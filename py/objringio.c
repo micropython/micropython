@@ -40,7 +40,7 @@ typedef struct _micropython_ringio_obj_t {
 static mp_obj_t micropython_ringio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_int_t buff_size = -1;
-    mp_buffer_info_t bufinfo = {NULL, 0, 0};
+    mp_buffer_info_t bufinfo = {NULL, 0, 0, 0};
 
     if (!mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
         buff_size = mp_obj_get_int(args[0]);

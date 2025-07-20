@@ -48,12 +48,20 @@ static const mp_obj_type_t uctypes_struct_type;
 // Get size of any type descriptor
 static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
 
+#define CTYPES_FLAGS_SIZE_BITS (2)
+#define CTYPES_OFFSET_SIZE_BITS (8 * sizeof(uint32_t) - 2)
+
 typedef struct _mp_obj_uctypes_struct_t {
     mp_obj_base_t base;
     mp_obj_t desc;
-    byte *addr;
-    uint32_t flags;
+    byte *ptrbase;
+    uint32_t flags : CTYPES_FLAGS_SIZE_BITS;
+    uint32_t offset : CTYPES_OFFSET_SIZE_BITS;
 } mp_obj_uctypes_struct_t;
+
+static inline byte *struct_addr(mp_obj_uctypes_struct_t *s) {
+    return s->ptrbase + s->offset;
+}
 
 static MP_NORETURN void syntax_error(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
@@ -80,10 +88,12 @@ mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
     mp_buffer_info_t bufinfo;
     mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
-    if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
-        o->addr = bufinfo.buf;
+    if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ | MP_BUFFER_GET_BASE)) {
+        o->ptrbase = bufinfo.base;
+        o->offset = (char *)bufinfo.buf - (char *)bufinfo.base;
     } else {
-        o->addr = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
+        o->ptrbase = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
+        o->offset = 0;
     }
     o->desc = desc;
     o->flags = flags;
@@ -107,9 +117,8 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
     mp_uint_t size = uctypes_struct_size(desc, type->struct_flags, &max_field_size);
 
     mp_buffer_info_t bufinfo;
-    mp_obj_t bytearray = mp_obj_new_bytearray(size, NULL);
-    mp_get_buffer_raise(bytearray, &bufinfo, MP_BUFFER_WRITE);
     if (is_ptr(desc)) {
+        bufinfo.len = size;
         if (n_args != 1) {
             mp_raise_TypeError(NULL);
         }
@@ -121,6 +130,9 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
             mp_get_buffer_raise(args[0], &pointee, MP_BUFFER_WRITE);
             *(void **)bufinfo.buf = pointee.buf;
         }
+    } else {
+        mp_obj_t bytearray = mp_obj_new_bytearray(size, NULL);
+        mp_get_buffer_raise(bytearray, &bufinfo, MP_BUFFER_WRITE);
     }
 
     mp_obj_t args1[] = {mp_obj_new_int((intptr_t)bufinfo.buf), desc, mp_obj_new_int(type->struct_flags)};
@@ -180,7 +192,7 @@ void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         typen = "ERROR";
     }
 
-    mp_printf(print, "<%q %s %p>", (qstr)mp_obj_get_type_qstr(self_in), typen, self->addr);
+    mp_printf(print, "<%q %s %p>", (qstr)mp_obj_get_type_qstr(self_in), typen, struct_addr(self));
 }
 
 // Get size of scalar type descriptor
@@ -477,16 +489,16 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         if (val_type <= INT64 || val_type == FLOAT32 || val_type == FLOAT64) {
             if (self->flags == LAYOUT_NATIVE) {
                 if (set_val == MP_OBJ_NULL) {
-                    return get_aligned(val_type, self->addr + offset, 0);
+                    return get_aligned(val_type, struct_addr(self) + offset, 0);
                 } else {
-                    set_aligned(val_type, self->addr + offset, 0, set_val);
+                    set_aligned(val_type, struct_addr(self) + offset, 0, set_val);
                     return set_val; // just !MP_OBJ_NULL
                 }
             } else {
                 if (set_val == MP_OBJ_NULL) {
-                    return get_unaligned(val_type, self->addr + offset, self->flags);
+                    return get_unaligned(val_type, struct_addr(self) + offset, self->flags);
                 } else {
-                    set_unaligned(val_type, self->addr + offset, self->flags, set_val);
+                    set_unaligned(val_type, struct_addr(self) + offset, self->flags, set_val);
                     return set_val; // just !MP_OBJ_NULL
                 }
             }
@@ -496,9 +508,9 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             offset &= (1 << OFFSET_BITS) - 1;
             mp_uint_t val;
             if (self->flags == LAYOUT_NATIVE) {
-                val = get_aligned_basic(val_type & 6, self->addr + offset);
+                val = get_aligned_basic(val_type & 6, struct_addr(self) + offset);
             } else {
-                val = mp_binary_get_int(GET_SCALAR_SIZE(val_type & 7), val_type & 1, self->flags, self->addr + offset);
+                val = mp_binary_get_int(GET_SCALAR_SIZE(val_type & 7), val_type & 1, self->flags, struct_addr(self) + offset);
             }
             if (set_val == MP_OBJ_NULL) {
                 val >>= bit_offset;
@@ -515,10 +527,10 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
                 val = (val & ~mask) | set_val_int;
 
                 if (self->flags == LAYOUT_NATIVE) {
-                    set_aligned_basic(val_type & 6, self->addr + offset, val);
+                    set_aligned_basic(val_type & 6, struct_addr(self) + offset, val);
                 } else {
                     mp_binary_set_int(GET_SCALAR_SIZE(val_type & 7), self->flags == LAYOUT_BIG_ENDIAN,
-                        self->addr + offset, val);
+                        struct_addr(self) + offset, val);
                 }
                 return set_val; // just !MP_OBJ_NULL
             }
@@ -544,19 +556,19 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     switch (agg_type) {
         case STRUCT: {
-            mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)self->addr + offset), sub->items[1], mp_obj_new_int(self->flags) };
+            mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)struct_addr(self) + offset), sub->items[1], mp_obj_new_int(self->flags) };
             return uctypes_struct_make_new(&uctypes_struct_type, MP_ARRAY_SIZE(args), 0, args);
         }
         case ARRAY: {
             mp_uint_t dummy;
             if (IS_SCALAR_ARRAY(sub) && IS_SCALAR_ARRAY_OF_BYTES(sub)) {
-                return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, self->flags, &dummy), self->addr + offset);
+                return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, self->flags, &dummy), struct_addr(self) + offset);
             }
             // Fall thru to return uctypes struct object
             MP_FALLTHROUGH
         }
         case PTR: {
-            mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)self->addr + offset), deref, mp_obj_new_int(self->flags) };
+            mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)struct_addr(self) + offset), deref, mp_obj_new_int(self->flags) };
             return uctypes_struct_make_new(&uctypes_struct_type, MP_ARRAY_SIZE(args), 0, args);
         }
     }
@@ -640,13 +652,13 @@ mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
                 // array of scalars
                 if (self->flags == LAYOUT_NATIVE) {
                     if (value == MP_OBJ_SENTINEL) {
-                        return get_aligned(val_type, self->addr, index);
+                        return get_aligned(val_type, struct_addr(self), index);
                     } else {
-                        set_aligned(val_type, self->addr, index, value);
+                        set_aligned(val_type, struct_addr(self), index, value);
                         return value; // just !MP_OBJ_NULL
                     }
                 } else {
-                    byte *p = self->addr + uctypes_struct_scalar_size(val_type) * index;
+                    byte *p = struct_addr(self) + uctypes_struct_scalar_size(val_type) * index;
                     if (value == MP_OBJ_SENTINEL) {
                         return get_unaligned(val_type, p, self->flags);
                     } else {
@@ -657,14 +669,14 @@ mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
             } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
-                mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)self->addr + size * index), t->items[2], mp_obj_new_int(self->flags) };
+                mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)(uintptr_t)struct_addr(self) + size * index), t->items[2], mp_obj_new_int(self->flags) };
                 return uctypes_struct_make_new(&uctypes_struct_type, MP_ARRAY_SIZE(args), 0, args);
             } else {
                 return MP_OBJ_NULL; // op not supported
             }
 
         } else if (agg_type == PTR) {
-            byte *p = *(void **)self->addr;
+            byte *p = *(void **)struct_addr(self);
             if (mp_obj_is_small_int(t->items[1])) {
                 uint val_type = GET_TYPE(MP_OBJ_SMALL_INT_VALUE(t->items[1]), VAL_TYPE_BITS);
                 if (value == MP_OBJ_SENTINEL) {
@@ -695,7 +707,7 @@ mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
                 uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
                 if (agg_type == PTR) {
-                    byte *p = *(void **)self->addr;
+                    byte *p = *(void **)struct_addr(self);
                     return mp_obj_new_int_from_uint((uintptr_t)p);
                 }
             }
@@ -712,9 +724,13 @@ mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint
     mp_uint_t max_field_size = 0;
     mp_uint_t size = uctypes_struct_size(self->desc, self->flags, &max_field_size);
 
-    bufinfo->buf = self->addr;
+    bufinfo->buf = struct_addr(self);
     bufinfo->len = size;
     bufinfo->typecode = BYTEARRAY_TYPECODE;
+    if (flags & MP_BUFFER_GET_BASE) {
+        bufinfo->base = (void *)self->ptrbase;
+    }
+
     return 0;
 }
 

@@ -82,7 +82,7 @@ mp_obj_t mp_vfs_rom_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_
 
 static mp_int_t vfs_rom_file_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_vfs_rom_file_t *self = MP_OBJ_TO_PTR(self_in);
-    if (flags == MP_BUFFER_READ) {
+    if ((flags & MP_BUFFER_RW) == MP_BUFFER_READ) {
         bufinfo->buf = (void *)self->file_data;
         bufinfo->len = self->file_size;
         bufinfo->typecode = 'B';
