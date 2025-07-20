@@ -188,6 +188,16 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
         }
     }
 
+    // get hash of index, with fast path for common case of qstr
+    // The object is hashed regardless of whether the map is ordered or not,
+    // because performing the hash is also performing the "is object hashable" check.
+    mp_uint_t hash;
+    if (mp_obj_is_qstr(index)) {
+        hash = qstr_hash(MP_OBJ_QSTR_VALUE(index));
+    } else {
+        hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
+    }
+
     // if the map is an ordered array then we must do a brute force linear search
     if (map->is_ordered) {
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
@@ -239,14 +249,6 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
         } else {
             return NULL;
         }
-    }
-
-    // get hash of index, with fast path for common case of qstr
-    mp_uint_t hash;
-    if (mp_obj_is_qstr(index)) {
-        hash = qstr_hash(MP_OBJ_QSTR_VALUE(index));
-    } else {
-        hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
     }
 
     size_t pos = hash % map->alloc;

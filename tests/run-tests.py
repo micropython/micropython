@@ -758,6 +758,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         "memoryview1",
         "memoryview_gc",
         "object1",
+        "ordereddict_unhashable",
         "python34",
         "string_format_modulo",
         "struct_endian",
