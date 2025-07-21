@@ -35,7 +35,7 @@
 
 void mp_module_js_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_jsproxy_t global_this;
-    global_this.ref = 0;
+    global_this.ref = MP_OBJ_JSPROXY_REF_GLOBAL_THIS;
     mp_obj_jsproxy_attr(MP_OBJ_FROM_PTR(&global_this), attr, dest);
 }
 

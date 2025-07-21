@@ -28,6 +28,10 @@
 
 #include "py/obj.h"
 
+// Fixed JsProxy references.
+#define MP_OBJ_JSPROXY_REF_GLOBAL_THIS (0)
+#define MP_OBJ_JSPROXY_REF_UNDEFINED (1)
+
 // proxy value number of items
 #define PVN (3)
 
