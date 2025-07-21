@@ -6,9 +6,7 @@ import qd
 import uctypes
 import windowmgr
 
-
-def let(dst, src):
-    memoryview(dst)[:] = memoryview(src)[:]
+scrn = qd.qdGlobals().screenBits
 
 
 def pstr(s):
@@ -26,20 +24,27 @@ ABOVE_ALL_WINDOWS = uctypes.struct(-1, qd.GrafPort)
 
 title = pstr("Hello World")
 r = mactypes.Rect()
-scrn = qd.qdGlobals().screenBits
-let(r, scrn.bounds)
+r[:] = scrn.bounds
 r.top += 80
 qd.InsetRect(r, 25, 25)
 
 w = windowmgr.NewWindow(NIL_WINDOW, r, title, True, 0, ABOVE_ALL_WINDOWS, True, 0)
-let(r, w.portRect)
 qd.SetPort(w)
+r[:] = w.portRect
 
-mid_x = (r.left + r.right) // 2
-mid_y = (r.top + r.bottom) // 2
-for i in range(r.left, r.right, 2):
-    qd.MoveTo(mid_x, r.bottom)
-    qd.LineTo(i, r.top)
 
-qd.MoveTo(mid_x, mid_y)
+g = qd.qdGlobals()
+
+barbell = qd.NewRgn()
+tempRect = mactypes.Rect()
+qd.OpenRgn()
+qd.SetRect(tempRect, 20, 20, 30, 50)
+qd.FrameOval(tempRect)
+qd.SetRect(tempRect, 25, 30, 85, 40)
+qd.FrameRect(tempRect)
+qd.SetRect(tempRect, 80, 20, 90, 50)
+qd.FrameOval(tempRect)
+qd.CloseRgn(barbell)
+qd.FillRgn(barbell, g.black)
+
 input("hit enter to exit")
