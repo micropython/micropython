@@ -30,6 +30,8 @@
 #if MICROPY_PY_UCTYPES
 #include "py/obj.h"
 
+extern const mp_obj_type_t uctypes_struct_type;
+
 typedef struct _mp_obj_ctypes_struct_type_t {
     // This is a mp_obj_type_t with six slots.
     mp_obj_empty_type_t base;

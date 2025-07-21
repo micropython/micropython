@@ -43,7 +43,7 @@
 #define IS_SCALAR_ARRAY_OF_BYTES(tuple_desc) (GET_TYPE(MP_OBJ_SMALL_INT_VALUE((tuple_desc)->items[1]), VAL_TYPE_BITS) == UINT8)
 
 // "struct" in uctypes context means "structural", i.e. aggregate, type.
-static const mp_obj_type_t uctypes_struct_type;
+const mp_obj_type_t uctypes_struct_type;
 
 // Get size of any type descriptor
 static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
@@ -757,7 +757,7 @@ static mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
-static MP_DEFINE_CONST_OBJ_TYPE(
+MP_DEFINE_CONST_OBJ_TYPE(
     uctypes_struct_type,
     MP_QSTR_struct,
     MP_TYPE_FLAG_NONE,
