@@ -16,10 +16,17 @@ void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_c
     return bufinfo.buf;
 }
 
+static const mp_rom_map_elem_t empty_table[] = {};
+static MP_DEFINE_CONST_DICT(empty_dict, empty_table);
 
 mp_obj_t from_struct_helper(void *buf, const mp_obj_type_t *type) {
-    mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)buf), MP_OBJ_FROM_PTR(type) };
-    return uctypes_struct_make_new(type, 2, 0, args);
+    if (type) {
+        mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)buf), MP_OBJ_FROM_PTR(type) };
+        return uctypes_struct_make_new(type, 2, 0, args);
+    } else {
+        mp_obj_t args[] = { mp_obj_new_int((mp_uint_t)buf), &empty_dict };
+        return uctypes_struct_make_new(&uctypes_struct_type, 2, 0, args);
+    }
 }
 
 void *to_scalar_helper(mp_obj_t obj, size_t objsize, bool is_const) {
