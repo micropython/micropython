@@ -273,7 +273,7 @@ class descr_maker_arr_scalar:
     def __call__(self, emitter, offset):
         obj = emitter.common_definition(
             "mp_rom_obj_tuple_t",
-            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(ARRAY)), MP_ROM_INT({self.tag} | {self.size}))",
+            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(ARRAY)), MP_ROM_INT(UCTYPE_TYPE({self.tag}) | {self.size}))",
         )
         return f"MP_ROM_PTR(&{obj})"
 
@@ -298,7 +298,7 @@ class descr_maker_ptr_scalar:
     def __call__(self, emitter, offset):
         obj = emitter.common_definition(
             "mp_rom_obj_tuple_t",
-            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(PTR)), MP_ROM_INT({self.tag}))",
+            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(PTR)), MP_ROM_INT(UCTYPE_TYPE({self.tag})))",
         )
         return f"MP_ROM_PTR(&{obj})"
 
