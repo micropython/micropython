@@ -285,6 +285,7 @@ static mp_obj_t jsproxy_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t r
 
 EM_JS(void, proxy_js_free_obj, (int js_ref), {
     if (js_ref >= PROXY_JS_REF_NUM_STATIC) {
+        proxy_js_ref_map.delete(proxy_js_ref[js_ref]);
         proxy_js_ref[js_ref] = undefined;
         if (js_ref < proxy_js_ref_next) {
             proxy_js_ref_next = js_ref;

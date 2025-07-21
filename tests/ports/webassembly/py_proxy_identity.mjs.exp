@@ -1,3 +1,10 @@
 PyProxy { _ref: 3 } PyProxy { _ref: 3 }
 true
-callback <JsProxy 7>
+callback <JsProxy 5>
+Object equality
+True
+True
+Array equality
+True
+True
+True
