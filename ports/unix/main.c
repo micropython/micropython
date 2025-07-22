@@ -111,8 +111,6 @@ static int handle_uncaught_exception(mp_obj_base_t *exc) {
 }
 
 #define LEX_SRC_STR (1)
-#define LEX_SRC_VSTR (2)
-#define LEX_SRC_FILENAME (3)
 #define LEX_SRC_STDIN (4)
 
 // Returns standard error codes: 0 for success, 1 for all other errors,
@@ -128,12 +126,6 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         if (source_kind == LEX_SRC_STR) {
             const char *line = source;
             lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
-        } else if (source_kind == LEX_SRC_VSTR) {
-            const vstr_t *vstr = source;
-            lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
-        } else if (source_kind == LEX_SRC_FILENAME) {
-            const char *filename = (const char *)source;
-            lex = mp_lexer_new_from_file(qstr_from_str(filename));
         } else { // LEX_SRC_STDIN
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
@@ -245,9 +237,7 @@ static int do_repl(void) {
     return ret;
 }
 
-
-static int do_file(const char *file) {
-    int ret = pyexec_file(file);
+static inline int convert_pyexec_result(int ret) {
     // pyexec returns 1 for success, 0 for exception, PYEXEC_FORCED_EXIT for SystemExit
     // Convert to unix port's expected codes: 0 for success, 1 for exception, FORCED_EXIT|val for SystemExit
     if (ret == 1) {
@@ -259,8 +249,17 @@ static int do_file(const char *file) {
     }
 }
 
+static int do_file(const char *file) {
+    return convert_pyexec_result(pyexec_file(file));
+}
+
 static int do_str(const char *str) {
-    return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
+    vstr_t vstr;
+    vstr_init(&vstr, strlen(str));
+    vstr_add_strn(&vstr, str, strlen(str));
+    int ret = pyexec_vstr(&vstr, false);
+    vstr_clear(&vstr);
+    return convert_pyexec_result(ret);
 }
 
 static void print_help(char **argv) {
