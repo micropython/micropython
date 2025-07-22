@@ -26,7 +26,7 @@ IOMUX_REGEXS = [
     r"IOMUXC_(?P<pin>GPIO_SNVS_\d\d_DIG)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
 ]
 
-SUPPORTED_AF_FNS = {"GPIO", "USDHC", "FLEXPWM", "TMR"}
+SUPPORTED_AF_FNS = {"GPIO", "USDHC", "FLEXPWM", "TMR", "XBAR"}
 
 
 class MimxrtPin(boardgen.Pin):
@@ -183,7 +183,7 @@ class MimxrtPinGenerator(boardgen.PinGenerator):
     # the CMD pin of the USDHC1 function on the GPIO_SD_B0_00 pin.
     def print_module_instances(self, out_header):
         print(file=out_header)
-        for match_fn in ("USDHC", "FLEXPWM", "TMR"):
+        for match_fn in ("USDHC", "FLEXPWM", "TMR", "XBAR"):
             module_instances = defaultdict(list)
             for pin in self.available_pins():
                 for i, (_af_idx, _input_reg, _input_daisy, instance, fn, af) in enumerate(
@@ -200,6 +200,8 @@ class MimxrtPinGenerator(boardgen.PinGenerator):
                 print("#define {:s}_AVAIL (1)".format(k), file=out_header)
                 if match_fn == "FLEXPWM":
                     print("#define {:s} {:s}".format(k, k[-4:]), file=out_header)
+                if match_fn == "XBAR":
+                    print("#define {:s} {:s}A1".format(k, k[:4]), file=out_header)
                 for i in v:
                     print(i, file=out_header)
 
