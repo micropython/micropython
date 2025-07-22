@@ -31,6 +31,7 @@
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
@@ -64,29 +65,12 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 
 static void machine_timer_callback(struct k_timer *timer) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)k_timer_user_data_get(timer);
-    if (self->callback != mp_const_none) {
-        if (self->ishard) {
-            // When executing code within a handler we must lock the scheduler to
-            // prevent any scheduled callbacks from running, and lock the GC to
-            // prevent any memory allocations.
-            mp_sched_lock();
-            gc_lock();
-            nlr_buf_t nlr;
-            if (nlr_push(&nlr) == 0) {
-                mp_call_function_1(self->callback, MP_OBJ_FROM_PTR(self));
-                nlr_pop();
-            } else {
-                // Uncaught exception; disable the callback so it doesn't run again.
-                self->mode = TIMER_MODE_ONE_SHOT;
-                mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in timer callback\n");
-                mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
-            }
-            gc_unlock();
-            mp_sched_unlock();
-        } else {
-            mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
-        }
+
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception; disable the callback so it doesn't run again.
+        self->mode = TIMER_MODE_ONE_SHOT;
     }
+
     if (self->mode == TIMER_MODE_ONE_SHOT) {
         machine_timer_deinit(self);
     }
