@@ -64,7 +64,7 @@ static bool repl_display_debugging_info = 0;
 // EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
 // EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
-static int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, mp_uint_t exec_flags) {
+static int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, mp_uint_t exec_flags, const char *frozen_module_name) {
     int ret = 0;
     #if MICROPY_REPL_INFO
     uint32_t start = 0;
@@ -86,6 +86,14 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             ctx->module.globals = mp_globals_get();
             ctx->constants = frozen->constants;
             module_fun = mp_make_function_from_proto_fun(frozen->proto_fun, ctx, NULL);
+
+            #if MICROPY_MODULE___FILE__
+            // Set __file__ for frozen MPY modules
+            if (input_kind == MP_PARSE_FILE_INPUT && frozen_module_name != NULL) {
+                qstr source_name = qstr_from_str(frozen_module_name);
+                mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+            }
+            #endif
         } else
         #endif
         {
@@ -103,7 +111,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             }
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
-            #if MICROPY_PY___FILE__
+            #if MICROPY_MODULE___FILE__
             if (input_kind == MP_PARSE_FILE_INPUT) {
                 mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
             }
@@ -161,6 +169,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         // check for SystemExit
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // Extract SystemExit value
+            // None is an exit value of 0; an int is its value; anything else is 1
             mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
             mp_int_t val = 0;
             if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
@@ -297,7 +306,7 @@ static int do_reader_stdin(int c) {
     mp_reader_stdin_t reader_stdin;
     mp_reader_new_stdin(&reader, &reader_stdin, MICROPY_REPL_STDIN_BUFFER_MAX);
     int exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
-    return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags);
+    return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags, NULL);
 }
 
 #if MICROPY_REPL_EVENT_DRIVEN
@@ -372,7 +381,7 @@ static int pyexec_raw_repl_process_char(int c) {
         return PYEXEC_FORCED_EXIT;
     }
 
-    int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
+    int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
     if (ret & PYEXEC_FORCED_EXIT) {
         return ret;
     }
@@ -393,7 +402,7 @@ static int pyexec_friendly_repl_process_char(int c) {
         } else if (c == CHAR_CTRL_D) {
             // end of input
             mp_hal_stdout_tx_str("\r\n");
-            int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+            int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
@@ -484,7 +493,7 @@ static int pyexec_friendly_repl_process_char(int c) {
         }
 
     exec:;
-        int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+        int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -567,7 +576,7 @@ raw_repl_reset:
             return PYEXEC_FORCED_EXIT;
         }
 
-        int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
+        int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -692,7 +701,7 @@ friendly_repl_reset:
             }
         }
 
-        ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+        ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -703,7 +712,7 @@ friendly_repl_reset:
 #endif // MICROPY_ENABLE_COMPILER
 
 int pyexec_file(const char *filename) {
-    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
+    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME, NULL);
 }
 
 
@@ -729,13 +738,13 @@ int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt) {
     switch (frozen_type) {
         #if MICROPY_MODULE_FROZEN_STR
         case MP_FROZEN_STR:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags, NULL);
         #endif
 
         #if MICROPY_MODULE_FROZEN_MPY
         case MP_FROZEN_MPY:
             return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags |
-                EXEC_FLAG_SOURCE_IS_RAW_CODE);
+                EXEC_FLAG_SOURCE_IS_RAW_CODE, name);
         #endif
 
         default:
@@ -747,7 +756,7 @@ int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt) {
 
 int pyexec_vstr(vstr_t *str, bool allow_keyboard_interrupt) {
     mp_uint_t exec_flags = allow_keyboard_interrupt ? 0 : EXEC_FLAG_NO_INTERRUPT;
-    return parse_compile_execute(str, MP_PARSE_FILE_INPUT, exec_flags | EXEC_FLAG_SOURCE_IS_VSTR);
+    return parse_compile_execute(str, MP_PARSE_FILE_INPUT, exec_flags | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
 }
 
 #if MICROPY_REPL_INFO
