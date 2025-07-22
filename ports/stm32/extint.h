@@ -37,7 +37,7 @@
 #if defined(STM32L4)
 #define EXTI_RTC_ALARM          (18)
 #define EXTI_USB_OTG_FS_WAKEUP  (17)
-#else
+#elif !defined(STM32U5)
 #define EXTI_RTC_ALARM          (17)
 #define EXTI_USB_OTG_FS_WAKEUP  (18)
 #endif
@@ -55,6 +55,11 @@
 #elif defined(STM32G0)
 #define EXTI_RTC_WAKEUP         (19)
 #define EXTI_RTC_TIMESTAMP      (21)
+#elif defined(STM32U5)
+#define EXTI_RTC_TIMESTAMP      (26)
+#define EXTI_RTC_WAKEUP         (27)
+#define EXTI_RTC_ALARM          (28)
+#define EXTI_USB_OTG_FS_WAKEUP  (29)
 #else
 #define EXTI_RTC_TIMESTAMP      (21)
 #define EXTI_RTC_WAKEUP         (22)
