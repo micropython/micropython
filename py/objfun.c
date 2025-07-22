@@ -34,7 +34,8 @@
 #include "py/objfun.h"
 #include "py/runtime.h"
 #include "py/bc.h"
-#include "py/cstack.h"
+#include "py/stackctrl.h"
+#include "py/profile.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -366,17 +367,13 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_FROM_PTR(self->context->module.globals);
     }
-    #if MICROPY_PY_FUNCTION_ATTRS_CODE
+
+    #if MICROPY_PY_SYS_SETTRACE
     if (attr == MP_QSTR___code__) {
-        const mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-        if ((self->base.type == &mp_type_fun_bc
-             || self->base.type == &mp_type_gen_wrap)
-            && self->child_table == NULL) {
-            #if MICROPY_PY_BUILTINS_CODE <= MICROPY_PY_BUILTINS_CODE_BASIC
-            dest[0] = mp_obj_new_code(self->context->constants, self->bytecode);
-            #else
-            dest[0] = mp_obj_new_code(self->context, self->rc, true);
-            #endif
+        mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+        mp_obj_t code_obj = mp_obj_new_code(self->context, self->rc, false);
+        if (code_obj != MP_OBJ_NULL) {
+            dest[0] = code_obj;
         }
     }
     #endif
