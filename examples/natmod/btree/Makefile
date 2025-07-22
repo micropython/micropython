@@ -39,6 +39,11 @@ endif
 # Use our own errno implementation if Picolibc is used
 CFLAGS += -D__PICOLIBC_ERRNO_FUNCTION=__errno
 
+ifeq ($(ARCH),armv6m)
+# Link with libgcc.a for division helper functions
+LINK_RUNTIME = 1
+endif
+
 include $(MPY_DIR)/py/dynruntime.mk
 
 # btree needs gnu99 defined
