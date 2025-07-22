@@ -49,9 +49,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        #ifdef MICROPY_SOFT_TIMER_HARD_CALLBACKS
         { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        #endif
     };
 
     // Parse args
@@ -84,13 +82,11 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
         self->py_callback = args[ARG_callback].u_obj;
     }
 
-    #ifdef MICROPY_SOFT_TIMER_HARD_CALLBACKS
     if (args[ARG_hard].u_bool) {
         self->flags |= SOFT_TIMER_FLAG_HARD_CALLBACK;
     } else {
         self->flags &= ~SOFT_TIMER_FLAG_HARD_CALLBACK;
     }
-    #endif
 
     if (self->py_callback != mp_const_none) {
         soft_timer_insert(self, self->delta_ms);

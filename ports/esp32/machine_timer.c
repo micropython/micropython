@@ -34,6 +34,7 @@
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 
 #include "hal/timer_hal.h"
@@ -157,26 +158,10 @@ static void machine_timer_isr(void *self_in) {
 }
 
 static void machine_timer_isr_handler(machine_timer_obj_t *self) {
-    if (self->ishard) {
-        // When executing code within a handler we must lock the scheduler to
-        // prevent any scheduled callbacks from running, and lock the GC to
-        // prevent any memory allocations.
-        mp_sched_lock();
-        gc_lock();
-        nlr_buf_t nlr;
-        if (nlr_push(&nlr) == 0) {
-            mp_call_function_1(self->callback, MP_OBJ_FROM_PTR(self));
-            nlr_pop();
-        } else {
-            // Uncaught exception; disable the callback so it doesn't run again.
-            self->repeat = 0;
-            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in timer callback\n");
-            mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
-        }
-        gc_unlock();
-        mp_sched_unlock();
-    } else {
-        mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception; disable the callback so it doesn't run again.
+        self->repeat = 0;
+    } else if (!self->ishard) {
         mp_hal_wake_main_task_from_isr();
     }
 }

@@ -49,7 +49,6 @@
 #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
 #define MICROPY_SOFT_TIMER_TICKS_MS             system_tick_ms_counter
 #endif
-#define MICROPY_SOFT_TIMER_HARD_CALLBACKS       (1)
 
 #ifndef MICROPY_HW_ENABLE_OSPI
 #define MICROPY_HW_ENABLE_OSPI                  (CORE_M55_HP)

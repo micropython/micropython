@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "shared/runtime/mpirq.h"
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"
@@ -1715,33 +1716,10 @@ static void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
             // clear the interrupt
             __HAL_TIM_CLEAR_IT(&tim->tim, irq_mask);
 
-            // execute callback if it's set
-            if (callback != mp_const_none) {
-                if (tim->ishard) {
-                    mp_sched_lock();
-                    // When executing code within a handler we must lock the GC to prevent
-                    // any memory allocations.  We must also catch any exceptions.
-                    gc_lock();
-                    nlr_buf_t nlr;
-                    if (nlr_push(&nlr) == 0) {
-                        mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
-                        nlr_pop();
-                    } else {
-                        // Uncaught exception; disable the callback so it doesn't run again.
-                        tim->callback = mp_const_none;
-                        __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
-                        if (channel == 0) {
-                            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
-                        } else {
-                            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
-                        }
-                        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-                    }
-                    gc_unlock();
-                    mp_sched_unlock();
-                } else {
-                    mp_sched_schedule(callback, MP_OBJ_FROM_PTR(tim));
-                }
+            if (mp_irq_dispatch(callback, MP_OBJ_FROM_PTR(tim), tim->ishard) < 0) {
+                // Uncaught exception; disable the callback so it doesn't run again.
+                tim->callback = mp_const_none;
+                __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
             }
         }
     }
