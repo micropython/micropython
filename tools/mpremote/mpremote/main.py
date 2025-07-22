@@ -598,7 +598,7 @@ def main():
                 cmd == "fs"
                 and len(command_args) >= 1
                 and command_args[0] in ("ls", "tree")
-                and sum(1 for a in command_args if not a.startswith('-')) == 1
+                and sum(1 for a in command_args if not a.startswith("-")) == 1
             ):
                 command_args.append("")
 

@@ -35,7 +35,7 @@ client_socket = DummySocket()
 dtls_server_ctx = SSLContext(PROTOCOL_DTLS_SERVER)
 dtls_server_ctx.verify_mode = CERT_NONE
 dtls_server = dtls_server_ctx.wrap_socket(
-    server_socket, do_handshake_on_connect=False, client_id=b'dummy_client_id'
+    server_socket, do_handshake_on_connect=False, client_id=b"dummy_client_id"
 )
 print("Wrapped DTLS Server")
 

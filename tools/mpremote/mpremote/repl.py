@@ -110,7 +110,7 @@ def _is_disconnect_exception(exception):
     False otherwise.
     """
     if isinstance(exception, OSError):
-        if hasattr(exception, 'args') and len(exception.args) > 0:
+        if hasattr(exception, "args") and len(exception.args) > 0:
             # IO error, device disappeared
             if exception.args[0] == 5:
                 return True

@@ -52,6 +52,6 @@ for function_name, function, test_vals in functions:
         except ValueError as e:
             ans = str(e)
         # a tiny error in REPR_C value for 1.5204998778 causes a wrong rounded value
-        if is_REPR_C and function_name == 'erfc' and ans == "1.521":
+        if is_REPR_C and function_name == "erfc" and ans == "1.521":
             ans = "1.52"
         print("{}({:.4g}) = {}".format(function_name, value, ans))

@@ -1,4 +1,4 @@
-__all__ = ['publicFun', 'PublicClass', 'dynamicFun']
+__all__ = ["publicFun", "PublicClass", "dynamicFun"]
 
 
 # Definitions below should always be imported by a star import

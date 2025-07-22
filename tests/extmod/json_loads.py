@@ -86,7 +86,7 @@ except ValueError:
 
 # incomplete array declaration
 try:
-    my_print(json.loads('[0,'))
+    my_print(json.loads("[0,"))
 except ValueError:
     print("ValueError")
 

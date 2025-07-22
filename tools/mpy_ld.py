@@ -1521,31 +1521,31 @@ def parse_linkerscript(source):
     symbols = {}
 
     LINE_REGEX = re.compile(
-        r'^(?P<weak>PROVIDE\()?'  # optional weak marker start
-        r'(?P<symbol>[a-zA-Z_]\w*)'  # symbol name
-        r'=0x(?P<address>[\da-fA-F]{1,8})*'  # symbol address
-        r'(?(weak)\));$',  # optional weak marker end and line terminator
+        r"^(?P<weak>PROVIDE\()?"  # optional weak marker start
+        r"(?P<symbol>[a-zA-Z_]\w*)"  # symbol name
+        r"=0x(?P<address>[\da-fA-F]{1,8})*"  # symbol address
+        r"(?(weak)\));$",  # optional weak marker end and line terminator
         re.ASCII,
     )
 
     inside_comment = False
     for line in (line.strip() for line in source.readlines()):
-        if line.startswith('/*') and not inside_comment:
-            if not line.endswith('*/'):
+        if line.startswith("/*") and not inside_comment:
+            if not line.endswith("*/"):
                 inside_comment = True
             continue
         if inside_comment:
-            if line.endswith('*/'):
+            if line.endswith("*/"):
                 inside_comment = False
             continue
-        if line.startswith('//'):
+        if line.startswith("//"):
             continue
-        match = LINE_REGEX.match(''.join(line.split()))
+        match = LINE_REGEX.match("".join(line.split()))
         if not match:
             continue
         tokens = match.groupdict()
-        symbol = tokens['symbol']
-        address = int(tokens['address'], 16)
+        symbol = tokens["symbol"]
+        address = int(tokens["address"], 16)
         if symbol in symbols:
             raise ValueError(f"Symbol {symbol} already defined")
         symbols[symbol] = address

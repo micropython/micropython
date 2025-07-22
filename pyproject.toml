@@ -68,4 +68,3 @@ mccabe.max-complexity = 40
 #   repl_: not real python files
 #   viper_args: uses f(*)
 exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py"]
-quote-style = "preserve"
