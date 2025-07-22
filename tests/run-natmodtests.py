@@ -170,6 +170,7 @@ def run_tests(target_truth, target, args, resolved_arch):
             print("skip  {} - mpy file not compiled".format(test_file))
             continue
         test_script += bytes(injected_import_hook_code.format(test_module), "ascii")
+        test_script += b"print('START TEST')\n"
         test_script += test_file_data
 
         # Run test under MicroPython
@@ -177,8 +178,18 @@ def run_tests(target_truth, target, args, resolved_arch):
 
         # Work out result of test
         extra = ""
+        result_out = result_out.removeprefix(b"START TEST\n")
         if error is None and result_out == b"SKIP\n":
             result = "SKIP"
+        elif (
+            error is not None
+            and error.args[0] == "exception"
+            and error.args[1] == b""
+            and b"MemoryError" in error.args[2]
+        ):
+            # Test had a MemoryError before anything (should be at least "START TEST")
+            # was printed, so the test is too big for the target.
+            result = "LRGE"
         elif error is not None:
             result = "FAIL"
             extra = " - " + str(error)
@@ -203,6 +214,8 @@ def run_tests(target_truth, target, args, resolved_arch):
             test_results.append((test_file, "pass", ""))
         elif result == "SKIP":
             test_results.append((test_file, "skip", ""))
+        elif result == "LRGE":
+            test_results.append((test_file, "skip", "too large"))
         else:
             test_results.append((test_file, "fail", ""))
 
