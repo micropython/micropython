@@ -62,7 +62,7 @@ def list_ports(args):
     return ports
 
 
-NATMOD_ARCHS = ("x86", "x64", "armv6", "armv6m", "armv7m", "armv7em", "armv7emsp", "armv7emdp", "xtensa", "xtensawin", "rv32imc")
+NATMOD_ARCHS = ("x86", "x64", "armv6m", "armv7m", "armv7emsp", "armv7emdp", "xtensa", "xtensawin", "rv32imc")
 NATMOD_LIBS = ("btree", "deflate", "framebuf", "heapq", "random", "re")
 
 
