@@ -179,7 +179,11 @@ static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 // Forward declare the send and recv ESPNow callbacks
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
 static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
+#else
+static void send_cb(const esp_now_send_info_t *tx_info, esp_now_send_status_t status);
+#endif
 
 static void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, int msg_len);
 
@@ -539,7 +543,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_send_obj, 2, 4, espnow_send);
 // Callback triggered when a sent packet is acknowledged by the peer (or not).
 // Just count the number of responses and number of failures.
 // These are used in the send() logic.
-static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status) {
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
+static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
+#else
+static void send_cb(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
+#endif
+{
     esp_espnow_obj_t *self = _get_singleton();
     self->tx_responses++;
     if (status != ESP_NOW_SEND_SUCCESS) {
