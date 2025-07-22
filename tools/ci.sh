@@ -346,9 +346,15 @@ function ci_qemu_build_arm_thumb {
     ci_qemu_build_arm_prepare
     make ${MAKEOPTS} -C ports/qemu test_full
 
-    # Test building and running native .mpy with armv7m architecture.
+    # Test building native .mpy with all ARM-M architectures.
+    ci_native_mpy_modules_build armv6m
     ci_native_mpy_modules_build armv7m
-    make ${MAKEOPTS} -C ports/qemu test_natmod
+    ci_native_mpy_modules_build armv7emsp
+    ci_native_mpy_modules_build armv7emdp
+
+    # Test running native .mpy with armv6m and armv7m architectures.
+    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
+    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
 }
 
 function ci_qemu_build_rv32 {
@@ -442,10 +448,6 @@ function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=STM32F769DISC CFLAGS_EXTRA='-DMBOOT_ADDRESS_SPACE_64BIT=1 -DMBOOT_SDCARD_ADDR=0x100000000ULL -DMBOOT_SDCARD_BYTE_SIZE=0x400000000ULL -DMBOOT_FSLOAD=1 -DMBOOT_VFS_FAT=1'
-
-    # Test building native .mpy with armv7emsp architecture.
-    git submodule update --init lib/berkeley-db-1.xx
-    ci_native_mpy_modules_build armv7emsp
 }
 
 function ci_stm32_nucleo_build {
