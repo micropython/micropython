@@ -732,9 +732,14 @@ int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt) {
         #endif
 
         #if MICROPY_MODULE_FROZEN_MPY
-        case MP_FROZEN_MPY:
+        case MP_FROZEN_MPY: {
+            #if MICROPY_MODULE___FILE__
+            qstr source_name = qstr_from_str(name);
+            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+            #endif
             return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags |
                 EXEC_FLAG_SOURCE_IS_RAW_CODE);
+        }
         #endif
 
         default:
