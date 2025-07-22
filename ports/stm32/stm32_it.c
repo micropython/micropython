@@ -384,15 +384,27 @@ static void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
         /* Enable the main PLL. */
         __HAL_RCC_PLL_ENABLE();
 
+        #if defined(STM32U5)
+        /* Wait till PLL is ready */
+        while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLL1RDY) == RESET) {
+        }
+
+        /* Select PLL as SYSCLK */
+        MODIFY_REG(RCC->CFGR1, RCC_CFGR1_SW, RCC_SYSCLKSOURCE_PLLCLK);
+        #else
         /* Wait till PLL is ready */
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
         }
 
         /* Select PLL as SYSCLK */
         MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
+        #endif
 
         #if defined(STM32H7)
         while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1) {
+        }
+        #elif defined(STM32U5)
+        while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_SYSCLKSOURCE_STATUS_PLLCLK) {
         }
         #else
         while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
@@ -439,7 +451,7 @@ void OTG_HS_WKUP_IRQHandler(void) {
 
     OTG_CMD_WKUP_Handler(&pcd_hs_handle);
 
-    #if !defined(STM32H5) && !defined(STM32H7)
+    #if !defined(STM32H5) && !defined(STM32H7) && !defined(STM32U5)
     /* Clear EXTI pending Bit*/
     __HAL_USB_HS_EXTI_CLEAR_FLAG();
     #endif
@@ -507,6 +519,7 @@ void TAMP_STAMP_IRQHandler(void) {
 }
 #endif
 
+#if !defined(STM32U5)
 #if defined(STM32H5)
 void RTC_IRQHandler(void)
 #elif defined(STM32N6)
@@ -529,6 +542,7 @@ void RTC_WKUP_IRQHandler(void)
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
+#endif
 
 #if defined(STM32N6)
 void RTC_IRQHandler(void) {
@@ -571,6 +585,26 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void) {
     IRQ_EXIT(TIM1_BRK_UP_TRG_COM_IRQn);
 }
 
+#endif
+
+#if defined(STM32U5)
+extern RTC_HandleTypeDef RTCHandle;
+void RTC_IRQHandler(void) {
+    IRQ_ENTER(RTC_IRQn);
+    if (RTC->SR & RTC_SR_WUTF) {
+        RTC->SCR = RTC_SCR_CWUTF; // clear wakeup interrupt flag
+        Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
+    }
+    if (RTC->SR & RTC_SR_ALRAF) {
+        RTC->SCR &= ~RTC_SCR_CALRAF; // clear Alarm A flag
+        Handle_EXTI_Irq(EXTI_RTC_ALARM); // clear EXTI flag and execute optional callback
+    }
+    if (RTC->SR & RTC_SR_TSF) {
+        RTC->SR &= ~RTC_SR_TSF; // clear timestamp flag
+        Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP); // clear EXTI flag and execute optional callback
+    }
+    IRQ_EXIT(RTC_IRQn);
+}
 #endif
 
 void TIM1_BRK_TIM9_IRQHandler(void) {

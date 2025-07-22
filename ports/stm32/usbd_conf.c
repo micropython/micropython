@@ -182,7 +182,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         // Configure USB GPIO's.
 
-        #if defined(STM32H723xx) || (STM32H7A3xx) || defined(STM32H7A3xxQ)
+        #if defined(STM32H723xx) || (STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32U5)
 
         // These MCUs don't have an alternate function for USB but rather require
         // the pins to be disconnected from all peripherals, ie put in analog mode.
@@ -195,6 +195,33 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config_speed(pin_A11, GPIO_SPEED_FREQ_VERY_HIGH);
         mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
         mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
+
+        #if defined(STM32U5)
+        HAL_SYSCFG_SetOTGPHYReferenceClockSelection(SYSCFG_OTG_HS_PHY_CLK_SELECT_1);
+
+        // Peripheral clock enable
+        __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+        __HAL_RCC_USBPHYC_CLK_ENABLE();
+
+        // Enable VDDUSB
+        if (__HAL_RCC_PWR_IS_CLK_DISABLED()) {
+            __HAL_RCC_PWR_CLK_ENABLE();
+            HAL_PWREx_EnableVddUSB();
+
+            // configure VOSR register of USB
+            HAL_PWREx_EnableUSBHSTranceiverSupply();
+            __HAL_RCC_PWR_CLK_DISABLE();
+        } else {
+            HAL_PWREx_EnableVddUSB();
+
+            // configure VOSR register of USB
+            HAL_PWREx_EnableUSBHSTranceiverSupply();
+        }
+
+        // Configuring the SYSCFG registers OTG_HS PHY
+        // OTG_HS PHY enable
+        HAL_SYSCFG_EnableOTGPHY(SYSCFG_OTG_HS_PHY_ENABLE);
+        #endif
 
         #elif defined(STM32N6)
 
@@ -247,7 +274,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #else
 
         // Enable calling WFI and correct function of the embedded USB_FS_IN_HS phy
+        #if !defined(STM32U5)
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_DISABLE();
+        #endif
         __HAL_RCC_USB_OTG_HS_CLK_SLEEP_ENABLE();
 
         // Enable USB HS Clocks
@@ -550,7 +579,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
 
         #if MICROPY_HW_USB_HS_IN_FS
 
-        #if defined(STM32F723xx) || defined(STM32F733xx) || defined(STM32N6)
+        #if defined(STM32F723xx) || defined(STM32F733xx) || defined(STM32N6) || defined(STM32U5)
         pcd_hs_handle.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
         #else
         pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
