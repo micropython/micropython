@@ -765,3 +765,119 @@ Constructor
 
     - A 16-bit integer. e.g. ``0x2908``.
     - A 128-bit UUID string. e.g. ``'6E400001-B5A3-F393-E0A9-E50E24DCCA9E'``.
+
+
+HCI Commands
+-----------
+
+Some ports optionally support direct access to the Bluetooth controller via Host Controller Interface (HCI) commands.
+This is an advanced feature that allows for more direct manipulation of the Bluetooth stack.
+
+.. method:: BLE.hci_cmd(ogf, ocf, request_data, response_data, /)
+
+    Send a raw HCI command to the Bluetooth controller and receive a response.
+    
+    This function is only available when the ``MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD``
+    define is enabled during build.
+
+    **Parameters:**
+    
+    - *ogf* (int): Opcode Group Field, indicating the command group.
+    - *ocf* (int): Opcode Command Field, indicating the specific command within the group.
+    - *request_data* (buffer): Data to send to the controller (must implement the buffer protocol).
+    - *response_data* (buffer): Buffer to receive the response into (must implement the buffer protocol).
+    
+    **Return Value:**
+    
+    Returns the HCI status code from the command (0 for success, or a specific error code).
+    
+    **Example:**
+    
+    .. code-block:: python
+    
+        import bluetooth
+        import struct
+        
+        # Initialize the BLE interface
+        ble = bluetooth.BLE()
+        ble.active(True)
+        
+        # Read Local Version Information
+        cmd_buf = bytearray(0)  # Empty payload
+        resp_buf = bytearray(20)  # Buffer for response
+        
+        # OGF=0x04 (Information Parameters)
+        # OCF=0x0001 (Read Local Version Information)
+        status = ble.hci_cmd(0x04, 0x0001, cmd_buf, resp_buf)
+        
+        if status == 0:
+            # Parse the response
+            hci_version = resp_buf[0]
+            hci_revision = struct.unpack("<H", resp_buf[1:3])[0]
+            lmp_version = resp_buf[3]
+            manufacturer = struct.unpack("<H", resp_buf[4:6])[0]
+            lmp_subversion = struct.unpack("<H", resp_buf[6:8])[0]
+            
+            print(f"HCI Version: {hci_version}")
+            print(f"HCI Revision: {hci_revision}")
+            print(f"LMP Version: {lmp_version}")
+            print(f"Manufacturer: {manufacturer}")
+            print(f"LMP Subversion: {lmp_subversion}")
+        else:
+            print(f"HCI command failed with status: {status}")
+
+Some ports optionally support direct access to the Bluetooth controller via Host Controller Interface (HCI) commands.
+This is an advanced feature that allows for more direct manipulation of the Bluetooth stack.
+
+.. method:: BLE.hci_cmd(ogf, ocf, request_data, response_data, /)
+
+    Send a raw HCI command to the Bluetooth controller and receive a response.
+    
+    This function is only available when the ``MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD``
+    define is enabled during build.
+
+    **Parameters:**
+    
+    - *ogf* (int): Opcode Group Field, indicating the command group.
+    - *ocf* (int): Opcode Command Field, indicating the specific command within the group.
+    - *request_data* (buffer): Data to send to the controller (must implement the buffer protocol).
+    - *response_data* (buffer): Buffer to receive the response into (must implement the buffer protocol).
+    
+    **Return Value:**
+    
+    Returns the HCI status code from the command (0 for success, or a specific error code).
+    
+    **Example:**
+    
+    .. code-block:: python
+    
+        import bluetooth
+        import struct
+        
+        # Initialize the BLE interface
+        ble = bluetooth.BLE()
+        ble.active(True)
+        
+        # Read Local Version Information
+        cmd_buf = bytearray(0)  # Empty payload
+        resp_buf = bytearray(20)  # Buffer for response
+        
+        # OGF=0x04 (Information Parameters)
+        # OCF=0x0001 (Read Local Version Information)
+        status = ble.hci_cmd(0x04, 0x0001, cmd_buf, resp_buf)
+        
+        if status == 0:
+            # Parse the response
+            hci_version = resp_buf[0]
+            hci_revision = struct.unpack("<H", resp_buf[1:3])[0]
+            lmp_version = resp_buf[3]
+            manufacturer = struct.unpack("<H", resp_buf[4:6])[0]
+            lmp_subversion = struct.unpack("<H", resp_buf[6:8])[0]
+            
+            print(f"HCI Version: {hci_version}")
+            print(f"HCI Revision: {hci_revision}")
+            print(f"LMP Version: {lmp_version}")
+            print(f"Manufacturer: {manufacturer}")
+            print(f"LMP Subversion: {lmp_subversion}")
+        else:
+            print(f"HCI command failed with status: {status}")
