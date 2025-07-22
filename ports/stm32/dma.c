@@ -1737,10 +1737,10 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
     dma->CCR = init->Priority;
 
     uint32_t ctr1reg = 0;
-    ctr1reg |= init->SrcDataWidth;
+    ctr1reg |= config & DMA_CTR1_SDW_LOG2_Msk;
     ctr1reg |= init->SrcInc;
     ctr1reg |= (((init->SrcBurstLength - 1) << DMA_CTR1_SBL_1_Pos)) & DMA_CTR1_SBL_1_Msk;
-    ctr1reg |= init->DestDataWidth;
+    ctr1reg |= config & DMA_CTR1_DDW_LOG2_Msk;
     ctr1reg |= init->DestInc;
     ctr1reg |= (((init->DestBurstLength - 1) << DMA_CTR1_DBL_1_Pos)) & DMA_CTR1_DBL_1_Msk;
 
