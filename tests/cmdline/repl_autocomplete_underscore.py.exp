@@ -27,7 +27,6 @@ paste mode; Ctrl-C to cancel, Ctrl-D to finish
 ===         return 99
 === 
 === 
->>> 
 >>> # Paste executed
 >>> 
 >>> # Create an instance
