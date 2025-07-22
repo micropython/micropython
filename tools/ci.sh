@@ -720,7 +720,8 @@ function ci_unix_stackless_clang_build {
 }
 
 function ci_unix_stackless_clang_run_tests {
-    ci_unix_run_tests_helper CC=clang
+    # Timeout needs to be increased for thread/stress_aes.py test.
+    MICROPY_TEST_TIMEOUT=90 ci_unix_run_tests_helper CC=clang
 }
 
 function ci_unix_float_clang_build {
