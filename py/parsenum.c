@@ -52,7 +52,11 @@ static MP_NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
 // to bigint parsing if supported)
 typedef mp_int_t parsed_int_t;
 
+#if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+#define PARSED_INT_MUL_OVERFLOW __builtin_mul_overflow
+#else
 #define PARSED_INT_MUL_OVERFLOW mp_small_int_mul_overflow
+#endif
 #define PARSED_INT_FITS MP_SMALL_INT_FITS
 #else
 // In the special case where bigint support is long long, we save code size by

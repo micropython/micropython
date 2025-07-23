@@ -2324,4 +2324,24 @@ typedef time_t mp_timestamp_t;
 #define MP_WARN_CAT(x) (NULL)
 #endif
 
+// If true, use __builtin_mul_overflow (a gcc intrinsic supported by clang) for
+// overflow checking when multiplying two small ints. Otherwise, use the
+// routine mp_small_int_mul_overflow.
+//
+// On MCUs with a 32x32->64 bit multiply instruction (such as Cortex M4, Cortex M33)
+// this is likely to be faster and generate smaller code.
+//
+// The semantics of mp_small_int_mul_overflow. and__builtin_mul_overflow are not quite the
+// same: mp_small_int_mul_overflow additionally checks that the result fits within a
+// small integer, not just within mp_int_t.
+#ifndef MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+#if defined(__ARM_ARCH_ISA_THUMB) && defined(__GNUC__)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (__ARM_ARCH_ISA_THUMB >= 2)
+#elif (defined(__riscv_m) || defined(__x86_64__) || defined(__i686__)) && defined(__GNUC__)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (1)
+#else
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (0)
+#endif
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H
