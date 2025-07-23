@@ -196,7 +196,7 @@ test_natmod: $(BUILD)/firmware.elf
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && \
 		for natmod in btree deflate framebuf heapq random_basic re; do \
-		./run-natmodtests.py -p -d execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" extmod/$$natmod*.py; \
+		./run-natmodtests.py -p -d execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_EXTRA) extmod/$$natmod*.py; \
 		done
 
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
