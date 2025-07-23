@@ -639,7 +639,7 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
 
     ret = mbedtls_ssl_setup(&o->ssl, &ssl_context->conf);
     #if !MICROPY_MBEDTLS_CONFIG_BARE_METAL
-    if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
+    if (ret != 0) {
         // If mbedTLS relies on platform libc heap for buffers (i.e. esp32
         // port), then run a GC pass and then try again. This is useful because
         // it may free a Python object (like an old SSL socket) whose finaliser
