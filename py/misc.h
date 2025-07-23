@@ -35,7 +35,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#if __cplusplus // Required on at least one compiler to get ULLONG_MAX
+#include <climits>
+#else
 #include <limits.h>
+#endif
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -454,7 +458,7 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     #endif
 }
 
-// Overflow-checked operations for long long
+// Overflow-checked operations
 
 // Integer overflow builtins were added to GCC 5, but __has_builtin only in GCC 10
 //
@@ -462,45 +466,28 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
 // functions below don't update the result if an overflow would occur (to avoid UB).
 #define MP_GCC_HAS_BUILTIN_OVERFLOW (__GNUC__ >= 5)
 
-#if __has_builtin(__builtin_umulll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+#if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+
 #define mp_mul_ull_overflow __builtin_umulll_overflow
+#define mp_mul_ll_overflow __builtin_smulll_overflow
+static inline bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
+    // __builtin_mul_overflow is a type-generic function, this inline ensures the argument
+    // types are checked to match mp_int_t.
+    return __builtin_mul_overflow(x, y, res);
+}
+
 #else
-inline static bool mp_mul_ull_overflow(unsigned long long int x, unsigned long long int y, unsigned long long int *res) {
+
+bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res);
+bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res);
+static inline bool mp_mul_ull_overflow(unsigned long long int x, unsigned long long int y, unsigned long long int *res) {
     if (y > 0 && x > (ULLONG_MAX / y)) {
         return true; // overflow
     }
     *res = x * y;
     return false;
 }
-#endif
 
-#if __has_builtin(__builtin_smulll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
-#define mp_mul_ll_overflow __builtin_smulll_overflow
-#else
-inline static bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res) {
-    bool overflow;
-
-    // Check for multiply overflow; see CERT INT32-C
-    if (x > 0) { // x is positive
-        if (y > 0) { // x and y are positive
-            overflow = (x > (LLONG_MAX / y));
-        } else { // x positive, y nonpositive
-            overflow = (y < (LLONG_MIN / x));
-        } // x positive, y nonpositive
-    } else { // x is nonpositive
-        if (y > 0) { // x is nonpositive, y is positive
-            overflow = (x < (LLONG_MIN / y));
-        } else { // x and y are nonpositive
-            overflow = (x != 0 && y < (LLONG_MAX / x));
-        } // End if x and y are nonpositive
-    } // End if x is nonpositive
-
-    if (!overflow) {
-        *res = x * y;
-    }
-
-    return overflow;
-}
 #endif
 
 #if __has_builtin(__builtin_saddll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
