@@ -29,6 +29,9 @@
 // features to work on Unix-like systems, see mpconfigvariant.h (and
 // mpconfigvariant_common.h) for feature enabling.
 
+// For time_t, needed by MICROPY_TIMESTAMP_IMPL_TIME_T.
+#include <time.h>
+
 // For size_t and ssize_t
 #include <unistd.h>
 
