@@ -738,11 +738,12 @@ static mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
         // read value
         uint value = self->handle.Instance->DR;
 
-        // store value in buffer
+        // value is max 12 bits wide. If the array is 8-bit then shift down to fit
+        // (otherwise it will fit in any array typecode)
         if (typesize == 1) {
             value >>= 4;
         }
-        mp_binary_set_val_array_from_int(bufinfo.typecode, bufinfo.buf, index, value);
+        mp_binary_set_val_array(bufinfo.typecode, bufinfo.buf, index, MP_OBJ_NEW_SMALL_INT(value));
     }
 
     // turn the ADC off
@@ -846,11 +847,12 @@ static mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             // read value
             value = adc->handle.Instance->DR;
 
-            // store values in buffer
+            // value is max 12 bits wide. If the array is 8-bit then shift down to fit
+            // (otherwise it will fit in any array typecode)
             if (typesize == 1) {
                 value >>= 4;
             }
-            mp_binary_set_val_array_from_int(bufinfo.typecode, bufptrs[array_index], elem_index, value);
+            mp_binary_set_val_array(bufinfo.typecode, bufptrs[array_index], elem_index, MP_OBJ_NEW_SMALL_INT(value));
         }
     }
 
