@@ -506,6 +506,16 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                     #endif
 
                     mp_int_t int_res;
+                    #if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+                    if (__builtin_mul_overflow(lhs_val, rhs_val, &int_res)) {
+                        lhs = mp_obj_new_int_from_ll(lhs_val);
+                        goto generic_binary_op;
+                    } else {
+                        lhs_val = int_res;
+                    }
+
+                    break; // result fits in mp_int_t but might not be MP_SMALL_INT_FITS
+                    #else
                     if (mp_small_int_mul_overflow(lhs_val, rhs_val, &int_res)) {
                         // use higher precision
                         lhs = mp_obj_new_int_from_ll(lhs_val);
@@ -514,6 +524,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                         // use standard precision
                         return MP_OBJ_NEW_SMALL_INT(int_res);
                     }
+                    #endif
                 }
                 case MP_BINARY_OP_FLOOR_DIVIDE:
                 case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
@@ -553,18 +564,30 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                         mp_int_t ans = 1;
                         while (rhs_val > 0) {
                             if (rhs_val & 1) {
+                                #if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+                                if (__builtin_mul_overflow(ans, lhs_val, &ans)) {
+                                    goto power_overflow;
+                                }
+                                #else
                                 if (mp_small_int_mul_overflow(ans, lhs_val, &ans)) {
                                     goto power_overflow;
                                 }
+                                #endif
                             }
                             if (rhs_val == 1) {
                                 break;
                             }
                             rhs_val /= 2;
                             mp_int_t int_res;
+                            #if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+                            if (__builtin_mul_overflow(lhs_val, lhs_val, &int_res)) {
+                                goto power_overflow;
+                            }
+                            #else
                             if (mp_small_int_mul_overflow(lhs_val, lhs_val, &int_res)) {
                                 goto power_overflow;
                             }
+                            #endif
                             lhs_val = int_res;
                         }
                         lhs_val = ans;
