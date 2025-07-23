@@ -173,3 +173,7 @@ Several classes of checks are disabled via compiler flags:
   check is intended to make sure locals in a "returned from" stack frame are not
   used. However, this mode interferes with various assumptions that
   MicroPython's stack checking, NLR, and GC rely on.
+
+Note: When building with sanitizers (ASan/UBSan), an 8 KiB stack check margin is
+automatically reserved unless the build overrides MICROPY_STACK_CHECK_MARGIN.
+
