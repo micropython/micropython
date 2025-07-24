@@ -26,7 +26,8 @@ jobs:
         ci_func:  # names are functions in ci.sh
           - bigendian
           - sabrelite
-          - thumb
+          - thumb_softfp
+          - thumb_hardfp
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5

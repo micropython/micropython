@@ -349,19 +349,30 @@ function ci_qemu_build_arm_sabrelite {
     make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
 }
 
-function ci_qemu_build_arm_thumb {
+function ci_qemu_build_arm_thumb_softfp {
     ci_qemu_build_arm_prepare
-    make ${MAKEOPTS} -C ports/qemu test_full
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_full
 
-    # Test building native .mpy with all ARM-M architectures.
+    # Test building native .mpy with ARM-M softfp architectures.
     ci_native_mpy_modules_build armv6m
     ci_native_mpy_modules_build armv7m
+
+    # Test running native .mpy with all ARM-M architectures.
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
+}
+
+function ci_qemu_build_arm_thumb_hardfp {
+    ci_qemu_build_arm_prepare
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_full
+
+    # Test building native .mpy with all ARM-M hardfp architectures.
     ci_native_mpy_modules_build armv7emsp
     ci_native_mpy_modules_build armv7emdp
 
-    # Test running native .mpy with armv6m and armv7m architectures.
-    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
-    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
+    # Test running native .mpy with all ARM-M hardfp architectures.
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emsp"
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emdp"
 }
 
 function ci_qemu_build_rv32 {
