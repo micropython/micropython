@@ -102,7 +102,7 @@ static mp_obj_t bound_meth_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_
     }
     mp_obj_bound_meth_t *lhs = MP_OBJ_TO_PTR(lhs_in);
     mp_obj_bound_meth_t *rhs = MP_OBJ_TO_PTR(rhs_in);
-    return mp_obj_new_bool(lhs->self == rhs->self && lhs->meth == rhs->meth);
+    return mp_obj_new_bool(mp_obj_equal(lhs->self, rhs->self) && mp_obj_equal(lhs->meth, rhs->meth));
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
