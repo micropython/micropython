@@ -28,6 +28,7 @@
 #include <stdlib.h>
 
 #include "py/runtime.h"
+#include "py/misc.h"
 #include "py/parsenumbase.h"
 #include "py/parsenum.h"
 #include "py/smallint.h"
@@ -55,7 +56,7 @@ typedef mp_int_t parsed_int_t;
 #if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
 #define PARSED_INT_MUL_OVERFLOW __builtin_mul_overflow
 #else
-#define PARSED_INT_MUL_OVERFLOW mp_small_int_mul_overflow
+#define PARSED_INT_MUL_OVERFLOW mp_mul_mp_int_t_overflow
 #endif
 #define PARSED_INT_FITS MP_SMALL_INT_FITS
 #else
