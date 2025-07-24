@@ -238,6 +238,7 @@ set(PICO_SDK_COMPONENTS
     pico_platform_compiler
     pico_platform_panic
     pico_platform_sections
+    pico_rand
     pico_runtime
     pico_runtime_init
     pico_stdio
@@ -332,6 +333,7 @@ if(MICROPY_PY_BLUETOOTH)
         MICROPY_PY_BLUETOOTH=1
         MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
         MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+        MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
     )
 endif()
 
