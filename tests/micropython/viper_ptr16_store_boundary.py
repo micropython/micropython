@@ -15,6 +15,23 @@ SIZE = 2
 MASK = (1 << (8 * SIZE)) - 1
 
 
+next_int = 1
+test_buffer = bytearray(SIZE)
+
+
+def next_value() -> uint:
+    global next_int
+    global test_buffer
+    for index in range(1, SIZE):
+        test_buffer[index - 1] = test_buffer[index]
+    test_buffer[SIZE - 1] = next_int
+    next_int += 1
+    output = 0
+    for byte in test_buffer:
+        output = (output << 8) | byte
+    return output & MASK
+
+
 @micropython.viper
 def set_index(dest: ptr16, i: int, val: uint):
     saved = dest
@@ -27,8 +44,6 @@ def get_index(src, i):
 
 
 buffer = bytearray(((1 << max(BIT_THRESHOLDS) + 1) // 1024) * 1024)
-next = 1
-val = 0
 for bit in BIT_THRESHOLDS:
     print("---", bit)
     pre, idx, post = (
@@ -36,22 +51,10 @@ for bit in BIT_THRESHOLDS:
         (((1 << bit) - (1 * SIZE)) // SIZE),
         ((1 << bit) // SIZE),
     )
-    val = (val << 8) + next
-    next += 1
-    set_index(buffer, pre, val & MASK)
-    val = (val << 8) + next
-    next += 1
-    set_index(buffer, idx, val & MASK)
-    val = (val << 8) + next
-    next += 1
-    set_index(buffer, post, val & MASK)
-    val = (val << 8) + next
-    next += 1
+    set_index(buffer, pre, next_value())
+    set_index(buffer, idx, next_value())
+    set_index(buffer, post, next_value())
     print(hex(get_index(buffer, pre)), hex(get_index(buffer, idx)), hex(get_index(buffer, post)))
-    exec(SET_TEMPLATE.format(off=pre, val=val & MASK))
-    val = (val << 8) + next
-    next += 1
-    exec(SET_TEMPLATE.format(off=idx, val=val & MASK))
-    val = (val << 8) + next
-    next += 1
-    exec(SET_TEMPLATE.format(off=post, val=val & MASK))
+    exec(SET_TEMPLATE.format(off=pre, val=next_value()))
+    exec(SET_TEMPLATE.format(off=idx, val=next_value()))
+    exec(SET_TEMPLATE.format(off=post, val=next_value()))
