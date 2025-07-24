@@ -1129,6 +1129,14 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_FUNCTION_ATTRS_CODE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
 #endif
 
+// Whether bound_method can just use == (feature disabled), or requires a call to
+// mp_obj_equal (feature enabled), to test equality of the self and meth entities.
+// This is only needed if objects and functions can be identical without being the
+// same thing, eg when using an object proxy.
+#ifndef MICROPY_PY_BOUND_METHOD_FULL_EQUALITY_CHECK
+#define MICROPY_PY_BOUND_METHOD_FULL_EQUALITY_CHECK (0)
+#endif
+
 // Whether to support the descriptors __get__, __set__, __delete__, __set_name__
 // This costs some code size and makes load/store/delete of instance
 // attributes slower for the classes that use this feature
