@@ -2279,19 +2279,19 @@ typedef time_t mp_timestamp_t;
 #endif
 
 // If true, use __builtin_mul_overflow (a gcc intrinsic supported by clang) for
-// overflow checking when multiplying two small ints. Otherwise, use the
-// routine mp_small_int_mul_overflow.
+// overflow checking when multiplying two small ints. Otherwise, use a portable
+// algorithm.
 //
-// On MCUs with a 32x32->64 bit multiply instruction (such as Cortex M4, Cortex M33)
-// this is likely to be faster and generate smaller code.
+// Most MCUs have a with a 32x32->64 bit multiply instruction, in which case the
+// intrinsic is likely to be faster and generate smaller code. The main exception is
+// cortex-m0 with __ARM_ARCH_ISA_THUMB == 1.
 //
-// The semantics of mp_small_int_mul_overflow. and__builtin_mul_overflow are not quite the
-// same: mp_small_int_mul_overflow additionally checks that the result fits within a
-// small integer, not just within mp_int_t.
+// The intrinsic is in GCC from version 5. In principle it can be detected instead with
+// __has_builtin except this is only in GCC from version 5.
 #ifndef MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
-#if defined(__ARM_ARCH_ISA_THUMB) && defined(__GNUC__)
+#if defined(__ARM_ARCH_ISA_THUMB) && (__GNUC__ >= 5)
 #define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (__ARM_ARCH_ISA_THUMB >= 2)
-#elif (defined(__riscv_m) || defined(__x86_64__) || defined(__i686__)) && defined(__GNUC__)
+#elif (__GNUC__ >= 5)
 #define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (1)
 #else
 #define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (0)
