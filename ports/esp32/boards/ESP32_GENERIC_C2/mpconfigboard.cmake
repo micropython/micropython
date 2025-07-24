@@ -7,3 +7,8 @@ set(SDKCONFIG_DEFAULTS
     # C2 has unusably low free RAM without these optimisations
     boards/sdkconfig.free_ram
 )
+
+set(MICROPY_SOURCE_BOARD
+    ${MICROPY_BOARD_DIR}/board_init.c
+)
+
