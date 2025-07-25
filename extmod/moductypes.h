@@ -49,10 +49,10 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type, size_t n_args, 
 mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 #define MP_DECLARE_CTYPES_STRUCT(type_name) \
-    extern mp_obj_ctypes_struct_type_t type_name;
+    extern const mp_obj_ctypes_struct_type_t type_name;
 
 #define MP_DEFINE_CTYPES_STRUCT(type_name, name_, desc_, flags_) \
-    mp_obj_ctypes_struct_type_t type_name = { \
+    const mp_obj_ctypes_struct_type_t type_name = { \
         .base = { \
             .base = { &mp_type_type }, \
             .flags = MP_TYPE_FLAG_NONE,  \
