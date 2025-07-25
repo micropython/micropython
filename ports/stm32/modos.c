@@ -52,7 +52,7 @@ bool mp_os_dupterm_is_builtin_stream(mp_const_obj_t stream) {
            #if MICROPY_PY_MACHINE_UART
            || type == &machine_uart_type
            #endif
-           #if MICROPY_HW_ENABLE_USB
+           #if MICROPY_HW_STM_USB_STACK
            || type == &pyb_usb_vcp_type
            #endif
     ;
@@ -64,7 +64,7 @@ void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t s
         uart_attach_to_repl(MP_OBJ_TO_PTR(stream_detached), false);
     }
     #endif
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_STM_USB_STACK
     if (mp_obj_get_type(stream_detached) == &pyb_usb_vcp_type) {
         usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(stream_detached), false);
     }
@@ -75,7 +75,7 @@ void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t s
         uart_attach_to_repl(MP_OBJ_TO_PTR(stream_attached), true);
     }
     #endif
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_STM_USB_STACK
     if (mp_obj_get_type(stream_attached) == &pyb_usb_vcp_type) {
         usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(stream_attached), true);
     }

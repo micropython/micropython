@@ -175,6 +175,7 @@
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
+#define MICROPY_FATFS_MAX_SS           (4096)
 
 #if MICROPY_PY_PYB
 extern const struct _mp_obj_module_t pyb_module;

@@ -81,7 +81,13 @@
 #include "storage.h"
 #include "dma.h"
 #include "i2c.h"
+
+#if MICROPY_HW_TINYUSB_STACK
+#include "tusb.h"
+#include "shared/tinyusb/mp_usbd.h"
+#else
 #include "usb.h"
+#endif
 
 #if defined(MICROPY_HW_USB_FS)
 extern PCD_HandleTypeDef pcd_fs_handle;
@@ -146,7 +152,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
         powerctrl_mcu_reset();
     }
 
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_STM_USB_STACK
     // We need to disable the USB so it doesn't try to write data out on
     // the VCP and then block indefinitely waiting for the buffer to drain.
     pyb_usb_flags = 0;
@@ -300,7 +306,11 @@ void DebugMon_Handler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_UCPD1_2_IRQHandler(void) {
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #else
     HAL_PCD_IRQHandler(&pcd_fs_handle);
+    #endif
 }
 #endif
 
@@ -308,7 +318,11 @@ void USB_UCPD1_2_IRQHandler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_DRD_FS_IRQHandler(void) {
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #else
     HAL_PCD_IRQHandler(&pcd_fs_handle);
+    #endif
 }
 #endif
 
@@ -316,7 +330,11 @@ void USB_DRD_FS_IRQHandler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_IRQHandler(void) {
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #else
     HAL_PCD_IRQHandler(&pcd_fs_handle);
+    #endif
 }
 #endif
 
@@ -324,7 +342,11 @@ void USB_IRQHandler(void) {
 
 #if MICROPY_HW_USB_FS
 void USB_LP_IRQHandler(void) {
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #else
     HAL_PCD_IRQHandler(&pcd_fs_handle);
+    #endif
 }
 #endif
 
@@ -338,7 +360,11 @@ void USB_LP_IRQHandler(void) {
 #if MICROPY_HW_USB_FS
 void OTG_FS_IRQHandler(void) {
     IRQ_ENTER(OTG_FS_IRQn);
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #else
     HAL_PCD_IRQHandler(&pcd_fs_handle);
+    #endif
     IRQ_EXIT(OTG_FS_IRQn);
 }
 #endif
@@ -352,7 +378,11 @@ void USB1_OTG_HS_IRQHandler(void) {
 #else
 void OTG_HS_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_IRQn);
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #else
     HAL_PCD_IRQHandler(&pcd_hs_handle);
+    #endif
     IRQ_EXIT(OTG_HS_IRQn);
 }
 #endif
