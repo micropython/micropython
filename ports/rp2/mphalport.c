@@ -50,7 +50,7 @@
 static uint64_t time_us_64_offset_from_epoch;
 #endif
 
-#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC || MICROPY_PY_OS_DUPTERM_NOTIFY
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -83,11 +83,12 @@ int mp_hal_stdin_rx_chr(void) {
         #if MICROPY_HW_USB_CDC
         mp_usbd_cdc_poll_interfaces(0);
         #endif
-
+        #if MICROPY_HW_USB_CDC || MICROPY_HW_ENABLE_UART_REPL || MICROPY_PY_OS_DUPTERM_NOTIFY
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
         }
+        #endif
         #if MICROPY_PY_OS_DUPTERM
         int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
