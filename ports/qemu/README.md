@@ -59,6 +59,7 @@ Available boards are:
 | ----------------- | ------------ | ------------------------ |
 | `MICROBIT`        | `arm`        | `microbit`               |
 | `MPS2_AN385`      | `arm`        | `mps2-an385`             |
+| `MPS2_AN500`      | `arm`        | `mps2-an500`             |
 | `NETDUINO2`       | `arm`        | `netduino2`              |
 | `SABRELITE`       | `arm`        | `sabrelite`              |
 | `VIRT_RV32`       | `riscv32`    | `virt`                   |
