@@ -1657,7 +1657,7 @@ static void dma_idle_handler(uint32_t tick) {
 }
 #endif
 
-#if defined(STM32F0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4)
+#if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4)
 
 void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
     DMA_Channel_TypeDef *dma = descr->instance;
@@ -1680,7 +1680,7 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
     } else {
         __HAL_DMA2_REMAP(descr->sub_instance);
     }
-    #elif defined(STM32G4)
+    #elif defined(STM32G0) || defined(STM32G4)
     uint32_t *dmamux_ctrl = (void *)(DMAMUX1_Channel0_BASE + 0x04 * descr->id);
     *dmamux_ctrl = (*dmamux_ctrl & ~(0x7f)) | descr->sub_instance;
     #elif defined(STM32L1)
@@ -1807,7 +1807,7 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
     dma->CCR |= DMA_CCR_EN;
 }
 
-#elif defined(STM32G0) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
+#elif defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
 
 // These functions are currently not implemented or needed for this MCU.
 
