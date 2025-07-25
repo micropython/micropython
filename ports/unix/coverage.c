@@ -632,19 +632,6 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%s\n", buf2);
     }
 
-    // binary
-    {
-        mp_printf(&mp_plat_print, "# binary\n");
-
-        // call function with float and double typecodes
-        float far[1];
-        double dar[1];
-        mp_binary_set_val_array_from_int('f', far, 0, 123);
-        mp_printf(&mp_plat_print, "%.0f\n", (double)far[0]);
-        mp_binary_set_val_array_from_int('d', dar, 0, 456);
-        mp_printf(&mp_plat_print, "%.0lf\n", dar[0]);
-    }
-
     // VM
     {
         mp_printf(&mp_plat_print, "# VM\n");

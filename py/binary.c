@@ -42,6 +42,10 @@
 #define alignof(type) offsetof(struct { char c; type t; }, t)
 #endif
 
+// MicroPython V1.x truncates integers when writing into arrays,
+// MicroPython V2 will raise OverflowError in these cases, same as CPython
+#define OVERFLOW_CHECKS MICROPY_PREVIEW_VERSION_2
+
 size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
     size_t size = 0;
     int align = 1;
@@ -370,7 +374,21 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte *
     }
 }
 
-void mp_binary_set_int(size_t val_sz, bool big_endian, byte *dest, mp_uint_t val) {
+void mp_binary_set_int(size_t dest_sz, byte *dest, size_t val_sz, mp_uint_t val, bool big_endian) {
+    if (dest_sz > val_sz) {
+        // zero/sign extension if needed
+        int c = ((mp_int_t)val < 0) ? 0xff : 0x00;
+        memset(dest, c, dest_sz);
+
+        // big endian: write val_sz bytes at end of 'dest'
+        if (big_endian) {
+            dest += dest_sz - val_sz;
+        }
+    } else if (dest_sz < val_sz) {
+        // truncate 'val' into 'dest'
+        val_sz = dest_sz;
+    }
+
     if (MP_ENDIANNESS_LITTLE && !big_endian) {
         memcpy(dest, &val, val_sz);
     } else if (MP_ENDIANNESS_BIG && big_endian) {
@@ -434,34 +452,21 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
                 val = fp_dp.i64;
             } else {
                 int be = struct_type == '>';
-                mp_binary_set_int(sizeof(uint32_t), be, p, fp_dp.i32[MP_ENDIANNESS_BIG ^ be]);
+                mp_binary_set_int(sizeof(uint32_t), p, sizeof(uint32_t), fp_dp.i32[MP_ENDIANNESS_BIG ^ be], be);
+                // Now fall through and copy the second word, below
                 p += sizeof(uint32_t);
+                size = sizeof(uint32_t);
                 val = fp_dp.i32[MP_ENDIANNESS_LITTLE ^ be];
             }
             break;
         }
         #endif
         default:
-            #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
-                mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
-                return;
-            }
-            #endif
-
-            val = mp_obj_get_int(val_in);
-            // zero/sign extend if needed
-            if (MP_BYTES_PER_OBJ_WORD < 8 && size > sizeof(val)) {
-                int c = (mp_int_t)val < 0 ? 0xff : 0x00;
-                memset(p, c, size);
-                if (struct_type == '>') {
-                    p += size - sizeof(val);
-                }
-            }
-            break;
+            mp_obj_int_to_bytes(val_in, size, p, struct_type == '>', is_signed(val_type), OVERFLOW_CHECKS);
+            return;
     }
 
-    mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
+    mp_binary_set_int(size, p, sizeof(val), val, struct_type == '>');
 }
 
 void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_in) {
@@ -478,65 +483,11 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
         case 'O':
             ((mp_obj_t *)p)[index] = val_in;
             break;
-        default:
-            #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
-                size_t size = mp_binary_get_size('@', typecode, NULL);
-                mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
-                    size, (uint8_t *)p + index * size);
-                return;
-            }
-            #endif
-            mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
-    }
-}
-
-void mp_binary_set_val_array_from_int(char typecode, void *p, size_t index, mp_int_t val) {
-    switch (typecode) {
-        case 'b':
-            ((signed char *)p)[index] = val;
-            break;
-        case BYTEARRAY_TYPECODE:
-        case 'B':
-            ((unsigned char *)p)[index] = val;
-            break;
-        case 'h':
-            ((short *)p)[index] = val;
-            break;
-        case 'H':
-            ((unsigned short *)p)[index] = val;
-            break;
-        case 'i':
-            ((int *)p)[index] = val;
-            break;
-        case 'I':
-            ((unsigned int *)p)[index] = val;
-            break;
-        case 'l':
-            ((long *)p)[index] = val;
-            break;
-        case 'L':
-            ((unsigned long *)p)[index] = val;
-            break;
-        #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-        case 'q':
-            ((long long *)p)[index] = val;
-            break;
-        case 'Q':
-            ((unsigned long long *)p)[index] = val;
-            break;
-        #endif
-        #if MICROPY_PY_BUILTINS_FLOAT
-        case 'f':
-            ((float *)p)[index] = (float)val;
-            break;
-        case 'd':
-            ((double *)p)[index] = (double)val;
-            break;
-        #endif
-        // Extension to CPython: array of pointers
-        case 'P':
-            ((void **)p)[index] = (void *)(uintptr_t)val;
-            break;
+        default: {
+            size_t size = mp_binary_get_size('@', typecode, NULL);
+            p = (uint8_t *)p + index * size;
+            mp_obj_int_to_bytes(val_in, size, p, MP_ENDIANNESS_BIG, is_signed(typecode), OVERFLOW_CHECKS);
+            return;
+        }
     }
 }

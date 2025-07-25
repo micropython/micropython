@@ -632,9 +632,17 @@ function ci_unix_coverage_run_mpy_merge_tests {
     outdir=$(mktemp -d)
     allmpy=()
 
+    export MICROPYPATH="${mptop}/lib/micropython-lib/python-stdlib/unittest"
+
     # Compile a selection of tests to .mpy and execute them, collecting the output.
     # None of the tests should SKIP.
     for inpy in $mptop/tests/basics/[acdel]*.py; do
+        if grep -q "import unittest" $inpy; then
+            # Merging >1 unittest-enabled module leads to unexpected
+            # results, as each file runs all previously registered unittest cases
+            echo "SKIPPING $inpy"
+            continue
+        fi
         test=$(basename $inpy .py)
         echo $test
         outmpy=$outdir/$test.mpy
