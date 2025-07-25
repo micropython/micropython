@@ -1145,29 +1145,11 @@ class append_filter(argparse.Action):
         args.filters.append((option, re.compile(value)))
 
 
-def main():
-    global injected_import_hook_code
-
-    cmd_parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="""Run and manage tests for MicroPython.
-
+test_instance_description = """\
 By default the tests are run against the unix port of MicroPython. To run it
 against something else, use the -t option.  See below for details.
-
-Tests are discovered by scanning test directories for .py files or using the
-specified test files. If test files nor directories are specified, the script
-expects to be ran in the tests directory (where this file is located) and the
-builtin tests suitable for the target platform are ran.
-
-When running tests, run-tests.py compares the MicroPython output of the test with the output
-produced by running the test through CPython unless a <test>.exp file is found, in which
-case it is used as comparison.
-
-If a test fails, run-tests.py produces a pair of <test>.out and <test>.exp files in the result
-directory with the MicroPython output and the expectations, respectively.
-""",
-        epilog="""\
+"""
+test_instance_epilog = """\
 The -t option accepts the following for the test instance:
 - unix - use the unix port of MicroPython, specified by the MICROPY_MICROPYTHON
   environment variable (which defaults to the standard variant of either the unix
@@ -1183,7 +1165,35 @@ The -t option accepts the following for the test instance:
 - execpty:<command> - execute a command and attach to the printed /dev/pts/<n> device
 - <a>.<b>.<c>.<d> - connect to the given IPv4 address
 - anything else specifies a serial port
+"""
 
+test_directory_description = """\
+Tests are discovered by scanning test directories for .py files or using the
+specified test files. If test files nor directories are specified, the script
+expects to be ran in the tests directory (where this file is located) and the
+builtin tests suitable for the target platform are ran.
+"""
+
+
+def main():
+    global injected_import_hook_code
+
+    cmd_parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=f"""Run and manage tests for MicroPython.
+
+{test_instance_description}
+{test_directory_description}
+
+When running tests, run-tests.py compares the MicroPython output of the test with the output
+produced by running the test through CPython unless a <test>.exp file is found, in which
+case it is used as comparison.
+
+If a test fails, run-tests.py produces a pair of <test>.out and <test>.exp files in the result
+directory with the MicroPython output and the expectations, respectively.
+""",
+        epilog=f"""\
+{test_instance_epilog}
 Options -i and -e can be multiple and processed in the order given. Regex
 "search" (vs "match") operation is used. An action (include/exclude) of
 the last matching regex is used:
