@@ -33,11 +33,7 @@
 
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"
-
-#define DEFAULT_I2C_ID          (0)
-#define DEFAULT_I2C_FREQ        (400000)
-#define DEFAULT_I2C_DRIVE       (6)
-#define DEFAULT_I2C_TIMEOUT     (50000)
+#include "machine_i2c.h"
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
@@ -57,11 +53,10 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-static const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
-static LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
+const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
+LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
+const uint8_t micropy_hw_i2c_num = MICROPY_HW_I2C_NUM;
 static const iomux_table_t iomux_table[] = { IOMUX_TABLE_I2C };
-
-#define MICROPY_HW_I2C_NUM     ARRAY_SIZE(i2c_index_table)
 
 #define SCL (iomux_table[index])
 #define SDA (iomux_table[index + 1])

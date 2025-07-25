@@ -127,6 +127,7 @@
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/samd/machine_wdt.c"
 #define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS   (1)
 #define MICROPY_PLATFORM_VERSION            "ASF4"
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE  "ports/samd/machine_i2c_target.c"
 
 #define MP_STATE_PORT MP_STATE_VM
 
