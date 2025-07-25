@@ -62,6 +62,7 @@ class PythonError extends Error {
 function proxy_js_init() {
     globalThis.proxy_js_ref = [globalThis, undefined];
     globalThis.proxy_js_ref_next = PROXY_JS_REF_NUM_STATIC;
+    globalThis.proxy_js_ref_map = new Map();
     globalThis.proxy_js_map = new Map();
     globalThis.proxy_js_existing = [undefined];
     globalThis.pyProxyFinalizationRegistry = new FinalizationRegistry(
@@ -95,8 +96,15 @@ function proxy_js_check_existing(c_ref) {
     return globalThis.proxy_js_existing.length - 1;
 }
 
-// js_obj cannot be undefined
+// The `js_obj` argument cannot be `undefined`.
+// Returns an integer reference to the given `js_obj`.
 function proxy_js_add_obj(js_obj) {
+    // See if there is an existing JsProxy reference, and use that if there is.
+    const existing_ref = proxy_js_ref_map.get(js_obj);
+    if (existing_ref !== undefined) {
+        return existing_ref;
+    }
+
     // Search for the first free slot in proxy_js_ref.
     while (proxy_js_ref_next < proxy_js_ref.length) {
         if (proxy_js_ref[proxy_js_ref_next] === undefined) {
@@ -104,6 +112,7 @@ function proxy_js_add_obj(js_obj) {
             const id = proxy_js_ref_next;
             ++proxy_js_ref_next;
             proxy_js_ref[id] = js_obj;
+            proxy_js_ref_map.set(js_obj, id);
             return id;
         }
         ++proxy_js_ref_next;
@@ -113,6 +122,7 @@ function proxy_js_add_obj(js_obj) {
     const id = proxy_js_ref.length;
     proxy_js_ref[id] = js_obj;
     proxy_js_ref_next = proxy_js_ref.length;
+    proxy_js_ref_map.set(js_obj, id);
     return id;
 }
 

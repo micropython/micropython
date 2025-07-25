@@ -266,8 +266,26 @@ static mp_obj_t jsproxy_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     }
 }
 
+static mp_obj_t jsproxy_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    if (!mp_obj_is_type(rhs_in, &mp_type_jsproxy)) {
+        return MP_OBJ_NULL; // op not supported
+    }
+
+    mp_obj_jsproxy_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+    mp_obj_jsproxy_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+
+    switch (op) {
+        case MP_BINARY_OP_EQUAL:
+            return mp_obj_new_bool(lhs->ref == rhs->ref);
+
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 EM_JS(void, proxy_js_free_obj, (int js_ref), {
     if (js_ref >= PROXY_JS_REF_NUM_STATIC) {
+        proxy_js_ref_map.delete(proxy_js_ref[js_ref]);
         proxy_js_ref[js_ref] = undefined;
         if (js_ref < proxy_js_ref_next) {
             proxy_js_ref_next = js_ref;
@@ -566,6 +584,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_ITER_IS_GETITER,
     print, jsproxy_print,
     call, jsproxy_call,
+    binary_op, jsproxy_binary_op,
     attr, mp_obj_jsproxy_attr,
     subscr, jsproxy_subscr,
     iter, jsproxy_getiter
