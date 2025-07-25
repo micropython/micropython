@@ -5,7 +5,7 @@
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RNG       (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_DAC       (0)
+#define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (0) // can be enabled if USB cable connected to PA11/PA12
 #define MICROPY_PY_PYB_LEGACY       (0)
 
