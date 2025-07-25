@@ -802,6 +802,9 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), 0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
+The ESP32-C2 family does not include any RMT peripheral, so this class is
+unavailable on those SoCs.
+
 OneWire driver
 --------------
 

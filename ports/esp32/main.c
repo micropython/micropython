@@ -245,6 +245,13 @@ void boardctrl_startup(void) {
 }
 
 void MICROPY_ESP_IDF_ENTRY(void) {
+    #if CONFIG_IDF_TARGET_ESP32C2 && CONFIG_SOC_XTAL_SUPPORT_26M
+    // The ESP32-C2 ROM prints output at 74880 which is interpreted mostly as
+    // noise, then boot.py output and/or the REPL banner prints at the end of a
+    // line of noise unless we inject a newline here
+    printf("\n");
+    #endif
+
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS and detecting the flash size.
     MICROPY_BOARD_STARTUP();

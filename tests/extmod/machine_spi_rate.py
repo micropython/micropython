@@ -25,7 +25,7 @@ elif "rp2" in sys.platform:
     spi_instances = ((0, Pin(18), Pin(19), Pin(16)),)
 elif "esp32" in sys.platform:
     impl = str(sys.implementation)
-    if "ESP32C3" in impl or "ESP32C6" in impl:
+    if any(soc in impl for soc in ("ESP32C2", "ESP32C3", "ESP32C6")):
         spi_instances = ((1, Pin(4), Pin(5), Pin(6)),)
     else:
         spi_instances = ((1, Pin(18), Pin(19), Pin(21)), (2, Pin(18), Pin(19), Pin(21)))
