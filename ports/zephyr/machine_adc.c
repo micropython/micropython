@@ -39,7 +39,7 @@
  * also needs to be specified in devicetree, in ADC controller child nodes. Also
  * the ADC resolution and oversampling setting (if used) need to be specified
  * there.
- * 
+ *
  * Here is an excerpt from a devicetree overlay that configures an ADC
  * with one channel that would be referred to as ('adc', 0) in the constructor
  * of the ADC object:
@@ -49,11 +49,11 @@
  *  		io-channels = <&adc 0>, <&adc 1>, <&adc 4>, <&adc 5>, <&adc 7>;
  *  	};
  *  };
- *  
+ *
  *  &adc {
  *  	#address-cells = <1>;
  *  	#size-cells = <0>;
- *  
+ *
  *  	channel@0 {
  *  		reg = <0>;
  *  		zephyr,gain = "ADC_GAIN_1_6";

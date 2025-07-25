@@ -159,7 +159,7 @@ the 'io-channels' property with all the ADC channels):
 
     from machine import ADC
 
-    adc = ADC(('adc', 0))
+    adc = ADC(("adc", 0))
     adc.read_uv()
 
 Minimal build
