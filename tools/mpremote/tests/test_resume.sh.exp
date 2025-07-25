@@ -1,11 +1,9 @@
 -----
 hello
 -----
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-NameError: name 'a' isn't defined
+hello
 -----
-resume
+persists
 -----
 soft-reset
 2
