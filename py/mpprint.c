@@ -495,6 +495,11 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 chrs += mp_print_strn(print, str, len, flags, fill, width);
                 break;
             }
+            case 'r': {
+                mp_obj_t arg = va_arg(args, mp_obj_t);
+                mp_obj_print_helper(print, arg, width);
+                break;
+            }
             case 's': {
                 const char *str = va_arg(args, const char *);
                 #ifndef NDEBUG

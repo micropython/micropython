@@ -1,4 +1,3 @@
-Using multiversal interfaces
 ADBOp
 FSOpen
 OpenRF
@@ -175,3 +174,5 @@ GetDblTime
 GetCaretTime
 GetIndString
 GetIndPattern
+R_X2Fix
+R_X2Frac

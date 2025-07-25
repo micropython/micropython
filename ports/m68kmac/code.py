@@ -5,6 +5,7 @@ import mactypes
 import qd
 import uctypes
 import windowmgr
+import random
 
 scrn = qd.qdGlobals().screenBits
 
@@ -14,23 +15,37 @@ def pstr(s):
     b[0] = len(s)
     for i in range(len(s)):
         b[i + 1] = ord(s[i])
-    return b
+    return uctypes.struct(b, mactypes.ConstStringPtr)
 
 
 ev = eventmgr.EventRecord()
 
-NIL_WINDOW = uctypes.struct(0, qd.GrafPort)
-ABOVE_ALL_WINDOWS = uctypes.struct(-1, qd.GrafPort)
+NIL_WINDOW = uctypes.struct(0, qd.GrafPtr)
+ABOVE_ALL_WINDOWS = uctypes.struct(-1, qd.GrafPtr)
 
-title = pstr("Hello World")
+print(f"{ABOVE_ALL_WINDOWS=}")
+title = pstr("Hello World 11")
 r = mactypes.Rect()
 r[:] = scrn.bounds
 r.top += 80
 qd.InsetRect(r, 25, 25)
 
 w = windowmgr.NewWindow(NIL_WINDOW, r, title, True, 0, ABOVE_ALL_WINDOWS, True, 0)
+print(f"{w=}")
+print(f"{w.portRect.left=}")
+print(f"{w.portRect.right=}")
+# print("before setport")
 qd.SetPort(w)
+# print("33")
+# print(type(r))
+# print(r)
+# print(f"{w}")
+# print(f"{w.portRect}")
+# print(f"{w.portRect.top}")
+# print(f"{w.portRect.left}")
 r[:] = w.portRect
+print(r.left, r.right)
+print(r.top, r.bottom)
 
 
 g = qd.qdGlobals()
@@ -45,6 +60,9 @@ qd.FrameRect(tempRect)
 qd.SetRect(tempRect, 80, 20, 90, 50)
 qd.FrameOval(tempRect)
 qd.CloseRgn(barbell)
+
 qd.FillRgn(barbell, g.black)
+
+qd.DisposeRgn(barbell)
 
 input("hit enter to exit")

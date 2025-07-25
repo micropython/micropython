@@ -15,7 +15,7 @@ jobs:
   build:
     permissions: write-all
     runs-on: ubuntu-latest
-    container: ghcr.io/m68k-micropython/builder
+    container: ghcr.io/m68k-micropython/builder:latest
     steps:
     - uses: actions/checkout@v4
     - name: Build

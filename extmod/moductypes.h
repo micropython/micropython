@@ -47,6 +47,8 @@ mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in);
 mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+// may call on an instance or named struct type
+mp_obj_t uctypes_get_struct_desc(const mp_obj_t obj);
 
 #define MP_DECLARE_CTYPES_STRUCT(type_name) \
     extern const mp_obj_ctypes_struct_type_t type_name;

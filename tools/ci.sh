@@ -627,6 +627,7 @@ function ci_unix_coverage_setup {
     pip3 install setuptools
     pip3 install pyelftools
     pip3 install ar
+    pip3 install pyyaml click
     ci_gcc_plugin_setup
     gcc --version
     python3 --version
@@ -680,6 +681,7 @@ function ci_unix_32bit_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     sudo pip3 install ar
+    sudo pip3 install --upgrade pyyaml click
     gcc --version
     python2.7 --version
     python3 --version

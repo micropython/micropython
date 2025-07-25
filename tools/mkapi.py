@@ -9,13 +9,34 @@ from functools import singledispatchmethod
 from dataclasses import dataclass, Field
 from typing import Any, get_args, get_origin, Union
 
+script_dir = pathlib.Path(__file__).parent
+
 if sys.version_info >= (3, 10):
     from types import UnionType
 else:
     UnionType = type(Union[int, float])
 
-with open("etc/needs-glue.txt") as f:
-    needs_glue = set(f.read().split("\n"))
+p = pathlib.Path("etc/needs-glue.txt")
+if p.exists():
+    needs_glue = set(p.read_text().split("\n"))
+else:
+    needs_glue = set()
+
+
+typecodes = {
+    'bool': 'B',
+    'char': 'B',
+    'uint8_t': 'B',
+    'uint16_t': 'H',
+    'uint32_t': 'L',
+    'uint64_t': 'Q',
+    'float': 'f',
+    'double': 'd',
+    'int8_t': 'b',
+    'int16_t': 'h',
+    'int32_t': 'l',
+    'int64_t': 'q',
+}
 
 
 @dataclass(frozen=True)
@@ -260,9 +281,10 @@ class descr_maker_struct:
 
     def __call__(self, emitter, offset):
         obj = emitter.common_definition(
-            "mp_rom_obj_tuple_t", f"ROM_TUPLE(MP_ROM_INT({offset}), MP_ROM_PTR(&{self.tag}_obj))"
+            "const mp_rom_obj_tuple_t",
+            f"ROM_TUPLE(MP_ROM_INT({offset}), MP_ROM_PTR((void*)&{self.tag}_obj))",
         )
-        return f"MP_ROM_PTR(&{obj})"
+        return f"MP_ROM_PTR((void*)&{obj})"
 
 
 @dataclass
@@ -272,10 +294,10 @@ class descr_maker_arr_scalar:
 
     def __call__(self, emitter, offset):
         obj = emitter.common_definition(
-            "mp_rom_obj_tuple_t",
+            "const mp_rom_obj_tuple_t",
             f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(ARRAY)), MP_ROM_INT(UCTYPE_TYPE({self.tag}) | {self.size}))",
         )
-        return f"MP_ROM_PTR(&{obj})"
+        return f"MP_ROM_PTR((void*)&{obj})"
 
 
 @dataclass
@@ -285,10 +307,10 @@ class descr_maker_arr_struct:
 
     def __call__(self, emitter, offset):
         obj = emitter.common_definition(
-            "mp_rom_obj_tuple_t",
-            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(ARRAY)), MP_ROM_INT({self.size}), MP_ROM_PTR(&{self.tag}_obj))",
+            "const mp_rom_obj_tuple_t",
+            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(ARRAY)), MP_ROM_INT({self.size}), MP_ROM_PTR((void*)(&{self.tag}_obj)))",
         )
-        return f"MP_ROM_PTR(&{obj})"
+        return f"MP_ROM_PTR((void*)&{obj})"
 
 
 @dataclass
@@ -297,10 +319,10 @@ class descr_maker_ptr_scalar:
 
     def __call__(self, emitter, offset):
         obj = emitter.common_definition(
-            "mp_rom_obj_tuple_t",
+            "const mp_rom_obj_tuple_t",
             f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(PTR)), MP_ROM_INT(UCTYPE_TYPE({self.tag})))",
         )
-        return f"MP_ROM_PTR(&{obj})"
+        return f"MP_ROM_PTR((void*)&{obj})"
 
 
 class descr_maker_ptr_struct:
@@ -309,10 +331,10 @@ class descr_maker_ptr_struct:
 
     def __call__(self, emitter, offset):
         obj = emitter.common_definition(
-            "mp_rom_obj_tuple_t",
-            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(PTR)), MP_ROM_PTR(&{self.tag}_obj))",
+            "const mp_rom_obj_tuple_t",
+            f"ROM_TUPLE(MP_ROM_INT({offset} | UCTYPE_AGG(PTR)), MP_ROM_PTR((void*)&{self.tag}_obj))",
         )
-        return f"MP_ROM_PTR(&{obj})"
+        return f"MP_ROM_PTR((void*)&{obj})"
 
 
 @dataclass
@@ -352,6 +374,7 @@ class ScalarConverter:
 
 @dataclass
 class PtrConverter:
+    emitter: object
     fieldname: str
     type_c: object
     type_obj: object
@@ -360,10 +383,28 @@ class PtrConverter:
 
     def emit_to_c(self, name_py, name_c):
         is_const = +self.is_const  # to get 0/1, not True/False
-        return f"{self.type_c} {name_c} = to_struct_helper({name_py}, {self.type_obj}, {is_const}, MP_QSTR_{self.fieldname});"
+        resolved_type = self.emitter.parse_type(self.type_c)
+        if (
+            isinstance(resolved_type, Ptr)
+            and self.emitter.parse_type(resolved_type.pointee) not in all_scalar_types
+        ):
+            type_obj = f"(void*)&{resolved_type.pointee}_obj"
+            return f"{self.type_c} {name_c} = to_struct_helper({name_py}, {type_obj}, {is_const}, MP_QSTR_{self.fieldname}); // 1\n"
+        else:
+            return f"{self.type_c} {name_c} = to_struct_helper({name_py}, {self.type_obj}, {is_const}, MP_QSTR_{self.fieldname}); // 2\n"
 
     def emit_to_py(self, name_c):
-        return f"from_struct_helper({name_c}, {self.type_obj});"
+        resolved_type = self.emitter.parse_type(self.type_c)
+        if resolved_type in self.emitter.types:
+            resolved_type = self.emitter.parse_type(self.emitter.types[resolved_type])
+        print("emit_to_py", self.type_c, resolved_type)
+        if isinstance(resolved_type, Ptr):
+            assert self.type_obj and self.type_obj != "null"
+            type_str = resolved_type.pointee.replace("*", "Ptr")
+            return f"from_struct_helper({name_c}, (void*)&{type_str}_obj) /* {self.type_c} 3 */"
+        else:
+            type_str = self.type_obj.replace("*", "Ptr")
+            return f"from_struct_helper({name_c}, {self.type_obj}) /* {resolved_type} 4 */"
 
     def emit_call_arg(self, name_c):
         if self.deref:
@@ -372,12 +413,14 @@ class PtrConverter:
 
 
 def make_converter(emitter, fieldname, type_c):
+    print(f"make_converter {type_c=}")
     if converter := converters.get(type_c):
         return converter(fieldname)
     resolved_type = emitter.parse_type(type_c)
-    print(f"{type_c} -> {resolved_type}")
     if resolved_type in signed_integer_types:
         return ScalarConverter(resolved_type, "mp_obj_get_int", "mp_obj_new_int")
+    if resolved_type in emitter.types:
+        resolved_type = emitter.parse_type(emitter.types[resolved_type])
     if resolved_type in emitter.funptrs:
         return ScalarConverter(
             resolved_type, f"({type_c})mp_obj_get_int_truncated", "mp_obj_new_int_from_ptr"
@@ -386,19 +429,48 @@ def make_converter(emitter, fieldname, type_c):
         return ScalarConverter(
             resolved_type, "mp_obj_get_int_truncated", "mp_obj_new_int_from_uint"
         )
+    if type_c == "void*":
+        return ScalarConverter(resolved_type, "void_ptr_from_py", "mp_obj_new_int_from_uint")
     if isinstance(resolved_type, Ptr):
         base_type = resolved_type.pointee
-        if base_type in emitter.structs:
+        if base_type in all_scalar_types:
             return PtrConverter(
+                emitter,
                 fieldname,
                 type_c,
                 f"(const mp_obj_type_t*)&{base_type}_obj",
                 is_const=resolved_type.is_const,
             )
-        emitter.info.append(f"confused about {base_type} from {resolved_type} from {type_c}")
-        return PtrConverter(fieldname, type_c, "NULL", is_const=resolved_type.is_const)
-    print(f"note: {emitter.funptrs}")
-    raise ValueError(f"no converter possible for {type_c} ({resolved_type})")
+        if type in emitter.structs or type_c in emitter.types:
+            return PtrConverter(
+                emitter,
+                fieldname,
+                type_c,
+                f"(const mp_obj_type_t*)&{type_c}_obj",
+                is_const=resolved_type.is_const,
+            )
+        if base_type in emitter.structs:
+            return PtrConverter(
+                emitter,
+                fieldname,
+                type_c,
+                f"(const mp_obj_type_t*)&{base_type}_obj",
+                is_const=resolved_type.is_const,
+            )
+        elif base_type in emitter.typedef_objs:
+            return PtrConverter(
+                emitter,
+                fieldname,
+                type_c,
+                f"(const mp_obj_type_t*)&{base_type}_obj",
+                is_const=resolved_type.is_const,
+            )
+            emitter.info.append(f"need to handle typedef obj {base_type}")
+        elif base_type != 'void':
+            emitter.info.append(f"confused about {base_type} from {resolved_type} from {type_c}")
+        return PtrConverter(emitter, fieldname, type_c, "NULL", is_const=resolved_type.is_const)
+    print(f"note: {emitter.funptrs=}")
+    raise ValueError(f"no converter possible for {type_c} ({resolved_type=})")
 
 
 class Processor:
@@ -415,7 +487,7 @@ class Processor:
         self.structs = {}
         self.funptrs = set(("ProcPtr",))
         self.decls_dedent("""
-        #include "multiverse_support.h"
+        #include "extmod/multiverse_support.h"
 
         """)
         self.add_local("__name__", f"MP_ROM_QSTR(MP_QSTR_{self.modname})")
@@ -429,6 +501,10 @@ class Processor:
         return f"common_{self.definitions[k]}"
 
     def is_array(self, typename):
+        if isinstance(typename, Array):
+            return True
+        if isinstance(typename, Ptr):
+            return False
         if typename.count(']') + ("*" in typename) > 1:
             raise ValueError(
                 f"array-of-array or pointer-to-array or array-of-pointers NYI {typename}"
@@ -436,18 +512,30 @@ class Processor:
         return typename.endswith("]")
 
     def remove_array(self, typename):
+        if isinstance(typename, Array):
+            return typename.pointee
         return typename.partition("[")[0]
 
     def remove_ptr(self, typename):
+        if isinstance(typename, Ptr):
+            return typename.pointee
         return typename.removesuffix("*")
 
     def remove_const(self, typename):
+        if hasattr(typename, 'is_const'):
+            return dataclasses.replace(typename, is_const=False)
         return typename.removeprefix("const ")
 
     def array_size(self, typename):
+        if isinstance(typename, Array):
+            return typename.bound
         return int(typename.partition("[")[2].removesuffix("]"))
 
     def is_ptr(self, typename):
+        if isinstance(typename, Ptr):
+            return True
+        if isinstance(typename, Array):
+            return False
         return typename.endswith("*")
 
     def is_scalar(self, typename):
@@ -456,6 +544,8 @@ class Processor:
         return typename in all_scalar_types
 
     def is_const(self, typename):
+        if hasattr(typename, 'is_const'):
+            return typename.is_const
         return typename.startswith("const ")
 
     def decls_dedent(self, text):
@@ -465,11 +555,8 @@ class Processor:
         self.body.append(textwrap.dedent(text.rstrip()))
 
     def parse_type(self, typestr):
-        print("parse_type", typestr)
-        if typestr == 'RgnHandle':
-            print(self.types)
-        while typestr in self.types:
-            typestr = self.types[typestr]
+        if scalar_type := self.types.get(typestr, None):
+            typestr = scalar_type
         is_const = self.is_const(typestr)
         base_type = self.remove_const(typestr)
         if self.is_array(base_type):
@@ -477,8 +564,7 @@ class Processor:
             base_type = self.parse_type(self.remove_array(base_type))
             return Array(base_type, bound, is_const=is_const)
         elif self.is_ptr(base_type):
-            print(base_type, self.remove_ptr(base_type))
-            base_type = self.parse_type(self.remove_ptr(base_type))
+            base_type = self.remove_ptr(base_type)
             return Ptr(base_type, is_const=is_const)
         else:
             if is_const:
@@ -492,13 +578,15 @@ class Processor:
                 d.fulltype = self.parse_type(d.type)
                 print(f"full type of {d.name} is {d.fulltype}")
                 self.types[d.name] = d.type
-                self.decls_dedent(f"MP_DECLARE_CTYPES_STRUCT({d.name}_obj);")
+                self.decls_dedent(
+                    f"MP_DECLARE_CTYPES_STRUCT({d.name}_obj); // typedef {d.fulltype} is_scalar? {self.is_scalar(d.fulltype)}"
+                )
             if isinstance(d, Struct) and d.members:
                 self.structs[d.name] = d
-                self.decls_dedent(f"MP_DECLARE_CTYPES_STRUCT({d.name}_obj);")
+                self.decls_dedent(f"MP_DECLARE_CTYPES_STRUCT({d.name}_obj); // struct")
             if isinstance(d, Union) and d.members:
                 self.structs[d.name] = d
-                self.decls_dedent(f"MP_DECLARE_CTYPES_STRUCT({d.name}_obj);")
+                self.decls_dedent(f"MP_DECLARE_CTYPES_STRUCT({d.name}_obj); // union")
             if isinstance(d, PyVerbatim) and d.typedef_content:
                 self.decls_dedent(d.typedef_content)
             if isinstance(d, FunPtr):
@@ -506,6 +594,7 @@ class Processor:
 
     def emit(self, defs):
         for d in defs:
+            print("emit", id(d), d)
             try:
                 self.emit_node(d)
             except Exception as e:
@@ -516,31 +605,53 @@ class Processor:
         if type(node) in self.unknowns:
             return
         self.unknowns.add(type(node))
-        self.info.append(f"# Unknown {node!r:.68s}...")
+        raise RuntimeError(f"# Unknown {node!r:.68s}...")
+
+    @emit_node.register
+    def emit_dispatcher(self, dispatcher: Dispatcher):
+        pass  # Nothing to emit
 
     @emit_node.register
     def emit_typedef(self, typedef: Typedef):
+        print("emit_typedef", typedef)
+        self.body_dedent(f"// typedef {typedef}")
         name = typedef.name
         type = typedef.type
         if type.endswith("*") or type.endswith("]"):
-            make_descr = self.type_details(typedef.type)
+            make_descr = self.type_details(typedef.fulltype)
+            self.body_dedent(f"// {type} {make_descr=}")
             if make_descr is None:
+                self.body_dedent(f"// {typedef}: no make_descr")
                 return
             offset = 0
             self.body_dedent(f"""
-            MP_DEFINE_CTYPES_STRUCT({name}_obj, MP_QSTR_{name}, {make_descr(self, offset)}, LAYOUT_NATIVE);
+            MP_DEFINE_CTYPES_STRUCT({name}_obj, MP_QSTR_{name}, {make_descr(self, offset)}, LAYOUT_NATIVE); // 1
             """)
             self.typedef_objs.add(name)
             self.add_local(name)
             offset = 0
+        else:
+            self.body_dedent(f"// no need for {typedef} !?")
 
     def type_details(self, typename):
         if typename in self.funptrs:
             return None
-        fulltype = self.parse_type(typename)
-        is_ptr = isinstance(fulltype, Ptr)
-        is_array = isinstance(fulltype, Array)
-        basetypename = fulltype if isinstance(fulltype, str) else fulltype.pointee
+        if isinstance(typename, Ptr):
+            is_ptr = True
+            is_array = False
+            basetypename = typename.pointee
+            print(f"{typename=} -- {basetypename=} {basetypename in self.types}")
+        elif isinstance(typename, Array):
+            is_ptr = False
+            is_array = True
+            fulltype = typename
+            basetypename = typename.pointee
+            print(f"{typename=} -- {basetypename=} {basetypename in self.types}")
+        else:
+            fulltype = self.parse_type(typename)
+            is_ptr = isinstance(fulltype, Ptr)
+            is_array = isinstance(fulltype, Array)
+            basetypename = fulltype if isinstance(fulltype, str) else fulltype.pointee
 
         if basetypename in all_scalar_types:
             u = "U" if basetypename.startswith("u") else ""
@@ -569,7 +680,11 @@ class Processor:
                 descr = descr_maker_scalar(type_str)
         else:
             if is_ptr:
-                if basetypename in self.structs:
+                if typename in self.types:
+                    descr = descr_maker_ptr_struct(typename)
+                elif basetypename in self.structs:
+                    descr = descr_maker_ptr_struct(basetypename)
+                elif basetypename in self.types:
                     descr = descr_maker_ptr_struct(basetypename)
                 else:
                     descr = descr_maker_ptr_scalar("UINT8")
@@ -607,7 +722,7 @@ class Processor:
              {self.union_make_table(e)}
         }};
         static MP_DEFINE_CONST_DICT({name}_descr_dict, {name}_descr_table);
-        MP_DEFINE_CTYPES_STRUCT({name}_obj, MP_QSTR_{name}, MP_ROM_PTR((void*)&{name}_descr_dict), LAYOUT_NATIVE);
+        MP_DEFINE_CTYPES_STRUCT({name}_obj, MP_QSTR_{name}, MP_ROM_PTR((void*)&{name}_descr_dict), LAYOUT_NATIVE); // 2
         """)
         self.add_local(name)
 
@@ -623,7 +738,7 @@ class Processor:
              {self.struct_make_table(e)}
         }};
         static MP_DEFINE_CONST_DICT({name}_descr_dict, {name}_descr_table);
-        MP_DEFINE_CTYPES_STRUCT({name}_obj, MP_QSTR_{name}, MP_ROM_PTR((void*)&{name}_descr_dict), LAYOUT_NATIVE);
+        MP_DEFINE_CTYPES_STRUCT({name}_obj, MP_QSTR_{name}, MP_ROM_PTR((void*)&{name}_descr_dict), LAYOUT_NATIVE); // 3
         """)
         self.add_local(name)
 
@@ -657,7 +772,7 @@ class Processor:
 
     def add_local(self, name, value=...):
         if value is ...:
-            value = f"MP_ROM_PTR(&{name}_obj)"
+            value = f"MP_ROM_PTR((void*)&{name}_obj)"
         self.locals.append(f"{{ MP_ROM_QSTR(MP_QSTR_{name}), {value} }},")
 
     @emit_node.register
@@ -719,7 +834,6 @@ class Processor:
         return_type = fun.return_
         args = fun.args
         argnames = [arg.name or f"arg{i}" for i, arg in enumerate(args)]
-        print(argnames)
         fun_args = ", ".join(argnames)
         if fun.inline:
             funcall = f"{fun.inline};"
@@ -732,9 +846,9 @@ class Processor:
         return_type = fun.return_
         if return_type:
             converter = self.make_converter(0, return_type)
-            return f"    return {converter.emit_to_py('retval')};"
+            return f"    return {converter.emit_to_py('retval')};\n"
         else:
-            return "    return mp_const_none;"
+            return "    return mp_const_none;\n"
 
     @emit_node.register
     def emit_function(self, node: Function):
@@ -746,7 +860,7 @@ class Processor:
         if node.api == 'carbon':
             return
         self.body_dedent(f"""
-        mp_obj_t {name}_fn(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {{
+        static mp_obj_t {name}_fn(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {{
              {self.fun_parse_args(args)}
              {self.fun_convert_args(args)}
              {self.fun_call_fun(node)}
@@ -795,7 +909,11 @@ class Processor:
     "-t", "--typedefs", multiple=True, type=click.Path(path_type=pathlib.Path, exists=True)
 )
 @click.option("-m", "--modname", type=str)
-def main(defs_files, output, modname, typedefs):
+@click.option("--format/-no-format", "do_format")
+def main(defs_files, output, modname, typedefs, do_format=False):
+    if modname is None:
+        modname = defs_files[0].stem
+
     if output is None:
         output = pathlib.Path(f"mod{modname}.c")
     processor = Processor(modname)
@@ -810,8 +928,16 @@ def main(defs_files, output, modname, typedefs):
     processor.typedefs(defs)
     processor.emit(defs)
 
-    with open(output, "w") as f:
-        processor.make_output(f)
+    if do_format:
+        tmpfile = output.with_suffix(".tmp.c")
+        with open(tmpfile, "w") as f:
+            processor.make_output(f)
+        print(f"Formatting {output}: ", [script_dir / "codeformat.py", "-c", tmpfile])
+        subprocess.check_call([script_dir / "codeformat.py", "-c", tmpfile])
+        tmpfile.rename(output)
+    else:
+        with open(output, "w") as f:
+            processor.make_output(f)
 
 
 if __name__ == '__main__':

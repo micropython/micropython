@@ -75,6 +75,11 @@ static bool is_struct_type(mp_obj_t obj_in) {
     return make_new == uctypes_struct_type_make_new;
 }
 
+static bool is_struct_instance(mp_obj_t obj_in) {
+    const mp_obj_type_t *type = mp_obj_get_type(obj_in);
+    return MP_OBJ_TYPE_GET_SLOT_OR_NULL(type, subscr) == uctypes_struct_subscr;
+}
+
 mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
     mp_obj_t desc = args[1];
@@ -346,13 +351,25 @@ static mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
+mp_obj_t uctypes_get_struct_desc(mp_obj_t arg) {
+    if (is_struct_instance(arg)) {
+        mp_obj_uctypes_struct_t *struct_ = MP_OBJ_TO_PTR(arg);
+        return struct_->desc;
+    }
+    if (is_struct_type(arg)) {
+        mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(arg);
+        return struct_type->desc;
+    }
+    return MP_OBJ_NULL;
+}
 static mp_obj_t uctypes_struct_desc(mp_obj_t arg) {
-    if (!is_struct_type(arg)) {
+    mp_obj_t result = uctypes_get_struct_desc(arg);
+    if (result == MP_OBJ_NULL) {
         mp_raise_TypeError(NULL);
     }
-    mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(arg);
-    return struct_type->desc;
+    return result;
 }
+
 MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_desc_obj, uctypes_struct_desc);
 
 static const char type2char[16] = {
