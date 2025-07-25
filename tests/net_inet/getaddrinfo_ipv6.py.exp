@@ -1,0 +1,6 @@
+-- test_dual_stack: Dual stack getaddrinfo returned resolutions
+-- test_family_unspec: Unspecified family getaddrinfo returned resolutions
+-- test_ipv6_address: IPv6 address getaddrinfo returned resolutions
+-- test_ipv6_domain: IPv6 domain getaddrinfo returned resolutions
+-- test_ipv6_localhost: IPv6 localhost getaddrinfo returned resolutions
+-- test_ipv6_wildcard: IPv6 wildcard getaddrinfo returned resolutions
