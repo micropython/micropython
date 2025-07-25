@@ -53,6 +53,7 @@ typedef struct _machine_timer_obj_t {
     uint64_t period;
 
     mp_obj_t callback;
+    bool ishard;
 
     intr_handle_t handle;
     void (*handler)(struct _machine_timer_obj_t *timer);
