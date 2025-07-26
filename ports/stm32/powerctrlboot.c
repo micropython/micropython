@@ -482,6 +482,11 @@ void SystemClock_Config(void) {
     LL_RCC_IC11_SetDivider(1);
     LL_RCC_IC11_Enable();
 
+    // Configure IC12 at 100MHz for ETH1CLKSEL.
+    LL_RCC_IC12_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC12_SetDivider(8);
+    LL_RCC_IC12_Enable();
+
     // Configure IC14 at 100MHz for slower peripherals.
     LL_RCC_IC14_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
     LL_RCC_IC14_SetDivider(8);
