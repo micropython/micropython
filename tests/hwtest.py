@@ -58,6 +58,17 @@ def list_ports(args):
             # Skip invalid ttySx ports.
             continue
         if not args or p.device in args:
+            t = SerialTransport(p.device)
+            t.enter_raw_repl()
+            t.exec("import os")
+            is_octoprobe_infra = "OCTOPROBE" in t.eval("os.listdir()")
+            t.close()
+            if is_octoprobe_infra:
+                if not args:
+                    # If no devices specified, skip Octoprobe infrastructure.
+                    print(f"{p.device} Octoprobe infrastructure device, skipping")
+                    continue
+                print(f"{p.device} Octoprobe infrastructure device")
             ports.append(Target(p.device, p.serial_number))
     return ports
 
