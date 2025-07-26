@@ -350,7 +350,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     return had_crash, output_mupy
 
 
-special_tests = [
+tests_with_regex_output = [
     base_path(file)
     for file in (
         "micropython/meminfo.py",
@@ -367,10 +367,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     had_crash = False
     if pyb is None:
         # run on PC
-        if (
-            test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/")))
-            or test_file_abspath in special_tests
-        ):
+        if test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/"))):
             # special handling for tests of the unix cmdline program
             is_special = True
 
@@ -502,7 +499,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
         return b"SKIP\n"
 
-    if is_special or test_file_abspath in special_tests:
+    if is_special or test_file_abspath in tests_with_regex_output:
         # convert parts of the output that are not stable across runs
         with open(test_file + ".exp", "rb") as f:
             lines_exp = []
@@ -872,6 +869,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
         skip_tests.add("extmod/asyncio_event_queue.py")  # native can't run schedule
         skip_tests.add("extmod/asyncio_iterator_event.py")  # native can't run schedule
+        skip_tests.add("misc/sys_settrace_cov.py")  # sys.settrace() not supported
+        skip_tests.add("thread/thread_exc2.py")  # requires traceback info
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
