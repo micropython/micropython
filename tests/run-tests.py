@@ -127,6 +127,7 @@ emitter_tests_to_skip = {
         "micropython/emg_exc.py",
         "micropython/heapalloc_traceback.py",
         "micropython/opt_level_lineno.py",
+        "thread/thread_exc2.py",
         # These require stack-allocated slice optimisation.
         "micropython/heapalloc_slice.py",
         # These require running the scheduler.
@@ -136,6 +137,7 @@ emitter_tests_to_skip = {
         # These require sys.exc_info().
         "misc/sys_exc_info.py",
         # These require sys.settrace().
+        "misc/sys_settrace_cov.py",
         "misc/sys_settrace_features.py",
         "misc/sys_settrace_generator.py",
         "misc/sys_settrace_loop.py",
@@ -392,7 +394,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     return had_crash, output_mupy
 
 
-special_tests = [
+tests_with_regex_output = [
     base_path(file)
     for file in (
         "micropython/meminfo.py",
@@ -409,10 +411,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     had_crash = False
     if pyb is None:
         # run on PC
-        if (
-            test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/")))
-            or test_file_abspath in special_tests
-        ):
+        if test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/"))):
             # special handling for tests of the unix cmdline program
             is_special = True
 
@@ -544,7 +543,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
         return b"SKIP\n"
 
-    if is_special or test_file_abspath in special_tests:
+    if is_special or test_file_abspath in tests_with_regex_output:
         # convert parts of the output that are not stable across runs
         with open(test_file + ".exp", "rb") as f:
             lines_exp = []
