@@ -65,21 +65,22 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if device.startswith("rfc2217://"):
+                try:
                     self.serial = serial.serial_for_url(device, **serial_kwargs)
-                elif os.name == "nt":
-                    self.serial = serial.Serial(**serial_kwargs)
-                    self.serial.port = device
-                    portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and portinfo[0].manufacturer != "Microsoft":
-                        # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
-                        # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
-                        # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
-                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
-                        self.serial.rts = False  # RTS False = EN High = MCU enabled
-                    self.serial.open()
-                else:
-                    self.serial = serial.Serial(device, **serial_kwargs)
+                except ValueError:
+                    if os.name == "nt":
+                        self.serial = serial.Serial(**serial_kwargs)
+                        self.serial.port = device
+                        portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
+                        if portinfo and portinfo[0].manufacturer != "Microsoft":
+                            # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
+                            # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
+                            # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
+                            self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
+                            self.serial.rts = False  # RTS False = EN High = MCU enabled
+                        self.serial.open()
+                    else:
+                        self.serial = serial.Serial(device, **serial_kwargs)
                 break
             except OSError:
                 if wait == 0:
