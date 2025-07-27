@@ -508,6 +508,10 @@ static mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     if (elem != NULL) {
         poll_obj_t *poll_obj = (poll_obj_t *)MP_OBJ_TO_PTR(elem->value);
         if (poll_obj->pollfd != NULL) {
+            // If this was the last used slot, reduce max_used.
+            if (poll_obj->pollfd == &self->poll_set.pollfds[self->poll_set.max_used - 1]) {
+                self->poll_set.max_used--;
+            }
             poll_obj->pollfd->fd = -1;
             --self->poll_set.used;
         }
