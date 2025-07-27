@@ -31,9 +31,16 @@
 #include "py/parsenumbase.h"
 #include "py/parsenum.h"
 #include "py/smallint.h"
+#include "py/mpz.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
+#endif
+
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+#define USE_EXACT_PARSER (1)
+#else
+#define USE_EXACT_PARSER (0)
 #endif
 
 static MP_NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
@@ -195,6 +202,8 @@ value_error:
     }
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+
 enum {
     REAL_IMAG_STATE_START = 0,
     REAL_IMAG_STATE_HAVE_REAL = 1,
@@ -207,7 +216,174 @@ typedef enum {
     PARSE_DEC_IN_EXP,
 } parse_dec_in_t;
 
-#if MICROPY_PY_BUILTINS_FLOAT
+#if USE_EXACT_PARSER
+
+static int mp_parse_decimal_exact(const char **str_in, const char *top, bool allow_imag, mp_float_t *float_out) {
+    const char *str = *str_in;
+
+    // TODO try to use fixed-allocated mpz on the stack
+    mpz_t mpz_tmp1, mpz_tmp2;
+    mpz_init_from_int(&mpz_tmp1, 10);
+    mpz_init_zero(&mpz_tmp2);
+
+    mpz_t dec;
+    mpz_init_zero(&dec);
+
+    int ret = 0;
+    int exp_extra = 0;
+    int exp_val = 0;
+    int exp_sign = 1;
+    parse_dec_in_t in = PARSE_DEC_IN_INTG;
+
+    while (str < top) {
+        unsigned int dig = *str++;
+        if ('0' <= dig && dig <= '9') {
+            dig -= '0';
+            if (in == PARSE_DEC_IN_EXP) {
+                // don't overflow exp_val when adding next digit, instead just truncate
+                // it and the resulting float will still be correct, either inf or 0.0
+                // (use INT_MAX/2 to allow adding exp_extra at the end without overflow)
+                if (exp_val < (INT_MAX / 2 - 9) / 10) {
+                    exp_val = 10 * exp_val + dig;
+                }
+            } else {
+                if (mpz_max_num_bits(&dec) < 52 + MPZ_DIG_SIZE) {
+                    // Can possibly represent more digits so accumulate them
+                    mpz_set_from_int(&mpz_tmp2, dig);
+                    mpz_mul_inpl(&dec, &dec, &mpz_tmp1);
+                    mpz_add_inpl(&dec, &dec, &mpz_tmp2);
+                    if (in == PARSE_DEC_IN_FRAC) {
+                        --exp_extra;
+                    }
+                } else {
+                    // Can't represent more digits of precision so ignore the digit and
+                    // just adjust the exponent
+                    if (in == PARSE_DEC_IN_INTG) {
+                        ++exp_extra;
+                    }
+                }
+            }
+        } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
+            in = PARSE_DEC_IN_FRAC;
+        } else if (in != PARSE_DEC_IN_EXP && ((dig | 0x20) == 'e')) {
+            in = PARSE_DEC_IN_EXP;
+            if (str < top) {
+                if (str[0] == '+') {
+                    ++str;
+                } else if (str[0] == '-') {
+                    ++str;
+                    exp_sign = -1;
+                }
+            }
+            if (str == top) {
+                ret = -1;
+                goto cleanup;
+            }
+        } else if (allow_imag && (dig | 0x20) == 'j') {
+            --str;
+            break;
+        } else if (dig == '_') {
+            continue;
+        } else {
+            // unknown character
+            --str;
+            break;
+        }
+    }
+
+    *str_in = str;
+
+    // special case
+    if (mpz_is_zero(&dec)) {
+        *float_out = 0.0;
+        goto cleanup;
+    }
+
+    exp_val *= exp_sign;
+    exp_val += exp_extra;
+
+    // Catch very large exponents, because 5**abs(exp_val) would be impossible to compute
+    // TODO make this threshold precise, based on size of dec
+    if (exp_val < -400) {
+        *float_out = 0.0;
+        goto cleanup;
+    } else if (exp_val > 400) {
+        *float_out = (mp_float_t)INFINITY;
+        goto cleanup;
+    }
+
+    // Compute: 5 ** abs(exp_val)
+    mpz_t mpz_exp5;
+    mpz_init_zero(&mpz_exp5);
+    mpz_init_from_int(&mpz_tmp1, 5);
+    mpz_init_from_int(&mpz_tmp2, abs(exp_val));
+    mpz_pow_inpl(&mpz_exp5, &mpz_tmp1, &mpz_tmp2);
+
+    if (exp_val >= 0) {
+        mpz_mul_inpl(&dec, &dec, &mpz_exp5);
+    } else {
+        // dec <<= 3 * (-exp_val) + 54
+        mpz_shl_inpl(&dec, &dec, 3 * (-exp_val) + 54);
+
+        // dec /= 5 ** (-exp_val)
+        mpz_set(&mpz_tmp2, &dec);
+        mpz_divmod_inpl(&dec, &mpz_tmp1, &mpz_tmp2, &mpz_exp5);
+
+        // adjust exponent, only power of 2 left
+        exp_val += 3 * exp_val - 54;
+    }
+
+    // normalise so bit 52 of mantissa is 1 (need 2 extra bits for rounding later on)
+    // TODO make this much more efficient, not using 2 loops!
+    mpz_set_from_int(&mpz_tmp1, 1);
+    mpz_shl_inpl(&mpz_tmp1, &mpz_tmp1, 54);
+    #if 0
+    // Only needed if we want to use the mpz bits to create the FP bits
+    while (mpz_cmp(&dec, &mpz_tmp1) < 0) {
+        exp_val -= 1;
+        mpz_shl_inpl(&dec, &dec, 1);
+    }
+    #endif
+    mpz_shl_inpl(&mpz_tmp1, &mpz_tmp1, 1);
+    while (mpz_cmp(&dec, &mpz_tmp1) > 0) {
+        exp_val += 1;
+        mpz_dig_t carry = dec.dig[0] & 1;
+        mpz_shr_inpl(&dec, &dec, 1);
+        dec.dig[0] |= carry;
+    }
+
+    // Looks ok to just reuse mpz_as_float to do the final conversion
+    // (this will be the only conversion with possible error, we are allow one error)
+    mp_float_t fdec = mpz_as_float(&dec);
+
+    // This code computes the (double) representation exactly from the big-int bits
+    /*
+    dec >>= 1
+    if dec & 1:
+        dec += 1
+    dec >>= 1
+    dec_bytes = bytearray(dec.to_bytes(8, 'little'))
+
+    # compute exponent
+    fexp = 54 + 1023
+    dec_bytes[6] |= fexp << 4 & 0xff
+    dec_bytes[7] |= fexp >> 4
+
+    fdec = array.array('d', dec_bytes)[0]
+    */
+
+    // ldexp is only needed to handle subnormals, otherwise fdec * 2**exp_val would suffice
+    *float_out = MICROPY_FLOAT_C_FUN(ldexp)(fdec, exp_val);
+
+cleanup:
+    mpz_deinit(&dec);
+    mpz_deinit(&mpz_tmp1);
+    mpz_deinit(&mpz_tmp2);
+    return ret;
+}
+
+#else
+
 // MANTISSA_MAX is used to retain precision while not overflowing mantissa
 // SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
 // EXACT_POWER_OF_10 is the largest value of x so that 10^x can be stored exactly in a float
@@ -244,6 +420,9 @@ static mp_float_uint_t accept_digit(mp_float_uint_t p_mantissa, unsigned int dig
         return p_mantissa;
     }
 }
+
+#endif // USE_EXACT_PARSER
+
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
 #if MICROPY_PY_BUILTINS_COMPLEX
@@ -295,6 +474,11 @@ parse_start:;
         dec_val = MICROPY_FLOAT_C_FUN(nan)("");
     } else {
         // string should be a decimal number
+        #if USE_EXACT_PARSER
+        if (mp_parse_decimal_exact(&str, top, allow_imag, &dec_val)) {
+            goto value_error;
+        }
+        #else
         parse_dec_in_t in = PARSE_DEC_IN_INTG;
         bool exp_neg = false;
         mp_float_uint_t mantissa = 0;
@@ -381,6 +565,7 @@ parse_start:;
         } else {
             dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
         }
+        #endif
     }
 
     if (allow_imag && str < top && (*str | 0x20) == 'j') {
