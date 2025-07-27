@@ -299,7 +299,7 @@ class Pins(object):
         print("extern const pin_obj_t * const pin_adc3[];", file=out_header)
 
     def print_af_hdr(self, out_af_const):
-        af_hdr_set = set([])
+        af_hdr_set = set()
         mux_name_width = 0
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
@@ -307,7 +307,7 @@ class Pins(object):
                 for af in pin.alt_fn:
                     if af.is_supported():
                         mux_name = af.mux_name()
-                        af_hdr_set |= set([mux_name])
+                        af_hdr_set |= {mux_name}
                         if len(mux_name) > mux_name_width:
                             mux_name_width = len(mux_name)
         for mux_name in sorted(af_hdr_set):

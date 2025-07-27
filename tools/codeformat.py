@@ -151,7 +151,7 @@ def main():
             # Filter against the default list of files. This is a little fiddly
             # because we need to apply both the inclusion globs given in PATHS
             # as well as the EXCLUSIONS, and use absolute paths
-            files = set(os.path.abspath(f) for f in files)
+            files = {os.path.abspath(f) for f in files}
             all_files = set(list_files(PATHS, EXCLUSIONS, TOP))
             if args.v:  # In verbose mode, log any files we're skipping
                 for f in files - all_files:

@@ -198,9 +198,9 @@ def main():
 
         # Select MCU parameters
         mcu = mcu_default
-        for m in mcu_table:
+        for m, new_mcu in mcu_table.items():
             if mcu_series.startswith(m):
-                mcu = mcu_table[m]
+                mcu = new_mcu
                 break
         plli2s_table = compute_plli2s_table(hse, pllm)
         if c_table:

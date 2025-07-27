@@ -158,8 +158,10 @@ def parse_file(filename):
                 if m[0] == "IO reg":
                     regs.append((reg, offset, bits, comment))
                 else:
-                    for i in range(int(d["array"])):
-                        regs.append((reg + str(i), offset + i * bits // 8, bits, comment))
+                    regs.extend(
+                        (reg + str(i), offset + i * bits // 8, bits, comment)
+                        for i in range(int(d["array"]))
+                    )
                 m = lexer.next_match()
             if m[0] in ("}", "} _t"):
                 pass

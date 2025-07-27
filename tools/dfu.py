@@ -87,7 +87,7 @@ def build(file, targets, device=DEFAULT_DEVICE):
         )
         data += tdata
     data = struct.pack("<5sBIB", b"DfuSe", 1, len(data) + 11, len(targets)) + data
-    v, d = map(lambda x: int(x, 0) & 0xFFFF, device.split(":", 1))
+    v, d = (int(x, 0) & 0xFFFF for x in device.split(":", 1))
     data += struct.pack("<4H3sB", 0, d, v, 0x011A, b"UFD", 16)
     crc = compute_crc(data)
     data += struct.pack("<I", crc)
@@ -147,7 +147,7 @@ if __name__ == "__main__":
         if options.device:
             device = options.device
         try:
-            v, d = map(lambda x: int(x, 0) & 0xFFFF, device.split(":", 1))
+            v, d = (int(x, 0) & 0xFFFF for x in device.split(":", 1))
         except:
             print("Invalid device '%s'." % device)
             sys.exit(1)

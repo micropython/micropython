@@ -1374,15 +1374,11 @@ def read_mpy(filename):
 
         # Read qstrs and construct qstr table.
         qstr_table_file_offset = reader.tell()
-        qstr_table = []
-        for i in range(n_qstr):
-            qstr_table.append(read_qstr(reader, segments))
+        qstr_table = [read_qstr(reader, segments) for _ in range(n_qstr)]
 
         # Read objects and construct object table.
         obj_table_file_offset = reader.tell()
-        obj_table = []
-        for i in range(n_obj):
-            obj_table.append(read_obj(reader, segments))
+        obj_table = [read_obj(reader, segments) for _ in range(n_obj)]
 
         # Compute the compiled-module escaped name.
         cm_escaped_name = qstr_table[0].str.replace("/", "_")[:-3]
