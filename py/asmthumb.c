@@ -492,8 +492,10 @@ void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base
         asm_thumb_op32(as, (OP_LDR_STR_W_HI(operation_size, reg_base) | OP_STR_W), OP_LDR_STR_W_LO(reg_src, (offset << operation_size)));
     } else {
         // Must use the generic sequence
+        asm_thumb_op16(as, OP_PUSH_RLIST(1 << reg_base));
         asm_thumb_add_reg_reg_offset(as, reg_base, reg_base, offset - 31, operation_size);
         asm_thumb_op16(as, ((OP_LDR_STR_TABLE[operation_size] | OP_STR) << 11) | (31 << 6) | (reg_base << 3) | reg_src);
+        asm_thumb_op16(as, OP_POP_RLIST(1 << reg_base));
     }
 }
 
