@@ -485,6 +485,9 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #endif
     }
 
+    // To prevent invalid dac output, clean D-cache before starting dma.
+    MP_HAL_CLEAN_DCACHE(bufinfo.buf, bufinfo.len);
+
     uint32_t align;
     if (self->bits == 8) {
         align = DAC_ALIGN_8B_R;
