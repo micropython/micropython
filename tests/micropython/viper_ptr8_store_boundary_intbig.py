@@ -3,7 +3,9 @@
 SET_TEMPLATE = """
 @micropython.viper
 def set{off}(dest: ptr8):
+    saved = dest
     dest[{off}] = {val}
+    assert int(saved) == int(dest)
 set{off}(buffer)
 print(hex(get_index(buffer, {off})))
 """
@@ -15,7 +17,9 @@ MASK = (1 << (8 * SIZE)) - 1
 
 @micropython.viper
 def set_index(dest: ptr8, i: int, val: uint):
+    saved = dest
     dest[i] = val
+    assert int(dest) == int(saved)
 
 
 def get_index(src: ptr8, i: int):
