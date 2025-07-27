@@ -1,0 +1,26 @@
+--- instance0 ---
+set hostname:  True
+ap instance created
+ap initially not active:  True
+ap is activated:  True
+ap is deactivated:  True
+ap has no client:  True
+ > yield station
+ap has clients:  True
+ap cannot disconnect:  network STA required
+ap status has stations:  True
+--- instance1 ---
+sta instance created
+sta is not active:  True
+sta scan finds ap wlan:  True
+sta scan finds ap wlan (ssid filter):  True
+sta scan finds ap wlan (mac filter):  True
+sta is not (yet) connected:  True
+sta attempt connection to ap
+sta is (now) active:  True
+sta is (now) connected:  True
+sta status rssi in range:  True
+ > yield access point
+sta is disconnected:  True
+sta attempt connection to ap (with bssid)
+sta is active:  True
