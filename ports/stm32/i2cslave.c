@@ -94,6 +94,9 @@ void i2c_slave_irq_handler(i2c_slave_t *i2c) {
         i2c->ISR = I2C_ISR_TXE;
         i2c->ICR = I2C_ICR_ADDRCF;
         i2c_slave_process_addr_match(i2c, (i2c->ISR >> I2C_ISR_DIR_Pos) & 1);
+        // Re-read ISR in case i2c_slave_process_addr_match() took some time
+        // to process and TXIS/RXNE was set in the meantime.
+        isr = i2c->ISR;
     }
     if (isr & I2C_ISR_TXIS) {
         // This callback must call i2c_slave_write_byte.
