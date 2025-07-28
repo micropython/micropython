@@ -40,6 +40,8 @@ from errno import EPERM
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
+VID_ESPRESSIF = 0x303A  # Espressif Incorporated
+
 
 class SerialTransport(Transport):
     fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
@@ -71,7 +73,10 @@ class SerialTransport(Transport):
                     self.serial = serial.Serial(**serial_kwargs)
                     self.serial.port = device
                     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and portinfo[0].manufacturer != "Microsoft":
+                    if portinfo and (
+                        getattr(portinfo[0], "vid", 0) == VID_ESPRESSIF
+                        or getattr(portinfo[0], "manufacturer", "") != "Microsoft"
+                    ):
                         # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
                         # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
                         # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
