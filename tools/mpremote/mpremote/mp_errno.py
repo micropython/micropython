@@ -1,4 +1,5 @@
 import errno
+import platform
 
 # This table maps numeric values defined by `py/mperrno.h` to host errno code.
 MP_ERRNO_TABLE = {
@@ -16,7 +17,6 @@ MP_ERRNO_TABLE = {
     12: errno.ENOMEM,
     13: errno.EACCES,
     14: errno.EFAULT,
-    15: errno.ENOTBLK,
     16: errno.EBUSY,
     17: errno.EEXIST,
     18: errno.EXDEV,
@@ -51,3 +51,5 @@ MP_ERRNO_TABLE = {
     115: errno.EINPROGRESS,
     125: errno.ECANCELED,
 }
+if platform.system() != "Windows":
+    MP_ERRNO_TABLE[15] = errno.ENOTBLK
