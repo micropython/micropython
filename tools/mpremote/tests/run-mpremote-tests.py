@@ -441,12 +441,10 @@ the last matching regex is used:
         else:
             tests = []
     elif len(args.files) == 0:
-        test_extensions = ("test_*.sh",)
         if sys.platform == "nt":
-            test_extensions += (
-                "test_*.bat",
-                "test_*.ps1",
-            )
+            test_extensions = ("test_*.ps1",)
+        else:
+            test_extensions = ("test_*.sh", "test_*.ps1")
 
         if args.test_dirs is None:
             test_dirs = (".",)
