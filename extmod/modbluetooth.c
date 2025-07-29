@@ -1343,7 +1343,14 @@ bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key
     const uint8_t *data[] = {key, value};
     uint16_t data_len[] = {key_len, value_len};
     mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_SET_SECRET, args, 1, 0, NULL_ADDR, NULL_UUID, data, data_len, 2);
-    return mp_obj_is_true(result);
+
+    if (result == mp_const_none) {
+        // Return true when no IRQ handler is registered to allow BTstack to function
+        // without requiring Python-level secret storage implementation
+        return true;
+    } else {
+        return mp_obj_is_true(result);
+    }
 }
 
 void mp_bluetooth_gap_on_passkey_action(uint16_t conn_handle, uint8_t action, mp_int_t passkey) {
