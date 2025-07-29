@@ -29,9 +29,9 @@ elif "rp2" in sys.platform:
 elif "esp32" in sys.platform:
     impl = str(sys.implementation)
     if any(soc in impl for soc in ("ESP32C2", "ESP32C3", "ESP32-C3", "ESP32C6")):
-        spi_instances = ((1, Pin(4), Pin(5), Pin(6)),)
+        spi_instances = ((1, None, None, None),)
     else:
-        spi_instances = ((1, Pin(18), Pin(19), Pin(21)), (2, Pin(18), Pin(19), Pin(21)))
+        spi_instances = ((1, None, None, None), (2, None, None, None))
 elif "esp8266" in sys.platform:
     MAX_DELTA_MS = 50  # port requires much looser timing requirements
     spi_instances = ((1, None, None, None),)  # explicit pin choice not allowed
