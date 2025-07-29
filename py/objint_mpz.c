@@ -382,23 +382,38 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
 }
 #endif
 
+// This routine *always* returns an mpz integer. Call it only if the value is *known*
+// to exceed the small integer range, because integers that fit are required to always
+// be returned as small integers.
+static mp_obj_t mp_obj_new_mpz_from_ll(long long val, bool is_signed) {
+    mp_obj_int_t *o = mp_obj_int_new_mpz();
+    mpz_set_from_ll(&o->mpz, val, is_signed);
+    return MP_OBJ_FROM_PTR(o);
+}
+
+mp_obj_t mp_obj_new_bigint_from_ll(long long val) {
+    return mp_obj_new_mpz_from_ll(val, true);
+}
+
 mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    return mp_obj_new_int_from_ll(value);
+    return mp_obj_new_mpz_from_ll(value, true);
 }
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
-    mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mpz_set_from_ll(&o->mpz, val, true);
-    return MP_OBJ_FROM_PTR(o);
+    if (val == (mp_int_t)val && MP_SMALL_INT_FITS((mp_int_t)val)) {
+        return MP_OBJ_NEW_SMALL_INT(val);
+    }
+    return mp_obj_new_mpz_from_ll(val, true);
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
-    mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mpz_set_from_ll(&o->mpz, val, false);
-    return MP_OBJ_FROM_PTR(o);
+    if ((val & ~(unsigned long long)MP_SMALL_INT_POSITIVE_MASK) == 0) {
+        return mp_obj_new_int(val);
+    }
+    return mp_obj_new_mpz_from_ll(val, false);
 }
 
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
@@ -407,7 +422,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     if ((value & ~MP_SMALL_INT_POSITIVE_MASK) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    return mp_obj_new_int_from_ull(value);
+    return mp_obj_new_mpz_from_ll(value, false);
 }
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
