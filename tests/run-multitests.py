@@ -132,6 +132,11 @@ def get_host_ip(_ip_cache=[]):
     return _ip_cache[0]
 
 
+def decode(output):
+    # Convenience function to convert raw process or serial output to ASCII
+    return str(output, "ascii", "backslashreplace")
+
+
 class PyInstance:
     def __init__(self):
         pass
@@ -190,7 +195,7 @@ class PyInstanceSubProcess(PyInstance):
             output = p.stdout
         except subprocess.CalledProcessError as er:
             err = er
-        return str(output.strip(), "ascii"), err
+        return decode(output.strip()), err
 
     def start_script(self, script):
         self.popen = subprocess.Popen(
@@ -217,7 +222,7 @@ class PyInstanceSubProcess(PyInstance):
             self.finished = self.popen.poll() is not None
             return None, None
         else:
-            return str(out.rstrip(), "ascii"), None
+            return decode(out.rstrip()), None
 
     def write(self, data):
         self.popen.stdin.write(data)
@@ -229,7 +234,7 @@ class PyInstanceSubProcess(PyInstance):
     def wait_finished(self):
         self.popen.wait()
         out = self.popen.stdout.read()
-        return str(out, "ascii"), ""
+        return decode(out), ""
 
 
 class PyInstancePyboard(PyInstance):
@@ -264,7 +269,7 @@ class PyInstancePyboard(PyInstance):
             output = self.pyb.exec_(script)
         except pyboard.PyboardError as er:
             err = er
-        return str(output.strip(), "ascii"), err
+        return decode(output.strip()), err
 
     def start_script(self, script):
         self.pyb.enter_raw_repl()
@@ -283,13 +288,13 @@ class PyInstancePyboard(PyInstance):
         if out.endswith(b"\x04"):
             self.finished = True
             out = out[:-1]
-            err = str(self.pyb.read_until(1, b"\x04"), "ascii")
+            err = decode(self.pyb.read_until(1, b"\x04"))
             err = err[:-1]
             if not out and not err:
                 return None, None
         else:
             err = None
-        return str(out.rstrip(), "ascii"), err
+        return decode(out.rstrip()), err
 
     def write(self, data):
         self.pyb.serial.write(data)
@@ -299,7 +304,7 @@ class PyInstancePyboard(PyInstance):
 
     def wait_finished(self):
         out, err = self.pyb.follow(10, None)
-        return str(out, "ascii"), str(err, "ascii")
+        return decode(out), decode(err)
 
 
 def prepare_test_file_list(test_files):
