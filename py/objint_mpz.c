@@ -74,6 +74,18 @@ const mp_obj_int_t mp_sys_maxsize_obj = {
 #undef NUM_DIG
 #endif
 
+static mp_obj_t mp_int_maybe_narrow(mp_obj_int_t *res) {
+    // Check if the result fits in a small-int, and if so just return that.
+    mp_int_t res_small;
+    if (mpz_as_int_checked(&res->mpz, &res_small)) {
+        if (MP_SMALL_INT_FITS(res_small)) {
+            return MP_OBJ_NEW_SMALL_INT(res_small);
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(res);
+}
+
 mp_obj_int_t *mp_obj_int_new_mpz(void) {
     mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     mpz_init_zero(&o->mpz);
@@ -312,16 +324,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return MP_OBJ_NULL; // op not supported
         }
 
-        // Check if the result fits in a small-int, and if so just return that.
-        mp_int_t res_small;
-        if (mpz_as_int_checked(&res->mpz, &res_small)) {
-            if (MP_SMALL_INT_FITS(res_small)) {
-                return MP_OBJ_NEW_SMALL_INT(res_small);
-            }
-        }
-
-        return MP_OBJ_FROM_PTR(res);
-
+        return mp_int_maybe_narrow(res);
     } else {
         int cmp = mpz_cmp(zlhs, zrhs);
         switch (op) {
@@ -377,7 +380,8 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         if (mod == &m_temp) {
             mpz_deinit(mod);
         }
-        return MP_OBJ_FROM_PTR(res_p);
+
+        return mp_int_maybe_narrow(res_p);
     }
 }
 #endif
