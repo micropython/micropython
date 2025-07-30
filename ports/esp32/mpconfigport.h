@@ -395,3 +395,7 @@ void boardctrl_startup(void);
 #ifndef MICROPY_ESP_IDF_ENTRY
 #define MICROPY_ESP_IDF_ENTRY app_main
 #endif
+
+// Deactivates BTREE
+#undef MICROPY_PY_BTREE
+#define MICROPY_PY_BTREE                (0)
