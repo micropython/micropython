@@ -14,6 +14,7 @@ docs/genrst/
 # Test failure outputs and intermediate artefacts
 tests/results/*
 tests/ports/unix/ffi_lib.so
+tools/mpremote/tests/results/*
 
 # Python cache files
 __pycache__/
