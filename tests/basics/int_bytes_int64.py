@@ -36,17 +36,8 @@ except OverflowError:
 
 # negative representations
 
-# MicroPython int.to_bytes() behaves as if signed=True for negative numbers
-if "micropython" in repr(sys.implementation):
+x = -x
 
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e)
-else:
-    # Implement MicroPython compatible behaviour for CPython
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e, signed=i < 0)
-
-
-print(to_bytes_compat(-x, 8, "little"))
-print(to_bytes_compat(-x, 20, "big"))
-print(to_bytes_compat(-x, 20, "little"))
+print(x.to_bytes(8, "little", signed=True))
+print(x.to_bytes(20, "big", signed=True))
+print(x.to_bytes(20, "little", signed=True))

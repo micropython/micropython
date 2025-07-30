@@ -1,11 +1,16 @@
 import sys
 
 print((10).to_bytes(1, "little"))
+print((-10).to_bytes(1, "little", signed=True))
+# Test fitting in length that's not a power of two.
+print((0x10000).to_bytes(3, "little"))
 print((111111).to_bytes(4, "little"))
+print((-111111).to_bytes(4, "little", signed=True))
 print((100).to_bytes(10, "little"))
 print(int.from_bytes(b"\x00\x01\0\0\0\0\0\0", "little"))
 print(int.from_bytes(b"\x01\0\0\0\0\0\0\0", "little"))
 print(int.from_bytes(b"\x00\x01\0\0\0\0\0\0", "little"))
+print((-100).to_bytes(10, "little", signed=True))
 
 # check that extra zero bytes don't change the internal int value
 print(int.from_bytes(bytes(20), "little") == 0)
@@ -13,7 +18,9 @@ print(int.from_bytes(b"\x01" + bytes(20), "little") == 1)
 
 # big-endian conversion
 print((10).to_bytes(1, "big"))
+print((-10).to_bytes(1, "big", signed=True))
 print((100).to_bytes(10, "big"))
+print((-100).to_bytes(10, "big", signed=True))
 print(int.from_bytes(b"\0\0\0\0\0\0\0\0\0\x01", "big"))
 print(int.from_bytes(b"\x01\0", "big"))
 
@@ -60,36 +67,36 @@ except OverflowError:
 
 # negative representations
 
-# MicroPython int.to_bytes() behaves as if signed=True for negative numbers
-if "micropython" in repr(sys.implementation):
+print((-1).to_bytes(1, "little", signed=True))
+print((-1).to_bytes(3, "little", signed=True))
+print((-1).to_bytes(1, "big", signed=True))
+print((-1).to_bytes(3, "big", signed=True))
+print((-128).to_bytes(1, "big", signed=True))
+print((-32768).to_bytes(2, "big", signed=True))
+print((-(1 << 23)).to_bytes(3, "big", signed=True))
 
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e)
-else:
-    # Implement MicroPython compatible behaviour for CPython
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e, signed=i < 0)
-
-
-print(to_bytes_compat(-1, 1, "little"))
-print(to_bytes_compat(-1, 3, "little"))
-print(to_bytes_compat(-1, 1, "big"))
-print(to_bytes_compat(-1, 3, "big"))
-print(to_bytes_compat(-128, 1, "big"))
-print(to_bytes_compat(-32768, 2, "big"))
-print(to_bytes_compat(-(1 << 23), 3, "big"))
-
+# negative numbers should raise an error if signed=False, regardless of fitting or not
 try:
-    print(to_bytes_compat(-129, 1, "big"))
+    (-256).to_bytes(2, "little", signed=False)
 except OverflowError:
     print("OverflowError")
 
 try:
-    print(to_bytes_compat(-32769, 2, "big"))
+    (-1).to_bytes(1, "little")
 except OverflowError:
     print("OverflowError")
 
 try:
-    print(to_bytes_compat(-(1 << 23) - 1, 2, "big"))
+    print((-129).to_bytes(1, "big"))
+except OverflowError:
+    print("OverflowError")
+
+try:
+    print((-32769).to_bytes(2, "big"))
+except OverflowError:
+    print("OverflowError")
+
+try:
+    print((-(1 << 23) - 1).to_bytes(2, "big"))
 except OverflowError:
     print("OverflowError")
