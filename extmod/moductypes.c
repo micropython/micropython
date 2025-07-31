@@ -48,6 +48,8 @@ const mp_obj_type_t uctypes_struct_type;
 // Get size of any type descriptor
 static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
 
+static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set_val);
+
 #define CTYPES_FLAGS_SIZE_BITS (2)
 #define CTYPES_OFFSET_SIZE_BITS (8 * sizeof(uint32_t) - 2)
 
@@ -178,8 +180,10 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
 void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *d = 0;
     const char *typen = "unk";
     if (mp_obj_is_dict_or_ordereddict(self->desc)) {
+        d = MP_OBJ_TO_PTR(self->desc);
         typen = "STRUCT";
     } else if (mp_obj_is_type(self->desc, &mp_type_tuple)) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
@@ -197,7 +201,17 @@ void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         typen = "ERROR";
     }
 
-    mp_printf(print, "<%q %s %p>", (qstr)mp_obj_get_type_qstr(self_in), typen, struct_addr(self));
+    mp_printf(print, "<%q %s %p", (qstr)mp_obj_get_type_qstr(self_in), typen, struct_addr(self));
+    if (kind == PRINT_REPR && d) {
+        for (mp_uint_t i = 0; i < d->map.alloc; i++) {
+            if (mp_map_slot_is_filled(&d->map, i)) {
+                qstr k = mp_obj_str_get_qstr(d->map.table[i].key);
+                mp_obj_t attr = uctypes_struct_attr_op(self_in, k, MP_OBJ_NULL);
+                mp_printf(print, "\n    %q=%r", k, attr);
+            }
+        }
+    }
+    mp_printf(print, ">");
 }
 
 // Get size of scalar type descriptor
