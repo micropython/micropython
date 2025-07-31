@@ -3,15 +3,21 @@
 import socket, ssl, sys
 
 try:
-    from micropython import alloc_emergency_exception_buf, heap_lock, heap_unlock
+    from micropython import heap_lock, heap_unlock
 except:
     print("SKIP")
     raise SystemExit
 
+try:
+    from micropython import alloc_emergency_exception_buf
+
+    alloc_emergency_exception_buf(256)
+except:
+    pass
+
 
 # test with heap locked to see it switch to number-only error message
 def test(addr):
-    alloc_emergency_exception_buf(256)
     s = socket.socket()
     s.connect(addr)
     try:
