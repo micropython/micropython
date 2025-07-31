@@ -1,6 +1,9 @@
 import socket
 import ssl
 
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
 
 # This certificate was obtained from micropython.org using openssl:
 # $ openssl s_client -showcerts -connect micropython.org:443 </dev/null 2>/dev/null

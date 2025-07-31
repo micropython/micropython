@@ -1,5 +1,12 @@
 import socket, ssl, errno, sys, time, select
 
+# Although this test doesn't need ssl.CERT_REQUIRED, it does require the ssl module
+# to support modern ciphers.  So exclude the test on axTLS which doesn't have
+# CERT_REQUIRED.
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 
 def test_one(site, opts):
     ai = socket.getaddrinfo(site, 443, socket.AF_INET)
