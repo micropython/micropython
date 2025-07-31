@@ -288,6 +288,7 @@ struct micropython_checks : gimple_opt_pass {
                             require_qstr(argno++);
                             break;
 
+                        case 'r':
                         case 's':
                         case 'p':
                         case 'P':
