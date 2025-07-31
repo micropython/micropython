@@ -45,6 +45,8 @@ class RAMBlockDevice:
 
 try:
     bdev = RAMBlockDevice(50)
+    vfs.VfsLfs2.mkfs(bdev)
+    vfs.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
