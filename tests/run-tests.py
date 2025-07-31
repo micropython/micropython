@@ -154,6 +154,18 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "samd/armv6m": (
+        # Fails timing bounds.
+        "extmod/time_res.py",
+        # Require more detailed error messages.
+        "micropython/emg_exc.py",
+        "micropython/heapalloc_exc_compressed.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        "micropython/native_with.py",
+        "micropython/opt_level_lineno.py",
+        "micropython/viper_with.py",
+        "misc/print_exception.py",
+    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
@@ -827,6 +839,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.arch is not None:
+        skip_tests.update(platform_tests_to_skip.get(args.platform + "/" + args.arch, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
