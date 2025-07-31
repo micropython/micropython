@@ -40,15 +40,17 @@ from errno import EPERM
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
-VID_ESPRESSIF = 0x303A  # Espressif Incorporated
-
-ESPRESSIF_INDICATORS = [
+esp_detection = [
     # chipset , VID, PID, Vendor
+    # partial source http://www.linux-usb.org/usb.ids
     ("USB-CDC", 0x303A, None, "Espressif Incorporated"),
     ("Pycom", 0x04D8, None, "Pycom"),
+    # 0x04D8/0xEF99  / COM6  [Pytrack] [USB VID:PID=04D8:F013 SER=Py343434 LOCATION=20-2]
     ("CP2102 / CP2104", 0x10C4, 0xEA60, "Silicon Labs"),
     ("FT232R / FTDI", 0x0403, 0x6001, "Future Technology Devices Intl Ltd"),
+    ("CH340", 0x1A86, 0x7522, "QinHeng Electronics"),  # ESP32-C3 UART
     ("CH340 / CH341", 0x1A86, 0x7523, "QinHeng Electronics"),
+    ("CH343", 0x1A86, 0x55D3, "QinHeng Electronics"),  # ESP32-C6 UART
     ("Prolific PL2303", 0x067B, 0x2303, "Prolific Technology Inc."),
     ("Microchip MCP2200", 0x04D8, 0x00DF, "Microchip Technology Inc."),
     ("CH9102 / CH9102F", 0x1A86, 0x55D4, "QinHeng Electronics"),
@@ -65,10 +67,30 @@ def is_esp_device(device):
     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
     if not portinfo or len(portinfo) != 1:
         raise TransportError("No port info found for device: {}".format(device))
-    for chipset, vid, pid, vendor in ESPRESSIF_INDICATORS:
+    for chipset, vid, pid, vendor in esp_detection:
         if portinfo[0].vid == vid and (pid is None or portinfo[0].pid == pid):  # type: ignore
             return True
     return False
+
+
+def add_user_esp_detection(config):
+    """
+    Integrate the ESP detection list from the user config.
+    """
+    if not config or not hasattr(config, 'esp_detection'):
+        return
+    esp_user_detection = config.esp_detection
+    if esp_user_detection is None or not isinstance(esp_user_detection, list):
+        raise ValueError("esp_detection must be a list of 4-tuples")
+    for chipset, vid, pid, vendor in esp_user_detection:
+        if (
+            # isinstance(chipset, str) and
+            # isinstance(vendor, str) and
+            isinstance(vid, int)
+            and (0 <= vid <= 0xFFFF)
+            and (pid is None or (isinstance(pid, int) and 0 <= pid <= 0xFFFF))
+        ):
+            esp_detection.append((chipset, vid, pid, vendor))
 
 
 class SerialTransport(Transport):

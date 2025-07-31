@@ -42,6 +42,7 @@ from .commands import (
 )
 from .mip import do_mip
 from .repl import do_repl
+from .transport_serial import add_user_esp_detection
 
 _PROG = "mpremote"
 
@@ -560,6 +561,7 @@ class State:
 def main():
     config = load_user_config()
     prepare_command_expansions(config)
+    add_user_esp_detection(config)
 
     remaining_args = sys.argv[1:]
     state = State()
