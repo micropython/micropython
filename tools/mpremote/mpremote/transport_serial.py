@@ -40,6 +40,57 @@ from errno import EPERM
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
+esp_detection = [
+    # chipset , VID, PID, Vendor
+    # partial source http://www.linux-usb.org/usb.ids
+    ("USB-CDC", 0x303A, None, "Espressif Incorporated"),
+    ("Pycom", 0x04D8, None, "Pycom"),
+    # 0x04D8/0xEF99  / COM6  [Pytrack] [USB VID:PID=04D8:F013 SER=Py343434 LOCATION=20-2]
+    ("CP2102 / CP2104", 0x10C4, 0xEA60, "Silicon Labs"),
+    ("FT232R / FTDI", 0x0403, 0x6001, "Future Technology Devices Intl Ltd"),
+    ("CH340", 0x1A86, 0x7522, "QinHeng Electronics"),  # ESP32-C3 UART
+    ("CH340 / CH341", 0x1A86, 0x7523, "QinHeng Electronics"),
+    ("Prolific PL2303", 0x067B, 0x2303, "Prolific Technology Inc."),
+    ("Microchip MCP2200", 0x04D8, 0x00DF, "Microchip Technology Inc."),
+    ("CH9102 / CH9102F", 0x1A86, 0x55D4, "QinHeng Electronics"),
+]
+
+
+def is_esp_device(device):
+    """
+    Check if the device is an ESP device by checking the VID.
+    This is used to set DTR/RTS correctly for ESP devices.
+    """
+    import serial.tools.list_ports
+
+    portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
+    if not portinfo or len(portinfo) != 1:
+        raise TransportError("No port info found for device: {}".format(device))
+    for chipset, vid, pid, vendor in esp_detection:
+        if portinfo[0].vid == vid and (pid is None or portinfo[0].pid == pid):  # type: ignore
+            return True
+    return False
+
+
+def add_user_esp_detection(config):
+    """
+    Integrate the ESP detection list from the user config.
+    """
+    if not config or not hasattr(config, 'esp_detection'):
+        return
+    esp_user_detection = config.esp_detection
+    if esp_user_detection is None or not isinstance(esp_user_detection, list):
+        raise ValueError("esp_detection must be a list of 4-tuples")
+    for chipset, vid, pid, vendor in esp_user_detection:
+        if (
+            # isinstance(chipset, str) and
+            # isinstance(vendor, str) and
+            isinstance(vid, int)
+            and (0 <= vid <= 0xFFFF)
+            and (pid is None or (isinstance(pid, int) and 0 <= pid <= 0xFFFF))
+        ):
+            esp_detection.append((chipset, vid, pid, vendor))
+
 
 class SerialTransport(Transport):
     fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
@@ -51,7 +102,6 @@ class SerialTransport(Transport):
         self.mounted = False
 
         import serial
-        import serial.tools.list_ports
 
         # Set options, and exclusive if pyserial supports it
         serial_kwargs = {
@@ -70,8 +120,7 @@ class SerialTransport(Transport):
                 elif os.name == "nt":
                     self.serial = serial.Serial(**serial_kwargs)
                     self.serial.port = device
-                    portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and portinfo[0].manufacturer != "Microsoft":
+                    if is_esp_device(device):
                         # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
                         # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
                         # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
