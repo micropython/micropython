@@ -1,5 +1,13 @@
 # test formatting floats with large precision, that it doesn't overflow the buffer
 
+try:
+    import micropython
+except:
+
+    class micropython:
+        def bytecode(f):
+            return f
+
 
 def test(num, num_str):
     if num == float("inf") or num == 0.0 and num_str != "0.0":
@@ -18,6 +26,12 @@ def test(num, num_str):
 
 
 # check most powers of 10, making sure to include exponents with 3 digits
-for e in range(-101, 102):
-    num = pow(10, e)
-    test(num, "1e%d" % e)
+# force bytecode emitter so it can feed the WDT on esp8266
+@micropython.bytecode
+def main():
+    for e in range(-101, 102):
+        num = pow(10, e)
+        test(num, "1e%d" % e)
+
+
+main()
