@@ -1,5 +1,13 @@
 # test formatting floats with large precision, that it doesn't overflow the buffer
 
+try:
+    import micropython
+except:
+
+    class micropython:
+        def bytecode(f):
+            return f
+
 
 def test(num, num_str):
     if num == float("inf") or num == 0.0 and num_str != "0.0":
