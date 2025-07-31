@@ -109,64 +109,6 @@ static int handle_uncaught_exception(mp_obj_base_t *exc) {
     return 1;
 }
 
-#define LEX_SRC_STR (1)
-#define LEX_SRC_STDIN (4)
-
-// Returns standard error codes: 0 for success, 1 for all other errors,
-// except if FORCED_EXIT bit is set then script raised SystemExit and the
-// value of the exit is in the lower 8 bits of the return value
-static int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
-    mp_hal_set_interrupt_char(CHAR_CTRL_C);
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        // create lexer based on source kind
-        mp_lexer_t *lex;
-        if (source_kind == LEX_SRC_STR) {
-            const char *line = source;
-            lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
-        } else { // LEX_SRC_STDIN
-            lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
-        }
-
-        qstr source_name = lex->source_name;
-
-        #if MICROPY_PY___FILE__
-        if (input_kind == MP_PARSE_FILE_INPUT) {
-            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-        }
-        #endif
-
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-
-        #if defined(MICROPY_UNIX_COVERAGE)
-        // allow to print the parse tree in the coverage build
-        if (mp_verbose_flag >= 3) {
-            printf("----------------\n");
-            mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
-            printf("----------------\n");
-        }
-        #endif
-
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
-
-        if (!mp_compile_only) {
-            // execute it
-            mp_call_function_0(module_fun);
-        }
-
-        mp_hal_set_interrupt_char(-1);
-        mp_handle_pending(true);
-        nlr_pop();
-        return 0;
-
-    } else {
-        // uncaught exception
-        mp_hal_set_interrupt_char(-1);
-        mp_handle_pending(false);
-        return handle_uncaught_exception(nlr.ret_val);
-    }
-}
 
 #if MICROPY_USE_READLINE == 1
 #include "shared/readline/readline.h"
@@ -226,7 +168,7 @@ static int do_repl(void) {
             line = line3;
         }
 
-        ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
+        ret = convert_pyexec_result(pyexec_str_single(line, true));
         free(line);
         if (ret & FORCED_EXIT) {
             return ret;
@@ -237,10 +179,10 @@ static int do_repl(void) {
 }
 
 
-static int do_file(const char *file) {
-    int ret = pyexec_file(file);
-    // pyexec returns 1 for success, 0 for exception, PYEXEC_FORCED_EXIT for SystemExit
-    // Convert to unix port's expected codes: 0 for success, 1 for exception, FORCED_EXIT|val for SystemExit
+// Convert pyexec return codes to unix port's expected codes
+// pyexec returns 1 for success, 0 for exception, PYEXEC_FORCED_EXIT for SystemExit
+// Convert to unix port's expected codes: 0 for success, 1 for exception, FORCED_EXIT|val for SystemExit
+static int convert_pyexec_result(int ret) {
     if (ret == 1) {
         return 0; // success
     } else if (ret & PYEXEC_FORCED_EXIT) {
@@ -250,19 +192,16 @@ static int do_file(const char *file) {
     }
 }
 
+static int do_file(const char *file) {
+    return convert_pyexec_result(pyexec_file(file));
+}
+
 static int do_str(const char *str) {
     vstr_t vstr;
-    vstr_init(&vstr, strlen(str));
-    vstr_add_strn(&vstr, str, strlen(str));
-    int ret = pyexec_vstr(&vstr, false);
-    vstr_clear(&vstr);
-    if (ret == 1) {
-        return 0; // success
-    } else if (ret & PYEXEC_FORCED_EXIT) {
-        return ret; // SystemExit with exit value in lower 8 bits
-    } else {
-        return 1; // exception
-    }
+    size_t len = strlen(str);
+    vstr_init_fixed_buf(&vstr, len, (char *)str);
+    vstr.len = len;
+    return convert_pyexec_result(pyexec_vstr(&vstr, false));
 }
 
 static void print_help(char **argv) {
@@ -703,7 +642,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             ret = do_repl();
             prompt_write_history();
         } else {
-            ret = execute_from_lexer(LEX_SRC_STDIN, NULL, MP_PARSE_FILE_INPUT, false);
+            ret = convert_pyexec_result(pyexec_stdin());
         }
     }
 
