@@ -528,7 +528,7 @@ target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--wrap=runtime_init_clocks
 )
 
-if(PICO_FLASH_SIZE_BYTES GREATER 0)
+if(DEFINED PICO_FLASH_SIZE_BYTES)
     target_link_options(${MICROPY_TARGET} PRIVATE
         -Wl,--defsym=__micropy_flash_size__=${PICO_FLASH_SIZE_BYTES}
     )
