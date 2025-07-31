@@ -31,6 +31,9 @@
  * THE SOFTWARE.
  */
 
+#include "esp_wpa2.h"
+#include "esp_wifi.h"
+
 #include <string.h>
 
 #include "py/objlist.h"
@@ -45,6 +48,10 @@
 
 #ifndef NO_QSTR
 #include "mdns.h"
+#endif
+
+#ifndef MICROPY_PY_NETWORK_WLAN_WPA2_ENT
+#define MICROPY_PY_NETWORK_WLAN_WPA2_ENT (1)
 #endif
 
 #if MICROPY_PY_NETWORK_WLAN
@@ -628,6 +635,7 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
         return mp_const_none;
     }
 
+
     // Get config
 
     if (n_args != 2) {
@@ -730,6 +738,62 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
 unknown:
     mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
+
+// WPA2 Enterprise Support - Added by Univercom
+
+static mp_obj_t wlan_wpa2_ent_enable(mp_obj_t self_in) {
+    esp_err_t ret = esp_wifi_sta_wpa2_ent_enable();
+    if (ret != ESP_OK) {
+        mp_raise_OSError(ret);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_wpa2_ent_enable_obj, wlan_wpa2_ent_enable);
+
+static mp_obj_t wlan_wpa2_ent_disable(mp_obj_t self_in) {
+    esp_err_t ret = esp_wifi_sta_wpa2_ent_disable();
+    if (ret != ESP_OK) {
+        mp_raise_OSError(ret);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_wpa2_ent_disable_obj, wlan_wpa2_ent_disable);
+
+static mp_obj_t wlan_wpa2_ent_set_identity(mp_obj_t self_in, mp_obj_t id_obj) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(id_obj, &bufinfo, MP_BUFFER_READ);
+    esp_err_t ret = esp_wifi_sta_wpa2_ent_set_identity(bufinfo.buf, bufinfo.len);
+    if (ret != ESP_OK) {
+        mp_raise_OSError(ret);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(wlan_wpa2_ent_set_identity_obj, wlan_wpa2_ent_set_identity);
+
+static mp_obj_t wlan_wpa2_ent_set_username(mp_obj_t self_in, mp_obj_t user_obj) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(user_obj, &bufinfo, MP_BUFFER_READ);
+    esp_err_t ret = esp_wifi_sta_wpa2_ent_set_username(bufinfo.buf, bufinfo.len);
+    if (ret != ESP_OK) {
+        mp_raise_OSError(ret);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(wlan_wpa2_ent_set_username_obj, wlan_wpa2_ent_set_username);
+
+static mp_obj_t wlan_wpa2_ent_set_password(mp_obj_t self_in, mp_obj_t pwd_obj) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(pwd_obj, &bufinfo, MP_BUFFER_READ);
+    esp_err_t ret = esp_wifi_sta_wpa2_ent_set_password(bufinfo.buf, bufinfo.len);
+    if (ret != ESP_OK) {
+        mp_raise_OSError(ret);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(wlan_wpa2_ent_set_password_obj, wlan_wpa2_ent_set_password);
+
+
+
 MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_config_obj, 1, network_wlan_config);
 
 static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
@@ -742,6 +806,12 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_wlan_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_network_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&esp_nic_ipconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wpa2_ent_enable), MP_ROM_PTR(&wlan_wpa2_ent_enable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wpa2_ent_disable), MP_ROM_PTR(&wlan_wpa2_ent_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wpa2_ent_set_identity), MP_ROM_PTR(&wlan_wpa2_ent_set_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wpa2_ent_set_username), MP_ROM_PTR(&wlan_wpa2_ent_set_username_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wpa2_ent_set_password),MP_ROM_PTR(&wlan_wpa2_ent_set_password_obj) },
+
 
     // Constants
     { MP_ROM_QSTR(MP_QSTR_IF_STA), MP_ROM_INT(WIFI_IF_STA)},
@@ -791,5 +861,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, network_wlan_make_new,
     locals_dict, &wlan_if_locals_dict
     );
+
+
 
 #endif // MICROPY_PY_NETWORK_WLAN
