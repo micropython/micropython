@@ -1,3 +1,8 @@
+ifeq ($(shell which m68k-apple-macos-gcc),)
+.PHONY: default
+default: docker-build
+endif
+
 include ../../py/mkenv.mk
 
 CROSS_COMPILE=m68k-apple-macos-
@@ -120,7 +125,7 @@ $(BUILD)/micropython.bin $(BUILD)/micropython.APPL $(BUILD)/micropython.dsk: $(B
 		-o $(BUILD)/micropython.bin --cc $(BUILD)/micropython.APPL --cc $(BUILD)/micropython.dsk
 
 .PHONY: docker-build
-docker-build: mkapi
+docker-build:
 	./docker-run.sh make -j$(shell nproc)
 
 BASE_IMG ?= base.img
