@@ -7,6 +7,13 @@
 # run-multitests.py
 # Runs a test suite that relies on two micropython instances/devices
 # interacting in some way. Typically used to test networking / bluetooth etc.
+#
+# IPv6 Support:
+# Use --ipv6 flag to run network tests over IPv6. Requirements:
+# - IPv6 connectivity on all test instances
+# - DHCPv6 or SLAAC enabled for address autoconfiguration  
+# - Proper IPv6 routing between test instances
+# Tests will fail if IPv6 is not properly configured on target devices
 
 
 import sys, os, time, re, select
@@ -49,7 +56,11 @@ INSTANCE_READ_TIMEOUT_S = 10
 
 APPEND_CODE_TEMPLATE = """
 import sys
+import socket
 class multitest:
+    # IP version configuration attributes
+    AF_FAMILY = None  # Will be set to socket.AF_INET or socket.AF_INET6
+    BIND_ADDR = None  # Will be set to "0.0.0.0" or "::"
     @staticmethod
     def flush():
         try:
@@ -82,18 +93,54 @@ class multitest:
         multitest.flush()
     @staticmethod
     def get_network_ip():
-        try:
-            ip = nic.ifconfig()[0]
-        except:
+        if multitest.AF_FAMILY == socket.AF_INET6:
+            # IPv6 path
             try:
-                import network
-                if hasattr(network, "WLAN"):
-                    ip = network.WLAN().ifconfig()[0]
+                # Try to get IPv6 address from existing nic object
+                if 'nic' in globals():
+                    addrs = nic.ipconfig('addr6')
                 else:
-                    ip = network.LAN().ifconfig()[0]
+                    # Try to get from network interface
+                    import network
+                    if hasattr(network, "WLAN"):
+                        addrs = network.WLAN().ipconfig('addr6')
+                    else:
+                        addrs = network.LAN().ipconfig('addr6')
+                
+                # addrs is list of (ip, state, preferred_lifetime, valid_lifetime)
+                if addrs:
+                    # Prefer non-link-local addresses with preferred state (0x30)
+                    for addr, state, _, _ in addrs:
+                        if state == 0x30 and not addr.startswith('fe80:'):
+                            return addr
+                    
+                    # Fall back to any preferred address
+                    for addr, state, _, _ in addrs:
+                        if state == 0x30:
+                            return addr
+                    
+                    # If no preferred, use first available
+                    return addrs[0][0]
+                
+                raise Exception("No IPv6 addresses found")
             except:
+                # Fall back to HOST_IP for unix port or when network unavailable
+                return HOST_IP
+        else:
+            # IPv4 path (existing logic with fallback)
+            try:
+                if 'nic' in globals():
+                    ip = nic.ifconfig()[0]
+                else:
+                    import network
+                    if hasattr(network, "WLAN"):
+                        ip = network.WLAN().ifconfig()[0]
+                    else:
+                        ip = network.LAN().ifconfig()[0]
+            except:
+                # Fall back to HOST_IP for unix port or when network unavailable
                 ip = HOST_IP
-        return ip
+            return ip
     @staticmethod
     def expect_reboot(resume, delay_ms=0):
         print("WAIT_FOR_REBOOT", resume, delay_ms)
@@ -118,18 +165,30 @@ IGNORE_OUTPUT_MATCHES = (
 )
 
 
-def get_host_ip(_ip_cache=[]):
-    if not _ip_cache:
+def get_host_ip(family=None, _ip_cache={}):
+    import socket
+    
+    # Default to IPv4 if no family specified
+    if family is None:
+        family = socket.AF_INET
+    
+    cache_key = family
+    if cache_key not in _ip_cache:
         try:
-            import socket
-
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(("8.8.8.8", 80))
-            _ip_cache.append(s.getsockname()[0])
+            s = socket.socket(family, socket.SOCK_DGRAM)
+            if family == socket.AF_INET:
+                # Connect to Google Public DNS (8.8.8.8) to determine local IP
+                s.connect(("8.8.8.8", 80))
+                fallback = "127.0.0.1"
+            else:  # AF_INET6
+                # Connect to Google Public DNS IPv6 (2001:4860:4860::8888) to determine local IP
+                s.connect(("2001:4860:4860::8888", 80))
+                fallback = "::1"
+            _ip_cache[cache_key] = s.getsockname()[0]
             s.close()
         except:
-            _ip_cache.append("127.0.0.1")
-    return _ip_cache[0]
+            _ip_cache[cache_key] = fallback
+    return _ip_cache[cache_key]
 
 
 class PyInstance:
@@ -332,12 +391,18 @@ def run_test_on_instances(test_file, num_instances, instances):
     output = [[] for _ in range(num_instances)]
     output_metrics = []
 
-    # If the test calls get_network_ip() then inject HOST_IP so that devices can know
-    # the IP address of the host.  Do this lazily to not require a TCP/IP connection
-    # on the host if it's not needed.
+    # If the test calls get_network_ip() then inject HOST_IP and set multitest IP attributes
+    # so that devices can know the IP address of the host and which IP version to use.
+    # Do this lazily to not require a TCP/IP connection on the host if it's not needed.
     with open(test_file, "rb") as f:
         if b"get_network_ip" in f.read():
-            injected_globals += "HOST_IP = '" + get_host_ip() + "'\n"
+            import socket
+            use_ipv6 = getattr(cmd_args, 'ipv6', False)
+            family = socket.AF_INET6 if use_ipv6 else socket.AF_INET
+            
+            injected_globals += "HOST_IP = '" + get_host_ip(family) + "'\n"
+            injected_globals += "multitest.AF_FAMILY = " + ("socket.AF_INET6" if use_ipv6 else "socket.AF_INET") + "\n"
+            injected_globals += "multitest.BIND_ADDR = '" + ("::" if use_ipv6 else "0.0.0.0") + "'\n"
 
     if cmd_args.trace_output:
         print("TRACE {}:".format("|".join(str(i) for i in instances)))
@@ -580,6 +645,15 @@ def main():
         "--result-dir",
         default=run_tests_module.base_path("results"),
         help="directory for test results",
+    )
+    ip_group = cmd_parser.add_mutually_exclusive_group()
+    ip_group.add_argument(
+        "-4", "--ipv4", action="store_true", 
+        help="Use IPv4 addresses (default)"
+    )
+    ip_group.add_argument(
+        "-6", "--ipv6", action="store_true",
+        help="Use IPv6 addresses"
     )
     cmd_parser.epilog = (
         "Supported instance types:\r\n"
