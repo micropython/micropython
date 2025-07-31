@@ -101,14 +101,20 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
         print(test_file + ": ", end="")
 
         # Check if test should be skipped
+        skip_reason = ""
         skip = (
             skip_complex
             and test_file.find("bm_fft") != -1
             or skip_native
             and test_file.find("viper_") != -1
         )
+        # bm_hexiom is large.  Assume a target without complex support
+        # doesn't have much RAM and also so skip bm_hexiom.
+        if skip_complex and test_file.find("bm_hexiom") != -1:
+            skip = True
+            skip_reason = "too large"
         if skip:
-            test_results.append((test_file, "skip", ""))
+            test_results.append((test_file, "skip", skip_reason))
             print("SKIP")
             continue
 
