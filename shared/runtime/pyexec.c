@@ -86,7 +86,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             ctx->module.globals = mp_globals_get();
             ctx->constants = frozen->constants;
             module_fun = mp_make_function_from_proto_fun(frozen->proto_fun, ctx, NULL);
-            
+
             #if MICROPY_PY___FILE__
             // Set __file__ for frozen MPY modules
             if (input_kind == MP_PARSE_FILE_INPUT && frozen_module_name != NULL) {
@@ -758,6 +758,20 @@ int pyexec_vstr(vstr_t *str, bool allow_keyboard_interrupt) {
     mp_uint_t exec_flags = allow_keyboard_interrupt ? 0 : EXEC_FLAG_NO_INTERRUPT;
     return parse_compile_execute(str, MP_PARSE_FILE_INPUT, exec_flags | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
 }
+
+#if MICROPY_PYEXEC_POSIX_FUNCTIONS
+int pyexec_str_single(const char *str, bool allow_keyboard_interrupt) {
+    mp_uint_t exec_flags = allow_keyboard_interrupt ? 0 : EXEC_FLAG_NO_INTERRUPT;
+    return parse_compile_execute(str, MP_PARSE_SINGLE_INPUT, exec_flags | EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL, NULL);
+}
+
+int pyexec_stdin(void) {
+    mp_reader_t reader;
+    mp_reader_new_file_from_fd(&reader, 0, false);
+    mp_uint_t exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
+    return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags, NULL);
+}
+#endif
 
 #if MICROPY_REPL_INFO
 mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
