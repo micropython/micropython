@@ -39,7 +39,7 @@ async def tcp_server():
     server_ctx.verify_mode = ssl.CERT_REQUIRED
     server_ctx.load_verify_locations(cafile=cert)
     ev = asyncio.Event()
-    server = await asyncio.start_server(handle_connection, "0.0.0.0", PORT, ssl=server_ctx)
+    server = await asyncio.start_server(handle_connection, multitest.BIND_ADDR, PORT, ssl=server_ctx)
     print("server running")
     multitest.next()
     async with server:

@@ -8,9 +8,9 @@ import time
 def instance0():
     PORT = random.randrange(10000, 50000)
     multitest.globals(IP=multitest.get_network_ip(), PORT=PORT)
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(socket.getaddrinfo("0.0.0.0", PORT)[0][-1])
+    s.bind(socket.getaddrinfo(multitest.BIND_ADDR, PORT, multitest.AF_FAMILY)[0][-1])
     multitest.next()
     peek_bytes, peek_addr = s.recvfrom(8, socket.MSG_PEEK)
     print(peek_bytes)
@@ -27,8 +27,8 @@ def instance0():
 # Client
 def instance1():
     multitest.next()
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_DGRAM)
+    s.connect(socket.getaddrinfo(IP, PORT, multitest.AF_FAMILY)[0][-1])
     s.send(b"abcdefgh")
     s.send(b"klmnopqr")
     print(s.recv(5, socket.MSG_PEEK))
