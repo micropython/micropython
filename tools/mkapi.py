@@ -681,6 +681,13 @@ class Processor:
         else:
             if is_ptr:
                 if typename in self.types:
+                    deref_typename = self.parse_type(self.types[typename])
+                    if (
+                        isinstance(deref_typename, Ptr)
+                        and deref_typename.pointee in self.structs
+                        or deref_typename.pointee in self.types
+                    ):
+                        typename = deref_typename.pointee
                     descr = descr_maker_ptr_struct(typename)
                 elif basetypename in self.structs:
                     descr = descr_maker_ptr_struct(basetypename)
