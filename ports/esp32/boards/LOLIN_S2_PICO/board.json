@@ -1,13 +1,16 @@
 {
     "deploy": [
-        "../deploy_s2.md"
+        "../deploy_nativeusb.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
     "docs": "",
     "features": [
-        "Breadboard Friendly",
-        "OLED",
-        "SPIRAM",
-        "STEMMA QT/QWIIC",
+        "Display",
+        "External Flash",
+        "External RAM",
+        "JST-SH",
         "USB-C",
         "WiFi"
     ],

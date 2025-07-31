@@ -28,6 +28,10 @@ _MODE_MODULE = "module"
 _MODE_ROOT_POINTER = "root_pointer"
 
 
+class PreprocessorError(Exception):
+    pass
+
+
 def is_c_source(fname):
     return os.path.splitext(fname)[1] in [".c"]
 
@@ -57,7 +61,10 @@ def preprocess():
 
     def pp(flags):
         def run(files):
-            return subprocess.check_output(args.pp + flags + files)
+            try:
+                return subprocess.check_output(args.pp + flags + files)
+            except subprocess.CalledProcessError as er:
+                raise PreprocessorError(str(er))
 
         return run
 
@@ -131,15 +138,12 @@ def cat_together():
 
     hasher = hashlib.md5()
     all_lines = []
-    outf = open(args.output_dir + "/out", "wb")
     for fname in glob.glob(args.output_dir + "/*." + args.mode):
         with open(fname, "rb") as f:
             lines = f.readlines()
             all_lines += lines
     all_lines.sort()
     all_lines = b"\n".join(all_lines)
-    outf.write(all_lines)
-    outf.close()
     hasher.update(all_lines)
     new_hash = hasher.hexdigest()
     # print(new_hash)
@@ -156,14 +160,11 @@ def cat_together():
         mode_full = "Module registrations"
     elif args.mode == _MODE_ROOT_POINTER:
         mode_full = "Root pointer registrations"
-    if old_hash != new_hash:
+    if old_hash != new_hash or not os.path.exists(args.output_file):
         print(mode_full, "updated")
-        try:
-            # rename below might fail if file exists
-            os.remove(args.output_file)
-        except:
-            pass
-        os.rename(args.output_dir + "/out", args.output_file)
+
+        with open(args.output_file, "wb") as outf:
+            outf.write(all_lines)
         with open(args.output_file + ".hash", "w") as f:
             f.write(new_hash)
     else:
@@ -208,7 +209,12 @@ if __name__ == "__main__":
         for k, v in named_args.items():
             setattr(args, k, v)
 
-        preprocess()
+        try:
+            preprocess()
+        except PreprocessorError as er:
+            print(er)
+            sys.exit(1)
+
         sys.exit(0)
 
     args.mode = sys.argv[2]

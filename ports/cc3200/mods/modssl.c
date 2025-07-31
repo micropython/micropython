@@ -53,14 +53,14 @@ typedef struct _mp_obj_ssl_socket_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC const mp_obj_type_t ssl_socket_type;
+static const mp_obj_type_t ssl_socket_type;
 
 /******************************************************************************/
 // MicroPython bindings; SSL class
 
 // ssl sockets inherit from normal socket, so we take its
 // locals and stream methods
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     ssl_socket_type,
     MP_QSTR_ssl,
     MP_TYPE_FLAG_NONE,
@@ -68,8 +68,8 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &socket_locals_dict
     );
 
-STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t allowed_args[] = {
+static mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sock,             MP_ARG_REQUIRED | MP_ARG_OBJ,  },
         { MP_QSTR_keyfile,          MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
         { MP_QSTR_certfile,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
@@ -133,9 +133,9 @@ socket_error:
 arg_error:
     mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
+static MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 
-STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_ssl) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket),         MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
 
@@ -153,7 +153,7 @@ STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLSv1_2),    MP_ROM_INT(SL_SO_SEC_METHOD_TLSV1_2) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
 
 const mp_obj_module_t mp_module_ssl = {
     .base = { &mp_type_module },

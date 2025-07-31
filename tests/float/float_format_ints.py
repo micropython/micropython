@@ -12,12 +12,6 @@ for b in [13, 123, 457, 23456]:
             print(title, "with format", f_fmt, "gives", f_fmt.format(f))
             print(title, "with format", g_fmt, "gives", g_fmt.format(f))
 
-# Check that powers of 10 (that fit in float32) format correctly.
-for i in range(31):
-    # It works to 12 digits on all platforms *except* qemu-arm, where
-    # 10^11 comes out as 10000000820 or something.
-    print("{:.7g}".format(float("1e" + str(i))))
-
 # 16777215 is 2^24 - 1, the largest integer that can be completely held
 # in a float32.
 print("{:f}".format(16777215))

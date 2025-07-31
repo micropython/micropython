@@ -26,7 +26,9 @@
  */
 
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "uart.h"
+#include "rng.h"
 
 bool mp_os_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     const mp_obj_type_t *type = mp_obj_get_type(stream);
@@ -42,3 +44,16 @@ void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t s
         uart_attach_to_repl(MP_OBJ_TO_PTR(stream_attached), true);
     }
 }
+
+#if MICROPY_PY_OS_URANDOM
+static mp_obj_t mp_os_urandom(mp_obj_t num) {
+    mp_int_t n = mp_obj_get_int(num);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n);
+    for (int i = 0; i < n; i++) {
+        vstr.buf[i] = rng_read();
+    }
+    return mp_obj_new_bytes_from_vstr(&vstr);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
+#endif

@@ -1,5 +1,8 @@
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include "shared/runtime/interrupt_char.h"
+
+#define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
+#define MICROPY_END_ATOMIC_SECTION irq_unlock
 
 void mp_hal_init(void);
 void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);
@@ -28,8 +31,7 @@ static inline void mp_hal_delay_ms(mp_uint_t delay) {
 }
 
 static inline uint64_t mp_hal_time_ns(void) {
-    // Not currently implemented.
-    return 0;
+    return k_ticks_to_ns_near64(k_uptime_ticks());
 }
 
 #define mp_hal_delay_us_fast(us)   (mp_hal_delay_us(us))

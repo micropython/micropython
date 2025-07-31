@@ -6,8 +6,9 @@
 #define MICROPY_HW_ENABLE_RTC               (1)
 #define MICROPY_HW_ENABLE_RNG               (1)
 #define MICROPY_HW_ENABLE_ADC               (1)
-#define MICROPY_HW_ENABLE_DAC               (0) // requires DMA
+#define MICROPY_HW_ENABLE_DAC               (1)
 #define MICROPY_HW_ENABLE_USB               (1)
+#define MICROPY_HW_ENABLE_SDCARD            (1)
 #define MICROPY_HW_HAS_SWITCH               (1)
 #define MICROPY_HW_HAS_FLASH                (1)
 
@@ -105,6 +106,22 @@
 // USB config
 #define MICROPY_HW_USB_FS                   (1)
 #define MICROPY_HW_USB_MAIN_DEV             (USB_PHY_FS_ID)
+
+// SD card
+#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_H14)
+#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
+
+// Ethernet via RMII
+#define MICROPY_HW_ETH_MDC                  (pin_C1)
+#define MICROPY_HW_ETH_MDIO                 (pin_A2)
+#define MICROPY_HW_ETH_RMII_REF_CLK         (pin_A1)
+#define MICROPY_HW_ETH_RMII_CRS_DV          (pin_A7)
+#define MICROPY_HW_ETH_RMII_RXD0            (pin_C4)
+#define MICROPY_HW_ETH_RMII_RXD1            (pin_C5)
+#define MICROPY_HW_ETH_RMII_TX_EN           (pin_G11)
+#define MICROPY_HW_ETH_RMII_TXD0            (pin_G13)
+#define MICROPY_HW_ETH_RMII_TXD1            (pin_G12)
 
 /******************************************************************************/
 // Variable and function declarations

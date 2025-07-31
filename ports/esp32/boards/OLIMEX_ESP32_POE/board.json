@@ -2,15 +2,18 @@
     "deploy": [
         "../deploy.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
     "docs": "",
     "features": [
         "BLE",
-        "WiFi",
-        "MicroSD",
         "Battery Charging",
         "Ethernet",
+        "External Flash",
         "PoE",
-        "Breadboard friendly"
+        "WiFi",
+        "microSD"
     ],
     "images": [
         "ESP32-POE-ISO-1.jpg"

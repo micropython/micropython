@@ -42,9 +42,13 @@
 
 #define NINA_GPIO_MODE          (0x50)
 #define NINA_GPIO_READ          (0x53)
+#define NINA_GPIO_READ_ANALOG   (0x54)
 #define NINA_GPIO_WRITE         (0x51)
-#define NINA_GPIO_IS_INPUT_ONLY(p) ((p >= 34 && p <= 36) || (p == 39))
+#define NINA_GPIO_IS_INPUT_ONLY(p)  ((p >= 3 && p <= 6))
+#define NINA_GPIO_IS_ADC_CHANNEL(p) ((p >= 3 && p <= 6))
 
+// This maps logical pin ID (0..MICROPY_HW_PIN_EXT_COUNT) to
+// physical pins on the Nina module.
 static uint8_t pin_map[MICROPY_HW_PIN_EXT_COUNT] = {
     27, // LEDR
     25, // LEDG
@@ -55,8 +59,28 @@ static uint8_t pin_map[MICROPY_HW_PIN_EXT_COUNT] = {
     35, // A7
 };
 
+// This maps logical pin ID (0..MICROPY_HW_PIN_EXT_COUNT) to
+// ADC channel numbers on the Nina module.
+static uint8_t adc_map[MICROPY_HW_PIN_EXT_COUNT] = {
+    -1, // LEDR
+    -1, // LEDG
+    -1, // LEDB
+    6, // A4
+    3, // A5
+    0, // A6
+    7, // A7
+};
+
 void machine_pin_ext_init(void) {
     nina_init();
+}
+
+bool machine_pin_ext_is_adc_channel(const machine_pin_obj_t *self) {
+    return NINA_GPIO_IS_ADC_CHANNEL(self->id);
+}
+
+uint32_t machine_pin_ext_to_adc_channel(const machine_pin_obj_t *self) {
+    return adc_map[self->id];
 }
 
 void machine_pin_ext_set(machine_pin_obj_t *self, bool value) {
@@ -76,8 +100,14 @@ bool machine_pin_ext_get(machine_pin_obj_t *self) {
     return value;
 }
 
+uint16_t machine_pin_ext_read_u16(uint32_t channel) {
+    uint16_t buf = channel;
+    nina_ioctl(NINA_GPIO_READ_ANALOG, sizeof(buf), (uint8_t *)&buf, 0);
+    return buf;
+}
+
 void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value) {
-    if (mode == MACHINE_PIN_MODE_IN) {
+    if (mode == MACHINE_PIN_MODE_IN || mode == MACHINE_PIN_MODE_ANALOG) {
         mode = NINA_GPIO_INPUT;
         self->is_output = false;
     } else if (mode == MACHINE_PIN_MODE_OUT) {
@@ -89,7 +119,7 @@ void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value) {
     if (self->id >= 0 && self->id < MICROPY_HW_PIN_EXT_COUNT) {
         uint8_t buf[] = {pin_map[self->id], mode};
         if (mode == NINA_GPIO_OUTPUT) {
-            if (NINA_GPIO_IS_INPUT_ONLY(buf[0])) {
+            if (NINA_GPIO_IS_INPUT_ONLY(self->id)) {
                 mp_raise_ValueError("only Pin.IN is supported for this pin");
             }
             machine_pin_ext_set(self, value);

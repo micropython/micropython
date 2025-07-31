@@ -8,7 +8,7 @@ This class provides a driver for WiFi network processors.  Example usage::
 
     import network
     # enable station interface and connect to WiFi access point
-    nic = network.WLAN(network.STA_IF)
+    nic = network.WLAN(network.WLAN.IF_STA)
     nic.active(True)
     nic.connect('your-ssid', 'your-key')
     # now use sockets as usual
@@ -18,8 +18,8 @@ Constructors
 .. class:: WLAN(interface_id)
 
 Create a WLAN network interface object. Supported interfaces are
-``network.STA_IF`` (station aka client, connects to upstream WiFi access
-points) and ``network.AP_IF`` (access point, allows other WiFi clients to
+``network.WLAN.IF_STA`` (station aka client, connects to upstream WiFi access
+points) and ``network.WLAN.IF_AP`` (access point, allows other WiFi clients to
 connect). Availability of the methods below depends on interface type.
 For example, only STA interface may `WLAN.connect()` to an access point.
 
@@ -75,7 +75,7 @@ Methods
     Return the current status of the wireless connection.
 
     When called with no argument the return value describes the network link status.
-    The possible statuses are defined as constants:
+    The possible statuses are defined as constants in the :mod:`network` module:
 
         * ``STAT_IDLE`` -- no connection and no activity,
         * ``STAT_CONNECTING`` -- connecting in progress,
@@ -85,7 +85,18 @@ Methods
         * ``STAT_GOT_IP`` -- connection successful.
 
     When called with one argument *param* should be a string naming the status
-    parameter to retrieve.  Supported parameters in WiFI STA mode are: ``'rssi'``.
+    parameter to retrieve, and different parameters are supported depending on the
+    mode the WiFi is in.
+
+    In STA mode, passing ``'rssi'`` returns a signal strength indicator value, whose
+    format varies depending on the port (this is available on all ports that support
+    WiFi network interfaces, except for CC3200).
+
+    In AP mode, passing ``'stations'`` returns a list of connected WiFi stations
+    (this is available on all ports that support WiFi network interfaces, except for
+    CC3200).  The format of the station information entries varies across ports,
+    providing either the raw BSSID of the connected station, the IP address of the
+    connected station, or both.
 
 .. method:: WLAN.isconnected()
 
@@ -107,7 +118,7 @@ Methods
 
    Get or set general network interface parameters. These methods allow to work
    with additional parameters beyond standard IP configuration (as dealt with by
-   `WLAN.ifconfig()`). These include network-specific and hardware-specific
+   `AbstractNIC.ipconfig()`). These include network-specific and hardware-specific
    parameters. For setting parameters, keyword argument syntax should be used,
    multiple parameters can be set at once. For querying, parameters name should
    be quoted as a string, and only one parameter can be queries at time::
@@ -126,7 +137,7 @@ Methods
    =============  ===========
    mac            MAC address (bytes)
    ssid           WiFi access point name (string)
-   channel        WiFi channel (integer)
+   channel        WiFi channel (integer). Depending on the port this may only be supported on the AP interface.
    hidden         Whether SSID is hidden (boolean)
    security       Security protocol supported (enumeration, see module constants)
    key            Access key (string)

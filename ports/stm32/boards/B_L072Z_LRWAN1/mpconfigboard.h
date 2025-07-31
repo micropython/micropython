@@ -5,8 +5,15 @@
 #define MICROPY_HW_BOARD_NAME       "B-L072Z-LRWAN1"
 #define MICROPY_HW_MCU_NAME         "STM32L072CZ"
 
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+
+#define MICROPY_QSTR_BYTES_IN_HASH  (0)
+
+#define MICROPY_HELPER_REPL         (1)
+#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
@@ -18,6 +25,8 @@
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
 #define MICROPY_PY_HEAPQ            (0)
+#define MICROPY_PY_OS               (1)
+#define MICROPY_PY_TIME             (1)
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
@@ -40,8 +49,9 @@
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
 
 // SPI buses
+// SPI1 on the CMWX1ZZABZ module is connected internally to the SX1276
 #define MICROPY_HW_SPI1_NSS         (pin_A15)
-#define MICROPY_HW_SPI1_SCK         (pin_A5)
+#define MICROPY_HW_SPI1_SCK         (pin_B3)
 #define MICROPY_HW_SPI1_MISO        (pin_A6)
 #define MICROPY_HW_SPI1_MOSI        (pin_A7)
 #define MICROPY_HW_SPI2_NSS         (pin_B12)

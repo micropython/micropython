@@ -45,19 +45,24 @@
 
 void octospi_init(void) {
     // Configure OCTOSPI pins (allows 1, 2, 4 or 8 line configuration).
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_NCS);
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_CLK);
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO0);
+    #if defined(STM32H7)
+    #define STATIC_AF_OCTOSPI(signal) STATIC_AF_OCTOSPIM_P1_##signal
+    #else
+    #define STATIC_AF_OCTOSPI(signal) STATIC_AF_OCTOSPI1_##signal
+    #endif
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(NCS));
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(CLK));
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO0));
     #if defined(MICROPY_HW_OSPIFLASH_IO1)
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO1);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO1));
     #if defined(MICROPY_HW_OSPIFLASH_IO2)
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO2);
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO3);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO2));
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO3));
     #if defined(MICROPY_HW_OSPIFLASH_IO4)
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO4, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO4);
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO5, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO5);
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO6, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO6);
-    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO7, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI1_IO7);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO4, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO4));
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO5, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO5));
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO6, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO6));
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_OSPIFLASH_IO7, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_OCTOSPI(IO7));
     #endif
     #endif
     #endif
@@ -69,11 +74,19 @@ void octospi_init(void) {
 
     // Configure the OCTOSPI peripheral.
 
+    #if defined(STM32H7)
+    OCTOSPI1->CR =
+        3 << OCTOSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
+            | 0 << OCTOSPI_CR_FSEL_Pos // FLASH 0 selected
+            | 0 << OCTOSPI_CR_DQM_Pos // dual-memory mode disabled
+    ;
+    #else
     OCTOSPI1->CR =
         3 << OCTOSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
             | 0 << OCTOSPI_CR_MSEL_Pos // FLASH 0 selected
             | 0 << OCTOSPI_CR_DMM_Pos // dual-memory mode disabled
     ;
+    #endif
 
     OCTOSPI1->DCR1 =
         (MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) << OCTOSPI_DCR1_DEVSIZE_Pos
@@ -92,8 +105,9 @@ void octospi_init(void) {
     OCTOSPI1->CR |= OCTOSPI_CR_EN;
 }
 
-STATIC int octospi_ioctl(void *self_in, uint32_t cmd) {
+static int octospi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     (void)self_in;
+    (void)arg;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
             octospi_init();
@@ -112,7 +126,7 @@ STATIC int octospi_ioctl(void *self_in, uint32_t cmd) {
     return 0; // success
 }
 
-STATIC int octospi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
+static int octospi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
     (void)self_in;
 
     OCTOSPI1->FCR = OCTOSPI_FCR_CTCF; // clear TC flag
@@ -166,7 +180,7 @@ STATIC int octospi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32
     return 0;
 }
 
-STATIC int octospi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
+static int octospi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
     (void)self_in;
 
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
@@ -231,7 +245,7 @@ STATIC int octospi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr
     return 0;
 }
 
-STATIC int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
+static int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
     (void)self_in;
 
     OCTOSPI1->FCR = OCTOSPI_FCR_CTCF; // clear TC flag
@@ -269,18 +283,38 @@ STATIC int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *de
     return 0;
 }
 
-STATIC int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+static int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, uint8_t num_dummy, size_t len, uint8_t *dest) {
     (void)self_in;
+
+    #if defined(MICROPY_HW_OSPIFLASH_IO1) && !defined(MICROPY_HW_OSPIFLASH_IO2) && !defined(MICROPY_HW_OSPIFLASH_IO4)
+
+    // Use 2-line address, 2-line data.
+
+    uint32_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
+    uint32_t dmode = 2; // data on 2-lines
+    uint32_t admode = 2; // address on 2-lines
+    uint32_t dcyc = 2 * num_dummy; // 2N dummy cycles
+
+    if (cmd == 0xeb || cmd == 0xec) {
+        // Convert to 2-line command.
+        cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 0xbc : 0xbb;
+    }
+
+    #else
+
+    // Fallback to use 1-line address, 1-line data.
 
     uint32_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
     uint32_t dmode = 1; // data on 1-line
     uint32_t admode = 1; // address on 1-line
     uint32_t dcyc = 0; // 0 dummy cycles
 
-    if (cmd == 0xeb) {
+    if (cmd == 0xeb || cmd == 0xec) {
         // Convert to 1-line command.
         cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 0x13 : 0x03;
     }
+
+    #endif
 
     OCTOSPI1->FCR = OCTOSPI_FCR_CTCF; // clear TC flag
 

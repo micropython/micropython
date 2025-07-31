@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "External Flash",
+        "WiFi"
+    ],
+    "images": [
+        "esp8266.jpg"
+    ],
+    "mcu": "esp8266",
+    "product": "ESP8266",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "variants": {
+        "OTA": "OTA compatible",
+        "FLASH_1M": "1MiB flash",
+        "FLASH_512K": "512kiB flash",
+        "FLASH_2M_ROMFS": "2MiB flash with ROMFS"
+    },
+    "vendor": "Espressif"
+}

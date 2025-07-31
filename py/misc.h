@@ -52,10 +52,15 @@ typedef unsigned int uint;
 
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
-#if defined(_MSC_VER)
-#define MP_STATIC_ASSERT_NOT_MSC(cond) (1)
+// In C++ things like comparing extern const pointers are not constant-expressions so cannot be used
+// in MP_STATIC_ASSERT. Note that not all possible compiler versions will reject this. Some gcc versions
+// do, others only with -Werror=vla, msvc always does.
+// The (void) is needed to avoid "left operand of comma operator has no effect [-Werror=unused-value]"
+// when using this macro on the left-hand side of a comma.
+#if defined(_MSC_VER) || defined(__cplusplus)
+#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)1)
 #else
-#define MP_STATIC_ASSERT_NOT_MSC(cond) MP_STATIC_ASSERT(cond)
+#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) MP_STATIC_ASSERT(cond)
 #endif
 
 // Round-up integer division
@@ -71,26 +76,19 @@ typedef unsigned int uint;
 #define m_new0(type, num) ((type *)(m_malloc0(sizeof(type) * (num))))
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_maybe(type) (m_new_maybe(type, 1))
-#define m_new_obj_var(obj_type, var_type, var_num) ((obj_type *)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
-#define m_new_obj_var0(obj_type, var_type, var_num) ((obj_type *)m_malloc0(sizeof(obj_type) + sizeof(var_type) * (var_num)))
-#define m_new_obj_var_maybe(obj_type, var_type, var_num) ((obj_type *)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num)))
-#if MICROPY_ENABLE_FINALISER
-#define m_new_obj_with_finaliser(type) ((type *)(m_malloc_with_finaliser(sizeof(type))))
-#define m_new_obj_var_with_finaliser(type, var_type, var_num) ((type *)m_malloc_with_finaliser(sizeof(type) + sizeof(var_type) * (var_num)))
-#else
-#define m_new_obj_with_finaliser(type) m_new_obj(type)
-#define m_new_obj_var_with_finaliser(type, var_type, var_num) m_new_obj_var(type, var_type, var_num)
-#endif
+#define m_new_obj_var(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
+#define m_new_obj_var0(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc0(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
+#define m_new_obj_var_maybe(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc_maybe(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
 #define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num), (allow_move))))
 #define m_del(type, ptr, num) m_free(ptr, sizeof(type) * (num))
-#define m_del_var(obj_type, var_type, var_num, ptr) (m_free(ptr, sizeof(obj_type) + sizeof(var_type) * (var_num)))
+#define m_del_var(obj_type, var_field, var_type, var_num, ptr) (m_free(ptr, offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
 #else
 #define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), sizeof(type) * (new_num))))
 #define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), sizeof(type) * (new_num), (allow_move))))
 #define m_del(type, ptr, num) ((void)(num), m_free(ptr))
-#define m_del_var(obj_type, var_type, var_num, ptr) ((void)(var_num), m_free(ptr))
+#define m_del_var(obj_type, var_field, var_type, var_num, ptr) ((void)(var_num), m_free(ptr))
 #endif
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
@@ -335,5 +333,92 @@ typedef const char *mp_rom_error_text_t;
 // Might add more types of compressed text in the future.
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.
 #define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
+
+// Portable implementations of CLZ and CTZ intrinsics
+#ifdef _MSC_VER
+#include <intrin.h>
+
+static inline uint32_t mp_clz(uint32_t x) {
+    unsigned long lz = 0;
+    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+
+static inline uint32_t mp_clzl(unsigned long x) {
+    unsigned long lz = 0;
+    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+
+#ifdef _WIN64
+static inline uint32_t mp_clzll(unsigned long long x) {
+    unsigned long lz = 0;
+    return _BitScanReverse64(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+#else
+// Microsoft don't ship _BitScanReverse64 on Win32, so emulate it
+static inline uint32_t mp_clzll(unsigned long long x) {
+    unsigned long h = x >> 32;
+    return h ? mp_clzl(h) : (mp_clzl((unsigned long)x) + 32);
+}
+#endif
+
+static inline uint32_t mp_ctz(uint32_t x) {
+    unsigned long tz = 0;
+    return _BitScanForward(&tz, x) ? tz : 0;
+}
+
+// Workaround for 'warning C4127: conditional expression is constant'.
+static inline bool mp_check(bool value) {
+    return value;
+}
+
+static inline uint32_t mp_popcount(uint32_t x) {
+    return __popcnt(x);
+}
+#else
+#define mp_clz(x) __builtin_clz(x)
+#define mp_clzl(x) __builtin_clzl(x)
+#define mp_clzll(x) __builtin_clzll(x)
+#define mp_ctz(x) __builtin_ctz(x)
+#define mp_check(x) (x)
+#if defined __has_builtin
+#if __has_builtin(__builtin_popcount)
+#define mp_popcount(x) __builtin_popcount(x)
+#endif
+#endif
+#if !defined(mp_popcount)
+static inline uint32_t mp_popcount(uint32_t x) {
+    x = x - ((x >> 1) & 0x55555555);
+    x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+    x = (x + (x >> 4)) & 0x0F0F0F0F;
+    return x * 0x01010101;
+}
+#endif
+#endif
+
+// mp_int_t can be larger than long, i.e. Windows 64-bit, nan-box variants
+static inline uint32_t mp_clz_mpi(mp_int_t x) {
+    #ifdef __XC16__
+    mp_uint_t mask = MP_OBJ_WORD_MSBIT_HIGH;
+    mp_uint_t zeroes = 0;
+    while (mask != 0) {
+        if (mask & (mp_uint_t)x) {
+            break;
+        }
+        zeroes++;
+        mask >>= 1;
+    }
+    return zeroes;
+    #else
+    MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
+        || sizeof(mp_int_t) == sizeof(long));
+
+    // ugly, but should compile to single intrinsic unless O0 is set
+    if (mp_check(sizeof(mp_int_t) == sizeof(long))) {
+        return mp_clzl((unsigned long)x);
+    } else {
+        return mp_clzll((unsigned long long)x);
+    }
+    #endif
+}
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

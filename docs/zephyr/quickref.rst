@@ -36,7 +36,7 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
     from machine import Pin
 
-    pin = Pin(("GPIO_1", 21), Pin.IN)   # create input pin on GPIO1
+    pin = Pin(("gpiob", 21), Pin.IN)    # create input pin on GPIO port B
     print(pin)                          # print pin port and number
 
     pin.init(Pin.OUT, Pin.PULL_UP, value=1)     # reinitialize pin
@@ -47,14 +47,14 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     pin.on()                            # set pin to high
     pin.off()                           # set pin to low
 
-    pin = Pin(("GPIO_1", 21), Pin.IN)   # create input pin on GPIO1
+    pin = Pin(("gpiob", 21), Pin.IN)              # create input pin on GPIO port B
 
-    pin = Pin(("GPIO_1", 21), Pin.OUT, value=1)         # set pin high on creation
+    pin = Pin(("gpiob", 21), Pin.OUT, value=1)    # set pin high on creation
 
-    pin = Pin(("GPIO_1", 21), Pin.IN, Pin.PULL_UP)      # enable internal pull-up resistor
+    pin = Pin(("gpiob", 21), Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
 
-    switch = Pin(("GPIO_2", 6), Pin.IN)                 # create input pin for a switch
-    switch.irq(lambda t: print("SW2 changed"))          # enable an interrupt when switch state is changed
+    switch = Pin(("gpioc", 6), Pin.IN)            # create input pin for a switch
+    switch.irq(lambda t: print("SW2 changed"))    # enable an interrupt when switch state is changed
 
 Hardware I2C bus
 ----------------
@@ -63,7 +63,7 @@ Hardware I2C is accessed via the :ref:`machine.I2C <machine.I2C>` class::
 
     from machine import I2C
 
-    i2c = I2C("I2C_0")          # construct an i2c bus
+    i2c = I2C("i2c0")           # construct an i2c bus
     print(i2c)                  # print device name
 
     i2c.scan()                  # scan the device for available I2C slaves
@@ -84,11 +84,11 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
 
     from machine import SPI
 
-    spi = SPI("SPI_0")          # construct a spi bus with default configuration
+    spi = SPI("spi0")           # construct a spi bus with default configuration
     spi.init(baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB) # set configuration
 
     # equivalently, construct spi bus and set configuration at the same time
-    spi = SPI("SPI_0", baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB)
+    spi = SPI("spi0", baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB)
     print(spi)                  # print device name and bus configuration
 
     spi.read(4)                 # read 4 bytes on MISO
@@ -109,12 +109,12 @@ Disk Access
 
 Use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class to support filesystem::
 
-    import os
+    import vfs
     from zephyr import DiskAccess
 
     block_dev = DiskAccess('SDHC')      # create a block device object for an SD card
-    os.VfsFat.mkfs(block_dev)           # create FAT filesystem object using the disk storage block
-    os.mount(block_dev, '/sd')          # mount the filesystem at the SD card subdirectory
+    vfs.VfsFat.mkfs(block_dev)          # create FAT filesystem object using the disk storage block
+    vfs.mount(block_dev, '/sd')         # mount the filesystem at the SD card subdirectory
 
     # with the filesystem mounted, files can be manipulated as normal
     with open('/sd/hello.txt','w') as f:     # open a new file in the directory
@@ -126,12 +126,12 @@ Flash Area
 
 Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
 
-    import os
+    import vfs
     from zephyr import FlashArea
 
     block_dev = FlashArea(4, 4096)      # creates a block device object in the frdm-k64f flash scratch partition
-    os.VfsLfs2.mkfs(block_dev)          # create filesystem in lfs2 format using the flash block device
-    os.mount(block_dev, '/flash')       # mount the filesystem at the flash subdirectory
+    vfs.VfsLfs2.mkfs(block_dev)         # create filesystem in lfs2 format using the flash block device
+    vfs.mount(block_dev, '/flash')      # mount the filesystem at the flash subdirectory
 
     # with the filesystem mounted, files can be manipulated as normal
     with open('/flash/hello.txt','w') as f:     # open a new file in the directory
@@ -146,7 +146,7 @@ Use the :ref:`zsensor.Sensor <zsensor.Sensor>` class to access sensor data::
     import zsensor
     from zsensor import Sensor
 
-    accel = Sensor("FXOX8700")    # create sensor object for the accelerometer
+    accel = Sensor("fxos8700")    # create sensor object for the accelerometer
 
     accel.measure()               # obtain a measurement reading from the accelerometer
 

@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "drivers/dht/dht.h"
 #include "modrp2.h"
@@ -41,11 +42,17 @@
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj);
 #endif
 
+#define CS_PIN_INDEX 1
+
+#if PICO_RP2040
+#define CS_BIT (1u << CS_PIN_INDEX)
+#else
+#define CS_BIT SIO_GPIO_HI_IN_QSPI_CSN_BITS
+#endif
+
 // Improved version of
 // https://github.com/raspberrypi/pico-examples/blob/master/picoboard/button/button.c
-STATIC bool __no_inline_not_in_flash_func(bootsel_button)(void) {
-    const uint CS_PIN_INDEX = 1;
-
+static bool __no_inline_not_in_flash_func(bootsel_button)(void) {
     // Disable interrupts and the other core since they might be
     // executing code from flash and we are about to temporarily
     // disable flash access.
@@ -64,7 +71,7 @@ STATIC bool __no_inline_not_in_flash_func(bootsel_button)(void) {
 
     // The HI GPIO registers in SIO can observe and control the 6 QSPI pins.
     // The button pulls the QSPI_SS pin *low* when pressed.
-    bool button_state = !(sio_hw->gpio_hi_in & (1 << CS_PIN_INDEX));
+    bool button_state = !(sio_hw->gpio_hi_in & CS_BIT);
 
     // Restore the QSPI_SS pin so we can use flash again.
     hw_write_masked(&ioqspi_hw->io[CS_PIN_INDEX].ctrl,
@@ -76,17 +83,18 @@ STATIC bool __no_inline_not_in_flash_func(bootsel_button)(void) {
     return button_state;
 }
 
-STATIC mp_obj_t rp2_bootsel_button(void) {
+static mp_obj_t rp2_bootsel_button(void) {
     return MP_OBJ_NEW_SMALL_INT(bootsel_button());
 }
 MP_DEFINE_CONST_FUN_OBJ_0(rp2_bootsel_button_obj, rp2_bootsel_button);
 
 
-STATIC const mp_rom_map_elem_t rp2_module_globals_table[] = {
+static const mp_rom_map_elem_t rp2_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_rp2) },
     { MP_ROM_QSTR(MP_QSTR_Flash),               MP_ROM_PTR(&rp2_flash_type) },
     { MP_ROM_QSTR(MP_QSTR_PIO),                 MP_ROM_PTR(&rp2_pio_type) },
     { MP_ROM_QSTR(MP_QSTR_StateMachine),        MP_ROM_PTR(&rp2_state_machine_type) },
+    { MP_ROM_QSTR(MP_QSTR_DMA),                 MP_ROM_PTR(&rp2_dma_type) },
     { MP_ROM_QSTR(MP_QSTR_bootsel_button),      MP_ROM_PTR(&rp2_bootsel_button_obj) },
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -94,7 +102,7 @@ STATIC const mp_rom_map_elem_t rp2_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_country),             MP_ROM_PTR(&mod_network_country_obj) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(rp2_module_globals, rp2_module_globals_table);
+static MP_DEFINE_CONST_DICT(rp2_module_globals, rp2_module_globals_table);
 
 const mp_obj_module_t mp_module_rp2 = {
     .base = { &mp_type_module },

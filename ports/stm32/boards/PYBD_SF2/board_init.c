@@ -61,6 +61,16 @@ void board_early_init(void) {
 
 #if !BUILDING_MBOOT
 
+#include "boardctrl.h"
+#include "qspi.h"
+
+int board_run_boot_py(boardctrl_state_t *state) {
+    // Due to errata 2.4.3, restart memory-mapped mode to deactivate the CS line and save power.
+    qspi_memory_map_restart();
+
+    return boardctrl_run_boot_py(state);
+}
+
 void board_sleep(int value) {
     mp_spiflash_deepsleep(&spi_bdev.spiflash, value);
     mp_spiflash_deepsleep(&spi_bdev2.spiflash, value);

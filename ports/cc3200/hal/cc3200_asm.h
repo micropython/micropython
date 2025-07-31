@@ -32,8 +32,11 @@
 //
 // Note on IRQ state: you should not need to know the specific
 // value of the state variable, but rather just pass the return
-// value from disable_irq back to enable_irq.  If you really need
-// to know the machine-specific values, see irq.h.
+// value from disable_irq back to enable_irq.
+
+// these states correspond to values from query_irq, enable_irq and disable_irq
+#define IRQ_STATE_DISABLED (0x00000001)
+#define IRQ_STATE_ENABLED  (0x00000000)
 
 #ifndef __disable_irq
 #define __disable_irq() __asm__ volatile ("cpsid i");
@@ -77,6 +80,11 @@ static inline uint32_t __get_BASEPRI(void) {
 __attribute__(( always_inline ))
 static inline void __set_BASEPRI(uint32_t value) {
     __asm volatile ("msr basepri, %0" : : "r" (value) : "memory");
+}
+
+__attribute__(( always_inline ))
+static inline uint32_t query_irq(void) {
+    return __get_PRIMASK();
 }
 
 __attribute__(( always_inline ))

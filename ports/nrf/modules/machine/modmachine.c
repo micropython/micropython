@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2023 Damien P. George
  * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,29 +24,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+// This file is never compiled standalone, it's included directly from
+// extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
+
 #include <stdio.h>
 
 #include "modmachine.h"
 #include "py/gc.h"
-#include "py/runtime.h"
 #include "py/mphal.h"
-#include "extmod/machine_mem.h"
-#include "extmod/machine_pulse.h"
-#include "extmod/machine_i2c.h"
-#include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "gccollect.h"
 #include "pin.h"
-#include "uart.h"
 #include "spi.h"
 #include "i2c.h"
 #include "timer.h"
 #if MICROPY_PY_MACHINE_HW_PWM || MICROPY_PY_MACHINE_SOFT_PWM
 #include "pwm.h"
-#endif
-#if MICROPY_PY_MACHINE_ADC
-#include "adc.h"
 #endif
 #if MICROPY_PY_MACHINE_TEMP
 #include "temp.h"
@@ -54,8 +49,6 @@
 #if MICROPY_PY_MACHINE_RTCOUNTER
 #include "rtcounter.h"
 #endif
-
-#if MICROPY_PY_MACHINE
 
 #define PYB_RESET_HARD      (0)
 #define PYB_RESET_WDT       (1)
@@ -66,7 +59,50 @@
 #define PYB_RESET_DIF       (18)
 #define PYB_RESET_NFC       (19)
 
-STATIC uint32_t reset_cause;
+#if MICROPY_PY_MACHINE_RTCOUNTER
+#define MICROPY_PY_MACHINE_RTCOUNTER_ENTRY { MP_ROM_QSTR(MP_QSTR_RTCounter), MP_ROM_PTR(&machine_rtcounter_type) },
+#else
+#define MICROPY_PY_MACHINE_RTCOUNTER_ENTRY
+#endif
+
+#if MICROPY_PY_MACHINE_TIMER_NRF
+#define MICROPY_PY_MACHINE_TIMER_ENTRY { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
+#else
+#define MICROPY_PY_MACHINE_TIMER_ENTRY
+#endif
+
+#if MICROPY_PY_MACHINE_TEMP
+#define MICROPY_PY_MACHINE_TEMP_ENTRY { MP_ROM_QSTR(MP_QSTR_Temp), MP_ROM_PTR(&machine_temp_type) },
+#else
+#define MICROPY_PY_MACHINE_TEMP_ENTRY
+#endif
+
+#if defined(NRF52_SERIES)
+#define MICROPY_PY_MACHINE_NFC_RESET_ENTRY { MP_ROM_QSTR(MP_QSTR_NFC_RESET), MP_ROM_INT(PYB_RESET_NFC) },
+#else
+#define MICROPY_PY_MACHINE_NFC_RESET_ENTRY
+#endif
+
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_info),               MP_ROM_PTR(&machine_info_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_enable_irq),         MP_ROM_PTR(&machine_enable_irq_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_disable_irq),        MP_ROM_PTR(&machine_disable_irq_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_lightsleep_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Pin),                MP_ROM_PTR(&pin_type) }, \
+    \
+    MICROPY_PY_MACHINE_RTCOUNTER_ENTRY \
+    MICROPY_PY_MACHINE_TIMER_ENTRY \
+    MICROPY_PY_MACHINE_TEMP_ENTRY \
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),         MP_ROM_INT(PYB_RESET_HARD) }, \
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),          MP_ROM_INT(PYB_RESET_WDT) }, \
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),         MP_ROM_INT(PYB_RESET_SOFT) }, \
+    { MP_ROM_QSTR(MP_QSTR_LOCKUP_RESET),       MP_ROM_INT(PYB_RESET_LOCKUP) }, \
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),        MP_ROM_INT(PYB_RESET_POWER_ON) }, \
+    { MP_ROM_QSTR(MP_QSTR_LPCOMP_RESET),       MP_ROM_INT(PYB_RESET_LPCOMP) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEBUG_IF_RESET),     MP_ROM_INT(PYB_RESET_DIF) }, \
+    MICROPY_PY_MACHINE_NFC_RESET_ENTRY \
+
+static uint32_t reset_cause;
 
 void machine_init(void) {
     uint32_t state = NRF_POWER->RESETREAS;
@@ -80,16 +116,16 @@ void machine_init(void) {
         reset_cause = PYB_RESET_LOCKUP;
     } else if (state & POWER_RESETREAS_OFF_Msk) {
         reset_cause = PYB_RESET_POWER_ON;
-#if !defined(NRF9160_XXAA)
+    #if !defined(NRF9160_XXAA)
     } else if (state & POWER_RESETREAS_LPCOMP_Msk) {
         reset_cause = PYB_RESET_LPCOMP;
-#endif
+    #endif
     } else if (state & POWER_RESETREAS_DIF_Msk) {
         reset_cause = PYB_RESET_DIF;
-#if defined(NRF52_SERIES)
+    #if defined(NRF52_SERIES)
     } else if (state & POWER_RESETREAS_NFC_Msk) {
         reset_cause = PYB_RESET_NFC;
-#endif
+    #endif
     }
 
     // clear reset reason
@@ -98,7 +134,7 @@ void machine_init(void) {
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
-STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
     // to print info about memory
     {
         printf("_etext=%p\n", &_etext);
@@ -138,134 +174,64 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
+
+static mp_obj_t mp_machine_unique_id(void) {
+    return mp_const_empty_bytes;
+}
 
 // Resets the board in a manner similar to pushing the external RESET button.
-STATIC mp_obj_t machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     NVIC_SystemReset();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
-STATIC mp_obj_t machine_soft_reset(void) {
-    pyexec_system_exit = PYEXEC_FORCED_EXIT;
-    mp_raise_type(&mp_type_SystemExit);
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
-
-NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     for (;;) {
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
 
-STATIC mp_obj_t machine_idle(void) {
+static void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
-STATIC mp_obj_t machine_lightsleep(void) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     __WFE();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_lightsleep_obj, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(void) {
-    __WFI();
-    return mp_const_none;
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_machine_reset();
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
 
-STATIC mp_obj_t machine_reset_cause(void) {
-    return MP_OBJ_NEW_SMALL_INT(reset_cause);
+static mp_int_t mp_machine_reset_cause(void) {
+    return reset_cause;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
-STATIC mp_obj_t machine_enable_irq(void) {
-#ifndef BLUETOOTH_SD
+static mp_obj_t mp_machine_get_freq(void) {
+    mp_raise_NotImplementedError(NULL);
+}
+
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_raise_NotImplementedError(NULL);
+}
+
+static mp_obj_t machine_enable_irq(void) {
+    #ifndef BLUETOOTH_SD
     __enable_irq();
-#else
+    #else
 
-#endif
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_enable_irq_obj, machine_enable_irq);
 
 // Resets the board in a manner similar to pushing the external RESET button.
-STATIC mp_obj_t machine_disable_irq(void) {
-#ifndef BLUETOOTH_SD
+static mp_obj_t machine_disable_irq(void) {
+    #ifndef BLUETOOTH_SD
     __disable_irq();
-#else
+    #else
 
-#endif
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
-
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),           MP_ROM_QSTR(MP_QSTR_machine) },
-    { MP_ROM_QSTR(MP_QSTR_info),               MP_ROM_PTR(&machine_info_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reset),              MP_ROM_PTR(&machine_reset_obj) },
-    { MP_ROM_QSTR(MP_QSTR_soft_reset),         MP_ROM_PTR(&machine_soft_reset_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bootloader),         MP_ROM_PTR(&machine_bootloader_obj) },
-    { MP_ROM_QSTR(MP_QSTR_enable_irq),         MP_ROM_PTR(&machine_enable_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disable_irq),        MP_ROM_PTR(&machine_disable_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_idle),               MP_ROM_PTR(&machine_idle_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_lightsleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_lightsleep),         MP_ROM_PTR(&machine_lightsleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deepsleep),          MP_ROM_PTR(&machine_deepsleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reset_cause),        MP_ROM_PTR(&machine_reset_cause_obj) },
-    { MP_ROM_QSTR(MP_QSTR_Pin),                MP_ROM_PTR(&pin_type) },
-    { MP_ROM_QSTR(MP_QSTR_mem8),               MP_ROM_PTR(&machine_mem8_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem16),              MP_ROM_PTR(&machine_mem16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem32),              MP_ROM_PTR(&machine_mem32_obj) },
-    
-#if MICROPY_PY_MACHINE_UART
-    { MP_ROM_QSTR(MP_QSTR_UART),               MP_ROM_PTR(&machine_uart_type) },
-#endif
-#if MICROPY_PY_MACHINE_HW_SPI
-    { MP_ROM_QSTR(MP_QSTR_SPI),                MP_ROM_PTR(&machine_spi_type) },
-#endif
-#if MICROPY_PY_MACHINE_I2C
-    { MP_ROM_QSTR(MP_QSTR_I2C),                MP_ROM_PTR(&machine_i2c_type) },
-    { MP_ROM_QSTR(MP_QSTR_SoftI2C),            MP_ROM_PTR(&mp_machine_soft_i2c_type) },
-#endif
-#if MICROPY_PY_MACHINE_ADC
-    { MP_ROM_QSTR(MP_QSTR_ADC),                MP_ROM_PTR(&machine_adc_type) },
-#endif
-#if MICROPY_PY_MACHINE_RTCOUNTER
-    { MP_ROM_QSTR(MP_QSTR_RTCounter),          MP_ROM_PTR(&machine_rtcounter_type) },
-#endif
-#if MICROPY_PY_MACHINE_TIMER_NRF
-    { MP_ROM_QSTR(MP_QSTR_Timer),              MP_ROM_PTR(&machine_timer_type) },
-#endif
-#if MICROPY_PY_MACHINE_HW_PWM || MICROPY_PY_MACHINE_SOFT_PWM
-    { MP_ROM_QSTR(MP_QSTR_PWM),                MP_ROM_PTR(&machine_pwm_type) },
-#endif
-#if MICROPY_PY_MACHINE_TEMP
-    { MP_ROM_QSTR(MP_QSTR_Temp),               MP_ROM_PTR(&machine_temp_type) },
-#endif
-    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),         MP_ROM_INT(PYB_RESET_HARD) },
-    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),          MP_ROM_INT(PYB_RESET_WDT) },
-    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),         MP_ROM_INT(PYB_RESET_SOFT) },
-    { MP_ROM_QSTR(MP_QSTR_LOCKUP_RESET),       MP_ROM_INT(PYB_RESET_LOCKUP) },
-    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),        MP_ROM_INT(PYB_RESET_POWER_ON) },
-    { MP_ROM_QSTR(MP_QSTR_LPCOMP_RESET),       MP_ROM_INT(PYB_RESET_LPCOMP) },
-    { MP_ROM_QSTR(MP_QSTR_DEBUG_IF_RESET),     MP_ROM_INT(PYB_RESET_DIF) },
-#if defined(NRF52_SERIES)
-    { MP_ROM_QSTR(MP_QSTR_NFC_RESET),          MP_ROM_INT(PYB_RESET_NFC) },
-#endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
-};
-
-MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
-
-#endif // MICROPY_PY_MACHINE

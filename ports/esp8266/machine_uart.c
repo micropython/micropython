@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2016-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
 
+#include "py/mperrno.h"
+#include "py/mphal.h"
 #include "ets_sys.h"
 #include "user_interface.h"
 #include "uart.h"
 
-#include "py/runtime.h"
-#include "py/stream.h"
-#include "py/mperrno.h"
-#include "py/mphal.h"
-#include "modmachine.h"
-
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;
 
-typedef struct _pyb_uart_obj_t {
+typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     uint8_t uart_id;
     uint8_t bits;
@@ -50,21 +45,24 @@ typedef struct _pyb_uart_obj_t {
     uint32_t baudrate;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
-} pyb_uart_obj_t;
+} machine_uart_obj_t;
 
-STATIC const char *_parity_name[] = {"None", "1", "0"};
+static const char *_parity_name[] = {"None", "1", "0"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
 
-STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+// The UART class doesn't have any constants for this port.
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
+
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, rxbuf=%u, timeout=%u, timeout_char=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
         self->stop, uart0_get_rxbuf_len() - 1, self->timeout, self->timeout_char);
 }
 
-STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rxbuf, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
@@ -192,7 +190,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
     uart_setup(self->uart_id);
 }
 
-STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get uart id
@@ -202,7 +200,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     // create instance
-    pyb_uart_obj_t *self = mp_obj_malloc(pyb_uart_obj_t, &pyb_uart_type);
+    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
     self->uart_id = uart_id;
     self->baudrate = 115200;
     self->bits = 8;
@@ -214,47 +212,25 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     // init the peripheral
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+    mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t pyb_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    pyb_uart_init_helper(args[0], n_args - 1, args + 1, kw_args);
-    return mp_const_none;
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    (void)self;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 
-STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(uart_rx_any(self->uart_id));
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+    return uart_rx_any(self->uart_id);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 
-STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    return uart_txdone(self->uart_id) == true ? mp_const_true : mp_const_false;
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    return uart_txdone(self->uart_id);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
-STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_uart_init_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_uart_any_obj) },
-    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
-
-STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->uart_id == 1) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("UART(1) can't read"));
@@ -282,8 +258,8 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     }
 }
 
-STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const byte *buf = buf_in;
 
     /* TODO implement non-blocking
@@ -303,8 +279,8 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
     return size;
 }
 
-STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    pyb_uart_obj_t *self = self_in;
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
@@ -321,10 +297,10 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
         uint64_t timeout = (uint64_t)(3 + 127) * 13000000ll * 2 / self->baudrate
             + system_get_time();
         do {
-            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+            if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         } while (system_get_time() < timeout);
 
         *errcode = MP_ETIMEDOUT;
@@ -335,22 +311,5 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
     }
     return ret;
 }
-
-STATIC const mp_stream_p_t uart_stream_p = {
-    .read = pyb_uart_read,
-    .write = pyb_uart_write,
-    .ioctl = pyb_uart_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    pyb_uart_type,
-    MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, pyb_uart_make_new,
-    print, pyb_uart_print,
-    protocol, &uart_stream_p,
-    locals_dict, &pyb_uart_locals_dict
-    );
 
 MP_REGISTER_ROOT_POINTER(byte * uart0_rxbuf);

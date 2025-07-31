@@ -67,11 +67,17 @@ Methods
        :meth:`~CAN.restart()` can be used to leave the bus-off state
      - *baudrate* if a baudrate other than 0 is provided, this function will try to automatically
        calculate the CAN nominal bit time (overriding *prescaler*, *bs1* and *bs2*) that satisfies
-       both the baudrate and the desired *sample_point*.
-     - *sample_point* given in a percentage of the nominal bit time, the *sample_point* specifies the position
-       of the bit sample with respect to the whole nominal bit time. The default *sample_point* is 75%.
+       both the *baudrate* (within .1%) and the desired *sample_point* (to the nearest 1%). For more precise
+       control over the CAN timing, set the *prescaler*, *bs1* and *bs2* parameters directly.
+     - *sample_point* specifies the position of the bit sample with respect to the whole nominal bit time,
+       expressed as an integer percentage of the nominal bit time. The default *sample_point* is 75%.
+       This parameter is ignored unless *baudrate* is set.
      - *num_filter_banks* for classic CAN, this is the number of banks that will be assigned to CAN(1),
        the rest of the 28 are assigned to CAN(2).
+
+  The remaining parameters are only present on boards with CAN FD support, and configure the optional CAN FD
+  Bit Rate Switch (BRS) feature:
+
      - *brs_prescaler* is the value by which the CAN FD input clock is divided to generate the
        data bit time quanta. The prescaler can be a value between 1 and 32 inclusive.
      - *brs_sjw* is the resynchronisation jump width in units of time quanta for data bits;
@@ -82,10 +88,11 @@ Methods
        it can be a value between 1 and 16 inclusive
      - *brs_baudrate* if a baudrate other than 0 is provided, this function will try to automatically
        calculate the CAN data bit time (overriding *brs_prescaler*, *brs_bs1* and *brs_bs2*) that satisfies
-       both the baudrate and the desired *brs_sample_point*.
-     - *brs_sample_point* given in a percentage of the data bit time, the *brs_sample_point* specifies the position
-       of the bit sample with respect to the whole data bit time. The default *brs_sample_point* is 75%.
-
+       both the *brs_baudrate* (within .1%) and the desired *brs_sample_point* (to the nearest 1%). For more
+       precise control over the BRS timing, set the *brs_prescaler*, *brs_bs1* and *brs_bs2* parameters directly.
+     - *brs_sample_point* specifies the position of the bit sample with respect to the whole nominal bit time,
+       expressed as an integer percentage of the nominal bit time. The default *brs_sample_point* is 75%.
+       This parameter is ignored unless *brs_baudrate* is set.
 
    The time quanta tq is the basic unit of time for the CAN bus.  tq is the CAN
    prescaler value divided by PCLK1 (the frequency of internal peripheral bus 1);

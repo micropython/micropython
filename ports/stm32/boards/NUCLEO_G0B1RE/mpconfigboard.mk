@@ -11,3 +11,5 @@ endif
 
 # LTO reduces final binary size, may be slower to build depending on gcc version and hardware
 LTO ?= 1
+
+MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM = 1

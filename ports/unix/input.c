@@ -43,6 +43,7 @@ char *prompt(char *p) {
     // simple read string
     static char buf[256];
     fputs(p, stdout);
+    fflush(stdout);
     char *s = fgets(buf, sizeof(buf), stdin);
     if (!s) {
         return NULL;

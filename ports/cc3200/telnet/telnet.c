@@ -37,7 +37,6 @@
 #include "debug.h"
 #include "serverstask.h"
 #include "genhdr/mpversion.h"
-#include "irq.h"
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS

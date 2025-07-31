@@ -28,10 +28,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
-#ifdef _MSC_VER
-#include "py/mpconfig.h" // For inline.
-#endif
+#include "py/mpconfig.h"
 
 typedef struct _ringbuf_t {
     uint8_t *buf;
@@ -89,6 +88,38 @@ static inline size_t ringbuf_free(ringbuf_t *r) {
 
 static inline size_t ringbuf_avail(ringbuf_t *r) {
     return (r->size + r->iput - r->iget) % r->size;
+}
+
+static inline void ringbuf_memcpy_get_internal(ringbuf_t *r, uint8_t *data, size_t data_len) {
+    // No bounds / space checking is performed here so ensure available size is checked before running this
+    // otherwise data loss or buffer overflow can occur.
+    uint32_t iget = r->iget;
+    uint32_t iget_a = (iget + data_len) % r->size;
+    uint8_t *datap = data;
+    if (iget_a < iget) {
+        // Copy part of the data from the space left at the end of the buffer
+        memcpy(datap, r->buf + iget, r->size - iget);
+        datap += (r->size - iget);
+        iget = 0;
+    }
+    memcpy(datap, r->buf + iget, iget_a - iget);
+    r->iget = iget_a;
+}
+
+static inline void ringbuf_memcpy_put_internal(ringbuf_t *r, const uint8_t *data, size_t data_len) {
+    // No bounds / space checking is performed here so ensure free size is checked before running this
+    // otherwise data loss or buffer overflow can occur.
+    uint32_t iput = r->iput;
+    uint32_t iput_a = (iput + data_len) % r->size;
+    const uint8_t *datap = data;
+    if (iput_a < iput) {
+        // Copy part of the data to the end of the buffer
+        memcpy(r->buf + iput, datap, r->size - iput);
+        datap += (r->size - iput);
+        iput = 0;
+    }
+    memcpy(r->buf + iput, datap, iput_a - iput);
+    r->iput = iput_a;
 }
 
 // Note: big-endian. No-op if not enough room available for both bytes.

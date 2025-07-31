@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
-STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -57,9 +57,9 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_printf(print, "<module '%s'>", module_name);
 }
 
-STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+static void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
-STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+static void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
@@ -146,13 +146,13 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 /******************************************************************************/
 // Global module table and related functions
 
-STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
+static const mp_rom_map_elem_t mp_builtin_module_table[] = {
     // built-in modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
 };
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
-STATIC const mp_rom_map_elem_t mp_builtin_extensible_module_table[] = {
+static const mp_rom_map_elem_t mp_builtin_extensible_module_table[] = {
     // built-in modules declared with MP_REGISTER_EXTENSIBLE_MODULE()
     MICROPY_REGISTERED_EXTENSIBLE_MODULES
 };
@@ -164,7 +164,7 @@ typedef struct _mp_module_delegation_entry_t {
     mp_attr_fun_t fun;
 } mp_module_delegation_entry_t;
 
-STATIC const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] = {
+static const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] = {
     // delegation entries declared with MP_REGISTER_MODULE_DELEGATION()
     MICROPY_MODULE_DELEGATIONS
 };
@@ -223,7 +223,7 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
     return elem->value;
 }
 
-STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+static void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     #if MICROPY_MODULE_ATTR_DELEGATION && defined(MICROPY_MODULE_DELEGATIONS)
     // Delegate lookup to a module's custom attr method.
     size_t n = MP_ARRAY_SIZE(mp_builtin_module_delegation_table);

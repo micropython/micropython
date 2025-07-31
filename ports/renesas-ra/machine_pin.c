@@ -31,9 +31,10 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
-#include "extmod/virtpin.h"
 
 #include "pin.h"
 #include "extint.h"
@@ -55,13 +56,13 @@ const machine_pin_obj_t *machine_pin_find(mp_obj_t user_obj) {
     }
 
     // See if the pin name matches a board pin
-    pin_obj = pin_find_named_pin(&pin_board_pins_locals_dict, user_obj);
+    pin_obj = pin_find_named_pin(&machine_pin_board_pins_locals_dict, user_obj);
     if (pin_obj) {
         return pin_obj;
     }
 
     // See if the pin name matches a cpu pin
-    pin_obj = pin_find_named_pin(&pin_cpu_pins_locals_dict, user_obj);
+    pin_obj = pin_find_named_pin(&machine_pin_cpu_pins_locals_dict, user_obj);
     if (pin_obj) {
         return pin_obj;
     }
@@ -70,7 +71,7 @@ const machine_pin_obj_t *machine_pin_find(mp_obj_t user_obj) {
 }
 
 /// Return a string describing the pin object.
-STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // pin name
@@ -133,12 +134,7 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         // AF mode
         if (af) {
             mp_uint_t af_idx = pin_get_af(self);
-            const pin_af_obj_t *af_obj = pin_find_af_by_index(self, af_idx);
-            if (af_obj == NULL) {
-                mp_printf(print, ", alt=%d)", af_idx);
-            } else {
-                mp_printf(print, ", alt=Pin.%q)", af_obj->name);
-            }
+            mp_printf(print, ", alt=%d)", af_idx);
         } else {
             mp_print_str(print, ")");
         }
@@ -146,7 +142,7 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 // pin.init(mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
-STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_pull, ARG_value, ARG_drive, ARG_alt };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
@@ -226,7 +222,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
 }
 
 // fast method for getting/setting pin value
-STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (n_args == 0) {
@@ -240,35 +236,35 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 }
 
 // pin.init(mode, pull)
-STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_obj_init);
 
 // pin.value([value])
-STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
     return machine_pin_call(args[0], n_args - 1, 0, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
 // pin.low()
-STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
+static mp_obj_t machine_pin_low(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_hal_pin_write(self, false);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
 // pin.high()
-STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
+static mp_obj_t machine_pin_high(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_hal_pin_write(self, true);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
-STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -292,9 +288,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     // TODO should return an IRQ object
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
-STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
@@ -305,8 +301,8 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_high), MP_ROM_PTR(&machine_pin_high_obj) },
 
     // class attributes
-    { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&pin_board_pins_obj_type) },
-    { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(MP_HAL_PIN_MODE_INPUT) },
@@ -327,9 +323,9 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_LOW_LEVEL), MP_ROM_INT(MP_HAL_PIN_TRIGGER_LOWLEVEL) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_HIGH_LEVEL), MP_ROM_INT(MP_HAL_PIN_TRIGGER_HIGHLEVEL) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
-STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -345,7 +341,7 @@ STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     return -1;
 }
 
-STATIC const mp_pin_p_t machine_pin_pin_p = {
+static const mp_pin_p_t machine_pin_pin_p = {
     .ioctl = machine_pin_ioctl,
 };
 
@@ -390,17 +386,17 @@ uint32_t pin_get_af(const machine_pin_obj_t *pin) {
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    pin_cpu_pins_obj_type,
+    machine_pin_cpu_pins_obj_type,
     MP_QSTR_cpu,
     MP_TYPE_FLAG_NONE,
-    locals_dict, &pin_cpu_pins_locals_dict
+    locals_dict, &machine_pin_cpu_pins_locals_dict
     );
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    pin_board_pins_obj_type,
+    machine_pin_board_pins_obj_type,
     MP_QSTR_board,
     MP_TYPE_FLAG_NONE,
-    locals_dict, &pin_board_pins_locals_dict
+    locals_dict, &machine_pin_board_pins_locals_dict
     );
 
 const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
@@ -408,16 +404,6 @@ const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_
     mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t *)named_map, name, MP_MAP_LOOKUP);
     if (named_elem != NULL && named_elem->value != MP_OBJ_NULL) {
         return MP_OBJ_TO_PTR(named_elem->value);
-    }
-    return NULL;
-}
-
-const pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx) {
-    const pin_af_obj_t *af = pin->af;
-    for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
-        if (af->idx == af_idx) {
-            return af;
-        }
     }
     return NULL;
 }

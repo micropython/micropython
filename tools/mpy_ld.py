@@ -30,13 +30,14 @@ Link .o files to .mpy
 
 import sys, os, struct, re
 from elftools.elf import elffile
+import ar_util
 
 sys.path.append(os.path.dirname(__file__) + "/../py")
 import makeqstrdata as qstrutil
 
 # MicroPython constants
 MPY_VERSION = 6
-MPY_SUB_VERSION = 1
+MPY_SUB_VERSION = 3
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
 MP_NATIVE_ARCH_X86 = 1
@@ -47,14 +48,17 @@ MP_NATIVE_ARCH_ARMV7EMSP = 7
 MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
+MP_NATIVE_ARCH_RV32IMC = 11
 MP_PERSISTENT_OBJ_STR = 5
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
 MP_SMALL_INT_BITS = 31
+MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET = 73
 
 # ELF constants
 R_386_32 = 1
+R_RISCV_32 = 1
 R_X86_64_64 = 1
 R_XTENSA_32 = 1
 R_386_PC32 = 2
@@ -68,15 +72,58 @@ R_XTENSA_PLT = 6
 R_386_GOTOFF = 9
 R_386_GOTPC = 10
 R_ARM_THM_CALL = 10
+R_XTENSA_ASM_EXPAND = 11
+R_RISCV_BRANCH = 16
+R_RISCV_JAL = 17
+R_RISCV_CALL = 18
+R_RISCV_CALL_PLT = 19
 R_XTENSA_DIFF32 = 19
 R_XTENSA_SLOT0_OP = 20
+R_RISCV_GOT_HI20 = 20
+R_RISCV_TLS_GD_HI20 = 22
+R_RISCV_PCREL_HI20 = 23
+R_RISCV_PCREL_LO12_I = 24
+R_RISCV_PCREL_LO12_S = 25
 R_ARM_BASE_PREL = 25  # aka R_ARM_GOTPC
 R_ARM_GOT_BREL = 26  # aka R_ARM_GOT32
 R_ARM_THM_JUMP24 = 30
+R_RISCV_HI20 = 26
+R_RISCV_LO12_I = 27
+R_RISCV_LO12_S = 28
+R_RISCV_TPREL_HI20 = 29
+R_RISCV_TPREL_LO12_I = 30
+R_RISCV_TPREL_LO12_S = 31
+R_RISCV_TPREL_ADD = 32
+R_RISCV_ADD8 = 33
+R_RISCV_ADD16 = 34
+R_RISCV_ADD32 = 35
+R_RISCV_ADD64 = 36
+R_RISCV_SUB8 = 37
+R_RISCV_SUB16 = 38
+R_RISCV_SUB32 = 39
+R_RISCV_SUB64 = 40
+R_RISCV_GOT32_PCREL = 41
 R_X86_64_GOTPCREL = 9
 R_X86_64_REX_GOTPCRELX = 42
 R_386_GOT32X = 43
+R_RISCV_ALIGN = 43
+R_RISCV_RVC_BRANCH = 44
+R_RISCV_RVC_JUMP = 45
+R_RISCV_RELAX = 51
+R_RISCV_SUB6 = 52
+R_RISCV_SET6 = 53
+R_RISCV_SET8 = 54
+R_RISCV_SET16 = 55
+R_RISCV_SET32 = 56
+R_RISCV_32_PCREL = 57
+R_RISCV_PLT32 = 59
 R_XTENSA_PDIFF32 = 59
+R_RISCV_SET_ULEB128 = 60
+R_RISCV_SUB_ULEB128 = 61
+R_RISCV_TLSDESC_HI20 = 62
+R_RISCC_TLSDESC_LOAD_LO12 = 63
+R_RISCV_TLSDESC_ADD_LO12 = 64
+R_RISCV_TLSDESC_CALL = 65
 
 ################################################################################
 # Architecture configuration
@@ -87,10 +134,26 @@ def asm_jump_x86(entry):
 
 
 def asm_jump_thumb(entry):
-    # Only signed values that fit in 12 bits are supported
+    # This function must return the same number of bytes for the encoding of the jump
+    # regardless of the value of `entry`.
     b_off = entry - 4
-    assert b_off >> 11 == 0 or b_off >> 11 == -1, b_off
-    return struct.pack("<H", 0xE000 | (b_off >> 1 & 0x07FF))
+    if b_off >> 11 == 0 or b_off >> 11 == -1:
+        # Signed value fits in 12 bits.
+        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
+        b1 = 0
+        b2 = 0
+        b3 = 0
+    else:
+        # Use bl to do a large jump/call:
+        #   push {r0, lr}
+        #   bl <dest>
+        #   pop {r0, pc}
+        b_off -= 2  # skip "push {r0, lr}"
+        b0 = 0xB400 | 0x0100 | 0x0001  # push, lr, r0
+        b1 = 0xF000 | (((b_off) >> 12) & 0x07FF)
+        b2 = 0xF800 | (((b_off) >> 1) & 0x07FF)
+        b3 = 0xBC00 | 0x0100 | 0x0001  # pop, pc, r0
+    return struct.pack("<HHHH", b0, b1, b2, b3)
 
 
 def asm_jump_thumb2(entry):
@@ -110,6 +173,18 @@ def asm_jump_xtensa(entry):
     jump_offset = entry - 4
     jump_op = jump_offset << 6 | 6
     return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
+
+
+def asm_jump_rv32(entry):
+    # This could be 6 bytes shorter, but the code currently cannot
+    # support a trampoline with varying length depending on the offset.
+
+    # auipc t6, HI(entry)
+    # jalr  zero, t6, LO(entry)
+    upper, lower = split_riscv_address(entry)
+    return struct.pack(
+        "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
+    )
 
 
 class ArchData:
@@ -181,6 +256,13 @@ ARCH_DATA = {
         asm_jump_xtensa,
         separate_rodata=True,
     ),
+    "rv32imc": ArchData(
+        "EM_RISCV",
+        MP_NATIVE_ARCH_RV32IMC << 2,
+        4,
+        (R_RISCV_32, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
+        asm_jump_rv32,
+    ),
 }
 
 ################################################################################
@@ -199,6 +281,21 @@ def pack_u24le(data, offset, value):
     data[offset] = value & 0xFF
     data[offset + 1] = value >> 8 & 0xFF
     data[offset + 2] = value >> 16 & 0xFF
+
+
+def split_riscv_address(value):
+    # The address can be represented with just the lowest 12 bits
+    if value < 0 and value > -2048:
+        value = 4096 + value
+        return 0, value
+    # 2s complement
+    if value < 0:
+        value = 0x100000000 + value
+    upper, lower = (value & 0xFFFFF000), (value & 0xFFF)
+    if lower & 0x800 != 0:
+        # Reverse lower part sign extension
+        upper += 0x1000
+    return upper & 0xFFFFFFFF, lower & 0xFFFFFFFF
 
 
 def xxd(text):
@@ -232,34 +329,20 @@ def extract_qstrs(source_files):
     def read_qstrs(f):
         with open(f) as f:
             vals = set()
-            objs = set()
             for line in f:
-                while line:
-                    m = re.search(r"MP_OBJ_NEW_QSTR\((MP_QSTR_[A-Za-z0-9_]*)\)", line)
-                    if m:
-                        objs.add(m.group(1))
-                    else:
-                        m = re.search(r"MP_QSTR_[A-Za-z0-9_]*", line)
-                        if m:
-                            vals.add(m.group())
-                    if m:
-                        s = m.span()
-                        line = line[: s[0]] + line[s[1] :]
-                    else:
-                        line = ""
-            return vals, objs
+                for m in re.finditer(r"MP_QSTR_[A-Za-z0-9_]*", line):
+                    vals.add(m.group())
+            return vals
 
     static_qstrs = ["MP_QSTR_" + qstrutil.qstr_escape(q) for q in qstrutil.static_qstr_list]
 
     qstr_vals = set()
-    qstr_objs = set()
     for f in source_files:
-        vals, objs = read_qstrs(f)
+        vals = read_qstrs(f)
         qstr_vals.update(vals)
-        qstr_objs.update(objs)
     qstr_vals.difference_update(static_qstrs)
 
-    return static_qstrs, qstr_vals, qstr_objs
+    return static_qstrs, qstr_vals
 
 
 ################################################################################
@@ -342,7 +425,7 @@ def build_got_generic(env):
         for r in sec.reloc:
             s = r.sym
             if not (
-                s.entry["st_info"]["bind"] == "STB_GLOBAL"
+                s.entry["st_info"]["bind"] in ("STB_GLOBAL", "STB_WEAK")
                 and r["r_info_type"] in env.arch.arch_got
             ):
                 continue
@@ -483,6 +566,8 @@ def do_relocation_text(env, text_addr, r):
     # Default relocation type and name for logging
     reloc_type = "le32"
     log_name = None
+    addr = None
+    value = None
 
     if (
         env.arch.name == "EM_386"
@@ -575,18 +660,61 @@ def do_relocation_text(env, text_addr, r):
         reloc = addr - r_offset
         reloc_type = "xtensa_l32r"
 
-    elif env.arch.name == "EM_XTENSA" and r_info_type in (R_XTENSA_DIFF32, R_XTENSA_PDIFF32):
-        if s.section.name.startswith(".text"):
-            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated
+    elif env.arch.name == "EM_XTENSA" and r_info_type in (
+        R_XTENSA_DIFF32,
+        R_XTENSA_PDIFF32,
+        R_XTENSA_ASM_EXPAND,
+    ):
+        if not hasattr(s, "section") or s.section.name.startswith(".text"):
+            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated,
+            # and expand relaxations cannot occur in non-executable sections.
             return
         assert 0
 
+    elif env.arch.name == "EM_RISCV" and r_info_type in (
+        R_RISCV_TLS_GD_HI20,
+        R_RISCV_TLSDESC_HI20,
+        R_RISCV_TLSDESC_ADD_LO12,
+        R_RISCV_TLSDESC_CALL,
+    ):
+        # TLS relocations are not supported.
+        raise LinkError("{}: RISC-V TLS relocation: {}".format(s.filename, s.name))
+
+    elif env.arch.name == "EM_RISCV" and r_info_type in (
+        R_RISCV_TPREL_HI20,
+        R_RISCV_TPREL_LO12_I,
+        R_RISCV_TPREL_LO12_S,
+        R_RISCV_TPREL_ADD,
+    ):
+        # ThreadPointer-relative relocations are not supported.
+        raise LinkError("{}: RISC-V TP-relative relocation: {}".format(s.filename, s.name))
+
+    elif env.arch.name == "EM_RISCV" and r_info_type in (R_RISCV_SET_ULEB128, R_RISCV_SUB_ULEB128):
+        # 128-bit value relocations are not supported
+        raise LinkError("{}: RISC-V ULEB128 relocation: {}".format(s.filename, s.name))
+
+    elif env.arch.name == "EM_RISCV" and r_info_type in (R_RISCV_RELAX, R_RISCV_ALIGN):
+        # To keep things simple, no relocations are relaxed and thus no
+        # size optimisation is performed even if there is the chance, along
+        # with no offsets to fix up.
+        return
+
+    elif env.arch.name == "EM_RISCV":
+        (addr, value) = process_riscv32_relocation(env, text_addr, r)
+
+    elif env.arch.name == "EM_ARM" and r_info_type == R_ARM_ABS32:
+        # happens for soft-float on armv6m
+        raise ValueError("Absolute relocations not supported on ARM")
+
     else:
         # Unknown/unsupported relocation
-        assert 0, r_info_type
+        assert 0, (r_info_type, s.name, s.entry, env.arch.name)
 
     # Write relocation
-    if reloc_type == "le32":
+    if env.arch.name == "EM_RISCV":
+        # This case is already handled by `process_riscv_relocation`.
+        pass
+    elif reloc_type == "le32":
         (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
         struct.pack_into("<I", env.full_text, r_offset, (existing + reloc) & 0xFFFFFFFF)
     elif reloc_type == "thumb_b":
@@ -614,7 +742,10 @@ def do_relocation_text(env, text_addr, r):
             log_name = s.section.name
         else:
             log_name = s.name
-    log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
+    if addr is not None:
+        log(LOG_LEVEL_3, "  {:08x} {} -> {:08x}".format(r_offset, log_name, addr))
+    else:
+        log(LOG_LEVEL_3, "  {:08x} {} == {:08x}".format(r_offset, log_name, value))
 
 
 def do_relocation_data(env, text_addr, r):
@@ -637,12 +768,16 @@ def do_relocation_data(env, text_addr, r):
         and r_info_type == R_ARM_ABS32
         or env.arch.name == "EM_XTENSA"
         and r_info_type == R_XTENSA_32
+        or env.arch.name == "EM_RISCV"
+        and r_info_type == R_RISCV_32
     ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
             struct_type = "<I"
         elif env.arch.word_size == 8:
             struct_type = "<Q"
+        if hasattr(s, "resolved"):
+            s = s.resolved
         sec = s.section
         assert r_offset % env.arch.word_size == 0
         addr = sec.addr + s["st_value"] + r_addend
@@ -675,62 +810,332 @@ def do_relocation_data(env, text_addr, r):
         assert 0, r_info_type
 
 
-def load_object_file(env, felf):
-    with open(felf, "rb") as f:
-        elf = elffile.ELFFile(f)
-        env.check_arch(elf["e_machine"])
+RISCV_RELOCATIONS_TYPE_MAP = {
+    R_RISCV_ADD8: ("riscv_addsub", "B", 8, 1),
+    R_RISCV_ADD16: ("riscv_addsub", "<H", 16, 1),
+    R_RISCV_ADD32: ("riscv_addsub", "<I", 32, 1),
+    R_RISCV_ADD64: ("riscv_addsub", "<Q", 64, 1),
+    R_RISCV_SUB6: ("riscv_addsub", "B", 6, -1),
+    R_RISCV_SUB8: ("riscv_addsub", "B", 8, -1),
+    R_RISCV_SUB16: ("riscv_addsub", "<H", 16, -1),
+    R_RISCV_SUB32: ("riscv_addsub", "<I", 32, -1),
+    R_RISCV_SUB64: ("riscv_addsub", "<Q", 64, -1),
+    R_RISCV_SET6: ("riscv_set6", "B", 6),
+    R_RISCV_SET8: ("riscv_set8", "B", 8),
+    R_RISCV_SET16: ("riscv_set16", "<H", 16),
+    R_RISCV_SET32: ("riscv_set32", "<I", 32),
+    R_RISCV_JAL: "riscv_j",
+    R_RISCV_BRANCH: "riscv_b",
+    R_RISCV_RVC_BRANCH: "riscv_cb",
+    R_RISCV_RVC_JUMP: "riscv_cj",
+    R_RISCV_CALL: "riscv_call",
+    R_RISCV_CALL_PLT: "riscv_call",
+    R_RISCV_PCREL_LO12_I: "riscv_lo12i",
+    R_RISCV_PCREL_LO12_S: "riscv_lo12s",
+    R_RISCV_LO12_I: "riscv_lo12i",
+    R_RISCV_LO12_S: "riscv_lo12s",
+    R_RISCV_32_PCREL: "riscv_32pcrel",
+    R_RISCV_PLT32: "riscv_32pcrel",
+}
 
-        # Get symbol table
-        symtab = list(elf.get_section_by_name(".symtab").iter_symbols())
 
-        # Load needed sections from ELF file
-        sections_shndx = {}  # maps elf shndx to Section object
-        for idx, s in enumerate(elf.iter_sections()):
-            if s.header.sh_type in ("SHT_PROGBITS", "SHT_NOBITS"):
-                if s.data_size == 0:
-                    # Ignore empty sections
-                    pass
-                elif s.name.startswith((".literal", ".text", ".rodata", ".data.rel.ro", ".bss")):
-                    sec = Section.from_elfsec(s, felf)
-                    sections_shndx[idx] = sec
-                    if s.name.startswith(".literal"):
-                        env.literal_sections.append(sec)
-                    else:
-                        env.sections.append(sec)
-                elif s.name.startswith(".data"):
-                    raise LinkError("{}: {} non-empty".format(felf, s.name))
+def process_riscv32_relocation(env, text_addr, r):
+    assert env.arch.name == "EM_RISCV"
+
+    addr = None
+    value = None
+    s = r.sym
+
+    if hasattr(s, "resolved"):
+        s = s.resolved
+
+    r_offset = r["r_offset"] + text_addr
+    r_info_type = r["r_info_type"]
+    try:
+        r_addend = r["r_addend"]
+    except KeyError:
+        r_addend = 0
+
+    if r_info_type == R_RISCV_GOT_HI20:
+        got_entry = env.got_entries[s.name]
+        addr = env.got_section.addr + got_entry.offset
+        reloc = addr + r_addend - r_offset
+        r.computed_reloc = reloc
+        reloc_type = "riscv_hi20"
+
+    elif r_info_type == R_RISCV_GOT32_PCREL:
+        got_entry = env.got_entries[s.name]
+        addr = env.got_section.addr + got_entry.offset
+        value = addr + r_addend - r_offset
+        reloc_type = "riscv_set32"
+
+    elif r_info_type == R_RISCV_PCREL_HI20:
+        addr = s.section.addr + s["st_value"]
+        reloc = addr + r_addend - r_offset
+        r.computed_reloc = reloc
+        reloc_type = "riscv_hi20"
+
+    elif r_info_type == R_RISCV_HI20:
+        addr = s.section.addr + s["st_value"]
+        reloc = addr + r_addend
+        r.computed_reloc = reloc
+        reloc_type = "riscv_hi20"
+
+    elif r_info_type in (
+        R_RISCV_PCREL_LO12_I,
+        R_RISCV_PCREL_LO12_S,
+        R_RISCV_LO12_I,
+        R_RISCV_LO12_S,
+    ):
+        parent = None
+        for potential_parent in s.section.reloc:
+            if potential_parent["r_offset"] != s["st_value"]:
+                continue
+            if potential_parent["r_info_type"] not in (
+                R_RISCV_GOT_HI20,
+                R_RISCV_PCREL_HI20,
+                R_RISCV_HI20,
+            ):
+                continue
+            parent = potential_parent
+            break
+        if parent is None:
+            assert 0, r
+        addr = s.section.addr + s["st_value"]
+        reloc = parent.computed_reloc
+        reloc_type = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
+
+    elif r_info_type in (
+        R_RISCV_JAL,
+        R_RISCV_RVC_BRANCH,
+        R_RISCV_RVC_JUMP,
+        R_RISCV_CALL,
+        R_RISCV_CALL_PLT,
+        R_RISCV_BRANCH,
+        R_RISCV_32_PCREL,
+        R_RISCV_PLT32,
+    ):
+        addr = s.section.addr + s["st_value"]
+        reloc = addr + r_addend - r_offset
+        reloc_type = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
+
+    elif r_info_type in (
+        R_RISCV_ADD8,
+        R_RISCV_ADD16,
+        R_RISCV_ADD32,
+        R_RISCV_ADD64,
+        R_RISCV_SUB6,
+        R_RISCV_SUB8,
+        R_RISCV_SUB16,
+        R_RISCV_SUB32,
+        R_RISCV_SUB64,
+        R_RISCV_SET6,
+        R_RISCV_SET8,
+        R_RISCV_SET16,
+        R_RISCV_SET32,
+    ):
+        value = s.section.addr + s["st_value"] + r_addend
+        reloc_type, *reloc_args = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
+
+    else:
+        # Unknown/unsupported relocation
+        assert 0, r_info_type
+
+    # Write relocation
+    if reloc_type == "riscv_hi20":
+        # Patch the upper 20 bits of the opcode
+        upper, _ = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_lo12i":
+        # Patch the lower 12 bits of an I-opcode immediate.
+        _, lower = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFFFFF) | ((lower & 0xFFF) << 20)) & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_lo12s":
+        # Patch the lower 12 bits of an S-opcode immediate.
+        _, lower = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFE000F80) | ((lower & 0xFE0) << 20) | ((lower & 0x1F) << 7))
+            & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_cb":
+        # Patch the target of a compressed branch opcode
+        (existing,) = struct.unpack_from("<H", env.full_text, r_offset)
+        struct.pack_into(
+            "<H",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0xE383)
+                | ((reloc & 0x100) << 4)
+                | ((reloc & 0xC0) >> 1)
+                | ((reloc & 0x20) >> 3)
+                | ((reloc & 0x18) << 7)
+                | ((reloc & 0x06) << 2)
+            )
+            & 0xFFFF,
+        )
+    elif reloc_type == "riscv_cj":
+        # Patch the target of a compressed jump opcode
+        (existing,) = struct.unpack_from("<H", env.full_text, r_offset)
+        struct.pack_into(
+            "<H",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0xE003)
+                | ((reloc & 0x800) << 1)
+                | ((reloc & 0x400) >> 2)
+                | ((reloc & 0x300) << 1)
+                | ((reloc & 0x80) >> 1)
+                | ((reloc & 0x40) << 1)
+                | ((reloc & 0x20) >> 3)
+                | ((reloc & 0x10) << 7)
+                | ((reloc & 0x0E) << 2)
+            )
+            & 0xFFFF,
+        )
+    elif reloc_type == "riscv_call":
+        # Patch a pair of opcodes forming a call operation
+        upper, lower = split_riscv_address(reloc)
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            ((existing & 0xFFF) | upper) & 0xFFFFFFFF,
+        )
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset + 4)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset + 4,
+            ((existing & 0xFFFFF) | (lower << 20)) & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_b":
+        # Patch a conditional opcode
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0x01FFF07F)
+                | ((reloc & 0x1000) << 19)
+                | ((reloc & 0x800) >> 4)
+                | ((reloc & 0x7E0) << 20)
+                | ((reloc & 0x1E) << 7)
+            )
+            & 0xFFFFFFFF,
+        )
+    elif reloc_type == "riscv_j":
+        # Patch a jump/jump with link opcode
+        (existing,) = struct.unpack_from("<I", env.full_text, r_offset)
+        struct.pack_into(
+            "<I",
+            env.full_text,
+            r_offset,
+            (
+                (existing & 0xFFF)
+                | ((reloc & 0x100000) << 11)
+                | (reloc & 0xFF000)
+                | ((reloc & 0x800) << 9)
+                | ((reloc & 0x7FE) << 20)
+            ),
+        )
+    elif reloc_type == "riscv_addsub":
+        (fmt, bits, multiplier) = reloc_args
+        (existing,) = struct.unpack_from(fmt, env.full_text, r_offset)
+        mask = (1 << bits) - 1
+        value = (existing & mask) + (value * multiplier)
+        if value < 0:
+            value = (1 << bits) + value
+        struct.pack_into(fmt, env.full_text, r_offset, (existing & ~mask) | (value & mask))
+    elif reloc_type == "riscv_set":
+        (fmt, bits) = reloc_args
+        (existing,) = struct.unpack_from(fmt, env.full_text, r_offset)
+        mask = (1 << bits) - 1
+        struct.pack_into(fmt, env.full_text, r_offset, (existing & ~mask) | (value & mask))
+    elif reloc_type == "riscv_32pcrel":
+        # Write the distance from the current PC
+        struct.pack_into("<I", env.full_text, r_offset, reloc & 0xFFFFFFFF)
+    else:
+        assert 0, reloc_type
+
+    return addr, value
+
+
+def load_object_file(env, f, felf):
+    elf = elffile.ELFFile(f)
+    env.check_arch(elf["e_machine"])
+
+    # Get symbol table
+    symtab = list(elf.get_section_by_name(".symtab").iter_symbols())
+
+    # Load needed sections from ELF file
+    sections_shndx = {}  # maps elf shndx to Section object
+    for idx, s in enumerate(elf.iter_sections()):
+        if s.header.sh_type in ("SHT_PROGBITS", "SHT_NOBITS"):
+            if s.data_size == 0:
+                # Ignore empty sections
+                pass
+            elif s.name.startswith((".literal", ".text", ".rodata", ".data.rel.ro", ".bss")):
+                sec = Section.from_elfsec(s, felf)
+                sections_shndx[idx] = sec
+                if s.name.startswith(".literal"):
+                    env.literal_sections.append(sec)
                 else:
-                    # Ignore section
-                    pass
-            elif s.header.sh_type in ("SHT_REL", "SHT_RELA"):
-                shndx = s.header.sh_info
-                if shndx in sections_shndx:
-                    sec = sections_shndx[shndx]
-                    sec.reloc_name = s.name
-                    sec.reloc = list(s.iter_relocations())
-                    for r in sec.reloc:
-                        r.sym = symtab[r["r_info_sym"]]
-
-        # Link symbols to their sections, and update known and unresolved symbols
-        for sym in symtab:
-            sym.filename = felf
-            shndx = sym.entry["st_shndx"]
+                    env.sections.append(sec)
+            elif s.name.startswith(".data"):
+                raise LinkError("{}: {} non-empty".format(felf, s.name))
+            else:
+                # Ignore section
+                pass
+        elif s.header.sh_type in ("SHT_REL", "SHT_RELA"):
+            shndx = s.header.sh_info
             if shndx in sections_shndx:
-                # Symbol with associated section
-                sym.section = sections_shndx[shndx]
-                if sym["st_info"]["bind"] == "STB_GLOBAL":
-                    # Defined global symbol
-                    if sym.name in env.known_syms and not sym.name.startswith(
-                        "__x86.get_pc_thunk."
-                    ):
-                        raise LinkError("duplicate symbol: {}".format(sym.name))
-                    env.known_syms[sym.name] = sym
-            elif sym.entry["st_shndx"] == "SHN_UNDEF" and sym["st_info"]["bind"] == "STB_GLOBAL":
-                # Undefined global symbol, needs resolving
-                env.unresolved_syms.append(sym)
+                sec = sections_shndx[shndx]
+                sec.reloc_name = s.name
+                sec.reloc = list(s.iter_relocations())
+                for r in sec.reloc:
+                    r.sym = symtab[r["r_info_sym"]]
+
+    # Link symbols to their sections, and update known and unresolved symbols
+    dup_errors = []
+    for sym in symtab:
+        sym.filename = felf
+        shndx = sym.entry["st_shndx"]
+        if shndx in sections_shndx:
+            # Symbol with associated section
+            sym.section = sections_shndx[shndx]
+            if sym["st_info"]["bind"] in ("STB_GLOBAL", "STB_WEAK"):
+                # Defined global symbol
+                if sym.name in env.known_syms and not sym.name.startswith("__x86.get_pc_thunk."):
+                    dup_errors.append("duplicate symbol: {}".format(sym.name))
+                env.known_syms[sym.name] = sym
+        elif sym.entry["st_shndx"] == "SHN_UNDEF" and sym["st_info"]["bind"] == "STB_GLOBAL":
+            # Undefined global symbol, needs resolving
+            env.unresolved_syms.append(sym)
+    if len(dup_errors):
+        raise LinkError("\n".join(dup_errors))
 
 
-def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
+def link_objects(env, native_qstr_vals_len):
     # Build GOT information
     if env.arch.name == "EM_XTENSA":
         build_got_xtensa(env)
@@ -761,14 +1166,14 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     # Create section to contain mp_native_obj_table
     env.obj_table_section = Section(
         ".external.obj_table",
-        bytearray(native_qstr_objs_len * env.arch.word_size),
+        bytearray(0 * env.arch.word_size),  # currently empty
         env.arch.word_size,
     )
 
     # Resolve unknown symbols
     mp_fun_table_sec = Section(".external.mp_fun_table", b"", 0)
     fun_table = {
-        key: 67 + idx
+        key: MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET + idx
         for idx, key in enumerate(
             [
                 "mp_type_type",
@@ -780,6 +1185,7 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
                 "mp_type_fun_builtin_2",
                 "mp_type_fun_builtin_3",
                 "mp_type_fun_builtin_var",
+                "mp_type_Exception",
                 "mp_stream_read_obj",
                 "mp_stream_readinto_obj",
                 "mp_stream_unbuffered_readline_obj",
@@ -787,6 +1193,8 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             ]
         )
     }
+
+    undef_errors = []
     for sym in env.unresolved_syms:
         assert sym["st_value"] == 0
         if sym.name == "_GLOBAL_OFFSET_TABLE_":
@@ -804,7 +1212,10 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
                 sym.section = mp_fun_table_sec
                 sym.mp_fun_table_offset = fun_table[sym.name]
             else:
-                raise LinkError("{}: undefined symbol: {}".format(sym.filename, sym.name))
+                undef_errors.append("{}: undefined symbol: {}".format(sym.filename, sym.name))
+
+    if len(undef_errors):
+        raise LinkError("\n".join(undef_errors))
 
     # Align sections, assign their addresses, and create full_text
     env.full_text = bytearray(env.arch.asm_jump(8))  # dummy, to be filled in later
@@ -899,7 +1310,7 @@ class MPYOutput:
             self.write_uint(n)
 
 
-def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
+def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
     # Write jump instruction to start of text
     jump = env.arch.asm_jump(entry_offset)
     env.full_text[: len(jump)] = jump
@@ -927,7 +1338,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.write_uint(1 + len(native_qstr_vals))
 
     # MPY: n_obj
-    out.write_uint(len(native_qstr_objs))
+    out.write_uint(0)
 
     # MPY: qstr table
     out.write_qstr(fmpy)  # filename
@@ -935,10 +1346,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
         out.write_qstr(q)
 
     # MPY: object table
-    for q in native_qstr_objs:
-        out.write_bytes(bytearray([MP_PERSISTENT_OBJ_STR]))
-        out.write_uint(len(q))
-        out.write_bytes(bytes(q, "utf8") + b"\x00")
+    # <empty>
 
     # MPY: kind/len
     out.write_uint(len(env.full_text) << 3 | (MP_CODE_NATIVE_VIPER - MP_CODE_BYTECODE))
@@ -965,11 +1373,15 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
         out.write_bytes(env.full_rodata)
 
     # MPY: relocation information
+    # See py/persistentcode.c:mp_native_relocate for meaning of the `kind` integer values.
     prev_kind = None
+    prev_base = None
+    prev_offset = None
+    prev_n = None
     for base, addr, kind in env.mpy_relocs:
         if isinstance(kind, str) and kind.startswith(".text"):
             kind = 0
-        elif kind in (".rodata", ".data.rel.ro"):
+        elif isinstance(kind, str) and kind.startswith((".rodata", ".data.rel.ro")):
             if env.arch.separate_rodata:
                 kind = rodata_const_table_idx
             else:
@@ -1013,7 +1425,7 @@ def do_preprocess(args):
     if args.output is None:
         assert args.files[0].endswith(".c")
         args.output = args.files[0][:-1] + "config.h"
-    static_qstrs, qstr_vals, qstr_objs = extract_qstrs(args.files)
+    static_qstrs, qstr_vals = extract_qstrs(args.files)
     with open(args.output, "w") as f:
         print(
             "#include <stdint.h>\n"
@@ -1026,11 +1438,6 @@ def do_preprocess(args):
             print("#define %s (%u)" % (q, i + 1), file=f)
         for i, q in enumerate(sorted(qstr_vals)):
             print("#define %s (mp_native_qstr_table[%d])" % (q, i + 1), file=f)
-        for i, q in enumerate(sorted(qstr_objs)):
-            print(
-                "#define MP_OBJ_NEW_QSTR_%s ((mp_obj_t)mp_native_obj_table[%d])" % (q, i),
-                file=f,
-            )
         print("extern const uint16_t mp_native_qstr_table[];", file=f)
         print("extern const mp_uint_t mp_native_obj_table[];", file=f)
 
@@ -1040,25 +1447,38 @@ def do_link(args):
         assert args.files[0].endswith(".o")
         args.output = args.files[0][:-1] + "mpy"
     native_qstr_vals = []
-    native_qstr_objs = []
     if args.qstrs is not None:
         with open(args.qstrs) as f:
             for l in f:
                 m = re.match(r"#define MP_QSTR_([A-Za-z0-9_]*) \(mp_native_", l)
                 if m:
                     native_qstr_vals.append(m.group(1))
-                else:
-                    m = re.match(r"#define MP_OBJ_NEW_QSTR_MP_QSTR_([A-Za-z0-9_]*)", l)
-                    if m:
-                        native_qstr_objs.append(m.group(1))
     log(LOG_LEVEL_2, "qstr vals: " + ", ".join(native_qstr_vals))
-    log(LOG_LEVEL_2, "qstr objs: " + ", ".join(native_qstr_objs))
     env = LinkEnv(args.arch)
     try:
-        for file in args.files:
-            load_object_file(env, file)
-        link_objects(env, len(native_qstr_vals), len(native_qstr_objs))
-        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals, native_qstr_objs)
+        # Load object files
+        for fn in args.files:
+            with open(fn, "rb") as f:
+                load_object_file(env, f, fn)
+
+        if args.libs:
+            # Load archive info
+            archives = []
+            for item in args.libs:
+                archives.extend(ar_util.load_archive(item))
+            # List symbols to look for
+            syms = set(sym.name for sym in env.unresolved_syms)
+            # Resolve symbols from libs
+            lib_objs, _ = ar_util.resolve(archives, syms)
+            # Load extra object files from libs
+            for ar, obj in lib_objs:
+                obj_name = ar.fn + ":" + obj
+                log(LOG_LEVEL_2, "using " + obj_name)
+                with ar.open(obj) as f:
+                    load_object_file(env, f, obj_name)
+
+        link_objects(env, len(native_qstr_vals))
+        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals)
     except LinkError as er:
         print("LinkError:", er.args[0])
         sys.exit(1)
@@ -1067,13 +1487,16 @@ def do_link(args):
 def main():
     import argparse
 
-    cmd_parser = argparse.ArgumentParser(description="Run scripts on the pyboard.")
+    cmd_parser = argparse.ArgumentParser(description="Link native object files into a MPY bundle.")
     cmd_parser.add_argument(
         "--verbose", "-v", action="count", default=1, help="increase verbosity"
     )
     cmd_parser.add_argument("--arch", default="x64", help="architecture")
     cmd_parser.add_argument("--preprocess", action="store_true", help="preprocess source files")
     cmd_parser.add_argument("--qstrs", default=None, help="file defining additional qstrs")
+    cmd_parser.add_argument(
+        "--libs", "-l", dest="libs", action="append", help="static .a libraries to link"
+    )
     cmd_parser.add_argument(
         "--output", "-o", default=None, help="output .mpy file (default to input with .o->.mpy)"
     )

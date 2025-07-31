@@ -25,11 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #include "py/obj.h"
 
-STATIC mp_obj_t mp_time_time_get(void) {
+static mp_obj_t mp_time_time_get(void) {
     /* The absence of FP support is deliberate. The Zephyr port uses
      * single precision floats so the fraction component will start to
      * lose precision on devices with a long uptime.

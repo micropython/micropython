@@ -54,15 +54,25 @@ pushd ${MICROPY_AUTOBUILD_MICROPYTHON_REPO}
 make -C mpy-cross
 
 # make the firmware tag
+# final filename will be <BOARD><-VARIANT>-<DATE>-v<SEMVER>.ext
+# where SEMVER is vX.Y.Z or vX.Y.Z-preview.N.gHASH or vX.Y.Z-preview.N.gHASH.dirty
 FW_DATE=$(date '+%Y%m%d')
-FW_GIT="$(git describe --dirty || echo unknown)"
-FW_TAG="-$FW_DATE-unstable-$FW_GIT"
+# same logic as makeversionhdr.py, convert git-describe output into semver-compatible
+FW_GIT_TAG="$(git describe --tags --dirty --always --match 'v[1-9].*')"
+FW_SEMVER_MAJOR_MINOR_PATCH="$(echo $FW_GIT_TAG | cut -d'-' -f1)"
+FW_SEMVER_PRERELEASE="$(echo $FW_GIT_TAG | cut -s -d'-' -f2-)"
+if [ -z "$FW_SEMVER_PRERELEASE" ]; then
+    FW_SEMVER="$FW_SEMVER_MAJOR_MINOR_PATCH"
+else
+    FW_SEMVER="$FW_SEMVER_MAJOR_MINOR_PATCH-$(echo $FW_SEMVER_PRERELEASE | tr - .)"
+fi
+FW_TAG="-$FW_DATE-$FW_SEMVER"
 
 # build new firmware
 cd ports/cc3200
-${AUTODIR}/build-cc3200-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+build_cc3200_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
-${AUTODIR}/build-esp8266-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+build_esp8266_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp32
 (source ${IDF_PATH_V50}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
 cd ../mimxrt
@@ -77,7 +87,6 @@ cd ../samd
 build_samd_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../stm32
 build_stm32_boards ${FW_TAG} ${LOCAL_FIRMWARE}
-${AUTODIR}/build-stm32-extra.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 
 popd
 

@@ -14,9 +14,9 @@ flash_config_start  = flash_start + 0x00000400;
 flash_config_size   = 0x00000C00;
 ivt_start           = flash_start + 0x00001000;
 ivt_size            = 0x00001000;
-interrupts_start    = flash_start + 0x00002000;
+interrupts_start    = flash_start + 0x0000C000;
 interrupts_size     = 0x00000400;
-text_start          = flash_start + 0x00002400;
+text_start          = flash_start + 0x0000C400;
 vfs_start           = flash_start + 0x00100000;
 text_size           = ((vfs_start) - (text_start));
 vfs_size            = ((flash_end) - (vfs_start));
@@ -27,8 +27,8 @@ dtcm_size           = 0x00008000;
 ocrm_start          = 0x20200000;
 ocrm_size           = 0x00010000;
 
-/* 20kiB stack. */
-__stack_size__ = 0x5000;
+/* 16kiB stack. */
+__stack_size__ = 0x4000;
 _estack = __StackTop;
 _sstack = __StackLimit;
 

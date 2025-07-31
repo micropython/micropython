@@ -27,16 +27,17 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_i2c.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include CLOCK_CONFIG_H
 #include "pin.h"
 
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"
 
+#define DEFAULT_I2C_ID          (0)
 #define DEFAULT_I2C_FREQ        (400000)
 #define DEFAULT_I2C_DRIVE       (6)
+#define DEFAULT_I2C_TIMEOUT     (50000)
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
@@ -56,8 +57,8 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-STATIC const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
-STATIC LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
+static const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
+static LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
 static const iomux_table_t iomux_table[] = { IOMUX_TABLE_I2C };
 
 #define MICROPY_HW_I2C_NUM     ARRAY_SIZE(i2c_index_table)
@@ -81,18 +82,20 @@ bool lpi2c_set_iomux(int8_t hw_i2c, uint8_t drive) {
     }
 }
 
-STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, freq=%u)",
-        self->i2c_id, self->master_config->baudRate_Hz);
+    mp_printf(print, "I2C(%u, freq=%u, timeout=%u)",
+        self->i2c_id, self->master_config->baudRate_Hz,
+        self->master_config->pinLowTimeout_ns / 1000);
 }
 
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_freq, ARG_drive};
+    enum { ARG_id, ARG_freq, ARG_drive, ARG_timeout};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = DEFAULT_I2C_ID} },
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_DRIVE} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_TIMEOUT} },
     };
 
     // Parse args.
@@ -100,7 +103,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get I2C bus.
-    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    int i2c_id = args[ARG_id].u_int;
     if (i2c_id < 0 || i2c_id >= MICROPY_HW_I2C_NUM || i2c_index_table[i2c_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
@@ -122,6 +125,9 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     LPI2C_MasterGetDefaultConfig(self->master_config);
     // Initialise the I2C peripheral.
     self->master_config->baudRate_Hz = args[ARG_freq].u_int;
+    if (args[ARG_timeout].u_int >= 0) {
+        self->master_config->pinLowTimeout_ns = args[ARG_timeout].u_int * 1000; // to be set as ns
+    }
     LPI2C_MasterInit(self->i2c_inst, self->master_config, BOARD_BOOTCLOCKRUN_LPI2C_CLK_ROOT);
 
     return MP_OBJ_FROM_PTR(self);
@@ -134,7 +140,7 @@ static void lpi2c_master_callback(LPI2C_Type *base, lpi2c_master_handle_t *handl
     self->transfer_status = status;
 }
 
-STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
     status_t ret;
     lpi2c_master_handle_t g_master_handle;
@@ -186,7 +192,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     }
 }
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+static const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
 };

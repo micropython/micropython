@@ -28,8 +28,23 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 #include "rtc.h"
-#include "genhdr/pllfreqtable.h"
 #include "extmod/modbluetooth.h"
+#include "py/mpconfig.h"
+#ifndef NO_QSTR
+#include "genhdr/pllfreqtable.h"
+#endif
+
+// These will be defined / expanded in pre-processor output for use in the
+// boards/pllvalues.py script, then generally stripped from final firmware.
+#ifdef HSI_VALUE
+static uint32_t __attribute__((unused)) micropy_hw_hsi_value = HSI_VALUE;
+#endif
+#ifdef HSE_VALUE
+static uint32_t __attribute__((unused)) micropy_hw_hse_value = HSE_VALUE;
+#endif
+#ifdef MICROPY_HW_CLK_PLLM
+static uint32_t __attribute__((unused)) micropy_hw_clk_pllm = MICROPY_HW_CLK_PLLM;
+#endif
 
 #if defined(STM32H5) || defined(STM32H7)
 #define RCC_SR          RSR
@@ -47,6 +62,8 @@
 // TODO
 #define POWERCTRL_GET_VOLTAGE_SCALING() PWR_REGULATOR_VOLTAGE_SCALE0
 #elif defined(STM32H723xx)
+#define POWERCTRL_GET_VOLTAGE_SCALING() LL_PWR_GetRegulVoltageScaling()
+#elif defined(STM32H5)
 #define POWERCTRL_GET_VOLTAGE_SCALING() LL_PWR_GetRegulVoltageScaling()
 #else
 #define POWERCTRL_GET_VOLTAGE_SCALING()     \
@@ -160,14 +177,14 @@ typedef struct _sysclk_scaling_table_entry_t {
 } sysclk_scaling_table_entry_t;
 
 #if defined(STM32F7)
-STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+static const sysclk_scaling_table_entry_t volt_scale_table[] = {
     { 151, PWR_REGULATOR_VOLTAGE_SCALE3 },
     { 180, PWR_REGULATOR_VOLTAGE_SCALE2 },
     // Above 180MHz uses default PWR_REGULATOR_VOLTAGE_SCALE1
 };
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
     defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
-STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+static const sysclk_scaling_table_entry_t volt_scale_table[] = {
     // See table 15 "FLASH recommended number of wait states and programming delay" of RM0455.
     {88, PWR_REGULATOR_VOLTAGE_SCALE3},
     {160, PWR_REGULATOR_VOLTAGE_SCALE2},
@@ -175,7 +192,7 @@ STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
     {280, PWR_REGULATOR_VOLTAGE_SCALE0},
 };
 #elif defined(STM32H7)
-STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+static const sysclk_scaling_table_entry_t volt_scale_table[] = {
     // See table 55 "Kernel clock distribution overview" of RM0433.
     {200, PWR_REGULATOR_VOLTAGE_SCALE3},
     {300, PWR_REGULATOR_VOLTAGE_SCALE2},
@@ -184,7 +201,7 @@ STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
 };
 #endif
 
-STATIC int powerctrl_config_vos(uint32_t sysclk_mhz) {
+static int powerctrl_config_vos(uint32_t sysclk_mhz) {
     #if defined(STM32F7) || defined(STM32H7)
     uint32_t volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
     for (int i = 0; i < MP_ARRAY_SIZE(volt_scale_table); ++i) {
@@ -289,7 +306,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
 
-STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
+static uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
     if (wanted_div <= 1) {
         return RCC_HCLK_DIV1;
@@ -333,7 +350,7 @@ STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #endif
 }
 
-STATIC uint32_t calc_apb1_div(uint32_t wanted_div) {
+static uint32_t calc_apb1_div(uint32_t wanted_div) {
     #if defined(STM32H7)
     if (wanted_div <= 1) {
         return RCC_APB1_DIV1;
@@ -361,7 +378,7 @@ STATIC uint32_t calc_apb1_div(uint32_t wanted_div) {
     #endif
 }
 
-STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
+static uint32_t calc_apb2_div(uint32_t wanted_div) {
     #if defined(STM32H7)
     if (wanted_div <= 1) {
         return RCC_APB2_DIV1;
@@ -498,6 +515,9 @@ set_clk:
     RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
     RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
     RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
+    #if defined(STM32G0) || defined(STM32H5)
+    RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
+    #endif
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
@@ -506,7 +526,24 @@ set_clk:
     RCC_OscInitStruct.PLL.PLLP = p;
     RCC_OscInitStruct.PLL.PLLQ = q;
 
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    RCC_OscInitStruct.PLL.PLLR = 0;
+    if (MICROPY_HW_CLK_VALUE / 1000000 <= 2 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_0; // 1-2MHz
+    } else if (MICROPY_HW_CLK_VALUE / 1000000 <= 4 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_1; // 2-4MHz
+    } else if (MICROPY_HW_CLK_VALUE / 1000000 <= 8 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_2; // 4-8MHz
+    } else {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_3; // 8-16MHz
+    }
+    if (MICROPY_HW_CLK_VALUE / 1000000 * n <= 420 * m) {
+        RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1_VCORANGE_MEDIUM; // 150-420MHz
+    } else {
+        RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1_VCORANGE_WIDE; // 192-836MHz
+    }
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    #elif defined(STM32H7)
     RCC_OscInitStruct.PLL.PLLR = 0;
     if (MICROPY_HW_CLK_VALUE / 1000000 <= 2 * m) {
         RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_0; // 1-2MHz
@@ -777,6 +814,14 @@ void powerctrl_enter_stop_mode(void) {
     HAL_PWREx_EnableFlashPowerDown();
     #endif
 
+    #if defined(STM32H5)
+    // Save RCC CR to re-enable OSCs and PLLs after wake up from low power mode.
+    uint32_t rcc_cr = RCC->CR;
+
+    // Save the current voltage scaling level to restore after exiting low power mode.
+    uint32_t vscaling = POWERCTRL_GET_VOLTAGE_SCALING();
+    #endif
+
     #if defined(STM32H7)
     // Save RCC CR to re-enable OSCs and PLLs after wake up from low power mode.
     uint32_t rcc_cr = RCC->CR;
@@ -797,10 +842,18 @@ void powerctrl_enter_stop_mode(void) {
     powerctrl_low_power_prep_wb55();
     #endif
 
+    #if defined(MICROPY_BOARD_PRE_STOP)
+    MICROPY_BOARD_PRE_STOP
+    #endif
+
     #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+    #endif
+
+    #if defined(MICROPY_BOARD_POST_STOP)
+    MICROPY_BOARD_POST_STOP
     #endif
 
     // reconfigure the system clock after waking up
@@ -817,9 +870,9 @@ void powerctrl_enter_stop_mode(void) {
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_HSI48) {
     }
 
-    #else
+    #else // defined(STM32F0)
 
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     // When exiting from Stop or Standby modes, the Run mode voltage scaling is reset to
     // the default VOS3 value. Restore the voltage scaling to the previous voltage scale.
     if (vscaling != POWERCTRL_GET_VOLTAGE_SCALING()) {
@@ -859,7 +912,7 @@ void powerctrl_enter_stop_mode(void) {
     while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1) {
     }
 
-    #else
+    #else // defined(STM32H5)
 
     // enable PLL
     __HAL_RCC_PLL_ENABLE();
@@ -879,7 +932,7 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
-    #endif
+    #endif // defined(STM32H5)
 
     powerctrl_disable_hsi_if_unused();
 
@@ -888,6 +941,15 @@ void powerctrl_enter_stop_mode(void) {
         // Enable PLLSAI if it is selected as 48MHz source
         RCC->CR |= RCC_CR_PLL48_ON;
         while (!(RCC->CR & RCC_CR_PLL48_RDY)) {
+        }
+    }
+    #endif
+
+    #if defined(STM32H5)
+    if (rcc_cr & RCC_CR_HSI48ON) {
+        // Enable HSI48.
+        LL_RCC_HSI48_Enable();
+        while (!LL_RCC_HSI48_IsReady()) {
         }
     }
     #endif
@@ -954,7 +1016,7 @@ void powerctrl_enter_stop_mode(void) {
     enable_irq(irq_state);
 }
 
-void powerctrl_enter_standby_mode(void) {
+NORETURN void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
 
     #if defined(MICROPY_BOARD_ENTER_STANDBY)
@@ -1075,5 +1137,7 @@ void powerctrl_enter_standby_mode(void) {
 
     // enter standby mode
     HAL_PWR_EnterSTANDBYMode();
-    // we never return; MCU is reset on exit from standby
+
+    // MCU is reset on exit from standby, but just in case it's not, do an explicit reset.
+    powerctrl_mcu_reset();
 }

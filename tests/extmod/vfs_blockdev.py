@@ -1,10 +1,10 @@
 # Test for behaviour of combined standard and extended block device
 
 try:
-    import os
+    import vfs
 
-    os.VfsFat
-    os.VfsLfs2
+    vfs.VfsFat
+    vfs.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -65,12 +65,10 @@ def test(bdev, vfs_class):
 
 
 try:
-    import os
-
     bdev = RAMBlockDevice(50)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
-test(bdev, os.VfsFat)
-test(bdev, os.VfsLfs2)
+test(bdev, vfs.VfsFat)
+test(bdev, vfs.VfsLfs2)

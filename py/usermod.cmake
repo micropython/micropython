@@ -5,6 +5,10 @@ function(usermod_gather_sources SOURCES_VARNAME INCLUDE_DIRECTORIES_VARNAME INCL
     if (NOT ${LIB} IN_LIST ${INCLUDED_VARNAME})
         list(APPEND ${INCLUDED_VARNAME} ${LIB})
 
+        if (NOT TARGET ${LIB})
+            return()
+        endif()
+
         # Gather library sources
         get_target_property(lib_sources ${LIB} INTERFACE_SOURCES)
         if (lib_sources)
@@ -38,6 +42,16 @@ endfunction()
 # Include CMake files for user modules.
 if (USER_C_MODULES)
     foreach(USER_C_MODULE_PATH ${USER_C_MODULES})
+        # If a directory is given, append the micropython.cmake to it.
+        if (IS_DIRECTORY ${USER_C_MODULE_PATH})
+            set(USER_C_MODULE_PATH "${USER_C_MODULE_PATH}/micropython.cmake")
+        endif()
+        # Confirm the provided path exists, show abspath if not to make it clearer to fix.
+        if (NOT EXISTS ${USER_C_MODULE_PATH})
+            get_filename_component(USER_C_MODULES_ABS "${USER_C_MODULE_PATH}" ABSOLUTE)
+            message(FATAL_ERROR "USER_C_MODULES doesn't exist: ${USER_C_MODULES_ABS}")
+        endif()
+
         message("Including User C Module(s) from ${USER_C_MODULE_PATH}")
         include(${USER_C_MODULE_PATH})
     endforeach()

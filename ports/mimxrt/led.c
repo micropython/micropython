@@ -34,13 +34,13 @@
 #if defined(MICROPY_HW_LED1_PIN)
 
 const machine_led_obj_t machine_led_obj[] = {
-    { .base = {&machine_led_type}, .led_id = 1U, .led_pin = &MICROPY_HW_LED1_PIN, },
+    { .base = {&machine_led_type}, .led_id = 1U, .led_pin = MICROPY_HW_LED1_PIN, },
     #if defined(MICROPY_HW_LED2_PIN)
-    { .base = {&machine_led_type}, .led_id = 2U, .led_pin = &MICROPY_HW_LED2_PIN, },
+    { .base = {&machine_led_type}, .led_id = 2U, .led_pin = MICROPY_HW_LED2_PIN, },
     #if defined(MICROPY_HW_LED3_PIN)
-    { .base = {&machine_led_type}, .led_id = 3U, .led_pin = &MICROPY_HW_LED3_PIN, },
+    { .base = {&machine_led_type}, .led_id = 3U, .led_pin = MICROPY_HW_LED3_PIN, },
     #if defined(MICROPY_HW_LED4_PIN)
-    { .base = {&machine_led_type}, .led_id = 4U, .led_pin = &MICROPY_HW_LED4_PIN, },
+    { .base = {&machine_led_type}, .led_id = 4U, .led_pin = MICROPY_HW_LED4_PIN, },
     #endif
     #endif
     #endif
@@ -52,19 +52,7 @@ void led_init(void) {
     // Turn off LEDs and initialize
     for (mp_int_t led = 0; led < NUM_LEDS; led++) {
         const machine_pin_obj_t *led_pin = machine_led_obj[led].led_pin;
-
-        gpio_pin_config_t pin_config = {
-            .outputLogic = 1U,
-            .direction = kGPIO_DigitalOutput,
-            .interruptMode = kGPIO_NoIntmode,
-        };
-
-        GPIO_PinInit(led_pin->gpio, led_pin->pin, &pin_config);
-
-        // ALT mode for GPIO is always 5
-        IOMUXC_SetPinMux(led_pin->muxRegister, 5U, 0, 0, led_pin->configRegister,
-            1U);                 // Software Input On Field: Input Path is determined by functionality
-        IOMUXC_SetPinConfig(led_pin->muxRegister, 5U, 0, 0, led_pin->configRegister, 0x10B0U);
+        mp_hal_pin_output(led_pin);
         MICROPY_HW_LED_OFF(led_pin);
     }
 }

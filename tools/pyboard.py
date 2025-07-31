@@ -235,15 +235,17 @@ class ProcessPtyToTerminal:
             preexec_fn=os.setsid,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
-        pty_line = self.subp.stderr.readline().decode("utf-8")
+        pty_line = self.subp.stdout.readline().decode("utf-8")
         m = re.search(r"/dev/pts/[0-9]+", pty_line)
         if not m:
             print("Error: unable to find PTY device in startup line:", pty_line)
             self.close()
             sys.exit(1)
         pty = m.group()
+        # Compensate for some boards taking a bit longer to start
+        time.sleep(0.1)
         # rtscts, dsrdtr params are to workaround pyserial bug:
         # http://stackoverflow.com/questions/34831131/pyserial-does-not-play-well-with-virtual-port
         self.serial = serial.Serial(pty, interCharTimeout=1, rtscts=True, dsrdtr=True)
@@ -348,7 +350,7 @@ class Pyboard:
         return data
 
     def enter_raw_repl(self, soft_reset=True):
-        self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
+        self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
@@ -504,7 +506,7 @@ class Pyboard:
         return self.exec_(pyfile)
 
     def get_time(self):
-        t = str(self.eval("pyb.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
+        t = str(self.eval("machine.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
     def fs_exists(self, src):
@@ -528,7 +530,7 @@ class Pyboard:
         def repr_consumer(b):
             buf.extend(b.replace(b"\x04", b""))
 
-        cmd = "import os\nfor f in os.ilistdir(%s):\n" " print(repr(f), end=',')" % (
+        cmd = "import os\nfor f in os.ilistdir(%s):\n print(repr(f), end=',')" % (
             ("'%s'" % src) if src else ""
         )
         try:
@@ -546,7 +548,7 @@ class Pyboard:
     def fs_stat(self, src):
         try:
             self.exec_("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % (("'%s'" % src)), parse=True))
+            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src), parse=True))
         except PyboardError as e:
             raise e.convert(src)
 

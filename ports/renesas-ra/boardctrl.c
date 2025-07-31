@@ -32,7 +32,7 @@
 #include "led.h"
 #include "usrsw.h"
 
-STATIC void flash_error(int n) {
+static void flash_error(int n) {
     for (int i = 0; i < n; i++) {
         led_state(RA_LED1, 1);
         mp_hal_delay_ms(250);
@@ -42,7 +42,7 @@ STATIC void flash_error(int n) {
 }
 
 #if !MICROPY_HW_USES_BOOTLOADER
-STATIC uint update_reset_mode(uint reset_mode) {
+static uint update_reset_mode(uint reset_mode) {
     #if MICROPY_HW_HAS_SWITCH
     bool press_status;
 

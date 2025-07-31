@@ -77,6 +77,18 @@ typedef struct _mp_sched_item_t {
     mp_obj_t arg;
 } mp_sched_item_t;
 
+// gc_lock_depth field is a combination of the GC_COLLECT_FLAG
+// bit and a lock depth shifted GC_LOCK_DEPTH_SHIFT bits left.
+#if MICROPY_ENABLE_FINALISER
+#define GC_COLLECT_FLAG 1
+#define GC_LOCK_DEPTH_SHIFT 1
+#else
+// If finalisers are disabled then this check doesn't matter, as gc_lock()
+// is called anywhere else that heap can't be changed. So save some code size.
+#define GC_COLLECT_FLAG 0
+#define GC_LOCK_DEPTH_SHIFT 0
+#endif
+
 // This structure holds information about a single contiguous area of
 // memory reserved for the memory manager.
 typedef struct _mp_state_mem_area_t {
@@ -93,6 +105,7 @@ typedef struct _mp_state_mem_area_t {
     byte *gc_pool_end;
 
     size_t gc_last_free_atb_index;
+    size_t gc_last_used_block; // The block ID of the highest block allocated in the area
 } mp_state_mem_area_t;
 
 // This structure hold information about the memory allocation system.
@@ -132,7 +145,7 @@ typedef struct _mp_state_mem_t {
 
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the GC thread-safe.
-    mp_thread_mutex_t gc_mutex;
+    mp_thread_recursive_mutex_t gc_mutex;
     #endif
 } mp_state_mem_t;
 
@@ -248,8 +261,10 @@ typedef struct _mp_state_vm_t {
     #endif
 } mp_state_vm_t;
 
-// This structure holds state that is specific to a given thread.
-// Everything in this structure is scanned for root pointers.
+// This structure holds state that is specific to a given thread. Everything
+// in this structure is scanned for root pointers.  Anything added to this
+// structure must have corresponding initialisation added to thread_entry (in
+// py/modthread.c).
 typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;
@@ -265,6 +280,7 @@ typedef struct _mp_state_thread_t {
     #endif
 
     // Locking of the GC is done per thread.
+    // See GC_LOCK_DEPTH_SHIFT for an explanation of this field.
     uint16_t gc_lock_depth;
 
     ////////////////////////////////////////////////////////////
@@ -290,6 +306,10 @@ typedef struct _mp_state_thread_t {
     bool prof_callback_is_executing;
     struct _mp_code_state_t *current_code_state;
     #endif
+
+    #if MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT
+    struct _mp_obj_ssl_context_t *tls_ssl_context;
+    #endif
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.
@@ -307,7 +327,6 @@ extern mp_state_ctx_t mp_state_ctx;
 #define MP_STATE_MAIN_THREAD(x) (mp_state_ctx.thread.x)
 
 #if MICROPY_PY_THREAD
-extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
 #define mp_thread_is_main_thread() (mp_thread_get_state() == &mp_state_ctx.thread)
 #else

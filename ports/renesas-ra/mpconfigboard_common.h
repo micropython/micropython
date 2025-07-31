@@ -256,9 +256,9 @@
 // Enable hardware I2C if there are any peripherals defined
 #if defined(MICROPY_HW_I2C0_SCL) || defined(MICROPY_HW_I2C1_SCL) \
     || defined(MICROPY_HW_I2C2_SCL)
-#define MICROPY_HW_ENABLE_HW_I2C (1)
+#define MICROPY_PY_MACHINE_I2C (1)
 #else
-#define MICROPY_HW_ENABLE_HW_I2C (0)
+#define MICROPY_PY_MACHINE_I2C (0)
 #endif
 
 #if defined(MICROPY_HW_PWM_0A) || defined(MICROPY_HW_PWM_0B) \

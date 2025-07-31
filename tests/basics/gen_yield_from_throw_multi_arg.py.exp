@@ -1,0 +1,8 @@
+1
+got ValueError from upstream! ()
+str1
+got TypeError from downstream!
+1
+got ValueError from upstream! (123,)
+str1
+got TypeError from downstream!

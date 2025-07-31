@@ -14,7 +14,7 @@ async def handle_connection(reader, writer):
     await writer.drain()
 
     # Split the first 2 bytes up so the client must wait for the second one
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(1)
 
     writer.write(b"b")
     await writer.drain()

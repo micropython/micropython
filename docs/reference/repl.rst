@@ -143,10 +143,12 @@ the auto-indent feature, and changes the prompt from ``>>>`` to ``===``. For exa
 Paste Mode allows blank lines to be pasted. The pasted text is compiled as if
 it were a file. Pressing Ctrl-D exits paste mode and initiates the compilation.
 
+.. _repl_soft_reset:
+
 Soft reset
 ----------
 
-A soft reset will reset the python interpreter, but tries not to reset the
+A :ref:`soft_reset` will reset the python interpreter, but tries not to reset the
 method by which you're connected to the MicroPython board (USB-serial, or Wifi).
 
 You can perform a soft reset from the REPL by pressing Ctrl-D, or from your python
@@ -182,6 +184,9 @@ variables no longer exist:
     ['__name__', 'pyb']
     >>>
 
+For more information about reset types and the startup process, see
+:doc:`/reference/reset_boot`.
+
 The special variable _ (underscore)
 -----------------------------------
 
@@ -196,6 +201,8 @@ So you can use the underscore to save the result in a variable. For example:
     15
     >>>
 
+.. _raw_repl:
+
 Raw mode and raw-paste mode
 ---------------------------
 
@@ -206,7 +213,7 @@ echo turned off, and with optional flow control.
 Raw mode is entered using Ctrl-A. You then send your python code, followed by
 a Ctrl-D. The Ctrl-D will be acknowledged by 'OK' and then the python code will
 be compiled and executed. Any output (or errors) will be sent back. Entering
-Ctrl-B will leave raw mode and return the the regular (aka friendly) REPL.
+Ctrl-B will leave raw mode and return the regular (aka friendly) REPL.
 
 Raw-paste mode is an additional mode within the raw REPL that includes flow control,
 and which compiles code as it receives it. This makes it more robust for high-speed

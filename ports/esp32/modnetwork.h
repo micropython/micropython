@@ -44,6 +44,7 @@ typedef struct _base_if_obj_t {
     mp_obj_base_t base;
     esp_interface_t if_id;
     esp_netif_t *netif;
+    volatile bool active;
 } base_if_obj_t;
 
 extern const mp_obj_type_t esp_network_wlan_type;
@@ -53,8 +54,12 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_get_lan_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_ipconfig_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_nic_ipconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_config_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
+
+mp_obj_t esp_ifname(esp_netif_t *netif);
 
 NORETURN void esp_exceptions_helper(esp_err_t e);
 

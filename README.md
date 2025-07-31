@@ -1,4 +1,4 @@
-[![CI badge](https://github.com/micropython/micropython/workflows/unix%20port/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
+[![Unix CI badge](https://github.com/micropython/micropython/actions/workflows/ports_unix.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![STM32 CI badge](https://github.com/micropython/micropython/actions/workflows/ports_stm32.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![Docs CI badge](https://github.com/micropython/micropython/actions/workflows/docs.yml/badge.svg)](https://docs.micropython.org/) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
 
 The MicroPython project
 =======================
@@ -19,7 +19,7 @@ Python 3.5 and some select features from later versions). The following core
 datatypes are provided: `str`(including basic Unicode support), `bytes`,
 `bytearray`, `tuple`, `list`, `dict`, `set`, `frozenset`, `array.array`,
 `collections.namedtuple`, classes and instances. Builtin modules include
-`os`, `sys`, `time`, `re`, and `struct`, etc. Select ports have support for
+`os`, `sys`, `time`, `re`, and `struct`, etc. Some ports have support for
 `_thread` module (multithreading), `socket` and `ssl` for networking, and
 `asyncio`. Note that only a subset of Python 3 functionality is implemented
 for the data types and modules.
@@ -35,8 +35,8 @@ DAC, PWM, SPI, I2C, CAN, Bluetooth, and USB.
 Getting started
 ---------------
 
-See the [online documentation](https://docs.micropython.org/) for API
-references and information about using MicroPython and information about how
+See the [online documentation](https://docs.micropython.org/) for the API
+reference and information about using MicroPython and information about how
 it is implemented.
 
 We use [GitHub Discussions](https://github.com/micropython/micropython/discussions)
@@ -108,18 +108,17 @@ track of the code size of the core runtime and VM.
 
 In addition, the following ports are provided in this repository:
  - [cc3200](ports/cc3200) -- Texas Instruments CC3200 (including PyCom WiPy).
- - [esp32](ports/esp32) -- Espressif ESP32 SoC (including ESP32S2, ESP32S3, ESP32C3).
+ - [esp32](ports/esp32) -- Espressif ESP32 SoC (including ESP32S2, ESP32S3, ESP32C3, ESP32C6).
  - [esp8266](ports/esp8266) -- Espressif ESP8266 SoC.
  - [mimxrt](ports/mimxrt) -- NXP m.iMX RT (including Teensy 4.x).
  - [nrf](ports/nrf) -- Nordic Semiconductor nRF51 and nRF52.
  - [pic16bit](ports/pic16bit) -- Microchip PIC 16-bit.
  - [powerpc](ports/powerpc) -- IBM PowerPC (including Microwatt)
- - [qemu-arm](ports/qemu-arm) -- QEMU-based emulated target, for testing)
+ - [qemu](ports/qemu) -- QEMU-based emulated target (for testing)
  - [renesas-ra](ports/renesas-ra) -- Renesas RA family.
  - [rp2](ports/rp2) -- Raspberry Pi RP2040 (including Pico and Pico W).
  - [samd](ports/samd) -- Microchip (formerly Atmel) SAMD21 and SAMD51.
  - [stm32](ports/stm32) -- STMicroelectronics STM32 family (including F0, F4, F7, G0, G4, H7, L0, L4, WB)
- - [teensy](ports/teensy) -- Teensy 3.x.
  - [webassembly](ports/webassembly) -- Emscripten port targeting browsers and NodeJS.
  - [zephyr](ports/zephyr) -- Zephyr RTOS.
 

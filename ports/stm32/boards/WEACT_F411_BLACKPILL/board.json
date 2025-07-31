@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../PYBV10/deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "WEACTV20_F411.jpg"
+    ],
+    "mcu": "stm32f411",
+    "product": "WeAct F411 'blackpill'. Default variant is v3.1 with no SPI Flash.",
+    "thumbnail": "",
+    "url": "https://github.com/WeActStudio/WeActStudio.MiniSTM32F4x1",
+    "variants": {
+        "V13": "v1.3 board with no SPI Flash",
+        "V13_FLASH_4M": "v1.3 board with 4MB SPI Flash",
+        "V20_FLASH_4M": "v2.0 board with 4MB SPI Flash",
+        "V31_FLASH_8M": "v3.1 board with 8MB SPI Flash",
+        "V31_XTAL_8M": "v3.1 board with 8MHz crystal"
+    },
+    "vendor": "WeAct Studio"
+}

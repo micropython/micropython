@@ -37,6 +37,28 @@
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_HW_ENABLE_USBDEV    (0)
+#endif
+#ifndef MICROPY_HW_ENABLE_UART_REPL
+#define MICROPY_HW_ENABLE_UART_REPL (1) // useful if there is no USB
+#endif
+
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC      (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC    (0)
+#endif
+// RA unique ID is 16 bytes (hex string == 32)
+#ifndef MICROPY_HW_USB_DESC_STR_MAX
+#define MICROPY_HW_USB_DESC_STR_MAX (32)
+#endif
+#endif
+
 // memory allocation policies
 #ifndef MICROPY_GC_STACK_ENTRY_TYPE
 #if MICROPY_HW_SDRAM_SIZE
@@ -67,6 +89,7 @@
 #endif
 
 // Python internal features
+#define MICROPY_TRACKED_ALLOC       (MICROPY_SSL_MBEDTLS || MICROPY_BLUETOOTH_BTSTACK)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
@@ -78,6 +101,7 @@
 #endif
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
+#define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_VFS                 (1)
 
 // control over Python builtins
@@ -96,21 +120,25 @@
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
 #define MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
-#define MICROPY_PY_OS_SEP           (1)
 #define MICROPY_PY_OS_SYNC          (1)
 #define MICROPY_PY_OS_UNAME         (1)
 #define MICROPY_PY_OS_URANDOM       (MICROPY_HW_ENABLE_RNG)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/renesas-ra/modtime.c"
+#define MICROPY_PY_LWIP_SOCK_RAW    (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
-#ifndef MICROPY_PY_MACHINE_BITSTREAM
-#define MICROPY_PY_MACHINE_BITSTREAM (1)
-#endif
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/renesas-ra/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET    (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER (1)
+#define MICROPY_PY_MACHINE_ADC      (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/renesas-ra/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
-#define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MSB  (SPI_FIRSTBIT_MSB)
@@ -123,6 +151,11 @@
 #define MICROPY_PY_MACHINE_PWM_DUTY (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/renesas-ra/machine_pwm.c"
 #endif
+#define MICROPY_PY_MACHINE_UART     (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/renesas-ra/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_IRQ (1)
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
+#define MICROPY_PY_MACHINE_UART_SENDBREAK (1)
 #if MICROPY_HW_ENABLE_HW_DAC
 #define MICROPY_PY_MACHINE_DAC      (1)
 #endif
@@ -132,20 +165,40 @@
 #ifndef MICROPY_PY_ONEWIRE
 #define MICROPY_PY_ONEWIRE          (1)
 #endif
-#ifndef MICROPY_PY_PLATFORM
-#define MICROPY_PY_PLATFORM         (1)
-#endif
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_ENABLE_LFN       (2)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
+#if MICROPY_HW_USB_MSC
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#define MICROPY_FATFS_MAX_SS           (FLASH_SECTOR_SIZE)
+#endif
+
+// By default networking should include sockets, ssl, websockets, webrepl, dupterm.
+#if MICROPY_PY_NETWORK
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-ra"
+#endif
+#ifndef MICROPY_PY_USOCKET
+#define MICROPY_PY_USOCKET              (1)
+#endif
+#ifndef MICROPY_PY_USSL
+#define MICROPY_PY_USSL                 (1)
+#endif
+#ifndef MICROPY_PY_UWEBSOCKET
+#define MICROPY_PY_UWEBSOCKET           (1)
+#endif
+#ifndef MICROPY_PY_WEBREPL
+#define MICROPY_PY_WEBREPL              (1)
+#endif
+#endif
 
 #if MICROPY_PY_MACHINE
 #define MACHINE_BUILTIN_MODULE_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #else
 #define MACHINE_BUILTIN_MODULE_CONSTANTS
@@ -156,6 +209,30 @@
     MACHINE_BUILTIN_MODULE_CONSTANTS \
 
 #define MP_STATE_PORT MP_STATE_VM
+
+#if MICROPY_PY_NETWORK_ESP_HOSTED
+extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
+#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+#else
+#define MICROPY_HW_NIC_ESP_HOSTED
+#endif
+
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_ESP_HOSTED \
+    MICROPY_BOARD_NETWORK_INTERFACES \
+
+// Miscellaneous settings
+
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID  (0xf055)
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID  (0x9800)
+#endif
 
 // type definitions for the specific machine
 
@@ -172,27 +249,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 
 typedef long mp_off_t;
-
-// We have inlined IRQ functions for efficiency (they are generally
-// 1 machine instruction).
-//
-// Note on IRQ state: you should not need to know the specific
-// value of the state variable, but rather just pass the return
-// value from disable_irq back to enable_irq.  If you really need
-// to know the machine-specific values, see irq.h.
-
-static inline void enable_irq(mp_uint_t state) {
-    __set_PRIMASK(state);
-}
-
-static inline mp_uint_t disable_irq(void) {
-    mp_uint_t state = __get_PRIMASK();
-    __disable_irq();
-    return state;
-}
-
-#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
@@ -218,6 +274,14 @@ static inline mp_uint_t disable_irq(void) {
     } while (0);
 
 #define MICROPY_THREAD_YIELD()
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
 // We need an implementation of the log2 function which is not a macro

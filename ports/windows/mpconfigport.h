@@ -117,6 +117,8 @@
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_EXC_INFO     (1)
 #define MICROPY_PY_COLLECTIONS_DEQUE (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE_ITER (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE_SUBSCR (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
@@ -134,7 +136,6 @@
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/unix/modos.c"
 #define MICROPY_PY_OS_ERRNO         (1)
 #define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
-#define MICROPY_PY_OS_SEP           (1)
 #define MICROPY_PY_OS_STATVFS       (0)
 #define MICROPY_PY_OS_SYSTEM        (1)
 #define MICROPY_PY_OS_URANDOM       (1)
@@ -144,7 +145,8 @@
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/unix/modtime.c"
 #define MICROPY_PY_ERRNO            (1)
 #define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_ZLIB             (1)
+#define MICROPY_PY_DEFLATE          (1)
+#define MICROPY_PY_DEFLATE_COMPRESS (1)
 #define MICROPY_PY_JSON             (1)
 #define MICROPY_PY_RE               (1)
 #define MICROPY_PY_HEAPQ            (1)
@@ -153,7 +155,9 @@
 #define MICROPY_PY_BINASCII_CRC32   (1)
 #define MICROPY_PY_RANDOM           (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"
 #define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
@@ -221,18 +225,6 @@ typedef long mp_off_t;
 
 #include "realpath.h"
 #include "init.h"
-#include "sleep.h"
-
-#if MICROPY_ENABLE_SCHEDULER
-// Use 1mSec sleep to make sure there is effectively a wait period:
-// something like usleep(500) truncates and ends up calling Sleep(0).
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        msec_sleep(1.0); \
-    } while (0);
-#endif
 
 #ifdef __GNUC__
 #define MP_NOINLINE __attribute__((noinline))

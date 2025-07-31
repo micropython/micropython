@@ -29,6 +29,7 @@
 
 // Entries for sys.path
 Q(/flash)
+Q(/flash/lib)
 
 // For os.sep
 Q(/)

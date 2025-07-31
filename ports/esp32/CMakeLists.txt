@@ -1,10 +1,13 @@
 # Top-level cmake file for building MicroPython on ESP32.
-
+#
+# Note for maintainers: Where possible, functionality should be put into
+# esp32_common.cmake not this file. This is because this CMakeLists.txt file
+# needs to be duplicated for out-of-tree builds, and can easily get out of date.
 cmake_minimum_required(VERSION 3.12)
 
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
-    set(MICROPY_BOARD GENERIC)
+    set(MICROPY_BOARD ESP32_GENERIC)
 endif()
 
 # Set the board directory and check that it exists.
@@ -13,6 +16,13 @@ if(NOT MICROPY_BOARD_DIR)
 endif()
 if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
     message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
+endif()
+
+# If a board variant is specified, check that it exists.
+if(MICROPY_BOARD_VARIANT)
+    if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigvariant_${MICROPY_BOARD_VARIANT}.cmake)
+        message(FATAL_ERROR "Invalid MICROPY_BOARD_VARIANT specified: ${MICROPY_BOARD_VARIANT}")
+    endif()
 endif()
 
 # Define the output sdkconfig so it goes in the build directory.
@@ -25,6 +35,11 @@ set(MICROPY_USER_FROZEN_MANIFEST ${MICROPY_FROZEN_MANIFEST})
 # - SDKCONFIG_DEFAULTS
 # - IDF_TARGET
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
+if(NOT MICROPY_BOARD_VARIANT)
+    include(${MICROPY_BOARD_DIR}/mpconfigvariant.cmake OPTIONAL)
+else()
+    include(${MICROPY_BOARD_DIR}/mpconfigvariant_${MICROPY_BOARD_VARIANT}.cmake)
+endif()
 
 # Set the frozen manifest file. Note if MICROPY_FROZEN_MANIFEST is set from the cmake
 # command line, then it will override the default and any manifest set by the board.
@@ -45,9 +60,6 @@ set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 
 # Include main IDF cmake file.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-
-# Set the location of the main component for the project (one per target).
-set(EXTRA_COMPONENT_DIRS main_${IDF_TARGET})
 
 # Define the project.
 project(micropython)

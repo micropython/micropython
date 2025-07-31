@@ -29,7 +29,6 @@
 // options to control how MicroPython is built
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_B)
 #define MICROPY_ALLOC_PATH_MAX      (64)
-#define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -94,7 +93,3 @@ typedef int mp_off_t;
 #define MICROPY_MPHALPORT_H "pic16bit_mphal.h"
 #define MICROPY_HW_BOARD_NAME "dsPICSK"
 #define MICROPY_HW_MCU_NAME "dsPIC33"
-
-// XC16 toolchain doesn't seem to define these
-typedef int intptr_t;
-typedef unsigned int uintptr_t;

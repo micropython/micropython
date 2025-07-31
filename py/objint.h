@@ -55,7 +55,8 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     int base, const char *prefix, char base_char, char comma);
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf);
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf);
+// Returns true if 'self_in' fit into 'len' bytes of 'buf' without overflowing, 'buf' is truncated otherwise.
+bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf);
 int mp_obj_int_sign(mp_obj_t self_in);
 mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in);
 mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);

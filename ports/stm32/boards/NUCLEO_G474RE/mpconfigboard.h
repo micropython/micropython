@@ -10,7 +10,7 @@
 #define MICROPY_HW_HAS_FLASH        (0) // QSPI extflash not mounted
 
 #define MICROPY_PY_ASYNCIO          (0)
-#define MICROPY_PY_ZLIB             (0)
+#define MICROPY_PY_DEFLATE          (0)
 #define MICROPY_PY_BINASCII         (0)
 #define MICROPY_PY_HASHLIB          (0)
 #define MICROPY_PY_JSON             (0)

@@ -1,13 +1,8 @@
 try:
-    import errno
-    import os
-except ImportError:
-    print("SKIP")
-    raise SystemExit
+    import errno, os, vfs
 
-try:
-    os.VfsFat
-except AttributeError:
+    vfs.VfsFat
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
@@ -38,13 +33,13 @@ class RAMFS:
 
 try:
     bdev = RAMFS(50)
-    os.VfsFat.mkfs(bdev)
+    vfs.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
-vfs = os.VfsFat(bdev)
-os.mount(vfs, "/ramdisk")
+fs = vfs.VfsFat(bdev)
+vfs.mount(fs, "/ramdisk")
 os.chdir("/ramdisk")
 
 # file IO
@@ -99,12 +94,12 @@ with open("foo_file.txt") as f2:
 #    print(f.read())
 
 # dirs
-vfs.mkdir("foo_dir")
+fs.mkdir("foo_dir")
 
 try:
-    vfs.rmdir("foo_file.txt")
+    fs.rmdir("foo_file.txt")
 except OSError as e:
     print(e.errno == 20)  # errno.ENOTDIR
 
-vfs.remove("foo_file.txt")
-print(list(vfs.ilistdir()))
+fs.remove("foo_file.txt")
+print(list(fs.ilistdir()))

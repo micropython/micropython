@@ -32,6 +32,7 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/objstr.h"
+#include "py/parsenum.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
@@ -114,7 +115,7 @@ typedef enum{
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC wlan_obj_t wlan_obj = {
+static wlan_obj_t wlan_obj = {
         .mode = -1,
         .status = 0,
         .ip = 0,
@@ -130,7 +131,7 @@ STATIC wlan_obj_t wlan_obj = {
     #endif
 };
 
-STATIC const mp_irq_methods_t wlan_irq_methods;
+static const mp_irq_methods_t wlan_irq_methods;
 
 /******************************************************************************
  DECLARE PUBLIC DATA
@@ -142,31 +143,31 @@ OsiLockObj_t wlan_LockObj;
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC void wlan_clear_data (void);
-STATIC void wlan_reenable (SlWlanMode_t mode);
-STATIC void wlan_servers_start (void);
-STATIC void wlan_servers_stop (void);
-STATIC void wlan_reset (void);
-STATIC void wlan_validate_mode (uint mode);
-STATIC void wlan_set_mode (uint mode);
-STATIC void wlan_validate_ssid_len (uint32_t len);
-STATIC void wlan_set_ssid (const char *ssid, uint8_t len, bool add_mac);
-STATIC void wlan_validate_security (uint8_t auth, const char *key, uint8_t len);
-STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len);
-STATIC void wlan_validate_channel (uint8_t channel);
-STATIC void wlan_set_channel (uint8_t channel);
+static void wlan_clear_data (void);
+static void wlan_reenable (SlWlanMode_t mode);
+static void wlan_servers_start (void);
+static void wlan_servers_stop (void);
+static void wlan_reset (void);
+static void wlan_validate_mode (uint mode);
+static void wlan_set_mode (uint mode);
+static void wlan_validate_ssid_len (uint32_t len);
+static void wlan_set_ssid (const char *ssid, uint8_t len, bool add_mac);
+static void wlan_validate_security (uint8_t auth, const char *key, uint8_t len);
+static void wlan_set_security (uint8_t auth, const char *key, uint8_t len);
+static void wlan_validate_channel (uint8_t channel);
+static void wlan_set_channel (uint8_t channel);
 #if MICROPY_HW_ANTENNA_DIVERSITY
-STATIC void wlan_validate_antenna (uint8_t antenna);
-STATIC void wlan_set_antenna (uint8_t antenna);
+static void wlan_validate_antenna (uint8_t antenna);
+static void wlan_set_antenna (uint8_t antenna);
 #endif
-STATIC void wlan_sl_disconnect (void);
-STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
+static void wlan_sl_disconnect (void);
+static modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len, int32_t timeout);
-STATIC void wlan_get_sl_mac (void);
-STATIC void wlan_wep_key_unhexlify (const char *key, char *key_out);
-STATIC void wlan_lpds_irq_enable (mp_obj_t self_in);
-STATIC void wlan_lpds_irq_disable (mp_obj_t self_in);
-STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid);
+static void wlan_get_sl_mac (void);
+static void wlan_wep_key_unhexlify (const char *key, char *key_out);
+static void wlan_lpds_irq_enable (mp_obj_t self_in);
+static void wlan_lpds_irq_disable (mp_obj_t self_in);
+static bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid);
 
 //*****************************************************************************
 //
@@ -541,14 +542,14 @@ void wlan_off_on (void) {
 // DEFINE STATIC FUNCTIONS
 //*****************************************************************************
 
-STATIC void wlan_clear_data (void) {
+static void wlan_clear_data (void) {
     CLR_STATUS_BIT_ALL(wlan_obj.status);
     wlan_obj.ip = 0;
     //memset(wlan_obj.ssid_o, 0, sizeof(wlan_obj.ssid));
     //memset(wlan_obj.bssid, 0, sizeof(wlan_obj.bssid));
 }
 
-STATIC void wlan_reenable (SlWlanMode_t mode) {
+static void wlan_reenable (SlWlanMode_t mode) {
     // stop and start again
     #ifdef SL_PLATFORM_MULTI_THREADED
     sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
@@ -562,7 +563,7 @@ STATIC void wlan_reenable (SlWlanMode_t mode) {
     ASSERT (wlan_obj.mode == mode);
 }
 
-STATIC void wlan_servers_start (void) {
+static void wlan_servers_start (void) {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     // start the servers if they were enabled before
     if (wlan_obj.servers_enabled) {
@@ -571,7 +572,7 @@ STATIC void wlan_servers_start (void) {
 #endif
 }
 
-STATIC void wlan_servers_stop (void) {
+static void wlan_servers_stop (void) {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     // Stop all other processes using the wlan engine
     if ((wlan_obj.servers_enabled = servers_are_enabled())) {
@@ -580,30 +581,30 @@ STATIC void wlan_servers_stop (void) {
 #endif
 }
 
-STATIC void wlan_reset (void) {
+static void wlan_reset (void) {
     wlan_servers_stop();
     wlan_reenable (wlan_obj.mode);
     wlan_servers_start();
 }
 
-STATIC void wlan_validate_mode (uint mode) {
+static void wlan_validate_mode (uint mode) {
     if (mode != ROLE_STA && mode != ROLE_AP) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
-STATIC void wlan_set_mode (uint mode) {
+static void wlan_set_mode (uint mode) {
     wlan_obj.mode = mode;
     ASSERT_ON_ERROR(sl_WlanSetMode(mode));
 }
 
-STATIC void wlan_validate_ssid_len (uint32_t len) {
+static void wlan_validate_ssid_len (uint32_t len) {
     if (len > MODWLAN_SSID_LEN_MAX) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
-STATIC void wlan_set_ssid (const char *ssid, uint8_t len, bool add_mac) {
+static void wlan_set_ssid (const char *ssid, uint8_t len, bool add_mac) {
     if (ssid != NULL) {
         // save the ssid
         memcpy(&wlan_obj.ssid, ssid, len);
@@ -618,7 +619,7 @@ STATIC void wlan_set_ssid (const char *ssid, uint8_t len, bool add_mac) {
     }
 }
 
-STATIC void wlan_validate_security (uint8_t auth, const char *key, uint8_t len) {
+static void wlan_validate_security (uint8_t auth, const char *key, uint8_t len) {
     if (auth != SL_SEC_TYPE_WEP && auth != SL_SEC_TYPE_WPA_WPA2) {
         goto invalid_args;
     }
@@ -635,7 +636,7 @@ invalid_args:
     mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
-STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
+static void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
     wlan_obj.auth = auth;
     ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SECURITY_TYPE, sizeof(uint8_t), &auth));
     if (key != NULL) {
@@ -653,31 +654,31 @@ STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
     }
 }
 
-STATIC void wlan_validate_channel (uint8_t channel) {
+static void wlan_validate_channel (uint8_t channel) {
     if (channel < 1 || channel > 11) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
-STATIC void wlan_set_channel (uint8_t channel) {
+static void wlan_set_channel (uint8_t channel) {
     wlan_obj.channel = channel;
     ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_CHANNEL, 1, &channel));
 }
 
 #if MICROPY_HW_ANTENNA_DIVERSITY
-STATIC void wlan_validate_antenna (uint8_t antenna) {
+static void wlan_validate_antenna (uint8_t antenna) {
     if (antenna != ANTENNA_TYPE_INTERNAL && antenna != ANTENNA_TYPE_EXTERNAL) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
-STATIC void wlan_set_antenna (uint8_t antenna) {
+static void wlan_set_antenna (uint8_t antenna) {
     wlan_obj.antenna = antenna;
     antenna_select(antenna);
 }
 #endif
 
-STATIC void wlan_sl_disconnect (void) {
+static void wlan_sl_disconnect (void) {
     // Device in station-mode. Disconnect previous connection if any
     // The function returns 0 if 'Disconnected done', negative number if already
     // disconnected Wait for 'disconnection' event if 0 is returned, Ignore
@@ -690,7 +691,7 @@ STATIC void wlan_sl_disconnect (void) {
     }
 }
 
-STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
+static modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len, int32_t timeout) {
     SlSecParams_t secParams;
     secParams.Key = (_i8*)key;
@@ -716,13 +717,13 @@ STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, co
     return MODWLAN_ERROR_INVALID_PARAMS;
 }
 
-STATIC void wlan_get_sl_mac (void) {
+static void wlan_get_sl_mac (void) {
     // Get the MAC address
     uint8_t macAddrLen = SL_MAC_ADDR_LEN;
     sl_NetCfgGet(SL_MAC_ADDRESS_GET, NULL, &macAddrLen, wlan_obj.mac);
 }
 
-STATIC void wlan_wep_key_unhexlify (const char *key, char *key_out) {
+static void wlan_wep_key_unhexlify (const char *key, char *key_out) {
     byte hex_byte = 0;
     for (mp_uint_t i = strlen(key); i > 0 ; i--) {
         hex_byte += unichar_xdigit_value(*key++);
@@ -735,22 +736,22 @@ STATIC void wlan_wep_key_unhexlify (const char *key, char *key_out) {
     }
 }
 
-STATIC void wlan_lpds_irq_enable (mp_obj_t self_in) {
+static void wlan_lpds_irq_enable (mp_obj_t self_in) {
     wlan_obj_t *self = self_in;
     self->irq_enabled = true;
 }
 
-STATIC void wlan_lpds_irq_disable (mp_obj_t self_in) {
+static void wlan_lpds_irq_disable (mp_obj_t self_in) {
     wlan_obj_t *self = self_in;
     self->irq_enabled = false;
 }
 
-STATIC int wlan_irq_flags (mp_obj_t self_in) {
+static int wlan_irq_flags (mp_obj_t self_in) {
     wlan_obj_t *self = self_in;
     return self->irq_flags;
 }
 
-STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
+static bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
     for (int i = 0; i < nets->len; i++) {
         // index 1 in the list is the bssid
         mp_obj_str_t *_bssid = (mp_obj_str_t *)((mp_obj_tuple_t *)nets->items[i])->items[1];
@@ -766,7 +767,7 @@ STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
 
 /// \class WLAN - WiFi driver
 
-STATIC mp_obj_t wlan_init_helper(wlan_obj_t *self, const mp_arg_val_t *args) {
+static mp_obj_t wlan_init_helper(wlan_obj_t *self, const mp_arg_val_t *args) {
     // get the mode
     int8_t mode = args[0].u_int;
     wlan_validate_mode(mode);
@@ -808,7 +809,7 @@ STATIC mp_obj_t wlan_init_helper(wlan_obj_t *self, const mp_arg_val_t *args) {
     return mp_const_none;
 }
 
-STATIC const mp_arg_t wlan_init_args[] = {
+static const mp_arg_t wlan_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_INT,  {.u_int = 0} },
     { MP_QSTR_mode,                           MP_ARG_INT,  {.u_int = ROLE_STA} },
     { MP_QSTR_ssid,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
@@ -818,7 +819,7 @@ STATIC const mp_arg_t wlan_init_args[] = {
     { MP_QSTR_antenna,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = ANTENNA_TYPE_INTERNAL} },
     #endif
 };
-STATIC mp_obj_t wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -844,16 +845,16 @@ STATIC mp_obj_t wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return (mp_obj_t)self;
 }
 
-STATIC mp_obj_t wlan_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wlan_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(wlan_init_args) - 1];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &wlan_init_args[1], args);
     return wlan_init_helper(pos_args[0], args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_init_obj, 1, wlan_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_init_obj, 1, wlan_init);
 
-STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
-    STATIC const qstr wlan_scan_info_fields[] = {
+static mp_obj_t wlan_scan(mp_obj_t self_in) {
+    static const qstr wlan_scan_info_fields[] = {
         MP_QSTR_ssid, MP_QSTR_bssid, MP_QSTR_sec, MP_QSTR_channel, MP_QSTR_rssi
     };
 
@@ -901,10 +902,10 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 
     return nets;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
-STATIC mp_obj_t wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t allowed_args[] = {
+static mp_obj_t wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, },
         { MP_QSTR_auth,                       MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_bssid,    MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -967,21 +968,21 @@ STATIC mp_obj_t wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_connect_obj, 1, wlan_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_connect_obj, 1, wlan_connect);
 
-STATIC mp_obj_t wlan_disconnect(mp_obj_t self_in) {
+static mp_obj_t wlan_disconnect(mp_obj_t self_in) {
     wlan_sl_disconnect();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_disconnect_obj, wlan_disconnect);
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_disconnect_obj, wlan_disconnect);
 
-STATIC mp_obj_t wlan_isconnected(mp_obj_t self_in) {
+static mp_obj_t wlan_isconnected(mp_obj_t self_in) {
     return wlan_is_connected() ? mp_const_true : mp_const_false;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_isconnected_obj, wlan_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_isconnected_obj, wlan_isconnected);
 
-STATIC mp_obj_t wlan_ifconfig(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t wlan_ifconfig_args[] = {
+static mp_obj_t wlan_ifconfig(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t wlan_ifconfig_args[] = {
         { MP_QSTR_id,               MP_ARG_INT,     {.u_int = 0} },
         { MP_QSTR_config,           MP_ARG_OBJ,     {.u_obj = MP_OBJ_NULL} },
     };
@@ -1055,9 +1056,119 @@ STATIC mp_obj_t wlan_ifconfig(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_ifconfig_obj, 1, wlan_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_ifconfig_obj, 1, wlan_ifconfig);
 
-STATIC mp_obj_t wlan_mode(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wlan_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    unsigned char len = sizeof(SlNetCfgIpV4Args_t);
+    unsigned char dhcpIsOn;
+    SlNetCfgIpV4Args_t ipV4;
+    sl_NetCfgGet(SL_IPV4_STA_P2P_CL_GET_INFO, &dhcpIsOn, &len, (uint8_t *)&ipV4);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_dhcp4: {
+                return mp_obj_new_bool(dhcpIsOn);
+            }
+            case MP_QSTR_has_dhcp4: {
+                return mp_obj_new_bool(dhcpIsOn && ipV4.ipV4 != 0);
+            }
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE),
+                    netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4Gateway, NETUTILS_LITTLE);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        // Set config value(s)
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dhcp4: {
+                        if (wlan_obj.mode == ROLE_AP) {
+                            if (mp_obj_is_true(e->value)) {
+                                sl_NetCfgSet(SL_IPV4_AP_P2P_GO_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4,
+                                    sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4);
+                                SlNetAppDhcpServerBasicOpt_t dhcpParams;
+                                dhcpParams.lease_time      =  4096;                             // lease time (in seconds) of the IP Address
+                                dhcpParams.ipv4_addr_start =  ipV4.ipV4 + 1;                    // first IP Address for allocation.
+                                dhcpParams.ipv4_addr_last  =  (ipV4.ipV4 & 0xFFFFFF00) + 254;   // last IP Address for allocation.
+                                sl_NetAppStop(SL_NET_APP_DHCP_SERVER_ID);      // stop DHCP server before settings
+                                sl_NetAppSet(SL_NET_APP_DHCP_SERVER_ID, NETAPP_SET_DHCP_SRV_BASIC_OPT,
+                                    sizeof(SlNetAppDhcpServerBasicOpt_t), (_u8* )&dhcpParams);  // set parameters
+                                sl_NetAppStart(SL_NET_APP_DHCP_SERVER_ID);     // start DHCP server with new settings
+                            } else {
+                                sl_NetAppStop(SL_NET_APP_DHCP_SERVER_ID);      // stop DHCP server before settings
+                            }
+                        } else {
+                            _u8 val = 1;
+                            if (mp_obj_is_true(e->value)) {
+                                sl_NetCfgSet(SL_IPV4_STA_P2P_CL_DHCP_ENABLE, IPCONFIG_MODE_ENABLE_IPV4, 1, &val);
+                            } else {
+                                sl_NetCfgSet(SL_IPV4_STA_P2P_CL_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4,
+                                    sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4);
+                            }
+                        }
+                        break;
+                    }
+                    case MP_QSTR_addr4: {
+                        int prefix_bits = 32;
+                        if (e->value != mp_const_none && mp_obj_is_str(e->value)) {
+                            size_t addr_len;
+                            const char *input_str = mp_obj_str_get_data(e->value, &addr_len);
+                            char *split = strchr(input_str, '/');
+                            if (split) {
+                                mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);
+                                prefix_bits = mp_obj_get_int(prefix_obj);
+                                ipV4.ipV4Mask = -(1u << (32 - prefix_bits));
+                            }
+                            netutils_parse_ipv4_addr(e->value, (uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE);
+                        } else if (e->value != mp_const_none) {
+                            mp_obj_t *items;
+                            mp_obj_get_array_fixed_n(e->value, 2, &items);
+                            netutils_parse_ipv4_addr(items[0], (uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE);
+                            netutils_parse_ipv4_addr(items[1], (uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE);
+                        }
+                        ASSERT_ON_ERROR(sl_NetCfgSet(SL_IPV4_STA_P2P_CL_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4, sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4));
+                        break;
+                    }
+                    case MP_QSTR_gw4: {
+                        netutils_parse_ipv4_addr(e->value, (uint8_t *)&ipV4.ipV4Gateway, NETUTILS_LITTLE);
+                        sl_NetCfgSet(SL_IPV4_STA_P2P_CL_STATIC_ENABLE, IPCONFIG_MODE_ENABLE_IPV4, sizeof(SlNetCfgIpV4Args_t), (_u8 *)&ipV4);
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_ipconfig_obj, 1, wlan_ipconfig);
+
+static mp_obj_t wlan_mode(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(self->mode);
@@ -1069,12 +1180,12 @@ STATIC mp_obj_t wlan_mode(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_mode_obj, 1, 2, wlan_mode);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_mode_obj, 1, 2, wlan_mode);
 
-STATIC mp_obj_t wlan_ssid(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wlan_ssid(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
-        return mp_obj_new_str((const char *)self->ssid, strlen((const char *)self->ssid));
+        return mp_obj_new_str_from_cstr((const char *)self->ssid);
     } else {
         size_t len;
         const char *ssid = mp_obj_str_get_data(args[1], &len);
@@ -1084,9 +1195,9 @@ STATIC mp_obj_t wlan_ssid(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_ssid_obj, 1, 2, wlan_ssid);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_ssid_obj, 1, 2, wlan_ssid);
 
-STATIC mp_obj_t wlan_auth(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wlan_auth(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
         if (self->auth == SL_SEC_TYPE_OPEN) {
@@ -1094,7 +1205,7 @@ STATIC mp_obj_t wlan_auth(size_t n_args, const mp_obj_t *args) {
         } else {
             mp_obj_t security[2];
             security[0] = mp_obj_new_int(self->auth);
-            security[1] = mp_obj_new_str((const char *)self->key, strlen((const char *)self->key));
+            security[1] = mp_obj_new_str_from_cstr((const char *)self->key);
             return mp_obj_new_tuple(2, security);
         }
     } else {
@@ -1114,9 +1225,9 @@ STATIC mp_obj_t wlan_auth(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_auth_obj, 1, 2, wlan_auth);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_auth_obj, 1, 2, wlan_auth);
 
-STATIC mp_obj_t wlan_channel(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wlan_channel(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(self->channel);
@@ -1128,9 +1239,9 @@ STATIC mp_obj_t wlan_channel(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_channel_obj, 1, 2, wlan_channel);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_channel_obj, 1, 2, wlan_channel);
 
-STATIC mp_obj_t wlan_antenna(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wlan_antenna(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(self->antenna);
@@ -1143,9 +1254,9 @@ STATIC mp_obj_t wlan_antenna(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_antenna_obj, 1, 2, wlan_antenna);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_antenna_obj, 1, 2, wlan_antenna);
 
-STATIC mp_obj_t wlan_mac(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t wlan_mac(size_t n_args, const mp_obj_t *args) {
     wlan_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_bytes((const byte *)self->mac, SL_BSSID_LENGTH);
@@ -1161,9 +1272,9 @@ STATIC mp_obj_t wlan_mac(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_mac_obj, 1, 2, wlan_mac);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_mac_obj, 1, 2, wlan_mac);
 
-STATIC mp_obj_t wlan_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t wlan_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
 
@@ -1191,14 +1302,14 @@ STATIC mp_obj_t wlan_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 invalid_args:
     mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 
 //STATIC mp_obj_t wlan_connections (mp_obj_t self_in) {
 //    mp_obj_t device[2];
 //    mp_obj_t connections = mp_obj_new_list(0, NULL);
 //
 //    if (wlan_is_connected()) {
-//        device[0] = mp_obj_new_str((const char *)wlan_obj.ssid_o, strlen((const char *)wlan_obj.ssid_o));
+//        device[0] = mp_obj_new_str_from_cstr((const char *)wlan_obj.ssid_o);
 //        device[1] = mp_obj_new_bytes((const byte *)wlan_obj.bssid, SL_BSSID_LENGTH);
 //        // add the device to the list
 //        mp_obj_list_append(connections, mp_obj_new_tuple(MP_ARRAY_SIZE(device), device));
@@ -1238,7 +1349,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 //}
 //STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_urn_obj, 1, 2, wlan_urn);
 
-STATIC mp_obj_t wlan_print_ver(void) {
+static mp_obj_t wlan_print_ver(void) {
     SlVersionFull ver;
     byte config_opt = SL_DEVICE_GENERAL_VERSION;
     byte config_len = sizeof(ver);
@@ -1250,16 +1361,17 @@ STATIC mp_obj_t wlan_print_ver(void) {
                                  ver.ChipFwAndPhyVersion.PhyVersion[2], ver.ChipFwAndPhyVersion.PhyVersion[3]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(wlan_print_ver_fun_obj, wlan_print_ver);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(wlan_print_ver_obj, MP_ROM_PTR(&wlan_print_ver_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_0(wlan_print_ver_fun_obj, wlan_print_ver);
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(wlan_print_ver_obj, MP_ROM_PTR(&wlan_print_ver_fun_obj));
 
-STATIC const mp_rom_map_elem_t wlan_locals_dict_table[] = {
+static const mp_rom_map_elem_t wlan_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&wlan_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&wlan_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),             MP_ROM_PTR(&wlan_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),          MP_ROM_PTR(&wlan_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected),         MP_ROM_PTR(&wlan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig),            MP_ROM_PTR(&wlan_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig),            MP_ROM_PTR(&wlan_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_mode),                MP_ROM_PTR(&wlan_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_ssid),                MP_ROM_PTR(&wlan_ssid_obj) },
     { MP_ROM_QSTR(MP_QSTR_auth),                MP_ROM_PTR(&wlan_auth_obj) },
@@ -1283,7 +1395,7 @@ STATIC const mp_rom_map_elem_t wlan_locals_dict_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_ANY_EVENT),           MP_ROM_INT(MODWLAN_WIFI_EVENT_ANY) },
 };
-STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
+static MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mod_network_nic_type_wlan,
@@ -1293,7 +1405,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &wlan_locals_dict
     );
 
-STATIC const mp_irq_methods_t wlan_irq_methods = {
+static const mp_irq_methods_t wlan_irq_methods = {
     .init = wlan_irq,
     .enable = wlan_lpds_irq_enable,
     .disable = wlan_lpds_irq_disable,

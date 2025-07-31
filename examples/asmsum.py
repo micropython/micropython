@@ -1,3 +1,6 @@
+# ruff: noqa: F821 - @asm_thumb decorator adds names to function scope
+
+
 @micropython.asm_thumb
 def asm_sum_words(r0, r1):
     # r0 = len

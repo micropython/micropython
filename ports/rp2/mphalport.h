@@ -30,18 +30,55 @@
 #include "pico/time.h"
 #include "hardware/clocks.h"
 #include "hardware/structs/systick.h"
-#include "RP2040.h" // cmsis, for __WFI
+#include "pendsv.h"
 
 #define SYSTICK_MAX (0xffffff)
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
+// Entering a critical section.
+#if MICROPY_PY_THREAD
+#define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
+#define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
+#else
+#define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
+#define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
+#endif
+
+#define MICROPY_PY_PENDSV_ENTER   pendsv_suspend()
+#define MICROPY_PY_PENDSV_EXIT    pendsv_resume()
+
+// Prevent the "lwIP task" from running when unsafe to do so.
+#define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
+#define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
+#define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
+
+// Port level Wait-for-Event macro
+//
+// Do not use this macro directly, include py/runtime.h and
+// call mp_event_wait_indefinite() or mp_event_wait_ms(timeout)
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do {                                 \
+        if ((TIMEOUT_MS) < 0) { \
+            __wfe(); \
+        } else { \
+            mp_wfe_or_timeout(TIMEOUT_MS); \
+        } \
+    } while (0)
+
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
-void mp_hal_set_interrupt_char(int c);
+// Port-specific function to create a wakeup interrupt after timeout_ms and enter WFE
+void mp_wfe_or_timeout(uint32_t timeout_ms);
 
-static inline void mp_hal_delay_us(mp_uint_t us) {
-    sleep_us(us);
+uint32_t mp_thread_begin_atomic_section(void);
+void mp_thread_end_atomic_section(uint32_t);
+
+void mp_hal_set_interrupt_char(int c);
+void mp_hal_time_ns_set_from_rtc(void);
+
+static inline void mp_hal_wake_main_task_from_isr(void) {
+    // Defined for tinyusb support, nothing needs to be done here.
 }
 
 static inline void mp_hal_delay_us_fast(mp_uint_t us) {
@@ -59,11 +96,15 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
     return to_ms_since_boot(get_absolute_time());
 }
 
+#if PICO_ARM
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     // ticks_cpu() is defined as using the highest-resolution timing source
     // in the system. This is usually a CPU clock, but doesn't have to be.
     return time_us_32();
 }
+#elif PICO_RISCV
+mp_uint_t mp_hal_ticks_cpu(void);
+#endif
 
 static inline mp_uint_t mp_hal_get_cpu_freq(void) {
     return clock_get_hz(clk_sys);
@@ -82,7 +123,7 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
 #define MP_HAL_PIN_PULL_UP              (1)
 #define MP_HAL_PIN_PULL_DOWN            (2)
 
-extern uint32_t machine_pin_open_drain_mask;
+extern uint64_t machine_pin_open_drain_mask;
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
 
@@ -141,11 +182,11 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
 }
 
 static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
-    gpio_clr_mask(1 << pin);
+    gpio_clr_mask64(UINT64_C(1) << pin);
 }
 
 static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
-    gpio_set_mask(1 << pin);
+    gpio_set_mask64(UINT64_C(1) << pin);
 }
 
 enum mp_hal_pin_interrupt_trigger {
@@ -169,5 +210,6 @@ enum {
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
+int mp_hal_is_pin_reserved(int n);
 
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H

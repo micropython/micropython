@@ -4,7 +4,8 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly"
+        "External Flash",
+        "USB"
     ],
     "images": [
         "teensy40_front.jpg"

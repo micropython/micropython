@@ -28,70 +28,60 @@
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 #include "extmod/mpbthci.h"
+#include "shared/runtime/softtimer.h"
 #include "modmachine.h"
 #include "mpbthciport.h"
-#include "pico/stdlib.h"
 
 #if MICROPY_PY_BLUETOOTH
 
 #define debug_printf(...) // mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 #define error_printf(...) mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 
-// Poll timer ID.
-static alarm_id_t poll_timer_id = 0;
-
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
-// Prevent double-enqueuing of the scheduled task.
-STATIC volatile bool events_task_is_scheduled;
+// Soft timer and scheduling node for scheduling a HCI poll.
+static soft_timer_entry_t mp_bluetooth_hci_soft_timer;
+static mp_sched_node_t mp_bluetooth_hci_sched_node;
 
-void mp_bluetooth_hci_init(void) {
-    events_task_is_scheduled = false;
+// This is called by soft_timer and executes at PendSV level.
+static void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
+    mp_bluetooth_hci_poll_now();
 }
 
-static int64_t mp_bluetooth_hci_timer_callback(alarm_id_t id, void *user_data) {
-    poll_timer_id = 0;
-    mp_bluetooth_hci_poll_now();
-    return 0;
+void mp_bluetooth_hci_init(void) {
+    soft_timer_static_init(
+        &mp_bluetooth_hci_soft_timer,
+        SOFT_TIMER_MODE_ONE_SHOT,
+        0,
+        mp_bluetooth_hci_soft_timer_callback
+        );
 }
 
 void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
-    if (poll_timer_id != 0) {
-        cancel_alarm(poll_timer_id);
-    }
-    poll_timer_id = add_alarm_in_ms(ms, mp_bluetooth_hci_timer_callback, NULL, true);
+    soft_timer_reinsert(&mp_bluetooth_hci_soft_timer, ms);
 }
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
 // This task is scheduled periodically via a timer, or immediately after UART RX IRQ.
-STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
-    (void)none_in;
-    events_task_is_scheduled = false;
-    // This will process all HCI data, and run any callouts or events.
+static void run_events_scheduled_task(mp_sched_node_t *node) {
+    (void)node;
+    // This will process all buffered HCI UART data, and run any callouts or events.
     mp_bluetooth_hci_poll();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_scheduled_task);
 
 // Called periodically (systick) or directly (e.g. UART RX IRQ) in order to
 // request that processing happens ASAP in the scheduler.
 void mp_bluetooth_hci_poll_now(void) {
-    if (!events_task_is_scheduled) {
-        events_task_is_scheduled = mp_sched_schedule(MP_OBJ_FROM_PTR(&run_events_scheduled_task_obj), mp_const_none);
-        if (!events_task_is_scheduled) {
-            // The schedule queue is full, set callback to try again soon.
-            mp_bluetooth_hci_poll_in_ms(5);
-        }
-    }
+    mp_sched_schedule_node(&mp_bluetooth_hci_sched_node, run_events_scheduled_task);
 }
 
 #if defined(MICROPY_HW_BLE_UART_ID)
 
 mp_obj_t mp_bthci_uart;
 
-STATIC void mp_bluetooth_hci_start_polling(void) {
-    events_task_is_scheduled = false;
+static void mp_bluetooth_hci_start_polling(void) {
     mp_bluetooth_hci_poll_now();
 }
 
@@ -99,16 +89,18 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     debug_printf("mp_bluetooth_hci_uart_init\n");
 
     mp_obj_t args[] = {
-        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_BLE_UART_ID),
-        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_BLE_UART_BAUDRATE),
+        MP_OBJ_NEW_SMALL_INT(port),
+        MP_OBJ_NEW_QSTR(MP_QSTR_baudrate), MP_OBJ_NEW_SMALL_INT(baudrate),
         MP_OBJ_NEW_QSTR(MP_QSTR_flow), MP_OBJ_NEW_SMALL_INT((1 | 2)),
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout), MP_OBJ_NEW_SMALL_INT(1000),
+        MP_OBJ_NEW_QSTR(MP_QSTR_timeout_char), MP_OBJ_NEW_SMALL_INT(200),
+        MP_OBJ_NEW_QSTR(MP_QSTR_rxbuf), MP_OBJ_NEW_SMALL_INT(768),
     };
 
     // This is a statically-allocated UART (see machine_uart.c), and doesn't
     // contain any heap pointers other than the ringbufs (which are already
     // root pointers), so no need to track this as a root pointer.
-    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 2, 2, args);
+    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 1, 5, args);
 
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();
@@ -119,10 +111,8 @@ int mp_bluetooth_hci_uart_deinit(void) {
     debug_printf("mp_bluetooth_hci_uart_deinit\n");
 
     // If a poll callback is set cancel it now.
-    if (poll_timer_id > 0) {
-        cancel_alarm(poll_timer_id);
-    }
-    poll_timer_id = 0;
+    soft_timer_remove(&mp_bluetooth_hci_soft_timer);
+
     return 0;
 }
 

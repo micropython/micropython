@@ -1,16 +1,21 @@
 name: Check code size
 
 on:
-  push:
   pull_request:
     paths:
       - '.github/workflows/*.yml'
       - 'tools/**'
       - 'py/**'
       - 'extmod/**'
+      - 'shared/**'
       - 'lib/**'
       - 'ports/bare-arm/**'
+      - 'ports/mimxrt/**'
       - 'ports/minimal/**'
+      - 'ports/rp2/**'
+      - 'ports/samd/**'
+      - 'ports/stm32/**'
+      - 'ports/unix/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,9 +23,9 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 100
     - name: Install packages
@@ -36,7 +41,7 @@ jobs:
       run: echo $PR_NUMBER > pr_number
     - name: Upload diff
       if: github.event_name == 'pull_request'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: code-size-report
         path: |

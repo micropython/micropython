@@ -30,12 +30,20 @@
 #include "py/parse.h"
 #include "py/emitglue.h"
 
+// Whether mp_compile_to_raw_code is exposed as a public function.
+#define MICROPY_EXPOSE_MP_COMPILE_TO_RAW_CODE (MICROPY_PY_BUILTINS_CODE >= MICROPY_PY_BUILTINS_CODE_BASIC || MICROPY_PERSISTENT_CODE_SAVE)
+
+#if MICROPY_COMP_ALLOW_TOP_LEVEL_AWAIT
+// set to `true` to allow top-level await expressions
+extern bool mp_compile_allow_top_level_await;
+#endif
+
 // the compiler will raise an exception if an error occurred
 // the compiler will clear the parse tree before it returns
 // mp_globals_get() will be used for the context
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl);
 
-#if MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_EXPOSE_MP_COMPILE_TO_RAW_CODE
 // this has the same semantics as mp_compile
 void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_compiled_module_t *cm);
 #endif

@@ -64,12 +64,15 @@ library.
    collections.rst
    errno.rst
    gc.rst
+   gzip.rst
    hashlib.rst
    heapq.rst
    io.rst
    json.rst
+   marshal.rst
    math.rst
    os.rst
+   platform.rst
    random.rst
    re.rst
    select.rst
@@ -95,12 +98,15 @@ the following libraries.
    bluetooth.rst
    btree.rst
    cryptolib.rst
+   deflate.rst
    framebuf.rst
    machine.rst
    micropython.rst
    neopixel.rst
    network.rst
+   openamp.rst
    uctypes.rst
+   vfs.rst
 
 The following libraries provide drivers for hardware components.
 
@@ -194,11 +200,11 @@ Extending built-in libraries from Python
 A subset of the built-in modules are able to be extended by Python code by
 providing a module of the same name in the filesystem. This extensibility
 applies to the following Python standard library modules which are built-in to
-the firmware: ``array``, ``binascii``, ``collections``, ``errno``, ``hashlib``,
-``heapq``, ``io``, ``json``, ``os``, ``platform``, ``random``, ``re``,
-``select``, ``socket``, ``ssl``, ``struct``, ``time`` ``zlib``, as well as the
-MicroPython-specific ``machine`` module. All other built-in modules cannot be
-extended from the filesystem.
+the firmware: ``array``, ``binascii``, ``collections``, ``errno``, ``gzip``,
+``hashlib``, ``heapq``, ``io``, ``json``, ``os``, ``platform``, ``random``,
+``re``, ``select``, ``socket``, ``ssl``, ``struct``, ``time`` ``zlib``, as well
+as the MicroPython-specific ``machine`` module. All other built-in modules
+cannot be extended from the filesystem.
 
 This allows the user to provide an extended implementation of a built-in library
 (perhaps to provide additional CPython compatibility or missing functionality).

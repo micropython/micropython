@@ -39,7 +39,7 @@ dtcm_size           = 0x00020000;
 ocrm_start          = 0x20240000;
 ocrm_size           = 0x00100000;
 
-#ifdef MICROPY_HW_SDRAM_AVAIL
+#if MICROPY_HW_SDRAM_AVAIL
 sdram_start         = 0x80000000;
 sdram_size          = MICROPY_HW_SDRAM_SIZE;
 #endif
@@ -49,7 +49,7 @@ __stack_size__ = 0x8000;
 _estack = __StackTop;
 _sstack = __StackLimit;
 
-#ifdef MICROPY_HW_SDRAM_AVAIL
+#if MICROPY_HW_SDRAM_AVAIL
 _gc_heap_start = ORIGIN(m_sdram);
 _gc_heap_end = ORIGIN(m_sdram) + LENGTH(m_sdram);
 #else
@@ -57,3 +57,7 @@ _gc_heap_end = ORIGIN(m_sdram) + LENGTH(m_sdram);
 _gc_heap_start = ORIGIN(m_ocrm);
 _gc_heap_end = ORIGIN(m_ocrm) + LENGTH(m_ocrm);
 #endif
+
+/* CM4 DTCM */
+_openamp_shm_region_start = 0x20220000;
+_openamp_shm_region_end  = 0x20230000;

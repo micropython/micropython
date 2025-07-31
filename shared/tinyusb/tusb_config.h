@@ -31,6 +31,10 @@
 
 #if MICROPY_HW_ENABLE_USBDEV
 
+#ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE 0
+#endif
+
 #ifndef MICROPY_HW_USB_MANUFACTURER_STRING
 #define MICROPY_HW_USB_MANUFACTURER_STRING "MicroPython"
 #endif
@@ -43,7 +47,21 @@
 #define MICROPY_HW_USB_CDC_INTERFACE_STRING "Board CDC"
 #endif
 
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING "MicroPy"
+#endif
+
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING "Mass Storage"
+#endif
+
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING "1.00"
+#endif
+
+#ifndef CFG_TUSB_RHPORT0_MODE
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
+#endif
 
 #if MICROPY_HW_USB_CDC
 #define CFG_TUD_CDC             (1)
@@ -59,8 +77,12 @@
 
 // CDC Configuration
 #if CFG_TUD_CDC
-#define CFG_TUD_CDC_RX_BUFSIZE  (256)
-#define CFG_TUD_CDC_TX_BUFSIZE  (256)
+#ifndef CFG_TUD_CDC_RX_BUFSIZE
+#define CFG_TUD_CDC_RX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
+#endif
+#ifndef CFG_TUD_CDC_TX_BUFSIZE
+#define CFG_TUD_CDC_TX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
+#endif
 #endif
 
 // MSC Configuration
@@ -72,12 +94,9 @@
 #define CFG_TUD_MSC_BUFSIZE (MICROPY_FATFS_MAX_SS)
 #endif
 
-// Define static descriptor size and interface count based on the above config
+#define USBD_RHPORT (0) // Currently only one port is supported
 
-#define USBD_STATIC_DESC_LEN (TUD_CONFIG_DESC_LEN +                     \
-    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
-    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
-    )
+// Define built-in interface, string and endpoint numbering based on the above config
 
 #define USBD_STR_0 (0x00)
 #define USBD_STR_MANUF (0x01)
@@ -89,7 +108,7 @@
 #define USBD_MAX_POWER_MA (250)
 
 #ifndef MICROPY_HW_USB_DESC_STR_MAX
-#define MICROPY_HW_USB_DESC_STR_MAX (20)
+#define MICROPY_HW_USB_DESC_STR_MAX (40)
 #endif
 
 #if CFG_TUD_CDC
@@ -112,19 +131,19 @@
 #endif // CFG_TUD_CDC
 #endif // CFG_TUD_MSC
 
-/* Limits of statically defined USB interfaces, endpoints, strings */
+/* Limits of builtin USB interfaces, endpoints, strings */
 #if CFG_TUD_MSC
-#define USBD_ITF_STATIC_MAX (USBD_ITF_MSC + 1)
-#define USBD_STR_STATIC_MAX (USBD_STR_MSC + 1)
-#define USBD_EP_STATIC_MAX (EPNUM_MSC_OUT + 1)
+#define USBD_ITF_BUILTIN_MAX (USBD_ITF_MSC + 1)
+#define USBD_STR_BUILTIN_MAX (USBD_STR_MSC + 1)
+#define USBD_EP_BUILTIN_MAX (EPNUM_MSC_OUT + 1)
 #elif CFG_TUD_CDC
-#define USBD_ITF_STATIC_MAX (USBD_ITF_CDC + 2)
-#define USBD_STR_STATIC_MAX (USBD_STR_CDC + 1)
-#define USBD_EP_STATIC_MAX (((EPNUM_CDC_EP_IN)&~TUSB_DIR_IN_MASK) + 1)
+#define USBD_ITF_BUILTIN_MAX (USBD_ITF_CDC + 2)
+#define USBD_STR_BUILTIN_MAX (USBD_STR_CDC + 1)
+#define USBD_EP_BUILTIN_MAX (((USBD_CDC_EP_IN)&~TUSB_DIR_IN_MASK) + 1)
 #else // !CFG_TUD_MSC && !CFG_TUD_CDC
-#define USBD_ITF_STATIC_MAX (0)
-#define USBD_STR_STATIC_MAX (0)
-#define USBD_EP_STATIC_MAX (0)
+#define USBD_ITF_BUILTIN_MAX (0)
+#define USBD_STR_BUILTIN_MAX (0)
+#define USBD_EP_BUILTIN_MAX (0)
 #endif
 
 #endif // MICROPY_HW_ENABLE_USBDEV

@@ -46,7 +46,7 @@
 #ifndef _WIN32
 #include <signal.h>
 
-STATIC void sighandler(int signum) {
+static void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
         #if MICROPY_PY_THREAD_GIL
@@ -184,10 +184,15 @@ main_term:;
     return c;
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
-    mp_os_dupterm_tx_strn(str, len);
+    mp_uint_t written = ret < 0 ? 0 : ret;
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        written = MIN((mp_uint_t)dupterm_res, written);
+    }
+    return written;
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
@@ -237,17 +242,10 @@ uint64_t mp_hal_time_ns(void) {
 
 #ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms) {
-    #ifdef MICROPY_EVENT_POLL_HOOK
     mp_uint_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
-        // MICROPY_EVENT_POLL_HOOK does usleep(500).
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
-    #else
-    // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
-    // "The useconds argument shall be less than one million."
-    usleep(ms * 1000);
-    #endif
 }
 #endif
 
