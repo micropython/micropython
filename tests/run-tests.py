@@ -152,6 +152,19 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "samd/armv6m": (
+        # Fails timing bounds.
+        "extmod/time_res.py",
+        # Require more detailed error messages.
+        "micropython/emg_exc.py",
+    ),
+    "samd/armv6m/mpy": (
+    ),
+    "samd/armv6m/mpy/native": (
+        # Not enough memory.
+        "basics/array_limits_intbig.py",
+        "extmod/machine_timer.py",
+    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
@@ -931,6 +944,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.arch is not None:
+        plat_arch = args.platform + "/" + args.arch
+        skip_tests.update(platform_tests_to_skip.get(plat_arch, ()))
+        if args.via_mpy:
+            plat_arch_mpy = plat_arch + "/mpy"
+            skip_tests.update(platform_tests_to_skip.get(plat_arch_mpy, ()))
+            skip_tests.update(platform_tests_to_skip.get(plat_arch_mpy + "/" + args.emit, ()))
 
     # Skip error-reporting-specific tests.
     skip_tests.update(error_reporting_tests_to_skip.get(args.error_reporting, ()))
