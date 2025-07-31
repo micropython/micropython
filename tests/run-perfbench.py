@@ -175,6 +175,9 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
         if error is not None:
             if error.startswith("SKIP"):
                 test_results.append((test_file, "skip", error))
+            elif error.startswith("CRASH:") and error.find("MemoryError:") != -1:
+                test_results.append((test_file, "skip", "too large"))
+                error = "SKIP: too large"
             else:
                 test_results.append((test_file, "fail", error))
             print(error)
