@@ -729,13 +729,18 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 skip_tests.add("inlineasm/thumb/asmbitops.py")
                 skip_tests.add("inlineasm/thumb/asmconst.py")
                 skip_tests.add("inlineasm/thumb/asmdiv.py")
+                skip_tests.add("inlineasm/thumb/asmit.py")
+                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
+            if (
+                output != b"thumb2\n"
+                or args.via_mpy
+                and args.arch not in ("armv7emsp", "armv7emdp")
+            ):
                 skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
                 skip_tests.add("inlineasm/thumb/asmfpcmp.py")
                 skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
                 skip_tests.add("inlineasm/thumb/asmfpmuldiv.py")
                 skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
-                skip_tests.add("inlineasm/thumb/asmit.py")
-                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
