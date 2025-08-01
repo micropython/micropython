@@ -235,3 +235,6 @@ static inline unsigned long mp_random_seed_init(void) {
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
+
+// Enable all z1fonts (firmware size costs ~300 bytes)
+#define MICROPY_PY_FRAMEBUF_ALL_FONTS (1)
