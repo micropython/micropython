@@ -121,6 +121,13 @@ docker-build:
 BASE_IMG ?= base.img
 UMAC=$(HOME)/src/umac/main -w -r ~/src/umac/rom.bin
 .PHONY: run
+run-%:
+	cp $(BASE_IMG) $(BUILD)/run.dsk
+	hmount $(BUILD)/run.dsk
+	hcopy $(BUILD)/micropython.bin ":Desktop Folder"
+	hcopy examples/$*.py ":Desktop Folder:code.py"
+	hattrib -t mupy -c mupy -t text ":Desktop Folder:code.py"
+	$(UMAC) -d build/run.dsk
 run:
 	cp $(BASE_IMG) $(BUILD)/run.dsk
 	hmount $(BUILD)/run.dsk
