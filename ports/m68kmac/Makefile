@@ -132,14 +132,14 @@ run-%:
 	hmount $(BUILD)/run.dsk
 	hcopy $(BUILD)/micropython.bin ":Desktop Folder"
 	hcopy examples/$*.py ":Desktop Folder:code.py"
-	hattrib -t mupy -c mupy -t text ":Desktop Folder:code.py"
+	hattrib -c mupy -t text ":Desktop Folder:code.py"
 	$(UMAC) -d build/run.dsk
 run:
 	cp $(BASE_IMG) $(BUILD)/run.dsk
 	hmount $(BUILD)/run.dsk
 	hcopy $(BUILD)/micropython.bin ":Desktop Folder"
 	hcopy code.py ":Desktop Folder"
-	hattrib -t mupy -c mupy -t text ":Desktop Folder:code.py"
+	hattrib -c mupy -t text ":Desktop Folder:code.py"
 	$(UMAC) -d build/run.dsk
 
 include $(TOP)/py/mkrules.mk
