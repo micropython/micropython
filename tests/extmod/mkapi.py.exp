@@ -12,3 +12,20 @@
 512
 1024
 768
+<Rect STRUCT \[0-9a-f\]\*>
+<Rect STRUCT \[0-9a-f\]\*
+    top=1
+    left=2
+    bottom=3
+    right=4>
+<Rect STRUCT \[0-9a-f\]\*
+    top=10
+    left=20
+    bottom=40
+    right=30>
+<Rect STRUCT \[0-9a-f\]\*
+    top=100
+    left=200
+    bottom=400
+    right=300>
+<class 'TypeError'>

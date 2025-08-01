@@ -357,6 +357,7 @@ special_tests = [
         "misc/sys_settrace_cov.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
+        "extmod/mkapi.py",
     )
 ]
 

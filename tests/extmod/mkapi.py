@@ -20,3 +20,17 @@ print(w.portRect.top)
 print(w.portRect.left)
 print(w.portRect.right)
 print(w.portRect.bottom)
+
+r = mkapitest.Rect(1, 2, 3, 4)
+print(r)
+print(repr(r))
+r = mkapitest.Rect(top=10, left=20, right=30, bottom=40)
+print(repr(r))
+r = mkapitest.Rect(100, 200, right=300, bottom=400)
+print(repr(r))
+
+try:
+    r = mkapitest.Rect(1000, 2000, 3000, right=4000, bottom=5000)
+    print(repr(r))
+except Exception as e:
+    print(type(e))

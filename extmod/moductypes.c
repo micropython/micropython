@@ -156,6 +156,9 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
         } else if (agg_type != PTR) {
             syntax_error();
         }
+        if (n_kw) {
+            mp_raise_TypeError(MP_ERROR_TEXT("struct: no fields"));
+        }
     } else {
         mp_obj_dict_t *d = MP_OBJ_TO_PTR(desc);
         // only for packed ROM tables..
@@ -168,10 +171,17 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
         for (size_t i = 0; i < n_args; i++) {
             mp_store_attr(result, mp_obj_str_get_qstr(d->map.table[i].key), args[i]);
         }
-    }
-    args += n_args;
-    for (size_t i = 0; i < 2 * n_kw; i += 2) {
-        mp_store_attr(result, mp_obj_str_get_qstr(args[i]), args[i + 1]);
+        args += n_args;
+        for (size_t i = 0; i < 2 * n_kw; i += 2) {
+            qstr q = mp_obj_str_get_qstr(args[i]);
+            for (size_t j = 0; j < n_args; j++) {
+                if (mp_obj_str_get_qstr(d->map.table[j].key) == q) {
+                    mp_raise_msg_varg(&mp_type_TypeError,
+                        MP_ERROR_TEXT("function got multiple values for argument '%q'"), q);
+                }
+            }
+            mp_store_attr(result, q, args[i + 1]);
+        }
     }
     return result;
 }
