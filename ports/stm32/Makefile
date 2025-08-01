@@ -58,7 +58,7 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/libhydrogen lib/stm32lib
+GIT_SUBMODULES += lib/libhydrogen lib/stm32lib lib/tinyusb
 
 CROSS_COMPILE ?= arm-none-eabi-
 LD_DIR=boards
@@ -110,6 +110,9 @@ INC += -I$(STM32LIB_CMSIS_ABS)/Include
 INC += -I$(STM32LIB_HAL_ABS)/Inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
+INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb/
+
 INC += -Ilwip_inc
 
 CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
@@ -213,6 +216,10 @@ SHARED_SRC_C += $(addprefix shared/,\
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
+	tinyusb/mp_usbd.c \
+	tinyusb/mp_usbd_cdc.c \
+	tinyusb/mp_usbd_descriptor.c \
+	tinyusb/mp_usbd_runtime.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -238,11 +245,21 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	dht/dht.c \
 	)
 
+# TinyUSB Stack source
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c \
+	src/portable/synopsys/dwc2/dcd_dwc2.c \
+	)
+
 SRC_C += \
 	boardctrl.c \
 	main.c \
 	stm32_it.c \
+	usbd.c \
 	usbd_conf.c \
+	usb.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
 	usbd_hid_interface.c \
@@ -276,7 +293,6 @@ SRC_C += \
 	can.c \
 	fdcan.c \
 	pyb_can.c \
-	usb.c \
 	eth.c \
 	eth_phy.c \
 	gccollect.c \
@@ -498,6 +514,7 @@ OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(USBDEV_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
