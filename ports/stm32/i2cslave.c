@@ -45,10 +45,12 @@ void i2c_slave_irq_handler(i2c_slave_t *i2c) {
         i2c_slave_process_addr_match(i2c, (sr2 >> I2C_SR2_TRA_Pos) & 1);
     }
     if (sr1 & I2C_SR1_TXE) {
-        i2c->DR = i2c_slave_process_tx_byte(i2c);
+        // This callback must call i2c_slave_write_byte.
+        i2c_slave_process_tx_byte(i2c);
     }
     if (sr1 & I2C_SR1_RXNE) {
-        i2c_slave_process_rx_byte(i2c, i2c->DR);
+        // This callback must call i2c_slave_read_byte.
+        i2c_slave_process_rx_byte(i2c);
     }
     if (sr1 & I2C_SR1_STOPF) {
         // STOPF only set at end of RX mode (in TX mode AF is set on NACK)
@@ -80,10 +82,12 @@ void i2c_slave_irq_handler(i2c_slave_t *i2c) {
         i2c_slave_process_addr_match(i2c, (i2c->ISR >> I2C_ISR_DIR_Pos) & 1);
     }
     if (isr & I2C_ISR_TXIS) {
-        i2c->TXDR = i2c_slave_process_tx_byte(i2c);
+        // This callback must call i2c_slave_write_byte.
+        i2c_slave_process_tx_byte(i2c);
     }
     if (isr & I2C_ISR_RXNE) {
-        i2c_slave_process_rx_byte(i2c, i2c->RXDR);
+        // This callback must call i2c_slave_read_byte.
+        i2c_slave_process_rx_byte(i2c);
     }
     if (isr & I2C_ISR_STOPF) {
         // STOPF only set for STOP condition, not a repeated START
