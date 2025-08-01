@@ -113,6 +113,12 @@ $(BUILD)/micropython.bin $(BUILD)/micropython.APPL $(BUILD)/micropython.dsk: $(B
 		"$(RINCLUDES)/Retro68APPL.r" \
 		-t "APPL" -c "mupy" \
 		-o $(BUILD)/micropython.bin --cc $(BUILD)/micropython.APPL --cc $(BUILD)/micropython.dsk
+	hmount $(BUILD)/micropython.dsk
+	(cd examples; set -x; \
+	for i in *.py; do \
+		hcopy $$i ":$$i"; \
+		hattrib -c mupy -t text ":$$i"; \
+	done)
 
 .PHONY: docker-build
 docker-build:
