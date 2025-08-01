@@ -1,0 +1,167 @@
+- typedef:
+    name: Byte
+    type: uint8_t
+
+- typedef:
+    name: INTEGER
+    type: int16_t
+
+- struct:
+    name: Rect
+    members:
+      - name: top
+        type: INTEGER
+      - name: left
+        type: INTEGER
+      - name: bottom
+        type: INTEGER
+      - name: right
+        type: INTEGER
+    size: 8
+
+- typedef:
+    name: Str15
+    type: Byte[16]
+
+- struct:             
+    name: GrafPort 
+    members:
+      - name: device
+        type: INTEGER
+      - name: portRect
+        type: Rect
+
+- typedef:
+    name: GrafPtr
+    type: GrafPort* 
+
+- typedef:
+    name: WindowPtr
+    type: GrafPtr
+
+
+# ####
+
+- struct:
+    name: Region
+    members:
+      - name: rgnSize
+        type: INTEGER
+      - name: rgnBBox
+        type: Rect
+    size: 10
+
+# ####
+
+- struct:
+    name: Point
+    members:
+      - name: h
+        type: INTEGER
+      - name: v
+        type: INTEGER
+
+- typedef:
+    name: RegionPtr
+    type: Region*
+
+- typedef:
+    name: RgnHandle
+    type: RegionPtr*
+
+
+# ####
+
+- pyverbatim:
+    typedef_content: |
+
+      typedef struct {
+        INTEGER top, left, bottom, right;
+      } Rect;
+
+      typedef struct {
+        INTEGER rgnSize; Rect rgnBBox;
+      } Region;
+
+      typedef struct {
+        INTEGER device;
+        Rect portRect;
+      } GrafPort;
+
+      typedef GrafPort *GrafPtr;
+
+      typedef GrafPtr WindowPtr;
+
+      #define WindowPtr_obj GrafPtr_obj
+
+      typedef Region *RegionPtr;
+      typedef RegionPtr *RgnHandle;
+
+      static void OffsetRgn(RgnHandle rh, INTEGER dh, INTEGER dv) {
+        Region *region = *rh;
+        region->rgnBBox.top += dv;
+        region->rgnBBox.bottom += dv;
+        region->rgnBBox.left += dh;
+        region->rgnBBox.right += dh;
+      }
+
+
+      static RgnHandle NewRgn(void) {
+        static Region rgn = { 0x505, {100, 200, 300, 400} };
+        static RegionPtr rp = &rgn;
+        return &rp;
+      }
+
+      static WindowPtr NewWindow(void) {
+        static GrafPort result = {0, {0x100, 0x200, 0x300, 0x400} };
+        return &result;
+      }
+
+      static void PtToAngle(const Rect *r, Point p, INTEGER *angle) {
+        mp_printf(&mp_plat_print, "PtToAngle(rect@%p, p={%d,%d}, angle@%p\n", r, p.h, p.v, angle);
+        *angle = 314;
+      }
+
+      static INTEGER GetWinDevice(WindowPtr w) {
+        return w->device;
+      }
+- function:
+    name: NewRgn
+    return: RgnHandle
+    trap: 0xA8D8
+    executor: C_
+
+- function:
+    name: OffsetRgn
+    args:
+      - name: rh
+        type: RgnHandle
+      - name: dh
+        type: INTEGER
+      - name: dv
+        type: INTEGER
+    trap: 0xA8E0
+    executor: C_
+
+- function:
+    name: PtToAngle 
+    args:             
+      - name: rp
+        type: const Rect*
+      - name: p      
+        type: Point 
+      - name: angle
+        type: INTEGER*
+    trap: 0xA8C3
+    executor: C_
+
+- function:
+    name: NewWindow
+    return: WindowPtr 
+
+- function:
+    name: GetWinDevice
+    return: INTEGER
+    args:             
+      - name: w
+        type: WindowPtr

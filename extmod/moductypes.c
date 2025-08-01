@@ -43,10 +43,12 @@
 #define IS_SCALAR_ARRAY_OF_BYTES(tuple_desc) (GET_TYPE(MP_OBJ_SMALL_INT_VALUE((tuple_desc)->items[1]), VAL_TYPE_BITS) == UINT8)
 
 // "struct" in uctypes context means "structural", i.e. aggregate, type.
-static const mp_obj_type_t uctypes_struct_type;
+const mp_obj_type_t uctypes_struct_type;
 
 // Get size of any type descriptor
 static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
+
+static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set_val);
 
 #define CTYPES_FLAGS_SIZE_BITS (2)
 #define CTYPES_OFFSET_SIZE_BITS (8 * sizeof(uint32_t) - 2)
@@ -73,6 +75,11 @@ static bool is_struct_type(mp_obj_t obj_in) {
     }
     mp_make_new_fun_t make_new = MP_OBJ_TYPE_GET_SLOT_OR_NULL((mp_obj_type_t *)MP_OBJ_TO_PTR(obj_in), make_new);
     return make_new == uctypes_struct_type_make_new;
+}
+
+static bool is_struct_instance(mp_obj_t obj_in) {
+    const mp_obj_type_t *type = mp_obj_get_type(obj_in);
+    return MP_OBJ_TYPE_GET_SLOT_OR_NULL(type, subscr) == uctypes_struct_subscr;
 }
 
 mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -149,6 +156,9 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
         } else if (agg_type != PTR) {
             syntax_error();
         }
+        if (n_kw) {
+            mp_raise_TypeError(MP_ERROR_TEXT("struct: no fields"));
+        }
     } else {
         mp_obj_dict_t *d = MP_OBJ_TO_PTR(desc);
         // only for packed ROM tables..
@@ -161,10 +171,17 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
         for (size_t i = 0; i < n_args; i++) {
             mp_store_attr(result, mp_obj_str_get_qstr(d->map.table[i].key), args[i]);
         }
-    }
-    args += n_args;
-    for (size_t i = 0; i < 2 * n_kw; i += 2) {
-        mp_store_attr(result, mp_obj_str_get_qstr(args[i]), args[i + 1]);
+        args += n_args;
+        for (size_t i = 0; i < 2 * n_kw; i += 2) {
+            qstr q = mp_obj_str_get_qstr(args[i]);
+            for (size_t j = 0; j < n_args; j++) {
+                if (mp_obj_str_get_qstr(d->map.table[j].key) == q) {
+                    mp_raise_msg_varg(&mp_type_TypeError,
+                        MP_ERROR_TEXT("function got multiple values for argument '%q'"), q);
+                }
+            }
+            mp_store_attr(result, q, args[i + 1]);
+        }
     }
     return result;
 }
@@ -173,8 +190,10 @@ mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type_in, size_t n_arg
 void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *d = 0;
     const char *typen = "unk";
     if (mp_obj_is_dict_or_ordereddict(self->desc)) {
+        d = MP_OBJ_TO_PTR(self->desc);
         typen = "STRUCT";
     } else if (mp_obj_is_type(self->desc, &mp_type_tuple)) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
@@ -192,7 +211,17 @@ void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         typen = "ERROR";
     }
 
-    mp_printf(print, "<%q %s %p>", (qstr)mp_obj_get_type_qstr(self_in), typen, struct_addr(self));
+    mp_printf(print, "<%q %s %p", (qstr)mp_obj_get_type_qstr(self_in), typen, struct_addr(self));
+    if (kind == PRINT_REPR && d) {
+        for (mp_uint_t i = 0; i < d->map.alloc; i++) {
+            if (mp_map_slot_is_filled(&d->map, i)) {
+                qstr k = mp_obj_str_get_qstr(d->map.table[i].key);
+                mp_obj_t attr = uctypes_struct_attr_op(self_in, k, MP_OBJ_NULL);
+                mp_printf(print, "\n    %q=%r", k, attr);
+            }
+        }
+    }
+    mp_printf(print, ">");
 }
 
 // Get size of scalar type descriptor
@@ -346,13 +375,25 @@ static mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
+mp_obj_t uctypes_get_struct_desc(mp_obj_t arg) {
+    if (is_struct_instance(arg)) {
+        mp_obj_uctypes_struct_t *struct_ = MP_OBJ_TO_PTR(arg);
+        return struct_->desc;
+    }
+    if (is_struct_type(arg)) {
+        mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(arg);
+        return struct_type->desc;
+    }
+    return MP_OBJ_NULL;
+}
 static mp_obj_t uctypes_struct_desc(mp_obj_t arg) {
-    if (!is_struct_type(arg)) {
+    mp_obj_t result = uctypes_get_struct_desc(arg);
+    if (result == MP_OBJ_NULL) {
         mp_raise_TypeError(NULL);
     }
-    mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(arg);
-    return struct_type->desc;
+    return result;
 }
+
 MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_desc_obj, uctypes_struct_desc);
 
 static const char type2char[16] = {
@@ -757,7 +798,7 @@ static mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
-static MP_DEFINE_CONST_OBJ_TYPE(
+MP_DEFINE_CONST_OBJ_TYPE(
     uctypes_struct_type,
     MP_QSTR_struct,
     MP_TYPE_FLAG_NONE,

@@ -15,14 +15,11 @@ jobs:
   build:
     permissions: write-all
     runs-on: ubuntu-latest
-    container: ghcr.io/autc04/retro68
+    container: ghcr.io/m68k-micropython/builder:latest
     steps:
     - uses: actions/checkout@v4
     - name: Build
       run: |
-        apt update
-        apt install -y python3-pip
-        pip install pyyaml click
         git config --global --add safe.directory $(pwd)
         make -C mpy-cross -j$(nproc)
         make -C ports/m68kmac submodules

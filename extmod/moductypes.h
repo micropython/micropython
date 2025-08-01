@@ -30,6 +30,8 @@
 #if MICROPY_PY_UCTYPES
 #include "py/obj.h"
 
+extern const mp_obj_type_t uctypes_struct_type;
+
 typedef struct _mp_obj_ctypes_struct_type_t {
     // This is a mp_obj_type_t with six slots.
     mp_obj_empty_type_t base;
@@ -45,12 +47,14 @@ mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in);
 mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 mp_obj_t uctypes_struct_type_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+// may call on an instance or named struct type
+mp_obj_t uctypes_get_struct_desc(const mp_obj_t obj);
 
 #define MP_DECLARE_CTYPES_STRUCT(type_name) \
-    extern mp_obj_ctypes_struct_type_t type_name;
+    extern const mp_obj_ctypes_struct_type_t type_name;
 
 #define MP_DEFINE_CTYPES_STRUCT(type_name, name_, desc_, flags_) \
-    mp_obj_ctypes_struct_type_t type_name = { \
+    const mp_obj_ctypes_struct_type_t type_name = { \
         .base = { \
             .base = { &mp_type_type }, \
             .flags = MP_TYPE_FLAG_NONE,  \

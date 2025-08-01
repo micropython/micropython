@@ -1,3 +1,8 @@
+ifeq ($(shell which m68k-apple-macos-gcc),)
+.PHONY: default
+default: docker-build
+endif
+
 include ../../py/mkenv.mk
 
 CROSS_COMPILE=m68k-apple-macos-
@@ -44,7 +49,6 @@ SRC_C = \
 	main.c \
 	vfs_mac.c \
 	macutil.c \
-	multiverse_support.c \
 
 SRC_C += \
 	shared/readline/readline.c \
@@ -64,37 +68,28 @@ SRC_S += \
 	shared/runtime/gchelper_m68k.s \
 
 SRC_QSTR += \
-	vfs_mac.c \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
+	vfs_mac.c \
 
 .PHONY: mkapi
 
 DEFS = lib/multiversal/defs/MacTypes.yaml etc/MacTypesExtras.yaml
 TDEFS = $(patsubst %, -t %, $(DEFS))
 
-# $(eval $(call multiversal_module, module name, defs files))
-define multiversal_module
-$$(BUILD)/mod$(1).c: tools/mkapi.py $(filter-out -t,$(2)) $$(DEFS)
-	$$(ECHO) "MKAPI $(1)"
-	$$(Q)$$(MKDIR) -p $$(BUILD)
-	$$(Q)$$(PYTHON) tools/mkapi.py -o $$@ -m $(1) $$(TDEFS) $(2)
-SRC_C += $(BUILD)/mod$(1).c
-SRC_QSTR += $(BUILD)/mod$(1).c
-mkapi:: $$(BUILD)/mod$(1).c
-endef
+include $(TOP)/extmod/multiversal.mk
 
 $(eval $(call multiversal_module,eventmgr,lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
-$(eval $(call multiversal_module,deskmgr,lib/multiversal/defs/DeskMgr.yaml -t lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
-$(eval $(call multiversal_module,dialogmgr,lib/multiversal/defs/DialogMgr.yaml -t lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml -t etc/DialogMgrExtras.yaml))
+$(eval $(call multiversal_module,deskmgr,lib/multiversal/defs/DeskMgr.yaml -t lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml -t lib/multiversal/defs/EventMgr.yaml))
+$(eval $(call multiversal_module,dialogmgr,lib/multiversal/defs/DialogMgr.yaml -t lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml -t etc/DialogMgrExtras.yaml -t lib/multiversal/defs/EventMgr.yaml))
 $(eval $(call multiversal_module,fontmgr,lib/multiversal/defs/FontMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,mactypes,lib/multiversal/defs/MacTypes.yaml etc/MacTypesExtras.yaml))
 $(eval $(call multiversal_module,menumgr,lib/multiversal/defs/MenuMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
 $(eval $(call multiversal_module,qd,lib/multiversal/defs/QuickDraw.yaml etc/QuickDrawExtras.yaml))
 $(eval $(call multiversal_module,textedit,lib/multiversal/defs/TextEdit.yaml -t lib/multiversal/defs/QuickDraw.yaml))
-$(eval $(call multiversal_module,toolboxevent,lib/multiversal/defs/ToolboxEvent.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,toolboxevent,lib/multiversal/defs/ToolboxEvent.yaml -t lib/multiversal/defs/QuickDraw.yaml -t lib/multiversal/defs/EventMgr.yaml))
 $(eval $(call multiversal_module,toolboxutil,lib/multiversal/defs/ToolboxUtil.yaml -t lib/multiversal/defs/EventMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
-$(eval $(call multiversal_module,windowmgr,lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml))
+$(eval $(call multiversal_module,windowmgr,lib/multiversal/defs/WindowMgr.yaml -t lib/multiversal/defs/QuickDraw.yaml -t lib/multiversal/defs/EventMgr.yaml))
 
 OBJ += $(PY_CORE_O) $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -118,20 +113,33 @@ $(BUILD)/micropython.bin $(BUILD)/micropython.APPL $(BUILD)/micropython.dsk: $(B
 		"$(RINCLUDES)/Retro68APPL.r" \
 		-t "APPL" -c "mupy" \
 		-o $(BUILD)/micropython.bin --cc $(BUILD)/micropython.APPL --cc $(BUILD)/micropython.dsk
+	hmount $(BUILD)/micropython.dsk
+	(cd examples; set -x; \
+	for i in *.py; do \
+		hcopy $$i ":$$i"; \
+		hattrib -c mupy -t text ":$$i"; \
+	done)
 
 .PHONY: docker-build
-docker-build: mkapi
+docker-build:
 	./docker-run.sh make -j$(shell nproc)
 
 BASE_IMG ?= base.img
 UMAC=$(HOME)/src/umac/main -w -r ~/src/umac/rom.bin
 .PHONY: run
+run-%:
+	cp $(BASE_IMG) $(BUILD)/run.dsk
+	hmount $(BUILD)/run.dsk
+	hcopy $(BUILD)/micropython.bin ":Desktop Folder"
+	hcopy examples/$*.py ":Desktop Folder:code.py"
+	hattrib -c mupy -t text ":Desktop Folder:code.py"
+	$(UMAC) -d build/run.dsk
 run:
 	cp $(BASE_IMG) $(BUILD)/run.dsk
 	hmount $(BUILD)/run.dsk
 	hcopy $(BUILD)/micropython.bin ":Desktop Folder"
 	hcopy code.py ":Desktop Folder"
-	hattrib -t mupy -c mupy -t text ":Desktop Folder:code.py"
+	hattrib -c mupy -t text ":Desktop Folder:code.py"
 	$(UMAC) -d build/run.dsk
 
 include $(TOP)/py/mkrules.mk

@@ -1,1 +1,13 @@
-[]
+- typedef:
+    name: ProcPtr
+    type: void*
+- pyverbatim:
+    typedef_content: |
+      #define WindowRef_obj GrafPtr_obj
+      #define WindowPtr_obj GrafPtr_obj
+      #define DialogPtr_obj GrafPtr_obj
+      #define INTEGER_obj int16_t_obj
+      #define Fixed_obj int32_t_obj
+      #define LONGINT_obj int32_t_obj
+      #define Byte_obj uint8_t_obj
+      #define SignedByte_obj int8_t_obj
