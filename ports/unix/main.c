@@ -484,6 +484,10 @@ int main(int argc, char **argv) {
     // ARM (non-Thumb) architectures require more stack.
     stack_size *= 2;
     #endif
+    #if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_UNDEFINED__)
+    // Sanitizer features consume more stack in some cases
+    stack_size *= 2;
+    #endif
 
     // We should capture stack top ASAP after start, and it should be
     // captured guaranteedly before any other stack variables are allocated.
