@@ -135,6 +135,24 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "samd/armv6m": (
+        # Requires unicode.
+        "extmod/json_loads.py",
+        # Fails timing bounds.
+        "extmod/time_res.py",
+        # Require more detailed error messages.
+        "micropython/emg_exc.py",
+        "micropython/heapalloc_exc_compressed.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        "micropython/native_with.py",
+        "micropython/opt_level_lineno.py",
+        "micropython/viper_with.py",
+        "misc/print_exception.py",
+        # Not enough memory running the test.
+        "micropython/viper_ptr16_store_boundary_intbig.py",
+        "micropython/viper_ptr32_store_boundary_intbig.py",
+        "micropython/viper_ptr8_store_boundary_intbig.py",
+    ),
     "qemu": (
         # Skip tests that require Cortex-M4.
         "inlineasm/thumb/asmfpaddsub.py",
@@ -350,7 +368,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     return had_crash, output_mupy
 
 
-special_tests = [
+tests_with_regex_output = [
     base_path(file)
     for file in (
         "micropython/meminfo.py",
@@ -367,10 +385,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     had_crash = False
     if pyb is None:
         # run on PC
-        if (
-            test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/")))
-            or test_file_abspath in special_tests
-        ):
+        if test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/"))):
             # special handling for tests of the unix cmdline program
             is_special = True
 
@@ -502,7 +517,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
         return b"SKIP\n"
 
-    if is_special or test_file_abspath in special_tests:
+    if is_special or test_file_abspath in tests_with_regex_output:
         # convert parts of the output that are not stable across runs
         with open(test_file + ".exp", "rb") as f:
             lines_exp = []
@@ -714,13 +729,18 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 skip_tests.add("inlineasm/thumb/asmbitops.py")
                 skip_tests.add("inlineasm/thumb/asmconst.py")
                 skip_tests.add("inlineasm/thumb/asmdiv.py")
+                skip_tests.add("inlineasm/thumb/asmit.py")
+                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
+            if (
+                output != b"thumb2\n"
+                or args.via_mpy
+                and args.arch not in ("armv7emsp", "armv7emdp")
+            ):
                 skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
                 skip_tests.add("inlineasm/thumb/asmfpcmp.py")
                 skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
                 skip_tests.add("inlineasm/thumb/asmfpmuldiv.py")
                 skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
-                skip_tests.add("inlineasm/thumb/asmit.py")
-                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
@@ -826,6 +846,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.arch is not None:
+        skip_tests.update(platform_tests_to_skip.get(args.platform + "/" + args.arch, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
@@ -876,6 +898,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
         skip_tests.add("extmod/asyncio_event_queue.py")  # native can't run schedule
         skip_tests.add("extmod/asyncio_iterator_event.py")  # native can't run schedule
+        skip_tests.add("misc/sys_settrace_cov.py")  # sys.settrace() not supported
+        skip_tests.add("thread/thread_exc2.py")  # requires traceback info
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
