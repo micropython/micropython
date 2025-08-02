@@ -229,7 +229,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 // negative shift not allowed
                 mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
             }
-            overflow = rhs_val >= (sizeof(long long) * MP_BITS_PER_BYTE)
+            overflow = rhs_val >= (long long)(sizeof(long long) * MP_BITS_PER_BYTE)
                 || lhs_val > (LLONG_MAX >> rhs_val)
                 || lhs_val < (LLONG_MIN >> rhs_val);
             result = (unsigned long long)lhs_val << rhs_val;
