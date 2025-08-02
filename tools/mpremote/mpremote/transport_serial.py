@@ -795,7 +795,7 @@ class PyboardCommand:
         if n == 0:
             return ""
         else:
-            return str(self.fin.read(n), "utf8")
+            return str(self.fin.read(n), "utf8", errors="backslashreplace")
 
     def wr_s8(self, i):
         self.fout.write(struct.pack("<b", i))
@@ -925,7 +925,7 @@ class PyboardCommand:
         fd = self.rd_s8()
         buf = self.rd_bytes()
         if self.data_files[fd][1]:
-            buf = str(buf, "utf8")
+            buf = str(buf, "utf8", errors="backslashreplace")
         n = self.data_files[fd][0].write(buf)
         self.wr_s32(n)
         # self.log_cmd(f"write {fd} {len(buf)} -> {n}")
