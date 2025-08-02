@@ -1,5 +1,6 @@
 #include "storage.h"
 #include "spi.h"
+#include "octospi.h"
 #include "py/mpconfig.h"
 
 #if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
@@ -29,5 +30,17 @@ const mp_spiflash_config_t spiflash_config = {
 };
 
 spi_bdev_t spi_bdev;
+
+// Second external SPI flash uses hardware QSPI interface
+const mp_spiflash_config_t spiflash2_config = {
+    .bus_kind = MP_SPIFLASH_BUS_QSPI,
+    .bus.u_qspi.data = NULL,
+    .bus.u_qspi.proto = &octospi_proto,
+    #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+    .cache = &spi_bdev_cache,
+    #endif
+};
+
+spi_bdev_t spi_bdev2;
 
 #endif
