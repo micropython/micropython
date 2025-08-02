@@ -32,6 +32,7 @@
 
 #include "flash.h"
 #include "qspi.h"
+#include "octospi.h"
 #include "storage.h"
 #include "xspi.h"
 
@@ -144,6 +145,21 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
         }
         #endif
 
+        #if MICROPY_HW_ROMFS_ENABLE_EXTERNAL_OSPI
+        if (octospi_is_valid_addr(dest)) {
+            dest -= OCTOSPI_MAP_ADDR;
+            dest_max -= OCTOSPI_MAP_ADDR;
+            while (dest < dest_max) {
+                int ret = mp_spiflash_erase_block(MICROPY_HW_ROMFS_OSPI_SPIFLASH_OBJ, dest);
+                if (ret < 0) {
+                    return MP_OBJ_NEW_SMALL_INT(ret);
+                }
+                dest += MP_SPIFLASH_ERASE_BLOCK_SIZE;
+            }
+            return MP_OBJ_NEW_SMALL_INT(4);
+        }
+        #endif
+
         #if MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI
         if (xspi_is_valid_addr(&xspi_flash2, dest)) {
             dest -= xspi_get_xip_base(&xspi_flash2);
@@ -180,6 +196,14 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
         if (qspi_is_valid_addr(dest)) {
             dest -= QSPI_MAP_ADDR;
             int ret = mp_spiflash_write(MICROPY_HW_ROMFS_QSPI_SPIFLASH_OBJ, dest, bufinfo.len, bufinfo.buf);
+            return MP_OBJ_NEW_SMALL_INT(ret);
+        }
+        #endif
+
+        #if MICROPY_HW_ROMFS_ENABLE_EXTERNAL_OSPI
+        if (octospi_is_valid_addr(dest)) {
+            dest -= OCTOSPI_MAP_ADDR;
+            int ret = mp_spiflash_write(MICROPY_HW_ROMFS_OSPI_SPIFLASH_OBJ, dest, bufinfo.len, bufinfo.buf);
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
         #endif
