@@ -174,7 +174,7 @@ static void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
         // For STM32G4, DAC registers have to be accessed by words (32-bit).
         dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_WORD;
         #elif defined(STM32H5)
-        dma_align = 0;
+        dma_align = DMA_SRC_DATAWIDTH_BYTE | DMA_DEST_DATAWIDTH_WORD;
         #else
         dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_BYTE;
         #endif
@@ -183,7 +183,7 @@ static void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
         // For STM32G4, DAC registers have to be accessed by words (32-bit).
         dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_WORD;
         #elif defined(STM32H5)
-        dma_align = 0;
+        dma_align = DMA_SRC_DATAWIDTH_HALFWORD | DMA_DEST_DATAWIDTH_WORD;
         #else
         dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_HALFWORD;
         #endif
@@ -490,7 +490,10 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         align = DAC_ALIGN_8B_R;
     } else {
         align = DAC_ALIGN_12B_R;
+        // For STM32H5, the length is the amount of data to be transferred from source to destination in bytes.
+        #if !defined(STM32H5)
         bufinfo.len /= 2;
+        #endif
     }
 
     dac_start_dma(self->dac_channel, tx_dma_descr, args[2].u_int, self->bits, align, bufinfo.len, bufinfo.buf);
