@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "weact_h723vg.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "WeAct STM32H723 Core Board",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "WeAct Studio"
+}
