@@ -97,7 +97,7 @@ static uint32_t TIMx_Config(mp_obj_t timer) {
     // work out the trigger channel (only certain ones are supported)
     if (tim->Instance == TIM2) {
         return DAC_TRIGGER_T2_TRGO;
-    #if defined(TIM4)
+    #if defined(TIM4) && defined(DAC_TRIGGER_T4_TRGO) // G0B1 doesn't have this
     } else if (tim->Instance == TIM4) {
         return DAC_TRIGGER_T4_TRGO;
     #endif
