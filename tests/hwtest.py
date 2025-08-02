@@ -77,8 +77,10 @@ NATMOD_ARCHS = ("x86", "x64", "armv6m", "armv7m", "armv7emsp", "armv7emdp", "xte
 NATMOD_LIBS = ("btree", "deflate", "framebuf", "heapq", "random", "re")
 
 
-def build_natmods():
-    for arch in NATMOD_ARCHS:
+def build_natmods(archs):
+    if not archs:
+        archs = NATMOD_ARCHS
+    for arch in archs:
         for lib in NATMOD_LIBS:
             subprocess.run(["make", "-C", f"../examples/natmod/{lib}", "-j8", "-B", f"ARCH={arch}"])
 
@@ -189,7 +191,7 @@ def main():
     args = sys.argv[1:]
 
     if len(args) > 0 and args[0] == "build-natmod":
-        build_natmods()
+        build_natmods(args[1:])
         return
 
     selected_tests = "vphmnwb"
