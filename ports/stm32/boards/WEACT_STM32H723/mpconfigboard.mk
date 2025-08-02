@@ -12,7 +12,8 @@ LD_FILES = boards/stm32h723.ld boards/common_bl.ld
 TEXT0_ADDR = 0x08020000
 else
 # When not using Mboot everything goes at the start of flash
-LD_FILES = boards/stm32h723.ld boards/common_basic.ld
+LD_FILES = boards/WEACT_STM32H723/weact_stm32h723.ld boards/common_basic.ld
+#LD_FILES = boards/stm32h723.ld boards/common_basic.ld
 TEXT0_ADDR = 0x08000000
 endif
 
