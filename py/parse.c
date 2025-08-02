@@ -671,13 +671,13 @@ static bool binary_op_maybe(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs, mp_ob
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t tmp = mp_binary_op(op, lhs, rhs);
+        nlr_pop();
         #if MICROPY_PY_BUILTINS_COMPLEX
         if (mp_obj_is_type(tmp, &mp_type_complex)) {
             return false;
         }
         #endif
         *res = tmp;
-        nlr_pop();
         return true;
     } else {
         return false;
