@@ -478,14 +478,11 @@ static mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
     int proto = 0;
 
     if (n_args > 0) {
-        assert(mp_obj_is_small_int(args[0]));
-        family = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        family = mp_obj_get_int(args[0]);
         if (n_args > 1) {
-            assert(mp_obj_is_small_int(args[1]));
-            type = MP_OBJ_SMALL_INT_VALUE(args[1]);
+            type = mp_obj_get_int(args[1]);
             if (n_args > 2) {
-                assert(mp_obj_is_small_int(args[2]));
-                proto = MP_OBJ_SMALL_INT_VALUE(args[2]);
+                proto = mp_obj_get_int(args[2]);
             }
         }
     }
