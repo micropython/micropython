@@ -10,6 +10,7 @@ PYTHON = python3
 MPY_CROSS = $(MPY_DIR)/mpy-cross/build/mpy-cross
 MPY_TOOL = $(PYTHON) $(MPY_DIR)/tools/mpy-tool.py
 MPY_LD = $(PYTHON) $(MPY_DIR)/tools/mpy_ld.py
+MAKE_NATMOD_INIT = $(PYTHON) $(MPY_DIR)/py/make_natmod_init.py
 
 Q = @
 ifeq ("$(origin V)", "command line")
@@ -36,10 +37,25 @@ CFLAGS_ARCH += -U_FORTIFY_SOURCE # prevent use of __*_chk libc functions
 
 MPY_CROSS_FLAGS += -march=$(ARCH)
 
-SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC))) $(patsubst %.S,%.o,$(filter %.S,$(SRC))))
+# Check if source uses static module definition (MP_REGISTER_MODULE)
+STATIC_MODULE_SRC = $(shell grep -l "MP_REGISTER_MODULE" $(SRC) 2>/dev/null)
+
+ifneq ($(STATIC_MODULE_SRC),)
+# Use static module definition - generate init function
+SRC_GEN = $(BUILD)/natmod_init_gen.c
+MOD_FROM_SRC = $(shell $(MAKE_NATMOD_INIT) --get-name $(SRC) 2>/dev/null)
+ifneq ($(MOD_FROM_SRC),)
+MOD ?= $(MOD_FROM_SRC)
+endif
+else
+# No static module definition
+SRC_GEN =
+endif
+
+SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC) $(SRC_GEN))) $(patsubst %.S,%.o,$(filter %.S,$(SRC))))
 SRC_MPY += $(addprefix $(BUILD)/, $(patsubst %.py,%.mpy,$(filter %.py,$(SRC))))
 
-CLEAN_EXTRA += $(MOD).mpy .mpy_ld_cache
+CLEAN_EXTRA += $(MOD).mpy .mpy_ld_cache $(SRC_GEN)
 
 ################################################################################
 # Architecture configuration
@@ -189,13 +205,20 @@ clean:
 	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 
 # Create build destination directories first
-BUILD_DIRS = $(sort $(dir $(CONFIG_H) $(SRC_O) $(SRC_MPY)))
-$(CONFIG_H) $(SRC_O) $(SRC_MPY): | $(BUILD_DIRS)
+BUILD_DIRS = $(sort $(dir $(CONFIG_H) $(SRC_O) $(SRC_MPY) $(SRC_GEN)))
+$(CONFIG_H) $(SRC_O) $(SRC_MPY) $(SRC_GEN): | $(BUILD_DIRS)
 $(BUILD_DIRS):
 	$(Q)$(MKDIR) -p $@
 
+# Generate init function for static modules
+ifneq ($(SRC_GEN),)
+$(SRC_GEN): $(SRC)
+	$(ECHO) "GEN $@"
+	$(Q)$(MAKE_NATMOD_INIT) $(SRC) > $@ || ($(RM) -f $@ && false)
+endif
+
 # Preprocess all source files to generate $(CONFIG_H)
-$(CONFIG_H): $(SRC)
+$(CONFIG_H): $(SRC) $(SRC_GEN)
 	$(ECHO) "GEN $@"
 	$(Q)$(MPY_LD) --arch $(ARCH) --preprocess -o $@ $^
 
