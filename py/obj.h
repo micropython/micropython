@@ -1057,6 +1057,7 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) {
     return mp_obj_is_int(o) || mp_obj_is_bool(o);
 }
 
+int64_t mp_obj_get_ll_int(mp_obj_t arg);
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);
 mp_uint_t mp_obj_get_uint(mp_const_obj_t arg);
 long long mp_obj_get_ll(mp_const_obj_t arg);
