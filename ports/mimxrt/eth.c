@@ -52,6 +52,9 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 #include "netif/ethernet.h"
+#if LWIP_IPV6
+#include "lwip/ethip6.h"
+#endif
 
 #include "ticks.h"
 
@@ -541,6 +544,10 @@ static err_t eth_netif_init(struct netif *netif) {
     netif->output = etharp_output;
     netif->mtu = 1500;
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
+    #if LWIP_IPV6
+    netif->output_ip6 = ethip6_output;
+    netif->flags |= NETIF_FLAG_MLD6;
+    #endif
     // Checksums only need to be checked on incoming frames, not computed on outgoing frames
     NETIF_SET_CHECKSUM_CTRL(netif,
         NETIF_CHECKSUM_CHECK_IP
@@ -556,25 +563,31 @@ static void eth_lwip_init(eth_t *self) {
     struct netif *n = &self->netif;
     ip_addr_t ipconfig[4];
 
+    #if LWIP_IPV6
+    for (int i = 0; i < 4; i++) {
+        IP_ADDR4(&ipconfig[i], 0, 0, 0, 0);
+    }
+    #endif
+
     self->netif.hwaddr_len = 6;
     if (self == &eth_instance0) {
         memcpy(self->netif.hwaddr, hw_addr, 6);
-        IP4_ADDR(&ipconfig[0], 192, 168, 0, 2);
+        IP_ADDR4(&ipconfig[0], 192, 168, 0, 2);
     #if defined ENET_DUAL_PORT
     } else {
         memcpy(self->netif.hwaddr, hw_addr_1, 6);
-        IP4_ADDR(&ipconfig[0], 192, 168, 0, 3);
+        IP_ADDR4(&ipconfig[0], 192, 168, 0, 3);
     #endif
     }
-    IP4_ADDR(&ipconfig[1], 255, 255, 255, 0);
-    IP4_ADDR(&ipconfig[2], 192, 168, 0, 1);
-    IP4_ADDR(&ipconfig[3], 8, 8, 8, 8);
+    IP_ADDR4(&ipconfig[1], 255, 255, 255, 0);
+    IP_ADDR4(&ipconfig[2], 192, 168, 0, 1);
+    IP_ADDR4(&ipconfig[3], 8, 8, 8, 8);
 
     MICROPY_PY_LWIP_ENTER
 
     n->name[0] = 'e';
     n->name[1] = (self == &eth_instance0 ? '0' : '1');
-    netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, eth_netif_init, ethernet_input);
+    netif_add(n, ip_2_ip4(&ipconfig[0]), ip_2_ip4(&ipconfig[1]), ip_2_ip4(&ipconfig[2]), self, eth_netif_init, ethernet_input);
     netif_set_hostname(n, mod_network_hostname_data);
     netif_set_default(n);
     netif_set_up(n);
@@ -585,6 +598,10 @@ static void eth_lwip_init(eth_t *self) {
 
     netif_set_link_up(n);
 
+    #if LWIP_IPV6
+    netif_create_ip6_linklocal_address(n, 1);
+    #endif
+
     MICROPY_PY_LWIP_EXIT
 }
 
@@ -593,7 +610,7 @@ static void eth_lwip_deinit(eth_t *self) {
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif == &self->netif) {
             netif_remove(netif);
-            netif->ip_addr.addr = 0;
+            netif_set_addr(netif, IP4_ADDR_ANY4, IP4_ADDR_ANY4, IP4_ADDR_ANY4);
             netif->flags = 0;
         }
     }
@@ -608,7 +625,7 @@ int eth_link_status(eth_t *self) {
     struct netif *netif = &self->netif;
     if ((netif->flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP))
         == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
-        if (netif->ip_addr.addr != 0) {
+        if (!ip4_addr_isany_val(*netif_ip4_addr(netif))) {
             return 3; // link up
         } else {
             return 2; // link no-ip;
