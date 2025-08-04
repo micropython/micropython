@@ -47,7 +47,7 @@ typedef struct _mp_obj_websocket_t {
     byte to_recv;
     byte mask_pos;
     byte buf_pos;
-    byte buf[6];
+    byte buf[12];
     byte opts;
     // Copy of last data frame flags
     byte ws_flags;
@@ -76,6 +76,7 @@ static mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
+
     const mp_stream_p_t *stream_p = mp_get_stream(self->sock);
     while (1) {
         if (self->to_recv != 0) {
@@ -93,9 +94,6 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
         switch (self->state) {
             case FRAME_HEADER: {
-                // TODO: Split frame handling below is untested so far, so conservatively disable it
-                assert(self->buf[0] & 0x80);
-
                 // "Control frames MAY be injected in the middle of a fragmented message."
                 // So, they must be processed before data frames (and not alter
                 // self->ws_flags)
@@ -121,13 +119,12 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
                     to_recv += 2;
                 } else if (sz == 127) {
                     // Msg size is next 8 bytes
-                    assert(0);
+                    to_recv += 8;
                 }
                 if (self->buf[1] & 0x80) {
                     // Next 4 bytes is mask
                     to_recv += 4;
                 }
-
                 self->buf_pos = 0;
                 self->to_recv = to_recv;
                 self->msg_sz = sz; // May be overridden by FRAME_OPT
@@ -144,11 +141,24 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
             }
 
             case FRAME_OPT: {
-                if ((self->buf_pos & 3) == 2) {
+                if (self->buf_pos & 2) { // to_recv was 2 or 6
+                    assert(self->buf_pos == 2 || self->buf_pos == 6);
                     // First two bytes are message length
                     self->msg_sz = (self->buf[0] << 8) | self->buf[1];
+                } else if (self->buf_pos & 8) { // to_recv was 8 or 12
+                    assert(self->buf_pos == 8 || self->buf_pos == 12);
+                    // First eight bytes are message length
+                    if (self->buf[0] || self->buf[1] || self->buf[2] || self->buf[3]) {
+                        mp_stream_close(self->sock); // cannot recover from framing error
+                        *errcode = MP_EIO;
+                        return MP_STREAM_ERROR;
+                    }
+                    self->msg_sz = ((uint32_t)self->buf[4] << 24)
+                        | ((uint32_t)self->buf[5] << 16)
+                        | ((uint32_t)self->buf[6] << 8)
+                        | (uint32_t)self->buf[7];
                 }
-                if (self->buf_pos >= 4) {
+                if (self->buf_pos & 4) {
                     // Last 4 bytes is mask
                     memcpy(self->mask, self->buf + self->buf_pos - 4, 4);
                 }
@@ -218,7 +228,10 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
 static mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
-    assert(size < 0x10000);
+    if (size >= 0x10000) {
+        *errcode = MP_ENOBUFS;
+        return MP_STREAM_ERROR;
+    }
     byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
     int hdr_sz;
     if (size < 126) {
