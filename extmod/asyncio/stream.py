@@ -176,15 +176,15 @@ class Server:
 
 # Helper function to start a TCP stream server, running as a new task
 # TODO could use an accept-callback on socket read activity instead of creating a task
-async def start_server(cb, host, port, backlog=5, ssl=None):
+async def start_server(cb, host, port, backlog=5, ssl=None, family=0):
     import socket
 
     # Create and bind server socket.
-    host = socket.getaddrinfo(host, port)[0]  # TODO this is blocking!
-    s = socket.socket()
+    addr_info = socket.getaddrinfo(host, port, family)[0]  # TODO this is blocking!
+    s = socket.socket(addr_info[0])  # Use address family from getaddrinfo
     s.setblocking(False)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(host[-1])
+    s.bind(addr_info[-1])
     s.listen(backlog)
 
     # Create and return server object and task.
