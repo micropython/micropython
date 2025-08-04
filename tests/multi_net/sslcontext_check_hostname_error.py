@@ -36,6 +36,9 @@ def instance0():
 
 # Client
 def instance1():
+    if not hasattr(ssl, "CERT_REQUIRED"):
+        print("SKIP")
+        raise SystemExit
     multitest.next()
     s = socket.socket()
     s.connect(socket.getaddrinfo(IP, PORT)[0][-1])

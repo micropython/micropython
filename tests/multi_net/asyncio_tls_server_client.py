@@ -62,5 +62,8 @@ def instance0():
 
 
 def instance1():
+    if not hasattr(ssl, "CERT_REQUIRED"):
+        print("SKIP")
+        raise SystemExit
     multitest.next()
     asyncio.run(tcp_client(b"client data"))
