@@ -25,6 +25,9 @@ except OSError:
 
 # Server
 def instance0():
+    if not hasattr(ssl, "CERT_REQUIRED"):
+        print("SKIP")
+        raise SystemExit
     multitest.globals(IP=multitest.get_network_ip())
     s = socket.socket()
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
