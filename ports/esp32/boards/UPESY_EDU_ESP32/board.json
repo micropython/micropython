@@ -1,0 +1,26 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "Arduino UNO compatible",
+        "Grove Shield compatible"
+    ],
+    "images": [
+        "upesy_edu_esp32.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "uPesy EDU ESP32",
+    "thumbnail": "",
+    "url": "https://www.upesy.com/products/esp32-arduino-uno-format",
+    "variants": {
+        "IDF3": "Compiled with IDF 3.x"
+    },
+    "vendor": "uPesy"
+}
