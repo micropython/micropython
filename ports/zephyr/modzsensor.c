@@ -93,12 +93,48 @@ static mp_obj_t sensor_get_int(mp_obj_t self_in, mp_obj_t channel_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(sensor_get_int_obj, sensor_get_int);
 
+static mp_obj_t zsensor_attr_get(mp_obj_t self_in, mp_obj_t channel_in, mp_obj_t attr_in) {
+    mp_obj_sensor_t *self = MP_OBJ_TO_PTR(self_in);
+    struct sensor_value val;
+    int st = sensor_attr_get(self->dev, mp_obj_get_int(channel_in), mp_obj_get_int(attr_in), &val);
+    if (st != 0) {
+        mp_raise_OSError(-st);
+    }
+    mp_obj_t items[] = {
+        mp_obj_new_int(val.val1),
+        mp_obj_new_int(val.val2),
+    };
+    return mp_obj_new_tuple(2, items);
+}
+MP_DEFINE_CONST_FUN_OBJ_3(zsensor_attr_get_obj, zsensor_attr_get);
+
+static mp_obj_t zsensor_attr_set(size_t n_args, const mp_obj_t *args) {
+    mp_obj_sensor_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t channel_in = args[1];
+    mp_obj_t attr_in = args[2];
+    struct sensor_value val;
+    val.val1 = mp_obj_get_int(args[3]);
+    if (n_args == 4) {
+        val.val2 = 0;
+    } else {
+        val.val2 = mp_obj_get_int(args[4]);
+    }
+    int st = sensor_attr_set(self->dev, mp_obj_get_int(channel_in), mp_obj_get_int(attr_in), &val);
+    if (st != 0) {
+        mp_raise_OSError(-st);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(zsensor_attr_set_obj, 4, 5, zsensor_attr_set);
+
 static const mp_rom_map_elem_t sensor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_measure), MP_ROM_PTR(&sensor_measure_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_float), MP_ROM_PTR(&sensor_get_float_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_micros), MP_ROM_PTR(&sensor_get_micros_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_millis), MP_ROM_PTR(&sensor_get_millis_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_int), MP_ROM_PTR(&sensor_get_int_obj) },
+    { MP_ROM_QSTR(MP_QSTR_attr_set), MP_ROM_PTR(&zsensor_attr_set_obj) },
+    { MP_ROM_QSTR(MP_QSTR_attr_get), MP_ROM_PTR(&zsensor_attr_get_obj) },
 };
 
 static MP_DEFINE_CONST_DICT(sensor_locals_dict, sensor_locals_dict_table);
@@ -119,12 +155,15 @@ static const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     C(ACCEL_X),
     C(ACCEL_Y),
     C(ACCEL_Z),
+    C(ACCEL_XYZ),
     C(GYRO_X),
     C(GYRO_Y),
     C(GYRO_Z),
+    C(GYRO_XYZ),
     C(MAGN_X),
     C(MAGN_Y),
     C(MAGN_Z),
+    C(MAGN_XYZ),
     C(DIE_TEMP),
     C(AMBIENT_TEMP),
     C(PRESS),
@@ -144,6 +183,26 @@ static const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     C(VOC),
     C(GAS_RES),
     C(VOLTAGE),
+#undef C
+#define C(name) { MP_ROM_QSTR(MP_QSTR_ATTR_##name), MP_ROM_INT(SENSOR_ATTR_##name) }
+    C(SAMPLING_FREQUENCY),
+    C(LOWER_THRESH),
+    C(UPPER_THRESH),
+    C(SLOPE_TH),
+    C(SLOPE_DUR),
+    C(HYSTERESIS),
+    C(OVERSAMPLING),
+    C(FULL_SCALE),
+    C(OFFSET),
+    C(CALIB_TARGET),
+    C(CONFIGURATION),
+    C(CALIBRATION),
+    C(FEATURE_MASK),
+    C(ALERT),
+    C(FF_DUR),
+    C(BATCH_DURATION),
+    C(GAIN),
+    C(RESOLUTION),
 #undef C
 };
 
