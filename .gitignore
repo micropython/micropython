@@ -24,3 +24,6 @@ user.props
 
 # MacOS desktop metadata files
 .DS_Store
+
+# mtb downloadable libs
+lib/mtb_shared
