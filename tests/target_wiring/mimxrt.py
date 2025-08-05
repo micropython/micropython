@@ -7,3 +7,7 @@ uart_loopback_args = (1,)
 uart_loopback_kwargs = {}
 
 spi_standalone_args_list = [()]
+
+encoder_loopback_id = 0
+encoder_loopback_out_pins = ("D2", "D5")
+encoder_loopback_in_pins = ("D3", "D4")
