@@ -27,7 +27,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: Encoder(id, phase_a, phase_b, *, home, match_pin, filter_ns, cpc, signed, index)
+.. class:: Encoder(id, phase_a, phase_b, *, home, match_pin, filter_ns, cpc, signed, index, phases)
    :no-index:
 
     Construct and return a new quadrature encoder object using the following parameters:
@@ -72,6 +72,10 @@ Constructors
       - *index*\=value. A Pin specifier telling to which pin the index pulse is connected.
         At a rising slope of the index pulse the position counter is set to the init value
         and the cycles counter is increased by one. A *value* of *None* disables the index input.
+      - *phases* specifies the number of signal edges to count and thus the
+        granularity of the decoding. e.g. 4 phases corresponds to "4x quadrature
+        decoding", and will result in four counts per pulse. Ports may support
+        either 1, 2, or 4 phases and the default is 4 phase. *(Supported on MIMXRT)*
 
 The arguments phase_a, phase_b and filter_ns are generic across ports, all other arguments are port-specific.
 
