@@ -75,6 +75,10 @@ TOP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 UNCRUSTIFY_CFG = os.path.join(TOP, "tools/uncrustify.cfg")
 
 
+class IndentationError(ValueError):
+    pass
+
+
 def list_files(paths, exclusions=None, prefix=""):
     files = set()
     for pattern in paths:
@@ -111,6 +115,10 @@ def fixup_c(filename):
                         # This #-line does not need dedenting.
                         dedent_stack.append(-1)
                 else:
+                    if len(dedent_stack) == 0:
+                        raise IndentationError(
+                            f'dedent stack is empty for "{directive}" at {filename}:{line_number}'
+                        )
                     if dedent_stack[-1] >= 0:
                         # This associated #-line needs dedenting to match the #if.
                         indent_diff = indent - dedent_stack[-1]
