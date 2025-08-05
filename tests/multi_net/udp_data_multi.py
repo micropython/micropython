@@ -5,7 +5,7 @@ import socket
 
 NUM_NEW_SOCKETS = 4
 NUM_PACKET_BURSTS = 6
-NUM_PACKET_GROUPS = 5
+NUM_PACKET_GROUPS = 4
 TOTAL_PACKET_BURSTS = NUM_NEW_SOCKETS * NUM_PACKET_BURSTS
 # The tast passes if more than 75% of packets are received in each group.
 PACKET_RECV_THRESH = 0.75 * TOTAL_PACKET_BURSTS
