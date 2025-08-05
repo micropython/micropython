@@ -787,7 +787,7 @@ static mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ys
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t xstep = mp_obj_get_int(xstep_in);
     mp_int_t ystep = mp_obj_get_int(ystep_in);
-    int sx, y, xend, yend, dx, dy;
+    mp_int_t sx, y, xend, yend, dx, dy;
     if (xstep < 0) {
         sx = 0;
         xend = self->width + xstep;
