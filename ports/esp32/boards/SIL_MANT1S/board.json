@@ -10,7 +10,7 @@
         "BLE",
         "External Flash",
         "External RAM",
-        "WiFi",
+        "WiFi"
     ],
     "features_non_filterable": [
         "T1S"
