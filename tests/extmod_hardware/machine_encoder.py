@@ -45,7 +45,6 @@ class TestEncoder(unittest.TestCase):
         out0_pin(0)
         out1_pin(0)
         self.enc = Encoder(id, in0_pin, in1_pin, phases=1)
-        self.pulses = 0  # track the expected encoder position in software
         self.pulses = start_value  # track the expected encoder position in software
 
     def tearDown(self):
