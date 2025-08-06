@@ -38,6 +38,8 @@
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
 #include "soc/timer_periph.h"
+#include "esp_private/esp_clk_tree_common.h"
+#include "esp_private/periph_ctrl.h"
 #include "machine_timer.h"
 
 #define TIMER_DIVIDER  8
@@ -163,8 +165,18 @@ static void machine_timer_isr_handler(machine_timer_obj_t *self) {
 void machine_timer_enable(machine_timer_obj_t *self) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
+
+    PERIPH_RCC_ACQUIRE_ATOMIC(timer_group_periph_signals.groups[self->index].module, ref_count) {
+        if (ref_count == 0) {
+            timer_ll_enable_bus_clock(self->index, true);
+            timer_ll_reset_register(self->index);
+        }
+    }
+
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
+    esp_clk_tree_enable_src(GPTIMER_CLK_SRC_DEFAULT, true);
     timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_DEFAULT);
+    timer_ll_enable_clock(self->hal_context.dev, self->index, true);
     timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
     timer_hal_set_counter_value(&self->hal_context, 0);
     timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);
