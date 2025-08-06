@@ -47,6 +47,8 @@ elif "rp2" in sys.platform:
     pwm_pulse_pins = (("GPIO0", "GPIO1"),)
 elif "samd" in sys.platform:
     pwm_pulse_pins = (("D0", "D1"),)
+    if "Seeed Xiao" in sys.implementation._machine:
+        pwm_pulse_pins = (("A1_D1", "A0_D0"),)
     if "SAMD21" in sys.implementation._machine:
         # MCU is too slow to capture short pulses.
         pwm_freq_limit = 2_000
