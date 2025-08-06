@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_MISC_H
 #define MICROPY_INCLUDED_PY_MISC_H
 
+#include "py/mpconfig.h"
+
 // a mini library of useful types and functions
 
 /** types *******************************************************/
