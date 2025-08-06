@@ -518,12 +518,14 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
 )
 
 CI_UNIX_OPTS_SANITIZE_ADDRESS=(
-    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
+    # Macro MP_ASAN allows detecting ASan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -DMP_ASAN=1"
     LDFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
 )
 
 CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
-    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+    # Macro MP_UBSAN allows detecting UBSan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute -DMP_UBSAN=1"
     LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
 )
 
