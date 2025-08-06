@@ -24,6 +24,9 @@ elif "pyboard" in sys.platform:
         (1, None, None, None),  # "explicit choice of sck/mosi/miso is not implemented"
         (2, None, None, None),
     )
+elif "renesas-ra" in sys.platform:
+    MAX_DELTA_MS = 15
+    spi_instances = ((0, None, None, None),)
 elif "rp2" in sys.platform:
     spi_instances = ((0, Pin(18), Pin(19), Pin(16)),)
 elif "esp32" in sys.platform:
