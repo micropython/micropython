@@ -14,7 +14,7 @@ except:
 try:
     # large stack/heap, eg unix
     [0] * 80000
-    N = 5000
+    N = 8000
 except:
     try:
         # medium, eg pyboard
