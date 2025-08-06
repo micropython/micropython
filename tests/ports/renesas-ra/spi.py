@@ -20,7 +20,7 @@ for bus in spis:
     except ValueError:
         print("ValueError", bus)
 
-spi = SPI(0)
+spi = SPI(0, baudrate=500000, polarity=0, phase=0, bits=8)
 print(spi)
 
 spi = SPI(0)
