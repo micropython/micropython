@@ -30,11 +30,14 @@ elif sys.platform == "rp2":
     args_target = (1,)
 elif sys.platform == "pyboard":
     if sys.implementation._build == "NUCLEO_WB55":
-        args_controller = {"scl": "B8", "sda": "B9"}
-        args_target = (3,)
+        args_controller = {"scl": "B8", "sda": "B9"}  # Arduino header D15/D14
+        args_target = (3,)  # PC0/PC1, Arduino header A0/A1
     else:
         args_controller = {"scl": "X1", "sda": "X2"}
         args_target = ("X",)
+        if hasattr(Pin.board, "PULL_SCL"):
+            Pin("PULL_SCL", Pin.OUT, value=1)
+            Pin("PULL_SDA", Pin.OUT, value=1)
 elif "zephyr-nucleo_wb55rg" in sys.implementation._machine:
     # PB8=I2C1_SCL, PB9=I2C1_SDA (on Arduino header D15/D14)
     # PC0=I2C3_SCL, PC1=I2C3_SDA (on Arduino header A0/A1)
