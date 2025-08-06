@@ -42,10 +42,8 @@
 #include "esp_private/periph_ctrl.h"
 #include "machine_timer.h"
 
+#define TIMER_CLK_SRC GPTIMER_CLK_SRC_DEFAULT
 #define TIMER_DIVIDER  8
-
-// TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
 
 #define TIMER_FLAGS    0
 
@@ -53,6 +51,14 @@ const mp_obj_type_t machine_timer_type;
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
+
+uint32_t machine_timer_freq_hz(void) {
+    // The timer source clock is APB or a fixed PLL (depending on chip), both constant frequency.
+    uint32_t freq;
+    check_esp_err(esp_clk_tree_src_get_freq_hz(TIMER_CLK_SRC, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &freq));
+    assert(freq % TIMER_DIVIDER == 0); // Source clock should divide evenly into TIMER_DIVIDER
+    return freq / TIMER_DIVIDER;
+}
 
 void machine_timer_deinit_all(void) {
     // Disable, deallocate and remove all timers from list
@@ -68,7 +74,7 @@ void machine_timer_deinit_all(void) {
 static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_timer_obj_t *self = self_in;
     qstr mode = self->repeat ? MP_QSTR_PERIODIC : MP_QSTR_ONE_SHOT;
-    uint64_t period = self->period / (TIMER_SCALE / 1000); // convert to ms
+    uint64_t period = self->period / (machine_timer_freq_hz() / 1000); // convert to ms
     #if SOC_TIMER_GROUP_TIMERS_PER_GROUP == 1
     mp_printf(print, "Timer(%u, mode=%q, period=%lu)", self->group, mode, period);
     #else
@@ -174,8 +180,8 @@ void machine_timer_enable(machine_timer_obj_t *self) {
     }
 
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
-    esp_clk_tree_enable_src(GPTIMER_CLK_SRC_DEFAULT, true);
-    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_DEFAULT);
+    esp_clk_tree_enable_src(TIMER_CLK_SRC, true);
+    timer_ll_set_clock_source(self->hal_context.dev, self->index, TIMER_CLK_SRC);
     timer_ll_enable_clock(self->hal_context.dev, self->index, true);
     timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
     timer_hal_set_counter_value(&self->hal_context, 0);
@@ -236,7 +242,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 
     #if MICROPY_PY_BUILTINS_FLOAT
     if (args[ARG_freq].u_obj != mp_const_none) {
-        self->period = (uint64_t)(TIMER_SCALE / mp_obj_get_float(args[ARG_freq].u_obj));
+        self->period = (uint64_t)(machine_timer_freq_hz() / mp_obj_get_float(args[ARG_freq].u_obj));
     }
     #else
     if (args[ARG_freq].u_int != 0xffffffff) {
@@ -244,7 +250,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     }
     #endif
     else {
-        self->period = (((uint64_t)args[ARG_period].u_int) * TIMER_SCALE) / args[ARG_tick_hz].u_int;
+        self->period = (((uint64_t)args[ARG_period].u_int) * machine_timer_freq_hz()) / args[ARG_tick_hz].u_int;
     }
 
     self->repeat = args[ARG_mode].u_int;
@@ -280,7 +286,7 @@ static mp_obj_t machine_timer_value(mp_obj_t self_in) {
         mp_raise_ValueError(MP_ERROR_TEXT("timer not set"));
     }
     uint64_t result = timer_ll_get_counter_value(self->hal_context.dev, self->index);
-    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (TIMER_SCALE / 1000))); // value in ms
+    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (machine_timer_freq_hz() / 1000))); // value in ms
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 

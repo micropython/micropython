@@ -58,7 +58,7 @@
 #define UART_IRQ_RXIDLE (0x1000)
 #define UART_IRQ_BREAK (1 << UART_BREAK)
 #define MP_UART_ALLOWED_FLAGS (UART_IRQ_RX | UART_IRQ_RXIDLE | UART_IRQ_BREAK)
-#define RXIDLE_TIMER_MIN (5000)  // 500 us
+#define RXIDLE_TIMER_MIN (machine_timer_freq_hz() * 5 / 10000) // 500us minimum rxidle time
 #define UART_QUEUE_SIZE (3)
 
 enum {
@@ -535,7 +535,7 @@ static void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger
         self->mp_irq_obj->ishard = false;
         uint32_t baudrate;
         uart_get_baudrate(self->uart_num, &baudrate);
-        mp_int_t period = TIMER_SCALE * 20 / baudrate + 1;
+        mp_int_t period = machine_timer_freq_hz() * 20 / baudrate + 1;
         if (period < RXIDLE_TIMER_MIN) {
             period = RXIDLE_TIMER_MIN;
         }
