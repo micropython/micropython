@@ -27,6 +27,24 @@ That will create an executable called `embed` which you can run:
 
     $ ./embed
 
+Building the example with CMake
+-------------------------------
+
+As an alternative to the two-step `make` flow above, this example can also be
+built directly with CMake.  In this mode MicroPython is compiled from the
+repository sources as a library and linked into the application; there is no
+separate `micropython_embed` generation step.
+
+    $ cmake -S . -B build
+    $ cmake --build build
+    $ ./build/embed-test
+
+See `CMakeLists.txt` for how the port is consumed.  The key steps are pointing
+`MICROPY_EMBED_CONFIG_DIR` at the directory containing `mpconfigport.h`, calling
+`find_package(micropython-embed ...)`, and linking against the
+`micropython::micropython` target.  By default a static library is produced;
+set `MICROPY_EMBED_LIBRARY_TYPE` to `SHARED` to build a shared library instead.
+
 Out of tree build
 -----------------
 

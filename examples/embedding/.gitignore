@@ -2,3 +2,6 @@
 embed
 main.o
 micropython_embed
+
+# CMake build directory
+build
