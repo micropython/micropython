@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy_c3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "xiao_esp32c3.jpg"
+    ],
+    "mcu": "esp32c3",
+    "product": "XIAO-ESP32C3",
+    "thumbnail": "",
+    "url": "https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/",
+    "vendor": "Seeed Studio"
+}
