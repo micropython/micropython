@@ -598,6 +598,11 @@ static mp_parse_node_t make_node_const_object_optimised(parser_t *parser, size_t
 static void push_result_token(parser_t *parser, uint8_t rule_id) {
     mp_parse_node_t pn;
     mp_lexer_t *lex = parser->lexer;
+    if (lex->tok_kind == MP_TOKEN_NAME || lex->tok_kind == MP_TOKEN_STRING) {
+        if (!mp_utf8_check((byte *)lex->vstr.buf, lex->vstr.len)) {
+            mp_raise_msg(&mp_type_SyntaxError, NULL);
+        }
+    }
     if (lex->tok_kind == MP_TOKEN_NAME) {
         qstr id = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
         #if MICROPY_COMP_CONST

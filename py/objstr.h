@@ -122,9 +122,13 @@ extern const mp_obj_dict_t mp_obj_array_locals_dict;
 #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
 // Throws an exception if string content is not UTF-8
 void mp_utf8_require(const byte *p, size_t len);
+bool mp_utf8_check(const byte *p, size_t len);
 #else
 // If unicode strings are not enabled, or the check is explicitly disabled, it's a no-op
 static inline void mp_utf8_require(const byte *p, size_t len) {
+}
+static inline bool mp_utf8_check(const byte *p, size_t len) {
+    return true;
 }
 #endif
 
