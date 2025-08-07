@@ -26,25 +26,30 @@
 
 #include "py/smallint.h"
 
-bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
+#if !MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+#define MP_UINT_MAX (~(mp_uint_t)0)
+#define MP_INT_MAX ((mp_int_t)(MP_UINT_MAX >> 1))
+#define MP_INT_MIN (-MP_INT_MAX - 1)
+
+bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
     // Check for multiply overflow; see CERT INT32-C
     if (x > 0) { // x is positive
         if (y > 0) { // x and y are positive
-            if (x > (MP_SMALL_INT_MAX / y)) {
+            if (x > (MP_INT_MAX / y)) {
                 return true;
             }
         } else { // x positive, y nonpositive
-            if (y < (MP_SMALL_INT_MIN / x)) {
+            if (y < (MP_INT_MIN / x)) {
                 return true;
             }
         } // x positive, y nonpositive
     } else { // x is nonpositive
         if (y > 0) { // x is nonpositive, y is positive
-            if (x < (MP_SMALL_INT_MIN / y)) {
+            if (x < (MP_INT_MIN / y)) {
                 return true;
             }
         } else { // x and y are nonpositive
-            if (x != 0 && y < (MP_SMALL_INT_MAX / x)) {
+            if (x != 0 && y < (MP_INT_MAX / x)) {
                 return true;
             }
         } // End if x and y are nonpositive
@@ -54,6 +59,7 @@ bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
     *res = x * y;
     return false;
 }
+#endif
 
 mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor) {
     // Python specs require that mod has same sign as second operand
