@@ -639,10 +639,12 @@
 #if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL) \
     || defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C4_SCL)
 #define MICROPY_HW_ENABLE_HW_I2C (1)
+#ifndef MICROPY_HW_ENABLE_HW_I2C_TARGET
 #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32WB)
 #define MICROPY_HW_ENABLE_HW_I2C_TARGET (1)
 #else
 #define MICROPY_HW_ENABLE_HW_I2C_TARGET (0)
+#endif
 #endif
 #else
 #define MICROPY_HW_ENABLE_HW_I2C (0)
