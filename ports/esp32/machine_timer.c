@@ -181,8 +181,13 @@ void machine_timer_enable(machine_timer_obj_t *self) {
 
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
     esp_clk_tree_enable_src(TIMER_CLK_SRC, true);
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
     timer_ll_set_clock_source(self->hal_context.dev, self->index, TIMER_CLK_SRC);
     timer_ll_enable_clock(self->hal_context.dev, self->index, true);
+    #else
+    timer_ll_set_clock_source(self->group, self->index, TIMER_CLK_SRC);
+    timer_ll_enable_clock(self->group, self->index, true);
+    #endif
     timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
     timer_hal_set_counter_value(&self->hal_context, 0);
     timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);
