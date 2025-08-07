@@ -112,7 +112,8 @@ static void vfs_init(void) {
     mount_point_str = "/sd";
     path_lib_qstr = MP_QSTR__slash_sd_slash_lib;
     #elif defined(CONFIG_FLASH_MAP) && FIXED_PARTITION_EXISTS(storage_partition)
-    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)), MP_OBJ_NEW_SMALL_INT(4096) };
+    int block_size = DT_PROP(DT_GPARENT(DT_NODELABEL(storage_partition)), erase_block_size);
+    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)), MP_OBJ_NEW_SMALL_INT(block_size) };
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/flash";
     path_lib_qstr = MP_QSTR__slash_flash_slash_lib;
