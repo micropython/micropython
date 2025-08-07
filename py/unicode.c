@@ -177,35 +177,3 @@ mp_uint_t unichar_xdigit_value(unichar c) {
     }
     return n;
 }
-
-#if MICROPY_PY_BUILTINS_STR_UNICODE
-
-bool utf8_check(const byte *p, size_t len) {
-    uint8_t need = 0;
-    const byte *end = p + len;
-    for (; p < end; p++) {
-        byte c = *p;
-        if (need) {
-            if (UTF8_IS_CONT(c)) {
-                need--;
-            } else {
-                // mismatch
-                return 0;
-            }
-        } else {
-            if (c >= 0xc0) {
-                if (c >= 0xf8) {
-                    // mismatch
-                    return 0;
-                }
-                need = (0xe5 >> ((c >> 3) & 0x6)) & 3;
-            } else if (c >= 0x80) {
-                // mismatch
-                return 0;
-            }
-        }
-    }
-    return need == 0; // no pending fragments allowed
-}
-
-#endif
