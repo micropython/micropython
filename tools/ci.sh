@@ -468,6 +468,7 @@ function ci_stm32_nucleo_build {
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI COPT=-O2 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1
+    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK CFLAGS_EXTRA='-DMICROPY_HW_TINYUSB_STACK=1'
 
     # Test building a board with mboot packing enabled (encryption, signing, compression).
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55 USE_MBOOT=1 MBOOT_ENABLE_PACKING=1
