@@ -766,10 +766,8 @@ int pyexec_str_single(const char *str, bool allow_keyboard_interrupt) {
 }
 
 int pyexec_stdin(void) {
-    mp_reader_t reader;
-    mp_reader_new_file_from_fd(&reader, 0, false);
-    mp_uint_t exec_flags = EXEC_FLAG_SOURCE_IS_READER;
-    return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags, NULL);
+    mp_lexer_t *lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
+    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0, NULL);
 }
 #endif
 
