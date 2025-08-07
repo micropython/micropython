@@ -2461,7 +2461,7 @@ mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
 }
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-static bool mp_utf8_check(const byte *p, size_t len) {
+bool mp_utf8_check(const byte *p, size_t len) {
     uint8_t need = 0;
     const byte *end = p + len;
     for (; p < end; p++) {
