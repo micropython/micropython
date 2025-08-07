@@ -39,22 +39,19 @@ typedef struct _micropython_ringio_obj_t {
 
 static mp_obj_t micropython_ringio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    mp_int_t buff_size = -1;
     mp_buffer_info_t bufinfo = {NULL, 0, 0};
 
     if (!mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
-        buff_size = mp_obj_get_int(args[0]);
+        bufinfo.len = mp_obj_get_int(args[0]) + 1;
+        bufinfo.buf = m_new(uint8_t, bufinfo.len);
+    }
+    if (bufinfo.len < 2 || bufinfo.len > UINT16_MAX) {
+        mp_raise_ValueError(NULL);
     }
     micropython_ringio_obj_t *self = mp_obj_malloc(micropython_ringio_obj_t, type);
-    if (bufinfo.buf != NULL) {
-        // buffer passed in, use it directly for ringbuffer.
-        self->ringbuffer.buf = bufinfo.buf;
-        self->ringbuffer.size = bufinfo.len;
-        self->ringbuffer.iget = self->ringbuffer.iput = 0;
-    } else {
-        // Allocate new buffer, add one extra to buff_size as ringbuf consumes one byte for tracking.
-        ringbuf_alloc(&(self->ringbuffer), buff_size + 1);
-    }
+    self->ringbuffer.buf = bufinfo.buf;
+    self->ringbuffer.size = bufinfo.len;
+    self->ringbuffer.iget = self->ringbuffer.iput = 0;
     return MP_OBJ_FROM_PTR(self);
 }
 
