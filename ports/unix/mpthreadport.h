@@ -26,6 +26,7 @@
 
 #include <pthread.h>
 #include <stdbool.h>
+#include "py/misc.h"
 
 typedef pthread_mutex_t mp_thread_mutex_t;
 typedef pthread_mutex_t mp_thread_recursive_mutex_t;
