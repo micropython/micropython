@@ -136,6 +136,24 @@
 #define MICROPY_HW_ENABLE_USB (0)
 #endif
 
+#if MICROPY_HW_ENABLE_USB
+#define MICROPY_HW_USB_CDC (1)
+#define MICROPY_HW_USB_FS (1)
+
+// Select whether TinyUSB or legacy STM stack is used to provide USB.
+#ifndef MICROPY_HW_TINYUSB_STACK
+#define MICROPY_HW_TINYUSB_STACK (0)
+#endif
+
+// Central definition for STM USB stack (when not using TinyUSB)
+#define MICROPY_HW_STM_USB_STACK (MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK)
+
+#if MICROPY_HW_TINYUSB_STACK
+#define MICROPY_HW_ENABLE_USBDEV (1)
+#endif
+
+#endif // MICROPY_HW_ENABLE_USB
+
 // Whether to enable the PA0-PA3 servo driver, exposed as pyb.Servo
 #ifndef MICROPY_HW_ENABLE_SERVO
 #define MICROPY_HW_ENABLE_SERVO (0)
@@ -256,6 +274,8 @@
 // Windows needs a different PID to distinguish different device configurations.
 #ifndef MICROPY_HW_USB_VID
 #define MICROPY_HW_USB_VID              (0xf055)
+#define MICROPY_HW_USB_PID              (0x9802)
+
 #define MICROPY_HW_USB_PID_CDC_MSC      (0x9800)
 #define MICROPY_HW_USB_PID_CDC_HID      (0x9801)
 #define MICROPY_HW_USB_PID_CDC          (0x9802)
@@ -369,6 +389,8 @@
 #endif
 #define MICROPY_HW_MAX_LPUART (0)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32F4
+
 // Configuration for STM32F7 series
 #elif defined(STM32F7)
 
@@ -384,6 +406,8 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32F7
+
 // Configuration for STM32G0 series
 #elif defined(STM32G0)
 
@@ -393,6 +417,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (6)
 #define MICROPY_HW_MAX_LPUART (2)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32G0
 
 // Configuration for STM32G4 series
 #elif defined(STM32G4)
@@ -404,6 +430,8 @@
 #define MICROPY_HW_MAX_UART (5) // UART1-5 + LPUART1
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32G4
+
 // Configuration for STM32H5 series
 #elif defined(STM32H5)
 
@@ -413,6 +441,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (12)
 #define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32H5
 
 // Configuration for STM32H7A3/B3 series
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
@@ -425,6 +455,8 @@
 #define MICROPY_HW_MAX_UART (10)
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32H7
+
 // Configuration for STM32H7 series
 #elif defined(STM32H7)
 
@@ -434,6 +466,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32H7
 
 #if defined(MICROPY_HW_ANALOG_SWITCH_PA0) \
     || defined(MICROPY_HW_ANALOG_SWITCH_PA1) \
@@ -454,6 +488,8 @@
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32L0
+
 // Configuration for STM32L1 series
 #elif defined(STM32L1)
 #define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
@@ -464,6 +500,8 @@
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (0)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32L1
+
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
 
@@ -473,6 +511,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32L4
 
 // Configuration for STM32N6 series
 #elif defined(STM32N6)
@@ -493,6 +533,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (1)
 #define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32WB
 
 #ifndef MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
 #define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
@@ -699,10 +741,10 @@
 #define MICROPY_HW_USB_CDC_NUM (1)
 #endif
 #ifndef MICROPY_HW_USB_MSC
-#define MICROPY_HW_USB_MSC (MICROPY_HW_ENABLE_USB)
+#define MICROPY_HW_USB_MSC (MICROPY_HW_STM_USB_STACK)
 #endif
 #ifndef MICROPY_HW_USB_HID
-#define MICROPY_HW_USB_HID (MICROPY_HW_ENABLE_USB)
+#define MICROPY_HW_USB_HID (MICROPY_HW_STM_USB_STACK)
 #endif
 
 // Pin definition header file
