@@ -93,7 +93,7 @@ int GPIO_get_instance(GPIO_Type *gpio) {
     return 0;
 }
 
-void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
+__attribute__((section(".ram_functions"))) void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
     uint32_t mask = 1 << pin;
     uint32_t isr = gpio->ISR & gpio->IMR;
     for (int i = 0; i < 16; i++, pin++, mask <<= 1) {
@@ -122,43 +122,43 @@ void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
 
 // 10 GPIO IRQ handlers, each covering 16 bits.
 
-void GPIO1_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO1_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[1], 1, 0);
 }
 
-void GPIO1_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO1_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[1], 1, 16);
 }
 
-void GPIO2_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO2_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[2], 2, 0);
 }
 
-void GPIO2_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO2_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[2], 2, 16);
 }
 
-void GPIO3_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO3_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[3], 3, 0);
 }
 
-void GPIO3_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO3_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[3], 3, 16);
 }
 
-void GPIO4_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO4_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[4], 4, 0);
 }
 
-void GPIO4_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO4_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[4], 4, 16);
 }
 
-void GPIO5_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO5_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 0);
 }
 
-void GPIO5_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO5_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 16);
 }
 
