@@ -456,7 +456,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                                || lhs_val > (MP_SMALL_INT_MAX >> rhs_val)
                                || lhs_val < (MP_SMALL_INT_MIN >> rhs_val)) {
                         // left-shift will overflow, so use higher precision integer
-                        lhs = mp_obj_new_int_from_ll(lhs_val);
+                        lhs = mp_obj_new_long_from_ll(lhs_val);
                         goto generic_binary_op;
                     } else {
                         // use standard precision
@@ -498,7 +498,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                     long long res = (long long)lhs_val * (long long)rhs_val;
                     if (res > MP_SMALL_INT_MAX || res < MP_SMALL_INT_MIN) {
                         // result overflowed SMALL_INT, so return higher precision integer
-                        return mp_obj_new_int_from_ll(res);
+                        return mp_obj_new_long_from_ll(res);
                     } else {
                         // use standard precision
                         lhs_val = (mp_int_t)res;
@@ -508,7 +508,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                     mp_int_t int_res;
                     if (mp_small_int_mul_overflow(lhs_val, rhs_val, &int_res)) {
                         // use higher precision
-                        lhs = mp_obj_new_int_from_ll(lhs_val);
+                        lhs = mp_obj_new_long_from_ll(lhs_val);
                         goto generic_binary_op;
                     } else {
                         // use standard precision
@@ -573,7 +573,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
 
                 power_overflow:
                     // use higher precision
-                    lhs = mp_obj_new_int_from_ll(MP_OBJ_SMALL_INT_VALUE(lhs));
+                    lhs = mp_obj_new_long_from_ll(MP_OBJ_SMALL_INT_VALUE(lhs));
                     goto generic_binary_op;
 
                 case MP_BINARY_OP_DIVMOD: {
@@ -603,7 +603,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
             if (MP_SMALL_INT_FITS(lhs_val)) {
                 return MP_OBJ_NEW_SMALL_INT(lhs_val);
             } else {
-                return mp_obj_new_int_from_ll(lhs_val);
+                return mp_obj_new_long_from_ll(lhs_val);
             }
         #if MICROPY_PY_BUILTINS_FLOAT
         } else if (mp_obj_is_float(rhs)) {
