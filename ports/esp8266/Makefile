@@ -199,11 +199,11 @@ FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
 deploy: $(FWBIN)
 	$(ECHO) "Writing $< to the board"
-	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
+	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) write-flash --verify --flash-size=$(FLASH_SIZE) --flash-mode=$(FLASH_MODE) 0 $<
 
 erase:
 	$(ECHO) "Erase flash"
-	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) erase_flash
+	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) erase-flash
 
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
