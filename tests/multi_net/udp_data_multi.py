@@ -19,9 +19,9 @@ def instance0():
     multitest.next()
     for i in range(NUM_NEW_SOCKETS):
         print("test socket", i)
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s = socket.socket(multitest.AF_FAMILY, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind(socket.getaddrinfo("0.0.0.0", PORT + i)[0][-1])
+        s.bind(socket.getaddrinfo(multitest.BIND_ADDR, PORT + i, multitest.AF_FAMILY)[0][-1])
         s.settimeout(0.250)
         multitest.broadcast("server ready")
         for burst in range(NUM_PACKET_BURSTS):
@@ -55,8 +55,8 @@ def instance1():
     multitest.next()
     for i in range(NUM_NEW_SOCKETS):
         print("test socket", i)
-        ai = socket.getaddrinfo(IP, PORT + i)[0][-1]
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s = socket.socket(multitest.AF_FAMILY, socket.SOCK_DGRAM)
+        ai = socket.getaddrinfo(IP, PORT + i, multitest.AF_FAMILY)[0][-1]
         multitest.wait("server ready")
         for burst in range(NUM_PACKET_BURSTS):
             # Send a bunch of packets all in a row.

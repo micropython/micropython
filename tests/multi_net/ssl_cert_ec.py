@@ -30,9 +30,9 @@ with open(keyfile, "rb") as kf:
 # Server
 def instance0():
     multitest.globals(IP=multitest.get_network_ip())
-    s = socket.socket()
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(socket.getaddrinfo("0.0.0.0", PORT)[0][-1])
+    s.bind(socket.getaddrinfo(multitest.BIND_ADDR, PORT, multitest.AF_FAMILY)[0][-1])
     s.listen(1)
     multitest.next()
     s2, _ = s.accept()
@@ -46,8 +46,8 @@ def instance0():
 # Client
 def instance1():
     multitest.next()
-    s = socket.socket()
-    s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM)
+    s.connect(socket.getaddrinfo(IP, PORT, multitest.AF_FAMILY)[0][-1])
     s = ssl.wrap_socket(
         s, cert_reqs=ssl.CERT_REQUIRED, server_hostname="micropython.local", cadata=cadata
     )
