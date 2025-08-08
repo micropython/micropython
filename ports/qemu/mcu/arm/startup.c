@@ -47,6 +47,12 @@ __attribute__((naked)) void Reset_Handler(void) {
     for (uint32_t *dest = &_sbss; dest < &_ebss;) {
         *dest++ = 0;
     }
+    #if MICROPY_HW_FPU && defined(__ARM_ARCH_ISA_THUMB) && __ARM_ARCH == 7
+    // initialise the FPU (full access to CP10 and CP11, as per B3.2.20)
+    *((volatile uint32_t *)0xE000ED88) |= 0x00F00000;
+    __asm volatile ("dsb");
+    __asm volatile ("isb");
+    #endif
     // jump to board initialisation
     void _start(void);
     _start();
