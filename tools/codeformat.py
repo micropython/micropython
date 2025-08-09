@@ -75,6 +75,10 @@ TOP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 UNCRUSTIFY_CFG = os.path.join(TOP, "tools/uncrustify.cfg")
 
 
+class IndentationError(ValueError):
+    pass
+
+
 def list_files(paths, exclusions=None, prefix=""):
     files = set()
     for pattern in paths:
@@ -92,36 +96,39 @@ def fixup_c(filename):
     # Write out file with fixups.
     with open(filename, "w", newline="") as f:
         dedent_stack = []
-        while lines:
-            # Get next line.
-            l = lines.pop(0)
-
+        for line_number, line in enumerate(lines, 1):
             # Dedent #'s to match indent of following line (not previous line).
-            m = re.match(r"( +)#(if |ifdef |ifndef |elif |else|endif)", l)
+            m = re.match(r"( +)#(if |ifdef |ifndef |elif |else|endif)", line)
             if m:
                 indent = len(m.group(1))
                 directive = m.group(2)
                 if directive in ("if ", "ifdef ", "ifndef "):
-                    l_next = lines[0]
-                    indent_next = len(re.match(r"( *)", l_next).group(1))
-                    if indent - 4 == indent_next and re.match(r" +(} else |case )", l_next):
+                    # Line numbers are 1-based, and lists are always 0-based,
+                    # thus this retrieves the next line, not the current one
+                    line_next = lines[line_number]
+                    indent_next = len(re.match(r"( *)", line_next).group(1))
+                    if indent - 4 == indent_next and re.match(r" +(} else |case )", line_next):
                         # This #-line (and all associated ones) needs dedenting by 4 spaces.
-                        l = l[4:]
+                        line = line[4:]
                         dedent_stack.append(indent - 4)
                     else:
                         # This #-line does not need dedenting.
                         dedent_stack.append(-1)
                 else:
+                    if len(dedent_stack) == 0:
+                        raise IndentationError(
+                            f'dedent stack is empty for "{directive}" at {filename}:{line_number}'
+                        )
                     if dedent_stack[-1] >= 0:
                         # This associated #-line needs dedenting to match the #if.
                         indent_diff = indent - dedent_stack[-1]
                         assert indent_diff >= 0
-                        l = l[indent_diff:]
+                        line = line[indent_diff:]
                     if directive == "endif":
                         dedent_stack.pop()
 
             # Write out line.
-            f.write(l)
+            f.write(line)
 
         assert not dedent_stack, filename
 
