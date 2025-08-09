@@ -32,7 +32,7 @@
 #define MICROPY_VERSION_MAJOR 1
 #define MICROPY_VERSION_MINOR 26
 #define MICROPY_VERSION_MICRO 0
-#define MICROPY_VERSION_PRERELEASE 1
+#define MICROPY_VERSION_PRERELEASE 0
 
 // Combined version as a 32-bit number for convenience to allow version
 // comparison. Doesn't include prerelease state.
