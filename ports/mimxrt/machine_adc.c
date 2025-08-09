@@ -126,6 +126,7 @@ void machine_adc_init(void) {
     adc_config.enableAnalogPreliminary = true;
     adc_config.referenceVoltageSource = kLPADC_ReferenceVoltageAlt1;
     LPADC_Init(LPADC1, &adc_config);
+    LPADC_Init(LPADC2, &adc_config);
 }
 
 #else
