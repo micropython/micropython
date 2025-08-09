@@ -3,6 +3,10 @@
 
 import sys, errno, select, socket, ssl
 
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 
 def test(addr, hostname, block=True):
     print("---", hostname)
