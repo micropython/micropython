@@ -814,7 +814,7 @@ typedef struct _mp_obj_full_type_t {
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, N, ...) MP_DEFINE_CONST_OBJ_TYPE_NARGS_##N
 
 // This macros is used to define a object type in ROM.
-// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, _make_new [, slot, func]*)
+// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, [, slot, func]*)
 // It uses the number of arguments to select which MP_DEFINE_CONST_OBJ_TYPE_*
 // macro to use based on the number of arguments. It works by shifting the
 // numeric values 12, 11, ... 0 by the number of arguments, such that the
