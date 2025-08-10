@@ -378,7 +378,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, ucty
 mp_obj_t uctypes_get_struct_desc(mp_obj_t arg) {
     if (is_struct_instance(arg)) {
         mp_obj_uctypes_struct_t *struct_ = MP_OBJ_TO_PTR(arg);
-        return struct_->desc;
+        arg = struct_->desc;
+        if (is_struct_type(arg)) {
+            mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(arg);
+            return struct_type->desc;
+        }
+        return arg;
     }
     if (is_struct_type(arg)) {
         mp_obj_ctypes_struct_type_t *struct_type = MP_OBJ_TO_PTR(arg);
