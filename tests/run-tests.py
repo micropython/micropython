@@ -1340,6 +1340,7 @@ the last matching regex is used:
                 "micropython",
                 "misc",
                 "extmod",
+                "stress",
             )
             if args.inlineasm_arch is not None:
                 test_dirs += ("inlineasm/{}".format(args.inlineasm_arch),)
@@ -1349,15 +1350,11 @@ the last matching regex is used:
                 test_dirs += ("float",)
             if args.platform == "pyboard":
                 # run pyboard tests
-                test_dirs += ("stress", "ports/stm32")
-            elif args.platform == "mimxrt":
-                test_dirs += ("stress",)
+                test_dirs += ("ports/stm32",)
             elif args.platform == "renesas-ra":
                 test_dirs += ("ports/renesas-ra")
             elif args.platform == "rp2":
-                test_dirs += ("stress", "ports/rp2")
-            elif args.platform == "esp32":
-                test_dirs += ("stress",)
+                test_dirs += ("ports/rp2",)
             elif args.platform == "WiPy":
                 # run WiPy tests
                 test_dirs += ("ports/cc3200",)
@@ -1366,7 +1363,6 @@ the last matching regex is used:
                 test_dirs += (
                     "import",
                     "io",
-                    "stress",
                     "unicode",
                     "cmdline",
                     "ports/unix",
