@@ -95,10 +95,10 @@ void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_c
             // w = WindowMgr.NewWindow(...)
             // qd.SetPort(w)
             // ```
-            // which would otherwise say `TypeError: p must be of type GrafPort, not GrafPtr
+            // which would otherwise say `TypeError: p must be of type GrafPtr, not GrafPort
             //
             // (currently) mkapi treats the argument to SetPort
-            // as a GrafPort. But `GrafPtr` is a typedef to `GrafPort*`. It might be
+            // as a GrafPtr. But `GrafPtr` is a typedef to `GrafPort*`. It might be
             // better to fix this in mkapi, but instead cater here...
 
             mp_buffer_info_t bufinfo = {0};
