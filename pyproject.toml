@@ -67,5 +67,5 @@ mccabe.max-complexity = 40
 #   basics: needs careful attention before applying automatic formatting
 #   repl_: not real python files
 #   viper_args: uses f(*)
-exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py"]
+exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py", "ports/m68kmac/examples/*.py"]
 quote-style = "preserve"
