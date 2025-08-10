@@ -126,12 +126,6 @@ emitter_tests_to_skip = {
         "basics/unboundlocal.py",
         # These require "raise from".
         "basics/exception_chain.py",
-        # These require proper traceback info.
-        "basics/sys_tracebacklimit.py",
-        "misc/print_exception.py",
-        "micropython/emg_exc.py",
-        "micropython/heapalloc_traceback.py",
-        "thread/thread_exc2.py",
         # These require stack-allocated slice optimisation.
         "micropython/heapalloc_slice.py",
         # These require running the scheduler.
