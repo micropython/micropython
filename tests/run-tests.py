@@ -292,12 +292,13 @@ def detect_test_platform(pyb, args):
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch, thread = str(output, "ascii").strip().split()
+    platform, arch, thread, float_prec = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
     inlineasm_arch = detect_inline_asm_arch(pyb, args)
     if thread == "None":
         thread = None
+    float_prec = int(float_prec)
 
     args.platform = platform
     args.arch = arch
@@ -305,6 +306,7 @@ def detect_test_platform(pyb, args):
         args.mpy_cross_flags = "-march=" + arch
     args.inlineasm_arch = inlineasm_arch
     args.thread = thread
+    args.float_prec = float_prec
 
     print("platform={}".format(platform), end="")
     if arch:
@@ -313,6 +315,8 @@ def detect_test_platform(pyb, args):
         print(" inlineasm={}".format(inlineasm_arch), end="")
     if thread:
         print(" thread={}".format(thread), end="")
+    if float_prec:
+        print(" float={}-bit".format(float_prec), end="")
     print()
 
 
@@ -685,8 +689,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     has_complex = True
     has_coverage = False
 
-    upy_float_precision = 32
-
     if True:
         # Even if we run completely different tests in a different directory,
         # we need to access feature_checks from the same directory as the
@@ -774,11 +776,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("cmdline/repl_words_move.py")
 
         upy_byteorder = run_feature_check(pyb, args, "byteorder.py")
-        upy_float_precision = run_feature_check(pyb, args, "float.py")
-        try:
-            upy_float_precision = int(upy_float_precision)
-        except ValueError:
-            upy_float_precision = 0
         has_complex = run_feature_check(pyb, args, "complex.py") == b"complex\n"
         has_coverage = run_feature_check(pyb, args, "coverage.py") == b"coverage\n"
         cpy_byteorder = subprocess.check_output(
@@ -814,7 +811,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # fails with stack overflow on Debug builds
             skip_tests.add("misc/sys_settrace_features.py")
 
-    if upy_float_precision == 0:
+    if args.float_prec == 0:
         skip_tests.add("extmod/uctypes_le_float.py")
         skip_tests.add("extmod/uctypes_native_float.py")
         skip_tests.add("extmod/uctypes_sizeof_float.py")
@@ -822,7 +819,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("extmod/json_loads_float.py")
         skip_tests.add("extmod/random_extra_float.py")
         skip_tests.add("misc/rge_sm.py")
-    if upy_float_precision < 32:
+    if args.float_prec < 32:
         skip_tests.add(
             "float/float2int_intbig.py"
         )  # requires fp32, there's float2int_fp30_intbig.py instead
@@ -832,7 +829,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("float/bytes_construct.py")  # requires fp32
         skip_tests.add("float/bytearray_construct.py")  # requires fp32
         skip_tests.add("float/float_format_ints_power10.py")  # requires fp32
-    if upy_float_precision < 64:
+    if args.float_prec < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
         skip_tests.add("float/float_struct_e_doubleprec.py")
@@ -1348,26 +1345,25 @@ the last matching regex is used:
                 test_dirs += ("inlineasm/{}".format(args.inlineasm_arch),)
             if args.thread is not None:
                 test_dirs += ("thread",)
+            if args.float_prec > 0:
+                test_dirs += ("float",)
             if args.platform == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "ports/stm32")
+                test_dirs += ("stress", "ports/stm32")
             elif args.platform == "mimxrt":
-                test_dirs += ("float", "stress")
+                test_dirs += ("stress",)
             elif args.platform == "renesas-ra":
-                test_dirs += ("float", "ports/renesas-ra")
+                test_dirs += ("ports/renesas-ra")
             elif args.platform == "rp2":
-                test_dirs += ("float", "stress", "ports/rp2")
+                test_dirs += ("stress", "ports/rp2")
             elif args.platform == "esp32":
-                test_dirs += ("float", "stress")
-            elif args.platform in ("esp8266", "minimal", "samd", "nrf"):
-                test_dirs += ("float",)
+                test_dirs += ("stress",)
             elif args.platform == "WiPy":
                 # run WiPy tests
                 test_dirs += ("ports/cc3200",)
             elif args.platform in PC_PLATFORMS:
                 # run PC tests
                 test_dirs += (
-                    "float",
                     "import",
                     "io",
                     "stress",
@@ -1377,11 +1373,10 @@ the last matching regex is used:
                 )
             elif args.platform == "qemu":
                 test_dirs += (
-                    "float",
                     "ports/qemu",
                 )
             elif args.platform == "webassembly":
-                test_dirs += ("float", "ports/webassembly")
+                test_dirs += ("ports/webassembly",)
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
