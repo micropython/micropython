@@ -71,7 +71,7 @@ try:
     except Exception as e:
         print("reraise")
         print_exc(e)
-        raise
+        raise e
 except Exception as e:
     print("caught")
     print_exc(e)
