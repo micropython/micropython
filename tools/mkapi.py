@@ -555,8 +555,8 @@ class Processor:
         self.body.append(textwrap.dedent(text.rstrip()))
 
     def parse_type(self, typestr):
-        if scalar_type := self.types.get(typestr, None):
-            typestr = scalar_type
+        while typedef_type := self.types.get(typestr, None):
+            typestr = typedef_type
         is_const = self.is_const(typestr)
         base_type = self.remove_const(typestr)
         if self.is_array(base_type):
