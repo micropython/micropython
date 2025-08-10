@@ -994,7 +994,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # Expected output is result of running unittest.
             output_expected = None
         else:
-            test_file_expected = test_file + ".exp"
+            # Prefer emitter-specific expected output.
+            test_file_expected = test_file + "." + args.emit + ".exp"
+            if not os.path.isfile(test_file_expected):
+                # Fall back to generic expected output.
+                test_file_expected = test_file + ".exp"
             if os.path.isfile(test_file_expected):
                 # Expected output given by a file, so read that in.
                 with open(test_file_expected, "rb") as f:
@@ -1202,8 +1206,8 @@ def main():
 {test_directory_description}
 
 When running tests, run-tests.py compares the MicroPython output of the test with the output
-produced by running the test through CPython unless a <test>.exp file is found, in which
-case it is used as comparison.
+produced by running the test through CPython unless a <test>.exp file is found (or a
+<test>.native.exp file when using the native emitter), in which case it is used as comparison.
 
 If a test fails, run-tests.py produces a pair of <test>.out and <test>.exp files in the result
 directory with the MicroPython output and the expectations, respectively.
