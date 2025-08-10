@@ -35,6 +35,12 @@ elif "esp32" in sys.platform:
 elif "esp8266" in sys.platform:
     MAX_DELTA_MS = 50  # port requires much looser timing requirements
     spi_instances = ((1, None, None, None),)  # explicit pin choice not allowed
+elif "mimxrt" in sys.platform:
+    # Use default SPI instance (tested working on TEENSY40).
+    spi_instances = ((None, None, None, None),)
+elif "nrf" in sys.platform:
+    # Tested working on ARDUINO_NANO_33_BLE_SENSE.
+    spi_instances = ((1, None, None, None),)
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
