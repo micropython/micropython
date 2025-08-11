@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import pathlib
 import sys
 import subprocess
@@ -569,6 +571,8 @@ class Processor:
         else:
             if is_const:
                 base_type = self.parse_type(self.remove_const(base_type))
+                if isinstance(base_type, str):
+                    return f"const {base_type}"
                 return dataclasses.replace(base_type, is_const=True)
             return typestr
 
@@ -591,6 +595,91 @@ class Processor:
                 self.decls_dedent(d.typedef_content)
             if isinstance(d, FunPtr):
                 self.funptrs.add(d.name)
+
+    def document(self, defs):
+        self.body.append(f'"""{self.modname} - Wrapped MacOS APIs"""')
+        self.body.append("import array")
+        for d in defs:
+            try:
+                self.document_node(d)
+            except Exception as e:
+                raise RuntimeError(f"failed to document {d}") from e
+
+    def pytype(self, ctype):
+        if ctype is None:
+            return None
+        if ctype in {"LONGINT", "INTEGER"}:
+            return "int"
+        if ctype == "INTEGER*":
+            return "array.array['h']"
+        if ctype == "LONGINT*":
+            return "array.array['i']"
+
+        parsed = self.parse_type(ctype)
+        print("pytype", ctype, "->", repr(parsed))
+        if isinstance(parsed, Ptr):
+            return parsed.pointee
+        return ctype
+
+    @singledispatchmethod
+    def document_node(self, node):
+        if type(node) in self.unknowns:
+            return
+        self.unknowns.add(type(node))
+        raise RuntimeError(f"# Unknown {node!r:.68s}...")
+
+    @document_node.register
+    def document_typedef(self, typedef: Typedef):
+        print(typedef)
+
+    @document_node.register
+    def document_struct(self, struct: Struct):
+        self.body.append(f"class {struct.name}:")
+        self.body.append('    """A uctypes structure"""')
+        for m in struct.members:
+            self.body.append(f'    {m.name}: "{self.pytype(m.type)}"')
+
+    @document_node.register
+    def document_union(self, union: Union):
+        self.body.append(f"class {union.name}:")
+        self.body.append('    """A uctypes union"""')
+        for m in union.members:
+            self.body.append(f'    {m.name}: "{self.pytype(m.type)}"')
+
+    @document_node.register
+    def document_pyverbatim(self, p: PyVerbatim):
+        pass
+
+    @document_node.register
+    def document_function(self, f: Function):
+        self.body.append(f"def {f.name}(")
+        for i, m in enumerate(f.args):
+            argname = m.name or f"arg{i}"
+            self.body.append(f'    {argname}: "{self.pytype(m.type)}",')
+        self.body.append(f") -> {self.pytype(f.return_)}: ...\n")
+
+    @document_node.register
+    def document_enum(self, e: Enum):
+        for m in e.values:
+            self.body.append(f"{m.name} : int")
+
+    @document_node.register
+    def document_lm(self, lm: LowMem):
+        # TODO type of LMGet/Set
+        self.body.append(f"def LMGet{lm.name}() -> object: ...")
+        self.body.append(f"def LMSet{lm.name}(value) -> None: ...")
+
+    @document_node.register
+    def document_dispatcher(self, d: Dispatcher):
+        pass
+
+    @document_node.register
+    def document_funptr(self, f: FunPtr):
+        pass
+
+    @document_node.register
+    def document_verbatim(self, lm: Verbatim):
+        pass
 
     def emit(self, defs):
         for d in defs:
@@ -916,35 +1005,48 @@ class Processor:
     "-t", "--typedefs", multiple=True, type=click.Path(path_type=pathlib.Path, exists=True)
 )
 @click.option("-m", "--modname", type=str)
+@click.option("-d/-c", "--doc/--code", "do_doc", is_flag=True)
 @click.option("--format/-no-format", "do_format")
-def main(defs_files, output, modname, typedefs, do_format=False):
+def main(defs_files, output, modname, typedefs, do_format=False, do_doc=False):
     if modname is None:
         modname = defs_files[0].stem
 
     if output is None:
-        output = pathlib.Path(f"mod{modname}.c")
+        if do_doc:
+            output = pathlib.Path(f"{modname}.pyi")
+        else:
+            output = pathlib.Path(f"mod{modname}.c")
     processor = Processor(modname)
 
     for t in typedefs:
         defs = load_defs(t)
-        processor.typedefs(defs)
+        if not do_doc:
+            processor.typedefs(defs)
 
     defs = []
     for f in defs_files:
         defs.extend(load_defs(f))
-    processor.typedefs(defs)
-    processor.emit(defs)
+        if not do_doc:
+            processor.typedefs(defs)
 
-    if do_format:
-        tmpfile = output.with_suffix(".tmp.c")
-        with open(tmpfile, "w") as f:
-            processor.make_output(f)
-        print(f"Formatting {output}: ", [script_dir / "codeformat.py", "-c", tmpfile])
-        subprocess.check_call([script_dir / "codeformat.py", "-c", tmpfile])
-        tmpfile.rename(output)
-    else:
+    if do_doc:
+        processor.document(defs)
         with open(output, "w") as f:
-            processor.make_output(f)
+            for line in processor.body:
+                print(line, file=f)
+    else:
+        processor.emit(defs)
+
+        if do_format:
+            tmpfile = output.with_suffix(".tmp.c")
+            with open(tmpfile, "w") as f:
+                processor.make_output(f)
+            print(f"Formatting {output}: ", [script_dir / "codeformat.py", "-c", tmpfile])
+            subprocess.check_call([script_dir / "codeformat.py", "-c", tmpfile])
+            tmpfile.rename(output)
+        else:
+            with open(output, "w") as f:
+                processor.make_output(f)
 
 
 if __name__ == '__main__':

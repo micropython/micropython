@@ -30,6 +30,6 @@ the Macintosh ``Rect`` type.
 
 To create a new ``Rect`` on the MicroPython heap, call the rect constructor. You can initialize fields using kwargs: ``r = Rect(top=48, left=8, bottom=308, right=504)``.
 
-To treat a memory region as a ``Rect``, use ``Rect`` as the descriptor argument of :fun:`uctypes.struct`: ``uctypes.struct(addr, Rect)``.
+To treat a memory region as a ``Rect``, use ``Rect`` as the descriptor argument of :meth:`uctypes.struct`: ``uctypes.struct(addr, Rect)``.
 
 A copy of a struct can be made with ``dest = src[:]`` and a struct can be updated in place with ``dest[:] = src``. The normal assignment operator ``dest = src`` merely makes ``dest`` refer to the same storage as ``src``. (Note that ``dest[:] = src`` does not currently type-check, but it may be made to do so in the future)
