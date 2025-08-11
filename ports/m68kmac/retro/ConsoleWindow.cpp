@@ -271,3 +271,11 @@ static void setupEventFunction()
         }
     #endif
 }
+
+void ConsoleWindow::setVisibility(bool shown) {
+    if (shown) {
+        ShowWindow(win);
+    } else {
+        HideWindow(win);
+    }
+}

@@ -3,6 +3,14 @@
     type: uint8_t
 
 - typedef:
+    name: Ptr
+    type: char*
+
+- typedef:
+    name: LONGINT
+    type: int32_t
+
+- typedef:
     name: INTEGER
     type: int16_t
 
@@ -75,6 +83,8 @@
 - pyverbatim:
     typedef_content: |
 
+      typedef void *Ptr;
+
       typedef struct {
         INTEGER top, left, bottom, right;
       } Rect;
@@ -117,13 +127,21 @@
         return &result;
       }
 
+      static void ShowWindow(WindowPtr w) {
+        mp_printf(&mp_plat_print, "ShowWindow(w@%p)\n", w);
+      }
+
       static void PtToAngle(const Rect *r, Point p, INTEGER *angle) {
-        mp_printf(&mp_plat_print, "PtToAngle(rect@%p, p={%d,%d}, angle@%p\n", r, p.h, p.v, angle);
+        mp_printf(&mp_plat_print, "PtToAngle(rect@%p, p={%d,%d}, angle@%p)\n", r, p.h, p.v, angle);
         *angle = 314;
       }
 
       static INTEGER GetWinDevice(WindowPtr w) {
         return w->device;
+      }
+
+      static void TETextBox(char *p, uint32_t ln, const Rect *r, int j) {
+        mp_printf(&mp_plat_print, "TETextBox(p[ln=%d]=%.*s, r@%p, j=%d\n", ln, ln, p, r, j);
       }
 - function:
     name: NewRgn
@@ -165,3 +183,26 @@
     args:             
       - name: w
         type: WindowPtr
+
+- function:
+    name: ShowWindow
+    args:
+      - name: w
+        type: WindowPtr
+    trap: 0xA915
+    executor: C_
+
+- function:
+    name: TETextBox
+    args:
+      - name: p
+        type: Ptr
+      - name: ln
+        type: LONGINT
+      - name: r
+        type: const Rect*
+      - name: j
+        type: INTEGER
+    trap: 0xA9CE
+    executor: C_
+

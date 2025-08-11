@@ -358,6 +358,8 @@ special_tests = [
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
         "extmod/mkapi.py",
+        "extmod/mkapi2.py",
+        "extmod/mkapi3.py",
     )
 ]
 

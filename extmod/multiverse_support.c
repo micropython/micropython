@@ -85,6 +85,11 @@ void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_c
     if (obj == mp_const_none) {
         return NULL;
     }
+    if (struct_type == (const mp_obj_type_t *)&char_obj) { // C type is 'Ptr', we don't know what it is
+        mp_buffer_info_t bufinfo = {0};
+        mp_get_buffer_raise(obj, &bufinfo, is_const ? MP_BUFFER_READ : MP_BUFFER_READ | MP_BUFFER_WRITE);
+        return bufinfo.buf;
+    }
     if (struct_type && !mp_obj_is_type(obj, struct_type)) {
         mp_obj_t arg_descr = uctypes_get_struct_desc(obj);
         mp_obj_t type_descr = uctypes_get_struct_desc(MP_OBJ_FROM_PTR(struct_type));
@@ -95,10 +100,10 @@ void *to_struct_helper(mp_obj_t obj, const mp_obj_type_t *struct_type, bool is_c
             // w = WindowMgr.NewWindow(...)
             // qd.SetPort(w)
             // ```
-            // which would otherwise say `TypeError: p must be of type GrafPort, not GrafPtr
+            // which would otherwise say `TypeError: p must be of type GrafPtr, not GrafPort
             //
             // (currently) mkapi treats the argument to SetPort
-            // as a GrafPort. But `GrafPtr` is a typedef to `GrafPort*`. It might be
+            // as a GrafPtr. But `GrafPtr` is a typedef to `GrafPort*`. It might be
             // better to fix this in mkapi, but instead cater here...
 
             mp_buffer_info_t bufinfo = {0};

@@ -104,6 +104,8 @@ public:
         virtual void setWindowName(const char *newName) {
         };
 
+        virtual void setVisibility(bool shown) {
+        }
 
         void Idle();
 
