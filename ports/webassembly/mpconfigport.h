@@ -44,7 +44,6 @@
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_PYSTACK      (1)
-#define MICROPY_STACK_CHECK         (0)
 #define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)

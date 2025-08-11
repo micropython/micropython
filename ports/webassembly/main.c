@@ -49,6 +49,9 @@
 // the top-level call into C.
 static size_t external_call_depth = 0;
 
+// Emscripten defaults to a 64k C-stack, so our limit should be less than that.
+#define CSTACK_SIZE (32 * 1024)
+
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 static void gc_collect_top_level(void);
 #endif
@@ -67,6 +70,8 @@ void external_call_depth_dec(void) {
 }
 
 void mp_js_init(int pystack_size, int heap_size) {
+    mp_cstack_init_with_sp_here(CSTACK_SIZE);
+
     #if MICROPY_ENABLE_PYSTACK
     mp_obj_t *pystack = (mp_obj_t *)malloc(pystack_size * sizeof(mp_obj_t));
     mp_pystack_init(pystack, pystack + pystack_size);
