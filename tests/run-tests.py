@@ -695,7 +695,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_async = False
     skip_const = False
     skip_revops = False
-    skip_io_module = False
     skip_fstring = False
     skip_endian = False
     skip_inlineasm = False
@@ -751,11 +750,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "reverse_ops.py")
         if output == b"TypeError\n":
             skip_revops = True
-
-        # Check if io module exists, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, "io_module.py")
-        if output != b"io\n":
-            skip_io_module = True
 
         # Check if fstring feature is enabled, and skip such tests if it doesn't
         output = run_feature_check(pyb, args, "fstring.py")
@@ -925,7 +919,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
-        is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")
         is_inlineasm = test_name.startswith("asm")
 
@@ -940,7 +933,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and "reverse_op" in test_name
-        skip_it |= skip_io_module and is_io_module
         skip_it |= skip_fstring and is_fstring
         skip_it |= skip_inlineasm and is_inlineasm
 
