@@ -9,6 +9,10 @@ build:
   os: ubuntu-24.04
   tools:
     python: "3.13"
+  jobs:
+    post_install:
+      - make -C ports/m68kmac submodules
+      - make -C docs doc-pre
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
