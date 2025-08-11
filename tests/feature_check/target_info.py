@@ -33,4 +33,4 @@ try:
 except NameError:
     float_prec = 0
 
-print(platform, arch, thread, float_prec)
+print(platform, arch, thread, float_prec, len("α") == 1)

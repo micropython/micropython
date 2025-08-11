@@ -301,13 +301,14 @@ def detect_test_platform(pyb, args):
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch, thread, float_prec = str(output, "ascii").strip().split()
+    platform, arch, thread, float_prec, unicode = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
     inlineasm_arch = detect_inline_asm_arch(pyb, args)
     if thread == "None":
         thread = None
     float_prec = int(float_prec)
+    unicode = unicode == "True"
 
     args.platform = platform
     args.arch = arch
@@ -316,6 +317,7 @@ def detect_test_platform(pyb, args):
     args.inlineasm_arch = inlineasm_arch
     args.thread = thread
     args.float_prec = float_prec
+    args.unicode = unicode
 
     print("platform={}".format(platform), end="")
     if arch:
@@ -326,6 +328,8 @@ def detect_test_platform(pyb, args):
         print(" thread={}".format(thread), end="")
     if float_prec:
         print(" float={}-bit".format(float_prec), end="")
+    if unicode:
+        print(" unicode", end="")
     print()
 
 
@@ -845,6 +849,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("float/float_format_ints_doubleprec.py")
         skip_tests.add("float/float_parse_doubleprec.py")
 
+    if not args.unicode:
+        skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
+
     if not has_complex:
         skip_tests.add("float/complex1.py")
         skip_tests.add("float/complex1_intbig.py")
@@ -870,6 +877,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if args.platform not in PC_PLATFORMS:
         skip_tests.add("basics/exception_chain.py")  # warning is not printed
         skip_tests.add("micropython/meminfo.py")  # output is very different to PC output
+        skip_tests.add("unicode/file1.py")  # requires local file access
+        skip_tests.add("unicode/file2.py")  # requires local file access
+        skip_tests.add("unicode/file_invalid.py")  # requires local file access
 
     # Skip emitter-specific tests.
     skip_tests.update(emitter_tests_to_skip.get(args.emit, ()))
@@ -1357,6 +1367,8 @@ the last matching regex is used:
                 test_dirs += ("thread",)
             if args.float_prec > 0:
                 test_dirs += ("float",)
+            if args.unicode:
+                test_dirs += ("unicode",)
             port_specific_test_dir = "ports/{}".format(platform_to_port(args.platform))
             if os.path.isdir(port_specific_test_dir):
                 test_dirs += (port_specific_test_dir,)
@@ -1365,7 +1377,6 @@ the last matching regex is used:
                 test_dirs += (
                     "import",
                     "io",
-                    "unicode",
                     "cmdline",
                 )
         else:
