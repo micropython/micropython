@@ -102,6 +102,11 @@ __import__('__injected_test')
 # Platforms associated with the unix port, values of `sys.platform`.
 PC_PLATFORMS = ("darwin", "linux", "win32")
 
+# Mapping from `sys.platform` to the port name, for special cases.
+# See `platform_to_port()` function.
+platform_to_port_map = {"pyboard": "stm32", "WiPy": "cc3200"}
+platform_to_port_map.update({p: "unix" for p in PC_PLATFORMS})
+
 # Tests to skip for specific emitters.
 emitter_tests_to_skip = {
     # Some tests are known to fail with native emitter.
@@ -250,6 +255,10 @@ def convert_regex_escapes(line):
     if cs[-1] == "\n":
         cs[-1] = "\r*\n"
     return bytes("".join(cs), "utf8")
+
+
+def platform_to_port(platform):
+    return platform_to_port_map.get(platform, platform)
 
 
 def get_test_instance(test_instance, baudrate, user, password):
@@ -1348,31 +1357,17 @@ the last matching regex is used:
                 test_dirs += ("thread",)
             if args.float_prec > 0:
                 test_dirs += ("float",)
-            if args.platform == "pyboard":
-                # run pyboard tests
-                test_dirs += ("ports/stm32",)
-            elif args.platform == "renesas-ra":
-                test_dirs += ("ports/renesas-ra")
-            elif args.platform == "rp2":
-                test_dirs += ("ports/rp2",)
-            elif args.platform == "WiPy":
-                # run WiPy tests
-                test_dirs += ("ports/cc3200",)
-            elif args.platform in PC_PLATFORMS:
+            port_specific_test_dir = "ports/{}".format(platform_to_port(args.platform))
+            if os.path.isdir(port_specific_test_dir):
+                test_dirs += (port_specific_test_dir,)
+            if args.platform in PC_PLATFORMS:
                 # run PC tests
                 test_dirs += (
                     "import",
                     "io",
                     "unicode",
                     "cmdline",
-                    "ports/unix",
                 )
-            elif args.platform == "qemu":
-                test_dirs += (
-                    "ports/qemu",
-                )
-            elif args.platform == "webassembly":
-                test_dirs += ("ports/webassembly",)
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
