@@ -1,2 +1,5 @@
+click
 sphinx~=7.2.6
+sphinx-autoapi
+sphinx-rtd-theme
 sphinxcontrib.jquery==4.1

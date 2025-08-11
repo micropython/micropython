@@ -1,0 +1,29 @@
+name: Build docs
+
+on:
+  push:
+  pull_request:
+    paths:
+      - docs/**
+      - py/**
+      - tests/cpydiff/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+    - name: Install Python packages
+      run: pip install -r docs/requirements.txt
+    - name: Submodules
+      run: make -C ports/m68kmac submodules
+    - name: Build unix port
+      run: source tools/ci.sh && ci_unix_build_helper
+    - name: Build docs
+      run: make -C docs/ html

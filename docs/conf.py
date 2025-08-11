@@ -49,6 +49,7 @@ micropy_authors = "MicroPython authors and contributors"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "autoapi.extension",
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
@@ -105,7 +106,7 @@ include_patterns = [
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["build", ".venv"]
+exclude_patterns = ["build", ".venv", "autoapi"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -337,3 +338,23 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"python": ("https://docs.python.org/3.5", None)}
+
+# autoapi
+autoapi_type = "python"
+# Uncomment this if debugging autoapi
+# autoapi_keep_files = True
+autoapi_dirs = ["../ports/m68kmac/build/."]
+autoapi_add_toctree_entry = False
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "private-members",
+    "show-inheritance",
+    "special-members",
+    "show-module-summary",
+]
+autoapi_template_dir = "autoapi/templates"
+autoapi_python_class_content = "both"
+autoapi_python_use_implicit_namespaces = False
+autoapi_root = "library/mac"
+autoapi_file_patterns = ["*.pyi"]

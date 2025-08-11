@@ -84,6 +84,19 @@ library.
    zlib.rst
    _thread.rst
 
+.. _micropython_lib_m68kmac:
+
+Macintosh-specific libraries
+----------------------------
+
+This section is auto-generated.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   mac/**
+
 .. _micropython_lib_micropython:
 
 MicroPython-specific libraries
@@ -107,90 +120,6 @@ the following libraries.
    openamp.rst
    uctypes.rst
    vfs.rst
-
-The following libraries provide drivers for hardware components.
-
-.. toctree::
-  :maxdepth: 1
-
-  wm8960.rst
-
-
-Port-specific libraries
------------------------
-
-In some cases the following port/board-specific libraries have functions or
-classes similar to those in the :mod:`machine` library.  Where this occurs, the
-entry in the port specific library exposes hardware functionality unique to
-that platform.
-
-To write portable code use functions and classes from the :mod:`machine` module.
-To access platform-specific hardware use the appropriate library, e.g.
-:mod:`pyb` in the case of the Pyboard.
-
-
-Libraries specific to the pyboard
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following libraries are specific to the pyboard.
-
-.. toctree::
-  :maxdepth: 2
-
-  pyb.rst
-  stm.rst
-  lcd160cr.rst
-
-
-Libraries specific to the WiPy
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following libraries and classes are specific to the WiPy.
-
-.. toctree::
-  :maxdepth: 2
-
-  wipy.rst
-  machine.ADCWiPy.rst
-  machine.TimerWiPy.rst
-
-
-Libraries specific to the ESP8266 and ESP32
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following libraries are specific to the ESP8266 and ESP32.
-
-.. toctree::
-  :maxdepth: 2
-
-  esp.rst
-  esp32.rst
-
-.. toctree::
-  :maxdepth: 1
-
-  espnow.rst
-
-
-Libraries specific to the RP2040
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following libraries are specific to the RP2040, as used in the Raspberry Pi Pico.
-
-.. toctree::
-  :maxdepth: 2
-
-  rp2.rst
-
-Libraries specific to Zephyr
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following libraries are specific to the Zephyr port.
-
-.. toctree::
-  :maxdepth: 2
-
-  zephyr.rst
 
 .. _micropython_lib_extending:
 
