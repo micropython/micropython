@@ -11,9 +11,9 @@ import random
 def instance0():
     PORT = random.randrange(10000, 50000)
     multitest.globals(IP=multitest.get_network_ip(), PORT=PORT)
-    s = socket.socket()
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(socket.getaddrinfo("0.0.0.0", PORT)[0][-1])
+    s.bind(socket.getaddrinfo(multitest.BIND_ADDR, PORT, multitest.AF_FAMILY)[0][-1])
     s.listen()
     multitest.next()
     s2, _ = s.accept()
@@ -33,8 +33,8 @@ def instance0():
 # Client
 def instance1():
     multitest.next()
-    s = socket.socket()
-    s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM)
+    s.connect(socket.getaddrinfo(IP, PORT, multitest.AF_FAMILY)[0][-1])
     s.send(b"abcdefgh")
     multitest.broadcast("1-sent")
     multitest.wait("0-sent")
