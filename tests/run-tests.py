@@ -406,7 +406,12 @@ def get_test_instance(test_instance, baudrate, user, password):
 
     pyb = pyboard.Pyboard(port, baudrate, user, password)
     pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
-    pyb.enter_raw_repl()
+    try:
+        pyb.enter_raw_repl()
+    except pyboard.PyboardError as e:
+        print("error: could not detect test instance")
+        print(e)
+        sys.exit(2)
     return pyb
 
 
@@ -1265,7 +1270,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     except TestError as er:
         for line in er.args[0]:
             print(line)
-        sys.exit(1)
+        sys.exit(2)
 
     # Return test results.
     return test_results.value, testcase_count.value
