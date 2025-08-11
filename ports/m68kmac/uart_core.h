@@ -2,6 +2,8 @@
 
 #include "py/mpprint.h"
 
+void mp_console_showhide(bool shown);
+void mp_console_idle();
 void mp_hal_stdin_init(void);
 bool mp_hal_stdin_available(void);
 int mp_hal_stdin_rx_chr(void);

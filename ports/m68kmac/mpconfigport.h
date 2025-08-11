@@ -57,3 +57,6 @@ typedef long mp_off_t;
 typedef struct _mp_obj_type_t mp_obj_type_t;
 extern const mp_obj_type_t mp_type_vfs_mac;
 #define MICROPY_VFS_PORT { MP_ROM_QSTR(MP_QSTR_VfsMac), MP_ROM_PTR(&mp_type_vfs_mac) }
+
+#define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/m68kmac/modmachine.c"

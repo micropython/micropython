@@ -35,7 +35,7 @@ public:
         ConsoleWindow(Rect r, ConstStr255Param title);
         ~ConsoleWindow();
         void setWindowName(std::string newName);
-
+        void setVisibility(bool shown) override;
 private:
         WindowPtr win;
 

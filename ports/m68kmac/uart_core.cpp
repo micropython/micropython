@@ -30,10 +30,7 @@ void mp_hal_stdin_init(void) {
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
 #if USE_CONSOLE
-    if(!Console::currentInstance)
-        InitConsole();
-    if(Console::currentInstance == (Console*)-1)
-        return EOF;
+    mp_console_showhide(true);
     int c = Console::currentInstance->WaitNextChar();
 #else
     int c = *(char*)0xc0006a;
@@ -41,6 +38,16 @@ int mp_hal_stdin_rx_chr(void) {
     return c;
 }
 
+int show_state = -1;
+void mp_console_showhide(bool shown) {
+    if (shown == show_state) return;
+    show_state = shown;
+    if(!Console::currentInstance)
+        InitConsole();
+    if(Console::currentInstance == (Console*)-1)
+        return;
+    Console::currentInstance->setVisibility(shown);
+}
 bool mp_hal_stdin_available(void) {
     if(!Console::currentInstance)
         InitConsole();
@@ -78,4 +85,12 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 #endif
 
     return len;
+}
+void mp_console_idle() {
+    if(!Console::currentInstance)
+        InitConsole();
+    if(Console::currentInstance == (Console*)-1)
+        return;
+
+    Console::currentInstance->Idle();
 }
