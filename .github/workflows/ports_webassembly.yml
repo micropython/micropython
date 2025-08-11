@@ -11,6 +11,7 @@ on:
       - 'shared/**'
       - 'lib/**'
       - 'ports/webassembly/**'
+      - 'tests/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
