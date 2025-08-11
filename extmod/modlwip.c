@@ -39,6 +39,34 @@
 
 #include "modnetwork.h"
 
+// LWIP uses atoi in netif_find, but some MicroPython ports don't provide it.
+// Provide a simple implementation for LWIP's use.
+int lwip_atoi(const char *str) {
+    int result = 0;
+    int sign = 1;
+
+    // Skip whitespace
+    while (*str == ' ' || *str == '\t' || *str == '\n' || *str == '\r') {
+        str++;
+    }
+
+    // Handle sign
+    if (*str == '-') {
+        sign = -1;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+
+    // Convert digits
+    while (*str >= '0' && *str <= '9') {
+        result = result * 10 + (*str - '0');
+        str++;
+    }
+
+    return result * sign;
+}
+
 #include "lwip/init.h"
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
