@@ -85,7 +85,7 @@
 #define MICROPY_GCREGS_SETJMP (1)
 #endif
 
-#define MICROPY_PY___FILE__         (0)
+#define MICROPY_MODULE___FILE__     (0)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_ATTRTUPLE        (0)
 #define MICROPY_PY_COLLECTIONS      (0)

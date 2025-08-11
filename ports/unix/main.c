@@ -139,7 +139,7 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
         qstr source_name = lex->source_name;
 
-        #if MICROPY_PY___FILE__
+        #if MICROPY_MODULE___FILE__
         if (input_kind == MP_PARSE_FILE_INPUT) {
             mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
         }
