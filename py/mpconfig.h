@@ -990,6 +990,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_STREAMS_POSIX_API (0)
 #endif
 
+// Whether to process __all__ when importing all public symbols from a module.
+#ifndef MICROPY_MODULE___ALL__
+#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
+#endif
+
 // Whether to set __file__ on imported modules.
 #ifndef MICROPY_MODULE___FILE__
 #define MICROPY_MODULE___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
@@ -1425,11 +1430,6 @@ typedef time_t mp_timestamp_t;
 // Add the ability to list the available modules when executing help('modules')
 #ifndef MICROPY_PY_BUILTINS_HELP_MODULES
 #define MICROPY_PY_BUILTINS_HELP_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
-#endif
-
-// Whether to process __all__ when importing all public symbols from module
-#ifndef MICROPY_MODULE___ALL__
-#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
 #endif
 
 // Whether to provide mem-info related functions in micropython module
