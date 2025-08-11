@@ -131,7 +131,6 @@ emitter_tests_to_skip = {
         "misc/print_exception.py",
         "micropython/emg_exc.py",
         "micropython/heapalloc_traceback.py",
-        "micropython/opt_level_lineno.py",
         "thread/thread_exc2.py",
         # These require stack-allocated slice optimisation.
         "micropython/heapalloc_slice.py",
