@@ -20,9 +20,14 @@ namespace retro
 
 #define USE_CONSOLE (1)
 
+void mp_hal_stdin_init(void) {
+#if USE_CONSOLE
+    if(!Console::currentInstance)
+        InitConsole();
+#endif
+}
+
 // Receive single character
-extern "C" 
-int mp_hal_stdin_rx_chr(void);
 int mp_hal_stdin_rx_chr(void) {
 #if USE_CONSOLE
     if(!Console::currentInstance)
@@ -44,8 +49,6 @@ bool mp_hal_stdin_available(void) {
     return Console::currentInstance->Available(1);
 }
 
-extern "C"
-mp_uint_t debug_uart_tx_strn(const char *str, mp_uint_t len);
 mp_uint_t debug_uart_tx_strn(const char *str, mp_uint_t len) {
     mp_uint_t result = len;
     // debug hack, needs patched umac

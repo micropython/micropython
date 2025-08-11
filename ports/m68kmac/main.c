@@ -70,6 +70,9 @@ int main(int argc, char **argv) {
     size_t heap_size = growmax / 2;
     unsigned char *heap = (unsigned char *)NewPtr(growmax / 2);
 
+    // show the console window always
+    mp_hal_stdin_init();
+
     // Check if we were given a file ...
     short message, count;
     CountAppFiles(&message, &count);
