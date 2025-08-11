@@ -81,7 +81,7 @@ static int compile_and_save(const char *file, const char *output_file, const cha
             source_name = qstr_from_str(source_file);
         }
 
-        #if MICROPY_PY___FILE__
+        #if MICROPY_MODULE___FILE__
         mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
         #endif
 
