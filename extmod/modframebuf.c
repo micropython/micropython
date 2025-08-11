@@ -483,9 +483,7 @@ static void line(const mp_obj_framebuf_t *fb, mp_int_t x1, mp_int_t y1, mp_int_t
         e += 2 * dy;
     }
 
-    if (0 <= x2 && x2 < fb->width && 0 <= y2 && y2 < fb->height) {
-        setpixel(fb, x2, y2, col);
-    }
+    setpixel_checked(fb, x2, y2, col, 1);
 }
 
 static mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args_in) {
