@@ -292,6 +292,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             pins_pull[3] = MICROPY_HW_UART1_CTS_PULL;
             #endif
             __HAL_RCC_USART1_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART1_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART1_CLK_SLEEP_ENABLE();
+            #endif
             break;
         #endif
 
@@ -323,6 +326,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             pins_pull[3] = MICROPY_HW_UART2_CTS_PULL;
             #endif
             __HAL_RCC_USART2_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART2_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART2_CLK_SLEEP_ENABLE();
+            #endif
             break;
         #endif
 
@@ -356,6 +362,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             pins_pull[3] = MICROPY_HW_UART3_CTS_PULL;
             #endif
             __HAL_RCC_USART3_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART3_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART3_CLK_SLEEP_ENABLE();
+            #endif
             break;
         #endif
 
@@ -366,18 +375,30 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             UARTx = USART4;
             irqn = USART3_8_IRQn;
             __HAL_RCC_USART4_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART4_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART4_CLK_SLEEP_ENABLE();
+            #endif
             #elif defined(STM32L0)
             UARTx = USART4;
             irqn = USART4_5_IRQn;
             __HAL_RCC_USART4_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART4_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART4_CLK_SLEEP_ENABLE();
+            #endif
             #elif defined(STM32G0)
             UARTx = USART4;
             irqn = USART3_4_5_6_LPUART1_IRQn;
             __HAL_RCC_USART4_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART4_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART4_CLK_SLEEP_ENABLE();
+            #endif
             #else
             UARTx = UART4;
             irqn = UART4_IRQn;
             __HAL_RCC_UART4_CLK_ENABLE();
+            #if defined(__HAL_RCC_UART4_CLK_SLEEP_ENABLE)
+            __HAL_RCC_UART4_CLK_SLEEP_ENABLE();
+            #endif
             #endif
             pins[0] = MICROPY_HW_UART4_TX;
             pins[1] = MICROPY_HW_UART4_RX;
@@ -407,18 +428,30 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             UARTx = USART5;
             irqn = USART3_8_IRQn;
             __HAL_RCC_USART5_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART5_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART5_CLK_SLEEP_ENABLE();
+            #endif
             #elif defined(STM32L0)
             UARTx = USART5;
             irqn = USART4_5_IRQn;
             __HAL_RCC_USART5_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART5_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART5_CLK_SLEEP_ENABLE();
+            #endif
             #elif defined(STM32G0)
             UARTx = USART5;
             irqn = USART3_4_5_6_LPUART1_IRQn;
             __HAL_RCC_USART5_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART5_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART5_CLK_SLEEP_ENABLE();
+            #endif
             #else
             UARTx = UART5;
             irqn = UART5_IRQn;
             __HAL_RCC_UART5_CLK_ENABLE();
+            #if defined(__HAL_RCC_UART5_CLK_SLEEP_ENABLE)
+            __HAL_RCC_UART5_CLK_SLEEP_ENABLE();
+            #endif
             #endif
             pins[0] = MICROPY_HW_UART5_TX;
             pins[1] = MICROPY_HW_UART5_RX;
@@ -471,6 +504,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             pins_pull[3] = MICROPY_HW_UART6_CTS_PULL;
             #endif
             __HAL_RCC_USART6_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART6_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART6_CLK_SLEEP_ENABLE();
+            #endif
             break;
         #endif
 
@@ -481,10 +517,16 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             UARTx = USART7;
             irqn = USART3_8_IRQn;
             __HAL_RCC_USART7_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART7_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART7_CLK_SLEEP_ENABLE();
+            #endif
             #else
             UARTx = UART7;
             irqn = UART7_IRQn;
             __HAL_RCC_UART7_CLK_ENABLE();
+            #if defined(__HAL_RCC_UART7_CLK_SLEEP_ENABLE)
+            __HAL_RCC_UART7_CLK_SLEEP_ENABLE();
+            #endif
             #endif
             pins[0] = MICROPY_HW_UART7_TX;
             pins[1] = MICROPY_HW_UART7_RX;
@@ -514,10 +556,16 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             UARTx = USART8;
             irqn = USART3_8_IRQn;
             __HAL_RCC_USART8_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART8_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART8_CLK_SLEEP_ENABLE();
+            #endif
             #else
             UARTx = UART8;
             irqn = UART8_IRQn;
             __HAL_RCC_UART8_CLK_ENABLE();
+            #if defined(__HAL_RCC_UART8_CLK_SLEEP_ENABLE)
+            __HAL_RCC_UART8_CLK_SLEEP_ENABLE();
+            #endif
             #endif
             pins[0] = MICROPY_HW_UART8_TX;
             pins[1] = MICROPY_HW_UART8_RX;
@@ -546,6 +594,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             UARTx = UART9;
             irqn = UART9_IRQn;
             __HAL_RCC_UART9_CLK_ENABLE();
+            #if defined(__HAL_RCC_UART9_CLK_SLEEP_ENABLE)
+            __HAL_RCC_UART9_CLK_SLEEP_ENABLE();
+            #endif
             pins[0] = MICROPY_HW_UART9_TX;
             pins[1] = MICROPY_HW_UART9_RX;
             #if defined(MICROPY_HW_UART9_RX_PULL)
@@ -561,10 +612,16 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             UARTx = UART10;
             irqn = UART10_IRQn;
             __HAL_RCC_UART10_CLK_ENABLE();
+            #if defined(__HAL_RCC_UART10_CLK_SLEEP_ENABLE)
+            __HAL_RCC_UART10_CLK_SLEEP_ENABLE();
+            #endif
             #else
             UARTx = USART10;
             irqn = USART10_IRQn;
             __HAL_RCC_USART10_CLK_ENABLE();
+            #if defined(__HAL_RCC_USART10_CLK_SLEEP_ENABLE)
+            __HAL_RCC_USART10_CLK_SLEEP_ENABLE();
+            #endif
             #endif
             pins[0] = MICROPY_HW_UART10_TX;
             pins[1] = MICROPY_HW_UART10_RX;
@@ -603,6 +660,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             pins_pull[3] = MICROPY_HW_LPUART1_CTS_PULL;
             #endif
             __HAL_RCC_LPUART1_CLK_ENABLE();
+            #if defined(__HAL_RCC_LPUART1_CLK_SLEEP_ENABLE)
+            __HAL_RCC_LPUART1_CLK_SLEEP_ENABLE();
+            #endif
             break;
         #endif
 
@@ -633,6 +693,9 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             pins_pull[3] = MICROPY_HW_LPUART2_CTS_PULL;
             #endif
             __HAL_RCC_LPUART2_CLK_ENABLE();
+            #if defined(__HAL_RCC_LPUART2_CLK_SLEEP_ENABLE)
+            __HAL_RCC_LPUART2_CLK_SLEEP_ENABLE();
+            #endif
             break;
         #endif
 
@@ -770,6 +833,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_USART1_FORCE_RESET();
         __HAL_RCC_USART1_RELEASE_RESET();
         __HAL_RCC_USART1_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART1_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART1_CLK_SLEEP_DISABLE();
+        #endif
     #if defined(USART2)
     } else if (self->uart_id == 2) {
         #if defined(STM32G0)
@@ -780,6 +846,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_USART2_FORCE_RESET();
         __HAL_RCC_USART2_RELEASE_RESET();
         __HAL_RCC_USART2_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART2_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART2_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(USART3)
     } else if (self->uart_id == 3) {
@@ -791,6 +860,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART3_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART3_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(UART4)
     } else if (self->uart_id == 4) {
@@ -798,12 +870,18 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_UART4_FORCE_RESET();
         __HAL_RCC_UART4_RELEASE_RESET();
         __HAL_RCC_UART4_CLK_DISABLE();
+        #if defined(__HAL_RCC_UART4_CLK_SLEEP_DISABLE)
+        __HAL_RCC_UART4_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(USART4)
     } else if (self->uart_id == 4) {
         __HAL_RCC_USART4_FORCE_RESET();
         __HAL_RCC_USART4_RELEASE_RESET();
         __HAL_RCC_USART4_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART4_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART4_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(UART5)
     } else if (self->uart_id == 5) {
@@ -811,12 +889,18 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_UART5_FORCE_RESET();
         __HAL_RCC_UART5_RELEASE_RESET();
         __HAL_RCC_UART5_CLK_DISABLE();
+        #if defined(__HAL_RCC_UART5_CLK_SLEEP_DISABLE)
+        __HAL_RCC_UART5_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(USART5)
     } else if (self->uart_id == 5) {
         __HAL_RCC_USART5_FORCE_RESET();
         __HAL_RCC_USART5_RELEASE_RESET();
         __HAL_RCC_USART5_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART5_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART5_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(UART6)
     } else if (self->uart_id == 6) {
@@ -824,6 +908,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_USART6_FORCE_RESET();
         __HAL_RCC_USART6_RELEASE_RESET();
         __HAL_RCC_USART6_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART6_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART6_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(UART7)
     } else if (self->uart_id == 7) {
@@ -831,12 +918,18 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_UART7_FORCE_RESET();
         __HAL_RCC_UART7_RELEASE_RESET();
         __HAL_RCC_UART7_CLK_DISABLE();
+        #if defined(__HAL_RCC_UART7_CLK_SLEEP_DISABLE)
+        __HAL_RCC_UART7_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(USART7)
     } else if (self->uart_id == 7) {
         __HAL_RCC_USART7_FORCE_RESET();
         __HAL_RCC_USART7_RELEASE_RESET();
         __HAL_RCC_USART7_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART7_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART7_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(UART8)
     } else if (self->uart_id == 8) {
@@ -844,12 +937,18 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_UART8_FORCE_RESET();
         __HAL_RCC_UART8_RELEASE_RESET();
         __HAL_RCC_UART8_CLK_DISABLE();
+        #if defined(__HAL_RCC_UART8_CLK_SLEEP_DISABLE)
+        __HAL_RCC_UART8_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(USART8)
     } else if (self->uart_id == 8) {
         __HAL_RCC_USART8_FORCE_RESET();
         __HAL_RCC_USART8_RELEASE_RESET();
         __HAL_RCC_USART8_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART8_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART8_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(UART9)
     } else if (self->uart_id == 9) {
@@ -857,6 +956,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_UART9_FORCE_RESET();
         __HAL_RCC_UART9_RELEASE_RESET();
         __HAL_RCC_UART9_CLK_DISABLE();
+        #if defined(__HAL_RCC_UART9_CLK_SLEEP_DISABLE)
+        __HAL_RCC_UART9_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(UART10)
     } else if (self->uart_id == 10) {
@@ -864,6 +966,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_UART10_FORCE_RESET();
         __HAL_RCC_UART10_RELEASE_RESET();
         __HAL_RCC_UART10_CLK_DISABLE();
+        #if defined(__HAL_RCC_UART10_CLK_SLEEP_DISABLE)
+        __HAL_RCC_UART10_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(USART10)
     } else if (self->uart_id == 10) {
@@ -871,6 +976,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_USART10_FORCE_RESET();
         __HAL_RCC_USART10_RELEASE_RESET();
         __HAL_RCC_USART10_CLK_DISABLE();
+        #if defined(__HAL_RCC_USART10_CLK_SLEEP_DISABLE)
+        __HAL_RCC_USART10_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(LPUART1)
     } else if (self->uart_id == PYB_LPUART_1) {
@@ -882,6 +990,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_LPUART1_FORCE_RESET();
         __HAL_RCC_LPUART1_RELEASE_RESET();
         __HAL_RCC_LPUART1_CLK_DISABLE();
+        #if defined(__HAL_RCC_LPUART1_CLK_SLEEP_DISABLE)
+        __HAL_RCC_LPUART1_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     #if defined(LPUART2)
     } else if (self->uart_id == PYB_LPUART_2) {
@@ -893,6 +1004,9 @@ void uart_deinit(machine_uart_obj_t *self) {
         __HAL_RCC_LPUART2_FORCE_RESET();
         __HAL_RCC_LPUART2_RELEASE_RESET();
         __HAL_RCC_LPUART2_CLK_DISABLE();
+        #if defined(__HAL_RCC_LPUART2_CLK_SLEEP_DISABLE)
+        __HAL_RCC_LPUART2_CLK_SLEEP_DISABLE();
+        #endif
     #endif
     }
 }
