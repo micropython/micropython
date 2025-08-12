@@ -42,7 +42,7 @@ Usage Model::
 Constructors
 ------------
 
-.. class:: Pin(id, mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
+.. class:: Pin(id, mode=-1, pull=-1, *, value=None, drive=-1, alt=-1, slew=-1)
 
    Access the pin peripheral (GPIO pin) associated with the given ``id``.  If
    additional arguments are given in the constructor then they are used to initialise
@@ -87,15 +87,20 @@ Constructors
        output pin value if given, otherwise the state of the pin peripheral remains
        unchanged.
 
-     - ``drive`` specifies the output power of the pin and can be one of: ``Pin.DRIVE_0``,
-       ``Pin.DRIVE_1``, etc., increasing in drive strength.  The actual current driving
-       capabilities are port dependent.  Not all ports implement this argument.
+     - ``drive`` specifies the drive strength of the pin (applicable only for output pins)
+       and can be one of: ``Pin.DRIVE_0``, ``Pin.DRIVE_1``, etc., increasing in drive strength.
+       The actual current driving capabilities are port dependent.  Not all ports implement this
+       argument.
 
      - ``alt`` specifies an alternate function for the pin and the values it can take are
        port dependent.  This argument is valid only for ``Pin.ALT`` and ``Pin.ALT_OPEN_DRAIN``
        modes.  It may be used when a pin supports more than one alternate function.  If only
        one pin alternate function is supported the this argument is not required.  Not all
        ports implement this argument.
+
+     - ``slew`` specifies the slew rate of the pin (applicable only for output pins) and can
+       be one of: ``Pin.SLEW_SLOW``, ``Pin.SLEW_FAST``, etc.  The actual slew rate capabilities
+       are port dependent.  Not all ports implement this argument.
 
    As specified above, the Pin class allows to set an alternate function for a particular
    pin, but it does not specify any further operations on such a pin.  Pins configured in
@@ -108,7 +113,7 @@ Constructors
 Methods
 -------
 
-.. method:: Pin.init(mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
+.. method:: Pin.init(mode=-1, pull=-1, *, value=None, drive=-1, alt=-1, slew=-1)
 
    Re-initialise the pin using the given parameters.  Only those arguments that
    are specified will be set.  The rest of the pin peripheral state will remain
@@ -270,9 +275,20 @@ not all constants are available on all ports.
           Pin.DRIVE_1
           Pin.DRIVE_2
 
-   Selects the pin drive strength.  A port may define additional drive
-   constants with increasing number corresponding to increasing drive
-   strength.
+   Selects the output pin drive strength. Each port may define it's own drive
+   constants following only one of these approaches to avoid confusion:
+
+      - Sequential drive constants with increasing number corresponding to
+        increasing drive strength, starting at 0 for lowest drive strength
+        (like DRIVE_0, DRIVE_1, etc.);
+      - non-sequential drive constants that identify specific pin currents
+        (like DRIVE_4 for 4mA, DRIVE_12 for 12mA, etc.).
+
+.. data:: Pin.SLEW_SLOW
+          Pin.SLEW_FAST
+
+   Selects the output pin slew rate.  A port may define additional or entirely
+   custom drive constants with constant corresponding to specific slew rate.
 
 .. data:: Pin.IRQ_FALLING
           Pin.IRQ_RISING

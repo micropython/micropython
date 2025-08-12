@@ -162,6 +162,9 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
+    # create output pin on GPIO6 with 8mA drive strength and slow slew rate
+    p6 = Pin(6, Pin.OUT, drive=Pin.DRIVE_8, slew=Pin.SLEW_SLOW)
+
 Programmable IO (PIO)
 ---------------------
 
