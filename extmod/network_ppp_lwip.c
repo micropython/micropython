@@ -145,8 +145,8 @@ static mp_obj_t network_ppp_poll(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_int_t total_len = 0;
-    mp_obj_t stream = self->stream;
-    while (stream != mp_const_none) {
+    mp_obj_t stream;
+    while ((stream = self->stream) != mp_const_none) {
         uint8_t buf[256];
         int err;
         mp_uint_t len = mp_stream_rw(stream, buf, sizeof(buf), &err, 0);
