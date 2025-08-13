@@ -38,6 +38,12 @@
 #if SOC_I2C_SUPPORT_XTAL
 #if CONFIG_XTAL_FREQ > 0
 #define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
+#elif CONFIG_XTAL_FREQ == 0 && CONFIG_IDF_TARGET_ESP32C5    // In the official configuration of ESP32C5, there is currently only the AUTO option available.
+                                                            // This causes CONFIG_XTAL_FREQ to be set to 0, resulting in compilation errors.
+                                                            // For now, we'll set it to 40M, and we'll add a configuration item for it later if they open up the configuration interface.
+                                                            // Detailed information: https://github.com/micropython/micropython/issues/17903
+#define CONFIG_XTAL_FREQ 40                                 // If your external crystal frequency is 48, please change this 40 to 48 and recompile.
+#define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
 #else
 #error "I2C uses XTAL but no configured freq"
 #endif // CONFIG_XTAL_FREQ
