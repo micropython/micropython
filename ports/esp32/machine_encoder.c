@@ -97,14 +97,14 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
                     }
                 }
                 if (self->event_status & PCNT_EVT_THRES_1) {
-                    // when counting up & treshold value > 0
+                    // when counting up & threshold value > 0
                     // debug_printf("1");
                     if (self->counter_accum == self->counter_match) {
                         mp_sched_schedule(self->handler_match, MP_OBJ_FROM_PTR(self));
                         mp_hal_wake_main_task_from_isr();
                     }
                 } else if (self->event_status & PCNT_EVT_THRES_0) {
-                    // when counting down & treshold value < 0
+                    // when counting down & threshold value < 0
                     // debug_printf("0");
                     if (self->counter_accum == self->counter_match + INT16_ROLL) {
                         mp_sched_schedule(self->handler_match, MP_OBJ_FROM_PTR(self));
@@ -459,12 +459,12 @@ static void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     mp_obj_t direction = args[ARG_direction].u_obj;
     if (args[ARG__src].u_obj != MP_OBJ_NULL) {
         self->bPinNumber = pin_or_int(args[ARG__src].u_obj);
-        self->x124 = -1;
+        self->phases = -1;
         if (direction != MP_OBJ_NULL) {
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("direction parameter is omitted"));
         }
     } else {
-        self->x124 = 0;
+        self->phases = 0;
         if (direction != MP_OBJ_NULL) {
             if (mp_obj_is_type(direction, &machine_pin_type) || mp_obj_is_small_int(direction)) {
                 self->bPinNumber = pin_or_int(direction);
@@ -629,7 +629,7 @@ static void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
         return;
     }
     mp_printf(print, "), src=Pin(%u)", self->aPinNumber);
-    if (self->x124 < 0) {
+    if (self->phases < 0) {
         mp_printf(print, ", _src=Pin(%u)", self->bPinNumber);
     } else {
         if (self->bPinNumber >= 0) {
@@ -684,11 +684,11 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // =================================================================
 // class Encoder(object):
 static void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_phase_a, ARG_phase_b, ARG_x124, ARG_filter_ns };
+    enum { ARG_phase_a, ARG_phase_b, ARG_phases, ARG_filter_ns };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_phase_b, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_x124, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_phases, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
@@ -710,11 +710,11 @@ static void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         mp_raise_ValueError(MP_ERROR_TEXT("phase_b"));
     }
 
-    if (args[ARG_x124].u_int != -1) {
-        if ((args[ARG_x124].u_int == 1) || (args[ARG_x124].u_int == 2) || (args[ARG_x124].u_int == 4)) {
-            self->x124 = args[ARG_x124].u_int;
+    if (args[ARG_phases].u_int != -1) {
+        if ((args[ARG_phases].u_int == 1) || (args[ARG_phases].u_int == 2) || (args[ARG_phases].u_int == 4)) {
+            self->phases = args[ARG_phases].u_int;
         } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("x124 must be 1, 2, 4"));
+            mp_raise_ValueError(MP_ERROR_TEXT("phases must be 1, 2, 4"));
         }
     }
 
@@ -727,7 +727,7 @@ static void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     r_enc_config.ctrl_gpio_num = self->bPinNumber; // Rotary Encoder Chan B
 
     r_enc_config.pos_mode = PCNT_COUNT_INC; // X1 X2 X4 Count on Rising-Edges
-    r_enc_config.neg_mode = (self->x124 != 1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // X2 X4 Count on Falling-Edges
+    r_enc_config.neg_mode = (self->phases != 1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // X2 X4 Count on Falling-Edges
 
     r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Rising A on HIGH B
     r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Rising A on LOW B
@@ -738,7 +738,7 @@ static void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
     check_esp_err(pcnt_unit_config(&r_enc_config));
 
-    if (self->x124 == 4) { // X4
+    if (self->phases == 4) { // X4
         // set up second channel for full quad
         r_enc_config.unit = self->unit;
         r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
@@ -785,7 +785,7 @@ static mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_arg
     if (n_args >= 3) {
         self->bPinNumber = pin_or_int(args[2]);
     }
-    self->x124 = 4;
+    self->phases = 1;
 
     // Process the remaining parameters
     mp_map_t kw_args;
@@ -807,7 +807,7 @@ static void machine_Encoder_print(const mp_print_t *print, mp_obj_t self_obj, mp
         mp_printf(print, ")");
         return;
     }
-    mp_printf(print, ", phase_a=Pin(%u), phase_b=Pin(%u), x124=%d", self->aPinNumber, self->bPinNumber, self->x124);
+    mp_printf(print, ", phase_a=Pin(%u), phase_b=Pin(%u), phases=%d", self->aPinNumber, self->bPinNumber, self->phases);
     common_print_kw(print, self);
 }
 

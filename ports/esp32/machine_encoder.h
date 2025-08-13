@@ -40,7 +40,7 @@ typedef struct _mp_pcnt_obj_t {
 
     int filter;
     enum edge_bit_mask edge; // Counter only
-    int8_t x124; // Encoder: multiplier 1, 2 or 4 // Counter: 0 is 'direction=' keyword used, -1 is '_src=' keyword used
+    int8_t phases; // Encoder: multiplier 1, 2 or 4 // Counter: 0 is 'direction=' keyword used, -1 is '_src=' keyword used
 } mp_pcnt_obj_t;
 
 #endif // MICROPY_INCLUDED_MACHINE_ENCODER_H

@@ -116,7 +116,7 @@ Attention: ``Counter.irq()`` resets counter to 0.
    Returns the event status flags of the recent handled Counter interrupt as a bitmap.
 
 =====  ====  =======================  =============================================================
-bit #  mask   trigger                  coment
+bit #  mask   trigger                  comment
 =====  ====  =======================  =============================================================
   0      1                             if zero event: 0 - when counting up, 1 - when counting down
   2      4    Counter.IRQ_MATCH        match value event when counting up
@@ -195,7 +195,7 @@ See `Quadrature encoder outputs.
 Constructor
 -----------
 
-.. class:: Encoder(id, phase_a=None, phase_b=None, \*, x124=4, filter_ns=0, match=0)
+.. class:: Encoder(id, phase_a=None, phase_b=None, \*, phases=1, filter_ns=0, match=0)
 
     The Encoder starts to count immediately. Filtering is disabled.
 
@@ -205,7 +205,7 @@ Constructor
       - *phase_a*, *phase_b* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses.
         They are required in the constructor.
 
-      - *x124* is a hardware multiplier, possible values is 1, 2, 4. The default value is 4.
+      - *phases* is a hardware multiplier, possible values is 1, 2, 4. The default value is 1.
         More info in `Quadrature decoder state table <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_decoder>`_.
         When more Encoder resolution is needed, it is possible for the encoder to count the leading
         and trailing edges of the quadrature encoder’s pulse train from one channel,
