@@ -674,7 +674,7 @@ static MP_DEFINE_CONST_DICT(machine_Counter_locals_dict, machine_Counter_locals_
 // Create the class-object itself
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_Counter_type,
-    MP_QSTR_Counter,
+    MP_QSTR_counter,
     MP_TYPE_FLAG_NONE,
     make_new, machine_Counter_make_new,
     print, machine_Counter_print,
@@ -822,7 +822,7 @@ static MP_DEFINE_CONST_DICT(machine_Encoder_locals_dict, machine_Encoder_locals_
 // Create the class-object itself
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_Encoder_type,
-    MP_QSTR_Encoder,
+    MP_QSTR_encoder,
     MP_TYPE_FLAG_NONE,
     make_new, machine_Encoder_make_new,
     print, machine_Encoder_print,

@@ -52,8 +52,8 @@
 #endif
 
 #if MICROPY_PY_MACHINE_PCNT
-#define MICROPY_PY_MACHINE_PCNT_ENTRY { MP_ROM_QSTR(MP_QSTR_Encoder), MP_ROM_PTR(&machine_Encoder_type) }, \
-    { MP_ROM_QSTR(MP_QSTR_Counter), MP_ROM_PTR(&machine_Counter_type) },
+#define MICROPY_PY_MACHINE_PCNT_ENTRY { MP_ROM_QSTR(MP_QSTR_encoder), MP_ROM_PTR(&machine_Encoder_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_counter), MP_ROM_PTR(&machine_Counter_type) },
 #else
 #define MICROPY_PY_MACHINE_PCNT_ENTRY
 #endif
