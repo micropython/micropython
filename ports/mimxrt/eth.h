@@ -47,6 +47,7 @@ enum {
     PHY_KSZ8081 = 0,
     PHY_DP83825,
     PHY_DP83848,
+    PHY_DP83867,
     PHY_LAN8720,
     PHY_RTL8211F,
 };
