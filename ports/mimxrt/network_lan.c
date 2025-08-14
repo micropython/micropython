@@ -35,6 +35,7 @@
 #include "hal/phy/device/phyksz8081/fsl_phyksz8081.h"
 #include "hal/phy/device/phydp83825/fsl_phydp83825.h"
 #include "hal/phy/device/phydp83848/fsl_phydp83848.h"
+#include "hal/phy/device/phydp83867/fsl_phydp83867.h"
 #include "hal/phy/device/phylan8720/fsl_phylan8720.h"
 #include "hal/phy/device/phyrtl8211f/fsl_phyrtl8211f.h"
 
@@ -113,6 +114,8 @@ static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
             phy_ops = &phydp83825_ops;
         } else if (phy_type == PHY_DP83848) {
             phy_ops = &phydp83848_ops;
+        } else if (phy_type == PHY_DP83867) {
+            phy_ops = &phydp83867_ops;
         } else if (phy_type == PHY_LAN8720) {
             phy_ops = &phylan8720_ops;
         } else if (phy_type == PHY_RTL8211F) {
@@ -254,6 +257,7 @@ static const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8081), MP_ROM_INT(PHY_KSZ8081) },
     { MP_ROM_QSTR(MP_QSTR_PHY_DP83825), MP_ROM_INT(PHY_DP83825) },
     { MP_ROM_QSTR(MP_QSTR_PHY_DP83848), MP_ROM_INT(PHY_DP83848) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_DP83867), MP_ROM_INT(PHY_DP83867) },
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
     { MP_ROM_QSTR(MP_QSTR_PHY_RTL8211F), MP_ROM_INT(PHY_RTL8211F) },
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(PHY_TX_CLK_IN) },
