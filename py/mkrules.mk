@@ -104,7 +104,7 @@ vpath %.cpp . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.cpp
 	$(call compile_cxx)
 
-$(BUILD)/%.pp: %.c
+$(BUILD)/%.pp: %.c FORCE
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
 
