@@ -578,14 +578,17 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
         return True, script
 
     try:
-        had_crash = False
-        pyb.enter_raw_repl()
+        pyb.enter_raw_repl(timeout_overall=4)
         if test_file.endswith(tests_requiring_target_wiring) and pyb.target_wiring_script:
             pyb.exec_(
                 "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec("
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
+    except pyboard.PyboardError as e:
+        return True, b"enter_raw_repl failed\n"
+
+    try:
         output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
     except pyboard.PyboardError as e:
         had_crash = True
@@ -879,6 +882,7 @@ class PyboardNodeRunner:
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     testcase_count = ThreadSafeCounter()
+    enter_raw_repl_failure_count = ThreadSafeCounter()
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
@@ -1240,6 +1244,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
+            if output_mupy == b"enter_raw_repl failed\n":
+                extra_info = "enter_raw_repl failed"
+                enter_raw_repl_failure_count.increment()
             print("FAIL ", test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
@@ -1270,6 +1277,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         else:
             for test in tests:
                 run_one_test(test)
+                if enter_raw_repl_failure_count.value >= 4:
+                    print("Too many enter_raw_repl failures, aborting test run")
+                    break
     except TestError as er:
         for line in er.args[0]:
             print(line)
