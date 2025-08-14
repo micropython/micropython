@@ -35,6 +35,7 @@
 #include "driver/i2c_master.h"
 #else
 #include "driver/i2c.h"
+#include "esp_clk_tree.h"
 #include "hal/i2c_ll.h"
 #endif
 
@@ -224,6 +225,8 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
 #if SOC_I2C_SUPPORT_XTAL
 #if CONFIG_XTAL_FREQ > 0
 #define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
+#elif CONFIG_XTAL_FREQ == 0 && CONFIG_IDF_TARGET_ESP32C5
+// The crystal is auto-detected, so the I2C sclk frequency will be computed at runtime.
 #else
 #error "I2C uses XTAL but no configured freq"
 #endif // CONFIG_XTAL_FREQ
@@ -257,7 +260,13 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, bool first_init) {
         .master.clk_speed = self->freq,
     };
     i2c_param_config(self->port, &conf);
-    int timeout = i2c_ll_calculate_timeout_us_to_reg_val(I2C_SCLK_FREQ, self->timeout_us);
+    #if CONFIG_IDF_TARGET_ESP32C5
+    uint32_t i2c_sclk_freq;
+    check_esp_err(esp_clk_tree_src_get_freq_hz(I2C_CLK_SRC_DEFAULT, ESP_CLK_TREE_SRC_FREQ_PRECISION_APPROX, &i2c_sclk_freq));
+    #else
+    uint32_t i2c_sclk_freq = I2C_SCLK_FREQ;
+    #endif
+    int timeout = i2c_ll_calculate_timeout_us_to_reg_val(i2c_sclk_freq, self->timeout_us);
     i2c_set_timeout(self->port, (timeout > I2C_LL_MAX_TIMEOUT) ? I2C_LL_MAX_TIMEOUT : timeout);
     i2c_driver_install(self->port, I2C_MODE_MASTER, 0, 0, 0);
 }
