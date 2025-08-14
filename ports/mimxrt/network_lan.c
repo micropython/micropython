@@ -35,6 +35,7 @@
 #include "hal/phy/device/phyksz8081/fsl_phyksz8081.h"
 #include "hal/phy/device/phydp83825/fsl_phydp83825.h"
 #include "hal/phy/device/phydp83848/fsl_phydp83848.h"
+#include "hal/phy/device/phydp83867/fsl_phydp83867.h"
 #include "hal/phy/device/phylan8720/fsl_phylan8720.h"
 #include "hal/phy/device/phyrtl8211f/fsl_phyrtl8211f.h"
 

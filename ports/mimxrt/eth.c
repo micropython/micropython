@@ -44,6 +44,7 @@
 #include "hal/phy/device/phyksz8081/fsl_phyksz8081.h"
 #include "hal/phy/device/phydp83825/fsl_phydp83825.h"
 #include "hal/phy/device/phydp83848/fsl_phydp83848.h"
+#include "hal/phy/device/phydp83867/fsl_phydp83867.h"
 #include "hal/phy/device/phylan8720/fsl_phylan8720.h"
 #include "hal/phy/device/phyrtl8211f/fsl_phyrtl8211f.h"
 
@@ -422,7 +423,7 @@ void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     uint32_t source_clock = eth_clock_init(eth_id, phy_clock);
 
     const machine_pin_obj_t *reset_pin = NULL;
-    #if defined(pin_ENET_1_INT)
+    #if defined(pin_ENET_1_RESET)
     reset_pin = pin_ENET_1_RESET;
     #endif
     const machine_pin_obj_t *int_pin = NULL;
