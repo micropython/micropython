@@ -80,6 +80,10 @@ sys.modules['{}'] = __import__('__injected')
 """
 
 
+class TargetError(Exception):
+    pass
+
+
 class TargetSubprocess:
     def __init__(self, cmd):
         self.cmd = cmd
@@ -100,7 +104,10 @@ class TargetSubprocess:
 class TargetPyboard:
     def __init__(self, pyb):
         self.pyb = pyb
-        self.pyb.enter_raw_repl()
+        try:
+            self.pyb.enter_raw_repl(timeout_overall=4)
+        except pyboard.PyboardError as er:
+            raise TargetError(str(er))
 
     def close(self):
         self.pyb.exit_raw_repl()
@@ -108,7 +115,7 @@ class TargetPyboard:
 
     def run_script(self, script):
         try:
-            self.pyb.enter_raw_repl()
+            self.pyb.enter_raw_repl(timeout_overall=4)
             output = self.pyb.exec_(script)
             output = output.replace(b"\r\n", b"\n")
             return output, None
@@ -143,6 +150,7 @@ def run_tests(target_truth, target, args, resolved_arch):
         prelude = args.begin.read()
     injected_import_hook_code = injected_import_hook_code.replace("{import_prelude}", prelude)
 
+    enter_raw_repl_failure_count = 0
     test_results = []
     for test_file in args.files:
         # Find supported test
@@ -222,6 +230,12 @@ def run_tests(target_truth, target, args, resolved_arch):
         # Print result
         print("{:4}  {}{}".format(result, test_file, extra))
 
+        if result == "FAIL" and str(error) == "could not enter raw repl":
+            enter_raw_repl_failure_count += 1
+            if enter_raw_repl_failure_count >= 4:
+                print("Too many enter_raw_repl failures, aborting test run")
+                break
+
     return test_results
 
 
@@ -254,12 +268,15 @@ def main():
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
 
-    target_truth = TargetSubprocess([CPYTHON3])
-
-    if args.pyboard:
-        target = TargetPyboard(pyboard.Pyboard(args.device))
-    else:
-        target = TargetSubprocess([MICROPYTHON])
+    try:
+        target_truth = TargetSubprocess([CPYTHON3])
+        if args.pyboard:
+            target = TargetPyboard(pyboard.Pyboard(args.device))
+        else:
+            target = TargetSubprocess([MICROPYTHON])
+    except TargetError as er:
+        print("Cannot initialise targets: {}".format(er))
+        sys.exit(2)
 
     if hasattr(args, "arch") and args.arch is not None:
         target_arch = args.arch
@@ -268,7 +285,7 @@ def main():
         target_platform, target_arch, error = detect_architecture(target)
         if error:
             print("Cannot run tests: {}".format(error))
-            sys.exit(1)
+            sys.exit(2)
     target_arch = ARCH_MAPPINGS.get(target_arch, target_arch)
 
     if target_platform:
