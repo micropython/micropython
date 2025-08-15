@@ -61,7 +61,7 @@ class Target:
         )
         self.port, self.build, self.machine, self.version = sys_info
         self.can_import_mpy = t.eval("hasattr(sys.implementation, '_mpy')")
-        _, self.arch, _ = str(t.exec(TARGET_INFO_CHECK), "ascii").strip().split()
+        _, self.arch, *_ = str(t.exec(TARGET_INFO_CHECK), "ascii").strip().split()
         if self.arch == "None":
             self.arch = None
         self.has_vfs = try_import(t, "vfs")
