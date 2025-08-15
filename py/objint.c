@@ -247,7 +247,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
 
     char sign = '\0';
     if (num < 0) {
-        num = -num;
+        num = -(fmt_uint_t)num;
         sign = '-';
     }
 
