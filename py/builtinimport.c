@@ -116,7 +116,7 @@ static mp_import_stat_t stat_module(vstr_t *path) {
 // path (i.e. "<entry>/mod_name(.py)").
 static mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
     DEBUG_printf("stat_top_level: '%s'\n", qstr_str(mod_name));
-    #if MICROPY_PY_SYS
+    #if MICROPY_PY_SYS && MICROPY_PY_SYS_PATH
     size_t path_num;
     mp_obj_t *path_items;
     mp_obj_get_array(mp_sys_path, &path_num, &path_items);
@@ -367,7 +367,7 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     // Immediately return if the module at this level is already loaded.
     mp_map_elem_t *elem;
 
-    #if MICROPY_PY_SYS
+    #if MICROPY_PY_SYS && MICROPY_PY_SYS_PATH
     // If sys.path is empty, the intention is to force using a built-in. This
     // means we should also ignore any loaded modules with the same name
     // which may have come from the filesystem.
