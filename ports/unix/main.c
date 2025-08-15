@@ -54,6 +54,7 @@
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
+#include "stack_size.h"
 
 // Command line options, with their defaults
 static bool compile_only = false;
@@ -479,11 +480,7 @@ int main(int argc, char **argv) {
     #endif
 
     // Define a reasonable stack limit to detect stack overflow.
-    mp_uint_t stack_size = 40000 * (sizeof(void *) / 4);
-    #if defined(__arm__) && !defined(__thumb2__)
-    // ARM (non-Thumb) architectures require more stack.
-    stack_size *= 2;
-    #endif
+    mp_uint_t stack_size = 40000 * UNIX_STACK_MULTIPLIER;
 
     // We should capture stack top ASAP after start, and it should be
     // captured guaranteedly before any other stack variables are allocated.
