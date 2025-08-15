@@ -1669,14 +1669,14 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
 #endif // MICROPY_ENABLE_COMPILER
 
 MP_NORETURN void m_malloc_fail(size_t num_bytes) {
-    DEBUG_printf("memory allocation failed, allocating %u bytes\n", (uint)num_bytes);
+    DEBUG_printf("memory allocation failed, allocating " SIZE_FMT " bytes\n", num_bytes);
     #if MICROPY_ENABLE_GC
     if (gc_is_locked()) {
         mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("memory allocation failed, heap is locked"));
     }
     #endif
     mp_raise_msg_varg(&mp_type_MemoryError,
-        MP_ERROR_TEXT("memory allocation failed, allocating %u bytes"), (uint)num_bytes);
+        MP_ERROR_TEXT("memory allocation failed, allocating " SIZE_FMT " bytes"), num_bytes);
 }
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
