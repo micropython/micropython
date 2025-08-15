@@ -80,9 +80,8 @@ This repository contains the following components:
 - [examples/](examples/) -- a few example Python scripts.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash, gcc, and Python 3.3+ available as the command `python3`
-(if your system only has Python 2.7 then invoke make with the additional option
-`PYTHON=python2`). Some ports (rp2 and esp32) additionally use CMake.
+You will also need bash, gcc, and Python 3.3+ available as the command `python3`.
+Some ports (rp2 and esp32) additionally use CMake.
 
 Supported platforms & architectures
 -----------------------------------
