@@ -97,9 +97,6 @@
 #endif
 
 // extended modules
-#define MICROPY_PY_HASHLIB_MD5      (MICROPY_PY_SSL)
-#define MICROPY_PY_HASHLIB_SHA1     (MICROPY_PY_SSL)
-#define MICROPY_PY_CRYPTOLIB        (MICROPY_PY_SSL)
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/stm32/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
