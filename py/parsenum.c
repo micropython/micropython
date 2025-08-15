@@ -64,7 +64,7 @@ typedef mp_int_t parsed_int_t;
 typedef unsigned long long parsed_int_t;
 
 #define PARSED_INT_MUL_OVERFLOW mp_mul_ull_overflow
-#define PARSED_INT_FITS(I) ((I) <= (unsigned long long)LLONG_MAX)
+#define PARSED_INT_FITS(I) ((I) <= (unsigned long long)LLONG_MAX + 1)
 #endif
 
 mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, mp_lexer_t *lex) {
@@ -135,8 +135,11 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
 have_ret_val:
     #else
     // The PARSED_INT_FITS check above ensures parsed_val won't overflow signed long long
-    long long signed_val = parsed_val;
-    if (neg) {
+    long long signed_val = -parsed_val;
+    if (!neg) {
+        if (signed_val == LLONG_MIN) {
+            goto overflow;
+        }
         signed_val = -signed_val;
     }
     ret_val = mp_obj_new_int_from_ll(signed_val); // Could be large or small int
