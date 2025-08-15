@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../tools"))
 import boardgen
 
 
-# Pins start at zero, and the highest pin index on any ESP32* chip is 48.
-NUM_GPIOS = 49
+# Pins start at zero, and the highest pin index on any ESP32* chip is 54.
+NUM_GPIOS = 55
 
 
 class Esp32Pin(boardgen.Pin):
