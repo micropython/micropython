@@ -1860,11 +1860,11 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_MD5
-#define MICROPY_PY_HASHLIB_MD5 (0)
+#define MICROPY_PY_HASHLIB_MD5 (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA1
-#define MICROPY_PY_HASHLIB_SHA1  (0)
+#define MICROPY_PY_HASHLIB_SHA1  (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA256
@@ -1872,7 +1872,7 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_CRYPTOLIB
-#define MICROPY_PY_CRYPTOLIB (0)
+#define MICROPY_PY_CRYPTOLIB (MICROPY_PY_SSL)
 #endif
 
 // Depends on MICROPY_PY_CRYPTOLIB
