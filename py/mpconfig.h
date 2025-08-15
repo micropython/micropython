@@ -1610,7 +1610,7 @@ typedef time_t mp_timestamp_t;
 
 // Whether to provide "sys" module
 #ifndef MICROPY_PY_SYS
-#define MICROPY_PY_SYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#define MICROPY_PY_SYS (1)
 #endif
 
 // Whether to initialise "sys.path" and "sys.argv" to their defaults in mp_init()
