@@ -254,6 +254,13 @@ function ci_esp32_build_c2_c5_c6 {
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C6
 }
 
+function ci_esp32_build_p4 {
+    ci_esp32_build_common
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4 BOARD_VARIANT=C6_WIFI
+}
+
 ########################################################################################
 # ports/esp8266
 

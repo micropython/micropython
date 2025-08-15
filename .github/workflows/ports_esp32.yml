@@ -30,6 +30,7 @@ jobs:
           - esp32_build_cmod_spiram_s2
           - esp32_build_s3_c3
           - esp32_build_c2_c5_c6
+          - esp32_build_p4
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
