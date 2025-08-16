@@ -9,6 +9,10 @@ except ImportError:
 try:
     open("this filedoesnotexist", "r")
     print("FAILED TO RAISE")
+    import os
+
+    print(os.getcwd())
+    print(os.listdir())
 except OSError as e:
     print(e)
 

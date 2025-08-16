@@ -109,7 +109,7 @@ static void print_reset_info(void) {
 
 static void mp_reset(void) {
     mp_stack_set_top((void *)0x40000000);
-    mp_stack_set_limit(8192);
+    mp_stack_set_limit(8192 - 64);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
     mp_init();
