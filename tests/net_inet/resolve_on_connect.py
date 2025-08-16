@@ -1,4 +1,6 @@
-# Test that the esp32's socket module performs DNS resolutions on bind and connect
+# Test that the socket module performs DNS resolutions on bind and connect
+# Only works on the esp32 port at the moment
+
 import sys
 
 if sys.implementation.name == "micropython" and sys.platform != "esp32":
