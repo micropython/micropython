@@ -43,7 +43,7 @@ typedef struct _mp_obj_framebuf_t {
 } mp_obj_framebuf_t;
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-static const mp_obj_type_t mp_type_framebuf;
+const mp_obj_type_t mp_type_framebuf;
 #endif
 
 typedef void (*setpixel_t)(const mp_obj_framebuf_t *, unsigned int, unsigned int, uint32_t);
@@ -883,7 +883,7 @@ static const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
 };
 static MP_DEFINE_CONST_DICT(framebuf_locals_dict, framebuf_locals_dict_table);
 
-static MP_DEFINE_CONST_OBJ_TYPE(
+MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_framebuf,
     MP_QSTR_FrameBuffer,
     MP_TYPE_FLAG_NONE,
