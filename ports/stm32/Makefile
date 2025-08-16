@@ -611,7 +611,7 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
-TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .data .ARM
+TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .gc.blocks.table .data .ARM
 
 deploy-stlink: $(BUILD)/firmware.bin
 	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
@@ -629,7 +629,7 @@ else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
 TEXT0_SECTIONS ?= .isr_vector .isr_extratext
-TEXT1_SECTIONS ?= .text .data .ARM
+TEXT1_SECTIONS ?= .text .gc.blocks.table .data .ARM
 
 deploy-stlink: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
 	$(call RUN_STLINK,$(word 1,$^),$(TEXT0_ADDR))
