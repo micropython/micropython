@@ -287,7 +287,7 @@ static mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write1_obj, stream_write1_method);
 
-static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_readinto_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
 
@@ -303,7 +303,7 @@ static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     }
 
     int error;
-    mp_uint_t out_sz = mp_stream_read_exactly(args[0], bufinfo.buf, len, &error);
+    mp_uint_t out_sz = mp_stream_rw(args[0], bufinfo.buf, len, &error, flags);
     if (error != 0) {
         if (mp_is_nonblocking_error(error)) {
             return mp_const_none;
@@ -313,7 +313,16 @@ static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
 }
+
+static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
+    return stream_readinto_generic(n_args, args, MP_STREAM_RW_READ);
+}
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
+
+static mp_obj_t stream_readinto1(size_t n_args, const mp_obj_t *args) {
+    return stream_readinto_generic(n_args, args, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto1_obj, 2, 3, stream_readinto1);
 
 static mp_obj_t stream_readall(mp_obj_t self_in) {
     const mp_stream_p_t *stream_p = mp_get_stream(self_in);
