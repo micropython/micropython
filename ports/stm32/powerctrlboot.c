@@ -485,10 +485,10 @@ void SystemClock_Config(void) {
     LL_RCC_IC11_SetDivider(1);
     LL_RCC_IC11_Enable();
 
-    // Configure IC14 at 100MHz for slower peripherals.
-    LL_RCC_IC14_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
-    LL_RCC_IC14_SetDivider(8);
-    LL_RCC_IC14_Enable();
+    // Configure IC9 at 100MHz for slower peripherals.
+    LL_RCC_IC9_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC9_SetDivider(8);
+    LL_RCC_IC9_Enable();
 
     // Enable buses.
     LL_BUS_EnableClock(LL_APB5 | LL_APB4 | LL_APB3 | LL_APB2 | LL_APB1 | LL_AHB5 | LL_AHB4 | LL_AHB3 | LL_AHB2 | LL_AHB1);

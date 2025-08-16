@@ -184,9 +184,9 @@ void spi_init0(void) {
     LL_RCC_SetSPIClockSource(LL_RCC_SPI3_CLKSOURCE_PCLK1);
     LL_RCC_SetSPIClockSource(LL_RCC_SPI6_CLKSOURCE_PCLK4);
 
-    // SPI4/5 clock configuration, IC14 (max 100MHz).
-    LL_RCC_SetSPIClockSource(LL_RCC_SPI4_CLKSOURCE_IC14);
-    LL_RCC_SetSPIClockSource(LL_RCC_SPI5_CLKSOURCE_IC14);
+    // SPI4/5 clock configuration, IC9 (max 100MHz).
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI4_CLKSOURCE_IC9);
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI5_CLKSOURCE_IC9);
     #endif
 }
 
