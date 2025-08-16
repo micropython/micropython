@@ -208,11 +208,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 if (str_hash == 0) {
                     str_hash = qstr_compute_hash(str_data, str_len);
                 }
-                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-                if (!utf8_check(str_data, str_len)) {
-                    mp_raise_msg(&mp_type_UnicodeError, NULL);
-                }
-                #endif
+                mp_utf8_require(str_data, str_len);
 
                 // Check if a qstr with this data already exists
                 qstr q = qstr_find_strn((const char *)str_data, str_len);
@@ -2285,17 +2281,13 @@ static mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t 
 }
 
 mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr) {
-    #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-    if (!utf8_check((byte *)vstr->buf, vstr->len)) {
-        mp_raise_msg(&mp_type_UnicodeError, NULL);
-    }
-    #endif // MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+    mp_utf8_require((byte *)vstr->buf, vstr->len);
     return mp_obj_new_str_type_from_vstr(&mp_type_str, vstr);
 }
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
 mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr) {
-    // bypasses utf8_check.
+    // bypasses utf8_require.
     return mp_obj_new_str_type_from_vstr(&mp_type_str, vstr);
 }
 #endif // MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
@@ -2305,11 +2297,7 @@ mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr) {
 }
 
 mp_obj_t mp_obj_new_str(const char *data, size_t len) {
-    #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-    if (!utf8_check((byte *)data, len)) {
-        mp_raise_msg(&mp_type_UnicodeError, NULL);
-    }
-    #endif
+    mp_utf8_require((byte *)data, len);
     qstr q = qstr_find_strn(data, len);
     if (q != MP_QSTRnull) {
         // qstr with this data already exists
@@ -2471,3 +2459,39 @@ mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
     o->cur = 0;
     return MP_OBJ_FROM_PTR(o);
 }
+
+#if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+static bool mp_utf8_check(const byte *p, size_t len) {
+    uint8_t need = 0;
+    const byte *end = p + len;
+    for (; p < end; p++) {
+        byte c = *p;
+        if (need) {
+            if (UTF8_IS_CONT(c)) {
+                need--;
+            } else {
+                // mismatch
+                return 0;
+            }
+        } else {
+            if (c >= 0xc0) {
+                if (c >= 0xf8) {
+                    // mismatch
+                    return 0;
+                }
+                need = (0xe5 >> ((c >> 3) & 0x6)) & 3;
+            } else if (c >= 0x80) {
+                // mismatch
+                return 0;
+            }
+        }
+    }
+    return need == 0; // no pending fragments allowed
+}
+
+void mp_utf8_require(const byte *p, size_t len) {
+    if (!mp_utf8_check(p, len)) {
+        mp_raise_msg(&mp_type_UnicodeError, NULL);
+    }
+}
+#endif
