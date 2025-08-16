@@ -145,9 +145,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
-#define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
-#define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
-#define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
 #ifndef MICROPY_PY_NETWORK_PPP_LWIP
 #define MICROPY_PY_NETWORK_PPP_LWIP         (MICROPY_PY_LWIP)
 #endif
