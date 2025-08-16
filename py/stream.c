@@ -303,7 +303,7 @@ static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     }
 
     int error;
-    mp_uint_t out_sz = mp_stream_read_exactly(args[0], bufinfo.buf, len, &error);
+    mp_uint_t out_sz = mp_stream_rw(args[0], bufinfo.buf, len, &error, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
     if (error != 0) {
         if (mp_is_nonblocking_error(error)) {
             return mp_const_none;
