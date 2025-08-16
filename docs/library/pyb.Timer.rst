@@ -62,7 +62,7 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0, brk=Timer.BRK_OFF)
+.. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0, brk=Timer.BRK_OFF, hard=True)
 
    Initialise the timer.  Initialisation must be either by frequency (in Hz)
    or by prescaler and period::
@@ -114,6 +114,18 @@ Methods
        ``Timer.BRK_HIGH``. To select the ``BRK_IN`` pin construct a Pin object with
        ``mode=Pin.ALT, alt=Pin.AFn_TIMx``. The pin's GPIO input features are
        available in alt mode - ``pull=`` , ``value()`` and ``irq()``.
+
+     - ``hard`` can be one of:
+
+       - ``True`` - The callback will be executed in hard interrupt
+         context, which minimises delay and jitter but is subject to the
+         limitations described in :ref:`isr_rules` including being unable
+         to allocate on the heap.
+       - ``False`` - The callback will be scheduled as a soft interrupt,
+         allowing it to allocate but possibly also introducing
+         garbage-collection delays and jitter.
+
+       The default value of this option is True.
 
     You must either specify freq or both of period and prescaler.
 

@@ -30,9 +30,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "py/gc.h"
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 
 #include "hal/timer_hal.h"
@@ -164,8 +166,12 @@ static void machine_timer_isr(void *self_in) {
 }
 
 static void machine_timer_isr_handler(machine_timer_obj_t *self) {
-    mp_sched_schedule(self->callback, self);
-    mp_hal_wake_main_task_from_isr();
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception; disable the callback so it doesn't run again.
+        self->repeat = 0;
+    } else if (!self->ishard) {
+        mp_hal_wake_main_task_from_isr();
+    }
 }
 
 void machine_timer_enable(machine_timer_obj_t *self) {
@@ -227,6 +233,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         ARG_period,
         ARG_tick_hz,
         ARG_freq,
+        ARG_hard,
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -238,6 +245,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         #else
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         #endif
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     machine_timer_disable(self);
@@ -261,6 +269,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     self->repeat = args[ARG_mode].u_int;
     self->handler = machine_timer_isr_handler;
     self->callback = args[ARG_callback].u_obj;
+    self->ishard = args[ARG_hard].u_bool;
 
     machine_timer_enable(self);
 
