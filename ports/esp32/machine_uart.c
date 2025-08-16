@@ -668,19 +668,18 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
         return 0;
     }
 
-    TickType_t time_to_wait;
-    if (self->timeout == 0) {
-        time_to_wait = 0;
-    } else {
-        time_to_wait = pdMS_TO_TICKS(self->timeout);
-    }
+    TickType_t time_to_wait = self->timeout > 0 ? pdMS_TO_TICKS(self->timeout) : 0;
 
-    bool release_gil = time_to_wait > 0;
+    bool release_gil = (self->timeout + self->timeout_char) > 0;
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
 
-    int bytes_read = uart_read_bytes(self->uart_num, buf_in, size, time_to_wait);
+    int bytes_read = uart_read_bytes(self->uart_num, buf_in, 1, time_to_wait);
+    if (size > 1 && bytes_read != 0) {
+        time_to_wait = self->timeout_char > 0 ? pdMS_TO_TICKS(self->timeout_char) : 0;
+        bytes_read += uart_read_bytes(self->uart_num, buf_in + 1, size - 1, time_to_wait);
+    }
 
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
