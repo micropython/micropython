@@ -29,7 +29,7 @@ jobs:
           - thumb
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install packages
       run: source tools/ci.sh && ci_qemu_setup_arm
     - name: Build and run test suite ci_qemu_build_arm_${{ matrix.ci_func }}
@@ -41,7 +41,7 @@ jobs:
   build_and_test_rv32:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install packages
       run: source tools/ci.sh && ci_qemu_setup_rv32
     - name: Build and run test suite

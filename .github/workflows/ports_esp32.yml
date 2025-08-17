@@ -28,7 +28,7 @@ jobs:
           - esp32_build_c2_c6
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - id: idf_ver
       name: Read the ESP-IDF version (including Python version)
