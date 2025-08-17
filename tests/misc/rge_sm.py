@@ -29,7 +29,7 @@ class RungeKutta(object):
             k = ktmp[:]
             step = [s + c * k[ik] for ik, s in enumerate(step)]
         if self.save:
-            self.Trajectory += [step]
+            self.Trajectory.append(step)
         else:
             self.Trajectory = [step]
         return True
