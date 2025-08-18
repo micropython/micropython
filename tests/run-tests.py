@@ -291,7 +291,7 @@ def detect_test_platform(pyb, args):
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch, thread, float_prec, unicode = str(output, "ascii").strip().split()
+    platform, arch, build, thread, float_prec, unicode = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
     inlineasm_arch = detect_inline_asm_arch(pyb, args)
@@ -305,6 +305,7 @@ def detect_test_platform(pyb, args):
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
     args.inlineasm_arch = inlineasm_arch
+    args.build = build
     args.thread = thread
     args.float_prec = float_prec
     args.unicode = unicode
