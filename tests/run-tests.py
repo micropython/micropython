@@ -246,6 +246,17 @@ def platform_to_port(platform):
     return platform_to_port_map.get(platform, platform)
 
 
+def convert_device_shortcut_to_real_device(device):
+    if device.startswith("a") and device[1:].isdigit():
+        return "/dev/ttyACM" + device[1:]
+    elif device.startswith("u") and device[1:].isdigit():
+        return "/dev/ttyUSB" + device[1:]
+    elif device.startswith("c") and device[1:].isdigit():
+        return "COM" + device[1:]
+    else:
+        return device
+
+
 def get_test_instance(test_instance, baudrate, user, password):
     if test_instance.startswith("port:"):
         _, port = test_instance.split(":", 1)
@@ -253,15 +264,9 @@ def get_test_instance(test_instance, baudrate, user, password):
         return None
     elif test_instance == "webassembly":
         return PyboardNodeRunner()
-    elif test_instance.startswith("a") and test_instance[1:].isdigit():
-        port = "/dev/ttyACM" + test_instance[1:]
-    elif test_instance.startswith("u") and test_instance[1:].isdigit():
-        port = "/dev/ttyUSB" + test_instance[1:]
-    elif test_instance.startswith("c") and test_instance[1:].isdigit():
-        port = "COM" + test_instance[1:]
     else:
         # Assume it's a device path.
-        port = test_instance
+        port = convert_device_shortcut_to_real_device(test_instance)
 
     global pyboard
     sys.path.append(base_path("../tools"))
