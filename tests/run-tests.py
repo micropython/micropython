@@ -346,9 +346,11 @@ def detect_test_platform(pyb, args):
     tw = None
     if pyb:
         tw = detect_target_wiring_script(args)
+        data = b""
         if tw:
             with open("target_wiring/" + tw, "rb") as f:
-                pyb.target_wiring_script = f.read()
+                data = f.read()
+        pyb.target_wiring_script = data
 
     # Print the detected information about the target.
     print("platform={}".format(platform), end="")
