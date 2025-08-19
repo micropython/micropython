@@ -1,70 +1,40 @@
 .. _writingtests:
 
-Writing tests
-=============
+Testing MicroPython
+===================
 
-Tests in MicroPython are located at the path ``tests/``. The following is a listing of
-key directories and the run-tests.py runner script:
+MicroPython includes a comprehensive test suite to ensure correctness and stability across all ports and platforms.
 
-.. code-block:: bash
+Quick Start
+-----------
 
-   .
-    ├── basics
-    ├── extmod
-    ├── float
-    ├── micropython
-    ├── run-tests.py
-    ...
+If you want to run existing tests or check if your MicroPython build is working correctly, see:
 
-There are subfolders maintained to categorize the tests. Add a test by creating a new file in one of the
-existing folders or in a new folder. It's also possible to make custom tests outside this tests folder,
-which would be recommended for a custom port.
+- :ref:`test_quickstart` - Essential information for running tests
 
-For example, add the following code in a file ``print.py`` in the ``tests/unix/`` subdirectory:
+Developer Documentation
+-----------------------
 
-.. code-block:: python
+If you're contributing to MicroPython and need to write or modify tests, see:
 
-   def print_one():
-       print(1)
+- :ref:`test_developers` - Comprehensive guide for test development
 
-   print_one()
+Test Categories
+---------------
 
-If you run your tests, this test should appear in the test output:
+The test suite includes:
 
-.. code-block:: bash
+- **Standard tests** - Core functionality tests that run on a single instance
+- **Multi-instance tests** - Tests for networking, Bluetooth, and other communication
+- **Performance benchmarks** - Measure execution speed and efficiency
+- **Native module tests** - Verify dynamic native modules
+- **Internal benchmarks** - Low-level VM and C code performance
 
-   $ cd ports/unix
-   $ make tests
-   skip  unix/extra_coverage.py
-   pass  unix/ffi_callback.py
-   pass  unix/ffi_float.py
-   pass  unix/ffi_float2.py
-   pass  unix/print.py
-   pass  unix/time.py
-   pass  unix/time2.py
+All test scripts are located in the ``tests/`` directory with various subdirectories for organization.
 
-Tests are run by comparing the output from the test target against the output from CPython.
-So any test should use print statements to indicate test results.
+.. toctree::
+   :hidden:
+   :maxdepth: 1
 
-For tests that can't be compared to CPython (i.e. micropython-specific functionality),
-you can provide a ``.py.exp`` file which will be used as the truth for comparison.
-
-The other way to run tests, which is useful when running on targets other than the Unix port, is:
-
-.. code-block:: bash
-
-   $ cd tests
-   $ ./run-tests.py
-
-Then to run on a board:
-
-.. code-block:: bash
-
-   $ ./run-tests.py -t /dev/ttyACM0
-
-And to run only a certain set of tests (eg a directory):
-
-.. code-block:: bash
-
-   $ ./run-tests.py -d basics
-   $ ./run-tests.py float/builtin*.py
+   test_quickstart
+   test_developers
