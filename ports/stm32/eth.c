@@ -852,8 +852,17 @@ int eth_link_status(eth_t *self) {
             return 2; // link up, no IP
         }
     } else {
-        // Use tracked link status instead of direct PHY read
-        if (self->last_link_status) {
+        // Check physical link status - use direct PHY read if not enabled yet
+        bool physical_link_up;
+        if (self->enabled) {
+            physical_link_up = self->last_link_status;
+        } else {
+            // Direct PHY read when interface not enabled
+            uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
+            physical_link_up = (bsr & PHY_BSR_LINK_STATUS) != 0;
+        }
+
+        if (physical_link_up) {
             return 1; // physical link up but interface down
         } else {
             return 0; // link down
