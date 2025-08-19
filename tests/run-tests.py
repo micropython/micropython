@@ -224,6 +224,9 @@ platform_tests_to_skip = {
     ),
 }
 
+# Tests that require `import target_wiring` to work.
+tests_requiring_target_wiring = ()
+
 
 def rm_f(fname):
     if os.path.exists(fname):
@@ -289,6 +292,26 @@ def detect_inline_asm_arch(pyb, args):
     return None
 
 
+def detect_target_wiring_script(args):
+    port = platform_to_port(args.platform)
+    build = args.build
+    tw_board_exact = None
+    tw_board_partial = None
+    tw_port = None
+    for file in os.listdir("target_wiring"):
+        file_base = file.removesuffix(".py")
+        if file_base == build:
+            # A file matching the target's board/build name.
+            tw_board_exact = file
+        elif file_base.endswith("x") and build.startswith(file_base.removesuffix("x")):
+            # A file with a partial match to the target's board/build name.
+            tw_board_partial = file
+        elif file_base == port:
+            # A file matching the target's port.
+            tw_port = file
+    return tw_board_exact or tw_board_partial or tw_port
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
@@ -313,6 +336,15 @@ def detect_test_platform(pyb, args):
     args.float_prec = float_prec
     args.unicode = unicode
 
+    # Get the target_wiring script, if one exists for this target.
+    tw = None
+    if pyb:
+        tw = detect_target_wiring_script(args)
+        if tw:
+            with open("target_wiring/" + tw, "rb") as f:
+                pyb.target_wiring_script = f.read()
+
+    # Print the detected information about the target.
     print("platform={}".format(platform), end="")
     if arch:
         print(" arch={}".format(arch), end="")
@@ -324,6 +356,8 @@ def detect_test_platform(pyb, args):
         print(" float={}-bit".format(float_prec), end="")
     if unicode:
         print(" unicode", end="")
+    if tw:
+        print(" target_wiring={}".format(tw), end="")
     print()
 
 
@@ -385,6 +419,11 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     try:
         had_crash = False
         pyb.enter_raw_repl()
+        if test_file.endswith(tests_requiring_target_wiring) and pyb.target_wiring_script:
+            pyb.exec_("__target_wiring=" + repr(pyb.target_wiring_script))
+            pyb.exec_(
+                "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec(__target_wiring),'target_wiring')"
+            )
         output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
     except pyboard.PyboardError as e:
         had_crash = True
