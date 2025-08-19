@@ -114,7 +114,7 @@ void mpz_set_from_ll(mpz_t *z, long long i, bool is_signed);
 void mpz_set_from_float(mpz_t *z, mp_float_t src);
 #endif
 size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigned int base);
-void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf);
+void mpz_set_from_bytes(mpz_t *z, bool big_endian, bool is_signed, size_t len, const byte *buf);
 
 static inline bool mpz_is_zero(const mpz_t *z) {
     return z->len == 0;

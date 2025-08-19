@@ -39,6 +39,9 @@
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
+#define MP_LONG_LONG_MAX LLONG_MAX
+#define MP_LONG_LONG_MIN LLONG_MIN
+
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
@@ -48,16 +51,25 @@ static void raise_long_long_overflow(void) {
     mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("result overflows long long storage"));
 }
 
-mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len, const byte *buf) {
     int delta = 1;
     if (!big_endian) {
         buf += len - 1;
         delta = -1;
     }
-
     mp_longint_impl_t value = 0;
-    for (; len--; buf += delta) {
-        value = (value << 8) | *buf;
+    if (len) {
+        if (is_signed && (*buf & 0x80) != 0) {
+            value = (int8_t)(*buf); // propagate the sign bit
+            buf += delta;
+            len--;
+        }
+        for (; len--; buf += delta) {
+            if ((value > (MP_LONG_LONG_MAX >> 8)) || (value < (MP_LONG_LONG_MIN >> 8))) {
+                raise_long_long_overflow();
+            }
+            value = (value << 8) | *buf;
+        }
     }
     return mp_obj_new_int_from_ll(value);
 }

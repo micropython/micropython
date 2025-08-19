@@ -74,9 +74,9 @@ Functions and types
 
 .. class:: int()
 
-   .. classmethod:: from_bytes(bytes, byteorder)
+   .. classmethod:: from_bytes(bytes, byteorder='big', *, signed=False)
 
-      In MicroPython, `byteorder` parameter must be positional (this is
+      In MicroPython, `byteorder` parameter may be positional (this is
       compatible with CPython).
 
    .. method:: to_bytes(size, byteorder, /, *, signed=False)
