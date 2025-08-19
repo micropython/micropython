@@ -30,6 +30,8 @@ elif "mimxrt" in sys.platform:
 elif "pyboard" in sys.platform:
     if "STM32WB" in sys.implementation._machine:
         uart_id = "LP1"
+    elif "PYBLITE" in sys.implementation._machine:
+        uart_id = "XA"
     else:
         uart_id = 4
     pins = {}
@@ -44,6 +46,16 @@ elif "samd" in sys.platform:
     pins = {"tx": "D1", "rx": "D0"}
     timing_margin_us = 300
     bit_margin = 1
+elif "zephyr-frdm_k64f" in sys.implementation._machine:
+    uart_id = "uart3"
+    pins = {}  # TX/RX=PTC17/PTC16
+    bit_margin = 1
+    timing_margin_us = 1200
+elif "zephyr-nucleo_wb55rg" in sys.implementation._machine:
+    uart_id = "lpuart1"
+    pins = {}  # TX/RX=PC0/PC1
+    bit_margin = 1
+    timing_margin_us = 400
 else:
     print("SKIP")
     raise SystemExit
