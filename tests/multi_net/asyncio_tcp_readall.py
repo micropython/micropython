@@ -33,7 +33,7 @@ async def handle_connection(reader, writer):
 async def tcp_server():
     global ev
     ev = asyncio.Event()
-    server = await asyncio.start_server(handle_connection, "0.0.0.0", PORT)
+    server = await asyncio.start_server(handle_connection, multitest.BIND_ADDR, PORT)
     print("server running")
     multitest.next()
     async with server:
