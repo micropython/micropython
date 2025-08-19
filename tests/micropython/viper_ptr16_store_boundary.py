@@ -6,14 +6,11 @@ def set{off}(dest: ptr16):
     saved = dest
     dest[{off}] = {val}
     assert int(saved) == int(dest)
-set{off}(buffer)
-print(hex(get_index(buffer, {off})))
 """
 
 BIT_THRESHOLDS = (5, 8, 11, 12)
 SIZE = 2
 MASK = (1 << (8 * SIZE)) - 1
-
 
 next_int = 1
 test_buffer = bytearray(SIZE)
@@ -32,6 +29,10 @@ def next_value() -> uint:
     return output & MASK
 
 
+def get_index(src, i):
+    return src[i * SIZE] + (src[(i * SIZE) + 1] << 8)
+
+
 @micropython.viper
 def set_index(dest: ptr16, i: int, val: uint):
     saved = dest
@@ -39,22 +40,24 @@ def set_index(dest: ptr16, i: int, val: uint):
     assert int(saved) == int(dest)
 
 
-def get_index(src, i):
-    return src[i * SIZE] + (src[(i * SIZE) + 1] << 8)
+try:
+    buffer = bytearray((((1 << max(BIT_THRESHOLDS)) // 1024) + 1) * 1024)
+
+    for bit in BIT_THRESHOLDS:
+        offset = (1 << bit) - (2 * SIZE)
+        for index in range(0, 3 * SIZE, SIZE):
+            exec(SET_TEMPLATE.format(off=(offset + index) // SIZE, val=next_value()))
+except MemoryError:
+    print("SKIP-TOO-LARGE")
+    raise SystemExit
 
 
-buffer = bytearray(((1 << max(BIT_THRESHOLDS) + 1) // 1024) * 1024)
 for bit in BIT_THRESHOLDS:
     print("---", bit)
-    pre, idx, post = (
-        (((1 << bit) - (2 * SIZE)) // SIZE),
-        (((1 << bit) - (1 * SIZE)) // SIZE),
-        ((1 << bit) // SIZE),
-    )
-    set_index(buffer, pre, next_value())
-    set_index(buffer, idx, next_value())
-    set_index(buffer, post, next_value())
-    print(hex(get_index(buffer, pre)), hex(get_index(buffer, idx)), hex(get_index(buffer, post)))
-    exec(SET_TEMPLATE.format(off=pre, val=next_value()))
-    exec(SET_TEMPLATE.format(off=idx, val=next_value()))
-    exec(SET_TEMPLATE.format(off=post, val=next_value()))
+    offset = (1 << bit) - (2 * SIZE)
+    for index in range(0, 3 * SIZE, SIZE):
+        globals()["set{}".format((offset + index) // SIZE)](buffer)
+        print(hex(get_index(buffer, (offset + index) // SIZE)))
+    for index in range(0, 3 * SIZE, SIZE):
+        set_index(buffer, (offset + index) // SIZE, next_value())
+        print(hex(get_index(buffer, (offset + index) // SIZE)))
