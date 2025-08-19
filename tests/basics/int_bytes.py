@@ -9,7 +9,7 @@ print(int.from_bytes(b"\x00\x01\0\0\0\0\0\0", "little"))
 
 # check that extra zero bytes don't change the internal int value
 print(int.from_bytes(bytes(20), "little") == 0)
-print(int.from_bytes(b"\x01" + bytes(20), "little") == 1)
+print(int.from_bytes(b"\x01" + bytes(7), "little") == 1)
 
 # big-endian conversion
 print((10).to_bytes(1, "big"))

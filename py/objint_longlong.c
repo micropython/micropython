@@ -48,18 +48,32 @@ static void raise_long_long_overflow(void) {
     mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("result overflows long long storage"));
 }
 
-mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
-    int delta = 1;
-    if (!big_endian) {
-        buf += len - 1;
-        delta = -1;
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len, const byte *buf) {
+    if (len > sizeof(mp_longint_impl_t)) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("big-int overflow"));
+    }
+    union {
+        mp_longint_impl_t value;
+        byte buf[sizeof(mp_longint_impl_t)];
+    } result = {0};
+
+    if (big_endian) {
+        reverce_memcpy(&result, buf, len);
+    } else { // little-endian
+        memcpy(&result, buf, len);
     }
 
-    mp_longint_impl_t value = 0;
-    for (; len--; buf += delta) {
-        value = (value << 8) | *buf;
+    if ((is_signed) && (sizeof(result) > len) && (result.buf[len - 1] & 0x80)) {
+        // Sign propagation in little-endian
+        // x = 2
+        // x.to_bytes(1, 'little', True) -> b'\x02'
+        // x.to_bytes(4, 'little', True) -> b'\x02\x00\x00\x00'
+        // x = -2
+        // x.to_bytes(1, 'little', True) -> b'\xFE'
+        // x.to_bytes(4, 'little', True) -> b'\xFE\xFF\xFF\xFF'
+        memset(result.buf + len, 0xFF, sizeof(result) - len);
     }
-    return mp_obj_new_int_from_ll(value);
+    return mp_obj_new_int_from_ll(result.value);
 }
 
 bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
