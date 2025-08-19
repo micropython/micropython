@@ -267,9 +267,11 @@ static uint16_t runtime_dev_open(uint8_t rhport, tusb_desc_interface_t const *it
     }
 
     // If TinyUSB built-in drivers are enabled, don't claim any interface in the built-in range
+    #if USBD_ITF_BUILTIN_MAX > 0
     if (mp_usb_device_builtin_enabled(usbd) && itf_desc->bInterfaceNumber < USBD_ITF_BUILTIN_MAX) {
         return 0;
     }
+    #endif
 
     // Determine the total descriptor length of the interface(s) we are going to claim
     uint8_t assoc_itf_count = _runtime_dev_count_itfs(itf_desc);
