@@ -130,7 +130,6 @@ eth_t eth_instance;
 static void eth_mac_deinit(eth_t *self);
 static void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf);
 static void eth_lwip_init(eth_t *self);
-static void eth_phy_configure_autoneg(eth_t *self);
 static int eth_phy_init(eth_t *self);
 
 void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val) {
@@ -760,21 +759,6 @@ static void eth_lwip_init(eth_t *self) {
     MICROPY_PY_LWIP_EXIT
 }
 
-static void eth_phy_configure_autoneg(eth_t *self) {
-    // Configure PHY for autonegotiation (non-blocking)
-    // This sets up the PHY but doesn't wait for link establishment
-
-    // Announce all supported modes
-    eth_phy_write(self->phy_addr, PHY_ANAR,
-        PHY_ANAR_SPEED_10HALF |
-        PHY_ANAR_SPEED_10FULL |
-        PHY_ANAR_SPEED_100HALF |
-        PHY_ANAR_SPEED_100FULL |
-        PHY_ANAR_IEEE802_3);
-
-    // Start autonegotiation
-    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_AUTONEG_EN);
-}
 
 void eth_phy_link_status_poll() {
     eth_t *self = &eth_instance;
@@ -795,12 +779,6 @@ void eth_phy_link_status_poll() {
         if (current_link_status) {
             // Cable is physically connected
             netif_set_link_up(netif);
-
-            // If this is a new connection, configure autonegotiation
-            uint16_t bcr = eth_phy_read(self->phy_addr, PHY_BCR);
-            if (!(bcr & PHY_BCR_AUTONEG_EN)) {
-                eth_phy_configure_autoneg(self);
-            }
 
             // Start or restart DHCP if interface is up
             if (netif_is_up(netif)) {
@@ -900,14 +878,11 @@ int eth_start(eth_t *self) {
     // Do an initial link status poll after PHY has had time to initialize
     eth_phy_link_status_poll();
 
-    // Start DHCP if no static IP has been configured and link is up
+    // Start DHCP if no static IP has been configured
     if (ip4_addr_isany_val(*netif_ip4_addr(n))) {
-        // No static IP configured, start DHCP if link is up
-        if (n->flags & NETIF_FLAG_LINK_UP) {
-            dhcp_start(n);
-        }
-        // Note: If link is down, DHCP will be started later when link comes up
-        // via the dhcp_renew() call in eth_phy_link_status_poll()
+        // No static IP configured, start DHCP regardless of link status
+        // DHCP will wait for link to come up before sending packets
+        dhcp_start(n);
     }
 
     MICROPY_PY_LWIP_EXIT
