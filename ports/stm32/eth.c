@@ -273,6 +273,9 @@ static int eth_mac_init(eth_t *self) {
 
     #if defined(STM32H5)
     __HAL_RCC_ETH_RELEASE_RESET();
+    __HAL_RCC_ETH_CLK_SLEEP_DISABLE();
+    __HAL_RCC_ETHTX_CLK_SLEEP_DISABLE();
+    __HAL_RCC_ETHRX_CLK_SLEEP_DISABLE();
     #elif defined(STM32H7)
     __HAL_RCC_ETH1MAC_RELEASE_RESET();
     #else
