@@ -1091,15 +1091,10 @@ static mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
         mp_raise_OSError(MP_EOPNOTSUPP);
     }
 
-    // Create new socket object, do it here because we must not raise an out-of-memory
-    // exception when the LWIP concurrency lock is held
-    lwip_socket_obj_t *socket2 = mp_obj_malloc_with_finaliser(lwip_socket_obj_t, &lwip_socket_type);
-
     MICROPY_PY_LWIP_ENTER
 
     if (socket->pcb.tcp == NULL) {
         MICROPY_PY_LWIP_EXIT
-        m_del_obj(lwip_socket_obj_t, socket2);
         mp_raise_OSError(MP_EBADF);
     }
 
@@ -1107,7 +1102,6 @@ static mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     struct tcp_pcb *listener = socket->pcb.tcp;
     if (listener->state != LISTEN) {
         MICROPY_PY_LWIP_EXIT
-        m_del_obj(lwip_socket_obj_t, socket2);
         mp_raise_OSError(MP_EINVAL);
     }
 
@@ -1124,7 +1118,6 @@ static mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
             }
             if (socket_is_timedout(socket, ticks_start)) {
                 MICROPY_PY_LWIP_EXIT
-                m_del_obj(lwip_socket_obj_t, socket2);
                 if (socket->timeout == 0) {
                     mp_raise_OSError(MP_EAGAIN);
                 } else {
@@ -1135,13 +1128,20 @@ static mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     }
 
     // We get a new pcb handle...
-    socket2->pcb.tcp = *incoming_connection;
+    struct tcp_pcb *pcb_new = *incoming_connection;
     if (++socket->incoming.connection.iget >= socket->incoming.connection.alloc) {
         socket->incoming.connection.iget = 0;
     }
     *incoming_connection = NULL;
 
+    MICROPY_PY_LWIP_EXIT
+
     // ...and set up the new socket for it.
+    //
+    // Creating the new socket object must be done in one step due to the finaliser, and
+    // outside the lwIP concurrency lock in case it raises an out-of-memory exception.
+    lwip_socket_obj_t *socket2 = mp_obj_malloc_with_finaliser(lwip_socket_obj_t, &lwip_socket_type);
+    socket2->pcb.tcp = pcb_new;
     socket2->domain = MOD_NETWORK_AF_INET;
     socket2->type = MOD_NETWORK_SOCK_STREAM;
     socket2->incoming.tcp.pbuf = NULL;
@@ -1149,10 +1149,12 @@ static mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     socket2->state = STATE_CONNECTED;
     socket2->recv_offset = 0;
     socket2->callback = MP_OBJ_NULL;
+
+    MICROPY_PY_LWIP_REENTER
+
     tcp_arg(socket2->pcb.tcp, (void *)socket2);
     tcp_err(socket2->pcb.tcp, _lwip_tcp_error);
     tcp_recv(socket2->pcb.tcp, _lwip_tcp_recv);
-
     tcp_accepted(listener);
 
     MICROPY_PY_LWIP_EXIT
