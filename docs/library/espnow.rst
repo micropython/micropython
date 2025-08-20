@@ -96,10 +96,16 @@ class ESPNow
 Constructor
 -----------
 
-.. class:: ESPNow()
+.. class:: ESPNow(buffer_size: int = 526, phy_rate: int = 0)
 
     Returns the singleton ESPNow object. As this is a singleton, all calls to
     `espnow.ESPNow()` return a reference to the same object.
+
+    .. data:: Arguments:
+
+        - *buffer_size* (int) – The size of the internal ring buffer. Default: 526 bytes.
+
+        - *phy_rate* (int) – The ESP-NOW physical layer rate (see wifi_phy_rate_t). Default: 0 (1 Mbps).
 
     .. note::
       Some methods are available only on the ESP32 due to code size
