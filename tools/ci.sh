@@ -205,6 +205,8 @@ function ci_esp32_build_cmod_spiram_s2 {
 
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
+
+    ci_esp32_check_lockfiles
 }
 
 function ci_esp32_build_s3_c3 {
@@ -212,6 +214,8 @@ function ci_esp32_build_s3_c3 {
 
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
+    ci_esp32_check_lockfiles
 }
 
 function ci_esp32_build_c2_c6 {
@@ -219,6 +223,20 @@ function ci_esp32_build_c2_c6 {
 
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C2
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C6
+
+    ci_esp32_check_lockfiles
+}
+
+function ci_esp32_check_lockfiles {
+    if ! git diff --exit-code ports/esp32/lockfiles; then
+        echo
+        echo "The ESP-IDF Component Lockfiles were updated by the build."
+        echo
+        echo "Most likely changes have been made in idf_component.yml,"
+        echo "or the ESP-IDF version used in CI doesn't match the lockfile"
+        echo "version."
+        exit 1
+    fi
 }
 
 ########################################################################################
