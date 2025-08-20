@@ -209,6 +209,9 @@ static int do_repl(void) {
         mp_hal_stdio_mode_raw();
 
     input_restart:
+        // If the GC is locked at this point there is no way out except a reset,
+        // so force the GC to be unlocked to help the user debug what went wrong.
+        MP_STATE_THREAD(gc_lock_depth) = 0;
         vstr_reset(&line);
         int ret = readline(&line, mp_repl_get_ps1());
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
