@@ -61,5 +61,21 @@ set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 # Include main IDF cmake file.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
+# Generate individual dependencies.lock files based on chip target
+idf_build_set_property(DEPENDENCIES_LOCK lockfiles/dependencies.lock.${IDF_TARGET})
+
 # Define the project.
 project(micropython)
+
+# Check for lockfile changes and either warn or error depending on build type
+message("Checking lockfile contents...")
+execute_process(COMMAND git diff --exit-code lockfiles/ WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    RESULT_VARIABLE RES)
+if (RES)
+    # Maintainer builds (CI or autobuild runs) should fail if this has happened
+    if($ENV{MICROPY_MAINTAINER_BUILD})
+        message(FATAL_ERROR "Failing build as lockfiles are dirty (see above). Check that ESP-IDF versions match.")
+    else()
+        message(WARNING "Component lockfile contents have changed (see above). This may be due to building with a different ESP-IDF version. Please mention this output if reporting an issue with MicroPython.")
+    endif()
+endif()
