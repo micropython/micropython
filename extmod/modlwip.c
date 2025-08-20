@@ -371,11 +371,7 @@ static struct tcp_pcb *volatile *lwip_socket_incoming_array(lwip_socket_obj_t *s
 }
 
 static void lwip_socket_free_incoming(lwip_socket_obj_t *socket) {
-    bool socket_is_listener =
-        socket->type == MOD_NETWORK_SOCK_STREAM
-        && socket->pcb.tcp->state == LISTEN;
-
-    if (!socket_is_listener) {
+    if (socket->state != STATE_LISTENING) {
         if (socket->type == MOD_NETWORK_SOCK_STREAM) {
             if (socket->incoming.tcp.pbuf != NULL) {
                 pbuf_free(socket->incoming.tcp.pbuf);
@@ -1648,7 +1644,7 @@ static mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 tcp_err(socket->pcb.tcp, NULL);
                 tcp_recv(socket->pcb.tcp, NULL);
 
-                if (socket->pcb.tcp->state != LISTEN) {
+                if (socket->state != STATE_LISTENING) {
                     // Schedule a callback to abort the connection if it's not cleanly closed after
                     // the given timeout.  The callback must be set before calling tcp_close since
                     // the latter may free the pcb; if it doesn't then the callback will be active.
