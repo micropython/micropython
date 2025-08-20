@@ -4,7 +4,7 @@ dependencies:
   espressif/esp_tinyusb:
     rules:
       - if: "target in [esp32s2, esp32s3]"
-    version: "~1.0.0"
+    version: "~1.7.6"
   espressif/lan867x:
     version: "~1.0.0"
     rules:
