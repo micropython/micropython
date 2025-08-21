@@ -334,7 +334,6 @@ def detect_test_platform(pyb, args):
         print(" float={}-bit".format(float_prec), end="")
     if unicode:
         print(" unicode", end="")
-    print()
 
 
 def detect_target_wiring_script(pyb, args):
@@ -347,7 +346,7 @@ def detect_target_wiring_script(pyb, args):
     )
     if has_target_wiring:
         # The board already has a target_wiring module available, so use that.
-        tw_source = "target's filesystem"
+        tw_source = "on-device"
     else:
         port = platform_to_port(args.platform)
         build = args.build
@@ -365,13 +364,12 @@ def detect_target_wiring_script(pyb, args):
             elif file_base == port:
                 # A file matching the target's port.
                 tw_port = file
-        tw = tw_board_exact or tw_board_partial or tw_port
-        if tw:
-            with open("target_wiring/" + tw, "rb") as f:
+        tw_source = tw_board_exact or tw_board_partial or tw_port
+        if tw_source:
+            with open("target_wiring/" + tw_source, "rb") as f:
                 tw_data = f.read()
-            tw_source = f"host file {tw}"
     if tw_source:
-        print(f"using target_wiring module from {tw_source}")
+        print(" target_wiring={}".format(tw_source), end="")
     pyb.target_wiring_script = tw_data
 
 
@@ -1439,6 +1437,9 @@ the last matching regex is used:
     # If any tests need it, prepare the target_wiring script for the target.
     if pyb and any(test.endswith(tests_requiring_target_wiring) for test in tests):
         detect_target_wiring_script(pyb, args)
+
+    # End the target information line.
+    print()
 
     if not args.keep_path:
         # Clear search path to make sure tests use only builtin modules, those in
