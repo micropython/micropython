@@ -341,7 +341,8 @@ def detect_target_wiring_script(pyb, args):
     tw_data = b""
     tw_source = None
     has_target_wiring = (
-        pyb.exec_("try:\n import target_wiring\n print(True)\nexcept:\n print(False)").strip()
+        hasattr(pyb, "exec_")
+        and pyb.exec_("try:\n import target_wiring\n print(True)\nexcept:\n print(False)").strip()
         == b"True"
     )
     if has_target_wiring:
@@ -371,8 +372,6 @@ def detect_target_wiring_script(pyb, args):
             tw_source = f"host file {tw}"
     if tw_source:
         print(f"using target_wiring module from {tw_source}")
-    else:
-        print(f"WARNING: target_wiring module not found for this target")
     pyb.target_wiring_script = tw_data
 
 
