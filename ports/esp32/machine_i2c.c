@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2025 Vincent1-python
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,109 +31,93 @@
 #include "extmod/modmachine.h"
 #include "machine_i2c.h"
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "hal/i2c_ll.h"
 
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SOFTI2C
-
-#if SOC_I2C_SUPPORT_XTAL
-#if CONFIG_XTAL_FREQ > 0
-#define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
-#else
-#error "I2C uses XTAL but no configured freq"
-#endif // CONFIG_XTAL_FREQ
-#elif SOC_I2C_SUPPORT_APB
-#define I2C_SCLK_FREQ APB_CLK_FREQ
-#else
-#error "unsupported I2C for ESP32 SoC variant"
-#endif
 
 #define I2C_DEFAULT_TIMEOUT_US (50000) // 50ms
 
 typedef struct _machine_hw_i2c_obj_t {
     mp_obj_base_t base;
-    i2c_port_t port : 8;
+    i2c_master_bus_handle_t bus_handle;
+    uint8_t port : 8;
     gpio_num_t scl : 8;
     gpio_num_t sda : 8;
+    uint32_t freq;
+    uint32_t timeout_us;
 } machine_hw_i2c_obj_t;
 
 static machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];
 
-static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq, uint32_t timeout_us, bool first_init) {
-    if (!first_init) {
-        i2c_driver_delete(self->port);
+static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, bool first_init) {
+
+    if (!first_init && self->bus_handle) {
+        i2c_del_master_bus(self->bus_handle);
+        self->bus_handle = NULL;
     }
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = self->sda,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+
+    i2c_master_bus_config_t bus_cfg = {
+        .i2c_port = self->port,
         .scl_io_num = self->scl,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = freq,
+        .sda_io_num = self->sda,
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .glitch_ignore_cnt = 7,
+        .flags.enable_internal_pullup = true,
     };
-    i2c_param_config(self->port, &conf);
-    int timeout = I2C_SCLK_FREQ / 1000000 * timeout_us;
-    i2c_set_timeout(self->port, (timeout > I2C_LL_MAX_TIMEOUT) ? I2C_LL_MAX_TIMEOUT : timeout);
-    i2c_driver_install(self->port, I2C_MODE_MASTER, 0, 0, 0);
+    ESP_ERROR_CHECK(i2c_new_master_bus(&bus_cfg, &self->bus_handle));
 }
 
-int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
+static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    int data_len = 0;
-
-    if (flags & MP_MACHINE_I2C_FLAG_WRITE1) {
-        i2c_master_start(cmd);
-        i2c_master_write_byte(cmd, addr << 1, true);
-        i2c_master_write(cmd, bufs->buf, bufs->len, true);
-        data_len += bufs->len;
-        --n;
-        ++bufs;
+    // 1. Probe the address to see if any device responds.
+    //    This test uses a fixed scl freq of 100_000.
+    esp_err_t err = i2c_master_probe(self->bus_handle, addr, self->timeout_us / 1000);
+    if (err != ESP_OK) {
+        return -MP_ENODEV;   // No device at address, return immediately
     }
 
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ), true);
-
-    for (; n--; ++bufs) {
-        if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            i2c_master_read(cmd, bufs->buf, bufs->len, n == 0 ? I2C_MASTER_LAST_NACK : I2C_MASTER_ACK);
-        } else {
-            if (bufs->len != 0) {
-                i2c_master_write(cmd, bufs->buf, bufs->len, true);
-            }
+    if (len > 0) {
+        // 2. Create a temporary device handle for this transaction
+        //    This step for every transaction can be omitted in
+        //    esp idf v5.5+, which supports handle address changing.
+        i2c_device_config_t dev_cfg = {
+            .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+            .device_address = addr,
+            .scl_speed_hz = self->freq,
+        };
+        i2c_master_dev_handle_t dev_handle;
+        err = i2c_master_bus_add_device(self->bus_handle, &dev_cfg, &dev_handle);
+        if (err != ESP_OK) {
+            return -MP_ENODEV;
         }
-        data_len += bufs->len;
+        // 3. Transfer data
+        if (flags & MP_MACHINE_I2C_FLAG_READ) {
+            err = i2c_master_receive(dev_handle, buf, len, self->timeout_us / 1000);
+        } else {
+            err = i2c_master_transmit(dev_handle, buf, len, self->timeout_us / 1000);
+        }
+        // 4. Destroy the temporary handle
+        i2c_master_bus_rm_device(dev_handle);
+        // 5. Map errors
+        if (err == ESP_FAIL) {
+            return -MP_ENODEV;
+        }
+        if (err == ESP_ERR_TIMEOUT) {
+            return -MP_ETIMEDOUT;
+        }
+        if (err != ESP_OK) {
+            return -abs(err);
+        }
     }
-
-    if (flags & MP_MACHINE_I2C_FLAG_STOP) {
-        i2c_master_stop(cmd);
-    }
-
-    // TODO proper timeout
-    esp_err_t err = i2c_master_cmd_begin(self->port, cmd, 100 * (1 + data_len) / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    if (err == ESP_FAIL) {
-        return -MP_ENODEV;
-    } else if (err == ESP_ERR_TIMEOUT) {
-        return -MP_ETIMEDOUT;
-    } else if (err != ESP_OK) {
-        return -abs(err);
-    }
-
-    return data_len;
+    return len;
 }
-
-/******************************************************************************/
-// MicroPython bindings for machine API
 
 static void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    int h, l;
-    i2c_get_period(self->port, &h, &l);
-    mp_printf(print, "I2C(%u, scl=%u, sda=%u, freq=%u)",
-        self->port, self->scl, self->sda, I2C_SCLK_FREQ / (h + l));
+    mp_printf(print, "I2C(%u, scl=%u, sda=%u, freq=%u, timeout=%u)",
+        self->port, self->scl, self->sda, self->freq, self->timeout_us);
 }
 
 mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -147,55 +132,49 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
         { MP_QSTR_id, MP_ARG_INT, {.u_int = I2C_NUM_0} },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2C_DEFAULT_TIMEOUT_US} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Get I2C bus
     mp_int_t i2c_id = args[ARG_id].u_int;
-
-    // Check if the I2C bus is valid
     if (!(I2C_NUM_0 <= i2c_id && i2c_id < I2C_NUM_MAX)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
 
-    // Get static peripheral object
-    machine_hw_i2c_obj_t *self = (machine_hw_i2c_obj_t *)&machine_hw_i2c_obj[i2c_id];
+    machine_hw_i2c_obj_t *self = &machine_hw_i2c_obj[i2c_id];
 
-    bool first_init = false;
-    if (self->base.type == NULL) {
-        // Created for the first time, set default pins
+    bool first_init = (self->base.type == NULL);
+    if (first_init) {
         self->base.type = &machine_i2c_type;
         self->port = i2c_id;
-        if (self->port == I2C_NUM_0) {
-            self->scl = MICROPY_HW_I2C0_SCL;
-            self->sda = MICROPY_HW_I2C0_SDA;
-        } else {
-            self->scl = MICROPY_HW_I2C1_SCL;
-            self->sda = MICROPY_HW_I2C1_SDA;
-        }
-        first_init = true;
+        self->scl = (i2c_id == I2C_NUM_0) ? MICROPY_HW_I2C0_SCL : MICROPY_HW_I2C1_SCL;
+        self->sda = (i2c_id == I2C_NUM_0) ? MICROPY_HW_I2C0_SDA : MICROPY_HW_I2C1_SDA;
+        self->freq = 400000;
+        self->timeout_us = I2C_DEFAULT_TIMEOUT_US;
     }
 
-    // Set SCL/SDA pins if given
     if (args[ARG_scl].u_obj != MP_OBJ_NULL) {
         self->scl = machine_pin_get_id(args[ARG_scl].u_obj);
     }
     if (args[ARG_sda].u_obj != MP_OBJ_NULL) {
         self->sda = machine_pin_get_id(args[ARG_sda].u_obj);
     }
+    if (args[ARG_freq].u_int != -1) {
+        self->freq = args[ARG_freq].u_int;
+    }
+    if (args[ARG_timeout].u_int != -1) {
+        self->timeout_us = args[ARG_timeout].u_int;
+    }
 
-    // Initialise the I2C peripheral
-    machine_hw_i2c_init(self, args[ARG_freq].u_int, args[ARG_timeout].u_int, first_init);
-
+    machine_hw_i2c_init(self, first_init);
     return MP_OBJ_FROM_PTR(self);
 }
 
 static const mp_machine_i2c_p_t machine_hw_i2c_p = {
-    .transfer_supports_write1 = true,
-    .transfer = machine_hw_i2c_transfer,
+    .transfer = mp_machine_i2c_transfer_adaptor,
+    .transfer_single = machine_i2c_transfer_single,
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
@@ -208,4 +187,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &mp_machine_i2c_locals_dict
     );
 
-#endif
+#endif // MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SOFTI2C
