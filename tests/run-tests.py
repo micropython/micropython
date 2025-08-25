@@ -224,6 +224,15 @@ platform_tests_to_skip = {
     ),
 }
 
+# Tests that require `import target_wiring` to work.
+tests_requiring_target_wiring = (
+    "extmod/machine_uart_irq_txidle.py",
+    "extmod/machine_uart_tx.py",
+    "extmod_hardware/machine_uart_irq_break.py",
+    "extmod_hardware/machine_uart_irq_rx.py",
+    "extmod_hardware/machine_uart_irq_rxidle.py",
+)
+
 
 def rm_f(fname):
     if os.path.exists(fname):
@@ -294,7 +303,7 @@ def detect_test_platform(pyb, args):
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch, thread, float_prec, unicode = str(output, "ascii").strip().split()
+    platform, arch, build, thread, float_prec, unicode = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
     inlineasm_arch = detect_inline_asm_arch(pyb, args)
@@ -308,10 +317,12 @@ def detect_test_platform(pyb, args):
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
     args.inlineasm_arch = inlineasm_arch
+    args.build = build
     args.thread = thread
     args.float_prec = float_prec
     args.unicode = unicode
 
+    # Print the detected information about the target.
     print("platform={}".format(platform), end="")
     if arch:
         print(" arch={}".format(arch), end="")
@@ -323,7 +334,43 @@ def detect_test_platform(pyb, args):
         print(" float={}-bit".format(float_prec), end="")
     if unicode:
         print(" unicode", end="")
-    print()
+
+
+def detect_target_wiring_script(pyb, args):
+    tw_data = b""
+    tw_source = None
+    has_target_wiring = (
+        hasattr(pyb, "exec_")
+        and pyb.exec_("try:\n import target_wiring\n print(True)\nexcept:\n print(False)").strip()
+        == b"True"
+    )
+    if has_target_wiring:
+        # The board already has a target_wiring module available, so use that.
+        tw_source = "on-device"
+    else:
+        port = platform_to_port(args.platform)
+        build = args.build
+        tw_board_exact = None
+        tw_board_partial = None
+        tw_port = None
+        for file in os.listdir("target_wiring"):
+            file_base = file.removesuffix(".py")
+            if file_base == build:
+                # A file matching the target's board/build name.
+                tw_board_exact = file
+            elif file_base.endswith("x") and build.startswith(file_base.removesuffix("x")):
+                # A file with a partial match to the target's board/build name.
+                tw_board_partial = file
+            elif file_base == port:
+                # A file matching the target's port.
+                tw_port = file
+        tw_source = tw_board_exact or tw_board_partial or tw_port
+        if tw_source:
+            with open("target_wiring/" + tw_source, "rb") as f:
+                tw_data = f.read()
+    if tw_source:
+        print(" target_wiring={}".format(tw_source), end="")
+    pyb.target_wiring_script = tw_data
 
 
 def prepare_script_for_target(args, *, script_text=None, force_plain=False):
@@ -384,6 +431,11 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     try:
         had_crash = False
         pyb.enter_raw_repl()
+        if test_file.endswith(tests_requiring_target_wiring) and pyb.target_wiring_script:
+            pyb.exec_("__target_wiring=" + repr(pyb.target_wiring_script))
+            pyb.exec_(
+                "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec(__target_wiring),'target_wiring')"
+            )
         output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
     except pyboard.PyboardError as e:
         had_crash = True
@@ -1381,6 +1433,13 @@ the last matching regex is used:
     else:
         # tests explicitly given
         tests = args.files
+
+    # If any tests need it, prepare the target_wiring script for the target.
+    if pyb and any(test.endswith(tests_requiring_target_wiring) for test in tests):
+        detect_target_wiring_script(pyb, args)
+
+    # End the target information line.
+    print()
 
     if not args.keep_path:
         # Clear search path to make sure tests use only builtin modules, those in
