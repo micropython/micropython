@@ -7,8 +7,12 @@ except ImportError:
 
 # try some vanilla OSError to get std error code
 try:
-    open("this filedoesnotexist", "r")
+    open("/this filedoesnotexist", "r")
     print("FAILED TO RAISE")
+    import os
+
+    print(os.getcwd())
+    print(os.listdir())
 except OSError as e:
     print(e)
 

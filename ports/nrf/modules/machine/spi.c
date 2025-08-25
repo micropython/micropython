@@ -187,11 +187,33 @@ enum {
     ARG_INIT_firstbit
 };
 
+static inline uint32_t machine_hard_spi_get_baudrate(const machine_hard_spi_obj_t *self) {
+    MP_STATIC_ASSERT(NRF_SPI_FREQ_125K == (2 << 24));
+    MP_STATIC_ASSERT(NRF_SPI_FREQ_250K == (4 << 24));
+    MP_STATIC_ASSERT(NRF_SPI_FREQ_500K == (8 << 24));
+    MP_STATIC_ASSERT(NRF_SPI_FREQ_1M == (16 << 24));
+    MP_STATIC_ASSERT(NRF_SPI_FREQ_2M == (32 << 24));
+    MP_STATIC_ASSERT(NRF_SPI_FREQ_4M == (64 << 24));
+    MP_STATIC_ASSERT(NRF_SPI_FREQ_8M == (128 << 24));
+    #if defined(NRF52840_XXAA) && NRFX_SPIM_ENABLED
+    if (self->p_config->frequency == NRF_SPIM_FREQ_16M) {
+        return 16000000;
+    }
+    if (self->p_config->frequency == NRF_SPIM_FREQ_32M) {
+        return 32000000;
+    }
+    #endif
+    return 125000 * (self->p_config->frequency >> 25);
+}
+
 static void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_arg_val_t *args);
 
 static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = self_in;
-    mp_printf(print, "SPI(%u)", self->p_spi->drv_inst_idx);
+    unsigned int polarity = self->p_config->mode == NRF_SPI_MODE_0 || self->p_config->mode == NRF_SPI_MODE_1 ? 0 : 1;
+    unsigned int phase = self->p_config->mode == NRF_SPI_MODE_0 || self->p_config->mode == NRF_SPI_MODE_2 ? 0 : 1;
+    mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u)",
+        self->p_spi->drv_inst_idx, machine_hard_spi_get_baudrate(self), polarity, phase);
 }
 
 static mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
