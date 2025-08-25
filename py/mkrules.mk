@@ -74,7 +74,7 @@ $(BUILD)/%.o: %.s
 
 define compile_c
 $(ECHO) "CC $<"
-$(Q)$(CC) $(CFLAGS) -c -MD -MF $(@:.o=.d) -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
+$(Q)$(CC) $(CFLAGS) -c -MD -MF $(@:.o=.d) -MT "$@ ${@:.o=.pp}" -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
 @# The following fixes the dependency file.
 @# See http://make.paulandlesley.org/autodep.html for details.
 @# Regex adjusted from the above to play better with Windows paths, etc.
