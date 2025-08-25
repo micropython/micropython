@@ -108,6 +108,9 @@ with timer ID of -1::
 
 The period is in milliseconds.
 
+By default, timer callbacks are scheduled as soft interrupts on this port.
+Specify ``hard=True`` to run them in hard interrupt context instead.
+
 Pins and GPIO
 -------------
 
