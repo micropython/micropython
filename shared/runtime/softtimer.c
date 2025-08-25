@@ -28,6 +28,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "shared/runtime/mpirq.h"
 #include "softtimer.h"
 
 #ifdef MICROPY_SOFT_TIMER_TICKS_MS
@@ -88,7 +89,11 @@ void soft_timer_handler(void) {
         soft_timer_entry_t *entry = heap;
         heap = (soft_timer_entry_t *)mp_pairheap_pop(soft_timer_lt, &heap->pairheap);
         if (entry->flags & SOFT_TIMER_FLAG_PY_CALLBACK) {
-            mp_sched_schedule(entry->py_callback, MP_OBJ_FROM_PTR(entry));
+            if (mp_irq_dispatch(entry->py_callback, MP_OBJ_FROM_PTR(entry),
+                entry->flags & SOFT_TIMER_FLAG_HARD_CALLBACK)) {
+                // Uncaught exception; disable the callback so it doesn't run again.
+                entry->mode = SOFT_TIMER_MODE_ONE_SHOT;
+            }
         } else if (entry->c_callback) {
             entry->c_callback(entry);
         }

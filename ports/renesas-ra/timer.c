@@ -30,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "shared/runtime/mpirq.h"
 #include "timer.h"
 #include "pin.h"
 #include "irq.h"
@@ -53,6 +54,7 @@ typedef struct _pyb_timer_obj_t {
     mp_obj_base_t base;
     uint8_t tim_id;
     mp_obj_t callback;
+    bool ishard;
     #if defined(TIMER_CHANNEL)
     pyb_timer_channel_obj_t *channel;
     #endif
@@ -91,7 +93,7 @@ static void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_printf(print, "Timer(%u)", self->tim_id);
 }
 
-/// \method init(*, freq, prescaler, period)
+/// \method init(*, freq, hard)
 /// Initialise the timer.  Initialisation must be either by frequency (in Hz)
 /// or by prescaler and period:
 ///
@@ -102,16 +104,17 @@ static void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///   - `freq` - specifies the periodic frequency of the timer. You might also
 ///              view this as the frequency with which the timer goes through
 ///              one complete cycle.
-//////
 ///   - `callback` - as per Timer.callback()
-//////
-///  You must either specify freq.
+///   - `hard` - whether the callback should be called in hard-IRQ context
+///
+///  You must specify freq; hard defaults to True if not set.
 static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // enum { ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime };
-    enum { ARG_freq, ARG_callback };
+    enum { ARG_freq, ARG_callback, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -128,11 +131,12 @@ static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         freq_args[1] = args[ARG_freq].u_obj;
         pyb_timer_freq(2, (const mp_obj_t *)&freq_args);
     } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("must specify either freq, period, or prescaler and period"));
+        mp_raise_TypeError(MP_ERROR_TEXT("must specify freq"));
     }
     // Enable ARPE so that the auto-reload register is buffered.
     // This allows to smoothly change the frequency of the timer.
     // Start the timer running
+    self->ishard = args[ARG_hard].u_bool;
     if (args[ARG_callback].u_obj == mp_const_none) {
         // do nothing
     } else {
@@ -160,6 +164,7 @@ static mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         tim->base.type = &pyb_timer_type;
         tim->tim_id = tim_id;
         tim->callback = mp_const_none;
+        tim->ishard = true;
         MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] = tim;
     } else {
         // reference existing Timer object
@@ -513,30 +518,9 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 #endif
 
 static void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_obj_t callback) {
-
-    // execute callback if it's set
-    if (callback != mp_const_none) {
-        mp_sched_lock();
-        // When executing code within a handler we must lock the GC to prevent
-        // any memory allocations.  We must also catch any exceptions.
-        gc_lock();
-        nlr_buf_t nlr;
-        if (nlr_push(&nlr) == 0) {
-            mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
-            nlr_pop();
-        } else {
-            // Uncaught exception; disable the callback so it doesn't run again.
-            tim->callback = mp_const_none;
-            // __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
-            if (channel == 0) {
-                mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
-            } else {
-                mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
-            }
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-        }
-        gc_unlock();
-        mp_sched_unlock();
+    if (mp_irq_dispatch(callback, MP_OBJ_FROM_PTR(tim), tim->ishard) < 0) {
+        // Uncaught exception; disable the callback so it doesn't run again.
+        tim->callback = mp_const_none;
     }
 }
 
