@@ -23,7 +23,7 @@ if(CONFIG_IDF_TARGET_ARCH_RISCV)
 endif()
 
 if(NOT DEFINED MICROPY_PY_TINYUSB)
-    if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3)
+    if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3 OR CONFIG_IDF_TARGET_ESP32P4)
         set(MICROPY_PY_TINYUSB ON)
     endif()
 endif()
@@ -159,6 +159,7 @@ list(APPEND IDF_COMPONENTS
     esp_adc
     esp_app_format
     esp_common
+    esp_driver_touch_sens
     esp_eth
     esp_event
     esp_hw_support
