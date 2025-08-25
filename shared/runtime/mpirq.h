@@ -77,6 +77,7 @@ extern const mp_obj_type_t mp_irq_type;
 
 mp_irq_obj_t *mp_irq_new(const mp_irq_methods_t *methods, mp_obj_t parent);
 void mp_irq_init(mp_irq_obj_t *self, const mp_irq_methods_t *methods, mp_obj_t parent);
+int mp_irq_dispatch(mp_obj_t handler, mp_obj_t parent, bool ishard);
 void mp_irq_handler(mp_irq_obj_t *self);
 
 #endif // MICROPY_INCLUDED_LIB_UTILS_MPIRQ_H
