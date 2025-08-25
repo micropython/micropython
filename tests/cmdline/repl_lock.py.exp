@@ -1,0 +1,10 @@
+MicroPython \.\+ version
+Use \.\+
+>>> import micropython
+>>> micropython.heap_lock()
+>>> 1+1
+2
+>>> micropython.heap_lock()
+>>> ####################################################################
+>>> micropython.heap_lock()
+>>> raise SystemExit
