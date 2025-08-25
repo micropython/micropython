@@ -42,13 +42,14 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, };
+    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, ARG_hard, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOFT_TIMER_MODE_PERIODIC} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // Parse args
@@ -79,6 +80,12 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 
     if (args[ARG_callback].u_obj != MP_OBJ_NULL) {
         self->py_callback = args[ARG_callback].u_obj;
+    }
+
+    if (args[ARG_hard].u_bool) {
+        self->flags |= SOFT_TIMER_FLAG_HARD_CALLBACK;
+    } else {
+        self->flags &= ~SOFT_TIMER_FLAG_HARD_CALLBACK;
     }
 
     if (self->py_callback != mp_const_none) {
