@@ -454,7 +454,7 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     #endif
 }
 
-// Overflow-checked operations for long long
+// Overflow-checked operations
 
 // Integer overflow builtins were added to GCC 5, but __has_builtin only in GCC 10
 //
@@ -462,8 +462,28 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
 // functions below don't update the result if an overflow would occur (to avoid UB).
 #define MP_GCC_HAS_BUILTIN_OVERFLOW (__GNUC__ >= 5)
 
-#if __has_builtin(__builtin_umulll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+// <limits.h> may not define these macros when gcc is in C++ mode.
+#ifndef ULLONG_MAX
+#define ULLONG_MAX (~0ULL)
+#endif
+
+#ifndef LLONG_MAX
+#define LLONG_MAX ((long long)(ULLONG_MAX >> 1))
+#endif
+
+#ifndef LLONG_MIN
+#define LLONG_MIN (-LLONG_MAX - 1)
+#endif
+
+
+#if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
 #define mp_mul_ull_overflow __builtin_umulll_overflow
+#define mp_mul_ll_overflow __builtin_smulll_overflow
+inline static bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
+    // __builtin_mul_overflow is a type-generic function, this inline ensures the argument
+    // types are checked to match mp_int_t.
+    return __builtin_mul_overflow(x, y, res);
+}
 #else
 inline static bool mp_mul_ull_overflow(unsigned long long int x, unsigned long long int y, unsigned long long int *res) {
     if (y > 0 && x > (ULLONG_MAX / y)) {
@@ -472,11 +492,7 @@ inline static bool mp_mul_ull_overflow(unsigned long long int x, unsigned long l
     *res = x * y;
     return false;
 }
-#endif
 
-#if __has_builtin(__builtin_smulll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
-#define mp_mul_ll_overflow __builtin_smulll_overflow
-#else
 inline static bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res) {
     bool overflow;
 
@@ -501,6 +517,8 @@ inline static bool mp_mul_ll_overflow(long long int x, long long int y, long lon
 
     return overflow;
 }
+
+extern bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res);
 #endif
 
 #if __has_builtin(__builtin_saddll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
