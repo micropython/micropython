@@ -18,8 +18,9 @@ Timer callbacks.
 
     Memory can't be allocated inside irq handlers (an interrupt) and so
     exceptions raised within a handler don't give much information.  See
-    :func:`micropython.alloc_emergency_exception_buf` for how to get around this
-    limitation.
+    :func:`micropython.alloc_emergency_exception_buf` for how to get around
+    this limitation, which applies to all callbacks of Timers created with
+    ``hard=True``.
 
 If you are using a WiPy board please refer to :ref:`machine.TimerWiPy <machine.TimerWiPy>`
 instead of this class.
@@ -38,7 +39,7 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(*, mode=Timer.PERIODIC, freq=-1, period=-1, callback=None)
+.. method:: Timer.init(*, mode=Timer.PERIODIC, freq=-1, period=-1, callback=None, hard=True)
 
    Initialise the timer. Example::
 
@@ -75,6 +76,19 @@ Methods
        The ``callback`` argument shall be specified. Otherwise an exception
        will occur upon timer expiration:
        ``TypeError: 'NoneType' object isn't callable``
+
+     - ``hard`` can be one of:
+
+       - ``True`` - The callback will be executed in hard interrupt
+         context, which minimises delay and jitter but is subject to the
+         limitations described in :ref:`isr_rules` including being unable
+         to allocate on the heap.
+       - ``False`` - The callback will be scheduled as a soft interrupt,
+         allowing it to allocate but possibly also introducing
+         garbage-collection delays and jitter.
+
+       The default value of this option is port-specific for historical
+       reasons.
 
 .. method:: Timer.deinit()
 
