@@ -34,6 +34,7 @@
 #include "osapi.h"
 #include "etshal.h"
 #include "user_interface.h"
+#include "py/gc.h"
 
 // #define MACHINE_WAKE_IDLE (0x01)
 // #define MACHINE_WAKE_SLEEP (0x02)
@@ -169,6 +170,7 @@ typedef struct _esp_timer_obj_t {
     uint32_t remain_ms; // if non-zero, remaining time to handle large periods
     uint32_t period_ms; // if non-zero, periodic timer with a large period
     mp_obj_t callback;
+    bool ishard;
 } esp_timer_obj_t;
 
 static void esp_timer_arm_ms(esp_timer_obj_t *self, uint32_t ms, bool repeat) {
@@ -225,7 +227,27 @@ static void esp_timer_cb(void *arg) {
         self->remain_ms -= next_period_ms;
         os_timer_arm(&self->timer, next_period_ms, false);
     } else {
-        mp_sched_schedule(self->callback, self);
+        if (self->ishard) {
+            // When executing code within a handler we must lock the scheduler to
+            // prevent any scheduled callbacks from running, and lock the GC to
+            // prevent any memory allocations.
+            mp_sched_lock();
+            gc_lock();
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                mp_call_function_1(self->callback, MP_OBJ_FROM_PTR(self));
+                nlr_pop();
+            } else {
+                // Uncaught exception; disable the callback so it doesn't run again.
+                self->period_ms = 0;
+                mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in timer callback\n");
+                mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+            }
+            gc_unlock();
+            mp_sched_unlock();
+        } else {
+            mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
+        }
         if (self->period_ms != 0) {
             // A periodic timer with a larger period: reschedule it
             esp_timer_arm_ms(self, self->period_ms, true);
@@ -240,6 +262,7 @@ static mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
         ARG_period,
         ARG_tick_hz,
         ARG_freq,
+        ARG_hard,
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -251,6 +274,7 @@ static mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
         #else
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         #endif
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // parse args
@@ -258,6 +282,7 @@ static mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     self->callback = args[ARG_callback].u_obj;
+    self->ishard = args[ARG_hard].u_bool;
     // Be sure to disarm timer before making any changes
     os_timer_disarm(&self->timer);
     os_timer_setfn(&self->timer, esp_timer_cb, self);
