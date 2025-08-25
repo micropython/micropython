@@ -133,6 +133,37 @@ Terminal redirection and duplication
 
    The function returns the previous stream-like object in the given slot.
 
+.. function:: dupterm_notify(obj_in, /)
+    Notify the MicroPython REPL that input is available on a stream-like object
+    previously registered via `os.dupterm()`.
+
+    This function should be called by custom stream implementations (e.g., UART,
+    Bluetooth, or other non-USB REPL streams) to inform the REPL that input is
+    ready to be read. Proper use ensures that special characters such as
+    Ctrl+C (used to trigger KeyboardInterrupt) are processed promptly by the
+    REPL, enabling expected interruption behavior for user code.
+
+    Args:
+        obj_in: Is ignored by `dupterm_notify`, but is required to allow calling
+        dupterm_notify from an interrupt handler such as ``UART.irq()``.
+
+    Note:
+        - If input is available (including control characters like Ctrl+C),
+          call this function to ensure responsive REPL behavior.
+        - If omitted, input from the custom stream may not be detected or
+          processed until the next REPL poll, potentially delaying KeyboardInterrupts
+          or other control signals.
+        - This is especially important for UART, Bluetooth, or other
+          non-standard REPL connections, where automatic notification is not guaranteed.
+
+    Example::
+        from machine import UART
+        import os
+        uart = UART(0)
+        uart.irq(os.dupterm_notify, machine.UART.IRQ_RX)
+        os.dupterm(uart, 0)
+
+
 Filesystem mounting
 -------------------
 
