@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "features": ["External Flash", "DAC", "Display","microSD", "USB", "USB-C"],
+    "images": [
+        "weact_stm32h743.jpg"
+    ],
+    "mcu": "STM32H743VIT6",
+    "product": "WeAct Studio STM32H743",
+    "url": "https://github.com/WeActStudio/MiniSTM32H7xx",
+    "vendor": "WeAct Studio"
+}
