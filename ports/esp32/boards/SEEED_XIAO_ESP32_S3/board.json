@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "External RAM",
+        "WiFi"
+    ],
+    "images": [
+        "xiao_esp32s3-font.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "XIAO ESP32s3",
+    "thumbnail": "",
+    "url": "https://www.seeedstudio.com/XIAO-ESP32S3-p-5627.html",
+    "vendor": "Seeed Studio"
+}
