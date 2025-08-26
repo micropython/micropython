@@ -177,14 +177,6 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
-    "qemu": (
-        # Skip tests that require Cortex-M4.
-        "inlineasm/thumb/asmfpaddsub.py",
-        "inlineasm/thumb/asmfpcmp.py",
-        "inlineasm/thumb/asmfpldrstr.py",
-        "inlineasm/thumb/asmfpmuldiv.py",
-        "inlineasm/thumb/asmfpsqrt.py",
-    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
@@ -757,13 +749,14 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 skip_tests.add("inlineasm/thumb/asmbitops.py")
                 skip_tests.add("inlineasm/thumb/asmconst.py")
                 skip_tests.add("inlineasm/thumb/asmdiv.py")
+                skip_tests.add("inlineasm/thumb/asmit.py")
+                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
+            if args.arch not in ("armv7emsp", "armv7emdp"):
                 skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
                 skip_tests.add("inlineasm/thumb/asmfpcmp.py")
                 skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
                 skip_tests.add("inlineasm/thumb/asmfpmuldiv.py")
                 skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
-                skip_tests.add("inlineasm/thumb/asmit.py")
-                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
