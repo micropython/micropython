@@ -28,9 +28,9 @@ def instance0():
     multitest.globals(IP=multitest.get_network_ip())
 
     # Create a UDP socket and bind it to accept incoming connections.
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(socket.getaddrinfo("0.0.0.0", PORT)[0][-1])
+    s.bind(socket.getaddrinfo(multitest.BIND_ADDR, PORT, multitest.AF_FAMILY)[0][-1])
 
     multitest.next()
 
@@ -71,8 +71,8 @@ def instance1():
     multitest.next()
 
     # Create a UDP socket and connect to the server.
-    addr = socket.getaddrinfo(IP, PORT)[0][-1]
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_DGRAM)
+    addr = socket.getaddrinfo(IP, PORT, multitest.AF_FAMILY)[0][-1]
     print("connect")
     s.connect(addr)
 

@@ -37,7 +37,7 @@ async def tcp_server():
     server_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     server_ctx.load_cert_chain(cert, key)
     ev = asyncio.Event()
-    server = await asyncio.start_server(handle_connection, "0.0.0.0", PORT, ssl=server_ctx)
+    server = await asyncio.start_server(handle_connection, multitest.BIND_ADDR, PORT, ssl=server_ctx)
     print("server running")
     multitest.next()
     async with server:

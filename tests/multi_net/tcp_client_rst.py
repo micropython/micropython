@@ -13,9 +13,9 @@ def convert_poll_list(l):
 # Server
 def instance0():
     multitest.globals(IP=multitest.get_network_ip())
-    s = socket.socket()
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(socket.getaddrinfo("0.0.0.0", PORT)[0][-1])
+    s.bind(socket.getaddrinfo(multitest.BIND_ADDR, PORT, multitest.AF_FAMILY)[0][-1])
     s.listen(1)
     multitest.next()
     s2, _ = s.accept()
@@ -47,8 +47,8 @@ def instance1():
     if not hasattr(socket, "SO_LINGER"):
         multitest.skip()
     multitest.next()
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-    s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
+    s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM, 0)
+    s.connect(socket.getaddrinfo(IP, PORT, multitest.AF_FAMILY)[0][-1])
     lgr_onoff = 1
     lgr_linger = 0
     s.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack("ii", lgr_onoff, lgr_linger))
