@@ -530,14 +530,14 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
 
 CI_UNIX_OPTS_SANITIZE_ADDRESS=(
     # Macro MP_ASAN allows detecting ASan on gcc<=13
-    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -DMP_ASAN=1"
-    LDFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
+    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -fno-sanitize-recover -DMP_ASAN=1"
+    LDFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -fno-sanitize-recover"
 )
 
 CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
     # Macro MP_UBSAN allows detecting UBSan on gcc<=13
-    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute -DMP_UBSAN=1"
-    LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute -fno-sanitize-recover -DMP_UBSAN=1"
+    LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute -fno-sanitize-recover"
 )
 
 function ci_unix_build_helper {
@@ -774,7 +774,7 @@ function ci_unix_settrace_stackless_run_tests {
 }
 
 function ci_unix_sanitize_undefined_build {
-    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C mpy-cross "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
     make ${MAKEOPTS} -C ports/unix submodules
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
     ci_unix_build_ffi_lib_helper gcc
@@ -785,7 +785,7 @@ function ci_unix_sanitize_undefined_run_tests {
 }
 
 function ci_unix_sanitize_address_build {
-    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C mpy-cross "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
     make ${MAKEOPTS} -C ports/unix submodules
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
     ci_unix_build_ffi_lib_helper gcc
