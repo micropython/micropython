@@ -45,7 +45,18 @@
 static inline void mp_usbd_init_tud(void) {
     tusb_init();
     #if MICROPY_HW_USB_CDC
-    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
+    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0,
+                                     .tx_persistent = 1,
+
+                                     // This config flag is unreleased in TinyUSB >v0.18.0
+                                     // but included in Espressif's TinyUSB component since v0.18.0~3
+                                     //
+                                     // Versioning issue reported as
+                                     // https://github.com/espressif/esp-usb/issues/236
+                                     #if TUSB_VERSION_NUMBER > 1800 || defined(ESP_PLATFORM)
+                                     .tx_overwritabe_if_not_connected = 1,
+                                     #endif
+    };
     tud_cdc_configure_fifo(&cfg);
     #endif
 }
