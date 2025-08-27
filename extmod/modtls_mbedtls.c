@@ -100,10 +100,6 @@ typedef struct _mp_obj_ssl_context_t {
     bool is_dtls_server;
     mbedtls_ssl_cookie_ctx cookie_ctx;
     #endif
-    
-    mp_obj_t psk_identity;  // PSK identity (string)
-    mp_obj_t psk_key;       // PSK key (bytes)
-    bool use_psk;           // Flag to indicate if PSK should be used
 } mp_obj_ssl_context_t;
 
 // This corresponds to an SSLSocket object.
@@ -302,9 +298,6 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     #endif
 
     // Initialize PSK fields
-    self->psk_identity = mp_const_none;
-    self->psk_key = mp_const_none;
-    self->use_psk = false;
 
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
@@ -470,7 +463,6 @@ static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
         
         // Check for generic "PSK" mode
         if (strcmp(ciphername, "PSK") == 0) {
-            ssl_context->use_psk = true;
             set_psk_ciphersuites(&ssl_context->conf);
             return mp_const_none;
         }
@@ -480,9 +472,6 @@ static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
         if (info != NULL) {
             // Check if this is a PSK ciphersuite
             if (ciphersuite_uses_psk(info)) {
-                // Enable PSK mode
-                ssl_context->use_psk = true;
-
                 // Create a ciphersuite array with just this one ciphersuite
                 ssl_context->ciphersuites = m_new(int, 2);
                 if (ssl_context->ciphersuites == NULL) {
@@ -633,18 +622,19 @@ static mp_obj_t ssl_context_load_verify_locations(mp_obj_t self_in, mp_obj_t cad
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_load_verify_locations_obj, ssl_context_load_verify_locations);
 
-// SSLContext.set_psk_identity(identity)
+// SSLContext.set_psk_identity(identity) and set_psk_key(key)
+// These methods now configure PSK directly with mbedtls instead of storing values
+static mp_obj_t psk_identity = mp_const_none;
+static mp_obj_t psk_key = mp_const_none;
+
 static mp_obj_t ssl_context_set_psk_identity(mp_obj_t self_in, mp_obj_t identity) {
-    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
-    self->psk_identity = identity;
+    psk_identity = identity;
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_psk_identity_obj, ssl_context_set_psk_identity);
 
-// SSLContext.set_psk_key(key)
 static mp_obj_t ssl_context_set_psk_key(mp_obj_t self_in, mp_obj_t key) {
-    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
-    self->psk_key = key;
+    psk_key = key;
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_psk_key_obj, ssl_context_set_psk_key);
@@ -795,19 +785,33 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
 
     mbedtls_ssl_init(&o->ssl);
 
-    // Configure PSK if enabled
-    if (ssl_context->use_psk && ssl_context->psk_identity != mp_const_none && ssl_context->psk_key != mp_const_none) {
-        // Get PSK identity and key
-        size_t psk_identity_len;
-        const byte *psk_identity = (const byte *)mp_obj_str_get_data(ssl_context->psk_identity, &psk_identity_len);
+    // Configure PSK if PSK ciphersuites are enabled and PSK data is available
+    if (psk_identity != mp_const_none && psk_key != mp_const_none) {
+        // Check if any of the configured ciphersuites use PSK
+        bool has_psk_cipher = false;
+        if (ssl_context->ciphersuites != NULL) {
+            for (int i = 0; ssl_context->ciphersuites[i] != 0; i++) {
+                const mbedtls_ssl_ciphersuite_t *info = mbedtls_ssl_ciphersuite_from_id(ssl_context->ciphersuites[i]);
+                if (info != NULL && ciphersuite_uses_psk(info)) {
+                    has_psk_cipher = true;
+                    break;
+                }
+            }
+        }
         
-        size_t psk_key_len;
-        const byte *psk_key = (const byte *)mp_obj_str_get_data(ssl_context->psk_key, &psk_key_len);
+        if (has_psk_cipher) {
+            // Get PSK identity and key
+            size_t psk_identity_len;
+            const byte *psk_identity_data = (const byte *)mp_obj_str_get_data(psk_identity, &psk_identity_len);
+            
+            size_t psk_key_len;
+            const byte *psk_key_data = (const byte *)mp_obj_str_get_data(psk_key, &psk_key_len);
 
-        // Configure PSK
-        ret = mbedtls_ssl_conf_psk(&ssl_context->conf, psk_key, psk_key_len, psk_identity, psk_identity_len);
-        if (ret != 0) {
-            goto cleanup;
+            // Configure PSK
+            ret = mbedtls_ssl_conf_psk(&ssl_context->conf, psk_key_data, psk_key_len, psk_identity_data, psk_identity_len);
+            if (ret != 0) {
+                goto cleanup;
+            }
         }
     }
 
