@@ -132,6 +132,9 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname,
     mp_obj_t client_id);
 
+// Helper function to check if a ciphersuite uses PSK
+static bool ciphersuite_uses_psk(const mbedtls_ssl_ciphersuite_t *info);
+
 /******************************************************************************/
 // Helper functions.
 
@@ -472,14 +475,11 @@ static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
             return mp_const_none;
         }
 
-        // Check if this is a PSK ciphersuite name
-        if (strncmp(ciphername, "PSK-", 4) == 0 ||
-            strncmp(ciphername, "TLS-PSK-", 8) == 0 ||
-            strncmp(ciphername, "TLS_PSK_", 8) == 0) {
-
-            // Try to look up the ciphersuite ID
-            const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
-            if (id != 0) {
+        // Try to look up the ciphersuite using mbedtls API
+        const mbedtls_ssl_ciphersuite_t *info = mbedtls_ssl_ciphersuite_from_string(ciphername);
+        if (info != NULL) {
+            // Check if this is a PSK ciphersuite
+            if (ciphersuite_uses_psk(info)) {
                 // Enable PSK mode
                 ssl_context->use_psk = true;
 
@@ -488,7 +488,20 @@ static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
                 if (ssl_context->ciphersuites == NULL) {
                     mp_raise_OSError(MP_ENOMEM);
                 }
-                ssl_context->ciphersuites[0] = id;
+                ssl_context->ciphersuites[0] = mbedtls_ssl_ciphersuite_get_id(info);
+                ssl_context->ciphersuites[1] = 0;  // Terminating zero
+
+                // Configure the ciphersuite
+                mbedtls_ssl_conf_ciphersuites(&ssl_context->conf, (const int *)ssl_context->ciphersuites);
+                return mp_const_none;
+            } else {
+                // Not a PSK ciphersuite, but it's a valid ciphersuite name
+                // Fall through to handle it as a regular single ciphersuite
+                ssl_context->ciphersuites = m_new(int, 2);
+                if (ssl_context->ciphersuites == NULL) {
+                    mp_raise_OSError(MP_ENOMEM);
+                }
+                ssl_context->ciphersuites[0] = mbedtls_ssl_ciphersuite_get_id(info);
                 ssl_context->ciphersuites[1] = 0;  // Terminating zero
 
                 // Configure the ciphersuite
@@ -507,15 +520,15 @@ static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
         mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
     }
 
-    // Parse list of ciphers.
+    // Parse list of ciphers using mbedtls API for validation.
     ssl_context->ciphersuites = m_new(int, len + 1);
     for (size_t i = 0; i < len; ++i) {
         const char *ciphername = mp_obj_str_get_str(ciphers[i]);
-        const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
-        if (id == 0) {
+        const mbedtls_ssl_ciphersuite_t *info = mbedtls_ssl_ciphersuite_from_string(ciphername);
+        if (info == NULL) {
             mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
         }
-        ssl_context->ciphersuites[i] = id;
+        ssl_context->ciphersuites[i] = mbedtls_ssl_ciphersuite_get_id(info);
     }
     ssl_context->ciphersuites[len] = 0;
 
@@ -525,6 +538,46 @@ static mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ciphers);
+
+// Helper function to check if a ciphersuite uses PSK
+static bool ciphersuite_uses_psk(const mbedtls_ssl_ciphersuite_t *info) {
+    if (info == NULL) {
+        return false;
+    }
+    
+    // Check if ciphersuite ID corresponds to any PSK ciphersuite
+    int id = mbedtls_ssl_ciphersuite_get_id(info);
+    
+    // Check for common PSK ciphersuites based on their IDs
+    // These correspond to the MBEDTLS_TLS_*_PSK_* constants
+    return (id == 0x2C ||  // MBEDTLS_TLS_PSK_WITH_NULL_SHA
+            id == 0x2D ||  // MBEDTLS_TLS_DHE_PSK_WITH_NULL_SHA
+            id == 0x2E ||  // MBEDTLS_TLS_RSA_PSK_WITH_NULL_SHA
+            id == 0x8C ||  // MBEDTLS_TLS_PSK_WITH_AES_128_CBC_SHA
+            id == 0x8D ||  // MBEDTLS_TLS_PSK_WITH_AES_256_CBC_SHA
+            id == 0x90 ||  // MBEDTLS_TLS_DHE_PSK_WITH_AES_128_CBC_SHA
+            id == 0x91 ||  // MBEDTLS_TLS_DHE_PSK_WITH_AES_256_CBC_SHA
+            id == 0x94 ||  // MBEDTLS_TLS_RSA_PSK_WITH_AES_128_CBC_SHA
+            id == 0x95 ||  // MBEDTLS_TLS_RSA_PSK_WITH_AES_256_CBC_SHA
+            id == 0xA8 ||  // MBEDTLS_TLS_PSK_WITH_AES_128_GCM_SHA256
+            id == 0xA9 ||  // MBEDTLS_TLS_PSK_WITH_AES_256_GCM_SHA384
+            id == 0xAA ||  // MBEDTLS_TLS_DHE_PSK_WITH_AES_128_GCM_SHA256
+            id == 0xAB ||  // MBEDTLS_TLS_DHE_PSK_WITH_AES_256_GCM_SHA384
+            id == 0xAC ||  // MBEDTLS_TLS_RSA_PSK_WITH_AES_128_GCM_SHA256
+            id == 0xAD ||  // MBEDTLS_TLS_RSA_PSK_WITH_AES_256_GCM_SHA384
+            id == 0xAE ||  // MBEDTLS_TLS_PSK_WITH_AES_128_CBC_SHA256
+            id == 0xAF ||  // MBEDTLS_TLS_PSK_WITH_AES_256_CBC_SHA384
+            id == 0xB0 ||  // MBEDTLS_TLS_PSK_WITH_NULL_SHA256
+            id == 0xB1 ||  // MBEDTLS_TLS_PSK_WITH_NULL_SHA384
+            id == 0xB2 ||  // MBEDTLS_TLS_DHE_PSK_WITH_AES_128_CBC_SHA256
+            id == 0xB3 ||  // MBEDTLS_TLS_DHE_PSK_WITH_AES_256_CBC_SHA384
+            id == 0xB4 ||  // MBEDTLS_TLS_DHE_PSK_WITH_NULL_SHA256
+            id == 0xB5 ||  // MBEDTLS_TLS_DHE_PSK_WITH_NULL_SHA384
+            id == 0xB6 ||  // MBEDTLS_TLS_RSA_PSK_WITH_AES_128_CBC_SHA256
+            id == 0xB7 ||  // MBEDTLS_TLS_RSA_PSK_WITH_AES_256_CBC_SHA384
+            id == 0xB8 ||  // MBEDTLS_TLS_RSA_PSK_WITH_NULL_SHA256
+            id == 0xB9);   // MBEDTLS_TLS_RSA_PSK_WITH_NULL_SHA384
+}
 
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
