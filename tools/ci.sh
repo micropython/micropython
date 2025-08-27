@@ -637,6 +637,10 @@ function ci_unix_coverage_setup {
 }
 
 function ci_unix_coverage_build {
+    make ${MAKEOPTS} -C mpy-cross COPT="-Os -fprofile-arcs -ftest-coverage" LDFLAGS="-fprofile-arcs -ftest-coverage -lm" DEBUG=1
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage deplibs
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage
     ci_unix_build_helper VARIANT=coverage
     ci_unix_build_ffi_lib_helper gcc
 }

@@ -90,6 +90,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_coverage_run_native_mpy_tests
     - name: Run gcov coverage analysis
       run: |
+        (cd mpy-cross && gcov -o build/py ../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
     - name: Upload coverage to Codecov
