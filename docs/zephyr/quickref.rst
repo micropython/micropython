@@ -102,7 +102,7 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
     spi = SPI("spi0")           # construct a spi bus with default configuration
     spi.init(baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB) # set configuration
 
-    # equivalently, construct spi bus and set configuration at the same time
+    \# equivalently, construct spi bus and set configuration at the same time
     spi = SPI("spi0", baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB)
     print(spi)                  # print device name and bus configuration
 
@@ -119,6 +119,19 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
     spi.write_readinto(b'abcd', buf)    # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf)        # write buf to MOSI and read back into the buf
 
+Analog to Digital Converter (ADC)
+----------------------------------
+
+Use the :ref:`machine.ADC <machine.ADC>` class.
+
+Example of using ADC to read a pin's analog value (the ``zephyr,user`` node must contain
+the ``io-channels`` property containing all the ADC channels)::
+
+    from machine import ADC
+
+    adc = ADC(('adc', 0))
+    adc.read_uv()
+
 Disk Access
 -----------
 
@@ -131,7 +144,7 @@ Use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class to support filesystem
     vfs.VfsFat.mkfs(block_dev)          # create FAT filesystem object using the disk storage block
     vfs.mount(block_dev, '/sd')         # mount the filesystem at the SD card subdirectory
 
-    # with the filesystem mounted, files can be manipulated as normal
+    \# with the filesystem mounted, files can be manipulated as normal
     with open('/sd/hello.txt','w') as f:     # open a new file in the directory
         f.write('Hello world')                  # write to the file
     print(open('/sd/hello.txt').read())      # print contents of the file
@@ -153,7 +166,7 @@ Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
         f.write('Hello world')                  # write to the file
     print(open('/flash/hello.txt').read())      # print contents of the file
 
-The FlashAreas' IDs that are available are listed in the FlashArea module, as ID_*.
+The ``FlashAreas``' IDs that are available are listed in the FlashArea module, as ``ID_*``.
 
 Sensor
 ------
@@ -172,3 +185,29 @@ Use the :ref:`zsensor.Sensor <zsensor.Sensor>` class to access sensor data::
     accel.get_millis(zsensor.ACCEL_Y) # print measurement value for accelerometer Y-axis sensor channel in millionths
     accel.get_micro(zsensor.ACCEL_Z)  # print measurement value for accelerometer Z-axis sensor channel in thousandths
     accel.get_int(zsensor.ACCEL_X)    # print measurement integer value only for accelerometer X-axis sensor channel
+
+The channel IDs that are used as arguments to the ``get_int()``, ``get_float()``, ``get_millis()`` and ``get_micro()``
+methods are constants in the ``zsensor`` module.
+
+You can use the ``zsensor.Sensor.attr_set()`` method to set sensor attributes
+like full-scale range and update rate::
+
+    # Example for XIAO BLE NRF52840 SENSE
+    from zsensor import *
+    accel = Sensor('lsm6ds3tr_c')  # name from Devicetree
+    # Set full-scale to 2g (19.613300 m/sec^2)
+    # units are micro-m/s^2
+    accel.attr_set(ACCEL_XYZ, ATTR_FULL_SCALE, 19, 613300)
+    # Set sampling frequency to 104 Hz
+    accel.attr_set(ACCEL_XYZ, ATTR_SAMPLING_FREQUENCY, 104)
+    accel.measure()
+    accel.get_float(ACCEL_X) # -0.508 (m/s^2)
+    accel.get_float(ACCEL_Y) # -3.62 (m/s^2)
+    accel.get_float(ACCEL_Z) # 9.504889 (m/s^2)
+
+There is also a ``zsensor.attr_get()`` method, but many sensors do not support this.::
+
+    full_scale = accel.attr_get(ATTR_FULL_SCALE)
+
+The attribute IDs that are used as arguments to the ``attr_set()`` and ``attr_get()`` methods are
+constants in the ``zsensor`` module named ``ATTR_*``.
