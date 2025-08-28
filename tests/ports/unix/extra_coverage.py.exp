@@ -72,13 +72,14 @@ cppexample      cryptolib       deflate         errno
 example_package                 ffi             framebuf
 gc              hashlib         heapq           io
 json            machine         marshal         math
-os              platform        random          re
-select          socket          struct          sys
-termios         time            tls             uctypes
-vfs             websocket
+mpycross        os              platform        random
+re              select          socket          struct
+sys             termios         time            tls
+uctypes         vfs             websocket
 me
 
 micropython     machine         marshal         math
+mpycross
 
 argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation

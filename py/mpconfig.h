@@ -1835,6 +1835,10 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_OS_STATVFS (MICROPY_PY_OS)
 #endif
 
+#ifndef MICROPY_PY_MPYCROSS
+#define MICROPY_PY_MPYCROSS (0)
+#endif
+
 #ifndef MICROPY_PY_RE
 #define MICROPY_PY_RE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif

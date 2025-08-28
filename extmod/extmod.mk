@@ -31,6 +31,7 @@ SRC_EXTMOD_C += \
 	extmod/modlwip.c \
 	extmod/modmachine.c \
 	extmod/modmarshal.c \
+	extmod/modmpycross.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
 	extmod/modopenamp.c \

@@ -287,7 +287,7 @@ void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label) {
     asm_xtensa_op_add_n(as, reg_dest, reg_dest, ASM_XTENSA_REG_A0);
 }
 
-void asm_xtensa_l32i_optimised(asm_xtensa_t *as, uint reg_dest, uint reg_base, uint word_offset) {
+static void asm_xtensa_l32i_optimised(asm_xtensa_t *as, uint reg_dest, uint reg_base, uint word_offset) {
     if (word_offset < 16) {
         asm_xtensa_op_l32i_n(as, reg_dest, reg_base, word_offset);
     } else if (word_offset < 256) {

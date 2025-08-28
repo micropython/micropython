@@ -703,8 +703,6 @@ void asm_rv32_meta_comparison_le(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2
 
 void asm_rv32_emit_optimised_load_immediate(asm_rv32_t *state, mp_uint_t rd, mp_int_t immediate);
 
-#ifdef GENERIC_ASM_API
-
 void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index);
 void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label);
 void asm_rv32_emit_jump_if_reg_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t label);
@@ -716,6 +714,8 @@ void asm_rv32_emit_mov_reg_local(asm_rv32_t *state, mp_uint_t rd, mp_uint_t loca
 void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t label);
 void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs);
 void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_uint_t base, int32_t offset, mp_uint_t operation_size);
+
+#ifdef GENERIC_ASM_API
 
 #define ASM_T asm_rv32_t
 #define ASM_ENTRY(state, labels, name) asm_rv32_entry(state, labels)
