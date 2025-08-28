@@ -279,10 +279,6 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
 #elif defined(STM32L4)
 #define APB1ENR            APB1ENR1
 #define RCC_APB1ENR_I2C1EN RCC_APB1ENR1_I2C1EN
-#if defined(STM32L432xx)
-// Not a real peripheral, only needed for i2c_id calculation in i2c_init.
-#define I2C2_BASE          (APB1PERIPH_BASE + 0x5800UL)
-#endif
 #endif
 
 static uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
