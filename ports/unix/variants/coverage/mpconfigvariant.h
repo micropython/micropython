@@ -53,3 +53,20 @@
 #define MICROPY_HW_MCU_NAME            MICROPY_PY_SYS_PLATFORM
 // Keep the standard banner message
 #define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
+
+#define MICROPY_PY_MPYCROSS (1)
+
+#define MICROPY_EMIT_X64            (1)
+#define MICROPY_EMIT_X86            (1)
+#define MICROPY_EMIT_THUMB          (1)
+#define MICROPY_EMIT_INLINE_THUMB   (1)
+#define MICROPY_EMIT_ARM            (1)
+#define MICROPY_EMIT_XTENSA         (1)
+#define MICROPY_EMIT_INLINE_XTENSA  (1)
+#define MICROPY_EMIT_XTENSAWIN      (1)
+#define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_INLINE_RV32    (1)
+#define MICROPY_EMIT_NATIVE_DEBUG   (1)
+#define MICROPY_EMIT_NATIVE_DEBUG_PRINTER (&mp_plat_print)
+
+#define MICROPY_DYNAMIC_COMPILER    (1)
