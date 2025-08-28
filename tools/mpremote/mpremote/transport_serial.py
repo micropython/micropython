@@ -40,8 +40,6 @@ from errno import EPERM
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
-VID_ESPRESSIF = 0x303A  # Espressif Incorporated
-
 
 class SerialTransport(Transport):
     fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
@@ -67,24 +65,7 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if device.startswith("rfc2217://"):
-                    self.serial = serial.serial_for_url(device, **serial_kwargs)
-                elif os.name == "nt":
-                    self.serial = serial.Serial(**serial_kwargs)
-                    self.serial.port = device
-                    portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and (
-                        getattr(portinfo[0], "vid", 0) == VID_ESPRESSIF
-                        or getattr(portinfo[0], "manufacturer", "") != "Microsoft"
-                    ):
-                        # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
-                        # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
-                        # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
-                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
-                        self.serial.rts = False  # RTS False = EN High = MCU enabled
-                    self.serial.open()
-                else:
-                    self.serial = serial.Serial(device, **serial_kwargs)
+                self.serial = serial.serial_for_url(device, **serial_kwargs)
                 break
             except OSError:
                 if wait == 0:
@@ -103,6 +84,9 @@ class SerialTransport(Transport):
             print("")
 
     def close(self):
+        # ESP Windows quirk: Prevent target from resetting when Windows clears DTR before RTS
+        self.serial.rts = False
+        self.serial.dtr = False
         self.serial.close()
 
     def read_until(
