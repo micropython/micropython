@@ -287,7 +287,7 @@ static mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write1_obj, stream_write1_method);
 
-static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_readinto_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
 
@@ -303,7 +303,12 @@ static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     }
 
     int error;
-    mp_uint_t out_sz = mp_stream_read_exactly(args[0], bufinfo.buf, len, &error);
+    mp_uint_t out_sz;
+    if (flags & MP_STREAM_RW_ONCE) {
+        out_sz = mp_stream_rw(args[0], bufinfo.buf, len, &error, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+    } else {
+        out_sz = mp_stream_read_exactly(args[0], bufinfo.buf, len, &error);
+    }
     if (error != 0) {
         if (mp_is_nonblocking_error(error)) {
             return mp_const_none;
@@ -313,31 +318,14 @@ static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
 }
+
+static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
+    return stream_readinto_generic(n_args, args, 0);
+}
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
 
-
 static mp_obj_t stream_readinto1(size_t n_args, const mp_obj_t *args) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-
-    // CPython extension: if 2nd arg is provided, that's max len to read,
-    // instead of full buffer. Similar to
-    // https://docs.python.org/3/library/socket.html#socket.socket.recv_into
-    mp_uint_t len = bufinfo.len;
-    if (n_args > 2) {
-        len = mp_obj_get_int(args[2]);
-        if (len > bufinfo.len) {
-            len = bufinfo.len;
-        }
-    }
-
-    int error;
-    mp_uint_t out_sz = mp_stream_rw(args[0], bufinfo.buf, len, &error, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
-    if (error != 0) {
-        return mp_const_none;
-    } else {
-        return MP_OBJ_NEW_SMALL_INT(out_sz);
-    }
+    return stream_readinto_generic(n_args, args, MP_STREAM_RW_ONCE);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto1_obj, 2, 3, stream_readinto1);
 
