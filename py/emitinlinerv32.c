@@ -501,7 +501,7 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
                 return false;
             }
 
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << shift;
             if (kind & U) {
                 if (!is_in_unsigned_mask(mask, immediate)) {
                     goto out_of_range;
@@ -660,7 +660,7 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             parse_register_node(arguments[1], &rs1, opcode_data->argument2_kind & C);
             mp_obj_t object;
             mp_parse_node_get_int_maybe(arguments[2], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument3_shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << opcode_data->argument3_shift;
             ((call_rri_t)opcode_data->emitter)(&emit->as, rd, rs1, immediate);
             break;
         }
@@ -669,7 +669,7 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
             mp_obj_t object;
             mp_parse_node_get_int_maybe(arguments[1], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument2_shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << opcode_data->argument2_shift;
             ((call_ri_t)opcode_data->emitter)(&emit->as, rd, immediate);
             break;
         }
