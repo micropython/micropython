@@ -115,7 +115,7 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
+#if MICROPY_EMIT_NATIVE && !MICROPY_NO_RUNTIME
 
 #if !MICROPY_PY_BUILTINS_SET
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
@@ -354,7 +354,7 @@ const mp_fun_table_t mp_fun_table = {
     &mp_stream_write_obj,
 };
 
-#elif MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
+#elif MICROPY_EMIT_NATIVE && MICROPY_NO_RUNTIME
 
 const int mp_fun_table;
 

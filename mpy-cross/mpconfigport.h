@@ -52,6 +52,7 @@
 #define MICROPY_EMIT_NATIVE_DEBUG_PRINTER (&mp_stdout_print)
 
 #define MICROPY_DYNAMIC_COMPILER    (1)
+#define MICROPY_NO_RUNTIME          (1)
 #define MICROPY_COMP_CONST_FOLDING  (1)
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_CONST          (1)
