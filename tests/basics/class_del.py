@@ -1,8 +1,8 @@
 """
 categories: Core,Classes
-description: Special method __del__ not implemented for user-defined classes
-cause: Unknown
-workaround: Unknown
+description: Special method __del__ is implemented for user-defined classes
+cause: Known
+workaround: Unnecessary
 """
 
 import gc
