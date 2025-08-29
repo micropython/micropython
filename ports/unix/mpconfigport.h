@@ -178,6 +178,8 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_DEBUG_PRINTER (&mp_stderr_print)
 #define MICROPY_ERROR_PRINTER (&mp_stderr_print)
 
+#define MICROPY_DEBUG_VERBOSE (0)
+
 // For the native emitter configure how to mark a region as executable.
 void mp_unix_alloc_exec(size_t min_size, void **ptr, size_t *size);
 void mp_unix_free_exec(void *ptr, size_t size);
@@ -198,6 +200,28 @@ static inline unsigned long mp_random_seed_init(void) {
 #ifdef __linux__
 // Can access physical memory using /dev/mem
 #define MICROPY_PLAT_DEV_MEM  (1)
+
+#ifndef MICROPY_PY_GPIO
+#define MICROPY_PY_GPIO                   (0)
+#endif
+
+#if MICROPY_PY_GPIO
+// If you do not need IRQs or you are polling the GPIO pins anyway, you can
+// disable this (with a smaller footprint and slightly faster execution).
+//
+// This requires threading support to be enabled, as it is essentially a
+// background thread doing blocking epoll()s on a file descriptor.
+#define MICROPY_PY_GPIO_IRQ               (MICROPY_PY_THREAD)
+
+// Since GPIO line change events may be batched, this indicates how many
+// events can be reported at the same time per epoll operation.  Each entry
+// takes up sizeof(struct epoll_event) bytes of heap.
+//
+// TODO: Make this configurable at runtime instead?
+#define MICROPY_PY_GPIO_IRQ_QUEUE_SIZE    (16)
+
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW   mp_pin_make_new
+#endif
 #endif
 
 #ifdef __ANDROID__
@@ -206,6 +230,11 @@ static inline unsigned long mp_random_seed_init(void) {
 // Bionic libc in Android 1.5 misses these 2 functions
 #define MP_NEED_LOG2 (1)
 #define nan(x) NAN
+#endif
+
+// Android is "Linux", but its GPIO support cannot be tested at the moment.
+#if MICROPY_PY_GPIO
+#error "GPIO support is not available on Android."
 #endif
 #endif
 
