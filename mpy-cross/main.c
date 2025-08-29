@@ -64,6 +64,14 @@ static void stderr_print_strn(void *env, const char *str, size_t len) {
 
 static const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
+#if MICROPY_EMIT_RV32
+#include "py/asmrv32.h"
+
+static asm_rv32_backend_options_t rv32_options = {
+    .emit_zba = false,
+};
+#endif
+
 static int compile_and_save(const char *file, const char *output_file, const char *source_file) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -147,6 +155,10 @@ static int usage(char **argv) {
         "  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
         , heap_size);
     impl_opts_cnt++;
+    #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+    printf("  riscv=zba -- use Zba opcodes if possible when targeting RV32\n");
+    impl_opts_cnt++;
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
@@ -170,6 +182,10 @@ static void pre_process_options(int argc, char **argv) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #if MICROPY_EMIT_RV32
+                } else if (strcmp(argv[a + 1], "riscv=zba") == 0) {
+                    rv32_options.emit_zba = true;
+                #endif
                 #endif
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
@@ -236,6 +252,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
+    #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+    mp_dynamic_compiler.backend_options = (void *)&rv32_options;
+    #endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
@@ -349,6 +368,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
             input_file = backslash_to_forwardslash(argv[a]);
         }
     }
+
+    #if MICROPY_EMIT_RV32
+    if (rv32_options.emit_zba && mp_dynamic_compiler.native_arch != MP_NATIVE_ARCH_RV32IMC) {
+        mp_printf(&mp_stderr_print, "cannot use RV32-specific options on anything but -march=rv32imc\n");
+        exit(1);
+    }
+    #endif
 
     #if MICROPY_EMIT_NATIVE
     if ((MP_STATE_VM(default_emit_opt) == MP_EMIT_OPT_NATIVE_PYTHON
