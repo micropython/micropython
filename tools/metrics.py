@@ -57,6 +57,8 @@ class PortData:
         self.needs_mpy_cross = dir not in ("bare-arm", "minimal")
 
 
+mpy_cross_output = "mpy-cross/build/mpy-cross"
+
 port_data = {
     "b": PortData("bare-arm", "bare-arm", "build/firmware.elf"),
     "m": PortData("minimal x86", "minimal", "build/firmware.elf"),
@@ -142,6 +144,8 @@ def do_diff(args):
     max_delta = None
     for key, value1 in data1.items():
         value2 = data2[key]
+        if key == mpy_cross_output:
+            name = "mpy-cross"
         for port in port_data.values():
             if key == "ports/{}/{}".format(port.dir, port.output):
                 name = port.name
@@ -207,6 +211,10 @@ def do_sizes(args):
     ports = parse_port_list(args)
 
     print("COMPUTING SIZES")
+
+    if any(port.needs_mpy_cross for port in ports):
+        syscmd("size", mpy_cross_output)
+
     for port in ports:
         syscmd("size", "ports/{}/{}".format(port.dir, port.output))
 
