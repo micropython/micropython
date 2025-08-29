@@ -36,11 +36,37 @@
 # as a command line tool and a library for interacting with devices.
 
 import ast, io, os, re, struct, sys, time
+import serial
+import serial.tools.list_ports
 from errno import EPERM
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
 VID_ESPRESSIF = 0x303A  # Espressif Incorporated
+PID_ESPRESSIF_SERIAL_JTAG = 0x1001  # Serial/JTAG peripheral of ESP32-S3,C3,C6
+
+
+def has_espressif_dtr_quirk(devicename):
+    """ESP8266 and ESP32 dev boards use the DTR and RTS lines to trigger reset &
+    reset into bootloader mode. This can causes spurious reset issues on Windows.
+
+    Apply the quirk to any USB/Serial chip on Windows that isn't using the
+    Microsoft CDC-ACM driver, or to the integrated Espressif Serial/JTAG device.
+
+    Don't apply it to Espressif boards running TinyUSB, as TinyUSB uses DTR
+    to determine if the CDC port is open (and there's no spurious reset issue).
+    """
+    portinfo = list(serial.tools.list_ports.grep(devicename))  # type: ignore
+    if not portinfo:
+        return False
+
+    def port_attr(name):
+        return getattr(portinfo[0], name, None)
+
+    return (port_attr("vid"), port_attr("pid")) == (
+        VID_ESPRESSIF,
+        PID_ESPRESSIF_SERIAL_JTAG,
+    ) or port_attr("manufacturer") != "Microsoft"
 
 
 class SerialTransport(Transport):
@@ -51,9 +77,6 @@ class SerialTransport(Transport):
         self.use_raw_paste = True
         self.device_name = device
         self.mounted = False
-
-        import serial
-        import serial.tools.list_ports
 
         # Set options, and exclusive if pyserial supports it
         serial_kwargs = {
@@ -72,12 +95,7 @@ class SerialTransport(Transport):
                 elif os.name == "nt":
                     self.serial = serial.Serial(**serial_kwargs)
                     self.serial.port = device
-                    portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and (
-                        getattr(portinfo[0], "vid", 0) == VID_ESPRESSIF
-                        or getattr(portinfo[0], "manufacturer", "") != "Microsoft"
-                    ):
-                        # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
+                    if has_espressif_dtr_quirk(device):
                         # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
                         # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
                         self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
