@@ -56,6 +56,11 @@
 #include "input.h"
 #include "stack_size.h"
 
+#if MICROPY_DYNAMIC_COMPILER
+#include "py/persistentcode.h"
+#include "py/smallint.h"
+#endif
+
 // Command line options, with their defaults
 static bool compile_only = false;
 static uint emit_opt = MP_EMIT_OPT_NONE;
@@ -504,6 +509,26 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // means "pipe was requested to terminate, it's not an error"), should
     // catch EPIPE themselves.
     signal(SIGPIPE, SIG_IGN);
+    #endif
+
+    #if MICROPY_DYNAMIC_COMPILER
+    // set default compiler configuration
+    mp_dynamic_compiler.small_int_bits = MP_SMALL_INT_BITS;
+    // don't support native emitter unless -march is specified
+
+    #if defined(__i386__) || defined(_M_IX86)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
+    #elif defined(__x86_64__) || defined(_M_X64)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
+    #elif defined(__arm__) && !defined(__thumb2__)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
+    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+    #else
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
+    mp_dynamic_compiler.nlr_buf_num_regs = 0;
+    #endif
     #endif
 
     pre_process_options(argc, argv);
