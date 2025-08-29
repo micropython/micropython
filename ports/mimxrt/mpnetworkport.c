@@ -58,11 +58,20 @@ u32_t sys_now(void) {
 static void pyb_lwip_poll(void) {
     // Run the lwIP internal updates
     sys_check_timeouts();
+
+    #if MICROPY_PY_NETWORK_ESP_HOSTED
+    extern int esp_hosted_wifi_poll(void);
+    // Poll the NIC for incoming data
+    esp_hosted_wifi_poll();
+    #endif
 }
 
+static bool network_poll_now_flag = false;
+
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
-    if (LWIP_TICK(ticks_ms)) {
+    if (LWIP_TICK(ticks_ms) || network_poll_now_flag) {
         pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, pyb_lwip_poll);
+        network_poll_now_flag = false;
     }
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -74,6 +83,10 @@ void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
         }
     }
     #endif
+}
+
+void mod_network_poll_events(void) {
+    network_poll_now_flag = true;
 }
 
 #endif // MICROPY_PY_LWIP

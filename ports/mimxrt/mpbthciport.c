@@ -100,6 +100,14 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 1, 6, args);
     MP_STATE_PORT(mp_bthci_uart) = mp_bthci_uart;
 
+    #if MICROPY_PY_NETWORK_NINAW10
+    mp_hal_pin_output(MICROPY_HW_NINA_CS);
+    mp_hal_pin_write(MICROPY_HW_NINA_CS, 0);
+    #else
+    mp_hal_pin_output(MICROPY_HW_WIFI_SPI_CS);
+    mp_hal_pin_write(MICROPY_HW_WIFI_SPI_CS, 0);
+    #endif
+
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();
     return 0;
