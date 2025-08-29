@@ -98,11 +98,14 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(native_base_init_wrapper_obj, 1, native_base_i
 #if !MICROPY_CPYTHON_COMPAT
 static
 #endif
-mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_type_t **native_base) {
+mp_obj_instance_t *mp_obj_new_instance(mp_obj_type_t *class, const mp_obj_type_t **native_base) {
     size_t num_native_bases = instance_count_native_bases(class, native_base);
     assert(num_native_bases < 2);
     mp_obj_instance_t *o = mp_obj_malloc_var(mp_obj_instance_t, subobj, mp_obj_t, num_native_bases, class);
     mp_map_init(&o->members, 0);
+    if (mp_obj_is_instance_type(class)) {
+        class->flags |= MP_TYPE_FLAG_IS_INSTANCED;
+    }
     // Initialise the native base-class slot (should be 1 at most) with a valid
     // object.  It doesn't matter which object, so long as it can be uniquely
     // distinguished from a native class that is initialised.
@@ -285,7 +288,7 @@ static void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "<%s object at %p>", mp_obj_get_type_str(self_in), self);
 }
 
-static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_obj_instance_make_new(mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_instance_type(self));
 
     // look for __new__ function
