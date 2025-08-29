@@ -40,9 +40,11 @@
 #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 typedef uint64_t mp_obj_t;
 typedef uint64_t mp_const_obj_t;
+typedef uint64_t mp_weak_obj_t;
 #else
 typedef void *mp_obj_t;
 typedef const void *mp_const_obj_t;
+typedef void *mp_weak_obj_t;
 #endif
 
 // This mp_obj_type_t struct is a concrete MicroPython object which holds info
@@ -126,6 +128,8 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 3) == 0;
 }
 
+#define MP_WEAKOBJ_MASK (0x80000001)
+
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
 
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
@@ -170,6 +174,8 @@ mp_obj_t mp_obj_new_float(mp_float_t value);
 static inline bool mp_obj_is_obj(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 1) == 0;
 }
+
+#define MP_WEAKOBJ_MASK (0x80000002)
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
 
@@ -241,6 +247,8 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 3) == 0;
 }
 
+#define MP_WEAKOBJ_MASK (0x80000001)
+
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
@@ -308,6 +316,8 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 #define MP_OBJ_TO_PTR(o) ((void *)(uintptr_t)(o))
 #define MP_OBJ_FROM_PTR(p) ((mp_obj_t)((uintptr_t)(p)))
 
+#define MP_WEAKOBJ_MASK (0x0000800000000001)
+
 // rom object storage needs special handling to widen 32-bit pointer to 64-bits
 typedef union _mp_rom_obj_t {
     uint64_t u64;
@@ -371,6 +381,16 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 #define MP_ROM_QSTR(q) {MP_OBJ_NEW_QSTR(q)}
 #define MP_ROM_PTR(p) {.o = p}
 */
+#endif
+
+// Macros for weakening and unweakening object pointers.
+// This is used to blind the garbage collector to certain references.
+#ifndef MP_OBJ_TO_WEAK
+#define MP_OBJ_TO_WEAK(o) ((mp_weak_obj_t)((uintptr_t)(o) ^ MP_WEAKOBJ_MASK))
+#endif
+
+#ifndef MP_OBJ_FROM_WEAK
+#define MP_OBJ_FROM_WEAK(w) ((mp_obj_t)((uintptr_t)(w) ^ MP_WEAKOBJ_MASK))
 #endif
 
 // These macros are used to declare and define constant function objects
