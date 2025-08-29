@@ -558,7 +558,10 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // If MP_TYPE_FLAG_INSTANCE_TYPE is set then this is an instance type (i.e. defined in Python).
 // If MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE is set then the "subscr" slot allows a stack
 //   allocated slice to be passed in (no references to it will be retained after the call).
-// If MP_TYPE_FLAG_IS_INSTANCED is set, then instances of this class have been created.
+// If MP_TYPE_FLAG_IS_INSTANCED is set, then instances of this class have been created,
+//   i.e. possibly on non-finaliser-marked allocations if MP_TYPE_FLAG_HAS_FINALISER is unset.
+// If MP_TYPE_FLAG_HAS_FINALISER is set, then instances of this class need to be instantiated
+//   using finalising allocations.
 #define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
@@ -574,6 +577,7 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_INSTANCE_TYPE (0x0200)
 #define MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE (0x0400)
 #define MP_TYPE_FLAG_IS_INSTANCED (0x0800)
+#define MP_TYPE_FLAG_HAS_FINALISER (0x1000)
 
 typedef enum {
     PRINT_STR = 0,
