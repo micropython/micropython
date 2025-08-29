@@ -287,6 +287,10 @@ with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
 The period is in milliseconds. When using UART.IRQ_RXIDLE, timer 0 is needed for
 the IRQ_RXIDLE mechanism and must not be used otherwise.
 
+Timer callbacks are scheduled as soft interrupts on this port; hard
+callbacks are not implemented. Specifying ``hard=True`` will raise
+a ValueError.
+
 Virtual timers are not currently supported on this port.
 
 .. _Pins_and_GPIO:
