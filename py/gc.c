@@ -580,7 +580,8 @@ static void gc_sweep_run_finalisers(void) {
             while (ftb) {
                 MICROPY_GC_HOOK_LOOP(block);
                 if (ftb & 1) { // FTB_GET(area, block) shortcut
-                    if (ATB_GET_KIND(area, block) == AT_HEAD) {
+                    byte atb_kind = ATB_GET_KIND(area, block);
+                    if (atb_kind == AT_HEAD || atb_kind == AT_MARK) {
                         mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
                         if (obj->type != NULL) {
                             // if the object has a type then see if it has a __del__ method
