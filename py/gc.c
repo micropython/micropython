@@ -532,6 +532,8 @@ void gc_sweep_all(void) {
     gc_collect_end();
 }
 
+static size_t atb_miss_count = 0;
+
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep_run_finalisers();
@@ -544,6 +546,10 @@ void gc_collect_end(void) {
     }
     MP_STATE_THREAD(gc_lock_depth) &= ~GC_COLLECT_FLAG;
     GC_EXIT();
+    if (atb_miss_count != 0) {
+        printf("atb_miss_count = %zu\n", atb_miss_count);
+        atb_miss_count = 0;
+    }
 }
 
 static void gc_deal_with_stack_overflow(void) {
@@ -566,7 +572,6 @@ static void gc_deal_with_stack_overflow(void) {
         }
     }
 }
-
 // Run finalisers for all to-be-freed blocks
 static void gc_sweep_run_finalisers(void) {
     #if MICROPY_ENABLE_FINALISER
@@ -599,6 +604,8 @@ static void gc_sweep_run_finalisers(void) {
                         }
                         // clear finaliser flag
                         FTB_CLEAR(area, block);
+                    } else {
+                        atb_miss_count++;
                     }
                 }
                 ftb >>= 1;
