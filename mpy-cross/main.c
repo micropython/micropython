@@ -119,6 +119,7 @@ static int compile_and_save(const char *file, const char *output_file, const cha
 
 static int usage(char **argv) {
     printf(
+        MICROPY_BANNER_NAME_AND_VERSION "\n\n"
         "usage: %s [<opts>] [-X <implopt>] [--] <input filename>\n"
         "Options:\n"
         "--version : show version information\n"
@@ -358,6 +359,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         exit(1);
     }
     #endif
+
+    if (mp_verbose_flag) {
+        mp_printf(&mp_stderr_print, MICROPY_BANNER_NAME_AND_VERSION "\n");
+    }
 
     if (input_file == NULL) {
         mp_printf(&mp_stderr_print, "no input file\n");

@@ -171,3 +171,9 @@ typedef mp_off_t off_t;
 #endif
 
 extern const struct _mp_print_t mp_stdout_print;
+
+#if MICROPY_PREVIEW_VERSION_2
+#define MICROPY_BANNER_NAME_AND_VERSION "mpy-cross (with v2.0 preview) " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+#else
+#define MICROPY_BANNER_NAME_AND_VERSION "mpy-cross " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+#endif
