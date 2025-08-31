@@ -66,6 +66,7 @@ def run_one_arch(arch, inlineasm=None):
     arch_support_check(arch)
 
     run_dir("micropython", "viper_", emit_arch=arch)
+    run_dir("micropython", "native_", emit_arch=arch)
     run_dir("basics", emit_arch=arch, emit_opt="EMIT_OPT_NATIVE_PYTHON")
     if inlineasm:
         run_dir(f"inlineasm/{inlineasm}", emit_arch=arch, emit_opt="EMIT_OPT_NATIVE_PYTHON")
