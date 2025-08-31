@@ -163,7 +163,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    const struct device *dev = zephyr_device_find(args[0]);
+    const struct device *dev = zephyr_device_setup(args[0]);
     machine_uart_obj_t *self = mp_obj_malloc_with_finaliser(machine_uart_obj_t, &machine_uart_type);
     self->dev = dev;
     self->tx_complete = true;
