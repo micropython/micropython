@@ -71,6 +71,17 @@ def run_one_arch(arch, inlineasm=None):
         run_dir(f"inlineasm/{inlineasm}", emit_arch=arch, emit_opt="EMIT_OPT_NATIVE_PYTHON")
 
 
+def run_extra_cases(emit_arch, cases):
+    arch_support_check(emit_arch)
+
+    for content in cases:
+        try:
+            compiled = mpycross.compile(content, "<expect-error>", emit_arch=emit_arch)
+            print(f"OK")
+        except SyntaxError as e:
+            print(e)
+
+
 if __name__ == "__main__":
     arch_support_check("host")
     run_dir(f"basics", emit_opt="EMIT_OPT_BYTECODE")

@@ -595,3 +595,27 @@ Compiling asmsanity.py with rv32imc EMIT_OPT_NATIVE_PYTHON
 Compiling asmshift.py with rv32imc EMIT_OPT_NATIVE_PYTHON
 Compiling asmstack.py with rv32imc EMIT_OPT_NATIVE_PYTHON
 Compiling asmsum.py with rv32imc EMIT_OPT_NATIVE_PYTHON
+Expected to compile
+OK
+Expected to fail
+can only have up to 4 parameters for RV32 assembly
+parameters must be registers in sequence a0 to a3
+opcode 'csrrc': expecting 3 arguments
+opcode 'csrrc' argument 3: expecting integer
+opcode 'csrrc' argument 3: out of range
+opcode 'csrrc' argument 2: expecting register
+unknown RV32 instruction 'moo'
+opcode 'beq' argument 3: expecting label
+opcode 'beq' argument 3: expecting label
+opcode 'beq' argument 3: undefined label 'y'
+opcode 'lw' argument 2: out of range
+opcode 'lw' argument 2: out of range
+opcode 'lw' argument 2: out of range
+opcode 'lw' argument 2: expecting offset
+opcode 'lw': expecting 2 arguments
+expecting an assembler instruction
+parameters must be registers in sequence a0 to a3
+opcode 'c_lui' argument 1: unknown register
+opcode 'c_lui' argument 2: must not be zero
+opcode 'csrrci' argument 3: out of range
+opcode 'c_beqz' argument 2: out of range
