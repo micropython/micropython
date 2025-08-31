@@ -532,8 +532,6 @@ void gc_sweep_all(void) {
     gc_collect_end();
 }
 
-static size_t atb_miss_count = 0;
-
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep_run_finalisers();
@@ -546,10 +544,6 @@ void gc_collect_end(void) {
     }
     MP_STATE_THREAD(gc_lock_depth) &= ~GC_COLLECT_FLAG;
     GC_EXIT();
-    if (atb_miss_count != 0) {
-        printf("atb_miss_count = %zu\n", atb_miss_count);
-        atb_miss_count = 0;
-    }
 }
 
 static void gc_deal_with_stack_overflow(void) {
@@ -572,6 +566,35 @@ static void gc_deal_with_stack_overflow(void) {
         }
     }
 }
+
+#define LOG_FINALISER_MISS(area, block) log_finaliser_miss(area, block, __PRETTY_FUNCTION__)
+static void log_finaliser_miss(const mp_state_mem_area_t *area, size_t block, const char *where) {
+    byte atb_kind = ATB_GET_KIND(area, block);
+    char *atb_kind_name;
+    switch (atb_kind) {
+        case AT_FREE:
+            atb_kind_name = "AT_FREE";
+            break;
+        case AT_HEAD:
+            atb_kind_name = "AT_HEAD";
+            break;
+        case AT_MARK:
+            atb_kind_name = "AT_MARK";
+            break;
+        case AT_TAIL:
+            atb_kind_name = "AT_TAIL";
+            break;
+        default:
+            atb_kind_name = "UNKNOWN";
+            break;
+    }
+    uintptr_t ptr = PTR_FROM_BLOCK(area, block);
+
+    mp_printf(MICROPY_ERROR_PRINTER, "%s.%s block=%lu ptr=%p kind=%s[%u]: ", where, __PRETTY_FUNCTION__, block, ptr, atb_kind_name, atb_kind);
+    mp_obj_print_helper(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(ptr), PRINT_REPR);
+    mp_print_str(MICROPY_ERROR_PRINTER, "\n");
+}
+
 // Run finalisers for all to-be-freed blocks
 static void gc_sweep_run_finalisers(void) {
     #if MICROPY_ENABLE_FINALISER
@@ -605,7 +628,7 @@ static void gc_sweep_run_finalisers(void) {
                         // clear finaliser flag
                         FTB_CLEAR(area, block);
                     } else {
-                        atb_miss_count++;
+                        LOG_FINALISER_MISS(area, block);
                     }
                 }
                 ftb >>= 1;
