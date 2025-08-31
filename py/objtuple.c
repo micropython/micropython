@@ -162,7 +162,7 @@ mp_obj_t mp_obj_tuple_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (n <= 0) {
                 return mp_const_empty_tuple;
             }
-            mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(o->len * n, NULL));
+            mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(mp_compute_size_overflow(0, o->len, n), NULL));
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return MP_OBJ_FROM_PTR(s);
         }

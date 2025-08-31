@@ -83,26 +83,38 @@ typedef unsigned int uint;
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
-#define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
-#define m_new_maybe(type, num) ((type *)(m_malloc_maybe(sizeof(type) * (num))))
-#define m_new0(type, num) ((type *)(m_malloc0(sizeof(type) * (num))))
-#define m_new_obj(type) (m_new(type, 1))
-#define m_new_obj_maybe(type) (m_new_maybe(type, 1))
-#define m_new_obj_var(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
-#define m_new_obj_var0(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc0(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
-#define m_new_obj_var_maybe(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc_maybe(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
+#define m_new(type, num) ((type *)(m_malloc_overflow2(sizeof(type), (num))))
+#define m_new_maybe(type, num) ((type *)(m_malloc_maybe_overflow2(sizeof(type), (num))))
+#define m_new0(type, num) ((type *)(m_malloc0_overflow2(sizeof(type), (num))))
+#define m_new_obj(type) ((type *)m_malloc(sizeof(type)))
+#define m_new_obj_maybe(type) ((type *)m_malloc_maybe(sizeof(type)))
+#define m_new_obj_var(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc_overflow(offsetof(obj_type, var_field), sizeof(var_type), (var_num)))
+#define m_new_obj_var0(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc0_overflow(offsetof(obj_type, var_field), sizeof(var_type), (var_num)))
+#define m_new_obj_var_maybe(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc_maybe_overflow(offsetof(obj_type, var_field), sizeof(var_type), (var_num)))
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
-#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num), (allow_move))))
+#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc_overflow((ptr), sizeof(type) * (old_num), sizeof(type), (new_num))))
+#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe_overflow((ptr), sizeof(type) * (old_num), sizeof(type), (new_num), (allow_move))))
 #define m_del(type, ptr, num) m_free(ptr, sizeof(type) * (num))
 #define m_del_var(obj_type, var_field, var_type, var_num, ptr) (m_free(ptr, offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
 #else
-#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), sizeof(type) * (new_num))))
-#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), sizeof(type) * (new_num), (allow_move))))
+#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc_overflow((ptr), sizeof(type), (new_num))))
+#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe_overflow((ptr), sizeof(type), (new_num), (allow_move))))
 #define m_del(type, ptr, num) ((void)(num), m_free(ptr))
 #define m_del_var(obj_type, var_field, var_type, var_num, ptr) ((void)(var_num), m_free(ptr))
 #endif
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
+
+// The "overflow" allocators all compute `base_size + element_size * count` or
+// `element_size * count` while catching the overflow that can occur at each
+// step and returning SIZE_MAX. All allocations of SIZE_MAX are assumed to
+// fail.
+size_t mp_compute_size_overflow(size_t base_size, size_t element_size, size_t count);
+void *m_malloc_overflow(size_t base_size, size_t element_size, size_t count);
+void *m_malloc_maybe_overflow(size_t base_size, size_t element_size, size_t count);
+void *m_malloc0_overflow(size_t base_size, size_t element_size, size_t count);
+void *m_malloc_overflow2(size_t element_size, size_t count);
+void *m_malloc_maybe_overflow2(size_t element_size, size_t count);
+void *m_malloc0_overflow2(size_t element_size, size_t count);
 
 void *m_malloc(size_t num_bytes);
 void *m_malloc_maybe(size_t num_bytes);
@@ -111,11 +123,15 @@ void *m_malloc0(size_t num_bytes);
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
+void *m_realloc_overflow(void *ptr, size_t old_num_bytes, size_t size, size_t count);
+void *m_realloc_maybe_overflow(void *ptr, size_t old_num_bytes, size_t size, size_t count, bool allow_move);
 void m_free(void *ptr, size_t num_bytes);
 #else
 void *m_realloc(void *ptr, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
+void *m_realloc_overflow(void *ptr, size_t size, size_t count);
+void *m_realloc_maybe_overflow(void *ptr, size_t size, size_t count, bool allow_move);
 #endif
 MP_NORETURN void m_malloc_fail(size_t num_bytes);
 

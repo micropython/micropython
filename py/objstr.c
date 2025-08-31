@@ -379,7 +379,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         if (!mp_obj_get_int_maybe(rhs_in, &n)) {
             return MP_OBJ_NULL; // op not supported
         }
-        if (n <= 0) {
+        if (n <= 0 || !lhs_len) {
             if (lhs_type == &mp_type_str) {
                 return MP_OBJ_NEW_QSTR(MP_QSTR_); // empty str
             } else {
@@ -387,7 +387,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             }
         }
         vstr_t vstr;
-        vstr_init_len(&vstr, lhs_len * n);
+        vstr_init_len(&vstr, mp_compute_size_overflow(1, lhs_len, n) - 1);
         mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, vstr.buf);
         return mp_obj_new_str_type_from_vstr(lhs_type, &vstr);
     }

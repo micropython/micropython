@@ -132,6 +132,42 @@ void *m_malloc0(size_t num_bytes) {
     return ptr;
 }
 
+size_t mp_compute_size_overflow(size_t base_size, size_t element_size, size_t count) {
+    size_t new_size;
+    bool overflow = __builtin_mul_overflow(element_size, count, &new_size);
+    overflow |= __builtin_add_overflow(base_size, new_size, &new_size);
+    if (overflow) {
+        return SIZE_MAX;
+    }
+    return new_size;
+}
+
+void *m_malloc_overflow(size_t base_size, size_t element_size, size_t count) {
+    return m_malloc(mp_compute_size_overflow(base_size, element_size, count));
+}
+
+void *m_malloc_overflow2(size_t element_size, size_t count) {
+    return m_malloc_overflow(0, element_size, count);
+}
+
+void *m_malloc_maybe_overflow(size_t base_size, size_t element_size, size_t count) {
+    return m_malloc_maybe(mp_compute_size_overflow(base_size, element_size, count));
+}
+
+void *m_malloc_maybe_overflow2(size_t element_size, size_t element_count) {
+    return m_malloc_maybe_overflow(0, element_size, element_count);
+}
+
+
+void *m_malloc0_overflow(size_t base_size, size_t element_size, size_t element_count) {
+    return m_malloc0(mp_compute_size_overflow(base_size, element_size, element_count));
+}
+
+void *m_malloc0_overflow2(size_t element_size, size_t element_count) {
+    return m_malloc0_overflow(0, element_size, element_count);
+}
+
+
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes)
 #else
@@ -162,6 +198,18 @@ void *m_realloc(void *ptr, size_t new_num_bytes)
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+void *m_realloc_overflow(void *ptr, size_t old_num_bytes, size_t size, size_t count) {
+    size_t new_size = mp_compute_size_overflow(0, size, count);
+    return m_realloc(ptr, old_num_bytes, new_size);
+}
+#else
+void *m_realloc_overflow(void *ptr, size_t size, size_t count) {
+    size_t new_size = mp_compute_size_overflow(0, size, count);
+    return m_realloc(ptr, new_size);
+}
+#endif
+
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move)
 #else
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move)
@@ -189,6 +237,19 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move)
     #endif
     return new_ptr;
 }
+
+
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+void *m_realloc_maybe_overflow(void *ptr, size_t old_num_bytes, size_t size, size_t count, bool allow_move) {
+    size_t new_size = mp_compute_size_overflow(0, size, count);
+    return m_realloc_maybe(ptr, old_num_bytes, new_size, allow_move);
+}
+#else
+void *m_realloc_maybe_overflow(void *ptr, size_t size, size_t count, bool allow_move) {
+    size_t new_size = mp_compute_size_overflow(0, size, count);
+    return m_realloc_maybe(ptr, new_size, allow_move);
+}
+#endif
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void m_free(void *ptr, size_t num_bytes)
