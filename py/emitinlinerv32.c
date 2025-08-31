@@ -196,7 +196,6 @@ typedef enum {
     CALL_R,   // Opcode Register
     CALL_RL,  // Opcode Register, Label
     CALL_N,   // Opcode
-    CALL_I,   // Opcode Immediate
     CALL_RII, // Opcode Register, Register, Immediate
     CALL_RIR, // Opcode Register, Immediate(Register)
     CALL_COUNT
@@ -710,14 +709,6 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
         case CALL_N:
             ((call_n_t)opcode_data->emitter)(&emit->as);
             break;
-
-        case CALL_I: {
-            mp_obj_t object;
-            mp_parse_node_get_int_maybe(arguments[0], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument1_shift;
-            ((call_i_t)opcode_data->emitter)(&emit->as, immediate);
-            break;
-        }
 
         case CALL_RII: {
             parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
