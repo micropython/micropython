@@ -119,7 +119,9 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
         mp_raise_OSError(-ret);
     }
 
-    return MP_OBJ_FROM_PTR(o);
+    mp_obj_t obj = MP_OBJ_FROM_PTR(o);
+    LOG_VFS_LFSx(obj);
+    return obj;
 }
 
 static mp_uint_t MP_VFS_LFSx(file_read)(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
@@ -194,6 +196,14 @@ static mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
     }
 }
 
+static mp_obj_t MP_VFS_LFSx(file_del)(mp_obj_t self) {
+    LOG_VFS_LFSx(self);
+    mp_obj_t call[2];
+    mp_load_method(self, MP_QSTR_close, call);
+    return mp_call_method_n_kw(0, 0, call);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(file_del_obj), MP_VFS_LFSx(file_del));
+
 static const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
@@ -204,7 +214,7 @@ static const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&MP_VFS_LFSx(file_del_obj)) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
