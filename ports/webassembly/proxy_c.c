@@ -59,8 +59,9 @@ enum {
     PROXY_KIND_JS_INTEGER = 3,
     PROXY_KIND_JS_DOUBLE = 4,
     PROXY_KIND_JS_STRING = 5,
-    PROXY_KIND_JS_OBJECT = 6,
-    PROXY_KIND_JS_PYPROXY = 7,
+    PROXY_KIND_JS_OBJECT_EXISTING = 6,
+    PROXY_KIND_JS_OBJECT = 7,
+    PROXY_KIND_JS_PYPROXY = 8,
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
@@ -83,6 +84,9 @@ void proxy_c_init(void) {
     MP_STATE_PORT(proxy_c_dict) = mp_obj_new_dict(0);
     mp_obj_list_append(MP_STATE_PORT(proxy_c_ref), MP_OBJ_NULL);
     proxy_c_ref_next = PROXY_C_REF_NUM_STATIC;
+
+    void mp_obj_jsproxy_init(void);
+    mp_obj_jsproxy_init();
 }
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t proxy_c_ref);
@@ -172,6 +176,8 @@ mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value) {
         return s;
     } else if (value[0] == PROXY_KIND_JS_PYPROXY) {
         return proxy_c_get_obj(value[1]);
+    } else if (value[0] == PROXY_KIND_JS_OBJECT_EXISTING) {
+        return mp_obj_get_jsproxy(value[1]);
     } else {
         // PROXY_KIND_JS_OBJECT
         return mp_obj_new_jsproxy(value[1]);

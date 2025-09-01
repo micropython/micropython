@@ -32,6 +32,9 @@
 #include "py/runtime.h"
 #include "proxy_c.h"
 
+static mp_obj_t *jsproxy_table = NULL;
+static size_t jsproxy_table_len = 0;
+
 EM_JS(bool, has_attr, (int jsref, const char *str), {
     const base = proxy_js_ref[jsref];
     const attr = UTF8ToString(str);
@@ -295,6 +298,7 @@ EM_JS(void, proxy_js_free_obj, (int js_ref), {
 
 static mp_obj_t jsproxy___del__(mp_obj_t self_in) {
     mp_obj_jsproxy_t *self = MP_OBJ_TO_PTR(self_in);
+    jsproxy_table[self->ref] = MP_OBJ_NULL;
     proxy_js_free_obj(self->ref);
     return mp_const_none;
 }
@@ -590,11 +594,38 @@ MP_DEFINE_CONST_OBJ_TYPE(
     iter, jsproxy_getiter
     );
 
+void mp_obj_jsproxy_init(void) {
+    jsproxy_table = NULL;
+    jsproxy_table_len = 0;
+    MP_STATE_PORT(jsproxy_global_this) = mp_obj_new_jsproxy(MP_OBJ_JSPROXY_REF_GLOBAL_THIS);
+}
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t jsproxy_global_this);
+
 mp_obj_t mp_obj_new_jsproxy(int ref) {
+    // The proxy for this ref should not exist.
+    assert(ref >= jsproxy_table_len || jsproxy_table[ref] == MP_OBJ_NULL);
+
     mp_obj_jsproxy_t *o = mp_obj_malloc_with_finaliser(mp_obj_jsproxy_t, &mp_type_jsproxy);
     o->ref = ref;
     o->bind_to_self = false;
+    if (ref >= jsproxy_table_len) {
+        size_t new_len = MAX(16, ref * 2);
+        jsproxy_table = realloc(jsproxy_table, new_len * sizeof(mp_obj_t));
+        for (size_t i = jsproxy_table_len; i < new_len; ++i) {
+            jsproxy_table[i] = MP_OBJ_NULL;
+        }
+        jsproxy_table_len = new_len;
+    }
+    jsproxy_table[ref] = MP_OBJ_FROM_PTR(o);
     return MP_OBJ_FROM_PTR(o);
+}
+
+mp_obj_t mp_obj_get_jsproxy(int ref) {
+    // The proxy for this ref should exist.
+    assert(ref < jsproxy_table_len && jsproxy_table[ref] != MP_OBJ_NULL);
+
+    return jsproxy_table[ref];
 }
 
 // Load/delete/store an attribute from/to the JavaScript globalThis entity.

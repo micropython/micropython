@@ -2,7 +2,12 @@
 Object equality
 True
 True
+Object identity
+True
 Array equality
 True
+True
+True
+Array identity
 True
 True
