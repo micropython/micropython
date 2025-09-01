@@ -109,17 +109,25 @@ typedef unsigned int uint;
 // step and returning SIZE_MAX. All allocations of SIZE_MAX are assumed to
 // fail.
 size_t mp_compute_size_overflow(size_t base_size, size_t element_size, size_t count);
-void *m_malloc_overflow(size_t base_size, size_t element_size, size_t count);
-void *m_malloc_maybe_overflow(size_t base_size, size_t element_size, size_t count);
-void *m_malloc0_overflow(size_t base_size, size_t element_size, size_t count);
-void *m_malloc_overflow2(size_t element_size, size_t count);
 void *m_malloc_maybe_overflow2(size_t element_size, size_t count);
-void *m_malloc0_overflow2(size_t element_size, size_t count);
+void *m_malloc_maybe_overflow(size_t base_size, size_t element_size, size_t count);
+void *m_malloc_overflow2(size_t element_size, size_t count);
+void *m_malloc_overflow(size_t base_size, size_t element_size, size_t count);
 
 void *m_malloc(size_t num_bytes);
 void *m_malloc_maybe(size_t num_bytes);
 void *m_malloc_with_finaliser(size_t num_bytes);
+
+#if !MICROPY_GC_CONSERVATIVE_CLEAR
 void *m_malloc0(size_t num_bytes);
+void *m_malloc0_overflow2(size_t element_size, size_t count);
+void *m_malloc0_overflow(size_t base_size, size_t element_size, size_t count);
+#else
+#define m_malloc0 m_malloc
+#define m_malloc0_overflow2 m_malloc_overflow2
+#define m_malloc0_overflow m_malloc_overflow
+#endif
+
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);

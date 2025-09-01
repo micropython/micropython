@@ -123,6 +123,7 @@ void *m_malloc_with_finaliser(size_t num_bytes) {
 }
 #endif
 
+#if !MICROPY_GC_CONSERVATIVE_CLEAR
 void *m_malloc0(size_t num_bytes) {
     void *ptr = m_malloc(num_bytes);
     // If this config is set then the GC clears all memory, so we don't need to.
@@ -131,6 +132,15 @@ void *m_malloc0(size_t num_bytes) {
     #endif
     return ptr;
 }
+
+void *m_malloc0_overflow(size_t base_size, size_t element_size, size_t element_count) {
+    return m_malloc0(mp_compute_size_overflow(base_size, element_size, element_count));
+}
+
+void *m_malloc0_overflow2(size_t element_size, size_t element_count) {
+    return m_malloc0_overflow(0, element_size, element_count);
+}
+#endif
 
 size_t mp_compute_size_overflow(size_t base_size, size_t element_size, size_t count) {
     size_t new_size;
@@ -157,16 +167,6 @@ void *m_malloc_maybe_overflow(size_t base_size, size_t element_size, size_t coun
 void *m_malloc_maybe_overflow2(size_t element_size, size_t element_count) {
     return m_malloc_maybe_overflow(0, element_size, element_count);
 }
-
-
-void *m_malloc0_overflow(size_t base_size, size_t element_size, size_t element_count) {
-    return m_malloc0(mp_compute_size_overflow(base_size, element_size, element_count));
-}
-
-void *m_malloc0_overflow2(size_t element_size, size_t element_count) {
-    return m_malloc0_overflow(0, element_size, element_count);
-}
-
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes)
