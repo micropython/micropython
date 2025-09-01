@@ -137,9 +137,17 @@ void *m_malloc0_overflow2(size_t element_size, size_t element_count) {
 #endif
 
 size_t mp_compute_size_overflow(size_t base_size, size_t element_size, size_t count) {
-    size_t new_size;
-    bool overflow = __builtin_mul_overflow(element_size, count, &new_size);
-    overflow |= __builtin_add_overflow(base_size, new_size, &new_size);
+    size_t new_size, var_size;
+    bool overflow;
+    #if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+    overflow = __builtin_mul_overflow(element_size, count, &var_size);
+    overflow |= __builtin_add_overflow(base_size, var_size, &new_size);
+    #else
+    overflow = count > (SIZE_MAX / element_size);
+    var_size = element_size * count;
+    new_size = var_size + base_size;
+    overflow |= (new_size < base_size);
+    #endif
     if (overflow) {
         return SIZE_MAX;
     }
