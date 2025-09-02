@@ -2293,6 +2293,26 @@ typedef time_t mp_timestamp_t;
 #define MP_FALLTHROUGH
 #endif
 
+// If true, use __builtin_mul_overflow (a gcc intrinsic supported by clang) for
+// overflow checking when multiplying two small ints. Otherwise, use a portable
+// algorithm.
+//
+// Most MCUs have a with a 32x32->64 bit multiply instruction, in which case the
+// intrinsic is likely to be faster and generate smaller code. The main exception is
+// cortex-m0 with __ARM_ARCH_ISA_THUMB == 1.
+//
+// The intrinsic is in GCC from version 5. In principle it can be detected instead with
+// __has_builtin except this is only not GCC version 5.
+#ifndef MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+#if defined(__ARM_ARCH_ISA_THUMB) && (__GNUC__ >= 5)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (__ARM_ARCH_ISA_THUMB >= 2)
+#elif (__GNUC__ >= 5)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (1)
+#else
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (0)
+#endif
+#endif
+
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
 #define MP_HTOBE16(x) ((uint16_t)((((x) & 0xff) << 8) | (((x) >> 8) & 0xff)))

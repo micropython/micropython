@@ -66,8 +66,11 @@
 
 #define m_malloc_fail(num_bytes)        (m_malloc_fail_dyn((num_bytes)))
 #define m_malloc(n)                     (m_malloc_dyn((n)))
+#define m_malloc_overflow(base_size, element_size, count) (m_malloc_dyn((base_size) + (element_size) * (count)))
+#define m_malloc_overflow2(element_size, count) (m_malloc_dyn((element_size) * (count)))
 #define m_free(ptr)                     (m_free_dyn((ptr)))
 #define m_realloc(ptr, new_num_bytes)   (m_realloc_dyn((ptr), (new_num_bytes)))
+#define m_realloc_overflow(ptr, element_size, count)   (m_realloc_dyn((ptr), (element_size) * (count)))
 #define m_realloc_maybe(ptr, new_num_bytes, allow_move) (m_realloc_maybe_dyn((ptr), (new_num_bytes), (allow_move)))
 
 static MP_NORETURN inline void m_malloc_fail_dyn(size_t num_bytes) {
