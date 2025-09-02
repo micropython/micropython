@@ -56,8 +56,8 @@
 #undef malloc
 #undef free
 #undef realloc
-#define malloc(b) gc_alloc((b), false)
-#define malloc_with_finaliser(b) gc_alloc((b), true)
+#define malloc(b) gc_alloc((b), 0)
+#define malloc_with_finaliser(b) gc_alloc((b), GC_ALLOC_FLAG_HAS_FINALISER)
 #define free gc_free
 #define realloc(ptr, n) gc_realloc(ptr, n, true)
 #define realloc_ext(ptr, n, mv) gc_realloc(ptr, n, mv)
