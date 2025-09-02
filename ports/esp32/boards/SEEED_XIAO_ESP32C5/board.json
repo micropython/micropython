@@ -15,8 +15,8 @@
         "esp32c5_devkitmini.jpg"
     ],
     "mcu": "esp32c5",
-    "product": "XIAO-ESP32-C5",
+    "product": "ESP32-C5",
     "thumbnail": "",
-    "url": "https://wiki.seeedstudio.com/",
+    "url": "https://www.espressif.com/en/products/modules",
     "vendor": "Espressif"
 }
