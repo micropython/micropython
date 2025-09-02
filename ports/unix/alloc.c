@@ -50,26 +50,27 @@ typedef struct _mmap_region_t {
 
 void mp_unix_alloc_exec(size_t min_size, void **ptr, size_t *size) {
     // size needs to be a multiple of the page size
-    *size = (min_size + 0xfff) & (~0xfff);
-    *ptr = mmap(NULL, *size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    size_t rounded_size = (min_size + 0xfff) & (~0xfff);
+    *ptr = mmap(NULL, rounded_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (*ptr == MAP_FAILED) {
         *ptr = NULL;
     }
+    *size = min_size;
 
     // add new link to the list of mmap'd regions
     mmap_region_t *rg = m_new_obj(mmap_region_t);
     rg->ptr = *ptr;
-    rg->len = min_size;
+    rg->len = rounded_size;
     rg->next = MP_STATE_VM(mmap_region_head);
     MP_STATE_VM(mmap_region_head) = rg;
 }
 
 void mp_unix_free_exec(void *ptr, size_t size) {
-    munmap(ptr, size);
 
     // unlink the mmap'd region from the list
     for (mmap_region_t **rg = (mmap_region_t **)&MP_STATE_VM(mmap_region_head); *rg != NULL; *rg = (*rg)->next) {
         if ((*rg)->ptr == ptr) {
+            munmap(ptr, (*rg)->len);
             mmap_region_t *next = (*rg)->next;
             m_del_obj(mmap_region_t, *rg);
             *rg = next;
