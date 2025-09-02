@@ -43,6 +43,16 @@
 #error "MICROPY_VFS_LFS requires MICROPY_ENABLE_FINALISER"
 #endif
 
+#ifndef LOG_VFS_LFSx
+#define LOG_VFS_LFSx(obj) LFSx_API(log)(obj, __PRETTY_FUNCTION__)
+#endif
+
+static void LFSx_API(log)(const mp_obj_t obj, const char *where) {
+    mp_printf(MICROPY_ERROR_PRINTER, "%s.%s ptr=%p: ", where, __PRETTY_FUNCTION__, MP_OBJ_TO_PTR(obj));
+    mp_obj_print_helper(MICROPY_ERROR_PRINTER, obj, PRINT_REPR);
+    mp_print_str(MICROPY_ERROR_PRINTER, "\n");
+}
+
 static int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
     mp_obj_t ret = mp_vfs_blockdev_ioctl(c->context, cmd, arg);
     int ret_i = 0;
@@ -211,6 +221,7 @@ static mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
 
 static mp_obj_t MP_VFS_LFSx(ilistdir_it_del)(mp_obj_t self_in) {
     MP_VFS_LFSx(ilistdir_it_t) * self = MP_OBJ_TO_PTR(self_in);
+    LOG_VFS_LFSx(self_in);
     if (self->vfs != NULL) {
         LFSx_API(dir_close)(&self->vfs->lfs, &self->dir);
     }
@@ -240,7 +251,9 @@ static mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
         mp_raise_OSError(-ret);
     }
     iter->vfs = self;
-    return MP_OBJ_FROM_PTR(iter);
+    mp_obj_t obj = MP_OBJ_FROM_PTR(iter);
+    LOG_VFS_LFSx(obj);
+    return obj;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(MP_VFS_LFSx(ilistdir_obj), 1, 2, MP_VFS_LFSx(ilistdir_func));
 
