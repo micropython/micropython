@@ -86,7 +86,7 @@
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
 #elif defined(STM32N6)
-#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_11CYCLES_5
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_46CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_246CYCLES_5
 #endif
 
@@ -232,6 +232,8 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
     #elif defined(STM32L1)
     ADC1_COMMON->CCR = 1 << ADC_CCR_ADCPRE_Pos; // ADCPRE=2
+    #elif defined(STM32N6)
+    LL_RCC_SetADCPrescaler(4 - 1); // 200MHz / 4 = 50MHz
     #elif defined(STM32WB)
     ADC1_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos | 0 << ADC_CCR_CKMODE_Pos; // PRESC=1, MODE=ASYNC
     #elif defined(STM32WL)
@@ -433,13 +435,6 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ) || defined(STM32N6)
     ADC_Common_TypeDef *adc_common = ADC12_COMMON;
     #elif defined(STM32H7)
-    #if defined(ADC_VER_V5_V90)
-    if (adc != ADC3) {
-        adc->PCSEL_RES0 |= 1 << channel;
-    }
-    #else
-    adc->PCSEL |= 1 << channel;
-    #endif
     ADC_Common_TypeDef *adc_common = adc == ADC3 ? ADC3_COMMON : ADC12_COMMON;
     #elif defined(STM32L4)
     ADC_Common_TypeDef *adc_common = ADCx_COMMON;
@@ -469,6 +464,7 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
         adc->OR |= ADC_OR_OP0; // Enable Vddcore channel on ADC2
     #endif
     }
+
     #if defined(STM32G4) || defined(STM32H5) || defined(STM32N6) || defined(STM32WB)
     // MCU uses encoded literals for internal channels -> extract ADC channel for following code
     if (__LL_ADC_IS_CHANNEL_INTERNAL(channel)) {
@@ -476,6 +472,17 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     }
     adc->DIFSEL &= ~(1 << channel); // Set channel to Single-ended.
     #endif
+
+    #if defined(STM32H7) || defined(STM32N6)
+    #if defined(ADC_VER_V5_V90)
+    if (adc != ADC3) {
+        adc->PCSEL_RES0 |= 1 << channel;
+    }
+    #else
+    adc->PCSEL |= 1 << channel;
+    #endif
+    #endif
+
     adc->SQR1 = (channel & 0x1f) << ADC_SQR1_SQ1_Pos | (1 - 1) << ADC_SQR1_L_Pos;
     __IO uint32_t *smpr;
     if (channel <= 9) {
