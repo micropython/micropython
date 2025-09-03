@@ -102,6 +102,20 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  coverage_repr_b:
+    runs-on: ubuntu-22.04 # use 22.04 to get libffi-dev:i386
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_unix_32bit_setup
+    - name: Build
+      run: source tools/ci.sh && ci_unix_coverage_repr_b_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_coverage_repr_b_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   coverage_32bit:
     runs-on: ubuntu-22.04 # use 22.04 to get libffi-dev:i386
     steps:
