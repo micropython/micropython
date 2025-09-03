@@ -186,6 +186,9 @@
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (esp_rom_get_cpu_ticks_per_us() * 1000000 / 200) // roughly
+#ifndef MICROPY_HW_ESP_NEW_I2C_DRIVER
+#define MICROPY_HW_ESP_NEW_I2C_DRIVER       (0)
+#endif
 #define MICROPY_PY_SSL                      (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_WEBSOCKET                (1)
