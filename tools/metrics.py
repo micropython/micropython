@@ -43,9 +43,9 @@ Other commands:
 
 """
 
-import collections, sys, re, subprocess
+import collections, sys, re, subprocess, multiprocessing
 
-MAKE_FLAGS = ["-j3", "CFLAGS_EXTRA=-DNDEBUG"]
+MAKE_FLAGS = ["-j{}".format(multiprocessing.cpu_count()), "CFLAGS_EXTRA=-DNDEBUG"]
 
 
 class PortData:
