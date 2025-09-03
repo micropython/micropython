@@ -122,6 +122,11 @@ function ci_code_size_build {
     return $STATUS
 }
 
+function ci_code_size_report {
+    # Allow errors from tools/metrics.py to propagate out of the pipe above.
+    (set -o pipefail; tools/metrics.py diff ~/size0 ~/size1 | tee diff)
+}
+
 ########################################################################################
 # .mpy file format
 
