@@ -48,6 +48,9 @@ git -C ${MICROPY_AUTOBUILD_MICROPYTHON_REPO}/lib/pico-sdk submodule update --ini
 ########################################
 # Build all firmware
 
+# Fail on some things which are warnings otherwise
+export MICROPY_MAINTAINER_BUILD=1
+
 pushd ${MICROPY_AUTOBUILD_MICROPYTHON_REPO}
 
 # build cross compiler

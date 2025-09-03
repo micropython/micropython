@@ -9,6 +9,9 @@ fi
 # Ensure known OPEN_MAX (NO_FILES) limit.
 ulimit -n 1024
 
+# Fail on some things which are warnings otherwise
+export MICROPY_MAINTAINER_BUILD=1
+
 ########################################################################################
 # general helper functions
 
@@ -168,14 +171,17 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-# GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
-IDF_VER=v5.4.2
+# GitHub tag of ESP-IDF to use for CI, extracted from the esp32 dependency lockfile
+# This should end up as a tag name like vX.Y.Z
+# (note: This hacky parsing can be replaced with 'yq' once Ubuntu >=24.04 is in use)
+IDF_VER=v$(grep -A10 "idf:" ports/esp32/lockfiles/dependencies.lock.esp32 | grep "version:" | head -n1 | sed -E 's/ +version: //')
 PYTHON=$(command -v python3 2> /dev/null)
 PYTHON_VER=$(${PYTHON:-python} --version | cut -d' ' -f2)
 
 export IDF_CCACHE_ENABLE=1
 
 function ci_esp32_idf_setup {
+    echo "Using ESP-IDF version $IDF_VER"
     git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
     # doing a treeless clone isn't quite as good as --shallow-submodules, but it
     # is smaller than full clones and works when the submodule commit isn't a head.
