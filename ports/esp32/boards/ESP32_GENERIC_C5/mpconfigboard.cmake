@@ -5,5 +5,5 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.ble
     boards/sdkconfig.240mhz
     boards/sdkconfig.free_ram
-    boards/SEEED_XIAO_ESP32C5/sdkconfig.board
+    boards/ESP32_GENERIC_C5/sdkconfig.board
 )
