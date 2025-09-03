@@ -24,40 +24,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Python 2/3/MicroPython compatibility code
-from __future__ import print_function
-import sys
-
-if sys.version_info[0] == 2:
-    from binascii import hexlify as hexlify_py2
-
-    str_cons = lambda val, enc=None: str(val)
-    bytes_cons = lambda val, enc=None: bytearray(val)
-    is_str_type = lambda o: isinstance(o, str)
-    is_bytes_type = lambda o: type(o) is bytearray
-    is_int_type = lambda o: isinstance(o, int) or isinstance(o, long)  # noqa: F821
-
-    def hexlify_to_str(b):
-        x = hexlify_py2(b)
-        return ":".join(x[i : i + 2] for i in range(0, len(x), 2))
-
-elif sys.version_info[0] == 3:  # Also handles MicroPython
-    from binascii import hexlify
-
-    str_cons = str
-    bytes_cons = bytes
-    is_str_type = lambda o: isinstance(o, str)
-    is_bytes_type = lambda o: isinstance(o, bytes)
-    is_int_type = lambda o: isinstance(o, int)
-
-    def hexlify_to_str(b):
-        return str(hexlify(b, ":"), "ascii")
-
-
-# end compatibility code
-
-import sys
 import struct
+import sys
+from binascii import hexlify
+
+str_cons = str
+bytes_cons = bytes
+is_str_type = lambda o: isinstance(o, str)
+is_bytes_type = lambda o: isinstance(o, bytes)
+is_int_type = lambda o: isinstance(o, int)
+
+
+def hexlify_to_str(b):
+    return str(hexlify(b, ":"), "ascii")
+
 
 sys.path.append(sys.path[0] + "/../py")
 import makeqstrdata as qstrutil
