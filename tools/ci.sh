@@ -100,30 +100,33 @@ function ci_code_size_build {
     echo "Comparing sizes of reference ${REFERENCE} to ${COMPARISON}..."
     git log --oneline $REFERENCE..$COMPARISON
 
-    function code_size_build_step {
-        COMMIT=$1
-        OUTFILE=$2
+    OLD_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-        echo "Building ${COMMIT}..."
-        git checkout --detach $COMMIT
-        git submodule update --init $SUBMODULES
-        git show -s
-        tools/metrics.py clean $PORTS_TO_CHECK
-        # Allow errors from tools/metrics.py to propagate out of the pipe above.
-        (set -o pipefail; tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE)
-        return $?
-    }
+    ( # Execute in a subshell so the trap & code_size_build_step doesn't leak
+        function code_size_build_step {
+            if [ ! -z "$OLD_BRANCH" ]; then
+                trap 'git checkout "$OLD_BRANCH"' RETURN EXIT ERR
+            fi
 
-    # build reference, save to size0
-    # ignore any errors with this build, in case master is failing
-    code_size_build_step $REFERENCE ~/size0
-    # build PR/branch, save to size1
-    code_size_build_step $COMPARISON ~/size1
-    STATUS=$?
+            COMMIT=$1
+            OUTFILE=$2
 
-    unset -f code_size_build_step
+            echo "Building ${COMMIT}..."
+            git checkout --detach $COMMIT
+            git submodule update --init $SUBMODULES
+            git show -s
+            tools/metrics.py clean "$PORTS_TO_CHECK"
+            # Allow errors from tools/metrics.py to propagate out of the pipe below.
+            set -o pipefail
+            tools/metrics.py build "$PORTS_TO_CHECK" | tee $OUTFILE
+        }
 
-    return $STATUS
+        # build reference, save to size0
+        # ignore any errors with this build, in case master is failing
+        code_size_build_step $REFERENCE ~/size0
+        # build PR/branch, save to size1
+        code_size_build_step $COMPARISON ~/size1
+    )
 }
 
 function ci_code_size_report {
