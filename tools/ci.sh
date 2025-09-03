@@ -105,12 +105,10 @@ function ci_code_size_build {
         git submodule update --init $SUBMODULES
         git show -s
         tools/metrics.py clean $PORTS_TO_CHECK
-        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE
+        # Allow errors from tools/metrics.py to propagate out of the pipe above.
+        (set -o pipefail; tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE)
         return $?
     }
-
-    # Allow errors from tools/metrics.py to propagate out of the pipe above.
-    set -o pipefail
 
     # build reference, save to size0
     # ignore any errors with this build, in case master is failing
@@ -119,7 +117,6 @@ function ci_code_size_build {
     code_size_build_step $COMPARISON ~/size1
     STATUS=$?
 
-    set +o pipefail
     unset -f code_size_build_step
 
     return $STATUS
