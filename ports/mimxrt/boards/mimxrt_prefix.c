@@ -16,10 +16,11 @@
         .pad_config = (uint32_t)(_pad_config), \
     } \
 
-#define PIN_ADC(_instance, _channel) \
+#define PIN_ADC(_instance, _channel, _channel_group) \
     { \
         .instance = (_instance), \
-        .channel = (_channel) \
+        .channel = (_channel), \
+        .channel_group = (_channel_group), \
     } \
 
 #define PIN(_name, _gpio, _pin, _af_list, _adc_list_len, _adc_list) \
