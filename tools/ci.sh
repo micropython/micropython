@@ -9,6 +9,9 @@ fi
 # Ensure known OPEN_MAX (NO_FILES) limit.
 ulimit -n 1024
 
+# Fail on some things which are warnings otherwise
+export MICROPY_MAINTAINER_BUILD=1
+
 ########################################################################################
 # general helper functions
 
