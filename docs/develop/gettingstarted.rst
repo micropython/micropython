@@ -328,3 +328,20 @@ tools
 examples
 
   Example code for building MicroPython as a library as well as native modules.
+
+Using ci.sh locally
+-------------------
+
+MicroPython uses GitHub Actions for continuous integration.
+To reduce dependence on any specific CI system, the actual build steps for Unix-based builds are in the file ``tools/ci.sh``.
+This can also be used as a script on developer desktops, with caveats:
+
+  * For most steps, An Ubuntu/Debian system similar to the one used during CI is assumed
+  * Some specific steps assume specific Ubuntu versions
+  * The setup steps may invoke the system package manager to install packages,
+    download and install software from the internet, etc
+
+To get a usage message including the list of commands, run ``tools/ci.sh --help``.
+
+As an example, you can build and test the unix minimal port with
+``tools/ci.sh unix_minimal_build unix_minimal_run_tests``.
