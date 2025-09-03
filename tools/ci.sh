@@ -79,7 +79,7 @@ function ci_code_size_setup {
 
 function ci_code_size_build {
     # check the following ports for the change in their code size
-    PORTS_TO_CHECK=bmusxpdv
+    PORTS_TO_CHECK="${1-bmusxpdv}"
     SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
     # Default GitHub pull request sets HEAD to a generated merge commit
@@ -93,33 +93,38 @@ function ci_code_size_build {
     echo "Comparing sizes of reference ${REFERENCE} to ${COMPARISON}..."
     git log --oneline $REFERENCE..$COMPARISON
 
-    function code_size_build_step {
-        COMMIT=$1
-        OUTFILE=$2
+    OLD_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-        echo "Building ${COMMIT}..."
-        git checkout --detach $COMMIT
-        git submodule update --init $SUBMODULES
-        git show -s
-        tools/metrics.py clean $PORTS_TO_CHECK
-        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE
-        return $?
-    }
+    ( # Execute in a subshell so the trap & code_size_build_step doesn't leak
+        function code_size_build_step {
+            if [ ! -z "$OLD_BRANCH" ]; then
+                trap 'git checkout "$OLD_BRANCH"' RETURN EXIT ERR
+            fi
 
+            COMMIT=$1
+            OUTFILE=$2
+
+            echo "Building ${COMMIT}..."
+            git checkout --detach $COMMIT
+            git submodule update --init $SUBMODULES
+            git show -s
+            tools/metrics.py clean "$PORTS_TO_CHECK"
+            # Allow errors from tools/metrics.py to propagate out of the pipe below.
+            set -o pipefail
+            tools/metrics.py build "$PORTS_TO_CHECK" | tee $OUTFILE
+        }
+
+        # build reference, save to size0
+        # ignore any errors with this build, in case master is failing
+        code_size_build_step $REFERENCE ~/size0
+        # build PR/branch, save to size1
+        code_size_build_step $COMPARISON ~/size1
+    )
+}
+
+function ci_code_size_report {
     # Allow errors from tools/metrics.py to propagate out of the pipe above.
-    set -o pipefail
-
-    # build reference, save to size0
-    # ignore any errors with this build, in case master is failing
-    code_size_build_step $REFERENCE ~/size0
-    # build PR/branch, save to size1
-    code_size_build_step $COMPARISON ~/size1
-    STATUS=$?
-
-    set +o pipefail
-    unset -f code_size_build_step
-
-    return $STATUS
+    (set -o pipefail; tools/metrics.py diff ~/size0 ~/size1 | tee diff)
 }
 
 ########################################################################################
@@ -227,7 +232,7 @@ function ci_esp32_build_c2_c6 {
 function ci_esp8266_setup {
     sudo pip3 install pyserial esptool==3.3.1 pyelftools ar
     wget https://micropython.org/resources/xtensa-lx106-elf-standalone.tar.gz
-    zcat xtensa-lx106-elf-standalone.tar.gz | tar x
+    (set -o pipefile; zcat xtensa-lx106-elf-standalone.tar.gz | tar x)
     # Remove this esptool.py so pip version is used instead
     rm xtensa-lx106-elf/bin/esptool.py
 }
