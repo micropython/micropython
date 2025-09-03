@@ -1,4 +1,4 @@
-# Wiznet W5100S-EVB-Pico
+# Wiznet W55RP20-EVB-Pico
 
 ## Network Example
 
@@ -6,7 +6,11 @@ To use network / socket based code, connect ethernet port to network with DHCP r
 
 ```
 >>> import network
->>> nic = network.WIZNET6K()
+>>> from machine import Pin, WIZNET_PIO_SPI
+>>> spi = WIZNET_PIO_SPI(baudrate=10_000_000, sck=Pin(18), cs=Pin(17), mosi=Pin(19), miso=Pin(16))
+>>> print(spi)
+WIZNET_PIO_SPI(baudrate=10416666, sck=Pin(18), cs=Pin(17), mosi=Pin(19), miso=Pin(16))
+>>> nic = network.WIZNET6K(spi, Pin(17), Pin(20))  # spi, cs, reset pin
 >>> nic.active(True)
 >>> nic.ifconfig()
 ('0.0.0.0', '0.0.0.0', '0.0.0.0', '0.0.0.0')
