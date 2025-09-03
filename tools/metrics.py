@@ -185,6 +185,10 @@ def do_clean(args):
     ports = parse_port_list(args)
 
     print("CLEANING")
+
+    if any(port.needs_mpy_cross for port in ports):
+        syscmd("make", "-C", "mpy-cross", "clean")
+
     for port in ports:
         syscmd("make", "-C", "ports/{}".format(port.dir), port.make_flags, "clean")
 
