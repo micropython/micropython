@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
     - name: Install Python packages
       run: pip install -r docs/requirements.txt
     - name: Build unix port

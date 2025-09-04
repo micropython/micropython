@@ -109,7 +109,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       # note: can go back to installing mingw-w64-${{ matrix.env }}-python after
       # MSYS2 updates to Python >3.12 (due to settrace compatibility issue)
       with:
