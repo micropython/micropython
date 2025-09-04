@@ -40,7 +40,8 @@ from errno import EPERM
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
-VID_ESPRESSIF = 0x303A  # Espressif Incorporated
+
+VID_SILICON_LABS = 0x10C4
 
 
 class SerialTransport(Transport):
@@ -67,24 +68,27 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if device.startswith("rfc2217://"):
-                    self.serial = serial.serial_for_url(device, **serial_kwargs)
-                elif os.name == "nt":
-                    self.serial = serial.Serial(**serial_kwargs)
-                    self.serial.port = device
+                self.serial = serial.serial_for_url(device, do_not_open=True, **serial_kwargs)
+                if os.name == "nt":
                     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and (
-                        getattr(portinfo[0], "vid", 0) == VID_ESPRESSIF
-                        or getattr(portinfo[0], "manufacturer", "") != "Microsoft"
-                    ):
-                        # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
-                        # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
-                        # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
-                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
-                        self.serial.rts = False  # RTS False = EN High = MCU enabled
+                    if portinfo and getattr(portinfo[0], "vid", None) == VID_SILICON_LABS:
+                        # Silicon Labs CP210x driver on Windows has a quirk
+                        # where after a power on reset it will set DTR and RTS
+                        # at different times when the port is opened (it doesn't
+                        # happen on subsequent openings).
+                        #
+                        # To avoid issues with spurious reset on Espressif boards we clear DTR and RTS,
+                        # open the port, and then set them in an order which prevents triggering a reset.
+                        self.serial.dtr = False
+                        self.serial.rts = False
+                        self.serial.open()
+                        self.serial.dtr = True
+                        self.serial.rts = True
+
+                # On all other host/driver combinations we keep the default
+                # behaviour (pyserial will set DTR and RTS automatically on open)
+                if not self.serial.isOpen():
                     self.serial.open()
-                else:
-                    self.serial = serial.Serial(device, **serial_kwargs)
                 break
             except OSError:
                 if wait == 0:
@@ -103,6 +107,9 @@ class SerialTransport(Transport):
             print("")
 
     def close(self):
+        # ESP Windows quirk: Prevent target from resetting when Windows clears DTR before RTS
+        self.serial.rts = False
+        self.serial.dtr = False
         self.serial.close()
 
     def read_until(
