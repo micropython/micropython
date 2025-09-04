@@ -2251,6 +2251,7 @@ mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len) {
 static mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t *vstr) {
     // if not a bytes object, look if a qstr with this data already exists
     if (type == &mp_type_str) {
+        mp_utf8_require((byte *)vstr->buf, vstr->len);
         qstr q = qstr_find_strn(vstr->buf, vstr->len);
         if (q != MP_QSTRnull) {
             vstr_clear(vstr);
