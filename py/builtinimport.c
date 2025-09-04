@@ -116,7 +116,7 @@ static mp_import_stat_t stat_module(vstr_t *path) {
 // path (i.e. "<entry>/mod_name(.py)").
 static mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
     DEBUG_printf("stat_top_level: '%s'\n", qstr_str(mod_name));
-    #if MICROPY_PY_SYS
+    #if MICROPY_PY_SYS && MICROPY_PY_SYS_PATH
     size_t path_num;
     mp_obj_t *path_items;
     mp_obj_get_array(mp_sys_path, &path_num, &path_items);
@@ -153,7 +153,7 @@ static mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
 
 #if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
 static void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
-    #if MICROPY_PY___FILE__
+    #if MICROPY_MODULE___FILE__
     qstr source_name = lex->source_name;
     mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
     #endif
@@ -166,7 +166,7 @@ static void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
 
 #if (MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD) || MICROPY_MODULE_FROZEN_MPY
 static void do_execute_proto_fun(const mp_module_context_t *context, mp_proto_fun_t proto_fun, qstr source_name) {
-    #if MICROPY_PY___FILE__
+    #if MICROPY_MODULE___FILE__
     mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
     #else
     (void)source_name;
@@ -225,7 +225,7 @@ static void do_load(mp_module_context_t *module_obj, vstr_t *file) {
         if (frozen_type == MP_FROZEN_MPY) {
             const mp_frozen_module_t *frozen = modref;
             module_obj->constants = frozen->constants;
-            #if MICROPY_PY___FILE__
+            #if MICROPY_MODULE___FILE__
             qstr frozen_file_qstr = qstr_from_str(file_str + frozen_path_prefix_len);
             #else
             qstr frozen_file_qstr = MP_QSTRnull;
@@ -367,7 +367,7 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     // Immediately return if the module at this level is already loaded.
     mp_map_elem_t *elem;
 
-    #if MICROPY_PY_SYS
+    #if MICROPY_PY_SYS && MICROPY_PY_SYS_PATH
     // If sys.path is empty, the intention is to force using a built-in. This
     // means we should also ignore any loaded modules with the same name
     // which may have come from the filesystem.

@@ -267,9 +267,8 @@ bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
 
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
 
-// all these bit-arithmetic operations need coverage testing!
-#define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
-#define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
+#define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 12) & 0x003f))
+#define OP_BCC_W_LO(byte_offset) (0x8000 | (((byte_offset) >> 5) & 0x2000) | (((byte_offset) >> 8) & 0x0800) | (((byte_offset) >> 1) & 0x07ff))
 
 bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide) {
     mp_uint_t dest = get_label_dest(as, label);

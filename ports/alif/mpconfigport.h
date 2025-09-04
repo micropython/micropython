@@ -119,7 +119,9 @@
 #define MICROPY_PY_OS_UNAME                     (1)
 #define MICROPY_PY_OS_URANDOM                   (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (se_services_rand64())
-#define MICROPY_PY_TIME                         (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS            (1)
+#define MICROPY_PY_TIME_INCLUDEFILE             "ports/alif/modtime.c"
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/alif/modmachine.c"
 #define MICROPY_PY_MACHINE_RESET                (1)

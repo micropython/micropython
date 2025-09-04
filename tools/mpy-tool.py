@@ -1765,6 +1765,44 @@ def merge_mpy(compiled_modules, output_file):
             f.write(merged_mpy)
 
 
+def extract_segments(compiled_modules, basename, kinds_arg):
+    import re
+
+    kind_str = ("META", "QSTR", "OBJ", "CODE")
+    kinds = set()
+    if kinds_arg is not None:
+        for kind in kinds_arg.upper().split(","):
+            if kind in kind_str:
+                kinds.add(kind)
+            else:
+                raise Exception('unknown segment kind "%s"' % (kind,))
+    segments = []
+    for module in compiled_modules:
+        for segment in module.mpy_segments:
+            if not kinds or kind_str[segment.kind] in kinds:
+                segments.append((module.mpy_source_file, module.source_file.str, segment))
+    count_len = len(str(len(segments)))
+    sanitiser = re.compile("[^a-zA-Z0-9_.-]")
+    for counter, entry in enumerate(segments):
+        file_name, source_file, segment = entry
+        output_name = (
+            basename
+            + "_"
+            + str(counter).rjust(count_len, "0")
+            + "_"
+            + sanitiser.sub("_", source_file)
+            + "_"
+            + kind_str[segment.kind]
+            + "_"
+            + sanitiser.sub("_", str(segment.name))
+            + ".bin"
+        )
+        with open(file_name, "rb") as source:
+            with open(output_name, "wb") as output:
+                source.seek(segment.start)
+                output.write(source.read(segment.end - segment.start))
+
+
 def main(args=None):
     global global_qstrs
 
@@ -1780,6 +1818,14 @@ def main(args=None):
     cmd_parser.add_argument("-f", "--freeze", action="store_true", help="freeze files")
     cmd_parser.add_argument(
         "--merge", action="store_true", help="merge multiple .mpy files into one"
+    )
+    cmd_parser.add_argument(
+        "-e", "--extract", metavar="BASE", type=str, help="write segments into separate files"
+    )
+    cmd_parser.add_argument(
+        "--extract-only",
+        metavar="KIND[,...]",
+        help="extract only segments of the given type (meta, qstr, obj, code)",
     )
     cmd_parser.add_argument("-q", "--qstr-header", help="qstr header file to freeze against")
     cmd_parser.add_argument(
@@ -1847,6 +1893,9 @@ def main(args=None):
 
     if args.merge:
         merge_mpy(compiled_modules, args.output)
+
+    if args.extract:
+        extract_segments(compiled_modules, args.extract, args.extract_only)
 
 
 if __name__ == "__main__":

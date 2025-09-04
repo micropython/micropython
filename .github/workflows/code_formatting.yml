@@ -10,7 +10,7 @@ jobs:
   code-formatting:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions/setup-python@v5
     - name: Install packages
       run: source tools/ci.sh && ci_c_code_formatting_setup

@@ -19,7 +19,15 @@ SECTIONS
         *(.rodata*)
         . = ALIGN(4);
         _etext = .;
-        _sidata = _etext;
+    } > RAM
+
+    .ARM.exidx : AT ( _etext ) {
+        . = ALIGN(4);
+        __exidx_start = .;
+        *(.ARM.exidx*)
+        *(.gnu.linkonce.armexidx.*)
+        __exidx_end = .;
+        _sidata = __exidx_end;
     } > RAM
 
     .data : AT ( _sidata )

@@ -483,9 +483,7 @@ static void line(const mp_obj_framebuf_t *fb, mp_int_t x1, mp_int_t y1, mp_int_t
         e += 2 * dy;
     }
 
-    if (0 <= x2 && x2 < fb->width && 0 <= y2 && y2 < fb->height) {
-        setpixel(fb, x2, y2, col);
-    }
+    setpixel_checked(fb, x2, y2, col, 1);
 }
 
 static mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args_in) {
@@ -787,39 +785,40 @@ static mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ys
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t xstep = mp_obj_get_int(xstep_in);
     mp_int_t ystep = mp_obj_get_int(ystep_in);
-    int sx, y, xend, yend, dx, dy;
+    unsigned int sx, y, xend, yend;
+    int dx, dy;
     if (xstep < 0) {
-        sx = 0;
-        xend = self->width + xstep;
-        if (xend <= 0) {
+        if (-xstep >= self->width) {
             return mp_const_none;
         }
+        sx = 0;
+        xend = self->width + (int)xstep;
         dx = 1;
     } else {
-        sx = self->width - 1;
-        xend = xstep - 1;
-        if (xend >= sx) {
+        if (xstep >= self->width) {
             return mp_const_none;
         }
+        sx = self->width - 1;
+        xend = (int)xstep - 1;
         dx = -1;
     }
     if (ystep < 0) {
-        y = 0;
-        yend = self->height + ystep;
-        if (yend <= 0) {
+        if (-ystep >= self->height) {
             return mp_const_none;
         }
+        y = 0;
+        yend = self->height + (int)ystep;
         dy = 1;
     } else {
-        y = self->height - 1;
-        yend = ystep - 1;
-        if (yend >= y) {
+        if (ystep >= self->height) {
             return mp_const_none;
         }
+        y = self->height - 1;
+        yend = (int)ystep - 1;
         dy = -1;
     }
     for (; y != yend; y += dy) {
-        for (int x = sx; x != xend; x += dx) {
+        for (unsigned x = sx; x != xend; x += dx) {
             setpixel(self, x, y, getpixel(self, x - xstep, y - ystep));
         }
     }

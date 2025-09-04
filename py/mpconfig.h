@@ -30,7 +30,7 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 26
+#define MICROPY_VERSION_MINOR 27
 #define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 1
 
@@ -990,6 +990,16 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_STREAMS_POSIX_API (0)
 #endif
 
+// Whether to process __all__ when importing all public symbols from a module.
+#ifndef MICROPY_MODULE___ALL__
+#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
+#endif
+
+// Whether to set __file__ on imported modules.
+#ifndef MICROPY_MODULE___FILE__
+#define MICROPY_MODULE___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
 // Whether modules can use MP_REGISTER_MODULE_DELEGATION() to delegate failed
 // attribute lookups to a custom handler function.
 #ifndef MICROPY_MODULE_ATTR_DELEGATION
@@ -1422,16 +1432,6 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_HELP_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to set __file__ for imported modules
-#ifndef MICROPY_PY___FILE__
-#define MICROPY_PY___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
-#endif
-
-// Whether to process __all__ when importing all public symbols from module
-#ifndef MICROPY_MODULE___ALL__
-#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
-#endif
-
 // Whether to provide mem-info related functions in micropython module
 #ifndef MICROPY_PY_MICROPYTHON_MEM_INFO
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -1601,9 +1601,16 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_STRUCT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether struct module provides unsafe and non-standard typecodes O, P, S.
+// These typecodes are not in CPython and can cause crashes by accessing arbitrary
+// memory.
+#ifndef MICROPY_PY_STRUCT_UNSAFE_TYPECODES
+#define MICROPY_PY_STRUCT_UNSAFE_TYPECODES (1)
+#endif
+
 // Whether to provide "sys" module
 #ifndef MICROPY_PY_SYS
-#define MICROPY_PY_SYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#define MICROPY_PY_SYS (1)
 #endif
 
 // Whether to initialise "sys.path" and "sys.argv" to their defaults in mp_init()
@@ -1853,11 +1860,11 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_MD5
-#define MICROPY_PY_HASHLIB_MD5 (0)
+#define MICROPY_PY_HASHLIB_MD5 (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA1
-#define MICROPY_PY_HASHLIB_SHA1  (0)
+#define MICROPY_PY_HASHLIB_SHA1  (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA256
@@ -1865,7 +1872,7 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_CRYPTOLIB
-#define MICROPY_PY_CRYPTOLIB (0)
+#define MICROPY_PY_CRYPTOLIB (MICROPY_PY_SSL)
 #endif
 
 // Depends on MICROPY_PY_CRYPTOLIB

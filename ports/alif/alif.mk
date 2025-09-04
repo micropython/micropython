@@ -22,6 +22,8 @@ include $(TOP)/extmod/extmod.mk
 ################################################################################
 # Project specific settings and compiler/linker flags
 
+MPY_CROSS_FLAGS += -march=armv7emdp
+
 CROSS_COMPILE ?= arm-none-eabi-
 ALIF_DFP_REL_TOP ?= lib/alif_ensemble-cmsis-dfp
 ALIF_DFP_REL_HERE ?= $(TOP)/lib/alif_ensemble-cmsis-dfp

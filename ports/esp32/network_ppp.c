@@ -68,8 +68,6 @@ typedef struct _network_ppp_obj_t {
 
 const mp_obj_type_t esp_network_ppp_lwip_type;
 
-static mp_obj_t network_ppp___del__(mp_obj_t self_in);
-
 static void network_ppp_stream_uart_irq_disable(network_ppp_obj_t *self) {
     if (self->stream == mp_const_none) {
         return;
@@ -94,8 +92,15 @@ static void network_ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
                 // only need to free the PPP PCB, not close it.
                 self->state = STATE_ACTIVE;
             }
+            network_ppp_stream_uart_irq_disable(self);
             // Clean up the PPP PCB.
-            network_ppp___del__(MP_OBJ_FROM_PTR(self));
+            // Note: Because we use pppapi_close instead of ppp_close, this
+            // callback will run on the lwIP tcpip_thread, thus to prevent a
+            // deadlock we must use the non-threadsafe function here.
+            if (ppp_free(pcb) == ERR_OK) {
+                self->state = STATE_INACTIVE;
+                self->pcb = NULL;
+            }
             break;
         default:
             self->state = STATE_ERROR;
@@ -123,17 +128,17 @@ static mp_obj_t network_ppp_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 static mp_obj_t network_ppp___del__(mp_obj_t self_in) {
     network_ppp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->state >= STATE_ACTIVE) {
-        if (self->state >= STATE_ERROR) {
-            // Still connected over the stream.
-            // Force the connection to close, with nocarrier=1.
-            self->state = STATE_INACTIVE;
-            pppapi_close(self->pcb, 1);
-        }
-        network_ppp_stream_uart_irq_disable(self);
+    network_ppp_stream_uart_irq_disable(self);
+    if (self->state >= STATE_ERROR) {
+        // Still connected over the stream.
+        // Force the connection to close, with nocarrier=1.
+        pppapi_close(self->pcb, 1);
+    } else if (self->state >= STATE_ACTIVE) {
         // Free PPP PCB and reset state.
+        if (pppapi_free(self->pcb) != ERR_OK) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("pppapi_free failed"));
+        }
         self->state = STATE_INACTIVE;
-        pppapi_free(self->pcb);
         self->pcb = NULL;
     }
     return mp_const_none;
@@ -148,8 +153,8 @@ static mp_obj_t network_ppp_poll(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_int_t total_len = 0;
-    mp_obj_t stream = self->stream;
-    while (stream != mp_const_none) {
+    mp_obj_t stream;
+    while (self->state >= STATE_ACTIVE && (stream = self->stream) != mp_const_none) {
         uint8_t buf[256];
         int err;
         mp_uint_t len = mp_stream_rw(stream, buf, sizeof(buf), &err, 0);
@@ -163,7 +168,7 @@ static mp_obj_t network_ppp_poll(size_t n_args, const mp_obj_t *args) {
         }
         mp_printf(&mp_plat_print, ")\n");
         #endif
-        pppos_input(self->pcb, (u8_t *)buf, len);
+        pppos_input_tcpip(self->pcb, (u8_t *)buf, len);
         total_len += len;
     }
 

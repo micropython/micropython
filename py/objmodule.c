@@ -44,7 +44,7 @@ static void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
         module_name = mp_obj_str_get_str(elem->value);
     }
 
-    #if MICROPY_PY___FILE__
+    #if MICROPY_MODULE___FILE__
     // If we store __file__ to imported modules then try to lookup this
     // symbol to give more information about the module.
     elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);

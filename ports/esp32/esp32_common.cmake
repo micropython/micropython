@@ -265,7 +265,7 @@ target_include_directories(${MICROPY_TARGET} PUBLIC
 
 # Add additional extmod and usermod components.
 if (MICROPY_PY_BTREE)
-    target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
+    target_link_libraries(${MICROPY_TARGET} $<TARGET_OBJECTS:micropy_extmod_btree>)
 endif()
 target_link_libraries(${MICROPY_TARGET} usermod)
 

@@ -11,6 +11,7 @@ on:
       - 'shared/**'
       - 'lib/**'
       - 'ports/zephyr/**'
+      - 'tests/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,7 +30,7 @@ jobs:
         large-packages: false
         docker-images: false
         swap-storage: false
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - id: versions
       name: Read Zephyr version
       run: source tools/ci.sh && echo "ZEPHYR=$ZEPHYR_VERSION" | tee "$GITHUB_OUTPUT"

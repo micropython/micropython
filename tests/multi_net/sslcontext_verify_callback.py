@@ -15,14 +15,10 @@ PORT = 8000
 cert = cafile = "ec_cert.der"
 key = "ec_key.der"
 
-try:
-    with open(cafile, "rb") as f:
-        cadata = f.read()
-    with open(key, "rb") as f:
-        key = f.read()
-except OSError:
-    print("SKIP")
-    raise SystemExit
+with open(cafile, "rb") as f:
+    cadata = f.read()
+with open(key, "rb") as f:
+    key = f.read()
 
 
 def verify_callback(cert, depth):

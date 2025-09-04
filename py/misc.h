@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_MISC_H
 #define MICROPY_INCLUDED_PY_MISC_H
 
+#include "py/mpconfig.h"
+
 // a mini library of useful types and functions
 
 /** types *******************************************************/
@@ -41,6 +43,11 @@ typedef unsigned int uint;
 #ifndef __has_builtin
 #define __has_builtin(x) (0)
 #endif
+#ifndef __has_feature
+// This macro is supported by Clang and gcc>=14
+#define __has_feature(x) (0)
+#endif
+
 
 /** generic ops *************************************************/
 
@@ -534,6 +541,25 @@ inline static bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long
 
     return overflow;
 }
+#endif
+
+
+// Helper macros for detecting if sanitizers are enabled
+//
+// Use sparingly, not for masking issues reported by sanitizers!
+//
+// Can be detected automatically in Clang and gcc>=14, need to be
+// set manually otherwise.
+#ifndef MP_UBSAN
+#define MP_UBSAN __has_feature(undefined_behavior_sanitizer)
+#endif
+
+#ifndef MP_ASAN
+#define MP_ASAN __has_feature(address_sanitizer)
+#endif
+
+#ifndef MP_SANITIZER_BUILD
+#define MP_SANITIZER_BUILD (MP_UBSAN || MP_ASAN)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

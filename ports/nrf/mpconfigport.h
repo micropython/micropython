@@ -264,6 +264,7 @@
 #define MICROPY_ERROR_REPORTING               (2)
 #define MICROPY_FULL_CHECKS                   (1)
 #define MICROPY_GC_ALLOC_THRESHOLD            (1)
+#define MICROPY_MODULE___FILE__               (1)
 #define MICROPY_MODULE_GETATTR                (1)
 #define MICROPY_MULTIPLE_INHERITANCE          (1)
 #define MICROPY_PY_ARRAY                      (1)
@@ -288,9 +289,7 @@
 #define MICROPY_PY_GENERATOR_PEND_THROW       (1)
 #define MICROPY_PY_MATH                       (1)
 #define MICROPY_PY_STRUCT                     (1)
-#define MICROPY_PY_SYS                        (1)
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS     (1)
-#define MICROPY_PY___FILE__                   (1)
 #endif
 
 #ifndef MICROPY_PY_UBLUEPY

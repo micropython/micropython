@@ -502,9 +502,7 @@ static inline bool mp_map_slot_is_filled(const mp_map_t *map, size_t pos) {
 
 void mp_map_init(mp_map_t *map, size_t n);
 void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table);
-mp_map_t *mp_map_new(size_t n);
 void mp_map_deinit(mp_map_t *map);
-void mp_map_free(mp_map_t *map);
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
 void mp_map_dump(mp_map_t *map);
@@ -814,7 +812,7 @@ typedef struct _mp_obj_full_type_t {
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, N, ...) MP_DEFINE_CONST_OBJ_TYPE_NARGS_##N
 
 // This macros is used to define a object type in ROM.
-// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, _make_new [, slot, func]*)
+// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, [, slot, func]*)
 // It uses the number of arguments to select which MP_DEFINE_CONST_OBJ_TYPE_*
 // macro to use based on the number of arguments. It works by shifting the
 // numeric values 12, 11, ... 0 by the number of arguments, such that the
@@ -987,7 +985,6 @@ void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t 
 bool mp_obj_is_dict_or_ordereddict(mp_obj_t o);
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 
-mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {
     return x ? mp_const_true : mp_const_false;
 }

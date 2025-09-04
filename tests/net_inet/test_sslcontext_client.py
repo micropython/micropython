@@ -13,11 +13,6 @@ import ssl
 # $ openssl x509 -in mpycert.pem -out mpycert.der -outform DER
 
 ca_cert_chain = "mpycert.der"
-try:
-    os.stat(ca_cert_chain)
-except OSError:
-    print("SKIP")
-    raise SystemExit
 
 
 def main(use_stream=True):

@@ -151,3 +151,11 @@ try:
     print((1 << 48) << -6)
 except ValueError as e:
     print(e)
+
+# Test that the most extreme 64 bit integer values all parse with int()
+print(int("-9223372036854775807"))
+print(int("-9223372036854775808"))
+print(int("9223372036854775807"))
+
+# Test that the most negative 64 bit integer can be formed via arithmetic
+print(-9223372036854775807-1)

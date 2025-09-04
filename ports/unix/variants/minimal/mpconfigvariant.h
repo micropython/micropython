@@ -61,6 +61,5 @@
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (1)
 #define MICROPY_PY_GENERATOR_PEND_THROW (1)
 
-// Enable just the sys and os built-in modules.
-#define MICROPY_PY_SYS (1)
+// Add just the os built-in module.
 #define MICROPY_PY_OS (1)

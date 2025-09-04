@@ -105,10 +105,6 @@
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
 #endif
-#define MICROPY_PY_HASHLIB_MD5              (1)
-#define MICROPY_PY_HASHLIB_SHA1             (1)
-#define MICROPY_PY_HASHLIB_SHA256           (1)
-#define MICROPY_PY_CRYPTOLIB                (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (esp_random())
 #define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
@@ -141,8 +137,7 @@
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #ifndef MICROPY_PY_MACHINE_I2C_TARGET
 // I2C target hardware is limited on ESP32 (eg read event comes after the read) so we only support newer SoCs.
-// ESP32C6 does not have enough flash space so also disable it on that SoC.
-#define MICROPY_PY_MACHINE_I2C_TARGET       (SOC_I2C_SUPPORT_SLAVE && !CONFIG_IDF_TARGET_ESP32 && !CONFIG_IDF_TARGET_ESP32C6)
+#define MICROPY_PY_MACHINE_I2C_TARGET       (SOC_I2C_SUPPORT_SLAVE && !CONFIG_IDF_TARGET_ESP32)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/esp32/machine_i2c_target.c"
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX   (2)
 #endif

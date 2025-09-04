@@ -104,12 +104,6 @@
 #define MICROPY_PY_TIME_CUSTOM_SLEEP   (1)
 #define MICROPY_PY_TIME_INCLUDEFILE    "ports/unix/modtime.c"
 
-#if MICROPY_PY_SSL
-#define MICROPY_PY_HASHLIB_MD5         (1)
-#define MICROPY_PY_HASHLIB_SHA1        (1)
-#define MICROPY_PY_CRYPTOLIB           (1)
-#endif
-
 // The "select" module is enabled by default, but disable select.select().
 #define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (1)
 #define MICROPY_PY_SELECT_SELECT       (0)

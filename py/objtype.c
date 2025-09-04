@@ -44,6 +44,7 @@
 #define ENABLE_SPECIAL_ACCESSORS \
     (MICROPY_PY_DESCRIPTORS || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY)
 
+static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 static mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo);
 static mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
@@ -1164,7 +1165,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     attr, type_attr
     );
 
-mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
+static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     // Verify input objects have expected type
     if (!mp_obj_is_type(bases_tuple, &mp_type_tuple)) {
         mp_raise_TypeError(NULL);
@@ -1291,8 +1292,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         mp_raise_TypeError(MP_ERROR_TEXT("multiple bases have instance lay-out conflict"));
     }
 
-    mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(o, locals_dict)->map;
-    mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(MP_QSTR___new__), MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup(&locals_ptr->map, MP_OBJ_NEW_QSTR(MP_QSTR___new__), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // __new__ slot exists; check if it is a function
         if (mp_obj_is_fun(elem->value)) {

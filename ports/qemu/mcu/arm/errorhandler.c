@@ -63,6 +63,8 @@ static const char *EXCEPTION_NAMES_TABLE[] = {
 // R0-R15, PSR, Kind
 uintptr_t registers_copy[18] = { 0 };
 
+#define BIT(v, b) (((v) & (1U << (b))) != 0)
+
 __attribute__((naked)) MP_NORETURN void exception_handler(uintptr_t kind) {
     // Save registers
     __asm volatile (
@@ -127,12 +129,32 @@ __attribute__((naked)) MP_NORETURN void exception_handler(uintptr_t kind) {
             }
             break;
     }
-    printf(" exception caught:\n");
+    printf(" exception caught:\n\n");
+    printf("CPU registers:\n");
     printf("R0:   %08X R1:   %08X R2:   %08X R3:   %08X\n", registers_copy[0], registers_copy[1], registers_copy[2], registers_copy[3]);
     printf("R4:   %08X R5:   %08X R6:   %08X R7:   %08X\n", registers_copy[4], registers_copy[5], registers_copy[6], registers_copy[7]);
     printf("R8:   %08X R9:   %08X R10:  %08X R11:  %08X\n", registers_copy[8], registers_copy[9], registers_copy[10], registers_copy[11]);
     printf("R12:  %08X R13:  %08X R14:  %08X R15:  %08X\n", registers_copy[12], registers_copy[13], registers_copy[14], registers_copy[15]);
     printf("xPSR: %08X\n", registers_copy[16]);
+
+    #if __ARM_ARCH == 7
+    uint32_t cfsr = *(volatile uint32_t *)0xE000ED28;
+    uint32_t hfsr = *(volatile uint32_t *)0xE000ED2C;
+    uint32_t dfsr = *(volatile uint32_t *)0xE000ED30;
+    uint32_t mmfar = *(volatile uint32_t *)0xE000ED34;
+    uint32_t bfar = *(volatile uint32_t *)0xE000ED38;
+
+    printf("\nDebug registers:\n");
+    printf("CFSR: %08lX HFSR: %08lX DFSR: %08lX MMFAR: %08lX BFAR: %08lX\n", cfsr, hfsr, dfsr, mmfar, bfar);
+    printf("CFSR.IACCVIOL:    %d CFSR.DACCVIOL:   %d CFSR.MUNSTKERR: %d CFSR.MSTKERR:   %d\n", BIT(cfsr, 0), BIT(cfsr, 1), BIT(cfsr, 3), BIT(cfsr, 4));
+    printf("CFSR.MLSPERR:     %d CFSR.MMARVALID:  %d CFSR.IBUSERR:   %d CFSR.PRECISERR: %d\n", BIT(cfsr, 5), BIT(cfsr, 7), BIT(cfsr, 8), BIT(cfsr, 9));
+    printf("CFSR.IMPRECISERR: %d CFSR.UNSTKERR:   %d CFSR.STKERR:    %d CFSR.LSPERR:    %d\n", BIT(cfsr, 10), BIT(cfsr, 11), BIT(cfsr, 12), BIT(cfsr, 13));
+    printf("CFSR.BFARVALID:   %d CFSR.UNDEFINSTR: %d CFSR.INVSTATE:  %d CFSR.INVPC:     %d\n", BIT(cfsr, 15), BIT(cfsr, 16), BIT(cfsr, 17), BIT(cfsr, 18));
+    printf("CFSR.NOCP:        %d CFSR.UNALIGNED:  %d CFSR.DIVBYZERO: %d\n", BIT(cfsr, 19), BIT(cfsr, 24), BIT(cfsr, 25));
+    printf("HFSR.VECTTBL:     %d HFSR.FORCED:     %d HFSR.DEBUGEVT:  %d\n", BIT(hfsr, 1), BIT(hfsr, 30), BIT(hfsr, 31));
+    printf("DFSR.HALTED:      %d DFSR.BKPT:       %d DFSR.DWTTRAP:   %d DFSR.VCATCH:    %d\n", BIT(dfsr, 0), BIT(dfsr, 1), BIT(dfsr, 2), BIT(dfsr, 3));
+    printf("DFSR.EXTERNAL:    %d\n", BIT(dfsr, 4));
+    #endif
 
     for (;;) {}
 }

@@ -241,7 +241,9 @@ static void configure_flexpwm(machine_pwm_obj_t *self) {
             pwmConfig.pairOperation = kPWM_Independent;
         }
         pwmConfig.clockSource = kPWM_BusClock;
+        #if !defined(FSL_FEATURE_PWM_HAS_NO_WAITEN) || (!FSL_FEATURE_PWM_HAS_NO_WAITEN)
         pwmConfig.enableWait = false;
+        #endif
         pwmConfig.initializationControl = self->sync ? kPWM_Initialize_MasterSync : kPWM_Initialize_LocalSync;
 
         if (PWM_Init(self->instance, self->submodule, &pwmConfig) == kStatus_Fail) {

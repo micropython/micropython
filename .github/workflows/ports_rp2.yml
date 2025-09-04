@@ -24,7 +24,7 @@ jobs:
       run:
         working-directory: 'micropython repo'  # test build with space in path
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         path: 'micropython repo'
     - name: Install packages

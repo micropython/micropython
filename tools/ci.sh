@@ -349,19 +349,30 @@ function ci_qemu_build_arm_sabrelite {
     make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
 }
 
-function ci_qemu_build_arm_thumb {
+function ci_qemu_build_arm_thumb_softfp {
     ci_qemu_build_arm_prepare
-    make ${MAKEOPTS} -C ports/qemu test_full
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_full
 
-    # Test building native .mpy with all ARM-M architectures.
+    # Test building native .mpy with ARM-M softfp architectures.
     ci_native_mpy_modules_build armv6m
     ci_native_mpy_modules_build armv7m
+
+    # Test running native .mpy with all ARM-M architectures.
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
+}
+
+function ci_qemu_build_arm_thumb_hardfp {
+    ci_qemu_build_arm_prepare
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_full
+
+    # Test building native .mpy with all ARM-M hardfp architectures.
     ci_native_mpy_modules_build armv7emsp
     ci_native_mpy_modules_build armv7emdp
 
-    # Test running native .mpy with armv6m and armv7m architectures.
-    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
-    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
+    # Test running native .mpy with all ARM-M hardfp architectures.
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emsp"
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emdp"
 }
 
 function ci_qemu_build_rv32 {
@@ -518,14 +529,14 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
 )
 
 CI_UNIX_OPTS_SANITIZE_ADDRESS=(
-    VARIANT=coverage
-    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
+    # Macro MP_ASAN allows detecting ASan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -DMP_ASAN=1"
     LDFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
 )
 
 CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
-    VARIANT=coverage
-    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+    # Macro MP_UBSAN allows detecting UBSan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute -DMP_UBSAN=1"
     LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
 )
 
@@ -699,7 +710,7 @@ function ci_unix_nanbox_run_tests {
 }
 
 function ci_unix_longlong_build {
-    ci_unix_build_helper VARIANT=longlong
+    ci_unix_build_helper VARIANT=longlong "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
 }
 
 function ci_unix_longlong_run_tests {
@@ -765,23 +776,23 @@ function ci_unix_settrace_stackless_run_tests {
 function ci_unix_sanitize_undefined_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
-    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
     ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_sanitize_undefined_run_tests {
-    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
 }
 
 function ci_unix_sanitize_address_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
-    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
     ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_sanitize_address_run_tests {
-    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
 }
 
 function ci_unix_macos_build {
@@ -799,7 +810,8 @@ function ci_unix_macos_run_tests {
     # - float_parse and float_parse_doubleprec parse/print floats out by a few mantissa bits
     # - ffi_callback crashes for an unknown reason
     # - thread/stress_heap.py is flaky
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback|thread/stress_heap).py')
+    # - thread/thread_gc1.py is flaky
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback|thread/stress_heap|thread/thread_gc1).py')
 }
 
 function ci_unix_qemu_mips_setup {
@@ -820,8 +832,9 @@ function ci_unix_qemu_mips_run_tests {
     # Issues with MIPS tests:
     # - thread/stress_aes.py takes around 50 seconds
     # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_arm_setup {
@@ -843,8 +856,9 @@ function ci_unix_qemu_arm_run_tests {
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     # - thread/stress_aes.py takes around 70 seconds
     # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py|thread/stress_recurse.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py|thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
@@ -865,8 +879,9 @@ function ci_unix_qemu_riscv64_run_tests {
     # Issues with RISCV-64 tests:
     # - thread/stress_aes.py takes around 140 seconds
     # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 ########################################################################################
@@ -886,9 +901,9 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.27.4
-ZEPHYR_SDK_VERSION=0.17.0
-ZEPHYR_VERSION=v4.0.0
+ZEPHYR_DOCKER_VERSION=v0.28.1
+ZEPHYR_SDK_VERSION=0.17.2
+ZEPHYR_VERSION=v4.2.0
 
 function ci_zephyr_setup {
     IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}
