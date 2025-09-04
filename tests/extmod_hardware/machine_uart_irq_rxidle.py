@@ -25,6 +25,10 @@ elif "esp32" in sys.platform:
     uart_id = 1
     tx_pin = 4
     rx_pin = 5
+    if "ESP32S2" in sys.implementation._machine:
+        # For UM FeatherS2
+        tx_pin = 6
+        rx_pin = 5
 elif "mimxrt" in sys.platform:
     uart_id = 1
     tx_pin = None
@@ -33,6 +37,8 @@ elif "pyboard" in sys.platform:
     if "STM32WB" in sys.implementation._machine:
         # LPUART(1) is on PA2/PA3
         uart_id = "LP1"
+    elif "PYBLITE" in sys.implementation._machine:
+        uart_id = "XA"
     else:
         # UART(4) is on PA0/PA1
         uart_id = 4
