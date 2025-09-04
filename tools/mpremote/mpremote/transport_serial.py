@@ -41,6 +41,9 @@ from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
 
+VID_SILICON_LABS = 0x10C4
+
+
 class SerialTransport(Transport):
     fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
 
@@ -65,7 +68,27 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                self.serial = serial.serial_for_url(device, **serial_kwargs)
+                self.serial = serial.serial_for_url(device, do_not_open=True, **serial_kwargs)
+                if os.name == "nt":
+                    portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
+                    if portinfo and getattr(portinfo[0], "vid", None) == VID_SILICON_LABS:
+                        # Silicon Labs CP210x driver on Windows has a quirk
+                        # where after a power on reset it will set DTR and RTS
+                        # at different times when the port is opened (it doesn't
+                        # happen on subsequent openings).
+                        #
+                        # To avoid issues with spurious reset on Espressif boards we clear DTR and RTS,
+                        # open the port, and then set them in an order which prevents triggering a reset.
+                        self.serial.dtr = False
+                        self.serial.rts = False
+                        self.serial.open()
+                        self.serial.dtr = True
+                        self.serial.rts = True
+
+                # On all other host/driver combinations we keep the default
+                # behaviour (pyserial will set DTR and RTS automatically on open)
+                if not self.serial.isOpen():
+                    self.serial.open()
                 break
             except OSError:
                 if wait == 0:
