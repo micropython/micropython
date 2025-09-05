@@ -13,7 +13,8 @@
         "WiFi"
     ],
     "features_non_filterable": [
-        "T1S"
+        "T1S",
+        "10BASE-T1S"
     ],
     "images": [
         "mant1s-board-top.jpg"
