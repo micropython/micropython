@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "W5100S-EVB-Pico2.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "W5100S-EVB-Pico2",
+    "thumbnail": "",
+    "url": "https://docs.wiznet.io/Product/iEthernet/W5100S/w5100s-evb-pico2",
+    "vendor": "WIZnet"
+}
