@@ -558,6 +558,10 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // If MP_TYPE_FLAG_INSTANCE_TYPE is set then this is an instance type (i.e. defined in Python).
 // If MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE is set then the "subscr" slot allows a stack
 //   allocated slice to be passed in (no references to it will be retained after the call).
+// If MP_TYPE_FLAG_IS_INSTANCED is set, then instances of this class have been created,
+//   i.e. possibly on non-finaliser-marked allocations if MP_TYPE_FLAG_HAS_FINALISER is unset.
+// If MP_TYPE_FLAG_HAS_FINALISER is set, then instances of this class need to be instantiated
+//   using finalising allocations.
 #define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
@@ -572,6 +576,8 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_ITER_IS_STREAM (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM)
 #define MP_TYPE_FLAG_INSTANCE_TYPE (0x0200)
 #define MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE (0x0400)
+#define MP_TYPE_FLAG_IS_INSTANCED (0x0800)
+#define MP_TYPE_FLAG_HAS_FINALISER (0x1000)
 
 typedef enum {
     PRINT_STR = 0,
@@ -947,11 +953,11 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 // Object allocation macros for allocating objects that have a finaliser.
 #if MICROPY_ENABLE_FINALISER
 #define mp_obj_malloc_with_finaliser(struct_type, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type), obj_type))
-#define mp_obj_malloc_var_with_finaliser(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_field, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(offsetof(struct_type, var_field) + sizeof(var_type) * (var_num), obj_type))
 void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t *type);
 #else
 #define mp_obj_malloc_with_finaliser(struct_type, obj_type) mp_obj_malloc(struct_type, obj_type)
-#define mp_obj_malloc_var_with_finaliser(struct_type, var_type, var_num, obj_type) mp_obj_malloc_var(struct_type, var_type, var_num, obj_type)
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_field, var_type, var_num, obj_type) mp_obj_malloc_var(struct_type, var_field, var_type, var_num, obj_type)
 #endif
 
 // These macros are derived from more primitive ones and are used to
