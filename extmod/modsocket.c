@@ -573,7 +573,7 @@ static mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 
     if (hlen > 0) {
         // check if host is already in IP form
-        nlr_buf_t nlr;
+        nlr_buf_t nlr = { .ret_val = NULL };
         if (nlr_push(&nlr) == 0) {
             netutils_parse_ipv4_addr(args[0], out_ip, NETUTILS_BIG);
             have_ip = true;

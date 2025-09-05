@@ -952,7 +952,7 @@ int micropy_mbedtls_ecdsa_sign_alt(const mbedtls_mpi *d, const unsigned char *ha
         return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
     }
 
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     mp_buffer_info_t sig_buf;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t ret = mp_call_function_2(ssl_ctx->ecdsa_sign_callback,

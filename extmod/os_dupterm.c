@@ -49,7 +49,7 @@ void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
         // Dupterm was already closed.
         return;
     }
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_stream_close(term);
         nlr_pop();
@@ -76,7 +76,7 @@ uintptr_t mp_os_dupterm_poll(uintptr_t poll_flags) {
         } else
         #endif
         {
-            nlr_buf_t nlr;
+            nlr_buf_t nlr = { .ret_val = NULL };
             if (nlr_push(&nlr) == 0) {
                 ret = stream_p->ioctl(s, MP_STREAM_POLL, poll_flags, &errcode);
                 nlr_pop();
@@ -134,7 +134,7 @@ int mp_os_dupterm_rx_chr(void) {
         }
         #endif
 
-        nlr_buf_t nlr;
+        nlr_buf_t nlr = { .ret_val = NULL };
         if (nlr_push(&nlr) == 0) {
             byte buf[1];
             int errcode;
@@ -194,7 +194,7 @@ int mp_os_dupterm_tx_strn(const char *str, size_t len) {
         }
         #endif
 
-        nlr_buf_t nlr;
+        nlr_buf_t nlr = { .ret_val = NULL };
         if (nlr_push(&nlr) == 0) {
             mp_obj_t written = mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
             if (written == mp_const_none) {

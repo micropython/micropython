@@ -78,7 +78,7 @@ static void usbd_pend_exception(mp_obj_t exception) {
 //
 // Handles any exception using usbd_pend_exception()
 static mp_obj_t usbd_callback_function_n(mp_obj_t fun, size_t n_args, const mp_obj_t *args) {
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_obj_t ret = mp_call_function_n_kw(fun, n_args, 0, args);
         nlr_pop();
@@ -126,7 +126,7 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
 
 const char *mp_usbd_runtime_string_cb(uint8_t index) {
     mp_obj_usb_device_t *usbd = MP_OBJ_TO_PTR(MP_STATE_VM(usbd));
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
 
     if (usbd == NULL || usbd->desc_strs == mp_const_none) {
         return NULL;

@@ -1714,7 +1714,7 @@ static void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
                 // When executing code within a handler we must lock the GC to prevent
                 // any memory allocations.  We must also catch any exceptions.
                 gc_lock();
-                nlr_buf_t nlr;
+                nlr_buf_t nlr = { .ret_val = NULL };
                 if (nlr_push(&nlr) == 0) {
                     mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
                     nlr_pop();

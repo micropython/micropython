@@ -248,7 +248,7 @@ void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out) {
 
 void proxy_c_to_js_call(uint32_t c_ref, uint32_t n_args, uint32_t *args_value, uint32_t *out) {
     external_call_depth_inc();
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_obj_t args[n_args];
         for (size_t i = 0; i < n_args; ++i) {
@@ -268,7 +268,7 @@ void proxy_c_to_js_call(uint32_t c_ref, uint32_t n_args, uint32_t *args_value, u
 
 void proxy_c_to_js_dir(uint32_t c_ref, uint32_t *out) {
     external_call_depth_inc();
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
         mp_obj_t dir;
@@ -313,7 +313,7 @@ bool proxy_c_to_js_has_attr(uint32_t c_ref, const char *attr_in) {
 
 void proxy_c_to_js_lookup_attr(uint32_t c_ref, const char *attr_in, uint32_t *out) {
     external_call_depth_inc();
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
         qstr attr = qstr_from_str(attr_in);
@@ -344,7 +344,7 @@ void proxy_c_to_js_lookup_attr(uint32_t c_ref, const char *attr_in, uint32_t *ou
 
 static bool proxy_c_to_js_store_helper(uint32_t c_ref, const char *attr_in, uint32_t *value_in) {
     external_call_depth_inc();
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
         qstr attr = qstr_from_str(attr_in);
@@ -440,7 +440,7 @@ uint32_t proxy_c_to_js_get_iter(uint32_t c_ref) {
 
 bool proxy_c_to_js_iternext(uint32_t c_ref, uint32_t *out) {
     external_call_depth_inc();
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
         mp_obj_t iter = mp_iternext_allow_raise(obj);
@@ -598,7 +598,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(resume_obj, 5, 5, resume_fun);
 
 void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
     external_call_depth_inc();
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
         mp_obj_t resolve = proxy_convert_js_to_mp_obj_cside(args + 1 * 3);

@@ -1272,7 +1272,7 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
 
 // Acts like mp_load_method_maybe but catches AttributeError, and all other exceptions if requested
 void mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc) {
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_load_method_maybe(obj, attr, dest);
         nlr_pop();
@@ -1408,7 +1408,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
         mp_load_method_maybe(o_in, MP_QSTR___next__, dest);
         if (dest[0] != MP_OBJ_NULL) {
             // __next__ exists, call it and return its result
-            nlr_buf_t nlr;
+            nlr_buf_t nlr = { .ret_val = NULL };
             if (nlr_push(&nlr) == 0) {
                 mp_obj_t ret = mp_call_method_n_kw(0, 0, dest);
                 nlr_pop();

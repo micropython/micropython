@@ -177,7 +177,7 @@ static void *thread_entry(void *args_in) {
 
     DEBUG_printf("[thread] start ts=%p args=%p stack=%p\n", &ts, &args, MP_STATE_THREAD(stack_top));
 
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         mp_call_function_n_kw(args->fun, args->n_args, args->n_kw, args->args);
         nlr_pop();

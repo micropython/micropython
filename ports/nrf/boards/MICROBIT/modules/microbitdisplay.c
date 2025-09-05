@@ -326,7 +326,7 @@ static void microbit_display_update(void) {
             /* WARNING: We are executing in an interrupt handler.
              * If an exception is raised here then we must hand it to the VM. */
             mp_obj_t obj;
-            nlr_buf_t nlr;
+            nlr_buf_t nlr = { .ret_val = NULL };
             gc_lock();
             if (nlr_push(&nlr) == 0) {
                 obj = mp_iternext_allow_raise(async_iterator);

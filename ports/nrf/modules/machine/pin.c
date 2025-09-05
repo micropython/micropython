@@ -506,7 +506,7 @@ static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t 
         // When executing code within a handler we must lock the GC to prevent
         // any memory allocations.  We must also catch any exceptions.
         gc_lock();
-        nlr_buf_t nlr;
+        nlr_buf_t nlr = { .ret_val = NULL };
         if (nlr_push(&nlr) == 0) {
             mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
             nlr_pop();

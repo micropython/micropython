@@ -106,7 +106,7 @@ void extint_callback(void *param) {
         // When executing code within a handler we must lock the GC to prevent
         // any memory allocations.  We must also catch any exceptions.
         gc_lock();
-        nlr_buf_t nlr;
+        nlr_buf_t nlr = { .ret_val = NULL };
         if (nlr_push(&nlr) == 0) {
             mp_call_function_1(*cb, pyb_extint_callback_arg[irq_no]);
             nlr_pop();

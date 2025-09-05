@@ -93,7 +93,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
         return;
     }
 
-    nlr_buf_t nlr;
+    nlr_buf_t nlr = { .ret_val = NULL };
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
         mp_parse_tree_t pn = mp_parse(lex, input_kind);

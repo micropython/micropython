@@ -1063,7 +1063,7 @@ void can_irq_handler(uint can_id,  can_int_t interrupt, can_rx_fifo_t fifo) {
     if (callback != mp_const_none) {
         mp_sched_lock();
         gc_lock();
-        nlr_buf_t nlr;
+        nlr_buf_t nlr = { .ret_val = NULL };
         if (nlr_push(&nlr) == 0) {
             mp_call_function_2(callback, MP_OBJ_FROM_PTR(self), MP_OBJ_NEW_SMALL_INT(interrupt));
             nlr_pop();
