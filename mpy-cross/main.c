@@ -65,7 +65,7 @@ static void stderr_print_strn(void *env, const char *str, size_t len) {
 static const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
 static int compile_and_save(const char *file, const char *output_file, const char *source_file) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_lexer_t *lex;
         if (strcmp(file, "-") == 0) {

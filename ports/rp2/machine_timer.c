@@ -55,7 +55,7 @@ static int64_t alarm_callback(alarm_id_t id, void *user_data) {
         // prevent any memory allocations.
         mp_sched_lock();
         gc_lock();
-        nlr_buf_t nlr = { .ret_val = NULL };
+        nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_call_function_1(self->callback, MP_OBJ_FROM_PTR(self));
             nlr_pop();

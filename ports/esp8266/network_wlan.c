@@ -229,7 +229,7 @@ static void esp_scan_cb(void *result, STATUS status) {
     }
     if (result && status == 0) {
         // we need to catch any memory errors
-        nlr_buf_t nlr = { .ret_val = NULL };
+        nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             for (struct bss_info *bs = result; bs; bs = STAILQ_NEXT(bs, next)) {
                 mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);

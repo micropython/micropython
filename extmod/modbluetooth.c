@@ -1233,7 +1233,7 @@ static mp_obj_t invoke_irq_handler_run_protected(uint16_t event,
     }
 
     mp_obj_t result = mp_const_none;
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         result = invoke_irq_handler_run(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
         nlr_pop();

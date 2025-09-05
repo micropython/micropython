@@ -120,7 +120,7 @@ static int handle_uncaught_exception(mp_obj_base_t *exc) {
 static int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
     mp_hal_set_interrupt_char(CHAR_CTRL_C);
 
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         // create lexer based on source kind
         mp_lexer_t *lex;
@@ -657,7 +657,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 set_sys_argv(argv, argc, a + 1);
 
                 mp_obj_t mod;
-                nlr_buf_t nlr = { .ret_val = NULL };
+                nlr_buf_t nlr;
 
                 // Allocating subpkg_tried on the stack can lead to compiler warnings about this
                 // variable being clobbered when nlr is implemented using setjmp/longjmp.  Its

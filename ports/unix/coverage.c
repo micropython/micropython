@@ -386,7 +386,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.*s\n", (int)vstr->len, vstr->buf);
 
         VSTR_FIXED(fix, 4);
-        nlr_buf_t nlr = { .ret_val = NULL };
+        nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             vstr_add_str(&fix, "large");
             nlr_pop();
@@ -571,7 +571,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(2)));
 
         // mp_obj_int_get_uint_checked with negative small-int (should raise exception)
-        nlr_buf_t nlr = { .ret_val = NULL };
+        nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(-1));
             nlr_pop();
@@ -688,7 +688,7 @@ static mp_obj_t extra_coverage(void) {
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
         mp_sched_keyboard_interrupt();
-        nlr_buf_t nlr = { .ret_val = NULL };
+        nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_handle_pending(true);
             nlr_pop();

@@ -239,7 +239,7 @@ void pyb_sleep_set_rtc_obj (mp_obj_t rtc_obj) {
 }
 
 void pyb_sleep_sleep (void) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
 
     // check if we should enable timer wake-up
     if (pybsleep_data.rtc_obj->irq_enabled && (pybsleep_data.rtc_obj->pwrmode & PYB_PWR_MODE_LPDS)) {

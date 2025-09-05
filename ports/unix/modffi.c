@@ -290,7 +290,7 @@ static void call_py_func_with_lock(ffi_cif *cif, void *ret, void **args, void *u
     mp_obj_t pyargs[cif->nargs];
     mp_obj_fficallback_t *o = user_data;
     mp_obj_t pyfunc = o->pyfunc;
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
 
     #if MICROPY_ENABLE_SCHEDULER
     mp_sched_lock();

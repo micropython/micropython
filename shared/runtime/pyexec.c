@@ -73,7 +73,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     MICROPY_BOARD_BEFORE_PYTHON_EXEC(input_kind, exec_flags);
     #endif
 
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
@@ -567,7 +567,7 @@ friendly_repl_reset:
     {
         uint32_t x[4] = {0x424242, 0xdeaddead, 0x242424, 0xdeadbeef};
         for (;;) {
-            nlr_buf_t nlr = { .ret_val = NULL };
+            nlr_buf_t nlr;
             printf("pyexec_repl: %p\n", x);
             mp_hal_set_interrupt_char(CHAR_CTRL_C);
             if (nlr_push(&nlr) == 0) {

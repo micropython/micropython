@@ -668,7 +668,7 @@ static MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
 
 static bool binary_op_maybe(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs, mp_obj_t *res) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t tmp = mp_binary_op(op, lhs, rhs);
         nlr_pop();

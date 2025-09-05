@@ -43,7 +43,7 @@ void mp_embed_init(void *gc_heap, size_t gc_heap_size, void *stack_top) {
 #if MICROPY_ENABLE_COMPILER
 // Compile and execute the given source script (Python text).
 void mp_embed_exec_str(const char *src) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         // Compile, parse and execute the given string.
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -61,7 +61,7 @@ void mp_embed_exec_str(const char *src) {
 
 #if MICROPY_PERSISTENT_CODE_LOAD
 void mp_embed_exec_mpy(const uint8_t *mpy, size_t len) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         // Execute the given .mpy data.
         mp_module_context_t *ctx = m_new_obj(mp_module_context_t);

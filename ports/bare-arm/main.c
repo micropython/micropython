@@ -40,7 +40,7 @@ static const char *demo_file_input =
     "    print('iter {:08}'.format(i))";
 
 static void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         // Compile, parse and execute the given string.
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);

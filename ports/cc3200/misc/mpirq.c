@@ -121,7 +121,7 @@ void mp_irq_handler (mp_obj_t self_in) {
         // when executing code within a handler we must lock the GC to prevent
         // any memory allocations.
         gc_lock();
-        nlr_buf_t nlr = { .ret_val = NULL };
+        nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_call_function_1(self->handler, self->parent);
             nlr_pop();

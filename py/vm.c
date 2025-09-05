@@ -296,7 +296,7 @@ FRAME_SETUP();
 
     // outer exception handling loop
     for (;;) {
-        nlr_buf_t nlr = { .ret_val = NULL };
+        nlr_buf_t nlr;
 outer_dispatch_loop:
         if (nlr_push(&nlr) == 0) {
             // local variables that are not visible to the exception handler

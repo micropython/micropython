@@ -28,7 +28,7 @@
 #include "py/runtime.h"
 
 mp_obj_t mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t ret = mp_call_function_1(fun, arg);
         nlr_pop();
@@ -40,7 +40,7 @@ mp_obj_t mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
 }
 
 mp_obj_t mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
-    nlr_buf_t nlr = { .ret_val = NULL };
+    nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t ret = mp_call_function_2(fun, arg1, arg2);
         nlr_pop();
