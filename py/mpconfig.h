@@ -2328,7 +2328,7 @@ typedef time_t mp_timestamp_t;
 // overflow checking when multiplying two small ints. Otherwise, use a portable
 // algorithm.
 //
-// Most MCUs have a with a 32x32->64 bit multiply instruction, in which case the
+// Most MCUs have a 32x32->64 bit multiply instruction, in which case the
 // intrinsic is likely to be faster and generate smaller code. The main exception is
 // cortex-m0 with __ARM_ARCH_ISA_THUMB == 1.
 //
