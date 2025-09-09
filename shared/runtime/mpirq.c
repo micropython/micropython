@@ -69,6 +69,15 @@ int mp_irq_dispatch(mp_obj_t handler, mp_obj_t parent, bool ishard) {
     int result = 0;
     if (handler != mp_const_none) {
         if (ishard) {
+            #if MICROPY_STACK_CHECK && MICROPY_STACK_SIZE_HARD_IRQ > 0
+            // This callback executes in an ISR context so the stack-limit
+            // check must be changed to use the ISR stack for the duration
+            // of this function.
+            char *orig_stack_top = MP_STATE_THREAD(stack_top);
+            size_t orig_stack_limit = MP_STATE_THREAD(stack_limit);
+            mp_cstack_init_with_sp_here(MICROPY_STACK_SIZE_HARD_IRQ);
+            #endif
+
             // When executing code within a handler we must lock the scheduler to
             // prevent any scheduled callbacks from running, and lock the GC to
             // prevent any memory allocations.
@@ -85,6 +94,12 @@ int mp_irq_dispatch(mp_obj_t handler, mp_obj_t parent, bool ishard) {
             }
             gc_unlock();
             mp_sched_unlock();
+
+            #if MICROPY_STACK_CHECK && MICROPY_STACK_SIZE_HARD_IRQ > 0
+            // Restore original stack-limit checking values.
+            MP_STATE_THREAD(stack_top) = orig_stack_top;
+            MP_STATE_THREAD(stack_limit) = orig_stack_limit;
+            #endif
         } else {
             // Schedule call to user function
             mp_sched_schedule(handler, parent);

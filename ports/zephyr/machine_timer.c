@@ -66,16 +66,6 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 static void machine_timer_callback(struct k_timer *timer) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)k_timer_user_data_get(timer);
 
-    #if MICROPY_STACK_CHECK
-    // This callback executes in an ISR context so the stack-limit check must
-    // be changed to use the ISR stack for the duration of this function (so
-    // that hard IRQ callbacks work).
-    char *orig_stack_top = MP_STATE_THREAD(stack_top);
-    size_t orig_stack_limit = MP_STATE_THREAD(stack_limit);
-    MP_STATE_THREAD(stack_top) = (void *)&self;
-    MP_STATE_THREAD(stack_limit) = CONFIG_ISR_STACK_SIZE - 512;
-    #endif
-
     if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
         // Uncaught exception; disable the callback so it doesn't run again.
         self->mode = TIMER_MODE_ONE_SHOT;
@@ -84,12 +74,6 @@ static void machine_timer_callback(struct k_timer *timer) {
     if (self->mode == TIMER_MODE_ONE_SHOT) {
         machine_timer_deinit(self);
     }
-
-    #if MICROPY_STACK_CHECK
-    // Restore original stack-limit checking values.
-    MP_STATE_THREAD(stack_top) = orig_stack_top;
-    MP_STATE_THREAD(stack_limit) = orig_stack_limit;
-    #endif
 }
 
 static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
