@@ -29,8 +29,10 @@ jobs:
         include:
         - visualstudio: '2017'
           vs_version: '[15, 16)'
+          custom_vs_install: true
         - visualstudio: '2019'
           vs_version: '[16, 17)'
+          custom_vs_install: true
         - visualstudio: '2022'
           vs_version: '[17, 18)'
         # trim down the number of jobs in the matrix
@@ -43,18 +45,17 @@ jobs:
     env:
       CI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
     steps:
-    - name: Install Visual Studio 2017
-      if: matrix.visualstudio == '2017'
+    - name: Install Visual Studio ${{ matrix.visualstudio }}
+      if: matrix.custom_vs_install
+      shell: bash
+      # Shell functions in this block are to retry intermittent corrupt
+      # downloads (with a clean download dir) before failing the job outright
       run: |
-        choco install visualstudio2017buildtools
-        choco install visualstudio2017-workload-vctools
-        choco install windows-sdk-8.1
-    - name: Install Visual Studio 2019
-      if: matrix.visualstudio == '2019'
-      run: |
-        choco install visualstudio2019buildtools
-        choco install visualstudio2019-workload-vctools
-        choco install windows-sdk-8.1
+        try () { ($@) || ($@) || ($@) || ($@) }
+        clean_install () ( rm -rf $TEMP/chocolatey; choco install $1 )
+        try clean_install visualstudio${{ matrix.visualstudio }}buildtools
+        try clean_install visualstudio${{ matrix.visualstudio }}-workload-vctools
+        try clean_install windows-sdk-8.1
     - uses: microsoft/setup-msbuild@v2
       with:
         vs-version: ${{ matrix.vs_version }}
