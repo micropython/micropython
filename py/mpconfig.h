@@ -717,6 +717,13 @@
 #define MICROPY_STACK_CHECK_MARGIN (0)
 #endif
 
+// The size of a separate stack used for hard IRQ handlers, which should be
+// checked instead of the main stack when running a hard callback. 0 implies
+// there is no separate ISR stack to check.
+#ifndef MICROPY_STACK_SIZE_HARD_IRQ
+#define MICROPY_STACK_SIZE_HARD_IRQ (0)
+#endif
+
 // Whether to have an emergency exception buffer
 #ifndef MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
