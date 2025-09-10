@@ -10,17 +10,39 @@ and ESP32-S3 (ESP8266 is supported by a separate MicroPython port).
 
 Supported features include:
 - REPL (Python prompt) over UART0.
-- 16k stack for the MicroPython task and approximately 100k Python heap.
+- 16KiB stack for the MicroPython task and approximately 110KiB of free RAM for
+  MicroPython heap and other usage. (This number is for the original ESP32
+  without SPIRAM. Boards with SPIRAM will have much more free RAM, and other
+  SoCs may have less.)
 - Many of MicroPython's features are enabled: unicode, arbitrary-precision
   integers, single-precision floats, complex numbers, frozen bytecode, as
   well as many of the internal modules.
-- Internal filesystem using the flash (currently 2M in size).
+- Internal filesystem using the remaining flash area.
+- Threading support via the _thread module (built on native FreeRTOS tasks),
+  with GIL enabled.
 - The machine module with GPIO, UART, SPI, software I2C, ADC, DAC, PWM,
   TouchPad, WDT and Timer.
 - The network module with WLAN (WiFi) support.
 - Bluetooth low-energy (BLE) support via the bluetooth module.
 
 Initial development of this ESP32 port was sponsored in part by Microbric Pty Ltd.
+
+Choosing Correct Chip
+---------------------
+
+ESP32 chips are not all the same. The different ESP32 families have different
+capabilities and resources available. In particular, the ESP32-C2 and ESP32-S2
+(without external SPIRAM) have the least RAM. They can still run MicroPython
+well but may run out of RAM if a program uses a lot of resources (i.e. if it
+needs many complex code modules, multiple TLS connections, or large memory
+buffers for a display, etc.)
+
+ESP32 chips with external "SPIRAM" (supported on ESP32, ESP32-S2, ESP32-S3) have
+megabytes of RAM available - significantly more than any ESP32 without external
+SPIRAM. Not every ESP32 board has SPIRAM included.
+
+The supported ESP32 chip with the most hardware resources is the ESP32-S3 with
+external SPIRAM included (usually 2MB, 4MB, or 8MB).
 
 Setting up ESP-IDF and the build environment
 --------------------------------------------
