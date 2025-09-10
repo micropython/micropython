@@ -5,8 +5,6 @@ qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 This script works with Python 3.3+.
 """
 
-from __future__ import print_function
-
 import io
 import os
 import re
