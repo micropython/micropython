@@ -4,7 +4,6 @@ the CPU frequency to a given value.  The algorithm here appears as C code
 for the machine.freq() function.
 """
 
-from __future__ import print_function
 import re
 
 

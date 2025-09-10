@@ -4,8 +4,6 @@ extracts relevant peripheral constants, and creates qstrs, mpz's and constants
 for the stm module.
 """
 
-from __future__ import print_function
-
 import argparse
 import re
 
