@@ -11,8 +11,6 @@ See app note AN3156 for a description of the DFU protocol.
 See document UM0391 for a description of the DFuse file.
 """
 
-from __future__ import print_function
-
 import argparse
 import collections
 import inspect
