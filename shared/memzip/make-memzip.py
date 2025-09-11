@@ -7,8 +7,6 @@
 # This is somewhat like frozen modules in python, but allows arbitrary files
 # to be used.
 
-from __future__ import print_function
-
 import argparse
 import os
 import subprocess
