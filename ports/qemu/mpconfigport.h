@@ -41,6 +41,7 @@
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #elif defined(__riscv) && (__riscv_xlen == 32)
 #define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_RV32_ZBA       (1)
 #define MICROPY_EMIT_INLINE_RV32    (1)
 #endif
 
