@@ -411,6 +411,7 @@ tests_with_regex_output = [
     base_path(file)
     for file in (
         "micropython/meminfo.py",
+        "micropython/meminfo_mark.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
         "misc/sys_settrace_cov.py",
