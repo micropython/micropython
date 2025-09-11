@@ -121,6 +121,8 @@ static bool uart_is_repl(uart_port_t uart_num) {
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_BREAK), MP_ROM_INT(UART_IRQ_BREAK) }, \
 
+#define MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS (MP_TYPE_FLAG_NONE)
+
 static void uart_timer_callback(machine_timer_obj_t *timer) {
     // The UART object is referred here by the callback field.
     machine_uart_obj_t *self = (machine_uart_obj_t *)timer->callback;
