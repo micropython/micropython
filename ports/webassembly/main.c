@@ -58,15 +58,15 @@ static void gc_collect_top_level(void);
 
 void external_call_depth_inc(void) {
     ++external_call_depth;
-    #if MICROPY_GC_SPLIT_HEAP_AUTO
-    if (external_call_depth == 1) {
-        gc_collect_top_level();
-    }
-    #endif
 }
 
 void external_call_depth_dec(void) {
     --external_call_depth;
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    if (external_call_depth == 0) {
+        gc_collect_top_level();
+    }
+    #endif
 }
 
 void mp_js_init(int pystack_size, int heap_size) {
@@ -133,13 +133,12 @@ void mp_js_do_import(const char *name, uint32_t *out) {
             }
         }
         nlr_pop();
-        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(ret, out);
     } else {
         // uncaught exception
-        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
     }
+    external_call_depth_dec();
 }
 
 void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
@@ -153,13 +152,12 @@ void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
         mp_obj_t ret = mp_call_function_0(module_fun);
         nlr_pop();
-        external_call_depth_dec();
         proxy_convert_mp_to_js_obj_cside(ret, out);
     } else {
         // uncaught exception
-        external_call_depth_dec();
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
     }
+    external_call_depth_dec();
 }
 
 void mp_js_do_exec_async(const char *src, size_t len, uint32_t *out) {
