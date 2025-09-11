@@ -1844,6 +1844,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_SYS_TRACEBACKLIMIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
+// Whether to disable traceback allocation
+#ifndef MICROPY_PY_SYS_TRACEBACK_DISABLE
+#define MICROPY_PY_SYS_TRACEBACK_DISABLE 0
+#endif
+
 // Whether the sys module supports attribute delegation
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PY_SYS_ATTR_DELEGATION

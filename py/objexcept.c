@@ -583,6 +583,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     self->traceback_data = NULL;
 }
 
+#if !MICROPY_PY_SYS_TRACEBACK_DISABLE
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
     mp_obj_exception_t *self = get_native_exception(self_in);
 
@@ -645,6 +646,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
     tb_data[1] = line;
     tb_data[2] = block;
 }
+#endif // !MICROPY_PY_SYS_TRACEBACK_DISABLE
 
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values) {
     mp_obj_exception_t *self = get_native_exception(self_in);
