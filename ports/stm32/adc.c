@@ -306,6 +306,11 @@ static void adcx_clock_enable(ADC_HandleTypeDef *adch) {
 static void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adcx_clock_enable(adch);
 
+    // Set ADC clock prescaler, if it's not done by HAL_ADC_Init() below.
+    #if defined(STM32N6)
+    LL_RCC_SetADCPrescaler(4 - 1); // 200MHz / 4 = 50MHz
+    #endif
+
     adch->Init.Resolution = resolution;
     adch->Init.ContinuousConvMode = DISABLE;
     adch->Init.DiscontinuousConvMode = DISABLE;
@@ -375,7 +380,7 @@ static void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #endif
     #if defined(STM32G0)
     HAL_ADCEx_Calibration_Start(adch);
-    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB)
     HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
     #endif
 }
@@ -449,7 +454,7 @@ static void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
         sConfig.SamplingTime = ADC_SAMPLETIME_246CYCLES_5;
     } else {
-        sConfig.SamplingTime = ADC_SAMPLETIME_11CYCLES_5;
+        sConfig.SamplingTime = ADC_SAMPLETIME_46CYCLES_5;
     }
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
