@@ -807,6 +807,24 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
+#if MICROPY_ENABLE_FINALISER
+bool gc_ftb_get(void *ptr) {
+    #if MICROPY_GC_SPLIT_HEAP
+    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
+    if (!area) {
+        return false;
+    }
+    #else
+    if (!VERIFY_PTR(ptr)) {
+        return false;
+    }
+    mp_state_mem_area_t *area = &MP_STATE_MEM(area);
+    #endif
+    size_t block = BLOCK_FROM_PTR(area, ptr);
+    return FTB_GET(area, block);
+}
+#endif
+
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
