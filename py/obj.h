@@ -539,6 +539,10 @@ typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
 // Flags for type behaviour (mp_obj_type_t.flags)
+// If MP_TYPE_FLAG_IS_SUBCLASSED is set, then subclasses of this class have been created.
+//   Mutations to this class that would require updating all subclasses must be rejected.
+// If MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS is set, then attribute lookups involving this
+//   class need to additionally check for special accessor methods, such as from descriptors.
 // If MP_TYPE_FLAG_EQ_NOT_REFLEXIVE is clear then __eq__ is reflexive (A==A returns True).
 // If MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE is clear then the type can't be equal to an
 //   instance of any different class that also clears this flag.  If this flag is set
