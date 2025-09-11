@@ -199,6 +199,42 @@ class Test(unittest.TestCase):
         del obj
         self.check_final()
 
+    def test_del_necromancy(self):
+        """Test what happens when a finaliser tries to make its object reachable again."""
+
+        zombie_range = [i + 1000 for i in self.RANGE]
+        sentinel = object()
+        graveyard = dict.fromkeys(self.RANGE + zombie_range, sentinel)
+
+        class Zombie:
+            def __init__(self2, i):
+                self2.i = i
+
+            def __del__(self2):
+                graveyard[self2.i] = self2
+
+        for i in self.RANGE:
+            obj = Zombie(i)
+
+        del obj
+
+        self.collect_tryveryhard()
+
+        retained = []
+        for i in zombie_range:
+            obj = Zombie(i)
+            retained.append(obj)
+
+        del obj
+
+        self.collect_tryveryhard()
+
+        for i, obj in graveyard.items():
+            if obj == sentinel:
+                pass
+            else:
+                self.assertEqual(obj.i, i)
+
 
 if __name__ == "__main__":
     unittest.main()
