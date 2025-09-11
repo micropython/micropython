@@ -93,9 +93,9 @@ Changes to built-in modules:
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | `gc <https://docs.python.org/3/whatsnew/3.9.html#gc>`_                                                                        |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | Garbage collection does not block on resurrected objects                                                      |               |
+  | Garbage collection does not block on resurrected objects                                                      | Complete      |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | Added a new function *gc.is_finalized()* to check if an object has been finalized by the garbage collector    |               |
+  | Added a new function *gc.is_finalized()* to check if an object has been finalized by the garbage collector    | Complete      |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | `math <https://docs.python.org/3/whatsnew/3.9.html#math>`_                                                                    |
   +---------------------------------------------------------------------------------------------------------------+---------------+
