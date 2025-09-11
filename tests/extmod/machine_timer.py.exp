@@ -1,0 +1,16 @@
+callback one-shot soft 500 unlocked
+callback one-shot soft 250 unlocked
+callback one-shot hard 500 locked
+callback one-shot hard 250 locked
+callback periodic soft 500 unlocked
+callback periodic soft 500 unlocked
+callback periodic soft 500 unlocked
+callback periodic soft 500 unlocked
+callback periodic soft 250 unlocked
+callback periodic soft 250 unlocked
+callback periodic hard 500 locked
+callback periodic hard 500 locked
+callback periodic hard 500 locked
+callback periodic hard 500 locked
+callback periodic hard 250 locked
+callback periodic hard 250 locked
