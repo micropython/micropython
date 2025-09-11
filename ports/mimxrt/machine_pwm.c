@@ -375,7 +375,7 @@ static void configure_pwm(machine_pwm_obj_t *self) {
     }
 }
 
-// Micropython API functions
+// MicroPython API functions
 //
 static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

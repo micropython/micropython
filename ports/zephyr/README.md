@@ -211,8 +211,8 @@ run the following after you built an image with the previous command:
 File Systems
 ------------
 
-The Zephyr Micropython port provides 2 options for handling filesystems on the device:
-The first is the Micropython filesystem management, which uses Micropython's filesystem code and
+The Zephyr MicroPython port provides 2 options for handling filesystems on the device:
+The first is the MicroPython filesystem management, which uses MicroPython's filesystem code and
 relies on zephyr's FlashArea API, this is enabled by default when 
 `CONFIG_FLASH` and `CONFIG_FLASH_MAP` are turned on.
 The second option is using Zephyr's Filesystem management:
@@ -241,13 +241,13 @@ Then, a fstab must be added to the dts overlay, for example:
 		};
 	};
 	
-It is then possible to use the FS like a normal Micropython filesystem:
+It is then possible to use the FS like a normal MicroPython filesystem:
 
     import vfs, zephyr
     zfs = zephyr.FileSystem(zephyr.FileSystem.fstab()[0])
     vfs.mount(zfs, "/zephyr")
 
-You may disable Micropython's File system code to save space:
+You may disable MicroPython's File system code to save space:
     
     CONFIG_MICROPY_VFS_FAT=n
     CONFIG_MICROPY_VFS_LFS1=n
