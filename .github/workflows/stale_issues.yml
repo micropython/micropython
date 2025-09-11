@@ -1,0 +1,8 @@
+name: 'Close stale issues/PRs'
+on:
+  schedule:
+    - cron: "50 14 */2 * *"
+
+jobs:
+  call-workflow:
+    uses: Infineon/workflows/.github/workflows/epe_stale_issues.yml@master
