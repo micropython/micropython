@@ -1,3 +1,4 @@
 sphinx~=7.2.6
 sphinxcontrib.jquery==4.1
 sphinx-rtd-theme==3.0.2
+sphinxemoji==0.1.8
