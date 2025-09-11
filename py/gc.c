@@ -549,6 +549,7 @@ void gc_collect_end(void) {
     gc_maybe_resweep();
     #if MICROPY_ENABLE_FINALISER
     gc_finalise_all_unmarked();
+    gc_maybe_resweep();
     #endif
     gc_free_all_unmarked();
     #if MICROPY_GC_SPLIT_HEAP
@@ -637,6 +638,12 @@ static void gc_finalise_if_unmarked(const mp_state_mem_area_t *area, size_t bloc
     #if MICROPY_ENABLE_SCHEDULER
     mp_sched_unlock();
     #endif
+
+    if (obj->type->flags & MP_TYPE_FLAG_INSTANCE_TYPE) {
+        // trigger rescan to prevent finaliser zombies from being freed
+        // non-python types are assumed to not need this
+        MP_STATE_MEM(gc_needs_resweep) = 1;
+    }
 }
 #endif // MICROPY_ENABLE_FINALISER
 
