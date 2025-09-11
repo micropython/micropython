@@ -1,0 +1,72 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 0 */1 * *' # daily 00:00 
+  workflow_dispatch: # on button click
+
+jobs:
+  synch_master:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout target repo
+      uses: actions/checkout@v4
+      with:
+        ref: master
+        token: ${{ secrets.GH_ACT_SYNCH_UPSTREAM }}
+
+    - name: Sync upstream changes
+      id: sync
+      uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+      with:
+        target_sync_branch: master
+        target_repo_token: ${{ secrets.GH_ACT_SYNCH_UPSTREAM }}
+        upstream_sync_branch: master
+        upstream_sync_repo: micropython/micropython
+        git_config_pull_rebase: true
+
+      
+    - name: New commits found
+      if: steps.sync.outputs.has_new_commits == 'true'
+      run: echo "New commits were found to sync."
+    
+    - name: No new commits
+      if: steps.sync.outputs.has_new_commits == 'false'
+      run: echo "There were no new commits."
+      
+    - name: Show value of 'has_new_commits'
+      run: echo ${{ steps.sync.outputs.has_new_commits }}
+  
+  synch_port_psoc6:
+    runs-on: ubuntu-latest
+    needs: synch_master
+
+    steps:
+    - name: Checkout target repo
+      uses: actions/checkout@v4
+      with:
+        ref: psoc-edge-main
+        token: ${{ secrets.GH_ACT_SYNCH_UPSTREAM }}
+
+    - name: Sync upstream changes
+      id: sync
+      uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+      with:
+        target_sync_branch: psoc-edge-main
+        target_repo_token: ${{ secrets.GH_ACT_SYNCH_UPSTREAM }}
+        upstream_sync_branch: master
+        upstream_sync_repo: micropython/micropython
+        git_config_pull_rebase: true
+        target_branch_push_args: '--force'
+      
+    - name: New commits found
+      if: steps.sync.outputs.has_new_commits == 'true'
+      run: echo "New commits were found to sync."
+    
+    - name: No new commits
+      if: steps.sync.outputs.has_new_commits == 'false'
+      run: echo "There were no new commits."
+      
+    - name: Show value of 'has_new_commits'
+      run: echo ${{ steps.sync.outputs.has_new_commits }}
