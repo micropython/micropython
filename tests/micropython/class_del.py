@@ -250,11 +250,15 @@ class Test(unittest.TestCase):
 
         self.collect_tryveryhard()
 
+        for obj in retained:
+            self.assertFalse(gc.is_finalized(obj))
+
         for i, obj in graveyard.items():
             if obj == sentinel:
                 pass
             else:
                 self.assertEqual(obj.i, i)
+                self.assertTrue(gc.is_finalized(obj))
 
 
 if __name__ == "__main__":
