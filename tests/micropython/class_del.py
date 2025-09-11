@@ -17,26 +17,18 @@ created very early or touched very recently.
 
 try:
     import unittest
+    import micropython
     import gc
     import sys
 
-    if hasattr(sys.implementation, "_mpy"):
-        import vfs  # correlate with MICROPY_ENABLE_FINALISER
-except ImportError:
+    gc.is_finalized
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 
-def is_webassembly_with_micropy_gc_split_heap_auto():
-    return (
-        sys.platform == "webassembly"
-        and hasattr(sys.implementation, "_mpy")
-        and sys.implementation._build == "pyscript"
-    )
-
-
-if is_webassembly_with_micropy_gc_split_heap_auto():
-    # No mid-function GC, collection and finalisation can only happen from outermost context.
+if sys.platform == "webassembly" and sys.implementation._build == "pyscript":
+    # GC cannot run in the middle of python bytecode on this platform.
     print("SKIP")
     raise SystemExit
 
@@ -229,11 +221,15 @@ class Test(unittest.TestCase):
 
         self.collect_tryveryhard()
 
+        for obj in retained:
+            self.assertFalse(gc.is_finalized(obj))
+
         for i, obj in graveyard.items():
             if obj == sentinel:
                 pass
             else:
                 self.assertEqual(obj.i, i)
+                self.assertTrue(gc.is_finalized(obj))
 
 
 if __name__ == "__main__":
