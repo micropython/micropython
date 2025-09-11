@@ -10,6 +10,9 @@ in the execution of the program code. This carries significant consequences, som
 language. Others are common to all systems capable of responding to real time events. This document covers
 the language specific issues first, followed by a brief introduction to real time programming for those new to it.
 
+Note that most of these same requirements also apply when writing finalisers; that is, the bodies of ``__del__`` data
+model methods need to obey the same restrictions.
+
 This introduction uses vague terms like "slow" or "as fast as possible". This is deliberate, as speeds are
 application dependent. Acceptable durations for an ISR are dependent on the rate at which interrupts occur,
 the nature of the main program, and the presence of other concurrent events.
