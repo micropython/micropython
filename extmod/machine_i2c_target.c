@@ -376,7 +376,11 @@ static MP_DEFINE_CONST_DICT(machine_i2c_target_locals_dict, machine_i2c_target_l
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_i2c_target_type,
     MP_QSTR_I2CTarget,
+    #if MICROPY_PY_MACHINE_I2C_TARGET_FINALISER
+    MP_TYPE_FLAG_HAS_FINALISER,
+    #else
     MP_TYPE_FLAG_NONE,
+    #endif
     make_new, mp_machine_i2c_target_make_new,
     print, mp_machine_i2c_target_print,
     attr, &machine_i2c_target_attr,

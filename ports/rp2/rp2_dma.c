@@ -465,7 +465,7 @@ static MP_DEFINE_CONST_DICT(rp2_dma_locals_dict, rp2_dma_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     rp2_dma_type,
     MP_QSTR_DMA,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, rp2_dma_make_new,
     print, rp2_dma_print,
     attr, rp2_dma_attr,

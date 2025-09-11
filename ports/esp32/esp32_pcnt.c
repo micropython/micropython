@@ -504,7 +504,7 @@ static MP_DEFINE_CONST_DICT(esp32_pcnt_locals_dict, esp32_pcnt_locals_dict_table
 MP_DEFINE_CONST_OBJ_TYPE(
     esp32_pcnt_type,
     MP_QSTR_PCNT,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, esp32_pcnt_make_new,
     print, esp32_pcnt_print,
     locals_dict, &esp32_pcnt_locals_dict
