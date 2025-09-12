@@ -39,7 +39,7 @@
 #define MICROPY_EMIT_INLINE_THUMB   (1)
 #endif
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
-#elif defined(__riscv)
+#elif defined(__riscv) && (__riscv_xlen == 32)
 #define MICROPY_EMIT_RV32           (1)
 #define MICROPY_EMIT_INLINE_RV32    (1)
 #endif
@@ -67,14 +67,20 @@
 
 // type definitions for the specific machine
 
+#if defined(__riscv) && (__riscv_xlen == 64)
+#define MP_SSIZE_MAX (0x7fffffffffffffff)
+typedef int64_t mp_int_t; // must be pointer size
+typedef uint64_t mp_uint_t; // must be pointer size
+#else
 #define MP_SSIZE_MAX (0x7fffffff)
+typedef int32_t mp_int_t; // must be pointer size
+typedef uint32_t mp_uint_t; // must be pointer size
+#endif
 
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 #define HEX_FMT "%lx"
 
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()
