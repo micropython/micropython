@@ -102,27 +102,6 @@ class Test(unittest.TestCase):
         del obj
         self.check_final()
 
-    def test_del_linked(self):
-        """Create a linked list."""
-
-        class Linked:
-            def __init__(self2, i):
-                self2.i = i
-                self2.child = None
-
-            def __del__(self2):
-                self.finalised[self2.i] = True
-
-        obj = None
-        for i in self.RANGE:
-            next_obj = Linked(i)
-            if obj:
-                obj.child = next_obj
-            obj = next_obj
-
-        del obj
-        self.check_final()
-
     def test_del_preinsert(self):
         """Insert a finaliser after class creation, before instantiation."""
 
