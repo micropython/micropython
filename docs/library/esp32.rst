@@ -485,13 +485,37 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     new sequence of pulses. Looping sequences longer than 126 pulses is not
     supported by the hardware.
 
+.. staticmethod:: RMT.bitstream_rmt([value])
+
+    Configure RMT usage in the `machine.bitstream` implementation.
+
+    If *value* is ``True``, bitstream tries to use RMT if possible. If *value*
+    is ``False``, bitstream sticks to the bit-banging implementation.
+
+    If no parameter is supplied, it returns the current state. The default state
+    is ``True``.
+
+.. staticmethod:: RMT.bitstream_channel([value])
+
+    Select which RMT channel is used by the `machine.bitstream` implementation.
+    *value* can be ``None`` or an RMT channel number.
+
+    Passing in ``None`` disables the use of RMT and instead selects a bit-banging
+    implementation for `machine.bitstream`.
+
+    Passing in no argument will not change the channel. This function returns
+    the current channel number.
+
+    This method is deprecated since RMT channels are now dynamically allocated and
+    the channel number is opaque. Passing any non-negative number as *value* will
+    enable RMT usage in bitstream. When RMT is enabled, this method always returns 1.
+
 Constants
 ---------
 
 .. data:: RMT.PULSE_MAX
 
    Maximum integer that can be set for a pulse duration.
-
 
 Ultra-Low-Power co-processor
 ----------------------------
