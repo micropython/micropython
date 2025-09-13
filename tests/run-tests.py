@@ -229,6 +229,26 @@ platform_tests_to_skip = {
     ),
 }
 
+# These tests don't test slice explicitly but rather use it to perform the test.
+tests_requiring_slice = (
+    "basics/builtin_range.py",
+    "basics/bytearray1.py",
+    "basics/class_super.py",
+    "basics/containment.py",
+    "basics/errno1.py",
+    "basics/fun_str.py",
+    "basics/generator1.py",
+    "basics/globals_del.py",
+    "basics/memoryview1.py",
+    "basics/memoryview_gc.py",
+    "basics/object1.py",
+    "basics/python34.py",
+    "basics/struct_endian.py",
+    "float/string_format_modulo.py",
+    "misc/non_compliant.py",
+    "misc/rge_sm.py",
+)
+
 # Tests that require `import target_wiring` to work.
 tests_requiring_target_wiring = (
     "extmod/machine_uart_irq_txidle.py",
@@ -855,24 +875,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         skip_inlineasm = args.inlineasm_arch is None
 
-    # These tests don't test slice explicitly but rather use it to perform the test
-    misc_slice_tests = (
-        "builtin_range",
-        "bytearray1",
-        "class_super",
-        "containment",
-        "errno1",
-        "fun_str",
-        "generator1",
-        "globals_del",
-        "memoryview1",
-        "memoryview_gc",
-        "object1",
-        "python34",
-        "string_format_modulo",
-        "struct_endian",
-    )
-
     # Some tests shouldn't be run on GitHub Actions
     if os.getenv("GITHUB_ACTIONS") == "true":
         skip_tests.add("thread/stress_schedule.py")  # has reliability issues
@@ -908,6 +910,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     if not args.unicode:
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
+
+    if skip_slice:
+        skip_tests.update(tests_requiring_slice)
 
     if not has_complex:
         skip_tests.add("float/complex1.py")
@@ -982,7 +987,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
-        is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
+        is_slice = test_name.find("slice") != -1
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
         is_fstring = test_name.startswith("string_fstring")
