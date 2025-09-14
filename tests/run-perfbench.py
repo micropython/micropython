@@ -194,7 +194,13 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if ": " in l and ": SKIP" not in l and "CRASH: " not in l:
+            if (
+                ": " in l
+                and ": SKIP" not in l
+                and "CRASH: " not in l
+                and "skipped: " not in l
+                and "failed: " not in l
+            ):
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
