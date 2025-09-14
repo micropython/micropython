@@ -271,12 +271,12 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
     return num_acks;
 }
 
-#elif defined(STM32F0) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
+#elif defined(STM32F0) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4)
 
 #if defined(STM32H7)
 #define APB1ENR            APB1LENR
 #define RCC_APB1ENR_I2C1EN RCC_APB1LENR_I2C1EN
-#elif defined(STM32L4)
+#elif defined(STM32G4) || defined(STM32L4)
 #define APB1ENR            APB1ENR1
 #define RCC_APB1ENR_I2C1EN RCC_APB1ENR1_I2C1EN
 #endif
