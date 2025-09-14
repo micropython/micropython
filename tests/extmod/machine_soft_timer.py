@@ -1,18 +1,16 @@
 # test "soft" machine.Timer (no hardware ID)
 import sys
 
-
-if sys.platform in ("esp32", "esp8266"):
-    print("SKIP")  # TODO: Implement soft timers for esp32/esp8266 ports
-    raise SystemExit
-
-
 try:
-    import time, machine as machine
+    import time, machine
 
     machine.Timer
 except:
     print("SKIP")
+    raise SystemExit
+
+if sys.platform in ("esp32", "esp8266"):
+    print("SKIP")  # TODO: Implement soft timers for esp32/esp8266 ports
     raise SystemExit
 
 # create and deinit
