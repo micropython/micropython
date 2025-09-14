@@ -1,4 +1,10 @@
-import micropython as micropython
+# test micropython.opt_level() and line numbers
+
+try:
+    import micropython
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 # check that level 3 doesn't store line numbers
 # the expected output is that any line is printed as "line 1"
