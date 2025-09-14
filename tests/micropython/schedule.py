@@ -1,10 +1,10 @@
 # test micropython.schedule() function
 
-import micropython
-
 try:
+    import micropython
+
     micropython.schedule
-except AttributeError:
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
