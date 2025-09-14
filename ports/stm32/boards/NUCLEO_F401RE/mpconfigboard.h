@@ -21,6 +21,9 @@
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV4)
 #define MICROPY_HW_CLK_PLLQ (7)
 
+// 84 MHz needs 2 wait states
+#define MICROPY_HW_FLASH_LATENCY (FLASH_LATENCY_2)
+
 // UART config
 #define MICROPY_HW_UART2_TX     (pin_A2)
 #define MICROPY_HW_UART2_RX     (pin_A3)
