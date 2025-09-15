@@ -673,7 +673,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     #endif
 
-    #if defined(STM32H7) || defined(STM32N6) || defined(STM32WB)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB)
     // Compute the smallest prescaler that will allow the given baudrate.
     uint32_t presc = UART_PRESCALER_DIV1;
     if (uart_obj->uart_id == PYB_LPUART_1) {
