@@ -9,12 +9,14 @@
 // HSE is 8MHz, HSI is 16MHz CPU freq set to 84MHz
 // Default source for the clock is HSI.
 // For revisions of the board greater than C-01, HSE can be used as a
-// clock source by removing the #define MICROPY_HW_CLK_USE_HSE line
+// clock source by removing the #define MICROPY_HW_CLK_USE_HSI line
 #define MICROPY_HW_CLK_USE_HSI (1)
 
 #if MICROPY_HW_CLK_USE_HSI
 #define MICROPY_HW_CLK_PLLM (16)
 #else
+// HSE comes from ST-LINK 8MHz, not crystal.
+#define MICROPY_HW_CLK_USE_BYPASS (1)
 #define MICROPY_HW_CLK_PLLM (8)
 #endif
 #define MICROPY_HW_CLK_PLLN (336)

@@ -385,7 +385,9 @@ void SystemClock_Config(void) {
     RCC->CFGR = RCC_CFGR_PLLSRC_HSI;
     #else
     // Enable the 8MHz external oscillator
+    #if MICROPY_HW_CLK_USE_BYPASS
     RCC->CR |= RCC_CR_HSEBYP;
+    #endif
     RCC->CR |= RCC_CR_HSEON;
     while (!(RCC->CR & RCC_CR_HSERDY)) {
     }
