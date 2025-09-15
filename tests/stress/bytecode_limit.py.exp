@@ -1,4 +1,4 @@
 cond false
 cond false
-[(433, 'RuntimeError'), (432, 'RuntimeError'), (431, 'ok'), (430, 'ok')]
+["RuntimeError('bytecode overflow',)", "RuntimeError('bytecode overflow',)", 'ok', 'ok']
 [123]
