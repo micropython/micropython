@@ -1469,11 +1469,9 @@ the last matching regex is used:
                 test_dirs += (port_specific_test_dir,)
             if args.platform in PC_PLATFORMS:
                 # run PC tests
-                test_dirs += (
-                    "import",
-                    "io",
-                    "cmdline",
-                )
+                test_dirs += ("import",)
+                if args.build != "minimal":
+                    test_dirs += ("cmdline", "io")
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
