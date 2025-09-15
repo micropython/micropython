@@ -613,7 +613,10 @@ function ci_unix_minimal_build {
 }
 
 function ci_unix_minimal_run_tests {
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/build-minimal/micropython ./run-tests.py -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+    # Issues with unix minimal variant tests:
+    # - basics/exception_chain.py output doesn't match because warnings aren't printed
+    # - basics/self_type_check.py crashes because MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG isn't enabled
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/build-minimal/micropython ./run-tests.py -e exception_chain -e self_type_check)
 }
 
 function ci_unix_standard_build {
