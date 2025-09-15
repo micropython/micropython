@@ -229,6 +229,36 @@ platform_tests_to_skip = {
     ),
 }
 
+# These tests don't test float explicitly but rather use it to perform the test.
+tests_requiring_float = (
+    "extmod/asyncio_basic.py",
+    "extmod/asyncio_basic2.py",
+    "extmod/asyncio_cancel_task.py",
+    "extmod/asyncio_event.py",
+    "extmod/asyncio_fair.py",
+    "extmod/asyncio_gather.py",
+    "extmod/asyncio_gather_notimpl.py",
+    "extmod/asyncio_get_event_loop.py",
+    "extmod/asyncio_iterator_event.py",
+    "extmod/asyncio_lock.py",
+    "extmod/asyncio_task_done.py",
+    "extmod/asyncio_wait_for.py",
+    "extmod/asyncio_wait_for_fwd.py",
+    "extmod/asyncio_wait_for_linked_task.py",
+    "extmod/asyncio_wait_task.py",
+    "extmod/json_dumps_float.py",
+    "extmod/json_loads_float.py",
+    "extmod/random_extra_float.py",
+    "extmod/select_poll_eintr.py",
+    "extmod/tls_threads.py",
+    "extmod/uctypes_le_float.py",
+    "extmod/uctypes_native_float.py",
+    "extmod/uctypes_sizeof_float.py",
+    "misc/rge_sm.py",
+    "ports/unix/ffi_float.py",
+    "ports/unix/ffi_float2.py",
+)
+
 # These tests don't test slice explicitly but rather use it to perform the test.
 tests_requiring_slice = (
     "basics/builtin_range.py",
@@ -907,13 +937,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("misc/sys_settrace_features.py")
 
     if args.float_prec == 0:
-        skip_tests.add("extmod/uctypes_le_float.py")
-        skip_tests.add("extmod/uctypes_native_float.py")
-        skip_tests.add("extmod/uctypes_sizeof_float.py")
-        skip_tests.add("extmod/json_dumps_float.py")
-        skip_tests.add("extmod/json_loads_float.py")
-        skip_tests.add("extmod/random_extra_float.py")
-        skip_tests.add("misc/rge_sm.py")
+        skip_tests.update(tests_requiring_float)
     if args.float_prec < 32:
         skip_tests.add(
             "float/float2int_intbig.py"
