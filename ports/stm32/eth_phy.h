@@ -56,6 +56,7 @@
 #define PHY_SPEED_100FULL  (6)
 #define PHY_DUPLEX         (4)
 
+
 uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg);
 void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val);
 
