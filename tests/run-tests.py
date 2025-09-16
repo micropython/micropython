@@ -107,6 +107,19 @@ PC_PLATFORMS = ("darwin", "linux", "win32")
 platform_to_port_map = {"pyboard": "stm32", "WiPy": "cc3200"}
 platform_to_port_map.update({p: "unix" for p in PC_PLATFORMS})
 
+# Tests to skip for values of the `--via-mpy` argument.
+via_mpy_tests_to_skip = {
+    # Skip the following when mpy is enabled.
+    True: (
+        # These print out the filename and that's expected to match the .py name.
+        "import/import_file.py",
+        "io/argv.py",
+        "misc/sys_settrace_features.py",
+        "misc/sys_settrace_generator.py",
+        "misc/sys_settrace_loop.py",
+    ),
+}
+
 # Tests to skip for specific emitters.
 emitter_tests_to_skip = {
     # Some tests are known to fail with native emitter.
@@ -924,6 +937,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("unicode/file1.py")  # requires local file access
         skip_tests.add("unicode/file2.py")  # requires local file access
         skip_tests.add("unicode/file_invalid.py")  # requires local file access
+
+    # Skip certain tests when going via a .mpy file.
+    skip_tests.update(via_mpy_tests_to_skip.get(args.via_mpy, ()))
 
     # Skip emitter-specific tests.
     skip_tests.update(emitter_tests_to_skip.get(args.emit, ()))
