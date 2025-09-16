@@ -45,3 +45,18 @@ MICROPY_USE_READLINE = 0
 MICROPY_VFS_FAT = 0
 MICROPY_VFS_LFS1 = 0
 MICROPY_VFS_LFS2 = 0
+
+PROG ?= micropython
+
+# LLVM still uses the older version of EH proposal. ("phase 3")
+# Convert to the latest version of EH proposal with exnref.
+$(BUILD)/$(PROG).spilled.exnref: $(BUILD)/$(PROG).spilled
+	$(WASM_OPT) --translate-to-exnref --enable-exception-handling \
+	-o $(BUILD)/$(PROG).spilled.exnref $(BUILD)/$(PROG).spilled
+
+# Unlike emscripten, WASI doesn't provide a way to scan GC roots
+# like WASM locals. Hopefully --spill-pointers can workaround it.
+$(BUILD)/$(PROG).spilled: $(BUILD)/$(PROG)
+	$(WASM_OPT) --spill-pointers -o $(BUILD)/$(PROG).spilled $(BUILD)/$(PROG)
+
+all: $(BUILD)/$(PROG).spilled.exnref
