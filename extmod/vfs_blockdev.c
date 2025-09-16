@@ -69,7 +69,7 @@ static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t bloc
         // and negative integer on errors. Check for positive integer
         // results as some callers (i.e. littlefs) will produce corrupt
         // results from these.
-        int i = MP_OBJ_SMALL_INT_VALUE(ret);
+        int i = mp_obj_get_int(ret);
         return i > 0 ? (-MP_EINVAL) : i;
     }
 }
