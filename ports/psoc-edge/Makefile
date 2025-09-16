@@ -1,4 +1,8 @@
+
+BOARD_DIR  = boards/$(BOARD)
+
 include ../../py/mkenv.mk
+-include $(BOARD_DIR)/mpconfigboard.mk
 
 CROSS = 0
 
@@ -73,10 +77,14 @@ OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
+-include $(TOP)/lib/mtb-psoc-edge-libs/mtb-makefile.mk
+
+build: mtb_build
+
 ifeq ($(CROSS), 1)
 all: $(BUILD)/firmware.dfu
 else
-all: $(BUILD)/firmware.elf
+all: build #$(BUILD)/firmware.elf
 endif
 
 $(BUILD)/_frozen_mpy.c: $(TOP)/tests/frozen/frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
@@ -95,8 +103,6 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
 
--include $(TOP)/lib/mtb-psoc-edge-libs/mtb-makefile.mk
-
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(PYDFU) -u $<
@@ -111,5 +117,7 @@ run:
 
 test: $(BUILD)/firmware.elf
 	$(Q)/usr/bin/printf "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\004" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"
+
+.PHONY: build
 
 include $(TOP)/py/mkrules.mk
