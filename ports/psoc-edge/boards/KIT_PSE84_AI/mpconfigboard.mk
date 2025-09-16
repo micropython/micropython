@@ -1,0 +1,1 @@
+BOARD_VERSION=release-v1.0.0
