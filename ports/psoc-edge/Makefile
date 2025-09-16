@@ -11,6 +11,8 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+GIT_SUBMODULES += lib/mtb-psoc-edge-libs
+
 ifeq ($(CROSS), 1)
 CROSS_COMPILE ?= arm-none-eabi-
 endif
@@ -92,6 +94,8 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
+
+-include $(TOP)/lib/mtb-psoc-edge-libs/mtb-makefile.mk
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
