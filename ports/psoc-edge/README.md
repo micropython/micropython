@@ -6,7 +6,9 @@ This port is intended to run on PSOC™ Edge microcontrollers.
 
 *TODO: Provide a script that install and the MTB utilities. To be done once edge tools are publicly released.*
 
-*TODO: Add script to setup the environment variables etc.*
+Run the following script from MicroPython repository root to add the required tools to the system PATH:
+
+    source tools/psoc-edge/dev-setup.sh && toolchain_setup
 
 ## Building and running on Linux
 
@@ -18,14 +20,19 @@ Retrieve submodules:
 
     make submodules
 
------------------------------------------------------
-*TODO: From here on, this is not implemented:*
+Then initialize the ModusToolbox™ environment: 
+
+    make mtb_init BOARD=KIT_PSE84_AI
 
 Build the firmware:
 
-    make BOARD=KIT-PSOCE84-AI
+    make BOARD=KIT_PSE84_AI
 
-To build and program the device:
+> [!WARNING]
+> Work in progress ->  This is currently only triggering the MTB project compilation.
+
+-----------------------------------------------------
+*TODO: From here on, this is not implemented:*
 
     make deploy
 
