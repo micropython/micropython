@@ -3,8 +3,6 @@
 
 #define LWIP_NETIF_EXT_STATUS_CALLBACK  1
 
-#define LWIP_IPV6                       0
-
 #define LWIP_RAND() trng_random_u32()
 
 // Include common lwIP configuration.
