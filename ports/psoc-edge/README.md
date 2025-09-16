@@ -1,47 +1,40 @@
-# The minimal port
+# PSOC™ Edge port
 
-This port is intended to be a minimal MicroPython port that actually runs.
-It can run under Linux (or similar) and on any STM32F4xx MCU (eg the pyboard).
+This port is intended to run on PSOC™ Edge microcontrollers.
 
-## Building and running Linux version
+## Pre-requisites
 
-By default the port will be built for the host machine:
+*TODO: Provide a script that install and the MTB utilities. To be done once edge tools are publicly released.*
 
-    $ make
+*TODO: Add script to setup the environment variables etc.*
 
-To run the executable and get a basic working REPL do:
+## Building and running on Linux
 
-    $ make run
+As we are working on the `psoc-edge-main` branch, first checkout that branch after cloning this repo:
 
-## Building for an STM32 MCU
+    git checkout --track origin/psoc-edge-main
 
-The Makefile has the ability to build for a Cortex-M CPU, and by default
-includes some start-up code for an STM32F4xx MCU and also enables a UART
-for communication.  To build:
+Retrieve submodules:
 
-    $ make CROSS=1
+    make submodules
 
-If you previously built the Linux version, you will need to first run
-`make clean` to get rid of incompatible object files.
+-----------------------------------------------------
+*TODO: From here on, this is not implemented:*
 
-Building will produce the build/firmware.dfu file which can be programmed
-to an MCU using:
+Build the firmware:
 
-    $ make CROSS=1 deploy
+    make BOARD=KIT-PSOCE84-AI
 
-This version of the build will work out-of-the-box on a pyboard (and
-anything similar), and will give you a MicroPython REPL on UART1 at 9600
-baud.  Pin PA13 will also be driven high, and this turns on the red LED on
-the pyboard.
+To build and program the device:
 
-## Building without the built-in MicroPython compiler
+    make deploy
 
-This minimal port can be built with the built-in MicroPython compiler
-disabled.  This will reduce the firmware by about 20k on a Thumb2 machine,
-and by about 40k on 32-bit x86.  Without the compiler the REPL will be
-disabled, but pre-compiled scripts can still be executed.
+Find more information about the available makefile targets:
 
-To test out this feature, change the `MICROPY_ENABLE_COMPILER` config
-option to "0" in the mpconfigport.h file in this directory.  Then
-recompile and run the firmware and it will execute the frozentest.py
-file.
+    make help
+-----------------------------------------------------
+
+# Run micropython
+
+Use any serial terminal (putty, minicom..) and establish a session with your device with 115200 bauds and 8-N-1 configuration. 
+
