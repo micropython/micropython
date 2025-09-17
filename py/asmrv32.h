@@ -709,17 +709,16 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index);
 void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label);
 void asm_rv32_emit_jump_if_reg_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t label);
 void asm_rv32_emit_jump_if_reg_nonzero(asm_rv32_t *state, mp_uint_t rs, mp_uint_t label);
-void asm_rv32_emit_load16_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset);
-void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset);
+void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, int32_t offset, mp_uint_t operation_size);
 void asm_rv32_emit_mov_local_reg(asm_rv32_t *state, mp_uint_t local, mp_uint_t rs);
 void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t local);
 void asm_rv32_emit_mov_reg_local(asm_rv32_t *state, mp_uint_t rd, mp_uint_t local);
 void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t label);
 void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs);
-void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_uint_t base, mp_int_t offset);
+void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_uint_t base, int32_t offset, mp_uint_t operation_size);
 
 #define ASM_T asm_rv32_t
-#define ASM_ENTRY(state, labels) asm_rv32_entry(state, labels)
+#define ASM_ENTRY(state, labels, name) asm_rv32_entry(state, labels)
 #define ASM_EXIT(state) asm_rv32_exit(state)
 #define ASM_END_PASS(state) asm_rv32_end_pass(state)
 
@@ -732,12 +731,13 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_JUMP_IF_REG_NONZERO(state, rs, label, bool_test) asm_rv32_emit_jump_if_reg_nonzero(state, rs, label)
 #define ASM_JUMP_IF_REG_ZERO(state, rs, label, bool_test) asm_rv32_emit_jump_if_reg_eq(state, rs, ASM_RV32_REG_ZERO, label)
 #define ASM_JUMP_REG(state, rs) asm_rv32_opcode_cjr(state, rs)
-#define ASM_LOAD16_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_load16_reg_reg_offset(state, rd, rs, offset)
-#define ASM_LOAD16_REG_REG(state, rd, rs) asm_rv32_opcode_lhu(state, rd, rs, 0)
-#define ASM_LOAD32_REG_REG(state, rd, rs) ASM_LOAD_REG_REG_OFFSET(state, rd, rs, 0)
-#define ASM_LOAD8_REG_REG(state, rd, rs) asm_rv32_opcode_lbu(state, rd, rs, 0)
-#define ASM_LOAD_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_load_reg_reg_offset(state, rd, rs, offset)
-#define ASM_LOAD_REG_REG(state, rd, rs) ASM_LOAD32_REG_REG(state, rd, rs)
+#define ASM_LOAD_REG_REG_OFFSET(state, rd, rs, offset) ASM_LOAD32_REG_REG_OFFSET(state, rd, rs, offset)
+#define ASM_LOAD8_REG_REG(state, rd, rs) ASM_LOAD8_REG_REG_OFFSET(state, rd, rs, 0)
+#define ASM_LOAD16_REG_REG(state, rd, rs) ASM_LOAD16_REG_REG_OFFSET(state, rd, rs, 0)
+#define ASM_LOAD32_REG_REG(state, rd, rs) ASM_LOAD32_REG_REG_OFFSET(state, rd, rs, 0)
+#define ASM_LOAD8_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_load_reg_reg_offset(state, rd, rs, offset, 0)
+#define ASM_LOAD16_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_load_reg_reg_offset(state, rd, rs, offset, 1)
+#define ASM_LOAD32_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_load_reg_reg_offset(state, rd, rs, offset, 2)
 #define ASM_LSL_REG_REG(state, rd, rs) asm_rv32_opcode_sll(state, rd, rd, rs)
 #define ASM_LSR_REG_REG(state, rd, rs) asm_rv32_opcode_srl(state, rd, rd, rs)
 #define ASM_MOV_LOCAL_REG(state, local, rs) asm_rv32_emit_mov_local_reg(state, local, rs)
@@ -750,14 +750,50 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_NEG_REG(state, rd) asm_rv32_opcode_sub(state, rd, ASM_RV32_REG_ZERO, rd)
 #define ASM_NOT_REG(state, rd) asm_rv32_opcode_xori(state, rd, rd, -1)
 #define ASM_OR_REG_REG(state, rd, rs) asm_rv32_opcode_or(state, rd, rd, rs)
-#define ASM_STORE16_REG_REG(state, rs1, rs2) asm_rv32_opcode_sh(state, rs1, rs2, 0)
-#define ASM_STORE32_REG_REG(state, rs1, rs2) ASM_STORE_REG_REG_OFFSET(state, rs1, rs2, 0)
-#define ASM_STORE8_REG_REG(state, rs1, rs2) asm_rv32_opcode_sb(state, rs1, rs2, 0)
-#define ASM_STORE_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_store_reg_reg_offset(state, rd, rs, offset)
-#define ASM_STORE_REG_REG(state, rs1, rs2) ASM_STORE32_REG_REG(state, rs1, rs2)
+#define ASM_STORE_REG_REG_OFFSET(state, rd, rs, offset) ASM_STORE32_REG_REG_OFFSET(state, rd, rs, offset)
+#define ASM_STORE8_REG_REG(state, rs1, rs2) ASM_STORE8_REG_REG_OFFSET(state, rs1, rs2, 0)
+#define ASM_STORE16_REG_REG(state, rs1, rs2) ASM_STORE16_REG_REG_OFFSET(state, rs1, rs2, 0)
+#define ASM_STORE32_REG_REG(state, rs1, rs2) ASM_STORE32_REG_REG_OFFSET(state, rs1, rs2, 0)
+#define ASM_STORE8_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_store_reg_reg_offset(state, rd, rs, offset, 0)
+#define ASM_STORE16_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_store_reg_reg_offset(state, rd, rs, offset, 1)
+#define ASM_STORE32_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_store_reg_reg_offset(state, rd, rs, offset, 2)
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
 #define ASM_CLR_REG(state, rd)
+#define ASM_LOAD8_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_lbu(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_lhu(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_lw(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_STORE8_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_sb(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_sh(state, rd, rs1, 0); \
+    } while (0)
+#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) \
+    do { \
+        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
+        asm_rv32_opcode_cadd(state, rs1, rs2); \
+        asm_rv32_opcode_sw(state, rd, rs1, 0); \
+    } while (0)
 
 #endif
 

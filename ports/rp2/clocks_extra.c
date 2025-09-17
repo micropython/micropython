@@ -83,8 +83,8 @@ void runtime_init_clocks_optional_usb(bool init_usb) {
     clock_configure(clk_ref,
         CLOCKS_CLK_REF_CTRL_SRC_VALUE_XOSC_CLKSRC,
         0,             // No aux mux
-        XOSC_KHZ * KHZ,
-        XOSC_KHZ * KHZ);
+        XOSC_HZ,
+        XOSC_HZ);
 
     /// \tag::configure_clk_sys[]
     // CLK SYS = PLL SYS (usually) 125MHz / 1 = 125MHz

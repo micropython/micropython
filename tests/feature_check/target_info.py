@@ -20,4 +20,18 @@ arch = [
     "xtensawin",
     "rv32imc",
 ][sys_mpy >> 10]
-print(platform, arch)
+build = getattr(sys.implementation, "_build", "unknown")
+thread = getattr(sys.implementation, "_thread", None)
+
+# Detect how many bits of precision the floating point implementation has.
+try:
+    if float("1.0000001") == float("1.0"):
+        float_prec = 30
+    elif float("1e300") == float("inf"):
+        float_prec = 32
+    else:
+        float_prec = 64
+except NameError:
+    float_prec = 0
+
+print(platform, arch, build, thread, float_prec, len("α") == 1)

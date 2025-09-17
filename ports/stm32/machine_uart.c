@@ -93,7 +93,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         #endif
         {
             mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
-                self->uart_id, uart_get_baudrate(self), bits);
+                self->uart_id, uart_get_baudrate(self), (int)bits);
         }
         if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");
@@ -399,7 +399,7 @@ static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
 
 // Send a break condition.
 static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
     self->uartx->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uartx->CR1 |= USART_CR1_SBK;

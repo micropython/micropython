@@ -18,10 +18,14 @@ Functions
     Configure whether or not a touch will wake the device from sleep.
     *wake* should be a boolean value.
 
+    .. note:: This is only available for boards that have touch sensor support.
+
 .. function:: wake_on_ulp(wake)
 
     Configure whether or not the Ultra-Low-Power co-processor can wake the
     device from sleep. *wake* should be a boolean value.
+
+    .. note:: This is only available for boards that have ULP coprocessor support.
 
 .. function:: wake_on_ext0(pin, level)
 
@@ -29,11 +33,15 @@ Functions
     or a valid Pin object.  *level* should be ``esp32.WAKEUP_ALL_LOW`` or
     ``esp32.WAKEUP_ANY_HIGH``.
 
+    .. note:: This is only available for boards that have ext0 support.
+
 .. function:: wake_on_ext1(pins, level)
 
     Configure how EXT1 wakes the device from sleep.  *pins* can be ``None``
     or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
     or ``esp32.WAKEUP_ANY_HIGH``.
+
+    .. note:: This is only available for boards that have ext1 support.
 
 .. function:: gpio_deep_sleep_hold(enable)
 
@@ -79,6 +87,29 @@ Functions
 
        The result of :func:`gc.mem_free()` is the total of the current "free"
        and "max new split" values printed by :func:`micropython.mem_info()`.
+
+.. function:: idf_task_info()
+
+    Returns information about running ESP-IDF/FreeRTOS tasks, which include
+    MicroPython threads. This data is useful to gain insight into how much time
+    tasks spend running or if they are blocked for significant parts of time,
+    and to determine if allocated stacks are fully utilized or might be reduced.
+
+    ``CONFIG_FREERTOS_USE_TRACE_FACILITY=y`` must be set in the board
+    configuration to make this method available. Additionally configuring
+    ``CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y`` and
+    ``CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID=y`` is recommended to be able to
+    retrieve the total and per-task runtime and the core ID respectively.
+
+    The return value is a 2-tuple where the first value is the total runtime,
+    and the second a list of tasks. Each task is a 7-tuple containing: the task
+    ID, name, current state, priority, runtime, stack high water mark, and the
+    ID of the core it is running on. Runtime and core ID will be None when the
+    respective FreeRTOS configuration option is not enabled.
+
+    .. note:: For an easier to use output based on this function you can use the
+       `utop library <https://github.com/micropython/micropython-lib/tree/master/micropython/utop>`_,
+       which implements a live overview similar to the Unix ``top`` command.
 
 
 Flash partitions
@@ -163,6 +194,151 @@ Constants
           HEAP_EXEC
 
     Used in `idf_heap_info`.
+
+
+.. _esp32.PCNT:
+
+PCNT
+----
+
+This class provides access to the ESP32 hardware support for pulse counting.
+There are 8 pulse counter units, with id 0..7.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler and portable
+abstractions of common pulse counting applications. These classes are
+implemented as thin Python shims around :class:`PCNT`.
+
+.. class:: PCNT(id, *, ...)
+
+    Returns the singleton PCNT instance for the given unit ``id``.
+
+    Keyword arguments are passed to the ``init()`` method as described
+    below.
+
+.. method:: PCNT.init(*, ...)
+
+    (Re-)initialise a pulse counter unit. Supported keyword arguments are:
+
+      - ``channel``: see description below
+      - ``pin``: the input Pin to monitor for pulses
+      - ``rising``: an action to take on a rising edge - one of
+        ``PCNT.INCREMENT``, ``PCNT.DECREMENT`` or ``PCNT.IGNORE`` (the default)
+      - ``falling``: an action to take on a falling edge (takes the save values
+        as the ``rising`` argument).
+      - ``mode_pin``: ESP32 pulse counters support monitoring a second pin and
+        altering the behaviour of the counter based on its level - set this
+        keyword to any input Pin
+      - ``mode_low``: set to either ``PCNT.HOLD`` or ``PCNT.REVERSE`` to
+        either suspend counting or reverse the direction of the counter (i.e.,
+        ``PCNT.INCREMENT`` behaves as ``PCNT.DECREMENT`` and vice versa)
+        when ``mode_pin`` is low
+      - ``mode_high``: as ``mode_low`` but for the behaviour when ``mode_pin``
+        is high
+      - ``filter``: set to a value 1..1023, in ticks of the 80MHz clock, to
+        enable the pulse width filter
+      - ``min``: set to the minimum level of the counter value when
+        decrementing (-32768..-1) or 0 to disable
+      - ``max``: set to the maximum level of the counter value when
+        incrementing (1..32767) or 0 to disable
+      - ``threshold0``: sets the counter value for the
+        ``PCNT.IRQ_THRESHOLD0`` event (see ``irq`` method)
+      - ``threshold1``: sets the counter value for the
+        ``PCNT.IRQ_THRESHOLD1`` event (see ``irq`` method)
+      - ``value``: can be set to ``0`` to reset the counter value
+
+    The hardware initialisation is done in stages and so some of the keyword
+    arguments can be used in groups or in isolation to partially reconfigure a
+    unit:
+
+      - the ``pin`` keyword (optionally combined with ``mode_pin``) can be used
+        to change just the bound pin(s)
+      - ``rising``, ``falling``, ``mode_low`` and ``mode_high`` can be used
+        (singly or together) to change the counting logic - omitted keywords
+        use their default (``PCNT.IGNORE`` or ``PCNT.NORMAL``)
+      - ``filter`` can be used to change only the pulse width filter (with 0
+        disabling it)
+      - each of ``min``, ``max``, ``threshold0`` and ``threshold1`` can
+        be used to change these limit/event values individually; however,
+        setting any will reset the counter to zero (i.e., they imply
+        ``value=0``)
+
+    Each pulse counter unit supports two channels, 0 and 1, each able to
+    monitor different pins with different counting logic but updating the same
+    counter value. Use ``channel=1`` with the ``pin``, ``rising``, ``falling``,
+    ``mode_pin``, ``mode_low`` and ``mode_high`` keywords to configure the
+    second channel.
+
+    The second channel can be used to configure 4X quadrature decoding with a
+    single counter unit::
+
+        pin_a = Pin(2, Pin.INPUT, pull=Pin.PULL_UP)
+        pin_b = Pin(3, Pin.INPUT, pull=Pin.PULL_UP)
+        rotary = PCNT(0, min=-32000, max=32000)
+        rotary.init(channel=0, pin=pin_a, falling=PCNT.INCREMENT, rising=PCNT.DECREMENT, mode_pin=pin_b, mode_low=PCNT.REVERSE)
+        rotary.init(channel=1, pin=pin_b, falling=PCNT.DECREMENT, rising=PCNT.INCREMENT, mode_pin=pin_a, mode_low=PCNT.REVERSE)
+        rotary.start()
+
+.. method:: PCNT.value([value])
+
+    Call this method with no arguments to return the current counter value.
+
+    If the optional *value* argument is set to ``0`` then the counter is
+    reset (but the previous value is returned). Read and reset is not atomic and
+    so it is possible for a pulse to be missed. Any value other than ``0`` will
+    raise an error.
+
+.. method:: PCNT.irq(handler=None, trigger=PCNT.IRQ_ZERO)
+
+    ESP32 pulse counters support interrupts on these counter events:
+
+      - ``PCNT.IRQ_ZERO``: the counter has reset to zero
+      - ``PCNT.IRQ_MIN``: the counter has hit the ``min`` value
+      - ``PCNT.IRQ_MAX``: the counter has hit the ``max`` value
+      - ``PCNT.IRQ_THRESHOLD0``: the counter has hit the ``threshold0`` value
+      - ``PCNT.IRQ_THRESHOLD1``: the counter has hit the ``threshold1`` value
+
+    ``trigger`` should be a bit-mask of the desired events OR'ed together. The
+    ``handler`` function should take a single argument which is the
+    :class:`PCNT` instance that raised the event.
+
+    This method returns a callback object. The callback object can be used to
+    access the bit-mask of events that are outstanding on the PCNT unit.::
+
+        def pcnt_irq(pcnt):
+            flags = pcnt.irq().flags()
+            if flags & PCNT.IRQ_ZERO:
+               # reset
+            if flags & PCNT.IRQ_MAX:
+               # overflow...
+            ... etc
+
+        pcnt.irq(handler=pcnt_irq, trigger=PCNT.IRQ_ZERO | PCNT.IRQ_MAX | ...)
+
+    **Note:** Accessing ``irq.flags()`` will clear the flags, so only call it
+    once per invocation of the handler.
+
+    The handler is called with the MicroPython scheduler and so will run at a
+    point after the interrupt. If another interrupt occurs before the handler
+    has been called then the events will be coalesced together into a single
+    call and the bit mask will indicate all events that have occurred.
+
+    To avoid race conditions between a handler being called and retrieving the
+    current counter value, the ``value()`` method will force execution of any
+    pending events before returning the current counter value (and potentially
+    resetting the value).
+
+    Only one handler can be in place per-unit. Set ``handler`` to ``None`` to
+    disable the event interrupt.
+
+.. Note::
+    ESP32 pulse counters reset to *zero* when reaching the minimum or maximum
+    value. Thus the ``IRQ_ZERO`` event will also trigger when either of these
+    events occurs.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
+common pulse counting applications.
 
 .. _esp32.RMT:
 

@@ -2,10 +2,8 @@
 This script processes the output from the C preprocessor and extracts all
 qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 
-This script works with Python 2.6, 2.7, 3.3 and 3.4.
+This script works with Python 3.3+.
 """
-
-from __future__ import print_function
 
 import io
 import os

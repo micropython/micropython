@@ -135,7 +135,7 @@ static void mp_help_print_obj(const mp_obj_t obj) {
     // try to print something sensible about the given object
     mp_print_str(MP_PYTHON_PRINTER, "object ");
     mp_obj_print(obj, PRINT_STR);
-    mp_printf(MP_PYTHON_PRINTER, " is of type %q\n", type->name);
+    mp_printf(MP_PYTHON_PRINTER, " is of type %q\n", (qstr)type->name);
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {

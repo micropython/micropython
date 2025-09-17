@@ -17,4 +17,5 @@
 #include <stdint.h>
 
 void zephyr_getchar_init(void);
+int zephyr_getchar_check(void);
 int zephyr_getchar(void);

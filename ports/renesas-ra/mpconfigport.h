@@ -99,6 +99,7 @@
 #ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
+#define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
@@ -210,19 +211,11 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_NETWORK_ESP_HOSTED
-extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
-#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
-#else
-#define MICROPY_HW_NIC_ESP_HOSTED
-#endif
-
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
-    MICROPY_HW_NIC_ESP_HOSTED \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Miscellaneous settings
@@ -242,8 +235,6 @@ extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
 
 // Assume that if we already defined the obj repr then we also defined these items
 #ifndef MICROPY_OBJ_REPR
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
@@ -251,28 +242,17 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
+#define MICROPY_INTERNAL_EVENT_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
             pyb_thread_yield(); \
             MP_THREAD_GIL_ENTER(); \
-        } else { \
-            __WFI(); \
         } \
     } while (0);
 
 #define MICROPY_THREAD_YIELD() pyb_thread_yield()
 #else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        __WFI(); \
-    } while (0);
-
 #define MICROPY_THREAD_YIELD()
 #endif
 

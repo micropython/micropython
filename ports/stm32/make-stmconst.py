@@ -4,30 +4,16 @@ extracts relevant peripheral constants, and creates qstrs, mpz's and constants
 for the stm module.
 """
 
-from __future__ import print_function
-
 import argparse
 import re
 
-# Python 2/3 compatibility
-import platform
 
-if platform.python_version_tuple()[0] == "2":
-
-    def convert_bytes_to_str(b):
-        return b
-
-elif platform.python_version_tuple()[0] == "3":
-
-    def convert_bytes_to_str(b):
-        try:
-            return str(b, "utf8")
-        except ValueError:
-            # some files have invalid utf8 bytes, so filter them out
-            return "".join(chr(l) for l in b if l <= 126)
-
-
-# end compatibility code
+def convert_bytes_to_str(b):
+    try:
+        return str(b, "utf8")
+    except ValueError:
+        # some files have invalid utf8 bytes, so filter them out
+        return "".join(chr(l) for l in b if l <= 126)
 
 
 # given a list of (name,regex) pairs, find the first one that matches the given line

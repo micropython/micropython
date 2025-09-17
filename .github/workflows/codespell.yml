@@ -6,7 +6,7 @@ jobs:
   codespell:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     # codespell version should be kept in sync with .pre-commit-config.yml
     - run: pip install --user codespell==2.4.1 tomli
     - run: codespell

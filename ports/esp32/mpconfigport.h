@@ -32,7 +32,7 @@
 #ifndef MICROPY_GC_INITIAL_HEAP_SIZE
 #if CONFIG_IDF_TARGET_ESP32
 #define MICROPY_GC_INITIAL_HEAP_SIZE        (56 * 1024)
-#elif CONFIG_IDF_TARGET_ESP32S2 && !CONFIG_SPIRAM
+#elif CONFIG_IDF_TARGET_ESP32C2 || (CONFIG_IDF_TARGET_ESP32S2 && !CONFIG_SPIRAM)
 #define MICROPY_GC_INITIAL_HEAP_SIZE        (36 * 1024)
 #else
 #define MICROPY_GC_INITIAL_HEAP_SIZE        (64 * 1024)
@@ -62,13 +62,15 @@
 #define MICROPY_STACK_CHECK_MARGIN          (1024)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
+#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL) // Debugging Note: Increase the error reporting level to view
+                                                                             // __FUNCTION__, __LINE__, __FILE__ in check_esp_err() exceptions
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_POSIX_API           (1)
 #define MICROPY_USE_INTERNAL_ERRNO          (0) // errno.h from xtensa-esp32-elf/sys-include/sys
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
 #define MICROPY_SCHEDULER_DEPTH             (8)
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_VFS                         (1)
 
 // control over Python builtins
@@ -103,10 +105,6 @@
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
 #endif
-#define MICROPY_PY_HASHLIB_MD5              (1)
-#define MICROPY_PY_HASHLIB_SHA1             (1)
-#define MICROPY_PY_HASHLIB_SHA256           (1)
-#define MICROPY_PY_CRYPTOLIB                (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (esp_random())
 #define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
@@ -123,6 +121,7 @@
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
 #define MICROPY_PY_MACHINE_ADC_INIT         (1)
+#define MICROPY_PY_MACHINE_ADC_DEINIT       (1)
 #define MICROPY_PY_MACHINE_ADC_READ         (1)
 #define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
 #define MICROPY_PY_MACHINE_ADC_BLOCK        (1)
@@ -136,6 +135,12 @@
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
+#ifndef MICROPY_PY_MACHINE_I2C_TARGET
+// I2C target hardware is limited on ESP32 (eg read event comes after the read) so we only support newer SoCs.
+#define MICROPY_PY_MACHINE_I2C_TARGET       (SOC_I2C_SUPPORT_SLAVE && !CONFIG_IDF_TARGET_ESP32)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/esp32/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX   (2)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
@@ -163,6 +168,8 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s2"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s3"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c2"
 #elif CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c3"
 #elif CONFIG_IDF_TARGET_ESP32C6
@@ -186,6 +193,9 @@
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
+#ifndef MICROPY_PY_ESP32_PCNT
+#define MICROPY_PY_ESP32_PCNT               (SOC_PCNT_SUPPORTED)
+#endif
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -324,9 +334,6 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) IRAM_ATTR f
 
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-
 typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
@@ -390,4 +397,9 @@ void boardctrl_startup(void);
 // The minimum string length threshold for string printing to stdout operations to be GIL-aware.
 #ifndef MICROPY_PY_STRING_TX_GIL_THRESHOLD
 #define MICROPY_PY_STRING_TX_GIL_THRESHOLD  (20)
+#endif
+
+// Code can override this to provide a custom ESP-IDF entry point.
+#ifndef MICROPY_ESP_IDF_ENTRY
+#define MICROPY_ESP_IDF_ENTRY app_main
 #endif

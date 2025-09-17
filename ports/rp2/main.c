@@ -34,6 +34,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
@@ -257,6 +258,9 @@ int main(int argc, char **argv) {
         machine_pwm_deinit_all();
         machine_pin_deinit();
         machine_uart_deinit_all();
+        #if MICROPY_PY_MACHINE_I2C_TARGET
+        mp_machine_i2c_target_deinit_all();
+        #endif
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif

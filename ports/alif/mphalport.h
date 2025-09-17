@@ -90,6 +90,9 @@ extern ringbuf_t stdin_ringbuf;
 #define MP_HAL_PIN_SPEED_LOW                    (0)
 #define MP_HAL_PIN_SPEED_HIGH                   (PADCTRL_SLEW_RATE_FAST)
 
+#define MP_HAL_PIN_TRIGGER_FALL                 (1)
+#define MP_HAL_PIN_TRIGGER_RISE                 (2)
+
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 
 #define MP_HAL_PIN_ALT(function, unit)          (MP_HAL_PIN_ALT_MAKE((MP_HAL_PIN_ALT_##function), (unit)))
@@ -370,3 +373,5 @@ enum {
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
+
+uint32_t mp_hal_time_get(uint32_t *microseconds);

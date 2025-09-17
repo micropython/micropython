@@ -80,7 +80,6 @@
 #include "uart.h"
 #include "storage.h"
 #include "dma.h"
-#include "i2c.h"
 #include "usb.h"
 
 #if defined(MICROPY_HW_USB_FS)
@@ -343,14 +342,22 @@ void OTG_FS_IRQHandler(void) {
 }
 #endif
 #if MICROPY_HW_USB_HS
+#if defined(STM32N6)
+void USB1_OTG_HS_IRQHandler(void) {
+    IRQ_ENTER(USB1_OTG_HS_IRQn);
+    HAL_PCD_IRQHandler(&pcd_hs_handle);
+    IRQ_EXIT(USB1_OTG_HS_IRQn);
+}
+#else
 void OTG_HS_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_IRQn);
     HAL_PCD_IRQHandler(&pcd_hs_handle);
     IRQ_EXIT(OTG_HS_IRQn);
 }
 #endif
+#endif
 
-#if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
+#if (MICROPY_HW_USB_FS || MICROPY_HW_USB_HS) && !defined(STM32N6)
 /**
   * @brief  This function handles USB OTG Common FS/HS Wakeup functions.
   * @param  *pcd_handle for FS or HS
@@ -421,7 +428,7 @@ void OTG_FS_WKUP_IRQHandler(void) {
 }
 #endif
 
-#if MICROPY_HW_USB_HS
+#if MICROPY_HW_USB_HS && !defined(STM32N6)
 /**
   * @brief  This function handles USB OTG HS Wakeup IRQ Handler.
   * @param  None
@@ -480,7 +487,7 @@ void ETH_WKUP_IRQHandler(void) {
 }
 #endif
 
-#if defined(STM32H5)
+#if defined(STM32H5) || defined(STM32N6)
 void TAMP_IRQHandler(void) {
     IRQ_ENTER(TAMP_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_TAMP);
@@ -502,6 +509,9 @@ void TAMP_STAMP_IRQHandler(void) {
 
 #if defined(STM32H5)
 void RTC_IRQHandler(void)
+#elif defined(STM32N6)
+#define RTC_WKUP_IRQn RTC_S_IRQn
+void RTC_S_IRQHandler(void)
 #else
 void RTC_WKUP_IRQHandler(void)
 #endif
@@ -509,8 +519,8 @@ void RTC_WKUP_IRQHandler(void)
     IRQ_ENTER(RTC_WKUP_IRQn);
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
-    #elif defined(STM32H5)
-    RTC->SCR = RTC_SCR_CWUTF; // clear wakeup interrupt flag
+    #elif defined(STM32H5) || defined(STM32N6)
+    LL_RTC_ClearFlag_WUT(RTC);
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     RTC->SR &= ~RTC_SR_WUTF; // clear wakeup interrupt flag
     #else
@@ -519,6 +529,12 @@ void RTC_WKUP_IRQHandler(void)
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
+
+#if defined(STM32N6)
+void RTC_IRQHandler(void) {
+    RTC_S_IRQHandler();
+}
+#endif
 
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0)
 
@@ -970,63 +986,3 @@ void LPUART2_IRQHandler(void) {
     IRQ_EXIT(LPUART2_IRQn);
 }
 #endif
-
-#if MICROPY_PY_PYB_LEGACY
-
-#if defined(MICROPY_HW_I2C1_SCL)
-void I2C1_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C1_EV_IRQn);
-    i2c_ev_irq_handler(1);
-    IRQ_EXIT(I2C1_EV_IRQn);
-}
-
-void I2C1_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C1_ER_IRQn);
-    i2c_er_irq_handler(1);
-    IRQ_EXIT(I2C1_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C1_SCL)
-
-#if defined(MICROPY_HW_I2C2_SCL)
-void I2C2_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C2_EV_IRQn);
-    i2c_ev_irq_handler(2);
-    IRQ_EXIT(I2C2_EV_IRQn);
-}
-
-void I2C2_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C2_ER_IRQn);
-    i2c_er_irq_handler(2);
-    IRQ_EXIT(I2C2_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C2_SCL)
-
-#if defined(MICROPY_HW_I2C3_SCL)
-void I2C3_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C3_EV_IRQn);
-    i2c_ev_irq_handler(3);
-    IRQ_EXIT(I2C3_EV_IRQn);
-}
-
-void I2C3_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C3_ER_IRQn);
-    i2c_er_irq_handler(3);
-    IRQ_EXIT(I2C3_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C3_SCL)
-
-#if defined(MICROPY_HW_I2C4_SCL)
-void I2C4_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C4_EV_IRQn);
-    i2c_ev_irq_handler(4);
-    IRQ_EXIT(I2C4_EV_IRQn);
-}
-
-void I2C4_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C4_ER_IRQn);
-    i2c_er_irq_handler(4);
-    IRQ_EXIT(I2C4_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C4_SCL)
-
-#endif // MICROPY_PY_PYB_LEGACY

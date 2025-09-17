@@ -5,6 +5,7 @@
 # This is a regression test for https://github.com/micropython/micropython/issues/15230
 # on rp2, but doubles as a general property to test across all ports.
 import sys
+import time
 import _thread
 
 try:
@@ -38,7 +39,7 @@ StdinWaiter().wait_stdin(1000)
 # have run yet. The actual delay is <20ms but spinning here instead of
 # sleep(0.1) means the test can run on MP builds without float support.
 while not thread_waiter.is_done():
-    pass
+    time.sleep(0)
 
 # The background thread should have completed its wait by now.
 print(thread_waiter.is_done())

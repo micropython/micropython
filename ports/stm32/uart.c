@@ -91,7 +91,7 @@
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
 #endif
 
-#elif defined(STM32H7)
+#elif defined(STM32H7) || defined(STM32N6)
 #define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_RXFFIE | USART_CR1_TXFEIE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
 #define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_RXFTIE | USART_CR3_TCBGTIE | USART_CR3_TXFTIE | USART_CR3_WUFIE)
@@ -157,6 +157,18 @@ void uart_init0(void) {
     if (HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
     }
+    #elif defined(STM32N6)
+    // UART clock configuration, IC14 (max 100MHz).
+    LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_IC14);
+    LL_RCC_SetUSARTClockSource(LL_RCC_USART2_CLKSOURCE_IC14);
+    LL_RCC_SetUSARTClockSource(LL_RCC_USART3_CLKSOURCE_IC14);
+    LL_RCC_SetUARTClockSource(LL_RCC_UART4_CLKSOURCE_IC14);
+    LL_RCC_SetUARTClockSource(LL_RCC_UART5_CLKSOURCE_IC14);
+    LL_RCC_SetUSARTClockSource(LL_RCC_USART6_CLKSOURCE_IC14);
+    LL_RCC_SetUARTClockSource(LL_RCC_UART7_CLKSOURCE_IC14);
+    LL_RCC_SetUARTClockSource(LL_RCC_UART8_CLKSOURCE_IC14);
+    LL_RCC_SetUARTClockSource(LL_RCC_UART9_CLKSOURCE_IC14);
+    LL_RCC_SetUSARTClockSource(LL_RCC_USART10_CLKSOURCE_IC14);
     #endif
 }
 
@@ -653,7 +665,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
 
-    #if defined(STM32G4)  // H7 and WB also have fifo..
+    #if defined(STM32G4) || defined(STM32H7) // WB also has a fifo..
     huart.FifoMode = UART_FIFOMODE_ENABLE;
     #endif
 
@@ -661,7 +673,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     #endif
 
-    #if defined(STM32H7) || defined(STM32WB)
+    #if defined(STM32H7) || defined(STM32N6) || defined(STM32WB)
     // Compute the smallest prescaler that will allow the given baudrate.
     uint32_t presc = UART_PRESCALER_DIV1;
     if (uart_obj->uart_id == PYB_LPUART_1) {
@@ -689,6 +701,10 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     uart_obj->is_enabled = true;
     uart_obj->attached_to_repl = false;
 
+    #if defined(STM32F4) || defined(STM32L1)
+    uart_obj->suppress_idle_irq = true;
+    #endif
+
     if (bits == UART_WORDLENGTH_9B && parity == UART_PARITY_NONE) {
         uart_obj->char_mask = 0x1ff;
         uart_obj->char_width = CHAR_WIDTH_9BIT;
@@ -700,6 +716,12 @@ bool uart_init(machine_uart_obj_t *uart_obj,
         }
         uart_obj->char_width = CHAR_WIDTH_8BIT;
     }
+
+    #if defined(STM32H7)
+    HAL_UARTEx_SetTxFifoThreshold(&huart, UART_TXFIFO_THRESHOLD_1_8);
+    HAL_UARTEx_SetRxFifoThreshold(&huart, UART_RXFIFO_THRESHOLD_1_8);
+    HAL_UARTEx_EnableFifoMode(&huart);
+    #endif
 
     uart_obj->mp_irq_trigger = 0;
     uart_obj->mp_irq_obj = NULL;
@@ -966,6 +988,29 @@ uint32_t uart_get_source_freq(machine_uart_obj_t *self) {
         default:
             break;
     }
+
+    #elif defined(STM32N6)
+
+    static const uint16_t is_usart = 1 << 10 | 1 << 6 | 1 << 3 | 1 << 2 | 1 << 1;
+    static const uint32_t clksource[] = {
+        LL_RCC_USART1_CLKSOURCE,
+        LL_RCC_USART2_CLKSOURCE,
+        LL_RCC_USART3_CLKSOURCE,
+        LL_RCC_UART4_CLKSOURCE,
+        LL_RCC_UART5_CLKSOURCE,
+        LL_RCC_USART6_CLKSOURCE,
+        LL_RCC_UART7_CLKSOURCE,
+        LL_RCC_UART8_CLKSOURCE,
+        LL_RCC_UART9_CLKSOURCE,
+        LL_RCC_USART10_CLKSOURCE,
+    };
+
+    if (is_usart & (1 << self->uart_id)) {
+        uart_clk = LL_RCC_GetUSARTClockFreq(clksource[self->uart_id - 1]);
+    } else {
+        uart_clk = LL_RCC_GetUARTClockFreq(clksource[self->uart_id - 1]);
+    }
+
     #else
     if (self->uart_id == 1
         #if defined(USART6)
@@ -991,14 +1036,14 @@ uint32_t uart_get_baudrate(machine_uart_obj_t *self) {
     #if defined(LPUART1)
     if (self->uart_id == PYB_LPUART_1) {
         return LL_LPUART_GetBaudRate(self->uartx, uart_get_source_freq(self)
-            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
+            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
             , self->uartx->PRESC
             #endif
             );
     }
     #endif
     return LL_USART_GetBaudRate(self->uartx, uart_get_source_freq(self),
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
         self->uartx->PRESC,
         #endif
         LL_USART_OVERSAMPLING_16);
@@ -1008,7 +1053,7 @@ void uart_set_baudrate(machine_uart_obj_t *self, uint32_t baudrate) {
     #if defined(LPUART1)
     if (self->uart_id == PYB_LPUART_1) {
         LL_LPUART_SetBaudRate(self->uartx, uart_get_source_freq(self),
-            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
+            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
             LL_LPUART_PRESCALER_DIV1,
             #endif
             baudrate);
@@ -1016,7 +1061,7 @@ void uart_set_baudrate(machine_uart_obj_t *self, uint32_t baudrate) {
     }
     #endif
     LL_USART_SetBaudRate(self->uartx, uart_get_source_freq(self),
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
         LL_USART_PRESCALER_DIV1,
         #endif
         LL_USART_OVERSAMPLING_16, baudrate);
@@ -1067,7 +1112,7 @@ int uart_rx_char(machine_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
         int data = self->uartx->RDR & self->char_mask;
         self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
         return data;
@@ -1141,6 +1186,9 @@ size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_cha
     // timeout_char by FIFO size + 1.
     // STM32G4 has 8 words FIFO.
     timeout = (8 + 1) * self->timeout_char;
+    #elif defined(STM32H7)
+    // STM32H7 has 16 words FIFO.
+    timeout = (16 + 1) * self->timeout_char;
     #else
     // The timeout specified here is for waiting for the TX data register to
     // become empty (ie between chars), as well as for the final char to be
@@ -1219,7 +1267,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
-                #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+                #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
                 int data = self->uartx->RDR; // clears UART_FLAG_RXNE
                 #else
                 self->mp_irq_flags = self->uartx->SR; // resample to get any new flags since next read of DR will clear SR
@@ -1265,6 +1313,9 @@ void uart_irq_handler(mp_uint_t uart_id) {
             self->uartx->CR1 &= ~USART_CR1_RXNEIE;
         }
     }
+    if (self->suppress_idle_irq) {
+        self->mp_irq_flags &= ~USART_SR_IDLE;
+    }
     #else
     self->uartx->ICR = self->mp_irq_flags & (USART_ICR_IDLECF | USART_ICR_ORECF);
     #endif
@@ -1273,6 +1324,14 @@ void uart_irq_handler(mp_uint_t uart_id) {
     if (self->mp_irq_trigger & self->mp_irq_flags) {
         mp_irq_handler(self->mp_irq_obj);
     }
+
+    #if defined(STM32F4) || defined(STM32L1)
+    if (did_clear_sr) {
+        self->suppress_idle_irq = false;
+    } else {
+        self->suppress_idle_irq = true;
+    }
+    #endif
 }
 
 static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {

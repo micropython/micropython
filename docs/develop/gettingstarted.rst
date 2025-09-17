@@ -106,7 +106,7 @@ See the `ARM GCC
 toolchain <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>`_
 for the latest details.
 
-Python is also required. Python 2 is supported for now, but we recommend using Python 3.
+Python 3 is also required.
 Check that you have Python available on your system:
 
 .. code-block:: bash

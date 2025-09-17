@@ -19,8 +19,8 @@
         "lilygo-ttgo-lora-32-v1-6.jpg"
     ],
     "mcu": "esp32",
-    "product": "LILYGO TTGO LoRa32",
+    "product": "TTGO LoRa32",
     "thumbnail": "",
-    "url": "http://www.lilygo.cn/prod_view.aspx?TypeId=50060&Id=1270&FId=t3:50060:3",
+    "url": "https://www.lilygo.cc/products/lora3",
     "vendor": "LILYGO"
 }

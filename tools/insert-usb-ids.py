@@ -2,8 +2,6 @@
 # inserts those values into the template file specified by sys.argv[2],
 # printing the result to stdout
 
-from __future__ import print_function
-
 import sys
 import re
 import string

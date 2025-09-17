@@ -53,6 +53,7 @@
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_VFS
 #include "extmod/vfs.h"
@@ -62,6 +63,10 @@
 #include "modzephyr.h"
 
 static char heap[MICROPY_HEAP_SIZE];
+
+#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
+extern int mp_usbd_init(void);
+#endif // defined(CONFIG_USB_DEVICE_STACK_NEXT)
 
 void init_zephyr(void) {
     // We now rely on CONFIG_NET_APP_SETTINGS to set up bootstrap
@@ -95,6 +100,7 @@ static void vfs_init(void) {
     mp_obj_t bdev = NULL;
     mp_obj_t mount_point;
     const char *mount_point_str = NULL;
+    qstr path_lib_qstr = MP_QSTRnull;
     int ret = 0;
 
     #ifdef CONFIG_DISK_DRIVER_SDMMC
@@ -105,15 +111,18 @@ static void vfs_init(void) {
     #endif
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
+    path_lib_qstr = MP_QSTR__slash_sd_slash_lib;
     #elif defined(CONFIG_FLASH_MAP) && FIXED_PARTITION_EXISTS(storage_partition)
     mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)), MP_OBJ_NEW_SMALL_INT(4096) };
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/flash";
+    path_lib_qstr = MP_QSTR__slash_flash_slash_lib;
     #endif
 
     if ((bdev != NULL)) {
         mount_point = mp_obj_new_str_from_cstr(mount_point_str);
         ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(path_lib_qstr));
         // TODO: if this failed, make a new file system and try to mount again
     }
 }
@@ -143,12 +152,26 @@ soft_reset:
     usb_enable(NULL);
     #endif
 
+    #ifdef CONFIG_USB_DEVICE_STACK_NEXT
+    mp_usbd_init();
+    #endif
+
     #if MICROPY_VFS
     vfs_init();
     #endif
 
     #if MICROPY_MODULE_FROZEN || MICROPY_VFS
-    pyexec_file_if_exists("main.py");
+    // Execute user scripts.
+    int ret = pyexec_file_if_exists("boot.py");
+    if (ret & PYEXEC_FORCED_EXIT) {
+        goto soft_reset_exit;
+    }
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+        ret = pyexec_file_if_exists("main.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+    }
     #endif
 
     for (;;) {
@@ -163,13 +186,20 @@ soft_reset:
         }
     }
 
-    printf("soft reboot\n");
+    #if MICROPY_MODULE_FROZEN || MICROPY_VFS
+soft_reset_exit:
+    #endif
+
+    mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
 
     #if MICROPY_PY_BLUETOOTH
     mp_bluetooth_deinit();
     #endif
     #if MICROPY_PY_MACHINE
     machine_pin_deinit();
+    #endif
+    #if MICROPY_PY_MACHINE_I2C_TARGET
+    mp_machine_i2c_target_deinit_all();
     #endif
 
     #if MICROPY_PY_THREAD
@@ -211,7 +241,7 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 
-NORETURN void nlr_jump_fail(void *val) {
+MP_NORETURN void nlr_jump_fail(void *val) {
     while (1) {
         ;
     }

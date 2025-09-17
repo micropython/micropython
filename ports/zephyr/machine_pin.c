@@ -36,6 +36,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include "zephyr_device.h"
@@ -115,6 +116,10 @@ static mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     }
 
     int ret = gpio_pin_configure(self->port, self->pin, mode | pull | init);
+    if (ret == -ENOTSUP && mode == (GPIO_OUTPUT | GPIO_INPUT)) {
+        // Some targets (eg frdm_k64f) don't support GPIO_OUTPUT|GPIO_INPUT, so try again with just GPIO_OUTPUT.
+        ret = gpio_pin_configure(self->port, self->pin, GPIO_OUTPUT | pull | init);
+    }
     if (ret) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
     }
@@ -126,19 +131,26 @@ static mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // get the wanted port
-    if (!mp_obj_is_type(args[0], &mp_type_tuple)) {
+    machine_pin_obj_t *pin;
+    if (mp_obj_is_type(args[0], &machine_pin_type)) {
+        // Already a Pin object, reuse it.
+        pin = MP_OBJ_TO_PTR(args[0]);
+    } else if (mp_obj_is_type(args[0], &mp_type_tuple)) {
+        // Get the wanted (port, pin) values.
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(args[0], 2, &items);
+        const struct device *wanted_port = zephyr_device_find(items[0]);
+        int wanted_pin = mp_obj_get_int(items[1]);
+
+        pin = m_new_obj(machine_pin_obj_t);
+        pin->base = machine_pin_obj_template;
+        pin->port = wanted_port;
+        pin->pin = wanted_pin;
+        pin->irq = NULL;
+    } else {
+        // Unknown Pin.
         mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"GPIO_x\", pin#)"));
     }
-    mp_obj_t *items;
-    mp_obj_get_array_fixed_n(args[0], 2, &items);
-    const struct device *wanted_port = zephyr_device_find(items[0]);
-    int wanted_pin = mp_obj_get_int(items[1]);
-
-    machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
-    pin->base = machine_pin_obj_template;
-    pin->port = wanted_port;
-    pin->pin = wanted_pin;
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -270,7 +282,8 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUTPUT | GPIO_INPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_OUTPUT | GPIO_INPUT | GPIO_OPEN_DRAIN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_INT_EDGE_RISING) },

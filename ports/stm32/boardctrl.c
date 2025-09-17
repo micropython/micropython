@@ -35,7 +35,7 @@
 #include "led.h"
 #include "usrsw.h"
 
-NORETURN void boardctrl_fatal_error(const char *msg) {
+MP_NORETURN void boardctrl_fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 10000000; delay++) {
     }
     led_state(1, 1);

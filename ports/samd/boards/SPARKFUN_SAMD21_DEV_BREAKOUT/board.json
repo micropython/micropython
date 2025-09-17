@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "DAC",
+        "USB"
+    ],
+    "images": [
+        "sparkfun_sam21_dev_breakout.jpg"
+    ],
+    "mcu": "samd21",
+    "product": "SparkFun SAMD21 Dev Breakout",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/products/13672",
+    "vendor": "SparkFun"
+}

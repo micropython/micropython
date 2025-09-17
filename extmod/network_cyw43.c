@@ -143,6 +143,9 @@ static mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_bool(if_active[self->itf]);
     } else {
         bool value = mp_obj_is_true(args[1]);
+        if (!value && self->itf == CYW43_ITF_STA) {
+            cyw43_wifi_leave(self->cyw, self->itf);
+        }
         cyw43_wifi_set_up(self->cyw, self->itf, value, get_country_code());
         if_active[self->itf] = value;
         return mp_const_none;

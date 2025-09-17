@@ -99,6 +99,11 @@ static mp_obj_t mp_machine_get_freq(void) {
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
+    #if CONFIG_IDF_TARGET_ESP32C2
+    if (freq != 80 && freq != 120) {
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 80MHz or 120MHz"));
+    }
+    #else
     if (freq != 20 && freq != 40 && freq != 80 && freq != 160
         #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
         && freq != 240
@@ -110,6 +115,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         #endif
     }
+    #endif
     esp_pm_config_t pm = {
         .max_freq_mhz = freq,
         .min_freq_mhz = freq,
@@ -178,7 +184,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, args);
 };
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, args);
     mp_machine_reset();
 };
@@ -221,7 +227,7 @@ static mp_int_t mp_machine_reset_cause(void) {
 #include "esp32s3/rom/usb/chip_usb_dw_wrapper.h"
 #endif
 
-NORETURN static void machine_bootloader_rtc(void) {
+MP_NORETURN static void machine_bootloader_rtc(void) {
     #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_USB_CDC
     usb_usj_mode();
     usb_dc_prepare_persist();
@@ -233,7 +239,7 @@ NORETURN static void machine_bootloader_rtc(void) {
 #endif
 
 #ifdef MICROPY_BOARD_ENTER_BOOTLOADER
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     for (;;) {
     }
@@ -254,7 +260,7 @@ static mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     esp_restart();
 }
 

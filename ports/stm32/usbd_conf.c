@@ -51,6 +51,11 @@ PCD_HandleTypeDef pcd_hs_handle;
 #define USB_OTG_FS USB
 #endif
 
+#if defined(STM32N6)
+#define USB_OTG_HS USB1_OTG_HS
+#define OTG_HS_IRQn USB1_OTG_HS_IRQn
+#endif
+
 /*******************************************************************************
                        PCD BSP Routines
 *******************************************************************************/
@@ -191,6 +196,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
         mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
 
+        #elif defined(STM32N6)
+
+        // These MCUs have dedicated USB pins.
+
         #else
 
         // Other MCUs have an alternate function for GPIO's to be in USB mode.
@@ -220,6 +229,23 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, otg_alt);
         #endif
 
+        #if defined(STM32N6)
+
+        __HAL_RCC_USB1_OTG_HS_FORCE_RESET();
+        __HAL_RCC_USB1_OTG_HS_PHY_FORCE_RESET();
+        __HAL_RCC_USB1_OTG_HS_PHY_RELEASE_RESET();
+        __HAL_RCC_USB1_OTG_HS_RELEASE_RESET();
+
+        LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_OTG1);
+        LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+        LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_OTG1);
+        LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+
+        // Select 24MHz clock.
+        MODIFY_REG(USB1_HS_PHYC->USBPHYC_CR, USB_USBPHYC_CR_FSEL, 2 << USB_USBPHYC_CR_FSEL_Pos);
+
+        #else
+
         // Enable calling WFI and correct function of the embedded USB_FS_IN_HS phy
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_DISABLE();
         __HAL_RCC_USB_OTG_HS_CLK_SLEEP_ENABLE();
@@ -234,6 +260,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #endif
 
         __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+
+        #endif
 
         #else // !MICROPY_HW_USB_HS_IN_FS
 
@@ -283,7 +311,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
     #if MICROPY_HW_USB_HS
     if (hpcd->Instance == USB_OTG_HS) {
         /* Disable USB FS Clocks */
+        #if defined(STM32N6)
+        LL_AHB5_GRP1_DisableClock(LL_AHB5_GRP1_PERIPH_OTG1);
+        LL_AHB5_GRP1_DisableClock(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+        #else
         __USB_OTG_HS_CLK_DISABLE();
+        #endif
     }
     #endif
 
@@ -517,7 +550,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
 
         #if MICROPY_HW_USB_HS_IN_FS
 
-        #if defined(STM32F723xx) || defined(STM32F733xx)
+        #if defined(STM32F723xx) || defined(STM32F733xx) || defined(STM32N6)
         pcd_hs_handle.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
         #else
         pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;

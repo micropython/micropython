@@ -202,7 +202,7 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
         out[2] = (uintptr_t)str;
     } else if (obj == mp_const_undefined) {
         kind = PROXY_KIND_MP_JSPROXY;
-        out[1] = 1;
+        out[1] = MP_OBJ_JSPROXY_REF_UNDEFINED;
     } else if (mp_obj_is_jsproxy(obj)) {
         kind = PROXY_KIND_MP_JSPROXY;
         out[1] = mp_obj_jsproxy_get_ref(obj);

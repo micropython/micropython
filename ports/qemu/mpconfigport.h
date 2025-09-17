@@ -51,7 +51,6 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_SYS_PLATFORM     "qemu"
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
@@ -72,6 +71,7 @@
 
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
+#define HEX_FMT "%lx"
 
 typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size

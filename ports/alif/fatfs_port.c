@@ -24,15 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
+#include "shared/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 
 DWORD get_fattime(void) {
-    // TODO
-    int year = 2024;
-    int month = 1;
-    int day = 1;
-    int hour = 0;
-    int min = 0;
-    int sec = 0;
-    return ((year - 1980) << 25) | (month << 21) | (day << 16) | (hour << 11) | (min << 5) | (sec / 2);
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_epoch_to_struct_time(mp_hal_time_get(NULL), &tm);
+    return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21) | ((tm.tm_mday) << 16) | ((tm.tm_hour) << 11) | ((tm.tm_min) << 5) | (tm.tm_sec / 2);
 }

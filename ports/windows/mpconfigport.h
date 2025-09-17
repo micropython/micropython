@@ -242,7 +242,7 @@ typedef long mp_off_t;
 
 // CL specific overrides from mpconfig
 
-#define NORETURN                    __declspec(noreturn)
+#define MP_NORETURN                 __declspec(noreturn)
 #define MP_WEAK
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_ALWAYSINLINE             __forceinline
@@ -264,6 +264,11 @@ typedef long mp_off_t;
 #else
 #define MICROPY_PY_MATH_POW_FIX_NAN (1)
 #endif
+#endif
+
+// VC++ 2017 fixes
+#if (_MSC_VER < 1920)
+#define MICROPY_PY_MATH_COPYSIGN_FIX_NAN (1)
 #endif
 
 // CL specific definitions

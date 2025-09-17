@@ -18,8 +18,8 @@
         "ESP32-EVB_Rev_K1.png"
     ],
     "mcu": "esp32",
-    "product": "Olimex ESP32 EVB",
+    "product": "ESP32 EVB",
     "thumbnail": "",
-    "url": "https://www.olimex.com/Products/IoT/ESP32/ESP32-EVB/open-source-hardware",
-    "vendor": "OLIMEX"
+    "url": "https://www.olimex.com/Products/IoT/ESP32/ESP32-EVB",
+    "vendor": "Olimex"
 }

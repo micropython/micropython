@@ -30,10 +30,6 @@
 
 #include "mp_usbd.h"
 
-#ifndef NO_QSTR
-#include "device/dcd.h"
-#endif
-
 #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 void mp_usbd_task(void) {
@@ -47,13 +43,8 @@ void mp_usbd_task_callback(mp_sched_node_t *node) {
 
 #endif // !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
-extern void __real_dcd_event_handler(dcd_event_t const *event, bool in_isr);
-
-// If -Wl,--wrap=dcd_event_handler is passed to the linker, then this wrapper
-// will be called and allows MicroPython to schedule the TinyUSB task when
-// dcd_event_handler() is called from an ISR.
-TU_ATTR_FAST_FUNC void __wrap_dcd_event_handler(dcd_event_t const *event, bool in_isr) {
-    __real_dcd_event_handler(event, in_isr);
+// Schedule the TinyUSB task on demand, when there is a new USB device event
+TU_ATTR_FAST_FUNC void tud_event_hook_cb(uint8_t rhport, uint32_t eventid, bool in_isr) {
     mp_usbd_schedule_task();
     mp_hal_wake_main_task_from_isr();
 }

@@ -1,3 +1,5 @@
+# Test sys.print_exception (MicroPython) / traceback.print_exception (CPython).
+
 try:
     import io
     import sys
@@ -69,7 +71,7 @@ try:
     except Exception as e:
         print("reraise")
         print_exc(e)
-        raise
+        raise e
 except Exception as e:
     print("caught")
     print_exc(e)

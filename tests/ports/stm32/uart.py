@@ -1,4 +1,10 @@
+import sys
 from pyb import UART
+
+if "STM32WB" in sys.implementation._machine:
+    # UART(1) is usually connected to the REPL on these MCUs.
+    print("SKIP")
+    raise SystemExit
 
 # test we can correctly create by id
 for bus in (-1, 0, 1, 2, 5, 6):

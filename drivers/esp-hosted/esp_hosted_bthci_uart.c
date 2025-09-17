@@ -72,7 +72,7 @@ int esp_hosted_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_
     // Receive HCI event packet, initially reading 3 bytes (HCI Event, Event code, Plen).
     for (mp_uint_t start = mp_hal_ticks_ms(), size = 3, i = 0; i < size;) {
         while (!mp_bluetooth_hci_uart_any()) {
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
             // Timeout.
             if ((mp_hal_ticks_ms() - start) > HCI_COMMAND_TIMEOUT) {
                 error_printf("timeout waiting for HCI packet\n");
@@ -126,7 +126,7 @@ int mp_bluetooth_hci_controller_init(void) {
         if (mp_bluetooth_hci_uart_any()) {
             mp_bluetooth_hci_uart_readchar();
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 
     #ifdef MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY

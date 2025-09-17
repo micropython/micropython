@@ -161,3 +161,19 @@ pwm_config_t get_pwm_config(int pin_id, int wanted_dev, uint8_t device_status[])
 }
 
 #endif
+
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET
+
+// Configure a I2C pin. Used by machine_i2c.c and machine_i2c_target.c.
+uint8_t pin_config_for_i2c(mp_obj_t pin_obj, uint8_t id, uint8_t pad_nr) {
+    uint8_t pin = mp_hal_get_pin_obj(pin_obj);
+    sercom_pad_config_t pad_config = get_sercom_config(pin, id);
+    if (pad_config.pad_nr != pad_nr) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid sda/scl pin"));
+    }
+    // Configure the Pin mux.
+    mp_hal_set_pin_mux(pin, pad_config.alt_fct);
+    return pin;
+}
+
+#endif

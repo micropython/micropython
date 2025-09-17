@@ -6,6 +6,7 @@ SRC_EXTMOD_C += \
 	extmod/machine_adc_block.c \
 	extmod/machine_bitstream.c \
 	extmod/machine_i2c.c \
+	extmod/machine_i2c_target.c \
 	extmod/machine_i2s.c \
 	extmod/machine_mem.c \
 	extmod/machine_pinbase.c \
@@ -206,7 +207,7 @@ endif
 
 ifeq ($(MICROPY_VFS_LFS2),1)
 CFLAGS_EXTMOD += -DMICROPY_VFS_LFS2=1
-CFLAGS_THIRDPARTY += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+CFLAGS_THIRDPARTY += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT -DLFS2_DEFINES=extmod/littlefs-include/lfs2_defines.h
 SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2.c \
 	lfs2_util.c \

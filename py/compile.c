@@ -3277,7 +3277,9 @@ static void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         }
 
         // check structure of parse node
-        assert(MP_PARSE_NODE_IS_STRUCT(pns2->nodes[0]));
+        if (!MP_PARSE_NODE_IS_STRUCT(pns2->nodes[0])) {
+            goto not_an_instruction;
+        }
         if (!MP_PARSE_NODE_IS_NULL(pns2->nodes[1])) {
             goto not_an_instruction;
         }

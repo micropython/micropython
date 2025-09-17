@@ -38,6 +38,7 @@
 #include "nvs_flash.h"
 #include "esp_task.h"
 #include "esp_event.h"
+#include "esp_flash.h"
 #include "esp_log.h"
 #include "esp_memory_utils.h"
 #include "esp_psram.h"
@@ -50,6 +51,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/timeutils/timeutils.h"
@@ -59,6 +61,7 @@
 #include "uart.h"
 #include "usb.h"
 #include "usb_serial_jtag.h"
+#include "modesp32.h"
 #include "modmachine.h"
 #include "modnetwork.h"
 
@@ -177,7 +180,14 @@ soft_reset_exit:
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif
 
+    // Deinit uart before timers, as esp32 uart
+    // depends on a timer instance
+    machine_uart_deinit_all();
     machine_timer_deinit_all();
+
+    #if MICROPY_PY_ESP32_PCNT
+    esp32_pcnt_deinit_all();
+    #endif
 
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
@@ -198,7 +208,11 @@ soft_reset_exit:
     machine_pwm_deinit_all();
     // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
+    #if MICROPY_PY_MACHINE_I2C_TARGET
+    mp_machine_i2c_target_deinit_all();
+    #endif
     machine_deinit();
+
     #if MICROPY_PY_SOCKET_EVENTS
     socket_events_deinit();
     #endif
@@ -214,18 +228,45 @@ void boardctrl_startup(void) {
         nvs_flash_erase();
         nvs_flash_init();
     }
+
+    // Query the physical size of the SPI flash and store it in the size
+    // variable of the global, default SPI flash handle.
+    esp_flash_get_physical_size(NULL, &esp_flash_default_chip->size);
+
+    // If there is no filesystem partition (no "vfs" or "ffat"), add a "vfs" partition
+    // that extends from the end of the application partition up to the end of flash.
+    if (esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs") == NULL
+        && esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "ffat") == NULL) {
+        // No "vfs" or "ffat" partition, so try to create one.
+
+        // Find the end of the last partition that exists in the partition table.
+        size_t offset = 0;
+        esp_partition_iterator_t iter = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);
+        while (iter != NULL) {
+            const esp_partition_t *part = esp_partition_get(iter);
+            offset = MAX(offset, part->address + part->size);
+            iter = esp_partition_next(iter);
+        }
+
+        // If we found the application partition and there is some space between the end of
+        // that and the end of flash, create a "vfs" partition taking up all of that space.
+        if (offset > 0 && esp_flash_default_chip->size > offset) {
+            size_t size = esp_flash_default_chip->size - offset;
+            esp_partition_register_external(esp_flash_default_chip, offset, size, "vfs", ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, NULL);
+        }
+    }
 }
 
-void app_main(void) {
+void MICROPY_ESP_IDF_ENTRY(void) {
     // Hook for a board to run code at start up.
-    // This defaults to initialising NVS.
+    // This defaults to initialising NVS and detecting the flash size.
     MICROPY_BOARD_STARTUP();
 
     // Create and transfer control to the MicroPython task.
     xTaskCreatePinnedToCore(mp_task, "mp_task", MICROPY_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
-void nlr_jump_fail(void *val) {
+MP_WEAK void nlr_jump_fail(void *val) {
     printf("NLR jump failed, val=%p\n", val);
     esp_restart();
 }

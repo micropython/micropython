@@ -48,6 +48,9 @@ git -C ${MICROPY_AUTOBUILD_MICROPYTHON_REPO}/lib/pico-sdk submodule update --ini
 ########################################
 # Build all firmware
 
+# Fail on some things which are warnings otherwise
+export MICROPY_MAINTAINER_BUILD=1
+
 pushd ${MICROPY_AUTOBUILD_MICROPYTHON_REPO}
 
 # build cross compiler
@@ -69,7 +72,9 @@ fi
 FW_TAG="-$FW_DATE-$FW_SEMVER"
 
 # build new firmware
-cd ports/cc3200
+cd ports/alif
+build_alif_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../cc3200
 build_cc3200_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
 build_esp8266_boards ${FW_TAG} ${LOCAL_FIRMWARE}

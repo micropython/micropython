@@ -336,18 +336,34 @@ static uint8_t peek_rule(parser_t *parser, size_t n) {
 }
 #endif
 
-bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
+#if MICROPY_COMP_CONST_FOLDING || MICROPY_EMIT_INLINE_ASM
+static bool mp_parse_node_get_number_maybe(mp_parse_node_t pn, mp_obj_t *o) {
     if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         *o = MP_OBJ_NEW_SMALL_INT(MP_PARSE_NODE_LEAF_SMALL_INT(pn));
         return true;
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         *o = mp_parse_node_extract_const_object(pns);
-        return mp_obj_is_int(*o);
+        return mp_obj_is_int(*o)
+               #if MICROPY_COMP_CONST_FLOAT
+               || mp_obj_is_float(*o)
+               #endif
+        ;
     } else {
         return false;
     }
 }
+#endif
+
+#if MICROPY_EMIT_INLINE_ASM
+bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
+    return mp_parse_node_get_number_maybe(pn, o)
+           #if MICROPY_COMP_CONST_FLOAT
+           && mp_obj_is_int(*o)
+           #endif
+    ;
+}
+#endif
 
 #if MICROPY_COMP_CONST_TUPLE || MICROPY_COMP_CONST
 static bool mp_parse_node_is_const(mp_parse_node_t pn) {
@@ -642,11 +658,31 @@ static const mp_rom_map_elem_t mp_constants_table[] = {
     #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
     #endif
+    #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH && MICROPY_COMP_CONST_FLOAT
+    { MP_ROM_QSTR(MP_QSTR_math), MP_ROM_PTR(&mp_module_math) },
+    #endif
     // Extra constants as defined by a port
     MICROPY_PORT_CONSTANTS
 };
 static MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
+
+static bool binary_op_maybe(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs, mp_obj_t *res) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t tmp = mp_binary_op(op, lhs, rhs);
+        nlr_pop();
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        if (mp_obj_is_type(tmp, &mp_type_complex)) {
+            return false;
+        }
+        #endif
+        *res = tmp;
+        return true;
+    } else {
+        return false;
+    }
+}
 
 static bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *num_args) {
     if (rule_id == RULE_or_test
@@ -706,7 +742,7 @@ static bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *nu
 }
 
 static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
-    // this code does folding of arbitrary integer expressions, eg 1 + 2 * 3 + 4
+    // this code does folding of arbitrary numeric expressions, eg 1 + 2 * 3 + 4
     // it does not do partial folding, eg 1 + 2 + x -> 3 + x
 
     mp_obj_t arg0;
@@ -716,7 +752,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         || rule_id == RULE_power) {
         // folding for binary ops: | ^ & **
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
-        if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
+        if (!mp_parse_node_get_number_maybe(pn, &arg0)) {
             return false;
         }
         mp_binary_op_t op;
@@ -732,58 +768,45 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         for (ssize_t i = num_args - 2; i >= 0; --i) {
             pn = peek_result(parser, i);
             mp_obj_t arg1;
-            if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
+            if (!mp_parse_node_get_number_maybe(pn, &arg1)) {
                 return false;
             }
-            if (op == MP_BINARY_OP_POWER && mp_obj_int_sign(arg1) < 0) {
-                // ** can't have negative rhs
+            if (!binary_op_maybe(op, arg0, arg1, &arg0)) {
                 return false;
             }
-            arg0 = mp_binary_op(op, arg0, arg1);
         }
     } else if (rule_id == RULE_shift_expr
                || rule_id == RULE_arith_expr
                || rule_id == RULE_term) {
         // folding for binary ops: << >> + - * @ / % //
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
-        if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
+        if (!mp_parse_node_get_number_maybe(pn, &arg0)) {
             return false;
         }
         for (ssize_t i = num_args - 2; i >= 1; i -= 2) {
             pn = peek_result(parser, i - 1);
             mp_obj_t arg1;
-            if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
+            if (!mp_parse_node_get_number_maybe(pn, &arg1)) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH) {
-                // Can't fold @ or /
+            mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
+            if (!binary_op_maybe(op, arg0, arg1, &arg0)) {
                 return false;
             }
-            mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
-            int rhs_sign = mp_obj_int_sign(arg1);
-            if (op <= MP_BINARY_OP_RSHIFT) {
-                // << and >> can't have negative rhs
-                if (rhs_sign < 0) {
-                    return false;
-                }
-            } else if (op >= MP_BINARY_OP_FLOOR_DIVIDE) {
-                // % and // can't have zero rhs
-                if (rhs_sign == 0) {
-                    return false;
-                }
-            }
-            arg0 = mp_binary_op(op, arg0, arg1);
         }
     } else if (rule_id == RULE_factor_2) {
         // folding for unary ops: + - ~
         mp_parse_node_t pn = peek_result(parser, 0);
-        if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
+        if (!mp_parse_node_get_number_maybe(pn, &arg0)) {
             return false;
         }
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, 1));
         mp_unary_op_t op;
         if (tok == MP_TOKEN_OP_TILDE) {
+            if (!mp_obj_is_int(arg0)) {
+                return false;
+            }
             op = MP_UNARY_OP_INVERT;
         } else {
             assert(tok == MP_TOKEN_OP_PLUS || tok == MP_TOKEN_OP_MINUS); // should be
@@ -855,7 +878,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             return false;
         }
         // id1.id2
-        // look it up in constant table, see if it can be replaced with an integer
+        // look it up in constant table, see if it can be replaced with an integer or a float
         mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t *)pn1;
         assert(MP_PARSE_NODE_IS_ID(pns1->nodes[0]));
         qstr q_base = MP_PARSE_NODE_LEAF_ARG(pn0);
@@ -866,7 +889,7 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         mp_obj_t dest[2];
         mp_load_method_maybe(elem->value, q_attr, dest);
-        if (!(dest[0] != MP_OBJ_NULL && mp_obj_is_int(dest[0]) && dest[1] == MP_OBJ_NULL)) {
+        if (!(dest[0] != MP_OBJ_NULL && (mp_obj_is_int(dest[0]) || mp_obj_is_float(dest[0])) && dest[1] == MP_OBJ_NULL)) {
             return false;
         }
         arg0 = dest[0];

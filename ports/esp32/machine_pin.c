@@ -152,7 +152,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
     if (args[ARG_mode].u_obj != mp_const_none) {
         if (rtc_gpio_is_valid_gpio(index)) {
-            #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
+            #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
             rtc_gpio_deinit(index);
             #endif
         }
@@ -325,14 +325,17 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
                 mp_raise_ValueError(MP_ERROR_TEXT("bad wake value"));
             }
 
+            #if SOC_TOUCH_SENSOR_SUPPORTED
             if (machine_rtc_config.wake_on_touch) { // not compatible
                 mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
             }
+            #endif
 
             if (!RTC_IS_VALID_EXT_PIN(index)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for wake"));
             }
 
+            #if SOC_PM_SUPPORT_EXT0_WAKEUP
             if (machine_rtc_config.ext0_pin == -1) {
                 machine_rtc_config.ext0_pin = index;
             } else if (machine_rtc_config.ext0_pin != index) {
@@ -341,10 +344,13 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
             machine_rtc_config.ext0_level = trigger == GPIO_INTR_LOW_LEVEL ? 0 : 1;
             machine_rtc_config.ext0_wake_types = wake;
+            #endif
         } else {
+            #if SOC_PM_SUPPORT_EXT0_WAKEUP
             if (machine_rtc_config.ext0_pin == index) {
                 machine_rtc_config.ext0_pin = -1;
             }
+            #endif
 
             if (handler == mp_const_none) {
                 handler = MP_OBJ_NULL;

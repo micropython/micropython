@@ -104,7 +104,7 @@ vpath %.cpp . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.cpp
 	$(call compile_cxx)
 
-$(BUILD)/%.pp: %.c
+$(BUILD)/%.pp: %.c FORCE
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
 
@@ -268,7 +268,7 @@ submodules:
 	$(ECHO) "Updating submodules: $(GIT_SUBMODULES)"
 ifneq ($(GIT_SUBMODULES),)
 	$(Q)cd $(TOP) && git submodule sync $(GIT_SUBMODULES)
-	$(Q)cd $(TOP) && git submodule update --init --filter=blob:none $(GIT_SUBMODULES) || \
+	$(Q)cd $(TOP) && git submodule update --init --filter=blob:none $(GIT_SUBMODULES) 2>/dev/null || \
 	  git submodule update --init $(GIT_SUBMODULES)
 endif
 .PHONY: submodules

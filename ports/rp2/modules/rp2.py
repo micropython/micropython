@@ -7,12 +7,13 @@ from micropython import const
 _PROG_DATA = const(0)
 _PROG_OFFSET_PIO0 = const(1)
 _PROG_OFFSET_PIO1 = const(2)
-_PROG_EXECCTRL = const(3)
-_PROG_SHIFTCTRL = const(4)
-_PROG_OUT_PINS = const(5)
-_PROG_SET_PINS = const(6)
-_PROG_SIDESET_PINS = const(7)
-_PROG_MAX_FIELDS = const(8)
+_PROG_OFFSET_PIO2 = const(3)
+_PROG_EXECCTRL = const(4)
+_PROG_SHIFTCTRL = const(5)
+_PROG_OUT_PINS = const(6)
+_PROG_SET_PINS = const(7)
+_PROG_SIDESET_PINS = const(8)
+_PROG_MAX_FIELDS = const(9)
 
 
 class PIOASMError(Exception):
@@ -50,7 +51,7 @@ class PIOASMEmit:
             | autopull << 17
             | autopush << 16
         )
-        self.prog = [array("H"), -1, -1, execctrl, shiftctrl, out_init, set_init, sideset_init]
+        self.prog = [array("H"), -1, -1, -1, execctrl, shiftctrl, out_init, set_init, sideset_init]
 
         self.wrap_used = False
 

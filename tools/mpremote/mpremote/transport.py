@@ -24,8 +24,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import ast, errno, hashlib, os, sys
+import ast, errno, hashlib, os, re, sys
 from collections import namedtuple
+from .mp_errno import MP_ERRNO_TABLE
 
 
 def stdout_write_bytes(b):
@@ -62,6 +63,16 @@ def _convert_filesystem_error(e, info):
         ]:
             if estr in e.error_output:
                 return OSError(code, info)
+
+        # Some targets don't render OSError with the name of the errno, so in these
+        # cases support an explicit mapping of errnos to known numeric codes.
+        error_lines = e.error_output.splitlines()
+        match = re.match(r"OSError: (\d+)$", error_lines[-1])
+        if match:
+            value = int(match.group(1), 10)
+            if value in MP_ERRNO_TABLE:
+                return OSError(MP_ERRNO_TABLE[value], info)
+
     return e
 
 

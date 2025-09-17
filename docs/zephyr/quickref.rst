@@ -153,6 +153,8 @@ Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
         f.write('Hello world')                  # write to the file
     print(open('/flash/hello.txt').read())      # print contents of the file
 
+The FlashAreas' IDs that are available are listed in the FlashArea module, as ID_*.
+
 Sensor
 ------
 

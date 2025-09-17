@@ -9,15 +9,20 @@ fi
 # Ensure known OPEN_MAX (NO_FILES) limit.
 ulimit -n 1024
 
+# Fail on some things which are warnings otherwise
+export MICROPY_MAINTAINER_BUILD=1
+
 ########################################################################################
 # general helper functions
 
 function ci_gcc_arm_setup {
+    sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
     arm-none-eabi-gcc --version
 }
 
 function ci_gcc_riscv_setup {
+    sudo apt-get update
     sudo apt-get install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf
     riscv64-unknown-elf-gcc --version
 }
@@ -35,6 +40,7 @@ function ci_picotool_setup {
 # c code formatting
 
 function ci_c_code_formatting_setup {
+    sudo apt-get update
     sudo apt-get install uncrustify
     uncrustify --version
 }
@@ -93,23 +99,30 @@ function ci_code_size_build {
     function code_size_build_step {
         COMMIT=$1
         OUTFILE=$2
-        IGNORE_ERRORS=$3
 
         echo "Building ${COMMIT}..."
         git checkout --detach $COMMIT
         git submodule update --init $SUBMODULES
         git show -s
         tools/metrics.py clean $PORTS_TO_CHECK
-        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE || $IGNORE_ERRORS
+        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE
+        return $?
     }
+
+    # Allow errors from tools/metrics.py to propagate out of the pipe above.
+    set -o pipefail
 
     # build reference, save to size0
     # ignore any errors with this build, in case master is failing
-    code_size_build_step $REFERENCE ~/size0 true
+    code_size_build_step $REFERENCE ~/size0
     # build PR/branch, save to size1
-    code_size_build_step $COMPARISON ~/size1 false
+    code_size_build_step $COMPARISON ~/size1
+    STATUS=$?
 
+    set +o pipefail
     unset -f code_size_build_step
+
+    return $STATUS
 }
 
 ########################################################################################
@@ -117,15 +130,12 @@ function ci_code_size_build {
 
 function ci_mpy_format_setup {
     sudo apt-get update
-    sudo apt-get install python2.7
     sudo pip3 install pyelftools
-    python2.7 --version
     python3 --version
 }
 
 function ci_mpy_format_test {
     # Test mpy-tool.py dump feature on bytecode
-    python2.7 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
     python3 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
 
     # Build MicroPython
@@ -158,14 +168,17 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-# GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
-IDF_VER=v5.2.2
+# GitHub tag of ESP-IDF to use for CI, extracted from the esp32 dependency lockfile
+# This should end up as a tag name like vX.Y.Z
+# (note: This hacky parsing can be replaced with 'yq' once Ubuntu >=24.04 is in use)
+IDF_VER=v$(grep -A10 "idf:" ports/esp32/lockfiles/dependencies.lock.esp32 | grep "version:" | head -n1 | sed -E 's/ +version: //')
 PYTHON=$(command -v python3 2> /dev/null)
 PYTHON_VER=$(${PYTHON:-python} --version | cut -d' ' -f2)
 
 export IDF_CCACHE_ENABLE=1
 
 function ci_esp32_idf_setup {
+    echo "Using ESP-IDF version $IDF_VER"
     git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
     # doing a treeless clone isn't quite as good as --shallow-submodules, but it
     # is smaller than full clones and works when the submodule commit isn't a head.
@@ -204,12 +217,19 @@ function ci_esp32_build_s3_c3 {
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
 }
 
+function ci_esp32_build_c2_c6 {
+    ci_esp32_build_common
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C2
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C6
+}
+
 ########################################################################################
 # ports/esp8266
 
 function ci_esp8266_setup {
     sudo pip3 install pyserial esptool==3.3.1 pyelftools ar
-    wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
+    wget https://micropython.org/resources/xtensa-lx106-elf-standalone.tar.gz
     zcat xtensa-lx106-elf-standalone.tar.gz | tar x
     # Remove this esptool.py so pip version is used instead
     rm xtensa-lx106-elf/bin/esptool.py
@@ -317,17 +337,45 @@ function ci_qemu_setup_rv32 {
     qemu-system-riscv32 --version
 }
 
-function ci_qemu_build_arm {
+function ci_qemu_build_arm_prepare {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
-    make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
-    make ${MAKEOPTS} -C ports/qemu clean
-    make ${MAKEOPTS} -C ports/qemu test_full
-    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
+}
 
-    # Test building and running native .mpy with armv7m architecture.
+function ci_qemu_build_arm_bigendian {
+    ci_qemu_build_arm_prepare
+    make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
+}
+
+function ci_qemu_build_arm_sabrelite {
+    ci_qemu_build_arm_prepare
+    make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
+}
+
+function ci_qemu_build_arm_thumb_softfp {
+    ci_qemu_build_arm_prepare
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_full
+
+    # Test building native .mpy with ARM-M softfp architectures.
+    ci_native_mpy_modules_build armv6m
     ci_native_mpy_modules_build armv7m
-    make ${MAKEOPTS} -C ports/qemu test_natmod
+
+    # Test running native .mpy with all ARM-M architectures.
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
+}
+
+function ci_qemu_build_arm_thumb_hardfp {
+    ci_qemu_build_arm_prepare
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_full
+
+    # Test building native .mpy with all ARM-M hardfp architectures.
+    ci_native_mpy_modules_build armv7emsp
+    ci_native_mpy_modules_build armv7emdp
+
+    # Test running native .mpy with all ARM-M hardfp architectures.
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emsp"
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emdp"
 }
 
 function ci_qemu_build_rv32 {
@@ -421,10 +469,6 @@ function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=STM32F769DISC CFLAGS_EXTRA='-DMBOOT_ADDRESS_SPACE_64BIT=1 -DMBOOT_SDCARD_ADDR=0x100000000ULL -DMBOOT_SDCARD_BYTE_SIZE=0x400000000ULL -DMBOOT_FSLOAD=1 -DMBOOT_VFS_FAT=1'
-
-    # Test building native .mpy with armv7emsp architecture.
-    git submodule update --init lib/berkeley-db-1.xx
-    ci_native_mpy_modules_build armv7emsp
 }
 
 function ci_stm32_nucleo_build {
@@ -462,13 +506,6 @@ function ci_stm32_misc_build {
 ########################################################################################
 # ports/unix
 
-CI_UNIX_OPTS_SYS_SETTRACE=(
-    MICROPY_PY_BTREE=0
-    MICROPY_PY_FFI=0
-    MICROPY_PY_SSL=0
-    CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1"
-)
-
 CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS=(
     MICROPY_PY_BTREE=0
     MICROPY_PY_FFI=0
@@ -494,6 +531,18 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
     MICROPY_STANDALONE=1
 )
 
+CI_UNIX_OPTS_SANITIZE_ADDRESS=(
+    # Macro MP_ASAN allows detecting ASan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -DMP_ASAN=1"
+    LDFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
+)
+
+CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
+    # Macro MP_UBSAN allows detecting UBSan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute -DMP_UBSAN=1"
+    LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
@@ -509,13 +558,26 @@ function ci_unix_run_tests_helper {
     make -C ports/unix "$@" test
 }
 
+function ci_unix_run_tests_full_extra {
+    micropython=$1
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py --average 1 1000 1000)
+}
+
+function ci_unix_run_tests_full_no_native_helper {
+    variant=$1
+    shift
+    micropython=../ports/unix/build-$variant/micropython
+    make -C ports/unix VARIANT=$variant "$@" test_full_no_native
+    ci_unix_run_tests_full_extra $micropython
+}
+
 function ci_unix_run_tests_full_helper {
     variant=$1
     shift
     micropython=../ports/unix/build-$variant/micropython
     make -C ports/unix VARIANT=$variant "$@" test_full
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py 1000 1000)
+    ci_unix_run_tests_full_extra $micropython
 }
 
 function ci_native_mpy_modules_build {
@@ -524,39 +586,18 @@ function ci_native_mpy_modules_build {
     else
         arch=$1
     fi
-    for natmod in features1 features3 features4 heapq re
+    for natmod in btree deflate features1 features3 features4 framebuf heapq random re
     do
-        make -C examples/natmod/$natmod clean
+        make -C examples/natmod/$natmod ARCH=$arch clean
         make -C examples/natmod/$natmod ARCH=$arch
     done
 
-    # deflate, framebuf, and random currently cannot build on xtensa due to
-    # some symbols that have been removed from the compiler's runtime, in
-    # favour of being provided from ROM.
-    if [ $arch != "xtensa" ]; then
-        for natmod in deflate framebuf random
-        do
-            make -C examples/natmod/$natmod clean
-            make -C examples/natmod/$natmod ARCH=$arch
-        done
-    fi
-
-    # features2 requires soft-float on armv7m, rv32imc, and xtensa.  On armv6m
-    # the compiler generates absolute relocations in the object file
-    # referencing soft-float functions, which is not supported at the moment.
-    make -C examples/natmod/features2 clean
-    if [ $arch = "rv32imc" ] || [ $arch = "armv7m" ] || [ $arch = "xtensa" ]; then
+    # features2 requires soft-float on rv32imc and xtensa.
+    make -C examples/natmod/features2 ARCH=$arch clean
+    if [ $arch = "rv32imc" ] || [ $arch = "xtensa" ]; then
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
-    elif [ $arch != "armv6m" ]; then
+    else
         make -C examples/natmod/features2 ARCH=$arch
-    fi
-
-    # btree requires thread local storage support on rv32imc, whilst on xtensa
-    # it relies on symbols that are provided from ROM but not exposed to
-    # natmods at the moment.
-    if [ $arch != "rv32imc" ] && [ $arch != "xtensa" ]; then
-        make -C examples/natmod/btree clean
-        make -C examples/natmod/btree ARCH=$arch
     fi
 }
 
@@ -591,9 +632,9 @@ function ci_unix_standard_v2_run_tests {
 }
 
 function ci_unix_coverage_setup {
-    sudo pip3 install setuptools
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    pip3 install setuptools
+    pip3 install pyelftools
+    pip3 install ar
     gcc --version
     python3 --version
 }
@@ -604,7 +645,7 @@ function ci_unix_coverage_build {
 }
 
 function ci_unix_coverage_run_tests {
-    ci_unix_run_tests_full_helper coverage
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage
 }
 
 function ci_unix_coverage_run_mpy_merge_tests {
@@ -639,12 +680,11 @@ function ci_unix_coverage_run_native_mpy_tests {
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386 python2.7
+    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     sudo pip3 install ar
     gcc --version
-    python2.7 --version
     python3 --version
 }
 
@@ -662,13 +702,20 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 }
 
 function ci_unix_nanbox_build {
-    # Use Python 2 to check that it can run the build scripts
-    ci_unix_build_helper PYTHON=python2.7 VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
+    ci_unix_build_helper VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
     ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_nanbox_run_tests {
-    ci_unix_run_tests_full_helper nanbox PYTHON=python2.7
+    ci_unix_run_tests_full_no_native_helper nanbox
+}
+
+function ci_unix_longlong_build {
+    ci_unix_build_helper VARIANT=longlong "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+}
+
+function ci_unix_longlong_run_tests {
+    ci_unix_run_tests_full_helper longlong
 }
 
 function ci_unix_float_build {
@@ -681,7 +728,17 @@ function ci_unix_float_run_tests {
     ci_unix_run_tests_helper CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
 }
 
+function ci_unix_gil_enabled_build {
+    ci_unix_build_helper VARIANT=standard MICROPY_PY_THREAD_GIL=1
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_gil_enabled_run_tests {
+    ci_unix_run_tests_full_helper standard MICROPY_PY_THREAD_GIL=1
+}
+
 function ci_unix_clang_setup {
+    sudo apt-get update
     sudo apt-get install clang
     clang --version
 }
@@ -693,7 +750,8 @@ function ci_unix_stackless_clang_build {
 }
 
 function ci_unix_stackless_clang_run_tests {
-    ci_unix_run_tests_helper CC=clang
+    # Timeout needs to be increased for thread/stress_aes.py test.
+    MICROPY_TEST_TIMEOUT=90 ci_unix_run_tests_helper CC=clang
 }
 
 function ci_unix_float_clang_build {
@@ -706,16 +764,6 @@ function ci_unix_float_clang_run_tests {
     ci_unix_run_tests_helper CC=clang
 }
 
-function ci_unix_settrace_build {
-    make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/unix submodules
-    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
-}
-
-function ci_unix_settrace_run_tests {
-    ci_unix_run_tests_full_helper standard "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
-}
-
 function ci_unix_settrace_stackless_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
@@ -724,6 +772,28 @@ function ci_unix_settrace_stackless_build {
 
 function ci_unix_settrace_stackless_run_tests {
     ci_unix_run_tests_full_helper standard "${CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS[@]}"
+}
+
+function ci_unix_sanitize_undefined_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_sanitize_undefined_run_tests {
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+}
+
+function ci_unix_sanitize_address_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_sanitize_address_run_tests {
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
 }
 
 function ci_unix_macos_build {
@@ -740,7 +810,9 @@ function ci_unix_macos_run_tests {
     # Issues with macOS tests:
     # - float_parse and float_parse_doubleprec parse/print floats out by a few mantissa bits
     # - ffi_callback crashes for an unknown reason
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback).py')
+    # - thread/stress_heap.py is flaky
+    # - thread/thread_gc1.py is flaky
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback|thread/stress_heap|thread/thread_gc1).py')
 }
 
 function ci_unix_qemu_mips_setup {
@@ -758,8 +830,12 @@ function ci_unix_qemu_mips_build {
 }
 
 function ci_unix_qemu_mips_run_tests {
+    # Issues with MIPS tests:
+    # - thread/stress_aes.py takes around 50 seconds
+    # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_arm_setup {
@@ -779,8 +855,11 @@ function ci_unix_qemu_arm_build {
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
+    # - thread/stress_aes.py takes around 70 seconds
+    # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py|thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
@@ -798,14 +877,19 @@ function ci_unix_qemu_riscv64_build {
 }
 
 function ci_unix_qemu_riscv64_run_tests {
+    # Issues with RISCV-64 tests:
+    # - thread/stress_aes.py takes around 140 seconds
+    # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 ########################################################################################
 # ports/windows
 
 function ci_windows_setup {
+    sudo apt-get update
     sudo apt-get install gcc-mingw-w64
 }
 
@@ -818,9 +902,9 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.27.4
-ZEPHYR_SDK_VERSION=0.17.0
-ZEPHYR_VERSION=v4.0.0
+ZEPHYR_DOCKER_VERSION=v0.28.1
+ZEPHYR_SDK_VERSION=0.17.2
+ZEPHYR_VERSION=v4.2.0
 
 function ci_zephyr_setup {
     IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}

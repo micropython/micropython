@@ -8,8 +8,8 @@
         "arduino_primo.jpg"
     ],
     "mcu": "nrf52",
-    "product": "arduino_primo",
+    "product": "Primo",
     "thumbnail": "",
-    "url": "",
+    "url": "https://docs.arduino.cc/retired/boards/arduino-primo/",
     "vendor": "Arduino"
 }

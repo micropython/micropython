@@ -21,7 +21,6 @@
     "url": "https://www.espressif.com/en/products/modules",
     "vendor": "Espressif",
     "variants": {
-        "SPIRAM_OCT": "Support for Octal-SPIRAM",
-        "FLASH_4M": "4MiB flash"
+        "SPIRAM_OCT": "Support for Octal-SPIRAM"
     }
 }

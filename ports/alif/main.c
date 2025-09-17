@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "py/stackctrl.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
@@ -55,8 +56,9 @@
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
+extern void machine_pin_irq_deinit(void);
 
-NORETURN void panic(const char *msg) {
+MP_NORETURN void panic(const char *msg) {
     mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
     mp_hal_stdout_tx_strn(msg, strlen(msg));
     for (;;) {
@@ -163,7 +165,11 @@ int main(void) {
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
+        #if MICROPY_PY_MACHINE_I2C_TARGET
+        mp_machine_i2c_target_deinit_all();
+        #endif
         soft_timer_deinit();
+        machine_pin_irq_deinit();
         gc_sweep_all();
         mp_deinit();
     }

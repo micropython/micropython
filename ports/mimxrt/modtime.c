@@ -29,36 +29,26 @@
 #include "shared/timeutils/timeutils.h"
 #include "fsl_snvs_lp.h"
 
-// Return the localtime as an 8-tuple.
-static mp_obj_t mp_time_localtime_get(void) {
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
     // Get current date and time.
     snvs_lp_srtc_datetime_t t;
     SNVS_LP_SRTC_GetDatetime(SNVS, &t);
-    mp_obj_t tuple[8] = {
-        mp_obj_new_int(t.year),
-        mp_obj_new_int(t.month),
-        mp_obj_new_int(t.day),
-        mp_obj_new_int(t.hour),
-        mp_obj_new_int(t.minute),
-        mp_obj_new_int(t.second),
-        mp_obj_new_int(timeutils_calc_weekday(t.year, t.month, t.day)),
-        mp_obj_new_int(timeutils_year_day(t.year, t.month, t.day)),
-    };
-    return mp_obj_new_tuple(8, tuple);
+    tm->tm_year = t.year;
+    tm->tm_mon = t.month;
+    tm->tm_mday = t.day;
+    tm->tm_hour = t.hour;
+    tm->tm_min = t.minute;
+    tm->tm_sec = t.second;
+    tm->tm_wday = timeutils_calc_weekday(t.year, t.month, t.day);
+    tm->tm_yday = timeutils_year_day(t.year, t.month, t.day);
 }
 
 // Return the number of seconds since the Epoch.
 static mp_obj_t mp_time_time_get(void) {
     snvs_lp_srtc_datetime_t t;
     SNVS_LP_SRTC_GetDatetime(SNVS, &t);
-    // EPOCH is 1970 for this port, which leads to the following trouble:
-    // timeutils_seconds_since_epoch() calls timeutils_seconds_since_2000(), and
-    // timeutils_seconds_since_2000() subtracts 2000 from year, but uses
-    // an unsigned number for seconds, That causes an underrun, which is not
-    // fixed by adding the TIMEUTILS_SECONDS_1970_TO_2000.
-    // Masking it to 32 bit for year < 2000 fixes it.
-    return mp_obj_new_int_from_ull(
+    return timeutils_obj_from_timestamp(
         timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.minute, t.second)
-        & (t.year < 2000 ? 0xffffffff : 0xffffffffffff)
         );
 }

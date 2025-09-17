@@ -14,13 +14,6 @@ PORT = 8000
 cert = cafile = "ec_cert.der"
 key = "ec_key.der"
 
-try:
-    os.stat(cafile)
-    os.stat(key)
-except OSError:
-    print("SKIP")
-    raise SystemExit
-
 
 async def handle_connection(reader, writer):
     data = await reader.readline()

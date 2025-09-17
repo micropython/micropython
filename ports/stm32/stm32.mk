@@ -43,17 +43,15 @@ ifneq ($(BUILDING_MBOOT),1)
 # Select hardware floating-point support.
 SUPPORTS_HARDWARE_FP_SINGLE = 0
 SUPPORTS_HARDWARE_FP_DOUBLE = 0
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx STM32H747xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx STM32H747xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ STM32N657xx))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard -mfp16-format=ieee
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 SUPPORTS_HARDWARE_FP_DOUBLE = 1
-else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0 l1 wl))
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0 l1 wl))
 CFLAGS_CORTEX_M += -msoft-float
 else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mfp16-format=ieee
 SUPPORTS_HARDWARE_FP_SINGLE = 1
-endif
 endif
 endif
 
@@ -68,6 +66,7 @@ CFLAGS_MCU_l1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m3 -mcpu=cortex-m3
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_h5 = $(CFLAGS_CORTEX_M) -mtune=cortex-m33 -mcpu=cortex-m33
 CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_n6 = $(CFLAGS_CORTEX_M) -mtune=cortex-m55 -mcpu=cortex-m55 -mcmse
 CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_wl = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
@@ -81,5 +80,20 @@ MPY_CROSS_MCU_ARCH_l1 = armv7m
 MPY_CROSS_MCU_ARCH_l4 = armv7m
 MPY_CROSS_MCU_ARCH_h5 = armv7m
 MPY_CROSS_MCU_ARCH_h7 = armv7m
+MPY_CROSS_MCU_ARCH_n6 = armv7m # really armv8m
 MPY_CROSS_MCU_ARCH_wb = armv7m
 MPY_CROSS_MCU_ARCH_wl = armv7m
+
+# gcc up to 14.2.0 have a known loop-optimisation bug:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116799
+# This bug manifests for Cortex M55 targets, so require a newer compiler on such targets.
+ifeq ($(MCU_SERIES),n6)
+# Check if GCC version is less than 14.3
+GCC_VERSION := $(shell $(CROSS_COMPILE)gcc -dumpversion | cut -d. -f1-2)
+GCC_VERSION_MAJOR := $(shell echo $(GCC_VERSION) | cut -d. -f1)
+GCC_VERSION_MINOR := $(shell echo $(GCC_VERSION) | cut -d. -f2)
+GCC_VERSION_NUM := $(shell echo $$(($(GCC_VERSION_MAJOR) * 100 + $(GCC_VERSION_MINOR))))
+ifeq ($(shell test $(GCC_VERSION_NUM) -lt 1403 && echo yes),yes)
+$(error Error: GCC $(GCC_VERSION) has known issues with Cortex-M55; upgrade to GCC 14.3+ for proper CM55 support)
+endif
+endif

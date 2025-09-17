@@ -77,9 +77,14 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    if (mp_obj_get_int(args[0]) != -1) {
+    // Get timer id (only soft timer (-1) supported at the moment)
+    mp_int_t id = -1;
+    if (n_args > 0) {
+        id = mp_obj_get_int(args[0]);
+        --n_args;
+        ++args;
+    }
+    if (id != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("only virtual timers are supported"));
     }
 
@@ -90,10 +95,10 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     self->next = MP_STATE_PORT(machine_timer_obj_head);
     MP_STATE_PORT(machine_timer_obj_head) = self;
 
-    if (n_args > 1 || n_kw > 0) {
+    if (n_args > 0 || n_kw > 0) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        machine_timer_init_helper(self, n_args - 1, args + 1, &kw_args);
+        machine_timer_init_helper(self, n_args, args, &kw_args);
     }
     return self;
 }

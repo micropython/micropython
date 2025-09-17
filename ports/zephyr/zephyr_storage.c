@@ -139,6 +139,20 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #endif // CONFIG_DISK_ACCESS
 
 #ifdef CONFIG_FLASH_MAP
+
+#define FLASH_AREA_DEFINE_LABEL(part) CONCAT(MP_QSTR_ID_, DT_STRING_TOKEN(part, label))
+#define FLASH_AREA_DEFINE_NB(part) CONCAT(MP_QSTR_ID_, DT_FIXED_PARTITION_ID(part))
+
+#define FLASH_AREA_DEFINE_GETNAME(part) COND_CODE_1(DT_NODE_HAS_PROP(part, label), \
+    (FLASH_AREA_DEFINE_LABEL(part)), (FLASH_AREA_DEFINE_NB(part)))
+
+#define FLASH_AREA_DEFINE_DEFINE(part) { MP_ROM_QSTR(FLASH_AREA_DEFINE_GETNAME(part)), MP_ROM_INT(DT_FIXED_PARTITION_ID(part)) },
+
+#define FLASH_AREA_DEFINE(part) COND_CODE_1(DT_NODE_HAS_STATUS_OKAY(DT_MTD_FROM_FIXED_PARTITION(part)), \
+    (FLASH_AREA_DEFINE_DEFINE(part)), ())
+
+#define FOREACH_PARTITION(n) DT_FOREACH_CHILD(n, FLASH_AREA_DEFINE)
+
 const mp_obj_type_t zephyr_flash_area_type;
 
 typedef struct _zephyr_flash_area_obj_t {
@@ -244,9 +258,8 @@ static const mp_rom_map_elem_t zephyr_flash_area_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&zephyr_flash_area_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&zephyr_flash_area_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&zephyr_flash_area_ioctl_obj) },
-    #if FIXED_PARTITION_EXISTS(storage_partition)
-    { MP_ROM_QSTR(MP_QSTR_STORAGE), MP_ROM_INT(FIXED_PARTITION_ID(storage_partition)) },
-    #endif
+    /* Generate list of partition IDs from Zephyr Devicetree */
+    DT_FOREACH_STATUS_OKAY(fixed_partitions, FOREACH_PARTITION)
 };
 static MP_DEFINE_CONST_DICT(zephyr_flash_area_locals_dict, zephyr_flash_area_locals_dict_table);
 

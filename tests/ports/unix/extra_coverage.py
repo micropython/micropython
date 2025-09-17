@@ -6,6 +6,16 @@ except NameError:
 
 import errno
 import io
+import uctypes
+
+# create an int-like variable used for coverage of `mp_obj_get_ll`
+buf = bytearray(b"\xde\xad\xbe\xef")
+struct = uctypes.struct(
+    uctypes.addressof(buf),
+    {"f32": uctypes.UINT32 | 0},
+    uctypes.BIG_ENDIAN,
+)
+deadbeef = struct.f32
 
 data = extra_coverage()
 

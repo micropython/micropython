@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_MBEDTLS_CONFIG_COMMON_H
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_COMMON_H
 
+#include "py/mpconfig.h"
+
 // If you want to debug MBEDTLS uncomment the following and
 // pass "3" to mbedtls_debug_set_threshold in socket_new.
 // #define MBEDTLS_DEBUG_C
@@ -89,11 +91,17 @@
 #define MBEDTLS_SHA384_C
 #define MBEDTLS_SHA512_C
 #define MBEDTLS_SSL_CLI_C
-#define MBEDTLS_SSL_PROTO_DTLS
 #define MBEDTLS_SSL_SRV_C
 #define MBEDTLS_SSL_TLS_C
 #define MBEDTLS_X509_CRT_PARSE_C
 #define MBEDTLS_X509_USE_C
+
+#if MICROPY_PY_SSL_DTLS
+#define MBEDTLS_SSL_PROTO_DTLS
+#define MBEDTLS_SSL_DTLS_ANTI_REPLAY
+#define MBEDTLS_SSL_DTLS_HELLO_VERIFY
+#define MBEDTLS_SSL_COOKIE_C
+#endif
 
 // A port may enable this option to select additional bare-metal configuration.
 #if MICROPY_MBEDTLS_CONFIG_BARE_METAL
@@ -114,5 +122,9 @@ void m_tracked_free(void *ptr);
 #define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
 
 #endif
+
+// Workaround for a mimxrt platform driver header that defines ARRAY_SIZE,
+// which is also defined in some mbedtls source files.
+#undef ARRAY_SIZE
 
 #endif // MICROPY_INCLUDED_MBEDTLS_CONFIG_COMMON_H

@@ -197,6 +197,10 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     } else {
         uint8_t num_dummy = MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(self);
         self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, num_dummy);
+        if (self->config->bus.u_qspi.proto->direct_read != NULL) {
+            // A bus with a custom read function should not have any further initialisation done.
+            return;
+        }
     }
 
     mp_spiflash_acquire_bus(self);
@@ -317,6 +321,10 @@ int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr) {
 int mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
     if (len == 0) {
         return 0;
+    }
+    const mp_spiflash_config_t *c = self->config;
+    if (c->bus_kind == MP_SPIFLASH_BUS_QSPI && c->bus.u_qspi.proto->direct_read != NULL) {
+        return c->bus.u_qspi.proto->direct_read(c->bus.u_qspi.data, addr, len, dest);
     }
     mp_spiflash_acquire_bus(self);
     int ret = mp_spiflash_read_data(self, addr, len, dest);

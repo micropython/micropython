@@ -1,13 +1,8 @@
 # Test asyncio stream readinto() method using TCP server/client
 
 try:
-    import asyncio
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-try:
     import array
+    import asyncio
 except ImportError:
     print("SKIP")
     raise SystemExit

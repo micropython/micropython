@@ -1,21 +1,27 @@
 class Descriptor:
     def __get__(self, obj, cls):
-        print('get')
+        print("get")
         print(type(obj) is Main)
         print(cls is Main)
-        return 'result'
+        return "result"
 
     def __set__(self, obj, val):
-        print('set')
+        print("set")
         print(type(obj) is Main)
         print(val)
 
     def __delete__(self, obj):
-        print('delete')
+        print("delete")
         print(type(obj) is Main)
+
+    def __set_name__(self, owner, name):
+        print("set_name", name)
+        print(owner.__name__ == "Main")
+
 
 class Main:
     Forward = Descriptor()
+
 
 m = Main()
 try:
@@ -26,15 +32,15 @@ except AttributeError:
     raise SystemExit
 
 r = m.Forward
-if 'Descriptor' in repr(r.__class__):
+if "Descriptor" in repr(r.__class__):
     # Target doesn't support descriptors.
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
 # Test assignment and deletion.
 
 print(r)
-m.Forward = 'a'
+m.Forward = "a"
 del m.Forward
 
 # Test that lookup of descriptors like __get__ are not passed into __getattr__.

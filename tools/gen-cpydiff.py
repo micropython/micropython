@@ -45,6 +45,12 @@ else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
     MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/build-standard/micropython")
 
+# Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
+# Set PYTHONUNBUFFERED so that CPython will interleave stdout & stderr without buffering
+os.environ["PYTHONUNBUFFERED"] = "a non-empty string"
+
 TESTPATH = "../tests/cpydiff"
 DOCPATH = "../docs/genrst"
 SRCDIR = "../docs/differences"
@@ -111,7 +117,7 @@ def run_tests(tests):
     results = []
     for test in tests:
         test_fullpath = os.path.join(TESTPATH, test.name)
-        with open(test_fullpath, "rb") as f:
+        with open(test_fullpath, "r") as f:
             input_py = f.read()
 
         process = subprocess.Popen(
@@ -119,20 +125,22 @@ def run_tests(tests):
             shell=True,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding="utf-8",
         )
-        output_cpy = [com.decode("utf8") for com in process.communicate(input_py)]
+        output_cpy = process.communicate(input_py)[0]
 
         process = subprocess.Popen(
             MICROPYTHON,
             shell=True,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding="utf-8",
         )
-        output_upy = [com.decode("utf8") for com in process.communicate(input_py)]
+        output_upy = process.communicate(input_py)[0]
 
-        if output_cpy[0] == output_upy[0] and output_cpy[1] == output_upy[1]:
+        if output_cpy == output_upy:
             print("Error: Test has same output in CPython vs MicroPython: " + test_fullpath)
             same_results = True
         else:
@@ -211,6 +219,8 @@ def gen_rst(results):
     class_ = []
     for output in results:
         section = output.class_.split(",")
+        if len(section) < 2:
+            raise SystemExit("Each item must have at least 2 categories")
         for i in range(len(section)):
             section[i] = section[i].rstrip()
             if section[i] in CLASSMAP:
@@ -220,8 +230,8 @@ def gen_rst(results):
                     filename = section[i].replace(" ", "_").lower()
                     rst = open(os.path.join(DOCPATH, filename + ".rst"), "w")
                     rst.write(HEADER)
-                    rst.write(section[i] + "\n")
-                    rst.write(RSTCHARS[0] * len(section[i]))
+                    rst.write(section[0] + "\n")
+                    rst.write(RSTCHARS[0] * len(section[0]) + "\n\n")
                     rst.write(time.strftime("\nGenerated %a %d %b %Y %X UTC\n\n", time.gmtime()))
                     # If a file docs/differences/<filename>_preamble.txt exists
                     # then its output is inserted after the top-level heading,
@@ -239,16 +249,16 @@ def gen_rst(results):
         class_ = section
         rst.write(".. _cpydiff_%s:\n\n" % os.path.splitext(output.name)[0])
         rst.write(output.desc + "\n")
-        rst.write("~" * len(output.desc) + "\n\n")
+        rst.write(RSTCHARS[min(i + 1, len(RSTCHARS) - 1)] * len(output.desc) + "\n\n")
         if output.cause != "Unknown":
             rst.write("**Cause:** " + output.cause + "\n\n")
         if output.workaround != "Unknown":
             rst.write("**Workaround:** " + output.workaround + "\n\n")
 
         rst.write("Sample code::\n\n" + indent(output.code, TAB) + "\n")
-        output_cpy = indent("".join(output.output_cpy[0:2]), TAB).rstrip()
+        output_cpy = indent(output.output_cpy, TAB).rstrip()
         output_cpy = ("::\n\n" if output_cpy != "" else "") + output_cpy
-        output_upy = indent("".join(output.output_upy[0:2]), TAB).rstrip()
+        output_upy = indent(output.output_upy, TAB).rstrip()
         output_upy = ("::\n\n" if output_upy != "" else "") + output_upy
         table = gen_table([["CPy output:", output_cpy], ["uPy output:", output_upy]])
         rst.write(table)

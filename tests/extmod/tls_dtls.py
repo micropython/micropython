@@ -34,8 +34,18 @@ client_socket = DummySocket()
 # Wrap the DTLS Server
 dtls_server_ctx = SSLContext(PROTOCOL_DTLS_SERVER)
 dtls_server_ctx.verify_mode = CERT_NONE
-dtls_server = dtls_server_ctx.wrap_socket(server_socket, do_handshake_on_connect=False)
+dtls_server = dtls_server_ctx.wrap_socket(
+    server_socket, do_handshake_on_connect=False, client_id=b"dummy_client_id"
+)
 print("Wrapped DTLS Server")
+
+# wrap DTLS server with invalid client_id
+try:
+    dtls_server = dtls_server_ctx.wrap_socket(
+        server_socket, do_handshake_on_connect=False, client_id=4
+    )
+except OSError:
+    print("Failed to wrap DTLS Server with invalid client_id")
 
 # Wrap the DTLS Client
 dtls_client_ctx = SSLContext(PROTOCOL_DTLS_CLIENT)

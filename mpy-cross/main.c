@@ -81,7 +81,7 @@ static int compile_and_save(const char *file, const char *output_file, const cha
             source_name = qstr_from_str(source_file);
         }
 
-        #if MICROPY_PY___FILE__
+        #if MICROPY_MODULE___FILE__
         mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
         #endif
 
@@ -130,7 +130,7 @@ static int usage(char **argv) {
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
         "-march=<arch> : set architecture for native emitter;\n"
-        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin, rv32imc, debug\n"
+        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin, rv32imc, host, debug\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -349,6 +349,15 @@ MP_NOINLINE int main_(int argc, char **argv) {
             input_file = backslash_to_forwardslash(argv[a]);
         }
     }
+
+    #if MICROPY_EMIT_NATIVE
+    if ((MP_STATE_VM(default_emit_opt) == MP_EMIT_OPT_NATIVE_PYTHON
+         || MP_STATE_VM(default_emit_opt) == MP_EMIT_OPT_VIPER)
+        && mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_NONE) {
+        mp_printf(&mp_stderr_print, "arch not specified\n");
+        exit(1);
+    }
+    #endif
 
     if (input_file == NULL) {
         mp_printf(&mp_stderr_print, "no input file\n");

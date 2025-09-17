@@ -3,7 +3,6 @@
 
 BOARD ?= ALIF_ENSEMBLE
 BOARD_DIR ?= boards/$(BOARD)
-BUILD ?= build-$(BOARD)/$(MCU_CORE)
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
@@ -22,6 +21,8 @@ include $(TOP)/extmod/extmod.mk
 
 ################################################################################
 # Project specific settings and compiler/linker flags
+
+MPY_CROSS_FLAGS += -march=armv7emdp
 
 CROSS_COMPILE ?= arm-none-eabi-
 ALIF_DFP_REL_TOP ?= lib/alif_ensemble-cmsis-dfp
@@ -102,10 +103,6 @@ CFLAGS += -Wl,-T$(BUILD)/ensemble.ld \
           -Wl,--gc-sections \
           -Wl,--print-memory-usage \
           -Wl,--no-warn-rwx-segment
-
-ifeq ($(MCU_CORE),M55_HP)
-CFLAGS += -Wl,--wrap=dcd_event_handler
-endif
 
 ################################################################################
 # Source files and libraries
