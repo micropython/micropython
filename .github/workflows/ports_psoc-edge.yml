@@ -18,21 +18,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_stm32:
+  build:
     strategy:
       fail-fast: false
-      matrix:
-        # TODO: This is copied from stm32 port yaml. 
-        # This will updated when psoc-edge specific jobs are created.
-        ci_func:  # names are functions in ci.sh
-          - stm32_pyb_build
-          - stm32_nucleo_build
-          - stm32_misc_build
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v5
-    - name: Install packages
-      run: source tools/ci.sh && ci_stm32_setup
-    - name: Build ci_${{matrix.ci_func }}
-      run: source tools/ci.sh && ci_${{ matrix.ci_func }}
+    - name: psoc-edge step placeholder
+      run: echo "TODO! This will be updated when we have a basic build flow for psoc-edge port"
 
