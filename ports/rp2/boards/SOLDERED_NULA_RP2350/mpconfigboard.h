@@ -28,19 +28,19 @@
 #define MICROPY_HW_UART1_RTS (43)
 
 // I2C0
-#define MICROPY_HW_I2C0_SCL  (5)
-#define MICROPY_HW_I2C0_SDA  (4)
+#define MICROPY_HW_I2C0_SCL  (9)
+#define MICROPY_HW_I2C0_SDA  (8)
 
 // I2C1
 #define MICROPY_HW_I2C1_SCL  (31)
 #define MICROPY_HW_I2C1_SDA  (30)
 
-// SPI0
-#define MICROPY_HW_SPI0_SCK  (22)
-#define MICROPY_HW_SPI0_MOSI (23)
-#define MICROPY_HW_SPI0_MISO (20)
+// SD Card/SPI0
+#define MICROPY_HW_SPI0_SCK  (2)
+#define MICROPY_HW_SPI0_MOSI (3)
+#define MICROPY_HW_SPI0_MISO (0)
 
-// SD Card/SPI1
+// SPI1
 #define MICROPY_HW_SPI1_SCK  (10)
 #define MICROPY_HW_SPI1_MOSI (11)
 #define MICROPY_HW_SPI1_MISO (8)

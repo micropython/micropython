@@ -69,7 +69,7 @@
 #define PICO_DEFAULT_SPI_RX_PIN 2
 #endif
 #ifndef PICO_DEFAULT_SPI_CSN_PIN
-#define PICO_DEFAULT_SPI_CSN_PIN 5
+#define PICO_DEFAULT_SPI_CSN_PIN 1
 #endif
 
 // --- FLASH ---
