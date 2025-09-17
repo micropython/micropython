@@ -27,14 +27,14 @@ Then initialize the ModusToolbox™ environment:
 Build the firmware:
 
     make BOARD=KIT_PSE84_AI
+  
+And flash it to the board:
 
-> [!WARNING]
-> Work in progress ->  This is currently only triggering the MTB project compilation.
+    make deploy BOARD=KIT_PSE84_AI
 
------------------------------------------------------
-*TODO: From here on, this is not implemented:*
+If you have multiple boards connected, you can specify the serial number of the board to be programmed:
 
-    make deploy
+    make deploy BOARD=KIT_PSE84_AI DEVICE_SN=123456
 
 Find more information about the available makefile targets:
 
