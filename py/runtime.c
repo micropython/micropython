@@ -1562,14 +1562,11 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     mp_obj_t dest[2];
 
     mp_load_method_maybe(module, name, dest);
-
     if (dest[1] != MP_OBJ_NULL) {
-        // Hopefully we can't import bound method from an object
-    import_error:
-        mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("can't import name %q"), name);
-    }
-
-    if (dest[0] != MP_OBJ_NULL) {
+        // Importing a bound method from a class instance.
+        return mp_obj_new_bound_meth(dest[0], dest[1]);
+    } else if (dest[0] != MP_OBJ_NULL) {
+        // Importing a function or attribute.
         return dest[0];
     }
 
@@ -1602,6 +1599,9 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     goto import_error;
 
     #endif
+
+import_error:
+    mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("can't import name %q"), name);
 }
 
 void mp_import_all(mp_obj_t module) {
