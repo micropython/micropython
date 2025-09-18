@@ -207,6 +207,9 @@ soft_reset_exit:
     // deinitialise peripherals
     machine_pwm_deinit_all();
     // TODO: machine_rmt_deinit_all();
+    #if MICROPY_PY_MACHINE_PCNT
+    machine_encoder_deinit_all();
+    #endif
     machine_pins_deinit();
     #if MICROPY_PY_MACHINE_I2C_TARGET
     mp_machine_i2c_target_deinit_all();
