@@ -35,7 +35,6 @@ from .commands import (
     do_exec,
     do_eval,
     do_run,
-    do_resume,
     do_rtc,
     do_soft_reset,
     do_romfs,
@@ -299,10 +298,6 @@ _COMMANDS = {
         do_edit,
         argparse_edit,
     ),
-    "resume": (
-        do_resume,
-        argparse_none("resume a previous mpremote session (will not auto soft-reset)"),
-    ),
     "soft-reset": (
         do_soft_reset,
         argparse_none("perform a soft-reset of the device"),
@@ -532,7 +527,7 @@ class State:
     def __init__(self):
         self.transport = None
         self._did_action = False
-        self._auto_soft_reset = True
+        self._auto_soft_reset = False
 
     def did_action(self):
         self._did_action = True
