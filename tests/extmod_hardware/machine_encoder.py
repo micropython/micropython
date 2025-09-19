@@ -11,22 +11,16 @@ except ImportError:
     raise SystemExit
 
 import sys
+import unittest
 from machine import Pin
+from target_wiring import encoder_loopback_id, encoder_loopback_out_pins, encoder_loopback_in_pins
 
 PRINT = False
 PIN_INIT_VALUE = 1
 
-if "esp32" in sys.platform:
-    id = 0
-    out0_pin = 4
-    in0_pin = 5
-    out1_pin = 12
-    in1_pin = 13
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
-
-import unittest
+id = encoder_loopback_id
+out0_pin, out1_pin = encoder_loopback_out_pins
+in0_pin, in1_pin = encoder_loopback_in_pins
 
 out0_pin = Pin(out0_pin, mode=Pin.OUT)
 in0_pin = Pin(in0_pin, mode=Pin.IN)
