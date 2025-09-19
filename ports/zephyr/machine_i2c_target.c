@@ -114,14 +114,7 @@ static inline size_t mp_machine_i2c_target_get_index(machine_i2c_target_obj_t *s
 }
 
 static void mp_machine_i2c_target_event_callback(machine_i2c_target_irq_obj_t *irq) {
-    char dummy;
-    void *orig_top = MP_STATE_THREAD(stack_top);
-    mp_uint_t orig_limit = MP_STATE_THREAD(stack_limit);
-    MP_STATE_THREAD(stack_top) = &dummy;
-    MP_STATE_THREAD(stack_limit) = CONFIG_ISR_STACK_SIZE - 512;
     mp_irq_handler(&irq->base);
-    MP_STATE_THREAD(stack_top) = orig_top;
-    MP_STATE_THREAD(stack_limit) = orig_limit;
 }
 
 static size_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf) {
