@@ -1011,6 +1011,7 @@ function _ci_main {
             _ci_help
         ;;
         (*)
+            set -e
             cd $(dirname "$0")/..
             while [ $# -ne 0 ]; do
                 ci_$1
