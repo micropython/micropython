@@ -122,6 +122,16 @@ typedef struct _asm_rv32_t {
     mp_uint_t locals_stack_offset;
 } asm_rv32_t;
 
+enum {
+    RV32_EXT_NONE = 0,
+    RV32_EXT_ZBA = 1 << 0,
+};
+
+typedef struct _asm_rv32_backend_options_t {
+    // This is a bitmask holding a combination of RV32_EXT_* entries.
+    uint8_t allowed_extensions;
+} asm_rv32_backend_options_t;
+
 void asm_rv32_entry(asm_rv32_t *state, mp_uint_t locals);
 void asm_rv32_exit(asm_rv32_t *state);
 void asm_rv32_end_pass(asm_rv32_t *state);
@@ -679,6 +689,19 @@ static inline void asm_rv32_opcode_xori(asm_rv32_t *state, mp_uint_t rd, mp_uint
     asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x13, 0x04, rd, rs, immediate));
 }
 
+static inline uint8_t asm_rv32_allowed_extensions(void) {
+    uint8_t extensions = 0;
+    #if MICROPY_EMIT_RV32_ZBA
+    extensions |= RV32_EXT_ZBA;
+    #endif
+    #if MICROPY_DYNAMIC_COMPILER
+    if (mp_dynamic_compiler.backend_options != NULL) {
+        extensions |= ((asm_rv32_backend_options_t *)mp_dynamic_compiler.backend_options)->allowed_extensions;
+    }
+    #endif
+    return extensions;
+}
+
 #define ASM_WORD_SIZE (4)
 #define ASM_HALFWORD_SIZE (2)
 
@@ -702,6 +725,8 @@ void asm_rv32_meta_comparison_lt(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2
 void asm_rv32_meta_comparison_le(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd, bool unsigned_comparison);
 
 void asm_rv32_emit_optimised_load_immediate(asm_rv32_t *state, mp_uint_t rd, mp_int_t immediate);
+void asm_rv32_emit_load_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size);
+void asm_rv32_emit_store_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size);
 
 #ifdef GENERIC_ASM_API
 
@@ -760,40 +785,12 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
 #define ASM_CLR_REG(state, rd)
-#define ASM_LOAD8_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_lbu(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_lhu(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_lw(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_STORE8_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_sb(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_sh(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_sw(state, rd, rs1, 0); \
-    } while (0)
+#define ASM_LOAD8_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 0)
+#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 1)
+#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 2)
+#define ASM_STORE8_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store_reg_reg_reg(state, rd, rs1, rs2, 0)
+#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store_reg_reg_reg(state, rd, rs1, rs2, 1)
+#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store_reg_reg_reg(state, rd, rs1, rs2, 2)
 
 #endif
 
