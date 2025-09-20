@@ -669,12 +669,18 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 subpkg_tried = false;
 
             reimport:
+                mp_hal_set_interrupt_char(CHAR_CTRL_C);
                 if (nlr_push(&nlr) == 0) {
                     mod = mp_builtin___import__(MP_ARRAY_SIZE(import_args), import_args);
+                    mp_hal_set_interrupt_char(-1);
+                    mp_handle_pending(true);
                     nlr_pop();
                 } else {
                     // uncaught exception
-                    return handle_uncaught_exception(nlr.ret_val) & 0xff;
+                    mp_hal_set_interrupt_char(-1);
+                    mp_handle_pending(false);
+                    ret = handle_uncaught_exception(nlr.ret_val) & 0xff;
+                    break;
                 }
 
                 // If this module is a package, see if it has a `__main__.py`.
