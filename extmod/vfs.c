@@ -338,7 +338,12 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     #endif
 
     mp_vfs_mount_t *vfs = lookup_path(args[ARG_file].u_obj, &args[ARG_file].u_obj);
-    return mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t *)&args);
+    mp_obj_t result = mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t *)&args);
+    const mp_obj_type_t *type = mp_obj_get_type(vfs->obj);
+    if (!MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
+        mp_raise_TypeError(NULL);
+    }
+    return result;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_open_obj, 0, mp_vfs_open);
 
