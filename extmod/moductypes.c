@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "py/smallint.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/binary.h"
@@ -94,6 +95,17 @@ static MP_NORETURN void syntax_error(void) {
 }
 
 static mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // Because mpy-cross turns an expression like `uctypes.INT8` into a single
+    // constant integer load, the uctypes constant values must be consistent, no
+    // matter the OBJ_REPR and mp_int_t type.
+    //
+    // However, these constants are 31 bits (counting the sign bit) while
+    // OBJ_REPR_B with 32-bit mp_int_t provides only 30 bits of small integer, so
+    // this combination is unsupported.
+    //
+    // For more information, see https://github.com/micropython/micropython/issues/18105
+    MP_STATIC_ASSERT(MP_SMALL_INT_BITS >= 31);
+
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
     mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
     o->addr = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
