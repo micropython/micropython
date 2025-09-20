@@ -556,6 +556,14 @@ CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
     LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
 )
 
+CI_UNIX_OPTS_REPR_B=(
+    VARIANT=standard
+    CFLAGS_EXTRA="-DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_B -DMICROPY_PY_UCTYPES=0 -Dmp_int_t=int32_t -Dmp_uint_t=uint32_t"
+    MICROPY_FORCE_32BIT=1
+    RUN_TESTS_MPY_CROSS_FLAGS="--mpy-cross-flags=\"-march=x86 -msmall-int-bits=30\""
+
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
@@ -898,6 +906,17 @@ function ci_unix_qemu_riscv64_run_tests {
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
+function ci_unix_repr_b_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_REPR_B[@]}"
+    ci_unix_build_ffi_lib_helper gcc -m32
+}
+
+function ci_unix_repr_b_run_tests {
+    # ci_unix_run_tests_full_no_native_helper is not used due to
+    # https://github.com/micropython/micropython/issues/18105
+    ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
+}
+
 ########################################################################################
 # ports/windows
 
@@ -984,6 +1003,8 @@ function ci_alif_ae3_build {
     make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL
 }
 
+_ci_functions=
+
 function _ci_help {
     # Note: these lines must be indented with tab characters (required by bash <<-EOF)
     cat <<-EOF
@@ -1005,10 +1026,17 @@ function _ci_help {
     exit
 }
 
+function _ci_shell_integration {
+    echo "alias ci=$0; complete -W '$(grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//')' ci"
+}
+
 function _ci_main {
     case "$1" in
         (-h|-?|--help)
             _ci_help
+        ;;
+        (--jeff)
+            _ci_shell_integration
         ;;
         (*)
             cd $(dirname "$0")/..
