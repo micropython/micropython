@@ -63,6 +63,10 @@ typedef struct _bytecode_prelude_t {
     uint code_info_size;
 } bytecode_prelude_t;
 
+#if MICROPY_EMIT_RV32
+#include "py/asmrv32.h"
+#endif
+
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #if MICROPY_PERSISTENT_CODE_LOAD
@@ -471,7 +475,7 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
         || header[3] > MP_SMALL_INT_BITS) {
         mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
-    if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
+    if (arch != MP_NATIVE_ARCH_NONE) {
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
             if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_NONE)) {
                 // On supported ports this can be resolved by enabling feature, eg
@@ -480,6 +484,22 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
             } else {
                 mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
             }
+        }
+    }
+
+    size_t arch_flags = 0;
+    if (MPY_FEATURE_ARCH_FLAGS_TEST(header[2])) {
+        arch_flags = read_uint(reader);
+        #if MICROPY_EMIT_RV32
+        if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_RV32IMC)) {
+            if (((arch_flags & ~((size_t)RV32_EXT_ALL)) != 0) || ((arch_flags & (size_t)asm_rv32_allowed_extensions()) != arch_flags)) {
+                mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+            }
+        } else
+        #endif
+        {
+            (void)arch_flags;
+            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
         }
     }
 
@@ -504,6 +524,7 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
     cm->has_native = MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE;
     cm->n_qstr = n_qstr;
     cm->n_obj = n_obj;
+    cm->arch_flags = arch_flags;
     #endif
 
     // Deregister exception handler and close the reader.
@@ -672,14 +693,33 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     byte header[4] = {
         'M',
         MPY_VERSION,
-        cm->has_native ? MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC) : 0,
+        (cm->arch_flags != 0 ? MPY_FEATURE_ARCH_FLAGS : 0) | (cm->has_native ? MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC) : 0),
         #if MICROPY_DYNAMIC_COMPILER
         mp_dynamic_compiler.small_int_bits,
         #else
         MP_SMALL_INT_BITS,
         #endif
     };
+
     mp_print_bytes(print, header, sizeof(header));
+
+    // The encoded architecture flags could have been placed at the end, but:
+    //
+    // * Having them here makes the architecture compatibility checks occur
+    //   before having read the whole file in memory (which still happens on
+    //   certain platforms as the reader may be backed by a memory buffer,
+    //   but not on all platforms), and prevents eventual memory allocations
+    //   that do not take place if the module is rejected early
+    //
+    // * Properly-written MPY file parsers should have checked the upper two
+    //   bits of the flags byte to be actually zero according to the format
+    //   specification available right before this change, so no assumptions
+    //   should have been made on the exact order of the chunks for an
+    //   unexpected format
+
+    if (cm->arch_flags) {
+        mp_print_uint(print, cm->arch_flags);
+    }
 
     // Number of entries in constant table.
     mp_print_uint(print, cm->n_qstr);

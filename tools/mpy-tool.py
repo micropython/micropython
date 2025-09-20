@@ -96,6 +96,22 @@ MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_NATIVE_ARCH_RV32IMC = 11
 MP_NATIVE_ARCH_RV64IMC = 12
 
+MP_NATIVE_ARCH_NAMES = [
+    "NONE",
+    "X86",
+    "X64",
+    "ARMV6",
+    "ARMV6M",
+    "ARMV7M",
+    "ARMV7EM",
+    "ARMV7EMSP",
+    "ARMV7EMDP",
+    "XTENSA",
+    "XTENSAWIN",
+    "RV32IMC",
+    "RV64IMC",
+]
+
 MP_PERSISTENT_OBJ_FUN_TABLE = 0
 MP_PERSISTENT_OBJ_NONE = 1
 MP_PERSISTENT_OBJ_FALSE = 2
@@ -119,6 +135,8 @@ MP_BC_FORMAT_BYTE = 0
 MP_BC_FORMAT_QSTR = 1
 MP_BC_FORMAT_VAR_UINT = 2
 MP_BC_FORMAT_OFFSET = 3
+
+MP_NATIVE_ARCH_FLAGS_PRESENT = 0x40
 
 mp_unary_op_method_name = (
     "__pos__",
@@ -542,6 +560,7 @@ class CompiledModule:
         mpy_source_file,
         mpy_segments,
         header,
+        arch_flags,
         qstr_table,
         obj_table,
         raw_code,
@@ -554,6 +573,7 @@ class CompiledModule:
         self.mpy_segments = mpy_segments
         self.source_file = qstr_table[0]
         self.header = header
+        self.arch_flags = arch_flags
         self.qstr_table = qstr_table
         self.obj_table = obj_table
         self.raw_code = raw_code
@@ -631,6 +651,14 @@ class CompiledModule:
         print("mpy_source_file:", self.mpy_source_file)
         print("source_file:", self.source_file.str)
         print("header:", hexlify_to_str(self.header))
+        arch_index = (self.header[2] >> 2) & 0x0F
+        if arch_index >= len(MP_NATIVE_ARCH_NAMES):
+            arch_name = "UNKNOWN"
+        else:
+            arch_name = MP_NATIVE_ARCH_NAMES[arch_index]
+        print("arch:", arch_name)
+        if self.header[2] & MP_NATIVE_ARCH_FLAGS_PRESENT != 0:
+            print("arch_flags:", hex(self.arch_flags))
         print("qstr_table[%u]:" % len(self.qstr_table))
         for q in self.qstr_table:
             print("    %s" % q.str)
@@ -1339,7 +1367,7 @@ def read_mpy(filename):
         if header[1] != config.MPY_VERSION:
             raise MPYReadError(filename, "incompatible .mpy version")
         feature_byte = header[2]
-        mpy_native_arch = feature_byte >> 2
+        mpy_native_arch = (feature_byte >> 2) & 0x0F
         if mpy_native_arch != MP_NATIVE_ARCH_NONE:
             mpy_sub_version = feature_byte & 3
             if mpy_sub_version != config.MPY_SUB_VERSION:
@@ -1349,6 +1377,12 @@ def read_mpy(filename):
             elif config.native_arch != mpy_native_arch:
                 raise MPYReadError(filename, "native architecture mismatch")
         config.mp_small_int_bits = header[3]
+
+        # Read the architecture-specific flag bits if present.
+        if (feature_byte & MP_NATIVE_ARCH_FLAGS_PRESENT) != 0:
+            arch_flags = reader.read_uint()
+            if not config.override_arch_flags:
+                config.arch_flags = arch_flags
 
         # Read number of qstrs, and number of objects.
         n_qstr = reader.read_uint()
@@ -1378,6 +1412,7 @@ def read_mpy(filename):
         filename,
         segments,
         header,
+        config.arch_flags,
         qstr_table,
         obj_table,
         raw_code,
@@ -1688,9 +1723,18 @@ def merge_mpy(compiled_modules, output_file):
         header = bytearray(4)
         header[0] = ord("M")
         header[1] = config.MPY_VERSION
-        header[2] = config.native_arch << 2 | config.MPY_SUB_VERSION if config.native_arch else 0
+        header[2] = (
+            (MP_NATIVE_ARCH_FLAGS_PRESENT if config.arch_flags != 0 else 0)
+            | config.native_arch << 2
+            | config.MPY_SUB_VERSION
+            if config.native_arch
+            else 0
+        )
         header[3] = config.mp_small_int_bits
         merged_mpy.extend(header)
+
+        if config.arch_flags != 0:
+            merged_mpy.extend(mp_encode_uint(config.arch_flags))
 
         n_qstr = 0
         n_obj = 0
@@ -1823,6 +1867,12 @@ def main(args=None):
         default=16,
         help="mpz digit size used by target (default 16)",
     )
+    cmd_parser.add_argument(
+        "-march-flags",
+        metavar="F",
+        type=int,
+        help="architecture flags value to set in the output file (default 0)",
+    )
     cmd_parser.add_argument("-o", "--output", default=None, help="output file")
     cmd_parser.add_argument("files", nargs="+", help="input .mpy files")
     args = cmd_parser.parse_args(args)
@@ -1835,6 +1885,8 @@ def main(args=None):
     }[args.mlongint_impl]
     config.MPZ_DIG_SIZE = args.mmpz_dig_size
     config.native_arch = MP_NATIVE_ARCH_NONE
+    config.override_arch_flags = args.march_flags is not None
+    config.arch_flags = args.march_flags if config.override_arch_flags else 0
 
     # set config values for qstrs, and get the existing base set of qstrs
     # already in the firmware
