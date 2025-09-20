@@ -155,6 +155,13 @@ static machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];
 
 static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, bool first_init) {
 
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+    if (!first_init && self->dev_handle) {
+        i2c_master_bus_rm_device(self->dev_handle);
+        self->dev_handle = NULL;
+    }
+    #endif
+
     if (!first_init && self->bus_handle) {
         i2c_del_master_bus(self->bus_handle);
         self->bus_handle = NULL;
