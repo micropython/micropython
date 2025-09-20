@@ -1,10 +1,9 @@
 # test that we can generate a traceback without allocating
 
-import micropython
 import sys
 
 try:
-    import io
+    import io, micropython
 except ImportError:
     print("SKIP")
     raise SystemExit

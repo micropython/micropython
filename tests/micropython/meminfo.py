@@ -1,9 +1,10 @@
 # tests meminfo functions in micropython module
 
-import micropython
+try:
+    import micropython
 
-# these functions are not always available
-if not hasattr(micropython, "mem_info"):
+    micropython.mem_info
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
