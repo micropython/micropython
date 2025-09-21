@@ -285,6 +285,21 @@ See also :ref:`writingtests`.
 Additional make targets for developers
 --------------------------------------
 
+In all ``make``-based ports, there is a target to print the size of a specific object file.
+When a change is confined to a single file, this is useful when testing variations to find smaller alternatives.
+
+For instance, to print the size of ``objstr.o`` in the ``py/`` directory when making a unix standard build:
+
+.. code-block:: bash
+
+   $ make build-standard/py/objstr.sz
+
+Similarly, there is a target to save the preprocessed version of a file:
+
+.. code-block:: bash
+
+   $ make build-standard/py/objstr.pp
+
 In ``ports/unix`` there are additional targets related to running tests:
 
 .. code-block:: bash
