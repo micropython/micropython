@@ -41,7 +41,10 @@ class Lexer:
                 r"#define +(?P<id>[A-Z0-9_]+) +\(?(\(uint32_t\))?(?P<hex>0x[0-9A-F]+)U?L?\)?($| */\*)"
             ),
         ),
-        ("#define X", re.compile(r"#define +(?P<id>[A-Z0-9_]+) +(?P<id2>[A-Z0-9_]+)($| +/\*)")),
+        (
+            "#define X",
+            re.compile(r"#define +(?P<id>[A-Z0-9_]+) +\(?(?P<id2>[A-Z0-9_]+)\)?($| +/\*)"),
+        ),
         (
             "#define X+hex",
             re.compile(
