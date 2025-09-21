@@ -306,6 +306,22 @@ As an example, you can build and test the unix minimal port with:
 
    $ tools/ci.sh unix_minimal_build unix_minimal_run_tests
 
+If you use the bash shell, you can add a ``ci`` command with tab completion:
+
+.. code-block:: bash
+
+   $ eval `tools/ci.sh --bash-completion`
+   $ ci unix_cov<tab>
+
+This will complete the ci step name to ``unix_coverage_``.
+Pressing tab a second time will show the list of matching steps:
+
+.. code-block:: bash
+
+   $ ci unix_coverage_<tab>
+   unix_coverage_32bit_build
+   unix_coverage_32bit_run_native_mpy_tests…
+
 Folder structure
 ----------------
 
