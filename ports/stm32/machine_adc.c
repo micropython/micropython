@@ -244,12 +244,12 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     }
     #endif
 
-    #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     if (!(adc->CR & ADC_CR_ADVREGEN)) {
         adc->CR = ADC_CR_ADVREGEN; // enable VREG
         #if defined(STM32H7)
         mp_hal_delay_us(10); // T_ADCVREG_STUP
-        #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
+        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
         mp_hal_delay_us(20); // T_ADCVREG_STUP
         #endif
     }
@@ -378,6 +378,12 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     adc->SMPR = sample_time << ADC_SMPR_SMP1_Pos; // select sample time from SMP1 (default)
     #else
     adc->SMPR = sample_time << ADC_SMPR_SMP_Pos; // select sample time
+    #endif
+
+    #if defined(STM32G0)
+    if (__LL_ADC_IS_CHANNEL_INTERNAL(channel)) {
+        channel = __LL_ADC_CHANNEL_TO_DECIMAL_NB(channel);
+    }
     #endif
     adc->CHSELR = 1 << channel; // select channel for conversion
 
