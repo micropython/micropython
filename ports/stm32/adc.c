@@ -212,6 +212,14 @@ static inline uint32_t adc_get_internal_channel(uint32_t channel) {
     if (channel == 16) {
         channel = ADC_CHANNEL_TEMPSENSOR;
     }
+    #elif defined(STM32G0)
+    if (channel == 12) {
+        channel = ADC_CHANNEL_TEMPSENSOR;
+    } else if (channel == 13) {
+        channel = ADC_CHANNEL_VREFINT;
+    } else if (channel == 14) {
+        channel = ADC_CHANNEL_VBAT;
+    }
     #elif defined(STM32G4)
     if (channel == 16) {
         channel = ADC_CHANNEL_TEMPSENSOR_ADC1;
@@ -344,6 +352,10 @@ static void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adch->Init.DMAContinuousRequests = DISABLE;
     #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32G0)
+    adch->Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;
+    adch->Init.SamplingTimeCommon2 = ADC_SAMPLETIME_160CYCLES_5;
+    #endif
     #if defined(STM32G4) || defined(STM32H5)
     adch->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
     #else
@@ -432,9 +444,9 @@ static void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     }
     #elif defined(STM32G0)
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
-        sConfig.SamplingTime = ADC_SAMPLETIME_160CYCLES_5;
+        sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_2;
     } else {
-        sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+        sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
     }
     #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB)
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
@@ -939,9 +951,9 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
     return 0.0f; // TODO
     #else
 
-    #if defined(STM32G4) || defined(STM32L1) || defined(STM32L4)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32L1) || defined(STM32L4)
     // Update the reference correction factor before reading tempsensor
-    // because TS_CAL1 and TS_CAL2 of STM32G4,L1/L4 are at VDDA=3.0V
+    // because TS_CAL1 and TS_CAL2 of STM32G0,G4,L1,L4 are at VDDA=3.0V
     adc_read_core_vref(adcHandle);
     #endif
 
@@ -966,9 +978,9 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
 }
 
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
-    #if defined(STM32G4) || defined(STM32L4)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32L4)
     // Update the reference correction factor before reading tempsensor
-    // because VREFINT of STM32G4,L4 is at VDDA=3.0V
+    // because VREFINT of STM32G0,G4,L4 is at VDDA=3.0V
     adc_read_core_vref(adcHandle);
     #endif
 
