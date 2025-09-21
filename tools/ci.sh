@@ -1005,10 +1005,21 @@ function _ci_help {
     exit
 }
 
+function _ci_bash_completion {
+    echo "alias ci=\"$(readlink -f "$0")\"; complete -W '$(grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//')' ci"
+}
+
 function _ci_main {
     case "$1" in
         (-h|-?|--help)
             _ci_help
+        ;;
+        (--bash-completion)
+            _ci_bash_completion
+        ;;
+        (-*)
+            echo "Unknown option: $1" 1>&2
+            exit 1
         ;;
         (*)
             cd $(dirname "$0")/..
