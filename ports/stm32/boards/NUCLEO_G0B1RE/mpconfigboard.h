@@ -18,13 +18,17 @@
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_2
 
 #if MICROPY_HW_CLK_USE_HSI
-#define MICROPY_HW_CLK_PLLM (16)
+#define MICROPY_HW_CLK_PLLM (1)
+#define MICROPY_HW_CLK_PLLN (8)
 #else
-#define MICROPY_HW_CLK_PLLM (8)
+// HSE comes from ST-LINK 8MHz, not crystal.
+#define MICROPY_HW_CLK_USE_BYPASS (1)
+#define MICROPY_HW_CLK_PLLM (1)
+#define MICROPY_HW_CLK_PLLN (16)
 #endif
-#define MICROPY_HW_CLK_PLLN (336)
-#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV4)
-#define MICROPY_HW_CLK_PLLQ (7)
+#define MICROPY_HW_CLK_PLLP (2)
+#define MICROPY_HW_CLK_PLLQ (2)
+#define MICROPY_HW_CLK_PLLR (2)
 
 // USART1 config
 #define MICROPY_HW_UART1_TX         (pin_A9)
