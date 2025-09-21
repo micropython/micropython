@@ -541,7 +541,7 @@ void RTC_IRQHandler(void) {
 #if defined(STM32G0)
 void RTC_TAMP_IRQHandler(void) {
     IRQ_ENTER(RTC_TAMP_IRQn);
-    RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
+    RTC->SCR |= RTC_SCR_CWUTF; // clear wakeup interrupt flag
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP);    // clear EXTI flag and execute optional callback
     Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_TAMP_IRQn);
