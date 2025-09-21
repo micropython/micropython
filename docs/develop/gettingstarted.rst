@@ -282,6 +282,19 @@ To run a selection of tests on a board/device connected over USB use:
 
 See also :ref:`writingtests`.
 
+Additional make targets for developers
+--------------------------------------
+
+In ``ports/unix`` there are additional targets related to running tests:
+
+.. code-block:: bash
+
+   $ make test//int       # Run all tests matching the pattern "int"
+   $ make test/ports/unix # Run all tests in ports/unix
+   $ make test-failures   # Re-run only the failed tests
+   $ make print-failures  # print the differences for failed tests
+   $ make clean-failures  # delete the .exp and .out files from failed tests
+
 Using ci.sh locally
 -------------------
 
