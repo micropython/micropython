@@ -80,6 +80,10 @@ If importing an .mpy file fails then try the following:
   above, or by inspecting the ``MPY_CROSS_FLAGS`` Makefile variable for the
   port that you are using.
 
+* If the third byte of the .mpy file has bit #6 set, then check whether the
+  encoded architecture-specific flag bits vuint is compatible with the
+  target you're importing the file on.
+
 The following table shows the correspondence between MicroPython release
 and .mpy version.
 
@@ -153,9 +157,30 @@ size    field
 ======  ================================
 byte    value 0x4d (ASCII 'M')
 byte    .mpy major version number
-byte    native arch and minor version number (was feature flags in older versions)
+byte    feature flags, native arch, minor version number (was feature flags in older versions)
 byte    number of bits in a small int
 ======  ================================
+
+The third byte is split as follows (MSB first):
+
+======  ================================
+bit     meaning
+======  ================================
+7       reserved, must be 0
+6       an architecture-specific flags vuint follows the header
+5..2    native arch number
+1..0    minor version number
+======  ================================
+
+Architecture-specific flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If bit #6 of the header's feature flags byte is set, then a vuint containing
+optional architecture-specific information will follow the header. The contents
+of this integer depends on which native architecture the file is meant for.
+
+See also ``mpy-tool.py``'s ``-march-flags`` command-line option to set this
+value when creating MPY files.
 
 The global qstr and constant tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

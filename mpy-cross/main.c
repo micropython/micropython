@@ -93,6 +93,7 @@ static int compile_and_save(const char *file, const char *output_file, const cha
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
         mp_compiled_module_t cm;
         cm.context = m_new_obj(mp_module_context_t);
+        cm.arch_flags = 0;
         mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
 
         if ((output_file != NULL && strcmp(output_file, "-") == 0) ||
