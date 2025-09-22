@@ -64,6 +64,7 @@
 #endif
 
 #define EXTI_NUM_VECTORS        (PYB_EXTI_NUM_VECTORS)
+extern mp_obj_t pyb_extint_callback_arg[];
 
 void extint_init0(void);
 
