@@ -96,6 +96,22 @@ MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_NATIVE_ARCH_RV32IMC = 11
 MP_NATIVE_ARCH_RV64IMC = 12
 
+MP_NATIVE_ARCH_NAMES = [
+    "NONE",
+    "X86",
+    "X64",
+    "ARMV6",
+    "ARMV6M",
+    "ARMV7M",
+    "ARMV7EM",
+    "ARMV7EMSP",
+    "ARMV7EMDP",
+    "XTENSA",
+    "XTENSAWIN",
+    "RV32IMC",
+    "RV64IMC",
+]
+
 MP_PERSISTENT_OBJ_FUN_TABLE = 0
 MP_PERSISTENT_OBJ_NONE = 1
 MP_PERSISTENT_OBJ_FALSE = 2
@@ -635,6 +651,14 @@ class CompiledModule:
         print("mpy_source_file:", self.mpy_source_file)
         print("source_file:", self.source_file.str)
         print("header:", hexlify_to_str(self.header))
+        arch_index = (self.header[2] >> 2) & 0x2F
+        if arch_index >= len(MP_NATIVE_ARCH_NAMES):
+            arch_name = "UNKNOWN"
+        else:
+            arch_name = MP_NATIVE_ARCH_NAMES[arch_index]
+        print("arch:", arch_name)
+        if self.header[2] & MP_NATIVE_ARCH_FLAGS_PRESENT != 0:
+            print("arch_flags:", hex(self.arch_flags))
         print("qstr_table[%u]:" % len(self.qstr_table))
         for q in self.qstr_table:
             print("    %s" % q.str)
