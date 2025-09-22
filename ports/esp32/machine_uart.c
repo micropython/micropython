@@ -253,9 +253,6 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // wait for all data to be transmitted before changing settings
-    uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
-
     // If UART is being freshly initialised then restore object defaults
     if (!uart_is_driver_installed(self->uart_num)) {
         self->bits = 8;
@@ -299,6 +296,9 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
             case UART_NUM_MAX:
                 assert(0); // Range is checked in mp_machine_uart_make_new, value should be unreachable
         }
+    } else {
+        // wait for all data to be transmitted before changing settings
+        uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
     }
 
     // Default driver parameters, should correspond to values set above
