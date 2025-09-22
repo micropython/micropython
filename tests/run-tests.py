@@ -308,8 +308,13 @@ def detect_inline_asm_arch(pyb, args):
     for arch in ("rv32", "thumb", "xtensa"):
         output = run_feature_check(pyb, args, "inlineasm_{}.py".format(arch))
         if output.strip() == arch.encode():
-            return arch
-    return None
+            arch_flags = None
+            if arch == "rv32":
+                output = run_feature_check(pyb, args, "inlineasm_rv32_zba.py")
+                if output == b"rv32_zba\n":
+                    arch_flags = "zba"
+            return arch, arch_flags
+    return None, None
 
 
 def detect_test_platform(pyb, args):
@@ -320,7 +325,7 @@ def detect_test_platform(pyb, args):
     platform, arch, build, thread, float_prec, unicode = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
-    inlineasm_arch = detect_inline_asm_arch(pyb, args)
+    inlineasm_arch, arch_flags = detect_inline_asm_arch(pyb, args)
     if thread == "None":
         thread = None
     float_prec = int(float_prec)
@@ -328,8 +333,11 @@ def detect_test_platform(pyb, args):
 
     args.platform = platform
     args.arch = arch
+    args.arch_flags = arch_flags
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
+        if arch_flags:
+            args.mpy_cross_flags += " -march-flags=" + arch_flags
     args.inlineasm_arch = inlineasm_arch
     args.build = build
     args.thread = thread
