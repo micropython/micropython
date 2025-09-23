@@ -179,8 +179,19 @@ If bit #6 of the header's feature flags byte is set, then a vuint containing
 optional architecture-specific information will follow the header. The contents
 of this integer depends on which native architecture the file is meant for.
 
-See also ``mpy-tool.py``'s ``-march-flags`` command-line option to set this
-value when creating MPY files.
+This is currently used to store which RISC-V processor extensions the MPY file
+needs to operate correctly besides I, M, C, and Zicsr.  Different flavours of
+ArmV7 are identified by their native architecture number, but reusing that
+mechanism would complicate things for RV32 and RV64.
+
+MPY files targeting RV32 or RV64 that do not need any particular processor
+extensions do not need to provide a flags integer (along with setting the
+appropriate bit in the header).  The lack of a flags value for RV32 and RV64
+MPY files is used to indicate that no specific extensions are needed, and saves
+one byte in the final output binary.
+
+See also the ``-march-flags`` command-line option in both ``mpy-tool.py`` and
+``mpy-cross`` to set this value when creating MPY files.
 
 The global qstr and constant tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

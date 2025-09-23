@@ -63,6 +63,10 @@ typedef struct _bytecode_prelude_t {
     uint code_info_size;
 } bytecode_prelude_t;
 
+#if MICROPY_EMIT_RV32
+#include "py/asmrv32.h"
+#endif
+
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #if MICROPY_PERSISTENT_CODE_LOAD
@@ -485,8 +489,19 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
 
     size_t arch_flags = 0;
     if (MPY_FEATURE_ARCH_FLAGS_TEST(header[2])) {
-        (void)arch_flags;
-        mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+        #if MICROPY_EMIT_RV32
+        arch_flags = read_uint(reader);
+
+        if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_RV32IMC)) {
+            if ((arch_flags & (size_t)asm_rv32_allowed_extensions()) != arch_flags) {
+                mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+            }
+        } else
+        #endif
+        {
+            (void)arch_flags;
+            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+        }
     }
 
     size_t n_qstr = read_uint(reader);

@@ -94,6 +94,12 @@ static int compile_and_save(const char *file, const char *output_file, const cha
         mp_compiled_module_t cm;
         cm.context = m_new_obj(mp_module_context_t);
         cm.arch_flags = 0;
+        #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+        if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC && mp_dynamic_compiler.backend_options != NULL) {
+            cm.arch_flags = ((asm_rv32_backend_options_t *)mp_dynamic_compiler.backend_options)->allowed_extensions;
+        }
+        #endif
+
         mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
 
         if ((output_file != NULL && strcmp(output_file, "-") == 0) ||
@@ -138,7 +144,7 @@ static int usage(char **argv) {
         "-march=<arch> : set architecture for native emitter;\n"
         "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
         "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug\n"
-        "-march-flags=<flags> : set architecture-specific flags (OUTPUT FILE MAY NOT WORK ON ALL TARGETS!)\n"
+        "-march-flags=<flags> : set architecture-specific flags\n"
         "                       supported flags for rv32imc: zba\n"
         "\n"
         "Implementation specific options:\n", argv[0]
@@ -382,10 +388,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
             mp_printf(&mp_stderr_print, "unrecognised arch flags\n");
             exit(1);
         }
-        mp_printf(&mp_stderr_print,
-            "WARNING: Using architecture-specific flags may create a MPY file whose code won't run on all targets!\n"
-            "         Currently there are no checks in the module file loader for whether the chosen flags used to\n"
-            "         build the MPY file are compatible with the running target.\n\n");
     }
 
     #if MICROPY_EMIT_NATIVE
