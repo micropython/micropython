@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2025 Ned Konz <ned@metamagix.tech>
+ * Copyright (c) 2025 NED KONZ <NED@METAMAGIX.TECH>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,23 +45,23 @@
  * of the ADC object:
  *
  *  / {
- *  	zephyr,user {
- *  		io-channels = <&adc 0>, <&adc 1>, <&adc 4>, <&adc 5>, <&adc 7>;
- *  	};
+ *      zephyr,user {
+ *          io-channels = <&adc 0>, <&adc 1>, <&adc 4>, <&adc 5>, <&adc 7>;
+ *      };
  *  };
  *
  *  &adc {
- *  	#address-cells = <1>;
- *  	#size-cells = <0>;
+ *      #address-cells = <1>;
+ *      #size-cells = <0>;
  *
- *  	channel@0 {
- *  		reg = <0>;
- *  		zephyr,gain = "ADC_GAIN_1_6";
- *  		zephyr,reference = "ADC_REF_INTERNAL";
- *  		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
- *  		zephyr,input-positive = <NRF_SAADC_AIN0>;
- *  		zephyr,resolution = <12>;
- *  	};
+ *      channel@0 {
+ *          reg = <0>;
+ *          zephyr,gain = "ADC_GAIN_1_6";
+ *          zephyr,reference = "ADC_REF_INTERNAL";
+ *          zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+ *          zephyr,input-positive = <NRF_SAADC_AIN0>;
+ *          zephyr,resolution = <12>;
+ *      };
  *      // other channels here (1, 4, 5, 7)
  *  };
  *
@@ -83,6 +83,7 @@
 #include "modmachine.h"
 #include "zephyr_device.h"
 
+
 static uint16_t sample_buffer;
 
 static struct adc_sequence adc_sequence = {
@@ -95,13 +96,18 @@ static struct adc_sequence adc_sequence = {
     .calibrate = false, // Default to no calibration
 };
 
+#define USER_NODE DT_PATH(zephyr_user)
+
 #define DT_SPEC_AND_COMMA(node_id, prop, idx) \
     ADC_DT_SPEC_GET_BY_IDX(node_id, idx),
 
 /* Data of ADC io-channels specified in devicetree. */
 static const struct adc_dt_spec adc_channels[] = {
-    DT_FOREACH_PROP_ELEM(DT_PATH(zephyr_user), io_channels,
+    // We require that the user node has an io-channels property.
+    #if DT_NODE_HAS_PROP(USER_NODE, io_channels)
+    DT_FOREACH_PROP_ELEM(USER_NODE, io_channels,
         DT_SPEC_AND_COMMA)
+    #endif
 };
 
 #define NUM_CHANNELS ARRAY_SIZE(adc_channels)
@@ -193,6 +199,7 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     return u16;
 }
 
+
 #if MICROPY_PY_MACHINE_ADC_INIT
 static void mp_machine_adc_init_helper(machine_adc_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 #endif
@@ -228,5 +235,6 @@ static mp_int_t mp_machine_adc_read(machine_adc_obj_t *self) {
     return (mp_int_t)raw;
 }
 #endif
+
 
 #define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS
