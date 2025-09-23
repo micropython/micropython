@@ -31,11 +31,11 @@
 #include "extmod/modmachine.h"
 #include "machine_i2c.h"
 
-#if CONFIG_I2C_SKIP_LEGACY_CONFLICT_CHECK
+#if MICROPY_HW_ESP_NEW_I2C_DRIVER
+#include "driver/i2c_master.h"
+#else
 #include "driver/i2c.h"
 #include "hal/i2c_ll.h"
-#else
-#include "driver/i2c_master.h"
 #endif
 
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SOFTI2C
@@ -45,98 +45,7 @@
 // CONFIG_I2C_SKIP_LEGACY_CONFLICT_CHECK is set if the related sdkconfig
 // option is set.
 
-#if CONFIG_I2C_SKIP_LEGACY_CONFLICT_CHECK
-
-#if SOC_I2C_SUPPORT_XTAL
-#if CONFIG_XTAL_FREQ > 0
-#define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
-#else
-#error "I2C uses XTAL but no configured freq"
-#endif // CONFIG_XTAL_FREQ
-#elif SOC_I2C_SUPPORT_APB
-#define I2C_SCLK_FREQ APB_CLK_FREQ
-#else
-#error "unsupported I2C for ESP32 SoC variant"
-#endif
-
-typedef struct _machine_hw_i2c_obj_t {
-    mp_obj_base_t base;
-    i2c_port_t port : 8;
-    gpio_num_t scl : 8;
-    gpio_num_t sda : 8;
-    uint32_t freq;
-    uint32_t timeout_us;
-} machine_hw_i2c_obj_t;
-
-static machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];
-
-static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, bool first_init) {
-    if (!first_init) {
-        i2c_driver_delete(self->port);
-    }
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = self->sda,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_io_num = self->scl,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = self->freq,
-    };
-    i2c_param_config(self->port, &conf);
-    int timeout = I2C_SCLK_FREQ / 1000000 * self->timeout_us;
-    i2c_set_timeout(self->port, (timeout > I2C_LL_MAX_TIMEOUT) ? I2C_LL_MAX_TIMEOUT : timeout);
-    i2c_driver_install(self->port, I2C_MODE_MASTER, 0, 0, 0);
-}
-
-int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
-    machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    int data_len = 0;
-
-    if (flags & MP_MACHINE_I2C_FLAG_WRITE1) {
-        i2c_master_start(cmd);
-        i2c_master_write_byte(cmd, addr << 1, true);
-        i2c_master_write(cmd, bufs->buf, bufs->len, true);
-        data_len += bufs->len;
-        --n;
-        ++bufs;
-    }
-
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ), true);
-
-    for (; n--; ++bufs) {
-        if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            i2c_master_read(cmd, bufs->buf, bufs->len, n == 0 ? I2C_MASTER_LAST_NACK : I2C_MASTER_ACK);
-        } else {
-            if (bufs->len != 0) {
-                i2c_master_write(cmd, bufs->buf, bufs->len, true);
-            }
-        }
-        data_len += bufs->len;
-    }
-
-    if (flags & MP_MACHINE_I2C_FLAG_STOP) {
-        i2c_master_stop(cmd);
-    }
-
-    // TODO proper timeout
-    esp_err_t err = i2c_master_cmd_begin(self->port, cmd, 100 * (1 + data_len) / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    if (err == ESP_FAIL) {
-        return -MP_ENODEV;
-    } else if (err == ESP_ERR_TIMEOUT) {
-        return -MP_ETIMEDOUT;
-    } else if (err != ESP_OK) {
-        return -abs(err);
-    }
-
-    return data_len;
-}
-
-#else
+#if MICROPY_HW_ESP_NEW_I2C_DRIVER
 
 typedef struct _machine_hw_i2c_obj_t {
     mp_obj_base_t base;
@@ -309,7 +218,99 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
     return len;
 }
 
-#endif  // CONFIG_I2C_SKIP_LEGACY_CONFLICT_CHECK
+#else
+
+#if SOC_I2C_SUPPORT_XTAL
+#if CONFIG_XTAL_FREQ > 0
+#define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
+#else
+#error "I2C uses XTAL but no configured freq"
+#endif // CONFIG_XTAL_FREQ
+#elif SOC_I2C_SUPPORT_APB
+#define I2C_SCLK_FREQ APB_CLK_FREQ
+#else
+#error "unsupported I2C for ESP32 SoC variant"
+#endif
+
+typedef struct _machine_hw_i2c_obj_t {
+    mp_obj_base_t base;
+    i2c_port_t port : 8;
+    gpio_num_t scl : 8;
+    gpio_num_t sda : 8;
+    uint32_t freq;
+    uint32_t timeout_us;
+} machine_hw_i2c_obj_t;
+
+static machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];
+
+static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, bool first_init) {
+    if (!first_init) {
+        i2c_driver_delete(self->port);
+    }
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = self->sda,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = self->scl,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = self->freq,
+    };
+    i2c_param_config(self->port, &conf);
+    int timeout = I2C_SCLK_FREQ / 1000000 * self->timeout_us;
+    i2c_set_timeout(self->port, (timeout > I2C_LL_MAX_TIMEOUT) ? I2C_LL_MAX_TIMEOUT : timeout);
+    i2c_driver_install(self->port, I2C_MODE_MASTER, 0, 0, 0);
+}
+
+int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
+    machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    int data_len = 0;
+
+    if (flags & MP_MACHINE_I2C_FLAG_WRITE1) {
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, addr << 1, true);
+        i2c_master_write(cmd, bufs->buf, bufs->len, true);
+        data_len += bufs->len;
+        --n;
+        ++bufs;
+    }
+
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ), true);
+
+    for (; n--; ++bufs) {
+        if (flags & MP_MACHINE_I2C_FLAG_READ) {
+            i2c_master_read(cmd, bufs->buf, bufs->len, n == 0 ? I2C_MASTER_LAST_NACK : I2C_MASTER_ACK);
+        } else {
+            if (bufs->len != 0) {
+                i2c_master_write(cmd, bufs->buf, bufs->len, true);
+            }
+        }
+        data_len += bufs->len;
+    }
+
+    if (flags & MP_MACHINE_I2C_FLAG_STOP) {
+        i2c_master_stop(cmd);
+    }
+
+    // TODO proper timeout
+    esp_err_t err = i2c_master_cmd_begin(self->port, cmd, 100 * (1 + data_len) / portTICK_PERIOD_MS);
+    i2c_cmd_link_delete(cmd);
+
+    if (err == ESP_FAIL) {
+        return -MP_ENODEV;
+    } else if (err == ESP_ERR_TIMEOUT) {
+        return -MP_ETIMEDOUT;
+    } else if (err != ESP_OK) {
+        return -abs(err);
+    }
+
+    return data_len;
+}
+
+
+#endif  // MICROPY_HW_ESP_NEW_I2C_DRIVER
 
 /******************************************************************************/
 // MicroPython bindings for machine API

@@ -142,7 +142,6 @@ CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT=n
 # connections.
 CONFIG_LWIP_MAX_ACTIVE_TCP=12
 
-# Enable new I2C slave API
-CONFIG_I2C_ENABLE_SLAVE_DRIVER_VERSION_2=y
-# Disable conflict check. This can be reverted in a further config file.
+# Enable new I2C slave API, and disable conflict check.
 CONFIG_I2C_SKIP_LEGACY_CONFLICT_CHECK=y
+CONFIG_I2C_ENABLE_SLAVE_DRIVER_VERSION_2=y
