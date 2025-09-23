@@ -22,3 +22,4 @@ to `<https://www.python.org>`__.
    pwm.rst
    peripheral_access.rst
    reset.rst
+   wifi_scan_options.rst
