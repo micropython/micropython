@@ -125,6 +125,8 @@ typedef struct _asm_rv32_t {
 enum {
     RV32_EXT_NONE = 0,
     RV32_EXT_ZBA = 1 << 0,
+
+    RV32_EXT_ALL = RV32_EXT_ZBA
 };
 
 typedef struct _asm_rv32_backend_options_t {
