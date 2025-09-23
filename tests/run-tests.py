@@ -343,7 +343,9 @@ def platform_to_port(platform):
 
 
 def convert_device_shortcut_to_real_device(device):
-    if device.startswith("a") and device[1:].isdigit():
+    if device.startswith("port:"):
+        return device.split(":", 1)[1]
+    elif device.startswith("a") and device[1:].isdigit():
         return "/dev/ttyACM" + device[1:]
     elif device.startswith("u") and device[1:].isdigit():
         return "/dev/ttyUSB" + device[1:]
@@ -354,9 +356,7 @@ def convert_device_shortcut_to_real_device(device):
 
 
 def get_test_instance(test_instance, baudrate, user, password):
-    if test_instance.startswith("port:"):
-        _, port = test_instance.split(":", 1)
-    elif test_instance == "unix":
+    if test_instance == "unix":
         return None
     elif test_instance == "webassembly":
         return PyboardNodeRunner()
