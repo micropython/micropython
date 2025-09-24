@@ -1,7 +1,8 @@
 [tool.codespell]
+dictionary = './tools/codespell/micropython-dictionary.txt,-'
+ignore-words = './tools/codespell/ignore.txt'
 count = ""
 ignore-regex = '\b[A-Z]{3}\b'
-ignore-words-list = "ans,asend,deques,dout,emac,extint,hsi,iput,mis,notin,numer,ser,shft,synopsys,technic,ure,curren"
 quiet-level = 3
 skip = """
 */build*,\
@@ -16,6 +17,7 @@ skip = """
 ./ports/esp32/managed_components,\
 ./ports/nrf/drivers/bluetooth/s1*,\
 ./ports/stm32/usbhost,\
+./tools/codespell, \
 ./tests,\
 ACKNOWLEDGEMENTS,\
 """
