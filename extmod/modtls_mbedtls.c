@@ -304,7 +304,7 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     psa_crypto_init();
     #endif
 
-    const byte seed[] = "upy";
+    const byte seed[] = "mpy";
     int ret = mbedtls_ctr_drbg_seed(&self->ctr_drbg, mbedtls_entropy_func, &self->entropy, seed, sizeof(seed));
     if (ret != 0) {
         mbedtls_raise_error(ret);

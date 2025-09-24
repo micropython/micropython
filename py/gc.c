@@ -1245,7 +1245,7 @@ void gc_dump_alloc_table(const mp_print_t *print) {
                     break;
                 }
                 */
-                /* this prints the uPy object type of the head block */
+                /* this prints the MicroPython object type of the head block */
                 case AT_HEAD: {
                     void **ptr = (void **)(area->gc_pool_start + bl * BYTES_PER_BLOCK);
                     if (*ptr == &mp_type_tuple) {

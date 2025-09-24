@@ -38,10 +38,10 @@
 #include "soc/spi_pins.h"
 
 // SPI mappings by device, naming used by IDF old/new
-// upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3 | ESP32C6
-// ----------+-----------+-----------+---------+---------+---------
-// SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2    | SPI2
-// SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err     | err
+// MicroPython | ESP32     | ESP32S2   | ESP32S3 | ESP32C3 | ESP32C6
+// ------------+-----------+-----------+---------+---------+---------
+// SPI(id=1)   | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2    | SPI2
+// SPI(id=2)   | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err     | err
 
 // Number of available hardware SPI peripherals.
 #if SOC_SPI_PERIPH_NUM > 2

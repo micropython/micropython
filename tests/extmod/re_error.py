@@ -11,7 +11,7 @@ def test_re(r):
     try:
         re.compile(r)
         print("OK")
-    except:  # uPy and CPy use different errors, so just ignore the type
+    except:  # MPy and CPy use different errors, so just ignore the type
         print("Error")
 
 

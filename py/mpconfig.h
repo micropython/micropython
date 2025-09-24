@@ -2099,7 +2099,7 @@ typedef time_t mp_timestamp_t;
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
-// All uPy objects in ROM must be aligned on at least a 4 byte boundary
+// All MicroPython objects in ROM must be aligned on at least a 4 byte boundary
 // so that the small-int/qstr/pointer distinction can be made.  For machines
 // that don't do this (eg 16-bit CPU), define the following macro to something
 // like __attribute__((aligned(4))).

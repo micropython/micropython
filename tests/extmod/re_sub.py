@@ -61,7 +61,7 @@ try:
 except:
     print("invalid group")
 
-# invalid group with very large number (to test overflow in uPy)
+# invalid group with very large number (to test overflow in MicroPython)
 try:
     re.sub("(a)", "b\\199999999999999999999999999999999999999", "a")
 except:

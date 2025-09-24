@@ -128,7 +128,7 @@ from frzqstr import returns_NULL
 
 print(returns_NULL())
 
-# test for freeze_mpy
+# test for freeze_mpy (importing prints several lines)
 import frozentest
 
 print(frozentest.__file__)
