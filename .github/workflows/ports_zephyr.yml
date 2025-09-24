@@ -12,6 +12,10 @@ on:
       - 'lib/**'
       - 'ports/zephyr/**'
       - 'tests/**'
+  schedule:
+     # Scheduled run exists to keep master branch Zephyr cache entry hot
+     # and prevent creating many redundant per-branch cache entries instead.
+     - cron: "40 4 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

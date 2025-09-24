@@ -12,6 +12,10 @@ on:
       - 'lib/**'
       - 'drivers/**'
       - 'ports/esp32/**'
+  schedule:
+     # Scheduled run exists to keep master branch ESP-IDF cache entry hot
+     # and prevent creating many redundant per-branch cache entries instead.
+     - cron: "20 0 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
