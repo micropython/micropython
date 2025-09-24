@@ -272,7 +272,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // We allow 'exc.__traceback__ = None' assignment as low-level
             // optimization of pre-allocating exception instance and raising
             // it repeatedly - this avoids memory allocation during raise.
-            // However, uPy will keep adding traceback entries to such
+            // However, MicroPython will keep adding traceback entries to such
             // exception instance, so before throwing it, traceback should
             // be cleared like above.
             self->traceback_len = 0;

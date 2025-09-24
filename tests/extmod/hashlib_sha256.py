@@ -1,7 +1,7 @@
 try:
     import hashlib
 except ImportError:
-    # This is neither uPy, nor cPy, so must be uPy with
+    # This is neither MP, nor CPy, so must be MP with
     # hashlib module disabled.
     print("SKIP")
     raise SystemExit

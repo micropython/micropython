@@ -25,20 +25,20 @@ for sep in [
     # dump to a small-int not allowed
     try:
         json.dump(123, 1, separators=sep)
-    except (AttributeError, OSError):  # CPython and uPy have different errors
+    except (AttributeError, OSError):  # CPython and MicroPython have different errors
         print("Exception")
 
     # dump to an object not allowed
     try:
         json.dump(123, {}, separators=sep)
-    except (AttributeError, OSError):  # CPython and uPy have different errors
+    except (AttributeError, OSError):  # CPython and MicroPython have different errors
         print("Exception")
 
 
 try:
     s = StringIO()
     json.dump(False, s, separators={"a": 1})
-except (TypeError, ValueError):  # CPython and uPy have different errors
+except (TypeError, ValueError):  # CPython and MicroPython have different errors
     print("Exception")
 
 # invalid separator types

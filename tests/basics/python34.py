@@ -28,7 +28,7 @@ test_syntax("() = []") # can't assign to empty tuple (in 3.6 we can)
 test_syntax("del ()") # can't delete empty tuple (in 3.6 we can)
 
 # from basics/sys1.py
-# uPy prints version 3.4
+# MicroPython prints version 3.4
 import sys
 print(sys.version[:3])
 print(sys.version_info[0], sys.version_info[1])

@@ -144,7 +144,7 @@ if full_tests:
             for alignment in ("", "<", ">", "=", "^"):
                 for fill in ("", " ", "0", "@"):
                     for sign in ("", "+", "-", " "):
-                        # An empty precision defaults to 6, but when uPy is
+                        # An empty precision defaults to 6, but when MicroPython is
                         # configured to use a float, we can only use a
                         # precision of 6 with numbers less than 10 and still
                         # get results that compare to CPython (which uses
@@ -164,7 +164,7 @@ if full_tests:
         for alignment in ("", "<", ">", "=", "^"):
             for fill in ("", " ", "0", "@"):
                 for sign in ("", "+", "-", " "):
-                    # An empty precision defaults to 6, but when uPy is
+                    # An empty precision defaults to 6, but when MicroPython is
                     # configured to use a float, we can only use a
                     # precision of 6 with numbers less than 10 and still
                     # get results that compare to CPython (which uses
