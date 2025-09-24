@@ -67,7 +67,7 @@ for arch in (0x1406, 0x1806, 0x1C06, 0x2006):
     features0_file_contents[arch] = features0_file_contents[0x1006]
 
 # Check that a .mpy exists for the target (ignore sub-version in lookup).
-sys_implementation_mpy = sys.implementation._mpy & ~(3 << 8)
+sys_implementation_mpy = (sys.implementation._mpy & ~(3 << 8)) & 0xFFFF
 if sys_implementation_mpy not in features0_file_contents:
     print("SKIP")
     raise SystemExit
