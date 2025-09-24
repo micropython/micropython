@@ -22,6 +22,8 @@ TEST_TIMEOUT = float(os.environ.get("MICROPY_TEST_TIMEOUT", 30))
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
 
+RV32_ARCH_FLAGS = {1 << 0: "zba"}
+
 
 def base_path(*p):
     return os.path.abspath(os.path.join(BASEPATH, *p)).replace("\\", "/")
@@ -295,6 +297,18 @@ def detect_inline_asm_arch(pyb, args):
     return None
 
 
+def map_rv32_arch_flags(flags):
+    mapped_flags = []
+    all_bits = 0
+    for bits in RV32_ARCH_FLAGS.keys():
+        if (flags & bits) == flags:
+            mapped_flags.append(RV32_ARCH_FLAGS[bits])
+        all_bits |= bits
+    if (~all_bits & flags) != 0:
+        raise Exception("Unexpected flag bits set in value {}".format(flags))
+    return mapped_flags
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
@@ -310,12 +324,18 @@ def detect_test_platform(pyb, args):
         thread = None
     float_prec = int(float_prec)
     unicode = unicode == "True"
+    if arch == "rv32imc":
+        arch_flags = map_rv32_arch_flags(int(arch_flags))
+    else:
+        arch_flags = None
 
     args.platform = platform
     args.arch = arch
+    args.arch_flags = arch_flags
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
-    args.arch_flags = arch_flags
+        if arch_flags:
+            args.mpy_cross_flags += " -march-flags=" + ",".join(arch_flags)
     args.inlineasm_arch = inlineasm_arch
     args.build = build
     args.thread = thread
@@ -326,7 +346,8 @@ def detect_test_platform(pyb, args):
     print("platform={}".format(platform), end="")
     if arch:
         print(" arch={}".format(arch), end="")
-        print(" arch_flags={}".format(arch_flags), end="")
+        if arch_flags:
+            print(" arch_flags={}".format(",".join(arch_flags)), end="")
     if inlineasm_arch:
         print(" inlineasm={}".format(inlineasm_arch), end="")
     if thread:
