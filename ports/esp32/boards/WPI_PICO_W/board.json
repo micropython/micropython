@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "External Flash",
+        "External RAM",
+        "USB-C"
+    ],
+    "images": [
+        "walnutpi_pico_w.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "Pico W",
+    "thumbnail": "",
+    "url": "https://www.walnutpi.com",
+    "vendor": "Walnut Pi",
+    "variants": {
+        "SPIRAM_OCT": "Support for Octal-SPIRAM"
+    }
+}
