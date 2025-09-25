@@ -55,13 +55,6 @@ const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
     .bNumConfigurations = 1,
 };
 
-// Allow runtime override of VID/PID for non-runtime mode
-#ifndef MICROPY_HW_USB_RUNTIME_VID
-#define MICROPY_HW_USB_RUNTIME_VID MICROPY_HW_USB_VID
-#endif
-#ifndef MICROPY_HW_USB_RUNTIME_PID
-#define MICROPY_HW_USB_RUNTIME_PID MICROPY_HW_USB_PID
-#endif
 
 // Global class enable state
 mp_usbd_class_state_t mp_usbd_class_state;

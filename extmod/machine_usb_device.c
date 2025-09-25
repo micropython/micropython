@@ -554,6 +554,18 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // Load attribute.
         if (attr == MP_QSTR_builtin_driver) {
             dest[0] = self->builtin_driver;
+        } else if (attr == MP_QSTR_vid) {
+            uint16_t vid = self->custom_vid;
+            if (vid == 0) {
+                vid = MICROPY_HW_USB_RUNTIME_VID;
+            }
+            dest[0] = MP_OBJ_NEW_SMALL_INT(vid);
+        } else if (attr == MP_QSTR_pid) {
+            uint16_t pid = self->custom_pid;
+            if (pid == 0) {
+                pid = MICROPY_HW_USB_RUNTIME_PID;
+            }
+            dest[0] = MP_OBJ_NEW_SMALL_INT(pid);
         } else {
             // Continue lookup in locals_dict.
             dest[1] = MP_OBJ_SENTINEL;

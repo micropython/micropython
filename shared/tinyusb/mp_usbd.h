@@ -103,6 +103,14 @@ static inline void mp_usbd_init_tud(void) {
 #define USB_BUILTIN_FLAG_MSC   0x02
 #define USB_BUILTIN_FLAG_NCM   0x04
 
+// Allow runtime override of VID/PID defaults
+#ifndef MICROPY_HW_USB_RUNTIME_VID
+#define MICROPY_HW_USB_RUNTIME_VID MICROPY_HW_USB_VID
+#endif
+#ifndef MICROPY_HW_USB_RUNTIME_PID
+#define MICROPY_HW_USB_RUNTIME_PID MICROPY_HW_USB_PID
+#endif
+
 // Get dynamic descriptor length based on enabled classes
 size_t mp_usbd_get_descriptor_cfg_len(void);
 
@@ -146,6 +154,9 @@ typedef struct {
 
     bool active; // Has the user set the USB device active?
     bool trigger; // Has the user requested the active state change (or re-activate)?
+
+    uint16_t custom_vid; // Custom VID (0 = use builtin default)
+    uint16_t custom_pid; // Custom PID (0 = use builtin default)
 
     // Temporary pointers for xfer data in progress on each endpoint
     // Ensuring they aren't garbage collected until the xfer completes
