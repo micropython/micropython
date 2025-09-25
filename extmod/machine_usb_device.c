@@ -71,10 +71,36 @@ static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, si
         // Initialize fields common to both minimal and full modes
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         o->builtin_driver = MP_OBJ_FROM_PTR(&builtin_none_obj);
+        o->active = false; // Runtime mode starts inactive
         #else
-        o->builtin_driver = MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
+        // In static mode, detect if USB is already initialized at boot
+        // Check if TinyUSB is running by testing if the stack is configured
+        #ifndef NO_QSTR
+        o->active = tud_inited();
+        #else
+        o->active = false; // Fallback when TinyUSB headers not available
         #endif
-        o->active = false; // Builtin USB may be active already, but runtime is inactive
+
+        // Set builtin_driver based on current class state if active
+        if (o->active) {
+            // Convert current class state to appropriate builtin driver
+            extern mp_usbd_class_state_t mp_usbd_class_state;
+            uint8_t flags = 0;
+            if (mp_usbd_class_state.cdc_enabled) flags |= USB_BUILTIN_FLAG_CDC;
+            if (mp_usbd_class_state.msc_enabled) flags |= USB_BUILTIN_FLAG_MSC;
+            if (mp_usbd_class_state.ncm_enabled) flags |= USB_BUILTIN_FLAG_NCM;
+
+            // Create appropriate builtin object based on current state
+            if (flags == USB_BUILTIN_FLAG_NONE) {
+                o->builtin_driver = MP_OBJ_FROM_PTR(&builtin_none_obj);
+            } else {
+                // Use the dynamic builtin system
+                o->builtin_driver = mp_usbd_create_builtin_config(flags);
+            }
+        } else {
+            o->builtin_driver = MP_OBJ_FROM_PTR(&builtin_none_obj);
+        }
+        #endif
         o->custom_vid = 0; // 0 = use builtin default
         o->custom_pid = 0; // 0 = use builtin default
 
@@ -573,9 +599,15 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else if (dest[1] != MP_OBJ_NULL) {
         // Store attribute.
         if (attr == MP_QSTR_builtin_driver) {
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In runtime mode, require deactivation before changing builtin_driver
             if (self->active) {
                 mp_raise_OSError(MP_EINVAL); // Need to deactivate first
             }
+            #else
+            // In static mode, allow changing builtin_driver when active
+            // This will update the class state and trigger re-enumeration
+            #endif
 
             // Handle new bitfield builtin types and legacy constants
             uint8_t flags = 0;
@@ -618,28 +650,70 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // Update the internal class state based on flags
             mp_usbd_update_class_state(flags);
 
+            #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In static mode, if USB is active, trigger re-enumeration
+            // to update the host with the new configuration
+            if (self->active) {
+                #ifndef NO_QSTR
+                // Disconnect and reconnect to trigger enumeration with new descriptors
+                tud_disconnect();
+                // Small delay to ensure host recognizes disconnection
+                mp_hal_delay_ms(100);
+                tud_connect();
+                #endif
+            }
+            #endif
+
             // Store the builtin_driver (could be legacy constant or new bitfield object)
             self->builtin_driver = dest[1];
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_vid) {
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In runtime mode, require deactivation before changing VID
             if (self->active) {
                 mp_raise_OSError(MP_EINVAL); // Need to deactivate first
             }
+            #endif
             mp_int_t vid = mp_obj_get_int(dest[1]);
             if (vid < 0 || vid > 0xFFFF) {
                 mp_raise_ValueError(MP_ERROR_TEXT("VID must be 0-65535"));
             }
             self->custom_vid = (uint16_t)vid;
+
+            #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In static mode, if USB is active, trigger re-enumeration
+            if (self->active) {
+                #ifndef NO_QSTR
+                tud_disconnect();
+                mp_hal_delay_ms(100);
+                tud_connect();
+                #endif
+            }
+            #endif
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_pid) {
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In runtime mode, require deactivation before changing PID
             if (self->active) {
                 mp_raise_OSError(MP_EINVAL); // Need to deactivate first
             }
+            #endif
             mp_int_t pid = mp_obj_get_int(dest[1]);
             if (pid < 0 || pid > 0xFFFF) {
                 mp_raise_ValueError(MP_ERROR_TEXT("PID must be 0-65535"));
             }
             self->custom_pid = (uint16_t)pid;
+
+            #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In static mode, if USB is active, trigger re-enumeration
+            if (self->active) {
+                #ifndef NO_QSTR
+                tud_disconnect();
+                mp_hal_delay_ms(100);
+                tud_connect();
+                #endif
+            }
+            #endif
             dest[0] = MP_OBJ_NULL;
         }
     }
