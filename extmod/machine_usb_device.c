@@ -104,21 +104,15 @@ static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     return MP_STATE_VM(usbd);
 }
-
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 // Utility helper to raise an error if USB device is not active
 // (or if a change of active state is triggered but not processed.)
 static void usb_device_check_active(mp_obj_usb_device_t *usbd) {
-    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
     if (!usbd->active || usbd->trigger) {
         mp_raise_OSError(MP_EINVAL);
     }
-    #else
-    // Static mode: only check active state
-    if (!usbd->active) {
-        mp_raise_OSError(MP_EINVAL);
-    }
-    #endif
 }
+#endif
 
 #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buffer) {

@@ -202,22 +202,6 @@ size_t mp_usbd_get_descriptor_cfg_len(void) {
     return len;
 }
 
-// Get number of enabled interfaces
-static uint8_t mp_usbd_get_interface_count(void) {
-    uint8_t count = 0;
-
-    if (mp_usbd_class_state.cdc_enabled && CFG_TUD_CDC) {
-        count += 2;  // CDC uses 2 interfaces
-    }
-    if (mp_usbd_class_state.msc_enabled && CFG_TUD_MSC) {
-        count += 1;
-    }
-    if (mp_usbd_class_state.ncm_enabled && CFG_TUD_NCM) {
-        count += 1;
-    }
-
-    return count;
-}
 
 #if 0
 // Static descriptor for maximum possible configuration
@@ -362,7 +346,6 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 
 const uint8_t *tud_descriptor_device_cb(void) {
     // Check if custom VID/PID is set
-    extern mp_obj_t MP_STATE_VM(usbd);
     if (MP_STATE_VM(usbd) != MP_OBJ_NULL) {
         mp_obj_usb_device_t *usbd = MP_OBJ_TO_PTR(MP_STATE_VM(usbd));
         if (usbd->custom_vid != 0 || usbd->custom_pid != 0) {
