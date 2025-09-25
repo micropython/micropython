@@ -48,7 +48,6 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "py/stackctrl.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
@@ -129,8 +128,6 @@ static void vfs_init(void) {
 #endif // MICROPY_VFS
 
 int real_main(void) {
-    volatile int stack_dummy = 0;
-
     #if MICROPY_PY_THREAD
     struct k_thread *z_thread = (struct k_thread *)k_current_get();
     mp_thread_init((void *)z_thread->stack_info.start, z_thread->stack_info.size / sizeof(uintptr_t));
@@ -140,9 +137,7 @@ int real_main(void) {
     mp_hal_init();
 
 soft_reset:
-    mp_stack_set_top((void *)&stack_dummy);
-    // Make MicroPython's stack limit somewhat smaller than full stack available
-    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
+    mp_cstack_init_with_sp_here(CONFIG_MAIN_STACK_SIZE);
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
