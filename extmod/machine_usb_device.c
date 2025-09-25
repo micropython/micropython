@@ -58,6 +58,9 @@ const mp_obj_type_t mp_type_usb_builtin;
 // Forward declarations for builtin objects
 static const mp_obj_usb_builtin_t builtin_none_obj;
 
+// Forward declaration for builtin config creation
+static mp_obj_t mp_usbd_create_builtin_config(uint8_t flags);
+
 static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type;
     (void)n_args;
@@ -319,7 +322,6 @@ static const MP_DEFINE_BYTES_OBJ(builtin_default_desc_dev_obj,
     &mp_usbd_builtin_desc_dev, sizeof(tusb_desc_device_t));
 
 // Forward declarations for bitfield builtin functions
-static mp_obj_t mp_usbd_create_builtin_config(uint8_t flags);
 static uint8_t mp_usbd_get_itf_max(uint8_t flags);
 static uint8_t mp_usbd_get_ep_max(uint8_t flags);
 static uint8_t mp_usbd_get_str_max(uint8_t flags);
