@@ -9,6 +9,7 @@ def run_micropython_code(source: str) -> str:
     # TODO: add option to run against specific port / board (e.g. pyboard, esp32, etc)
     # TODO: Skip if no mpremote / no board detected
     # TODO: add option to run against simulator (WOKWI)
+    __tracebackhide__ = True  # hide helper details
     tf = None
     try:
         with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as tf:
@@ -30,6 +31,7 @@ def run_micropython_code(source: str) -> str:
 
 def reset_micropython_mcu() -> None:
     """Reset the MicroPython MCU to clear namespace/state"""
+    __tracebackhide__ = True  # hide helper details
     try:
         cmd = ["mpremote", "reset"]
         print("Running:", " ".join(cmd))

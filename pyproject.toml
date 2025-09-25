@@ -74,13 +74,17 @@ minversion = "7.0"
 python_functions = ["test_", "*_test"]
 python_files = ["test_*.py", "*_test.py"]
 addopts = "-p no:doctest"
+#  -q --tb=line
 testpaths = [
     "docs",
     ]
 norecursedirs = [
     ".*",
     "extmod",
-    "lib"
+    "lib",
+    "docs/docs_test",
+    "docs/conf.py",
+    "docs/conftest.py",
 ]
 junit_family = "xunit1"
 

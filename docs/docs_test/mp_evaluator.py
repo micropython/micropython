@@ -22,10 +22,14 @@ class MicroPythonEvaluator:
         self.flags = 0
 
     def __call__(self, example: Example) -> None:
+        __tracebackhide__ = True  # hide helper details
         # There must be a nicer way to get line numbers to be correct...
         source = pad(example.parsed, example.line + example.parsed.line_offset)
         # TODO : run in the correct micropython port
-        run_micropython_code(source)
+        try:
+            run_micropython_code(source)
+        except Exception as e:
+            pytest.fail(f"MicroPython evaluation failed: {e}", pytrace=False)
 
 
 class MicroPythonDocTestEvaluator(DocTestEvaluator):
@@ -35,6 +39,7 @@ class MicroPythonDocTestEvaluator(DocTestEvaluator):
 
     def __call__(self, sybil_example: Example) -> str:
         """Run doctest examples on the MCU"""
+        __tracebackhide__ = True  # hide helper details
         # Get the doctest examples - could be a single example or a list
         examples = sybil_example.parsed
         output: List[str] = []
@@ -91,7 +96,9 @@ class MicroPythonDocTestEvaluator(DocTestEvaluator):
                             actual_output = str(e).strip()
                     else:
                         # Re-raise if this wasn't an expected error
-                        raise
+                        # raise
+                        __tracebackhide__ = True
+                        pytest.fail(f"Expected: {expected_output!r}, Got: Nothing", pytrace=False)
 
                 # Simple comparison - you might want to make this more sophisticated
                 if expected_output and actual_output != expected_output:
@@ -115,12 +122,15 @@ class MicroPythonDocTestEvaluator(DocTestEvaluator):
                                 ):
                                     return "".join(output)  # Consider this a match
 
-                    raise AssertionError(f"Expected: {expected_output!r}, Got: {actual_output!r}")
+                    # raise AssertionError(f"Expected: {expected_output!r}, Got: {actual_output!r}")
+                    __tracebackhide__ = True
+                    pytest.fail(f"Expected: {expected_output!r}, Got: {actual_output!r}", pytrace=False)
 
     def _clean_doctest_source(self, doctest_source: str) -> str:
         """
         Clean doctest source by removing >>> and ... prefixes to get actual Python code
         """
+        __tracebackhide__ = True  # hide helper details        
         lines = doctest_source.split("\n")
         cleaned_lines = []
 
@@ -150,6 +160,7 @@ class MicroPythonDocTestEvaluator(DocTestEvaluator):
         Determine if a line of code should have its result printed
         based on whether there's expected output and the code is an expression
         """
+        __tracebackhide__ = True  # hide helper details        
         if not expected_output.strip():
             return False
 
