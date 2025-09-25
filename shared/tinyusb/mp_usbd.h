@@ -170,6 +170,8 @@ typedef struct {
     mp_obj_base_t base;
     mp_obj_t builtin_driver; // Points to one of mp_type_usb_device_builtin_nnn
     bool active; // Has the user set the USB device active?
+    uint16_t custom_vid; // Custom VID (0 = use builtin default)
+    uint16_t custom_pid; // Custom PID (0 = use builtin default)
 } mp_obj_usb_device_t;
 
 static inline void mp_usbd_init(void) {

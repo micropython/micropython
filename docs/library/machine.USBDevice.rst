@@ -441,10 +441,40 @@ Usage Examples
     usb.builtin_driver = usb.BUILTIN_CDC
     usb.active(True)
 
-Build-time VID/PID Override
----------------------------
+Dynamic VID/PID Configuration
+-----------------------------
 
-For non-runtime USB device mode, VID/PID can be customized at build time
+**Runtime VID/PID Properties (All Modes):**
+
+Both runtime and non-runtime USB device modes support dynamic VID/PID
+configuration using simple Python properties:
+
+::
+
+    import machine
+
+    usb = machine.USBDevice()
+    usb.active(False)
+
+    # Set custom VID/PID dynamically
+    usb.vid = 0x1234
+    usb.pid = 0x5678
+
+    usb.builtin_driver = usb.BUILTIN_CDC
+    usb.active(True)
+
+    # Check current values
+    print(f"VID: 0x{usb.vid:04X}, PID: 0x{usb.pid:04X}")
+
+    # Reset to firmware defaults
+    usb.active(False)
+    usb.vid = 0  # 0 means use builtin default
+    usb.pid = 0
+    usb.active(True)
+
+**Build-time VID/PID Override:**
+
+For additional customization, VID/PID defaults can be set at build time
 using the ``MICROPY_HW_USB_RUNTIME_VID`` and ``MICROPY_HW_USB_RUNTIME_PID``
 macros:
 
@@ -461,8 +491,16 @@ macros:
     #define MICROPY_HW_USB_RUNTIME_VID (0x1234)
     #define MICROPY_HW_USB_RUNTIME_PID (0x5678)
 
-This allows customizing the USB VID/PID even when ``MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE``
+This allows customizing the USB VID/PID defaults even when ``MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE``
 is disabled and only built-in drivers are available. If not specified, these
 macros default to ``MICROPY_HW_USB_VID`` and ``MICROPY_HW_USB_PID``.
+
+**VID/PID Property Notes:**
+
+- Properties can only be set when ``usb.active`` is ``False``
+- Setting VID/PID to ``0`` uses the firmware default value
+- Valid range is 1-65535 (0x0001-0xFFFF)
+- Changes are automatically reset when deactivating USB
+- Works in both runtime and non-runtime USB device modes
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme

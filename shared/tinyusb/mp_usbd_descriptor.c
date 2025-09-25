@@ -368,6 +368,23 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 const uint8_t *tud_descriptor_device_cb(void) {
+    // Check if custom VID/PID is set
+    extern mp_obj_t MP_STATE_VM(usbd);
+    if (MP_STATE_VM(usbd) != MP_OBJ_NULL) {
+        mp_obj_usb_device_t *usbd = MP_OBJ_TO_PTR(MP_STATE_VM(usbd));
+        if (usbd->custom_vid != 0 || usbd->custom_pid != 0) {
+            // Create custom descriptor with overridden VID/PID
+            static tusb_desc_device_t custom_desc;
+            custom_desc = mp_usbd_builtin_desc_dev; // Copy default
+            if (usbd->custom_vid != 0) {
+                custom_desc.idVendor = usbd->custom_vid;
+            }
+            if (usbd->custom_pid != 0) {
+                custom_desc.idProduct = usbd->custom_pid;
+            }
+            return (const uint8_t*)&custom_desc;
+        }
+    }
     return (const void *)&mp_usbd_builtin_desc_dev;
 }
 
