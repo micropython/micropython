@@ -41,6 +41,7 @@
 
 // Python internal features
 #define MICROPY_ENABLE_GC                   (1)
+#define MICROPY_STACK_CHECK_MARGIN          (1024)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #ifndef MICROPY_PY_BUILTINS_COMPLEX
