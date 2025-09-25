@@ -30,6 +30,7 @@
 
 #include "mp_usbd.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/objstr.h"
 
 // Implements the USB device object
