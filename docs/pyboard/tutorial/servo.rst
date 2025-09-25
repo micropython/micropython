@@ -44,6 +44,7 @@ The angle here is measured in degrees, and ranges from about -90 to +90,
 depending on the motor.  Calling ``angle`` without parameters will return
 the current angle::
 
+.. skip: next
 
     >>> servo1.angle()
     -60
