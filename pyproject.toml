@@ -77,6 +77,10 @@ addopts = "-p no:doctest"
 testpaths = [
     "docs",
     ]
-
+norecursedirs = [
+    ".*",
+    "extmod",
+    "lib"
+]
 junit_family = "xunit1"
 
