@@ -213,24 +213,27 @@ MP_REGISTER_ROOT_POINTER(mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH]);
 
 // Called periodically from the VM or from "waiting" code (e.g. sleep) to
 // process background tasks and pending exceptions (e.g. KeyboardInterrupt).
-void mp_handle_pending(bool raise_exc) {
+void mp_handle_pending_internal(mp_handle_pending_behaviour_t behavior) {
+    bool handle_exceptions = (behavior != MP_HANDLE_PENDING_CALLBACKS_ONLY);
+    bool raise_exceptions = (behavior == MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
+
     // Handle pending VM abort.
     #if MICROPY_ENABLE_VM_ABORT
-    if (MP_STATE_VM(vm_abort) && mp_thread_is_main_thread()) {
+    if (handle_exceptions && MP_STATE_VM(vm_abort) && mp_thread_is_main_thread()) {
         MP_STATE_VM(vm_abort) = false;
-        if (raise_exc && nlr_get_abort() != NULL) {
+        if (raise_exceptions && nlr_get_abort() != NULL) {
             nlr_jump_abort();
         }
     }
     #endif
 
     // Handle any pending exception.
-    if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
+    if (handle_exceptions && MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
         if (obj != MP_OBJ_NULL) {
             MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-            if (raise_exc) {
+            if (raise_exceptions) {
                 MICROPY_END_ATOMIC_SECTION(atomic_state);
                 nlr_raise(obj);
             }
