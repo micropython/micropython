@@ -72,11 +72,15 @@ def has_espressif_dtr_quirk(devicename):
 class SerialTransport(Transport):
     fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
 
-    def __init__(self, device, baudrate=115200, wait=0, exclusive=True, timeout=None):
+    def __init__(
+        self, device, baudrate=115200, wait=0, exclusive=True, timeout=None, dtr=None, rts=None
+    ):
         self.in_raw_repl = False
         self.use_raw_paste = True
         self.device_name = device
         self.mounted = False
+        self.dtr = dtr
+        self.rts = rts
 
         # Set options, and exclusive if pyserial supports it
         serial_kwargs = {
@@ -103,6 +107,14 @@ class SerialTransport(Transport):
                     self.serial.open()
                 else:
                     self.serial = serial.Serial(device, **serial_kwargs)
+                    if dtr:
+                        self.serial.dtr = (
+                            dtr == "1" or dtr == "on"
+                        )  # DTR False = gpio0 High = Normal boot
+                    if rts:
+                        self.serial.rts = (
+                            rts == "1" or rts == "on"
+                        )  # RTS False = EN High = MCU enabled
                 break
             except OSError:
                 if wait == 0:
@@ -165,8 +177,22 @@ class SerialTransport(Transport):
         return data
 
     def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
-        self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
-
+        if self.dtr or self.rts:
+            self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
+            time.sleep(0.1)
+            self.serial.flush()
+            self.serial.flushInput()
+            for cnt in range(timeout_overall):
+                self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
+                self.serial.flush()
+                data = self.read_until(1, b"\r\n>>> ", timeout_overall=1)
+                if data.endswith(b"\r\n>>> "):
+                    break
+            else:
+                raise TransportError("could not find repl mode")
+        else:
+            self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
+            self.serial.flush()
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
         while n > 0:
@@ -174,13 +200,12 @@ class SerialTransport(Transport):
             n = self.serial.inWaiting()
 
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
-
-        if soft_reset:
+        self.serial.flush()
+        if soft_reset and not self.dtr and not self.rts:
             data = self.read_until(
                 1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
             )
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
-                print(data)
                 raise TransportError("could not enter raw repl")
 
             self.serial.write(b"\x04")  # ctrl-D: soft reset
@@ -190,12 +215,10 @@ class SerialTransport(Transport):
             # and before "raw REPL".
             data = self.read_until(1, b"soft reboot\r\n", timeout_overall=timeout_overall)
             if not data.endswith(b"soft reboot\r\n"):
-                print(data)
                 raise TransportError("could not enter raw repl")
 
         data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
-            print(data)
             raise TransportError("could not enter raw repl")
 
         self.in_raw_repl = True
@@ -280,7 +303,6 @@ class SerialTransport(Transport):
                 # Device doesn't support raw-paste, fall back to normal raw REPL.
                 data = self.read_until(1, b"w REPL; CTRL-B to exit\r\n>")
                 if not data.endswith(b"w REPL; CTRL-B to exit\r\n>"):
-                    print(data)
                     raise TransportError("could not enter raw repl")
             # Don't try to use raw-paste mode again for this connection.
             self.use_raw_paste = False
