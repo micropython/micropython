@@ -381,7 +381,7 @@ static uint8_t mp_usbd_get_itf_max(uint8_t flags) {
     }
     #if MICROPY_HW_NETWORK_USBNET
     if ((flags & USB_BUILTIN_FLAG_NCM) && MICROPY_HW_NETWORK_USBNET) {
-        count += 1;
+        count += 2;  // NCM uses 2 interfaces (control + data)
     }
     #endif
     return count;

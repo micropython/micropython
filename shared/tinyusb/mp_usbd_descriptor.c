@@ -118,7 +118,7 @@ static uint8_t mp_usbd_get_interface_count_from_flags(uint8_t flags) {
         count += 1;
     }
     if ((flags & USB_BUILTIN_FLAG_NCM) && CFG_TUD_NCM) {
-        count += 1;
+        count += 2;  // NCM uses 2 interfaces (control + data)
     }
 
     return count;
@@ -138,7 +138,7 @@ static const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *
     *desc++ = interface_count;             // bNumInterfaces
     *desc++ = 1;                           // bConfigurationValue
     *desc++ = USBD_STR_0;                  // iConfiguration
-    *desc++ = 0;                           // bmAttributes
+    *desc++ = 0x80;                        // bmAttributes (bit 7 must be 1)
     *desc++ = USBD_MAX_POWER_MA / 2;       // bMaxPower (in 2mA units)
 
     // Add enabled class descriptors
