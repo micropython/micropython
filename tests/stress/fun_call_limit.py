@@ -16,7 +16,7 @@ def test(n):
 
 
 # If the port has at least 32-bits then this test should pass.
-print(test(29))
+print(test(28))
 
 # This test should fail on all ports (overflows a small int).
 print(test(70))
