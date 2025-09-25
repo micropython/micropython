@@ -37,13 +37,17 @@
 
 #if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
 
-#if !MICROPY_HW_TINYUSB_STACK
+#if BUILDING_MBOOT
+// TinyUSB not used in mboot
+#undef MICROPY_HW_TINYUSB_STACK
+#endif
+
+// These handles are also used in Interrupt / Wakeup handlers.
 #if MICROPY_HW_USB_FS
 PCD_HandleTypeDef pcd_fs_handle;
 #endif
 #if MICROPY_HW_USB_HS
 PCD_HandleTypeDef pcd_hs_handle;
-#endif
 #endif
 
 #if defined(STM32G0) || defined(STM32H5)

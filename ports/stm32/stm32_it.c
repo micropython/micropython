@@ -370,8 +370,12 @@ void OTG_FS_IRQHandler(void) {
 #if MICROPY_HW_USB_HS
 #if defined(STM32N6)
 void USB1_OTG_HS_IRQHandler(void) {
-    IRQ_ENTER(USB1_OTG_HS_IRQn);
+    IRQ_ENTER(USB1_OTG_HS_IRQn);    IRQ_ENTER(OTG_FS_IRQn);
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #else
     HAL_PCD_IRQHandler(&pcd_hs_handle);
+    #endif
     IRQ_EXIT(USB1_OTG_HS_IRQn);
 }
 #else
@@ -432,6 +436,9 @@ static void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
         /* ungate PHY clock */
         __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
     }
+    #if MICROPY_HW_TINYUSB_STACK
+    tud_int_handler(0);
+    #endif
 
 }
 #endif
