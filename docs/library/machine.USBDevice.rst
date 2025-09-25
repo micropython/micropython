@@ -9,7 +9,8 @@ class USBDevice -- USB Device driver
           supports native USB.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
-Python code.
+Python code. This includes both runtime device descriptor configuration and
+build-time customization of USB Vendor ID (VID) and Product ID (PID).
 
 .. warning:: This low-level API assumes familiarity with the USB standard. There
    are high-level `usb driver modules in micropython-lib`_ which provide a
@@ -410,5 +411,58 @@ Usage Examples
     usb.active(False)
     usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_NCM
     usb.active(True)
+
+**Custom VID/PID (Runtime Mode):**
+::
+
+    import machine
+
+    # Create custom device descriptor with your VID/PID
+    custom_device_desc = bytearray([
+        18,     # bLength
+        1,      # bDescriptorType (Device)
+        0x00, 0x02,  # bcdUSB (USB 2.0)
+        0x02,   # bDeviceClass (CDC)
+        0x00,   # bDeviceSubClass
+        0x00,   # bDeviceProtocol
+        64,     # bMaxPacketSize0
+        0x34, 0x12,  # idVendor (0x1234)
+        0x78, 0x56,  # idProduct (0x5678)
+        0x00, 0x01,  # bcdDevice (1.0)
+        1,      # iManufacturer
+        2,      # iProduct
+        3,      # iSerialNumber
+        1       # bNumConfigurations
+    ])
+
+    usb = machine.USBDevice()
+    usb.active(False)
+    usb.config(desc_dev=custom_device_desc)
+    usb.builtin_driver = usb.BUILTIN_CDC
+    usb.active(True)
+
+Build-time VID/PID Override
+---------------------------
+
+For non-runtime USB device mode, VID/PID can be customized at build time
+using the ``MICROPY_HW_USB_RUNTIME_VID`` and ``MICROPY_HW_USB_RUNTIME_PID``
+macros:
+
+**Override VID/PID at Build Time:**
+::
+
+    # Build with custom VID/PID
+    make CFLAGS_EXTRA="-DMICROPY_HW_USB_RUNTIME_VID=0x1234 -DMICROPY_HW_USB_RUNTIME_PID=0x5678"
+
+**Port-specific Configuration:**
+::
+
+    # In mpconfigport.h or boards/BOARD/mpconfigboard.h
+    #define MICROPY_HW_USB_RUNTIME_VID (0x1234)
+    #define MICROPY_HW_USB_RUNTIME_PID (0x5678)
+
+This allows customizing the USB VID/PID even when ``MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE``
+is disabled and only built-in drivers are available. If not specified, these
+macros default to ``MICROPY_HW_USB_VID`` and ``MICROPY_HW_USB_PID``.
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme

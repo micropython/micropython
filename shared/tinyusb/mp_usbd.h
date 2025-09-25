@@ -97,6 +97,12 @@ static inline void mp_usbd_init_tud(void) {
     #endif
 }
 
+// Individual USB class flags for bitfield operations
+#define USB_BUILTIN_FLAG_NONE  0x00
+#define USB_BUILTIN_FLAG_CDC   0x01
+#define USB_BUILTIN_FLAG_MSC   0x02
+#define USB_BUILTIN_FLAG_NCM   0x04
+
 // Get dynamic descriptor length based on enabled classes
 size_t mp_usbd_get_descriptor_cfg_len(void);
 

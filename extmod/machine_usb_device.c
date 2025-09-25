@@ -44,11 +44,7 @@
 
 #define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC)
 
-// Individual USB class flags for bitfield operations
-#define USB_BUILTIN_FLAG_NONE  0x00
-#define USB_BUILTIN_FLAG_CDC   0x01
-#define USB_BUILTIN_FLAG_MSC   0x02
-#define USB_BUILTIN_FLAG_NCM   0x04
+// USB class flags are defined in mp_usbd.h
 
 // Structure for combinable built-in USB driver configurations
 typedef struct {
