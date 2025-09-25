@@ -39,6 +39,7 @@
 #include "irq.h"
 #include "usb.h"
 #endif
+#include "extmod/modplatform.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
