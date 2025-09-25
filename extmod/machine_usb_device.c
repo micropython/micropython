@@ -120,6 +120,7 @@ static void usb_device_check_active(mp_obj_usb_device_t *usbd) {
     #endif
 }
 
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buffer) {
     mp_obj_usb_device_t *usbd = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(self);
     int ep_addr;
@@ -158,6 +159,7 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
     return mp_obj_new_bool(result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(usb_device_submit_xfer_obj, usb_device_submit_xfer);
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
     mp_obj_usb_device_t *usbd = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(args[0]);
@@ -216,6 +218,7 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_active_obj, 1, 2, usb_device_active);
 
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 static mp_obj_t usb_remote_wakeup(mp_obj_t self) {
     return mp_obj_new_bool(tud_remote_wakeup());
 }
@@ -241,7 +244,9 @@ static mp_obj_t usb_device_stall(size_t n_args, const mp_obj_t *args) {
     return res;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_stall_obj, 2, 3, usb_device_stall);
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 // Configure the singleton USB device with all of the relevant transfer and descriptor
 // callbacks for dynamic devices.
 static mp_obj_t usb_device_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -287,6 +292,7 @@ static mp_obj_t usb_device_config(size_t n_args, const mp_obj_t *pos_args, mp_ma
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_config_obj, 1, usb_device_config);
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 // Device descriptor object (needed by bitfield builtin functions)
 static const MP_DEFINE_BYTES_OBJ(builtin_default_desc_dev_obj,
