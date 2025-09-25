@@ -42,7 +42,7 @@
 #include "device/usbd_pvt.h"
 #endif
 
-#define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC)
+#define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC || MICROPY_HW_USB_NCM)
 
 // USB class flags are defined in mp_usbd.h
 
