@@ -117,6 +117,7 @@ typedef struct {
 typedef struct {
     ADC_Type *instance;
     uint8_t channel;
+    uint8_t channel_group;
 } machine_pin_adc_obj_t;
 
 typedef struct {
