@@ -7,3 +7,4 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.spiram_sx
     boards/ESP32_GENERIC_S3/sdkconfig.board
 )
+set(MICROPY_PY_MACHINE_CAN 1)
