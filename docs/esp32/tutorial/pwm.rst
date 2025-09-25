@@ -11,7 +11,9 @@ compared with the length of a single period (low plus high time).  Maximum
 duty cycle is when the pin is high all of the time, and minimum is when it is
 low all of the time.
 
-* More comprehensive example with all **16 PWM channels and 8 timers**::
+* More comprehensive example with all **16 PWM channels and 8 timers**:
+
+.. code-block:: python
 
     from time import sleep
     from machine import Pin, PWM
@@ -33,7 +35,7 @@ low all of the time.
             except:
                 pass
 
-  Output is::
+Output is::
 
     PWM(Pin(2), freq=10000, duty_u16=4096)
     PWM(Pin(4), freq=10000, duty_u16=8192)
@@ -53,7 +55,9 @@ low all of the time.
     PWM(Pin(33), freq=80000, duty_u16=65535)
 
 
-* Example of a **smooth frequency change**::
+* Example of a **smooth frequency change**:
+
+.. code-block:: python
 
     from time import sleep
     from machine import Pin, PWM
@@ -81,9 +85,9 @@ low all of the time.
             elif f < F_MIN:
                 f = F_MIN
 
-  See PWM wave on Pin(27) with an oscilloscope.
+See PWM wave on Pin(27) with an oscilloscope.
 
-  Output is::
+Output is::
 
     PWM(Pin(27), freq=998, duty_u16=32768)
     PWM(Pin(27), freq=1202, duty_u16=32768)
@@ -107,6 +111,9 @@ low all of the time.
 
 
 * Example of a **smooth duty change**::
+.. skip: next
+
+.. code-block:: python
 
     from time import sleep
     from machine import Pin, PWM
@@ -138,9 +145,9 @@ low all of the time.
             duty_u16 = 0
             delta_d = -delta_d
 
-  PWM wave on Pin(27) with an oscilloscope.
+PWM wave on Pin(27) with an oscilloscope.
 
-  Output is::
+Output is::
 
     PWM(Pin(27), freq=998, duty_u16=0)
     PWM(Pin(27), freq=998, duty_u16=256)
@@ -166,7 +173,11 @@ low all of the time.
     PWM(Pin(27), freq=998, duty_u16=0)
 
 
-* Example of a **smooth duty change and PWM output inversion**::
+* Example of a **smooth duty change and PWM output inversion**:
+
+.. skip: next
+
+.. code-block:: python
 
     from utime import sleep
     from machine import Pin, PWM
@@ -206,7 +217,7 @@ low all of the time.
         except:
             pass
 
-  Output is::
+Output is::
 
     PWM(Pin(27), freq=5000, duty_u16=0)
     PWM(Pin(32), freq=5000, duty_u16=32768, invert=1)
@@ -224,6 +235,9 @@ low all of the time.
   See PWM waves on Pin(27) and Pin(32) with an oscilloscope.
 
 Note: New PWM parameters take effect in the next PWM cycle.
+.. skip: start
+
+.. code-block:: python
 
     pwm = PWM(2, duty=512)
     print(pwm)
@@ -240,12 +254,17 @@ Note: machine.freq(20_000_000) reduces the highest PWM frequency to 10 MHz.
 Note: the Pin.OUT mode does not need to be specified. The channel is initialized
 to PWM mode internally once for each Pin that is passed to the PWM constructor.
 
-The following code is wrong::
+The following code is wrong:
+
+.. code-block:: python
 
     pwm = PWM(Pin(5, Pin.OUT), freq=1000, duty=512)  # Pin(5) in PWM mode here
     pwm = PWM(Pin(5, Pin.OUT), freq=500, duty=256)  # Pin(5) in OUT mode here, PWM is off
 
-Use this code instead::
+.. skip: end
+Use this code instead:
+
+.. code-block:: python
 
     pwm = PWM(Pin(5), freq=1000, duty=512)
     pwm.init(freq=500, duty=256)

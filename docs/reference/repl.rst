@@ -84,6 +84,7 @@ Interrupting a running program
 You can interrupt a running program by pressing Ctrl-C. This will raise a KeyboardInterrupt
 which will bring you back to the REPL, providing your program doesn't intercept the
 KeyboardInterrupt exception.
+.. skip: start
 
 For example:
 
@@ -142,6 +143,7 @@ the auto-indent feature, and changes the prompt from ``>>>`` to ``===``. For exa
 
 Paste Mode allows blank lines to be pasted. The pasted text is compiled as if
 it were a file. Pressing Ctrl-D exits paste mode and initiates the compilation.
+.. skip: end
 
 .. _repl_soft_reset:
 

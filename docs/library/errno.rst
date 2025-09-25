@@ -17,7 +17,9 @@ Constants
     Error codes, based on ANSI C/POSIX standard. All error codes start with
     "E". As mentioned above, inventory of the codes depends on
     :term:`MicroPython port`. Errors are usually accessible as ``exc.errno``
-    where ``exc`` is an instance of `OSError`. Usage example::
+    where ``exc`` is an instance of `OSError`. Usage example:
+
+    .. code-block:: python
 
         try:
             os.mkdir("my_dir")
@@ -30,5 +32,6 @@ Constants
     Dictionary mapping numeric error codes to strings with symbolic error
     code (see above)::
 
+        >>> import errno
         >>> print(errno.errorcode[errno.EEXIST])
         EEXIST

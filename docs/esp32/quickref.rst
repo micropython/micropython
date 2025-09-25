@@ -35,14 +35,18 @@ Tab-completion is useful to find out what methods an object has.
 Paste mode (ctrl-E) is useful to paste a large slab of Python code into
 the REPL.
 
-The :mod:`machine` module::
+The :mod:`machine` module:
+
+.. code-block:: python
 
     import machine
 
     machine.freq()          # get the current frequency of the CPU
     machine.freq(240000000) # set the CPU frequency to 240 MHz
 
-The :mod:`esp` module::
+The :mod:`esp` module:
+
+.. code-block:: python
 
     import esp
 
@@ -56,7 +60,9 @@ The :mod:`esp` module::
     esp.flash_write(byte_offset, buffer)
     esp.flash_read(byte_offset, buffer)
 
-The :mod:`esp32` module::
+The :mod:`esp32` module:
+
+.. code-block:: python
 
     import esp32
 
@@ -69,7 +75,9 @@ by reading the temperature sensor immediately after waking up from sleep.
 
 ESP32C3, ESP32C6, ESP32S2, and ESP32S3 also have an internal temperature sensor available.
 It is implemented a bit differently to the ESP32 and returns the temperature in
-Celsius::
+Celsius:
+
+.. code-block:: python
 
     esp32.mcu_temperature() # read the internal temperature of the MCU, in Celsius
 
@@ -79,7 +87,9 @@ Networking
 WLAN
 ^^^^
 
-The :class:`network.WLAN` class in the :mod:`network` module::
+The :class:`network.WLAN` class in the :mod:`network` module:
+    
+.. code-block:: python
 
     import network
 
@@ -96,7 +106,9 @@ The :class:`network.WLAN` class in the :mod:`network` module::
     ap.config(max_clients=10)             # set how many clients can connect to the network
     ap.active(True)                       # activate the interface
 
-A useful function for connecting to your local WiFi network is::
+A useful function for connecting to your local WiFi network is:
+
+.. code-block:: python
 
     def do_connect():
         import machine, network
@@ -134,9 +146,12 @@ external Ethernet PHY to be wired to the chip's EMAC pins. Most of the EMAC pin
 assignments are fixed, consult the ESP32 datasheet for details.
 
 If the PHY is connected, the internal Ethernet MAC can be configured via
-the :class:`network.LAN` constructor::
+the :class:`network.LAN` constructor:
+
+.. code-block:: python
 
     import network
+    import time
 
     lan = network.LAN(mdc=PIN_MDC, ...)   # Set the pin and mode configuration
     lan.active(True)                      # activate the interface
@@ -170,7 +185,9 @@ Optional keyword arguments:
   ``machine.Pin.OUT``. If not specified, the board default is used
   (typically input, but may be different if a particular board has Ethernet.)
 
-These are working configurations for LAN interfaces of some popular ESP32 boards::
+These are working configurations for LAN interfaces of some popular ESP32 boards:
+
+.. code-block:: python
 
     # Olimex ESP32-GATEWAY: power controlled by Pin(5)
     # Olimex ESP32 PoE and ESP32-PoE ISO: power controlled by Pin(12)
@@ -208,7 +225,9 @@ interfaces that connect via a SPI bus, rather than an Ethernet RMII interface.
      to save code size.
 
 SPI Ethernet uses the same :class:`network.LAN` constructor, with a different
-set of keyword arguments::
+set of keyword arguments:
+
+.. code-block:: python
 
     import machine, network
 
@@ -242,7 +261,9 @@ Optional keyword arguments for the constructor:
   switches the power of the SPI Ethernet interface.
 
 Here is a sample configuration for a WIZNet W5500 chip connected to pins on
-an ESP32-S3 development board::
+an ESP32-S3 development board:
+
+.. code-block:: python
 
     import machine, network
     from machine import Pin, SPI
@@ -258,7 +279,9 @@ an ESP32-S3 development board::
 Delay and timing
 ----------------
 
-Use the :mod:`time <time>` module::
+Use the :mod:`time <time>` module:
+
+.. code-block:: python
 
     import time
 
@@ -274,7 +297,9 @@ Timers
 The ESP32 port has one, two or four hardware timers, depending on the ESP32 device type.
 There is 1 timer for ESP32C2, 2 timers for ESP32C4, ESP32C6 and ESP32H4, and
 4 timers otherwise. Use the :ref:`machine.Timer <machine.Timer>` class
-with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
+with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive):
+
+.. code-block:: python
 
     from machine import Timer
 
@@ -298,7 +323,9 @@ Virtual timers are not currently supported on this port.
 Pins and GPIO
 -------------
 
-Use the :ref:`machine.Pin <machine.Pin>` class::
+Use the :ref:`machine.Pin <machine.Pin>` class:
+
+.. code-block:: python
 
     from machine import Pin
 
@@ -355,7 +382,9 @@ using ``on()`` or ``value(1)``.
 UART (serial bus)
 -----------------
 
-See :ref:`machine.UART <machine.UART>`. ::
+See :ref:`machine.UART <machine.UART>`. :
+
+.. code-block:: python
 
     from machine import UART
 
@@ -389,7 +418,9 @@ range from 1Hz to 40MHz but there is a tradeoff; as the base frequency
 `LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/ledc.html>`_
 for more details.
 
-Use the :ref:`machine.PWM <machine.PWM>` class::
+Use the :ref:`machine.PWM <machine.PWM>` class:
+
+.. code-block:: python
 
     from machine import Pin, PWM, lightsleep
 
@@ -453,7 +484,9 @@ DAC (digital to analog conversion)
 On the ESP32, DAC functionality is available on pins 25, 26.
 On the ESP32S2, DAC functionality is available on pins 17, 18.
 
-Use the DAC::
+Use the DAC:
+
+.. code-block:: python
 
     from machine import DAC, Pin
 
@@ -466,7 +499,9 @@ ADC (analog to digital conversion)
 On the ESP32, ADC functionality is available on pins 32-39 (ADC block 1) and
 pins 0, 2, 4, 12-15 and 25-27 (ADC block 2).
 
-Use the :ref:`machine.ADC <machine.ADC>` class::
+Use the :ref:`machine.ADC <machine.ADC>` class:
+
+.. code-block:: python
 
     from machine import ADC
 
@@ -577,7 +612,9 @@ The ESP32 provides up to 8 pulse counter peripherals depending on the hardware,
 with id 0..7. These can be configured to count rising and/or falling edges on
 any input pin.
 
-Use the :ref:`esp32.PCNT <esp32.PCNT>` class::
+Use the :ref:`esp32.PCNT <esp32.PCNT>` class:
+
+.. code-block:: python
 
     from machine import Pin
     from esp32 import PCNT
@@ -593,7 +630,9 @@ implement quadrature decoding or up/down signal counters.
 
 See the :ref:`machine.Counter <machine.Counter>` and
 :ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
-common pulse counting applications::
+common pulse counting applications:
+
+.. code-block:: python
 
     from machine import Pin, Counter
 
@@ -610,7 +649,9 @@ Software SPI bus
 ----------------
 
 Software SPI (using bit-banging) works on all pins, and is accessed via the
-:ref:`machine.SoftSPI <machine.SoftSPI>` class::
+:ref:`machine.SoftSPI <machine.SoftSPI>` class:
+
+.. code-block:: python
 
     from machine import Pin, SoftSPI
 
@@ -658,7 +699,9 @@ miso   12           19
 =====  ===========  ============
 
 Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class and
-has the same methods as software SPI above::
+has the same methods as software SPI above:
+
+.. code-block:: python
 
     from machine import Pin, SPI
 
@@ -670,7 +713,9 @@ Software I2C bus
 ----------------
 
 Software I2C (using bit-banging) works on all output-capable pins, and is
-accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
+accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class:
+
+.. code-block:: python
 
     from machine import Pin, SoftI2C
 
@@ -699,7 +744,9 @@ sda    19           26
 =====  ===========  ============
 
 The driver is accessed via the :ref:`machine.I2C <machine.I2C>` class and
-has the same methods as software I2C above::
+has the same methods as software I2C above:
+
+.. code-block:: python
 
     from machine import Pin, I2C
 
@@ -709,7 +756,9 @@ has the same methods as software I2C above::
 I2S bus
 -------
 
-See :ref:`machine.I2S <machine.I2S>`. ::
+See :ref:`machine.I2S <machine.I2S>`. :
+
+.. code-block:: python
 
     from machine import I2S, Pin
 
@@ -727,7 +776,9 @@ ESP32 has two I2S buses with id=0 and id=1
 Real time clock (RTC)
 ---------------------
 
-See :ref:`machine.RTC <machine.RTC>` ::
+See :ref:`machine.RTC <machine.RTC>` :
+
+.. code-block:: python
 
     from machine import RTC
 
@@ -740,7 +791,9 @@ See :ref:`machine.RTC <machine.RTC>` ::
 WDT (Watchdog timer)
 --------------------
 
-See :ref:`machine.WDT <machine.WDT>`. ::
+See :ref:`machine.WDT <machine.WDT>`. :
+
+.. code-block:: python
 
     from machine import WDT
 
@@ -753,7 +806,9 @@ See :ref:`machine.WDT <machine.WDT>`. ::
 Deep-sleep mode
 ---------------
 
-The following code can be used to sleep, wake and check the reset cause::
+The following code can be used to sleep, wake and check the reset cause:
+
+.. code-block:: python
 
     import machine
 
@@ -779,7 +834,9 @@ deep-sleep.
 If the pull resistors are not actively required during deep-sleep and are likely
 to cause current leakage (for example a pull-up resistor is connected to ground
 through a switch), then they should be disabled to save power before entering
-deep-sleep mode::
+deep-sleep mode:
+
+.. code-block:: python
 
     from machine import Pin, deepsleep
 
@@ -796,7 +853,9 @@ deep-sleep if pad hold is enabled with the ``hold=True`` argument to
 
 Non-RTC GPIO pins will be disconnected by default on entering deep-sleep.
 Configuration of non-RTC pins - including output level - can be retained by
-enabling pad hold on the pin and enabling GPIO pad hold during deep-sleep::
+enabling pad hold on the pin and enabling GPIO pad hold during deep-sleep:
+
+.. code-block:: python
 
     from machine import Pin, deepsleep
     import esp32
@@ -816,7 +875,9 @@ sleep. See :ref:`Pins_and_GPIO` above for a further discussion of pad holding.
 SD card
 -------
 
-See :ref:`machine.SDCard <machine.SDCard>`. ::
+See :ref:`machine.SDCard <machine.SDCard>`. :
+
+.. code-block:: python
 
     import machine, os, vfs
 
@@ -832,7 +893,9 @@ RMT
 ---
 
 The RMT is ESP32-specific and allows generation of accurate digital pulses with
-12.5ns resolution.  See :ref:`esp32.RMT <esp32.RMT>` for details.  Usage is::
+12.5ns resolution.  See :ref:`esp32.RMT <esp32.RMT>` for details.  Usage is:
+
+.. code-block:: python
 
     import esp32
     from machine import Pin
@@ -848,7 +911,9 @@ unavailable on those SoCs.
 OneWire driver
 --------------
 
-The OneWire driver is implemented in software and works on all pins::
+The OneWire driver is implemented in software and works on all pins:
+
+.. code-block:: python
 
     from machine import Pin
     import onewire
@@ -861,7 +926,9 @@ The OneWire driver is implemented in software and works on all pins::
     ow.write('123')         # write bytes on the bus
     ow.select_rom(b'12345678') # select a specific device by its ROM code
 
-There is a specific driver for DS18S20 and DS18B20 devices::
+There is a specific driver for DS18S20 and DS18B20 devices:
+
+.. code-block:: python
 
     import time, ds18x20
     ds = ds18x20.DS18X20(ow)
@@ -878,7 +945,9 @@ sample the temperature.
 NeoPixel and APA106 driver
 --------------------------
 
-Use the ``neopixel`` and ``apa106`` modules::
+Use the ``neopixel`` and ``apa106`` modules:
+
+.. code-block:: python
 
     from machine import Pin
     from neopixel import NeoPixel
@@ -890,7 +959,9 @@ Use the ``neopixel`` and ``apa106`` modules::
     r, g, b = np[0]         # get first pixel colour
 
 
-The APA106 driver extends NeoPixel, but internally uses a different colour order::
+The APA106 driver extends NeoPixel, but internally uses a different colour order:
+
+.. code-block:: python
 
     from apa106 import APA106
     ap = APA106(pin, 8)
@@ -912,7 +983,9 @@ Capacitive touch
 ----------------
 
 ESP32, ESP32-S2 and ESP32-S3 support capacitive touch via the ``TouchPad`` class
-in the ``machine`` module::
+in the ``machine`` module:
+
+.. code-block:: python
 
     from machine import TouchPad, Pin
 
@@ -939,7 +1012,9 @@ ESP32-S3  1 to 14 inclusive
 
 Trying to assign to any other pins will result in a ``ValueError``.
 
-Note that TouchPads can be used to wake an ESP32 from sleep::
+Note that TouchPads can be used to wake an ESP32 from sleep:
+
+.. code-block:: python
 
     import machine
     from machine import TouchPad, Pin
@@ -957,7 +1032,9 @@ For more details on touchpads refer to `Espressif Touch Sensor
 DHT driver
 ----------
 
-The DHT driver is implemented in software and works on all pins::
+The DHT driver is implemented in software and works on all pins:
+
+.. code-block:: python
 
     import dht
     import machine
@@ -978,13 +1055,18 @@ WebREPL (web browser interactive prompt)
 WebREPL (REPL over WebSockets, accessible via a web browser) is an
 experimental feature available in ESP32 port. Download web client
 from https://github.com/micropython/webrepl (hosted version available
-at http://micropython.org/webrepl), and configure it by executing::
+at http://micropython.org/webrepl), and configure it by executing:
+
+.. code-block:: python
+
 
     import webrepl_setup
 
 and following on-screen instructions. After reboot, it will be available
 for connection. If you disabled automatic start-up on boot, you may
-run configured daemon on demand using::
+run configured daemon on demand using:
+
+.. code-block:: python
 
     import webrepl
     webrepl.start()

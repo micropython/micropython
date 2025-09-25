@@ -32,6 +32,7 @@ Creating a Servo object
 Plug in a servo to position 1 (the one with pin X1) and create a servo object
 using::
 
+    >>> import pyb
     >>> servo1 = pyb.Servo(1)
 
 To change the angle of the servo use the ``angle`` method::
@@ -42,6 +43,7 @@ To change the angle of the servo use the ``angle`` method::
 The angle here is measured in degrees, and ranges from about -90 to +90,
 depending on the motor.  Calling ``angle`` without parameters will return
 the current angle::
+
 
     >>> servo1.angle()
     -60
@@ -61,6 +63,7 @@ to the desired angle, and stop when it gets there.  You can use this feature
 as a speed control, or to synchronise 2 or more servo motors.  If we have
 another servo motor (``servo2 = pyb.Servo(2)``) then we can do ::
 
+    >>> servo2 = pyb.Servo(2)
     >>> servo1.angle(-45, 2000); servo2.angle(60, 2000)
 
 This will move the servos together, making them both take 2 seconds to
@@ -100,6 +103,7 @@ called ``speed`` which sets the speed::
 
 ``speed`` has the same functionality as ``angle``: you can get the speed,
 set it, and set it with a time to reach the final speed. ::
+.. skip: start
 
     >>> servo1.speed()
     30
@@ -144,3 +148,5 @@ You can recalibrate the servo (change its default values) by using::
 
 Of course, you would change the above values to suit your particular
 servo motor.
+
+.. skip: end

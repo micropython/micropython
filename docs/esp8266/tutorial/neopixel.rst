@@ -40,6 +40,7 @@ Then use the ``write()`` method to output the colours to the LEDs::
 
 The following demo function makes a fancy show on the LEDs::
 
+.. code-block:: python
     import time
 
     def demo(np):
@@ -80,5 +81,5 @@ The following demo function makes a fancy show on the LEDs::
         np.write()
 
 Execute it using::
-
+    >>> np = neopixel.NeoPixel(machine.Pin(4), 8)
     >>> demo(np)

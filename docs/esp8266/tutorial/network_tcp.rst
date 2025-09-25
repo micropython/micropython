@@ -20,6 +20,7 @@ The first thing to do is make sure we have the socket module available::
 
     >>> import socket
 
+.. skip: start
 Then get the IP address of the server::
 
     >>> addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)
@@ -50,6 +51,7 @@ interrupt it).
 
 You should also be able to run this same code on your PC using normal Python if
 you want to try it out there.
+.. skip: end
 
 HTTP GET request
 ----------------
@@ -58,7 +60,9 @@ The next example shows how to download a webpage.  HTTP uses port 80 and you
 first need to send a "GET" request before you can download anything.  As part
 of the request you need to specify the page to retrieve.
 
-Let's define a function that can download and print a URL::
+Let's define a function that can download and print a URL:
+
+.. code-block:: python
 
     def http_get(url):
         import socket
@@ -76,6 +80,7 @@ Let's define a function that can download and print a URL::
         s.close()
 
 Then you can try::
+.. skip: start
 
     >>> http_get('http://micropython.org/ks/test.html')
 
@@ -85,7 +90,9 @@ Simple HTTP server
 ------------------
 
 The following code creates an simple HTTP server which serves a single webpage
-that contains a table with the state of all the GPIO pins::
+that contains a table with the state of all the GPIO pins:
+
+.. code-block:: python
 
     import machine
     pins = [machine.Pin(i, machine.Pin.IN) for i in (0, 2, 4, 5, 12, 13, 14, 15)]
@@ -121,3 +128,5 @@ that contains a table with the state of all the GPIO pins::
         cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
         cl.send(response)
         cl.close()
+
+.. skip: end

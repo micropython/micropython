@@ -13,20 +13,26 @@ timer prescaler.  When the counter reaches the timer period it triggers an
 event, and the counter resets back to zero.  By using the callback method,
 the timer event can call a Python function.
 
-Example usage to toggle an LED at a fixed frequency::
+Example usage to toggle an LED at a fixed frequency:
+
+.. code-block:: python
 
     tim = pyb.Timer(4)              # create a timer object using timer 4
     tim.init(freq=2)                # trigger at 2Hz
     tim.callback(lambda t:pyb.LED(1).toggle())
 
-Example using named function for the callback::
+Example using named function for the callback:
+
+.. code-block:: python
 
     def tick(timer):                # we will receive the timer object when being called
         print(timer.counter())      # show current timer's counter value
     tim = pyb.Timer(4, freq=1)      # create a timer object using timer 4 - trigger at 1Hz
     tim.callback(tick)              # set the callback to our tick function
 
-Further examples::
+Further examples:
+
+.. code-block:: python
 
     tim = pyb.Timer(4, freq=100)    # freq in Hz
     tim = pyb.Timer(4, prescaler=0, period=99)
@@ -65,7 +71,9 @@ Methods
 .. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0, brk=Timer.BRK_OFF, hard=True)
 
    Initialise the timer.  Initialisation must be either by frequency (in Hz)
-   or by prescaler and period::
+   or by prescaler and period:
+
+    .. code-block:: python
 
        tim.init(freq=100)                  # set the timer to trigger at 100Hz
        tim.init(prescaler=83, period=999)  # set the prescaler and period directly
