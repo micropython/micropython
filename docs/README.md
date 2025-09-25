@@ -13,8 +13,7 @@ Building the documentation locally
 If you're making changes to the documentation, you may want to build the
 documentation locally so that you can preview your changes.
 
-Install Sphinx, and optionally (for the RTD-styling), sphinx_rtd_theme,
-preferably in a virtualenv:
+Install Sphinx and sphinx_rtd_theme, preferably in a virtualenv:
 
      pip install sphinx
      pip install sphinx_rtd_theme
