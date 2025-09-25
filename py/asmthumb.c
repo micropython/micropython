@@ -246,7 +246,7 @@ void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
 void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src) {
     assert(reg_dest < ASM_THUMB_REG_R15);
     // mov[wt] reg_dest, #i16_src
-    asm_thumb_op32(as, mov_op | ((i16_src >> 1) & 0x0400) | ((i16_src >> 12) & 0xf), ((i16_src << 4) & 0x7000) | (reg_dest << 8) | (i16_src & 0xff));
+    asm_thumb_op32(as, mov_op | ((i16_src >> 1) & 0x0400) | ((i16_src >> 12) & 0xf), (((uint16_t)i16_src << 4) & 0x7000) | (reg_dest << 8) | (i16_src & 0xff));
 }
 
 static void asm_thumb_mov_rlo_i16(asm_thumb_t *as, uint rlo_dest, int i16_src) {
