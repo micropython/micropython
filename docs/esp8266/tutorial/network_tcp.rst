@@ -21,6 +21,7 @@ The first thing to do is make sure we have the socket module available::
     >>> import socket
 
 .. skip: start
+
 Then get the IP address of the server::
 
     >>> addr_info = socket.getaddrinfo("towel.blinkenlights.nl", 23)

@@ -38,9 +38,10 @@ Then use the ``write()`` method to output the colours to the LEDs::
 
     >>> np.write()
 
-The following demo function makes a fancy show on the LEDs::
+The following demo function makes a fancy show on the LEDs:
 
 .. code-block:: python
+
     import time
 
     def demo(np):

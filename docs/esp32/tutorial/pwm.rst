@@ -110,7 +110,8 @@ Output is::
     PWM(Pin(27), freq=998, duty_u16=32768)
 
 
-* Example of a **smooth duty change**::
+* Example of a **smooth duty change**:
+
 .. skip: next
 
 .. code-block:: python
@@ -262,6 +263,7 @@ The following code is wrong:
     pwm = PWM(Pin(5, Pin.OUT), freq=500, duty=256)  # Pin(5) in OUT mode here, PWM is off
 
 .. skip: end
+
 Use this code instead:
 
 .. code-block:: python
