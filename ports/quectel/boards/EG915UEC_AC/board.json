@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Celluar network",
+        "bsp",
+        "USB"
+    ],
+    "images": [
+        "eg915uec_ac.jpg"
+    ],
+    "mcu": "eg915uecac",
+    "product": "EG915UEC_AC",
+    "thumbnail": "",
+    "url": "https://developer.quectel.com/en/modules-cat/eg915u-series",
+    "vendor": "Unisoc"
+}
