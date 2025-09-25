@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
