@@ -31,8 +31,8 @@
     <PyVariantDir Condition="'$(PyVariantDir)' == ''">$(PyWinDir)variants\$(PyVariant)\</PyVariantDir>
     <PyTargetDir Condition="'$(PyTargetDir)' == ''">$(PyBuildDir)</PyTargetDir>
 
-    <!-- All include directories needed for uPy -->
-    <PyIncDirs>$(PyIncDirs);$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc;$(PyVariantDir)</PyIncDirs>
+    <!-- Common include directories needed for uPy -->
+    <PyIncDirs>$(PyIncDirs);$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc</PyIncDirs>
 
     <!-- Within PyBuildDir different subdirectories are used based on configuration and platform.
          By default these are chosen based on the Configuration and Platform properties, but

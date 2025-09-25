@@ -19,6 +19,9 @@
     <PyFileCopyCookie>$(PyBuildDir)copycookie$(Configuration)$(Platform)</PyFileCopyCookie>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(PyBuildingMpyCross)' != 'True'">
+    <PyIncDirs>$(PyIncDirs);$(PyVariantDir)</PyIncDirs>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(PyIncDirs);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
