@@ -11,6 +11,7 @@ from sybil.evaluators.python import pad
 
 from doctest import Example as DocTestExample
 
+
 class MicroPythonEvaluator:
     """
     The :any:`Evaluator` to use for :class:`Regions <sybil.Region>` containing
@@ -112,7 +113,7 @@ class MicroPythonDocTestEvaluator(DocTestEvaluator):
                                     "name 'x' is" in expected_error
                                     and "name 'x' is" in actual_error
                                 ):
-                                    return  ''.join(output) # Consider this a match
+                                    return "".join(output)  # Consider this a match
 
                     raise AssertionError(f"Expected: {expected_output!r}, Got: {actual_output!r}")
 
