@@ -68,3 +68,15 @@ mccabe.max-complexity = 40
 #   repl_: not real python files
 #   viper_args: uses f(*)
 exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+python_functions = ["test_", "*_test"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-p no:doctest"
+testpaths = [
+    "docs",
+    ]
+
+junit_family = "xunit1"
+
