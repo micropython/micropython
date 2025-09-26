@@ -27,7 +27,7 @@ class PIOASMEmit:
         out_init=None,
         set_init=None,
         sideset_init=None,
-        side_pindir=False,
+        side_pindir=None,
         in_shiftdir=PIO.SHIFT_LEFT,
         out_shiftdir=PIO.SHIFT_LEFT,
         autopush=False,
@@ -35,13 +35,17 @@ class PIOASMEmit:
         push_thresh=32,
         pull_thresh=32,
         fifo_join=PIO.JOIN_NONE,
+        execctrl=0,
     ):
         # array is a built-in module so importing it here won't require
         # scanning the filesystem.
         from array import array
 
         self.labels = {}
-        execctrl = side_pindir << 29
+        if side_pindir:
+            execctrl |= 1 << 29
+        elif side_pindir is not None:
+            execctrl &= ~(1 << 29)
         shiftctrl = (
             fifo_join << 30
             | (pull_thresh & 0x1F) << 25
