@@ -17,6 +17,7 @@ The following video shows how to solder the headers, microphone and speaker onto
 
     <iframe style="margin-left:3em;" width="560" height="315" src="http://www.youtube.com/embed/fjB1DuZRveo?rel=0" frameborder="0" allowfullscreen></iframe>
 
+
 For circuit schematics and datasheets for the components on the skin see :ref:`hardware_index`.
 
 Example code
@@ -26,11 +27,24 @@ The AMP skin has a speaker which is connected to ``DAC(1)`` via a small
 power amplifier.  The volume of the amplifier is controlled by a digital
 potentiometer, which is an I2C device with address 46 on the ``IC2(1)`` bus.
 
-To set the volume, define the following function::
+To set the volume, define the following function:
+
+.. invisible-code-block: python
+
+    import pyb
+    def volume(val):
+        # mock implementation for docs test
+        pass
+
+
+.. skip: next
+
+.. code-block:: python
 
     import pyb
     def volume(val):
         pyb.I2C(1, pyb.I2C.CONTROLLER).mem_write(val, 46, 0)
+
 
 Then you can do::
 
@@ -38,7 +52,9 @@ Then you can do::
     >>> volume(127) # maximum volume
 
 To play a sound, use the ``write_timed`` method of the ``DAC`` object.
-For example::
+For example:
+
+.. code-block:: python
 
     import math
     from pyb import DAC
@@ -75,7 +91,9 @@ so it has to be small enough to fit in it.
 To play larger wave files you will have to use the micro-SD card to store it.
 Also the file must be read and sent to the DAC in small chunks that will fit
 the RAM limit of the microcontroller.  Here is an example function that can
-play 8-bit wave files with up to 16kHz sampling::
+play 8-bit wave files with up to 16kHz sampling:
+
+.. code-block:: python
 
     import wave
     from pyb import DAC

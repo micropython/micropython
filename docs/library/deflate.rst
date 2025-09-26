@@ -81,6 +81,7 @@ Examples
 A typical use case for :class:`deflate.DeflateIO` is to read or write a compressed
 file from storage:
 
+.. skip: begin
 .. code:: python
 
    import deflate
@@ -134,6 +135,7 @@ to turn it into a stream suitable for use with :class:`deflate.DeflateIO`:
        d.write(uncompressed_data)
    compressed_data = stream.getvalue()
 
+.. skip: end
 .. _deflate_wbits:
 
 Deflate window size

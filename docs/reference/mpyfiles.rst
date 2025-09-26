@@ -52,7 +52,9 @@ code) will raise ``ValueError('incompatible .mpy arch')``.
 If importing an .mpy file fails then try the following:
 
 * Determine the .mpy version and flags supported by your MicroPython system
-  by executing::
+  by executing:
+
+.. code-block:: python
 
     import sys
     sys_mpy = sys.implementation._mpy

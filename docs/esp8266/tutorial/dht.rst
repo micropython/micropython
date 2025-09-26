@@ -26,6 +26,7 @@ To use the 1-wire interface, construct the objects referring to their data pin::
     >>> d = dht.DHT22(machine.Pin(4))
 
 Then measure and read their values with::
+.. skip: next
 
     >>> d.measure()
     >>> d.temperature()

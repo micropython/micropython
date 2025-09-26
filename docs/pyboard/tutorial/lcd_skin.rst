@@ -31,7 +31,9 @@ Make sure the LCD skin is attached to the pyboard as pictured at the top of this
     >>> lcd.light(True)
     >>> lcd.write('Hello uPy!\n')
 
-You can make a simple animation using the code::
+You can make a simple animation using the code:
+
+.. code-block:: python
 
     import pyb
     lcd = pyb.LCD('X')
@@ -44,11 +46,11 @@ You can make a simple animation using the code::
 
 Using the touch sensor
 ----------------------
-
 To read the touch-sensor data you need to use the I2C bus.  The
 MPR121 capacitive touch sensor has address 90.
 
 To get started, try::
+.. skip: start
 
     >>> import pyb
     >>> i2c = pyb.I2C(1, pyb.I2C.CONTROLLER)
@@ -84,3 +86,5 @@ initialise the I2C bus using::
 
 There is also a demo which uses the LCD and the touch sensors together,
 and can be found `here <http://micropython.org/resources/examples/lcddemo.py>`__.
+
+.. skip: end
