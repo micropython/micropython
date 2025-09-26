@@ -403,6 +403,7 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // all the locations in sys.path.
         stat = stat_top_level(level_mod_name, &path);
 
+        #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
         // If filesystem failed, now try and see if it matches an extensible
         // built-in module.
         if (stat == MP_IMPORT_STAT_NO_EXIST) {
@@ -411,6 +412,7 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
                 return module_obj;
             }
         }
+        #endif
     } else {
         DEBUG_printf("Searching for sub-module\n");
 
@@ -646,11 +648,13 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
+    #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
     // Now try as an extensible built-in (e.g. `time`).
     module_obj = mp_module_get_builtin(module_name_qstr, true);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
+    #endif
 
     // Couldn't find the module, so fail
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE

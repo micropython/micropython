@@ -79,7 +79,9 @@ static void mp_help_print_modules(void) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
+    #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
     mp_help_add_from_map(list, &mp_builtin_extensible_module_map);
+    #endif
 
     #if MICROPY_MODULE_FROZEN
     extern const char mp_frozen_names[];
