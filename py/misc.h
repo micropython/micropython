@@ -147,6 +147,33 @@ size_t m_get_peak_bytes_allocated(void);
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
 
+// ensure a variable or type declaration has a particular minimum alignment
+// e.g. `MP_ALIGNAS(32, char buf[256]);`
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)) || (defined(__cplusplus) && (__cplusplus >= 201103L)) || __has_extension(cxx_alignas) || (defined(__alignas_is_defined) && (__alignas_is_defined == 1))
+// C23 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// C++11 specifier: https://en.cppreference.com/w/cpp/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c-11-alignment-specifiers
+// stdalign.h macro: https://en.cppreference.com/w/c/header/stdalign.html
+// e.g. `alignas(32) char buf[256];`
+#define MP_ALIGNAS(alignment, decl) alignas(alignment) decl
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)) || __has_extension(c_alignas)
+// C11 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c11-alignment-specifiers
+// e.g. `_Alignas(32) char buf[256];`
+#define MP_ALIGNAS(alignment, decl) _Alignas(alignment) decl
+#elif defined(__GNUC__) || __has_attribute(__aligned__)
+// GCC attribute: https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-aligned-variable-attribute
+// e.g. `char buf[256] __attribute__((aligned(32)));`
+#define MP_ALIGNAS(alignment, decl) decl __attribute__((aligned(alignment)))
+#elif defined(_MSC_VER)
+// MSVC declspec: https://learn.microsoft.com/en-us/cpp/cpp/align-cpp
+// e.g. `__declspec(align(32))char buf[256];`
+#define MP_ALIGNAS(alignment, decl) __declspec(align(alignment))decl
+#else
+// e.g. `char buf[256];`
+#define MP_ALIGNAS(alignment, decl) decl
+#endif
+
 /** unichar / UTF-8 *********************************************/
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
