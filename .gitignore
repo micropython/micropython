@@ -24,3 +24,7 @@ user.props
 
 # MacOS desktop metadata files
 .DS_Store
+
+# Created by ci.sh zephyr targets
+/.ccache
+/zephyrproject
