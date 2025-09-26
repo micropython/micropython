@@ -40,20 +40,6 @@
 #include "py/formatfloat.h"
 #endif
 
-static const char pad_spaces[16] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
-#define pad_spaces_size  (sizeof(pad_spaces))
-static const char pad_common[23] = {'0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '_', '0', '0', '0', ',', '0', '0'};
-// The contents of pad_common is arranged to provide the following padding
-// strings with minimal flash size:
-//     0000000000000000 <- pad_zeroes
-//                 0000_000 <- pad_zeroes_underscore (offset: 12, size 5)
-//                      000,00 <- pad_zeroes_comma (offset: 17, size 4)
-#define pad_zeroes       (pad_common + 0)
-#define pad_zeroes_size  (16)
-#define pad_zeroes_underscore (pad_common + 12)
-#define pad_zeroes_underscore_size  (5)
-#define pad_zeroes_comma (pad_common + 17)
-#define pad_zeroes_comma_size  (4)
 
 static void plat_print_strn(void *env, const char *str, size_t len) {
     (void)env;
@@ -70,79 +56,59 @@ int mp_print_str(const mp_print_t *print, const char *str) {
     return len;
 }
 
+// Efficiently print `count` chars looping over `str[len]`.
+static void print_strn_cycle(const mp_print_t *print, const char *str, size_t len, size_t count) {
+    while (count >= len) {
+        print->print_strn(print->data, str, len);
+        count -= len;
+    }
+    if (count) {
+        print->print_strn(print->data, str, count);
+    }
+}
+
+// lcm(4,5) to match stride for both comma and underscore grouping
+#define PAD_BUF_SIZE 20
+
 int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
-    int pad_size;
     int total_chars_printed = 0;
-    const char *pad_chars;
-    char grouping = flags >> PF_FLAG_SEP_POS;
 
-    if (!fill || fill == ' ') {
-        pad_chars = pad_spaces;
-        pad_size = pad_spaces_size;
-    } else if (fill == '0' && !grouping) {
-        pad_chars = pad_zeroes;
-        pad_size = pad_zeroes_size;
-    } else if (fill == '0') {
-        if (grouping == '_') {
-            pad_chars = pad_zeroes_underscore;
-            pad_size = pad_zeroes_underscore_size;
+    char pad_buf[PAD_BUF_SIZE];
+    MP_STATIC_ASSERT(sizeof(pad_buf) % 5 == 0); // stride for underscore grouping
+    MP_STATIC_ASSERT(sizeof(pad_buf) % 4 == 0); // stride for comma grouping
+
+    fill = fill ? fill : ' ';
+
+    if (pad > 0) {
+        if (flags & PF_FLAG_CENTER_ADJUST) {
+            left_pad = pad / 2;
+            right_pad = pad - left_pad;
+        } else if (flags & PF_FLAG_LEFT_ADJUST) {
+            left_pad = 0;
+            right_pad = pad;
         } else {
-            pad_chars = pad_zeroes_comma;
-            pad_size = pad_zeroes_comma_size;
+            left_pad = pad;
+            right_pad = 0;
         }
-        // The result will never start with a grouping character. An extra leading zero is added.
-        // width is dead after this so we can use it in calculation
-        if (width % pad_size == 0) {
-            pad++;
-            width++;
-        }
-        // position the grouping character correctly within the pad repetition
-        pad_chars += pad_size - 1 - width % pad_size;
-    } else {
-        // Other pad characters are fairly unusual, so we'll take the hit
-        // and output them 1 at a time.
-        pad_chars = &fill;
-        pad_size = 1;
-    }
 
-    if (flags & PF_FLAG_CENTER_ADJUST) {
-        left_pad = pad / 2;
-        right_pad = pad - left_pad;
-    } else if (flags & PF_FLAG_LEFT_ADJUST) {
-        right_pad = pad;
-    } else {
-        left_pad = pad;
-    }
+        memset(pad_buf, fill, sizeof(pad_buf));
 
-    if (left_pad > 0) {
+        // inside the (pad>0) condition just because we can be
+        print_strn_cycle(print, pad_buf, sizeof(pad_buf), left_pad);
         total_chars_printed += left_pad;
-        while (left_pad > 0) {
-            int p = left_pad;
-            if (p > pad_size) {
-                p = pad_size;
-            }
-            print->print_strn(print->data, pad_chars, p);
-            left_pad -= p;
-        }
     }
-    if (len) {
-        print->print_strn(print->data, str, len);
-        total_chars_printed += len;
-    }
-    if (right_pad > 0) {
-        total_chars_printed += right_pad;
-        while (right_pad > 0) {
-            int p = right_pad;
-            if (p > pad_size) {
-                p = pad_size;
-            }
-            print->print_strn(print->data, pad_chars, p);
-            right_pad -= p;
-        }
-    }
+
+    // indirect call is expensive, could condition this on `MP_LIKELY(len > 0)`
+    // but most `mp_print_strn` already check that and it's not actually a bug to invoke with 0 len
+    print->print_strn(print->data, str, len);
+    total_chars_printed += len;
+
+    print_strn_cycle(print, pad_buf, sizeof(pad_buf), right_pad);
+    total_chars_printed += right_pad;
+
     return total_chars_printed;
 }
 
