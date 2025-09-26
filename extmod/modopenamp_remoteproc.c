@@ -165,7 +165,7 @@ static MP_DEFINE_CONST_DICT(openamp_remoteproc_dict, openamp_remoteproc_dict_tab
 MP_DEFINE_CONST_OBJ_TYPE(
     openamp_remoteproc_type,
     MP_QSTR_RemoteProc,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, openamp_remoteproc_make_new,
     locals_dict, &openamp_remoteproc_dict
     );

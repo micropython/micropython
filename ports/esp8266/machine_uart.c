@@ -55,6 +55,8 @@ static const char *_parity_name[] = {"None", "1", "0"};
 // The UART class doesn't have any constants for this port.
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
 
+#define MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS (MP_TYPE_FLAG_NONE)
+
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, rxbuf=%u, timeout=%u, timeout_char=%u)",
