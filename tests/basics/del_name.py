@@ -10,7 +10,7 @@ except NameError:
 try:
     del x
 except: # NameError:
-    # FIXME uPy returns KeyError for this
+    # FIXME MicroPython returns KeyError for this
     print("NameError")
 
 class C:

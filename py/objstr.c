@@ -1304,7 +1304,7 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
 
                 case '\0':  // No explicit format type implies 'd'
-                case 'n':   // I don't think we support locales in uPy so use 'd'
+                case 'n':   // I don't think we support locales in MicroPython so use 'd'
                 case 'd':
                     mp_print_mp_int(&print, arg, 10, 'a', flags, fill, width, 0);
                     continue;

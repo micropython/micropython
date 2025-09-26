@@ -260,7 +260,7 @@ def gen_rst(results):
         output_cpy = ("::\n\n" if output_cpy != "" else "") + output_cpy
         output_upy = indent(output.output_upy, TAB).rstrip()
         output_upy = ("::\n\n" if output_upy != "" else "") + output_upy
-        table = gen_table([["CPy output:", output_cpy], ["uPy output:", output_upy]])
+        table = gen_table([["CPython output:", output_cpy], ["MicroPython output:", output_upy]])
         rst.write(table)
 
     template = open(INDEXTEMPLATE, "r")

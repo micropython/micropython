@@ -30,5 +30,5 @@ f.close()
 try:
     f.seek(1)
 except (OSError, ValueError):
-    # CPy raises ValueError, uPy raises OSError
+    # CPy raises ValueError, MP raises OSError
     print("OSError or ValueError")
