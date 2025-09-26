@@ -220,6 +220,7 @@ typedef struct _mp_compiled_module_t {
     bool has_native;
     size_t n_qstr;
     size_t n_obj;
+    size_t arch_flags;
     #endif
 } mp_compiled_module_t;
 
