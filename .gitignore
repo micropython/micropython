@@ -24,3 +24,11 @@ user.props
 
 # MacOS desktop metadata files
 .DS_Store
+
+# Created by ci.sh zephyr targets
+/.ccache
+/zephyrproject
+
+# Created by ci.sh esp8266 targets
+/xtensa-lx106-elf-standalone.tar.gz
+/xtensa-lx106-elf/
