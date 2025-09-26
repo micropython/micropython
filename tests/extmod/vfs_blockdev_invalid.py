@@ -70,8 +70,8 @@ def test(vfs_class):
         try:
             with fs.open("test", "r") as f:
                 print("opened")
-        except OSError as e:
-            print("OSError", e)
+        except Exception as e:
+            print(type(e), e)
 
         # This variant should succeed on open, may fail on read
         # unless the filesystem cached the contents already
@@ -81,8 +81,8 @@ def test(vfs_class):
                 bdev.read_res = res
                 print("read 1", f.read(1))
                 print("read rest", f.read())
-        except OSError as e:
-            print("OSError", e)
+        except Exception as e:
+            print(type(e), e)
 
 
 test(vfs.VfsLfs2)
