@@ -34,7 +34,6 @@
 #include "py/persistentcode.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
 #ifdef _WIN32
 #include "ports/windows/fmode.h"
@@ -221,8 +220,6 @@ static char *backslash_to_forwardslash(char *path) {
 }
 
 MP_NOINLINE int main_(int argc, char **argv) {
-    mp_stack_set_limit(40000 * (sizeof(void *) / 4));
-
     pre_process_options(argc, argv);
 
     char *heap = malloc(heap_size);
@@ -418,7 +415,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    mp_stack_ctrl_init();
+    mp_cstack_init_with_sp_here(40000 * (sizeof(void *) / 4));
     return main_(argc, argv);
 }
 
