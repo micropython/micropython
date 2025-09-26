@@ -218,7 +218,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   macos:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
     - uses: actions/checkout@v5
     - uses: actions/setup-python@v6
