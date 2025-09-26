@@ -1,6 +1,7 @@
 # MicroPython Test Suite
 
-This directory contains tests for most parts of MicroPython.
+This directory contains tests for most parts of MicroPython.  To run it you will need
+CPython 3.8.2 or newer, which is used to validate MicroPython's behaviour.
 
 To run all stable tests, run the "run-tests.py" script in this directory.  By default
 that will run the test suite against the unix port of MicroPython.
