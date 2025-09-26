@@ -40,8 +40,6 @@
 #include "py/formatfloat.h"
 #endif
 
-static const char pad_spaces[] = "                ";
-static const char pad_zeroes[] = "0000000000000000";
 
 static void plat_print_strn(void *env, const char *str, size_t len) {
     (void)env;
@@ -58,62 +56,55 @@ int mp_print_str(const mp_print_t *print, const char *str) {
     return len;
 }
 
+// Efficiently print `count` chars looping over `str[len]`.
+static void print_strn_cycle(const mp_print_t *print, const char *str, size_t len, size_t count) {
+    while (count > len) {
+        print->print_strn(print->data, str, len);
+        count -= len;
+    }
+    if (count > 0) {
+        print->print_strn(print->data, str, count);
+    }
+}
+
+// lcm(4,5) to match stride for both comma and underscore grouping
+#define PAD_BUF_SIZE 20
+
 int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
-    int pad_size;
     int total_chars_printed = 0;
-    const char *pad_chars;
 
-    if (!fill || fill == ' ') {
-        pad_chars = pad_spaces;
-        pad_size = sizeof(pad_spaces) - 1;
-    } else if (fill == '0') {
-        pad_chars = pad_zeroes;
-        pad_size = sizeof(pad_zeroes) - 1;
-    } else {
-        // Other pad characters are fairly unusual, so we'll take the hit
-        // and output them 1 at a time.
-        pad_chars = &fill;
-        pad_size = 1;
-    }
+    char pad_buf[PAD_BUF_SIZE];
 
-    if (flags & PF_FLAG_CENTER_ADJUST) {
-        left_pad = pad / 2;
-        right_pad = pad - left_pad;
-    } else if (flags & PF_FLAG_LEFT_ADJUST) {
-        right_pad = pad;
-    } else {
-        left_pad = pad;
-    }
+    if (pad > 0) {
+        fill = fill ? fill : ' ';
+        memset(pad_buf, fill, sizeof(pad_buf));
 
-    if (left_pad > 0) {
-        total_chars_printed += left_pad;
-        while (left_pad > 0) {
-            int p = left_pad;
-            if (p > pad_size) {
-                p = pad_size;
-            }
-            print->print_strn(print->data, pad_chars, p);
-            left_pad -= p;
+        if (flags & PF_FLAG_CENTER_ADJUST) {
+            left_pad = pad / 2;
+            right_pad = pad - left_pad;
+        } else if (flags & PF_FLAG_LEFT_ADJUST) {
+            left_pad = 0;
+            right_pad = pad;
+        } else {
+            left_pad = pad;
+            right_pad = 0;
         }
+
+        print_strn_cycle(print, pad_buf, sizeof(pad_buf), left_pad);
+        total_chars_printed += left_pad;
     }
-    if (len) {
+
+    if (MP_LIKELY(len)) {
         print->print_strn(print->data, str, len);
         total_chars_printed += len;
     }
-    if (right_pad > 0) {
-        total_chars_printed += right_pad;
-        while (right_pad > 0) {
-            int p = right_pad;
-            if (p > pad_size) {
-                p = pad_size;
-            }
-            print->print_strn(print->data, pad_chars, p);
-            right_pad -= p;
-        }
-    }
+
+    print_strn_cycle(print, pad_buf, sizeof(pad_buf), right_pad);
+    total_chars_printed += right_pad;
+
     return total_chars_printed;
 }
 
