@@ -14,7 +14,7 @@ $(error Invalid VARIANT specified: $(VARIANT_DIR))
 endif
 
 # If the build directory is not given, make it reflect the variant name.
-BUILD ?= build-$(VARIANT)
+BUILD ?= $(abspath ./build-$(VARIANT))
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
@@ -258,15 +258,15 @@ include $(TOP)/py/mkrules.mk
 
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py
 
 test//%: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py -i "$*"
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py -i "$*"
 
 test-failures: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --run-failures
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py --run-failures
 
 print-failures:
 	cd $(TOP)/tests && ./run-tests.py --print-failures
@@ -276,18 +276,18 @@ clean-failures:
 
 test/%: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py -d "$*"
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py -d "$*"
 
 test_full_no_native: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
-	cat $(TOP)/tests/basics/0prelim.py | ./$(BUILD)/$(PROG) | grep -q 'abc'
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
+	cat $(TOP)/tests/basics/0prelim.py | $(BUILD)/$(PROG) | grep -q 'abc'
 
 test_full: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py test_full_no_native
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --emit native
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py --emit native
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(BUILD)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
 
 test_gcov: test_full
 	gcov -o $(BUILD)/py $(TOP)/py/*.c
