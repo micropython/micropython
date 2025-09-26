@@ -67,7 +67,14 @@ typedef unsigned int uint;
 #define MP_STRINGIFY(x) MP_STRINGIFY_HELPER(x)
 
 // Static assertion macro
+#if __cplusplus
+#define MP_STATIC_ASSERT(cond) static_assert((cond), #cond)
+#elif __GNUC__ >= 5 || __STDC_VERSION__ >= 201112L
+#define MP_STATIC_ASSERT(cond) _Static_assert((cond), #cond)
+#else
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
+#endif
+
 // In C++ things like comparing extern const pointers are not constant-expressions so cannot be used
 // in MP_STATIC_ASSERT. Note that not all possible compiler versions will reject this. Some gcc versions
 // do, others only with -Werror=vla, msvc always does.
@@ -76,7 +83,7 @@ typedef unsigned int uint;
 #if defined(_MSC_VER) || defined(__cplusplus)
 #define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)1)
 #else
-#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) MP_STATIC_ASSERT(cond)
+#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
 #endif
 
 // Round-up integer division
