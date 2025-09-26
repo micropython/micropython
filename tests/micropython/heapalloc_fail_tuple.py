@@ -1,6 +1,12 @@
 # test handling of failed heap allocation with tuple
 
-import micropython
+try:
+    import micropython
+
+    micropython.heap_lock
+except (ImportError, AttributeError):
+    print("SKIP")
+    raise SystemExit
 
 # create tuple
 x = 1

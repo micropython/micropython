@@ -1,10 +1,10 @@
 # Check that micropython.RingIO works correctly.
 
-import micropython
-
 try:
+    import micropython
+
     micropython.RingIO
-except AttributeError:
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
