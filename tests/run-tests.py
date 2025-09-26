@@ -283,6 +283,7 @@ tests_requiring_slice = (
     "micropython/import_mpy_invalid.py",
     "micropython/import_mpy_native.py",
     "micropython/import_mpy_native_gc.py",
+    "micropython/ringio_big.py",
     "misc/non_compliant.py",
     "misc/rge_sm.py",
 )
