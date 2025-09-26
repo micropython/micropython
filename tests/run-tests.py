@@ -177,6 +177,18 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "samd/armv6m": (
+        # Fails timing bounds.
+        "extmod/time_res.py",
+        # Require more detailed error messages.
+        "micropython/emg_exc.py",
+        "micropython/heapalloc_exc_compressed.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        "micropython/native_with.py",
+        "micropython/opt_level_lineno.py",
+        "micropython/viper_with.py",
+        "misc/print_exception.py",
+    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
@@ -256,7 +268,9 @@ def platform_to_port(platform):
 
 
 def convert_device_shortcut_to_real_device(device):
-    if device.startswith("a") and device[1:].isdigit():
+    if device.startswith("port:"):
+        return device.split(":", 1)[1]
+    elif device.startswith("a") and device[1:].isdigit():
         return "/dev/ttyACM" + device[1:]
     elif device.startswith("u") and device[1:].isdigit():
         return "/dev/ttyUSB" + device[1:]
@@ -267,9 +281,7 @@ def convert_device_shortcut_to_real_device(device):
 
 
 def get_test_instance(test_instance, baudrate, user, password):
-    if test_instance.startswith("port:"):
-        _, port = test_instance.split(":", 1)
-    elif test_instance == "unix":
+    if test_instance == "unix":
         return None
     elif test_instance == "webassembly":
         return PyboardNodeRunner()
@@ -283,7 +295,12 @@ def get_test_instance(test_instance, baudrate, user, password):
 
     pyb = pyboard.Pyboard(port, baudrate, user, password)
     pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
-    pyb.enter_raw_repl()
+    try:
+        pyb.enter_raw_repl()
+    except pyboard.PyboardError as e:
+        print("error: could not detect test instance")
+        print(e)
+        sys.exit(2)
     return pyb
 
 
@@ -291,8 +308,13 @@ def detect_inline_asm_arch(pyb, args):
     for arch in ("rv32", "thumb", "xtensa"):
         output = run_feature_check(pyb, args, "inlineasm_{}.py".format(arch))
         if output.strip() == arch.encode():
-            return arch
-    return None
+            arch_flags = None
+            if arch == "rv32":
+                output = run_feature_check(pyb, args, "inlineasm_rv32_zba.py")
+                if output == b"rv32_zba\n":
+                    arch_flags = "zba"
+            return arch, arch_flags
+    return None, None
 
 
 def detect_test_platform(pyb, args):
@@ -303,7 +325,7 @@ def detect_test_platform(pyb, args):
     platform, arch, build, thread, float_prec, unicode = str(output, "ascii").strip().split()
     if arch == "None":
         arch = None
-    inlineasm_arch = detect_inline_asm_arch(pyb, args)
+    inlineasm_arch, arch_flags = detect_inline_asm_arch(pyb, args)
     if thread == "None":
         thread = None
     float_prec = int(float_prec)
@@ -311,8 +333,11 @@ def detect_test_platform(pyb, args):
 
     args.platform = platform
     args.arch = arch
+    args.arch_flags = arch_flags
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
+        if arch_flags:
+            args.mpy_cross_flags += " -march-flags=" + arch_flags
     args.inlineasm_arch = inlineasm_arch
     args.build = build
     args.thread = thread
@@ -426,14 +451,17 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
         return True, script
 
     try:
-        had_crash = False
-        pyb.enter_raw_repl()
+        pyb.enter_raw_repl(timeout_overall=4)
         if test_file.endswith(tests_requiring_target_wiring) and pyb.target_wiring_script:
             pyb.exec_(
                 "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec("
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
+    except pyboard.PyboardError as e:
+        return True, b"enter_raw_repl failed\n"
+
+    try:
         output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
     except pyboard.PyboardError as e:
         had_crash = True
@@ -726,6 +754,7 @@ class PyboardNodeRunner:
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     testcase_count = ThreadSafeCounter()
+    enter_raw_repl_failure_count = ThreadSafeCounter()
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
@@ -930,6 +959,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.arch is not None:
+        skip_tests.update(platform_tests_to_skip.get(args.platform + "/" + args.arch, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
@@ -1098,6 +1129,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
+            if output_mupy == b"enter_raw_repl failed\n":
+                extra_info = "enter_raw_repl failed"
+                enter_raw_repl_failure_count.increment()
             print("FAIL ", test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
@@ -1128,10 +1162,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         else:
             for test in tests:
                 run_one_test(test)
+                if enter_raw_repl_failure_count.value >= 4:
+                    print("Too many enter_raw_repl failures, aborting test run")
+                    break
     except TestError as er:
         for line in er.args[0]:
             print(line)
-        sys.exit(1)
+        sys.exit(2)
 
     # Return test results.
     return test_results.value, testcase_count.value
