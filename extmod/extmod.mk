@@ -56,6 +56,7 @@ SRC_EXTMOD_C += \
 	extmod/network_ninaw10.c \
 	extmod/network_ppp_lwip.c \
 	extmod/network_wiznet5k.c \
+	extmod/network_wiznet6k.c \
 	extmod/os_dupterm.c \
 	extmod/vfs.c \
 	extmod/vfs_blockdev.c \
@@ -487,6 +488,28 @@ SRC_THIRDPARTY_C += $(addprefix $(WIZNET5K_DIR)/,\
 	)
 endif
 endif # MICROPY_PY_NETWORK_WIZNET5K
+
+ifneq ($(MICROPY_PY_NETWORK_WIZNET6K),)
+ifneq ($(MICROPY_PY_NETWORK_WIZNET6K),0)
+WIZNET6K_DIR=lib/wiznet6k
+GIT_SUBMODULES += lib/wiznet6k
+INC += -I$(TOP)/$(WIZNET6K_DIR) -I$(TOP)/$(WIZNET6K_DIR)/Ethernet
+CFLAGS += -DMICROPY_PY_NETWORK_WIZNET6K=$(MICROPY_PY_NETWORK_WIZNET6K) -D_WIZCHIP_=$(MICROPY_PY_NETWORK_WIZNET6K) -DMICROPY_WIZNET_PIO=$(MICROPY_WIZNET_PIO) -D_WIZCHIP_QSPI_MODE_=${_WIZCHIP_QSPI_MODE_}
+CFLAGS_THIRDPARTY += -DWIZCHIP_PREFIXED_EXPORTS=0
+ifeq ($(MICROPY_PY_LWIP),1)
+# When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
+CFLAGS_THIRDPARTY += -DWIZCHIP_USE_MAX_BUFFER
+endif
+SRC_THIRDPARTY_C += $(addprefix $(WIZNET6K_DIR)/,\
+	Ethernet/W$(MICROPY_PY_NETWORK_WIZNET6K)/w$(MICROPY_PY_NETWORK_WIZNET6K).c \
+	Ethernet/wizchip_conf.c \
+	Ethernet/socket.c \
+	Internet/DNS/dns.c \
+	Internet/DHCP/dhcp.c \
+	)
+
+endif
+endif # MICROPY_PY_NETWORK_WIZNET6K
 
 ifeq ($(MICROPY_PY_NETWORK_ESP_HOSTED),1)
 ESP_HOSTED_DIR = drivers/esp-hosted
