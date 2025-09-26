@@ -100,7 +100,20 @@ void mp_sched_keyboard_interrupt(void);
 #if MICROPY_ENABLE_VM_ABORT
 void mp_sched_vm_abort(void);
 #endif
-void mp_handle_pending(bool raise_exc);
+
+typedef enum {
+    MP_HANDLE_PENDING_CALLBACKS_ONLY,
+    MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS,
+    MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS,
+} mp_handle_pending_behaviour_t;
+
+void mp_handle_pending_internal(mp_handle_pending_behaviour_t behavior);
+
+static inline void mp_handle_pending(bool raise_exc) {
+    mp_handle_pending_internal(raise_exc ?
+        MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS :
+        MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS);
+}
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
