@@ -146,17 +146,21 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 /******************************************************************************/
 // Global module table and related functions
 
+#if MICROPY_HAVE_REGISTERED_MODULES
 static const mp_rom_map_elem_t mp_builtin_module_table[] = {
     // built-in modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
 };
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
+#endif
 
+#if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
 static const mp_rom_map_elem_t mp_builtin_extensible_module_table[] = {
     // built-in modules declared with MP_REGISTER_EXTENSIBLE_MODULE()
     MICROPY_REGISTERED_EXTENSIBLE_MODULES
 };
 MP_DEFINE_CONST_MAP(mp_builtin_extensible_module_map, mp_builtin_extensible_module_table);
+#endif
 
 #if MICROPY_MODULE_ATTR_DELEGATION && defined(MICROPY_MODULE_DELEGATIONS)
 typedef struct _mp_module_delegation_entry_t {
@@ -173,7 +177,11 @@ static const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] =
 // Attempts to find (and initialise) a built-in, otherwise returns
 // MP_OBJ_NULL.
 mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
+    #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)(extensible ? &mp_builtin_extensible_module_map : &mp_builtin_module_map), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    #else
+    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    #endif
     if (!elem) {
         #if MICROPY_PY_SYS
         // Special case for sys, which isn't extensible but can always be
@@ -183,6 +191,7 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
         }
         #endif
 
+        #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
         if (extensible) {
             // At this point we've already tried non-extensible built-ins, the
             // filesystem, and now extensible built-ins. No match, so fail
@@ -204,6 +213,8 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
             return MP_OBJ_NULL;
         }
         elem = mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(qstr_from_strn(module_name_str + 1, module_name_len - 1)), MP_MAP_LOOKUP);
+        #endif
+
         if (!elem) {
             return MP_OBJ_NULL;
         }

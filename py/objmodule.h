@@ -34,8 +34,15 @@
 #include "genhdr/moduledefs.h"
 #endif
 
+#if MICROPY_HAVE_REGISTERED_MODULES
 extern const mp_map_t mp_builtin_module_map;
+#else
+#define mp_builtin_module_map (mp_const_empty_map)
+#endif
+
+#if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
 extern const mp_map_t mp_builtin_extensible_module_map;
+#endif
 
 mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible);
 

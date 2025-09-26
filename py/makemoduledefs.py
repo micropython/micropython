@@ -85,19 +85,24 @@ def generate_module_table_header(modules):
             )
         )
 
-    print("\n#define MICROPY_REGISTERED_MODULES \\")
+    print("\n#define MICROPY_HAVE_REGISTERED_MODULES ", len(mod_defs))
 
-    for mod_def in sorted(mod_defs):
-        print("    {mod_def} \\".format(mod_def=mod_def))
+    if mod_defs:
+        print("\n#define MICROPY_REGISTERED_MODULES \\")
 
-    print("// MICROPY_REGISTERED_MODULES")
+        for mod_def in sorted(mod_defs):
+            print("    {mod_def} \\".format(mod_def=mod_def))
+        print("// MICROPY_REGISTERED_MODULES")
 
-    print("\n#define MICROPY_REGISTERED_EXTENSIBLE_MODULES \\")
+    print("\n#define MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES ", len(extensible_mod_defs))
 
-    for mod_def in sorted(extensible_mod_defs):
-        print("    {mod_def} \\".format(mod_def=mod_def))
+    if extensible_mod_defs:
+        print("\n#define MICROPY_REGISTERED_EXTENSIBLE_MODULES \\")
 
-    print("// MICROPY_REGISTERED_EXTENSIBLE_MODULES")
+        for mod_def in sorted(extensible_mod_defs):
+            print("    {mod_def} \\".format(mod_def=mod_def))
+
+        print("// MICROPY_REGISTERED_EXTENSIBLE_MODULES")
 
 
 def generate_module_delegations(delegations):
