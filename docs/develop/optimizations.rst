@@ -59,6 +59,7 @@ These variables use ``const()`` from the MicroPython library. Therefore:
 Compiles to:
 
 .. code-block:: python
+
     def foo(a, b):
         return a + b
 
