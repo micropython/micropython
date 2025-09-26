@@ -110,6 +110,7 @@ function ci_code_size_build {
 
             COMMIT=$1
             OUTFILE=$2
+            IGNORE_ERRORS=$3
 
             echo "Building ${COMMIT}..."
             git checkout --detach $COMMIT
@@ -118,14 +119,15 @@ function ci_code_size_build {
             tools/metrics.py clean "$PORTS_TO_CHECK"
             # Allow errors from tools/metrics.py to propagate out of the pipe below.
             set -o pipefail
-            tools/metrics.py build "$PORTS_TO_CHECK" | tee $OUTFILE
+            tools/metrics.py build "$PORTS_TO_CHECK" | tee $OUTFILE || $IGNORE_ERRORS
+            return $?
         }
 
         # build reference, save to size0
         # ignore any errors with this build, in case master is failing
-        code_size_build_step $REFERENCE ~/size0
+        code_size_build_step $REFERENCE ~/size0 true
         # build PR/branch, save to size1
-        code_size_build_step $COMPARISON ~/size1
+        code_size_build_step $COMPARISON ~/size1 false
     )
 }
 
