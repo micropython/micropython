@@ -174,6 +174,28 @@ size_t m_get_peak_bytes_allocated(void);
 #define MP_ALIGNAS(alignment, decl) decl
 #endif
 
+// get the minimum alignment of a type
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)) || (defined(__cplusplus) && (__cplusplus >= 201103L)) || __has_extension(cxx_alignof) || (defined(__alignof_is_defined) && (__alignof_is_defined == 1))
+// C23 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// C++11 operator: https://en.cppreference.com/w/cpp/language/alignof.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c-11-alignment-specifiers
+// stdalign.h macro: https://en.cppreference.com/w/c/header/stdalign.html
+#define MP_ALIGNOF(type) alignof(type)
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)) || __has_extension(c_alignof)
+// C11 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c11-alignment-specifiers
+#define MP_ALIGNOF(type) _Alignof(type)
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC keyword: https://gcc.gnu.org/onlinedocs/gcc/Alignment.html
+// Clang keyword: https://clang.llvm.org/docs/LanguageExtensions.html#alignof-alignof
+#define MP_ALIGNOF(type) __alignof__(type)
+#elif defined(_MSC_VER)
+// MSVC operator: https://learn.microsoft.com/en-us/cpp/cpp/alignof-operator
+#define MP_ALIGNOF(type) __alignof(type)
+#else
+#define MP_ALIGNOF(type) 4
+#endif
+
 /** unichar / UTF-8 *********************************************/
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
