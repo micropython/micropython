@@ -556,6 +556,14 @@ CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
     LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
 )
 
+CI_UNIX_OPTS_REPR_B=(
+    VARIANT=standard
+    CFLAGS_EXTRA="-DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_B -DMICROPY_PY_UCTYPES=0 -Dmp_int_t=int32_t -Dmp_uint_t=uint32_t"
+    MICROPY_FORCE_32BIT=1
+    RUN_TESTS_MPY_CROSS_FLAGS="--mpy-cross-flags=\"-march=x86 -msmall-int-bits=30\""
+
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
@@ -896,6 +904,17 @@ function ci_unix_qemu_riscv64_run_tests {
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+}
+
+function ci_unix_repr_b_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_REPR_B[@]}"
+    ci_unix_build_ffi_lib_helper gcc -m32
+}
+
+function ci_unix_repr_b_run_tests {
+    # ci_unix_run_tests_full_no_native_helper is not used due to
+    # https://github.com/micropython/micropython/issues/18105
+    ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
 }
 
 ########################################################################################
