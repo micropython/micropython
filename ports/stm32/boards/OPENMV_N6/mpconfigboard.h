@@ -53,6 +53,7 @@
 #define MICROPY_HW_UART2_CTS        (pyb_pin_BT_CTS)
 #define MICROPY_HW_UART3_TX         (pyb_pin_UART3_TX)
 #define MICROPY_HW_UART3_RX         (pyb_pin_UART3_RX)
+#define MICROPY_HW_UART3_RTS        (pyb_pin_UART3_RTS)
 #define MICROPY_HW_UART4_TX         (pyb_pin_UART4_TX)
 #define MICROPY_HW_UART4_RX         (pyb_pin_UART4_RX)
 #define MICROPY_HW_UART7_TX         (pyb_pin_UART7_TX)
