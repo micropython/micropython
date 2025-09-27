@@ -15,6 +15,7 @@
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_PY_PYB_LEGACY       (0)
+#define MICROPY_FATFS_EXFAT         (1)
 
 #define MICROPY_BOARD_ENTER_BOOTLOADER board_enter_bootloader
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
@@ -53,6 +54,7 @@
 #define MICROPY_HW_UART2_CTS        (pyb_pin_BT_CTS)
 #define MICROPY_HW_UART3_TX         (pyb_pin_UART3_TX)
 #define MICROPY_HW_UART3_RX         (pyb_pin_UART3_RX)
+#define MICROPY_HW_UART3_RTS        (pyb_pin_UART3_RTS)
 #define MICROPY_HW_UART4_TX         (pyb_pin_UART4_TX)
 #define MICROPY_HW_UART4_RX         (pyb_pin_UART4_RX)
 #define MICROPY_HW_UART7_TX         (pyb_pin_UART7_TX)
@@ -122,6 +124,8 @@
 #define MICROPY_HW_USB_PID_CDC_MSC  (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC_HID  (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC_MSC_HID  (MICROPY_HW_USB_PID)
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE     (1024)
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE     (1024)
 
 // Murata 1YN configuration
 #define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE     "lib/cyw43-driver/firmware/w43439_sdio_1yn_7_95_59_combined.h"
