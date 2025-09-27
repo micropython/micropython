@@ -1,0 +1,19 @@
+=== Syntax errors ===
+SyntaxError: cannot combine 'b' and 't' prefixes
+SyntaxError: cannot combine 'f' and 't' prefixes
+SyntaxError: unclosed string
+
+=== Template behavior ===
+PEP 750: str(t) returns default object repr
+TypeError: Templates do not support ordering
+
+=== Implicit concatenation restrictions ===
+SyntaxError: Cannot mix t-string and regular string
+SyntaxError: Cannot mix regular string and t-string
+SyntaxError: Cannot mix t-string and regular string in chain
+
+=== Import errors ===
+ERROR: Should not be able to import Template from builtins
+OK: Correct import from string.templatelib
+
+Error tests completed!
