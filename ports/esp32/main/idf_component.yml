@@ -1,10 +1,17 @@
-## IDF Component Manager Manifest File
 dependencies:
   espressif/mdns: "~1.1.0"
   espressif/esp_tinyusb:
     rules:
-      - if: "target in [esp32s2, esp32s3]"
+      - if: "target in [esp32s2, esp32s3, esp32p4]"
     version: "~1.7.6"
+  espressif/esp_hosted:
+    rules:
+      - if: "target == esp32p4"
+    version: "2.2.4"
+  espressif/esp_wifi_remote:
+    rules:
+      - if: "target == esp32p4"
+    version: "0.15.2"
   espressif/lan867x:
     version: "~1.0.0"
     rules:
