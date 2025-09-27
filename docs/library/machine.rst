@@ -264,9 +264,12 @@ Classes
    machine.UART.rst
    machine.SPI.rst
    machine.I2C.rst
+   machine.I2CTarget.rst
    machine.I2S.rst
    machine.RTC.rst
    machine.Timer.rst
+   machine.Counter.rst
+   machine.Encoder.rst
    machine.WDT.rst
    machine.SD.rst
    machine.SDCard.rst

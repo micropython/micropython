@@ -494,7 +494,7 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     #if defined(STM32G4)
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8) != HAL_OK) {
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCC_ClockConfig");
     }
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_LPUART1

@@ -865,9 +865,10 @@ unwind_jump:;
                         // 3-argument slice includes step
                         step = POP();
                     }
-                    if ((*ip == MP_BC_LOAD_SUBSCR || *ip == MP_BC_STORE_SUBSCR) && mp_obj_is_native_type(mp_obj_get_type(sp[-2]))) {
+                    if ((*ip == MP_BC_LOAD_SUBSCR || *ip == MP_BC_STORE_SUBSCR)
+                        && (mp_obj_get_type(sp[-2])->flags & MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE)) {
                         // Fast path optimisation for when the BUILD_SLICE is immediately followed
-                        // by a LOAD/STORE_SUBSCR for a native type to avoid needing to allocate
+                        // by a LOAD/STORE_SUBSCR for an accepting type, to avoid needing to allocate
                         // the slice on the heap.  In some cases (e.g. a[1:3] = x) this can result
                         // in no allocations at all.  We can't do this for instance types because
                         // the get/set/delattr implementation may keep a reference to the slice.

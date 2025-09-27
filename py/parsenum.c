@@ -64,7 +64,7 @@ typedef mp_int_t parsed_int_t;
 typedef unsigned long long parsed_int_t;
 
 #define PARSED_INT_MUL_OVERFLOW mp_mul_ull_overflow
-#define PARSED_INT_FITS(I) ((I) <= (unsigned long long)LLONG_MAX)
+#define PARSED_INT_FITS(I) ((I) <= (unsigned long long)LLONG_MAX + 1)
 #endif
 
 mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, mp_lexer_t *lex) {
@@ -135,8 +135,11 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
 have_ret_val:
     #else
     // The PARSED_INT_FITS check above ensures parsed_val won't overflow signed long long
-    long long signed_val = parsed_val;
-    if (neg) {
+    long long signed_val = -parsed_val;
+    if (!neg) {
+        if (signed_val == LLONG_MIN) {
+            goto overflow;
+        }
         signed_val = -signed_val;
     }
     ret_val = mp_obj_new_int_from_ll(signed_val); // Could be large or small int
@@ -195,6 +198,8 @@ value_error:
     }
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+
 enum {
     REAL_IMAG_STATE_START = 0,
     REAL_IMAG_STATE_HAVE_REAL = 1,
@@ -207,27 +212,77 @@ typedef enum {
     PARSE_DEC_IN_EXP,
 } parse_dec_in_t;
 
-#if MICROPY_PY_BUILTINS_FLOAT
 // MANTISSA_MAX is used to retain precision while not overflowing mantissa
-// SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
-// EXACT_POWER_OF_10 is the largest value of x so that 10^x can be stored exactly in a float
-//   Note: EXACT_POWER_OF_10 is at least floor(log_5(2^mantissa_length)). Indeed, 10^n = 2^n * 5^n
-//   so we only have to store the 5^n part in the mantissa (the 2^n part will go into the float's
-//   exponent).
+#define MANTISSA_MAX (sizeof(mp_large_float_uint_t) == 8 ? 0x1999999999999998ULL : 0x19999998U)
+
+// MAX_EXACT_POWER_OF_5 is the largest value of x so that 5^x can be stored exactly in a float
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#define MANTISSA_MAX 0x19999998U
-#define SMALL_NORMAL_VAL (1e-37F)
-#define SMALL_NORMAL_EXP (-37)
-#define EXACT_POWER_OF_10 (9)
+#define MAX_EXACT_POWER_OF_5 (10)
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define MANTISSA_MAX 0x1999999999999998ULL
-#define SMALL_NORMAL_VAL (1e-307)
-#define SMALL_NORMAL_EXP (-307)
-#define EXACT_POWER_OF_10 (22)
+#define MAX_EXACT_POWER_OF_5 (22)
 #endif
 
+// Helper to compute `num * (10.0 ** dec_exp)`
+mp_large_float_t mp_decimal_exp(mp_large_float_t num, int dec_exp) {
+    if (dec_exp == 0 || num == (mp_large_float_t)(0.0)) {
+        return num;
+    }
+
+    #if MICROPY_FLOAT_FORMAT_IMPL == MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
+    // If the assert below fails, it means you have chosen MICROPY_FLOAT_FORMAT_IMPL_EXACT
+    // manually on a platform where `larger floats` are not supported, which would
+    // result in inexact conversions. To fix this issue, change your `mpconfigport.h`
+    // and select MICROPY_FLOAT_FORMAT_IMPL_APPROX instead
+    assert(sizeof(mp_large_float_t) > sizeof(mp_float_t));
+
+    // Perform power using simple multiplications, to avoid
+    // dependency to higher-precision pow() function
+    int neg_exp = (dec_exp < 0);
+    if (neg_exp) {
+        dec_exp = -dec_exp;
+    }
+    mp_large_float_t res = num;
+    mp_large_float_t expo = (mp_large_float_t)10.0;
+    while (dec_exp) {
+        if (dec_exp & 1) {
+            if (neg_exp) {
+                res /= expo;
+            } else {
+                res *= expo;
+            }
+        }
+        dec_exp >>= 1;
+        if (dec_exp) {
+            expo *= expo;
+        }
+    }
+    return res;
+
+    #else
+    // MICROPY_FLOAT_FORMAT_IMPL != MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
+    mp_float_union_t res = {num};
+    // Multiply first by (2.0 ** dec_exp) via the exponent
+    // - this will ensure that the result of `pow()` is always in mp_float_t range
+    //   when the result is expected to be in mp_float_t range (e.g. during format)
+    // - we don't need to care about p.exp overflow, as (5.0 ** dec_exp) will anyway
+    //   force the final result toward the proper edge if needed (0.0 or inf)
+    res.p.exp += dec_exp;
+    // Use positive exponents when they are more precise then negative
+    if (dec_exp < 0 && dec_exp >= -MAX_EXACT_POWER_OF_5) {
+        res.f /= MICROPY_FLOAT_C_FUN(pow)(5, -dec_exp);
+    } else {
+        res.f *= MICROPY_FLOAT_C_FUN(pow)(5, dec_exp);
+    }
+    return (mp_large_float_t)res.f;
+
+    #endif
+}
+
+
 // Break out inner digit accumulation routine to ease trailing zero deferral.
-static mp_float_uint_t accept_digit(mp_float_uint_t p_mantissa, unsigned int dig, int *p_exp_extra, int in) {
+static mp_large_float_uint_t accept_digit(mp_large_float_uint_t p_mantissa, unsigned int dig, int *p_exp_extra, int in) {
     // Core routine to ingest an additional digit.
     if (p_mantissa < MANTISSA_MAX) {
         // dec_val won't overflow so keep accumulating
@@ -243,6 +298,85 @@ static mp_float_uint_t accept_digit(mp_float_uint_t p_mantissa, unsigned int dig
         }
         return p_mantissa;
     }
+}
+
+// Helper to parse an unsigned decimal number into a mp_float_t
+const char *mp_parse_float_internal(const char *str, size_t len, mp_float_t *res) {
+    const char *top = str + len;
+
+    parse_dec_in_t in = PARSE_DEC_IN_INTG;
+    bool exp_neg = false;
+    mp_large_float_uint_t mantissa = 0;
+    int exp_val = 0;
+    int exp_extra = 0;
+    int trailing_zeros_intg = 0, trailing_zeros_frac = 0;
+    while (str < top) {
+        unsigned int dig = *str++;
+        if ('0' <= dig && dig <= '9') {
+            dig -= '0';
+            if (in == PARSE_DEC_IN_EXP) {
+                // don't overflow exp_val when adding next digit, instead just truncate
+                // it and the resulting float will still be correct, either inf or 0.0
+                // (use INT_MAX/2 to allow adding exp_extra at the end without overflow)
+                if (exp_val < (INT_MAX / 2 - 9) / 10) {
+                    exp_val = 10 * exp_val + dig;
+                }
+            } else {
+                if (dig == 0 || mantissa >= MANTISSA_MAX) {
+                    // Defer treatment of zeros in fractional part.  If nothing comes afterwards, ignore them.
+                    // Also, once we reach MANTISSA_MAX, treat every additional digit as a trailing zero.
+                    if (in == PARSE_DEC_IN_INTG) {
+                        ++trailing_zeros_intg;
+                    } else {
+                        ++trailing_zeros_frac;
+                    }
+                } else {
+                    // Time to un-defer any trailing zeros.  Intg zeros first.
+                    while (trailing_zeros_intg) {
+                        mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_INTG);
+                        --trailing_zeros_intg;
+                    }
+                    while (trailing_zeros_frac) {
+                        mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_FRAC);
+                        --trailing_zeros_frac;
+                    }
+                    mantissa = accept_digit(mantissa, dig, &exp_extra, in);
+                }
+            }
+        } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
+            in = PARSE_DEC_IN_FRAC;
+        } else if (in != PARSE_DEC_IN_EXP && ((dig | 0x20) == 'e')) {
+            in = PARSE_DEC_IN_EXP;
+            if (str < top) {
+                if (str[0] == '+') {
+                    str++;
+                } else if (str[0] == '-') {
+                    str++;
+                    exp_neg = true;
+                }
+            }
+            if (str == top) {
+                return NULL;
+            }
+        } else if (dig == '_') {
+            continue;
+        } else {
+            // unknown character
+            str--;
+            break;
+        }
+    }
+
+    // work out the exponent
+    if (exp_neg) {
+        exp_val = -exp_val;
+    }
+    exp_val += exp_extra + trailing_zeros_intg;
+
+    // At this point, we just need to multiply the mantissa by its base 10 exponent.
+    *res = (mp_float_t)mp_decimal_exp(mantissa, exp_val);
+
+    return str;
 }
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
@@ -295,91 +429,9 @@ parse_start:;
         dec_val = MICROPY_FLOAT_C_FUN(nan)("");
     } else {
         // string should be a decimal number
-        parse_dec_in_t in = PARSE_DEC_IN_INTG;
-        bool exp_neg = false;
-        mp_float_uint_t mantissa = 0;
-        int exp_val = 0;
-        int exp_extra = 0;
-        int trailing_zeros_intg = 0, trailing_zeros_frac = 0;
-        while (str < top) {
-            unsigned int dig = *str++;
-            if ('0' <= dig && dig <= '9') {
-                dig -= '0';
-                if (in == PARSE_DEC_IN_EXP) {
-                    // don't overflow exp_val when adding next digit, instead just truncate
-                    // it and the resulting float will still be correct, either inf or 0.0
-                    // (use INT_MAX/2 to allow adding exp_extra at the end without overflow)
-                    if (exp_val < (INT_MAX / 2 - 9) / 10) {
-                        exp_val = 10 * exp_val + dig;
-                    }
-                } else {
-                    if (dig == 0 || mantissa >= MANTISSA_MAX) {
-                        // Defer treatment of zeros in fractional part.  If nothing comes afterwards, ignore them.
-                        // Also, once we reach MANTISSA_MAX, treat every additional digit as a trailing zero.
-                        if (in == PARSE_DEC_IN_INTG) {
-                            ++trailing_zeros_intg;
-                        } else {
-                            ++trailing_zeros_frac;
-                        }
-                    } else {
-                        // Time to un-defer any trailing zeros.  Intg zeros first.
-                        while (trailing_zeros_intg) {
-                            mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_INTG);
-                            --trailing_zeros_intg;
-                        }
-                        while (trailing_zeros_frac) {
-                            mantissa = accept_digit(mantissa, 0, &exp_extra, PARSE_DEC_IN_FRAC);
-                            --trailing_zeros_frac;
-                        }
-                        mantissa = accept_digit(mantissa, dig, &exp_extra, in);
-                    }
-                }
-            } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
-                in = PARSE_DEC_IN_FRAC;
-            } else if (in != PARSE_DEC_IN_EXP && ((dig | 0x20) == 'e')) {
-                in = PARSE_DEC_IN_EXP;
-                if (str < top) {
-                    if (str[0] == '+') {
-                        str++;
-                    } else if (str[0] == '-') {
-                        str++;
-                        exp_neg = true;
-                    }
-                }
-                if (str == top) {
-                    goto value_error;
-                }
-            } else if (dig == '_') {
-                continue;
-            } else {
-                // unknown character
-                str--;
-                break;
-            }
-        }
-
-        // work out the exponent
-        if (exp_neg) {
-            exp_val = -exp_val;
-        }
-
-        // apply the exponent, making sure it's not a subnormal value
-        exp_val += exp_extra + trailing_zeros_intg;
-        dec_val = (mp_float_t)mantissa;
-        if (exp_val < SMALL_NORMAL_EXP) {
-            exp_val -= SMALL_NORMAL_EXP;
-            dec_val *= SMALL_NORMAL_VAL;
-        }
-
-        // At this point, we need to multiply the mantissa by its base 10 exponent. If possible,
-        // we would rather manipulate numbers that have an exact representation in IEEE754. It
-        // turns out small positive powers of 10 do, whereas small negative powers of 10 don't.
-        // So in that case, we'll yield a division of exact values rather than a multiplication
-        // of slightly erroneous values.
-        if (exp_val < 0 && exp_val >= -EXACT_POWER_OF_10) {
-            dec_val /= MICROPY_FLOAT_C_FUN(pow)(10, -exp_val);
-        } else {
-            dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
+        str = mp_parse_float_internal(str, top - str, &dec_val);
+        if (!str) {
+            goto value_error;
         }
     }
 

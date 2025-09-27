@@ -125,6 +125,22 @@ else:
 x = 1 << 62
 print('a' * (x + 4 - x))
 
+# test overflow check in mp_obj_get_int_maybe
+x = 1 << 32
+r = None
+try:
+    r = range(0, x)
+except OverflowError:
+    # 32-bit target, correctly handled the overflow of x
+    print("ok")
+if r is not None:
+    if len(r) == x:
+        # 64-bit target, everything is just a small-int
+        print("ok")
+    else:
+        # 32-bit target that did not handle the overflow of x
+        print("unhandled overflow")
+
 # negative shifts are invalid
 try:
     print((1 << 48) >> -4)
@@ -135,3 +151,11 @@ try:
     print((1 << 48) << -6)
 except ValueError as e:
     print(e)
+
+# Test that the most extreme 64 bit integer values all parse with int()
+print(int("-9223372036854775807"))
+print(int("-9223372036854775808"))
+print(int("9223372036854775807"))
+
+# Test that the most negative 64 bit integer can be formed via arithmetic
+print(-9223372036854775807-1)

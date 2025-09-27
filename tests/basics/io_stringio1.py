@@ -1,4 +1,9 @@
-import io
+try:
+    import io
+except ImportError:
+    print("SKIP")
+    raise SystemExit
+
 a = io.StringIO()
 print('io.StringIO' in repr(a))
 print(a.getvalue())

@@ -1,0 +1,18 @@
+caught
+Exception: msg
+
+caught
+Exception: fail
+
+finally
+caught
+Exception: fail
+
+reraise
+Exception: fail
+
+caught
+Exception: fail
+
+AttributeError: 'function' object has no attribute 'X'
+

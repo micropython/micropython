@@ -1,8 +1,9 @@
-import io
 try:
+    import io
+
     io.IOBase
-except AttributeError:
-    print('SKIP')
+except (AttributeError, ImportError):
+    print("SKIP")
     raise SystemExit
 
 

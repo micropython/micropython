@@ -31,6 +31,11 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/spi.h>
 
+// Use the basic configuration level to get a balance between size and features.
+#ifndef MICROPY_CONFIG_ROM_LEVEL
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
+#endif
+
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE
 #define MICROPY_HEAP_SIZE (16 * 1024)
@@ -42,30 +47,29 @@
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
+#define MICROPY_STACK_CHECK_MARGIN  (512)
+#define MICROPY_STACK_SIZE_HARD_IRQ (CONFIG_ISR_STACK_SIZE)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (MICROPY_VFS)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_KBD_EXCEPTION       (1)
-#define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_BUILTINS_BYTES_HEX (1)
-#define MICROPY_PY_BUILTINS_FILTER  (0)
-#define MICROPY_PY_BUILTINS_PROPERTY (0)
-#define MICROPY_PY_BUILTINS_RANGE_ATTRS (0)
-#define MICROPY_PY_BUILTINS_REVERSED (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
-#define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
-#define MICROPY_PY_COLLECTIONS      (0)
-#define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/zephyr/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C      (1)
+#ifdef CONFIG_I2C_TARGET
+#define MICROPY_PY_MACHINE_I2C_TARGET (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/zephyr/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ (1)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MSB (SPI_TRANSFER_MSB)
@@ -80,7 +84,6 @@
 #endif
 #define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/zephyr/machine_pwm.c"
-#define MICROPY_PY_STRUCT           (0)
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort
 #define MICROPY_PY_ERRNO            (1)
@@ -96,7 +99,6 @@
 #define MICROPY_PY_BINASCII         (1)
 #define MICROPY_PY_HASHLIB          (1)
 #define MICROPY_PY_OS               (1)
-#define MICROPY_PY_TIME             (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/zephyr/modtime.c"
 #define MICROPY_PY_ZEPHYR           (1)
@@ -116,11 +118,6 @@
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_NORTC            (1)
-
-// Saving extra crumbs to make sure binary fits in 128K
-#define MICROPY_COMP_CONST_FOLDING  (0)
-#define MICROPY_COMP_CONST (0)
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
 
 // When CONFIG_THREAD_CUSTOM_DATA is enabled, MICROPY_PY_THREAD is enabled automatically
 #ifdef CONFIG_THREAD_CUSTOM_DATA

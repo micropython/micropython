@@ -79,4 +79,3 @@ exclude = [
   "tests/micropython/heapalloc_fail_tstring.py",
   "tests/micropython/viper_args.py",
 ]
-quote-style = "preserve"

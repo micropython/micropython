@@ -97,7 +97,7 @@ static uint32_t TIMx_Config(mp_obj_t timer) {
     // work out the trigger channel (only certain ones are supported)
     if (tim->Instance == TIM2) {
         return DAC_TRIGGER_T2_TRGO;
-    #if defined(TIM4)
+    #if defined(TIM4) && defined(DAC_TRIGGER_T4_TRGO) // G0B1 doesn't have this
     } else if (tim->Instance == TIM4) {
         return DAC_TRIGGER_T4_TRGO;
     #endif
@@ -174,7 +174,7 @@ static void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
         // For STM32G4, DAC registers have to be accessed by words (32-bit).
         dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_WORD;
         #elif defined(STM32H5)
-        dma_align = 0;
+        dma_align = DMA_SRC_DATAWIDTH_BYTE | DMA_DEST_DATAWIDTH_WORD;
         #else
         dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_BYTE;
         #endif
@@ -183,7 +183,7 @@ static void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
         // For STM32G4, DAC registers have to be accessed by words (32-bit).
         dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_WORD;
         #elif defined(STM32H5)
-        dma_align = 0;
+        dma_align = DMA_SRC_DATAWIDTH_HALFWORD | DMA_DEST_DATAWIDTH_WORD;
         #else
         dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_HALFWORD;
         #endif
@@ -485,12 +485,18 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #endif
     }
 
+    // To prevent invalid dac output, clean D-cache before starting dma.
+    MP_HAL_CLEAN_DCACHE(bufinfo.buf, bufinfo.len);
+
     uint32_t align;
     if (self->bits == 8) {
         align = DAC_ALIGN_8B_R;
     } else {
         align = DAC_ALIGN_12B_R;
+        // For STM32H5, the length is the amount of data to be transferred from source to destination in bytes.
+        #if !defined(STM32H5)
         bufinfo.len /= 2;
+        #endif
     }
 
     dac_start_dma(self->dac_channel, tx_dma_descr, args[2].u_int, self->bits, align, bufinfo.len, bufinfo.buf);

@@ -10,4 +10,9 @@ SRC = re.c
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc)
 ARCH = x64
 
+ifeq ($(ARCH),armv6m)
+# Link with libgcc.a for division helper functions
+LINK_RUNTIME = 1
+endif
+
 include $(MPY_DIR)/py/dynruntime.mk

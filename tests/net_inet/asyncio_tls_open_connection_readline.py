@@ -20,12 +20,6 @@ import asyncio
 
 ca_cert_chain = "isrg.der"
 
-try:
-    os.stat(ca_cert_chain)
-except OSError:
-    print("SKIP")
-    raise SystemExit
-
 with open(ca_cert_chain, "rb") as ca:
     cadata = ca.read()
 

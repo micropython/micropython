@@ -206,6 +206,10 @@ static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
         mp_float_t f;
         mp_uint_t u;
     } num = {.u = ((mp_uint_t)o - 0x80800000u) & ~3u};
+    // Rather than always truncating toward zero, which creates a strong
+    // bias, copy the two previous bits to fill in the two missing bits.
+    // This appears to be a pretty good heuristic.
+    num.u |= (num.u >> 2) & 3u;
     return num.f;
 }
 static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
@@ -498,9 +502,7 @@ static inline bool mp_map_slot_is_filled(const mp_map_t *map, size_t pos) {
 
 void mp_map_init(mp_map_t *map, size_t n);
 void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table);
-mp_map_t *mp_map_new(size_t n);
 void mp_map_deinit(mp_map_t *map);
-void mp_map_free(mp_map_t *map);
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
 void mp_map_dump(mp_map_t *map);
@@ -537,6 +539,10 @@ typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
 // Flags for type behaviour (mp_obj_type_t.flags)
+// If MP_TYPE_FLAG_IS_SUBCLASSED is set, then subclasses of this class have been created.
+//   Mutations to this class that would require updating all subclasses must be rejected.
+// If MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS is set, then attribute lookups involving this
+//   class need to additionally check for special accessor methods, such as from descriptors.
 // If MP_TYPE_FLAG_EQ_NOT_REFLEXIVE is clear then __eq__ is reflexive (A==A returns True).
 // If MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE is clear then the type can't be equal to an
 //   instance of any different class that also clears this flag.  If this flag is set
@@ -554,6 +560,8 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // If MP_TYPE_FLAG_ITER_IS_STREAM is set then the type implicitly gets a "return self"
 //   getiter, and mp_stream_unbuffered_iter for iternext.
 // If MP_TYPE_FLAG_INSTANCE_TYPE is set then this is an instance type (i.e. defined in Python).
+// If MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE is set then the "subscr" slot allows a stack
+//   allocated slice to be passed in (no references to it will be retained after the call).
 #define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
@@ -567,6 +575,7 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_ITER_IS_CUSTOM (0x0100)
 #define MP_TYPE_FLAG_ITER_IS_STREAM (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM)
 #define MP_TYPE_FLAG_INSTANCE_TYPE (0x0200)
+#define MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE (0x0400)
 
 typedef enum {
     PRINT_STR = 0,
@@ -807,7 +816,7 @@ typedef struct _mp_obj_full_type_t {
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, N, ...) MP_DEFINE_CONST_OBJ_TYPE_NARGS_##N
 
 // This macros is used to define a object type in ROM.
-// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, _make_new [, slot, func]*)
+// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, [, slot, func]*)
 // It uses the number of arguments to select which MP_DEFINE_CONST_OBJ_TYPE_*
 // macro to use based on the number of arguments. It works by shifting the
 // numeric values 12, 11, ... 0 by the number of arguments, such that the
@@ -943,11 +952,11 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 // Object allocation macros for allocating objects that have a finaliser.
 #if MICROPY_ENABLE_FINALISER
 #define mp_obj_malloc_with_finaliser(struct_type, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type), obj_type))
-#define mp_obj_malloc_var_with_finaliser(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_field, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(offsetof(struct_type, var_field) + sizeof(var_type) * (var_num), obj_type))
 void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t *type);
 #else
 #define mp_obj_malloc_with_finaliser(struct_type, obj_type) mp_obj_malloc(struct_type, obj_type)
-#define mp_obj_malloc_var_with_finaliser(struct_type, var_type, var_num, obj_type) mp_obj_malloc_var(struct_type, var_type, var_num, obj_type)
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_field, var_type, var_num, obj_type) mp_obj_malloc_var(struct_type, var_field, var_type, var_num, obj_type)
 #endif
 
 // These macros are derived from more primitive ones and are used to
@@ -981,7 +990,6 @@ void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t 
 bool mp_obj_is_dict_or_ordereddict(mp_obj_t o);
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 
-mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {
     return x ? mp_const_true : mp_const_false;
 }

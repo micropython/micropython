@@ -30,7 +30,7 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 26
+#define MICROPY_VERSION_MINOR 27
 #define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 1
 
@@ -421,6 +421,11 @@
 #define MICROPY_EMIT_RV32 (0)
 #endif
 
+// Whether to emit RISC-V RV32 Zba opcodes in native code
+#ifndef MICROPY_EMIT_RV32_ZBA
+#define MICROPY_EMIT_RV32_ZBA (0)
+#endif
+
 // Whether to enable the RISC-V RV32 inline assembler
 #ifndef MICROPY_EMIT_INLINE_RV32
 #define MICROPY_EMIT_INLINE_RV32 (0)
@@ -488,6 +493,13 @@
 // Whether to enable constant optimisation; id = const(value)
 #ifndef MICROPY_COMP_CONST
 #define MICROPY_COMP_CONST (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
+// Whether to enable float constant folding like 1.2+3.4 (when MICROPY_COMP_CONST_FOLDING is also enabled)
+// and constant optimisation like id = const(1.2) (when MICROPY_COMP_CONST is also enabled)
+// and constant lookup like math.inf (when MICROPY_COMP_MODULE_CONST is also enabled)
+#ifndef MICROPY_COMP_CONST_FLOAT
+#define MICROPY_COMP_CONST_FLOAT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to enable optimisation of: a, b = c, d
@@ -705,6 +717,13 @@
 #define MICROPY_STACK_CHECK_MARGIN (0)
 #endif
 
+// The size of a separate stack used for hard IRQ handlers, which should be
+// checked instead of the main stack when running a hard callback. 0 implies
+// there is no separate ISR stack to check.
+#ifndef MICROPY_STACK_SIZE_HARD_IRQ
+#define MICROPY_STACK_SIZE_HARD_IRQ (0)
+#endif
+
 // Whether to have an emergency exception buffer
 #ifndef MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
@@ -861,6 +880,27 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_COMPLEX (MICROPY_PY_BUILTINS_FLOAT)
 #endif
 
+// Float to string conversion implementations
+//
+// Note that the EXACT method is only available if the compiler supports
+// floating points larger than mp_float_t:
+// - with MICROPY_FLOAT_IMPL_FLOAT, the compiler needs to support `double`
+// - with MICROPY_FLOAT_IMPL_DOUBLE, the compiler needs to support `long double`
+//
+#define MICROPY_FLOAT_FORMAT_IMPL_BASIC (0)  // smallest code, but inexact
+#define MICROPY_FLOAT_FORMAT_IMPL_APPROX (1) // slightly bigger, almost perfect
+#define MICROPY_FLOAT_FORMAT_IMPL_EXACT (2)  // bigger code, and 100% exact repr
+
+#ifndef MICROPY_FLOAT_FORMAT_IMPL
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define MICROPY_FLOAT_FORMAT_IMPL (MICROPY_FLOAT_FORMAT_IMPL_APPROX)
+#elif defined(__SIZEOF_LONG_DOUBLE__) && __SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__
+#define MICROPY_FLOAT_FORMAT_IMPL (MICROPY_FLOAT_FORMAT_IMPL_EXACT)
+#else
+#define MICROPY_FLOAT_FORMAT_IMPL (MICROPY_FLOAT_FORMAT_IMPL_APPROX)
+#endif
+#endif
+
 // Whether to use the native _Float16 for 16-bit float support
 #ifndef MICROPY_FLOAT_USE_NATIVE_FLT16
 #ifdef __FLT16_MAX__
@@ -960,6 +1000,16 @@ typedef time_t mp_timestamp_t;
 // (useful for porting existing libraries to MicroPython).
 #ifndef MICROPY_STREAMS_POSIX_API
 #define MICROPY_STREAMS_POSIX_API (0)
+#endif
+
+// Whether to process __all__ when importing all public symbols from a module.
+#ifndef MICROPY_MODULE___ALL__
+#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
+#endif
+
+// Whether to set __file__ on imported modules.
+#ifndef MICROPY_MODULE___FILE__
+#define MICROPY_MODULE___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether modules can use MP_REGISTER_MODULE_DELEGATION() to delegate failed
@@ -1084,6 +1134,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_VFS_POSIX (0)
 #endif
 
+// Whether to include support for writable POSIX filesystems.
+#ifndef MICROPY_VFS_POSIX_WRITABLE
+#define MICROPY_VFS_POSIX_WRITABLE (1)
+#endif
+
 // Support for VFS FAT component, to mount a FAT filesystem within VFS
 #ifndef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT (0)
@@ -1124,7 +1179,15 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_FUNCTION_ATTRS_CODE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
 #endif
 
-// Whether to support the descriptors __get__, __set__, __delete__
+// Whether bound_method can just use == (feature disabled), or requires a call to
+// mp_obj_equal (feature enabled), to test equality of the self and meth entities.
+// This is only needed if objects and functions can be identical without being the
+// same thing, eg when using an object proxy.
+#ifndef MICROPY_PY_BOUND_METHOD_FULL_EQUALITY_CHECK
+#define MICROPY_PY_BOUND_METHOD_FULL_EQUALITY_CHECK (0)
+#endif
+
+// Whether to support the descriptors __get__, __set__, __delete__, __set_name__
 // This costs some code size and makes load/store/delete of instance
 // attributes slower for the classes that use this feature
 #ifndef MICROPY_PY_DESCRIPTORS
@@ -1387,16 +1450,6 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_HELP_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to set __file__ for imported modules
-#ifndef MICROPY_PY___FILE__
-#define MICROPY_PY___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
-#endif
-
-// Whether to process __all__ when importing all public symbols from module
-#ifndef MICROPY_MODULE___ALL__
-#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
-#endif
-
 // Whether to provide mem-info related functions in micropython module
 #ifndef MICROPY_PY_MICROPYTHON_MEM_INFO
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -1566,9 +1619,16 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_STRUCT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether struct module provides unsafe and non-standard typecodes O, P, S.
+// These typecodes are not in CPython and can cause crashes by accessing arbitrary
+// memory.
+#ifndef MICROPY_PY_STRUCT_UNSAFE_TYPECODES
+#define MICROPY_PY_STRUCT_UNSAFE_TYPECODES (1)
+#endif
+
 // Whether to provide "sys" module
 #ifndef MICROPY_PY_SYS
-#define MICROPY_PY_SYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#define MICROPY_PY_SYS (1)
 #endif
 
 // Whether to initialise "sys.path" and "sys.argv" to their defaults in mp_init()
@@ -1818,11 +1878,11 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_MD5
-#define MICROPY_PY_HASHLIB_MD5 (0)
+#define MICROPY_PY_HASHLIB_MD5 (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA1
-#define MICROPY_PY_HASHLIB_SHA1  (0)
+#define MICROPY_PY_HASHLIB_SHA1  (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA256
@@ -1830,7 +1890,7 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_CRYPTOLIB
-#define MICROPY_PY_CRYPTOLIB (0)
+#define MICROPY_PY_CRYPTOLIB (MICROPY_PY_SSL)
 #endif
 
 // Depends on MICROPY_PY_CRYPTOLIB
@@ -1945,6 +2005,11 @@ typedef time_t mp_timestamp_t;
 // Whether to add a root pointer for the current ssl object
 #ifndef MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT
 #define MICROPY_PY_SSL_MBEDTLS_NEED_ACTIVE_CONTEXT (MICROPY_PY_SSL_ECDSA_SIGN_ALT)
+#endif
+
+// Whether to support DTLS protocol (non-CPython feature)
+#ifndef MICROPY_PY_SSL_DTLS
+#define MICROPY_PY_SSL_DTLS (MICROPY_SSL_MBEDTLS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 // Whether to provide the "vfs" module
@@ -2183,13 +2248,16 @@ typedef time_t mp_timestamp_t;
 // Archs where mp_int_t == long, long != int
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
+#define HEX_FMT "%lx"
 #elif defined(_WIN64)
 #define UINT_FMT "%llu"
 #define INT_FMT "%lld"
+#define HEX_FMT "%llx"
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
+#define HEX_FMT "%x"
 #endif
 #endif // INT_FMT
 

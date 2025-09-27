@@ -61,6 +61,7 @@
 
 // IRQ priorities (encoded values suitable for NVIC_SetPriority)
 // Most values are defined in irq.h.
+#undef IRQ_PRI_I2C
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
 #if defined(MBOOT_CLK_PLLM)
@@ -805,9 +806,9 @@ int i2c_slave_process_addr_match(i2c_slave_t *i2c, int rw) {
     return 0; // ACK
 }
 
-int i2c_slave_process_rx_byte(i2c_slave_t *i2c, uint8_t val) {
+int i2c_slave_process_rx_byte(i2c_slave_t *i2c) {
     if (i2c_obj.cmd_buf_pos < sizeof(i2c_obj.cmd_buf)) {
-        i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++] = val;
+        i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++] = i2c_slave_read_byte(i2c);
     }
     return 0; // ACK
 }
@@ -909,15 +910,17 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
     i2c_obj.cmd_arg_sent = false;
 }
 
-uint8_t i2c_slave_process_tx_byte(i2c_slave_t *i2c) {
+void i2c_slave_process_tx_byte(i2c_slave_t *i2c) {
+    uint8_t value;
     if (i2c_obj.cmd_send_arg) {
         i2c_obj.cmd_arg_sent = true;
-        return i2c_obj.cmd_arg;
+        value = i2c_obj.cmd_arg;
     } else if (i2c_obj.cmd_buf_pos < sizeof(i2c_obj.cmd_buf)) {
-        return i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++];
+        value = i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++];
     } else {
-        return 0;
+        value = 0;
     }
+    i2c_slave_write_byte(i2c, value);
 }
 
 void i2c_slave_process_tx_end(i2c_slave_t *i2c) {
@@ -1755,7 +1758,7 @@ void SysTick_Handler(void) {
 
 #if defined(MBOOT_I2C_SCL)
 void I2Cx_EV_IRQHandler(void) {
-    i2c_slave_ev_irq_handler(MBOOT_I2Cx);
+    i2c_slave_irq_handler(MBOOT_I2Cx);
 }
 #endif
 

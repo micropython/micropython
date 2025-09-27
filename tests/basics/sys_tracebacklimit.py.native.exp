@@ -1,0 +1,22 @@
+ValueError: value
+
+limit 4
+ValueError: value
+
+limit 3
+ValueError: value
+
+limit 2
+ValueError: value
+
+limit 1
+ValueError: value
+
+limit 0
+ValueError: value
+
+limit -1
+ValueError: value
+
+True
+False

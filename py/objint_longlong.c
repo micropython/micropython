@@ -165,10 +165,27 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
     } else if (mp_obj_is_exact_type(rhs_in, &mp_type_int)) {
         rhs_val = ((mp_obj_int_t *)rhs_in)->val;
+    #if MICROPY_PY_BUILTINS_FLOAT
+    } else if (mp_obj_is_float(rhs_in)) {
+        return mp_obj_float_binary_op(op, (mp_float_t)lhs_val, rhs_in);
+    #endif
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    } else if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
+        return mp_obj_complex_binary_op(op, (mp_float_t)lhs_val, 0, rhs_in);
+    #endif
     } else {
         // delegate to generic function to check for extra cases
         return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
     }
+
+    #if MICROPY_PY_BUILTINS_FLOAT
+    if (op == MP_BINARY_OP_TRUE_DIVIDE || op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE) {
+        if (rhs_val == 0) {
+            goto zero_division;
+        }
+        return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
+    }
+    #endif
 
     switch (op) {
         case MP_BINARY_OP_ADD:
@@ -208,14 +225,14 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
         case MP_BINARY_OP_LSHIFT:
         case MP_BINARY_OP_INPLACE_LSHIFT:
-            if ((int)rhs_val < 0) {
+            if (rhs_val < 0) {
                 // negative shift not allowed
                 mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
             }
-            result = lhs_val << (int)rhs_val;
-            // Left-shifting of negative values is implementation defined in C, but assume compiler
-            // will give us typical 2s complement behaviour unless the value overflows
-            overflow = rhs_val > 0 && ((lhs_val >= 0 && result < lhs_val) || (lhs_val < 0 && result > lhs_val));
+            overflow = rhs_val >= (sizeof(long long) * MP_BITS_PER_BYTE)
+                || lhs_val > (LLONG_MAX >> rhs_val)
+                || lhs_val < (LLONG_MIN >> rhs_val);
+            result = (unsigned long long)lhs_val << rhs_val;
             break;
         case MP_BINARY_OP_RSHIFT:
         case MP_BINARY_OP_INPLACE_RSHIFT:
@@ -308,8 +325,17 @@ mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
 }
 
 mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
-    // TODO: Check overflow
-    return mp_obj_int_get_truncated(self_in);
+    if (mp_obj_is_small_int(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        const mp_obj_int_t *self = self_in;
+        long long value = self->val;
+        mp_int_t truncated = (mp_int_t)value;
+        if ((long long)truncated == value) {
+            return truncated;
+        }
+    }
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("overflow converting long int to machine word"));
 }
 
 mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {

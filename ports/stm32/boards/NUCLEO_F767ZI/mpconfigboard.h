@@ -21,6 +21,8 @@ void NUCLEO_F767ZI_board_early_init(void);
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
 #define MICROPY_HW_CLK_PLLQ (9)
 #define MICROPY_HW_FLASH_LATENCY (FLASH_LATENCY_7) // 210-216 MHz needs 7 wait states
+// HSE comes from ST-LINK 8MHz, not crystal.
+#define MICROPY_HW_CLK_USE_BYPASS (1)
 
 // UART config
 #define MICROPY_HW_UART2_TX         (pin_D5)

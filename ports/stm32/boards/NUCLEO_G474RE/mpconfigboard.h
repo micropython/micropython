@@ -29,7 +29,7 @@
 #define MICROPY_HW_CLK_USE_HSI48    (1) // for RNG
 
 // 4 wait states
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_8
+#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // UART config
 #define MICROPY_HW_LPUART1_TX       (pin_A2)  // A2 (to STLINK), B11, C1

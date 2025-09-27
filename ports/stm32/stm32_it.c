@@ -80,7 +80,6 @@
 #include "uart.h"
 #include "storage.h"
 #include "dma.h"
-#include "i2c.h"
 #include "usb.h"
 
 #if defined(MICROPY_HW_USB_FS)
@@ -542,7 +541,7 @@ void RTC_IRQHandler(void) {
 #if defined(STM32G0)
 void RTC_TAMP_IRQHandler(void) {
     IRQ_ENTER(RTC_TAMP_IRQn);
-    RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
+    RTC->SCR |= RTC_SCR_CWUTF; // clear wakeup interrupt flag
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP);    // clear EXTI flag and execute optional callback
     Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_TAMP_IRQn);
@@ -987,63 +986,3 @@ void LPUART2_IRQHandler(void) {
     IRQ_EXIT(LPUART2_IRQn);
 }
 #endif
-
-#if MICROPY_PY_PYB_LEGACY
-
-#if defined(MICROPY_HW_I2C1_SCL)
-void I2C1_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C1_EV_IRQn);
-    i2c_ev_irq_handler(1);
-    IRQ_EXIT(I2C1_EV_IRQn);
-}
-
-void I2C1_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C1_ER_IRQn);
-    i2c_er_irq_handler(1);
-    IRQ_EXIT(I2C1_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C1_SCL)
-
-#if defined(MICROPY_HW_I2C2_SCL)
-void I2C2_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C2_EV_IRQn);
-    i2c_ev_irq_handler(2);
-    IRQ_EXIT(I2C2_EV_IRQn);
-}
-
-void I2C2_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C2_ER_IRQn);
-    i2c_er_irq_handler(2);
-    IRQ_EXIT(I2C2_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C2_SCL)
-
-#if defined(MICROPY_HW_I2C3_SCL)
-void I2C3_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C3_EV_IRQn);
-    i2c_ev_irq_handler(3);
-    IRQ_EXIT(I2C3_EV_IRQn);
-}
-
-void I2C3_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C3_ER_IRQn);
-    i2c_er_irq_handler(3);
-    IRQ_EXIT(I2C3_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C3_SCL)
-
-#if defined(MICROPY_HW_I2C4_SCL)
-void I2C4_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C4_EV_IRQn);
-    i2c_ev_irq_handler(4);
-    IRQ_EXIT(I2C4_EV_IRQn);
-}
-
-void I2C4_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C4_ER_IRQn);
-    i2c_er_irq_handler(4);
-    IRQ_EXIT(I2C4_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C4_SCL)
-
-#endif // MICROPY_PY_PYB_LEGACY

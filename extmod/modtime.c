@@ -53,26 +53,26 @@
 // - weekday is 0-6 for Mon-Sun
 // - yearday is 1-366
 static mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
+    timeutils_struct_time_t tm;
     if (n_args == 0 || args[0] == mp_const_none) {
         // Get current date and time.
-        return mp_time_localtime_get();
+        mp_time_localtime_get(&tm);
     } else {
         // Convert given seconds to tuple.
         mp_timestamp_t seconds = timeutils_obj_get_timestamp(args[0]);
-        timeutils_struct_time_t tm;
         timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
-        mp_obj_t tuple[8] = {
-            tuple[0] = mp_obj_new_int(tm.tm_year),
-            tuple[1] = mp_obj_new_int(tm.tm_mon),
-            tuple[2] = mp_obj_new_int(tm.tm_mday),
-            tuple[3] = mp_obj_new_int(tm.tm_hour),
-            tuple[4] = mp_obj_new_int(tm.tm_min),
-            tuple[5] = mp_obj_new_int(tm.tm_sec),
-            tuple[6] = mp_obj_new_int(tm.tm_wday),
-            tuple[7] = mp_obj_new_int(tm.tm_yday),
-        };
-        return mp_obj_new_tuple(8, tuple);
     }
+    mp_obj_t tuple[8] = {
+        mp_obj_new_int(tm.tm_year),
+        mp_obj_new_int(tm.tm_mon),
+        mp_obj_new_int(tm.tm_mday),
+        mp_obj_new_int(tm.tm_hour),
+        mp_obj_new_int(tm.tm_min),
+        mp_obj_new_int(tm.tm_sec),
+        mp_obj_new_int(tm.tm_wday),
+        mp_obj_new_int(tm.tm_yday),
+    };
+    return mp_obj_new_tuple(8, tuple);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_time_localtime_obj, 0, 1, time_localtime);
 

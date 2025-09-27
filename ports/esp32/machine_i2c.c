@@ -28,34 +28,19 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/modmachine.h"
+#include "machine_i2c.h"
 
 #include "driver/i2c.h"
 #include "hal/i2c_ll.h"
 
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SOFTI2C
 
-#ifndef MICROPY_HW_I2C0_SCL
-#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S3
-#define MICROPY_HW_I2C0_SCL (GPIO_NUM_9)
-#define MICROPY_HW_I2C0_SDA (GPIO_NUM_8)
-#else
-#define MICROPY_HW_I2C0_SCL (GPIO_NUM_18)
-#define MICROPY_HW_I2C0_SDA (GPIO_NUM_19)
-#endif
-#endif
-
-#ifndef MICROPY_HW_I2C1_SCL
-#if CONFIG_IDF_TARGET_ESP32
-#define MICROPY_HW_I2C1_SCL (GPIO_NUM_25)
-#define MICROPY_HW_I2C1_SDA (GPIO_NUM_26)
-#else
-#define MICROPY_HW_I2C1_SCL (GPIO_NUM_9)
-#define MICROPY_HW_I2C1_SDA (GPIO_NUM_8)
-#endif
-#endif
-
 #if SOC_I2C_SUPPORT_XTAL
-#define I2C_SCLK_FREQ XTAL_CLK_FREQ
+#if CONFIG_XTAL_FREQ > 0
+#define I2C_SCLK_FREQ (CONFIG_XTAL_FREQ * 1000000)
+#else
+#error "I2C uses XTAL but no configured freq"
+#endif // CONFIG_XTAL_FREQ
 #elif SOC_I2C_SUPPORT_APB
 #define I2C_SCLK_FREQ APB_CLK_FREQ
 #else

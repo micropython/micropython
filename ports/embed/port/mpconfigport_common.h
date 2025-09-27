@@ -34,8 +34,13 @@ typedef long mp_off_t;
 
 // Need to provide a declaration/definition of alloca()
 #if defined(__FreeBSD__) || defined(__NetBSD__)
+// BSD
 #include <stdlib.h>
+#elif defined(_WIN32)
+// Windows
+#include <malloc.h>
 #else
+// Other OS
 #include <alloca.h>
 #endif
 

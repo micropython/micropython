@@ -63,7 +63,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(namedtuple_asdict_obj, namedtuple_asdict);
 static void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_namedtuple_t *o = MP_OBJ_TO_PTR(o_in);
-    mp_printf(print, "%q", o->tuple.base.type->name);
+    mp_printf(print, "%q", (qstr)o->tuple.base.type->name);
     const qstr *fields = ((mp_obj_namedtuple_type_t *)o->tuple.base.type)->fields;
     mp_obj_attrtuple_print_helper(print, fields, &o->tuple);
 }

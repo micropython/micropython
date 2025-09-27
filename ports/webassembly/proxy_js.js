@@ -48,8 +48,9 @@ const PROXY_KIND_JS_BOOLEAN = 2;
 const PROXY_KIND_JS_INTEGER = 3;
 const PROXY_KIND_JS_DOUBLE = 4;
 const PROXY_KIND_JS_STRING = 5;
-const PROXY_KIND_JS_OBJECT = 6;
-const PROXY_KIND_JS_PYPROXY = 7;
+const PROXY_KIND_JS_OBJECT_EXISTING = 6;
+const PROXY_KIND_JS_OBJECT = 7;
+const PROXY_KIND_JS_PYPROXY = 8;
 
 class PythonError extends Error {
     constructor(exc_type, exc_details) {
@@ -62,6 +63,8 @@ class PythonError extends Error {
 function proxy_js_init() {
     globalThis.proxy_js_ref = [globalThis, undefined];
     globalThis.proxy_js_ref_next = PROXY_JS_REF_NUM_STATIC;
+    globalThis.proxy_js_ref_map = new Map();
+    globalThis.proxy_js_ref_map.set(globalThis, 0);
     globalThis.proxy_js_map = new Map();
     globalThis.proxy_js_existing = [undefined];
     globalThis.pyProxyFinalizationRegistry = new FinalizationRegistry(
@@ -95,7 +98,8 @@ function proxy_js_check_existing(c_ref) {
     return globalThis.proxy_js_existing.length - 1;
 }
 
-// js_obj cannot be undefined
+// The `js_obj` argument cannot be `undefined`.
+// Returns an integer reference to the given `js_obj`.
 function proxy_js_add_obj(js_obj) {
     // Search for the first free slot in proxy_js_ref.
     while (proxy_js_ref_next < proxy_js_ref.length) {
@@ -104,6 +108,7 @@ function proxy_js_add_obj(js_obj) {
             const id = proxy_js_ref_next;
             ++proxy_js_ref_next;
             proxy_js_ref[id] = js_obj;
+            proxy_js_ref_map.set(js_obj, id);
             return id;
         }
         ++proxy_js_ref_next;
@@ -113,6 +118,7 @@ function proxy_js_add_obj(js_obj) {
     const id = proxy_js_ref.length;
     proxy_js_ref[id] = js_obj;
     proxy_js_ref_next = proxy_js_ref.length;
+    proxy_js_ref_map.set(js_obj, id);
     return id;
 }
 
@@ -165,7 +171,7 @@ function proxy_call_python(target, argumentsList) {
     return ret;
 }
 
-function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
+function proxy_convert_js_to_mp_obj_jsside_helper(js_obj, out, allow_pyproxy) {
     let kind;
     if (js_obj === undefined) {
         kind = PROXY_KIND_JS_UNDEFINED;
@@ -196,33 +202,35 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
         Module.setValue(out + 4, len, "i32");
         Module.setValue(out + 8, buf, "i32");
     } else if (
-        js_obj instanceof PyProxy ||
-        (typeof js_obj === "function" && "_ref" in js_obj) ||
-        js_obj instanceof PyProxyThenable
+        allow_pyproxy &&
+        (js_obj instanceof PyProxy ||
+            (typeof js_obj === "function" && "_ref" in js_obj) ||
+            js_obj instanceof PyProxyThenable)
     ) {
         kind = PROXY_KIND_JS_PYPROXY;
         Module.setValue(out + 4, js_obj._ref, "i32");
     } else {
-        kind = PROXY_KIND_JS_OBJECT;
-        const id = proxy_js_add_obj(js_obj);
+        let id;
+        // See if there is an existing JsProxy reference, and use that if there is.
+        const existing_ref = proxy_js_ref_map.get(js_obj);
+        if (existing_ref !== undefined) {
+            kind = PROXY_KIND_JS_OBJECT_EXISTING;
+            id = existing_ref;
+        } else {
+            kind = PROXY_KIND_JS_OBJECT;
+            id = proxy_js_add_obj(js_obj);
+        }
         Module.setValue(out + 4, id, "i32");
     }
     Module.setValue(out + 0, kind, "i32");
 }
 
+function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
+    proxy_convert_js_to_mp_obj_jsside_helper(js_obj, out, true);
+}
+
 function proxy_convert_js_to_mp_obj_jsside_force_double_proxy(js_obj, out) {
-    if (
-        js_obj instanceof PyProxy ||
-        (typeof js_obj === "function" && "_ref" in js_obj) ||
-        js_obj instanceof PyProxyThenable
-    ) {
-        const kind = PROXY_KIND_JS_OBJECT;
-        const id = proxy_js_add_obj(js_obj);
-        Module.setValue(out + 4, id, "i32");
-        Module.setValue(out + 0, kind, "i32");
-    } else {
-        proxy_convert_js_to_mp_obj_jsside(js_obj, out);
-    }
+    proxy_convert_js_to_mp_obj_jsside_helper(js_obj, out, false);
 }
 
 function proxy_convert_mp_to_js_obj_jsside(value) {

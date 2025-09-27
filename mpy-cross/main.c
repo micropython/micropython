@@ -40,6 +40,12 @@
 #include "ports/windows/fmode.h"
 #endif
 
+#if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+#include "py/asmrv32.h"
+
+static asm_rv32_backend_options_t rv32_options = { 0 };
+#endif
+
 // Command line options, with their defaults
 static uint emit_opt = MP_EMIT_OPT_NONE;
 mp_uint_t mp_verbose_flag = 0;
@@ -81,7 +87,7 @@ static int compile_and_save(const char *file, const char *output_file, const cha
             source_name = qstr_from_str(source_file);
         }
 
-        #if MICROPY_PY___FILE__
+        #if MICROPY_MODULE___FILE__
         mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
         #endif
 
@@ -130,7 +136,10 @@ static int usage(char **argv) {
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
         "-march=<arch> : set architecture for native emitter;\n"
-        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin, rv32imc, host, debug\n"
+        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
+        "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug\n"
+        "-march-flags=<flags> : set architecture-specific flags (OUTPUT FILE MAY NOT WORK ON ALL TARGETS!)\n"
+        "                       supported flags for rv32imc: zba\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -236,11 +245,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
+    mp_dynamic_compiler.backend_options = NULL;
 
     const char *input_file = NULL;
     const char *output_file = NULL;
     const char *source_file = NULL;
     bool option_parsing_active = true;
+    const char *arch_flags = NULL;
 
     // parse main options
     for (int a = 1; a < argc; a++) {
@@ -316,6 +327,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "rv32imc") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV32IMC;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV32I;
+                } else if (strcmp(arch, "rv64imc") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV64IMC;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV64I;
                 } else if (strcmp(arch, "debug") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_DEBUG;
                     mp_dynamic_compiler.nlr_buf_num_regs = 0;
@@ -329,6 +343,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     #elif defined(__arm__) && !defined(__thumb2__)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                    #elif defined(__riscv) && (__riscv_xlen == 64)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV64IMC;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV64I;
                     #else
                     mp_printf(&mp_stderr_print, "unable to determine host architecture for -march=host\n");
                     exit(1);
@@ -336,6 +353,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else {
                     return usage(argv);
                 }
+            } else if (strncmp(argv[a], "-march-flags=", sizeof("-march-flags=") - 1) == 0) {
+                arch_flags = argv[a] + sizeof("-march-flags=") - 1;
             } else if (strcmp(argv[a], "--") == 0) {
                 option_parsing_active = false;
             } else {
@@ -348,6 +367,27 @@ MP_NOINLINE int main_(int argc, char **argv) {
             }
             input_file = backslash_to_forwardslash(argv[a]);
         }
+    }
+
+    if (arch_flags && mp_dynamic_compiler.native_arch != MP_NATIVE_ARCH_NONE) {
+        bool processed = false;
+        #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+        if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC) {
+            mp_dynamic_compiler.backend_options = (void *)&rv32_options;
+            if (strncmp(arch_flags, "zba", sizeof("zba") - 1) == 0) {
+                rv32_options.allowed_extensions |= RV32_EXT_ZBA;
+                processed = true;
+            }
+        }
+        #endif
+        if (!processed) {
+            mp_printf(&mp_stderr_print, "unrecognised arch flags\n");
+            exit(1);
+        }
+        mp_printf(&mp_stderr_print,
+            "WARNING: Using architecture-specific flags may create a MPY file whose code won't run on all targets!\n"
+            "         Currently there are no checks in the module file loader for whether the chosen flags used to\n"
+            "         build the MPY file are compatible with the running target.\n\n");
     }
 
     #if MICROPY_EMIT_NATIVE

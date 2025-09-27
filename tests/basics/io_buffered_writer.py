@@ -1,9 +1,9 @@
-import io
-
 try:
+    import io
+
     io.BytesIO
     io.BufferedWriter
-except AttributeError:
+except (AttributeError, ImportError):
     print('SKIP')
     raise SystemExit
 

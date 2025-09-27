@@ -26,7 +26,7 @@ jobs:
           - alif_ae3_build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install packages
       run: source tools/ci.sh && ci_alif_setup
     - name: Build ci_${{matrix.ci_func }}

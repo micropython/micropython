@@ -119,7 +119,9 @@
 #define MICROPY_PY_OS_UNAME                     (1)
 #define MICROPY_PY_OS_URANDOM                   (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (se_services_rand64())
-#define MICROPY_PY_TIME                         (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS            (1)
+#define MICROPY_PY_TIME_INCLUDEFILE             "ports/alif/modtime.c"
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/alif/modmachine.c"
 #define MICROPY_PY_MACHINE_RESET                (1)
@@ -132,6 +134,12 @@
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_I2C                  (MICROPY_HW_ENABLE_HW_I2C)
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1  (1)
+#ifndef MICROPY_PY_MACHINE_I2C_TARGET
+#define MICROPY_PY_MACHINE_I2C_TARGET           (MICROPY_HW_ENABLE_HW_I2C)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/alif/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (4)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ  (1)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)

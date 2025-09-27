@@ -72,6 +72,14 @@ To run the complete testsuite, use:
 
     $ make test
 
+There are other make targets to interact with the testsuite:
+
+    $ make test//int       # Run all tests matching the pattern "int"
+    $ make test/ports/unix # Run all tests in ports/unix
+    $ make test-failures   # Re-run only the failed tests
+    $ make print-failures  # print the differences for failed tests
+    $ make clean-failures  # delete the .exp and .out files from failed tests
+
 The Unix port comes with a built-in package manager called `mip`, e.g.:
 
     $ ./build-standard/micropython -m mip install hmac

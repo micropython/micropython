@@ -1,0 +1,2 @@
+KeyError (slice(None, None, None),)
+[slice(None, 'a', None), 'b'] [1, 2]

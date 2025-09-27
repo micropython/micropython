@@ -267,9 +267,8 @@ bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
 
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
 
-// all these bit-arithmetic operations need coverage testing!
-#define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
-#define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
+#define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 12) & 0x003f))
+#define OP_BCC_W_LO(byte_offset) (0x8000 | (((byte_offset) >> 5) & 0x2000) | (((byte_offset) >> 8) & 0x0800) | (((byte_offset) >> 1) & 0x07ff))
 
 bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide) {
     mp_uint_t dest = get_label_dest(as, label);
@@ -492,8 +491,10 @@ void asm_thumb_store_reg_reg_offset(asm_thumb_t *as, uint reg_src, uint reg_base
         asm_thumb_op32(as, (OP_LDR_STR_W_HI(operation_size, reg_base) | OP_STR_W), OP_LDR_STR_W_LO(reg_src, (offset << operation_size)));
     } else {
         // Must use the generic sequence
+        asm_thumb_op16(as, OP_PUSH_RLIST(1 << reg_base));
         asm_thumb_add_reg_reg_offset(as, reg_base, reg_base, offset - 31, operation_size);
         asm_thumb_op16(as, ((OP_LDR_STR_TABLE[operation_size] | OP_STR) << 11) | (31 << 6) | (reg_base << 3) | reg_src);
+        asm_thumb_op16(as, OP_POP_RLIST(1 << reg_base));
     }
 }
 

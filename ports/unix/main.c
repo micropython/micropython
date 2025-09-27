@@ -54,6 +54,7 @@
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
+#include "stack_size.h"
 
 // Command line options, with their defaults
 static bool compile_only = false;
@@ -138,7 +139,7 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
         qstr source_name = lex->source_name;
 
-        #if MICROPY_PY___FILE__
+        #if MICROPY_MODULE___FILE__
         if (input_kind == MP_PARSE_FILE_INPUT) {
             mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
         }
@@ -208,6 +209,9 @@ static int do_repl(void) {
         mp_hal_stdio_mode_raw();
 
     input_restart:
+        // If the GC is locked at this point there is no way out except a reset,
+        // so force the GC to be unlocked to help the user debug what went wrong.
+        MP_STATE_THREAD(gc_lock_depth) = 0;
         vstr_reset(&line);
         int ret = readline(&line, mp_repl_get_ps1());
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
@@ -479,11 +483,7 @@ int main(int argc, char **argv) {
     #endif
 
     // Define a reasonable stack limit to detect stack overflow.
-    mp_uint_t stack_size = 40000 * (sizeof(void *) / 4);
-    #if defined(__arm__) && !defined(__thumb2__)
-    // ARM (non-Thumb) architectures require more stack.
-    stack_size *= 2;
-    #endif
+    mp_uint_t stack_size = 40000 * UNIX_STACK_MULTIPLIER;
 
     // We should capture stack top ASAP after start, and it should be
     // captured guaranteedly before any other stack variables are allocated.
@@ -616,19 +616,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     #endif
 
-    // Here is some example code to create a class and instance of that class.
-    // First is the Python, then the C code.
-    //
-    // class TestClass:
-    //     pass
-    // test_obj = TestClass()
-    // test_obj.attr = 42
-    //
-    // mp_obj_t test_class_type, test_class_instance;
-    // test_class_type = mp_obj_new_type(qstr_from_str("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    // mp_store_name(qstr_from_str("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
-    // mp_store_attr(test_class_instance, qstr_from_str("attr"), mp_obj_new_int(42));
-
     /*
     printf("bytes:\n");
     printf("    total %d\n", m_get_total_bytes_allocated());
@@ -682,12 +669,18 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 subpkg_tried = false;
 
             reimport:
+                mp_hal_set_interrupt_char(CHAR_CTRL_C);
                 if (nlr_push(&nlr) == 0) {
                     mod = mp_builtin___import__(MP_ARRAY_SIZE(import_args), import_args);
+                    mp_hal_set_interrupt_char(-1);
+                    mp_handle_pending(true);
                     nlr_pop();
                 } else {
                     // uncaught exception
-                    return handle_uncaught_exception(nlr.ret_val) & 0xff;
+                    mp_hal_set_interrupt_char(-1);
+                    mp_handle_pending(false);
+                    ret = handle_uncaught_exception(nlr.ret_val) & 0xff;
+                    break;
                 }
 
                 // If this module is a package, see if it has a `__main__.py`.

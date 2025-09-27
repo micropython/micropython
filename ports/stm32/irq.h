@@ -177,6 +177,8 @@ static inline void restore_irq_pri(uint32_t state) {
 
 #define IRQ_PRI_HSEM            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 10, 0)
 
+#define IRQ_PRI_I2C             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 12, 0)
+
 // Interrupt priority for non-special timers.
 #define IRQ_PRI_TIMX            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 13, 0)
 

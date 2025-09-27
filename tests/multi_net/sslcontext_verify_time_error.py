@@ -14,13 +14,6 @@ PORT = 8000
 cert = cafile = "expired_cert.der"
 key = "ec_key.der"
 
-try:
-    os.stat(cafile)
-    os.stat(key)
-except OSError:
-    print("SKIP")
-    raise SystemExit
-
 
 # Server
 def instance0():

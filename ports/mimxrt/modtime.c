@@ -29,22 +29,19 @@
 #include "shared/timeutils/timeutils.h"
 #include "fsl_snvs_lp.h"
 
-// Return the localtime as an 8-tuple.
-static mp_obj_t mp_time_localtime_get(void) {
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
     // Get current date and time.
     snvs_lp_srtc_datetime_t t;
     SNVS_LP_SRTC_GetDatetime(SNVS, &t);
-    mp_obj_t tuple[8] = {
-        mp_obj_new_int(t.year),
-        mp_obj_new_int(t.month),
-        mp_obj_new_int(t.day),
-        mp_obj_new_int(t.hour),
-        mp_obj_new_int(t.minute),
-        mp_obj_new_int(t.second),
-        mp_obj_new_int(timeutils_calc_weekday(t.year, t.month, t.day)),
-        mp_obj_new_int(timeutils_year_day(t.year, t.month, t.day)),
-    };
-    return mp_obj_new_tuple(8, tuple);
+    tm->tm_year = t.year;
+    tm->tm_mon = t.month;
+    tm->tm_mday = t.day;
+    tm->tm_hour = t.hour;
+    tm->tm_min = t.minute;
+    tm->tm_sec = t.second;
+    tm->tm_wday = timeutils_calc_weekday(t.year, t.month, t.day);
+    tm->tm_yday = timeutils_year_day(t.year, t.month, t.day);
 }
 
 // Return the number of seconds since the Epoch.

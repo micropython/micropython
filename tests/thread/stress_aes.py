@@ -277,7 +277,7 @@ if __name__ == "__main__":
         n_thread = 2
         n_loop = 2
     else:
-        n_thread = 20
+        n_thread = 10
         n_loop = 5
     for i in range(n_thread):
         _thread.start_new_thread(thread_entry, (n_loop,))

@@ -92,6 +92,13 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#ifndef MICROPY_PY_MACHINE_I2C_TARGET
+#define MICROPY_PY_MACHINE_I2C_TARGET       (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/mimxrt/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX   (FSL_FEATURE_SOC_LPI2C_COUNT)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_FINALISER (1)
+#endif
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (0)
 #endif
@@ -138,9 +145,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
-#define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
-#define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
-#define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
 #ifndef MICROPY_PY_NETWORK_PPP_LWIP
 #define MICROPY_PY_NETWORK_PPP_LWIP         (MICROPY_PY_LWIP)
 #endif

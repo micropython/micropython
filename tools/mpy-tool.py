@@ -24,40 +24,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Python 2/3/MicroPython compatibility code
-from __future__ import print_function
-import sys
-
-if sys.version_info[0] == 2:
-    from binascii import hexlify as hexlify_py2
-
-    str_cons = lambda val, enc=None: str(val)
-    bytes_cons = lambda val, enc=None: bytearray(val)
-    is_str_type = lambda o: isinstance(o, str)
-    is_bytes_type = lambda o: type(o) is bytearray
-    is_int_type = lambda o: isinstance(o, int) or isinstance(o, long)  # noqa: F821
-
-    def hexlify_to_str(b):
-        x = hexlify_py2(b)
-        return ":".join(x[i : i + 2] for i in range(0, len(x), 2))
-
-elif sys.version_info[0] == 3:  # Also handles MicroPython
-    from binascii import hexlify
-
-    str_cons = str
-    bytes_cons = bytes
-    is_str_type = lambda o: isinstance(o, str)
-    is_bytes_type = lambda o: isinstance(o, bytes)
-    is_int_type = lambda o: isinstance(o, int)
-
-    def hexlify_to_str(b):
-        return str(hexlify(b, ":"), "ascii")
-
-
-# end compatibility code
-
-import sys
 import struct
+import sys
+from binascii import hexlify
+
+str_cons = str
+bytes_cons = bytes
+is_str_type = lambda o: isinstance(o, str)
+is_bytes_type = lambda o: isinstance(o, bytes)
+is_int_type = lambda o: isinstance(o, int)
+
+
+def hexlify_to_str(b):
+    return str(hexlify(b, ":"), "ascii")
+
 
 sys.path.append(sys.path[0] + "/../py")
 import makeqstrdata as qstrutil
@@ -114,6 +94,7 @@ MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_NATIVE_ARCH_RV32IMC = 11
+MP_NATIVE_ARCH_RV64IMC = 12
 
 MP_PERSISTENT_OBJ_FUN_TABLE = 0
 MP_PERSISTENT_OBJ_NONE = 1
@@ -1081,6 +1062,7 @@ class RawCodeNative(RawCode):
             MP_NATIVE_ARCH_XTENSA,
             MP_NATIVE_ARCH_XTENSAWIN,
             MP_NATIVE_ARCH_RV32IMC,
+            MP_NATIVE_ARCH_RV64IMC,
         ):
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",@progbits # ")))'
         else:
@@ -1098,8 +1080,8 @@ class RawCodeNative(RawCode):
             self.fun_data_attributes += " __attribute__ ((aligned (4)))"
         elif (
             MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP
-        ) or config.native_arch == MP_NATIVE_ARCH_RV32IMC:
-            # ARMVxxM or RV32IMC -- two byte align.
+        ) or MP_NATIVE_ARCH_RV32IMC <= config.native_arch <= MP_NATIVE_ARCH_RV64IMC:
+            # ARMVxxM or RV{32,64}IMC -- two byte align.
             self.fun_data_attributes += " __attribute__ ((aligned (2)))"
 
     def disassemble(self):
@@ -1765,6 +1747,44 @@ def merge_mpy(compiled_modules, output_file):
             f.write(merged_mpy)
 
 
+def extract_segments(compiled_modules, basename, kinds_arg):
+    import re
+
+    kind_str = ("META", "QSTR", "OBJ", "CODE")
+    kinds = set()
+    if kinds_arg is not None:
+        for kind in kinds_arg.upper().split(","):
+            if kind in kind_str:
+                kinds.add(kind)
+            else:
+                raise Exception('unknown segment kind "%s"' % (kind,))
+    segments = []
+    for module in compiled_modules:
+        for segment in module.mpy_segments:
+            if not kinds or kind_str[segment.kind] in kinds:
+                segments.append((module.mpy_source_file, module.source_file.str, segment))
+    count_len = len(str(len(segments)))
+    sanitiser = re.compile("[^a-zA-Z0-9_.-]")
+    for counter, entry in enumerate(segments):
+        file_name, source_file, segment = entry
+        output_name = (
+            basename
+            + "_"
+            + str(counter).rjust(count_len, "0")
+            + "_"
+            + sanitiser.sub("_", source_file)
+            + "_"
+            + kind_str[segment.kind]
+            + "_"
+            + sanitiser.sub("_", str(segment.name))
+            + ".bin"
+        )
+        with open(file_name, "rb") as source:
+            with open(output_name, "wb") as output:
+                source.seek(segment.start)
+                output.write(source.read(segment.end - segment.start))
+
+
 def main(args=None):
     global global_qstrs
 
@@ -1780,6 +1800,14 @@ def main(args=None):
     cmd_parser.add_argument("-f", "--freeze", action="store_true", help="freeze files")
     cmd_parser.add_argument(
         "--merge", action="store_true", help="merge multiple .mpy files into one"
+    )
+    cmd_parser.add_argument(
+        "-e", "--extract", metavar="BASE", type=str, help="write segments into separate files"
+    )
+    cmd_parser.add_argument(
+        "--extract-only",
+        metavar="KIND[,...]",
+        help="extract only segments of the given type (meta, qstr, obj, code)",
     )
     cmd_parser.add_argument("-q", "--qstr-header", help="qstr header file to freeze against")
     cmd_parser.add_argument(
@@ -1847,6 +1875,9 @@ def main(args=None):
 
     if args.merge:
         merge_mpy(compiled_modules, args.output)
+
+    if args.extract:
+        extract_segments(compiled_modules, args.extract, args.extract_only)
 
 
 if __name__ == "__main__":

@@ -29,6 +29,9 @@
 // features to work on Unix-like systems, see mpconfigvariant.h (and
 // mpconfigvariant_common.h) for feature enabling.
 
+// For time_t, needed by MICROPY_TIMESTAMP_IMPL_TIME_T.
+#include <time.h>
+
 // For size_t and ssize_t
 #include <unistd.h>
 
@@ -142,6 +145,9 @@ typedef long mp_off_t;
 #define MICROPY_STACKLESS           (0)
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
+
+// Recursive mutex is needed when threading is enabled, regardless of GIL setting.
+#define MICROPY_PY_THREAD_RECURSIVE_MUTEX (MICROPY_PY_THREAD)
 
 // Implementation of the machine module.
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"

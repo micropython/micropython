@@ -282,7 +282,7 @@ class Pyboard:
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
         elif device.startswith("execpty:"):
-            self.serial = ProcessPtyToTerminal(device[len("qemupty:") :])
+            self.serial = ProcessPtyToTerminal(device[len("execpty:") :])
         elif device and device[0].isdigit() and device[-1].isdigit() and device.count(".") == 3:
             # device looks like an IP address
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
@@ -530,8 +530,8 @@ class Pyboard:
             return ret
 
     # In Python3, call as pyboard.exec(), see the setattr call below.
-    def exec_(self, command, data_consumer=None):
-        ret, ret_err = self.exec_raw(command, data_consumer=data_consumer)
+    def exec_(self, command, timeout=10, data_consumer=None):
+        ret, ret_err = self.exec_raw(command, timeout, data_consumer)
         if ret_err:
             raise PyboardError("exception", ret, ret_err)
         return ret

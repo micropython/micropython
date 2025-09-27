@@ -665,7 +665,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
 
-    #if defined(STM32G4) || defined(STM32H7) // WB also has a fifo..
+    #if defined(STM32G4) || defined(STM32H7) || defined(STM32N6) // WB also has a fifo..
     huart.FifoMode = UART_FIFOMODE_ENABLE;
     #endif
 
@@ -673,7 +673,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     #endif
 
-    #if defined(STM32H7) || defined(STM32N6) || defined(STM32WB)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB)
     // Compute the smallest prescaler that will allow the given baudrate.
     uint32_t presc = UART_PRESCALER_DIV1;
     if (uart_obj->uart_id == PYB_LPUART_1) {
@@ -717,7 +717,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
         uart_obj->char_width = CHAR_WIDTH_8BIT;
     }
 
-    #if defined(STM32H7)
+    #if defined(STM32H7) || defined(STM32N6)
     HAL_UARTEx_SetTxFifoThreshold(&huart, UART_TXFIFO_THRESHOLD_1_8);
     HAL_UARTEx_SetRxFifoThreshold(&huart, UART_RXFIFO_THRESHOLD_1_8);
     HAL_UARTEx_EnableFifoMode(&huart);
@@ -1186,8 +1186,8 @@ size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_cha
     // timeout_char by FIFO size + 1.
     // STM32G4 has 8 words FIFO.
     timeout = (8 + 1) * self->timeout_char;
-    #elif defined(STM32H7)
-    // STM32H7 has 16 words FIFO.
+    #elif defined(STM32H7) || defined(STM32N6)
+    // STM32H7 and STM32N6 have 16 words FIFO.
     timeout = (16 + 1) * self->timeout_char;
     #else
     // The timeout specified here is for waiting for the TX data register to

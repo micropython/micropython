@@ -5,7 +5,9 @@
 from micropython import const
 import time, machine, bluetooth
 
-TIMEOUT_MS = 4000
+# Note: This value can be much lower most of the time, but an ESP32 with a boot.py
+# that connects to Wi-Fi may take an extra 5 seconds after reboot.
+TIMEOUT_MS = 8000
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)

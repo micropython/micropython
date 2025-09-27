@@ -212,6 +212,7 @@ enum {
     PROG_DATA,
     PROG_OFFSET_PIO0,
     PROG_OFFSET_PIO1,
+    PROG_OFFSET_PIO2,
     PROG_EXECCTRL,
     PROG_SHIFTCTRL,
     PROG_OUT_PINS,
@@ -683,8 +684,10 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     }
 
     // Configure jmp pin, if needed.
+    int jmp_pin = -1;
     if (args[ARG_jmp_pin].u_obj != mp_const_none) {
-        sm_config_set_jmp_pin(&config, mp_hal_get_pin_obj(args[ARG_jmp_pin].u_obj));
+        jmp_pin = mp_hal_get_pin_obj(args[ARG_jmp_pin].u_obj);
+        sm_config_set_jmp_pin(&config, jmp_pin);
     }
 
     // Configure sideset pin, if needed.
@@ -716,6 +719,18 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     if (set_config.base >= 0) {
         asm_pio_init_gpio(self->pio, self->sm, &set_config);
     }
+    #if !PICO_RP2040
+    if (jmp_pin >= 0) {
+        // On RP2350 pins by default have their isolation enabled.  This means they will
+        // not work as input to a PIO without further configuration.  That's different to
+        // RP2040 where pins can work as PIO input from a reset.  To make RP2350 have
+        // similar behaviour as RP2040, configure the jmp pin for PIO use if it's isolation
+        // is enabled (which means it's probably unconfigured from reset).
+        if (pads_bank0_hw->io[jmp_pin] & PADS_BANK0_GPIO0_ISO_BITS) {
+            pio_gpio_init(self->pio, jmp_pin);
+        }
+    }
+    #endif
     if (sideset_config.base >= 0) {
         asm_pio_init_gpio(self->pio, self->sm, &sideset_config);
     }

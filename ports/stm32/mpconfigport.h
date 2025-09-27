@@ -97,9 +97,6 @@
 #endif
 
 // extended modules
-#define MICROPY_PY_HASHLIB_MD5      (MICROPY_PY_SSL)
-#define MICROPY_PY_HASHLIB_SHA1     (MICROPY_PY_SSL)
-#define MICROPY_PY_CRYPTOLIB        (MICROPY_PY_SSL)
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/stm32/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
@@ -129,6 +126,10 @@
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_I2C      (MICROPY_HW_ENABLE_HW_I2C)
+#define MICROPY_PY_MACHINE_I2C_TARGET (MICROPY_HW_ENABLE_HW_I2C_TARGET)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/stm32/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX (4)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ (1)
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE "ports/stm32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_RX (I2S_MODE_MASTER_RX)
@@ -230,8 +231,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 // Assume that if we already defined the obj repr then we also defined these items
 #ifndef MICROPY_OBJ_REPR
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif

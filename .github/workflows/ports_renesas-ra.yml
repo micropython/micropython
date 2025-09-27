@@ -21,7 +21,7 @@ jobs:
   build_renesas_ra_board:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install packages
       run: source tools/ci.sh && ci_renesas_ra_setup
     - name: Build

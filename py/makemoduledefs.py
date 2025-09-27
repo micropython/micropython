@@ -14,8 +14,6 @@ py/builtinimnport.c:process_import_at_level. Regular modules will always use
 the built-in version.
 """
 
-from __future__ import print_function
-
 import sys
 import re
 import io

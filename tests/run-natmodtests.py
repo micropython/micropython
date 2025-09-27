@@ -11,9 +11,6 @@ import argparse
 
 run_tests_module = __import__("run-tests")
 
-sys.path.append("../tools")
-import pyboard
-
 # Paths for host executables
 CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
 MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/build-coverage/micropython")
@@ -112,7 +109,7 @@ class TargetPyboard:
             output = self.pyb.exec_(script)
             output = output.replace(b"\r\n", b"\n")
             return output, None
-        except pyboard.PyboardError as er:
+        except run_tests_module.pyboard.PyboardError as er:
             return b"", er
 
 
@@ -170,6 +167,7 @@ def run_tests(target_truth, target, args, resolved_arch):
             print("skip  {} - mpy file not compiled".format(test_file))
             continue
         test_script += bytes(injected_import_hook_code.format(test_module), "ascii")
+        test_script += b"print('START TEST')\n"
         test_script += test_file_data
 
         # Run test under MicroPython
@@ -177,8 +175,18 @@ def run_tests(target_truth, target, args, resolved_arch):
 
         # Work out result of test
         extra = ""
+        result_out = result_out.removeprefix(b"START TEST\n")
         if error is None and result_out == b"SKIP\n":
             result = "SKIP"
+        elif (
+            error is not None
+            and error.args[0] == "exception"
+            and error.args[1] == b""
+            and b"MemoryError" in error.args[2]
+        ):
+            # Test had a MemoryError before anything (should be at least "START TEST")
+            # was printed, so the test is too big for the target.
+            result = "LRGE"
         elif error is not None:
             result = "FAIL"
             extra = " - " + str(error)
@@ -203,6 +211,8 @@ def run_tests(target_truth, target, args, resolved_arch):
             test_results.append((test_file, "pass", ""))
         elif result == "SKIP":
             test_results.append((test_file, "skip", ""))
+        elif result == "LRGE":
+            test_results.append((test_file, "skip", "too large"))
         else:
             test_results.append((test_file, "fail", ""))
 
@@ -214,14 +224,16 @@ def run_tests(target_truth, target, args, resolved_arch):
 
 def main():
     cmd_parser = argparse.ArgumentParser(
-        description="Run dynamic-native-module tests under MicroPython"
+        description="Run dynamic-native-module tests under MicroPython",
+        epilog=run_tests_module.test_instance_epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     cmd_parser.add_argument(
-        "-p", "--pyboard", action="store_true", help="run tests via pyboard.py"
+        "-t", "--test-instance", default="unix", help="the MicroPython instance to test"
     )
-    cmd_parser.add_argument(
-        "-d", "--device", default="/dev/ttyACM0", help="the device for pyboard.py"
-    )
+    cmd_parser.add_argument("--baudrate", default=115200, help="baud rate of the serial device")
+    cmd_parser.add_argument("--user", default="micro", help="telnet login username")
+    cmd_parser.add_argument("--password", default="python", help="telnet login password")
     cmd_parser.add_argument(
         "-a", "--arch", choices=AVAILABLE_ARCHS, help="override native architecture of the target"
     )
@@ -243,10 +255,15 @@ def main():
 
     target_truth = TargetSubprocess([CPYTHON3])
 
-    if args.pyboard:
-        target = TargetPyboard(pyboard.Pyboard(args.device))
-    else:
+    target = run_tests_module.get_test_instance(
+        args.test_instance, args.baudrate, args.user, args.password
+    )
+    if target is None:
+        # Use the unix port of MicroPython.
         target = TargetSubprocess([MICROPYTHON])
+    else:
+        # Use a remote target.
+        target = TargetPyboard(target)
 
     if hasattr(args, "arch") and args.arch is not None:
         target_arch = args.arch

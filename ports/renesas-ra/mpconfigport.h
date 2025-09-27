@@ -99,6 +99,7 @@
 #ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
+#define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
@@ -234,8 +235,6 @@
 
 // Assume that if we already defined the obj repr then we also defined these items
 #ifndef MICROPY_OBJ_REPR
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif

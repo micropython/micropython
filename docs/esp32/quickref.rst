@@ -287,6 +287,10 @@ with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
 The period is in milliseconds. When using UART.IRQ_RXIDLE, timer 0 is needed for
 the IRQ_RXIDLE mechanism and must not be used otherwise.
 
+Timer callbacks are scheduled as soft interrupts on this port; hard
+callbacks are not implemented. Specifying ``hard=True`` will raise
+a ValueError.
+
 Virtual timers are not currently supported on this port.
 
 .. _Pins_and_GPIO:
@@ -566,6 +570,42 @@ ESP32 S2:
 
     Provided to deinit the adc driver.
 
+Pulse Counter (pin pulse/edge counting)
+---------------------------------------
+
+The ESP32 provides up to 8 pulse counter peripherals depending on the hardware,
+with id 0..7. These can be configured to count rising and/or falling edges on
+any input pin.
+
+Use the :ref:`esp32.PCNT <esp32.PCNT>` class::
+
+    from machine import Pin
+    from esp32 import PCNT
+
+    counter = PCNT(0, pin=Pin(2), rising=PCNT.INCREMENT)        # create counter
+    counter.start()                                             # start counter
+    count = counter.value()                                     # read count, -32768..32767
+    counter.value(0)                                            # reset counter
+    count = counter.value(0)                                    # read and reset
+
+The PCNT hardware supports monitoring multiple pins in a single unit to
+implement quadrature decoding or up/down signal counters.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
+common pulse counting applications::
+
+    from machine import Pin, Counter
+
+    counter = Counter(0, Pin(2))    # create a counter as above and start it
+    count = counter.value()         # read the count as an arbitrary precision signed integer
+
+    encoder = Encoder(0, Pin(12), Pin(14))    # create an encoder and begin counting
+    count = encoder.value()                   # read the count as an arbitrary precision signed integer
+
+Note that the id passed to these ``Counter()`` and ``Encoder()`` objects must be
+a PCNT id.
+
 Software SPI bus
 ----------------
 
@@ -801,6 +841,9 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), 0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
+
+The ESP32-C2 family does not include any RMT peripheral, so this class is
+unavailable on those SoCs.
 
 OneWire driver
 --------------

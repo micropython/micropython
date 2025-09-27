@@ -108,7 +108,7 @@ void rtc_init_start(bool force_init) {
     // Enable the RTC APB bus clock, to communicate with the RTC.
     #if defined(STM32H5)
     __HAL_RCC_RTC_CLK_ENABLE();
-    #elif defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32WL)
     __HAL_RCC_RTCAPB_CLK_ENABLE();
     #endif
 

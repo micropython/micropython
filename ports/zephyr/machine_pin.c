@@ -64,22 +64,7 @@ void machine_pin_deinit(void) {
 static void gpio_callback_handler(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
     machine_pin_irq_obj_t *irq = CONTAINER_OF(cb, machine_pin_irq_obj_t, callback);
 
-    #if MICROPY_STACK_CHECK
-    // This callback executes in an ISR context so the stack-limit check must be changed to
-    // use the ISR stack for the duration of this function (so that hard IRQ callbacks work).
-    char *orig_stack_top = MP_STATE_THREAD(stack_top);
-    size_t orig_stack_limit = MP_STATE_THREAD(stack_limit);
-    MP_STATE_THREAD(stack_top) = (void *)&irq;
-    MP_STATE_THREAD(stack_limit) = CONFIG_ISR_STACK_SIZE - 512;
-    #endif
-
     mp_irq_handler(&irq->base);
-
-    #if MICROPY_STACK_CHECK
-    // Restore original stack-limit checking values.
-    MP_STATE_THREAD(stack_top) = orig_stack_top;
-    MP_STATE_THREAD(stack_limit) = orig_stack_limit;
-    #endif
 }
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

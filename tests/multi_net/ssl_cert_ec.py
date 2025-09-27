@@ -13,13 +13,6 @@ PORT = 8000
 certfile = "ec_cert.der"
 keyfile = "ec_key.der"
 
-try:
-    os.stat(certfile)
-    os.stat(keyfile)
-except OSError:
-    print("SKIP")
-    raise SystemExit
-
 with open(certfile, "rb") as cf:
     cert = cadata = cf.read()
 

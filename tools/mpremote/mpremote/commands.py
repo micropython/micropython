@@ -309,7 +309,7 @@ def do_filesystem_recursive_rm(state, path, args):
                 os.path.join(r_cwd, path) if not os.path.isabs(path) else path
             )
             if isinstance(state.transport, SerialTransport) and abs_path.startswith(
-                f'{SerialTransport.fs_hook_mount}/'
+                f"{SerialTransport.fs_hook_mount}/"
             ):
                 raise CommandError(
                     f"rm -r not permitted on {SerialTransport.fs_hook_mount} directory"
@@ -335,11 +335,11 @@ def do_filesystem_recursive_rm(state, path, args):
 
 
 def human_size(size, decimals=1):
-    for unit in ['B', 'K', 'M', 'G', 'T']:
-        if size < 1024.0 or unit == 'T':
+    for unit in ["B", "K", "M", "G", "T"]:
+        if size < 1024.0 or unit == "T":
             break
         size /= 1024.0
-    return f"{size:.{decimals}f}{unit}" if unit != 'B' else f"{int(size)}"
+    return f"{size:.{decimals}f}{unit}" if unit != "B" else f"{int(size)}"
 
 
 def do_filesystem_tree(state, path, args):

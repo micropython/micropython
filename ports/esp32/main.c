@@ -51,6 +51,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/timeutils/timeutils.h"
@@ -60,6 +61,7 @@
 #include "uart.h"
 #include "usb.h"
 #include "usb_serial_jtag.h"
+#include "modesp32.h"
 #include "modmachine.h"
 #include "modnetwork.h"
 
@@ -178,7 +180,14 @@ soft_reset_exit:
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif
 
+    // Deinit uart before timers, as esp32 uart
+    // depends on a timer instance
+    machine_uart_deinit_all();
     machine_timer_deinit_all();
+
+    #if MICROPY_PY_ESP32_PCNT
+    esp32_pcnt_deinit_all();
+    #endif
 
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
@@ -199,7 +208,11 @@ soft_reset_exit:
     machine_pwm_deinit_all();
     // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
+    #if MICROPY_PY_MACHINE_I2C_TARGET
+    mp_machine_i2c_target_deinit_all();
+    #endif
     machine_deinit();
+
     #if MICROPY_PY_SOCKET_EVENTS
     socket_events_deinit();
     #endif

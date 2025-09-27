@@ -28,12 +28,17 @@
 
 #include "py/obj.h"
 
+// Fixed JsProxy references.
+#define MP_OBJ_JSPROXY_REF_GLOBAL_THIS (0)
+#define MP_OBJ_JSPROXY_REF_UNDEFINED (1)
+
 // proxy value number of items
 #define PVN (3)
 
 typedef struct _mp_obj_jsproxy_t {
     mp_obj_base_t base;
     int ref;
+    bool bind_to_self;
 } mp_obj_jsproxy_t;
 
 extern const mp_obj_type_t mp_type_jsproxy;
@@ -48,7 +53,8 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out);
 void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out);
 
 mp_obj_t mp_obj_new_jsproxy(int ref);
-void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+mp_obj_t mp_obj_get_jsproxy(int ref);
+void mp_obj_jsproxy_global_this_attr(qstr attr, mp_obj_t *dest);
 
 static inline bool mp_obj_is_jsproxy(mp_obj_t o) {
     return mp_obj_get_type(o) == &mp_type_jsproxy;

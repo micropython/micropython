@@ -29,22 +29,10 @@
 #include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 
-// Return the localtime as an 8-tuple.
-static mp_obj_t mp_time_localtime_get(void) {
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
     mp_uint_t seconds = pyb_rtc_get_us_since_epoch() / 1000u / 1000u;
-    timeutils_struct_time_t tm;
-    timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
-    mp_obj_t tuple[8] = {
-        tuple[0] = mp_obj_new_int(tm.tm_year),
-        tuple[1] = mp_obj_new_int(tm.tm_mon),
-        tuple[2] = mp_obj_new_int(tm.tm_mday),
-        tuple[3] = mp_obj_new_int(tm.tm_hour),
-        tuple[4] = mp_obj_new_int(tm.tm_min),
-        tuple[5] = mp_obj_new_int(tm.tm_sec),
-        tuple[6] = mp_obj_new_int(tm.tm_wday),
-        tuple[7] = mp_obj_new_int(tm.tm_yday),
-    };
-    return mp_obj_new_tuple(8, tuple);
+    timeutils_seconds_since_epoch_to_struct_time(seconds, tm);
 }
 
 // Returns the number of seconds, as an integer, since the Epoch.

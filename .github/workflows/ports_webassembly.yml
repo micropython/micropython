@@ -11,6 +11,7 @@ on:
       - 'shared/**'
       - 'lib/**'
       - 'ports/webassembly/**'
+      - 'tests/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install packages
       run: source tools/ci.sh && ci_webassembly_setup
     - name: Build

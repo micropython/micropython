@@ -12,9 +12,6 @@ from glob import glob
 
 run_tests_module = __import__("run-tests")
 
-sys.path.append("../tools")
-import pyboard
-
 prepare_script_for_target = run_tests_module.prepare_script_for_target
 
 # Paths for host executables
@@ -47,12 +44,12 @@ def run_script_on_target(target, script):
     output = b""
     err = None
 
-    if isinstance(target, pyboard.Pyboard):
+    if hasattr(target, "enter_raw_repl"):
         # Run via pyboard interface
         try:
             target.enter_raw_repl()
             output = target.exec_(script)
-        except pyboard.PyboardError as er:
+        except run_tests_module.pyboard.PyboardError as er:
             err = er
     else:
         # Run local executable
@@ -125,7 +122,7 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
                 f.write(test_script)
 
         # Process script through mpy-cross if needed
-        if isinstance(target, pyboard.Pyboard) or args.via_mpy:
+        if hasattr(target, "enter_raw_repl") or args.via_mpy:
             crash, test_script_target = prepare_script_for_target(args, script_text=test_script)
             if crash:
                 test_results.append((test_file, "fail", "preparation"))
@@ -197,7 +194,13 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if ": " in l and ": SKIP" not in l and "CRASH: " not in l:
+            if (
+                ": " in l
+                and ": SKIP" not in l
+                and "CRASH: " not in l
+                and "skipped: " not in l
+                and "failed: " not in l
+            ):
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
@@ -253,17 +256,17 @@ def compute_diff(file1, file2, diff_score):
 def main():
     cmd_parser = argparse.ArgumentParser(description="Run benchmarks for MicroPython")
     cmd_parser.add_argument(
-        "-t", "--diff-time", action="store_true", help="diff time outputs from a previous run"
+        "-m", "--diff-time", action="store_true", help="diff time outputs from a previous run"
     )
     cmd_parser.add_argument(
         "-s", "--diff-score", action="store_true", help="diff score outputs from a previous run"
     )
     cmd_parser.add_argument(
-        "-p", "--pyboard", action="store_true", help="run tests via pyboard.py"
+        "-t", "--test-instance", default="unix", help="the MicroPython instance to test"
     )
-    cmd_parser.add_argument(
-        "-d", "--device", default="/dev/ttyACM0", help="the device for pyboard.py"
-    )
+    cmd_parser.add_argument("--baudrate", default=115200, help="baud rate of the serial device")
+    cmd_parser.add_argument("--user", default="micro", help="telnet login username")
+    cmd_parser.add_argument("--password", default="python", help="telnet login password")
     cmd_parser.add_argument("-a", "--average", default="8", help="averaging number")
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
@@ -295,15 +298,18 @@ def main():
     M = int(args.M[0])
     n_average = int(args.average)
 
-    if args.pyboard:
-        if not args.mpy_cross_flags:
-            args.mpy_cross_flags = "-march=armv7m"
-        target = pyboard.Pyboard(args.device)
-        target.enter_raw_repl()
-    else:
+    target = run_tests_module.get_test_instance(
+        args.test_instance, args.baudrate, args.user, args.password
+    )
+    if target is None:
+        # Use the unix port of MicroPython.
         target = [MICROPYTHON, "-X", "emit=" + args.emit]
         if args.heapsize is not None:
             target.extend(["-X", "heapsize=" + args.heapsize])
+    else:
+        # Use a remote target.
+        if not args.mpy_cross_flags:
+            args.mpy_cross_flags = "-march=armv7m"
 
     if len(args.files) == 0:
         tests_skip = ("benchrun.py",)
@@ -324,7 +330,7 @@ def main():
     test_results = run_benchmarks(args, target, N, M, n_average, tests)
     res = run_tests_module.create_test_report(args, test_results)
 
-    if isinstance(target, pyboard.Pyboard):
+    if hasattr(target, "exit_raw_repl"):
         target.exit_raw_repl()
         target.close()
 

@@ -1,4 +1,4 @@
-__all__ = ('existingFun', 'missingFun')
+__all__ = ("existingFun", "missingFun")
 
 
 def existingFun():

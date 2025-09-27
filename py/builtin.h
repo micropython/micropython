@@ -141,6 +141,7 @@ extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_errno;
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_machine;
+extern const mp_obj_module_t mp_module_math;
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 

@@ -132,7 +132,11 @@ ifeq ($(MICROPY_PY_SOCKET),1)
 CFLAGS += -DMICROPY_PY_SOCKET=1
 endif
 ifeq ($(MICROPY_PY_THREAD),1)
+ifeq ($(MICROPY_PY_THREAD_GIL),1)
+CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=1
+else
 CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
+endif
 LDFLAGS += $(LIBPTHREAD)
 endif
 
@@ -250,16 +254,33 @@ endif
 
 include $(TOP)/py/mkrules.mk
 
-.PHONY: test test_full_no_native test_full
+.PHONY: test test_full_no_native test_full test//% test/% test-failures print-failures clean-failures
 
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py
 
+test//%: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py -i "$*"
+
+test-failures: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --run-failures
+
+print-failures:
+	cd $(TOP)/tests && ./run-tests.py --print-failures
+
+clean-failures:
+	cd $(TOP)/tests && ./run-tests.py --clean-failures
+
+test/%: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py -d "$*"
+
 test_full_no_native: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py -d thread
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
 	cat $(TOP)/tests/basics/0prelim.py | ./$(BUILD)/$(PROG) | grep -q 'abc'
 
