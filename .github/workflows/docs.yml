@@ -22,6 +22,6 @@ jobs:
     - name: Install Python packages
       run: pip install -r docs/requirements.txt
     - name: Build unix port
-      run: source tools/ci.sh && ci_unix_build_helper
+      run: tools/ci.sh unix_build_helper
     - name: Build docs
       run: make -C docs/ html
