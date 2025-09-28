@@ -79,6 +79,9 @@ typedef unsigned int uint;
 #if defined(_MSC_VER) || defined(__cplusplus)
 #define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)1)
 #else
+#if __clang__
+#pragma GCC diagnostic ignored "-Wgnu-folding-constant"
+#endif
 #define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
 #endif
 
