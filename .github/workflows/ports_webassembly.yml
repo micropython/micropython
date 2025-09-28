@@ -23,11 +23,11 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     - name: Install packages
-      run: source tools/ci.sh && ci_webassembly_setup
+      run: tools/ci.sh webassembly_setup
     - name: Build
-      run: source tools/ci.sh && ci_webassembly_build
+      run: tools/ci.sh webassembly_build
     - name: Run tests
-      run: source tools/ci.sh && ci_webassembly_run_tests
+      run: tools/ci.sh webassembly_run_tests
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures

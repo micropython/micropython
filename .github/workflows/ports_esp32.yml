@@ -51,7 +51,7 @@ jobs:
 
     - name: Install ESP-IDF packages
       if: steps.cache_esp_idf.outputs.cache-hit != 'true'
-      run: source tools/ci.sh && ci_esp32_idf_setup
+      run: tools/ci.sh esp32_idf_setup
 
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
@@ -59,4 +59,4 @@ jobs:
         key: esp32-${{ matrix.ci_func }}
 
     - name: Build ci_${{matrix.ci_func }}
-      run: source tools/ci.sh && ci_${{ matrix.ci_func }}
+      run: tools/ci.sh ${{ matrix.ci_func }}

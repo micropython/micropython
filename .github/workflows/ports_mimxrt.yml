@@ -28,6 +28,6 @@ jobs:
       with:
         path: 'micropython repo'
     - name: Install packages
-      run: source tools/ci.sh && ci_mimxrt_setup
+      run: tools/ci.sh mimxrt_setup
     - name: Build
-      run: source tools/ci.sh && ci_mimxrt_build
+      run: tools/ci.sh mimxrt_build
