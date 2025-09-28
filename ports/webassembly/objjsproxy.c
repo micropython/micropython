@@ -566,7 +566,8 @@ static mp_obj_t jsproxy_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
         // decouples the task from the thenable and allows cancelling the task.
         if (mp_asyncio_context != MP_OBJ_NULL) {
             mp_obj_t cur_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
-            if (cur_task != mp_const_none) {
+            mp_obj_t top_level_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR__top_level_task));
+            if (cur_task != top_level_task) {
                 mp_obj_t thenable_event_class = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_ThenableEvent));
                 mp_obj_t thenable_event = mp_call_function_1(thenable_event_class, self_in);
                 mp_obj_t dest[2];

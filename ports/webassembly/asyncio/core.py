@@ -243,8 +243,7 @@ def get_event_loop():
 
 
 def current_task():
-    if cur_task is None:
-        raise RuntimeError("no running event loop")
+    assert cur_task is not None
     return cur_task
 
 

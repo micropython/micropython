@@ -88,3 +88,35 @@ print("top-level end")
 `);
 
 console.log("finished");
+
+/**********************************************************/
+// Top-level await's on a JavaScript function that throws.
+
+console.log("= TEST 4 ==========");
+
+globalThis.jsFail = async () => {
+    console.log("jsFail");
+    throw new Error("jsFail");
+};
+
+await mp.runPythonAsync(`
+import asyncio
+import js
+
+# Test top-level catching from a failed JS await.
+try:
+    await js.jsFail()
+except Exception as er:
+    print("caught exception:", type(er), type(er.args[0]), er.args[1:])
+
+async def main():
+    try:
+        await js.jsFail()
+    except Exception as er:
+        print("caught exception:", type(er), type(er.args[0]), er.args[1:])
+
+# Test top-level waiting on a coro that catches.
+await main()
+`);
+
+console.log("finished");
