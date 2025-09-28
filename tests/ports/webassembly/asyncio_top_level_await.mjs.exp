@@ -22,4 +22,6 @@ jsFail
 caught exception: <class 'JsException'> <class 'JsProxy'> ('Error', 'jsFail')
 jsFail
 caught exception: <class 'JsException'> <class 'JsProxy'> ('Error', 'jsFail')
+jsFail
+caught exception: <class 'JsException'> <class 'JsProxy'> ('Error', 'jsFail')
 finished

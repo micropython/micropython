@@ -79,13 +79,21 @@ class TopLevelCoro:
 
 class ThenableEvent:
     def __init__(self, thenable):
-        self.result = None  # Result of the thenable
         self.waiting = None  # Task waiting on completion of this thenable
-        thenable.then(self.set)
+        thenable.then(self.set, self.cancel)
 
     def set(self, value=None):
         # Thenable/Promise is fulfilled, set result and schedule any waiting task.
         self.result = value
+        if self.waiting:
+            _task_queue.push(self.waiting)
+            self.waiting = None
+
+    def cancel(self, value=None):
+        # Thenable/Promise is rejected, set error and schedule any waiting task.
+        self.error = jsffi.JsException(
+            value, getattr(value, "name", None), getattr(value, "message", None)
+        )
         if self.waiting:
             _task_queue.push(self.waiting)
             self.waiting = None
@@ -101,7 +109,9 @@ class ThenableEvent:
         cur_task.data = self
         # Wait for the thenable to fulfill.
         yield
-        # Return the result of the thenable.
+        # Raise the error, or return the result, of the thenable.
+        if hasattr(self, "error"):
+            raise self.error
         return self.result
 
 

@@ -117,6 +117,10 @@ async def main():
 
 # Test top-level waiting on a coro that catches.
 await main()
+
+# Test top-level waiting on a task that catches.
+t = asyncio.create_task(main())
+await t
 `);
 
 console.log("finished");
