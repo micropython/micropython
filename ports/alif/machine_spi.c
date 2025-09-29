@@ -79,8 +79,8 @@ static inline uint32_t spi_get_clk(machine_spi_obj_t *spi) {
     return spi->is_lp ? GetSystemCoreClock() : GetSystemAHBClock();
 }
 
-static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
-    uint32_t polarity, uint32_t phase, uint32_t bits, uint32_t firstbit) {
+static void spi_init(machine_spi_obj_t *spi, int32_t baudrate,
+    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
     const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
     switch (spi->id) {
         #if defined(MICROPY_HW_SPI0_SCK)
@@ -161,7 +161,9 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     spi_mask_interrupts(spi->inst);
 
     // Configure baudrate clock
-    spi_set_bus_speed(spi->inst, baudrate, spi_get_clk(spi));
+    if (baudrate > 0) {
+        spi_set_bus_speed(spi->inst, baudrate, spi_get_clk(spi));
+    }
 
     // Configure FIFOs
     spi_set_tx_threshold(spi->inst, 0);
@@ -172,6 +174,21 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     }
 
     // Configure SPI bus mode.
+    if (!spi->is_lp) {
+        if (polarity < 0) {
+            polarity = (spi->inst->SPI_CTRLR0 & SPI_CTRLR0_SCPOL_HIGH) ? 1 : 0;
+        }
+        if (phase < 0) {
+            phase = (spi->inst->SPI_CTRLR0 & SPI_CTRLR0_SCPH_HIGH) ? 1 : 0;
+        }
+    } else {
+        if (polarity < 0) {
+            polarity = (spi->inst->SPI_CTRLR0 & LPSPI_CTRLR0_SCPOL_HIGH) ? 1 : 0;
+        }
+        if (phase < 0) {
+            phase = (spi->inst->SPI_CTRLR0 & LPSPI_CTRLR0_SCPH_HIGH) ? 1 : 0;
+        }
+    }
     uint32_t spi_mode = (polarity << 1) | phase;
     if (!spi->is_lp) {
         spi_set_mode(spi->inst, spi_mode);
@@ -193,10 +210,12 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     }
 
     // Configure frame size.
-    if (!spi->is_lp) {
-        spi_set_dfs(spi->inst, bits);
-    } else {
-        lpspi_set_dfs(spi->inst, bits);
+    if (bits > 0) {
+        if (!spi->is_lp) {
+            spi_set_dfs(spi->inst, bits);
+        } else {
+            lpspi_set_dfs(spi->inst, bits);
+        }
     }
 
     // Configure slave select pin
