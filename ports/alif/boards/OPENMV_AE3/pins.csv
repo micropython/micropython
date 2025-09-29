@@ -8,7 +8,7 @@ LED_GREEN,P6_3
 LED_BLUE,P6_0
 
 # User switch
-USR_SW,P15_7
+SW,P15_7
 
 # Flash on OSPI0
 FLASH_RESET,P3_3
