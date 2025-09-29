@@ -26,13 +26,16 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#if MICROPY_HW_ENABLE_USBDEV
 
 #include "mp_usbd.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/objstr.h"
 
-// Implements the singleton runtime USB object
+// Implements the USB device object
+// Full runtime functionality when MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE=1
+// Minimal functionality (builtin_driver control only) when =0
 //
 // Currently this implementation references TinyUSB directly.
 
@@ -40,9 +43,24 @@
 #include "device/usbd_pvt.h"
 #endif
 
-#define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC)
+#define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC || MICROPY_HW_USB_NCM)
+
+// USB class flags are defined in mp_usbd.h
+
+// Structure for combinable built-in USB driver configurations
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t flags;  // Combination of USB_BUILTIN_FLAG_* values
+} mp_obj_usb_builtin_t;
 
 const mp_obj_type_t machine_usb_device_type;
+const mp_obj_type_t mp_type_usb_builtin;
+
+// Forward declarations for builtin objects
+static const mp_obj_usb_builtin_t builtin_none_obj;
+
+// Forward declaration for builtin config creation
+static mp_obj_t mp_usbd_create_builtin_config(uint8_t flags);
 
 static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type;
@@ -53,6 +71,43 @@ static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, si
     if (MP_STATE_VM(usbd) == MP_OBJ_NULL) {
         mp_obj_usb_device_t *o = m_new0(mp_obj_usb_device_t, 1);
         o->base.type = &machine_usb_device_type;
+
+        // Initialize fields common to both minimal and full modes
+        #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+        o->builtin_driver = MP_OBJ_FROM_PTR(&builtin_none_obj);
+        o->active = false; // Runtime mode starts inactive
+        #else
+        // In static mode, detect if USB is already initialized at boot
+        // Check if TinyUSB is running by testing if the stack is configured
+        #ifndef NO_QSTR
+        o->active = tud_inited();
+        #else
+        o->active = false; // Fallback when TinyUSB headers not available
+        #endif
+
+        // Set builtin_driver based on current class state if active
+        if (o->active) {
+            // Convert current class state to appropriate builtin driver
+            extern mp_usbd_class_state_t mp_usbd_class_state;
+            uint8_t flags = 0;
+            if (mp_usbd_class_state.cdc_enabled) flags |= USB_BUILTIN_FLAG_CDC;
+            if (mp_usbd_class_state.msc_enabled) flags |= USB_BUILTIN_FLAG_MSC;
+            if (mp_usbd_class_state.ncm_enabled) flags |= USB_BUILTIN_FLAG_NCM;
+
+            // Create appropriate builtin object based on current state
+            if (flags == USB_BUILTIN_FLAG_NONE) {
+                o->builtin_driver = MP_OBJ_FROM_PTR(&builtin_none_obj);
+            } else {
+                // Use the dynamic builtin system
+                o->builtin_driver = mp_usbd_create_builtin_config(flags);
+            }
+        } else {
+            o->builtin_driver = MP_OBJ_FROM_PTR(&builtin_none_obj);
+        }
+        #endif
+
+        #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+        // Initialize runtime-only fields
         o->desc_dev = mp_const_none;
         o->desc_cfg = mp_const_none;
         o->desc_strs = mp_const_none;
@@ -64,21 +119,20 @@ static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, si
             o->xfer_data[i][0] = mp_const_none;
             o->xfer_data[i][1] = mp_const_none;
         }
-        o->builtin_driver = MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
-        o->active = false; // Builtin USB may be active already, but runtime is inactive
         o->trigger = false;
         o->control_data = MP_OBJ_TO_PTR(mp_obj_new_memoryview('B', 0, NULL));
         o->num_pend_excs = 0;
         for (int i = 0; i < MP_USBD_MAX_PEND_EXCS; i++) {
             o->pend_excs[i] = mp_const_none;
         }
+        #endif
 
         MP_STATE_VM(usbd) = MP_OBJ_FROM_PTR(o);
     }
 
     return MP_STATE_VM(usbd);
 }
-
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 // Utility helper to raise an error if USB device is not active
 // (or if a change of active state is triggered but not processed.)
 static void usb_device_check_active(mp_obj_usb_device_t *usbd) {
@@ -86,7 +140,9 @@ static void usb_device_check_active(mp_obj_usb_device_t *usbd) {
         mp_raise_OSError(MP_EINVAL);
     }
 }
+#endif
 
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buffer) {
     mp_obj_usb_device_t *usbd = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(self);
     int ep_addr;
@@ -125,6 +181,7 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
     return mp_obj_new_bool(result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(usb_device_submit_xfer_obj, usb_device_submit_xfer);
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
     mp_obj_usb_device_t *usbd = (mp_obj_usb_device_t *)MP_OBJ_TO_PTR(args[0]);
@@ -134,6 +191,8 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
         bool value = mp_obj_is_true(args[1]);
 
         if (value != result) {
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // Runtime mode: check descriptors and handle trigger mechanism
             if (value
                 && !mp_usb_device_builtin_enabled(usbd)
                 && usbd->desc_dev == mp_const_none) {
@@ -150,6 +209,27 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
                 mp_usbd_init(); // Ensure TinyUSB has initialised by this point
             }
             mp_usbd_schedule_task();
+            #else
+            // Static mode: directly control USB classes based on builtin_driver
+            if (value && !mp_usb_device_builtin_enabled(usbd)) {
+                // Only allow activating if a built-in driver is enabled
+                mp_raise_OSError(MP_EINVAL);
+            }
+
+            usbd->active = value;
+            if (value) {
+                mp_usbd_init(); // Ensure TinyUSB has initialised by this point
+
+                // Update class state based on current builtin_driver
+                if (mp_obj_is_type(usbd->builtin_driver, &mp_type_usb_builtin)) {
+                    mp_obj_usb_builtin_t *builtin = MP_OBJ_TO_PTR(usbd->builtin_driver);
+                    mp_usbd_update_class_state(builtin->flags);
+                }
+            } else {
+                // Disable all classes when deactivating
+                mp_usbd_update_class_state(USB_BUILTIN_FLAG_NONE);
+            }
+            #endif
         }
     }
 
@@ -157,6 +237,7 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_active_obj, 1, 2, usb_device_active);
 
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 static mp_obj_t usb_remote_wakeup(mp_obj_t self) {
     return mp_obj_new_bool(tud_remote_wakeup());
 }
@@ -182,7 +263,9 @@ static mp_obj_t usb_device_stall(size_t n_args, const mp_obj_t *args) {
     return res;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_stall_obj, 2, 3, usb_device_stall);
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 // Configure the singleton USB device with all of the relevant transfer and descriptor
 // callbacks for dynamic devices.
 static mp_obj_t usb_device_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -228,61 +311,130 @@ static mp_obj_t usb_device_config(size_t n_args, const mp_obj_t *pos_args, mp_ma
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_config_obj, 1, usb_device_config);
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
-// Per-class control methods
-static mp_obj_t usb_device_enable_cdc(size_t n_args, const mp_obj_t *args) {
-    mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
-    
-    if (self->active) {
-        mp_raise_OSError(MP_EINVAL);
-    }
-    
-    if (n_args == 1) {
-        return mp_obj_new_bool(mp_usbd_class_state.cdc_enabled);
-    } else {
-        bool enable = mp_obj_is_true(args[1]);
-        mp_usbd_enable_class_cdc(enable);
-        return mp_const_none;
-    }
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_cdc_obj, 1, 2, usb_device_enable_cdc);
-
-static mp_obj_t usb_device_enable_msc(size_t n_args, const mp_obj_t *args) {
-    mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
-    
-    if (self->active) {
-        mp_raise_OSError(MP_EINVAL);
-    }
-    
-    if (n_args == 1) {
-        return mp_obj_new_bool(mp_usbd_class_state.msc_enabled);
-    } else {
-        bool enable = mp_obj_is_true(args[1]);
-        mp_usbd_enable_class_msc(enable);
-        return mp_const_none;
-    }
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_msc_obj, 1, 2, usb_device_enable_msc);
-
-static mp_obj_t usb_device_enable_ncm(size_t n_args, const mp_obj_t *args) {
-    mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
-    
-    if (self->active) {
-        mp_raise_OSError(MP_EINVAL);
-    }
-    
-    if (n_args == 1) {
-        return mp_obj_new_bool(mp_usbd_class_state.ncm_enabled);
-    } else {
-        bool enable = mp_obj_is_true(args[1]);
-        mp_usbd_enable_class_ncm(enable);
-        return mp_const_none;
-    }
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_ncm_obj, 1, 2, usb_device_enable_ncm);
-
+// Device descriptor object (needed by bitfield builtin functions)
 static const MP_DEFINE_BYTES_OBJ(builtin_default_desc_dev_obj,
     &mp_usbd_builtin_desc_dev, sizeof(tusb_desc_device_t));
+
+// Forward declarations for bitfield builtin functions
+static uint8_t mp_usbd_get_itf_max(uint8_t flags);
+static uint8_t mp_usbd_get_ep_max(uint8_t flags);
+static uint8_t mp_usbd_get_str_max(uint8_t flags);
+static const uint8_t *mp_usbd_get_builtin_desc_cfg(uint8_t flags);
+static size_t mp_usbd_get_desc_cfg_len(uint8_t flags);
+
+// Function from mp_usbd_descriptor.c to update class state based on flags
+extern void mp_usbd_update_class_state(uint8_t flags);
+
+// Create a new builtin configuration object with specified flags
+static mp_obj_t mp_usbd_create_builtin_config(uint8_t flags) {
+    mp_obj_usb_builtin_t *builtin = mp_obj_malloc(mp_obj_usb_builtin_t, &mp_type_usb_builtin);
+    builtin->flags = flags;
+    return MP_OBJ_FROM_PTR(builtin);
+}
+
+// Binary operator for combining builtin configs (implements __or__)
+static mp_obj_t builtin_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    if (op == MP_BINARY_OP_OR) {
+        mp_obj_usb_builtin_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+        mp_obj_usb_builtin_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+        return mp_usbd_create_builtin_config(lhs->flags | rhs->flags);
+    }
+    return MP_OBJ_NULL; // Operation not supported
+}
+
+// Dynamic attribute access for builtin config objects
+static void builtin_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_usb_builtin_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load attribute
+        if (attr == MP_QSTR_desc_cfg) {
+            size_t len = mp_usbd_get_desc_cfg_len(self->flags);
+            dest[0] = mp_obj_new_bytes(mp_usbd_get_builtin_desc_cfg(self->flags), len);
+        } else if (attr == MP_QSTR_itf_max) {
+            dest[0] = MP_OBJ_NEW_SMALL_INT(mp_usbd_get_itf_max(self->flags));
+        } else if (attr == MP_QSTR_ep_max) {
+            dest[0] = MP_OBJ_NEW_SMALL_INT(mp_usbd_get_ep_max(self->flags));
+        } else if (attr == MP_QSTR_str_max) {
+            dest[0] = MP_OBJ_NEW_SMALL_INT(mp_usbd_get_str_max(self->flags));
+        } else if (attr == MP_QSTR_desc_dev) {
+            dest[0] = MP_OBJ_FROM_PTR(&builtin_default_desc_dev_obj);
+        }
+    }
+}
+
+// Helper functions for dynamic property calculation
+static uint8_t mp_usbd_get_itf_max(uint8_t flags) {
+    uint8_t count = 0;
+    if ((flags & USB_BUILTIN_FLAG_CDC) && MICROPY_HW_USB_CDC) {
+        count += 2;  // CDC uses 2 interfaces
+    }
+    if ((flags & USB_BUILTIN_FLAG_MSC) && MICROPY_HW_USB_MSC) {
+        count += 1;
+    }
+    #if MICROPY_HW_NETWORK_USBNET
+    if ((flags & USB_BUILTIN_FLAG_NCM) && MICROPY_HW_NETWORK_USBNET) {
+        count += 2;  // NCM uses 2 interfaces (control + data)
+    }
+    #endif
+    return count;
+}
+
+static uint8_t mp_usbd_get_ep_max(uint8_t flags) {
+    uint8_t ep_max = 1;  // Endpoint 0 is always used
+    if ((flags & USB_BUILTIN_FLAG_CDC) && MICROPY_HW_USB_CDC) {
+        ep_max = 3;  // CDC uses endpoints 1, 2, 3
+    }
+    if ((flags & USB_BUILTIN_FLAG_MSC) && MICROPY_HW_USB_MSC) {
+        ep_max = (ep_max > 2) ? ep_max : 2;  // MSC uses endpoints 1, 2
+    }
+    #if MICROPY_HW_NETWORK_USBNET
+    if ((flags & USB_BUILTIN_FLAG_NCM) && MICROPY_HW_NETWORK_USBNET) {
+        ep_max = (ep_max > 3) ? ep_max : 3;  // NCM uses endpoints 1, 2, 3
+    }
+    #endif
+    return ep_max;
+}
+
+static uint8_t mp_usbd_get_str_max(uint8_t flags) {
+    uint8_t str_max = 1;  // String 0 is always used (language descriptor)
+    if ((flags & USB_BUILTIN_FLAG_CDC) && MICROPY_HW_USB_CDC) {
+        str_max = 4;  // CDC uses strings 1, 2, 3, 4
+    }
+    if ((flags & USB_BUILTIN_FLAG_MSC) && MICROPY_HW_USB_MSC) {
+        str_max = (str_max > 2) ? str_max : 2;  // MSC uses strings 1, 2
+    }
+    #if MICROPY_HW_NETWORK_USBNET
+    if ((flags & USB_BUILTIN_FLAG_NCM) && MICROPY_HW_NETWORK_USBNET) {
+        str_max = (str_max > 3) ? str_max : 3;  // NCM uses strings 1, 2, 3
+    }
+    #endif
+    return str_max;
+}
+
+static const uint8_t *mp_usbd_get_builtin_desc_cfg(uint8_t flags) {
+    // For now, return the generated descriptor from mp_usbd_descriptor.c
+    // This will be implemented when we modify that file
+    extern const uint8_t *mp_usbd_generate_desc_cfg_from_flags(uint8_t flags);
+    return mp_usbd_generate_desc_cfg_from_flags(flags);
+}
+
+static size_t mp_usbd_get_desc_cfg_len(uint8_t flags) {
+    // Calculate descriptor length based on enabled classes
+    extern size_t mp_usbd_get_descriptor_cfg_len_from_flags(uint8_t flags);
+    return mp_usbd_get_descriptor_cfg_len_from_flags(flags);
+}
+
+// Type definition for combinable builtin config objects
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_usb_builtin,
+    MP_QSTR_USBBuiltin,
+    MP_TYPE_FLAG_NONE,
+    binary_op, builtin_binary_op,
+    attr, builtin_attr
+);
 
 #if HAS_BUILTIN_DRIVERS
 // BUILTIN_DEFAULT Python object holds properties of the built-in USB configuration
@@ -324,40 +476,100 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &usb_device_builtin_none_dict
     );
 
+// Create the new bitfield-based constant objects
+static const mp_obj_usb_builtin_t builtin_none_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_NONE
+};
+
+static const mp_obj_usb_builtin_t builtin_cdc_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_CDC
+};
+
+static const mp_obj_usb_builtin_t builtin_msc_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_MSC
+};
+
+#if MICROPY_HW_NETWORK_USBNET
+static const mp_obj_usb_builtin_t builtin_ncm_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_NCM
+};
+#endif
+
+// Create default combination based on compile-time configuration
+#if MICROPY_HW_USB_CDC && MICROPY_HW_USB_MSC
+static const mp_obj_usb_builtin_t builtin_default_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_CDC | USB_BUILTIN_FLAG_MSC
+};
+#elif MICROPY_HW_USB_CDC
+static const mp_obj_usb_builtin_t builtin_default_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_CDC
+};
+#elif MICROPY_HW_USB_MSC
+static const mp_obj_usb_builtin_t builtin_default_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_MSC
+};
+#else
+static const mp_obj_usb_builtin_t builtin_default_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_NONE
+};
+#endif
+
+// Legacy combination for backward compatibility
+#if MICROPY_HW_USB_CDC && MICROPY_HW_USB_MSC
+static const mp_obj_usb_builtin_t builtin_cdc_msc_obj = {
+    {&mp_type_usb_builtin}, USB_BUILTIN_FLAG_CDC | USB_BUILTIN_FLAG_MSC
+};
+#endif
+
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+// Full runtime USB device methods and constants
 static const mp_rom_map_elem_t usb_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&usb_device_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_submit_xfer), MP_ROM_PTR(&usb_device_submit_xfer_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&usb_device_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_stall), MP_ROM_PTR(&usb_device_stall_obj) },
     { MP_ROM_QSTR(MP_QSTR_remote_wakeup), MP_ROM_PTR(&usb_remote_wakeup_obj) },
-    
-    // Per-class control methods
-    { MP_ROM_QSTR(MP_QSTR_enable_cdc), MP_ROM_PTR(&usb_device_enable_cdc_obj) },
-    { MP_ROM_QSTR(MP_QSTR_enable_msc), MP_ROM_PTR(&usb_device_enable_msc_obj) },
-    { MP_ROM_QSTR(MP_QSTR_enable_ncm), MP_ROM_PTR(&usb_device_enable_ncm_obj) },
 
-    // Built-in driver constants
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_NONE), MP_ROM_PTR(&mp_type_usb_device_builtin_none) },
+    // Built-in driver constants (new bitfield-based system)
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_NONE), MP_ROM_PTR(&builtin_none_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_DEFAULT), MP_ROM_PTR(&builtin_default_obj) },
 
-    #if !HAS_BUILTIN_DRIVERS
-    // No builtin-in drivers, so BUILTIN_DEFAULT is BUILTIN_NONE
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_DEFAULT), MP_ROM_PTR(&mp_type_usb_device_builtin_none) },
-    #else
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_DEFAULT), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
+    // Individual class constants
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC), MP_ROM_PTR(&builtin_cdc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_MSC), MP_ROM_PTR(&builtin_msc_obj) },
 
-    // Specific driver constant names are to support future switching of built-in drivers,
-    // but currently only one is present and it maps directly to BUILTIN_DEFAULT
-    #if MICROPY_HW_USB_CDC && !MICROPY_HW_USB_MSC
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
+    #if MICROPY_HW_NETWORK_USBNET
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_NCM), MP_ROM_PTR(&builtin_ncm_obj) },
     #endif
-    #if MICROPY_HW_USB_MSC && !MICROPY_HW_USB_CDC
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_MSC), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
-    #endif
+
+    // Legacy combination constant for backward compatibility
     #if MICROPY_HW_USB_CDC && MICROPY_HW_USB_MSC
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC_MSC), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC_MSC), MP_ROM_PTR(&builtin_cdc_msc_obj) },
     #endif
-    #endif // !HAS_BUILTIN_DRIVERS
 };
+#else
+// Minimal static USB device methods and constants
+static const mp_rom_map_elem_t usb_device_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&usb_device_active_obj) },
+
+    // Built-in driver constants (new bitfield-based system)
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_NONE), MP_ROM_PTR(&builtin_none_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_DEFAULT), MP_ROM_PTR(&builtin_default_obj) },
+
+    // Individual class constants
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC), MP_ROM_PTR(&builtin_cdc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_MSC), MP_ROM_PTR(&builtin_msc_obj) },
+
+    #if MICROPY_HW_NETWORK_USBNET
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_NCM), MP_ROM_PTR(&builtin_ncm_obj) },
+    #endif
+
+    // Legacy combination constant for backward compatibility
+    #if MICROPY_HW_USB_CDC && MICROPY_HW_USB_MSC
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC_MSC), MP_ROM_PTR(&builtin_cdc_msc_obj) },
+    #endif
+};
+#endif
 static MP_DEFINE_CONST_DICT(usb_device_locals_dict, usb_device_locals_dict_table);
 
 static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -373,11 +585,72 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else if (dest[1] != MP_OBJ_NULL) {
         // Store attribute.
         if (attr == MP_QSTR_builtin_driver) {
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In runtime mode, require deactivation before changing builtin_driver
             if (self->active) {
                 mp_raise_OSError(MP_EINVAL); // Need to deactivate first
             }
-            // Note: this value should be one of the BUILTIN_nnn constants,
-            // but not checked here to save code size in a low level API
+            #else
+            // In static mode, allow changing builtin_driver when active
+            // This will update the class state and trigger re-enumeration
+            #endif
+
+            // Handle new bitfield builtin types and legacy constants
+            uint8_t flags = 0;
+            if (mp_obj_is_type(dest[1], &mp_type_usb_builtin)) {
+                // New bitfield builtin object
+                mp_obj_usb_builtin_t *builtin = MP_OBJ_TO_PTR(dest[1]);
+                flags = builtin->flags;
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&builtin_none_obj)) {
+                flags = USB_BUILTIN_FLAG_NONE;
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&builtin_default_obj)) {
+                flags = builtin_default_obj.flags;
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&builtin_cdc_obj)) {
+                flags = USB_BUILTIN_FLAG_CDC;
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&builtin_msc_obj)) {
+                flags = USB_BUILTIN_FLAG_MSC;
+            #if MICROPY_HW_NETWORK_USBNET
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&builtin_ncm_obj)) {
+                flags = USB_BUILTIN_FLAG_NCM;
+            #endif
+            #if MICROPY_HW_USB_CDC && MICROPY_HW_USB_MSC
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&builtin_cdc_msc_obj)) {
+                flags = USB_BUILTIN_FLAG_CDC | USB_BUILTIN_FLAG_MSC;
+            #endif
+            // Also handle legacy constant types for backward compatibility
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none)) {
+                flags = USB_BUILTIN_FLAG_NONE;
+            #if HAS_BUILTIN_DRIVERS
+            } else if (dest[1] == MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_default)) {
+                // Map to default combination based on compile configuration
+                #if MICROPY_HW_USB_CDC && MICROPY_HW_USB_MSC
+                flags = USB_BUILTIN_FLAG_CDC | USB_BUILTIN_FLAG_MSC;
+                #elif MICROPY_HW_USB_CDC
+                flags = USB_BUILTIN_FLAG_CDC;
+                #elif MICROPY_HW_USB_MSC
+                flags = USB_BUILTIN_FLAG_MSC;
+                #endif
+            #endif
+            }
+
+            // Update the internal class state based on flags
+            mp_usbd_update_class_state(flags);
+
+            #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In static mode, if USB is active, trigger re-enumeration
+            // to update the host with the new configuration
+            if (self->active) {
+                #ifndef NO_QSTR
+                // Disconnect and reconnect to trigger enumeration with new descriptors
+                tud_disconnect();
+                // Small delay to ensure host recognizes disconnection
+                mp_hal_delay_ms(100);
+                tud_connect();
+                #endif
+            }
+            #endif
+
+            // Store the builtin_driver (could be legacy constant or new bitfield object)
             self->builtin_driver = dest[1];
             dest[0] = MP_OBJ_NULL;
         }
