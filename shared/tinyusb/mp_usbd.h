@@ -45,26 +45,6 @@
 #include "class/cdc/cdc_device.h"
 #endif
 
-// Initialise TinyUSB device.
-static inline void mp_usbd_init_tud(void) {
-    tusb_init();
-    #if MICROPY_HW_USB_CDC
-    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0,
-                                     .tx_persistent = 1,
-
-                                     // This config flag is unreleased in TinyUSB >v0.18.0
-                                     // but included in Espressif's TinyUSB component since v0.18.0~3
-                                     //
-                                     // Versioning issue reported as
-                                     // https://github.com/espressif/esp-usb/issues/236
-                                     #if TUSB_VERSION_NUMBER > 1800 || defined(ESP_PLATFORM)
-                                     .tx_overwritabe_if_not_connected = 1,
-                                     #endif
-    };
-    tud_cdc_configure_fifo(&cfg);
-    #endif
-}
-
 // Run the TinyUSB device task
 void mp_usbd_task(void);
 
@@ -101,10 +81,28 @@ static inline void mp_usbd_init_tud(void) {
 
     tusb_init();
     #if MICROPY_HW_USB_CDC
-    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
+    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0,
+                                     .tx_persistent = 1,
+
+                                     // This config flag is unreleased in TinyUSB >v0.18.0
+                                     // but included in Espressif's TinyUSB component since v0.18.0~3
+                                     //
+                                     // Versioning issue reported as
+                                     // https://github.com/espressif/esp-usb/issues/236
+                                     #if TUSB_VERSION_NUMBER > 1800 || defined(ESP_PLATFORM)
+                                     .tx_overwritabe_if_not_connected = 1,
+                                     #endif
+    };
     tud_cdc_configure_fifo(&cfg);
     #endif
 }
+
+// Individual USB class flags for bitfield operations
+#define USB_BUILTIN_FLAG_NONE  0x00
+#define USB_BUILTIN_FLAG_CDC   0x01
+#define USB_BUILTIN_FLAG_MSC   0x02
+#define USB_BUILTIN_FLAG_NCM   0x04
+
 
 // Get dynamic descriptor length based on enabled classes
 size_t mp_usbd_get_descriptor_cfg_len(void);
@@ -149,6 +147,7 @@ typedef struct {
 
     bool active; // Has the user set the USB device active?
     bool trigger; // Has the user requested the active state change (or re-activate)?
+
 
     // Temporary pointers for xfer data in progress on each endpoint
     // Ensuring they aren't garbage collected until the xfer completes
