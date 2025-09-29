@@ -506,7 +506,7 @@ inline static bool mp_mul_ll_overflow(long long int x, long long int y, long lon
 #if __has_builtin(__builtin_saddll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
 #define mp_add_ll_overflow __builtin_saddll_overflow
 #else
-inline static bool mp_add_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+static inline bool mp_add_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
     bool overflow;
 
     if (rhs > 0) {
@@ -526,7 +526,7 @@ inline static bool mp_add_ll_overflow(long long int lhs, long long int rhs, long
 #if __has_builtin(__builtin_ssubll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
 #define mp_sub_ll_overflow __builtin_ssubll_overflow
 #else
-inline static bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+static inline bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
     bool overflow;
 
     if (rhs > 0) {
