@@ -105,6 +105,8 @@ static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, si
             o->builtin_driver = MP_OBJ_FROM_PTR(&builtin_none_obj);
         }
         #endif
+        o->custom_vid = 0; // 0 = use builtin default
+        o->custom_pid = 0; // 0 = use builtin default
 
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         // Initialize runtime-only fields
@@ -228,6 +230,9 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
             } else {
                 // Disable all classes when deactivating
                 mp_usbd_update_class_state(USB_BUILTIN_FLAG_NONE);
+                // Reset custom VID/PID for clean state
+                usbd->custom_vid = 0;
+                usbd->custom_pid = 0;
             }
             #endif
         }
@@ -578,6 +583,18 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // Load attribute.
         if (attr == MP_QSTR_builtin_driver) {
             dest[0] = self->builtin_driver;
+        } else if (attr == MP_QSTR_vid) {
+            uint16_t vid = self->custom_vid;
+            if (vid == 0) {
+                vid = MICROPY_HW_USB_RUNTIME_VID;
+            }
+            dest[0] = MP_OBJ_NEW_SMALL_INT(vid);
+        } else if (attr == MP_QSTR_pid) {
+            uint16_t pid = self->custom_pid;
+            if (pid == 0) {
+                pid = MICROPY_HW_USB_RUNTIME_PID;
+            }
+            dest[0] = MP_OBJ_NEW_SMALL_INT(pid);
         } else {
             // Continue lookup in locals_dict.
             dest[1] = MP_OBJ_SENTINEL;
@@ -652,6 +669,54 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
             // Store the builtin_driver (could be legacy constant or new bitfield object)
             self->builtin_driver = dest[1];
+            dest[0] = MP_OBJ_NULL;
+        } else if (attr == MP_QSTR_vid) {
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In runtime mode, require deactivation before changing VID
+            if (self->active) {
+                mp_raise_OSError(MP_EINVAL); // Need to deactivate first
+            }
+            #endif
+            mp_int_t vid = mp_obj_get_int(dest[1]);
+            if (vid < 0 || vid > 0xFFFF) {
+                mp_raise_ValueError(MP_ERROR_TEXT("VID must be 0-65535"));
+            }
+            self->custom_vid = (uint16_t)vid;
+
+            #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In static mode, if USB is active, trigger re-enumeration
+            if (self->active) {
+                #ifndef NO_QSTR
+                tud_disconnect();
+                mp_hal_delay_ms(100);
+                tud_connect();
+                #endif
+            }
+            #endif
+            dest[0] = MP_OBJ_NULL;
+        } else if (attr == MP_QSTR_pid) {
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In runtime mode, require deactivation before changing PID
+            if (self->active) {
+                mp_raise_OSError(MP_EINVAL); // Need to deactivate first
+            }
+            #endif
+            mp_int_t pid = mp_obj_get_int(dest[1]);
+            if (pid < 0 || pid > 0xFFFF) {
+                mp_raise_ValueError(MP_ERROR_TEXT("PID must be 0-65535"));
+            }
+            self->custom_pid = (uint16_t)pid;
+
+            #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            // In static mode, if USB is active, trigger re-enumeration
+            if (self->active) {
+                #ifndef NO_QSTR
+                tud_disconnect();
+                mp_hal_delay_ms(100);
+                tud_connect();
+                #endif
+            }
+            #endif
             dest[0] = MP_OBJ_NULL;
         }
     }
