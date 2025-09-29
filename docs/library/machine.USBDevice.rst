@@ -9,7 +9,8 @@ class USBDevice -- USB Device driver
           supports native USB.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
-Python code.
+Python code. This includes both runtime device descriptor configuration and
+build-time customization of USB configuration.
 
 .. warning:: This low-level API assumes familiarity with the USB standard. There
    are high-level `usb driver modules in micropython-lib`_ which provide a
@@ -188,7 +189,8 @@ Methods
 .. attribute:: USBDevice.builtin_driver
 
    This attribute holds the current built-in driver configuration, and must be
-   set to one of the ``USBDevice.BUILTIN_`` named constants defined on this object.
+   set to one of the ``USBDevice.BUILTIN_`` constants or a combination of them
+   using the bitwise OR operator (``|``).
 
    By default it holds the value :data:`USBDevice.BUILTIN_NONE`.
 
@@ -196,15 +198,30 @@ Methods
    :func:`USBDevice.active` function to deactivate before setting if necessary
    (and again to activate after setting).
 
+   **Combining Built-in Drivers:**
+
+   Multiple built-in USB classes can be enabled simultaneously by combining
+   constants with the bitwise OR operator::
+
+       usb = machine.USBDevice()
+       usb.active(False)
+       # Enable both CDC and MSC
+       usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
+       usb.active(True)
+
+   The combined configuration will dynamically generate appropriate USB
+   descriptors containing only the selected classes.
+
    If this value is set to any value other than :data:`USBDevice.BUILTIN_NONE` then
    the following restrictions apply to the :func:`USBDevice.config` arguments:
 
    - ``desc_cfg`` should begin with the built-in USB interface descriptor data
      accessible via :data:`USBDevice.builtin_driver` attribute ``desc_cfg``.
-     Descriptors appended after the built-in configuration descriptors should use
-     interface, string and endpoint numbers starting from the max built-in values
-     defined in :data:`USBDevice.builtin_driver` attributes ``itf_max``, ``str_max`` and
-     ``ep_max``.
+     The descriptor is dynamically generated based on the combination of classes
+     enabled. Descriptors appended after the built-in configuration descriptors
+     should use interface, string and endpoint numbers starting from the max
+     built-in values defined in :data:`USBDevice.builtin_driver` attributes
+     ``itf_max``, ``str_max`` and ``ep_max``.
 
    - The ``bNumInterfaces`` field in the built-in configuration
      descriptor will also need to be updated if any new interfaces
@@ -266,39 +283,134 @@ Constants
 ---------
 
 .. data:: USBDevice.BUILTIN_NONE
+
+          Constant representing no built-in USB drivers enabled. This is the
+          default value for :data:`USBDevice.builtin_driver`.
+
 .. data:: USBDevice.BUILTIN_DEFAULT
+
+          Constant representing the default combination of built-in USB drivers
+          for this firmware build. The exact combination depends on compile-time
+          configuration options.
+
 .. data:: USBDevice.BUILTIN_CDC
+
+          Constant representing the built-in USB CDC (serial port) driver.
+          Can be combined with other ``BUILTIN_`` constants using the bitwise
+          OR operator (``|``).
+
 .. data:: USBDevice.BUILTIN_MSC
+
+          Constant representing the built-in USB MSC (mass storage) driver.
+          Can be combined with other ``BUILTIN_`` constants using the bitwise
+          OR operator (``|``).
+
+.. data:: USBDevice.BUILTIN_NCM
+
+          Constant representing the built-in USB NCM (network) driver.
+          Only available when ``MICROPY_HW_NETWORK_USBNET`` is enabled in the
+          firmware build. Can be combined with other ``BUILTIN_`` constants
+          using the bitwise OR operator (``|``).
+
+          .. note:: When NCM is disabled after being active, the network
+                    interface is automatically cleaned up.
+
 .. data:: USBDevice.BUILTIN_CDC_MSC
 
-          These constant objects hold the built-in descriptor data which is
-          compiled into the MicroPython firmware. ``USBDevice.BUILTIN_NONE`` and
-          ``USBDevice.BUILTIN_DEFAULT`` are always present. Additional objects may be present
-          depending on the firmware build configuration and the actual built-in drivers.
+          .. deprecated::
+             Use ``USBDevice.BUILTIN_CDC | USBDevice.BUILTIN_MSC`` instead.
 
-          .. note:: Currently at most one of ``USBDevice.BUILTIN_CDC``,
-                    ``USBDevice.BUILTIN_MSC`` and ``USBDevice.BUILTIN_CDC_MSC`` is defined
-                    and will be the same object as ``USBDevice.BUILTIN_DEFAULT``.
-                    These constants are defined to allow run-time detection of
-                    the built-in driver (if any). Support for selecting one of
-                    multiple built-in driver configurations may be added in the
-                    future.
+          Legacy constant for CDC and MSC combination. Provided for backward
+          compatibility only.
 
-          These values are assigned to :data:`USBDevice.builtin_driver` to get/set the
-          built-in configuration.
+**Combining Built-in Constants:**
 
-          Each object contains the following read-only fields:
+Built-in driver constants can be combined using the bitwise OR operator to
+create custom USB device configurations::
 
-          - ``itf_max`` - One more than the highest bInterfaceNumber value used
-            in the built-in configuration descriptor.
-          - ``ep_max`` - One more than the highest bEndpointAddress value used
-            in the built-in configuration descriptor. Does not include any
-            ``IN`` flag bit (0x80).
-          - ``str_max`` - One more than the highest string descriptor index
-            value used by any built-in descriptor.
-          - ``desc_dev`` - ``bytes`` object containing the built-in USB device
-            descriptor.
-          - ``desc_cfg`` - ``bytes`` object containing the complete built-in USB
-            configuration descriptor.
+    # CDC serial port only
+    usb.builtin_driver = USBDevice.BUILTIN_CDC
+
+    # CDC and MSC (serial + mass storage)
+    usb.builtin_driver = USBDevice.BUILTIN_CDC | USBDevice.BUILTIN_MSC
+
+    # All available interfaces
+    usb.builtin_driver = USBDevice.BUILTIN_CDC | USBDevice.BUILTIN_MSC | USBDevice.BUILTIN_NCM
+
+    # No built-in drivers (for fully custom USB devices)
+    usb.builtin_driver = USBDevice.BUILTIN_NONE
+
+The combined configuration dynamically generates the appropriate USB descriptors
+and updates the ``itf_max``, ``ep_max``, and ``str_max`` properties accordingly.
+
+Each constant object contains the following read-only fields:
+
+- ``itf_max`` - One more than the highest bInterfaceNumber value used
+  in the configuration. Dynamically calculated based on enabled classes.
+- ``ep_max`` - One more than the highest bEndpointAddress value used
+  in the configuration. Does not include any ``IN`` flag bit (0x80).
+  Dynamically calculated based on enabled classes.
+- ``str_max`` - One more than the highest string descriptor index
+  value used by any descriptor. Dynamically calculated.
+- ``desc_dev`` - ``bytes`` object containing the USB device descriptor.
+- ``desc_cfg`` - ``bytes`` object containing the complete USB
+  configuration descriptor for the enabled classes.
+
+Usage Examples
+--------------
+
+**Basic CDC Serial Port:**
+::
+
+    import machine
+
+    usb = machine.USBDevice()
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC
+    usb.active(True)
+
+**CDC + Mass Storage:**
+::
+
+    import machine
+
+    usb = machine.USBDevice()
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
+    usb.active(True)
+
+**Network Device with Serial Console:**
+::
+
+    import machine
+
+    usb = machine.USBDevice()
+    usb.active(False)
+    # Enable both CDC for console and NCM for networking
+    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_NCM
+    usb.active(True)
+
+**Switching Configurations at Runtime:**
+::
+
+    import machine
+
+    usb = machine.USBDevice()
+
+    # Start with CDC only
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC
+    usb.active(True)
+
+    # Later, add mass storage
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
+    usb.active(True)
+
+    # Remove MSC, add NCM
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_NCM
+    usb.active(True)
+
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme
