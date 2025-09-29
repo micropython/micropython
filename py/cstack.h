@@ -35,7 +35,7 @@
 
 void mp_cstack_init_with_sp_here(size_t stack_size);
 
-inline static void mp_cstack_init_with_top(void *top, size_t stack_size) {
+static inline void mp_cstack_init_with_top(void *top, size_t stack_size) {
     MP_STATE_THREAD(stack_top) = (char *)top;
 
     #if MICROPY_STACK_CHECK
@@ -54,7 +54,7 @@ void mp_cstack_check(void);
 
 #else
 
-inline static void mp_cstack_check(void) {
+static inline void mp_cstack_check(void) {
     // No-op when stack checking is disabled
 }
 
