@@ -346,10 +346,17 @@ class MicroPythonSkipper:
             self.evaluate_other_example(example)
 
     def _evaluate_condition_on_mcu(self, condition: str) -> bool:
-        """Evaluate a condition on the MicroPython MCU and return True if should skip"""
+        """Evaluate a condition on the MicroPython MCU and return True if should skip.
+        The os, sys, and platform modules are available for condition checks.
+        """
         try:
             # Create Python code that evaluates the condition and returns the result
             test_code = f"""
+try:
+    import os, sys
+    import platform
+except ImportError:
+    pass
 try:
     result = {condition}
     print("SKIP_CONDITION_RESULT:", result)
