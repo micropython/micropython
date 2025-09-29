@@ -11,7 +11,7 @@
 function set_mtb_tools_path {
     mtb_path=$1
     if [ -z "$mtb_path" ]; then
-        mtb_path=~/ModusToolbox
+        mtb_path=/opt/Tools/ModusToolbox
     fi
     
     echo ${mtb_path}/tools_3.6
