@@ -161,7 +161,6 @@ Wrong order: SyntaxError - invalid syntax in template expression: x:>10
 Format before conversion: SyntaxError - invalid syntax in template expression: x:d
 
 # Integer overflow test
-Overflow test: checked
 
 
 # Unicode escape sequences tests
@@ -271,7 +270,7 @@ Empty format after colon: 'Template(strings=('', ''), interpolations=(Interpolat
 Variable with empty format: 'Template(strings=('', ''), interpolations=(Interpolation(100, 'x', None, ''),))'
 
 # Template string size limit
-Template size limit: checked
+Too many interpolations: template string too large for header format
 
 === Tests for remaining uncovered branches ===
 Malformed 1: invalid syntax in template expression: x:10
