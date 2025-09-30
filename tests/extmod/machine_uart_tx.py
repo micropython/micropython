@@ -32,6 +32,12 @@ elif "rp2" in sys.platform:
 elif "samd" in sys.platform:
     timing_margin_us = 300
     bit_margin = 1
+elif "zephyr" in sys.platform:
+    bit_margin = 1
+    if "frdm_k64f" in sys.implementation._machine:
+        timing_margin_us = 1200
+    elif "nucleo_wb55rg" in sys.implementation._machine:
+        timing_margin_us = 400
 
 # Test that write+flush takes the expected amount of time to execute.
 for bits_per_s in (2400, 9600, 115200):
