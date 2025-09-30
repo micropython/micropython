@@ -45,6 +45,7 @@
 #undef MICROPY_VFS_ROM_IOCTL
 #define MICROPY_VFS_ROM_IOCTL          (1)
 #define MICROPY_PY_CRYPTOLIB_CTR       (1)
+#define MICROPY_PY_JSON_ORDERED_DICT   (1)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
 
 // Enable os.uname for attrtuple coverage test
