@@ -572,6 +572,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
     // start new token text
     vstr_reset(&lex->vstr);
+    #if MICROPY_PY_TSTRINGS
+    lex->tok_is_tstring_raw = false;
+    #endif
 
     // skip white space and comments
     // set the newline tokens at the line and column of the preceding line:
@@ -689,9 +692,22 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             #endif
 
             // Set or check token kind
+            mp_token_kind_t assigned_kind = kind;
+            #if MICROPY_PY_TSTRINGS
+            bool this_token_raw = (kind == MP_TOKEN_TSTRING_RAW);
+            if (this_token_raw) {
+                assigned_kind = MP_TOKEN_TSTRING;
+            }
+            #else
+            (void)assigned_kind;
+            #endif
+
             if (lex->tok_kind == MP_TOKEN_END) {
-                lex->tok_kind = kind;
-            } else if (lex->tok_kind != kind) {
+                lex->tok_kind = assigned_kind;
+                #if MICROPY_PY_TSTRINGS
+                lex->tok_is_tstring_raw = this_token_raw;
+                #endif
+            } else if (lex->tok_kind != assigned_kind) {
                 // Can't concatenate string with bytes
                 break;
             }
