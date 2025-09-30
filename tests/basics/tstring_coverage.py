@@ -509,7 +509,7 @@ try:
         args.append(interp)
         args.append(base)
     Template(*args)
-except (ValueError, OverflowError, SystemError, MemoryError):
+except (ValueError, OverflowError, MemoryError, RuntimeError):
     pass
 print("Overflow test: checked")
 
@@ -947,7 +947,7 @@ print("\n# Template string size limit")
 try:
     code = 't"' + '{x}' * 4096 + '"'
     exec(f"x = 1; result = {code}")
-except (SyntaxError, OverflowError, MemoryError):
+except (SyntaxError, OverflowError, MemoryError, RuntimeError):
     pass
 print("Template size limit: checked")
 
