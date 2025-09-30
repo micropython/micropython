@@ -511,7 +511,7 @@ try:
         args.append(interp)
         args.append(base)
     huge = Template(*args)  # Try to exceed limits
-except (ValueError, OverflowError, SystemError) as e:
+except (ValueError, OverflowError, RuntimeError) as e:
     print(f"Overflow test: {type(e).__name__} - {e}")
 
 # Empty overflow test output as expected
