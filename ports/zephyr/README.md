@@ -22,6 +22,7 @@ Features supported at this time:
 * `machine.PWM` class for PWM control.
 * `machine.ADC` class for ADC control.
 * `socket` module for networking (IPv4/IPv6).
+* `zsensor` module for reading sensors.
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
   run-on-boot capability.
