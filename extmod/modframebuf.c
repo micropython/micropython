@@ -347,6 +347,25 @@ static void framebuf_args(const mp_obj_t *args_in, mp_int_t *args_out, int n) {
     }
 }
 
+static void framebuf_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load attribute
+        if (attr == MP_QSTR_width) {
+            dest[0] = MP_OBJ_NEW_SMALL_INT(self->width);
+        } else if (attr == MP_QSTR_height) {
+            dest[0] = MP_OBJ_NEW_SMALL_INT(self->height);
+        } else if (attr == MP_QSTR_format) {
+            dest[0] = MP_OBJ_NEW_SMALL_INT(self->format);
+        } else if (attr == MP_QSTR_stride) {
+            dest[0] = MP_OBJ_NEW_SMALL_INT(self->stride);
+        } else {
+            // Continue lookup in locals_dict.
+            dest[1] = MP_OBJ_SENTINEL;
+        }
+    }
+}
+
 static mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_get_buffer(self->buf_obj, bufinfo, flags) ? 0 : 1;
@@ -889,6 +908,7 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     make_new, framebuf_make_new,
     buffer, framebuf_get_buffer,
+    attr, framebuf_attr,
     locals_dict, &framebuf_locals_dict
     );
 #endif
