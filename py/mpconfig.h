@@ -2244,15 +2244,18 @@ typedef time_t mp_timestamp_t;
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 #define HEX_FMT "%lx"
+#define SIZE_FMT "%lu"
 #elif defined(_WIN64)
 #define UINT_FMT "%llu"
 #define INT_FMT "%lld"
 #define HEX_FMT "%llx"
+#define SIZE_FMT "%llu"
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
 #define HEX_FMT "%x"
+#define SIZE_FMT "%u"
 #endif
 #endif // INT_FMT
 
