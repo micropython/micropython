@@ -15,7 +15,10 @@ void *nimble_realloc(void *ptr, size_t size);
 #define realloc(ptr, size) nimble_realloc(ptr, size)
 
 int nimble_sprintf(char *str, const char *fmt, ...);
+#ifndef __APPLE__
+// Don't redefine sprintf on macOS as it conflicts with system headers
 #define sprintf(str, fmt, ...) nimble_sprintf(str, fmt, __VA_ARGS__)
+#endif
 
 #define MYNEWT_VAL(x) MYNEWT_VAL_ ## x
 
