@@ -260,6 +260,7 @@ Classes
    machine.Signal.rst
    machine.ADC.rst
    machine.ADCBlock.rst
+   machine.DAC.rst
    machine.PWM.rst
    machine.UART.rst
    machine.SPI.rst
