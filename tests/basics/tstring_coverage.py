@@ -36,8 +36,23 @@ try:
 except TypeError as e:
     print(f"Invalid interp: {e}")
 
-t = Template(("hello", "world"), (Interpolation(42, "x"),))
-print(f"Tuple constructor: {t.__str__()}")
+t = Template("hello ", Interpolation(42, "x"), "world")
+print(f"Template repr: {t.__str__()}")
+
+t_varargs = Template("Hello ", Interpolation("World", "name"), "!")
+print(f"Varargs constructor: strings={t_varargs.strings}, values={t_varargs.values}")
+
+t_concat = Template("A", "B", Interpolation(1, "value"), "C", "D")
+print(f"Varargs merged strings: {t_concat.strings}")
+
+t_leading = Template(Interpolation(1, "x"), " tail")
+print(f"Leading interpolation strings: {t_leading.strings}")
+
+t_trailing = Template("head ", Interpolation(2, "y"))
+print(f"Trailing interpolation strings: {t_trailing.strings}")
+
+t_interps_only = Template(Interpolation(1, "x"), Interpolation(2, "y"))
+print(f"Interpolation only strings: {t_interps_only.strings}")
 
 print("\n=== Binary operations ===")
 t1 = t"template"
@@ -67,13 +82,13 @@ print("\n=== Edge cases ===")
 t_empty = Template()
 print(f"Empty template: '{t_empty.__str__()}'")
 
-t_empty_strs = Template(("", "", ""), (Interpolation(1, "a"), Interpolation(2, "b")))
+t_empty_strs = Template("", Interpolation(1, "a"), "", Interpolation(2, "b"), "")
 print(f"Empty strings: {list(t_empty_strs)}")
 
 t_adj = t"{1}{2}{3}"
 print(f"Adjacent: '{t_adj.__str__()}'")
 
-t_single = Template(("only",), ())
+t_single = Template("only")
 print(f"Single iter: {list(t_single)}")
 
 t_self = t"test"
@@ -81,9 +96,12 @@ print(f"Self+self: '{(t_self + t_self).__str__()}'")
 
 print("\n=== Values property ===")
 for n in range(7):
-    interps = tuple(Interpolation(i, str(i)) for i in range(n))
-    strings = ("",) * (n + 1)
-    t = Template(strings, interps)
+    args = []
+    for i in range(n):
+        args.append("")
+        args.append(Interpolation(i, str(i)))
+    args.append("")
+    t = Template(*args)
     print(f"Values[{n}]: {t.values}")
 
 print("\n=== Size limits ===")
@@ -120,10 +138,10 @@ try:
 except AttributeError:
     print("Interp read-only: AttributeError")
 
-t_ws_trim = Template(("", ""), (Interpolation(None, "   ", None, ""),))
+t_ws_trim = Template("", Interpolation(None, "   ", None, ""), "")
 print(f"Whitespace trim: '{t_ws_trim.__str__()}'")
 
-t_debug = Template(("", ""), (Interpolation(42, "x=", None, ""),))
+t_debug = Template("", Interpolation(42, "x=", None, ""), "")
 print(f"Debug =: {t_debug.__str__()}")
 
 class Custom:
@@ -138,14 +156,36 @@ t_str = t"test"
 str_method = t_str.__str__
 print(f"__str__ bound: {str_method()}")
 
-t_empty_start = Template(("", "text"), (Interpolation(1, "1"),))
+t_empty_start = Template("", Interpolation(1, "1"), "text")
 print(f"Empty start iter: {[type(x).__name__ for x in t_empty_start]}")
 
-t_iter_edge = Template(("", "", ""), (Interpolation(1, "1"), Interpolation(2, "2")))
+t_iter_edge = Template("", Interpolation(1, "1"), "", Interpolation(2, "2"), "")
 iter_items = []
 for item in t_iter_edge:
     iter_items.append(type(item).__name__)
 print(f"Iterator edge: {iter_items}")
+
+print("\n=== Bracket/paren depth tracking ===")
+d = {'a': 1, 'b:c': 2}
+items = [10, 20, 30]
+colon_key = t"{d['b:c']}"
+print(f"Colon in key: expr={colon_key.interpolations[0].expression}, value={colon_key.interpolations[0].value}")
+
+slice_expr = t"{items[1:3]}"
+print(f"Slice colon: expr={slice_expr.interpolations[0].expression}, value={slice_expr.interpolations[0].value}")
+
+def pair(x, y=':'):
+    return (x, y)
+
+func_expr = t"{pair(1, 2)}"
+print(f"Function call: expr={func_expr.interpolations[0].expression}, value={func_expr.interpolations[0].value}")
+
+default_expr = t"{pair(3)}"
+print(f"Default arg colon: expr={default_expr.interpolations[0].expression}, value={default_expr.interpolations[0].value}")
+
+matrix = [[1, 2], [3, 4]]
+nested_expr = t"{matrix[0][1]}"
+print(f"Nested brackets: expr={nested_expr.interpolations[0].expression}, value={nested_expr.interpolations[0].value}")
 
 print("\n=== repr tests ===")
 t_repr = t"Hello {42} world"
@@ -158,6 +198,14 @@ print("\n=== Additional coverage tests ===")
 
 t_str_literal = t"{'hello'}"
 print(f"String literal: {t_str_literal.__str__()}")
+
+path = "/usr/local/bin"
+count = 42
+raw_path = rt"Path: {path}\n"
+print(f"Raw path strings: {raw_path.strings}, value={raw_path.interpolations[0].value}")
+
+raw_regex = rt"Regex: \\d+{count}"
+print(f"Raw regex strings: {raw_regex.strings}, value={raw_regex.interpolations[0].value}")
 
 try:
     t_str_expr = t'{"test"}'
@@ -310,9 +358,11 @@ mixed = Template("Hello ", Interpolation("World", "name", None, ""), ", the answ
 print(f"Mixed args: {mixed.__str__()}")
 
 print("\n# Two-tuple constructor")
-from_tuples = Template(("Hello ", ", welcome to ", "!"),
-                       (Interpolation("World", "name", None, ""),
-                        Interpolation("Python", "lang", None, "")))
+from_tuples = Template("Hello ",
+                       Interpolation("World", "name", None, ""),
+                       ", welcome to ",
+                       Interpolation("Python", "lang", None, ""),
+                       "!")
 print(f"Two-tuple form: {from_tuples.__str__()}")
 
 print("\n# Complex format with variables")
@@ -320,30 +370,37 @@ width = 10
 precision = 2
 val = 3.14159
 fmt_str = str(width) + "." + str(precision) + "f"
-complex_fmt = Template(("Value: ", ""),
-                       (Interpolation(val, "val", None, fmt_str),))
+complex_fmt = Template("Value: ",
+                       Interpolation(val, "val", None, fmt_str),
+                       "")
 print(f"Complex format: {complex_fmt.__str__()}")
 
 print("\n# Escaped braces in format specs")
 try:
     width = 5
-    escaped_fmt = Template(("Value: ", ""),
-                           (Interpolation(42, "x", None, "0{{5}}d"),))
+    escaped_fmt = Template("Value: ",
+                           Interpolation(42, "x", None, "0{{5}}d"),
+                           "")
     print(f"Escaped {{5}}: {escaped_fmt.__str__()}")
 except ValueError as e:
     print(f"Escaped braces error: {e}")
 
 print("\n# Multi-string concatenation")
-t1 = Template(("A ", " B"), (Interpolation(1, "x", None, ""),))
-t2 = Template(("C ", " D"), (Interpolation(2, "y", None, ""),))
+t1 = Template("A ", Interpolation(1, "x", None, ""), " B")
+t2 = Template("C ", Interpolation(2, "y", None, ""), " D")
 concat_multi = t1 + t2
 print(f"Multi concat: {concat_multi.__str__()}")
 
 print("\n# Cumulative size limit")
 try:
     parts = ["x" * 200 for _ in range(10)]
-    interps = tuple(Interpolation(i, str(i), None, "") for i in range(9))
-    test_tmpl = Template(tuple(parts), interps)
+    interps = [Interpolation(i, str(i), None, "") for i in range(9)]
+    args = []
+    for idx, part in enumerate(parts):
+        args.append(part)
+        if idx < len(interps):
+            args.append(interps[idx])
+    test_tmpl = Template(*args)
     result = test_tmpl.__str__()
     print("Created huge template")
     print("Size limit: template string too large")
@@ -355,7 +412,7 @@ except (ValueError, MemoryError) as e:
         print(f"Size limit: {type(e).__name__}")
 
 print("\n# Empty expression")
-empty_expr = Template(("Val: ", ""), (Interpolation(42, "", None, ""),))
+empty_expr = Template("Val: ", Interpolation(42, "", None, ""), "")
 print(f"Empty expr: {empty_expr.__str__()}")
 
 print("\n# Invalid __template__ calls")
@@ -378,27 +435,33 @@ class StringLike(str):
 
 try:
     s = StringLike("hello")
-    t = Template(("world",), ())
+    t = Template("world")
     result = s + t
 except TypeError as e:
     print(f"StringLike + Template: {e}")
 
 print("\n# Format spec ending with }}")
 try:
-    fmt_end = Template(("Val: ", ""), (Interpolation(42, "x", None, "d}}"),))
+    fmt_end = Template("Val: ", Interpolation(42, "x", None, "d}}"), "")
     print(f"Format }}: {fmt_end.__str__()}")
 except ValueError as e:
     print(f"Format }} error: {e}")
 
 print("\n# Large values test")
-large_interps = tuple(Interpolation(i, "val" + str(i), None, "") for i in range(10))
-large_strings = ("Start",) + ("",) * 9 + ("End",)
-large_tmpl = Template(large_strings, large_interps)
+large_interps = [Interpolation(i, "val" + str(i), None, "") for i in range(10)]
+large_args = ["Start"]
+for idx, interp in enumerate(large_interps):
+    large_args.append(interp)
+    large_args.append("End" if idx == len(large_interps) - 1 else "")
+large_tmpl = Template(*large_args)
 print(f"Large values (10): {large_tmpl.values}")
 
-xl_interps = tuple(Interpolation(i, "val" + str(i), None, "") for i in range(15))
-xl_strings = ("",) * 16
-xl_tmpl = Template(xl_strings, xl_interps)
+xl_interps = [Interpolation(i, "val" + str(i), None, "") for i in range(15)]
+xl_args = [""]
+for interp in xl_interps:
+    xl_args.append(interp)
+    xl_args.append("")
+xl_tmpl = Template(*xl_args)
 print(f"Large values (15): len={len(xl_tmpl.values)}")
 
 print("\n# Broken interpolation test")
@@ -406,7 +469,7 @@ print("Broken interp created: expr=broken")
 
 print("\n# Long expression name")
 long_name = "x" * 100
-long_expr = Template(("Long: ", ""), (Interpolation(42, long_name, None, ""),))
+long_expr = Template("Long: ", Interpolation(42, long_name, None, ""), "")
 print(f"Long expr: value={long_expr.values[0]}")
 
 print("\nCoverage tests completed!")
@@ -441,9 +504,13 @@ print("\n# Integer overflow test")
 try:
     # Create a template that would cause integer overflow
     # MAX_SEG = 256, MAX_INT = 4095
-    strings = ("x" * 100,) * 256  # max segments
-    interps = tuple(Interpolation(i, str(i), None, "") for i in range(4095))  # max interpolations
-    huge = Template(strings[:257], interps)  # Try to exceed limits
+    base = "x" * 100
+    interps = [Interpolation(i, str(i), None, "") for i in range(4095)]
+    args = [base]
+    for interp in interps:
+        args.append(interp)
+        args.append(base)
+    huge = Template(*args)  # Try to exceed limits
 except (ValueError, OverflowError, SystemError) as e:
     print(f"Overflow test: {type(e).__name__} - {e}")
 

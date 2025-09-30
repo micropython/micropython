@@ -67,15 +67,15 @@ static void template_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 
 static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
-        mp_raise_TypeError(MP_ERROR_TEXT("Template.__new__ only accepts *args arguments"));
+        mp_raise_TypeError(MP_ERROR_TEXT("Template.__new__ only accepts positional arguments"));
     }
 
     mp_obj_t strings_obj;
     mp_obj_t interpolations_obj;
 
     if (n_args == 0) {
-        mp_obj_t empty_str = mp_obj_new_str("", 0);
-        strings_obj = mp_obj_new_tuple(1, &empty_str);
+        mp_obj_t empty = MP_OBJ_NEW_QSTR(MP_QSTR_);
+        strings_obj = mp_obj_new_tuple(1, &empty);
         interpolations_obj = mp_obj_new_tuple(0, NULL);
     } else if (n_args == 2 && mp_obj_is_type(args[0], &mp_type_tuple) && mp_obj_is_type(args[1], &mp_type_tuple)) {
         strings_obj = args[0];
@@ -92,76 +92,97 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
             }
         }
     } else {
-        bool all_strings = true;
+        size_t n_interpolations = 0;
+        size_t n_str_args = 0;
         for (size_t i = 0; i < n_args; i++) {
             if (mp_obj_is_exact_type(args[i], &mp_type_interpolation)) {
-                all_strings = false;
-            } else if (!mp_obj_is_str(args[i])) {
+                n_interpolations++;
+            } else if (mp_obj_is_str(args[i])) {
+                n_str_args++;
+            } else {
                 mp_raise_msg_varg(&mp_type_TypeError,
                     MP_ERROR_TEXT("Template args must be str or Interpolation, got %s"),
                     mp_obj_get_type_str(args[i]));
             }
         }
 
-        if (all_strings) {
-            if (n_args == 1) {
+        if (n_interpolations == 0) {
+            if (n_str_args == 1) {
                 strings_obj = mp_obj_new_tuple(1, &args[0]);
             } else {
+                size_t total_len = 0;
+                for (size_t i = 0; i < n_args; i++) {
+                    size_t str_len;
+                    (void)mp_obj_str_get_data(args[i], &str_len);
+                    total_len += str_len;
+                }
                 vstr_t vstr;
-                vstr_init(&vstr, 16);
+                vstr_init(&vstr, total_len);
                 for (size_t i = 0; i < n_args; i++) {
                     size_t str_len;
                     const char *str_data = mp_obj_str_get_data(args[i], &str_len);
                     vstr_add_strn(&vstr, str_data, str_len);
                 }
-                mp_obj_t concatenated = mp_obj_new_str_from_vstr(&vstr);
-                strings_obj = mp_obj_new_tuple(1, &concatenated);
+                mp_obj_t str_items[1];
+                str_items[0] = mp_obj_new_str_from_vstr(&vstr);
+                strings_obj = mp_obj_new_tuple(1, str_items);
             }
             interpolations_obj = mp_obj_new_tuple(0, NULL);
         } else {
-            size_t n_strings = 0;
-            size_t n_interpolations = 0;
-
-            for (size_t i = 0; i < n_args; i++) {
-                if (mp_obj_is_exact_type(args[i], &mp_type_interpolation)) {
-                    n_interpolations++;
-                }
-            }
-            n_strings = n_interpolations + 1;
-
-            // Create tuples directly to avoid GC issues with temporary arrays
+            size_t n_strings = n_interpolations + 1;
             mp_obj_tuple_t *strings_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, n_strings, &mp_type_tuple);
             mp_obj_tuple_t *interpolations_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, n_interpolations, &mp_type_tuple);
             strings_tuple->len = n_strings;
             interpolations_tuple->len = n_interpolations;
 
+            size_t string_idx = 0;
             size_t interp_idx = 0;
+            mp_obj_t current_str = MP_OBJ_NULL;
+            bool current_vstr_active = false;
+            vstr_t current_vstr = {0};
 
-            // First pass: collect string segments using vstrs
-            vstr_t *vstrs = m_new(vstr_t, n_strings);
-            for (size_t i = 0; i < n_strings; i++) {
-                vstr_init(&vstrs[i], 16);
-            }
+            #define FLUSH_CURRENT_STRING() \
+                do { \
+                    mp_obj_t out_str; \
+                    if (current_vstr_active) { \
+                        out_str = mp_obj_new_str_from_vstr(&current_vstr); \
+                        current_vstr_active = false; \
+                    } else if (current_str != MP_OBJ_NULL) { \
+                        out_str = current_str; \
+                    } else { \
+                        out_str = MP_OBJ_NEW_QSTR(MP_QSTR_); \
+                    } \
+                    strings_tuple->items[string_idx++] = out_str; \
+                    current_str = MP_OBJ_NULL; \
+                } while (0)
 
-            size_t current_vstr_idx = 0;
             for (size_t i = 0; i < n_args; i++) {
-                if (mp_obj_is_exact_type(args[i], &mp_type_interpolation)) {
-                    interpolations_tuple->items[interp_idx++] = args[i];
-                    current_vstr_idx++;
+                mp_obj_t arg = args[i];
+                if (mp_obj_is_exact_type(arg, &mp_type_interpolation)) {
+                    FLUSH_CURRENT_STRING();
+                    interpolations_tuple->items[interp_idx++] = arg;
                 } else {
                     size_t str_len;
-                    const char *str_data = mp_obj_str_get_data(args[i], &str_len);
-                    vstr_add_strn(&vstrs[current_vstr_idx], str_data, str_len);
+                    const char *str_data = mp_obj_str_get_data(arg, &str_len);
+                    if (current_vstr_active) {
+                        vstr_add_strn(&current_vstr, str_data, str_len);
+                    } else if (current_str == MP_OBJ_NULL) {
+                        current_str = arg;
+                    } else {
+                        size_t prev_len;
+                        const char *prev_data = mp_obj_str_get_data(current_str, &prev_len);
+                        vstr_init(&current_vstr, prev_len + str_len);
+                        vstr_add_strn(&current_vstr, prev_data, prev_len);
+                        vstr_add_strn(&current_vstr, str_data, str_len);
+                        current_vstr_active = true;
+                        current_str = MP_OBJ_NULL;
+                    }
                 }
             }
 
-            // Second pass: create string objects directly in tuple
-            for (size_t i = 0; i < n_strings; i++) {
-                strings_tuple->items[i] = mp_obj_new_str_from_vstr(&vstrs[i]);
-            }
+            FLUSH_CURRENT_STRING();
 
-            // Clean up vstrs array
-            m_del(vstr_t, vstrs, n_strings);
+            #undef FLUSH_CURRENT_STRING
 
             strings_obj = MP_OBJ_FROM_PTR(strings_tuple);
             interpolations_obj = MP_OBJ_FROM_PTR(interpolations_tuple);
@@ -276,7 +297,7 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
         case MP_BINARY_OP_ADD: {
             if (!mp_obj_is_exact_type(rhs_in, &mp_type_template)) {
                 if (mp_obj_is_str(rhs_in)) {
-                    mp_raise_TypeError(MP_ERROR_TEXT("cannot mix t-strings with strings or f-strings"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not \"str\") to string.templatelib.Template"));
                 }
                 return MP_OBJ_NULL;
             }
@@ -335,7 +356,7 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
 
         case MP_BINARY_OP_REVERSE_ADD: {
             if (mp_obj_is_str(rhs_in)) {
-                mp_raise_TypeError(MP_ERROR_TEXT("cannot mix t-strings with strings or f-strings"));
+                mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate str (not \"string.templatelib.Template\") to str"));
             }
             return MP_OBJ_NULL;
         }

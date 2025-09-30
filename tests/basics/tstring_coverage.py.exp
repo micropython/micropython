@@ -1,12 +1,17 @@
 === Constructor edge cases ===
-Keyword args: Template.__new__ only accepts *args arguments
+Keyword args: Template.__new__ only accepts positional arguments
 Invalid type: Template args must be str or Interpolation, got int
 Invalid interp: interpolations tuple must contain only Interpolation objects, got int
-Tuple constructor: Template(strings=('hello', 'world'), interpolations=(Interpolation(42, 'x', None, ''),))
+Template repr: Template(strings=('hello ', 'world'), interpolations=(Interpolation(42, 'x', None, ''),))
+Varargs constructor: strings=('Hello ', '!'), values=('World',)
+Varargs merged strings: ('AB', 'CD')
+Leading interpolation strings: ('', ' tail')
+Trailing interpolation strings: ('head ', '')
+Interpolation only strings: ('', '', '')
 
 === Binary operations ===
-Template+str: cannot mix t-strings with strings or f-strings
-str+Template: unsupported types for __add__: 'str', 'Template'
+Template+str: can only concatenate string.templatelib.Template (not "str") to string.templatelib.Template
+str+Template: can only concatenate str (not "string.templatelib.Template") to str
 int+Template: TypeError
 -: unsupported
 *: unsupported
@@ -57,12 +62,21 @@ __str__ bound: Template(strings=('test',), interpolations=())
 Empty start iter: ['Interpolation', 'str']
 Iterator edge: ['Interpolation', 'Interpolation']
 
+=== Bracket/paren depth tracking ===
+Colon in key: expr=d['b:c'], value=2
+Slice colon: expr=items[1:3], value=[20, 30]
+Function call: expr=pair(1, 2), value=(1, 2)
+Default arg colon: expr=pair(3), value=(3, ':')
+Nested brackets: expr=matrix[0][1], value=2
+
 === repr tests ===
 Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
 Interp repr: Interpolation(42, 'x', 's', ':>10')
 
 === Additional coverage tests ===
 String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
+Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
+Raw regex strings: ('Regex: \\\\d+', ''), value=42
 String expr: 'Template(strings=('', ''), interpolations=(Interpolation('test', '"test"', None, ''),))'
 Re-raised exception: Special error
 Conv empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', ''),))'
@@ -165,9 +179,9 @@ Too many interpolations: SyntaxError - template string too large for header form
 Template.__str__ with large string: OK
 Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
 Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
-Template + str error: cannot mix t-strings with strings or f-strings
-str + Template error: unsupported types for __add__: 'str', 'Template'
-Binary op error: unsupported types for __add__: 'str', 'Template'
+Template + str error: can only concatenate string.templatelib.Template (not "str") to string.templatelib.Template
+str + Template error: can only concatenate str (not "string.templatelib.Template") to str
+Binary op error: can only concatenate str (not "string.templatelib.Template") to str
 Conversion without format spec: OK
 Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
 
