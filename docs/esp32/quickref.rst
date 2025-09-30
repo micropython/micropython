@@ -16,6 +16,7 @@ working with this board it may be useful to get an overview of the microcontroll
    :maxdepth: 1
 
    general.rst
+   pcnt.rst
    tutorial/index.rst
 
 Note that there are several varieties of ESP32 -- ESP32, ESP32C3, ESP32C6, ESP32S2, ESP32S3 --
@@ -83,30 +84,30 @@ The :class:`network.WLAN` class in the :mod:`network` module::
 
     import network
 
-    wlan = network.WLAN()       # create station interface (the default, see below for an access point interface)
-    wlan.active(True)           # activate the interface
-    wlan.scan()                 # scan for access points
-    wlan.isconnected()          # check if the station is connected to an AP
+    wlan = network.WLAN(network.WLAN.IF_STA) # create station interface
+    wlan.active(True)       # activate the interface
+    wlan.scan()             # scan for access points
+    wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('ssid', 'key') # connect to an AP
-    wlan.config('mac')          # get the interface's MAC address
-    wlan.ipconfig('addr4')      # get the interface's IPv4 addresses
+    wlan.config('mac')      # get the interface's MAC address
+    wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
 
     ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
-    ap.config(ssid='ESP-AP')              # set the SSID of the access point
-    ap.config(max_clients=10)             # set how many clients can connect to the network
-    ap.active(True)                       # activate the interface
+    ap.config(ssid='ESP-AP') # set the SSID of the access point
+    ap.config(max_clients=10) # set how many clients can connect to the network
+    ap.active(True)         # activate the interface
 
 A useful function for connecting to your local WiFi network is::
 
     def do_connect():
-        import machine, network
-        wlan = network.WLAN()
+        import network
+        wlan = network.WLAN(network.WLAN.IF_STA)
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
             wlan.connect('ssid', 'key')
             while not wlan.isconnected():
-                machine.idle()
+                pass
         print('network config:', wlan.ipconfig('addr4'))
 
 Once the network is established the :mod:`socket <socket>` module can be used
@@ -148,7 +149,6 @@ Required keyword arguments for the constructor:
 - ``mdc`` and ``mdio`` - :class:`machine.Pin` objects (or integers) specifying
   the MDC and MDIO pins.
 - ``phy_type`` - Select the PHY device type. Supported devices are
-  ``PHY_GENERIC``,
   ``PHY_LAN8710``, ``PHY_LAN8720``, ``PHY_IP101``, ``PHY_RTL8201``,
   ``PHY_DP83848``, ``PHY_KSZ8041`` and ``PHY_KSZ8081``. These values are all
   constants defined in the ``network`` module.
@@ -271,10 +271,8 @@ Use the :mod:`time <time>` module::
 Timers
 ------
 
-The ESP32 port has one, two or four hardware timers, depending on the ESP32 device type.
-There is 1 timer for ESP32C2, 2 timers for ESP32C4, ESP32C6 and ESP32H4, and
-4 timers otherwise. Use the :ref:`machine.Timer <machine.Timer>` class
-with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
+The ESP32 port has four hardware timers. Use the :ref:`machine.Timer <machine.Timer>` class
+with a timer ID from 0 to 3 (inclusive)::
 
     from machine import Timer
 
@@ -284,8 +282,7 @@ with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
     tim1 = Timer(1)
     tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
-The period is in milliseconds. When using UART.IRQ_RXIDLE, timer 0 is needed for
-the IRQ_RXIDLE mechanism and must not be used otherwise.
+The period is in milliseconds.
 
 Timer callbacks are scheduled as soft interrupts on this port; hard
 callbacks are not implemented. Specifying ``hard=True`` will raise
@@ -391,7 +388,7 @@ for more details.
 
 Use the :ref:`machine.PWM <machine.PWM>` class::
 
-    from machine import Pin, PWM, lightsleep
+    from machine import Pin, PWM
 
     pwm0 = PWM(Pin(0), freq=5000, duty_u16=32768) # create PWM object from a pin
     freq = pwm0.freq()         # get current frequency
@@ -401,7 +398,7 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     pwm0.duty(256)             # set duty cycle from 0 to 1023 as a ratio duty/1023, (now 25%)
 
     duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65535
-    pwm0.duty_u16(65536*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
+    pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
 
     duty_ns = pwm0.duty_ns()   # get current pulse width in ns
     pwm0.duty_ns(250_000)      # set pulse width in nanoseconds from 0 to 1_000_000_000/freq, (now 25%)
@@ -410,35 +407,19 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
     print(pwm2)                               # view PWM settings
-    pwm2.deinit()                             # turn off PWM on the pin
-
-    pwm0 = PWM(Pin(0), duty_u16=16384)            # The output is at a high level 25% of the time.
-    pwm2 = PWM(Pin(2), duty_u16=16384, invert=1)  # The output is at a low level 25% of the time.
-
-    pwm4 = PWM(Pin(4), lightsleep=True)           # Allow PWM during light sleep mode
-
-    lightsleep(10*1000) # pwm0, pwm2 goes off, pwm4 stays on during 10s light sleep
-                        # pwm0, pwm2, pwm4 on after 10s light sleep
 
 ESP chips have different hardware peripherals:
 
-=======================================================  ========  =========  ==========
-Hardware specification                                      ESP32  ESP32-S2,  ESP32-C2,
-                                                                   ESP32-S3,  ESP32-C3,
-                                                                   ESP32-P4   ESP32-C5,
-                                                                              ESP32-C6,
-                                                                              ESP32-H2
--------------------------------------------------------  --------  ---------  ----------
-Number of groups (speed modes)                                  2          1         1
-Number of timers per group                                      4          4         4
-Number of channels per group                                    8          8         6
--------------------------------------------------------  --------  ---------  ----------
-Different PWM frequencies = (groups * timers)                   8          4         4
-Total PWM channels (Pins, duties) = (groups * channels)        16          8         6
-=======================================================  ========  =========  ==========
-
-In light sleep, the ESP32 PWM can only operate in low speed mode, so only 4 timers and
-8 channels are available.
+=====================================================  ========  ========  ========
+Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
+-----------------------------------------------------  --------  --------  --------
+Number of groups (speed modes)                                2         1         1
+Number of timers per group                                    4         4         4
+Number of channels per group                                  8         8         6
+-----------------------------------------------------  --------  --------  --------
+Different PWM frequencies (groups * timers)                   8         4         4
+Total PWM channels (Pins, duties) (groups * channels)        16         8         6
+=====================================================  ========  ========  ========
 
 A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
 but only 8 different PWM frequencies are available, the remaining 8 channels must
@@ -548,63 +529,14 @@ Legacy methods:
 
     Equivalent to ``ADC.block().init(bits=bits)``.
 
-The only chip that can switch resolution to a lower one is the normal esp32.
-The C2 & S3 are stuck at 12 bits, while the S2 is at 13 bits.
-
 For compatibility, the ``ADC`` object also provides constants matching the
-supported ADC resolutions, per chip:
+supported ADC resolutions:
 
-ESP32:
   - ``ADC.WIDTH_9BIT`` = 9
   - ``ADC.WIDTH_10BIT`` = 10
   - ``ADC.WIDTH_11BIT`` = 11
   - ``ADC.WIDTH_12BIT`` = 12
 
-ESP32 C3 & S3:
-  - ``ADC.WIDTH_12BIT`` = 12
-
-ESP32 S2:
-  - ``ADC.WIDTH_13BIT`` = 13
-
-.. method:: ADC.deinit()
-
-    Provided to deinit the adc driver.
-
-Pulse Counter (pin pulse/edge counting)
----------------------------------------
-
-The ESP32 provides up to 8 pulse counter peripherals depending on the hardware,
-with id 0..7. These can be configured to count rising and/or falling edges on
-any input pin.
-
-Use the :ref:`esp32.PCNT <esp32.PCNT>` class::
-
-    from machine import Pin
-    from esp32 import PCNT
-
-    counter = PCNT(0, pin=Pin(2), rising=PCNT.INCREMENT)        # create counter
-    counter.start()                                             # start counter
-    count = counter.value()                                     # read count, -32768..32767
-    counter.value(0)                                            # reset counter
-    count = counter.value(0)                                    # read and reset
-
-The PCNT hardware supports monitoring multiple pins in a single unit to
-implement quadrature decoding or up/down signal counters.
-
-See the :ref:`machine.Counter <machine.Counter>` and
-:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
-common pulse counting applications::
-
-    from machine import Pin, Counter
-
-    counter = Counter(0, Pin(2))    # create a counter as above and start it
-    count = counter.value()         # read the count as an arbitrary precision signed integer
-
-    encoder = Encoder(0, Pin(12), Pin(14))    # create an encoder and begin counting
-    count = encoder.value()                   # read the count as an arbitrary precision signed integer
-
-Note that the id passed to these ``Counter()`` and ``Encoder()`` objects must be
-a PCNT id.
 
 Software SPI bus
 ----------------
@@ -842,8 +774,44 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), 0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
-The ESP32-C2 family does not include any RMT peripheral, so this class is
-unavailable on those SoCs.
+Counter (Pulse/Edge Counter)
+----------------------------
+
+The Counter counts the number of rising and/or falling edges on any input pin.
+It is a 64-bit signed hardware-based counter. Counter and Encoder share the same ESP32 PCNT hardware peripheral,
+the total summary available number of Counter and Encoder is up to 8.
+
+See :ref:`machine.Counter <esp32_machine.Counter>` for details.  Simplest usage is::
+
+    from machine import Pin, Counter
+
+    cnt = Counter(0, src=Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+    _v = None
+    while True:
+        v = cnt.value()  # get 64-bit signed value
+        if _v != v:
+            _v = v
+            print('Counter value:', v)
+
+Encoder (Quadrature Incremental Encoder)
+----------------------------------------
+
+The Encoder counts the quadrature-encoded pulses on pair of input pins (two square wave signals A and B with
+~50% duty cycle and ~90-degree phase difference between them).
+It is a 64-bit signed hardware-based counter. Counter and Encoder share the same ESP32 PCNT hardware peripheral,
+the total summary available number of Counter and Encoder is up to 8.
+
+See :ref:`machine.Encoder <esp32_machine.Encoder>` for details.  Simplest usage is::
+
+    from machine import Pin, Encoder
+
+    enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN))
+    _v = None
+    while True:
+        v = enc.value()  # get 64-bit signed value
+        if _v != v:
+            _v = v
+            print('Encoder value:', v)
 
 OneWire driver
 --------------
