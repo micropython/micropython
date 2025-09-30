@@ -660,7 +660,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 #endif
                 #if MICROPY_PY_TSTRINGS
                 else if (is_char_following(lex, 't')) {
-                    kind = MP_TOKEN_TSTRING;
+                    kind = MP_TOKEN_TSTRING_RAW;
                     is_raw = true;
                     n_char = 2;
                 }
@@ -682,6 +682,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 n_char = 1;
                 if (is_char_following(lex, 'r')) {
                     is_raw = true;
+                    kind = MP_TOKEN_TSTRING_RAW;
                     n_char = 2;
                 }
             }
@@ -705,7 +706,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
             // Parse the literal
             #if MICROPY_PY_TSTRINGS
-            if (kind == MP_TOKEN_TSTRING) {
+            if (kind == MP_TOKEN_TSTRING || kind == MP_TOKEN_TSTRING_RAW) {
                 char quote_char = '\'';
                 if (is_char(lex, '\"')) {
                     quote_char = '\"';
