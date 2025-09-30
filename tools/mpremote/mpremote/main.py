@@ -103,6 +103,12 @@ def argparse_connect():
     cmd_parser.add_argument(
         "device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path"
     )
+    cmd_parser.add_argument(
+        "--dtr", nargs=1, choices=['0', '1', 'on', 'off'], help="force dtr state"
+    )
+    cmd_parser.add_argument(
+        "--rts", nargs=1, choices=['0', '1', 'on', 'off'], help="force rts state"
+    )
     return cmd_parser
 
 

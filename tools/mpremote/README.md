@@ -14,6 +14,9 @@ The full list of supported commands are:
     mpremote connect <device>         -- connect to given device
                                          device may be: list, auto, id:x, port:x
                                          or any valid device name/path
+                                         options:
+                                             --dtr [0|1|on|off]
+                                             --rts [0|1|on|off]
     mpremote disconnect               -- disconnect current device
     mpremote mount <local-dir>        -- mount local directory on device
     mpremote eval <string>            -- evaluate and print the string
@@ -82,3 +85,15 @@ Examples:
     mpremote mip install aioble
     mpremote mip install github:org/repo@branch
     mpremote mip install gitlab:org/repo@branch
+
+Note for ESP-32 CAM with MB
+
+When using mpremote with the ESP-32 CAM attached to the ESP-32 CAM MB you might
+get into the situation that the communication is not working (i.e. you might
+get a timeout). To avoid this try using the following options:
+
+    mpremote connect --dtr 0 --rts 0 auto
+    mpremote connect --dtr 0 --rts 0 auto fs ls
+
+The commands may take some additional 1-2s to be executed in case the ESP32 is
+performing a hard reset.
