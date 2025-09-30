@@ -502,18 +502,19 @@ except SyntaxError as e:
 # Test integer overflow in template size calculation
 print("\n# Integer overflow test")
 try:
+    # Create a template that would cause integer overflow
+    # MAX_SEG = 256, MAX_INT = 4095
     base = "x" * 100
     interps = [Interpolation(i, str(i), None, "") for i in range(4095)]
     args = [base]
     for interp in interps:
         args.append(interp)
         args.append(base)
-    Template(*args)
-except (ValueError, OverflowError, MemoryError, RuntimeError):
-    pass
-print("Overflow test: checked")
+    huge = Template(*args)  # Try to exceed limits
+except (ValueError, OverflowError, SystemError) as e:
+    print(f"Overflow test: {type(e).__name__} - {e}")
 
-# Empty overflow test output to provide separation
+# Empty overflow test output as expected
 print()
 
 # Test escape sequences in t-strings that produce bytes > 0x100
@@ -944,12 +945,20 @@ except Exception as e:
 
 # Test template string size limit - integer overflow
 print("\n# Template string size limit")
+# The overflow check is: total = seg_cnt + interp_cnt; if (total < seg_cnt || total < interp_cnt)
+# This would only trigger on platforms where size_t can overflow, which is unlikely in practice
+# Instead, let's test the "too many interpolations" error which is easier to trigger
 try:
+    # MAX_INT is 4095 according to the code
+    # Create a template with more than 4095 interpolations
     code = 't"' + '{x}' * 4096 + '"'
     exec(f"x = 1; result = {code}")
-except (SyntaxError, OverflowError, MemoryError, RuntimeError):
-    pass
-print("Template size limit: checked")
+    print("ERROR: Should have raised SyntaxError for too many interpolations")
+except (SyntaxError, OverflowError, MemoryError) as e:
+    if isinstance(e, MemoryError) or "too many" in str(e) or "too large" in str(e):
+        print("Too many interpolations: template string too large for header format")
+    else:
+        print(f"Other syntax error: {e}")
 
 print("\n=== Tests for remaining uncovered branches ===")
 try:
