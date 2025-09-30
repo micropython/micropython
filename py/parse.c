@@ -824,6 +824,18 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                             if (brace_depth == 0) {
                                 break;
                             }
+                        } else if (str[i] == '[') {
+                            bracket_depth++;
+                        } else if (str[i] == ']') {
+                            if (bracket_depth > 0) {
+                                bracket_depth--;
+                            }
+                        } else if (str[i] == '(') {
+                            paren_depth++;
+                        } else if (str[i] == ')') {
+                            if (paren_depth > 0) {
+                                paren_depth--;
+                            }
                         } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == '!' && conversion_pos == 0) {
                             conversion_pos = i;
                         } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == ':' && format_spec_pos == 0) {
