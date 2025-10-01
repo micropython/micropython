@@ -50,6 +50,7 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
+#define MICROPY_PY_MATH_POW_FIX_NAN (1)
 
 // These features are enabled to get the test suite passing.
 #define MICROPY_FULL_CHECKS         (1)
