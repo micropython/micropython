@@ -47,6 +47,10 @@ typedef unsigned int uint;
 // This macro is supported by Clang and gcc>=14
 #define __has_feature(x) (0)
 #endif
+#ifndef __has_attribute
+// This macro is supported by Clang and gcc>=14
+#define __has_attribute(x) (0)
+#endif
 
 
 /** generic ops *************************************************/
@@ -153,7 +157,7 @@ size_t m_get_peak_bytes_allocated(void);
 // Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c11-alignment-specifiers
 // e.g. `_Alignas(32) char buf[256];`
 #define MP_ALIGNAS(alignment, decl) _Alignas(alignment) decl
-#elif defined(__GNUC__)
+#elif __has_attribute(__aligned__)
 // GCC attribute: https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-aligned-variable-attribute
 // e.g. `char buf[256] __attribute__((aligned(32)));`
 #define MP_ALIGNAS(alignment, decl) decl __attribute__((aligned(alignment)))
