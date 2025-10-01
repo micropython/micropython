@@ -41,6 +41,11 @@
 
 #include <zephyr/storage/flash_map.h>
 
+#ifdef CONFIG_FILE_SYSTEM
+#include <zephyr/fs/fs.h>
+#include <string.h>
+#endif
+
 #include "py/mperrno.h"
 #include "py/builtin.h"
 #include "py/compile.h"
@@ -96,6 +101,36 @@ void init_zephyr(void) {
 }
 
 #if MICROPY_VFS
+
+#define FS_SLASH_FLASH "/flash"
+
+#if defined(CONFIG_FILE_SYSTEM) && DT_HAS_COMPAT_STATUS_OKAY(zephyr_fstab)
+
+static mp_obj_t zephyr_fs_init(void) {
+    mp_obj_t bdev = NULL;
+    nlr_buf_t nlr;
+    struct fs_mount_t *const *mounts = mp_zephyr_fs_get_mounts();
+
+    /* Attempt to mount every fstab entry at their mount point */
+    for (int i = 0; i < mp_zephyr_fs_get_mounts_size(); i++) {
+        nlr_push(&nlr);
+        mp_obj_t args_1[] = { mp_obj_new_str_from_cstr(mounts[i]->mnt_point) };
+        mp_obj_t block_dev = MP_OBJ_TYPE_GET_SLOT(&zephyr_fs_type, make_new)(&zephyr_fs_type, ARRAY_SIZE(args_1), 0, args_1);
+        /* If it is /flash, we want to do the normal process to it */
+        if (strcmp(FS_SLASH_FLASH, mounts[i]->mnt_point) == 0) {
+            bdev = block_dev;
+            /* Otherwise, only mount it */
+        } else {
+            mp_obj_t args_2[] = { block_dev, mp_obj_new_str_from_cstr(mounts[i]->mnt_point) };
+            mp_vfs_mount(2, args_2, (mp_map_t *)&mp_const_empty_map);
+        }
+        nlr_pop();
+    }
+    return bdev;
+}
+
+#endif
+
 static void vfs_init(void) {
     mp_obj_t bdev = NULL;
     mp_obj_t mount_point;
@@ -112,10 +147,14 @@ static void vfs_init(void) {
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
     path_lib_qstr = MP_QSTR__slash_sd_slash_lib;
+    #elif defined(CONFIG_FILE_SYSTEM) && DT_HAS_COMPAT_STATUS_OKAY(zephyr_fstab)
+    bdev = zephyr_fs_init();
+    mount_point_str = FS_SLASH_FLASH;
+    path_lib_qstr = MP_QSTR__slash_flash_slash_lib;
     #elif defined(CONFIG_FLASH_MAP) && FIXED_PARTITION_EXISTS(storage_partition)
     mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)), MP_OBJ_NEW_SMALL_INT(4096) };
     bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
-    mount_point_str = "/flash";
+    mount_point_str = FS_SLASH_FLASH;
     path_lib_qstr = MP_QSTR__slash_flash_slash_lib;
     #endif
 
