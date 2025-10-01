@@ -175,6 +175,21 @@ size_t m_get_peak_bytes_allocated(void);
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
 
+#if __has_attribute(__counted_by__)
+// link struct flex and pointer members to corresponding size fields for better ASAN and debug info
+// available in Clang 18 and GCC 15.
+#define MP_ATTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#else
+#define MP_ATTR_COUNTED_BY(count)
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+// annotate char arrays or pointers that are meant to contain null bytes
+#define MP_ATTR_NONSTRING __attribute__((nonstring))
+#else
+#define MP_ATTR_NONSTRING
+#endif
+
 /** unichar / UTF-8 *********************************************/
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
