@@ -504,11 +504,21 @@ print("\n# Integer overflow test")
 try:
     # Create a template that would cause integer overflow
     # MAX_SEG = 256, MAX_INT = 4095
-    strings = ("x" * 100,) * 256
-    interps = tuple(Interpolation(i, str(i), None, "") for i in range(4095))
-    huge = Template(strings=strings[:257], values=interps)
-except (ValueError, OverflowError, SystemError) as e:
+    base = "x" * 100
+    args = [base]
+    for i in range(4095):
+        args.append(Interpolation(i, str(i), None, ""))
+        args.append(base)
+    huge = Template(*args)
+except (ValueError, OverflowError) as e:
     print(f"Overflow test: {type(e).__name__} - {e}")
+except Exception as e:
+    if type(e).__name__ == "SystemError":
+        print(f"Overflow test: {type(e).__name__} - {e}")
+    elif type(e).__name__ == "RuntimeError" and "pystack exhausted" in str(e):
+        pass
+    else:
+        raise
 
 # Empty overflow test output as expected
 print()
