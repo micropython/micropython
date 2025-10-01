@@ -51,6 +51,13 @@ typedef unsigned int uint;
 // This macro is supported by Clang and gcc>=14
 #define __has_feature(x) (0)
 #endif
+#ifndef __has_extension
+// This macro is supported by Clang and gcc>=14
+#define __has_extension(x) (0)
+#endif
+#ifndef __has_attribute
+#define __has_attribute(x) (0)
+#endif
 
 
 /** generic ops *************************************************/
