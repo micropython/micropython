@@ -484,7 +484,7 @@ typedef struct _mp_map_t {
     size_t is_ordered : 1;  // if set, table is an ordered array, not a hash map
     size_t used : (8 * sizeof(size_t) - 3);
     size_t alloc;
-    mp_map_elem_t *table;
+    mp_map_elem_t *table MP_ATTR_COUNTED_BY(alloc);
 } mp_map_t;
 
 // mp_set_lookup requires these constants to have the values they do
@@ -512,7 +512,7 @@ void mp_map_dump(mp_map_t *map);
 typedef struct _mp_set_t {
     size_t alloc;
     size_t used;
-    mp_obj_t *table;
+    mp_obj_t *table MP_ATTR_COUNTED_BY(alloc);
 } mp_set_t;
 
 static inline bool mp_set_slot_is_filled(const mp_set_t *set, size_t pos) {
@@ -614,7 +614,7 @@ typedef struct _mp_getiter_iternext_custom_t {
 // Buffer protocol
 
 typedef struct _mp_buffer_info_t {
-    void *buf;      // can be NULL if len == 0
+    void *buf MP_ATTR_COUNTED_BY(len); // can be NULL if len == 0
     size_t len;     // in bytes
     int typecode;   // as per binary.h
 } mp_buffer_info_t;

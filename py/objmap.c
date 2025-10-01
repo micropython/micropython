@@ -28,12 +28,13 @@
 #include <assert.h>
 
 #include "py/runtime.h"
+#include "py/misc.h"
 
 typedef struct _mp_obj_map_t {
     mp_obj_base_t base;
     size_t n_iters;
     mp_obj_t fun;
-    mp_obj_t iters[];
+    mp_obj_t iters[] MP_ATTR_COUNTED_BY(n_iters);
 } mp_obj_map_t;
 
 static mp_obj_t map_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
