@@ -94,7 +94,10 @@ void init_zephyr(void) {
     #endif
 }
 
-#if MICROPY_VFS
+
+// If we don't have frozen modules, then we need to provide a way to
+// mount a filesystem at boot instead of relying on _boot.py to do it.
+#if MICROPY_VFS && !MICROPY_FROZEN_MPY
 static void vfs_init(void) {
     mp_obj_t bdev = NULL;
     mp_obj_t mount_point;
@@ -127,6 +130,7 @@ static void vfs_init(void) {
 }
 #endif // MICROPY_VFS
 
+
 int real_main(void) {
     #if MICROPY_PY_THREAD
     struct k_thread *z_thread = (struct k_thread *)k_current_get();
@@ -152,10 +156,16 @@ soft_reset:
     #endif
 
     #if MICROPY_VFS
+    #if MICROPY_MODULE_FROZEN_MPY
+    // Mount and/or create the filesystem
+    pyexec_frozen_module("_boot.py", false);
+    #else
     vfs_init();
     #endif
+    #endif
 
-    #if MICROPY_MODULE_FROZEN || MICROPY_VFS
+
+    #if MICROPY_MODULE_FROZEN_MPY || MICROPY_VFS
     // Execute user scripts.
     int ret = pyexec_file_if_exists("boot.py");
     if (ret & PYEXEC_FORCED_EXIT) {
