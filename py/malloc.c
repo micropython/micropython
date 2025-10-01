@@ -241,8 +241,10 @@ typedef struct _m_tracked_node_t {
     struct _m_tracked_node_t *next;
     #if MICROPY_TRACKED_ALLOC_STORE_SIZE
     uintptr_t size;
-    #endif
+    uint8_t data[] MP_ATTR_COUNTED_BY(size);
+    #else
     uint8_t data[];
+    #endif
 } m_tracked_node_t;
 
 #if MICROPY_DEBUG_VERBOSE

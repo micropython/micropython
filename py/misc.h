@@ -219,6 +219,14 @@ size_t m_get_peak_bytes_allocated(void);
 #define MP_ALIGNOF(type) 4
 #endif
 
+#if __has_attribute(__counted_by__)
+// link struct flex and pointer members to corresponding size fields for better ASAN and debug info
+// available in Clang 18 and GCC 15.
+#define MP_ATTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#else
+#define MP_ATTR_COUNTED_BY(count)
+#endif
+
 /** unichar / UTF-8 *********************************************/
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
@@ -267,7 +275,7 @@ mp_uint_t unichar_xdigit_value(unichar c);
 typedef struct _vstr_t {
     size_t alloc;
     size_t len;
-    char *buf;
+    char *buf MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING;
     bool fixed_buf;
 } vstr_t;
 
