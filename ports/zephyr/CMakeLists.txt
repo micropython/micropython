@@ -82,14 +82,33 @@ set(MICROPY_QSTRDEFS_PORT
     ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
 
-set(MICROPY_SOURCE_LIB
+if (CONFIG_MICROPY_VFS_FAT)
+
+list(APPEND MICROPY_SOURCE_LIB
     oofatfs/ff.c
     oofatfs/ffunicode.c
+)
+
+endif()
+
+if (CONFIG_MICROPY_VFS_LFS1)
+
+list(APPEND MICROPY_SOURCE_LIB
     littlefs/lfs1.c
     littlefs/lfs1_util.c
+)
+
+endif()
+
+if (CONFIG_MICROPY_VFS_LFS2)
+
+list(APPEND MICROPY_SOURCE_LIB
     littlefs/lfs2.c
     littlefs/lfs2_util.c
 )
+
+endif()
+
 list(TRANSFORM MICROPY_SOURCE_LIB PREPEND ${MICROPY_DIR}/lib/)
 
 set(MICROPY_SOURCE_QSTR
