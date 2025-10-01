@@ -221,7 +221,7 @@ typedef struct _mp_parse_chunk_t {
         size_t used;
         struct _mp_parse_chunk_t *next;
     } union_;
-    byte data[] MP_ATTR_COUNTED_BY(alloc);
+    byte data[] MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING;
 } mp_parse_chunk_t;
 
 typedef struct _parser_t {
