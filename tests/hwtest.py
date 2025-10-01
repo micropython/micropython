@@ -240,7 +240,7 @@ def do_test(cmd):
 def run_multitests_p2(instances, tests):
     cmd = ["./run-multitests.py", "-p2"]
     for instance in instances:
-        cmd.extend(["-i", f"pyb:{instance}"])
+        cmd.extend(["--test-instance", f"{instance}"])
     do_test(cmd + tests)
 
 
@@ -251,7 +251,7 @@ def run_multitests_on_two_targets(targets, tests):
         target0 = targets[i]
         target1 = targets[(i + 1) % len(targets)]
         do_test(
-            ["./run-multitests.py", "-i", f"pyb:{target0.device}", "-i", f"pyb:{target1.device}"]
+            ["./run-multitests.py", "--test-instance", f"{target0.device}", "--test-instance", f"{target1.device}"]
             + tests
         )
 
@@ -367,7 +367,7 @@ def main():
 
             if select_native and target.arch is not None:
                 do_test(run_tests_native_cmd)
-                do_test(["./run-natmodtests.py", "-p", "-d", target.device] + tests_natmod)
+                do_test(["./run-natmodtests.py", "--test-instance", target.device] + tests_natmod)
 
             if select_hardware:
                 run_cmds = [run_tests_cmd]
