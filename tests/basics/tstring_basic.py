@@ -350,8 +350,8 @@ print(f"\n5. Complex nested: {str(complex)}")
 print(f"   Values: {complex.values}")
 
 unicode_test = t"""Unicode test:
-Emoji: {'🐍'}
-Special: {'α β γ'}"""
+Emoji: {'\U0001f40d'}
+Special: {'\u03b1 \u03b2 \u03b3'}"""
 print(f"\n6. Unicode: {str(unicode_test)}")
 
 import os
