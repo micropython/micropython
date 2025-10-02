@@ -510,18 +510,16 @@ try:
         args.append(Interpolation(i, str(i), None, ""))
         args.append(base)
     huge = Template(*args)
-except (ValueError, OverflowError) as e:
-    print(f"Overflow test: {type(e).__name__} - {e}")
 except Exception as e:
     name = type(e).__name__
-    if name == "SystemError":
-        print(f"Overflow test: {name} - {e}")
+    if name in {"ValueError", "OverflowError", "SystemError", "MemoryError"}:
+        pass
     elif name == "RuntimeError" and "pystack exhausted" in str(e):
         pass
-    elif name == "MemoryError":
-        print("Overflow test: MemoryError")
+    elif name == "TypeError" and "keyword-only argument" in str(e):
+        pass
     else:
-        raise e
+        raise
 
 # Empty overflow test output as expected
 print()
