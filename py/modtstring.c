@@ -38,6 +38,8 @@
 
 #if MICROPY_PY_TSTRINGS
 
+#define TEMPLATE_COUNT_MAX (0x0FFF)
+
 extern const mp_obj_type_t mp_type_template;
 extern const mp_obj_type_t mp_type_interpolation;
 
@@ -81,9 +83,17 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
         strings_obj = args[0];
         interpolations_obj = args[1];
 
+        size_t strings_len = mp_obj_get_int(mp_obj_len(strings_obj));
+        if (strings_len > TEMPLATE_COUNT_MAX) {
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+        }
+
         size_t interp_len;
         mp_obj_t *interp_items;
         mp_obj_get_array(interpolations_obj, &interp_len, &interp_items);
+        if (interp_len > TEMPLATE_COUNT_MAX) {
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+        }
         for (size_t i = 0; i < interp_len; i++) {
             if (!mp_obj_is_exact_type(interp_items[i], &mp_type_interpolation)) {
                 mp_raise_msg_varg(&mp_type_TypeError,
@@ -129,7 +139,14 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
             }
             interpolations_obj = mp_obj_new_tuple(0, NULL);
         } else {
+            if (n_interpolations > TEMPLATE_COUNT_MAX) {
+                mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+            }
+
             size_t n_strings = n_interpolations + 1;
+            if (n_strings > TEMPLATE_COUNT_MAX) {
+                mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+            }
             mp_obj_tuple_t *strings_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, n_strings, &mp_type_tuple);
             mp_obj_tuple_t *interpolations_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, n_interpolations, &mp_type_tuple);
             strings_tuple->len = n_strings;
@@ -142,19 +159,19 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
             vstr_t current_vstr = {0};
 
             #define FLUSH_CURRENT_STRING() \
-                do { \
-                    mp_obj_t out_str; \
-                    if (current_vstr_active) { \
-                        out_str = mp_obj_new_str_from_vstr(&current_vstr); \
-                        current_vstr_active = false; \
-                    } else if (current_str != MP_OBJ_NULL) { \
-                        out_str = current_str; \
-                    } else { \
-                        out_str = MP_OBJ_NEW_QSTR(MP_QSTR_); \
-                    } \
-                    strings_tuple->items[string_idx++] = out_str; \
-                    current_str = MP_OBJ_NULL; \
-                } while (0)
+                    do { \
+                        mp_obj_t out_str; \
+                        if (current_vstr_active) { \
+                            out_str = mp_obj_new_str_from_vstr(&current_vstr); \
+                            current_vstr_active = false; \
+                        } else if (current_str != MP_OBJ_NULL) { \
+                            out_str = current_str; \
+                        } else { \
+                            out_str = MP_OBJ_NEW_QSTR(MP_QSTR_); \
+                        } \
+                        strings_tuple->items[string_idx++] = out_str; \
+                        current_str = MP_OBJ_NULL; \
+                    } while (0)
 
             for (size_t i = 0; i < n_args; i++) {
                 mp_obj_t arg = args[i];
@@ -182,7 +199,7 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
 
             FLUSH_CURRENT_STRING();
 
-            #undef FLUSH_CURRENT_STRING
+#undef FLUSH_CURRENT_STRING
 
             strings_obj = MP_OBJ_FROM_PTR(strings_tuple);
             interpolations_obj = MP_OBJ_FROM_PTR(interpolations_tuple);
@@ -384,9 +401,18 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolations_in) {
+    size_t strings_len = mp_obj_get_int(mp_obj_len(strings));
+    if (strings_len > TEMPLATE_COUNT_MAX) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+    }
+
     mp_obj_t *items;
     size_t len;
     mp_obj_get_array(interpolations_in, &len, &items);
+
+    if (len > TEMPLATE_COUNT_MAX) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+    }
 
     // Create tuple directly to avoid GC issues
     mp_obj_tuple_t *interpolations_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, len, &mp_type_tuple);

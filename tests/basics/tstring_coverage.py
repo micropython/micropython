@@ -502,24 +502,26 @@ except SyntaxError as e:
 # Test integer overflow in template size calculation
 print("\n# Integer overflow test")
 try:
-    # Create a template that would cause integer overflow
-    # MAX_SEG = 256, MAX_INT = 4095
-    base = "x" * 100
+    # Create a template that would exceed the template header limit
+    limit = 0x1000  # one more than the maximum number of interpolations (4095)
+    base = "x"
+    interp = Interpolation(0, "x", None, "")
     args = [base]
-    for i in range(4095):
-        args.append(Interpolation(i, str(i), None, ""))
+    for _ in range(limit):
+        args.append(interp)
         args.append(base)
-    huge = Template(*args)
-except Exception as e:
-    name = type(e).__name__
-    if name in {"ValueError", "OverflowError", "SystemError", "MemoryError"}:
-        pass
-    elif name == "RuntimeError" and "pystack exhausted" in str(e):
-        pass
-    elif name == "TypeError" and "keyword-only argument" in str(e):
-        pass
+    Template(*args)
+except OverflowError as e:
+    print(f"Overflow test: {type(e).__name__} - {e}")
+except MemoryError:
+    print("Overflow test: MemoryError")
+except RuntimeError as e:
+    if "pystack exhausted" in str(e):
+        print("Overflow test: RuntimeError - pystack exhausted")
     else:
         raise
+else:
+    print("Overflow test: no error")
 
 # Empty overflow test output as expected
 print()
