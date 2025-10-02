@@ -38,10 +38,15 @@ extern const mp_map_t mp_builtin_module_map;
 
 #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
 extern const mp_map_t mp_builtin_extensible_module_map;
+
+mp_obj_t mp_module_get_builtin_impl(qstr module_name, bool extensible);
+#define mp_module_get_builtin(module_name, extensible) mp_module_get_builtin_impl((module_name), (extensible))
+#else
+mp_obj_t mp_module_get_builtin_impl(qstr module_name);
+#define mp_module_get_builtin(module_name, extensible) ( \
+    MP_STATIC_ASSERT(!extensible), mp_module_get_builtin_impl((module_name)) \
+    )
 #endif
-
-mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible);
-
 void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values);
 
 #endif // MICROPY_INCLUDED_PY_OBJMODULE_H

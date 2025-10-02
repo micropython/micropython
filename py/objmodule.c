@@ -174,7 +174,12 @@ static const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] =
 
 // Attempts to find (and initialise) a built-in, otherwise returns
 // MP_OBJ_NULL.
-mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
+mp_obj_t mp_module_get_builtin_impl(qstr module_name
+    #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
+    , bool extensible
+    #endif
+    ) {
+
     #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
     const mp_map_t *map = extensible ? &mp_builtin_extensible_module_map : &mp_builtin_module_map;
     #else
