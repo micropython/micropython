@@ -78,10 +78,6 @@ typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
 #endif
 
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
-#define HEX_FMT "%lx"
-
 typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()
