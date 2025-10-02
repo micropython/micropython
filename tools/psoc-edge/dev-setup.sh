@@ -17,18 +17,22 @@ function set_mtb_tools_path {
     echo ${mtb_path}/tools_3.6
 }
 
+function set_gcc_path {
+    tools_path=$2
+    if [ -z "$tools_path" ]; then
+        tools_path=/opt/Tools
+    fi
+    
+    echo ${tools_path}/mtb-gcc-arm-eabi/14.2.1
+}
+
 function export_path {
     mtb_tools_path=$(set_mtb_tools_path "$1")
-    export PATH=${mtb_tools_path}/library-manager:$PATH
+    gcc_path=$(set_gcc_path "$1" "$2")
+    export PATH=${mtb_tools_path}/library-manager:${gcc_path}/gcc/bin:$PATH
 }
 
 function toolchain_setup {
     mtb_path=$1
     export_path ${mtb_path}
-}
-
-function git_add_ssh {
-    ssh_key=$1
-    eval $(ssh-agent -s)
-    ssh-add ${ssh_key}
 }
