@@ -142,9 +142,22 @@ The following code can be used to sleep, reducing power consumption::
     # put the device to sleep for 10 seconds
     machine.lightsleep(10000)
 
+GPIO interrupts can wake the system from light-sleep mode::
+
+    from machine import Pin
+    import machine
+
+    # Configure a pin interrupt
+    switch = Pin(("gpioc", 6), Pin.IN)
+    switch.irq(lambda t: print("Switch pressed!"))
+
+    # Sleep until timeout or GPIO interrupt occurs
+    machine.lightsleep(30000)  # Sleep for 30 seconds or until switch is pressed
+
 Notes:
 
 * Calling ``lightsleep()`` suspends the micropython thread, allowing Zephyr power management to reduce power consumption.
+* GPIO interrupts configured with ``Pin.irq()`` will wake the system from light-sleep mode.
 
 Deep-sleep mode
 ----------------

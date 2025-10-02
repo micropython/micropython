@@ -34,8 +34,12 @@
 #include <zephyr/pm/pm.h>
 #include <zephyr/pm/device.h>
 #include <zephyr/sys/poweroff.h>
+#include <zephyr/kernel.h>
 
 #include "modmachine.h"
+
+// Semaphore for waking from lightsleep on GPIO interrupts
+K_SEM_DEFINE(lightsleep_wake_sem, 0, 1);
 
 #ifdef CONFIG_REBOOT
 #define MICROPY_PY_MACHINE_RESET_ENTRY { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
@@ -77,7 +81,13 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
     // Set UART device to low power state
     pm_device_action_run(console, PM_DEVICE_ACTION_SUSPEND);
-    k_sleep(K_MSEC(milliseconds));
+
+    // Reset the semaphore before sleeping to ensure clean state
+    k_sem_reset(&lightsleep_wake_sem);
+
+    // Use semaphore with timeout instead of k_sleep to allow GPIO wake
+    k_sem_take(&lightsleep_wake_sem, K_MSEC(milliseconds));
+
     // Set UART device back to active state
     pm_device_action_run(console, PM_DEVICE_ACTION_RESUME);
 }
