@@ -54,23 +54,30 @@ Retrieve submodules:
 
     make submodules
 
-Then initialize the ModusToolbox™ environment: 
-
-    make mtb_init BOARD=KIT_PSE84_AI
-
 Build the firmware:
 
     make BOARD=KIT_PSE84_AI
-  
+
+> [!NOTE] 
+> The first time we call `make` the board needs to be specified with 
+> `BOARD=<board>`. This is required as the ModusToolbox libraries need to be
+> initialized for the selected board. 
+> This board will then be set as the default board for subsequent builds, you
+> can just call `make` without the `BOARD=` argument.
+
 And flash it to the board:
 
-    make deploy BOARD=KIT_PSE84_AI
+    make deploy
+
+> [!NOTE]
+> This will also build the firmware if it has not been built yet.
+> Use `deploy` target to avoid rebuilding the firmware.
 
 If you have multiple boards connected, you can specify the serial number of the board to be programmed:
 
-    make deploy BOARD=KIT_PSE84_AI DEVICE_SN=123456
+    make deploy DEVICE_SN=123456
 
-Find more information about the available makefile targets:
+Find more information about the all available makefile targets:
 
     make help
 -----------------------------------------------------
