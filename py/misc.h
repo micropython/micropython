@@ -446,11 +446,11 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     }
     return zeroes;
     #else
-    MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
-        || sizeof(mp_int_t) == sizeof(long));
+    MP_STATIC_ASSERT(sizeof(mp_int_t) <= sizeof(long long)
+        || sizeof(mp_int_t) <= sizeof(long));
 
     // ugly, but should compile to single intrinsic unless O0 is set
-    if (mp_check(sizeof(mp_int_t) == sizeof(long))) {
+    if (mp_check(sizeof(mp_int_t) <= sizeof(long))) {
         return mp_clzl((unsigned long)x);
     } else {
         return mp_clzll((unsigned long long)x);
