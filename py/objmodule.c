@@ -212,7 +212,7 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
         if (module_name_str[0] != 'u') {
             return MP_OBJ_NULL;
         }
-        elem = mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(qstr_from_strn(module_name_str + 1, module_name_len - 1)), MP_MAP_LOOKUP);
+        elem = mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(qstr_find_strn(module_name_str + 1, module_name_len - 1)), MP_MAP_LOOKUP);
         #endif
 
         if (!elem) {
