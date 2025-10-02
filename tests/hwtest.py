@@ -9,7 +9,7 @@ import subprocess
 import serial.tools.list_ports
 import datetime
 import time
-import vcprate
+import serial_test
 
 sys.path.append("../tools/mpremote")
 from mpremote.transport_serial import SerialTransport
@@ -256,7 +256,7 @@ def run_multitests_on_two_targets(targets, tests):
         )
 
 
-ALL_TEST_CODES = "vphmnwb"
+ALL_TEST_CODES = "sphmnwb"
 
 
 def main():
@@ -292,7 +292,7 @@ def main():
     selected_devices = [map_device_name(d) for d in args.test_instances]
     targets = list_targets(selected_devices, [ref_target.device] if ref_target else [])
 
-    select_vcprate = "v" in selected_tests
+    select_serial = "s" in selected_tests
     select_python = "p" in selected_tests
     select_hardware = "h" in selected_tests
     select_via_mpy = "m" in selected_tests
@@ -348,9 +348,11 @@ def main():
 
             do_test(run_tests_cmd + ["--clean-failures"])
 
-            if select_vcprate:
+            if select_serial:
                 try:
-                    vcprate.do_test(target.device)
+                    serial_test.do_test(target.device)
+                except serial_test.TestError:
+                    pass
                 except KeyboardInterrupt:
                     print("INTERRUPT")
                     time.sleep(2)
