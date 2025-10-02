@@ -6,12 +6,9 @@ The MicroPython project
   <img src="https://raw.githubusercontent.com/micropython/micropython/master/logo/upython-with-micro.jpg" alt="MicroPython Logo"/>
 </p>
 
-This is the MicroPython project, which aims to put an implementation
-of Python 3.x on microcontrollers and small embedded systems.
+This is the MicroPython project, an implementation of Python 3.x for
+microcontrollers, embedded systems and other constrained platforms.
 You can find the official website at [micropython.org](http://www.micropython.org).
-
-WARNING: this project is in beta stage and is subject to changes of the
-code-base, including project-wide name changes and API changes.
 
 MicroPython implements the entire Python 3.4 syntax (including exceptions,
 `with`, `yield from`, etc., and additionally `async`/`await` keywords from
