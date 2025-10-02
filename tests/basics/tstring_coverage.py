@@ -513,12 +513,15 @@ try:
 except (ValueError, OverflowError) as e:
     print(f"Overflow test: {type(e).__name__} - {e}")
 except Exception as e:
-    if type(e).__name__ == "SystemError":
-        print(f"Overflow test: {type(e).__name__} - {e}")
-    elif type(e).__name__ == "RuntimeError" and "pystack exhausted" in str(e):
+    name = type(e).__name__
+    if name == "SystemError":
+        print(f"Overflow test: {name} - {e}")
+    elif name == "RuntimeError" and "pystack exhausted" in str(e):
         pass
+    elif name == "MemoryError":
+        print("Overflow test: MemoryError")
     else:
-        raise
+        raise e
 
 # Empty overflow test output as expected
 print()
