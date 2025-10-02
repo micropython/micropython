@@ -93,12 +93,8 @@
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 // This port is 64-bit
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
-#define HEX_FMT "%lx"
 typedef signed long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
-
 typedef long mp_off_t;
 
 // extra built in names to add to the global namespace
