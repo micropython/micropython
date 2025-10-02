@@ -60,6 +60,41 @@ and the [Code Conventions](https://github.com/micropython/micropython/blob/maste
 Note that MicroPython is licenced under the MIT license, and all contributions
 should follow this license.
 
+MicroPython design values
+-------------------------
+
+For its design and implementation, MicroPython aims to follow a set of values.
+Although not a strict set of rules, these values and principles serve as a
+useful guide for new and seasoned contributors, as well as maintainers.
+
+MicroPython is at heart a combination of "Micro" and "Python": it's about
+resource constrained systems running the Python programming language.  Both of
+these concepts balance off against each other in all parts of MicroPython's
+design and implementation.
+
+The key concepts that focus the development of MicroPython are:
+- Minimalism: do lots with little.
+- Efficiency, in all respects: coding, build, execution, power consumption.
+- Consistency: the whole system feels like it was designed at once.
+
+When using MicroPython, the Python language is used as the human interface to an
+embedded system, giving fine control over the entities attached to that system.
+In a hardware setting, MicroPython aims to give the user a bare-metal feeling:
+one should feel like they have complete control over the system, with very
+little between the programmer and the physical world.
+
+MicroPython recognises that systems can be very complex.  The existing Python
+libraries in combination with the MicroPython-specific libraries provide a
+user-friendly way to harness the complexity of a system.
+
+Python language compatibility is very important to MicroPython, and at first
+glance MicroPython should look just like regular Python.  In the first instance,
+a Python script should run unchanged on MicroPython, even on devices with very
+tight resources.  Beyond that, there are ways to extend MicroPython if needed to
+better match Python.  The provided built-in modules are an efficient subset of
+the corresponding Python ones, without duplication of functionality, and allow
+extension in Python if needed.
+
 About this repository
 ---------------------
 
