@@ -394,7 +394,7 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // An import of a non-extensible built-in will always bypass the
         // filesystem. e.g. `import micropython` or `import pyb`. So try and
         // match a non-extensible built-ins first.
-        module_obj = mp_module_get_builtin(level_mod_name, false);
+        module_obj = mp_module_get_builtin(level_mod_name);
         if (module_obj != MP_OBJ_NULL) {
             return module_obj;
         }
@@ -407,7 +407,7 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // If filesystem failed, now try and see if it matches an extensible
         // built-in module.
         if (stat == MP_IMPORT_STAT_NO_EXIST) {
-            module_obj = mp_module_get_builtin(level_mod_name, true);
+            module_obj = mp_module_get_builtin_extensible(level_mod_name);
             if (module_obj != MP_OBJ_NULL) {
                 return module_obj;
             }
@@ -644,13 +644,13 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
 
     // Try the name directly as a non-extensible built-in (e.g. `micropython`).
     qstr module_name_qstr = mp_obj_str_get_qstr(args[0]);
-    mp_obj_t module_obj = mp_module_get_builtin(module_name_qstr, false);
+    mp_obj_t module_obj = mp_module_get_builtin(module_name_qstr);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
     #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
     // Now try as an extensible built-in (e.g. `time`).
-    module_obj = mp_module_get_builtin(module_name_qstr, true);
+    module_obj = mp_module_get_builtin_extensible(module_name_qstr);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
