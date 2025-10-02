@@ -161,7 +161,7 @@ Wrong order: SyntaxError - invalid syntax in template expression: x:>10
 Format before conversion: SyntaxError - invalid syntax in template expression: x:d
 
 # Integer overflow test
-
+Overflow test: OverflowError - template string too large for header format
 
 # Unicode escape sequences tests
 Invalid \u hex: preserved as literal
