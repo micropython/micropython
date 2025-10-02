@@ -37,12 +37,20 @@
 typedef struct _mp_obj_sensor_t {
     mp_obj_base_t base;
     const struct device *dev;
+    mp_obj_t trigger_callback;
+    struct sensor_trigger current_trigger;
+    struct _mp_obj_sensor_t *next;  // For linked list of active sensors
 } mp_obj_sensor_t;
+
+// Linked list of sensors with active callbacks
+static mp_obj_sensor_t *sensor_callback_list = NULL;
 
 static mp_obj_t sensor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_obj_sensor_t *o = mp_obj_malloc(mp_obj_sensor_t, type);
     o->dev = zephyr_device_find(args[0]);
+    o->trigger_callback = mp_const_none;
+    o->next = NULL;
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -153,6 +161,83 @@ static mp_obj_t mp_sensor_attr_set(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sensor_attr_set_obj, 4, 5, mp_sensor_attr_set);
 
+// Zephyr sensor trigger handler (runs in interrupt context)
+static void sensor_trigger_handler(const struct device *dev, const struct sensor_trigger *trigger) {
+    // Find the sensor object that matches this device
+    for (mp_obj_sensor_t *sensor = sensor_callback_list; sensor != NULL; sensor = sensor->next) {
+        if (sensor->dev == dev &&
+            sensor->current_trigger.type == trigger->type) {
+            // Schedule callback on main thread - pass sensor object only
+            // The callback can query the sensor for updated data
+            mp_sched_schedule(sensor->trigger_callback, MP_OBJ_FROM_PTR(sensor));
+            break;
+        }
+    }
+}
+
+static mp_obj_t mp_sensor_trigger_set(mp_obj_t self_in, mp_obj_t trigger_type_in, mp_obj_t callback_in) {
+    mp_obj_sensor_t *self = MP_OBJ_TO_PTR(self_in);
+
+    // If disabling callback, remove from list
+    if (callback_in == mp_const_none) {
+        // Remove from callback list
+        mp_obj_sensor_t **curr = &sensor_callback_list;
+        while (*curr != NULL) {
+            if (*curr == self) {
+                *curr = self->next;
+                break;
+            }
+            curr = &(*curr)->next;
+        }
+        self->next = NULL;
+
+        // Disable trigger in hardware
+        struct sensor_trigger trigger = {
+            .type = self->current_trigger.type,
+            .chan = self->current_trigger.chan
+        };
+        int ret = sensor_trigger_set(self->dev, &trigger, NULL);
+        if (ret != 0) {
+            mp_raise_OSError(-ret);
+        }
+
+        self->trigger_callback = mp_const_none;
+        return mp_const_none;
+    }
+
+    // Setup trigger structure
+    struct sensor_trigger trigger = {
+        .type = mp_obj_get_int(trigger_type_in),
+        .chan = SENSOR_CHAN_ALL  // Default to all channels
+    };
+
+    // Store callback and trigger info
+    self->trigger_callback = callback_in;
+    self->current_trigger = trigger;
+
+    // Add to callback list if not already present
+    bool found = false;
+    for (mp_obj_sensor_t *sensor = sensor_callback_list; sensor != NULL; sensor = sensor->next) {
+        if (sensor == self) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        self->next = sensor_callback_list;
+        sensor_callback_list = self;
+    }
+
+    // Set the trigger with Zephyr
+    int ret = sensor_trigger_set(self->dev, &trigger, sensor_trigger_handler);
+    if (ret != 0) {
+        mp_raise_OSError(-ret);
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_3(sensor_trigger_set_obj, mp_sensor_trigger_set);
+
 static const mp_rom_map_elem_t sensor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_measure), MP_ROM_PTR(&sensor_measure_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_float), MP_ROM_PTR(&sensor_get_float_obj) },
@@ -164,6 +249,7 @@ static const mp_rom_map_elem_t sensor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_attr_get_millis), MP_ROM_PTR(&sensor_attr_get_millis_obj) },
     { MP_ROM_QSTR(MP_QSTR_attr_get_int), MP_ROM_PTR(&sensor_attr_get_int_obj) },
     { MP_ROM_QSTR(MP_QSTR_attr_set), MP_ROM_PTR(&sensor_attr_set_obj) },
+    { MP_ROM_QSTR(MP_QSTR_trigger_set), MP_ROM_PTR(&sensor_trigger_set_obj) },
 };
 
 static MP_DEFINE_CONST_DICT(sensor_locals_dict, sensor_locals_dict_table);
@@ -180,6 +266,23 @@ static const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zsensor) },
     { MP_ROM_QSTR(MP_QSTR_Sensor), MP_ROM_PTR(&sensor_type) },
 
+// Sensor trigger types
+#define T(name) { MP_ROM_QSTR(MP_QSTR_TRIG_##name), MP_ROM_INT(SENSOR_TRIG_##name) }
+    T(TIMER),
+    T(DATA_READY),
+    T(DELTA),
+    T(NEAR_FAR),
+    T(THRESHOLD),
+    T(TAP),
+    T(DOUBLE_TAP),
+    T(FREEFALL),
+    T(MOTION),
+    T(STATIONARY),
+    T(FIFO_WATERMARK),
+    T(FIFO_FULL),
+#undef T
+
+// Sensor channel types
 #define C(name) { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(SENSOR_CHAN_##name) }
     C(ACCEL_X),
     C(ACCEL_Y),
@@ -244,4 +347,7 @@ const mp_obj_module_t mp_module_zsensor = {
 
 MP_REGISTER_MODULE(MP_QSTR_zsensor, mp_module_zsensor);
 
-#endif // MICROPY_PY_HASHLIB
+// Register root pointer to prevent GC of sensor callback list
+MP_REGISTER_ROOT_POINTER(void *sensor_callback_list);
+
+#endif // MICROPY_PY_ZSENSOR
