@@ -145,7 +145,7 @@ Escape sequence tests completed!
 5. Complex nested: Template(strings=('Users:\n', ': ', '\n', ': ', ''), interpolations=(Interpolation('Alice', "data['users'][0]['name']", None, ''), Interpolation('Say "Hello"', "data['users'][0]['msg']", None, ''), Interpolation('Bob', "data['users'][1]['name']", None, ''), Interpolation("It's great!", "data['users'][1]['msg']", None, '')))
    Values: ('Alice', 'Say "Hello"', 'Bob', "It's great!")
 
-6. Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('\U0001f40d', "'\U0001f40d'", None, ''), Interpolation('\u03b1 \u03b2 \u03b3', "'\u03b1 \u03b2 \u03b3'", None, '')))
+6. Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('\U0001f40d', "'\\U0001f40d'", None, ''), Interpolation('\u03b1 \u03b2 \u03b3', "'\\u03b1 \\u03b2 \\u03b3'", None, '')))
 
 7. Raw with interpolation: Template(strings=('Path: C:\\Users\\', 'Documents\nRaw newline: \\n\nRaw tab: \\t'), interpolations=(Interpolation('/', 'path_sep', None, ''),))
    String 0 repr: 'Path: C:\\Users\\'
