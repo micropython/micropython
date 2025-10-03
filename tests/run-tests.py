@@ -88,10 +88,11 @@ class __FS:
     return ""
   def stat(self, path):
     if path == '__injected_test.mpy':
-      return tuple(0 for _ in range(10))
+      return (0,0,0,0,0,0,0,0,0,0)
     else:
-      raise OSError(-2) # ENOENT
+      raise OSError(2) # ENOENT
   def open(self, path, mode):
+    self.stat(path)
     return __File()
 vfs.mount(__FS(), '/__vfstest')
 os.chdir('/__vfstest')
