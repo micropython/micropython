@@ -273,4 +273,5 @@ Classes
    machine.WDT.rst
    machine.SD.rst
    machine.SDCard.rst
+   machine.CAN.rst
    machine.USBDevice.rst
