@@ -281,7 +281,8 @@ methods are constants in the :mod:`zsensor` module named ``ATTR_*``.
 Sensor interrupts and triggers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use ``trigger_set()`` to configure sensor interrupts that can wake the system from light-sleep mode::
+Use ``trigger_set()`` to configure sensor interrupts that can wake the system from light-sleep mode.
+The channel parameter is optional and defaults to all channels for most common use cases::
 
     import zsensor
     import machine
@@ -298,11 +299,27 @@ Use ``trigger_set()`` to configure sensor interrupts that can wake the system fr
         z = sensor_obj.get_float(zsensor.ACCEL_Z)
         print(f"Acceleration: X={x:.2f}, Y={y:.2f}, Z={z:.2f}")
 
-    # Set up data ready interrupt
+    # Simple trigger for all channels (most common usage)
     accel.trigger_set(zsensor.TRIG_DATA_READY, motion_callback)
 
-    # Disable interrupt
+    # Sleep until timeout or sensor interrupt occurs
+    machine.lightsleep(30000)  # Sleep for 30 seconds or until motion is detected
+
+    # Disable the trigger
     accel.trigger_set(zsensor.TRIG_DATA_READY, None)
+
+For more advanced usage, you can set channel-specific triggers::
+
+    def x_axis_callback(sensor_obj):
+        print("X-axis data ready!")
+        x = sensor_obj.get_float(zsensor.ACCEL_X)
+        print(f"X acceleration: {x:.2f} m/s^2")
+
+    # Channel-specific trigger
+    accel.trigger_set(zsensor.TRIG_DATA_READY, zsensor.ACCEL_X, x_axis_callback)
+
+    # Disable specific channel trigger
+    accel.trigger_set(zsensor.TRIG_DATA_READY, zsensor.ACCEL_X, None)
 
 Available trigger types include:
 
