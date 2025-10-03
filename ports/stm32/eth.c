@@ -270,6 +270,10 @@ static int eth_mac_init(eth_t *self) {
     SYSCFG->PMC |= SYSCFG_PMC_MII_RMII_SEL;
     #endif
 
+    // Release ETH peripheral from reset and disable clock gating during sleep.
+    // Clock gating must be disabled to ensure stable ETH/PHY operation - without
+    // this, MDIO communication can hang if the CPU enters sleep mode during
+    // busy-wait loops or delays in initialization sequences.
     #if defined(STM32H5)
     __HAL_RCC_ETH_RELEASE_RESET();
     __HAL_RCC_ETH_CLK_SLEEP_DISABLE();
@@ -277,8 +281,14 @@ static int eth_mac_init(eth_t *self) {
     __HAL_RCC_ETHRX_CLK_SLEEP_DISABLE();
     #elif defined(STM32H7)
     __HAL_RCC_ETH1MAC_RELEASE_RESET();
+    __HAL_RCC_ETH1MAC_CLK_SLEEP_DISABLE();
+    __HAL_RCC_ETH1TX_CLK_SLEEP_DISABLE();
+    __HAL_RCC_ETH1RX_CLK_SLEEP_DISABLE();
     #else
     __HAL_RCC_ETHMAC_RELEASE_RESET();
+    __HAL_RCC_ETHMAC_CLK_SLEEP_DISABLE();
+    __HAL_RCC_ETHMACTX_CLK_SLEEP_DISABLE();
+    __HAL_RCC_ETHMACRX_CLK_SLEEP_DISABLE();
     #endif
 
     // Do a soft reset of the MAC core
@@ -300,6 +310,21 @@ static int eth_mac_init(eth_t *self) {
             return -MP_ETIMEDOUT;
         }
     }
+
+    #if defined(STM32H5)
+    // __HAL_RCC_ETH_CLK_SLEEP_ENABLE();
+    // __HAL_RCC_ETHTX_CLK_SLEEP_ENABLE();
+    // __HAL_RCC_ETHRX_CLK_SLEEP_ENABLE();
+    #elif defined(STM32H7)
+    __HAL_RCC_ETH1MAC_CLK_SLEEP_ENABLE();
+    __HAL_RCC_ETH1TX_CLK_SLEEP_ENABLE();
+    __HAL_RCC_ETH1RX_CLK_SLEEP_ENABLE();
+    #else
+    __HAL_RCC_ETHMAC_CLK_SLEEP_ENABLE();
+    __HAL_RCC_ETHMACTX_CLK_SLEEP_ENABLE();
+    __HAL_RCC_ETHMACRX_CLK_SLEEP_ENABLE();
+    #endif
+
 
     // Set MII clock range
     uint32_t hclk = HAL_RCC_GetHCLKFreq();
