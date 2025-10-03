@@ -183,6 +183,24 @@ static void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     }
 }
 
+static void esp32_rmt_deactivate(esp32_rmt_obj_t *self) {
+    if (self->enabled) {
+        // FIXME: panics in ESP32 if called while TX is ongoing and TX sequence is long (>300ms)
+        // Does not panic in ESP32-S3, ESP32-C3 and ESP32-C6.
+        // Tested with ESP-IDF up to 5.5
+        // ESP-IDF issue: https://github.com/espressif/esp-idf/issues/17692
+        //
+        // Cause is Interrupt WDT to trigger because ESP-IDF rmt_disable() disables
+        // interrupts and spinlocks until the ongoing TX sequence is finished.
+        //
+        // Workaround is not to use RMT sequences longer than 300ms (which are unusual anyway),
+        // or at least not try to stop such a sequence, nor enable loop for it.
+        // Another workaround is to set CONFIG_ESP_INT_WDT=n in your local build.
+        rmt_disable(self->channel);
+        self->enabled = false;
+    }
+}
+
 static mp_obj_t esp32_rmt_active(size_t n_args, const mp_obj_t *args) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -192,13 +210,7 @@ static mp_obj_t esp32_rmt_active(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("Activate by calling write_pulses()"));
     }
 
-    if (self->enabled) {
-        // FIXME: panics if called while non-loop tx is ongoing,
-        // or when the first round of an infinite loop is ongoing.
-        // (Need to check with ESP-IDF support if this bug is ours or theirs.)
-        rmt_disable(self->channel);
-        self->enabled = false;
-    }
+    esp32_rmt_deactivate(self);
 
     return mp_const_false;
 }
@@ -208,10 +220,7 @@ static mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->pin != -1) { // Check if channel has already been deinitialised.
-        if (self->enabled) {
-            rmt_disable(self->channel);
-            self->enabled = false;
-        }
+        esp32_rmt_deactivate(self);
         rmt_tx_event_callbacks_t callbacks = {
             .on_trans_done = NULL,
         };
@@ -291,6 +300,14 @@ static const mp_stream_p_t esp32_rmt_stream_p = {
     .ioctl = esp32_rmt_stream_ioctl,
 };
 
+static void esp32_rmt_loop_in(esp32_rmt_obj_t *self, int new_loop_count) {
+    if (self->enabled && self->tx_ongoing > 0 && self->loop_count != 0 && new_loop_count == 0) {
+        // Break ongoing loop
+        esp32_rmt_deactivate(self);
+    }
+    self->loop_count = new_loop_count;
+}
+
 static mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pin == -1) {
@@ -298,16 +315,7 @@ static mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {
     }
 
     bool loop_en = mp_obj_get_int(loop);
-
-    if (self->enabled && self->loop_count == -1 && !loop_en && self->tx_ongoing > 0) {
-        // Break ongoing loop
-        // FIXME: panics if called while the first round of an infinite loop is ongoing.
-        // (Need to check with ESP-IDF support if this bug is ours or theirs.)
-        rmt_disable(self->channel);
-        self->enabled = false;
-    }
-
-    self->loop_count = loop_en ? -1 : 0;
+    esp32_rmt_loop_in(self, loop_en ? -1 : 0);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(esp32_rmt_loop_obj, esp32_rmt_loop);
@@ -322,14 +330,7 @@ static mp_obj_t esp32_rmt_loop_count(mp_obj_t self_in, mp_obj_t loop) {
     if (loop_count < -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("arg must be -1, 0 or positive"));
     }
-
-    if (self->enabled && self->loop_count != loop_count && rmt_tx_wait_all_done(self->channel, 0) != ESP_OK) {
-        // Break ongoing loop
-        rmt_disable(self->channel);
-        self->enabled = false;
-    }
-
-    self->loop_count = loop_count;
+    esp32_rmt_loop_in(self, loop_count);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(esp32_rmt_loop_count_obj, esp32_rmt_loop_count);
