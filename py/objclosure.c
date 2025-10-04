@@ -28,12 +28,13 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/misc.h"
 
 typedef struct _mp_obj_closure_t {
     mp_obj_base_t base;
     mp_obj_t fun;
     size_t n_closed;
-    mp_obj_t closed[];
+    mp_obj_t closed[] MP_ATTR_COUNTED_BY(n_closed);
 } mp_obj_closure_t;
 
 static mp_obj_t closure_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {

@@ -51,6 +51,10 @@ typedef unsigned int uint;
 // This macro is supported by Clang and gcc>=14
 #define __has_feature(x) (0)
 #endif
+#ifndef __has_attribute
+// This macro is supported by Clang and gcc>=14
+#define __has_attribute(x) (0)
+#endif
 
 
 /** generic ops *************************************************/
@@ -95,6 +99,31 @@ typedef unsigned int uint;
 
 /** memory allocation ******************************************/
 
+// annotate malloc return size for better ASAN and debug info
+#if __has_attribute(__alloc_size__)
+#define MP_ATTR_ALLOC_SIZE(...) __attribute__((alloc_size(__VA_ARGS__)))
+#else
+#define MP_ATTR_ALLOC_SIZE(...)
+#endif
+
+// annotate malloc/free methods for better ASAN and debug info
+#if __has_attribute(__malloc__)
+#if defined(__GNUC__) && __GNUC__ <= 10
+#define MP_ATTR_MALLOC(...) __attribute__((malloc))
+#else
+#define MP_ATTR_MALLOC(...) __attribute__((malloc, malloc(__VA_ARGS__)))
+#endif
+#else
+#define MP_ATTR_MALLOC(...)
+#endif
+
+// annotate infallible mallocs for better ASAN and debug info
+#if defined(__GNUC__) || defined(__clang__)
+#define MP_ATTR_RETURNS_NONNULL __attribute__((returns_nonnull))
+#else
+#define MP_ATTR_RETURNS_NONNULL
+#endif
+
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
 #define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
@@ -118,26 +147,29 @@ typedef unsigned int uint;
 #endif
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
-void *m_malloc(size_t num_bytes);
-void *m_malloc_maybe(size_t num_bytes);
-void *m_malloc_with_finaliser(size_t num_bytes);
-void *m_malloc0(size_t num_bytes);
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr, size_t num_bytes);
 #else
-void *m_realloc(void *ptr, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
+#endif
+void *m_malloc(size_t num_bytes) MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC(m_free) MP_ATTR_RETURNS_NONNULL;
+void *m_malloc_maybe(size_t num_bytes) MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC(m_free);
+void *m_malloc_with_finaliser(size_t num_bytes) MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC(m_free) MP_ATTR_RETURNS_NONNULL;
+void *m_malloc0(size_t num_bytes) MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC(m_free) MP_ATTR_RETURNS_NONNULL;
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes) MP_ATTR_ALLOC_SIZE(3);
+void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move) MP_ATTR_ALLOC_SIZE(3);
+#else
+void *m_realloc(void *ptr, size_t new_num_bytes) MP_ATTR_ALLOC_SIZE(2) MP_ATTR_RETURNS_NONNULL;
+void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) MP_ATTR_ALLOC_SIZE(2);
 #endif
 MP_NORETURN void m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_TRACKED_ALLOC
 // These alloc/free functions track the pointers in a linked list so the GC does not reclaim
 // them.  They can be used by code that requires traditional C malloc/free semantics.
-void *m_tracked_calloc(size_t nmemb, size_t size);
 void m_tracked_free(void *ptr_in);
+void *m_tracked_calloc(size_t nmemb, size_t size) MP_ATTR_ALLOC_SIZE(1, 2) MP_ATTR_MALLOC(m_tracked_free);
 #endif
 
 #if MICROPY_MEM_STATS
@@ -153,6 +185,68 @@ size_t m_get_peak_bytes_allocated(void);
 
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
+
+// ensure a variable or type declaration has a particular minimum alignment
+// e.g. `MP_ALIGNAS(32, char buf[256]);`
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)) || __has_feature(cxx_alignas) || (defined(__alignas_is_defined) && (__alignas_is_defined == 1))
+// C23 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c-11-alignment-specifiers
+// stdalign.h macro: https://en.cppreference.com/w/c/header/stdalign.html
+// e.g. `alignas(32) char buf[256];`
+#define MP_ALIGNAS(alignment, decl) alignas(alignment) decl
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)) || __has_feature(c_alignas)
+// C11 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c11-alignment-specifiers
+// e.g. `_Alignas(32) char buf[256];`
+#define MP_ALIGNAS(alignment, decl) _Alignas(alignment) decl
+#elif __has_attribute(__aligned__)
+// GCC attribute: https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-aligned-variable-attribute
+// e.g. `char buf[256] __attribute__((aligned(32)));`
+#define MP_ALIGNAS(alignment, decl) decl __attribute__((aligned(alignment)))
+#elif defined(_MSC_VER)
+// MSVC declspec: https://learn.microsoft.com/en-us/cpp/cpp/align-cpp
+// e.g. `__declspec(align(32))char buf[256];`
+#define MP_ALIGNAS(alignment, decl) __declspec(align(alignment))decl
+#else
+// e.g. `char buf[256];`
+#define MP_ALIGNAS(alignment, decl) decl
+#endif
+
+// get the minimum alignment of a type
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)) || __has_feature(cxx_alignof) || (defined(__alignof_is_defined) && (__alignof_is_defined == 1))
+// C23 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c-11-alignment-specifiers
+// stdalign.h macro: https://en.cppreference.com/w/c/header/stdalign.html
+#define MP_ALIGNOF(type) alignof(type)
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)) || __has_feature(c_alignof)
+// C11 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c11-alignment-specifiers
+#define MP_ALIGNOF(type) _Alignof(type)
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC keyword: https://gcc.gnu.org/onlinedocs/gcc/Alignment.html
+// Clang keyword: https://clang.llvm.org/docs/LanguageExtensions.html#alignof-alignof
+#define MP_ALIGNOF(type) __alignof__(type)
+#elif defined(_MSC_VER)
+// MSVC operator: https://learn.microsoft.com/en-us/cpp/cpp/alignof-operator
+#define MP_ALIGNOF(type) __alignof(type)
+#else
+#define MP_ALIGNOF(type) 4
+#endif
+
+#if __has_attribute(__counted_by__)
+// link struct flex and pointer members to corresponding size fields for better ASAN and debug info
+// available in Clang 18 and GCC 15.
+#define MP_ATTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#else
+#define MP_ATTR_COUNTED_BY(count)
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+// annotate char arrays or pointers that are meant to contain null bytes
+#define MP_ATTR_NONSTRING __attribute__((nonstring))
+#else
+#define MP_ATTR_NONSTRING
+#endif
 
 /** unichar / UTF-8 *********************************************/
 
@@ -202,7 +296,7 @@ mp_uint_t unichar_xdigit_value(unichar c);
 typedef struct _vstr_t {
     size_t alloc;
     size_t len;
-    char *buf;
+    char *buf MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING;
     bool fixed_buf;
 } vstr_t;
 

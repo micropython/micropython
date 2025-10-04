@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "py/misc.h"
 
 #if MICROPY_ROM_TEXT_COMPRESSION && !defined(NO_QSTR)
 // Extract the MP_MAX_UNCOMPRESSED_TEXT_LEN macro from "genhdr/compressed.data.h".
@@ -436,7 +437,7 @@ struct _exc_printer_t {
     bool allow_realloc;
     size_t alloc;
     size_t len;
-    byte *buf;
+    byte *buf MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING;
 };
 
 static void exc_add_strn(void *data, const char *str, size_t len) {
