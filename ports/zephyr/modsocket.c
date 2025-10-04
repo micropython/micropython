@@ -31,6 +31,7 @@
 #include "py/stream.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net/net_context.h>
 #include <zephyr/net/net_pkt.h>
@@ -84,21 +85,27 @@ static void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct socka
 }
 
 static mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
-    // We employ the fact that port and address offsets are the same for IPv4 & IPv6
-    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6 *)addr;
     char buf[40];
-    net_addr_ntop(addr->sa_family, &sockaddr_in6->sin6_addr, buf, sizeof(buf));
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(addr->sa_family == AF_INET ? 2 : 4, NULL);
+    mp_obj_tuple_t *tuple;
 
-    tuple->items[0] = mp_obj_new_str_from_cstr(buf);
-    // We employ the fact that port offset is the same for IPv4 & IPv6
-    // not filled in
-    // tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
-    tuple->items[1] = port;
-
-    if (addr->sa_family == AF_INET6) {
+    if (addr->sa_family == AF_INET) {
+        struct sockaddr_in addr_copy __attribute__((aligned(4)));
+        memcpy(&addr_copy, addr, sizeof(struct sockaddr_in));
+        net_addr_ntop(AF_INET, &addr_copy.sin_addr, buf, sizeof(buf));
+        tuple = mp_obj_new_tuple(2, NULL);
+        tuple->items[0] = mp_obj_new_str_from_cstr(buf);
+        tuple->items[1] = port;
+    } else if (addr->sa_family == AF_INET6) {
+        struct sockaddr_in6 addr_copy __attribute__((aligned(4)));
+        memcpy(&addr_copy, addr, sizeof(struct sockaddr_in6));
+        net_addr_ntop(AF_INET6, &addr_copy.sin6_addr, buf, sizeof(buf));
+        tuple = mp_obj_new_tuple(4, NULL);
+        tuple->items[0] = mp_obj_new_str_from_cstr(buf);
+        tuple->items[1] = port;
         tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0); // flow_info
-        tuple->items[3] = MP_OBJ_NEW_SMALL_INT(sockaddr_in6->sin6_scope_id);
+        tuple->items[3] = MP_OBJ_NEW_SMALL_INT(addr_copy.sin6_scope_id);
+    } else {
+        mp_raise_OSError(MP_EINVAL);
     }
 
     return MP_OBJ_FROM_PTR(tuple);
@@ -394,8 +401,16 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 // getaddrinfo() implementation
 //
 
+#define MAX_DNS_RESULTS 8
+
+typedef struct _getaddrinfo_result_t {
+    sa_family_t family;
+    struct sockaddr_storage addr;
+} getaddrinfo_result_t;
+
 typedef struct _getaddrinfo_state_t {
-    mp_obj_t result;
+    getaddrinfo_result_t results[MAX_DNS_RESULTS];
+    int num_results;
     struct k_sem sem;
     mp_obj_t port;
     int status;
@@ -414,30 +429,40 @@ void dns_resolve_cb(enum dns_resolve_status status, struct dns_addrinfo *info, v
         return;
     }
 
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
-    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(info->ai_family);
-    // info->ai_socktype not filled
-    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(SOCK_STREAM);
-    // info->ai_protocol not filled
-    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP);
-    tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    tuple->items[4] = format_inet_addr(&info->ai_addr, state->port);
-    mp_obj_list_append(state->result, MP_OBJ_FROM_PTR(tuple));
+    // Don't allocate MicroPython objects here - we're in the network thread!
+    // Just store the raw address data
+    if (state->num_results < MAX_DNS_RESULTS) {
+        state->results[state->num_results].family = info->ai_family;
+        size_t addr_size = (info->ai_family == AF_INET) ?
+            sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6);
+        memcpy(&state->results[state->num_results].addr, &info->ai_addr, addr_size);
+        state->num_results++;
+    }
 }
 
 static mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     mp_obj_t host_in = args[0], port_in = args[1];
     const char *host = mp_obj_str_get_str(host_in);
     mp_int_t family = 0;
+    mp_int_t socktype = 0;
+    mp_int_t proto = 0;
+
     if (n_args > 2) {
         family = mp_obj_get_int(args[2]);
     }
+    if (n_args > 3) {
+        socktype = mp_obj_get_int(args[3]);
+    }
+    if (n_args > 4) {
+        proto = mp_obj_get_int(args[4]);
+    }
+    // args[5] (flags) is ignored
 
     getaddrinfo_state_t state;
     // Just validate that it's int
     (void)mp_obj_get_int(port_in);
     state.port = port_in;
-    state.result = mp_obj_new_list(0, NULL);
+    state.num_results = 0;
     k_sem_init(&state.sem, 0, UINT_MAX);
 
     for (int i = 2; i--;) {
@@ -450,16 +475,34 @@ static mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         family = AF_INET6;
     }
 
-    // Raise error only if there's nothing to return, otherwise
-    // it may be IPv4 vs IPv6 differences.
-    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(state.result));
-    if (state.status != 0 && len == 0) {
+    // Raise error only if there's nothing to return
+    if (state.status != 0 && state.num_results == 0) {
         mp_raise_OSError(state.status);
     }
 
-    return state.result;
+    // Determine socktype and proto if not specified
+    if (socktype == 0) {
+        socktype = SOCK_STREAM;
+    }
+    if (proto == 0) {
+        proto = (socktype == SOCK_STREAM) ? IPPROTO_TCP : IPPROTO_UDP;
+    }
+
+    // Now build the result list on the MicroPython thread (safe to allocate here)
+    mp_obj_t result = mp_obj_new_list(0, NULL);
+    for (int i = 0; i < state.num_results; i++) {
+        mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
+        tuple->items[0] = MP_OBJ_NEW_SMALL_INT(state.results[i].family);
+        tuple->items[1] = MP_OBJ_NEW_SMALL_INT(socktype);
+        tuple->items[2] = MP_OBJ_NEW_SMALL_INT(proto);
+        tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+        tuple->items[4] = format_inet_addr((struct sockaddr *)&state.results[i].addr, state.port);
+        mp_obj_list_append(result, MP_OBJ_FROM_PTR(tuple));
+    }
+
+    return result;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_getaddrinfo_obj, 2, 3, mod_getaddrinfo);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_getaddrinfo_obj, 2, 6, mod_getaddrinfo);
 
 
 static mp_obj_t pkt_get_info(void) {
