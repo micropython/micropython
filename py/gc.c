@@ -535,6 +535,10 @@ void gc_sweep_all(void) {
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep_run_finalisers();
+    #if MICROPY_ENABLE_FINALISER
+    // finaliser block might have set overflow flag, if a rescan is needed
+    gc_deal_with_stack_overflow();
+    #endif
     gc_sweep_free_blocks();
     #if MICROPY_GC_SPLIT_HEAP
     MP_STATE_MEM(gc_last_free_area) = &MP_STATE_MEM(area);
@@ -595,6 +599,8 @@ static void gc_sweep_run_finalisers(void) {
                                 #if MICROPY_ENABLE_SCHEDULER
                                 mp_sched_unlock();
                                 #endif
+                                // trigger rescan to prevent finaliser zombies from being freed
+                                MP_STATE_MEM(gc_stack_overflow) = 1;
                             }
                         }
                         // clear finaliser flag
@@ -756,6 +762,24 @@ void gc_info(gc_info_t *info) {
 
     GC_EXIT();
 }
+
+#if MICROPY_ENABLE_FINALISER
+bool gc_ftb_get(void *ptr) {
+    #if MICROPY_GC_SPLIT_HEAP
+    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
+    if (!area) {
+        return false;
+    }
+    #else
+    if (!VERIFY_PTR(ptr)) {
+        return false;
+    }
+    mp_state_mem_area_t *area = &MP_STATE_MEM(area);
+    #endif
+    size_t block = BLOCK_FROM_PTR(area, ptr);
+    return FTB_GET(area, block);
+}
+#endif
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;

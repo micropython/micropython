@@ -46,6 +46,8 @@
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(MACHINE_UART_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_uart_deinit_obj) },
 
+#define MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS (MP_TYPE_FLAG_HAS_FINALISER)
+
 #define UART_RX_RING_BUF_DEF_SIZE                   128
 #define UART_TX_RING_BUF_DEF_SIZE                   128
 
