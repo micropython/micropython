@@ -50,11 +50,18 @@ These variables use ``const()`` from the MicroPython library. Therefore:
 
     X = const(1)
     _Y = const(2)
+
+    def foo(a, b):
+        return a + b
+
     foo(X, _Y)
 
 Compiles to:
 
 .. code-block:: python
+
+    def foo(a, b):
+        return a + b
 
     X = 1
     foo(1, 2)
