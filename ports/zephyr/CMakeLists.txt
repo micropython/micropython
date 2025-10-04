@@ -48,6 +48,7 @@ set(MICROPY_SOURCE_PORT
     machine_pin.c
     machine_timer.c
     modbluetooth_zephyr.c
+    modnetwork.c
     modsocket.c
     modzephyr.c
     modzsensor.c
@@ -61,6 +62,7 @@ list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
 set(MICROPY_SOURCE_SHARED
     libc/printf.c
+    netutils/netutils.c
     readline/readline.c
     runtime/gchelper_generic.c
     runtime/interrupt_char.c
