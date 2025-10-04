@@ -175,7 +175,7 @@ void mp_init(void) {
     MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
     #endif
 
-    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    #if MICROPY_HW_ENABLE_USBDEV
     MP_STATE_VM(usbd) = MP_OBJ_NULL;
     #endif
 
