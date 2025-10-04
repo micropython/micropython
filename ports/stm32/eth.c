@@ -121,6 +121,8 @@ typedef struct _eth_t {
     int16_t (*phy_get_link_status)(uint32_t phy_addr);
     bool last_link_status;
     bool enabled;
+    bool mac_speed_configured;
+    uint16_t configured_phy_speed;
 } eth_t;
 
 static eth_dma_t eth_dma MICROPY_HW_ETH_DMA_ATTRIBUTE;
@@ -809,6 +811,9 @@ void eth_phy_link_status_poll() {
             // Cable is physically connected
             netif_set_link_up(netif);
 
+            // Mark MAC speed as needing configuration (will be done after autoneg completes)
+            self->mac_speed_configured = false;
+
             // Start or restart DHCP if interface is up
             if (netif_is_up(netif)) {
                 if (netif_dhcp_data(netif)) {
@@ -822,8 +827,59 @@ void eth_phy_link_status_poll() {
         } else {
             // Cable is physically disconnected
             netif_set_link_down(netif);
+            self->mac_speed_configured = false;
         }
         MICROPY_PY_LWIP_EXIT
+    }
+
+    // If link is up but MAC speed/duplex not yet configured, check if autoneg is complete
+    if (current_link_status && !self->mac_speed_configured) {
+        // Check if autonegotiation has completed
+        bsr = eth_phy_read(self->phy_addr, PHY_BSR);
+
+        if (bsr & PHY_BSR_AUTONEG_DONE) {
+            // Autonegotiation complete - read negotiated speed/duplex
+            uint16_t phy_speed = self->phy_get_link_status(self->phy_addr);
+
+            // Update MAC to match PHY negotiated speed/duplex
+            uint32_t maccr = ETH->MACCR;
+
+            // Stop TX/RX temporarily
+            maccr &= ~(ETH_MACCR_TE | ETH_MACCR_RE);
+            ETH->MACCR = maccr;
+            mp_hal_delay_ms(10);
+
+            // Clear speed/duplex bits and set according to PHY
+            maccr &= ~(ETH_MACCR_FES | ETH_MACCR_DM);
+
+            if (phy_speed == PHY_SPEED_100FULL) {
+                maccr |= ETH_MACCR_FES | ETH_MACCR_DM;
+            } else if (phy_speed == PHY_SPEED_100HALF) {
+                maccr |= ETH_MACCR_FES;
+            } else if (phy_speed == PHY_SPEED_10FULL) {
+                maccr |= ETH_MACCR_DM;
+            }
+            // else: 10HALF = both bits clear
+
+            ETH->MACCR = maccr;
+            mp_hal_delay_ms(10);
+
+            // Restart TX/RX
+            ETH->MACCR |= ETH_MACCR_TE | ETH_MACCR_RE;
+            mp_hal_delay_ms(10);
+
+            // Mark as configured
+            self->mac_speed_configured = true;
+            self->configured_phy_speed = phy_speed;
+
+            // Restart DHCP since MAC was reconfigured
+            struct netif *netif = &self->netif;
+            MICROPY_PY_LWIP_ENTER
+            if (netif_is_up(netif) && netif_dhcp_data(netif)) {
+                dhcp_renew(netif);
+            }
+            MICROPY_PY_LWIP_EXIT
+        }
     }
 }
 
@@ -978,8 +1034,20 @@ static int eth_phy_init(eth_t *self) {
         mp_hal_delay_ms(2);
     }
 
+    // Enable autonegotiation for all speed/duplex modes
+    // This starts the autonegotiation process in the background
+    eth_phy_write(self->phy_addr, PHY_ANAR,
+        PHY_ANAR_SPEED_10HALF |
+        PHY_ANAR_SPEED_10FULL |
+        PHY_ANAR_SPEED_100HALF |
+        PHY_ANAR_SPEED_100FULL |
+        PHY_ANAR_IEEE802_3);
+    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_AUTONEG_EN);
+
     // Initialize link status tracking (current state, whatever it is)
     self->last_link_status = false;
+    self->mac_speed_configured = false;
+    self->configured_phy_speed = 0;
     eth_phy_link_status_poll();
 
     return 0;
