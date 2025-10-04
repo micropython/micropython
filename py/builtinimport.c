@@ -428,6 +428,22 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
                 return elem->value;
             }
         }
+        #elif MICROPY_PY_TSTRINGS
+        // Special case for string.templatelib when MICROPY_MODULE_BUILTIN_SUBPACKAGES is disabled
+        // This allows importing templatelib from the string module without enabling subpackages globally
+        if (mp_obj_is_type(outer_module_obj, &mp_type_module)) {
+            mp_obj_module_t *mod = MP_OBJ_TO_PTR(outer_module_obj);
+            // Check if this is the string module trying to import templatelib
+            mp_map_elem_t *name_elem = mp_map_lookup(&mod->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
+            if (name_elem && mp_obj_is_qstr(name_elem->value) && MP_OBJ_QSTR_VALUE(name_elem->value) == MP_QSTR_string) {
+                if (level_mod_name == MP_QSTR_templatelib) {
+                    elem = mp_map_lookup(&mod->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR_templatelib), MP_MAP_LOOKUP);
+                    if (elem && mp_obj_is_type(elem->value, &mp_type_module)) {
+                        return elem->value;
+                    }
+                }
+            }
+        }
         #endif
 
         // If the outer module is a package, it will have __path__ set.
