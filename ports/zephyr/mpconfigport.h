@@ -61,7 +61,6 @@
 #define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_MATH_POW_FIX_NAN (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/zephyr/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C      (1)
@@ -172,4 +171,10 @@ typedef long mp_off_t;
         mp_handle_pending(true); \
         k_msleep(1); \
     } while (0);
+#endif
+
+// Compatibility switches
+
+#ifdef CONFIG_NEWLIB_LIBC
+#define MICROPY_PY_MATH_POW_FIX_NAN (1)
 #endif
