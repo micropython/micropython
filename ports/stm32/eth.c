@@ -88,6 +88,8 @@
 // Configuration values
 
 #define PHY_INIT_TIMEOUT_MS (10000)
+#define PHY_AUTONEG_TIMEOUT_MS (5000)
+#define MAC_RECONFIG_DELAY_MS (10)
 
 #define RX_BUF_SIZE (1524) // includes 4-byte CRC at end
 #define TX_BUF_SIZE (1524)
@@ -123,6 +125,7 @@ typedef struct _eth_t {
     bool enabled;
     bool mac_speed_configured;
     uint16_t configured_phy_speed;
+    uint32_t autoneg_start_ms;
 } eth_t;
 
 static eth_dma_t eth_dma MICROPY_HW_ETH_DMA_ATTRIBUTE;
@@ -813,6 +816,7 @@ void eth_phy_link_status_poll() {
 
             // Mark MAC speed as needing configuration (will be done after autoneg completes)
             self->mac_speed_configured = false;
+            self->autoneg_start_ms = mp_hal_ticks_ms();
 
             // Start or restart DHCP if interface is up
             if (netif_is_up(netif)) {
@@ -837,17 +841,28 @@ void eth_phy_link_status_poll() {
         // Check if autonegotiation has completed
         bsr = eth_phy_read(self->phy_addr, PHY_BSR);
 
-        if (bsr & PHY_BSR_AUTONEG_DONE) {
-            // Autonegotiation complete - read negotiated speed/duplex
+        // Check for autoneg timeout - if exceeded, use default speed
+        bool autoneg_timeout = (mp_hal_ticks_ms() - self->autoneg_start_ms) > PHY_AUTONEG_TIMEOUT_MS;
+
+        if ((bsr & PHY_BSR_AUTONEG_DONE) || autoneg_timeout) {
+            // Autonegotiation complete or timed out - read negotiated speed/duplex
             uint16_t phy_speed = self->phy_get_link_status(self->phy_addr);
+
+            // If autoneg timed out and speed couldn't be read, use safe default (10Mbps Half)
+            if (autoneg_timeout && phy_speed == 0) {
+                phy_speed = PHY_SPEED_10HALF;
+            }
+
+            // Disable ETH interrupts during MAC reconfiguration to prevent race conditions
+            HAL_NVIC_DisableIRQ(ETH_IRQn);
 
             // Update MAC to match PHY negotiated speed/duplex
             uint32_t maccr = ETH->MACCR;
 
-            // Stop TX/RX temporarily
+            // Stop TX/RX temporarily to allow safe reconfiguration
             maccr &= ~(ETH_MACCR_TE | ETH_MACCR_RE);
             ETH->MACCR = maccr;
-            mp_hal_delay_ms(10);
+            mp_hal_delay_ms(MAC_RECONFIG_DELAY_MS);
 
             // Clear speed/duplex bits and set according to PHY
             maccr &= ~(ETH_MACCR_FES | ETH_MACCR_DM);
@@ -862,11 +877,14 @@ void eth_phy_link_status_poll() {
             // else: 10HALF = both bits clear
 
             ETH->MACCR = maccr;
-            mp_hal_delay_ms(10);
+            mp_hal_delay_ms(MAC_RECONFIG_DELAY_MS);
 
             // Restart TX/RX
             ETH->MACCR |= ETH_MACCR_TE | ETH_MACCR_RE;
-            mp_hal_delay_ms(10);
+            mp_hal_delay_ms(MAC_RECONFIG_DELAY_MS);
+
+            // Re-enable ETH interrupts
+            HAL_NVIC_EnableIRQ(ETH_IRQn);
 
             // Mark as configured
             self->mac_speed_configured = true;
@@ -1042,7 +1060,7 @@ static int eth_phy_init(eth_t *self) {
         PHY_ANAR_SPEED_100HALF |
         PHY_ANAR_SPEED_100FULL |
         PHY_ANAR_IEEE802_3);
-    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_AUTONEG_EN);
+    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_AUTONEG_EN | PHY_BCR_AUTONEG_RESTART);
 
     // Initialize link status tracking (current state, whatever it is)
     self->last_link_status = false;
