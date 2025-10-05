@@ -1,9 +1,27 @@
 # ruff: noqa: F821
-import vfs
 import sys
 import os
-from zephyr import FlashArea, DiskAccess
 from micropython import const
+import vfs  # vfs is always available
+
+# FlashArea depends on CONFIG_FLASH_MAP
+_HAVE_FA = False
+try:
+    from zephyr import FlashArea
+
+    _HAVE_FA = True
+except ImportError:
+    pass
+
+# DiskAccess depends on CONFIG_DISK_ACCESS
+_HAVE_DA = False
+try:
+    from zephyr import DiskAccess
+
+    _HAVE_DA = True
+except ImportError:
+    pass
+
 
 _FLASH = const("/flash")
 _FLASH_LIB = const("/flash/lib")
@@ -37,13 +55,14 @@ def create_flash_partition():
                 vfs.VfsLfs2.mkfs(bdev)
                 vfs.mount(bdev, _FLASH)
             except OSError:
+                print("Error formatting flash partition")
                 retval = False
         return retval
     return False
 
 
 def mount_all_disks():
-    # Now mount all the DiskAreas (if any).
+    """Now mount all the DiskAreas (if any)."""
     retval = False
     for da_name in DiskAccess.Disks:
         mount_name = f"/{da_name.lower()}"
@@ -53,21 +72,27 @@ def mount_all_disks():
             sys.path.append(f"{mount_name}/lib")
             os.chdir(mount_name)
             retval = True
-        except OSError:
-            pass
+        except OSError as e:
+            print(f"Error mounting {da_name}: {e}")
     return retval
 
 
-if partition_mounted(_FLASH) or create_flash_partition():
+if partition_mounted(_FLASH) or (_HAVE_FA and create_flash_partition()):
     _FLASH_EXISTS = True
 
 # Prefer disks to /flash
-if not mount_all_disks():
+if not (_HAVE_DA and mount_all_disks()):
     if _FLASH_EXISTS:
         os.chdir(_FLASH)
 
+# Place /flash/lib last on sys.path
 if _FLASH_EXISTS:
     sys.path.append(_FLASH_LIB)
 
-del sys, vfs, os, const, FlashArea, DiskAccess
+# Cleanup globals for boot.py/main.py
+if _HAVE_FA:
+    del FlashArea
+if _HAVE_DA:
+    del DiskAccess
+del sys, vfs, os, const
 del partition_mounted, create_flash_partition, mount_all_disks, _FLASH_EXISTS
