@@ -505,7 +505,7 @@ primary = "OverflowError - template string too large for header format"
 secondary = "none"
 try:
     limit = 0x1000
-    strings = tuple("" for _ in range(limit + 1))
+    strings = tuple([""] * (limit + 1))
     interp = Interpolation(0, "x", None, "")
     interps = (interp,) * limit
     Template(strings, interps)
