@@ -304,5 +304,55 @@ Whitespace-only: SyntaxError - empty expression not allowed
 Octal high bytes: OK, ord=255, 128
 Trailing backslash: SyntaxError
 Very long expression: OK
+Debug fmt+conv: fmt_spec='10', conv=r
 
-All coverage tests completed!
+# Test parse.c line 1086: integer overflow in total calculation
+Integer overflow: platform-dependent, tested via overflow scenarios
+
+# Test __template__ edge cases
+Max strings: OK, 4095 strings
+Max interps error: OverflowError
+
+# Test modtstring.c line 185: vstr string concatenation
+vstr concat: 'Template(strings=('part1part2part3part4', 'end'), interpolations=(Interpolation(1, 'x', None, ''),))'
+
+# Test lexer.c line 833: high byte handling
+High bytes: len=5, first=0x7f, last=0xff
+Octal high bytes: OK, len=3
+
+=== Debug specifier tests ===
+
+# Debug specifier
+Debug basic: strings=('value=', ''), conv=r
+Debug !s: strings=('value=', ''), conv=s
+Debug fmt: strings=('value=', ''), fmt_spec='>10'
+
+# Format spec with nested interpolation
+Nested fmt spec: '10'
+
+# Conversion types
+Conversion r: OK
+Conversion s: OK
+Conversion a: OK
+
+# Raw template strings
+rt prefix: 'Raw\n'
+tr prefix: 'Raw\t'
+
+# Template concatenation
+Explicit concat: strings=('Hello ', ''), values=('World',)
+Implicit concat: strings=('Hello ', ''), values=('World',)
+
+# Template + str prohibition
+Template + str: TypeError (correct)
+str + Template: TypeError (correct)
+
+# Empty template
+Empty template: strings=('',), interpolations=()
+
+# Size limit tests
+Many segments: OK
+4090 interpolations error: OverflowError
+4096 interpolations: OverflowError (correct)
+
+=== All coverage tests completed! ===
