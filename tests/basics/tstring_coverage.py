@@ -1166,4 +1166,181 @@ try:
 except Exception as e:
     print(f"Long expression error: {e}")
 
-print("\nAll coverage tests completed!")
+try:
+    x = 42
+    result = t'{x=:10!r}'
+    interp = result.interpolations[0]
+    print(f"Debug fmt+conv: fmt_spec='{interp.format_spec}', conv={interp.conversion}")
+except Exception as e:
+    print(f"Debug fmt+conv error: {type(e).__name__}: {e}")
+
+print("\n# Test parse.c line 1086: integer overflow in total calculation")
+print("Integer overflow: platform-dependent, tested via overflow scenarios")
+
+# Test __template__ with maximum valid sizes to approach overflow
+print("\n# Test __template__ edge cases")
+try:
+    # Create template at the edge of TEMPLATE_COUNT_MAX (0xFFF = 4095)
+    strings = tuple(["s"] * 4095)
+    interps = tuple()
+    result = __template__(strings, interps)
+    print(f"Max strings: OK, {len(result.strings)} strings")
+except Exception as e:
+    print(f"Max strings error: {type(e).__name__}")
+
+try:
+    # Create template with max interpolations
+    strings = tuple([""] * 4096)  # n_strings = n_interps + 1 = 4096
+    interps = []
+    for i in range(4095):
+        interps.append((i, f"x{i}", None, ""))
+    result = __template__(strings, tuple(interps))
+    print(f"Max interps: OK, {len(result.interpolations)} interpolations")
+except Exception as e:
+    print(f"Max interps error: {type(e).__name__}")
+
+print("\n# Test modtstring.c line 185: vstr string concatenation")
+try:
+    t1 = Template("part1", "part2", "part3", "part4", Interpolation(1, "x"), "end")
+    result = t1.__str__()
+    print(f"vstr concat: '{result}'")
+except Exception as e:
+    print(f"vstr concat error: {e}")
+
+# vstr_add_byte is called for characters c < 0x100
+print("\n# Test lexer.c line 833: high byte handling")
+try:
+    # Test various high bytes
+    result = t'\x7F\x80\x81\xFE\xFF'
+    first_str = result.strings[0]
+    print(f"High bytes: len={len(first_str)}, first=0x{ord(first_str[0]):02x}, last=0x{ord(first_str[-1]):02x}")
+except Exception as e:
+    print(f"High bytes error: {e}")
+
+try:
+    # Test octal escapes that produce high bytes
+    result = t'\200\201\377'
+    print(f"Octal high bytes: OK, len={len(result.strings[0])}")
+except Exception as e:
+    print(f"Octal high bytes error: {e}")
+
+print("\n=== Debug specifier tests ===")
+
+print("\n# Debug specifier")
+try:
+    value = 42
+    # Basic debug format
+    t1 = t'{value=}'
+    print(f"Debug basic: strings={t1.strings}, conv={t1.interpolations[0].conversion}")
+
+    # Debug with explicit conversion
+    t2 = t'{value=!s}'
+    print(f"Debug !s: strings={t2.strings}, conv={t2.interpolations[0].conversion}")
+
+    # Debug with format spec
+    t3 = t'{value=:>10}'
+    print(f"Debug fmt: strings={t3.strings}, fmt_spec='{t3.interpolations[0].format_spec}'")
+except Exception as e:
+    print(f"Debug format error: {e}")
+
+# Test format spec with nested interpolations
+print("\n# Format spec with nested interpolation")
+try:
+    value = 42
+    width = 10
+    t1 = t'{value:{width}}'
+    print(f"Nested fmt spec: '{t1.interpolations[0].format_spec}'")
+except Exception as e:
+    print(f"Nested fmt spec error: {e}")
+
+# Test conversion types
+print("\n# Conversion types")
+for conv in ['r', 's', 'a']:
+    try:
+        code = f"t'{{value!{conv}}}'"
+        exec(f"value = 42; result = {code}")
+        print(f"Conversion {conv}: OK")
+    except Exception as e:
+        print(f"Conversion {conv} error: {e}")
+
+# Test raw template strings
+print("\n# Raw template strings")
+try:
+    value = "test"
+    rt1 = rt'Raw\n{value}'
+    tr1 = tr'Raw\t{value}'
+    print(f"rt prefix: '{rt1.strings[0]}'")
+    print(f"tr prefix: '{tr1.strings[0]}'")
+except Exception as e:
+    print(f"Raw t-string error: {e}")
+
+# Test template concatenation
+print("\n# Template concatenation")
+try:
+    t1 = t"Hello "
+    t2 = t"{name}"
+    name = "World"
+    t3 = t1 + t2
+    print(f"Explicit concat: strings={t3.strings}, values={t3.values}")
+
+    # Implicit concatenation
+    name = "World"
+    t4 = t"Hello " t"{name}"
+    print(f"Implicit concat: strings={t4.strings}, values={t4.values}")
+except Exception as e:
+    print(f"Concatenation error: {e}")
+
+# Test that Template + str is prohibited
+print("\n# Template + str prohibition")
+try:
+    t1 = t"hello"
+    result = t1 + " world"
+    print("ERROR: Template + str should raise TypeError")
+except TypeError as e:
+    print(f"Template + str: TypeError (correct)")
+
+try:
+    result = "hello " + t"world"
+    print("ERROR: str + Template should raise TypeError")
+except TypeError as e:
+    print(f"str + Template: TypeError (correct)")
+
+# Test empty template
+print("\n# Empty template")
+try:
+    t_empty = t""
+    print(f"Empty template: strings={t_empty.strings}, interpolations={t_empty.interpolations}")
+except Exception as e:
+    print(f"Empty template error: {e}")
+
+# Test very long template string to approach size limits
+print("\n# Size limit tests")
+try:
+    # Create a template string with many segments
+    segments = []
+    for i in range(100):
+        segments.append(f"segment{i}")
+        segments.append("{x}")
+    code = 't"' + ''.join(segments) + '"'
+    exec(f"x = 1; result = {code}")
+    print(f"Many segments: OK")
+except Exception as e:
+    print(f"Many segments error: {type(e).__name__}")
+
+try:
+    # Test approaching TEMPLATE_COUNT_MAX
+    code = 't"' + '{x}' * 4090 + '"'
+    exec(f"x = 1; result = {code}")
+    print(f"4090 interpolations: OK")
+except Exception as e:
+    print(f"4090 interpolations error: {type(e).__name__}")
+
+try:
+    # Test exceeding TEMPLATE_COUNT_MAX (4096 should fail)
+    code = 't"' + '{x}' * 4096 + '"'
+    exec(f"x = 1; result = {code}")
+    print("ERROR: Should have raised OverflowError")
+except (OverflowError, SyntaxError, MemoryError) as e:
+    print(f"4096 interpolations: {type(e).__name__} (correct)")
+
+print("\n=== All coverage tests completed! ===")
