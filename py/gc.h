@@ -64,9 +64,9 @@ enum {
 };
 
 void gc_free(void *ptr); // does not call finaliser
-void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) MP_ATTR_ALLOC_SIZE(1) MP_ATTR_ASSUME_ALIGNED(MP_BYTES_PER_OBJ_WORD) MP_ATTR_MALLOC(gc_free);
+void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) MP_ATTR_ALLOC_SIZE(1) MP_ATTR_ASSUME_ALIGNED(__BIGGEST_ALIGNMENT__) MP_ATTR_MALLOC(gc_free);
 size_t gc_nbytes(const void *ptr);
-void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move) MP_ATTR_ALLOC_SIZE(2) MP_ATTR_ASSUME_ALIGNED(MP_BYTES_PER_OBJ_WORD);
+void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move) MP_ATTR_ALLOC_SIZE(2) MP_ATTR_ASSUME_ALIGNED(__BIGGEST_ALIGNMENT__);
 
 typedef struct _gc_info_t {
     size_t total;
