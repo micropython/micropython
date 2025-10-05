@@ -143,13 +143,13 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
             }
 
             case FRAME_OPT: {
-                if ((self->buf_pos & 3) == 2) {
-                    // First two bytes are message length
+                if (self->buf_pos & 2) { // to_recv was 2 or 6
+                    assert(self->buf_pos == 2 || self->buf_pos == 6);
                     // First two bytes are message length. Technically the size must be at least 126 per RFC6455
                     // but micropython skips checking that.
                     self->msg_sz = (self->buf[0] << 8) | self->buf[1];
                 }
-                if (self->buf_pos >= 4) {
+                if (self->buf_pos & 4) {
                     // Last 4 bytes is mask
                     memcpy(self->mask, self->buf + self->buf_pos - 4, 4);
                 }
