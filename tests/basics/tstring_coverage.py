@@ -517,7 +517,9 @@ except RuntimeError as e:
     if "pystack exhausted" in str(e):
         secondary = "RuntimeError - pystack exhausted"
     else:
-        raise
+        primary = f"RuntimeError - {e}"
+except Exception as e:
+    primary = f"Unexpected exception: {type(e).__name__} - {e}"
 else:
     primary = "no error"
 
