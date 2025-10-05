@@ -502,10 +502,13 @@ except SyntaxError as e:
 # Test integer overflow in template size calculation
 print("\n# Integer overflow test")
 try:
-    # Create a template literal that exceeds the parser header limit (4095 interpolations)
-    interp_count = 0x1000
-    code = "x = 1\n" + "t\"" + "{x}" * interp_count + "\""
-    exec(code)
+    # Create a runtime template that exceeds the header limit (>4095 interpolations)
+    limit = 0x1000
+    base = "x"
+    interp = Interpolation(0, "x", None, "")
+    args = [base]
+    args.extend([interp, base] * limit)
+    Template(*args)
 except OverflowError as e:
     print(f"Overflow test: {type(e).__name__} - {e}")
 except MemoryError:
