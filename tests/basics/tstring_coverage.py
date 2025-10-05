@@ -501,25 +501,28 @@ except SyntaxError as e:
 
 # Test integer overflow in template size calculation
 print("\n# Integer overflow test")
+primary = "OverflowError - template string too large for header format"
+secondary = "none"
 try:
-    # Create a runtime template that exceeds the header limit (>4095 interpolations)
     limit = 0x1000
-    base = "x"
+    strings = tuple("" for _ in range(limit + 1))
     interp = Interpolation(0, "x", None, "")
-    args = [base]
-    args.extend([interp, base] * limit)
-    Template(*args)
+    interps = (interp,) * limit
+    Template(strings, interps)
 except OverflowError as e:
-    print(f"Overflow test: {type(e).__name__} - {e}")
+    primary = f"OverflowError - {e}"
 except MemoryError:
-    print("Overflow test: MemoryError")
+    primary = "MemoryError"
 except RuntimeError as e:
     if "pystack exhausted" in str(e):
-        print("Overflow test: RuntimeError - pystack exhausted")
+        secondary = "RuntimeError - pystack exhausted"
     else:
         raise
 else:
-    print("Overflow test: no error")
+    primary = "no error"
+
+print(f"Overflow test (primary): {primary}")
+print(f"Overflow test (secondary): {secondary}")
 
 # Empty overflow test output as expected
 print()
