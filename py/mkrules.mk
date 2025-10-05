@@ -214,21 +214,9 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 
-# Set default path variables to be passed to makemanifest.py. These will be
-# available in path substitutions. Additional variables can be set per-board
-# in mpconfigboard.mk or on the make command line.
-MICROPY_MANIFEST_MPY_LIB_DIR = $(MPY_LIB_DIR)
-MICROPY_MANIFEST_PORT_DIR = $(shell pwd)
-MICROPY_MANIFEST_BOARD_DIR = $(BOARD_DIR)
-MICROPY_MANIFEST_MPY_DIR = $(TOP)
-
-# Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
-MANIFEST_VARIABLES = $(foreach var,$(filter MICROPY_MANIFEST_%, $(.VARIABLES)),-v "$(subst MICROPY_MANIFEST_,,$(var))=$($(var))")
-
-# to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h | $(MICROPY_MPYCROSS_DEPENDENCY)
-	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)
-	$(Q)$(MAKE_MANIFEST) -o $@ $(MANIFEST_VARIABLES) -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
+# Process manifest for frozen content generation.
+# Includes variable setup, MANIFEST_VARIABLES construction, and frozen_content.c rule.
+include $(TOP)/py/manifest.mk
 endif
 
 ifneq ($(PROG),)
