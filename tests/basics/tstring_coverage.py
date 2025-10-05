@@ -521,8 +521,9 @@ except RuntimeError as e:
 else:
     primary = "no error"
 
-print(f"Overflow test (primary): {primary}")
-print(f"Overflow test (secondary): {secondary}")
+print(f"Overflow test: {primary}")
+if secondary != "none":
+    print(f"Overflow test: {secondary}")
 
 # Empty overflow test output as expected
 print()
