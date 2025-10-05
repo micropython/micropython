@@ -136,6 +136,9 @@ def main():
     )
     cmd_parser.add_argument("-v", "--var", action="append", help="variables to substitute")
     cmd_parser.add_argument("--mpy-tool-flags", default="", help="flags to pass to mpy-tool")
+    cmd_parser.add_argument(
+        "--list-c-modules", action="store_true", help="list C module paths from manifest and exit"
+    )
     cmd_parser.add_argument("files", nargs="+", help="input manifest list")
     args = cmd_parser.parse_args()
 
@@ -150,6 +153,26 @@ def main():
         print("MPY_DIR and PORT_DIR variables must be specified")
         sys.exit(1)
 
+    manifest = manifestfile.ManifestFile(manifestfile.MODE_FREEZE, VARS)
+
+    # Include top-level inputs, to generate the manifest
+    for input_manifest in args.files:
+        try:
+            manifest.execute(input_manifest)
+        except manifestfile.ManifestFileError as er:
+            print(
+                'freeze error executing "{}": {}'.format(input_manifest, er.args[0]),
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    # If we're just listing C modules, output them and exit
+    if args.list_c_modules:
+        c_modules = manifest.c_modules()
+        if c_modules:
+            print(" ".join(c_modules))
+        sys.exit(0)
+
     # Get paths to tools
     MPY_CROSS = VARS["MPY_DIR"] + "/mpy-cross/build/mpy-cross"
     if sys.platform == "win32":
@@ -161,16 +184,6 @@ def main():
     if not os.path.exists(MPY_CROSS):
         print("mpy-cross not found at {}, please build it first".format(MPY_CROSS))
         sys.exit(1)
-
-    manifest = manifestfile.ManifestFile(manifestfile.MODE_FREEZE, VARS)
-
-    # Include top-level inputs, to generate the manifest
-    for input_manifest in args.files:
-        try:
-            manifest.execute(input_manifest)
-        except manifestfile.ManifestFileError as er:
-            print('freeze error executing "{}": {}'.format(input_manifest, er.args[0]))
-            sys.exit(1)
 
     # Process the manifest
     str_paths = []
