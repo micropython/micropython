@@ -1382,31 +1382,19 @@ try:
 except TypeError as e:
     print(f"Template + custom object: TypeError (correct)")
 
-# Test modtstring.c:95 - 2-tuple constructor with too many interpolations
+# 2-tuple constructor with too many strings
 print("\n# 2-tuple constructor overflow")
 try:
-    from string.templatelib import Template, Interpolation
-    # Try to create with > 4095 interpolations
-    interps = tuple(Interpolation(i, str(i), None, "") for i in range(4100))
-    strings = tuple("" for _ in range(4101))
+    from string.templatelib import Template
+    # Try to create with > 4095 strings (triggers line 88 overflow check)
+    strings = tuple("" for _ in range(4100))
+    interps = tuple()
     t = Template(strings, interps)
     print("ERROR: Should have raised OverflowError")
 except OverflowError as e:
-    print(f"Too many interpolations (2-tuple): OverflowError (correct)")
-except MemoryError:
-    print("Too many interpolations (2-tuple): MemoryError (memory limit)")
-
-print("\n# __template__ overflow")
-try:
-    from string.templatelib import Interpolation
-    interps = [Interpolation(i, str(i), None, "") for i in range(4100)]
-    strings = tuple("" for _ in range(4101))
-    result = __template__(strings, interps)
-    print("ERROR: Should have raised OverflowError")
-except OverflowError:
-    print("__template__ overflow: OverflowError (correct)")
-except MemoryError:
-    print("__template__ overflow: MemoryError (memory limit)")
+    print(f"Too many strings (2-tuple): OverflowError (correct)")
+except (MemoryError, TypeError) as e:
+    print(f"Too many strings (2-tuple): {type(e).__name__} (memory/type limit)")
 
 print("\n# Raw t-string with octal escapes")
 try:

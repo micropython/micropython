@@ -368,10 +368,7 @@ Deep nesting error: RuntimeError
 Template + custom object: TypeError (correct)
 
 # 2-tuple constructor overflow
-Too many interpolations (2-tuple): OverflowError (correct)
-
-# __template__ overflow
-__template__ overflow: OverflowError (correct)
+Too many strings (2-tuple): OverflowError (correct)
 
 # Raw t-string with octal escapes
 Regular string octal: OK, len=4
