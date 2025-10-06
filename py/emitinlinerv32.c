@@ -215,7 +215,6 @@ typedef void (*call_rri_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_in
 typedef void (*call_rii_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t immediate1, mp_int_t immediate2);
 typedef void (*call_rrr_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2);
 typedef void (*call_rr_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs);
-typedef void (*call_i_t)(asm_rv32_t *state, mp_int_t immediate);
 typedef void (*call_r_t)(asm_rv32_t *state, mp_uint_t rd);
 typedef void (*call_n_t)(asm_rv32_t *state);
 
@@ -706,7 +705,7 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             qstr qstring;
             mp_uint_t label_index = lookup_label(emit, arguments[0], &qstring);
             ptrdiff_t displacement = label_code_offset(emit, label_index);
-            ((call_i_t)opcode_data->emitter)(&emit->as, displacement);
+            ((call_l_t)opcode_data->emitter)(&emit->as, displacement);
             break;
         }
 
