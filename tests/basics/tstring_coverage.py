@@ -1343,4 +1343,96 @@ try:
 except (OverflowError, SyntaxError, MemoryError) as e:
     print(f"4096 interpolations: {type(e).__name__} (correct)")
 
+print("\n# Trailing whitespace in expression")
+try:
+    x = 42
+    # The expression "x   " (with trailing spaces) should have spaces trimmed
+    code = 't"{x   }"'
+    result = eval(code)
+    print(f"Trailing whitespace: OK")
+except Exception as e:
+    print(f"Trailing whitespace error: {e}")
+
+print("\n# Empty expression after trimming")
+try:
+    # Expression with only whitespace becomes empty after trimming
+    code = 't"{   }"'
+    result = eval(code)
+    print("ERROR: Should have raised SyntaxError")
+except SyntaxError as e:
+    print(f"Empty expression: SyntaxError (correct)")
+
+print("\n# Deep nesting test")
+try:
+    # Create a deeply nested expression with many parentheses and operations
+    nested = "1" + " + 1" * 150
+    code = f't"{{{nested}}}"'
+    exec(code)
+    print("Deep nesting: OK")
+except Exception as e:
+    print(f"Deep nesting error: {type(e).__name__}")
+
+print("\n# Template + non-string object")
+try:
+    class CustomObj:
+        pass
+    t1 = t"hello"
+    result = t1 + CustomObj()
+    print("ERROR: Should have raised TypeError")
+except TypeError as e:
+    print(f"Template + custom object: TypeError (correct)")
+
+# Test modtstring.c:95 - 2-tuple constructor with too many interpolations
+print("\n# 2-tuple constructor overflow")
+try:
+    from string.templatelib import Template, Interpolation
+    # Try to create with > 4095 interpolations
+    interps = tuple(Interpolation(i, str(i), None, "") for i in range(4100))
+    strings = tuple("" for _ in range(4101))
+    t = Template(strings, interps)
+    print("ERROR: Should have raised OverflowError")
+except OverflowError as e:
+    print(f"Too many interpolations (2-tuple): OverflowError (correct)")
+except MemoryError:
+    print("Too many interpolations (2-tuple): MemoryError (memory limit)")
+
+print("\n# __template__ overflow")
+try:
+    from string.templatelib import Interpolation
+    interps = [Interpolation(i, str(i), None, "") for i in range(4100)]
+    strings = tuple("" for _ in range(4101))
+    result = __template__(strings, interps)
+    print("ERROR: Should have raised OverflowError")
+except OverflowError:
+    print("__template__ overflow: OverflowError (correct)")
+except MemoryError:
+    print("__template__ overflow: MemoryError (memory limit)")
+
+print("\n# Raw t-string with octal escapes")
+try:
+    # For raw t-strings, octal escapes might behave differently
+    # But first test regular string with octal
+    s = "\200\201\376\377"
+    print(f"Regular string octal: OK, len={len(s)}")
+except Exception as e:
+    print(f"Regular octal error: {e}")
+
+print("\n# Empty format spec node")
+try:
+    x = 42
+    # This tests the case where we have a colon but empty format spec
+    result = t'{x:}'
+    print(f"Empty format after colon: OK")
+except Exception as e:
+    print(f"Empty format spec error: {e}")
+
+print("\n# Too many segments")
+try:
+    # Create template with > 4095 segments
+    code = 't"' + 'x{y}' * 2200 + '"'
+    exec(f"y = 1; result = {code}")
+    print("ERROR: Should have raised SyntaxError/OverflowError")
+except (SyntaxError, OverflowError, MemoryError) as e:
+    print(f"Too many segments: {type(e).__name__} (correct)")
+
 print("\n=== All coverage tests completed! ===")
