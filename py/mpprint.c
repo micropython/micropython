@@ -71,8 +71,8 @@ static void print_strn_cycle(const mp_print_t *print, const char *str, size_t le
 #define PAD_BUF_SIZE 20
 
 int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width) {
-    int left_pad = 0;
-    int right_pad = 0;
+    size_t left_pad = 0;
+    size_t right_pad = 0;
     int pad = width - len;
     int total_chars_printed = 0;
 
@@ -96,9 +96,31 @@ int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned
 
         memset(pad_buf, fill, sizeof(pad_buf));
 
+        // no grouping in the padding when padding with spaces
+        char grouping = (fill == ' ') ? 0 : (flags >> PF_FLAG_SEP_POS);
+
+        if (grouping) {
+            size_t stride = (grouping == '_' ? 5 : 4);
+            size_t i = width % stride;
+            // The result will never start with a grouping character. An extra leading zero is added.
+            if (i == 0) {
+                i++;
+                left_pad++;
+            }
+            for (; i < sizeof(pad_buf); i += stride) {
+                pad_buf[i] = grouping;
+            }
+        }
+
         // inside the (pad>0) condition just because we can be
         print_strn_cycle(print, pad_buf, sizeof(pad_buf), left_pad);
         total_chars_printed += left_pad;
+
+        if (grouping) {
+            // theoretically needed for inane formats like f"{:^010,}" to work (which CPython doesn't even support)
+            // but what this line really does is convince GCC it knows what pad_buf is for inlining
+            memset(pad_buf, fill, sizeof(pad_buf));
+        }
     }
 
     // indirect call is expensive, could condition this on `MP_LIKELY(len > 0)`
