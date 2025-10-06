@@ -818,19 +818,13 @@ void eth_phy_link_status_poll() {
             self->mac_speed_configured = false;
             self->autoneg_start_ms = mp_hal_ticks_ms();
 
-            // Start or restart DHCP if interface is up
-            if (netif_is_up(netif)) {
+            // Start or restart DHCP if interface is up and no static IP
+            if (netif_is_up(netif) && ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+                // No static IP configured, ensure DHCP is started fresh
                 if (netif_dhcp_data(netif)) {
-                    // DHCP struct exists - could be running or stopped after link down
-                    // Stop and restart to ensure clean state
-                    dhcp_stop(netif);
-                    if (ip4_addr_isany_val(*netif_ip4_addr(netif))) {
-                        dhcp_start(netif);
-                    }
-                } else if (ip4_addr_isany_val(*netif_ip4_addr(netif))) {
-                    // No static IP and no DHCP running, start DHCP
-                    dhcp_start(netif);
+                    dhcp_stop(netif);  // Clean up any existing DHCP state
                 }
+                dhcp_start(netif);
             }
         } else {
             // Cable is physically disconnected
