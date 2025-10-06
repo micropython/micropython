@@ -120,7 +120,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 MPY_CROSS_FLAGS += -march=armv8-m.main
 
 # TODO: We need to retrieve this from the MTB build system. Hardcoded for now.
-MTB_LDFLAGS = -mcpu=cortex-m33 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv5-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -Wl,--gc-sections -Wl,--print-memory-usage -Xlinker -L ../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/COMPONENT_CM33/TOOLCHAIN_GCC_ARM -Xlinker -L ../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/config/GeneratedSource -T../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/pse84_ns_cm33.ld -Wl,-Map,/home/enriquezgarc/micropython-psoc-edge/lib/mtb-psoc-edge-libs/proj_cm33_ns/build/APP_KIT_PSE84_AI/Debug/proj_cm33_ns.map -Wl,--start-group ../../lib/mtb-psoc-edge-libs/proj_cm33_s/nsc_veneer.o -Wl,--end-group
+MTB_LDFLAGS = -mcpu=cortex-m33 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv5-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -Wl,--gc-sections -Wl,--print-memory-usage -Xlinker -L ../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/COMPONENT_CM33/TOOLCHAIN_GCC_ARM -Xlinker -L ../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/config/GeneratedSource -T../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/pse84_ns_cm33.ld -Wl,-Map,../../lib/mtb-psoc-edge-libs/proj_cm33_ns/build/APP_KIT_PSE84_AI/Debug/proj_cm33_ns.map -Wl,--start-group ../../lib/mtb-psoc-edge-libs/proj_cm33_s/nsc_veneer.o -Wl,--end-group
 
 $(BUILD)/mpy_edge_app_ns.elf: mtb_build_ns mtb_get_build_flags_ns $(OBJ)
 	$(info )
