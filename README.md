@@ -126,21 +126,27 @@ In addition, the following ports are provided in this repository:
 Port Tier levels
 ----------------
 
-MicroPython operates with a set of Tier levels for the ports. Tiers 1 through 3
-are for ports under active development.  Tier M is for older ports now in
-maintenance mode.  Tier T is for ports used primarily for testing. These Tier
-levels are defined in the table below.
+MicroPython operates with a set of Tier levels for the ports. Tiers 0 through 3
+are for ports under active development, with Tier 0 indicating a port used heavily
+for testing as part of CI.  Tier M is for older ports now in maintenance mode.
+These Tier levels are defined in the table below.
 
-|                                     | Tier 1 | Tier 2 | Tier 3 | Tier M | Tier T |
+|                                     | Tier 0 | Tier 1 | Tier 2 | Tier 3 | Tier M |
 |-------------------------------------|--------|--------|--------|--------|--------|
 | builds pass under CI                | x      | x      | x      | x      | x      |
-| actively maintained                 | x      | x      |        | x      | x      |
-| stable Python API                   | x      | x      |        | x      |        |
-| tested on hardware for releases     | x      | x      |        | x      |        |
-| new features actively developed     | x      | x      | x      |        |        |
-| prioritized bug reports             | x      |        |        |        | x      |
-| regressions warrant a patch release | x      |        |        |        |        |
-| tests run under CI                  |        |        |        |        | x      |
+| actively maintained                 | x      | x      | x      |        | x      |
+| stable Python API                   | x      | x      | x      |        | x      |
+| tested on hardware for releases     | x      | x      | x      |        | x      |
+| new features actively developed     | x      | x      | x      | x      |        |
+| prioritized bug reports             | x      | x      |        |        |        |
+| regressions warrant a patch release | x      | x      |        |        |        |
+| tests run under CI                  | x      |        |        |        |        |
+
+Tier 0 ports:
+- bare-arm
+- minimal
+- qemu
+- unix
 
 Tier 1 ports:
 - esp32
@@ -148,7 +154,6 @@ Tier 1 ports:
 - rp2
 - samd
 - stm32
-- unix
 
 Tier 2 ports:
 - alif
@@ -166,11 +171,6 @@ Tier 3 ports:
 Tier M ports:
 - cc3200
 - esp8266
-
-Tier T ports:
-- bare-arm
-- minimal
-- qemu
 
 The MicroPython cross-compiler, mpy-cross
 -----------------------------------------
