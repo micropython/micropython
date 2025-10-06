@@ -373,8 +373,8 @@ Too many interpolations (2-tuple): OverflowError (correct)
 # __template__ overflow
 __template__ overflow: OverflowError (correct)
 
-# Non-tstring octal escapes
-Non-tstring octal escapes: OK, len=4
+# Raw t-string with octal escapes
+Regular string octal: OK, len=4
 
 # Empty format spec node
 Empty format after colon: OK
