@@ -821,8 +821,12 @@ void eth_phy_link_status_poll() {
             // Start or restart DHCP if interface is up
             if (netif_is_up(netif)) {
                 if (netif_dhcp_data(netif)) {
-                    // DHCP already running, renew lease
-                    dhcp_renew(netif);
+                    // DHCP struct exists - could be running or stopped after link down
+                    // Stop and restart to ensure clean state
+                    dhcp_stop(netif);
+                    if (ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+                        dhcp_start(netif);
+                    }
                 } else if (ip4_addr_isany_val(*netif_ip4_addr(netif))) {
                     // No static IP and no DHCP running, start DHCP
                     dhcp_start(netif);
@@ -832,6 +836,11 @@ void eth_phy_link_status_poll() {
             // Cable is physically disconnected
             netif_set_link_down(netif);
             self->mac_speed_configured = false;
+
+            // Stop DHCP so it will be properly restarted when link comes back up
+            if (netif_dhcp_data(netif)) {
+                dhcp_stop(netif);
+            }
         }
         MICROPY_PY_LWIP_EXIT
     }
