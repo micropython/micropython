@@ -1,7 +1,7 @@
 MTB_LIBS_DIR = ../../lib/mtb-psoc-edge-libs
 -include $(MTB_LIBS_DIR)/mtb-bsp-setup.mk
 
-# The only target allowing to run without BOARD set is 'submodules' or 'help'
+# The only target allowed to run without BOARD defined is 'submodules' or 'help'
 ifeq ($(BOARD),)
 	ifneq ($(filter $(MAKECMDGOALS),submodules help),$(MAKECMDGOALS))
     	$(error No active board is set. Run "make BOARD=<target-board>" to initialize the ModusToolbox libraries and set the active board. )
@@ -52,7 +52,7 @@ CFLAGS  += $(INC) -Wall -Werror -std=c11 $(CFLAGS_CORTEX_M33) $(COPT) -D_XOPEN_S
 CFLAGS  += -Wno-error=double-promotion -Wno-error=overflow -Wno-error=analyzer-null-dereference -Wno-error=unused-local-typedefs -Wno-error=unused-function -Wno-error=maybe-uninitialized
 
 # TODO: Check required additional LDFFLAGS by micropython
-LD                = arm-none-eabi-gcc
+LD = arm-none-eabi-gcc
 # LDFLAGS += -Wl,--cref -Wl,--gc-sections
 # LDFLAGS += -Wl,-Map,$(BUILD)/firmware.map  -Wl,--start-group -Wl,--end-group -Wl,--print-memory-usage
 
@@ -119,13 +119,10 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
 MPY_CROSS_FLAGS += -march=armv8-m.main
 
-# TODO: We need to retrieve this from the MTB build system. Hardcoded for now.
-MTB_LDFLAGS = -mcpu=cortex-m33 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv5-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -Wl,--gc-sections -Wl,--print-memory-usage -Xlinker -L ../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/COMPONENT_CM33/TOOLCHAIN_GCC_ARM -Xlinker -L ../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/config/GeneratedSource -T../../lib/mtb-psoc-edge-libs/bsps/TARGET_APP_KIT_PSE84_AI/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/pse84_ns_cm33.ld -Wl,-Map,../../lib/mtb-psoc-edge-libs/proj_cm33_ns/build/APP_KIT_PSE84_AI/Debug/proj_cm33_ns.map -Wl,--start-group ../../lib/mtb-psoc-edge-libs/proj_cm33_s/nsc_veneer.o -Wl,--end-group
-
 $(BUILD)/mpy_edge_app_ns.elf: mtb_build_ns mtb_get_build_flags_ns $(OBJ)
 	$(info )
 	$(info Linking $@ ...)
-	$(LD) $(MTB_LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(info Linking $@ done.)
 	$(Q) $(SIZE) $@ -A
 	$(info )
@@ -140,7 +137,7 @@ build_mpy_app_ns: $(BUILD)/mpy_edge_app_ns.hex
 	mkdir -p $(MTB_LIBS_BUILD_PRJ_HEX_DIR)
 	cp $^ $(MTB_LIBS_BUILD_PRJ_HEX_DIR)
 
-all: mtb_init build_mpy_app_ns mtb_build_s
+all: mtb_init mtb_build_ns_ninja build_mpy_app_ns mtb_build_s 
 
 rebuild: clean all
 
