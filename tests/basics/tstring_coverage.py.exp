@@ -355,4 +355,31 @@ Many segments: OK
 4090 interpolations error: OverflowError
 4096 interpolations: OverflowError (correct)
 
+# Trailing whitespace in expression
+Trailing whitespace: OK
+
+# Empty expression after trimming
+Empty expression: SyntaxError (correct)
+
+# Deep nesting test
+Deep nesting error: RuntimeError
+
+# Template + non-string object
+Template + custom object: TypeError (correct)
+
+# 2-tuple constructor overflow
+Too many interpolations (2-tuple): OverflowError (correct)
+
+# __template__ overflow
+__template__ overflow: OverflowError (correct)
+
+# Non-tstring octal escapes
+Non-tstring octal escapes: OK, len=4
+
+# Empty format spec node
+Empty format after colon: OK
+
+# Too many segments
+Too many segments: OverflowError (correct)
+
 === All coverage tests completed! ===
