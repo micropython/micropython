@@ -1,6 +1,11 @@
 # test that modtls produces a numerical error message when out of heap
 
-import socket, ssl, sys
+import socket, tls
+
+# This test is specific to the mbedTLS implementation, so require that.
+if not hasattr(tls, "MBEDTLS_VERSION"):
+    print("SKIP")
+    raise SystemExit
 
 try:
     from micropython import heap_lock, heap_unlock
@@ -18,11 +23,13 @@ except:
 
 # test with heap locked to see it switch to number-only error message
 def test(addr):
+    ctx = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
+    ctx.verify_mode = tls.CERT_NONE
     s = socket.socket()
     s.connect(addr)
     try:
         s.setblocking(False)
-        s = ssl.wrap_socket(s, do_handshake=False)
+        s = ctx.wrap_socket(s, do_handshake_on_connect=False)
         heap_lock()
         print("heap is locked")
         while True:
