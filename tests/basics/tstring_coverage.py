@@ -214,10 +214,9 @@ except Exception as e:
     print(f"String expr error: {e}")
 
 class ExceptionRaiser:
-    def __getattr__(self, name):
-        if name == "special":
-            raise ValueError("Special error")
-        raise AttributeError("Test error")
+    @property
+    def special(self):
+        raise ValueError("Special error")
 
 er = ExceptionRaiser()
 try:
