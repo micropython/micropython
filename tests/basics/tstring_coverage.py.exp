@@ -379,4 +379,27 @@ Empty format after colon: OK
 # Too many segments
 Too many segments: OverflowError (correct)
 
+# Overflow: > 4095 interpolations (parse.c:1080)
+4095 interpolations: OverflowError (correct)
+
+# Empty expression - whitespace only (tstring_expr_parser.c:111)
+Empty expr (space): SyntaxError (correct)
+Empty expr (spaces): SyntaxError (correct)
+Empty expr (tab): SyntaxError (correct)
+
+# Template() constructor overflow (modtstring.c:95)
+4096 interpolations: OverflowError (correct)
+
+# Multiple consecutive strings (modtstring.c:185)
+Multiple strings concatenated: OK
+
+# Template.__add__ overflow (modtstring.c:143,148)
+Template.__add__: concatenated to 4096 interpolations
+
+# Unicode escapes < 0x100 (lexer.c:833)
+Unicode escapes < 0x100: OK
+
+# __template__ builtin overflow (modtstring.c:406,414)
+__template__: MemoryError (system limit)
+
 === All coverage tests completed! ===
