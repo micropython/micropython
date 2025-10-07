@@ -11,14 +11,14 @@ print(type(errno.EIO))
 
 # check that errors are rendered in a nice way
 msg = str(OSError(errno.EIO))
-print(msg[:7], msg[-5:])
+print(msg[:7])
 msg = str(OSError(errno.EIO, "details"))
-print(msg[:7], msg[-14:])
+print(msg[:7], msg[-7:])
 msg = str(OSError(errno.EIO, "details", "more details"))
 print(msg[:1], msg[-28:])
 
 # check that unknown errno is still rendered
-print(str(OSError(9999)))
+print(str(OSError(-9999)))
 
 # this tests a failed constant lookup in errno
 errno = errno

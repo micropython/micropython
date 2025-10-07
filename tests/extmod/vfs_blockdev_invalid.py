@@ -2,6 +2,7 @@
 
 try:
     import vfs
+    import errno
 
     vfs.VfsFat
     vfs.VfsLfs2
@@ -70,6 +71,8 @@ def test(vfs_class):
         try:
             with fs.open("test", "r") as f:
                 print("opened")
+        except OSError as e:
+            print(type(e), errno.errorcode.get(e.errno))
         except Exception as e:
             print(type(e), e)
 
@@ -81,6 +84,8 @@ def test(vfs_class):
                 bdev.read_res = res
                 print("read 1", f.read(1))
                 print("read rest", f.read())
+        except OSError as e:
+            print(type(e), errno.errorcode.get(e.errno))
         except Exception as e:
             print(type(e), e)
 
