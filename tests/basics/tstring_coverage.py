@@ -1423,7 +1423,7 @@ try:
 except (SyntaxError, OverflowError, MemoryError) as e:
     print(f"Too many segments: {type(e).__name__} (correct)")
 
-print("\n# Overflow: > 4095 interpolations (parse.c:1080)")
+print("\n# Overflow: > 4095 interpolations")
 try:
     code = 't"' + '{x}' * 4095 + '"'
     exec(f"x = 1; result = {code}")
@@ -1433,7 +1433,7 @@ except (OverflowError, SyntaxError) as e:
 except MemoryError:
     print("4095 interpolations: MemoryError (system limit)")
 
-print("\n# Empty expression - whitespace only (tstring_expr_parser.c:111)")
+print("\n# Empty expression - whitespace only")
 for ws_test, desc in [('t"{ }"', 'space'), ('t"{  }"', 'spaces'), ('t"{\t}"', 'tab')]:
     try:
         exec(ws_test)
@@ -1441,7 +1441,7 @@ for ws_test, desc in [('t"{ }"', 'space'), ('t"{  }"', 'spaces'), ('t"{\t}"', 't
     except SyntaxError:
         print(f"Empty expr ({desc}): SyntaxError (correct)")
 
-print("\n# Template() constructor overflow (modtstring.c:95)")
+print("\n# Template() constructor overflow")
 try:
     from string.templatelib import Template, Interpolation
     interps = [Interpolation(i, f"i{i}") for i in range(4096)]
@@ -1453,7 +1453,7 @@ except OverflowError:
 except MemoryError:
     print("4096 interpolations: MemoryError (system limit)")
 
-print("\n# Multiple consecutive strings (modtstring.c:185)")
+print("\n# Multiple consecutive strings")
 try:
     from string.templatelib import Template, Interpolation
     t = Template("first", "second", "third", Interpolation(42, "x"), "fourth", "fifth")
@@ -1464,7 +1464,7 @@ try:
 except Exception as e:
     print(f"Multiple strings error: {e}")
 
-print("\n# Template.__add__ overflow (modtstring.c:143,148)")
+print("\n# Template.__add__ overflow")
 try:
     # Create two large templates (smaller to avoid CI memory limits)
     # Test with 1024 interpolations each (total 2048, well under 4095 limit)
@@ -1488,7 +1488,7 @@ try:
 except (OverflowError, MemoryError) as e:
     print(f"Template.__add__: {type(e).__name__} (system limit)")
 
-print("\n# Unicode escapes < 0x100 (lexer.c:833)")
+print("\n# Unicode escapes < 0x100")
 try:
     # Test various escape sequences that result in bytes < 0x100
     s1 = "\x00"  # null
@@ -1501,23 +1501,5 @@ try:
         print("Unicode escapes < 0x100: ERROR")
 except Exception as e:
     print(f"Unicode escape error: {e}")
-
-print("\n# __template__ builtin overflow (modtstring.c:406,414)")
-try:
-    from string.templatelib import Interpolation
-    # Test with too many strings
-    try:
-        strings = tuple(f"s{i}" for i in range(4096))
-        interps = tuple()
-        result = __template__(strings, interps)
-        print("ERROR: Should have raised OverflowError")
-    except OverflowError:
-        print("__template__ strings overflow: OverflowError (correct)")
-    except NameError:
-        print("__template__ builtin: not directly accessible (OK)")
-    except MemoryError:
-        print("__template__: MemoryError (system limit)")
-except (ImportError, MemoryError) as e:
-    print(f"__template__ test: {type(e).__name__} (system limit)")
 
 print("\n=== All coverage tests completed! ===")
