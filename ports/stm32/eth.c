@@ -814,8 +814,16 @@ void eth_phy_link_status_poll() {
             netif_set_link_down(netif);
             self->mac_speed_configured = false;
 
-            // Stop DHCP so it will be properly restarted when link comes back up
-            if (netif_dhcp_data(netif)) {
+            // Stop DHCP and clear IP if DHCP is active (not static IP)
+            struct dhcp *dhcp = netif_dhcp_data(netif);
+            if (dhcp != NULL && dhcp->state != DHCP_STATE_OFF) {
+                // DHCP is active - stop it and clear IP so it restarts on replug
+                dhcp_stop(netif);
+                ip_addr_t ipaddr_zero;
+                ip_addr_set_zero(&ipaddr_zero);
+                netif_set_addr(netif, ip_2_ip4(&ipaddr_zero), ip_2_ip4(&ipaddr_zero), ip_2_ip4(&ipaddr_zero));
+            } else if (dhcp != NULL) {
+                // DHCP struct exists but is off (static IP configured) - just stop it
                 dhcp_stop(netif);
             }
         }
