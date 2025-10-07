@@ -548,6 +548,7 @@ tests_with_regex_output = [
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
         "misc/sys_settrace_cov.py",
+        "net_inet/tls_text_errors.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
     )
