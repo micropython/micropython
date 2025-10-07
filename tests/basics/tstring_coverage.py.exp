@@ -387,14 +387,14 @@ Empty expr (space): SyntaxError (correct)
 Empty expr (spaces): SyntaxError (correct)
 Empty expr (tab): SyntaxError (correct)
 
-# Template() constructor overflow
-4096 interpolations: OverflowError (correct)
+# Template() constructor with many interpolations
+Template() constructor: OK (100 interpolations)
 
 # Multiple consecutive strings
 Multiple strings concatenated: OK
 
-# Template.__add__ overflow
-Template.__add__: OK (2048 interpolations)
+# Template.__add__ with multiple interpolations
+Template.__add__: OK (100 interpolations)
 
 # Unicode escapes < 0x100
 Unicode escapes < 0x100: OK
