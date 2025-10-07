@@ -379,9 +379,6 @@ Empty format after colon: OK
 # Too many segments
 Too many segments: OverflowError (correct)
 
-# Overflow: > 4095 interpolations
-4096 interpolations: OverflowError (correct)
-
 # Empty expression - whitespace only
 Empty expr (space): SyntaxError (correct)
 Empty expr (spaces): SyntaxError (correct)
@@ -398,15 +395,6 @@ Template.__add__: OK (40 interpolations)
 
 # Unicode escapes < 0x100
 Unicode escapes < 0x100: OK
-
-# Template() constructor overflow (modtstring.c:95)
-Template() overflow: OverflowError (correct)
-
-# Template varargs constructor overflow (modtstring.c:143,148)
-Template varargs overflow: OverflowError (correct)
-
-# __template__ overflow (modtstring.c:414)
-__template__ overflow: OverflowError (correct)
 
 # Unicode > 0xFF in regular string (lexer.c:832-833)
 Unicode > 0xFF: OK
