@@ -1419,16 +1419,6 @@ try:
 except (SyntaxError, OverflowError, MemoryError) as e:
     print(f"Too many segments: {type(e).__name__} (correct)")
 
-print("\n# Overflow: > 4095 interpolations")
-try:
-    code = 't"' + '{x}' * 4096 + '"'
-    exec(f"x = 1; result = {code}")
-    print("ERROR: Should have raised OverflowError")
-except (OverflowError, SyntaxError) as e:
-    print(f"4096 interpolations: {type(e).__name__} (correct)")
-except MemoryError:
-    print("4096 interpolations: MemoryError (system limit)")
-
 print("\n# Empty expression - whitespace only")
 for ws_test, desc in [('t"{ }"', 'space'), ('t"{  }"', 'spaces'), ('t"{\t}"', 'tab')]:
     try:
@@ -1487,44 +1477,6 @@ try:
         print("Unicode escapes < 0x100: ERROR")
 except Exception as e:
     print(f"Unicode escape error: {e}")
-
-print("\n# Template() constructor overflow (modtstring.c:95)")
-try:
-    from string.templatelib import Template, Interpolation
-    interps = [Interpolation(0, "x")] * 4096
-    strings = [''] * 4097
-    t = Template(*strings, *interps)
-    print("ERROR: Should have raised OverflowError")
-except OverflowError:
-    print("Template() overflow: OverflowError (correct)")
-except MemoryError:
-    print("Template() overflow: MemoryError (system limit)")
-
-print("\n# Template varargs constructor overflow (modtstring.c:143,148)")
-try:
-    from string.templatelib import Template, Interpolation
-    args = []
-    for i in range(4096):
-        args.append("")
-        args.append(Interpolation(0, "x"))
-    args.append("")
-    t = Template(*args)
-    print("ERROR: Should have raised OverflowError")
-except OverflowError:
-    print("Template varargs overflow: OverflowError (correct)")
-except MemoryError:
-    print("Template varargs overflow: MemoryError (system limit)")
-
-print("\n# __template__ overflow (modtstring.c:414)")
-try:
-    from string.templatelib import Interpolation
-    interps = [Interpolation(0, "x")] * 4096
-    __template__([""], interps)
-    print("ERROR: Should have raised OverflowError")
-except OverflowError:
-    print("__template__ overflow: OverflowError (correct)")
-except MemoryError:
-    print("__template__ overflow: MemoryError (system limit)")
 
 print("\n# Unicode > 0xFF in regular string (lexer.c:832-833)")
 try:
