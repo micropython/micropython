@@ -1423,4 +1423,100 @@ try:
 except (SyntaxError, OverflowError, MemoryError) as e:
     print(f"Too many segments: {type(e).__name__} (correct)")
 
+print("\n# Overflow: > 4095 interpolations (parse.c:1080)")
+try:
+    code = 't"' + '{x}' * 4095 + '"'
+    exec(f"x = 1; result = {code}")
+    print("ERROR: Should have raised OverflowError")
+except (OverflowError, SyntaxError) as e:
+    print(f"4095 interpolations: {type(e).__name__} (correct)")
+except MemoryError:
+    print("4095 interpolations: MemoryError (system limit)")
+
+print("\n# Empty expression - whitespace only (tstring_expr_parser.c:111)")
+for ws_test, desc in [('t"{ }"', 'space'), ('t"{  }"', 'spaces'), ('t"{\t}"', 'tab')]:
+    try:
+        exec(ws_test)
+        print(f"ERROR: {desc} should raise SyntaxError")
+    except SyntaxError:
+        print(f"Empty expr ({desc}): SyntaxError (correct)")
+
+print("\n# Template() constructor overflow (modtstring.c:95)")
+try:
+    from string.templatelib import Template, Interpolation
+    interps = [Interpolation(i, f"i{i}") for i in range(4096)]
+    strings = [''] * 4097
+    t = Template(*strings, *interps)
+    print("ERROR: Should have raised OverflowError")
+except OverflowError:
+    print("4096 interpolations: OverflowError (correct)")
+except MemoryError:
+    print("4096 interpolations: MemoryError (system limit)")
+
+print("\n# Multiple consecutive strings (modtstring.c:185)")
+try:
+    from string.templatelib import Template, Interpolation
+    t = Template("first", "second", "third", Interpolation(42, "x"), "fourth", "fifth")
+    if t.strings == ('firstsecondthird', 'fourthfifth'):
+        print("Multiple strings concatenated: OK")
+    else:
+        print(f"Multiple strings: strings={t.strings}")
+except Exception as e:
+    print(f"Multiple strings error: {e}")
+
+print("\n# Template.__add__ overflow (modtstring.c:143,148)")
+try:
+    from string.templatelib import Template, Interpolation
+    # Create two large templates
+    interps1 = [Interpolation(i, f"i{i}") for i in range(2048)]
+    strings1 = [''] * 2049
+    t1 = Template(*strings1, *interps1)
+
+    interps2 = [Interpolation(i, f"i{i}") for i in range(2048)]
+    strings2 = [''] * 2049
+    t2 = Template(*strings2, *interps2)
+
+    result = t1 + t2
+    # Check if overflow occurred or if concatenation succeeded
+    if len(result.interpolations) == 4096:
+        print(f"Template.__add__: concatenated to {len(result.interpolations)} interpolations")
+    else:
+        print(f"Template.__add__: ERROR unexpected count {len(result.interpolations)}")
+except OverflowError:
+    print("Template.__add__: OverflowError (correct)")
+except MemoryError:
+    print("Template.__add__: MemoryError (system limit)")
+
+print("\n# Unicode escapes < 0x100 (lexer.c:833)")
+try:
+    # Test various escape sequences that result in bytes < 0x100
+    s1 = "\x00"  # null
+    s2 = "\x41"  # 'A'
+    s3 = "\x7F"  # DEL
+    s4 = "\xFF"  # max byte
+    if ord(s1) == 0 and ord(s2) == 65 and ord(s3) == 127 and ord(s4) == 255:
+        print("Unicode escapes < 0x100: OK")
+    else:
+        print("Unicode escapes < 0x100: ERROR")
+except Exception as e:
+    print(f"Unicode escape error: {e}")
+
+print("\n# __template__ builtin overflow (modtstring.c:406,414)")
+try:
+    from string.templatelib import Interpolation
+    # Test with too many strings
+    try:
+        strings = tuple(f"s{i}" for i in range(4096))
+        interps = tuple()
+        result = __template__(strings, interps)
+        print("ERROR: Should have raised OverflowError")
+    except OverflowError:
+        print("__template__ strings overflow: OverflowError (correct)")
+    except NameError:
+        print("__template__ builtin: not directly accessible (OK)")
+    except MemoryError:
+        print("__template__: MemoryError (system limit)")
+except (ImportError, MemoryError) as e:
+    print(f"__template__ test: {type(e).__name__} (system limit)")
+
 print("\n=== All coverage tests completed! ===")
