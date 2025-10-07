@@ -115,29 +115,28 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
--include $(TOP)/lib/mtb-psoc-edge-libs/mtb-makefile.mk
-
 MPY_CROSS_FLAGS += -march=armv8-m.main
 
-$(BUILD)/mpy_edge_app_ns.elf: mtb_build_ns mtb_get_build_flags_ns $(OBJ)
+MPY_APP_NAME = mpy_edge_app_ns
+
+-include $(TOP)/lib/mtb-psoc-edge-libs/mtb-makefile.mk
+
+LDFLAGS += -Wl,-Map,$(BUILD)/$(MPY_APP_NAME).map
+
+$(BUILD)/$(MPY_APP_NAME).elf: mtb_build_ns_info $(OBJ)
 	$(info )
 	$(info Linking $@ ...)
-	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q) $(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(info Linking $@ done.)
 	$(Q) $(SIZE) $@ -A
 	$(info )
 
-$(BUILD)/mpy_edge_app_ns.hex: $(BUILD)/mpy_edge_app_ns.elf
+$(BUILD)/$(MPY_APP_NAME).hex: $(BUILD)/$(MPY_APP_NAME).elf
 	$(Q) $(OBJCOPY) -O ihex $^ $@
 
-# Copy the hex file to the MTB build directory for 
-# inclusion in the final firmware image
-# TODO: This step should be better handle in the mtb-makefile.mk
-build_mpy_app_ns: $(BUILD)/mpy_edge_app_ns.hex
-	mkdir -p $(MTB_LIBS_BUILD_PRJ_HEX_DIR)
-	cp $^ $(MTB_LIBS_BUILD_PRJ_HEX_DIR)
+mpy_build: $(BUILD)/$(MPY_APP_NAME).hex
 
-all: mtb_init mtb_build_ns_ninja build_mpy_app_ns mtb_build_s 
+all: mtb_init mpy_build mtb_build_s 
 
 rebuild: clean all
 
