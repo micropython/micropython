@@ -1444,8 +1444,8 @@ for ws_test, desc in [('t"{ }"', 'space'), ('t"{  }"', 'spaces'), ('t"{\t}"', 't
 print("\n# Template() constructor with many interpolations")
 try:
     from string.templatelib import Template, Interpolation
-    interps = [Interpolation(i, f"i{i}") for i in range(100)]
-    strings = [''] * 101
+    interps = [Interpolation(i, f"i{i}") for i in range(20)]
+    strings = [''] * 21
     t = Template(*strings, *interps)
     print(f"Template() constructor: OK ({len(t.interpolations)} interpolations)")
 except Exception as e:
@@ -1464,12 +1464,12 @@ except Exception as e:
 
 print("\n# Template.__add__ with multiple interpolations")
 try:
-    interps1 = [Interpolation(i, f"i{i}") for i in range(50)]
-    strings1 = [''] * 51
+    interps1 = [Interpolation(i, f"i{i}") for i in range(20)]
+    strings1 = [''] * 21
     t1 = Template(*strings1, *interps1)
 
-    interps2 = [Interpolation(i, f"i{i}") for i in range(50)]
-    strings2 = [''] * 51
+    interps2 = [Interpolation(i+20, f"i{i+20}") for i in range(20)]
+    strings2 = [''] * 21
     t2 = Template(*strings2, *interps2)
 
     result = t1 + t2

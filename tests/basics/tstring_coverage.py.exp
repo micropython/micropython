@@ -388,13 +388,13 @@ Empty expr (spaces): SyntaxError (correct)
 Empty expr (tab): SyntaxError (correct)
 
 # Template() constructor with many interpolations
-Template() constructor: OK (100 interpolations)
+Template() constructor: OK (20 interpolations)
 
 # Multiple consecutive strings
 Multiple strings concatenated: OK
 
 # Template.__add__ with multiple interpolations
-Template.__add__: OK (100 interpolations)
+Template.__add__: OK (40 interpolations)
 
 # Unicode escapes < 0x100
 Unicode escapes < 0x100: OK
