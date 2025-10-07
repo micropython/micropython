@@ -213,14 +213,11 @@ try:
 except Exception as e:
     print(f"String expr error: {e}")
 
-class ExceptionRaiser:
-    @property
-    def special(self):
-        raise ValueError("Special error")
+def raise_error():
+    raise ValueError("Special error")
 
-er = ExceptionRaiser()
 try:
-    t_exc = t"{er.special}"
+    t_exc = t"{raise_error()}"
     print(t_exc.__str__())
 except ValueError as e:
     print(f"Re-raised exception: {e}")
