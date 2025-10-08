@@ -492,6 +492,10 @@ static const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM1), MP_ROM_INT(0x200) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM2), MP_ROM_INT(0x400) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM3), MP_ROM_INT(0x800) },
+
+    { MP_ROM_QSTR(MP_QSTR_STATUS_TXLEVEL), MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_STATUS_RXLEVEL), MP_ROM_INT(32) },
+    { MP_ROM_QSTR(MP_QSTR_STATUS_IRQ), MP_ROM_INT(64) },
 };
 static MP_DEFINE_CONST_DICT(rp2_pio_locals_dict, rp2_pio_locals_dict_table);
 
