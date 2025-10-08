@@ -536,9 +536,19 @@ MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
 
 #else // MICROPY_REPL_EVENT_DRIVEN
 
+#if !MICROPY_HAL_HAS_STDIO_MODE_SWITCH
+// If the port doesn't need any stdio mode switching calls then provide trivial ones.
+static inline void mp_hal_stdio_mode_raw(void) {
+}
+static inline void mp_hal_stdio_mode_orig(void) {
+}
+#endif
+
 int pyexec_raw_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
+
+    mp_hal_stdio_mode_raw();
 
 raw_repl_reset:
     mp_hal_stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
@@ -553,6 +563,7 @@ raw_repl_reset:
                 if (vstr_len(&line) == 2 && vstr_str(&line)[0] == CHAR_CTRL_E) {
                     int ret = do_reader_stdin(vstr_str(&line)[1]);
                     if (ret & PYEXEC_FORCED_EXIT) {
+                        mp_hal_stdio_mode_orig();
                         return ret;
                     }
                     vstr_reset(&line);
@@ -565,6 +576,7 @@ raw_repl_reset:
                 mp_hal_stdout_tx_str("\r\n");
                 vstr_clear(&line);
                 pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+                mp_hal_stdio_mode_orig();
                 return 0;
             } else if (c == CHAR_CTRL_C) {
                 // clear line
@@ -585,19 +597,25 @@ raw_repl_reset:
             // exit for a soft reset
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
+            mp_hal_stdio_mode_orig();
             return PYEXEC_FORCED_EXIT;
         }
 
+        // Switch to original terminal mode to execute code, eg to support keyboard interrupt (SIGINT).
+        mp_hal_stdio_mode_orig();
         int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
+        mp_hal_stdio_mode_raw();
     }
 }
 
 int pyexec_friendly_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
+
+    mp_hal_stdio_mode_raw();
 
 friendly_repl_reset:
     mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
@@ -640,6 +658,7 @@ friendly_repl_reset:
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
+            mp_hal_stdio_mode_orig();
             return 0;
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
@@ -653,6 +672,7 @@ friendly_repl_reset:
             // exit for a soft reset
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
+            mp_hal_stdio_mode_orig();
             return PYEXEC_FORCED_EXIT;
         } else if (ret == CHAR_CTRL_E) {
             // paste mode
@@ -697,10 +717,13 @@ friendly_repl_reset:
             }
         }
 
+        // Switch to original terminal mode to execute code, eg to support keyboard interrupt (SIGINT).
+        mp_hal_stdio_mode_orig();
         ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
+        mp_hal_stdio_mode_raw();
     }
 }
 

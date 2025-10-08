@@ -193,7 +193,6 @@ static int do_repl(void) {
     // use MicroPython supplied readline-based REPL
 
     int ret = 0;
-    mp_hal_stdio_mode_raw();
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if ((ret = pyexec_raw_repl()) != 0) {
@@ -205,7 +204,6 @@ static int do_repl(void) {
             }
         }
     }
-    mp_hal_stdio_mode_orig();
     return ret;
 
     #else
