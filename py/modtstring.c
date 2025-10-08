@@ -159,19 +159,19 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
             vstr_t current_vstr = {0};
 
             #define FLUSH_CURRENT_STRING() \
-                    do { \
-                        mp_obj_t out_str; \
-                        if (current_vstr_active) { \
-                            out_str = mp_obj_new_str_from_vstr(&current_vstr); \
-                            current_vstr_active = false; \
-                        } else if (current_str != MP_OBJ_NULL) { \
-                            out_str = current_str; \
-                        } else { \
-                            out_str = MP_OBJ_NEW_QSTR(MP_QSTR_); \
-                        } \
-                        strings_tuple->items[string_idx++] = out_str; \
-                        current_str = MP_OBJ_NULL; \
-                    } while (0)
+    do { \
+        mp_obj_t out_str; \
+        if (current_vstr_active) { \
+            out_str = mp_obj_new_str_from_vstr(&current_vstr); \
+            current_vstr_active = false; \
+        } else if (current_str != MP_OBJ_NULL) { \
+            out_str = current_str; \
+        } else { \
+            out_str = MP_OBJ_NEW_QSTR(MP_QSTR_); \
+        } \
+        strings_tuple->items[string_idx++] = out_str; \
+        current_str = MP_OBJ_NULL; \
+    } while (0)
 
             for (size_t i = 0; i < n_args; i++) {
                 mp_obj_t arg = args[i];
