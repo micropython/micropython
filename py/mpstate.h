@@ -124,7 +124,7 @@ typedef struct _mp_state_mem_t {
 
     mp_state_mem_area_t area;
 
-    int gc_stack_overflow;
+    int gc_needs_resweep;
     MICROPY_GC_STACK_ENTRY_TYPE gc_block_stack[MICROPY_ALLOC_GC_STACK_SIZE];
     #if MICROPY_GC_SPLIT_HEAP
     // Array that tracks the area for each block on gc_block_stack.
