@@ -58,7 +58,7 @@ typedef struct _mp_obj_any_call_t
     mp_obj_base_t base;
 } mp_obj_any_call_t;
 
-extern const mp_obj_type_t mp_type_any_call_t;
+static const mp_obj_type_t mp_type_any_call_t;
 
 
 // Can be used both for __new__ and __call__: the latter's prototype is
