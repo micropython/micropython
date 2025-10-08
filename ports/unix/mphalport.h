@@ -48,6 +48,9 @@
         MP_THREAD_GIL_ENTER(); \
     } while (0)
 
+// The port provides `mp_hal_stdio_mode_raw()` and `mp_hal_stdio_mode_orig()`.
+#define MICROPY_HAL_HAS_STDIO_MODE_SWITCH (1)
+
 void mp_hal_set_interrupt_char(char c);
 
 #define mp_hal_stdio_poll unused // this is not implemented, nor needed
