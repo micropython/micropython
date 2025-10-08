@@ -87,7 +87,7 @@ function _ci_is_git_merge {
 function ci_code_size_build {
     # check the following ports for the change in their code size
     # Override the list by setting PORTS_TO_CHECK in the environment before invoking ci.
-    : ${PORTS_TO_CHECK:=bmusxpdv}
+    : ${PORTS_TO_CHECK:=bmus3xpdv}
     
     SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
