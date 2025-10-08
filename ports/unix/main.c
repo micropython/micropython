@@ -191,7 +191,6 @@ static int do_repl(void) {
     int ret = 0;
     #if MICROPY_USE_READLINE == 1
     // use MicroPython supplied readline based repl
-    mp_hal_stdio_mode_raw();
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if ((ret = pyexec_raw_repl()) != 0) {
@@ -203,7 +202,6 @@ static int do_repl(void) {
             }
         }
     }
-    mp_hal_stdio_mode_orig();
     #else
     // use simple readline
     mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
