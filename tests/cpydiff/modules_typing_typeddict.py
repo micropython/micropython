@@ -1,21 +1,19 @@
 """
 categories: Modules,typing
-description: ``TypedDict`` does not behave according to spec.
+description: ``TypedDict`` class not allowed for instance or class checks.
 cause: Micropython does not implement all typing features
 workaround: None
 """
-# Specification: https://typing.readthedocs.io/en/latest/spec/typeddict.html
 
-from typing import TypedDict
+from typing import TypeVar, TypedDict
 
 
 class Movie(TypedDict):
-    title: str
+    name: str
     year: int
 
 
-movie = Movie(title="Life of Brian", year=1979)
-print("Type is: ", type(movie))
+movie: Movie = {"name": "Blade Runner", "year": 1982}
 
 try:
     if isinstance(movie, Movie):  # type: ignore

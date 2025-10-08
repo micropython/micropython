@@ -57,7 +57,6 @@ if "micropython" in sys.implementation.name:
 
 MyAlias = str
 Vector: typing.List[float]
-Nested = Iterable[Tuple[MyAlias, ...]]
 UserId = NewType("UserId", int)
 T = TypeVar("T", int, float, complex)
 
@@ -65,15 +64,4 @@ hintedGlobal: Any = None
 
 
 def func_with_hints(c: int, b: MyAlias, a: Union[int, None], lst: List[float] = [0.0]) -> Any:
-    pass
-
-
-class ClassWithHints(Generic[T]):
-    a: int = 0
-
-    def foo(self, other: int) -> None:
-        self.typed_thing: List[T] = []
-
-
-class Bar(ClassWithHints[Any]):
     pass

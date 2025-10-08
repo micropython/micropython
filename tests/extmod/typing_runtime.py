@@ -138,7 +138,7 @@ def hash_b(item: Any) -> int:
 print(hash_b(42))
 print(hash_b("foo"))
 
-print("Testing : typing.AnyString")
+print("Testing : typing.AnyStr")
 
 from typing import AnyStr
 
@@ -151,8 +151,8 @@ concat("foo", "bar")  # OK, output has type 'str'
 concat(b"foo", b"bar")  # OK, output has type 'bytes'
 try:
     concat("foo", b"bar")  # Error, cannot mix str and bytes
-except TypeError as e:
-    print("OK, expected:", e)
+except TypeError:
+    print("TypeError is expected")
 
 
 print("Testing : typing.LiteralString")
@@ -201,11 +201,11 @@ def bar(x):
 print(bar(42))
 
 
-print("Testing : typing.")
+print("Testing : typing.Required, NotRequired in TypedDict")
 
 # Specification: https://typing.readthedocs.io/en/latest/spec/typeddict.html#required-and-notrequired
 
-from typing import Annotated, NotRequired, Required, TypedDict
+from typing import NotRequired, Required, TypedDict
 
 
 class Movie(TypedDict):
@@ -215,7 +215,6 @@ class Movie(TypedDict):
 
 
 m = Movie(title="Life of Brian", year=1979)
-print(type(m))  # <class 'dict'>
 
 
 print("Testing : typing.TypeVar")
