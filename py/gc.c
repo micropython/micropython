@@ -1047,14 +1047,9 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     GC_ENTER();
 
     // get the GC block number corresponding to this pointer
-    mp_state_mem_area_t *area;
-    #if MICROPY_GC_SPLIT_HEAP
-    area = gc_get_ptr_area(ptr);
+    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
     assert(area);
-    #else
-    assert(VERIFY_PTR(ptr));
-    area = &MP_STATE_MEM(area);
-    #endif
+
     size_t block = BLOCK_FROM_PTR(area, ptr);
     assert(ATB_GET_KIND(area, block) == AT_HEAD);
 
