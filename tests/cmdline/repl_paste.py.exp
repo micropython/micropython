@@ -12,7 +12,6 @@ paste mode; Ctrl-C to cancel, Ctrl-D to finish
 === 
 Hello from paste mode!
 >>> 
->>> 
 >>> # Paste mode with multiple indentation levels
 >>> 
 paste mode; Ctrl-C to cancel, Ctrl-D to finish
@@ -35,7 +34,6 @@ Even: 2
 Odd: 3
 Even: 4
 >>> 
->>> 
 >>> # Paste mode with blank lines
 >>> 
 paste mode; Ctrl-C to cancel, Ctrl-D to finish
@@ -53,7 +51,6 @@ paste mode; Ctrl-C to cancel, Ctrl-D to finish
 First line
 After blank line
 After two blank lines
->>> 
 >>> 
 >>> # Paste mode with class definition and multiple methods
 >>> 
@@ -79,7 +76,6 @@ Value is: 21
 Doubled: 42
 Value is: 42
 >>> 
->>> 
 >>> # Paste mode with exception handling
 >>> 
 paste mode; Ctrl-C to cancel, Ctrl-D to finish
@@ -93,7 +89,6 @@ paste mode; Ctrl-C to cancel, Ctrl-D to finish
 === 
 Caught division by zero
 Finally block executed
->>> 
 >>> 
 >>> # Cancel paste mode with Ctrl-C
 >>> 
@@ -118,7 +113,6 @@ Traceback (most recent call last):
   File "<stdin>", line 2
 SyntaxError: invalid syntax
 >>> 
->>> 
 >>> # Paste mode with runtime error
 >>> 
 paste mode; Ctrl-C to cancel, Ctrl-D to finish
@@ -132,7 +126,6 @@ Traceback (most recent call last):
   File "<stdin>", line 5, in <module>
   File "<stdin>", line 3, in will_error
 NameError: name 'undefined_variable' isn't defined
->>> 
 >>> 
 >>> # Final test to show REPL is still functioning
 >>> 1 + 2 + 3
