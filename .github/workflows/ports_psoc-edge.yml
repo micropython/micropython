@@ -18,12 +18,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
+  server-build:
     runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v5
-    - name: psoc-edge step placeholder
-      run: echo "TODO! This will be updated when we have a basic build flow for psoc-edge port"
+    strategy:
+      matrix:
+        board: 
+          - KIT_PSE84_AI
+    outputs:
+      commit_sha: ${{ steps.commit_sha.outputs.sha_short }}
 
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install packages
+        run: source tools/ci.sh && ci_psoc_edge_setup
+      - name: Build
+        run: source tools/ci.sh && ci_psoc_edge_build ${{ matrix.board }}
+
+      # Steps only relevant for Infineon fork 
+      # with self-hosted runner available
+      - name: Gets commit SHA
+        if: success() && github.repository_owner == 'infineon'
+        id: commit_sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Save firmware bin
+        if: success() && github.repository_owner == 'infineon'
+        uses: actions/upload-artifact@v4
+        with: 
+          name: mpy-psoc-edge_${{ matrix.board }}_${{ steps.commit_sha.outputs.sha_short }}
+          # TODO: Encapsulate and abstract path details from this workflow
+          path: lib/mtb-psoc-edge-libs/build/app_combined.hex
