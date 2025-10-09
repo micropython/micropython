@@ -421,22 +421,13 @@ static void gc_collect_start_common(void) {
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
-    #if !MICROPY_GC_SPLIT_HEAP
-    mp_state_mem_area_t *area = &MP_STATE_MEM(area);
-    #endif
     for (size_t i = 0; i < len; i++) {
         MICROPY_GC_HOOK_LOOP(i);
         void *ptr = gc_get_ptr(ptrs, i);
-        #if MICROPY_GC_SPLIT_HEAP
         mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
         if (!area) {
             continue;
         }
-        #else
-        if (!VERIFY_PTR(ptr)) {
-            continue;
-        }
-        #endif
         size_t block = BLOCK_FROM_PTR(area, ptr);
         if (ATB_GET_KIND(area, block) == AT_HEAD) {
             // An unmarked head: mark it, and mark all its children
