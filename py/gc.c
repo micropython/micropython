@@ -99,6 +99,7 @@
 
 #define BLOCK_FROM_PTR(area, ptr) (((byte *)(ptr) - area->gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(area, block) (((block) * BYTES_PER_BLOCK + (uintptr_t)area->gc_pool_start))
+static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr);
 
 // After the ATB, there must be a byte filled with AT_FREE so that gc_mark_tree
 // cannot erroneously conclude that a block extends past the end of the GC heap
@@ -368,7 +369,7 @@ bool gc_is_locked(void) {
 #if MICROPY_GC_SPLIT_HEAP
 // Returns the area to which this pointer belongs, or NULL if it isn't
 // allocated on the GC-managed heap.
-static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
+static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {   // must be aligned on a block
         return NULL;
     }
