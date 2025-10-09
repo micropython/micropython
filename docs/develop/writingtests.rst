@@ -68,3 +68,76 @@ And to run only a certain set of tests (eg a directory):
 
    $ ./run-tests.py -d basics
    $ ./run-tests.py float/builtin*.py
+
+Using run-tests.py
+------------------
+
+The ``run-tests.py`` script supports several parameters to customize test execution:
+
+**Target and Device Selection:**
+
+* ``-t, --test-instance`` 
+
+The -t option accepts the following for the test instance:
+
+- **unix** - use the unix port of MicroPython, specified by the MICROPY_MICROPYTHON
+  environment variable (which defaults to the standard variant of either the unix
+  or windows ports, depending on the host platform)
+- **webassembly** - use the webassembly port of MicroPython, specified by the
+  MICROPY_MICROPYTHON_MJS environment variable (which defaults to the standard
+  variant of the webassembly port)
+- **port:<device>** - connect to and use the given serial port device
+- **a<n>** - connect to and use /dev/ttyACM<n>
+- **u<n>** - connect to and use /dev/ttyUSB<n>
+- **c<n>** - connect to and use COM<n>
+- **exec:<command>** - execute a command and attach to it's stdin/stdout
+- **execpty:<command>** - execute a command and attach to the printed /dev/pts/<n> device
+- **<a>.<b>.<c>.<d>** - connect to the given IPv4 address
+- anything else specifies a serial port
+
+**Test Selection:**
+
+* ``-d, --test-dirs`` - Specify one or more test directories to run
+* ``-i, --include REGEX`` - Include tests matching regex pattern
+* ``-e, --exclude REGEX`` - Exclude tests matching regex pattern
+* ``files`` - Specific test files to run
+
+**Execution Options:**
+
+* ``--emit <EMITTER>`` - MicroPython emitter, EMITTER can be bytecode or native. Default: bytecode
+* ``--via-mpy`` - Compile .py files to .mpy first
+* ``--heapsize`` - Set heap size for tests
+* ``-j, --jobs N`` - Number of tests to run simultaneously
+
+Set the MICROPY_MPYCROSS environment variable to use a specific version of ``mpy-cross`` when using ``--via-mpy``.
+
+**Result Management:**
+
+* ``-r, --result-dir`` - Directory for test results. Default: results/
+* ``--print-failures`` - Show diff of failed tests and exit
+* ``--clean-failures`` - Delete .exp and .out files from prior failed tests
+* ``--run-failures`` - Re-run only previously failed tests
+
+**Examples:**
+
+.. code-block:: bash
+
+   # Run only basic tests with native emitter
+   $ ./run-tests.py --emit native -d basics extmod
+
+   # Run tests excluding async functionality
+   $ ./run-tests.py -e async
+
+   # Run tests matching *_pep_*
+   $ ./run-tests.py -i *_pep_*
+
+   # Run specific test files in parallel
+   $ ./run-tests.py -j 4 basics/list*.py
+
+   # Test on connected ESP32 board
+   $ ./run-tests.py -t /dev/ttyUSB0
+   # or
+   $ ./run-tests.py -t u0
+
+   # Re-run only failed tests from previous run
+   $ ./run-tests.py --run-failures
