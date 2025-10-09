@@ -997,16 +997,7 @@ void gc_free(void *ptr) {
 size_t gc_nbytes(const void *ptr) {
     GC_ENTER();
 
-    mp_state_mem_area_t *area;
-    #if MICROPY_GC_SPLIT_HEAP
-    area = gc_get_ptr_area(ptr);
-    #else
-    if (VERIFY_PTR(ptr)) {
-        area = &MP_STATE_MEM(area);
-    } else {
-        area = NULL;
-    }
-    #endif
+    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
 
     if (area) {
         size_t block = BLOCK_FROM_PTR(area, ptr);
