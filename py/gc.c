@@ -622,6 +622,8 @@ static void gc_finalise_if_unmarked(const mp_state_mem_area_t *area, size_t bloc
         return;
     }
 
+    assert(obj->type->flags & MP_TYPE_FLAG_HAS_FINALISER);
+
     #if MICROPY_ENABLE_SCHEDULER
     mp_sched_lock();
     #endif
