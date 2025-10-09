@@ -30,7 +30,7 @@ const char psoc_edge_help_text[] =
     "For online help please visit https://micropython.org/help/.\n"
     "\n"
     "For access to the hardware use the 'machine' module.\n"
-    "PSoC6 specific commands are in the 'psoc edge' module.\n"
+    "PSOC™ Edge specific commands are in the 'psoc-edge' module.\n"
     "\n"
     "Useful control commands:\n"
     "  CTRL-C -- interrupt a running program\n"
