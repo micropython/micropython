@@ -132,11 +132,7 @@ static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr);
 // Static functions for individual steps of the GC mark/sweep sequence
 static void gc_collect_start_common(void);
 static void *gc_get_ptr(void **ptrs, int i);
-#if MICROPY_GC_SPLIT_HEAP
 static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block);
-#else
-static void gc_mark_subtree(size_t block);
-#endif
 static void gc_maybe_resweep(void);
 #if MICROPY_ENABLE_FINALISER
 static void gc_finalise_all_unmarked(void);
@@ -447,11 +443,7 @@ void gc_collect_root(void **ptrs, size_t len) {
         if (ATB_GET_KIND(area, block) == AT_HEAD) {
             // An unmarked head: mark it, and mark all its children
             ATB_HEAD_TO_MARK(area, block);
-            #if MICROPY_GC_SPLIT_HEAP
             gc_mark_subtree(area, block);
-            #else
-            gc_mark_subtree(block);
-            #endif
         }
     }
 }
@@ -460,12 +452,7 @@ void gc_collect_root(void **ptrs, size_t len) {
 // children: mark the unmarked child blocks and put those newly marked
 // blocks on the stack. When all children have been checked, pop off the
 // topmost block on the stack and repeat with that one.
-#if MICROPY_GC_SPLIT_HEAP
-static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block)
-#else
-static void gc_mark_subtree(size_t block)
-#endif
-{
+static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block) {
     // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
@@ -566,11 +553,7 @@ static void gc_maybe_resweep(void) {
                 MICROPY_GC_HOOK_LOOP(block);
                 // trace (again) if mark bit set
                 if (ATB_GET_KIND(area, block) == AT_MARK) {
-                    #if MICROPY_GC_SPLIT_HEAP
                     gc_mark_subtree(area, block);
-                    #else
-                    gc_mark_subtree(block);
-                    #endif
                 }
             }
         }
