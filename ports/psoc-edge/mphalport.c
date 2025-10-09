@@ -28,6 +28,8 @@
 #include "stdbool.h"   // because of missing include in shared/timeutils/timeutils.h
 #include "stdio.h"
 
+// MTB includes
+#include "retarget_io_init.h"
 
 // micropython includes
 #include "mpconfigport.h"
@@ -36,13 +38,15 @@
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 
+extern mtb_hal_uart_t DEBUG_UART_hal_obj;
 
 void mp_hal_delay_ms(mp_uint_t ms) {
+    mtb_hal_system_delay_ms(ms);
 }
 
 
 void mp_hal_delay_us(mp_uint_t us) {
-
+    mtb_hal_system_delay_us(us);
 }
 
 uint64_t mp_hal_time_ns(void) {
@@ -74,11 +78,20 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 // Send string of given length
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    printf("WELCOME INTO MICROPYTHON\n");
+    int r = write(STDOUT_FILENO, str, len);
+    (void)r;
 }
 
 int mp_hal_stdin_rx_chr(void) {
-    return -1; // TODO: Implement this function properly
+    for (;;) {
+        uint8_t c = 0;
+        cy_rslt_t result;
+        result = mtb_hal_uart_get(&DEBUG_UART_hal_obj, &c, 1);
+        if (result == CY_RSLT_SUCCESS) {
+            return c;
+        }
+        MICROPY_EVENT_POLL_HOOK
+    }
 }
 
 void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
