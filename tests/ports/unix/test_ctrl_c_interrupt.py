@@ -6,7 +6,13 @@ This test spawns micropython in a PTY, starts a long-running loop,
 and sends SIGINT to verify it generates KeyboardInterrupt.
 """
 
-import pty
+# This test must be run with CPython as it spawns a subprocess
+try:
+    import pty
+except ImportError:
+    print("SKIP")
+    raise SystemExit
+
 import os
 import subprocess
 import select
