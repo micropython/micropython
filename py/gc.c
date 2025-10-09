@@ -362,7 +362,6 @@ bool gc_is_locked(void) {
     return MP_STATE_THREAD(gc_lock_depth) != 0;
 }
 
-#if MICROPY_GC_SPLIT_HEAP
 // Returns the area to which this pointer belongs, or NULL if it isn't
 // allocated on the GC-managed heap.
 static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
@@ -377,7 +376,6 @@ static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     }
     return NULL;
 }
-#endif
 
 // ptr should be of type void*
 #define VERIFY_PTR(ptr) ( \
