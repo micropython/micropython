@@ -454,10 +454,6 @@ static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block) {
     // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
-        #if !MICROPY_GC_SPLIT_HEAP
-        mp_state_mem_area_t *area = &MP_STATE_MEM(area);
-        #endif
-
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -474,18 +470,11 @@ static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block) {
             void *ptr = *ptrs;
             // If this is a heap pointer that hasn't been marked, mark it and push
             // it's children to the stack.
-            #if MICROPY_GC_SPLIT_HEAP
             mp_state_mem_area_t *ptr_area = gc_get_ptr_area(ptr);
             if (!ptr_area) {
                 // Not a heap-allocated pointer (might even be random data).
                 continue;
             }
-            #else
-            if (!VERIFY_PTR(ptr)) {
-                continue;
-            }
-            mp_state_mem_area_t *ptr_area = area;
-            #endif
             size_t ptr_block = BLOCK_FROM_PTR(ptr_area, ptr);
             if (ATB_GET_KIND(ptr_area, ptr_block) != AT_HEAD) {
                 // This block is already marked.
