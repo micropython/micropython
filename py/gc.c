@@ -84,6 +84,8 @@
 #define NEXT_AREA(area) (NULL)
 #endif
 
+#define FOR_ALL_AREAS(x) for (mp_state_mem_area_t *x = &MP_STATE_MEM(area); x != NULL; x = NEXT_AREA(x))
+
 #define BLOCK_SHIFT(block) (2 * ((block) & (BLOCKS_PER_ATB - 1)))
 #define ATB_GET_KIND(area, block) (((area)->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
 #define ATB_ANY_TO_FREE(area, block) do { area->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] &= (~(AT_MARK << BLOCK_SHIFT(block))); } while (0)
@@ -301,7 +303,7 @@ static bool gc_try_add_heap(size_t failed_alloc) {
 
     // Compute total number of blocks in the current heap.
     size_t total_blocks = 0;
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         total_blocks += area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
     }
 
@@ -367,7 +369,7 @@ static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {   // must be aligned on a block
         return NULL;
     }
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         if (ptr >= (void *)area->gc_pool_start   // must be above start of pool
             && ptr < (void *)area->gc_pool_end) {   // must be below end of pool
             return area;
@@ -542,7 +544,7 @@ void gc_collect_end(void) {
     #if MICROPY_GC_SPLIT_HEAP
     MP_STATE_MEM(gc_last_free_area) = &MP_STATE_MEM(area);
     #endif
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         area->gc_last_free_atb_index = 0;
     }
     MP_STATE_THREAD(gc_lock_depth) &= ~GC_COLLECT_FLAG;
@@ -555,7 +557,7 @@ static void gc_maybe_resweep(void) {
         MP_STATE_MEM(gc_needs_resweep) = 0;
 
         // scan entire memory looking for blocks which have been marked but not their children
-        for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        FOR_ALL_AREAS(area) {
             for (size_t block = 0; block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
                 MICROPY_GC_HOOK_LOOP(block);
                 // trace (again) if mark bit set
@@ -638,7 +640,7 @@ static void gc_free_all_unmarked(void) {
     mp_state_mem_area_t *prev_area = NULL;
     #endif
 
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         size_t last_used_block = 0;
         assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 
@@ -712,7 +714,7 @@ void gc_info(gc_info_t *info) {
     info->num_1block = 0;
     info->num_2block = 0;
     info->max_block = 0;
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         bool finish = false;
         info->total += area->gc_pool_end - area->gc_pool_start;
         for (size_t block = 0, len = 0, len_free = 0; !finish;) {
@@ -1204,7 +1206,7 @@ void gc_dump_info(const mp_print_t *print) {
 void gc_dump_alloc_table(const mp_print_t *print) {
     GC_ENTER();
     static const size_t DUMP_BYTES_PER_LINE = 64;
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         #if !EXTENSIVE_HEAP_PROFILING
         // When comparing heap output we don't want to print the starting
         // pointer of the heap because it changes from run to run.
