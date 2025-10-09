@@ -36,8 +36,8 @@ jobs:
     - uses: actions/checkout@v6
 
     - id: idf_ver
-      name: Read the ESP-IDF version (including Python version)
-      run: source tools/ci.sh && echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
+      name: Read the ESP-IDF version (including Python version) and set outputs.IDF_VER
+      run: tools/ci.sh esp32_idf_ver | tee "${GITHUB_OUTPUT}"
 
     - name: Cached ESP-IDF install
       id: cache_esp_idf

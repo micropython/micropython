@@ -206,6 +206,10 @@ PYTHON_VER=$(${PYTHON:-python} --version | cut -d' ' -f2)
 
 export IDF_CCACHE_ENABLE=1
 
+function ci_esp32_idf_ver {
+    echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}"
+}
+
 function ci_esp32_idf_setup {
     echo "Using ESP-IDF version $IDF_VER"
     git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
