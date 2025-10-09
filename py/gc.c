@@ -622,6 +622,8 @@ static void gc_finalise_if_unmarked(mp_state_mem_area_t *area, size_t block) {
         return;
     }
 
+    assert(obj->type->flags & MP_TYPE_FLAG_HAS_FINALISER);
+
     if (obj->type->flags & MP_TYPE_FLAG_INSTANCE_TYPE) {
         // sum this object's closure into the marked set
         // i.e. instead of checking later for any new unmarked heads in the graph
