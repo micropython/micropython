@@ -76,4 +76,4 @@
 	url = https://github.com/micropython/alif-security-toolkit.git
 [submodule "lib/mtb-psoc-edge-libs"]
 	path = lib/mtb-psoc-edge-libs
-	url = git@github.com:Infineon/mtb-micropython-psoc-edge-integration.git
+	url = https://github.com/Infineon/mtb-micropython-psoc-edge-integration.git
