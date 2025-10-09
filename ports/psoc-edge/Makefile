@@ -12,8 +12,8 @@ endif
 # Files that are generated and needed before the QSTR build.
 # QSTR_GENERATED_HEADERS = build/pins_qstr.h
 # qstr definitions (must come before including py.mk)
-# QSTR_DEFS = qstrdefsport.h #$(QSTR_GENERATED_HEADERS)
-# QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h $(QSTR_GENERATED_HEADERS)
+QSTR_DEFS = qstrdefsport.h #$(QSTR_GENERATED_HEADERS)
+QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h #$(QSTR_GENERATED_HEADERS)
 
 
 # TODO: Do we need this frozen manifest? In PSOC6 we are freezing mpip and asyncio?
