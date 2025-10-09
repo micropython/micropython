@@ -80,11 +80,14 @@
 
 #if MICROPY_GC_SPLIT_HEAP
 #define NEXT_AREA(area) ((area)->next)
+#define FOR_ALL_AREAS(x) \
+    assert(&MP_STATE_MEM(area) != NULL); \
+    if (&MP_STATE_MEM(area) == NULL) { MP_UNREACHABLE; } \
+    for (mp_state_mem_area_t *x = &MP_STATE_MEM(area); x != NULL; x = NEXT_AREA(x))
 #else
 #define NEXT_AREA(area) (NULL)
+#define FOR_ALL_AREAS(x) mp_state_mem_area_t *x = &MP_STATE_MEM(area); if (true)
 #endif
-
-#define FOR_ALL_AREAS(x) for (mp_state_mem_area_t *x = &MP_STATE_MEM(area); x != NULL; x = NEXT_AREA(x))
 
 #define BLOCK_SHIFT(block) (2 * ((block) & (BLOCKS_PER_ATB - 1)))
 #define ATB_GET_KIND(area, block) (((area)->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
