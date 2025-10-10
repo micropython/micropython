@@ -35,6 +35,7 @@
 #define PHY_BCR                 (0x0000)
 #define PHY_BCR_SOFT_RESET      (0x8000)
 #define PHY_BCR_AUTONEG_EN      (0x1000)
+#define PHY_BCR_AUTONEG_RESTART (0x0200)
 #define PHY_BCR_POWER_DOWN      (0x0800U)
 
 #undef PHY_BSR
@@ -55,6 +56,7 @@
 #define PHY_SPEED_100HALF  (2)
 #define PHY_SPEED_100FULL  (6)
 #define PHY_DUPLEX         (4)
+
 
 uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg);
 void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val);
