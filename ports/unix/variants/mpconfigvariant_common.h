@@ -70,7 +70,9 @@
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (256)
 
 // Allow loading of .mpy files.
+#ifndef MICROPY_PERSISTENT_CODE_LOAD
 #define MICROPY_PERSISTENT_CODE_LOAD   (1)
+#endif
 
 // Extra memory debugging.
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
@@ -109,10 +111,14 @@
 #define MICROPY_PY_SELECT_SELECT       (0)
 
 // Enable the "websocket" module.
+#ifndef MICROPY_PY_WEBSOCKET
 #define MICROPY_PY_WEBSOCKET           (1)
+#endif
 
 // Enable the "machine" module, mostly for machine.mem*.
+#ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE             (1)
+#endif
 #define MICROPY_PY_MACHINE_PULSE       (1)
 #define MICROPY_PY_MACHINE_PIN_BASE    (1)
 
