@@ -489,8 +489,7 @@ except SyntaxError as e:
 
 # Test that triggers the specific conversion_pos > format_spec_pos branch
 try:
-    # Create a test that would hit line 882 in parse.c
-    exec("t'{x:d!r}'")  
+    exec("t'{x:d!r}'")
     print("ERROR: Should have raised SyntaxError")
 except SyntaxError as e:
     print(f"Format before conversion: SyntaxError - {e}")
@@ -602,7 +601,6 @@ except Exception as e:
 
 # Test maximum interpolations (should trigger "too many interpolations")
 try:
-    # MAX_INT = 4095 according to parse.c
     code = 't"' + '{x}' * 4096 + '"'
     exec(f"x = 'test'; result = {code}")
     print("ERROR: Should have raised SyntaxError for too many interpolations")
@@ -831,7 +829,6 @@ print(f"Format spec attr: {i.format_spec}")
 # Test Template with many strings that need concatenation
 print("\n# Template string concatenation")
 try:
-    # This triggers the string concatenation path in modtstring.c
     tmpl_concat = Template("part1", "part2", "part3", "part4", "part5")
     print(f"Concatenated strings: {tmpl_concat.strings}")
 except Exception as e:
@@ -885,7 +882,6 @@ except Exception as e:
 # Test backslash at end of string segment
 print("\n# Backslash handling")
 try:
-    # This tests the escaped flag handling in parse.c
     exec(r'''result = t"path\\{x}\\end"''')
     print("Backslash in path: OK")
 except Exception as e:
@@ -940,8 +936,6 @@ except Exception as e:
 # Test empty format spec branches
 print("\n# Empty format spec branches")
 
-# Test case for line 891: format_spec_pos exists but fmt_end <= format_spec_pos + 1
-# This happens when we have :{} or just : with no actual format spec
 try:
     # Create a case where format_spec_pos is valid but no content after :
     result = t'{42:}'
@@ -952,7 +946,6 @@ except Exception as e:
 # Test another edge case - format spec that's just a colon
 x = 100
 try:
-    # This should create an empty format spec node (line 894)
     result = t'{x:}'
     print(f"Variable with empty format: '{result}'")
 except Exception as e:
@@ -1170,7 +1163,7 @@ try:
 except Exception as e:
     print(f"Debug fmt+conv error: {type(e).__name__}: {e}")
 
-print("\n# Test parse.c line 1086: integer overflow in total calculation")
+print("\n# Test integer overflow in total calculation")
 print("Integer overflow: platform-dependent, tested via overflow scenarios")
 
 # Test __template__ with maximum valid sizes to approach overflow
@@ -1195,7 +1188,7 @@ try:
 except Exception as e:
     print(f"Max interps error: {type(e).__name__}")
 
-print("\n# Test modtstring.c line 185: vstr string concatenation")
+print("\n# Test vstr string concatenation")
 try:
     t1 = Template("part1", "part2", "part3", "part4", Interpolation(1, "x"), "end")
     result = t1.__str__()
@@ -1204,7 +1197,7 @@ except Exception as e:
     print(f"vstr concat error: {e}")
 
 # vstr_add_byte is called for characters c < 0x100
-print("\n# Test lexer.c line 833: high byte handling")
+print("\n# Test high byte handling")
 try:
     # Test various high bytes
     result = t'\x7F\x80\x81\xFE\xFF'
@@ -1382,7 +1375,6 @@ except TypeError as e:
 print("\n# 2-tuple constructor overflow")
 try:
     from string.templatelib import Template
-    # Try to create with > 4095 strings (triggers line 88 overflow check)
     strings = tuple("" for _ in range(4100))
     interps = tuple()
     t = Template(strings, interps)
@@ -1478,7 +1470,7 @@ try:
 except Exception as e:
     print(f"Unicode escape error: {e}")
 
-print("\n# Unicode > 0xFF in regular string (lexer.c:832-833)")
+print("\n# Unicode > 0xFF in regular string")
 try:
     s1 = "\u0100"
     s2 = "\u1234"

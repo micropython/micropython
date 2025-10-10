@@ -19,6 +19,7 @@ Max interps error: OverflowError
 
 # 2-tuple constructor overflow
 Too many strings (2-tuple): OverflowError (correct)
+Too many interps (2-tuple): OverflowError (correct)
 
 # Too many segments
 Too many segments: OverflowError (correct)
