@@ -37,4 +37,10 @@ extern const mp_obj_type_t zephyr_disk_access_type;
 extern const mp_obj_type_t zephyr_flash_area_type;
 #endif
 
+#ifdef CONFIG_FILE_SYSTEM
+extern const mp_obj_type_t zephyr_fs_type;
+size_t mp_zephyr_fs_get_mounts_size(void);
+struct fs_mount_t *const *mp_zephyr_fs_get_mounts(void);
+#endif
+
 #endif // MICROPY_INCLUDED_ZEPHYR_MODZEPHYR_H
