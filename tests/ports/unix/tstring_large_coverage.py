@@ -3,7 +3,7 @@ print("# These tests require substantial memory and are unix-only")
 
 from string.templatelib import Template, Interpolation
 
-print("\n# Template() constructor overflow (modtstring.c:95)")
+print("\n# Template constructor overflow")
 try:
     interps = [Interpolation(0, "x")] * 4096
     strings = [""] * 4097
@@ -12,7 +12,7 @@ try:
 except OverflowError:
     print("Template() overflow: OverflowError (correct)")
 
-print("\n# Template varargs constructor n_strings overflow (modtstring.c:148)")
+print("\n# Template varargs constructor n_strings overflow")
 try:
     args = []
     for i in range(4095):
@@ -24,7 +24,7 @@ try:
 except OverflowError:
     print("Template varargs n_strings overflow: OverflowError (correct)")
 
-print("\n# __template__ overflow (modtstring.c:414)")
+print("\n# __template__ overflow")
 try:
     interps = [Interpolation(0, "x")] * 4096
     __template__([""], interps)
@@ -32,13 +32,21 @@ try:
 except OverflowError:
     print("__template__ overflow: OverflowError (correct)")
 
-print("\n# Parse overflow > 4095 interpolations")
+print("\n# Runtime overflow > 4095 interpolations")
 try:
     code = 't"' + "{x}" * 4096 + '"'
     exec(f"x = 1; result = {code}")
     print("ERROR: Should have raised OverflowError")
 except (OverflowError, SyntaxError):
-    print("4096 interpolations: OverflowError (correct)")
+    print("4096 interpolations (runtime): OverflowError (correct)")
+
+print("\n# Parse-time overflow > 4095 interpolations")
+try:
+    code = 't"' + "{x}" * 4096 + '"'
+    compile(f"x = 1; result = {code}", "<test>", "exec")
+    print("ERROR: Should have raised OverflowError")
+except (OverflowError, SyntaxError):
+    print("4096 interpolations (parse-time): OverflowError (correct)")
 
 print("\n# __template__ with maximum valid sizes")
 try:
@@ -71,6 +79,16 @@ except OverflowError as e:
     print(f"Too many strings (2-tuple): OverflowError (correct)")
 except (MemoryError, TypeError) as e:
     print(f"Too many strings (2-tuple): {type(e).__name__} (memory/type limit)")
+
+try:
+    strings = tuple("" for _ in range(10))
+    interps = tuple(Interpolation(0, "x") for _ in range(4096))
+    t = Template(strings, interps)
+    print("ERROR: Should have raised OverflowError")
+except OverflowError as e:
+    print(f"Too many interps (2-tuple): OverflowError (correct)")
+except (MemoryError, TypeError) as e:
+    print(f"Too many interps (2-tuple): {type(e).__name__} (memory/type limit)")
 
 print("\n# Too many segments")
 try:
@@ -106,5 +124,12 @@ try:
     print("ERROR: Should have raised SyntaxError")
 except SyntaxError as e:
     print("Empty expr (newline): SyntaxError (correct)")
+
+print("\n# Lexer escape sequence: invalid then valid")
+try:
+    exec("t'\\U00200000\\x41'")
+    print("ERROR: Should have raised SyntaxError")
+except SyntaxError as e:
+    print("Invalid escape sequence: SyntaxError (correct)")
 
 print("\n=== Large coverage tests completed! ===")

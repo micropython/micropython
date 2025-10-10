@@ -306,17 +306,17 @@ Trailing backslash: SyntaxError
 Very long expression: OK
 Debug fmt+conv: fmt_spec='10', conv=r
 
-# Test parse.c line 1086: integer overflow in total calculation
+# Test integer overflow in total calculation
 Integer overflow: platform-dependent, tested via overflow scenarios
 
 # Test __template__ edge cases
 Max strings: OK, 4095 strings
 Max interps error: OverflowError
 
-# Test modtstring.c line 185: vstr string concatenation
+# Test vstr string concatenation
 vstr concat: 'Template(strings=('part1part2part3part4', 'end'), interpolations=(Interpolation(1, 'x', None, ''),))'
 
-# Test lexer.c line 833: high byte handling
+# Test high byte handling
 High bytes: len=5, first=0x7f, last=0xff
 Octal high bytes: OK, len=3
 
@@ -396,7 +396,7 @@ Template.__add__: OK (40 interpolations)
 # Unicode escapes < 0x100
 Unicode escapes < 0x100: OK
 
-# Unicode > 0xFF in regular string (lexer.c:832-833)
+# Unicode > 0xFF in regular string
 Unicode > 0xFF: OK
 
 === All coverage tests completed! ===
