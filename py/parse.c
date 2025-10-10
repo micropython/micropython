@@ -1080,11 +1080,8 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
             goto tstring_overflow;
         }
 
-        // Check for integer overflow in total calculation
+        // Integer overflow is impossible here since both values are <= 0xFFF
         size_t total = seg_cnt + interp_cnt;
-        if (total < seg_cnt || total < interp_cnt) {
-            goto tstring_too_big;
-        }
 
         // Allocate template node. GC safety: We copy the array contents
         // immediately after allocation to avoid issues if parser_alloc triggers GC.
@@ -1123,9 +1120,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         tstring_empty_expr:
             vstr_clear(&vstr);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("empty expression not allowed"));
-        tstring_too_big:
-            vstr_clear(&vstr);
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("template string too big"));
         }
     }
     #endif
