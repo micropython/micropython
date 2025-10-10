@@ -179,6 +179,8 @@ MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *machine_uart_obj_all[UART_M
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(MP_UART_IRQ_RXIDLE) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(MP_UART_IRQ_TXIDLE) }, \
 
+#define MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS (MP_TYPE_FLAG_HAS_FINALISER)
+
 #define GET_PIN_WITH_DEFAULT(uart_id_, pin_name, pin_selection) \
     (pin_selection == mp_const_none ? machine_uart_default_pins[uart_id_].pin_name : mp_hal_get_pin_obj(pin_selection))
 
