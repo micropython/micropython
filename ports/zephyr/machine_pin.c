@@ -64,6 +64,9 @@ void machine_pin_deinit(void) {
 static void gpio_callback_handler(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
     machine_pin_irq_obj_t *irq = CONTAINER_OF(cb, machine_pin_irq_obj_t, callback);
 
+    // Signal lightsleep wake semaphore for any GPIO interrupt
+    k_sem_give(&lightsleep_wake_sem);
+
     mp_irq_handler(&irq->base);
 }
 

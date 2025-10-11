@@ -119,6 +119,63 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
     spi.write_readinto(b'abcd', buf)    # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf)        # write buf to MOSI and read back into the buf
 
+Light-sleep mode
+----------------
+
+The following code can be used to sleep, reducing power consumption::
+
+    import machine
+
+    # put the device to sleep for 10 seconds
+    machine.lightsleep(10000)
+
+GPIO interrupts can wake the system from light-sleep mode::
+
+    from machine import Pin
+    import machine
+
+    # Configure a pin interrupt
+    switch = Pin(("gpioc", 6), Pin.IN)
+    switch.irq(lambda t: print("Switch pressed!"))
+
+    # Sleep until timeout or GPIO interrupt occurs
+    machine.lightsleep(30000)  # Sleep for 30 seconds or until switch is pressed
+
+Sensor interrupts can also wake the system from light-sleep mode::
+
+    import zsensor
+    import machine
+
+    # Configure sensor interrupt
+    accel = zsensor.Sensor("lsm6ds3tr_c")
+    accel.measure()  # Initialize sensor
+    accel.trigger_set(zsensor.TRIG_DATA_READY, lambda sensor: print("Motion detected!"))
+
+    # Sleep until timeout or sensor interrupt occurs
+    machine.lightsleep(30000)  # Sleep for 30 seconds or until motion is detected
+
+Notes:
+
+* Calling ``lightsleep()`` suspends the micropython thread, allowing Zephyr power management to reduce power consumption.
+* GPIO interrupts configured with ``Pin.irq()`` will wake the system from light-sleep mode.
+* Sensor interrupts configured with ``Sensor.trigger_set()`` will wake the system from light-sleep mode.
+
+Deep-sleep mode
+----------------
+
+The following code can be used to power down the system::
+
+    import machine
+
+    # power down the system
+    machine.depsleep()
+
+Notes:
+
+* Calling ``deepsleep()`` performs a complete system power off.
+* A reset or interrupt is required to restart the system.
+
+
 Disk Access
 -----------
 
@@ -172,3 +229,62 @@ Use the :ref:`zsensor.Sensor <zsensor.Sensor>` class to access sensor data::
     accel.get_millis(zsensor.ACCEL_Y) # print measurement value for accelerometer Y-axis sensor channel in millionths
     accel.get_micro(zsensor.ACCEL_Z)  # print measurement value for accelerometer Z-axis sensor channel in thousandths
     accel.get_int(zsensor.ACCEL_X)    # print measurement integer value only for accelerometer X-axis sensor channel
+
+Sensor interrupts and triggers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use ``trigger_set()`` to configure sensor interrupts that can wake the system from light-sleep mode.
+The channel parameter is optional and defaults to all channels for most common use cases::
+
+    import zsensor
+    import machine
+
+    # Create accelerometer sensor object (example for LSM6DS3TR-C)
+    accel = zsensor.Sensor("lsm6ds3tr_c")
+    accel.measure()  # Initialize sensor
+
+    def motion_callback(sensor_obj):
+        print("Motion detected!")
+        # Read fresh sensor data
+        x = sensor_obj.get_float(zsensor.ACCEL_X)
+        y = sensor_obj.get_float(zsensor.ACCEL_Y)
+        z = sensor_obj.get_float(zsensor.ACCEL_Z)
+        print(f"Acceleration: X={x:.2f}, Y={y:.2f}, Z={z:.2f}")
+
+    # Simple trigger for all channels (most common usage)
+    accel.trigger_set(zsensor.TRIG_DATA_READY, motion_callback)
+
+    # Sleep until timeout or sensor interrupt occurs
+    machine.lightsleep(30000)  # Sleep for 30 seconds or until motion is detected
+
+    # Disable the trigger
+    accel.trigger_set(zsensor.TRIG_DATA_READY, None)
+
+For more advanced usage, you can set channel-specific triggers::
+
+    def x_axis_callback(sensor_obj):
+        print("X-axis data ready!")
+        x = sensor_obj.get_float(zsensor.ACCEL_X)
+        print(f"X acceleration: {x:.2f} m/s^2")
+
+    # Channel-specific trigger
+    accel.trigger_set(zsensor.TRIG_DATA_READY, zsensor.ACCEL_X, x_axis_callback)
+
+    # Disable specific channel trigger
+    accel.trigger_set(zsensor.TRIG_DATA_READY, zsensor.ACCEL_X, None)
+
+Available trigger types include:
+
+* ``zsensor.TRIG_TIMER`` - Timer-based trigger
+* ``zsensor.TRIG_DATA_READY`` - Trigger when new sensor data is available
+* ``zsensor.TRIG_DELTA`` - Trigger when sensor value changes significantly
+* ``zsensor.TRIG_THRESHOLD`` - Trigger when sensor crosses a threshold
+* ``zsensor.TRIG_MOTION`` - Motion detection trigger
+* ``zsensor.TRIG_STATIONARY`` - Stationary detection trigger
+* ``zsensor.TRIG_TAP`` - Single tap detection
+* ``zsensor.TRIG_DOUBLE_TAP`` - Double tap detection
+* ``zsensor.TRIG_FREEFALL`` - Freefall detection
+* ``zsensor.TRIG_FIFO_WATERMARK`` - FIFO watermark trigger
+* ``zsensor.TRIG_FIFO_FULL`` - FIFO full trigger
+
+Note: Available trigger types depend on the specific sensor hardware capabilities.
