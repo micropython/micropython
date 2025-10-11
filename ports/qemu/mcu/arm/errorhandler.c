@@ -191,7 +191,7 @@ __attribute__((naked)) MP_NORETURN void PendSV_Handler(void) {
     exception_handler(PENDING_SV);
 }
 
-__attribute__((naked)) MP_NORETURN void SysTick_Handler(void) {
+__attribute__((naked, weak)) MP_NORETURN void SysTick_Handler(void) {
     exception_handler(SYSTEM_TICK);
 }
 

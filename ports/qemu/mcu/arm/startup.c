@@ -118,6 +118,9 @@ const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
 void _start(void) {
     mp_semihosting_init();
 
+    extern void ticks_init(void);
+    ticks_init();
+
     // Enable the UART
     uart_init();
 
