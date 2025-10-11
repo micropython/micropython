@@ -12,7 +12,7 @@ dependencies:
   idf:
     source:
       type: idf
-    version: 5.4.2
+    version: 5.5.1
 direct_dependencies:
 - espressif/mdns
 - idf
