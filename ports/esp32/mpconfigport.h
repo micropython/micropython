@@ -174,6 +174,8 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c3"
 #elif CONFIG_IDF_TARGET_ESP32C6
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c6"
+#elif CONFIG_IDF_TARGET_ESP32P4
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32p4"
 #endif
 #endif
 #define MICROPY_PY_NETWORK_INCLUDEFILE      "ports/esp32/modnetwork.h"
@@ -274,13 +276,18 @@
 
 // Enable stdio over USB Serial/JTAG peripheral
 #ifndef MICROPY_HW_ESP_USB_SERIAL_JTAG
+#if !CONFIG_IDF_TARGET_ESP32P4
 #define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED && !MICROPY_HW_USB_CDC)
+#else
+#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED)
+#endif
 #endif
 
+#if !CONFIG_IDF_TARGET_ESP32P4
 #if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG
 #error "Invalid build config: Can't enable both native USB and USB Serial/JTAG peripheral"
 #endif
-
+#endif
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
@@ -361,7 +368,7 @@ typedef long mp_off_t;
 
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
 // RTC has a register to trigger bootloader on these targets
-#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32P4
 #define MICROPY_ESP32_USE_BOOTLOADER_RTC    (1)
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) machine_bootloader_rtc()
 #endif
