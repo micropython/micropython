@@ -118,6 +118,12 @@ const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
 void _start(void) {
     mp_semihosting_init();
 
+    #if MICROPY_PY_TIME
+    // Initialize SysTick timer
+    extern void systick_init(void);
+    systick_init();
+    #endif
+
     // Enable the UART
     uart_init();
 
