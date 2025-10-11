@@ -68,3 +68,54 @@ And to run only a certain set of tests (eg a directory):
 
    $ ./run-tests.py -d basics
    $ ./run-tests.py float/builtin*.py
+
+Using run-tests.py
+------------------
+
+The ``run-tests.py`` script supports several parameters to customize test execution:
+
+**Target and Device Selection:**
+
+* ``--target`` - Target port (unix, pyboard, esp32, etc.). Default: unix
+* ``--device`` - Serial device or IP address for remote targets. Default: /dev/ttyACM0
+* ``-b, --baudrate`` - Baud rate for serial communication. Default: 115200
+
+**Test Selection:**
+
+* ``-d, --test-dirs`` - Specify test directories to run
+* ``-i, --include REGEX`` - Include tests matching regex pattern
+* ``-e, --exclude REGEX`` - Exclude tests matching regex pattern
+* ``files`` - Specific test files to run
+
+**Execution Options:**
+
+* ``--emit`` - MicroPython emitter (bytecode or native). Default: bytecode
+* ``--via-mpy`` - Compile .py files to .mpy first
+* ``--heapsize`` - Set heap size for tests
+* ``-j, --jobs N`` - Number of tests to run simultaneously
+
+**Result Management:**
+
+* ``-r, --result-dir`` - Directory for test results. Default: results/
+* ``--print-failures`` - Show diff of failed tests and exit
+* ``--clean-failures`` - Delete .exp and .out files from failed tests
+* ``--run-failures`` - Re-run only previously failed tests
+
+**Examples:**
+
+.. code-block:: bash
+
+   # Run only basic tests with native emitter
+   $ ./run-tests.py --emit native -d basics
+
+   # Run tests excluding async functionality
+   $ ./run-tests.py -e async
+
+   # Run specific test files in parallel
+   $ ./run-tests.py -j 4 basics/list*.py
+
+   # Test on ESP32 board
+   $ ./run-tests.py --target esp32 --device /dev/ttyUSB0
+
+   # Re-run only failed tests from previous run
+   $ ./run-tests.py --run-failures
