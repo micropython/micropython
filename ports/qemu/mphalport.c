@@ -25,6 +25,7 @@
  */
 
 #include "py/mphal.h"
+#include "py/stream.h"
 #include "shared/runtime/semihosting_arm.h"
 #include "uart.h"
 
@@ -33,7 +34,11 @@
 #define USE_SEMIHOSTING (0)
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
-    // Not implemented.
+    #if USE_UART
+    if ((poll_flags & MP_STREAM_POLL_RD) && uart_rx_any()) {
+        return MP_STREAM_POLL_RD;
+    }
+    #endif
     return 0;
 }
 
