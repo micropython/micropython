@@ -143,6 +143,13 @@ void mp_hal_signal_event(void);
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
 
+#ifdef CONFIG_ADC
+#define MICROPY_PY_MACHINE_ADC (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/zephyr/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ (1)
+#define MICROPY_PY_MACHINE_ADC_READ_UV (1)
+#endif
+
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;

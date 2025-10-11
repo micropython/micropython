@@ -119,6 +119,19 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
     spi.write_readinto(b'abcd', buf)    # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf)        # write buf to MOSI and read back into the buf
 
+Analog to Digital Converter (ADC)
+----------------------------------
+
+Use the :ref:`machine.ADC <machine.ADC>` class.
+
+Example of using ADC to read a pin's analog value (the ``zephyr,user`` node must contain
+the ``io-channels`` property containing all the ADC channels)::
+
+    from machine import ADC
+
+    adc = ADC(("adc", 0))
+    adc.read_uv()
+
 Disk Access
 -----------
 
