@@ -54,9 +54,15 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_SYS_PLATFORM     "qemu"
+#ifndef MICROPY_PY_SYS_STDIO_BUFFER
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
+#endif
+#ifndef MICROPY_PY_SELECT
 #define MICROPY_PY_SELECT           (0)
+#endif
+#ifndef MICROPY_PY_TIME
 #define MICROPY_PY_TIME             (0)
+#endif
 #define MICROPY_PY_ASYNCIO          (0)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/qemu/modmachine.c"
