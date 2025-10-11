@@ -42,6 +42,12 @@
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
 #endif
 
+// Enable t-strings only for full features builds
+// T-strings require significant stack space which causes issues in constrained environments
+#ifndef MICROPY_PY_TSTRINGS
+#define MICROPY_PY_TSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#endif
+
 #ifndef MICROPY_PY_SYS_PLATFORM
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"

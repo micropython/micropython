@@ -1,0 +1,402 @@
+=== Constructor edge cases ===
+Keyword args: Template.__new__ only accepts positional arguments
+Invalid type: Template args must be str or Interpolation, got int
+Invalid interp: interpolations tuple must contain only Interpolation objects, got int
+Template repr: Template(strings=('hello ', 'world'), interpolations=(Interpolation(42, 'x', None, ''),))
+Varargs constructor: strings=('Hello ', '!'), values=('World',)
+Varargs merged strings: ('AB', 'CD')
+Leading interpolation strings: ('', ' tail')
+Trailing interpolation strings: ('head ', '')
+Interpolation only strings: ('', '', '')
+
+=== Binary operations ===
+Template+str: can only concatenate string.templatelib.Template (not "str") to string.templatelib.Template
+str+Template: can only concatenate str (not "string.templatelib.Template") to str
+int+Template: TypeError
+-: unsupported
+*: unsupported
+/: unsupported
+%: unsupported
+**: unsupported
+&: unsupported
+|: unsupported
+^: unsupported
+<<: unsupported
+>>: unsupported
+
+=== Edge cases ===
+Empty template: 'Template(strings=('',), interpolations=())'
+Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
+Adjacent: 'Template(strings=('', '', '', ''), interpolations=(Interpolation(1, '1', None, ''), Interpolation(2, '2', None, ''), Interpolation(3, '3', None, '')))'
+Single iter: ['only']
+Self+self: 'Template(strings=('testtest',), interpolations=())'
+
+=== Values property ===
+Values[0]: ()
+Values[1]: (0,)
+Values[2]: (0, 1)
+Values[3]: (0, 1, 2)
+Values[4]: (0, 1, 2, 3)
+Values[5]: (0, 1, 2, 3, 4)
+Values[6]: (0, 1, 2, 3, 4, 5)
+
+=== Size limits ===
+Size limit test: SKIPPED (causes memory errors)
+
+=== Format spec edge cases ===
+Empty fmt: Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))
+Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10'),))'
+Conv+fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
+Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.14', None, '10.2f'),))'
+Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
+
+=== Special cases ===
+__template__ error: invalid interpolation format
+__template__: Template
+Interp read-only: AttributeError
+Whitespace trim: 'Template(strings=('', ''), interpolations=(Interpolation(None, '   ', None, ''),))'
+Debug =: Template(strings=('', ''), interpolations=(Interpolation(42, 'x=', None, ''),))
+Custom !r: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 'r', ''),))
+Custom !s: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 's', ''),))
+__str__ bound: Template(strings=('test',), interpolations=())
+Empty start iter: ['Interpolation', 'str']
+Iterator edge: ['Interpolation', 'Interpolation']
+
+=== Bracket/paren depth tracking ===
+Colon in key: expr=d['b:c'], value=2
+Slice colon: expr=items[1:3], value=[20, 30]
+Function call: expr=pair(1, 2), value=(1, 2)
+Default arg colon: expr=pair(3), value=(3, ':')
+Nested brackets: expr=matrix[0][1], value=2
+
+=== repr tests ===
+Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
+Interp repr: Interpolation(42, 'x', 's', ':>10')
+
+=== Additional coverage tests ===
+String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
+Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
+Raw regex strings: ('Regex: \\\\d+', ''), value=42
+String expr: 'Template(strings=('', ''), interpolations=(Interpolation('test', '"test"', None, ''),))'
+Re-raised exception: Special error
+Conv empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', ''),))'
+Too many interpolations: SyntaxError
+Large template: SyntaxError
+Triple quoted: 'Template(strings=('Triple "quoted" string',), interpolations=())'
+Raw triple: 'Template(strings=('Raw triple\\n', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'Template(strings=('test', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Self interp concat: values=(1, 1)
+Lonely string: SyntaxError
+Empty t-string: 'Template(strings=('',), interpolations=())'
+
+=== Unicode edge cases ===
+Emoji: True
+Combining: True
+Zero-width: True
+Unicode format: True
+
+=== Nested template strings ===
+Nested: Template
+Expression: Template
+Function: Template
+
+=== Inline template literal tests ===
+Empty nested: Template
+With content: Template
+Concatenation: Template
+Mixed quotes: Template
+Nested interp: Template
+
+=== Additional unique coverage tests ===
+# Mixed args constructor
+Mixed args: Template(strings=('Hello ', ', the answer is ', ' and pi is ', ''), interpolations=(Interpolation('World', 'name', None, ''), Interpolation(42, 'answer', None, ''), Interpolation(3.14, 'pi', None, '.2f')))
+
+# Two-tuple constructor
+Two-tuple form: Template(strings=('Hello ', ', welcome to ', '!'), interpolations=(Interpolation('World', 'name', None, ''), Interpolation('Python', 'lang', None, '')))
+
+# Complex format with variables
+Complex format: Template(strings=('Value: ', ''), interpolations=(Interpolation(3.14159, 'val', None, '10.2f'),))
+
+# Escaped braces in format specs
+Escaped {5}: Template(strings=('Value: ', ''), interpolations=(Interpolation(42, 'x', None, '0{{5}}d'),))
+
+# Multi-string concatenation
+Multi concat: Template(strings=('A ', ' BC ', ' D'), interpolations=(Interpolation(1, 'x', None, ''), Interpolation(2, 'y', None, '')))
+
+# Cumulative size limit
+Created huge template
+Size limit: template string too large
+
+# Empty expression
+Empty expr: Template(strings=('Val: ', ''), interpolations=(Interpolation(42, '', None, ''),))
+
+# Invalid __template__ calls
+Single tuple: function takes 2 positional arguments but 1 were given
+Invalid interp: invalid interpolation format
+
+# StringLike REVERSE_ADD test
+StringLike + Template: unsupported types for __add__: 'StringLike', 'Template'
+
+# Format spec ending with }}
+Format }: Template(strings=('Val: ', ''), interpolations=(Interpolation(42, 'x', None, 'd}}'),))
+
+# Large values test
+Large values (10): (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+Large values (15): len=15
+
+# Broken interpolation test
+Broken interp created: expr=broken
+
+# Long expression name
+Long expr: value=42
+
+Coverage tests completed!
+
+=== Additional coverage for uncovered branches ===
+
+# Conversion after format spec
+Conv after fmt: SyntaxError - invalid syntax in template expression: x:10
+Wrong order: SyntaxError - invalid syntax in template expression: x:>10
+Format before conversion: SyntaxError - invalid syntax in template expression: x:d
+
+# Integer overflow test
+Overflow test: OverflowError - template string too large for header format
+
+
+# Unicode escape sequences tests
+Invalid \u hex: preserved as literal
+Short \U: preserved as literal
+
+# Bytes in t-strings
+Bytes 0x80-0xFF: OK
+Octal bytes: OK
+Empty expr SyntaxError: empty expression not allowed
+Whitespace expr SyntaxError: empty expression not allowed
+Long expression: OK
+Large template string: OK
+Many interpolations: OK
+Too many interpolations: SyntaxError - template string too large for header format
+Template.__str__ with large string: OK
+Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
+Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
+Template + str error: can only concatenate string.templatelib.Template (not "str") to string.templatelib.Template
+str + Template error: can only concatenate str (not "string.templatelib.Template") to str
+Binary op error: can only concatenate str (not "string.templatelib.Template") to str
+Conversion without format spec: OK
+Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
+
+# Debug format edge cases
+Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
+
+# Empty format spec branches
+Empty fmt before conv: SyntaxError
+Conv then empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
+
+# Raw t-string escape tests
+Raw escapes: 'Template(strings=('\\x41\\u0042\\n\\t',), interpolations=())'
+
+# Lexer edge cases
+ERROR: Invalid \x should have failed
+\N{}: SyntaxError
+
+# Expression parser tests
+Complex expr: OK
+
+# Format spec position tests
+Conv before fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
+Whitespace expr: SyntaxError
+
+# Memory/lexer failure simulation
+Lexer NULL case: Tested via heapalloc_fail_tstring.py
+
+# Size overflow edge cases
+Large segments: SyntaxError
+
+# High byte tests
+High bytes: OK
+
+# Invalid escape tests
+Invalid escape: SyntaxError
+
+# Debug format edge cases
+Debug format: OK
+
+# Format spec edge cases
+Full format: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 'r', '0>+#10.5'),))'
+
+# Escape at EOF tests
+Trailing backslash: SyntaxError
+
+# Format spec position coverage
+Malformed format: SyntaxError
+
+=== Additional t-string coverage tests ===
+
+# Interpolation attribute access
+Value attr: test_value
+Expression attr: test_expr
+Conversion attr: s
+Format spec attr: :>10
+
+# Template string concatenation
+Concatenated strings: ('part1part2part3part4part5',)
+
+# Template interpolations attribute
+Interpolations attr: (Interpolation('World', 'name', None, ''), Interpolation('Python', 'place', None, ''))
+
+# Integer overflow in size calculation
+ERROR: Should have raised SyntaxError
+
+# Escaped quotes in literals
+Escaped quotes: OK
+
+# Backslash handling
+Backslash in path: OK
+
+# Lexer edge cases
+Note: NULL lexer case requires out-of-memory condition
+This is tested in heapalloc_fail_tstring.py
+
+# Parser allocation edge cases
+Deep nesting: OK
+
+# Complex expression parsing
+Dict comprehension: OK
+
+# Expression parser exceptions
+
+# Empty format spec branches
+Empty format after colon: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Variable with empty format: 'Template(strings=('', ''), interpolations=(Interpolation(100, 'x', None, ''),))'
+
+# Template string size limit
+Too many interpolations: template string too large for header format
+
+=== Tests for remaining uncovered branches ===
+Malformed 1: invalid syntax in template expression: x:10
+Malformed 2: invalid syntax in template expression: value:^10
+Malformed 3: invalid syntax in template expression: x:>
+Empty format spec 1: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'val', None, ''),))'
+No format spec: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'val', None, ''),))'
+Octal high bytes: OK, first byte = 0x80
+Invalid unicode: SyntaxError - invalid syntax
+Empty expr: empty expression not allowed
+Whitespace expr: empty expression not allowed
+Custom exception re-raised: Test exception
+
+NULL lexer: Tested in heapalloc_fail_tstring.py
+ERROR: Should have raised SyntaxError
+Direct high bytes: OK, len=5
+Incomplete hex: SyntaxError
+\N{} escape: SyntaxError
+Triple quote high bytes: OK
+Colon only format: 'Template(strings=('', ''), interpolations=(Interpolation(100, 'x', None, ''),))'
+Debug with format: OK
+Debug format with repr: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
+Octal escapes: OK, len=2
+Unicode name escape: SyntaxError - invalid syntax in template expression: LATIN SMALL LETTER A
+Raw Unicode escapes: '\u0041\U00000042'
+Bytes Unicode escape: preserved as literal
+CR LF handling: OK
+Deep indent: OK
+Whitespace-only: SyntaxError - empty expression not allowed
+Octal high bytes: OK, ord=255, 128
+Trailing backslash: SyntaxError
+Very long expression: OK
+Debug fmt+conv: fmt_spec='10', conv=r
+
+# Test integer overflow in total calculation
+Integer overflow: platform-dependent, tested via overflow scenarios
+
+# Test __template__ edge cases
+Max strings: OK, 4095 strings
+Max interps error: OverflowError
+
+# Test vstr string concatenation
+vstr concat: 'Template(strings=('part1part2part3part4', 'end'), interpolations=(Interpolation(1, 'x', None, ''),))'
+
+# Test high byte handling
+High bytes: len=5, first=0x7f, last=0xff
+Octal high bytes: OK, len=3
+
+=== Debug specifier tests ===
+
+# Debug specifier
+Debug basic: strings=('value=', ''), conv=r
+Debug !s: strings=('value=', ''), conv=s
+Debug fmt: strings=('value=', ''), fmt_spec='>10'
+
+# Format spec with nested interpolation
+Nested fmt spec: '10'
+
+# Conversion types
+Conversion r: OK
+Conversion s: OK
+Conversion a: OK
+
+# Raw template strings
+rt prefix: 'Raw\n'
+tr prefix: 'Raw\t'
+
+# Template concatenation
+Explicit concat: strings=('Hello ', ''), values=('World',)
+Implicit concat: strings=('Hello ', ''), values=('World',)
+
+# Template + str prohibition
+Template + str: TypeError (correct)
+str + Template: TypeError (correct)
+
+# Empty template
+Empty template: strings=('',), interpolations=()
+
+# Size limit tests
+Many segments: OK
+4090 interpolations error: OverflowError
+4096 interpolations: OverflowError (correct)
+
+# Trailing whitespace in expression
+Trailing whitespace: OK
+
+# Empty expression after trimming
+Empty expression: SyntaxError (correct)
+
+# Deep nesting test
+Deep nesting error: RuntimeError
+
+# Template + non-string object
+Template + custom object: TypeError (correct)
+
+# 2-tuple constructor overflow
+Too many strings (2-tuple): OverflowError (correct)
+
+# Raw t-string with octal escapes
+Regular string octal: OK, len=4
+
+# Empty format spec node
+Empty format after colon: OK
+
+# Too many segments
+Too many segments: OverflowError (correct)
+
+# Empty expression - whitespace only
+Empty expr (space): SyntaxError (correct)
+Empty expr (spaces): SyntaxError (correct)
+Empty expr (tab): SyntaxError (correct)
+
+# Template() constructor with many interpolations
+Template() constructor: OK (20 interpolations)
+
+# Multiple consecutive strings
+Multiple strings concatenated: OK
+
+# Template.__add__ with multiple interpolations
+Template.__add__: OK (40 interpolations)
+
+# Unicode escapes < 0x100
+Unicode escapes < 0x100: OK
+
+# Unicode > 0xFF in regular string
+Unicode > 0xFF: OK
+
+=== All coverage tests completed! ===

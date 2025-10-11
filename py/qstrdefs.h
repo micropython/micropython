@@ -76,3 +76,7 @@ Q(/rom/lib)
 #if MICROPY_ENABLE_PYSTACK
 Q(pystack exhausted)
 #endif
+
+// Always define __template__ qstr to maintain consistent qstr indices
+// even when MICROPY_PY_TSTRINGS is disabled
+Q(__template__)

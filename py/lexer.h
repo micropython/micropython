@@ -56,6 +56,10 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_INTEGER,
     MP_TOKEN_FLOAT_OR_IMAG,
     MP_TOKEN_STRING,
+    #if MICROPY_PY_TSTRINGS
+    MP_TOKEN_TSTRING,
+    MP_TOKEN_TSTRING_RAW,
+    #endif
     MP_TOKEN_BYTES,
 
     MP_TOKEN_ELLIPSIS,
@@ -181,6 +185,9 @@ typedef struct _mp_lexer_t {
     size_t tok_column;          // token source column
     mp_token_kind_t tok_kind;   // token kind
     vstr_t vstr;                // token data
+    #if MICROPY_PY_TSTRINGS
+    bool tok_is_tstring_raw;    // whether the current token was a raw t-string
+    #endif
     #if MICROPY_PY_FSTRINGS
     vstr_t fstring_args;        // extracted arguments to pass to .format()
     size_t fstring_args_idx;    // how many bytes of fstring_args have been read
