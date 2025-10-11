@@ -102,6 +102,15 @@ const mp_obj_module_t mp_module_errno = {
 MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_errno, mp_module_errno);
 
 qstr mp_errno_to_str(mp_obj_t errno_val) {
+    #if MICROPY_PY_STRERROR
+    mp_int_t errno_int;
+    if (mp_obj_get_int_maybe(errno_val, &errno_int) && errno_int > 0) {
+        char *msg = strerror(errno_int);
+        if (msg) {
+            return qstr_from_str(msg);
+        }
+    }
+    #endif
     #if MICROPY_PY_ERRNO_ERRORCODE
     // We have the errorcode dict so can do a lookup using the hash map
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
