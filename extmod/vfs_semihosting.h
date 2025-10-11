@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the MicroPython project, https://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2024 Damien P. George
+ * Copyright (c) 2024 Alessandro Gatti
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,43 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
-#include "shared/runtime/semihosting.h"
-#include "uart.h"
+#ifndef MICROPY_INCLUDED_PORTS_QEMU_VFS_SEMIHOSTING_H
+#define MICROPY_INCLUDED_PORTS_QEMU_VFS_SEMIHOSTING_H
 
-// UART is better behaved with redirection under qemu-system-arm, so prefer that for stdio.
-#define USE_UART (1)
-#define USE_SEMIHOSTING (0)
+#include "py/obj.h"
 
-uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
-    // Not implemented.
-    return 0;
-}
+extern const mp_obj_type_t mp_type_vfs_semihosting;
+extern const mp_obj_type_t mp_type_vfs_semihosting_fileio;
+extern const mp_obj_type_t mp_type_vfs_semihosting_textio;
 
-int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        #if USE_UART
-        int c = uart_rx_chr();
-        if (c >= 0) {
-            return c;
-        }
-        #endif
-        #if USE_SEMIHOSTING
-        char str[1];
-        int ret = mp_semihosting_read(mp_semihosting_stdout, str, 1);
-        if (ret == 0) {
-            return str[0];
-        }
-        #endif
-    }
-}
+mp_obj_t mp_vfs_semihosting_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_obj_t mode_in);
 
-mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    #if USE_UART
-    uart_tx_strn(str, len);
-    #endif
-    #if USE_SEMIHOSTING
-    mp_semihosting_write(mp_semihosting_stdout, str, len);
-    #endif
-    return len;
-}
+#endif // MICROPY_INCLUDED_PORTS_QEMU_VFS_SEMIHOSTING_H
