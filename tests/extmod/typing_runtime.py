@@ -1,18 +1,22 @@
 print("Testing runtime aspects of typing module")
 
+
 try:
     from typing import TYPE_CHECKING
 except ImportError:
     print("SKIP")
     raise SystemExit
 
+print("# Python 3.5+")
+print("### Miscellaneous")
 
-print("Testing : typing.TYPE_CHECKING - Python 3.5.2")
+
+print("typing.TYPE_CHECKING")
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
 
-print("Testing : typing parameter annotations")
-from typing import Any, Dict, List
+print("typing parameter annotations")
+from typing import Any, Dict, List, Union
 
 
 def add_numbers(a: int, b: int) -> int:
@@ -38,7 +42,7 @@ avg = get_average([1.0, 2.5, 3.5])
 process_data({"key": "value", "number": 42})
 
 
-print("Testing : typing.Self - Python 3.11")
+print("typing.Self - Python 3.11")
 from typing import Callable, Self
 
 
@@ -55,7 +59,7 @@ base = BaseClass()
 base.register(cb)
 
 
-print("Testing : typing@no_type_check decorator")
+print("typing@no_type_check decorator")
 from typing import no_type_check
 
 
@@ -66,7 +70,7 @@ def quad(r0):
 
 print(quad(1))
 
-print("Testing : typing.Protocol")
+print("typing.Protocol")
 
 from typing import Protocol
 
@@ -93,7 +97,7 @@ def add(adder: Adder) -> None:
 add(IntAdder())
 add(FloatAdder())
 
-print("Testing : typing.NewType")
+print("typing.NewType")
 
 from typing import NewType
 
@@ -105,7 +109,7 @@ print(some_id)
 assert isinstance(some_id, int), "NewType should be instance of the original type"
 
 
-print("Testing : typing.Any")
+print("typing.Any")
 from typing import Any
 
 a: Any = None
@@ -138,7 +142,7 @@ def hash_b(item: Any) -> int:
 print(hash_b(42))
 print(hash_b("foo"))
 
-print("Testing : typing.AnyStr")
+print("typing.AnyStr")
 
 from typing import AnyStr
 
@@ -150,12 +154,12 @@ def concat(a: AnyStr, b: AnyStr) -> AnyStr:
 concat("foo", "bar")  # OK, output has type 'str'
 concat(b"foo", b"bar")  # OK, output has type 'bytes'
 try:
-    concat("foo", b"bar")  # Error, cannot mix str and bytes
+    concat("foo", b"bar")  # Error, cannot mix str and bytes # type: ignore
 except TypeError:
     print("TypeError is expected")
 
 
-print("Testing : typing.LiteralString")
+print("typing.LiteralString")
 from typing import LiteralString
 
 
@@ -179,7 +183,7 @@ literal_str = "drop * from tables"
 
 caller(some_str, literal_str)
 
-print("Testing : typing.overload")
+print("typing.overload")
 
 from typing import overload
 
@@ -201,9 +205,8 @@ def bar(x):
 print(bar(42))
 
 
-print("Testing : typing.Required, NotRequired in TypedDict")
-
-# Specification: https://typing.readthedocs.io/en/latest/spec/typeddict.html#required-and-notrequired
+print("typing.Required, NotRequired in TypedDict")
+# https://typing.readthedocs.io/en/latest/spec/typeddict.html#required-and-notrequired
 
 from typing import NotRequired, Required, TypedDict
 
@@ -217,7 +220,7 @@ class Movie(TypedDict):
 m = Movie(title="Life of Brian", year=1979)
 
 
-print("Testing : typing.TypeVar")
+print("typing.TypeVar")
 
 from typing import List, TypeVar
 
@@ -235,7 +238,7 @@ list_two: List[int] = [1, 2, 3]
 print(first(list_two))
 
 
-print("Testing : typing.Generator")
+print("typing.Generator")
 
 from typing import Generator
 
@@ -250,7 +253,7 @@ v = next(e)
 print(v)
 
 
-print("Testing : typing.NoReturn")
+print("typing.NoReturn")
 
 from typing import NoReturn
 
@@ -261,7 +264,7 @@ def stop() -> NoReturn:
 
 #
 
-print("Testing : typing.Final")
+print("typing.Final")
 
 from typing import Final
 
@@ -271,7 +274,7 @@ CONST: Final = 42
 print(CONST)
 
 
-print("Testing : typing.final")
+print("typing.final")
 
 from typing import final
 
@@ -299,21 +302,25 @@ class Other(Leaf):  # type: ignore # Error reported by type checker
 other = Other()
 
 
-print("Testing : typing.TypeVarTuple and typing.Unpack")
+print("typing.TypeVarTuple and typing.Unpack")
 
 from typing import TypeVarTuple, Unpack
 
 Ts = TypeVarTuple("Ts")
-tup: tuple[Unpack[Ts]]  # Semantically equivalent, and backwards-compatible
+tup: tuple[Unpack[Ts]]  # Semantically equivalent, and backwards-compatible # type: ignore
 
 
-print("Testing : typing.Callable, ParamSpec")
+print("typing.Callable, ParamSpec")
 
 # ParamSpec, 3.11 notation
 # https://docs.python.org/3/library/typing.html#typing.ParamSpec
 
-# FIXME: from collections.abc import Callable
-from typing import Callable
+try:
+    from collections.abc import Callable
+except ImportError:
+    print("- [ ] FIXME: from collections.abc import Callable")
+
+from typing import Callable  # Workaround for test
 from typing import TypeVar, ParamSpec
 
 T = TypeVar("T")
@@ -341,8 +348,109 @@ print(x)
 assert x == 3, "add_two(1, 2) == 3"
 
 
-print("Testing : typing.")
-print("Testing : typing.")
-print("Testing : typing.")
-print("Testing : typing.")
-print("Testing : typing.")
+print("typing.get_origin()")
+# https://docs.python.org/3/library/typing.html#typing.get_origin
+
+from typing import get_origin
+
+# FIXME: - cpy_diff - get_origin() unsupported, or always returns None
+if not get_origin(str) is None:
+    print("- [ ] FIXME: cpy_diff - get_origin(str) should be None")
+# assert get_origin(Dict[str, int]) is dict
+# assert get_origin(Union[int, str]) is Union
+
+print("typing.get_args()")
+# https://docs.python.org/3/library/typing.html#typing.get_args
+from typing import get_args, Dict, Union
+
+# FIXME: - cpy_diff - get_args() unsupported, or always returns ()
+if not get_args(int) == ():
+    print("- [ ] FIXME: cpy_diff - get_args(int) should be ()")
+
+# assert get_args(Dict[int, str]) == (int, str), "get_args(Dict[int, str]) should be (int, str)"
+# assert get_args(Union[int, str]) == (int, str), "get_args(Union[int, str]) should be (int, str)"
+
+
+print("Subscriptables")
+
+from typing import (
+    AbstractSet,
+    AsyncContextManager,
+    AsyncGenerator,
+    AsyncIterable,
+    AsyncIterator,
+    Awaitable,
+)
+from typing import (
+    Callable,
+    ChainMap,
+    Collection,
+    Container,
+    ContextManager,
+    Coroutine,
+    Counter,
+    DefaultDict,
+)
+from typing import (
+    Deque,
+    Dict,
+    FrozenSet,
+    Generator,
+    Generic,
+    Iterable,
+    Iterator,
+    List,
+    Literal,
+    Mapping,
+)
+from typing import (
+    MutableMapping,
+    MutableSequence,
+    MutableSet,
+    NamedTuple,
+    Optional,
+    OrderedDict,
+    Self,
+)
+from typing import Sequence, Set, Tuple, Type, Union
+
+
+t_01: AbstractSet[Any]
+t_02: AsyncContextManager[Any]
+t_03: AsyncGenerator[Any]
+t_04: AsyncIterable[Any]
+t_05: AsyncIterator[Any]
+t_06: Awaitable[Any]
+t_07: Callable[[], Any]
+t_08: ChainMap[Any, Any]
+t_09: Collection[Any]
+t_10: Container[Any]
+t_11: ContextManager[Any]
+t_12: Coroutine[Any, Any, Any]
+t_13: Counter[Any]
+t_14: DefaultDict[Any, Any]
+t_15: Deque[Any]
+t_16: Dict[Any, Any]
+t_17: FrozenSet[Any]
+t_18: Generator[Any]
+# t_19: Generic[Any]
+t_20: Iterable[Any]
+t_21: Iterator[Any]
+t_22: List[Any]
+t_23: Literal[1, 2, 3, "a", b"b", True, None]
+t_24: Mapping[Any, Any]
+t_25: MutableMapping[Any, Any]
+t_26: MutableSequence[Any]
+t_27: MutableSet[Any]
+t_28: NamedTuple
+t_29: Optional[Any]
+t_30: OrderedDict[Any, Any]
+# t_31: Self[Any]
+t_32: Sequence[Any]
+t_33: Set[Any]
+t_34: Tuple[Any]
+t_35: Type[Any]
+t_36: Union[Any, Any]
+
+
+print("-----")
