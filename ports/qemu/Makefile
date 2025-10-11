@@ -77,6 +77,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 SRC_C += \
 	mcu/arm/errorhandler.c \
 	mcu/arm/startup.c \
+	mcu/arm/systick.c \
 	shared/runtime/semihosting_arm.c \
 
 endif
