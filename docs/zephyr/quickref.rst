@@ -119,6 +119,49 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
     spi.write_readinto(b'abcd', buf)    # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf)        # write buf to MOSI and read back into the buf
 
+Light-sleep mode
+----------------
+
+The following code can be used to sleep, reducing power consumption::
+
+    import machine
+
+    # put the device to sleep for 10 seconds
+    machine.lightsleep(10000)
+
+GPIO interrupts can wake the system from light-sleep mode::
+
+    from machine import Pin
+    import machine
+
+    # Configure a pin interrupt
+    switch = Pin(("gpioc", 6), Pin.IN)
+    switch.irq(lambda t: print("Switch pressed!"))
+
+    # Sleep until timeout or GPIO interrupt occurs
+    machine.lightsleep(30000)  # Sleep for 30 seconds or until switch is pressed
+
+Notes:
+
+* Calling ``lightsleep()`` suspends the micropython thread, allowing Zephyr power management to reduce power consumption.
+* GPIO interrupts configured with ``Pin.irq()`` will wake the system from light-sleep mode.
+
+Deep-sleep mode
+----------------
+
+The following code can be used to power down the system::
+
+    import machine
+
+    # power down the system
+    machine.depsleep()
+
+Notes:
+
+* Calling ``deepsleep()`` performs a complete system power off.
+* A reset or interrupt is required to restart the system.
+
+
 Disk Access
 -----------
 
