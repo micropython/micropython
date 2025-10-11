@@ -191,7 +191,9 @@ PWM can be enabled on all pins except Pin(16).  There is a single frequency
 for all channels, with range between 1 and 1000 (measured in Hz).  The duty
 cycle is between 0 and 1023 inclusive.
 
-Use the ``machine.PWM`` class::
+Use the ``machine.PWM`` class:
+
+.. code-block:: python
 
     from machine import Pin, PWM
 
@@ -222,7 +224,9 @@ Software SPI bus
 
 There are two SPI drivers. One is implemented in software (bit-banging)
 and works on all pins, and is accessed via the :ref:`machine.SoftSPI <machine.SoftSPI>`
-class::
+class:
+
+.. code-block:: python
 
     from machine import Pin, SoftSPI
 
@@ -266,7 +270,9 @@ I2C bus
 
 The I2C driver is implemented in software and works on all pins,
 and is accessed via the :ref:`machine.I2C <machine.I2C>` class (which is an
-alias of :ref:`machine.SoftI2C <machine.SoftI2C>`)::
+alias of :ref:`machine.SoftI2C <machine.SoftI2C>`):
+
+.. code-block:: python
 
     from machine import Pin, I2C
 
@@ -282,7 +288,9 @@ alias of :ref:`machine.SoftI2C <machine.SoftI2C>`)::
 Real time clock (RTC)
 ---------------------
 
-See :ref:`machine.RTC <machine.RTC>` ::
+See :ref:`machine.RTC <machine.RTC>` :
+
+.. code-block:: python
 
     from machine import RTC
 
@@ -305,7 +313,9 @@ See :ref:`machine.RTC <machine.RTC>` ::
 WDT (Watchdog timer)
 --------------------
 
-See :ref:`machine.WDT <machine.WDT>`. ::
+See :ref:`machine.WDT <machine.WDT>`. :
+
+.. code-block:: python
 
     from machine import WDT
 
@@ -317,7 +327,9 @@ Deep-sleep mode
 ---------------
 
 Connect GPIO16 to the reset pin (RST on HUZZAH).  Then the following code
-can be used to sleep, wake and check the reset cause::
+can be used to sleep, wake and check the reset cause:
+
+.. code-block:: python
 
     import machine
 
@@ -338,7 +350,9 @@ can be used to sleep, wake and check the reset cause::
 OneWire driver
 --------------
 
-The OneWire driver is implemented in software and works on all pins::
+The OneWire driver is implemented in software and works on all pins:
+
+.. code-block:: python
 
     from machine import Pin
     import onewire
@@ -351,7 +365,9 @@ The OneWire driver is implemented in software and works on all pins::
     ow.write('123')         # write bytes on the bus
     ow.select_rom(b'12345678') # select a specific device by its ROM code
 
-There is a specific driver for DS18S20 and DS18B20 devices::
+There is a specific driver for DS18S20 and DS18B20 devices:
+
+.. code-block:: python
 
     import time, ds18x20
     ds = ds18x20.DS18X20(ow)
@@ -368,7 +384,9 @@ sample the temperature.
 NeoPixel driver
 ---------------
 
-Use the ``neopixel`` module::
+Use the ``neopixel`` module:
+
+.. code-block:: python
 
     from machine import Pin
     from neopixel import NeoPixel
@@ -390,7 +408,9 @@ For low-level driving of a NeoPixel see `machine.bitstream`.
 APA102 driver
 -------------
 
-Use the ``apa102`` module::
+Use the ``apa102`` module:
+
+.. code-block:: python
 
     from machine import Pin
     from apa102 import APA102
@@ -402,7 +422,9 @@ Use the ``apa102`` module::
     apa.write()                  # write data to all pixels
     r, g, b, brightness = apa[0] # get first pixel colour
 
-For low-level driving of an APA102::
+For low-level driving of an APA102:
+
+.. code-block:: python
 
     import esp
     esp.apa102_write(clock_pin, data_pin, rgbi_buf)
@@ -410,7 +432,9 @@ For low-level driving of an APA102::
 DHT driver
 ----------
 
-The DHT driver is implemented in software and works on all pins::
+The DHT driver is implemented in software and works on all pins:
+
+.. code-block:: python
 
     import dht
     import machine
@@ -428,7 +452,9 @@ The DHT driver is implemented in software and works on all pins::
 SSD1306 driver
 --------------
 
-Driver for SSD1306 monochrome OLED displays. See tutorial :ref:`ssd1306`. ::
+Driver for SSD1306 monochrome OLED displays. See tutorial :ref:`ssd1306`. :
+
+.. code-block:: python
 
     from machine import Pin, I2C
     import ssd1306
@@ -445,13 +471,17 @@ WebREPL (web browser interactive prompt)
 WebREPL (REPL over WebSockets, accessible via a web browser) is an
 experimental feature available in ESP8266 port. Download web client
 from https://github.com/micropython/webrepl (hosted version available
-at http://micropython.org/webrepl), and configure it by executing::
+at http://micropython.org/webrepl), and configure it by executing:
+
+.. code-block:: python
 
     import webrepl_setup
 
 and following on-screen instructions. After reboot, it will be available
 for connection. If you disabled automatic start-up on boot, you may
-run configured daemon on demand using::
+run configured daemon on demand using:
+
+.. code-block:: python
 
     import webrepl
     webrepl.start()

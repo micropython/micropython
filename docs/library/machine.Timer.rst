@@ -41,7 +41,9 @@ Methods
 
 .. method:: Timer.init(*, mode=Timer.PERIODIC, freq=-1, period=-1, callback=None, hard=True)
 
-   Initialise the timer. Example::
+   Initialise the timer. Example:
+
+    .. code-block:: python
 
        def mycallback(t):
            pass

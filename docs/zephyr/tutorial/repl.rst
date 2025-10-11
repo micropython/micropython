@@ -59,11 +59,11 @@ example::
 
 If your board has an LED, you can blink it using the following code::
 
-        >>>import time
-        >>>from machine import Pin
+        >>> import time
+        >>> from machine import Pin
 
-        >>>LED = Pin(("GPIO_1", 21), Pin.OUT)
-        >>>while True:
+        >>> LED = Pin(("GPIO_1", 21), Pin.OUT)
+        >>> while True:
         ...    LED.value(1)
         ...    time.sleep(0.5)
         ...    LED.value(0)

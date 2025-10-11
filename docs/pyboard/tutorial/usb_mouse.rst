@@ -6,7 +6,9 @@ of the default USB flash drive.
 
 To do this we must first edit the ``boot.py`` file to change the USB
 configuration.  If you have not yet touched your ``boot.py`` file then it
-will look something like this::
+will look something like this:
+
+.. code-block:: python
 
     # boot.py -- run on boot to configure USB and filesystem
     # Put app code in main.py
@@ -17,12 +19,16 @@ will look something like this::
     #pyb.usb_mode('VCP+HID') # act as a serial device and a mouse
 
 To enable the mouse mode, uncomment the last line of the file, to
-make it look like::
+make it look like:
+
+.. code-block:: python
 
     pyb.usb_mode('VCP+HID') # act as a serial device and a mouse
 
 If you already changed your ``boot.py`` file, then the minimum code it
-needs to work is::
+needs to work is:
+
+.. code-block:: python
 
     import pyb
     pyb.usb_mode('VCP+HID')
@@ -41,6 +47,8 @@ To get the py-mouse to do anything we need to send mouse events to the PC.
 We will first do this manually using the REPL prompt.  Connect to your
 pyboard using your serial program and type the following (no need to type
 the ``#`` and text following it)::
+
+.. skip: start
 
     >>> hid = pyb.USB_HID()
     >>> hid.send((0, 100, 0, 0)) # (button status, x-direction, y-direction, scroll)
@@ -96,7 +104,9 @@ to the filesystem (the USB drive should appear), and you can edit ``main.py``.
 (Leave ``boot.py`` as-is, because we still want to go back to HID-mode after
 we finish editing ``main.py``.)
 
-In ``main.py`` put the following code::
+In ``main.py`` put the following code:
+
+.. code-block:: python
 
     import pyb
 
@@ -130,3 +140,4 @@ In the ``boot.py`` file, comment out (put a # in front of) the line with the
 
 Save your file, eject/unmount the drive, and reset the pyboard.  It is now
 back to normal operating mode.
+.. skip: end
