@@ -29,8 +29,6 @@
 
 // type definitions for the specific machine
 
-typedef intptr_t mp_int_t; // must be pointer size
-typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()

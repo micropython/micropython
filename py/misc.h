@@ -456,15 +456,15 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     }
     return zeroes;
     #else
-    MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
-        || sizeof(mp_int_t) == sizeof(long));
-
-    // ugly, but should compile to single intrinsic unless O0 is set
-    if (mp_check(sizeof(mp_int_t) == sizeof(long))) {
-        return mp_clzl((unsigned long)x);
-    } else {
-        return mp_clzll((unsigned long long)x);
-    }
+    #if MP_INT_MAX == INT_MAX
+    return mp_clz((unsigned)x);
+    #elif MP_INT_MAX == LONG_MAX
+    return mp_clzl((unsigned long)x);
+    #elif MP_INT_MAX == LLONG_MAX
+    return mp_clzll((unsigned long long)x);
+    #else
+    #error Unexpected MP_INT_MAX value
+    #endif
     #endif
 }
 
