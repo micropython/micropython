@@ -28,3 +28,20 @@
 #include "py/obj.h"
 
 const struct device *zephyr_device_find(mp_obj_t name);
+
+#if defined(CONFIG_MICROPY_DYNAMIC_PINCTRL)
+
+// Circumvent limitation of only having devices that are initialized
+typedef struct mp_zephyr_device_data_t_ {
+    const struct device *dev;
+    char *name;
+    const char **labels;
+    size_t label_cnt;
+    struct pinctrl_dev_config *pinctrl_cfg;
+} mp_zephyr_device_data_t;
+
+const mp_zephyr_device_data_t *zephyr_device_find_data_name(mp_obj_t name);
+const mp_zephyr_device_data_t *zephyr_device_find_data_dev(const struct device *dev);
+// Supports maximum 32 pins, accepts pins and mp_const_none. None are ignored.
+int zephyr_device_apply_pinctrl(const mp_zephyr_device_data_t *data, size_t pin_cnt, ...);
+#endif
