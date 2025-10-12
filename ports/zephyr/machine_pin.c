@@ -102,12 +102,14 @@ static mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     }
 
     int ret = gpio_pin_configure(self->port, self->pin, mode | pull | init);
-    if (ret == -ENOTSUP && mode == (GPIO_OUTPUT | GPIO_INPUT)) {
-        // Some targets (eg frdm_k64f) don't support GPIO_OUTPUT|GPIO_INPUT, so try again with just GPIO_OUTPUT.
-        ret = gpio_pin_configure(self->port, self->pin, GPIO_OUTPUT | pull | init);
-    }
-    if (ret) {
+    if (ret == -ENOTSUP) {
+        mp_raise_ValueError(MP_ERROR_TEXT("unsupported pin setup"));
+    } else if (ret == -EINVAL) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
+    } else if (ret == -EIO) {
+        mp_raise_ValueError(MP_ERROR_TEXT("I/O error"));
+    } else if (ret) {
+        mp_raise_ValueError(MP_ERROR_TEXT("couldn't configure pin"));
     }
 
     return mp_const_none;
@@ -135,7 +137,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
         pin->irq = NULL;
     } else {
         // Unknown Pin.
-        mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"GPIO_x\", pin#)"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"port\", pin#)"));
     }
 
     if (n_args > 1 || n_kw > 0) {
@@ -268,12 +270,15 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUTPUT | GPIO_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_OUTPUT | GPIO_INPUT | GPIO_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_INOUT),       MP_ROM_INT(GPIO_INPUT | GPIO_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_OPEN_DRAIN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_INT_EDGE_RISING) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_INT_EDGE_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_LOW_LEVEL), MP_ROM_INT(GPIO_INT_LEVEL_LOW) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_HIGH_LEVEL), MP_ROM_INT(GPIO_INT_LEVEL_HIGH) },
 };
 
 static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
