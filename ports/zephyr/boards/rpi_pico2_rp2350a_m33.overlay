@@ -47,4 +47,70 @@
 	status = "okay";
 	pinctrl-0 = <&i2c1_default>;
 	pinctrl-names = "default";
+	zephyr,deferred-init;
+};
+
+&uart0 {
+	status = "okay";
+	current-speed = <115200>;
+	zephyr,deferred-init;
+};
+
+&pinctrl {
+	uart1_default: uart1_default {
+		group1 {
+			pinmux = <UART1_TX_P4>;
+		};
+		group2 {
+			pinmux = <UART1_RX_P5>;
+			input-enable;
+		};
+	};
+};
+
+&uart1 {
+	status = "okay";
+	current-speed = <115200>;
+	zephyr,deferred-init;
+	/* A pinctrl struct MUST have been allocated at build time to use dynamic pinctrl,
+	 * but it can be nonsense if needed as the device is deferred-init
+	 * and pinctrl won't be applied until device init.
+	 */
+	pinctrl-0 = <&uart1_default>;
+	pinctrl-names = "default";
+
+};
+
+&i2c0 {
+	status = "okay";
+	zephyr,deferred-init;
+};
+
+&spi0 {
+	status = "okay";
+	zephyr,deferred-init;
+};
+
+&pinctrl {
+	spi1_default: spi1_default {
+		group1 {
+			pinmux = <SPI1_TX_P11>, <SPI1_CSN_P13>, <SPI1_SCK_P14>;
+		};
+		group2 {
+			pinmux = <SPI1_RX_P12>;
+			input-enable;
+		};
+	};
+};
+
+&spi1 {
+	status = "okay";
+	zephyr,deferred-init;
+	pinctrl-0 = <&spi1_default>;
+	pinctrl-names = "default";
+};
+
+&adc {
+	/* And conversely, any enabled device with pinctrl must have their driver built */
+	status = "disabled";
 };
