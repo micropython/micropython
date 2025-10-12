@@ -3,11 +3,20 @@
 
 #include "py/obj.h"
 
+#ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+#include <pinctrl_soc.h>
+#endif
+
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     const struct device *port;
     uint32_t pin;
     struct _machine_pin_irq_obj_t *irq;
+    #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+    mp_obj_t pinmux;
+    pinctrl_soc_pin_t pinctrl;
+    bool is_pinctrl;
+    #endif
 } machine_pin_obj_t;
 
 void machine_pin_deinit(void);

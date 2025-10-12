@@ -66,8 +66,12 @@ static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp
 }
 
 mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum {ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso};
-
+    int ret;
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit,
+           #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+           ARG_sck, ARG_mosi, ARG_miso, ARG_cs,
+           #endif
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
@@ -75,9 +79,12 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
-        { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+        { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #endif
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -85,8 +92,22 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     const struct device *dev = zephyr_device_find(args[ARG_id].u_obj);
 
-    if ((args[ARG_sck].u_obj != MP_OBJ_NULL) || (args[ARG_miso].u_obj != MP_OBJ_NULL) || (args[ARG_mosi].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of sck/miso/mosi is not implemented"));
+    #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+    if (args[ARG_sck].u_obj != mp_const_none
+        || args[ARG_miso].u_obj != mp_const_none
+        || args[ARG_mosi].u_obj != mp_const_none
+        || args[ARG_cs].u_obj != mp_const_none) {
+        const mp_zephyr_device_data_t *data = zephyr_device_find_data_dev(dev);
+        zephyr_device_apply_pinctrl(data, 4, args[ARG_sck].u_obj, args[ARG_miso].u_obj, args[ARG_mosi].u_obj, args[ARG_cs].u_obj);
+    }
+    #endif
+
+    // deferred-init
+    if (!device_is_ready(dev)) {
+        ret = device_init(dev);
+        if (ret < 0) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("couldn't initialize SPI: %d"), ret);
+        }
     }
 
     struct spi_config cfg = {

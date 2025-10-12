@@ -83,6 +83,145 @@ choice MICROPY_CONFIG_ROM_LEVEL
 
 endchoice
 
+config MICROPY_DYNAMIC_DEVICE_INFOS
+	bool "Allow querying more information about devices at runtime"
+	depends on DEVICE_DT_METADATA
+	help
+		Fully live runtime-accessible devicetree for leisurely micropython browsing.
+
+config MICROPY_DYNAMIC_PINCTRL
+	bool "Enable Dynamic Pins"
+	depends on DEVICE_DT_METADATA
+	help
+		Switch pin roles at runtime.
+
+if MICROPY_DYNAMIC_PINCTRL
+
+config MICROPY_DYNAMIC_PINCTRL_MAX
+	int "Maximum number of pins per pinctrl"
+	default 16
+	help
+		How many pins may be contained in a single pinctrl state,
+		or how many pin one peripheral may need to use at the same time
+
+config MICROPY_DYNAMIC_PINCTRL_STATES_MAX
+	int "Maximum number of pinctrl states"
+	default 2
+	help
+		If the platform uses more state than 'default' and 'sleep', this may be more than 2.
+
+config MICROPY_DYNAMIC_PINCTRL_GENERATE_PINMUX
+	bool "Generate pinmux from dts header files"
+	default y
+	help
+		Generate a pinmux database for use at runtime.
+		Use an automated script to generated a pinmux database from headers listing possible
+		pinmuxes.
+		The default mode is appropriate for platforms that have simple muxing: bflb, rpi_pico, wch, atmel...
+		This will not work on platform using other methods of defining pinctrl,
+		like stm32, nordic, or espressif, which will require MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+		or this feature being disabled.
+
+config MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+	bool "Enable Dynamic Pins with custom pinmux generator script"
+
+choice MICROPY_DYNAMIC_PINCTRL_SUPPORT
+	bool "Whether dynamic pinctrl is legal on the platform"
+	default MICROPY_DYNAMIC_PINCTRL_SUPPORT_LEGAL
+
+	config MICROPY_DYNAMIC_PINCTRL_SUPPORT_LEGAL
+		bool "Dynamic pinctrl is legal and relies on peripheral deinit"
+		select DEVICE_DEINIT_SUPPORT
+		select PINCTRL_DYNAMIC
+		help
+			Use pinctrl_update_states to change pinctrl states after deinitializing the device.
+			If the targeted device doesn't support deinit, the pinctrl can only be set a single time.
+
+	config MICROPY_DYNAMIC_PINCTRL_SUPPORT_ILLEGAL
+		bool "Dynamic pinctrl is illegal and forces pinctrl changes without deinit"
+		help
+			Illegally use the pinctrl_configure_pins function to set pinctrl while the device is instantiated.
+
+endchoice
+
+choice MICROPY_DYNAMIC_PINCTRL_GPIO_PREVIOUS
+	bool "Configure Pins previously used by a peripheral as GPIOs once they are disused"
+	default MICROPY_DYNAMIC_PINCTRL_GPIO_PREVIOUS_DIRECT
+
+	config MICROPY_DYNAMIC_PINCTRL_GPIO_PREVIOUS_NO
+		bool "Do not reset previously used pins"
+		help
+			Either the platform does not require muxing-off the pin roles,
+			or the user code may do the muxing-off via the GPIO API.
+
+	config MICROPY_DYNAMIC_PINCTRL_GPIO_PREVIOUS_UPDATE
+		bool "Update the old pins via the update state"
+		depends on MICROPY_DYNAMIC_PINCTRL_SUPPORT_LEGAL
+		help
+			The pinctrl states list also contains the previously used pins disabling role,
+			such that those pins are muxed-off when the peripheral init applies the states.
+
+	config MICROPY_DYNAMIC_PINCTRL_GPIO_PREVIOUS_DIRECT
+		bool "Update the old pins with pinctrl_configure_pins"
+		help
+			Use the pinctrl_configure_pins function to mux-off pins while device is deinitialized.
+
+endchoice
+
+if MICROPY_DYNAMIC_PINCTRL_GENERATE_PINMUX
+
+if MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+config MICROPY_DYNAMIC_PINCTRL_ARG
+	string "Custom argument for filtering by board"
+
+config MICROPY_DYNAMIC_PINCTRL_SCRIPT
+	string "Custom generator script"
+
+endif # MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+if !MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+config MICROPY_DYNAMIC_PINCTRL_REGEX
+	string "Regex to identify pinmux definitions"
+
+endif # !MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+config MICROPY_DYNAMIC_PINCTRL_HEADER
+	string "Path to header containing pinmux definitions"
+
+endif # MICROPY_DYNAMIC_PINCTRL_GENERATE_PINMUX
+
+config MICROPY_DYNAMIC_PINCTRL_BUILDER_FILE
+	string "Path to file defining functions to build pinctrl structure"
+	help
+		The platform must define some functions to be able to use dynamic pinctrl.
+
+choice MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE
+	prompt "How to handle the DTS pinmux type"
+	default MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE_UINT32_T
+	help
+		Define how the Pinmux type functions in relation to the actual pinmux data storage
+		and definition. Most platform's pinmuxes are stored as simple uint32_t.
+		Platforms using in-tree muxing (nordic, stm32, esp32...) require custom pinmux handling.
+
+	config MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE_UINT32_T
+		bool "The DTS pinmux type is uint32_t"
+
+	config MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE_CUSTOM
+		bool "The DTS pinmux type is custom"
+
+endchoice
+
+if MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE_CUSTOM
+
+config MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE_FILE
+	string "File defining the pinmux type"
+
+endif # MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE_CUSTOM
+
+endif # MICROPY_DYNAMIC_PINCTRL
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
