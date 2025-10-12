@@ -31,6 +31,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/i2c.h>
+#include <dt-bindings/i2c/i2c.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -53,11 +54,13 @@ static void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 }
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    uint32_t i2c_config;
+    int ret;
     enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
     };
@@ -67,12 +70,51 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     const struct device *dev = zephyr_device_find(args[ARG_id].u_obj);
 
-    if ((args[ARG_scl].u_obj != MP_OBJ_NULL) || (args[ARG_sda].u_obj != MP_OBJ_NULL)) {
+    #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+    if (args[ARG_scl].u_obj != mp_const_none
+        || args[ARG_sda].u_obj != mp_const_none) {
+        const mp_zephyr_device_data_t *data = zephyr_device_find_data_dev(dev);
+        zephyr_device_apply_pinctrl(data, 2, args[ARG_sda].u_obj, args[ARG_scl].u_obj);
+    }
+    #else
+    if ((args[ARG_scl].u_obj != mp_const_none) || (args[ARG_sda].u_obj != mp_const_none)) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of scl/sda is not implemented"));
     }
+    #endif
 
-    if ((args[ARG_freq].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of freq is not implemented"));
+    // deferred-init
+    if (!device_is_ready(dev)) {
+        ret = device_init(dev);
+        if (ret < 0) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("couldn't initialize I2C: %d"), ret);
+        }
+    }
+
+    if (args[ARG_freq].u_obj != MP_OBJ_NULL) {
+        i2c_config = I2C_MODE_CONTROLLER;
+        switch (args[ARG_freq].u_int) {
+            case I2C_BITRATE_STANDARD:
+                i2c_config |= I2C_SPEED_SET(I2C_SPEED_STANDARD);
+                break;
+            case I2C_BITRATE_FAST:
+                i2c_config |= I2C_SPEED_SET(I2C_SPEED_FAST);
+                break;
+            case I2C_BITRATE_FAST_PLUS:
+                i2c_config |= I2C_SPEED_SET(I2C_SPEED_FAST_PLUS);
+                break;
+            case I2C_BITRATE_HIGH:
+                i2c_config |= I2C_SPEED_SET(I2C_SPEED_HIGH);
+                break;
+            case I2C_BITRATE_ULTRA:
+                i2c_config |= I2C_SPEED_SET(I2C_SPEED_ULTRA);
+                break;
+            default:
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("not a valid standard bitrate"));
+        }
+        ret = i2c_configure(dev, i2c_config);
+        if (ret < 0) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("couldn't set I2C freq: %d"), -ret);
+        }
     }
 
     if ((args[ARG_timeout].u_obj != MP_OBJ_NULL)) {
@@ -113,7 +155,7 @@ static int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t add
     }
 
     ret = i2c_transfer(self->dev, &msg, 1, addr);
-    return (ret < 0) ? -MP_EIO : len;
+    return (ret < 0) ? ret : len;
 }
 
 static const mp_machine_i2c_p_t machine_hard_i2c_p = {
