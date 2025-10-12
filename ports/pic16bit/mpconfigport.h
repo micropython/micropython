@@ -77,9 +77,6 @@
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-
 typedef int mp_off_t;
 
 // extra builtin names to add to the global namespace
