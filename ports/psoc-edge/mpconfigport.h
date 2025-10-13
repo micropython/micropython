@@ -25,6 +25,7 @@
  */
 
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
+#include <alloca.h>
 #include <stdint.h>
 
 // #include "shared/runtime/interrupt_char.h"
@@ -33,6 +34,7 @@
 // options to control how MicroPython is built
 
 #define MICROPY_PY_BUILTINS_HELP                (1)
+#define MICROPY_PY_BUILTINS_HELP_MODULES        (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT           psoc_edge_help_text
 #define MICROPY_USE_INTERNAL_PRINTF             (0)
 #define MICROPY_REPL_INFO                       (1)
@@ -55,20 +57,24 @@
 // Use the minimum headroom in the chunk allocator for parse nodes.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
-// Disable all optional sys module features.
-#define MICROPY_PY_SYS_MODULES            (0)
-#define MICROPY_PY_SYS_EXIT               (0)
-#define MICROPY_PY_SYS_PATH               (0)
-#define MICROPY_PY_SYS_ARGV               (0)
+// Fine control over Python builtins, classes, modules, etc
+#define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
+#define MICROPY_PY_SYS_EXC_INFO                 (1)
+
+// Extended modules
+#define MICROPY_PY_TIME                         (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS            (1)
+#define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc-edge/modtime.c"
+#define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX    (2)
+
+#define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
 
 // type definitions for the specific machine
 
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
-
-// We need to provide a declaration/definition of alloca()
-#include <alloca.h>
 
 
 // #if defined(__linux__) || defined(__APPLE__)
