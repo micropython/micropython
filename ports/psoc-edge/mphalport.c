@@ -39,6 +39,7 @@
 #include "shared/timeutils/timeutils.h"
 
 extern mtb_hal_uart_t DEBUG_UART_hal_obj;
+extern mtb_hal_timer_t psoc_edge_timer;
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     mtb_hal_system_delay_ms(ms);
@@ -55,17 +56,17 @@ uint64_t mp_hal_time_ns(void) {
 
 
 mp_uint_t mp_hal_ticks_ms(void) {
-    return 0; // TODO: Implement this function properly
+    return mtb_hal_timer_read(&psoc_edge_timer) / 1000;
 }
 
 
 mp_uint_t mp_hal_ticks_us(void) {
-    return 0; // TODO: Implement this function properly
+    return mtb_hal_timer_read(&psoc_edge_timer);
 }
 
 
 mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0; // TODO: Implement this function properly
+    return mtb_hal_timer_read(&psoc_edge_timer);
 }
 
 
