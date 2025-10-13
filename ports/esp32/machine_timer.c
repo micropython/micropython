@@ -145,12 +145,11 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         // Create the new timer.
         uint32_t timer_number = mp_obj_get_int(args[0]);
         if (timer_number >= SOC_TIMER_GROUP_TOTAL_TIMERS) {
-            //mp_raise_ValueError(MP_ERROR_TEXT("invalid Timer number, out of range"));
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid Timer number, max %d"), SOC_TIMER_GROUP_TOTAL_TIMERS);
         }
         // Find existing hw timer, if none allocate and add to the linked list
         self = machine_timer_create(timer_number);
-        self->type = 1; // hardware timer  
+        self->type = 1; // Hardware timer
     }
 
     // If there are any arguments to Timer(id,...) then call init to set them.
