@@ -146,7 +146,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const struct device *dev = zephyr_device_find(args[ARG_id].u_obj);
+    const struct device *dev = zephyr_device_setup(args[ARG_id].u_obj);
 
     machine_i2c_target_obj_t *self = &machine_i2c_target_obj[0];
     if (!(self->dev == NULL || self->dev == dev)) {
