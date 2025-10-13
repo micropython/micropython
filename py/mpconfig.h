@@ -1097,6 +1097,12 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_STREAMS_POSIX_API (0)
 #endif
 
+// Whether to delegate error raising to stream implementations using the
+// MP_STREAM_RAISE_ERROR ioctl to support raising more detailed messages.
+#ifndef MICROPY_STREAMS_DELEGATE_ERROR
+#define MICROPY_STREAMS_DELEGATE_ERROR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to process __all__ when importing all public symbols from a module.
 #ifndef MICROPY_MODULE___ALL__
 #define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)

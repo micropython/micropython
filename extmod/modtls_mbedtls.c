@@ -870,7 +870,14 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 }
             }
         }
-    } else {
+    }
+    #if MICROPY_STREAMS_DELEGATE_ERROR
+    else if (request == MP_STREAM_RAISE_ERROR) {
+        // Raise error with detailed error string
+        mbedtls_raise_error((int)arg);
+    }
+    #endif
+    else {
         // Unsupported ioctl.
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;

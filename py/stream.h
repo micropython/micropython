@@ -27,23 +27,27 @@
 #ifndef MICROPY_INCLUDED_PY_STREAM_H
 #define MICROPY_INCLUDED_PY_STREAM_H
 
+#include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/mperrno.h"
 
 #define MP_STREAM_ERROR ((mp_uint_t)-1)
 
 // Stream ioctl request codes
-#define MP_STREAM_FLUSH (1)
-#define MP_STREAM_SEEK  (2)
-#define MP_STREAM_POLL  (3)
-#define MP_STREAM_CLOSE         (4)
-#define MP_STREAM_TIMEOUT       (5)  // Get/set timeout (single op)
-#define MP_STREAM_GET_OPTS      (6)  // Get stream options
-#define MP_STREAM_SET_OPTS      (7)  // Set stream options
-#define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
-#define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
-#define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
-#define MP_STREAM_GET_BUFFER_SIZE (11) // Get preferred buffer size for file
+#define MP_STREAM_FLUSH             (1)
+#define MP_STREAM_SEEK              (2)
+#define MP_STREAM_POLL              (3)
+#define MP_STREAM_CLOSE             (4)
+#define MP_STREAM_TIMEOUT           (5)  // Get/set timeout (single op)
+#define MP_STREAM_GET_OPTS          (6)  // Get stream options
+#define MP_STREAM_SET_OPTS          (7)  // Set stream options
+#define MP_STREAM_GET_DATA_OPTS     (8)  // Get data/message options
+#define MP_STREAM_SET_DATA_OPTS     (9)  // Set data/message options
+#define MP_STREAM_GET_FILENO        (10) // Get fileno of underlying file
+#define MP_STREAM_GET_BUFFER_SIZE   (11) // Get preferred buffer size for file
+#if MICROPY_STREAMS_DELEGATE_ERROR
+#define MP_STREAM_RAISE_ERROR       (12) // Raise an error with detailed error string
+#endif
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD       (0x0001)
@@ -68,8 +72,12 @@ struct mp_stream_seek_t {
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
-    // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
-    // are implementation-dependent, but will be exposed to user, e.g. via exception).
+    // On error, functions should return MP_STREAM_ERROR and fill in *errcode
+    // (values are are implementation-dependent, but will be exposed to user).
+    // If MICROPY_STREAMS_DELEGATE_ERROR is enabled and ioctl is not null the
+    // stream will receive a MP_STREAM_RAISE_ERROR ioctl request with the arg
+    // containing the errcode, so it may raise a more detailed error. If that
+    // ioctl returns without raising, an OSError with the errcode will raised.
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
