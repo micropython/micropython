@@ -281,7 +281,7 @@ static void ftp_close_files (void);
 static void ftp_close_filesystem_on_error (void);
 static void ftp_close_cmd_data (void);
 static ftp_cmd_index_t ftp_pop_command (char **str);
-static void ftp_pop_param (char **str, char *param);
+static void ftp_pop_param (char **str, char *param, size_t maxlen);
 static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno);
 static int ftp_print_eplf_drive (char *dest, uint32_t destsize, const char *name);
 static bool ftp_open_file (const char *path, int mode);
@@ -576,10 +576,7 @@ static void ftp_send_reply (_u16 status, char *message) {
     if (!message) {
         message = "";
     }
-    snprintf((char *)ftp_cmd_buffer, 4, "%u", status);
-    strcat ((char *)ftp_cmd_buffer, " ");
-    strcat ((char *)ftp_cmd_buffer, message);
-    strcat ((char *)ftp_cmd_buffer, "\r\n");
+    snprintf((char *)ftp_cmd_buffer, FTP_MAX_PARAM_SIZE + FTP_CMD_SIZE_MAX, "%u %s\r\n", status, message);
     fifoelement.sd = &ftp_data.c_sd;
     fifoelement.datasize = strlen((char *)ftp_cmd_buffer);
     fifoelement.data = mem_Malloc(fifoelement.datasize);
@@ -666,7 +663,7 @@ static ftp_result_t ftp_recv_non_blocking (_i16 sd, void *buff, _i16 Maxlen, _i3
 }
 
 static void ftp_get_param_and_open_child (char **bufptr) {
-    ftp_pop_param (bufptr, ftp_scratch_buffer);
+    ftp_pop_param (bufptr, ftp_scratch_buffer, FTP_MAX_PARAM_SIZE);
     ftp_open_child (ftp_path, ftp_scratch_buffer);
     ftp_data.closechild = true;
 }
@@ -701,7 +698,7 @@ static void ftp_process_cmd (void) {
         case E_FTP_CMD_CWD:
             {
                 fres = FR_NO_PATH;
-                ftp_pop_param (&bufptr, ftp_scratch_buffer);
+                ftp_pop_param (&bufptr, ftp_scratch_buffer, FTP_MAX_PARAM_SIZE);
                 ftp_open_child (ftp_path, ftp_scratch_buffer);
                 if ((ftp_path[0] == '/' && ftp_path[1] == '\0') || ((fres = f_opendir_helper (&ftp_data.dp, ftp_path)) == FR_OK)) {
                     if (fres == FR_OK) {
@@ -751,14 +748,14 @@ static void ftp_process_cmd (void) {
             ftp_send_reply(200, NULL);
             break;
         case E_FTP_CMD_USER:
-            ftp_pop_param (&bufptr, ftp_scratch_buffer);
+            ftp_pop_param (&bufptr, ftp_scratch_buffer, FTP_MAX_PARAM_SIZE);
             if (!memcmp(ftp_scratch_buffer, servers_user, MAX(strlen(ftp_scratch_buffer), strlen(servers_user)))) {
                 ftp_data.login.uservalid = true && (strlen(servers_user) == strlen(ftp_scratch_buffer));
             }
             ftp_send_reply(331, NULL);
             break;
         case E_FTP_CMD_PASS:
-            ftp_pop_param (&bufptr, ftp_scratch_buffer);
+            ftp_pop_param (&bufptr, ftp_scratch_buffer, FTP_MAX_PARAM_SIZE);
             if (!memcmp(ftp_scratch_buffer, servers_pass, MAX(strlen(ftp_scratch_buffer), strlen(servers_pass))) &&
                     ftp_data.login.uservalid) {
                 ftp_data.login.passvalid = true && (strlen(servers_pass) == strlen(ftp_scratch_buffer));
@@ -938,8 +935,8 @@ static void stoupper (char *str) {
 }
 
 static ftp_cmd_index_t ftp_pop_command (char **str) {
-    char _cmd[FTP_CMD_SIZE_MAX];
-    ftp_pop_param (str, _cmd);
+    char _cmd[FTP_CMD_SIZE_MAX + 1];
+    ftp_pop_param (str, _cmd, sizeof(_cmd));
     stoupper (_cmd);
     for (ftp_cmd_index_t i = 0; i < E_FTP_NUM_FTP_CMDS; i++) {
         if (!strcmp (_cmd, ftp_cmd_table[i].cmd)) {
@@ -951,11 +948,18 @@ static ftp_cmd_index_t ftp_pop_command (char **str) {
     return E_FTP_CMD_NOT_SUPPORTED;
 }
 
-static void ftp_pop_param (char **str, char *param) {
+static void ftp_pop_param (char **str, char *param, size_t maxlen) {
+    size_t copied = 0;
+
+    // copy at most maxlen - 1 bytes and NUL terminate
     while (**str != ' ' && **str != '\r' && **str != '\n' && **str != '\0') {
-        *param++ = **str;
+        if (copied + 1 < maxlen) {
+            *param++ = **str;
+            copied++;
+        }
         (*str)++;
     }
+
     *param = '\0';
 }
 
