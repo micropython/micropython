@@ -49,6 +49,8 @@ extern uint8_t __StackTop, __StackLimit;
 __attribute__((section(".bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
 #endif
 
+extern void time_init(void);
+
 int main(void) {
     cy_rslt_t result = CY_RSLT_SUCCESS;
 
@@ -71,16 +73,31 @@ int main(void) {
     mp_stack_set_limit((mp_uint_t)&__StackLimit);
     gc_init(&gc_heap[0], &gc_heap[MP_ARRAY_SIZE(gc_heap)]);
     #endif
+
+    time_init();
+
+soft_reset:
     mp_init();
 
-    // Start a normal REPL; will exit when ctrl-D is entered on a blank line.
-    pyexec_friendly_repl();
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
 
     // Deinitialise the runtime.
     #if MICROPY_ENABLE_GC
     gc_sweep_all();
     #endif
     mp_deinit();
+
+    goto soft_reset;
 
     // Should never get here
     CY_ASSERT(0);
