@@ -279,12 +279,11 @@ static mp_obj_t machine_timer_virtualtimer_del(mp_obj_t self_in) {
 }
 
 static void machine_timer_virtualtimer_callback(TimerHandle_t timer) {
-    machine_timer_obj_t *self = (machine_timer_obj_t *)( pvTimerGetTimerID(timer) );
+    machine_timer_obj_t *self = (machine_timer_obj_t *)(pvTimerGetTimerID(timer));
 
     // For timers that will repeat, update the start time as now
     // Non-repeating then set the timer counter to zero so value gets fail.
-    if (self->repeat == 0)
-    {
+    if (self->repeat == 0) {
         self->v_start_tick = 0;
     } else {
         self->v_start_tick = xTaskGetTickCount();
