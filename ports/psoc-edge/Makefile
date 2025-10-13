@@ -97,10 +97,12 @@ SHARED_SRC_C += $(addprefix shared/,\
 
 DRIVERS_SRC_C += 
 
-MOD_SRC_C +=
+MOD_SRC_C += \
+	modpsocedge.c
 
 SRC_C = help.c \
 		main.c \
+		modtime.c \
 		mphalport.c 
 
 SRC_ASM +=
