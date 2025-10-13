@@ -88,6 +88,8 @@
 // If we have networking, we likely want errno comfort
 #define MICROPY_PY_ERRNO            (1)
 #define MICROPY_PY_SOCKET           (1)
+// Zephyr has its own network module - don't use extmod
+#define MICROPY_PY_ZEPHYR_NETWORK   (1)
 #endif
 #ifdef CONFIG_BT
 #define MICROPY_PY_BLUETOOTH        (1)
