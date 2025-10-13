@@ -138,7 +138,7 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         self->next = MP_STATE_PORT(machine_timer_obj_head);
         MP_STATE_PORT(machine_timer_obj_head) = self;
 
-        self->type = 0; // virtual timer
+        self->type = 0; // Virtual timer
         self->vtimer = NULL;
         self->v_start_tick = 0;
     } else {
@@ -265,9 +265,10 @@ static mp_obj_t machine_timer_virtualtimer_del(mp_obj_t self_in) {
                 MP_STATE_PORT(machine_timer_obj_head) = _timer->next;
             }
 
-            // Remove memory allocaiton
-            if( self->vtimer != NULL )
+            // Remove memory allocation
+            if (self->vtimer != NULL) {
                 xTimerDelete(self->vtimer, 0);
+            }
             m_del_obj(machine_timer_obj_t, self);
             break;
         } else {
@@ -282,11 +283,13 @@ static void machine_timer_virtualtimer_callback(TimerHandle_t timer) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)( pvTimerGetTimerID(timer) );
 
     // For timers that will repeat, update the start time as now
-    // Non-repeating then set the timer conter to zero so value gets fail.
-    if( self->repeat == 0 )
+    // Non-repeating then set the timer counter to zero so value gets fail.
+    if (self->repeat == 0)
+    {
         self->v_start_tick = 0;
-    else
+    } else {
         self->v_start_tick = xTaskGetTickCount();
+    }
 
     if (self->callback != mp_const_none) {
         mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
@@ -315,7 +318,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
-    if(self->type == 0 && self->vtimer != NULL) {
+    if (self->type == 0 && self->vtimer != NULL) {
         xTimerStop(self->vtimer, 0);
     } else {
         machine_timer_disable(self);
@@ -354,11 +357,11 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     self->callback = args[ARG_callback].u_obj;
 
     // Virtual timer
-    if ( self->type == 0) {
+    if (self->type == 0) {
         self->handler = NULL;
         self->period = vperiod;
 
-        if ( vperiod == 0 ) {
+        if (vperiod == 0) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("period too small for soft timer, less than OS tick period of %d ms.  Try a hardware timer."), 1000 / configTICK_RATE_HZ);
         }
 
@@ -368,7 +371,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
             self->repeat ? pdTRUE : pdFALSE,    // Auto-reload
             (void *)self,                       // Timer ID
             machine_timer_virtualtimer_callback // Callback function
-        );
+            );
 
         if (self->vtimer == NULL) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed to create timer, internal python system error."));
@@ -378,8 +381,8 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         self->v_start_tick = xTaskGetTickCount();
         xTimerStart(self->vtimer, 0);
 
-    // Hardware timer
     } else {
+        // Hardware timer
         self->handler = machine_timer_isr_handler;
         machine_timer_enable(self);
     }
@@ -391,9 +394,10 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
 
     // Virtual timer
-    if(self->type == 0) {
-        if( self->vtimer == NULL )
+    if (self->type == 0) {
+        if (self->vtimer == NULL) {
             mp_raise_ValueError(MP_ERROR_TEXT("timer not set"));
+        }
         xTimerStop(self->vtimer, 0);
         self->v_start_tick = 0;
         return mp_const_none;
@@ -416,7 +420,7 @@ static mp_obj_t machine_timer_del(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
 
     // Virtual timer, delete it
-    if(self->type == 0) {
+    if (self->type == 0) {
         machine_timer_virtualtimer_del(self);
         return mp_const_none;
     }
@@ -438,13 +442,14 @@ static mp_obj_t machine_timer_value(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
 
     // Virtual timers dont have a wauy to get the current value, so use executing task tick count
-    if( self->type == 0) {
-        int ticks =  0;
+    if (self->type == 0) {
+        int ticks = 0;
 
-        if( self->vtimer == NULL || self->v_start_tick == 0 )
+        if (self->vtimer == NULL || self->v_start_tick == 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("timer not set"));
+        }
 
-        ticks = (int)(self->period - (xTaskGetTickCount() - self->v_start_tick)) ;
+        ticks = (int)(self->period - (xTaskGetTickCount() - self->v_start_tick));
 
         return MP_OBJ_NEW_SMALL_INT(ticks);
     }
