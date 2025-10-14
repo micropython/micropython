@@ -855,9 +855,27 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     }
                     if (in_string == 0) {
                         if (ch == '{') {
+                            if (is_char_following(lex, '{')) {
+                                vstr_add_byte(&lex->vstr, '{');
+                                vstr_add_byte(&lex->vstr, '{');
+                                next_char(lex);
+                                next_char(lex);
+                                continue;
+                            }
                             brace_depth++;
-                        } else if (ch == '}' && brace_depth > 0) {
-                            brace_depth--;
+                        } else if (ch == '}') {
+                            if (brace_depth > 0) {
+                                brace_depth--;
+                            } else if (is_char_following(lex, '}')) {
+                                vstr_add_byte(&lex->vstr, '}');
+                                vstr_add_byte(&lex->vstr, '}');
+                                next_char(lex);
+                                next_char(lex);
+                                continue;
+                            } else {
+                                lex->tok_kind = MP_TOKEN_INVALID;
+                                break;
+                            }
                         }
                     }
                     if (brace_depth == 0 && in_string == 0 && is_char(lex, quote_char)) {

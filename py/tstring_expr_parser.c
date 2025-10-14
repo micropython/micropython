@@ -28,7 +28,7 @@ enum {
 
 typedef struct _parser_t parser_t;
 
-static mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t allocator, mp_parse_node_t node) {
+mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t allocator, mp_parse_node_t node) {
     if (MP_PARSE_NODE_IS_NULL(node)) {
         return MP_PARSE_NODE_NULL;
     }
