@@ -1507,13 +1507,17 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
         o = mp_call_function_n_kw(o, 0, 0, NULL);
     }
 
-    if (mp_obj_is_exception_instance(o)) {
-        // o is an instance of an exception, so use it as the exception
+    mp_obj_instance_t *obj = MP_OBJ_TO_PTR(o);
+    if (mp_obj_is_native_exception_instance(o)) {
+        // o is an instance of a native, so use it as the exception
         return o;
-    } else {
-        // o cannot be used as an exception, so return a type error (which will be raised by the caller)
-        return mp_obj_new_exception_msg(&mp_type_TypeError, MP_ERROR_TEXT("exceptions must derive from BaseException"));
     }
+    if (mp_obj_is_exception_instance(o) && obj->subobj[0] != MP_OBJ_FROM_PTR(&mp_native_base_init_wrapper_obj)) {
+        // o is an instance of a subclass and is properly initialized, so use it as the exception
+        return o;
+    }
+    // o cannot be used as an exception, so return a type error (which will be raised by the caller)
+    return mp_obj_new_exception_msg(&mp_type_TypeError, MP_ERROR_TEXT("exceptions must derive from BaseException"));
 }
 
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
