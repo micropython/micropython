@@ -108,7 +108,7 @@ void uart_tx_strn(const char *buf, size_t len) {
     }
 }
 
-#elif defined(QEMU_SOC_MPS2)
+#elif defined(QEMU_SOC_MPS2) || defined(QEMU_SOC_MPS3)
 
 #define UART_STATE_TXFULL (1 << 0)
 #define UART_STATE_RXFULL (1 << 1)
@@ -124,7 +124,11 @@ typedef struct _UART_t {
     volatile uint32_t BAUDDIV;
 } UART_t;
 
+#if defined(QEMU_SOC_MPS3)
+#define UART0 ((UART_t *)(0x49303000))
+#else
 #define UART0 ((UART_t *)(0x40004000))
+#endif
 
 void uart_init(void) {
     UART0->BAUDDIV = 16;
