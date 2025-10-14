@@ -167,3 +167,20 @@ Escape sequence tests completed!
     Strings: ('Part 1\nwith newlinePart 2\nalso multiline',)
 
 Triple quote edge case tests completed!
+
+=== PEP 701 brace compliance ===
+Escaped {{: ('{',)
+Escaped }}: ('}',)
+Mixed: ('test{escape}here',)
+Lone }} rejected (correct)
+Unterminated {{ rejected (correct)
+
+PEP 701 brace compliance tests completed!
+
+=== Format spec scope resolution ===
+Local vars: width=10, x=42
+Format spec: 10
+Scope test: PASS
+Precision: format_spec=.2f
+
+Format spec scope tests completed!

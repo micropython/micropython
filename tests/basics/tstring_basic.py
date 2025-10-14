@@ -190,7 +190,7 @@ t_nested5 = t"{d['key']}"
 print(f"Nested quotes 5: {str(t_nested5)}")
 print(f"  Value: {t_nested5.interpolations[0].value}")
 
-t_escaped1 = t"{{""}}"
+t_escaped1 = t'{{""}}'
 print(f"Escaped braces 1: {str(t_escaped1)}")
 print(f"  Strings: {t_escaped1.strings}")
 
@@ -399,3 +399,51 @@ print(f"\n12. Concatenated triple: {repr(concatenated)}")
 print(f"    Strings: {concatenated.strings}")
 
 print("\nTriple quote edge case tests completed!")
+
+print("\n=== PEP 701 brace compliance ===")
+t_brace1 = t"{{"
+print(f"Escaped {{{{: {t_brace1.strings}")
+assert t_brace1.strings == ('{',)
+
+t_brace2 = t"}}"
+print(f"Escaped }}}}: {t_brace2.strings}")
+assert t_brace2.strings == ('}',)
+
+t_brace3 = t"test{{escape}}here"
+print(f"Mixed: {t_brace3.strings}")
+assert t_brace3.strings == ('test{escape}here',)
+
+try:
+    exec('t"}"')
+    print("ERROR: lone }} should raise SyntaxError")
+except SyntaxError:
+    print("Lone }} rejected (correct)")
+
+try:
+    exec('t"{"')
+    print("ERROR: unterminated {{ should raise SyntaxError")
+except SyntaxError:
+    print("Unterminated {{ rejected (correct)")
+
+print("\nPEP 701 brace compliance tests completed!")
+
+print("\n=== Format spec scope resolution ===")
+def test_format_scope():
+    width = 10
+    x = 42
+    t_scope = t"{x:{width}}"
+    print(f"Local vars: width={width}, x={x}")
+    print(f"Format spec: {t_scope.interpolations[0].format_spec}")
+    return t_scope.interpolations[0].format_spec == '10'
+
+result = test_format_scope()
+print(f"Scope test: {'PASS' if result else 'FAIL'}")
+assert result, "Format spec scope resolution failed"
+
+precision = 2
+value = 3.14159
+t_prec = t"{value:.{precision}f}"
+print(f"Precision: format_spec={t_prec.interpolations[0].format_spec}")
+assert t_prec.interpolations[0].format_spec == '.2f'
+
+print("\nFormat spec scope tests completed!")

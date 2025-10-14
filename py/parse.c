@@ -924,8 +924,49 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                             const byte *fmt_start = &str[format_spec_pos + 1];
                             size_t fmt_len = fmt_end - format_spec_pos - 1;
 
-                            qstr fmt_q = qstr_from_strn((const char *)fmt_start, fmt_len);
-                            format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, fmt_q);
+                            #if MICROPY_PY_FSTRINGS
+                            bool has_expr = false;
+                            for (size_t k = 0; k < fmt_len; k++) {
+                                if (fmt_start[k] == '{') {
+                                    has_expr = true;
+                                    break;
+                                }
+                            }
+
+                            if (has_expr) {
+                                vstr_t fstring_vstr;
+                                vstr_init(&fstring_vstr, fmt_len + 3);
+                                vstr_add_str(&fstring_vstr, "f\"");
+                                vstr_add_strn(&fstring_vstr, (const char *)fmt_start, fmt_len);
+                                vstr_add_str(&fstring_vstr, "\"");
+
+                                mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
+                                    MP_QSTR__lt_format_spec_gt_,
+                                    vstr_str(&fstring_vstr),
+                                    vstr_len(&fstring_vstr),
+                                    0
+                                    );
+
+                                mp_parse_tree_t fstring_tree = mp_parse(fstring_lex, MP_PARSE_EVAL_INPUT);
+                                mp_parse_node_t fstring_root = fstring_tree.root;
+
+                                if (MP_PARSE_NODE_IS_STRUCT(fstring_root)) {
+                                    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)fstring_root;
+                                    if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_eval_input) {
+                                        fstring_root = pns->nodes[0];
+                                    }
+                                }
+
+                                format_spec_node = copy_parse_node(parser, tstring_parser_alloc_wrapper, fstring_root);
+
+                                mp_parse_tree_clear(&fstring_tree);
+                                vstr_clear(&fstring_vstr);
+                            } else
+                            #endif
+                            {
+                                qstr fmt_q = qstr_from_strn((const char *)fmt_start, fmt_len);
+                                format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, fmt_q);
+                            }
                         } else {
                             format_spec_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, MP_QSTR_);
                         }
@@ -955,6 +996,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     i++;     // Skip the closing brace
                 } else {
                     // Failed to find closing brace - syntax error
+                    goto tstring_unterminated;
                 }
             } else if (false && str[i] == '\\' && i + 1 < len) {
                 i++;
@@ -1120,6 +1162,9 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         tstring_empty_expr:
             vstr_clear(&vstr);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("empty expression not allowed"));
+        tstring_unterminated:
+            vstr_clear(&vstr);
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: unterminated replacement field"));
         }
     }
     #endif
