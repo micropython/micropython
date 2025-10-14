@@ -935,9 +935,21 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                             if (has_expr) {
                                 vstr_t fstring_vstr;
-                                vstr_init(&fstring_vstr, fmt_len + 3);
-                                vstr_add_str(&fstring_vstr, "f\"");
-                                vstr_add_strn(&fstring_vstr, (const char *)fmt_start, fmt_len);
+                                vstr_init(&fstring_vstr, fmt_len * 2 + 5); // Extra space for escaping and prefix
+
+                                if (lex->tok_is_tstring_raw) {
+                                    vstr_add_str(&fstring_vstr, "fr\"");
+                                } else {
+                                    vstr_add_str(&fstring_vstr, "f\"");
+                                }
+
+                                for (size_t k = 0; k < fmt_len; k++) {
+                                    char c = fmt_start[k];
+                                    if (c == '"' || c == '\\') {
+                                        vstr_add_byte(&fstring_vstr, '\\');
+                                    }
+                                    vstr_add_byte(&fstring_vstr, c);
+                                }
                                 vstr_add_str(&fstring_vstr, "\"");
 
                                 mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
