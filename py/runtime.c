@@ -1508,7 +1508,7 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
     }
 
     if (mp_obj_is_exception_instance(o)) {
-        // o is an instance of an exception, so use it as the exception
+        // o is an fully-constructed instance of an exception, so use it as the exception
         return o;
     } else {
         // o cannot be used as an exception, so return a type error (which will be raised by the caller)
