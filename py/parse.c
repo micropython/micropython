@@ -728,6 +728,10 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                 // Handle escaped braces }}
                 vstr_add_byte(&vstr, '}');
                 i += 2;
+            } else if (str[i] == '}') {
+                // Lone } without matching }} - syntax error
+                vstr_clear(&vstr);
+                mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: single '}' is not allowed"));
             } else if (str[i] == '{') {
                 // Find the end of the interpolation first to check for debug format
                 i++;
@@ -945,7 +949,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                                 for (size_t k = 0; k < fmt_len; k++) {
                                     char c = fmt_start[k];
-                                    if (c == '"' || c == '\\') {
+                                    if (c == '"' || (c == '\\' && !lex->tok_is_tstring_raw)) {
                                         vstr_add_byte(&fstring_vstr, '\\');
                                     }
                                     vstr_add_byte(&fstring_vstr, c);
@@ -1006,6 +1010,11 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     ADD_NODE_INTERPS((mp_parse_node_t)interp_tuple);
                     // Added interpolation
                     i++;     // Skip the closing brace
+                    // Check if next char is } (making }})
+                    if (i < len && str[i] == '}') {
+                        vstr_add_byte(&vstr, '}');
+                        i++;
+                    }
                 } else {
                     // Failed to find closing brace - syntax error
                     goto tstring_unterminated;
