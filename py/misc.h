@@ -102,6 +102,27 @@ typedef unsigned int uint;
 
 /** memory allocation ******************************************/
 
+// indicate which malloc argument is the allocation size
+#if __has_attribute(__alloc_size__)
+#define MP_ATTR_ALLOC_SIZE(...) __attribute__((alloc_size(__VA_ARGS__)))
+#else
+#define MP_ATTR_ALLOC_SIZE(...)
+#endif
+
+// declare the alignment of the output pointer
+#if __has_attribute(__assume_aligned__)
+#define MP_ATTR_ASSUME_ALIGNED(alignment) __attribute__((assume_aligned(alignment)))
+#else
+#define MP_ATTR_ASSUME_ALIGNED(alignment)
+#endif
+
+// associate allocators with their corresponding free functions
+#if __has_attribute(__malloc__) && (defined(__GNUC__) ? __GNUC__ >= 11 : true)
+#define MP_ATTR_MALLOC(...) __attribute__((malloc(__VA_ARGS__)))
+#else
+#define MP_ATTR_MALLOC(...)
+#endif
+
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
 #define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
