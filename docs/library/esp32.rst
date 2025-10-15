@@ -497,18 +497,16 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 
 .. staticmethod:: RMT.bitstream_channel([value])
 
-    Select which RMT channel is used by the `machine.bitstream` implementation.
-    *value* can be ``None`` or an RMT channel number.
+    *This function is deprecated and will be replaced by `RMT.bitstream_rmt()`.*
 
-    Passing in ``None`` disables the use of RMT and instead selects a bit-banging
-    implementation for `machine.bitstream`.
+    Passing in no argument will return ``1`` if RMT was enabled for the `machine.bitstream`
+    feature, and ``None`` otherwise.
 
-    Passing in no argument will not change the channel. This function returns
-    the current channel number.
+    Passing any non-negative integer argument is equivalent to calling ``RMT.bitstream_rmt(True)``.
 
-    This method is deprecated since RMT channels are now dynamically allocated and
-    the channel number is opaque. Passing any non-negative number as *value* will
-    enable RMT usage in bitstream. When RMT is enabled, this method always returns 1.
+    .. note:: In previous versions of MicroPython it was necessary to use this function to assign
+              a specific RMT channel number for the bitstream, but the channel number is now assigned
+              dynamically.
 
 Constants
 ---------
