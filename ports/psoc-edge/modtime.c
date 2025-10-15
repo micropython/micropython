@@ -42,6 +42,8 @@ mtb_hal_timer_t psoc_edge_timer;
 #define TIMER_HW CYBSP_GENERAL_PURPOSE_TIMER_HW    // TCPWM0
 #define TIMER_NUM CYBSP_GENERAL_PURPOSE_TIMER_NUM  // 2
 #define TIMER_INPUT_DISABLED 0x7U
+#define RTC_ACCESS_RETRY_COUNT      (500U)
+#define RTC_RETRY_DELAY_MS          (5U)
 
 static const mtb_hal_peri_div_t clock_ref =
 {
@@ -108,6 +110,21 @@ void time_init(void) {
     if (rslt == CY_RSLT_SUCCESS) {
         rslt = mtb_hal_timer_start(&psoc_edge_timer);
     }
+
+    // TODO: Code below needs to be removed when rtc machine module is implemented.
+
+    cy_en_rtc_status_t rtc_status;
+    uint32_t rtc_access_retry = RTC_ACCESS_RETRY_COUNT;
+
+    do
+    {
+        rtc_status = Cy_RTC_Init(&CYBSP_RTC_config);
+        rtc_access_retry--;
+        Cy_SysLib_Delay(RTC_RETRY_DELAY_MS);
+    } while ((rtc_status != CY_RTC_SUCCESS) && (rtc_access_retry != 0));
+
+    Cy_RTC_SetDateAndTimeDirect(10, 45, 15, 15, 10, 25);
+
 }
 
 void time_deinit(void) {
@@ -115,12 +132,26 @@ void time_deinit(void) {
 }
 
 static void mp_time_localtime_get(timeutils_struct_time_t *time) {
+    // TODO: This is not fully functional until rtc machine module is implemented.
+    cy_stc_rtc_config_t current_date_time = {0};
+    Cy_RTC_GetDateAndTime(&current_date_time);
 
+    time->tm_year = current_date_time.year;
+    time->tm_mon = current_date_time.month;
+    time->tm_mday = current_date_time.date;
+    time->tm_hour = current_date_time.hour;
+    time->tm_min = current_date_time.min;
+    time->tm_sec = current_date_time.sec;
+    time->tm_wday = current_date_time.dayOfWeek - 1u;
+    time->tm_yday = timeutils_year_day(current_date_time.year, current_date_time.month, current_date_time.date);
 }
 
 // Return the number of seconds since the Epoch.
 static mp_obj_t mp_time_time_get(void) {
-    struct tm current_date_time = {0};
-    return timeutils_obj_from_timestamp(timeutils_seconds_since_epoch(current_date_time.tm_year, current_date_time.tm_mon, current_date_time.tm_mday,
-        current_date_time.tm_hour, current_date_time.tm_min, current_date_time.tm_sec));
+    // TODO: This is not fully functional until rtc machine module is implemented.
+    cy_stc_rtc_config_t current_date_time = {0};
+    Cy_RTC_GetDateAndTime(&current_date_time);
+
+    return timeutils_obj_from_timestamp(timeutils_seconds_since_epoch(current_date_time.year, current_date_time.month, current_date_time.date,
+        current_date_time.hour, current_date_time.min, current_date_time.sec));
 }
