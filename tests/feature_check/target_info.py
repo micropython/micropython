@@ -20,7 +20,8 @@ arch = [
     "xtensawin",
     "rv32imc",
     "rv64imc",
-][sys_mpy >> 10]
+][(sys_mpy >> 10) & 0x0F]
+arch_flags = sys_mpy >> 16
 build = getattr(sys.implementation, "_build", "unknown")
 thread = getattr(sys.implementation, "_thread", None)
 
@@ -35,4 +36,4 @@ try:
 except NameError:
     float_prec = 0
 
-print(platform, arch, build, thread, float_prec, len("α") == 1)
+print(platform, arch, arch_flags, build, thread, float_prec, len("α") == 1)
