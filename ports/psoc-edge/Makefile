@@ -102,7 +102,6 @@ MOD_SRC_C += \
 
 SRC_C = help.c \
 		main.c \
-		modtime.c \
 		mphalport.c 
 
 SRC_ASM +=
