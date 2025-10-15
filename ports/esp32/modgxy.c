@@ -64,7 +64,8 @@ static mp_obj_t gxy_dhcp_rem(void) {
 static MP_DEFINE_CONST_FUN_OBJ_0(gxy_dhcp_rem_obj, gxy_dhcp_rem);
 
 static mp_obj_t gxy_wifi_set_storage(const mp_obj_t storage) {
-    return mp_obj_new_int( esp_wifi_set_storage(mp_obj_get_int(storage)));
+    int e = (int) esp_wifi_set_storage(mp_obj_get_int(storage));
+    return mp_obj_new_int(e);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(gxy_wifi_set_storage_obj, gxy_wifi_set_storage);
 
