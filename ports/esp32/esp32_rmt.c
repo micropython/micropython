@@ -199,9 +199,8 @@ static void esp32_rmt_deactivate(esp32_rmt_obj_t *self) {
         // Cause is Interrupt WDT to trigger because ESP-IDF rmt_disable() disables
         // interrupts and spinlocks until the ongoing TX sequence is finished.
         //
-        // Workaround is not to use RMT sequences longer than 300ms (which are unusual anyway),
-        // or at least not try to stop such a sequence, nor enable loop for it.
-        // Another workaround is to set CONFIG_ESP_INT_WDT=n in your local build.
+        // Workaround is never try to stop RMT sequences longer than 300ms (which are unusual
+        // anyway). Or apply the patch mentioned at the GitHub issue to ESP-IDF.
         rmt_disable(self->channel);
         self->enabled = false;
     }
