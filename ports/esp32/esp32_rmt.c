@@ -34,6 +34,7 @@
 #include "esp_task.h"
 
 #if SOC_RMT_SUPPORTED
+#include "esp_clk_tree.h"
 #include "driver/rmt_tx.h"
 #include "driver/rmt_encoder.h"
 
@@ -59,6 +60,7 @@ typedef struct _esp32_rmt_obj_t {
     rmt_channel_handle_t channel;
     bool enabled;
     gpio_num_t pin;
+    uint32_t clock_freq;
     int resolution_hz;
     mp_uint_t cap_items;
     rmt_symbol_word_t *items;
@@ -94,9 +96,15 @@ static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     // mp_uint_t channel_id = args[0].u_int;
     gpio_num_t pin_id = machine_pin_get_id(args[1].u_obj);
 
+    uint32_t clock_freq;
+    check_esp_err(esp_clk_tree_src_get_freq_hz(RMT_CLK_SRC_DEFAULT, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &clock_freq));
+
     mp_uint_t resolution_hz;
     if (args[2].u_obj != mp_const_none && args[3].u_obj != mp_const_none) {
         mp_raise_ValueError(MP_ERROR_TEXT("resolution_hz and clock_div are mutually exclusive"));
+    } else if (args[2].u_obj == mp_const_none && args[3].u_obj == mp_const_none) {
+        // default value
+        resolution_hz = 10000000;
     } else if (args[3].u_obj == mp_const_none) {
         resolution_hz = args[2].u_int;
         if (resolution_hz <= 0) {
@@ -107,10 +115,7 @@ static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         if (clock_div < 1 || clock_div > 255) {
             mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
         }
-        resolution_hz = APB_CLK_FREQ / clock_div;
-    } else {
-        // default value (clock_div=8, resolution_hz=10000000)
-        resolution_hz = 10000000;
+        resolution_hz = clock_freq / clock_div;
     }
 
     mp_uint_t idle_level = args[4].u_bool;
@@ -124,6 +129,7 @@ static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     esp32_rmt_obj_t *self = mp_obj_malloc_with_finaliser(esp32_rmt_obj_t, &esp32_rmt_type);
     self->channel = NULL;
     self->pin = pin_id;
+    self->clock_freq = clock_freq;
     self->resolution_hz = resolution_hz;
     self->loop_count = 0;
     self->tx_ongoing = 0;
@@ -177,7 +183,7 @@ static void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pin != -1) {
         mp_printf(print, "RMT(pin=%u, source_freq=%u, resolution_hz=%u, idle_level=%u)",
-            self->pin, APB_CLK_FREQ, self->resolution_hz, self->idle_level);
+            self->pin, self->clock_freq, self->resolution_hz, self->idle_level);
     } else {
         mp_printf(print, "RMT()");
     }
@@ -238,10 +244,12 @@ static mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
 
 // Return the source frequency.
-// Currently only the APB clock (80MHz) can be used but it is possible other
+// Currently only the default clock (80MHz) can be used but it is possible other
 // clock sources will added in the future.
 static mp_obj_t esp32_rmt_source_freq() {
-    return mp_obj_new_int(APB_CLK_FREQ);
+    uint32_t clock_freq;
+    check_esp_err(esp_clk_tree_src_get_freq_hz(RMT_CLK_SRC_DEFAULT, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &clock_freq));
+    return mp_obj_new_int(clock_freq);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(esp32_rmt_source_freq_obj, esp32_rmt_source_freq);
 static MP_DEFINE_CONST_STATICMETHOD_OBJ(esp32_rmt_source_obj, MP_ROM_PTR(&esp32_rmt_source_freq_obj));
@@ -253,7 +261,7 @@ static mp_obj_t esp32_rmt_clock_div(mp_obj_t self_in) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("already deinitialized"));
     }
 
-    return mp_obj_new_int(APB_CLK_FREQ / self->resolution_hz);
+    return mp_obj_new_int(self->clock_freq / self->resolution_hz);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_clock_div_obj, esp32_rmt_clock_div);
 

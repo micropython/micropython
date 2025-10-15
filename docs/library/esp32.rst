@@ -381,7 +381,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, *, pin=None, resolution_hz=10000000, clock_div=8, idle_level=False, num_symbols=64, tx_carrier=None)
+.. class:: RMT(channel, *, pin=None, resolution_hz=10000000, clock_div=None, idle_level=False, num_symbols=64, tx_carrier=None)
 
     This class provides access to one of the eight RMT channels. *channel* is
     optional and a dummy parameter for backward compatibility. *pin* is required
