@@ -50,7 +50,15 @@ void mp_hal_delay_us(mp_uint_t us) {
 }
 
 uint64_t mp_hal_time_ns(void) {
-    return 0; // TODO: Implement this function properly
+    // TODO: This is not fully functional until rtc machine module is implemented.
+    cy_stc_rtc_config_t current_date_time = {0};
+    Cy_RTC_GetDateAndTime(&current_date_time);
+
+    uint64_t s = timeutils_seconds_since_epoch(current_date_time.year, current_date_time.month, current_date_time.date,
+        current_date_time.hour, current_date_time.min, current_date_time.sec);
+
+    // add ticks to make sure time is strictly monotonic
+    return s * 1000000000ULL + mtb_hal_timer_read(&psoc_edge_timer) * 1000ULL;
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
@@ -91,21 +99,24 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
+    // TODO: Implement this function
 }
 
 
 void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
+    // TODO: Implement this function
 }
 
 int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
-    return 0; // TODO: Implement this function properly
+    return 0; // TODO: Implement this function
 }
 
 void mp_hal_set_interrupt_char(int c) {
-
+    // TODO: Implement this function
 }
 
 void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
+    // TODO: Implement this function
 }
 
 uint8_t mp_hal_pin_name(mp_hal_pin_obj_t pin) {
@@ -113,10 +124,13 @@ uint8_t mp_hal_pin_name(mp_hal_pin_obj_t pin) {
 }
 
 void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
+    // TODO: Implement this function
 }
 
 void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
+    // TODO: Implement this function
 }
 
 void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
+    // TODO: Implement this function
 }
