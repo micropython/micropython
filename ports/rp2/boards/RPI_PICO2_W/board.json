@@ -17,5 +17,8 @@
     "product": "Pico 2 W",
     "thumbnail": "",
     "url": "https://www.raspberrypi.com/products/raspberry-pi-pico-2/",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
     "vendor": "Raspberry Pi"
 }
