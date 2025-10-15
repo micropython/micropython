@@ -95,42 +95,6 @@ void init_zephyr(void) {
 }
 
 
-// If we don't have frozen modules, then we need to provide a way to
-// mount a filesystem at boot instead of relying on _boot.py to do it.
-#if MICROPY_VFS && !MICROPY_FROZEN_MPY
-static void vfs_init(void) {
-    mp_obj_t bdev = NULL;
-    mp_obj_t mount_point;
-    const char *mount_point_str = NULL;
-    qstr path_lib_qstr = MP_QSTRnull;
-    int ret = 0;
-
-    #ifdef CONFIG_DISK_DRIVER_SDMMC
-    #if KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(4, 0, 0)
-    mp_obj_t args[] = { mp_obj_new_str_from_cstr(DT_PROP(DT_INST(0, zephyr_sdmmc_disk), disk_name)) };
-    #else
-    mp_obj_t args[] = { mp_obj_new_str_from_cstr(CONFIG_SDMMC_VOLUME_NAME) };
-    #endif
-    bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
-    mount_point_str = "/sd";
-    path_lib_qstr = MP_QSTR__slash_sd_slash_lib;
-    #elif defined(CONFIG_FLASH_MAP) && FIXED_PARTITION_EXISTS(storage_partition)
-    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FIXED_PARTITION_ID(storage_partition)), MP_OBJ_NEW_SMALL_INT(4096) };
-    bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
-    mount_point_str = "/flash";
-    path_lib_qstr = MP_QSTR__slash_flash_slash_lib;
-    #endif
-
-    if ((bdev != NULL)) {
-        mount_point = mp_obj_new_str_from_cstr(mount_point_str);
-        ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(path_lib_qstr));
-        // TODO: if this failed, make a new file system and try to mount again
-    }
-}
-#endif // MICROPY_VFS
-
-
 int real_main(void) {
     #if MICROPY_PY_THREAD
     struct k_thread *z_thread = (struct k_thread *)k_current_get();
@@ -191,7 +155,7 @@ soft_reset:
         }
     }
 
-    #if MICROPY_MODULE_FROZEN || MICROPY_VFS
+    #if MICROPY_MODULE_FROZEN_MPY || MICROPY_VFS
 soft_reset_exit:
     #endif
 
