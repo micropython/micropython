@@ -1,24 +1,20 @@
+/* mod _gxy 15/10/2025 creation*/
 #include "py/obj.h"
 #include "py/runtime.h"
 
 #include <lwip/netif.h>
 #include <lwip/dhcp.h>
 
-#include "esp_wifi.h"
+#include <esp_wifi.h>
 
-static struct dhcp *_dhcp_get(uint32_t *ip_srv)
-{
+static struct dhcp *_dhcp_get(uint32_t *ip_srv){
     struct netif *nif = netif_list;
-    for (int i = 0; i < 5 && nif; i++)
-    {
-        if (nif->name[0] == 's' && nif->name[1] == 't') // station
-        {
+    for (int i = 0; i < 5 && nif; i++) {
+        if (nif->name[0] == 's' && nif->name[1] == 't') { // station
             struct dhcp *d = netif_dhcp_data(nif);
-            if (d)
-            {
+            if (d) {
                 uint32_t srv = ip_addr_get_ip4_u32(&d->server_ip_addr);
-                if (srv != 0)
-                {
+                if (srv != 0) {
                     if (ip_srv)
                         *ip_srv = srv;
                     return d;
@@ -51,11 +47,9 @@ bool dhcp_get_info(dhcp_info_t *nfo)
     }
     return false;
 } */
-static bool dhcp_get_rem(int *minutes)
-{
+static bool dhcp_get_rem(int *minutes) {
     struct dhcp *d = _dhcp_get(0);
-    if (d)
-    {
+    if (d) {
         int rem = d->t0_timeout - d->lease_used;
         if (minutes)
             *minutes = rem * DHCP_COARSE_TIMER_SECS / 60;
