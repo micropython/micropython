@@ -57,6 +57,8 @@
 // Use the minimum headroom in the chunk allocator for parse nodes.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
+#define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
+
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
 #define MICROPY_PY_SYS_EXC_INFO                 (1)
