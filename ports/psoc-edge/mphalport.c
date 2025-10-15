@@ -45,7 +45,6 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     mtb_hal_system_delay_ms(ms);
 }
 
-
 void mp_hal_delay_us(mp_uint_t us) {
     mtb_hal_system_delay_us(us);
 }
@@ -54,21 +53,17 @@ uint64_t mp_hal_time_ns(void) {
     return 0; // TODO: Implement this function properly
 }
 
-
 mp_uint_t mp_hal_ticks_ms(void) {
     return mtb_hal_timer_read(&psoc_edge_timer) / 1000;
 }
-
 
 mp_uint_t mp_hal_ticks_us(void) {
     return mtb_hal_timer_read(&psoc_edge_timer);
 }
 
-
 mp_uint_t mp_hal_ticks_cpu(void) {
     return mtb_hal_timer_read(&psoc_edge_timer);
 }
-
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     printf("mp_hal_stdio_poll\n");
@@ -112,7 +107,6 @@ void mp_hal_set_interrupt_char(int c) {
 
 void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
 }
-
 
 uint8_t mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     return pin;
