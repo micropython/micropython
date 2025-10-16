@@ -125,7 +125,7 @@ soft_reset:
     #endif
 
 
-    #if MICROPY_MODULE_FROZEN_MPY || MICROPY_VFS
+    #if MICROPY_MODULE_FROZEN || MICROPY_VFS
     // Execute user scripts.
     int ret = pyexec_file_if_exists("boot.py");
     if (ret & PYEXEC_FORCED_EXIT) {
