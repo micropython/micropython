@@ -119,13 +119,9 @@ soft_reset:
     mp_usbd_init();
     #endif
 
-    #if MICROPY_VFS
-    #if MICROPY_MODULE_FROZEN_MPY
+    #if MICROPY_VFS && MICROPY_MODULE_FROZEN_MPY
     // Mount and/or create the filesystem
     pyexec_frozen_module("_boot.py", false);
-    #else
-    vfs_init();
-    #endif
     #endif
 
 
