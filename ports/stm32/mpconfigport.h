@@ -176,8 +176,14 @@
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
-#if MICROPY_HW_TINYUSB_STACK && CFG_TUD_MSC
+#if MICROPY_HW_USB_MSC && MICROPY_HW_TINYUSB_STACK
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#if defined(STM32N6)
 #define MICROPY_FATFS_MAX_SS           (4096)
+#else
+#define MICROPY_FATFS_MAX_SS           (512)
+#endif
 #endif
 
 #if MICROPY_PY_PYB

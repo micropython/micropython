@@ -90,7 +90,9 @@
 #if MICROPY_HW_TINYUSB_STACK
 #include "usbd_conf.h"
 #include "shared/tinyusb/mp_usbd.h"
-#else
+#endif
+
+#if MICROPY_HW_ENABLE_USB
 #include "usb.h"
 #endif
 
@@ -281,7 +283,7 @@ static bool init_sdcard_fs(void) {
                 }
             }
 
-            #if MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK
+            #if MICROPY_HW_USB_MSC
             if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
                 // if no USB MSC medium is selected then use the SD card
                 pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
@@ -640,7 +642,7 @@ soft_reset:
     }
     #endif
 
-    #if MICROPY_HW_STM_USB_STACK
+    #if MICROPY_HW_USB_MSC
     // if the SD card isn't used as the USB MSC medium then use the internal flash
     if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
         pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
