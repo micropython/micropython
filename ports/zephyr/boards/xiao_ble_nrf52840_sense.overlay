@@ -27,6 +27,18 @@
 	};
 };
 
+// Enable PDM microphone (also select CONFIG_MICROPY_PY_MACHINE_PDM=y)
+&pdm0 {
+    status = "okay";
+};
+
+// Enable microphone power regulator
+/ {
+    msm261d3526hicpm-c-en {
+        regulator-boot-on;
+    };
+};
+
 &adc {
 	#address-cells = <1>;
 	#size-cells = <0>;

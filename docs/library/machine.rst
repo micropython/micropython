@@ -266,6 +266,7 @@ Classes
    machine.I2C.rst
    machine.I2CTarget.rst
    machine.I2S.rst
+   machine.PDM.rst
    machine.RTC.rst
    machine.Timer.rst
    machine.Counter.rst
