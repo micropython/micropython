@@ -80,6 +80,10 @@ function ci_code_size_setup {
     ci_picotool_setup
 }
 
+function _ci_is_git_merge {
+    [[ $(git log -1 --format=%P "$1" | wc -w) > 1 ]]
+}
+
 function ci_code_size_build {
     # check the following ports for the change in their code size
     # Override the list by setting PORTS_TO_CHECK in the environment before invoking ci.
@@ -112,21 +116,26 @@ function ci_code_size_build {
             OUTFILE=$2
             IGNORE_ERRORS=$3
 
-            echo "Building ${COMMIT}..."
             git checkout --detach $COMMIT
             git submodule update --init $SUBMODULES
             git show -s
             tools/metrics.py clean "$PORTS_TO_CHECK"
             # Allow errors from tools/metrics.py to propagate out of the pipe below.
             set -o pipefail
-            tools/metrics.py build "$PORTS_TO_CHECK" | tee $OUTFILE || $IGNORE_ERRORS
+            tools/metrics.py build "$PORTS_TO_CHECK" | tee -a $OUTFILE || $IGNORE_ERRORS
             return $?
         }
 
         # build reference, save to size0
         # ignore any errors with this build, in case master is failing
+        echo "BUILDING $(git log --format='%s [%h]' -1 ${REFERENCE})" > ~/size0
         code_size_build_step $REFERENCE ~/size0 true
         # build PR/branch, save to size1
+        if _ci_is_git_merge "$COMPARISON"; then
+            echo "BUILDING $(git log --oneline -1 --format='%s [merge of %h]' ${COMPARISON}^2)"
+        else
+            echo "BUILDING $(git log --oneline -1 --formta='%s [%h]' ${COMPARISON})"
+        fi > ~/size1
         code_size_build_step $COMPARISON ~/size1 false
     )
 }
