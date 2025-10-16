@@ -408,12 +408,14 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("missing config param identity"));
         }
-        if (args[ARG_ca_cert].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
-            // see comment (1) below.
-            esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("missing config param ca_cert"));
+        if (eap_method == WIFI_AUTH_EAP_TTLS)  {
+            if (args[ARG_ca_cert].u_obj != mp_const_none) {
+                p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
+                // see comment (1) below.
+                esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("missing config param ca_cert"));
+            }
         }
     }
 
