@@ -265,6 +265,7 @@ SRC_C += \
 	network_lan.c \
 	pendsv.c \
 	pin.c \
+	psram.c \
 	sdcard.c \
 	sdio.c \
 	systick.c \
