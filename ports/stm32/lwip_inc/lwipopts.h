@@ -6,8 +6,6 @@
 #define LWIP_LOOPIF_MULTICAST           1
 #define LWIP_LOOPBACK_MAX_PBUFS         8
 
-#define LWIP_IPV6                       0
-
 #define LWIP_RAND() rng_get()
 
 // Increase memory for lwIP to get better performance.
@@ -17,6 +15,10 @@
 #define TCP_WND                         (8 * TCP_MSS)
 #define TCP_SND_BUF                     (8 * TCP_MSS)
 #define MEMP_NUM_TCP_SEG                (32)
+#endif
+
+#ifndef LWIP_IPV6
+#define LWIP_IPV6                       1
 #endif
 
 // Include common lwIP configuration.

@@ -152,6 +152,9 @@
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_WEBSOCKET        (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL          (MICROPY_PY_LWIP)
+#ifndef MICROPY_HW_NETWORK_USBNET
+#define MICROPY_HW_NETWORK_USBNET   (MICROPY_PY_LWIP && MICROPY_HW_TINYUSB_STACK)
+#endif
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
 #endif
@@ -176,6 +179,15 @@
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
+#if MICROPY_HW_USB_MSC && MICROPY_HW_TINYUSB_STACK
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#if defined(STM32N6)
+#define MICROPY_FATFS_MAX_SS           (4096)
+#else
+#define MICROPY_FATFS_MAX_SS           (512)
+#endif
+#endif
 
 #if MICROPY_PY_PYB
 extern const struct _mp_obj_module_t pyb_module;
@@ -207,6 +219,26 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
+#if MICROPY_PY_NETWORK_CYW43
+extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
+#else
+#define MICROPY_HW_NIC_CYW43
+#endif
+
+#if MICROPY_PY_NETWORK_WIZNET5K
+extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
+#define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+#else
+#define MICROPY_HW_NIC_WIZNET5K
+#endif
+
+#if MICROPY_HW_NETWORK_USBNET
+extern const struct _mp_obj_type_t mod_network_nic_type_usbnet;
+#define MICROPY_HW_NIC_USBNET               { MP_ROM_QSTR(MP_QSTR_USB_NET), MP_ROM_PTR(&mod_network_nic_type_usbnet) },
+#else
+#define MICROPY_HW_NIC_USBNET
+#endif
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
@@ -219,6 +251,9 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
+    MICROPY_HW_NIC_CYW43 \
+    MICROPY_HW_NIC_WIZNET5K \
+    MICROPY_HW_NIC_USBNET \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 #define MP_STATE_PORT MP_STATE_VM

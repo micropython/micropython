@@ -45,7 +45,7 @@
 #include "sdcard.h"
 #include "usb.h"
 
-#if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_STM_USB_STACK
 
 // Work out which USB device to use as the main one (the one with the REPL)
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
@@ -1154,4 +1154,4 @@ MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_hid_report_desc);
 #endif
 MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_usb_vcp_irq[MICROPY_HW_USB_CDC_NUM]);
 
-#endif // MICROPY_HW_ENABLE_USB
+#endif // MICROPY_HW_STM_USB_STACK

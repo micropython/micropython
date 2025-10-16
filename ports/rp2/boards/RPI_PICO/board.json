@@ -15,5 +15,8 @@
     "product": "Pico",
     "thumbnail": "",
     "url": "https://www.raspberrypi.com/products/raspberry-pi-pico/",
+    "variants": {
+        "USB_NET": "USB Network Adapter"
+    },
     "vendor": "Raspberry Pi"
 }

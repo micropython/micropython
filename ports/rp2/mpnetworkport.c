@@ -31,6 +31,7 @@
 #if MICROPY_PY_LWIP
 
 #include "extmod/modnetwork.h"
+#include "extmod/network_usbd_ncm.h"
 #include "shared/runtime/softtimer.h"
 #include "lwip/netif.h"
 #include "lwip/timeouts.h"
