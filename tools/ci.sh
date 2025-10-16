@@ -986,6 +986,7 @@ function ci_zephyr_install {
 }
 
 function ci_zephyr_build {
+    git submodule update --init lib/micropython-lib
     docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
     docker exec zephyr-ci west build -p auto -b frdm_k64f
     docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
