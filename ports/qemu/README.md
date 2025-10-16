@@ -165,3 +165,5 @@ The following options can be specified on the `make` command line:
 - `QEMU_DEBUG_EXTRA`: extra options to pass to qemu when `QEMU_DEBUG=1` is used.
 - `MICROPY_HEAP_SIZE`: pass in an optional value (in bytes) for overriding the GC
   heap size used by the port.
+- `QEMU_FS_ROOT`: pass in a local directory path to be mounted as the root filesystem
+  base in the emulated environment.
