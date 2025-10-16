@@ -89,7 +89,9 @@ do {                                              \
   (d) = __u.f;                                    \
 } while (0)
 
+#if !defined(DBL_EPSILON)
 #define DBL_EPSILON 2.22044604925031308085e-16
+#endif
 
 int __rem_pio2(double, double*);
 int __rem_pio2_large(double*, double*, int, int, int);
