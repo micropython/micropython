@@ -86,6 +86,7 @@
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 #define MICROPY_WARNINGS               (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN  (1)
+#define MICROPY_PY_STRERROR            (1)
 
 // Configure the "sys" module with features not usually enabled on bare-metal.
 #define MICROPY_PY_SYS_ATEXIT          (1)
