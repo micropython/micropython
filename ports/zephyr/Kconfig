@@ -57,6 +57,50 @@ config MICROPY_USB_DEVICE_PID
 	hex "USB PID"
 	default 0x0001
 
+config MICROPY_DYNAMIC_PINCTRL
+	bool "Enable Dynamic Pins"
+	depends on PINCTRL_DYNAMIC
+
+config MICROPY_DYNAMIC_PINCTRL_GENERATE_PINMUX
+	bool "Generate pinmux from dts header files"
+	default y
+	depends on MICROPY_DYNAMIC_PINCTRL
+
+config MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+	bool "Enable Dynamic Pins with custom pinmux generator script"
+	select MICROPY_DYNAMIC_PINCTRL
+
+if MICROPY_DYNAMIC_PINCTRL
+
+if MICROPY_DYNAMIC_PINCTRL_GENERATE_PINMUX
+
+if MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+config MICROPY_DYNAMIC_PINCTRL_ARG
+	string "Custom argument for filtering by board"
+
+config MICROPY_DYNAMIC_PINCTRL_SCRIPT
+	string "Custom generator script"
+
+endif # MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+if !MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+config MICROPY_DYNAMIC_PINCTRL_REGEX
+	string "Regex to identify pinmux definitions"
+
+endif # !MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR
+
+config MICROPY_DYNAMIC_PINCTRL_HEADER
+	string "Path to header containing pinmux definitions"
+
+endif # MICROPY_DYNAMIC_PINCTRL_GENERATE_PINMUX
+
+config MICROPY_DYNAMIC_PINCTRL_HEADER_BUILDER
+	string "Path to header containing functions to build pinctrl structure"
+
+endif # MICROPY_DYNAMIC_PINCTRL
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
