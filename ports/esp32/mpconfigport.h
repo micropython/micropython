@@ -337,8 +337,6 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) IRAM_ATTR f
 
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 // ssize_t, off_t as required by POSIX-signatured functions in stream.h
 #include <sys/types.h>

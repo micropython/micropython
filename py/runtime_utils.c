@@ -77,10 +77,6 @@ bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res) {
     return overflow;
 }
 
-#define MP_UINT_MAX (~(mp_uint_t)0)
-#define MP_INT_MAX ((mp_int_t)(MP_UINT_MAX >> 1))
-#define MP_INT_MIN (-MP_INT_MAX - 1)
-
 bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
     // Check for multiply overflow; see CERT INT32-C
     if (x > 0) { // x is positive

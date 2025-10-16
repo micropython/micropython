@@ -82,18 +82,18 @@ static inline void mp_end_atomic_section(mp_uint_t state) {
 #define MICROPY_BEGIN_ATOMIC_SECTION() mp_begin_atomic_section()
 #define MICROPY_END_ATOMIC_SECTION(state) mp_end_atomic_section(state)
 
-uint32_t mp_hal_ticks_us(void);
-__attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
+mp_uint_t mp_hal_ticks_us(void);
+__attribute__((always_inline)) static inline mp_uint_t mp_hal_ticks_cpu(void) {
     uint32_t ccount;
     #if CONFIG_IDF_TARGET_ARCH_RISCV
     __asm__ __volatile__ ("csrr %0, 0x7E2" : "=r" (ccount)); // Machine Performance Counter Value
     #else
     __asm__ __volatile__ ("rsr %0,ccount" : "=a" (ccount));
     #endif
-    return ccount;
+    return (mp_uint_t)ccount;
 }
 
-void mp_hal_delay_us(uint32_t);
+void mp_hal_delay_us(mp_uint_t);
 #define mp_hal_delay_us_fast(us) esp_rom_delay_us(us)
 void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);

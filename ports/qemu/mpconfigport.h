@@ -70,12 +70,8 @@
 
 #if defined(__riscv) && (__riscv_xlen == 64)
 #define MP_SSIZE_MAX (0x7fffffffffffffff)
-typedef int64_t mp_int_t; // must be pointer size
-typedef uint64_t mp_uint_t; // must be pointer size
 #else
 #define MP_SSIZE_MAX (0x7fffffff)
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 #endif
 
 typedef long mp_off_t;
