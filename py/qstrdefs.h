@@ -77,6 +77,8 @@ Q(/rom/lib)
 Q(pystack exhausted)
 #endif
 
-// Always define __template__ qstr to maintain consistent qstr indices
+// Always define t-string qstrs to maintain consistent qstr indices
 // even when MICROPY_PY_TSTRINGS is disabled
 Q(__template__)
+Q(<format_spec>)
+Q(<tstring_expr>)
