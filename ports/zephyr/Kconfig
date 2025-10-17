@@ -57,6 +57,22 @@ config MICROPY_USB_DEVICE_PID
 	hex "USB PID"
 	default 0x0001
 
+config MICROPY_PY_MACHINE_PDM
+	bool "machine.PDM class for digital microphones"
+	select AUDIO
+	select AUDIO_DMIC
+	# Automatically select platform-specific PDM driver
+	select AUDIO_DMIC_NRFX_PDM if SOC_FAMILY_NORDIC_NRF
+	select AUDIO_DMIC_MCUX if SOC_FAMILY_NXP_KINETIS || SOC_FAMILY_NXP_IMX
+	select AUDIO_DMIC_AMBIQ_PDM if SOC_FAMILY_AMBIQ
+	help
+	  Enable the machine.PDM class for interfacing with digital microphones
+	  via Zephyr's DMIC (PDM) driver. This provides blocking and non-blocking
+	  audio capture with asyncio stream protocol support.
+
+	  Automatically enables the required Zephyr audio subsystem and
+	  platform-specific DMIC driver based on the target SoC.
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"

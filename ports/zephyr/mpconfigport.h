@@ -150,6 +150,11 @@ void mp_hal_signal_event(void);
 #define MICROPY_PY_MACHINE_ADC_READ_UV (1)
 #endif
 
+#ifdef CONFIG_MICROPY_PY_MACHINE_PDM
+#define MICROPY_PY_MACHINE_PDM (1)
+#define MICROPY_PY_MACHINE_PDM_INCLUDEFILE "ports/zephyr/machine_pdm.c"
+#endif
+
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
