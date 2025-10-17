@@ -112,14 +112,14 @@ function ci_code_size_build {
             OUTFILE=$2
             IGNORE_ERRORS=$3
 
-            echo "Building ${COMMIT}..."
+            echo "BUILDING REF $(git log --oneline -1 ${COMMIT})"| tee $OUTFILE
             git checkout --detach $COMMIT
             git submodule update --init $SUBMODULES
             git show -s
             tools/metrics.py clean "$PORTS_TO_CHECK"
             # Allow errors from tools/metrics.py to propagate out of the pipe below.
             set -o pipefail
-            tools/metrics.py build "$PORTS_TO_CHECK" | tee $OUTFILE || $IGNORE_ERRORS
+            tools/metrics.py build "$PORTS_TO_CHECK" | tee -a $OUTFILE || $IGNORE_ERRORS
             return $?
         }
 
