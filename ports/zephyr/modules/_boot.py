@@ -68,6 +68,6 @@ if _FLASH_EXISTS:
     sys.path.append(_FLASH_LIB)
 
 # Cleanup globals for boot.py/main.py
-del FlashArea, DiskAccess
+del FlashArea, DiskAccess, zephyr
 del sys, vfs, os, const
 del create_flash_partition, mount_all_disks, _FLASH_EXISTS
