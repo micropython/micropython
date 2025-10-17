@@ -62,7 +62,7 @@
 #define MICROPY_STACK_CHECK_MARGIN          (1024)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL) // Debugging Note: Increase the error reporting level to view
+#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL +1) // Debugging Note: Increase the error reporting level to view
                                                                              // __FUNCTION__, __LINE__, __FILE__ in check_esp_err() exceptions
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
@@ -158,6 +158,7 @@
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
+#define MICROPY_PY_MACHINE_CAN              (1)
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
 #define MICROPY_PY_NETWORK (1)
