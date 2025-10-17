@@ -73,7 +73,7 @@ static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
 static mp_obj_t network_lan_active(size_t n_args, const mp_obj_t *args) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
-        return mp_obj_new_bool(eth_link_status(self->eth));
+        return mp_obj_new_bool(eth_is_enabled(self->eth));
     } else {
         int ret;
         if (mp_obj_is_true(args[1])) {

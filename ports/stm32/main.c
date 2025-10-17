@@ -651,6 +651,12 @@ soft_reset:
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
+    #if MICROPY_PY_NETWORK
+    // Initialize network subsystem before boot.py runs so that network
+    // interfaces can be instantiated in boot.py (LWIP was already initialized earlier)
+    mod_network_init();
+    #endif
+
     // Run optional frozen boot code.
     #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
     pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
@@ -686,10 +692,6 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_SERVO
     servo_init();
-    #endif
-
-    #if MICROPY_PY_NETWORK
-    mod_network_init();
     #endif
 
     // At this point everything is fully configured and initialised.
