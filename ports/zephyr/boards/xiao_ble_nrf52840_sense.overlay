@@ -15,7 +15,7 @@
 		#size-cells = <1>;
 
 		storage_partition: partition@0 {
-			label = "Storage";
+			label = "storage";
 			reg = <0x00000000 0x200000>;
 		};
 	};
