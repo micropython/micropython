@@ -149,6 +149,26 @@ See :func:`micropython.opt_level`.
 
     You can use the variables above, such as ``$(PORT_DIR)`` in ``base_path``.
 
+.. function:: c_module(module_path)
+
+    Include a C module directory in the build.
+
+    The *module_path* should be a directory containing a ``micropython.mk``
+    and/or ``micropython.cmake`` file that defines the C module.
+
+    This function can be called multiple times to include multiple C modules:
+
+    .. code-block:: python3
+
+        c_module("$(MPY_DIR)/examples/usercmodule/cexample")
+        c_module("$(BOARD_DIR)/../../drivers/sensor")
+
+    Supports ``$(VAR)`` path substitution just like other manifest functions.
+
+    This provides an alternative to setting ``USER_C_MODULES`` on the make/cmake
+    command line, allowing C modules to be specified directly in the manifest
+    alongside frozen Python modules.
+
 .. function:: require(name, library=None)
 
     Require a package by name (and its dependencies) from :term:`micropython-lib`.
