@@ -184,14 +184,38 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #define FLASH_AREA_DEFINE_GETNAME(part) COND_CODE_1(DT_NODE_HAS_PROP(part, label), \
     (FLASH_AREA_DEFINE_LABEL(part)), (FLASH_AREA_DEFINE_NB(part)))
 
-#define FLASH_AREA_DEFINE_DEFINE(part) { MP_ROM_QSTR(FLASH_AREA_DEFINE_GETNAME(part)), MP_ROM_INT(DT_FIXED_PARTITION_ID(part)) },
+// Helper macro to get erase block size from the flash device
+// Note: Some flash controllers have erase-block-size, others (like QSPI NOR) don't
+// For devices without this property, use 4096 as a common default for NOR flash
+#define FLASH_AREA_GET_ERASE_SIZE(part) \
+    DT_PROP_OR(DT_MTD_FROM_FIXED_PARTITION(part), erase_block_size, 4096)
+
+// Create a static tuple for each partition containing (id, erase_block_size)
+#define FLASH_AREA_DEFINE_TUPLE(part) \
+    static const mp_rom_obj_tuple_t flash_area_tuple_##part = { \
+        {&mp_type_tuple}, \
+        2, \
+        { \
+            MP_ROM_INT(DT_FIXED_PARTITION_ID(part)), \
+            MP_ROM_INT(FLASH_AREA_GET_ERASE_SIZE(part)), \
+        } \
+    };
+
+#define FLASH_AREA_TUPLE(part) COND_CODE_1(DT_NODE_HAS_STATUS_OKAY(DT_MTD_FROM_FIXED_PARTITION(part)), \
+    (FLASH_AREA_DEFINE_TUPLE(part)), ())
+
+#define FLASH_AREA_DEFINE_DEFINE(part) { MP_ROM_QSTR(FLASH_AREA_DEFINE_GETNAME(part)), MP_ROM_PTR(&flash_area_tuple_##part) },
 
 #define FLASH_AREA_DEFINE(part) COND_CODE_1(DT_NODE_HAS_STATUS_OKAY(DT_MTD_FROM_FIXED_PARTITION(part)), \
     (FLASH_AREA_DEFINE_DEFINE(part)), ())
 
 #define FOREACH_PARTITION(n) DT_FOREACH_CHILD(n, FLASH_AREA_DEFINE)
+#define FOREACH_PARTITION_TUPLE(n) DT_FOREACH_CHILD(n, FLASH_AREA_TUPLE)
 
 const mp_obj_type_t zephyr_flash_area_type;
+
+// Generate tuple definitions for all partitions
+DT_FOREACH_STATUS_OKAY(fixed_partitions, FOREACH_PARTITION_TUPLE)
 
 typedef struct _zephyr_flash_area_obj_t {
     mp_obj_base_t base;

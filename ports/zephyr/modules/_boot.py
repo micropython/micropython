@@ -23,8 +23,7 @@ def create_flash_partition():
     Return True if successful, False otherwise.
     """
     if _STORAGE_KEY in FlashArea.areas:
-        # TODO: get the erase block size from DTS instead of 4K.
-        bdev = FlashArea(FlashArea.areas[_STORAGE_KEY], 4096)
+        bdev = FlashArea(*FlashArea.areas[_STORAGE_KEY])
         retval = True
         try:
             vfs.mount(bdev, _FLASH)
