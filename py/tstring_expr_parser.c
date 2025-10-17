@@ -112,7 +112,7 @@ mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t a
     }
 
 
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR___lt_tstring_expr_gt_, expr, len, 0);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_tstring_expr_gt_, expr, len, 0);
 
     if (lex == NULL) {
         qstr expr_str = qstr_from_strn(expr, len);
