@@ -107,7 +107,7 @@ int main(void) {
         mp_cstack_init_with_top(&_estack, &_estack - &_sstack);
 
         #if MICROPY_HW_ENABLE_PSRAM
-        if(psram_size) {
+        if (psram_size) {
             #if MICROPY_GC_SPLIT_HEAP
             gc_init(&_gc_heap_start, &_gc_heap_end);
             gc_add((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
