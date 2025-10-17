@@ -163,6 +163,28 @@ the 'io-channels' property with all the ADC channels):
     adc = ADC(("adc", 0))
     adc.read_uv()
 
+Example of using FlashArea for flash storage access:
+
+    from zephyr import FlashArea
+
+    # FlashArea.areas is a dictionary mapping partition labels to tuples
+    # Each tuple contains (partition_id, erase_block_size)
+    print(FlashArea.areas)  # e.g. {'storage': (3, 4096)}
+
+    # Create a FlashArea object for a specific partition
+    # Constructor takes (partition_id, block_size)
+    partition_id, erase_size = FlashArea.areas['storage']
+    flash = FlashArea(partition_id, erase_size)
+
+    # Use with virtual filesystem (see _boot.py for automatic mounting)
+    import os
+    os.VfsFat(flash)  # or os.VfsLfs2(flash)
+
+The `FlashArea.areas` dictionary provides partition information from the Zephyr
+devicetree. The erase block size is obtained from the flash controller's
+`erase-block-size` property, or defaults to 4096 bytes for devices (like QSPI
+NOR flash) that don't specify this property.
+
 Minimal build
 -------------
 

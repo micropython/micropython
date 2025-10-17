@@ -135,10 +135,13 @@ the ``io-channels`` property containing all the ADC channels)::
 Disk Access
 -----------
 
-Use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class to support filesystem::
+Storage devices such as SD cards are automatically mounted at startup (e.g., at ``/sd``).
+For manual mounting, use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class::
 
     import vfs
     from zephyr import DiskAccess
+
+    print(DiskAccess.disks)             # list available disk names, e.g., ('SDHC',)
 
     block_dev = DiskAccess('SDHC')      # create a block device object for an SD card
     vfs.VfsFat.mkfs(block_dev)          # create FAT filesystem object using the disk storage block
@@ -152,12 +155,15 @@ Use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class to support filesystem
 Flash Area
 ----------
 
-Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
+Flash storage is automatically mounted at ``/flash`` at startup with automatic filesystem creation.
+For manual mounting, use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class::
 
     import vfs
     from zephyr import FlashArea
 
-    block_dev = FlashArea(4, 4096)      # creates a block device object in the frdm-k64f flash scratch partition
+    print(FlashArea.areas)              # list available areas, e.g., {'storage': 1, 'scratch': 4}
+
+    block_dev = FlashArea(FlashArea.areas['scratch'], 4096)  # creates a block device object using the scratch partition
     vfs.VfsLfs2.mkfs(block_dev)         # create filesystem in lfs2 format using the flash block device
     vfs.mount(block_dev, '/flash')      # mount the filesystem at the flash subdirectory
 
@@ -165,8 +171,6 @@ Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
     with open('/flash/hello.txt','w') as f:     # open a new file in the directory
         f.write('Hello world')                  # write to the file
     print(open('/flash/hello.txt').read())      # print contents of the file
-
-The ``FlashAreas``' IDs that are available are listed in the FlashArea module, as ``ID_*``.
 
 Sensor
 ------
