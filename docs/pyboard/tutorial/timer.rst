@@ -10,6 +10,7 @@ Avoid using these timers if possible.
 
 Let's create a timer object::
 
+    >>> import pyb
     >>> tim = pyb.Timer(4)
 
 Now let's see what we just created::
@@ -24,6 +25,8 @@ it's not yet initialised.  So let's initialise it to trigger at 10 Hz
     >>> tim.init(freq=10)
 
 Now that it's initialised, we can see some information about the timer::
+
+.. skip: start
 
     >>> tim
     Timer(4, prescaler=624, period=13439, mode=UP, div=1)
@@ -45,6 +48,8 @@ current value of its counter::
     21504
 
 This counter will continuously change, and counts up.
+
+.. skip: end
 
 Timer callbacks
 ---------------

@@ -40,6 +40,7 @@ import the module::
     >>> import os
 
 Then try listing the contents of the filesystem::
+.. skip: next
 
     >>> os.listdir()
     ['boot.py', 'port_config.py', 'data.txt']

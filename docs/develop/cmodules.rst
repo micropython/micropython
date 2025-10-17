@@ -269,6 +269,7 @@ Module usage in MicroPython
 
 Once built into your copy of MicroPython, the module
 can now be accessed in Python just like any other builtin module, e.g.
+.. skip: start
 
 .. code-block:: python
 
@@ -285,3 +286,5 @@ can now be accessed in Python just like any other builtin module, e.g.
     sleep_ms(1000)
     print(watch.time())
     # should display approximately 1000
+
+.. skip: end
