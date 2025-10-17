@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Dual-core",
+        "External Flash",
+        "USB-C",
+        "WiFi",
+        "microSD",
+        "RGB LED",
+        "JST-SH",
+        "Battery Charging"
+    ],
+    "images": [
+    ],
+    "mcu": "rp2350",
+    "product": "Soldered NULA RP2350",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Soldered Electronics"
+}
