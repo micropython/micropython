@@ -627,6 +627,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     sys_set_excecutable(argv[0]);
     #endif
 
+    #ifdef __AFL_HAVE_MANUAL_CONTROL
+    __AFL_INIT();
+    #endif
+
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;
     bool inspect = false;
