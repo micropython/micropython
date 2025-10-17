@@ -69,6 +69,8 @@
 #define MAX_ENDPOINT(dev_id) ((dev_id) == USB_PHY_FS_ID ? 5 : 8)
 #elif defined(STM32H7) || defined(STM32N6)
 #define MAX_ENDPOINT(dev_id) (8)
+#elif defined(STM32U5)
+#define MAX_ENDPOINT(dev_id) (9)
 #endif
 
 // Constants for USB_VCP.irq trigger.

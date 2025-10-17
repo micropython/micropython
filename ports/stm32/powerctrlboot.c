@@ -193,7 +193,7 @@ void SystemClock_Config(void) {
     #endif
 }
 
-#elif defined(STM32H5)
+#elif defined(STM32H5) // || defined(STM32U5)
 
 void SystemClock_Config(void) {
     // Set power voltage scaling.

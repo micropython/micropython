@@ -25,6 +25,8 @@ extern uint8_t mp_hal_unique_id_address[12];
 #define MICROPY_PLATFORM_VERSION "HAL1.10.3"
 #elif defined(STM32L4)
 #define MICROPY_PLATFORM_VERSION "HAL1.17.0"
+#elif defined(STM32U5)
+#define MICROPY_PLATFORM_VERSION "HAL1.8.0"
 #elif defined(STM32WB)
 #define MICROPY_PLATFORM_VERSION "HAL1.10.0"
 #elif defined(STM32WL)
