@@ -28,7 +28,7 @@
 #include "usbd_ioreq.h"
 #include "usbd_cdc_msc_hid.h"
 
-#if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_STM_USB_STACK
 
 #define HEAD_DESC_SIZE (9)
 #define MSC_CLASS_DESC_SIZE (9 + 7 + 7)

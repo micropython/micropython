@@ -35,10 +35,6 @@
 #include "py/gc.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
-#if MICROPY_HW_ENABLE_USB
-#include "irq.h"
-#include "usb.h"
-#endif
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
@@ -582,20 +578,6 @@ friendly_repl_reset:
 
     for (;;) {
     input_restart:
-
-        #if MICROPY_HW_ENABLE_USB
-        if (usb_vcp_is_enabled()) {
-            // If the user gets to here and interrupts are disabled then
-            // they'll never see the prompt, traceback etc. The USB REPL needs
-            // interrupts to be enabled or no transfers occur. So we try to
-            // do the user a favor and re-enable interrupts.
-            if (query_irq() == IRQ_STATE_DISABLED) {
-                enable_irq(IRQ_STATE_ENABLED);
-                mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");
-            }
-        }
-        #endif
-
         // If the GC is locked at this point there is no way out except a reset,
         // so force the GC to be unlocked to help the user debug what went wrong.
         MP_STATE_THREAD(gc_lock_depth) = 0;
