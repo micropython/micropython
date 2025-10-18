@@ -962,6 +962,31 @@ try:
 except Exception as e:
     print(f"Raw nested spec error: {type(e).__name__}: {e}")
 
+# Non-raw format spec that requires escaping quotes
+try:
+    value = 'fmt'
+    tmpl = t'{value:"QUOTED"}'
+    print(f"Escaped quote spec: {tmpl.interpolations[0].format_spec}")
+except Exception as e:
+    print(f"Escaped quote spec error: {type(e).__name__}: {e}")
+
+# Non-raw format spec with backslash characters
+try:
+    value = 'fmt'
+    tmpl = t"{value:\\n}"
+    print(f"Escaped backslash spec: {tmpl.interpolations[0].format_spec}")
+except Exception as e:
+    print(f"Escaped backslash spec error: {type(e).__name__}: {e}")
+
+# Nested expression with characters that need escaping
+try:
+    ns = {}
+    exec("value = 'fmt'\nresult = t\"{value:{'\\\\'}}\"", globals(), ns)
+    tmpl = ns['result']
+    print(f"Nested quoted spec: {tmpl.interpolations[0].format_spec}")
+except Exception as e:
+    print(f"Nested quoted spec error: {type(e).__name__}: {e}")
+
 # Empty format spec should map to an empty string sentinel
 try:
     value = 'colon'
