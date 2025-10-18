@@ -4,7 +4,7 @@
  */
 
 #include "port/micropython_embed.h"
-#include "py/stackctrl.h"
+#include "py/mpconfig.h"
 
 // This is example 1 script, which will be compiled and executed.
 static const char *example_1 =
@@ -87,11 +87,6 @@ static const char *example_2 =
 static char heap[16 * 1024];
 
 int main() {
-#if MICROPY_STACK_CHECK
-    // Set the stack limit, otherwise the default is zero and we will end up in
-    // nlr_jump_fail() immediately.
-    mp_stack_set_limit(10240);
-#endif
     // Initialise MicroPython.
     //
     // Note: &stack_top below should be good enough for many cases.
@@ -100,7 +95,7 @@ int main() {
     // eg. pthread_get_stackaddr_np, pthread_getattr_np,
     // __builtin_frame_address/__builtin_stack_address, etc.
     int stack_top;
-    mp_embed_init(&heap[0], sizeof(heap), &stack_top);
+    mp_embed_init(&heap[0], sizeof(heap), &stack_top, 10240);
 
     // Run the example scripts (they will be compiled first).
     mp_embed_exec_str(example_1);

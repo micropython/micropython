@@ -29,13 +29,13 @@
 #include "py/gc.h"
 #include "py/persistentcode.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
+#include "py/cstack.h"
 #include "shared/runtime/gchelper.h"
 #include "port/micropython_embed.h"
 
 // Initialise the runtime.
-void mp_embed_init(void *gc_heap, size_t gc_heap_size, void *stack_top) {
-    mp_stack_set_top(stack_top);
+void mp_embed_init(void *gc_heap, size_t gc_heap_size, void *stack_top, size_t stack_size) {
+    mp_cstack_init_with_top(stack_top, stack_size);
     gc_init(gc_heap, (uint8_t *)gc_heap + gc_heap_size);
     mp_init();
 }
