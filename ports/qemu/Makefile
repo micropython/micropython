@@ -77,6 +77,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 SRC_C += \
 	mcu/arm/errorhandler.c \
 	mcu/arm/startup.c \
+	mcu/arm/systick.c \
 	shared/runtime/semihosting_arm.c \
 
 endif
@@ -109,6 +110,7 @@ LDFLAGS += -mabi=$(RV32_ABI) -march=$(RV32_ARCH) -Wl,-EL
 SRC_C += \
 	mcu/rv32/interrupts.c \
 	mcu/rv32/startup.c \
+	mcu/riscv/systick.c \
 
 SRC_BOARD_O += mcu/rv32/entrypoint.o
 
@@ -142,6 +144,7 @@ LDFLAGS += -mabi=$(RV64_ABI) -march=$(RV64_ARCH) -Wl,-EL -mcmodel=medany
 SRC_C += \
 	mcu/rv64/interrupts.c \
 	mcu/rv64/startup.c \
+	mcu/riscv/systick.c \
 
 SRC_BOARD_O += mcu/rv64/entrypoint.o
 

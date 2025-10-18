@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Damien P. George
+ * Copyright (c) 2025 Ibrahim Abdelkader <iabdalkader@openmv.io>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_QEMU_ARM_UART_H
-#define MICROPY_INCLUDED_QEMU_ARM_UART_H
 
-#include <stddef.h>
+#include <stdint.h>
 
-// Returned from uart_rx_chr when there are no chars available.
-#define UART_RX_NO_CHAR (-1)
+// RISC-V timebase frequency for QEMU
+#ifndef TIMEBASE_FREQ_HZ
+#define TIMEBASE_FREQ_HZ        10000000u
+#endif
 
-void uart_init(void);
-int uart_rx_chr(void);
-int uart_rx_any(void);
-void uart_tx_strn(const char *buf, size_t len);
+static uint64_t systick_get_ticks(void) {
+    #if __riscv_xlen < 64
+    uint32_t ticks_lo = 0;
+    uint32_t ticks_hi = 0;
+    uint32_t rollover = 0;
+    do {
+        __asm volatile (
+            "rdtimeh %0 \n"
+            "rdtime  %1 \n"
+            "rdtimeh %2 \n"
+            : "=r" (ticks_hi), "=r" (ticks_lo), "=r" (rollover)
+            :
+            :
+            );
+    } while (ticks_hi != rollover);
+    return ((uint64_t)(ticks_hi) << 32ULL) | (uint64_t)(ticks_lo);
+    #else
+    uint64_t ticks = 0;
+    __asm volatile (
+        "rdtime %0 \n"
+        : "=r" (ticks)
+        :
+        :
+        );
+    return ticks;
+    #endif
+}
 
-#endif // MICROPY_INCLUDED_QEMU_ARM_UART_H
+uintptr_t systick_ticks_ms(void) {
+    return (uintptr_t)(systick_get_ticks() / (TIMEBASE_FREQ_HZ / 1000));
+}
+
+uintptr_t systick_ticks_us(void) {
+    return (uintptr_t)(systick_get_ticks() / (TIMEBASE_FREQ_HZ / 1000000));
+}
