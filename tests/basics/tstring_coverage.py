@@ -951,6 +951,55 @@ try:
 except Exception as e:
     print(f"Variable empty format error: {e}")
 
+print("\n# Additional parser regression tests")
+
+# Raw t-string with nested format spec containing braces and quotes
+try:
+    fmt = '"QUOTED"'
+    value = 'raw'
+    tmpl = rt"{value:{fmt}}"
+    print(f"Raw nested spec: {tmpl.interpolations[0].format_spec}")
+except Exception as e:
+    print(f"Raw nested spec error: {type(e).__name__}: {e}")
+
+# Empty format spec should map to an empty string sentinel
+try:
+    value = 'colon'
+    tmpl = t"{value:}"
+    print(f"Colon only format: {tmpl}")
+except Exception as e:
+    print(f"Colon only format error: {e}")
+
+# Literal closing brace after interpolation (}} in source)
+try:
+    value = 'brace'
+    tmpl = t"{value}}}}tail"
+    print(f"Literal brace strings: {tmpl.strings}")
+except Exception as e:
+    print(f"Literal brace error: {type(e).__name__}: {e}")
+
+# Unterminated replacement field should raise SyntaxError
+try:
+    exec('t"{value"')
+    print("ERROR: Unterminated field should have raised")
+except SyntaxError as e:
+    print(f"Unterminated field: {e}")
+
+# Overflow when too many interpolations are provided
+try:
+    code = 't"' + '{x}' * 4096 + '"'
+    exec('x = 1\nresult = ' + code)
+    print("ERROR: Overflow should have raised")
+except OverflowError as e:
+    print(f"Overflow limit: {e}")
+
+# Expression trimmed to empty after whitespace removal
+try:
+    exec("t'{   }'")
+    print("ERROR: Trimmed empty expression should have raised")
+except SyntaxError as e:
+    print(f"Trimmed empty expression: {e}")
+
 # Test template string size limit - integer overflow
 print("\n# Template string size limit")
 # The overflow check is: total = seg_cnt + interp_cnt; if (total < seg_cnt || total < interp_cnt)
