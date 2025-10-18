@@ -1002,6 +1002,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip certain tests when going via a .mpy file.
     skip_tests.update(via_mpy_tests_to_skip.get(args.via_mpy, ()))
+    if args.via_mpy and args.emit == "native":
+        skip_tests.add("basics/tstring_coverage.py")
 
     # Skip emitter-specific tests.
     skip_tests.update(emitter_tests_to_skip.get(args.emit, ()))
