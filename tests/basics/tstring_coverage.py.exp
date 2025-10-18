@@ -51,7 +51,7 @@ Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.1
 Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
 
 === Special cases ===
-__template__ error: invalid template data: strings/interpolations mismatch
+__template__ error: invalid interpolation format
 __template__: Template
 Interp read-only: AttributeError
 Whitespace trim: 'Template(strings=('', ''), interpolations=(Interpolation(None, '   ', None, ''),))'
@@ -133,7 +133,7 @@ Empty expr: Template(strings=('Val: ', ''), interpolations=(Interpolation(42, ''
 
 # Invalid __template__ calls
 Single tuple: function takes 2 positional arguments but 1 were given
-Invalid interp: invalid template data: strings/interpolations mismatch
+Invalid interp: invalid interpolation format
 
 # StringLike REVERSE_ADD test
 StringLike + Template: unsupported types for __add__: 'StringLike', 'Template'
@@ -318,7 +318,7 @@ Debug fmt+conv: fmt_spec='10', conv=r
 Integer overflow: platform-dependent, tested via overflow scenarios
 
 # Test __template__ edge cases
-Max strings error: ValueError
+Max strings: OK, 4095 strings
 Max interps error: OverflowError
 
 # Test vstr string concatenation
