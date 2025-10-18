@@ -272,6 +272,9 @@ Variable with empty format: 'Template(strings=('', ''), interpolations=(Interpol
 
 # Additional parser regression tests
 Raw nested spec: "QUOTED"
+Escaped quote spec: "QUOTED"
+Escaped backslash spec: \n
+Nested quoted spec: \\
 Colon only format: Template(strings=('', ''), interpolations=(Interpolation('colon', 'value', None, ''),))
 Literal brace strings: ('', '}}tail')
 Unterminated field: invalid syntax
