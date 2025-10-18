@@ -28,11 +28,14 @@ jobs:
     - uses: jlumbroso/free-disk-space@main
       with:
         # Only free up a few things so this step runs quickly.
+        # (android would save 9.6GiB, but takes about 13m)
+        # (large-packages would save 4.6GiB, but takes about 3m)
         android: false
         dotnet: true
         haskell: true
         large-packages: false
         docker-images: false
+        tool-cache: true
         swap-storage: false
     - uses: actions/checkout@v5
     - id: versions
