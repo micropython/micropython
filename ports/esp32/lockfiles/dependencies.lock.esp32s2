@@ -45,6 +45,6 @@ direct_dependencies:
 - espressif/esp_tinyusb
 - espressif/mdns
 - idf
-manifest_hash: f518397f761ff78cb4e9f99b89dfe224dd55afb97b4cd26f3c2ae8031c274cc1
+manifest_hash: 7cc7aa445e2c69895d6138d4dacc330b83882e2388db2eb62726ece12e559982
 target: esp32s2
 version: 2.0.0
