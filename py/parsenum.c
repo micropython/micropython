@@ -28,6 +28,7 @@
 #include <stdlib.h>
 
 #include "py/runtime.h"
+#include "py/misc.h"
 #include "py/parsenumbase.h"
 #include "py/parsenum.h"
 #include "py/smallint.h"
@@ -52,7 +53,7 @@ static MP_NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
 // to bigint parsing if supported)
 typedef mp_int_t parsed_int_t;
 
-#define PARSED_INT_MUL_OVERFLOW mp_small_int_mul_overflow
+#define PARSED_INT_MUL_OVERFLOW mp_mul_mp_int_t_overflow
 #define PARSED_INT_FITS MP_SMALL_INT_FITS
 #else
 // In the special case where bigint support is long long, we save code size by

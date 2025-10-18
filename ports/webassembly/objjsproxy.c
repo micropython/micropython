@@ -153,20 +153,24 @@ EM_JS(void, call0_kwarg, (int f_ref, bool via_call, uint32_t n_kw, uint32_t * ke
     proxy_convert_js_to_mp_obj_jsside(ret, out);
 });
 
-EM_JS(void, call1_kwarg, (int f_ref, bool via_call, uint32_t * arg0, uint32_t n_kw, uint32_t * key, uint32_t * value, uint32_t * out), {
+EM_JS(void, calln_kwarg, (int f_ref, bool via_call, uint32_t n_args, uint32_t * args_value, uint32_t n_kw, uint32_t * kw_key, uint32_t * kw_value, uint32_t * out), {
     const f = proxy_js_ref[f_ref];
-    const a0 = proxy_convert_mp_to_js_obj_jsside(arg0);
-    const a = {};
+    const a = [];
+    for (let i = 0; i < n_args; ++i) {
+        const v = proxy_convert_mp_to_js_obj_jsside(args_value + i * 3 * 4);
+        a.push(v);
+    }
+    const ks = {};
     for (let i = 0; i < n_kw; ++i) {
-        const k = UTF8ToString(getValue(key + i * 4, "i32"));
-        const v = proxy_convert_mp_to_js_obj_jsside(value + i * 3 * 4);
-        a[k] = v;
+        const k = UTF8ToString(getValue(kw_key + i * 4, "i32"));
+        const v = proxy_convert_mp_to_js_obj_jsside(kw_value + i * 3 * 4);
+        ks[k] = v;
     }
     let ret;
     if (via_call) {
-        ret = f.call(a0, a);
+        ret = f.call(... a, ks);
     } else {
-        ret = f(a0, a);
+        ret = f(... a, ks);
     }
     proxy_convert_js_to_mp_obj_jsside(ret, out);
 });
@@ -218,10 +222,9 @@ static void jsproxy_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 static mp_obj_t jsproxy_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_jsproxy_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (n_kw == 0) {
-        mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
-    } else {
-        mp_arg_check_num(n_args, n_kw, 0, 1, true);
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+
+    if (n_kw != 0) {
         uint32_t key[n_kw];
         uint32_t value[PVN * n_kw];
         for (int i = 0; i < n_kw; ++i) {
@@ -232,10 +235,11 @@ static mp_obj_t jsproxy_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         if (n_args == 0) {
             call0_kwarg(self->ref, self->bind_to_self, n_kw, key, value, out);
         } else {
-            // n_args == 1
-            uint32_t arg0[PVN];
-            proxy_convert_mp_to_js_obj_cside(args[0], arg0);
-            call1_kwarg(self->ref, self->bind_to_self, arg0, n_kw, key, value, out);
+            uint32_t value_args[PVN * n_args];
+            for (int i = 0; i < n_args; ++i) {
+                proxy_convert_mp_to_js_obj_cside(args[i], &value_args[i * PVN]);
+            }
+            calln_kwarg(self->ref, self->bind_to_self, n_args, value_args, n_kw, key, value, out);
         }
         return proxy_convert_js_to_mp_obj_cside(out);
     }
@@ -566,7 +570,8 @@ static mp_obj_t jsproxy_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
         // decouples the task from the thenable and allows cancelling the task.
         if (mp_asyncio_context != MP_OBJ_NULL) {
             mp_obj_t cur_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
-            if (cur_task != mp_const_none) {
+            mp_obj_t top_level_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR__top_level_task));
+            if (cur_task != top_level_task) {
                 mp_obj_t thenable_event_class = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_ThenableEvent));
                 mp_obj_t thenable_event = mp_call_function_1(thenable_event_class, self_in);
                 mp_obj_t dest[2];

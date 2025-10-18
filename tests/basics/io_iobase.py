@@ -9,7 +9,7 @@ except (AttributeError, ImportError):
 
 class MyIO(io.IOBase):
     def write(self, buf):
-        # CPython and uPy pass in different types for buf (str vs bytearray)
+        # CPython and MicroPython pass in different types for buf (str vs bytearray)
         print('write', len(buf))
         return len(buf)
 

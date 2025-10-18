@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "py/stackctrl.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
@@ -100,8 +99,7 @@ int main(void) {
         led_init();
         #endif
 
-        mp_stack_set_top(&_estack);
-        mp_stack_set_limit(&_estack - &_sstack - 1024);
+        mp_cstack_init_with_top(&_estack, &_estack - &_sstack);
 
         gc_init(&_gc_heap_start, &_gc_heap_end);
         mp_init();

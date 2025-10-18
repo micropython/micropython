@@ -205,11 +205,11 @@ void dma_unprotect_rx_region(void *dest, size_t len);
 
 #else
 
-inline static void dma_protect_rx_region(uint8_t *dest, size_t len) {
+static inline void dma_protect_rx_region(uint8_t *dest, size_t len) {
     // No-ops on targets without D-Cache.
 }
 
-inline static void dma_unprotect_rx_region(void *dest, size_t len) {
+static inline void dma_unprotect_rx_region(void *dest, size_t len) {
 
 }
 

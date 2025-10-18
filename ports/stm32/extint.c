@@ -127,7 +127,7 @@ static uint8_t pyb_extint_mode[EXTI_NUM_VECTORS];
 static bool pyb_extint_hard_irq[EXTI_NUM_VECTORS];
 
 // The callback arg is a small-int or a ROM Pin object, so no need to scan by GC
-static mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
+mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
 
 #if !defined(ETH)
 #define ETH_WKUP_IRQn   62  // Some MCUs don't have ETH, but we want a value to put in our table

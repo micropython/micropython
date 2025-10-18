@@ -107,6 +107,19 @@ PC_PLATFORMS = ("darwin", "linux", "win32")
 platform_to_port_map = {"pyboard": "stm32", "WiPy": "cc3200"}
 platform_to_port_map.update({p: "unix" for p in PC_PLATFORMS})
 
+# Tests to skip for values of the `--via-mpy` argument.
+via_mpy_tests_to_skip = {
+    # Skip the following when mpy is enabled.
+    True: (
+        # These print out the filename and that's expected to match the .py name.
+        "import/import_file.py",
+        "io/argv.py",
+        "misc/sys_settrace_features.py",
+        "misc/sys_settrace_generator.py",
+        "misc/sys_settrace_loop.py",
+    ),
+}
+
 # Tests to skip for specific emitters.
 emitter_tests_to_skip = {
     # Some tests are known to fail with native emitter.
@@ -215,6 +228,79 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
     ),
 }
+
+# These tests don't test float explicitly but rather use it to perform the test.
+tests_requiring_float = (
+    "extmod/asyncio_basic.py",
+    "extmod/asyncio_basic2.py",
+    "extmod/asyncio_cancel_task.py",
+    "extmod/asyncio_event.py",
+    "extmod/asyncio_fair.py",
+    "extmod/asyncio_gather.py",
+    "extmod/asyncio_gather_notimpl.py",
+    "extmod/asyncio_get_event_loop.py",
+    "extmod/asyncio_iterator_event.py",
+    "extmod/asyncio_lock.py",
+    "extmod/asyncio_task_done.py",
+    "extmod/asyncio_wait_for.py",
+    "extmod/asyncio_wait_for_fwd.py",
+    "extmod/asyncio_wait_for_linked_task.py",
+    "extmod/asyncio_wait_task.py",
+    "extmod/json_dumps_float.py",
+    "extmod/json_loads_float.py",
+    "extmod/random_extra_float.py",
+    "extmod/select_poll_eintr.py",
+    "extmod/tls_threads.py",
+    "extmod/uctypes_le_float.py",
+    "extmod/uctypes_native_float.py",
+    "extmod/uctypes_sizeof_float.py",
+    "misc/rge_sm.py",
+    "ports/unix/ffi_float.py",
+    "ports/unix/ffi_float2.py",
+)
+
+# These tests don't test slice explicitly but rather use it to perform the test.
+tests_requiring_slice = (
+    "basics/builtin_range.py",
+    "basics/bytearray1.py",
+    "basics/class_super.py",
+    "basics/containment.py",
+    "basics/errno1.py",
+    "basics/fun_str.py",
+    "basics/generator1.py",
+    "basics/globals_del.py",
+    "basics/memoryview1.py",
+    "basics/memoryview_gc.py",
+    "basics/object1.py",
+    "basics/python34.py",
+    "basics/struct_endian.py",
+    "extmod/btree1.py",
+    "extmod/deflate_decompress.py",
+    "extmod/framebuf16.py",
+    "extmod/framebuf4.py",
+    "extmod/machine1.py",
+    "extmod/time_mktime.py",
+    "extmod/time_res.py",
+    "extmod/tls_sslcontext_ciphers.py",
+    "extmod/vfs_fat_fileio1.py",
+    "extmod/vfs_fat_finaliser.py",
+    "extmod/vfs_fat_more.py",
+    "extmod/vfs_fat_ramdisk.py",
+    "extmod/vfs_fat_ramdisklarge.py",
+    "extmod/vfs_lfs.py",
+    "extmod/vfs_rom.py",
+    "float/string_format_modulo.py",
+    "micropython/builtin_execfile.py",
+    "micropython/extreme_exc.py",
+    "micropython/heapalloc_fail_bytearray.py",
+    "micropython/heapalloc_fail_list.py",
+    "micropython/heapalloc_fail_memoryview.py",
+    "micropython/import_mpy_invalid.py",
+    "micropython/import_mpy_native.py",
+    "micropython/import_mpy_native_gc.py",
+    "misc/non_compliant.py",
+    "misc/rge_sm.py",
+)
 
 # Tests that require `import target_wiring` to work.
 tests_requiring_target_wiring = (
@@ -842,24 +928,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         skip_inlineasm = args.inlineasm_arch is None
 
-    # These tests don't test slice explicitly but rather use it to perform the test
-    misc_slice_tests = (
-        "builtin_range",
-        "bytearray1",
-        "class_super",
-        "containment",
-        "errno1",
-        "fun_str",
-        "generator1",
-        "globals_del",
-        "memoryview1",
-        "memoryview_gc",
-        "object1",
-        "python34",
-        "string_format_modulo",
-        "struct_endian",
-    )
-
     # Some tests shouldn't be run on GitHub Actions
     if os.getenv("GITHUB_ACTIONS") == "true":
         skip_tests.add("thread/stress_schedule.py")  # has reliability issues
@@ -869,13 +937,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("misc/sys_settrace_features.py")
 
     if args.float_prec == 0:
-        skip_tests.add("extmod/uctypes_le_float.py")
-        skip_tests.add("extmod/uctypes_native_float.py")
-        skip_tests.add("extmod/uctypes_sizeof_float.py")
-        skip_tests.add("extmod/json_dumps_float.py")
-        skip_tests.add("extmod/json_loads_float.py")
-        skip_tests.add("extmod/random_extra_float.py")
-        skip_tests.add("misc/rge_sm.py")
+        skip_tests.update(tests_requiring_float)
     if args.float_prec < 32:
         skip_tests.add(
             "float/float2int_intbig.py"
@@ -895,6 +957,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     if not args.unicode:
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
+
+    if skip_slice:
+        skip_tests.update(tests_requiring_slice)
 
     if not has_complex:
         skip_tests.add("float/complex1.py")
@@ -924,6 +989,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("unicode/file1.py")  # requires local file access
         skip_tests.add("unicode/file2.py")  # requires local file access
         skip_tests.add("unicode/file_invalid.py")  # requires local file access
+
+    # Skip certain tests when going via a .mpy file.
+    skip_tests.update(via_mpy_tests_to_skip.get(args.via_mpy, ()))
 
     # Skip emitter-specific tests.
     skip_tests.update(emitter_tests_to_skip.get(args.emit, ()))
@@ -966,7 +1034,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
-        is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
+        is_slice = test_name.find("slice") != -1
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
         is_fstring = test_name.startswith("string_fstring")
@@ -1425,11 +1493,9 @@ the last matching regex is used:
                 test_dirs += (port_specific_test_dir,)
             if args.platform in PC_PLATFORMS:
                 # run PC tests
-                test_dirs += (
-                    "import",
-                    "io",
-                    "cmdline",
-                )
+                test_dirs += ("import",)
+                if args.build != "minimal":
+                    test_dirs += ("cmdline", "io")
         else:
             # run tests from these directories
             test_dirs = args.test_dirs

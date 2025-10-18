@@ -1559,6 +1559,7 @@ typedef time_t mp_timestamp_t;
 #endif
 
 // Whether to provide fix for pow(1, NaN) and pow(NaN, 0), which both should be 1 not NaN.
+// Also fixes pow(base, NaN) to return NaN for other values of base.
 #ifndef MICROPY_PY_MATH_POW_FIX_NAN
 #define MICROPY_PY_MATH_POW_FIX_NAN (0)
 #endif
@@ -2098,7 +2099,7 @@ typedef time_t mp_timestamp_t;
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
-// All uPy objects in ROM must be aligned on at least a 4 byte boundary
+// All MicroPython objects in ROM must be aligned on at least a 4 byte boundary
 // so that the small-int/qstr/pointer distinction can be made.  For machines
 // that don't do this (eg 16-bit CPU), define the following macro to something
 // like __attribute__((aligned(4))).
@@ -2243,15 +2244,18 @@ typedef time_t mp_timestamp_t;
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 #define HEX_FMT "%lx"
+#define SIZE_FMT "%lu"
 #elif defined(_WIN64)
 #define UINT_FMT "%llu"
 #define INT_FMT "%lld"
 #define HEX_FMT "%llx"
+#define SIZE_FMT "%llu"
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
 #define HEX_FMT "%x"
+#define SIZE_FMT "%u"
 #endif
 #endif // INT_FMT
 
@@ -2334,6 +2338,25 @@ typedef time_t mp_timestamp_t;
 #else
 #undef MP_WARN_CAT
 #define MP_WARN_CAT(x) (NULL)
+#endif
+
+// If true, use __builtin_mul_overflow (a gcc intrinsic supported by clang) for
+// overflow checking when multiplying two small ints. Otherwise, use a portable
+// algorithm.
+//
+// Most MCUs have a 32x32->64 bit multiply instruction, in which case the
+// intrinsic is likely to be faster and generate smaller code. The main exception is
+// cortex-m0 with __ARM_ARCH_ISA_THUMB == 1.
+//
+// The intrinsic is in GCC starting with version 5.
+#ifndef MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+#if defined(__ARM_ARCH_ISA_THUMB) && (__GNUC__ >= 5)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (__ARM_ARCH_ISA_THUMB >= 2)
+#elif (__GNUC__ >= 5)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (1)
+#else
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (0)
+#endif
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

@@ -32,9 +32,9 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     - name: Install packages
-      run: source tools/ci.sh && ci_qemu_setup_arm
+      run: tools/ci.sh qemu_setup_arm
     - name: Build and run test suite ci_qemu_build_arm_${{ matrix.ci_func }}
-      run: source tools/ci.sh && ci_qemu_build_arm_${{ matrix.ci_func }}
+      run: tools/ci.sh qemu_build_arm_${{ matrix.ci_func }}
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
@@ -44,9 +44,9 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     - name: Install packages
-      run: source tools/ci.sh && ci_qemu_setup_rv32
+      run: tools/ci.sh qemu_setup_rv32
     - name: Build and run test suite
-      run: source tools/ci.sh && ci_qemu_build_rv32
+      run: tools/ci.sh qemu_build_rv32
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
@@ -56,9 +56,9 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     - name: Install packages
-      run: source tools/ci.sh && ci_qemu_setup_rv64
+      run: tools/ci.sh qemu_setup_rv64
     - name: Build and run test suite
-      run: source tools/ci.sh && ci_qemu_build_rv64
+      run: tools/ci.sh qemu_build_rv64
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures

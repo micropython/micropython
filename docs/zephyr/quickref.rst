@@ -99,10 +99,10 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
 
     from machine import SPI
 
-    spi = SPI("spi0")           # construct a spi bus with default configuration
+    spi = SPI("spi0")           # construct a SPI bus with default configuration
     spi.init(baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB) # set configuration
 
-    # equivalently, construct spi bus and set configuration at the same time
+    # equivalently, construct the SPI bus and set configuration at the same time
     spi = SPI("spi0", baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB)
     print(spi)                  # print device name and bus configuration
 
@@ -118,6 +118,19 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
     buf = bytearray(4)                  # create buffer of size 8
     spi.write_readinto(b'abcd', buf)    # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf)        # write buf to MOSI and read back into the buf
+
+Analog to Digital Converter (ADC)
+----------------------------------
+
+Use the :ref:`machine.ADC <machine.ADC>` class.
+
+Example of using ADC to read a pin's analog value (the ``zephyr,user`` node must contain
+the ``io-channels`` property containing all the ADC channels)::
+
+    from machine import ADC
+
+    adc = ADC(("adc", 0))
+    adc.read_uv()
 
 Disk Access
 -----------
@@ -153,7 +166,7 @@ Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
         f.write('Hello world')                  # write to the file
     print(open('/flash/hello.txt').read())      # print contents of the file
 
-The FlashAreas' IDs that are available are listed in the FlashArea module, as ID_*.
+The ``FlashAreas``' IDs that are available are listed in the FlashArea module, as ``ID_*``.
 
 Sensor
 ------
@@ -172,3 +185,34 @@ Use the :ref:`zsensor.Sensor <zsensor.Sensor>` class to access sensor data::
     accel.get_millis(zsensor.ACCEL_Y) # print measurement value for accelerometer Y-axis sensor channel in millionths
     accel.get_micro(zsensor.ACCEL_Z)  # print measurement value for accelerometer Z-axis sensor channel in thousandths
     accel.get_int(zsensor.ACCEL_X)    # print measurement integer value only for accelerometer X-axis sensor channel
+
+The channel IDs that are used as arguments to the :meth:`zsensor.Sensor.get_int`,
+:meth:`zsensor.Sensor.get_float()`, :meth:`zsensor.Sensor.get_millis()`, and
+:meth:`zsensor.Sensor.get_micros()` methods are constants in the :mod:`zsensor` module.
+
+You can use the :meth:`zsensor.Sensor.attr_set` method to set sensor attributes
+like full-scale range and update rate::
+
+    # Example for XIAO BLE NRF52840 SENSE
+    from zsensor import *
+    accel = Sensor('lsm6ds3tr_c')  # name from Devicetree
+    # Set full-scale to 2g (19.613300 m/sec^2)
+    # units are micro-m/s^2 (given as a float)
+    accel.attr_set(ACCEL_XYZ, ATTR_FULL_SCALE, 19.613300)
+    # Set sampling frequency to 104 Hz (as a pair of integers)
+    accel.attr_set(ACCEL_XYZ, ATTR_SAMPLING_FREQUENCY, 104, 0)
+    accel.measure()
+    accel.get_float(ACCEL_X) # -0.508 (m/s^2)
+    accel.get_float(ACCEL_Y) # -3.62 (m/s^2)
+    accel.get_float(ACCEL_Z) # 9.504889 (m/s^2)
+
+There are also the :meth:`zsensor.Sensor.attr_get_float`, :meth:`zsensor.Sensor.attr_get_int`,
+:meth:`zsensor.Sensor.attr_get_millis`, and :meth:`zsensor.Sensor.attr_get_micros` methods,
+but many sensors do not support these::
+
+    full_scale = accel.attr_get_float(ATTR_FULL_SCALE)
+
+The attribute IDs that are used as arguments to the :meth:`zsensor.Sensor.attr_set`,
+:meth:`zsensor.Sensor.attr_get_float`, :meth:`zsensor.Sensor.attr_get_int`,
+:meth:`zsensor.Sensor.attr_get_millis`, and :meth:`zsensor.Sensor.attr_get_micros`
+methods are constants in the :mod:`zsensor` module named ``ATTR_*``.

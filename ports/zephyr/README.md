@@ -19,8 +19,10 @@ Features supported at this time:
 * `machine.Pin` class for GPIO control, with IRQ support.
 * `machine.I2C` class for I2C control.
 * `machine.SPI` class for SPI control.
-* `machine.PWM` class for PWM control
+* `machine.PWM` class for PWM control.
+* `machine.ADC` class for ADC control.
 * `socket` module for networking (IPv4/IPv6).
+* `zsensor` module for reading sensors.
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
   run-on-boot capability.
@@ -119,7 +121,7 @@ To blink an LED:
         time.sleep(0.5)
 
 The above code uses an LED location for a FRDM-K64F board (port B, pin 21;
-following Zephyr conventions port are identified by their devicetree node
+following Zephyr conventions ports are identified by their devicetree node
 label. You will need to adjust it for another board (using board's reference
 materials). To execute the above sample, copy it to clipboard, in MicroPython
 REPL enter "paste mode" using Ctrl+E, paste clipboard, press Ctrl+D to finish
@@ -153,6 +155,13 @@ Example of using SPI to write a buffer to the MOSI pin:
     spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
     spi.write(b'abcd')
 
+Example of using ADC to read a pin's analog value (the 'zephyr,user' node must contain
+the 'io-channels' property with all the ADC channels):
+
+    from machine import ADC
+
+    adc = ADC(("adc", 0))
+    adc.read_uv()
 
 Minimal build
 -------------

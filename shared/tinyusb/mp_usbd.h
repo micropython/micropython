@@ -138,7 +138,7 @@ extern const mp_obj_type_t mp_type_usb_device_builtin_default;
 extern const mp_obj_type_t mp_type_usb_device_builtin_none;
 
 // Return true if any built-in driver is enabled
-inline static bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
+static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
     return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
 }
 

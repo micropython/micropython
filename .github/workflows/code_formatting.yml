@@ -13,8 +13,8 @@ jobs:
     - uses: actions/checkout@v5
     - uses: actions/setup-python@v6
     - name: Install packages
-      run: source tools/ci.sh && ci_c_code_formatting_setup
+      run: tools/ci.sh c_code_formatting_setup
     - name: Run code formatting
-      run: source tools/ci.sh && ci_c_code_formatting_run
+      run: tools/ci.sh c_code_formatting_run
     - name: Check code formatting
       run: git diff --exit-code

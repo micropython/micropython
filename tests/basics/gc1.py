@@ -15,13 +15,13 @@ print(gc.isenabled())
 gc.collect()
 
 if hasattr(gc, 'mem_free'):
-    # uPy has these extra functions
+    # MicroPython has these extra functions
     # just test they execute and return an int
     assert type(gc.mem_free()) is int
     assert type(gc.mem_alloc()) is int
 
 if hasattr(gc, 'threshold'):
-    # uPy has this extra function
+    # MicroPython has this extra function
     # check execution and returns
     assert(gc.threshold(1) is None)
     assert(gc.threshold() == 0)

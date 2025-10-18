@@ -250,7 +250,7 @@ b'\x00\xff'
 frzmpy4 1
 frzmpy4 2
 NULL
-uPy
+interned
 a long string that is not interned
 a string that has unicode αβγ chars
 b'bytes 1234\x01'

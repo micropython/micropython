@@ -1,10 +1,9 @@
 # test that emergency exceptions work
 
-import micropython
 import sys
 
 try:
-    import io
+    import io, micropython
 except ImportError:
     print("SKIP")
     raise SystemExit

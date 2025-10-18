@@ -1,0 +1,10 @@
+set(SDKCONFIG_DEFAULTS
+    ${SDKCONFIG_DEFAULTS}
+    boards/sdkconfig.flash_2MiB
+)
+
+list(APPEND MICROPY_DEF_BOARD
+    MICROPY_HW_BOARD_NAME="Generic ESP32-C2 module with 2MiB Flash"
+    MICROPY_OPT_COMPUTED_GOTO=0
+    MICROPY_PY_NETWORK_LAN=0
+)

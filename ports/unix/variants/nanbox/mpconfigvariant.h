@@ -49,3 +49,4 @@ typedef uint64_t mp_uint_t;
 #define UINT_FMT "%llu"
 #define INT_FMT "%lld"
 #define HEX_FMT "%llx"
+#define SIZE_FMT "%lu"
