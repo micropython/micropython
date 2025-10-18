@@ -51,7 +51,7 @@ Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.1
 Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
 
 === Special cases ===
-__template__ error: invalid interpolation format
+__template__ error: invalid template data: strings/interpolations mismatch
 __template__: Template
 Interp read-only: AttributeError
 Whitespace trim: 'Template(strings=('', ''), interpolations=(Interpolation(None, '   ', None, ''),))'
@@ -133,7 +133,7 @@ Empty expr: Template(strings=('Val: ', ''), interpolations=(Interpolation(42, ''
 
 # Invalid __template__ calls
 Single tuple: function takes 2 positional arguments but 1 were given
-Invalid interp: invalid interpolation format
+Invalid interp: invalid template data: strings/interpolations mismatch
 
 # StringLike REVERSE_ADD test
 StringLike + Template: unsupported types for __add__: 'StringLike', 'Template'
@@ -270,6 +270,14 @@ Dict comprehension: OK
 Empty format after colon: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))'
 Variable with empty format: 'Template(strings=('', ''), interpolations=(Interpolation(100, 'x', None, ''),))'
 
+# Additional parser regression tests
+Raw nested spec: "QUOTED"
+Colon only format: Template(strings=('', ''), interpolations=(Interpolation('colon', 'value', None, ''),))
+Literal brace strings: ('', '}}tail')
+Unterminated field: invalid syntax
+Overflow limit: template string too large for header format
+Trimmed empty expression: empty expression not allowed
+
 # Template string size limit
 Too many interpolations: template string too large for header format
 
@@ -310,7 +318,7 @@ Debug fmt+conv: fmt_spec='10', conv=r
 Integer overflow: platform-dependent, tested via overflow scenarios
 
 # Test __template__ edge cases
-Max strings: OK, 4095 strings
+Max strings error: ValueError
 Max interps error: OverflowError
 
 # Test vstr string concatenation
