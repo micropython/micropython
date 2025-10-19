@@ -111,6 +111,7 @@ INC += -I$(STM32LIB_HAL_ABS)/Inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I$(TOP)/lib/tinyusb/src
+INC += -Itinyusb_port
 INC += -I$(TOP)/shared/tinyusb/
 INC += -Ilwip_inc
 
