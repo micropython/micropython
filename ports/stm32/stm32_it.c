@@ -384,7 +384,7 @@ void USB1_OTG_HS_IRQHandler(void) {
 void OTG_HS_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_IRQn);
     #if MICROPY_HW_TINYUSB_STACK
-    tud_int_handler(0);
+    tud_int_handler(1); // OTG_HS is always RHPORT1 on F4/F7/H7 (not N6, which uses USB1_OTG_HS_IRQHandler)
     #else
     HAL_PCD_IRQHandler(&pcd_hs_handle);
     #endif
