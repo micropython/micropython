@@ -98,8 +98,8 @@ function ci_code_size_build {
     # the code size impact would be if we merged this PR. During CI we are at a merge commit,
     # so this tests the merged PR against its merge base.
     # Override the refs by setting REFERENCE and/or COMPARISON in the environment before invoking ci.
-    : ${REFERENCE:=$(git rev-parse --short HEAD^1)}
     : ${COMPARISON:=$(git rev-parse --short HEAD)}
+    : ${REFERENCE:=$(git rev-parse --short ${COMPARISON}^1)}
 
     echo "Comparing sizes of reference ${REFERENCE} to ${COMPARISON}..."
     git log --oneline $REFERENCE..$COMPARISON
