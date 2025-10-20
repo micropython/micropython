@@ -380,6 +380,13 @@ tx     1      10     17
 rx     3      9      16
 =====  =====  =====  =====
 
+You can pass a initialized Pin to ``tx`` and ``rx``::
+
+    from machine import UART, Pin
+
+    uart1 = UART(1, baudrate=9600, tx=Pin( 10, Pin.OPEN_DRAIN ), rx=Pin(9, Pin.IN, Pin.PULL_UP )  )
+
+
 PWM (pulse width modulation)
 ----------------------------
 
