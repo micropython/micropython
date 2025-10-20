@@ -128,13 +128,13 @@ function ci_code_size_build {
 
         # build reference, save to size0
         # ignore any errors with this build, in case master is failing
-        echo "BUILDING $(git log --oneline -1 ${REFERENCE})" > ~/size0
+        echo "BUILDING $(git log --format='%s [%h]' -1 ${REFERENCE})" > ~/size0
         code_size_build_step $REFERENCE ~/size0 true
         # build PR/branch, save to size1
         if _ci_is_git_merge "$COMPARISON"; then
-            echo "BUILDING merge of $(git log --oneline -1 ${COMPARISON}^2)"
+            echo "BUILDING $(git log --oneline -1 --format='%s [merge of %h]' ${COMPARISON}^2)"
         else
-            echo "BUILDING $(git log --oneline -1 ${COMPARISON})"
+            echo "BUILDING $(git log --oneline -1 --formta='%s [%h]' ${COMPARISON})"
         fi > ~/size1
         code_size_build_step $COMPARISON ~/size1 false
     )
