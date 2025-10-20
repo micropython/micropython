@@ -25,7 +25,7 @@
  */
 
 #include "py/mphal.h"
-#include "shared/runtime/semihosting_arm.h"
+#include "shared/runtime/semihosting.h"
 #include "uart.h"
 
 // UART is better behaved with redirection under qemu-system-arm, so prefer that for stdio.
@@ -47,7 +47,7 @@ int mp_hal_stdin_rx_chr(void) {
         #endif
         #if USE_SEMIHOSTING
         char str[1];
-        int ret = mp_semihosting_rx_chars(str, 1);
+        int ret = mp_semihosting_read(mp_semihosting_stdout, str, 1);
         if (ret == 0) {
             return str[0];
         }
@@ -60,7 +60,7 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     uart_tx_strn(str, len);
     #endif
     #if USE_SEMIHOSTING
-    mp_semihosting_tx_strn(str, len);
+    mp_semihosting_write(mp_semihosting_stdout, str, len);
     #endif
     return len;
 }
