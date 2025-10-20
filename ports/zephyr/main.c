@@ -155,6 +155,11 @@ soft_reset:
     vfs_init();
     #endif
 
+    #if MICROPY_PY_ZEPHYR_NETWORK
+    extern void mod_network_init(void);
+    mod_network_init();
+    #endif
+
     #if MICROPY_MODULE_FROZEN || MICROPY_VFS
     // Execute user scripts.
     int ret = pyexec_file_if_exists("boot.py");
