@@ -32,3 +32,12 @@ _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
+
+/* Define output sections */
+SECTIONS
+{
+    .eth_buffers (NOLOAD) : {
+        . = ABSOLUTE(0x341F8000);
+        *eth.o*(.bss.eth_dma)
+    } >SRAM2_S_FSBL
+}
