@@ -1,0 +1,12 @@
+MicroPython \.\+ version
+Type "help()" for more information.
+>>> # Test Ctrl-C interrupts executing code
+>>> import time
+>>> time.sleep(30)
+^C
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyboardInterrupt: 
+>>> print('interrupted')
+interrupted
+>>> 
