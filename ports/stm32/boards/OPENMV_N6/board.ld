@@ -37,3 +37,12 @@ _heap_end = _sstack;
 /* ROMFS location */
 _micropy_hw_romfs_part0_start = ORIGIN(EXT_FLASH_ROMFS);
 _micropy_hw_romfs_part0_size = LENGTH(EXT_FLASH_ROMFS);
+
+/* Define output sections */
+SECTIONS
+{
+    .eth_buffers (NOLOAD) : {
+        . = ABSOLUTE(0x341F8000);
+        *eth.o*(.bss.eth_dma);
+    } >SRAM2_S_FSBL
+}
