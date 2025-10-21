@@ -587,6 +587,10 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
             # special handling for tests of the unix cmdline program
             is_special = True
 
+        # Interactive tests (itest_*) also need special handling
+        if os.path.basename(test_file).startswith("itest_"):
+            is_special = True
+
         if is_special:
             # check for any cmdline options needed for this test
             args = [MICROPYTHON]
@@ -598,7 +602,90 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
 
             # run the test, possibly with redirected input
             try:
-                if os.path.basename(test_file).startswith("repl_"):
+                if os.path.basename(test_file).startswith("itest_"):
+                    # Interactive test - CPython code that controls MicroPython via PTY
+                    try:
+                        import pty
+                        import termios
+                        import fcntl
+                    except ImportError:
+                        # in case pty/termios module is not available, like on Windows
+                        return b"SKIP\n"
+                    import select
+                    from io import StringIO
+
+                    # Even though these might have the pty module, it's unlikely to function.
+                    if sys.platform in ["win32", "msys", "cygwin"]:
+                        return b"SKIP\n"
+
+                    # Set up PTY with ISIG enabled for signal generation
+                    master, slave = pty.openpty()
+
+                    # Configure terminal attributes to enable Ctrl-C signal generation
+                    attrs = termios.tcgetattr(slave)
+                    attrs[3] |= termios.ISIG  # Enable signal generation (ISIG flag)
+                    attrs[6][termios.VINTR] = 3  # Set Ctrl-C (0x03) as interrupt character
+                    termios.tcsetattr(slave, termios.TCSANOW, attrs)
+
+                    def setup_controlling_terminal():
+                        """Set up the child process with the PTY as controlling terminal."""
+                        os.setsid()  # Create a new session
+                        fcntl.ioctl(0, termios.TIOCSCTTY, 0)  # Make PTY the controlling terminal
+
+                    # Spawn MicroPython with the PTY as its stdin/stdout/stderr
+                    p = subprocess.Popen(
+                        args,
+                        stdin=slave,
+                        stdout=slave,
+                        stderr=subprocess.STDOUT,
+                        bufsize=0,
+                        preexec_fn=setup_controlling_terminal,
+                    )
+
+                    # Capture stdout while running the test code
+                    # Use lock to prevent other threads from printing while we redirect stdout
+                    with stdout_lock:
+                        sys.stdout.flush()  # Flush any buffered output before redirecting
+                        old_stdout = sys.stdout
+                        sys.stdout = StringIO()
+
+                        try:
+                            # Execute test file with utilities available in globals:
+                            # - master: PTY master file descriptor
+                            # - read_until_quiet: Function to read from PTY until no data for timeout seconds
+                            test_globals = {
+                                "master": master,
+                                "read_until_quiet": pty_read_until_quiet,
+                            }
+                            with open(test_file_abspath, "rb") as f:
+                                exec(compile(f.read(), test_file_abspath, "exec"), test_globals)
+                            output_mupy = sys.stdout.getvalue().encode("utf-8")
+                        except SystemExit:
+                            # Test requested to exit (e.g., after printing SKIP)
+                            output_mupy = sys.stdout.getvalue().encode("utf-8")
+                        except Exception as e:
+                            output_mupy = f"CRASH: {e}\n".encode("utf-8")
+                        finally:
+                            sys.stdout = old_stdout
+
+                    # Clean up: send Ctrl-D to exit REPL and close PTY
+                    try:
+                        os.write(master, b"\x04")  # Ctrl-D to exit
+                    except OSError:
+                        pass  # Process may have already exited
+
+                    try:
+                        p.wait(timeout=1)
+                    except subprocess.TimeoutExpired:
+                        p.kill()
+                        p.wait()
+                    except ProcessLookupError:
+                        pass
+
+                    os.close(master)
+                    os.close(slave)
+
+                elif os.path.basename(test_file).startswith("repl_"):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
@@ -612,14 +699,8 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                         return b"SKIP\n"
 
                     def get(required=False):
-                        rv = b""
-                        while True:
-                            ready = select.select([master], [], [], 0.02)
-                            if ready[0] == [master]:
-                                rv += os.read(master, 1024)
-                            else:
-                                if not required or rv:
-                                    return rv
+                        # Use the unified pty_read_until_quiet function
+                        return pty_read_until_quiet(master, timeout=0.02, required=required)
 
                     def send_get(what):
                         # Detect {\x00} pattern and convert to ctrl-key codes.
@@ -789,6 +870,42 @@ class ThreadSafeCounter:
     @property
     def value(self):
         return self._value
+
+
+# Global lock to protect stdout operations when running tests in parallel
+stdout_lock = threading.Lock()
+
+
+def pty_read_until_quiet(master, timeout=0.05, required=False):
+    """Read from PTY until no data for timeout seconds.
+
+    This is a unified utility function used by both repl_ and itest_ tests.
+
+    Args:
+        master: PTY master file descriptor
+        timeout: Seconds to wait for data before considering the stream quiet (default 0.05)
+        required: If True, keep trying until at least some data is read (default False)
+
+    Returns:
+        bytes: Data read from PTY
+    """
+    import select
+    import os
+
+    output = b""
+    while True:
+        ready = select.select([master], [], [], timeout)
+        if ready[0]:
+            data = os.read(master, 1024)
+            if not data:
+                # EOF reached
+                break
+            output += data
+        else:
+            # Timeout with no data available
+            if not required or output:
+                break
+    return output
 
 
 class PyboardNodeRunner:
@@ -1081,7 +1198,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
-            print("skip ", test_file)
+            with stdout_lock:
+                print("skip ", test_file)
             test_results.append((test_file, "skip", ""))
             return
 
@@ -1096,11 +1214,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # reset.  Wait for the soft reset to finish, so we don't interrupt the
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
-            print("skip ", test_file)
+            with stdout_lock:
+                print("skip ", test_file)
             test_results.append((test_file, "skip", ""))
             return
         elif output_mupy == b"SKIP-TOO-LARGE\n":
-            print("lrge ", test_file)
+            with stdout_lock:
+                print("lrge ", test_file)
             test_results.append((test_file, "skip", "too large"))
             return
 
@@ -1187,12 +1307,14 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
-            print("pass ", test_file, extra_info)
+            with stdout_lock:
+                print("pass ", test_file, extra_info)
             test_results.append((test_file, "pass", ""))
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            print("FAIL ", test_file, extra_info)
+            with stdout_lock:
+                print("FAIL ", test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
                     f.write(output_expected)
