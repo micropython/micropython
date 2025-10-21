@@ -8,9 +8,14 @@ import re
 from glob import glob
 from collections import defaultdict
 
-run_tests_module = __import__("run-tests")
-sys.path.append(run_tests_module.base_path("../tools"))
-import pyboard
+from test_utils import (
+    base_path,
+    pyboard,
+    test_instance_description,
+    test_instance_epilog,
+    test_directory_description,
+    get_test_instance,
+)
 
 if os.name == "nt":
     MICROPYTHON = os.getenv(
@@ -97,10 +102,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=f"""Run and manage tests for MicroPython.
 
-{run_tests_module.test_instance_description}
-{run_tests_module.test_directory_description}
+{test_instance_description}
+{test_directory_description}
 """,
-        epilog=run_tests_module.test_instance_epilog,
+        epilog=test_instance_epilog,
     )
     cmd_parser.add_argument(
         "-t", "--test-instance", default="unix", help="the MicroPython instance to test"
@@ -124,9 +129,7 @@ def main():
     args = cmd_parser.parse_args()
 
     # Note pyboard support is copied over from run-tests.py, not tests, and likely needs revamping
-    pyb = run_tests_module.get_test_instance(
-        args.test_instance, args.baudrate, args.user, args.password
-    )
+    pyb = get_test_instance(args.test_instance, args.baudrate, args.user, args.password)
 
     if len(args.files) == 0:
         if args.test_dirs:
