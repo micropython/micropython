@@ -91,6 +91,7 @@ soft_reset:
         }
     }
 
+    mp_printf(&mp_plat_print, "MPY: soft reboot\n");
     // Deinitialise the runtime.
     #if MICROPY_ENABLE_GC
     gc_sweep_all();
