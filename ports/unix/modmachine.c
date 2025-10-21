@@ -36,8 +36,7 @@
 #define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
-uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
-    uintptr_t addr = mp_obj_get_int_truncated(addr_o);
+uintptr_t mod_machine_mem_get_addr(uintptr_t addr, uint align) {
     if ((addr & (align - 1)) != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08x is not aligned to %d bytes"), addr, align);
     }
