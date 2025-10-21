@@ -578,6 +578,10 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
             # special handling for tests of the unix cmdline program
             is_special = True
 
+        # Interactive tests (itest_*) also need special handling
+        if os.path.basename(test_file).startswith("itest_"):
+            is_special = True
+
         if is_special:
             # check for any cmdline options needed for this test
             args = [MICROPYTHON]
@@ -589,7 +593,82 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
 
             # run the test, possibly with redirected input
             try:
-                if os.path.basename(test_file).startswith("repl_"):
+                if os.path.basename(test_file).startswith("itest_"):
+                    # Interactive test - CPython code that controls MicroPython via PTY
+                    try:
+                        import pty
+                        import termios
+                        import fcntl
+                    except ImportError:
+                        # in case pty/termios module is not available, like on Windows
+                        return b"SKIP\n"
+                    import select
+                    from io import StringIO
+
+                    # Even though these might have the pty module, it's unlikely to function.
+                    if sys.platform in ["win32", "msys", "cygwin"]:
+                        return b"SKIP\n"
+
+                    # Set up PTY with ISIG enabled for signal generation
+                    master, slave = pty.openpty()
+
+                    # Configure terminal attributes to enable Ctrl-C signal generation
+                    attrs = termios.tcgetattr(slave)
+                    attrs[3] |= termios.ISIG  # Enable signal generation (ISIG flag)
+                    attrs[6][termios.VINTR] = 3  # Set Ctrl-C (0x03) as interrupt character
+                    termios.tcsetattr(slave, termios.TCSANOW, attrs)
+
+                    def setup_controlling_terminal():
+                        """Set up the child process with the PTY as controlling terminal."""
+                        os.setsid()  # Create a new session
+                        fcntl.ioctl(0, termios.TIOCSCTTY, 0)  # Make PTY the controlling terminal
+
+                    # Spawn MicroPython with the PTY as its stdin/stdout/stderr
+                    p = subprocess.Popen(
+                        args,
+                        stdin=slave,
+                        stdout=slave,
+                        stderr=subprocess.STDOUT,
+                        bufsize=0,
+                        preexec_fn=setup_controlling_terminal,
+                    )
+
+                    # Capture stdout while running the test code
+                    old_stdout = sys.stdout
+                    sys.stdout = StringIO()
+
+                    try:
+                        # Execute test file with 'master' fd available in globals
+                        test_globals = {"master": master}
+                        with open(test_file_abspath, "rb") as f:
+                            exec(compile(f.read(), test_file_abspath, "exec"), test_globals)
+                        output_mupy = sys.stdout.getvalue().encode("utf-8")
+                    except SystemExit:
+                        # Test requested to exit (e.g., after printing SKIP)
+                        output_mupy = sys.stdout.getvalue().encode("utf-8")
+                    except Exception as e:
+                        output_mupy = f"CRASH: {e}\n".encode("utf-8")
+                    finally:
+                        sys.stdout = old_stdout
+
+                    # Clean up: send Ctrl-D to exit REPL and close PTY
+                    try:
+                        os.write(master, b"\x04")  # Ctrl-D to exit
+                    except OSError:
+                        pass  # Process may have already exited
+
+                    try:
+                        p.wait(timeout=1)
+                    except subprocess.TimeoutExpired:
+                        p.kill()
+                        p.wait()
+                    except ProcessLookupError:
+                        pass
+
+                    os.close(master)
+                    os.close(slave)
+
+                elif os.path.basename(test_file).startswith("repl_"):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
