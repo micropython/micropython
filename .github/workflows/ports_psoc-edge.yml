@@ -47,3 +47,39 @@ jobs:
           name: mpy-psoc-edge_${{ matrix.board }}_${{ steps.commit_sha.outputs.sha_short }}
           # TODO: Encapsulate and abstract path details from this workflow
           path: lib/mtb-psoc-edge-libs/build/app_combined.hex
+
+  # Jobs only relevant for Infineon fork 
+  on-target-test:
+    if: github.repository_owner == 'infineon'
+    runs-on: 
+      - self-hosted  
+      - Linux  
+      - PSOC-EDGE 
+    needs: server-build
+    strategy:
+      matrix:
+        board:
+          - KIT_PSE84_AI
+        test-suite: 
+          - ci-tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+      - name: Container setup
+        run: |
+          echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo -S chmod 666 /var/run/docker.sock
+          source tools/ci.sh && ci_psoc_edge_setup ${{ matrix.board }}
+      - name: Setup devices
+        run: |
+          cp mpy-psoc-edge_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/app_combined.hex .
+          source tools/ci.sh && ci_psoc_edge_deploy ${{ matrix.board }} app_combined.hex tools/psoc-edge/${{ runner.name }}-devs.yml
+      - name: Run psoc6 tests
+        timeout-minutes: 12
+        run: |
+          ./tests/ports/psoc-edge/run_psoc_edge_tests.sh --test-suite  ${{ matrix.test-suite }} --board ${{ matrix.board }} --hil ${{ runner.name }}
+        
+      - name: Container teardown 
+        if: failure() || success()
+        run: |
+          source tools/ci.sh && ci_psoc_edge_teardown

@@ -391,7 +391,8 @@ function ci_psoc_edge_build {
 }
 
 function ci_psoc_edge_deploy {
-    docker exec mtb36-ci make deploy
+    board=$1
+    docker exec mtb36-ci make BOARD=${board} deploy DEVICE_SN=0F16025A012D2400
 }
 
 # TODO: Enable for HIL testing
