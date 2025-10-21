@@ -492,7 +492,7 @@ void SystemClock_Config(void) {
     LL_MISC_EnableClock(LL_PER);
 
     // Configure bus dividers.
-    LL_RCC_SetAHBPrescaler(LL_RCC_AHB_DIV_2);
+    LL_RCC_SetAHBPrescaler(LL_RCC_AHB_DIV_4);
     LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
     LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
     LL_RCC_SetAPB4Prescaler(LL_RCC_APB4_DIV_1);
