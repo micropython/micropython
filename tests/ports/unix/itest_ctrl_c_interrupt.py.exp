@@ -1,0 +1,2 @@
+PASS: Ctrl-C interrupted execution
+PASS: REPL functional after interrupt
