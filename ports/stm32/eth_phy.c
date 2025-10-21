@@ -56,4 +56,31 @@ int16_t eth_phy_dp838xx_get_link_status(uint32_t phy_addr) {
     return scsr;
 }
 
+#include <stdio.h>
+int16_t eth_phy_rtl8211_get_link_status(uint32_t phy_addr) {
+    // Get the link mode & speed
+    eth_phy_write(phy_addr, 0x1f, 0xa43);
+    int16_t physr = eth_phy_read(phy_addr, 0x1a);
+    eth_phy_write(phy_addr, 0x1f, 0x000);
+    printf("physr %04x\n", physr);
+    int16_t status = 0;
+    switch ((physr >> 4) & 3) {
+        case 0:
+            status |= PHY_SPEED_10HALF;
+            break;
+        case 1:
+            status |= PHY_SPEED_100HALF;
+            break;
+            /*
+        case 2:
+            PHY_SPEED_1000HALF;
+            break;
+            */
+    }
+    if (physr & (1 << 3)) {
+        status |= PHY_DUPLEX;
+    }
+    return status;
+}
+
 #endif

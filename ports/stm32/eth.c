@@ -41,6 +41,8 @@
 #include "lwip/dhcp.h"
 #include "netif/ethernet.h"
 
+#define USE_RGMII (1)
+
 // Register and IRQ compatibility for STM32N6.
 #if defined(STM32N6)
 #define ETH                     ETH1
@@ -107,8 +109,8 @@
 
 #define PHY_INIT_TIMEOUT_MS (10000)
 
-#define RX_BUF_SIZE (1524) // includes 4-byte CRC at end
-#define TX_BUF_SIZE (1524)
+#define RX_BUF_SIZE (1536) // includes 4-byte CRC at end
+#define TX_BUF_SIZE (1536)
 
 #define RX_BUF_NUM (5)
 #define TX_BUF_NUM (5)
@@ -128,7 +130,7 @@ typedef struct _eth_dma_t {
     uint8_t tx_buf[TX_BUF_NUM * TX_BUF_SIZE] __attribute__((aligned(4)));
     size_t rx_descr_idx;
     size_t tx_descr_idx;
-    uint8_t padding[16384 - 15408];
+    //uint8_t padding[16384 - 15408 - 2 * 12 * 5];
 } eth_dma_t;
 
 typedef struct _eth_t {
@@ -210,6 +212,8 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
         self->phy_get_link_status = eth_phy_dp838xx_get_link_status;
     } else if (phy_type == ETH_PHY_LAN8720 || phy_type == ETH_PHY_LAN8742) {
         self->phy_get_link_status = eth_phy_lan87xx_get_link_status;
+    } else if (phy_type == ETH_PHY_RTL8211) {
+        self->phy_get_link_status = eth_phy_rtl8211_get_link_status;
     } else {
         return -1;
     }
@@ -224,6 +228,15 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TX_EN, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_TX_EN));
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TXD0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_TXD0));
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TXD1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_TXD1));
+
+    #if defined(MICROPY_HW_ETH_RGMII_GTX_CLK)
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_CLK125, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_CLK125));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_GTX_CLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_GTX_CLK));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RXD2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RXD2));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RXD3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RXD3));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_TXD2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_TXD2));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_TXD3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_TXD3));
+    #endif
 
     // Enable peripheral clock
     #if defined(STM32H5)
@@ -277,7 +290,11 @@ static int eth_mac_init(eth_t *self) {
     #elif defined(STM32H7)
     SYSCFG->PMCR = (SYSCFG->PMCR & ~SYSCFG_PMCR_EPIS_SEL_Msk) | SYSCFG_PMCR_EPIS_SEL_2;
     #elif defined(STM32N6)
+#if USE_RGMII
+    LL_RCC_SetETHPHYInterface(LL_RCC_ETH1PHY_IF_RGMII);
+#else
     LL_RCC_SetETHPHYInterface(LL_RCC_ETH1PHY_IF_RMII);
+#endif
     #else
     __HAL_RCC_SYSCFG_CLK_ENABLE();
     SYSCFG->PMC |= SYSCFG_PMC_MII_RMII_SEL;
@@ -345,8 +362,17 @@ static int eth_mac_init(eth_t *self) {
         cr_div |= ETH_MACMDIOAR_CR_DIV62;
     } else if (hclk < 250000000) {
         cr_div |= ETH_MACMDIOAR_CR_DIV102;
+    #if defined(STM32H5)
     } else {
         cr_div |= ETH_MACMDIOAR_CR_DIV124;
+    #else
+    } else if (hclk < 300000000) {
+        cr_div |= ETH_MACMDIOAR_CR_DIV124;
+    } else if (hclk < 500000000) {
+        cr_div |= ETH_MACMDIOAR_CR_DIV204;
+    } else {
+        cr_div |= ETH_MACMDIOAR_CR_DIV324;
+    #endif
     }
     ETH->MACMDIOAR = cr_div;
     #elif defined(STM32H7)
@@ -377,6 +403,10 @@ static int eth_mac_init(eth_t *self) {
     }
     ETH->MACMIIAR = cr_div;
     #endif
+
+#if defined(STM32N6)
+    WRITE_REG(ETH->MAC1USTCR, (((uint32_t)HAL_RCC_GetHCLKFreq() / ETH_MAC_US_TICK) - 1U));
+#endif
 
     #if defined(STM32H5) || defined(STM32H7)
     // don't skip 32bit words since our descriptors are continuous in memory
@@ -481,7 +511,9 @@ static int eth_mac_init(eth_t *self) {
     #if defined(STM32H5) || defined(STM32H7)
     ETH->DMACRDLAR = (uint32_t)&eth_dma.rx_descr[0];
     #elif defined(STM32N6)
+    // rx descriptor list address register
     ETH->DMA_CH[0].DMACRXDLAR = (uint32_t)&eth_dma.rx_descr[0];
+    ETH->DMA_CH[0].DMACRXDTPR = (uint32_t)&eth_dma.rx_descr[RX_BUF_NUM - 1];
     #else
     ETH->DMARDLAR = (uint32_t)&eth_dma.rx_descr[0];
     #endif
@@ -510,9 +542,12 @@ static int eth_mac_init(eth_t *self) {
     ETH->DMACTDLAR = (uint32_t)&eth_dma.tx_descr[0];
     #elif defined(STM32N6)
     // set number of descriptors and buffers
+    // ring length register
+    //MP_HAL_CLEANINVALIDATE_DCACHE(&eth_dma, 16*1024);
     ETH->DMA_CH[0].DMACTXRLR = TX_BUF_NUM - 1;
     ETH->DMA_CH[0].DMACRXRLR = RX_BUF_NUM - 1;
     ETH->DMA_CH[0].DMACTXDLAR = (uint32_t)&eth_dma.tx_descr[0];
+    ETH->DMA_CH[0].DMACTXDTPR = (uint32_t)&eth_dma.tx_descr[1];
     #else
     ETH->DMATDLAR = (uint32_t)&eth_dma.tx_descr[0];
     #endif
@@ -563,6 +598,39 @@ static int eth_mac_init(eth_t *self) {
     ;
     mp_hal_delay_ms(2);
 
+    #if defined(STM32N6)
+    #if USE_RGMII
+    uint32_t port_select = DISABLE;
+    uint32_t port_speed = ETH_SPEED_1000M;
+    #else
+    uint32_t port_select = ENABLE;
+    uint32_t port_speed = ETH_SPEED_100M;
+    #endif
+
+    ETH->MACCR =
+        ETH_INTERPACKETGAP_96BIT
+        | ETH_MACCR_SARC_REPADDR0
+        | ETH_MACCR_IPC
+        | (port_select << 15)
+        | port_speed
+        | ETH_FULLDUPLEX_MODE
+        | ETH_BACKOFFLIMIT_10
+        | ETH_PREAMBLELENGTH_7;
+    ETH->MACECR = 0x618U;
+    ETH->MACWTR = ETH_MACWTR_WTO_2KB;
+    ETH->MACQ0TXFCR = ETH_PAUSELOWTHRESHOLD_MINUS_4;
+    ETH->MACRXFCR = 0;
+
+    ETH->MTLOMR = ETH_MTLOMR_SCHALG_SP | ETH_MTLOMR_RAA_SP;
+    ETH->MTLRXQDMAMR = ETH_MTL_Q0_MAPPED_TO_DMA_CH0 | ETH_MTL_Q1_MAPPED_TO_DMA_CH1;
+    ETH->MTL_QUEUE[0].MTLTXQOMR = ETH_TX_QUEUE_ENABLED | ETH_TRANSMITSTOREFORWARD | ETH_TRANSMIT_QUEUE_SIZE_2048;
+    ETH->MTL_QUEUE[1].MTLTXQOMR = ETH_TX_QUEUE_ENABLED | ETH_TRANSMITSTOREFORWARD | ETH_TRANSMIT_QUEUE_SIZE_2048;
+    ETH->MACRXQC0R = ETH_RX_QUEUE0_ENABLED | ETH_RX_QUEUE1_DISABLED;
+    ETH->MTL_QUEUE[0].MTLRXQOMR = ETH_RECEIVESTOREFORWARD | ETH_RECEIVE_QUEUE_SIZE_4096;
+    ETH->MTL_QUEUE[1].MTLRXQOMR = ETH_RECEIVESTOREFORWARD | ETH_RECEIVE_QUEUE_SIZE_4096;
+    ETH->MTL_QUEUE[1].MTLTXQ1ECR = ETH_TX_QUEUE_AV_ALGO_SP;
+    #endif
+
     // Start MAC layer
     ETH->MACCR |=
         ETH_MACCR_TE // enable TX
@@ -575,8 +643,13 @@ static int eth_mac_init(eth_t *self) {
     ETH->DMACRCR |= ETH_DMACRCR_SR; // start RX
     ETH->DMACTCR |= ETH_DMACTCR_ST; // start TX
     #elif defined(STM32N6)
+    ETH->MTL_QUEUE[0].MTLTXQOMR |= ETH_MTLTXQxOMR_FTQ; // flush TX FIFO
+    ETH->MTL_QUEUE[1].MTLTXQOMR |= ETH_MTLTXQxOMR_FTQ; // flush TX FIFO
+    ETH->DMA_CH[0].DMACRXCR |= RX_BUF_SIZE << ETH_DMACxRXCR_RBSZ_Pos;
     ETH->DMA_CH[0].DMACRXCR |= ETH_DMACxRXCR_SR; // start RX
+    ETH->DMA_CH[0].DMACTXCR |= 4 << ETH_DMACxTXCR_TXPBL_Pos;
     ETH->DMA_CH[0].DMACTXCR |= ETH_DMACxTXCR_ST; // start TX
+    ETH->DMA_CH[0].DMACSR |= ETH_DMACxSR_TPS | ETH_DMACxSR_RPS; // clear TX/RX process stopped flags
     #else
     ETH->DMAOMR |=
         ETH_DMAOMR_ST // start TX
@@ -676,6 +749,7 @@ static int eth_tx_buf_send(void) {
     ;
     #endif
 
+    //MP_HAL_CLEANINVALIDATE_DCACHE(&eth_dma, 16*1024);
     // Notify ETH DMA that there is a new TX descriptor for sending
     __DMB();
     #if defined(STM32H5) || defined(STM32H7)
@@ -725,6 +799,7 @@ static void eth_dma_rx_free(void) {
     #if defined(STM32H5) || defined(STM32H7)
     ETH->DMACRDTPR = (uint32_t)&rx_descr[eth_dma.rx_descr_idx];
     #elif defined(STM32N6)
+    // todo probably needs to be (eth_dma.rx_descr_idx + RX_BUF_NUM - 1) % RX_BUF_NUM
     ETH->DMA_CH[0].DMACRXDTPR = (uint32_t)&rx_descr[eth_dma.rx_descr_idx];
     #else
     ETH->DMARPDR = 0;
