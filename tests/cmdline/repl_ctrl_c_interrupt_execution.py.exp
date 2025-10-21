@@ -1,0 +1,14 @@
+MicroPython \.\+ version
+Use Ctrl-D to exit, Ctrl-E for paste mode
+>>> # Test Ctrl-C interrupts executing code
+>>> # The test framework sends lines sequentially without waiting for completion,
+>>> # so Ctrl-C is sent while sleep(30) is still running, triggering SIGINT.
+>>> import time
+>>> time.sleep(30)
+^C
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyboardInterrupt: 
+>>> print('repl still responds')
+repl still responds
+>>> 

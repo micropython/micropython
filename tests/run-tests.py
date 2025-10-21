@@ -60,6 +60,23 @@ DIFF = os.getenv("MICROPY_DIFF", "diff -u")
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
+
+def normalize_newlines(data):
+    """Normalize newline variations to \\n.
+
+    Only normalizes actual line endings, not literal \\r characters in strings.
+    Handles \\r\\r\\n and \\r\\n cases to ensure consistent comparison
+    across different platforms and terminals.
+    """
+    if isinstance(data, bytes):
+        # Handle PTY double-newline issue first
+        data = data.replace(b"\r\r\n", b"\n")
+        # Then handle standard Windows line endings
+        data = data.replace(b"\r\n", b"\n")
+        # Don't convert standalone \r as it might be literal content
+    return data
+
+
 # Code to allow a target MicroPython to import an .mpy from RAM
 # Note: the module is named `__injected_test` but it needs to have `__name__` set to
 # `__main__` so that the test sees itself as the main module, eg so unittest works.
@@ -602,6 +619,8 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
+                        import termios
+                        import fcntl
                     except ImportError:
                         # in case pty module is not available, like on Windows
                         return b"SKIP\n"
@@ -632,24 +651,44 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                     with open(test_file, "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
                         master, slave = pty.openpty()
-                        p = subprocess.Popen(
-                            args, stdin=slave, stdout=slave, stderr=subprocess.STDOUT, bufsize=0
-                        )
-                        banner = get(True)
-                        output_mupy = banner + b"".join(send_get(line) for line in f)
-                        send_get(b"\x04")  # exit the REPL, so coverage info is saved
-                        # At this point the process might have exited already, but trying to
-                        # kill it 'again' normally doesn't result in exceptions as Python and/or
-                        # the OS seem to try to handle this nicely. When running Linux on WSL
-                        # though, the situation differs and calling Popen.kill after the process
-                        # terminated results in a ProcessLookupError. Just catch that one here
-                        # since we just want the process to be gone and that's the case.
                         try:
-                            p.kill()
-                        except ProcessLookupError:
-                            pass
-                        os.close(master)
-                        os.close(slave)
+                            # Configure terminal attributes to enable Ctrl-C signal generation
+                            attrs = termios.tcgetattr(slave)
+                            attrs[3] |= termios.ISIG  # Enable signal generation (ISIG flag)
+                            attrs[6][termios.VINTR] = 3  # Set Ctrl-C (0x03) as interrupt character
+                            termios.tcsetattr(slave, termios.TCSANOW, attrs)
+
+                            def setup_controlling_terminal():
+                                """Set up the child process with the PTY as controlling terminal."""
+                                os.setsid()  # Create a new session
+                                fcntl.ioctl(
+                                    0, termios.TIOCSCTTY, 0
+                                )  # Make PTY the controlling terminal
+
+                            p = subprocess.Popen(
+                                args,
+                                stdin=slave,
+                                stdout=slave,
+                                stderr=subprocess.STDOUT,
+                                bufsize=0,
+                                preexec_fn=setup_controlling_terminal,
+                            )
+                            banner = get(True)
+                            output_mupy = banner + b"".join(send_get(line) for line in f)
+                            send_get(b"\x04")  # exit the REPL, so coverage info is saved
+                            # At this point the process might have exited already, but trying to
+                            # kill it 'again' normally doesn't result in exceptions as Python and/or
+                            # the OS seem to try to handle this nicely. When running Linux on WSL
+                            # though, the situation differs and calling Popen.kill after the process
+                            # terminated results in a ProcessLookupError. Just catch that one here
+                            # since we just want the process to be gone and that's the case.
+                            try:
+                                p.kill()
+                            except ProcessLookupError:
+                                pass
+                        finally:
+                            os.close(master)
+                            os.close(slave)
                 else:
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
@@ -705,7 +744,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
         )
 
     # canonical form for all ports/platforms is to use \n for end-of-line
-    output_mupy = output_mupy.replace(b"\r\n", b"\n")
+    output_mupy = normalize_newlines(output_mupy)
 
     # don't try to convert the output if we should skip this test
     if had_crash or output_mupy in (b"SKIP\n", b"SKIP-TOO-LARGE\n", b"CRASH"):
