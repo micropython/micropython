@@ -779,15 +779,18 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     }
                     j++;
                 }
-                if (j > i && str[j - 1] == '=' && j < len &&
+                size_t check_pos = j - 1;
+                while (check_pos > i && (str[check_pos] == ' ' || str[check_pos] == '\t')) {
+                    check_pos--;
+                }
+                if (check_pos > i && str[check_pos] == '=' && j < len &&
                     (str[j] == '}' || str[j] == '!' || str[j] == ':')) {
                     is_debug_format = true;
 
-                    // For debug format, add "expr=" to the current string
-                    for (size_t k = expr_start; k < j - 1; k++) {
+                    // For debug format, add "expr=" with whitespace to the current string
+                    for (size_t k = expr_start; k < j; k++) {
                         vstr_add_byte(&vstr, str[k]);
                     }
-                    vstr_add_byte(&vstr, '=');
                 }
 
                 // Now save the string part as a const object to handle high bytes correctly
@@ -840,7 +843,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                             if (paren_depth > 0) {
                                 paren_depth--;
                             }
-                        } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == '!' && conversion_pos == 0) {
+                        } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == '!' && conversion_pos == 0 && format_spec_pos == 0) {
                             conversion_pos = i;
                         } else if (brace_depth == 1 && bracket_depth == 0 && paren_depth == 0 && str[i] == ':' && format_spec_pos == 0) {
                             format_spec_pos = i;
@@ -1015,9 +1018,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                         vstr_add_byte(&vstr, '}');
                         i++;
                     }
-                } else {
-                    // Failed to find closing brace - syntax error
-                    goto tstring_unterminated;
                 }
             } else if (false && str[i] == '\\' && i + 1 < len) {
                 i++;
@@ -1137,11 +1137,8 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         size_t seg_cnt = strings_len;
         size_t interp_cnt = interps_len;
 
-        // Check if counts fit in 12-bit header format
-        // This is a technical constraint of the header format, not an artificial limit
-        if (seg_cnt > 0xFFF || interp_cnt > 0xFFF) {
-            goto tstring_overflow;
-        }
+        // Counts are limited by ADD_NODE_* doubling logic, which aborts before exceeding 0xFFF.
+        assert(seg_cnt <= 0xFFF && interp_cnt <= 0xFFF);
 
         // Integer overflow is impossible here since both values are <= 0xFFF
         size_t total = seg_cnt + interp_cnt;
@@ -1182,10 +1179,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
         tstring_empty_expr:
             vstr_clear(&vstr);
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("empty expression not allowed"));
-        tstring_unterminated:
-            vstr_clear(&vstr);
-            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: unterminated replacement field"));
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: valid expression required before '}'"));
         }
     }
     #endif

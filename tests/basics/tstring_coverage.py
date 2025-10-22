@@ -472,27 +472,20 @@ print("\nCoverage tests completed!")
 
 print("\n=== Additional coverage for uncovered branches ===")
 
-# Test conversion after format spec (should be invalid)
+# Test format spec containing special characters (CPython compatibility)
 print("\n# Conversion after format spec")
-try:
-    exec("t'{x:10!r}'")
-    print("ERROR: Conversion after format spec should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Conv after fmt: SyntaxError - {e}")
+x = 42
+# In CPython, :10!r is valid - the !r is part of the format spec, not conversion
+result = t'{x:10!r}'
+print(f"Conv after fmt: format_spec: {result.interpolations[0].format_spec}, conversion: {result.interpolations[0].conversion}")
 
-# Test format spec with conversion in wrong order
-try:
-    exec("t'{x:>10!s}'")
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Wrong order: SyntaxError - {e}")
+# Test format spec with > and !s
+result = t'{x:>10!s}'
+print(f"Wrong order: format_spec: {result.interpolations[0].format_spec}, conversion: {result.interpolations[0].conversion}")
 
-# Test that triggers the specific conversion_pos > format_spec_pos branch
-try:
-    exec("t'{x:d!r}'")
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Format before conversion: SyntaxError - {e}")
+# Test format spec with d and !r
+result = t'{x:d!r}'
+print(f"Format before conversion: format_spec: {result.interpolations[0].format_spec}, conversion: {result.interpolations[0].conversion}")
 
 # Test integer overflow in template size calculation
 print("\n# Integer overflow test")
@@ -682,12 +675,9 @@ except SyntaxError as e:
 
 # Test empty format spec node creation
 print("\n# Empty format spec branches")
-try:
-    # Format spec followed by conversion (wrong order)
-    exec("t'{x:!r}'")
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Empty fmt before conv: SyntaxError")
+# In CPython, :!r is a valid format spec (not a conversion)
+result = t'{x:!r}'
+print(f"Empty fmt before conv: format_spec: '{result.interpolations[0].format_spec}', conversion: {result.interpolations[0].conversion}")
 
 # Test format spec that ends at conversion
 try:
@@ -744,6 +734,38 @@ try:
     print("ERROR: Whitespace-only expr should fail")
 except SyntaxError as e:
     print(f"Whitespace expr: SyntaxError")
+
+try:
+    exec("t'{value'")
+    print("ERROR: Unterminated expr should fail")
+except SyntaxError as e:
+    print(f"Unterminated expr: {type(e).__name__}")
+
+try:
+    exec("t'{   !r}'")
+    print("ERROR: Whitespace-conversion expr should fail")
+except SyntaxError as e:
+    print(f"Whitespace + conversion: {type(e).__name__}")
+
+print("\n# Parser MemoryError")
+blocks = []
+try:
+    try:
+        while True:
+            blocks.append(bytearray(512))
+    except MemoryError:
+        pass
+    if blocks:
+        blocks.pop()
+        gc.collect()
+    try:
+        compile("t'{x}'", "<tstring>", "exec")
+        print("ERROR: Parser MemoryError not raised")
+    except MemoryError:
+        print("Parser MemoryError: MemoryError")
+finally:
+    blocks = None
+    gc.collect()
 
 print("\n# Memory/lexer failure simulation")
 # Note: We can't directly test lexer returning NULL in normal circumstances,
@@ -807,13 +829,9 @@ except SyntaxError as e:
     print("Trailing backslash: SyntaxError")
 
 print("\n# Format spec position coverage")
-try:
-    # This specifically tests the branch where conversion_pos > format_spec_pos
-    # which should not normally happen in valid syntax
-    exec("result = t'{x::!r}'")  # Malformed - conversion inside format spec
-    print("ERROR: Should have failed")
-except SyntaxError as e:
-    print("Malformed format: SyntaxError")
+# In CPython, ::!r is a valid format spec (double colon followed by !r)
+result = t'{x::!r}'
+print(f"Malformed format: format_spec: '{result.interpolations[0].format_spec}', conversion: {result.interpolations[0].conversion}")
 
 print("\n=== Additional t-string coverage tests ===")
 
@@ -1043,23 +1061,17 @@ except (SyntaxError, OverflowError, MemoryError) as e:
         print(f"Other syntax error: {e}")
 
 print("\n=== Tests for remaining uncovered branches ===")
-try:
-    exec("t'{x:10!r}'")
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Malformed 1: {e}")
+# These are all valid in CPython - format specs can contain !
+x = 42
+value = 42
+result = t'{x:10!r}'
+print(f"Malformed 1: format_spec: '{result.interpolations[0].format_spec}', conversion: {result.interpolations[0].conversion}")
 
-try:
-    exec("t'{value:^10!s}'")
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Malformed 2: {e}")
+result = t'{value:^10!s}'
+print(f"Malformed 2: format_spec: '{result.interpolations[0].format_spec}', conversion: {result.interpolations[0].conversion}")
 
-try:
-    exec("t'{x:>!10}'")
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Malformed 3: {e}")
+result = t'{x:>!10}'
+print(f"Malformed 3: format_spec: '{result.interpolations[0].format_spec}', conversion: {result.interpolations[0].conversion}")
 val = 42
 result1 = t'{val:}'
 print(f"Empty format spec 1: '{result1.__str__()}'")
@@ -1555,5 +1567,44 @@ try:
         print("Unicode > 0xFF: ERROR")
 except Exception as e:
     print(f"Unicode error: {e}")
+
+print("\n=== Additional tests for 100% coverage ===")
+
+# Test single '}' without matching '{{' - should raise SyntaxError
+print("\n# Single closing brace")
+try:
+    exec('t"test }"')
+    print("ERROR: Single } should have raised SyntaxError")
+except SyntaxError as e:
+    print(f"Single }}: SyntaxError - {e}")
+
+# Test escape sequences in strings within interpolations (for lines 752-754)
+print("\n# Escape in string within interpolation")
+try:
+    # This tests the esc flag in the quick scan loop
+    code = r"result = t'{\"test\"value\"}'"
+    exec(code)
+    print(f"Escaped quote in string: OK")
+except Exception as e:
+    print(f"Escaped quote error: {type(e).__name__}")
+
+try:
+    # Test newline escape in string within interpolation
+    code = r"result = t'{\"\\n\"}'"
+    exec(code)
+    print(f"Escaped newline in string: OK")
+except Exception as e:
+    print(f"Escaped newline error: {type(e).__name__}")
+
+# Test format spec with special characters (CPython compatibility)
+print("\n# Format spec with special characters")
+try:
+    x = 42
+    # In CPython 3.14, :!r is valid format spec (not conversion)
+    result = t"{x:!r}"
+    print(f"Format spec '!r': {result.interpolations[0].format_spec == '!r'}")
+    print(f"Conversion is None: {result.interpolations[0].conversion is None}")
+except Exception as e:
+    print(f"Format spec error: {type(e).__name__}")
 
 print("\n=== All coverage tests completed! ===")

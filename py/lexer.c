@@ -884,7 +884,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     }
                     next_char(lex);
                 }
-                if (n_closing < num_quotes) {
+                if (brace_depth != 0) {
+                    mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: expecting '}'"));
+                } else if (n_closing < num_quotes) {
                     lex->tok_kind = MP_TOKEN_LONELY_STRING_OPEN;
                 } else {
                     next_char(lex);
