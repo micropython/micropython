@@ -779,17 +779,24 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     }
                     j++;
                 }
-                size_t check_pos = j - 1;
-                while (check_pos > i && (str[check_pos] == ' ' || str[check_pos] == '\t')) {
-                    check_pos--;
-                }
-                if (check_pos > i && str[check_pos] == '=' && j < len &&
-                    (str[j] == '}' || str[j] == '!' || str[j] == ':')) {
-                    is_debug_format = true;
+                // Check for debug format (expr=)
+                // Only check if we found a valid terminator (not EOF)
+                if (j < len) {
+                    size_t check_pos = j - 1;
+                    // Skip trailing whitespace to find '='
+                    while (check_pos > i && check_pos < len &&
+                           (str[check_pos] == ' ' || str[check_pos] == '\t')) {
+                        check_pos--;
+                    }
+                    // Check if it's a debug format
+                    if (check_pos > i && check_pos < len && str[check_pos] == '=' &&
+                        (str[j] == '}' || str[j] == '!' || str[j] == ':')) {
+                        is_debug_format = true;
 
-                    // For debug format, add "expr=" with whitespace to the current string
-                    for (size_t k = expr_start; k < j; k++) {
-                        vstr_add_byte(&vstr, str[k]);
+                        // For debug format, add "expr=" with whitespace to the current string
+                        for (size_t k = expr_start; k < j && k < len; k++) {
+                            vstr_add_byte(&vstr, str[k]);
+                        }
                     }
                 }
 
