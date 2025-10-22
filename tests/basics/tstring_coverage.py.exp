@@ -156,9 +156,9 @@ Coverage tests completed!
 === Additional coverage for uncovered branches ===
 
 # Conversion after format spec
-Conv after fmt: SyntaxError - invalid syntax in template expression: x:10
-Wrong order: SyntaxError - invalid syntax in template expression: x:>10
-Format before conversion: SyntaxError - invalid syntax in template expression: x:d
+Conv after fmt: format_spec: 10!r, conversion: None
+Wrong order: format_spec: >10!s, conversion: None
+Format before conversion: format_spec: d!r, conversion: None
 
 # Integer overflow test
 Overflow test: OverflowError - template string too large for header format
@@ -171,8 +171,8 @@ Short \U: preserved as literal
 # Bytes in t-strings
 Bytes 0x80-0xFF: OK
 Octal bytes: OK
-Empty expr SyntaxError: empty expression not allowed
-Whitespace expr SyntaxError: empty expression not allowed
+Empty expr SyntaxError: t-string: valid expression required before '}'
+Whitespace expr SyntaxError: t-string: valid expression required before '}'
 Long expression: OK
 Large template string: OK
 Many interpolations: OK
@@ -190,7 +190,7 @@ Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(
 Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
 
 # Empty format spec branches
-Empty fmt before conv: SyntaxError
+Empty fmt before conv: format_spec: '!r', conversion: None
 Conv then empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
 
 # Raw t-string escape tests
@@ -206,6 +206,11 @@ Complex expr: OK
 # Format spec position tests
 Conv before fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
 Whitespace expr: SyntaxError
+Unterminated expr: SyntaxError
+Whitespace + conversion: SyntaxError
+
+# Parser MemoryError
+Parser MemoryError: MemoryError
 
 # Memory/lexer failure simulation
 Lexer NULL case: Tested via heapalloc_fail_tstring.py
@@ -229,7 +234,7 @@ Full format: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 
 Trailing backslash: SyntaxError
 
 # Format spec position coverage
-Malformed format: SyntaxError
+Malformed format: format_spec: ':!r', conversion: None
 
 === Additional t-string coverage tests ===
 
@@ -277,23 +282,23 @@ Escaped backslash spec: \n
 Nested quoted spec: \\
 Colon only format: Template(strings=('', ''), interpolations=(Interpolation('colon', 'value', None, ''),))
 Literal brace strings: ('', '}}tail')
-Unterminated field: invalid syntax
+Unterminated field: t-string: expecting '}'
 Overflow limit: template string too large for header format
-Trimmed empty expression: empty expression not allowed
+Trimmed empty expression: t-string: valid expression required before '}'
 
 # Template string size limit
 Too many interpolations: template string too large for header format
 
 === Tests for remaining uncovered branches ===
-Malformed 1: invalid syntax in template expression: x:10
-Malformed 2: invalid syntax in template expression: value:^10
-Malformed 3: invalid syntax in template expression: x:>
+Malformed 1: format_spec: '10!r', conversion: None
+Malformed 2: format_spec: '^10!s', conversion: None
+Malformed 3: format_spec: '>!10', conversion: None
 Empty format spec 1: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'val', None, ''),))'
 No format spec: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'val', None, ''),))'
 Octal high bytes: OK, first byte = 0x80
 Invalid unicode: SyntaxError - invalid syntax
-Empty expr: empty expression not allowed
-Whitespace expr: empty expression not allowed
+Empty expr: t-string: valid expression required before '}'
+Whitespace expr: t-string: valid expression required before '}'
 Custom exception re-raised: Test exception
 
 NULL lexer: Tested in heapalloc_fail_tstring.py
@@ -311,11 +316,11 @@ Raw Unicode escapes: '\u0041\U00000042'
 Bytes Unicode escape: preserved as literal
 CR LF handling: OK
 Deep indent: OK
-Whitespace-only: SyntaxError - empty expression not allowed
+Whitespace-only: SyntaxError - t-string: valid expression required before '}'
 Octal high bytes: OK, ord=255, 128
 Trailing backslash: SyntaxError
 Very long expression: OK
-Debug fmt+conv: fmt_spec='10', conv=r
+Debug fmt+conv: fmt_spec='10!r', conv=None
 
 # Test integer overflow in total calculation
 Integer overflow: platform-dependent, tested via overflow scenarios
@@ -409,5 +414,18 @@ Unicode escapes < 0x100: OK
 
 # Unicode > 0xFF in regular string
 Unicode > 0xFF: OK
+
+=== Additional tests for 100% coverage ===
+
+# Single closing brace
+Single }: SyntaxError - t-string: single '}' is not allowed
+
+# Escape in string within interpolation
+Escaped quote in string: OK
+Escaped newline in string: OK
+
+# Format spec with special characters
+Format spec '!r': True
+Conversion is None: True
 
 === All coverage tests completed! ===

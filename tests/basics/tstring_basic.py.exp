@@ -7,7 +7,7 @@ Raw: 'Path: C:\test\'
 tr: 'Path: C:\test\'
 
 === Parser tests ===
-Empty expr: SyntaxError - empty expression not allowed
+Empty expr: SyntaxError - t-string: valid expression required before '}'
 Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42', None, ''),))
 Complex: Template(strings=('', ''), interpolations=(Interpolation(1, "data['a']['b'][0]", None, ''),))
 None: Template(strings=('', ''), interpolations=(Interpolation(None, 'None', None, ''),))
@@ -140,7 +140,7 @@ Escape sequence tests completed!
 1. Triple in interpolation: Template(strings=('Documentation:\n', '\nEnd of doc'), interpolations=(Interpolation('This is a\nmulti-line\ndocstring', 'doc', None, ''),))
    Value: 'This is a\nmulti-line\ndocstring'
 
-4. Empty interpolation error: SyntaxError: empty expression not allowed
+4. Empty interpolation error: SyntaxError: t-string: valid expression required before '}'
 
 5. Complex nested: Template(strings=('Users:\n', ': ', '\n', ': ', ''), interpolations=(Interpolation('Alice', "data['users'][0]['name']", None, ''), Interpolation('Say "Hello"', "data['users'][0]['msg']", None, ''), Interpolation('Bob', "data['users'][1]['name']", None, ''), Interpolation("It's great!", "data['users'][1]['msg']", None, '')))
    Values: ('Alice', 'Say "Hello"', 'Bob', "It's great!")

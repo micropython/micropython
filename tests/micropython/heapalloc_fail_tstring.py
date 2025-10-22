@@ -447,6 +447,19 @@ try:
     # Note: We can't directly test integer overflow, but we can test large templates
     print("Template size limit: Tested via exec in coverage tests")
 
+    # Test 9: Compile-time parsing under allocation failure
+    try:
+        micropython.heap_lock()
+        try:
+            compile("t'{x}'", "<tstring>", "exec")
+            print("FAIL: Compile-time parsing under heap lock")
+        except MemoryError:
+            print("OK: Compile-time parsing under heap lock")
+        finally:
+            micropython.heap_unlock()
+    except:
+        pass
+
 except Exception as e:
     # Catch any unexpected errors from the tests
     print(f"\nTest error: {type(e).__name__}: {e}")
