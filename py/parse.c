@@ -931,9 +931,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     mp_parse_node_t format_spec_node;
                     if (format_spec_pos && format_spec_pos + 1 < expr_end) {
                         size_t fmt_end = expr_end;
-                        if (conversion_pos && conversion_pos > format_spec_pos) {
-                            fmt_end = conversion_pos;
-                        }
                         if (fmt_end > format_spec_pos + 1) {
                             const byte *fmt_start = &str[format_spec_pos + 1];
                             size_t fmt_len = fmt_end - format_spec_pos - 1;
