@@ -359,7 +359,7 @@ used to transmit or receive many other types of digital signals::
     # To apply a carrier frequency to the high output
     r = esp32.RMT(pin=Pin(18), resolution_hz=10000000, tx_carrier=(38000, 50, 1))
 
-    # The channel resolution is 100ns (1/10M)
+    # The channel resolution is 100ns (1/resolution_hz)
     r.write_pulses((1, 20, 2, 40), 0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
 The input to the RMT module is an 80MHz clock (in the future it may be able to
