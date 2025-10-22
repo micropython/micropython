@@ -22,6 +22,9 @@ timing_margin_us = 5
 # Configure pins based on the target.
 if "esp32" in sys.platform:
     pwm_pulse_pins = ((4, 5),)
+    if "ESP32S2" in sys.implementation._machine:
+        # For UM FeatherS2
+        pwm_pulse_pins = ((6, 5),)
     freq_margin_per_thousand = 2
     duty_margin_per_thousand = 1
     timing_margin_us = 20
@@ -44,9 +47,14 @@ elif "rp2" in sys.platform:
     pwm_pulse_pins = (("GPIO0", "GPIO1"),)
 elif "samd" in sys.platform:
     pwm_pulse_pins = (("D0", "D1"),)
+    if "Seeed Xiao" in sys.implementation._machine:
+        pwm_pulse_pins = (("A1_D1", "A0_D0"),)
     if "SAMD21" in sys.implementation._machine:
         # MCU is too slow to capture short pulses.
         pwm_freq_limit = 2_000
+    # zephyr
+    # enable machine.time_pulse_us()
+    # frdm_k64f board: work out which physical pin ("ftm0", 0) and ("ftm3", 0) are...
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit

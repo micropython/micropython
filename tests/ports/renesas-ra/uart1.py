@@ -3,8 +3,10 @@ from machine import UART
 
 machine = os.uname().machine
 if "EK-RA6M2" in machine:
-    # 0, 7, 9
-    uart_ids = (0, 7, 9)
+    # 7, 9
+    # skip 0 because that's the UART REPL
+    # TODO really should work out why the REPL breaks when just constructing UART(0)
+    uart_ids = (7, 9)
     try_id = 7
     try_s = "UART(7, baudrate=115200, bits=8, parity=None, stop=1, tx=P401, rx=P402, flow=0, rxbuf=259, timeout=0, timeout_char=2)"
 elif "RA4M1 CLICKER" in machine:
@@ -26,8 +28,8 @@ elif "EK-RA4W1" in machine:
     try_s = "UART(9, baudrate=115200, bits=8, parity=None, stop=1, tx=P109, rx=P110, flow=0, rxbuf=259, timeout=0, timeout_char=2)"
 elif "EK-RA6M1" in machine:
     # 0, 1, 2, 3, 4, 8, 9
-    # 1/3/4/9 are disabled
-    uart_ids = (0, 2, 8)
+    # 1/3/4/9 are disabled, and skip 0 because that's the UART REPL
+    uart_ids = (2, 8)
     try_id = 8
     try_s = "UART(8, baudrate=115200, bits=8, parity=None, stop=1, tx=P105, rx=P104, flow=0, rxbuf=259, timeout=0, timeout_char=2)"
 else:

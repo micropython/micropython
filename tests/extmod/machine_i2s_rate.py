@@ -26,7 +26,10 @@ elif "mimxrt" in sys.platform:
         (2, Pin("D4"), Pin("D3"), Pin("D2"), None),
     )
 elif "esp32" in sys.platform:
-    i2s_instances = ((0, Pin(18), Pin(19), Pin(21), Pin(14)),)
+    if "ESP32C3" in sys.implementation._machine:
+        i2s_instances = ((0, Pin(5), Pin(6), Pin(7), Pin(4)),)
+    else:
+        i2s_instances = ((0, Pin(18), Pin(19), Pin(21), Pin(14)),)
     # Allow for small additional RTOS overhead
     MAX_DELTA_MS = 8
 

@@ -16,11 +16,17 @@ MAX_DELTA_MS = 8
 if "alif" in sys.platform:
     MAX_DELTA_MS = 20
     spi_instances = ((0, None, None, None),)
+elif "samd" in sys.platform:
+    # Use default SPI instance (tested working on ADAFRUIT_ITSYBITSY_M0_EXPRESS).
+    spi_instances = ((None, None, None, None),)
 elif "pyboard" in sys.platform:
     spi_instances = (
         (1, None, None, None),  # "explicit choice of sck/mosi/miso is not implemented"
         (2, None, None, None),
     )
+elif "renesas-ra" in sys.platform:
+    MAX_DELTA_MS = 15
+    spi_instances = ((0, None, None, None),)
 elif "rp2" in sys.platform:
     spi_instances = ((0, Pin(18), Pin(19), Pin(16)),)
 elif "esp32" in sys.platform:
@@ -111,8 +117,10 @@ def test_spi(spi_id, sck, mosi, miso, baudrate, polarity, phase, print_results):
             polarity=polarity,
             phase=phase,
         )
-    else:
+    elif spi_id is not None:
         s = SPI(spi_id, baudrate=baudrate, polarity=polarity, phase=phase)
+    else:
+        s = SPI(baudrate=baudrate, polarity=polarity, phase=phase)
 
     # to keep the test runtime down, use shorter buffer for lower baud rate
     wr_buf = wr_long if baudrate > 500_000 else wr_short
