@@ -357,7 +357,7 @@ used to transmit or receive many other types of digital signals::
     r  # RMT(pin=18, source_freq=80000000, resolution=10000000, idle_level=0)
 
     # To apply a carrier frequency to the high output
-    r = esp32.RMT(pin=Pin(18), resolution=10000000, tx_carrier=(38000, 50, 1))
+    r = esp32.RMT(pin=Pin(18), resolution_hz=10000000, tx_carrier=(38000, 50, 1))
 
     # The channel resolution is 100ns (1/10M)
     r.write_pulses((1, 20, 2, 40), 0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
