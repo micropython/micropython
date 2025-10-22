@@ -177,6 +177,22 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
         #endif
 
+        #if MICROPY_HW_TINYUSB_STACK
+        // Configure VBUS sensing for TinyUSB on STM32F4/F7 which have separate GCCFG register
+        // The DWC2 PHY init only sets PWRDWN bit, but doesn't configure VBUS sensing
+        #if defined(STM32F4) || defined(STM32F7)
+        #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+        // Enable VBUS sensing in "B device" mode (using PA9)
+        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_NOVBUSSENS;
+        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBUSBSEN;
+        #else
+        // Force VBUS valid (no VBUS detect pin configured)
+        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+        USB_OTG_FS->GCCFG &= ~(USB_OTG_GCCFG_VBUSBSEN | USB_OTG_GCCFG_VBUSASEN);
+        #endif
+        #endif
+        #endif
+
         #if MICROPY_HW_STM_USB_STACK
         return;
         #endif
