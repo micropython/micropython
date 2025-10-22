@@ -97,6 +97,14 @@ static inline void mp_usbd_init_tud(void) {
     #endif
 }
 
+// Allow runtime override of VID/PID defaults
+#ifndef MICROPY_HW_USB_RUNTIME_VID
+#define MICROPY_HW_USB_RUNTIME_VID MICROPY_HW_USB_VID
+#endif
+#ifndef MICROPY_HW_USB_RUNTIME_PID
+#define MICROPY_HW_USB_RUNTIME_PID MICROPY_HW_USB_PID
+#endif
+
 // Individual USB class flags for bitfield operations
 #define USB_BUILTIN_FLAG_NONE  0x00
 #define USB_BUILTIN_FLAG_CDC   0x01
@@ -148,6 +156,9 @@ typedef struct {
     bool active; // Has the user set the USB device active?
     bool trigger; // Has the user requested the active state change (or re-activate)?
 
+    uint16_t custom_vid; // Custom VID (0 = use builtin default)
+    uint16_t custom_pid; // Custom PID (0 = use builtin default)
+
 
     // Temporary pointers for xfer data in progress on each endpoint
     // Ensuring they aren't garbage collected until the xfer completes
@@ -172,6 +183,8 @@ typedef struct {
     mp_obj_base_t base;
     mp_obj_t builtin_driver; // Points to one of mp_type_usb_device_builtin_nnn
     bool active; // Has the user set the USB device active?
+    uint16_t custom_vid; // Custom VID (0 = use builtin default)
+    uint16_t custom_pid; // Custom PID (0 = use builtin default)
 } mp_obj_usb_device_t;
 
 static inline void mp_usbd_init(void) {

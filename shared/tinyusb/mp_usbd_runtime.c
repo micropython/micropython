@@ -111,7 +111,23 @@ const uint8_t *tud_descriptor_device_cb(void) {
     if (usbd) {
         result = usbd_get_buffer_in_cb(usbd->desc_dev, MP_BUFFER_READ);
     }
-    return result ? result : &mp_usbd_builtin_desc_dev;
+
+    // If no custom descriptor, check for custom VID/PID (0 means use default)
+    if (!result && usbd && (usbd->custom_vid != 0 || usbd->custom_pid != 0)) {
+        // Patch the default descriptor with custom VID/PID values.
+        // We override whichever fields are non-zero (0 = keep default).
+        static tusb_desc_device_t custom_desc;
+        custom_desc = mp_usbd_builtin_desc_dev;  // Copy default
+        if (usbd->custom_vid != 0) {
+            custom_desc.idVendor = usbd->custom_vid;
+        }
+        if (usbd->custom_pid != 0) {
+            custom_desc.idProduct = usbd->custom_pid;
+        }
+        return (const uint8_t *)&custom_desc;
+    }
+
+    return result ? result : (const uint8_t *)&mp_usbd_builtin_desc_dev;
 }
 
 const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
