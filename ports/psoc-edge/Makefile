@@ -146,6 +146,9 @@ clean: mtb_clean
 qdeploy: mtb_program
 deploy: all mtb_program
 
+qdeploy_multi: mtb_program_multi
+deploy_multi: all mtb_program_multi
+
 port_help:
 	@:
 	$(info )
@@ -158,13 +161,18 @@ port_help:
 	$(info   make rebuild                       Build the project after cleaning previous build.)
 	$(info   make deploy                        Build and deploy the project to the specified board.)
 	$(info   make qdeploy                       Deploy the project to the specified board without rebuilding.)
+	$(info   make deploy_multi                  Deploy the project to multiple boards.)
+	$(info   make qdeploy_multi                 Deploy the project to multiple boards without rebuilding.)
 	$(info   make clean                         Clean the build files.)
 	$(info   make help                          Show this help.)
+	$(info )
+	$(info Options: )
+	$(info   EXT_HEX_FILE                       An external .hex file can be provided to the deploy targets, instead of building from the sources.) 
 	$(info )
 
 help: port_help mtb_bsp_help mtb_build_help
 .DEFAULT_GOAL := all
 
-.PHONY: all clean rebuild deploy help
+.PHONY: all clean rebuild deploy deploy_multi help
 
 include $(TOP)/py/mkrules.mk
