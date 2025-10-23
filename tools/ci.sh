@@ -392,18 +392,17 @@ function ci_psoc_edge_build {
 
 function ci_psoc_edge_deploy {
     board=$1
-    docker exec mtb36-ci make BOARD=${board} deploy DEVICE_SN=0F16025A012D2400
+    docker exec mtb36-ci make BOARD=${board} deploy
 }
 
-# TODO: Enable for HIL testing
-# function ci_psoc_edge_flash_multiple_devices {
-#     board=$1
-#     # hex file including path with respect to micropython root
-#     hex_file=$2
-#     devs_file=$3
+function ci_psoc_edge_deploy_multiple_devices {
+    board=$1
+    # hex file including path with respect to micropython root
+    hex_file=$2
+    devs_file=$3
 
-#     # TBD
-# }
+    docker exec mtb36-ci make deploy_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=../../${devs_file}
+}
 
 # function ci_psoc_edge_run_tests {
 #     docker exec mtb36-ci /bin/bash -c "cd ../../tests && ./run-tests.py --target psoc-edge --device /dev/ttyACM0 -d psoc-edge"
