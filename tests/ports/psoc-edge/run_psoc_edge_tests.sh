@@ -33,7 +33,7 @@ usage() {
   echo
   echo "  Test suites as per peripheral:"
   echo
-  echo "    time              run time_pulse test"
+  echo "    time              run time test"
   echo
   echo "Available options:"
   echo 
@@ -216,6 +216,9 @@ no_ext_hw_single_tests() {
 }
 
 case ${test_suite} in
+    "ci-tests")
+        run_ci_tests
+        ;;
     "time")
         time_tests
         ;;
