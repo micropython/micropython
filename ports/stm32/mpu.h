@@ -198,7 +198,11 @@ static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32
         __DMB();
         // Configure attribute 1, inner-outer non-cacheable (=0x44).
         MPU->MAIR0 = (MPU->MAIR0 & ~MPU_MAIR0_Attr1_Msk)
+#if defined(STM32H5)
             | 0x44 << MPU_MAIR0_Attr1_Pos;
+#elif defined(STM32N6)
+            | INNER_OUTER(MPU_DEVICE_NGNRNE) << MPU_MAIR0_Attr1_Pos;
+#endif
         __DMB();
 
         // RBAR
@@ -215,7 +219,7 @@ static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32
         MPU->RBAR = (base_addr & MPU_RBAR_BASE_Msk)
             | MPU_ACCESS_NOT_SHAREABLE << MPU_RBAR_SH_Pos
             | MPU_REGION_ALL_RW << MPU_RBAR_AP_Pos
-            | MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RBAR_XN_Pos;
+            | MPU_INSTRUCTION_ACCESS_ENABLE << MPU_RBAR_XN_Pos;
         MPU->RLAR = ((base_addr + size - 1) & MPU_RLAR_LIMIT_Msk)
             | MPU_ATTRIBUTES_NUMBER1 << MPU_RLAR_AttrIndx_Pos
             | MPU_REGION_ENABLE << MPU_RLAR_EN_Pos;

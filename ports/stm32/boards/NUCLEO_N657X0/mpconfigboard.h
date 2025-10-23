@@ -74,6 +74,17 @@
 #define MICROPY_HW_USB_HS_IN_FS                 (1)
 #define MICROPY_HW_USB_MAIN_DEV                 (USB_PHY_HS_ID)
 
+// Ethernet via RMII
+#define MICROPY_HW_ETH_MDC                      (pin_G11)
+#define MICROPY_HW_ETH_MDIO                     (pin_F4)
+#define MICROPY_HW_ETH_RMII_REF_CLK             (pin_F7)
+#define MICROPY_HW_ETH_RMII_CRS_DV              (pin_F10)
+#define MICROPY_HW_ETH_RMII_RXD0                (pin_F14)
+#define MICROPY_HW_ETH_RMII_RXD1                (pin_F15)
+#define MICROPY_HW_ETH_RMII_TX_EN               (pin_F11)
+#define MICROPY_HW_ETH_RMII_TXD0                (pin_F12)
+#define MICROPY_HW_ETH_RMII_TXD1                (pin_F13)
+
 /******************************************************************************/
 // Bootloader configuration
 
