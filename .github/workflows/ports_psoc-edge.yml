@@ -65,8 +65,7 @@ jobs:
     steps:
       - name: Pre-cleanup workspace 
         run: | 
-          echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo rm -rf {{ github.workspace }}
-          mkdir -p {{ github.workspace }}
+          echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo rm -rf *
       - name: Checkout code
         uses: actions/checkout@v5
       - name: Download binaries
@@ -82,7 +81,7 @@ jobs:
       - name: Run psoc-edge tests
         timeout-minutes: 12
         run: |
-          ./tests/ports/psoc-edge/run_psoc_edge_tests.sh --test-suite  ${{ matrix.test-suite }} --board ${{ matrix.board }} --hil tools/psoc-edge/${{ runner.name }}-devs.yml
+          ./tests/ports/psoc-edge/run_psoc_edge_tests.sh --test-suite  ${{ matrix.test-suite }} --board ${{ matrix.board }} --hil ${{ runner.name }}
         
       - name: Container teardown 
         if: failure() || success()
