@@ -381,7 +381,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, *, pin=None, resolution_hz=10000000, clock_div=None, idle_level=False, num_symbols=64, tx_carrier=None)
+.. class:: RMT(channel, *, pin=None, resolution_hz=10000000, clock_div=None, idle_level=False, num_symbols=48|64, tx_carrier=None)
 
     This class provides access to one of the eight RMT channels. *channel* is
     optional and a dummy parameter for backward compatibility. *pin* is required
@@ -395,8 +395,8 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     channel allowing the resolution to be specified. Either *clock_div* and
     *resolution_hz* may be supplied, but not both.
     *num_symbols* specifies the
-    RMT buffer allocated for this channel (minimum 64), from a small pool of
-    512 symbols that are shared by all channels. This buffer does not limit the
+    RMT buffer allocated for this channel (minimum 48 or 64, depending on chip), from a small pool of
+    symbols (192 to 512, depending on chip) that are shared by all channels. This buffer does not limit the
     size of the pulse train that you can send, but bigger buffers reduce the
     CPU load and the potential of glitches/imprecise pulse lengths. *idle_level* specifies
     what level the output will be when no transmission is in progress and can

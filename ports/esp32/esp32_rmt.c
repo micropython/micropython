@@ -88,7 +88,7 @@ static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = mp_const_none} },
         { MP_QSTR_idle_level,                  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} }, // low voltage
         { MP_QSTR_tx_carrier,                  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // no carrier
-        { MP_QSTR_num_symbols,                 MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
+        { MP_QSTR_num_symbols,                 MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOC_RMT_MEM_WORDS_PER_CHANNEL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -122,8 +122,8 @@ static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_obj_t tx_carrier_obj = args[5].u_obj;
     mp_uint_t num_symbols = args[6].u_int;
 
-    if (num_symbols < 64 || ((num_symbols % 2) == 1)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("num_symbols must be even and at least 64"));
+    if (num_symbols < SOC_RMT_MEM_WORDS_PER_CHANNEL || ((num_symbols % 2) == 1)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("num_symbols must be even and at least %d"), SOC_RMT_MEM_WORDS_PER_CHANNEL);
     }
 
     esp32_rmt_obj_t *self = mp_obj_malloc_with_finaliser(esp32_rmt_obj_t, &esp32_rmt_type);

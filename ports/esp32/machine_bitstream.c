@@ -108,7 +108,7 @@ static bool machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
     rmt_tx_channel_config_t tx_chan_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT,
         .gpio_num = pin,
-        .mem_block_symbols = 64,
+        .mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL,
         .resolution_hz = APB_CLK_FREQ / clock_div,
         .trans_queue_depth = 1,
     };
