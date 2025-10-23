@@ -46,13 +46,13 @@ static void code_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
     (void)kind;
     mp_obj_code_t *o = MP_OBJ_TO_PTR(o_in);
     const mp_raw_code_t *rc = o->rc;
-    const mp_bytecode_prelude_t *prelude = &rc->prelude;
+    const mp_prof_settrace_data_t *settrace_data = &rc->specific.bytecode;
     mp_printf(print,
         "<code object %q at 0x%p, file \"%q\", line %d>",
-        MP_CODE_QSTR_MAP(o->context, prelude->qstr_block_name_idx),
+        MP_CODE_QSTR_MAP(o->context, settrace_data->qstr_block_name_idx),
         o,
         MP_CODE_QSTR_MAP(o->context, 0),
-        rc->line_of_definition
+        mp_prof_bytecode_lineno(rc, 0) - settrace_data->line_of_definition_delta
         );
 }
 
@@ -71,7 +71,7 @@ static mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_
 
 #if !MICROPY_PREVIEW_VERSION_2
 static mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
-    // const mp_bytecode_prelude_t *prelude = &rc->prelude;
+    // const mp_prof_settrace_data_t *settrace_data = &rc->specific.bytecode;
     uint start = 0;
     uint stop = rc->fun_data_len - start;
 
@@ -127,14 +127,14 @@ static mp_obj_t code_colines_iter(mp_obj_t self_in) {
     iter->rc = self->rc;
     iter->bc = 0;
     iter->source_line = 1;
-    iter->ci = self->rc->prelude.line_info;
+    iter->ci = self->rc->specific.bytecode.line_info;
     return MP_OBJ_FROM_PTR(iter);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(code_colines_obj, code_colines_iter);
 
 static mp_obj_t code_colines_next(mp_obj_t iter_in) {
     mp_obj_colines_iter_t *iter = MP_OBJ_TO_PTR(iter_in);
-    const byte *ci_end = iter->rc->prelude.line_info_top;
+    const byte *ci_end = iter->rc->specific.bytecode.line_info_top;
 
     mp_uint_t start = iter->bc;
     mp_uint_t line_no = iter->source_line;
@@ -155,8 +155,8 @@ static mp_obj_t code_colines_next(mp_obj_t iter_in) {
     }
 
     if (another) {
-        mp_uint_t prelude_size = (iter->rc->prelude.opcodes - (const byte *)iter->rc->fun_data);
-        mp_uint_t bc_end = iter->rc->fun_data_len - prelude_size;
+        mp_uint_t settrace_data_size = (iter->rc->specific.bytecode.opcodes - (const byte *)iter->rc->fun_data);
+        mp_uint_t bc_end = iter->rc->fun_data_len - settrace_data_size;
         if (iter->bc >= bc_end) {
             return MP_OBJ_STOP_ITERATION;
         } else {
@@ -177,12 +177,12 @@ static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
     mp_obj_code_t *o = MP_OBJ_TO_PTR(self_in);
     const mp_raw_code_t *rc = o->rc;
-    const mp_bytecode_prelude_t *prelude = &rc->prelude;
+    const mp_prof_settrace_data_t *settrace_data = &rc->specific.bytecode;
     switch (attr) {
         case MP_QSTR_co_code:
             dest[0] = mp_obj_new_bytes(
-                (void *)prelude->opcodes,
-                rc->fun_data_len - (prelude->opcodes - (const byte *)rc->fun_data)
+                (void *)settrace_data->opcodes,
+                rc->fun_data_len - (settrace_data->opcodes - (const byte *)rc->fun_data)
                 );
             break;
         case MP_QSTR_co_consts:
@@ -195,7 +195,7 @@ static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = MP_OBJ_NEW_SMALL_INT(mp_prof_bytecode_lineno(rc, 0));
             break;
         case MP_QSTR_co_name:
-            dest[0] = MP_OBJ_NEW_QSTR(MP_CODE_QSTR_MAP(o->context, prelude->qstr_block_name_idx));
+            dest[0] = MP_OBJ_NEW_QSTR(MP_CODE_QSTR_MAP(o->context, settrace_data->qstr_block_name_idx));
             break;
         case MP_QSTR_co_names:
             dest[0] = MP_OBJ_FROM_PTR(o->dict_locals);

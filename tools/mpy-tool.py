@@ -943,37 +943,56 @@ class RawCode(object):
         print("    #if MICROPY_PERSISTENT_CODE_SAVE")
         print("    .fun_data_len = %u," % len(self.fun_data))
         print("    .n_children = %u," % len(self.children))
-        print("    #if MICROPY_EMIT_MACHINE_CODE")
-        print("    .prelude_offset = %u," % self.prelude_offset)
         print("    #endif")
         if self.code_kind == MP_CODE_BYTECODE:
+            n_args = self.prelude_signature[3] + self.prelude_signature[4]
             print("    #if MICROPY_PY_SYS_SETTRACE")
-            print("    .line_of_definition = %u," % 0)  # TODO
-            print("    .prelude = {")
-            print("        .n_state = %u," % self.prelude_signature[0])
-            print("        .n_exc_stack = %u," % self.prelude_signature[1])
-            print("        .scope_flags = %u," % self.prelude_signature[2])
-            print("        .n_pos_args = %u," % self.prelude_signature[3])
-            print("        .n_kwonly_args = %u," % self.prelude_signature[4])
-            print("        .n_def_pos_args = %u," % self.prelude_signature[5])
-            print("        .qstr_block_name_idx = %u," % self.names[0])
+            print("    .specific = {")
+            print("        .bytecode = {")
+            print("            #if MICROPY_PY_SYS_SETTRACE_USE_FULL_PRELUDE")
+            print("            .n_state = %u," % self.prelude_signature[0])
+            print("            .n_exc_stack = %u," % self.prelude_signature[1])
+            print("            .scope_flags = %u," % self.prelude_signature[2])
+            print("            .n_pos_args = %u," % self.prelude_signature[3])
+            print("            .n_kwonly_args = %u," % self.prelude_signature[4])
+            print("            .n_def_pos_args = %u," % self.prelude_signature[5])
+            print("            #else")
+            print("            .n_args = %u," % n_args)
+            print("            #endif")
+            print("            .line_of_definition_delta = 0,")
+            print("            .qstr_block_name_idx = %u," % self.names[0])
             print(
-                "        .line_info = fun_data_%s + %u,"
+                "            .line_info = fun_data_%s + %u,"
                 % (self.escaped_name, self.offset_line_info)
             )
             print(
-                "        .line_info_top = fun_data_%s + %u,"
+                "            .line_info_top = fun_data_%s + %u,"
                 % (self.escaped_name, self.offset_closure_info)
             )
             print(
-                "        .opcodes = fun_data_%s + %u," % (self.escaped_name, self.offset_opcodes)
+                "            .opcodes = fun_data_%s + %u"
+                % (self.escaped_name, self.offset_opcodes)
             )
-            print("    },")
+            print("        }")
+            print("    }")
             print("    #endif")
-        print("    #endif")
-        if self.code_kind == MP_CODE_NATIVE_ASM:
-            print("    .asm_n_pos_args = %u," % self.n_pos_args)
-            print("    .asm_type_sig = %u," % type_sig)
+        elif self.code_kind == MP_CODE_NATIVE_PY:
+            print("    #if MICROPY_EMIT_MACHINE_CODE && MICROPY_PERSISTENT_CODE_SAVE")
+            print("    .specific = {")
+            print("        .native_py = {")
+            print("            .prelude_offset = %u" % self.prelude_offset)
+            print("        }")
+            print("    }")
+            print("    #endif")
+        elif self.code_kind == MP_CODE_NATIVE_ASM:
+            print("    #if MICROPY_EMIT_INLINE_ASM")
+            print("    .specific = {")
+            print("        .native_asm = {")
+            print("            .n_pos_args = %u," % self.n_pos_args)
+            print("            .type_sig = %u" % type_sig)
+            print("        }")
+            print("    }")
+            print("    #endif")
         print("};")
 
         if generate_minimal:

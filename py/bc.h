@@ -173,18 +173,25 @@
 #define MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp) ((exc_sp) + 1 - (exc_stack))
 #define MP_CODE_STATE_EXC_SP_IDX_TO_PTR(exc_stack, exc_sp_idx) ((exc_stack) + (exc_sp_idx) - 1)
 
-typedef struct _mp_bytecode_prelude_t {
+typedef struct _mp_prof_settrace_data_t {
+    #if MICROPY_PY_SYS_SETTRACE_USE_FULL_PRELUDE
     uint n_state;
-    uint n_exc_stack;
-    uint scope_flags;
-    uint n_pos_args;
-    uint n_kwonly_args;
-    uint n_def_pos_args;
+    uint16 n_exc_stack;
+    uint16 scope_flags;
+    uint16 n_pos_args;
+    uint16 n_kwonly_args;
+    uint16 n_def_pos_args;
+    uint16 line_of_definition_delta;    // line count between def stmt and first function stmt
     qstr qstr_block_name_idx;
+    #else
+    byte n_args;                        // n_pos_args + n_kwonly_args
+    byte line_of_definition_delta;      // line count between def stmt and first function stmt
+    qstr_short_t qstr_block_name_idx;
+    #endif
     const byte *line_info;
     const byte *line_info_top;
     const byte *opcodes;
-} mp_bytecode_prelude_t;
+} mp_prof_settrace_data_t;
 
 // Exception stack entry
 typedef struct _mp_exc_stack_t {

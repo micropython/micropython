@@ -218,7 +218,11 @@ static void emit_write_bytecode_byte_child(emit_t *emit, int stack_adj, byte b, 
     emit_write_bytecode_byte_const(emit, stack_adj, b,
         mp_emit_common_alloc_const_child(emit->emit_common, rc));
     #if MICROPY_PY_SYS_SETTRACE
-    rc->line_of_definition = emit->last_source_line;
+    // Temporarily save makefun source line into line_info (until mp_emit_glue_assign_bytecode).
+    // At this point, the kind of raw_code is not yet known, but we know that the storage is available.
+    // The proper specific value will anyway be overridden with the proper information when
+    // when the corresponding mp_emit_glue_assign_* function is invoked
+    rc->specific.bytecode.line_info = (const byte *)emit->last_source_line;
     #endif
 }
 
