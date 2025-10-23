@@ -1,7 +1,7 @@
 
 ***** Test 1: ticks_ms() *****
 
-Status: FAIL
+Status: PASS
 
 ***** Test 2: ticks_us() *****
 
