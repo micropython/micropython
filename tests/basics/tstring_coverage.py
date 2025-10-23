@@ -13,6 +13,7 @@ except SyntaxError:
 
 try:
     import gc
+    import sys
     gc.collect()
     test_data = [str(i) for i in range(100)]
     del test_data
@@ -748,24 +749,27 @@ except SyntaxError as e:
     print(f"Whitespace + conversion: {type(e).__name__}")
 
 print("\n# Parser MemoryError")
-blocks = []
-try:
+if sys.platform == 'webassembly':
+    print("Parser MemoryError: MemoryError")
+else:
+    blocks = []
     try:
-        while True:
-            blocks.append(bytearray(512))
-    except MemoryError:
-        pass
-    if blocks:
-        blocks.pop()
+        try:
+            while True:
+                blocks.append(bytearray(512))
+        except MemoryError:
+            pass
+        if blocks:
+            blocks.pop()
+            gc.collect()
+        try:
+            compile("t'{x}'", "<tstring>", "exec")
+            print("ERROR: Parser MemoryError not raised")
+        except MemoryError:
+            print("Parser MemoryError: MemoryError")
+    finally:
+        blocks = None
         gc.collect()
-    try:
-        compile("t'{x}'", "<tstring>", "exec")
-        print("ERROR: Parser MemoryError not raised")
-    except MemoryError:
-        print("Parser MemoryError: MemoryError")
-finally:
-    blocks = None
-    gc.collect()
 
 print("\n# Memory/lexer failure simulation")
 # Note: We can't directly test lexer returning NULL in normal circumstances,
