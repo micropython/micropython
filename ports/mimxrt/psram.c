@@ -13,8 +13,13 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * 1. The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * 2. If the Software is incorporated into a build system that allows
+ * selection among a list of target devices, then similar target
+ * devices manufactured by PJRC.COM must be included in the list of
+ * target devices and selectable in the same manner.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -32,7 +37,6 @@
 
 // These #defines are from here:
 // https://github.com/PaulStoffregen/cores/blob/10025393e83ca9f4dc5646643a41cb2f32022ae4/teensy4/imxrt.h
-#define CCM_CCGR_ON                             3
 #define FLEXSPI_MCR2_CLRLEARNPHASE(x)           ((uint32_t)(x << 14))
 #define FLEXSPI_LUTKEY_VALUE                    ((uint32_t)0x5AF05AF0)
 
@@ -97,23 +101,23 @@ static uint8_t flexspi2_psram_size(uint32_t addr) {
 
 size_t configure_external_ram() {
     // initialize pins
-    IOMUXC->SW_PAD_CTL_PAD[22] = 0x1B0F9;     // 100K pullup, strong drive, max speed, hyst
-    IOMUXC->SW_PAD_CTL_PAD[23] = 0x110F9;     // keeper, strong drive, max speed, hyst
-    IOMUXC->SW_PAD_CTL_PAD[24] = 0x1B0F9;     // 100K pullup, strong drive, max speed, hyst
-    IOMUXC->SW_PAD_CTL_PAD[25] = 0x100F9;     // strong drive, max speed, hyst
-    IOMUXC->SW_PAD_CTL_PAD[26] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
-    IOMUXC->SW_PAD_CTL_PAD[27] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
-    IOMUXC->SW_PAD_CTL_PAD[28] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
-    IOMUXC->SW_PAD_CTL_PAD[29] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_22] = 0x1B0F9;     // 100K pullup, strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_23] = 0x110F9;     // keeper, strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_24] = 0x1B0F9;     // 100K pullup, strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_25] = 0x100F9;     // strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_26] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_27] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_28] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
+    IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_29] = 0x170F9;     // 47K pullup, strong drive, max speed, hyst
 
-    IOMUXC->SW_MUX_CTL_PAD[22] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_SS1_B (Flash)
-    IOMUXC->SW_MUX_CTL_PAD[23] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DQS
-    IOMUXC->SW_MUX_CTL_PAD[24] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_SS0_B (RAM)
-    IOMUXC->SW_MUX_CTL_PAD[25] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_SCLK
-    IOMUXC->SW_MUX_CTL_PAD[26] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA0
-    IOMUXC->SW_MUX_CTL_PAD[27] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA1
-    IOMUXC->SW_MUX_CTL_PAD[28] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA2
-    IOMUXC->SW_MUX_CTL_PAD[29] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA3
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_22] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_SS1_B (Flash)
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_23] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DQS
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_24] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_SS0_B (RAM)
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_25] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_SCLK
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_26] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA0
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_27] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA1
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_28] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA2
+    IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_29] = 8 | 0x10;     // ALT1 = FLEXSPI2_A_DATA3
 
     IOMUXC->SELECT_INPUT_1[kIOMUXC_FLEXSPI2_IPP_IND_DQS_FA_SELECT_INPUT] = 1;     // GPIO_EMC_23 for Mode: ALT8, pg 986
     IOMUXC->SELECT_INPUT_1[kIOMUXC_FLEXSPI2_IPP_IND_IO_FA_BIT0_SELECT_INPUT] = 1;     // GPIO_EMC_26 for Mode: ALT8
@@ -123,18 +127,27 @@ size_t configure_external_ram() {
     IOMUXC->SELECT_INPUT_1[kIOMUXC_FLEXSPI2_IPP_IND_SCK_FA_SELECT_INPUT] = 1;     // GPIO_EMC_25 for Mode: ALT8
 
     // turn on clock  (QSPI flash & PSRAM chips usually spec max clock 100 to 133 MHz)
-    CCM->CBCMR = (CCM->CBCMR & ~(CCM_CBCMR_FLEXSPI2_PODF_MASK | CCM_CBCMR_FLEXSPI2_CLK_SEL_MASK))
-        // | CCM_CBCMR_FLEXSPI2_PODF(5) | CCM_CBCMR_FLEXSPI2_CLK_SEL(3); // 88.0 MHz
-        // | CCM_CBCMR_FLEXSPI2_PODF(3) | CCM_CBCMR_FLEXSPI2_CLK_SEL(0); // 99.0 MHz
-        // | CCM_CBCMR_FLEXSPI2_PODF(6) | CCM_CBCMR_FLEXSPI2_CLK_SEL(1); // 102.9 MHz
-        | CCM_CBCMR_FLEXSPI2_PODF(4) | CCM_CBCMR_FLEXSPI2_CLK_SEL(3);         // 105.6 MHz
-    // | CCM_CBCMR_FLEXSPI2_PODF(5) | CCM_CBCMR_FLEXSPI2_CLK_SEL(2); // 110.8 MHz
-    // | CCM_CBCMR_FLEXSPI2_PODF(5) | CCM_CBCMR_FLEXSPI2_CLK_SEL(1); // 120.0 MHz
-    // | CCM_CBCMR_FLEXSPI2_PODF(3) | CCM_CBCMR_FLEXSPI2_CLK_SEL(3); // 132.0 MHz
-    // | CCM_CBCMR_FLEXSPI2_PODF(4) | CCM_CBCMR_FLEXSPI2_CLK_SEL(1); // 144.0 MHz
-    // | CCM_CBCMR_FLEXSPI2_PODF(3) | CCM_CBCMR_FLEXSPI2_CLK_SEL(2); // 166.2 MHz
-    // | CCM_CBCMR_FLEXSPI2_PODF(2) | CCM_CBCMR_FLEXSPI2_CLK_SEL(3); // 176.0 MHz
-    CCM->CCGR7 |= CCM_CCGR7_CG1(CCM_CCGR_ON);
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 5); // 88.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 88.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 3); // 99.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 0); // 99.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 6); // 102.9 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 1); // 102.9 MHz
+    CLOCK_SetDiv(kCLOCK_Flexspi2Div, 4); // 105.6 MHz
+    CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 105.6 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 5); // 110.8 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 2); // 110.8 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 5); // 120.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 1); // 120.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 3); // 132.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 132.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 4); // 144.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 1); // 144.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 3); // 166.2 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 2); // 166.2 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 2); // 176.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 176.0 MHz
+    CLOCK_EnableClock(kCLOCK_FlexSpi2);
 
     FLEXSPI2->MCR0 |= FLEXSPI_MCR0_MDIS(1);
     FLEXSPI2->MCR0 = (FLEXSPI2->MCR0 & ~(FLEXSPI_MCR0_AHBGRANTWAIT_MASK
