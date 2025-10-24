@@ -34,7 +34,11 @@ QSTR_DEFS += qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # OS name, for simple autoconfig
+ifeq ($(VARIANT),wasi)
+UNAME_S := wasi
+else
 UNAME_S := $(shell uname -s)
+endif
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -114,7 +118,7 @@ CC = clang
 endif
 # Use clang syntax for map file
 LDFLAGS_ARCH = -Wl,-map,$@.map -Wl,-dead_strip
-else
+else ifeq ($(UNAME_S),Linux)
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
