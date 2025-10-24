@@ -41,6 +41,7 @@
 #endif
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
+#include "extmod/modplatform.h"
 #include "genhdr/mpversion.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
@@ -102,7 +103,20 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             }
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
+            #if MICROPY_MODULE___FILE__
+            if (input_kind == MP_PARSE_FILE_INPUT) {
+                mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+            }
+            #endif
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+            #if defined(MICROPY_UNIX_COVERAGE)
+            // allow to print the parse tree in the coverage build
+            if (mp_verbose_flag >= 3) {
+                printf("----------------\n");
+                mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
+                printf("----------------\n");
+            }
+            #endif
             module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
             #else
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
@@ -116,7 +130,12 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
         #endif
-        mp_call_function_0(module_fun);
+        #if MICROPY_PYEXEC_COMPILE_ONLY
+        if (!mp_compile_only)
+        #endif
+        {
+            mp_call_function_0(module_fun);
+        }
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
@@ -141,8 +160,14 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
 
         // check for SystemExit
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
-            ret = PYEXEC_FORCED_EXIT;
+            // Extract SystemExit value
+            // None is an exit value of 0; an int is its value; anything else is 1
+            mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+            mp_int_t val = 0;
+            if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
+                val = 1;
+            }
+            ret = PYEXEC_FORCED_EXIT | (val & 255);
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             ret = 0;
@@ -491,9 +516,19 @@ MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
 
 #else // MICROPY_REPL_EVENT_DRIVEN
 
+#if !MICROPY_HAL_HAS_STDIO_MODE_SWITCH
+// If the port doesn't need any stdio mode switching calls then provide trivial ones.
+static inline void mp_hal_stdio_mode_raw(void) {
+}
+static inline void mp_hal_stdio_mode_orig(void) {
+}
+#endif
+
 int pyexec_raw_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
+
+    mp_hal_stdio_mode_raw();
 
 raw_repl_reset:
     mp_hal_stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
@@ -508,6 +543,7 @@ raw_repl_reset:
                 if (vstr_len(&line) == 2 && vstr_str(&line)[0] == CHAR_CTRL_E) {
                     int ret = do_reader_stdin(vstr_str(&line)[1]);
                     if (ret & PYEXEC_FORCED_EXIT) {
+                        mp_hal_stdio_mode_orig();
                         return ret;
                     }
                     vstr_reset(&line);
@@ -520,6 +556,7 @@ raw_repl_reset:
                 mp_hal_stdout_tx_str("\r\n");
                 vstr_clear(&line);
                 pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+                mp_hal_stdio_mode_orig();
                 return 0;
             } else if (c == CHAR_CTRL_C) {
                 // clear line
@@ -540,10 +577,19 @@ raw_repl_reset:
             // exit for a soft reset
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
+            mp_hal_stdio_mode_orig();
             return PYEXEC_FORCED_EXIT;
         }
 
+        // Execute code with terminal mode switching for keyboard interrupt support.
+        // Switches to original mode (ISIG enabled) so Ctrl-C generates SIGINT during execution,
+        // then restores raw mode (ISIG disabled) for REPL input to support paste mode with arbitrary
+        // data including byte 0x03 without triggering interrupts.
+        mp_hal_stdio_mode_orig();
         int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
+        if (!(ret & PYEXEC_FORCED_EXIT)) {
+            mp_hal_stdio_mode_raw();
+        }
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -553,6 +599,8 @@ raw_repl_reset:
 int pyexec_friendly_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
+
+    mp_hal_stdio_mode_raw();
 
 friendly_repl_reset:
     mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
@@ -609,6 +657,7 @@ friendly_repl_reset:
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
+            mp_hal_stdio_mode_orig();
             return 0;
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
@@ -622,6 +671,7 @@ friendly_repl_reset:
             // exit for a soft reset
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
+            mp_hal_stdio_mode_orig();
             return PYEXEC_FORCED_EXIT;
         } else if (ret == CHAR_CTRL_E) {
             // paste mode
@@ -666,7 +716,15 @@ friendly_repl_reset:
             }
         }
 
+        // Execute code with terminal mode switching for keyboard interrupt support.
+        // Switches to original mode (ISIG enabled) so Ctrl-C generates SIGINT during execution,
+        // then restores raw mode (ISIG disabled) for REPL input to support paste mode with arbitrary
+        // data including byte 0x03 without triggering interrupts.
+        mp_hal_stdio_mode_orig();
         ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+        if (!(ret & PYEXEC_FORCED_EXIT)) {
+            mp_hal_stdio_mode_raw();
+        }
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -679,6 +737,7 @@ friendly_repl_reset:
 int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
 }
+
 
 int pyexec_file_if_exists(const char *filename) {
     #if MICROPY_MODULE_FROZEN
