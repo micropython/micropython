@@ -108,7 +108,10 @@ static void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = MP_OBJ_FROM_PTR(o->code);
             break;
         case MP_QSTR_f_globals:
-            dest[0] = MP_OBJ_FROM_PTR(o->code_state->fun_bc->context->module.globals);
+            ;
+            mp_obj_fun_bc_t *fun_bc = o->code_state->fun_obj;
+            assert(fun_bc->base.type == &mp_type_fun_bc || fun_bc->base.type == &mp_type_gen_wrap);
+            dest[0] = MP_OBJ_FROM_PTR(fun_bc->context->module.globals);
             break;
         case MP_QSTR_f_lasti:
             dest[0] = MP_OBJ_NEW_SMALL_INT(o->lasti);
@@ -137,7 +140,9 @@ mp_obj_t mp_obj_new_frame(const mp_code_state_t *code_state) {
         return MP_OBJ_NULL;
     }
 
-    mp_obj_code_t *code = o->code = MP_OBJ_TO_PTR(mp_obj_new_code(code_state->fun_bc->context, code_state->fun_bc->rc, false));
+    mp_obj_fun_bc_t *fun_bc = code_state->fun_obj;
+    assert(fun_bc->base.type == &mp_type_fun_bc || fun_bc->base.type == &mp_type_gen_wrap);
+    mp_obj_code_t *code = o->code = MP_OBJ_TO_PTR(mp_obj_new_code(fun_bc->context, fun_bc->rc, false));
     if (code == NULL) {
         return MP_OBJ_NULL;
     }
@@ -204,7 +209,8 @@ mp_obj_t mp_prof_frame_enter(mp_code_state_t *code_state) {
         // We are entering not-yet-traced frame
         // which means it's a CALL event (not a GENERATOR)
         // so set the function definition line.
-        const mp_raw_code_t *rc = code_state->fun_bc->rc;
+        mp_obj_fun_bc_t *fun_bc = code_state->fun_obj;
+        const mp_raw_code_t *rc = fun_bc->rc;
         frame->lineno = mp_prof_bytecode_lineno(rc, 0) - rc->specific.bytecode.line_of_definition_delta;
     }
     code_state->frame = frame;
@@ -277,7 +283,8 @@ mp_obj_t mp_prof_instr_tick(mp_code_state_t *code_state, bool is_exception) {
     }
 
     // SETTRACE event LINE
-    const mp_raw_code_t *rc = code_state->fun_bc->rc;
+    mp_obj_fun_bc_t *fun_bc = code_state->fun_obj;
+    const mp_raw_code_t *rc = fun_bc->rc;
     const mp_prof_settrace_data_t *settrace_data = &rc->specific.bytecode;
     size_t prev_line_no = args->frame->lineno;
     size_t current_line_no = mp_prof_bytecode_lineno(rc, code_state->ip - settrace_data->opcodes);
@@ -805,8 +812,9 @@ static const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
 
 void mp_prof_print_instr(const byte *ip, mp_code_state_t *code_state) {
     mp_dis_instruction_t _instruction, *instruction = &_instruction;
-    mp_prof_opcode_decode(ip, code_state->fun_bc->rc->const_table, instruction);
-    const mp_raw_code_t *rc = code_state->fun_bc->rc;
+    mp_obj_fun_bc_t *fun_bc = code_state->fun_obj;
+    mp_prof_opcode_decode(ip, fun_bc->rc->const_table, instruction);
+    const mp_raw_code_t *rc = fun_bc->rc;
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
 
     mp_uint_t offset = ip - prelude->opcodes;

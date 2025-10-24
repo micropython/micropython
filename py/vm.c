@@ -38,13 +38,16 @@
 
 // *FORMAT-OFF*
 
+// Within th VM, we can safely assume that code_state->fun_obj points to a mp_obj_fun_bc_t
+#define CODE_STATE_FUN_BC ((mp_obj_fun_bc_t *)code_state->fun_obj)
+
 #if 0
 #if MICROPY_PY_THREAD
 #define TRACE_PREFIX mp_printf(&mp_plat_print, "ts=%p sp=%d ", mp_thread_get_state(), (int)(sp - &code_state->state[0] + 1))
 #else
 #define TRACE_PREFIX mp_printf(&mp_plat_print, "sp=%d ", (int)(sp - &code_state->state[0] + 1))
 #endif
-#define TRACE(ip) TRACE_PREFIX; mp_bytecode_print2(&mp_plat_print, ip, 1, code_state->fun_bc->child_table, &code_state->fun_bc->context->constants);
+#define TRACE(ip) TRACE_PREFIX; mp_bytecode_print2(&mp_plat_print, ip, 1, CODE_STATE_FUN_BC->child_table, &CODE_STATE_FUN_BC->context->constants);
 #else
 #define TRACE(ip)
 #endif
@@ -102,11 +105,11 @@
 
 #define DECODE_PTR \
     DECODE_UINT; \
-    void *ptr = (void *)(uintptr_t)code_state->fun_bc->child_table[unum]
+    void *ptr = (void *)(uintptr_t)MP_FUN_BC_GET_CHILDREN(CODE_STATE_FUN_BC)[unum]
 
 #define DECODE_OBJ \
     DECODE_UINT; \
-    mp_obj_t obj = (mp_obj_t)code_state->fun_bc->context->constants.obj_table[unum]
+    mp_obj_t obj = (mp_obj_t)CODE_STATE_FUN_BC->context->constants.obj_table[unum]
 
 #define PUSH(val) *++sp = (val)
 #define POP() (*sp--)
@@ -303,7 +306,7 @@ outer_dispatch_loop:
             const byte *ip = code_state->ip;
             mp_obj_t *sp = code_state->sp;
             #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
-            const qstr_short_t *qstr_table = code_state->fun_bc->context->constants.qstr_table;
+            const qstr_short_t *qstr_table = CODE_STATE_FUN_BC->context->constants.qstr_table;
             #endif
             mp_obj_t obj_shared;
             MICROPY_VM_HOOK_INIT
@@ -920,7 +923,7 @@ unwind_jump:;
 
                 ENTRY(MP_BC_MAKE_FUNCTION): {
                     DECODE_PTR;
-                    PUSH(mp_make_function_from_proto_fun(ptr, code_state->fun_bc->context, NULL));
+                    PUSH(mp_make_function_from_proto_fun(ptr, CODE_STATE_FUN_BC->context, NULL));
                     DISPATCH();
                 }
 
@@ -928,7 +931,7 @@ unwind_jump:;
                     DECODE_PTR;
                     // Stack layout: def_tuple def_dict <- TOS
                     sp -= 1;
-                    SET_TOP(mp_make_function_from_proto_fun(ptr, code_state->fun_bc->context, sp));
+                    SET_TOP(mp_make_function_from_proto_fun(ptr, CODE_STATE_FUN_BC->context, sp));
                     DISPATCH();
                 }
 
@@ -937,7 +940,7 @@ unwind_jump:;
                     size_t n_closed_over = *ip++;
                     // Stack layout: closed_overs <- TOS
                     sp -= n_closed_over - 1;
-                    SET_TOP(mp_make_closure_from_proto_fun(ptr, code_state->fun_bc->context, n_closed_over, sp));
+                    SET_TOP(mp_make_closure_from_proto_fun(ptr, CODE_STATE_FUN_BC->context, n_closed_over, sp));
                     DISPATCH();
                 }
 
@@ -946,7 +949,7 @@ unwind_jump:;
                     size_t n_closed_over = *ip++;
                     // Stack layout: def_tuple def_dict closed_overs <- TOS
                     sp -= 2 + n_closed_over - 1;
-                    SET_TOP(mp_make_closure_from_proto_fun(ptr, code_state->fun_bc->context, 0x100 | n_closed_over, sp));
+                    SET_TOP(mp_make_closure_from_proto_fun(ptr, CODE_STATE_FUN_BC->context, 0x100 | n_closed_over, sp));
                     DISPATCH();
                 }
 
@@ -1441,7 +1444,7 @@ unwind_loop:
             if (nlr.ret_val != &mp_const_GeneratorExit_obj
                 && *code_state->ip != MP_BC_END_FINALLY
                 && *code_state->ip != MP_BC_RAISE_LAST) {
-                const byte *ip = code_state->fun_bc->bytecode;
+                const byte *ip = MP_FUN_BC_GET_BYTECODE(CODE_STATE_FUN_BC);
                 MP_BC_PRELUDE_SIG_DECODE(ip);
                 MP_BC_PRELUDE_SIZE_DECODE(ip);
                 const byte *line_info_top = ip + n_info;
@@ -1452,10 +1455,10 @@ unwind_loop:
                     ip = mp_decode_uint_skip(ip);
                 }
                 #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
-                block_name = code_state->fun_bc->context->constants.qstr_table[block_name];
-                qstr source_file = code_state->fun_bc->context->constants.qstr_table[0];
+                block_name = CODE_STATE_FUN_BC->context->constants.qstr_table[block_name];
+                qstr source_file = CODE_STATE_FUN_BC->context->constants.qstr_table[0];
                 #else
-                qstr source_file = code_state->fun_bc->context->constants.source_file;
+                qstr source_file = CODE_STATE_FUN_BC->context->constants.source_file;
                 #endif
                 size_t source_line = mp_bytecode_get_source_line(ip, line_info_top, bc);
                 mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val), source_file, source_line, block_name);

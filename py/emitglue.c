@@ -198,12 +198,9 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     #if MICROPY_MODULE_FROZEN_MPY && !MICROPY_PERSISTENT_CODE_SAVE
     if (mp_proto_fun_is_bytecode(proto_fun)) {
         const uint8_t *bc = proto_fun;
-        mp_obj_t fun = mp_obj_new_fun_bc(def_args, bc, context, NULL);
         MP_BC_PRELUDE_SIG_DECODE(bc);
-        if (scope_flags & MP_SCOPE_FLAG_GENERATOR) {
-            ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
-        }
-        return fun;
+        const mp_obj_type_t *bc_type = (scope_flags & MP_SCOPE_FLAG_GENERATOR ? &mp_type_gen_wrap : &mp_type_fun_bc);
+        return mp_obj_new_fun_py(def_args, proto_fun, context, NULL, bc_type);
     }
     #else
     assert(!mp_proto_fun_is_bytecode(proto_fun));
@@ -217,11 +214,9 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     switch (rc->kind) {
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-            fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
-            // Check for a generator function, and if so change the type of the object
-            if (rc->is_generator) {
-                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
-            }
+            ;
+            const mp_obj_type_t *native_type = (rc->is_generator ? &mp_type_native_gen_wrap : &mp_type_fun_native);
+            fun = mp_obj_new_fun_py(def_args, rc->fun_data, context, rc->children, native_type);
             break;
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_viper(rc->fun_data, context, rc->children);
@@ -235,11 +230,8 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
         default:
             // rc->kind should always be set and BYTECODE is the only remaining case
             assert(rc->kind == MP_CODE_BYTECODE);
-            fun = mp_obj_new_fun_bc(def_args, rc->fun_data, context, rc->children);
-            // check for generator functions and if so change the type of the object
-            if (rc->is_generator) {
-                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
-            }
+            const mp_obj_type_t *bc_type = (rc->is_generator ? &mp_type_gen_wrap : &mp_type_fun_bc);
+            fun = mp_obj_new_fun_py(def_args, rc->fun_data, context, rc->children, bc_type);
 
             #if MICROPY_PY_SYS_SETTRACE
             mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)MP_OBJ_TO_PTR(fun);

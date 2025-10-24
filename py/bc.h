@@ -239,11 +239,11 @@ typedef struct _mp_frozen_module_t {
 
 // State for an executing function.
 typedef struct _mp_code_state_t {
-    // The fun_bc entry points to the underlying function object that is being executed.
+    // The fun_obj entry points to the underlying function object that is being executed.
     // It is needed to access the start of bytecode and the const_table.
     // It is also needed to prevent the GC from reclaiming the bytecode during execution,
     // because the ip pointer below will always point to the interior of the bytecode.
-    struct _mp_obj_fun_bc_t *fun_bc;
+    void *fun_obj;
     const byte *ip;
     mp_obj_t *sp;
     uint16_t n_state;
@@ -264,7 +264,7 @@ typedef struct _mp_code_state_t {
 
 // State for an executing native function (based on mp_code_state_t).
 typedef struct _mp_code_state_native_t {
-    struct _mp_obj_fun_bc_t *fun_bc;
+    void *fun_obj;
     const byte *ip;
     mp_obj_t *sp;
     uint16_t n_state;
