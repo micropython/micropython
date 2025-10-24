@@ -152,6 +152,9 @@
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_WEBSOCKET        (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL          (MICROPY_PY_LWIP)
+#ifndef MICROPY_HW_NETWORK_USBNET
+#define MICROPY_HW_NETWORK_USBNET   (MICROPY_PY_LWIP && MICROPY_HW_TINYUSB_STACK)
+#endif
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
 #endif
@@ -176,6 +179,15 @@
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
+#if MICROPY_HW_USB_MSC && MICROPY_HW_TINYUSB_STACK
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#if defined(STM32N6)
+#define MICROPY_FATFS_MAX_SS           (4096)
+#else
+#define MICROPY_FATFS_MAX_SS           (512)
+#endif
+#endif
 
 #if MICROPY_PY_PYB
 extern const struct _mp_obj_module_t pyb_module;

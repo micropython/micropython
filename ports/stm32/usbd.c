@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018-2019 Damien P. George
+ * Copyright (c) 2025 Andrew Leech
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
-#define MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
 
-#include "lwip/ip_addr.h"
+#include "py/mpconfig.h"
 
-#define DHCPS_BASE_IP (16)
-#define DHCPS_MAX_IP (8)
+#if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_TINYUSB_STACK
 
-typedef struct _dhcp_server_lease_t {
-    uint8_t mac[6];
-    uint16_t expiry;
-} dhcp_server_lease_t;
+#include "mp_usbd.h"
+#include "py/mpconfig.h"
+#include "string.h"
+#include "mphalport.h"
 
-typedef void (*dhcp_client_callback_t)(uint8_t[4], uint8_t[16]);
+void mp_usbd_port_get_serial_number(char *serial_buf) {
+    uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
+    MP_STATIC_ASSERT(sizeof(MP_HAL_UNIQUE_ID_ADDRESS) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
+    mp_usbd_hex_str(serial_buf, id, sizeof(MP_HAL_UNIQUE_ID_ADDRESS));
+}
 
-typedef struct _dhcp_server_t {
-    ip_addr_t ip;
-    ip_addr_t nm;
-    dhcp_server_lease_t lease[DHCPS_MAX_IP];
-    struct udp_pcb *udp;
-    dhcp_client_callback_t on_client_connect;
-} dhcp_server_t;
-
-void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm);
-void dhcp_server_deinit(dhcp_server_t *d);
-void dhcp_server_register_connect_cb(dhcp_server_t *d, dhcp_client_callback_t on_client_connect);
-
-#endif // MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
+#endif

@@ -6,7 +6,9 @@
 #define LWIP_LOOPIF_MULTICAST           1
 #define LWIP_LOOPBACK_MAX_PBUFS         8
 
+#ifndef LWIP_IPV6
 #define LWIP_IPV6                       0
+#endif
 
 #define LWIP_RAND() rng_get()
 

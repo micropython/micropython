@@ -26,7 +26,9 @@
 #ifndef MICROPY_INCLUDED_STM32_USB_H
 #define MICROPY_INCLUDED_STM32_USB_H
 
+#if MICROPY_HW_STM_USB_STACK
 #include "usbd_cdc_msc_hid0.h"
+#endif
 
 #define PYB_USB_FLAG_USB_MODE_CALLED    (0x0002)
 
@@ -41,10 +43,16 @@ typedef enum {
     USB_PHY_HS_ID = 1,
 } USB_PHY_ID;
 
+// Storage medium variable used by both USB stacks when MSC is enabled
+#if MICROPY_HW_USB_MSC
+extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
+#endif
+
+#if MICROPY_HW_STM_USB_STACK
+
 typedef struct _pyb_usb_vcp_obj_t pyb_usb_vcp_obj_t;
 
 extern mp_uint_t pyb_usb_flags;
-extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
 extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_mouse_obj;
 extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_keyboard_obj;
 extern const mp_obj_type_t pyb_usb_vcp_type;
@@ -66,5 +74,6 @@ void usb_vcp_attach_to_repl(const pyb_usb_vcp_obj_t *self, bool attached);
 void pyb_usb_host_init(void);
 void pyb_usb_host_process(void);
 uint pyb_usb_host_get_keyboard(void);
+#endif
 
 #endif // MICROPY_INCLUDED_STM32_USB_H
