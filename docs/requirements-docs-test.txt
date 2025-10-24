@@ -1,0 +1,7 @@
+# requirements for the documentation tests
+# TODO: Move to pyproject.toml ( uv pip install) 
+
+-r requirements.txt
+
+mpremote>=1.26.1
+sybil[pytest]

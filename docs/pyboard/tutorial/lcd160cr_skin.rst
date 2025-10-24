@@ -45,6 +45,7 @@ LCD.  This test program is available on GitHub
 Copy it to the board over USB mass storage, or by using :ref:`mpremote`.
 
 To run the test from the MicroPython prompt do::
+.. skip: start
 
     >>> import lcd160cr_test
 
@@ -74,7 +75,9 @@ To erase the screen and draw a line, try::
 
 The next example draws random rectangles on the screen.  You can copy-and-paste it
 into the MicroPython prompt by first pressing "Ctrl-E" at the prompt, then "Ctrl-D"
-once you have pasted the text. ::
+once you have pasted the text. :
+
+.. code-block:: python
 
     from random import randint
     for i in range(1000):
@@ -132,3 +135,5 @@ is for the display to have power, ground and the power/enable pin driven high.
 Then any characters on the display's UART input will be printed to the screen.
 You can adjust the UART baudrate from the default of 115200 using the
 `set_uart_baudrate` method.
+
+.. skip: end
