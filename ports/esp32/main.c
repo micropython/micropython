@@ -212,6 +212,7 @@ soft_reset_exit:
     mp_machine_i2c_target_deinit_all();
     #endif
     machine_deinit();
+    network_wlan_deinit();
 
     #if MICROPY_PY_SOCKET_EVENTS
     socket_events_deinit();
