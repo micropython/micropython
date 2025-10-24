@@ -540,9 +540,13 @@ typedef uint64_t mp_uint_t;
 #endif
 
 // Whether the compiler is dynamically configurable (ie at runtime)
-// This will disable the ability to execute native/viper code
 #ifndef MICROPY_DYNAMIC_COMPILER
 #define MICROPY_DYNAMIC_COMPILER (0)
+#endif
+
+// This will disable the ability to execute native/viper code
+#ifndef MICROPY_NO_RUNTIME
+#define MICROPY_NO_RUNTIME (0)
 #endif
 
 // Whether the compiler allows compiling top-level await expressions
@@ -1923,6 +1927,10 @@ typedef time_t mp_timestamp_t;
 
 #ifndef MICROPY_PY_OS_STATVFS
 #define MICROPY_PY_OS_STATVFS (MICROPY_PY_OS)
+#endif
+
+#ifndef MICROPY_PY_MPYCROSS
+#define MICROPY_PY_MPYCROSS (0)
 #endif
 
 #ifndef MICROPY_PY_RE
