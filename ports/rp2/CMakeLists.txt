@@ -97,6 +97,11 @@ project(${MICROPY_TARGET})
 
 pico_sdk_init()
 
+# Ensure command-line FROZEN_MANIFEST takes precedence over board config.
+if (MICROPY_USER_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
+endif()
+
 include(${MICROPY_DIR}/py/usermod.cmake)
 
 add_executable(${MICROPY_TARGET})
