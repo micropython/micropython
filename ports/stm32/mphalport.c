@@ -90,7 +90,7 @@ void mp_hal_ticks_cpu_enable(void) {
 #endif
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
-    #if defined(STM32L476xx) || defined(STM32L496xx)
+    #if defined(STM32L476xx) || defined(STM32L496xx) || defined(STM32U5)
     if (gpio == GPIOG) {
         // Port G pins 2 thru 15 are powered using VddIO2 on these MCUs.
         HAL_PWREx_EnableVddIO2();
@@ -117,6 +117,9 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     #define AHBxENR AHB2ENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
+    #elif defined(STM32U5)
+    #define AHBxENR AHB2ENR1
+    #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR1_GPIOAEN_Pos
     #endif
 
     uint32_t gpio_idx = ((uint32_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
