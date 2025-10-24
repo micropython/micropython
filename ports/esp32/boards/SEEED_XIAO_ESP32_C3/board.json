@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "WiFi"
+    ],
+    "images": [
+        "xiao_esp32c3-font.jpg"
+    ],
+    "mcu": "esp32c3",
+    "product": "XIAO ESP32C3",
+    "thumbnail": "",
+    "url": "https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
+    "vendor": "Seeed Studio"
+}
