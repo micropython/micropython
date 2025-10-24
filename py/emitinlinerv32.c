@@ -196,7 +196,6 @@ typedef enum {
     CALL_R,   // Opcode Register
     CALL_RL,  // Opcode Register, Label
     CALL_N,   // Opcode
-    CALL_I,   // Opcode Immediate
     CALL_RII, // Opcode Register, Register, Immediate
     CALL_RIR, // Opcode Register, Immediate(Register)
     CALL_COUNT
@@ -216,7 +215,6 @@ typedef void (*call_rri_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_in
 typedef void (*call_rii_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t immediate1, mp_int_t immediate2);
 typedef void (*call_rrr_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2);
 typedef void (*call_rr_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs);
-typedef void (*call_i_t)(asm_rv32_t *state, mp_int_t immediate);
 typedef void (*call_r_t)(asm_rv32_t *state, mp_uint_t rd);
 typedef void (*call_n_t)(asm_rv32_t *state);
 
@@ -505,7 +503,7 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
                 return false;
             }
 
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << shift;
             if (kind & U) {
                 if (!is_in_unsigned_mask(mask, immediate)) {
                     goto out_of_range;
@@ -664,7 +662,7 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             parse_register_node(arguments[1], &rs1, opcode_data->argument2_kind & C);
             mp_obj_t object;
             mp_parse_node_get_int_maybe(arguments[2], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument3_shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << opcode_data->argument3_shift;
             ((call_rri_t)opcode_data->emitter)(&emit->as, rd, rs1, immediate);
             break;
         }
@@ -673,7 +671,7 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
             mp_obj_t object;
             mp_parse_node_get_int_maybe(arguments[1], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument2_shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << opcode_data->argument2_shift;
             ((call_ri_t)opcode_data->emitter)(&emit->as, rd, immediate);
             break;
         }
@@ -707,21 +705,13 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             qstr qstring;
             mp_uint_t label_index = lookup_label(emit, arguments[0], &qstring);
             ptrdiff_t displacement = label_code_offset(emit, label_index);
-            ((call_i_t)opcode_data->emitter)(&emit->as, displacement);
+            ((call_l_t)opcode_data->emitter)(&emit->as, displacement);
             break;
         }
 
         case CALL_N:
             ((call_n_t)opcode_data->emitter)(&emit->as);
             break;
-
-        case CALL_I: {
-            mp_obj_t object;
-            mp_parse_node_get_int_maybe(arguments[0], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument1_shift;
-            ((call_i_t)opcode_data->emitter)(&emit->as, immediate);
-            break;
-        }
 
         case CALL_RII: {
             parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
