@@ -30,49 +30,65 @@
  * THE SOFTWARE.
  */
 
+// This implementation is adapted from here:
+// https://github.com/PaulStoffregen/cores/blob/10025393e83ca9f4dc5646643a41cb2f32022ae4/teensy4/startup.c#L421-L615
 #include "py/mphal.h"
 #include "fsl_flexspi.h"
 
 #if MICROPY_HW_ENABLE_PSRAM
 
-// These #defines are from here:
-// https://github.com/PaulStoffregen/cores/blob/10025393e83ca9f4dc5646643a41cb2f32022ae4/teensy4/imxrt.h
-#define FLEXSPI_MCR2_CLRLEARNPHASE(x)           ((uint32_t)(x << 14))
-#define FLEXSPI_LUTKEY_VALUE                    ((uint32_t)0x5AF05AF0)
+/*!
+ * @brief Clock divider value.
+ *
+ * See https://www.pjrc.com/teensy/IMXRT1060RM_rev3_annotations.pdf (p1010 and p1050)
+ */
+typedef enum _clock_mux_value {
+    kCLOCK_Flexspi2Mux_396MHz = 0U, /*!< FLEXSPI2 clock source is PLL2 PFD2. */
+    kCLOCK_Flexspi2Mux_720MHz = 1U, /*!< FLEXSPI2 clock source is PLL3 PFD0. */
+    kCLOCK_Flexspi2Mux_664_62MHz = 2U, /*!< FLEXSPI2 clock source is PLL3 PFD1. */
+    kCLOCK_Flexspi2Mux_528MHz = 3U, /*!< FLEXSPI2 clock source is PLL2 (pll2_main_clk). */
+} clock_mux_value_t;
 
-// The rest of the implementation is adapted from here:
-// https://github.com/PaulStoffregen/cores/blob/10025393e83ca9f4dc5646643a41cb2f32022ae4/teensy4/startup.c#L421-L615
-static void flexspi2_command(uint32_t index, uint32_t addr) {
-    FLEXSPI2->IPCR0 = addr;
-    FLEXSPI2->IPCR1 = FLEXSPI_IPCR1_ISEQID(index);
-    FLEXSPI2->IPCMD = FLEXSPI_IPCMD_TRG(1);
-    while (!(FLEXSPI2->INTR & FLEXSPI_INTR_IPCMDDONE(1))) {
-        ;                                                      // wait
-    }
-    FLEXSPI2->INTR = FLEXSPI_INTR_IPCMDDONE(1);
+static void flexspi2_command(uint32_t index, uint32_t addr, flexspi_port_t port) {
+    flexspi_transfer_t xfer = {
+        .deviceAddress = addr,
+        .port = port,
+        .cmdType = kFLEXSPI_Command,
+        .seqIndex = index,
+        .SeqNumber = 1,
+        .data = NULL,
+        .dataSize = 0,
+    };
+    FLEXSPI_TransferBlocking(FLEXSPI2, &xfer);
+    FLEXSPI_ClearInterruptStatusFlags(FLEXSPI2, kFLEXSPI_IpCommandExecutionDoneFlag);
 }
 
-static uint32_t flexspi2_psram_id(uint32_t addr) {
-    FLEXSPI2->IPCR0 = addr;
-    FLEXSPI2->IPCR1 = FLEXSPI_IPCR1_ISEQID(3) | FLEXSPI_IPCR1_IDATSZ(4);
-    FLEXSPI2->IPCMD = FLEXSPI_IPCMD_TRG(1);
-    while (!(FLEXSPI2->INTR & FLEXSPI_INTR_IPCMDDONE(1))) {
-        ;                                                      // wait
-    }
-    uint32_t id = FLEXSPI2->RFDR[0];
-    FLEXSPI2->INTR = FLEXSPI_INTR_IPCMDDONE(1) | FLEXSPI_INTR_IPRXWA(1);
+static uint32_t flexspi2_psram_id(uint32_t addr, flexspi_port_t port) {
+    uint32_t id = 0;
+    flexspi_transfer_t xfer = {
+        .deviceAddress = addr,
+        .port = port,
+        .cmdType = kFLEXSPI_Read,
+        .seqIndex = 3,
+        .SeqNumber = 1,
+        .data = &id,
+        .dataSize = 4,
+    };
+    FLEXSPI_TransferBlocking(FLEXSPI2, &xfer);
+    FLEXSPI_ClearInterruptStatusFlags(FLEXSPI2,
+        kFLEXSPI_IpCommandExecutionDoneFlag | kFLEXSPI_IpRxFifoWatermarkAvailableFlag);
     return id;
 }
 
 /**
  * \return size of PSRAM in MBytes, or 0 if not present
  */
-static uint8_t flexspi2_psram_size(uint32_t addr) {
+static uint8_t flexspi2_psram_size(uint32_t addr, flexspi_port_t port) {
     uint8_t result = 0;     // assume we don't have PSRAM at this address
-    flexspi2_command(0, addr);     // exit quad mode
-    flexspi2_command(1, addr);     // reset enable
-    flexspi2_command(2, addr);     // reset (is this really necessary?)
-    uint32_t id = flexspi2_psram_id(addr);
+    flexspi2_command(0, addr, port);     // exit quad mode
+    flexspi2_command(1, addr, port);     // reset enable
+    flexspi2_command(2, addr, port);     // reset (is this really necessary?)
+    uint32_t id = flexspi2_psram_id(addr, port);
 
     switch (id & 0xFFFF)
     {
@@ -127,116 +143,120 @@ size_t configure_external_ram() {
     IOMUXC->SELECT_INPUT_1[kIOMUXC_FLEXSPI2_IPP_IND_SCK_FA_SELECT_INPUT] = 1;     // GPIO_EMC_25 for Mode: ALT8
 
     // turn on clock  (QSPI flash & PSRAM chips usually spec max clock 100 to 133 MHz)
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 5); // 88.0 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 88.0 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 3); // 99.0 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 0); // 99.0 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 6); // 102.9 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 1); // 102.9 MHz
-    CLOCK_SetDiv(kCLOCK_Flexspi2Div, 4); // 105.6 MHz
-    CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 105.6 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 5); // 110.8 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 2); // 110.8 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 5); // 120.0 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 1); // 120.0 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 3); // 132.0 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 132.0 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 4); // 144.0 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 1); // 144.0 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 3); // 166.2 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 2); // 166.2 MHz
-    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, 2); // 176.0 MHz
-    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, 3); // 176.0 MHz
-    CLOCK_EnableClock(kCLOCK_FlexSpi2);
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy6); // 88.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_528MHz); // 88.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy4); // 99.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_396MHz); // 99.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy7); // 102.9 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_720MHz); // 102.9 MHz
+    CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy5); // 105.6 MHz
+    CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_528MHz); // 105.6 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy6); // 110.8 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_664_62MHz); // 110.8 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy6); // 120.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_720MHz); // 120.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy4); // 132.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_528MHz); // 132.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy5); // 144.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_720MHz); // 144.0 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy4); // 166.2 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_664_62MHz); // 166.2 MHz
+    // CLOCK_SetDiv(kCLOCK_Flexspi2Div, kCLOCK_Flexspi2DivBy3); // 176.0 MHz
+    // CLOCK_SetMux(kCLOCK_Flexspi2Mux, kCLOCK_Flexspi2Mux_528MHz); // 176.0 MHz
 
-    FLEXSPI2->MCR0 |= FLEXSPI_MCR0_MDIS(1);
-    FLEXSPI2->MCR0 = (FLEXSPI2->MCR0 & ~(FLEXSPI_MCR0_AHBGRANTWAIT_MASK
-        | FLEXSPI_MCR0_IPGRANTWAIT_MASK | FLEXSPI_MCR0_SCKFREERUNEN(1)
-        | FLEXSPI_MCR0_COMBINATIONEN(1) | FLEXSPI_MCR0_DOZEEN(1)
-        | FLEXSPI_MCR0_HSEN(1) | FLEXSPI_MCR0_ATDFEN(1) | FLEXSPI_MCR0_ARDFEN(1)
-        | FLEXSPI_MCR0_RXCLKSRC_MASK | FLEXSPI_MCR0_SWRESET(1)))
-        | FLEXSPI_MCR0_AHBGRANTWAIT(0xFF) | FLEXSPI_MCR0_IPGRANTWAIT(0xFF)
-        | FLEXSPI_MCR0_RXCLKSRC(1) | FLEXSPI_MCR0_MDIS(1);
-    FLEXSPI2->MCR1 = FLEXSPI_MCR1_SEQWAIT(0xFFFF) | FLEXSPI_MCR1_AHBBUSWAIT(0xFFFF);
-    FLEXSPI2->MCR2 = (FLEXSPI->MCR2 & ~(FLEXSPI_MCR2_RESUMEWAIT_MASK
-        | FLEXSPI_MCR2_SCKBDIFFOPT(1) | FLEXSPI_MCR2_SAMEDEVICEEN(1)
-        | FLEXSPI_MCR2_CLRLEARNPHASE(1) | FLEXSPI_MCR2_CLRAHBBUFOPT(1)))
-        | FLEXSPI_MCR2_RESUMEWAIT(0x20) /*| FLEXSPI_MCR2_SAMEDEVICEEN*/;
+    flexspi_config_t flexspi_config = {
+        .rxSampleClock = kFLEXSPI_ReadSampleClkLoopbackFromDqsPad,
+        .enableSckFreeRunning = false,
+        .enableCombination = false,
+        .enableDoze = false,
+        .enableHalfSpeedAccess = false,
+        .enableSckBDiffOpt = false,
+        .enableSameConfigForAll = false,
+        .seqTimeoutCycle = 0xFFFF,
+        .ipGrantTimeoutCycle = 0xFF,
+        .txWatermark = 0,
+        .rxWatermark = 0,
+        .ahbConfig = {
+            .enableAHBWriteIpTxFifo = false,
+            .enableAHBWriteIpRxFifo = false,
+            .ahbGrantTimeoutCycle = 0xFF,
+            .ahbBusTimeoutCycle = 0xFFFF,
+            .resumeWaitCycle = 0x20,
+            .buffer = {
+                {.priority = 0, .masterIndex = 0, .bufferSize = 512, .enablePrefetch = true},
+                {.priority = 0, .masterIndex = 0, .bufferSize = 512, .enablePrefetch = true},
+                {.priority = 0, .masterIndex = 0, .bufferSize = 0, .enablePrefetch = false},
+                {.priority = 0, .masterIndex = 0, .bufferSize = 0, .enablePrefetch = false},
+            },
+            .enableClearAHBBufferOpt = false,
+            .enableReadAddressOpt = false,
+            .enableAHBPrefetch = false,
+            .enableAHBBufferable = false,
+            .enableAHBCachable = false,
+        },
+    };
+    FLEXSPI_Init(FLEXSPI2, &flexspi_config);
 
-    FLEXSPI2->AHBCR = FLEXSPI2->AHBCR & ~(FLEXSPI_AHBCR_READADDROPT(1) | FLEXSPI_AHBCR_PREFETCHEN(1)
-        | FLEXSPI_AHBCR_BUFFERABLEEN(1) | FLEXSPI_AHBCR_CACHABLEEN(1));
-    uint32_t mask = (FLEXSPI_AHBRXBUFCR0_PREFETCHEN(1) | FLEXSPI_AHBRXBUFCR0_PRIORITY_MASK
-        | FLEXSPI_AHBRXBUFCR0_MSTRID_MASK | FLEXSPI_AHBRXBUFCR0_BUFSZ_MASK);
-    FLEXSPI2->AHBRXBUFCR0[0] = (FLEXSPI2->AHBRXBUFCR0[0] & ~mask)
-        | FLEXSPI_AHBRXBUFCR0_PREFETCHEN(1) | FLEXSPI_AHBRXBUFCR0_BUFSZ(64);
-    FLEXSPI2->AHBRXBUFCR0[1] = (FLEXSPI2->AHBRXBUFCR0[0] & ~mask)
-        | FLEXSPI_AHBRXBUFCR0_PREFETCHEN(1) | FLEXSPI_AHBRXBUFCR0_BUFSZ(64);
-    FLEXSPI2->AHBRXBUFCR0[2] = mask;
-    FLEXSPI2->AHBRXBUFCR0[3] = mask;
+    FLEXSPI_DisableInterrupts(FLEXSPI2, kFLEXSPI_AllInterruptFlags);
 
-    // RX watermark = one 64 bit line
-    FLEXSPI2->IPRXFCR = (FLEXSPI->IPRXFCR & 0xFFFFFFC0) | FLEXSPI_IPRXFCR_CLRIPRXF(1);
-    // TX watermark = one 64 bit line
-    FLEXSPI2->IPTXFCR = (FLEXSPI->IPTXFCR & 0xFFFFFFC0) | FLEXSPI_IPTXFCR_CLRIPTXF(1);
+    flexspi_device_config_t flexspi_device_config = {
+        .flexspiRootClk = 0,
+        .isSck2Enabled = false,
+        .flashSize = 1 << 16, // Default value, will be updated later
+            .CSIntervalUnit = kFLEXSPI_CsIntervalUnit1SckCycle,
+            .CSInterval = 0,
+            .CSHoldTime = 1,
+            .CSSetupTime = 1,
+            .dataValidTime = 0,
+            .columnspace = 0,
+            .enableWordAddress = false,
+            .AWRSeqIndex = 6,
+            .AWRSeqNumber = 1,
+            .ARDSeqIndex = 5,
+            .ARDSeqNumber = 1,
+            .AHBWriteWaitUnit = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
+            .AHBWriteWaitInterval = 0,
+            .enableWriteMask = false,
+    };
+    FLEXSPI_SetFlashConfig(FLEXSPI2, &flexspi_device_config, kFLEXSPI_PortA1);
+    FLEXSPI_SetFlashConfig(FLEXSPI2, &flexspi_device_config, kFLEXSPI_PortA2);
 
-    FLEXSPI2->INTEN = 0;
-    FLEXSPI2->FLSHCR1[0] = FLEXSPI_FLSHCR1_CSINTERVAL(0)
-        | FLEXSPI_FLSHCR1_TCSH(1) | FLEXSPI_FLSHCR1_TCSS(1);
-    FLEXSPI2->FLSHCR2[0] = FLEXSPI_FLSHCR2_AWRSEQID(6) | FLEXSPI_FLSHCR2_AWRSEQNUM(0)
-        | FLEXSPI_FLSHCR2_ARDSEQID(5) | FLEXSPI_FLSHCR2_ARDSEQNUM(0);
-
-    FLEXSPI2->FLSHCR1[1] = FLEXSPI_FLSHCR1_CSINTERVAL(0)
-        | FLEXSPI_FLSHCR1_TCSH(1) | FLEXSPI_FLSHCR1_TCSS(1);
-    FLEXSPI2->FLSHCR2[1] = FLEXSPI_FLSHCR2_AWRSEQID(6) | FLEXSPI_FLSHCR2_AWRSEQNUM(0)
-        | FLEXSPI_FLSHCR2_ARDSEQID(5) | FLEXSPI_FLSHCR2_ARDSEQNUM(0);
-
-    FLEXSPI2->MCR0 &= ~FLEXSPI_MCR0_MDIS(1);
-
-    FLEXSPI2->LUTKEY = FLEXSPI_LUTKEY_VALUE;
-    FLEXSPI2->LUTCR = FLEXSPI_LUTCR_UNLOCK(1);
-    volatile uint32_t *luttable = &FLEXSPI2->LUT[0];
-    for (int i = 0; i < 64; i++) { luttable[i] = 0;
-    }
-    FLEXSPI2->MCR0 |= FLEXSPI_MCR0_SWRESET(1);
-    while (FLEXSPI2->MCR0 & FLEXSPI_MCR0_SWRESET(1)) {
-        ;                                                  // wait
-
-    }
-    FLEXSPI2->LUTKEY = FLEXSPI_LUTKEY_VALUE;
-    FLEXSPI2->LUTCR = FLEXSPI_LUTCR_UNLOCK(1);
-
+    uint32_t cmd[64] = {0};
     // cmd index 0 = exit QPI mode
-    FLEXSPI2->LUT[0] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_4PAD, 0xF5, 0, 0, 0);
+    cmd[0] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_4PAD, 0xF5, 0, 0, 0);
     // cmd index 1 = reset enable
-    FLEXSPI2->LUT[4] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x66, 0, 0, 0);
+    cmd[4] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x66, 0, 0, 0);
     // cmd index 2 = reset
-    FLEXSPI2->LUT[8] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x99, 0, 0, 0);
+    cmd[8] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x99, 0, 0, 0);
     // cmd index 3 = read ID bytes
-    FLEXSPI2->LUT[12] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x9F, kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 24);
-    FLEXSPI2->LUT[13] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 1, 0, 0, 0);
+    cmd[12] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x9F, kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 24);
+    cmd[13] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 1, 0, 0, 0);
     // cmd index 4 = enter QPI mode
-    FLEXSPI2->LUT[16] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x35, 0, 0, 0);
+    cmd[16] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x35, 0, 0, 0);
     // cmd index 5 = read QPI
-    FLEXSPI2->LUT[20] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_4PAD, 0xEB, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 24);
-    FLEXSPI2->LUT[21] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_4PAD, 6, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 1);
+    cmd[20] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_4PAD, 0xEB, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 24);
+    cmd[21] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_4PAD, 6, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 1);
     // cmd index 6 = write QPI
-    FLEXSPI2->LUT[24] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_4PAD, 0x38, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 24);
-    FLEXSPI2->LUT[25] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_4PAD, 1, 0, 0, 0);
+    cmd[24] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_4PAD, 0x38, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 24);
+    cmd[25] = FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_4PAD, 1, 0, 0, 0);
+    FLEXSPI_UpdateLUT(FLEXSPI2, 0, cmd, 64);
 
     // Detected PSRAM size in MB
     uint8_t external_psram_size = 0;
 
     // look for the first PSRAM chip
-    uint8_t size1 = flexspi2_psram_size(0);
+    uint8_t size1 = flexspi2_psram_size(0, kFLEXSPI_PortA1);
     if (size1 > 0) {
-        FLEXSPI2->FLSHCR0[0] = size1 << 10;
-        flexspi2_command(4, 0);         // enter QPI mode
+        flexspi_device_config.flashSize = size1 << 10;
+        FLEXSPI_SetFlashConfig(FLEXSPI2, &flexspi_device_config, kFLEXSPI_PortA1);
+        flexspi2_command(4, 0, kFLEXSPI_PortA1);         // enter QPI mode
         // look for a second PSRAM chip
-        uint8_t size2 = flexspi2_psram_size(size1 << 20);
+        uint8_t size2 = flexspi2_psram_size(size1 << 20, kFLEXSPI_PortA2);
         external_psram_size = size1 + size2;
         if (size2 > 0) {
-            FLEXSPI2->FLSHCR0[1] = size2 << 10;
-            flexspi2_command(4, size1 << 20);              // enter QPI mode
+            flexspi_device_config.flashSize = size2 << 10;
+            FLEXSPI_SetFlashConfig(FLEXSPI2, &flexspi_device_config, kFLEXSPI_PortA2);
+            flexspi2_command(4, size1 << 20, kFLEXSPI_PortA2);              // enter QPI mode
         }
     } else {
         // No PSRAM
