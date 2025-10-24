@@ -429,6 +429,7 @@ static const mp_stream_p_t ssl_socket_stream_p = {
     .read = ssl_socket_read,
     .write = ssl_socket_write,
     .ioctl = ssl_socket_ioctl,
+    .raise = ssl_raise_error,
 };
 
 static MP_DEFINE_CONST_OBJ_TYPE(
