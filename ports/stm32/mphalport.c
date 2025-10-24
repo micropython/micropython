@@ -90,7 +90,8 @@ void mp_hal_ticks_cpu_enable(void) {
 #endif
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
-    #if defined(STM32L476xx) || defined(STM32L496xx)
+    #if defined(STM32L471xx) || defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L486xx) || \
+    defined(STM32L496xx) || defined(STM32L4A6xx)
     if (gpio == GPIOG) {
         // Port G pins 2 thru 15 are powered using VddIO2 on these MCUs.
         HAL_PWREx_EnableVddIO2();

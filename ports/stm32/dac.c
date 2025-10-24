@@ -133,7 +133,7 @@ static void dac_deinit(uint32_t dac_channel) {
 
 void dac_deinit_all(void) {
     dac_deinit(DAC_CHANNEL_1);
-    #if !defined(STM32L452xx)
+    #if !defined(STM32L451xx) && !defined(STM32L452xx) && !defined(STM32L462xx)
     dac_deinit(DAC_CHANNEL_2);
     #endif
 }
@@ -155,7 +155,7 @@ static void dac_set_value(uint32_t dac_channel, uint32_t align, uint32_t value) 
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
-    #if !defined(STM32L452xx)
+    #if !defined(STM32L451xx) && !defined(STM32L452xx) && !defined(STM32L462xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
     #endif
@@ -192,7 +192,7 @@ static void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
-    #if !defined(STM32L452xx)
+    #if !defined(STM32L451xx) && !defined(STM32L452xx) && !defined(STM32L462xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
     #endif
@@ -225,7 +225,7 @@ static void pyb_dac_reconfigure(pyb_dac_obj_t *self, uint32_t cr, uint32_t outbu
         const dma_descr_t *tx_dma_descr;
         if (self->dac_channel == DAC_CHANNEL_1) {
             tx_dma_descr = &dma_DAC_1_TX;
-        #if !defined(STM32L452xx)
+        #if !defined(STM32L451xx) && !defined(STM32L452xx) && !defined(STM32L462xx)
         } else {
             tx_dma_descr = &dma_DAC_2_TX;
         #endif
@@ -261,7 +261,7 @@ static mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_hal_pin_obj_t pin;
     if (self->dac_channel == DAC_CHANNEL_1) {
         pin = pin_A4;
-    #if !defined(STM32L452xx)
+    #if !defined(STM32L451xx) && !defined(STM32L452xx) && !defined(STM32L462xx)
     } else {
         pin = pin_A5;
     #endif
@@ -337,7 +337,7 @@ static mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
     uint32_t dac_channel;
     if (dac_id == 1) {
         dac_channel = DAC_CHANNEL_1;
-    #if !defined(STM32L452xx)
+    #if !defined(STM32L451xx) && !defined(STM32L452xx) && !defined(STM32L462xx)
     } else if (dac_id == 2) {
         dac_channel = DAC_CHANNEL_2;
     #endif
@@ -479,7 +479,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     const dma_descr_t *tx_dma_descr;
     if (self->dac_channel == DAC_CHANNEL_1) {
         tx_dma_descr = &dma_DAC_1_TX;
-    #if !defined(STM32L452xx)
+    #if !defined(STM32L451xx) && !defined(STM32L452xx) && !defined(STM32L462xx)
     } else {
         tx_dma_descr = &dma_DAC_2_TX;
     #endif

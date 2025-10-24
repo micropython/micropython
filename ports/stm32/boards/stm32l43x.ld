@@ -1,12 +1,15 @@
 /*
-    GNU linker script for STM32L432KC
+    GNU linker script for STM32L431xC STM32L432KC STM32L433xC STM32L442KC STM32L443xC.
+    FLASH has 2K blocks, RAM 64K.
+    The MCU flash and file system size are defined for each board in mpconfigboard.mk.
 */
 
-/* Specify the memory areas */
+/* Specify the memory areas. */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 230K /* sectors 0-114 */
-    FLASH_FS (r)    : ORIGIN = 0x08039800, LENGTH = 26K /* sectors 115-127 */
+    MCU_FLASH (rx)  : ORIGIN = 0x08000000,  LENGTH = MICROPY_HW_MCU_FLASH_SIZE
+    FLASH (rx)      : ORIGIN = ORIGIN(MCU_FLASH), LENGTH = LENGTH(MCU_FLASH) - MICROPY_HW_FS_SIZE
+    FLASH_FS (r)    : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH), LENGTH = MICROPY_HW_FS_SIZE
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 64K /* SRAM1, 48K + SRAM2, 16K */
 }
 

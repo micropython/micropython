@@ -687,10 +687,10 @@
 #define MICROPY_HW_SDMMC2_CK (1)
 #endif
 
-// Whether the USB peripheral is device-only, or multiple OTG
+// Whether the USB peripheral is device-only, or multiple OTG.
 // For STM32G0 and STM32H5 the USB peripheral supports device and host mode,
 // but otherwise acts like a non-multi-OTG peripheral.
-#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L1) || defined(STM32L432xx) || defined(STM32L452xx) || defined(STM32WB)
+#if defined(USB_BASE) || defined(USB_DRD_FS)
 #define MICROPY_HW_USB_IS_MULTI_OTG (0)
 #else
 #define MICROPY_HW_USB_IS_MULTI_OTG (1)
