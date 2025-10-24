@@ -1,0 +1,18 @@
+ops1: [array('H', [8201, 8375, 8385, 12, 16402, 16441, 16479, 16482, 16602, 16638, 51, 64, 24600, 24619, 24665, 24689, 24793, 24801, 4, 32800, 32800, 32768, 32864, 32864, 32832, 96, 140]), -1, -1, -1, 106496, 0, None, None, None]
+ops2: [array('H', [32928, 32928, 32896, 32992, 32992, 32960, 176, 40962, 41016, 41037, 41094, 41143, 41160, 41185, 41026, 245, 49155, 49168, 49191, 49233, 199, 57353, 57378, 57438, 57483]), -1, -1, -1, 82816, 0, None, None, None]
+side1: [array('H', [28471, 2176, 42481]), -1, -1, -1, 8192, 0, None, None, [2, 2, 2]]
+side2: overflow correctly detected
+side3: overflow correctly detected
+init1: [array('H', [41026]), -1, -1, -1, 0, 0, [3, 3, 3, 3, 3, 3, 3], [3, 2, 3, 2], None]
+init2: [array('H', [41026]), -1, -1, -1, 0, 0, [2, 3, 2, 3, 2, 3], [2, 2, 2, 2, 2], None]
+pindir1: [array('H', [41026]), -1, -1, -1, 536870912, 0, None, None, None]
+pindir2: [array('H', [41026]), -1, -1, -1, 0, 0, None, None, None]
+autopush1: [array('H', [41026]), -1, -1, -1, 0, 24182784, None, None, None]
+autopush2: [array('H', [41026]), -1, -1, -1, 0, 5242880, None, None, None]
+autopull1: [array('H', [41026]), -1, -1, -1, 0, 436338688, None, None, None]
+autopull2: [array('H', [41026]), -1, -1, -1, 0, 1040187392, None, None, None]
+shiftdir1: [array('H', [41026]), -1, -1, -1, 0, 524288, None, None, None]
+shiftdir2: [array('H', [41026]), -1, -1, -1, 0, 262144, None, None, None]
+join1: [array('H', [41026]), -1, -1, -1, 0, 2147483648, None, None, None]
+join2: [array('H', [41026]), -1, -1, -1, 0, 1073741824, None, None, None]
+join3: [array('H', [41026]), -1, -1, -1, 0, 0, None, None, None]
