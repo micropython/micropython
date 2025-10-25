@@ -67,10 +67,6 @@ Function call: expr=pair(1, 2), value=(1, 2)
 Default arg colon: expr=pair(3), value=(3, ':')
 Nested brackets: expr=matrix[0][1], value=2
 
-=== repr tests ===
-Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
-Interp repr: Interpolation(42, 'x', 's', ':>10')
-
 === Additional coverage tests ===
 String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
 Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
@@ -86,17 +82,6 @@ Empty concat: 'Template(strings=('test', ''), interpolations=(Interpolation(42, 
 Self interp concat: values=(1, 1)
 Lonely string: SyntaxError
 Empty t-string: 'Template(strings=('',), interpolations=())'
-
-=== Unicode edge cases ===
-Emoji: True
-Combining: True
-Zero-width: True
-Unicode format: True
-
-=== Nested template strings ===
-Nested: Template
-Expression: Template
-Function: Template
 
 === Inline template literal tests ===
 Empty nested: Template
@@ -124,9 +109,6 @@ Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(
 === Expression parser tests ===
 Complex expr: OK
 
-=== Format spec position tests ===
-Conv before fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
-
 === Parser MemoryError ===
 Parser MemoryError: MemoryError
 
@@ -139,33 +121,9 @@ Full format: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 
 === Debug format edge cases ===
 Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
 
-=== Raw t-string escape tests ===
-Raw escapes: 'Template(strings=('\\x41\\u0042\\n\\t',), interpolations=())'
-
-=== Interpolation attribute access ===
-Value attr: test_value
-Expression attr: test_expr
-Conversion attr: s
-Format spec attr: :>10
-
-=== Template string concatenation ===
-Concatenated strings: ('part1part2part3part4part5',)
-
-=== Template interpolations attribute ===
-Interpolations attr: (Interpolation('World', 'name', None, ''), Interpolation('Python', 'place', None, ''))
-
-=== Escaped quotes in literals ===
-Escaped quotes: OK
-
-=== Backslash handling ===
-Backslash in path: OK
-
 === Parser allocation edge cases ===
 Deep nesting: OK
 Very long expression: OK
-
-=== Complex expression parsing ===
-Dict comprehension: OK
 
 === Additional parser regression tests ===
 Raw nested spec: "QUOTED"
@@ -207,25 +165,6 @@ Octal high bytes: OK, len=3
 Debug basic: strings=('value=', ''), conv=r
 Debug !s: strings=('value=', ''), conv=s
 Debug fmt: strings=('value=', ''), fmt_spec='>10'
-
-=== Format spec with nested interpolation ===
-Nested fmt spec: '10'
-
-=== Conversion types ===
-Conversion r: OK
-Conversion s: OK
-Conversion a: OK
-
-=== Raw template strings ===
-rt prefix: 'Raw\n'
-tr prefix: 'Raw\t'
-
-=== Template concatenation ===
-Explicit concat: strings=('Hello ', ''), values=('World',)
-Implicit concat: strings=('Hello ', ''), values=('World',)
-
-=== Empty template ===
-Empty template: strings=('',), interpolations=()
 4090 interpolations error: OverflowError
 4096 interpolations: OverflowError (correct)
 

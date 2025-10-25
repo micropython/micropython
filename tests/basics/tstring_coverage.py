@@ -187,12 +187,7 @@ matrix = [[1, 2], [3, 4]]
 nested_expr = t"{matrix[0][1]}"
 print(f"Nested brackets: expr={nested_expr.interpolations[0].expression}, value={nested_expr.interpolations[0].value}")
 
-print("\n=== repr tests ===")
-t_repr = t"Hello {42} world"
-print(f"Template repr: {repr(t_repr)[:60]}...")
-
-i_repr = Interpolation(42, "x", "s", ":>10")
-print(f"Interp repr: {repr(i_repr)}")
+# Removed: repr tests (redundant with tstring_basic.py:123, 195)
 
 print("\n=== Additional coverage tests ===")
 
@@ -271,39 +266,9 @@ try:
 except Exception as e:
     print(f"Empty t-string error: {e}")
 
-print("\n=== Unicode edge cases ===")
-emoji = "🐍"
-t_emoji = t"Python {emoji}"
-print(f"Emoji: {t_emoji.values[0] == emoji}")
+# Removed: Unicode edge cases (redundant with tstring_basic.py:274-289)
 
-combined = "e\u0301"
-t_combined = t"Café: {combined}"
-print(f"Combining: {t_combined.values[0] == combined}")
-
-zwj_text = "a\u200Db"
-t_zwj = t"ZWJ: {zwj_text}"
-print(f"Zero-width: {t_zwj.values[0] == zwj_text}")
-
-pi = 3.14159
-t_pi = t"π ≈ {pi:.2f}"
-print(f"Unicode format: {t_pi.strings[0] == 'π ≈ '}")
-
-print("\n=== Nested template strings ===")
-x = 5
-inner = t"inner: {x}"
-outer = t"outer: {inner}"
-print(f"Nested: {type(outer.values[0]).__name__}")
-
-t_a = t'a'
-t_b = t'b'
-expr_result = t"Expr: {t_a + t_b}"
-print(f"Expression: {type(expr_result.values[0]).__name__}")
-
-def get_template(n):
-    return t"func: {n}"
-
-func_result = t"Result: {get_template(42)}"
-print(f"Function: {type(func_result.values[0]).__name__}")
+# Removed: Nested template strings (redundant with tstring_basic.py:291-306)
 
 print("\n=== Inline template literal tests ===")
 
@@ -448,12 +413,7 @@ try:
 except Exception as e:
     print(f"Complex expr error: {type(e).__name__}")
 
-print("\n=== Format spec position tests ===")
-try:
-    result = t'{42!r:>10}'
-    print(f"Conv before fmt: '{result.__str__()}'")
-except Exception as e:
-    print(f"Conv before fmt error: {e}")
+# Removed: Format spec position tests (redundant with tstring_basic.py:109, 235-237)
 
 print("\n=== Parser MemoryError ===")
 if sys.platform == 'webassembly':
@@ -497,49 +457,15 @@ try:
 except SyntaxError as e:
     print(f"Debug conv: SyntaxError - {e}")
 
-print("\n=== Raw t-string escape tests ===")
-try:
-    raw_t = rt'\x41\u0042\n\t'
-    print(f"Raw escapes: '{raw_t.__str__()}'")
-except Exception as e:
-    print(f"Raw escape error: {type(e).__name__}")
+# Removed: Raw t-string escape tests (redundant with tstring_basic.py:306-312)
 
-print("\n=== Interpolation attribute access ===")
-i = Interpolation("test_value", "test_expr", "s", ":>10")
-print(f"Value attr: {i.value}")
-print(f"Expression attr: {i.expression}")
-print(f"Conversion attr: {i.conversion}")
-print(f"Format spec attr: {i.format_spec}")
+# Removed: Interpolation attribute access (redundant with tstring_basic.py:214-237)
 
-print("\n=== Template string concatenation ===")
-try:
-    tmpl_concat = Template("part1", "part2", "part3", "part4", "part5")
-    print(f"Concatenated strings: {tmpl_concat.strings}")
-except Exception as e:
-    print(f"Concatenation error: {e}")
+# Removed: Template string concatenation (redundant with tstring_basic.py:101-102)
 
-print("\n=== Template interpolations attribute ===")
-name = "World"
-place = "Python"
-tmpl = t"Hello {name} and {place}!"
-try:
-    print(f"Interpolations attr: {tmpl.interpolations}")
-except AttributeError as e:
-    print(f"Interpolations error: {e}")
+# Removed: Template interpolations attribute (redundant with tstring_basic.py:120)
 
-print("\n=== Escaped quotes in literals ===")
-try:
-    exec(r'''result = t"He said \"Hello\" to me"''')
-    print("Escaped quotes: OK")
-except Exception as e:
-    print(f"Escaped quotes error: {e}")
-
-print("\n=== Backslash handling ===")
-try:
-    exec(r'''result = t"path\\{x}\\end"''')
-    print("Backslash in path: OK")
-except Exception as e:
-    print(f"Backslash error: {e}")
+# Removed: Escaped quotes and backslash handling (redundant with tstring_basic.py:243-245)
 
 print("\n=== Parser allocation edge cases ===")
 try:
@@ -556,13 +482,7 @@ try:
 except Exception as e:
     print(f"Long expression error: {e}")
 
-print("\n=== Complex expression parsing ===")
-try:
-    exec("data = {i: i**2 for i in range(5)}")
-    exec("result = t'{data}'")
-    print("Dict comprehension: OK")
-except Exception as e:
-    print(f"Dict comprehension error: {e}")
+# Removed: Complex expression parsing (redundant with tstring_basic.py:559-565)
 
 print("\n=== Additional parser regression tests ===")
 
@@ -746,54 +666,15 @@ try:
 except Exception as e:
     print(f"Debug format error: {e}")
 
-print("\n=== Format spec with nested interpolation ===")
-try:
-    value = 42
-    width = 10
-    t1 = t'{value:{width}}'
-    print(f"Nested fmt spec: '{t1.interpolations[0].format_spec}'")
-except Exception as e:
-    print(f"Nested fmt spec error: {e}")
+# Removed: Format spec with nested interpolation (redundant with tstring_basic.py:112, 434-436)
 
-print("\n=== Conversion types ===")
-for conv in ['r', 's', 'a']:
-    try:
-        code = f"t'{{value!{conv}}}'"
-        exec(f"value = 42; result = {code}")
-        print(f"Conversion {conv}: OK")
-    except Exception as e:
-        print(f"Conversion {conv} error: {e}")
+# Removed: Conversion types loop (redundant with tstring_basic.py:46-61)
 
-print("\n=== Raw template strings ===")
-try:
-    value = "test"
-    rt1 = rt'Raw\n{value}'
-    tr1 = tr'Raw\t{value}'
-    print(f"rt prefix: '{rt1.strings[0]}'")
-    print(f"tr prefix: '{tr1.strings[0]}'")
-except Exception as e:
-    print(f"Raw t-string error: {e}")
+# Removed: Raw template strings (redundant with tstring_basic.py:13-17)
 
-print("\n=== Template concatenation ===")
-try:
-    t1 = t"Hello "
-    t2 = t"{name}"
-    name = "World"
-    t3 = t1 + t2
-    print(f"Explicit concat: strings={t3.strings}, values={t3.values}")
+# Removed: Template concatenation (redundant with tstring_basic.py:110-113, 777-789)
 
-    name = "World"
-    t4 = t"Hello " t"{name}"
-    print(f"Implicit concat: strings={t4.strings}, values={t4.values}")
-except Exception as e:
-    print(f"Concatenation error: {e}")
-
-print("\n=== Empty template ===")
-try:
-    t_empty = t""
-    print(f"Empty template: strings={t_empty.strings}, interpolations={t_empty.interpolations}")
-except Exception as e:
-    print(f"Empty template error: {e}")
+# Removed: Empty template (redundant with tstring_basic.py:95-96)
 
 try:
     code = 't"' + '{x}' * 4090 + '"'
