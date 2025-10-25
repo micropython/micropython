@@ -1,0 +1,45 @@
+
+=== Empty expression tests ===
+Empty expr SyntaxError: t-string: valid expression required before '}'
+Whitespace expr SyntaxError: t-string: valid expression required before '}'
+Whitespace expr: SyntaxError
+Unterminated expr: SyntaxError
+Whitespace + conversion: SyntaxError
+Long expression: OK
+Template.__str__ with large string: OK
+Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
+Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
+Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
+
+=== Expression parser tests ===
+
+=== Expression parser tests ===
+Complex expr: OK
+
+=== Parser MemoryError ===
+
+=== Parser MemoryError ===
+Parser MemoryError: MemoryError
+
+=== Lexer edge cases ===
+
+=== Lexer edge cases ===
+Lexer NULL case: Tested via heapalloc_fail_tstring.py
+
+=== Format spec edge cases ===
+
+=== Parser allocation edge cases ===
+Deep nesting: OK
+Very long expression: OK
+
+=== Additional parser regression tests ===
+
+=== Additional parser regression tests ===
+Raw nested spec: "QUOTED"
+Escaped quote spec: "QUOTED"
+Escaped backslash spec: \n
+Nested quoted spec: \\
+Literal brace strings: ('', '}}tail')
+Unterminated field: t-string: expecting '}'
+
+=== Template string size limit ===
