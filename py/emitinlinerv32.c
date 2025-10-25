@@ -196,7 +196,6 @@ typedef enum {
     CALL_R,   // Opcode Register
     CALL_RL,  // Opcode Register, Label
     CALL_N,   // Opcode
-    CALL_I,   // Opcode Immediate
     CALL_RII, // Opcode Register, Register, Immediate
     CALL_RIR, // Opcode Register, Immediate(Register)
     CALL_COUNT
@@ -505,7 +504,7 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
                 return false;
             }
 
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << shift;
             if (kind & U) {
                 if (!is_in_unsigned_mask(mask, immediate)) {
                     goto out_of_range;
@@ -664,7 +663,7 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             parse_register_node(arguments[1], &rs1, opcode_data->argument2_kind & C);
             mp_obj_t object;
             mp_parse_node_get_int_maybe(arguments[2], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument3_shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << opcode_data->argument3_shift;
             ((call_rri_t)opcode_data->emitter)(&emit->as, rd, rs1, immediate);
             break;
         }
@@ -673,7 +672,7 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
             parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
             mp_obj_t object;
             mp_parse_node_get_int_maybe(arguments[1], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument2_shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << opcode_data->argument2_shift;
             ((call_ri_t)opcode_data->emitter)(&emit->as, rd, immediate);
             break;
         }
@@ -714,14 +713,6 @@ static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *
         case CALL_N:
             ((call_n_t)opcode_data->emitter)(&emit->as);
             break;
-
-        case CALL_I: {
-            mp_obj_t object;
-            mp_parse_node_get_int_maybe(arguments[0], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument1_shift;
-            ((call_i_t)opcode_data->emitter)(&emit->as, immediate);
-            break;
-        }
 
         case CALL_RII: {
             parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
