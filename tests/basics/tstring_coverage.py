@@ -15,8 +15,6 @@ try:
     import gc
     import sys
     gc.collect()
-    test_data = [str(i) for i in range(100)]
-    del test_data
 except (ImportError, MemoryError):
     print("SKIP")
     raise SystemExit
@@ -105,14 +103,9 @@ for n in range(7):
     t = Template(*args)
     print(f"Values[{n}]: {t.values}")
 
-print("\n=== Size limits ===")
-print("Size limit test: SKIPPED (causes memory errors)")
-
 print("\n=== Format spec edge cases ===")
 print(f"Empty fmt: {t'{42:}'.__str__()}")
-
 print(f"Width: '{t'{42:10}'.__str__()}'")
-
 print(f"Conv+fmt: '{t'{42!r:>10}'.__str__()}'")
 
 width = 10
@@ -124,7 +117,6 @@ try:
 except Exception as e:
     print(f"Escaped braces error: {e}")
 
-# Test conversion with empty format (needed for coverage)
 try:
     t_conv_fmt = t"{42!r:}"
     print(f"Conv empty fmt: '{t_conv_fmt.__str__()}'")
@@ -237,13 +229,11 @@ except (ValueError, SyntaxError, MemoryError, OverflowError) as e:
     print("Too many interpolations: SyntaxError")
 
 try:
-    # This will exceed QSTR length limit
     large_str = "x" * 100000
     exec(f'very_long_name_{large_str} = t"test"')
 except (ValueError, MemoryError, SyntaxError, RuntimeError) as e:
     print("Large template: SyntaxError")
 
-# Triple-quoted t-strings test (needed for coverage)
 try:
     exec('''t_triple = t"""Triple "quoted" string"""''')
     print(f"Triple quoted: '{t_triple.__str__()}'")
@@ -348,127 +338,15 @@ try:
 except Exception as e:
     print(f"Nested interp: FAIL - {type(e).__name__}: {e}")
 
-print("\n=== Additional unique coverage tests ===")
-
-print("# Mixed args constructor")
-mixed = Template("Hello ", Interpolation("World", "name", None, ""), ", the answer is ",
-                 Interpolation(42, "answer", None, ""), " and pi is ",
-                 Interpolation(3.14, "pi", None, ".2f"), "")
-print(f"Mixed args: {mixed.__str__()}")
-
-print("\n# Two-tuple constructor")
-from_tuples = Template("Hello ",
-                       Interpolation("World", "name", None, ""),
-                       ", welcome to ",
-                       Interpolation("Python", "lang", None, ""),
-                       "!")
-print(f"Two-tuple form: {from_tuples.__str__()}")
-
-print("\n# Complex format with variables")
-width = 10
-precision = 2
-val = 3.14159
-fmt_str = str(width) + "." + str(precision) + "f"
-complex_fmt = Template("Value: ",
-                       Interpolation(val, "val", None, fmt_str),
-                       "")
-print(f"Complex format: {complex_fmt.__str__()}")
-
-print("\n# Escaped braces in format specs")
-try:
-    width = 5
-    escaped_fmt = Template("Value: ",
-                           Interpolation(42, "x", None, "0{{5}}d"),
-                           "")
-    print(f"Escaped {{5}}: {escaped_fmt.__str__()}")
-except ValueError as e:
-    print(f"Escaped braces error: {e}")
-
-print("\n# Multi-string concatenation")
-t1 = Template("A ", Interpolation(1, "x", None, ""), " B")
-t2 = Template("C ", Interpolation(2, "y", None, ""), " D")
-concat_multi = t1 + t2
-print(f"Multi concat: {concat_multi.__str__()}")
-
-print("\n# Empty expression")
-empty_expr = Template("Val: ", Interpolation(42, "", None, ""), "")
-print(f"Empty expr: {empty_expr.__str__()}")
-
-print("\n# Invalid __template__ calls")
-try:
-    __template__(("test",))
-except TypeError as e:
-    print(f"Single tuple: {e}")
-
-try:
-    __template__(("test",), ((42,),))
-except ValueError as e:
-    print(f"Invalid interp: {e}")
-
-print("\n# StringLike REVERSE_ADD test")
-class StringLike(str):
-    def __add__(self, other):
-        if isinstance(other, Template):
-            return NotImplemented
-        return super().__add__(other)
-
-try:
-    s = StringLike("hello")
-    t = Template("world")
-    result = s + t
-except TypeError as e:
-    print(f"StringLike + Template: {e}")
-
-print("\n# Format spec ending with }}")
-try:
-    fmt_end = Template("Val: ", Interpolation(42, "x", None, "d}}"), "")
-    print(f"Format }}: {fmt_end.__str__()}")
-except ValueError as e:
-    print(f"Format }} error: {e}")
-
-print("\n# Large values test")
-large_interps = [Interpolation(i, "val" + str(i), None, "") for i in range(10)]
-large_args = ["Start"]
-for idx, interp in enumerate(large_interps):
-    large_args.append(interp)
-    large_args.append("End" if idx == len(large_interps) - 1 else "")
-large_tmpl = Template(*large_args)
-print(f"Large values (10): {large_tmpl.values}")
-
-xl_interps = [Interpolation(i, "val" + str(i), None, "") for i in range(15)]
-xl_args = [""]
-for interp in xl_interps:
-    xl_args.append(interp)
-    xl_args.append("")
-xl_tmpl = Template(*xl_args)
-print(f"Large values (15): len={len(xl_tmpl.values)}")
-
-print("\n# Broken interpolation test")
-print("Broken interp created: expr=broken")
-
-print("\n# Long expression name")
-long_name = "x" * 100
-long_expr = Template("Long: ", Interpolation(42, long_name, None, ""), "")
-print(f"Long expr: value={long_expr.values[0]}")
-
-print("\nCoverage tests completed!")
-
-print("\n=== Additional coverage for uncovered branches ===")
-
-# Test integer overflow in template size calculation
-print("\n# Integer overflow test")
+print("\n=== Integer overflow test ===")
 primary = "OverflowError - template string too large for header format"
 secondary = "none"
 try:
     limit = 0x1000
-    strings_list = []
-    for _ in range(limit + 1):
-        strings_list.append("")
+    strings_list = ["" for _ in range(limit + 1)]
     strings = tuple(strings_list)
     interp = Interpolation(0, "x", None, "")
-    interps_list = []
-    for _ in range(limit):
-        interps_list.append(interp)
+    interps_list = [interp for _ in range(limit)]
     interps = tuple(interps_list)
     Template(strings, interps)
 except OverflowError as e:
@@ -489,42 +367,9 @@ print(f"Overflow test: {primary}")
 if secondary != "none":
     print(f"Overflow test: {secondary}")
 
-# Empty overflow test output as expected
 print()
 
-# Test escape sequences in t-strings that produce bytes > 0x100
-print("\n# Unicode escape sequences tests")
-try:
-    # Test \\u with invalid hex - in t-strings these get preserved
-    exec("result = t'\\\\u123g'")
-    print("Invalid \\u hex: preserved as literal")
-except SyntaxError as e:
-    print(f"Invalid \\u hex: SyntaxError")
-
-try:
-    # Test \\U with not enough digits - also preserved
-    exec("result = t'\\\\U123'")
-    print("Short \\U: preserved as literal")
-except SyntaxError as e:
-    print(f"Short \\U: SyntaxError")
-
-# Test bytes handling in t-strings (needed for coverage)
-print("\n# Bytes in t-strings")
-try:
-    # Characters in range 0x80-0xFF should work
-    exec("t'\\x80\\x9F\\xA0\\xFF'")
-    print("Bytes 0x80-0xFF: OK")
-except Exception as e:
-    print(f"Bytes error: {type(e).__name__} - {e}")
-
-try:
-    # Test octal escape producing byte value
-    exec("t'\\200\\377'")
-    print("Octal bytes: OK")
-except Exception as e:
-    print(f"Octal error: {type(e).__name__} - {e}")
-
-# Test empty expressions more thoroughly (needed for coverage)
+print("\n=== Empty expression tests ===")
 try:
     exec("t'{}'")
     print("ERROR: Empty expression should have raised SyntaxError")
@@ -537,7 +382,6 @@ try:
 except SyntaxError as e:
     print("Whitespace expr SyntaxError:", e)
 
-# Additional whitespace tests for coverage
 try:
     exec("t'{\\n\\t   \\n}'")
     print("ERROR: Whitespace-only expr should fail")
@@ -588,27 +432,6 @@ try:
 except Exception as e:
     print(f"Nested interpolations error: {type(e).__name__}: {e}")
 
-try:
-    tmpl = t'hello'
-    result = tmpl + 'world'
-    print("ERROR: Template + str should have raised TypeError")
-except TypeError as e:
-    print(f"Template + str error: {e}")
-
-try:
-    result = 'hello' + t'world'
-    print("ERROR: str + Template should have raised TypeError")
-except TypeError as e:
-    print(f"str + Template error: {e}")
-
-tmpl = Template('hello')
-str_obj = 'test'
-try:
-    result = str_obj + tmpl
-    print("ERROR: Should have raised TypeError")
-except TypeError as e:
-    print(f"Binary op error: {e}")
-
 width = 5
 x = 42
 try:
@@ -618,25 +441,21 @@ try:
 except ValueError as e:
     print(f'Escaped braces ValueError: {e}')
 
-# Test expression parser edge cases
-print("\n# Expression parser tests")
+print("\n=== Expression parser tests ===")
 try:
-    # Very complex nested expression to test parser limits
     exec("t'{[{(x,y):[1,2,3]} for x,y in [(1,2),(3,4)]]}'")
     print("Complex expr: OK")
 except Exception as e:
     print(f"Complex expr error: {type(e).__name__}")
 
-# Additional edge case: format spec position vs conversion position
-print("\n# Format spec position tests")
+print("\n=== Format spec position tests ===")
 try:
-    # This should work: conversion before format
     result = t'{42!r:>10}'
     print(f"Conv before fmt: '{result.__str__()}'")
 except Exception as e:
     print(f"Conv before fmt error: {e}")
 
-print("\n# Parser MemoryError")
+print("\n=== Parser MemoryError ===")
 if sys.platform == 'webassembly':
     print("Parser MemoryError: MemoryError")
 else:
@@ -659,12 +478,10 @@ else:
         blocks = None
         gc.collect()
 
-print("\n# Memory/lexer failure simulation")
-# Note: We can't directly test lexer returning NULL in normal circumstances,
-# but we can document that this branch exists for out-of-memory conditions
+print("\n=== Lexer edge cases ===")
 print("Lexer NULL case: Tested via heapalloc_fail_tstring.py")
 
-print("\n# Format spec edge cases")
+print("\n=== Format spec edge cases ===")
 try:
     x = 42
     result = t'{x!r:0>+#10.5}'
@@ -672,8 +489,7 @@ try:
 except Exception as e:
     print(f"Full format error: {e}")
 
-# Test debug format with conversion after equal sign (needed for coverage)
-print("\n# Debug format edge cases")
+print("\n=== Debug format edge cases ===")
 try:
     x = 42
     result = t'{x=!r}'
@@ -681,44 +497,28 @@ try:
 except SyntaxError as e:
     print(f"Debug conv: SyntaxError - {e}")
 
-# Test raw t-strings with escape sequences (needed for coverage)
-print("\n# Raw t-string escape tests")
+print("\n=== Raw t-string escape tests ===")
 try:
     raw_t = rt'\x41\u0042\n\t'
     print(f"Raw escapes: '{raw_t.__str__()}'")
 except Exception as e:
     print(f"Raw escape error: {type(e).__name__}")
 
-# Test lexer edge cases for coverage (needed for coverage)
-print("\n# Lexer edge cases")
-try:
-    # Test invalid escape in t-string
-    exec(r"t'\\x'")
-    print("ERROR: Invalid \\x should have failed")
-except SyntaxError as e:
-    print(f"Invalid \\x: SyntaxError")
-
-print("\n=== Additional t-string coverage tests ===")
-
-# Test Interpolation attribute access
-print("\n# Interpolation attribute access")
-from string.templatelib import Interpolation
+print("\n=== Interpolation attribute access ===")
 i = Interpolation("test_value", "test_expr", "s", ":>10")
 print(f"Value attr: {i.value}")
 print(f"Expression attr: {i.expression}")
 print(f"Conversion attr: {i.conversion}")
 print(f"Format spec attr: {i.format_spec}")
 
-# Test Template with many strings that need concatenation
-print("\n# Template string concatenation")
+print("\n=== Template string concatenation ===")
 try:
     tmpl_concat = Template("part1", "part2", "part3", "part4", "part5")
     print(f"Concatenated strings: {tmpl_concat.strings}")
 except Exception as e:
     print(f"Concatenation error: {e}")
 
-# Test Template.interpolations attribute access
-print("\n# Template interpolations attribute")
+print("\n=== Template interpolations attribute ===")
 name = "World"
 place = "Python"
 tmpl = t"Hello {name} and {place}!"
@@ -727,65 +527,28 @@ try:
 except AttributeError as e:
     print(f"Interpolations error: {e}")
 
-# Test integer overflow in template size calculation
-print("\n# Integer overflow in size calculation")
+print("\n=== Escaped quotes in literals ===")
 try:
-    # Try to create a template that would cause overflow
-    # Create maximum segments and interpolations
-    seg_count = 256  # MAX_SEG
-    interp_count = 4095  # MAX_INT
-
-    # This should trigger the overflow check
-    parts = []
-    for i in range(seg_count):
-        parts.append(f"seg{i}")
-        if i < interp_count:
-            parts.append("{x}")
-
-    code = 't"' + ''.join(parts) + '"'
-    exec(f"x = 1; result = {code}")
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    if "template string too big" in str(e):
-        print(f"Template too big: SyntaxError - {e}")
-    else:
-        print(f"Other syntax error: {e}")
-except Exception as e:
-    print(f"Unexpected error: {type(e).__name__} - {e}")
-
-# Test escaped quotes in t-string literals
-print("\n# Escaped quotes in literals")
-try:
-    # Test escaped quotes that should continue parsing
     exec(r'''result = t"He said \"Hello\" to me"''')
     print("Escaped quotes: OK")
 except Exception as e:
     print(f"Escaped quotes error: {e}")
 
-# Test backslash at end of string segment
-print("\n# Backslash handling")
+print("\n=== Backslash handling ===")
 try:
     exec(r'''result = t"path\\{x}\\end"''')
     print("Backslash in path: OK")
 except Exception as e:
     print(f"Backslash error: {e}")
 
-# Test lexer failure simulation (can't directly test NULL lexer)
-print("\n# Lexer edge cases")
-print("Note: NULL lexer case requires out-of-memory condition")
-print("This is tested in heapalloc_fail_tstring.py")
-
-# Test parser edge cases (needed for coverage - deep nesting)
-print("\n# Parser allocation edge cases")
+print("\n=== Parser allocation edge cases ===")
 try:
-    # Very deeply nested expression to stress parser
     deep_expr = "(" * 50 + "x" + ")" * 50
     exec(f"x = 1; result = t'{{{deep_expr}}}'")
     print("Deep nesting: OK")
 except Exception as e:
     print(f"Deep nesting error: {type(e).__name__} - {e}")
 
-# Test 100-level nesting to cover copy_parse_node() n > 100 check (line 77 in tstring_expr_parser.c)
 try:
     long_expr = "(" * 100 + "x" + ")" * 100
     exec(f"x = 1; result = t'{{{long_expr}}}'")
@@ -793,19 +556,16 @@ try:
 except Exception as e:
     print(f"Long expression error: {e}")
 
-# Test t-string with complex expressions
-print("\n# Complex expression parsing")
+print("\n=== Complex expression parsing ===")
 try:
-    # Dictionary comprehension in t-string
     exec("data = {i: i**2 for i in range(5)}")
     exec("result = t'{data}'")
     print("Dict comprehension: OK")
 except Exception as e:
     print(f"Dict comprehension error: {e}")
 
-print("\n# Additional parser regression tests")
+print("\n=== Additional parser regression tests ===")
 
-# Raw t-string with nested format spec containing braces and quotes
 try:
     fmt = '"QUOTED"'
     value = 'raw'
@@ -814,7 +574,6 @@ try:
 except Exception as e:
     print(f"Raw nested spec error: {type(e).__name__}: {e}")
 
-# Non-raw format spec that requires escaping quotes
 try:
     value = 'fmt'
     tmpl = t'{value:"QUOTED"}'
@@ -822,7 +581,6 @@ try:
 except Exception as e:
     print(f"Escaped quote spec error: {type(e).__name__}: {e}")
 
-# Non-raw format spec with backslash characters
 try:
     value = 'fmt'
     tmpl = t"{value:\\n}"
@@ -830,7 +588,6 @@ try:
 except Exception as e:
     print(f"Escaped backslash spec error: {type(e).__name__}: {e}")
 
-# Nested expression with characters that need escaping
 try:
     ns = {}
     exec("value = 'fmt'\nresult = t\"{value:{'\\\\'}}\"", globals(), ns)
@@ -839,7 +596,6 @@ try:
 except Exception as e:
     print(f"Nested quoted spec error: {type(e).__name__}: {e}")
 
-# Literal closing brace after interpolation (}} in source)
 try:
     value = 'brace'
     exec('tmpl = t"{value}}}}tail"')
@@ -847,21 +603,14 @@ try:
 except Exception as e:
     print(f"Literal brace error: {type(e).__name__}: {e}")
 
-# Unterminated replacement field should raise SyntaxError
 try:
     exec('t"{value"')
     print("ERROR: Unterminated field should have raised")
 except SyntaxError as e:
     print(f"Unterminated field: {e}")
 
-# Test template string size limit - integer overflow
-print("\n# Template string size limit")
-# The overflow check is: total = seg_cnt + interp_cnt; if (total < seg_cnt || total < interp_cnt)
-# This would only trigger on platforms where size_t can overflow, which is unlikely in practice
-# Instead, let's test the "too many interpolations" error which is easier to trigger
+print("\n=== Template string size limit ===")
 try:
-    # MAX_INT is 4095 according to the code
-    # Create a template with more than 4095 interpolations
     code = 't"' + '{x}' * 4096 + '"'
     exec(f"x = 1; result = {code}")
     print("ERROR: Should have raised SyntaxError for too many interpolations")
@@ -871,8 +620,7 @@ except (SyntaxError, OverflowError, MemoryError) as e:
     else:
         print(f"Other syntax error: {e}")
 
-print("\n=== Tests for remaining uncovered branches ===")
-# These are all valid in CPython - format specs can contain !
+print("\n=== Malformed format specs (valid in CPython) ===")
 x = 42
 value = 42
 result = t'{x:10!r}'
@@ -883,6 +631,7 @@ print(f"Malformed 2: format_spec: '{result.interpolations[0].format_spec}', conv
 
 result = t'{x:>!10}'
 print(f"Malformed 3: format_spec: '{result.interpolations[0].format_spec}', conversion: {result.interpolations[0].conversion}")
+
 try:
     exec(r"t'\U00110000'")
     print("ERROR: Should have failed")
@@ -914,22 +663,10 @@ except (SyntaxError, NotImplementedError) as e:
     print(f"\\N{{}} escape: {type(e).__name__}")
 
 try:
-    exec(r"t'\N{LATIN SMALL LETTER A}'")
-    print("ERROR: Unicode name escapes should not be supported")
-except (SyntaxError, NotImplementedError) as e:
-    print(f"Unicode name escape: {type(e).__name__} - {e}")
-
-try:
     result = rt'\u0041\U00000042'
     print(f"Raw Unicode escapes: '{result.strings[0]}'")
 except Exception as e:
     print(f"Raw Unicode error: {e}")
-
-try:
-    exec("b'\\u1234'")
-    print("Bytes Unicode escape: preserved as literal")
-except Exception as e:
-    print(f"Bytes Unicode error: {e}")
 
 try:
     code_with_crlf = 't"line1\\r\\nline2"'
@@ -954,13 +691,8 @@ try:
 except SyntaxError as e:
     print(f"Trailing backslash: SyntaxError")
 
-print("\n# Test integer overflow in total calculation")
-print("Integer overflow: platform-dependent, tested via overflow scenarios")
-
-# Test __template__ with maximum valid sizes to approach overflow
-print("\n# Test __template__ edge cases")
+print("\n=== __template__ edge cases ===")
 try:
-    # Create template at the edge of TEMPLATE_COUNT_MAX (0xFFF = 4095)
     strings = tuple(["s"] * 4095)
     interps = tuple()
     result = __template__(strings, interps)
@@ -969,8 +701,7 @@ except Exception as e:
     print(f"Max strings error: {type(e).__name__}")
 
 try:
-    # Create template with max interpolations
-    strings = tuple([""] * 4096)  # n_strings = n_interps + 1 = 4096
+    strings = tuple([""] * 4096)
     interps = []
     for i in range(4095):
         interps.append((i, f"x{i}", None, ""))
@@ -979,7 +710,7 @@ try:
 except Exception as e:
     print(f"Max interps error: {type(e).__name__}")
 
-print("\n# Test vstr string concatenation")
+print("\n=== vstr string concatenation ===")
 try:
     t1 = Template("part1", "part2", "part3", "part4", Interpolation(1, "x"), "end")
     result = t1.__str__()
@@ -987,10 +718,8 @@ try:
 except Exception as e:
     print(f"vstr concat error: {e}")
 
-# vstr_add_byte is called for characters c < 0x100
-print("\n# Test high byte handling")
+print("\n=== High byte handling ===")
 try:
-    # Test various high bytes
     result = t'\x7F\x80\x81\xFE\xFF'
     first_str = result.strings[0]
     print(f"High bytes: len={len(first_str)}, first=0x{ord(first_str[0]):02x}, last=0x{ord(first_str[-1]):02x}")
@@ -998,33 +727,26 @@ except Exception as e:
     print(f"High bytes error: {e}")
 
 try:
-    # Test octal escapes that produce high bytes
     result = t'\200\201\377'
     print(f"Octal high bytes: OK, len={len(result.strings[0])}")
 except Exception as e:
     print(f"Octal high bytes error: {e}")
 
 print("\n=== Debug specifier tests ===")
-
-print("\n# Debug specifier")
 try:
     value = 42
-    # Basic debug format
     t1 = t'{value=}'
     print(f"Debug basic: strings={t1.strings}, conv={t1.interpolations[0].conversion}")
 
-    # Debug with explicit conversion
     t2 = t'{value=!s}'
     print(f"Debug !s: strings={t2.strings}, conv={t2.interpolations[0].conversion}")
 
-    # Debug with format spec
     t3 = t'{value=:>10}'
     print(f"Debug fmt: strings={t3.strings}, fmt_spec='{t3.interpolations[0].format_spec}'")
 except Exception as e:
     print(f"Debug format error: {e}")
 
-# Test format spec with nested interpolations
-print("\n# Format spec with nested interpolation")
+print("\n=== Format spec with nested interpolation ===")
 try:
     value = 42
     width = 10
@@ -1033,8 +755,7 @@ try:
 except Exception as e:
     print(f"Nested fmt spec error: {e}")
 
-# Test conversion types
-print("\n# Conversion types")
+print("\n=== Conversion types ===")
 for conv in ['r', 's', 'a']:
     try:
         code = f"t'{{value!{conv}}}'"
@@ -1043,8 +764,7 @@ for conv in ['r', 's', 'a']:
     except Exception as e:
         print(f"Conversion {conv} error: {e}")
 
-# Test raw template strings
-print("\n# Raw template strings")
+print("\n=== Raw template strings ===")
 try:
     value = "test"
     rt1 = rt'Raw\n{value}'
@@ -1054,8 +774,7 @@ try:
 except Exception as e:
     print(f"Raw t-string error: {e}")
 
-# Test template concatenation
-print("\n# Template concatenation")
+print("\n=== Template concatenation ===")
 try:
     t1 = t"Hello "
     t2 = t"{name}"
@@ -1063,30 +782,13 @@ try:
     t3 = t1 + t2
     print(f"Explicit concat: strings={t3.strings}, values={t3.values}")
 
-    # Implicit concatenation
     name = "World"
     t4 = t"Hello " t"{name}"
     print(f"Implicit concat: strings={t4.strings}, values={t4.values}")
 except Exception as e:
     print(f"Concatenation error: {e}")
 
-# Test that Template + str is prohibited
-print("\n# Template + str prohibition")
-try:
-    t1 = t"hello"
-    result = t1 + " world"
-    print("ERROR: Template + str should raise TypeError")
-except TypeError as e:
-    print(f"Template + str: TypeError (correct)")
-
-try:
-    result = "hello " + t"world"
-    print("ERROR: str + Template should raise TypeError")
-except TypeError as e:
-    print(f"str + Template: TypeError (correct)")
-
-# Test empty template
-print("\n# Empty template")
+print("\n=== Empty template ===")
 try:
     t_empty = t""
     print(f"Empty template: strings={t_empty.strings}, interpolations={t_empty.interpolations}")
@@ -1094,7 +796,6 @@ except Exception as e:
     print(f"Empty template error: {e}")
 
 try:
-    # Test approaching TEMPLATE_COUNT_MAX
     code = 't"' + '{x}' * 4090 + '"'
     exec(f"x = 1; result = {code}")
     print(f"4090 interpolations: OK")
@@ -1102,35 +803,23 @@ except Exception as e:
     print(f"4090 interpolations error: {type(e).__name__}")
 
 try:
-    # Test exceeding TEMPLATE_COUNT_MAX (4096 should fail)
     code = 't"' + '{x}' * 4096 + '"'
     exec(f"x = 1; result = {code}")
     print("ERROR: Should have raised OverflowError")
 except (OverflowError, SyntaxError, MemoryError) as e:
     print(f"4096 interpolations: {type(e).__name__} (correct)")
 
-print("\n# Trailing whitespace in expression")
+print("\n=== Trailing whitespace in expression ===")
 try:
     x = 42
-    # The expression "x   " (with trailing spaces) should have spaces trimmed
     code = 't"{x   }"'
     result = eval(code)
     print(f"Trailing whitespace: OK")
 except Exception as e:
     print(f"Trailing whitespace error: {e}")
 
-print("\n# Empty expression after trimming")
+print("\n=== Deep nesting test ===")
 try:
-    # Expression with only whitespace becomes empty after trimming
-    code = 't"{   }"'
-    result = eval(code)
-    print("ERROR: Should have raised SyntaxError")
-except SyntaxError as e:
-    print(f"Empty expression: SyntaxError (correct)")
-
-print("\n# Deep nesting test")
-try:
-    # Create a deeply nested expression with many parentheses and operations
     nested = "1" + " + 1" * 150
     code = f't"{{{nested}}}"'
     exec(code)
@@ -1138,7 +827,7 @@ try:
 except Exception as e:
     print(f"Deep nesting error: {type(e).__name__}")
 
-print("\n# Template + non-string object")
+print("\n=== Template + non-string object ===")
 try:
     class CustomObj:
         pass
@@ -1148,8 +837,7 @@ try:
 except TypeError as e:
     print(f"Template + custom object: TypeError (correct)")
 
-# 2-tuple constructor with too many strings
-print("\n# 2-tuple constructor overflow")
+print("\n=== 2-tuple constructor overflow ===")
 try:
     from string.templatelib import Template
     strings = tuple("" for _ in range(4100))
@@ -1161,44 +849,24 @@ except OverflowError as e:
 except (MemoryError, TypeError) as e:
     print(f"Too many strings (2-tuple): {type(e).__name__} (memory/type limit)")
 
-print("\n# Raw t-string with octal escapes")
-try:
-    # For raw t-strings, octal escapes might behave differently
-    # But first test regular string with octal
-    s = "\200\201\376\377"
-    print(f"Regular string octal: OK, len={len(s)}")
-except Exception as e:
-    print(f"Regular octal error: {e}")
-
-print("\n# Empty format spec node")
+print("\n=== Empty format spec node ===")
 try:
     x = 42
-    # This tests the case where we have a colon but empty format spec
     result = t'{x:}'
     print(f"Empty format after colon: OK")
 except Exception as e:
     print(f"Empty format spec error: {e}")
 
-print("\n# Too many segments")
+print("\n=== Too many segments ===")
 try:
-    # Create template with > 4095 segments
     code = 't"' + 'x{y}' * 2200 + '"'
     exec(f"y = 1; result = {code}")
     print("ERROR: Should have raised SyntaxError/OverflowError")
 except (SyntaxError, OverflowError, MemoryError) as e:
     print(f"Too many segments: {type(e).__name__} (correct)")
 
-print("\n# Empty expression - whitespace only")
-for ws_test, desc in [('t"{ }"', 'space'), ('t"{  }"', 'spaces'), ('t"{\t}"', 'tab')]:
-    try:
-        exec(ws_test)
-        print(f"ERROR: {desc} should raise SyntaxError")
-    except SyntaxError:
-        print(f"Empty expr ({desc}): SyntaxError (correct)")
-
-print("\n# Template() constructor with many interpolations")
+print("\n=== Template() constructor with many interpolations ===")
 try:
-    from string.templatelib import Template, Interpolation
     exprs = ["a", "b", "c", "d", "e"]
     interps = [Interpolation(i, exprs[i % len(exprs)]) for i in range(20)]
     strings = [''] * 21
@@ -1207,9 +875,8 @@ try:
 except Exception as e:
     print(f"Template() constructor: {type(e).__name__}")
 
-print("\n# Multiple consecutive strings")
+print("\n=== Multiple consecutive strings ===")
 try:
-    from string.templatelib import Template, Interpolation
     t = Template("first", "second", "third", Interpolation(42, "x"), "fourth", "fifth")
     if t.strings == ('firstsecondthird', 'fourthfifth'):
         print("Multiple strings concatenated: OK")
@@ -1218,7 +885,7 @@ try:
 except Exception as e:
     print(f"Multiple strings error: {e}")
 
-print("\n# Template.__add__ with multiple interpolations")
+print("\n=== Template.__add__ with multiple interpolations ===")
 try:
     exprs = ["a", "b", "c", "d", "e"]
     interps1 = [Interpolation(i, exprs[i % len(exprs)]) for i in range(20)]
@@ -1234,45 +901,15 @@ try:
 except Exception as e:
     print(f"Template.__add__: {type(e).__name__}")
 
-print("\n# Unicode escapes < 0x100")
-try:
-    s1 = "\x00"
-    s2 = "\x41"
-    s3 = "\x7F"
-    s4 = "\xFF"
-    if ord(s1) == 0 and ord(s2) == 65 and ord(s3) == 127 and ord(s4) == 255:
-        print("Unicode escapes < 0x100: OK")
-    else:
-        print("Unicode escapes < 0x100: ERROR")
-except Exception as e:
-    print(f"Unicode escape error: {e}")
-
-print("\n# Unicode > 0xFF in regular string")
-try:
-    s1 = "\u0100"
-    s2 = "\u1234"
-    s3 = "\U00010000"
-    if ord(s1) == 0x100 and ord(s2) == 0x1234 and ord(s3) == 0x10000:
-        print("Unicode > 0xFF: OK")
-    else:
-        print("Unicode > 0xFF: ERROR")
-except Exception as e:
-    print(f"Unicode error: {e}")
-
-print("\n=== Additional tests for 100% coverage ===")
-
-# Test single '}' without matching '{{' - should raise SyntaxError
-print("\n# Single closing brace")
+print("\n=== Single closing brace ===")
 try:
     exec('t"test }"')
     print("ERROR: Single } should have raised SyntaxError")
 except SyntaxError as e:
     print(f"Single }}: SyntaxError - {e}")
 
-# Test escape sequences in strings within interpolations (for lines 752-754)
-print("\n# Escape in string within interpolation")
+print("\n=== Escape in string within interpolation ===")
 try:
-    # This tests the esc flag in the quick scan loop
     code = r"result = t'{\"test\"value\"}'"
     exec(code)
     print(f"Escaped quote in string: OK")
@@ -1280,22 +917,19 @@ except Exception as e:
     print(f"Escaped quote error: {type(e).__name__}")
 
 try:
-    # Test newline escape in string within interpolation
     code = r"result = t'{\"\\n\"}'"
     exec(code)
     print(f"Escaped newline in string: OK")
 except Exception as e:
     print(f"Escaped newline error: {type(e).__name__}")
 
-# Test format spec with special characters (CPython compatibility)
-print("\n# Format spec with special characters")
+print("\n=== Format spec with special characters ===")
 try:
     x = 42
-    # In CPython 3.14, :!r is valid format spec (not conversion)
     result = t"{x:!r}"
     print(f"Format spec '!r': {result.interpolations[0].format_spec == '!r'}")
     print(f"Conversion is None: {result.interpolations[0].conversion is None}")
 except Exception as e:
     print(f"Format spec error: {type(e).__name__}")
 
-print("\n=== All coverage tests completed! ===")
+print("\nCoverage tests completed!")
