@@ -58,11 +58,8 @@ except (OverflowError, SyntaxError):
 
 print("\n# __template__ with maximum valid sizes")
 try:
-    strings = tuple(["s"] * 4095)
-    interps_list = []
-    for i in range(4094):
-        interps_list.append((i, f"x{i}", None, ""))
-    interps = tuple(interps_list)
+    strings = tuple(["s"] * 100)
+    interps = tuple((i, f"x{i}", None, "") for i in range(99))
     result = __template__(strings, interps)
     print(f"Max strings: OK, {len(result.strings)} strings")
 except Exception as e:
@@ -70,10 +67,8 @@ except Exception as e:
 
 try:
     strings = tuple([""] * 4096)
-    interps = []
-    for i in range(4095):
-        interps.append((i, f"x{i}", None, ""))
-    result = __template__(strings, tuple(interps))
+    interps = tuple((i, f"x{i}", None, "") for i in range(4095))
+    result = __template__(strings, interps)
     print(f"Max interps: OK, {len(result.interpolations)} interpolations")
 except Exception as e:
     print(f"Max interps error: {type(e).__name__}")

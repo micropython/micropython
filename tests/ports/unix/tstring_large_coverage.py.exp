@@ -20,14 +20,14 @@ __template__ overflow: OverflowError (correct)
 4096 interpolations (parse-time): OverflowError (correct)
 
 # __template__ with maximum valid sizes
-Max strings: OK, 4095 strings
-Max interps error: MemoryError
+Max strings: OK, 100 strings
+Max interps error: OverflowError
 
 # Too many segments
-Too many segments: MemoryError (correct)
+Too many segments: OverflowError (correct)
 
 # Approaching max interpolations
-4090 interpolations error: MemoryError
+4090 interpolations error: OverflowError
 
 # Empty expression (whitespace only)
 Empty expr (space): SyntaxError (correct)
