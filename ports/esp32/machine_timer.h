@@ -37,6 +37,20 @@
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
 
+    // Timer type; virtual or hardware
+    mp_uint_t type; // 0 = virtual, 1 = hardware
+
+
+    // NOTE: For soft timers (period in ticks) is converted to OS ticks, this is a compile time
+    // constant defined in FreeRTOSConfig.h as CONFIG_TICK_RATE_HZ (typically 100Hz or 1 tick every 10ms)
+    // however its recommended to set this to 1000Hz (1ms tick) for better resolution by adding to
+    // the board sdkconfig.defaults file.
+
+    // Virtual timer specific fields
+    TimerHandle_t vtimer;
+    TickType_t v_start_tick; // Tick count when virtual timer was started
+
+    // ESP32 specific fields
     timer_hal_context_t hal_context;
     mp_uint_t group;
     mp_uint_t index;
@@ -45,11 +59,14 @@ typedef struct _machine_timer_obj_t {
     // ESP32 timers are 64-bit
     uint64_t period;
 
+    // User callback to be invoked when timer expires
     mp_obj_t callback;
 
+    // Interrupt related callbacks and state
     intr_handle_t handle;
     void (*handler)(struct _machine_timer_obj_t *timer);
 
+    // Pointer to next timer in linked list of active timers
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
 
