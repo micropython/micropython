@@ -90,8 +90,6 @@ Template format_spec: >10
 Both conversion: r
 Both format_spec: >10
 
-Basic tests completed!
-
 === Escape sequence coverage tests ===
 Template(strings=('Line1\nLine2',), interpolations=())
 Template(strings=('Path\\to\\file',), interpolations=())
@@ -134,39 +132,26 @@ Template(strings=('C:\\new\\test',), interpolations=())
 Template(strings=('\n\tA',), interpolations=())
 Template(strings=('\\n\\t\\x41',), interpolations=())
 
-Escape sequence tests completed!
-
 === Triple quote edge cases ===
-1. Triple in interpolation: Template(strings=('Documentation:\n', '\nEnd of doc'), interpolations=(Interpolation('This is a\nmulti-line\ndocstring', 'doc', None, ''),))
+Triple in interpolation: Template(strings=('Documentation:\n', '\nEnd of doc'), interpolations=(Interpolation('This is a\nmulti-line\ndocstring', 'doc', None, ''),))
    Value: 'This is a\nmulti-line\ndocstring'
-
-4. Empty interpolation error: SyntaxError: t-string: valid expression required before '}'
-
-5. Complex nested: Template(strings=('Users:\n', ': ', '\n', ': ', ''), interpolations=(Interpolation('Alice', "data['users'][0]['name']", None, ''), Interpolation('Say "Hello"', "data['users'][0]['msg']", None, ''), Interpolation('Bob', "data['users'][1]['name']", None, ''), Interpolation("It's great!", "data['users'][1]['msg']", None, '')))
+Empty interpolation error: SyntaxError: t-string: valid expression required before '}'
+Complex nested: Template(strings=('Users:\n', ': ', '\n', ': ', ''), interpolations=(Interpolation('Alice', "data['users'][0]['name']", None, ''), Interpolation('Say "Hello"', "data['users'][0]['msg']", None, ''), Interpolation('Bob', "data['users'][1]['name']", None, ''), Interpolation("It's great!", "data['users'][1]['msg']", None, '')))
    Values: ('Alice', 'Say "Hello"', 'Bob', "It's great!")
-
-6. Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('\U0001f40d', "'\\U0001f40d'", None, ''), Interpolation('\u03b1 \u03b2 \u03b3', "'\\u03b1 \\u03b2 \\u03b3'", None, '')))
-
-7. Raw with interpolation: Template(strings=('Path: C:\\Users\\', 'Documents\nRaw newline: \\n\nRaw tab: \\t'), interpolations=(Interpolation('/', 'path_sep', None, ''),))
+Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('\U0001f40d', "'\\U0001f40d'", None, ''), Interpolation('\u03b1 \u03b2 \u03b3', "'\\u03b1 \\u03b2 \\u03b3'", None, '')))
+Raw with interpolation: Template(strings=('Path: C:\\Users\\', 'Documents\nRaw newline: \\n\nRaw tab: \\t'), interpolations=(Interpolation('/', 'path_sep', None, ''),))
    String 0 repr: 'Path: C:\\Users\\'
-
-8. Long line: strings=('Start\n', '\nEnd')
+Long line: strings=('Start\n', '\nEnd')
    Value length: 50
-
-9. Nested templates: Template(strings=('Outer template:\n', '\nEnd'), interpolations=(Interpolation(Template(strings=('inner ', ''), interpolations=(Interpolation(42, '42', None, ''),)), 'inner', None, ''),))
+Nested templates: Template(strings=('Outer template:\n', '\nEnd'), interpolations=(Interpolation(Template(strings=('inner ', ''), interpolations=(Interpolation(42, '42', None, ''),)), 'inner', None, ''),))
    Inner value: Template(strings=('inner ', ''), interpolations=(Interpolation(42, '42', None, ''),))
-
-10. Formatted values: Template(strings=('Math constants:\nPi: ', '\nE: ', '\nSqrt(2): ', ''), interpolations=(Interpolation(314, '314', None, '.2f'), Interpolation(271, '271', None, '.1e'), Interpolation(141, '141', None, '.0f')))
+Formatted values: Template(strings=('Math constants:\nPi: ', '\nE: ', '\nSqrt(2): ', ''), interpolations=(Interpolation(314, '314', None, '.2f'), Interpolation(271, '271', None, '.1e'), Interpolation(141, '141', None, '.0f')))
     Interpolation count: 3
     Format specs: ['.2f', '.1e', '.0f']
-
-11. Debug complex: Template(strings=('Debug info:\nx + y=', ' x * y * z=', ' x < y < z=', ''), interpolations=(Interpolation(3, 'x + y', 'r', ''), Interpolation(6, 'x * y * z', 'r', ''), Interpolation(True, 'x < y < z', 'r', '')))
+Debug complex: Template(strings=('Debug info:\nx + y=', ' x * y * z=', ' x < y < z=', ''), interpolations=(Interpolation(3, 'x + y', 'r', ''), Interpolation(6, 'x * y * z', 'r', ''), Interpolation(True, 'x < y < z', 'r', '')))
     Expressions: ['x + y', 'x * y * z', 'x < y < z']
-
-12. Concatenated triple: Template(strings=('Part 1\nwith newlinePart 2\nalso multiline',), interpolations=())
+Concatenated triple: Template(strings=('Part 1\nwith newlinePart 2\nalso multiline',), interpolations=())
     Strings: ('Part 1\nwith newlinePart 2\nalso multiline',)
-
-Triple quote edge case tests completed!
 
 === PEP 701 brace compliance ===
 Escaped {{: ('{',)
@@ -175,12 +160,10 @@ Mixed: ('test{escape}here',)
 Lone }} rejected (correct)
 Unterminated {{ rejected (correct)
 
-PEP 701 brace compliance tests completed!
-
 === Format spec scope resolution ===
 Local vars: width=10, x=42
 Format spec: 10
 Scope test: PASS
 Precision: format_spec=.2f
 
-Format spec scope tests completed!
+Basic tests completed!

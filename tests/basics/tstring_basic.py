@@ -8,7 +8,6 @@ name = "World"
 t2 = t"Hello {name}"
 print(f"Strings: {t2.strings}")
 print(f"Value: {t2.interpolations[0].value}")
-
 print(f"str(): {str(t2)}")
 
 t_raw = rt"Path: C:\test\{name}"
@@ -145,12 +144,11 @@ try:
 except SyntaxError:
     print("bt prefix: SyntaxError")
 
-
 print("\n=== Escaped braces evaluation ===")
 t_escaped = Template(("{", "}", "{{", "}}"), (Interpolation(42, "x"),) * 3)
 print(f"Escaped eval: '{str(t_escaped)}'")
 
-t_braces = Template(("{{hello}}", " {", "} ", "{{world}}"), 
+t_braces = Template(("{{hello}}", " {", "} ", "{{world}}"),
                    (Interpolation(1, "a"), Interpolation(2, "b"), Interpolation(3, "c")))
 print(f"Braces in strings: '{str(t_braces)}'")
 
@@ -238,8 +236,6 @@ t_both = t"{42!r:>10}"
 print(f"Both conversion: {t_both.interpolations[0].conversion}")
 print(f"Both format_spec: {t_both.interpolations[0].format_spec}")
 
-print("\nBasic tests completed!")
-
 print("\n=== Escape sequence coverage tests ===")
 
 # Test all standard escape sequences
@@ -315,9 +311,6 @@ print(repr(rt"C:\new\test"))  # Windows path
 print(repr(t"""\n\t\x41"""))  # Should process escapes
 print(repr(rt"""\n\t\x41"""))  # Raw should not process
 
-print("\nEscape sequence tests completed!")
-
-
 print("\n=== Triple quote edge cases ===")
 
 doc = '''This is a
@@ -326,16 +319,16 @@ docstring'''
 result1 = t"""Documentation:
 {doc}
 End of doc"""
-print(f"1. Triple in interpolation: {str(result1)}")
+print(f"Triple in interpolation: {str(result1)}")
 print(f"   Value: {repr(result1.interpolations[0].value)}")
 
 try:
     exec('''empty_interp = t"""Start
 {}
 End"""''')
-    print(f"\n4. Empty interpolation: {str(empty_interp)}")
+    print(f"Empty interpolation: {str(empty_interp)}")
 except Exception as e:
-    print(f"\n4. Empty interpolation error: {type(e).__name__}: {e}")
+    print(f"Empty interpolation error: {type(e).__name__}: {e}")
 
 data = {
     "users": [
@@ -346,48 +339,48 @@ data = {
 complex = t"""Users:
 {data['users'][0]['name']}: {data['users'][0]['msg']}
 {data['users'][1]['name']}: {data['users'][1]['msg']}"""
-print(f"\n5. Complex nested: {str(complex)}")
+print(f"Complex nested: {str(complex)}")
 print(f"   Values: {complex.values}")
 
 unicode_test = t"""Unicode test:
 Emoji: {'\U0001f40d'}
 Special: {'\u03b1 \u03b2 \u03b3'}"""
-print(f"\n6. Unicode: {str(unicode_test)}")
+print(f"Unicode: {str(unicode_test)}")
 
 import os
 path_sep = os.sep
 raw_with_interp = rt"""Path: C:\Users\{path_sep}Documents
 Raw newline: \n
 Raw tab: \t"""
-print(f"\n7. Raw with interpolation: {str(raw_with_interp)}")
+print(f"Raw with interpolation: {str(raw_with_interp)}")
 print(f"   String 0 repr: {repr(raw_with_interp.strings[0])}")
 
 long_line = "x" * 50
 long_triple = t"""Start
 {long_line}
 End"""
-print(f"\n8. Long line: strings={long_triple.strings}")
+print(f"Long line: strings={long_triple.strings}")
 print(f"   Value length: {len(long_triple.values[0])}")
 
 inner = t"inner {42}"
 outer = t"""Outer template:
 {inner}
 End"""
-print(f"\n9. Nested templates: {str(outer)}")
+print(f"Nested templates: {str(outer)}")
 print(f"   Inner value: {outer.values[0]}")
 
 formatted = t"""Math constants:
 Pi: {314:.2f}
 E: {271:.1e}
 Sqrt(2): {141:.0f}"""
-print(f"\n10. Formatted values: {repr(formatted)}")
+print(f"Formatted values: {repr(formatted)}")
 print(f"    Interpolation count: {len(formatted.interpolations)}")
 print(f"    Format specs: {[i.format_spec for i in formatted.interpolations]}")
 
 x, y, z = 1, 2, 3
 debug_complex = t"""Debug info:
 {x + y=} {x * y * z=} {x < y < z=}"""
-print(f"\n11. Debug complex: {repr(debug_complex)}")
+print(f"Debug complex: {repr(debug_complex)}")
 print(f"    Expressions: {[i.expression for i in debug_complex.interpolations]}")
 
 part1 = t"""Part 1
@@ -395,10 +388,8 @@ with newline"""
 part2 = t'''Part 2
 also multiline'''
 concatenated = part1 + part2
-print(f"\n12. Concatenated triple: {repr(concatenated)}")
+print(f"Concatenated triple: {repr(concatenated)}")
 print(f"    Strings: {concatenated.strings}")
-
-print("\nTriple quote edge case tests completed!")
 
 print("\n=== PEP 701 brace compliance ===")
 t_brace1 = t"{{"
@@ -425,8 +416,6 @@ try:
 except SyntaxError:
     print("Unterminated {{ rejected (correct)")
 
-print("\nPEP 701 brace compliance tests completed!")
-
 print("\n=== Format spec scope resolution ===")
 def test_format_scope():
     width = 10
@@ -446,4 +435,4 @@ t_prec = t"{value:.{precision}f}"
 print(f"Precision: format_spec={t_prec.interpolations[0].format_spec}")
 assert t_prec.interpolations[0].format_spec == '.2f'
 
-print("\nFormat spec scope tests completed!")
+print("\nBasic tests completed!")
