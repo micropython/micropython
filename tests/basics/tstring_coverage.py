@@ -187,7 +187,6 @@ matrix = [[1, 2], [3, 4]]
 nested_expr = t"{matrix[0][1]}"
 print(f"Nested brackets: expr={nested_expr.interpolations[0].expression}, value={nested_expr.interpolations[0].value}")
 
-# Removed: repr tests (redundant with tstring_basic.py:123, 195)
 
 print("\n=== Additional coverage tests ===")
 
@@ -266,9 +265,6 @@ try:
 except Exception as e:
     print(f"Empty t-string error: {e}")
 
-# Removed: Unicode edge cases (redundant with tstring_basic.py:274-289)
-
-# Removed: Nested template strings (redundant with tstring_basic.py:291-306)
 
 print("\n=== Inline template literal tests ===")
 
@@ -413,7 +409,6 @@ try:
 except Exception as e:
     print(f"Complex expr error: {type(e).__name__}")
 
-# Removed: Format spec position tests (redundant with tstring_basic.py:109, 235-237)
 
 print("\n=== Parser MemoryError ===")
 if sys.platform == 'webassembly':
@@ -457,15 +452,6 @@ try:
 except SyntaxError as e:
     print(f"Debug conv: SyntaxError - {e}")
 
-# Removed: Raw t-string escape tests (redundant with tstring_basic.py:306-312)
-
-# Removed: Interpolation attribute access (redundant with tstring_basic.py:214-237)
-
-# Removed: Template string concatenation (redundant with tstring_basic.py:101-102)
-
-# Removed: Template interpolations attribute (redundant with tstring_basic.py:120)
-
-# Removed: Escaped quotes and backslash handling (redundant with tstring_basic.py:243-245)
 
 print("\n=== Parser allocation edge cases ===")
 try:
@@ -482,7 +468,6 @@ try:
 except Exception as e:
     print(f"Long expression error: {e}")
 
-# Removed: Complex expression parsing (redundant with tstring_basic.py:559-565)
 
 print("\n=== Additional parser regression tests ===")
 
@@ -666,15 +651,6 @@ try:
 except Exception as e:
     print(f"Debug format error: {e}")
 
-# Removed: Format spec with nested interpolation (redundant with tstring_basic.py:112, 434-436)
-
-# Removed: Conversion types loop (redundant with tstring_basic.py:46-61)
-
-# Removed: Raw template strings (redundant with tstring_basic.py:13-17)
-
-# Removed: Template concatenation (redundant with tstring_basic.py:110-113, 777-789)
-
-# Removed: Empty template (redundant with tstring_basic.py:95-96)
 
 try:
     code = 't"' + '{x}' * 4090 + '"'
