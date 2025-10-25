@@ -151,6 +151,10 @@ void mp_hal_signal_event(void);
 #define MICROPY_PY_MACHINE_ADC_READ_UV (1)
 #endif
 
+#if DT_HAS_COMPAT_STATUS_OKAY(micropython_heap)
+#define MICROPY_GC_SPLIT_HEAP (1)
+#endif
+
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM

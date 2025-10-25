@@ -1,0 +1,23 @@
+# Copyright (c) 2025 MASSDRIVER EI (massdriver.space)
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+    MicroPython Heap
+    Used to define micropython heap areas.
+
+compatible: "micropython,heap"
+
+include: [base.yaml]
+
+properties:
+  size:
+    type: int
+    required: true
+    description: |
+      Size of the heap
+
+  memory-region:
+    type: phandle
+    required: true
+    description: |
+      Memory region to place the heap in
