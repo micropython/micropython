@@ -24,10 +24,18 @@ try:
 except OverflowError:
     print("Template varargs n_strings overflow: OverflowError (correct)")
 
-print("\n# __template__ overflow")
+print("\n# __template__ type validation (list instead of tuple)")
 try:
     interps = [Interpolation(0, "x")] * 4096
     __template__([""], interps)
+    print("ERROR: Should have raised TypeError")
+except TypeError:
+    print("__template__ list validation: TypeError (correct)")
+
+print("\n# __template__ overflow")
+try:
+    interps = tuple((i, f"x{i}", None, "") for i in range(4096))
+    __template__(("",), interps)
     print("ERROR: Should have raised OverflowError")
 except OverflowError:
     print("__template__ overflow: OverflowError (correct)")
@@ -51,7 +59,10 @@ except (OverflowError, SyntaxError):
 print("\n# __template__ with maximum valid sizes")
 try:
     strings = tuple(["s"] * 4095)
-    interps = tuple()
+    interps_list = []
+    for i in range(4094):
+        interps_list.append((i, f"x{i}", None, ""))
+    interps = tuple(interps_list)
     result = __template__(strings, interps)
     print(f"Max strings: OK, {len(result.strings)} strings")
 except Exception as e:
@@ -66,29 +77,6 @@ try:
     print(f"Max interps: OK, {len(result.interpolations)} interpolations")
 except Exception as e:
     print(f"Max interps error: {type(e).__name__}")
-
-print("\n# 2-tuple constructor overflow")
-try:
-    from string.templatelib import Template
-
-    strings = tuple("" for _ in range(4100))
-    interps = tuple()
-    t = Template(strings, interps)
-    print("ERROR: Should have raised OverflowError")
-except OverflowError as e:
-    print(f"Too many strings (2-tuple): OverflowError (correct)")
-except (MemoryError, TypeError) as e:
-    print(f"Too many strings (2-tuple): {type(e).__name__} (memory/type limit)")
-
-try:
-    strings = tuple("" for _ in range(10))
-    interps = tuple(Interpolation(0, "x") for _ in range(4096))
-    t = Template(strings, interps)
-    print("ERROR: Should have raised OverflowError")
-except OverflowError as e:
-    print(f"Too many interps (2-tuple): OverflowError (correct)")
-except (MemoryError, TypeError) as e:
-    print(f"Too many interps (2-tuple): {type(e).__name__} (memory/type limit)")
 
 print("\n# Too many segments")
 try:

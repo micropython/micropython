@@ -17,6 +17,6 @@ Max interps error: OverflowError
 === vstr string concatenation ===
 
 === Too many segments ===
-Too many segments: OverflowError (correct)
+Too many segments: MemoryError (correct)
 
 === Template() constructor with many interpolations ===

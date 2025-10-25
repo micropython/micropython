@@ -3,16 +3,17 @@
 import micropython
 from string.templatelib import Template, Interpolation
 
-# Pre-create objects for tests
-strings1 = ("x" * 100,) * 10
-interps1 = tuple(Interpolation(i, "x" + str(i)) for i in range(9))
 i1 = Interpolation(1, "1")
 i2 = Interpolation(2, "2")
 
-# Template creation
 micropython.heap_lock()
 try:
-    Template(strings1, interps1)
+    args = []
+    for i in range(9):
+        args.append("x" * 100)
+        args.append(Interpolation(i, "x" + str(i)))
+    args.append("x" * 100)
+    Template(*args)
     print("FAIL: Template creation")
 except MemoryError:
     print("OK: Template creation")
@@ -57,11 +58,13 @@ except MemoryError:
     print("OK: Template.values")
 micropython.heap_unlock()
 
-# Large values array
 n = 20
-interps3 = tuple(Interpolation(i, "x" + str(i)) for i in range(n))
-strings3 = ("",) * (n + 1)
-t_large = Template(strings3, interps3)
+args_large = []
+for i in range(n):
+    args_large.append("")
+    args_large.append(Interpolation(i, "x" + str(i)))
+args_large.append("")
+t_large = Template(*args_large)
 micropython.heap_lock()
 try:
     t_large.values
