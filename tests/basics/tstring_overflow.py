@@ -92,6 +92,6 @@ try:
     exec(f"y = 1; result = {code}")
     print("ERROR: Should have raised SyntaxError/OverflowError")
 except (SyntaxError, OverflowError, MemoryError) as e:
-    print(f"Too many segments: {type(e).__name__} (correct)")
+    print(f"Too many segments: Error (correct)")
 
 print("\n=== Template() constructor with many interpolations ===")

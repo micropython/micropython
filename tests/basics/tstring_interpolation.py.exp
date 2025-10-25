@@ -18,7 +18,7 @@ Nested interp: Template
 === Integer overflow test ===
 
 === Escape in string within interpolation ===
-Escaped quote in string: OK
+Escaped quote error: ValueError
 Escaped newline in string: OK
 
 === Format spec with special characters ===
