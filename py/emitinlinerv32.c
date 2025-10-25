@@ -196,7 +196,6 @@ typedef enum {
     CALL_R,   // Opcode Register
     CALL_RL,  // Opcode Register, Label
     CALL_N,   // Opcode
-    CALL_I,   // Opcode Immediate
     CALL_RII, // Opcode Register, Register, Immediate
     CALL_RIR, // Opcode Register, Immediate(Register)
     CALL_COUNT
@@ -210,7 +209,6 @@ typedef enum {
 #define U (1 << 2) // Unsigned immediate
 #define Z (1 << 3) // Non-zero
 
-typedef void (*call_l_t)(asm_rv32_t *state, mp_uint_t label_index);
 typedef void (*call_ri_t)(asm_rv32_t *state, mp_uint_t rd, mp_int_t immediate);
 typedef void (*call_rri_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_int_t immediate);
 typedef void (*call_rii_t)(asm_rv32_t *state, mp_uint_t rd, mp_uint_t immediate1, mp_int_t immediate2);
@@ -439,8 +437,7 @@ static bool validate_integer(mp_uint_t value, mp_uint_t mask, mp_uint_t flags) {
 #define ET_WRONG_ARGUMENTS_COUNT MP_ERROR_TEXT("opcode '%q': expecting %d arguments")
 #define ET_OUT_OF_RANGE          MP_ERROR_TEXT("opcode '%q' argument %d: out of range")
 
-static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
-    const opcode_t *opcode, mp_parse_node_t node, mp_uint_t node_index) {
+static bool serialise_argument(emit_inline_asm_t *emit, const opcode_t *opcode, mp_parse_node_t node, mp_uint_t node_index, mp_uint_t *serialised) {
     assert((node_index < 3) && "Invalid argument node number.");
 
     uint32_t kind = 0;
@@ -470,17 +467,19 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
             break;
     }
 
+    mp_uint_t serialised_value = 0;
+
     switch (kind & 0x03) {
         case N:
             assert(mask == OPCODE_MASKS[MASK_NOT_USED] && "Invalid mask index for missing operand.");
-            return true;
+            break;
 
         case R: {
             mp_uint_t register_index;
             if (!parse_register_node(node, &register_index, false)) {
                 emit_inline_rv32_error_exc(emit,
                     mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-                        ET_WRONG_ARGUMENT_KIND, opcode_qstr, node_index + 1, MP_QSTR_register));
+                        ET_WRONG_ARGUMENT_KIND, opcode->qstring, node_index + 1, MP_QSTR_register));
                 return false;
             }
 
@@ -488,11 +487,11 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
                 emit_inline_rv32_error_exc(emit,
                     mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
                         MP_ERROR_TEXT("opcode '%q' argument %d: unknown register"),
-                        opcode_qstr, node_index + 1));
+                        opcode->qstring, node_index + 1));
                 return false;
             }
 
-            return true;
+            serialised_value = (kind & C) ? RV32_MAP_IN_C_REGISTER_WINDOW(register_index) : register_index;
         }
         break;
 
@@ -501,7 +500,7 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
             if (!mp_parse_node_get_int_maybe(node, &object)) {
                 emit_inline_rv32_error_exc(emit,
                     mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-                        ET_WRONG_ARGUMENT_KIND, opcode_qstr, node_index + 1, MP_QSTR_integer));
+                        ET_WRONG_ARGUMENT_KIND, opcode->qstring, node_index + 1, MP_QSTR_integer));
                 return false;
             }
 
@@ -520,7 +519,7 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
                 goto zero_immediate;
             }
 
-            return true;
+            serialised_value = immediate;
         }
         break;
 
@@ -528,7 +527,7 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
             if (!MP_PARSE_NODE_IS_ID(node)) {
                 emit_inline_rv32_error_exc(emit,
                     mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-                        ET_WRONG_ARGUMENT_KIND, opcode_qstr, node_index + 1, MP_QSTR_label));
+                        ET_WRONG_ARGUMENT_KIND, opcode->qstring, node_index + 1, MP_QSTR_label));
                 return false;
             }
 
@@ -538,7 +537,7 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
                 emit_inline_rv32_error_exc(emit,
                     mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
                         MP_ERROR_TEXT("opcode '%q' argument %d: undefined label '%q'"),
-                        opcode_qstr, node_index + 1, qstring));
+                        opcode->qstring, node_index + 1, qstring));
                 return false;
             }
 
@@ -552,27 +551,33 @@ static bool validate_argument(emit_inline_asm_t *emit, qstr opcode_qstr,
                     goto out_of_range;
                 }
             }
-            return true;
+
+            serialised_value = displacement;
         }
         break;
 
         default:
             assert(!"Unknown argument kind");
+            MP_UNREACHABLE;
             break;
     }
 
-    return false;
+    if (serialised != NULL) {
+        *serialised = serialised_value;
+    }
+
+    return true;
 
 out_of_range:
     emit_inline_rv32_error_exc(emit,
-        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, ET_OUT_OF_RANGE, opcode_qstr, node_index + 1));
+        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, ET_OUT_OF_RANGE, opcode->qstring, node_index + 1));
     return false;
 
 zero_immediate:
     emit_inline_rv32_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
             MP_ERROR_TEXT("opcode '%q' argument %d: must not be zero"),
-            opcode_qstr, node_index + 1));
+            opcode->qstring, node_index + 1));
     return false;
 }
 
@@ -618,14 +623,14 @@ static bool parse_register_offset_node(emit_inline_asm_t *emit, qstr opcode_qstr
             return false;
         }
     } else {
-        if (!validate_argument(emit, opcode_qstr, opcode_data, node_struct->nodes[0], 1)) {
+        if (!serialise_argument(emit, opcode_data, node_struct->nodes[0], 1, NULL)) {
             return false;
         }
     }
 
     *offset_node = node_struct->nodes[0];
     node_struct = (mp_parse_node_struct_t *)node_struct->nodes[1];
-    if (!validate_argument(emit, opcode_qstr, opcode_data, node_struct->nodes[0], 2)) {
+    if (!serialise_argument(emit, opcode_data, node_struct->nodes[0], 2, NULL)) {
         return false;
     }
     *register_node = node_struct->nodes[0];
@@ -638,115 +643,58 @@ invalid_structure:
     return false;
 }
 
-static void handle_opcode(emit_inline_asm_t *emit, qstr opcode, const opcode_t *opcode_data, mp_parse_node_t *arguments) {
-    mp_uint_t rd = 0;
-    mp_uint_t rs1 = 0;
-    mp_uint_t rs2 = 0;
-
+static void handle_opcode(emit_inline_asm_t *emit, const opcode_t *opcode_data, mp_uint_t *arguments) {
     switch (opcode_data->calling_convention) {
-        case CALL_RRR: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            parse_register_node(arguments[1], &rs1, opcode_data->argument2_kind & C);
-            parse_register_node(arguments[2], &rs2, opcode_data->argument3_kind & C);
-            ((call_rrr_t)opcode_data->emitter)(&emit->as, rd, rs1, rs2);
+        case CALL_RRR:
+            ((call_rrr_t)opcode_data->emitter)(&emit->as, arguments[0], arguments[1], arguments[2]);
             break;
-        }
 
-        case CALL_RR: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            parse_register_node(arguments[1], &rs1, opcode_data->argument2_kind & C);
-            ((call_rr_t)opcode_data->emitter)(&emit->as, rd, rs1);
+        case CALL_RR:
+            ((call_rr_t)opcode_data->emitter)(&emit->as, arguments[0], arguments[1]);
             break;
-        }
 
-        case CALL_RRI: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            parse_register_node(arguments[1], &rs1, opcode_data->argument2_kind & C);
-            mp_obj_t object;
-            mp_parse_node_get_int_maybe(arguments[2], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument3_shift;
-            ((call_rri_t)opcode_data->emitter)(&emit->as, rd, rs1, immediate);
+        case CALL_RRI:
+            ((call_rri_t)opcode_data->emitter)(&emit->as, arguments[0], arguments[1], arguments[2]);
             break;
-        }
 
-        case CALL_RI: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            mp_obj_t object;
-            mp_parse_node_get_int_maybe(arguments[1], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument2_shift;
-            ((call_ri_t)opcode_data->emitter)(&emit->as, rd, immediate);
+        case CALL_RI:
+            ((call_ri_t)opcode_data->emitter)(&emit->as, arguments[0], arguments[1]);
             break;
-        }
 
-        case CALL_R: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            ((call_r_t)opcode_data->emitter)(&emit->as, rd);
+        case CALL_R:
+            ((call_r_t)opcode_data->emitter)(&emit->as, arguments[0]);
             break;
-        }
 
-        case CALL_RRL: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            parse_register_node(arguments[1], &rs1, opcode_data->argument2_kind & C);
-            qstr qstring;
-            mp_uint_t label_index = lookup_label(emit, arguments[2], &qstring);
-            ptrdiff_t displacement = label_code_offset(emit, label_index);
-            ((call_rri_t)opcode_data->emitter)(&emit->as, rd, rs1, displacement);
+        case CALL_RRL:
+            ((call_rri_t)opcode_data->emitter)(&emit->as, arguments[0], arguments[1], (ptrdiff_t)arguments[2]);
             break;
-        }
 
-        case CALL_RL: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            qstr qstring;
-            mp_uint_t label_index = lookup_label(emit, arguments[1], &qstring);
-            ptrdiff_t displacement = label_code_offset(emit, label_index);
-            ((call_ri_t)opcode_data->emitter)(&emit->as, rd, displacement);
+        case CALL_RL:
+            ((call_ri_t)opcode_data->emitter)(&emit->as, arguments[0], (ptrdiff_t)arguments[1]);
             break;
-        }
 
-        case CALL_L: {
-            qstr qstring;
-            mp_uint_t label_index = lookup_label(emit, arguments[0], &qstring);
-            ptrdiff_t displacement = label_code_offset(emit, label_index);
-            ((call_i_t)opcode_data->emitter)(&emit->as, displacement);
+        case CALL_L:
+            ((call_i_t)opcode_data->emitter)(&emit->as, (ptrdiff_t)arguments[0]);
             break;
-        }
 
         case CALL_N:
             ((call_n_t)opcode_data->emitter)(&emit->as);
             break;
 
-        case CALL_I: {
-            mp_obj_t object;
-            mp_parse_node_get_int_maybe(arguments[0], &object);
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << opcode_data->argument1_shift;
-            ((call_i_t)opcode_data->emitter)(&emit->as, immediate);
-            break;
-        }
-
-        case CALL_RII: {
-            parse_register_node(arguments[0], &rd, opcode_data->argument1_kind & C);
-            mp_obj_t object;
-            mp_parse_node_get_int_maybe(arguments[1], &object);
-            mp_uint_t immediate1 = mp_obj_get_int_truncated(object) << opcode_data->argument2_shift;
-            mp_parse_node_get_int_maybe(arguments[2], &object);
-            mp_uint_t immediate2 = mp_obj_get_int_truncated(object) << opcode_data->argument3_shift;
-            ((call_rii_t)opcode_data->emitter)(&emit->as, rd, immediate1, immediate2);
-            break;
-        }
-
-        case CALL_RIR:
-            assert(!"Should not get here.");
+        case CALL_RII:
+            ((call_rii_t)opcode_data->emitter)(&emit->as, arguments[0], arguments[1], arguments[2]);
             break;
 
         default:
             assert(!"Unhandled call convention.");
+            MP_UNREACHABLE;
             break;
     }
 }
 
 static bool handle_load_store_opcode_with_offset(emit_inline_asm_t *emit, qstr opcode, const opcode_t *opcode_data, mp_parse_node_t *argument_nodes) {
     mp_parse_node_t nodes[3] = {0};
-    if (!validate_argument(emit, opcode, opcode_data, argument_nodes[0], 0)) {
+    if (!serialise_argument(emit, opcode_data, argument_nodes[0], 0, NULL)) {
         return false;
     }
     nodes[0] = argument_nodes[0];
@@ -806,16 +754,17 @@ static void emit_inline_rv32_opcode(emit_inline_asm_t *emit, qstr opcode, mp_uin
                     ET_WRONG_ARGUMENTS_COUNT, opcode, opcode_data->arguments_count));
             return;
         }
-        if (opcode_data->arguments_count >= 1 && !validate_argument(emit, opcode, opcode_data, argument_nodes[0], 0)) {
+        mp_uint_t serialised_arguments[3] = { 0 };
+        if (opcode_data->arguments_count >= 1 && !serialise_argument(emit, opcode_data, argument_nodes[0], 0, &serialised_arguments[0])) {
             return;
         }
-        if (opcode_data->arguments_count >= 2 && !validate_argument(emit, opcode, opcode_data, argument_nodes[1], 1)) {
+        if (opcode_data->arguments_count >= 2 && !serialise_argument(emit, opcode_data, argument_nodes[1], 1, &serialised_arguments[1])) {
             return;
         }
-        if (opcode_data->arguments_count >= 3 && !validate_argument(emit, opcode, opcode_data, argument_nodes[2], 2)) {
+        if (opcode_data->arguments_count >= 3 && !serialise_argument(emit, opcode_data, argument_nodes[2], 2, &serialised_arguments[2])) {
             return;
         }
-        handle_opcode(emit, opcode, opcode_data, argument_nodes);
+        handle_opcode(emit, opcode_data, serialised_arguments);
         return;
     }
 
