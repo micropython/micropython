@@ -2,14 +2,17 @@
 Keyword args: Template.__new__ only accepts positional arguments
 Invalid type: Template args must be str or Interpolation, got int
 Invalid interp: interpolations tuple must contain only Interpolation objects, got int
+Template repr: Template(strings=('hello ', 'world'), interpolations=(Interpolation(42, 'x', None, ''),))
 Varargs constructor: strings=('Hello ', '!'), values=('World',)
 Varargs merged strings: ('AB', 'CD')
 Leading interpolation strings: ('', ' tail')
+Trailing interpolation strings: ('head ', '')
 Interpolation only strings: ('', '', '')
 
 === Binary operations ===
 Template+str: can only concatenate string.templatelib.Template (not "str") to string.templatelib.Template
 str+Template: can only concatenate str (not "string.templatelib.Template") to str
+int+Template: TypeError
 -: unsupported
 *: unsupported
 /: unsupported
@@ -22,51 +25,84 @@ str+Template: can only concatenate str (not "string.templatelib.Template") to st
 >>: unsupported
 
 === Edge cases ===
+Empty template: 'Template(strings=('',), interpolations=())'
 Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
 Adjacent: 'Template(strings=('', '', '', ''), interpolations=(Interpolation(1, '1', None, ''), Interpolation(2, '2', None, ''), Interpolation(3, '3', None, '')))'
+Single iter: ['only']
+Self+self: 'Template(strings=('testtest',), interpolations=())'
 
 === Values property ===
 Values[0]: ()
+Values[1]: (0,)
+Values[2]: (0, 1)
 Values[3]: (0, 1, 2)
+Values[4]: (0, 1, 2, 3)
+Values[5]: (0, 1, 2, 3, 4)
 Values[6]: (0, 1, 2, 3, 4, 5)
 
 === Format spec edge cases ===
 Empty fmt: Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))
+Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10'),))'
+Conv+fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
 Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.14', None, '10.2f'),))'
 Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
+Conv empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', ''),))'
 
 === Special cases ===
 __template__ error: invalid interpolation format
 __template__: Template
 Interp read-only: AttributeError
+Whitespace trim: 'Template(strings=('', ''), interpolations=(Interpolation(None, '   ', None, ''),))'
+Debug =: Template(strings=('', ''), interpolations=(Interpolation(42, 'x=', None, ''),))
 Custom !r: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 'r', ''),))
 Custom !s: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 's', ''),))
+__str__ bound: Template(strings=('test',), interpolations=())
+Empty start iter: ['Interpolation', 'str']
 Iterator edge: ['Interpolation', 'Interpolation']
 
 === Bracket/paren depth tracking ===
 Colon in key: expr=d['b:c'], value=2
 Slice colon: expr=items[1:3], value=[20, 30]
+Function call: expr=pair(1, 2), value=(1, 2)
 Default arg colon: expr=pair(3), value=(3, ':')
+Nested brackets: expr=matrix[0][1], value=2
+
+=== repr tests ===
+Template repr: Template(strings=('Hello ', ' world'), interpolations=(Inter...
+Interp repr: Interpolation(42, 'x', 's', ':>10')
 
 === Additional coverage tests ===
+String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
 Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
+Raw regex strings: ('Regex: \\\\d+', ''), value=42
+String expr: 'Template(strings=('', ''), interpolations=(Interpolation('test', '"test"', None, ''),))'
 Re-raised exception: Special error
 Too many interpolations: SyntaxError
+Large template: SyntaxError
 Triple quoted: 'Template(strings=('Triple "quoted" string',), interpolations=())'
 Raw triple: 'Template(strings=('Raw triple\\n', ''), interpolations=(Interpolation(42, '42', None, ''),))'
 Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'Template(strings=('test', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Self interp concat: values=(1, 1)
 Lonely string: SyntaxError
+Empty t-string: 'Template(strings=('',), interpolations=())'
 
 === Unicode edge cases ===
 Emoji: True
+Combining: True
+Zero-width: True
 Unicode format: True
 
 === Nested template strings ===
 Nested: Template
+Expression: Template
+Function: Template
 
 === Inline template literal tests ===
 Empty nested: Template
 With content: Template
+Concatenation: Template
+Mixed quotes: Template
 Nested interp: Template
 
 === Integer overflow test ===
@@ -76,14 +112,20 @@ Overflow test: OverflowError - template string too large for header format
 === Empty expression tests ===
 Empty expr SyntaxError: t-string: valid expression required before '}'
 Whitespace expr SyntaxError: t-string: valid expression required before '}'
+Whitespace expr: SyntaxError
 Unterminated expr: SyntaxError
+Whitespace + conversion: SyntaxError
 Long expression: OK
 Template.__str__ with large string: OK
+Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
 Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
 Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
 
 === Expression parser tests ===
 Complex expr: OK
+
+=== Format spec position tests ===
+Conv before fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
 
 === Parser MemoryError ===
 Parser MemoryError: MemoryError
@@ -112,14 +154,24 @@ Concatenated strings: ('part1part2part3part4part5',)
 === Template interpolations attribute ===
 Interpolations attr: (Interpolation('World', 'name', None, ''), Interpolation('Python', 'place', None, ''))
 
+=== Escaped quotes in literals ===
+Escaped quotes: OK
+
+=== Backslash handling ===
+Backslash in path: OK
+
 === Parser allocation edge cases ===
 Deep nesting: OK
 Very long expression: OK
+
+=== Complex expression parsing ===
+Dict comprehension: OK
 
 === Additional parser regression tests ===
 Raw nested spec: "QUOTED"
 Escaped quote spec: "QUOTED"
 Escaped backslash spec: \n
+Nested quoted spec: \\
 Literal brace strings: ('', '}}tail')
 Unterminated field: t-string: expecting '}'
 
@@ -129,12 +181,15 @@ Too many interpolations: template string too large for header format
 === Malformed format specs (valid in CPython) ===
 Malformed 1: format_spec: '10!r', conversion: None
 Malformed 2: format_spec: '^10!s', conversion: None
+Malformed 3: format_spec: '>!10', conversion: None
 Invalid unicode: SyntaxError - invalid syntax
 Custom exception re-raised: Test exception
 
 NULL lexer: Tested in heapalloc_fail_tstring.py
 \N{} escape: SyntaxError
 Raw Unicode escapes: '\u0041\U00000042'
+CR LF handling: OK
+Deep indent: OK
 Trailing backslash: SyntaxError
 
 === __template__ edge cases ===
@@ -156,6 +211,24 @@ Debug fmt: strings=('value=', ''), fmt_spec='>10'
 === Format spec with nested interpolation ===
 Nested fmt spec: '10'
 
+=== Conversion types ===
+Conversion r: OK
+Conversion s: OK
+Conversion a: OK
+
+=== Raw template strings ===
+rt prefix: 'Raw\n'
+tr prefix: 'Raw\t'
+
+=== Template concatenation ===
+Explicit concat: strings=('Hello ', ''), values=('World',)
+Implicit concat: strings=('Hello ', ''), values=('World',)
+
+=== Empty template ===
+Empty template: strings=('',), interpolations=()
+4090 interpolations error: OverflowError
+4096 interpolations: OverflowError (correct)
+
 === Trailing whitespace in expression ===
 Trailing whitespace: OK
 
@@ -168,8 +241,14 @@ Template + custom object: TypeError (correct)
 === 2-tuple constructor overflow ===
 Too many strings (2-tuple): OverflowError (correct)
 
+=== Empty format spec node ===
+Empty format after colon: OK
+
 === Too many segments ===
 Too many segments: OverflowError (correct)
+
+=== Template() constructor with many interpolations ===
+Template() constructor: OK (20 interpolations)
 
 === Multiple consecutive strings ===
 Multiple strings concatenated: OK
@@ -182,6 +261,7 @@ Single }: SyntaxError - t-string: single '}' is not allowed
 
 === Escape in string within interpolation ===
 Escaped quote in string: OK
+Escaped newline in string: OK
 
 === Format spec with special characters ===
 Format spec '!r': True
