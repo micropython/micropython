@@ -31,9 +31,9 @@ except TypeError as e:
     print(f"Invalid type: {e}")
 
 try:
-    Template(("a", "b"), (42,))
+    Template("a", 42, "b")
 except TypeError as e:
-    print(f"Invalid interp: {e}")
+    print(f"Invalid type in varargs: {e}")
 
 t = Template("hello ", Interpolation(42, "x"), "world")
 print(f"Template repr: {t.__str__()}")
@@ -130,17 +130,6 @@ except Exception as e:
     print(f"Template() constructor: {type(e).__name__}")
 
 print("\n=== Multiple consecutive strings ===")
-print("\n=== 2-tuple constructor overflow ===")
-try:
-    from string.templatelib import Template
-    strings = tuple("" for _ in range(4100))
-    interps = tuple()
-    t = Template(strings, interps)
-    print("ERROR: Should have raised OverflowError")
-except OverflowError as e:
-    print(f"Too many strings (2-tuple): OverflowError (correct)")
-except (MemoryError, TypeError) as e:
-    print(f"Too many strings (2-tuple): {type(e).__name__} (memory/type limit)")
 
 print("\n=== Empty format spec node ===")
 print("\n=== vstr string concatenation ===")

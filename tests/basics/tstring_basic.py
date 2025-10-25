@@ -145,24 +145,29 @@ except SyntaxError:
     print("bt prefix: SyntaxError")
 
 print("\n=== Escaped braces evaluation ===")
-t_escaped = Template(("{", "}", "{{", "}}"), (Interpolation(42, "x"),) * 3)
+t_escaped = Template("{", Interpolation(42, "x"), "}", Interpolation(42, "x"), "{{", Interpolation(42, "x"), "}}")
 print(f"Escaped eval: '{str(t_escaped)}'")
 
-t_braces = Template(("{{hello}}", " {", "} ", "{{world}}"),
-                   (Interpolation(1, "a"), Interpolation(2, "b"), Interpolation(3, "c")))
+t_braces = Template("{{hello}}", Interpolation(1, "a"), " {", Interpolation(2, "b"), "} ", Interpolation(3, "c"), "{{world}}")
 print(f"Braces in strings: '{str(t_braces)}'")
 
 print("\n=== Memory stress test ===")
 for n in [10, 20, 30]:
-    interps = tuple(Interpolation(i, f"var{i}") for i in range(n))
-    strings = ("s",) * (n + 1)
-    t_mem = Template(strings, interps)
+    args = []
+    for i in range(n):
+        args.append("s")
+        args.append(Interpolation(i, f"var{i}"))
+    args.append("s")
+    t_mem = Template(*args)
     result = str(t_mem)
     print(f"Memory test [{n}]: {len(result)} chars")
 
-large_interps = tuple(Interpolation(i, f"v{i}") for i in range(20))
-large_strings = ("",) * 21
-t_large = Template(large_strings, large_interps)
+large_args = []
+for i in range(20):
+    large_args.append("")
+    large_args.append(Interpolation(i, f"v{i}"))
+large_args.append("")
+t_large = Template(*large_args)
 print(f"Large values: {len(t_large.values)} values")
 
 print("\n=== Nested quotes and braces tests ===")

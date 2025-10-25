@@ -69,7 +69,7 @@ static void template_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 
 static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
-        mp_raise_TypeError(MP_ERROR_TEXT("Template.__new__ only accepts positional arguments"));
+        mp_raise_TypeError(MP_ERROR_TEXT("Template.__new__ only accepts *args arguments"));
     }
 
     mp_obj_t strings_obj;
@@ -79,28 +79,6 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
         mp_obj_t empty = MP_OBJ_NEW_QSTR(MP_QSTR_);
         strings_obj = mp_obj_new_tuple(1, &empty);
         interpolations_obj = mp_obj_new_tuple(0, NULL);
-    } else if (n_args == 2 && mp_obj_is_type(args[0], &mp_type_tuple) && mp_obj_is_type(args[1], &mp_type_tuple)) {
-        strings_obj = args[0];
-        interpolations_obj = args[1];
-
-        size_t strings_len = mp_obj_get_int(mp_obj_len(strings_obj));
-        if (strings_len > TEMPLATE_COUNT_MAX) {
-            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
-        }
-
-        size_t interp_len;
-        mp_obj_t *interp_items;
-        mp_obj_get_array(interpolations_obj, &interp_len, &interp_items);
-        if (interp_len > TEMPLATE_COUNT_MAX) {
-            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
-        }
-        for (size_t i = 0; i < interp_len; i++) {
-            if (!mp_obj_is_exact_type(interp_items[i], &mp_type_interpolation)) {
-                mp_raise_msg_varg(&mp_type_TypeError,
-                    MP_ERROR_TEXT("interpolations tuple must contain only Interpolation objects, got %s"),
-                    mp_obj_get_type_str(interp_items[i]));
-            }
-        }
     } else {
         size_t n_interpolations = 0;
         size_t n_str_args = 0;
@@ -111,7 +89,7 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
                 n_str_args++;
             } else {
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    MP_ERROR_TEXT("Template args must be str or Interpolation, got %s"),
+                    MP_ERROR_TEXT("Template.__new__ *args need to be of type 'str' or 'Interpolation', got %s"),
                     mp_obj_get_type_str(args[i]));
             }
         }
@@ -401,9 +379,30 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolations_in) {
-    size_t strings_len = mp_obj_get_int(mp_obj_len(strings));
+    if (!mp_obj_is_type(strings, &mp_type_tuple)) {
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("__template__ strings must be tuple, got %s"),
+            mp_obj_get_type_str(strings));
+    }
+
+    mp_obj_t *strings_items;
+    size_t strings_len;
+    mp_obj_tuple_get(strings, &strings_len, &strings_items);
+
+    if (strings_len == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("__template__ strings must be non-empty"));
+    }
+
     if (strings_len > TEMPLATE_COUNT_MAX) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+    }
+
+    for (size_t i = 0; i < strings_len; i++) {
+        if (!mp_obj_is_str(strings_items[i])) {
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("__template__ strings must contain only str, got %s at index %d"),
+                mp_obj_get_type_str(strings_items[i]), i);
+        }
     }
 
     mp_obj_t *items;
@@ -414,7 +413,6 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
     }
 
-    // Create tuple directly to avoid GC issues
     mp_obj_tuple_t *interpolations_tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, len, &mp_type_tuple);
     interpolations_tuple->len = len;
 
@@ -435,7 +433,12 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
         }
     }
 
-    // Create Template directly instead of calling make_new
+    if (strings_len != interpolations_tuple->len + 1) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("__template__ requires len(strings) == len(interpolations) + 1, got %d and %d"),
+            strings_len, interpolations_tuple->len);
+    }
+
     mp_obj_template_t *self = mp_obj_malloc(mp_obj_template_t, &mp_type_template);
     self->strings = strings;
     self->interpolations = MP_OBJ_FROM_PTR(interpolations_tuple);

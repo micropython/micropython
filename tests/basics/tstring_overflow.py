@@ -24,12 +24,12 @@ primary = "OverflowError - template string too large for header format"
 secondary = "none"
 try:
     limit = 0x1000
-    strings_list = ["" for _ in range(limit + 1)]
-    strings = tuple(strings_list)
-    interp = Interpolation(0, "x", None, "")
-    interps_list = [interp for _ in range(limit)]
+    strings = tuple("" for _ in range(limit + 1))
+    interps_list = []
+    for i in range(limit):
+        interps_list.append((i, f"x{i}", None, ""))
     interps = tuple(interps_list)
-    Template(strings, interps)
+    __template__(strings, interps)
 except OverflowError as e:
     primary = f"OverflowError - {e}"
 except MemoryError:
@@ -66,7 +66,10 @@ print("\n=== Malformed format specs (valid in CPython) ===")
 print("\n=== __template__ edge cases ===")
 try:
     strings = tuple(["s"] * 4095)
-    interps = tuple()
+    interps_list = []
+    for i in range(4094):
+        interps_list.append((i, f"x{i}", None, ""))
+    interps = tuple(interps_list)
     result = __template__(strings, interps)
     print(f"Max strings: OK, {len(result.strings)} strings")
 except Exception as e:
