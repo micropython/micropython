@@ -76,3 +76,22 @@ Q(/rom/lib)
 #if MICROPY_ENABLE_PYSTACK
 Q(pystack exhausted)
 #endif
+
+// Always define t-string qstrs to maintain consistent qstr indices
+// even when MICROPY_PY_TSTRINGS is disabled
+Q(__template__)
+Q(<format_spec>)
+Q(<tstring_expr>)
+Q(Interpolation)
+Q(Template)
+Q(template_iterator)
+Q(strings)
+Q(interpolations)
+Q(values)
+Q(value)
+Q(expression)
+Q(conversion)
+Q(format_spec)
+Q(r)
+Q(s)
+Q(a)

@@ -544,6 +544,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
 
 static mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // Note: For ducktyping, CPython does not look in the instance members or use
+
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = MP_OBJ_TO_PTR(lhs_in);
     qstr op_name = mp_binary_op_method_name[op];
