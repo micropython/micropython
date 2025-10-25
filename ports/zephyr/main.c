@@ -58,6 +58,19 @@
 #include "extmod/vfs.h"
 #endif
 
+#if MICROPY_ENABLE_GC
+#if defined(MICROPY_GC_SPLIT_HEAP) && defined(CONFIG_MICROPY_ADDITIONAL_HEAPS)
+
+static const uintptr_t mpy_zephyr_heap_list[] = {
+    CONFIG_MICROPY_ADDITIONAL_HEAPS_LIST_UNSTRINGIFIED
+};
+
+BUILD_ASSERT(ARRAY_SIZE(mpy_zephyr_heap_list) % 2 == 0, "Invalid additional heap list");
+BUILD_ASSERT(ARRAY_SIZE(mpy_zephyr_heap_list) >= 2, "Invalid additional heap list");
+
+#endif
+#endif
+
 #include "modmachine.h"
 #include "modzephyr.h"
 
@@ -107,6 +120,12 @@ soft_reset:
     mp_cstack_init_with_sp_here(CONFIG_MAIN_STACK_SIZE);
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
+    #if defined(MICROPY_GC_SPLIT_HEAP) && defined(CONFIG_MICROPY_ADDITIONAL_HEAPS)
+    for (int i = 0; i < ARRAY_SIZE(mpy_zephyr_heap_list); i += 2) {
+        gc_add((void *)mpy_zephyr_heap_list[i],
+            (void *)(mpy_zephyr_heap_list[i] + mpy_zephyr_heap_list[i + 1]));
+    }
+    #endif
     #endif
     mp_init();
 
