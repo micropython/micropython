@@ -54,3 +54,12 @@ Type error int: Template.__new__ args must be str or Interpolation, got 'int'
 Type error float: TypeError
 Unmatched brace: t-string: expecting '}'
 Nested debug braces: SyntaxError
+Missing conversion: SyntaxError
+Invalid conversion: t-string: invalid conversion character 'z': expected 's', 'r', or 'a'
+Vertical tab: invalid non-printable character U+000B (<test>, line 1)
+Invalid char after conversion: t-string: invalid conversion character 'r@': expected 's', 'r', or 'a'
+Space after conversion: OK
+Tab after conversion: OK
+Newline after conversion: OK
+CR after conversion: OK
+Form-feed after conversion: OK
