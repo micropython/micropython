@@ -98,12 +98,12 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
                 #if MICROPY_ASAN_BUILD
                 // Shortened message for ASan builds to avoid stack overflow during ROM compression
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    MP_ERROR_TEXT("Template.__new__ args must be str or Interpolation, got %s"),
+                    MP_ERROR_TEXT("Template.__new__ args must be str or Interpolation, got %T"),
                     mp_obj_get_type_str(args[i]));
                 #else
                 // CPython-compatible message for normal builds
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    MP_ERROR_TEXT("Template.__new__ *args need to be of type 'str' or 'Interpolation', got %s"),
+                    MP_ERROR_TEXT("Template.__new__ *args need to be of type 'str' or 'Interpolation', got %T"),
                     mp_obj_get_type_str(args[i]));
                 #endif
             }
@@ -307,10 +307,10 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
         case MP_BINARY_OP_ADD: {
             if (!mp_obj_is_exact_type(rhs_in, &mp_type_template)) {
                 if (mp_obj_is_str(rhs_in)) {
-                    mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not \"str\") to string.templatelib.Template"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not 'str') to string.templatelib.Template"));
                 } else {
                     mp_raise_msg_varg(&mp_type_TypeError,
-                        MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not \"%s\") to string.templatelib.Template"),
+                        MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not %T) to string.templatelib.Template"),
                         mp_obj_get_type_str(rhs_in));
                 }
                 return MP_OBJ_NULL;
@@ -400,7 +400,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolations_in) {
     if (!mp_obj_is_type(strings, &mp_type_tuple)) {
         mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("__template__ strings must be tuple, got %s"),
+            MP_ERROR_TEXT("__template__ strings must be tuple, got %T"),
             mp_obj_get_type_str(strings));
     }
 
@@ -419,7 +419,7 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
     for (size_t i = 0; i < strings_len; i++) {
         if (!mp_obj_is_str(strings_items[i])) {
             mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("__template__ strings must contain only str, got %s at index %d"),
+                MP_ERROR_TEXT("__template__ strings must contain only str, got %T at index %d"),
                 mp_obj_get_type_str(strings_items[i]), i);
         }
     }

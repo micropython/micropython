@@ -1,14 +1,14 @@
 === __template__ validation tests ===
 
 Test 1: strings must be tuple
-OK: rejected list - __template__ strings must be tuple, got list
+OK: rejected list - __template__ strings must be tuple, got 'list'
 
 Test 2: strings must be non-empty
 OK: rejected empty strings - __template__ strings must be non-empty
 
 Test 3: strings items must be str
-OK: rejected non-string - __template__ strings must contain only str, got int at index 0
-OK: rejected non-string at index 1 - __template__ strings must contain only str, got int at index 1
+OK: rejected non-string - __template__ strings must contain only str, got 'int' at index 0
+OK: rejected non-string at index 1 - __template__ strings must contain only str, got 'int' at index 1
 
 Test 4: len(strings) must equal len(interpolations) + 1
 OK: rejected wrong length - __template__ count mismatch: strings=2, interpolations=0

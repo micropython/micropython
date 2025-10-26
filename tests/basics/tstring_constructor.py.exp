@@ -1,7 +1,7 @@
 === Constructor edge cases ===
 Keyword args: Template.__new__ only accepts *args arguments
-Invalid type: Template.__new__ args must be str or Interpolation, got int
-Invalid type in varargs: Template.__new__ args must be str or Interpolation, got int
+Invalid type: Template.__new__ args must be str or Interpolation, got 'int'
+Invalid type in varargs: Template.__new__ args must be str or Interpolation, got 'int'
 Template repr: Template(strings=('hello ', 'world'), interpolations=(Interpolation(42, 'x', None, ''),))
 Varargs constructor: strings=('Hello ', '!'), values=('World',)
 Varargs merged strings: ('AB', 'CD')
