@@ -54,3 +54,8 @@ Trailing backslash: SyntaxError
 Empty format after colon: OK
 
 === Too many segments ===
+
+=== Format spec with special characters (coverage) ===
+Backslash raw: format_spec='<5\\\\'
+Backslash non-raw: format_spec='<5\\'
+Multiple escapes: format_spec='<5\n\t\r'

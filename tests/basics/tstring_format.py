@@ -180,3 +180,31 @@ except Exception as e:
     print(f"Empty format spec error: {e}")
 
 print("\n=== Too many segments ===")
+
+print("\n=== Format spec with special characters (coverage) ===")
+try:
+    align = "<"
+    width = 5
+    value = "test"
+    result = rt"{value:{align}{width}\\}"
+    print(f"Backslash raw: format_spec={repr(result.interpolations[0].format_spec)}")
+except Exception as e:
+    print(f"Backslash raw error: {type(e).__name__}: {e}")
+
+try:
+    align = "<"
+    width = 5
+    value = "test"
+    result = t"{value:{align}{width}\\}"
+    print(f"Backslash non-raw: format_spec={repr(result.interpolations[0].format_spec)}")
+except Exception as e:
+    print(f"Backslash non-raw error: {type(e).__name__}: {e}")
+
+try:
+    align = "<"
+    width = 5
+    value = "test"
+    result = t"{value:{align}{width}\n\t\r}"
+    print(f"Multiple escapes: format_spec={repr(result.interpolations[0].format_spec)}")
+except Exception as e:
+    print(f"Multiple escapes error: {type(e).__name__}: {e}")

@@ -971,10 +971,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                                 for (size_t k = 0; k < fmt_len; k++) {
                                     char c = fmt_start[k];
                                     // Escape characters that can't appear unescaped in f-strings
-                                    if (c == '"') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, '"');
-                                    } else if (c == '\\' && !lex->tok_is_tstring_raw) {
+                                    if (c == '\\' && !lex->tok_is_tstring_raw) {
                                         vstr_add_byte(&fstring_vstr, '\\');
                                         vstr_add_byte(&fstring_vstr, '\\');
                                     } else if (c == '\n') {
