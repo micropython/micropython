@@ -381,13 +381,47 @@ So, in the example above, the resolution is resolution is (1/10Mhz) = 100ns.
 Since the ``start`` level is 0 and toggles with each number, the bitstream is
 ``0101`` with durations of [100ns, 2000ns, 100ns, 4000ns].
 
+The example below uses RMTRX to receive a signal coming from an EV1527 keyfob::
+
+    rx = esp32.RMTRX(pin=Pin(14), \
+                     num_symbols=64, \
+                     min_ns=3100, \
+                     max_ns=5000*1000, \
+                     resolution_hz=1000000, \
+                     soft_min_ns=150*1000, \
+                     soft_max_ns=1500*1000, \
+                     soft_min_len=49, \
+                     soft_max_len=49)
+
+    rx.active(1)
+    while True:
+        data = rx.get_data()
+        if data is not None:
+            print(data)
+            binary = map(lambda hi, lo: abs(hi) > abs(lo) and "1" or "0", data[0:48:2], data[1:48:2])
+            binary = "".join(binary)
+            print("Code is", int(binary, 2))
+            break
+    rx.active(0)
+
+Assuming Pin 14 is connected to a 315/433MHz OOK receiver like a SYN480R, the code
+above can discriminate a signal that is likely coming from an EV1527 keyfob.
+The output would be something like::
+
+    [397, -995, 1058, -312, 1059, -312, 379, -995, 379, ... ] # 49 items
+    Code is 6455248
+
+This type of keyfob transmits a pulse train, delimited by long preambles
+(detected by *max_ns*) and composed of 49 level transitions (filtered by
+*soft_min_len* and *soft_max_len*), the length of each pulse being between 300µs and 1100µs
+(loosely filtered by *min_ns*, *soft_min_ns* and *soft_max_ns*).
+
 For more details see Espressif's `ESP-IDF RMT documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
 
 .. Warning::
-   The current MicroPython RMT implementation lacks some features, most notably
-   receiving pulses. RMT should be considered a
-   *beta feature* and the interface may change in the future.
+   The current MicroPython RMT implementation lacks some features.
+   RMT should be considered a *beta feature* and the interface may change in the future.
 
 
 .. class:: RMT(channel, *, pin=None, resolution_hz=10000000, clock_div=None, idle_level=False, num_symbols=48|64, tx_carrier=None)
@@ -523,12 +557,89 @@ For more details see Espressif's `ESP-IDF RMT documentation.
               a specific RMT channel number for the bitstream, but the channel number is now assigned
               dynamically.
 
+.. class:: RMTRX(pin=None, num_symbols=64, min_ns, max_ns, resolution_hz, soft_min_len=0, soft_max_len=0x7fffffff, soft_min_ns=0, soft_max_ns=0x7fffffff)
+
+    This class provides access to one of the eight RMT channels.
+
+    *pin* is required and configures which Pin is bound to the RMT channel.
+
+    *num_symbols* specifies the RMT buffer allocated for this channel (minimum 64),
+    from a small pool of 512 symbols that are shared by all channels. This buffer does not limit the
+    size of the pulse train that you can receive, but bigger buffers reduce the
+    CPU load and the potential of glitches/imprecise pulse lengths.
+
+    *min_ns* is required and specifies the minimum pulse width considered valid.
+    Pulses shorter than *min_ns* don't close the RMT transaction, they are simply
+    filtered out.
+    The hardware register that holds *min_ns* is 8-bit, so the maximum valid value is 3187 (255 * 12.5ns).
+    If supplied value is too big for the hardware, it will fail when calling ``active(True)``.
+
+    *max_ns* is required and specifies the maximum pulse width considered valid.
+    A pulse longer than *max_ns* closes an RMT transaction.
+    The maximum value is such that (*resolution_hz* * *max_ns*) / 1,000,000,000
+    does not exceed 65535 for ESP32/ESP32-S2, or 32767 for ESP32-S3/C3/C6/H2.
+    If supplied value is too big for the hardware, it will fail when calling ``active(True)``.
+
+    *resolution_hz* is required and defines the unit of the received samples.
+    For example, 1,000,000 means the unit is microsecond. The pulse widths can
+    assume values up to *RMTRX.PULSE_MAX*, so this value should be selected
+    accordingly to the expected incoming signal.
+
+    The following optional parameters are software filters that may help to overcome the
+    limitations of the hardware filters, and are still much faster than filtering at
+    Python level. All values have maximum values of 0x7fffffff:
+
+    *soft_min_ns* is the minimum pulse width considered valid, in nanoseconds.
+    Since *min_ns* ceiling is quite low, *soft_min_ns* allows for a more accurate
+    prefiltering of valid pulse widths. Different from *min_ns*, if a pulse shorter
+    than *soft_min_ns* is detected, the RMT transaction is cancelled and restarted.
+
+    *soft_max_ns* is the maximum pulse width considered valid, in nanoseconds.
+    If a pulse longer than *soft_max_ns* (but shorter than *max_ns*) is detected,
+    the RMT transaction is cancelled and restarted. It is useful to filter out
+    spurious pulses that are too long to be valid, but too short to signal
+    closure.
+
+    *soft_min_len* is the minimum pulse train length considered valid.
+
+    *soft_max_len* is the maximum pulse train length considered valid. If specified,
+    This value should be smaller than twice the parameter *num_symbols* i.e. the
+    transaction must fit in the RMT hardware buffer allocated for this task.
+
+.. method:: RMTRX.active([bool])
+
+    Starts or stops RMT data reception. If no parameter is supplied, returns the current
+    state.
+
+    When RMT reception is active, caller should call ``RMTRX.get_data()`` periodically.
+    For a more sophisticated querying, register for select.POLLIN on the RMTRX object.
+
+.. method:: RMTRX.get_data()
+
+    Get available pulse train data, otherwise gets None.
+
+    Pulse train is supplied as a list of pulse widths, positive values meaning high level and negative values meaning low level.
+    Value unit is defined by *resolution_hz*.
+
+    While a pulse train is available and stays uncollected, newer ones are discarded. Make sure to poll as frequently
+    as necessary, or register for select.POLLIN.
+
+.. method:: RMTRX.deinit()
+
+    Release all RMT resources and invalidate the object. All subsequent method
+    calls will raise OSError. Useful to free RMT resources without having to wait
+    for the object to be garbage-collected.
+
 Constants
 ---------
 
 .. data:: RMT.PULSE_MAX
 
    Maximum integer that can be set for a pulse duration.
+
+.. data:: RMTRX.PULSE_MAX
+
+   Maximum integer that can be received for a pulse duration. Always equal to *RMT.PULSE_MAX*.
 
 Ultra-Low-Power co-processor
 ----------------------------
