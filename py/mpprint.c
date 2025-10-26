@@ -556,28 +556,6 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 chrs += mp_print_strn(print, str, len, flags, fill, width);
                 break;
             }
-            case 'T': {
-                // Type name formatting (like CPython's %T from PEP 737)
-                // Outputs type name in quotes, e.g., 'int' instead of int
-                const char *type_str = va_arg(args, const char *);
-                #ifndef NDEBUG
-                if (type_str == NULL) {
-                    chrs += mp_print_strn(print, "'(null)'", 8, flags, fill, width);
-                    break;
-                }
-                #endif
-                // Opening quote
-                chrs += mp_print_strn(print, "'", 1, 0, ' ', 0);
-                // Type name
-                size_t len = strlen(type_str);
-                if (prec >= 0 && (size_t)prec < len) {
-                    len = prec;
-                }
-                chrs += mp_print_strn(print, type_str, len, 0, ' ', 0);
-                // Closing quote
-                chrs += mp_print_strn(print, "'", 1, 0, ' ', 0);
-                break;
-            }
             case 'd':
             case 'p':
             case 'P':
