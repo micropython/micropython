@@ -38,6 +38,13 @@
 
 #if MICROPY_PY_TSTRINGS
 
+// Detect AddressSanitizer to use shortened error messages when needed
+#if defined(__SANITIZE_ADDRESS__) || (defined(__has_feature) && __has_feature(address_sanitizer))
+#define MICROPY_ASAN_BUILD (1)
+#else
+#define MICROPY_ASAN_BUILD (0)
+#endif
+
 #define TEMPLATE_COUNT_MAX (0x0FFF)
 
 extern const mp_obj_type_t mp_type_template;
@@ -88,9 +95,17 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
             } else if (mp_obj_is_str(args[i])) {
                 n_str_args++;
             } else {
+                #if MICROPY_ASAN_BUILD
+                // Shortened message for ASan builds to avoid stack overflow during ROM compression
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    MP_ERROR_TEXT("Template.__new__ args must be str or Interpolation, got %s"),
+                    mp_obj_get_type_str(args[i]));
+                #else
+                // CPython-compatible message for normal builds
                 mp_raise_msg_varg(&mp_type_TypeError,
                     MP_ERROR_TEXT("Template.__new__ *args need to be of type 'str' or 'Interpolation', got %s"),
                     mp_obj_get_type_str(args[i]));
+                #endif
             }
         }
 
@@ -434,9 +449,17 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
     }
 
     if (strings_len != interpolations_tuple->len + 1) {
+        #if MICROPY_ASAN_BUILD
+        // Shortened message for ASan builds to avoid stack overflow during ROM compression
         mp_raise_msg_varg(&mp_type_ValueError,
             MP_ERROR_TEXT("__template__ count mismatch: strings=%d, interpolations=%d"),
             strings_len, interpolations_tuple->len);
+        #else
+        // CPython-compatible message for normal builds
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("__template__ requires len(strings) == len(interpolations) + 1, got %d and %d"),
+            strings_len, interpolations_tuple->len);
+        #endif
     }
 
     mp_obj_template_t *self = mp_obj_malloc(mp_obj_template_t, &mp_type_template);

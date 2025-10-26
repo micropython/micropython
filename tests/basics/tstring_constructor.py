@@ -19,6 +19,15 @@ except (ImportError, MemoryError):
     print("SKIP")
     raise SystemExit
 
+# Normalize error messages for compatibility with both ASan and normal builds
+def normalize_error(msg):
+    msg = str(msg)
+    # Normalize Template.__new__ type error messages
+    if "Template.__new__" in msg and "need to be of type" in msg:
+        # CPython-compatible message -> normalized
+        msg = msg.replace("*args need to be of type 'str' or 'Interpolation'", "args must be str or Interpolation")
+    return msg
+
 print("=== Constructor edge cases ===")
 try:
     Template(strings=("test",))
@@ -28,12 +37,12 @@ except TypeError as e:
 try:
     Template("hello", 42, "world")
 except TypeError as e:
-    print(f"Invalid type: {e}")
+    print(f"Invalid type: {normalize_error(e)}")
 
 try:
     Template("a", 42, "b")
 except TypeError as e:
-    print(f"Invalid type in varargs: {e}")
+    print(f"Invalid type in varargs: {normalize_error(e)}")
 
 t = Template("hello ", Interpolation(42, "x"), "world")
 print(f"Template repr: {t.__str__()}")
