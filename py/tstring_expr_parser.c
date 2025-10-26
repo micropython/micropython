@@ -108,7 +108,7 @@ mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t a
     }
 
     if (len == 0) {
-        mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("empty expression not allowed"));
+        mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: empty expression not allowed"));
     }
 
 
