@@ -198,7 +198,13 @@ if __name__ == "__main__":
             if arg in named_args:
                 current_tok = arg
             else:
-                named_args[current_tok].append(arg)
+                # Support response files (starting with @) to avoid argument list too long errors
+                if arg.startswith("@") and os.path.isfile(arg[1:]):
+                    with open(arg[1:], "r") as f:
+                        items = [item for item in f.read().splitlines() if item.strip()]
+                        named_args[current_tok].extend(items)
+                else:
+                    named_args[current_tok].append(arg)
 
         if not named_args["pp"] or len(named_args["output"]) != 1:
             print("usage: %s %s ..." % (sys.argv[0], " ... ".join(named_args)))
