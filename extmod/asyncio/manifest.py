@@ -9,6 +9,7 @@ package(
         "funcs.py",
         "lock.py",
         "stream.py",
+        "threads.py",
     ),
     base_path="..",
     opt=3,

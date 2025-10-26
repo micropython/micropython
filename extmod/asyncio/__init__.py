@@ -16,6 +16,7 @@ _attrs = {
     "start_server": "stream",
     "StreamReader": "stream",
     "StreamWriter": "stream",
+    "to_thread": "threads",
 }
 
 
