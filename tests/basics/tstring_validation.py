@@ -1,17 +1,5 @@
 from string.templatelib import Interpolation
 
-# Normalize error messages for compatibility with both ASan and normal builds
-def normalize_error(msg):
-    msg = str(msg)
-    # Normalize __template__ count mismatch messages
-    if "__template__" in msg and "len(strings)" in msg:
-        # CPython-compatible message -> normalized
-        import re
-        match = re.search(r'got (\d+) and (\d+)', msg)
-        if match:
-            return f"__template__ count mismatch: strings={match.group(1)}, interpolations={match.group(2)}"
-    return msg
-
 print("=== __template__ validation tests ===")
 
 print("\nTest 1: strings must be tuple")
@@ -46,19 +34,19 @@ try:
     __template__(("a", "b"), ())
     print("FAIL: accepted wrong length (2 strings, 0 interpolations)")
 except ValueError as e:
-    print("OK: rejected wrong length -", normalize_error(e))
+    print("OK: rejected wrong length -", e)
 
 try:
     __template__(("a",), ((1, "x"),))
     print("FAIL: accepted wrong length (1 string, 1 interpolation)")
 except ValueError as e:
-    print("OK: rejected wrong length -", normalize_error(e))
+    print("OK: rejected wrong length -", e)
 
 try:
     __template__(("a", "b", "c"), ((1, "x"),))
     print("FAIL: accepted wrong length (3 strings, 1 interpolation)")
 except ValueError as e:
-    print("OK: rejected wrong length -", normalize_error(e))
+    print("OK: rejected wrong length -", e)
 
 print("\nTest 5: valid inputs")
 try:
