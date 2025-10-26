@@ -136,13 +136,7 @@ mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t a
         nlr_pop();
         return result;
     } else {
-        mp_obj_t exc = MP_OBJ_FROM_PTR(nlr.ret_val);
-
-        if (mp_obj_is_exact_type(exc, &mp_type_SyntaxError)) {
-            mp_raise_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("invalid syntax in template expression: %.*s"), (int)len, expr);
-        } else {
-            nlr_raise(exc);
-        }
+        nlr_raise(nlr.ret_val);
     }
 }
 

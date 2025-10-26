@@ -929,7 +929,35 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     // Extract conversion
                     mp_parse_node_t conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
 
-                    if (conversion_pos && conversion_pos + 1 < expr_end) {
+                    if (conversion_pos) {
+                        if (conversion_pos + 1 >= expr_end) {
+                            vstr_clear(&vstr);
+                            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: missing conversion character"));
+                        }
+                        char conv_char = str[conversion_pos + 1];
+                        if (conv_char != 's' && conv_char != 'r' && conv_char != 'a') {
+                            vstr_clear(&vstr);
+                            mp_raise_msg_varg(&mp_type_SyntaxError,
+                                MP_ERROR_TEXT("t-string: invalid conversion character '%c': expected 's', 'r', or 'a'"),
+                                conv_char);
+                        }
+                        size_t check_start = conversion_pos + 2;
+                        size_t check_end = format_spec_pos ? format_spec_pos : expr_end;
+                        for (size_t k = check_start; k < check_end; k++) {
+                            char c = str[k];
+                            if (c == '\x0b') {
+                                vstr_clear(&vstr);
+                                mp_raise_msg_varg(&mp_type_SyntaxError,
+                                    MP_ERROR_TEXT("invalid non-printable character U+000B (%s, line %d)"),
+                                    qstr_str(lex->source_name), lex->tok_line);
+                            }
+                            if (c != ' ' && c != '\t' && c != '\n' && c != '\r' && c != '\f') {
+                                vstr_clear(&vstr);
+                                mp_raise_msg_varg(&mp_type_SyntaxError,
+                                    MP_ERROR_TEXT("t-string: invalid conversion character '%.*s': expected 's', 'r', or 'a'"),
+                                    (int)(check_end - conversion_pos - 1), (const char *)&str[conversion_pos + 1]);
+                            }
+                        }
                         qstr conv_q = qstr_from_strn((const char *)&str[conversion_pos + 1], 1);
                         conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, conv_q);
                     } else if (is_debug_format) {

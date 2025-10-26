@@ -8,7 +8,7 @@ Whitespace + conversion: SyntaxError
 Long expression: OK
 Template.__str__ with large string: OK
 Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
-Nested interpolations error: SyntaxError: invalid syntax in template expression: nested{x}
+Nested interpolations error: SyntaxError: invalid syntax
 Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
 
 === Expression parser tests ===
