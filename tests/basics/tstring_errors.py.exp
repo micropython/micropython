@@ -46,3 +46,11 @@ Trailing whitespace: OK
 Single }: SyntaxError - t-string: single '}' is not allowed
 
 === Escape in string within interpolation ===
+Debug unclosed colon: SyntaxError
+Debug unclosed exclaim: SyntaxError
+Unclosed brace literal: t-string: expecting '}'
+Malformed f-string: SyntaxError
+Type error int: Template.__new__ args must be str or Interpolation, got 'int'
+Type error float: TypeError
+Unmatched brace: t-string: expecting '}'
+Nested debug braces: SyntaxError

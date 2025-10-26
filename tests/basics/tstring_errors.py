@@ -158,3 +158,51 @@ except SyntaxError as e:
     print(f"Single }}: SyntaxError - {e}")
 
 print("\n=== Escape in string within interpolation ===")
+
+# Debug format unclosed errors
+try:
+    compile('x = 1; t"{x=:"', '<test>', 'exec')
+except SyntaxError:
+    print('Debug unclosed colon: SyntaxError')
+
+try:
+    compile('x = 1; t"{x=!"', '<test>', 'exec')
+except SyntaxError:
+    print('Debug unclosed exclaim: SyntaxError')
+
+# Unclosed brace literal
+try:
+    compile('t"prefix{incomplete"', '<test>', 'exec')
+except SyntaxError as e:
+    print('Unclosed brace literal:', e)
+
+# Malformed f-string
+try:
+    import sys
+    if hasattr(sys.implementation, '_mpy'):
+        compile('f"{x!invalid}"', '<test>', 'exec')
+except SyntaxError:
+    print('Malformed f-string: SyntaxError')
+
+# Type errors
+try:
+    t = Template("string", 123)
+except TypeError as e:
+    print('Type error int:', e)
+
+try:
+    t = Template("a", "b", 3.14)
+except TypeError:
+    print('Type error float: TypeError')
+
+# Unmatched brace
+try:
+    compile('t"text { more text"', '<test>', 'exec')
+except SyntaxError as e:
+    print('Unmatched brace:', e)
+
+# Nested braces in debug format
+try:
+    compile('x=1; t"{x= {nested}}"', '<test>', 'exec')
+except SyntaxError:
+    print('Nested debug braces: SyntaxError')
