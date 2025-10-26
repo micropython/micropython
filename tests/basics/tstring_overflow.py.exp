@@ -12,7 +12,7 @@ Too many interpolations: template string too large for header format
 
 === __template__ edge cases ===
 Max strings: OK, 4095 strings
-Max interps error: OverflowError
+Max interps limit enforced
 
 === vstr string concatenation ===
 

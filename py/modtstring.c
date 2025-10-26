@@ -435,7 +435,7 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
 
     if (strings_len != interpolations_tuple->len + 1) {
         mp_raise_msg_varg(&mp_type_ValueError,
-            MP_ERROR_TEXT("__template__ requires len(strings) == len(interpolations) + 1, got %d and %d"),
+            MP_ERROR_TEXT("__template__ count mismatch: strings=%d, interpolations=%d"),
             strings_len, interpolations_tuple->len);
     }
 

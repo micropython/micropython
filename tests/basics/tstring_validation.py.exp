@@ -11,9 +11,9 @@ OK: rejected non-string - __template__ strings must contain only str, got int at
 OK: rejected non-string at index 1 - __template__ strings must contain only str, got int at index 1
 
 Test 4: len(strings) must equal len(interpolations) + 1
-OK: rejected wrong length - __template__ requires len(strings) == len(interpolations) + 1, got 2 and 0
-OK: rejected wrong length - __template__ requires len(strings) == len(interpolations) + 1, got 1 and 1
-OK: rejected wrong length - __template__ requires len(strings) == len(interpolations) + 1, got 3 and 1
+OK: rejected wrong length - __template__ count mismatch: strings=2, interpolations=0
+OK: rejected wrong length - __template__ count mismatch: strings=1, interpolations=1
+OK: rejected wrong length - __template__ count mismatch: strings=3, interpolations=1
 
 Test 5: valid inputs
 OK: accepted (1 string, 0 interpolations)

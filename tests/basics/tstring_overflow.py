@@ -82,8 +82,10 @@ try:
         interps.append((i, f"x{i}", None, ""))
     result = __template__(strings, tuple(interps))
     print(f"Max interps: OK, {len(result.interpolations)} interpolations")
+except (OverflowError, MemoryError):
+    print("Max interps limit enforced")
 except Exception as e:
-    print(f"Max interps error: {type(e).__name__}")
+    print(f"Max interps unexpected error: {type(e).__name__}")
 
 print("\n=== vstr string concatenation ===")
 print("\n=== Too many segments ===")
