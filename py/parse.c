@@ -909,8 +909,22 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     }
 
                     // Create expression text string
-                    qstr expr_text_q = qstr_from_strn((const char *)&str[expr_start], expr_len);
-                    mp_parse_node_t expr_text_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_text_q);
+                    mp_parse_node_t expr_text_node;
+                    if (expr_len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
+                        // intern short strings
+                        qstr expr_text_q = qstr_from_strn((const char *)&str[expr_start], expr_len);
+                        expr_text_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_text_q);
+                    } else {
+                        // check if this string is already interned
+                        qstr expr_text_q = qstr_find_strn((const char *)&str[expr_start], expr_len);
+                        if (expr_text_q != MP_QSTRnull) {
+                            expr_text_node = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_text_q);
+                        } else {
+                            // not interned, make a node holding a pointer to the string object
+                            mp_obj_t o = mp_obj_new_str_copy(&mp_type_str, (const byte *)&str[expr_start], expr_len);
+                            expr_text_node = make_node_const_object(parser, lex->tok_line, o);
+                        }
+                    }
 
                     // Extract conversion
                     mp_parse_node_t conversion_node = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_NONE);
@@ -956,10 +970,25 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                                 for (size_t k = 0; k < fmt_len; k++) {
                                     char c = fmt_start[k];
-                                    if (c == '"' || (c == '\\' && !lex->tok_is_tstring_raw)) {
+                                    // Escape characters that can't appear unescaped in f-strings
+                                    if (c == '"') {
                                         vstr_add_byte(&fstring_vstr, '\\');
+                                        vstr_add_byte(&fstring_vstr, '"');
+                                    } else if (c == '\\' && !lex->tok_is_tstring_raw) {
+                                        vstr_add_byte(&fstring_vstr, '\\');
+                                        vstr_add_byte(&fstring_vstr, '\\');
+                                    } else if (c == '\n') {
+                                        vstr_add_byte(&fstring_vstr, '\\');
+                                        vstr_add_byte(&fstring_vstr, 'n');
+                                    } else if (c == '\r') {
+                                        vstr_add_byte(&fstring_vstr, '\\');
+                                        vstr_add_byte(&fstring_vstr, 'r');
+                                    } else if (c == '\t') {
+                                        vstr_add_byte(&fstring_vstr, '\\');
+                                        vstr_add_byte(&fstring_vstr, 't');
+                                    } else {
+                                        vstr_add_byte(&fstring_vstr, c);
                                     }
-                                    vstr_add_byte(&fstring_vstr, c);
                                 }
                                 vstr_add_str(&fstring_vstr, "\"");
 

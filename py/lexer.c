@@ -704,13 +704,13 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
             if (lex->tok_kind == MP_TOKEN_END) {
                 lex->tok_kind = assigned_kind;
-                #if MICROPY_PY_TSTRINGS
-                lex->tok_is_tstring_raw = this_token_raw;
-                #endif
             } else if (lex->tok_kind != assigned_kind) {
                 // Can't concatenate string with bytes
                 break;
             }
+            #if MICROPY_PY_TSTRINGS
+            lex->tok_is_tstring_raw = this_token_raw;
+            #endif
 
             // Skip any type code characters
             if (n_char != 0) {
