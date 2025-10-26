@@ -24,6 +24,7 @@ jobs:
       matrix:
         ci_func:  # names are functions in ci.sh
           - stm32_pyb_build
+          - stm32_build_cmod
           - stm32_nucleo_build
           - stm32_misc_build
     runs-on: ubuntu-22.04
