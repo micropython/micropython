@@ -90,7 +90,7 @@ static mp_obj_t template_make_new(const mp_obj_type_t *type, size_t n_args, size
             } else {
                 // Shortened message for all builds to avoid stack overflow during ROM compression on constrained platforms (Windows x86, ASan)
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    MP_ERROR_TEXT("Template.__new__ args must be str or Interpolation, got %T"),
+                    MP_ERROR_TEXT("Template.__new__ args must be str or Interpolation, got '%s'"),
                     mp_obj_get_type_str(args[i]));
             }
         }
@@ -296,7 +296,7 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
                     mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not 'str') to string.templatelib.Template"));
                 } else {
                     mp_raise_msg_varg(&mp_type_TypeError,
-                        MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not %T) to string.templatelib.Template"),
+                        MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not '%s') to string.templatelib.Template"),
                         mp_obj_get_type_str(rhs_in));
                 }
                 return MP_OBJ_NULL;
@@ -386,7 +386,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolations_in) {
     if (!mp_obj_is_type(strings, &mp_type_tuple)) {
         mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("__template__ strings must be tuple, got %T"),
+            MP_ERROR_TEXT("__template__ strings must be tuple, got '%s'"),
             mp_obj_get_type_str(strings));
     }
 
@@ -405,7 +405,7 @@ static mp_obj_t mp_builtin___template__(mp_obj_t strings, mp_obj_t interpolation
     for (size_t i = 0; i < strings_len; i++) {
         if (!mp_obj_is_str(strings_items[i])) {
             mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("__template__ strings must contain only str, got %T at index %d"),
+                MP_ERROR_TEXT("__template__ strings must contain only str, got '%s' at index %d"),
                 mp_obj_get_type_str(strings_items[i]), i);
         }
     }
