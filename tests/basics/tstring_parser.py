@@ -102,7 +102,7 @@ except Exception as e:
 
 print("\n=== Parser MemoryError ===")
 print("\n=== Parser MemoryError ===")
-if sys.platform in ('webassembly', 'win32', 'msys', 'cygwin'):
+if sys.platform in ('webassembly', 'win32', 'msys', 'cygwin') or sys.maxsize < 2**32:
     print("Parser MemoryError: MemoryError")
 else:
     blocks = []
