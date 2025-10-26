@@ -29,8 +29,8 @@ Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42,
 Debug basic: strings=('value=', ''), conv=r
 Debug !s: strings=('value=', ''), conv=s
 Debug fmt: strings=('value=', ''), fmt_spec='>10'
-4090 interpolations error: OverflowError
-4096 interpolations: OverflowError (correct)
+4090 interpolations error: MemoryError
+4096 interpolations: MemoryError (correct)
 
 === Trailing whitespace in expression ===
 

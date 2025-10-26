@@ -718,6 +718,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         vstr_t vstr;
         vstr_init(&vstr, 16);
 
+        size_t literal_brace_depth = 0;
         size_t i = 0;
         while (i < len) {
             if (i < len - 1 && str[i] == '{' && str[i + 1] == '{') {
@@ -729,14 +730,22 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                 vstr_add_byte(&vstr, '}');
                 i += 2;
             } else if (str[i] == '}') {
+                if (literal_brace_depth > 0) {
+                    vstr_add_byte(&vstr, '}');
+                    literal_brace_depth--;
+                    i++;
+                    continue;
+                }
                 // Lone } without matching }} - syntax error
                 vstr_clear(&vstr);
                 mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: single '}' is not allowed"));
             } else if (str[i] == '{') {
                 // Find the end of the interpolation first to check for debug format
+                size_t brace_pos = i;
                 i++;
                 size_t expr_start = i;
                 int brace_depth = 1;
+                size_t saved_vstr_len = vstr.len;
                 size_t conversion_pos = 0;
                 size_t format_spec_pos = 0;
                 bool is_debug_format = false;
@@ -800,11 +809,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     }
                 }
 
-                // Now save the string part as a const object to handle high bytes correctly
-                mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
-                ADD_NODE_STRINGS(make_node_const_object(parser, lex->tok_line, str_obj));
-                vstr_reset(&vstr);
-
                 int bracket_depth = 0;     // Track [] nesting
                 int paren_depth = 0;     // Track () nesting
                 char in_string = 0;     // Track string delimiter (0, '"', or '\'')
@@ -863,6 +867,11 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     // Successfully found closing brace
                     size_t expr_end = i;
                     size_t expr_len = expr_end - expr_start;
+
+                    // Commit literal prefix (including any debug prefix) now that interpolation parsed.
+                    mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
+                    ADD_NODE_STRINGS(make_node_const_object(parser, lex->tok_line, str_obj));
+                    vstr_reset(&vstr);
 
                     if (is_debug_format) {
                         // Find the position of '=' to determine expression length
@@ -1022,6 +1031,15 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                         vstr_add_byte(&vstr, '}');
                         i++;
                     }
+                } else {
+                    // Failed to parse interpolation (unmatched braces). Treat '{' as literal.
+                    if (vstr.len > saved_vstr_len) {
+                        vstr_cut_tail_bytes(&vstr, vstr.len - saved_vstr_len);
+                    }
+                    i = brace_pos;
+                    vstr_add_byte(&vstr, str[i]);
+                    literal_brace_depth++;
+                    i++;
                 }
             } else if (false && str[i] == '\\' && i + 1 < len) {
                 i++;
@@ -1134,6 +1152,11 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
             }
         }
 
+        if (literal_brace_depth != 0) {
+            vstr_clear(&vstr);
+            mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: expecting '}'"));
+        }
+
         mp_obj_t str_obj = mp_obj_new_str_copy(&mp_type_str, (const byte *)vstr.buf, vstr.len);
         ADD_NODE_STRINGS(make_node_const_object(parser, lex->tok_line, str_obj));
 
@@ -1180,7 +1203,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
         if (0) {
         tstring_overflow:
             vstr_clear(&vstr);
-            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("template string too large for header format"));
+            mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("template string too large for header format"));
         tstring_empty_expr:
             vstr_clear(&vstr);
             mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("t-string: valid expression required before '}'"));

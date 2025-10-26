@@ -14,10 +14,10 @@ __template__ list validation: TypeError (correct)
 __template__ overflow: OverflowError (correct)
 
 # Runtime overflow > 4095 interpolations
-4096 interpolations (runtime): OverflowError (correct)
+4096 interpolations (runtime): MemoryError (correct)
 
 # Parse-time overflow > 4095 interpolations
-4096 interpolations (parse-time): OverflowError (correct)
+4096 interpolations (parse-time): MemoryError (correct)
 
 # __template__ with maximum valid sizes
 Max strings: OK, 4095 strings

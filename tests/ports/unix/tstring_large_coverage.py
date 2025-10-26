@@ -45,16 +45,16 @@ try:
     code = 't"' + "{x}" * 4096 + '"'
     exec(f"x = 1; result = {code}")
     print("ERROR: Should have raised OverflowError")
-except (OverflowError, SyntaxError):
-    print("4096 interpolations (runtime): OverflowError (correct)")
+except (OverflowError, SyntaxError, MemoryError) as e:
+    print(f"4096 interpolations (runtime): {type(e).__name__} (correct)")
 
 print("\n# Parse-time overflow > 4095 interpolations")
 try:
     code = 't"' + "{x}" * 4096 + '"'
     compile(f"x = 1; result = {code}", "<test>", "exec")
     print("ERROR: Should have raised OverflowError")
-except (OverflowError, SyntaxError):
-    print("4096 interpolations (parse-time): OverflowError (correct)")
+except (OverflowError, SyntaxError, MemoryError) as e:
+    print(f"4096 interpolations (parse-time): {type(e).__name__} (correct)")
 
 print("\n# __template__ with maximum valid sizes")
 try:
