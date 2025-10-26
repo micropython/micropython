@@ -8,7 +8,7 @@ tr: 'Path: C:\test\'
 
 === Parser tests ===
 Empty expr: SyntaxError - t-string: valid expression required before '}'
-Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42', None, ''),))
+Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42 ', None, ''),))
 Complex: Template(strings=('', ''), interpolations=(Interpolation(1, "data['a']['b'][0]", None, ''),))
 None: Template(strings=('', ''), interpolations=(Interpolation(None, 'None', None, ''),))
 True: Template(strings=('', ''), interpolations=(Interpolation(True, 'True', None, ''),))
@@ -165,5 +165,11 @@ Local vars: width=10, x=42
 Format spec: 10
 Scope test: PASS
 Precision: format_spec=.2f
+
+=== Trailing whitespace preservation (PEP 750) ===
+Expression with trailing spaces: |x   |
+Expression with both spaces: |   x   |
+Expression with leading spaces: |   x|
+Trailing whitespace: PASS
 
 Basic tests completed!

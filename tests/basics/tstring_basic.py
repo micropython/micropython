@@ -440,4 +440,25 @@ t_prec = t"{value:.{precision}f}"
 print(f"Precision: format_spec={t_prec.interpolations[0].format_spec}")
 assert t_prec.interpolations[0].format_spec == '.2f'
 
+print("\n=== Trailing whitespace preservation (PEP 750) ===")
+x = 42
+tmpl_trail = t"{x   }"
+expr = tmpl_trail.interpolations[0].expression
+print(f"Expression with trailing spaces: |{expr}|")
+assert expr == "x   ", f"Expected 'x   ' but got '{expr}'"
+assert len(expr) == 4, f"Expected length 4 but got {len(expr)}"
+
+tmpl_both = t"{   x   }"
+expr2 = tmpl_both.interpolations[0].expression
+print(f"Expression with both spaces: |{expr2}|")
+assert expr2 == "   x   ", f"Expected '   x   ' but got '{expr2}'"
+assert len(expr2) == 7, f"Expected length 7 but got {len(expr2)}"
+
+tmpl_lead = t"{   x}"
+expr3 = tmpl_lead.interpolations[0].expression
+print(f"Expression with leading spaces: |{expr3}|")
+assert expr3 == "   x", f"Expected '   x' but got '{expr3}'"
+
+print("Trailing whitespace: PASS")
+
 print("\nBasic tests completed!")

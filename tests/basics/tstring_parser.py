@@ -192,3 +192,38 @@ except SyntaxError as e:
     print(f"Unterminated field: {e}")
 
 print("\n=== Template string size limit ===")
+
+print("\n=== Complex expression stress test ===")
+try:
+    vars_dict = {f"x{i}": i for i in range(60)}
+    exec_globals = globals().copy()
+    exec_globals.update(vars_dict)
+    expr_parts = [f"x{i}" for i in range(60)]
+    expr_str = " + ".join(expr_parts)
+    code = f't"{{{expr_str}}}"'
+    result = eval(code, exec_globals)
+    expected = sum(range(60))
+    actual = result.interpolations[0].value
+    if actual == expected:
+        print(f"60 terms: PASS")
+    else:
+        print(f"60 terms: FAIL (expected={expected}, got={actual})")
+except Exception as e:
+    print(f"60 terms: ERROR - {type(e).__name__}: {e}")
+
+try:
+    vars_dict = {f"x{i}": i for i in range(100)}
+    exec_globals = globals().copy()
+    exec_globals.update(vars_dict)
+    expr_parts = [f"x{i}" for i in range(100)]
+    expr_str = " + ".join(expr_parts)
+    code = f't"{{{expr_str}}}"'
+    result = eval(code, exec_globals)
+    expected = sum(range(100))
+    actual = result.interpolations[0].value
+    if actual == expected:
+        print(f"100 terms: PASS")
+    else:
+        print(f"100 terms: FAIL (expected={expected}, got={actual})")
+except Exception as e:
+    print(f"100 terms: ERROR - {type(e).__name__}: {e}")

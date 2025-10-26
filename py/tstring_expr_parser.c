@@ -73,10 +73,6 @@ mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t allocator,
     }
     #endif
 
-    if (n > 100) {
-        return MP_PARSE_NODE_NULL;
-    }
-
     mp_parse_node_struct_t *new_pns = (mp_parse_node_struct_t *)allocator(alloc_ctx,
         sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * n);
 
@@ -84,14 +80,7 @@ mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t allocator,
     new_pns->kind_num_nodes = pns->kind_num_nodes;
 
     for (size_t i = 0; i < n; i++) {
-        mp_parse_node_t child = pns->nodes[i];
-
-        if (!MP_PARSE_NODE_IS_NULL(child) && !MP_PARSE_NODE_IS_LEAF(child)) {
-            if ((uintptr_t)child < 0x1000) {
-                return MP_PARSE_NODE_NULL;
-            }
-        }
-        new_pns->nodes[i] = copy_parse_node(alloc_ctx, allocator, child);
+        new_pns->nodes[i] = copy_parse_node(alloc_ctx, allocator, pns->nodes[i]);
     }
 
     return (mp_parse_node_t)new_pns;

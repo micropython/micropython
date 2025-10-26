@@ -1,7 +1,7 @@
 
 === Empty expression tests ===
 Empty expr SyntaxError: t-string: valid expression required before '}'
-Whitespace expr SyntaxError: t-string: valid expression required before '}'
+Whitespace expr SyntaxError: t-string: empty expression not allowed
 Whitespace expr: SyntaxError
 Unterminated expr: SyntaxError
 Whitespace + conversion: SyntaxError
@@ -43,3 +43,7 @@ Literal brace strings: ('', '}}tail')
 Unterminated field: t-string: expecting '}'
 
 === Template string size limit ===
+
+=== Complex expression stress test ===
+60 terms: PASS
+100 terms: PASS

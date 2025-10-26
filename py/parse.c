@@ -881,15 +881,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                         expr_len = conversion_pos - expr_start;
                     } else if (format_spec_pos) {
                         expr_len = format_spec_pos - expr_start;
-                    } else {
-                        // Trim trailing whitespace for normal expressions
-                        while (expr_len > 0 &&
-                               (str[expr_start + expr_len - 1] == ' ' ||
-                                str[expr_start + expr_len - 1] == '\t' ||
-                                str[expr_start + expr_len - 1] == '\n' ||
-                                str[expr_start + expr_len - 1] == '\r')) {
-                            expr_len--;
-                        }
                     }
 
                     // Parse the expression to generate proper AST nodes
