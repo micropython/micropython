@@ -33,7 +33,7 @@ Octal high bytes: OK, len=3
 === Debug specifier tests ===
 
 === Deep nesting test ===
-Deep nesting error: RuntimeError
+Deep nesting: OK
 
 === Template + non-string object ===
 
