@@ -12,3 +12,6 @@ CONFIG_SPIRAM_USE_MALLOC=y
 # This is the threshold for preferring small allocations from internal memory
 # first, before failing over to PSRAM.
 CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=8192
+
+# USB in DMA mode cannot read from PSRAM, so configure USB in IRQ/slave mode instead.
+CONFIG_TINYUSB_MODE_SLAVE=y
