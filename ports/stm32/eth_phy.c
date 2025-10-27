@@ -40,6 +40,14 @@
 #define PHY_SCSR_DP838XX_DUPLEX_Msk     (4)
 #define PHY_SCSR_DP838XX_10M_Msk        (2)
 
+#define PHY_RTL8211_DEFAULT_PAGE        (0xa42)
+#define PHY_RTL8211_PAGSR_ADDR          (0x1f)
+#define PHY_RTL8211_PHYSR_PAGE          (0xa43)
+#define PHY_RTL8211_PHYSR_ADDR          (0x1a)
+#define PHY_RTL8211_PHYSR_SPEED_Pos     (4)
+#define PHY_RTL8211_PHYSR_SPEED_Msk     (3 << PHY_RTL8211_PHYSR_SPEED_Pos)
+#define PHY_RTL8211_PHYSR_DUPLEX_Msk    (0x0008)
+
 int16_t eth_phy_lan87xx_get_link_status(uint32_t phy_addr) {
     // Get the link mode & speed
     uint16_t scsr = eth_phy_read(phy_addr, PHY_SCSR_LAN87XX);
@@ -65,6 +73,29 @@ int16_t eth_phy_dp838xx_get_link_status(uint32_t phy_addr) {
         scsr |= PHY_DUPLEX;
     }
     return scsr;
+}
+
+int16_t eth_phy_rtl8211_get_link_status(uint32_t phy_addr) {
+    // Get the link mode & speed
+    eth_phy_write(phy_addr, PHY_RTL8211_PAGSR_ADDR, PHY_RTL8211_PHYSR_PAGE);
+    int16_t physr = eth_phy_read(phy_addr, PHY_RTL8211_PHYSR_ADDR);
+    eth_phy_write(phy_addr, PHY_RTL8211_PAGSR_ADDR, PHY_RTL8211_DEFAULT_PAGE);
+    int16_t status = 0;
+    switch ((physr & PHY_RTL8211_PHYSR_SPEED_Msk) >> PHY_RTL8211_PHYSR_SPEED_Pos) {
+        case 0:
+            status |= PHY_SPEED_10HALF;
+            break;
+        case 1:
+            status |= PHY_SPEED_100HALF;
+            break;
+        case 2:
+            status |= PHY_SPEED_1000HALF;
+            break;
+    }
+    if (physr & PHY_RTL8211_PHYSR_DUPLEX_Msk) {
+        status |= PHY_DUPLEX;
+    }
+    return status;
 }
 
 #endif
