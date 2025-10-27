@@ -225,9 +225,12 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
         return -1;
     }
 
-    // Configure GPIO
+    // Configure GPIO for management data.
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_MDC, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(MDC));
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_MDIO, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(MDIO));
+
+    #if defined(MICROPY_HW_ETH_RMII_REF_CLK)
+    // Configure GPIO for RMII interface.
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_ETH_RMII_REF_CLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_MEDIUM, STATIC_AF_ETH(RMII_REF_CLK));
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_CRS_DV, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_CRS_DV));
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_RXD0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_RXD0));
@@ -235,6 +238,22 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TX_EN, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_TX_EN));
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TXD0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_TXD0));
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TXD1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RMII_TXD1));
+    #else
+    // Configure GPIO for RGMII interface.
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_CLK125, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_CLK125));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_GTX_CLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_GTX_CLK));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_TXD0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_TXD0));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_TXD1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_TXD1));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_TXD2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_TXD2));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_TXD3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_TXD3));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_TX_CTL, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_TX_CTL));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RX_CLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RX_CLK));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RXD0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RXD0));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RXD1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RXD1));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RXD2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RXD2));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RXD3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RXD3));
+    mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RGMII_RX_CTL, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH(RGMII_RX_CTL));
+    #endif
 
     // Enable peripheral clock
     #if defined(STM32H5)
@@ -290,14 +309,18 @@ static int eth_mac_init(eth_t *self) {
     LL_RCC_SetETHPTPClockSource(LL_RCC_ETH1PTP_CLKSOURCE_HCLK); // max 200MHz
     #endif
 
-    // Select RMII interface
+    // Select RMII or RGMII interface
     #if defined(STM32H5)
     __HAL_RCC_SBS_CLK_ENABLE();
     SBS->PMCR = (SBS->PMCR & ~SBS_PMCR_ETH_SEL_PHY_Msk) | SBS_PMCR_ETH_SEL_PHY_2;
     #elif defined(STM32H7)
     SYSCFG->PMCR = (SYSCFG->PMCR & ~SYSCFG_PMCR_EPIS_SEL_Msk) | SYSCFG_PMCR_EPIS_SEL_2;
     #elif defined(STM32N6)
+    #if defined(MICROPY_HW_ETH_RGMII_CLK125)
+    LL_RCC_SetETHPHYInterface(LL_RCC_ETH1PHY_IF_RGMII);
+    #else
     LL_RCC_SetETHPHYInterface(LL_RCC_ETH1PHY_IF_RMII);
+    #endif
     #else
     __HAL_RCC_SYSCFG_CLK_ENABLE();
     SYSCFG->PMC |= SYSCFG_PMC_MII_RMII_SEL;
@@ -602,11 +625,14 @@ static int eth_mac_init(eth_t *self) {
 
     #if defined(STM32N6)
 
+    if (!(phy_scsr & PHY_SPEED_1000HALF)) {
+        maccr |= ETH_MACCR_PS;
+    }
+
     maccr |=
         ETH_MACCR_IPG_96BIT
         | ETH_MACCR_SARC_REPADDR0
         | ETH_MACCR_IPC
-        | ETH_MACCR_PS
         | ETH_MACCR_BL_10
         | ETH_MACCR_PRELEN_7;
 
