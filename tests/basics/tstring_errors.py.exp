@@ -6,8 +6,6 @@ Adjacent: 'Template(strings=('', '', '', ''), interpolations=(Interpolation(1, '
 Single iter: ['only']
 Self+self: 'Template(strings=('testtest',), interpolations=())'
 
-=== Values property ===
-
 === Additional coverage tests ===
 String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
 Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
@@ -24,23 +22,15 @@ Self interp concat: values=(1, 1)
 Lonely string: SyntaxError
 Empty t-string: 'Template(strings=('',), interpolations=())'
 
-=== Inline template literal tests ===
-
 === High byte handling ===
 High bytes: len=5, first=0x7f, last=0xff
 Octal high bytes: OK, len=3
 
-=== Debug specifier tests ===
-
 === Deep nesting test ===
 Deep nesting: OK
 
-=== Template + non-string object ===
-
 === Trailing whitespace in expression ===
 Trailing whitespace: OK
-
-=== Deep nesting test ===
 
 === Single closing brace ===
 Single }: SyntaxError - t-string: single '}' is not allowed

@@ -12,27 +12,17 @@ Nested interpolations error: SyntaxError: invalid syntax
 Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
 
 === Expression parser tests ===
-
-=== Expression parser tests ===
 Complex expr: OK
-
-=== Parser MemoryError ===
 
 === Parser MemoryError ===
 Parser MemoryError: MemoryError
 
 === Lexer edge cases ===
-
-=== Lexer edge cases ===
 Lexer NULL case: Tested via heapalloc_fail_tstring.py
-
-=== Format spec edge cases ===
 
 === Parser allocation edge cases ===
 Deep nesting: OK
 Very long expression: OK
-
-=== Additional parser regression tests ===
 
 === Additional parser regression tests ===
 Raw nested spec: "QUOTED"
@@ -41,8 +31,6 @@ Escaped backslash spec: \n
 Nested quoted spec: \\
 Literal brace strings: ('', '}}tail')
 Unterminated field: t-string: expecting '}'
-
-=== Template string size limit ===
 
 === Complex expression stress test ===
 60 terms: PASS

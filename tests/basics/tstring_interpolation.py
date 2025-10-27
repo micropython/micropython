@@ -42,7 +42,6 @@ nested_expr = t"{matrix[0][1]}"
 print(f"Nested brackets: expr={nested_expr.interpolations[0].expression}, value={nested_expr.interpolations[0].value}")
 
 
-print("\n=== Additional coverage tests ===")
 print("\n=== Inline template literal tests ===")
 
 try:
@@ -76,7 +75,6 @@ try:
 except Exception as e:
     print(f"Nested interp: FAIL - {type(e).__name__}: {e}")
 
-print("\n=== Integer overflow test ===")
 print("\n=== Escape in string within interpolation ===")
 try:
     code = r"result = t'{\"test\"value\"}'"

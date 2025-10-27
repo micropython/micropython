@@ -53,7 +53,6 @@ print(f"Trailing interpolation strings: {t_trailing.strings}")
 t_interps_only = Template(Interpolation(1, "x"), Interpolation(2, "y"))
 print(f"Interpolation only strings: {t_interps_only.strings}")
 
-print("\n=== Binary operations ===")
 print("\n=== Special cases ===")
 try:
     __template__(("test",), ((42,),))
@@ -96,7 +95,6 @@ for item in t_iter_edge:
     iter_items.append(type(item).__name__)
 print(f"Iterator edge: {iter_items}")
 
-print("\n=== Bracket/paren depth tracking ===")
 print("\n=== Values property ===")
 for n in range(7):
     args = []
@@ -107,7 +105,6 @@ for n in range(7):
     t = Template(*args)
     print(f"Values[{n}]: {t.values}")
 
-print("\n=== Format spec edge cases ===")
 print("\n=== Multiple consecutive strings ===")
 try:
     t = Template("first", "second", "third", Interpolation(42, "x"), "fourth", "fifth")
@@ -118,7 +115,6 @@ try:
 except Exception as e:
     print(f"Multiple strings error: {e}")
 
-print("\n=== Template.__add__ with multiple interpolations ===")
 print("\n=== Template() constructor with many interpolations ===")
 try:
     exprs = ["a", "b", "c", "d", "e"]
@@ -129,9 +125,6 @@ try:
 except Exception as e:
     print(f"Template() constructor: {type(e).__name__}")
 
-print("\n=== Multiple consecutive strings ===")
-
-print("\n=== Empty format spec node ===")
 print("\n=== vstr string concatenation ===")
 try:
     t1 = Template("part1", "part2", "part3", "part4", Interpolation(1, "x"), "end")

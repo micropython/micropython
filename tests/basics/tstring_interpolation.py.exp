@@ -6,16 +6,12 @@ Function call: expr=pair(1, 2), value=(1, 2)
 Default arg colon: expr=pair(3), value=(3, ':')
 Nested brackets: expr=matrix[0][1], value=2
 
-=== Additional coverage tests ===
-
 === Inline template literal tests ===
 Empty nested: Template
 With content: Template
 Concatenation: Template
 Mixed quotes: Template
 Nested interp: Template
-
-=== Integer overflow test ===
 
 === Escape in string within interpolation ===
 Escaped quote in string: OK

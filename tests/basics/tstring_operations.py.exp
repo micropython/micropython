@@ -14,12 +14,8 @@ int+Template: TypeError
 <<: unsupported
 >>: unsupported
 
-=== Edge cases ===
-
 === Template.__add__ with multiple interpolations ===
 Template.__add__: OK (40 interpolations)
-
-=== Single closing brace ===
 
 === Template + non-string object ===
 Template + custom object: TypeError (correct)

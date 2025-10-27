@@ -7,12 +7,8 @@ Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.1
 Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
 Conv empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', ''),))'
 
-=== Special cases ===
-
 === Format spec edge cases ===
 Full format: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 'r', '0>+#10.5'),))'
-
-=== Debug format edge cases ===
 
 === Format spec with special characters ===
 Format spec '!r': True
@@ -23,16 +19,12 @@ Coverage tests completed!
 === Debug format edge cases ===
 Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
 
-=== Parser allocation edge cases ===
-
 === Debug specifier tests ===
 Debug basic: strings=('value=', ''), conv=r
 Debug !s: strings=('value=', ''), conv=s
 Debug fmt: strings=('value=', ''), fmt_spec='>10'
 4090 interpolations error: MemoryError
 4096 interpolations: MemoryError (correct)
-
-=== Trailing whitespace in expression ===
 
 === Malformed format specs (valid in CPython) ===
 Malformed 1: format_spec: '10!r', conversion: None
@@ -48,12 +40,8 @@ CR LF handling: OK
 Deep indent: OK
 Trailing backslash: SyntaxError
 
-=== __template__ edge cases ===
-
 === Empty format spec node ===
 Empty format after colon: OK
-
-=== Too many segments ===
 
 === Format spec with special characters (coverage) ===
 Backslash raw: format_spec='<5\\\\'

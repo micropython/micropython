@@ -34,7 +34,6 @@ print(f"Single iter: {list(t_single)}")
 t_self = t"test"
 print(f"Self+self: '{(t_self + t_self).__str__()}'")
 
-print("\n=== Values property ===")
 print("\n=== Additional coverage tests ===")
 
 t_str_literal = t"{'hello'}"
@@ -113,7 +112,6 @@ except Exception as e:
     print(f"Empty t-string error: {e}")
 
 
-print("\n=== Inline template literal tests ===")
 print("\n=== High byte handling ===")
 try:
     result = t'\x7F\x80\x81\xFE\xFF'
@@ -128,7 +126,6 @@ try:
 except Exception as e:
     print(f"Octal high bytes error: {e}")
 
-print("\n=== Debug specifier tests ===")
 print("\n=== Deep nesting test ===")
 try:
     nested = "1" + " + 1" * 150
@@ -138,7 +135,6 @@ try:
 except Exception as e:
     print(f"Deep nesting error: {type(e).__name__}")
 
-print("\n=== Template + non-string object ===")
 print("\n=== Trailing whitespace in expression ===")
 try:
     x = 42
@@ -148,7 +144,6 @@ try:
 except Exception as e:
     print(f"Trailing whitespace error: {e}")
 
-print("\n=== Deep nesting test ===")
 print("\n=== Single closing brace ===")
 try:
     exec('t"test }"')

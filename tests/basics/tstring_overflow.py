@@ -50,7 +50,6 @@ if secondary != "none":
 
 print()
 
-print("\n=== Empty expression tests ===")
 print("\n=== Template string size limit ===")
 try:
     code = 't"' + '{x}' * 4096 + '"'
@@ -62,7 +61,6 @@ except (SyntaxError, OverflowError, MemoryError) as e:
     else:
         print(f"Other syntax error: {e}")
 
-print("\n=== Malformed format specs (valid in CPython) ===")
 print("\n=== __template__ edge cases ===")
 try:
     strings = tuple(["s"] * 4095)
@@ -87,7 +85,6 @@ except (OverflowError, MemoryError):
 except Exception as e:
     print(f"Max interps unexpected error: {type(e).__name__}")
 
-print("\n=== vstr string concatenation ===")
 print("\n=== Too many segments ===")
 try:
     code = 't"' + 'x{y}' * 2200 + '"'

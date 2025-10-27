@@ -43,7 +43,6 @@ for op in ['-', '*', '/', '%', '**', '&', '|', '^', '<<', '>>']:
     except TypeError:
         print(f"{op}: unsupported")
 
-print("\n=== Edge cases ===")
 print("\n=== Template.__add__ with multiple interpolations ===")
 try:
     exprs = ["a", "b", "c", "d", "e"]
@@ -60,7 +59,6 @@ try:
 except Exception as e:
     print(f"Template.__add__: {type(e).__name__}")
 
-print("\n=== Single closing brace ===")
 print("\n=== Template + non-string object ===")
 try:
     class CustomObj:

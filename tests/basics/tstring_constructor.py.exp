@@ -9,8 +9,6 @@ Leading interpolation strings: ('', ' tail')
 Trailing interpolation strings: ('head ', '')
 Interpolation only strings: ('', '', '')
 
-=== Binary operations ===
-
 === Special cases ===
 __template__ error: invalid interpolation format
 __template__: Template
@@ -23,8 +21,6 @@ __str__ bound: Template(strings=('test',), interpolations=())
 Empty start iter: ['Interpolation', 'str']
 Iterator edge: ['Interpolation', 'Interpolation']
 
-=== Bracket/paren depth tracking ===
-
 === Values property ===
 Values[0]: ()
 Values[1]: (0,)
@@ -34,19 +30,11 @@ Values[4]: (0, 1, 2, 3)
 Values[5]: (0, 1, 2, 3, 4)
 Values[6]: (0, 1, 2, 3, 4, 5)
 
-=== Format spec edge cases ===
-
 === Multiple consecutive strings ===
 Multiple strings concatenated: OK
 
-=== Template.__add__ with multiple interpolations ===
-
 === Template() constructor with many interpolations ===
 Template() constructor: OK (20 interpolations)
-
-=== Multiple consecutive strings ===
-
-=== Empty format spec node ===
 
 === vstr string concatenation ===
 vstr concat: 'Template(strings=('part1part2part3part4', 'end'), interpolations=(Interpolation(1, 'x', None, ''),))'

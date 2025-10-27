@@ -92,7 +92,6 @@ except ValueError as e:
     print(f'Escaped braces ValueError: {e}')
 
 print("\n=== Expression parser tests ===")
-print("\n=== Expression parser tests ===")
 try:
     exec("t'{[{(x,y):[1,2,3]} for x,y in [(1,2),(3,4)]]}'")
     print("Complex expr: OK")
@@ -100,7 +99,6 @@ except Exception as e:
     print(f"Complex expr error: {type(e).__name__}")
 
 
-print("\n=== Parser MemoryError ===")
 print("\n=== Parser MemoryError ===")
 if sys.platform in ('webassembly', 'win32', 'msys', 'cygwin') or sys.maxsize < 2**32:
     print("Parser MemoryError: MemoryError")
@@ -125,10 +123,8 @@ else:
         gc.collect()
 
 print("\n=== Lexer edge cases ===")
-print("\n=== Lexer edge cases ===")
 print("Lexer NULL case: Tested via heapalloc_fail_tstring.py")
 
-print("\n=== Format spec edge cases ===")
 print("\n=== Parser allocation edge cases ===")
 try:
     deep_expr = "(" * 50 + "x" + ")" * 50
@@ -145,7 +141,6 @@ except Exception as e:
     print(f"Long expression error: {e}")
 
 
-print("\n=== Additional parser regression tests ===")
 print("\n=== Additional parser regression tests ===")
 
 try:
@@ -191,7 +186,6 @@ try:
 except SyntaxError as e:
     print(f"Unterminated field: {e}")
 
-print("\n=== Template string size limit ===")
 
 print("\n=== Complex expression stress test ===")
 try:

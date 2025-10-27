@@ -39,7 +39,6 @@ try:
 except Exception as e:
     print(f"Conv fmt error: {e}")
 
-print("\n=== Special cases ===")
 print("\n=== Format spec edge cases ===")
 try:
     x = 42
@@ -48,7 +47,6 @@ try:
 except Exception as e:
     print(f"Full format error: {e}")
 
-print("\n=== Debug format edge cases ===")
 print("\n=== Format spec with special characters ===")
 try:
     x = 42
@@ -68,7 +66,6 @@ except SyntaxError as e:
     print(f"Debug conv: SyntaxError - {e}")
 
 
-print("\n=== Parser allocation edge cases ===")
 print("\n=== Debug specifier tests ===")
 try:
     value = 42
@@ -98,7 +95,6 @@ try:
 except (OverflowError, SyntaxError, MemoryError) as e:
     print(f"4096 interpolations: {type(e).__name__} (correct)")
 
-print("\n=== Trailing whitespace in expression ===")
 print("\n=== Malformed format specs (valid in CPython) ===")
 x = 42
 value = 42
@@ -170,7 +166,6 @@ try:
 except SyntaxError as e:
     print(f"Trailing backslash: SyntaxError")
 
-print("\n=== __template__ edge cases ===")
 print("\n=== Empty format spec node ===")
 try:
     x = 42
@@ -179,7 +174,6 @@ try:
 except Exception as e:
     print(f"Empty format spec error: {e}")
 
-print("\n=== Too many segments ===")
 
 print("\n=== Format spec with special characters (coverage) ===")
 try:
