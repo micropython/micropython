@@ -1,0 +1,43 @@
+name: Onboard to Membrowse
+
+on:
+  workflow_dispatch:
+    inputs:
+      num_commits:
+        description: 'Number of commits to process'
+        required: true
+        default: '100'
+        type: string
+      api_url:
+        description: 'Membrowse API URL'
+        required: true
+        type: string
+
+jobs:
+  onboard:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install STM32 packages
+        run: source tools/ci.sh && ci_stm32_setup
+      
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: stm32-build
+      
+      - name: Run Membrowse Onboard Action
+        uses: membrowse/membrowse-action/onboard-action@main
+        with:
+          target_name: stm32
+          num_commits: ${{ github.event.inputs.num_commits }}
+          build_script: source tools/ci.sh && ci_stm32_setup && ci_stm32_pyb_build
+          elf: ports/stm32/build-PYBV11/firmware.elf
+          ld: "ports/stm32/boards/stm32f405.ld ports/stm32/boards/common_ifs.ld"
+          api_key: ${{ secrets.MEMBROWSE_API_KEY }}
+          api_url: ${{ github.event.inputs.api_url }}

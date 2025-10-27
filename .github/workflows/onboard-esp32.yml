@@ -1,0 +1,70 @@
+name: Onboard to Membrowse (ESP32)
+
+on:
+  workflow_dispatch:
+    inputs:
+      num_commits:
+        description: 'Number of commits to process'
+        required: true
+        default: '100'
+        type: string
+      api_url:
+        description: 'Membrowse API URL'
+        required: true
+        type: string
+
+jobs:
+  onboard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - id: idf_ver
+        name: Read the ESP-IDF version (including Python version)
+        run: source tools/ci.sh && echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
+
+      - name: Cached ESP-IDF install
+        id: cache_esp_idf
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./esp-idf/
+            ~/.espressif/
+            !~/.espressif/dist/
+            ~/.cache/pip/
+          key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}-${{ runner.os }}-python3.11
+
+      - name: Install ESP-IDF packages
+        run: |
+          if [ "${{ steps.cache_esp_idf.outputs.cache-hit }}" != "true" ]; then
+            source tools/ci.sh && ci_esp32_idf_setup
+          else
+            echo "ESP-IDF cached, reinstalling Python environment for consistency..."
+            source esp-idf/export.sh
+            ./esp-idf/install.sh
+          fi
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: esp32-build
+
+      - name: Run Membrowse Onboard Action
+        uses: membrowse/membrowse-action/onboard-action@main
+        with:
+          target_name: esp32
+          num_commits: ${{ github.event.inputs.num_commits }}
+          build_script: source tools/ci.sh && ci_esp32_idf_setup && ci_esp32_build_s3_c3
+          elf: ports/esp32/build-ESP32_GENERIC_S3/micropython.elf
+          ld: "ports/esp32/build-ESP32_GENERIC_S3/esp-idf/esp_system/ld/memory.ld"
+          api_key: ${{ secrets.MEMBROWSE_API_KEY }}
+          api_url: ${{ github.event.inputs.api_url }}

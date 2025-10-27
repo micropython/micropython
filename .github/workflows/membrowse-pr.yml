@@ -1,0 +1,40 @@
+name: Membrowse PR Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install STM32 packages
+        run: source tools/ci.sh && ci_stm32_setup
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: stm32-build-pr
+
+      - name: Build STM32
+        run: source tools/ci.sh && ci_stm32_pyb_build
+
+      - name: Run Membrowse PR Action
+        uses: membrowse/membrowse-action/pr-action@main
+        with:
+          target_name: stm32
+          build_script: source tools/ci.sh && ci_stm32_setup && ci_stm32_pyb_build
+          elf: ports/stm32/build-PYBV11/firmware.elf
+          ld: "ports/stm32/boards/stm32f405.ld ports/stm32/boards/common_ifs.ld"
+          api_key: ${{ secrets.MEMBROWSE_API_KEY }}
+          api_url: ${{ vars.MEMBROWSE_API_URL }}

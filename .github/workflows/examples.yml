@@ -2,6 +2,8 @@ name: Check examples
 
 on:
   push:
+    branches-ignore:
+      - master
   pull_request:
     paths:
       - '.github/workflows/*.yml'

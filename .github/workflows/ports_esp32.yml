@@ -2,6 +2,8 @@ name: esp32 port
 
 on:
   push:
+    branches-ignore:
+      - master
   pull_request:
     paths:
       - '.github/workflows/*.yml'

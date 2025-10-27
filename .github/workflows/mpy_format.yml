@@ -2,6 +2,8 @@ name: .mpy file format and tools
 
 on:
   push:
+    branches-ignore:
+      - master
   pull_request:
     paths:
       - '.github/workflows/*.yml'
