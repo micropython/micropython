@@ -28,6 +28,25 @@ enum {
 
 typedef struct _parser_t parser_t;
 
+#define COPY_STACK_INITIAL_ALLOC 16
+
+typedef struct {
+    mp_parse_node_struct_t *src_node;
+    mp_parse_node_struct_t *dst_node;
+    size_t child_idx;
+    size_t num_children;
+} copy_frame_t;
+
+static inline size_t get_num_children(mp_parse_node_struct_t *pns) {
+    #if MICROPY_PY_TSTRINGS
+    if ((pns->kind_num_nodes & 0xFF) == MP_PARSE_NODE_TEMPLATE_STRING) {
+        uint32_t hdr = pns->kind_num_nodes;
+        return MP_PARSE_TSTR_HDR_GET_SEG_CNT(hdr) + MP_PARSE_TSTR_HDR_GET_INT_CNT(hdr);
+    }
+    #endif
+    return MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+}
+
 mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t allocator, mp_parse_node_t node) {
     if (MP_PARSE_NODE_IS_NULL(node)) {
         return MP_PARSE_NODE_NULL;
@@ -38,52 +57,87 @@ mp_parse_node_t copy_parse_node(void *alloc_ctx, mp_parse_allocator_t allocator,
     }
 
     mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)node;
-    size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-
 
     if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
-
+        size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         mp_parse_node_struct_t *new_pns = (mp_parse_node_struct_t *)allocator(alloc_ctx,
             sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * n);
         new_pns->source_line = pns->source_line;
         new_pns->kind_num_nodes = pns->kind_num_nodes;
-
         memcpy(new_pns->nodes, pns->nodes, sizeof(mp_parse_node_t) * n);
-
         return (mp_parse_node_t)new_pns;
     }
 
-    #if MICROPY_PY_TSTRINGS
-    if ((pns->kind_num_nodes & 0xFF) == MP_PARSE_NODE_TEMPLATE_STRING) {
-        uint32_t hdr = pns->kind_num_nodes;
-        size_t seg_cnt = MP_PARSE_TSTR_HDR_GET_SEG_CNT(hdr);
-        size_t interp_cnt = MP_PARSE_TSTR_HDR_GET_INT_CNT(hdr);
-        size_t total_nodes = seg_cnt + interp_cnt;
+    copy_frame_t *stack = m_new(copy_frame_t, COPY_STACK_INITIAL_ALLOC);
+    size_t stack_alloc = COPY_STACK_INITIAL_ALLOC;
+    size_t stack_top = 0;
 
-        mp_parse_node_struct_t *new_pns = (mp_parse_node_struct_t *)allocator(alloc_ctx,
-            sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * total_nodes);
-        new_pns->source_line = pns->source_line;
-        new_pns->kind_num_nodes = pns->kind_num_nodes;
+    mp_parse_node_t result = MP_PARSE_NODE_NULL;
 
-        for (size_t i = 0; i < total_nodes; i++) {
-            new_pns->nodes[i] = copy_parse_node(alloc_ctx, allocator, pns->nodes[i]);
-        }
-
-        return (mp_parse_node_t)new_pns;
-    }
-    #endif
-
+    size_t num_children = get_num_children(pns);
     mp_parse_node_struct_t *new_pns = (mp_parse_node_struct_t *)allocator(alloc_ctx,
-        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * n);
-
+        sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * num_children);
     new_pns->source_line = pns->source_line;
     new_pns->kind_num_nodes = pns->kind_num_nodes;
+    result = (mp_parse_node_t)new_pns;
 
-    for (size_t i = 0; i < n; i++) {
-        new_pns->nodes[i] = copy_parse_node(alloc_ctx, allocator, pns->nodes[i]);
+    stack[stack_top].src_node = pns;
+    stack[stack_top].dst_node = new_pns;
+    stack[stack_top].child_idx = 0;
+    stack[stack_top].num_children = num_children;
+    stack_top++;
+
+    while (stack_top > 0) {
+        copy_frame_t *frame = &stack[stack_top - 1];
+
+        if (frame->child_idx >= frame->num_children) {
+            stack_top--;
+            continue;
+        }
+
+        mp_parse_node_t child = frame->src_node->nodes[frame->child_idx];
+
+        if (MP_PARSE_NODE_IS_NULL(child) || MP_PARSE_NODE_IS_LEAF(child)) {
+            frame->dst_node->nodes[frame->child_idx] = child;
+            frame->child_idx++;
+        } else {
+            mp_parse_node_struct_t *child_pns = (mp_parse_node_struct_t *)child;
+
+            if (MP_PARSE_NODE_STRUCT_KIND(child_pns) == RULE_const_object) {
+                size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(child_pns);
+                mp_parse_node_struct_t *new_child = (mp_parse_node_struct_t *)allocator(alloc_ctx,
+                    sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * n);
+                new_child->source_line = child_pns->source_line;
+                new_child->kind_num_nodes = child_pns->kind_num_nodes;
+                memcpy(new_child->nodes, child_pns->nodes, sizeof(mp_parse_node_t) * n);
+                frame->dst_node->nodes[frame->child_idx] = (mp_parse_node_t)new_child;
+                frame->child_idx++;
+            } else {
+                size_t child_num_children = get_num_children(child_pns);
+                mp_parse_node_struct_t *new_child = (mp_parse_node_struct_t *)allocator(alloc_ctx,
+                    sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * child_num_children);
+                new_child->source_line = child_pns->source_line;
+                new_child->kind_num_nodes = child_pns->kind_num_nodes;
+
+                frame->dst_node->nodes[frame->child_idx] = (mp_parse_node_t)new_child;
+                frame->child_idx++;
+
+                if (stack_top >= stack_alloc) {
+                    stack = m_renew(copy_frame_t, stack, stack_alloc, stack_alloc * 2);
+                    stack_alloc *= 2;
+                }
+
+                stack[stack_top].src_node = child_pns;
+                stack[stack_top].dst_node = new_child;
+                stack[stack_top].child_idx = 0;
+                stack[stack_top].num_children = child_num_children;
+                stack_top++;
+            }
+        }
     }
 
-    return (mp_parse_node_t)new_pns;
+    m_del(copy_frame_t, stack, stack_alloc);
+    return result;
 }
 
 mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t allocator,
