@@ -42,10 +42,9 @@
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
 #endif
 
-// Enable t-strings only for full features builds
-// T-strings require significant stack space which causes issues in constrained environments
+// Enable t-strings for all builds
 #ifndef MICROPY_PY_TSTRINGS
-#define MICROPY_PY_TSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#define MICROPY_PY_TSTRINGS (1)
 #endif
 
 #ifndef MICROPY_PY_SYS_PLATFORM
