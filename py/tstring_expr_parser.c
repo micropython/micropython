@@ -1,7 +1,10 @@
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_TSTRINGS
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
-#include "py/mpconfig.h"
 #include "py/misc.h"
 #include "py/qstr.h"
 #include "py/obj.h"
@@ -9,8 +12,6 @@
 #include "py/parse.h"
 #include "py/lexer.h"
 #include "py/tstring_expr_parser.h"
-
-#if MICROPY_PY_TSTRINGS
 
 enum {
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
@@ -181,13 +182,6 @@ mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t a
     } else {
         nlr_raise(nlr.ret_val);
     }
-}
-
-#else
-mp_parse_node_t parse_tstring_expression(void *alloc_ctx, mp_parse_allocator_t allocator,
-    const char *expr, size_t len) {
-    qstr expr_str = qstr_from_strn(expr, len);
-    return mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, expr_str);
 }
 
 #endif

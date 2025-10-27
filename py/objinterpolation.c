@@ -24,10 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/obj.h"
+#include "py/mpconfig.h"
 
 #if MICROPY_PY_TSTRINGS
+
+#include "py/runtime.h"
+#include "py/obj.h"
 
 typedef struct _mp_obj_interpolation_t {
     mp_obj_base_t base;
@@ -106,22 +108,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 mp_obj_t mp_obj_new_interpolation(mp_obj_t value, mp_obj_t expression, mp_obj_t conversion, mp_obj_t format_spec) {
     mp_obj_t args[4] = {value, expression, conversion, format_spec};
     return interpolation_make_new(&mp_type_interpolation, 4, 0, args);
-}
-
-#else
-MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_interpolation,
-    MP_QSTR_Interpolation,
-    MP_TYPE_FLAG_NONE
-    );
-
-mp_obj_t mp_obj_new_interpolation(mp_obj_t value, mp_obj_t expression, mp_obj_t conversion, mp_obj_t format_spec) {
-    (void)value;
-    (void)expression;
-    (void)conversion;
-    (void)format_spec;
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("template strings not available"));
-    return mp_const_none;
 }
 
 #endif
