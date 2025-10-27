@@ -221,3 +221,16 @@ try:
         print(f"100 terms: FAIL (expected={expected}, got={actual})")
 except Exception as e:
     print(f"100 terms: ERROR - {type(e).__name__}: {e}")
+
+print("\n=== Stack expansion test (copy_parse_node) ===")
+try:
+    depth = 20
+    nested_expr = "[" * depth + "1" + "]" * depth
+    code = f't"{{{nested_expr}}}"'
+    result = eval(code)
+    if len(str(result.interpolations[0].value)) > 30:
+        print("Stack expansion: OK")
+    else:
+        print(f"Stack expansion: FAIL")
+except Exception as e:
+    print(f"Stack expansion error: {type(e).__name__}")

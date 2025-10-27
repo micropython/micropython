@@ -35,3 +35,6 @@ Unterminated field: t-string: expecting '}'
 === Complex expression stress test ===
 60 terms: PASS
 100 terms: PASS
+
+=== Stack expansion test (copy_parse_node) ===
+Stack expansion: OK
