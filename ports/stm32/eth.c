@@ -837,6 +837,7 @@ void eth_phy_link_status_poll() {
             // If autoneg timed out and speed couldn't be read, use safe default (10Mbps Half)
             if (autoneg_timeout && phy_speed == 0) {
                 phy_speed = PHY_SPEED_10HALF;
+                mp_printf(&mp_plat_print, "ETH: Autonegotiation timeout, using 10Mbps Half-Duplex\n");
             }
 
             // Set flag to prevent IRQ handler from processing packets during reconfiguration
