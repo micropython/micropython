@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/objmodule.h"
 #include "py/builtin.h"
 
 #if MICROPY_PY_TSTRINGS

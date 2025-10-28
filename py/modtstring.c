@@ -24,16 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-
-#include "py/obj.h"
-#include "py/runtime.h"
-#include "py/objstr.h"
-#include "py/objexcept.h"
-#include "py/lexer.h"
-#include "py/parse.h"
-#include "py/compile.h"
 #include "py/misc.h"
 
 #if MICROPY_PY_TSTRINGS
