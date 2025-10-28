@@ -314,6 +314,119 @@ static bool get_hex(mp_lexer_t *lex, size_t num_digits, mp_uint_t *result) {
     return true;
 }
 
+// Handle escape sequence in string/t-string literals
+// Returns: true if caller should continue to next iteration (e.g., line continuation)
+static bool handle_escape_sequence(mp_lexer_t *lex, char ch, bool is_raw,
+    int brace_depth, char in_string,
+    mp_token_kind_t tok_kind) {
+    if (is_raw || (brace_depth > 0 && in_string != 0)) {
+        // In raw mode or inside expression strings, preserve backslash
+        vstr_add_byte(&lex->vstr, '\\');
+        vstr_add_byte(&lex->vstr, ch);
+        next_char(lex);
+        return true;
+    }
+
+    unichar c = ch;
+    switch (ch) {
+        case '\n':
+            // Line continuation: skip the newline
+            next_char(lex);
+            return true;
+        case '\\':
+            c = '\\';
+            break;
+        case '\'':
+            c = '\'';
+            break;
+        case '"':
+            c = '"';
+            break;
+        case 'a':
+            c = 0x07;
+            break;
+        case 'b':
+            c = 0x08;
+            break;
+        case 't':
+            c = 0x09;
+            break;
+        case 'n':
+            c = 0x0a;
+            break;
+        case 'v':
+            c = 0x0b;
+            break;
+        case 'f':
+            c = 0x0c;
+            break;
+        case 'r':
+            c = 0x0d;
+            break;
+        case 'u':
+        case 'U':
+            if (tok_kind == MP_TOKEN_BYTES) {
+                // b'\u1234' == b'\\u1234'
+                vstr_add_char(&lex->vstr, '\\');
+                break;
+            }
+            MP_FALLTHROUGH
+        case 'x': {
+            mp_uint_t num = 0;
+            int num_digits = (ch == 'x' ? 2 : ch == 'u' ? 4 : 8);
+            if (!get_hex(lex, num_digits, &num)) {
+                // not enough hex chars for escape sequence
+                vstr_add_byte(&lex->vstr, '\\');
+                c = ch;
+            } else {
+                c = num;
+            }
+            break;
+        }
+        case 'N':
+            // Unicode name escapes not supported
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("unicode name escapes"));
+            break;
+        default:
+            if (ch >= '0' && ch <= '7') {
+                // Octal sequence, 1-3 chars
+                size_t digits = 3;
+                mp_uint_t num = ch - '0';
+                while (is_following_odigit(lex) && --digits != 0) {
+                    next_char(lex);
+                    num = num * 8 + (CUR_CHAR(lex) - '0');
+                }
+                c = num;
+            } else {
+                // unrecognised escape character
+                vstr_add_char(&lex->vstr, '\\');
+            }
+            break;
+    }
+
+    // Add the processed character
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_PY_TSTRINGS
+    if (c < 0x110000 && (tok_kind == MP_TOKEN_STRING || tok_kind == MP_TOKEN_TSTRING)) {
+    #else
+    if (c < 0x110000 && tok_kind == MP_TOKEN_STRING) {
+        #endif
+        vstr_add_char(&lex->vstr, c);
+    } else if (c < 0x100) {
+        vstr_add_byte(&lex->vstr, c);
+    }
+    #else
+    if (c < 0x100) {
+        vstr_add_byte(&lex->vstr, c);
+    }
+    #endif
+    else {
+        lex->tok_kind = MP_TOKEN_INVALID;
+    }
+    next_char(lex);
+    return true;
+}
+
 static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) {
     // get first quoting character
     char quote_char = '\'';
@@ -416,107 +529,9 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
 
             if (is_char(lex, '\\')) {
                 next_char(lex);
-                unichar c = CUR_CHAR(lex);
-                if (is_raw) {
-                    // raw strings allow escaping of quotes, but the backslash is also emitted
-                    vstr_add_char(&lex->vstr, '\\');
-                } else {
-                    switch (c) {
-                        // note: "c" can never be MP_LEXER_EOF because next_char
-                        // always inserts a newline at the end of the input stream
-                        case '\n':
-                            c = MP_LEXER_EOF;
-                            break;                          // backslash escape the newline, just ignore it
-                        case '\\':
-                            break;
-                        case '\'':
-                            break;
-                        case '"':
-                            break;
-                        case 'a':
-                            c = 0x07;
-                            break;
-                        case 'b':
-                            c = 0x08;
-                            break;
-                        case 't':
-                            c = 0x09;
-                            break;
-                        case 'n':
-                            c = 0x0a;
-                            break;
-                        case 'v':
-                            c = 0x0b;
-                            break;
-                        case 'f':
-                            c = 0x0c;
-                            break;
-                        case 'r':
-                            c = 0x0d;
-                            break;
-                        case 'u':
-                        case 'U':
-                            if (lex->tok_kind == MP_TOKEN_BYTES) {
-                                // b'\u1234' == b'\\u1234'
-                                vstr_add_char(&lex->vstr, '\\');
-                                break;
-                            }
-                            // Otherwise fall through.
-                            MP_FALLTHROUGH
-                        case 'x': {
-                            mp_uint_t num = 0;
-                            if (!get_hex(lex, (c == 'x' ? 2 : c == 'u' ? 4 : 8), &num)) {
-                                // not enough hex chars for escape sequence
-                                lex->tok_kind = MP_TOKEN_INVALID;
-                            }
-                            c = num;
-                            break;
-                        }
-                        case 'N':
-                            // Supporting '\N{LATIN SMALL LETTER A}' == 'a' would require keeping the
-                            // entire Unicode name table in the core. As of Unicode 6.3.0, that's nearly
-                            // 3MB of text; even gzip-compressed and with minimal structure, it'll take
-                            // roughly half a meg of storage. This form of Unicode escape may be added
-                            // later on, but it's definitely not a priority right now. -- CJA 20140607
-                            mp_raise_NotImplementedError(MP_ERROR_TEXT("unicode name escapes"));
-                            break;
-                        default:
-                            if (c >= '0' && c <= '7') {
-                                // Octal sequence, 1-3 chars
-                                size_t digits = 3;
-                                mp_uint_t num = c - '0';
-                                while (is_following_odigit(lex) && --digits != 0) {
-                                    next_char(lex);
-                                    num = num * 8 + (CUR_CHAR(lex) - '0');
-                                }
-                                c = num;
-                            } else {
-                                // unrecognised escape character; CPython lets this through verbatim as '\' and then the character
-                                vstr_add_char(&lex->vstr, '\\');
-                            }
-                            break;
-                    }
-                }
-                if (c != MP_LEXER_EOF) {
-                    #if MICROPY_PY_BUILTINS_STR_UNICODE
-                    if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
-                        // Valid unicode character in a str object.
-                        vstr_add_char(&lex->vstr, c);
-                    } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
-                        // Valid byte in a bytes object.
-                        vstr_add_byte(&lex->vstr, c);
-                    }
-                    #else
-                    if (c < 0x100) {
-                        // Without unicode everything is just added as an 8-bit byte.
-                        vstr_add_byte(&lex->vstr, c);
-                    }
-                    #endif
-                    else {
-                        // Character out of range; this raises a generic SyntaxError.
-                        lex->tok_kind = MP_TOKEN_INVALID;
-                    }
-                }
+                // Use common escape handling (brace_depth=0, in_string=0 for regular strings)
+                handle_escape_sequence(lex, CUR_CHAR(lex), is_raw, 0, 0, lex->tok_kind);
+                continue;  // handle_escape_sequence already called next_char
             } else {
                 // Add the "character" as a byte so that we remain 8-bit clean.
                 // This way, strings are parsed correctly whether or not they contain utf-8 chars.
@@ -759,99 +774,8 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
                     if (escaped) {
                         escaped = false;
-                        if (is_raw || (brace_depth > 0 && in_string != 0)) {
-                            // In raw mode or inside expression strings, preserve backslash
-                            vstr_add_byte(&lex->vstr, '\\');
-                            vstr_add_byte(&lex->vstr, ch);
-                            next_char(lex);
-                            continue;
-                        }
-                        unichar c = ch;
-                        switch (ch) {
-                            case '\n':
-                                next_char(lex);
-                                continue;
-                            case '\\':
-                                c = '\\';
-                                break;
-                            case '\'':
-                                c = '\'';
-                                break;
-                            case '"':
-                                c = '"';
-                                break;
-                            case 'a':
-                                c = 0x07;
-                                break;
-                            case 'b':
-                                c = 0x08;
-                                break;
-                            case 't':
-                                c = 0x09;
-                                break;
-                            case 'n':
-                                c = 0x0a;
-                                break;
-                            case 'v':
-                                c = 0x0b;
-                                break;
-                            case 'f':
-                                c = 0x0c;
-                                break;
-                            case 'r':
-                                c = 0x0d;
-                                break;
-                            case 'x': {
-                                mp_uint_t num = 0;
-                                if (!get_hex(lex, 2, &num)) {
-                                    vstr_add_byte(&lex->vstr, '\\');
-                                    c = 'x';
-                                } else {
-                                    c = num;
-                                }
-                                break;
-                            }
-                            case 'u':
-                            case 'U': {
-                                int num_digits = (ch == 'u') ? 4 : 8;
-                                mp_uint_t num = 0;
-                                if (!get_hex(lex, num_digits, &num)) {
-                                    vstr_add_byte(&lex->vstr, '\\');
-                                    c = ch;
-                                } else {
-                                    c = num;
-                                }
-                                break;
-                            }
-                            default:
-                                if (ch >= '0' && ch <= '7') {
-                                    size_t digits = 3;
-                                    mp_uint_t num = ch - '0';
-                                    while (is_following_odigit(lex) && --digits != 0) {
-                                        next_char(lex);
-                                        num = num * 8 + (CUR_CHAR(lex) - '0');
-                                    }
-                                    c = num;
-                                } else {
-                                    vstr_add_byte(&lex->vstr, '\\');
-                                }
-                                break;
-                        }
-                        #if MICROPY_PY_BUILTINS_STR_UNICODE
-                        if (c < 0x110000 && lex->tok_kind == MP_TOKEN_TSTRING) {
-                            vstr_add_char(&lex->vstr, c);
-                        } else if (c < 0x100) {
-                            vstr_add_byte(&lex->vstr, c);
-                        }
-                        #else
-                        if (c < 0x100) {
-                            vstr_add_byte(&lex->vstr, c);
-                        }
-                        #endif
-                        else {
-                            lex->tok_kind = MP_TOKEN_INVALID;
-                        }
-                        next_char(lex);
+                        // Use common escape handling
+                        handle_escape_sequence(lex, ch, is_raw, brace_depth, in_string, lex->tok_kind);
                         continue;
                     }
                     if (ch == '\\') {
