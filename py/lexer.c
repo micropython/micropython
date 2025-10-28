@@ -384,9 +384,10 @@ static bool handle_escape_sequence(mp_lexer_t *lex, char ch, bool is_raw,
             break;
         }
         case 'N':
-            // Unicode name escapes not supported
-            mp_raise_SyntaxError(MP_ERROR_TEXT("unicode name escapes"));
-            break;
+            // Unicode name escapes not supported - mark as invalid for SyntaxError
+            lex->tok_kind = MP_TOKEN_INVALID;
+            next_char(lex);
+            return true;  // Skip adding anything to vstr, return immediately
         default:
             if (ch >= '0' && ch <= '7') {
                 // Octal sequence, 1-3 chars
