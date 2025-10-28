@@ -855,9 +855,20 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                         continue;
                     }
                     if (ch == '\\') {
-                        escaped = true;
-                        next_char(lex);
-                        continue;
+                        if (is_raw) {
+                            // raw strings: add backslash and next char (like parse_string_literal)
+                            vstr_add_byte(&lex->vstr, '\\');
+                            next_char(lex);
+                            if (!is_end(lex)) {
+                                vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
+                                next_char(lex);
+                            }
+                            continue;
+                        } else {
+                            escaped = true;
+                            next_char(lex);
+                            continue;
+                        }
                     }
                     if (brace_depth > 0 && in_string == 0 && (ch == '"' || ch == '\'')) {
                         in_string = ch;
