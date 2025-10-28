@@ -950,10 +950,15 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
 
         if args.inlineasm_arch == "rv32":
-            # Check if @micropython.asm_rv32 supports Zba instructions, and skip such tests if it doesn't
-            output = run_feature_check(pyb, args, "inlineasm_rv32_zba.py")
-            if output != b"rv32_zba\n":
-                skip_tests.add("inlineasm/rv32/asmzba.py")
+            # Discover extension-specific inlineasm tests and add them to the
+            # list of tests to run if applicable.
+            for extension in RV32_ARCH_FLAGS:
+                try:
+                    output = run_feature_check(pyb, args, "inlineasm_rv32_{}.py".format(extension))
+                    if output.strip() != "rv32_{}".format(extension).encode():
+                        skip_tests.add("inlineasm/rv32/asm_ext_{}.py".format(extension))
+                except FileNotFoundError:
+                    pass
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
