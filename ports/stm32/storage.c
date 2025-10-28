@@ -171,6 +171,12 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 
         return true;
 
+    } else if (block < FLASH_PART1_START_BLOCK) {
+        // Blocks between MBR and first partition: return zeros
+        // (This handles blocks 1 to FLASH_PART1_START_BLOCK-1)
+        memset(dest, 0, FLASH_BLOCK_SIZE);
+        return true;
+
     #if defined(MICROPY_HW_BDEV_READBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return MICROPY_HW_BDEV_READBLOCK(dest, block - FLASH_PART1_START_BLOCK);
@@ -183,6 +189,10 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 bool storage_write_block(const uint8_t *src, uint32_t block) {
     if (block == 0) {
         // can't write MBR, but pretend we did
+        return true;
+    } else if (block < FLASH_PART1_START_BLOCK) {
+        // Blocks between MBR and first partition: ignore writes
+        // (This handles blocks 1 to FLASH_PART1_START_BLOCK-1)
         return true;
     #if defined(MICROPY_HW_BDEV_WRITEBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {

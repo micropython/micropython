@@ -277,7 +277,7 @@
 #define MICROPY_HW_USB_CDC_NUM (1)
 #endif
 #ifndef MICROPY_HW_USB_MSC
-#define MICROPY_HW_USB_MSC (MICROPY_HW_STM_USB_STACK)
+#define MICROPY_HW_USB_MSC (MICROPY_HW_ENABLE_USB)
 #endif
 #ifndef MICROPY_HW_USB_HID
 #define MICROPY_HW_USB_HID (MICROPY_HW_STM_USB_STACK)
@@ -695,8 +695,13 @@
 #define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(MICROPY_HW_BDEV_SPIFLASH, (src), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BLOCKS + (bl), (n))
 #endif
 
+// Define the FATFS maximum sector size.
+#ifndef MICROPY_FATFS_MAX_SS
 #if defined(STM32N6)
 #define MICROPY_FATFS_MAX_SS                    (4096)
+#else
+#define MICROPY_FATFS_MAX_SS                    (512)
+#endif
 #endif
 
 // Whether to enable caching for external SPI flash, to allow block writes that are

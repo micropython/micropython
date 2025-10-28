@@ -92,7 +92,9 @@ typedef struct _usb_device_t {
 } usb_device_t;
 
 usb_device_t usb_device = {0};
+#if MICROPY_HW_USB_MSC
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
+#endif
 
 #if !MICROPY_HW_USB_IS_MULTI_OTG
 
