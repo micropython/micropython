@@ -385,7 +385,7 @@ static bool handle_escape_sequence(mp_lexer_t *lex, char ch, bool is_raw,
         }
         case 'N':
             // Unicode name escapes not supported
-            mp_raise_NotImplementedError(MP_ERROR_TEXT("unicode name escapes"));
+            mp_raise_SyntaxError(MP_ERROR_TEXT("unicode name escapes"));
             break;
         default:
             if (ch >= '0' && ch <= '7') {
