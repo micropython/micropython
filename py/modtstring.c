@@ -290,10 +290,10 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
         case MP_BINARY_OP_ADD: {
             if (!mp_obj_is_exact_type(rhs_in, &mp_type_template)) {
                 if (mp_obj_is_str(rhs_in)) {
-                    mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not 'str') to string.templatelib.Template"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not \"str\") to string.templatelib.Template"));
                 } else {
                     mp_raise_msg_varg(&mp_type_TypeError,
-                        MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not '%s') to string.templatelib.Template"),
+                        MP_ERROR_TEXT("can only concatenate string.templatelib.Template (not \"%s\") to string.templatelib.Template"),
                         mp_obj_get_type_str(rhs_in));
                 }
                 return MP_OBJ_NULL;

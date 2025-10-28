@@ -77,7 +77,7 @@ static void interpolation_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
     } else {
         if (dest[1] != MP_OBJ_NULL) {
-            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("'Interpolation' object attribute is read-only"));
+            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("readonly attribute"));
         }
     }
 }
