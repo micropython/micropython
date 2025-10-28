@@ -33,22 +33,19 @@
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
 #include "soc/timer_periph.h"
+#include "esp_timer.h"
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
 
     // Timer type; virtual or hardware
-    mp_uint_t type; // 0 = virtual, 1 = hardware
-
-
-    // NOTE: For soft timers (period in ticks) is converted to OS ticks, this is a compile time
-    // constant defined in FreeRTOSConfig.h as CONFIG_TICK_RATE_HZ (typically 100Hz or 1 tick every 10ms)
-    // however its recommended to set this to 1000Hz (1ms tick) for better resolution by adding to
-    // the board sdkconfig.defaults file.
+    bool is_virtual;
 
     // Virtual timer specific fields
-    TimerHandle_t vtimer;
-    TickType_t v_start_tick; // Tick count when virtual timer was started
+    //  - vtimer is memory allocated esp32 timer
+    //  - v_start_tick is used to return time until next event
+    esp_timer_handle_t vtimer;
+    int64_t v_start_tick;
 
     // ESP32 specific fields
     timer_hal_context_t hal_context;
@@ -70,10 +67,10 @@ typedef struct _machine_timer_obj_t {
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
 
-machine_timer_obj_t *machine_timer_create(mp_uint_t timer);
+// Externalize machine timer for use elsewhere in board support
+machine_timer_obj_t *machine_timer_create(mp_int_t timer);
 void machine_timer_enable(machine_timer_obj_t *self);
 void machine_timer_disable(machine_timer_obj_t *self);
-
 uint32_t machine_timer_freq_hz(void);
 
 #endif // MICROPY_INCLUDED_ESP32_MACHINE_TIMER_H
