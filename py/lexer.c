@@ -529,10 +529,10 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
     // check we got the required end quotes
     if (n_closing < num_quotes) {
         lex->tok_kind = MP_TOKEN_LONELY_STRING_OPEN;
-    } else {
-        // cut off the end quotes from the token text
-        vstr_cut_tail_bytes(&lex->vstr, n_closing);
     }
+
+    // cut off the end quotes from the token text
+    vstr_cut_tail_bytes(&lex->vstr, n_closing);
 }
 
 // This function returns whether it has crossed a newline or not.
