@@ -44,8 +44,17 @@ static const char fresh_boot_py[] =
     "import pyb\r\n"
     "#pyb.main('main.py') # main script to run after this one\r\n"
 #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_TINYUSB_STACK
+    "#usb = machine.USBDevice()\r\n"
+    "#usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC  # serial and storage\r\n"
+    "#usb.active(True)\r\n"
+#if MICROPY_HW_NETWORK_USBNET
+    "#usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_NCM  # serial and network\r\n"
+#endif
+#else
     "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
     "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
+#endif
 #endif
 #if MICROPY_PY_NETWORK
     "#import network\r\n"
