@@ -1,3 +1,6 @@
+# No we don't use separate build dirs for mpy-cross
+BUILD = build
+
 include ../py/mkenv.mk
 
 # define main target
