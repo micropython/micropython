@@ -819,6 +819,11 @@ void eth_phy_link_status_poll() {
 
     // If link is up but MAC speed/duplex not yet configured, check if autoneg is complete
     if (current_link_status && !self->mac_speed_configured) {
+        // Re-verify link is still up before proceeding (link could have changed since first check)
+        if (!self->last_link_status) {
+            return;  // Link went down since first check, abort MAC reconfiguration
+        }
+
         // Check if autonegotiation has completed
         bsr = eth_phy_read(self->phy_addr, PHY_BSR);
 
