@@ -315,11 +315,14 @@ static bool get_hex(mp_lexer_t *lex, size_t num_digits, mp_uint_t *result) {
 }
 
 static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) {
+    // get first quoting character
     char quote_char = '\'';
     if (is_char(lex, '\"')) {
         quote_char = '\"';
     }
     next_char(lex);
+
+    // work out if it's a single or triple quoted literal
     size_t num_quotes;
     if (is_char_and(lex, quote_char, quote_char)) {
         // triple quotes
@@ -357,7 +360,7 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
             while (is_fstring && is_char(lex, '{')) {
                 next_char(lex);
                 if (is_char(lex, '{')) {
-                    // "{{" is passed through unchanged for f-strings
+                    // "{{" is passed through unchanged to be handled by str.format
                     vstr_add_byte(&lex->vstr, '{');
                     next_char(lex);
                 } else {
@@ -522,6 +525,8 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
         }
         next_char(lex);
     }
+
+    // check we got the required end quotes
     if (n_closing < num_quotes) {
         lex->tok_kind = MP_TOKEN_LONELY_STRING_OPEN;
     } else {
