@@ -775,7 +775,9 @@ void eth_phy_link_status_poll() {
         return;
     }
     // Poll PHY link status and handle state changes
-    uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
+    // PHY_BSR link status bit is latched-low (IEEE 802.3): requires two reads to get current state
+    uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);  // First read clears latch
+    bsr = eth_phy_read(self->phy_addr, PHY_BSR);  // Second read gets current state
     bool current_link_status = (bsr & PHY_BSR_LINK_STATUS) != 0;
 
     // Check if link status changed
@@ -938,7 +940,9 @@ int eth_link_status(eth_t *self) {
             physical_link_up = self->last_link_status;
         } else {
             // Direct PHY read when interface not enabled
+            // PHY_BSR link status bit is latched-low: requires two reads
             uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
+            bsr = eth_phy_read(self->phy_addr, PHY_BSR);
             physical_link_up = (bsr & PHY_BSR_LINK_STATUS) != 0;
         }
 
