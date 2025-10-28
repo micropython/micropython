@@ -125,8 +125,9 @@ typedef struct _asm_rv32_t {
 enum {
     RV32_EXT_NONE = 0,
     RV32_EXT_ZBA = 1 << 0,
+    RV32_EXT_ZCMP = 1 << 1,
 
-    RV32_EXT_ALL = RV32_EXT_ZBA
+    RV32_EXT_ALL = RV32_EXT_ZBA | RV32_EXT_ZCMP
 };
 
 typedef struct _asm_rv32_backend_options_t {
@@ -710,7 +711,8 @@ static inline void asm_rv32_opcode_xori(asm_rv32_t *state, mp_uint_t rd, mp_uint
 }
 
 #define MICROPY_RV32_EXTENSIONS \
-    (MICROPY_EMIT_RV32_ZBA ? RV32_EXT_ZBA : 0)
+    ((MICROPY_EMIT_RV32_ZBA ? RV32_EXT_ZBA : 0) | \
+    (MICROPY_EMIT_RV32_ZCMP ? RV32_EXT_ZCMP : 0))
 
 static inline uint8_t asm_rv32_allowed_extensions(void) {
     uint8_t extensions = MICROPY_RV32_EXTENSIONS;
