@@ -31,8 +31,9 @@
 #if defined(MICROPY_HW_ETH_MDC)
 
 #define PHY_SCSR_LAN87XX                (0x001f)
-#define PHY_SCSR_LAN87XX_SPEED_Pos      (2)
-#define PHY_SCSR_LAN87XX_SPEED_Msk      (7)
+#define PHY_SCSR_LAN87XX_10M_Msk        (0x0004)
+#define PHY_SCSR_LAN87XX_100M_Msk       (0x0008)
+#define PHY_SCSR_LAN87XX_DUPLEX_Msk     (0x0010)
 
 #define PHY_SCSR_DP838XX                (0x0010)
 #define PHY_RECR_DP838XX                (0x0015)
@@ -41,8 +42,18 @@
 
 int16_t eth_phy_lan87xx_get_link_status(uint32_t phy_addr) {
     // Get the link mode & speed
-    int16_t scsr = eth_phy_read(phy_addr, PHY_SCSR_LAN87XX);
-    return (scsr >> PHY_SCSR_LAN87XX_SPEED_Pos) & PHY_SCSR_LAN87XX_SPEED_Msk;
+    uint16_t scsr = eth_phy_read(phy_addr, PHY_SCSR_LAN87XX);
+    int16_t status = 0;
+    if (scsr & PHY_SCSR_LAN87XX_10M_Msk) {
+        status |= PHY_SPEED_10HALF;
+    }
+    if (scsr & PHY_SCSR_LAN87XX_100M_Msk) {
+        status |= PHY_SPEED_100HALF;
+    }
+    if (scsr & PHY_SCSR_LAN87XX_DUPLEX_Msk) {
+        status |= PHY_DUPLEX;
+    }
+    return status;
 }
 
 int16_t eth_phy_dp838xx_get_link_status(uint32_t phy_addr) {
