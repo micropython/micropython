@@ -900,7 +900,9 @@ void eth_phy_link_status_poll() {
             struct netif *netif = &self->netif;
             MICROPY_PY_LWIP_ENTER
             if (netif_is_up(netif) && netif_dhcp_data(netif)) {
-                dhcp_renew(netif);
+                // Use stop+start instead of renew to handle all DHCP states reliably
+                dhcp_stop(netif);
+                dhcp_start(netif);
             }
             MICROPY_PY_LWIP_EXIT
         }
