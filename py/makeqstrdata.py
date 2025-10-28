@@ -321,22 +321,6 @@ unsorted_qstr_list = {
     "<dictcomp>",
     "<setcomp>",
     "<genexpr>",
-    # Template strings (PEP 750) qstrs that must have consistent indices
-    # across all builds, even when MICROPY_PY_TSTRINGS is disabled.
-    "<format_spec>",
-    "<tstring_expr>",
-    "__template__",
-    "Interpolation",
-    "Template",
-    "template_iterator",
-    "strings",
-    "interpolations",
-    "expression",
-    "conversion",
-    "format_spec",
-    "r",
-    "s",
-    "a",
 }
 
 # Matches any string that needs no escaping (alphanum + _ only)
