@@ -167,7 +167,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     // Deprecated (use network.country instead).
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&mod_network_country_obj) },
 
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_STM_USB_STACK
     { MP_ROM_QSTR(MP_QSTR_usb_mode), MP_ROM_PTR(&pyb_usb_mode_obj) },
     #if MICROPY_HW_USB_HID
     { MP_ROM_QSTR(MP_QSTR_hid_mouse), MP_ROM_PTR(&pyb_usb_hid_mouse_obj) },
