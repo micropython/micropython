@@ -222,6 +222,9 @@ platform_tests_to_skip = {
         "micropython/extreme_exc.py",
         "micropython/heapalloc_exc_compressed_emg_exc.py",
     ),
+    "win32": (
+        "ports/unix/tstring_large_coverage.py",  # exhausts pystack on Windows before overflow checks
+    ),
     "WiPy": (
         "misc/print_exception.py",  # requires error reporting full
     ),
