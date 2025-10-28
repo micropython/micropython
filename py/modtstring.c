@@ -354,6 +354,13 @@ static mp_obj_t template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
             return MP_OBJ_FROM_PTR(result);
         }
 
+        case MP_BINARY_OP_REVERSE_ADD: {
+            if (mp_obj_is_str(rhs_in)) {
+                mp_raise_TypeError(MP_ERROR_TEXT("can only concatenate str (not \"string.templatelib.Template\") to str"));
+            }
+            return MP_OBJ_NULL;
+        }
+
         default:
             return MP_OBJ_NULL; // op not supported
     }
