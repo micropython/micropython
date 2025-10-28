@@ -754,7 +754,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 char in_string = 0;
                 bool escaped = false;
 
-                while (!is_end(lex)) {
+                while (!is_end(lex) && (escaped || num_quotes > 1 || !is_char(lex, '\n'))) {
                     char ch = CUR_CHAR(lex);
 
                     if (escaped) {
@@ -854,7 +854,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                         next_char(lex);
                         continue;
                     }
-                    if (ch == '\\' && !is_raw) {
+                    if (ch == '\\') {
                         escaped = true;
                         next_char(lex);
                         continue;
