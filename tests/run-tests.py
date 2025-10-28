@@ -22,7 +22,10 @@ TEST_TIMEOUT = float(os.environ.get("MICROPY_TEST_TIMEOUT", 30))
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
 
-RV32_ARCH_FLAGS = {"zba": 1 << 0}
+RV32_ARCH_FLAGS = {
+    "zba": 1 << 0,
+    "zcmp": 1 << 1,
+}
 
 
 def base_path(*p):
