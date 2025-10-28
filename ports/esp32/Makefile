@@ -98,10 +98,10 @@ monitor:
 	$(call RUN_IDF_PY,$(DEVICE) monitor)
 
 size:
-	$(call RUN_IDF_PY,size)
+	$(call RUN_IDF_PY,size $(SIZE_FLAGS))
 
 size-components:
-	$(call RUN_IDF_PY,size-components)
+	$(call RUN_IDF_PY,size-components $(SIZE_FLAGS))
 
 size-files:
 	$(call RUN_IDF_PY,size-files)

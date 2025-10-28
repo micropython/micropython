@@ -50,7 +50,7 @@ void mp_hal_init(void) {
     uart_attached_to_dupterm = 0;
 }
 
-void MP_FASTCODE(mp_hal_delay_us)(uint32_t us) {
+void MP_FASTCODE(mp_hal_delay_us)(mp_uint_t us) {
     uint32_t start = system_get_time();
     while (system_get_time() - start < us) {
         mp_event_handle_nowait();

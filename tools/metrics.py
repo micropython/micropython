@@ -127,6 +127,8 @@ def read_build_log(filename):
     with open(filename) as f:
         for line in f:
             line = line.strip()
+            if line.startswith("BUILDING ") and "_ref" not in data:
+                data["_ref"] = line.removeprefix("BUILDING ")
             if line.strip() == "COMPUTING SIZES":
                 found_sizes = True
             elif found_sizes:
@@ -158,6 +160,10 @@ def do_diff(args):
     data1 = read_build_log(args[0])
     data2 = read_build_log(args[1])
 
+    ref1 = data1.pop("_ref", "(unknown ref)")
+    ref2 = data2.pop("_ref", "(unknown ref)")
+    print(f"Reference:  {ref1}")
+    print(f"Comparison: {ref2}")
     max_delta = None
     for key, value1 in data1.items():
         value2 = data2[key]

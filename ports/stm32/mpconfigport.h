@@ -229,12 +229,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-// Assume that if we already defined the obj repr then we also defined these items
-#ifndef MICROPY_OBJ_REPR
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
-
 typedef long mp_off_t;
 
 #if MICROPY_PY_THREAD

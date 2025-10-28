@@ -80,6 +80,10 @@ function ci_code_size_setup {
     ci_picotool_setup
 }
 
+function _ci_is_git_merge {
+    [[ $(git log -1 --format=%P "$1" | wc -w) > 1 ]]
+}
+
 function ci_code_size_build {
     # check the following ports for the change in their code size
     # Override the list by setting PORTS_TO_CHECK in the environment before invoking ci.
@@ -94,8 +98,8 @@ function ci_code_size_build {
     # the code size impact would be if we merged this PR. During CI we are at a merge commit,
     # so this tests the merged PR against its merge base.
     # Override the refs by setting REFERENCE and/or COMPARISON in the environment before invoking ci.
-    : ${REFERENCE:=$(git rev-parse --short HEAD^1)}
     : ${COMPARISON:=$(git rev-parse --short HEAD)}
+    : ${REFERENCE:=$(git rev-parse --short ${COMPARISON}^1)}
 
     echo "Comparing sizes of reference ${REFERENCE} to ${COMPARISON}..."
     git log --oneline $REFERENCE..$COMPARISON
@@ -112,21 +116,26 @@ function ci_code_size_build {
             OUTFILE=$2
             IGNORE_ERRORS=$3
 
-            echo "Building ${COMMIT}..."
             git checkout --detach $COMMIT
             git submodule update --init $SUBMODULES
             git show -s
             tools/metrics.py clean "$PORTS_TO_CHECK"
             # Allow errors from tools/metrics.py to propagate out of the pipe below.
             set -o pipefail
-            tools/metrics.py build "$PORTS_TO_CHECK" | tee $OUTFILE || $IGNORE_ERRORS
+            tools/metrics.py build "$PORTS_TO_CHECK" | tee -a $OUTFILE || $IGNORE_ERRORS
             return $?
         }
 
         # build reference, save to size0
         # ignore any errors with this build, in case master is failing
+        echo "BUILDING $(git log --format='%s [%h]' -1 ${REFERENCE})" > ~/size0
         code_size_build_step $REFERENCE ~/size0 true
         # build PR/branch, save to size1
+        if _ci_is_git_merge "$COMPARISON"; then
+            echo "BUILDING $(git log --oneline -1 --format='%s [merge of %h]' ${COMPARISON}^2)"
+        else
+            echo "BUILDING $(git log --oneline -1 --formta='%s [%h]' ${COMPARISON})"
+        fi > ~/size1
         code_size_build_step $COMPARISON ~/size1 false
     )
 }
@@ -940,6 +949,7 @@ function ci_windows_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/windows submodules
     make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=x86_64-w64-mingw32- BUILD=build-standard-w64
 }
 
 ########################################################################################
@@ -986,6 +996,7 @@ function ci_zephyr_install {
 }
 
 function ci_zephyr_build {
+    git submodule update --init lib/micropython-lib
     docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
     docker exec zephyr-ci west build -p auto -b frdm_k64f
     docker exec zephyr-ci west build -p auto -b mimxrt1050_evk

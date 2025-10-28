@@ -18,5 +18,8 @@
     "product": "ESP32-C2",
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
+    "variants": {
+        "FLASH_2M": "2MiB flash"
+    },
     "vendor": "Espressif"
 }

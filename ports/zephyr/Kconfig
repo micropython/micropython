@@ -43,6 +43,7 @@ config MICROPY_VFS_LFS2
 
 config MICROPY_FROZEN_MODULES
 	bool "Enable Frozen Modules"
+	default y if FLASH_MAP || DISK_ACCESS
 
 config MICROPY_FROZEN_MANIFEST
 	string "Path to Frozen Modules manifest.py"
