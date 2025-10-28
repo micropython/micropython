@@ -124,6 +124,7 @@ typedef struct _eth_t {
     bool enabled;
     bool mac_speed_configured;
     uint32_t autoneg_start_ms;
+    volatile bool mac_reconfig_in_progress;
 } eth_t;
 
 static eth_dma_t eth_dma MICROPY_HW_ETH_DMA_ATTRIBUTE;
@@ -201,6 +202,9 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     self->phy_addr = phy_addr;
     self->last_link_status = false;
     self->enabled = false;
+    self->mac_reconfig_in_progress = false;
+    self->mac_speed_configured = false;
+    self->autoneg_start_ms = 0;
     if (phy_type == ETH_PHY_DP83825 || phy_type == ETH_PHY_DP83848) {
         self->phy_get_link_status = eth_phy_dp838xx_get_link_status;
     } else if (phy_type == ETH_PHY_LAN8720 || phy_type == ETH_PHY_LAN8742) {
@@ -619,6 +623,11 @@ static void eth_dma_rx_free(void) {
 }
 
 void ETH_IRQHandler(void) {
+    // Skip packet processing if MAC reconfiguration in progress
+    if (eth_instance.mac_reconfig_in_progress) {
+        return;
+    }
+
     #if defined(STM32H5) || defined(STM32H7)
     uint32_t sr = ETH->DMACSR;
     ETH->DMACSR = ETH_DMACSR_NIS;
@@ -823,8 +832,8 @@ void eth_phy_link_status_poll() {
                 phy_speed = PHY_SPEED_10HALF;
             }
 
-            // Disable ETH interrupts during MAC reconfiguration to prevent race conditions
-            HAL_NVIC_DisableIRQ(ETH_IRQn);
+            // Set flag to prevent IRQ handler from processing packets during reconfiguration
+            self->mac_reconfig_in_progress = true;
 
             // Update MAC to match PHY negotiated speed/duplex
             uint32_t maccr = ETH->MACCR;
@@ -832,7 +841,30 @@ void eth_phy_link_status_poll() {
             // Stop TX/RX temporarily to allow safe reconfiguration
             maccr &= ~(ETH_MACCR_TE | ETH_MACCR_RE);
             ETH->MACCR = maccr;
-            mp_hal_delay_ms(MAC_RECONFIG_DELAY_MS);
+
+            // Poll for TX/RX to stop (wait for in-flight operations to complete)
+            // Check if DMA has released all RX descriptors
+            uint32_t poll_start = mp_hal_ticks_ms();
+            bool rx_stopped = false;
+            while (!rx_stopped && (mp_hal_ticks_ms() - poll_start < 100)) {
+                rx_stopped = true;
+                for (size_t i = 0; i < RX_BUF_NUM; ++i) {
+                    #if defined(STM32H5) || defined(STM32H7)
+                    if (eth_dma.rx_descr[i].rdes3 & (1 << RX_DESCR_3_OWN_Pos)) {
+                        rx_stopped = false;
+                        break;
+                    }
+                    #else
+                    if (eth_dma.rx_descr[i].rdes0 & (1 << RX_DESCR_0_OWN_Pos)) {
+                        rx_stopped = false;
+                        break;
+                    }
+                    #endif
+                }
+                if (!rx_stopped) {
+                    mp_hal_delay_ms(1);
+                }
+            }
 
             // Clear speed/duplex bits and set according to PHY
             maccr &= ~(ETH_MACCR_FES | ETH_MACCR_DM);
@@ -847,14 +879,12 @@ void eth_phy_link_status_poll() {
             // else: 10HALF = both bits clear
 
             ETH->MACCR = maccr;
-            mp_hal_delay_ms(MAC_RECONFIG_DELAY_MS);
 
             // Restart TX/RX
             ETH->MACCR |= ETH_MACCR_TE | ETH_MACCR_RE;
-            mp_hal_delay_ms(MAC_RECONFIG_DELAY_MS);
 
-            // Re-enable ETH interrupts
-            HAL_NVIC_EnableIRQ(ETH_IRQn);
+            // Clear flag to allow IRQ handler to resume processing
+            self->mac_reconfig_in_progress = false;
 
             // Mark as configured
             self->mac_speed_configured = true;
