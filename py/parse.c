@@ -1084,27 +1084,42 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                                 vstr_add_str(&fstring_vstr, wrapper_end);
 
-                                mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
-                                    MP_QSTR__lt_format_spec_gt_,
-                                    vstr_str(&fstring_vstr),
-                                    vstr_len(&fstring_vstr),
-                                    0
-                                    );
+                                // Use nlr to ensure cleanup even if parsing/copying fails
+                                nlr_buf_t nlr;
+                                mp_parse_tree_t fstring_tree;
+                                bool tree_needs_cleanup = false;
+                                if (nlr_push(&nlr) == 0) {
+                                    mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
+                                        MP_QSTR__lt_format_spec_gt_,
+                                        vstr_str(&fstring_vstr),
+                                        vstr_len(&fstring_vstr),
+                                        0
+                                        );
 
-                                mp_parse_tree_t fstring_tree = mp_parse(fstring_lex, MP_PARSE_EVAL_INPUT);
-                                mp_parse_node_t fstring_root = fstring_tree.root;
+                                    fstring_tree = mp_parse(fstring_lex, MP_PARSE_EVAL_INPUT);
+                                    tree_needs_cleanup = true;  // From here on, tree must be cleaned up
+                                    mp_parse_node_t fstring_root = fstring_tree.root;
 
-                                if (MP_PARSE_NODE_IS_STRUCT(fstring_root)) {
-                                    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)fstring_root;
-                                    if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_eval_input) {
-                                        fstring_root = pns->nodes[0];
+                                    if (MP_PARSE_NODE_IS_STRUCT(fstring_root)) {
+                                        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)fstring_root;
+                                        if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_eval_input) {
+                                            fstring_root = pns->nodes[0];
+                                        }
                                     }
+
+                                    format_spec_node = copy_parse_node(parser, tstring_parser_alloc_wrapper, fstring_root);
+
+                                    mp_parse_tree_clear(&fstring_tree);
+                                    nlr_pop();
+                                    vstr_clear(&fstring_vstr);
+                                } else {
+                                    // Exception occurred - cleanup allocated resources
+                                    if (tree_needs_cleanup) {
+                                        mp_parse_tree_clear(&fstring_tree);
+                                    }
+                                    vstr_clear(&fstring_vstr);
+                                    nlr_raise(nlr.ret_val);
                                 }
-
-                                format_spec_node = copy_parse_node(parser, tstring_parser_alloc_wrapper, fstring_root);
-
-                                mp_parse_tree_clear(&fstring_tree);
-                                vstr_clear(&fstring_vstr);
                             } else
                             #endif
                             {

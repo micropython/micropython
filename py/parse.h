@@ -64,7 +64,9 @@ struct _mp_lexer_t;
     ((((hdr) >> MP_PARSE_TSTR_HDR_INT_SHIFT) & UINT32_C(0xFFF)))
 
 // Ensure header bit packing fits in 32 bits
-typedef char _tstr_assert1[(MP_PARSE_TSTR_HDR_INT_SHIFT + 12 <= 32) ? 1 : -1];
+static inline void mp_parse_header_static_asserts(void) {
+    MP_STATIC_ASSERT(MP_PARSE_TSTR_HDR_INT_SHIFT + 12 <= 32);
+}
 
 typedef uintptr_t mp_parse_node_t; // must be pointer size
 
