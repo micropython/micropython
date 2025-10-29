@@ -195,7 +195,7 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     // def_kw_args must be MP_OBJ_NULL or a dict
     assert(def_args == NULL || def_args[1] == MP_OBJ_NULL || mp_obj_is_type(def_args[1], &mp_type_dict));
 
-    #if MICROPY_MODULE_FROZEN_MPY && !MICROPY_PERSISTENT_CODE_SAVE
+    #if MICROPY_MODULE_FROZEN_MPY && !MICROPY_PERSISTENT_CODE_SAVE && !MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
     if (mp_proto_fun_is_bytecode(proto_fun)) {
         const uint8_t *bc = proto_fun;
         MP_BC_PRELUDE_SIG_DECODE(bc);
@@ -208,6 +208,13 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
 
     // the proto-function is a mp_raw_code_t
     const mp_raw_code_t *rc = proto_fun;
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    if (rc->has_const_fun_obj) {
+        // we have a ready-to-use frozen function object
+        const mp_obj_fun_bc_t *fun_bc = (void *)((mp_raw_code_truncated_t *)rc)->fun_obj;
+        return MP_OBJ_FROM_PTR(fun_bc);
+    }
+    #endif
 
     // make the function, depending on the raw code kind
     mp_obj_t fun;

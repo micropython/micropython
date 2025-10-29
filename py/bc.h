@@ -232,10 +232,34 @@ typedef struct _mp_compiled_module_t {
 } mp_compiled_module_t;
 
 // Outer level struct defining a frozen module.
+// When MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC is defined, this structure matches
+// `mp_module_context_t` and can be used directly as such, except that globals is
+// an indirect pointer to the globals
 typedef struct _mp_frozen_module_t {
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    mp_obj_base_t base;
+    mp_obj_dict_t **globals_ref;
+    #endif
     const mp_module_constants_t constants;
     const void *proto_fun;
 } mp_frozen_module_t;
+
+static inline mp_obj_dict_t *mp_module_get_globals(const mp_obj_module_t *module) {
+    mp_obj_dict_t *dict = module->globals;
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    if (dict->base.type != &mp_type_dict) {
+        // not a dictionary: we are dealing with a frozen module_context
+        const mp_frozen_module_t *frozen_module = (const mp_frozen_module_t *)(void *)module;
+        dict = *frozen_module->globals_ref;
+        assert(dict->base.type == &mp_type_dict);
+    }
+    #endif
+    return dict;
+}
+
+static inline mp_obj_dict_t *mp_module_context_get_globals(const mp_module_context_t *module_ctx) {
+    return mp_module_get_globals(&module_ctx->module);
+}
 
 // State for an executing function.
 typedef struct _mp_code_state_t {

@@ -31,6 +31,7 @@
 
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/frozenmod.h"
 
 #if MICROPY_DEBUG_VALGRIND
 #include <valgrind/memcheck.h>
@@ -409,6 +410,10 @@ void gc_collect_start(void) {
     // Trace root pointers from the Python stack.
     ptrs = (void **)(void *)MP_STATE_THREAD(pystack_start);
     gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void *));
+    #endif
+
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    mp_gc_collect_frozen_globals();
     #endif
 }
 

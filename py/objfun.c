@@ -273,7 +273,7 @@ static mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
-    mp_globals_set(self->context->module.globals);
+    mp_globals_set(mp_module_context_get_globals(self->context));
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
     mp_globals_set(code_state->old_globals);
 
@@ -484,7 +484,7 @@ void mp_obj_fun_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             mp_obj_fun_native_t *self = MP_OBJ_TO_PTR(self_in);
             context = self->context;
         }
-        dest[0] = MP_OBJ_FROM_PTR(context->module.globals);
+        dest[0] = MP_OBJ_FROM_PTR(mp_module_context_get_globals(context));
     }
     #if MICROPY_PY_FUNCTION_ATTRS_CODE
     if (attr == MP_QSTR___code__ && is_bc) {

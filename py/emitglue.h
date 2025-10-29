@@ -118,7 +118,12 @@ typedef union _mp_code_specific_data {
 typedef struct _mp_raw_code_t {
     uint8_t proto_fun_indicator[2];
     uint8_t kind; // of type mp_raw_code_kind_t; only 3 bits used
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    uint8_t is_generator : 1;
+    uint8_t has_const_fun_obj : 1;
+    #else
     uint8_t is_generator;
+    #endif
     const void *fun_data;
     struct _mp_raw_code_t **children;
     #if MICROPY_PERSISTENT_CODE_SAVE
@@ -139,10 +144,18 @@ typedef struct _mp_raw_code_t {
 // Version of mp_raw_code_t but without the final native_asm entry, which is only need
 // when the kind is MP_CODE_NATIVE_ASM. So this struct can be used for frozen code when the
 // kind is MP_CODE_BYTECODE, MP_CODE_NATIVE_PY or MP_CODE_NATIVE_VIPER, to reduce its size.
+// This version of mp_raw_code_t also includes a variable-length field that can be used
+// to create a frozen mp_obj_fun_bc_t, which is not really part of mp_raw_code_t but
+// can be conveniently retrieved in this way without having to add an extra pointer.
 typedef struct _mp_raw_code_truncated_t {
     uint8_t proto_fun_indicator[2];
     uint8_t kind;
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    uint8_t is_generator : 1;
+    uint8_t has_const_fun_obj : 1;
+    #else
     uint8_t is_generator;
+    #endif
     const void *fun_data;
     struct _mp_raw_code_t **children;
     #if MICROPY_PERSISTENT_CODE_SAVE
@@ -151,6 +164,10 @@ typedef struct _mp_raw_code_truncated_t {
     #endif
     #if MICROPY_HAS_SPECIFIC_UNION
     mp_code_specific_data specific;
+    #endif
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    // Variable-length storage space for an optional mp_obj_fun_bc_t, when has_const_fun_obj is true
+    mp_const_obj_t fun_obj[];
     #endif
 } mp_raw_code_truncated_t;
 

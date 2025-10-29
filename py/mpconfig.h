@@ -1148,6 +1148,13 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_MODULE_FROZEN_MPY (0)
 #endif
 
+// Whether frozen modules as .mpy files should also freeze bytecode function objects to save RAM.
+// It saves 16 bytes of RAM per function, but costs 12 bytes of ROM per function when SYS_SETTRACE
+// is enabled, or 16/24 bytes of ROM per function or without SYS_SETTRACE, depending on the case.
+#ifndef MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+#define MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC (MICROPY_MODULE_FROZEN_MPY && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Convenience macro for whether frozen modules are supported
 #ifndef MICROPY_MODULE_FROZEN
 #define MICROPY_MODULE_FROZEN (MICROPY_MODULE_FROZEN_STR || MICROPY_MODULE_FROZEN_MPY)

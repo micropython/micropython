@@ -36,5 +36,6 @@ enum {
 };
 
 mp_import_stat_t mp_find_frozen_module(const char *str, int *frozen_type, void **data);
+void mp_gc_collect_frozen_globals(void);
 
 #endif // MICROPY_INCLUDED_PY_FROZENMOD_H
