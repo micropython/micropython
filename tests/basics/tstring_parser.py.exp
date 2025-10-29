@@ -28,7 +28,7 @@ Very long expression: OK
 Raw nested spec: "QUOTED"
 Escaped quote spec: "QUOTED"
 Escaped backslash spec: \n
-Nested quoted spec: \\
+Nested quoted spec: \
 Literal brace strings: ('', '}}tail')
 Unterminated field: t-string: expecting '}'
 
