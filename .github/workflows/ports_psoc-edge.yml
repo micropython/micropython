@@ -77,11 +77,14 @@ jobs:
       - name: Setup devices
         run: |
           cp mpy-psoc-edge_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/app_combined.hex .
-          source tools/ci.sh && ci_psoc_edge_deploy_multiple_devices ${{ matrix.board }} app_combined.hex tools/psoc-edge/${{ runner.name }}-devs.yml
+          source tools/ci.sh && ci_psoc_edge_deploy_multiple_devices ${{ matrix.board }} app_combined.hex tests/ports/psoc-edge/${{ runner.name }}-devs.yml
       - name: Run psoc-edge tests
         timeout-minutes: 12
+        env: 
+          pse_test_dir: ../../tests/ports/psoc-edge
         run: |
-          ./tests/ports/psoc-edge/run_psoc_edge_tests.sh --test-suite  ${{ matrix.test-suite }} --board ${{ matrix.board }} --hil ${{ runner.name }}
+          cd lib/mpy-test-ext
+          python -u run_test_plan.py --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
         
       - name: Container teardown 
         if: failure() || success()
