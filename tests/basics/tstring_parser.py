@@ -234,3 +234,83 @@ try:
         print(f"Stack expansion: FAIL")
 except Exception as e:
     print(f"Stack expansion error: {type(e).__name__}")
+
+print("\n=== Format spec with triple-quoted strings ===")
+try:
+    x = 42
+    code = '''t"{x:{"""test"""}}"'''
+    result = eval(code)
+    print(f"Triple-quote in format spec: OK")
+except Exception as e:
+    print(f"Triple-quote error: {type(e).__name__}: {e}")
+
+try:
+    x = 42
+    code = """t'{x:{'''test'''}}'"""
+    result = eval(code)
+    print(f"Triple single-quote in format spec: OK")
+except Exception as e:
+    print(f"Triple single-quote error: {type(e).__name__}: {e}")
+
+print("\n=== Format spec parse error (exception handler) ===")
+try:
+    x = 42
+    code = "t\"{x:{1 + (}}\" "  # Unclosed parenthesis
+    result = eval(code)
+    print("ERROR: Should have raised SyntaxError")
+except SyntaxError as e:
+    print(f"Parse error handler: OK")
+except Exception as e:
+    print(f"Unexpected error: {type(e).__name__}: {e}")
+
+try:
+    x = 42
+    code = "t\"{x:{1 2 3}}\" "  # Invalid syntax
+    result = eval(code)
+    print("ERROR: Should have raised SyntaxError")
+except SyntaxError as e:
+    print(f"Parse error handler 2: OK")
+except Exception as e:
+    print(f"Unexpected error 2: {type(e).__name__}: {e}")
+
+print("\n=== Large integer in t-string ===")
+try:
+    large_int = 10**30
+    tmpl = t"{large_int}"
+    if tmpl.interpolations[0].value == large_int:
+        print("Large integer: OK")
+    else:
+        print(f"Large integer: FAIL")
+except Exception as e:
+    print(f"Large integer error: {type(e).__name__}: {e}")
+
+print("\n=== Bytes in expression ===")
+try:
+    data = b"test"
+    tmpl = t"{data}"
+    if tmpl.interpolations[0].value == b"test":
+        print("Bytes in expression: OK")
+    else:
+        print(f"Bytes: FAIL")
+except Exception as e:
+    print(f"Bytes error: {type(e).__name__}: {e}")
+
+print("\n=== Boolean constants ===")
+try:
+    tmpl = t"{True} {False}"
+    if tmpl.values == (True, False):
+        print("Boolean constants: OK")
+    else:
+        print(f"Booleans: FAIL")
+except Exception as e:
+    print(f"Boolean error: {type(e).__name__}: {e}")
+
+print("\n=== None constant ===")
+try:
+    tmpl = t"{None}"
+    if tmpl.values[0] is None:
+        print("None constant: OK")
+    else:
+        print(f"None: FAIL")
+except Exception as e:
+    print(f"None error: {type(e).__name__}: {e}")

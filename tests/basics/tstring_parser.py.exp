@@ -38,3 +38,23 @@ Unterminated field: t-string: expecting '}'
 
 === Stack expansion test (copy_parse_node) ===
 Stack expansion: OK
+
+=== Format spec with triple-quoted strings ===
+Triple-quote in format spec: OK
+Triple single-quote in format spec: OK
+
+=== Format spec parse error (exception handler) ===
+Parse error handler: OK
+Parse error handler 2: OK
+
+=== Large integer in t-string ===
+Large integer: OK
+
+=== Bytes in expression ===
+Bytes in expression: OK
+
+=== Boolean constants ===
+Boolean constants: OK
+
+=== None constant ===
+None constant: OK
