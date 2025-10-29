@@ -1291,8 +1291,12 @@ static void emit_native_global_exc_entry(emit_t *emit) {
 
             // Check LOCAL_IDX_THROW_VAL for any injected value
             ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
+            #if N_RV32
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ZERO);
+            #else
             ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+            #endif
             emit_call(emit, MP_F_NATIVE_RAISE);
         }
     }
@@ -2208,8 +2212,12 @@ static void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
 
     // Replace exception with MP_OBJ_NULL.
     emit_native_label_assign(emit, *emit->label_slot);
+    #if N_RV32
+    ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_ZERO);
+    #else
     ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)MP_OBJ_NULL);
     ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+    #endif
 
     // end of with cleanup nlr_catch block
     emit_native_label_assign(emit, *emit->label_slot + 1);
@@ -2315,9 +2323,13 @@ static void emit_native_for_iter_end(emit_t *emit) {
 
 static void emit_native_pop_except_jump(emit_t *emit, mp_uint_t label, bool within_exc_handler) {
     if (within_exc_handler) {
-        // Cancel any active exception so subsequent handlers don't see it
+        // Cancel any active exception and set to MP_OBJ_NULL so subsequent handlers don't see it
+        #if N_RV32
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_ZERO);
+        #else
         ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)MP_OBJ_NULL);
         ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+        #endif
     } else {
         emit_native_leave_exc_stack(emit, false);
     }
@@ -3002,8 +3014,12 @@ static void emit_native_yield(emit_t *emit, int kind) {
     if (kind == MP_EMIT_YIELD_VALUE) {
         // Check LOCAL_IDX_THROW_VAL for any injected value
         ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
+        #if N_RV32
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ZERO);
+        #else
         ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
         ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+        #endif
         emit_call(emit, MP_F_NATIVE_RAISE);
     } else {
         // Label loop entry
