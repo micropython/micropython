@@ -77,3 +77,6 @@
 [submodule "lib/mtb-psoc-edge-libs"]
 	path = lib/mtb-psoc-edge-libs
 	url = https://github.com/Infineon/mtb-micropython-psoc-edge-integration.git
+[submodule "lib/mpy-test-ext"]
+	path = lib/mpy-test-ext
+	url = https://github.com/Infineon/mpy-test-ext.git
