@@ -515,6 +515,7 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_BOARD_DIR}
     "${MICROPY_PORT_DIR}"
     "${CMAKE_BINARY_DIR}"
+    "${MICROPY_PORT_DIR}/sdk_inc"
 )
 
 target_compile_options(${MICROPY_TARGET} PRIVATE
