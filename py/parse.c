@@ -969,41 +969,66 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                             size_t fmt_len = fmt_end - format_spec_pos - 1;
 
                             #if MICROPY_PY_FSTRINGS
+                            // Check if format spec contains expressions (has '{')
+                            // But also check if it's safe to parse as f-string
+                            // Per PEP 498, backslashes cannot appear in f-string expressions
                             bool has_expr = false;
+                            bool has_backslash_in_expr = false;
+                            bool in_braces = false;
+                            bool in_string_literal = false;
+                            byte string_quote = 0;
+
                             for (size_t k = 0; k < fmt_len; k++) {
-                                if (fmt_start[k] == '{') {
-                                    has_expr = true;
-                                    break;
+                                byte c = fmt_start[k];
+
+                                if (!in_string_literal) {
+                                    if (c == '{' && (k + 1 >= fmt_len || fmt_start[k + 1] != '{')) {
+                                        has_expr = true;
+                                        in_braces = true;
+                                    } else if (c == '}' && in_braces && (k + 1 >= fmt_len || fmt_start[k + 1] != '}')) {
+                                        in_braces = false;
+                                    } else if (in_braces && (c == '\'' || c == '"')) {
+                                        in_string_literal = true;
+                                        string_quote = c;
+                                    } else if (in_braces && c == '\\') {
+                                        // Backslash outside string literal - not allowed per PEP 498
+                                        has_backslash_in_expr = true;
+                                        break;
+                                    }
+                                } else {
+                                    // Inside string literal - backslashes are allowed per PEP 701
+                                    if (c == '\\') {
+                                        // Escape sequence - skip the next character
+                                        k++;
+                                    } else if (c == string_quote) {
+                                        in_string_literal = false;
+                                        string_quote = 0;
+                                    }
                                 }
                             }
 
-                            if (has_expr) {
+                            if (has_expr && !has_backslash_in_expr) {
                                 vstr_t fstring_vstr;
-                                vstr_init(&fstring_vstr, fmt_len * 2 + 5); // Extra space for escaping and prefix
+                                vstr_init(&fstring_vstr, fmt_len * 2 + 8); // f"" + escaped content + ""
 
+                                // Use triple-quoted f-string
                                 vstr_add_str(&fstring_vstr, "f\"\"\"");
+
+                                // Add the format spec content, escaping special characters
                                 for (size_t k = 0; k < fmt_len; k++) {
-                                    char c = fmt_start[k];
-                                    // Escape characters that can't appear unescaped in f-strings
+                                    byte c = fmt_start[k];
                                     if (c == '\\') {
+                                        // Escape backslash
                                         vstr_add_byte(&fstring_vstr, '\\');
                                         vstr_add_byte(&fstring_vstr, '\\');
-                                    } else if (c == '"') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, '"');
-                                    } else if (c == '\n') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, 'n');
                                     } else if (c == '\r') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, 'r');
-                                    } else if (c == '\t') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, 't');
+                                        // Use hex escape for CR to avoid lexer normalization
+                                        vstr_add_str(&fstring_vstr, "\\x0d");
                                     } else {
                                         vstr_add_byte(&fstring_vstr, c);
                                     }
                                 }
+
                                 vstr_add_str(&fstring_vstr, "\"\"\"");
 
                                 mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
