@@ -1153,11 +1153,6 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                     ADD_NODE_INTERPS((mp_parse_node_t)interp_tuple);
                     // Added interpolation
                     i++;     // Skip the closing brace
-                    // Check if next char is } (making }})
-                    if (i < len && str[i] == '}') {
-                        vstr_add_byte(&vstr, '}');
-                        i++;
-                    }
                 }
             } else if (false && str[i] == '\\' && i + 1 < len) {
                 i++;

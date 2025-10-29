@@ -29,7 +29,7 @@ Raw nested spec: "QUOTED"
 Escaped quote spec: "QUOTED"
 Escaped backslash spec: \n
 Nested quoted spec: \
-Literal brace strings: ('', '}}tail')
+Literal brace error: SyntaxError: t-string: single '}' is not allowed
 Unterminated field: t-string: expecting '}'
 
 === Complex expression stress test ===
