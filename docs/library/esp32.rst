@@ -444,12 +444,18 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     Note: looping for a finite number of times is not supported by all flavors
     of ESP32.
 
-.. method:: RMT.disable()
+.. method:: RMT.active([boolean])
 
-    Disable RMT channel. This is useful to stop an infinite transmission loop.
+    If called without parameters, returns *True* if there is an ongoing transmission.
+
+    If called with parameter *False*, stops the ongoing transmission.
+    This is useful to stop an infinite transmission loop.
     The current loop is finished and transmission stops.
     The object is not invalidated, and the RMT channel is again enabled when a new
     transmission is started.
+
+    Calling with parameter *True* does not restart transmission. A new transmission
+    should always be initiated by *write_pulses()*.
 
 .. method:: RMT.deinit()
 
