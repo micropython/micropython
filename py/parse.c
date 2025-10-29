@@ -982,23 +982,32 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                                 vstr_init(&fstring_vstr, fmt_len * 2 + 5); // Extra space for escaping and prefix
 
                                 bool use_raw = lex->tok_is_tstring_raw;
+                                bool has_double = false;
+                                bool has_single = false;
+                                for (size_t k = 0; k < fmt_len; k++) {
+                                    char c = fmt_start[k];
+                                    if (c == '"') {
+                                        has_double = true;
+                                    } else if (c == '\'') {
+                                        has_single = true;
+                                    }
+                                }
+
                                 char quote_char = '"';
                                 if (use_raw) {
-                                    bool has_double = false;
-                                    bool has_single = false;
-                                    for (size_t k = 0; k < fmt_len; k++) {
-                                        char c = fmt_start[k];
-                                        if (c == '"') {
-                                            has_double = true;
-                                        } else if (c == '\'') {
-                                            has_single = true;
-                                        }
-                                    }
                                     if (has_double && !has_single) {
                                         quote_char = '\'';
                                     } else if (has_double && has_single) {
                                         // Fall back to non-raw literal so we can escape quotes.
                                         use_raw = false;
+                                    }
+                                }
+                                if (!use_raw) {
+                                    if (has_single && !has_double) {
+                                        quote_char = '"';
+                                    } else if (has_double && !has_single) {
+                                        quote_char = '\'';
+                                    } else {
                                         quote_char = '"';
                                     }
                                 }
@@ -1010,8 +1019,11 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                                         vstr_add_str(&fstring_vstr, "fr\"");
                                     }
                                 } else {
-                                    vstr_add_str(&fstring_vstr, "f\"");
-                                    quote_char = '"';
+                                    if (quote_char == '\'') {
+                                        vstr_add_str(&fstring_vstr, "f'");
+                                    } else {
+                                        vstr_add_str(&fstring_vstr, "f\"");
+                                    }
                                 }
 
                                 for (size_t k = 0; k < fmt_len; k++) {
