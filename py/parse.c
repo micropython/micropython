@@ -981,7 +981,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                                 vstr_t fstring_vstr;
                                 vstr_init(&fstring_vstr, fmt_len * 2 + 5); // Extra space for escaping and prefix
 
-                                vstr_add_str(&fstring_vstr, "f\"");
+                                vstr_add_str(&fstring_vstr, "f\"\"\"");
                                 for (size_t k = 0; k < fmt_len; k++) {
                                     char c = fmt_start[k];
                                     // Escape characters that can't appear unescaped in f-strings
@@ -1004,7 +1004,7 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                                         vstr_add_byte(&fstring_vstr, c);
                                     }
                                 }
-                                vstr_add_str(&fstring_vstr, "\"");
+                                vstr_add_str(&fstring_vstr, "\"\"\"");
 
                                 mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
                                     MP_QSTR__lt_format_spec_gt_,
