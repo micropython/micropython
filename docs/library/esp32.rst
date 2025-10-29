@@ -354,7 +354,7 @@ used to transmit or receive many other types of digital signals::
     from machine import Pin
 
     r = esp32.RMT(pin=Pin(18), resolution_hz=10000000)
-    r  # RMT(pin=18, source_freq=80000000, resolution=10000000, idle_level=0)
+    r  # RMT(pin=18, source_freq=80000000, resolution_hz=10000000, idle_level=0)
 
     # To apply a carrier frequency to the high output
     r = esp32.RMT(pin=Pin(18), resolution_hz=10000000, tx_carrier=(38000, 50, 1))
