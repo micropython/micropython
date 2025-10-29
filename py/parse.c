@@ -970,66 +970,119 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
 
                             #if MICROPY_PY_FSTRINGS
                             // Check if format spec contains expressions (has '{')
-                            // But also check if it's safe to parse as f-string
-                            // Per PEP 498, backslashes cannot appear in f-string expressions
                             bool has_expr = false;
-                            bool has_backslash_in_expr = false;
-                            bool in_braces = false;
-                            bool in_string_literal = false;
-                            byte string_quote = 0;
-
                             for (size_t k = 0; k < fmt_len; k++) {
                                 byte c = fmt_start[k];
-
-                                if (!in_string_literal) {
-                                    if (c == '{' && (k + 1 >= fmt_len || fmt_start[k + 1] != '{')) {
-                                        has_expr = true;
-                                        in_braces = true;
-                                    } else if (c == '}' && in_braces && (k + 1 >= fmt_len || fmt_start[k + 1] != '}')) {
-                                        in_braces = false;
-                                    } else if (in_braces && (c == '\'' || c == '"')) {
-                                        in_string_literal = true;
-                                        string_quote = c;
-                                    } else if (in_braces && c == '\\') {
-                                        // Backslash outside string literal - not allowed per PEP 498
-                                        has_backslash_in_expr = true;
-                                        break;
-                                    }
-                                } else {
-                                    // Inside string literal - backslashes are allowed per PEP 701
-                                    if (c == '\\') {
-                                        // Escape sequence - skip the next character
-                                        k++;
-                                    } else if (c == string_quote) {
-                                        in_string_literal = false;
-                                        string_quote = 0;
-                                    }
+                                if (c == '{' && (k + 1 >= fmt_len || fmt_start[k + 1] != '{')) {
+                                    has_expr = true;
+                                    break;
                                 }
                             }
 
-                            if (has_expr && !has_backslash_in_expr) {
-                                vstr_t fstring_vstr;
-                                vstr_init(&fstring_vstr, fmt_len * 2 + 8); // f"" + escaped content + ""
-
-                                // Use triple-quoted f-string
-                                vstr_add_str(&fstring_vstr, "f\"\"\"");
-
-                                // Add the format spec content, escaping special characters
-                                for (size_t k = 0; k < fmt_len; k++) {
-                                    byte c = fmt_start[k];
-                                    if (c == '\\') {
-                                        // Escape backslash
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                    } else if (c == '\r') {
-                                        // Use hex escape for CR to avoid lexer normalization
-                                        vstr_add_str(&fstring_vstr, "\\x0d");
-                                    } else {
-                                        vstr_add_byte(&fstring_vstr, c);
+                            if (has_expr) {
+                                // Choose f-string wrapper to avoid collision with format spec content
+                                bool has_triple_double = false;
+                                bool has_triple_single = false;
+                                for (size_t k = 0; k + 2 < fmt_len; k++) {
+                                    if (fmt_start[k] == '"' && fmt_start[k + 1] == '"' && fmt_start[k + 2] == '"') {
+                                        has_triple_double = true;
+                                    }
+                                    if (fmt_start[k] == '\'' && fmt_start[k + 1] == '\'' && fmt_start[k + 2] == '\'') {
+                                        has_triple_single = true;
                                     }
                                 }
 
-                                vstr_add_str(&fstring_vstr, "\"\"\"");
+                                const char *wrapper_start, *wrapper_end;
+                                if (has_triple_double && has_triple_single) {
+                                    // Both present: use ''' (''' less common than """)
+                                    wrapper_start = "f'''";
+                                    wrapper_end = "'''";
+                                } else if (has_triple_double) {
+                                    wrapper_start = "f'''";
+                                    wrapper_end = "'''";
+                                } else {
+                                    wrapper_start = "f\"\"\"";
+                                    wrapper_end = "\"\"\"";
+                                }
+
+                                vstr_t fstring_vstr;
+                                vstr_init(&fstring_vstr, fmt_len * 2 + 8);
+                                vstr_add_str(&fstring_vstr, wrapper_start);
+
+                                // Track string literal type: 0=none, 1=', 2=", 3=''', 4="""
+                                int string_type = 0;
+                                for (size_t k = 0; k < fmt_len; k++) {
+                                    byte c = fmt_start[k];
+
+                                    if (string_type == 0) {
+                                        // Outside string literals: check for string start and special chars
+                                        if (c == '"' && k + 2 < fmt_len && fmt_start[k + 1] == '"' && fmt_start[k + 2] == '"') {
+                                            string_type = 4;
+                                            vstr_add_byte(&fstring_vstr, '"');
+                                            vstr_add_byte(&fstring_vstr, '"');
+                                            vstr_add_byte(&fstring_vstr, '"');
+                                            k += 2;
+                                        } else if (c == '\'' && k + 2 < fmt_len && fmt_start[k + 1] == '\'' && fmt_start[k + 2] == '\'') {
+                                            string_type = 3;
+                                            vstr_add_byte(&fstring_vstr, '\'');
+                                            vstr_add_byte(&fstring_vstr, '\'');
+                                            vstr_add_byte(&fstring_vstr, '\'');
+                                            k += 2;
+                                        } else if (c == '"') {
+                                            string_type = 2;
+                                            vstr_add_byte(&fstring_vstr, c);
+                                        } else if (c == '\'') {
+                                            string_type = 1;
+                                            vstr_add_byte(&fstring_vstr, c);
+                                        } else if (c == '\\') {
+                                            // Escape backslash to prevent escaping wrapper quotes
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                        } else if (c == '\r') {
+                                            // Escape CR to avoid lexer normalization to LF
+                                            vstr_add_str(&fstring_vstr, "\\r");
+                                        } else {
+                                            vstr_add_byte(&fstring_vstr, c);
+                                        }
+                                    } else {
+                                        if (c == '\\') {
+                                            // Copy backslash and next char to preserve escape sequences
+                                            vstr_add_byte(&fstring_vstr, c);
+                                            k++;
+                                            if (k < fmt_len) {
+                                                vstr_add_byte(&fstring_vstr, fmt_start[k]);
+                                            }
+                                        } else if (string_type == 4) {
+                                            vstr_add_byte(&fstring_vstr, c);
+                                            if (c == '"' && k + 2 < fmt_len && fmt_start[k + 1] == '"' && fmt_start[k + 2] == '"') {
+                                                vstr_add_byte(&fstring_vstr, '"');
+                                                vstr_add_byte(&fstring_vstr, '"');
+                                                k += 2;
+                                                string_type = 0;
+                                            }
+                                        } else if (string_type == 3) {
+                                            vstr_add_byte(&fstring_vstr, c);
+                                            if (c == '\'' && k + 2 < fmt_len && fmt_start[k + 1] == '\'' && fmt_start[k + 2] == '\'') {
+                                                vstr_add_byte(&fstring_vstr, '\'');
+                                                vstr_add_byte(&fstring_vstr, '\'');
+                                                k += 2;
+                                                string_type = 0;
+                                            }
+                                        } else if (string_type == 2) {
+                                            vstr_add_byte(&fstring_vstr, c);
+                                            if (c == '"') {
+                                                string_type = 0;
+                                            }
+                                        } else if (string_type == 1) {
+                                            vstr_add_byte(&fstring_vstr, c);
+                                            if (c == '\'') {
+                                                string_type = 0;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                vstr_add_str(&fstring_vstr, wrapper_end);
 
                                 mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
                                     MP_QSTR__lt_format_spec_gt_,
