@@ -105,12 +105,12 @@ static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     } else if (args[2].u_obj == mp_const_none && args[3].u_obj == mp_const_none) {
         // default value
         resolution_hz = 10000000;
-    } else if (args[3].u_obj == mp_const_none) {
+    } else if (args[2].u_obj != mp_const_none) {
         resolution_hz = args[2].u_int;
         if (resolution_hz <= 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("resolution_hz must be positive"));
         }
-    } else if (args[2].u_obj == mp_const_none) {
+    } else if (args[3].u_obj != mp_const_none) {
         mp_uint_t clock_div = args[3].u_int;
         if (clock_div < 1 || clock_div > 255) {
             mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
@@ -210,7 +210,7 @@ static mp_obj_t esp32_rmt_active(size_t n_args, const mp_obj_t *args) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args == 1) {
-        return self->enabled ? mp_const_true : mp_const_false;
+        return mp_obj_new_bool(self->enabled && self->tx_ongoing);
     } else if (mp_obj_is_true(args[1])) {
         mp_raise_ValueError(MP_ERROR_TEXT("Activate by calling write_pulses()"));
     }
@@ -235,10 +235,9 @@ static mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
         self->pin = -1; // -1 to indicate RMT is unused
         self->tx_ongoing = 0;
         m_free(self->items);
-        return mp_const_true;
     }
 
-    return mp_const_false;
+    return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
 
@@ -299,8 +298,8 @@ static mp_uint_t esp32_rmt_stream_ioctl(
     }
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return arg ^ (
-        // If tx is ongoing, unset the Read ready flag
-        (self->tx_ongoing <= 0 ? 0 : MP_STREAM_POLL_RD));
+        // If tx is ongoing, unset the Write ready flag
+        (self->tx_ongoing <= 0 ? 0 : MP_STREAM_POLL_WR));
 }
 
 static const mp_stream_p_t esp32_rmt_stream_p = {
