@@ -402,7 +402,8 @@ function ci_psoc_edge_deploy_multiple_devices {
     hex_file=$2
     devs_file=$3
 
-    docker exec mtb36-ci make deploy_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=../../${devs_file}
+    docker exec mtb36-ci make mtb_init BOARD=${board}
+    docker exec mtb36-ci make qdeploy_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=../../${devs_file}
 }
 
 function ci_psoc_edge_teardown {
