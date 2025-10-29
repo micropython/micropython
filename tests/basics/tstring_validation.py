@@ -74,4 +74,10 @@ print("interpolations count:", len(t.interpolations))
 print("first interpolation value:", t.interpolations[0].value)
 print("first interpolation expr:", t.interpolations[0].expression)
 
+print("\nTest 7: Interpolation defaults")
+interp_default = Interpolation(123)
+print("expression default:", repr(interp_default.expression))
+print("conversion default is None:", interp_default.conversion is None)
+print("format_spec default:", repr(interp_default.format_spec))
+
 print("\n=== All validation tests complete ===")

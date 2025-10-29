@@ -26,4 +26,9 @@ interpolations count: 1
 first interpolation value: 42
 first interpolation expr: value
 
+Test 7: Interpolation defaults
+expression default: ''
+conversion default is None: True
+format_spec default: ''
+
 === All validation tests complete ===

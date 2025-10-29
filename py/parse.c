@@ -981,32 +981,66 @@ static void push_result_token(parser_t *parser, uint8_t rule_id) {
                                 vstr_t fstring_vstr;
                                 vstr_init(&fstring_vstr, fmt_len * 2 + 5); // Extra space for escaping and prefix
 
-                                if (lex->tok_is_tstring_raw) {
-                                    vstr_add_str(&fstring_vstr, "fr\"");
+                                bool use_raw = lex->tok_is_tstring_raw;
+                                char quote_char = '"';
+                                if (use_raw) {
+                                    bool has_double = false;
+                                    bool has_single = false;
+                                    for (size_t k = 0; k < fmt_len; k++) {
+                                        char c = fmt_start[k];
+                                        if (c == '"') {
+                                            has_double = true;
+                                        } else if (c == '\'') {
+                                            has_single = true;
+                                        }
+                                    }
+                                    if (has_double && !has_single) {
+                                        quote_char = '\'';
+                                    } else if (has_double && has_single) {
+                                        // Fall back to non-raw literal so we can escape quotes.
+                                        use_raw = false;
+                                        quote_char = '"';
+                                    }
+                                }
+
+                                if (use_raw) {
+                                    if (quote_char == '\'') {
+                                        vstr_add_str(&fstring_vstr, "fr'");
+                                    } else {
+                                        vstr_add_str(&fstring_vstr, "fr\"");
+                                    }
                                 } else {
                                     vstr_add_str(&fstring_vstr, "f\"");
+                                    quote_char = '"';
                                 }
 
                                 for (size_t k = 0; k < fmt_len; k++) {
                                     char c = fmt_start[k];
-                                    // Escape characters that can't appear unescaped in f-strings
-                                    if (c == '\\' && !lex->tok_is_tstring_raw) {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                    } else if (c == '\n') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, 'n');
-                                    } else if (c == '\r') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, 'r');
-                                    } else if (c == '\t') {
-                                        vstr_add_byte(&fstring_vstr, '\\');
-                                        vstr_add_byte(&fstring_vstr, 't');
-                                    } else {
+                                    if (use_raw) {
                                         vstr_add_byte(&fstring_vstr, c);
+                                    } else {
+                                        // Escape characters that can't appear unescaped in f-strings
+                                        if (c == '\\') {
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                        } else if (c == quote_char) {
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                            vstr_add_byte(&fstring_vstr, quote_char);
+                                        } else if (c == '\n') {
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                            vstr_add_byte(&fstring_vstr, 'n');
+                                        } else if (c == '\r') {
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                            vstr_add_byte(&fstring_vstr, 'r');
+                                        } else if (c == '\t') {
+                                            vstr_add_byte(&fstring_vstr, '\\');
+                                            vstr_add_byte(&fstring_vstr, 't');
+                                        } else {
+                                            vstr_add_byte(&fstring_vstr, c);
+                                        }
                                     }
                                 }
-                                vstr_add_str(&fstring_vstr, "\"");
+                                vstr_add_byte(&fstring_vstr, quote_char);
 
                                 mp_lexer_t *fstring_lex = mp_lexer_new_from_str_len(
                                     MP_QSTR__lt_format_spec_gt_,

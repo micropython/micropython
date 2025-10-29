@@ -180,6 +180,15 @@ try:
     align = "<"
     width = 5
     value = "test"
+    result = t'{value:{"^"*width}}'
+    print(f"Double quotes expr: format_spec={repr(result.interpolations[0].format_spec)}")
+except Exception as e:
+    print(f"Double quotes expr error: {type(e).__name__}: {e}")
+
+try:
+    align = "<"
+    width = 5
+    value = "test"
     result = rt"{value:{align}{width}\\}"
     print(f"Backslash raw: format_spec={repr(result.interpolations[0].format_spec)}")
 except Exception as e:

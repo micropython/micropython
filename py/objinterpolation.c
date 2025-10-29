@@ -45,7 +45,7 @@ static mp_obj_t interpolation_make_new(const mp_obj_type_t *type, size_t n_args,
     enum { ARG_value, ARG_expression, ARG_conversion, ARG_format_spec };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_expression, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_expression, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_)} },
         { MP_QSTR_conversion, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_format_spec, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_)} },
     };
