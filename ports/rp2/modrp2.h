@@ -33,6 +33,12 @@ extern const mp_obj_type_t rp2_pio_type;
 extern const mp_obj_type_t rp2_state_machine_type;
 extern const mp_obj_type_t rp2_dma_type;
 
+#ifdef PICO_RP2350
+extern const mp_obj_type_t rp2_hstx_type;
+void rp2_hstx_init(void);
+void rp2_hstx_deinit(void);
+#endif
+
 void rp2_pio_init(void);
 void rp2_pio_deinit(void);
 
