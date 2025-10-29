@@ -380,6 +380,7 @@ function ci_psoc_edge_setup {
     # This command prevents the issue "fatal: detected dubious ownership in repository at '/micropython'""
     docker exec mtb36-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge"
     docker exec mtb36-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge/lib/mtb-psoc-edge-libs"
+    docker exec mtb36-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge/lib/mpy-test-ext"
 
     # Initialize the submodules
     docker exec mtb36-ci make submodules
@@ -403,10 +404,6 @@ function ci_psoc_edge_deploy_multiple_devices {
 
     docker exec mtb36-ci make deploy_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=../../${devs_file}
 }
-
-# function ci_psoc_edge_run_tests {
-#     docker exec mtb36-ci /bin/bash -c "cd ../../tests && ./run-tests.py --target psoc-edge --device /dev/ttyACM0 -d psoc-edge"
-# }
 
 function ci_psoc_edge_teardown {
     docker stop mtb36-ci
