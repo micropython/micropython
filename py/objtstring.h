@@ -23,44 +23,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_PY_OBJTSTRING_H
+#define MICROPY_INCLUDED_PY_OBJTSTRING_H
 
-#include "py/builtin.h"
-#include "py/objtstring.h"
+#include "py/obj.h"
 
 #if MICROPY_PY_TSTRINGS
 
-// templatelib submodule
-static const mp_rom_map_elem_t mp_module_templatelib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_templatelib) },
-    { MP_ROM_QSTR(MP_QSTR_Template), MP_ROM_PTR(&mp_type_template) },
-    { MP_ROM_QSTR(MP_QSTR_Interpolation), MP_ROM_PTR(&mp_type_interpolation) },
-};
+// Interpolation object type - represents {expr} in t-strings
+typedef struct _mp_obj_interpolation_t {
+    mp_obj_base_t base;
+    mp_obj_t value;         // Evaluated value of the expression
+    mp_obj_t expression;    // String representation of the expression
+    mp_obj_t conversion;    // None or single char string ('r', 's', 'a')
+    mp_obj_t format_spec;   // Format specification string
+} mp_obj_interpolation_t;
 
-static MP_DEFINE_CONST_DICT(
-    mp_module_templatelib_globals,
-    mp_module_templatelib_globals_table
-    );
+// Template object type - represents the result of a t-string literal
+typedef struct _mp_obj_template_t {
+    mp_obj_base_t base;
+    mp_obj_t strings;        // Tuple of string segments
+    mp_obj_t interpolations; // Tuple of Interpolation objects
+} mp_obj_template_t;
 
-const mp_obj_module_t mp_module_templatelib = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_templatelib_globals,
-};
-
-static const mp_rom_map_elem_t mp_module_string_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_string) },
-    { MP_ROM_QSTR(MP_QSTR_templatelib), MP_ROM_PTR(&mp_module_templatelib) },
-};
-
-static MP_DEFINE_CONST_DICT(
-    mp_module_string_globals,
-    mp_module_string_globals_table
-    );
-
-const mp_obj_module_t mp_module_string = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_string_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_string, mp_module_string);
+// Exported type objects
+extern const mp_obj_type_t mp_type_template;
+extern const mp_obj_type_t mp_type_interpolation;
 
 #endif // MICROPY_PY_TSTRINGS
+
+#endif // MICROPY_INCLUDED_PY_OBJTSTRING_H

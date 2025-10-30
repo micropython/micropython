@@ -30,14 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/obj.h"
-
-typedef struct _mp_obj_interpolation_t {
-    mp_obj_base_t base;
-    mp_obj_t value;
-    mp_obj_t expression;
-    mp_obj_t conversion;
-    mp_obj_t format_spec;
-} mp_obj_interpolation_t;
+#include "py/objtstring.h"
 
 const mp_obj_type_t mp_type_interpolation;
 

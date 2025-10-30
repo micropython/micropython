@@ -32,27 +32,11 @@
 #include "py/objstr.h"
 #include "py/objexcept.h"
 #include "py/misc.h"
+#include "py/objtstring.h"
 
 #if MICROPY_PY_TSTRINGS
 
 #define TEMPLATE_COUNT_MAX (0x0FFF)
-
-extern const mp_obj_type_t mp_type_template;
-extern const mp_obj_type_t mp_type_interpolation;
-
-typedef struct _mp_obj_interpolation_t {
-    mp_obj_base_t base;
-    mp_obj_t value;
-    mp_obj_t expression;
-    mp_obj_t conversion;    // None or single char string ('r', 's', 'a')
-    mp_obj_t format_spec;   // string
-} mp_obj_interpolation_t;
-
-typedef struct _mp_obj_template_t {
-    mp_obj_base_t base;
-    mp_obj_t strings;
-    mp_obj_t interpolations;
-} mp_obj_template_t;
 
 static void template_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
