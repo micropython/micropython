@@ -275,7 +275,10 @@ except Exception as e:
 
 print("\n=== Large integer in t-string ===")
 try:
-    large_int = 10**30
+    if sys.maxsize < 2**63:
+        large_int = 10**15
+    else:
+        large_int = 10**30
     tmpl = t"{large_int}"
     if tmpl.interpolations[0].value == large_int:
         print("Large integer: OK")
