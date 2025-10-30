@@ -37,6 +37,23 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
+#if MICROPY_PY_TSTRINGS
+extern const mp_obj_module_t mp_module_templatelib;
+
+static void ensure_string_has_templatelib(mp_obj_t module_obj) {
+    if (!mp_obj_is_type(module_obj, &mp_type_module)) {
+        return;
+    }
+    mp_obj_module_t *mod = MP_OBJ_TO_PTR(module_obj);
+    mp_map_elem_t *elem = mp_map_lookup(&mod->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR_templatelib), MP_MAP_LOOKUP);
+    if (elem == NULL) {
+        mp_store_attr(module_obj, MP_QSTR_templatelib, MP_OBJ_FROM_PTR(&mp_module_templatelib));
+        qstr sub_name = qstr_from_strn("string.templatelib", 18);
+        mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_loaded_modules_dict)), MP_OBJ_NEW_QSTR(sub_name), MP_OBJ_FROM_PTR(&mp_module_templatelib));
+    }
+}
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -379,6 +396,11 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     {
         elem = mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_dict).map, MP_OBJ_NEW_QSTR(full_mod_name), MP_MAP_LOOKUP);
         if (elem) {
+            #if MICROPY_PY_TSTRINGS
+            if (full_mod_name == MP_QSTR_string) {
+                ensure_string_has_templatelib(elem->value);
+            }
+            #endif
             return elem->value;
         }
     }
@@ -539,6 +561,11 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // If it's a sub-module then make it available on the parent module.
         mp_store_attr(outer_module_obj, level_mod_name, module_obj);
     }
+    #if MICROPY_PY_TSTRINGS
+    else if (full_mod_name == MP_QSTR_string) {
+        ensure_string_has_templatelib(module_obj);
+    }
+    #endif
 
     nlr_pop_jump_callback(false);
 

@@ -28,6 +28,7 @@ target-version = "py37"
 
 [tool.ruff.lint]
 exclude = [  # Ruff finds Python SyntaxError in these files
+  "tests/basics/string_module.py",
   "tests/basics/tstring_basic.py",
   "tests/basics/tstring_constructor.py",
   "tests/basics/tstring_errors.py",

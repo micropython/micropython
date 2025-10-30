@@ -1557,13 +1557,15 @@ the last matching regex is used:
 
     if not args.keep_path:
         # Clear search path to make sure tests use only builtin modules, those in
-        # extmod, and a path to unittest in case it's needed.
+        # extmod, and a path to unittest and string in case they're needed.
         os.environ["MICROPYPATH"] = (
             ".frozen"
             + os.pathsep
             + base_path("../extmod")
             + os.pathsep
             + base_path("../lib/micropython-lib/python-stdlib/unittest")
+            + os.pathsep
+            + base_path("../lib/micropython-lib/python-stdlib/string")
         )
 
     try:
