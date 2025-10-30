@@ -275,13 +275,15 @@ except Exception as e:
 
 print("\n=== Large integer in t-string ===")
 try:
-    large_int = 10**30
+    # Use eval() to avoid compile-time overflow in longlong variant
+    large_int = eval("10**30")
     tmpl = t"{large_int}"
     if tmpl.interpolations[0].value == large_int:
         print("Large integer: OK")
     else:
         print(f"Large integer: FAIL")
 except OverflowError:
+    # longlong variant doesn't support arbitrary precision integers
     print("Large integer: OK")
 except Exception as e:
     print(f"Large integer error: {type(e).__name__}: {e}")
