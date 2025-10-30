@@ -704,12 +704,6 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     kind = MP_TOKEN_TSTRING_RAW;
                     is_raw = true;
                     n_char = 2;
-                    #if MICROPY_PY_FSTRINGS
-                    if (lex->chr2 == 'f' || lex->chr2 == 'F') {
-                        mp_raise_msg(&mp_type_SyntaxError,
-                            MP_ERROR_TEXT("'f' and 't' prefixes are incompatible"));
-                    }
-                    #endif
                 }
                 #endif
             }
@@ -722,8 +716,8 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     n_char = 2;
                 }
                 #if MICROPY_PY_TSTRINGS
-                int lookahead = (n_char == 2) ? lex->chr2 : lex->chr1;
-                if (lookahead == 't' || lookahead == 'T') {
+                // Only check for ft"..." (2 chars), not frt"..." (3 chars)
+                if (n_char == 1 && (lex->chr1 == 't' || lex->chr1 == 'T')) {
                     mp_raise_msg(&mp_type_SyntaxError,
                         MP_ERROR_TEXT("'f' and 't' prefixes are incompatible"));
                 }
@@ -740,8 +734,8 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     n_char = 2;
                 }
                 #if MICROPY_PY_FSTRINGS
-                int lookahead = (n_char == 2) ? lex->chr2 : lex->chr1;
-                if (lookahead == 'f' || lookahead == 'F') {
+                // Only check for tf"..." (2 chars), not trf"..." (3 chars)
+                if (n_char == 1 && (lex->chr1 == 'f' || lex->chr1 == 'F')) {
                     mp_raise_msg(&mp_type_SyntaxError,
                         MP_ERROR_TEXT("'f' and 't' prefixes are incompatible"));
                 }
