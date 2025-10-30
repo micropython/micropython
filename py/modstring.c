@@ -49,6 +49,21 @@ const mp_obj_module_t mp_module_templatelib = {
     .globals = (mp_obj_dict_t *)&mp_module_templatelib_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_templatelib, mp_module_templatelib);
+static const mp_rom_map_elem_t mp_module_string_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_string) },
+    { MP_ROM_QSTR(MP_QSTR_templatelib), MP_ROM_PTR(&mp_module_templatelib) },
+};
+
+static MP_DEFINE_CONST_DICT(
+    mp_module_string_globals,
+    mp_module_string_globals_table
+    );
+
+const mp_obj_module_t mp_module_string = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&mp_module_string_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_string, mp_module_string);
 
 #endif // MICROPY_PY_TSTRINGS
