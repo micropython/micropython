@@ -768,6 +768,16 @@ static void eth_lwip_init(eth_t *self) {
     MICROPY_PY_LWIP_EXIT
 }
 
+// Restart DHCP if no static IP is configured
+// Used when link comes up, MAC is reconfigured, or interface starts
+static void eth_dhcp_restart_if_needed(struct netif *netif) {
+    if (netif_is_up(netif) && ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+        if (netif_dhcp_data(netif)) {
+            dhcp_stop(netif);
+        }
+        dhcp_start(netif);
+    }
+}
 
 void eth_phy_link_status_poll() {
     eth_t *self = &eth_instance;
@@ -795,14 +805,8 @@ void eth_phy_link_status_poll() {
             self->mac_speed_configured = false;
             self->autoneg_start_ms = mp_hal_ticks_ms();
 
-            // Start or restart DHCP if interface is up and no static IP
-            if (netif_is_up(netif) && ip4_addr_isany_val(*netif_ip4_addr(netif))) {
-                // No static IP configured, ensure DHCP is started fresh
-                if (netif_dhcp_data(netif)) {
-                    dhcp_stop(netif);  // Clean up any existing DHCP state
-                }
-                dhcp_start(netif);
-            }
+            // Start or restart DHCP if no static IP configured
+            eth_dhcp_restart_if_needed(netif);
         } else {
             // Cable is physically disconnected
             netif_set_link_down(netif);
@@ -897,14 +901,10 @@ void eth_phy_link_status_poll() {
             // Mark as configured
             self->mac_speed_configured = true;
 
-            // Restart DHCP since MAC was reconfigured
+            // Restart DHCP if no static IP configured (since MAC was reconfigured)
             struct netif *netif = &self->netif;
             MICROPY_PY_LWIP_ENTER
-            if (netif_is_up(netif) && netif_dhcp_data(netif)) {
-                // Use stop+start instead of renew to handle all DHCP states reliably
-                dhcp_stop(netif);
-                dhcp_start(netif);
-            }
+            eth_dhcp_restart_if_needed(netif);
             MICROPY_PY_LWIP_EXIT
         }
     }
@@ -992,12 +992,8 @@ int eth_start(eth_t *self) {
     // Do an initial link status poll after PHY has had time to initialize
     eth_phy_link_status_poll();
 
-    // Start DHCP if no static IP has been configured
-    if (ip4_addr_isany_val(*netif_ip4_addr(n))) {
-        // No static IP configured, start DHCP regardless of link status
-        // DHCP will wait for link to come up before sending packets
-        dhcp_start(n);
-    }
+    // Start DHCP if no static IP configured
+    eth_dhcp_restart_if_needed(n);
 
     MICROPY_PY_LWIP_EXIT
 
