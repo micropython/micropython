@@ -586,13 +586,10 @@ void asm_rv32_emit_store_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t 
 }
 
 void asm_rv32_meta_comparison_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd) {
-    // c.li rd, 1       ;
-    // beq  rs1, rs2, 6 ; PC + 0
-    // c.li rd, 0       ; PC + 4
-    // ...              ; PC + 6
-    asm_rv32_opcode_cli(state, rd, 1);
-    asm_rv32_opcode_beq(state, rs1, rs2, 6);
-    asm_rv32_opcode_cli(state, rd, 0);
+    // sub   rd, rs1, rs2
+    // sltiu rd, rd, 1
+    asm_rv32_opcode_sub(state, rd, rs1, rs2);
+    asm_rv32_opcode_sltiu(state, rd, rd, 1);
 }
 
 void asm_rv32_meta_comparison_ne(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd) {
@@ -608,13 +605,10 @@ void asm_rv32_meta_comparison_lt(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2
 }
 
 void asm_rv32_meta_comparison_le(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd, bool unsigned_comparison) {
-    // c.li   rd, 1        ;
-    // beq    rs1, rs2, 8  ; PC + 0
-    // slt(u) rd, rs1, rs2 ; PC + 4
-    // ...                 ; PC + 8
-    asm_rv32_opcode_cli(state, rd, 1);
-    asm_rv32_opcode_beq(state, rs1, rs2, 8);
-    asm_rv32_meta_comparison_lt(state, rs1, rs2, rd, unsigned_comparison);
+    // slt[u] rd, rs2, rs1
+    // xori   rd, rd, 1
+    asm_rv32_meta_comparison_lt(state, rs2, rs1, rd, unsigned_comparison);
+    asm_rv32_opcode_xori(state, rd, rd, 1);
 }
 
 #endif // MICROPY_EMIT_RV32
