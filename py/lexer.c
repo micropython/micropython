@@ -115,6 +115,10 @@ static bool is_string_or_bytes(mp_lexer_t *lex) {
            || (is_char_or4(lex, 'r', 'u', 'b', 'f') && is_char_following_or(lex, '\'', '\"'))
            || (((is_char_and(lex, 'r', 'f') || is_char_and(lex, 'f', 'r'))
                && is_char_following_following_or(lex, '\'', '\"')))
+           #if MICROPY_PY_TSTRINGS
+           || ((is_char_and(lex, 'f', 't') || is_char_and(lex, 't', 'f'))
+               && is_char_following_following_or(lex, '\'', '\"'))
+           #endif
            #else
            || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
            #endif
@@ -700,6 +704,12 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     kind = MP_TOKEN_TSTRING_RAW;
                     is_raw = true;
                     n_char = 2;
+                    #if MICROPY_PY_FSTRINGS
+                    if (lex->chr2 == 'f' || lex->chr2 == 'F') {
+                        mp_raise_msg(&mp_type_SyntaxError,
+                            MP_ERROR_TEXT("'f' and 't' prefixes are incompatible"));
+                    }
+                    #endif
                 }
                 #endif
             }
@@ -711,6 +721,13 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     is_raw = true;
                     n_char = 2;
                 }
+                #if MICROPY_PY_TSTRINGS
+                int lookahead = (n_char == 2) ? lex->chr2 : lex->chr1;
+                if (lookahead == 't' || lookahead == 'T') {
+                    mp_raise_msg(&mp_type_SyntaxError,
+                        MP_ERROR_TEXT("'f' and 't' prefixes are incompatible"));
+                }
+                #endif
             }
             #endif
             #if MICROPY_PY_TSTRINGS
@@ -722,6 +739,13 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     kind = MP_TOKEN_TSTRING_RAW;
                     n_char = 2;
                 }
+                #if MICROPY_PY_FSTRINGS
+                int lookahead = (n_char == 2) ? lex->chr2 : lex->chr1;
+                if (lookahead == 'f' || lookahead == 'F') {
+                    mp_raise_msg(&mp_type_SyntaxError,
+                        MP_ERROR_TEXT("'f' and 't' prefixes are incompatible"));
+                }
+                #endif
             }
             #endif
 

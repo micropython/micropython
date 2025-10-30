@@ -53,3 +53,10 @@ Tab after conversion: OK
 Newline after conversion: OK
 CR after conversion: OK
 Form-feed after conversion: OK
+
+=== Mixed prefixes ===
+ft: incompatible prefixes
+tf: incompatible prefixes
+frt: invalid syntax
+rtf: invalid syntax
+trf: invalid syntax

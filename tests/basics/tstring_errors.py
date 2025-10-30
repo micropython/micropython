@@ -249,3 +249,16 @@ try:
     print('Form-feed after conversion: OK')
 except Exception as e:
     print(f'Unexpected error: {e}')
+
+print("\n=== Mixed prefixes ===")
+for src in ('ft"{x}"', 'tf"{x}"', 'frt"{x}"', 'rtf"{x}"', 'trf"{x}"'):
+    try:
+        exec(src)
+        print(src.split('"')[0] + ": OK (BUG!)")
+    except SyntaxError as e:
+        prefix = src.split('"')[0]
+        # Check if we get the specific error message or generic one
+        if "'f' and 't' prefixes are incompatible" in str(e):
+            print(f"{prefix}: incompatible prefixes")
+        else:
+            print(f"{prefix}: invalid syntax")
