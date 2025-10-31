@@ -37,6 +37,9 @@
 #define MICROPY_OBJ_REPR               (MICROPY_OBJ_REPR_C)
 #define MICROPY_FLOAT_IMPL             (MICROPY_FLOAT_IMPL_FLOAT)
 
+// Enable frozen function objects, as could be done for low RAM port
+#define MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC (1)
+
 // Set base feature level.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
