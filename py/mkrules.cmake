@@ -122,9 +122,15 @@ add_custom_target(
 # If any of the dependencies in this rule change then the C-preprocessor step must be run.
 # It only needs to be passed the list of MICROPY_SOURCE_QSTR files that have changed since
 # it was last run, but it looks like it's not possible to specify that with cmake.
+
+# Write source list at configure time (avoids passing huge list as command-line argument)
+# Convert semicolon-separated list to newline-separated for consistency with Make builds
+string(REPLACE ";" "\n" _qstr_sources_newline "${MICROPY_SOURCE_QSTR}")
+file(WRITE "${MICROPY_GENHDR_DIR}/qstr_sources.txt" "${_qstr_sources_newline}")
+
 add_custom_command(
     OUTPUT ${MICROPY_QSTRDEFS_LAST}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py pp ${CMAKE_C_COMPILER} -E output ${MICROPY_GENHDR_DIR}/qstr.i.last cflags ${MICROPY_CPP_FLAGS} -DNO_QSTR cxxflags ${MICROPY_CPP_FLAGS} -DNO_QSTR sources ${MICROPY_SOURCE_QSTR}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py pp ${CMAKE_C_COMPILER} -E output ${MICROPY_GENHDR_DIR}/qstr.i.last cflags ${MICROPY_CPP_FLAGS} -DNO_QSTR cxxflags ${MICROPY_CPP_FLAGS} -DNO_QSTR sources @${MICROPY_GENHDR_DIR}/qstr_sources.txt
     DEPENDS ${MICROPY_MPVERSION}
         ${MICROPY_SOURCE_QSTR}
     VERBATIM
