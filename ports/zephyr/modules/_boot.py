@@ -11,6 +11,9 @@ FlashArea = getattr(zephyr, "FlashArea", None)
 # DiskAccess depends on CONFIG_DISK_ACCESS
 DiskAccess = getattr(zephyr, "DiskAccess", None)
 
+# zephyr.FS depends on CONFIG_FILE_SYSTEM and CONFIG_FLASH_MAP
+FS = getattr(zephyr, "FS", None)
+
 _FLASH = const("/flash")
 _FLASH_LIB = const("/flash/lib")
 _STORAGE_KEY = const("storage")
@@ -54,7 +57,34 @@ def mount_all_disks():
     return retval
 
 
-if FlashArea and create_flash_partition():
+def mount_FS_flash():
+    """Create a filesystem if needed on the FS partition "/flash"
+    and mount it on /flash.
+    Return True if successful, False otherwise.
+    """
+    if _FLASH in FS.fstab():
+        fs = FS(_FLASH)
+        retval = True
+        try:
+            vfs.mount(fs, _FLASH)
+        except OSError:
+            if getattr(fs, "mkfs", None):
+                try:
+                    fs.mkfs()
+                    vfs.mount(fs, _FLASH)
+                except OSError:
+                    print("Error formatting flash partition")
+                    retval = False
+            else:
+                retval = False
+        return retval
+    return False
+
+
+# Prefer FS over FlashArea Access
+if FS and mount_FS_flash():
+    _FLASH_EXISTS = True
+elif FlashArea and create_flash_partition():
     _FLASH_EXISTS = True
 
 # Prefer disks to /flash
@@ -67,6 +97,6 @@ if _FLASH_EXISTS:
     sys.path.append(_FLASH_LIB)
 
 # Cleanup globals for boot.py/main.py
-del FlashArea, DiskAccess, zephyr
+del FlashArea, DiskAccess, FS, zephyr
 del sys, vfs, os, const
 del create_flash_partition, mount_all_disks, _FLASH_EXISTS
