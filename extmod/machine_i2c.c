@@ -30,6 +30,7 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/modmachine.h"
 
@@ -295,14 +296,20 @@ static int mp_machine_i2c_readfrom(mp_obj_base_t *self, uint16_t addr, uint8_t *
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
     mp_machine_i2c_buf_t buf = {.len = len, .buf = dest};
     unsigned int flags = MP_MACHINE_I2C_FLAG_READ | (stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
-    return i2c_p->transfer(self, addr, 1, &buf, flags);
+    MP_THREAD_GIL_EXIT()
+    int ret = i2c_p->transfer(self, addr, 1, &buf, flags);
+    MP_THREAD_GIL_ENTER()
+    return ret;
 }
 
 static int mp_machine_i2c_writeto(mp_obj_base_t *self, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
     mp_machine_i2c_buf_t buf = {.len = len, .buf = (uint8_t *)src};
     unsigned int flags = stop ? MP_MACHINE_I2C_FLAG_STOP : 0;
-    return i2c_p->transfer(self, addr, 1, &buf, flags);
+    MP_THREAD_GIL_EXIT()
+    int ret = i2c_p->transfer(self, addr, 1, &buf, flags);
+    MP_THREAD_GIL_ENTER()
+    return ret;
 }
 
 /******************************************************************************/
@@ -488,7 +495,9 @@ static mp_obj_t machine_i2c_writevto(size_t n_args, const mp_obj_t *args) {
 
     // Do the I2C transfer
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
+    MP_THREAD_GIL_EXIT()
     int ret = i2c_p->transfer(self, addr, nbufs, bufs, stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
+    MP_THREAD_GIL_ENTER()
     mp_local_free(bufs);
 
     if (ret < 0) {
@@ -529,8 +538,11 @@ static int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
         };
 
         // Do write+read I2C transfer
-        return i2c_p->transfer(self, addr, 2, bufs,
+        MP_THREAD_GIL_EXIT()
+        int ret = i2c_p->transfer(self, addr, 2, bufs,
             MP_MACHINE_I2C_FLAG_WRITE1 | MP_MACHINE_I2C_FLAG_READ | MP_MACHINE_I2C_FLAG_STOP);
+        MP_THREAD_GIL_ENTER()
+        return ret;
     }
     #endif
 
@@ -558,7 +570,10 @@ static int write_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t 
 
     // Do I2C transfer
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
-    return i2c_p->transfer(self, addr, 2, bufs, MP_MACHINE_I2C_FLAG_STOP);
+    MP_THREAD_GIL_EXIT()
+    int ret = i2c_p->transfer(self, addr, 2, bufs, MP_MACHINE_I2C_FLAG_STOP);
+    MP_THREAD_GIL_ENTER()
+    return ret;
 }
 
 static const mp_arg_t machine_i2c_mem_allowed_args[] = {
