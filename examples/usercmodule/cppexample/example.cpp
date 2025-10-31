@@ -1,3 +1,6 @@
+#include <vector>
+#include <numeric>
+
 extern "C" {
 #include <examplemodule.h>
 #include <py/objstr.h>
@@ -14,8 +17,13 @@ mp_obj_t cppfunc(mp_obj_t a_obj, mp_obj_t b_obj) {
     // Prove we have (at least) C++11 features.
     const auto a = mp_obj_get_int(a_obj);
     const auto b = mp_obj_get_int(b_obj);
+    // Prove that we can use the C++ standard library.
+    std::vector<int> vec;
+    vec.push_back(a);
+    vec.push_back(b);
+    int std_accumulate = std::accumulate(vec.begin(), vec.end(), 0);
     const auto sum = [&]() {
-        return mp_obj_new_int(a + b);
+        return mp_obj_new_int(std_accumulate);
     } ();
     // Prove we're being scanned for QSTRs.
     mp_obj_t tup[] = {sum, MP_ROM_QSTR(MP_QSTR_hellocpp)};
