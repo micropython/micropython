@@ -159,6 +159,7 @@ ignored.)
 The function you just defined allows you to toggle a pin.  The pin object you
 created earlier should still exist (recreate it if it doesn't) and you can
 toggle the LED using::
+.. skip: start
 
     >>> toggle(pin)
 
@@ -173,6 +174,8 @@ print some text instead of calling toggle, to see the effect)::
     ...    
     ...    
     >>>
+
+.. skip: end
 
 This will toggle the LED at 1Hz (half a second on, half a second off).  To stop
 the toggling press ctrl-C, which will raise a KeyboardInterrupt exception and

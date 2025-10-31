@@ -9,6 +9,7 @@ such an ADC pin object using::
     >>> adc = machine.ADC(0)
 
 Then read its value with::
+.. skip: next
 
     >>> adc.read()
     58

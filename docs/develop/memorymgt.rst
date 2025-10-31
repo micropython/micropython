@@ -23,8 +23,9 @@ live objects while the sweep phase goes through the heap reclaiming all unmarked
 
 Garbage collection functionality in MicroPython is available through the ``gc`` built-in
 module:
+.. skip: next
 
-.. code-block:: bash
+.. code-block:: python
 
    >>> x = 5
    >>> x
