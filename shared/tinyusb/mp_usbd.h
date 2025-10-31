@@ -35,14 +35,50 @@
 #include "py/objarray.h"
 #include "py/runtime.h"
 
+#if MICROPY_HW_NETWORK_USBNET
+#include "extmod/network_usbd_ncm.h"
+#endif
+
 #ifndef NO_QSTR
 #include "tusb.h"
 #include "device/dcd.h"
 #include "class/cdc/cdc_device.h"
 #endif
 
+// Run the TinyUSB device task
+void mp_usbd_task(void);
+
+// Schedule a call to mp_usbd_task(), even if no USB interrupt has occurred
+void mp_usbd_schedule_task(void);
+
+// Function to be implemented in port code.
+// Can write a string up to MICROPY_HW_USB_DESC_STR_MAX characters long, plus terminating byte.
+extern void mp_usbd_port_get_serial_number(char *buf);
+
+// Most ports need to write a hexadecimal serial number from a byte array. This
+// is a helper function for this. out_str must be long enough to hold a string of total
+// length (2 * bytes_len + 1) (including NUL terminator).
+void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
+
+// Per-class runtime enable/disable state
+typedef struct {
+    bool cdc_enabled;
+    bool msc_enabled;
+    bool ncm_enabled;
+} mp_usbd_class_state_t;
+
+// Global class enable state
+extern mp_usbd_class_state_t mp_usbd_class_state;
+
+// Functions to control USB classes via bitfield flags
+void mp_usbd_update_class_state(uint8_t flags);
+void mp_usbd_init_class_state(void);
+
 // Initialise TinyUSB device.
 static inline void mp_usbd_init_tud(void) {
+    // Initialize class state before TinyUSB init
+    mp_usbd_init_class_state();
+
     tusb_init();
     #if MICROPY_HW_USB_CDC
     tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0,
@@ -61,26 +97,30 @@ static inline void mp_usbd_init_tud(void) {
     #endif
 }
 
-// Run the TinyUSB device task
-void mp_usbd_task(void);
+// Allow runtime override of VID/PID defaults
+#ifndef MICROPY_HW_USB_RUNTIME_VID
+#define MICROPY_HW_USB_RUNTIME_VID MICROPY_HW_USB_VID
+#endif
+#ifndef MICROPY_HW_USB_RUNTIME_PID
+#define MICROPY_HW_USB_RUNTIME_PID MICROPY_HW_USB_PID
+#endif
 
-// Schedule a call to mp_usbd_task(), even if no USB interrupt has occurred
-void mp_usbd_schedule_task(void);
+// Individual USB class flags for bitfield operations
+#define USB_BUILTIN_FLAG_NONE  0x00
+#define USB_BUILTIN_FLAG_CDC   0x01
+#define USB_BUILTIN_FLAG_MSC   0x02
+#define USB_BUILTIN_FLAG_NCM   0x04
 
-// Function to be implemented in port code.
-// Can write a string up to MICROPY_HW_USB_DESC_STR_MAX characters long, plus terminating byte.
-extern void mp_usbd_port_get_serial_number(char *buf);
 
-// Most ports need to write a hexadecimal serial number from a byte array. This
-// is a helper function for this. out_str must be long enough to hold a string of total
-// length (2 * bytes_len + 1) (including NUL terminator).
-void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
+// Get dynamic descriptor length based on enabled classes
+size_t mp_usbd_get_descriptor_cfg_len(void);
 
 // Length of built-in configuration descriptor
-#define MP_USBD_BUILTIN_DESC_CFG_LEN (TUD_CONFIG_DESC_LEN +                     \
-    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
-    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
-    )
+#define MP_USBD_BUILTIN_DESC_CFG_LEN ( \
+    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) + \
+    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0) + \
+    (CFG_TUD_NCM ? (TUD_CDC_NCM_DESC_LEN) : 0) + \
+    TUD_CONFIG_DESC_LEN)
 
 // Built-in USB device and configuration descriptor values
 extern const tusb_desc_device_t mp_usbd_builtin_desc_dev;
@@ -97,6 +137,7 @@ const char *mp_usbd_runtime_string_cb(uint8_t index);
 // Maximum number of pending exceptions per single TinyUSB task execution
 #define MP_USBD_MAX_PEND_EXCS 2
 
+// Full runtime USB device structure
 typedef struct {
     mp_obj_base_t base;
 
@@ -115,6 +156,10 @@ typedef struct {
     bool active; // Has the user set the USB device active?
     bool trigger; // Has the user requested the active state change (or re-activate)?
 
+    uint16_t custom_vid; // Custom VID (0 = use builtin default)
+    uint16_t custom_pid; // Custom PID (0 = use builtin default)
+
+
     // Temporary pointers for xfer data in progress on each endpoint
     // Ensuring they aren't garbage collected until the xfer completes
     mp_obj_t xfer_data[CFG_TUD_ENDPPOINT_MAX][2];
@@ -131,6 +176,25 @@ typedef struct {
     mp_obj_t pend_excs[MP_USBD_MAX_PEND_EXCS];
 } mp_obj_usb_device_t;
 
+#else // Static USBD drivers only
+
+// Minimal USB device structure for static mode (builtin_driver control only)
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t builtin_driver; // Points to one of mp_type_usb_device_builtin_nnn
+    bool active; // Has the user set the USB device active?
+    uint16_t custom_vid; // Custom VID (0 = use builtin default)
+    uint16_t custom_pid; // Custom PID (0 = use builtin default)
+} mp_obj_usb_device_t;
+
+static inline void mp_usbd_init(void) {
+    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
+    // which is called in the below helper function.
+    mp_usbd_init_tud();
+}
+
+#endif
+
 // Built-in constant objects, possible values of builtin_driver
 //
 // (Currently not possible to change built-in drivers at runtime, just enable/disable.)
@@ -141,16 +205,6 @@ extern const mp_obj_type_t mp_type_usb_device_builtin_none;
 static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
     return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
 }
-
-#else // Static USBD drivers only
-
-static inline void mp_usbd_init(void) {
-    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    // which is called in the below helper function.
-    mp_usbd_init_tud();
-}
-
-#endif
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 
