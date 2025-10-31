@@ -27,6 +27,7 @@
 #include <unistd.h> // for ssize_t
 
 #include "py/runtime.h"
+#include "py/misc.h"
 
 #if MICROPY_PY_COLLECTIONS_DEQUE
 
@@ -35,7 +36,7 @@ typedef struct _mp_obj_deque_t {
     size_t alloc;
     size_t i_get;
     size_t i_put;
-    mp_obj_t *items;
+    mp_obj_t *items MP_ATTR_COUNTED_BY(alloc);
     uint32_t flags;
     #define FLAG_CHECK_OVERFLOW 1
 } mp_obj_deque_t;

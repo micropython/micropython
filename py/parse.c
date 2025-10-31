@@ -38,6 +38,7 @@
 #include "py/objint.h"
 #include "py/objstr.h"
 #include "py/builtin.h"
+#include "py/misc.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -220,17 +221,17 @@ typedef struct _mp_parse_chunk_t {
         size_t used;
         struct _mp_parse_chunk_t *next;
     } union_;
-    byte data[];
+    byte data[] MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING;
 } mp_parse_chunk_t;
 
 typedef struct _parser_t {
     size_t rule_stack_alloc;
     size_t rule_stack_top;
-    rule_stack_t *rule_stack;
+    rule_stack_t *rule_stack MP_ATTR_COUNTED_BY(rule_stack_alloc);
 
     size_t result_stack_alloc;
     size_t result_stack_top;
-    mp_parse_node_t *result_stack;
+    mp_parse_node_t *result_stack MP_ATTR_COUNTED_BY(result_stack_alloc);
 
     mp_lexer_t *lexer;
 
