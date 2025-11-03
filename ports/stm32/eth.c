@@ -107,8 +107,9 @@
 
 #define PHY_INIT_TIMEOUT_MS (10000)
 
-#define RX_BUF_SIZE (1524) // includes 4-byte CRC at end
-#define TX_BUF_SIZE (1524)
+// These buffer sizes need to be a multiple of 8 (for STM32N6 at least).
+#define RX_BUF_SIZE (1528) // includes 4-byte CRC at end
+#define TX_BUF_SIZE (1528)
 
 #define RX_BUF_NUM (5)
 #define TX_BUF_NUM (5)
@@ -130,11 +131,17 @@ typedef struct _eth_dma_tx_descr_t {
 typedef struct _eth_dma_t {
     eth_dma_rx_descr_t rx_descr[RX_BUF_NUM];
     eth_dma_tx_descr_t tx_descr[TX_BUF_NUM];
-    uint8_t rx_buf[RX_BUF_NUM * RX_BUF_SIZE] __attribute__((aligned(4)));
-    uint8_t tx_buf[TX_BUF_NUM * TX_BUF_SIZE] __attribute__((aligned(4)));
+    uint8_t rx_buf[RX_BUF_NUM * RX_BUF_SIZE] __attribute__((aligned(8)));
+    uint8_t tx_buf[TX_BUF_NUM * TX_BUF_SIZE] __attribute__((aligned(8)));
     size_t rx_descr_idx;
     size_t tx_descr_idx;
-    uint8_t padding[16384 - 15408];
+    // Make sure the size of this struct is 16k, for the MPU.
+    uint8_t padding[16 * 1024
+                    - sizeof(eth_dma_rx_descr_t) * RX_BUF_NUM
+                    - sizeof(eth_dma_tx_descr_t) * TX_BUF_NUM
+                    - RX_BUF_NUM * RX_BUF_SIZE
+                    - TX_BUF_NUM * TX_BUF_SIZE
+                    - sizeof(size_t) * 2];
 } eth_dma_t;
 
 typedef struct _eth_t {
@@ -210,6 +217,8 @@ uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg) {
 }
 
 int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
+    MP_STATIC_ASSERT(sizeof(eth_dma_t) == 16 * 1024);
+
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
     self->phy_addr = phy_addr;
