@@ -219,6 +219,7 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     } else if (phy_type == ETH_PHY_LAN8720 || phy_type == ETH_PHY_LAN8742) {
         self->phy_get_link_status = eth_phy_lan87xx_get_link_status;
     } else if (phy_type == ETH_PHY_RTL8211) {
+        self->phy_init = eth_phy_rtl8211_init;
         self->phy_get_link_status = eth_phy_rtl8211_get_link_status;
     } else {
         return -1;

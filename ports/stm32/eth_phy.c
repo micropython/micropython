@@ -47,6 +47,8 @@
 #define PHY_RTL8211_PHYSR_SPEED_Pos     (4)
 #define PHY_RTL8211_PHYSR_SPEED_Msk     (3 << PHY_RTL8211_PHYSR_SPEED_Pos)
 #define PHY_RTL8211_PHYSR_DUPLEX_Msk    (0x0008)
+#define PHY_RTL8211_LCR_PAGE            (0xd04)
+#define PHY_RTL8211_LCR_ADDR            (0x10)
 
 void eth_phy_generic_init(uint32_t phy_addr) {
     // Reset the PHY.
@@ -79,6 +81,16 @@ int16_t eth_phy_dp838xx_get_link_status(uint32_t phy_addr) {
         scsr |= PHY_DUPLEX;
     }
     return scsr;
+}
+
+void eth_phy_rtl8211_init(uint32_t phy_addr) {
+    // Perform generic PHY initialization.
+    eth_phy_generic_init(phy_addr);
+
+    // Configure LED0 output to show 10/100/1000 link speed, and activity.
+    eth_phy_write(phy_addr, PHY_RTL8211_PAGSR_ADDR, PHY_RTL8211_LCR_PAGE);
+    eth_phy_write(phy_addr, PHY_RTL8211_LCR_ADDR, 0x001b);
+    eth_phy_write(phy_addr, PHY_RTL8211_PAGSR_ADDR, PHY_RTL8211_DEFAULT_PAGE);
 }
 
 int16_t eth_phy_rtl8211_get_link_status(uint32_t phy_addr) {
