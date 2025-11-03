@@ -48,6 +48,12 @@
 #define PHY_RTL8211_PHYSR_SPEED_Msk     (3 << PHY_RTL8211_PHYSR_SPEED_Pos)
 #define PHY_RTL8211_PHYSR_DUPLEX_Msk    (0x0008)
 
+void eth_phy_generic_init(uint32_t phy_addr) {
+    // Reset the PHY.
+    eth_phy_write(phy_addr, PHY_BCR, PHY_BCR_SOFT_RESET);
+    mp_hal_delay_ms(50);
+}
+
 int16_t eth_phy_lan87xx_get_link_status(uint32_t phy_addr) {
     // Get the link mode & speed
     uint16_t scsr = eth_phy_read(phy_addr, PHY_SCSR_LAN87XX);

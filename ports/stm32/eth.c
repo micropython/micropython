@@ -142,6 +142,7 @@ typedef struct _eth_t {
     struct netif netif;
     struct dhcp dhcp_struct;
     uint32_t phy_addr;
+    void (*phy_init)(uint32_t phy_addr);
     int16_t (*phy_get_link_status)(uint32_t phy_addr);
 } eth_t;
 
@@ -212,6 +213,7 @@ int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
     self->phy_addr = phy_addr;
+    self->phy_init = eth_phy_generic_init;
     if (phy_type == ETH_PHY_DP83825 || phy_type == ETH_PHY_DP83848) {
         self->phy_get_link_status = eth_phy_dp838xx_get_link_status;
     } else if (phy_type == ETH_PHY_LAN8720 || phy_type == ETH_PHY_LAN8742) {
@@ -417,9 +419,8 @@ static int eth_mac_init(eth_t *self) {
     ETH->DMA_CH[TX_DMA_CH].DMACCR &= ~(ETH_DMACxCR_DSL_Msk);
     #endif
 
-    // Reset the PHY
-    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_SOFT_RESET);
-    mp_hal_delay_ms(50);
+    // Reset and initialize the PHY.
+    self->phy_init(self->phy_addr);
 
     // Wait for the PHY link to be established
     int phy_state = 0;

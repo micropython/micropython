@@ -61,6 +61,7 @@
 uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg);
 void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val);
 
+void eth_phy_generic_init(uint32_t phy_addr);
 int16_t eth_phy_lan87xx_get_link_status(uint32_t phy_addr);
 int16_t eth_phy_dp838xx_get_link_status(uint32_t phy_addr);
 int16_t eth_phy_rtl8211_get_link_status(uint32_t phy_addr);
