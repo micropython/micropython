@@ -116,6 +116,12 @@ class TaskQueue:
     def remove(self, v):
         self.heap = ph_delete(self.heap, v)
 
+    def __iter__(self):
+        heap = self.heap
+        while heap:
+            yield heap
+            heap = heap.ph_child
+
 
 # Task class representing a coroutine, can be waited on and cancelled.
 class Task:
