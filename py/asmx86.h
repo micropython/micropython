@@ -216,6 +216,8 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define ASM_STORE32_REG_REG(as, reg_src, reg_base) ASM_STORE32_REG_REG_OFFSET((as), (reg_src), (reg_base), 0)
 #define ASM_STORE32_REG_REG_OFFSET(as, reg_src, reg_base, dword_offset) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 4 * (dword_offset))
 
+#define ASM_CLR_REG(as, reg_dest) asm_x86_xor_r32_r32((as), (reg_dest), (reg_dest))
+
 #endif // GENERIC_ASM_API
 
 #endif // MICROPY_INCLUDED_PY_ASMX86_H
