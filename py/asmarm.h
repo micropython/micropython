@@ -230,6 +230,8 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 #define ASM_STORE16_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_strh_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
 #define ASM_STORE32_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_arm_str_reg_reg_reg((as), (reg_val), (reg_base), (reg_index))
 
+#define ASM_CLR_REG(as, reg_dest) asm_arm_eor_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_dest))
+
 #endif // GENERIC_ASM_API
 
 #endif // MICROPY_INCLUDED_PY_ASMARM_H

@@ -804,7 +804,7 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_STORE32_REG_REG_OFFSET(state, rd, rs, offset) asm_rv32_emit_store_reg_reg_offset(state, rd, rs, offset, 2)
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
-#define ASM_CLR_REG(state, rd)
+#define ASM_CLR_REG(state, rd) asm_rv32_emit_optimised_xor(state, rd, rd)
 #define ASM_LOAD8_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 0)
 #define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 1)
 #define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 2)

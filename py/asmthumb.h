@@ -485,6 +485,8 @@ void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
         asm_thumb_str_rlo_rlo_rlo((as), (reg_val), (reg_base), (reg_index)); \
     } while (0)
 
+#define ASM_CLR_REG(as, reg_dest) asm_thumb_mov_rlo_i8((as), (reg_dest), 0)
+
 #endif // GENERIC_ASM_API
 
 #endif // MICROPY_INCLUDED_PY_ASMTHUMB_H
