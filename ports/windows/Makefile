@@ -85,7 +85,7 @@ CFLAGS += -DMICROPY_USE_READLINE=1
 SRC_C += shared/readline/readline.c
 endif
 
-LIB += -lws2_32
+LIBS += -lws2_32
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
