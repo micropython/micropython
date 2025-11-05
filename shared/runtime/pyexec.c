@@ -165,6 +165,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #endif
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) { // system exit
             #if MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+            // None is an exit value of 0; an int is its value; anything else is 1
             mp_obj_t val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
             if (val != mp_const_none) {
                 if (mp_obj_is_int(val)) {
