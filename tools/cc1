@@ -174,7 +174,7 @@ def process_map_table(file, line, output):
         if print_debug:
             print("  %s lookup took %u attempts" % (qstr, attempts))
         total_attempts += attempts
-    if len(entries):
+    if entries:
         stats = len(map), len(entries) / len(map), total_attempts / len(entries)
     else:
         stats = 0, 0, 0
