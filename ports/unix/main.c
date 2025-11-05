@@ -236,6 +236,17 @@ static int do_repl(void) {
 }
 
 static inline int convert_pyexec_result(int ret) {
+    #if MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+    // With exit code handling enabled:
+    // pyexec returns exit code with PYEXEC_FORCED_EXIT flag set for SystemExit
+    // Unix port expects: 0 for success, non-zero for error/exit
+    if (ret & PYEXEC_FORCED_EXIT) {
+        // SystemExit: extract exit code from lower bits
+        return ret & 0xFF;
+    }
+    // Normal execution or exception: return as-is (0 for success, 1 for exception)
+    return ret;
+    #else
     // pyexec returns 1 for success, 0 for exception, PYEXEC_FORCED_EXIT for SystemExit
     // Convert to unix port's expected codes: 0 for success, 1 for exception, FORCED_EXIT|val for SystemExit
     if (ret == 1) {
@@ -245,6 +256,7 @@ static inline int convert_pyexec_result(int ret) {
     } else {
         return 1; // exception
     }
+    #endif
 }
 
 static int do_file(const char *file) {

@@ -154,6 +154,9 @@ typedef long mp_off_t;
 // Enable support for compile-only mode.
 #define MICROPY_PYEXEC_COMPILE_ONLY (1)
 
+// Enable handling of sys.exit() exit codes.
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (1)
+
 #define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 
 // Bare-metal ports don't have stderr. Printing debug to stderr may give tests
