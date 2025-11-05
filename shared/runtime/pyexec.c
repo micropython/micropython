@@ -178,6 +178,8 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             } else {
                 ret = PYEXEC_NORMAL_EXIT;
             }
+            // Set PYEXEC_FORCED_EXIT flag so REPL knows to exit
+            ret |= PYEXEC_FORCED_EXIT;
             #else
             ret = PYEXEC_FORCED_EXIT;
             #endif

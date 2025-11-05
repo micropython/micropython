@@ -164,6 +164,9 @@
 // Enable support for compile-only mode.
 #define MICROPY_PYEXEC_COMPILE_ONLY (1)
 
+// Enable handling of sys.exit() exit codes.
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (1)
+
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 #define MICROPY_ERROR_PRINTER       (&mp_stderr_print)
 #define MICROPY_WARNINGS            (1)
