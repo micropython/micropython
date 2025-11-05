@@ -173,6 +173,15 @@ function ci_mpy_format_test {
     $micropython ./tools/mpy-tool.py -x -d examples/natmod/features1/features1.mpy
 }
 
+function ci_mpy_cross_debug_emitter {
+    make ${MAKEOPTS} -C mpy-cross
+    mpy_cross=./mpy-cross/build/mpy-cross
+
+    # Make sure the debug emitter does not crash or fail for simple files
+    $mpy_cross -X emit=native -march=debug ./tests/basics/0prelim.py | \
+	    grep -E "ENTRY|EXIT" | wc -l | grep "^2$"
+}
+
 ########################################################################################
 # ports/cc3200
 
