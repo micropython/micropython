@@ -617,9 +617,9 @@ static mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     uintptr_t flags = arg;
-    self->io_mode = ASYNCIO; // a call to ioctl() is an indication that asyncio is being used
 
     if (request == MP_STREAM_POLL) {
+        self->io_mode = ASYNCIO; // a MP_STREAM_POLL request is an indication that asyncio is being used
         ret = 0;
 
         if (flags & MP_STREAM_POLL_RD) {
