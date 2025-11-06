@@ -35,7 +35,7 @@
 # Once the API is stabilised, the idea is that mpremote can be used both
 # as a command line tool and a library for interacting with devices.
 
-import ast, io, os, re, struct, sys, time
+import ast, io, os, re, stat, struct, sys, time
 import serial
 import serial.tools.list_ports
 from errno import EPERM, ENOTTY
@@ -105,6 +105,31 @@ class SerialTransport(Transport):
         if delayed:
             print("")
 
+        # Detect if this is a PTY device (e.g., QEMU serial output)
+        # PTY devices don't reliably report inWaiting() status, so we need
+        # to use blocking reads instead of checking for data availability.
+        self.is_pty = self._is_pty_device(device)
+
+    def _is_pty_device(self, device):
+        """
+        Detect if device is a PTY (pseudo-terminal).
+
+        PTY devices are commonly used by emulators like QEMU. Unlike real serial
+        devices, PTY inWaiting() may not report data availability correctly,
+        requiring use of blocking reads instead.
+        """
+        try:
+            # Linux Unix98 PTY pattern: /dev/pts/N
+            if device.startswith("/dev/pts/"):
+                st = os.stat(device)
+                # Unix98 PTY slaves have major device number 136 on Linux
+                if stat.S_ISCHR(st.st_mode) and os.major(st.st_rdev) == 136:
+                    return True
+        except (OSError, AttributeError):
+            # If detection fails or os.major not available, assume not a PTY
+            pass
+        return False
+
     def close(self):
         # ESP Windows quirk: Prevent target from resetting when Windows clears DTR before RTS
         try:
@@ -140,22 +165,27 @@ class SerialTransport(Transport):
         while True:
             if data.endswith(ending):
                 break
-            elif self.serial.inWaiting() > 0:
+
+            # PTY: always read (blocking with timeout), Serial: check inWaiting() first
+            if self.is_pty or self.serial.inWaiting() > 0:
                 new_data = self.serial.read(1)
-                if data_consumer:
-                    data_consumer(new_data)
-                    data = new_data
-                else:
-                    data = data + new_data
-                begin_char_s = time.monotonic()
-            else:
-                if timeout is not None and time.monotonic() >= begin_char_s + timeout:
-                    break
-                if (
-                    timeout_overall is not None
-                    and time.monotonic() >= begin_overall_s + timeout_overall
-                ):
-                    break
+                if new_data:
+                    if data_consumer:
+                        data_consumer(new_data)
+                        data = new_data
+                    else:
+                        data = data + new_data
+                    begin_char_s = time.monotonic()
+
+            # Check timeouts (applies to both PTY and real serial)
+            if timeout is not None and time.monotonic() >= begin_char_s + timeout:
+                break
+            if (
+                timeout_overall is not None
+                and time.monotonic() >= begin_overall_s + timeout_overall
+            ):
+                break
+            if not self.is_pty:
                 time.sleep(0.01)
         return data
 
