@@ -1573,6 +1573,11 @@ static err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {
 }
 
 static mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    if (request != MP_STREAM_POLL && request != MP_STREAM_CLOSE) {
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
+    }
+
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
 
@@ -1687,10 +1692,6 @@ static mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         socket->pcb.tcp = NULL;
         socket->state = _ERR_BADF;
         ret = 0;
-
-    } else {
-        *errcode = MP_EINVAL;
-        ret = MP_STREAM_ERROR;
     }
 
     MICROPY_PY_LWIP_EXIT
