@@ -58,6 +58,7 @@ set(MICROPY_SOURCE_PORT
     mpthreadport.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
+include(${MICROPY_DIR}/py/usermod.cmake)
 
 set(MICROPY_SOURCE_SHARED
     libc/printf.c
@@ -98,6 +99,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_DRIVERS}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
+    ${MICROPY_SOURCE_USERMOD}
 )
 
 zephyr_get_include_directories_for_lang(C includes)
@@ -113,6 +115,7 @@ zephyr_library_include_directories(
     ${MICROPY_INC_CORE}
     ${MICROPY_PORT_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${MICROPY_INC_USERMOD}
 )
 
 zephyr_library_compile_options(
