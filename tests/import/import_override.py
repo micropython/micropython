@@ -2,6 +2,10 @@
 
 
 def custom_import(name, globals, locals, fromlist, level):
+    # CPython always tries to import _io, so just let that through as-is.
+    if name == "_io":
+        return orig_import(name, globals, locals, fromlist, level)
+
     print("import", name, fromlist, level)
 
     class M:
