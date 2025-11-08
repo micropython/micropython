@@ -780,7 +780,16 @@ typedef struct _mp_obj_full_type_t {
 // Do not use these directly, instead use MP_DEFINE_CONST_OBJ_TYPE.
 // Generated with:
 // for i in range(13):
-//     print(f"#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_{i}(_struct_type, _typename, _name, _flags{''.join(f', f{j+1}, v{j+1}' for j in range(i))}) const _struct_type _typename = {{ .base = {{ &mp_type_type }}, .flags = _flags, .name = _name{''.join(f', .slot_index_##f{j+1} = {j+1}' for j in range(i))}{', .slots = { ' + ''.join(f'v{j+1}, ' for j in range(i)) + '}' if i else '' } }}")
+//     args = ['_struct_type', '_typename', '_name', '_flags']
+//     struct = ['.base = { &mp_type_type }', '.flags = _flags', '.name = _name']
+//     slots = []
+//     for j in range(i):
+//         args += [f"f{j+1}", f"v{j+1}"]
+//         struct += [f".slot_index_##f{j+1} = {j+1}"]
+//         slots += [f"v{j+1},"]
+//     if slots:
+//         struct += [f".slots = {{ {' '.join(slots)} }}"]
+//     print(f"#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_{i}({', '.join(args)}) const _struct_type _typename = {{ {', '.join(struct)} }}")
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS_0(_struct_type, _typename, _name, _flags) const _struct_type _typename = { .base = { &mp_type_type }, .flags = _flags, .name = _name }
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS_1(_struct_type, _typename, _name, _flags, f1, v1) const _struct_type _typename = { .base = { &mp_type_type }, .flags = _flags, .name = _name, .slot_index_##f1 = 1, .slots = { v1, } }
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS_2(_struct_type, _typename, _name, _flags, f1, v1, f2, v2) const _struct_type _typename = { .base = { &mp_type_type }, .flags = _flags, .name = _name, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slots = { v1, v2, } }
