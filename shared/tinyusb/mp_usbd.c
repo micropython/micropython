@@ -34,6 +34,7 @@
 
 void mp_usbd_task(void) {
     tud_task_ext(0, false);
+    MICROPY_USBD_TASK_HOOK;
 }
 
 void mp_usbd_task_callback(mp_sched_node_t *node) {

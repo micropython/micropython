@@ -41,6 +41,12 @@
 #include "class/cdc/cdc_device.h"
 #endif
 
+// Hook for the USB device task
+#ifndef MICROPY_USBD_TASK_HOOK
+#define MICROPY_USBD_TASK_HOOK
+#endif
+
+
 // Initialise TinyUSB device.
 static inline void mp_usbd_init_tud(void) {
     tusb_init();
