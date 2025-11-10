@@ -14,6 +14,9 @@ set(MICROPY_MODULEDEFS "${MICROPY_GENHDR_DIR}/moduledefs.h")
 set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
 set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
 set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
+set(MICROPY_FLOAT_CONSTS_SPLIT "${MICROPY_GENHDR_DIR}/float_consts.split")
+set(MICROPY_FLOAT_CONSTS_COLLECTED "${MICROPY_GENHDR_DIR}/float_consts.collected")
+set(MICROPY_FLOAT_CONSTS "${MICROPY_GENHDR_DIR}/float_consts.h")
 set(MICROPY_COMPRESSED_SPLIT "${MICROPY_GENHDR_DIR}/compressed.split")
 set(MICROPY_COMPRESSED_COLLECTED "${MICROPY_GENHDR_DIR}/compressed.collected")
 set(MICROPY_COMPRESSED_DATA "${MICROPY_GENHDR_DIR}/compressed.data.h")
@@ -91,6 +94,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_MPVERSION}
     ${MICROPY_QSTRDEFS_GENERATED}
     ${MICROPY_MODULEDEFS}
+    ${MICROPY_FLOAT_CONSTS}
     ${MICROPY_ROOT_POINTERS}
 )
 
@@ -219,6 +223,32 @@ add_custom_command(
     DEPENDS ${MICROPY_ROOT_POINTERS_COLLECTED} ${MICROPY_PY_DIR}/make_root_pointers.py
 )
 
+# Generate float_consts.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_FLOAT_CONSTS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split float_const ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/float_const _
+    COMMAND touch ${MICROPY_FLOAT_CONSTS_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_FLOAT_CONSTS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat float_const _ ${MICROPY_GENHDR_DIR}/float_const ${MICROPY_FLOAT_CONSTS_COLLECTED}
+    BYPRODUCTS "${MICROPY_FLOAT_CONSTS_COLLECTED}.hash"
+    DEPENDS ${MICROPY_FLOAT_CONSTS_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_FLOAT_CONSTS}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/make_float_consts.py ${MICROPY_FLOAT_CONSTS_COLLECTED} > ${MICROPY_FLOAT_CONSTS}
+    DEPENDS ${MICROPY_FLOAT_CONSTS_COLLECTED} ${MICROPY_PY_DIR}/make_float_consts.py
+)
+
 # Generate compressed.data.h
 
 add_custom_command(
@@ -314,6 +344,7 @@ if(MICROPY_FROZEN_MANIFEST)
         DEPENDS
             ${MICROPY_QSTRDEFS_GENERATED}
             ${MICROPY_ROOT_POINTERS}
+            ${MICROPY_FLOAT_CONSTS}
             ${MICROPY_MPYCROSS_DEPENDENCY}
         VERBATIM
     )

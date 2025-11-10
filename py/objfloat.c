@@ -43,31 +43,15 @@
 #include "py/formatfloat.h"
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
-
-// M_E and M_PI are not part of the math.h standard and may not be defined
-#ifndef M_E
-#define M_E (2.7182818284590452354)
-#endif
-#ifndef M_PI
-#define M_PI (3.14159265358979323846)
-#endif
-
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
 } mp_obj_float_t;
-
-const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, (mp_float_t)M_E};
-const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t)M_PI};
-#if MICROPY_PY_MATH_CONSTANTS
-#ifndef NAN
-#error NAN macro is not defined
-#endif
-const mp_obj_float_t mp_const_float_tau_obj = {{&mp_type_float}, (mp_float_t)(2.0 * M_PI)};
-const mp_obj_float_t mp_const_float_inf_obj = {{&mp_type_float}, (mp_float_t)INFINITY};
-const mp_obj_float_t mp_const_float_nan_obj = {{&mp_type_float}, (mp_float_t)NAN};
 #endif
 
+#ifndef NO_QSTR
+#define MP_FLOAT_CONSTS_IMPL
+#include "genhdr/float_consts.h"
 #endif
 
 #define MICROPY_FLOAT_ZERO MICROPY_FLOAT_CONST(0.0)
