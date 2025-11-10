@@ -1,0 +1,62 @@
+
+=== Edge cases ===
+Empty template: 'Template(strings=('',), interpolations=())'
+Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
+Adjacent: 'Template(strings=('', '', '', ''), interpolations=(Interpolation(1, '1', None, ''), Interpolation(2, '2', None, ''), Interpolation(3, '3', None, '')))'
+Single iter: ['only']
+Self+self: 'Template(strings=('testtest',), interpolations=())'
+
+=== Additional coverage tests ===
+String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
+Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
+Raw regex strings: ('Regex: \\\\d+', ''), value=42
+String expr: 'Template(strings=('', ''), interpolations=(Interpolation('test', '"test"', None, ''),))'
+Re-raised exception: Special error
+Too many interpolations: SyntaxError
+Large template: SyntaxError
+Triple quoted: 'Template(strings=('Triple "quoted" string',), interpolations=())'
+Raw triple: 'Template(strings=('Raw triple\\n', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'Template(strings=('test', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Self interp concat: values=(1, 1)
+Lonely string: SyntaxError
+Empty t-string: 'Template(strings=('',), interpolations=())'
+
+=== High byte handling ===
+High bytes: len=5, first=0x7f, last=0xff
+Octal high bytes: OK, len=3
+
+=== Deep nesting test ===
+Deep nesting: OK
+
+=== Trailing whitespace in expression ===
+Trailing whitespace: OK
+
+=== Single closing brace ===
+Single }: SyntaxError - t-string: single '}' is not allowed
+
+=== Escape in string within interpolation ===
+Debug unclosed colon: SyntaxError
+Debug unclosed exclaim: SyntaxError
+Unclosed brace literal: t-string: expecting '}'
+Malformed f-string: SyntaxError
+Type error int: Template.__new__ args must be str or Interpolation, got 'int'
+Type error float: TypeError
+Unmatched brace: t-string: expecting '}'
+Nested debug braces: SyntaxError
+Missing conversion: SyntaxError
+Invalid conversion: t-string: invalid conversion character 'z': expected 's', 'r', or 'a'
+Vertical tab: invalid non-printable character U+000B (<test>, line 1)
+Invalid char after conversion: t-string: invalid conversion character 'r@': expected 's', 'r', or 'a'
+Space after conversion: OK
+Tab after conversion: OK
+Newline after conversion: OK
+CR after conversion: OK
+Form-feed after conversion: OK
+
+=== Mixed prefixes ===
+ft: incompatible prefixes
+tf: incompatible prefixes
+frt: invalid syntax
+rtf: invalid syntax
+trf: invalid syntax
