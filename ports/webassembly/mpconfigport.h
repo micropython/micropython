@@ -74,6 +74,9 @@
 #define MICROPY_PY_JSFFI (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// PEP 750 template strings for PyScript
+#define MICROPY_PY_TSTRINGS (1)
+
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
