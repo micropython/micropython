@@ -38,6 +38,7 @@
 #include "py/nativeglue.h"
 #include "py/persistentcode.h"
 #include "py/smallint.h"
+#include "py/parse.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -2830,9 +2831,34 @@ static void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         EMIT_ARG(set_source_line, pns->source_line);
-        assert(MP_PARSE_NODE_STRUCT_KIND(pns) <= PN_const_object);
-        compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
-        f(comp, pns);
+        size_t kind = MP_PARSE_NODE_STRUCT_KIND(pns);
+
+        #if MICROPY_PY_TSTRINGS
+        if (kind == MP_PARSE_NODE_TEMPLATE_STRING) {
+            uint32_t hdr = pns->kind_num_nodes;
+            size_t seg_cnt = MP_PARSE_TSTR_HDR_GET_SEG_CNT(hdr);
+            size_t interp_cnt = MP_PARSE_TSTR_HDR_GET_INT_CNT(hdr);
+            mp_parse_node_t *ch = pns->nodes;
+
+            EMIT_LOAD_GLOBAL(MP_QSTR___template__);
+
+            for (size_t i = 0; i < seg_cnt; ++i) {
+                compile_node(comp, ch[i]);
+            }
+            EMIT_ARG(build, seg_cnt, MP_EMIT_BUILD_TUPLE);
+
+            for (size_t i = 0; i < interp_cnt; ++i) {
+                compile_node(comp, ch[seg_cnt + i]);
+            }
+            EMIT_ARG(build, interp_cnt, MP_EMIT_BUILD_TUPLE);
+
+            EMIT_ARG(call_function, 2, 0, 0);
+            return;
+        }
+        #endif
+
+        assert(kind <= PN_const_object);
+        compile_function[kind](comp, pns);
     }
 }
 
