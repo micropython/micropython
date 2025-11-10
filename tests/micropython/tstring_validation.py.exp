@@ -1,0 +1,34 @@
+=== __template__ validation tests ===
+
+Test 1: strings must be tuple
+OK: rejected list - __template__ strings must be tuple, got 'list'
+
+Test 2: strings must be non-empty
+OK: rejected empty strings - __template__ strings must be non-empty
+
+Test 3: strings items must be str
+OK: rejected non-string - __template__ strings must contain only str, got 'int' at index 0
+OK: rejected non-string at index 1 - __template__ strings must contain only str, got 'int' at index 1
+
+Test 4: len(strings) must equal len(interpolations) + 1
+OK: rejected wrong length - __template__ count mismatch: strings=2, interpolations=0
+OK: rejected wrong length - __template__ count mismatch: strings=1, interpolations=1
+OK: rejected wrong length - __template__ count mismatch: strings=3, interpolations=1
+
+Test 5: valid inputs
+OK: accepted (1 string, 0 interpolations)
+OK: accepted (2 strings, 1 interpolation)
+OK: accepted (3 strings, 2 interpolations)
+
+Test 6: verify Template properties
+strings: ('Hello ', '!')
+interpolations count: 1
+first interpolation value: 42
+first interpolation expr: value
+
+Test 7: Interpolation defaults
+expression default: ''
+conversion default is None: True
+format_spec default: ''
+
+=== All validation tests complete ===

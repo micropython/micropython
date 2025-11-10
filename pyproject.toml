@@ -30,6 +30,18 @@ target-version = "py37"
 
 [tool.ruff.lint]
 exclude = [  # Ruff finds Python SyntaxError in these files
+  "tests/basics/string_module.py",
+  "tests/basics/string_module_tstring.py",
+  "tests/basics/tstring_basic.py",
+  "tests/basics/tstring_basic1.py",
+  "tests/basics/tstring_constructor.py",
+  "tests/basics/tstring_constructor1.py",
+  "tests/basics/tstring_errors1.py",
+  "tests/basics/tstring_format1.py",
+  "tests/basics/tstring_interpolation1.py",
+  "tests/basics/tstring_operations.py",
+  "tests/basics/tstring_overflow1.py",
+  "tests/basics/tstring_parser1.py",
   "tests/cmdline/cmd_compile_only_error.py",
   "tests/cmdline/repl_autocomplete.py",
   "tests/cmdline/repl_autocomplete_underscore.py",
@@ -41,6 +53,8 @@ exclude = [  # Ruff finds Python SyntaxError in these files
   "tests/cmdline/repl_words_move.py",
   "tests/feature_check/repl_emacs_check.py",
   "tests/feature_check/repl_words_move_check.py",
+  "tests/feature_check/tstring.py",
+  "tests/micropython/heapalloc_fail_tstring.py",
   "tests/micropython/viper_args.py",
 ]
 extend-select = ["C9", "PLC"]
@@ -69,11 +83,14 @@ mccabe.max-complexity = 40
 # Exclude third-party code, and exclude the following tests:
 #   basics: needs careful attention before applying automatic formatting
 #   repl_: not real python files
+#   tstring: ruff does not support template strings
 #   viper_args: uses f(*)
 exclude = [
   "tests/basics/*.py",
   "tests/*/repl_*.py",
   "tests/cmdline/cmd_compile_only_error.py",
+  "tests/feature_check/tstring.py",
+  "tests/micropython/heapalloc_fail_tstring.py",
   "tests/micropython/test_normalize_newlines.py",
   "tests/micropython/viper_args.py",
 ]

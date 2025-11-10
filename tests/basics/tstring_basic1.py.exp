@@ -1,0 +1,41 @@
+=== Parser error tests ===
+Empty expr: SyntaxError - t-string: valid expression required before '}'
+Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42 ', None, ''),))
+
+=== Error cases ===
+Invalid syntax: SyntaxError
+Long expr: Error
+Mixed concat: SyntaxError
+bt prefix: SyntaxError
+
+=== Escape sequence coverage tests ===
+Template(strings=('\\8',), interpolations=())
+Template(strings=('\\9',), interpolations=())
+Template(strings=('\\z',), interpolations=())
+Template(strings=('\\k',), interpolations=())
+Invalid \x escape: SyntaxError
+Invalid \u escape: SyntaxError
+Invalid \U escape: SyntaxError
+Template(strings=('\x00\x01\xff',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\u03b1',), interpolations=())
+Template(strings=('\u2764',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\U0001f600',), interpolations=())
+Template(strings=('ABC',), interpolations=())
+Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('\U0001f40d', "'\\U0001f40d'", None, ''), Interpolation('\u03b1 \u03b2 \u03b3', "'\\u03b1 \\u03b2 \\u03b3'", None, '')))
+
+=== Trailing whitespace preservation (PEP 750) ===
+Expression with trailing spaces: |x   |
+Expression with both spaces: |   x   |
+Expression with leading spaces: |   x|
+Trailing whitespace: PASS
+
+=== Error message tests ===
+Lone }} rejected (correct)
+Unterminated {{ rejected (correct)
+
+=== Triple quote empty interpolation ===
+Empty interpolation error: SyntaxError: t-string: valid expression required before '}'
+
+Incompatible tests completed!
