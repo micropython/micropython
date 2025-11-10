@@ -197,6 +197,10 @@ void asm_rv32_end_pass(asm_rv32_t *state);
     ((rs & 0x07) << 7) | ((imm & 0x40) >> 1) | ((imm & 0x38) << 7) | \
     ((imm & 0x04) << 4))
 
+#define RV32_ENCODE_TYPE_CMPP(op, ft6, ft2, rlist, imm) \
+    ((op & 0x03) | ((ft6 & 0x3F) << 10) | ((ft2 & 0x03) << 8) | \
+    ((rlist & 0x0F) << 4) | ((imm & 0x03) << 2))
+
 #define RV32_ENCODE_TYPE_CR(op, ft4, rs1, rs2) \
     ((op & 0x03) | ((rs2 & 0x1F) << 2) | ((rs1 & 0x1F) << 7) | ((ft4 & 0x0F) << 12))
 
@@ -438,6 +442,18 @@ static inline void asm_rv32_opcode_cswsp(asm_rv32_t *state, mp_uint_t rs, mp_uin
 static inline void asm_rv32_opcode_cxor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs) {
     // CA: 100011 ... 01 ... 01
     asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CA(0x01, 0x23, 0x01, rd, rs));
+}
+
+// CM.POPRET {REG_LIST}, IMMEDIATE
+static inline void asm_rv32_opcode_cmpopret(asm_rv32_t *state, mp_uint_t reg_list, mp_uint_t immediate) {
+    // CMPP: 10111110 ... .. 10
+    asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMPP(0x02, 0x2F, 0x02, reg_list, immediate));
+}
+
+// CM.PUSH {REG_LIST}, -IMMEDIATE
+static inline void asm_rv32_opcode_cmpush(asm_rv32_t *state, mp_uint_t reg_list, mp_uint_t immediate) {
+    // CMPP: 10111000 .... .. 10
+    asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMPP(0x02, 0x2E, 0x00, reg_list, immediate));
 }
 
 // CSRRC RD, RS, IMMEDIATE
@@ -737,8 +753,8 @@ static inline uint8_t asm_rv32_allowed_extensions(void) {
 #define REG_TEMP2 ASM_RV32_REG_T3
 #define REG_FUN_TABLE ASM_RV32_REG_S1
 #define REG_LOCAL_1 ASM_RV32_REG_S3
-#define REG_LOCAL_2 ASM_RV32_REG_S4
-#define REG_LOCAL_3 ASM_RV32_REG_S5
+#define REG_LOCAL_2 ASM_RV32_REG_S2
+#define REG_LOCAL_3 ASM_RV32_REG_S4
 #define REG_ZERO ASM_RV32_REG_ZERO
 
 void asm_rv32_meta_comparison_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd);
