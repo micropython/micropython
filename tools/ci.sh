@@ -1023,6 +1023,18 @@ function ci_alif_ae3_build {
     make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL
 }
 
+########################################################################################
+# embedding
+#
+function ci_embedding_build {
+    make ${MAKEOPTS} -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
+}
+
+function ci_embedding_run_tests {
+    set -o pipefail
+    ./examples/embedding/embed | grep "hello world"
+}
+
 function _ci_help {
     # Note: these lines must be indented with tab characters (required by bash <<-EOF)
     cat <<-EOF
