@@ -18,7 +18,7 @@ HELP_MPY_LIB_SUBMODULE ?= "\033[1;31mError: micropython-lib submodule is not ini
 OBJ_EXTRA_ORDER_DEPS =
 
 # Generate header files.
-OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h $(HEADER_BUILD)/root_pointers.h
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h $(HEADER_BUILD)/root_pointers.h $(HEADER_BUILD)/float_consts.h
 
 ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
 # If compression is enabled, trigger the build of compressed.data.h...
@@ -164,6 +164,16 @@ $(HEADER_BUILD)/root_pointers.split: $(HEADER_BUILD)/qstr.i.last
 $(HEADER_BUILD)/root_pointers.collected: $(HEADER_BUILD)/root_pointers.split
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat root_pointer _ $(HEADER_BUILD)/root_pointer $@
+
+# Floating point constants via MP_FLOAT_
+$(HEADER_BUILD)/float_consts.split: $(HEADER_BUILD)/qstr.i.last
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split float_const $< $(HEADER_BUILD)/float_const _
+	$(Q)$(TOUCH) $@
+
+$(HEADER_BUILD)/float_consts.collected: $(HEADER_BUILD)/float_consts.split
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat float_const _ $(HEADER_BUILD)/float_const $@
 
 # Compressed error strings.
 $(HEADER_BUILD)/compressed.split: $(HEADER_BUILD)/qstr.i.last

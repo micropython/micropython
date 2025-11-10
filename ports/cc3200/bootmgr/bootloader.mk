@@ -123,6 +123,10 @@ $(BUILD)/bootloader.bin: $(BUILD)/bootmgr.bin
 	$(ECHO) "Create $@"
 	$(Q)$(SHELL) $(BOOT_GEN) $(BUILD)
 
+# Create an empty "float_consts.h" needed by py/mkrules.mk
+$(HEADER_BUILD)/float_consts.h: | $(HEADER_BUILD)
+	touch $@
+
 # Create an empty "qstrdefs.generated.h" needed by py/mkrules.mk
 $(HEADER_BUILD)/qstrdefs.generated.h: | $(HEADER_BUILD)
 	touch $@

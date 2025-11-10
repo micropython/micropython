@@ -102,21 +102,6 @@ static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 #define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 3) | 6))
 
 #if MICROPY_PY_BUILTINS_FLOAT
-#define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
-#define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
-#if MICROPY_PY_MATH_CONSTANTS
-#define mp_const_float_tau MP_ROM_PTR(&mp_const_float_tau_obj)
-#define mp_const_float_inf MP_ROM_PTR(&mp_const_float_inf_obj)
-#define mp_const_float_nan MP_ROM_PTR(&mp_const_float_nan_obj)
-#endif
-extern const struct _mp_obj_float_t mp_const_float_e_obj;
-extern const struct _mp_obj_float_t mp_const_float_pi_obj;
-#if MICROPY_PY_MATH_CONSTANTS
-extern const struct _mp_obj_float_t mp_const_float_tau_obj;
-extern const struct _mp_obj_float_t mp_const_float_inf_obj;
-extern const struct _mp_obj_float_t mp_const_float_nan_obj;
-#endif
-
 #define mp_obj_is_float(o) mp_obj_is_type((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_new_float(mp_float_t value);
@@ -147,21 +132,6 @@ static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 #define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 3) | 7))
 
 #if MICROPY_PY_BUILTINS_FLOAT
-#define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
-#define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
-#if MICROPY_PY_MATH_CONSTANTS
-#define mp_const_float_tau MP_ROM_PTR(&mp_const_float_tau_obj)
-#define mp_const_float_inf MP_ROM_PTR(&mp_const_float_inf_obj)
-#define mp_const_float_nan MP_ROM_PTR(&mp_const_float_nan_obj)
-#endif
-extern const struct _mp_obj_float_t mp_const_float_e_obj;
-extern const struct _mp_obj_float_t mp_const_float_pi_obj;
-#if MICROPY_PY_MATH_CONSTANTS
-extern const struct _mp_obj_float_t mp_const_float_tau_obj;
-extern const struct _mp_obj_float_t mp_const_float_inf_obj;
-extern const struct _mp_obj_float_t mp_const_float_nan_obj;
-#endif
-
 #define mp_obj_is_float(o) mp_obj_is_type((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_new_float(mp_float_t value);
@@ -185,16 +155,8 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
-// note: MP_OBJ_NEW_CONST_FLOAT should be a MP_ROM_PTR but that macro isn't available yet
 #define MP_OBJ_NEW_CONST_FLOAT(f) ((mp_obj_t)((((((uint64_t)f) & ~3) | 2) + 0x80800000) & 0xffffffff))
-#define mp_const_float_e  MP_OBJ_NEW_CONST_FLOAT(0x402df854)
-#define mp_const_float_pi MP_OBJ_NEW_CONST_FLOAT(0x40490fdb)
 #define mp_const_float_nan MP_OBJ_NEW_CONST_FLOAT(0x7fc00000)
-#if MICROPY_PY_MATH_CONSTANTS
-#define mp_const_float_tau MP_OBJ_NEW_CONST_FLOAT(0x40c90fdb)
-#define mp_const_float_inf MP_OBJ_NEW_CONST_FLOAT(0x7f800000)
-#endif
-
 static inline bool mp_obj_is_float(mp_const_obj_t o) {
     // Ensure that 32-bit arch can only use single precision.
     MP_STATIC_ASSERT(sizeof(mp_float_t) <= sizeof(mp_obj_t));
@@ -242,7 +204,8 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 }
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-
+#include <math.h>
+#define mp_const_float_nan {((mp_obj_t)((uint64_t)0x7ff8000000000000 + 0x8004000000000000))}
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
     return (((uint64_t)(o)) & 0xffff000000000000) == 0x0001000000000000;
 }
@@ -265,15 +228,6 @@ static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 
 #if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_DOUBLE
 #error MICROPY_OBJ_REPR_D requires MICROPY_FLOAT_IMPL_DOUBLE
-#endif
-
-#include <math.h>
-#define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
-#define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
-#define mp_const_float_nan {((mp_obj_t)((uint64_t)0x7ff8000000000000 + 0x8004000000000000))}
-#if MICROPY_PY_MATH_CONSTANTS
-#define mp_const_float_tau {((mp_obj_t)((uint64_t)0x401921fb54442d18 + 0x8004000000000000))}
-#define mp_const_float_inf {((mp_obj_t)((uint64_t)0x7ff0000000000000 + 0x8004000000000000))}
 #endif
 
 static inline bool mp_obj_is_float(mp_const_obj_t o) {
