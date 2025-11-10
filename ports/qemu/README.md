@@ -157,6 +157,10 @@ The following options can be specified on the `make` command line:
 - `CFLAGS_EXTRA`: pass in extra flags for the compiler.
 - `RUN_TESTS_EXTRA`: pass in extra flags for `run-tests.py` and `run-natmodtests.py`
   when invoked via `make test` or `make test_natmod`.
+- `QEMU_BASE`: pass an optional partial path of the qemu binary to run code with, eg.
+  `/opt/custom-directory/qemu/bin/qemu-system-`, similar to how a cross compiler name
+  is passed to the MicroPython makefile.  By default it will use the appropriate QEMU
+  binary found through the system's PATH environment variable.
 - `QEMU_DEBUG=1`: when running qemu (via `repl`, `run` or `test` target), qemu
   will block until a debugger is connected.  By default it waits for a gdb connection
   on TCP port 1234.
