@@ -43,6 +43,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/map.c
     ${MICROPY_PY_DIR}/modarray.c
     ${MICROPY_PY_DIR}/modbuiltins.c
+    ${MICROPY_PY_DIR}/modtstring.c
     ${MICROPY_PY_DIR}/modcmath.c
     ${MICROPY_PY_DIR}/modcollections.c
     ${MICROPY_PY_DIR}/modgc.c
@@ -89,6 +90,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objint.c
     ${MICROPY_PY_DIR}/objint_longlong.c
     ${MICROPY_PY_DIR}/objint_mpz.c
+    ${MICROPY_PY_DIR}/objinterpolation.c
     ${MICROPY_PY_DIR}/objlist.c
     ${MICROPY_PY_DIR}/objmap.c
     ${MICROPY_PY_DIR}/objmodule.c
@@ -130,6 +132,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/smallint.c
     ${MICROPY_PY_DIR}/stackctrl.c
     ${MICROPY_PY_DIR}/stream.c
+    ${MICROPY_PY_DIR}/tstring_expr_parser.c
     ${MICROPY_PY_DIR}/unicode.c
     ${MICROPY_PY_DIR}/vm.c
     ${MICROPY_PY_DIR}/vstr.c
