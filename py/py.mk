@@ -103,6 +103,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	reader.o \
 	lexer.o \
 	parse.o \
+	tstring_expr_parser.o \
 	scope.o \
 	compile.o \
 	emitcommon.o \
@@ -180,6 +181,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objstr.o \
 	objstrunicode.o \
 	objstringio.o \
+	objinterpolation.o \
 	objtuple.o \
 	objtype.o \
 	objzip.o \
@@ -192,6 +194,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	builtinhelp.o \
 	modarray.o \
 	modbuiltins.o \
+	modtstring.o \
 	modcollections.o \
 	modgc.o \
 	modio.o \
