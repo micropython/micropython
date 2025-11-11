@@ -742,7 +742,11 @@ soft_reset_exit:
     soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();
-    spi_deinit_all();
+    // If mounted SPI-based FLASH, then after soft-reset the board is 
+    // not going to work ever again. As it tries to re-initialize the 
+    // flash filesystem but the SPI is deactivated.
+    if (!mounted_flash)
+        spi_deinit_all();
     #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     pyb_i2c_deinit_all();
     #endif
