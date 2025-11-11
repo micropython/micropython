@@ -86,6 +86,8 @@ def drain_input(ser):
 
 
 def send_script(ser, script):
+    ser.write(b"\x03\x01\x04")  # break, raw-repl, soft-reboot
+    drain_input(ser)
     chunk_size = 32
     for i in range(0, len(script), chunk_size):
         ser.write(script[i : i + chunk_size])
@@ -109,8 +111,6 @@ def read_test(ser_repl, ser_data, bufsize, nbuf):
     READ_TIMEOUT_S = 2
 
     # Load and run the read_test_script.
-    ser_repl.write(b"\x03\x01\x04")  # break, raw-repl, soft-reboot
-    drain_input(ser_repl)
     script = bytes(read_test_script % (bufsize, nbuf), "ascii")
     send_script(ser_repl, script)
 
@@ -166,8 +166,6 @@ def write_test(ser_repl, ser_data, bufsize, nbuf, verified):
     global test_passed
 
     # Load and run the write_test_script.
-    ser_repl.write(b"\x03\x01\x04")  # break, raw-repl, soft-reboot
-    drain_input(ser_repl)
     if verified:
         script = write_test_script_verified
     else:
