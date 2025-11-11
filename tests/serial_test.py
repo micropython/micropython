@@ -8,11 +8,24 @@
 # The `serial-device` will default to /dev/ttyACM0.
 
 import argparse
+import random
 import serial
 import sys
 import time
 
 run_tests_module = __import__("run-tests")
+
+echo_test_script = """
+import sys
+bytes_min=%u
+bytes_max=%u
+repeat=%u
+b=memoryview(bytearray(bytes_max))
+for n in range(bytes_min,bytes_max+1):
+    for _ in range(repeat):
+        n2 = sys.stdin.readinto(b[:n])
+        sys.stdout.write(b[:n2])
+"""
 
 read_test_script = """
 bin = True
@@ -98,6 +111,59 @@ def send_script(ser, script):
     if response != b"OK":
         response += ser.read(ser.inWaiting())
         raise TestError("could not send script", response)
+
+
+def echo_test(ser_repl, ser_data):
+    global test_passed
+
+    # Make the test data deterministic.
+    random.seed(0)
+
+    # Set parameters for the test.
+    # Go just a bit above the size of a USB high-speed packet.
+    bytes_min = 1
+    bytes_max = 520
+    num_repeat = 1
+
+    # Load and run the write_test_script.
+    script = bytes(echo_test_script % (bytes_min, bytes_max, num_repeat), "ascii")
+    send_script(ser_repl, script)
+
+    # A selection of printable bytes for echo data.
+    printable_bytes = list(range(48, 58)) + list(range(65, 91)) + list(range(97, 123))
+
+    # Write data to the device and record the echo'd data.
+    # Use a different selection of random printable characters for each
+    # echo, to make it easier to debug when the echo doesn't match.
+    num_errors = 0
+    echo_results = []
+    for num_bytes in range(bytes_min, bytes_max + 1):
+        print(f"DATA ECHO: {num_bytes} / {bytes_max}", end="\r")
+        for repeat in range(num_repeat):
+            rand_bytes = list(random.choice(printable_bytes) for _ in range(8))
+            buf = bytes(random.choice(rand_bytes) for _ in range(num_bytes))
+            ser_data.write(buf)
+            buf2 = ser_data.read(len(buf))
+            match = buf == buf2
+            num_errors += not match
+            echo_results.append((match, buf, buf2))
+        if num_errors > 8:
+            # Stop early if there are too many errors.
+            break
+    ser_repl.write(b"\x03")
+
+    # Print results.
+    if all(match for match, _, _ in echo_results):
+        print("DATA ECHO: OK for {}-{} bytes at a time".format(bytes_min, bytes_max))
+    else:
+        test_passed = False
+        print("DATA ECHO: FAIL     ")
+        for match, buf, buf2 in echo_results:
+            print("  sent", len(buf), buf)
+            if match:
+                print("  echo match")
+            else:
+                print("  echo", len(buf), buf2)
 
 
 def read_test(ser_repl, ser_data, bufsize, nbuf):
@@ -212,6 +278,12 @@ def do_test(dev_repl, dev_data=None, time_per_subtest=1):
         ser_repl = serial.Serial(dev_repl, baudrate=115200, timeout=1)
         ser_data = serial.Serial(dev_data, baudrate=115200, timeout=1)
 
+    # Do echo test first, and abort if it doesn't pass.
+    echo_test(ser_repl, ser_data)
+    if not test_passed:
+        return
+
+    # Do read and write throughput test.
     for test_func, test_args, bufsize in (
         (read_test, (), 256),
         (write_test, (True,), 128),
