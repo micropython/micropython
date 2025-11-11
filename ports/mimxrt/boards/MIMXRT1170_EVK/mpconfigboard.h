@@ -175,10 +175,6 @@
 #define ENET_1_PHY_OPS         phyrtl8211f_ops
 
 // 1G Ethernet PIN definitions
-// No INT pin for ENET_1G
-#define ENET_1_RESET_PIN       &pin_GPIO_DISP_B2_13
-#define ENET_1_INT_PIN         NULL
-
 #define IOMUX_TABLE_ENET_1 \
     { IOMUXC_GPIO_DISP_B1_00_ENET_1G_RX_EN, 0, 0x08U }, \
     { IOMUXC_GPIO_DISP_B1_01_ENET_1G_RX_CLK, 0, 0x08U }, \
