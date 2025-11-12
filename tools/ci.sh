@@ -937,6 +937,17 @@ function ci_unix_repr_b_run_tests {
     ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
 }
 
+function ci_unix_repr_e_build {
+    ci_unix_build_helper VARIANT=repr_e
+}
+
+function ci_unix_repr_e_run_tests {
+    # ci_unix_run_tests_full_no_native_helper is not used due to
+    # https://github.com/micropython/micropython/issues/18105
+    ci_unix_run_tests_helper VARIANT=repr_e
+}
+
+
 ########################################################################################
 # ports/windows
 

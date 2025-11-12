@@ -94,7 +94,7 @@ const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_
     } else if (mp_obj_is_qstr(o_in)) {
         return &mp_type_str;
         #if MICROPY_PY_BUILTINS_FLOAT && ( \
-            MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D)
+            MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_E)
     } else if (mp_obj_is_float(o_in)) {
         return &mp_type_float;
         #endif

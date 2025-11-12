@@ -277,6 +277,38 @@ typedef union _mp_rom_obj_t {
 #define MP_ROM_PTR(p) {.u32 = {.lo = NULL, .hi = (p)}}
 #endif
 
+#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_E
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_NONE
+#error "MICROPY_OBJ_REPR_E requires float to be enabled."
+#endif
+
+static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
+    return (((mp_int_t)(o)) & 3) == 1;
+}
+#define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 2)
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 2) | 1))
+
+static inline bool mp_obj_is_qstr(mp_const_obj_t o) {
+    return (((mp_uint_t)(o)) & 0xff80000f) == 0x00000006;
+}
+#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 4)
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 4) | 0x00000006))
+
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
+    return (((mp_uint_t)(o)) & 0xff80000f) == 0x0000000e;
+}
+#define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 4)
+#define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 4) | 0xe))
+
+static inline bool mp_obj_is_obj(mp_const_obj_t o) {
+    return (((mp_int_t)(o)) & 3) == 0;
+}
+
+#include <math.h>
+bool mp_obj_is_float(mp_const_obj_t o);
+mp_float_t mp_obj_float_get(mp_const_obj_t o);
+mp_obj_t mp_obj_new_float(mp_float_t f);
 #endif
 
 // Macros to convert between mp_obj_t and concrete object types.

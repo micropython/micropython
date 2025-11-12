@@ -36,24 +36,41 @@ def removeprefix(s, pfx):  # assumes s starts with pfx
     return s[len(pfx) :]
 
 
+repr_e_bias = 0x30080000
+repr_e_roll = 3
+
+
+def roll32_l(val, n):
+    return ((val << n) | (val >> (32 - n))) & 0xFFFFFFFF
+
+
 def generate_constant_float_definition(constant_name):
-    expression = removeprefix(constant_name, "MP_CONST_FLOAT_").replace("__", ".")
+    expression = removeprefix(constant_name, "MP_CONST_FLOAT_")
+    if expression.startswith("__"):
+        expression = "-" + expression[2:]
+    expression = expression.replace("__", ".")
     value = eval(expression, math.__dict__)
     if expression == "inf":
         c_value = "INFINITY"
+    elif expression == "-inf":
+        c_value = "-INFINITY"
     elif expression == "nan":
         c_value = "NAN"
+    elif expression == "-0":
+        c_value = "-0."
     else:
-        c_value = value
+        c_value = float(value)
+
     print(f"// {constant_name} = {value}")
     double_as_uint64 = cast("d", "Q", value)
     repr_d_value = double_as_uint64 + 0x8004000000000000
     float_as_uint32 = cast("f", "I", value)
     repr_c_value = ((((float_as_uint32) & ~3) | 2) + 0x80800000) & 0xFFFFFFFF
+    repr_e_value = roll32_l((float_as_uint32 + repr_e_bias) & 0xFFFFFFFF, repr_e_roll)
 
     print(
         dedent(f"""\
-        #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
+        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
         extern const struct _mp_obj_float_t {constant_name}_obj;
         #define {constant_name} MP_ROM_PTR(&{constant_name}_obj)
         #if defined(MP_FLOAT_CONSTS_IMPL)
@@ -61,10 +78,24 @@ def generate_constant_float_definition(constant_name):
         #endif
         #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
         #define {constant_name} {{ ((mp_obj_t)((uint64_t){repr_d_value:#x})) }}
-        #else // REPR_C
+        #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
         #define {constant_name} ((mp_obj_t)((uint64_t){repr_c_value:#x}))
-        #endif""")
+        #else // REPR_E""")
     )
+
+    if repr_e_value & 0x3 == 3:
+        print(f"#define {constant_name} ((mp_obj_t)((uint64_t){repr_e_value:#x}))")
+    else:
+        print(
+            dedent(f"""\
+            extern const struct _mp_obj_float_t {constant_name}_obj;
+            #define {constant_name} MP_ROM_PTR(&{constant_name}_obj)
+            #if defined(MP_FLOAT_CONSTS_IMPL)
+            const mp_obj_float_t {constant_name}_obj = {{ {{&mp_type_float}}, (mp_float_t)({c_value}) }};
+            #endif""")
+        )
+
+    print("""#endif""")
     print()
 
 
