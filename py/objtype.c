@@ -1040,83 +1040,77 @@ static mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
         case 1:
             return MP_OBJ_FROM_PTR(mp_obj_get_type(args[0]));
 
-        case 3: {
+        case 3:
             // args[0] = name
             // args[1] = bases tuple
             // args[2] = locals dict
-            // args[3..] = keyword argument pairs (if n_kw > 0)
-
-            // Build kw_args map if there are keywords
-            #if MICROPY_INIT_SUBCLASS
-            mp_map_t kw_args_map;
-            #endif
-            #if MICROPY_METACLASS || MICROPY_INIT_SUBCLASS
-            mp_map_t *kw_args_ptr = NULL;
-            #endif
-            #if MICROPY_INIT_SUBCLASS
-            if (n_kw > 0) {
-                mp_map_init(&kw_args_map, n_kw);
-                for (size_t i = 0; i < n_kw; i++) {
-                    mp_map_lookup(&kw_args_map, args[3 + i * 2], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[3 + i * 2 + 1];
-                }
-                kw_args_ptr = &kw_args_map;
-            }
-            #endif
-
-            #if MICROPY_METACLASS || MICROPY_INIT_SUBCLASS
-            mp_obj_t result = mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2], type_in, kw_args_ptr);
+            #if !(MICROPY_METACLASS)
+            return mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2]);
             #else
-            mp_obj_t result = mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2]);
-            #endif
+            {
+                mp_map_t *kw_args_ptr = NULL;
+                #if MICROPY_INIT_SUBCLASS
+                // args[3..] = keyword argument pairs (if n_kw > 0)
+                // Build kw_args map if there are keywords
+                mp_map_t kw_args_map;
+                if (n_kw > 0) {
+                    mp_map_init(&kw_args_map, n_kw);
+                    for (size_t i = 0; i < n_kw; i++) {
+                        mp_map_lookup(&kw_args_map, args[3 + i * 2], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[3 + i * 2 + 1];
+                    }
+                    kw_args_ptr = &kw_args_map;
+                }
+                #endif
 
-            #if MICROPY_INIT_SUBCLASS
-            if (n_kw > 0) {
-                mp_map_deinit(&kw_args_map);
-            }
-            #endif
+                mp_obj_t result = mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2], type_in, kw_args_ptr);
 
-            // Call metaclass __init__ if it exists (PEP 3115)
-            // This is needed for custom metaclasses to initialize the class
-            #if MICROPY_METACLASS
-            if (type_in != &mp_type_type) {
-                // Custom metaclass - look for __init__ in the metaclass's dict
-                mp_obj_t init_fn[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
-                struct class_lookup_data lookup = {
-                    .obj = (mp_obj_instance_t *)type_in,
-                    .attr = MP_QSTR___init__,
-                    .slot_offset = 0,
-                    .dest = init_fn,
-                    .is_type = true,
-                };
-                mp_obj_class_lookup(&lookup, type_in);
+                #if MICROPY_INIT_SUBCLASS
+                if (n_kw > 0) {
+                    mp_map_deinit(&kw_args_map);
+                }
+                #endif
 
-                if (init_fn[0] != MP_OBJ_NULL && init_fn[0] != MP_OBJ_SENTINEL) {
-                    // __init__ exists, call it with (cls, name, bases, dict)
-                    // If init_fn[1] is not NULL, it's a bound method, otherwise it's a function
-                    if (init_fn[1] != MP_OBJ_NULL) {
-                        // Bound method - init_fn[0] is the function, init_fn[1] is self
-                        mp_obj_t call_args[4];
-                        call_args[0] = result;      // cls (the newly created class)
-                        call_args[1] = args[0];     // name
-                        call_args[2] = args[1];     // bases
-                        call_args[3] = args[2];     // dict
-                        mp_call_function_n_kw(init_fn[0], 4, 0, call_args);
-                    } else {
-                        // Unbound function - need to pass type_in as self? Or result?
-                        mp_obj_t call_args[4];
-                        call_args[0] = result;      // cls
-                        call_args[1] = args[0];     // name
-                        call_args[2] = args[1];     // bases
-                        call_args[3] = args[2];     // dict
-                        mp_call_function_n_kw(init_fn[0], 4, 0, call_args);
+                // Call metaclass __init__ if it exists (PEP 3115)
+                // This is needed for custom metaclasses to initialize the class
+                #if MICROPY_METACLASS
+                if (type_in != &mp_type_type) {
+                    // Custom metaclass - look for __init__ in the metaclass's dict
+                    mp_obj_t init_fn[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+                    struct class_lookup_data lookup = {
+                        .obj = (mp_obj_instance_t *)type_in,
+                        .attr = MP_QSTR___init__,
+                        .slot_offset = 0,
+                        .dest = init_fn,
+                        .is_type = true,
+                    };
+                    mp_obj_class_lookup(&lookup, type_in);
+
+                    if (init_fn[0] != MP_OBJ_NULL && init_fn[0] != MP_OBJ_SENTINEL) {
+                        // __init__ exists, call it with (cls, name, bases, dict)
+                        // If init_fn[1] is not NULL, it's a bound method, otherwise it's a function
+                        if (init_fn[1] != MP_OBJ_NULL) {
+                            // Bound method - init_fn[0] is the function, init_fn[1] is self
+                            mp_obj_t call_args[4];
+                            call_args[0] = result;  // cls (the newly created class)
+                            call_args[1] = args[0]; // name
+                            call_args[2] = args[1]; // bases
+                            call_args[3] = args[2]; // dict
+                            mp_call_function_n_kw(init_fn[0], 4, 0, call_args);
+                        } else {
+                            // Unbound function - need to pass type_in as self? Or result?
+                            mp_obj_t call_args[4];
+                            call_args[0] = result;  // cls
+                            call_args[1] = args[0]; // name
+                            call_args[2] = args[1]; // bases
+                            call_args[3] = args[2]; // dict
+                            mp_call_function_n_kw(init_fn[0], 4, 0, call_args);
+                        }
                     }
                 }
+                #endif
+                return result;
             }
             #endif
-
-            return result;
-        }
-
         default:
             mp_raise_TypeError(MP_ERROR_TEXT("type takes 1 or 3 arguments"));
     }
@@ -1326,7 +1320,9 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
     o->base.type = metaclass; // Use the provided metaclass
     o->flags = base_flags;
     o->name = name;
-
+    #if MICROPY_METACLASS
+    // TODO
+    #endif
     // Check if the first base class is type (or a subclass of type), and if so, copy its make_new
     // This is needed for metaclasses (subclasses of type) to work correctly
     bool inherited_type_make_new = false;
