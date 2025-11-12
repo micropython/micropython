@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_ESP32_MODNETWORK_H
 #define MICROPY_INCLUDED_ESP32_MODNETWORK_H
 
+#include "esp_wifi_types.h"
 #include "esp_netif.h"
 
 // lan867x component requires newer IDF version
