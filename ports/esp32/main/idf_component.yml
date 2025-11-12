@@ -1,10 +1,10 @@
 ## IDF Component Manager Manifest File
 dependencies:
   espressif/mdns: "~1.1.0"
-  espressif/esp_tinyusb:
+  espressif/tinyusb:
     rules:
       - if: "target in [esp32s2, esp32s3]"
-    version: "~1.7.6"
+    version: "~0.18.0"
   espressif/lan867x:
     version: "~1.0.0"
     rules:
