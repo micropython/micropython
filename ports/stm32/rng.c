@@ -31,6 +31,7 @@
 #if MICROPY_HW_ENABLE_RNG
 
 #define RNG_TIMEOUT_MS (10)
+#define RNG_RETRY_MAX_COUNT (10)
 
 uint32_t rng_get(void) {
     // Enable the RNG peripheral if it's not already enabled
@@ -46,9 +47,23 @@ uint32_t rng_get(void) {
 
     // Wait for a new random number to be ready, takes on the order of 10us
     uint32_t start = HAL_GetTick();
+    #if defined(RNG_CR_CONDRST)
+    uint8_t retry_count = 0;
+    #endif
     while (!(RNG->SR & RNG_SR_DRDY)) {
         if (HAL_GetTick() - start >= RNG_TIMEOUT_MS) {
+            #if defined(RNG_CR_CONDRST)
+            if (retry_count > RNG_RETRY_MAX_COUNT) {
+                return 0;
+            }
+            // Reset and retry waiting RNG_SR_DRDY.
+            RNG->CR |= RNG_CR_CONDRST;
+            RNG->CR = (RNG->CR & ~RNG_CR_CONDRST);
+            start = HAL_GetTick();
+            retry_count++;
+            #else
             return 0;
+            #endif
         }
     }
 
