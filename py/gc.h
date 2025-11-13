@@ -49,6 +49,9 @@ void gc_lock(void);
 void gc_unlock(void);
 bool gc_is_locked(void);
 
+// Access to the finaliser table for gc.is_finalized
+bool gc_ftb_get(void *ptr);
+
 // A given port must implement gc_collect by using the other collect functions.
 void gc_collect(void);
 void gc_collect_start(void);
