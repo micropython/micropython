@@ -160,6 +160,20 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  repr_e:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: Install packages
+      run: tools/ci.sh unix_32bit_setup
+    - name: Build
+      run: tools/ci.sh unix_repr_e_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_repr_e_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   gil_enabled:
     runs-on: ubuntu-latest
     steps:
