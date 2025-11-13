@@ -31,11 +31,12 @@
 #define MICROPY_LONGINT_IMPL           (MICROPY_LONGINT_IMPL_LONGLONG)
 
 // We build it on top of REPR C, which uses memory-efficient floating point
-// objects encoded directly mp_obj_t (30 bits only).
+// objects encoded directly mp_obj_t.
 // Therefore this variant should be built using MICROPY_FORCE_32BIT=1
 
 #define MICROPY_OBJ_REPR               (MICROPY_OBJ_REPR_C)
 #define MICROPY_FLOAT_IMPL             (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_FLOAT_BOX_AS_NEEDED    (1)
 
 // Set base feature level.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
