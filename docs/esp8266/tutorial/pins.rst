@@ -22,7 +22,7 @@ has no pull-up mode.
 You can read the value on the pin using::
 
     >>> pin.value()
-    0
+    1
 
 The pin on your board may return 0 or 1 here, depending on what it's connected
 to.  To make an output pin use::

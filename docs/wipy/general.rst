@@ -96,6 +96,7 @@ inside ``/flash/sys/`` because it's actually saved bypassing the user file syste
 ends up inside the internal **hidden** file system, but rest assured that it was successfully
 transferred, and it has been signed with a MD5 checksum to verify its integrity. Now, reset
 the WiPy by pressing the switch on the board, or by typing::
+.. skip: next
 
     >>> import machine
     >>> machine.reset()
@@ -110,6 +111,7 @@ read the **release notes** before.
    needed for the Over The Air update.
 
 In order to check your software version, do::
+.. skip: next
 
    >>> import os
    >>> os.uname().release
@@ -250,11 +252,11 @@ default this is the peripheral that is used when constructing an I2C instance.
 The default pins are GP23 for SCL and GP13 for SDA, and one can create the
 default I2C peripheral simply by doing::
 
-    i2c = machine.I2C()
+    >>> i2c = machine.I2C()
 
 The pins and frequency can be specified as::
 
-    i2c = machine.I2C(freq=400000, scl='GP23', sda='GP13')
+    >>> i2c = machine.I2C(freq=400000, scl='GP23', sda='GP13')
 
 Only certain pins can be used as SCL/SDA.  Please refer to the pinout for further
 information.
@@ -266,7 +268,9 @@ Incompatible way to create SSL sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SSL sockets need to be created the following way before wrapping them with.
-``ssl.wrap_socket``::
+``ssl.wrap_socket``:
+
+.. code-block:: python
 
   import socket
   import ssl
@@ -288,7 +292,9 @@ FTP server, and they must be placed in specific paths with specific names.
 
 For instance to connect to the Blynk servers using certificates, take the file ``ca.pem`` located
 in the `blynk examples folder <https://github.com/wipy/wipy/tree/master/examples/blynk>`_.
-and put it in '/flash/cert/'. Then do::
+and put it in '/flash/cert/'. Then do:
+
+.. code-block:: python
 
   import socket
   import ssl
@@ -308,7 +314,9 @@ to be given, an initial chunk of ``data`` must be passed as well. **When using t
 care must be taken to make sure that the length of all intermediate chunks (including the
 initial one) is a multiple of 4 bytes.** The last chunk may be of any length.
 
-Example::
+Example:
+
+.. code-block:: python
 
    hash = hashlib.sha1('abcd1234', 1001)    # length of the initial piece is multiple of 4 bytes
    hash.update('1234')                       # also multiple of 4 bytes
@@ -333,7 +341,9 @@ The ``Server`` class controls the behaviour and the configuration of the FTP and
 services running on the WiPy. Any changes performed using this class' methods will
 affect both.
 
-Example::
+Example:
+
+.. code-block:: python
 
     import network
     server = network.Server()
