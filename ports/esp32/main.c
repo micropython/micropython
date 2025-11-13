@@ -219,6 +219,12 @@ soft_reset_exit:
 
     mp_deinit();
     fflush(stdout);
+
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    // matches mp_usbd_deinit() above, ensure we have USB-CDC after soft reset
+    mp_usbd_init();
+    #endif
+
     goto soft_reset;
 }
 
