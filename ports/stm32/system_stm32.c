@@ -269,6 +269,11 @@ MP_WEAK void SystemClock_Config(void) {
     RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_HSI48;
     #endif
 
+    #if MICROPY_HW_RTC_USE_LSE
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_LSE;
+    #endif
+
     RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
 
     #elif defined(STM32L4)
