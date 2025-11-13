@@ -1522,7 +1522,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     // build args array
     mp_obj_t args[5];
     args[0] = MP_OBJ_NEW_QSTR(name);
-    args[1] = mp_const_none; // TODO should be globals
+    args[1] = MP_OBJ_FROM_PTR(mp_globals_get()); // globals of the current context
     args[2] = mp_const_none; // TODO should be locals
     args[3] = fromlist;
     args[4] = level;
