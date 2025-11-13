@@ -28,11 +28,14 @@
 #define MICROPY_INCLUDED_MIMXRT_ETH_H
 
 typedef struct _eth_t eth_t;
-extern eth_t eth_instance0;
-extern eth_t eth_instance1;
-void eth_init_0(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock);
 
-#if defined(ENET_DUAL_PORT)
+#if defined(ENET_PHY_ADDRESS)
+extern eth_t eth_instance0;
+void eth_init_0(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock);
+#endif
+
+#if defined(ENET_1_PHY_ADDRESS)
+extern eth_t eth_instance1;
 void eth_init_1(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock);
 #endif
 
