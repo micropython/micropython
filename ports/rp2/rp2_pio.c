@@ -270,13 +270,18 @@ static void asm_pio_get_pins(PIO pio, const char *type, mp_obj_t prog_pins, mp_o
         #endif
     }
 }
-
+static inline uint32_t rotl32a(const uint32_t x, const int k) {
+    return (x << k) | (x >> (32 - k));
+}
 static void asm_pio_init_gpio(PIO pio, uint32_t sm, asm_pio_config_t *config) {
-    uint32_t pinmask = ((1 << config->count) - 1) << (config->base - pio_get_gpio_base(pio));
-    pio_sm_set_pins_with_mask(pio, sm, config->pinvals << (config->base - pio_get_gpio_base(pio)), pinmask);
-    pio_sm_set_pindirs_with_mask(pio, sm, config->pindirs << (config->base - pio_get_gpio_base(pio)), pinmask);
-    for (size_t i = 0; i < config->count; ++i) {
-        gpio_set_function(config->base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
+    uint32_t gpio_base = pio_get_gpio_base(pio);
+    uint32_t pinmask = rotl32a(~(-1 << config->count), config->base - gpio_base);
+    pio_sm_set_pins_with_mask_internal(pio, sm, rotl32a(config->pinvals, config->base - gpio_base), pinmask);
+    pio_sm_set_pindirs_with_mask_internal(pio, sm, rotl32a(config->pindirs, config->base - gpio_base), pinmask);
+    for (size_t i = 0; i < 32; ++i) {
+        if (pinmask & (1 << i)) {
+            gpio_set_function(gpio_base + i, GPIO_FUNC_PIO0 + pio_get_index(pio));
+        }
     }
 }
 
