@@ -58,6 +58,12 @@ config MICROPY_USB_DEVICE_PID
 	hex "USB PID"
 	default 0x0001
 
+config MICROPY_ADDITIONAL_HEAPS
+	bool "Enable Additional Heaps"
+
+config MICROPY_ADDITIONAL_HEAPS_LIST
+	string "Additional Heaps in address,size,address,size,... format"
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
