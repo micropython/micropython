@@ -77,7 +77,11 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
 }
 
 static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_flow };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_flow,
+           #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+           ARG_tx, ARG_rx, ARG_cts, ARG_rts
+           #endif
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 115200} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
@@ -88,7 +92,14 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #endif
     };
+    int ret;
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -140,6 +151,24 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid flow control"));
     }
 
+    #ifdef CONFIG_MICROPY_DYNAMIC_PINCTRL
+    if (args[ARG_rx].u_obj != mp_const_none
+        || args[ARG_tx].u_obj != mp_const_none
+        || args[ARG_cts].u_obj != mp_const_none
+        || args[ARG_rts].u_obj != mp_const_none) {
+        const mp_zephyr_device_data_t *data = zephyr_device_find_data_dev(self->dev);
+        zephyr_device_apply_pinctrl(data, 4, args[ARG_rx].u_obj, args[ARG_tx].u_obj, args[ARG_cts].u_obj, args[ARG_rts].u_obj);
+    }
+    #endif
+
+    // deferred-init
+    if (!device_is_ready(self->dev)) {
+        ret = device_init(self->dev);
+        if (ret < 0) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("couldn't initialize UART: %d"), -ret);
+        }
+    }
+
     const struct uart_config cfg = {
         .baudrate = args[ARG_baudrate].u_int,
         .parity = parity,
@@ -148,7 +177,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         .flow_ctrl = flow_ctrl
     };
 
-    int ret = uart_configure(self->dev, &cfg);
+    ret = uart_configure(self->dev, &cfg);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }

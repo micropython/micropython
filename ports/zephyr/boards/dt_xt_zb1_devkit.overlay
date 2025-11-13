@@ -1,0 +1,20 @@
+&pinctrl {
+	uart1_default: uart1_default {
+		group1 {
+			pinmux = <GPIO17_UART1_TX>;
+		};
+	};
+};
+
+&uart1 {
+	status = "okay";
+	current-speed = <115200>;
+	zephyr,deferred-init;
+	/* A pinctrl struct MUST have been allocated at build time to use dynamic pinctrl,
+	 * but it can be nonsense if needed as the device is deferred-init
+	 * and pinctrl won't be applied until device init.
+	 */
+	pinctrl-0 = <&uart1_default>;
+	pinctrl-names = "default";
+
+};
