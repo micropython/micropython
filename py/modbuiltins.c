@@ -49,9 +49,48 @@ extern struct _mp_dummy_t mp_sys_stdout_obj; // type is irrelevant, just need po
 static mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(2 <= n_args);
 
-    // set the new classes __locals__ object
+    // STEP 1: Determine metaclass FIRST (before creating namespace)
+    mp_obj_t meta;
+    mp_map_elem_t *key_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_metaclass), MP_MAP_LOOKUP);
+    if (key_elem != NULL) {
+        meta = key_elem->value;
+    } else {
+        if (n_args == 2) {
+            // no explicit bases, so use 'type'
+            meta = MP_OBJ_FROM_PTR(&mp_type_type);
+        } else {
+            // use type of first base object
+            meta = MP_OBJ_FROM_PTR(mp_obj_get_type(args[2]));
+        }
+    }
+
+    // TODO do proper metaclass resolution for multiple base objects
+
+    // STEP 2: Call __prepare__ if it exists, or create regular dict
+    mp_obj_t class_locals;
+    #if MICROPY_PY_METACLASS_PREPARE
+    mp_obj_t prepare_dest[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+    mp_load_method_maybe(meta, MP_QSTR___prepare__, prepare_dest);
+
+    if (prepare_dest[0] != MP_OBJ_NULL) {
+        // __prepare__ exists, call it with (name, bases)
+        mp_obj_t prepare_args[4];
+        prepare_args[0] = prepare_dest[0];  // method function
+        prepare_args[1] = prepare_dest[1];  // self (metaclass)
+        prepare_args[2] = args[1];          // class name
+        prepare_args[3] = mp_obj_new_tuple(n_args - 2, args + 2); // bases tuple
+        class_locals = mp_call_method_n_kw(2, 0, prepare_args);
+    } else {
+        // No __prepare__, use regular dict
+        class_locals = mp_obj_new_dict(0);
+    }
+    #else
+    // __prepare__ not supported, always use regular dict
+    class_locals = mp_obj_new_dict(0);
+    #endif
+
+    // STEP 3: Execute class body with the namespace from __prepare__
     mp_obj_dict_t *old_locals = mp_locals_get();
-    mp_obj_t class_locals = mp_obj_new_dict(0);
     mp_locals_set(MP_OBJ_TO_PTR(class_locals));
 
     // call the class code
@@ -60,28 +99,11 @@ static mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args, 
     // restore old __locals__ object
     mp_locals_set(old_locals);
 
-    // get the class type (meta object) from the base objects
-    mp_obj_t meta;
-    mp_map_elem_t *key_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_metaclass), MP_MAP_LOOKUP);
-    if (key_elem != NULL) {
-        meta = key_elem->value;
-    } else {
-    if (n_args == 2) {
-        // no explicit bases, so use 'type'
-        meta = MP_OBJ_FROM_PTR(&mp_type_type);
-    } else {
-        // use type of first base object
-        meta = MP_OBJ_FROM_PTR(mp_obj_get_type(args[2]));
-    }
-    }
-
-    // TODO do proper metaclass resolution for multiple base objects
-
-    // create the new class using a call to the meta object
+    // STEP 4: Create the class using the metaclass
     mp_obj_t meta_args[3];
     meta_args[0] = args[1]; // class name
     meta_args[1] = mp_obj_new_tuple(n_args - 2, args + 2); // tuple of bases
-    meta_args[2] = class_locals; // dict of members
+    meta_args[2] = class_locals; // dict of members (now from __prepare__)
     mp_obj_t new_class = mp_call_function_n_kw(meta, 3, 0, meta_args);
 
     // store into cell if needed
