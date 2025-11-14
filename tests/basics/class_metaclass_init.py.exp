@@ -1,0 +1,7 @@
+Test 1: PASS - metaclass __init__ called
+Test 2: PASS - metaclass __init__ can modify class
+Test 3: PASS - correct arguments passed to __init__
+Test 4: PASS - inherited metaclass __init__ called
+Test 5: PASS - TypeError raised for bad signature
+
+All metaclass __init__ tests passed!
