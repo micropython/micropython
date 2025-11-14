@@ -32,8 +32,8 @@
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
+    qstr_short_t name;
     uint8_t pin_id;
-    qstr name;
     uint8_t eic;
     uint8_t adc0;
     uint8_t sercom1;
@@ -50,8 +50,8 @@ typedef struct _machine_pin_obj_t {
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
+    qstr_short_t name;
     uint8_t pin_id;
-    qstr name;
     uint8_t eic;
     uint8_t adc0;
     uint8_t adc1;
