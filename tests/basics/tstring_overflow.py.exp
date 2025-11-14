@@ -1,0 +1,16 @@
+
+=== Integer overflow test ===
+Overflow test: OverflowError - template string too large for header format
+
+
+=== Template string size limit ===
+Too many interpolations: template string too large for header format
+
+=== __template__ edge cases ===
+Max strings: OK, 4095 strings
+Max interps limit enforced
+
+=== Too many segments ===
+Too many segments: MemoryError (correct)
+
+=== Template() constructor with many interpolations ===
