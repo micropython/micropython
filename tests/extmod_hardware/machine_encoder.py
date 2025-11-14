@@ -19,6 +19,15 @@ if "esp32" in sys.platform:
     in0_pin = 5
     out1_pin = 12
     in1_pin = 13
+    start_value = -1
+elif sys.platform == "mimxrt":
+    if "Teensy" in sys.implementation._machine:
+        id = 0
+        out0_pin = "D2"
+        in0_pin = "D3"
+        out1_pin = "D5"
+        in1_pin = "D4"
+        start_value = 0
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
@@ -35,8 +44,8 @@ class TestEncoder(unittest.TestCase):
     def setUp(self):
         out0_pin(0)
         out1_pin(0)
-        self.enc = Encoder(id, in0_pin, in1_pin)
-        self.pulses = 0  # track the expected encoder position in software
+        self.enc = Encoder(id, in0_pin, in1_pin, phases=1)
+        self.pulses = start_value  # track the expected encoder position in software
 
     def tearDown(self):
         self.enc.deinit()
@@ -52,6 +61,7 @@ class TestEncoder(unittest.TestCase):
     def assertPosition(self, value):
         self.assertEqual(self.enc.value(), value)
 
+    @unittest.skipIf(sys.platform == "mimxrt", "cannot read back the pin")
     def test_connections(self):
         # Test the hardware connections are correct. If this test fails, all tests will fail.
         for ch, outp, inp in ((0, out0_pin, in0_pin), (1, out1_pin, in1_pin)):
@@ -76,7 +86,9 @@ class TestEncoder(unittest.TestCase):
         self.rotate(1)
         self.assertPosition(0)
         self.rotate(1)
-        self.assertPosition(1)  # only 3 pulses to count first rotation?
+        self.assertPosition(0)
+        self.rotate(1)
+        self.assertPosition(1)  # 4 pulses to count first rotation?
         self.rotate(1)
         self.assertPosition(1)
         self.rotate(1)
