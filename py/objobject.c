@@ -48,7 +48,19 @@ static mp_obj_t object___init__(mp_obj_t self) {
 static MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
 
 static mp_obj_t object___new__(mp_obj_t cls) {
-    if (!mp_obj_is_type(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t *)MP_OBJ_TO_PTR(cls))) {
+    // First, check if cls is a type object at all (not an int, str, etc.)
+    // This is true if mp_obj_get_type(cls) is type or a metaclass (subclass of type)
+    const mp_obj_type_t *cls_type = mp_obj_get_type(cls);
+    bool cls_is_type_obj = (cls_type == &mp_type_type) ||
+        mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(cls_type), MP_OBJ_FROM_PTR(&mp_type_type));
+
+    if (!cls_is_type_obj) {
+        mp_raise_TypeError(MP_ERROR_TEXT("arg must be user-type"));
+    }
+
+    // Now we know cls is a type object, check if it's an instance type
+    mp_obj_type_t *cls_as_type = (mp_obj_type_t *)MP_OBJ_TO_PTR(cls);
+    if (!mp_obj_is_instance_type(cls_as_type)) {
         mp_raise_TypeError(MP_ERROR_TEXT("arg must be user-type"));
     }
     // This executes only "__new__" part of instance creation.
