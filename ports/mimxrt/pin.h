@@ -106,7 +106,7 @@ enum {
 
 typedef struct {
     mp_obj_base_t base;
-    qstr name;  // port name
+    qstr_short_t name;  // port name
     uint8_t af_mode;  // alternate function
     uint8_t input_daisy;
     void *instance;  // pointer to peripheral instance for alternate function
@@ -121,15 +121,15 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
-    qstr name;  // pad name
     GPIO_Type *gpio;  // gpio instance for pin
     uint32_t pin;  // pin number
     uint32_t muxRegister;
     uint32_t configRegister;
-    uint8_t af_list_len;  // length of available alternate functions list
-    uint8_t adc_list_len; // length of available ADC options list
     const machine_pin_af_obj_t *af_list;  // pointer to list with alternate functions
     const machine_pin_adc_obj_t *adc_list; // pointer to list with ADC options
+    qstr_short_t name;  // pad name
+    uint8_t af_list_len;  // length of available alternate functions list
+    uint8_t adc_list_len; // length of available ADC options list
 } machine_pin_obj_t;
 
 typedef struct _machine_pin_irq_obj_t {
