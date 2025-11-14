@@ -1,5 +1,12 @@
 # Test enum.auto() support (requires MICROPY_PY_METACLASS_PREPARE)
 
+# Skip test if enum module is not available
+try:
+    from enum import Enum, IntEnum, auto
+except ImportError:
+    print("SKIP")
+    raise SystemExit
+
 # Skip test if __prepare__ is not supported
 _prepare_test = []
 class _TestMeta(type):
@@ -14,9 +21,6 @@ class _Test(metaclass=_TestMeta):
 if not _prepare_test:
     print("SKIP")
     raise SystemExit
-
-# Now run the actual tests
-from enum import Enum, IntEnum, auto
 
 # Test 1: Basic auto() usage - sequential values starting from 1
 print("Test 1: Basic auto() usage")

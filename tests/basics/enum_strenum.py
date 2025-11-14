@@ -1,5 +1,11 @@
 # Test StrEnum class
-from enum import StrEnum
+
+# Skip test if enum module is not available
+try:
+    from enum import StrEnum
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 print("Test 1: Basic StrEnum")
 class Color(StrEnum):

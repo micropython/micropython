@@ -1,3 +1,20 @@
+# Test metaclass __init__ support (requires MICROPY_PY_METACLASS_INIT)
+
+# Skip test if metaclass __init__ is not supported
+_init_test = []
+
+class _TestMeta(type):
+    def __init__(cls, name, bases, attrs):
+        super().__init__(name, bases, attrs)
+        _init_test.append(1)
+
+class _Test(metaclass=_TestMeta):
+    pass
+
+if not _init_test:
+    print("SKIP")
+    raise SystemExit
+
 # Test 1: Basic metaclass __init__ call
 init_called = []
 

@@ -1,5 +1,11 @@
 # Test Flag and IntFlag enum classes
-from enum import Flag, IntFlag, auto
+
+# Skip test if enum module is not available
+try:
+    from enum import Flag, IntFlag, auto
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 print("Test 1: Basic Flag operations")
 class Permission(Flag):
