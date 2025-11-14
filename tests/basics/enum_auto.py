@@ -1,22 +1,37 @@
 # Test enum.auto() support (requires MICROPY_PY_METACLASS_PREPARE)
 
+# Skip test if enum module is not available
+try:
+    from enum import Enum, IntEnum, auto
+except ImportError:
+    print("SKIP")
+    raise SystemExit
+
+# Skip test if classmethod builtin is not available
+try:
+    classmethod
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 # Skip test if __prepare__ is not supported
 _prepare_test = []
-class _TestMeta(type):
-    @classmethod
-    def __prepare__(mcs, name, bases):
-        _prepare_test.append(1)
-        return {}
 
-class _Test(metaclass=_TestMeta):
+try:
+    class _TestMeta(type):
+        @classmethod
+        def __prepare__(mcs, name, bases):
+            _prepare_test.append(1)
+            return {}
+
+    class _Test(metaclass=_TestMeta):
+        pass
+except:
     pass
 
 if not _prepare_test:
     print("SKIP")
     raise SystemExit
-
-# Now run the actual tests
-from enum import Enum, IntEnum, auto
 
 # Test 1: Basic auto() usage - sequential values starting from 1
 print("Test 1: Basic auto() usage")
@@ -25,9 +40,9 @@ class Color(Enum):
     GREEN = auto()
     BLUE = auto()
 
-print(f"RED.value = {Color.RED.value}")
-print(f"GREEN.value = {Color.GREEN.value}")
-print(f"BLUE.value = {Color.BLUE.value}")
+print("RED.value = %s" % (Color.RED.value))
+print("GREEN.value = %s" % (Color.GREEN.value))
+print("BLUE.value = %s" % (Color.BLUE.value))
 print("PASS" if (Color.RED.value == 1 and Color.GREEN.value == 2 and Color.BLUE.value == 3) else "FAIL")
 
 # Test 2: Mixed auto() and explicit values
@@ -39,10 +54,10 @@ class Status(Enum):
     PAUSED = auto()
     STOPPED = auto()
 
-print(f"PENDING.value = {Status.PENDING.value}")
-print(f"ACTIVE.value = {Status.ACTIVE.value}")
-print(f"PAUSED.value = {Status.PAUSED.value}")
-print(f"STOPPED.value = {Status.STOPPED.value}")
+print("PENDING.value = %s" % (Status.PENDING.value))
+print("ACTIVE.value = %s" % (Status.ACTIVE.value))
+print("PAUSED.value = %s" % (Status.PAUSED.value))
+print("STOPPED.value = %s" % (Status.STOPPED.value))
 # In MicroPython, auto() starts at max(explicit) + 1, then assigns in creation order
 # PENDING, PAUSED, STOPPED were created in that order, so they get 11, 12, 13
 print("PASS" if (Status.ACTIVE.value == 10 and
@@ -56,9 +71,9 @@ class Priority(IntEnum):
     MEDIUM = auto()
     HIGH = auto()
 
-print(f"LOW.value = {Priority.LOW.value}")
-print(f"MEDIUM.value = {Priority.MEDIUM.value}")
-print(f"HIGH.value = {Priority.HIGH.value}")
+print("LOW.value = %s" % (Priority.LOW.value))
+print("MEDIUM.value = %s" % (Priority.MEDIUM.value))
+print("HIGH.value = %s" % (Priority.HIGH.value))
 print("PASS" if (Priority.LOW.value == 1 and Priority.MEDIUM.value == 2 and Priority.HIGH.value == 3) else "FAIL")
 
 # Test 4: auto() with single member
@@ -66,7 +81,7 @@ print("\nTest 4: auto() with single member")
 class Single(Enum):
     ONLY = auto()
 
-print(f"ONLY.value = {Single.ONLY.value}")
+print("ONLY.value = %s" % (Single.ONLY.value))
 print("PASS" if Single.ONLY.value == 1 else "FAIL")
 
 # Test 5: All auto() values
@@ -79,7 +94,7 @@ class AllAuto(Enum):
     E = auto()
 
 values = [AllAuto.A.value, AllAuto.B.value, AllAuto.C.value, AllAuto.D.value, AllAuto.E.value]
-print(f"Values: {values}")
+print("Values: %s" % (values))
 print("PASS" if values == [1, 2, 3, 4, 5] else "FAIL")
 
 # Test 6: auto() after explicit value 0
@@ -89,9 +104,9 @@ class StartZero(Enum):
     ONE = auto()
     TWO = auto()
 
-print(f"ZERO.value = {StartZero.ZERO.value}")
-print(f"ONE.value = {StartZero.ONE.value}")
-print(f"TWO.value = {StartZero.TWO.value}")
+print("ZERO.value = %s" % (StartZero.ZERO.value))
+print("ONE.value = %s" % (StartZero.ONE.value))
+print("TWO.value = %s" % (StartZero.TWO.value))
 print("PASS" if (StartZero.ZERO.value == 0 and StartZero.ONE.value == 1 and StartZero.TWO.value == 2) else "FAIL")
 
 # Test 7: auto() continues from highest explicit value
@@ -103,11 +118,11 @@ class Complex(Enum):
     D = 50
     E = auto()
 
-print(f"A.value = {Complex.A.value}")
-print(f"B.value = {Complex.B.value}")
-print(f"C.value = {Complex.C.value}")
-print(f"D.value = {Complex.D.value}")
-print(f"E.value = {Complex.E.value}")
+print("A.value = %s" % (Complex.A.value))
+print("B.value = %s" % (Complex.B.value))
+print("C.value = %s" % (Complex.C.value))
+print("D.value = %s" % (Complex.D.value))
+print("E.value = %s" % (Complex.E.value))
 # In MicroPython: auto() starts at max(100, 50) + 1 = 101
 # A, C, E created in that order get 101, 102, 103
 print("PASS" if (Complex.B.value == 100 and Complex.D.value == 50 and
@@ -123,13 +138,13 @@ class Direction(Enum):
 
 # Test iteration
 directions = [d for d in Direction]
-print(f"Member count: {len(directions)}")
+print("Member count: %s" % (len(directions)))
 print("PASS" if len(directions) == 4 else "FAIL")
 
 # Test value lookup
 try:
     north = Direction(1)
-    print(f"Direction(1) = {north.name}")
+    print("Direction(1) = %s" % (north.name))
     print("PASS" if north == Direction.NORTH else "FAIL")
 except ValueError:
     print("FAIL - value lookup failed")
@@ -137,7 +152,7 @@ except ValueError:
 # Test 9: auto() repr
 print("\nTest 9: auto() repr")
 a = auto()
-print(f"repr(auto()) = {repr(a)}")
+print("repr(auto()) = %s" % (repr(a)))
 print("PASS" if repr(a) == "auto()" else "FAIL")
 
 print("\nAll enum.auto() tests completed!")

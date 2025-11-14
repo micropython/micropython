@@ -1,3 +1,32 @@
+# Test metaclass property/method support (requires MICROPY_PY_METACLASS_PROPERTIES)
+
+# Skip test if property builtin is not available
+try:
+    property
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
+# Skip test if metaclass property access is not supported
+_property_test = None
+
+try:
+    class _TestMeta(type):
+        @property
+        def test_prop(cls):
+            return "works"
+
+    class _Test(metaclass=_TestMeta):
+        pass
+
+    _property_test = _Test.test_prop
+except (AttributeError, TypeError):
+    pass
+
+if _property_test != "works":
+    print("SKIP")
+    raise SystemExit
+
 # Test 1: Metaclass property access
 class Meta(type):
     @property

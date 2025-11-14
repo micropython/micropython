@@ -1,14 +1,25 @@
 # Test metaclass __prepare__ method (PEP 3115)
 
+# Skip test if classmethod builtin is not available
+try:
+    classmethod
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 # Skip test if __prepare__ is not supported
 _prepare_test = []
-class _TestMeta(type):
-    @classmethod
-    def __prepare__(mcs, name, bases):
-        _prepare_test.append(1)
-        return {}
 
-class _Test(metaclass=_TestMeta):
+try:
+    class _TestMeta(type):
+        @classmethod
+        def __prepare__(mcs, name, bases):
+            _prepare_test.append(1)
+            return {}
+
+    class _Test(metaclass=_TestMeta):
+        pass
+except:
     pass
 
 if not _prepare_test:
@@ -22,7 +33,7 @@ prepare_log = []
 class Meta1(type):
     @classmethod
     def __prepare__(mcs, name, bases):
-        prepare_log.append(f"__prepare__({name})")
+        prepare_log.append("__prepare__(%s)" % (name,))
         return {}
 
 class Test1(metaclass=Meta1):
@@ -37,7 +48,7 @@ print("\nTest 2: __prepare__ arguments")
 class Meta2(type):
     @classmethod
     def __prepare__(mcs, name, bases):
-        print(f"mcs={mcs.__name__}, name={name}, bases={bases}")
+        print("mcs=%s, name=%s, bases=%s" % (mcs.__name__, name, bases))
         return {}
 
 class Base2:
@@ -58,7 +69,7 @@ class Meta3(type):
 class Test3(metaclass=Meta3):
     pass
 
-print(f"Test3.injected = {Test3.injected}")
+print("Test3.injected = %s" % (Test3.injected))
 print("PASS" if Test3.injected == 42 else "FAIL")
 
 # Test 4: __prepare__ can access namespace in __new__
@@ -82,7 +93,7 @@ class Meta4(type):
 class Test4(metaclass=Meta4):
     x = 1
 
-print(f"Was prepared: {Test4._was_prepared}")
+print("Was prepared: %s" % (Test4._was_prepared))
 print("PASS" if Test4._was_prepared else "FAIL")
 
 # Test 5: __prepare__ inheritance
@@ -91,7 +102,7 @@ print("\nTest 5: Inherited __prepare__")
 class BaseMeta(type):
     @classmethod
     def __prepare__(mcs, name, bases):
-        print(f"BaseMeta.__prepare__({name})")
+        print("BaseMeta.__prepare__(%s)" % (name))
         return {}
 
 class DerivedMeta(BaseMeta):
@@ -109,7 +120,7 @@ class Meta6(type):
 class Test6(metaclass=Meta6):
     x = 1
 
-print(f"Test6.x = {Test6.x}")
+print("Test6.x = %s" % (Test6.x))
 print("PASS")
 
 print("\nAll __prepare__ tests completed!")
