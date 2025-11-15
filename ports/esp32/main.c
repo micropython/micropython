@@ -187,7 +187,9 @@ soft_reset_exit:
 
     // Deinit uart before timers, as esp32 uart
     // depends on a timer instance
+    #if MICROPY_PY_MACHINE_UART
     machine_uart_deinit_all();
+    #endif
     machine_timer_deinit_all();
 
     #if MICROPY_PY_ESP32_PCNT
@@ -210,7 +212,9 @@ soft_reset_exit:
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
+    #if MICROPY_PY_MACHINE_PWM
     machine_pwm_deinit_all();
+    #endif
     // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
     #if MICROPY_PY_MACHINE_I2C_TARGET
