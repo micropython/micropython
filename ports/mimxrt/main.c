@@ -170,8 +170,12 @@ int main(void) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        #if MICROPY_PY_MACHINE_UART
         machine_uart_deinit_all();
+        #endif
+        #if MICROPY_PY_MACHINE_PWM
         machine_pwm_deinit_all();
+        #endif
         soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
