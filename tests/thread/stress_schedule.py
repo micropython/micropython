@@ -35,7 +35,7 @@ def thread():
             micropython.schedule(task, None)
         except RuntimeError:
             # Queue full, back off.
-            time.sleep_ms(10)
+            time.sleep_ms(1)
 
 
 for i in range(8):
