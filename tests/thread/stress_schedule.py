@@ -35,7 +35,7 @@ def thread():
             micropython.schedule(task, None)
         except RuntimeError:
             # Queue full, back off.
-            time.sleep_ms(10)
+            time.sleep_ms(1)
 
 
 for i in range(8):
@@ -45,10 +45,17 @@ for i in range(8):
         # System cannot create a new thead, so stop trying to create them.
         break
 
-# Wait up to 10 seconds for 10000 tasks to be scheduled.
-t = time.ticks_ms()
-while n < _NUM_TASKS and time.ticks_diff(time.ticks_ms(), t) < _TIMEOUT_MS:
-    time.sleep(0)
+
+# This function must always use the bytecode emitter so services the schedule queue when !GIL
+@micropython.bytecode
+def waiter():
+    # Wait up to 10 seconds for 10000 tasks to be scheduled.
+    t = time.ticks_ms()
+    while n < _NUM_TASKS and time.ticks_diff(time.ticks_ms(), t) < _TIMEOUT_MS:
+        time.sleep_ms(0)
+
+
+waiter()
 
 # Stop all threads.
 thread_run = False
