@@ -56,7 +56,6 @@ typedef struct {
     uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
     uint32_t adc_num  : 3;  // 1 bit per ADC
     const pin_af_obj_t *af;
-    uint32_t pull;
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
