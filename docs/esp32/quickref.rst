@@ -837,9 +837,9 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     import esp32
     from machine import Pin
 
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8)
-    r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
-    # The channel resolution is 100ns (1/(source_freq/clock_div)).
+    r = esp32.RMT(pin=Pin(18), resolution_hz=10000000)
+    r   # RMT(pin=18, source_freq=80000000, resolution_hz=10000000)
+    # The channel resolution is based on resolution_hz, i.e. 100ns for 10000000
     r.write_pulses((1, 20, 2, 40), 0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
 The ESP32-C2 family does not include any RMT peripheral, so this class is
@@ -903,8 +903,7 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
    ``NeoPixel`` object.
 
 For low-level driving of a NeoPixel see `machine.bitstream`.
-This low-level driver uses an RMT channel by default.  To configure this see
-`RMT.bitstream_channel`.
+This low-level driver uses an RMT channel by default.
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
 
