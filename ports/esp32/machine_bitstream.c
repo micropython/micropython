@@ -178,14 +178,12 @@ static bool machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
 
 void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
     #if SOC_RMT_SUPPORTED
-    // Falls back to bitbang if rmt_new_tx_channel() fails.
-    // Other ESP errors in RMT version still raise an exception.
-    if (!esp32_rmt_bitstream_enabled || !machine_bitstream_high_low_rmt(pin, timing_ns, buf, len)) {
-        machine_bitstream_high_low_bitbang(pin, timing_ns, buf, len);
+    if (esp32_rmt_bitstream_enabled && machine_bitstream_high_low_rmt(pin, timing_ns, buf, len)) {
+        // Use of RMT was successful.
+        return;
     }
-    #else
-    machine_bitstream_high_low_bitbang(pin, timing_ns, buf, len);
     #endif
+    machine_bitstream_high_low_bitbang(pin, timing_ns, buf, len);
 }
 
 #endif // MICROPY_PY_MACHINE_BITSTREAM
