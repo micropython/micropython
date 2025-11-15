@@ -65,7 +65,7 @@
 #include "modmachine.h"
 #include "modnetwork.h"
 
-#if MICROPY_BLUETOOTH_NIMBLE
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
 #endif
 
@@ -106,7 +106,8 @@ void mp_task(void *pvParameter) {
     #endif
     #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_init();
-    #elif MICROPY_HW_ENABLE_USBDEV
+    #endif
+    #if MICROPY_HW_ENABLE_USBDEV
     usb_init();
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL
@@ -171,7 +172,7 @@ soft_reset:
 
 soft_reset_exit:
 
-    #if MICROPY_BLUETOOTH_NIMBLE
+    #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
     mp_bluetooth_deinit();
     #endif
 
