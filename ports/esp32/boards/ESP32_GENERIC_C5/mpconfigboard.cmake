@@ -6,4 +6,5 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.240mhz
     boards/sdkconfig.free_ram
     boards/ESP32_GENERIC_C5/sdkconfig.board
+    boards/sdkconfig.riscv
 )
