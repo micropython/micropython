@@ -151,9 +151,6 @@ static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
 #endif
 
-
-#if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
-
 static mp_obj_t esp32_wake_on_gpio(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_pins, ARG_level};
     const mp_arg_t allowed_args[] = {
@@ -198,6 +195,8 @@ static mp_obj_t esp32_wake_on_gpio(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_gpio_obj, 0, esp32_wake_on_gpio);
+
+#if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
 
 static mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     if (mp_obj_is_true(enable)) {
@@ -332,8 +331,9 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     #if SOC_ULP_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
     #endif
-    #if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP  //P4 does not support
     { MP_ROM_QSTR(MP_QSTR_wake_on_gpio), MP_ROM_PTR(&esp32_wake_on_gpio_obj) },
+    #if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP  //P4 does not support
+    { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #endif
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
@@ -344,7 +344,6 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     #if CONFIG_FREERTOS_USE_TRACE_FACILITY
     { MP_ROM_QSTR(MP_QSTR_idf_task_info), MP_ROM_PTR(&esp32_idf_task_info_obj) },
     #endif
-
     { MP_ROM_QSTR(MP_QSTR_NVS), MP_ROM_PTR(&esp32_nvs_type) },
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
     #if MICROPY_PY_ESP32_PCNT
