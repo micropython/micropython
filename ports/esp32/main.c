@@ -65,7 +65,7 @@
 #include "modmachine.h"
 #include "modnetwork.h"
 
-#if MICROPY_BLUETOOTH_NIMBLE
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
 #endif
 
@@ -172,7 +172,7 @@ soft_reset:
 
 soft_reset_exit:
 
-    #if MICROPY_BLUETOOTH_NIMBLE
+    #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
     mp_bluetooth_deinit();
     #endif
 
