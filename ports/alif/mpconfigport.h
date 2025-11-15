@@ -191,12 +191,7 @@
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-// Assume that if we already defined the obj repr then we also defined these items
-#ifndef MICROPY_OBJ_REPR
-typedef intptr_t mp_int_t; // must be pointer size
-typedef uintptr_t mp_uint_t; // must be pointer size
 typedef intptr_t mp_off_t;
-#endif
 
 // Board configuration settings.
 

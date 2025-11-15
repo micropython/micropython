@@ -22,6 +22,8 @@ TEST_TIMEOUT = float(os.environ.get("MICROPY_TEST_TIMEOUT", 30))
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
 
+RV32_ARCH_FLAGS = {"zba": 1 << 0}
+
 
 def base_path(*p):
     return os.path.abspath(os.path.join(BASEPATH, *p)).replace("\\", "/")
@@ -88,10 +90,11 @@ class __FS:
     return ""
   def stat(self, path):
     if path == '__injected_test.mpy':
-      return tuple(0 for _ in range(10))
+      return (0,0,0,0,0,0,0,0,0,0)
     else:
-      raise OSError(-2) # ENOENT
+      raise OSError(2) # ENOENT
   def open(self, path, mode):
+    self.stat(path)
     return __File()
 vfs.mount(__FS(), '/__vfstest')
 os.chdir('/__vfstest')
@@ -342,7 +345,9 @@ def platform_to_port(platform):
 
 
 def convert_device_shortcut_to_real_device(device):
-    if device.startswith("a") and device[1:].isdigit():
+    if device.startswith("port:"):
+        return device.split(":", 1)[1]
+    elif device.startswith("a") and device[1:].isdigit():
         return "/dev/ttyACM" + device[1:]
     elif device.startswith("u") and device[1:].isdigit():
         return "/dev/ttyUSB" + device[1:]
@@ -353,9 +358,7 @@ def convert_device_shortcut_to_real_device(device):
 
 
 def get_test_instance(test_instance, baudrate, user, password):
-    if test_instance.startswith("port:"):
-        _, port = test_instance.split(":", 1)
-    elif test_instance == "unix":
+    if test_instance == "unix":
         return None
     elif test_instance == "webassembly":
         return PyboardNodeRunner()
@@ -381,12 +384,25 @@ def detect_inline_asm_arch(pyb, args):
     return None
 
 
+def map_rv32_arch_flags(flags):
+    mapped_flags = []
+    for extension, bit in RV32_ARCH_FLAGS.items():
+        if flags & bit:
+            mapped_flags.append(extension)
+        flags &= ~bit
+    if flags:
+        raise Exception("Unexpected flag bits set in value {}".format(flags))
+    return mapped_flags
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch, build, thread, float_prec, unicode = str(output, "ascii").strip().split()
+    platform, arch, arch_flags, build, thread, float_prec, unicode = (
+        str(output, "ascii").strip().split()
+    )
     if arch == "None":
         arch = None
     inlineasm_arch = detect_inline_asm_arch(pyb, args)
@@ -394,11 +410,18 @@ def detect_test_platform(pyb, args):
         thread = None
     float_prec = int(float_prec)
     unicode = unicode == "True"
+    if arch == "rv32imc":
+        arch_flags = map_rv32_arch_flags(int(arch_flags))
+    else:
+        arch_flags = None
 
     args.platform = platform
     args.arch = arch
+    args.arch_flags = arch_flags
     if arch and not args.mpy_cross_flags:
         args.mpy_cross_flags = "-march=" + arch
+        if arch_flags:
+            args.mpy_cross_flags += " -march-flags=" + ",".join(arch_flags)
     args.inlineasm_arch = inlineasm_arch
     args.build = build
     args.thread = thread
@@ -409,6 +432,8 @@ def detect_test_platform(pyb, args):
     print("platform={}".format(platform), end="")
     if arch:
         print(" arch={}".format(arch), end="")
+        if arch_flags:
+            print(" arch_flags={}".format(",".join(arch_flags)), end="")
     if inlineasm_arch:
         print(" inlineasm={}".format(inlineasm_arch), end="")
     if thread:
@@ -547,6 +572,7 @@ tests_with_regex_output = [
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
         "misc/sys_settrace_cov.py",
+        "net_inet/tls_text_errors.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
     )

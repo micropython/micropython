@@ -482,7 +482,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
         }
 
         // parse long and long long specifiers (only where they make a difference)
-        #if defined(MICROPY_UNIX_COVERAGE) || (LONG_MAX > INT_MAX)
+        #if (MP_INT_MAX > INT_MAX && MP_INT_MAX == LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
         #define SUPPORT_L_FORMAT (1)
         #else
         #define SUPPORT_L_FORMAT (0)
@@ -491,7 +491,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
         bool long_arg = false;
         #endif
 
-        #if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64) || defined(MICROPY_UNIX_COVERAGE)
+        #if (MP_INT_MAX > LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
         #define SUPPORT_LL_FORMAT (1)
         #else
         #define SUPPORT_LL_FORMAT (0)

@@ -4,6 +4,12 @@ import io
 import socket
 import tls
 
+context = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
+
+if not hasattr(context, "verify_callback"):
+    print("SKIP")
+    raise SystemExit
+
 
 def verify_callback(cert, depth):
     print("verify_callback:", type(cert), len(cert) > 100, depth)
@@ -16,7 +22,6 @@ def verify_callback_fail(cert, depth):
 
 
 def test(peer_addr):
-    context = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
     context.verify_mode = tls.CERT_OPTIONAL
     context.verify_callback = verify_callback
     s = socket.socket()

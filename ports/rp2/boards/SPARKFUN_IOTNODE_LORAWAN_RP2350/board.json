@@ -21,5 +21,8 @@
     "product": "IoT Node LoRaWAN RP2350",
     "thumbnail": "",
     "url": "https://www.sparkfun.com/products/26060",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
     "vendor": "SparkFun"
 }

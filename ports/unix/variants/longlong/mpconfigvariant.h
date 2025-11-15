@@ -36,8 +36,6 @@
 
 #define MICROPY_OBJ_REPR               (MICROPY_OBJ_REPR_C)
 #define MICROPY_FLOAT_IMPL             (MICROPY_FLOAT_IMPL_FLOAT)
-typedef int mp_int_t;
-typedef unsigned int mp_uint_t;
 
 // Set base feature level.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)

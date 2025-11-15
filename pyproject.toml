@@ -23,6 +23,8 @@ ACKNOWLEDGEMENTS,\
 [tool.ruff]
 # Exclude third-party code from linting and formatting
 extend-exclude = ["lib"]
+# Include Python source files that don't end with .py
+extend-include = ["tools/cc1"]
 line-length = 99
 target-version = "py37"
 

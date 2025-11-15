@@ -237,7 +237,9 @@ mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t
     o->context = context;
     o->rc = rc;
     o->dict_locals = mp_locals_get(); // this is a wrong! how to do this properly?
+    #if !MICROPY_PREVIEW_VERSION_2
     o->lnotab = MP_OBJ_NULL;
+    #endif
     return MP_OBJ_FROM_PTR(o);
 }
 

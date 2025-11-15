@@ -287,12 +287,27 @@ struct _emit_t {
 #define ASM_CLR_REG(state, rd) ASM_XOR_REG_REG(state, rd, rd)
 #endif
 
+#if N_RV32
+#define ASM_MOV_LOCAL_MP_OBJ_NULL(as, local_num, reg_temp) \
+    ASM_MOV_LOCAL_REG(as, local_num, REG_ZERO)
+#else
+#define ASM_MOV_LOCAL_MP_OBJ_NULL(as, local_num, reg_temp) \
+    ASM_MOV_REG_IMM(as, reg_temp, (mp_uint_t)MP_OBJ_NULL); \
+    ASM_MOV_LOCAL_REG(as, local_num, reg_temp)
+#endif
+
 static void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj);
 static void emit_native_global_exc_entry(emit_t *emit);
 static void emit_native_global_exc_exit(emit_t *emit);
 static void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj);
 
 emit_t *EXPORT_FUN(new)(mp_emit_common_t * emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels) {
+    // Generated code performing exception handling assumes that MP_OBJ_NULL
+    // equals to 0 to simplify some checks, leveraging dedicated opcodes for
+    // comparisons against 0.  If this assumption does not hold true anymore
+    // then generated code won't work correctly.
+    MP_STATIC_ASSERT(MP_OBJ_NULL == 0);
+
     emit_t *emit = m_new0(emit_t, 1);
     emit->emit_common = emit_common;
     emit->error_slot = error_slot;
@@ -1291,8 +1306,7 @@ static void emit_native_global_exc_entry(emit_t *emit) {
 
             // Check LOCAL_IDX_THROW_VAL for any injected value
             ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
-            ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+            ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
             emit_call(emit, MP_F_NATIVE_RAISE);
         }
     }
@@ -2208,8 +2222,7 @@ static void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
 
     // Replace exception with MP_OBJ_NULL.
     emit_native_label_assign(emit, *emit->label_slot);
-    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)MP_OBJ_NULL);
-    ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+    ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
 
     // end of with cleanup nlr_catch block
     emit_native_label_assign(emit, *emit->label_slot + 1);
@@ -2316,8 +2329,7 @@ static void emit_native_for_iter_end(emit_t *emit) {
 static void emit_native_pop_except_jump(emit_t *emit, mp_uint_t label, bool within_exc_handler) {
     if (within_exc_handler) {
         // Cancel any active exception so subsequent handlers don't see it
-        ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)MP_OBJ_NULL);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+        ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
     } else {
         emit_native_leave_exc_stack(emit, false);
     }
@@ -3002,8 +3014,7 @@ static void emit_native_yield(emit_t *emit, int kind) {
     if (kind == MP_EMIT_YIELD_VALUE) {
         // Check LOCAL_IDX_THROW_VAL for any injected value
         ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
-        ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+        ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
         emit_call(emit, MP_F_NATIVE_RAISE);
     } else {
         // Label loop entry

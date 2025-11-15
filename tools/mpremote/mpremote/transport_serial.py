@@ -38,7 +38,7 @@
 import ast, io, os, re, struct, sys, time
 import serial
 import serial.tools.list_ports
-from errno import EPERM
+from errno import EPERM, ENOTTY
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
@@ -107,8 +107,15 @@ class SerialTransport(Transport):
 
     def close(self):
         # ESP Windows quirk: Prevent target from resetting when Windows clears DTR before RTS
-        self.serial.rts = False
-        self.serial.dtr = False
+        try:
+            self.serial.rts = False
+            self.serial.dtr = False
+        except OSError as er:
+            if er.errno == ENOTTY:
+                # Some devices (like QEMU pts) don't support RTS/DTR control
+                pass
+            else:
+                raise er
         self.serial.close()
 
     def read_until(

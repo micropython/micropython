@@ -57,6 +57,10 @@ int uart_rx_chr(void) {
     return UART0->DR;
 }
 
+int uart_rx_any(void) {
+    return UART0->SR & UART_SR_RXNE;
+}
+
 void uart_tx_strn(const char *buf, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         UART0->DR = buf[i];
@@ -94,13 +98,17 @@ int uart_rx_chr(void) {
     return UART0->RXD;
 }
 
+int uart_rx_any(void) {
+    return UART0->RXDRDY ? 1 : 0;
+}
+
 void uart_tx_strn(const char *buf, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         UART0->TXD = buf[i];
     }
 }
 
-#elif defined(QEMU_SOC_MPS2)
+#elif defined(QEMU_SOC_MPS2) || defined(QEMU_SOC_MPS3)
 
 #define UART_STATE_TXFULL (1 << 0)
 #define UART_STATE_RXFULL (1 << 1)
@@ -116,7 +124,11 @@ typedef struct _UART_t {
     volatile uint32_t BAUDDIV;
 } UART_t;
 
+#if defined(QEMU_SOC_MPS3)
+#define UART0 ((UART_t *)(0x49303000))
+#else
 #define UART0 ((UART_t *)(0x40004000))
+#endif
 
 void uart_init(void) {
     UART0->BAUDDIV = 16;
@@ -128,6 +140,10 @@ int uart_rx_chr(void) {
         return UART_RX_NO_CHAR;
     }
     return UART0->DATA;
+}
+
+int uart_rx_any(void) {
+    return UART0->STATE & UART_STATE_RXFULL;
 }
 
 void uart_tx_strn(const char *buf, size_t len) {
@@ -170,6 +186,10 @@ int uart_rx_chr(void) {
     return UART1->URXD & 0xff;
 }
 
+int uart_rx_any(void) {
+    return !(UART1->UTS1 & UART_UTS1_RXEMPTY);
+}
+
 void uart_tx_strn(const char *buf, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         UART1->UTXD = buf[i];
@@ -198,6 +218,10 @@ int uart_rx_chr(void) {
         return UART0->DR;
     }
     return UART_RX_NO_CHAR;
+}
+
+int uart_rx_any(void) {
+    return UART0->LSR & UART_LSR_DR;
 }
 
 void uart_tx_strn(const char *buffer, size_t length) {

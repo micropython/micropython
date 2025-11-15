@@ -130,8 +130,6 @@
 #define MICROPY_MAKE_POINTER_CALLABLE(p)            ((void *)((mp_uint_t)(p) | 1))
 #define MP_SSIZE_MAX                                (0x7FFFFFFF)
 
-typedef int32_t mp_int_t;                           // must be pointer size
-typedef unsigned int mp_uint_t;                     // must be pointer size
 typedef long mp_off_t;
 
 #define MICROPY_EVENT_POLL_HOOK                     __WFI();

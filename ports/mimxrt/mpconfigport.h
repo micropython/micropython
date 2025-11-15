@@ -231,8 +231,6 @@ extern const struct _mp_obj_type_t network_lan_type;
     ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 
 #define MP_SSIZE_MAX (0x7fffffff)
-typedef int mp_int_t; // must be pointer size
-typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // Need an implementation of the log2 function which is not a macro.

@@ -115,6 +115,15 @@
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
 #endif
 
+#elif defined(STM32U5)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#if defined(USART_CR3_TCBGTIE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_TCBGTIE)
+#else
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE)
+#endif
+
 #endif
 
 typedef struct _machine_uart_irq_map_t {
@@ -256,7 +265,7 @@ bool uart_exists(int uart_id) {
 
 // assumes Init parameters have been set up correctly
 bool uart_init(machine_uart_obj_t *uart_obj,
-    uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow) {
+    uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow, uint32_t invert) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
     uint8_t uart_fn = AF_FN_UART;
@@ -664,6 +673,23 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.Mode = UART_MODE_TX_RX;
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
+    #if defined(STM32U5)
+    huart.Init.ClockPrescaler = UART_PRESCALER_DIV16;
+    #endif
+
+    #if defined(STM32H7)
+    huart.AdvancedInit.AdvFeatureInit = (UART_ADVFEATURE_TXINVERT_INIT | UART_ADVFEATURE_RXINVERT_INIT);
+    if (invert & UART_ADVFEATURE_RXINVERT_INIT) {
+        huart.AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
+    } else {
+        huart.AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_DISABLE;
+    }
+    if (invert & UART_ADVFEATURE_TXINVERT_INIT) {
+        huart.AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_ENABLE;
+    } else {
+        huart.AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_DISABLE;
+    }
+    #endif
 
     #if defined(STM32G4) || defined(STM32H7) || defined(STM32N6) // WB also has a fifo..
     huart.FifoMode = UART_FIFOMODE_ENABLE;
@@ -1036,14 +1062,14 @@ uint32_t uart_get_baudrate(machine_uart_obj_t *self) {
     #if defined(LPUART1)
     if (self->uart_id == PYB_LPUART_1) {
         return LL_LPUART_GetBaudRate(self->uartx, uart_get_source_freq(self)
-            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
+            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
             , self->uartx->PRESC
             #endif
             );
     }
     #endif
     return LL_USART_GetBaudRate(self->uartx, uart_get_source_freq(self),
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
         self->uartx->PRESC,
         #endif
         LL_USART_OVERSAMPLING_16);
@@ -1053,7 +1079,7 @@ void uart_set_baudrate(machine_uart_obj_t *self, uint32_t baudrate) {
     #if defined(LPUART1)
     if (self->uart_id == PYB_LPUART_1) {
         LL_LPUART_SetBaudRate(self->uartx, uart_get_source_freq(self),
-            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
+            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
             LL_LPUART_PRESCALER_DIV1,
             #endif
             baudrate);
@@ -1061,7 +1087,7 @@ void uart_set_baudrate(machine_uart_obj_t *self, uint32_t baudrate) {
     }
     #endif
     LL_USART_SetBaudRate(self->uartx, uart_get_source_freq(self),
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
         LL_USART_PRESCALER_DIV1,
         #endif
         LL_USART_OVERSAMPLING_16, baudrate);
@@ -1112,7 +1138,7 @@ int uart_rx_char(machine_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
         int data = self->uartx->RDR & self->char_mask;
         self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
         return data;
@@ -1267,7 +1293,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
-                #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB) || defined(STM32WL)
+                #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
                 int data = self->uartx->RDR; // clears UART_FLAG_RXNE
                 #else
                 self->mp_irq_flags = self->uartx->SR; // resample to get any new flags since next read of DR will clear SR

@@ -337,8 +337,6 @@ void *nrf_native_code_commit(void *, unsigned int, void *);
 
 #define HEX2_FMT "%02x"
 
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #if MICROPY_HW_ENABLE_RNG

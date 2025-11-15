@@ -12,8 +12,6 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-portenta-h7"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
-typedef int mp_int_t;               // must be pointer size
-typedef unsigned int mp_uint_t;     // must be pointer size
 
 #define MICROPY_FATFS_EXFAT         (1)
 #define MICROPY_HW_ENABLE_RTC       (1)

@@ -26,6 +26,15 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
+#include <stdint.h>
+
+#if defined(__cplusplus) // Required on at least one compiler to get ULLONG_MAX
+#include <climits>
+#else
+#include <limits.h>
+#endif
+
+
 // Current version of MicroPython. This is used by sys.implementation.version
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
@@ -160,6 +169,78 @@
 #ifndef MICROPY_OBJ_IMMEDIATE_OBJS
 #define MICROPY_OBJ_IMMEDIATE_OBJS (MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D)
 #endif
+
+// Definition of the `mp_int_t` and `mp_uint_t` types and associated macros.
+// Normally, it suffices for the platform to do nothing: A type as wide
+// as a pointer is chosen, unless nanboxing (REPR_D) is selected, in
+// which case a 64-bit type is chosen to match the assumed size of
+// double-precision floats.
+//
+// In the case of exceptions, the port, board, or variant must define
+// MP_INT_TYPE as MP_INT_TYPE_OTHER and provide all the typedefs and
+// defines.
+#define MP_INT_TYPE_INTPTR (0)
+#define MP_INT_TYPE_INT64 (1)
+#define MP_INT_TYPE_OTHER (2)
+
+#if !defined(MP_INT_TYPE)
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+#define MP_INT_TYPE (MP_INT_TYPE_INT64)
+#else
+#define MP_INT_TYPE (MP_INT_TYPE_INTPTR)
+#endif
+#endif
+
+#if MP_INT_TYPE == MP_INT_TYPE_INTPTR
+typedef intptr_t mp_int_t;
+typedef uintptr_t mp_uint_t;
+#define MP_INT_MAX INTPTR_MAX
+#define MP_INT_MIN INTPTR_MIN
+#define MP_UINT_MAX INTPTR_UMAX
+#elif MP_INT_TYPE == MP_INT_TYPE_INT64
+typedef int64_t mp_int_t;
+typedef uint64_t mp_uint_t;
+#define MP_INT_MAX INT64_MAX
+#define MP_INT_MIN INT64_MIN
+#define MP_UINT_MAX INT64_UMAX
+#endif
+
+// mp_printf format support for mp_int_t. In the unusual case that MP_INT_MAX doesn't
+// match any of the standard C types (int/long/long long), provide all 3
+// macros. Otherwise, rely on these automatic definitions.
+#if !defined(INT_FMT)
+#if MP_INT_MAX == INT_MAX
+#define INT_FMT "%d"
+#define UINT_FMT "%u"
+#define HEX_FMT "%x"
+#elif MP_INT_MAX == LONG_MAX
+#define INT_FMT "%ld"
+#define UINT_FMT "%lu"
+#define HEX_FMT "%lx"
+#elif MP_INT_MAX == LLONG_MAX
+#define INT_FMT "%lld"
+#define UINT_FMT "%llu"
+#define HEX_FMT "%llx"
+#else
+#error Unexpected MP_INT_MAX value
+#endif
+#endif
+
+// mp_printf format support for size_t. In the unusual case that SIZE_MAX doesn't
+// match any of the standard C types (int/long/long long), provide a
+// macro. Otherwise, rely on these automatic definitions.
+#if !defined(SIZE_FMT)
+#if SIZE_MAX == UINT_MAX
+#define SIZE_FMT "%u"
+#elif SIZE_MAX == ULONG_MAX
+#define SIZE_FMT "%lu"
+#elif SIZE_MAX == ULLONG_MAX
+#define SIZE_FMT "%llu"
+#else
+#error Unexpected SIZE_MAX value
+#endif
+#endif
+
 
 /*****************************************************************************/
 /* Memory allocation policy                                                  */
@@ -1097,6 +1178,16 @@ typedef time_t mp_timestamp_t;
 // Whether to support mp_sched_vm_abort to asynchronously abort to the top level.
 #ifndef MICROPY_ENABLE_VM_ABORT
 #define MICROPY_ENABLE_VM_ABORT (0)
+#endif
+
+// Whether to handle abort behavior in pyexec code
+#ifndef MICROPY_PYEXEC_ENABLE_VM_ABORT
+#define MICROPY_PYEXEC_ENABLE_VM_ABORT (0)
+#endif
+
+// Whether to set exit codes according to the exit reason (keyboard interrupt, crash, normal exit, ...)
+#ifndef MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (0)
 #endif
 
 // Support for internal scheduler
@@ -2236,28 +2327,6 @@ typedef time_t mp_timestamp_t;
 #ifndef MP_SSIZE_MAX
 #define MP_SSIZE_MAX SSIZE_MAX
 #endif
-
-// printf format spec to use for mp_int_t and friends
-#ifndef INT_FMT
-#if defined(__LP64__)
-// Archs where mp_int_t == long, long != int
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
-#define HEX_FMT "%lx"
-#define SIZE_FMT "%lu"
-#elif defined(_WIN64)
-#define UINT_FMT "%llu"
-#define INT_FMT "%lld"
-#define HEX_FMT "%llx"
-#define SIZE_FMT "%llu"
-#else
-// Archs where mp_int_t == int
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-#define HEX_FMT "%x"
-#define SIZE_FMT "%u"
-#endif
-#endif // INT_FMT
 
 // Modifier for function which doesn't return
 #ifndef MP_NORETURN

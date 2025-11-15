@@ -66,7 +66,7 @@
 
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
 
-#if defined(STM32H5) || defined(STM32H7)
+#if defined(STM32H5) || defined(STM32H7) || defined(STM32U5)
 #define DAC DAC1
 #endif
 
@@ -124,7 +124,7 @@ static uint32_t TIMx_Config(mp_obj_t timer) {
 
 static void dac_deinit(uint32_t dac_channel) {
     DAC->CR &= ~(DAC_CR_EN1 << dac_channel);
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32U5)
     DAC->MCR = (DAC->MCR & ~(DAC_MCR_MODE1_Msk << dac_channel)) | (DAC_OUTPUTBUFFER_DISABLE << dac_channel);
     #else
     DAC->CR |= DAC_CR_BOFF1 << dac_channel;
@@ -142,7 +142,7 @@ static void dac_config_channel(uint32_t dac_channel, uint32_t trig, uint32_t out
     DAC->CR &= ~(DAC_CR_EN1 << dac_channel);
     uint32_t cr_off = DAC_CR_DMAEN1 | DAC_CR_MAMP1 | DAC_CR_WAVE1 | DAC_CR_TSEL1 | DAC_CR_TEN1;
     uint32_t cr_on = trig;
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32U5)
     DAC->MCR = (DAC->MCR & ~(DAC_MCR_MODE1_Msk << dac_channel)) | (outbuf << dac_channel);
     #else
     cr_off |= DAC_CR_BOFF1;
@@ -173,7 +173,7 @@ static void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
         #if defined(STM32G4)
         // For STM32G4, DAC registers have to be accessed by words (32-bit).
         dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_WORD;
-        #elif defined(STM32H5)
+        #elif defined(STM32H5) || defined(STM32U5)
         dma_align = DMA_SRC_DATAWIDTH_BYTE | DMA_DEST_DATAWIDTH_WORD;
         #else
         dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_BYTE;
@@ -182,7 +182,7 @@ static void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
         #if defined(STM32G4)
         // For STM32G4, DAC registers have to be accessed by words (32-bit).
         dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_WORD;
-        #elif defined(STM32H5)
+        #elif defined(STM32H5) || defined(STM32U5)
         dma_align = DMA_SRC_DATAWIDTH_HALFWORD | DMA_DEST_DATAWIDTH_WORD;
         #else
         dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_HALFWORD;
@@ -273,7 +273,7 @@ static mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     __DAC_CLK_ENABLE();
     #elif defined(STM32H7)
     __HAL_RCC_DAC12_CLK_ENABLE();
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32U5)
     __HAL_RCC_DAC1_CLK_ENABLE();
     #elif defined(STM32L1)
     __HAL_RCC_DAC_CLK_ENABLE();
@@ -493,8 +493,8 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         align = DAC_ALIGN_8B_R;
     } else {
         align = DAC_ALIGN_12B_R;
-        // For STM32H5, the length is the amount of data to be transferred from source to destination in bytes.
-        #if !defined(STM32H5)
+        // For STM32H5/U5, the length is the amount of data to be transferred from source to destination in bytes.
+        #if !defined(STM32H5) && !defined(STM32U5)
         bufinfo.len /= 2;
         #endif
     }

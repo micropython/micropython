@@ -47,6 +47,7 @@
 #include "rtc.h"
 #include "i2c.h"
 #include "spi.h"
+#include "shared/tinyusb/mp_usbd.h"
 
 #if defined(STM32G0)
 // G0 has BOR and POR combined
@@ -297,9 +298,13 @@ MP_NORETURN static void mp_machine_reset(void) {
 
 // Activate the bootloader without BOOT* pins.
 MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_STM_USB_STACK
     pyb_usb_dev_deinit();
     #endif
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE && MICROPY_HW_TINYUSB_STACK
+    mp_usbd_deinit();
+    #endif
+
     #if MICROPY_HW_ENABLE_STORAGE
     storage_flush();
     #endif
