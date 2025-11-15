@@ -985,8 +985,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Some tests shouldn't be run on GitHub Actions
     if os.getenv("GITHUB_ACTIONS") == "true":
-        skip_tests.add("thread/stress_schedule.py")  # has reliability issues
-
         if os.getenv("RUNNER_OS") == "Windows" and os.getenv("CI_BUILD_CONFIGURATION") == "Debug":
             # fails with stack overflow on Debug builds
             skip_tests.add("misc/sys_settrace_features.py")
