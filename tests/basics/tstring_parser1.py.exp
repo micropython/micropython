@@ -58,3 +58,6 @@ Boolean constants: OK
 
 === None constant ===
 None constant: OK
+
+=== Deep nesting for rule stack expansion ===
+Deep nesting (depth=80): OK
