@@ -9,7 +9,7 @@
            NULL
 [   6]   \(rule\|expr_stmt\)(5) (n=2)
            id(a)
-           tok(15)
+           tok(17)
 [   7]   \(rule\|expr_stmt\)(5) (n=2)
            id(b)
            str(str)
