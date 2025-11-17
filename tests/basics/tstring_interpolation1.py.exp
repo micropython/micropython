@@ -13,8 +13,8 @@ Concatenation: Template
 Mixed quotes: Template
 Nested interp: Template
 
-=== Escape in string within interpolation ===
-Escaped quote in string: OK
-Escaped newline in string: OK
+=== Backslashes not allowed in expressions (PEP 498/750) ===
+Backslash in expression: SyntaxError
+Escaped newline: SyntaxError
 
 === Format spec with special characters ===
