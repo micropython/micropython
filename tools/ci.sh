@@ -439,8 +439,9 @@ function ci_qemu_build_rv64 {
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 submodules
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test
 
-    # Test building native .mpy with rv64imc architecture.
+    # Test building and running native .mpy with rv64imc architecture.
     ci_native_mpy_modules_build rv64imc
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test_natmod
 }
 
 ########################################################################################

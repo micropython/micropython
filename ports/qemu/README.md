@@ -142,8 +142,7 @@ tests against the serial device, for example:
     $ ./run-tests.py -t /dev/pts/1
 
 Selected native modules that come as examples with the MicroPython source tree
-can also be tested with this command (this is currently not supported for the
-`VIRT_RV64` board):
+can also be tested with this command:
 
     $ make test_natmod
 
