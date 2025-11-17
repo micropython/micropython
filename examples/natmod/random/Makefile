@@ -7,7 +7,7 @@ MOD = random_$(ARCH)
 # Source files (.c or .py)
 SRC = random.c
 
-# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc)
+# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc, rv64imc)
 ARCH ?= x64
 
 ifeq ($(ARCH),xtensa)
