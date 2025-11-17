@@ -1,0 +1,40 @@
+# Large allocation tests for t-string coverage
+# These tests require substantial memory and are unix-only
+
+# Template constructor overflow
+Template() overflow: OverflowError (correct)
+
+# Template varargs constructor n_strings overflow
+Template varargs n_strings overflow: OverflowError (correct)
+
+# __template__ type validation (list instead of tuple)
+__template__ list validation: TypeError (correct)
+
+# __template__ overflow
+__template__ overflow: OverflowError (correct)
+
+# Runtime overflow > 4095 interpolations
+4096 interpolations (runtime): MemoryError (correct)
+
+# Parse-time overflow > 4095 interpolations
+4096 interpolations (parse-time): MemoryError (correct)
+
+# __template__ with maximum valid sizes
+Max strings: OK, 4095 strings
+Max interps error: MemoryError
+
+# Too many segments
+Too many segments: MemoryError (correct)
+
+# Approaching max interpolations
+4090 interpolations error: MemoryError
+
+# Empty expression (whitespace only)
+Empty expr (space): SyntaxError (correct)
+Empty expr (tab): SyntaxError (correct)
+Empty expr (newline): SyntaxError (correct)
+
+# Lexer escape sequence: invalid then valid
+Invalid escape sequence: SyntaxError (correct)
+
+=== Large coverage tests completed! ===

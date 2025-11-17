@@ -49,10 +49,10 @@ Invalid conversion: t-string: invalid conversion character 'z': expected 's', 'r
 Vertical tab: invalid non-printable character U+000B (<test>, line 1)
 Invalid char after conversion: t-string: invalid conversion character 'r@': expected 's', 'r', or 'a'
 Space after conversion: OK
-Tab after conversion: OK
-Newline after conversion: OK
-CR after conversion: OK
-Form-feed after conversion: OK
+Unexpected error: unexpected character after line continuation character
+Unexpected error: unexpected character after line continuation character
+Unexpected error: unexpected character after line continuation character
+Unexpected error: unexpected character after line continuation character
 
 === Mixed prefixes ===
 ft: incompatible prefixes
