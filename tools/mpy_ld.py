@@ -829,10 +829,10 @@ RISCV_RELOCATIONS_TYPE_MAP = {
     R_RISCV_SUB16: ("riscv_addsub", "<H", 16, -1),
     R_RISCV_SUB32: ("riscv_addsub", "<I", 32, -1),
     R_RISCV_SUB64: ("riscv_addsub", "<Q", 64, -1),
-    R_RISCV_SET6: ("riscv_set6", "B", 6),
-    R_RISCV_SET8: ("riscv_set8", "B", 8),
-    R_RISCV_SET16: ("riscv_set16", "<H", 16),
-    R_RISCV_SET32: ("riscv_set32", "<I", 32),
+    R_RISCV_SET6: ("riscv_set", "B", 6),
+    R_RISCV_SET8: ("riscv_set", "B", 8),
+    R_RISCV_SET16: ("riscv_set", "<H", 16),
+    R_RISCV_SET32: ("riscv_set", "<I", 32),
     R_RISCV_JAL: "riscv_j",
     R_RISCV_BRANCH: "riscv_b",
     R_RISCV_RVC_BRANCH: "riscv_cb",
@@ -876,7 +876,7 @@ def process_riscv32_relocation(env, text_addr, r):
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
         value = addr + r_addend - r_offset
-        reloc_type = "riscv_set32"
+        reloc_type, *reloc_args = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
 
     elif r_info_type == R_RISCV_PCREL_HI20:
         addr = s.section.addr + s["st_value"]
