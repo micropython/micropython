@@ -443,7 +443,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
 /******************************************************************************/
 /* native functions                                                           */
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
 
 static mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_cstack_check();
@@ -472,12 +472,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
     call, fun_native_call
     );
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
 
 /******************************************************************************/
 /* viper functions                                                           */
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
 
 static mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_cstack_check();
@@ -493,7 +493,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     call, fun_viper_call
     );
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
 
 /******************************************************************************/
 /* inline assembler functions                                                 */

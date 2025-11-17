@@ -41,7 +41,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
 
 int mp_native_type_from_qstr(qstr qst) {
     switch (qst) {
@@ -115,7 +115,7 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
+#if (MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES) && !MICROPY_DYNAMIC_COMPILER
 
 #if !MICROPY_PY_BUILTINS_SET
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
@@ -354,8 +354,8 @@ const mp_fun_table_t mp_fun_table = {
     &mp_stream_write_obj,
 };
 
-#elif MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
+#elif (MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES) && MICROPY_DYNAMIC_COMPILER
 
 const int mp_fun_table;
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES

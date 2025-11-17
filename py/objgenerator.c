@@ -87,7 +87,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 // native generator wrapper
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
 
 // Based on mp_obj_gen_instance_t.
 typedef struct _mp_obj_gen_instance_native_t {
@@ -139,7 +139,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     NATIVE_GEN_WRAP_TYPE_ATTR
     );
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
 
 /******************************************************************************/
 /* generator instance                                                         */

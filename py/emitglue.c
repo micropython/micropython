@@ -197,7 +197,7 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
-        #if MICROPY_EMIT_NATIVE
+        #if MICROPY_EMIT_NATIVE || MICROPY_LOAD_NATIVE_MODULES
         case MP_CODE_NATIVE_PY:
             fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
             // Check for a generator function, and if so change the type of the object
