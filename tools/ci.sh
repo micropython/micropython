@@ -378,6 +378,8 @@ function ci_qemu_setup_rv64 {
     ci_gcc_riscv_setup
     sudo apt-get update
     sudo apt-get install qemu-system
+    sudo pip3 install pyelftools
+    sudo pip3 install ar
     qemu-system-riscv64 --version
 }
 
@@ -436,6 +438,9 @@ function ci_qemu_build_rv64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 submodules
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test
+
+    # Test building native .mpy with rv64imc architecture.
+    ci_native_mpy_modules_build rv64imc
 }
 
 ########################################################################################
@@ -669,9 +674,9 @@ function ci_native_mpy_modules_build {
         make -C examples/natmod/$natmod ARCH=$arch
     done
 
-    # features2 requires soft-float on rv32imc and xtensa.
+    # features2 requires soft-float on rv32imc, rv64imc, and xtensa.
     make -C examples/natmod/features2 ARCH=$arch clean
-    if [ $arch = "rv32imc" ] || [ $arch = "xtensa" ]; then
+    if [ $arch = "rv32imc" ] || [ $arch = "rv64imc" ] || [ $arch = "xtensa" ]; then
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
     else
         make -C examples/natmod/features2 ARCH=$arch

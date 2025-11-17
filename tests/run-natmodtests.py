@@ -40,6 +40,7 @@ AVAILABLE_ARCHS = (
     "xtensa",
     "xtensawin",
     "rv32imc",
+    "rv64imc",
 )
 
 ARCH_MAPPINGS = {"armv7em": "armv7m"}
