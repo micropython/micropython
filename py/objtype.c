@@ -1152,6 +1152,18 @@ static mp_obj_t type___new__(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(type___new___obj, 1, 4, type___new__);
 
+// type.__init__(cls, name, bases, dict) - does nothing, exists for metaclass super() calls
+static mp_obj_t type___init__(size_t n_args, const mp_obj_t *args) {
+    (void)args;
+    // Accept 1 or 4 arguments (1 = self, 4 = self, name, bases, dict)
+    // Do nothing - type initialization is handled by type.__new__()
+    if (n_args != 1 && n_args != 4) {
+        mp_raise_TypeError(MP_ERROR_TEXT("type.__init__() takes 1 or 4 arguments"));
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(type___init___obj, 1, 4, type___init__);
+
 static void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
     // Allow types with custom metaclasses that inherit from type
@@ -1203,6 +1215,13 @@ static void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // Other classes should continue with normal lookup to find object.__new__
         if (attr == MP_QSTR___new__ && self == &mp_type_type) {
             dest[0] = MP_OBJ_FROM_PTR(&type___new___obj);
+            return;
+        }
+        // Only provide type.__init__ when looking up on type itself
+        // This allows type.__init__ to be called directly but doesn't interfere with
+        // regular classes or metaclasses which should use their own __init__
+        if (attr == MP_QSTR___init__ && self == &mp_type_type) {
+            dest[0] = MP_OBJ_FROM_PTR(&type___init___obj);
             return;
         }
         struct class_lookup_data lookup = {
@@ -1672,8 +1691,23 @@ static void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     };
 
     // Allow a call super().__init__() to reach any native base classes.
+    // But don't do this if self->obj is a type (i.e., calling super() from within a metaclass),
+    // as that would incorrectly call type_make_new() which creates a new type.
     if (attr == MP_QSTR___init__) {
-        lookup.slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(make_new);
+        // Check if self->obj is a type object by checking if its type is a subclass of 'type'
+        const mp_obj_type_t *obj_type = mp_obj_get_type(self->obj);
+        bool obj_is_type = mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(obj_type), MP_OBJ_FROM_PTR(&mp_type_type));
+
+        if (obj_is_type) {
+            // self->obj is a type, so super().__init__() is being called from a metaclass
+            // Return type.__init__ which is a no-op that accepts the right arguments
+            dest[0] = MP_OBJ_FROM_PTR(&type___init___obj);
+            dest[1] = self->obj;  // bind to self->obj
+            return;
+        } else {
+            // Only map __init__ to make_new for regular instances, not for types
+            lookup.slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(make_new);
+        }
     }
 
     if (!MP_OBJ_TYPE_HAS_SLOT(type, parent)) {
