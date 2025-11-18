@@ -88,9 +88,22 @@ extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
 
 void mp_usbd_task_callback(mp_sched_node_t *node);
 
-#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
-void mp_usbd_deinit(void);
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+
+static inline void mp_usbd_init(void) {
+    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
+    // which is called in the below helper function.
+    mp_usbd_init_tud();
+}
+
+static inline void mp_usbd_deinit(void) {
+    // Called in soft reset path. No-op if no runtime USB devices require cleanup.
+}
+
+#else
+// Runtime USB Device support requires more complex init/deinit
 void mp_usbd_init(void);
+void mp_usbd_deinit(void);
 
 const char *mp_usbd_runtime_string_cb(uint8_t index);
 
@@ -142,15 +155,7 @@ static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd
     return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
 }
 
-#else // Static USBD drivers only
-
-static inline void mp_usbd_init(void) {
-    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    // which is called in the below helper function.
-    mp_usbd_init_tud();
-}
-
-#endif
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 
