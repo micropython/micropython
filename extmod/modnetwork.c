@@ -55,6 +55,10 @@ extern const struct _mp_obj_type_t mod_network_nic_type_nina;
 extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
 #endif
 
+#if MICROPY_HW_NETWORK_USBNET
+extern const struct _mp_obj_type_t mod_network_nic_type_usbnet;
+#endif
+
 #ifdef MICROPY_PY_NETWORK_INCLUDEFILE
 #include MICROPY_PY_NETWORK_INCLUDEFILE
 #endif
@@ -203,6 +207,10 @@ static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 
     #if MICROPY_PY_NETWORK_ESP_HOSTED
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+    #endif
+
+    #if MICROPY_HW_NETWORK_USBNET
+    { MP_ROM_QSTR(MP_QSTR_USB_NET), MP_ROM_PTR(&mod_network_nic_type_usbnet) },
     #endif
 
     // Allow a port to take mostly full control of the network module.

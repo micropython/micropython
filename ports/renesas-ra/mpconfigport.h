@@ -129,6 +129,9 @@
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/renesas-ra/modtime.c"
 #define MICROPY_PY_LWIP_SOCK_RAW    (MICROPY_PY_LWIP)
+#ifndef MICROPY_HW_NETWORK_USBNET
+#define MICROPY_HW_NETWORK_USBNET   (MICROPY_PY_LWIP)
+#endif
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/renesas-ra/modmachine.c"

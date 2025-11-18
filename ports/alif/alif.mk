@@ -178,14 +178,9 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	dht/dht.c \
 	)
 
-TINYUSB_SRC_C += \
-	lib/tinyusb/src/tusb.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_control.c \
-	tinyusb_port/tusb_alif_dcd.c \
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(addprefix lib/tinyusb/, $(TINYUSB_SRC_C) )
+TINYUSB_SRC_C += tinyusb_port/tusb_alif_dcd.c
 
 ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/clk.c \
