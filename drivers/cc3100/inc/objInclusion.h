@@ -49,7 +49,7 @@ extern "C" {
 	
 *******************************************************************************/
 
-#define __inln        	/* if inline functions requiered: #define __inln inline */
+#define __inln        	/* if inline functions required: #define __inln inline */
 
 #define SL_DEVICE      	/* Device silo is currently always mandatory */
 
