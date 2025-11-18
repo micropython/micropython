@@ -1503,15 +1503,16 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
     if (inherits_from_type && type_base != NULL) {
         // Inherit slots from the type base
         // Note: for iter, use instance_getiter so __iter__ from locals_dict is used
+        // Use MP_OBJ_TYPE_SET_SLOT_IF_EXISTS for optional slots that may not exist in type_base
         MP_OBJ_TYPE_SET_SLOT(o, make_new, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, make_new), 0);
-        MP_OBJ_TYPE_SET_SLOT(o, print, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, print), 1);
-        MP_OBJ_TYPE_SET_SLOT(o, call, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, call), 2);
-        MP_OBJ_TYPE_SET_SLOT(o, unary_op, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, unary_op), 3);
-        MP_OBJ_TYPE_SET_SLOT(o, binary_op, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, binary_op), 4);
-        MP_OBJ_TYPE_SET_SLOT(o, attr, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, attr), 5);
-        MP_OBJ_TYPE_SET_SLOT(o, subscr, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, subscr), 6);
+        MP_OBJ_TYPE_SET_SLOT_IF_EXISTS(o, print, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, print), 1);
+        MP_OBJ_TYPE_SET_SLOT_IF_EXISTS(o, call, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, call), 2);
+        MP_OBJ_TYPE_SET_SLOT_IF_EXISTS(o, unary_op, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, unary_op), 3);
+        MP_OBJ_TYPE_SET_SLOT_IF_EXISTS(o, binary_op, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, binary_op), 4);
+        MP_OBJ_TYPE_SET_SLOT_IF_EXISTS(o, attr, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, attr), 5);
+        MP_OBJ_TYPE_SET_SLOT_IF_EXISTS(o, subscr, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, subscr), 6);
         MP_OBJ_TYPE_SET_SLOT(o, iter, mp_obj_instance_getiter, 7);
-        MP_OBJ_TYPE_SET_SLOT(o, buffer, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, buffer), 8);
+        MP_OBJ_TYPE_SET_SLOT_IF_EXISTS(o, buffer, MP_OBJ_TYPE_GET_SLOT_OR_NULL(type_base, buffer), 8);
     } else {
         // Use regular instance slots
         MP_OBJ_TYPE_SET_SLOT(o, make_new, mp_obj_instance_make_new, 0);
