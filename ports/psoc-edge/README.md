@@ -44,11 +44,16 @@ Run the following script from MicroPython repository root to add the required to
 
     source tools/psoc-edge/dev-setup.sh && toolchain_setup
 
+> [!NOTE] 
+> This command needs to be run every time you open a new shell session, as it only sets environment variables for the current session. 
+
 ## Building and running on Linux
 
 As we are working on the `psoc-edge-main` branch, first checkout that branch after cloning this repo:
 
     git checkout --track origin/psoc-edge-main
+
+The following build commands should be run from the `ports/psoc-edge` directory:
 
 Retrieve submodules:
 
