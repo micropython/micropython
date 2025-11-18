@@ -3,12 +3,14 @@
 Quick verification script for MicroPython enum implementation.
 Tests all core functionality to ensure everything works correctly.
 """
+
 import sys
 import os
 
 # Add enum lib to path
-ENUM_LIB = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lib')
+ENUM_LIB = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib")
 sys.path.insert(0, ENUM_LIB)
+
 
 def test_basic_enum():
     """Test basic Enum functionality."""
@@ -19,12 +21,13 @@ def test_basic_enum():
         GREEN = 2
         BLUE = 3
 
-    assert Color.RED.name == 'RED'
+    assert Color.RED.name == "RED"
     assert Color.RED.value == 1
     assert Color(1) is Color.RED
-    assert Color['GREEN'] is Color.GREEN
+    assert Color["GREEN"] is Color.GREEN
     assert list(Color) == [Color.RED, Color.GREEN, Color.BLUE]
     print("✓ Basic Enum")
+
 
 def test_int_enum():
     """Test IntEnum functionality."""
@@ -39,17 +42,19 @@ def test_int_enum():
     assert int(Status.PENDING) == 1
     print("✓ IntEnum")
 
+
 def test_str_enum():
     """Test StrEnum functionality."""
     from enum import StrEnum
 
     class Mode(StrEnum):
-        READ = 'r'
-        WRITE = 'w'
+        READ = "r"
+        WRITE = "w"
 
-    assert Mode.READ + 'b' == 'rb'
-    assert Mode.READ.upper() == 'R'
+    assert Mode.READ + "b" == "rb"
+    assert Mode.READ.upper() == "R"
     print("✓ StrEnum")
+
 
 def test_flag():
     """Test Flag functionality."""
@@ -65,6 +70,7 @@ def test_flag():
     assert ~Perm.READ != Perm.READ
     print("✓ Flag")
 
+
 def test_int_flag():
     """Test IntFlag functionality."""
     from enum import IntFlag
@@ -77,6 +83,7 @@ def test_int_flag():
     assert Mask.A | Mask.B == 3
     assert (Mask.A | Mask.B) & Mask.A == Mask.A
     print("✓ IntFlag")
+
 
 def test_auto():
     """Test auto() functionality."""
@@ -92,15 +99,18 @@ def test_auto():
     assert Auto.THIRD.value == 3
     print("✓ auto()")
 
+
 def test_unique():
     """Test @unique decorator."""
     from enum import Enum, unique
 
     try:
+
         @unique
         class Dupe(Enum):
             A = 1
             B = 1
+
         assert False, "@unique should have raised ValueError"
     except ValueError:
         pass
@@ -112,29 +122,32 @@ def test_unique():
 
     print("✓ @unique")
 
+
 def test_lazy_loading():
     """Test lazy loading."""
     import enum
 
     # Check core is loaded
-    assert hasattr(enum, 'Enum')
-    assert hasattr(enum, 'IntEnum')
-    assert hasattr(enum, 'EnumMeta')
+    assert hasattr(enum, "Enum")
+    assert hasattr(enum, "IntEnum")
+    assert hasattr(enum, "EnumMeta")
 
     # Check lazy attrs exist
-    assert hasattr(enum, 'Flag')
-    assert hasattr(enum, 'IntFlag')
-    assert hasattr(enum, 'StrEnum')
-    assert hasattr(enum, 'auto')
-    assert hasattr(enum, 'unique')
+    assert hasattr(enum, "Flag")
+    assert hasattr(enum, "IntFlag")
+    assert hasattr(enum, "StrEnum")
+    assert hasattr(enum, "auto")
+    assert hasattr(enum, "unique")
 
     print("✓ Lazy loading")
+
 
 def test_pickling():
     """Test pickling support."""
     # Note: Pickling works but requires module-level enums
     # Local enums can't be pickled in any Python implementation
     print("✓ Pickling (skipped - requires module-level enums)")
+
 
 def test_type_mixins():
     """Test type mixins."""
@@ -152,6 +165,7 @@ def test_type_mixins():
 
     assert IntMixin.ONE + IntMixin.TWO == 3
     print("✓ Type mixins")
+
 
 def main():
     """Run all tests."""
@@ -195,5 +209,6 @@ def main():
 
     return 0 if failed == 0 else 1
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())
