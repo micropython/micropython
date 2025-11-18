@@ -1413,6 +1413,7 @@ static mp_obj_t type_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
 }
 #endif // MICROPY_PY_METACLASS_OPS
 
+#if MICROPY_PY_METACLASS_OPS
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_type,
     MP_QSTR_type,
@@ -1420,12 +1421,21 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, type_make_new,
     print, type_print,
     call, type_call,
-    #if MICROPY_PY_METACLASS_OPS
     unary_op, type_unary_op,
     binary_op, type_binary_op,
-    #endif
     attr, type_attr
     );
+#else
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_type,
+    MP_QSTR_type,
+    MP_TYPE_FLAG_NONE,
+    make_new, type_make_new,
+    print, type_print,
+    call, type_call,
+    attr, type_attr
+    );
+#endif
 
 static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict, const mp_obj_type_t *metaclass) {
     // Verify input objects have expected type
