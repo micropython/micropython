@@ -66,6 +66,11 @@ if(NOT MICROPY_C_HEAP_SIZE)
     set(MICROPY_C_HEAP_SIZE 0)
 endif()
 
+# Set the stack size if it's not already set by the board.
+if(NOT PICO_STACK_SIZE)
+    set(PICO_STACK_SIZE 0x2000)
+endif()
+
 # Enable error text compression by default.
 if(NOT MICROPY_ROM_TEXT_COMPRESSION)
     set(MICROPY_ROM_TEXT_COMPRESSION ON)
@@ -98,6 +103,8 @@ project(${MICROPY_TARGET})
 pico_sdk_init()
 
 include(${MICROPY_DIR}/py/usermod.cmake)
+
+set(PIOASM_VERSION_STRING "pico-sdk-${PICO_SDK_VERSION_STRING}")
 
 add_executable(${MICROPY_TARGET})
 
@@ -578,7 +585,6 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
     LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
     PICO_FLOAT_PROPAGATE_NANS=1
-    PICO_STACK_SIZE=0x2000
     PICO_CORE1_STACK_SIZE=0
     PICO_MAX_SHARED_IRQ_HANDLERS=8 # we need more than the default
     PICO_PROGRAM_NAME="MicroPython"
