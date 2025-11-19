@@ -35,6 +35,7 @@
 #define PHY_BCR                 (0x0000)
 #define PHY_BCR_SOFT_RESET      (0x8000)
 #define PHY_BCR_AUTONEG_EN      (0x1000)
+#define PHY_BCR_AUTONEG_RESTART (0x0200)
 #define PHY_BCR_POWER_DOWN      (0x0800U)
 
 #undef PHY_BSR
