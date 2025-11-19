@@ -182,4 +182,4 @@ if __name__ == "__main__":
     if failed == 0:
         print("All tests PASSED!")
     else:
-        print(f"FAILED tests detected!")
+        print("FAILED tests detected!")

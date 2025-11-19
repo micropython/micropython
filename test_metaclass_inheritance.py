@@ -20,5 +20,5 @@ class TestClass(metaclass=DerivedMeta):
 
 
 print(f"\nInit calls: {init_calls}")
-print(f"Expected: ['BaseMeta.__init__(TestClass)']")
+print("Expected: ['BaseMeta.__init__(TestClass)']")
 print(f"Pass: {init_calls == ['BaseMeta.__init__(TestClass)']}")

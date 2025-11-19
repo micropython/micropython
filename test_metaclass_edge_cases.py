@@ -133,7 +133,7 @@ def test_explicit_type_base():
         pass
 
     assert hasattr(Test, "initialized")
-    assert Test.initialized == True
+    assert Test.initialized
 
 
 # Test 6: Metaclass without __init__ should work
@@ -171,9 +171,9 @@ def test_deep_metaclass_hierarchy():
     class Test(metaclass=Meta3):
         pass
 
-    assert Test.level1 == True
-    assert Test.level2 == True
-    assert Test.level3 == True
+    assert Test.level1
+    assert Test.level2
+    assert Test.level3
 
 
 # Test 8: super() in metaclass without __init__ override
@@ -225,7 +225,7 @@ def test_instance_init_still_works():
             super().__init__()
             init_called.append("Derived")
 
-    obj = Derived()
+    Derived()
     assert init_called == ["Base", "Derived"]
 
 
@@ -258,4 +258,4 @@ if __name__ == "__main__":
     if failed == 0:
         print("All tests PASSED!")
     else:
-        print(f"Some tests FAILED!")
+        print("Some tests FAILED!")
