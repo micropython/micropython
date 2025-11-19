@@ -55,10 +55,9 @@ Filesystem access
       directories and 0x8000 for regular files;
     - *inode* is an integer corresponding to the inode of the file, and may be 0
       for filesystems that don't have such a notion.
-    - Some platforms may return a 4-tuple that includes the entry's *size*.  For
-      file entries, *size* is an integer representing the size of the file
-      or -1 if unknown.  Its meaning is currently undefined for directory
-      entries.
+    - *size* is an integer that may be included depending on the filesystem type.
+      For file entries, *size* represents the size of the file or -1 if unknown.
+      Its meaning is currently undefined for directory entries.
 
 .. function:: listdir([dir])
 
