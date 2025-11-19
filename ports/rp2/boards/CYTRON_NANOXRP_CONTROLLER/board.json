@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Dual-core",
+        "External Flash",
+        "IMU",
+        "JST-SH",
+        "USB",
+        "WiFi"
+    ],
+    "images": [
+        "nanoxrp-board.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "NanoXRP Controller",
+    "thumbnail": "",
+    "url": "https://www.experiential.bot/",
+    "vendor": "Cytron"
+}
