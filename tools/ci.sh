@@ -1049,6 +1049,14 @@ function _ci_bash_completion {
     echo "alias ci=\"$(readlink -f "$0")\"; complete -W '$(grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//')' ci"
 }
 
+function _ci_zsh_completion {
+    echo "alias ci=\"$(readlink -f "$0"\"); _complete_mpy_ci_zsh() { compadd $(grep '^function ci_' $0 | awk '{sub(/^ci_/,"",$2); print $2}' | tr '\n' ' ') }; autoload -Uz compinit; compinit; compdef _complete_mpy_ci_zsh $(readlink -f "$0")"
+}
+
+function _ci_fish_completion {
+    echo "alias ci=\"$(readlink -f "$0"\"); complete -c ci -p $(readlink -f "$0") -f -a '$(grep '^function ci_' $(readlink -f "$0") | awk '{sub(/^ci_/,"",$2); print $2}' | tr '\n' ' ')'"
+}
+
 function _ci_main {
     case "$1" in
         (-h|-?|--help)
@@ -1056,6 +1064,12 @@ function _ci_main {
         ;;
         (--bash-completion)
             _ci_bash_completion
+        ;;
+        (--zsh-completion)
+            _ci_zsh_completion
+        ;;
+        (--fish-completion)
+            _ci_fish_completion
         ;;
         (-*)
             echo "Unknown option: $1" 1>&2

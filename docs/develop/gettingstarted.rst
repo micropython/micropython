@@ -338,7 +338,15 @@ If you use the bash shell, you can add a ``ci`` command with tab completion:
 
 .. code-block:: bash
 
-   $ eval `tools/ci.sh --bash-completion`
+   $ eval $(tools/ci.sh --bash-completion)
+
+For the zsh shell, replace ``--bash-completion`` with ``--zsh-completion``.
+For the fish shell, replace ``--bash-completion`` with ``--fish-completion``.
+
+Then, typing:
+
+.. code-block:: bash
+
    $ ci unix_cov<tab>
 
 This will complete the ci step name to ``unix_coverage_``.
