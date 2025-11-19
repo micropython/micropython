@@ -120,7 +120,16 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     const void *result = NULL;
     if (usbd) {
         result = usbd_get_buffer_in_cb(usbd->desc_cfg, MP_BUFFER_READ);
+
+        // If no runtime descriptor but builtin_driver is set, generate from flags
+        if (!result && usbd->builtin_driver != USB_BUILTIN_FLAG_NONE) {
+            extern void mp_usbd_update_class_state(uint8_t flags);
+            extern const uint8_t *mp_usbd_generate_desc_cfg_from_flags(uint8_t flags);
+            mp_usbd_update_class_state(usbd->builtin_driver);
+            result = mp_usbd_generate_desc_cfg_from_flags(usbd->builtin_driver);
+        }
     }
+    // Fallback to static descriptor (needed for boot before Python initializes)
     return result ? result : &mp_usbd_builtin_desc_cfg;
 }
 
