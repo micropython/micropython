@@ -77,40 +77,93 @@ void mp_usbd_update_class_state(uint8_t flags) {
     mp_usbd_class_state.msc_enabled = (flags & USB_BUILTIN_FLAG_MSC) && (CFG_TUD_MSC == 1);
 }
 
-// Functions to generate descriptors from flags (for new bitfield-based system)
+// Descriptor template entry for lookup table
+typedef struct {
+    uint8_t flag_mask;     // USB_BUILTIN_FLAG_* to check
+    uint8_t desc_len;      // Length of descriptor in bytes
+    uint8_t itf_count;     // Number of interfaces used
+    const uint8_t *template; // Descriptor bytes (0xFF = interface number placeholder)
+} usb_desc_entry_t;
+
+// CDC descriptor template with interface number placeholders (0xFF)
+// Expands TUD_CDC_DESCRIPTOR macro with 0xFF for interface numbers
+#if CFG_TUD_CDC
+static const uint8_t cdc_desc_template[] = {
+    // Interface Associate
+    8, TUSB_DESC_INTERFACE_ASSOCIATION, 0xFF, 2, TUSB_CLASS_CDC, CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL, CDC_COMM_PROTOCOL_NONE, 0,
+    // CDC Control Interface
+    9, TUSB_DESC_INTERFACE, 0xFF, 0, 1, TUSB_CLASS_CDC, CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL, CDC_COMM_PROTOCOL_NONE, USBD_STR_CDC,
+    // CDC Header
+    5, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_HEADER, U16_TO_U8S_LE(0x0120),
+    // CDC Call
+    5, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_CALL_MANAGEMENT, 0, 0xFE, // 0xFE = itf_num + 1
+    // CDC ACM
+    4, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_ABSTRACT_CONTROL_MANAGEMENT, 6,
+    // CDC Union
+    5, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_UNION, 0xFF, 0xFE, // 0xFF = itf_num, 0xFE = itf_num + 1
+    // Endpoint Notification
+    7, TUSB_DESC_ENDPOINT, USBD_CDC_EP_CMD, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(USBD_CDC_CMD_MAX_SIZE), 16,
+    // CDC Data Interface
+    9, TUSB_DESC_INTERFACE, 0xFE, 0, 2, TUSB_CLASS_CDC_DATA, 0, 0, 0, // 0xFE = itf_num + 1
+    // Endpoint Out
+    7, TUSB_DESC_ENDPOINT, USBD_CDC_EP_OUT, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_CDC_IN_OUT_MAX_SIZE), 0,
+    // Endpoint In
+    7, TUSB_DESC_ENDPOINT, USBD_CDC_EP_IN, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_CDC_IN_OUT_MAX_SIZE), 0
+};
+#endif
+
+// MSC descriptor template with interface number placeholders (0xFF)
+// Expands TUD_MSC_DESCRIPTOR macro with 0xFF for interface number
+#if CFG_TUD_MSC
+static const uint8_t msc_desc_template[] = {
+    // Interface
+    9, TUSB_DESC_INTERFACE, 0xFF, 0, 2, TUSB_CLASS_MSC, MSC_SUBCLASS_SCSI, MSC_PROTOCOL_BOT, USBD_STR_MSC,
+    // Endpoint Out
+    7, TUSB_DESC_ENDPOINT, USBD_MSC_EP_OUT, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_MSC_IN_OUT_MAX_SIZE), 0,
+    // Endpoint In
+    7, TUSB_DESC_ENDPOINT, USBD_MSC_EP_IN, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_MSC_IN_OUT_MAX_SIZE), 0
+};
+#endif
+
+// Lookup table for all USB class descriptors
+static const usb_desc_entry_t usb_desc_table[] = {
+    #if CFG_TUD_CDC
+    {USB_BUILTIN_FLAG_CDC, TUD_CDC_DESC_LEN, 2, cdc_desc_template},
+    #endif
+    #if CFG_TUD_MSC
+    {USB_BUILTIN_FLAG_MSC, TUD_MSC_DESC_LEN, 1, msc_desc_template},
+    #endif
+};
+
+// Calculate descriptor length from flags using lookup table
 size_t mp_usbd_get_descriptor_cfg_len_from_flags(uint8_t flags) {
     size_t len = TUD_CONFIG_DESC_LEN;
-
-    if ((flags & USB_BUILTIN_FLAG_CDC) && CFG_TUD_CDC) {
-        len += TUD_CDC_DESC_LEN;
+    for (size_t i = 0; i < MP_ARRAY_SIZE(usb_desc_table); i++) {
+        if (flags & usb_desc_table[i].flag_mask) {
+            len += usb_desc_table[i].desc_len;
+        }
     }
-    if ((flags & USB_BUILTIN_FLAG_MSC) && CFG_TUD_MSC) {
-        len += TUD_MSC_DESC_LEN;
-    }
-
     return len;
 }
 
+// Calculate interface count from flags using lookup table
 static uint8_t mp_usbd_get_interface_count_from_flags(uint8_t flags) {
     uint8_t count = 0;
-
-    if ((flags & USB_BUILTIN_FLAG_CDC) && CFG_TUD_CDC) {
-        count += 2;  // CDC uses 2 interfaces
+    for (size_t i = 0; i < MP_ARRAY_SIZE(usb_desc_table); i++) {
+        if (flags & usb_desc_table[i].flag_mask) {
+            count += usb_desc_table[i].itf_count;
+        }
     }
-    if ((flags & USB_BUILTIN_FLAG_MSC) && CFG_TUD_MSC) {
-        count += 1;
-    }
-
     return count;
 }
 
-// Unified descriptor generation function
+// Unified descriptor generation function using lookup table
 static const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer) {
     uint8_t *desc = buffer;
     uint8_t interface_count = mp_usbd_get_interface_count_from_flags(flags);
     size_t total_len = mp_usbd_get_descriptor_cfg_len_from_flags(flags);
 
-    // Configuration descriptor header
+    // Configuration descriptor header (unrolled for size optimization)
     *desc++ = 9;                           // bLength
     *desc++ = TUSB_DESC_CONFIGURATION;     // bDescriptorType
     *desc++ = (total_len) & 0xFF;          // wTotalLength low
@@ -124,29 +177,28 @@ static const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *
     // Track current interface number for dynamic assignment
     uint8_t itf_num = 0;
 
-    // Add enabled class descriptors with dynamically calculated interface numbers
-    #if CFG_TUD_CDC
-    if (flags & USB_BUILTIN_FLAG_CDC) {
-        const uint8_t cdc_desc[] = {
-            TUD_CDC_DESCRIPTOR(itf_num, USBD_STR_CDC, USBD_CDC_EP_CMD,
-                USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE)
-        };
-        memcpy(desc, cdc_desc, sizeof(cdc_desc));
-        desc += sizeof(cdc_desc);
-        itf_num += 2;  // CDC uses 2 interfaces
-    }
-    #endif
+    // Iterate through lookup table and copy enabled class descriptors
+    for (size_t i = 0; i < MP_ARRAY_SIZE(usb_desc_table); i++) {
+        if (flags & usb_desc_table[i].flag_mask) {
+            const uint8_t *src = usb_desc_table[i].template;
+            uint8_t len = usb_desc_table[i].desc_len;
 
-    #if CFG_TUD_MSC
-    if (flags & USB_BUILTIN_FLAG_MSC) {
-        const uint8_t msc_desc[] = {
-            TUD_MSC_DESCRIPTOR(itf_num, USBD_STR_MSC, USBD_MSC_EP_OUT, USBD_MSC_EP_IN, USBD_MSC_IN_OUT_MAX_SIZE)
-        };
-        memcpy(desc, msc_desc, sizeof(msc_desc));
-        desc += sizeof(msc_desc);
-        itf_num += 1;  // MSC uses 1 interface
+            // Copy descriptor with interface number substitution
+            // 0xFF = itf_num, 0xFE = itf_num + 1
+            for (uint8_t j = 0; j < len; j++) {
+                uint8_t byte = src[j];
+                if (byte == 0xFF) {
+                    *desc++ = itf_num;
+                } else if (byte == 0xFE) {
+                    *desc++ = itf_num + 1;
+                } else {
+                    *desc++ = byte;
+                }
+            }
+
+            itf_num += usb_desc_table[i].itf_count;
+        }
     }
-    #endif
 
     return buffer;
 }
