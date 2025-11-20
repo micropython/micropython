@@ -156,24 +156,23 @@ static int call_dupterm_read(size_t idx) {
 
 int mp_hal_stdin_rx_chr(void) {
     #if MICROPY_PY_OS_DUPTERM
-    // TODO only support dupterm one slot at the moment
-    if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
-        int c;
-        do {
-            c = call_dupterm_read(0);
-        } while (c == -2);
-        if (c == -1) {
-            goto main_term;
+    for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
+        if (MP_STATE_VM(dupterm_objs[idx]) != MP_OBJ_NULL) {
+            int c;
+            do {
+                c = call_dupterm_read(idx);
+            } while (c == -2);
+            if (c == -1) {
+                goto main_term;
+            }
+            if (c == '\n') {
+                c = '\r';
+            }
+            return c;
         }
-        if (c == '\n') {
-            c = '\r';
-        }
-        return c;
     }
-main_term:;
-    #endif
-
-    unsigned char c;
+    main_term:;
+    #endif    unsigned char c;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, &c, 1), {});
     if (ret == 0) {

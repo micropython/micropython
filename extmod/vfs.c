@@ -376,8 +376,14 @@ mp_obj_t mp_vfs_getcwd(void) {
     }
     const char *cwd = mp_obj_str_get_str(cwd_o);
     vstr_t vstr;
-    vstr_init(&vstr, MP_STATE_VM(vfs_cur)->len + strlen(cwd) + 1);
-    vstr_add_strn(&vstr, MP_STATE_VM(vfs_cur)->str, MP_STATE_VM(vfs_cur)->len);
+    // Check for integer overflow in length calculation
+    size_t vfs_len = MP_STATE_VM(vfs_cur)->len;
+    size_t cwd_len = strlen(cwd);
+    if (vfs_len > SIZE_MAX - cwd_len - 1) {
+        mp_raise_OSError(MP_ENAMETOOLONG);
+    }
+    vstr_init(&vstr, vfs_len + cwd_len + 1);
+    vstr_add_strn(&vstr, MP_STATE_VM(vfs_cur)->str, vfs_len);
     if (!(cwd[0] == '/' && cwd[1] == 0)) {
         vstr_add_str(&vstr, cwd);
     }

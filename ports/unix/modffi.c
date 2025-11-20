@@ -341,6 +341,9 @@ static mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map
     o->base.type = &fficallback_type;
 
     o->clo = ffi_closure_alloc(sizeof(ffi_closure), &o->func);
+    if (o->clo == NULL) {
+        mp_raise_OSError(MP_ENOMEM);
+    }
 
     o->rettype = *rettype;
     o->pyfunc = func_in;
@@ -355,12 +358,14 @@ static mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
+        ffi_closure_free(o->clo);
         mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif,
         lock_in? call_py_func_with_lock: call_py_func, o, o->func);
     if (res != FFI_OK) {
+        ffi_closure_free(o->clo);
         mp_raise_ValueError(MP_ERROR_TEXT("ffi_prep_closure_loc"));
     }
 
@@ -512,7 +517,7 @@ static mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (MP_OBJ_TYPE_HAS_SLOT(((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type, buffer)) {
             mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
             mp_buffer_info_t bufinfo;
-            int ret = MP_OBJ_TYPE_GET_SLOT(o->type, buffer)(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
+            int ret = MP_OBJ_TYPE_GET_SLOT(o->type, buffer)(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ);
             if (ret != 0) {
                 goto error;
             }
@@ -556,8 +561,20 @@ static mp_obj_t fficallback_cfun(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fficallback_cfun_obj, fficallback_cfun);
 
+// Destructor to properly free ffi_closure
+static mp_obj_t fficallback_del(mp_obj_t self_in) {
+    mp_obj_fficallback_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->clo != NULL) {
+        ffi_closure_free(self->clo);
+        self->clo = NULL;
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(fficallback_del_obj, fficallback_del);
+
 static const mp_rom_map_elem_t fficallback_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_cfun), MP_ROM_PTR(&fficallback_cfun_obj) }
+    { MP_ROM_QSTR(MP_QSTR_cfun), MP_ROM_PTR(&fficallback_cfun_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&fficallback_del_obj) },
 };
 static MP_DEFINE_CONST_DICT(fficallback_locals_dict, fficallback_locals_dict_table);
 

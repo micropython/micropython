@@ -35,10 +35,13 @@
 #define MICROPY_ENABLE_COMPILER                 (1)
 
 // Python internal features
-#define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_NONE)
+#define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_TERSE)
 
 // Fine control over Python builtins, classes, modules, etc.
-#define MICROPY_PY_SYS                          (0)
+#define MICROPY_PY_SYS                          (1)
+
+// Enable machine module
+#define MICROPY_PY_MACHINE                      (1)
 
 // Type definitions for the specific machine
 

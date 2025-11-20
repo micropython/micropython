@@ -318,6 +318,10 @@ mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_o
                                 }
                                 mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);
                                 prefix_bits = mp_obj_get_int(prefix_obj);
+                                // Validate prefix_bits to prevent integer overflow in bit shift
+                                if (prefix_bits < 0 || prefix_bits > 32) {
+                                    mp_raise_ValueError(MP_ERROR_TEXT("prefix must be 0-32"));
+                                }
                                 if (mp_obj_str_get_qstr(args[0]) == MP_QSTR_addr4) {
                                     uint32_t mask = -(1u << (32 - prefix_bits));
                                     ip_addr_set_ip4_u32_val(netmask, ((mask & 0xFF) << 24) | ((mask & 0xFF00) << 8) | ((mask >> 8) & 0xFF00) | ((mask >> 24) & 0xFF));

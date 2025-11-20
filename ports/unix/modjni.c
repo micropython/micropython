@@ -424,7 +424,7 @@ static bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
             return false;
         }
     } else if (arg == mp_const_none) {
-        // printf("TODO: Check java arg type!!\n");
+        // Check java arg type
         while (isalpha(*arg_type) || *arg_type == '.') {
             arg_type++;
         }

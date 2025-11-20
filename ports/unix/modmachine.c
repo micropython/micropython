@@ -36,10 +36,35 @@
 #define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
+// Hardware abstraction layer for Raspberry Pi and other Linux SBCs
+// These are unix-port specific implementations using Linux kernel interfaces
+extern const mp_obj_type_t machine_pin_type;
+extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_spi_type;
+extern const mp_obj_type_t machine_pwm_type;
+extern const mp_obj_type_t machine_camera_type;
+extern const mp_obj_type_t machine_display_type;
+extern const mp_obj_type_t machine_audio_type;
+extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_usb_type;
+extern mp_obj_t machine_usb_singleton(void);
+
+// Register port-specific machine module classes
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_spi_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&machine_pwm_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&machine_camera_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&machine_display_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Audio), MP_ROM_PTR(&machine_audio_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_USB), MP_ROM_PTR(machine_usb_singleton()) },
+
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08x is not aligned to %d bytes"), addr, align);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %p is not aligned to %d bytes"), (void*)addr, align);
     }
     #if MICROPY_PLAT_DEV_MEM
     {

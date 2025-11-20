@@ -57,13 +57,16 @@ DIR *opendir(const char *name) {
         errno = ENOMEM;
         return NULL;
     }
-    strcpy(path, name);
+    // Use memcpy + snprintf instead of strcpy/strcat for safety
+    memcpy(path, name, nameLen);
+    path[nameLen] = '\0';
 
     // assure path ends with wildcard
     const char lastChar = path[nameLen - 1];
     if (lastChar != '*') {
         const char *appendWC = (lastChar != '/' && lastChar != '\\') ? "/*" : "*";
-        strcat(path, appendWC);
+        // Safely append wildcard
+        snprintf(path + nameLen, 3, "%s", appendWC);
     }
 
     // init

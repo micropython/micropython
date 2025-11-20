@@ -273,7 +273,11 @@ void MICROPY_ESP_IDF_ENTRY(void) {
     MICROPY_BOARD_STARTUP();
 
     // Create and transfer control to the MicroPython task.
-    xTaskCreatePinnedToCore(mp_task, "mp_task", MICROPY_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
+    BaseType_t res = xTaskCreatePinnedToCore(mp_task, "mp_task", MICROPY_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
+    if (res != pdPASS) {
+        printf("FATAL: Failed to create MicroPython task\n");
+        abort();
+    }
 }
 
 MP_WEAK void nlr_jump_fail(void *val) {
