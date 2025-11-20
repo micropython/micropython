@@ -444,6 +444,9 @@ static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
         // create a queue linking the MicroPython task to a FreeRTOS task
         // that manages the non blocking mode of operation
         self->non_blocking_mode_queue = xQueueCreate(1, sizeof(non_blocking_descriptor_t));
+        if (self->non_blocking_mode_queue == NULL) {
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("failed to create I2S queue"));
+        }
 
         // non-blocking mode requires a background FreeRTOS task
         if (xTaskCreatePinnedToCore(

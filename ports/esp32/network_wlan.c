@@ -449,6 +449,9 @@ static mp_obj_t network_wlan_scan(mp_obj_t self_in) {
             count = 1;
         }
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
+        if (wifi_ap_records == NULL) {
+            mp_raise_OSError(MP_ENOMEM);
+        }
         esp_exceptions(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {
             mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
