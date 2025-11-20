@@ -45,6 +45,9 @@ extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_camera_type;
 extern const mp_obj_type_t machine_display_type;
 extern const mp_obj_type_t machine_audio_type;
+extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_usb_type;
+extern mp_obj_t machine_usb_singleton(void);
 
 // Register port-specific machine module classes
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
@@ -54,7 +57,9 @@ extern const mp_obj_type_t machine_audio_type;
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&machine_pwm_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&machine_camera_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&machine_display_type) }, \
-    { MP_ROM_QSTR(MP_QSTR_Audio), MP_ROM_PTR(&machine_audio_type) },
+    { MP_ROM_QSTR(MP_QSTR_Audio), MP_ROM_PTR(&machine_audio_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_USB), MP_ROM_PTR(machine_usb_singleton()) },
 
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
