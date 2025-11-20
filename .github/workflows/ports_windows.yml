@@ -59,7 +59,7 @@ jobs:
     - uses: microsoft/setup-msbuild@v2
       with:
         vs-version: ${{ matrix.vs_version }}
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Build mpy-cross.exe
       run: msbuild mpy-cross\mpy-cross.vcxproj -maxcpucount -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }}
     - name: Update submodules
@@ -126,7 +126,7 @@ jobs:
           git
           diffutils
         path-type: inherit  # Remove when setup-python is removed
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Build mpy-cross.exe
       run: make -C mpy-cross -j2
     - name: Update submodules
@@ -144,7 +144,7 @@ jobs:
   cross-build-on-linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Install packages
       run: tools/ci.sh windows_setup
     - name: Build
