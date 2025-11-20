@@ -986,7 +986,11 @@ bool sdcard_power_on(mimxrt_sdcard_obj_t *card) {
 }
 
 bool sdcard_power_off(mimxrt_sdcard_obj_t *card) {
-    (void)sdcard_cmd_go_idle_state(card);
+    // Only send GO_IDLE_STATE command if card was successfully initialized
+    // Sending commands to a non-existent card will deadlock waiting for response
+    if (card->state->initialized) {
+        (void)sdcard_cmd_go_idle_state(card);
+    }
 
     // Reset card bus clock
     USDHC_SetDataBusWidth(card->usdhc_inst, kUSDHC_DataBusWidth1Bit);
