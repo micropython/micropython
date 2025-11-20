@@ -134,6 +134,17 @@ static mp_obj_t tflite_interpreter_get_tensor(mp_obj_t self_in, mp_obj_t index_i
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(tflite_interpreter_get_tensor_obj, tflite_interpreter_get_tensor);
 
+// Destructor to free model_path
+static mp_obj_t tflite_interpreter_del(mp_obj_t self_in) {
+    tflite_interpreter_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->model_path != NULL) {
+        free(self->model_path);
+        self->model_path = NULL;
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(tflite_interpreter_del_obj, tflite_interpreter_del);
+
 static const mp_rom_map_elem_t tflite_interpreter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_allocate_tensors), MP_ROM_PTR(&tflite_interpreter_allocate_tensors_obj) },
     { MP_ROM_QSTR(MP_QSTR_invoke), MP_ROM_PTR(&tflite_interpreter_invoke_obj) },
@@ -141,6 +152,7 @@ static const mp_rom_map_elem_t tflite_interpreter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_output_details), MP_ROM_PTR(&tflite_interpreter_get_output_details_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_tensor), MP_ROM_PTR(&tflite_interpreter_set_tensor_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_tensor), MP_ROM_PTR(&tflite_interpreter_get_tensor_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&tflite_interpreter_del_obj) },
 };
 static MP_DEFINE_CONST_DICT(tflite_interpreter_locals_dict, tflite_interpreter_locals_dict_table);
 
