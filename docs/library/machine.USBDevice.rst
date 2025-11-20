@@ -4,9 +4,9 @@
 class USBDevice -- USB Device driver
 ====================================
 
-.. note:: ``machine.USBDevice`` is currently only supported for esp32, rp2 and
-          samd ports. Native USB support is also required, and not every board
-          supports native USB.
+.. note:: ``machine.USBDevice`` is currently only supported for esp32, rp2,
+          samd, and stm32 (with TinyUSB) ports. Native USB support is also
+          required, and not every board supports native USB.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
 Python code. This includes both runtime device descriptor configuration and
@@ -389,6 +389,26 @@ Usage Examples
     # Enable both CDC for console and NCM for networking
     usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_NCM
     usb.active(True)
+
+**Querying Current Configuration:**
+::
+
+    import machine
+
+    usb = machine.USBDevice()
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
+    usb.active(True)
+
+    # Check if specific class is enabled using bitwise AND
+    if usb.builtin_driver & usb.BUILTIN_CDC:
+        print("CDC is enabled")
+    if usb.builtin_driver & usb.BUILTIN_MSC:
+        print("MSC is enabled")
+
+    # Check for exact configuration using equality
+    if usb.builtin_driver == (usb.BUILTIN_CDC | usb.BUILTIN_MSC):
+        print("Both CDC and MSC are enabled")
 
 **Switching Configurations at Runtime:**
 ::
