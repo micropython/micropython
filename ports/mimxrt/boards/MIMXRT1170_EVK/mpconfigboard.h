@@ -167,9 +167,7 @@
     { IOMUXC_GPIO_AD_33_ENET_MDIO, 0, 0x06u }, \
     { IOMUXC_GPIO_AD_32_ENET_MDC, 0, 0x06u },
 
-// A second ETH port is present.
-#define ENET_DUAL_PORT         (1)
-// 1G Transceiver Phy Parameters
+// 1G Transceiver Phy Parameters (second ETH port)
 #define ENET_1_PHY_ADDRESS     (1)
 #define ENET_1_PHY             RTL8211F
 #define ENET_1_PHY_OPS         phyrtl8211f_ops
