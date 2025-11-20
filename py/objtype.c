@@ -47,6 +47,8 @@
 static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict, const mp_obj_type_t *metaclass);
 static mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo);
 static mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+static mp_obj_t type___new__(size_t n_args, const mp_obj_t *args);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(type___new___obj, 1, 4, type___new__);
 
 /******************************************************************************/
 // instance object
@@ -1032,36 +1034,27 @@ static mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
         case 1:
             return MP_OBJ_FROM_PTR(mp_obj_get_type(args[0]));
 
-        case 3: {
+        case 3:
             // args[0] = name
             // args[1] = bases tuple
             // args[2] = locals dict
 
-            // Check if the metaclass has a custom __new__ method
-            // Use proper method lookup to check inheritance chain
-            mp_obj_t dest[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
-            struct class_lookup_data lookup = {
-                .obj = NULL,
-                .attr = MP_QSTR___new__,
-                .slot_offset = 0,
-                .dest = dest,
-                .is_type = true,
-            };
-            mp_obj_class_lookup(&lookup, type_in);
-            if (dest[0] != MP_OBJ_NULL) {
-                // Found custom __new__, unwrap if it's a staticmethod
-                mp_obj_t new_fn = dest[0];
-                if (mp_obj_is_type(new_fn, &mp_type_staticmethod)) {
-                    new_fn = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(new_fn))->fun;
+            // Check if metaclass has custom __new__ (not inherited from type)
+            if (type_in != &mp_type_type) {
+                mp_obj_t dest[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+                mp_load_method_maybe(MP_OBJ_FROM_PTR(type_in), MP_QSTR___new__, dest);
+                if (dest[0] != MP_OBJ_NULL && dest[0] != MP_OBJ_FROM_PTR(&type___new___obj)) {
+                    // Found custom __new__, call it with (metaclass, name, bases, dict)
+                    mp_obj_t new_args[4] = {MP_OBJ_FROM_PTR(type_in), args[0], args[1], args[2]};
+                    return mp_call_function_n_kw(dest[0], 4, 0, new_args);
                 }
-                // Call it with (metaclass, name, bases, dict)
-                mp_obj_t new_args[4] = {MP_OBJ_FROM_PTR(type_in), args[0], args[1], args[2]};
-                return mp_call_function_n_kw(new_fn, 4, 0, new_args);
             }
 
-            // No custom __new__, use default behavior
-            return mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2], type_in);
-        }
+            // No custom __new__, use default type.__new__
+            {
+                mp_obj_t new_args[4] = {MP_OBJ_FROM_PTR(type_in), args[0], args[1], args[2]};
+                return type___new__(4, new_args);
+            }
 
         default:
             mp_raise_TypeError(MP_ERROR_TEXT("type takes 1 or 3 arguments"));
@@ -1074,34 +1067,23 @@ static mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
 
     // Check if the metaclass has a custom __call__ method
-    // If it does, use that instead of the default make_new behavior
     const mp_obj_type_t *metaclass = self->base.type;
     if (metaclass != &mp_type_type) {
-        // Custom metaclass, check for __call__ method
         mp_obj_t dest[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
-        struct class_lookup_data lookup = {
-            .obj = NULL,
-            .attr = MP_QSTR___call__,
-            .slot_offset = 0,
-            .dest = dest,
-            .is_type = true,
-        };
-        mp_obj_class_lookup(&lookup, metaclass);
+        mp_load_method_maybe(MP_OBJ_FROM_PTR(metaclass), MP_QSTR___call__, dest);
         if (dest[0] != MP_OBJ_NULL) {
-            // Found __call__ on metaclass, use it
-            // dest[0] contains the function, call it with cls as first argument
+            // Found custom __call__, call it with (cls, *args, **kwargs)
             mp_obj_t *new_args;
-            mp_obj_t stack_args[8];  // Stack allocation for small arg counts
+            mp_obj_t stack_args[8];
 
-            if (n_args < 8) {  // Use all 8 slots: up to 7 args + cls = 8 total
+            if (n_args < 8) {
                 new_args = stack_args;
             } else {
                 new_args = m_new(mp_obj_t, n_args + 1);
             }
 
-            new_args[0] = self_in;  // cls argument
+            new_args[0] = self_in;
             memcpy(new_args + 1, args, sizeof(mp_obj_t) * n_args);
-            // Call the function directly (not as a method) to avoid recursion
             mp_obj_t result = mp_call_function_n_kw(dest[0], n_args + 1, n_kw, new_args);
 
             if (n_args >= 8) {
@@ -1112,6 +1094,7 @@ static mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
         }
     }
 
+    // No custom __call__, use default make_new behavior
     if (!MP_OBJ_TYPE_HAS_SLOT(self, make_new)) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't create instance"));
@@ -1120,11 +1103,7 @@ static mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
         #endif
     }
 
-    // make new instance
-    mp_obj_t o = MP_OBJ_TYPE_GET_SLOT(self, make_new)(self, n_args, n_kw, args);
-
-    // return new instance
-    return o;
+    return MP_OBJ_TYPE_GET_SLOT(self, make_new)(self, n_args, n_kw, args);
 }
 
 // Minimal type.__new__ for metaclass support
@@ -1150,7 +1129,6 @@ static mp_obj_t type___new__(size_t n_args, const mp_obj_t *args) {
             MP_ERROR_TEXT("type.__new__() takes 1, 2 or 4 arguments (%d given)"), n_args);
     }
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(type___new___obj, 1, 4, type___new__);
 
 // type.__init__(cls, name, bases, dict) - does nothing, exists for metaclass super() calls
 static mp_obj_t type___init__(size_t n_args, const mp_obj_t *args) {
