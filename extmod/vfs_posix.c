@@ -198,6 +198,11 @@ static mp_obj_t vfs_posix_getcwd(mp_obj_t self_in) {
         mp_raise_OSError(errno);
     }
     if (self->root_len > 0) {
+        // Bounds check before pointer arithmetic to prevent buffer over-read
+        size_t ret_len = strlen(ret);
+        if (self->root_len - 1 > ret_len) {
+            mp_raise_OSError(MP_EINVAL);
+        }
         ret += self->root_len - 1;
         #ifdef _WIN32
         if (*ret == '\\') {

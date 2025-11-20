@@ -872,6 +872,10 @@ static mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
     struct pbuf *p = socket->incoming.tcp.pbuf;
 
+    // Bounds check to prevent integer underflow
+    if (socket->recv_offset > p->len) {
+        socket->recv_offset = 0;
+    }
     mp_uint_t remaining = p->len - socket->recv_offset;
     if (len > remaining) {
         len = remaining;
@@ -886,7 +890,10 @@ static mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             // If we don't ref here, free() will free the entire chain,
             // if we ref, it does what we need: frees 1st buf, and decrements
             // next buf's refcount back to 1.
-            pbuf_ref(p->next);
+            // Add NULL check before pbuf_ref
+            if (p->next != NULL) {
+                pbuf_ref(p->next);
+            }
             pbuf_free(p);
             socket->recv_offset = 0;
         } else {
@@ -1071,6 +1078,10 @@ static mp_obj_t lwip_socket_listen(size_t n_args, const mp_obj_t *args) {
     } else {
         socket->incoming.connection.alloc = backlog;
         socket->incoming.connection.tcp.array = m_new0(struct tcp_pcb *, backlog);
+        // m_new0 raises exception on failure, but add explicit check for safety
+        if (socket->incoming.connection.tcp.array == NULL) {
+            mp_raise_OSError(MP_ENOMEM);
+        }
     }
     socket->incoming.connection.iget = 0;
     socket->incoming.connection.iput = 0;

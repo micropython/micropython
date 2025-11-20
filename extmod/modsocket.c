@@ -284,6 +284,10 @@ static mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
         mp_raise_OSError(MP_ENOTCONN);
     }
     mp_int_t len = mp_obj_get_int(len_in);
+    // Validate buffer size to prevent negative or excessive allocation
+    if (len < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer size must be non-negative"));
+    }
     vstr_t vstr;
     vstr_init_len(&vstr, len);
     int _errno;
@@ -332,8 +336,13 @@ static mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         // not connected
         mp_raise_OSError(MP_ENOTCONN);
     }
+    mp_int_t len = mp_obj_get_int(len_in);
+    // Validate buffer size to prevent negative or excessive allocation
+    if (len < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer size must be non-negative"));
+    }
     vstr_t vstr;
-    vstr_init_len(&vstr, mp_obj_get_int(len_in));
+    vstr_init_len(&vstr, len);
     byte ip[4];
     mp_uint_t port;
     int _errno;
