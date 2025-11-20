@@ -130,8 +130,16 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
             result = mp_usbd_generate_desc_cfg_unified(usbd->builtin_driver, mp_usbd_desc_cfg_buffer);
         }
     }
-    // Fallback to static descriptor (needed for boot before Python initializes)
-    return result ? result : &mp_usbd_builtin_desc_cfg;
+    // Fallback to descriptor (needed for boot before Python initializes)
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    // Runtime mode: Generate default descriptor from templates
+    extern const uint8_t *mp_usbd_get_default_desc(void);
+    return result ? result : mp_usbd_get_default_desc();
+    #else
+    // Static mode: Use static descriptor
+    extern const uint8_t mp_usbd_builtin_desc_cfg[];
+    return result ? result : mp_usbd_builtin_desc_cfg;
+    #endif
 }
 
 const char *mp_usbd_runtime_string_cb(uint8_t index) {

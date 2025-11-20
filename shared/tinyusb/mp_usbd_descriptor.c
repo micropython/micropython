@@ -208,7 +208,8 @@ static const uint8_t *mp_usbd_generate_desc_cfg(void) {
 }
 #endif
 
-// Static fallback descriptor (needed for boot before Python initializes in runtime mode)
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+// Static mode: Use TinyUSB macros directly for fixed descriptor
 const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
     TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_BUILTIN_MAX, USBD_STR_0, MP_USBD_BUILTIN_DESC_CFG_LEN,
         0, USBD_MAX_POWER_MA),
@@ -221,6 +222,23 @@ const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
     TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, EPNUM_MSC_OUT, EPNUM_MSC_IN, USBD_MSC_IN_OUT_MAX_SIZE),
     #endif
 };
+#else
+// Runtime mode: Generate default descriptor from templates into buffer at init
+// This eliminates duplication - we use templates for both dynamic and fallback descriptors
+static bool mp_usbd_default_desc_generated = false;
+
+const uint8_t *mp_usbd_get_default_desc(void) {
+    if (!mp_usbd_default_desc_generated) {
+        // Generate default descriptor (CDC only by default in runtime mode)
+        mp_usbd_generate_desc_cfg_unified(
+            (CFG_TUD_CDC ? USB_BUILTIN_FLAG_CDC : 0),
+            mp_usbd_desc_cfg_buffer
+            );
+        mp_usbd_default_desc_generated = true;
+    }
+    return mp_usbd_desc_cfg_buffer;
+}
+#endif
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     char serial_buf[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes terminating NUL byte

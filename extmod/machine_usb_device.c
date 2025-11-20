@@ -213,11 +213,13 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
                 // Update class state based on current builtin_driver
                 if (mp_obj_is_type(usbd->builtin_driver, &mp_type_usb_builtin)) {
                     mp_obj_usb_builtin_t *builtin = MP_OBJ_TO_PTR(usbd->builtin_driver);
-                    mp_usbd_update_class_state(builtin->flags);
+                    extern mp_usbd_class_state_t mp_usbd_class_state;
+                    mp_usbd_class_state.flags = builtin->flags;
                 }
             } else {
                 // Disable all classes when deactivating
-                mp_usbd_update_class_state(USB_BUILTIN_FLAG_NONE);
+                extern mp_usbd_class_state_t mp_usbd_class_state;
+                mp_usbd_class_state.flags = USB_BUILTIN_FLAG_NONE;
             }
             #endif
         }
@@ -314,9 +316,6 @@ static const uint8_t *mp_usbd_get_builtin_desc_cfg(uint8_t flags);
 static size_t mp_usbd_get_desc_cfg_len(uint8_t flags);
 
 #endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
-
-// Function from mp_usbd_descriptor.c to update class state based on flags
-extern void mp_usbd_update_class_state(uint8_t flags);
 
 // Create a new builtin configuration object with specified flags
 static mp_obj_t mp_usbd_create_builtin_config(uint8_t flags) {
