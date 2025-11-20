@@ -133,15 +133,12 @@ typedef struct _eth_dma_t {
     eth_dma_tx_descr_t tx_descr[TX_BUF_NUM];
     uint8_t rx_buf[RX_BUF_NUM * RX_BUF_SIZE] __attribute__((aligned(8)));
     uint8_t tx_buf[TX_BUF_NUM * TX_BUF_SIZE] __attribute__((aligned(8)));
-    size_t rx_descr_idx;
-    size_t tx_descr_idx;
     // Make sure the size of this struct is 16k, for the MPU.
     uint8_t padding[16 * 1024
                     - sizeof(eth_dma_rx_descr_t) * RX_BUF_NUM
                     - sizeof(eth_dma_tx_descr_t) * TX_BUF_NUM
                     - RX_BUF_NUM * RX_BUF_SIZE
-                    - TX_BUF_NUM * TX_BUF_SIZE
-                    - sizeof(size_t) * 2];
+                    - TX_BUF_NUM * TX_BUF_SIZE];
 } eth_dma_t;
 
 typedef struct _eth_t {
@@ -153,7 +150,13 @@ typedef struct _eth_t {
     int16_t (*phy_get_link_status)(uint32_t phy_addr);
 } eth_t;
 
+// This struct contains RX and TX buffers shared with the DMA, and they may need
+// to go in a special RAM section, or have MPU settings applied.
 static eth_dma_t eth_dma MICROPY_HW_ETH_DMA_ATTRIBUTE;
+
+// These variables index the buffers in eth_dma and are not shared with DMA.
+static size_t eth_dma_rx_descr_idx;
+static size_t eth_dma_tx_descr_idx;
 
 eth_t eth_instance;
 
@@ -554,7 +557,7 @@ static int eth_mac_init(eth_t *self) {
     #else
     ETH->DMARDLAR = (uint32_t)&eth_dma.rx_descr[0];
     #endif
-    eth_dma.rx_descr_idx = 0;
+    eth_dma_rx_descr_idx = 0;
 
     // Configure TX descriptor lists
     for (size_t i = 0; i < TX_BUF_NUM; ++i) {
@@ -585,7 +588,7 @@ static int eth_mac_init(eth_t *self) {
     #else
     ETH->DMATDLAR = (uint32_t)&eth_dma.tx_descr[0];
     #endif
-    eth_dma.tx_descr_idx = 0;
+    eth_dma_tx_descr_idx = 0;
 
     // Configure DMA
     #if defined(STM32H5) || defined(STM32H7)
@@ -730,7 +733,7 @@ static int eth_tx_buf_get(size_t len, uint8_t **buf) {
     }
 
     // Wait for DMA to release the current TX descriptor (if it has it)
-    eth_dma_tx_descr_t *tx_descr = &eth_dma.tx_descr[eth_dma.tx_descr_idx];
+    eth_dma_tx_descr_t *tx_descr = &eth_dma.tx_descr[eth_dma_tx_descr_idx];
     uint32_t t0 = mp_hal_ticks_ms();
     for (;;) {
         #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
@@ -749,15 +752,15 @@ static int eth_tx_buf_get(size_t len, uint8_t **buf) {
 
     #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
     // Update TX descriptor with length and buffer pointer
-    *buf = &eth_dma.tx_buf[eth_dma.tx_descr_idx * TX_BUF_SIZE];
+    *buf = &eth_dma.tx_buf[eth_dma_tx_descr_idx * TX_BUF_SIZE];
     tx_descr->tdes2 = len & TX_DESCR_2_B1L_Msk;
     tx_descr->tdes0 = (uint32_t)*buf;
     #else
     // Update TX descriptor with length, buffer pointer and linked list pointer
-    *buf = &eth_dma.tx_buf[eth_dma.tx_descr_idx * TX_BUF_SIZE];
+    *buf = &eth_dma.tx_buf[eth_dma_tx_descr_idx * TX_BUF_SIZE];
     tx_descr->tdes1 = len << TX_DESCR_1_TBS1_Pos;
     tx_descr->tdes2 = (uint32_t)*buf;
-    tx_descr->tdes3 = (uint32_t)&eth_dma.tx_descr[(eth_dma.tx_descr_idx + 1) % TX_BUF_NUM];
+    tx_descr->tdes3 = (uint32_t)&eth_dma.tx_descr[(eth_dma_tx_descr_idx + 1) % TX_BUF_NUM];
     #endif
 
     return 0;
@@ -765,8 +768,8 @@ static int eth_tx_buf_get(size_t len, uint8_t **buf) {
 
 static int eth_tx_buf_send(void) {
     // Get TX descriptor and move to next one
-    eth_dma_tx_descr_t *tx_descr = &eth_dma.tx_descr[eth_dma.tx_descr_idx];
-    eth_dma.tx_descr_idx = (eth_dma.tx_descr_idx + 1) % TX_BUF_NUM;
+    eth_dma_tx_descr_t *tx_descr = &eth_dma.tx_descr[eth_dma_tx_descr_idx];
+    eth_dma_tx_descr_idx = (eth_dma_tx_descr_idx + 1) % TX_BUF_NUM;
 
     // Schedule to send next outgoing frame
     #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
@@ -792,12 +795,12 @@ static int eth_tx_buf_send(void) {
     if (ETH->DMACSR & ETH_DMACSR_TBU) {
         ETH->DMACSR = ETH_DMACSR_TBU;
     }
-    ETH->DMACTDTPR = (uint32_t)&eth_dma.tx_descr[eth_dma.tx_descr_idx];
+    ETH->DMACTDTPR = (uint32_t)&eth_dma.tx_descr[eth_dma_tx_descr_idx];
     #elif defined(STM32N6)
     if (ETH->DMA_CH[TX_DMA_CH].DMACSR & ETH_DMACxSR_TBU) {
         ETH->DMA_CH[TX_DMA_CH].DMACSR = ETH_DMACxSR_TBU;
     }
-    ETH->DMA_CH[TX_DMA_CH].DMACTXDTPR = (uint32_t)&eth_dma.tx_descr[eth_dma.tx_descr_idx];
+    ETH->DMA_CH[TX_DMA_CH].DMACTXDTPR = (uint32_t)&eth_dma.tx_descr[eth_dma_tx_descr_idx];
     #else
     if (ETH->DMASR & ETH_DMASR_TBUS) {
         ETH->DMASR = ETH_DMASR_TBUS;
@@ -810,9 +813,9 @@ static int eth_tx_buf_send(void) {
 
 static void eth_dma_rx_free(void) {
     // Get RX descriptor, RX buffer and move to next one
-    eth_dma_rx_descr_t *rx_descr = &eth_dma.rx_descr[eth_dma.rx_descr_idx];
-    uint8_t *buf = &eth_dma.rx_buf[eth_dma.rx_descr_idx * RX_BUF_SIZE];
-    eth_dma.rx_descr_idx = (eth_dma.rx_descr_idx + 1) % RX_BUF_NUM;
+    eth_dma_rx_descr_t *rx_descr = &eth_dma.rx_descr[eth_dma_rx_descr_idx];
+    uint8_t *buf = &eth_dma.rx_buf[eth_dma_rx_descr_idx * RX_BUF_SIZE];
+    eth_dma_rx_descr_idx = (eth_dma_rx_descr_idx + 1) % RX_BUF_NUM;
 
     // Schedule to get next incoming frame
     #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
@@ -826,16 +829,16 @@ static void eth_dma_rx_free(void) {
             | RX_BUF_SIZE << RX_DESCR_1_RBS1_Pos // maximum buffer length
     ;
     rx_descr->rdes2 = (uint32_t)buf;
-    rx_descr->rdes3 = (uint32_t)&eth_dma.rx_descr[eth_dma.rx_descr_idx];
+    rx_descr->rdes3 = (uint32_t)&eth_dma.rx_descr[eth_dma_rx_descr_idx];
     rx_descr->rdes0 = 1 << RX_DESCR_0_OWN_Pos;  // owned by DMA
     #endif
 
     // Notify ETH DMA that there is a new RX descriptor available
     __DMB();
     #if defined(STM32H5) || defined(STM32H7)
-    ETH->DMACRDTPR = (uint32_t)&rx_descr[eth_dma.rx_descr_idx];
+    ETH->DMACRDTPR = (uint32_t)&rx_descr[eth_dma_rx_descr_idx];
     #elif defined(STM32N6)
-    ETH->DMA_CH[RX_DMA_CH].DMACRXDTPR = (uint32_t)&rx_descr[eth_dma.rx_descr_idx];
+    ETH->DMA_CH[RX_DMA_CH].DMACRXDTPR = (uint32_t)&rx_descr[eth_dma_rx_descr_idx];
     #else
     ETH->DMARPDR = 0;
     #endif
@@ -867,13 +870,13 @@ void ETH_IRQHandler(void) {
         #endif
         for (;;) {
             #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
-            eth_dma_rx_descr_t *rx_descr_l = &eth_dma.rx_descr[eth_dma.rx_descr_idx];
+            eth_dma_rx_descr_t *rx_descr_l = &eth_dma.rx_descr[eth_dma_rx_descr_idx];
             if (rx_descr_l->rdes3 & (1 << RX_DESCR_3_OWN_Pos)) {
                 // No more RX descriptors ready to read
                 break;
             }
             #else
-            eth_dma_rx_descr_t *rx_descr = &eth_dma.rx_descr[eth_dma.rx_descr_idx];
+            eth_dma_rx_descr_t *rx_descr = &eth_dma.rx_descr[eth_dma_rx_descr_idx];
             if (rx_descr->rdes0 & (1 << RX_DESCR_0_OWN_Pos)) {
                 // No more RX descriptors ready to read
                 break;
@@ -888,7 +891,7 @@ void ETH_IRQHandler(void) {
             #endif
             len -= 4; // discard CRC at end
             #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
-            uint8_t *buf = &eth_dma.rx_buf[eth_dma.rx_descr_idx * RX_BUF_SIZE];
+            uint8_t *buf = &eth_dma.rx_buf[eth_dma_rx_descr_idx * RX_BUF_SIZE];
             #else
             uint8_t *buf = (uint8_t *)rx_descr->rdes2;
             #endif
