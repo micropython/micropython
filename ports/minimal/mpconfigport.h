@@ -21,11 +21,14 @@
 // Use the minimum headroom in the chunk allocator for parse nodes.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
-// Disable all optional sys module features.
-#define MICROPY_PY_SYS_MODULES            (0)
+// Enable essential sys module features
+#define MICROPY_PY_SYS_MODULES            (1)
 #define MICROPY_PY_SYS_EXIT               (0)
 #define MICROPY_PY_SYS_PATH               (0)
 #define MICROPY_PY_SYS_ARGV               (0)
+
+// Enable machine module for hardware access
+#define MICROPY_PY_MACHINE                (1)
 
 // type definitions for the specific machine
 
