@@ -36,6 +36,20 @@
 #define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
+// Hardware abstraction layer for Raspberry Pi and other Linux SBCs
+// These are unix-port specific implementations using Linux kernel interfaces
+extern const mp_obj_type_t machine_pin_type;
+extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_spi_type;
+extern const mp_obj_type_t machine_pwm_type;
+
+// Register port-specific machine module classes
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_spi_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&machine_pwm_type) },
+
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {

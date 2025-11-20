@@ -216,6 +216,10 @@ SRC_C += \
 	modsocket.c \
 	modffi.c \
 	modjni.c \
+	machine_pin.c \
+	machine_i2c.c \
+	machine_spi.c \
+	machine_pwm.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
 SHARED_SRC_C += $(addprefix shared/,\
