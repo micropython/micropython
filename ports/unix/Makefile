@@ -220,6 +220,10 @@ SRC_C += \
 	machine_i2c.c \
 	machine_spi.c \
 	machine_pwm.c \
+	machine_camera.c \
+	machine_display.c \
+	machine_audio.c \
+	mod_tflite.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
 SHARED_SRC_C += $(addprefix shared/,\
