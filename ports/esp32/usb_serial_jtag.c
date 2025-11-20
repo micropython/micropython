@@ -71,23 +71,31 @@ static void usb_serial_jtag_handle_rx(void) {
 
 static void usb_serial_jtag_isr_handler(void *arg) {
     uint32_t flags = usb_serial_jtag_ll_get_intsts_mask();
-
-    if (flags & USB_SERIAL_JTAG_INTR_SOF) {
-        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SOF);
-    }
+    usb_serial_jtag_ll_clr_intsts_mask(flags);
 
     if (flags & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
-        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
         usb_serial_jtag_handle_rx();
         mp_hal_wake_main_task_from_isr();
+    }
+
+    if (flags & USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY) {
+        // As per the ESP-IDF driver, allow for the possibility the USJ just sent a full
+        // 64-bit endpoint to the host and now it's waiting for another ZLP to flush the result
+        // to the OS
+        usb_serial_jtag_ll_txfifo_flush();
+
+        // Disable this interrupt until next time we write into the FIFO
+        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
     }
 }
 
 void usb_serial_jtag_init(void) {
+    // Note: Don't clear the SERIAL_IN_EMPTY interrupt, as it's possible the
+    // bootloader wrote enough data to the host that we need the interrupt to flush it.
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT |
         USB_SERIAL_JTAG_INTR_SOF);
     usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT |
-        USB_SERIAL_JTAG_INTR_SOF);
+        USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
     ESP_ERROR_CHECK(esp_intr_alloc(ETS_USB_SERIAL_JTAG_INTR_SOURCE, ESP_INTR_FLAG_LEVEL1,
         usb_serial_jtag_isr_handler, NULL, NULL));
 }
@@ -114,10 +122,11 @@ void usb_serial_jtag_tx_strn(const char *str, size_t len) {
         }
         terminal_connected = true;
         l = usb_serial_jtag_ll_write_txfifo((const uint8_t *)str, l);
-        usb_serial_jtag_ll_txfifo_flush();
         str += l;
         len -= l;
+        usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
     }
+    usb_serial_jtag_ll_txfifo_flush();
 }
 
 #endif // MICROPY_HW_ESP_USB_SERIAL_JTAG
