@@ -108,8 +108,10 @@ const usb_desc_entry_t usb_desc_table[] = {
     #endif
 };
 
-// Global descriptor buffer for runtime configuration (used by both runtime and static modes)
+// Global descriptor buffer for runtime configuration (only needed in runtime mode)
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 uint8_t mp_usbd_desc_cfg_buffer[MP_USBD_BUILTIN_DESC_CFG_LEN];
+#endif
 
 // Unified descriptor generation function using lookup table
 const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer) {
@@ -165,12 +167,16 @@ const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer)
 size_t mp_usbd_get_descriptor_cfg_len(void) {
     size_t len = TUD_CONFIG_DESC_LEN;
 
-    if (mp_usbd_class_state.cdc_enabled && CFG_TUD_CDC) {
+    #if CFG_TUD_CDC
+    if (MP_USBD_CDC_ENABLED()) {
         len += TUD_CDC_DESC_LEN;
     }
-    if (mp_usbd_class_state.msc_enabled && CFG_TUD_MSC) {
+    #endif
+    #if CFG_TUD_MSC
+    if (MP_USBD_MSC_ENABLED()) {
         len += TUD_MSC_DESC_LEN;
     }
+    #endif
 
     return len;
 }
@@ -196,22 +202,9 @@ static const uint8_t mp_usbd_builtin_desc_cfg_max[MP_USBD_BUILTIN_DESC_CFG_LEN] 
 // Dynamic descriptor buffer for runtime configuration
 static uint8_t mp_usbd_dynamic_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
 
-// Convert class state to flags
-static uint8_t mp_usbd_class_state_to_flags(void) {
-    uint8_t flags = USB_BUILTIN_FLAG_NONE;
-    if (mp_usbd_class_state.cdc_enabled) {
-        flags |= USB_BUILTIN_FLAG_CDC;
-    }
-    if (mp_usbd_class_state.msc_enabled) {
-        flags |= USB_BUILTIN_FLAG_MSC;
-    }
-    return flags;
-}
-
 // Generate dynamic configuration descriptor based on enabled classes
 static const uint8_t *mp_usbd_generate_desc_cfg(void) {
-    uint8_t flags = mp_usbd_class_state_to_flags();
-    return mp_usbd_generate_desc_cfg_unified(flags, mp_usbd_dynamic_desc_cfg);
+    return mp_usbd_generate_desc_cfg_unified(mp_usbd_class_state.flags, mp_usbd_dynamic_desc_cfg);
 }
 #endif
 

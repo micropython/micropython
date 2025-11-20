@@ -125,7 +125,8 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
         if (!result && usbd->builtin_driver != USB_BUILTIN_FLAG_NONE) {
             extern uint8_t mp_usbd_desc_cfg_buffer[];
             extern const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer);
-            mp_usbd_update_class_state(usbd->builtin_driver);
+            extern mp_usbd_class_state_t mp_usbd_class_state;
+            mp_usbd_class_state.flags = usbd->builtin_driver;
             result = mp_usbd_generate_desc_cfg_unified(usbd->builtin_driver, mp_usbd_desc_cfg_buffer);
         }
     }

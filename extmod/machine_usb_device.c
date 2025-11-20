@@ -84,30 +84,15 @@ static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, si
         o->base.type = &machine_usb_device_type;
 
         // Initialize fields common to both minimal and full modes
+        extern mp_usbd_class_state_t mp_usbd_class_state;
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         // Runtime mode: read current class state to reflect default CDC configuration
-        extern mp_usbd_class_state_t mp_usbd_class_state;
-        uint8_t flags = 0;
-        if (mp_usbd_class_state.cdc_enabled) {
-            flags |= USB_BUILTIN_FLAG_CDC;
-        }
-        if (mp_usbd_class_state.msc_enabled) {
-            flags |= USB_BUILTIN_FLAG_MSC;
-        }
-        o->builtin_driver = flags;
+        o->builtin_driver = mp_usbd_class_state.flags;
         o->active = tud_inited();
         #else
         // In static mode, USB is always initialized at boot
         // Class state is set during early boot, create a USBBuiltin object from it
-        extern mp_usbd_class_state_t mp_usbd_class_state;
-        uint8_t flags = 0;
-        if (mp_usbd_class_state.cdc_enabled) {
-            flags |= USB_BUILTIN_FLAG_CDC;
-        }
-        if (mp_usbd_class_state.msc_enabled) {
-            flags |= USB_BUILTIN_FLAG_MSC;
-        }
-        o->builtin_driver = mp_usbd_create_builtin_config(flags);
+        o->builtin_driver = mp_usbd_create_builtin_config(mp_usbd_class_state.flags);
         o->active = tud_inited();
         #endif
 
@@ -546,7 +531,7 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             }
 
             // Update the internal class state based on flags
-            mp_usbd_update_class_state(flags);
+            mp_usbd_class_state.flags = flags;
 
             #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
             // In runtime mode, store flags directly

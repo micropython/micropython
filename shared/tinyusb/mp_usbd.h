@@ -58,8 +58,7 @@ void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
 // Per-class runtime enable/disable state
 typedef struct {
-    bool cdc_enabled;
-    bool msc_enabled;
+    uint8_t flags;  // Bitfield of enabled USB classes (USB_BUILTIN_FLAG_*)
 } mp_usbd_class_state_t;
 
 // Global class enable state
@@ -103,23 +102,21 @@ extern const mp_obj_type_t mp_type_usb_builtin;
 #define USB_BUILTIN_FLAG_MSC   0x02
 #define USB_BUILTIN_FLAG_NCM   0x04
 
+// Helper macros for checking enabled classes
+#define MP_USBD_CDC_ENABLED() (mp_usbd_class_state.flags & USB_BUILTIN_FLAG_CDC)
+#define MP_USBD_MSC_ENABLED() (mp_usbd_class_state.flags & USB_BUILTIN_FLAG_MSC)
+
 // Initialize class state based on compile-time configuration and runtime mode
 static inline void mp_usbd_init_class_state(void) {
     #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
     // In runtime mode, only CDC enabled by default
-    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
-    mp_usbd_class_state.msc_enabled = false;
+    mp_usbd_class_state.flags = (CFG_TUD_CDC ? USB_BUILTIN_FLAG_CDC : 0);
     #else
     // In static mode, enable all compiled classes
-    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
-    mp_usbd_class_state.msc_enabled = (CFG_TUD_MSC == 1);
+    mp_usbd_class_state.flags =
+        (CFG_TUD_CDC ? USB_BUILTIN_FLAG_CDC : 0) |
+        (CFG_TUD_MSC ? USB_BUILTIN_FLAG_MSC : 0);
     #endif
-}
-
-// Update class state based on bitfield flags
-static inline void mp_usbd_update_class_state(uint8_t flags) {
-    mp_usbd_class_state.cdc_enabled = (flags & USB_BUILTIN_FLAG_CDC) && (CFG_TUD_CDC == 1);
-    mp_usbd_class_state.msc_enabled = (flags & USB_BUILTIN_FLAG_MSC) && (CFG_TUD_MSC == 1);
 }
 
 // Calculate descriptor length from flags using compile-time conditionals
