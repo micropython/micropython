@@ -104,8 +104,6 @@ pico_sdk_init()
 
 include(${MICROPY_DIR}/py/usermod.cmake)
 
-set(PIOASM_VERSION_STRING "pico-sdk-${PICO_SDK_VERSION_STRING}")
-
 add_executable(${MICROPY_TARGET})
 
 # Provide a C-level definitions of PICO_ARM.
