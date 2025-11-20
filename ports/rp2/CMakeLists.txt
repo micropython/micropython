@@ -114,12 +114,6 @@ set(MICROPY_QSTRDEFS_PORT
 )
 
 set(MICROPY_SOURCE_LIB
-    ${MICROPY_DIR}/lib/littlefs/lfs1.c
-    ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
-    ${MICROPY_DIR}/lib/littlefs/lfs2.c
-    ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-    ${MICROPY_DIR}/lib/oofatfs/ff.c
-    ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
     ${MICROPY_DIR}/shared/netutils/dhcpserver.c
     ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/netutils/trace.c
@@ -137,6 +131,29 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd_runtime.c
 )
+
+# Add filesystem sources based on configuration
+# These are enabled by default in mpconfigport.h but can be disabled by boards
+if(NOT DEFINED MICROPY_VFS_FAT OR MICROPY_VFS_FAT)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/oofatfs/ff.c
+        ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+    )
+endif()
+
+if(MICROPY_VFS_LFS1)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/littlefs/lfs1.c
+        ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
+    )
+endif()
+
+if(NOT DEFINED MICROPY_VFS_LFS2 OR MICROPY_VFS_LFS2)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/littlefs/lfs2.c
+        ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
+    )
+endif()
 
 if(PICO_ARM)
     list(APPEND MICROPY_SOURCE_LIB
