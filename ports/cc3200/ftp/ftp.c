@@ -576,10 +576,8 @@ static void ftp_send_reply (_u16 status, char *message) {
     if (!message) {
         message = "";
     }
-    snprintf((char *)ftp_cmd_buffer, 4, "%u", status);
-    strcat ((char *)ftp_cmd_buffer, " ");
-    strcat ((char *)ftp_cmd_buffer, message);
-    strcat ((char *)ftp_cmd_buffer, "\r\n");
+    // Use snprintf with proper bounds checking instead of unsafe strcat
+    snprintf((char *)ftp_cmd_buffer, FTP_MAX_PARAM_SIZE + FTP_CMD_SIZE_MAX, "%u %s\r\n", status, message);
     fifoelement.sd = &ftp_data.c_sd;
     fifoelement.datasize = strlen((char *)ftp_cmd_buffer);
     fifoelement.data = mem_Malloc(fifoelement.datasize);
@@ -1110,12 +1108,16 @@ static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *li
 
 static void ftp_open_child (char *pwd, char *dir) {
     if (dir[0] == '/') {
-        strcpy (pwd, dir);
+        // Use snprintf instead of strcpy for bounds checking
+        snprintf(pwd, FTP_MAX_PARAM_SIZE, "%s", dir);
     } else {
-        if (strlen(pwd) > 1) {
-            strcat (pwd, "/");
+        // Build path safely with snprintf
+        size_t pwd_len = strlen(pwd);
+        if (pwd_len > 1) {
+            snprintf(pwd + pwd_len, FTP_MAX_PARAM_SIZE - pwd_len, "/%s", dir);
+        } else {
+            snprintf(pwd + pwd_len, FTP_MAX_PARAM_SIZE - pwd_len, "%s", dir);
         }
-        strcat (pwd, dir);
     }
 
     uint len = strlen(pwd);

@@ -323,7 +323,8 @@ static mp_obj_t webrepl_set_password(mp_obj_t passwd_in) {
     if (len > sizeof(webrepl_passwd) - 1) {
         mp_raise_ValueError(NULL);
     }
-    strcpy(webrepl_passwd, passwd);
+    memcpy(webrepl_passwd, passwd, len);
+    webrepl_passwd[len] = '\0';  // Null-terminate
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(webrepl_set_password_obj, webrepl_set_password);

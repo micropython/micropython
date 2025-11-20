@@ -577,8 +577,9 @@ int nina_scan(nina_scan_callback_t scan_callback, void *arg, uint32_t timeout) {
             break;
         }
 
-        // Set AP SSID
-        strncpy(scan_result.ssid, ssids[i], NINA_MAX_SSID_LEN);
+        // Set AP SSID with null termination
+        strncpy(scan_result.ssid, ssids[i], NINA_MAX_SSID_LEN - 1);
+        scan_result.ssid[NINA_MAX_SSID_LEN - 1] = '\0';
 
         // Read AP RSSI
         if (nina_send_command_read_vals(NINA_CMD_AP_GET_RSSI,
