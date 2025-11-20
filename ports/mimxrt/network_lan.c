@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "extmod/modnetwork.h"
 
-#if defined(IOMUX_TABLE_ENET)
+#if defined(ENET_PHY_ADDRESS) || defined(ENET_1_PHY_ADDRESS)
 
 #include "fsl_phy.h"
 #include "eth.h"
@@ -55,9 +55,13 @@ typedef struct _network_lan_obj_t {
     eth_t *eth;
 } network_lan_obj_t;
 
+// Forward declaration of the type
+extern const mp_obj_type_t network_lan_type;
 
+#if defined(ENET_PHY_ADDRESS)
 static const network_lan_obj_t network_lan_eth0 = { { &network_lan_type }, &eth_instance0 };
-#if defined(ENET_DUAL_PORT)
+#endif
+#if defined(ENET_1_PHY_ADDRESS)
 static const network_lan_obj_t network_lan_eth1 = { { &network_lan_type }, &eth_instance1 };
 #endif
 
@@ -65,8 +69,19 @@ static void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     network_lan_obj_t *self = MP_OBJ_TO_PTR(self_in);
     struct netif *netif = eth_netif(self->eth);
     int status = eth_link_status(self->eth);
+    int eth_id = 0;
+    #if defined(ENET_PHY_ADDRESS)
+    if (self->eth == &eth_instance0) {
+        eth_id = 0;
+    }
+    #endif
+    #if defined(ENET_1_PHY_ADDRESS)
+    if (self->eth == &eth_instance1) {
+        eth_id = 1;
+    }
+    #endif
     mp_printf(print, "<ETH%d status=%u ip=%u.%u.%u.%u>",
-        self->eth == &eth_instance0 ? 0 : 1,
+        eth_id,
         status,
         netif->ip_addr.addr & 0xff,
         netif->ip_addr.addr >> 8 & 0xff,
@@ -77,8 +92,18 @@ static void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 
 static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_phy_type, ARG_phy_addr, ARG_ref_clk_mode};
+
+    // Default to port 0 if ENET available, else port 1 if only ENET_1 available
+    #if defined(ENET_PHY_ADDRESS)
+    #define DEFAULT_ETH_ID 0
+    #elif defined(ENET_1_PHY_ADDRESS)
+    #define DEFAULT_ETH_ID 1
+    #else
+    #error "No Ethernet PHY configured"
+    #endif
+
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = DEFAULT_ETH_ID} },
         { MP_QSTR_phy_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phy_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -92,18 +117,21 @@ static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
     bool phy_clock;
 
     int mac_id = args[ARG_id].u_int;
-    // set default
+    // set default based on which interface is being used
+    #if defined(ENET_PHY_ADDRESS)
     if (mac_id == 0) {
         phy_ops = &ENET_PHY_OPS;
         phy_addr = ENET_PHY_ADDRESS;
         phy_clock = ENET_TX_CLK_OUTPUT;
-    #if defined(ENET_DUAL_PORT)
-    } else {
+    }
+    #endif
+    #if defined(ENET_1_PHY_ADDRESS)
+    if (mac_id == 1) {
         phy_ops = &ENET_1_PHY_OPS;
         phy_addr = ENET_1_PHY_ADDRESS;
         phy_clock = ENET_1_TX_CLK_OUTPUT;
-    #endif
     }
+    #endif
 
     // Select PHY driver
     int phy_type = args[ARG_phy_type].u_int;
@@ -132,17 +160,21 @@ static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
         phy_clock = args[ARG_ref_clk_mode].u_int;
     }
 
-    // Prepare for two ETH interfaces.
-    const network_lan_obj_t *self;
+    // Initialize the appropriate ETH interface
+    const network_lan_obj_t *self = NULL;
+    #if defined(ENET_PHY_ADDRESS)
     if (mac_id == 0) {
         self = &network_lan_eth0;
         eth_init_0(self->eth, MP_HAL_MAC_ETH0, phy_ops, phy_addr, phy_clock);
-    #if defined(ENET_DUAL_PORT)
-    } else if (mac_id == 1) {
+    }
+    #endif
+    #if defined(ENET_1_PHY_ADDRESS)
+    if (mac_id == 1) {
         self = &network_lan_eth1;
         eth_init_1(self->eth, MP_HAL_MAC_ETH1, phy_ops, phy_addr, phy_clock);
+    }
     #endif
-    } else {
+    if (self == NULL) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid LAN interface %d"), mac_id);
     }
 
@@ -275,4 +307,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 
-#endif // defined(IOMUX_TABLE_ENET)
+#endif // defined(ENET_PHY_ADDRESS) || defined(ENET_1_PHY_ADDRESS)
