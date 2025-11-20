@@ -172,7 +172,7 @@ Configuration
         api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_. This
         parameter is actually *write-only* due to ESP-IDF not providing any
         means for querying the radio interface's rate parameter.
-        See also `espnow-long-range`.
+        See also `espnow-long-range`. This API currently doesn't work on ESP32-C6.
 
     .. data:: Returns:
 
