@@ -146,8 +146,35 @@ static int configure_uart(void) {
     toptions.c_iflag &= ~(IXON | IXOFF | IXANY);
     toptions.c_cflag |= CRTSCTS;
 
-    // 1Mbit (TODO: make this configurable).
+    // 1Mbit default, configurable via MICROPYBTBAUD
     speed_t brate = B1000000;
+    char *baud_env = getenv("MICROPYBTBAUD");
+    if (baud_env != NULL) {
+        int baud = atoi(baud_env);
+        switch (baud) {
+            case 9600: brate = B9600; break;
+            case 19200: brate = B19200; break;
+            case 38400: brate = B38400; break;
+            case 57600: brate = B57600; break;
+            case 115200: brate = B115200; break;
+            case 230400: brate = B230400; break;
+            case 460800: brate = B460800; break;
+            case 500000: brate = B500000; break;
+            case 576000: brate = B576000; break;
+            case 921600: brate = B921600; break;
+            case 1000000: brate = B1000000; break;
+            case 1152000: brate = B1152000; break;
+            case 1500000: brate = B1500000; break;
+            case 2000000: brate = B2000000; break;
+            case 2500000: brate = B2500000; break;
+            case 3000000: brate = B3000000; break;
+            case 3500000: brate = B3500000; break;
+            case 4000000: brate = B4000000; break;
+            default:
+                DEBUG_printf("Unsupported baudrate %d, using 1000000\n", baud);
+                break;
+        }
+    }
     cfsetospeed(&toptions, brate);
     cfsetispeed(&toptions, brate);
 

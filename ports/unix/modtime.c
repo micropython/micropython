@@ -99,11 +99,18 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
         res = sleep_select(0, NULL, NULL, NULL, &tv);
         MP_THREAD_GIL_ENTER();
         #if MICROPY_SELECT_REMAINING_TIME
-        // TODO: This assumes Linux behavior of modifying tv to the remaining
-        // time.
+        // This assumes Linux behavior of modifying tv to the remaining time.
+        // POSIX permits this but does not require it.
+        #ifdef __linux__
         if (res != -1 || errno != EINTR) {
             break;
         }
+        #else
+        // On non-Linux, we might sleep longer than intended if interrupted,
+        // or we need to manually recalculate remaining time.
+        // For now, just break to avoid infinite loops if tv is not updated.
+        break;
+        #endif
         mp_handle_pending(true);
         // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else

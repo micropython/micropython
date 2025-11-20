@@ -347,8 +347,15 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
 }
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
-    pthread_mutex_unlock(mutex);
-    // TODO check return value
+    int ret = pthread_mutex_unlock(mutex);
+    if (ret != 0) {
+        // This should not happen in a correctly written program.
+        // But if it does, we can't easily raise an exception here.
+        // Just print a warning in debug builds.
+        #ifdef DEBUG_printf
+        DEBUG_printf("pthread_mutex_unlock failed: %d\n", ret);
+        #endif
+    }
 }
 
 #if MICROPY_PY_THREAD_RECURSIVE_MUTEX

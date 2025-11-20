@@ -461,9 +461,10 @@ static mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 static MP_DEFINE_CONST_FUN_OBJ_2(socket_settimeout_obj, socket_settimeout);
 
 static mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
-    // TODO: CPython explicitly says that closing returned object doesn't close
-    // the original socket (Python2 at all says that fd is dup()ed). But we
-    // save on the bloat.
+    // CPython explicitly says that closing returned object doesn't close
+    // the original socket (Python2 at all says that fd is dup()ed).
+    // MicroPython does NOT dup() the fd to save on resources/bloat.
+    // This means closing the file object WILL close the socket.
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
     memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
