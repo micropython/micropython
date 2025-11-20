@@ -65,11 +65,114 @@ typedef struct {
 // Global class enable state
 extern mp_usbd_class_state_t mp_usbd_class_state;
 
-// Functions to control USB classes via bitfield flags
-void mp_usbd_update_class_state(uint8_t flags);
-void mp_usbd_init_class_state(void);
+// Descriptor template entry for lookup table
+typedef struct {
+    uint8_t flag_mask;     // USB_BUILTIN_FLAG_* to check
+    uint8_t desc_len;      // Length of descriptor in bytes
+    uint8_t itf_count;     // Number of interfaces used
+    const uint8_t *template; // Descriptor bytes (0xFF = interface number placeholder)
+} usb_desc_entry_t;
 
-// Initialise TinyUSB device.
+// External reference to descriptor lookup table for inline functions
+extern const usb_desc_entry_t usb_desc_table[];
+
+// Number of entries in usb_desc_table
+#define USB_DESC_TABLE_SIZE ((CFG_TUD_CDC ? 1 : 0) + (CFG_TUD_MSC ? 1 : 0))
+
+// Descriptor info structure for combined length/count calculation
+typedef struct {
+    size_t length;
+    uint8_t interface_count;
+} usb_desc_info_t;
+
+// Allow runtime override of VID/PID defaults
+#ifndef MICROPY_HW_USB_RUNTIME_VID
+#define MICROPY_HW_USB_RUNTIME_VID MICROPY_HW_USB_VID
+#endif
+#ifndef MICROPY_HW_USB_RUNTIME_PID
+#define MICROPY_HW_USB_RUNTIME_PID MICROPY_HW_USB_PID
+#endif
+
+// Forward declarations for USBBuiltin type
+typedef struct _mp_obj_usb_builtin_t mp_obj_usb_builtin_t;
+extern const mp_obj_type_t mp_type_usb_builtin;
+
+// Individual USB class flags for bitfield operations
+#define USB_BUILTIN_FLAG_NONE  0x00
+#define USB_BUILTIN_FLAG_CDC   0x01
+#define USB_BUILTIN_FLAG_MSC   0x02
+#define USB_BUILTIN_FLAG_NCM   0x04
+
+// Initialize class state based on compile-time configuration and runtime mode
+static inline void mp_usbd_init_class_state(void) {
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    // In runtime mode, only CDC enabled by default
+    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
+    mp_usbd_class_state.msc_enabled = false;
+    #else
+    // In static mode, enable all compiled classes
+    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
+    mp_usbd_class_state.msc_enabled = (CFG_TUD_MSC == 1);
+    #endif
+}
+
+// Update class state based on bitfield flags
+static inline void mp_usbd_update_class_state(uint8_t flags) {
+    mp_usbd_class_state.cdc_enabled = (flags & USB_BUILTIN_FLAG_CDC) && (CFG_TUD_CDC == 1);
+    mp_usbd_class_state.msc_enabled = (flags & USB_BUILTIN_FLAG_MSC) && (CFG_TUD_MSC == 1);
+}
+
+// Calculate descriptor length from flags using compile-time conditionals
+static inline size_t mp_usbd_get_descriptor_cfg_len_from_flags(uint8_t flags) {
+    size_t len = TUD_CONFIG_DESC_LEN;
+    #if CFG_TUD_CDC
+    if (flags & USB_BUILTIN_FLAG_CDC) {
+        len += TUD_CDC_DESC_LEN;
+    }
+    #endif
+    #if CFG_TUD_MSC
+    if (flags & USB_BUILTIN_FLAG_MSC) {
+        len += TUD_MSC_DESC_LEN;
+    }
+    #endif
+    return len;
+}
+
+// Calculate interface count from flags using compile-time conditionals
+static inline uint8_t mp_usbd_get_interface_count_from_flags(uint8_t flags) {
+    uint8_t count = 0;
+    #if CFG_TUD_CDC
+    if (flags & USB_BUILTIN_FLAG_CDC) {
+        count += 2;  // CDC uses 2 interfaces
+    }
+    #endif
+    #if CFG_TUD_MSC
+    if (flags & USB_BUILTIN_FLAG_MSC) {
+        count += 1;  // MSC uses 1 interface
+    }
+    #endif
+    return count;
+}
+
+// Combined descriptor info calculation using compile-time conditionals
+static inline usb_desc_info_t mp_usbd_get_desc_info_from_flags(uint8_t flags) {
+    usb_desc_info_t info = { .length = TUD_CONFIG_DESC_LEN, .interface_count = 0 };
+    #if CFG_TUD_CDC
+    if (flags & USB_BUILTIN_FLAG_CDC) {
+        info.length += TUD_CDC_DESC_LEN;
+        info.interface_count += 2;
+    }
+    #endif
+    #if CFG_TUD_MSC
+    if (flags & USB_BUILTIN_FLAG_MSC) {
+        info.length += TUD_MSC_DESC_LEN;
+        info.interface_count += 1;
+    }
+    #endif
+    return info;
+}
+
+// Initialise TinyUSB device
 static inline void mp_usbd_init_tud(void) {
     // Initialize class state before TinyUSB init
     mp_usbd_init_class_state();
@@ -91,25 +194,6 @@ static inline void mp_usbd_init_tud(void) {
     tud_cdc_configure_fifo(&cfg);
     #endif
 }
-
-// Allow runtime override of VID/PID defaults
-#ifndef MICROPY_HW_USB_RUNTIME_VID
-#define MICROPY_HW_USB_RUNTIME_VID MICROPY_HW_USB_VID
-#endif
-#ifndef MICROPY_HW_USB_RUNTIME_PID
-#define MICROPY_HW_USB_RUNTIME_PID MICROPY_HW_USB_PID
-#endif
-
-// Forward declarations for USBBuiltin type
-typedef struct _mp_obj_usb_builtin_t mp_obj_usb_builtin_t;
-extern const mp_obj_type_t mp_type_usb_builtin;
-
-// Individual USB class flags for bitfield operations
-#define USB_BUILTIN_FLAG_NONE  0x00
-#define USB_BUILTIN_FLAG_CDC   0x01
-#define USB_BUILTIN_FLAG_MSC   0x02
-#define USB_BUILTIN_FLAG_NCM   0x04
-
 
 // Get dynamic descriptor length based on enabled classes
 size_t mp_usbd_get_descriptor_cfg_len(void);

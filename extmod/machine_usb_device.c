@@ -429,8 +429,9 @@ static uint8_t mp_usbd_get_str_max(uint8_t flags) {
 }
 
 static const uint8_t *mp_usbd_get_builtin_desc_cfg(uint8_t flags) {
-    extern const uint8_t *mp_usbd_generate_desc_cfg_from_flags(uint8_t flags);
-    return mp_usbd_generate_desc_cfg_from_flags(flags);
+    extern uint8_t mp_usbd_desc_cfg_buffer[];
+    extern const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer);
+    return mp_usbd_generate_desc_cfg_unified(flags, mp_usbd_desc_cfg_buffer);
 }
 
 static size_t mp_usbd_get_desc_cfg_len(uint8_t flags) {

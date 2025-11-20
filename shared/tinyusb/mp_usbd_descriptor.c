@@ -58,33 +58,6 @@ const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
 // Global class enable state
 mp_usbd_class_state_t mp_usbd_class_state;
 
-// Initialize class state based on compile-time configuration and runtime mode
-void mp_usbd_init_class_state(void) {
-    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
-    // In runtime mode, only CDC enabled by default
-    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
-    mp_usbd_class_state.msc_enabled = false;
-    #else
-    // In static mode, enable all compiled classes
-    mp_usbd_class_state.cdc_enabled = (CFG_TUD_CDC == 1);
-    mp_usbd_class_state.msc_enabled = (CFG_TUD_MSC == 1);
-    #endif
-}
-
-// Update class state based on bitfield flags
-void mp_usbd_update_class_state(uint8_t flags) {
-    mp_usbd_class_state.cdc_enabled = (flags & USB_BUILTIN_FLAG_CDC) && (CFG_TUD_CDC == 1);
-    mp_usbd_class_state.msc_enabled = (flags & USB_BUILTIN_FLAG_MSC) && (CFG_TUD_MSC == 1);
-}
-
-// Descriptor template entry for lookup table
-typedef struct {
-    uint8_t flag_mask;     // USB_BUILTIN_FLAG_* to check
-    uint8_t desc_len;      // Length of descriptor in bytes
-    uint8_t itf_count;     // Number of interfaces used
-    const uint8_t *template; // Descriptor bytes (0xFF = interface number placeholder)
-} usb_desc_entry_t;
-
 // CDC descriptor template with interface number placeholders (0xFF)
 // Expands TUD_CDC_DESCRIPTOR macro with 0xFF for interface numbers
 #if CFG_TUD_CDC
@@ -125,8 +98,8 @@ static const uint8_t msc_desc_template[] = {
 };
 #endif
 
-// Lookup table for all USB class descriptors
-static const usb_desc_entry_t usb_desc_table[] = {
+// Lookup table for all USB class descriptors (extern for inlining in header)
+const usb_desc_entry_t usb_desc_table[] = {
     #if CFG_TUD_CDC
     {USB_BUILTIN_FLAG_CDC, TUD_CDC_DESC_LEN, 2, cdc_desc_template},
     #endif
@@ -135,33 +108,15 @@ static const usb_desc_entry_t usb_desc_table[] = {
     #endif
 };
 
-// Calculate descriptor length from flags using lookup table
-size_t mp_usbd_get_descriptor_cfg_len_from_flags(uint8_t flags) {
-    size_t len = TUD_CONFIG_DESC_LEN;
-    for (size_t i = 0; i < MP_ARRAY_SIZE(usb_desc_table); i++) {
-        if (flags & usb_desc_table[i].flag_mask) {
-            len += usb_desc_table[i].desc_len;
-        }
-    }
-    return len;
-}
-
-// Calculate interface count from flags using lookup table
-static uint8_t mp_usbd_get_interface_count_from_flags(uint8_t flags) {
-    uint8_t count = 0;
-    for (size_t i = 0; i < MP_ARRAY_SIZE(usb_desc_table); i++) {
-        if (flags & usb_desc_table[i].flag_mask) {
-            count += usb_desc_table[i].itf_count;
-        }
-    }
-    return count;
-}
+// Global descriptor buffer for runtime configuration (used by both runtime and static modes)
+uint8_t mp_usbd_desc_cfg_buffer[MP_USBD_BUILTIN_DESC_CFG_LEN];
 
 // Unified descriptor generation function using lookup table
-static const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer) {
+const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer) {
     uint8_t *desc = buffer;
-    uint8_t interface_count = mp_usbd_get_interface_count_from_flags(flags);
-    size_t total_len = mp_usbd_get_descriptor_cfg_len_from_flags(flags);
+    usb_desc_info_t info = mp_usbd_get_desc_info_from_flags(flags);
+    uint8_t interface_count = info.interface_count;
+    size_t total_len = info.length;
 
     // Configuration descriptor header (unrolled for size optimization)
     *desc++ = 9;                           // bLength
@@ -201,12 +156,6 @@ static const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *
     }
 
     return buffer;
-}
-
-// Wrapper for bitfield API
-const uint8_t *mp_usbd_generate_desc_cfg_from_flags(uint8_t flags) {
-    static uint8_t desc_cfg_buffer[MP_USBD_BUILTIN_DESC_CFG_LEN];
-    return mp_usbd_generate_desc_cfg_unified(flags, desc_cfg_buffer);
 }
 
 #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
