@@ -83,6 +83,7 @@ OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS += -DMICROPY_USE_READLINE=1
 SRC_C += shared/readline/readline.c
+SRC_C += shared/runtime/pyexec.c
 endif
 
 LIB += -lws2_32

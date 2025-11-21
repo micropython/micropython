@@ -55,9 +55,10 @@
 #include "genhdr/mpversion.h"
 #include "input.h"
 #include "stack_size.h"
+#include "shared/runtime/pyexec.h"
 
 // Command line options, with their defaults
-static bool compile_only = false;
+bool mp_compile_only = false;
 static uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -110,8 +111,6 @@ static int handle_uncaught_exception(mp_obj_base_t *exc) {
 }
 
 #define LEX_SRC_STR (1)
-#define LEX_SRC_VSTR (2)
-#define LEX_SRC_FILENAME (3)
 #define LEX_SRC_STDIN (4)
 
 // Returns standard error codes: 0 for success, 1 for all other errors,
@@ -127,12 +126,6 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         if (source_kind == LEX_SRC_STR) {
             const char *line = source;
             lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
-        } else if (source_kind == LEX_SRC_VSTR) {
-            const vstr_t *vstr = source;
-            lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
-        } else if (source_kind == LEX_SRC_FILENAME) {
-            const char *filename = (const char *)source;
-            lex = mp_lexer_new_from_file(qstr_from_str(filename));
         } else { // LEX_SRC_STDIN
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
@@ -158,7 +151,7 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
 
-        if (!compile_only) {
+        if (!mp_compile_only) {
             // execute it
             mp_call_function_0(module_fun);
         }
@@ -195,94 +188,31 @@ static char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 static int do_repl(void) {
-    mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
-    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
-    mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
-
     #if MICROPY_USE_READLINE == 1
 
-    // use MicroPython supplied readline
+    // use MicroPython supplied readline-based REPL
 
-    vstr_t line;
-    vstr_init(&line, 16);
+    int ret = 0;
     for (;;) {
-        mp_hal_stdio_mode_raw();
-
-    input_restart:
-        // If the GC is locked at this point there is no way out except a reset,
-        // so force the GC to be unlocked to help the user debug what went wrong.
-        MP_STATE_THREAD(gc_lock_depth) = 0;
-        vstr_reset(&line);
-        int ret = readline(&line, mp_repl_get_ps1());
-        mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
-
-        if (ret == CHAR_CTRL_C) {
-            // cancel input
-            mp_hal_stdout_tx_str("\r\n");
-            goto input_restart;
-        } else if (ret == CHAR_CTRL_D) {
-            // EOF
-            printf("\n");
-            mp_hal_stdio_mode_orig();
-            vstr_clear(&line);
-            return 0;
-        } else if (ret == CHAR_CTRL_E) {
-            // paste mode
-            mp_hal_stdout_tx_str("\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== ");
-            vstr_reset(&line);
-            for (;;) {
-                char c = mp_hal_stdin_rx_chr();
-                if (c == CHAR_CTRL_C) {
-                    // cancel everything
-                    mp_hal_stdout_tx_str("\n");
-                    goto input_restart;
-                } else if (c == CHAR_CTRL_D) {
-                    // end of input
-                    mp_hal_stdout_tx_str("\n");
-                    break;
-                } else {
-                    // add char to buffer and echo
-                    vstr_add_byte(&line, c);
-                    if (c == '\r') {
-                        mp_hal_stdout_tx_str("\n=== ");
-                    } else {
-                        mp_hal_stdout_tx_strn(&c, 1);
-                    }
-                }
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if ((ret = pyexec_raw_repl()) != 0) {
+                break;
             }
-            parse_input_kind = MP_PARSE_FILE_INPUT;
-        } else if (line.len == 0) {
-            if (ret != 0) {
-                printf("\n");
-            }
-            goto input_restart;
         } else {
-            // got a line with non-zero length, see if it needs continuing
-            while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
-                vstr_add_byte(&line, '\n');
-                ret = readline(&line, mp_repl_get_ps2());
-                if (ret == CHAR_CTRL_C) {
-                    // cancel everything
-                    printf("\n");
-                    goto input_restart;
-                } else if (ret == CHAR_CTRL_D) {
-                    // stop entering compound statement
-                    break;
-                }
+            if ((ret = pyexec_friendly_repl()) != 0) {
+                break;
             }
-        }
-
-        mp_hal_stdio_mode_orig();
-
-        ret = execute_from_lexer(LEX_SRC_VSTR, &line, parse_input_kind, true);
-        if (ret & FORCED_EXIT) {
-            return ret;
         }
     }
+    return ret;
 
     #else
 
     // use simple readline
+
+    mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
+    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
+    mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
 
     for (;;) {
         char *line = prompt((char *)mp_repl_get_ps1());
@@ -311,12 +241,40 @@ static int do_repl(void) {
     #endif
 }
 
+static inline int convert_pyexec_result(int ret) {
+    #if MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+    // With exit code handling enabled:
+    // pyexec returns exit code with PYEXEC_FORCED_EXIT flag set for SystemExit
+    // Unix port expects: 0 for success, non-zero for error/exit
+    if (ret & PYEXEC_FORCED_EXIT) {
+        // SystemExit: extract exit code from lower bits
+        return ret & 0xFF;
+    }
+    // Normal execution or exception: return as-is (0 for success, 1 for exception)
+    return ret;
+    #else
+    // pyexec returns 1 for success, 0 for exception, PYEXEC_FORCED_EXIT for SystemExit
+    // Convert to unix port's expected codes: 0 for success, 1 for exception, FORCED_EXIT|val for SystemExit
+    if (ret == 1) {
+        return 0; // success
+    } else if (ret & PYEXEC_FORCED_EXIT) {
+        return ret; // SystemExit with exit value in lower 8 bits
+    } else {
+        return 1; // exception
+    }
+    #endif
+}
+
 static int do_file(const char *file) {
-    return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);
+    return convert_pyexec_result(pyexec_file(file));
 }
 
 static int do_str(const char *str) {
-    return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
+    vstr_t vstr;
+    vstr.buf = (char *)str;
+    vstr.len = strlen(str);
+    int ret = pyexec_vstr(&vstr, true);
+    return convert_pyexec_result(ret);
 }
 
 static void print_help(char **argv) {
@@ -385,7 +343,7 @@ static void pre_process_options(int argc, char **argv) {
                 }
                 if (0) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
-                    compile_only = true;
+                    mp_compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
                 #if MICROPY_EMIT_NATIVE
