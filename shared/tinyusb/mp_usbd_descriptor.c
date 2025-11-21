@@ -182,23 +182,6 @@ size_t mp_usbd_get_descriptor_cfg_len(void) {
 }
 
 
-#if 0
-// Static descriptor for maximum possible configuration
-static const uint8_t mp_usbd_builtin_desc_cfg_max[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
-    TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_BUILTIN_MAX, USBD_STR_0, MP_USBD_BUILTIN_DESC_CFG_LEN,
-        0, USBD_MAX_POWER_MA),
-
-    #if CFG_TUD_CDC
-    TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
-        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
-    #endif
-    #if CFG_TUD_MSC
-    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, USBD_MSC_EP_OUT, USBD_MSC_EP_IN, USBD_MSC_IN_OUT_MAX_SIZE),
-    #endif
-};
-#endif
-
-
 // Dynamic descriptor buffer for runtime configuration
 static uint8_t mp_usbd_dynamic_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
 
