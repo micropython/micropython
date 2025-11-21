@@ -31,6 +31,13 @@ LDFLAGS += -nostdlib -T stm32f405.ld --gc-sections
 
 # Define the required source files.
 SRC_C += lib.c main.c system.c
+SRC_C += modmachine.c
+SRC_C += machine_uart.c
+SRC_C += machine_i2c.c
+SRC_C += machine_spi.c
+SRC_C += machine_pwm.c
+SRC_C += machine_adc.c
+SRC_C += machine_timer.c
 
 # Define the required object files.
 OBJ += $(PY_CORE_O)
