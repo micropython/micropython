@@ -1,0 +1,8 @@
+ADVANCED_EXAMPLES_MOD_DIR := $(USERMOD_DIR)
+
+# Add all C files to SRC_USERMOD
+SRC_USERMOD += $(ADVANCED_EXAMPLES_MOD_DIR)/buffer_example.c
+SRC_USERMOD += $(ADVANCED_EXAMPLES_MOD_DIR)/callback_example.c
+
+# Add include paths if needed
+CFLAGS_USERMOD += -I$(ADVANCED_EXAMPLES_MOD_DIR)

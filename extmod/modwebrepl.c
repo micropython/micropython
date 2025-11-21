@@ -197,7 +197,12 @@ static mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     if (self->state == STATE_PASSWD) {
         char c = *(char *)buf;
         if (c == '\r' || c == '\n') {
-            self->hdr.fname[self->data_to_recv] = 0;
+            // Bounds check before null termination to prevent buffer overflow
+            if (self->data_to_recv < sizeof(self->hdr.fname)) {
+                self->hdr.fname[self->data_to_recv] = 0;
+            } else {
+                self->hdr.fname[sizeof(self->hdr.fname) - 1] = 0;
+            }
             DEBUG_printf("webrepl: entered password: %s\n", self->hdr.fname);
 
             if (strcmp(self->hdr.fname, webrepl_passwd) != 0) {
@@ -208,7 +213,8 @@ static mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             self->state = STATE_NORMAL;
             self->data_to_recv = 0;
             write_webrepl_str(self->sock, SSTR(connected_prompt));
-        } else if (self->data_to_recv < 10) {
+        } else if (self->data_to_recv < sizeof(self->hdr.fname) - 1) {
+            // Use actual buffer size minus 1 for null terminator to prevent buffer overflow
             self->hdr.fname[self->data_to_recv++] = c;
         }
         return -2;

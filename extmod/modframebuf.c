@@ -672,8 +672,9 @@ static mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
             }
 
             // Sort the nodes left-to-right (bubble-sort for code size).
+            // Ensure n_nodes >= 2 before sorting to prevent array access issues
             i = 0;
-            while (i < n_nodes - 1) {
+            while (n_nodes >= 2 && i < n_nodes - 1) {
                 if (nodes[i] > nodes[i + 1]) {
                     mp_int_t swap = nodes[i];
                     nodes[i] = nodes[i + 1];
@@ -687,7 +688,8 @@ static mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
             }
 
             // Fill between each pair of nodes.
-            for (i = 0; i < n_nodes; i += 2) {
+            // Ensure we don't access out of bounds when accessing nodes[i + 1]
+            for (i = 0; i + 1 < n_nodes; i += 2) {
                 fill_rect(self, x + nodes[i], y + row, (nodes[i + 1] - nodes[i]) + 1, 1, col);
             }
         }

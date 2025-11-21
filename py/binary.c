@@ -303,7 +303,10 @@ long long mp_binary_get_int(size_t size, bool is_signed, bool big_endian, const 
     int delta;
     if (!big_endian) {
         delta = -1;
-        src += size - 1;
+        // Prevent pointer arithmetic underflow when size is 0
+        if (size > 0) {
+            src += size - 1;
+        }
     } else {
         delta = 1;
     }

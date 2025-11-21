@@ -116,6 +116,10 @@ static mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 return MP_OBJ_NULL; // op not supported
             }
             mp_obj_list_t *p = MP_OBJ_TO_PTR(rhs);
+            // Check for integer overflow before addition
+            if (o->len > SIZE_MAX - p->len) {
+                mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("list too large"));
+            }
             mp_obj_list_t *s = list_new(o->len + p->len);
             mp_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(s);
@@ -186,7 +190,9 @@ static mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_get_array(value, &value_len, &value_items);
         mp_int_t len_adj = value_len - (slice.stop - slice.start);
         if (len_adj > 0) {
-            if (self->len + len_adj > self->alloc) {
+            // Rewrite check to prevent integer overflow: self->len + len_adj > self->alloc
+            // becomes: len_adj > self->alloc - self->len
+            if ((size_t)len_adj > self->alloc - self->len) {
                 // TODO: Might optimize memory copies here by checking if block can
                 // be grown inplace or not
                 self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + len_adj);
@@ -242,6 +248,14 @@ static mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     if (mp_obj_is_type(arg_in, &mp_type_list)) {
         mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
         mp_obj_list_t *arg = MP_OBJ_TO_PTR(arg_in);
+
+        // Check for integer overflow before addition and memcpy size calculation
+        if (self->len > SIZE_MAX - arg->len - 4) {
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("list too large"));
+        }
+        if (arg->len > SIZE_MAX / sizeof(mp_obj_t)) {
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("list too large"));
+        }
 
         if (self->len + arg->len > self->alloc) {
             // TODO: use alloc policy for "4"

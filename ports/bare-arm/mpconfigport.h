@@ -40,8 +40,15 @@
 // Fine control over Python builtins, classes, modules, etc.
 #define MICROPY_PY_SYS                          (1)
 
-// Enable machine module
+// Enable machine module with full peripheral support
 #define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_PIN                  (1)
+#define MICROPY_PY_MACHINE_UART                 (1)
+#define MICROPY_PY_MACHINE_I2C                  (1)
+#define MICROPY_PY_MACHINE_SPI                  (1)
+#define MICROPY_PY_MACHINE_PWM                  (1)
+#define MICROPY_PY_MACHINE_ADC                  (1)
+#define MICROPY_PY_MACHINE_TIMER                (1)
 
 // Type definitions for the specific machine
 
