@@ -111,7 +111,10 @@ static mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
 }
 
 static mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
-    assert(n_args <= PROXY_MAX_ARGS);
+    // Runtime check instead of just assert to prevent buffer overflow in release builds
+    if (n_args > PROXY_MAX_ARGS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("too many arguments"));
+    }
     if (vfs == MP_VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);
@@ -376,8 +379,14 @@ mp_obj_t mp_vfs_getcwd(void) {
     }
     const char *cwd = mp_obj_str_get_str(cwd_o);
     vstr_t vstr;
-    vstr_init(&vstr, MP_STATE_VM(vfs_cur)->len + strlen(cwd) + 1);
-    vstr_add_strn(&vstr, MP_STATE_VM(vfs_cur)->str, MP_STATE_VM(vfs_cur)->len);
+    // Check for integer overflow in length calculation
+    size_t vfs_len = MP_STATE_VM(vfs_cur)->len;
+    size_t cwd_len = strlen(cwd);
+    if (vfs_len > SIZE_MAX - cwd_len - 1) {
+        mp_raise_OSError(ENAMETOOLONG);
+    }
+    vstr_init(&vstr, vfs_len + cwd_len + 1);
+    vstr_add_strn(&vstr, MP_STATE_VM(vfs_cur)->str, vfs_len);
     if (!(cwd[0] == '/' && cwd[1] == 0)) {
         vstr_add_str(&vstr, cwd);
     }

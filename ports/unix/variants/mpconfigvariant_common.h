@@ -115,6 +115,8 @@
 #define MICROPY_PY_MACHINE             (1)
 #define MICROPY_PY_MACHINE_PULSE       (1)
 #define MICROPY_PY_MACHINE_PIN_BASE    (1)
+// Hardware support for GPIO, I2C, SPI, PWM is provided by unix port specific implementations
+#define MICROPY_PY_MACHINE_PIN         (1)
 
 #define MICROPY_VFS_ROM                (1)
 #define MICROPY_VFS_ROM_IOCTL          (0)

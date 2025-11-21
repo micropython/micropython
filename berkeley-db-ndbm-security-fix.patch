@@ -1,0 +1,13 @@
+--- a/lib/berkeley-db-1.xx/hash/ndbm.c
++++ b/lib/berkeley-db-1.xx/hash/ndbm.c
+@@ -67,8 +67,8 @@ dbm_open(file, flags, mode)
+ 	info.cachesize = 0;
+ 	info.hash = NULL;
+ 	info.lorder = 0;
+-	(void)strcpy(path, file);
+-	(void)strcat(path, DBM_SUFFIX);
++	// Use snprintf instead of strcpy/strcat for bounds checking
++	snprintf(path, sizeof(path), "%s%s", file, DBM_SUFFIX);
+ 	return ((DBM *)__hash_open(path, flags, mode, &info, 0));
+ }
+

@@ -180,7 +180,7 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
 
     char *path = getenv("MICROPYBTUART");
     if (path != NULL) {
-        strcpy(uart_device_name, path);
+        snprintf(uart_device_name, sizeof(uart_device_name), "%s", path);
     }
     DEBUG_printf("mp_bluetooth_hci_uart_init: Using HCI UART: %s\n", uart_device_name);
 

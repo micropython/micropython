@@ -313,8 +313,11 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
 
         // Save connection info to re-connect if needed.
         self->security = security;
+        // Use strncpy with explicit null termination
         strncpy(self->key, key, NINA_MAX_WPA_LEN);
+        self->key[NINA_MAX_WPA_LEN] = '\0';
         strncpy(self->ssid, ssid, NINA_MAX_SSID_LEN);
+        self->ssid[NINA_MAX_SSID_LEN] = '\0';
         self->poll_enable = true;
         soft_timer_reinsert(&mp_wifi_poll_timer, NINAW10_POLL_INTERVAL);
     } else {

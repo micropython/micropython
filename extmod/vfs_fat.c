@@ -363,7 +363,13 @@ static mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
 
-    t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * SECSIZE(fatfs)); // f_bsize
+    // Calculate block size with overflow check
+    uint32_t block_size = fatfs->csize * SECSIZE(fatfs);
+    // Check if multiplication overflowed (basic overflow detection)
+    if (fatfs->csize != 0 && block_size / fatfs->csize != SECSIZE(fatfs)) {
+        mp_raise_OSError(EOVERFLOW);
+    }
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(block_size); // f_bsize
     t->items[1] = t->items[0]; // f_frsize
     t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2)); // f_blocks
     t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst); // f_bfree

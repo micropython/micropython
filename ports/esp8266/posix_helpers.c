@@ -44,6 +44,11 @@ void free(void *ptr) {
     gc_free(ptr);
 }
 void *calloc(size_t nmemb, size_t size) {
+    // Check for integer overflow before multiplication
+    if (size != 0 && nmemb > SIZE_MAX / size) {
+        errno = ENOMEM;
+        return NULL;
+    }
     return malloc(nmemb * size);
 }
 void *realloc(void *ptr, size_t size) {
