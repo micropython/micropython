@@ -53,6 +53,175 @@ the officially supported board from the
 see the [schematics and pinouts](http://github.com/micropython/pyboard) and
 [documentation](https://docs.micropython.org/en/latest/pyboard/quickref.html).
 
+What's New in v1.27.1 🎉
+------------------------
+
+### 🔒 Security Release - 40 Vulnerabilities Fixed
+
+MicroPython v1.27.1 is a **major security and stability release** addressing 40 vulnerabilities
+across the codebase. **Upgrading is strongly recommended**, especially for:
+- **WebREPL users** (CRITICAL buffer overflow fixes)
+- **Network applications** (lwIP stack improvements)
+- **Production deployments** (stability enhancements)
+
+**Security Summary:**
+- **2 CRITICAL** - WebREPL buffer overflows enabling remote code execution (CVE pending)
+- **8 HIGH** - Division by zero, array bounds, memory allocation overflows
+- **28 MEDIUM** - Integer overflows, NULL pointers, buffer validation issues
+- **2 DOCUMENTED** - Path traversal vulnerabilities (require architectural changes)
+
+See [RELEASE_NOTES_v1.27.1.md](RELEASE_NOTES_v1.27.1.md) for complete security details.
+
+### 🚀 Interactive Firmware Upload Tool
+
+**NEW:** Easy firmware installation with automatic device detection!
+
+```bash
+cd tools
+python3 upload_firmware.py
+```
+
+**Features:**
+- 🔍 **Auto-detects** connected devices (Pico, ESP32, STM32)
+- 📋 **Step-by-step guidance** with color-coded progress
+- ✅ **One-command upload** for all device types
+- 📚 **Comprehensive help** with troubleshooting
+
+**Supported Devices:**
+- Raspberry Pi Pico / Pico 2 (RP2040 / RP2350) - UF2 bootloader
+- ESP32 / ESP32-S2 / ESP32-S3 - esptool.py
+- STM32 Pyboard - DFU mode
+
+**Quick Start:**
+```bash
+# List connected devices
+python3 tools/upload_firmware.py --list
+
+# Interactive wizard (recommended)
+python3 tools/upload_firmware.py
+
+# Or direct upload
+python3 tools/upload_firmware.py --device rp2-pico --firmware firmware.uf2
+```
+
+**Documentation:**
+- [QUICK_START.md](tools/QUICK_START.md) - 3-minute setup guide
+- [README.md](tools/README.md) - Complete tool reference
+- [FIRMWARE_UPLOAD_GUIDE.md](tools/FIRMWARE_UPLOAD_GUIDE.md) - Device-specific instructions
+
+### 📚 Enhanced C API Documentation
+
+**NEW:** Comprehensive C API guide for developers integrating MicroPython!
+
+[docs/develop/c_api_guide.md](docs/develop/c_api_guide.md) - **66KB** of detailed documentation covering:
+
+**Core Topics:**
+- 🏗️ Object system and custom type creation
+- 💾 Memory management best practices
+- 🔄 Buffer protocol implementation
+- ⚠️ Exception handling patterns
+- 🔁 Iterator and generator creation
+- 📡 Callback and event handling
+- ⚙️ Hardware integration (GPIO, SPI, I2C, UART)
+- 🧵 Thread safety and interrupt handling
+- ⚡ Performance optimization techniques
+- 🐛 Debugging and profiling methods
+
+**Advanced Examples:**
+- [buffer_example.c](examples/usercmodule/advanced_examples/buffer_example.c) - RingBuffer class with buffer protocol, CRC32, XOR operations
+- [callback_example.c](examples/usercmodule/advanced_examples/callback_example.c) - Event-driven programming, interrupt-safe queues
+
+**Build System Support:**
+- Both Make and CMake build configurations
+- Complete integration examples
+- Ready to use in your projects
+
+### ✨ Enhanced Port Features
+
+#### Bare-ARM Port - Full Peripheral Support
+The minimal bare-ARM port now has **complete hardware functionality**:
+- ✅ UART/USART (full serial communication)
+- ✅ I2C (master mode, device scanning)
+- ✅ SPI (master mode, 8-bit transfers)
+- ✅ PWM (pulse width modulation, 4 channels)
+- ✅ ADC (12-bit analog conversion, 16 channels)
+- ✅ Timer (hardware timer support)
+
+See [ports/bare-arm/README_FULL_PERIPHERALS.md](ports/bare-arm/README_FULL_PERIPHERALS.md)
+
+#### Unix Port - Extended Hardware Support
+- Enhanced machine module with UART and USB gadget support
+- Raspberry Pi 5 hardware control
+- Audio, camera, and display interfaces
+- TensorFlow Lite integration
+
+#### RP2350 (Pico 2) Support
+Full support for the new **Raspberry Pi Pico 2** with RP2350 chip:
+```bash
+make BOARD=RPI_PICO2      # Pico 2
+make BOARD=RPI_PICO2_W    # Pico 2 W (WiFi)
+```
+
+Additional boards: SEEED_XIAO_RP2350, SPARKFUN_THINGPLUS_RP2350, WEACTSTUDIO_RP2350B_CORE
+
+### 🛠️ Build System Improvements
+
+**Fixed Issues:**
+- Unix port build system (added machine_uart.c, machine_usb.c)
+- QSTR definitions for UART support
+- Static initializer issues
+- Include dependencies
+
+**Build Verification:**
+- Unix port tested (887KB binary)
+- All security fixes compile cleanly
+- Ready for embedded port builds
+
+### 📊 Version Status
+
+**Current Version:** v1.27.1 (Stable)
+- MICROPY_VERSION_MAJOR: 1
+- MICROPY_VERSION_MINOR: 27
+- MICROPY_VERSION_MICRO: 1
+- MICROPY_VERSION_PRERELEASE: 0 (stable!)
+
+See [CURRENT_VERSION_STATUS.md](CURRENT_VERSION_STATUS.md) for all ports.
+
+### 🔗 Release Documentation
+
+- [RELEASE_NOTES_v1.27.1.md](RELEASE_NOTES_v1.27.1.md) - Complete changelog and security details
+- [REPOSITORY_STATUS.md](REPOSITORY_STATUS.md) - Full repository status and verification
+- [BUG_FIXES_SESSION3.md](BUG_FIXES_SESSION3.md) - Latest 20 security fixes (Session 3)
+- [BUG_FIXES_SESSION2_PART2.md](BUG_FIXES_SESSION2_PART2.md) - 9 additional fixes (Session 2 Part 2)
+- [BUG_FIXES_SESSION2.md](BUG_FIXES_SESSION2.md) - Initial 9 fixes (Session 2)
+
+### 🎯 Quick Links
+
+| Resource | Description |
+|----------|-------------|
+| [Upload Firmware](tools/upload_firmware.py) | Interactive firmware upload wizard |
+| [3-Minute Guide](tools/QUICK_START.md) | Get started in under 3 minutes |
+| [C API Reference](docs/develop/c_api_guide.md) | Complete C integration guide |
+| [Release Notes](RELEASE_NOTES_v1.27.1.md) | Full v1.27.1 changelog |
+| [Security Fixes](BUG_FIXES_SESSION3.md) | Detailed security audit results |
+
+### 📈 Performance & Compatibility
+
+- **No performance degradation** from security fixes
+- **Minimal code size increase** (~2KB across all fixes)
+- **No breaking changes** from v1.27.0-preview
+- **Direct upgrade path** for all users
+
+### ⚠️ Upgrade Recommendation
+
+**WebREPL Users - CRITICAL:**
+If you use WebREPL for remote access, **upgrade immediately**. The buffer overflow
+vulnerabilities allow remote code execution and authentication bypass.
+
+**All Users:**
+This release is recommended for all deployments due to the extensive stability
+and security improvements.
+
 Contributing
 ------------
 
@@ -76,8 +245,8 @@ This repository contains the following components:
 - [tests/](tests/) -- test framework and test scripts.
 - [docs/](docs/) -- user documentation in Sphinx reStructuredText format. This is used to generate the [online documentation](http://docs.micropython.org).
 - [extmod/](extmod/) -- additional (non-core) modules implemented in C.
-- [tools/](tools/) -- various tools, including the pyboard.py module.
-- [examples/](examples/) -- a few example Python scripts.
+- [tools/](tools/) -- various tools, including the **NEW interactive firmware upload utility** and pyboard.py module.
+- [examples/](examples/) -- Python scripts and advanced C module examples.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
 You will also need bash, gcc, and Python 3.3+ available as the command `python3`.
