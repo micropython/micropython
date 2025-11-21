@@ -1,5 +1,5 @@
 MicroPython \.\+ version
-Use \.\+
+Type "help()" for more information.
 >>> # test changing ps1/ps2
 >>> import sys
 >>> sys.ps1 = "PS1"
