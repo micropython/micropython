@@ -177,22 +177,8 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
     flashbdev_init();
-
-    // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
-    mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
-    int ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
-
-    if ((ret == -MP_ENODEV) || (ret == -MP_EIO)) {
-        pyexec_frozen_module("_mkfs.py", false); // Frozen script for formatting flash filesystem.
-        ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
-    }
-
-    if (ret != 0) {
-        printf("MPY: can't mount flash\n");
-    } else {
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
-    }
+    // Execute _boot.py to set up the filesystem.
+    pyexec_frozen_module("_boot.py", false);
     #endif
 
     #if MICROPY_MBFS
