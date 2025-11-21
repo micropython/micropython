@@ -84,7 +84,6 @@ static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, si
         o->base.type = &machine_usb_device_type;
 
         // Initialize fields common to both minimal and full modes
-        extern mp_usbd_class_state_t mp_usbd_class_state;
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         // Runtime mode: read current class state to reflect default CDC configuration
         o->builtin_driver = mp_usbd_class_state.flags;
@@ -213,12 +212,10 @@ static mp_obj_t usb_device_active(size_t n_args, const mp_obj_t *args) {
                 // Update class state based on current builtin_driver
                 if (mp_obj_is_type(usbd->builtin_driver, &mp_type_usb_builtin)) {
                     mp_obj_usb_builtin_t *builtin = MP_OBJ_TO_PTR(usbd->builtin_driver);
-                    extern mp_usbd_class_state_t mp_usbd_class_state;
                     mp_usbd_class_state.flags = builtin->flags;
                 }
             } else {
                 // Disable all classes when deactivating
-                extern mp_usbd_class_state_t mp_usbd_class_state;
                 mp_usbd_class_state.flags = USB_BUILTIN_FLAG_NONE;
             }
             #endif
@@ -413,13 +410,10 @@ static uint8_t mp_usbd_get_str_max(uint8_t flags) {
 }
 
 static const uint8_t *mp_usbd_get_builtin_desc_cfg(uint8_t flags) {
-    extern uint8_t mp_usbd_desc_cfg_buffer[];
-    extern const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer);
     return mp_usbd_generate_desc_cfg_unified(flags, mp_usbd_desc_cfg_buffer);
 }
 
 static size_t mp_usbd_get_desc_cfg_len(uint8_t flags) {
-    extern size_t mp_usbd_get_descriptor_cfg_len_from_flags(uint8_t flags);
     return mp_usbd_get_descriptor_cfg_len_from_flags(flags);
 }
 #endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
