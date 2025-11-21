@@ -29,6 +29,22 @@
 
 #include "py/mpconfig.h"
 
+#ifndef MICROPY_WRAP_TUD_SOF_CB
+#define MICROPY_WRAP_TUD_SOF_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_CDC_RX_CB
+#define MICROPY_WRAP_TUD_CDC_RX_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_CDC_LINE_STATE_CB
+#define MICROPY_WRAP_TUD_CDC_LINE_STATE_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_EVENT_HOOK_CB
+#define MICROPY_WRAP_TUD_EVENT_HOOK_CB(name) name
+#endif
+
 #if MICROPY_HW_ENABLE_USBDEV
 
 #include "py/obj.h"

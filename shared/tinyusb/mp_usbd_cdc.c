@@ -68,7 +68,7 @@ uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     return ret;
 }
 
-void tud_cdc_rx_cb(uint8_t itf) {
+void MICROPY_WRAP_TUD_CDC_RX_CB(tud_cdc_rx_cb)(uint8_t itf) {
     // consume pending USB data immediately to free usb buffer and keep the endpoint from stalling.
     // in case the ringbuffer is full, mark the CDC interface that need attention later on for polling
     cdc_itf_pending &= ~(1 << itf);
@@ -141,7 +141,7 @@ mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
     return i;
 }
 
-void tud_sof_cb(uint32_t frame_count) {
+void MICROPY_WRAP_TUD_SOF_CB(tud_sof_cb)(uint32_t frame_count) {
     if (--cdc_connected_flush_delay < 0) {
         // Finished on-connection delay, disable SOF interrupt again.
         tud_sof_cb_enable(false);
@@ -172,7 +172,7 @@ static struct {
 } prev_line_state = {0};
 #endif
 
-void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
+void MICROPY_WRAP_TUD_CDC_LINE_STATE_CB(tud_cdc_line_state_cb)(uint8_t itf, bool dtr, bool rts) {
     #if MICROPY_HW_USB_CDC && !MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC
     if (dtr) {
         // A host application has started to open the cdc serial port.
