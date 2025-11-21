@@ -131,66 +131,93 @@ R_RISCV_TLSDESC_CALL = 65
 # Architecture configuration
 
 
+def fit_signed(bits, value):
+    return (value >> bits) == 0 or (value >> bits) == -1
+
+
+# Note: all trampoline jump function arguments are raw offsets calculated from
+#       the start of the text segment with no relocation applied beforehand.
+
+
 def asm_jump_x86(entry):
-    return struct.pack("<BI", 0xE9, entry - 5)
+    return struct.pack("<BI", 0xE9, entry)
 
 
 def asm_jump_thumb(entry):
-    # This function must return the same number of bytes for the encoding of the jump
-    # regardless of the value of `entry`.
-    b_off = entry - 4
-    if b_off >> 11 == 0 or b_off >> 11 == -1:
+    if fit_signed(11, entry):
         # Signed value fits in 12 bits.
-        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
-        b1 = 0
-        b2 = 0
-        b3 = 0
+        b0 = 0xE000 | ((entry >> 1) & 0x07FF)
+        return struct.pack("<H", b0)
     else:
         # Use bl to do a large jump/call:
         #   push {r0, lr}
         #   bl <dest>
         #   pop {r0, pc}
-        b_off -= 2  # skip "push {r0, lr}"
+        entry += 2  # skip "push {r0, lr}"
         b0 = 0xB400 | 0x0100 | 0x0001  # push, lr, r0
-        b1 = 0xF000 | (((b_off) >> 12) & 0x07FF)
-        b2 = 0xF800 | (((b_off) >> 1) & 0x07FF)
+        b1 = 0xF000 | ((entry >> 12) & 0x07FF)
+        b2 = 0xF800 | ((entry >> 1) & 0x07FF)
         b3 = 0xBC00 | 0x0100 | 0x0001  # pop, pc, r0
-    return struct.pack("<HHHH", b0, b1, b2, b3)
+        return struct.pack("<HHHH", b0, b1, b2, b3)
 
 
 def asm_jump_thumb2(entry):
-    b_off = entry - 4
-    if b_off >> 11 == 0 or b_off >> 11 == -1:
+    if fit_signed(11, entry):
         # Signed value fits in 12 bits
-        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
-        b1 = 0
+        b0 = 0xE000 | ((entry >> 1) & 0x07FF)
+        return struct.pack("<H", b0)
     else:
         # Use large jump
-        b0 = 0xF000 | (b_off >> 12 & 0x07FF)
-        b1 = 0xB800 | (b_off >> 1 & 0x7FF)
-    return struct.pack("<HH", b0, b1)
+        b0 = 0xF000 | ((entry >> 12) & 0x07FF)
+        b1 = 0xB800 | ((entry >> 1) & 0x07FF)
+        return struct.pack("<HH", b0, b1)
 
 
 def asm_jump_xtensa(entry):
-    jump_offset = entry - 4
-    jump_op = jump_offset << 6 | 6
-    return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
+    if fit_signed(17, entry):
+        jump_op = (entry - 4) << 6 | 6
+        return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
+    else:
+        raise LinkError("Large jumps are not yet supported on Xtensa")
 
 
 def asm_jump_riscv(entry):
-    # This could be 6 bytes shorter, but the code currently cannot
-    # support a trampoline with varying length depending on the offset.
-
-    # auipc t6, HI(entry)
-    # jalr  zero, t6, LO(entry)
-    upper, lower = split_riscv_address(entry)
-    return struct.pack(
-        "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
-    )
+    if fit_signed(11, entry):
+        entry += 2
+        # c.j entry
+        return struct.pack(
+            "<H",
+            0xA001
+            | ((entry & 0x0E) << 2)
+            | ((entry & 0x300) << 1)
+            | ((entry & 0x800) << 1)
+            | ((entry & 0x400) >> 2)
+            | ((entry & 0x80) >> 1)
+            | ((entry & 0x40) << 1)
+            | ((entry & 0x20) >> 3)
+            | ((entry & 0x10) << 7),
+        )
+    else:
+        # auipc t6, HI(entry)
+        # jalr  zero, t6, LO(entry)
+        upper, lower = split_riscv_address(entry + 8)
+        return struct.pack(
+            "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
+        )
 
 
 class ArchData:
-    def __init__(self, name, mpy_feature, word_size, arch_got, asm_jump, *, separate_rodata=False):
+    def __init__(
+        self,
+        name,
+        mpy_feature,
+        word_size,
+        arch_got,
+        asm_jump,
+        *,
+        separate_rodata=False,
+        delayed_entry_offset=False,
+    ):
         self.name = name
         self.mpy_feature = mpy_feature
         self.qstr_entry_size = 2
@@ -198,6 +225,7 @@ class ArchData:
         self.arch_got = arch_got
         self.asm_jump = asm_jump
         self.separate_rodata = separate_rodata
+        self.delayed_entry_offset = delayed_entry_offset
 
 
 ARCH_DATA = {
@@ -249,6 +277,7 @@ ARCH_DATA = {
         4,
         (R_XTENSA_32, R_XTENSA_PLT),
         asm_jump_xtensa,
+        delayed_entry_offset=True,
     ),
     "xtensawin": ArchData(
         "EM_XTENSA",
@@ -257,6 +286,7 @@ ARCH_DATA = {
         (R_XTENSA_32, R_XTENSA_PLT),
         asm_jump_xtensa,
         separate_rodata=True,
+        delayed_entry_offset=True,
     ),
     "rv32imc": ArchData(
         "EM_RISCV",
@@ -427,6 +457,9 @@ class LinkEnv:
             s = self.known_syms[name]
             return s.section.addr + s["st_value"]
         raise LinkError("unknown symbol: {}".format(name))
+
+    def find_entry_addr(self):
+        return self.find_addr("mpy_init")
 
 
 def build_got_generic(env):
@@ -1248,8 +1281,13 @@ def link_objects(env, native_qstr_vals_len):
     if undef_errors:
         raise LinkError("\n".join(undef_errors))
 
+    # Generate the entry trampoline assuming the offset is already known.
+    env.entry_point = env.find_entry_addr()
+    jump = env.arch.asm_jump(env.entry_point)
+    env.entry_trampoline_len = len(jump)
+
     # Align sections, assign their addresses, and create full_text
-    env.full_text = bytearray(env.arch.asm_jump(8))  # dummy, to be filled in later
+    env.full_text = bytearray(jump)
     env.full_rodata = bytearray(0)
     env.full_bss = bytearray(0)
     for sec in env.sections:
@@ -1341,10 +1379,13 @@ class MPYOutput:
             self.write_uint(n)
 
 
-def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
-    # Write jump instruction to start of text
-    jump = env.arch.asm_jump(entry_offset)
-    env.full_text[: len(jump)] = jump
+def build_mpy(env, fmpy, native_qstr_vals):
+    # Rewrite the entry trampoline if the proper value isn't known earlier, and
+    # ensure the trampoline size remains the same.
+    if env.arch.delayed_entry_offset:
+        jump = env.arch.asm_jump(env.find_entry_addr())
+        env.full_text[: len(jump)] = jump
+        assert len(jump) == env.entry_trampoline_len
 
     log(LOG_LEVEL_1, "arch:         {}".format(env.arch.name))
     log(LOG_LEVEL_1, "text size:    {}".format(len(env.full_text)))
@@ -1512,7 +1553,7 @@ def do_link(args):
                     load_object_file(env, f, obj_name)
 
         link_objects(env, len(native_qstr_vals))
-        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals)
+        build_mpy(env, args.output, native_qstr_vals)
     except LinkError as er:
         print("LinkError:", er.args[0])
         sys.exit(1)
