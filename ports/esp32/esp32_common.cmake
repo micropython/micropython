@@ -66,14 +66,31 @@ list(APPEND MICROPY_SOURCE_SHARED
 )
 
 list(APPEND MICROPY_SOURCE_LIB
-    ${MICROPY_DIR}/lib/littlefs/lfs1.c
-    ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
-    ${MICROPY_DIR}/lib/littlefs/lfs2.c
-    ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
     ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
-    ${MICROPY_DIR}/lib/oofatfs/ff.c
-    ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
 )
+
+# Add filesystem sources based on configuration
+# These are typically enabled by default in mpconfigport.h but can be disabled
+if(NOT DEFINED MICROPY_VFS_FAT OR MICROPY_VFS_FAT)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/oofatfs/ff.c
+        ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+    )
+endif()
+
+if(MICROPY_VFS_LFS1)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/littlefs/lfs1.c
+        ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
+    )
+endif()
+
+if(NOT DEFINED MICROPY_VFS_LFS2 OR MICROPY_VFS_LFS2)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/littlefs/lfs2.c
+        ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
+    )
+endif()
 
 list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
