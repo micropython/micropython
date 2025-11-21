@@ -38,6 +38,11 @@
 #define SDCARD_SWITCH_1_8V_CAPACITY             ((uint32_t)0x01000000U)
 #define SDCARD_MAX_VOLT_TRIAL                   ((uint32_t)0x000000FFU)
 
+// Transfer status flags
+#define SDCARD_TRANSFER_CMD_COMPLETE            (1U << 0)
+#define SDCARD_TRANSFER_DATA_COMPLETE           (1U << 1)
+#define SDCARD_TRANSFER_ERROR                   (1U << 2)
+
 // Error
 #define SDCARD_STATUS_OUT_OF_RANGE_SHIFT        (31U)
 #define SDCARD_STATUS_ADDRESS_ERROR_SHIFT       (30U)
@@ -275,6 +280,20 @@ void sdcard_dummy_callback(USDHC_Type *base, void *userData) {
     return;
 }
 
+void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData) {
+    mimxrt_sdcard_obj_t *card = (mimxrt_sdcard_obj_t *)userData;
+
+    if (status == kStatus_USDHC_TransferDataComplete) {
+        card->state->transfer_status |= SDCARD_TRANSFER_DATA_COMPLETE;
+    } else if (status == kStatus_USDHC_SendCommandSuccess) {
+        card->state->transfer_status |= SDCARD_TRANSFER_CMD_COMPLETE;
+    } else if (status != kStatus_USDHC_BusyTransferring) {
+        card->state->transfer_error = status;
+        __DSB();  // Ensure error is visible before status flag
+        card->state->transfer_status |= SDCARD_TRANSFER_ERROR;
+    }
+}
+
 static void sdcard_error_recovery(USDHC_Type *base) {
     uint32_t status = 0U;
     /* get host present status */
@@ -306,23 +325,46 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
     dma_config.admaTable = sdcard_adma_descriptor_table;
     dma_config.admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE;
 
-    // Wait while the card is busy before a transfer
-    status = kStatus_Timeout;
-    for (int i = 0; i < timeout_ms * 100; i++) {
-        // Wait until Data0 is low any more. Low indicates "Busy".
-        if (((transfer->data->txData == NULL) && (transfer->data->rxData == NULL)) ||
-            (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
-            // Not busy anymore or no TX-Data
-            status = USDHC_TransferBlocking(base, &dma_config, transfer);
-            if (status != kStatus_Success) {
-                sdcard_error_recovery(base);
-            }
-            break;
-        }
-        ticks_delay_us64(10);
-    }
-    return status;
+    // Get the card object from handle's userData
+    mimxrt_sdcard_obj_t *card = (mimxrt_sdcard_obj_t *)handle->userData;
 
+    // Clear transfer status flags
+    card->state->transfer_status = 0;
+    card->state->transfer_error = kStatus_Success;
+
+    // Determine expected completion flags
+    uint32_t expected_flags = SDCARD_TRANSFER_CMD_COMPLETE;
+    if (transfer->data != NULL) {
+        expected_flags |= SDCARD_TRANSFER_DATA_COMPLETE;
+    }
+
+    // Start non-blocking transfer
+    status = USDHC_TransferNonBlocking(base, handle, &dma_config, transfer);
+    if (status != kStatus_Success) {
+        return status;
+    }
+
+    // Wait for transfer completion with timeout
+    // Read transfer_status into local variable to avoid race with ISR between condition checks
+    uint32_t start = mp_hal_ticks_ms();
+    uint32_t xfer_status;
+    while (((xfer_status = card->state->transfer_status) != expected_flags) &&
+           !(xfer_status & SDCARD_TRANSFER_ERROR) &&
+           (mp_hal_ticks_ms() - start) < timeout_ms) {
+        MICROPY_EVENT_POLL_HOOK;
+    }
+
+    if (xfer_status == 0) {
+        // Timeout - no status flags set
+        sdcard_error_recovery(base);
+        return kStatus_Timeout;
+    } else if (xfer_status != expected_flags) {
+        // Error occurred
+        sdcard_error_recovery(base);
+        return card->state->transfer_error;
+    }
+
+    return kStatus_Success;
 }
 
 static void sdcard_decode_csd(mimxrt_sdcard_obj_t *card, csd_t *csd) {
@@ -725,10 +767,11 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
         .CardRemoved = sdcard_card_removed_callback,
         .SdioInterrupt = sdcard_dummy_callback,
         .BlockGap = sdcard_dummy_callback,
+        .TransferComplete = sdcard_transfer_complete_callback,
         .ReTuning = sdcard_dummy_callback,
     };
 
-    USDHC_TransferCreateHandle(card->usdhc_inst, &card->handle, &callbacks, NULL);
+    USDHC_TransferCreateHandle(card->usdhc_inst, &card->handle, &callbacks, card);
 }
 
 void sdcard_deinit(mimxrt_sdcard_obj_t *card) {
@@ -987,7 +1030,7 @@ bool sdcard_power_on(mimxrt_sdcard_obj_t *card) {
 
 bool sdcard_power_off(mimxrt_sdcard_obj_t *card) {
     // Only send GO_IDLE_STATE command if card was successfully initialized
-    // Sending commands to a non-existent card will deadlock waiting for response
+    // Sending commands to a non-existent card can timeout/hang waiting for response
     if (card->state->initialized) {
         (void)sdcard_cmd_go_idle_state(card);
     }

@@ -57,6 +57,8 @@ typedef struct _mimxrt_sdcard_obj_pins_t {
 typedef volatile struct _mimxrt_sdcard_status_obj_t {
     bool initialized;
     bool inserted;
+    uint32_t transfer_status;
+    status_t transfer_error;
 } mimxrt_sdcard_status_obj_t;
 
 typedef struct _mimxrt_sdcard_obj_t {
