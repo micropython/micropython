@@ -198,30 +198,15 @@ Methods
    :func:`USBDevice.active` function to deactivate before setting if necessary
    (and again to activate after setting).
 
-   **Combining Built-in Drivers:**
-
-   Multiple built-in USB classes can be enabled simultaneously by combining
-   constants with the bitwise OR operator::
-
-       usb = machine.USBDevice()
-       usb.active(False)
-       # Enable both CDC and MSC
-       usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
-       usb.active(True)
-
-   The combined configuration will dynamically generate appropriate USB
-   descriptors containing only the selected classes.
-
    If this value is set to any value other than :data:`USBDevice.BUILTIN_NONE` then
    the following restrictions apply to the :func:`USBDevice.config` arguments:
 
    - ``desc_cfg`` should begin with the built-in USB interface descriptor data
      accessible via :data:`USBDevice.builtin_driver` attribute ``desc_cfg``.
-     The descriptor is dynamically generated based on the combination of classes
-     enabled. Descriptors appended after the built-in configuration descriptors
-     should use interface, string and endpoint numbers starting from the max
-     built-in values defined in :data:`USBDevice.builtin_driver` attributes
-     ``itf_max``, ``str_max`` and ``ep_max``.
+     Descriptors appended after the built-in configuration descriptors should use
+     interface, string and endpoint numbers starting from the max built-in values
+     defined in :data:`USBDevice.builtin_driver` attributes ``itf_max``, ``str_max``
+     and ``ep_max``.
 
    - The ``bNumInterfaces`` field in the built-in configuration
      descriptor will also need to be updated if any new interfaces
@@ -305,61 +290,10 @@ Constants
           Can be combined with other ``BUILTIN_`` constants using the bitwise
           OR operator (``|``).
 
-.. data:: USBDevice.BUILTIN_NCM
-
-          Constant representing the built-in USB NCM (network) driver.
-          Only available when ``MICROPY_HW_NETWORK_USBNET`` is enabled in the
-          firmware build. Can be combined with other ``BUILTIN_`` constants
-          using the bitwise OR operator (``|``).
-
-          .. note:: When NCM is disabled after being active, the network
-                    interface is automatically cleaned up.
-
-.. data:: USBDevice.BUILTIN_CDC_MSC
-
-          .. deprecated::
-             Use ``USBDevice.BUILTIN_CDC | USBDevice.BUILTIN_MSC`` instead.
-
-          Legacy constant for CDC and MSC combination. Provided for backward
-          compatibility only.
-
-**Combining Built-in Constants:**
-
-Built-in driver constants can be combined using the bitwise OR operator to
-create custom USB device configurations::
-
-    # CDC serial port only
-    usb.builtin_driver = USBDevice.BUILTIN_CDC
-
-    # CDC and MSC (serial + mass storage)
-    usb.builtin_driver = USBDevice.BUILTIN_CDC | USBDevice.BUILTIN_MSC
-
-    # All available interfaces
-    usb.builtin_driver = USBDevice.BUILTIN_CDC | USBDevice.BUILTIN_MSC | USBDevice.BUILTIN_NCM
-
-    # No built-in drivers (for fully custom USB devices)
-    usb.builtin_driver = USBDevice.BUILTIN_NONE
-
-The combined configuration dynamically generates the appropriate USB descriptors
-and updates the ``itf_max``, ``ep_max``, and ``str_max`` properties accordingly.
-
-Each constant object contains the following read-only fields:
-
-- ``itf_max`` - One more than the highest bInterfaceNumber value used
-  in the configuration. Dynamically calculated based on enabled classes.
-- ``ep_max`` - One more than the highest bEndpointAddress value used
-  in the configuration. Does not include any ``IN`` flag bit (0x80).
-  Dynamically calculated based on enabled classes.
-- ``str_max`` - One more than the highest string descriptor index
-  value used by any descriptor. Dynamically calculated.
-- ``desc_dev`` - ``bytes`` object containing the USB device descriptor.
-- ``desc_cfg`` - ``bytes`` object containing the complete USB
-  configuration descriptor for the enabled classes.
-
 Usage Examples
 --------------
 
-**Basic CDC Serial Port:**
+**Enable CDC only:**
 ::
 
     import machine
@@ -369,7 +303,7 @@ Usage Examples
     usb.builtin_driver = usb.BUILTIN_CDC
     usb.active(True)
 
-**CDC + Mass Storage:**
+**Enable both CDC and MSC:**
 ::
 
     import machine
@@ -378,149 +312,5 @@ Usage Examples
     usb.active(False)
     usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
     usb.active(True)
-
-**Network Device with Serial Console:**
-::
-
-    import machine
-
-    usb = machine.USBDevice()
-    usb.active(False)
-    # Enable both CDC for console and NCM for networking
-    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_NCM
-    usb.active(True)
-
-**Querying Current Configuration:**
-::
-
-    import machine
-
-    usb = machine.USBDevice()
-    usb.active(False)
-    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
-    usb.active(True)
-
-    # Check if specific class is enabled using bitwise AND
-    if usb.builtin_driver & usb.BUILTIN_CDC:
-        print("CDC is enabled")
-    if usb.builtin_driver & usb.BUILTIN_MSC:
-        print("MSC is enabled")
-
-    # Check for exact configuration using equality
-    if usb.builtin_driver == (usb.BUILTIN_CDC | usb.BUILTIN_MSC):
-        print("Both CDC and MSC are enabled")
-
-**Switching Configurations at Runtime:**
-::
-
-    import machine
-
-    usb = machine.USBDevice()
-
-    # Start with CDC only
-    usb.active(False)
-    usb.builtin_driver = usb.BUILTIN_CDC
-    usb.active(True)
-
-    # Later, add mass storage
-    usb.active(False)
-    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
-    usb.active(True)
-
-    # Remove MSC, add NCM
-    usb.active(False)
-    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_NCM
-    usb.active(True)
-
-**Custom VID/PID (Runtime Mode):**
-::
-
-    import machine
-
-    # Create custom device descriptor with your VID/PID
-    custom_device_desc = bytearray([
-        18,     # bLength
-        1,      # bDescriptorType (Device)
-        0x00, 0x02,  # bcdUSB (USB 2.0)
-        0x02,   # bDeviceClass (CDC)
-        0x00,   # bDeviceSubClass
-        0x00,   # bDeviceProtocol
-        64,     # bMaxPacketSize0
-        0x34, 0x12,  # idVendor (0x1234)
-        0x78, 0x56,  # idProduct (0x5678)
-        0x00, 0x01,  # bcdDevice (1.0)
-        1,      # iManufacturer
-        2,      # iProduct
-        3,      # iSerialNumber
-        1       # bNumConfigurations
-    ])
-
-    usb = machine.USBDevice()
-    usb.active(False)
-    usb.config(desc_dev=custom_device_desc)
-    usb.builtin_driver = usb.BUILTIN_CDC
-    usb.active(True)
-
-Dynamic VID/PID Configuration
------------------------------
-
-**Runtime VID/PID Properties (All Modes):**
-
-Both runtime and non-runtime USB device modes support dynamic VID/PID
-configuration using simple Python properties:
-
-::
-
-    import machine
-
-    usb = machine.USBDevice()
-    usb.active(False)
-
-    # Set custom VID/PID dynamically
-    usb.vid = 0x1234
-    usb.pid = 0x5678
-
-    usb.builtin_driver = usb.BUILTIN_CDC
-    usb.active(True)
-
-    # Check current values
-    print(f"VID: 0x{usb.vid:04X}, PID: 0x{usb.pid:04X}")
-
-    # Reset to firmware defaults
-    usb.active(False)
-    usb.vid = 0  # 0 means use builtin default
-    usb.pid = 0
-    usb.active(True)
-
-**Build-time VID/PID Override:**
-
-For additional customization, VID/PID defaults can be set at build time
-using the ``MICROPY_HW_USB_RUNTIME_VID`` and ``MICROPY_HW_USB_RUNTIME_PID``
-macros:
-
-**Override VID/PID at Build Time:**
-::
-
-    # Build with custom VID/PID
-    make CFLAGS_EXTRA="-DMICROPY_HW_USB_RUNTIME_VID=0x1234 -DMICROPY_HW_USB_RUNTIME_PID=0x5678"
-
-**Port-specific Configuration:**
-::
-
-    # In mpconfigport.h or boards/BOARD/mpconfigboard.h
-    #define MICROPY_HW_USB_RUNTIME_VID (0x1234)
-    #define MICROPY_HW_USB_RUNTIME_PID (0x5678)
-
-This allows customizing the USB VID/PID defaults even when ``MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE``
-is disabled and only built-in drivers are available. If not specified, these
-macros default to ``MICROPY_HW_USB_VID`` and ``MICROPY_HW_USB_PID``.
-
-**VID/PID Property Notes:**
-
-- Properties can only be set when ``usb.active`` is ``False``
-- Setting VID/PID to ``0`` uses the firmware default value
-- Valid range is 1-65535 (0x0001-0xFFFF)
-- Custom values persist across active()/inactive() cycles
-- Works in both runtime and non-runtime USB device modes
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme
