@@ -59,7 +59,7 @@ extern mp_obj_t machine_usb_singleton(void);
     { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&machine_display_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Audio), MP_ROM_PTR(&machine_audio_type) }, \
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) }, \
-    { MP_ROM_QSTR(MP_QSTR_USB), MP_ROM_PTR(machine_usb_singleton()) },
+    { MP_ROM_QSTR(MP_QSTR_USB), MP_ROM_PTR(&machine_usb_type) },
 
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);

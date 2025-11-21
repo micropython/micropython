@@ -223,6 +223,8 @@ SRC_C += \
 	machine_camera.c \
 	machine_display.c \
 	machine_audio.c \
+	machine_uart.c \
+	machine_usb.c \
 	mod_tflite.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
 

@@ -54,6 +54,9 @@ typedef struct _machine_usb_obj_t {
     char product[64];
 } machine_usb_obj_t;
 
+// Forward declaration
+extern const mp_obj_type_t machine_usb_type;
+
 static machine_usb_obj_t usb_gadget = {
     .base = {&machine_usb_type},
     .enabled = false,

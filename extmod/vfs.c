@@ -383,7 +383,7 @@ mp_obj_t mp_vfs_getcwd(void) {
     size_t vfs_len = MP_STATE_VM(vfs_cur)->len;
     size_t cwd_len = strlen(cwd);
     if (vfs_len > SIZE_MAX - cwd_len - 1) {
-        mp_raise_OSError(MP_ENAMETOOLONG);
+        mp_raise_OSError(ENAMETOOLONG);
     }
     vstr_init(&vstr, vfs_len + cwd_len + 1);
     vstr_add_strn(&vstr, MP_STATE_VM(vfs_cur)->str, vfs_len);

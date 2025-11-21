@@ -25,3 +25,15 @@
  */
 
 // *FORMAT-OFF*
+
+// UART constants
+Q(PARITY_NONE)
+Q(PARITY_EVEN)
+Q(PARITY_ODD)
+Q(FLOW_NONE)
+Q(FLOW_RTS_CTS)
+Q(FLOW_XON_XOFF)
+Q(flow)
+Q(txbuf)
+Q(rxbuf)
+Q(sendbreak)

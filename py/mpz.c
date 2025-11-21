@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "py/mpz.h"
+#include "py/runtime.h"
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 

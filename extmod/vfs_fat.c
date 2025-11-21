@@ -367,7 +367,7 @@ static mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
     uint32_t block_size = fatfs->csize * SECSIZE(fatfs);
     // Check if multiplication overflowed (basic overflow detection)
     if (fatfs->csize != 0 && block_size / fatfs->csize != SECSIZE(fatfs)) {
-        mp_raise_OSError(MP_EOVERFLOW);
+        mp_raise_OSError(EOVERFLOW);
     }
     t->items[0] = MP_OBJ_NEW_SMALL_INT(block_size); // f_bsize
     t->items[1] = t->items[0]; // f_frsize
