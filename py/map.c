@@ -65,22 +65,12 @@
 // The first set of sizes are chosen so the allocation fits exactly in a
 // 4-word GC block, and it's not so important for these small values to be
 // prime.  The latter sizes are prime and increase at an increasing rate.
-static const uint16_t hash_allocation_sizes[] = {
-    0, 2, 4, 6, 8, 10, 12, // +2
-    17, 23, 29, 37, 47, 59, 73, // *1.25
-    97, 127, 167, 223, 293, 389, 521, 691, 919, 1223, 1627, 2161, // *1.33
-    3229, 4831, 7243, 10861, 16273, 24407, 36607, 54907, // *1.5
-};
-
-static size_t get_hash_alloc_greater_or_equal_to(size_t x) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(hash_allocation_sizes); i++) {
-        if (hash_allocation_sizes[i] >= x) {
-            return hash_allocation_sizes[i];
-        }
+static size_t get_hash_alloc(size_t x) {
+    size_t n = 4;
+    while (n < x) {
+        n <<= 1;
     }
-    // ran out of primes in the table!
-    // return something sensible, at least make it odd
-    return (x + x / 2) | 1;
+    return n;
 }
 
 /******************************************************************************/
@@ -91,7 +81,7 @@ void mp_map_init(mp_map_t *map, size_t n) {
         map->alloc = 0;
         map->table = NULL;
     } else {
-        map->alloc = n;
+        map->alloc = get_hash_alloc(n);
         map->table = m_new0(mp_map_elem_t, map->alloc);
     }
     map->used = 0;
@@ -130,7 +120,7 @@ void mp_map_clear(mp_map_t *map) {
 
 static void mp_map_rehash(mp_map_t *map) {
     size_t old_alloc = map->alloc;
-    size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
+    size_t new_alloc = (old_alloc == 0) ? 4 : old_alloc * 2;
     DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, old_alloc, new_alloc);
     mp_map_elem_t *old_table = map->table;
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
@@ -249,7 +239,7 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
         hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
     }
 
-    size_t pos = hash % map->alloc;
+    size_t pos = hash & (map->alloc - 1);
     size_t start_pos = pos;
     mp_map_elem_t *avail_slot = NULL;
     for (;;) {
@@ -281,7 +271,7 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
                 // delete element in this slot
                 map->used--;
-                if (map->table[(pos + 1) % map->alloc].key == MP_OBJ_NULL) {
+                if (map->table[(pos + 1) & (map->alloc - 1)].key == MP_OBJ_NULL) {
                     // optimisation if next slot is empty
                     slot->key = MP_OBJ_NULL;
                 } else {
@@ -294,7 +284,7 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
         }
 
         // not yet found, keep searching in this table
-        pos = (pos + 1) % map->alloc;
+        pos = (pos + 1) & (map->alloc - 1);
 
         if (pos == start_pos) {
             // search got back to starting position, so index is not in table
@@ -312,7 +302,7 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
                     // not enough room in table, rehash it
                     mp_map_rehash(map);
                     // restart the search for the new element
-                    start_pos = pos = hash % map->alloc;
+                    start_pos = pos = hash & (map->alloc - 1);
                 }
             } else {
                 return NULL;
@@ -335,7 +325,7 @@ void mp_set_init(mp_set_t *set, size_t n) {
 static void mp_set_rehash(mp_set_t *set) {
     size_t old_alloc = set->alloc;
     mp_obj_t *old_table = set->table;
-    set->alloc = get_hash_alloc_greater_or_equal_to(set->alloc + 1);
+    set->alloc = (set->alloc == 0) ? 4 : set->alloc * 2;
     set->used = 0;
     set->table = m_new0(mp_obj_t, set->alloc);
     for (size_t i = 0; i < old_alloc; i++) {
@@ -358,7 +348,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
         }
     }
     mp_uint_t hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
-    size_t pos = hash % set->alloc;
+    size_t pos = hash & (set->alloc - 1);
     size_t start_pos = pos;
     mp_obj_t *avail_slot = NULL;
     for (;;) {
@@ -385,7 +375,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
             if (lookup_kind & MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
                 // delete element
                 set->used--;
-                if (set->table[(pos + 1) % set->alloc] == MP_OBJ_NULL) {
+                if (set->table[(pos + 1) & (set->alloc - 1)] == MP_OBJ_NULL) {
                     // optimisation if next slot is empty
                     set->table[pos] = MP_OBJ_NULL;
                 } else {
@@ -396,7 +386,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
         }
 
         // not yet found, keep searching in this table
-        pos = (pos + 1) % set->alloc;
+        pos = (pos + 1) & (set->alloc - 1);
 
         if (pos == start_pos) {
             // search got back to starting position, so index is not in table
@@ -410,7 +400,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
                     // not enough room in table, rehash it
                     mp_set_rehash(set);
                     // restart the search for the new element
-                    start_pos = pos = hash % set->alloc;
+                    start_pos = pos = hash & (set->alloc - 1);
                 }
             } else {
                 return MP_OBJ_NULL;
@@ -425,7 +415,7 @@ mp_obj_t mp_set_remove_first(mp_set_t *set) {
             mp_obj_t elem = set->table[pos];
             // delete element
             set->used--;
-            if (set->table[(pos + 1) % set->alloc] == MP_OBJ_NULL) {
+            if (set->table[(pos + 1) & (set->alloc - 1)] == MP_OBJ_NULL) {
                 // optimisation if next slot is empty
                 set->table[pos] = MP_OBJ_NULL;
             } else {

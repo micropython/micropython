@@ -1,0 +1,14 @@
+{
+    "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.stubPath": "stubs",
+    "python.analysis.extraPaths": [
+        "tools",
+        "ports/rp2",
+        "lib"
+    ],
+    "files.exclude": {
+        "**/*.mpy": true,
+        "**/__pycache__": true
+    }
+}

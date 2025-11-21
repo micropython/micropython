@@ -678,6 +678,18 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE (128)
 #endif
 
+// Use extra RAM to cache method lookups by remembering (type, attr) -> (method, self)
+// mappings. Avoids repeated MRO walks for the same method calls. Can provide significant
+// performance improvements for code with deep class hierarchies or frequent method calls.
+#ifndef MICROPY_OPT_METHOD_CACHE
+#define MICROPY_OPT_METHOD_CACHE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Number of entries in the method cache (must be power of 2).
+#ifndef MICROPY_OPT_METHOD_CACHE_SIZE
+#define MICROPY_OPT_METHOD_CACHE_SIZE (128)
+#endif
+
 // Whether to use fast versions of bitwise operations (and, or, xor) when the
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE

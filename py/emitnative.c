@@ -2017,6 +2017,9 @@ static void emit_native_jump(emit_t *emit, mp_uint_t label) {
     emit_native_pre(emit);
     // need to commit stack because we are jumping elsewhere
     need_stack_settled(emit);
+    if (emit->as->base.label_offsets[label] != (size_t)-1) {
+        emit_call(emit, MP_F_HANDLE_PENDING);
+    }
     ASM_JUMP(emit->as, label);
     emit_post(emit);
     mp_asm_base_suppress_code(&emit->as->base);

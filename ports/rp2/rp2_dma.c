@@ -471,7 +471,27 @@ void rp2_dma_init(void) {
 }
 
 void rp2_dma_deinit(void) {
-    // Remove our interrupt handler.
+    // Disable and unclaim all DMA channels
+    for (uint8_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
+        // Disable the channel
+        dma_channel_abort(channel);
+        
+        // Clean up interrupt handler
+        mp_irq_obj_t *irq = MP_STATE_PORT(rp2_dma_irq_obj[channel]);
+        if (irq) {
+            irq->parent = MP_OBJ_NULL;
+            irq->handler = MP_OBJ_NULL;
+            dma_channel_set_irq0_enabled(channel, false);
+        }
+        MP_STATE_PORT(rp2_dma_irq_obj[channel]) = MP_OBJ_NULL;
+        
+        // Unclaim the channel if it was claimed
+        if (dma_channel_is_claimed(channel)) {
+            dma_channel_unclaim(channel);
+        }
+    }
+    
+    // Remove our interrupt handler
     irq_remove_handler(DMA_IRQ_0, rp2_dma_irq_handler);
 }
 
