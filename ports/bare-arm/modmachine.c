@@ -30,6 +30,15 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+// Forward declarations for all peripheral types
+extern const mp_obj_type_t machine_pin_type;
+extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_spi_type;
+extern const mp_obj_type_t machine_pwm_type;
+extern const mp_obj_type_t machine_adc_type;
+extern const mp_obj_type_t machine_timer_type;
+
 // STM32F405 register definitions
 #define RCC_BASE      0x40023800
 #define GPIOA_BASE    0x40020000
@@ -220,6 +229,12 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     // Classes
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&machine_pwm_type) },
+    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&machine_adc_type) },
+    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
 
     // Functions
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
