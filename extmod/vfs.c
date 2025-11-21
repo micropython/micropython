@@ -111,7 +111,10 @@ static mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
 }
 
 static mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
-    assert(n_args <= PROXY_MAX_ARGS);
+    // Runtime check instead of just assert to prevent buffer overflow in release builds
+    if (n_args > PROXY_MAX_ARGS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("too many arguments"));
+    }
     if (vfs == MP_VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);
