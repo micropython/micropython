@@ -185,6 +185,85 @@ $ make BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT
 ```
 
 
+Building with user C modules
+-----------------------------
+
+The ESP32 port supports building with external C modules using the
+`USER_C_MODULES` variable.  For detailed information on creating user C
+modules, refer to the MicroPython documentation on
+[external C modules](../../docs/develop/cmodules.rst).
+
+To build the ESP32 port with user C modules, pass the `USER_C_MODULES`
+variable when running `make`.  The path should point to a `micropython.cmake`
+file that includes your modules:
+
+```bash
+$ make USER_C_MODULES=/path/to/modules/micropython.cmake
+```
+
+**Important notes on relative paths:**
+
+When using relative paths for `USER_C_MODULES`, the path is now resolved
+relative to the `ports/esp32` directory (where the build is invoked), not
+relative to the `ports/esp32/main` subdirectory as in previous versions.
+This change unifies path handling and fixes inconsistencies in the build
+system.
+
+For example, to build with the example user modules from the MicroPython
+repository:
+
+```bash
+$ cd ports/esp32
+$ make USER_C_MODULES=../../examples/usercmodule/micropython.cmake
+```
+
+Note: This is a breaking change from previous versions where you needed to
+use `../../../examples/usercmodule/micropython.cmake` (with an extra `..`)
+due to the path being resolved from the `main` subdirectory.
+
+**Using user C modules as ESP-IDF components:**
+
+User C modules can now optionally be treated as ESP-IDF components, enabling
+full integration with the ESP-IDF component dependency management system.
+This allows your module to:
+
+- Declare dependencies on other ESP-IDF components via `idf_component.yml`
+- Have those dependencies automatically downloaded and included in the build
+- Access APIs and headers from ESP-IDF managed components
+
+To use this feature, add two files to your user C module directory:
+
+1. `idf_component.yml` - declares the ESP-IDF component dependencies
+2. `CMakeLists.txt` - can be empty or minimal (the module will still be built
+   via the MicroPython build system)
+
+The build system will automatically detect these files and register your
+module directory with the ESP-IDF component manager before the main project
+configuration. This ensures that all dependencies are resolved and available
+during the build.
+
+Example directory structure:
+
+```
+my_module/
+├── idf_component.yml      # IDF component dependencies
+├── CMakeLists.txt          # Can be empty
+├── my_module.c             # Your module source
+└── micropython.cmake       # MicroPython build integration
+```
+
+Example `idf_component.yml`:
+
+```yaml
+dependencies:
+  espressif/esp-dsp: "^1.0.0"
+```
+
+The module is still built through the standard MicroPython user C module
+mechanism (via `micropython.cmake`), but can now access headers and
+libraries from ESP-IDF managed dependencies.
+
+
 Getting a Python prompt on the device
 -------------------------------------
 
