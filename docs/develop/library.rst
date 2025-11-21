@@ -28,12 +28,11 @@ Implementing a core module
 Like CPython, MicroPython has core builtin modules that can be accessed through import statements.
 An example is the ``gc`` module discussed in :ref:`memorymanagement`.
 
-.. code-block:: bash
+.. code-block:: python
 
-   >>> import gc
-   >>> gc.enable()
-   >>>
-
+   import gc
+   gc.enable()
+   
 MicroPython has several other builtin standard/core modules like ``io``, ``array`` etc.
 Adding a new core module involves several modifications.
 

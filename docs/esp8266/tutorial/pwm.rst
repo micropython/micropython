@@ -30,6 +30,7 @@ You can set the frequency and duty cycle using::
 Note that the duty cycle is between 0 (all off) and 1023 (all on), with 512
 being a 50% duty. Values beyond this min/max will be clipped. If you
 print the PWM object then it will tell you its current configuration::
+.. skip: next
 
     >>> pwm12
     PWM(12, freq=500, duty=512)

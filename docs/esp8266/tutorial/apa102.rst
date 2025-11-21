@@ -8,6 +8,7 @@ They can operate at a much higher data and PWM frequencies than NeoPixels and
 are more suitable for persistence-of-vision effects.
 
 To create an APA102 object do the following::
+.. skip: start
 
     >>> import machine, apa102
     >>> strip = apa102.APA102(machine.Pin(5), machine.Pin(4), 60)
@@ -36,7 +37,9 @@ Use the ``write()`` method to output the colours to the LEDs::
 
     >>> strip.write()
 
-Demonstration::
+Demonstration:
+
+.. code-block:: python
 
     import time
     import machine, apa102
@@ -89,3 +92,5 @@ Demonstration::
     # End: Turn off all the LEDs
     strip.fill((0, 0, 0, 0))
     strip.write()
+
+.. skip: end

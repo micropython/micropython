@@ -3,6 +3,10 @@ The accelerometer
 
 Here you will learn how to read the accelerometer and signal using LEDs states like tilt left and tilt right.
 
+.. invisible-code-block: python
+
+    import pyb
+
 Using the accelerometer
 -----------------------
 
@@ -13,7 +17,6 @@ pyb.Accel() object and then call the x() method. ::
 
     >>> accel = pyb.Accel()
     >>> accel.x()
-    7
 
 This returns a signed integer with a value between around -30 and 30. Note that
 the measurement is very noisy, this means that even if you keep the board
