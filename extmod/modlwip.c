@@ -873,8 +873,14 @@ static mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     struct pbuf *p = socket->incoming.tcp.pbuf;
 
     // Bounds check to prevent integer underflow
-    if (socket->recv_offset > p->len) {
+    // Add NULL check before accessing p->len
+    if (p == NULL || socket->recv_offset > p->len) {
         socket->recv_offset = 0;
+    }
+    if (p == NULL) {
+        // No data available
+        *_errno = MP_EAGAIN;
+        return MP_STREAM_ERROR;
     }
     mp_uint_t remaining = p->len - socket->recv_offset;
     if (len > remaining) {
@@ -1399,7 +1405,8 @@ static mp_obj_t lwip_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
                 // way to determine how much data, if any, was successfully sent." Then, the
                 // most useful behavior is: check whether we will be able to send all of input
                 // data without EAGAIN, and if won't be, raise it without sending any.
-                if (bufinfo.len > tcp_sndbuf(socket->pcb.tcp)) {
+                // Check for NULL pcb before calling tcp_sndbuf
+                if (socket->pcb.tcp == NULL || bufinfo.len > tcp_sndbuf(socket->pcb.tcp)) {
                     mp_raise_OSError(MP_EAGAIN);
                 }
             }
