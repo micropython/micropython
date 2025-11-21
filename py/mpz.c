@@ -505,19 +505,31 @@ static void mpn_div(mpz_dig_t *num_dig, size_t *num_len, const mpz_dig_t *den_di
     for (mpz_dig_t *num = num_dig, carry = 0; num < num_dig + *num_len; ++num) {
         mpz_dig_t n = *num;
         *num = ((n << norm_shift) | carry) & DIG_MASK;
-        carry = (mpz_dbl_dig_t)n >> (DIG_SIZE - norm_shift);
+        // Prevent undefined behavior from shift overflow
+        if (norm_shift >= DIG_SIZE) {
+            carry = 0;
+        } else {
+            carry = (mpz_dbl_dig_t)n >> (DIG_SIZE - norm_shift);
+        }
     }
 
     // cache the leading digit of the denominator
     lead_den_digit = (mpz_dbl_dig_t)den_dig[den_len - 1] << norm_shift;
     if (den_len >= 2) {
-        lead_den_digit |= (mpz_dbl_dig_t)den_dig[den_len - 2] >> (DIG_SIZE - norm_shift);
+        // Prevent shift overflow
+        if (norm_shift < DIG_SIZE) {
+            lead_den_digit |= (mpz_dbl_dig_t)den_dig[den_len - 2] >> (DIG_SIZE - norm_shift);
+        }
     }
 
     // point num_dig to last digit in numerator
     num_dig += *num_len - 1;
 
     // calculate number of digits in quotient
+    // Check for integer underflow
+    if (*num_len < den_len) {
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("invalid division parameters"));
+    }
     *quo_len = *num_len - den_len;
 
     // point to last digit to store for quotient
@@ -528,6 +540,11 @@ static void mpn_div(mpz_dig_t *num_dig, size_t *num_len, const mpz_dig_t *den_di
         mpz_dbl_dig_t quo = ((mpz_dbl_dig_t)*num_dig << DIG_SIZE) | num_dig[-1];
 
         // get approximate quotient
+        // Defensive check: lead_den_digit should never be zero due to normalization,
+        // but check anyway to prevent division by zero
+        if (lead_den_digit == 0) {
+            mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
+        }
         quo /= lead_den_digit;
 
         // Multiply quo by den and subtract from num to get remainder.
