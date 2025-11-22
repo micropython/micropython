@@ -55,6 +55,12 @@ static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t bloc
     args[4] = MP_OBJ_NEW_SMALL_INT(block_off); // ignored for n_args == 2
     mp_obj_t ret = mp_call_method_n_kw(n_args, 0, args);
 
+    // Verify that user code didn't resize the buffer (e.g., via buf[:] = larger_array)
+    // This would cause memory corruption as the buffer is fixed-size
+    if (ar.len != len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("block device operation must not resize buffer"));
+    }
+
     if (ret == mp_const_none) {
         return 0;
     } else {
