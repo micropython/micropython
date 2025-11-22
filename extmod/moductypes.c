@@ -651,14 +651,54 @@ MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof
 // bytearray_at()
 // Capture memory at given address of given size as bytearray.
 static mp_obj_t uctypes_struct_bytearray_at(mp_obj_t ptr, mp_obj_t size) {
-    return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void *)(uintptr_t)mp_obj_int_get_truncated(ptr));
+    mp_int_t addr_signed = mp_obj_get_int(ptr);
+    mp_int_t size_val = mp_obj_int_get_truncated(size);
+
+    // Validate address: reject negative addresses (which convert to huge unsigned values)
+    if (addr_signed < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address: negative"));
+    }
+
+    uintptr_t addr = (uintptr_t)addr_signed;
+
+    // Reject NULL pointer
+    if (addr == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address: NULL pointer"));
+    }
+
+    // Check for address + size overflow
+    if (size_val > 0 && addr > (uintptr_t)(UINTPTR_MAX - size_val)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address: range overflow"));
+    }
+
+    return mp_obj_new_bytearray_by_ref(size_val, (void *)addr);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytearray_at);
 
 // bytes_at()
 // Capture memory at given address of given size as bytes.
 static mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
-    return mp_obj_new_bytes((void *)(uintptr_t)mp_obj_int_get_truncated(ptr), mp_obj_int_get_truncated(size));
+    mp_int_t addr_signed = mp_obj_get_int(ptr);
+    mp_int_t size_val = mp_obj_int_get_truncated(size);
+
+    // Validate address: reject negative addresses (which convert to huge unsigned values)
+    if (addr_signed < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address: negative"));
+    }
+
+    uintptr_t addr = (uintptr_t)addr_signed;
+
+    // Reject NULL pointer
+    if (addr == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address: NULL pointer"));
+    }
+
+    // Check for address + size overflow
+    if (size_val > 0 && addr > (uintptr_t)(UINTPTR_MAX - size_val)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid address: range overflow"));
+    }
+
+    return mp_obj_new_bytes((void *)addr, size_val);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
