@@ -2445,6 +2445,10 @@ static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_argument) {
                 #if MICROPY_PY_ASSIGN_EXPR
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_argument_3)) {
+                    if (n_keyword > 0) {
+                        compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("positional arg after keyword arg"));
+                        return;
+                    }
                     compile_namedexpr_helper(comp, pns_arg->nodes[0], ((mp_parse_node_struct_t *)pns_arg->nodes[1])->nodes[0]);
                     n_positional++;
                 } else
