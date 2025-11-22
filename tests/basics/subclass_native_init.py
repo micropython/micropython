@@ -75,3 +75,14 @@ a = L(range(5))
 print(a)
 a.reinit()
 print(a)
+
+# test that corrupted self in __init__ raises TypeError instead of segfault
+# (see issue #17728)
+class BadList(list):
+    def __init__(self, n):
+        self = n  # corrupt local self variable
+        super().__init__([])
+try:
+    BadList(42)
+except TypeError:
+    print("TypeError")
