@@ -3,7 +3,12 @@
     "allow": [
       "Bash(git fetch:*)",
       "Bash(git merge:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
