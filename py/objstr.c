@@ -386,6 +386,10 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return mp_const_empty_bytes;
             }
         }
+        // Check for integer overflow in size calculation
+        if (lhs_len > SIZE_MAX / (size_t)n) {
+            mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("string too long"));
+        }
         vstr_t vstr;
         vstr_init_len(&vstr, lhs_len * n);
         mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, vstr.buf);
