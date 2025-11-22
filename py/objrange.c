@@ -112,17 +112,29 @@ static mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
 
 static mp_int_t range_len(mp_obj_range_t *self) {
     // When computing length, need to take into account step!=1 and step<0.
-    mp_int_t len = self->stop - self->start + self->step;
+    // Use unsigned arithmetic to avoid signed integer overflow with large values.
+    mp_uint_t len;
     if (self->step > 0) {
-        len -= 1;
+        // Positive step: range is [start, stop)
+        if (self->stop <= self->start) {
+            len = 0;
+        } else {
+            // len = ceil((stop - start) / step) = ((stop - start) - 1) / step + 1
+            mp_uint_t diff = (mp_uint_t)(self->stop - self->start);
+            len = (diff - 1) / (mp_uint_t)self->step + 1;
+        }
     } else {
-        len += 1;
+        // Negative step: range is [start, stop) going backwards
+        if (self->stop >= self->start) {
+            len = 0;
+        } else {
+            // len = ceil((start - stop) / abs(step)) = ((start - stop) - 1) / abs(step) + 1
+            mp_uint_t diff = (mp_uint_t)(self->start - self->stop);
+            mp_uint_t abs_step = (mp_uint_t)(-self->step);
+            len = (diff - 1) / abs_step + 1;
+        }
     }
-    len = len / self->step;
-    if (len < 0) {
-        len = 0;
-    }
-    return len;
+    return (mp_int_t)len;
 }
 
 static mp_obj_t range_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
