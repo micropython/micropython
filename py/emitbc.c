@@ -353,7 +353,9 @@ bool mp_emit_bc_end_pass(emit_t *emit) {
     }
 
     // check stack is back to zero size
-    assert(emit->stack_size == 0);
+    if (emit->stack_size != 0) {
+        mp_raise_msg(&mp_type_SyntaxError, MP_ERROR_TEXT("invalid syntax"));
+    }
 
     // Calculate size of source code info section
     emit->n_info = emit->code_info_offset - emit->n_info;
