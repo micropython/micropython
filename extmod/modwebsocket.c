@@ -144,7 +144,10 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
             case FRAME_OPT: {
                 if (self->buf_pos & 2) { // to_recv was 2 or 6
-                    assert(self->buf_pos == 2 || self->buf_pos == 6);
+                    // Validate frame option buffer state
+                    if (self->buf_pos != 2 && self->buf_pos != 6) {
+                        mp_raise_ValueError(MP_ERROR_TEXT("invalid websocket frame"));
+                    }
                     // First two bytes are message length. Technically the size must be at least 126 per RFC6455
                     // but MicroPython skips checking that.
                     self->msg_sz = (self->buf[0] << 8) | self->buf[1];
