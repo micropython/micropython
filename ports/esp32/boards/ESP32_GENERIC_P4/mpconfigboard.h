@@ -22,11 +22,7 @@
 
 #define MICROPY_PY_MACHINE_I2S          (1)
 
-// Disable all networking, Wi-Fi and Bluetooth by default, these are re-enabled in the WIFI variants
-// (note the ESP32-P4 also has an ethernet MAC, not currently supported in MicroPython)
-#ifndef MICROPY_PY_NETWORK
-#define MICROPY_PY_NETWORK (0)
-#endif
+// Disable Wi-Fi and Bluetooth by default, these are re-enabled in the WIFI variants
 #ifndef MICROPY_PY_NETWORK_WLAN
 #define MICROPY_PY_NETWORK_WLAN         (0)
 #endif
