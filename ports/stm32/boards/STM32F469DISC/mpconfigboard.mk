@@ -2,7 +2,7 @@
 MCU_SERIES = f4
 CMSIS_MCU = STM32F469xx
 MICROPY_FLOAT_IMPL = double
-AF_FILE = boards/stm32f469_af.csv
+AF_FILE = boards/stm32f479_af.csv
 
 ifeq ($(USE_MBOOT),1)
 # When using Mboot all the text goes together after the filesystem
