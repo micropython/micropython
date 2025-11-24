@@ -542,6 +542,9 @@
 #define MICROPY_HW_MAX_UART (10)
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32N6
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+
 // Configuration for STM32U5 series
 #elif defined(STM32U5)
 
