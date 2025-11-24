@@ -31,6 +31,7 @@
 
 #include "py/lexer.h"
 #include "py/frozenmod.h"
+#include "py/gc.h"
 
 #if MICROPY_MODULE_FROZEN
 
@@ -131,5 +132,24 @@ mp_import_stat_t mp_find_frozen_module(const char *str, int *frozen_type, void *
 
     return MP_IMPORT_STAT_NO_EXIST;
 }
+
+#if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+void mp_gc_collect_frozen_globals(void) {
+    const char *nameptr = mp_frozen_names;
+
+    #if MICROPY_MODULE_FROZEN_STR && MICROPY_MODULE_FROZEN_MPY
+    for (const uint32_t *s = mp_frozen_str_sizes; *s && *nameptr; ++s) {
+        nameptr += strlen(nameptr) + 1;
+    }
+    #endif
+    for (size_t i = 0; *nameptr; i++) {
+        void *globals = *mp_frozen_mpy_content[i]->globals_ref;
+        if (globals) {
+            gc_collect_root(&globals, 1);
+        }
+        nameptr += strlen(nameptr) + 1;
+    }
+}
+#endif
 
 #endif // MICROPY_MODULE_FROZEN
