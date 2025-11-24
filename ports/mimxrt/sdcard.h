@@ -99,7 +99,7 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk);
 void sdcard_deinit(mimxrt_sdcard_obj_t *card);
 void sdcard_init_pins(mimxrt_sdcard_obj_t *card);
 bool sdcard_read(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num, uint32_t block_count);
-bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num, uint32_t block_count);
+bool sdcard_write(mimxrt_sdcard_obj_t *card, const uint8_t *buffer, uint32_t block_num, uint32_t block_count);
 bool sdcard_set_active(mimxrt_sdcard_obj_t *card);
 bool sdcard_volt_validation(mimxrt_sdcard_obj_t *card);
 bool sdcard_power_on(mimxrt_sdcard_obj_t *self);

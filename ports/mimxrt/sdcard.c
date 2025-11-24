@@ -867,10 +867,18 @@ void sdcard_init_pins(mimxrt_sdcard_obj_t *card) {
     }
 }
 
+// Note on buffer alignment: The cache operations extend to 32-byte (cache line) boundaries.
+// For buffers that are part of larger structures, this could affect adjacent memory.
+// The MicroPython VFS layer typically provides properly allocated buffers that are safe.
+// DMA requires 4-byte alignment which is checked implicitly by the hardware.
 bool sdcard_read(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num, uint32_t block_count) {
     if (!card->state->initialized) {
         return false;
     }
+
+    // Ensure cache is flushed and invalidated so when DMA updates RAM
+    // from the peripheral, the CPU reads the new data.
+    MP_HAL_CLEANINVALIDATE_DCACHE(buffer, block_count * card->block_len);
 
     usdhc_data_t data = {
         .enableAutoCommand12 = true,
@@ -900,16 +908,22 @@ bool sdcard_read(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num,
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
+        // Invalidate cache again after DMA completes to discard any speculative
+        // cache line fills that may have occurred during the transfer.
+        MP_HAL_CLEANINVALIDATE_DCACHE(buffer, block_count * card->block_len);
         return true;
     } else {
         return false;
     }
 }
 
-bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num, uint32_t block_count) {
+bool sdcard_write(mimxrt_sdcard_obj_t *card, const uint8_t *buffer, uint32_t block_num, uint32_t block_count) {
     if (!card->state->initialized) {
         return false;
     }
+
+    // Ensure cache is flushed to RAM so DMA can read the correct data.
+    MP_HAL_CLEAN_DCACHE(buffer, block_count * card->block_len);
 
     usdhc_data_t data = {
         .enableAutoCommand12 = true,

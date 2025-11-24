@@ -104,12 +104,10 @@ static mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, 
     mp_buffer_info_t bufinfo;
     mimxrt_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-
-    if (sdcard_read(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_DEFAULT_BLOCK_SIZE)) {
-        return MP_OBJ_NEW_SMALL_INT(0);
-    } else {
-        return MP_OBJ_NEW_SMALL_INT(-MP_EIO);
+    if (!sdcard_read(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_DEFAULT_BLOCK_SIZE)) {
+        mp_raise_OSError(MP_EIO);
     }
+    return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_readblocks_obj, machine_sdcard_readblocks);
 
@@ -142,13 +140,11 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_sdcard_info_obj, machine_sdcard_info);
 static mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mimxrt_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-
-    if (sdcard_write(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_DEFAULT_BLOCK_SIZE)) {
-        return MP_OBJ_NEW_SMALL_INT(0);
-    } else {
-        return MP_OBJ_NEW_SMALL_INT(-MP_EIO);
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    if (!sdcard_write(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_DEFAULT_BLOCK_SIZE)) {
+        mp_raise_OSError(MP_EIO);
     }
+    return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_writeblocks_obj, machine_sdcard_writeblocks);
 
