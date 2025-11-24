@@ -235,6 +235,7 @@ set(PICO_SDK_COMPONENTS
     pico_flash
     pico_multicore
     pico_platform
+    pico_platform_common
     pico_platform_compiler
     pico_platform_panic
     pico_platform_sections
