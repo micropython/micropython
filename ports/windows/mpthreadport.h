@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2021 Andrew Leech
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_WINDOWS_SLEEP_H
-#define MICROPY_INCLUDED_WINDOWS_SLEEP_H
 
-void init_sleep(void);
-void deinit_sleep(void);
-// The main sleep implementation for the Windows port.
-void msec_sleep(double msec);
+typedef void *mp_thread_mutex_t;  // win32 HANDLE
 
-// Define usleep() because some of the unix port's code uses that.
-// Mingw and the likes provide a definition of usleep(), note however
-// that it's also just Sleep(usec/1000).
-#ifdef _MSC_VER
-int usleep(__int64 usec);
-#endif
+void mp_thread_init(void);
+void mp_thread_deinit(void);
+void mp_thread_gc_others(void);
 
-#endif // MICROPY_INCLUDED_WINDOWS_SLEEP_H
+// Windows version of "enable/disable IRQs".
+// Functions as a port-global lock for any code that must be serialised.
+void mp_thread_windows_begin_atomic_section(void);
+void mp_thread_windows_end_atomic_section(void);
