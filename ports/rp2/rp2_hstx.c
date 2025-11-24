@@ -148,7 +148,20 @@ static mp_obj_t rp2_hstx_unpack_ctrl(mp_obj_t value_obj, rp2_hstx_ctrl_field_t *
 }
 
 void rp2_hstx_init(void) {
-    // Nothing to do, can probably remove this
+    // Check whether FIFO contains data
+    if (hstx_fifo_hw->stat & HSTX_FIFO_STAT_LEVEL_BITS) {
+        // Enable HSTX, wait for FIFO to drain, then disable HSTX
+        hstx_ctrl_hw->csr = DEFAULT_HSTX_CSR | HSTX_CTRL_CSR_EN_BITS;
+        while (hstx_fifo_hw->stat & HSTX_FIFO_STAT_LEVEL_BITS) {
+        }
+        hstx_ctrl_hw->csr = DEFAULT_HSTX_CSR;
+    }
+
+    // Check if the WOF flag is set
+    if (hstx_fifo_hw->stat & HSTX_FIFO_STAT_WOF_BITS) {
+        // Clear the WOF flag
+        hstx_fifo_hw->stat = HSTX_FIFO_STAT_WOF_BITS;
+    }
 }
 
 void rp2_hstx_deinit(void) {
