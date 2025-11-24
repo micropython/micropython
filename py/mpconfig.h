@@ -1787,6 +1787,13 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_SYS_SETTRACE (0)
 #endif
 
+// When MICROPY_PY_SYS_SETTRACE is enabled, whether to have separate VMs for the
+// no-tracing and tracing cases, so that bytecode execution is slowed down only when
+// a tracing function is enabled.
+#ifndef MICROPY_PY_SYS_SETTRACE_DUAL_VM
+#define MICROPY_PY_SYS_SETTRACE_DUAL_VM (0)
+#endif
+
 // Whether to provide "sys.getsizeof" function
 #ifndef MICROPY_PY_SYS_GETSIZEOF
 #define MICROPY_PY_SYS_GETSIZEOF (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)

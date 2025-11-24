@@ -36,6 +36,12 @@
 #include "py/bc0.h"
 #include "py/profile.h"
 
+#ifndef MICROPY_VM_IS_STATIC
+#define MICROPY_VM_IS_STATIC (0)
+#endif
+
+#if !MICROPY_PY_SYS_SETTRACE_DUAL_VM || MICROPY_VM_IS_STATIC
+
 // *FORMAT-OFF*
 
 #if 0
@@ -197,7 +203,7 @@
 
 #if MICROPY_PY_BUILTINS_SLICE
 // This function is marked "no inline" so it doesn't increase the C stack usage of the main VM function.
-MP_NOINLINE static mp_obj_t *build_slice_stack_allocated(byte op, mp_obj_t *sp, mp_obj_t step) {
+MP_NOINLINE static mp_obj_t *MICROPY_WRAP_MP_EXECUTE_BYTECODE(build_slice_stack_allocated)(byte op, mp_obj_t *sp, mp_obj_t step) {
     mp_obj_t stop = sp[2];
     mp_obj_t start = sp[1];
     mp_obj_slice_t slice = { .base = { .type = &mp_type_slice }, .start = start, .stop = stop, .step = step };
@@ -217,6 +223,9 @@ MP_NOINLINE static mp_obj_t *build_slice_stack_allocated(byte op, mp_obj_t *sp, 
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in state[0]
+#if MICROPY_VM_IS_STATIC
+static
+#endif
 mp_vm_return_kind_t MICROPY_WRAP_MP_EXECUTE_BYTECODE(mp_execute_bytecode)(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
 
 #define SELECTIVE_EXC_IP (0)
@@ -873,7 +882,7 @@ unwind_jump:;
                         // in no allocations at all.  We can't do this for instance types because
                         // the get/set/delattr implementation may keep a reference to the slice.
                         byte op = *ip++;
-                        sp = build_slice_stack_allocated(op, sp - 2, step);
+                        sp = MICROPY_WRAP_MP_EXECUTE_BYTECODE(build_slice_stack_allocated)(op, sp - 2, step);
                     } else {
                         mp_obj_t stop = POP();
                         mp_obj_t start = TOP();
@@ -1514,3 +1523,5 @@ unwind_loop:
         }
     }
 }
+
+#endif // !MICROPY_PY_SYS_SETTRACE_DUAL_VM || MICROPY_VM_IS_STATIC
