@@ -25,8 +25,8 @@ MEMORY
 {
     FLASH(rx) : ORIGIN = 0x10000000, LENGTH = __micropy_flash_size__
     RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 256k
-    SCRATCH_X(rwx) : ORIGIN = 0x20040000, LENGTH = 4k
-    SCRATCH_Y(rwx) : ORIGIN = 0x20041000, LENGTH = 4k
+    SCRATCH_X(rwx) : ORIGIN = 0x20040000, LENGTH = 0k
+    SCRATCH_Y(rwx) : ORIGIN = 0x20040000, LENGTH = 8k
 }
 
 ENTRY(_entry_point)
@@ -216,7 +216,7 @@ SECTIONS
     {
         __end__ = .;
         end = __end__;
-        *(.heap*)
+        KEEP(*(.heap*))
         __HeapLimit = .;
     } > RAM
 
@@ -231,11 +231,11 @@ SECTIONS
      */
     .stack1_dummy (COPY):
     {
-        *(.stack1*)
+        KEEP(*(.stack1*))
     } > SCRATCH_X
     .stack_dummy (COPY):
     {
-        *(.stack*)
+        KEEP(*(.stack*))
     } > SCRATCH_Y
 
     .flash_end : {
