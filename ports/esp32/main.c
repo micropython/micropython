@@ -34,6 +34,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_cache.h"
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "esp_task.h"
@@ -295,6 +296,20 @@ static void esp_native_code_free_all(void) {
 }
 
 void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
+    #if SOC_CPU_IDRAM_SPLIT_USING_PMP && !CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT
+    // On targets with this configuration all RAM is executable.
+    // So just do the native relocation (if needed) and flush the D-cache.
+
+    if (reloc) {
+        mp_native_relocate(reloc, buf, (uintptr_t)buf);
+    }
+    esp_cache_msync(buf, len, ESP_CACHE_MSYNC_FLAG_UNALIGNED | ESP_CACHE_MSYNC_FLAG_DIR_C2M);
+    return buf;
+
+    #else
+    // On targets with this configuration only certain RAM is executable.
+    // So reallocate executable RAM for the native code and copy it across.
+
     len = (len + 3) & ~3;
     size_t len_node = sizeof(native_code_node_t) + len;
     native_code_node_t *node = heap_caps_malloc(len_node, MALLOC_CAP_EXEC);
@@ -316,4 +331,6 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     }
     memcpy(p, buf, len);
     return p;
+
+    #endif
 }
