@@ -242,6 +242,8 @@ static bool sdcard_cmd_send_csd(mimxrt_sdcard_obj_t *card, csd_t *csd);
 static bool sdcard_cmd_select_card(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_blocklen(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *sdcard, usdhc_data_bus_width_t bus_width);
+static bool sdcard_cmd_send_status(mimxrt_sdcard_obj_t *card);
+static bool sdcard_wait_ready(mimxrt_sdcard_obj_t *card, uint32_t timeout_ms);
 
 void sdcard_card_inserted_callback(USDHC_Type *base, void *userData) {
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL
@@ -704,6 +706,54 @@ static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *card, usdhc_data_bus_w
     }
 }
 
+static bool sdcard_cmd_send_status(mimxrt_sdcard_obj_t *card) {
+    status_t status;
+    usdhc_command_t command = {
+        .index = SDCARD_CMD_SEND_STATUS,
+        .argument = (card->rca << 16),
+        .type = kCARD_CommandTypeNormal,
+        .responseType = kCARD_ResponseTypeR1,
+        .responseErrorFlags = SDMMC_R1_ALL_ERROR_FLAG,
+    };
+    usdhc_transfer_t transfer = {
+        .data = NULL,
+        .command = &command,
+    };
+
+    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+
+    if (status == kStatus_Success) {
+        card->status = command.response[0];
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool sdcard_wait_ready(mimxrt_sdcard_obj_t *card, uint32_t timeout_ms) {
+    uint32_t start = mp_hal_ticks_ms();
+
+    while ((mp_hal_ticks_ms() - start) < timeout_ms) {
+        if (!sdcard_cmd_send_status(card)) {
+            return false;
+        }
+
+        // Check if card is ready for data (bit 8) and in transfer state (bits 9-12 == 4)
+        uint32_t card_state = SDMMC_R1_CURRENT_STATE(card->status);
+        bool ready_for_data = (card->status & SDMMC_MASK(SDCARD_STATUS_READY_FOR_DATA_SHIFT)) != 0;
+
+        if (ready_for_data && (card_state == SDCARD_STATE_TRANSFER)) {
+            return true;
+        }
+
+        // Allow other MicroPython tasks to run while polling
+        MICROPY_EVENT_POLL_HOOK;
+        mp_hal_delay_ms(1);  // Wait 1ms between polls
+    }
+
+    return false;  // Timeout
+}
+
 static bool sdcard_reset(mimxrt_sdcard_obj_t *card) {
     card->block_len = SDCARD_DEFAULT_BLOCK_SIZE;
     card->rca = 0UL;
@@ -887,12 +937,19 @@ bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num
 
     status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 3000);
 
-    if (status == kStatus_Success) {
-        card->status = command.response[0];
-        return true;
-    } else {
+    if (status != kStatus_Success) {
         return false;
     }
+
+    card->status = command.response[0];
+
+    // Wait for the card to complete programming the data to flash.
+    // The transfer above only ensures the data has been sent to the card's buffer.
+    if (!sdcard_wait_ready(card, 5000)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool sdcard_set_active(mimxrt_sdcard_obj_t *card) {
@@ -916,7 +973,7 @@ bool sdcard_probe_bus_voltage(mimxrt_sdcard_obj_t *card) {
         /* Get operating voltage*/
         valid_voltage = (((card->oper_cond >> 31U) == 1U) ? true : false);
         count++;
-        ticks_delay_us64(1000);
+        mp_hal_delay_ms(1);
     }
 
     if (count >= SDCARD_MAX_VOLT_TRIAL) {
