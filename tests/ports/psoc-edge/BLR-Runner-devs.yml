@@ -1,5 +1,2 @@
-- board_type: KIT_PSE84_AI
-  board_list:
-    - sn: 0F16025A012D2400
-      hw_ext: 0.6.0.a
-    
+- name: KIT_PSE84_AI
+  uid: 0F16025A012D2400
