@@ -38,6 +38,7 @@ VALID_FEATURES = {
     "Microphone",
     "PoE",
     "RGB LED",
+    "RGB WS2812B LED",
     "Secure Element",
 }
 
