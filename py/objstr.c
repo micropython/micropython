@@ -945,14 +945,23 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
 static mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
     GET_STR_DATA_LEN(str_in, str, str_len);
     mp_uint_t width = mp_obj_get_int(width_in);
-    if (str_len >= width) {
+
+    // Get character length (not byte length) for proper unicode handling
+    size_t str_charlen = str_len;
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    if (mp_obj_get_type(str_in) == &mp_type_str) {
+        str_charlen = utf8_charlen(str, str_len);
+    }
+    #endif
+
+    if (str_charlen >= width) {
         return str_in;
     }
 
     vstr_t vstr;
-    vstr_init_len(&vstr, width);
-    memset(vstr.buf, ' ', width);
-    int left = (width - str_len) / 2;
+    vstr_init_len(&vstr, width + (str_len - str_charlen));  // Adjust for multi-byte characters
+    memset(vstr.buf, ' ', vstr.len);
+    int left = (width - str_charlen) / 2;
     memcpy(vstr.buf + left, str, str_len);
     return mp_obj_new_str_type_from_vstr(mp_obj_get_type(str_in), &vstr);
 }

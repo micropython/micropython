@@ -590,15 +590,24 @@ static mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             byte *p = *(void **)self->addr;
             if (mp_obj_is_small_int(t->items[1])) {
                 uint val_type = GET_TYPE(MP_OBJ_SMALL_INT_VALUE(t->items[1]), VAL_TYPE_BITS);
-                return get_aligned(val_type, p, index);
+                if (value == MP_OBJ_SENTINEL) {
+                    return get_aligned(val_type, p, index);
+                } else {
+                    set_aligned(val_type, p, index, value);
+                    return value; // just !MP_OBJ_NULL
+                }
             } else {
-                mp_uint_t dummy = 0;
-                mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
-                o->desc = t->items[1];
-                o->addr = p + size * index;
-                o->flags = self->flags;
-                return MP_OBJ_FROM_PTR(o);
+                if (value == MP_OBJ_SENTINEL) {
+                    mp_uint_t dummy = 0;
+                    mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
+                    mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
+                    o->desc = t->items[1];
+                    o->addr = p + size * index;
+                    o->flags = self->flags;
+                    return MP_OBJ_FROM_PTR(o);
+                } else {
+                    return MP_OBJ_NULL; // op not supported
+                }
             }
         }
 

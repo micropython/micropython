@@ -403,6 +403,9 @@ static mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t ar
 static mp_obj_t ssl_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
     mp_obj_t sock = o->sock;
+    if (sock == MP_OBJ_NULL) {
+        mp_raise_OSError(MP_EBADF);
+    }
     mp_obj_t dest[3];
     mp_load_method(sock, MP_QSTR_setblocking, dest);
     dest[2] = flag_in;

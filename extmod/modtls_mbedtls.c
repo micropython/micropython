@@ -822,6 +822,9 @@ static mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 static mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
     mp_obj_t sock = o->sock;
+    if (sock == MP_OBJ_NULL) {
+        mp_raise_OSError(MP_EBADF);
+    }
     mp_obj_t dest[3];
     mp_load_method(sock, MP_QSTR_setblocking, dest);
     dest[2] = flag_in;
