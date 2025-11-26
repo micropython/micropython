@@ -13,10 +13,11 @@
         "JST-PH"
     ],
     "images": [
+        "soldered-nula-mini-esp32c6.jpg"
     ],
     "mcu": "esp32c6",
     "product": "NULA Mini",
     "thumbnail": "",
-    "url": "https://soldered.com",
+    "url": "https://soldered.com/product/nula-mini-esp32-c6/",
     "vendor": "Soldered Electronics"
 }
