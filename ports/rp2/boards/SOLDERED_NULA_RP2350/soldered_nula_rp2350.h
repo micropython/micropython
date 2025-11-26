@@ -57,19 +57,19 @@
 
 // --- SPI ---
 #ifndef PICO_DEFAULT_SPI
-#define PICO_DEFAULT_SPI 0
+#define PICO_DEFAULT_SPI 1
 #endif
 #ifndef PICO_DEFAULT_SPI_SCK_PIN
-#define PICO_DEFAULT_SPI_SCK_PIN 4
+#define PICO_DEFAULT_SPI_SCK_PIN 32
 #endif
 #ifndef PICO_DEFAULT_SPI_TX_PIN
-#define PICO_DEFAULT_SPI_TX_PIN 3
+#define PICO_DEFAULT_SPI_TX_PIN 33
 #endif
 #ifndef PICO_DEFAULT_SPI_RX_PIN
-#define PICO_DEFAULT_SPI_RX_PIN 2
+#define PICO_DEFAULT_SPI_RX_PIN 34
 #endif
 #ifndef PICO_DEFAULT_SPI_CSN_PIN
-#define PICO_DEFAULT_SPI_CSN_PIN 1
+#define PICO_DEFAULT_SPI_CSN_PIN 40
 #endif
 
 // --- FLASH ---
@@ -102,12 +102,6 @@
 #define PICO_SD_DAT_PIN_COUNT 1
 #endif
 
-// The GPIO Pin used to monitor VSYS. Typically you would use this with ADC.
-// There is an example in adc/read_vsys in pico-examples.
-#ifndef PICO_VSYS_PIN
-#define PICO_VSYS_PIN 46
-#endif
-
 // pico_cmake_set_default PICO_RP2350_A2_SUPPORTED = 1
 #ifndef PICO_RP2350_A2_SUPPORTED
 #define PICO_RP2350_A2_SUPPORTED 1
@@ -117,17 +111,6 @@
 
 #ifndef CYW43_WL_GPIO_COUNT
 #define CYW43_WL_GPIO_COUNT 3
-#endif
-
-#ifndef CYW43_WL_GPIO_LED_PIN
-#define CYW43_WL_GPIO_LED_PIN 0
-#endif
-
-// If CYW43_WL_GPIO_VBUS_PIN is defined then a CYW43 GPIO has to be used to read VBUS.
-// This can be passed to cyw43_arch_gpio_get to determine if the device is battery powered.
-// PICO_VBUS_PIN and CYW43_WL_GPIO_VBUS_PIN should not both be defined.
-#ifndef CYW43_WL_GPIO_VBUS_PIN
-#define CYW43_WL_GPIO_VBUS_PIN 2
 #endif
 
 // cyw43 SPI pins can't be changed at runtime

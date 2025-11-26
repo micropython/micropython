@@ -16,16 +16,16 @@
 #define MICROPY_HW_USB_PID (0x10EC)
 
 // UART0
-#define MICROPY_HW_UART0_TX  (0)
-#define MICROPY_HW_UART0_RX  (1)
-#define MICROPY_HW_UART0_CTS (30)
-#define MICROPY_HW_UART0_RTS (31)
+#define MICROPY_HW_UART0_TX  (6)
+#define MICROPY_HW_UART0_RX  (7)
+#define MICROPY_HW_UART0_CTS (10)
+#define MICROPY_HW_UART0_RTS (11)
 
 // UART1
-#define MICROPY_HW_UART1_TX  (40)
-#define MICROPY_HW_UART1_RX  (41)
-#define MICROPY_HW_UART1_CTS (42)
-#define MICROPY_HW_UART1_RTS (43)
+#define MICROPY_HW_UART1_TX  (41)
+#define MICROPY_HW_UART1_RX  (42)
+#define MICROPY_HW_UART1_CTS (43)
+#define MICROPY_HW_UART1_RTS (44)
 
 // I2C0
 #define MICROPY_HW_I2C0_SCL  (9)
@@ -41,9 +41,9 @@
 #define MICROPY_HW_SPI0_MISO (0)
 
 // SPI1
-#define MICROPY_HW_SPI1_SCK  (10)
-#define MICROPY_HW_SPI1_MOSI (11)
-#define MICROPY_HW_SPI1_MISO (8)
+#define MICROPY_HW_SPI1_SCK  (32)
+#define MICROPY_HW_SPI1_MOSI (33)
+#define MICROPY_HW_SPI1_MISO (34)
 
 // #include "enable_cyw43.h"
 
