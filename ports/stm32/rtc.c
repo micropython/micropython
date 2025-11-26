@@ -134,19 +134,27 @@ void rtc_init_start(bool force_init) {
     if (!force_init) {
         bool rtc_running = false;
         #if defined(STM32N6)
+        // Note: the low-level boot on the N6 seems to always enable the RTC and the LSI, and
+        // switch the RTC to LSI mode.  So the logic below needs to account for that:
+        // - if LSE is ready then switch back to the LSE
+        // - even if LSI is ready, don't use it if the board is configured to use LSE
+        uint32_t rtc_clock_source = LL_RCC_GetRTCClockSource();
         if (LL_RCC_IsEnabledRTC()
-            && LL_RCC_GetRTCClockSource() == LL_RCC_RTC_CLKSOURCE_LSE
             && LL_RCC_LSE_IsReady()) {
             // LSE is enabled & ready --> no need to (re-)init RTC
             rtc_running = true;
+            if (rtc_clock_source != LL_RCC_RTC_CLKSOURCE_LSE) {
+                LL_RCC_SetRTCClockSource(LL_RCC_RTC_CLKSOURCE_LSE);
+            }
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
             __HAL_RCC_CLEAR_RESET_FLAGS();
             // provide some status information
             rtc_info |= 0x40000;
-        } else if (LL_RCC_IsEnabledRTC()
-                   && LL_RCC_GetRTCClockSource() == LL_RCC_RTC_CLKSOURCE_LSI) {
+        } else if (!rtc_use_lse
+                   && LL_RCC_IsEnabledRTC()
+                   && rtc_clock_source == LL_RCC_RTC_CLKSOURCE_LSI) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
             rtc_running = true;
             // remove Backup Domain write protection
