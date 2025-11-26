@@ -15,10 +15,11 @@
         "Battery Charging"
     ],
     "images": [
+        "soldered-nula-rp2350.jpg"
     ],
     "mcu": "rp2350",
     "product": "Soldered NULA RP2350",
     "thumbnail": "",
-    "url": "",
+    "url": "https://soldered.com/product/nula-max-rp2350/",
     "vendor": "Soldered Electronics"
 }
