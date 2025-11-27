@@ -1,0 +1,26 @@
+{
+    "deploy": [
+        "../deploy_mimxrt.md"
+    ],
+    "docs": "",
+    "features": [
+        "Audio Codec",
+        "CAN",
+        "Camera",
+        "Display",
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "External RAM",
+        "IMU",
+        "RGB LED",
+        "USB",
+        "microSD"
+    ],
+    "images": [],
+    "mcu": "mimxrt",
+    "product": "phyBOARD-RT1170 Development Kit",
+    "thumbnail": "",
+    "url": "https://www.phytec.com/product/phyboard-rt1170-development-kit/",
+    "vendor": "PHYTEC"
+}
