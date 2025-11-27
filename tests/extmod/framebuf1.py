@@ -70,7 +70,7 @@ for mapping in maps.keys():
 
     # line steep negative gradient
     fbuf.fill(0)
-    fbuf.line(3, 3, 2, 1, 1)
+    fbuf.line(3, 3, 2, 0, 1)
     print("line", buf)
 
     # scroll

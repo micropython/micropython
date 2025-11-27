@@ -2111,6 +2111,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_FRAMEBUF (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to support alpha blending in framebuf module
+#ifndef MICROPY_PY_FRAMEBUF_ALPHA
+#define MICROPY_PY_FRAMEBUF_ALPHA (MICROPY_PY_FRAMEBUF && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 #ifndef MICROPY_PY_BTREE
 #define MICROPY_PY_BTREE (0)
 #endif
