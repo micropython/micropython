@@ -57,10 +57,6 @@
 #include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "extmod/vfs.h"
-#if MICROPY_PY_BLUETOOTH
-#include "extmod/modbluetooth.h"
-#include "mpbthciport.h"
-#endif
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 

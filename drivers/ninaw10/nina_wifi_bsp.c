@@ -71,6 +71,7 @@ int nina_bsp_init(void) {
 
     #ifdef MICROPY_HW_NINA_GPIO0
     mp_hal_pin_input(MICROPY_HW_NINA_GPIO0);
+    mp_hal_pin_write(MICROPY_HW_NINA_GPIO0, 0);
     #endif
 
     // Initialize SPI.
@@ -113,13 +114,11 @@ int nina_bsp_atomic_exit(void) {
     return 0;
 }
 
+#ifdef MICROPY_HW_NINA_GPIO0
 int nina_bsp_read_irq(void) {
-    #ifdef MICROPY_HW_NINA_GPIO0
     return mp_hal_pin_read(MICROPY_HW_NINA_GPIO0);
-    #else
-    return 1;
-    #endif
 }
+#endif
 
 int nina_bsp_spi_slave_select(uint32_t timeout) {
     // Wait for ACK to go low.
