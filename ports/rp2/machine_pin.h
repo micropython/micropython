@@ -40,7 +40,7 @@ enum {
 
 typedef struct _machine_pin_af_obj_t {
     mp_obj_base_t base;
-    qstr name;
+    qstr_short_t name;
     uint8_t idx     : 4;
     uint8_t fn      : 4;
     uint8_t unit    : 8;
@@ -48,7 +48,7 @@ typedef struct _machine_pin_af_obj_t {
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
-    qstr name;
+    qstr_short_t name;
     uint8_t id                  : 6;
     #if MICROPY_HW_PIN_EXT_COUNT
     uint8_t is_ext              : 1;
