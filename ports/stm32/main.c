@@ -611,13 +611,8 @@ soft_reset:
     pyb_can_init0();
     #endif
 
-    #if MICROPY_HW_ENABLE_USB
-    #if MICROPY_HW_TINYUSB_STACK
-    pyb_usbd_init();
-    mp_usbd_init();
-    #else
+    #if MICROPY_HW_STM_USB_STACK && MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
-    #endif
     #endif
 
     #if MICROPY_PY_MACHINE_I2S
@@ -688,6 +683,10 @@ soft_reset:
         #endif
         pyb_usb_dev_init(pyb_usb_dev_detect(), MICROPY_HW_USB_VID, pid, mode, 0, NULL, NULL);
     }
+    #endif
+
+    #if MICROPY_HW_TINYUSB_STACK && MICROPY_HW_ENABLE_USBDEV
+    mp_usbd_init();
     #endif
 
     #if MICROPY_HW_HAS_MMA7660

@@ -32,6 +32,7 @@
 #include "usbd_core.h"
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "irq.h"
 #include "usb.h"
 
@@ -334,7 +335,12 @@ static void mp_usbd_ll_init_hs(void) {
 
 #if MICROPY_HW_TINYUSB_STACK
 
-void pyb_usbd_init(void) {
+void mp_usbd_ll_init(void) {
+    // Only initialize the USB hardware once.
+    if (tusb_inited()) {
+        return;
+    }
+
     #if MICROPY_HW_USB_FS
     mp_usbd_ll_init_fs();
     #endif
