@@ -1,3 +1,8 @@
+/* This file is part of the MicroPython project, http://micropython.org/
+ * The MIT License (MIT)
+ * Copyright (c) 2019 Damien P. George
+ */
+
 #include "py/mphal.h"
 #include "storage.h"
 
