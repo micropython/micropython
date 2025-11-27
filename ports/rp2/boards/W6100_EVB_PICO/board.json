@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "W6100-EVB-Pico.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "W6100-EVB-Pico",
+    "thumbnail": "",
+    "url": "https://docs.wiznet.io/Product/iEthernet/W6100/w6100-evb-pico",
+    "vendor": "WIZnet"
+}
