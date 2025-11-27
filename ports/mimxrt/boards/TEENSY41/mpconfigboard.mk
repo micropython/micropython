@@ -17,8 +17,5 @@ USE_UF2_BOOTLOADER = 1
 MICROPY_PY_NETWORK = 1
 MICROPY_PY_NETWORK_ESP_HOSTED = 1
 
-MICROPY_PY_BLUETOOTH = 1
-MICROPY_BLUETOOTH_NIMBLE = 1
-
 deploy: $(BUILD)/firmware.hex
 	teensy_loader_cli --mcu=imxrt1062 -v -w $<
