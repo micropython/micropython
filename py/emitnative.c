@@ -282,17 +282,13 @@ struct _emit_t {
     ASM_T *as;
 };
 
-#ifndef REG_ZERO
-#define REG_ZERO REG_TEMP0
-#define ASM_CLR_REG(state, rd) ASM_XOR_REG_REG(state, rd, rd)
-#endif
-
-#if N_RV32
+#ifdef REG_ZERO
 #define ASM_MOV_LOCAL_MP_OBJ_NULL(as, local_num, reg_temp) \
     ASM_MOV_LOCAL_REG(as, local_num, REG_ZERO)
 #else
+#define REG_ZERO REG_TEMP0
 #define ASM_MOV_LOCAL_MP_OBJ_NULL(as, local_num, reg_temp) \
-    ASM_MOV_REG_IMM(as, reg_temp, (mp_uint_t)MP_OBJ_NULL); \
+    ASM_CLR_REG(as, reg_temp); \
     ASM_MOV_LOCAL_REG(as, local_num, reg_temp)
 #endif
 
@@ -1145,7 +1141,7 @@ static void emit_native_leave_exc_stack(emit_t *emit, bool start_of_handler) {
             // Optimisation: PC is already cleared by global exc handler
             return;
         }
-        ASM_XOR_REG_REG(emit->as, REG_RET, REG_RET);
+        ASM_CLR_REG(emit->as, REG_RET);
     } else {
         // Found new active handler, get its PC
         ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
@@ -1242,8 +1238,7 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, true);
         } else {
             // Clear the unwind state
-            ASM_CLR_REG(emit->as, REG_ZERO);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_ZERO);
+            ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_ZERO);
 
             // clear nlr.ret_val, because it's passed to mp_native_raise regardless
             // of whether there was an exception or not
@@ -1263,8 +1258,7 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
 
             // Clear PC of current code block, and jump there to resume execution
-            ASM_CLR_REG(emit->as, REG_ZERO);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_ZERO);
+            ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_ZERO);
             ASM_JUMP_REG(emit->as, REG_LOCAL_1);
 
             // Global exception handler: check for valid exception handler
@@ -1945,7 +1939,7 @@ static void emit_native_delete_attr(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    ASM_XOR_REG_REG(emit->as, REG_ARG_3, REG_ARG_3); // arg3 = value (null for delete)
+    ASM_CLR_REG(emit->as, REG_ARG_3); // arg3 = value (null for delete)
     emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
@@ -2091,7 +2085,7 @@ static void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t exc
             // No finally, handle the jump ourselves
             // First, restore the exception handler address for the jump
             if (e < emit->exc_stack) {
-                ASM_XOR_REG_REG(emit->as, REG_RET, REG_RET);
+                ASM_CLR_REG(emit->as, REG_RET);
             } else {
                 ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
             }

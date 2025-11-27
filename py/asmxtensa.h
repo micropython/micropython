@@ -464,6 +464,8 @@ void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label);
         asm_xtensa_op_s32i_n((as), (reg_val), (reg_base), 0); \
     } while (0)
 
+#define ASM_CLR_REG(as, reg_dest) asm_xtensa_op_movi_n((as), (reg_dest), 0)
+
 #endif // GENERIC_ASM_API
 
 #endif // MICROPY_INCLUDED_PY_ASMXTENSA_H
