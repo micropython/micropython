@@ -54,6 +54,12 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 # File containing description of content to be frozen into firmware.
 FROZEN_MANIFEST ?= boards/manifest.py
 
+# Enable Bluetooth if WiFi/BLE by ESP_HOSTED is enabled
+ifeq ($(MICROPY_PY_NETWORK_ESP_HOSTED),1)
+MICROPY_PY_BLUETOOTH = 1
+MICROPY_BLUETOOTH_NIMBLE = 1
+endif
+
 # Include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
@@ -349,14 +355,6 @@ ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
     SRC_HAL_C += $(BOARD_DIR)/$(FLEXSPI_FLASH_TYPE)_config.c
 else
     SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
-endif
-
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-SRC_C += mpbthciport.c
-endif # MICROPY_PY_BLUETOOTH
-
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-SRC_C += mpnimbleport.c
 endif
 
 # Add mimxrt-specific implementation of libmetal (and optionally OpenAMP's rproc).
