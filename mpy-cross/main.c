@@ -145,8 +145,8 @@ static int usage(char **argv) {
         "-march=<arch> : set architecture for native emitter;\n"
         "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
         "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug\n"
-        "-march-flags=<flags> : set architecture-specific flags (can be either a dec/hex/bin value or a string)\n"
-        "                       supported flags for rv32imc: zba\n"
+        "-march-flags=<flags> : set architecture-specific flags (can be either a dec/hex/bin value or a comma-separated flags string)\n"
+        "                       supported flags for rv32imc: zba, zcmp\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -258,6 +258,34 @@ static bool parse_integer(const char *value, mp_uint_t *integer) {
 
     return valid;
 }
+
+#if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+static bool parse_rv32_flags_string(const char *source, mp_uint_t *flags) {
+    assert(source && "Flag arguments string is NULL.");
+    assert(flags && "Collected flags pointer is NULL.");
+
+    const char *current = source;
+    const char *end = source + strlen(source);
+    mp_uint_t collected_flags = 0;
+    while (current < end) {
+        const char *separator = strchr(current, ',');
+        if (separator == NULL) {
+            separator = end;
+        }
+        ptrdiff_t length = separator - current;
+        if (length == (sizeof("zba") - 1) && memcmp(current, "zba", length) == 0) {
+            collected_flags |= RV32_EXT_ZBA;
+        } else if (length == (sizeof("zcmp") - 1) && memcmp(current, "zcmp", length) == 0) {
+            collected_flags |= RV32_EXT_ZCMP;
+        } else {
+            return false;
+        }
+        current = separator + 1;
+    }
+    *flags = collected_flags;
+    return collected_flags != 0;
+}
+#endif
 
 MP_NOINLINE int main_(int argc, char **argv) {
     pre_process_options(argc, argv);
@@ -412,14 +440,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
         if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC) {
             mp_dynamic_compiler.backend_options = (void *)&rv32_options;
             mp_uint_t raw_flags = 0;
-            if (parse_integer(arch_flags, &raw_flags)) {
+            if (parse_integer(arch_flags, &raw_flags) || parse_rv32_flags_string(arch_flags, &raw_flags)) {
                 if ((raw_flags & ~((mp_uint_t)RV32_EXT_ALL)) == 0) {
                     rv32_options.allowed_extensions = raw_flags;
                     processed = true;
                 }
-            } else if (strncmp(arch_flags, "zba", sizeof("zba") - 1) == 0) {
-                rv32_options.allowed_extensions |= RV32_EXT_ZBA;
-                processed = true;
             }
         }
         #endif
