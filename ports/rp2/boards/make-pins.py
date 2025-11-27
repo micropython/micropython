@@ -60,7 +60,7 @@ class Rp2Pin(boardgen.Pin):
         m = re.match("([A-Z][A-Z0-9][A-Z]+)(([0-9]+)(_.*)?)?", af)
         af_fn = m.group(1)
         af_unit = int(m.group(3)) if m.group(3) is not None else 0
-        if af_idx == 10:
+        if af_idx == 11:
             # AF11 uses UART_AUX in lieu of UART
             af_fn = "UART_AUX"
         if af_fn.startswith("QMI"):
@@ -74,7 +74,7 @@ class Rp2Pin(boardgen.Pin):
             # pin can only be I2C0 _or_ I2C1, both sharing the same AF
             # index), so each PIO unit has a distinct AF index.
             af_fn = "{:s}{:d}".format(af_fn, af_unit)
-        self._afs.append((af_idx + 1, af_fn, af_unit, af))
+        self._afs.append((af_idx, af_fn, af_unit, af))
 
     # This will be called at the start of the output (after the prefix). Use
     # it to emit the af objects (via the AF() macro in rp2_prefix.c).
