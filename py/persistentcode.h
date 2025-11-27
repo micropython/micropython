@@ -54,9 +54,9 @@
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
 #elif MICROPY_EMIT_THUMB
     #if defined(__thumb2__)
-        #if defined(__ARM_FP) && (__ARM_FP & 8) == 8
+        #if defined(__ARM_FP) && (__ARM_FP & 8) == 8 && defined(__ARM_PCS_VFP)
             #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMDP)
-        #elif defined(__ARM_FP) && (__ARM_FP & 4) == 4
+        #elif defined(__ARM_FP) && (__ARM_FP & 4) == 4 && defined(__ARM_PCS_VFP)
             #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMSP)
         #else
             #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
