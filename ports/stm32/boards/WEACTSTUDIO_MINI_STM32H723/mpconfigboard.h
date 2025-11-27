@@ -1,6 +1,5 @@
-#define MICROPY_HW_BOARD_NAME               "WEACT_STM32H723"
+#define MICROPY_HW_BOARD_NAME               "WEACTSTUDIO_MINI_STM32H723"
 #define MICROPY_HW_MCU_NAME                 "STM32H723VGT6"
-#define MICROPY_HW_FLASH_FS_LABEL           "WEACT_STM32H723"
 
 #define MICROPY_FATFS_EXFAT                 (1)
 #define MICROPY_HW_ENABLE_RTC               (1)
@@ -27,7 +26,6 @@
 // Disable internal filesystem to use spiflash.
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 
-#if (MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE == 0)
 // W25Q64 for storage
 #define MICROPY_HW_SPIFLASH_SIZE_BYTES      (8 * 1024 * 1024)
 
@@ -63,7 +61,6 @@ extern struct _spi_bdev_t spi_bdev;
 // SPI flash #2, block device config
 extern const struct _mp_spiflash_config_t spiflash2_config;
 extern struct _spi_bdev_t spi_bdev2;
-#endif
 
 #define MICROPY_BOARD_EARLY_INIT            WeAct_Core_early_init
 

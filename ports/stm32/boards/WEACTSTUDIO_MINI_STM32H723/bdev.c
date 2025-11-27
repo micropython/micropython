@@ -1,9 +1,12 @@
+/* This file is part of the MicroPython project, http://micropython.org/
+ * The MIT License (MIT)
+ * Copyright (c) 2019 Damien P. George
+ */
+
 #include "storage.h"
 #include "spi.h"
 #include "octospi.h"
 #include "py/mpconfig.h"
-
-#if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
 static const spi_proto_cfg_t spi_bus = {
     .spi = &spi_obj[0], // SPI1
@@ -42,5 +45,3 @@ const mp_spiflash_config_t spiflash2_config = {
 };
 
 spi_bdev_t spi_bdev2;
-
-#endif
