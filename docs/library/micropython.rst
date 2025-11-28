@@ -132,7 +132,8 @@ Functions
      handler (an IRQ).
    - Inside native code functions, scheduled functions are not called unless
      the native code calls a function that specifically does so.
-   - ``time.sleep`` and ``time.sleep_ms``, including zero-duration sleeps,
+   - Certain functions including ``poll.poll``, ``poll.ipoll``,
+     ``time.sleep``, ``time.sleep_ms``, including zero-duration sleeps,
      will call scheduled functions.
 
    A use for this function is to schedule a callback from a preempting IRQ.
