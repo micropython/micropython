@@ -1107,10 +1107,6 @@ static mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
             px1 = px2;
             py1 = py2;
         } while (i >= 0);
-        // draw endpoint of last line if polygon is not closed
-        if (px1 != poly_int(&bufinfo, 0) || py1 != poly_int(&bufinfo, 1)) {
-            setpixel_checked(self, x + px1, y + py1, col, 1, alpha);
-        }
     }
 
     return mp_const_none;

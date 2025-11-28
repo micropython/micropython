@@ -198,12 +198,14 @@ poly_empty = array("h")  # Will draw nothing at all.
 poly_one = array("h", (20, 20))  # Will draw a single point.
 poly_two = array("h", (10, 10, 5, 5))  # Will draw a single line.
 poly_wrong_length = array("h", (2, 2, 4))  # Will round down to one point.
+poly_all_horizontal = array("h", [20, 10, 15, 10, 20, 10])  # horizontal, empty interior
 
 fbuf.fill(0)
 fbuf.poly(0, 0, poly_empty, col)
 fbuf.poly(0, 0, poly_one, col)
 fbuf.poly(0, 0, poly_two, col)
 fbuf.poly(0, 0, poly_wrong_length, col)
+fbuf.poly(0, 0, poly_all_horizontal, col)
 print_buffer(buf, w, h)
 print()
 
@@ -212,6 +214,7 @@ fbuf.poly(0, 0, poly_empty, col, True)
 fbuf.poly(0, 0, poly_one, col, True)
 fbuf.poly(0, 0, poly_two, col, True)
 fbuf.poly(0, 0, poly_wrong_length, col, True)
+fbuf.poly(0, 0, poly_all_horizontal, col, True)
 print_buffer(buf, w, h)
 print()
 
@@ -283,6 +286,13 @@ fbuf.poly(0, 0, poly, col, False, 0x7F)
 fbuf.poly(0, 0, poly, col_fill, True, 0x7F)
 fbuf.poly(15, -2, poly, col, False, 0x7F)
 fbuf.poly(15, -2, poly, col_fill, True, 0x7F)
+print_buffer(buf, w, h)
+print()
+
+# Draw with alpha 0.
+fbuf.fill(0)
+fbuf.poly(0, 0, poly, col, False, 0)
+fbuf.poly(15, -2, poly_reversed, col, False, 0)
 print_buffer(buf, w, h)
 print()
 

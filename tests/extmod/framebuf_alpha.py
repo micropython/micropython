@@ -91,6 +91,11 @@ for x, y in ((-1, -1), (0, 0), (1, 1), (4, 3)):
     fbuf.blit(fbuf2, x, y, -1, None, 0x7F)
     printbuf()
 
+# Blit another FrameBuffer with 0 alpha (test no-op branch).
+fbuf.fill(0)
+fbuf.blit(fbuf2, 1, 1, -1, None, 0x00)
+printbuf()
+
 # Blit another FrameBuffer, with alpha mask.
 alphas = [[0, 0x3F], [0x7F, 0xFF]]
 for bpp, format in [
@@ -125,11 +130,53 @@ for bpp, format in [
     fbuf.blit(fbuf2, 1, 1, -1, None, mask)
     printbuf()
 
+# Try to blit with wrong-shaped mask (ValueError).
+alphas = [[0, 0x3F], [0x7F, 0xFF]]
+mask = framebuf.FrameBuffer(bytearray(6), 3, 2, framebuf.GS8)
+for x in [0, 1]:
+    for y in [0, 1]:
+        mask.pixel(x, y, alphas[x][y] >> (8 - bpp))
+fbuf.fill(0x00)
+try:
+    fbuf.blit(fbuf2, 1, 1, -1, None, mask)
+except ValueError as exc:
+    print(exc)
+except Exception as exc:
+    print("Unexpected error:", exc)
+else:
+    print("No Error")
+
+# Try to blit with color mask (ValueError).
+mask = framebuf.FrameBuffer(bytearray(8), 2, 2, framebuf.RGB565)
+fbuf.fill(0x00)
+try:
+    fbuf.blit(fbuf2, 1, 1, -1, None, mask)
+except ValueError as exc:
+    print(exc)
+except Exception as exc:
+    print("Unexpected error:", exc)
+else:
+    print("No Error")
+
 # text at various locations with alpha.
 for x, y in ((-1, -1), (0, 0), (1, 1), (4, 3)):
     fbuf.fill(0)
     fbuf.text("x", x, y, 0x7F, 0x7F)
     printbuf()
+
+# drawing with alpha 0 does nothing
+fbuf.fill(0)
+
+fbuf.pixel(1, 1, 0x7F, 0)
+fbuf.hline(1, 1, 2, 0x7F, 0)
+fbuf.vline(1, 1, 2, 0x7F, 0)
+fbuf.line(1, 1, 2, 2, 0x7F, 0)
+fbuf.rect(1, 1, 2, 2, 0x7F, True, 0)
+fbuf.rect(1, 1, 2, 2, 0x7F, False, 0)
+fbuf.ellipse(1, 1, 2, 2, 0x7F, True, 0xF, 0)
+fbuf.text("x", 1, 1, 0x7F, 0)
+
+printbuf()
 
 # Ellipse
 w = 30
@@ -213,3 +260,28 @@ for format in [framebuf.RGB565_LE, framebuf.RGB565_BE]:
         fbuf.fill(0b00000_111111_00000)
         fbuf.blit(fbuf2, 1, 1, -1, None, mask)
         printbuf(2)
+
+# Basic tests of native and "byte-swapped" formats.
+# Ensure order in output is little-endian, then big-endian
+if sys.byteorder == "big":
+    formats = [framebuf.RGB565_BS, framebuf.RGB565]
+else:
+    formats = [framebuf.RGB565, framebuf.RGB565_BS]
+
+for format in formats:
+    w = 5
+    h = 4
+    buf = bytearray(2 * w * h)
+    fbuf = framebuf.FrameBuffer(buf, w, h, format)
+
+    if format == framebuf.RGB565_BS:
+        # Python provides byte-swapped color values.
+        col = 0b11100000_11111011
+    else:
+        col = 0b11111011_11100000
+
+    # set pixel at various locations with alpha.
+    fbuf.fill(0)
+    for x, y in ((-1, -1), (0, 0), (1, 1), (4, 3)):
+        fbuf.pixel(x, y, col, 0x7F)
+    printbuf(2)
