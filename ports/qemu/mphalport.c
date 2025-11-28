@@ -25,6 +25,7 @@
  */
 
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "py/stream.h"
 #include "shared/runtime/semihosting_arm.h"
 #include "uart.h"
@@ -82,8 +83,12 @@ mp_uint_t mp_hal_ticks_us(void) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    mp_uint_t start = mp_hal_ticks_ms();
-    while (mp_hal_ticks_ms() - start < ms) {
+    if (ms) {
+        mp_uint_t start = mp_hal_ticks_ms();
+        while (mp_hal_ticks_ms() - start < ms) {
+        }
+    } else {
+        mp_handle_pending(true);
     }
 }
 
