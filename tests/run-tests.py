@@ -161,10 +161,6 @@ emitter_tests_to_skip = {
         "basics/exception_chain.py",
         # These require stack-allocated slice optimisation.
         "micropython/heapalloc_slice.py",
-        # These require running the scheduler.
-        "micropython/schedule.py",
-        "extmod/asyncio_event_queue.py",
-        "extmod/asyncio_iterator_event.py",
         # These require sys.exc_info().
         "misc/sys_exc_info.py",
         # These require sys.settrace().
