@@ -71,6 +71,9 @@ Functions
    other boards may not accept a floating-point argument, for compatibility with
    them use `sleep_ms()` and `sleep_us()` functions.
 
+   Calling ``sleep``, including ``sleep(0)`` is guaranteed to call pending callback
+   functions.
+
 .. function:: sleep_ms(ms)
 
    Delay for given number of milliseconds, should be positive or 0.
@@ -79,6 +82,9 @@ Functions
    may take longer than that if other processing must take place, for example
    interrupt handlers or other threads.  Passing in 0 for *ms* will still allow
    this other processing to occur.  Use `sleep_us()` for more precise delays.
+
+   Calling ``sleep_ms``, including ``sleep_ms(0)`` is guaranteed to call
+   pending callback functions.
 
 .. function:: sleep_us(us)
 
