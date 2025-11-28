@@ -537,6 +537,8 @@ MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 static mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
+    mp_handle_pending(true);
+
     // work out timeout (its given already in ms)
     mp_uint_t timeout = -1;
     int flags = 0;
