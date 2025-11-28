@@ -164,7 +164,7 @@ emitter_tests_to_skip = {
         "basics/exception_chain.py",
         # These require stack-allocated slice optimisation.
         "micropython/heapalloc_slice.py",
-        # These require running the scheduler.
+        # These require implicitly running the scheduler between bytecodes.
         "micropython/schedule.py",
         "extmod/asyncio_event_queue.py",
         "extmod/asyncio_iterator_event.py",
