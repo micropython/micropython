@@ -384,6 +384,9 @@ function ci_psoc_edge_setup {
 
     # Initialize the submodules
     docker exec mtb36-ci make submodules
+
+    # Test device management library installation
+    sudo pip install --upgrade etdevs
 }
 
 function ci_psoc_edge_build {
@@ -402,6 +405,9 @@ function ci_psoc_edge_deploy_multiple_devices {
     hex_file=$2
     devs_file=$3
 
+    # etdevs will be later directly available in the docker
+    # As this will be updated frequently currently, we install it each time
+    docker exec mtb36-ci /bin/bash -c "pip install etdevs"
     docker exec mtb36-ci make mtb_init BOARD=${board}
     docker exec mtb36-ci make qdeploy_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=../../${devs_file}
 }
