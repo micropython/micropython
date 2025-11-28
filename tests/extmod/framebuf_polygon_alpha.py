@@ -199,6 +199,10 @@ poly_one = array("h", (20, 20))  # Will draw a single point.
 poly_two = array("h", (10, 10, 5, 5))  # Will draw a single line.
 poly_wrong_length = array("h", (2, 2, 4))  # Will round down to one point.
 poly_all_horizontal = array("h", [20, 10, 15, 10, 20, 10])  # horizontal, empty interior
+poly_offscreen_left = array("h", [-5, 5, -5, 10, -10, 10, -10, 5])  # nothing to draw
+poly_offscreen_right = array("h", [35, 5, 35, 10, 40, 10, 40, 5])  # nothing to draw
+poly_offscreen_top = array("h", [5, -5, 5, -10, 10, -10, 10, -5])  # nothing to draw
+poly_offscreen_bottom = array("h", [5, 40, 5, 45, 10, 45, 10, 40])  # nothing to draw
 
 fbuf.fill(0)
 fbuf.poly(0, 0, poly_empty, col)
@@ -206,6 +210,10 @@ fbuf.poly(0, 0, poly_one, col)
 fbuf.poly(0, 0, poly_two, col)
 fbuf.poly(0, 0, poly_wrong_length, col)
 fbuf.poly(0, 0, poly_all_horizontal, col)
+fbuf.poly(0, 0, poly_offscreen_left, col)
+fbuf.poly(0, 0, poly_offscreen_right, col)
+fbuf.poly(0, 0, poly_offscreen_top, col)
+fbuf.poly(0, 0, poly_offscreen_bottom, col)
 print_buffer(buf, w, h)
 print()
 
@@ -215,6 +223,10 @@ fbuf.poly(0, 0, poly_one, col, True)
 fbuf.poly(0, 0, poly_two, col, True)
 fbuf.poly(0, 0, poly_wrong_length, col, True)
 fbuf.poly(0, 0, poly_all_horizontal, col, True)
+fbuf.poly(0, 0, poly_offscreen_left, col, True)
+fbuf.poly(0, 0, poly_offscreen_right, col, True)
+fbuf.poly(0, 0, poly_offscreen_top, col, True)
+fbuf.poly(0, 0, poly_offscreen_bottom, col, True)
 print_buffer(buf, w, h)
 print()
 
