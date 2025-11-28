@@ -43,9 +43,14 @@ options for the ``ARCH`` variable, see below):
 * ``rv32imc`` (RISC-V 32 bits with compressed instructions, eg ESP32C3, ESP32C6)
 * ``rv64imc`` (RISC-V 64 bits with compressed instructions)
 
+If the chosen platform supports explicit architecture flags and you want to let
+the output .mpy file carry those flags' value, you must pass them to the
+``ARCH_FLAGS`` flags variable when building the .mpy file.
+
 When compiling and linking the native .mpy file the architecture must be chosen
-and the corresponding file can only be imported on that architecture.  For more
-details about .mpy files see :ref:`mpy_files`.
+and the corresponding file can only be imported on that architecture (and if
+architecture flags are present, only if they match the target's capabilities).
+For more details about .mpy files see :ref:`mpy_files`.
 
 Native code must be compiled as position independent code (PIC) and use a global
 offset table (GOT), although the details of this varies from architecture to
@@ -124,7 +129,8 @@ The filesystem layout consists of two main parts, the source files and the Makef
   location of the MicroPython repository (to find header files, the relevant Makefile
   fragment, and the ``mpy_ld.py`` tool), ``MOD`` as the name of the module, ``SRC``
   as the list of source files, optionally specify the machine architecture via ``ARCH``,
-  and then include ``py/dynruntime.mk``.
+  along with optional machine architecture flags specified via ``ARCH_FLAGS``, and
+  then include ``py/dynruntime.mk``.
 
 Minimal example
 ---------------
@@ -216,6 +222,10 @@ Then build with::
 Without modifying the Makefile you can specify the target architecture via::
 
     $ make ARCH=armv7m
+
+Same applies for optional architecture flags via::
+
+    $ make ARCH=rv32imc ARCH_FLAGS=zba
 
 Module usage in MicroPython
 ---------------------------

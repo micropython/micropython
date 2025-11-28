@@ -193,7 +193,8 @@ MPY files is used to indicate that no specific extensions are needed, and saves
 one byte in the final output binary.
 
 See also the ``-march-flags`` command-line option in both ``mpy-tool.py`` and
-``mpy-cross`` to set this value when creating MPY files.
+``mpy-cross``, and the ``--arch-flags`` command-line option in ``mpy_ld.py`` to
+set this value when creating MPY files.
 
 The global qstr and constant tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
