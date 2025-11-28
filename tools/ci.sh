@@ -195,6 +195,15 @@ function ci_cc3200_build {
 }
 
 ########################################################################################
+# ports/embed
+
+function ci_embedding_build {
+    make ${MAKEOPTS} -C examples/embedding -f micropython_embed.mk
+    make ${MAKEOPTS} -C examples/embedding
+    ./examples/embedding/embed | grep "hello world"
+}
+
+########################################################################################
 # ports/esp32
 
 # GitHub tag of ESP-IDF to use for CI, extracted from the esp32 dependency lockfile
