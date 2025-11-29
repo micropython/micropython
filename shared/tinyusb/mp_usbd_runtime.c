@@ -430,6 +430,8 @@ void mp_usbd_init(void) {
     }
 
     if (need_usb) {
+        // Call any port-specific initialization code.
+        MICROPY_HW_TINYUSB_LL_INIT();
         // The following will call tusb_init(), which is safe to call redundantly.
         mp_usbd_init_tud();
         // Reconnect if mp_usbd_deinit() has disconnected.

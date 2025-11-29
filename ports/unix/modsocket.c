@@ -709,6 +709,9 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     C(SO_KEEPALIVE),
     C(SO_LINGER),
     C(SO_REUSEADDR),
+
+    C(IP_ADD_MEMBERSHIP),
+    C(IP_DROP_MEMBERSHIP),
 #undef C
 };
 

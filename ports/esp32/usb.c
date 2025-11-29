@@ -38,7 +38,7 @@
 
 static usb_phy_handle_t phy_hdl;
 
-void usb_init(void) {
+void usb_phy_init(void) {
     // ref: https://github.com/espressif/esp-usb/blob/4b6a798d0bed444fff48147c8dcdbbd038e92892/device/esp_tinyusb/tinyusb.c
 
     // Configure USB PHY
@@ -51,10 +51,6 @@ void usb_init(void) {
 
     // Init ESP USB Phy
     usb_new_phy(&phy_conf, &phy_hdl);
-
-    // Init MicroPython / TinyUSB
-    mp_usbd_init();
-
 }
 
 #if CONFIG_IDF_TARGET_ESP32S3

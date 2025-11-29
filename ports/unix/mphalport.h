@@ -25,6 +25,7 @@
  */
 #include <errno.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #ifndef CHAR_CTRL_C
 #define CHAR_CTRL_C (3)
@@ -46,6 +47,9 @@
         mp_hal_delay_us(500); \
         MP_THREAD_GIL_ENTER(); \
     } while (0)
+
+// The port provides `mp_hal_stdio_mode_raw()` and `mp_hal_stdio_mode_orig()`.
+#define MICROPY_HAL_HAS_STDIO_MODE_SWITCH (1)
 
 void mp_hal_set_interrupt_char(char c);
 
@@ -117,3 +121,6 @@ enum {
 
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 #endif
+
+// Global variable to control compile-only mode.
+extern bool mp_compile_only;

@@ -30,7 +30,7 @@ jobs:
           - thumb_hardfp
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Install packages
       run: tools/ci.sh qemu_setup_arm
     - name: Build and run test suite ci_qemu_build_arm_${{ matrix.ci_func }}
@@ -42,7 +42,7 @@ jobs:
   build_and_test_rv32:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Install packages
       run: tools/ci.sh qemu_setup_rv32
     - name: Build and run test suite
@@ -54,7 +54,7 @@ jobs:
   build_and_test_rv64:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Install packages
       run: tools/ci.sh qemu_setup_rv64
     - name: Build and run test suite

@@ -29,6 +29,26 @@
 
 #include "py/mpconfig.h"
 
+#ifndef MICROPY_WRAP_TUD_SOF_CB
+#define MICROPY_WRAP_TUD_SOF_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_CDC_RX_CB
+#define MICROPY_WRAP_TUD_CDC_RX_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_CDC_LINE_STATE_CB
+#define MICROPY_WRAP_TUD_CDC_LINE_STATE_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_EVENT_HOOK_CB
+#define MICROPY_WRAP_TUD_EVENT_HOOK_CB(name) name
+#endif
+
+#ifndef MICROPY_HW_TINYUSB_LL_INIT
+#define MICROPY_HW_TINYUSB_LL_INIT()
+#endif
+
 #if MICROPY_HW_ENABLE_USBDEV
 
 #include "py/obj.h"
@@ -45,19 +65,12 @@
 static inline void mp_usbd_init_tud(void) {
     tusb_init();
     #if MICROPY_HW_USB_CDC
-    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0,
-                                     .tx_persistent = 1,
-
-                                     // This config flag is unreleased in TinyUSB >v0.18.0
-                                     // but included in Espressif's TinyUSB component since v0.18.0~3
-                                     //
-                                     // Versioning issue reported as
-                                     // https://github.com/espressif/esp-usb/issues/236
-                                     #if TUSB_VERSION_NUMBER > 1800 || defined(ESP_PLATFORM)
-                                     .tx_overwritabe_if_not_connected = 1,
-                                     #endif
+    tud_cdc_configure_t cfg = {
+        .rx_persistent = 0,
+        .tx_persistent = 1,
+        .tx_overwritabe_if_not_connected = 1,
     };
-    tud_cdc_configure_fifo(&cfg);
+    tud_cdc_configure(&cfg);
     #endif
 }
 
@@ -88,9 +101,23 @@ extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
 
 void mp_usbd_task_callback(mp_sched_node_t *node);
 
-#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
-void mp_usbd_deinit(void);
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+
+static inline void mp_usbd_init(void) {
+    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
+    // which is called in the below helper function.
+    MICROPY_HW_TINYUSB_LL_INIT();
+    mp_usbd_init_tud();
+}
+
+static inline void mp_usbd_deinit(void) {
+    // Called in soft reset path. No-op if no runtime USB devices require cleanup.
+}
+
+#else
+// Runtime USB Device support requires more complex init/deinit
 void mp_usbd_init(void);
+void mp_usbd_deinit(void);
 
 const char *mp_usbd_runtime_string_cb(uint8_t index);
 
@@ -142,15 +169,7 @@ static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd
     return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
 }
 
-#else // Static USBD drivers only
-
-static inline void mp_usbd_init(void) {
-    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    // which is called in the below helper function.
-    mp_usbd_init_tud();
-}
-
-#endif
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 

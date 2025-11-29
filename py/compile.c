@@ -103,6 +103,7 @@ static const emit_method_table_t *emit_native_table[] = {
     &emit_native_xtensa_method_table,
     &emit_native_xtensawin_method_table,
     &emit_native_rv32_method_table,
+    NULL,
     &emit_native_debug_method_table,
 };
 
@@ -3571,6 +3572,13 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
                 case MP_EMIT_OPT_NATIVE_PYTHON:
                 case MP_EMIT_OPT_VIPER:
                     if (emit_native == NULL) {
+                        // The check looks like this to work around a false
+                        // warning in GCC 13 (and possibly later), where it
+                        // assumes that the check will always fail.
+                        if ((uintptr_t)NATIVE_EMITTER_TABLE == (uintptr_t)NULL) {
+                            comp->compile_error = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("cannot emit native code for this architecture"));
+                            goto emit_finished;
+                        }
                         emit_native = NATIVE_EMITTER(new)(&comp->emit_common, &comp->compile_error, &comp->next_label, max_num_labels);
                     }
                     comp->emit_method_table = NATIVE_EMITTER_TABLE;
@@ -3602,6 +3610,10 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
             }
         }
     }
+
+    #if MICROPY_EMIT_NATIVE
+emit_finished:
+    #endif
 
     if (comp->compile_error != MP_OBJ_NULL) {
         // if there is no line number for the error then use the line

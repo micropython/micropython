@@ -180,5 +180,7 @@ void PendSV_Handler(void) {
 
     #if MICROPY_PY_THREAD
     mp_thread_recursive_mutex_unlock(&pendsv_mutex);
+    // Check if a dispatch occurred while the interrupt was being serviced
+    pendsv_resume_run_dispatch();
     #endif
 }

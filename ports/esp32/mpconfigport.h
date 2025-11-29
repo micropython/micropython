@@ -9,8 +9,6 @@
 #include "esp_random.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
-#include "driver/i2s_std.h"
-#include "esp_wifi_types.h"
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL            (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
@@ -172,6 +170,8 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c2"
 #elif CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c3"
+#elif CONFIG_IDF_TARGET_ESP32C5
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c5"
 #elif CONFIG_IDF_TARGET_ESP32C6
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c6"
 #endif
@@ -223,19 +223,14 @@
 
 #ifndef MICROPY_HW_USB_VID
 #define USB_ESPRESSIF_VID 0x303A
-#if CONFIG_TINYUSB_DESC_USE_ESPRESSIF_VID
 #define MICROPY_HW_USB_VID  (USB_ESPRESSIF_VID)
-#else
-#define MICROPY_HW_USB_VID  (CONFIG_TINYUSB_DESC_CUSTOM_VID)
 #endif
 
 #ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 #define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1) // Support machine.USBDevice
 #endif
-#endif
 
 #ifndef MICROPY_HW_USB_PID
-#if CONFIG_TINYUSB_DESC_USE_DEFAULT_PID
 #define _PID_MAP(itf, n) ((CFG_TUD_##itf) << (n))
 // A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
 // Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -244,25 +239,16 @@
 #define USB_TUSB_PID (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
     _PID_MAP(MIDI, 3))  // | _PID_MAP(AUDIO, 4) | _PID_MAP(VENDOR, 5) )
 #define MICROPY_HW_USB_PID  (USB_TUSB_PID)
-#else
-#define MICROPY_HW_USB_PID  (CONFIG_TINYUSB_DESC_CUSTOM_PID)
-#endif
 #endif
 
+// These Manufacturer & Product strings are the defaults when using the
+// esp_tinyusb component (which MicroPython used in the past).
 #ifndef MICROPY_HW_USB_MANUFACTURER_STRING
-#ifdef CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
-#define MICROPY_HW_USB_MANUFACTURER_STRING CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
-#else
-#define MICROPY_HW_USB_MANUFACTURER_STRING "MicroPython"
-#endif
+#define MICROPY_HW_USB_MANUFACTURER_STRING "Espressif Systems"
 #endif
 
 #ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
-#ifdef CONFIG_TINYUSB_DESC_PRODUCT_STRING
-#define MICROPY_HW_USB_PRODUCT_FS_STRING CONFIG_TINYUSB_DESC_PRODUCT_STRING
-#else
-#define MICROPY_HW_USB_PRODUCT_FS_STRING "Board in FS mode"
-#endif
+#define MICROPY_HW_USB_PRODUCT_FS_STRING "Espressif Device"
 #endif
 
 #endif // MICROPY_HW_ENABLE_USBDEV

@@ -88,6 +88,11 @@
 #include "pyb_can.h"
 #include "subghz.h"
 
+#if MICROPY_HW_TINYUSB_STACK
+#include "usbd_conf.h"
+#include "shared/tinyusb/mp_usbd.h"
+#endif
+
 #if MICROPY_PY_THREAD
 static pyb_thread_t pyb_thread_main;
 #endif
@@ -275,14 +280,12 @@ static bool init_sdcard_fs(void) {
                 }
             }
 
-            #if MICROPY_HW_ENABLE_USB
+            #if MICROPY_HW_USB_MSC
             if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
                 // if no USB MSC medium is selected then use the SD card
                 pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
             }
-            #endif
 
-            #if MICROPY_HW_ENABLE_USB
             // only use SD card as current directory if that's what the USB medium is
             if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_SDCARD)
             #endif
@@ -315,11 +318,14 @@ static void risaf_init(void) {
     rimc_master.MasterCID = RIF_CID_1;
     rimc_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
 
-    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_ADC12, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
     HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC1, &rimc_master);
-    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC1, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
     HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC2, &rimc_master);
+    HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_ETH1, &rimc_master);
+
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_ADC12, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC1, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
     HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC2, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_ETH1, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
 }
 #endif
 
@@ -502,7 +508,7 @@ void stm32_main(uint32_t reset_mode) {
     pyb_uart_repl_obj.is_static = true;
     pyb_uart_repl_obj.timeout = 0;
     pyb_uart_repl_obj.timeout_char = 2;
-    uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
+    uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0, 0);
     uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
     uart_attach_to_repl(&pyb_uart_repl_obj, true);
     MP_STATE_PORT(machine_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
@@ -605,7 +611,7 @@ soft_reset:
     pyb_can_init0();
     #endif
 
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_STM_USB_STACK && MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
     #endif
 
@@ -631,7 +637,7 @@ soft_reset:
     }
     #endif
 
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_USB_MSC
     // if the SD card isn't used as the USB MSC medium then use the internal flash
     if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
         pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
@@ -665,7 +671,7 @@ soft_reset:
     // or whose initialisation can be safely deferred until after running
     // boot.py.
 
-    #if MICROPY_HW_ENABLE_USB
+    #if MICROPY_HW_STM_USB_STACK
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
         #if MICROPY_HW_USB_MSC
@@ -677,6 +683,10 @@ soft_reset:
         #endif
         pyb_usb_dev_init(pyb_usb_dev_detect(), MICROPY_HW_USB_VID, pid, mode, 0, NULL, NULL);
     }
+    #endif
+
+    #if MICROPY_HW_TINYUSB_STACK && MICROPY_HW_ENABLE_USBDEV
+    mp_usbd_init();
     #endif
 
     #if MICROPY_HW_HAS_MMA7660
@@ -769,6 +779,9 @@ soft_reset_exit:
     MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
     #else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
+    #endif
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE && MICROPY_HW_TINYUSB_STACK
+    mp_usbd_deinit();
     #endif
 
     MICROPY_BOARD_END_SOFT_RESET(&state);

@@ -79,6 +79,15 @@ static bool mdns_initialised = false;
 static uint8_t conf_wifi_sta_reconnects = 0;
 static uint8_t wifi_sta_reconnects;
 
+// The rules for this default are defined in the documentation of esp_wifi_set_protocol()
+// rather than in code, so we have to recreate them here.
+#if CONFIG_SOC_WIFI_HE_SUPPORT
+// Note: No Explicit support for 5GHz here, yet
+#define WIFI_PROTOCOL_DEFAULT (WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11AX)
+#else
+#define WIFI_PROTOCOL_DEFAULT (WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N)
+#endif
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
@@ -769,6 +778,11 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     #endif
     #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA_ENT), MP_ROM_INT(WIFI_AUTH_WPA_ENTERPRISE) },
+    #endif
+
+    { MP_ROM_QSTR(MP_QSTR_PROTOCOL_DEFAULT), MP_ROM_INT(WIFI_PROTOCOL_DEFAULT) },
+    #if !CONFIG_IDF_TARGET_ESP32C2
+    { MP_ROM_QSTR(MP_QSTR_PROTOCOL_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(WIFI_PS_NONE) },

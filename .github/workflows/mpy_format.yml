@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/*.yml'
       - 'examples/**'
+      - 'mpy-cross/**'
+      - 'py/**'
       - 'tests/**'
       - 'tools/**'
 
@@ -17,8 +19,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Install packages
       run: tools/ci.sh mpy_format_setup
     - name: Test mpy-tool.py
       run: tools/ci.sh mpy_format_test
+    - name: Test mpy-cross debug emitter
+      run: tools/ci.sh mpy_cross_debug_emitter

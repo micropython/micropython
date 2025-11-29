@@ -103,6 +103,11 @@ def read_test(ser_repl, ser_data, bufsize, nbuf):
 
     assert bufsize % 256 == 0  # for verify to work
 
+    # how long to wait for data from device
+    # (if UART TX is also enabled then it can take 1.4s to send
+    # out a 16KB butter at 115200bps)
+    READ_TIMEOUT_S = 2
+
     # Load and run the read_test_script.
     ser_repl.write(b"\x03\x01\x04")  # break, raw-repl, soft-reboot
     drain_input(ser_repl)
@@ -121,7 +126,7 @@ def read_test(ser_repl, ser_data, bufsize, nbuf):
     while remain:
         t0 = time.monotonic_ns()
         while ser_data.inWaiting() == 0:
-            if time.monotonic_ns() - t0 > 1e9:
+            if time.monotonic_ns() - t0 > READ_TIMEOUT_S * 1e9:
                 # timeout waiting for data from device
                 break
             time.sleep(0.0001)

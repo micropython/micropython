@@ -58,6 +58,28 @@
 #include "extmod/vfs.h"
 #endif
 
+#if MICROPY_ENABLE_GC
+#if MICROPY_GC_SPLIT_HEAP && DT_HAS_COMPAT_STATUS_OKAY(micropython_heap)
+
+#include <zephyr/linker/devicetree_regions.h>
+
+#define MICROPY_HEAP_NAME(node) CONCAT(DT_NODE_FULL_NAME_TOKEN(node), _heap)
+
+#define MICROPY_HEAP_DEFINE(node) \
+    static char MICROPY_HEAP_NAME(node)[DT_PROP(node, size)] \
+    Z_GENERIC_SECTION(LINKER_DT_NODE_REGION_NAME(DT_PROP(node, memory_region)));
+
+DT_FOREACH_STATUS_OKAY(micropython_heap, MICROPY_HEAP_DEFINE)
+
+#define MICROPY_HEAP_ADD(node) \
+    gc_add((void *)&MICROPY_HEAP_NAME(node), \
+    (void *)&(MICROPY_HEAP_NAME(node)[DT_PROP(node, size) - 1]));
+
+#elif DT_HAS_COMPAT_STATUS_OKAY(micropython_heap)
+#error Has additional Heap but split heap is not enabled
+#endif
+#endif
+
 #include "modmachine.h"
 #include "modzephyr.h"
 
@@ -107,6 +129,9 @@ soft_reset:
     mp_cstack_init_with_sp_here(CONFIG_MAIN_STACK_SIZE);
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
+    #if MICROPY_GC_SPLIT_HEAP && DT_HAS_COMPAT_STATUS_OKAY(micropython_heap)
+    DT_FOREACH_STATUS_OKAY(micropython_heap, MICROPY_HEAP_ADD)
+    #endif
     #endif
     mp_init();
 

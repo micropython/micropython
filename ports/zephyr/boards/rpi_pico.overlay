@@ -9,6 +9,20 @@
 		/* Use USB CDC ACM as the console. */
 		zephyr,console = &cdc_acm_uart0;
 	};
+
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<256>;
+			cache-size=<1024>;
+			lookahead-size=<32>;
+			block-cycles=<4>;
+		};
+	};
 };
 
 /* Delete defined partitions and make a layout matching the rp2 port RPI_PICO configuration. */

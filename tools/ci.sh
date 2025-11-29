@@ -173,6 +173,15 @@ function ci_mpy_format_test {
     $micropython ./tools/mpy-tool.py -x -d examples/natmod/features1/features1.mpy
 }
 
+function ci_mpy_cross_debug_emitter {
+    make ${MAKEOPTS} -C mpy-cross
+    mpy_cross=./mpy-cross/build/mpy-cross
+
+    # Make sure the debug emitter does not crash or fail for simple files
+    $mpy_cross -X emit=native -march=debug ./tests/basics/0prelim.py | \
+	    grep -E "ENTRY|EXIT" | wc -l | grep "^2$"
+}
+
 ########################################################################################
 # ports/cc3200
 
@@ -237,10 +246,11 @@ function ci_esp32_build_s3_c3 {
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
 }
 
-function ci_esp32_build_c2_c6 {
+function ci_esp32_build_c2_c5_c6 {
     ci_esp32_build_common
 
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C2
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C5
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C6
 }
 
@@ -511,7 +521,7 @@ function ci_stm32_nucleo_build {
 
     # Test building various MCU families, some with additional options.
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
-    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK
+    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK CFLAGS_EXTRA='-DMICROPY_HW_TINYUSB_STACK=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI COPT=-O2 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1
@@ -1048,6 +1058,14 @@ function _ci_bash_completion {
     echo "alias ci=\"$(readlink -f "$0")\"; complete -W '$(grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//')' ci"
 }
 
+function _ci_zsh_completion {
+    echo "alias ci=\"$(readlink -f "$0"\"); _complete_mpy_ci_zsh() { compadd $(grep '^function ci_' $0 | awk '{sub(/^ci_/,"",$2); print $2}' | tr '\n' ' ') }; autoload -Uz compinit; compinit; compdef _complete_mpy_ci_zsh $(readlink -f "$0")"
+}
+
+function _ci_fish_completion {
+    echo "alias ci=\"$(readlink -f "$0"\"); complete -c ci -p $(readlink -f "$0") -f -a '$(grep '^function ci_' $(readlink -f "$0") | awk '{sub(/^ci_/,"",$2); print $2}' | tr '\n' ' ')'"
+}
+
 function _ci_main {
     case "$1" in
         (-h|-?|--help)
@@ -1055,6 +1073,12 @@ function _ci_main {
         ;;
         (--bash-completion)
             _ci_bash_completion
+        ;;
+        (--zsh-completion)
+            _ci_zsh_completion
+        ;;
+        (--fish-completion)
+            _ci_fish_completion
         ;;
         (-*)
             echo "Unknown option: $1" 1>&2

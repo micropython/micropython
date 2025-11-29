@@ -29,10 +29,10 @@ jobs:
         ci_func:  # names are functions in ci.sh
           - esp32_build_cmod_spiram_s2
           - esp32_build_s3_c3
-          - esp32_build_c2_c6
+          - esp32_build_c2_c5_c6
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - id: idf_ver
       name: Read the ESP-IDF version (including Python version)

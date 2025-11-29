@@ -60,6 +60,23 @@ DIFF = os.getenv("MICROPY_DIFF", "diff -u")
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
+
+def normalize_newlines(data):
+    """Normalize newline variations to \\n.
+
+    Only normalizes actual line endings, not literal \\r characters in strings.
+    Handles \\r\\r\\n and \\r\\n cases to ensure consistent comparison
+    across different platforms and terminals.
+    """
+    if isinstance(data, bytes):
+        # Handle PTY double-newline issue first
+        data = data.replace(b"\r\r\n", b"\n")
+        # Then handle standard Windows line endings
+        data = data.replace(b"\r\n", b"\n")
+        # Don't convert standalone \r as it might be literal content
+    return data
+
+
 # Code to allow a target MicroPython to import an .mpy from RAM
 # Note: the module is named `__injected_test` but it needs to have `__name__` set to
 # `__main__` so that the test sees itself as the main module, eg so unittest works.
@@ -309,6 +326,7 @@ tests_requiring_slice = (
 tests_requiring_target_wiring = (
     "extmod/machine_uart_irq_txidle.py",
     "extmod/machine_uart_tx.py",
+    "extmod_hardware/machine_encoder.py",
     "extmod_hardware/machine_uart_irq_break.py",
     "extmod_hardware/machine_uart_irq_rx.py",
     "extmod_hardware/machine_uart_irq_rxidle.py",
@@ -705,7 +723,7 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
         )
 
     # canonical form for all ports/platforms is to use \n for end-of-line
-    output_mupy = output_mupy.replace(b"\r\n", b"\n")
+    output_mupy = normalize_newlines(output_mupy)
 
     # don't try to convert the output if we should skip this test
     if had_crash or output_mupy in (b"SKIP\n", b"SKIP-TOO-LARGE\n", b"CRASH"):

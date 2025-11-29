@@ -97,6 +97,14 @@ if(MICROPY_PY_TINYUSB)
     list(APPEND MICROPY_INC_TINYUSB
         ${MICROPY_DIR}/shared/tinyusb/
     )
+
+    # Build the Espressif tinyusb component with MicroPython shared/tinyusb/tusb_config.h
+    idf_component_get_property(tusb_lib espressif__tinyusb COMPONENT_LIB)
+    target_include_directories(${tusb_lib} PRIVATE
+        ${MICROPY_DIR}/shared/tinyusb
+        ${MICROPY_DIR}
+        ${MICROPY_PORT_DIR}
+        ${MICROPY_BOARD_DIR})
 endif()
 
 list(APPEND MICROPY_SOURCE_PORT
@@ -262,6 +270,14 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
 target_include_directories(${MICROPY_TARGET} PUBLIC
     ${IDF_PATH}/components/bt/host/nimble/nimble
 )
+if (IDF_VERSION VERSION_LESS "5.3")
+# Additional include directories needed for private RMT header.
+#  IDF 5.x versions before 5.3.1
+  message(STATUS "Using private rmt headers for ${IDF_VERSION}")
+  target_include_directories(${MICROPY_TARGET} PRIVATE
+    ${IDF_PATH}/components/driver/rmt
+  )
+endif()
 
 # Add additional extmod and usermod components.
 if (MICROPY_PY_BTREE)

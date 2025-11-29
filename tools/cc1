@@ -23,8 +23,8 @@ import re
 # TODO somehow make them externally configurable
 
 # this is the path to the true C compiler
-cc1_path = '/usr/lib/gcc/x86_64-unknown-linux-gnu/5.3.0/cc1'
-#cc1_path = '/usr/lib/gcc/arm-none-eabi/5.3.0/cc1'
+cc1_path = "/usr/lib/gcc/x86_64-unknown-linux-gnu/5.3.0/cc1"
+# cc1_path = '/usr/lib/gcc/arm-none-eabi/5.3.0/cc1'
 
 # this must be the same as MICROPY_QSTR_BYTES_IN_HASH
 bytes_in_qstr_hash = 2
@@ -41,11 +41,16 @@ print_debug = False
 ################################################################################
 
 # precompile regexs
-re_preproc_line = re.compile(r'# [0-9]+ ')
-re_map_entry = re.compile(r'\{.+?\(MP_QSTR_([A-Za-z0-9_]+)\).+\},')
-re_mp_obj_dict_t = re.compile(r'(?P<head>(static )?const mp_obj_dict_t (?P<id>[a-z0-9_]+) = \{ \.base = \{&mp_type_dict\}, \.map = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$')
-re_mp_map_t = re.compile(r'(?P<head>(static )?const mp_map_t (?P<id>[a-z0-9_]+) = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$')
-re_mp_rom_map_elem_t = re.compile(r'static const mp_rom_map_elem_t [a-z_0-9]+\[\] = {$')
+re_preproc_line = re.compile(r"# [0-9]+ ")
+re_map_entry = re.compile(r"\{.+?\(MP_QSTR_([A-Za-z0-9_]+)\).+\},")
+re_mp_obj_dict_t = re.compile(
+    r"(?P<head>(static )?const mp_obj_dict_t (?P<id>[a-z0-9_]+) = \{ \.base = \{&mp_type_dict\}, \.map = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$"
+)
+re_mp_map_t = re.compile(
+    r"(?P<head>(static )?const mp_map_t (?P<id>[a-z0-9_]+) = \{ \.all_keys_are_qstrs = 1, \.is_fixed = 1, \.is_ordered = )1(?P<tail>, \.used = .+ };)$"
+)
+re_mp_rom_map_elem_t = re.compile(r"static const mp_rom_map_elem_t [a-z_0-9]+\[\] = {$")
+
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
@@ -55,18 +60,19 @@ def compute_hash(qstr):
     # Make sure that valid hash is never zero, zero means "hash not computed"
     return (hash & ((1 << (8 * bytes_in_qstr_hash)) - 1)) or 1
 
+
 # this algo must match the equivalent in map.c
 def hash_insert(map, key, value):
     hash = compute_hash(key)
     pos = hash % len(map)
     start_pos = pos
     if print_debug:
-        print('  insert %s: start at %u/%u -- ' % (key, pos, len(map)), end='')
+        print("  insert %s: start at %u/%u -- " % (key, pos, len(map)), end="")
     while True:
         if map[pos] is None:
             # found empty slot, so key is not in table
             if print_debug:
-                print('put at %u' % pos)
+                print("put at %u" % pos)
             map[pos] = (key, value)
             return
         else:
@@ -75,6 +81,7 @@ def hash_insert(map, key, value):
                 raise AssertionError("duplicate key '%s'" % (key,))
             pos = (pos + 1) % len(map)
             assert pos != start_pos
+
 
 def hash_find(map, key):
     hash = compute_hash(key)
@@ -92,6 +99,7 @@ def hash_find(map, key):
             if pos == start_pos:
                 return attempts, None
 
+
 def process_map_table(file, line, output):
     output.append(line)
 
@@ -101,7 +109,7 @@ def process_map_table(file, line, output):
     while True:
         line = file.readline()
         if len(line) == 0:
-            print('unexpected end of input')
+            print("unexpected end of input")
             sys.exit(1)
         line = line.strip()
         if len(line) == 0:
@@ -110,38 +118,38 @@ def process_map_table(file, line, output):
         if re_preproc_line.match(line):
             # preprocessor line number comment
             continue
-        if line == '};':
+        if line == "};":
             # end of table (we assume it appears on a single line)
             break
         table_contents.append(line)
 
     # make combined string of entries
-    entries_str = ''.join(table_contents)
+    entries_str = "".join(table_contents)
 
     # split into individual entries
     entries = []
     while entries_str:
         # look for single entry, by matching nested braces
         match = None
-        if entries_str[0] == '{':
+        if entries_str[0] == "{":
             nested_braces = 0
             for i in range(len(entries_str)):
-                if entries_str[i] == '{':
+                if entries_str[i] == "{":
                     nested_braces += 1
-                elif entries_str[i] == '}':
+                elif entries_str[i] == "}":
                     nested_braces -= 1
                     if nested_braces == 0:
-                        match = re_map_entry.match(entries_str[:i + 2])
+                        match = re_map_entry.match(entries_str[: i + 2])
                         break
 
         if not match:
-            print('unknown line in table:', entries_str)
+            print("unknown line in table:", entries_str)
             sys.exit(1)
 
         # extract single entry
         line = match.group(0)
         qstr = match.group(1)
-        entries_str = entries_str[len(line):].lstrip()
+        entries_str = entries_str[len(line) :].lstrip()
 
         # add the qstr and the whole line to list of all entries
         entries.append((qstr, line))
@@ -164,28 +172,28 @@ def process_map_table(file, line, output):
         attempts, line = hash_find(map, qstr)
         assert line is not None
         if print_debug:
-            print('  %s lookup took %u attempts' % (qstr, attempts))
+            print("  %s lookup took %u attempts" % (qstr, attempts))
         total_attempts += attempts
-    if len(entries):
+    if entries:
         stats = len(map), len(entries) / len(map), total_attempts / len(entries)
     else:
         stats = 0, 0, 0
     if print_debug:
-        print('  table stats: size=%d, load=%.2f, avg_lookups=%.1f' % stats)
+        print("  table stats: size=%d, load=%.2f, avg_lookups=%.1f" % stats)
 
     # output hash table
     for row in map:
         if row is None:
-            output.append('{ 0, 0 },\n')
+            output.append("{ 0, 0 },\n")
         else:
-            output.append(row[1] + '\n')
-    output.append('};\n')
+            output.append(row[1] + "\n")
+    output.append("};\n")
 
     # skip to next non-blank line
     while True:
         line = file.readline()
         if len(line) == 0:
-            print('unexpected end of input')
+            print("unexpected end of input")
             sys.exit(1)
         line = line.strip()
         if len(line) == 0:
@@ -197,19 +205,20 @@ def process_map_table(file, line, output):
     if match is None:
         match = re_mp_map_t.match(line)
     if match is None:
-        print('expecting mp_obj_dict_t or mp_map_t definition')
+        print("expecting mp_obj_dict_t or mp_map_t definition")
         print(output[0])
         print(line)
         sys.exit(1)
-    line = match.group('head') + '0' + match.group('tail') + '\n'
+    line = match.group("head") + "0" + match.group("tail") + "\n"
     output.append(line)
 
-    return (match.group('id'),) + stats
+    return (match.group("id"),) + stats
+
 
 def process_file(filename):
     output = []
     file_changed = False
-    with open(filename, 'rt') as f:
+    with open(filename, "rt") as f:
         while True:
             line = f.readline()
             if not line:
@@ -218,39 +227,41 @@ def process_file(filename):
                 file_changed = True
                 stats = process_map_table(f, line, output)
                 if print_stats:
-                    print('  [%s: size=%d, load=%.2f, avg_lookups=%.1f]' % stats)
+                    print("  [%s: size=%d, load=%.2f, avg_lookups=%.1f]" % stats)
             else:
                 output.append(line)
 
     if file_changed:
         if print_debug:
-            print('  modifying static maps in', output[0].strip())
-        with open(filename, 'wt') as f:
+            print("  modifying static maps in", output[0].strip())
+        with open(filename, "wt") as f:
             for line in output:
                 f.write(line)
+
 
 def main():
     # run actual C compiler
     # need to quote args that have special characters in them
     def quote(s):
-        if s.find('<') != -1 or s.find('>') != -1:
+        if s.find("<") != -1 or s.find(">") != -1:
             return "'" + s + "'"
         else:
             return s
-    ret = os.system(cc1_path + ' ' + ' '.join(quote(s) for s in sys.argv[1:]))
+
+    ret = os.system(cc1_path + " " + " ".join(quote(s) for s in sys.argv[1:]))
     if ret != 0:
-        ret = (ret & 0x7f) or 127 # make it in range 0-127, but non-zero
+        ret = (ret & 0x7F) or 127  # make it in range 0-127, but non-zero
         sys.exit(ret)
 
-    if sys.argv[1] == '-E':
+    if sys.argv[1] == "-E":
         # CPP has been run, now do our processing stage
         for i, arg in enumerate(sys.argv):
-            if arg == '-o':
+            if arg == "-o":
                 return process_file(sys.argv[i + 1])
 
         print('%s: could not find "-o" option' % (sys.argv[0],))
         sys.exit(1)
-    elif sys.argv[1] == '-fpreprocessed':
+    elif sys.argv[1] == "-fpreprocessed":
         # compiler has been run, nothing more to do
         return
     else:
@@ -258,5 +269,6 @@ def main():
         print('%s: unknown first option "%s"' % (sys.argv[0], sys.argv[1]))
         sys.exit(1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

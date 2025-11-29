@@ -60,6 +60,15 @@ class Rp2Pin(boardgen.Pin):
         m = re.match("([A-Z][A-Z0-9][A-Z]+)(([0-9]+)(_.*)?)?", af)
         af_fn = m.group(1)
         af_unit = int(m.group(3)) if m.group(3) is not None else 0
+        if af_idx == 10:
+            # AF11 uses UART_AUX in lieu of UART
+            af_fn = "UART_AUX"
+        if af_fn.startswith("QMI"):
+            # The full func name is GPIO_FUNC_XIP_CS1
+            af_fn = "XIP_CS1"
+        if af_fn.startswith("TRACE"):
+            # The various TRACE functions all belong under CORESIGHT_TRACE
+            af_fn = "CORESIGHT_TRACE"
         if af_fn == "PIO":
             # Pins can be either PIO unit (unlike, say, I2C where a
             # pin can only be I2C0 _or_ I2C1, both sharing the same AF
