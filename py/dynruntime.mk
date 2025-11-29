@@ -106,7 +106,7 @@ else ifeq ($(ARCH),rv32imc)
 # rv32imc
 CROSS = riscv64-unknown-elf-
 CFLAGS_ARCH += -march=rv32imac -mabi=ilp32 -mno-relax
-# If Picolibc is available then select it explicitly.  Ubuntu 22.04 ships its
+# If Picolibc is available then select it explicitly.  Ubuntu 24.04 ships its
 # bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
 # is "nosys" so a value must be provided.  To avoid having per-distro
 # workarounds, always select Picolibc if available.
@@ -116,6 +116,25 @@ CFLAGS_ARCH += -specs=$(PICOLIBC_SPECS)
 USE_PICOLIBC := 1
 PICOLIBC_ARCH := rv32imac
 PICOLIBC_ABI := ilp32
+endif
+
+MICROPY_FLOAT_IMPL ?= none
+
+else ifeq ($(ARCH),rv64imc)
+
+# rv64imc
+CROSS = riscv64-unknown-elf-
+CFLAGS_ARCH += -march=rv64imac -mabi=lp64 -mno-relax
+# If Picolibc is available then select it explicitly.  Ubuntu 24.04 ships its
+# bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
+# is "nosys" so a value must be provided.  To avoid having per-distro
+# workarounds, always select Picolibc if available.
+PICOLIBC_SPECS := $(shell $(CROSS)gcc --print-file-name=picolibc.specs)
+ifneq ($(PICOLIBC_SPECS),picolibc.specs)
+CFLAGS_ARCH += -specs=$(PICOLIBC_SPECS)
+USE_PICOLIBC := 1
+PICOLIBC_ARCH := rv64imac
+PICOLIBC_ABI := lp64
 endif
 
 MICROPY_FLOAT_IMPL ?= none
