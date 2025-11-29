@@ -1,0 +1,23 @@
+Test 1: Basic __prepare__ call
+['__prepare__(Test1)', 'body']
+PASS
+
+Test 2: __prepare__ arguments
+mcs=Meta2, name=Test2, bases=(<class 'Base2'>,)
+
+Test 3: __prepare__ return value as namespace
+Test3.injected = 42
+PASS
+
+Test 4: Access namespace from __new__
+Was prepared: True
+PASS
+
+Test 5: Inherited __prepare__
+BaseMeta.__prepare__(Test5)
+
+Test 6: No __prepare__ defined
+Test6.x = 1
+PASS
+
+All __prepare__ tests completed!

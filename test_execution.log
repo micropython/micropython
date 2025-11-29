@@ -1,0 +1,570 @@
+======================================================================
+CPython Enum Tests - MicroPython Compatibility Check
+======================================================================
+
+Enum implementation check:
+  Enum: ✓
+  IntEnum: ✓
+  Flag: ✓
+  IntFlag: ✓
+  StrEnum: ✓
+  auto: ✓
+  unique: ✓
+
+Loaded 16 test classes:
+  TestHelpers: 5 tests
+  TestPlainEnumClass: 34 tests
+  TestPlainFlagClass: 38 tests
+  TestIntEnumClass: 37 tests
+  TestStrEnumClass: 37 tests
+  TestIntFlagClass: 39 tests
+  TestMixedIntClass: 34 tests
+  TestMixedStrClass: 34 tests
+  TestMixedIntFlagClass: 37 tests
+  TestMixedDateClass: 34 tests
+  TestMinimalDateClass: 36 tests
+  TestMixedFloatClass: 34 tests
+  TestMinimalFloatClass: 36 tests
+  TestOrder: 7 tests
+  TestEmptyAndNonLatinStrings: 3 tests
+  TestUnique: 3 tests
+
+Skipped 14 incompatible test classes (functional API)
+
+Running 448 tests...
+----------------------------------------------------------------------
+test_dunder (test_enum_cpython.TestHelpers.test_dunder) ... ok
+test_is_descriptor (test_enum_cpython.TestHelpers.test_is_descriptor) ... ok
+test_is_private (test_enum_cpython.TestHelpers.test_is_private) ... ok
+test_iter_bits_lsb (test_enum_cpython.TestHelpers.test_iter_bits_lsb) ... ok
+test_sunder (test_enum_cpython.TestHelpers.test_sunder) ... ok
+test_attribute_deletion (test_enum_cpython.TestPlainEnumClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestPlainEnumClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestPlainEnumClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestPlainEnumClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestPlainEnumClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestPlainEnumClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestPlainEnumClass.test_contains_tf) ... ok
+test_dir_on_class (test_enum_cpython.TestPlainEnumClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestPlainEnumClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestPlainEnumClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestPlainEnumClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestPlainEnumClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestPlainEnumClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestPlainEnumClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestPlainEnumClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestPlainEnumClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestPlainEnumClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestPlainEnumClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestPlainEnumClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestPlainEnumClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestPlainEnumClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestPlainEnumClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestPlainEnumClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestPlainEnumClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestPlainEnumClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestPlainEnumClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestPlainEnumClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestPlainEnumClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestPlainEnumClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestPlainEnumClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestPlainEnumClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestPlainEnumClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestPlainEnumClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestPlainEnumClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestPlainFlagClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestPlainFlagClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestPlainFlagClass.test_basics) ... FAIL
+test_bool_is_true (test_enum_cpython.TestPlainFlagClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestPlainFlagClass.test_changing_member_fails) ... ok
+test_closed_invert_expectations (test_enum_cpython.TestPlainFlagClass.test_closed_invert_expectations) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestPlainFlagClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestPlainFlagClass.test_contains_tf) ... ok
+test_default_missing_with_wrong_type_value (test_enum_cpython.TestPlainFlagClass.test_default_missing_with_wrong_type_value) ... ok
+test_dir_on_class (test_enum_cpython.TestPlainFlagClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestPlainFlagClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestPlainFlagClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestPlainFlagClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestPlainFlagClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestPlainFlagClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestPlainFlagClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestPlainFlagClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestPlainFlagClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestPlainFlagClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestPlainFlagClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestPlainFlagClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestPlainFlagClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestPlainFlagClass.test_multiple_superclasses_repr) ... ok
+test_none_member (test_enum_cpython.TestPlainFlagClass.test_none_member) ... ok
+test_object_str_override (test_enum_cpython.TestPlainFlagClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_open_invert_expectations (test_enum_cpython.TestPlainFlagClass.test_open_invert_expectations) ... ok
+test_overridden_format (test_enum_cpython.TestPlainFlagClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestPlainFlagClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestPlainFlagClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestPlainFlagClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestPlainFlagClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestPlainFlagClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestPlainFlagClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestPlainFlagClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestPlainFlagClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestPlainFlagClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestPlainFlagClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestPlainFlagClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestIntEnumClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestIntEnumClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestIntEnumClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestIntEnumClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestIntEnumClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestIntEnumClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestIntEnumClass.test_contains_tf) ... ok
+test_copy (test_enum_cpython.TestIntEnumClass.test_copy) ... ok
+test_copy_member (test_enum_cpython.TestIntEnumClass.test_copy_member) ... ok
+test_dir_on_class (test_enum_cpython.TestIntEnumClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestIntEnumClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestIntEnumClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestIntEnumClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestIntEnumClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestIntEnumClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestIntEnumClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestIntEnumClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestIntEnumClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestIntEnumClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestIntEnumClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestIntEnumClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestIntEnumClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestIntEnumClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestIntEnumClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestIntEnumClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestIntEnumClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestIntEnumClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestIntEnumClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestIntEnumClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestIntEnumClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestIntEnumClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestIntEnumClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestIntEnumClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestIntEnumClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestIntEnumClass.test_reversed_iteration_order) ... ok
+test_shadowed_attr (test_enum_cpython.TestIntEnumClass.test_shadowed_attr) ... ok
+test_str (test_enum_cpython.TestIntEnumClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestStrEnumClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestStrEnumClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestStrEnumClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestStrEnumClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestStrEnumClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestStrEnumClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestStrEnumClass.test_contains_tf) ... ok
+test_copy (test_enum_cpython.TestStrEnumClass.test_copy) ... ok
+test_copy_member (test_enum_cpython.TestStrEnumClass.test_copy_member) ... ok
+test_dir_on_class (test_enum_cpython.TestStrEnumClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestStrEnumClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestStrEnumClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestStrEnumClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestStrEnumClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestStrEnumClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestStrEnumClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestStrEnumClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestStrEnumClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestStrEnumClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestStrEnumClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestStrEnumClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestStrEnumClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestStrEnumClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestStrEnumClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestStrEnumClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestStrEnumClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestStrEnumClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestStrEnumClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestStrEnumClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestStrEnumClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestStrEnumClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestStrEnumClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestStrEnumClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestStrEnumClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestStrEnumClass.test_reversed_iteration_order) ... ok
+test_shadowed_attr (test_enum_cpython.TestStrEnumClass.test_shadowed_attr) ... ok
+test_str (test_enum_cpython.TestStrEnumClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestIntFlagClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestIntFlagClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestIntFlagClass.test_basics) ... FAIL
+test_bool_is_true (test_enum_cpython.TestIntFlagClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestIntFlagClass.test_changing_member_fails) ... ok
+test_closed_invert_expectations (test_enum_cpython.TestIntFlagClass.test_closed_invert_expectations) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestIntFlagClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestIntFlagClass.test_contains_tf) ... ok
+test_copy (test_enum_cpython.TestIntFlagClass.test_copy) ... ok
+test_copy_member (test_enum_cpython.TestIntFlagClass.test_copy_member) ... ok
+test_default_missing_with_wrong_type_value (test_enum_cpython.TestIntFlagClass.test_default_missing_with_wrong_type_value) ... ok
+test_dir_on_class (test_enum_cpython.TestIntFlagClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestIntFlagClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestIntFlagClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestIntFlagClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestIntFlagClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestIntFlagClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestIntFlagClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestIntFlagClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestIntFlagClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestIntFlagClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestIntFlagClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestIntFlagClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestIntFlagClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestIntFlagClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestIntFlagClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_open_invert_expectations (test_enum_cpython.TestIntFlagClass.test_open_invert_expectations) ... ok
+test_overridden_format (test_enum_cpython.TestIntFlagClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestIntFlagClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestIntFlagClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestIntFlagClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestIntFlagClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestIntFlagClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestIntFlagClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestIntFlagClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestIntFlagClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestIntFlagClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestIntFlagClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestIntFlagClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestMixedIntClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestMixedIntClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestMixedIntClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestMixedIntClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestMixedIntClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestMixedIntClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestMixedIntClass.test_contains_tf) ... ok
+test_dir_on_class (test_enum_cpython.TestMixedIntClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestMixedIntClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestMixedIntClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestMixedIntClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestMixedIntClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestMixedIntClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestMixedIntClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestMixedIntClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestMixedIntClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestMixedIntClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestMixedIntClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestMixedIntClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestMixedIntClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestMixedIntClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestMixedIntClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestMixedIntClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestMixedIntClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestMixedIntClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestMixedIntClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestMixedIntClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestMixedIntClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestMixedIntClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestMixedIntClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestMixedIntClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestMixedIntClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestMixedIntClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestMixedIntClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestMixedStrClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestMixedStrClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestMixedStrClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestMixedStrClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestMixedStrClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestMixedStrClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestMixedStrClass.test_contains_tf) ... ok
+test_dir_on_class (test_enum_cpython.TestMixedStrClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestMixedStrClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestMixedStrClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestMixedStrClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestMixedStrClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestMixedStrClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestMixedStrClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestMixedStrClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestMixedStrClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestMixedStrClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestMixedStrClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestMixedStrClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestMixedStrClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestMixedStrClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestMixedStrClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestMixedStrClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestMixedStrClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestMixedStrClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestMixedStrClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestMixedStrClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestMixedStrClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestMixedStrClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestMixedStrClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestMixedStrClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestMixedStrClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestMixedStrClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestMixedStrClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestMixedIntFlagClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestMixedIntFlagClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestMixedIntFlagClass.test_basics) ... FAIL
+test_bool_is_true (test_enum_cpython.TestMixedIntFlagClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestMixedIntFlagClass.test_changing_member_fails) ... ok
+test_closed_invert_expectations (test_enum_cpython.TestMixedIntFlagClass.test_closed_invert_expectations) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestMixedIntFlagClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestMixedIntFlagClass.test_contains_tf) ... ok
+test_default_missing_with_wrong_type_value (test_enum_cpython.TestMixedIntFlagClass.test_default_missing_with_wrong_type_value) ... ok
+test_dir_on_class (test_enum_cpython.TestMixedIntFlagClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestMixedIntFlagClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestMixedIntFlagClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestMixedIntFlagClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestMixedIntFlagClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestMixedIntFlagClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestMixedIntFlagClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestMixedIntFlagClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestMixedIntFlagClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestMixedIntFlagClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestMixedIntFlagClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestMixedIntFlagClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestMixedIntFlagClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestMixedIntFlagClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestMixedIntFlagClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_open_invert_expectations (test_enum_cpython.TestMixedIntFlagClass.test_open_invert_expectations) ... ok
+test_overridden_format (test_enum_cpython.TestMixedIntFlagClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestMixedIntFlagClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestMixedIntFlagClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestMixedIntFlagClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestMixedIntFlagClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestMixedIntFlagClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestMixedIntFlagClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestMixedIntFlagClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestMixedIntFlagClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestMixedIntFlagClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestMixedIntFlagClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestMixedIntFlagClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestMixedDateClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestMixedDateClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestMixedDateClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestMixedDateClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestMixedDateClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestMixedDateClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestMixedDateClass.test_contains_tf) ... ok
+test_dir_on_class (test_enum_cpython.TestMixedDateClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestMixedDateClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestMixedDateClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestMixedDateClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestMixedDateClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestMixedDateClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestMixedDateClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestMixedDateClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestMixedDateClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestMixedDateClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestMixedDateClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestMixedDateClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestMixedDateClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestMixedDateClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestMixedDateClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestMixedDateClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestMixedDateClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestMixedDateClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestMixedDateClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestMixedDateClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestMixedDateClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestMixedDateClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestMixedDateClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestMixedDateClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestMixedDateClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestMixedDateClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestMixedDateClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestMinimalDateClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestMinimalDateClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestMinimalDateClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestMinimalDateClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestMinimalDateClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestMinimalDateClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestMinimalDateClass.test_contains_tf) ... ok
+test_copy (test_enum_cpython.TestMinimalDateClass.test_copy) ... ok
+test_copy_member (test_enum_cpython.TestMinimalDateClass.test_copy_member) ... ok
+test_dir_on_class (test_enum_cpython.TestMinimalDateClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestMinimalDateClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestMinimalDateClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestMinimalDateClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestMinimalDateClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestMinimalDateClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestMinimalDateClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestMinimalDateClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestMinimalDateClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestMinimalDateClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestMinimalDateClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestMinimalDateClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestMinimalDateClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestMinimalDateClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestMinimalDateClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestMinimalDateClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestMinimalDateClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestMinimalDateClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestMinimalDateClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestMinimalDateClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestMinimalDateClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestMinimalDateClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestMinimalDateClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestMinimalDateClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestMinimalDateClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestMinimalDateClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestMinimalDateClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestMixedFloatClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestMixedFloatClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestMixedFloatClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestMixedFloatClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestMixedFloatClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestMixedFloatClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestMixedFloatClass.test_contains_tf) ... ok
+test_dir_on_class (test_enum_cpython.TestMixedFloatClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestMixedFloatClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestMixedFloatClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestMixedFloatClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestMixedFloatClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestMixedFloatClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestMixedFloatClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestMixedFloatClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestMixedFloatClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestMixedFloatClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestMixedFloatClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestMixedFloatClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestMixedFloatClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestMixedFloatClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestMixedFloatClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestMixedFloatClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestMixedFloatClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestMixedFloatClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestMixedFloatClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestMixedFloatClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestMixedFloatClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestMixedFloatClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestMixedFloatClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestMixedFloatClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestMixedFloatClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestMixedFloatClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestMixedFloatClass.test_str) ... ok
+test_attribute_deletion (test_enum_cpython.TestMinimalFloatClass.test_attribute_deletion) ... ok
+test_bad_new_super (test_enum_cpython.TestMinimalFloatClass.test_bad_new_super) ... ok
+test_basics (test_enum_cpython.TestMinimalFloatClass.test_basics) ... ok
+test_bool_is_true (test_enum_cpython.TestMinimalFloatClass.test_bool_is_true) ... ok
+test_changing_member_fails (test_enum_cpython.TestMinimalFloatClass.test_changing_member_fails) ... ok
+test_contains_same_name_diff_enum_diff_values (test_enum_cpython.TestMinimalFloatClass.test_contains_same_name_diff_enum_diff_values) ... ok
+test_contains_tf (test_enum_cpython.TestMinimalFloatClass.test_contains_tf) ... ok
+test_copy (test_enum_cpython.TestMinimalFloatClass.test_copy) ... ok
+test_copy_member (test_enum_cpython.TestMinimalFloatClass.test_copy_member) ... ok
+test_dir_on_class (test_enum_cpython.TestMinimalFloatClass.test_dir_on_class) ... ok
+test_dir_on_item (test_enum_cpython.TestMinimalFloatClass.test_dir_on_item) ... ok
+test_dir_on_sub_with_behavior_including_instance_dict_on_super (test_enum_cpython.TestMinimalFloatClass.test_dir_on_sub_with_behavior_including_instance_dict_on_super) ... ok
+test_dir_on_sub_with_behavior_on_super (test_enum_cpython.TestMinimalFloatClass.test_dir_on_sub_with_behavior_on_super) ... ok
+test_dir_with_added_behavior (test_enum_cpython.TestMinimalFloatClass.test_dir_with_added_behavior) ... ok
+test_empty_enum_has_no_values (test_enum_cpython.TestMinimalFloatClass.test_empty_enum_has_no_values) ... ok
+test_enum_in_enum_out (test_enum_cpython.TestMinimalFloatClass.test_enum_in_enum_out) ... ok
+test_format (test_enum_cpython.TestMinimalFloatClass.test_format) ... ok
+test_format_specs (test_enum_cpython.TestMinimalFloatClass.test_format_specs) ... ok
+test_gnv_is_static (test_enum_cpython.TestMinimalFloatClass.test_gnv_is_static) ... ok
+test_hash (test_enum_cpython.TestMinimalFloatClass.test_hash) ... ok
+test_inherited_repr (test_enum_cpython.TestMinimalFloatClass.test_inherited_repr) ... ok
+test_invalid_names (test_enum_cpython.TestMinimalFloatClass.test_invalid_names) ... ok
+test_multiple_superclasses_repr (test_enum_cpython.TestMinimalFloatClass.test_multiple_superclasses_repr) ... ok
+test_object_str_override (test_enum_cpython.TestMinimalFloatClass.test_object_str_override)
+check that setting __str__ to object's is not reset to Enum's ... ok
+test_overridden_format (test_enum_cpython.TestMinimalFloatClass.test_overridden_format) ... ok
+test_overridden_str (test_enum_cpython.TestMinimalFloatClass.test_overridden_str) ... ok
+test_overridden_str_format (test_enum_cpython.TestMinimalFloatClass.test_overridden_str_format) ... ok
+test_overridden_str_format_inherited (test_enum_cpython.TestMinimalFloatClass.test_overridden_str_format_inherited) ... ok
+test_programmatic_function_from_dict (test_enum_cpython.TestMinimalFloatClass.test_programmatic_function_from_dict) ... ok
+test_programmatic_function_iterable (test_enum_cpython.TestMinimalFloatClass.test_programmatic_function_iterable) ... ok
+test_programmatic_function_string (test_enum_cpython.TestMinimalFloatClass.test_programmatic_function_string) ... ok
+test_programmatic_function_string_list (test_enum_cpython.TestMinimalFloatClass.test_programmatic_function_string_list) ... ok
+test_repr (test_enum_cpython.TestMinimalFloatClass.test_repr) ... ok
+test_repr_override (test_enum_cpython.TestMinimalFloatClass.test_repr_override) ... ok
+test_reversed_iteration_order (test_enum_cpython.TestMinimalFloatClass.test_reversed_iteration_order) ... ok
+test_str (test_enum_cpython.TestMinimalFloatClass.test_str) ... ok
+test_enum_has_extra_members (test_enum_cpython.TestOrder.test_enum_has_extra_members) ... ok
+test_enum_has_extra_members_with_aliases (test_enum_cpython.TestOrder.test_enum_has_extra_members_with_aliases) ... ok
+test_order_has_extra_members (test_enum_cpython.TestOrder.test_order_has_extra_members) ... ok
+test_order_has_extra_members_with_aliases (test_enum_cpython.TestOrder.test_order_has_extra_members_with_aliases) ... ok
+test_same_members (test_enum_cpython.TestOrder.test_same_members) ... ok
+test_same_members_with_aliases (test_enum_cpython.TestOrder.test_same_members_with_aliases) ... ok
+test_same_members_wrong_order (test_enum_cpython.TestOrder.test_same_members_wrong_order) ... ok
+test_empty_string (test_enum_cpython.TestEmptyAndNonLatinStrings.test_empty_string) ... ok
+test_non_latin_character_string (test_enum_cpython.TestEmptyAndNonLatinStrings.test_non_latin_character_string) ... ok
+test_non_latin_number_string (test_enum_cpython.TestEmptyAndNonLatinStrings.test_non_latin_number_string) ... ok
+test_unique_clean (test_enum_cpython.TestUnique.test_unique_clean) ... ok
+test_unique_dirty (test_enum_cpython.TestUnique.test_unique_dirty) ... ok
+test_unique_with_name (test_enum_cpython.TestUnique.test_unique_with_name) ... ok
+
+======================================================================
+FAIL: test_basics (test_enum_cpython.TestPlainFlagClass.test_basics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/test_enum_cpython.py", line 425, in test_basics
+    self.assertTrue(7 in TE)
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_basics (test_enum_cpython.TestIntFlagClass.test_basics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/test_enum_cpython.py", line 425, in test_basics
+    self.assertTrue(7 in TE)
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_basics (test_enum_cpython.TestMixedIntFlagClass.test_basics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/test_enum_cpython.py", line 425, in test_basics
+    self.assertTrue(7 in TE)
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 448 tests in 0.538s
+
+FAILED (failures=3)
+
+======================================================================
+Test Results Summary
+======================================================================
+Tests run:        448
+Passed:           445
+Failed:           3
+Errors:           0
+Skipped:          0
+Success rate:     99.3%
+
+======================================================================
+Failure Analysis
+======================================================================
+
+OTHER (3 failures):
+  - test_basics (test_enum_cpython.TestPlainFlagClass.test_basics)
+  - test_basics (test_enum_cpython.TestIntFlagClass.test_basics)
+  - test_basics (test_enum_cpython.TestMixedIntFlagClass.test_basics)
+
+======================================================================
+Detailed Failure Tracebacks
+======================================================================
+
+FAILURES:
+
+test_basics (test_enum_cpython.TestPlainFlagClass.test_basics):
+Traceback (most recent call last):
+  File "/tmp/test_enum_cpython.py", line 425, in test_basics
+    self.assertTrue(7 in TE)
+AssertionError: False is not true
+
+
+test_basics (test_enum_cpython.TestIntFlagClass.test_basics):
+Traceback (most recent call last):
+  File "/tmp/test_enum_cpython.py", line 425, in test_basics
+    self.assertTrue(7 in TE)
+AssertionError: False is not true
+
+
+test_basics (test_enum_cpython.TestMixedIntFlagClass.test_basics):
+Traceback (most recent call last):
+  File "/tmp/test_enum_cpython.py", line 425, in test_basics
+    self.assertTrue(7 in TE)
+AssertionError: False is not true
+
