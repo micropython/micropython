@@ -561,7 +561,7 @@ function ci_stm32_misc_build {
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G474RE
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L152RE
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_N657X0
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_U575ZI_Q
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_U5A5ZJ_Q
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WL55
 }
 
