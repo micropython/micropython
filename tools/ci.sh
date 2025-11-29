@@ -134,7 +134,7 @@ function ci_code_size_build {
         if _ci_is_git_merge "$COMPARISON"; then
             echo "BUILDING $(git log --oneline -1 --format='%s [merge of %h]' ${COMPARISON}^2)"
         else
-            echo "BUILDING $(git log --oneline -1 --formta='%s [%h]' ${COMPARISON})"
+            echo "BUILDING $(git log --oneline -1 --format='%s [%h]' ${COMPARISON})"
         fi > ~/size1
         code_size_build_step $COMPARISON ~/size1 false
     )
