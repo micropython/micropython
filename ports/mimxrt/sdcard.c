@@ -38,6 +38,11 @@
 #define SDCARD_SWITCH_1_8V_CAPACITY             ((uint32_t)0x01000000U)
 #define SDCARD_MAX_VOLT_TRIAL                   ((uint32_t)0x000000FFU)
 
+// Transfer status flags
+#define SDCARD_TRANSFER_CMD_COMPLETE            (1U << 0)
+#define SDCARD_TRANSFER_DATA_COMPLETE           (1U << 1)
+#define SDCARD_TRANSFER_ERROR                   (1U << 2)
+
 // Error
 #define SDCARD_STATUS_OUT_OF_RANGE_SHIFT        (31U)
 #define SDCARD_STATUS_ADDRESS_ERROR_SHIFT       (30U)
@@ -237,6 +242,8 @@ static bool sdcard_cmd_send_csd(mimxrt_sdcard_obj_t *card, csd_t *csd);
 static bool sdcard_cmd_select_card(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_blocklen(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *sdcard, usdhc_data_bus_width_t bus_width);
+static bool sdcard_cmd_send_status(mimxrt_sdcard_obj_t *card);
+static bool sdcard_wait_ready(mimxrt_sdcard_obj_t *card, uint32_t timeout_ms);
 
 void sdcard_card_inserted_callback(USDHC_Type *base, void *userData) {
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL
@@ -275,6 +282,20 @@ void sdcard_dummy_callback(USDHC_Type *base, void *userData) {
     return;
 }
 
+void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData) {
+    mimxrt_sdcard_obj_t *card = (mimxrt_sdcard_obj_t *)userData;
+
+    if (status == kStatus_USDHC_TransferDataComplete) {
+        card->state->transfer_status |= SDCARD_TRANSFER_DATA_COMPLETE;
+    } else if (status == kStatus_USDHC_SendCommandSuccess) {
+        card->state->transfer_status |= SDCARD_TRANSFER_CMD_COMPLETE;
+    } else if (status != kStatus_USDHC_BusyTransferring) {
+        card->state->transfer_error = status;
+        __DSB();  // Ensure error is visible before status flag
+        card->state->transfer_status |= SDCARD_TRANSFER_ERROR;
+    }
+}
+
 static void sdcard_error_recovery(USDHC_Type *base) {
     uint32_t status = 0U;
     /* get host present status */
@@ -306,23 +327,46 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
     dma_config.admaTable = sdcard_adma_descriptor_table;
     dma_config.admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE;
 
-    // Wait while the card is busy before a transfer
-    status = kStatus_Timeout;
-    for (int i = 0; i < timeout_ms * 100; i++) {
-        // Wait until Data0 is low any more. Low indicates "Busy".
-        if (((transfer->data->txData == NULL) && (transfer->data->rxData == NULL)) ||
-            (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
-            // Not busy anymore or no TX-Data
-            status = USDHC_TransferBlocking(base, &dma_config, transfer);
-            if (status != kStatus_Success) {
-                sdcard_error_recovery(base);
-            }
-            break;
-        }
-        ticks_delay_us64(10);
-    }
-    return status;
+    // Get the card object from handle's userData
+    mimxrt_sdcard_obj_t *card = (mimxrt_sdcard_obj_t *)handle->userData;
 
+    // Clear transfer status flags
+    card->state->transfer_status = 0;
+    card->state->transfer_error = kStatus_Success;
+
+    // Determine expected completion flags
+    uint32_t expected_flags = SDCARD_TRANSFER_CMD_COMPLETE;
+    if (transfer->data != NULL) {
+        expected_flags |= SDCARD_TRANSFER_DATA_COMPLETE;
+    }
+
+    // Start non-blocking transfer
+    status = USDHC_TransferNonBlocking(base, handle, &dma_config, transfer);
+    if (status != kStatus_Success) {
+        return status;
+    }
+
+    // Wait for transfer completion with timeout
+    // Read transfer_status into local variable to avoid race with ISR between condition checks
+    uint32_t start = mp_hal_ticks_ms();
+    uint32_t xfer_status;
+    while (((xfer_status = card->state->transfer_status) != expected_flags) &&
+           !(xfer_status & SDCARD_TRANSFER_ERROR) &&
+           (mp_hal_ticks_ms() - start) < timeout_ms) {
+        MICROPY_EVENT_POLL_HOOK;
+    }
+
+    if (xfer_status == 0) {
+        // Timeout - no status flags set
+        sdcard_error_recovery(base);
+        return kStatus_Timeout;
+    } else if (xfer_status != expected_flags) {
+        // Error occurred
+        sdcard_error_recovery(base);
+        return card->state->transfer_error;
+    }
+
+    return kStatus_Success;
 }
 
 static void sdcard_decode_csd(mimxrt_sdcard_obj_t *card, csd_t *csd) {
@@ -662,6 +706,54 @@ static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *card, usdhc_data_bus_w
     }
 }
 
+static bool sdcard_cmd_send_status(mimxrt_sdcard_obj_t *card) {
+    status_t status;
+    usdhc_command_t command = {
+        .index = SDCARD_CMD_SEND_STATUS,
+        .argument = (card->rca << 16),
+        .type = kCARD_CommandTypeNormal,
+        .responseType = kCARD_ResponseTypeR1,
+        .responseErrorFlags = SDMMC_R1_ALL_ERROR_FLAG,
+    };
+    usdhc_transfer_t transfer = {
+        .data = NULL,
+        .command = &command,
+    };
+
+    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+
+    if (status == kStatus_Success) {
+        card->status = command.response[0];
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool sdcard_wait_ready(mimxrt_sdcard_obj_t *card, uint32_t timeout_ms) {
+    uint32_t start = mp_hal_ticks_ms();
+
+    while ((mp_hal_ticks_ms() - start) < timeout_ms) {
+        if (!sdcard_cmd_send_status(card)) {
+            return false;
+        }
+
+        // Check if card is ready for data (bit 8) and in transfer state (bits 9-12 == 4)
+        uint32_t card_state = SDMMC_R1_CURRENT_STATE(card->status);
+        bool ready_for_data = (card->status & SDMMC_MASK(SDCARD_STATUS_READY_FOR_DATA_SHIFT)) != 0;
+
+        if (ready_for_data && (card_state == SDCARD_STATE_TRANSFER)) {
+            return true;
+        }
+
+        // Allow other MicroPython tasks to run while polling
+        MICROPY_EVENT_POLL_HOOK;
+        mp_hal_delay_ms(1);  // Wait 1ms between polls
+    }
+
+    return false;  // Timeout
+}
+
 static bool sdcard_reset(mimxrt_sdcard_obj_t *card) {
     card->block_len = SDCARD_DEFAULT_BLOCK_SIZE;
     card->rca = 0UL;
@@ -725,10 +817,11 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
         .CardRemoved = sdcard_card_removed_callback,
         .SdioInterrupt = sdcard_dummy_callback,
         .BlockGap = sdcard_dummy_callback,
+        .TransferComplete = sdcard_transfer_complete_callback,
         .ReTuning = sdcard_dummy_callback,
     };
 
-    USDHC_TransferCreateHandle(card->usdhc_inst, &card->handle, &callbacks, NULL);
+    USDHC_TransferCreateHandle(card->usdhc_inst, &card->handle, &callbacks, card);
 }
 
 void sdcard_deinit(mimxrt_sdcard_obj_t *card) {
@@ -774,10 +867,18 @@ void sdcard_init_pins(mimxrt_sdcard_obj_t *card) {
     }
 }
 
+// Note on buffer alignment: The cache operations extend to 32-byte (cache line) boundaries.
+// For buffers that are part of larger structures, this could affect adjacent memory.
+// The MicroPython VFS layer typically provides properly allocated buffers that are safe.
+// DMA requires 4-byte alignment which is checked implicitly by the hardware.
 bool sdcard_read(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num, uint32_t block_count) {
     if (!card->state->initialized) {
         return false;
     }
+
+    // Ensure cache is flushed and invalidated so when DMA updates RAM
+    // from the peripheral, the CPU reads the new data.
+    MP_HAL_CLEANINVALIDATE_DCACHE(buffer, block_count * card->block_len);
 
     usdhc_data_t data = {
         .enableAutoCommand12 = true,
@@ -807,16 +908,22 @@ bool sdcard_read(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num,
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
+        // Invalidate cache again after DMA completes to discard any speculative
+        // cache line fills that may have occurred during the transfer.
+        MP_HAL_CLEANINVALIDATE_DCACHE(buffer, block_count * card->block_len);
         return true;
     } else {
         return false;
     }
 }
 
-bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num, uint32_t block_count) {
+bool sdcard_write(mimxrt_sdcard_obj_t *card, const uint8_t *buffer, uint32_t block_num, uint32_t block_count) {
     if (!card->state->initialized) {
         return false;
     }
+
+    // Ensure cache is flushed to RAM so DMA can read the correct data.
+    MP_HAL_CLEAN_DCACHE(buffer, block_count * card->block_len);
 
     usdhc_data_t data = {
         .enableAutoCommand12 = true,
@@ -844,12 +951,19 @@ bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num
 
     status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 3000);
 
-    if (status == kStatus_Success) {
-        card->status = command.response[0];
-        return true;
-    } else {
+    if (status != kStatus_Success) {
         return false;
     }
+
+    card->status = command.response[0];
+
+    // Wait for the card to complete programming the data to flash.
+    // The transfer above only ensures the data has been sent to the card's buffer.
+    if (!sdcard_wait_ready(card, 5000)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool sdcard_set_active(mimxrt_sdcard_obj_t *card) {
@@ -873,7 +987,7 @@ bool sdcard_probe_bus_voltage(mimxrt_sdcard_obj_t *card) {
         /* Get operating voltage*/
         valid_voltage = (((card->oper_cond >> 31U) == 1U) ? true : false);
         count++;
-        ticks_delay_us64(1000);
+        mp_hal_delay_ms(1);
     }
 
     if (count >= SDCARD_MAX_VOLT_TRIAL) {
@@ -986,7 +1100,11 @@ bool sdcard_power_on(mimxrt_sdcard_obj_t *card) {
 }
 
 bool sdcard_power_off(mimxrt_sdcard_obj_t *card) {
-    (void)sdcard_cmd_go_idle_state(card);
+    // Only send GO_IDLE_STATE command if card was successfully initialized
+    // Sending commands to a non-existent card can timeout/hang waiting for response
+    if (card->state->initialized) {
+        (void)sdcard_cmd_go_idle_state(card);
+    }
 
     // Reset card bus clock
     USDHC_SetDataBusWidth(card->usdhc_inst, kUSDHC_DataBusWidth1Bit);
