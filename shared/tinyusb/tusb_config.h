@@ -63,6 +63,8 @@
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
 #endif
 
+// Always enable USB classes for compilation to allow runtime control
+// Runtime enabling/disabling is controlled by mp_usbd_class_state
 #if MICROPY_HW_USB_CDC
 #define CFG_TUD_CDC             (1)
 #else
@@ -129,6 +131,8 @@
 #define EPNUM_MSC_OUT (0x01)
 #define EPNUM_MSC_IN (0x81)
 #endif // CFG_TUD_CDC
+#define USBD_MSC_EP_OUT EPNUM_MSC_OUT
+#define USBD_MSC_EP_IN EPNUM_MSC_IN
 #endif // CFG_TUD_MSC
 
 /* Limits of builtin USB interfaces, endpoints, strings */
