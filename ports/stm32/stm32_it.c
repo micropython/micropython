@@ -301,6 +301,8 @@ void DebugMon_Handler(void) {
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
 
+#if MICROPY_HW_STM_USB_STACK || MICROPY_HW_TINYUSB_STACK
+
 #if defined(STM32G0)
 
 #if MICROPY_HW_USB_FS
@@ -498,6 +500,8 @@ void OTG_HS_WKUP_IRQHandler(void) {
 #endif
 
 #endif // !defined(STM32L0)
+
+#endif // MICROPY_HW_STM_USB_STACK || MICROPY_HW_TINYUSB_STACK
 
 /**
   * @brief  This function handles PPP interrupt request.
