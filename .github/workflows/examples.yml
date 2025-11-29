@@ -20,6 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Build
-      run: make -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
+      run: tools/ci.sh embedding_build
     - name: Run
-      run: ./examples/embedding/embed | grep "hello world"
+      run: tools/ci.sh embedding_run_tests
