@@ -494,10 +494,17 @@ function ci_samd_build {
 # ports/stm32
 
 function ci_stm32_setup {
-    ci_gcc_arm_setup
+    # Use a recent version of the ARM toolchain, to work with Cortex-M55.
+    wget https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+    xzcat arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz | tar x
+
     pip3 install pyelftools
     pip3 install ar
     pip3 install pyhy
+}
+
+function ci_stm32_path {
+    echo $(pwd)/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin
 }
 
 function ci_stm32_pyb_build {
