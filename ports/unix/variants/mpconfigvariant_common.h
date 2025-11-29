@@ -118,3 +118,7 @@
 
 #define MICROPY_VFS_ROM                (1)
 #define MICROPY_VFS_ROM_IOCTL          (0)
+
+// Enable "typing" and related modules.
+#define MICROPY_PY_TYPING               (1)
+#define MICROPY_PY_TYPING_EXTRA_MODULES (1)
