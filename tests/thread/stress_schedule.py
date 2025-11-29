@@ -27,15 +27,13 @@ def task(x):
     n += 1
 
 
-# This function must always use the bytecode emitter so it bounces the GIL when running.
-@micropython.bytecode
 def thread():
     while thread_run:
         try:
             micropython.schedule(task, None)
         except RuntimeError:
             # Queue full, back off.
-            time.sleep_ms(10)
+            time.sleep_ms(1)
 
 
 for i in range(8):

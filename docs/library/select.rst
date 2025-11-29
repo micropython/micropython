@@ -81,6 +81,9 @@ Methods
 
       Tuples returned may contain more than 2 elements as described above.
 
+   Calling ``poll.poll`` is guaranteed to call pending callback
+   functions before entering the polling loop.
+
 .. method:: poll.ipoll(timeout=-1, flags=0, /)
 
    Like :meth:`poll.poll`, but instead returns an iterator which yields a
@@ -97,3 +100,6 @@ Methods
       :class: attention
 
       This function is a MicroPython extension.
+
+   Calling ``poll.ipoll`` is guaranteed to call pending callback
+   functions before entering the polling loop.
