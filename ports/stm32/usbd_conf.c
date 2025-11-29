@@ -36,7 +36,7 @@
 #include "irq.h"
 #include "usb.h"
 
-#if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
+#if MICROPY_HW_STM_USB_STACK || MICROPY_HW_TINYUSB_STACK
 
 #if BUILDING_MBOOT
 // TinyUSB not used in mboot
