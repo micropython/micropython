@@ -11,5 +11,10 @@ MICROPY_HW_FLASH_QE_ARG = 0x02
 
 USE_UF2_BOOTLOADER = 1
 
+MICROPY_PY_LWIP = 1
+MICROPY_PY_SSL = 1
+MICROPY_SSL_MBEDTLS = 1
+MICROPY_PY_NETWORK_ESP_HOSTED = 1
+
 deploy: $(BUILD)/firmware.hex
 	teensy_loader_cli --mcu=imxrt1062 -v -w $<

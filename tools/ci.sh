@@ -76,6 +76,7 @@ function ci_code_size_setup {
     sudo apt-get install gcc-multilib
     gcc --version
     ci_gcc_arm_setup
+    sudo apt-get install protobuf-c-compiler
     ci_gcc_riscv_setup
     ci_picotool_setup
 }
@@ -304,6 +305,7 @@ function ci_webassembly_run_tests {
 
 function ci_mimxrt_setup {
     ci_gcc_arm_setup
+    sudo apt-get install protobuf-c-compiler
 }
 
 function ci_mimxrt_build {
