@@ -211,10 +211,7 @@ mimxrt_sdcard_obj_t mimxrt_sdcard_objs[] =
 // ---
 // Local function declarations
 // ---
-static status_t sdcard_transfer_blocking(USDHC_Type *base,
-    usdhc_handle_t *handle,
-    usdhc_transfer_t *transfer,
-    uint32_t timeout_ms);
+static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_transfer_t *transfer, uint32_t timeout_ms);
 static void sdcard_decode_csd(mimxrt_sdcard_obj_t *sdcard, csd_t *csd);
 static bool sdcard_reset(mimxrt_sdcard_obj_t *card);
 static inline void sdcard_init_pin(const machine_pin_obj_t *pin, uint8_t af_idx, uint32_t config_value);
@@ -222,7 +219,6 @@ static inline void sdcard_init_pin(const machine_pin_obj_t *pin, uint8_t af_idx,
 // SD Card interrupt callbacks
 void sdcard_card_inserted_callback(USDHC_Type *base, void *userData);
 void sdcard_card_removed_callback(USDHC_Type *base, void *userData);
-void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData);
 void sdcard_dummy_callback(USDHC_Type *base, void *userData);
 
 // SD Card commands
@@ -237,6 +233,8 @@ static bool sdcard_cmd_send_csd(mimxrt_sdcard_obj_t *card, csd_t *csd);
 static bool sdcard_cmd_select_card(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_blocklen(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *sdcard, usdhc_data_bus_width_t bus_width);
+static bool sdcard_cmd_send_status(mimxrt_sdcard_obj_t *card);
+static bool sdcard_wait_ready(mimxrt_sdcard_obj_t *card, uint32_t timeout_ms);
 
 void sdcard_card_inserted_callback(USDHC_Type *base, void *userData) {
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL
@@ -291,38 +289,43 @@ static void sdcard_error_recovery(USDHC_Type *base) {
     }
 }
 
-static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handle, usdhc_transfer_t *transfer, uint32_t timeout_ms) {
-    status_t status;
-
-    usdhc_adma_config_t dma_config;
-
-    (void)memset(&dma_config, 0, sizeof(usdhc_adma_config_t));
-    dma_config.dmaMode = kUSDHC_DmaModeAdma2;
-
-    #if !(defined(FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN) && FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN)
-    dma_config.burstLen = kUSDHC_EnBurstLenForINCR;
-    #endif
-
-    dma_config.admaTable = sdcard_adma_descriptor_table;
-    dma_config.admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE;
-
-    // Wait while the card is busy before a transfer
-    status = kStatus_Timeout;
-    for (int i = 0; i < timeout_ms * 100; i++) {
-        // Wait until Data0 is low any more. Low indicates "Busy".
-        if (((transfer->data->txData == NULL) && (transfer->data->rxData == NULL)) ||
-            (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
-            // Not busy anymore or no TX-Data
-            status = USDHC_TransferBlocking(base, &dma_config, transfer);
-            if (status != kStatus_Success) {
-                sdcard_error_recovery(base);
-            }
-            break;
+// Wait for card to be ready by polling Data0 line.
+// Data0 low indicates card is busy.
+static bool sdcard_wait_data0_ready(USDHC_Type *base, uint32_t timeout_ms) {
+    for (uint32_t i = 0; i < timeout_ms; i++) {
+        if ((USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
+            return true;
         }
-        ticks_delay_us64(10);
+        mp_hal_delay_ms(1);
+    }
+    return false;
+}
+
+// Wrapper around SDK's USDHC_TransferBlocking.
+// Waits for card to be ready before starting transfer.
+static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_transfer_t *transfer, uint32_t timeout_ms) {
+    usdhc_adma_config_t dma_config = {
+        .dmaMode = kUSDHC_DmaModeAdma2,
+        #if !(defined(FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN) && FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN)
+        .burstLen = kUSDHC_EnBurstLenForINCR,
+        #endif
+        .admaTable = sdcard_adma_descriptor_table,
+        .admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE,
+    };
+
+    // For command-only transfers (no data), skip the busy wait
+    bool has_data = (transfer->data != NULL) &&
+        ((transfer->data->txData != NULL) || (transfer->data->rxData != NULL));
+
+    if (has_data && !sdcard_wait_data0_ready(base, timeout_ms)) {
+        return kStatus_Timeout;
+    }
+
+    status_t status = USDHC_TransferBlocking(base, &dma_config, transfer);
+    if (status != kStatus_Success) {
+        sdcard_error_recovery(base);
     }
     return status;
-
 }
 
 static void sdcard_decode_csd(mimxrt_sdcard_obj_t *card, csd_t *csd) {
@@ -381,7 +384,7 @@ static bool sdcard_cmd_go_idle_state(mimxrt_sdcard_obj_t *card) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         return true;
@@ -403,7 +406,7 @@ static bool sdcard_cmd_oper_cond(mimxrt_sdcard_obj_t *card) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         card->oper_cond = command.response[0];
@@ -426,7 +429,7 @@ static bool sdcard_cmd_app_cmd(mimxrt_sdcard_obj_t *card) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
@@ -454,7 +457,7 @@ static bool sdcard_cmd_sd_app_op_cond(mimxrt_sdcard_obj_t *card, uint32_t argume
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         card->oper_cond = command.response[0];
@@ -477,7 +480,7 @@ static bool sdcard_cmd_all_send_cid(mimxrt_sdcard_obj_t *card, cid_t *cid) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         cid->mdt = (uint16_t)((command.response[0] & 0xFFF00U) >> 8U);
@@ -510,7 +513,7 @@ static bool sdcard_cmd_send_cid(mimxrt_sdcard_obj_t *card, cid_t *cid) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         cid->mdt = (uint16_t)((command.response[0] & 0xFFF00U) >> 8U);
@@ -543,7 +546,7 @@ static bool sdcard_cmd_set_rel_add(mimxrt_sdcard_obj_t *card) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         card->rca = 0xFFFFFFFF & (command.response[0] >> 16);
@@ -566,7 +569,7 @@ static bool sdcard_cmd_send_csd(mimxrt_sdcard_obj_t *card, csd_t *csd) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         csd->data[0] = command.response[0];
@@ -593,7 +596,7 @@ static bool sdcard_cmd_select_card(mimxrt_sdcard_obj_t *card) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
@@ -617,7 +620,7 @@ static bool sdcard_cmd_set_blocklen(mimxrt_sdcard_obj_t *card) {
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
@@ -652,7 +655,7 @@ static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *card, usdhc_data_bus_w
         .command = &command,
     };
 
-    status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 250);
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
@@ -660,6 +663,54 @@ static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *card, usdhc_data_bus_w
     } else {
         return false;
     }
+}
+
+static bool sdcard_cmd_send_status(mimxrt_sdcard_obj_t *card) {
+    status_t status;
+    usdhc_command_t command = {
+        .index = SDCARD_CMD_SEND_STATUS,
+        .argument = (card->rca << 16),
+        .type = kCARD_CommandTypeNormal,
+        .responseType = kCARD_ResponseTypeR1,
+        .responseErrorFlags = SDMMC_R1_ALL_ERROR_FLAG,
+    };
+    usdhc_transfer_t transfer = {
+        .data = NULL,
+        .command = &command,
+    };
+
+    status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 250);
+
+    if (status == kStatus_Success) {
+        card->status = command.response[0];
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool sdcard_wait_ready(mimxrt_sdcard_obj_t *card, uint32_t timeout_ms) {
+    uint32_t start = mp_hal_ticks_ms();
+
+    while ((mp_hal_ticks_ms() - start) < timeout_ms) {
+        if (!sdcard_cmd_send_status(card)) {
+            return false;
+        }
+
+        // Check if card is ready for data (bit 8) and in transfer state (bits 9-12 == 4)
+        uint32_t card_state = SDMMC_R1_CURRENT_STATE(card->status);
+        bool ready_for_data = (card->status & SDMMC_MASK(SDCARD_STATUS_READY_FOR_DATA_SHIFT)) != 0;
+
+        if (ready_for_data && (card_state == SDCARD_STATE_TRANSFER)) {
+            return true;
+        }
+
+        // Allow other MicroPython tasks to run while polling
+        MICROPY_EVENT_POLL_HOOK;
+        mp_hal_delay_ms(1);  // Wait 1ms between polls
+    }
+
+    return false;  // Timeout
 }
 
 static bool sdcard_reset(mimxrt_sdcard_obj_t *card) {
@@ -708,6 +759,19 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
 
     #endif // MIMXRT117x_SERIES
 
+    // ERR050396 workaround: Disable cacheable AXI transactions for USDHC
+    // This is critical when GC heap is in cacheable OCRAM (SDRAM disabled).
+    // The GPR28/GPR13 ARCACHE/AWCACHE bits control USDHC's AXI cache attributes
+    // at the hardware level, ensuring DMA accesses bypass the L1 D-cache.
+    #ifdef MIMXRT117x_SERIES
+    IOMUXC_GPR->GPR28 &= ~(IOMUXC_GPR_GPR28_ARCACHE_USDHC_MASK | IOMUXC_GPR_GPR28_AWCACHE_USDHC_MASK);
+    #else
+    #if defined(IOMUXC_GPR_GPR13_ARCACHE_USDHC_MASK)
+    IOMUXC_GPR->GPR13 &= ~(IOMUXC_GPR_GPR13_ARCACHE_USDHC_MASK | IOMUXC_GPR_GPR13_AWCACHE_USDHC_MASK);
+    #endif
+    #endif
+    __DSB();  // Ensure GPR setting completes before USDHC initialization
+
     // Initialize USDHC
     const usdhc_config_t config = {
         .endianMode = kUSDHC_EndianModeLittle,
@@ -725,6 +789,7 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
         .CardRemoved = sdcard_card_removed_callback,
         .SdioInterrupt = sdcard_dummy_callback,
         .BlockGap = sdcard_dummy_callback,
+        .TransferComplete = NULL,  // Not used - we use blocking transfers
         .ReTuning = sdcard_dummy_callback,
     };
 
@@ -779,6 +844,10 @@ bool sdcard_read(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num,
         return false;
     }
 
+    // Ensure cache is flushed and invalidated so when DMA updates RAM
+    // from the peripheral, the CPU reads the new data.
+    MP_HAL_CLEANINVALIDATE_DCACHE(buffer, block_count * card->block_len);
+
     usdhc_data_t data = {
         .enableAutoCommand12 = true,
         .enableAutoCommand23 = false,
@@ -803,10 +872,13 @@ bool sdcard_read(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num,
         .command = &command,
     };
 
-    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 500);
+    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 500);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
+        // Invalidate cache again after DMA completes to discard any speculative
+        // cache line fills that may have occurred during the transfer.
+        MP_HAL_CLEANINVALIDATE_DCACHE(buffer, block_count * card->block_len);
         return true;
     } else {
         return false;
@@ -817,6 +889,9 @@ bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num
     if (!card->state->initialized) {
         return false;
     }
+
+    // Ensure cache is flushed to RAM so DMA can read the correct data.
+    MP_HAL_CLEAN_DCACHE(buffer, block_count * card->block_len);
 
     usdhc_data_t data = {
         .enableAutoCommand12 = true,
@@ -842,14 +917,21 @@ bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num
         .command = &command,
     };
 
-    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 3000);
+    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &transfer, 3000);
 
-    if (status == kStatus_Success) {
-        card->status = command.response[0];
-        return true;
-    } else {
+    if (status != kStatus_Success) {
         return false;
     }
+
+    card->status = command.response[0];
+
+    // Wait for the card to complete programming the data to flash.
+    // The transfer above only ensures the data has been sent to the card's buffer.
+    if (!sdcard_wait_ready(card, 5000)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool sdcard_set_active(mimxrt_sdcard_obj_t *card) {
@@ -873,7 +955,7 @@ bool sdcard_probe_bus_voltage(mimxrt_sdcard_obj_t *card) {
         /* Get operating voltage*/
         valid_voltage = (((card->oper_cond >> 31U) == 1U) ? true : false);
         count++;
-        ticks_delay_us64(1000);
+        mp_hal_delay_ms(1);
     }
 
     if (count >= SDCARD_MAX_VOLT_TRIAL) {
