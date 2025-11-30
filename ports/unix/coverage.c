@@ -20,6 +20,16 @@
 #include "py/binary.h"
 #include "py/bc.h"
 
+// Forward declaration for tracked allocation testing
+typedef struct _m_tracked_node_t {
+    struct _m_tracked_node_t *prev;
+    struct _m_tracked_node_t *next;
+    #if !MICROPY_ENABLE_GC
+    uintptr_t size;
+    #endif
+    uint8_t data[];
+} m_tracked_node_t;
+
 // expected output of this file is found in extra_coverage.py.exp
 
 #if defined(MICROPY_UNIX_COVERAGE)
@@ -368,6 +378,87 @@ static mp_obj_t extra_coverage(void) {
         }
 
         mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
+
+        // Test realloc at head/tail of list (exercises NULL prev/next handling)
+        mp_printf(&mp_plat_print, "# tracked realloc list positions\n");
+
+        // Allocate 3 nodes to create a list
+        uint8_t *nodes[3];
+        for (int i = 0; i < 3; ++i) {
+            nodes[i] = m_tracked_calloc(1, 32);
+            nodes[i][0] = 'A' + i;  // Mark each with A, B, C
+        }
+
+        // Verify initial list has 3 items (head should be nodes[2], the last allocated)
+        int count = 0;
+        for (m_tracked_node_t *n = MP_STATE_VM(m_tracked_head); n != NULL; n = n->next) {
+            ++count;
+        }
+        mp_printf(&mp_plat_print, "list count: %d\n", count);
+
+        // Realloc the tail (first allocated, nodes[0]) - tests next==NULL case
+        nodes[0] = m_tracked_realloc(nodes[0], 64);
+        mp_printf(&mp_plat_print, "tail realloc marker: %c\n", nodes[0][0]);
+
+        // Realloc the head (last allocated, nodes[2]) - tests prev==NULL case
+        nodes[2] = m_tracked_realloc(nodes[2], 64);
+        mp_printf(&mp_plat_print, "head realloc marker: %c\n", nodes[2][0]);
+
+        // Realloc middle node - tests both prev and next non-NULL
+        nodes[1] = m_tracked_realloc(nodes[1], 64);
+        mp_printf(&mp_plat_print, "middle realloc marker: %c\n", nodes[1][0]);
+
+        // Verify list still has 3 items and is traversable
+        count = 0;
+        for (m_tracked_node_t *n = MP_STATE_VM(m_tracked_head); n != NULL; n = n->next) {
+            ++count;
+        }
+        mp_printf(&mp_plat_print, "list count after reallocs: %d\n", count);
+
+        // Verify backward traversal (prev pointers correct)
+        // Find tail by walking forward
+        m_tracked_node_t *tail = MP_STATE_VM(m_tracked_head);
+        while (tail != NULL && tail->next != NULL) {
+            tail = tail->next;
+        }
+        // Walk backward and count
+        count = 0;
+        for (m_tracked_node_t *n = tail; n != NULL; n = n->prev) {
+            ++count;
+        }
+        mp_printf(&mp_plat_print, "backward traversal count: %d\n", count);
+
+        // Test pure allocation via realloc (NULL ptr)
+        uint8_t *new_alloc = m_tracked_realloc(NULL, 32);
+        new_alloc[0] = 'X';
+        mp_printf(&mp_plat_print, "realloc(NULL) marker: %c\n", new_alloc[0]);
+
+        // Test pure free via realloc (size 0)
+        void *result = m_tracked_realloc(new_alloc, 0);
+        mp_printf(&mp_plat_print, "realloc(ptr, 0) result: %d\n", result == NULL ? 1 : 0);
+
+        // Test shrinking realloc (64->32) - may return same pointer
+        nodes[1] = m_tracked_realloc(nodes[1], 32);
+        mp_printf(&mp_plat_print, "shrink realloc marker: %c\n", nodes[1][0]);
+
+        // Clean up - free in reverse order to stress list operations
+        for (int i = 2; i >= 0; --i) {
+            m_tracked_free(nodes[i]);
+        }
+
+        // Test single-node list realloc (prev==NULL && next==NULL simultaneously)
+        uint8_t *single = m_tracked_calloc(1, 32);
+        single[0] = 'S';
+        single = m_tracked_realloc(single, 64);
+        mp_printf(&mp_plat_print, "single node realloc marker: %c\n", single[0]);
+        count = 0;
+        for (m_tracked_node_t *n = MP_STATE_VM(m_tracked_head); n != NULL; n = n->next) {
+            ++count;
+        }
+        mp_printf(&mp_plat_print, "single node list count: %d\n", count);
+        m_tracked_free(single);
+
+        mp_printf(&mp_plat_print, "m_tracked_head after cleanup: %p\n", MP_STATE_VM(m_tracked_head));
     }
 
     // vstr
