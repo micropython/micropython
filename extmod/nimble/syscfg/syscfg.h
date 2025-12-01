@@ -14,8 +14,10 @@ void *nimble_realloc(void *ptr, size_t size);
 #define free(ptr) nimble_free(ptr)
 #define realloc(ptr, size) nimble_realloc(ptr, size)
 
+#ifndef __MINGW32__
 int nimble_sprintf(char *str, const char *fmt, ...);
 #define sprintf(str, fmt, ...) nimble_sprintf(str, fmt, __VA_ARGS__)
+#endif
 
 #define MYNEWT_VAL(x) MYNEWT_VAL_ ## x
 
