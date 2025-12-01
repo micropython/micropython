@@ -100,11 +100,11 @@ The firmware binaries are available at
 https://github.com/micropython/micropython-lib/tree/master/micropython/espflash
 There are the firmware files available for different esp32 modules.
 
-1. Adafruit Airlift modules with NINA firmware: NINA_FW_v1.5.0_Airlift.bin.
+1. Adafruit Airlift modules with NINA firmware: NINA_FW_v2.0.0_Airlift.bin.
 2. Adafruit Airlift modules with esp_hosted firmware: esp_hosted_airlift.bin
-3. Arduino Nano RP2040 connect: NINA_FW_v1.5.0_W102.bin
+3. Arduino Nano RP2040 connect: NINA_FW_v2.0.0_W102.bin
 
-For the mimxrt boards with i.MX RT 101x MCU, you need the file NINA_FW_v1.5.0_Airlift.bin, for
+For the mimxrt boards with i.MX RT 101x MCU, you need the file NINA_FW_v2.0.0_Airlift.bin, for
 all other boards esp_hosted_airlift.bin.
 
 For firmware upload, the following connections to the WiFi module are required:
@@ -132,8 +132,8 @@ This place also holds the example script.::
     gpio0 = Pin("ESP_GPIO0", Pin.OUT)
     uart = UART(0, 115200, timeout=350)
 
-    md5sum = b"b0b9ab23da820a469e597c41364acb3a"
-    path = "/remote/NINA_FW_v1.5.0_Airlift.bin"
+    md5sum = b"d2dde19cba52d0f2f2ed31cccacbd364"
+    path = "/remote/NINA_FW_v2.0.0_Airlift.bin"
 
     esp = espflash.ESPFlash(reset, gpio0, uart)
     # Enter bootloader download mode, at 115200
@@ -169,22 +169,38 @@ After a while, the upload will start. A typical start sequence looks like::
     Failed to read response to command 8.
     Changing baudrate => 921600
     Flash attached
-    Flash size 2.0 MBytes
-    Flash write size: 1310720 total_blocks: 320 block size: 4096
-    Writing sequence number 0/320...
-    Writing sequence number 1/320...
-    Writing sequence number 2/320...
-    Writing sequence number 3/320...
-    Writing sequence number 4/320...
+    Flash size 8.0 MBytes
+    Flash write size: 1129472 total_blocks: 276 block size: 4096
+    Writing sequence number 0/276...
+    Writing sequence number 1/276...
+    Writing sequence number 2/276...
+    Writing sequence number 3/276...
+    Writing sequence number 4/276...
+    Writing sequence number 5/276...
     ....
     ....
-    Writing sequence number 317/320...
-    Writing sequence number 318/320...
-    Writing sequence number 319/320...
+    Writing sequence number 272/276...
+    Writing sequence number 273/276...
+    Writing sequence number 274/276...
+    Writing sequence number 275/276...
     Flash write finished
-    Flash verify: File  MD5 b'b0b9ab23da820a469e597c41364acb3a'
-    Flash verify: Flash MD5 b'b0b9ab23da820a469e597c41364acb3a'
+    Flash verify: File  MD5 b'd2dde19cba52d0f2f2ed31cccacbd364'
+    Flash verify: Flash MD5 b'd2dde19cba52d0f2f2ed31cccacbd364'
     Firmware verified.
-
+    
 The initial messages *Failed to read response to command 8.*
-can be ignored.
+can be ignored. The MIMXRT1011 devices do nto have a lot of RAM. So
+the NINA firmware upload may fail. In that case, pre-compile both the
+above script e.g. under the name ninaflash.mpy, pre-compile
+espflash.py, copy them to the board and run from the board, using the
+sequence::
+
+    mpremote run .
+
+Once at REPL, run::
+
+    import os
+    os.chdir("/flash")
+    import ninaflash
+
+
