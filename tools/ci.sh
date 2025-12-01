@@ -90,7 +90,7 @@ function ci_code_size_build {
     # Override the list by setting PORTS_TO_CHECK in the environment before invoking ci.
     : ${PORTS_TO_CHECK:=bmusxpdv}
     
-    SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/mynewt-nimble lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
+    SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/mynewt-nimble lib/nxp_driver lib/pico-sdk lib/protobuf-c lib/stm32lib lib/tinyusb"
 
     # Default GitHub pull request sets HEAD to a generated merge commit
     # between PR branch (HEAD^2) and base branch (i.e. master) (HEAD^1).
