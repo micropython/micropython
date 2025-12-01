@@ -27,8 +27,6 @@ def task(x):
     n += 1
 
 
-# This function must always use the bytecode emitter so it bounces the GIL when running.
-@micropython.bytecode
 def thread():
     while thread_run:
         try:
