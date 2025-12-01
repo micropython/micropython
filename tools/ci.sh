@@ -381,7 +381,7 @@ function ci_qemu_build_arm_prepare {
 
 function ci_qemu_build_arm_bigendian {
     ci_qemu_build_arm_prepare
-    make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
+    make ${MAKEOPTS} -C ports/qemu CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1 test_full
 }
 
 function ci_qemu_build_arm_sabrelite {
