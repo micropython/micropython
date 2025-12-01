@@ -98,6 +98,8 @@ SHARED_SRC_C += $(addprefix shared/,\
 DRIVERS_SRC_C += 
 
 MOD_SRC_C += \
+	machine_pdm_pcm.c\
+	\
 	modpsocedge.c
 
 SRC_C = help.c \
@@ -124,6 +126,12 @@ MPY_APP_NAME = mpy_edge_app_ns
 
 LDFLAGS += -Wl,-Map,$(BUILD)/$(MPY_APP_NAME).map
 
+MP_LOGGER_DEBUG ?= 0
+
+ifeq ($(MP_LOGGER_DEBUG), 1)
+   CFLAGS += -DMICROPY_LOGGER_DEBUG=1
+endif
+
 $(BUILD)/$(MPY_APP_NAME).elf: mtb_build_ns_info $(OBJ)
 	$(info )
 	$(info Linking $@ ...)
@@ -146,30 +154,8 @@ clean: mtb_clean
 qdeploy: mtb_program
 deploy: all mtb_program
 
-# When multiple types of boards are connected, a devs file needs to be provided.
-# When working locally, if a "local-devs.yml" file is placed in "tools/psoc6"
-# it will be used
-ifneq ($(DEVS_FILE),)
-MULTI_BOARD_DEVS_OPTS = -f name=$(BOARD) --devs-yml $(DEVS_FILE)
-else 
-DFLT_LOCAL_DEVS_FILE_NAME = local-devs.yml
-LOCAL_DEVS_FILE=$(TOP)/tools/psoc6/$(DFLT_LOCAL_DEVS_FILE_NAME)
-ifneq (,$(wildcard $(LOCAL_DEVS_FILE)))
-MULTI_BOARD_DEVS_OPTS = -f name=$(BOARD) --devs-yml $(LOCAL_DEVS_FILE)
-endif
-endif
-
-attached_devs:
-	@:
-	$(eval ATTACHED_TARGET_LIST = $(shell $(PYTHON) $(TOP)/lib/mpy-test-ext/devs_query.py serial_number $(MULTI_BOARD_DEVS_OPTS)))
-	$(eval ATTACHED_TARGETS_NUMBER = $(words $(ATTACHED_TARGET_LIST)))
-	$(info Number of attached targets : $(ATTACHED_TARGETS_NUMBER))
-	$(info List of attached targets : $(ATTACHED_TARGET_LIST))
-
-qdeploy_multi: attached_devs
-	$(foreach ATTACHED_TARGET, $(ATTACHED_TARGET_LIST), $(MAKE) qdeploy DEV_SERIAL_NUMBER=$(ATTACHED_TARGET);)
-
-deploy_multi: all qdeploy_multi
+qdeploy_multi: mtb_program_multi
+deploy_multi: all mtb_program_multi
 
 port_help:
 	@:
@@ -195,6 +181,6 @@ port_help:
 help: port_help mtb_bsp_help mtb_build_help
 .DEFAULT_GOAL := all
 
-.PHONY: all clean rebuild deploy qdeploy deploy_multi qdeploy_multi help
+.PHONY: all clean rebuild deploy deploy_multi help
 
 include $(TOP)/py/mkrules.mk
