@@ -202,7 +202,6 @@
 #define MICROPY_VFS_FAT                         (1)
 #define MICROPY_VFS_ROM                         (MICROPY_HW_ROMFS_BYTES > 0)
 #define MICROPY_SSL_MBEDTLS                     (1)
-#define MICROPY_PY_LWIP_PPP                     (MICROPY_PY_NETWORK_PPP_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
 
 // Hardware timer alarm index. Available range 0-3.
@@ -246,7 +245,7 @@
 #endif
 
 #ifndef MICROPY_PY_NETWORK_PPP_LWIP
-#define MICROPY_PY_NETWORK_PPP_LWIP     (0)
+#define MICROPY_PY_NETWORK_PPP_LWIP     (MICROPY_PY_LWIP)
 #endif
 #endif
 
