@@ -317,14 +317,6 @@ SHARED_SRC_C += \
 	shared/tinyusb/mp_usbd_cdc.c \
 	shared/tinyusb/mp_usbd_descriptor.c \
 
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-SRC_C += mpbthciport.c
-endif
-
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-SRC_C += mpnimbleport.c
-endif
-
 # Set flash driver name, base address and internal flash flag, based on the flash type.
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash))
     MICROPY_HW_FLASH_BASE = 0x60000000
@@ -355,6 +347,14 @@ ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
     SRC_HAL_C += $(BOARD_DIR)/$(FLEXSPI_FLASH_TYPE)_config.c
 else
     SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
+endif
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
 endif
 
 # Add mimxrt-specific implementation of libmetal (and optionally OpenAMP's rproc).
