@@ -98,6 +98,8 @@ SHARED_SRC_C += $(addprefix shared/,\
 DRIVERS_SRC_C += 
 
 MOD_SRC_C += \
+	machine_pdm_pcm.c\
+	\
 	modpsocedge.c
 
 SRC_C = help.c \
@@ -123,6 +125,12 @@ MPY_APP_NAME = mpy_edge_app_ns
 -include $(TOP)/lib/mtb-psoc-edge-libs/mtb-makefile.mk
 
 LDFLAGS += -Wl,-Map,$(BUILD)/$(MPY_APP_NAME).map
+
+MP_LOGGER_DEBUG ?= 0
+
+ifeq ($(MP_LOGGER_DEBUG), 1)
+   CFLAGS += -DMICROPY_LOGGER_DEBUG=1
+endif
 
 $(BUILD)/$(MPY_APP_NAME).elf: mtb_build_ns_info $(OBJ)
 	$(info )
@@ -195,6 +203,6 @@ port_help:
 help: port_help mtb_bsp_help mtb_build_help
 .DEFAULT_GOAL := all
 
-.PHONY: all clean rebuild deploy qdeploy deploy_multi qdeploy_multi help
+.PHONY: all clean rebuild deploy deploy_multi help
 
 include $(TOP)/py/mkrules.mk

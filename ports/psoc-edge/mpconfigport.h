@@ -72,6 +72,11 @@
 
 #define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
 
+#define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
+#define MICROPY_PY_MACHINE_PDM_PCM              (1)
+#define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
+
 // type definitions for the specific machine
 
 typedef intptr_t mp_int_t; // must be pointer size
