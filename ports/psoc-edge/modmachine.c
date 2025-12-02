@@ -46,6 +46,8 @@
 enum clock_freq_type PLL0_freq = AUDIO_SYS_CLOCK_73_728_000_HZ;
 enum clock_freq_type freq_peri;
 
+#if MICROPY_PY_MACHINE
+
 // machine.idle()
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.

@@ -1,9 +1,10 @@
+
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2024 Infineon Technologies AG
+ * Copyright (c) 2019-2025 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +24,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_PSOCEDGE_MACHINE_I2C_H
+#define MICROPY_INCLUDED_PSOCEDGE_MACHINE_I2C_H
 
-#ifndef MICROPY_INCLUDED_PSOCEDGE_MODMACHINE_H
-#define MICROPY_INCLUDED_PSOCEDGE_MODMACHINE_H
+// Configure default I2C0 pins.
+#ifndef MICROPY_HW_I2C0_SCL
+#define MICROPY_HW_I2C0_SCL (GPIO_NUM_9)
+#define MICROPY_HW_I2C0_SDA (GPIO_NUM_8)
+#define MAX_I2C               1
+#endif
 
-
-// micropython includes
-#include "py/obj.h"
-
-extern const mp_obj_type_t machine_pdm_pcm_type;
-
-enum clock_freq_type {
-    AUDIO_SYS_CLOCK_73_728_000_HZ = 73728000UL /* (Ideally 73.728 MHz) For sample rates: 8 KHz / 16 KHz / 48 KHz */,
-    AUDIO_SYS_CLOCK_169_344_000_HZ = 169344000UL /* (Ideally 169.344 MHz) For sample rates: 22.05 KHz / 44.1 KHz */,
-    CM4,
-    CM4_FLL
-};
-
-extern enum clock_freq_type PLL0_freq;
-extern const mp_obj_type_t machine_i2c_type;
-
-#endif // MICROPY_INCLUDED_PSOCEDGE_MODMACHINE_H
+#endif // MICROPY_INCLUDED_PSOCEDGE_MACHINE_I2C_H
