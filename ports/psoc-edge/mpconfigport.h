@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2024 Infineon Technologies AG
+ * Copyright (c) 2022-2025 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
-// #define MICROPY_PY_MACHINE_SOFTI2C              (1)
+#define MICROPY_PY_MACHINE_SOFTI2C              (0)
 
 #define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
 
