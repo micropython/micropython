@@ -61,18 +61,20 @@ class MimxrtPin(boardgen.Pin):
 
         elif af_name == "ADC":
             adc_regex = r"ADC(?P<instance>\d*)_IN(?P<channel>\d*)"
-            lpadc_regex = r"ADC(?P<instance>\d*)_CH(?P<channel>\d*)"  # LPADC for MIMXRT11xx chips
+            lpadc_regex = r"ADC(?P<instance>\d*)_CH(?P<channel>\d*)(?P<side>[AB])?"  # LPADC for MIMXRT11xx chips
 
             matches = re.finditer(adc_regex, af, re.MULTILINE)
             for match in matches:
                 self._adc_fns.append(
-                    (int(match.group("instance")), int(match.group("channel")), "ADC")
+                    (int(match.group("instance")), int(match.group("channel")), "ADC", 0)
                 )
 
             matches = re.finditer(lpadc_regex, af, re.MULTILINE)
             for match in matches:
+                side = match.group("side")
+                side_num = 1 if side == "B" else 0  # 0 = side A (default), 1 = side B
                 self._adc_fns.append(
-                    (int(match.group("instance")), int(match.group("channel")), "LPADC")
+                    (int(match.group("instance")), int(match.group("channel")), "LPADC", side_num)
                 )
 
     # Use the PIN() macro defined in samd_prefix.c for defining the pin
@@ -122,9 +124,11 @@ class MimxrtPin(boardgen.Pin):
                 "static const machine_pin_adc_obj_t pin_{:s}_adc[] = {{".format(self.name()),
                 file=out_source,
             )
-            for instance, channel, peripheral in self._adc_fns:
+            for instance, channel, peripheral, side in self._adc_fns:
                 print(
-                    "    PIN_ADC({:s}{:d}, {:d}),".format(peripheral, instance, channel),
+                    "    PIN_ADC({:s}{:d}, {:d}, {:d}),".format(
+                        peripheral, instance, channel, side
+                    ),
                     file=out_source,
                 )
             print("};", file=out_source)

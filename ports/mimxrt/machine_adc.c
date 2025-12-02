@@ -52,6 +52,7 @@ typedef struct _machine_adc_obj_t {
     ADC_Type *adc;
     uint8_t channel;
     uint8_t channel_group;
+    uint8_t side;  // 0 = side A, 1 = side B (for LPADC)
     uint16_t resolution;
 } machine_adc_obj_t;
 
@@ -83,12 +84,14 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     // Extract arguments
     ADC_Type *adc_instance = pin->adc_list[0].instance;  // NOTE: we only use the first ADC assignment - multiple assignments are not supported for now
     uint8_t channel = pin->adc_list[0].channel;
+    uint8_t side = pin->adc_list[0].side;
 
     // Create ADC Instance
     machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
     o->adc = adc_instance;
     o->channel = (uint8_t)channel;
     o->channel_group = 0;
+    o->side = side;
     o->resolution = 4096;  // NOTE: currently only 12bit resolution supported
 
     return MP_OBJ_FROM_PTR(o);
@@ -104,6 +107,9 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     LPADC_GetDefaultConvCommandConfig(&adc_config);
     adc_config.channelNumber = self->channel;
     adc_config.sampleScaleMode = kLPADC_SamplePartScale;
+    // Set channel side (A or B) for single-ended conversion
+    adc_config.sampleChannelMode = (self->side == 1) ?
+        kLPADC_SampleChannelSingleEndSideB : kLPADC_SampleChannelSingleEndSideA;
     LPADC_SetConvCommandConfig(self->adc, 1, &adc_config);
 
     // Set Trigger mode
@@ -121,11 +127,21 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
 }
 
 void machine_adc_init(void) {
-    lpadc_config_t adc_config;        // Set ADC configuration
-    LPADC_GetDefaultConfig(&adc_config);
-    adc_config.enableAnalogPreliminary = true;
-    adc_config.referenceVoltageSource = kLPADC_ReferenceVoltageAlt1;
-    LPADC_Init(LPADC1, &adc_config);
+    lpadc_config_t adc_config;
+
+    // Initialize all ADC instances (LPADC1 and LPADC2)
+    for (int i = 1; i < sizeof(adc_bases) / sizeof(ADC_Type *); ++i) {
+        ADC_Type *adc_instance = adc_bases[i];
+        if (adc_instance == NULL) {
+            continue;
+        }
+
+        // Set ADC configuration
+        LPADC_GetDefaultConfig(&adc_config);
+        adc_config.enableAnalogPreliminary = true;
+        adc_config.referenceVoltageSource = kLPADC_ReferenceVoltageAlt1;
+        LPADC_Init(adc_instance, &adc_config);
+    }
 }
 
 #else
