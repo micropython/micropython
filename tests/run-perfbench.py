@@ -52,6 +52,10 @@ def run_script_on_target(target, script):
         except run_tests_module.pyboard.PyboardError as er:
             err = er
     else:
+        if isinstance(target, run_tests_module.PyboardNodeRunner):
+            # Run a Python script indirectly via "node micropython.mjs <script.py>".
+            target = ["node", target.micropython_mjs]
+
         # Run local executable
         try:
             p = subprocess.run(
