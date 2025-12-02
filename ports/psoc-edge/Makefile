@@ -155,13 +155,13 @@ qdeploy: mtb_program
 deploy: all mtb_program
 
 # When multiple types of boards are connected, a devs file needs to be provided.
-# When working locally, if a "local-devs.yml" file is placed in "tools/psoc6"
+# When working locally, if a "local-devs.yml" file is placed in "tools/psoc-edge"
 # it will be used
 ifneq ($(DEVS_FILE),)
 MULTI_BOARD_DEVS_OPTS = -f name=$(BOARD) --devs-yml $(DEVS_FILE)
 else 
 DFLT_LOCAL_DEVS_FILE_NAME = local-devs.yml
-LOCAL_DEVS_FILE=$(TOP)/tools/psoc6/$(DFLT_LOCAL_DEVS_FILE_NAME)
+LOCAL_DEVS_FILE=$(TOP)/tools/psoc-edge/$(DFLT_LOCAL_DEVS_FILE_NAME)
 ifneq (,$(wildcard $(LOCAL_DEVS_FILE)))
 MULTI_BOARD_DEVS_OPTS = -f name=$(BOARD) --devs-yml $(LOCAL_DEVS_FILE)
 endif
@@ -203,6 +203,6 @@ port_help:
 help: port_help mtb_bsp_help mtb_build_help
 .DEFAULT_GOAL := all
 
-.PHONY: all clean rebuild deploy deploy_multi help
+.PHONY: all clean rebuild deploy qdeploy deploy_multi qdeploy_multi help
 
 include $(TOP)/py/mkrules.mk
