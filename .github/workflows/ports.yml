@@ -20,3 +20,7 @@ jobs:
     - uses: actions/checkout@v6
     - name: Build ports download metadata
       run: mkdir boards && ./tools/autobuild/build-downloads.py . ./boards
+    - name: Check board image links
+      # Note: this only checks board.json files that have changed in this PR, and prints the
+      # usage message otherwise.
+      run: tools/board_image_check.py $(git diff --name-only HEAD^1 HEAD | grep board.json)
