@@ -11,7 +11,7 @@
         "WiFi"
     ],
     "images": [
-        "esp32p4_devkitmini.jpg"
+        "esp32_p4_function_ev_board.jpg"
     ],
     "mcu": "esp32p4",
     "product": "ESP32-P4",
