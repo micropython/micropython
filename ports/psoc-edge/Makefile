@@ -126,10 +126,9 @@ MOD_SRC_C += \
 	machine_pdm_pcm.c\
 	machine_i2c.c\
 	machine_rtc.c \
-	modpsocedge.c
-	\
 	modpsocedge.c \
 	modipc.c
+
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
