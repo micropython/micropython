@@ -149,3 +149,5 @@ from example_package.foo import f as foo_f
 
 foo_f()
 print(foo_f == example_package.foo.f)
+
+print(one_quarter)

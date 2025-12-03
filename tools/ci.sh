@@ -973,6 +973,17 @@ function ci_unix_repr_b_run_tests {
     ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
 }
 
+function ci_unix_repr_e_build {
+    ci_unix_build_helper VARIANT=repr_e
+}
+
+function ci_unix_repr_e_run_tests {
+    # ci_unix_run_tests_full_no_native_helper is not used due to
+    # https://github.com/micropython/micropython/issues/18105
+    ci_unix_run_tests_helper VARIANT=repr_e
+}
+
+
 ########################################################################################
 # ports/windows
 
@@ -1057,6 +1068,18 @@ function ci_alif_ae3_build {
     make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HE submodules
     make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_DUAL
     make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL
+}
+
+########################################################################################
+# embedding
+#
+function ci_embedding_build {
+    make ${MAKEOPTS} -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
+}
+
+function ci_embedding_run_tests {
+    set -o pipefail
+    ./examples/embedding/embed | grep "hello world"
 }
 
 function _ci_help {

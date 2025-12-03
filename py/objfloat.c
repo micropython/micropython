@@ -43,31 +43,15 @@
 #include "py/formatfloat.h"
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
-
-// M_E and M_PI are not part of the math.h standard and may not be defined
-#ifndef M_E
-#define M_E (2.7182818284590452354)
-#endif
-#ifndef M_PI
-#define M_PI (3.14159265358979323846)
-#endif
-
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
 } mp_obj_float_t;
-
-const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, (mp_float_t)M_E};
-const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t)M_PI};
-#if MICROPY_PY_MATH_CONSTANTS
-#ifndef NAN
-#error NAN macro is not defined
-#endif
-const mp_obj_float_t mp_const_float_tau_obj = {{&mp_type_float}, (mp_float_t)(2.0 * M_PI)};
-const mp_obj_float_t mp_const_float_inf_obj = {{&mp_type_float}, (mp_float_t)INFINITY};
-const mp_obj_float_t mp_const_float_nan_obj = {{&mp_type_float}, (mp_float_t)NAN};
 #endif
 
+#ifndef NO_QSTR
+#define MP_FLOAT_CONSTS_IMPL
+#include "genhdr/float_consts.h"
 #endif
 
 #define MICROPY_FLOAT_ZERO MICROPY_FLOAT_CONST(0.0)
@@ -179,7 +163,71 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, float_binary_op
     );
 
-#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_E
+static mp_uint_t roll_l(mp_uint_t val, mp_uint_t n) {
+    return (val << n) | (val >> (32 - n));
+}
+#define MICROPY_FLOAT_ROLL (3)
+#define MICROPY_FLOAT_BIAS (0x30080000)
+#define MICROPY_FLOAT_TO_O(f) (roll_l((f) + MICROPY_FLOAT_BIAS, MICROPY_FLOAT_ROLL))
+#define MICROPY_FLOAT_FROM_O(f) (roll_l((f), 32 - MICROPY_FLOAT_ROLL) - MICROPY_FLOAT_BIAS)
+static const struct { mp_uint_t u;
+                      mp_rom_obj_t o;
+} float_constants[] = {
+    { 0, MP_CONST_FLOAT_0 },
+    { 0x80000000, MP_CONST_FLOAT___0 },
+    { 0x7f800000, MP_CONST_FLOAT_inf },
+    { 0x8f800000, MP_CONST_FLOAT___inf },
+};
+
+mp_obj_t mp_obj_new_float(mp_float_t value) {
+    union {
+        mp_float_t f;
+        mp_uint_t u;
+    } num = {.f = value };
+    mp_uint_t u = MICROPY_FLOAT_TO_O(num.u);
+    if ((u & 0x3) == 3) {
+        return (mp_obj_t)u;
+    }
+    for (size_t i = 0; i < MP_ARRAY_SIZE(float_constants); i++) {
+        if (num.u == float_constants[i].u) {
+            return (mp_obj_t)float_constants[i].o;
+        }
+    }
+    if (isnan(value)) {
+        return (mp_obj_t)MP_CONST_FLOAT_nan;
+    }
+    // Don't use mp_obj_malloc here to avoid extra function call overhead.
+    mp_obj_float_t *o = m_new_obj(mp_obj_float_t);
+    o->base.type = &mp_type_float;
+    o->value = value;
+    return MP_OBJ_FROM_PTR(o);
+}
+mp_float_t mp_obj_float_get(mp_const_obj_t o) {
+    if (mp_obj_is_obj(o)) {
+        mp_obj_float_t *self = MP_OBJ_TO_PTR(o);
+        return self->value;
+    }
+    mp_uint_t u = (mp_uint_t)o;
+    u = (u << 3) | (u >> 29);
+    u = u - 0x30800000;
+    union {
+        mp_float_t f;
+        mp_uint_t u;
+    } num = {.u = MICROPY_FLOAT_FROM_O((mp_uint_t)o) };
+    return num.f;
+}
+bool mp_obj_is_float(mp_const_obj_t o) {
+    // Ensure that 32-bit arch can only use single precision.
+    MP_STATIC_ASSERT(sizeof(mp_float_t) <= sizeof(mp_obj_t));
+
+    if (mp_obj_is_obj(o)) {
+        const mp_obj_base_t *self = MP_OBJ_TO_PTR(o);
+        return self->type == &mp_type_float;
+    }
+    return ((mp_uint_t)(o) & 3) == 3;
+}
+#elif MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
 mp_obj_t mp_obj_new_float(mp_float_t value) {
     // Don't use mp_obj_malloc here to avoid extra function call overhead.
