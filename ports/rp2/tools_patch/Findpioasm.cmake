@@ -22,6 +22,15 @@ if (NOT TARGET pioasm)
     set(pioasmBuild_TARGET pioasmBuild)
     set(pioasm_TARGET pioasm)
 
+    # Make sure we have a version string for pioasm
+    if (NOT PIOASM_VERSION_STRING)
+        if (PICO_SDK_VERSION_STRING)
+            set(PIOASM_VERSION_STRING "pico-sdk-${PICO_SDK_VERSION_STRING}")
+        else()
+            set(PIOASM_VERSION_STRING "pico-sdk-2.2.0")
+        endif()
+    endif()
+
     if (NOT TARGET ${pioasmBuild_TARGET})
         pico_message_debug("PIOASM will need to be built")
 #        message("Adding external project ${pioasmBuild_Target} in ${CMAKE_CURRENT_LIST_DIR}}")
@@ -37,6 +46,7 @@ if (NOT TARGET pioasm)
                     "-DCMAKE_INSTALL_PREFIX=${PIOASM_INSTALL_DIR}"
                     "-DCMAKE_RULE_MESSAGES=OFF" # quieten the build
                     "-DCMAKE_INSTALL_MESSAGE=NEVER" # quieten the install
+                    "-DPIOASM_VERSION_STRING=${PIOASM_VERSION_STRING}"
                     # Toolchain workaround follows
                     "-DCMAKE_CXX_FLAGS=-include cstdint"
                 CMAKE_CACHE_ARGS "-DPIOASM_EXTRA_SOURCE_FILES:STRING=${PIOASM_EXTRA_SOURCE_FILES}"
