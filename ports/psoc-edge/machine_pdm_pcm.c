@@ -39,6 +39,15 @@
 
 #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
 
+#define PDM_PCM_ISR_PRIORITY                    (2u)
+
+/* PDM PCM interrupt configuration parameters */
+const cy_stc_sysint_t PDM_IRQ_cfg =
+{
+    .intrSrc = (IRQn_Type)CYBSP_PDM_CHANNEL_3_IRQ,
+    .intrPriority = PDM_PCM_ISR_PRIORITY
+};
+
 static cy_stc_pdm_pcm_channel_config_t channel_config = {
     .sampledelay = 1,
     .wordSize = CY_PDM_PCM_WSIZE_16_BIT,
@@ -266,12 +275,29 @@ cy_en_pdm_pcm_ch_fir1_decimcode_t pdm_pcm_convert_decim_rate(uint8_t decim_rate)
     return pdl_code;
 }
 
+// IRQ Handler
+static void pdm_pcm_irq_handler(void) {
+
+}
+
 // Helper: Configure PDM PCM interrupts
-static void pdm_pcm_configure_interrupts(void) {
+static void pdm_pcm_configure_interrupts(format_t format) {
     mplogger_print("pdm_pcm_configure_interrupts \r\n");
-    /* As interrupt is registered for right channel, clear and set masks for it. */
-    Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
-    Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
+    if ((format == MONO_LEFT) || (format == STEREO)) {
+        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, LEFT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
+        Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, LEFT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
+    }
+    if ((format == MONO_RIGHT) || (format == STEREO)) {
+        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
+        Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
+    }
+    /* Register the IRQ handler */
+    if (CY_SYSINT_SUCCESS != Cy_SysInt_Init(&PDM_IRQ_cfg, &pdm_pcm_irq_handler)) {
+        printf("PDM PCM Initialization has failed! \r\n");
+        CY_ASSERT(0);
+    }
+    NVIC_ClearPendingIRQ(PDM_IRQ_cfg.intrSrc);
+    NVIC_EnableIRQ(PDM_IRQ_cfg.intrSrc);
 }
 
 // Helper: Configure DPLL for audio clock generation
@@ -419,7 +445,7 @@ static void pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
         result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, RIGHT_CH_INDEX);
         Cy_PDM_PCM_SetGain(PDM0, RIGHT_CH_INDEX, self->right_gain);
     }
-    pdm_pcm_configure_interrupts();
+    pdm_pcm_configure_interrupts(self->format);
 }
 
 int8_t get_frame_mapping_index(int8_t bits, format_t format) {
@@ -444,17 +470,6 @@ static void pdm_pcm_read_rxbuf(machine_pdm_pcm_obj_t *self) {
 static void pdm_pcm_rx_init(machine_pdm_pcm_obj_t *self) {
 
 }
-
-// IRQ Handler
-static void pdm_pcm_irq_handler(void *arg) {
-
-}
-
-// Configure PDM_PCM IRQ
-static void pdm_pcm_irq_configure(machine_pdm_pcm_obj_t *self) {
-
-}
-
 
 // =======================================================================================
 // MPY bindings for PDM_PCM
