@@ -118,6 +118,7 @@ IGNORE_OUTPUT_MATCHES = (
     "hci_number_completed_packet",  # Warning from unix btstack.
     "lld_pdu_get_tx_flush_nb HCI packet count mismatch (",  # From ESP-IDF, see https://github.com/espressif/esp-idf/issues/5105
     " ets_task(",  # ESP8266 port debug output
+    "DHCPS: client connected: MAC=",  # cyw43 AP
 )
 
 
