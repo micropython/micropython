@@ -282,19 +282,11 @@ typedef uint32_t mp_float_uint_t;
 
 typedef union _mp_float_union_t {
     mp_float_t f;
-    #if MP_ENDIANNESS_LITTLE
     struct {
         mp_float_uint_t frc : MP_FLOAT_FRAC_BITS;
         mp_float_uint_t exp : MP_FLOAT_EXP_BITS;
         mp_float_uint_t sgn : 1;
     } p;
-    #else
-    struct {
-        mp_float_uint_t sgn : 1;
-        mp_float_uint_t exp : MP_FLOAT_EXP_BITS;
-        mp_float_uint_t frc : MP_FLOAT_FRAC_BITS;
-    } p;
-    #endif
     mp_float_uint_t i;
 } mp_float_union_t;
 
