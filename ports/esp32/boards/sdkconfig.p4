@@ -1,3 +1,6 @@
+# Select the minimum chip revision to cover all possible boards.
+CONFIG_ESP32P4_REV_MIN_0=y
+
 # Flash
 CONFIG_FLASHMODE_QIO=y
 CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
