@@ -2,6 +2,7 @@
 
 #include "cy_pdm_pcm_v2.h"
 #include "cycfg_peripherals.h"
+#include "py/ringbuf.h"
 
 #define MICROPY_HW_MAX_PDM_PCM              1
 #define DEFAULT_LEFT_GAIN                   0
@@ -81,25 +82,18 @@ typedef enum {
 
 #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
 
-typedef struct _ring_buf_t {
-    uint8_t *buffer;
-    size_t head;
-    size_t tail;
-    size_t size;
-} ring_buf_t;
-
 typedef struct _non_blocking_descriptor_t {
     mp_buffer_info_t appbuf;
     uint32_t index;
     bool copy_in_progress;
 } non_blocking_descriptor_t;
 
-void ringbuf_init(ring_buf_t *rbuf, size_t size);
-bool ringbuf_push(ring_buf_t *rbuf, uint8_t data);
-bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data);
-size_t ringbuf_available_data(ring_buf_t *rbuf);
-size_t ringbuf_available_space(ring_buf_t *rbuf);
 #endif // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+
+#define FRAME_SIZE                      (1024)
+#define RX_FIFO_TRIG_LEVEL              (31)
+#define NUMBER_INTERRUPTS_FOR_FRAME     ((FRAME_SIZE) / RX_FIFO_TRIG_LEVEL)
+#define PDM_PCM_ISR_PRIORITY            (2u)
 
 typedef struct _machine_pdm_pcm_obj_t {
     mp_obj_base_t base;
@@ -117,8 +111,17 @@ typedef struct _machine_pdm_pcm_obj_t {
     uint32_t dma_processing_buffer[SIZEOF_DMA_BUFFER];
     uint32_t *dma_active_buf_p;
     uint32_t *dma_processing_buf_p;
-    ring_buf_t ring_buffer;
+    ringbuf_t ring_buffer;
     non_blocking_descriptor_t non_blocking_descriptor; // For non-blocking mode
+    // Ping-pong buffers for IRQ handler
+    int16_t audio_buffer0[FRAME_SIZE];
+    int16_t audio_buffer1[FRAME_SIZE];
+    int16_t *active_rx_buffer;
+    int16_t *full_rx_buffer;
+    bool have_data;
+    bool pdm_pcm_initialized;
+    uint8_t init_discard_counter;
+    IRQn_Type irq_num;
 } machine_pdm_pcm_obj_t;
 
 static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_val_t *args);
