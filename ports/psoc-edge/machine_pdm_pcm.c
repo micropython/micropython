@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
+#include "py/ringbuf.h"
 #include "modmachine.h"
 #include "mplogger.h"
 
@@ -38,15 +39,6 @@
 #include "cy_sysclk.h"
 
 #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
-
-#define PDM_PCM_ISR_PRIORITY                    (2u)
-
-/* PDM PCM interrupt configuration parameters */
-const cy_stc_sysint_t PDM_IRQ_cfg =
-{
-    .intrSrc = (IRQn_Type)CYBSP_PDM_CHANNEL_3_IRQ,
-    .intrPriority = PDM_PCM_ISR_PRIORITY
-};
 
 static cy_stc_pdm_pcm_channel_config_t channel_config = {
     .sampledelay = 1,
@@ -63,51 +55,12 @@ static cy_stc_pdm_pcm_channel_config_t channel_config = {
     .dc_block_code = CY_PDM_PCM_CHAN_DCBLOCK_CODE_16,
 };
 
-void ringbuf_init(ring_buf_t *rbuf, size_t size) {
-    mplogger_print("ringbuf_init \r\n");
-    rbuf->buffer = m_new(uint8_t, size);
-    memset(rbuf->buffer, 0, size);
-    rbuf->size = size;
-    rbuf->head = 0;
-    rbuf->tail = 0;
-}
-
-bool ringbuf_push(ring_buf_t *rbuf, uint8_t data) {
-    size_t next_tail = (rbuf->tail + 1) % rbuf->size;
-    if (next_tail != rbuf->head) {
-        rbuf->buffer[rbuf->tail] = data;
-        rbuf->tail = next_tail;
-        return true;
-    }
-    // full
-    return false;
-}
-
-bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data) {
-    if (rbuf->head == rbuf->tail) {
-        // empty
-        return false;
-    }
-
-    *data = rbuf->buffer[rbuf->head];
-    rbuf->head = (rbuf->head + 1) % rbuf->size;
-    return true;
-}
-
-size_t ringbuf_available_data(ring_buf_t *rbuf) {
-    return (rbuf->tail - rbuf->head + rbuf->size) % rbuf->size;
-}
-
-size_t ringbuf_available_space(ring_buf_t *rbuf) {
-    return rbuf->size - ringbuf_available_data(rbuf) - 1;
-}
-
+static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_info_t *appbuf) __attribute__((unused));
 static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_info_t *appbuf) {
     uint32_t num_bytes_copied_to_appbuf = 0;
     uint8_t *app_p = (uint8_t *)appbuf->buf;
     uint8_t appbuf_sample_size_in_bytes = (self->bits == 16? 2 : 3) * (self->format == STEREO ? 2: 1);
     uint32_t num_bytes_needed_from_ringbuf = appbuf->len * (PDM_PCM_RX_FRAME_SIZE_IN_BYTES / appbuf_sample_size_in_bytes);
-    uint8_t discard_byte;
     while (num_bytes_needed_from_ringbuf) {
 
         uint8_t f_index = get_frame_mapping_index(self->bits, self->format);
@@ -116,9 +69,11 @@ static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_
             int8_t r_to_a_mapping = pdm_pcm_frame_map[f_index][i];
             if (r_to_a_mapping != -1) {
                 if (self->io_mode == BLOCKING) {
-                    while (ringbuf_pop(&self->ring_buffer, app_p + r_to_a_mapping) == false) {
+                    int data;
+                    while ((data = ringbuf_get(&self->ring_buffer)) == -1) {
                         ;
                     }
+                    app_p[r_to_a_mapping] = (uint8_t)data;
                     num_bytes_copied_to_appbuf++;
                 } else {
                     return 0;  // should never get here (non-blocking mode does not use this function)
@@ -127,7 +82,7 @@ static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_
                 // discard unused byte from ring buffer
                 if (self->io_mode == BLOCKING) {
                     // poll the ringbuf until a sample becomes available
-                    while (ringbuf_pop(&self->ring_buffer, &discard_byte) == false) {
+                    while (ringbuf_get(&self->ring_buffer) == -1) {
                         ;
                     }
                 } else {
@@ -142,6 +97,7 @@ static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_
 }
 
 // Copy from ringbuf to appbuf as soon as ASYNC_TRANSFER_COMPLETE is triggered
+static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) __attribute__((unused));
 static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) {
     uint32_t num_bytes_copied_to_appbuf = 0;
     uint8_t *app_p = &(((uint8_t *)self->non_blocking_descriptor.appbuf.buf)[self->non_blocking_descriptor.index]);
@@ -151,8 +107,7 @@ static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) {
     uint32_t num_bytes_remaining_to_copy_from_ring_buffer = num_bytes_remaining_to_copy_to_appbuf *
         (PDM_PCM_RX_FRAME_SIZE_IN_BYTES / appbuf_sample_size_in_bytes);
     uint32_t num_bytes_needed_from_ringbuf = MIN(SIZEOF_NON_BLOCKING_COPY_IN_BYTES, num_bytes_remaining_to_copy_from_ring_buffer);
-    uint8_t discard_byte;
-    if (ringbuf_available_data(&self->ring_buffer) >= num_bytes_needed_from_ringbuf) {
+    if (ringbuf_avail(&self->ring_buffer) >= num_bytes_needed_from_ringbuf) {
         while (num_bytes_needed_from_ringbuf) {
 
             uint8_t f_index = get_frame_mapping_index(self->bits, self->format);
@@ -160,11 +115,14 @@ static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) {
             for (uint8_t i = 0; i < PDM_PCM_RX_FRAME_SIZE_IN_BYTES; i++) {
                 int8_t r_to_a_mapping = pdm_pcm_frame_map[f_index][i];
                 if (r_to_a_mapping != -1) {
-                    ringbuf_pop(&self->ring_buffer, app_p + r_to_a_mapping);
-                    num_bytes_copied_to_appbuf++;
+                    int data = ringbuf_get(&self->ring_buffer);
+                    if (data != -1) {
+                        app_p[r_to_a_mapping] = (uint8_t)data;
+                        num_bytes_copied_to_appbuf++;
+                    }
                 } else { // r_a_mapping == -1
                     // discard unused byte from ring buffer
-                    ringbuf_pop(&self->ring_buffer, &discard_byte);
+                    ringbuf_get(&self->ring_buffer);
                 }
                 num_bytes_needed_from_ringbuf--;
             }
@@ -580,6 +538,13 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->io_mode = BLOCKING;
 
+    // Initialize buffer pointers
+    self->active_rx_buffer = NULL;
+    self->full_rx_buffer = NULL;
+    self->have_data = false;
+    self->pdm_pcm_initialized = false;
+    self->init_discard_counter = 0;
+
     mplogger_print("PDM_PCM configured: sample_rate=%ld, decimation_rate=%d, bits=%u, format=%u, left_gain=%d, right_gain=%d\r\n",
         args[ARG_sample_rate].u_int,
         args[ARG_decimation_rate].u_int,
@@ -588,7 +553,7 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
         args[ARG_left_gain].u_int,
         args[ARG_right_gain].u_int);
 
-    ringbuf_init(&self->ring_buffer, ring_buffer_len);
+    ringbuf_alloc(&self->ring_buffer, ring_buffer_len);
     pdm_pcm_init(self);
     /* This function is not yet declared. */
     // pdm_pcm_irq_configure(self);
