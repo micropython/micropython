@@ -1,0 +1,16 @@
+MicroPython \.\+ version
+Use Ctrl-D to exit, Ctrl-E for paste mode
+>>> # Test that Ctrl-C cancels paste mode
+>>> 
+>>> # Test paste mode Ctrl-C cancel
+>>> 
+paste mode; Ctrl-C to cancel, Ctrl-D to finish
+=== 
+=== print('paste mode')
+=== 
+>>> 
+>>> 
+>>> # Verify REPL works
+>>> print('REPL works')
+REPL works
+>>> 
