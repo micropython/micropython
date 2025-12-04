@@ -233,32 +233,14 @@ cy_en_pdm_pcm_ch_fir1_decimcode_t pdm_pcm_convert_decim_rate(uint8_t decim_rate)
     return pdl_code;
 }
 
-// IRQ Handler
-static void pdm_pcm_irq_handler(void) {
-
-}
-
 // Helper: Configure PDM PCM interrupts
-static void pdm_pcm_configure_interrupts(format_t format) {
+static void pdm_pcm_configure_interrupts(machine_pdm_pcm_obj_t *self) {
     mplogger_print("pdm_pcm_configure_interrupts \r\n");
-    if ((format == MONO_LEFT) || (format == STEREO)) {
-        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, LEFT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
-        Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, LEFT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
-    }
-    if ((format == MONO_RIGHT) || (format == STEREO)) {
-        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
-        Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
-    }
-    /* Register the IRQ handler */
-    if (CY_SYSINT_SUCCESS != Cy_SysInt_Init(&PDM_IRQ_cfg, &pdm_pcm_irq_handler)) {
-        printf("PDM PCM Initialization has failed! \r\n");
-        CY_ASSERT(0);
-    }
-    NVIC_ClearPendingIRQ(PDM_IRQ_cfg.intrSrc);
-    NVIC_EnableIRQ(PDM_IRQ_cfg.intrSrc);
-}
 
-// Helper: Configure DPLL for audio clock generation
+    /* As interrupt is registered for right channel, clear and set masks for it. */
+    Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
+    Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
+}// Helper: Configure DPLL for audio clock generation
 static cy_rslt_t dpll_lp_configure(uint32_t target_freq) {
     mplogger_print("dpll_lp_configure \r\n");
     cy_rslt_t result;
@@ -392,18 +374,35 @@ static void pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
     // Initialize left channel if needed
     if ((self->format == MONO_LEFT) || (self->format == STEREO)) {
         Cy_PDM_PCM_Channel_Enable(PDM0, LEFT_CH_INDEX);
+        channel_config.sampledelay = 1;
         result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, LEFT_CH_INDEX);
+        if (result != CY_PDM_PCM_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError,
+                MP_ERROR_TEXT("PDM_PCM left channel init failed with return code %lx !"), result);
+        }
         Cy_PDM_PCM_SetGain(PDM0, LEFT_CH_INDEX, self->left_gain);
     }
 
     // Initialize right channel if needed
     if ((self->format == MONO_RIGHT) || (self->format == STEREO)) {
-        channel_config.sampledelay = 5;
         Cy_PDM_PCM_Channel_Enable(PDM0, RIGHT_CH_INDEX);
+        channel_config.sampledelay = 5;
         result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, RIGHT_CH_INDEX);
+        if (result != CY_PDM_PCM_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError,
+                MP_ERROR_TEXT("PDM_PCM right channel init failed with return code %lx !"), result);
+        }
         Cy_PDM_PCM_SetGain(PDM0, RIGHT_CH_INDEX, self->right_gain);
     }
-    pdm_pcm_configure_interrupts(self->format);
+
+    // Determine IRQ number based on which channel is used for interrupts
+    // Using right channel for interrupt as per MTB example
+    self->irq_num = (IRQn_Type)(pdm_0_interrupts_0_IRQn + RIGHT_CH_INDEX);
+
+    // Configure interrupts
+    pdm_pcm_configure_interrupts(self);
+
+    self->pdm_pcm_initialized = true;
 }
 
 int8_t get_frame_mapping_index(int8_t bits, format_t format) {
@@ -420,14 +419,127 @@ int8_t get_frame_mapping_index(int8_t bits, format_t format) {
 }
 
 // First read RX buffer
+static void pdm_pcm_read_rxbuf(machine_pdm_pcm_obj_t *self) __attribute__((unused));
 static void pdm_pcm_read_rxbuf(machine_pdm_pcm_obj_t *self) {
-
+    (void)self;
 }
 
 // First read and start the hw block
 static void pdm_pcm_rx_init(machine_pdm_pcm_obj_t *self) {
+    mplogger_print("pdm_pcm_rx_init \r\n");
 
+    if (!self->pdm_pcm_initialized) {
+        mp_raise_ValueError(MP_ERROR_TEXT("PDM_PCM not initialized"));
+        return;
+    }
+
+    /* Set up pointers to two buffers to implement a ping-pong buffer system */
+    memset(self->audio_buffer0, 0, FRAME_SIZE * sizeof(int16_t));
+    memset(self->audio_buffer1, 0, FRAME_SIZE * sizeof(int16_t));
+    self->active_rx_buffer = self->audio_buffer0;
+    self->full_rx_buffer = self->audio_buffer1;
+    self->have_data = false;
+    self->init_discard_counter = 4; /* Skip the first 4 frames */
+
+    /* Activate channels - CRITICAL STEP! */
+    if ((self->format == MONO_LEFT) || (self->format == STEREO)) {
+        Cy_PDM_PCM_Activate_Channel(PDM0, LEFT_CH_INDEX);
+        mplogger_print("Activated left channel\r\n");
+    }
+
+    if ((self->format == MONO_RIGHT) || (self->format == STEREO)) {
+        Cy_PDM_PCM_Activate_Channel(PDM0, RIGHT_CH_INDEX);
+        mplogger_print("Activated right channel\r\n");
+    }
+
+    mplogger_print("PDM_PCM started successfully\r\n");
 }
+
+// IRQ Handler
+static void pdm_pcm_irq_handler(void) {
+    machine_pdm_pcm_obj_t *self = MP_STATE_PORT(machine_pdm_pcm_obj[0]);
+    if (self == NULL) {
+        return;
+    }
+
+    uint8_t num_channels = (self->format == STEREO) ? 2 : 1;
+    uint8_t int_channel_index = RIGHT_CH_INDEX;  // Using right channel for interrupts
+
+    /* Used to track how full the buffer is */
+    static uint16_t frame_counter = 0;
+
+    /* Check the interrupt status */
+    uint32_t intr_status = Cy_PDM_PCM_Channel_GetInterruptStatusMasked(PDM0, int_channel_index);
+
+    if (intr_status & CY_PDM_PCM_INTR_RX_TRIGGER) {
+        /* Move data from the PDM fifo and place it in a buffer */
+        uint32_t index = 0;
+        for (uint32_t i = 0; i < (RX_FIFO_TRIG_LEVEL / num_channels); i++) {
+            if (self->format == MONO_LEFT) {
+                int32_t data = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, LEFT_CH_INDEX);
+                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data);
+                index++;
+            } else if (self->format == MONO_RIGHT) {
+                int32_t data = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, RIGHT_CH_INDEX);
+                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data);
+                index++;
+            } else {  // STEREO
+                int32_t data_left = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, LEFT_CH_INDEX);
+                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data_left);
+                index++;
+                int32_t data_right = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, RIGHT_CH_INDEX);
+                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data_right);
+                index++;
+            }
+        }
+
+        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, int_channel_index, CY_PDM_PCM_INTR_RX_TRIGGER);
+        frame_counter++;
+    }
+
+    /* Check if the buffer is full */
+    if (frame_counter >= NUMBER_INTERRUPTS_FOR_FRAME) {
+        /* Flip the active and the next rx buffers */
+        int16_t *temp = self->active_rx_buffer;
+        self->active_rx_buffer = self->full_rx_buffer;
+        self->full_rx_buffer = temp;
+
+        /* Set the have_data flag as true, signaling there is data ready for use */
+        if (self->init_discard_counter > 0) {
+            self->init_discard_counter--;
+            memset(self->full_rx_buffer, 0, FRAME_SIZE * sizeof(int16_t));
+        } else {
+            self->have_data = true;
+        }
+        frame_counter = 0;
+    }
+
+    /* Handle overflow/underflow errors */
+    if (intr_status & (CY_PDM_PCM_INTR_RX_FIR_OVERFLOW | CY_PDM_PCM_INTR_RX_OVERFLOW |
+                       CY_PDM_PCM_INTR_RX_IF_OVERFLOW | CY_PDM_PCM_INTR_RX_UNDERFLOW)) {
+        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, int_channel_index, CY_PDM_PCM_INTR_MASK);
+    }
+}
+
+// Configure PDM_PCM IRQ
+static void pdm_pcm_irq_configure(machine_pdm_pcm_obj_t *self) {
+    mplogger_print("pdm_pcm_irq_configure \r\n");
+
+    cy_stc_sysint_t irq_cfg = {
+        .intrSrc = self->irq_num,
+        .intrPriority = PDM_PCM_ISR_PRIORITY
+    };
+
+    cy_rslt_t result = Cy_SysInt_Init(&irq_cfg, pdm_pcm_irq_handler);
+    if (result != CY_SYSINT_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("PDM_PCM interrupt configuration failed with return code %lx !"), result);
+    }
+
+    NVIC_ClearPendingIRQ(irq_cfg.intrSrc);
+    NVIC_EnableIRQ(irq_cfg.intrSrc);
+}
+
 
 // =======================================================================================
 // MPY bindings for PDM_PCM
@@ -586,6 +698,7 @@ static void mp_machine_pdm_pcm_set_gain(machine_pdm_pcm_obj_t *self, int16_t lef
 }
 
 // irq update
+static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self) __attribute__((unused));
 static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self) {
     (void)self;
 }
