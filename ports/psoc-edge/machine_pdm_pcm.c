@@ -590,7 +590,8 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
 
     ringbuf_init(&self->ring_buffer, ring_buffer_len);
     pdm_pcm_init(self);
-    pdm_pcm_irq_configure(self);
+    /* This function is not yet declared. */
+    // pdm_pcm_irq_configure(self);
 }
 
 // init()
