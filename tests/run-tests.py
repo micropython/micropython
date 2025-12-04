@@ -1301,6 +1301,21 @@ the last matching regex is used:
     # Automatically detect the platform.
     detect_test_platform(pyb, args)
 
+    if False and args.platform == "esp8266":
+        print(pyb.exec_("import os; u=os.dupterm(None,1);os.dupterm(u,1)"))
+        print("A", pyb.exec_("print(u)"))
+        pyb.exec_raw_no_follow("u.init(baudrate=2*115200)")
+        pyb.serial.baudrate = 2*115200
+        import time
+        time.sleep(0.2)
+        while pyb.serial.inWaiting() > 0:
+            print("-", pyb.serial.read(pyb.serial.inWaiting()))
+        time.sleep(0.2)
+        print('next')
+        pyb.enter_raw_repl(soft_reset=0)
+        print("B", pyb.exec_("print(u)"))
+        # unfortunately the baudrate is reset back to 115200 upon soft reset
+
     if args.run_failures and (any(args.files) or args.test_dirs is not None):
         raise ValueError(
             "--run-failures cannot be used together with files or --test-dirs arguments"

@@ -7,7 +7,7 @@ import sys
 
 try:
     from machine import Pin, SoftI2C, I2CTarget
-except ImportError:
+except (AttributeError, ImportError):
     print("SKIP")
     raise SystemExit
 
@@ -30,8 +30,8 @@ elif sys.platform == "rp2":
     args_target = (1,)
 elif sys.platform == "pyboard":
     if sys.implementation._build == "NUCLEO_WB55":
-        args_controller = {"scl": "B8", "sda": "B9"}  # Arduino header D15/D14
-        args_target = (3,)  # PC0/PC1, Arduino header A0/A1
+        args_controller = {"scl": "D13", "sda": "D12"}  # Arduino header D13/D12
+        args_target = (1,)  # PB8/PB9, Arduino header D15/D14
     else:
         args_controller = {"scl": "X1", "sda": "X2"}
         args_target = ("X",)

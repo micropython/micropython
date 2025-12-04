@@ -5,7 +5,7 @@
 
 try:
     from machine import Counter
-except ImportError:
+except (AttributeError, ImportError):
     print("SKIP")
     raise SystemExit
 
@@ -16,6 +16,10 @@ if "esp32" in sys.platform:
     id = 0
     out_pin = 4
     in_pin = 5
+    if "ESP32S2" in sys.implementation._machine:
+        # FeatherS2
+        out_pin = 5
+        in_pin = 6
 elif sys.platform == "mimxrt":
     if "Teensy" in sys.implementation._machine:
         id = 0

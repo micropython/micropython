@@ -251,7 +251,13 @@ def run_multitests_on_two_targets(targets, tests):
         target0 = targets[i]
         target1 = targets[(i + 1) % len(targets)]
         do_test(
-            ["./run-multitests.py", "--test-instance", f"{target0.device}", "--test-instance", f"{target1.device}"]
+            [
+                "./run-multitests.py",
+                "--test-instance",
+                f"{target0.device}",
+                "--test-instance",
+                f"{target1.device}",
+            ]
             + tests
         )
 
@@ -322,7 +328,12 @@ def main():
     tests_multi_net = [file for file in glob.iglob("multi_net/*.py")]
     tests_multi_wlan = [file for file in glob.iglob("multi_wlan/*.py")]
     tests_multi_bluetooth = [
-        file for file in glob.iglob("multi_bluetooth/*.py") if "/ble_" in file
+        file for file in glob.iglob("multi_bluetooth/*.py") if "/stress_" not in file
+    ]
+    tests_multi_net_no_tls = [
+        file
+        for file in tests_multi_net
+        if file.startswith(("multi_net/asyncio_tcp_", "multi_net/tcp_", "multi_net/udp_"))
     ]
 
     try:
@@ -384,10 +395,13 @@ def main():
             if select_wlan and target.has_wlan:
                 target.setup_wlan()
                 if target.has_wlan_connected:
+                    tests_net = tests_multi_net
+                    if target.port == "esp8266":
+                        tests_net = tests_multi_net_no_tls
                     do_test(run_tests_cmd + ["-d", "net_hosted", "net_inet"])
-                    run_multitests_p2([target.device], tests_multi_net)
+                    run_multitests_p2([target.device], tests_net)
                     if ref_target and ref_target.has_wlan_connected:
-                        run_multitests_p2([target.device, ref_target.device], tests_multi_net)
+                        run_multitests_p2([target.device, ref_target.device], tests_net)
                         run_multitests_p2([target.device, ref_target.device], tests_multi_wlan)
 
             if select_ble and target.has_ble:
