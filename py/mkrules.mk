@@ -247,7 +247,7 @@ $(BUILD)/$(PROG): $(OBJ)
 	$(ECHO) "LINK $@"
 # Do not pass COPT here - it's *C* compiler optimizations. For example,
 # we may want to compile using Thumb, but link with non-Thumb libc.
-	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
+	$(Q)$(CC) -o $@ $^ $(LIBS) $(LDFLAGS)
 ifndef DEBUG
 ifdef STRIP
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $@
