@@ -395,7 +395,7 @@ static bool is_in_signed_mask(mp_uint_t mask, mp_uint_t value) {
     if (leading_zeroes == 0 || leading_zeroes > 32) {
         return true;
     }
-    mp_uint_t positive_mask = ~(mask & ~(1U << (31 - leading_zeroes)));
+    mp_uint_t positive_mask = ~(mask & ~(mp_uint_t)(1U << (31 - leading_zeroes)));
     if ((value & positive_mask) == 0) {
         return true;
     }
