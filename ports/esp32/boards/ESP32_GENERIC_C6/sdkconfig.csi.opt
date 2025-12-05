@@ -1,0 +1,6 @@
+# ESP32-C6 is single core, use unicore configuration
+CONFIG_FREERTOS_UNICORE=y
+
+# Enable WiFi 6 hardware support (for general connectivity)
+# Note: CSI examples use WiFi 4 (802.11n) for consistency across devices
+CONFIG_ESP_WIFI_11AX_SUPPORT=y
