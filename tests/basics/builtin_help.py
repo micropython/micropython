@@ -14,4 +14,10 @@ import micropython
 help(micropython) # help for a module
 help('modules') # list available modules
 
+class A:
+    x = 1
+    y = 2
+    del x
+help(A)
+
 print('done') # so last bit of output is predictable
