@@ -152,20 +152,25 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C init failed: 0x%lx"), result);
     }
 
-    // 4. Configure clock divider for I2C
+    // 4. Configure clock divider for I2C (balanced performance and power)
     // For desired data rate, clk_scb frequency must be in valid range (see TRM I2C Oversampling section)
-    // For 100kHz: clk_scb range is 1.55 - 3.2 MHz
-    //   - clk_peri = 50 MHz, divider = 32 → clk_scb = 1.563 MHz ✓
-    // For 400kHz: clk_scb range is 7.82 - 15.38 MHz
-    //   - clk_peri = 50 MHz, divider = 4 → clk_scb = 12.5 MHz ✓
-    // Note: Cy_SysClk_PeriphSetDivider takes (divider - 1), so divider=4 → value=3
-    uint32_t divider = (freq_hz <= 100000) ? 31U : 3U;
-    Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_8_BIT, 0U, divider);
-    Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_8_BIT, 0U);
+    // For 100kHz: clk_scb range is 1.55 - 3.2 MHz (architecture reference manual 002-38331 Rev. P685 table 355)
+    //   - clk_peri = 100 MHz, divider = 42 → clk_scb = 2.38 MHz ✓ (mid-range)
+    // For 400kHz: clk_scb range is 7.82 - 10 MHz
+    //   - clk_peri = 100 MHz, divider = 11 → clk_scb = 9.09 MHz ✓ (within range)
+    // Note: Cy_SysClk_PeriphSetDivider takes (divider - 1), so divider=11 → value=10
+    /* Connect assigned divider to be a clock source for I2C */
+    Cy_SysClk_PeriphAssignDivider(PCLK_SCB5_CLOCK_SCB_EN, CY_SYSCLK_DIV_8_BIT, 2U);
+    uint32_t divider = (freq_hz <= 100000) ? 41U : 10U;
+    Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_8_BIT, 2U, divider);
+    Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_8_BIT, 2U);
 
     // 5. Configure master data rate
-    uint32_t clk_scb_freq = Cy_SysClk_PeriphGetFrequency(CY_SYSCLK_DIV_8_BIT, 0U);
+    uint32_t clk_scb_freq = Cy_SysClk_PeriphGetFrequency(CY_SYSCLK_DIV_8_BIT, 2U);
+    mp_printf(&mp_plat_print, "DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
+
     uint32_t actual_rate = Cy_SCB_I2C_SetDataRate(MICROPY_HW_I2C0_SCB, freq_hz, clk_scb_freq);
+    mp_printf(&mp_plat_print, "DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
 
     if ((actual_rate > freq_hz) || (actual_rate == 0U)) {
         mp_raise_msg_varg(&mp_type_ValueError,
