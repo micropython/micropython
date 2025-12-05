@@ -148,6 +148,304 @@ Methods
    protocol       (ESP32 Only.) WiFi Low level 802.11 protocol. See `WLAN.PROTOCOL_DEFAULTS`.
    =============  ===========
 
+CSI Methods (ESP32 only)
+------------------------
+
+.. note::
+   These methods are only available on ESP32 ports when CSI support is enabled in the firmware build.
+
+   **Pre-configured boards**: The ``ESP32_CSI_C6`` and ``ESP32_CSI_S3`` boards have
+   CSI support pre-enabled and optimized for CSI applications. To use CSI on other
+   boards, you need to enable ``CONFIG_ESP_WIFI_CSI_ENABLED=y`` in your build
+   configuration (e.g., in ``sdkconfig.base`` or a custom ``sdkconfig.board`` file).
+
+Channel State Information (CSI) provides detailed information about the Wi-Fi channel
+state by analyzing physical layer signals. CSI data contains amplitude and phase
+information for each subcarrier, enabling applications such as motion detection,
+indoor localization, and gesture recognition.
+
+CSI capture requires an active Wi-Fi connection. Frames are captured from received
+Wi-Fi packets and stored in a circular buffer for asynchronous reading.
+
+.. method:: WLAN.csi_enable(buffer_size=16, lltf_en=True, htltf_en=True, stbc_htltf2_en=True, ltf_merge_en=True, channel_filter_en=True, manu_scale=False, shift=0)
+
+   Enable CSI capture with the specified configuration.
+
+   .. note::
+      Parameter support varies by device. ESP32-C6 and ESP32-C5 use the Wi-Fi 6
+      CSI API which automatically configures legacy CSI capture (equivalent to
+      ``acquire_csi_legacy = 1``). On these devices, only ``buffer_size`` is
+      configurable via Python; the other parameters (``lltf_en``, ``htltf_en``,
+      etc.) are ignored. ESP32, ESP32-S2, ESP32-S3, and ESP32-C3 use the standard
+      CSI API where all parameters are configurable. See the table below for details.
+
+   .. note::
+      **Wi-Fi Traffic Requirement**: CSI data is extracted from received Wi-Fi
+      packets. For CSI capture to work, there must be active Wi-Fi traffic
+      directed to the ESP32 device. Without traffic, no CSI frames will be
+      captured. To generate test traffic, you can use ping from another device
+      on the network (e.g., ``ping -i 0.1 <esp32_ip_address>``). More frequent
+      packets generate more CSI data but increase computational load on the
+      device.
+
+   **Parameters:**
+
+   * **buffer_size** (int, optional): Number of CSI frames to store in the circular
+     buffer (1-1024). Each frame uses approximately 552 bytes of RAM. Default: 16.
+     Larger buffers reduce frame drops but use more memory.
+     **Supported on all ESP32 devices.**
+
+   * **lltf_en** (bool, optional): Enable Legacy Long Training Field CSI capture.
+     Default: True.
+     **Only supported on ESP32, ESP32-S2, ESP32-S3, ESP32-C3.**
+
+   * **htltf_en** (bool, optional): Enable HT Long Training Field CSI capture.
+     Default: True.
+     **Only supported on ESP32, ESP32-S2, ESP32-S3, ESP32-C3.**
+
+   * **stbc_htltf2_en** (bool, optional): Enable STBC HT-LTF2 CSI capture.
+     Default: True.
+     **Only supported on ESP32, ESP32-S2, ESP32-S3, ESP32-C3.**
+
+   * **ltf_merge_en** (bool, optional): Merge L-LTF and HT-LTF data by averaging.
+     Default: True.
+     **Only supported on ESP32, ESP32-S2, ESP32-S3, ESP32-C3.**
+
+   * **channel_filter_en** (bool, optional): Enable channel filter to smooth adjacent
+     subcarriers. Default: True.
+     **Only supported on ESP32, ESP32-S2, ESP32-S3, ESP32-C3.**
+
+   * **manu_scale** (bool, optional): Use manual scaling mode. Default: False
+     (automatic scaling).
+     **Only supported on ESP32, ESP32-S2, ESP32-S3, ESP32-C3.**
+
+   * **shift** (int, optional): Shift value for manual scaling (0-15). Only used when
+     ``manu_scale=True``. Default: 0.
+     **Only supported on ESP32, ESP32-S2, ESP32-S3, ESP32-C3.**
+
+   **Parameter Support by Device:**
+
+   =====================  ==========  ==========  ==========  ==========  ==========  ==========
+   Parameter              ESP32       ESP32-S2    ESP32-S3    ESP32-C3    ESP32-C5    ESP32-C6
+   =====================  ==========  ==========  ==========  ==========  ==========  ==========
+   buffer_size            ✓           ✓           ✓           ✓           ✓           ✓
+   lltf_en                ✓           ✓           ✓           ✓           —           —
+   htltf_en               ✓           ✓           ✓           ✓           —           —
+   stbc_htltf2_en         ✓           ✓           ✓           ✓           —           —
+   ltf_merge_en           ✓           ✓           ✓           ✓           —           —
+   channel_filter_en      ✓           ✓           ✓           ✓           —           —
+   manu_scale             ✓           ✓           ✓           ✓           —           —
+   shift                  ✓           ✓           ✓           ✓           —           —
+   =====================  ==========  ==========  ==========  ==========  ==========  ==========
+
+   **Note:** ESP32-C5 and ESP32-C6 use the Wi-Fi 6 API which automatically enables
+   legacy CSI capture (via ``acquire_csi_legacy = 1``) but does not expose the
+   standard API parameters. These devices support legacy, HT20, and Wi-Fi 6 CSI
+   capture through their internal configuration.
+
+   **Note:** ESP32-C5 and ESP32-C6 use the Wi-Fi 6 (802.11ax) CSI API which has
+   different internal configuration options. These devices automatically configure
+   CSI capture with ``acquire_csi_legacy = 1`` (for legacy 802.11a/g packets),
+   ``acquire_csi_ht20 = 1`` (for HT packets), and ``acquire_csi_su = 1`` (for
+   Wi-Fi 6 HE packets). The Python configuration parameters (``lltf_en``,
+   ``htltf_en``, etc.) are accepted but ignored on these devices, as they use a
+   different API structure internally.
+
+   **Raises:** ``OSError`` if CSI cannot be enabled (e.g., Wi-Fi not connected).
+
+   **Example:** ::
+
+      import network
+      wlan = network.WLAN(network.STA_IF)
+      wlan.active(True)
+      wlan.connect("SSID", "password")
+      
+      # Enable CSI with custom buffer size
+      wlan.csi_enable(buffer_size=64)
+
+.. method:: WLAN.csi_disable()
+
+   Disable CSI capture and clean up resources.
+
+   **Example:** ::
+
+      wlan.csi_disable()
+
+.. method:: WLAN.csi_read()
+
+   Read a CSI frame from the buffer.
+
+   **Returns:** A tuple containing CSI frame data, or ``None`` if no frames are
+   available.
+
+   **Frame tuple fields (in order):**
+
+   * **0 - rssi** (int): Received signal strength in dBm
+   * **1 - channel** (int): Wi-Fi channel number
+   * **2 - mac** (bytes): Source MAC address (6 bytes)
+   * **3 - timestamp** (int): Timestamp in microseconds
+   * **4 - local_timestamp** (int): Local timestamp from Wi-Fi hardware
+   * **5 - data** (bytearray): CSI raw data (I/Q components as int8_t values)
+   * **6 - rate** (int): Data rate
+   * **7 - sig_mode** (int): Signal mode (legacy, HT, VHT)
+   * **8 - mcs** (int): Modulation and Coding Scheme index
+   * **9 - cwb** (int): Channel bandwidth
+   * **10 - smoothing** (int): Smoothing applied
+   * **11 - not_sounding** (int): Not sounding frame
+   * **12 - aggregation** (int): Aggregation
+   * **13 - stbc** (int): STBC
+   * **14 - fec_coding** (int): FEC coding
+   * **15 - sgi** (int): Short GI
+   * **16 - noise_floor** (int): Background noise level in dBm
+   * **17 - ampdu_cnt** (int): AMPDU count
+   * **18 - secondary_channel** (int): Secondary channel
+   * **19 - ant** (int): Antenna
+   * **20 - sig_len** (int): Signal length
+   * **21 - rx_state** (int): RX state
+
+   **Example:** ::
+
+      frame = wlan.csi_read()
+      if frame:
+          print(f"RSSI: {frame[0]} dBm")              # rssi
+          print(f"Channel: {frame[1]}")               # channel
+          print(f"CSI samples: {len(frame[5])}")      # data
+          print(f"MAC: {frame[2].hex()}")             # mac
+
+.. method:: WLAN.csi_available()
+
+   Get the number of CSI frames available in the buffer.
+
+   **Returns:** Integer count of available frames.
+
+   **Example:** ::
+
+      available = wlan.csi_available()
+      print(f"{available} frames ready to read")
+
+.. method:: WLAN.csi_dropped()
+
+   Get the number of CSI frames dropped due to buffer overflow.
+
+   **Returns:** Integer count of dropped frames.
+
+   **Note:** Frames are dropped when the buffer is full and new frames arrive faster
+   than they can be read. Increase ``buffer_size`` in ``csi_enable()`` to reduce drops.
+
+   **Example:** ::
+
+      dropped = wlan.csi_dropped()
+      if dropped > 0:
+          print(f"Warning: {dropped} frames dropped")
+
+**CSI Usage Example:** ::
+
+   import network
+   import time
+
+   wlan = network.WLAN(network.STA_IF)
+   wlan.active(True)
+   wlan.connect("SSID", "password")
+
+   # Wait for connection
+   timeout = 30
+   while not wlan.isconnected() and timeout > 0:
+       time.sleep(1)
+       timeout -= 1
+
+   if not wlan.isconnected():
+       raise Exception("WiFi connection failed")
+
+   # Enable CSI capture
+   wlan.csi_enable(buffer_size=32)
+
+   # Read frames
+   while True:
+       frame = wlan.csi_read()
+       if frame:
+           print(f"RSSI: {frame['rssi']} dBm, "
+                 f"Channel: {frame['channel']}, "
+                 f"CSI length: {len(frame['data'])} bytes")
+       else:
+           time.sleep(0.1)
+
+   # Disable when done
+   wlan.csi_disable()
+
+**Understanding CSI Data:**
+
+CSI data is provided as I/Q (In-phase/Quadrature) components in the ``data`` field.
+Each pair of values represents one subcarrier: ``[I0, Q0, I1, Q1, I2, Q2, ...]``.
+
+**CSI Data Length:**
+
+The ``data`` field is a bytearray that references an internal buffer of up to
+512 bytes, but the actual length varies based on Wi-Fi mode and configuration.
+The bytearray length (returned by ``len(frame['data'])``) reflects only the
+valid data bytes, not the full buffer size. Always use ``len(frame['data'])``
+to determine how many bytes are actually present in each frame.
+
+Typical CSI data lengths:
+
+* **HT20 (20 MHz bandwidth)**: 64 subcarriers = 128 bytes (most common)
+  - Each subcarrier uses 2 bytes (I and Q components)
+  - This is the default configuration and covers most use cases
+
+* **HT40 (40 MHz bandwidth)**: 128 subcarriers = 256 bytes
+  - Requires router/AP support for 40 MHz channels
+  - Provides higher resolution but uses more bandwidth
+
+* **Legacy 802.11a/g**: 64 subcarriers = 128 bytes
+  - L-LTF (Legacy Long Training Field) data
+
+* **Multi-antenna/MIMO**: May use additional bytes
+  - Multiple spatial streams require more data
+  - STBC (Space-Time Block Code) can increase data size
+
+The 512-byte buffer accommodates all these cases, including future support for
+HT40 and advanced MIMO configurations. For most applications, only the first
+128 bytes (64 subcarriers) are needed.
+
+To calculate amplitude for analysis::
+
+   import math
+
+   def csi_amplitude(csi_data):
+       amplitudes = []
+       # Process I/Q pairs (each subcarrier has I and Q components)
+       for i in range(0, len(csi_data) - 1, 2):
+           i_val = csi_data[i]      # In-phase component
+           q_val = csi_data[i + 1] if i + 1 < len(csi_data) else 0  # Quadrature component
+           # Mathematical formula: amplitude = √(I² + Q²)
+           # This calculates the magnitude of the complex number (I, Q)
+           # representing the channel response for this subcarrier
+           amp = math.sqrt(i_val * i_val + q_val * q_val)
+           amplitudes.append(amp)
+       return amplitudes
+
+   # Example: Get number of subcarriers
+   frame = wlan.csi_read()
+   if frame:
+       csi_data = frame['data']
+       # Mathematical formula:
+       # Each subcarrier requires 2 bytes: one for I (In-phase) and one for Q (Quadrature)
+       # Therefore: num_subcarriers = total_bytes ÷ 2
+       # Example: 128 bytes ÷ 2 = 64 subcarriers (HT20)
+       #          256 bytes ÷ 2 = 128 subcarriers (HT40)
+       num_subcarriers = len(csi_data) // 2
+       print(f"CSI data: {len(csi_data)} bytes, {num_subcarriers} subcarriers")
+
+**Memory Usage:**
+
+The circular buffer uses approximately ``buffer_size × 552 bytes`` of RAM.
+For example, a buffer size of 64 frames uses about 35 KB of RAM.
+
+**Platform Notes:**
+
+* **ESP32-C6 / ESP32-C5**: Support Wi-Fi 6 (802.11ax) CSI capture.
+
+* **ESP32 / ESP32-S2 / ESP32-S3 / ESP32-C3**: Support 802.11b/g/n CSI capture.
+
 Constants
 ---------
 

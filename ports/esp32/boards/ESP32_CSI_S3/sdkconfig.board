@@ -1,0 +1,23 @@
+# =============================================================================
+# ESP32-S3 Board Configuration for CSI/WiFi Sensing
+# =============================================================================
+
+# CSI Support (required for Channel State Information extraction)
+CONFIG_ESP_WIFI_CSI_ENABLED=y
+
+# Power saving modes can cause packet loss and timing issues with CSI callbacks
+CONFIG_PM_ENABLE=n
+CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE=n
+
+# Optimized scheduler: Improved task switching performance
+CONFIG_FREERTOS_OPTIMIZED_SCHEDULER=y
+
+# Higher tick rate: reduces callback latency by 10x compared to default 100Hz
+CONFIG_FREERTOS_HZ=1000
+
+# WiFi/LwIP buffers in internal SRAM reduce socket latency from ~15ms to ~1-2ms
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=n
+
+# Flash Configuration
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
