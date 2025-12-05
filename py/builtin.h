@@ -118,6 +118,9 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj);
+#if MICROPY_PY_TSTRINGS
+MP_DECLARE_CONST_FUN_OBJ_2(mp_builtin___template___obj);
+#endif
 
 MP_DECLARE_CONST_FUN_OBJ_2(mp_namedtuple_obj);
 

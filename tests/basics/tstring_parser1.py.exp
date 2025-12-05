@@ -1,0 +1,63 @@
+
+=== Empty expression tests ===
+Empty expr SyntaxError: t-string: valid expression required before '}'
+Whitespace expr SyntaxError: t-string: empty expression not allowed
+Whitespace expr: SyntaxError
+Unterminated expr: SyntaxError
+Whitespace + conversion: SyntaxError
+Long expression: OK
+Template.__str__ with large string: OK
+Basic t-string: OK, result=Template(strings=('', ''), interpolations=(Interpolation('a', 'x', None, ''),))
+Nested interpolations error: SyntaxError: invalid syntax
+Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(42, 'x', None, '5{literal}'),))
+
+=== Expression parser tests ===
+Complex expr: OK
+
+=== Parser MemoryError ===
+Parser MemoryError: MemoryError
+
+=== Lexer edge cases ===
+Lexer NULL case: Tested via heapalloc_fail_tstring.py
+
+=== Parser allocation edge cases ===
+Deep nesting: OK
+Very long expression: OK
+
+=== Additional parser regression tests ===
+Raw nested spec: "QUOTED"
+Escaped quote spec: "QUOTED"
+Escaped backslash spec: \n
+Nested quoted spec: \
+Literal brace error: SyntaxError: t-string: single '}' is not allowed
+Unterminated field: t-string: expecting '}'
+
+=== Complex expression stress test ===
+60 terms: PASS
+100 terms: PASS
+
+=== Stack expansion test (copy_parse_node) ===
+Stack expansion: OK
+
+=== Format spec with triple-quoted strings ===
+Triple-quote in format spec: OK
+Triple single-quote in format spec: OK
+
+=== Format spec parse error (exception handler) ===
+Parse error handler: OK
+Parse error handler 2: OK
+
+=== Large integer in t-string ===
+Large integer: OK
+
+=== Bytes in expression ===
+Bytes in expression: OK
+
+=== Boolean constants ===
+Boolean constants: OK
+
+=== None constant ===
+None constant: OK
+
+=== Deep nesting for rule stack expansion ===
+Deep nesting (depth=80): OK
