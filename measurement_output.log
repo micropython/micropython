@@ -1,0 +1,726 @@
+./measure_feature_sizes.sh: line 72: Building: METACLASS_INIT only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368244	     52	  27012	 395308	  6082c	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.dfu
+  Size: 368244 bytes
+
+368244: syntax error in expression (error token is ": METACLASS_INIT only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368244	     52	  27012	 395308	  6082c	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.dfu
+  Size: 368244 bytes
+
+368244")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 90: Building: METACLASS_OPS only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368348	     52	  27012	 395412	  60894	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368348 bytes
+
+368348: syntax error in expression (error token is ": METACLASS_OPS only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368348	     52	  27012	 395412	  60894	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368348 bytes
+
+368348")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 108: Building: METACLASS_PROPERTIES only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368196	     52	  27012	 395260	  607fc	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368196 bytes
+
+368196: syntax error in expression (error token is ": METACLASS_PROPERTIES only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368196	     52	  27012	 395260	  607fc	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368196 bytes
+
+368196")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 126: Building: METACLASS_PREPARE only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368192	     52	  27012	 395256	  607f8	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368192 bytes
+
+368192: syntax error in expression (error token is ": METACLASS_PREPARE only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368192	     52	  27012	 395256	  607f8	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368192 bytes
+
+368192")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 145: Building: CORE level (INIT)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368244	     52	  27012	 395308	  6082c	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368244 bytes
+
+368244: syntax error in expression (error token is ": CORE level (INIT)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368244	     52	  27012	 395308	  6082c	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368244 bytes
+
+368244")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 153: Building: EXTRA level (INIT+OPS+PROPS)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368572	     52	  27012	 395636	  60974	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368572 bytes
+
+368572: syntax error in expression (error token is ": EXTRA level (INIT+OPS+PROPS)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368572	     52	  27012	 395636	  60974	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368572 bytes
+
+368572")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 161: Building: FULL level (all enabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368648	     52	  27012	 395712	  609c0	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368648 bytes
+
+368648: syntax error in expression (error token is ": FULL level (all enabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368648	     52	  27012	 395712	  609c0	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368648 bytes
+
+368648")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 182: Building: EXTRA + enum.py frozen
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 374016	     52	  27012	 401080	  61eb8	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 374016 bytes
+
+374016: syntax error in expression (error token is ": EXTRA + enum.py frozen
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 374016	     52	  27012	 401080	  61eb8	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 374016 bytes
+
+374016")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+./measure_feature_sizes.sh: line 199: Building: FULL + enum.py frozen
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 374076	     52	  27012	 401140	  61ef4	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 374076 bytes
+
+374076: syntax error in expression (error token is ": FULL + enum.py frozen
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 374076	     52	  27012	 401140	  61ef4	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 374076 bytes
+
+374076")
+(standard_in) 1: syntax error
+(standard_in) 1: illegal character: :
+(standard_in) 1: syntax error
+(standard_in) 2: illegal character: :
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 2: syntax error
+(standard_in) 2: illegal character: _
+(standard_in) 2: illegal character: _
+(standard_in) 3: syntax error
+(standard_in) 3: syntax error
+(standard_in) 4: syntax error
+(standard_in) 4: syntax error
+(standard_in) 5: syntax error
+(standard_in) 5: syntax error
+(standard_in) 6: syntax error
+(standard_in) 6: syntax error
+(standard_in) 7: syntax error
+(standard_in) 7: syntax error
+(standard_in) 8: syntax error
+(standard_in) 8: illegal character: :
+
+✅ Measurement complete! Results saved to FEATURE_SIZE_REPORT.md
+# Feature Size Measurement Report
+
+**Board:** PYBV10
+**Date:** 2025-11-12 23:27:12
+**Default ROM Level:** EXTRA_FEATURES
+
+---
+
+## 1. Baseline Measurement
+
+Building baseline (all metaclass features disabled, no enum)...
+
+| Configuration | Text Size (bytes) | Change from Baseline | % Change |
+|--------------|------------------|---------------------|----------|
+| Baseline (all disabled) | Building: Baseline (all disabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368108	     52	  27012	 395172	  607a4	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368108 bytes
+
+368108 | 0 | 0.00% |
+
+## 2. Individual Metaclass Features
+
+### Feature 1: MICROPY_PY_METACLASS_INIT
+
+Enables metaclass `__init__` invocation after class creation.
+
+| Configuration | Text Size (bytes) | Change from Baseline | % Change |
+|--------------|------------------|---------------------|----------|
+| + METACLASS_INIT | Building: METACLASS_INIT only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368244	     52	  27012	 395308	  6082c	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.dfu
+  Size: 368244 bytes
+
+368244 | + | +368108% |
+
+### Feature 2: MICROPY_PY_METACLASS_OPS
+
+Enables operator support on type objects (`__len__`, `__contains__`, `__hash__`).
+
+| Configuration | Text Size (bytes) | Change from Baseline | % Change |
+|--------------|------------------|---------------------|----------|
+| + METACLASS_OPS | Building: METACLASS_OPS only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368348	     52	  27012	 395412	  60894	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368348 bytes
+
+368348 | + | +368108% |
+
+### Feature 3: MICROPY_PY_METACLASS_PROPERTIES
+
+Enables property and method lookup on classes from metaclass.
+
+| Configuration | Text Size (bytes) | Change from Baseline | % Change |
+|--------------|------------------|---------------------|----------|
+| + METACLASS_PROPERTIES | Building: METACLASS_PROPERTIES only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368196	     52	  27012	 395260	  607fc	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368196 bytes
+
+368196 | + | +368108% |
+
+### Feature 4: MICROPY_PY_METACLASS_PREPARE
+
+Enables `__prepare__` metaclass method (PEP 3115) for custom class namespace.
+
+| Configuration | Text Size (bytes) | Change from Baseline | % Change |
+|--------------|------------------|---------------------|----------|
+| + METACLASS_PREPARE | Building: METACLASS_PREPARE only
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368192	     52	  27012	 395256	  607f8	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368192 bytes
+
+368192 | + | +368108% |
+
+## 3. Cumulative Feature Builds
+
+Building with features enabled cumulatively:
+
+| Configuration | Text Size (bytes) | Change from Baseline | % Change |
+|--------------|------------------|---------------------|----------|
+| Baseline | Building: Baseline (all disabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368108	     52	  27012	 395172	  607a4	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368108 bytes
+
+368108 | 0 | 0.00% |
+| CORE (INIT) | Building: CORE level (INIT)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368244	     52	  27012	 395308	  6082c	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368244 bytes
+
+368244 | + | +368108% |
+| EXTRA (INIT+OPS+PROPS) | Building: EXTRA level (INIT+OPS+PROPS)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368572	     52	  27012	 395636	  60974	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368572 bytes
+
+368572 | + | +368108% |
+| FULL (all metaclass) | Building: FULL level (all enabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368648	     52	  27012	 395712	  609c0	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368648 bytes
+
+368648 | + | +368108% |
+
+## 4. Enum Module Impact
+
+### With Default Features (EXTRA level)
+
+| Configuration | Text Size (bytes) | Change from EXTRA | % Change |
+|--------------|------------------|-------------------|----------|
+| EXTRA (no enum) | Building: EXTRA level (INIT+OPS+PROPS)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368572	     52	  27012	 395636	  60974	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368572 bytes
+
+368572 | 0 | 0.00% |
+| EXTRA + enum.py frozen | Building: EXTRA + enum.py frozen
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 374016	     52	  27012	 401080	  61eb8	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 374016 bytes
+
+374016 | + | +368572% |
+
+### With PREPARE Enabled (for auto() support)
+
+| Configuration | Text Size (bytes) | Change from FULL | % Change |
+|--------------|------------------|------------------|----------|
+| FULL (no enum) | Building: FULL level (all enabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368648	     52	  27012	 395712	  609c0	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368648 bytes
+
+368648 | 0 | 0.00% |
+| FULL + enum.py frozen | Building: FULL + enum.py frozen
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 374076	     52	  27012	 401140	  61ef4	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 374076 bytes
+
+374076 | + | +368648% |
+
+## 5. Summary
+
+### Individual Feature Costs (C code only)
+
+| Feature | Size (bytes) | Description |
+|---------|-------------|-------------|
+| METACLASS_INIT |  | Metaclass `__init__` invocation |
+| METACLASS_OPS |  | Operator support on types |
+| METACLASS_PROPERTIES |  | Property/method lookup |
+| METACLASS_PREPARE |  | `__prepare__` method support |
+
+### ROM Level Configurations
+
+| ROM Level | Features Enabled | Size (bytes) | Overhead |
+|-----------|-----------------|--------------|----------|
+| MINIMAL | None | Building: Baseline (all disabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=0 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368108	     52	  27012	 395172	  607a4	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368108 bytes
+
+368108 | baseline |
+| CORE | INIT | Building: CORE level (INIT)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=0 -DMICROPY_PY_METACLASS_PROPERTIES=0 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368244	     52	  27012	 395308	  6082c	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368244 bytes
+
+368244 | + bytes |
+| EXTRA | INIT, OPS, PROPERTIES | Building: EXTRA level (INIT+OPS+PROPS)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=0
+ 368572	     52	  27012	 395636	  60974	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368572 bytes
+
+368572 | + bytes |
+| FULL | All metaclass features | Building: FULL level (all enabled)
+  CFLAGS: -DMICROPY_PY_METACLASS_INIT=1 -DMICROPY_PY_METACLASS_OPS=1 -DMICROPY_PY_METACLASS_PROPERTIES=1 -DMICROPY_PY_METACLASS_PREPARE=1
+ 368648	     52	  27012	 395712	  609c0	build-PYBV10/firmware.elf
+GEN build-PYBV10/firmware0.bin
+GEN build-PYBV10/firmware1.bin
+GEN build-PYBV10/firmware.hex
+GEN build-PYBV10/firmware.dfu
+  Size: 368648 bytes
+
+368648 | + bytes |
+
+### Enum Module Costs
+
+| Configuration | Enum Module Size | Total Overhead |
+|--------------|------------------|----------------|
+| EXTRA + enum.py |  bytes | +0 bytes |
+| FULL + enum.py |  bytes | +0 bytes |
+
+### Total Implementation Cost
+
+- **C code (all metaclass features):** 0 bytes
+- **Python enum.py (frozen):**  bytes
+- **Total:** 0 bytes
+
+---
+
+*Report generated: Wed Nov 12 11:40:19 PM AEDT 2025*
