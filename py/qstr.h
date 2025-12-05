@@ -85,24 +85,24 @@ typedef struct _qstr_pool_t {
     size_t alloc;
     size_t len;
     #if MICROPY_QSTR_BYTES_IN_HASH
-    qstr_hash_t *hashes;
+    qstr_hash_t *hashes MP_ATTR_COUNTED_BY(alloc);
     #endif
-    qstr_len_t *lengths;
-    const char *qstrs[];
+    qstr_len_t *lengths MP_ATTR_COUNTED_BY(alloc);
+    const char *qstrs[] MP_ATTR_COUNTED_BY(alloc);
 } qstr_pool_t;
 
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
 
 void qstr_init(void);
 
-size_t qstr_compute_hash(const byte *data, size_t len);
+size_t qstr_compute_hash(const byte *data MP_ATTR_COUNTED_BY(len), size_t len);
 
-qstr qstr_find_strn(const char *str, size_t str_len); // returns MP_QSTRnull if not found
+qstr qstr_find_strn(const char *str MP_ATTR_COUNTED_BY(str_len), size_t str_len); // returns MP_QSTRnull if not found
 
 qstr qstr_from_str(const char *str);
-qstr qstr_from_strn(const char *str, size_t len);
+qstr qstr_from_strn(const char *str MP_ATTR_COUNTED_BY(len), size_t len);
 #if MICROPY_VFS_ROM
-qstr qstr_from_strn_static(const char *str, size_t len);
+qstr qstr_from_strn_static(const char *str MP_ATTR_COUNTED_BY(len), size_t len);
 #endif
 
 mp_uint_t qstr_hash(qstr q);
