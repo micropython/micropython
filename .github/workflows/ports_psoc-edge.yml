@@ -74,7 +74,7 @@ jobs:
           source tools/ci.sh && ci_psoc_edge_setup ${{ matrix.board }}
       - name: Setup devices
         run: |
-          cp mpy-psoc-edge_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/app_combined.hex .
+          cp mpy-psoc-edge_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/app_combined.hex tools/psoc-edge
           source tools/ci.sh && ci_psoc_edge_deploy_multiple_devices ${{ matrix.board }} app_combined.hex tests/ports/psoc-edge/${{ runner.name }}-devs.yml
       - name: Run psoc-edge tests
         timeout-minutes: 12
