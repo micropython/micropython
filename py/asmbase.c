@@ -102,7 +102,7 @@ void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
 
 // align must be a multiple of 2
 void mp_asm_base_align(mp_asm_base_t *as, unsigned int align) {
-    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
+    as->code_offset = (as->code_offset + align - 1) & (~(size_t)(align - 1));
 }
 
 // this function assumes a little endian machine
