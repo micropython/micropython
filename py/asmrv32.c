@@ -53,6 +53,14 @@
     ((((value) & ~((1U << ((bits) - 1)) - 1)) == 0) ||                                      \
     (((value) & ~((1U << ((bits) - 1)) - 1)) == ~((1U << ((bits) - 1)) - 1)))
 
+static bool asm_rv32_allow_zba_opcodes(void) {
+    return asm_rv32_allowed_extensions() & RV32_EXT_ZBA;
+}
+
+static bool asm_rv32_allow_zcmp_opcodes(void) {
+    return asm_rv32_allowed_extensions() & RV32_EXT_ZCMP;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void asm_rv32_emit_word_opcode(asm_rv32_t *state, mp_uint_t word) {
@@ -214,6 +222,14 @@ static void adjust_stack(asm_rv32_t *state, mp_int_t stack_size) {
         return;
     }
 
+    // WARNING: If REG_TEMP0 is not set to a caller-saved register, then this
+    //          bit has to be rewritten to avoid clobbering the temporary
+    //          register when performing the stack adjustment.
+
+    MP_STATIC_ASSERT(((REG_TEMP0 >= ASM_RV32_REG_T0) && (REG_TEMP0 <= ASM_RV32_REG_T2)) || \
+        ((REG_TEMP0 >= ASM_RV32_REG_A0) && (REG_TEMP0 <= ASM_RV32_REG_A7)) || \
+        ((REG_TEMP0 >= ASM_RV32_REG_T3) && (REG_TEMP0 <= ASM_RV32_REG_T6)));
+
     // li    temporary, stack_size
     // c.add sp, temporary
     load_full_immediate(state, REG_TEMP0, stack_size);
@@ -245,6 +261,45 @@ static void emit_function_epilogue(asm_rv32_t *state, mp_uint_t registers) {
     state->saved_registers_mask = old_saved_registers_mask;
 }
 
+static mp_uint_t compute_zcmp_sequence_length(mp_uint_t registers) {
+    // Can only handle RA and S0..S11 and must have at least one entry.
+    assert((registers != 0) && (registers & (~0x0FFC0302U)) == 0 && "Invalid Zcmp registers set.");
+    mp_uint_t length = 32 - mp_clz(((registers & 0x00000002) >> 1) | ((registers & 0x00000300) >> 7) | ((registers & 0x0FFC0000) >> 15));
+    return length == 12 ? 13 : length;
+}
+
+#define EMIT_ASSERT(state, condition, message) assert((((state)->base.pass != MP_ASM_PASS_EMIT) ? true : (condition)) && (message))
+
+static void emit_compressed_function_prologue(asm_rv32_t *state, mp_uint_t registers_mask) {
+    mp_uint_t sequence_length = compute_zcmp_sequence_length(registers_mask);
+    mp_uint_t allocated_stack = (sequence_length + 3) & (mp_uint_t)-4;
+    EMIT_ASSERT(state, allocated_stack >= sequence_length, "Incorrect allocated stack calculation.");
+    mp_uint_t tail_slack = allocated_stack - sequence_length;
+    mp_uint_t locals_left = (state->locals_count < tail_slack) ? 0 : (state->locals_count - tail_slack);
+    mp_uint_t adjustment_chunks = MIN(3, locals_left / 4);
+    EMIT_ASSERT(state, (adjustment_chunks * 4) <= locals_left, "Incorrect adjustment chunks rounding.");
+    locals_left -= adjustment_chunks * 4;
+    EMIT_ASSERT(state, locals_left <= (MP_INT_MAX / sizeof(uint32_t)), "Too many locals.");
+    mp_int_t stack_size = (mp_int_t)(locals_left * sizeof(uint32_t));
+    asm_rv32_opcode_cmpush(state, MIN(3 + sequence_length, 15), adjustment_chunks);
+    // CM.PUSH allocates a stack block and then puts the registers *at the end*
+    // of the block, so for example "CM.PUSH {RA, S0-S11}, -64" will put RA at
+    // SP + 60, not at SP + 0.
+    adjust_stack(state, -stack_size);
+    // The stack size is expressed in bytes and as a multiple of 4, hence the
+    // bottom two bits are not used.  Since there can be up to three adjustment
+    // chunks, that number can be expressed in two bits, fitting nicely in the
+    // existing variable.
+    state->stack_size = ((mp_uint_t)stack_size) | adjustment_chunks;
+}
+
+static void emit_compressed_function_epilogue(asm_rv32_t *state, mp_uint_t registers_mask) {
+    mp_uint_t sequence_length = compute_zcmp_sequence_length(registers_mask);
+    mp_uint_t stack_size = state->stack_size & (mp_uint_t)(~0x03U);
+    adjust_stack(state, stack_size);
+    asm_rv32_opcode_cmpopret(state, MIN(3 + sequence_length, 15), state->stack_size & 0x03);
+}
+
 static bool calculate_displacement_for_label(asm_rv32_t *state, mp_uint_t label, ptrdiff_t *displacement) {
     assert(displacement != NULL && "Displacement pointer is NULL");
 
@@ -256,16 +311,24 @@ static bool calculate_displacement_for_label(asm_rv32_t *state, mp_uint_t label,
 ///////////////////////////////////////////////////////////////////////////////
 
 void asm_rv32_entry(asm_rv32_t *state, mp_uint_t locals) {
+    state->locals_count = locals;
     state->saved_registers_mask |= (1U << REG_FUN_TABLE) | (1U << REG_LOCAL_1) | \
         (1U << REG_LOCAL_2) | (1U << REG_LOCAL_3);
-    state->locals_count = locals;
-    emit_function_prologue(state, state->saved_registers_mask);
+    if (asm_rv32_allow_zcmp_opcodes()) {
+        emit_compressed_function_prologue(state, state->saved_registers_mask);
+    } else {
+        emit_function_prologue(state, state->saved_registers_mask);
+    }
 }
 
 void asm_rv32_exit(asm_rv32_t *state) {
-    emit_function_epilogue(state, state->saved_registers_mask);
-    // c.jr ra
-    asm_rv32_opcode_cjr(state, ASM_RV32_REG_RA);
+    if (asm_rv32_allow_zcmp_opcodes()) {
+        emit_compressed_function_epilogue(state, state->saved_registers_mask);
+    } else {
+        emit_function_epilogue(state, state->saved_registers_mask);
+        // c.jr ra
+        asm_rv32_opcode_cjr(state, ASM_RV32_REG_RA);
+    }
 }
 
 void asm_rv32_end_pass(asm_rv32_t *state) {
@@ -555,10 +618,6 @@ void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs) 
 
     // xor rd, rd, rs
     asm_rv32_opcode_xor(state, rd, rd, rs);
-}
-
-static bool asm_rv32_allow_zba_opcodes(void) {
-    return asm_rv32_allowed_extensions() & RV32_EXT_ZBA;
 }
 
 static void asm_rv32_fix_up_scaled_reg_reg_reg(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size) {
