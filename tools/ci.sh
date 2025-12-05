@@ -407,7 +407,7 @@ function ci_psoc_edge_deploy_multiple_devices {
     # etdevs will be later directly available in the docker
     # As this will be updated frequently currently, we install it each time
     docker exec mtb36-ci /bin/bash -c "pip install etdevs"
-    docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python mpy-pse.py --board $1 --hex-file $2 --devs-file ../../$3"
+    docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py --board $1 --hex-file $2 --devs-file ../../$3"
 }
 
 function ci_psoc_edge_teardown {
