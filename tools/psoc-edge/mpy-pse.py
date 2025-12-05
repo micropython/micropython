@@ -249,6 +249,9 @@ def openocd_program(board, hex_file, serial_adapter_sn=None):
     if not openocd:
         sys.exit(colour_str_error("error: openocd not found in PATH"))
 
+    # Convert to forward slashes for cross-platform compatibility
+    openocd = openocd.replace("\\", "/")
+
     # Get the root openocd path.
     # It is two level up from the openocd executable
     openocd_root_dir = os.path.dirname(os.path.dirname(openocd))
@@ -343,7 +346,7 @@ def select_board():
     print_f("+---------+-----------------------------------+")
     print_f("|   ID    |              Board                |")
     print_f("+---------+-----------------------------------+")
-    print_f("|   0     |  KIT_PSE84_AI                     |")
+    print_f("|   0     |           KIT_PSE84_AI            |")
     print_f("+---------+-----------------------------------+")
     print_f("")
     print_f("")
@@ -371,37 +374,74 @@ def wait_and_request_board_connect():
     )
 
 
-def device_setup(board, version, serial_adapter_sn=None, quiet=False):
+def device_setup(
+    board, version=None, hex_file=None, serial_adapter_sn=None, devs_file=None, quiet=False
+):
+    # if board is none it
+    # needs to be provided by the user
     if board is None:
         board = select_board()
     else:
         validate_board_name(board)
 
-    print_f("MicroPython PSOC Edge Board   :: ", board)
+    print_f("MicroPython PSOC Edge Board :: ", board)
 
-    if version is None:
-        version = "latest"
+    # Download hex file
+    # if not provided by the user
+    if hex_file is None:
+        if version is None:
+            version = "latest"
 
-    print_f("MicroPython PSOC Edge Version :: ", version)
+        print_f("MicroPython PSOC Edge Version :: ", version)
+        mpy_firmware_download("mpy-psoc-edge", board, version, silent=quiet)
 
-    if not quiet:
-        wait_and_request_board_connect()
+        hex_file = mpy_get_fw_hex_file_name("mpy-psoc-edge", board)
+
+    # If the user provides a device list,
+    # find and filter the applicable boards
+    # and get their serial numbers
+    serial_adapter_sn_list = []
+    if devs_file is not None:
+        try:
+            from etdevs.devs import Device
+        except ImportError:
+            sys.exit(
+                colour_str_error(
+                    "error: etdevs package not found. Please install it with 'pip install etdevs'"
+                )
+            )
+
+        all_available_devs = Device.load_device_list_from_yml(devs_file)
+        available_devs_board = [dev for dev in all_available_devs if dev.name == board]
+
+        if serial_adapter_sn:
+            # check if that sn is in the devs file for that board
+            serial_adapter_sn_list = [
+                dev.uid for dev in available_devs_board if dev.uid == serial_adapter_sn
+            ]
+            if not serial_adapter_sn_list:
+                sys.exit(
+                    colour_str_error(
+                        "error: serial adapter sn not found in devs file for that board"
+                    )
+                )
+        else:
+            serial_adapter_sn_list = [dev.uid for dev in available_devs_board]
+
+        print_f(
+            f"Found {len(serial_adapter_sn_list)} devices with serial number:  {serial_adapter_sn_list}"
+        )
+
+    if not serial_adapter_sn_list:
+        serial_adapter_sn_list = [serial_adapter_sn]
 
     openocd_download_install()
     openocd_board_conf_download(board)
 
-    mpy_firmware_download("mpy-psoc-edge", board, version, silent=quiet)
-    mpy_firmware_deploy("mpy-psoc-edge", board, serial_adapter_sn)
-
-    print_f(colour_str_success("Device setup completed :)"))
-
-
-def firmware_deploy(board, hex_file, serial_adapter_sn=None):
-    openocd_download_install()
-    openocd_board_conf_download(board)
-    print(f"Deploying hex file {hex_file} ...")
-    openocd_program(board, hex_file, serial_adapter_sn)
-    print(colour_str_success(f"Firmware {hex_file} deployed successfully"))
+    for sn in serial_adapter_sn_list:
+        print(f"Deploying hex file {hex_file} ...")
+        openocd_program(board, hex_file, sn)
+        print(colour_str_success("Device setup completed :)"))
 
 
 def clean_tool_downloads():
@@ -413,10 +453,9 @@ def parser():
         parser.print_help()
 
     def parser_device_setup(args):
-        device_setup(args.board, args.version, args.serial_num, args.q)
-
-    def parser_firmware_deploy(args):
-        firmware_deploy(args.board, args.hexfile, args.serial_num)
+        device_setup(
+            args.board, args.version, args.hex_file, args.serial_num, args.devs_file, args.q
+        )
 
     # Main parser
     class ver_action(argparse.Action):
@@ -429,18 +468,9 @@ def parser():
             print_f("mpy-pse version: " + version)
             parser.exit()
 
-    main_parser_desc = """
-    Micropython PSOC Edge utility script
-
-    Available commands:
-
-    device-setup        Setup of MicroPython PSOC Edge device
-    firmware-deploy     Firmware deployment on PSOC Edge device (user provided binary file)
-                                                                  
-    mpy-pse.py <command> --help for more information about each specific command.
-    """
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawTextHelpFormatter, description=main_parser_desc
+        formatter_class=argparse.RawTextHelpFormatter,
+        description="Micropython PSOC Edge utility script",
     )
     parser.add_argument("-v", "--version", action=ver_action, help="mpy-pse version")
     subparser = parser.add_subparsers()
@@ -451,7 +481,7 @@ def parser():
         "device-setup",
         description="Setup of MicroPython PSOC Edge device. \
                     Use this command to install the deployment tools \
-                    and MicroPython firmware binary, and deploy the \
+                    and deploy the MicroPython \
                     firmware on the PSOC Edge device.",
     )
     parser_ds.add_argument(
@@ -468,36 +498,15 @@ def parser():
         "-v", "--version", default=None, type=str, help="MicroPython PSOC Edge firmware version"
     )
     parser_ds.add_argument(
+        "-f", "--hex-file", type=str, help="MicroPython PSOC Edge firmware .hex file"
+    )
+    parser_ds.add_argument(
+        "-d", "--devs-file", type=str, help="Devices file for multiple device deployment"
+    )
+    parser_ds.add_argument(
         "-q", action="store_true", help="Quiet. Do not prompt any user confirmation request"
     )
     parser_ds.set_defaults(func=parser_device_setup)
-
-    # firmware deploy
-    parser_fd = subparser.add_parser(
-        "firmware-deploy",
-        description="Firmware deployment on MicroPython device. \
-                    Use this command to deploy an existing .hex file \
-                    on a PSOC Edge board.",
-    )
-    parser_fd.add_argument(
-        "-b",
-        "--board",
-        default=None,
-        type=str,
-        required=True,
-        help="PSOC Edge prototyping kit name",
-    )
-    parser_fd.add_argument(
-        "-n",
-        "--serial-num",
-        default=None,
-        type=str,
-        help="Serial number of the board serial adapter",
-    )
-    parser_fd.add_argument(
-        "-f", "--hexfile", type=str, required=True, help="MicroPython PSOC Edge firmware .hex file"
-    )
-    parser_fd.set_defaults(func=parser_firmware_deploy)
 
     # Parser call
     args = parser.parse_args()
