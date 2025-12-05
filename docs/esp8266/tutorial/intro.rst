@@ -97,11 +97,11 @@ to the documentation for your board to see its recommendations.
 
 Using esptool.py you can erase the flash with the command::
 
-    esptool.py --port /dev/ttyUSB0 erase_flash
+    esptool.py --port /dev/ttyUSB0 erase-flash
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write-flash --flash-size=detect 0 esp8266-20170108-v1.8.7.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
@@ -114,7 +114,7 @@ a NodeMCU board) you may need to manually set a compatible
 You'd usually pick the fastest option that is compatible with your device, but
 the ``-fm dout`` option (the slowest option) should have the best compatibility::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dout 0 esp8266-20170108-v1.8.7.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write-flash --flash-size=detect -fm dout 0 esp8266-20170108-v1.8.7.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -178,12 +178,12 @@ after it, here are troubleshooting recommendations:
 
     pip install esptool==1.0.1
 
-  This version doesn't support ``--flash_size=detect`` option, so you will
+  This version doesn't support ``--flash-size=detect`` option, so you will
   need to specify FlashROM size explicitly (in megabits). It also requires
   Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in the
   command above.
 
-* The ``--flash_size`` option in the commands above is mandatory. Omitting
+* The ``--flash-size`` option in the commands above is mandatory. Omitting
   it will lead to a corrupted firmware.
 
 * To catch incorrect flash content (e.g. from a defective sector on a chip),
