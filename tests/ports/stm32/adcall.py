@@ -33,10 +33,14 @@ for c in range(19):
     print(type(adc.read_channel(c)))
 
 # call special reading functions
-print(skip_temp_test or 0 < adc.read_core_temp() < 100)
-print(0 < adc.read_core_vbat() < 4)
-print(0 < adc.read_core_vref() < 2)
-print(0 < adc.read_vref() < 4)
+core_temp = adc.read_core_temp()
+core_vbat = adc.read_core_vbat()
+core_vref = adc.read_core_vref()
+vref = adc.read_vref()
+print(skip_temp_test or 0 < core_temp < 100 or core_temp)
+print(0 < core_vbat < 4 or core_vbat)
+print(0 < core_vref < 2 or core_vref)
+print(0 < vref < 4 or vref)
 
 if sys.implementation._build == "NUCLEO_WB55":
     # Restore button pin settings.
