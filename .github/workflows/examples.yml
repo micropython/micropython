@@ -20,6 +20,12 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Build
-      run: make -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
+      run: make -C examples/embedding -f micropython_embed.mk && make -C examples/embedding -f makefile.mk 
     - name: Run
+      run: ./examples/embedding/embed | grep "hello world"
+    - name: Clean
+      run: make -C examples/embedding clean && [ ! -e embed ] && [ ! -e micropython_embed ]
+    - name: Combined Build
+      run: make -C examples/embedding
+    - name: Combined Run
       run: ./examples/embedding/embed | grep "hello world"
