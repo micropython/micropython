@@ -2394,7 +2394,7 @@ typedef time_t mp_timestamp_t;
 
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
-#define MP_HTOBE16(x) ((uint16_t)((((x) & 0xff) << 8) | (((x) >> 8) & 0xff)))
+#define MP_HTOBE16(x) MP_BSWAP16(x)
 #define MP_BE16TOH(x) MP_HTOBE16(x)
 #else
 #define MP_HTOBE16(x) (x)
@@ -2404,7 +2404,7 @@ typedef time_t mp_timestamp_t;
 
 #ifndef MP_HTOBE32
 #if MP_ENDIANNESS_LITTLE
-#define MP_HTOBE32(x) ((uint32_t)((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8) & 0xff00) | (((x) >> 24) & 0xff)))
+#define MP_HTOBE32(x) MP_BSWAP32(x)
 #define MP_BE32TOH(x) MP_HTOBE32(x)
 #else
 #define MP_HTOBE32(x) (x)
