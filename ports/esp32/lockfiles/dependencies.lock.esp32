@@ -30,6 +30,6 @@ direct_dependencies:
 - espressif/lan867x
 - espressif/mdns
 - idf
-manifest_hash: cc42b6ea8bc1d77d04370604f0b1c1a93a4f2c9b9200690722458faedaee68a4
+manifest_hash: 482087bc40f0e187795a9ef9ad08ef15a585b4cdabc296c715a9d19284622150
 target: esp32
 version: 2.0.0

@@ -14,7 +14,7 @@ dependencies:
       type: service
     version: 1.1.3
   espressif/esp_hosted:
-    component_hash: f32400eec7f35652052ae79ecb301148d4011769e94eb8d47262fb22fce933d2
+    component_hash: 53544436deb5fcbfdbf4a8e2c643cdbe31126556781784278c016d674df99cd2
     dependencies:
     - name: idf
       require: private
@@ -22,7 +22,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 2.2.4
+    version: 2.7.0
   espressif/esp_serial_slave_link:
     component_hash: ac1776806de0a6e371c84e87898bb983e19ce62aa7f1e2e5c4a3b0234a575d2c
     dependencies:
@@ -88,6 +88,6 @@ direct_dependencies:
 - espressif/mdns
 - espressif/tinyusb
 - idf
-manifest_hash: cc42b6ea8bc1d77d04370604f0b1c1a93a4f2c9b9200690722458faedaee68a4
+manifest_hash: 482087bc40f0e187795a9ef9ad08ef15a585b4cdabc296c715a9d19284622150
 target: esp32p4
 version: 2.0.0
