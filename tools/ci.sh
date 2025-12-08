@@ -404,7 +404,7 @@ function ci_psoc_edge_deploy_multiple_devices {
     # hex file including path with respect to micropython root
     hex_file=$2
     devs_file=$3
-    docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board $1 --hex-file ../../$2 --devs-file ../../$3 -q"
+    docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board $1 --hex-file $2 --devs-file ../../$3 -q"
 }
 
 function ci_psoc_edge_teardown {
