@@ -77,13 +77,18 @@ Multiple devices deployment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you have multiple PSOC™ Edge boards connected to your computer, you can distinguish them by their serial number, and flash them one by one.
-To do so, use the ``-s`` flag to provide the serial number of the target board as shown below:
+To do so, use the ``-n`` flag to provide the serial number of the target board as shown below:
 
 .. code-block:: bash
     
     $ python mpy-pse.py device-setup -b KIT_PSE84_AI -n 181F0D5A01212300
 
 Alternatively, you can deploy a firmware file to all connected boards if you have a device YAML file following the `etdevs <https://pypi.org/project/etdevs/>`_ specification.
+
+.. note::
+
+    This option is only supported on **Linux** and **MacOS** systems. etdevs is not currently enabled for Windows.
+
 First, ensure that the etdevs package is installed:
 
 .. code-block:: bash
