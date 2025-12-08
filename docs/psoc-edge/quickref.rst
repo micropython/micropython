@@ -17,3 +17,4 @@ working with this port it may be useful to get an overview of the microcontrolle
    :includehidden:
 
    general.rst
+   installation.rst
