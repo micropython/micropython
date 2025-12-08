@@ -402,6 +402,15 @@ def device_setup(
     # and get their serial numbers
     serial_adapter_sn_list = []
     if devs_file is not None:
+        ## If the operating system is windows, warn that yaml device usage is not validated on Windows
+
+        if opsys == "win":
+            print_f(
+                colour_str_warn(
+                    "warning: Device YAML file usage is not currently supported on Windows systems. Proceed at your own risk."
+                )
+            )
+
         try:
             from etdevs.devs import Device
         except ImportError:
