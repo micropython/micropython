@@ -1,4 +1,4 @@
-[![Unix CI badge](https://github.com/micropython/micropython/actions/workflows/ports_unix.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![STM32 CI badge](https://github.com/micropython/micropython/actions/workflows/ports_stm32.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![Docs CI badge](https://github.com/micropython/micropython/actions/workflows/docs.yml/badge.svg)](https://docs.micropython.org/) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
+[![PSOC Edge CI badge](https://github.com/Infineon/micropython-psoc-edge/actions/workflows/ports_psoc-edge.yml/badge.svg)](https://github.com/Infineon/micropython-psoc-edge/actions/workflows/ports_psoc-edge.yml?query=branch%3Apsoc-edge-main++) [![Docs CI badge](https://readthedocs.org/projects/ifx-micropython/badge/?version=latest)](https://ifx-micropython.readthedocs.io/en/latest/psoc6/quickref.html) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
 
 The MicroPython project
 =======================
@@ -35,23 +35,19 @@ DAC, PWM, SPI, I2C, CAN, Bluetooth, and USB.
 Getting started
 ---------------
 
-See the [online documentation](https://docs.micropython.org/) for the API
+See the [online documentation (Infineon PSOC™ Edge port ReadTheDocs fork)](https://ifx-micropython-psoc-edge.readthedocs.io/en/latest/psoc-edge/quickref.html) for the API
 reference and information about using MicroPython and information about how
 it is implemented.
 
-We use [GitHub Discussions](https://github.com/micropython/micropython/discussions)
+We use [GitHub Discussions (Infineon PSOC™ Edge fork)](https://github.com/Infineon/micropython-psoc-edge/discussions)
 as our forum, and [Discord](https://discord.gg/RB8HZSAExQ) for chat. These
 are great places to ask questions and advice from the community or to discuss your
 MicroPython-based projects.
 
-For bugs and feature requests, please [raise an issue](https://github.com/micropython/micropython/issues/new/choose)
+For bugs and feature requests, please [raise an issue (Infineon PSOC™ Edge fork)](https://github.com/Infineon/micropython-psoc-edge/issues/new/choose)
 and follow the templates there.
 
-For information about the [MicroPython pyboard](https://store.micropython.org/pyb-features),
-the officially supported board from the
-[original Kickstarter campaign](https://www.kickstarter.com/projects/214379695/micro-python-python-for-microcontrollers),
-see the [schematics and pinouts](http://github.com/micropython/pyboard) and
-[documentation](https://docs.micropython.org/en/latest/pyboard/quickref.html).
+For information about the MicroPython PSoC supported boards see the [documentation (Infineon PSOC™ Edge port ReadTheDocs fork)](https://ifx-micropython-psoc-edge.readthedocs.io/en/latest/psoc-edge/general.html#supported-boards).
 
 Contributing
 ------------
@@ -112,6 +108,7 @@ are mature and have the most active development, support and testing:
 |--------------------------|----------------------------------------------------------------------------------------|----------------------------------------------------------------------|
 | [esp32](ports/esp32)*    | Espressif ESP32 SoCs (ESP32, ESP32S2, ESP32S3, ESP32C3, ESP32C6)                       | [here](https://docs.micropython.org/en/latest/esp32/quickref.html)   |
 | [mimxrt](ports/mimxrt)   | NXP m.iMX RT                                                                           | [here](https://docs.micropython.org/en/latest/mimxrt/quickref.html)  |
+| [psoc-edge](ports/edge)  | Infineon PSOC™ Edge                                                                    | [here](https://ifx-micropython-psoc-edge.readthedocs.io/en/latest/psoc-edge/quickref.html)  |     
 | [rp2](ports/rp2)         | Raspberry Pi RP2040 and RP2350                                                         | [here](https://docs.micropython.org/en/latest/rp2/quickref.html)     |
 | [samd](ports/samd)       | Microchip (formerly Atmel) SAMD21 and SAMD51                                           | [here](https://docs.micropython.org/en/latest/samd/quickref.html)    |
 | [stm32](ports/stm32)     | STMicroelectronics STM32 MCUs (F0, F4, F7, G0, G4, H5, H7, L0, L1, L4, N6, WB, WL)     | [here](https://docs.micropython.org/en/latest/pyboard/quickref.html) |
