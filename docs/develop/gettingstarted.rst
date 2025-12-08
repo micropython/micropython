@@ -87,8 +87,8 @@ The Windows instructions are provided in a later section.
 
 .. _required_dependencies:
 
-Required dependencies
-~~~~~~~~~~~~~~~~~~~~~
+Required dependencies (Linux)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install the required dependencies for Linux:
 
@@ -119,6 +119,54 @@ Check that you have Python available on your system:
 
 All supported ports have different dependency requirements, see their respective
 `readme files <https://github.com/micropython/micropython/tree/master/ports>`_.
+
+Required dependencies (M-Series Macs)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install Homebrew if you haven't already:
+
+.. code-block:: bash
+
+   $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+Ensure Homebrew is in your PATH. You can add the following line to your shell configuration 
+file (e.g., ``~/.bash_profile`` or ``~/.zshrc``):
+
+.. code-block:: bash
+    
+   export PATH="/opt/homebrew/bin:$PATH"
+
+Restart your shell and verify your PATH has ``/opt/homebrew/bin`` before ``/usr/bin``.
+
+Then install the required dependencies:
+
+.. code-block:: bash
+
+   $ brew install make cmake picotool 
+   $ brew install --cask gcc-arm-embedded
+
+.. note::
+   macOS ships with the BSD version of make at /usr/bin/make, which lacks some GNU-specific behavior. 
+   The MicroPython and Pico SDK build system expects GNU Make (gmake), especially on non-Linux systems like macOS.
+
+   Use ``gmake`` instead of ``make`` when building MicroPython on macOS.
+
+.. note::
+
+   ``picotool`` does not build properly with the macOS toolset, but installing it via Homebrew works fine
+   and solves some micropython build issues.
+
+An example of building the PI Pico port on M-Series Macs:
+
+.. code-block:: bash
+
+   $ cd micropython
+   $ git submodule update --init --recursive
+   $ gmake -C mpy-cross
+   $ cd ports/rp2
+   $ gmake BOARD=RPI_PICO
+
+(Additional dependencies may be required for other ports.)
 
 Building the MicroPython cross-compiler
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
