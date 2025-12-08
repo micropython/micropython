@@ -349,6 +349,7 @@ def main():
             do_test(run_tests_cmd + ["--clean-failures"])
 
             if select_serial:
+                serial_test.test_passed = True
                 try:
                     serial_test.do_test(target.device)
                 except serial_test.TestError:
