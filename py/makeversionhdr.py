@@ -30,7 +30,7 @@ def get_version_info_from_git(repo_path):
                 "--dirty",
                 "--always",
                 "--match",
-                "v[1-9].*",
+                "v[0-9].*",
                 "--abbrev=10",
             ],
             cwd=repo_path,
