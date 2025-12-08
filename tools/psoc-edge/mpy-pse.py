@@ -142,7 +142,7 @@ def openocd_download_install():
             if err:
                 return False
             out_str = out.decode()
-            if "0.12.0+dev-5.11.0.4042" or "0.12.0+dev-5.8.0.3960" in out_str:
+            if "0.12.0+dev-5.11.0.4042" in out_str or "0.12.0+dev-5.8.0.3960" in out_str:
                 print_f(f"openocd found in system path : {shutil.which('openocd')}")
                 return True
         except:
@@ -180,7 +180,7 @@ def openocd_download_install():
 
     def openocd_setup():
         # Add openocd to path
-        os.environ["PATH"] += os.pathsep + os.path.join("openocd", "bin")
+        os.environ["PATH"] = os.path.join("openocd", "bin") + os.pathsep + os.environ["PATH"]
 
         if opsys == "linux":
             # Install udev rules
