@@ -356,7 +356,7 @@ function ci_powerpc_build {
 ########################################################################################
 # ports/psoc-edge
 
-MPY_MTB36_CI_DOCKER_VERSION=0.1.0
+MPY_MTB36_CI_DOCKER_VERSION=0.2.0
 
 function ci_psoc_edge_setup {
     # Access to serial device 
@@ -404,10 +404,7 @@ function ci_psoc_edge_deploy_multiple_devices {
     # hex file including path with respect to micropython root
     hex_file=$2
     devs_file=$3
-    # etdevs will be later directly available in the docker
-    # As this will be updated frequently currently, we install it each time
-    docker exec mtb36-ci /bin/bash -c "pip install etdevs requests"
-    docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board $1 --hex-file $2 --devs-file ../../$3"
+    docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board $1 --hex-file ../../$2 --devs-file ../../$3 -q"
 }
 
 function ci_psoc_edge_teardown {
