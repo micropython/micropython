@@ -35,21 +35,18 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#define DEFAULT_UART_BAUDRATE (115200)
-#define DEFAULT_UART_BITS (8)
-#define DEFAULT_UART_STOP (1)
-#define DEFAULT_UART_TIMEOUT (0)
-#define DEFAULT_UART_TIMEOUT_CHAR (0)
-
+// Flow control flags for Python API (user combines with |).
 #define UART_HWCONTROL_RTS (1)
 #define UART_HWCONTROL_CTS (2)
-#define UART_BREAK_MS      (13)  // Break duration in milliseconds
+
+// COM port name max length: "COM256\0" = 7 chars, use 16 for safety.
+#define UART_PORT_NAME_MAX (16)
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     HANDLE handle;              // COM port handle
     uint8_t uart_id;            // Port number (1-255)
-    char port_name[16];         // "COM1", "COM10", etc.
+    char port_name[UART_PORT_NAME_MAX];
     uint32_t baudrate;
     uint8_t bits;               // 5, 6, 7, 8
     uint8_t parity;             // 0=none, 1=odd, 2=even
@@ -60,8 +57,6 @@ typedef struct _machine_uart_obj_t {
     uint16_t rxbuf;             // RX buffer size
     uint16_t txbuf;             // TX buffer size
 } machine_uart_obj_t;
-
-#define DEFAULT_BUFFER_SIZE (256)
 
 // UART.list() - enumerate available COM ports from registry
 static mp_obj_t machine_uart_list(void) {
@@ -74,19 +69,26 @@ static mp_obj_t machine_uart_list(void) {
         return list;  // Empty list if no ports
     }
 
+    // Registry value names are typically short (e.g. "\Device\Serial0").
     char valueName[256];
-    char portName[32];
+    char portName[UART_PORT_NAME_MAX];
     DWORD valueNameSize, portNameSize, type;
     DWORD index = 0;
+    LONG result;
 
     while (1) {
         valueNameSize = sizeof(valueName);
         portNameSize = sizeof(portName);
 
-        if (RegEnumValueA(hKey, index++, valueName, &valueNameSize,
-            NULL, &type, (LPBYTE)portName, &portNameSize)
-            != ERROR_SUCCESS) {
+        result = RegEnumValueA(hKey, index++, valueName, &valueNameSize,
+            NULL, &type, (LPBYTE)portName, &portNameSize);
+
+        if (result == ERROR_NO_MORE_ITEMS) {
             break;
+        }
+        if (result != ERROR_SUCCESS) {
+            // Skip entries that fail (e.g. buffer too small) and continue
+            continue;
         }
 
         if (type == REG_SZ) {
@@ -196,7 +198,8 @@ static bool uart_init_internal(machine_uart_obj_t *self) {
     dcb.fRtsControl = (self->flow & UART_HWCONTROL_RTS) ? RTS_CONTROL_HANDSHAKE : RTS_CONTROL_ENABLE;
     dcb.fOutX = FALSE;
     dcb.fInX = FALSE;
-    dcb.fDtrControl = DTR_CONTROL_ENABLE;
+    // DTR disabled by default to avoid resetting devices (e.g. Arduino).
+    dcb.fDtrControl = DTR_CONTROL_DISABLE;
 
     if (!SetCommState(self->handle, &dcb)) {
         uart_deinit_internal(self);
@@ -338,15 +341,15 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     }
 
     // Set defaults
-    self->baudrate = DEFAULT_UART_BAUDRATE;
-    self->bits = DEFAULT_UART_BITS;
-    self->parity = 0;  // None
-    self->stop = DEFAULT_UART_STOP;
-    self->timeout = DEFAULT_UART_TIMEOUT;
-    self->timeout_char = DEFAULT_UART_TIMEOUT_CHAR;
+    self->baudrate = 115200;
+    self->bits = 8;
+    self->parity = 0;
+    self->stop = 1;
+    self->timeout = 0;
+    self->timeout_char = 0;
     self->flow = 0;
-    self->rxbuf = DEFAULT_BUFFER_SIZE;
-    self->txbuf = DEFAULT_BUFFER_SIZE;
+    self->rxbuf = 256;
+    self->txbuf = 256;
 
     // Process remaining arguments
     mp_map_t kw_args;
@@ -392,7 +395,8 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
         return;
     }
     SetCommBreak(self->handle);
-    mp_hal_delay_ms(UART_BREAK_MS);
+    // Break duration: 13 bit periods (like rp2 port).
+    mp_hal_delay_us(13 * 1000000 / self->baudrate + 1);
     ClearCommBreak(self->handle);
 }
 #endif
