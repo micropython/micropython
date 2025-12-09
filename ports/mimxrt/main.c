@@ -75,11 +75,6 @@ int main(void) {
     #if LWIP_MDNS_RESPONDER
     mdns_resp_init();
     #endif
-
-    systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
-    #endif
-    #if MICROPY_PY_BLUETOOTH
-    mp_bluetooth_hci_init();
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -107,6 +102,15 @@ int main(void) {
         #if MICROPY_PY_NETWORK
         mod_network_init();
         #endif
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_hci_init();
+        #endif
+
+        #if MICROPY_PY_LWIP
+        // mod_network_lwip_init();
+        systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+        #endif
+
 
         // Initialise sub-systems.
         readline_init0();
@@ -164,11 +168,18 @@ int main(void) {
         #if MICROPY_PY_MACHINE_I2S
         machine_i2s_deinit_all();
         #endif
-        #if MICROPY_PY_BLUETOOTH
-        mp_bluetooth_deinit();
+        #if MICROPY_PY_LWIP
+        systick_disable_dispatch(SYSTICK_DISPATCH_LWIP);
+        #endif
+        #if MICROPY_PY_NETWORK_ESP_HOSTED
+        int esp_hosted_wifi_deinit(void);
+        esp_hosted_wifi_deinit();
         #endif
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
+        #endif
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_deinit();
         #endif
         #if MICROPY_PY_MACHINE_UART
         machine_uart_deinit_all();
@@ -191,6 +202,11 @@ void gc_collect(void) {
 }
 
 void nlr_jump_fail(void *val) {
+    for (;;) {
+    }
+}
+
+void abort(void) {
     for (;;) {
     }
 }

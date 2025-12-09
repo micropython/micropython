@@ -143,13 +143,20 @@ uint32_t trng_random_u32(void);
 #ifndef MICROPY_PY_SOCKET
 #define MICROPY_PY_SOCKET                   (1)
 #endif
-#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
-#define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
+
+#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP || MICROPY_PY_NETWORK_NINAW10)
+#define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP || MICROPY_PY_NETWORK_NINAW10)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_NETWORK_PPP_LWIP
 #define MICROPY_PY_NETWORK_PPP_LWIP         (MICROPY_PY_LWIP)
 #endif
 #define MICROPY_PY_LWIP_PPP                 (MICROPY_PY_NETWORK_PPP_LWIP)
+
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
+#endif
+
+#if MICROPY_PY_BLUETOOTH
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
@@ -159,8 +166,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
-#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
-#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
+// Bluetooth code only runs in the scheduler, no locking/mutex required.
+#define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
+#define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
 #endif
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
@@ -183,13 +191,28 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
+#if MICROPY_PY_NETWORK_NINAW10
+// This Network interface requires the extended socket state.
+#ifndef MICROPY_PY_SOCKET_EXTENDED_STATE
+#define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
+#endif
+#endif // MICROPY_PY_NETWORK_NINAW10
+
+#if MICROPY_PY_NETWORK_CYW43
+extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
+#else
+#define MICROPY_HW_NIC_CYW43
+#endif
+
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
-    MICROPY_BOARD_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_CYW43 \
+    MICROPY_BOARD_NETWORK_INTERFACES
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS
