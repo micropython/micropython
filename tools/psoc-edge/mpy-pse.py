@@ -128,14 +128,20 @@ def openocd_download_install():
 
     def is_openocd_already_downloaded():
         if os.path.exists(os.path.join("openocd", "bin", openocd_exe)):
-            return True
+            # Add openocd to path
+            os.environ["PATH"] = os.path.join("openocd", "bin") + os.pathsep + os.environ["PATH"]
+            valid_openocd_version = is_openocd_already_in_sys_path()
+            if not valid_openocd_version:
+                clean_openocd()
+
+            return valid_openocd_version
 
         return False
 
     def is_openocd_already_in_sys_path():
         try:
             ocd_proc = subprocess.Popen(
-                ["openocd", "--version"], stderr=subprocess.PIPE, stdout=subprocess.PIPE
+                [openocd_exe, "--version"], stderr=subprocess.PIPE, stdout=subprocess.PIPE
             )
             out, err = ocd_proc.communicate(timeout=10)
 
