@@ -3,3 +3,9 @@
     script: ports/psoc-edge/board_only_hw/single
     device: 
       - board: KIT_PSE84_AI
+
+- name: pin
+  test: 
+    script: ports/psoc-edge/board_ext_hw/single/pin.py
+    device: 
+      - board: KIT_PSE84_AI
