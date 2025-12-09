@@ -98,6 +98,7 @@ SHARED_SRC_C += $(addprefix shared/,\
 DRIVERS_SRC_C += 
 
 MOD_SRC_C += \
+	machine_pin.c \
 	machine_pdm_pcm.c\
 	\
 	modpsocedge.c
