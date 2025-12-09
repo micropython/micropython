@@ -94,7 +94,9 @@
 #define MICROPY_PY_MACHINE_PDM_PCM              (1)
 #define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
 
-#define MICROPY_LOGGER_DEBUG                    (0)
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
+
+#define MICROPY_LOGGER_DEBUG                    (1)
 
 // type definitions for the specific machine
 
@@ -117,12 +119,12 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_EVENT_POLL_HOOK_FAST \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-    } while (0);
+        do { \
+            extern void mp_handle_pending(bool); \
+            mp_handle_pending(true); \
+        } while (0);
 
 #define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        MICROPY_EVENT_POLL_HOOK_FAST; \
-    } while (0);
+        do { \
+            MICROPY_EVENT_POLL_HOOK_FAST; \
+        } while (0);
