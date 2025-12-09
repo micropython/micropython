@@ -316,3 +316,40 @@ extern void lwip_lock_release(void);
 #ifndef MICROPY_BOARD_END_SOFT_RESET
 #define MICROPY_BOARD_END_SOFT_RESET()
 #endif
+
+#if MICROPY_PY_NETWORK_CYW43
+// Array of allowed arguments needed to initialise cyw43 pins
+#if CYW43_PIN_WL_DYNAMIC
+#define CYW43_INIT_PINS_ALLOWED_ARGS \
+    { MP_QSTR_pin_on, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } }, \
+    { MP_QSTR_pin_out, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } }, \
+    { MP_QSTR_pin_in, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } }, \
+    { MP_QSTR_pin_wake, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } }, \
+    { MP_QSTR_pin_clock, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } }, \
+    { MP_QSTR_pin_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } }, \
+    { MP_QSTR_pin_dat, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+#else
+#define CYW43_INIT_PINS_ALLOWED_ARGS
+#endif // CYW43_PIN_WL_DYNAMIC
+
+// Array of allowed arguments needed to initialise cyw43 pio clock
+#if CYW43_PIO_CLOCK_DIV_DYNAMIC
+#define CYW43_INIT_CLOCK_ALLOWED_ARGS \
+    { MP_QSTR_div_int, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } }, \
+    { MP_QSTR_div_frac, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } },
+#else
+#define CYW43_INIT_CLOCK_ALLOWED_ARGS
+#endif // CYW43_PIO_CLOCK_DIV_DYNAMIC
+
+// Array of allowed arguments needed to initialise cyw43
+#define MICROPY_HW_PIN_EXT_OBJ_INIT_ARGS \
+    CYW43_INIT_PINS_ALLOWED_ARGS \
+    CYW43_INIT_CLOCK_ALLOWED_ARGS
+#define MICROPY_PY_NETWORK_CYW43_OBJ_INIT_ARGS \
+    CYW43_INIT_PINS_ALLOWED_ARGS \
+    CYW43_INIT_CLOCK_ALLOWED_ARGS
+#define MICROPY_PY_BLUETOOTH_OBJ_INIT_ARGS \
+    CYW43_INIT_PINS_ALLOWED_ARGS \
+    CYW43_INIT_CLOCK_ALLOWED_ARGS
+
+#endif // MICROPY_PY_NETWORK_CYW43
