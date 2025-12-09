@@ -251,20 +251,21 @@ def asm_pio(**kw):
         old_gl = gl.copy()
         gl.clear()
 
-        gl.update(_pio_funcs)
-        for name in _pio_directives:
-            gl[name] = getattr(emit, name)
-        for name in _pio_instructions:
-            gl[name] = getattr(emit, name)
+        try:
+            gl.update(_pio_funcs)
+            for name in _pio_directives:
+                gl[name] = getattr(emit, name)
+            for name in _pio_instructions:
+                gl[name] = getattr(emit, name)
 
-        emit.start_pass(0)
-        f()
+            emit.start_pass(0)
+            f()
 
-        emit.start_pass(1)
-        f()
-
-        gl.clear()
-        gl.update(old_gl)
+            emit.start_pass(1)
+            f()
+        finally:
+            gl.clear()
+            gl.update(old_gl)
 
         return emit.prog
 
