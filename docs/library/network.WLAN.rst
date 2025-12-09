@@ -145,7 +145,7 @@ Methods
    reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    txpower        Maximum transmit power in dBm (integer or float)
    pm             WiFi Power Management setting (see below for allowed values)
-   protocol       (ESP32 Only.) WiFi Low level 802.11 protocol. See `WLAN.PROTOCOL_DEFAULTS`.
+   protocol       (ESP32 Only.) WiFi Low level 802.11 protocol. See `WLAN.PROTOCOL_DEFAULT`.
    =============  ===========
 
 Constants
@@ -170,7 +170,7 @@ ESP32 Protocol Constants
 The following ESP32-only constants relate to the ``WLAN.config(protocol=...)``
 network interface parameter:
 
-.. data:: WLAN.PROTOCOL_DEFAULTS
+.. data:: WLAN.PROTOCOL_DEFAULT
 
       A bitmap representing all of the default 802.11 Wi-Fi modes supported by
       the chip. Consult `ESP-IDF Wi-Fi Protocols`_ documentation for details.
@@ -184,7 +184,7 @@ network interface parameter:
       <espnow-long-range>`.
 
       This mode can be bitwise ORed with some standard 802.11 protocol bits
-      (including `WLAN.PROTOCOL_DEFAULTS`) in order to support a mix of standard
+      (including `WLAN.PROTOCOL_DEFAULT`) in order to support a mix of standard
       Wi-Fi modes as well as LR mode, consult the `Espressif long-range
       documentation`_ for more details.
 
