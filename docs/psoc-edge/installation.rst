@@ -6,6 +6,14 @@ Installing MicroPython
 To facilitate the installation of the MicroPython PSOC™ Edge port, the ``mpy-pse.py`` Python script is provided. It is compatible with Windows,
 Linux and MacOS.
 
+Before downloading and running the script, it is recommended to create a new folder to keep all the related files together.
+For example:
+
+.. code-block:: bash
+    
+    $ mkdir mp-install
+    $ cd mp-install
+
 You can easily download the script from the terminal using the following command:
 
 .. code-block:: bash
