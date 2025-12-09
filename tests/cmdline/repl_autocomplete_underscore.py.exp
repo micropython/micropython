@@ -1,5 +1,5 @@
 MicroPython \.\+ version
-Use Ctrl-D to exit, Ctrl-E for paste mode
+Type "help()" for more information.
 >>> # Test REPL autocompletion filtering of underscore attributes
 >>> 
 >>> # Start paste mode

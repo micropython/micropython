@@ -1,5 +1,9 @@
 # test subclassing a native type and overriding __init__
 
+if not hasattr(object, "__init__"):
+    print("SKIP")
+    raise SystemExit
+
 # overriding list.__init__()
 class L(list):
     def __init__(self, a, b):

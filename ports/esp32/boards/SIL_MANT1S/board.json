@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "External RAM",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "T1S",
+        "10BASE-T1S"
+    ],
+    "images": [
+        "mant1s-board-top.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "ManT1S",
+    "thumbnail": "",
+    "url": "https://mant1s.net/",
+    "vendor": "Silicognition LLC"
+}

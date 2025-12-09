@@ -29,6 +29,7 @@
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "pico/time.h"
+#include "shared/runtime/mpirq.h"
 
 #define ALARM_ID_INVALID (-1)
 #define TIMER_MODE_ONE_SHOT (0)
@@ -49,29 +50,10 @@ const mp_obj_type_t machine_timer_type;
 static int64_t alarm_callback(alarm_id_t id, void *user_data) {
     machine_timer_obj_t *self = user_data;
 
-    if (self->ishard) {
-        // When executing code within a handler we must lock the scheduler to
-        // prevent any scheduled callbacks from running, and lock the GC to
-        // prevent any memory allocations.
-        mp_sched_lock();
-        gc_lock();
-        nlr_buf_t nlr;
-        if (nlr_push(&nlr) == 0) {
-            mp_call_function_1(self->callback, MP_OBJ_FROM_PTR(self));
-            nlr_pop();
-        } else {
-            // Uncaught exception; disable the callback so it doesn't run again.
-            self->mode = TIMER_MODE_ONE_SHOT;
-            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in timer callback\n");
-            mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
-        }
-        gc_unlock();
-        mp_sched_unlock();
-    } else {
-        mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
-    }
-
-    if (self->mode == TIMER_MODE_ONE_SHOT) {
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception; don't run the callback again.
+        return 0;
+    } else if (self->mode == TIMER_MODE_ONE_SHOT) {
         return 0;
     } else {
         return -self->delta_us;

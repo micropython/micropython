@@ -39,7 +39,7 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# uPy raises TypeError, should be ValueError
+# MicroPython raises TypeError, should be ValueError
 try:
     "%c" % b"\x01\x02"
 except (TypeError, ValueError):
@@ -99,10 +99,10 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# struct pack with too many args, not checked by uPy
+# struct pack with too many args, not checked by MicroPython
 print(struct.pack("bb", 1, 2, 3))
 
-# struct pack with too few args, not checked by uPy
+# struct pack with too few args, not checked by MicroPython
 print(struct.pack("bb", 1))
 
 # array slice assignment with unsupported RHS

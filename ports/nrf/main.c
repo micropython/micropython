@@ -36,7 +36,6 @@
 #include "py/parse.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/compile.h"
 #include "py/persistentcode.h"
@@ -126,11 +125,7 @@ soft_reset:
 
     led_state(1, 1); // MICROPY_HW_LED_1 aka MICROPY_HW_LED_RED
 
-    mp_stack_set_top(&_ram_end);
-
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_limit((char *)&_ram_end - (char *)&_heap_end - 400);
+    mp_cstack_init_with_top(&_ram_end, (char *)&_ram_end - (char *)&_heap_end);
 
     machine_init();
 

@@ -10,32 +10,7 @@ except (ImportError, AttributeError):
     raise SystemExit
 
 import time, sys
-
-# Configure pins based on the target.
-if "alif" in sys.platform:
-    uart_id = 1
-    tx_pin = None
-elif "rp2" in sys.platform:
-    uart_id = 0
-    tx_pin = "GPIO0"
-    rx_pin = "GPIO1"
-elif "samd" in sys.platform and "ItsyBitsy M0" in sys.implementation._machine:
-    uart_id = 0
-    tx_pin = "D1"
-    rx_pin = "D0"
-elif "samd" in sys.platform and "ItsyBitsy M4" in sys.implementation._machine:
-    uart_id = 3
-    tx_pin = "D1"
-    rx_pin = "D0"
-elif "mimxrt" in sys.platform:
-    uart_id = 1
-    tx_pin = None
-elif "nrf" in sys.platform:
-    uart_id = 0
-    tx_pin = None
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
+from target_wiring import uart_loopback_args, uart_loopback_kwargs
 
 
 def irq(u):
@@ -46,11 +21,7 @@ text = "Hello World" * 20
 
 # Test that the IRQ is called after the write has completed.
 for bits_per_s in (2400, 9600, 115200):
-    if tx_pin is None:
-        uart = UART(uart_id, bits_per_s)
-    else:
-        uart = UART(uart_id, bits_per_s, tx=tx_pin, rx=rx_pin)
-
+    uart = UART(*uart_loopback_args, baudrate=bits_per_s, **uart_loopback_kwargs)
     uart.irq(irq, uart.IRQ_TXIDLE)
 
     # The IRQ_TXIDLE shall trigger after the message has been sent. Thus

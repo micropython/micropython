@@ -1,4 +1,4 @@
-# uPy behaviour only: builtin modules are read-only
+# MicroPython behaviour only: builtin modules are read-only
 import sys
 try:
     sys.x = 1

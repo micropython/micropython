@@ -5,7 +5,7 @@ class Foo:
     def __init__(self):
         self.num = 20000000
 
-    def __getattr__(self, name):  # just trigger the 'special lookups' flag on the class
+    def __delattr__(self, name):  # just trigger the 'special lookups' flag on the class
         pass
 
 

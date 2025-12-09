@@ -1,10 +1,20 @@
-## IDF Component Manager Manifest File
 dependencies:
   espressif/mdns: "~1.1.0"
-  espressif/esp_tinyusb:
+  espressif/tinyusb:
     rules:
-      - if: "target in [esp32s2, esp32s3]"
-    version: "~1.7.6"
+      - if: "target in [esp32s2, esp32s3, esp32p4]"
+    # Temporary workaround for https://github.com/hathach/tinyusb/issues/3154
+    # Can be removed once fix is released in espressif/tinyusb
+    git: https://github.com/micropython/tinyusb-espressif.git
+    version: cherrypick/dwc2_zlp_fix
+  espressif/esp_hosted:
+    rules:
+      - if: "target == esp32p4"
+    version: "2.7.0"
+  espressif/esp_wifi_remote:
+    rules:
+      - if: "target == esp32p4"
+    version: "0.15.2"
   espressif/lan867x:
     version: "~1.0.0"
     rules:

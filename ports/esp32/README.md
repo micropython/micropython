@@ -5,22 +5,43 @@ This is a port of MicroPython to the Espressif ESP32 series of
 microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
 a task under FreeRTOS.
 
-Currently supports ESP32, ESP32-C2 (aka ESP8684), ESP32-C3, ESP32-C6, ESP32-S2
-and ESP32-S3 (ESP8266 is supported by a separate MicroPython port).
+Currently supports ESP32, ESP32-C2 (aka ESP8684), ESP32-C3, ESP32-C5, ESP32-C6,
+ESP32-P4, ESP32-S2 and ESP32-S3. ESP8266 is supported by a separate MicroPython port.
 
 Supported features include:
-- REPL (Python prompt) over UART0.
-- 16k stack for the MicroPython task and approximately 100k Python heap.
+- REPL (Python prompt) over UART0 and/or the integrated USB peripheral.
 - Many of MicroPython's features are enabled: unicode, arbitrary-precision
   integers, single-precision floats, complex numbers, frozen bytecode, as
   well as many of the internal modules.
-- Internal filesystem using the flash (currently 2M in size).
+- Internal filesystem using the remaining flash area.
+- Threading support via the _thread module (built on native FreeRTOS tasks),
+  with GIL enabled.
 - The machine module with GPIO, UART, SPI, software I2C, ADC, DAC, PWM,
   TouchPad, WDT and Timer.
 - The network module with WLAN (WiFi) support.
 - Bluetooth low-energy (BLE) support via the bluetooth module.
 
 Initial development of this ESP32 port was sponsored in part by Microbric Pty Ltd.
+
+Choosing a suitable chip
+------------------------
+
+ESP32 chips are not all the same. The different ESP32 families have different
+capabilities and resources available. In particular, the ESP32-C2 and ESP32-S2
+(without external SPIRAM) have the least RAM. They can still run MicroPython
+well but may run out of RAM if a program uses a lot of resources, eg if it
+needs many complex code modules, multiple TLS connections, large memory
+buffers for a display, etc.
+
+ESP32 boards with external "SPIRAM" (also called PSRAM) have megabytes of RAM
+available - significantly more than any board without external SPIRAM. SPIRAM is
+supported on original ESP32, ESP32-S2 and ESP32-S3 chips. Not every ESP32 board
+has SPIRAM included, even if the chip supports it.
+
+If you don't need particular hardware features but are looking for a board with
+the usual Wi-Fi and BLE support, many peripherals and plenty of RAM then
+recommend finding a board based on ESP32-S3 with SPIRAM included (usually 2MB,
+4MB or 8MB).
 
 Setting up ESP-IDF and the build environment
 --------------------------------------------
@@ -31,8 +52,8 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions. The
-current recommended version of ESP-IDF for MicroPython is v5.4.2. MicroPython
-also supports v5.2, v5.2.2, v5.3, v5.4 and v5.4.1.
+current recommended version of ESP-IDF for MicroPython is v5.5.1. MicroPython
+also supports v5.2, v5.2.2, v5.3, v5.4, v5.4.1 and v5.4.2.
 
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
@@ -50,10 +71,10 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v5.4.2 --recursive https://github.com/espressif/esp-idf.git
+$ git clone -b v5.5.1 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v5.4.2` with any other supported version.
+You can replace `v5.5.1` with any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
 
@@ -62,7 +83,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v5.4.2
+$ git checkout v5.5.1
 $ git submodule update --init --recursive
 ```
 

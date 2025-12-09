@@ -11,14 +11,6 @@ and unrestricted access to and control of hardware blocks on a system
 malfunction, lockups, crashes of your board, and in extreme cases, hardware
 damage.
 
-.. _machine_callbacks:
-
-A note of callbacks used by functions and class methods of :mod:`machine` module:
-all these callbacks should be considered as executing in an interrupt context.
-This is true for both physical devices with IDs >= 0 and "virtual" devices
-with negative IDs like -1 (these "virtual" devices are still thin shims on
-top of real hardware and real hardware interrupts). See :ref:`isr_rules`.
-
 Memory access
 -------------
 
@@ -260,6 +252,7 @@ Classes
    machine.Signal.rst
    machine.ADC.rst
    machine.ADCBlock.rst
+   machine.DAC.rst
    machine.PWM.rst
    machine.UART.rst
    machine.SPI.rst

@@ -25,7 +25,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import print_function
 import os
 import re
 import stat
@@ -44,6 +43,7 @@ NATIVE_ARCHS = {
     "NATIVE_ARCH_XTENSA": "xtensa",
     "NATIVE_ARCH_XTENSAWIN": "xtensawin",
     "NATIVE_ARCH_RV32IMC": "rv32imc",
+    "NATIVE_ARCH_RV64IMC": "rv64imc",
 }
 
 globals().update(NATIVE_ARCHS)

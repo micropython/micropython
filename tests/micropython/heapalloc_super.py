@@ -1,5 +1,12 @@
 # test super() operations which don't require allocation
-import micropython
+
+try:
+    import micropython
+
+    micropython.heap_lock
+except (ImportError, AttributeError):
+    print("SKIP")
+    raise SystemExit
 
 # Check for stackless build, which can't call functions without
 # allocating a frame on heap.

@@ -67,6 +67,7 @@ CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_h5 = $(CFLAGS_CORTEX_M) -mtune=cortex-m33 -mcpu=cortex-m33
 CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
 CFLAGS_MCU_n6 = $(CFLAGS_CORTEX_M) -mtune=cortex-m55 -mcpu=cortex-m55 -mcmse
+CFLAGS_MCU_u5 = $(CFLAGS_CORTEX_M) -mtune=cortex-m33 -mcpu=cortex-m33
 CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_wl = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
@@ -81,6 +82,7 @@ MPY_CROSS_MCU_ARCH_l4 = armv7m
 MPY_CROSS_MCU_ARCH_h5 = armv7m
 MPY_CROSS_MCU_ARCH_h7 = armv7m
 MPY_CROSS_MCU_ARCH_n6 = armv7m # really armv8m
+MPY_CROSS_MCU_ARCH_u5 = armv7m
 MPY_CROSS_MCU_ARCH_wb = armv7m
 MPY_CROSS_MCU_ARCH_wl = armv7m
 

@@ -46,12 +46,13 @@
 #define MULTI_HEAP_FREERTOS
 #include "../multi_heap_platform.h"
 #include "../heap_private.h"
+#include "driver/rtc_io.h"
 
 #if SOC_TOUCH_SENSOR_SUPPORTED
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
     #if SOC_PM_SUPPORT_EXT0_WAKEUP
-    if (machine_rtc_config.ext0_pin != -1) {
+    if (machine_rtc_config.ext0_pin != -1 || machine_rtc_config.gpio_pins != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
     #endif
@@ -140,7 +141,7 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1)
 #if SOC_ULP_SUPPORTED
 static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
     #if SOC_PM_SUPPORT_EXT0_WAKEUP
-    if (machine_rtc_config.ext0_pin != -1) {
+    if (machine_rtc_config.ext0_pin != -1 || machine_rtc_config.gpio_pins != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
     #endif
@@ -150,7 +151,52 @@ static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
 #endif
 
-#if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
+static mp_obj_t esp32_wake_on_gpio(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_pins, ARG_level};
+    const mp_arg_t allowed_args[] = {
+        { MP_QSTR_pins, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_level, MP_ARG_BOOL, {.u_bool = machine_rtc_config.gpio_level} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    uint64_t gpio_pins = machine_rtc_config.gpio_pins;
+
+    #if SOC_ULP_SUPPORTED
+    if (machine_rtc_config.wake_on_ulp) {
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
+    }
+    #endif
+
+    #if SOC_TOUCH_SENSOR_SUPPORTED
+    if (machine_rtc_config.wake_on_touch) {
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
+    }
+    #endif
+
+    // Check that all pins are allowed
+    if (args[ARG_pins].u_obj != mp_const_none) {
+        size_t len = 0;
+        mp_obj_t *elem;
+        mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
+        gpio_pins = 0;
+
+        for (int i = 0; i < len; i++) {
+            // Don't validate the pins at this point, since we can be using
+            // gpio pins for deepsleep or light sleep.
+            // Validations happen in the relevant sleep functions.
+            gpio_num_t pin_id = machine_pin_get_id(elem[i]);
+            gpio_pins |= (1ll << pin_id);
+        }
+    }
+
+    machine_rtc_config.gpio_level = args[ARG_level].u_bool;
+    machine_rtc_config.gpio_pins = gpio_pins;
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_gpio_obj, 0, esp32_wake_on_gpio);
+
+#if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
 static mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     if (mp_obj_is_true(enable)) {
         gpio_deep_sleep_hold_en();
@@ -284,7 +330,8 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     #if SOC_ULP_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
     #endif
-    #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
+    { MP_ROM_QSTR(MP_QSTR_wake_on_gpio), MP_ROM_PTR(&esp32_wake_on_gpio_obj) },
+    #if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #endif
     #if CONFIG_IDF_TARGET_ESP32

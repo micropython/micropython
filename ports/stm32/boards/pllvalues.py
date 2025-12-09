@@ -4,7 +4,6 @@ the CPU frequency to a given value.  The algorithm here appears as C code
 for the machine.freq() function.
 """
 
-from __future__ import print_function
 import re
 
 
@@ -105,7 +104,7 @@ def compute_pll2(hse, sys, relax_pll48):
         # VCO_OUT must be between 192MHz and 432MHz
         if sys * P not in mcu.range_vco_out:
             continue
-        NbyM = float(sys * P) / hse  # float for Python 2
+        NbyM = sys * P / hse
         # scan M
         M_min = mcu.range_n[0] // int(round(NbyM))  # starting value
         while mcu.range_vco_in[-1] * M_min < hse:
@@ -121,7 +120,7 @@ def compute_pll2(hse, sys, relax_pll48):
             # N is restricted
             if N not in mcu.range_n:
                 continue
-            Q = float(sys * P) / 48  # float for Python 2
+            Q = sys * P / 48
             # Q must be an integer in a set range
             if close_int(Q) and round(Q) in mcu.range_q:
                 # found valid values
@@ -142,7 +141,6 @@ def compute_pll2(hse, sys, relax_pll48):
 
 
 def compute_derived(hse, pll):
-    hse = float(hse)  # float for Python 2
     M, N, P, Q = pll
     vco_in = hse / M
     vco_out = hse * N / M

@@ -771,12 +771,6 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             if (!mp_parse_node_get_number_maybe(pn, &arg1)) {
                 return false;
             }
-            #if !MICROPY_COMP_CONST_FLOAT
-            if (op == MP_BINARY_OP_POWER && mp_obj_int_sign(arg1) < 0) {
-                // ** can't have negative rhs
-                return false;
-            }
-            #endif
             if (!binary_op_maybe(op, arg0, arg1, &arg0)) {
                 return false;
             }
@@ -796,16 +790,6 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            if (tok == MP_TOKEN_OP_AT) {
-                // Can't fold @
-                return false;
-            }
-            #if !MICROPY_COMP_CONST_FLOAT
-            if (tok == MP_TOKEN_OP_SLASH) {
-                // Can't fold /
-                return false;
-            }
-            #endif
             mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
             if (!binary_op_maybe(op, arg0, arg1, &arg0)) {
                 return false;

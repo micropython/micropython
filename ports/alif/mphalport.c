@@ -167,7 +167,9 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 }
 
 uint64_t mp_hal_time_ns(void) {
-    return 0;
+    uint32_t microseconds;
+    uint32_t s = mp_hal_time_get(&microseconds);
+    return (uint64_t)s * 1000000000ULL + (uint64_t)microseconds * 1000ULL;
 }
 
 void mp_hal_pin_config(const machine_pin_obj_t *pin, uint32_t mode,

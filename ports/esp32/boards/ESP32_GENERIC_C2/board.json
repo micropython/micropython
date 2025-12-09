@@ -12,11 +12,14 @@
         "WiFi"
     ],
     "images": [
-        "esp32c2_devkitmini.jpg"
+        "esp8684_devkitc.jpg"
     ],
     "mcu": "esp32c2",
     "product": "ESP32-C2",
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
+    "variants": {
+        "FLASH_2M": "2MiB flash"
+    },
     "vendor": "Espressif"
 }

@@ -97,6 +97,7 @@ static const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write1), MP_ROM_PTR(&mp_stream_write1_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto1), MP_ROM_PTR(&mp_stream_readinto1_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
 };
@@ -270,7 +271,7 @@ static mp_obj_t extra_coverage(void) {
         gc_unlock();
 
         // using gc_realloc to resize to 0, which means free the memory
-        void *p = gc_alloc(4, false);
+        void *p = gc_alloc(4, 0);
         mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 0, false));
 
         // calling gc_nbytes with a non-heap pointer

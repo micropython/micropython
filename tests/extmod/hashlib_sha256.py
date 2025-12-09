@@ -1,8 +1,7 @@
 try:
     import hashlib
 except ImportError:
-    # This is neither uPy, nor cPy, so must be uPy with
-    # hashlib module disabled.
+    # MicroPython with hashlib module disabled.
     print("SKIP")
     raise SystemExit
 

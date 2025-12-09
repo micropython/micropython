@@ -38,35 +38,12 @@
 import ast, io, os, re, struct, sys, time
 import serial
 import serial.tools.list_ports
-from errno import EPERM
+from errno import EPERM, ENOTTY
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
-VID_ESPRESSIF = 0x303A  # Espressif Incorporated
-PID_ESPRESSIF_SERIAL_JTAG = 0x1001  # Serial/JTAG peripheral of ESP32-S3,C3,C6
 
-
-def has_espressif_dtr_quirk(devicename):
-    """ESP8266 and ESP32 dev boards use the DTR and RTS lines to trigger reset &
-    reset into bootloader mode. This can causes spurious reset issues on Windows.
-
-    Apply the quirk to any USB/Serial chip on Windows that isn't using the
-    Microsoft CDC-ACM driver, or to the integrated Espressif Serial/JTAG device.
-
-    Don't apply it to Espressif boards running TinyUSB, as TinyUSB uses DTR
-    to determine if the CDC port is open (and there's no spurious reset issue).
-    """
-    portinfo = list(serial.tools.list_ports.grep(devicename))  # type: ignore
-    if not portinfo:
-        return False
-
-    def port_attr(name):
-        return getattr(portinfo[0], name, None)
-
-    return (port_attr("vid"), port_attr("pid")) == (
-        VID_ESPRESSIF,
-        PID_ESPRESSIF_SERIAL_JTAG,
-    ) or port_attr("manufacturer") != "Microsoft"
+VID_SILICON_LABS = 0x10C4
 
 
 class SerialTransport(Transport):
@@ -90,19 +67,27 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if device.startswith("rfc2217://"):
-                    self.serial = serial.serial_for_url(device, **serial_kwargs)
-                elif os.name == "nt":
-                    self.serial = serial.Serial(**serial_kwargs)
-                    self.serial.port = device
-                    if has_espressif_dtr_quirk(device):
-                        # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
-                        # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
-                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
-                        self.serial.rts = False  # RTS False = EN High = MCU enabled
+                self.serial = serial.serial_for_url(device, do_not_open=True, **serial_kwargs)
+                if os.name == "nt":
+                    portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
+                    if portinfo and getattr(portinfo[0], "vid", None) == VID_SILICON_LABS:
+                        # Silicon Labs CP210x driver on Windows has a quirk
+                        # where after a power on reset it will set DTR and RTS
+                        # at different times when the port is opened (it doesn't
+                        # happen on subsequent openings).
+                        #
+                        # To avoid issues with spurious reset on Espressif boards we clear DTR and RTS,
+                        # open the port, and then set them in an order which prevents triggering a reset.
+                        self.serial.dtr = False
+                        self.serial.rts = False
+                        self.serial.open()
+                        self.serial.dtr = True
+                        self.serial.rts = True
+
+                # On all other host/driver combinations we keep the default
+                # behaviour (pyserial will set DTR and RTS automatically on open)
+                if not self.serial.isOpen():
                     self.serial.open()
-                else:
-                    self.serial = serial.Serial(device, **serial_kwargs)
                 break
             except OSError:
                 if wait == 0:
@@ -121,6 +106,16 @@ class SerialTransport(Transport):
             print("")
 
     def close(self):
+        # ESP Windows quirk: Prevent target from resetting when Windows clears DTR before RTS
+        try:
+            self.serial.rts = False
+            self.serial.dtr = False
+        except OSError as er:
+            if er.errno == ENOTTY:
+                # Some devices (like QEMU pts) don't support RTS/DTR control
+                pass
+            else:
+                raise er
         self.serial.close()
 
     def read_until(
@@ -813,7 +808,7 @@ class PyboardCommand:
         if n == 0:
             return ""
         else:
-            return str(self.fin.read(n), "utf8")
+            return str(self.fin.read(n), "utf8", errors="backslashreplace")
 
     def wr_s8(self, i):
         self.fout.write(struct.pack("<b", i))
@@ -943,7 +938,7 @@ class PyboardCommand:
         fd = self.rd_s8()
         buf = self.rd_bytes()
         if self.data_files[fd][1]:
-            buf = str(buf, "utf8")
+            buf = str(buf, "utf8", errors="backslashreplace")
         n = self.data_files[fd][0].write(buf)
         self.wr_s32(n)
         # self.log_cmd(f"write {fd} {len(buf)} -> {n}")

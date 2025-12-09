@@ -53,6 +53,7 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out);
 void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out);
 
 mp_obj_t mp_obj_new_jsproxy(int ref);
+mp_obj_t mp_obj_get_jsproxy(int ref);
 void mp_obj_jsproxy_global_this_attr(qstr attr, mp_obj_t *dest);
 
 static inline bool mp_obj_is_jsproxy(mp_obj_t o) {

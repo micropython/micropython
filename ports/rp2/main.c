@@ -192,7 +192,9 @@ int main(int argc, char **argv) {
         machine_pin_init();
         rp2_pio_init();
         rp2_dma_init();
+        #if MICROPY_PY_MACHINE_I2S
         machine_i2s_init0();
+        #endif
 
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_hci_init();
@@ -249,15 +251,21 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        #if MICROPY_PY_MACHINE_I2S
         machine_i2s_deinit_all();
+        #endif
         rp2_dma_deinit();
         rp2_pio_deinit();
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
+        #if MICROPY_PY_MACHINE_PWM
         machine_pwm_deinit_all();
+        #endif
         machine_pin_deinit();
+        #if MICROPY_PY_MACHINE_UART
         machine_uart_deinit_all();
+        #endif
         #if MICROPY_PY_MACHINE_I2C_TARGET
         mp_machine_i2c_target_deinit_all();
         #endif

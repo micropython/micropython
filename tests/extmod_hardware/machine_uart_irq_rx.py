@@ -13,49 +13,14 @@ except (ImportError, AttributeError):
 
 import time, sys
 
-byte_by_byte = False
-# Configure pins based on the target.
-if "alif" in sys.platform:
-    uart_id = 1
-    tx_pin = None
-    rx_pin = None
-elif "esp32" in sys.platform:
-    uart_id = 1
-    tx_pin = 4
-    rx_pin = 5
-elif "pyboard" in sys.platform:
-    if "STM32WB" in sys.implementation._machine:
-        # LPUART(1) is on PA2/PA3
-        uart_id = "LP1"
-    else:
-        # UART(4) is on PA0/PA1
-        uart_id = 4
-    tx_pin = None
-    rx_pin = None
-elif "samd" in sys.platform and "ItsyBitsy M0" in sys.implementation._machine:
-    uart_id = 0
-    tx_pin = "D1"
-    rx_pin = "D0"
-    byte_by_byte = True
-elif "samd" in sys.platform and "ItsyBitsy M4" in sys.implementation._machine:
-    uart_id = 3
-    tx_pin = "D1"
-    rx_pin = "D0"
-elif "nrf" in sys.platform:
-    uart_id = 0
-    tx_pin = None
-    rx_pin = None
-elif "renesas-ra" in sys.platform:
-    uart_id = 9
-    tx_pin = None  # P602 @ RA6M2
-    rx_pin = None  # P601 @ RA6M2
-elif "CC3200" in sys.implementation._machine:
+if "CC3200" in sys.implementation._machine:
     # CC3200 doesn't work because it's too slow and has an allocation error in the handler.
     print("SKIP")
     raise SystemExit
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
+
+from target_wiring import uart_loopback_args, uart_loopback_kwargs
+
+byte_by_byte = "ItsyBitsy M0" in sys.implementation._machine
 
 
 def irq(u):
@@ -67,11 +32,7 @@ text = "1234"
 # Test that the IRQ is called for each byte received.
 # Use slow baudrates so that the IRQ has time to run.
 for bits_per_s in (2400, 9600):
-    if tx_pin is None:
-        uart = UART(uart_id, bits_per_s)
-    else:
-        uart = UART(uart_id, bits_per_s, tx=tx_pin, rx=rx_pin)
-
+    uart = UART(*uart_loopback_args, baudrate=bits_per_s, **uart_loopback_kwargs)
     uart.irq(irq, uart.IRQ_RX)
 
     print("write", bits_per_s)

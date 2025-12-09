@@ -31,7 +31,6 @@
 #include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
@@ -108,8 +107,7 @@ static void print_reset_info(void) {
 #endif
 
 static void mp_reset(void) {
-    mp_stack_set_top((void *)0x40000000);
-    mp_stack_set_limit(8192);
+    mp_cstack_init_with_top((void *)0x40000000, 8192);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
     mp_init();

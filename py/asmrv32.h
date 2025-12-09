@@ -122,6 +122,18 @@ typedef struct _asm_rv32_t {
     mp_uint_t locals_stack_offset;
 } asm_rv32_t;
 
+enum {
+    RV32_EXT_NONE = 0,
+    RV32_EXT_ZBA = 1 << 0,
+
+    RV32_EXT_ALL = RV32_EXT_ZBA
+};
+
+typedef struct _asm_rv32_backend_options_t {
+    // This is a bitmask holding a combination of RV32_EXT_* entries.
+    uint8_t allowed_extensions;
+} asm_rv32_backend_options_t;
+
 void asm_rv32_entry(asm_rv32_t *state, mp_uint_t locals);
 void asm_rv32_exit(asm_rv32_t *state);
 void asm_rv32_end_pass(asm_rv32_t *state);
@@ -583,6 +595,24 @@ static inline void asm_rv32_opcode_remu(asm_rv32_t *state, mp_uint_t rd, mp_uint
     asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x07, 0x01, rd, rs1, rs2));
 }
 
+// SH1ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh1add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 010 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x02, 0x10, rd, rs1, rs2));
+}
+
+// SH2ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh2add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 100 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x04, 0x10, rd, rs1, rs2));
+}
+
+// SH3ADD RD, RS1, RS2
+static inline void asm_rv32_opcode_sh3add(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
+    // R: 0010000 ..... ..... 110 ..... 0110011
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 0x06, 0x10, rd, rs1, rs2));
+}
+
 // SLL RD, RS1, RS2
 static inline void asm_rv32_opcode_sll(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2) {
     // R: 0000000 ..... ..... 001 ..... 0110011
@@ -679,6 +709,19 @@ static inline void asm_rv32_opcode_xori(asm_rv32_t *state, mp_uint_t rd, mp_uint
     asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x13, 0x04, rd, rs, immediate));
 }
 
+#define MICROPY_RV32_EXTENSIONS \
+    (MICROPY_EMIT_RV32_ZBA ? RV32_EXT_ZBA : 0)
+
+static inline uint8_t asm_rv32_allowed_extensions(void) {
+    uint8_t extensions = MICROPY_RV32_EXTENSIONS;
+    #if MICROPY_DYNAMIC_COMPILER
+    if (mp_dynamic_compiler.backend_options != NULL) {
+        extensions |= ((asm_rv32_backend_options_t *)mp_dynamic_compiler.backend_options)->allowed_extensions;
+    }
+    #endif
+    return extensions;
+}
+
 #define ASM_WORD_SIZE (4)
 #define ASM_HALFWORD_SIZE (2)
 
@@ -702,6 +745,8 @@ void asm_rv32_meta_comparison_lt(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2
 void asm_rv32_meta_comparison_le(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd, bool unsigned_comparison);
 
 void asm_rv32_emit_optimised_load_immediate(asm_rv32_t *state, mp_uint_t rd, mp_int_t immediate);
+void asm_rv32_emit_load_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size);
+void asm_rv32_emit_store_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size);
 
 #ifdef GENERIC_ASM_API
 
@@ -760,40 +805,12 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t source, mp_
 #define ASM_SUB_REG_REG(state, rd, rs) asm_rv32_opcode_sub(state, rd, rd, rs)
 #define ASM_XOR_REG_REG(state, rd, rs) asm_rv32_emit_optimised_xor(state, rd, rs)
 #define ASM_CLR_REG(state, rd)
-#define ASM_LOAD8_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_lbu(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_lhu(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_lw(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_STORE8_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_sb(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 1); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_sh(state, rd, rs1, 0); \
-    } while (0)
-#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) \
-    do { \
-        asm_rv32_opcode_slli(state, rs2, rs2, 2); \
-        asm_rv32_opcode_cadd(state, rs1, rs2); \
-        asm_rv32_opcode_sw(state, rd, rs1, 0); \
-    } while (0)
+#define ASM_LOAD8_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 0)
+#define ASM_LOAD16_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 1)
+#define ASM_LOAD32_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_load_reg_reg_reg(state, rd, rs1, rs2, 2)
+#define ASM_STORE8_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store_reg_reg_reg(state, rd, rs1, rs2, 0)
+#define ASM_STORE16_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store_reg_reg_reg(state, rd, rs1, rs2, 1)
+#define ASM_STORE32_REG_REG_REG(state, rd, rs1, rs2) asm_rv32_emit_store_reg_reg_reg(state, rd, rs1, rs2, 2)
 
 #endif
 

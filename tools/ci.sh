@@ -80,49 +80,69 @@ function ci_code_size_setup {
     ci_picotool_setup
 }
 
+function _ci_is_git_merge {
+    [[ $(git log -1 --format=%P "$1" | wc -w) > 1 ]]
+}
+
 function ci_code_size_build {
     # check the following ports for the change in their code size
-    PORTS_TO_CHECK=bmusxpdv
+    # Override the list by setting PORTS_TO_CHECK in the environment before invoking ci.
+    : ${PORTS_TO_CHECK:=bmusxpdv}
+    
     SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
     # Default GitHub pull request sets HEAD to a generated merge commit
     # between PR branch (HEAD^2) and base branch (i.e. master) (HEAD^1).
     #
     # We want to compare this generated commit with the base branch, to see what
-    # the code size impact would be if we merged this PR.
-    REFERENCE=$(git rev-parse --short HEAD^1)
-    COMPARISON=$(git rev-parse --short HEAD)
+    # the code size impact would be if we merged this PR. During CI we are at a merge commit,
+    # so this tests the merged PR against its merge base.
+    # Override the refs by setting REFERENCE and/or COMPARISON in the environment before invoking ci.
+    : ${COMPARISON:=$(git rev-parse --short HEAD)}
+    : ${REFERENCE:=$(git rev-parse --short ${COMPARISON}^1)}
 
     echo "Comparing sizes of reference ${REFERENCE} to ${COMPARISON}..."
     git log --oneline $REFERENCE..$COMPARISON
 
-    function code_size_build_step {
-        COMMIT=$1
-        OUTFILE=$2
+    OLD_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-        echo "Building ${COMMIT}..."
-        git checkout --detach $COMMIT
-        git submodule update --init $SUBMODULES
-        git show -s
-        tools/metrics.py clean $PORTS_TO_CHECK
-        tools/metrics.py build $PORTS_TO_CHECK | tee $OUTFILE
-        return $?
-    }
+    ( # Execute in a subshell so the trap & code_size_build_step doesn't leak
+        function code_size_build_step {
+            if [ ! -z "$OLD_BRANCH" ]; then
+                trap 'git checkout "$OLD_BRANCH"' RETURN EXIT ERR
+            fi
 
+            COMMIT=$1
+            OUTFILE=$2
+            IGNORE_ERRORS=$3
+
+            git checkout --detach $COMMIT
+            git submodule update --init $SUBMODULES
+            git show -s
+            tools/metrics.py clean "$PORTS_TO_CHECK"
+            # Allow errors from tools/metrics.py to propagate out of the pipe below.
+            set -o pipefail
+            tools/metrics.py build "$PORTS_TO_CHECK" | tee -a $OUTFILE || $IGNORE_ERRORS
+            return $?
+        }
+
+        # build reference, save to size0
+        # ignore any errors with this build, in case master is failing
+        echo "BUILDING $(git log --format='%s [%h]' -1 ${REFERENCE})" > ~/size0
+        code_size_build_step $REFERENCE ~/size0 true
+        # build PR/branch, save to size1
+        if _ci_is_git_merge "$COMPARISON"; then
+            echo "BUILDING $(git log --oneline -1 --format='%s [merge of %h]' ${COMPARISON}^2)"
+        else
+            echo "BUILDING $(git log --oneline -1 --formta='%s [%h]' ${COMPARISON})"
+        fi > ~/size1
+        code_size_build_step $COMPARISON ~/size1 false
+    )
+}
+
+function ci_code_size_report {
     # Allow errors from tools/metrics.py to propagate out of the pipe above.
-    set -o pipefail
-
-    # build reference, save to size0
-    # ignore any errors with this build, in case master is failing
-    code_size_build_step $REFERENCE ~/size0
-    # build PR/branch, save to size1
-    code_size_build_step $COMPARISON ~/size1
-    STATUS=$?
-
-    set +o pipefail
-    unset -f code_size_build_step
-
-    return $STATUS
+    (set -o pipefail; tools/metrics.py diff ~/size0 ~/size1 | tee diff)
 }
 
 ########################################################################################
@@ -130,15 +150,12 @@ function ci_code_size_build {
 
 function ci_mpy_format_setup {
     sudo apt-get update
-    sudo apt-get install python2.7
     sudo pip3 install pyelftools
-    python2.7 --version
     python3 --version
 }
 
 function ci_mpy_format_test {
     # Test mpy-tool.py dump feature on bytecode
-    python2.7 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
     python3 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
 
     # Build MicroPython
@@ -154,6 +171,15 @@ function ci_mpy_format_test {
     make -C examples/natmod/features1
     ./tools/mpy-tool.py -xd examples/natmod/features1/features1.mpy
     $micropython ./tools/mpy-tool.py -x -d examples/natmod/features1/features1.mpy
+}
+
+function ci_mpy_cross_debug_emitter {
+    make ${MAKEOPTS} -C mpy-cross
+    mpy_cross=./mpy-cross/build/mpy-cross
+
+    # Make sure the debug emitter does not crash or fail for simple files
+    $mpy_cross -X emit=native -march=debug ./tests/basics/0prelim.py | \
+	    grep -E "ENTRY|EXIT" | wc -l | grep "^2$"
 }
 
 ########################################################################################
@@ -220,11 +246,19 @@ function ci_esp32_build_s3_c3 {
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
 }
 
-function ci_esp32_build_c2_c6 {
+function ci_esp32_build_c2_c5_c6 {
     ci_esp32_build_common
 
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C2
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C5
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C6
+}
+
+function ci_esp32_build_p4 {
+    ci_esp32_build_common
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4 BOARD_VARIANT=C6_WIFI
 }
 
 ########################################################################################
@@ -233,7 +267,7 @@ function ci_esp32_build_c2_c6 {
 function ci_esp8266_setup {
     sudo pip3 install pyserial esptool==3.3.1 pyelftools ar
     wget https://micropython.org/resources/xtensa-lx106-elf-standalone.tar.gz
-    zcat xtensa-lx106-elf-standalone.tar.gz | tar x
+    (set -o pipefail; zcat xtensa-lx106-elf-standalone.tar.gz | tar x)
     # Remove this esptool.py so pip version is used instead
     rm xtensa-lx106-elf/bin/esptool.py
 }
@@ -340,6 +374,13 @@ function ci_qemu_setup_rv32 {
     qemu-system-riscv32 --version
 }
 
+function ci_qemu_setup_rv64 {
+    ci_gcc_riscv_setup
+    sudo apt-get update
+    sudo apt-get install qemu-system
+    qemu-system-riscv64 --version
+}
+
 function ci_qemu_build_arm_prepare {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
@@ -355,19 +396,30 @@ function ci_qemu_build_arm_sabrelite {
     make ${MAKEOPTS} -C ports/qemu BOARD=SABRELITE test_full
 }
 
-function ci_qemu_build_arm_thumb {
+function ci_qemu_build_arm_thumb_softfp {
     ci_qemu_build_arm_prepare
-    make ${MAKEOPTS} -C ports/qemu test_full
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_full
 
-    # Test building native .mpy with all ARM-M architectures.
+    # Test building native .mpy with ARM-M softfp architectures.
     ci_native_mpy_modules_build armv6m
     ci_native_mpy_modules_build armv7m
+
+    # Test running native .mpy with all ARM-M architectures.
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
+    make BOARD=MPS2_AN385 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
+}
+
+function ci_qemu_build_arm_thumb_hardfp {
+    ci_qemu_build_arm_prepare
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_full
+
+    # Test building native .mpy with all ARM-M hardfp architectures.
     ci_native_mpy_modules_build armv7emsp
     ci_native_mpy_modules_build armv7emdp
 
-    # Test running native .mpy with armv6m and armv7m architectures.
-    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv6m"
-    make ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7m"
+    # Test running native .mpy with all ARM-M hardfp architectures.
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emsp"
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_natmod RUN_TESTS_EXTRA="--arch armv7emdp"
 }
 
 function ci_qemu_build_rv32 {
@@ -378,6 +430,12 @@ function ci_qemu_build_rv32 {
     # Test building and running native .mpy with rv32imc architecture.
     ci_native_mpy_modules_build rv32imc
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_natmod
+}
+
+function ci_qemu_build_rv64 {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 submodules
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test
 }
 
 ########################################################################################
@@ -443,13 +501,22 @@ function ci_samd_build {
 # ports/stm32
 
 function ci_stm32_setup {
-    ci_gcc_arm_setup
+    # Use a recent version of the ARM toolchain, to work with Cortex-M55.
+    wget https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+    xzcat arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz | tar x
+
     pip3 install pyelftools
     pip3 install ar
     pip3 install pyhy
 }
 
+function ci_stm32_path {
+    echo $(pwd)/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin
+}
+
 function ci_stm32_pyb_build {
+    # This function builds the following MCU families: F4, F7.
+
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 MICROPY_PY_NETWORK_WIZNET5K=5200 submodules
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2 submodules
@@ -464,13 +531,15 @@ function ci_stm32_pyb_build {
 }
 
 function ci_stm32_nucleo_build {
+    # This function builds the following MCU families: F0, H5, H7, L0, L4, WB.
+
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI submodules
     git submodule update --init lib/mynewt-nimble
 
     # Test building various MCU families, some with additional options.
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
-    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK
+    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK CFLAGS_EXTRA='-DMICROPY_HW_TINYUSB_STACK=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI COPT=-O2 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1
@@ -490,9 +559,17 @@ function ci_stm32_nucleo_build {
 }
 
 function ci_stm32_misc_build {
+    # This function builds the following MCU families: G0, G4, H7, L1, N6, U5, WL.
+
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA submodules
     make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G0B1RE
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G474RE
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L152RE
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_N657X0
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_U5A5ZJ_Q
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WL55
 }
 
 ########################################################################################
@@ -524,15 +601,23 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
 )
 
 CI_UNIX_OPTS_SANITIZE_ADDRESS=(
-    VARIANT=coverage
-    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
+    # Macro MP_ASAN allows detecting ASan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -DMP_ASAN=1"
     LDFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0"
 )
 
 CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
-    VARIANT=coverage
-    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+    # Macro MP_UBSAN allows detecting UBSan on gcc<=13
+    CFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute -DMP_UBSAN=1"
     LDFLAGS_EXTRA="-fsanitize=undefined -fno-sanitize=nonnull-attribute"
+)
+
+CI_UNIX_OPTS_REPR_B=(
+    VARIANT=standard
+    CFLAGS_EXTRA="-DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_B -DMICROPY_PY_UCTYPES=0 -Dmp_int_t=int32_t -Dmp_uint_t=uint32_t"
+    MICROPY_FORCE_32BIT=1
+    RUN_TESTS_MPY_CROSS_FLAGS="--mpy-cross-flags=\"-march=x86 -msmall-int-bits=30\""
+
 )
 
 function ci_unix_build_helper {
@@ -602,7 +687,7 @@ function ci_unix_minimal_build {
 }
 
 function ci_unix_minimal_run_tests {
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/build-minimal/micropython ./run-tests.py -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+    make -C ports/unix VARIANT=minimal test
 }
 
 function ci_unix_standard_build {
@@ -672,12 +757,11 @@ function ci_unix_coverage_run_native_mpy_tests {
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386 python2.7
+    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     sudo pip3 install ar
     gcc --version
-    python2.7 --version
     python3 --version
 }
 
@@ -695,17 +779,16 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 }
 
 function ci_unix_nanbox_build {
-    # Use Python 2 to check that it can run the build scripts
-    ci_unix_build_helper PYTHON=python2.7 VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
+    ci_unix_build_helper VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
     ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_nanbox_run_tests {
-    ci_unix_run_tests_full_no_native_helper nanbox PYTHON=python2.7
+    ci_unix_run_tests_full_no_native_helper nanbox
 }
 
 function ci_unix_longlong_build {
-    ci_unix_build_helper VARIANT=longlong
+    ci_unix_build_helper VARIANT=longlong "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
 }
 
 function ci_unix_longlong_run_tests {
@@ -771,23 +854,23 @@ function ci_unix_settrace_stackless_run_tests {
 function ci_unix_sanitize_undefined_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
-    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
     ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_sanitize_undefined_run_tests {
-    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
 }
 
 function ci_unix_sanitize_address_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
-    make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
+    make ${MAKEOPTS} -C ports/unix VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
     ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_sanitize_address_run_tests {
-    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage VARIANT=coverage "${CI_UNIX_OPTS_SANITIZE_ADDRESS[@]}"
 }
 
 function ci_unix_macos_build {
@@ -805,7 +888,8 @@ function ci_unix_macos_run_tests {
     # - float_parse and float_parse_doubleprec parse/print floats out by a few mantissa bits
     # - ffi_callback crashes for an unknown reason
     # - thread/stress_heap.py is flaky
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback|thread/stress_heap).py')
+    # - thread/thread_gc1.py is flaky
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback|thread/stress_heap|thread/thread_gc1).py')
 }
 
 function ci_unix_qemu_mips_setup {
@@ -826,8 +910,9 @@ function ci_unix_qemu_mips_run_tests {
     # Issues with MIPS tests:
     # - thread/stress_aes.py takes around 50 seconds
     # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_arm_setup {
@@ -849,8 +934,9 @@ function ci_unix_qemu_arm_run_tests {
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     # - thread/stress_aes.py takes around 70 seconds
     # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py|thread/stress_recurse.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py|thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
@@ -871,8 +957,20 @@ function ci_unix_qemu_riscv64_run_tests {
     # Issues with RISCV-64 tests:
     # - thread/stress_aes.py takes around 140 seconds
     # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+}
+
+function ci_unix_repr_b_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_REPR_B[@]}"
+    ci_unix_build_ffi_lib_helper gcc -m32
+}
+
+function ci_unix_repr_b_run_tests {
+    # ci_unix_run_tests_full_no_native_helper is not used due to
+    # https://github.com/micropython/micropython/issues/18105
+    ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
 }
 
 ########################################################################################
@@ -887,14 +985,15 @@ function ci_windows_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/windows submodules
     make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=x86_64-w64-mingw32- BUILD=build-standard-w64
 }
 
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.27.4
-ZEPHYR_SDK_VERSION=0.17.0
-ZEPHYR_VERSION=v4.0.0
+ZEPHYR_DOCKER_VERSION=v0.28.1
+ZEPHYR_SDK_VERSION=0.17.2
+ZEPHYR_VERSION=v4.2.0
 
 function ci_zephyr_setup {
     IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}
@@ -933,6 +1032,7 @@ function ci_zephyr_install {
 }
 
 function ci_zephyr_build {
+    git submodule update --init lib/micropython-lib
     docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
     docker exec zephyr-ci west build -p auto -b frdm_k64f
     docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
@@ -941,9 +1041,7 @@ function ci_zephyr_build {
 
 function ci_zephyr_run_tests {
     docker exec zephyr-ci west build -p auto -b qemu_cortex_m3 -- -DCONF_FILE=prj_minimal.conf
-    # Issues with zephyr tests:
-    # - inf_nan_arith fails pow(-1, nan) test
-    (cd tests && ./run-tests.py -t execpty:"qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null -serial pty -kernel ../ports/zephyr/build/zephyr/zephyr.elf" -d basics float --exclude inf_nan_arith)
+    (cd tests && ./run-tests.py -t execpty:"qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null -serial pty -kernel ../ports/zephyr/build/zephyr/zephyr.elf")
 }
 
 ########################################################################################
@@ -960,3 +1058,86 @@ function ci_alif_ae3_build {
     make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_DUAL
     make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL
 }
+
+function _ci_help {
+    # Note: these lines must be indented with tab characters (required by bash <<-EOF)
+    cat <<-EOF
+	ci.sh: Script fragments used during CI
+
+	When invoked as a script, runs a sequence of ci steps,
+	stopping after the first error.
+
+	Usage:
+	    ${BASH_SOURCE} step1 step2...
+
+	Steps:
+	EOF
+    if type -path column > /dev/null 2>&1; then
+        grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//' | column
+    else
+        grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//'
+    fi
+    exit
+}
+
+function _ci_bash_completion {
+    echo "alias ci=\"$(readlink -f "$0")\"; complete -W '$(grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//')' ci"
+}
+
+function _ci_zsh_completion {
+    echo "alias ci=\"$(readlink -f "$0"\"); _complete_mpy_ci_zsh() { compadd $(grep '^function ci_' $0 | awk '{sub(/^ci_/,"",$2); print $2}' | tr '\n' ' ') }; autoload -Uz compinit; compinit; compdef _complete_mpy_ci_zsh $(readlink -f "$0")"
+}
+
+function _ci_fish_completion {
+    echo "alias ci=\"$(readlink -f "$0"\"); complete -c ci -p $(readlink -f "$0") -f -a '$(grep '^function ci_' $(readlink -f "$0") | awk '{sub(/^ci_/,"",$2); print $2}' | tr '\n' ' ')'"
+}
+
+function _ci_main {
+    case "$1" in
+        (-h|-?|--help)
+            _ci_help
+        ;;
+        (--bash-completion)
+            _ci_bash_completion
+        ;;
+        (--zsh-completion)
+            _ci_zsh_completion
+        ;;
+        (--fish-completion)
+            _ci_fish_completion
+        ;;
+        (-*)
+            echo "Unknown option: $1" 1>&2
+            exit 1
+        ;;
+        (*)
+            set -e
+            cd $(dirname "$0")/..
+            while [ $# -ne 0 ]; do
+                ci_$1
+                shift
+            done
+        ;;
+    esac
+}
+
+# https://stackoverflow.com/questions/2683279/how-to-detect-if-a-script-is-being-sourced
+sourced=0
+if [ -n "$ZSH_VERSION" ]; then
+  case $ZSH_EVAL_CONTEXT in *:file) sourced=1;; esac
+elif [ -n "$KSH_VERSION" ]; then
+  [ "$(cd -- "$(dirname -- "$0")" && pwd -P)/$(basename -- "$0")" != "$(cd -- "$(dirname -- "${.sh.file}")" && pwd -P)/$(basename -- "${.sh.file}")" ] && sourced=1
+elif [ -n "$BASH_VERSION" ]; then
+  (return 0 2>/dev/null) && sourced=1
+else # All other shells: examine $0 for known shell binary filenames.
+     # Detects `sh` and `dash`; add additional shell filenames as needed.
+  case ${0##*/} in sh|-sh|dash|-dash) sourced=1;; esac
+fi
+
+if [ $sourced -eq 0 ]; then
+    # invoked as a command
+    if [ "$#" -eq 0 ]; then
+        set -- --help
+    fi
+    _ci_main "$@"
+fi

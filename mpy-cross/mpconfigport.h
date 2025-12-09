@@ -85,7 +85,7 @@
 #define MICROPY_GCREGS_SETJMP (1)
 #endif
 
-#define MICROPY_PY___FILE__         (0)
+#define MICROPY_MODULE___FILE__     (0)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_ATTRTUPLE        (0)
 #define MICROPY_PY_COLLECTIONS      (0)
@@ -97,23 +97,6 @@
 #define MICROPY_PY_SYS              (0)
 
 // type definitions for the specific machine
-
-#ifdef __LP64__
-typedef long mp_int_t; // must be pointer size
-typedef unsigned long mp_uint_t; // must be pointer size
-#elif defined(__MINGW32__) && defined(_WIN64)
-#include <stdint.h>
-typedef __int64 mp_int_t;
-typedef unsigned __int64 mp_uint_t;
-#elif defined(_MSC_VER) && defined(_WIN64)
-typedef __int64 mp_int_t;
-typedef unsigned __int64 mp_uint_t;
-#else
-// These are definitions for machines where sizeof(int) == sizeof(void*),
-// regardless for actual size.
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
 
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)

@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mpthread.h"
 #include "py/gc.h"
+#include "stack_size.h"
 
 #if MICROPY_PY_THREAD
 
@@ -244,9 +245,9 @@ void mp_thread_start(void) {
 }
 
 mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
-    // default stack size is 8k machine-words
+    // default stack size
     if (*stack_size == 0) {
-        *stack_size = 8192 * sizeof(void *);
+        *stack_size = 32768 * UNIX_STACK_MULTIPLIER;
     }
 
     // minimum stack size is set by pthreads

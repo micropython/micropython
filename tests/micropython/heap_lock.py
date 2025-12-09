@@ -1,6 +1,10 @@
 # check that heap_lock/heap_unlock work as expected
 
-import micropython
+try:
+    import micropython
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 l = []
 l2 = list(range(100))

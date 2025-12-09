@@ -1,11 +1,13 @@
 // *FORMAT-OFF*
-///-------------------------------------------------------------------------------------------------
-/// @file    alif_dcd_reg.h
-/// @author  karol.saja@alifsemi.com
-/// @version 0.0.1
-/// @date    2023-09-08
-/// @brief   Low Level SPI driver
-///-------------------------------------------------------------------------------------------------
+/*
+ * Copyright (C) 2024 Alif Semiconductor - All Rights Reserved.
+ * Use, distribution and modification of this code is permitted under the
+ * terms stated in the Alif Semiconductor Software License Agreement
+ *
+ * You should have received a copy of the Alif Semiconductor Software
+ * License Agreement with this file. If not, please write to:
+ * contact@alifsemi.com, or visit: https://alifsemi.com/license
+ */
 
 #ifndef __ALIF_DCD_REG_H__
 #define __ALIF_DCD_REG_H__

@@ -43,19 +43,22 @@ Other commands:
 
 """
 
-import collections, sys, re, subprocess
+import collections, os, sys, re, shlex, subprocess, multiprocessing
 
-MAKE_FLAGS = ["-j3", "CFLAGS_EXTRA=-DNDEBUG"]
+MAKE_FLAGS = ["-j{}".format(multiprocessing.cpu_count()), "CFLAGS_EXTRA=-DNDEBUG"]
 
 
 class PortData:
-    def __init__(self, name, dir, output, make_flags=None):
+    def __init__(self, name, dir, output, make_flags=None, pre_cmd=None):
         self.name = name
         self.dir = dir
         self.output = output
         self.make_flags = make_flags
         self.needs_mpy_cross = dir not in ("bare-arm", "minimal")
+        self.pre_cmd = pre_cmd
 
+
+mpy_cross_output = "mpy-cross/build/mpy-cross"
 
 port_data = {
     "b": PortData("bare-arm", "bare-arm", "build/firmware.elf"),
@@ -65,7 +68,12 @@ port_data = {
     "s": PortData("stm32", "stm32", "build-PYBV10/firmware.elf", "BOARD=PYBV10"),
     "c": PortData("cc3200", "cc3200", "build/WIPY/release/application.axf", "BTARGET=application"),
     "8": PortData("esp8266", "esp8266", "build-ESP8266_GENERIC/firmware.elf"),
-    "3": PortData("esp32", "esp32", "build-ESP32_GENERIC/micropython.elf"),
+    "3": PortData(
+        "esp32",
+        "esp32",
+        "build-ESP32_GENERIC/micropython.elf",
+        pre_cmd=". esp-idf/export.sh",
+    ),
     "x": PortData("mimxrt", "mimxrt", "build-TEENSY40/firmware.elf"),
     "e": PortData("renesas-ra", "renesas-ra", "build-EK_RA6M2/firmware.elf"),
     "r": PortData("nrf", "nrf", "build-PCA10040/firmware.elf"),
@@ -74,8 +82,15 @@ port_data = {
     "v": PortData("qemu rv32", "qemu", "build-VIRT_RV32/firmware.elf", "BOARD=VIRT_RV32"),
 }
 
+for port_letter, port in port_data.items():
+    port.pre_cmd = os.environ.get(f"PRE_CMD_{port_letter}", port.pre_cmd)
 
-def syscmd(*args):
+
+def quoted(args):
+    return " ".join(shlex.quote(word) for word in args)
+
+
+def syscmd(*args, pre_cmd=None):
     sys.stdout.flush()
     a2 = []
     for a in args:
@@ -83,6 +98,10 @@ def syscmd(*args):
             a2.append(a)
         elif a:
             a2.extend(a)
+    if pre_cmd is not None:
+        a2_quoted = quoted(a2)
+        a2 = ["bash", "-c", "{} && {}".format(pre_cmd, a2_quoted)]
+        print(a2)
     subprocess.check_call(a2)
 
 
@@ -108,6 +127,8 @@ def read_build_log(filename):
     with open(filename) as f:
         for line in f:
             line = line.strip()
+            if line.startswith("BUILDING ") and "_ref" not in data:
+                data["_ref"] = line.removeprefix("BUILDING ")
             if line.strip() == "COMPUTING SIZES":
                 found_sizes = True
             elif found_sizes:
@@ -139,9 +160,15 @@ def do_diff(args):
     data1 = read_build_log(args[0])
     data2 = read_build_log(args[1])
 
+    ref1 = data1.pop("_ref", "(unknown ref)")
+    ref2 = data2.pop("_ref", "(unknown ref)")
+    print(f"Reference:  {ref1}")
+    print(f"Comparison: {ref2}")
     max_delta = None
     for key, value1 in data1.items():
         value2 = data2[key]
+        if key == mpy_cross_output:
+            name = "mpy-cross"
         for port in port_data.values():
             if key == "ports/{}/{}".format(port.dir, port.output):
                 name = port.name
@@ -181,8 +208,19 @@ def do_clean(args):
     ports = parse_port_list(args)
 
     print("CLEANING")
+
+    if any(port.needs_mpy_cross for port in ports):
+        syscmd("make", "-C", "mpy-cross", "clean")
+
     for port in ports:
-        syscmd("make", "-C", "ports/{}".format(port.dir), port.make_flags, "clean")
+        syscmd(
+            "make",
+            "-C",
+            "ports/{}".format(port.dir),
+            port.make_flags,
+            "clean",
+            pre_cmd=port.pre_cmd,
+        )
 
 
 def do_build(args):
@@ -196,7 +234,14 @@ def do_build(args):
 
     print("BUILDING PORTS")
     for port in ports:
-        syscmd("make", "-C", "ports/{}".format(port.dir), MAKE_FLAGS, port.make_flags)
+        syscmd(
+            "make",
+            "-C",
+            "ports/{}".format(port.dir),
+            MAKE_FLAGS,
+            port.make_flags,
+            pre_cmd=port.pre_cmd,
+        )
 
     do_sizes(args)
 
@@ -207,6 +252,10 @@ def do_sizes(args):
     ports = parse_port_list(args)
 
     print("COMPUTING SIZES")
+
+    if any(port.needs_mpy_cross for port in ports):
+        syscmd("size", mpy_cross_output)
+
     for port in ports:
         syscmd("size", "ports/{}/{}".format(port.dir, port.output))
 

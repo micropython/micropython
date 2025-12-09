@@ -145,17 +145,12 @@ void SystemClock_Config(void) {
     }
 
     // Use the PLL to get a 64MHz SYSCLK
-    #define PLLM (HSI_VALUE / 16000000) // input is 8MHz
-    #define PLLN (8) // 8*16MHz = 128MHz
-    #define PLLP (2) // f_P = 64MHz
-    #define PLLQ (2) // f_Q = 64MHz
-    #define PLLR (2) // f_R = 64MHz
     RCC->PLLCFGR =
-        (PLLP - 1) << RCC_PLLCFGR_PLLP_Pos | RCC_PLLCFGR_PLLPEN
-            | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
-            | (PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
-            | PLLN << RCC_PLLCFGR_PLLN_Pos
-            | (PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
+        (MICROPY_HW_CLK_PLLP - 1) << RCC_PLLCFGR_PLLP_Pos | RCC_PLLCFGR_PLLPEN
+            | (MICROPY_HW_CLK_PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
+            | (MICROPY_HW_CLK_PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
+            | MICROPY_HW_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
+            | (MICROPY_HW_CLK_PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
             | RCC_PLLCFGR_PLLSRC_HSI;
 
     #else
@@ -385,7 +380,9 @@ void SystemClock_Config(void) {
     RCC->CFGR = RCC_CFGR_PLLSRC_HSI;
     #else
     // Enable the 8MHz external oscillator
+    #if MICROPY_HW_CLK_USE_BYPASS
     RCC->CR |= RCC_CR_HSEBYP;
+    #endif
     RCC->CR |= RCC_CR_HSEON;
     while (!(RCC->CR & RCC_CR_HSERDY)) {
     }
@@ -484,6 +481,11 @@ void SystemClock_Config(void) {
     LL_RCC_IC11_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
     LL_RCC_IC11_SetDivider(1);
     LL_RCC_IC11_Enable();
+
+    // Configure IC12 at 100MHz for ETH1CLKSEL.
+    LL_RCC_IC12_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC12_SetDivider(8);
+    LL_RCC_IC12_Enable();
 
     // Configure IC14 at 100MHz for slower peripherals.
     LL_RCC_IC14_SetSource(LL_RCC_ICCLKSOURCE_PLL1);

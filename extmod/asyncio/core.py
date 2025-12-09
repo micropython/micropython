@@ -50,7 +50,7 @@ class SingletonGenerator:
             raise self.exc
 
 
-# Pause task execution for the given time (integer in milliseconds, uPy extension)
+# Pause task execution for the given time (integer in milliseconds, MicroPython extension)
 # Use a SingletonGenerator to do it without allocating on the heap
 def sleep_ms(t, sgen=SingletonGenerator()):
     assert sgen.state is None

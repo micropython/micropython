@@ -36,6 +36,8 @@
 #if MICROPY_EMIT_RV32
 
 #include "py/asmrv32.h"
+#include "py/mpstate.h"
+#include "py/persistentcode.h"
 
 #if MICROPY_DEBUG_VERBOSE
 #define DEBUG_PRINT (1)
@@ -555,14 +557,39 @@ void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs) 
     asm_rv32_opcode_xor(state, rd, rd, rs);
 }
 
+static bool asm_rv32_allow_zba_opcodes(void) {
+    return asm_rv32_allowed_extensions() & RV32_EXT_ZBA;
+}
+
+static void asm_rv32_fix_up_scaled_reg_reg_reg(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size) {
+    assert(operation_size <= 2 && "Operation size value out of range.");
+
+    if (operation_size > 0 && asm_rv32_allow_zba_opcodes()) {
+        // sh{1,2}add rs1, rs2, rs1
+        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 1 << operation_size, 0x10, rs1, rs2, rs1));
+    } else {
+        if (operation_size > 0) {
+            asm_rv32_opcode_cslli(state, rs2, operation_size);
+        }
+        asm_rv32_opcode_cadd(state, rs1, rs2);
+    }
+}
+
+void asm_rv32_emit_load_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size) {
+    asm_rv32_fix_up_scaled_reg_reg_reg(state, rs1, rs2, operation_size);
+    asm_rv32_emit_load_reg_reg_offset(state, rd, rs1, 0, operation_size);
+}
+
+void asm_rv32_emit_store_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size) {
+    asm_rv32_fix_up_scaled_reg_reg_reg(state, rs1, rs2, operation_size);
+    asm_rv32_emit_store_reg_reg_offset(state, rd, rs1, 0, operation_size);
+}
+
 void asm_rv32_meta_comparison_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd) {
-    // c.li rd, 1       ;
-    // beq  rs1, rs2, 6 ; PC + 0
-    // c.li rd, 0       ; PC + 4
-    // ...              ; PC + 6
-    asm_rv32_opcode_cli(state, rd, 1);
-    asm_rv32_opcode_beq(state, rs1, rs2, 6);
-    asm_rv32_opcode_cli(state, rd, 0);
+    // sub   rd, rs1, rs2
+    // sltiu rd, rd, 1
+    asm_rv32_opcode_sub(state, rd, rs1, rs2);
+    asm_rv32_opcode_sltiu(state, rd, rd, 1);
 }
 
 void asm_rv32_meta_comparison_ne(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd) {
@@ -573,26 +600,15 @@ void asm_rv32_meta_comparison_ne(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2
 }
 
 void asm_rv32_meta_comparison_lt(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd, bool unsigned_comparison) {
-    // slt(u) rd, rs1, rs2
-    if (unsigned_comparison) {
-        asm_rv32_opcode_sltu(state, rd, rs1, rs2);
-    } else {
-        asm_rv32_opcode_slt(state, rd, rs1, rs2);
-    }
+    // slt|sltu rd, rs1, rs2
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, (0x02 | (unsigned_comparison ? 1 : 0)), 0x00, rd, rs1, rs2));
 }
 
 void asm_rv32_meta_comparison_le(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd, bool unsigned_comparison) {
-    // c.li   rd, 1        ;
-    // beq    rs1, rs2, 8  ; PC + 0
-    // slt(u) rd, rs1, rs2 ; PC + 4
-    // ...                 ; PC + 8
-    asm_rv32_opcode_cli(state, rd, 1);
-    asm_rv32_opcode_beq(state, rs1, rs2, 8);
-    if (unsigned_comparison) {
-        asm_rv32_opcode_sltu(state, rd, rs1, rs2);
-    } else {
-        asm_rv32_opcode_slt(state, rd, rs1, rs2);
-    }
+    // slt[u] rd, rs2, rs1
+    // xori   rd, rd, 1
+    asm_rv32_meta_comparison_lt(state, rs2, rs1, rd, unsigned_comparison);
+    asm_rv32_opcode_xori(state, rd, rd, 1);
 }
 
 #endif // MICROPY_EMIT_RV32

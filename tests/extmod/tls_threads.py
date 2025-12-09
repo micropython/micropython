@@ -1,6 +1,5 @@
 # Ensure that SSL sockets can be allocated from multiple
 # threads without thread safety issues
-import unittest
 
 try:
     import _thread
@@ -10,6 +9,8 @@ try:
 except ImportError:
     print("SKIP")
     raise SystemExit
+
+import unittest
 
 
 class TestSocket(io.IOBase):

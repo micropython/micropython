@@ -75,12 +75,13 @@ static inline const void *mp_code_get_proto_fun(mp_obj_code_t *self) {
 #define MP_CODE_QSTR_MAP(context, idx) ((qstr)(context->constants.qstr_table[idx]))
 
 typedef struct _mp_obj_code_t {
-    // TODO this was 4 words
     mp_obj_base_t base;
     const mp_module_context_t *context;
     const mp_raw_code_t *rc;
     mp_obj_dict_t *dict_locals;
+    #if !MICROPY_PREVIEW_VERSION_2
     mp_obj_t lnotab;
+    #endif
 } mp_obj_code_t;
 
 mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t *rc, bool result_required);

@@ -86,8 +86,9 @@ machine_rtc_config_t machine_rtc_config = {
     .ext1_pins = 0,
     #endif
     #if SOC_PM_SUPPORT_EXT0_WAKEUP
-    .ext0_pin = -1
+    .ext0_pin = -1,
     #endif
+    .gpio_pins = 0,
 };
 
 static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

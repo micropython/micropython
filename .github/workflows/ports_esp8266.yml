@@ -21,8 +21,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install packages
-      run: source tools/ci.sh && ci_esp8266_setup && ci_esp8266_path >> $GITHUB_PATH
+      run: tools/ci.sh esp8266_setup && tools/ci.sh esp8266_path >> $GITHUB_PATH
     - name: Build
-      run: source tools/ci.sh && ci_esp8266_build
+      run: tools/ci.sh esp8266_build

@@ -29,7 +29,7 @@ Make sure the LCD skin is attached to the pyboard as pictured at the top of this
     >>> import pyb
     >>> lcd = pyb.LCD('X')
     >>> lcd.light(True)
-    >>> lcd.write('Hello uPy!\n')
+    >>> lcd.write('Hello MPy!\n')
 
 You can make a simple animation using the code::
 
@@ -38,7 +38,7 @@ You can make a simple animation using the code::
     lcd.light(True)
     for x in range(-80, 128):
         lcd.fill(0)
-        lcd.text('Hello uPy!', x, 10, 1)
+        lcd.text('Hello MPy!', x, 10, 1)
         lcd.show()
         pyb.delay(25)
 

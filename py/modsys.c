@@ -85,8 +85,16 @@ static const MP_DEFINE_STR_OBJ(mp_sys_implementation_machine_obj, MICROPY_BANNER
     MP_ROM_PTR(&mp_sys_implementation_machine_obj)
 
 #if MICROPY_PERSISTENT_CODE_LOAD
+// Note: Adding architecture flags to _mpy will break if the flags information
+//       takes up more bits than what is available in a small-int value.
+#if MICROPY_EMIT_RV32
+#include "py/asmrv32.h"
+#define MPY_FILE_ARCH_FLAGS (MICROPY_RV32_EXTENSIONS << 16)
+#else
+#define MPY_FILE_ARCH_FLAGS (0)
+#endif
 #define SYS_IMPLEMENTATION_ELEMS__MPY \
-    , MP_ROM_INT(MPY_FILE_HEADER_INT)
+    , MP_ROM_INT(MPY_FILE_HEADER_INT | MPY_FILE_ARCH_FLAGS)
 #else
 #define SYS_IMPLEMENTATION_ELEMS__MPY
 #endif

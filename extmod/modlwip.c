@@ -1725,18 +1725,6 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 /******************************************************************************/
-// Support functions for memory protection. lwIP has its own memory management
-// routines for its internal structures, and since they might be called in
-// interrupt handlers, they need some protection.
-sys_prot_t sys_arch_protect() {
-    return (sys_prot_t)MICROPY_BEGIN_ATOMIC_SECTION();
-}
-
-void sys_arch_unprotect(sys_prot_t state) {
-    MICROPY_END_ATOMIC_SECTION((mp_uint_t)state);
-}
-
-/******************************************************************************/
 // Polling callbacks for the interfaces connected to lwIP. Right now it calls
 // itself a "list" but isn't; we only support a single interface.
 
@@ -1802,10 +1790,11 @@ static mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     mp_obj_t host_in = args[0], port_in = args[1];
     const char *host = mp_obj_str_get_str(host_in);
     mp_int_t port = mp_obj_get_int(port_in);
+    mp_int_t family = 0;
 
     // If constraints were passed then check they are compatible with the supported params
     if (n_args > 2) {
-        mp_int_t family = mp_obj_get_int(args[2]);
+        family = mp_obj_get_int(args[2]);
         mp_int_t type = 0;
         mp_int_t proto = 0;
         mp_int_t flags = 0;
@@ -1818,7 +1807,7 @@ static mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
                 }
             }
         }
-        if (!((family == 0 || family == MOD_NETWORK_AF_INET)
+        if (!((family == 0 || family == MOD_NETWORK_AF_INET || family == MOD_NETWORK_AF_INET6)
               && (type == 0 || type == MOD_NETWORK_SOCK_STREAM)
               && proto == 0
               && flags == 0)) {
@@ -1829,11 +1818,23 @@ static mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     getaddrinfo_state_t state;
     state.status = 0;
 
+    #if LWIP_VERSION_MAJOR >= 2
+    // If family was specified, then try and resolve the address type as
+    // requested. Otherwise, use the default from network configuration.
+    if (family == MOD_NETWORK_AF_INET) {
+        family = LWIP_DNS_ADDRTYPE_IPV4;
+    } else if (family == MOD_NETWORK_AF_INET6) {
+        family = LWIP_DNS_ADDRTYPE_IPV6;
+    } else {
+        family = mp_mod_network_prefer_dns_use_ip_version == 4 ? LWIP_DNS_ADDRTYPE_IPV4_IPV6 : LWIP_DNS_ADDRTYPE_IPV6_IPV4;
+    }
+    #endif
+
     MICROPY_PY_LWIP_ENTER
     #if LWIP_VERSION_MAJOR < 2
     err_t ret = dns_gethostbyname(host, (ip_addr_t *)&state.ipaddr, lwip_getaddrinfo_cb, &state);
     #else
-    err_t ret = dns_gethostbyname_addrtype(host, (ip_addr_t *)&state.ipaddr, lwip_getaddrinfo_cb, &state, mp_mod_network_prefer_dns_use_ip_version == 4 ? LWIP_DNS_ADDRTYPE_IPV4_IPV6 : LWIP_DNS_ADDRTYPE_IPV6_IPV4);
+    err_t ret = dns_gethostbyname_addrtype(host, (ip_addr_t *)&state.ipaddr, lwip_getaddrinfo_cb, &state, family);
     #endif
     MICROPY_PY_LWIP_EXIT
 

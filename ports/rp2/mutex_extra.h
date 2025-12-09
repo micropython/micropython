@@ -44,11 +44,11 @@ typedef struct {
     recursive_mutex_t mutex;
 } recursive_mutex_nowait_t;
 
-inline static void recursive_mutex_nowait_init(recursive_mutex_nowait_t *mtx) {
+static inline void recursive_mutex_nowait_init(recursive_mutex_nowait_t *mtx) {
     recursive_mutex_init(&mtx->mutex);
 }
 
-inline static bool recursive_mutex_nowait_try_enter(recursive_mutex_nowait_t *mtx, uint32_t *owner_out) {
+static inline bool recursive_mutex_nowait_try_enter(recursive_mutex_nowait_t *mtx, uint32_t *owner_out) {
     return recursive_mutex_try_enter(&mtx->mutex, owner_out);
 }
 

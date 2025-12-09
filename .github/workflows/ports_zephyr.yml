@@ -11,6 +11,11 @@ on:
       - 'shared/**'
       - 'lib/**'
       - 'ports/zephyr/**'
+      - 'tests/**'
+  schedule:
+     # Scheduled run exists to keep master branch Zephyr cache entry hot
+     # and prevent creating many redundant per-branch cache entries instead.
+     - cron: "40 4 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,13 +28,16 @@ jobs:
     - uses: jlumbroso/free-disk-space@main
       with:
         # Only free up a few things so this step runs quickly.
+        # (android would save 9.6GiB, but takes about 13m)
+        # (large-packages would save 4.6GiB, but takes about 3m)
         android: false
         dotnet: true
         haskell: true
         large-packages: false
         docker-images: false
+        tool-cache: true
         swap-storage: false
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - id: versions
       name: Read Zephyr version
       run: source tools/ci.sh && echo "ZEPHYR=$ZEPHYR_VERSION" | tee "$GITHUB_OUTPUT"
@@ -47,14 +55,14 @@ jobs:
       with:
         key: zephyr
     - name: Install packages
-      run: source tools/ci.sh && ci_zephyr_setup
+      run: tools/ci.sh zephyr_setup
     - name: Install Zephyr
       if: steps.cache_workspace.outputs.cache-hit != 'true'
-      run: source tools/ci.sh && ci_zephyr_install
+      run: tools/ci.sh zephyr_install
     - name: Build
-      run: source tools/ci.sh && ci_zephyr_build
+      run: tools/ci.sh zephyr_build
     - name: Run main test suite
-      run: source tools/ci.sh && ci_zephyr_run_tests
+      run: tools/ci.sh zephyr_run_tests
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures

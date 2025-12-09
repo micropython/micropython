@@ -47,6 +47,8 @@
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
+#define MICROPY_STACK_CHECK_MARGIN  (512)
+#define MICROPY_STACK_SIZE_HARD_IRQ (CONFIG_ISR_STACK_SIZE)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (MICROPY_VFS)
 #define MICROPY_HELPER_REPL         (1)
@@ -82,9 +84,10 @@
 #endif
 #define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/zephyr/machine_pwm.c"
-#ifdef CONFIG_NETWORKING
-// If we have networking, we likely want errno comfort
+#if defined(CONFIG_NETWORKING) || defined(CONFIG_FILE_SYSTEM)
 #define MICROPY_PY_ERRNO            (1)
+#endif
+#ifdef CONFIG_NETWORKING
 #define MICROPY_PY_SOCKET           (1)
 #endif
 #ifdef CONFIG_BT
@@ -141,8 +144,17 @@ void mp_hal_signal_event(void);
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
 
-typedef intptr_t mp_int_t; // must be pointer size
-typedef uintptr_t mp_uint_t; // must be pointer size
+#ifdef CONFIG_ADC
+#define MICROPY_PY_MACHINE_ADC (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/zephyr/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ (1)
+#define MICROPY_PY_MACHINE_ADC_READ_UV (1)
+#endif
+
+#if DT_HAS_COMPAT_STATUS_OKAY(micropython_heap)
+#define MICROPY_GC_SPLIT_HEAP (1)
+#endif
+
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -169,4 +181,10 @@ typedef long mp_off_t;
         mp_handle_pending(true); \
         k_msleep(1); \
     } while (0);
+#endif
+
+// Compatibility switches
+
+#ifdef CONFIG_NEWLIB_LIBC
+#define MICROPY_PY_MATH_POW_FIX_NAN (1)
 #endif

@@ -97,9 +97,6 @@
 #endif
 
 // extended modules
-#define MICROPY_PY_HASHLIB_MD5      (MICROPY_PY_SSL)
-#define MICROPY_PY_HASHLIB_SHA1     (MICROPY_PY_SSL)
-#define MICROPY_PY_CRYPTOLIB        (MICROPY_PY_SSL)
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/stm32/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
@@ -231,12 +228,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((uint32_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
-
-// Assume that if we already defined the obj repr then we also defined these items
-#ifndef MICROPY_OBJ_REPR
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
 
 typedef long mp_off_t;
 

@@ -2,27 +2,27 @@
 opened
 read 1 a
 read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-OSError [Errno 5] EIO
+<class 'OSError'> [Errno 5] EIO
 read 1 a
 read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-OSError [Errno 22] EINVAL
+<class 'OSError'> [Errno 22] EINVAL
 read 1 a
 read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-OSError [Errno 22] EINVAL
+<class 'OSError'> [Errno 22] EINVAL
 read 1 a
 read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-OSError [Errno 22] EINVAL
+<class 'TypeError'> can't convert str to int
 read 1 a
 read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 <class 'VfsFat'>
 opened
 read 1 a
 read rest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-OSError [Errno 5] EIO
-OSError [Errno 5] EIO
-OSError [Errno 5] EIO
-OSError [Errno 5] EIO
-OSError [Errno 5] EIO
-OSError [Errno 5] EIO
-OSError [Errno 5] EIO
-OSError [Errno 5] EIO
+<class 'OSError'> [Errno 5] EIO
+<class 'OSError'> [Errno 5] EIO
+<class 'OSError'> [Errno 5] EIO
+<class 'OSError'> [Errno 5] EIO
+<class 'OSError'> [Errno 5] EIO
+<class 'OSError'> [Errno 5] EIO
+<class 'TypeError'> can't convert str to int
+<class 'TypeError'> can't convert str to int

@@ -14,6 +14,8 @@
 #define MICROPY_HW_CLK_PLLN (336)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
 #define MICROPY_HW_CLK_PLLQ (7)
+// HSE comes from ST-LINK 8MHz, not crystal.
+#define MICROPY_HW_CLK_USE_BYPASS (1)
 
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_B6)    // Arduino D10, pin 17 on CN10

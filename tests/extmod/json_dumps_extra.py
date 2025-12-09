@@ -1,4 +1,4 @@
-# test uPy json behaviour that's not valid in CPy
+# test MicroPython json behaviour that's not valid in CPython
 
 try:
     import json

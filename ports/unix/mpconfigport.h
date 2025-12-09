@@ -73,21 +73,6 @@
     #define MICROPY_EMIT_ARM        (1)
 #endif
 
-// Type definitions for the specific machine based on the word size.
-#ifndef MICROPY_OBJ_REPR
-#ifdef __LP64__
-typedef long mp_int_t; // must be pointer size
-typedef unsigned long mp_uint_t; // must be pointer size
-#else
-// These are definitions for machines where sizeof(int) == sizeof(void*),
-// regardless of actual size.
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
-#else
-// Assume that if we already defined the obj repr then we also defined types.
-#endif
-
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
 typedef long long mp_off_t;
@@ -165,6 +150,12 @@ typedef long mp_off_t;
 
 // Enable sys.executable.
 #define MICROPY_PY_SYS_EXECUTABLE (1)
+
+// Enable support for compile-only mode.
+#define MICROPY_PYEXEC_COMPILE_ONLY (1)
+
+// Enable handling of sys.exit() exit codes.
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (1)
 
 #define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 

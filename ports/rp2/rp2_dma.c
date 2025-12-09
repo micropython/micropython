@@ -427,6 +427,14 @@ static mp_obj_t rp2_dma_close(mp_obj_t self_in) {
     uint8_t channel = self->channel;
 
     if (channel != CHANNEL_CLOSED) {
+        // Reset this channel's registers to their default values (zeros).
+        dma_channel_config config = { .ctrl = 0 };
+        dma_channel_configure(channel, &config, NULL, NULL, 0, false);
+
+        // Abort this channel. Must be done after clearing EN bit in control
+        // register due to errata RP2350-E5.
+        dma_channel_abort(channel);
+
         // Clean up interrupt handler to ensure garbage collection
         mp_irq_obj_t *irq = MP_STATE_PORT(rp2_dma_irq_obj[channel]);
         MP_STATE_PORT(rp2_dma_irq_obj[channel]) = MP_OBJ_NULL;

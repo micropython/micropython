@@ -75,7 +75,7 @@ void dcd_uninit(void);
 
 // Initializes the USB peripheral for device mode and enables it.
 // This function should enable internal D+/D- pull-up for enumeration.
-void dcd_init(uint8_t rhport)
+bool dcd_init(uint8_t rhport, const tusb_rhport_init_t* rh_init)
 {
     // enable 20mhz clock
     enable_cgu_clk20m();
@@ -172,6 +172,8 @@ void dcd_init(uint8_t rhport)
     NVIC_SetPriority(USB_IRQ_IRQn, 5);
 #endif
     dcd_int_enable(rhport);
+
+    return true;
 }
 
 
@@ -249,7 +251,11 @@ void dcd_set_address(uint8_t rhport, uint8_t dev_addr)
 {
     LOG("%010u >%s", DWT->CYCCNT, __func__);
 
-    udev->dcfg_b.devaddr = dev_addr;
+    // Device address is set from the ISR when SETUP packet is received
+    // By point TinyUSB calls this function, the address has already been
+    // set and STATUS sent back to the host. Xfer call below is purely for
+    // internal TinyUSB state to conclude transaction and issue next SETUP req.
+
     dcd_edpt_xfer(rhport, tu_edpt_addr(0, TUSB_DIR_IN), NULL, 0);
 }
 
@@ -571,6 +577,9 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
 
             // XferNotReady NotActive for status stage
             if ((1 == ep) && (0b0010 == (sts & 0b1011))) {
+                if (0x00 == _ctrl_buf[0] && TUSB_REQ_SET_ADDRESS == _ctrl_buf[1]) {
+                    udev->dcfg_b.devaddr = _ctrl_buf[2];
+                }
                 _dcd_start_xfer(1, NULL, 0, TRBCTL_CTL_STAT2);
                 break;
             }

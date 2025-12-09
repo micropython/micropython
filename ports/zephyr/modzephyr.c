@@ -86,6 +86,9 @@ static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #ifdef CONFIG_FLASH_MAP
     { MP_ROM_QSTR(MP_QSTR_FlashArea), MP_ROM_PTR(&zephyr_flash_area_type) },
     #endif
+    #ifdef CONFIG_FILE_SYSTEM
+    { MP_ROM_QSTR(MP_QSTR_FileSystem), MP_ROM_PTR(&zephyr_filesystem_type) },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);

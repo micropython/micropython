@@ -39,7 +39,7 @@ for sep in [
 
 try:
     json.dumps(False, separators={"a": 1})
-except (TypeError, ValueError):  # CPython and uPy have different errors
+except (TypeError, ValueError):  # CPython and MicroPython have different errors
     print("Exception")
 
 # invalid separator types

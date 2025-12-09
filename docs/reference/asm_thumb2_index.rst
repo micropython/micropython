@@ -63,7 +63,7 @@ References
 -  :ref:`Assembler Tutorial <pyboard_tutorial_assembler>`
 -  `Wiki hints and tips
    <http://wiki.micropython.org/platforms/boards/pyboard/assembler>`__
--  `uPy Inline Assembler source-code,
+-  `MicroPython Inline Assembler source-code,
    emitinlinethumb.c <https://github.com/micropython/micropython/blob/master/py/emitinlinethumb.c>`__
 -  `ARM Thumb2 Instruction Set Quick Reference
    Card <http://infocenter.arm.com/help/topic/com.arm.doc.qrc0001l/QRC0001_UAL.pdf>`__

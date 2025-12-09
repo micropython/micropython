@@ -79,7 +79,7 @@
 #include "boardctrl.h"
 #include "powerctrl.h"
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32U5)
 
 /**
   * @brief  System Clock Configuration
@@ -168,15 +168,23 @@ MP_WEAK void SystemClock_Config(void) {
     // on reset value, so we set it back here, so the clocksources are the same
     // whether we were started from DFU or from a power on reset.
     RCC->DCKCFGR2 = 0;
+    #elif defined(STM32U5)
+    __HAL_RCC_PWR_CLK_ENABLE();
+    #if MICROPY_HW_ENABLE_USB
+    HAL_PWREx_EnableVddUSB();
+    #endif
+    #if MICROPY_HW_ENABLE_ADC || MICROPY_HW_ENABLE_DAC
+    HAL_PWREx_EnableVddA();
+    #endif
     #endif
 
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    #if defined(STM32G4) || defined(STM32H7)
+    #if defined(STM32G4) || defined(STM32H7) || defined(STM32U5)
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
     #endif
 
-    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32U5)
 
     #if defined(STM32H7) && defined(SMPS)
     // H7 MCUs with SMPS must provide a power supply configuration.
@@ -184,6 +192,11 @@ MP_WEAK void SystemClock_Config(void) {
     #elif defined(STM32H7)
     // H7 MCUs without SMPS, lock the power supply configuration update.
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
+    #elif defined(STM32U5)
+    HAL_PWREx_DisableUCPDDeadBattery();
+    if (HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY) != HAL_OK) {
+        MICROPY_BOARD_FATAL_ERROR("HAL_PWREx_ConfigSupply");
+    }
     #else
     // other MCUs, enable power control clock.
     __PWR_CLK_ENABLE();
@@ -204,6 +217,12 @@ MP_WEAK void SystemClock_Config(void) {
 
     #endif // defined(STM32H7)
 
+    #if defined(STM32U5)
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK) {
+        MICROPY_BOARD_FATAL_ERROR("HAL_PWREx_ControlVoltageScaling");
+    }
+    #else
     /* The voltage scaling allows optimizing the power consumption when the device is
        clocked below the maximum system frequency, to update the voltage scaling value
        regarding system frequency refer to product datasheet.  */
@@ -217,6 +236,7 @@ MP_WEAK void SystemClock_Config(void) {
     {
         __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
     }
+    #endif
 
     #elif defined(STM32G4)
     // Configure the main internal regulator output voltage
@@ -233,7 +253,7 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     /* Enable HSE Oscillator and activate PLL with HSE as source */
-    #if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7)
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32U5)
     RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
     RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
     RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
@@ -305,6 +325,8 @@ MP_WEAK void SystemClock_Config(void) {
     RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
     #if defined(STM32H7)
     RCC_ClkInitStruct.ClockType |= (RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1);
+    #elif defined(STM32U5)
+    RCC_ClkInitStruct.ClockType |= (RCC_CLOCKTYPE_PCLK3);
     #endif
 
     #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
@@ -354,13 +376,22 @@ MP_WEAK void SystemClock_Config(void) {
     RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
     RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
     RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
-    #if defined(STM32G4) || defined(STM32H7) || defined(STM32L4)
+    #if defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32U5)
     RCC_OscInitStruct.PLL.PLLR = MICROPY_HW_CLK_PLLR;
     #endif
 
     #if defined(STM32H7)
     RCC_OscInitStruct.PLL.PLLRGE = MICROPY_HW_CLK_PLLVCI;
     RCC_OscInitStruct.PLL.PLLVCOSEL = MICROPY_HW_CLK_PLLVCO;
+    RCC_OscInitStruct.PLL.PLLFRACN = MICROPY_HW_CLK_PLLFRAC;
+    #elif defined(STM32U5)
+    #if MICROPY_HW_RTC_USE_LSE
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    #else
+    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+    #endif
+    RCC_OscInitStruct.PLL.PLLMBOOST = RCC_PLLMBOOST_DIV1;
+    RCC_OscInitStruct.PLL.PLLRGE = MICROPY_HW_CLK_PLLVCI;
     RCC_OscInitStruct.PLL.PLLFRACN = MICROPY_HW_CLK_PLLFRAC;
     #endif
 
@@ -385,6 +416,12 @@ MP_WEAK void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
     RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
     RCC_ClkInitStruct.APB4CLKDivider = MICROPY_HW_CLK_APB4_DIV;
+    #elif defined(STM32U5)
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
+    RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
+    RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
+    RCC_ClkInitStruct.APB3CLKDivider = MICROPY_HW_CLK_APB3_DIV;
     #endif
     #endif
 
@@ -494,18 +531,50 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     #if defined(STM32G4)
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8) != HAL_OK) {
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCC_ClockConfig");
     }
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_LPUART1
-        | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12
+        | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12 | RCC_PERIPHCLK_ADC345
         | RCC_PERIPHCLK_FDCAN | RCC_PERIPHCLK_USB;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
     PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
     PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
     PeriphClkInitStruct.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
+    PeriphClkInitStruct.Adc345ClockSelection = RCC_ADC345CLKSOURCE_SYSCLK;
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
+    }
+    #elif defined(STM32U5)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK) {
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCC_ClockConfig");
+    }
+
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C1 | RCC_PERIPHCLK_I2C2
+        | RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_SPI2 | RCC_PERIPHCLK_SPI3;
+    PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.Spi1ClockSelection = RCC_SPI1CLKSOURCE_SYSCLK;
+    PeriphClkInitStruct.Spi2ClockSelection = RCC_SPI2CLKSOURCE_SYSCLK;
+    PeriphClkInitStruct.Spi3ClockSelection = RCC_SPI3CLKSOURCE_SYSCLK;
+
+    #if defined(MICROPY_HW_ENABLE_ADC) || (MICROPY_HW_ENABLE_DAC)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_ADCDAC | RCC_PERIPHCLK_DAC1;
+    PeriphClkInitStruct.AdcDacClockSelection = RCC_ADCDACCLKSOURCE_HSE;
+    PeriphClkInitStruct.Dac1ClockSelection = RCC_DAC1CLKSOURCE_LSE;
+    #endif
+    #if defined(MICROPY_HW_ENABLE_USB)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_USBPHY;
+    PeriphClkInitStruct.UsbPhyClockSelection = RCC_USBPHYCLKSOURCE_PLL1;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_RTC_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_RTC;
+    PeriphClkInitStruct.RTCClockSelection = MICROPY_HW_RCC_RTC_CLKSOURCE;
+    #endif
+
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
     }

@@ -126,7 +126,7 @@ General Methods
 
       - ``IRQ_ADDR_MATCH_READ`` indicates that the target was addressed by a
         controller for a read transaction.
-      - ``IRQ_ADDR_MATCH_READ`` indicates that the target was addressed by a
+      - ``IRQ_ADDR_MATCH_WRITE`` indicates that the target was addressed by a
         controller for a write transaction.
       - ``IRQ_READ_REQ`` indicates that the controller is requesting data, and this
         request must be satisfied by calling `I2CTarget.write` with the data to be
@@ -141,7 +141,7 @@ General Methods
 
    Note the following restrictions:
 
-      - ``IRQ_ADDR_MATCH_READ``, ``IRQ_ADDR_MATCH_READ``, ``IRQ_READ_REQ`` and
+      - ``IRQ_ADDR_MATCH_READ``, ``IRQ_ADDR_MATCH_WRITE``, ``IRQ_READ_REQ`` and
         ``IRQ_WRITE_REQ`` must be handled by a hard IRQ callback (with the *hard* argument
         set to ``True``).  This is because these events have very strict timing requirements
         and must usually be satisfied synchronously with the hardware event.

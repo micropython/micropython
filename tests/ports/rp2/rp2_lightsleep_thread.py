@@ -9,6 +9,7 @@ N_SLEEPS = 5
 SLEEP_MS = 250
 
 IDEAL_RUNTIME = N_SLEEPS * SLEEP_MS
+MIN_RUNTIME = 2 * SLEEP_MS
 MAX_RUNTIME = (N_SLEEPS + 1) * SLEEP_MS
 MAX_DELTA = 20
 
@@ -52,14 +53,17 @@ class LightSleepInThread(unittest.TestCase):
         # is unspecified.
         #
         # Currently, the other thread will return immediately if one is already
-        # in lightsleep. Therefore, runtime can be between IDEAL_RUNTIME and
-        # IDEAL_RUNTIME * 2 depending on how many times the calls to lightsleep() race
-        # each other.
+        # in lightsleep doing set up, or waking up.  When a thread is actually in the
+        # sleep section of lightsleep, the CPU clock is stopped and that also stops
+        # the other thread.  It's possible for the total sleep time of this test to
+        # be less than IDEAL_RUNTIME due to the order in which each thread gets to go
+        # to sleep first and whether the other thread is paused before or after it
+        # tries to enter lightsleep itself.
         #
         # Note this test case is really only here to ensure that the rp2 hasn't
         # hung or failed to sleep at all - not to verify any correct behaviour
         # when there's a race to call lightsleep().
-        self.assertGreaterEqual(self.elapsed_ms(), IDEAL_RUNTIME - MAX_DELTA)
+        self.assertGreaterEqual(self.elapsed_ms(), MIN_RUNTIME - MAX_DELTA)
         self.assertLessEqual(self.elapsed_ms(), IDEAL_RUNTIME * 2 + MAX_DELTA)
 
 

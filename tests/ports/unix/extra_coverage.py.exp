@@ -214,11 +214,17 @@ None
 None
 None
 None
+None
 b'123'
 b'123'
 b'123'
 OSError
 0
+# stream.readinto
+OSError True
+bytearray(b'123\x00')
+3 bytearray(b'123\x00')
+# stream textio
 None
 None
 cpp None
@@ -244,7 +250,7 @@ b'\x00\xff'
 frzmpy4 1
 frzmpy4 2
 NULL
-uPy
+interned
 a long string that is not interned
 a string that has unicode αβγ chars
 b'bytes 1234\x01'

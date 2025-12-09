@@ -1,8 +1,7 @@
 # Test ilistdir __del__ for VfsLittle using a RAM device.
-import gc
 
 try:
-    import vfs
+    import gc, vfs
 
     vfs.VfsLfs2
 except (ImportError, AttributeError):

@@ -75,3 +75,24 @@ except TypeError:
 
 # Unmount the VFS object.
 vfs.umount(fs)
+
+
+class EvilFilesystem:
+    def mount(self, readonly, mkfs):
+        print("mount", readonly, mkfs)
+
+    def umount(self):
+        print("umount")
+
+    def open(self, file, mode):
+        return None
+
+
+fs = EvilFilesystem()
+vfs.mount(fs, "/test_mnt")
+try:
+    execfile("/test_mnt/test.py")
+    print("ExecFile succeeded")
+except OSError:
+    print("OSError")
+vfs.umount(fs)

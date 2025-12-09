@@ -301,6 +301,10 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
                 lhs_val = MICROPY_FLOAT_CONST(1.0);
                 break;
             }
+            if (isnan(rhs_val)) {
+                lhs_val = rhs_val;
+                break;
+            }
             #endif
             lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
             break;

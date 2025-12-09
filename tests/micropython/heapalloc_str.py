@@ -1,5 +1,12 @@
 # String operations which don't require allocation
-import micropython
+
+try:
+    import micropython
+
+    micropython.heap_lock
+except (ImportError, AttributeError):
+    print("SKIP")
+    raise SystemExit
 
 micropython.heap_lock()
 

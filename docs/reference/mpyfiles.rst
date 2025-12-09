@@ -58,12 +58,14 @@ If importing an .mpy file fails then try the following:
     sys_mpy = sys.implementation._mpy
     arch = [None, 'x86', 'x64',
         'armv6', 'armv6m', 'armv7m', 'armv7em', 'armv7emsp', 'armv7emdp',
-        'xtensa', 'xtensawin', 'rv32imc'][sys_mpy >> 10]
+        'xtensa', 'xtensawin', 'rv32imc', 'rv64imc'][(sys_mpy >> 10) & 0x0F]
     print('mpy version:', sys_mpy & 0xff)
     print('mpy sub-version:', sys_mpy >> 8 & 3)
     print('mpy flags:', end='')
     if arch:
         print(' -march=' + arch, end='')
+    if (sys_mpy >> 16) != 0:
+        print(' -march-flags=' + (sys_mpy >> 16), end='')
     print()
 
 * Check the validity of the .mpy file by inspecting the first two bytes of
@@ -79,6 +81,10 @@ If importing an .mpy file fails then try the following:
 * Make sure you are using the correct ``mpy-cross`` flags, found by the code
   above, or by inspecting the ``MPY_CROSS_FLAGS`` Makefile variable for the
   port that you are using.
+
+* If the third byte of the .mpy file has bit #6 set, then check whether the
+  encoded architecture-specific flag bits vuint is compatible with the
+  target you're importing the file on.
 
 The following table shows the correspondence between MicroPython release
 and .mpy version.
@@ -153,9 +159,41 @@ size    field
 ======  ================================
 byte    value 0x4d (ASCII 'M')
 byte    .mpy major version number
-byte    native arch and minor version number (was feature flags in older versions)
+byte    feature flags, native arch, minor version number (was feature flags in older versions)
 byte    number of bits in a small int
 ======  ================================
+
+The third byte is split as follows (MSB first):
+
+======  ================================
+bit     meaning
+======  ================================
+7       reserved, must be 0
+6       an architecture-specific flags vuint follows the header
+5..2    native arch number
+1..0    minor version number
+======  ================================
+
+Architecture-specific flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If bit #6 of the header's feature flags byte is set, then a vuint containing
+optional architecture-specific information will follow the header. The contents
+of this integer depends on which native architecture the file is meant for.
+
+This is currently used to store which RISC-V processor extensions the MPY file
+needs to operate correctly besides I, M, C, and Zicsr.  Different flavours of
+ArmV7 are identified by their native architecture number, but reusing that
+mechanism would complicate things for RV32 and RV64.
+
+MPY files targeting RV32 or RV64 that do not need any particular processor
+extensions do not need to provide a flags integer (along with setting the
+appropriate bit in the header).  The lack of a flags value for RV32 and RV64
+MPY files is used to indicate that no specific extensions are needed, and saves
+one byte in the final output binary.
+
+See also the ``-march-flags`` command-line option in both ``mpy-tool.py`` and
+``mpy-cross`` to set this value when creating MPY files.
 
 The global qstr and constant tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

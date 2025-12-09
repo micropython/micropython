@@ -33,6 +33,11 @@
 
 #include "lwip/netif.h"
 
+// A board can customize the default PHY by defining this setting.
+#ifndef NETWORK_LAN_PHY
+#define NETWORK_LAN_PHY ETH_PHY_LAN8742
+#endif
+
 typedef struct _network_lan_obj_t {
     mp_obj_base_t base;
     eth_t *eth;
@@ -57,7 +62,7 @@ static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
     enum { ARG_phy_addr, ARG_phy_type};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phy_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_phy_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ETH_PHY_LAN8742} },
+        { MP_QSTR_phy_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NETWORK_LAN_PHY} },
     };
     // Parse args.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

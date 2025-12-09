@@ -26,12 +26,21 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
+#include <stdint.h>
+
+#if defined(__cplusplus) // Required on at least one compiler to get ULLONG_MAX
+#include <climits>
+#else
+#include <limits.h>
+#endif
+
+
 // Current version of MicroPython. This is used by sys.implementation.version
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 26
-#define MICROPY_VERSION_MICRO 1
+#define MICROPY_VERSION_MINOR 27
+#define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 0
 
 // Combined version as a 32-bit number for convenience to allow version
@@ -160,6 +169,78 @@
 #ifndef MICROPY_OBJ_IMMEDIATE_OBJS
 #define MICROPY_OBJ_IMMEDIATE_OBJS (MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D)
 #endif
+
+// Definition of the `mp_int_t` and `mp_uint_t` types and associated macros.
+// Normally, it suffices for the platform to do nothing: A type as wide
+// as a pointer is chosen, unless nanboxing (REPR_D) is selected, in
+// which case a 64-bit type is chosen to match the assumed size of
+// double-precision floats.
+//
+// In the case of exceptions, the port, board, or variant must define
+// MP_INT_TYPE as MP_INT_TYPE_OTHER and provide all the typedefs and
+// defines.
+#define MP_INT_TYPE_INTPTR (0)
+#define MP_INT_TYPE_INT64 (1)
+#define MP_INT_TYPE_OTHER (2)
+
+#if !defined(MP_INT_TYPE)
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+#define MP_INT_TYPE (MP_INT_TYPE_INT64)
+#else
+#define MP_INT_TYPE (MP_INT_TYPE_INTPTR)
+#endif
+#endif
+
+#if MP_INT_TYPE == MP_INT_TYPE_INTPTR
+typedef intptr_t mp_int_t;
+typedef uintptr_t mp_uint_t;
+#define MP_INT_MAX INTPTR_MAX
+#define MP_INT_MIN INTPTR_MIN
+#define MP_UINT_MAX INTPTR_UMAX
+#elif MP_INT_TYPE == MP_INT_TYPE_INT64
+typedef int64_t mp_int_t;
+typedef uint64_t mp_uint_t;
+#define MP_INT_MAX INT64_MAX
+#define MP_INT_MIN INT64_MIN
+#define MP_UINT_MAX INT64_UMAX
+#endif
+
+// mp_printf format support for mp_int_t. In the unusual case that MP_INT_MAX doesn't
+// match any of the standard C types (int/long/long long), provide all 3
+// macros. Otherwise, rely on these automatic definitions.
+#if !defined(INT_FMT)
+#if MP_INT_MAX == INT_MAX
+#define INT_FMT "%d"
+#define UINT_FMT "%u"
+#define HEX_FMT "%x"
+#elif MP_INT_MAX == LONG_MAX
+#define INT_FMT "%ld"
+#define UINT_FMT "%lu"
+#define HEX_FMT "%lx"
+#elif MP_INT_MAX == LLONG_MAX
+#define INT_FMT "%lld"
+#define UINT_FMT "%llu"
+#define HEX_FMT "%llx"
+#else
+#error Unexpected MP_INT_MAX value
+#endif
+#endif
+
+// mp_printf format support for size_t. In the unusual case that SIZE_MAX doesn't
+// match any of the standard C types (int/long/long long), provide a
+// macro. Otherwise, rely on these automatic definitions.
+#if !defined(SIZE_FMT)
+#if SIZE_MAX == UINT_MAX
+#define SIZE_FMT "%u"
+#elif SIZE_MAX == ULONG_MAX
+#define SIZE_FMT "%lu"
+#elif SIZE_MAX == ULLONG_MAX
+#define SIZE_FMT "%llu"
+#else
+#error Unexpected SIZE_MAX value
+#endif
+#endif
+
 
 /*****************************************************************************/
 /* Memory allocation policy                                                  */
@@ -419,6 +500,11 @@
 // Whether to emit RISC-V RV32 native code
 #ifndef MICROPY_EMIT_RV32
 #define MICROPY_EMIT_RV32 (0)
+#endif
+
+// Whether to emit RISC-V RV32 Zba opcodes in native code
+#ifndef MICROPY_EMIT_RV32_ZBA
+#define MICROPY_EMIT_RV32_ZBA (0)
 #endif
 
 // Whether to enable the RISC-V RV32 inline assembler
@@ -712,6 +798,13 @@
 #define MICROPY_STACK_CHECK_MARGIN (0)
 #endif
 
+// The size of a separate stack used for hard IRQ handlers, which should be
+// checked instead of the main stack when running a hard callback. 0 implies
+// there is no separate ISR stack to check.
+#ifndef MICROPY_STACK_SIZE_HARD_IRQ
+#define MICROPY_STACK_SIZE_HARD_IRQ (0)
+#endif
+
 // Whether to have an emergency exception buffer
 #ifndef MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
@@ -990,6 +1083,16 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_STREAMS_POSIX_API (0)
 #endif
 
+// Whether to process __all__ when importing all public symbols from a module.
+#ifndef MICROPY_MODULE___ALL__
+#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
+#endif
+
+// Whether to set __file__ on imported modules.
+#ifndef MICROPY_MODULE___FILE__
+#define MICROPY_MODULE___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
 // Whether modules can use MP_REGISTER_MODULE_DELEGATION() to delegate failed
 // attribute lookups to a custom handler function.
 #ifndef MICROPY_MODULE_ATTR_DELEGATION
@@ -1075,6 +1178,16 @@ typedef time_t mp_timestamp_t;
 // Whether to support mp_sched_vm_abort to asynchronously abort to the top level.
 #ifndef MICROPY_ENABLE_VM_ABORT
 #define MICROPY_ENABLE_VM_ABORT (0)
+#endif
+
+// Whether to handle abort behavior in pyexec code
+#ifndef MICROPY_PYEXEC_ENABLE_VM_ABORT
+#define MICROPY_PYEXEC_ENABLE_VM_ABORT (0)
+#endif
+
+// Whether to set exit codes according to the exit reason (keyboard interrupt, crash, normal exit, ...)
+#ifndef MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (0)
 #endif
 
 // Support for internal scheduler
@@ -1422,16 +1535,6 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_HELP_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to set __file__ for imported modules
-#ifndef MICROPY_PY___FILE__
-#define MICROPY_PY___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
-#endif
-
-// Whether to process __all__ when importing all public symbols from module
-#ifndef MICROPY_MODULE___ALL__
-#define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
-#endif
-
 // Whether to provide mem-info related functions in micropython module
 #ifndef MICROPY_PY_MICROPYTHON_MEM_INFO
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -1547,6 +1650,7 @@ typedef time_t mp_timestamp_t;
 #endif
 
 // Whether to provide fix for pow(1, NaN) and pow(NaN, 0), which both should be 1 not NaN.
+// Also fixes pow(base, NaN) to return NaN for other values of base.
 #ifndef MICROPY_PY_MATH_POW_FIX_NAN
 #define MICROPY_PY_MATH_POW_FIX_NAN (0)
 #endif
@@ -1601,9 +1705,16 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_STRUCT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether struct module provides unsafe and non-standard typecodes O, P, S.
+// These typecodes are not in CPython and can cause crashes by accessing arbitrary
+// memory.
+#ifndef MICROPY_PY_STRUCT_UNSAFE_TYPECODES
+#define MICROPY_PY_STRUCT_UNSAFE_TYPECODES (1)
+#endif
+
 // Whether to provide "sys" module
 #ifndef MICROPY_PY_SYS
-#define MICROPY_PY_SYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#define MICROPY_PY_SYS (1)
 #endif
 
 // Whether to initialise "sys.path" and "sys.argv" to their defaults in mp_init()
@@ -1853,11 +1964,11 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_MD5
-#define MICROPY_PY_HASHLIB_MD5 (0)
+#define MICROPY_PY_HASHLIB_MD5 (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA1
-#define MICROPY_PY_HASHLIB_SHA1  (0)
+#define MICROPY_PY_HASHLIB_SHA1  (MICROPY_PY_SSL)
 #endif
 
 #ifndef MICROPY_PY_HASHLIB_SHA256
@@ -1865,7 +1976,7 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #ifndef MICROPY_PY_CRYPTOLIB
-#define MICROPY_PY_CRYPTOLIB (0)
+#define MICROPY_PY_CRYPTOLIB (MICROPY_PY_SSL)
 #endif
 
 // Depends on MICROPY_PY_CRYPTOLIB
@@ -2079,7 +2190,7 @@ typedef time_t mp_timestamp_t;
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
-// All uPy objects in ROM must be aligned on at least a 4 byte boundary
+// All MicroPython objects in ROM must be aligned on at least a 4 byte boundary
 // so that the small-int/qstr/pointer distinction can be made.  For machines
 // that don't do this (eg 16-bit CPU), define the following macro to something
 // like __attribute__((aligned(4))).
@@ -2217,25 +2328,6 @@ typedef time_t mp_timestamp_t;
 #define MP_SSIZE_MAX SSIZE_MAX
 #endif
 
-// printf format spec to use for mp_int_t and friends
-#ifndef INT_FMT
-#if defined(__LP64__)
-// Archs where mp_int_t == long, long != int
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
-#define HEX_FMT "%lx"
-#elif defined(_WIN64)
-#define UINT_FMT "%llu"
-#define INT_FMT "%lld"
-#define HEX_FMT "%llx"
-#else
-// Archs where mp_int_t == int
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-#define HEX_FMT "%x"
-#endif
-#endif // INT_FMT
-
 // Modifier for function which doesn't return
 #ifndef MP_NORETURN
 #define MP_NORETURN __attribute__((noreturn))
@@ -2315,6 +2407,25 @@ typedef time_t mp_timestamp_t;
 #else
 #undef MP_WARN_CAT
 #define MP_WARN_CAT(x) (NULL)
+#endif
+
+// If true, use __builtin_mul_overflow (a gcc intrinsic supported by clang) for
+// overflow checking when multiplying two small ints. Otherwise, use a portable
+// algorithm.
+//
+// Most MCUs have a 32x32->64 bit multiply instruction, in which case the
+// intrinsic is likely to be faster and generate smaller code. The main exception is
+// cortex-m0 with __ARM_ARCH_ISA_THUMB == 1.
+//
+// The intrinsic is in GCC starting with version 5.
+#ifndef MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+#if defined(__ARM_ARCH_ISA_THUMB) && (__GNUC__ >= 5)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (__ARM_ARCH_ISA_THUMB >= 2)
+#elif (__GNUC__ >= 5)
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (1)
+#else
+#define MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC (0)
+#endif
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

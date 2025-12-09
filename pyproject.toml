@@ -22,12 +22,21 @@ ACKNOWLEDGEMENTS,\
 
 [tool.ruff]
 # Exclude third-party code from linting and formatting
-extend-exclude = ["lib"]
+extend-exclude = [
+  "lib",
+  "esp-idf",
+  "pico-sdk",
+  "emsdk",
+  "tests/cpydiff/syntax_assign_expr.py" # intentionally incorrect CPython code
+]
+# Include Python source files that don't end with .py
+extend-include = ["tools/cc1"]
 line-length = 99
-target-version = "py37"
+target-version = "py38"
 
 [tool.ruff.lint]
 exclude = [  # Ruff finds Python SyntaxError in these files
+  "tests/cmdline/cmd_compile_only_error.py",
   "tests/cmdline/repl_autocomplete.py",
   "tests/cmdline/repl_autocomplete_underscore.py",
   "tests/cmdline/repl_autoindent.py",
@@ -41,7 +50,7 @@ exclude = [  # Ruff finds Python SyntaxError in these files
   "tests/micropython/viper_args.py",
 ]
 extend-select = ["C9", "PLC"]
-ignore = [
+extend-ignore = [
   "E401",
   "E402",
   "E722",
@@ -51,6 +60,7 @@ ignore = [
   "F403",
   "F405",
   "PLC0206",
+  "PLC0415", # conditional imports are common in MicroPython
 ]
 mccabe.max-complexity = 40
 
@@ -61,10 +71,18 @@ mccabe.max-complexity = 40
 # manifest.py files are evaluated with some global names pre-defined
 "**/manifest.py" = ["F821"]
 "ports/**/boards/**/manifest_*.py" = ["F821"]
+# Uses assignment expressions.
+"tests/cpydiff/syntax_assign_expr.py" = ["F821"]
 
 [tool.ruff.format]
 # Exclude third-party code, and exclude the following tests:
 #   basics: needs careful attention before applying automatic formatting
 #   repl_: not real python files
 #   viper_args: uses f(*)
-exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py"]
+exclude = [
+  "tests/basics/*.py",
+  "tests/*/repl_*.py",
+  "tests/cmdline/cmd_compile_only_error.py",
+  "tests/micropython/test_normalize_newlines.py",
+  "tests/micropython/viper_args.py",
+]

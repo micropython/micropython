@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_MISC_H
 #define MICROPY_INCLUDED_PY_MISC_H
 
+#include "py/mpconfig.h"
+
 // a mini library of useful types and functions
 
 /** types *******************************************************/
@@ -33,7 +35,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#if __cplusplus // Required on at least one compiler to get ULLONG_MAX
+#include <climits>
+#else
 #include <limits.h>
+#endif
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -41,6 +47,11 @@ typedef unsigned int uint;
 #ifndef __has_builtin
 #define __has_builtin(x) (0)
 #endif
+#ifndef __has_feature
+// This macro is supported by Clang and gcc>=14
+#define __has_feature(x) (0)
+#endif
+
 
 /** generic ops *************************************************/
 
@@ -56,7 +67,14 @@ typedef unsigned int uint;
 #define MP_STRINGIFY(x) MP_STRINGIFY_HELPER(x)
 
 // Static assertion macro
+#if __cplusplus
+#define MP_STATIC_ASSERT(cond) static_assert((cond), #cond)
+#elif __GNUC__ >= 5 || __STDC_VERSION__ >= 201112L
+#define MP_STATIC_ASSERT(cond) _Static_assert((cond), #cond)
+#else
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
+#endif
+
 // In C++ things like comparing extern const pointers are not constant-expressions so cannot be used
 // in MP_STATIC_ASSERT. Note that not all possible compiler versions will reject this. Some gcc versions
 // do, others only with -Werror=vla, msvc always does.
@@ -65,7 +83,10 @@ typedef unsigned int uint;
 #if defined(_MSC_VER) || defined(__cplusplus)
 #define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)1)
 #else
-#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) MP_STATIC_ASSERT(cond)
+#if __clang__
+#pragma GCC diagnostic ignored "-Wgnu-folding-constant"
+#endif
+#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
 #endif
 
 // Round-up integer division
@@ -435,19 +456,19 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     }
     return zeroes;
     #else
-    MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
-        || sizeof(mp_int_t) == sizeof(long));
-
-    // ugly, but should compile to single intrinsic unless O0 is set
-    if (mp_check(sizeof(mp_int_t) == sizeof(long))) {
-        return mp_clzl((unsigned long)x);
-    } else {
-        return mp_clzll((unsigned long long)x);
-    }
+    #if MP_INT_MAX == INT_MAX
+    return mp_clz((unsigned)x);
+    #elif MP_INT_MAX == LONG_MAX
+    return mp_clzl((unsigned long)x);
+    #elif MP_INT_MAX == LLONG_MAX
+    return mp_clzll((unsigned long long)x);
+    #else
+    #error Unexpected MP_INT_MAX value
+    #endif
     #endif
 }
 
-// Overflow-checked operations for long long
+// Overflow-checked operations
 
 // Integer overflow builtins were added to GCC 5, but __has_builtin only in GCC 10
 //
@@ -455,51 +476,34 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
 // functions below don't update the result if an overflow would occur (to avoid UB).
 #define MP_GCC_HAS_BUILTIN_OVERFLOW (__GNUC__ >= 5)
 
-#if __has_builtin(__builtin_umulll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+#if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+
 #define mp_mul_ull_overflow __builtin_umulll_overflow
+#define mp_mul_ll_overflow __builtin_smulll_overflow
+static inline bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
+    // __builtin_mul_overflow is a type-generic function, this inline ensures the argument
+    // types are checked to match mp_int_t.
+    return __builtin_mul_overflow(x, y, res);
+}
+
 #else
-inline static bool mp_mul_ull_overflow(unsigned long long int x, unsigned long long int y, unsigned long long int *res) {
+
+bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res);
+bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res);
+static inline bool mp_mul_ull_overflow(unsigned long long int x, unsigned long long int y, unsigned long long int *res) {
     if (y > 0 && x > (ULLONG_MAX / y)) {
         return true; // overflow
     }
     *res = x * y;
     return false;
 }
-#endif
 
-#if __has_builtin(__builtin_smulll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
-#define mp_mul_ll_overflow __builtin_smulll_overflow
-#else
-inline static bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res) {
-    bool overflow;
-
-    // Check for multiply overflow; see CERT INT32-C
-    if (x > 0) { // x is positive
-        if (y > 0) { // x and y are positive
-            overflow = (x > (LLONG_MAX / y));
-        } else { // x positive, y nonpositive
-            overflow = (y < (LLONG_MIN / x));
-        } // x positive, y nonpositive
-    } else { // x is nonpositive
-        if (y > 0) { // x is nonpositive, y is positive
-            overflow = (x < (LLONG_MIN / y));
-        } else { // x and y are nonpositive
-            overflow = (x != 0 && y < (LLONG_MAX / x));
-        } // End if x and y are nonpositive
-    } // End if x is nonpositive
-
-    if (!overflow) {
-        *res = x * y;
-    }
-
-    return overflow;
-}
 #endif
 
 #if __has_builtin(__builtin_saddll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
 #define mp_add_ll_overflow __builtin_saddll_overflow
 #else
-inline static bool mp_add_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+static inline bool mp_add_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
     bool overflow;
 
     if (rhs > 0) {
@@ -519,7 +523,7 @@ inline static bool mp_add_ll_overflow(long long int lhs, long long int rhs, long
 #if __has_builtin(__builtin_ssubll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
 #define mp_sub_ll_overflow __builtin_ssubll_overflow
 #else
-inline static bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+static inline bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
     bool overflow;
 
     if (rhs > 0) {
@@ -534,6 +538,25 @@ inline static bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long
 
     return overflow;
 }
+#endif
+
+
+// Helper macros for detecting if sanitizers are enabled
+//
+// Use sparingly, not for masking issues reported by sanitizers!
+//
+// Can be detected automatically in Clang and gcc>=14, need to be
+// set manually otherwise.
+#ifndef MP_UBSAN
+#define MP_UBSAN __has_feature(undefined_behavior_sanitizer)
+#endif
+
+#ifndef MP_ASAN
+#define MP_ASAN __has_feature(address_sanitizer)
+#endif
+
+#ifndef MP_SANITIZER_BUILD
+#define MP_SANITIZER_BUILD (MP_UBSAN || MP_ASAN)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

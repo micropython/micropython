@@ -23,5 +23,8 @@
     "product": "Thing Plus RP2350",
     "thumbnail": "",
     "url": "https://www.sparkfun.com/products/25134",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
     "vendor": "SparkFun"
 }

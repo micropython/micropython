@@ -160,7 +160,6 @@
 #include "stm32n6xx_hal_dcmipp.h"
 #include "stm32n6xx_hal_dma2d.h"
 #include "stm32n6xx_hal_dts.h"
-#include "stm32n6xx_hal_eth.h"
 #include "stm32n6xx_hal_exti.h"
 #include "stm32n6xx_hal_fdcan.h"
 #include "stm32n6xx_hal_gfxmmu.h"

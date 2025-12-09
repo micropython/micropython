@@ -12,23 +12,7 @@ except (ImportError, AttributeError):
     raise SystemExit
 
 import time, sys
-
-# Configure pins based on the target.
-if "esp32" in sys.platform:
-    _machine = sys.implementation._machine
-    if "ESP32S2" in _machine or "ESP32C3" in _machine or "ESP32C6" in _machine:
-        print("SKIP")
-        raise SystemExit
-    uart_id = 1
-    tx_pin = 4
-    rx_pin = 5
-elif "rp2" in sys.platform:
-    uart_id = 0
-    tx_pin = "GPIO0"
-    rx_pin = "GPIO1"
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
+from target_wiring import uart_loopback_args, uart_loopback_kwargs
 
 
 def irq(u):
@@ -37,7 +21,7 @@ def irq(u):
 
 # Test that the IRQ is called for each break received.
 for bits_per_s in (2400, 9600, 57600):
-    uart = UART(uart_id, bits_per_s, tx=tx_pin, rx=rx_pin)
+    uart = UART(*uart_loopback_args, baudrate=bits_per_s, **uart_loopback_kwargs)
     uart.irq(irq, uart.IRQ_BREAK)
 
     print("write", bits_per_s)

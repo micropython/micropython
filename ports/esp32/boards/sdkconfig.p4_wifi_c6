@@ -1,0 +1,2 @@
+# Most settings are in sdkconfig.p4_wifi_common
+CONFIG_SLAVE_IDF_TARGET_ESP32C6=y

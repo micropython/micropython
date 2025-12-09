@@ -120,6 +120,7 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
+#define MICROPY_STACK_CHECK_MARGIN  (400)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_INFO           (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
@@ -264,6 +265,7 @@
 #define MICROPY_ERROR_REPORTING               (2)
 #define MICROPY_FULL_CHECKS                   (1)
 #define MICROPY_GC_ALLOC_THRESHOLD            (1)
+#define MICROPY_MODULE___FILE__               (1)
 #define MICROPY_MODULE_GETATTR                (1)
 #define MICROPY_MULTIPLE_INHERITANCE          (1)
 #define MICROPY_PY_ARRAY                      (1)
@@ -288,9 +290,7 @@
 #define MICROPY_PY_GENERATOR_PEND_THROW       (1)
 #define MICROPY_PY_MATH                       (1)
 #define MICROPY_PY_STRUCT                     (1)
-#define MICROPY_PY_SYS                        (1)
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS     (1)
-#define MICROPY_PY___FILE__                   (1)
 #endif
 
 #ifndef MICROPY_PY_UBLUEPY
@@ -337,8 +337,6 @@ void *nrf_native_code_commit(void *, unsigned int, void *);
 
 #define HEX2_FMT "%02x"
 
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #if MICROPY_HW_ENABLE_RNG

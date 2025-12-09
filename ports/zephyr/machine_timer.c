@@ -27,9 +27,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
@@ -51,6 +53,7 @@ typedef struct _machine_timer_obj_t {
     uint32_t period_ms;
 
     mp_obj_t callback;
+    bool ishard;
 
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
@@ -62,11 +65,14 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 
 static void machine_timer_callback(struct k_timer *timer) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)k_timer_user_data_get(timer);
+
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception; disable the callback so it doesn't run again.
+        self->mode = TIMER_MODE_ONE_SHOT;
+    }
+
     if (self->mode == TIMER_MODE_ONE_SHOT) {
         machine_timer_deinit(self);
-    }
-    if (self->callback != mp_const_none) {
-        mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
     }
 }
 
@@ -109,6 +115,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         ARG_callback,
         ARG_period,
         ARG_freq,
+        ARG_hard,
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_PERIODIC} },
@@ -119,6 +126,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         #else
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         #endif
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -139,6 +147,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 
     self->mode = args[ARG_mode].u_int;
     self->callback = args[ARG_callback].u_obj;
+    self->ishard = args[ARG_hard].u_bool;
 
     k_timer_init(&self->my_timer, machine_timer_callback, NULL);
     k_timer_user_data_set(&self->my_timer, self);
