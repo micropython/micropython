@@ -17,3 +17,6 @@ endif
 MICROPY_PY_BLUETOOTH = 1
 MICROPY_BLUETOOTH_NIMBLE = 1
 MICROPY_VFS_LFS2 = 1
+
+# Board specific version of the frozen manifest
+FROZEN_MANIFEST = $(BOARD_DIR)/manifest.py
