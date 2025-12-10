@@ -41,6 +41,7 @@ options for the ``ARCH`` variable, see below):
 * ``xtensa`` (non-windowed, eg ESP8266)
 * ``xtensawin`` (windowed with window size 8, eg ESP32, ESP32S3)
 * ``rv32imc`` (RISC-V 32 bits with compressed instructions, eg ESP32C3, ESP32C6)
+* ``rv64imc`` (RISC-V 64 bits with compressed instructions)
 
 When compiling and linking the native .mpy file the architecture must be chosen
 and the corresponding file can only be imported on that architecture.  For more
@@ -190,7 +191,7 @@ The file ``Makefile`` contains:
     # Source files (.c or .py)
     SRC = factorial.c
 
-    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc)
+    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc, rv64imc)
     ARCH = x64
 
     # Include to get the rules for compiling and linking the module
@@ -232,15 +233,15 @@ Using Picolibc when building modules
 ------------------------------------
 
 Using `Picolibc <https://github.com/picolibc/picolibc>`_ as your C standard
-library is not only supported, but in fact it is the default for the rv32imc
-platform.  However, there are a couple of things worth mentioning to make sure
-you don't run into problems later when building code.
+library is not only supported, but in fact it is the default for the rv32imc and
+rv64imc platforms.  However, there are a couple of things worth mentioning to make
+sure you don't run into problems later when building code.
 
 Some pre-built Picolibc versions (for example, those provided by Ubuntu Linux
 as the ``picolibc-arm-none-eabi``, ``picolibc-riscv64-unknown-elf``, and
 ``picolibc-xtensa-lx106-elf`` packages) assume thread-local storage (TLS) is
 available at runtime, but unfortunately MicroPython modules do not support that
-on some architectures (namely ``rv32imc``).  This means that some
+on some architectures (namely ``rv32imc`` and ``rv64imc``).  This means that some
 functionalities provided by Picolibc will default to use TLS, returning an
 error either during compilation or during linking.
 

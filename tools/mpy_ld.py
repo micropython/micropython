@@ -49,6 +49,7 @@ MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_NATIVE_ARCH_RV32IMC = 11
+MP_NATIVE_ARCH_RV64IMC = 12
 MP_PERSISTENT_OBJ_STR = 5
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
@@ -62,6 +63,7 @@ R_RISCV_32 = 1
 R_X86_64_64 = 1
 R_XTENSA_32 = 1
 R_386_PC32 = 2
+R_RISCV_64 = 2
 R_X86_64_PC32 = 2
 R_ARM_ABS32 = 2
 R_386_GOT32 = 3
@@ -175,7 +177,7 @@ def asm_jump_xtensa(entry):
     return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
 
 
-def asm_jump_rv32(entry):
+def asm_jump_riscv(entry):
     # This could be 6 bytes shorter, but the code currently cannot
     # support a trampoline with varying length depending on the offset.
 
@@ -261,7 +263,14 @@ ARCH_DATA = {
         MP_NATIVE_ARCH_RV32IMC << 2,
         4,
         (R_RISCV_32, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
-        asm_jump_rv32,
+        asm_jump_riscv,
+    ),
+    "rv64imc": ArchData(
+        "EM_RISCV",
+        MP_NATIVE_ARCH_RV64IMC << 2,
+        8,
+        (R_RISCV_64, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
+        asm_jump_riscv,
     ),
 }
 
@@ -778,7 +787,7 @@ def do_relocation_data(env, text_addr, r):
         or env.arch.name == "EM_XTENSA"
         and r_info_type == R_XTENSA_32
         or env.arch.name == "EM_RISCV"
-        and r_info_type == R_RISCV_32
+        and r_info_type in (R_RISCV_32, R_RISCV_64)
     ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
@@ -829,10 +838,10 @@ RISCV_RELOCATIONS_TYPE_MAP = {
     R_RISCV_SUB16: ("riscv_addsub", "<H", 16, -1),
     R_RISCV_SUB32: ("riscv_addsub", "<I", 32, -1),
     R_RISCV_SUB64: ("riscv_addsub", "<Q", 64, -1),
-    R_RISCV_SET6: ("riscv_set6", "B", 6),
-    R_RISCV_SET8: ("riscv_set8", "B", 8),
-    R_RISCV_SET16: ("riscv_set16", "<H", 16),
-    R_RISCV_SET32: ("riscv_set32", "<I", 32),
+    R_RISCV_SET6: ("riscv_set", "B", 6),
+    R_RISCV_SET8: ("riscv_set", "B", 8),
+    R_RISCV_SET16: ("riscv_set", "<H", 16),
+    R_RISCV_SET32: ("riscv_set", "<I", 32),
     R_RISCV_JAL: "riscv_j",
     R_RISCV_BRANCH: "riscv_b",
     R_RISCV_RVC_BRANCH: "riscv_cb",
@@ -876,7 +885,7 @@ def process_riscv32_relocation(env, text_addr, r):
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
         value = addr + r_addend - r_offset
-        reloc_type = "riscv_set32"
+        reloc_type, *reloc_args = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
 
     elif r_info_type == R_RISCV_PCREL_HI20:
         addr = s.section.addr + s["st_value"]
