@@ -247,6 +247,9 @@ platform_tests_to_skip = {
         "thread/stress_heap.py",
         "thread/thread_lock3.py",
     ),
+    "esp8266": (
+        "stress/list_sort.py",  # watchdog kicks in because it takes too long
+    ),
 }
 
 # These tests don't test float explicitly but rather use it to perform the test.
