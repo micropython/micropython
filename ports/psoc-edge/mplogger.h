@@ -32,5 +32,10 @@
 // macro to pipe debug messages to console in LOGGER DEBUG MODE
 // TODO: Since this is an expensive function call when  LOGGER DEBUG mode is not activated,
 // a rework of this function needed similar to MPY's built-in debug message handler DEBUG_print()
-#define mplogger_print(...) \
-    do { if (MICROPY_LOGGER_DEBUG) mp_printf(&mp_plat_print, __VA_ARGS__); } while (0)
+// Conditional debug logging macro
+// Enable/disable with MICROPY_LOGGER_DEBUG in mpconfigport.h
+#if MICROPY_LOGGER_DEBUG
+#define mplogger_print(...) mp_printf(__VA_ARGS__)
+#else
+#define mplogger_print(...) // No-op when debug is disabled
+#endif
