@@ -33,10 +33,21 @@
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
 #include "soc/timer_periph.h"
+#include "esp_timer.h"
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
 
+    // Timer type; virtual or hardware
+    bool is_virtual;
+
+    // Virtual timer specific fields
+    //  - vtimer is memory allocated esp32 timer
+    //  - v_start_tick is used to return time until next event
+    esp_timer_handle_t vtimer;
+    int64_t v_start_tick;
+
+    // ESP32 specific fields
     timer_hal_context_t hal_context;
     mp_uint_t group;
     mp_uint_t index;
@@ -45,18 +56,21 @@ typedef struct _machine_timer_obj_t {
     // ESP32 timers are 64-bit
     uint64_t period;
 
+    // User callback to be invoked when timer expires
     mp_obj_t callback;
 
+    // Interrupt related callbacks and state
     intr_handle_t handle;
     void (*handler)(struct _machine_timer_obj_t *timer);
 
+    // Pointer to next timer in linked list of active timers
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
 
-machine_timer_obj_t *machine_timer_create(mp_uint_t timer);
+// Externalize machine timer for use elsewhere in board support
+machine_timer_obj_t *machine_timer_create(mp_int_t timer);
 void machine_timer_enable(machine_timer_obj_t *self);
 void machine_timer_disable(machine_timer_obj_t *self);
-
 uint32_t machine_timer_freq_hz(void);
 
 #endif // MICROPY_INCLUDED_ESP32_MACHINE_TIMER_H
