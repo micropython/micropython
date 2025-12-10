@@ -221,6 +221,8 @@ void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
 #define ASM_STORE32_REG_REG(as, reg_src, reg_base) ASM_STORE32_REG_REG_OFFSET((as), (reg_src), (reg_base), 0)
 #define ASM_STORE32_REG_REG_OFFSET(as, reg_src, reg_base, dword_offset) asm_x64_mov_r32_to_mem32((as), (reg_src), (reg_base), 4 * (dword_offset))
 
+#define ASM_CLR_REG(as, reg_dest) asm_x64_xor_r64_r64((as), (reg_dest), (reg_dest))
+
 #endif // GENERIC_ASM_API
 
 #endif // MICROPY_INCLUDED_PY_ASMX64_H
