@@ -16,6 +16,11 @@ if "esp32" in sys.platform:
     id = 0
     out_pin = 4
     in_pin = 5
+elif sys.platform == "mimxrt":
+    if "Teensy" in sys.implementation._machine:
+        id = 0
+        out_pin = "D2"
+        in_pin = "D3"
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
@@ -43,6 +48,7 @@ class TestCounter(unittest.TestCase):
     def assertCounter(self, value):
         self.assertEqual(self.counter.value(), value)
 
+    @unittest.skipIf(sys.platform == "mimxrt", "cannot read back the pin")
     def test_connections(self):
         # Test the hardware connections are correct. If this test fails, all tests will fail.
         out_pin(1)
@@ -73,6 +79,7 @@ class TestCounter(unittest.TestCase):
         toggle(25)
         self.assertCounter(75)
 
+    @unittest.skipIf(sys.platform == "mimxrt", "FALLING edge not supported")
     def test_count_falling(self):
         self.counter.init(in_pin, direction=Counter.UP, edge=Counter.FALLING)
         toggle(20)
