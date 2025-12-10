@@ -46,12 +46,16 @@ class RAMBlockDevice:
 try:
     bdev = RAMBlockDevice(50)
 except MemoryError:
-    print("SKIP")
+    print("SKIP-TOO-LARGE")
     raise SystemExit
 
 
-def test(vfs_class):
-    print(vfs_class)
+ERROR_EIO = (OSError, "[Errno 5] EIO")
+ERROR_EINVAL = (OSError, "[Errno 22] EINVAL")
+ERROR_TYPE = (TypeError, "can't convert str to int")
+
+
+def test(vfs_class, test_data):
     bdev.read_res = 0  # reset function results
     bdev.write_res = 0
 
@@ -61,17 +65,15 @@ def test(vfs_class):
     with fs.open("test", "w") as f:
         f.write("a" * 64)
 
-    for res in (0, -5, 5, 33, "invalid"):
-        # -5 is a legitimate negative failure (EIO), positive integer
-        # is not
-
+    for res, error_open, error_read in test_data:
         # This variant will fail on open
         bdev.read_res = res
         try:
             with fs.open("test", "r") as f:
-                print("opened")
+                assert error_open is None
         except Exception as e:
-            print(type(e), e)
+            assert error_open is not None
+            assert (type(e), str(e)) == error_open
 
         # This variant should succeed on open, may fail on read
         # unless the filesystem cached the contents already
@@ -79,11 +81,35 @@ def test(vfs_class):
         try:
             with fs.open("test", "r") as f:
                 bdev.read_res = res
-                print("read 1", f.read(1))
-                print("read rest", f.read())
+                assert f.read(1) == "a"
+                assert f.read() == "a" * 63
+                assert error_read is None
         except Exception as e:
-            print(type(e), e)
+            assert error_read is not None
+            assert (type(e), str(e)) == error_read
 
 
-test(vfs.VfsLfs2)
-test(vfs.VfsFat)
+try:
+    test(
+        vfs.VfsLfs2,
+        (
+            (0, None, None),
+            (-5, ERROR_EIO, None),
+            (5, ERROR_EINVAL, None),
+            (33, ERROR_EINVAL, None),
+            ("invalid", ERROR_TYPE, None),
+        ),
+    )
+    test(
+        vfs.VfsFat,
+        (
+            (0, None, None),
+            (-5, ERROR_EIO, ERROR_EIO),
+            (5, ERROR_EIO, ERROR_EIO),
+            (33, ERROR_EIO, ERROR_EIO),
+            ("invalid", ERROR_TYPE, ERROR_TYPE),
+        ),
+    )
+    print("OK")
+except MemoryError:
+    print("SKIP-TOO-LARGE")
