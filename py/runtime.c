@@ -1229,7 +1229,12 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("no such attribute"));
         #else
         // following CPython, we give a more detailed error message for type objects
+        #if MICROPY_METACLASS
+        // With metaclass support, base may be an instance of a custom metaclass
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(base)), MP_OBJ_FROM_PTR(&mp_type_type))) {
+        #else
         if (mp_obj_is_type(base, &mp_type_type)) {
+            #endif
             mp_raise_msg_varg(&mp_type_AttributeError,
                 MP_ERROR_TEXT("type object '%q' has no attribute '%q'"),
                 ((mp_obj_type_t *)MP_OBJ_TO_PTR(base))->name, attr);
