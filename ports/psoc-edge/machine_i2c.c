@@ -41,7 +41,6 @@
 #include "cy_scb_i2c.h"
 #include "cy_sysint.h"
 #include "cy_sysclk.h"
-#include "mtb_hal_i2c.h"
 
 
 // port-specific includes
@@ -62,12 +61,9 @@ typedef struct _machine_hw_i2c_obj_t {
     uint32_t scl_pin;
     uint32_t sda_pin;
     uint32_t freq;                 // Configured frequency
-    mtb_hal_i2c_t hal_obj;         // HAL I2C object for setup
+    cy_stc_scb_i2c_config_t cfg;   // PDL I2C configuration
+    cy_stc_scb_i2c_context_t ctx;  // PDL I2C runtime context
 } machine_hw_i2c_obj_t;
-
-// Static configuration and context for each I2C instance
-static cy_stc_scb_i2c_config_t machine_hw_i2c_cfg[MAX_I2C];
-static cy_stc_scb_i2c_context_t machine_hw_i2c_ctx[MAX_I2C];
 
 machine_hw_i2c_obj_t *machine_hw_i2c_obj[MAX_I2C] = { NULL };
 
@@ -78,7 +74,7 @@ static void machine_i2c_isr(void) {
     for (uint8_t i = 0; i < MAX_I2C; i++) {
         if (machine_hw_i2c_obj[i] != NULL) {
             // Call I2C master interrupt handler (more efficient than generic Cy_SCB_I2C_Interrupt)
-            Cy_SCB_I2C_MasterInterrupt(MICROPY_HW_I2C0_SCB, &machine_hw_i2c_ctx[i]);
+            Cy_SCB_I2C_MasterInterrupt(MICROPY_HW_I2C0_SCB, &machine_hw_i2c_obj[i]->ctx);
         }
     }
 }
@@ -113,17 +109,8 @@ static inline void machine_hw_i2c_obj_free(machine_hw_i2c_obj_t *i2c_obj_ptr) {
 static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     cy_rslt_t result;
 
-    // Get I2C instance ID
-    uint8_t i2c_id = 0;
-    for (uint8_t i = 0; i < MAX_I2C; i++) {
-        if (machine_hw_i2c_obj[i] == self) {
-            i2c_id = i;
-            break;
-        }
-    }
-
     // 1. Populate I2C master configuration structure (following PDL example)
-    const cy_stc_scb_i2c_config_t i2cConfig = {
+    self->cfg = (cy_stc_scb_i2c_config_t) {
         .i2cMode = CY_SCB_I2C_MASTER,
         .useRxFifo = false,
         .useTxFifo = true,
@@ -137,9 +124,6 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
         .highPhaseDutyCycle = 8U,
     };
 
-    // Save to static array
-    machine_hw_i2c_cfg[i2c_id] = i2cConfig;
-
     // 2. Configure pins for I2C operation
     Cy_GPIO_SetHSIOM(GPIO_PRT17, self->scl_pin, P17_0_SCB5_I2C_SCL);
     Cy_GPIO_SetHSIOM(GPIO_PRT17, self->sda_pin, P17_1_SCB5_I2C_SDA);
@@ -147,7 +131,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     Cy_GPIO_SetDrivemode(GPIO_PRT17, self->sda_pin, CY_GPIO_DM_OD_DRIVESLOW);
 
     // 3. Initialize I2C with PDL (configure I2C to operate)
-    result = Cy_SCB_I2C_Init(MICROPY_HW_I2C0_SCB, &machine_hw_i2c_cfg[i2c_id], &machine_hw_i2c_ctx[i2c_id]);
+    result = Cy_SCB_I2C_Init(MICROPY_HW_I2C0_SCB, &self->cfg, &self->ctx);
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C init failed: 0x%lx"), result);
     }
@@ -207,17 +191,8 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 static int machine_hw_i2c_deinit(mp_obj_base_t *self_in) {
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // Get I2C instance ID
-    uint8_t i2c_id = 0;
-    for (uint8_t i = 0; i < MAX_I2C; i++) {
-        if (machine_hw_i2c_obj[i] == self) {
-            i2c_id = i;
-            break;
-        }
-    }
-
     // Disable I2C operation
-    Cy_SCB_I2C_Disable(MICROPY_HW_I2C0_SCB, &machine_hw_i2c_ctx[i2c_id]);
+    Cy_SCB_I2C_Disable(MICROPY_HW_I2C0_SCB, &self->ctx);
 
     // Disable interrupt in NVIC
     NVIC_DisableIRQ(scb_5_interrupt_IRQn);
@@ -235,15 +210,6 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result;
 
-    // Get I2C instance ID
-    uint8_t i2c_id = 0;
-    for (uint8_t i = 0; i < MAX_I2C; i++) {
-        if (machine_hw_i2c_obj[i] == self) {
-            i2c_id = i;
-            break;
-        }
-    }
-
     mp_printf(&mp_plat_print, "I2C Transfer: addr=0x%02X, len=%u, flags=0x%02X (%s)\n",
         addr, len, flags, (flags & MP_MACHINE_I2C_FLAG_READ) ? "READ" : "WRITE");
 
@@ -258,10 +224,10 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     // Initiate read or write transaction (non-blocking)
     if (flags & MP_MACHINE_I2C_FLAG_READ) {
         // Initiate read transaction
-        result = Cy_SCB_I2C_MasterRead(MICROPY_HW_I2C0_SCB, &transfer, &machine_hw_i2c_ctx[i2c_id]);
+        result = Cy_SCB_I2C_MasterRead(MICROPY_HW_I2C0_SCB, &transfer, &self->ctx);
     } else {
         // Initiate write transaction
-        result = Cy_SCB_I2C_MasterWrite(MICROPY_HW_I2C0_SCB, &transfer, &machine_hw_i2c_ctx[i2c_id]);
+        result = Cy_SCB_I2C_MasterWrite(MICROPY_HW_I2C0_SCB, &transfer, &self->ctx);
     }
 
     if (result != CY_RSLT_SUCCESS) {
@@ -274,7 +240,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     // Wait for transaction completion
     // The interrupt handler (Cy_SCB_I2C_MasterInterrupt) processes the transaction
     uint32_t timeout = 100000;  // Timeout counter
-    while (0UL != (CY_SCB_I2C_MASTER_BUSY & Cy_SCB_I2C_MasterGetStatus(MICROPY_HW_I2C0_SCB, &machine_hw_i2c_ctx[i2c_id]))) {
+    while (0UL != (CY_SCB_I2C_MASTER_BUSY & Cy_SCB_I2C_MasterGetStatus(MICROPY_HW_I2C0_SCB, &self->ctx))) {
         // Yield to allow other tasks/interrupts to run
         MICROPY_EVENT_POLL_HOOK
         if (--timeout == 0) {
@@ -284,7 +250,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     }
 
     // Check if there were any errors during the transfer
-    uint32_t master_status = Cy_SCB_I2C_MasterGetStatus(MICROPY_HW_I2C0_SCB, &machine_hw_i2c_ctx[i2c_id]);
+    uint32_t master_status = Cy_SCB_I2C_MasterGetStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
 
     mp_printf(&mp_plat_print, "I2C Transfer complete, status=0x%08lX\n", master_status);
 
