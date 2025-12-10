@@ -47,6 +47,12 @@
 #define MICROPY_PY_OPENAMP_TRACE_BUF_ENABLE (1)
 #endif
 
+// Set the default trace buffer size, making it 128 bytes long unless
+// marked otherwise.
+#ifndef MICROPY_PY_OPENAMP_TRACE_BUF_LEN
+#define MICROPY_PY_OPENAMP_TRACE_BUF_LEN (128)
+#endif
+
 // For ports that don't define a custom image store, this enables a generic
 // VFS-based image store that supports loading elf files from storage.
 #ifndef MICROPY_PY_OPENAMP_REMOTEPROC_STORE_ENABLE
