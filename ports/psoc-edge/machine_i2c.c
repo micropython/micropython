@@ -47,7 +47,6 @@
 #include "modmachine.h"
 // #include "machine_pin_phy.h"
 #include "mplogger.h"
-#include "machine_i2c.h" // TODO: Add pin define
 
 #define DEFAULT_I2C_FREQ     (400000)
 
@@ -89,9 +88,9 @@ static inline machine_hw_i2c_obj_t *machine_hw_i2c_obj_alloc(void) {
     }
 
     // Debug: print status of all slots
-    mplogger_print(&mp_plat_print, "I2C alloc failed - all slots occupied:\n");
+    mplogger_print("I2C alloc failed - all slots occupied:\n");
     for (uint8_t i = 0; i < MAX_I2C; i++) {
-        mplogger_print(&mp_plat_print, "  Slot %u: %p\n", i, machine_hw_i2c_obj[i]);
+        mplogger_print("  Slot %u: %p\n", i, machine_hw_i2c_obj[i]);
     }
 
     return NULL;
@@ -151,10 +150,10 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 
     // 5. Configure master data rate
     uint32_t clk_scb_freq = Cy_SysClk_PeriphGetFrequency(CY_SYSCLK_DIV_8_BIT, 2U);
-    mplogger_print(&mp_plat_print, "DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
+    mplogger_print("DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
 
     uint32_t actual_rate = Cy_SCB_I2C_SetDataRate(MICROPY_HW_I2C0_SCB, freq_hz, clk_scb_freq);
-    mplogger_print(&mp_plat_print, "DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
+    mplogger_print("DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
 
     if ((actual_rate > freq_hz) || (actual_rate == 0U)) {
         mp_raise_msg_varg(&mp_type_ValueError,
@@ -209,7 +208,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result;
 
-    mplogger_print(&mp_plat_print, "I2C Transfer: addr=0x%02X, len=%u, flags=0x%02X (%s)\n",
+    mplogger_print("I2C Transfer: addr=0x%02X, len=%u, flags=0x%02X (%s)\n",
         addr, len, flags, (flags & MP_MACHINE_I2C_FLAG_READ) ? "READ" : "WRITE");
 
     // Configure transfer structure
@@ -230,11 +229,11 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     }
 
     if (result != CY_RSLT_SUCCESS) {
-        mplogger_print(&mp_plat_print, "I2C Transfer start failed: 0x%lx\n", result);
+        mplogger_print("I2C Transfer start failed: 0x%lx\n", result);
         return -MP_EIO;  // I/O error
     }
 
-    mplogger_print(&mp_plat_print, "I2C Transfer started, waiting for completion...\n");
+    mplogger_print("I2C Transfer started, waiting for completion...\n");
 
     // Wait for transaction completion
     // The interrupt handler (Cy_SCB_I2C_MasterInterrupt) processes the transaction
@@ -243,7 +242,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
         // Yield to allow other tasks/interrupts to run
         MICROPY_EVENT_POLL_HOOK
         if (--timeout == 0) {
-            mplogger_print(&mp_plat_print, "I2C Transfer timeout!\n");
+            mplogger_print("I2C Transfer timeout!\n");
             return -MP_ETIMEDOUT;
         }
     }
@@ -251,11 +250,11 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     // Check if there were any errors during the transfer
     uint32_t master_status = Cy_SCB_I2C_MasterGetStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
 
-    mplogger_print(&mp_plat_print, "I2C Transfer complete, status=0x%08lX\n", master_status);
+    mplogger_print("I2C Transfer complete, status=0x%08lX\n", master_status);
 
     if (master_status & CY_SCB_I2C_MASTER_ERR) {
         // Error occurred during transfer
-        mplogger_print(&mp_plat_print, "I2C Transfer error detected in status\n");
+        mplogger_print("I2C Transfer error detected in status\n");
         return -MP_EIO;  // I/O error
     }
 
@@ -292,7 +291,23 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_hw_i2c_obj_t *self = machine_hw_i2c_obj_alloc();
+    // Check if an I2C instance already exists for this ID
+    // If so, deinitialize it first (allows reinitialization)
+    int requested_id = args[ARG_id].u_int;
+    if (requested_id == -1) {
+        requested_id = 0;  // Default to ID 0
+    }
+
+    // For single I2C port, reuse the existing object if present
+    machine_hw_i2c_obj_t *self = machine_hw_i2c_obj[0];
+    if (self != NULL) {
+        // Deinitialize existing instance
+        mplogger_print("Reinitializing existing I2C instance\n");
+        machine_hw_i2c_deinit((mp_obj_base_t *)self);
+    }
+
+    // Allocate new instance
+    self = machine_hw_i2c_obj_alloc();
     if (self == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("Maximum number of I2C instances reached"));
     }
@@ -303,21 +318,30 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
         mp_printf(&mp_plat_print, "machine.I2C: ID parameter is ignored in this port.\n");
     }
 
-    // Parse and validate pin arguments, use defaults from machine_i2c.h if not provided
+    // Parse and validate pin arguments, use defaults from mpconfigboard.h if not provided
     if (args[ARG_scl].u_obj != MP_ROM_NONE) {
         self->scl_pin = mp_obj_get_int(args[ARG_scl].u_obj);
     } else {
-        self->scl_pin = MICROPY_HW_I2C0_SCL;  // Default from machine_i2c.h
+        self->scl_pin = MICROPY_HW_I2C0_SCL;  // Default from mpconfigboard.h
     }
 
     if (args[ARG_sda].u_obj != MP_ROM_NONE) {
         self->sda_pin = mp_obj_get_int(args[ARG_sda].u_obj);
     } else {
-        self->sda_pin = MICROPY_HW_I2C0_SDA;  // Default from machine_i2c.h
+        self->sda_pin = MICROPY_HW_I2C0_SDA;  // Default from mpconfigboard.h
     }
 
     // initialise I2C at hardware level
-    machine_hw_i2c_init(self, args[ARG_freq].u_int);
+    // If this fails, free the allocated object
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        machine_hw_i2c_init(self, args[ARG_freq].u_int);
+        nlr_pop();
+    } else {
+        // Initialization failed, clean up
+        machine_hw_i2c_obj_free(self);
+        nlr_jump(nlr.ret_val);
+    }
 
     return MP_OBJ_FROM_PTR(self);
 }
