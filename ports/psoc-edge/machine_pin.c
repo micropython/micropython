@@ -166,6 +166,11 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     return MP_OBJ_FROM_PTR(self);
 }
 
+static mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_obj_init_obj, 1, machine_pin_obj_init);
+
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     // TODO: Placeholder.
 }
@@ -186,6 +191,7 @@ static const mp_pin_p_t pin_pin_p = {
 
 static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // Instance methods
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_obj_init_obj) },
 
     // Const
     { MP_ROM_QSTR(MP_QSTR_IN),                      MP_ROM_INT(GPIO_MODE_IN) },
