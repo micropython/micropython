@@ -3,12 +3,12 @@
 
 try:
     from machine import UART
+    from target_wiring import uart_loopback_args, uart_loopback_kwargs
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 import time, sys
-from target_wiring import uart_loopback_args, uart_loopback_kwargs
 
 initial_delay_ms = 0
 bit_margin = 0
