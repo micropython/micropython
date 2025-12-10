@@ -1,0 +1,43 @@
+OK: Template creation
+OK: Multi string concat
+OK: Mixed constructor
+OK: Template.__str__()
+OK: Template.values
+OK: Large values array
+OK: Template concatenation
+OK: Template iterator
+OK: Iterator next
+OK: __template__ builtin
+OK: Format spec interpolation
+OK: Debug format
+OK: Conversion + format
+OK: s conversion
+OK: a conversion
+OK: Complex format spec
+OK: Simple expression
+OK: Interpolation creation
+OK: Template repr
+OK: Interpolation repr
+
+=== Heap allocation failure tests ===
+OK: Many interpolations heap test
+OK: Template str heap test
+OK: Template iter heap test
+OK: Template concat heap test
+OK: Format spec heap test
+OK: Debug format heap test
+
+=== Coverage.c heap tests ===
+OK: Interpolation creation with heap locked
+OK: Parse with heap locked
+
+=== Lexer/Parser allocation tests ===
+OK: Complex expression parser allocation
+OK: Lexer creation failure
+OK: Format spec allocation
+OK: Debug format allocation
+OK: Many interpolations allocation
+Template size limit: Tested via exec in coverage tests
+OK: Compile-time parsing under heap lock
+
+=== Tests completed ===
