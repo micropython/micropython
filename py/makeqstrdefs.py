@@ -25,6 +25,9 @@ _MODE_MODULE = "module"
 # Extract MP_REGISTER_ROOT_POINTER(...) macros.
 _MODE_ROOT_POINTER = "root_pointer"
 
+# Extract MP_CONST_FLOAT_ macros.
+_MODE_FLOAT_CONST = "float_const"
+
 
 class PreprocessorError(Exception):
     pass
@@ -103,6 +106,8 @@ def process_file(f):
         )
     elif args.mode == _MODE_ROOT_POINTER:
         re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
+    elif args.mode == _MODE_FLOAT_CONST:
+        re_match = re.compile(r"MP_CONST_FLOAT_[_a-zA-Z0-9]+")
     output = []
     last_fname = None
     for line in f:
@@ -122,7 +127,12 @@ def process_file(f):
             if args.mode == _MODE_QSTR:
                 name = match.replace("MP_QSTR_", "")
                 output.append("Q(" + name + ")")
-            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
+            elif args.mode in (
+                _MODE_COMPRESS,
+                _MODE_MODULE,
+                _MODE_ROOT_POINTER,
+                _MODE_FLOAT_CONST,
+            ):
                 output.append(match)
 
     if last_fname:
@@ -220,7 +230,13 @@ if __name__ == "__main__":
     args.output_dir = sys.argv[4]
     args.output_file = None if len(sys.argv) == 5 else sys.argv[5]  # Unused for command=split
 
-    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
+    if args.mode not in (
+        _MODE_QSTR,
+        _MODE_COMPRESS,
+        _MODE_MODULE,
+        _MODE_ROOT_POINTER,
+        _MODE_FLOAT_CONST,
+    ):
         print("error: mode %s unrecognised" % sys.argv[2])
         sys.exit(2)
 
