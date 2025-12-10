@@ -50,3 +50,12 @@
 
 // Program page size: Fixed by flash chip hardware (minimum writable unit)
 #define EXT_FLASH_PAGE_SIZE         (0x00000100) /** 256 Bytes */
+
+// I2C Configuration
+#define MICROPY_HW_I2C0_SCB                     (SCB5)
+#define MICROPY_HW_I2C0_SCL                     (P17_0_NUM)
+#define MICROPY_HW_I2C0_SDA                     (P17_1_NUM)
+#define MAX_I2C                                 1
+#define MICROPY_HW_I2C_INTR_PRIORITY            (7UL)
+#define MICROPY_HW_I2C_PCLK                     PCLK_SCB5_CLOCK_SCB_EN
+#define MICROPY_HW_I2C_IRQn                     scb_5_interrupt_IRQn

@@ -27,14 +27,6 @@
 #ifndef MICROPY_INCLUDED_PSOCEDGE_MACHINE_I2C_H
 #define MICROPY_INCLUDED_PSOCEDGE_MACHINE_I2C_H
 
-// Configure default I2C0 pins and SCB peripheral
-#ifndef MICROPY_HW_I2C0_SCL
-#define MICROPY_HW_I2C0_SCB (SCB5)
-#define MICROPY_HW_I2C0_SCL (P17_0_NUM)
-#define MICROPY_HW_I2C0_SDA (P17_1_NUM)
-#define MAX_I2C               1
-#endif
-
 // Declare the I2C type for external use
 extern const mp_obj_type_t machine_i2c_type;
 

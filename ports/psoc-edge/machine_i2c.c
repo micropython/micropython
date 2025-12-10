@@ -144,7 +144,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     //   - clk_peri = 100 MHz, divider = 11 → clk_scb = 9.09 MHz ✓ (within range)
     // Note: Cy_SysClk_PeriphSetDivider takes (divider - 1), so divider=11 → value=10
     /* Connect assigned divider to be a clock source for I2C */
-    Cy_SysClk_PeriphAssignDivider(PCLK_SCB5_CLOCK_SCB_EN, CY_SYSCLK_DIV_8_BIT, 2U);
+    Cy_SysClk_PeriphAssignDivider(MICROPY_HW_I2C_PCLK, CY_SYSCLK_DIV_8_BIT, 2U);
     uint32_t divider = (freq_hz <= 100000) ? 41U : 10U;
     Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_8_BIT, 2U, divider);
     Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_8_BIT, 2U);
@@ -164,10 +164,9 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 
     // 6. Configure interrupt (mandatory for I2C operation)
     // Populate interrupt configuration structure
-    #define I2C_INTR_PRIORITY (7UL)
     const cy_stc_sysint_t i2cIntrConfig = {
-        .intrSrc = scb_5_interrupt_IRQn,
-        .intrPriority = I2C_INTR_PRIORITY,
+        .intrSrc = MICROPY_HW_I2C_IRQn,
+        .intrPriority = MICROPY_HW_I2C_INTR_PRIORITY,
     };
 
     // Hook interrupt service routine and enable interrupt in NVIC
@@ -175,7 +174,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C interrupt init failed: 0x%lx"), result);
     }
-    NVIC_EnableIRQ(scb_5_interrupt_IRQn);
+    NVIC_EnableIRQ(MICROPY_HW_I2C_IRQn);
 
     // 7. Enable I2C operation
     Cy_SCB_I2C_Enable(MICROPY_HW_I2C0_SCB);
@@ -195,7 +194,7 @@ static int machine_hw_i2c_deinit(mp_obj_base_t *self_in) {
     Cy_SCB_I2C_Disable(MICROPY_HW_I2C0_SCB, &self->ctx);
 
     // Disable interrupt in NVIC
-    NVIC_DisableIRQ(scb_5_interrupt_IRQn);
+    NVIC_DisableIRQ(MICROPY_HW_I2C_IRQn);
 
     // Disable clock divider
     Cy_SysClk_PeriphDisableDivider(CY_SYSCLK_DIV_8_BIT, 0U);
