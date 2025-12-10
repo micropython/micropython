@@ -633,15 +633,21 @@ static mp_obj_t extra_coverage(void) {
         // call mp_execute_bytecode with invalid bytecode (should raise NotImplementedError)
         mp_module_context_t context;
         mp_obj_fun_bc_t fun_bc;
+        const byte *bytecode = (const byte *)"\x01"; // just needed for n_state
+        fun_bc.base.type = &mp_type_fun_bc;
         fun_bc.context = &context;
+        #if !MICROPY_PY_SYS_SETTRACE
         fun_bc.child_table = NULL;
-        fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
+        fun_bc.bytecode = bytecode;
+        #endif
         #if MICROPY_PY_SYS_SETTRACE
-        struct _mp_raw_code_t rc = {};
+        mp_raw_code_t rc = {};
+        rc.fun_data = bytecode;
+        rc.children = NULL;
         fun_bc.rc = &rc;
         #endif
         mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, state, mp_obj_t, 1);
-        code_state->fun_bc = &fun_bc;
+        code_state->fun_obj = &fun_bc;
         code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
         code_state->exc_sp_idx = 0;
