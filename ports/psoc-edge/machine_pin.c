@@ -7,7 +7,7 @@
 #include "extmod/virtpin.h"
 
 #define pin_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
 enum {GPIO_MODE_NONE = 0, GPIO_MODE_IN, GPIO_MODE_OUT, GPIO_MODE_OPEN_DRAIN};
