@@ -46,7 +46,7 @@
 // port-specific includes
 #include "modmachine.h"
 // #include "machine_pin_phy.h"
-// #include "mplogger.h"
+#include "mplogger.h"
 #include "machine_i2c.h" // TODO: Add pin define
 
 #define DEFAULT_I2C_FREQ     (400000)
@@ -89,9 +89,9 @@ static inline machine_hw_i2c_obj_t *machine_hw_i2c_obj_alloc(void) {
     }
 
     // Debug: print status of all slots
-    mp_printf(&mp_plat_print, "I2C alloc failed - all slots occupied:\n");
+    mplogger_print(&mp_plat_print, "I2C alloc failed - all slots occupied:\n");
     for (uint8_t i = 0; i < MAX_I2C; i++) {
-        mp_printf(&mp_plat_print, "  Slot %u: %p\n", i, machine_hw_i2c_obj[i]);
+        mplogger_print(&mp_plat_print, "  Slot %u: %p\n", i, machine_hw_i2c_obj[i]);
     }
 
     return NULL;
@@ -151,10 +151,10 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 
     // 5. Configure master data rate
     uint32_t clk_scb_freq = Cy_SysClk_PeriphGetFrequency(CY_SYSCLK_DIV_8_BIT, 2U);
-    mp_printf(&mp_plat_print, "DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
+    mplogger_print(&mp_plat_print, "DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
 
     uint32_t actual_rate = Cy_SCB_I2C_SetDataRate(MICROPY_HW_I2C0_SCB, freq_hz, clk_scb_freq);
-    mp_printf(&mp_plat_print, "DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
+    mplogger_print(&mp_plat_print, "DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
 
     if ((actual_rate > freq_hz) || (actual_rate == 0U)) {
         mp_raise_msg_varg(&mp_type_ValueError,
@@ -210,7 +210,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result;
 
-    mp_printf(&mp_plat_print, "I2C Transfer: addr=0x%02X, len=%u, flags=0x%02X (%s)\n",
+    mplogger_print(&mp_plat_print, "I2C Transfer: addr=0x%02X, len=%u, flags=0x%02X (%s)\n",
         addr, len, flags, (flags & MP_MACHINE_I2C_FLAG_READ) ? "READ" : "WRITE");
 
     // Configure transfer structure
@@ -231,11 +231,11 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     }
 
     if (result != CY_RSLT_SUCCESS) {
-        mp_printf(&mp_plat_print, "I2C Transfer start failed: 0x%lx\n", result);
+        mplogger_print(&mp_plat_print, "I2C Transfer start failed: 0x%lx\n", result);
         return -MP_EIO;  // I/O error
     }
 
-    mp_printf(&mp_plat_print, "I2C Transfer started, waiting for completion...\n");
+    mplogger_print(&mp_plat_print, "I2C Transfer started, waiting for completion...\n");
 
     // Wait for transaction completion
     // The interrupt handler (Cy_SCB_I2C_MasterInterrupt) processes the transaction
@@ -244,7 +244,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
         // Yield to allow other tasks/interrupts to run
         MICROPY_EVENT_POLL_HOOK
         if (--timeout == 0) {
-            mp_printf(&mp_plat_print, "I2C Transfer timeout!\n");
+            mplogger_print(&mp_plat_print, "I2C Transfer timeout!\n");
             return -MP_ETIMEDOUT;
         }
     }
@@ -252,11 +252,11 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     // Check if there were any errors during the transfer
     uint32_t master_status = Cy_SCB_I2C_MasterGetStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
 
-    mp_printf(&mp_plat_print, "I2C Transfer complete, status=0x%08lX\n", master_status);
+    mplogger_print(&mp_plat_print, "I2C Transfer complete, status=0x%08lX\n", master_status);
 
     if (master_status & CY_SCB_I2C_MASTER_ERR) {
         // Error occurred during transfer
-        mp_printf(&mp_plat_print, "I2C Transfer error detected in status\n");
+        mplogger_print(&mp_plat_print, "I2C Transfer error detected in status\n");
         return -MP_EIO;  // I/O error
     }
 
