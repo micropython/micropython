@@ -208,20 +208,10 @@ erase:
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
-ifeq ($(BOARD_VARIANT),OTA)
-$(FWBIN): $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
-	$(Q)$(ESPTOOL) elf2image $^
-	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $(BUILD)/firmware-ota.bin
-
-	$(Q)cat $(YAOTA8266)/yaota8266.bin $(BUILD)/firmware-ota.bin > $@
-	$(Q)$(PYTHON) $(YAOTA8266)/ota-client/ota_client.py sign $@
-else
 $(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(ESPTOOL) elf2image $^
 	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
-endif
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
