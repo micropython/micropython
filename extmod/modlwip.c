@@ -213,7 +213,7 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 // TODO: We just know that change happened somewhere between 1.4.0 and 1.4.1,
 // investigate in more detail.
 #if LWIP_VERSION_MACRO < 0x01040100
-static const int error_lookup_table[] = {
+static const int8_t error_lookup_table[] = {
     0,                /* ERR_OK          0      No error, everything OK. */
     MP_ENOMEM,        /* ERR_MEM        -1      Out of memory error.     */
     MP_ENOBUFS,       /* ERR_BUF        -2      Buffer error.            */
@@ -234,7 +234,7 @@ static const int error_lookup_table[] = {
     MP_EBADF,         /* _ERR_BADF      -16     Closed socket (null pcb) */
 };
 #elif LWIP_VERSION_MACRO < 0x02000000
-static const int error_lookup_table[] = {
+static const int8_t error_lookup_table[] = {
     0,                /* ERR_OK          0      No error, everything OK. */
     MP_ENOMEM,        /* ERR_MEM        -1      Out of memory error.     */
     MP_ENOBUFS,       /* ERR_BUF        -2      Buffer error.            */
@@ -258,7 +258,7 @@ static const int error_lookup_table[] = {
 // Matches lwIP 2.0.3
 #undef _ERR_BADF
 #define _ERR_BADF -17
-static const int error_lookup_table[] = {
+static const int8_t error_lookup_table[] = {
     0,                /* ERR_OK          0      No error, everything OK  */
     MP_ENOMEM,        /* ERR_MEM        -1      Out of memory error      */
     MP_ENOBUFS,       /* ERR_BUF        -2      Buffer error             */
