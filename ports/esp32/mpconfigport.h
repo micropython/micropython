@@ -44,6 +44,9 @@
 #define MICROPY_EMIT_RV32                   (0)
 #else
 #define MICROPY_EMIT_RV32                   (1)
+#if CONFIG_IDF_TARGET_ESP32P4
+#define MICROPY_EMIT_RV32_ZCMP              (1)
+#endif
 #endif
 #else
 #define MICROPY_EMIT_XTENSAWIN              (1)
