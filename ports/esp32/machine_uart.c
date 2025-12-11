@@ -278,8 +278,14 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
                 self->tx = UART_PIN_NO_CHANGE; // GPIO 1
                 break;
             case UART_NUM_1:
+                #if CONFIG_IDF_TARGET_ESP32 && CONFIG_SPIRAM
+                // ESP32 usually uses pins 9 and 10 for SPIRAM bus, so avoid those pins as defaults.
+                self->rx = 4;
+                self->tx = 5;
+                #else
                 self->rx = 9;
                 self->tx = 10;
+                #endif
                 break;
             #if SOC_UART_HP_NUM > 2
             case UART_NUM_2:

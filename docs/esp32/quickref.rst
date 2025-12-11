@@ -380,6 +380,9 @@ tx     1      10     17
 rx     3      9      16
 =====  =====  =====  =====
 
+On ESP32 with SPIRAM, the default pins for UART1 are ``tx=5`` and ``rx=4``
+to avoid possible conflicts with the SPIRAM pins.
+
 PWM (pulse width modulation)
 ----------------------------
 
