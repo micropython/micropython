@@ -92,7 +92,8 @@ static mp_obj_t machine_uart_list(void) {
         }
 
         if (type == REG_SZ) {
-            mp_obj_list_append(list, mp_obj_new_str(portName, strlen(portName)));
+            // portNameSize includes null terminator
+            mp_obj_list_append(list, mp_obj_new_str(portName, portNameSize - 1));
         }
     }
 
