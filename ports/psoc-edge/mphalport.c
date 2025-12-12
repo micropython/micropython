@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2024 Infineon Technologies AG
+ * Copyright (c) 2025 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,39 +98,21 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
-    // TODO: Implement this function
-}
-
-
-void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
-    // TODO: Implement this function
-}
-
-int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
-    return 0; // TODO: Implement this function
-}
-
 void mp_hal_set_interrupt_char(int c) {
     // TODO: Implement this function
 }
 
-void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
-    // TODO: Implement this function
+extern uint32_t get_drive_mode(uint8_t mode, uint8_t pull);
+
+void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull) {
+    uint32_t drive_mode = get_drive_mode(mode, pull);
+    Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(pin->port), pin->pin, drive_mode, 0, HSIOM_SEL_GPIO);
 }
 
-uint8_t mp_hal_pin_name(mp_hal_pin_obj_t pin) {
-    return pin;
+uint32_t mp_hal_pin_read(mp_hal_pin_obj_t pin) {
+    return Cy_GPIO_Read(Cy_GPIO_PortToAddr(pin->port), pin->pin);
 }
 
 void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
-    // TODO: Implement this function
-}
-
-void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
-    // TODO: Implement this function
-}
-
-void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
-    // TODO: Implement this function
+    Cy_GPIO_Write(Cy_GPIO_PortToAddr(pin->port), pin->pin, polarity);
 }
