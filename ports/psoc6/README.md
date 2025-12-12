@@ -33,7 +33,7 @@ Retrieve submodules:
 
 Build the firmware:
 
-    make BOARD=CY8CKIT_062S2_AI
+    make BOARD=CY8CKIT-062S2-AI
 
 > [!NOTE] 
 > The first time we call `make` the board needs to be specified with 
