@@ -71,7 +71,7 @@ void pendsv_suspend(void) {
     // Recursive Mutex here as either core may call pendsv_suspend() and expect
     // both mutual exclusion (other core can't enter pendsv_suspend() at the
     // same time), and that no PendSV handler will run.
-    mp_thread_recursive_mutex_lock(&pendsv_mutex, 1);
+    mp_thread_recursive_mutex_lock(&pendsv_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
 }
 
 void pendsv_resume(void) {
