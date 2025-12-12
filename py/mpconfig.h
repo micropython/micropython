@@ -1841,6 +1841,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_SELECT_SELECT (1)
 #endif
 
+// Whether to use strerror() to provide user-friendly OSError messages.
+#ifndef MICROPY_PY_STRERROR
+#define MICROPY_PY_STRERROR (0)
+#endif
+
 // Whether to provide the "time" module
 #ifndef MICROPY_PY_TIME
 #define MICROPY_PY_TIME (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)

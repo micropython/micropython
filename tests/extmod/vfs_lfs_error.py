@@ -10,6 +10,10 @@ except (ImportError, AttributeError):
     raise SystemExit
 
 
+def oserror_name(ex):
+    return errno.errorcode.get(ex.errno)
+
+
 class RAMBlockDevice:
     ERASE_BLOCK_SIZE = 1024
 
@@ -61,51 +65,51 @@ def test(bdev, vfs_class):
     try:
         fs.ilistdir("noexist")
     except OSError as er:
-        print("ilistdir OSError", er)
+        print("ilistdir OSError", oserror_name(er))
 
     # remove
     try:
         fs.remove("noexist")
     except OSError as er:
-        print("remove OSError", er)
+        print("remove OSError", oserror_name(er))
 
     # rmdir
     try:
         fs.rmdir("noexist")
     except OSError as er:
-        print("rmdir OSError", er)
+        print("rmdir OSError", oserror_name(er))
 
     # rename
     try:
         fs.rename("noexist", "somethingelse")
     except OSError as er:
-        print("rename OSError", er)
+        print("rename OSError", oserror_name(er))
 
     # mkdir
     try:
         fs.mkdir("testdir")
     except OSError as er:
-        print("mkdir OSError", er)
+        print("mkdir OSError", oserror_name(er))
 
     # chdir to nonexistent
     try:
         fs.chdir("noexist")
     except OSError as er:
-        print("chdir OSError", er)
+        print("chdir OSError", oserror_name(er))
     print(fs.getcwd())  # check still at root
 
     # chdir to file
     try:
         fs.chdir("testfile")
     except OSError as er:
-        print("chdir OSError", er)
+        print("chdir OSError", oserror_name(er))
     print(fs.getcwd())  # check still at root
 
     # stat
     try:
         fs.stat("noexist")
     except OSError as er:
-        print("stat OSError", er)
+        print("stat OSError", oserror_name(er))
 
     # error during seek
     with fs.open("testfile", "r") as f:
@@ -113,7 +117,7 @@ def test(bdev, vfs_class):
         try:
             f.seek(1 << 30, 1)  # SEEK_CUR
         except OSError as er:
-            print("seek OSError", er)
+            print("seek OSError", oserror_name(er))
 
 
 bdev = RAMBlockDevice(30)
