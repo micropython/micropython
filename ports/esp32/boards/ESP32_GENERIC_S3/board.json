@@ -21,6 +21,7 @@
     "url": "https://www.espressif.com/en/products/modules",
     "vendor": "Espressif",
     "variants": {
-        "SPIRAM_OCT": "Support for Octal-SPIRAM"
+        "SPIRAM_OCT": "Support for Octal-SPIRAM",
+        "CSI": "Optimized for CSI-based motion detection applications"
     }
 }
