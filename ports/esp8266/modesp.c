@@ -159,10 +159,6 @@ static mp_obj_t esp_flash_size(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
-// If there's just 1 loadable segment at the start of flash,
-// we assume there's a yaota8266 bootloader.
-#define IS_OTA_FIRMWARE() ((*(uint32_t *)0x40200000 & 0xff00) == 0x100)
-
 extern byte _firmware_size[];
 #if MICROPY_VFS_ROM_IOCTL
 extern uint8_t _micropy_hw_romfs_part0_size;
@@ -180,11 +176,6 @@ static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start)
 static mp_obj_t esp_check_fw(void) {
     MD5_CTX ctx;
     char *fw_start = (char *)0x40200000;
-    if (IS_OTA_FIRMWARE()) {
-        // Skip yaota8266 bootloader
-        fw_start += 0x3c000;
-    }
-
     uint32_t size = *(uint32_t *)(fw_start + 0x8ffc);
     printf("size: %d\n", size);
     if (size > 1024 * 1024) {
