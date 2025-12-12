@@ -80,6 +80,43 @@ const char *nrfx_error_code_lookup(uint32_t err_code);
 
 void mp_nrf_start_lfclk(void);
 
+#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV)
+#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state)
+
+#if defined(NRF51)
+
+static inline uint32_t raise_irq_pri(uint32_t pri) {
+    (void)pri;
+    return 0;
+}
+
+static inline void restore_irq_pri(uint32_t basepri) {
+    (void)basepri;
+}
+#define IRQ_PRI_PENDSV          ((1 << __NVIC_PRIO_BITS) - 1)
+
+#else
+#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
+#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
+
+static inline uint32_t raise_irq_pri(uint32_t pri) {
+    uint32_t basepri = __get_BASEPRI();
+    // If non-zero, the processor does not process any exception with a
+    // priority value greater than or equal to BASEPRI.
+    // When writing to BASEPRI_MAX the write goes to BASEPRI only if either:
+    //   - Rn is non-zero and the current BASEPRI value is 0
+    //   - Rn is non-zero and less than the current BASEPRI value
+    pri <<= (8 - __NVIC_PRIO_BITS);
+    __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
+    return basepri;
+}
+
+// "basepri" should be the value returned from raise_irq_pri
+static inline void restore_irq_pri(uint32_t basepri) {
+    __set_BASEPRI(basepri);
+}
+#endif
+
 #define MP_HAL_PIN_FMT           "%q"
 #define mp_hal_pin_obj_t const pin_obj_t *
 #define mp_hal_get_pin_obj(o)    pin_find(o)
