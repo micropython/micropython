@@ -43,7 +43,7 @@ jobs:
       run: source tools/ci.sh && echo "ZEPHYR=$ZEPHYR_VERSION" | tee "$GITHUB_OUTPUT"
     - name: Cached Zephyr Workspace
       id: cache_workspace
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         # note that the Zephyr CI docker image is 15GB. At time of writing
         # GitHub caches are limited to 10GB total for a project. So we only
