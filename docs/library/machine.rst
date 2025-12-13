@@ -49,6 +49,23 @@ Example use (registers are specific to an stm32 microcontroller):
     # read PA3
     value = (machine.mem32[GPIOA + GPIO_IDR] >> 3) & 1
 
+
+Note: the returned values are signed integers.
+Example: reading the cpuid register on esp8266
+
+.. code-block:: python3
+
+    value = mem32[0x40001000]
+
+will return a negative value, that could be counter-intuitive.
+
+To always read a positive integer
+
+.. code-block:: python3
+
+    value = mem32[0x40001000] & 0xffffffff
+
+
 Reset related functions
 -----------------------
 
