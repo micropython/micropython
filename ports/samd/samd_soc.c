@@ -39,6 +39,7 @@
 #include "tusb.h"
 
 extern void machine_rtc_start(bool force);
+extern void samd_flash_init(void);
 
 static void usb_init(void) {
     // Init USB clock
@@ -120,6 +121,9 @@ void samd_init(void) {
     mp_hal_ticks_cpu_enable();
     #endif
     machine_rtc_start(false);
+    #if MICROPY_HW_MCUFLASH || MICROPY_VFS_ROM
+    samd_flash_init();
+    #endif
 }
 
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
