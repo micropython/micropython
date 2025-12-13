@@ -196,6 +196,85 @@ The file ``Makefile`` contains:
     # Include to get the rules for compiling and linking the module
     include $(MPY_DIR)/py/dynruntime.mk
 
+Reducing boilerplate with macros
+---------------------------------
+
+For modules with many functions and attributes, the ``mpy_init`` function can become
+quite long and repetitive. To reduce boilerplate, you can use a macro-based approach
+that makes the module definition cleaner and easier to maintain.
+
+Here's an example of the same factorial module using this approach:
+
+.. code-block:: c
+
+    #include "py/dynruntime.h"
+
+    // Helper function to compute factorial
+    static mp_int_t factorial_helper(mp_int_t x) {
+        if (x == 0) {
+            return 1;
+        }
+        return x * factorial_helper(x - 1);
+    }
+
+    // This is the function which will be called from Python
+    static mp_obj_t factorial(mp_obj_t x_obj) {
+        mp_int_t x = mp_obj_get_int(x_obj);
+        mp_int_t result = factorial_helper(x);
+        return mp_obj_new_int(result);
+    }
+    static MP_DEFINE_CONST_FUN_OBJ_1(factorial_obj, factorial);
+
+    // Define module attributes using macros
+    #define MODULE_ATTR_LIST \
+        ATTR(factorial, MP_OBJ_FROM_PTR(&factorial_obj))
+
+    // Reference QSTRs so they're included in the build
+    void _qstr_refs(void) {
+        (void)MP_QSTR_factorial;
+    }
+
+    // Module init function using the macro
+    mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
+        MP_DYNRUNTIME_INIT_ENTRY
+        
+        #define ATTR(name, value) mp_store_global(MP_QSTR_##name, value);
+        MODULE_ATTR_LIST
+        #undef ATTR
+        
+        MP_DYNRUNTIME_INIT_EXIT
+    }
+
+The ``MODULE_ATTR_LIST`` macro defines all module attributes in one place, and the
+``ATTR`` macro is temporarily defined to expand each entry into the appropriate
+``mp_store_global`` call. The ``_qstr_refs`` function ensures that the QSTRs
+(quoted string identifiers) are recognized by the build system.
+
+For modules that follow certain patterns, the build system can also automatically
+generate the module name from the source code. If your module uses ``MP_REGISTER_MODULE``
+(even though it's not fully functional in native modules), the build system can
+extract the module name, eliminating the need to specify ``MOD`` in the Makefile.
+
+Additional helper macros
+------------------------
+
+The ``py/dynruntime.h`` header provides additional helper macros to simplify common
+patterns in native modules:
+
+* ``MP_DYNRUNTIME_INIT_STATIC_MODULE(table)`` - A convenience macro that registers
+  all entries from a static ``mp_rom_map_elem_t`` array as module globals. This is
+  useful when porting code from built-in modules that already use static tables.
+
+* ``MP_DYNRUNTIME_REGISTER_GLOBALS_TABLE(table, size)`` - Lower-level macro that
+  iterates through a globals table and registers each entry (except ``__name__``)
+  as a module global.
+
+* ``MP_OBJ_QSTR_VALUE(obj)`` - Extracts the QSTR value from a MicroPython string
+  object, useful when working with string keys in tables.
+
+These macros help reduce code duplication and make it easier to maintain consistency
+between built-in modules and their native module counterparts.
+
 Compiling the module
 --------------------
 
