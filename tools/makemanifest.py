@@ -240,7 +240,7 @@ def main():
             print(f"""
 hash = {hashes !r}
 """, file=f)
-        outfile = "{}/frozen_mpy/_hash.mpy".format(args.build_dir, result.target_path[:-3])
+        outfile = "{}/frozen_mpy/_hash.mpy".format(args.build_dir)
         mpy_cross.compile(
             f"{args.build_dir}/_hash.py",
             dest=outfile,
