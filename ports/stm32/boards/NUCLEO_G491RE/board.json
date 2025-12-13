@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_g491re.jpg"
+    ],
+    "mcu": "stm32g4",
+    "product": "Nucleo G491RE",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}
