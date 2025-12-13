@@ -56,7 +56,7 @@ def get_timestamp(path, default=None):
         return stat.st_mtime
     except OSError:
         if default is None:
-            raise FreezeError("cannot stat {}".format(path))
+            raise FreezeError(f"cannot stat {path}")
         return default
 
 
@@ -160,7 +160,7 @@ def main():
 
     # Ensure mpy-cross is built
     if not os.path.exists(MPY_CROSS):
-        print("mpy-cross not found at {}, please build it first".format(MPY_CROSS))
+        print(f"mpy-cross not found at {MPY_CROSS}, please build it first")
         sys.exit(1)
 
     manifest = manifestfile.ManifestFile(manifestfile.MODE_FREEZE, VARS)
@@ -170,7 +170,7 @@ def main():
         try:
             manifest.execute(input_manifest)
         except manifestfile.ManifestFileError as er:
-            print('freeze error executing "{}": {}'.format(input_manifest, er.args[0]))
+            print(f'freeze error executing "{input_manifest}": {er.args[0]}')
             sys.exit(1)
 
     # Process the manifest
@@ -188,7 +188,7 @@ def main():
             )
             ts_outfile = result.timestamp
         elif result.kind == manifestfile.KIND_FREEZE_AS_MPY:
-            outfile = "{}/frozen_mpy/{}.mpy".format(args.build_dir, result.target_path[:-3])
+            outfile = f"{args.build_dir}/frozen_mpy/{result.target_path[:-3]}.mpy"
             ts_outfile = get_timestamp(outfile, 0)
             if result.timestamp >= ts_outfile:
                 print("MPY", result.target_path)
@@ -205,7 +205,7 @@ def main():
                             extra_args=args.mpy_cross_flags.split(),
                         )
                     except mpy_cross.CrossCompileError as ex:
-                        print("error compiling {}:".format(result.target_path))
+                        print(f"error compiling {result.target_path}:")
                         print(ex.args[0])
                         raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
@@ -214,9 +214,9 @@ def main():
             # Remember (part of) the hash of each file so that partial
             # updates will work.
             h = hashlib.sha256()
-            with open(result.full_path,"rb") as f:
+            with open(result.full_path, "rb") as f:
                 h.update(f.read())
-            modname = result.target_path[:-3].replace("/",".")
+            modname = result.target_path[:-3].replace("/", ".")
             if modname.endswith(".__init__"):
                 modname = modname[:-9]
             hashes[modname] = h.digest()[:8]
@@ -236,11 +236,14 @@ def main():
 
     # Freeze .mpy files
     if mpy_files:
-        with open(f"{args.build_dir}/_hash.py","w") as f:
-            print(f"""
-hash = {hashes !r}
-""", file=f)
-        outfile = "{}/frozen_mpy/_hash.mpy".format(args.build_dir)
+        with open(f"{args.build_dir}/_hash.py", "w") as f:
+            print(
+                f"""
+hash = {hashes!r}
+""",
+                file=f,
+            )
+        outfile = f"{args.build_dir}/frozen_mpy/_hash.mpy"
         mpy_cross.compile(
             f"{args.build_dir}/_hash.py",
             dest=outfile,
@@ -263,7 +266,7 @@ hash = {hashes !r}
             + mpy_files
         )
         if res != 0:
-            print("error freezing mpy {}:".format(mpy_files))
+            print(f"error freezing mpy {mpy_files}:")
             print(output_mpy.decode())
             sys.exit(1)
     else:
