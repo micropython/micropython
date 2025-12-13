@@ -1,0 +1,75 @@
+name: Membrowse PR Comment
+# Posts PR comments after Membrowse Memory Report workflow completes
+# Uses workflow_run trigger to have elevated permissions for fork PRs
+
+on:
+  workflow_run:
+    workflows: [Membrowse Memory Report]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-22.04
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Download report artifacts
+        id: download-reports
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const fs = require('fs');
+
+            const allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+
+            // Find all membrowse report artifacts
+            const reportArtifacts = allArtifacts.data.artifacts.filter(
+              artifact => artifact.name.startsWith('membrowse-report-')
+            );
+
+            if (reportArtifacts.length === 0) {
+              console.log('No report artifacts found');
+              return 'skip';
+            }
+
+            // Create reports directory
+            fs.mkdirSync('reports', { recursive: true });
+
+            // Download and extract each report
+            for (const artifact of reportArtifacts) {
+              console.log(`Downloading ${artifact.name}...`);
+              const download = await github.rest.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+                archive_format: 'zip',
+              });
+
+              const zipPath = `${artifact.name}.zip`;
+              fs.writeFileSync(zipPath, Buffer.from(download.data));
+
+              // Extract to reports directory
+              await exec.exec('unzip', ['-o', zipPath, '-d', 'reports']);
+            }
+
+            return 'ok';
+
+      - name: Post combined PR comment
+        if: steps.download-reports.outputs.result == 'ok'
+        uses: membrowse/membrowse-action/comment-action@v1
+        with:
+          json_files: "reports/*.json"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
