@@ -171,6 +171,8 @@ list(APPEND IDF_COMPONENTS
     esp_driver_touch_sens
     esp_eth
     esp_event
+    esp_http_server  # Required for mpDirect httpserver USER_C_MODULES
+    esp_https_server  # Required for mpDirect httpserver USER_C_MODULES (HTTPS support)
     esp_hw_support
     esp_netif
     esp_partition

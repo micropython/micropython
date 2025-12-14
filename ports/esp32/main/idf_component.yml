@@ -20,5 +20,9 @@ dependencies:
     rules:
       - if: "target == esp32"
       - if: "idf_version >=5.3"
+  # Required for mpDirect httpserver USER_C_MODULES (modwebfiles.c uses esp_vfs_littlefs)
+  joltwallet/littlefs: "^1.0.0"
+  # Required for mpDirect husarnet VPN module
+  husarnet/esp_husarnet: "^0.0.15"
   idf:
     version: ">=5.2.0"
