@@ -24,3 +24,7 @@ MICROPY_VFS_LFS2 = 1
 MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM = 1
 
 FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
+
+# Flash tool configuration
+STFLASH = st-flash --connect-under-reset
+OPENOCD_CONFIG = boards/openocd_stm32h7_dual_bank.cfg
