@@ -41,6 +41,7 @@
 #include "lib/littlefs/lfs2_util.h"
 #include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
+#include "extmod/machine_can.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
@@ -763,7 +764,10 @@ soft_reset_exit:
     #endif
     #if MICROPY_HW_ENABLE_CAN
     pyb_can_deinit_all();
+    #if MICROPY_PY_MACHINE_CAN
+    machine_can_deinit_all();
     #endif
+    #endif // MICROPY_HW_ENABLE_CAN
     #if MICROPY_HW_ENABLE_DAC
     dac_deinit_all();
     #endif

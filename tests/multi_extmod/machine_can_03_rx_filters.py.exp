@@ -1,0 +1,20 @@
+--- instance0 ---
+recv 0x345 00ff
+recv 0x3700 ee
+recv 0x345 01ff01ff
+recv 0x3701 eeee
+recv 0x345 02ff02ff02ff
+recv 0x3702 eeeeee
+--- instance1 ---
+0
+sent 0x345 00ff True
+sent 0x3700 ee True
+sent 0x123 616263646566 True
+1
+sent 0x345 01ff01ff True
+sent 0x3701 eeee True
+sent 0x123 616263646566 True
+2
+sent 0x345 02ff02ff02ff True
+sent 0x3702 eeeeee True
+sent 0x123 616263646566 True

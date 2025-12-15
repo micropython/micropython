@@ -360,17 +360,6 @@ Methods
    "Error Passive" state, depending whether the controller hardware zeroes
    TEC and REC or not.
 
-.. method:: CAN.mode([mode])
-
-   With an argument, transitions the CAN controller to a new mode of operation,
-   without resetting it. Argument is one of `can-modes`. Returns the
-   previous mode of operation.
-
-   Without any arguments, returns the current mode of operation.
-
-   .. note:: Not all modes are supported by all CAN controller hardware.
-             Passing an unsupported mode value will raise ``ValueError``.
-
 .. method:: CAN.deinit()
 
    De-initialises a previously active CAN instance. All pending messages
@@ -397,7 +386,9 @@ Constants
 Modes
 ^^^^^
 
-These values represent controller modes of operation. Not all controllers may support all modes.
+These values represent controller modes of operation, as passed to `CAN.init()`. Not all controllers may support all modes.
+
+Changing the mode of a running controller requires calling `CAN.deinit()` and then calling `CAN.init()` again with the new mode.
 
 .. data:: CAN.MODE_NORMAL
 

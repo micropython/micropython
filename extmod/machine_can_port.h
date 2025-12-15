@@ -117,8 +117,6 @@ static int machine_can_port_f_clock(const machine_can_obj_t *self);
 
 static bool machine_can_port_supports_mode(const machine_can_obj_t *self, machine_can_mode_t mode);
 
-static bool machine_can_port_set_mode(machine_can_obj_t *self, machine_can_mode_t mode);
-
 static void machine_can_port_clear_filters(machine_can_obj_t *self);
 
 static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags);

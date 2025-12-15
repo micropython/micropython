@@ -276,9 +276,14 @@ static void machine_can_init_helper(machine_can_obj_t *self, size_t n_args, cons
         machine_can_port_deinit(self);
     }
     machine_can_port_init(self);
-    // This second call may be redundant, depending on machine_can_port_init() on this port
-    machine_can_port_set_mode(self, mode);
-    self->mode = mode;
+}
+
+// Raise an exception if the CAN controller is not initialised
+static void machine_can_check_initialised(machine_can_obj_t *self) {
+    // Use self->port being allocated as indicator that controller is initialised
+    if (self->port == NULL) {
+        mp_raise_OSError(MP_EINVAL);
+    }
 }
 
 mp_uint_t machine_can_get_index(mp_obj_t identifier) {
@@ -355,14 +360,6 @@ void machine_can_deinit_all(void) {
             machine_can_deinit(can);
             MP_STATE_PORT(machine_can_objs)[i] = NULL;
         }
-    }
-}
-
-// Raise an exception if the CAN controller is not initialised
-static void machine_can_check_initialised(machine_can_obj_t *self) {
-    // Use self->port being allocated as indicator that controller is initialised
-    if (self->port == NULL) {
-        mp_raise_OSError(MP_EINVAL);
     }
 }
 
@@ -605,7 +602,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_can_get_counters_obj, 1, 2, machine_
 
 static mp_obj_t machine_can_get_timings(size_t n_args, const mp_obj_t *args) {
     machine_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    machine_can_timings_t timings = { 0 };
     mp_obj_list_t *list = mp_obj_list_optional_arg(n_args > 1 ? args[1] : mp_const_none, 6);
 
     list->items[0] = MP_OBJ_NEW_SMALL_INT(machine_can_get_actual_bitrate(self));
@@ -614,7 +610,11 @@ static mp_obj_t machine_can_get_timings(size_t n_args, const mp_obj_t *args) {
     list->items[3] = MP_OBJ_NEW_SMALL_INT(self->tseg2);
     #if MICROPY_HW_ENABLE_FDCAN
     mp_obj_list_t *fd_list = mp_obj_list_optional_arg(list->items[4], 4);
-    // TODO: CAN-FD timings support
+    fd_list->items[0] = mp_const_none;     // TODO: CAN-FD timings support
+    fd_list->items[1] = mp_const_none;
+    fd_list->items[2] = mp_const_none;
+    fd_list->items[3] = mp_const_none;
+    list->items[4] = MP_OBJ_FROM_PTR(fd_list);
     #else
     list->items[4] = mp_const_none;
     #endif
@@ -640,10 +640,31 @@ static void machine_can_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     // We don't store the bitrate argument, instead print the real achieved bitrate
     int f_clock = machine_can_port_f_clock(self);
     int actual_bitrate = machine_can_get_actual_bitrate(self);
-    mp_printf(print, "CAN(%d, bitrate=%u, mode=%u, sjw=%u, tseg1=%u, tseg2=%u, f_clock=%u, auto_retransmit=%d)",
+
+    qstr mode;
+    switch (self->mode) {
+        case MP_CAN_MODE_NORMAL:
+            mode = MP_QSTR_MODE_NORMAL;
+            break;
+        case MP_CAN_MODE_SLEEP:
+            mode = MP_QSTR_MODE_SLEEP;
+            break;
+        case MP_CAN_MODE_LOOPBACK:
+            mode = MP_QSTR_MODE_LOOPBACK;
+            break;
+        case MP_CAN_MODE_SILENT:
+            mode = MP_QSTR_MODE_SILENT;
+            break;
+        case MP_CAN_MODE_SILENT_LOOPBACK:
+        default:
+            mode = MP_QSTR_MODE_SILENT_LOOPBACK;
+            break;
+    }
+
+    mp_printf(print, "CAN(%d, bitrate=%u, mode=CAN.%q, sjw=%u, tseg1=%u, tseg2=%u, f_clock=%u, auto_retransmit=%d)",
         self->can_idx + 1,
         actual_bitrate,
-        self->mode,
+        mode,
         self->sjw,
         self->tseg1,
         self->tseg2,
