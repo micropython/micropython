@@ -281,7 +281,7 @@ static mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 
 static int typecode_for_comparison(int typecode, bool *is_unsigned) {
     if (typecode == MP_TYPECODE_BYTEARRAY) {
-        typecode = 'B';
+        typecode = MP_TYPECODE_C(unsigned char);
     }
     if (typecode <= 'Z') {
         typecode += 32; // to lowercase

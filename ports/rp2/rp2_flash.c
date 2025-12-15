@@ -29,6 +29,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/binary.h"
 #include "extmod/vfs.h"
 #include "modrp2.h"
 #include "hardware/flash.h"
@@ -247,7 +248,7 @@ static mp_int_t rp2_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo
     if (flags == MP_BUFFER_READ) {
         bufinfo->buf = (void *)(XIP_BASE + self->flash_base);
         bufinfo->len = self->flash_size;
-        bufinfo->typecode = 'B';
+        bufinfo->typecode = MP_TYPECODE_C(unsigned char);
         return 0;
     } else {
         // Write unsupported.

@@ -832,9 +832,9 @@ static mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
         if (args[1] != mp_const_none) {
             mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
             if (bufinfo.typecode == MP_TYPECODE_BYTEARRAY) {
-                bufinfo.typecode = 'b';
+                bufinfo.typecode = MP_TYPECODE_C(char);
             } else {
-                bufinfo.typecode |= 0x20; // make lowercase to support upper and lower
+                bufinfo.typecode &= ~0x20; // make uppercase to support upper and lower
             }
             if (bufinfo.len == 0) { // edge case: buffer of zero length supplied
                 return args[1];
@@ -855,13 +855,13 @@ static mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
         if (dest == NULL) {
             return mp_obj_new_int_from_uint(value);
         }
-        if (bufinfo.typecode == 'b') {
+        if (bufinfo.typecode == MP_TYPECODE_C(uint8_t)) {
             *(uint8_t *)dest = value;
             dest += sizeof(uint8_t);
-        } else if (bufinfo.typecode == 'h') {
+        } else if (bufinfo.typecode == MP_TYPECODE_C(uint16_t)) {
             *(uint16_t *)dest = value;
             dest += sizeof(uint16_t);
-        } else if (bufinfo.typecode == 'i') {
+        } else if (bufinfo.typecode == MP_TYPECODE_C(uint32_t)) {
             *(uint32_t *)dest = value;
             dest += sizeof(uint32_t);
         } else {
@@ -887,19 +887,19 @@ static mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
         data = mp_obj_get_int_truncated(args[1]);
         bufinfo.buf = &data;
         bufinfo.len = sizeof(uint32_t);
-        bufinfo.typecode = 'I';
+        bufinfo.typecode = MP_TYPECODE_C(uint32_t);
     }
     const uint8_t *src = bufinfo.buf;
     const uint8_t *src_top = src + bufinfo.len;
     while (src < src_top) {
         uint32_t value;
-        if (bufinfo.typecode == 'B' || bufinfo.typecode == MP_TYPECODE_BYTEARRAY) {
+        if (bufinfo.typecode == MP_TYPECODE_C(uint8_t) || bufinfo.typecode == MP_TYPECODE_BYTEARRAY) {
             value = *(uint8_t *)src;
             src += sizeof(uint8_t);
-        } else if (bufinfo.typecode == 'H') {
+        } else if (bufinfo.typecode == MP_TYPECODE_C(uint16_t)) {
             value = *(uint16_t *)src;
             src += sizeof(uint16_t);
-        } else if (bufinfo.typecode == 'I') {
+        } else if (bufinfo.typecode == MP_TYPECODE_C(uint32_t)) {
             value = *(uint32_t *)src;
             src += sizeof(uint32_t);
         } else {
@@ -936,7 +936,7 @@ static mp_int_t rp2_state_machine_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bu
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(o_in);
 
     bufinfo->len = 4;
-    bufinfo->typecode = 'I';
+    bufinfo->typecode = MP_TYPECODE_C(uint32_t);
 
     if (flags & MP_BUFFER_WRITE) {
         bufinfo->buf = (void *)&self->pio->txf[self->sm];
