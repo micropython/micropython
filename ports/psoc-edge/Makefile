@@ -134,7 +134,7 @@ SRC_C = help.c \
 		main.c \
 		mphalport.c 
 
-SRC_ASM +=
+SRC_ASM += shared/runtime/gchelper_thumb2.s
 
 SRC_QSTR += $(SHARED_SRC_C) $(MOD_SRC_C) $(GEN_PINS_SRC)
 
@@ -164,6 +164,9 @@ MP_LOGGER_DEBUG ?= 0
 ifeq ($(MP_LOGGER_DEBUG), 1)
    CFLAGS += -DMICROPY_LOGGER_DEBUG=1
 endif
+# Ensure assembly file is compiled with correct flags
+$(BUILD)/shared/runtime/gchelper_thumb2.o: $(TOP)/shared/runtime/gchelper_thumb2.s | mtb_build_ns_info
+	$(Q)$(CC) -mthumb -mcpu=cortex-m33 -c -o $@ $<
 
 $(BUILD)/$(MPY_APP_NAME).elf: mtb_build_ns_info $(OBJ)
 	$(info )
