@@ -241,7 +241,7 @@ static mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 
     // test if the object can be written to
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
-        self->typecode |= MP_OBJ_ARRAY_TYPECODE_FLAG_RW; // indicate writable buffer
+        self->typecode |= MP_TYPECODE_FLAG_RW; // indicate writable buffer
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -503,7 +503,7 @@ static mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 uint8_t *dest_items = o->items;
                 #if MICROPY_PY_BUILTINS_MEMORYVIEW
                 if (o->base.type == &mp_type_memoryview) {
-                    if (!(o->typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
+                    if (!(o->typecode & MP_TYPECODE_FLAG_RW)) {
                         // store to read-only memoryview not allowed
                         return MP_OBJ_NULL;
                     }
@@ -568,7 +568,7 @@ static mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
             if (o->base.type == &mp_type_memoryview) {
                 index += o->memview_offset;
-                if (value != MP_OBJ_SENTINEL && !(o->typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
+                if (value != MP_OBJ_SENTINEL && !(o->typecode & MP_TYPECODE_FLAG_RW)) {
                     // store to read-only memoryview
                     return MP_OBJ_NULL;
                 }
@@ -594,7 +594,7 @@ static mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
     bufinfo->typecode = o->typecode & TYPECODE_MASK;
     #if MICROPY_PY_BUILTINS_MEMORYVIEW
     if (o->base.type == &mp_type_memoryview) {
-        if (!(o->typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW) && (flags & MP_BUFFER_WRITE)) {
+        if (!(o->typecode & MP_TYPECODE_FLAG_RW) && (flags & MP_BUFFER_WRITE)) {
             // read-only memoryview
             return 1;
         }

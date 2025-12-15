@@ -34,6 +34,9 @@
 // type-specification errors due to end-of-string.
 #define MP_TYPECODE_BYTEARRAY 1
 
+// Used only for memoryview types, set in "typecode" to indicate a writable memoryview
+#define MP_TYPECODE_FLAG_RW (0x80)
+
 size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign);
 mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index);
 void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_in);
