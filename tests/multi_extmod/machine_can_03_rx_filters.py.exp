@@ -1,0 +1,49 @@
+--- instance0 ---
+recv 0x345 00ff
+recv 0x3700 ee
+recv 0x345 01ff01ff
+recv 0x3701 eeee
+recv 0x345 02ff02ff02ff
+recv 0x3702 eeeeee
+receiver configured single ext id
+recv 0x12345678 0102030405
+recv 0x12345678 010203
+receiver configured single std id
+recv 0x505 060708090a0b
+recv 0x505 040506
+receiver configured ext+std ids
+recv 0x12345678 0102030405
+recv 0x505 060708090a0b
+recv 0x12345678 010203
+recv 0x505 040506
+receiver configured std+ext ids
+recv 0x12345678 0102030405
+recv 0x505 060708090a0b
+recv 0x12345678 010203
+recv 0x505 040506
+receiver configured accept none
+receiver configured accept all
+recv 0x12345678 0102030405
+recv 0x2345678 0000
+recv 0x678 0001
+recv 0x505 060708090a0b
+recv 0x345 0002
+recv 0x12345679 0003
+recv 0x3705 0004
+recv 0x12345678 010203
+recv 0x505 040506
+recv 0x505 0005
+recv 0x507 0006
+recv 0x13345678 0007
+recv 0x12345670 0008
+receiver configured accept none again
+--- instance1 ---
+Sending ID ranges...
+Sending for single ext id...
+Sending for single std id...
+Sending for ext+std ids...
+Sending for std+ext ids...
+Sending for accept none...
+Sending for accept all...
+Sending for accept none again...
+Sender done

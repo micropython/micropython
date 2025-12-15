@@ -35,9 +35,81 @@
 
 #if !MICROPY_HW_ENABLE_FDCAN
 
-bool can_init(CAN_HandleTypeDef *can, int can_id, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart) {
+#if defined(MICROPY_HW_CAN3_TX)
+#define NUM_CAN 3
+#elif defined(MICROPY_HW_CAN2_TX)
+#define NUM_CAN 2
+#else
+#define NUM_CAN 1
+#endif
+
+static int get_inst_index(CAN_HandleTypeDef *hcan) {
+    #if defined(MICROPY_HW_CAN1_TX)
+    if (hcan->Instance == CAN1) {
+        return 0;
+    }
+    #endif
+    #if defined(MICROPY_HW_CAN2_TX)
+    if (hcan->Instance == CAN2) {
+        return 1;
+    }
+    #endif
+    #if defined(MICROPY_HW_CAN3_TX)
+    if (hcan->Instance == CAN3) {
+        return 2;
+    }
+    #endif
+    assert(0); // Invalid hcan argument
+    return 0;
+}
+
+static uint32_t get_tx_irqn(int can_id) {
+    switch (can_id) {
+        #if defined(MICROPY_HW_CAN1_TX)
+        case PYB_CAN_1:
+            return CAN1_TX_IRQn;
+        #endif
+        #if defined(MICROPY_HW_CAN2_TX)
+        case PYB_CAN_2:
+            return CAN2_TX_IRQn;
+        #endif
+        #if defined(MICROPY_HW_CAN3_TX)
+        case PYB_CAN_3:
+            return CAN3_TX_IRQn;
+        #endif
+        default:
+            return -1;
+    }
+}
+
+int can_get_transmit_finished(CAN_HandleTypeDef *hcan, bool *is_success) {
+    CAN_TypeDef *instance = hcan->Instance;
+    uint32_t tsr = instance->TSR;
+    int result = -1;
+
+    if (tsr & CAN_TSR_RQCP0) {
+        *is_success = tsr & CAN_TSR_TXOK0;
+        instance->TSR = CAN_TSR_RQCP0; // This also resets TXOK0, ALST0, TERR0
+        result = 0;
+    } else if (tsr & CAN_TSR_RQCP1) {
+        *is_success = tsr & CAN_TSR_TXOK1;
+        instance->TSR = CAN_TSR_RQCP1; // This also resets TXOK1, ALST1, TERR1
+        result = 1;
+    } else if (tsr & CAN_TSR_RQCP2) {
+        *is_success = tsr & CAN_TSR_TXOK2;
+        instance->TSR = CAN_TSR_RQCP2; // This also resets TXOK2, ALST2, TERR2
+        result = 2;
+    }
+
+    // Re-enable interrupts, to fire again if any transmit events outstanding
+    HAL_NVIC_EnableIRQ(get_tx_irqn(get_inst_index(hcan) + 1));
+
+    return result;
+}
+
+bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart) {
     CAN_InitTypeDef *init = &can->Init;
-    init->Mode = mode << 4; // shift-left so modes fit in a small-int
+    init->Mode = mode;
     init->Prescaler = prescaler;
     init->SJW = ((sjw - 1) & 3) << 24;
     init->BS1 = ((bs1 - 1) & 0xf) << 16;
@@ -49,8 +121,11 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, uint32_t mode, uint32_t presca
     init->RFLM = DISABLE;
     init->TXFP = DISABLE;
 
+    (void)tx_mode; // This parameter is important for initialising FDCAN variant, but not bxCAN
+
     CAN_TypeDef *CANx = NULL;
-    uint32_t sce_irq = 0;
+    uint32_t sce_irq;
+    uint32_t tx_irq = get_tx_irqn(can_id);
     const machine_pin_obj_t *pins[2];
 
     switch (can_id) {
@@ -100,12 +175,17 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, uint32_t mode, uint32_t presca
 
     // init CANx
     can->Instance = CANx;
-    HAL_CAN_Init(can);
+    if (HAL_CAN_Init(can) != HAL_OK) {
+        return false;
+    }
 
     __HAL_CAN_ENABLE_IT(can, CAN_IT_ERR | CAN_IT_BOF | CAN_IT_EPV | CAN_IT_EWG);
 
     NVIC_SetPriority(sce_irq, IRQ_PRI_CAN);
     HAL_NVIC_EnableIRQ(sce_irq);
+
+    NVIC_SetPriority(tx_irq, IRQ_PRI_CAN);
+    HAL_NVIC_EnableIRQ(tx_irq);
 
     return true;
 }
@@ -140,6 +220,10 @@ void can_deinit(CAN_HandleTypeDef *can) {
     }
 }
 
+uint32_t can_get_source_freq(void) {
+    return HAL_RCC_GetPCLK1Freq();
+}
+
 void can_disable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo) {
     __HAL_CAN_DISABLE_IT(can, ((fifo == CAN_RX_FIFO0) ?
         (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0) :
@@ -147,6 +231,23 @@ void can_disable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo) {
 }
 
 void can_enable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, bool enable_msg_received) {
+    uint32_t irq = 0;
+    if (can->Instance == CAN1) {
+        irq = (fifo == CAN_RX_FIFO0) ? CAN1_RX0_IRQn : CAN1_RX1_IRQn;
+    }
+    #if defined(CAN2)
+    else if (can->Instance == CAN2) {
+        irq = (fifo == CAN_RX_FIFO0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
+    }
+    #endif
+    #if defined(CAN3)
+    else {
+        irq = (fifo == CAN_RX_FIFO0) ? CAN3_RX0_IRQn : CAN3_RX1_IRQn;
+    }
+    #endif
+    NVIC_SetPriority(irq, IRQ_PRI_CAN);
+    HAL_NVIC_EnableIRQ(irq);
+
     __HAL_CAN_ENABLE_IT(can, ((fifo == CAN_RX_FIFO0) ?
         ((enable_msg_received ? CAN_IT_FMP0 : 0) | CAN_IT_FF0 | CAN_IT_FOV0) :
         ((enable_msg_received ? CAN_IT_FMP1 : 0) | CAN_IT_FF1 | CAN_IT_FOV1)));
@@ -214,12 +315,46 @@ int can_receive(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, CanRxMsgTypeDef *msg
     return 0; // success
 }
 
-// Lightly modified version of HAL CAN_Transmit to handle Timeout=0 correctly
+static HAL_StatusTypeDef can_transmit_common(CAN_HandleTypeDef *hcan, int index, CanTxMsgTypeDef *txmsg, const uint8_t *data) {
+    hcan->pTxMsg = txmsg;
+    (void)data; // Not needed here, caller has set it up as &tx_msg->Data
+
+    // Set up the Id
+    hcan->Instance->sTxMailBox[index].TIR &= CAN_TI0R_TXRQ;
+    if (hcan->pTxMsg->IDE == CAN_ID_STD) {
+        assert_param(IS_CAN_STDID(hcan->pTxMsg->StdId));
+        hcan->Instance->sTxMailBox[index].TIR |= ((hcan->pTxMsg->StdId << 21) | \
+            hcan->pTxMsg->RTR);
+    } else {
+        assert_param(IS_CAN_EXTID(hcan->pTxMsg->ExtId));
+        hcan->Instance->sTxMailBox[index].TIR |= ((hcan->pTxMsg->ExtId << 3) | \
+            hcan->pTxMsg->IDE | \
+            hcan->pTxMsg->RTR);
+    }
+
+    // Set up the DLC
+    hcan->pTxMsg->DLC &= (uint8_t)0x0000000F;
+    hcan->Instance->sTxMailBox[index].TDTR &= (uint32_t)0xFFFFFFF0;
+    hcan->Instance->sTxMailBox[index].TDTR |= hcan->pTxMsg->DLC;
+
+    // Set up the data field
+    hcan->Instance->sTxMailBox[index].TDLR = (((uint32_t)hcan->pTxMsg->Data[3] << 24) |
+        ((uint32_t)hcan->pTxMsg->Data[2] << 16) |
+        ((uint32_t)hcan->pTxMsg->Data[1] << 8) |
+        ((uint32_t)hcan->pTxMsg->Data[0]));
+    hcan->Instance->sTxMailBox[index].TDHR = (((uint32_t)hcan->pTxMsg->Data[7] << 24) |
+        ((uint32_t)hcan->pTxMsg->Data[6] << 16) |
+        ((uint32_t)hcan->pTxMsg->Data[5] << 8) |
+        ((uint32_t)hcan->pTxMsg->Data[4]));
+
+    // Request transmit
+    hcan->Instance->sTxMailBox[index].TIR |= CAN_TI0R_TXRQ;
+    return HAL_OK;
+}
+
 HAL_StatusTypeDef can_transmit(CAN_HandleTypeDef *hcan, CanTxMsgTypeDef *txmsg, uint8_t *data, uint32_t Timeout) {
     uint32_t transmitmailbox;
     uint32_t tickstart;
-    uint32_t rqcpflag = 0;
-    uint32_t txokflag = 0;
 
     hcan->pTxMsg = txmsg;
     (void)data; // Not needed here, caller has set it up as &tx_msg->Data
@@ -232,79 +367,86 @@ HAL_StatusTypeDef can_transmit(CAN_HandleTypeDef *hcan, CanTxMsgTypeDef *txmsg, 
     // Select one empty transmit mailbox
     if ((hcan->Instance->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) {
         transmitmailbox = CAN_TXMAILBOX_0;
-        rqcpflag = CAN_FLAG_RQCP0;
-        txokflag = CAN_FLAG_TXOK0;
     } else if ((hcan->Instance->TSR & CAN_TSR_TME1) == CAN_TSR_TME1) {
         transmitmailbox = CAN_TXMAILBOX_1;
-        rqcpflag = CAN_FLAG_RQCP1;
-        txokflag = CAN_FLAG_TXOK1;
     } else if ((hcan->Instance->TSR & CAN_TSR_TME2) == CAN_TSR_TME2) {
         transmitmailbox = CAN_TXMAILBOX_2;
-        rqcpflag = CAN_FLAG_RQCP2;
-        txokflag = CAN_FLAG_TXOK2;
-    } else {
-        transmitmailbox = CAN_TXSTATUS_NOMAILBOX;
-    }
-
-    if (transmitmailbox != CAN_TXSTATUS_NOMAILBOX) {
-        // Set up the Id
-        hcan->Instance->sTxMailBox[transmitmailbox].TIR &= CAN_TI0R_TXRQ;
-        if (hcan->pTxMsg->IDE == CAN_ID_STD) {
-            assert_param(IS_CAN_STDID(hcan->pTxMsg->StdId));
-            hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->StdId << 21) | \
-                hcan->pTxMsg->RTR);
-        } else {
-            assert_param(IS_CAN_EXTID(hcan->pTxMsg->ExtId));
-            hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->ExtId << 3) | \
-                hcan->pTxMsg->IDE | \
-                hcan->pTxMsg->RTR);
-        }
-
-        // Set up the DLC
-        hcan->pTxMsg->DLC &= (uint8_t)0x0000000F;
-        hcan->Instance->sTxMailBox[transmitmailbox].TDTR &= (uint32_t)0xFFFFFFF0;
-        hcan->Instance->sTxMailBox[transmitmailbox].TDTR |= hcan->pTxMsg->DLC;
-
-        // Set up the data field
-        hcan->Instance->sTxMailBox[transmitmailbox].TDLR = (((uint32_t)hcan->pTxMsg->Data[3] << 24) |
-            ((uint32_t)hcan->pTxMsg->Data[2] << 16) |
-            ((uint32_t)hcan->pTxMsg->Data[1] << 8) |
-            ((uint32_t)hcan->pTxMsg->Data[0]));
-        hcan->Instance->sTxMailBox[transmitmailbox].TDHR = (((uint32_t)hcan->pTxMsg->Data[7] << 24) |
-            ((uint32_t)hcan->pTxMsg->Data[6] << 16) |
-            ((uint32_t)hcan->pTxMsg->Data[5] << 8) |
-            ((uint32_t)hcan->pTxMsg->Data[4]));
-        // Request transmission
-        hcan->Instance->sTxMailBox[transmitmailbox].TIR |= CAN_TI0R_TXRQ;
-
-        if (Timeout == 0) {
-            return HAL_OK;
-        }
-
-        // Get tick
-        tickstart = HAL_GetTick();
-        // Check End of transmission flag
-        while (!(__HAL_CAN_TRANSMIT_STATUS(hcan, transmitmailbox))) {
-            // Check for the Timeout
-            if (Timeout != HAL_MAX_DELAY) {
-                if ((HAL_GetTick() - tickstart) > Timeout) {
-                    // When the timeout expires, we try to abort the transmission of the packet
-                    __HAL_CAN_CANCEL_TRANSMIT(hcan, transmitmailbox);
-                    while (!__HAL_CAN_GET_FLAG(hcan, rqcpflag)) {
-                    }
-                    if (__HAL_CAN_GET_FLAG(hcan, txokflag)) {
-                        // The abort attempt failed and the message was sent properly
-                        return HAL_OK;
-                    } else {
-                        return HAL_TIMEOUT;
-                    }
-                }
-            }
-        }
-        return HAL_OK;
     } else {
         return HAL_BUSY;
     }
+
+    HAL_StatusTypeDef err = can_transmit_common(hcan, transmitmailbox, txmsg, data);
+    if (err != HAL_OK) {
+        return err;
+    }
+
+    if (Timeout == 0) {
+        return HAL_OK;
+    }
+
+    // Get tick
+    tickstart = HAL_GetTick();
+    // Check End of transmission flag
+    while (!(__HAL_CAN_TRANSMIT_STATUS(hcan, transmitmailbox))) {
+        // Check for the Timeout
+        if (Timeout != HAL_MAX_DELAY) {
+            if ((HAL_GetTick() - tickstart) > Timeout) {
+                // When the timeout expires, we try to abort the transmission of the packet
+                bool was_transmitting = can_cancel_transmit(hcan, transmitmailbox);
+                // Note: there is a small race here where a message that transmits exactly as
+                // we call can_cancel_transmit() will still look like it failed
+                if (!was_transmitting) {
+                    // The abort attempt failed and the message was sent properly
+                    return HAL_OK;
+                } else {
+                    return HAL_TIMEOUT;
+                }
+            }
+        }
+    }
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef can_transmit_buf_index(CAN_HandleTypeDef *hcan, int index, CanTxMsgTypeDef *txmsg, const uint8_t *data) {
+    __HAL_CAN_ENABLE_IT(hcan, CAN_IT_TME);
+    return can_transmit_common(hcan, index, txmsg, data);
+}
+
+
+bool can_cancel_transmit(CAN_HandleTypeDef *hcan, int index) {
+    uint32_t empty_flag, mailbox;
+    bool result = false;
+    switch (index) {
+        case 0:
+            empty_flag = CAN_FLAG_TME0;
+            mailbox = CAN_TXMAILBOX_0;
+            break;
+        case 1:
+            empty_flag = CAN_FLAG_TME1;
+            mailbox = CAN_TXMAILBOX_1;
+            break;
+        default:
+            empty_flag = CAN_FLAG_TME2;
+            mailbox = CAN_TXMAILBOX_2;
+            break;
+    }
+    if (__HAL_CAN_GET_FLAG(hcan, empty_flag) == 0) {
+        result = true;
+        __HAL_CAN_CANCEL_TRANSMIT(hcan, mailbox);
+        mp_uint_t start = mp_hal_ticks_us();
+        while (__HAL_CAN_GET_FLAG(hcan, empty_flag) == 0) {
+            // we don't expect this to take longer than a few clock cycles, if
+            // it does then it probably indicates a bug in the driver. However,
+            // either way we don't want to end up stuck here
+            mp_uint_t elapsed = mp_hal_ticks_us() - start;
+            assert(elapsed < 1000);
+            if (elapsed >= 1000) {
+                break;
+            }
+        }
+    }
+
+    return result;
 }
 
 can_state_t can_get_state(CAN_HandleTypeDef *can) {
@@ -326,6 +468,29 @@ can_state_t can_get_state(CAN_HandleTypeDef *can) {
     }
 }
 
+void can_get_counters(CAN_HandleTypeDef *can, can_counters_t *counters) {
+    CAN_TypeDef *inst = can->Instance;
+    uint32_t esr = inst->ESR;
+    counters->tec = esr >> CAN_ESR_TEC_Pos & 0xff;
+    counters->rec = esr >> CAN_ESR_REC_Pos & 0xff;
+    counters->tx_pending = 0x01121223 >> ((inst->TSR >> CAN_TSR_TME_Pos & 7) << 2) & 0xf;
+    counters->rx_fifo0_pending = inst->RF0R >> CAN_RF0R_FMP0_Pos & 3;
+    counters->rx_fifo1_pending = inst->RF1R >> CAN_RF1R_FMP1_Pos & 3;
+}
+
+// Compatibility shim: call both the pyb.CAN and machine.CAN handlers if necessary,
+// allow them to decide which is initialised.
+static inline void call_can_irq_handler(uint can_id, can_int_t interrupt, can_rx_fifo_t fifo) {
+    #if MICROPY_PY_MACHINE_CAN
+    machine_can_irq_handler(can_id, interrupt);
+    #endif
+    if (interrupt != CAN_INT_TX_COMPLETE) {
+        pyb_can_irq_handler(can_id, interrupt, fifo);
+    }
+    // TODO: Need to do something to clear the transmit state if pyb.CAN is in use, I think
+    // (check usage of can_get_transmit_finished() from pyb CAN code)
+}
+
 // Workaround for the __HAL_CAN macros expecting a CAN_HandleTypeDef which we
 // don't have in the ISR. Using this "fake" struct instead of CAN_HandleTypeDef
 // so it's not possible to accidentally call an API that uses one of the other
@@ -336,6 +501,7 @@ typedef struct {
 
 static void can_rx_irq_handler(uint can_id, CAN_TypeDef *instance, can_rx_fifo_t fifo) {
     uint32_t full_flag, full_int, overrun_flag, overrun_int, pending_int;
+    bool msg_received;
 
     const fake_handle_t handle = {
         .Instance = instance,
@@ -347,12 +513,14 @@ static void can_rx_irq_handler(uint can_id, CAN_TypeDef *instance, can_rx_fifo_t
         overrun_flag = CAN_FLAG_FOV0;
         overrun_int = CAN_IT_FOV0;
         pending_int = CAN_IT_FMP0;
+        msg_received = __HAL_CAN_MSG_PENDING(&handle, CAN_FIFO0);
     } else {
         full_flag = CAN_FLAG_FF1;
         full_int = CAN_IT_FF1;
         overrun_flag = CAN_FLAG_FOV1;
         overrun_int = CAN_IT_FOV1;
         pending_int = CAN_IT_FMP1;
+        msg_received = __HAL_CAN_MSG_PENDING(&handle, CAN_FIFO1);
     }
 
     bool full = __HAL_CAN_GET_FLAG(&handle, full_flag);
@@ -361,37 +529,65 @@ static void can_rx_irq_handler(uint can_id, CAN_TypeDef *instance, can_rx_fifo_t
     // Note: receive interrupt bits are disabled below, and re-enabled by the
     // higher layer after calling can_receive()
 
+    // Only leave msg_received set if the interrupt is enabled,
+    // otherwise an CAN_INT_MESSAGE_RECEIVED interrupt is already pending
+    // and this ISR is being called for another reason
+    msg_received = msg_received && (handle.Instance->IER & pending_int);
+
     if (full) {
         __HAL_CAN_DISABLE_IT(&handle, full_int);
         __HAL_CAN_CLEAR_FLAG(&handle, full_flag);
         if (!overrun) {
-            can_irq_handler(can_id, CAN_INT_FIFO_FULL, fifo);
+            call_can_irq_handler(can_id, CAN_INT_FIFO_FULL, fifo);
         }
     }
     if (overrun) {
         __HAL_CAN_DISABLE_IT(&handle, overrun_int);
         __HAL_CAN_CLEAR_FLAG(&handle, overrun_flag);
-        can_irq_handler(can_id, CAN_INT_FIFO_OVERFLOW, fifo);
+        call_can_irq_handler(can_id, CAN_INT_FIFO_OVERFLOW, fifo);
     }
 
-    if (!(full || overrun)) {
-        // Process of elimination, if neither of the above
-        // FIFO status flags are set then message pending interrupt is what fired.
+    if (msg_received) {
         __HAL_CAN_DISABLE_IT(&handle, pending_int);
-        can_irq_handler(can_id, CAN_INT_MESSAGE_RECEIVED, fifo);
+        call_can_irq_handler(can_id, CAN_INT_MESSAGE_RECEIVED, fifo);
     }
 }
 
-static void can_sce_irq_handler(uint can_id, CAN_TypeDef *instance) {
+static void can_sce_irq_handler(int can_id, CAN_TypeDef *instance) {
     instance->MSR = CAN_MSR_ERRI; // Write to clear ERRIE interrupt
     uint32_t esr = instance->ESR;
     if (esr & CAN_ESR_BOFF) {
-        can_irq_handler(can_id, CAN_INT_ERR_BUS_OFF, 0);
+        call_can_irq_handler(can_id, CAN_INT_ERR_BUS_OFF, 0);
     } else if (esr & CAN_ESR_EPVF) {
-        can_irq_handler(can_id, CAN_INT_ERR_PASSIVE, 0);
+        call_can_irq_handler(can_id, CAN_INT_ERR_PASSIVE, 0);
     } else if (esr & CAN_ESR_EWGF) {
-        can_irq_handler(can_id, CAN_INT_ERR_WARNING, 0);
+        call_can_irq_handler(can_id, CAN_INT_ERR_WARNING, 0);
     }
+}
+
+void can_disable_tx_interrupts(CAN_HandleTypeDef *can) {
+    __HAL_CAN_DISABLE_IT(can, CAN_IT_TME);
+}
+
+void can_restart(CAN_HandleTypeDef *can) {
+    CAN_TypeDef *instance = can->Instance;
+    // This sequence puts the hardware in and out of initialisation mode,
+    // which is the manual way to leave Bus-Off mode (see RM0090 CAN_MCR bit ABOM)
+    instance->MCR |= CAN_MCR_INRQ;
+    while ((instance->MSR & CAN_MSR_INAK) == 0) {
+    }
+    instance->MCR &= ~CAN_MCR_INRQ;
+    while ((instance->MSR & CAN_MSR_INAK)) {
+    }
+}
+
+static void can_tx_irq_handler(int can_id, CAN_TypeDef *instance) {
+    // Update mailbox tx state based on any RQCPx flags which are set,
+    // and then clear the RQCPx flags.
+
+    // TX IRQ is re-enabled by higher layer
+    HAL_NVIC_DisableIRQ(get_tx_irqn(can_id));
+    call_can_irq_handler(can_id, CAN_INT_TX_COMPLETE, 0);
 }
 
 #if defined(MICROPY_HW_CAN1_TX)
@@ -411,6 +607,12 @@ void CAN1_SCE_IRQHandler(void) {
     IRQ_ENTER(CAN1_SCE_IRQn);
     can_sce_irq_handler(PYB_CAN_1, CAN1);
     IRQ_EXIT(CAN1_SCE_IRQn);
+}
+
+void CAN1_TX_IRQHandler(void) {
+    IRQ_ENTER(CAN1_TX_IRQn);
+    can_tx_irq_handler(PYB_CAN_1, CAN1);
+    IRQ_EXIT(CAN1_TX_IRQn);
 }
 #endif
 
@@ -432,6 +634,12 @@ void CAN2_SCE_IRQHandler(void) {
     can_sce_irq_handler(PYB_CAN_2, CAN2);
     IRQ_EXIT(CAN2_SCE_IRQn);
 }
+
+void CAN2_TX_IRQHandler(void) {
+    IRQ_ENTER(CAN2_TX_IRQn);
+    can_tx_irq_handler(PYB_CAN_2, CAN2);
+    IRQ_EXIT(CAN2_TX_IRQn);
+}
 #endif
 
 #if defined(MICROPY_HW_CAN3_TX)
@@ -451,6 +659,12 @@ void CAN3_SCE_IRQHandler(void) {
     IRQ_ENTER(CAN3_SCE_IRQn);
     can_sce_irq_handler(PYB_CAN_3, CAN3);
     IRQ_EXIT(CAN3_SCE_IRQn);
+}
+
+void CAN3_TX_IRQHandler(void) {
+    IRQ_ENTER(CAN3_TX_IRQn);
+    can_tx_irq_handler(PYB_CAN_3, CAN3);
+    IRQ_EXIT(CAN3_TX_IRQn);
 }
 #endif
 
