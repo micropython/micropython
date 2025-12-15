@@ -124,10 +124,10 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     };
 
     // 2. Configure pins for I2C operation
-    Cy_GPIO_SetHSIOM(GPIO_PRT17, self->scl_pin, P17_0_SCB5_I2C_SCL);
-    Cy_GPIO_SetHSIOM(GPIO_PRT17, self->sda_pin, P17_1_SCB5_I2C_SDA);
-    Cy_GPIO_SetDrivemode(GPIO_PRT17, self->scl_pin, CY_GPIO_DM_OD_DRIVESLOW);
-    Cy_GPIO_SetDrivemode(GPIO_PRT17, self->sda_pin, CY_GPIO_DM_OD_DRIVESLOW);
+    Cy_GPIO_SetHSIOM(MICROPY_HW_I2C0_SCL_PORT, self->scl_pin, MICROPY_HW_I2C0_SCL_HSIOM);
+    Cy_GPIO_SetHSIOM(MICROPY_HW_I2C0_SDA_PORT, self->sda_pin, MICROPY_HW_I2C0_SDA_HSIOM);
+    Cy_GPIO_SetDrivemode(MICROPY_HW_I2C0_SCL_PORT, self->scl_pin, CY_GPIO_DM_OD_DRIVESLOW);
+    Cy_GPIO_SetDrivemode(MICROPY_HW_I2C0_SDA_PORT, self->sda_pin, CY_GPIO_DM_OD_DRIVESLOW);
 
     // 3. Initialize I2C with PDL (configure I2C to operate)
     result = Cy_SCB_I2C_Init(MICROPY_HW_I2C0_SCB, &self->cfg, &self->ctx);

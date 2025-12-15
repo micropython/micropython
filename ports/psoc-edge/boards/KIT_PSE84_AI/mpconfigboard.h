@@ -53,6 +53,12 @@
 
 // I2C Configuration
 #define MICROPY_HW_I2C0_SCB                     (SCB5)
+#define MICROPY_HW_I2C0_SCL_PORT                GPIO_PRT17
+#define MICROPY_HW_I2C0_SCL_PIN                 P17_0_NUM
+#define MICROPY_HW_I2C0_SCL_HSIOM               P17_0_SCB5_I2C_SCL
+#define MICROPY_HW_I2C0_SDA_PORT                GPIO_PRT17
+#define MICROPY_HW_I2C0_SDA_PIN                 P17_1_NUM
+#define MICROPY_HW_I2C0_SDA_HSIOM               P17_1_SCB5_I2C_SDA
 #define MICROPY_HW_I2C0_SCL                     (P17_0_NUM)
 #define MICROPY_HW_I2C0_SDA                     (P17_1_NUM)
 #define MAX_I2C                                 1
