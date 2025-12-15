@@ -122,6 +122,14 @@
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
 #endif
+#ifndef MICROPY_PY_MACHINE_CAN
+#ifdef MICROPY_HW_CAN1_TX
+#define MICROPY_PY_MACHINE_CAN (1)
+#else
+#define MICROPY_PY_MACHINE_CAN (0)
+#endif
+#endif
+#define MICROPY_PY_MACHINE_CAN_INCLUDEFILE "ports/stm32/machine_can.c"
 #define MICROPY_PY_MACHINE_DHT_READINTO (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
@@ -206,6 +214,17 @@ extern const struct _mp_obj_type_t network_lan_type;
 #else
 #define MICROPY_HW_NIC_ETH
 #endif
+
+// Provide a port-level default of MICROPY_HW_NUM_CAN based on pin definitions
+#ifndef MICROPY_HW_NUM_CAN
+#if defined(MICROPY_HW_CAN3_TX)
+#define MICROPY_HW_NUM_CAN 3
+#elif defined(MICROPY_HW_CAN2_TX)
+#define MICROPY_HW_NUM_CAN 2
+#elif defined(MICROPY_HW_CAN1_TX)
+#define MICROPY_HW_NUM_CAN 1
+#endif
+#endif // MICROPY_HW_NUM_CAN
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \

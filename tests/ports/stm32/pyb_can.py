@@ -188,13 +188,13 @@ for n in [0, 8, 16, 24]:
     else:
         can.setfilter(0, CAN.MASK, 0, (filter_id, filter_mask), extframe=True)
 
-    can.send("ok", id_ok, timeout=3, extframe=True)
+    can.send("ok", id_ok, timeout=5, extframe=True)
     pyb.delay(10)
     if can.any(0):
         msg = can.recv(0)
         print((hex(filter_id), hex(filter_mask), hex(msg[0]), msg[1], msg[4]))
 
-    can.send("fail", id_fail, timeout=3, extframe=True)
+    can.send("fail", id_fail, timeout=5, extframe=True)
     pyb.delay(10)
     if can.any(0):
         msg = can.recv(0)
