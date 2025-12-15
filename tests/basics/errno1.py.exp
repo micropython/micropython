@@ -1,6 +1,6 @@
 <class 'int'>
-[Errno  ] EIO
-[Errno  ] EIO: details
+[Errno 
+[Errno  details
 ( , 'details', 'more details')
-9999
+-9999
 errno
