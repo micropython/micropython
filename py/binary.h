@@ -33,6 +33,32 @@
 // (underlyingly they're same).  Can't use 0 here because that's used to detect
 // type-specification errors due to end-of-string.
 #define MP_TYPECODE_BYTEARRAY 1
+#define MP_TYPECODE_OBJECT 'O'
+#define MP_TYPECODE_CALLBACK 'C'
+#define MP_TYPECODE_VOID 'v'
+#define MP_TYPECODE_HALFFLOAT 'e'
+
+// array/memoryview of the given C type
+#define MP_TYPECODE_C(type) _Generic((type)0, \
+    char : 'b', \
+    signed char : 'b', \
+    unsigned char : 'B', \
+    short : 'h', \
+    unsigned short : 'H', \
+    int : 'i', \
+    unsigned int : 'I', \
+    long : 'l', \
+    unsigned long : 'L', \
+    long long : 'q', \
+    unsigned long long : 'Q', \
+    float : 'f', \
+    double : 'd', \
+    char _MP_TYPECODES_UNCRUSTIFY_WORKAROUND_STAR: 'S', \
+    const char _MP_TYPECODES_UNCRUSTIFY_WORKAROUND_STAR: 's', \
+    void _MP_TYPECODES_UNCRUSTIFY_WORKAROUND_STAR: 'P', \
+    const void _MP_TYPECODES_UNCRUSTIFY_WORKAROUND_STAR: 'p' \
+    )
+#define _MP_TYPECODES_UNCRUSTIFY_WORKAROUND_STAR *
 
 // Used only for memoryview types, set in "typecode" to indicate a writable memoryview
 #define MP_TYPECODE_FLAG_RW (0x80)
