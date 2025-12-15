@@ -43,6 +43,31 @@
 // Use core features for Thonny compatibility (larger firmware)
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
 
+// Enable bytearray for I2C Target memory buffers
+#define MICROPY_PY_BUILTINS_BYTEARRAY (1)
+
+// Disable optional modules, only use bytearray
+#define MICROPY_PY_ARRAY                (0)
+#define MICROPY_PY_BINASCII             (0)
+#define MICROPY_PY_COLLECTIONS          (0)
+#define MICROPY_PY_ERRNO                (0)
+#define MICROPY_PY_HASHLIB              (0)
+#define MICROPY_PY_HEAPQ                (0)
+#define MICROPY_PY_IO                   (0)
+#define MICROPY_PY_JSON                 (0)
+#define MICROPY_PY_OS                   (0)
+#define MICROPY_PY_PLATFORM             (0)
+#define MICROPY_PY_RANDOM               (0)
+#define MICROPY_PY_RE                   (0)
+#define MICROPY_PY_SELECT               (0)
+#define MICROPY_PY_STRUCT               (0)
+#define MICROPY_PY_DEFLATE              (0)
+#define MICROPY_PY_FRAMEBUF             (0)
+#define MICROPY_PY_GC                   (0)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
+#define MICROPY_PY_UCTYPES              (0)
+#define MICROPY_PY_ASYNCIO              (0)
+
 // You can disable the built-in MicroPython compiler by setting the following
 // config option to 0.  If you do this then you won't get a REPL prompt, but you
 // will still be able to execute pre-compiled scripts, compiled with mpy-cross.
@@ -93,9 +118,17 @@
 
 // Machine module
 #define MICROPY_PY_MACHINE                      (1)
+// Use extmod's modmachine.c which includes I2CTarget
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (0)
+
+// I2C Target support (requires GC and Scheduler for IRQ framework)
+#define MICROPY_PY_MACHINE_I2C_TARGET           (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/psoc-edge/machine_i2c_target.c"
+#define MICROPY_ENABLE_SCHEDULER                (1)
+#define MICROPY_SCHEDULER_DEPTH                 (8)
 
 #define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
 
