@@ -52,7 +52,5 @@ extern const mp_obj_type_t pyb_can_type;
 void pyb_can_deinit_all(void);
 void pyb_can_init0(void);
 
-void pyb_can_irq_handler(uint can_id, can_rx_fifo_t fifo, can_int_t interrupt);
-
 #endif
 #endif
