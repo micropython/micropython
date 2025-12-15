@@ -182,6 +182,8 @@
     } \
 } while(0)
 
+#define FRAME_UPDATE_ALWAYS FRAME_UPDATE
+
 #define TRACE_TICK(current_ip, current_sp, is_exception) do { \
     assert(code_state != code_state->prev_state); \
     assert(MP_STATE_THREAD(current_code_state) == code_state); \
@@ -193,11 +195,45 @@
     } \
 } while(0)
 
+#elif MICROPY_PY_SYS_SETTRACE_DUAL_VM
+
+#define FRAME_SETUP() do { \
+    assert(code_state != code_state->prev_state); \
+    MP_STATE_THREAD(current_code_state) = code_state; \
+    assert(code_state != code_state->prev_state); \
+} while(0)
+
+#define FRAME_ENTER() do { \
+    assert(code_state != code_state->prev_state); \
+    code_state->prev_state = MP_STATE_THREAD(current_code_state); \
+    assert(code_state != code_state->prev_state); \
+    assert(!mp_prof_is_executing); \
+} while(0)
+
+#define FRAME_LEAVE() do { \
+    assert(code_state != code_state->prev_state); \
+    MP_STATE_THREAD(current_code_state) = code_state->prev_state; \
+    assert(code_state != code_state->prev_state); \
+} while(0)
+
+#define FRAME_UPDATE()
+
+#define FRAME_UPDATE_ALWAYS() do { \
+    assert(MP_STATE_THREAD(current_code_state) == code_state); \
+    assert(!mp_prof_is_executing); \
+    if (MP_STATE_THREAD(prof_trace_callback) != MP_OBJ_NULL) { \
+        code_state->frame = MP_OBJ_TO_PTR(mp_prof_frame_update(code_state)); \
+    } \
+} while(0)
+
+#define TRACE_TICK(current_ip, current_sp, is_exception)
+
 #else // MICROPY_PY_SYS_SETTRACE
 #define FRAME_SETUP()
 #define FRAME_ENTER()
 #define FRAME_LEAVE()
 #define FRAME_UPDATE()
+#define FRAME_UPDATE_ALWAYS()
 #define TRACE_TICK(current_ip, current_sp, is_exception)
 #endif // MICROPY_PY_SYS_SETTRACE
 
@@ -963,7 +999,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -998,7 +1034,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION_VAR_KW): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -1044,7 +1080,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_METHOD): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -1083,7 +1119,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_METHOD_VAR_KW): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional

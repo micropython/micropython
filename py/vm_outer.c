@@ -62,6 +62,7 @@ mp_vm_return_kind_t MICROPY_WRAP_MP_EXECUTE_BYTECODE(mp_execute_bytecode)(mp_cod
 #undef FRAME_ENTER
 #undef FRAME_LEAVE
 #undef FRAME_UPDATE
+#undef FRAME_UPDATE_ALWAYS
 #undef TRACE_TICK
 
 // Include the VM source code with settrace enabled.
