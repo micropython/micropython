@@ -166,6 +166,8 @@ static esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
 
         esp_err_t err = sdmmc_card_init(&(self->host), &(self->card));
         if (err == ESP_OK) {
+            // Ensure card's host structure has the correct slot after init
+            self->card.host.slot = self->host.slot;
             self->flags |= SDCARD_CARD_FLAGS_CARD_INIT_DONE;
         } else {
             self->flags &= ~SDCARD_CARD_FLAGS_CARD_INIT_DONE;
@@ -307,6 +309,7 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     else {
         sdmmc_host_t _temp_host = SDMMC_HOST_DEFAULT();
         _temp_host.max_freq_khz = freq / 1000;
+        _temp_host.slot = slot_num;
         self->host = _temp_host;
     }
     #endif
