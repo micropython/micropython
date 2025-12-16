@@ -37,49 +37,54 @@
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
-MP_DEFINE_CONST_OBJ_TYPE(
-    pin_cpu_pins_obj_type,
-    MP_QSTR_cpu,
-    MP_TYPE_FLAG_NONE,
-    locals_dict, &machine_pin_cpu_pins_locals_dict
-    );
+static uint8_t pin_get_mode(const machine_pin_obj_t *self) {
+    uint32_t drive_mode = Cy_GPIO_GetDrivemode(Cy_GPIO_PortToAddr(self->port), self->pin);
 
-MP_DEFINE_CONST_OBJ_TYPE(
-    pin_board_pins_obj_type,
-    MP_QSTR_board,
-    MP_TYPE_FLAG_NONE,
-    locals_dict, &machine_pin_board_pins_locals_dict
-    );
+    switch (drive_mode) {
+        case CY_GPIO_DM_HIGHZ:
+        case CY_GPIO_DM_PULLUP:
+        case CY_GPIO_DM_PULLDOWN:
+        case CY_GPIO_DM_PULLUP_DOWN:
+            return GPIO_MODE_IN;
 
-const machine_pin_obj_t *machine_pin_get_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
-    const mp_map_t *named_map = &named_pins->map;
-    mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t *)named_map, name, MP_MAP_LOOKUP);
-    if (named_elem != NULL && named_elem->value != MP_OBJ_NULL) {
-        return MP_OBJ_TO_PTR(named_elem->value);
+        case CY_GPIO_DM_STRONG_IN_OFF:
+        case CY_GPIO_DM_PULLUP_IN_OFF:
+        case CY_GPIO_DM_PULLDOWN_IN_OFF:
+        case CY_GPIO_DM_PULLUP_DOWN_IN_OFF:
+            return GPIO_MODE_OUT;
+
+        case CY_GPIO_DM_OD_DRIVESLOW_IN_OFF:
+        /* These 2 modes are not configurable
+        by the user but they could be set by
+        at C level */
+        case CY_GPIO_DM_OD_DRIVESLOW:
+        case CY_GPIO_DM_OD_DRIVESHIGH:
+            return GPIO_MODE_OPEN_DRAIN;
+
+        default:
+            return GPIO_MODE_NONE;
     }
-    return NULL;
 }
-const machine_pin_obj_t *machine_pin_get_pin_obj(mp_obj_t obj) {
-    const machine_pin_obj_t *pin_obj;
 
-    // pin can a pin object already
-    if (mp_obj_is_type(obj, &machine_pin_type)) {
-        return MP_OBJ_TO_PTR(obj);
+static uint8_t pin_get_pull(const machine_pin_obj_t *self) {
+    uint32_t drive_mode = Cy_GPIO_GetDrivemode(Cy_GPIO_PortToAddr(self->port), self->pin);
+
+    switch (drive_mode) {
+        case CY_GPIO_DM_PULLUP:
+        case CY_GPIO_DM_PULLUP_IN_OFF:
+            return GPIO_PULL_UP;
+
+        case CY_GPIO_DM_PULLDOWN:
+        case CY_GPIO_DM_PULLDOWN_IN_OFF:
+            return GPIO_PULL_DOWN;
+
+        case CY_GPIO_DM_PULLUP_DOWN:
+        case CY_GPIO_DM_PULLUP_DOWN_IN_OFF:
+            return GPIO_PULL_UP_DOWN;
+
+        default:
+            return GPIO_PULL_NONE;
     }
-
-    // pin can be a board named pin
-    pin_obj = machine_pin_get_named_pin(&machine_pin_board_pins_locals_dict, obj);
-    if (pin_obj) {
-        return pin_obj;
-    }
-
-    // pin can be a cpu named pin
-    pin_obj = machine_pin_get_named_pin(&machine_pin_cpu_pins_locals_dict, obj);
-    if (pin_obj) {
-        return pin_obj;
-    }
-
-    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%s) doesn't exist"), mp_obj_str_get_str(obj));
 }
 
 static uint32_t get_drive_mode(uint8_t mode, uint8_t pull) {
@@ -200,6 +205,38 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     return mp_const_none;
 }
 
+const machine_pin_obj_t *machine_pin_get_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+    const mp_map_t *named_map = &named_pins->map;
+    mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t *)named_map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL && named_elem->value != MP_OBJ_NULL) {
+        return MP_OBJ_TO_PTR(named_elem->value);
+    }
+    return NULL;
+}
+
+const machine_pin_obj_t *machine_pin_get_pin_obj(mp_obj_t obj) {
+    const machine_pin_obj_t *pin_obj;
+
+    // pin can a pin object already
+    if (mp_obj_is_type(obj, &machine_pin_type)) {
+        return MP_OBJ_TO_PTR(obj);
+    }
+
+    // pin can be a board named pin
+    pin_obj = machine_pin_get_named_pin(&machine_pin_board_pins_locals_dict, obj);
+    if (pin_obj) {
+        return pin_obj;
+    }
+
+    // pin can be a cpu named pin
+    pin_obj = machine_pin_get_named_pin(&machine_pin_cpu_pins_locals_dict, obj);
+    if (pin_obj) {
+        return pin_obj;
+    }
+
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%s) doesn't exist"), mp_obj_str_get_str(obj));
+}
+
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 6, true);
 
@@ -221,7 +258,36 @@ static mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_obj_init_obj, 1, machine_pin_obj_init);
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    // TODO: Placeholder.
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "Pin(Pin.cpu.%q", self->name);
+
+    uint8_t mode = pin_get_mode(self);
+    qstr mode_qst = MP_QSTRnull;
+    if (mode == GPIO_MODE_IN) {
+        mode_qst = MP_QSTR_IN;
+    } else if (mode == GPIO_MODE_OUT) {
+        mode_qst = MP_QSTR_OUT;
+    } else if (mode == GPIO_MODE_OPEN_DRAIN) {
+        mode_qst = MP_QSTR_OPEN_DRAIN;
+    }
+    if (mode_qst != MP_QSTRnull) {
+        mp_printf(print, ", mode=Pin.%q", mode_qst);
+    }
+
+    uint8_t pull = pin_get_pull(self);
+    qstr pull_qst = MP_QSTRnull;
+    if (pull == GPIO_PULL_UP) {
+        pull_qst = MP_QSTR_PULL_UP;
+    } else if (pull == GPIO_PULL_DOWN) {
+        pull_qst = MP_QSTR_PULL_DOWN;
+    } else if (pull == GPIO_PULL_UP_DOWN) {
+        pull_qst = MP_QSTR_PULL_UP_DOWN;
+    }
+
+    if (pull_qst != MP_QSTRnull) {
+        mp_printf(print, ", pull=Pin.%q", pull_qst);
+    }
+    mp_print_str(print, ")");
 }
 
 static mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -237,6 +303,20 @@ static mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 static const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_cpu_pins_obj_type,
+    MP_QSTR_cpu,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_cpu_pins_locals_dict
+    );
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_board_pins_obj_type,
+    MP_QSTR_board,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_board_pins_locals_dict
+    );
 
 static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // Instance methods
@@ -270,7 +350,6 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 };
 
 static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
-
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_type,
