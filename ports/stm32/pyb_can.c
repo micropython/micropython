@@ -440,18 +440,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_state_obj, pyb_can_state);
 // Get info about error states and TX/RX buffers
 static mp_obj_t pyb_can_info(size_t n_args, const mp_obj_t *args) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_list_t *list;
-    if (n_args == 1) {
-        list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
-    } else {
-        if (!mp_obj_is_type(args[1], &mp_type_list)) {
-            mp_raise_TypeError(NULL);
-        }
-        list = MP_OBJ_TO_PTR(args[1]);
-        if (list->len < 8) {
-            mp_raise_ValueError(NULL);
-        }
-    }
+    mp_obj_list_t *list = mp_obj_list_optional_arg(n_args > 1 ? args[1] : NULL, 8);
 
     #if MICROPY_HW_ENABLE_FDCAN
     FDCAN_GlobalTypeDef *can = self->can.Instance;
@@ -656,24 +645,14 @@ static mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         can_enable_rx_interrupts(&self->can, fifo, fifo_empty);
     }
 
-    // Create the tuple, or get the list, that will hold the return values
+    // Create or get the list, that will hold the return values
     // Also populate the fifth element, either a new bytes or reuse existing memoryview
-    mp_obj_t ret_obj = args[ARG_list].u_obj;
-    mp_obj_t *items;
-    if (ret_obj == mp_const_none) {
-        ret_obj = mp_obj_new_tuple(5, NULL);
-        items = ((mp_obj_tuple_t *)MP_OBJ_TO_PTR(ret_obj))->items;
+    mp_obj_list_t *list = mp_obj_list_optional_arg(args[ARG_list].u_obj, 5);
+    mp_obj_t *items = list->items;
+    if (MP_OBJ_FROM_PTR(list) != args[ARG_list].u_obj) {
+        // If newly allocated, create item 4
         items[4] = mp_obj_new_bytes(rx_data, rx_dlc);
     } else {
-        // User should provide a list of length at least 5 to hold the values
-        if (!mp_obj_is_type(ret_obj, &mp_type_list)) {
-            mp_raise_TypeError(NULL);
-        }
-        mp_obj_list_t *list = MP_OBJ_TO_PTR(ret_obj);
-        if (list->len < 5) {
-            mp_raise_ValueError(NULL);
-        }
-        items = list->items;
         // Fifth element must be a memoryview which we assume points to a
         // byte-like array which is large enough, and then we resize it inplace
         if (!mp_obj_is_type(items[4], &mp_type_memoryview)) {
@@ -702,7 +681,7 @@ static mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #endif
 
     // Return the result
-    return ret_obj;
+    return MP_OBJ_FROM_PTR(list);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
 
