@@ -1,0 +1,243 @@
+# QSPI flash
+,-P0_0
+,-P0_1
+,-P1_0
+,-P1_1
+,-P1_2
+,-P1_3
+
+# Not connected
+#,-P1_4
+#,-P1_5
+#,-P1_6
+#,-P1_7
+
+# QSPI flash
+,-P2_0
+
+# I3C bus
+,P3_0
+,P3_1
+
+# PSRAM
+,-P4_0
+,-P4_1
+,-P4_2
+,-P4_3
+,-P4_4
+,-P4_5
+,-P4_6
+,-P4_7
+
+# Not connected
+#,-P5_0
+
+# JTAG Debug I/O
+,-P6_0
+,-P6_1
+,-P6_2
+,-P6_3
+
+# Int magnetometer
+,P6_4
+
+# KitProg UART RX
+,-P6_5
+
+# Int IMU 
+,P6_6
+
+# KitProg UART TX
+,-P6_7
+
+# User button
+,P7_0
+
+# USB ID OGT
+,-P7_1
+
+# Not connected
+#,-P7_2
+
+# USB direction
+,-P7_3
+
+# External clock input
+,-P7_4
+
+# USB OUT1 DRP
+,-P7_5
+
+# USB OUT2 DRP
+,-P7_6
+
+# Int IMU1
+,P7_7
+
+# I2C 1.8V
+,P8_0
+,P8_1
+
+# Not connected
+#,-P8_2
+
+# USB fault signal DRP
+,-P8_3
+
+# Not connected
+#,-P8_4
+
+# PDM
+,P8_5
+,P8_6
+
+# Not connected
+#,-P8_7
+
+# J5 connector
+,P9_0
+,P9_1
+,P9_2
+,P9_3
+
+# Bluetooth
+,-P10_0
+,-P10_1
+,-P10_2
+,-P10_3
+,-P10_4
+
+# User LED2
+,P10_5
+
+# Bluetooth
+,-P10_6
+
+# User LED1
+,P10_7
+
+# Bluetooth
+,-P11_0
+
+# PCKL level translator
+,-P11_1
+
+# Bluetooth
+,-P11_2
+
+# Int pressure sensor
+,P11_3
+
+# Wifi 
+,-P11_4
+
+# Not connected
+#,-P11_5
+
+# Wifi
+,-P11_6
+
+# Not connected
+#,-P11_7
+
+# Wifi
+,-P12_0
+,-P12_1
+,-P12_2
+
+# I2S FYSYNC
+,P12_3
+
+# Wifi
+,-P12_4
+,-P12_5
+
+# J17 expansion connector
+,P13_0
+,P13_1
+,P13_2
+,P13_3
+,P13_4
+,P13_5
+,P13_6
+,P13_7
+
+# Analog microphones
+,P14_0
+,P14_1
+,P14_2
+,P14_3
+,P14_4
+,P14_5
+,P14_6
+,P14_7
+
+# J17 expansion connector
+,P15_0
+,P15_1
+,P15_2
+,P15_3
+,P15_4
+,P15_5
+,P15_6
+,P15_7
+
+# J14 connector
+,P16_0
+,P16_1
+,P16_2
+,P16_3
+,P16_4
+,P16_5
+,P16_6
+,P16_7
+,P17_0
+,P17_1
+,P17_2
+,P17_3
+,P17_4
+,P17_5
+
+# Boot
+,-P17_6
+
+# J14 connector
+,P17_7
+
+# Oscillators
+,-P18_0
+,-P18_1
+,-P19_0
+,-P19_1
+
+,-P20_0
+# Serial Int config
+,-P20_1
+,-P20_2
+
+# Int Radar
+,P20_3
+
+# USER LED RGB G
+,P20_4
+# USER LED RGB B
+,P20_5
+# USER LED RGB R
+,P20_6
+
+# Radar reset
+,P20_7
+
+# Wifi 
+,-P21_0
+
+# I2S
+,P21_1
+,P21_2
+,P21_3
+
+# Radar SPI
+,P21_4
+,P21_5
+,P21_6
+,P21_7
