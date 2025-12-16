@@ -54,7 +54,7 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
     return 1000000; // 1 MHz, this is a placeholder value
 }
 
-#define MP_HAL_PIN_FMT          "%u"
+#define MP_HAL_PIN_FMT          "%q"
 #define mp_hal_pin_obj_t        const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   machine_pin_get_pin_obj(o)
 #define mp_hal_pin_name(p)      ((p)->name)
