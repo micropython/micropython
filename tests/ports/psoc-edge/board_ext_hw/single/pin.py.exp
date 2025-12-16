@@ -1,0 +1,2 @@
+Pin(Pin.cpu.P16_0, mode=Pin.OUT)
+Pin(Pin.cpu.P16_1, mode=Pin.IN, pull=Pin.PULL_UP)
