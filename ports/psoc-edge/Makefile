@@ -132,7 +132,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
-MPY_CROSS_FLAGS += -march=armv8-m.main
+MPY_CROSS_FLAGS += -march=armv8-m.main+dsp
 
 MPY_APP_NAME = mpy_edge_app_ns
 
