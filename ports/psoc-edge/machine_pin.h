@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_PSOC_EDGE_MACHINE_PIN_H
 #define MICROPY_INCLUDED_PSOC_EDGE_MACHINE_PIN_H
 
+#include "py/obj.h"
+
 enum {GPIO_MODE_NONE = 0, GPIO_MODE_IN, GPIO_MODE_OUT, GPIO_MODE_OPEN_DRAIN};
 
 enum {GPIO_PULL_NONE = 0, GPIO_PULL_UP, GPIO_PULL_DOWN, GPIO_PULL_UP_DOWN};
@@ -37,6 +39,13 @@ typedef struct _machine_pin_obj_t {
     uint8_t port;
     uint8_t pin;
 } machine_pin_obj_t;
+
+extern const mp_obj_type_t machine_pin_type;
+
+#include "genhdr/pins.h"
+
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 const machine_pin_obj_t *machine_pin_get_pin_obj(mp_obj_t obj);
 
