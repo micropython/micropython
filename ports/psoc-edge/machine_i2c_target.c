@@ -24,10 +24,18 @@
  * THE SOFTWARE.
  */
 
+// MTB includes
 #include "cybsp.h"
 #include "cy_scb_i2c.h"
 #include "cy_sysint.h"
 #include "cy_sysclk.h"
+
+// MicroPython includes
+#include "py/runtime.h"
+#include "py/mphal.h"
+#include "extmod/modmachine.h"
+
+// port-specific includes
 #include "mplogger.h"
 
 // PDL event callback for slave operations
@@ -96,6 +104,36 @@ static void i2c_slave_event_callback(uint32_t events) {
 
     machine_i2c_target_data_t *data = &machine_i2c_target_data[self->id];
 
+    // Handle slave read request (master wants to read - address match)
+    // This is triggered when master sends slave address with READ bit
+    if (events & CY_SCB_I2C_SLAVE_READ_EVENT) {
+        mplogger_print("I2C Slave: Read request (address matched)\n");
+
+        // Call extmod helper for address match with read
+        machine_i2c_target_data_addr_match(data, true);
+    }
+
+    // Handle slave write request (master wants to write - address match)
+    // This is triggered when master sends slave address with WRITE bit
+    if (events & CY_SCB_I2C_SLAVE_WRITE_EVENT) {
+        mplogger_print("I2C Slave: Write request (address matched)\n");
+
+        // Call extmod helper for address match with write
+        machine_i2c_target_data_addr_match(data, false);
+    }
+
+    // Handle slave read buffer empty (master has read all configured data)
+    // This allows application to provide more data dynamically
+    if (events & CY_SCB_I2C_SLAVE_RD_BUF_EMPTY_EVENT) {
+        mplogger_print("I2C Slave: Read buffer empty\n");
+
+        // Trigger read request events to refill buffer
+        if (data->mem_buf != NULL && data->mem_len > 0) {
+            // Request more data to send
+            machine_i2c_target_data_read_request(self, data);
+        }
+    }
+
     // Handle slave read complete (master read data from slave)
     if (events & CY_SCB_I2C_SLAVE_RD_CMPLT_EVENT) {
         if (!(events & CY_SCB_I2C_SLAVE_ERR_EVENT)) {
@@ -112,7 +150,7 @@ static void i2c_slave_event_callback(uint32_t events) {
         // Reset index for next transaction
         self->tx_index = 0;
 
-        // Notify application layer
+        // Notify application layer - this triggers END_READ event
         machine_i2c_target_data_restart_or_stop(data);
     }
 
@@ -123,8 +161,11 @@ static void i2c_slave_event_callback(uint32_t events) {
             uint32_t bytes_received = Cy_SCB_I2C_SlaveGetWriteTransferCount(MICROPY_HW_I2C0_SCB, &self->ctx);
             mplogger_print("I2C Slave: Write complete, %u bytes received\n", bytes_received);
 
-            // Process received data
-            self->rx_index = bytes_received;
+            // Process received data through write request events
+            self->rx_index = 0;
+            while (self->rx_index < bytes_received) {
+                machine_i2c_target_data_write_request(self, data);
+            }
         }
 
         // Reconfigure write buffer for next transaction (per PDL documentation)
@@ -135,12 +176,9 @@ static void i2c_slave_event_callback(uint32_t events) {
         // Clear write status to capture following updates
         Cy_SCB_I2C_SlaveClearWriteStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
 
-        // Notify application layer
+        // Notify application layer - this triggers END_WRITE event
         machine_i2c_target_data_restart_or_stop(data);
     }
-
-    // Note: PDL only provides RD_CMPLT and WR_CMPLT events
-    // Address matching is handled automatically by hardware
 
     // Handle errors
     if (events & CY_SCB_I2C_SLAVE_ERR_EVENT) {
@@ -158,7 +196,7 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
         Cy_SCB_I2C_Disable(MICROPY_HW_I2C0_SCB, &self->ctx);
     }
 
-    // Configure I2C slave mode (following PDL documentation example)
+    // Configure I2C slave mode
     self->cfg = (cy_stc_scb_i2c_config_t) {
         .i2cMode = CY_SCB_I2C_SLAVE,
         .useRxFifo = false,  // PDL recommends false for slave to avoid side effects
@@ -176,7 +214,7 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
     self->slave_addr = addr;
     self->addrsize = addrsize;
 
-    // Configure pins for I2C operation (Open-Drain mode per PDL documentation)
+    // Configure pins for I2C operation
     Cy_GPIO_SetHSIOM(MICROPY_HW_I2C0_SCL_PORT, MICROPY_HW_I2C0_SCL_PIN, MICROPY_HW_I2C0_SCL_HSIOM);
     Cy_GPIO_SetHSIOM(MICROPY_HW_I2C0_SDA_PORT, MICROPY_HW_I2C0_SDA_PIN, MICROPY_HW_I2C0_SDA_HSIOM);
     Cy_GPIO_SetDrivemode(MICROPY_HW_I2C0_SCL_PORT, MICROPY_HW_I2C0_SCL_PIN, CY_GPIO_DM_OD_DRIVESLOW);
@@ -189,7 +227,8 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
     }
 
     // Configure clock for I2C slave operation
-    // For 400 kbps slave, clk_scb must be 7.82 – 15.38 MHz (per PDL documentation)
+    // For 400 khz slave, clk_scb must be 7.82 – 15.38 MHz
+    // For 100 khz slave, clk_scb must be 1.55 – 12.8 MHz
     // clk_peri = 100 MHz, divider = 7, clk_scb = 100/8 = 12.5 MHz
     Cy_SysClk_PeriphAssignDivider(MICROPY_HW_I2C_PCLK, CY_SYSCLK_DIV_8_BIT, 2U);
     Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_8_BIT, 2U, 7U); // divider = n+1, so 7 means divide by 8
@@ -207,11 +246,11 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
     }
     NVIC_EnableIRQ(MICROPY_HW_I2C_IRQn);
 
-    // Register event callback BEFORE enabling I2C (per PDL documentation)
+    // Register event callback BEFORE enabling I2C
     // This callback will be triggered by Cy_SCB_I2C_SlaveInterrupt
     Cy_SCB_I2C_RegisterEventCallback(MICROPY_HW_I2C0_SCB, i2c_slave_event_callback, &self->ctx);
 
-    // Configure slave read/write buffers BEFORE enabling I2C (per PDL documentation)
+    // Configure slave read/write buffers BEFORE enabling I2C
     // Note: Master reads from slave read buffer, writes to slave write buffer
     if (data->mem_buf != NULL && data->mem_len > 0) {
         Cy_SCB_I2C_SlaveConfigReadBuf(MICROPY_HW_I2C0_SCB, data->mem_buf, data->mem_len, &self->ctx);
@@ -231,17 +270,19 @@ static inline size_t mp_machine_i2c_target_get_index(machine_i2c_target_obj_t *s
     return self->id;
 }
 
-// Empty stub - we use PDL callbacks, not MicroPython IRQ framework
-// This function is required by extmod but never actually called in our implementation
+// IRQ event callback - called from extmod to trigger Python IRQ handler
+// This is called by handle_event() in extmod/machine_i2c_target.c
 static void mp_machine_i2c_target_event_callback(machine_i2c_target_irq_obj_t *irq) {
-    // Not used - PDL handles events directly via i2c_slave_event_callback
+    if (irq->base.handler != mp_const_none) {
+        mp_irq_handler(&irq->base);
+    }
 }
 
 static size_t mp_machine_i2c_target_read_bytes(machine_i2c_target_obj_t *self, size_t len, uint8_t *buf) {
     machine_i2c_target_data_t *data = &machine_i2c_target_data[self->id];
     size_t read_len = 0;
 
-    // Disable interrupt to protect from race condition (per PDL documentation)
+    // Disable interrupt to protect from race condition
     NVIC_DisableIRQ(MICROPY_HW_I2C_IRQn);
 
     // Read from write buffer (data written by master into slave write buffer)
@@ -266,7 +307,7 @@ static size_t mp_machine_i2c_target_write_bytes(machine_i2c_target_obj_t *self, 
     machine_i2c_target_data_t *data = &machine_i2c_target_data[self->id];
     size_t write_len = 0;
 
-    // Disable interrupt to protect from race condition (per PDL documentation)
+    // Disable interrupt to protect from race condition
     NVIC_DisableIRQ(MICROPY_HW_I2C_IRQn);
 
     // Write to read buffer (data to be read by master from slave read buffer)
@@ -300,7 +341,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
         { MP_QSTR_addr, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_addrsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 7} },
         { MP_QSTR_mem, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mem_addrsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_mem_addrsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
