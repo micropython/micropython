@@ -9,9 +9,9 @@ any False
 error_active True
 info [0, 0, 0, 0, 0, 0, 0, 0]
 any+info True [0, 0, 0, 0, 0, 0, 1, 0]
-(123, False, False, 0, b'abcd')
-(2047, False, False, 0, b'abcd')
-(0, False, False, 0, b'abcd')
+[123, False, False, 0, b'abcd']
+[2047, False, False, 0, b'abcd']
+[0, False, False, 0, b'abcd']
 overlong passed
 [42, False, False, 0, <memoryview>] 0 bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
 [42, False, False, 0, <memoryview>] 4 bytearray(b'1234\x00\x00\x00\x00\x00\x00')
@@ -33,11 +33,11 @@ extframe passed
 ('0x8000000', '0x1c000000', '0xa000000', True, b'ok')
 ==== TEST async send ====
 any False
-(1, False, False, 0, b'abcde')
+[1, False, False, 0, b'abcde']
 send fail ok
-(2, False, False, 0, b'abcde')
-(3, False, False, 0, b'abcde')
-(4, False, False, 0, b'abcde')
+[2, False, False, 0, b'abcde']
+[3, False, False, 0, b'abcde']
+[4, False, False, 0, b'abcde']
 ==== TEST rtr messages ====
 any False
 5 False True b''
