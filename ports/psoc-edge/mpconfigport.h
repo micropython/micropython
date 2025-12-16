@@ -45,6 +45,7 @@
 
 // Enable bytearray for I2C Target memory buffers
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
+#define MICROPY_PY_BUILTINS_SLICE (1)
 
 // Disable optional modules, only use bytearray
 #define MICROPY_PY_ARRAY                (0)
