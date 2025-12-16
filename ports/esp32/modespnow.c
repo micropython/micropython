@@ -423,10 +423,7 @@ static mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
     mp_int_t timeout_ms = ((n_args > 2 && args[2] != mp_const_none)
             ? mp_obj_get_int(args[2]) : self->recv_timeout_ms);
 
-    mp_obj_list_t *list = MP_OBJ_TO_PTR(args[1]);
-    if (!mp_obj_is_type(list, &mp_type_list) || list->len < 2) {
-        mp_raise_ValueError(MP_ERROR_TEXT("ESPNow.recvinto(): Invalid argument"));
-    }
+    mp_obj_list_t *list = mp_obj_list_ensure(args[1], 2);
     mp_obj_array_t *msg = MP_OBJ_TO_PTR(list->items[1]);
     if (mp_obj_is_type(msg, &mp_type_bytearray)) {
         msg->len += msg->free;   // Make all the space in msg array available

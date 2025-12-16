@@ -520,3 +520,22 @@ mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *
     o->cur = cur;
     return MP_OBJ_FROM_PTR(o);
 }
+
+mp_obj_list_t *mp_obj_list_optional_arg(mp_obj_t arg_in, size_t min_len) {
+    if (arg_in == mp_const_none || MP_OBJ_TO_PTR(arg_in) == NULL) {
+        return MP_OBJ_TO_PTR(mp_obj_new_list(min_len, NULL));
+    } else {
+        return mp_obj_list_ensure(arg_in, min_len);
+    }
+}
+
+mp_obj_list_t *mp_obj_list_ensure(mp_obj_t in, size_t min_len) {
+    mp_obj_list_t *list = MP_OBJ_TO_PTR(in);
+    if (!mp_obj_is_type(in, &mp_type_list)) {
+        mp_raise_TypeError(NULL);
+    }
+    if (list->len < min_len) {
+        mp_raise_ValueError(NULL);
+    }
+    return list;
+}

@@ -115,6 +115,13 @@ deadbeef
 0deadbeef
 c0ffee
 000c0ffee
+# list argument helpers
+TypeError: 
+ValueError: 
+mp_obj_list_ensure same list? 1
+mp_obj_list_optional_arg same list? 1
+mp_obj_list_optional_arg new list len 3
+mp_obj_list_optional_arg new list from NULL len 3
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'

@@ -548,6 +548,45 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
     }
 
+    // list argument helpers
+    {
+        mp_printf(&mp_plat_print, "# list argument helpers\n");
+
+        // Create a list to test with
+        mp_obj_t list_items[] = { mp_const_none, MP_OBJ_NEW_SMALL_INT(77), mp_obj_new_str_from_cstr("hello") };
+        size_t list_len = MP_ARRAY_SIZE(list_items);
+        mp_obj_t list = mp_obj_new_list(list_len, list_items);
+
+        // mp_obj_list_ensure
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_list_ensure(MP_OBJ_NEW_SMALL_INT(-1), 5); // Not a list
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_list_ensure(list, list_len + 2); // List shorter than minimum length
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        mp_obj_list_t *as_ptr = mp_obj_list_ensure(list, list_len);  // Acceptable!
+        mp_printf(&mp_plat_print, "mp_obj_list_ensure same list? %d\n", MP_OBJ_TO_PTR(list) == as_ptr);
+
+        // mp_obj_list_optional_arg()
+        as_ptr = mp_obj_list_optional_arg(list, list_len);
+        mp_printf(&mp_plat_print, "mp_obj_list_optional_arg same list? %d\n", MP_OBJ_TO_PTR(list) == as_ptr);
+
+        as_ptr = mp_obj_list_optional_arg(mp_const_none, list_len);
+        mp_printf(&mp_plat_print, "mp_obj_list_optional_arg new list len %d\n", as_ptr->len);
+
+        as_ptr = mp_obj_list_optional_arg(MP_OBJ_FROM_PTR(NULL), list_len);
+        mp_printf(&mp_plat_print, "mp_obj_list_optional_arg new list from NULL len %d\n", as_ptr->len);
+    }
+
     // runtime utils
     {
         mp_printf(&mp_plat_print, "# runtime utils\n");
