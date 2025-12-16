@@ -115,7 +115,7 @@
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc-edge/modtime.c"
 
 // Logger
-#define MICROPY_LOGGER_DEBUG                    (1)
+#define MICROPY_LOGGER_DEBUG                    (0)
 
 // Machine module
 #define MICROPY_PY_MACHINE                      (1)
