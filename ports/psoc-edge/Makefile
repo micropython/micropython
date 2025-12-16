@@ -56,20 +56,32 @@ LD = arm-none-eabi-gcc
 # LDFLAGS += -Wl,--cref -Wl,--gc-sections
 # LDFLAGS += -Wl,-Map,$(BUILD)/firmware.map  -Wl,--start-group -Wl,--end-group -Wl,--print-memory-usage
 
-#TODO: Add the pin generation. Check if the existing mpy scripts make sense for us
-# or we take a similar approach as for psoc6.
-#ToDo: Post adding af functionality, refactor to minimize dependent variables in py script if possible
-# GEN_PINS_SRC := $(BUILD)/pins_$(BOARD).c
-# HEADER_BUILD := $(BUILD)/genhdr
-# GEN_PINS_HDR := $(BUILD)/genhdr/pins.h
-# GEN_PINS_QSTR := $(BUILD)/pins_qstr.h
-#
-# GENERATED_PINS = $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR)
-#
-# $(GENERATED_PINS): 
-# 	@echo "Generating $@"
-# 	$(MKDIR) -p $(BUILD)/genhdr
-# 	$(PYTHON) boards/make-pins.py --gen-pin-for $(PIN_PACKAGE_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC) 
+
+# Pin generation
+HEADER_BUILD := $(BUILD)/genhdr
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+PREFIX_FILE = boards/pse84_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+
+# Making OBJ use an order-only dependency on the generated pins.h file
+# has the side effect of making the pins.h file before we actually compile
+# any of the objects. The normal dependency generation will deal with the
+# case when pins.h is modified. But when it doesn't exist, we don't know
+# which source files might need it.
+$(OBJ): | $(GEN_PINS_HDR)
+
+# With conditional pins, we may need to regenerate qstrdefs.h when config
+# options change.
+$(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
+
+# Use a pattern rule here so that make will only call make-pins.py once to make
+# both pins_$(BOARD).c and pins.h
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h : $(BOARD_DIR)/%.csv $(MAKE_PINS) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --prefix $(PREFIX_FILE) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
 
 # TODO: Check required C++ additional flags.
 # Flags for optional C++ source code
@@ -109,7 +121,7 @@ SRC_C = help.c \
 
 SRC_ASM +=
 
-SRC_QSTR += $(SHARED_SRC_C) $(MOD_SRC_C)
+SRC_QSTR += $(SHARED_SRC_C) $(MOD_SRC_C) $(GEN_PINS_SRC)
 
 OBJ += $(PY_O) 
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o)) 
@@ -118,6 +130,7 @@ OBJ += $(addprefix $(BUILD)/, $(MOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 MPY_CROSS_FLAGS += -march=armv8-m.main
 
