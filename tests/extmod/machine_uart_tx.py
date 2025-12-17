@@ -19,6 +19,8 @@ if "alif" in sys.platform:
     bit_margin = 1
 elif "esp32" in sys.platform:
     timing_margin_us = 400
+elif "esp8266" in sys.platform:
+    timing_margin_us = 4100
 elif "mimxrt" in sys.platform:
     initial_delay_ms = 20  # UART sends idle frame after init, so wait for that
     bit_margin = 1
