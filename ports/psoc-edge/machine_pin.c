@@ -26,6 +26,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 
 #include "cy_gpio.h"
 
@@ -37,7 +38,7 @@
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
-static uint8_t pin_get_mode(const machine_pin_obj_t *self) {
+uint8_t pin_get_mode(const machine_pin_obj_t *self) {
     uint32_t drive_mode = Cy_GPIO_GetDrivemode(Cy_GPIO_PortToAddr(self->port), self->pin);
 
     switch (drive_mode) {
@@ -291,9 +292,36 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 static mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // TODO: Placeholder.
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (n_args == 0) {
+        // get pin
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
+    } else {
+        // set pin
+        mp_hal_pin_write(self, mp_obj_is_true(args[0]));
+        return mp_const_none;
+    }
+}
+
+static mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
+    return machine_pin_call(args[0], n_args - 1, 0, args + 1);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
+
+static mp_obj_t machine_pin_off(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_hal_pin_low(self);
     return mp_const_none;
 }
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
+
+static mp_obj_t machine_pin_on(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_hal_pin_high(self);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
 static mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     // TODO: Placeholder.
@@ -321,6 +349,9 @@ MP_DEFINE_CONST_OBJ_TYPE(
 static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // Instance methods
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&machine_pin_obj_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&machine_pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&machine_pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
 
     // class attributes
     #if MICROPY_PY_MACHINE_PIN_BOARD_NUM_ENTRIES > 0
