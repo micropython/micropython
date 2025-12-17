@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2024 Infineon Technologies AG
+ * Copyright (c) 2025 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,15 @@
 #include "py/ringbuf.h"
 #include "modmachine.h"
 #include "mplogger.h"
+#include "cycfg_pins.h"
 
 #if MICROPY_PY_MACHINE_PDM_PCM
 #include "machine_pdm_pcm.h"
 #include "cy_sysclk.h"
 
 #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+
+static uint8_t int_channel_index = RIGHT_CH_INDEX;
 
 static cy_stc_pdm_pcm_channel_config_t channel_config = {
     .sampledelay = 1,
@@ -55,7 +58,6 @@ static cy_stc_pdm_pcm_channel_config_t channel_config = {
     .dc_block_code = CY_PDM_PCM_CHAN_DCBLOCK_CODE_16,
 };
 
-static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_info_t *appbuf) __attribute__((unused));
 static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_info_t *appbuf) {
     uint32_t num_bytes_copied_to_appbuf = 0;
     uint8_t *app_p = (uint8_t *)appbuf->buf;
@@ -97,7 +99,6 @@ static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_
 }
 
 // Copy from ringbuf to appbuf as soon as ASYNC_TRANSFER_COMPLETE is triggered
-static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) __attribute__((unused));
 static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) {
     uint32_t num_bytes_copied_to_appbuf = 0;
     uint8_t *app_p = &(((uint8_t *)self->non_blocking_descriptor.appbuf.buf)[self->non_blocking_descriptor.index]);
@@ -132,7 +133,7 @@ static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) {
 
         if (self->non_blocking_descriptor.index >= self->non_blocking_descriptor.appbuf.len) {
             self->non_blocking_descriptor.copy_in_progress = false;
-            // mp_sched_schedule(self->callback_for_non_blocking, MP_OBJ_FROM_PTR(self));
+            mp_sched_schedule(self->callback_for_non_blocking, MP_OBJ_FROM_PTR(self));
         }
     }
 }
@@ -193,10 +194,16 @@ static mp_obj_t machine_pdm_pcm_set_gain(size_t n_args, const mp_obj_t *pos_args
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    self->left_gain = args[ARG_left_gain].u_int;
-    self->right_gain = args[ARG_right_gain].u_int;
+    int16_t left_gain = args[ARG_left_gain].u_int;
+    int16_t right_gain = args[ARG_right_gain].u_int;
 
-    mp_machine_pdm_pcm_set_gain(self, self->left_gain, self->right_gain);
+    int16_t prev_left_gain = self->left_gain;
+    int16_t prev_right_gain = self->right_gain;
+
+    self->left_gain = (left_gain == prev_left_gain) ? prev_left_gain : left_gain;
+    self->right_gain = (right_gain == prev_right_gain) ? prev_right_gain : right_gain;
+
+    mp_machine_pdm_pcm_set_gain(self, left_gain, right_gain);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pdm_pcm_set_gain_obj, 1, machine_pdm_pcm_set_gain);
@@ -204,6 +211,22 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pdm_pcm_set_gain_obj, 1, machine_pdm_p
 // PDM_PCM.irq(handler)
 static mp_obj_t machine_pdm_pcm_irq(mp_obj_t self_in, mp_obj_t handler) {
     mplogger_print("machine_pdm_pcm_irq \r\n");
+    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
+    }
+
+    if (handler != mp_const_none) {
+        self->io_mode = NON_BLOCKING;
+    } else {
+        self->io_mode = BLOCKING;
+    }
+
+    self->callback_for_non_blocking = handler;
+
+    mp_machine_pdm_pcm_irq_update(self);
+
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(machine_pdm_pcm_irq_obj, machine_pdm_pcm_irq);
@@ -238,9 +261,11 @@ static void pdm_pcm_configure_interrupts(machine_pdm_pcm_obj_t *self) {
     mplogger_print("pdm_pcm_configure_interrupts \r\n");
 
     /* As interrupt is registered for right channel, clear and set masks for it. */
-    Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
-    Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, RIGHT_CH_INDEX, CY_PDM_PCM_INTR_MASK);
-}// Helper: Configure DPLL for audio clock generation
+    Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, int_channel_index, CY_PDM_PCM_INTR_MASK);
+    Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, int_channel_index, CY_PDM_PCM_INTR_MASK);
+}
+
+// Helper: Configure DPLL for audio clock generation
 static cy_rslt_t dpll_lp_configure(uint32_t target_freq) {
     mplogger_print("dpll_lp_configure \r\n");
     cy_rslt_t result;
@@ -373,31 +398,28 @@ static void pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
     pdm_pcm_init_sample_rate(self->sample_rate, self->decimation_rate);
     // Initialize left channel if needed
     if ((self->format == MONO_LEFT) || (self->format == STEREO)) {
-        Cy_PDM_PCM_Channel_Enable(PDM0, LEFT_CH_INDEX);
+        int_channel_index = LEFT_CH_INDEX;
+        Cy_PDM_PCM_Channel_Enable(PDM0, int_channel_index);
         channel_config.sampledelay = 1;
-        result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, LEFT_CH_INDEX);
-        if (result != CY_PDM_PCM_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError,
-                MP_ERROR_TEXT("PDM_PCM left channel init failed with return code %lx !"), result);
-        }
-        Cy_PDM_PCM_SetGain(PDM0, LEFT_CH_INDEX, self->left_gain);
+        result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, int_channel_index);
+        pdm_pcm_assert_raise_val("PDM_PCM left channel init failed with return code %lx !", result);
+        result = Cy_PDM_PCM_SetGain(PDM0, int_channel_index, self->left_gain);
+        pdm_pcm_assert_raise_val("PDM_PCM set left channel gain failed with return code %lx !", result);
     }
 
     // Initialize right channel if needed
     if ((self->format == MONO_RIGHT) || (self->format == STEREO)) {
-        Cy_PDM_PCM_Channel_Enable(PDM0, RIGHT_CH_INDEX);
+        int_channel_index = RIGHT_CH_INDEX; // if stereo mode, right channel gets interrupt
+        Cy_PDM_PCM_Channel_Enable(PDM0, int_channel_index);
         channel_config.sampledelay = 5;
-        result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, RIGHT_CH_INDEX);
-        if (result != CY_PDM_PCM_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError,
-                MP_ERROR_TEXT("PDM_PCM right channel init failed with return code %lx !"), result);
-        }
-        Cy_PDM_PCM_SetGain(PDM0, RIGHT_CH_INDEX, self->right_gain);
+        result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, int_channel_index);
+        pdm_pcm_assert_raise_val("PDM_PCM right channel init failed with return code %lx !", result);
+        result = Cy_PDM_PCM_SetGain(PDM0, int_channel_index, self->right_gain);
+        pdm_pcm_assert_raise_val("PDM_PCM set right channel gain failed with return code %lx !", result);
     }
 
     // Determine IRQ number based on which channel is used for interrupts
-    // Using right channel for interrupt as per MTB example
-    self->irq_num = (IRQn_Type)(pdm_0_interrupts_0_IRQn + RIGHT_CH_INDEX);
+    self->irq_num = (IRQn_Type)(pdm_0_interrupts_0_IRQn + int_channel_index);
 
     // Configure interrupts
     pdm_pcm_configure_interrupts(self);
@@ -418,11 +440,6 @@ int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     return -1;
 }
 
-// First read RX buffer
-static void pdm_pcm_read_rxbuf(machine_pdm_pcm_obj_t *self) __attribute__((unused));
-static void pdm_pcm_read_rxbuf(machine_pdm_pcm_obj_t *self) {
-    (void)self;
-}
 
 // First read and start the hw block
 static void pdm_pcm_rx_init(machine_pdm_pcm_obj_t *self) {
@@ -463,7 +480,6 @@ static void pdm_pcm_irq_handler(void) {
     }
 
     uint8_t num_channels = (self->format == STEREO) ? 2 : 1;
-    uint8_t int_channel_index = RIGHT_CH_INDEX;  // Using right channel for interrupts
 
     /* Used to track how full the buffer is */
     static uint16_t frame_counter = 0;
@@ -475,20 +491,16 @@ static void pdm_pcm_irq_handler(void) {
         /* Move data from the PDM fifo and place it in a buffer */
         uint32_t index = 0;
         for (uint32_t i = 0; i < (RX_FIFO_TRIG_LEVEL / num_channels); i++) {
-            if (self->format == MONO_LEFT) {
-                int32_t data = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, LEFT_CH_INDEX);
-                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data);
-                index++;
-            } else if (self->format == MONO_RIGHT) {
-                int32_t data = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, RIGHT_CH_INDEX);
-                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data);
-                index++;
-            } else {  // STEREO
+            if (self->format == STEREO) {
                 int32_t data_left = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, LEFT_CH_INDEX);
                 self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data_left);
                 index++;
                 int32_t data_right = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, RIGHT_CH_INDEX);
                 self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data_right);
+                index++;
+            } else {
+                int32_t data = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, int_channel_index);
+                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data);
                 index++;
             }
         }
@@ -510,6 +522,26 @@ static void pdm_pcm_irq_handler(void) {
             memset(self->full_rx_buffer, 0, FRAME_SIZE * sizeof(int16_t));
         } else {
             self->have_data = true;
+
+            #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+            // Copy data to ring buffer for both BLOCKING and NON_BLOCKING modes
+            // This enables seamless switching between modes
+            uint8_t *buf_p = (uint8_t *)self->full_rx_buffer;
+            uint32_t buf_size = FRAME_SIZE * sizeof(int16_t);
+            for (uint32_t i = 0; i < buf_size; i++) {
+                ringbuf_put(&self->ring_buffer, buf_p[i]);
+            }
+
+            // For NON_BLOCKING mode, trigger callback processing
+            if ((self->io_mode == NON_BLOCKING) && (self->non_blocking_descriptor.copy_in_progress)) {
+                fill_appbuf_from_ringbuf_non_blocking(self);
+            }
+            #else // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+            // Call user callback if registered (for BLOCKING mode without ringbuf)
+            if (self->callback_for_non_blocking != mp_const_none && self->callback_for_non_blocking != MP_OBJ_NULL) {
+                mp_sched_schedule(self->callback_for_non_blocking, MP_OBJ_FROM_PTR(self));
+            }
+            #endif // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
         }
         frame_counter = 0;
     }
@@ -693,12 +725,14 @@ static void mp_machine_pdm_pcm_deinit(machine_pdm_pcm_obj_t *self) {
 // set_gain()
 static void mp_machine_pdm_pcm_set_gain(machine_pdm_pcm_obj_t *self, int16_t left_gain, int16_t right_gain) {
     mplogger_print("mp_machine_pdm_pcm_set_gain \r\n");
-    Cy_PDM_PCM_SetGain(PDM0, LEFT_CH_INDEX, left_gain);
-    Cy_PDM_PCM_SetGain(PDM0, RIGHT_CH_INDEX, right_gain);
+    cy_rslt_t result = Cy_PDM_PCM_SetGain(PDM0, LEFT_CH_INDEX, left_gain);
+    pdm_pcm_assert_raise_val("PDM_PCM set left channel gain failed with return code %lx !", result);
+    result = Cy_PDM_PCM_SetGain(PDM0, RIGHT_CH_INDEX, right_gain);
+    pdm_pcm_assert_raise_val("PDM_PCM set right channel gain failed with return code %lx !", result);
+
 }
 
 // irq update
-static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self) __attribute__((unused));
 static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self) {
     (void)self;
 }
@@ -706,7 +740,53 @@ static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self) {
 // =======================================================================================
 // Implementation for stream protocol
 static mp_uint_t machine_pdm_pcm_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    return 0;
+    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    uint8_t appbuf_sample_size_in_bytes = (self->bits / 8) * (self->format == STEREO ? 2: 1);
+    if (size % appbuf_sample_size_in_bytes != 0) { // size should be multiple of sample size
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
+    }
+    if (size == 0) {
+        return 0;
+    }
+
+    if (self->io_mode == BLOCKING) {
+        mp_buffer_info_t appbuf;
+        appbuf.buf = (void *)buf_in;
+        appbuf.len = size;
+        #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+        uint32_t num_bytes_read = fill_appbuf_from_ringbuf(self, &appbuf);
+        #else
+        // Blocking read from ping-pong buffers
+        // Wait for data to be available
+        while (!self->have_data) {
+            __WFI();  // Wait for interrupt
+        }
+
+        // Calculate how many bytes to copy
+        uint32_t buffer_size_bytes = FRAME_SIZE * sizeof(int16_t);
+        uint32_t num_bytes_read = (size < buffer_size_bytes) ? size : buffer_size_bytes;
+
+        // Copy data from full_rx_buffer to application buffer
+        memcpy(buf_in, self->full_rx_buffer, num_bytes_read);
+
+        // Clear the have_data flag
+        self->have_data = false;
+        #endif
+        return num_bytes_read;
+    } else {
+        #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+        self->non_blocking_descriptor.appbuf.buf = (void *)buf_in;
+        self->non_blocking_descriptor.appbuf.len = size;
+        self->non_blocking_descriptor.index = 0;
+        self->non_blocking_descriptor.copy_in_progress = true;
+        return size;
+        #else
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Non-blocking mode requires ring buffer support"));
+        return 0;
+        #endif
+    }
 }
 
 static const mp_stream_p_t pdm_pcm_stream_p = {
