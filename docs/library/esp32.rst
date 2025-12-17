@@ -628,10 +628,10 @@ For more details see Espressif's `ESP-IDF LDO documentation.
 
     Create an object providing access to the Low Dropout Voltage Regulator for a given LDO *channel*.
 
-    Supported optional arguments:
+    Supported keyword arguments:
 
       - *voltage_mv*: The voltage value to be set to the LDO channel, in millivolts
-      - *adjustable*: Whether the LDO channel is adjustable, and the voltage can be updated by `adjust_voltage`
+      - *adjustable*: (Optional): Whether the LDO channel is adjustable, and the voltage can be updated by `adjust_voltage`
 
 .. method:: LDO.adjust_voltage(voltage_mv)
 
