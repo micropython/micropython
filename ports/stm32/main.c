@@ -416,6 +416,7 @@ void stm32_main(uint32_t reset_mode) {
     // Enable some AHB peripherals during sleep.
     LL_AHB1_GRP1_EnableClockLowPower(LL_AHB1_GRP1_PERIPH_ALL); // GPDMA1, ADC12
     LL_AHB4_GRP1_EnableClockLowPower(LL_AHB4_GRP1_PERIPH_ALL); // GPIOA-Q, PWR, CRC
+    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_SDMMC2 | LL_AHB5_GRP1_PERIPH_SDMMC1);
 
     // Enable some APB peripherals during sleep.
     LL_APB1_GRP1_EnableClockLowPower(LL_APB1_GRP1_PERIPH_ALL); // I2C, I3C, LPTIM, SPI, TIM, UART, WWDG
