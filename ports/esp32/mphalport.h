@@ -36,6 +36,7 @@
 #include "freertos/task.h"
 
 #include "driver/spi_master.h"
+#include "esp_cache.h"
 #include "soc/gpio_reg.h"
 
 #define MICROPY_PLATFORM_VERSION "IDF" IDF_VER
@@ -49,6 +50,11 @@
 #define MP_TASK_COREID (0)
 #else
 #define MP_TASK_COREID (1)
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32P4
+#define MP_HAL_CLEAN_DCACHE(data, len) \
+    esp_cache_msync((void *)(data), (len), ESP_CACHE_MSYNC_FLAG_UNALIGNED | ESP_CACHE_MSYNC_FLAG_DIR_C2M)
 #endif
 
 extern TaskHandle_t mp_main_task_handle;

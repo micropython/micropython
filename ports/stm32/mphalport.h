@@ -1,6 +1,7 @@
 // We use the ST Cube HAL library for most hardware peripherals
 #include STM32_HAL_H
 #include "pin.h"
+#include "usbd_conf.h"
 #include "py/ringbuf.h"
 #include "shared/runtime/interrupt_char.h"
 

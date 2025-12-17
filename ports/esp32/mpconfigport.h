@@ -92,6 +92,9 @@
 #endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
+#endif
+
+#if MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS (1)
 #define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS_WITH_INTERLOCK (1)
 // Event stack size is the RTOS stack size minus an allowance for the stack used
@@ -102,7 +105,8 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (1)
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
-#endif
+#endif // MICROPY_PY_BLUETOOTH
+
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (esp_random())
 #define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
@@ -158,7 +162,9 @@
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
+#ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK (1)
+#endif
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #if CONFIG_IDF_TARGET_ESP32
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32"
@@ -174,6 +180,8 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c5"
 #elif CONFIG_IDF_TARGET_ESP32C6
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c6"
+#elif CONFIG_IDF_TARGET_ESP32P4
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32p4"
 #endif
 #endif
 #define MICROPY_PY_NETWORK_INCLUDEFILE      "ports/esp32/modnetwork.h"
@@ -189,10 +197,10 @@
 #ifndef MICROPY_HW_ESP_NEW_I2C_DRIVER
 #define MICROPY_HW_ESP_NEW_I2C_DRIVER       (0)
 #endif
-#define MICROPY_PY_SSL                      (1)
-#define MICROPY_SSL_MBEDTLS                 (1)
-#define MICROPY_PY_WEBSOCKET                (1)
-#define MICROPY_PY_WEBREPL                  (1)
+#define MICROPY_PY_SSL                      (MICROPY_PY_NETWORK)
+#define MICROPY_SSL_MBEDTLS                 (MICROPY_PY_SSL)
+#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_NETWORK)
+#define MICROPY_PY_WEBREPL                  (MICROPY_PY_NETWORK)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
@@ -251,6 +259,17 @@
 #define MICROPY_HW_USB_PRODUCT_FS_STRING "Espressif Device"
 #endif
 
+#if CONFIG_IDF_TARGET_ESP32P4
+// By default, ESP32-P4 uses the HS USB PHY (RHPORT1) for TinyUSB
+// and configures the full speed USB port as USB Serial/JTAG device
+#ifndef MICROPY_HW_USB_HS
+#define MICROPY_HW_USB_HS 1
+#endif // MICROPY_HW_USB_HS
+#if MICROPY_HW_USB_HS && !defined(CFG_TUSB_RHPORT0_MODE) && !defined(CFG_TUSB_RHPORT1_MODE)
+#define CFG_TUSB_RHPORT1_MODE   (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#endif
+#endif
+
 #endif // MICROPY_HW_ENABLE_USBDEV
 
 // Enable stdio over native USB peripheral CDC via TinyUSB
@@ -259,14 +278,14 @@
 #endif
 
 // Enable stdio over USB Serial/JTAG peripheral
+// (SOC_USB_OTG_PERIPH_NUM is only 2 on the ESP32-P4, which supports both native USB & Serial/JTAG simultaneously)
 #ifndef MICROPY_HW_ESP_USB_SERIAL_JTAG
-#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED && !MICROPY_HW_USB_CDC)
+#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED && (!MICROPY_HW_USB_CDC || SOC_USB_OTG_PERIPH_NUM > 1))
 #endif
 
-#if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG
+#if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG && (SOC_USB_OTG_PERIPH_NUM <= 1)
 #error "Invalid build config: Can't enable both native USB and USB Serial/JTAG peripheral"
 #endif
-
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
@@ -345,7 +364,7 @@ typedef long mp_off_t;
 
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
 // RTC has a register to trigger bootloader on these targets
-#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32P4
 #define MICROPY_ESP32_USE_BOOTLOADER_RTC    (1)
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) machine_bootloader_rtc()
 #endif

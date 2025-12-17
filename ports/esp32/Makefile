@@ -112,4 +112,4 @@ size-files:
 # This is done in a dedicated build directory as some CMake cache values are not
 # set correctly if not all submodules are loaded yet.
 submodules:
-	$(Q)IDF_COMPONENT_MANAGER=0 idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure
+	$(Q)idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure

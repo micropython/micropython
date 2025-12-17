@@ -90,7 +90,8 @@ int vprintf_null(const char *format, va_list ap) {
     return 0;
 }
 
-time_t platform_mbedtls_time(time_t *timer) {
+#if MICROPY_SSL_MBEDTLS
+static time_t platform_mbedtls_time(time_t *timer) {
     // mbedtls_time requires time in seconds from EPOCH 1970
 
     struct timeval tv;
@@ -98,6 +99,7 @@ time_t platform_mbedtls_time(time_t *timer) {
 
     return tv.tv_sec + TIMEUTILS_SECONDS_1970_TO_2000;
 }
+#endif
 
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
@@ -106,7 +108,8 @@ void mp_task(void *pvParameter) {
     #endif
     #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_init();
-    #elif MICROPY_HW_ENABLE_USBDEV
+    #endif
+    #if MICROPY_HW_ENABLE_USBDEV
     usb_phy_init();
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL
@@ -114,8 +117,10 @@ void mp_task(void *pvParameter) {
     #endif
     machine_init();
 
+    #if MICROPY_SSL_MBEDTLS
     // Configure time function, for mbedtls certificate time validation.
     mbedtls_platform_set_time(platform_mbedtls_time);
+    #endif
 
     esp_err_t err = esp_event_loop_create_default();
     if (err != ESP_OK) {

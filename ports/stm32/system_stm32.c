@@ -535,13 +535,14 @@ MP_WEAK void SystemClock_Config(void) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCC_ClockConfig");
     }
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_LPUART1
-        | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12
+        | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12 | RCC_PERIPHCLK_ADC345
         | RCC_PERIPHCLK_FDCAN | RCC_PERIPHCLK_USB;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
     PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
     PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
     PeriphClkInitStruct.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
+    PeriphClkInitStruct.Adc345ClockSelection = RCC_ADC345CLKSOURCE_SYSCLK;
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");

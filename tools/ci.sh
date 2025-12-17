@@ -173,6 +173,15 @@ function ci_mpy_format_test {
     $micropython ./tools/mpy-tool.py -x -d examples/natmod/features1/features1.mpy
 }
 
+function ci_mpy_cross_debug_emitter {
+    make ${MAKEOPTS} -C mpy-cross
+    mpy_cross=./mpy-cross/build/mpy-cross
+
+    # Make sure the debug emitter does not crash or fail for simple files
+    $mpy_cross -X emit=native -march=debug ./tests/basics/0prelim.py | \
+	    grep -E "ENTRY|EXIT" | wc -l | grep "^2$"
+}
+
 ########################################################################################
 # ports/cc3200
 
@@ -243,6 +252,13 @@ function ci_esp32_build_c2_c5_c6 {
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C2
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C5
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C6
+}
+
+function ci_esp32_build_p4 {
+    ci_esp32_build_common
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4 BOARD_VARIANT=C6_WIFI
 }
 
 ########################################################################################
@@ -485,13 +501,22 @@ function ci_samd_build {
 # ports/stm32
 
 function ci_stm32_setup {
-    ci_gcc_arm_setup
+    # Use a recent version of the ARM toolchain, to work with Cortex-M55.
+    wget https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+    xzcat arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz | tar x
+
     pip3 install pyelftools
     pip3 install ar
     pip3 install pyhy
 }
 
+function ci_stm32_path {
+    echo $(pwd)/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin
+}
+
 function ci_stm32_pyb_build {
+    # This function builds the following MCU families: F4, F7.
+
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 MICROPY_PY_NETWORK_WIZNET5K=5200 submodules
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2 submodules
@@ -506,6 +531,8 @@ function ci_stm32_pyb_build {
 }
 
 function ci_stm32_nucleo_build {
+    # This function builds the following MCU families: F0, H5, H7, L0, L4, WB.
+
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI submodules
     git submodule update --init lib/mynewt-nimble
@@ -532,9 +559,17 @@ function ci_stm32_nucleo_build {
 }
 
 function ci_stm32_misc_build {
+    # This function builds the following MCU families: G0, G4, H7, L1, N6, U5, WL.
+
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA submodules
     make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G0B1RE
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G474RE
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L152RE
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_N657X0
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_U5A5ZJ_Q
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WL55
 }
 
 ########################################################################################

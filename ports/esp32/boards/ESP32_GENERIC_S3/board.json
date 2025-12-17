@@ -22,5 +22,8 @@
     "vendor": "Espressif",
     "variants": {
         "SPIRAM_OCT": "Support for Octal-SPIRAM"
+    },
+    "old_variants": {
+        "FLASH_4M": ["4MiB flash", "Use the standard variant instead."]
     }
 }

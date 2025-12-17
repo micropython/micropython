@@ -45,6 +45,10 @@
 #define MICROPY_WRAP_TUD_EVENT_HOOK_CB(name) name
 #endif
 
+#ifndef MICROPY_HW_TINYUSB_LL_INIT
+#define MICROPY_HW_TINYUSB_LL_INIT()
+#endif
+
 #if MICROPY_HW_ENABLE_USBDEV
 
 #include "py/obj.h"
@@ -102,6 +106,7 @@ void mp_usbd_task_callback(mp_sched_node_t *node);
 static inline void mp_usbd_init(void) {
     // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
     // which is called in the below helper function.
+    MICROPY_HW_TINYUSB_LL_INIT();
     mp_usbd_init_tud();
 }
 

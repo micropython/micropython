@@ -192,7 +192,9 @@ int main(int argc, char **argv) {
         machine_pin_init();
         rp2_pio_init();
         rp2_dma_init();
+        #if MICROPY_PY_MACHINE_I2S
         machine_i2s_init0();
+        #endif
 
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_hci_init();

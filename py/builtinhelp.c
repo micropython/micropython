@@ -152,9 +152,8 @@ static void mp_help_print_obj(const mp_obj_t obj) {
     }
     if (map != NULL) {
         for (uint i = 0; i < map->alloc; i++) {
-            mp_obj_t key = map->table[i].key;
-            if (key != MP_OBJ_NULL) {
-                mp_help_print_info_about_object(key, map->table[i].value);
+            if (mp_map_slot_is_filled(map, i)) {
+                mp_help_print_info_about_object(map->table[i].key, map->table[i].value);
             }
         }
     }

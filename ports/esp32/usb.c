@@ -42,18 +42,17 @@ void usb_phy_init(void) {
     // ref: https://github.com/espressif/esp-usb/blob/4b6a798d0bed444fff48147c8dcdbbd038e92892/device/esp_tinyusb/tinyusb.c
 
     // Configure USB PHY
-    usb_phy_config_t phy_conf = {
+    static const usb_phy_config_t phy_conf = {
         .controller = USB_PHY_CTRL_OTG,
         .otg_mode = USB_OTG_MODE_DEVICE,
+        .target = USB_PHY_TARGET_INT,
     };
-    // Internal USB PHY
-    phy_conf.target = USB_PHY_TARGET_INT;
 
     // Init ESP USB Phy
     usb_new_phy(&phy_conf, &phy_hdl);
 }
 
-#if CONFIG_IDF_TARGET_ESP32S3
+#if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4
 void usb_usj_mode(void) {
     // Switch the USB PHY back to Serial/Jtag mode, disabling OTG support
     // This should be run before jumping to bootloader.

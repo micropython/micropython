@@ -32,10 +32,11 @@
 #include "usbd_core.h"
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "irq.h"
 #include "usb.h"
 
-#if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
+#if MICROPY_HW_STM_USB_STACK || MICROPY_HW_TINYUSB_STACK
 
 #if BUILDING_MBOOT
 // TinyUSB not used in mboot
@@ -62,16 +63,8 @@ PCD_HandleTypeDef pcd_hs_handle;
 #define OTG_HS_IRQn USB1_OTG_HS_IRQn
 #endif
 
-#if MICROPY_HW_TINYUSB_STACK
-void pyb_usbd_init(void)
-#else
-void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
-#endif
-{
-    #if MICROPY_HW_USB_FS
-    #if MICROPY_HW_STM_USB_STACK
-    if (hpcd->Instance == USB_OTG_FS)
-    #endif
+#if MICROPY_HW_USB_FS
+static void mp_usbd_ll_init_fs(void) {
     {
         // Configure USB GPIO's.
 
@@ -192,17 +185,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
         #endif
         #endif
         #endif
-
-        #if MICROPY_HW_STM_USB_STACK
-        return;
-        #endif
     }
-    #endif
+}
+#endif // MICROPY_HW_USB_FS
 
-    #if MICROPY_HW_USB_HS
-    #if MICROPY_HW_STM_USB_STACK
-    if (hpcd->Instance == USB_OTG_HS)
-    #endif
+#if MICROPY_HW_USB_HS
+static void mp_usbd_ll_init_hs(void) {
     {
         #if MICROPY_HW_USB_HS_IN_FS
 
@@ -342,10 +330,41 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
         NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRI_OTG_HS);
         HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
     }
-    #endif // MICROPY_HW_USB_HS
+}
+#endif // MICROPY_HW_USB_HS
+
+#if MICROPY_HW_TINYUSB_STACK
+
+void mp_usbd_ll_init(void) {
+    // Only initialize the USB hardware once.
+    if (tusb_inited()) {
+        return;
+    }
+
+    #if MICROPY_HW_USB_FS
+    mp_usbd_ll_init_fs();
+    #endif
+
+    #if MICROPY_HW_USB_HS
+    mp_usbd_ll_init_hs();
+    #endif
 }
 
-#if MICROPY_HW_STM_USB_STACK
+#elif MICROPY_HW_STM_USB_STACK
+
+void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
+    #if MICROPY_HW_USB_FS
+    if (hpcd->Instance == USB_OTG_FS) {
+        mp_usbd_ll_init_fs();
+    }
+    #endif
+
+    #if MICROPY_HW_USB_HS
+    if (hpcd->Instance == USB_OTG_HS) {
+        mp_usbd_ll_init_hs();
+    }
+    #endif
+}
 
 /**
   * @brief  DeInitializes the PCD MSP.

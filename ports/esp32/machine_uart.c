@@ -293,6 +293,14 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
                 self->tx = 5;
                 break;
             #endif
+            #if SOC_UART_HP_NUM > 3
+            case UART_NUM_3:
+                break;
+            #endif
+            #if SOC_UART_HP_NUM > 4
+            case UART_NUM_4:
+                break;
+            #endif
             case UART_NUM_MAX:
                 assert(0); // Range is checked in mp_machine_uart_make_new, value should be unreachable
         }

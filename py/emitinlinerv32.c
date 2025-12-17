@@ -390,9 +390,9 @@ static const opcode_t OPCODES[] = {
 
 // These two checks assume the bitmasks are contiguous.
 
-static bool is_in_signed_mask(mp_uint_t mask, mp_uint_t value) {
-    mp_uint_t leading_zeroes = mp_clz(mask);
-    if (leading_zeroes == 0 || leading_zeroes > 32) {
+static bool is_in_signed_mask(uint32_t mask, mp_uint_t value) {
+    uint32_t leading_zeroes = mp_clz(mask);
+    if (leading_zeroes == 0) {
         return true;
     }
     mp_uint_t positive_mask = ~(mask & ~(1U << (31 - leading_zeroes)));

@@ -55,6 +55,9 @@
 #include "lwip/igmp.h"
 #include "esp_log.h"
 
+// See note at bottom of file about why this isn't MICROPY_PY_SOCKET
+#if MICROPY_PY_NETWORK
+
 #define SOCKET_POLL_US (100000)
 #define MDNS_QUERY_TIMEOUT_MS (5000)
 #define MDNS_LOCAL_SUFFIX ".local"
@@ -1028,3 +1031,5 @@ const mp_obj_module_t mp_module_socket = {
 // this will not conflict with the common implementation provided by
 // extmod/mod{lwip,socket}.c.
 MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_socket, mp_module_socket);
+
+#endif // MICROPY_PY_NETWORK

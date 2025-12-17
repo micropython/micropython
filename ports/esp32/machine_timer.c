@@ -47,6 +47,9 @@
 
 #define TIMER_FLAGS    0
 
+#if CONFIG_IDF_TARGET_ESP32P4
+static uint8_t __DECLARE_RCC_ATOMIC_ENV __attribute__ ((unused));
+#endif
 const mp_obj_type_t machine_timer_type;
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);

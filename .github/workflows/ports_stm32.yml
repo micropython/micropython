@@ -30,7 +30,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Install packages
-      run: tools/ci.sh stm32_setup
+      run: tools/ci.sh stm32_setup && tools/ci.sh stm32_path >> $GITHUB_PATH
     - name: Build ci_${{matrix.ci_func }}
       run: tools/ci.sh ${{ matrix.ci_func }}
 
