@@ -48,9 +48,17 @@
 // will still be able to execute pre-compiled scripts, compiled with mpy-cross.
 #define MICROPY_ENABLE_COMPILER           (1)
 
+// Enable scheduler for IRQ callbacks (required for PDM_PCM.irq())
+#define MICROPY_ENABLE_SCHEDULER          (1)
+
 #define MICROPY_ENABLE_GC                 (0)
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
+
+// Enable essential built-in types
+#define MICROPY_PY_BUILTINS_BYTEARRAY     (1)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW    (1)
+#define MICROPY_PY_ARRAY                  (1)
 
 #define MICROPY_ALLOC_PATH_MAX            (256)
 
@@ -58,6 +66,15 @@
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
+
+// Enable os module
+#define MICROPY_PY_OS                           (1)
+#define MICROPY_PY_OS_INCLUDEFILE               "ports/psoc-edge/modos.c"
+#define MICROPY_PY_OS_UNAME                     (0)
+#define MICROPY_PY_OS_URANDOM                   (0)
+#define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV    (1)
+#define MICROPY_PY_OS_SYSTEM                    (1)
+#define MICROPY_PY_OS_ERRNO                     (1)
 
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
@@ -77,7 +94,7 @@
 #define MICROPY_PY_MACHINE_PDM_PCM              (1)
 #define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
 
-#define MICROPY_LOGGER_DEBUG                    (1)
+#define MICROPY_LOGGER_DEBUG                    (0)
 
 // type definitions for the specific machine
 
