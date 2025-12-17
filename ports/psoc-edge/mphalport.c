@@ -109,7 +109,14 @@ void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull) {
     Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(pin->port), pin->pin, drive_mode, 0, HSIOM_SEL_GPIO);
 }
 
+extern uint8_t pin_get_mode(const machine_pin_obj_t *self);
+
 uint32_t mp_hal_pin_read(mp_hal_pin_obj_t pin) {
+    uint8_t mode = pin_get_mode(pin);
+    if (mode == GPIO_MODE_OUT ||
+        mode == GPIO_MODE_OPEN_DRAIN) {
+        return Cy_GPIO_ReadOut(Cy_GPIO_PortToAddr(pin->port), pin->pin);
+    }
     return Cy_GPIO_Read(Cy_GPIO_PortToAddr(pin->port), pin->pin);
 }
 
