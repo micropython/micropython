@@ -16,9 +16,11 @@ print("pin out initial value 0: ", pin_in.value() == 0)
 
 # Validation different output setting
 pin_out.value(1)
+print("pin out (self) value 1: ", pin_out.value() == 1)
 print("pin out value 1: ", pin_in.value() == 1)
 
 pin_out.value(0)
+print("pin out (self) value 0: ", pin_out.value() == 0)
 print("pin out value 0: ", pin_in.value() == 0)
 
 pin_out.value(True)
