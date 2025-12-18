@@ -51,34 +51,6 @@ void os_deinit(void) {
 }
 
 
-#if MICROPY_PY_OS_GETENV_PUTENV_UNSETENV
-
-static mp_obj_t mp_os_getenv(mp_obj_t var_in) {
-    const char *s = getenv(mp_obj_str_get_str(var_in));
-    if (s == NULL) {
-        return mp_const_none;
-    }
-    return mp_obj_new_str(s, strlen(s));
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_getenv_obj, mp_os_getenv);
-
-
-static mp_obj_t mp_os_putenv(mp_obj_t var, mp_obj_t value) {
-    setenv(mp_obj_str_get_str(var), mp_obj_str_get_str(value), 1);
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_2(mp_os_putenv_obj, mp_os_putenv);
-
-
-static mp_obj_t mp_os_unsetenv(mp_obj_t var) {
-    unsetenv(mp_obj_str_get_str(var));
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_unsetenv_obj, mp_os_unsetenv);
-
-#endif
-
-
 static mp_obj_t mp_os_system(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
 
