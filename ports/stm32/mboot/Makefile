@@ -54,7 +54,7 @@ DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
 BOOTLOADER_DFU_USB_VID ?= 0x0483
 BOOTLOADER_DFU_USB_PID ?= 0xDF11
-STFLASH ?= st-flash
+STFLASH ?= st-flash --connect-under-reset
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
