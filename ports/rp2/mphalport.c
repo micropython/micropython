@@ -50,7 +50,7 @@
 static uint64_t time_us_64_offset_from_epoch;
 #endif
 
-#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC || MICROPY_PY_OS_DUPTERM_NOTIFY
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -83,11 +83,12 @@ int mp_hal_stdin_rx_chr(void) {
         #if MICROPY_HW_USB_CDC
         mp_usbd_cdc_poll_interfaces(0);
         #endif
-
+        #if MICROPY_HW_USB_CDC || MICROPY_HW_ENABLE_UART_REPL || MICROPY_PY_OS_DUPTERM_NOTIFY
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
         }
+        #endif
         #if MICROPY_PY_OS_DUPTERM
         int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
@@ -266,17 +267,7 @@ void soft_timer_init(void) {
 }
 
 void mp_wfe_or_timeout(uint32_t timeout_ms) {
-    soft_timer_entry_t timer;
-
-    // Note the timer doesn't have an associated callback, it just exists to create a
-    // hardware interrupt to wake the CPU
-    soft_timer_static_init(&timer, SOFT_TIMER_MODE_ONE_SHOT, 0, NULL);
-    soft_timer_insert(&timer, timeout_ms);
-
-    __wfe();
-
-    // Clean up the timer node if it's not already
-    soft_timer_remove(&timer);
+    best_effort_wfe_or_timeout(delayed_by_ms(get_absolute_time(), timeout_ms));
 }
 
 int mp_hal_is_pin_reserved(int n) {

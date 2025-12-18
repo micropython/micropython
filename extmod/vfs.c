@@ -96,7 +96,7 @@ mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out) {
     return MP_STATE_VM(vfs_cur);
 }
 
-// Version of mp_vfs_lookup_path that takes and returns uPy string objects.
+// Version of mp_vfs_lookup_path that takes and returns MicroPython string objects.
 static mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     const char *path = mp_obj_str_get_str(path_in);
     const char *p_out;

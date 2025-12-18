@@ -29,6 +29,9 @@
 // features to work on Unix-like systems, see mpconfigvariant.h (and
 // mpconfigvariant_common.h) for feature enabling.
 
+// For time_t, needed by MICROPY_TIMESTAMP_IMPL_TIME_T.
+#include <time.h>
+
 // For size_t and ssize_t
 #include <unistd.h>
 
@@ -70,21 +73,6 @@
     #define MICROPY_EMIT_ARM        (1)
 #endif
 
-// Type definitions for the specific machine based on the word size.
-#ifndef MICROPY_OBJ_REPR
-#ifdef __LP64__
-typedef long mp_int_t; // must be pointer size
-typedef unsigned long mp_uint_t; // must be pointer size
-#else
-// These are definitions for machines where sizeof(int) == sizeof(void*),
-// regardless of actual size.
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
-#else
-// Assume that if we already defined the obj repr then we also defined types.
-#endif
-
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
 typedef long long mp_off_t;
@@ -124,6 +112,9 @@ typedef long mp_off_t;
 // VFS stat functions should return time values relative to 1970/1/1
 #define MICROPY_EPOCH_IS_1970       (1)
 
+// port modtime functions use time_t
+#define MICROPY_TIMESTAMP_IMPL      (MICROPY_TIMESTAMP_IMPL_TIME_T)
+
 // Assume that select() call, interrupted with a signal, and erroring
 // with EINTR, updates remaining timeout value.
 #define MICROPY_SELECT_REMAINING_TIME (1)
@@ -133,6 +124,9 @@ typedef long mp_off_t;
 #define MICROPY_STACKLESS           (0)
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
+
+// Recursive mutex is needed when threading is enabled, regardless of GIL setting.
+#define MICROPY_PY_THREAD_RECURSIVE_MUTEX (MICROPY_PY_THREAD)
 
 // Implementation of the machine module.
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"
@@ -156,6 +150,12 @@ typedef long mp_off_t;
 
 // Enable sys.executable.
 #define MICROPY_PY_SYS_EXECUTABLE (1)
+
+// Enable support for compile-only mode.
+#define MICROPY_PYEXEC_COMPILE_ONLY (1)
+
+// Enable handling of sys.exit() exit codes.
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (1)
 
 #define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 

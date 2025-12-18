@@ -13,8 +13,8 @@
         "W5100S-EVB-Pico.jpg"
     ],
     "mcu": "rp2040",
-    "product": "Wiznet W5100S-EVB-Pico",
+    "product": "W5100S-EVB-Pico",
     "thumbnail": "",
-    "url": "https://www.wiznet.io/product-item/w5100s-evb-pico/",
-    "vendor": "Wiznet"
+    "url": "https://docs.wiznet.io/Product/iEthernet/W5100S/w5100s-evb-pico",
+    "vendor": "WIZnet"
 }

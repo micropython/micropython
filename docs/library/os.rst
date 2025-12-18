@@ -55,10 +55,9 @@ Filesystem access
       directories and 0x8000 for regular files;
     - *inode* is an integer corresponding to the inode of the file, and may be 0
       for filesystems that don't have such a notion.
-    - Some platforms may return a 4-tuple that includes the entry's *size*.  For
-      file entries, *size* is an integer representing the size of the file
-      or -1 if unknown.  Its meaning is currently undefined for directory
-      entries.
+    - *size* is an integer that may be included depending on the filesystem type.
+      For file entries, *size* represents the size of the file or -1 if unknown.
+      Its meaning is currently undefined for directory entries.
 
 .. function:: listdir([dir])
 
@@ -132,6 +131,37 @@ Terminal redirection and duplication
    the slot given by *index*.
 
    The function returns the previous stream-like object in the given slot.
+
+.. function:: dupterm_notify(obj_in, /)
+
+    Notify the MicroPython REPL that input is available on a stream-like object
+    previously registered via `os.dupterm()`.
+
+    This function should be called by custom stream implementations (e.g., UART,
+    Bluetooth, or other non-USB REPL streams) to inform the REPL that input is
+    ready to be read. Proper use ensures that special characters such as
+    Ctrl+C (used to trigger KeyboardInterrupt) are processed promptly by the
+    REPL, enabling expected interruption behavior for user code.
+
+    The *obj_in* parameter is ignored by `os.dupterm_notify()`, but is required to allow calling
+    dupterm_notify from an interrupt handler such as `UART.irq()`.
+
+    Example:
+
+    .. code-block:: python
+
+        from machine import UART
+        import os
+        uart = UART(0)
+        os.dupterm(uart, 0)
+        uart.irq(os.dupterm_notify, machine.UART.IRQ_RX)
+
+    .. note::
+        If the ``dupterm_notify()`` function is not called, input from the custom stream
+        may not be detected or processed until the next REPL poll, potentially delaying
+        KeyboardInterrupts or other control signals.
+        This is especially important for UART, Bluetooth and other
+        non-standard REPL connections, where automatic notification is not guaranteed.
 
 Filesystem mounting
 -------------------

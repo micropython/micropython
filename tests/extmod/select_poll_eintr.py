@@ -10,6 +10,18 @@ except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
+# Use a new UDP socket for tests, which should be writable but not readable.
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+localhost_addr_info = socket.getaddrinfo("127.0.0.1", 8000)
+try:
+    s.bind(localhost_addr_info[0][-1])
+except OSError:
+    # Target can't bind to localhost.
+    # Most likely it doesn't have a NIC and the test cannot be run.
+    s.close()
+    print("SKIP")
+    raise SystemExit
+
 
 def thread_main():
     lock.acquire()
@@ -21,14 +33,18 @@ def thread_main():
     print("thread gc end")
 
 
+# Pre-allocate global variables here so the global dict is not resized by the main
+# thread while the secondary thread runs.  This is a workaround for the bug described
+# in https://github.com/micropython/micropython/pull/11604
+poller = None
+t0 = None
+result = None
+dt_ms = None
+
 # Start a thread to interrupt the main thread during its call to poll.
 lock = _thread.allocate_lock()
 lock.acquire()
 _thread.start_new_thread(thread_main, ())
-
-# Use a new UDP socket for tests, which should be writable but not readable.
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(socket.getaddrinfo("127.0.0.1", 8000)[0][-1])
 
 # Create the poller object.
 poller = select.poll()

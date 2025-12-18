@@ -41,9 +41,9 @@ typedef struct _mp_obj_range_it_t {
 static mp_obj_t range_it_iternext(mp_obj_t o_in) {
     mp_obj_range_it_t *o = MP_OBJ_TO_PTR(o_in);
     if ((o->step > 0 && o->cur < o->stop) || (o->step < 0 && o->cur > o->stop)) {
-        mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT(o->cur);
+        mp_int_t cur = o->cur;
         o->cur += o->step;
-        return o_out;
+        return mp_obj_new_int(cur);
     } else {
         return MP_OBJ_STOP_ITERATION;
     }
@@ -132,7 +132,7 @@ static mp_obj_t range_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         case MP_UNARY_OP_BOOL:
             return mp_obj_new_bool(len > 0);
         case MP_UNARY_OP_LEN:
-            return MP_OBJ_NEW_SMALL_INT(len);
+            return mp_obj_new_int(len);
         default:
             return MP_OBJ_NULL;      // op not supported
     }
@@ -164,20 +164,16 @@ static mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
-            mp_seq_get_fast_slice_indexes(len, index, &slice);
+            mp_obj_slice_indices(index, len, &slice);
             mp_obj_range_t *o = mp_obj_malloc(mp_obj_range_t, &mp_type_range);
             o->start = self->start + slice.start * self->step;
             o->stop = self->start + slice.stop * self->step;
             o->step = slice.step * self->step;
-            if (slice.step < 0) {
-                // Negative slice steps have inclusive stop, so adjust for exclusive
-                o->stop -= self->step;
-            }
             return MP_OBJ_FROM_PTR(o);
         }
         #endif
         size_t index_val = mp_get_index(self->base.type, len, index, false);
-        return MP_OBJ_NEW_SMALL_INT(self->start + index_val * self->step);
+        return mp_obj_new_int(self->start + index_val * self->step);
     } else {
         return MP_OBJ_NULL; // op not supported
     }

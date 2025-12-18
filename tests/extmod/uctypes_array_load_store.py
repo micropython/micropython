@@ -6,6 +6,13 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+# 'int' needs to be able to represent UINT64 for this test
+try:
+    int("FF" * 8, 16)
+except OverflowError:
+    print("SKIP")
+    raise SystemExit
+
 N = 5
 
 for endian in ("NATIVE", "LITTLE_ENDIAN", "BIG_ENDIAN"):

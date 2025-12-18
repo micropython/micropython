@@ -501,7 +501,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
             if (!uart_tx_busy(self)) {
                 return 0;
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_indefinite();
         } while (mp_hal_ticks_ms() < timeout);
         *errcode = MP_ETIMEDOUT;
         ret = MP_STREAM_ERROR;

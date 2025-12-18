@@ -31,7 +31,7 @@
     <PyVariantDir Condition="'$(PyVariantDir)' == ''">$(PyWinDir)variants\$(PyVariant)\</PyVariantDir>
     <PyTargetDir Condition="'$(PyTargetDir)' == ''">$(PyBuildDir)</PyTargetDir>
 
-    <!-- All include directories needed for uPy -->
+    <!-- All include directories needed for MicroPython -->
     <PyIncDirs>$(PyIncDirs);$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc;$(PyVariantDir)</PyIncDirs>
 
     <!-- Within PyBuildDir different subdirectories are used based on configuration and platform.

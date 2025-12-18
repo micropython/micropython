@@ -26,7 +26,7 @@
  */
 
 #ifndef MICROPY_INCLUDED_STM32_PHY_H
-#define MICROPY_INCLUDED_STM32_PYH_H
+#define MICROPY_INCLUDED_STM32_PHY_H
 
 #if defined(MICROPY_HW_ETH_MDC)
 
@@ -50,17 +50,22 @@
 #define PHY_ANAR_SPEED_100FULL  (0x0100)
 #define PHY_ANAR_IEEE802_3      (0x0001)
 
-#define PHY_SPEED_10HALF   (1)
-#define PHY_SPEED_10FULL   (5)
-#define PHY_SPEED_100HALF  (2)
-#define PHY_SPEED_100FULL  (6)
-#define PHY_DUPLEX         (4)
+#define PHY_SPEED_10HALF        (0x01)
+#define PHY_SPEED_100HALF       (0x02)
+#define PHY_SPEED_1000HALF      (0x04)
+#define PHY_DUPLEX              (0x08)
+#define PHY_SPEED_10FULL        (PHY_DUPLEX | PHY_SPEED_10HALF)
+#define PHY_SPEED_100FULL       (PHY_DUPLEX | PHY_SPEED_100HALF)
+#define PHY_SPEED_1000FULL      (PHY_DUPLEX | PHY_SPEED_1000HALF)
 
 uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg);
 void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val);
 
+void eth_phy_generic_init(uint32_t phy_addr);
 int16_t eth_phy_lan87xx_get_link_status(uint32_t phy_addr);
 int16_t eth_phy_dp838xx_get_link_status(uint32_t phy_addr);
+void eth_phy_rtl8211_init(uint32_t phy_addr);
+int16_t eth_phy_rtl8211_get_link_status(uint32_t phy_addr);
 
 #endif
 

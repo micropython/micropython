@@ -30,7 +30,8 @@ enum {
     ETH_PHY_LAN8742 = 0,
     ETH_PHY_LAN8720,
     ETH_PHY_DP83848,
-    ETH_PHY_DP83825
+    ETH_PHY_DP83825,
+    ETH_PHY_RTL8211
 };
 
 typedef struct _eth_t eth_t;

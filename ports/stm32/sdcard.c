@@ -40,7 +40,7 @@
 
 #if MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD
 
-#if defined(STM32F7) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4)
+#if defined(STM32F7) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32N6)
 
 // The H7/F7/L4 have 2 SDMMC peripherals, but at the moment this driver only supports
 // using one of them in a given build, selected by MICROPY_HW_SDCARD_SDMMC.
@@ -104,7 +104,7 @@
 #define SDIO_HARDWARE_FLOW_CONTROL_DISABLE  SDMMC_HARDWARE_FLOW_CONTROL_DISABLE
 #define SDIO_HARDWARE_FLOW_CONTROL_ENABLE   SDMMC_HARDWARE_FLOW_CONTROL_ENABLE
 
-#if defined(STM32H5) || defined(STM32H7)
+#if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
 #define SDIO_TRANSFER_CLK_DIV               SDMMC_NSpeed_CLK_DIV
 #define SDIO_USE_GPDMA                      0
 #else
@@ -214,7 +214,7 @@ static void sdmmc_msp_init(void) {
     // enable SDIO clock
     SDMMC_CLK_ENABLE();
 
-    #if defined(STM32H7)
+    #if defined(STM32H7) || defined(STM32N6)
     // Reset SDMMC
     SDMMC_FORCE_RESET();
     SDMMC_RELEASE_RESET();
@@ -270,7 +270,7 @@ static HAL_StatusTypeDef sdmmc_init_sd(void) {
     // SD device interface configuration
     sdmmc_handle.sd.Instance = SDIO;
     sdmmc_handle.sd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
-    #if !defined(STM32H5) && !defined(STM32H7)
+    #if !defined(STM32H5) && !defined(STM32H7) && !defined(STM32N6)
     sdmmc_handle.sd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
     #endif
     sdmmc_handle.sd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_ENABLE;

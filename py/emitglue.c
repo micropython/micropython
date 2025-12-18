@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include "py/emitglue.h"
+#include "py/mphal.h"
 #include "py/runtime0.h"
 #include "py/bc.h"
 #include "py/objfun.h"
@@ -126,6 +127,9 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, cons
         "mcr p15, 0, r0, c7, c7, 0\n" // invalidate I-cache and D-cache
         : : : "r0", "cc");
     #endif
+    #elif (MICROPY_EMIT_RV32 || MICROPY_EMIT_INLINE_RV32) && defined(MP_HAL_CLEAN_DCACHE)
+    // Flush the D-cache.
+    MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
     #endif
 
     rc->kind = kind;

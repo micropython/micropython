@@ -28,23 +28,20 @@
 #include "shared/timeutils/timeutils.h"
 #include "rtc.h"
 
-// Return the localtime as an 8-tuple.
-static mp_obj_t mp_time_localtime_get(void) {
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
     // get current date and time
     rtc_init_finalise();
     ra_rtc_t time;
     ra_rtc_get_time(&time);
-    mp_obj_t tuple[8] = {
-        mp_obj_new_int(time.year),
-        mp_obj_new_int(time.month),
-        mp_obj_new_int(time.date),
-        mp_obj_new_int(time.hour),
-        mp_obj_new_int(time.minute),
-        mp_obj_new_int(time.second),
-        mp_obj_new_int(time.weekday - 1),
-        mp_obj_new_int(timeutils_year_day(time.year, time.month, time.date)),
-    };
-    return mp_obj_new_tuple(8, tuple);
+    tm->tm_year = time.year;
+    tm->tm_mon = time.month;
+    tm->tm_mday = time.date;
+    tm->tm_hour = time.hour;
+    tm->tm_min = time.minute;
+    tm->tm_sec = time.second;
+    tm->tm_wday = time.weekday - 1;
+    tm->tm_yday = timeutils_year_day(time.year, time.month, time.date);
 }
 
 // Returns the number of seconds, as an integer, since the Epoch.
@@ -53,5 +50,5 @@ static mp_obj_t mp_time_time_get(void) {
     rtc_init_finalise();
     ra_rtc_t time;
     ra_rtc_get_time(&time);
-    return mp_obj_new_int(timeutils_seconds_since_epoch(time.year, time.month, time.date, time.hour, time.minute, time.second));
+    return timeutils_obj_from_timestamp(timeutils_seconds_since_epoch(time.year, time.month, time.date, time.hour, time.minute, time.second));
 }

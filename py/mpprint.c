@@ -40,8 +40,20 @@
 #include "py/formatfloat.h"
 #endif
 
-static const char pad_spaces[] = "                ";
-static const char pad_zeroes[] = "0000000000000000";
+static const char pad_spaces[16] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+#define pad_spaces_size  (sizeof(pad_spaces))
+static const char pad_common[23] = {'0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '_', '0', '0', '0', ',', '0', '0'};
+// The contents of pad_common is arranged to provide the following padding
+// strings with minimal flash size:
+//     0000000000000000 <- pad_zeroes
+//                 0000_000 <- pad_zeroes_underscore (offset: 12, size 5)
+//                      000,00 <- pad_zeroes_comma (offset: 17, size 4)
+#define pad_zeroes       (pad_common + 0)
+#define pad_zeroes_size  (16)
+#define pad_zeroes_underscore (pad_common + 12)
+#define pad_zeroes_underscore_size  (5)
+#define pad_zeroes_comma (pad_common + 17)
+#define pad_zeroes_comma_size  (4)
 
 static void plat_print_strn(void *env, const char *str, size_t len) {
     (void)env;
@@ -58,20 +70,37 @@ int mp_print_str(const mp_print_t *print, const char *str) {
     return len;
 }
 
-int mp_print_strn(const mp_print_t *print, const char *str, size_t len, int flags, char fill, int width) {
+int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
     int pad_size;
     int total_chars_printed = 0;
     const char *pad_chars;
+    char grouping = flags >> PF_FLAG_SEP_POS;
 
     if (!fill || fill == ' ') {
         pad_chars = pad_spaces;
-        pad_size = sizeof(pad_spaces) - 1;
-    } else if (fill == '0') {
+        pad_size = pad_spaces_size;
+    } else if (fill == '0' && !grouping) {
         pad_chars = pad_zeroes;
-        pad_size = sizeof(pad_zeroes) - 1;
+        pad_size = pad_zeroes_size;
+    } else if (fill == '0') {
+        if (grouping == '_') {
+            pad_chars = pad_zeroes_underscore;
+            pad_size = pad_zeroes_underscore_size;
+        } else {
+            pad_chars = pad_zeroes_comma;
+            pad_size = pad_zeroes_comma_size;
+        }
+        // The result will never start with a grouping character. An extra leading zero is added.
+        // width is dead after this so we can use it in calculation
+        if (width % pad_size == 0) {
+            pad++;
+            width++;
+        }
+        // position the grouping character correctly within the pad repetition
+        pad_chars += pad_size - 1 - width % pad_size;
     } else {
         // Other pad characters are fairly unusual, so we'll take the hit
         // and output them 1 at a time.
@@ -201,7 +230,7 @@ static int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base,
     return len;
 }
 
-int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec) {
+int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, unsigned int base, int base_char, int flags, char fill, int width, int prec) {
     // These are the only values for "base" that are required to be supported by this
     // function, since Python only allows the user to format integers in these bases.
     // If needed this function could be generalised to handle other values.
@@ -248,10 +277,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     int prefix_len = prefix - prefix_buf;
     prefix = prefix_buf;
 
-    char comma = '\0';
-    if (flags & PF_FLAG_SHOW_COMMA) {
-        comma = ',';
-    }
+    char comma = flags >> PF_FLAG_SEP_POS;
 
     // The size of this buffer is rather arbitrary. If it's not large
     // enough, a dynamic one will be allocated.
@@ -340,8 +366,8 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, char fill, int width, int prec) {
-    char buf[32];
+int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int flags, char fill, int width, int prec) {
+    char buf[36];
     char sign = '\0';
     int chrs = 0;
 
@@ -352,11 +378,17 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
         sign = ' ';
     }
 
-    int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
+    int len = mp_format_float(f, buf, sizeof(buf) - 3, fmt, prec, sign);
 
     char *s = buf;
 
-    if ((flags & PF_FLAG_ADD_PERCENT) && (size_t)(len + 1) < sizeof(buf)) {
+    if ((flags & PF_FLAG_ALWAYS_DECIMAL) && strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
+        buf[len++] = '.';
+        buf[len++] = '0';
+        buf[len] = '\0';
+    }
+
+    if (flags & PF_FLAG_ADD_PERCENT) {
         buf[len++] = '%';
         buf[len] = '\0';
     }
@@ -416,8 +448,6 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 flags |= PF_FLAG_SHOW_SIGN;
             } else if (*fmt == ' ') {
                 flags |= PF_FLAG_SPACE_SIGN;
-            } else if (*fmt == '!') {
-                flags |= PF_FLAG_NO_TRAILZ;
             } else if (*fmt == '0') {
                 flags |= PF_FLAG_PAD_AFTER_SIGN;
                 fill = '0';
@@ -451,15 +481,35 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             }
         }
 
-        // parse long specifiers (only for LP64 model where they make a difference)
-        #ifndef __LP64__
-        const
+        // parse long and long long specifiers (only where they make a difference)
+        #if (MP_INT_MAX > INT_MAX && MP_INT_MAX == LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
+        #define SUPPORT_L_FORMAT (1)
+        #else
+        #define SUPPORT_L_FORMAT (0)
         #endif
+        #if SUPPORT_L_FORMAT
         bool long_arg = false;
+        #endif
+
+        #if (MP_INT_MAX > LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
+        #define SUPPORT_LL_FORMAT (1)
+        #else
+        #define SUPPORT_LL_FORMAT (0)
+        #endif
+        #if SUPPORT_LL_FORMAT
+        bool long_long_arg = false;
+        #endif
+
         if (*fmt == 'l') {
             ++fmt;
-            #ifdef __LP64__
+            #if SUPPORT_L_FORMAT
             long_arg = true;
+            #endif
+            #if SUPPORT_LL_FORMAT
+            if (*fmt == 'l') {
+                ++fmt;
+                long_long_arg = true;
+            }
             #endif
         }
 
@@ -506,35 +556,50 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 chrs += mp_print_strn(print, str, len, flags, fill, width);
                 break;
             }
-            case 'd': {
-                mp_int_t val;
-                if (long_arg) {
-                    val = va_arg(args, long int);
-                } else {
-                    val = va_arg(args, int);
-                }
-                chrs += mp_print_int(print, val, 1, 10, 'a', flags, fill, width);
-                break;
-            }
+            case 'd':
+            case 'p':
+            case 'P':
             case 'u':
             case 'x':
             case 'X': {
-                int base = 16 - ((*fmt + 1) & 6); // maps char u/x/X to base 10/16/16
-                char fmt_c = (*fmt & 0xf0) - 'P' + 'A'; // maps char u/x/X to char a/a/A
+                char fmt_chr = *fmt;
                 mp_uint_t val;
-                if (long_arg) {
-                    val = va_arg(args, unsigned long int);
-                } else {
-                    val = va_arg(args, unsigned int);
+                if (fmt_chr == 'p' || fmt_chr == 'P') {
+                    val = va_arg(args, uintptr_t);
                 }
-                chrs += mp_print_int(print, val, 0, base, fmt_c, flags, fill, width);
+                #if SUPPORT_LL_FORMAT
+                else if (long_long_arg) {
+                    val = va_arg(args, unsigned long long);
+                }
+                #endif
+                #if SUPPORT_L_FORMAT
+                else if (long_arg) {
+                    if (sizeof(long) != sizeof(mp_uint_t) && fmt_chr == 'd') {
+                        val = va_arg(args, long);
+                    } else {
+                        val = va_arg(args, unsigned long);
+                    }
+                }
+                #endif
+                else {
+                    if (sizeof(int) != sizeof(mp_uint_t) && fmt_chr == 'd') {
+                        val = va_arg(args, int);
+                    } else {
+                        val = va_arg(args, unsigned);
+                    }
+                }
+                int base;
+                // Map format char x/p/X/P to a/a/A/A for hex letters.
+                // It doesn't matter what d/u map to.
+                char fmt_c = (fmt_chr & 0xf0) - 'P' + 'A';
+                if (fmt_chr == 'd' || fmt_chr == 'u') {
+                    base = 10;
+                } else {
+                    base = 16;
+                }
+                chrs += mp_print_int(print, val, fmt_chr == 'd', base, fmt_c, flags, fill, width);
                 break;
             }
-            case 'p':
-            case 'P': // don't bother to handle upcase for 'P'
-                // Use unsigned long int to work on both ILP32 and LP64 systems
-                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags, fill, width);
-                break;
             #if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
             case 'E':
@@ -548,18 +613,6 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 #else
                 #error Unknown MICROPY FLOAT IMPL
                 #endif
-                break;
-            }
-            #endif
-                // Because 'l' is eaten above, another 'l' means %ll.  We need to support
-                // this length specifier for OBJ_REPR_D (64-bit NaN boxing).
-                // TODO Either enable this unconditionally, or provide a specific config var.
-            #if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64)
-            case 'l': {
-                unsigned long long int arg_value = va_arg(args, unsigned long long int);
-                ++fmt;
-                assert(*fmt == 'u' || *fmt == 'd' || !"unsupported fmt char");
-                chrs += mp_print_int(print, arg_value, *fmt == 'd', 10, 'a', flags, fill, width);
                 break;
             }
             #endif

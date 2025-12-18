@@ -2,6 +2,7 @@
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
+import time
 import _thread
 
 # the shared bytearray
@@ -36,7 +37,7 @@ for i in range(n_thread):
 
 # busy wait for threads to finish
 while n_finished < n_thread:
-    pass
+    time.sleep(0)
 
 # check bytearray has correct contents
 print(len(ba))

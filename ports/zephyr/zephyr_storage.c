@@ -40,6 +40,11 @@
 #endif
 
 #ifdef CONFIG_DISK_ACCESS
+
+#define DISK_DEFINE_NAME(part) CONCAT(MP_QSTR_, DT_STRING_TOKEN(part, disk_name))
+
+#define FOREACH_DISK(n) MP_ROM_QSTR(DISK_DEFINE_NAME(n)),
+
 typedef struct _zephyr_disk_access_obj_t {
     mp_obj_base_t base;
     const char *pdrv;
@@ -121,10 +126,43 @@ static mp_obj_t zephyr_disk_access_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_o
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(zephyr_disk_access_ioctl_obj, zephyr_disk_access_ioctl);
 
+static const mp_rom_obj_tuple_t zephyr_disks_tuple = {
+    .base = {.type = &mp_type_tuple},
+    .items = {
+        #ifdef CONFIG_DISK_DRIVER_SDMMC
+        DT_FOREACH_STATUS_OKAY(zephyr_sdmmc_disk, FOREACH_DISK)
+        #endif
+        #ifdef CONFIG_DISK_DRIVER_MMC
+        DT_FOREACH_STATUS_OKAY(zephyr_mmc_disk, FOREACH_DISK)
+        #endif
+        #ifdef CONFIG_DISK_DRIVER_FLASH
+        DT_FOREACH_STATUS_OKAY(zephyr_flash_disk, FOREACH_DISK)
+        #endif
+        #ifdef CONFIG_DISK_DRIVER_RAM
+        DT_FOREACH_STATUS_OKAY(zephyr_ram_disk, FOREACH_DISK)
+        #endif
+    },
+    .len = MP_ARRAY_SIZE((mp_rom_obj_t []) {
+        #ifdef CONFIG_DISK_DRIVER_SDMMC
+        DT_FOREACH_STATUS_OKAY(zephyr_sdmmc_disk, FOREACH_DISK)
+        #endif
+        #ifdef CONFIG_DISK_DRIVER_MMC
+        DT_FOREACH_STATUS_OKAY(zephyr_mmc_disk, FOREACH_DISK)
+        #endif
+        #ifdef CONFIG_DISK_DRIVER_FLASH
+        DT_FOREACH_STATUS_OKAY(zephyr_flash_disk, FOREACH_DISK)
+        #endif
+        #ifdef CONFIG_DISK_DRIVER_RAM
+        DT_FOREACH_STATUS_OKAY(zephyr_ram_disk, FOREACH_DISK)
+        #endif
+    })
+};
+
 static const mp_rom_map_elem_t zephyr_disk_access_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&zephyr_disk_access_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&zephyr_disk_access_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&zephyr_disk_access_ioctl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disks), MP_ROM_PTR(&zephyr_disks_tuple) },
 };
 static MP_DEFINE_CONST_DICT(zephyr_disk_access_locals_dict, zephyr_disk_access_locals_dict_table);
 
@@ -139,7 +177,45 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #endif // CONFIG_DISK_ACCESS
 
 #ifdef CONFIG_FLASH_MAP
+
+#define FLASH_AREA_DEFINE_LABEL(part) CONCAT(MP_QSTR_, DT_STRING_TOKEN(part, label))
+#define FLASH_AREA_DEFINE_NB(part) CONCAT(MP_QSTR_, DT_FIXED_PARTITION_ID(part))
+
+#define FLASH_AREA_DEFINE_GETNAME(part) COND_CODE_1(DT_NODE_HAS_PROP(part, label), \
+    (FLASH_AREA_DEFINE_LABEL(part)), (FLASH_AREA_DEFINE_NB(part)))
+
+// Helper macro to get erase block size from the flash device
+// Note: Some flash controllers have erase-block-size, others (like QSPI NOR) don't
+// For devices without this property, use 4096 as a common default for NOR flash
+#define FLASH_AREA_GET_ERASE_SIZE(part) \
+    DT_PROP_OR(DT_MTD_FROM_FIXED_PARTITION(part), erase_block_size, 4096)
+
+// Create a static tuple for each partition containing (id, erase_block_size)
+#define FLASH_AREA_DEFINE_TUPLE(part) \
+    static const mp_rom_obj_tuple_t flash_area_tuple_##part = { \
+        {&mp_type_tuple}, \
+        2, \
+        { \
+            MP_ROM_INT(DT_FIXED_PARTITION_ID(part)), \
+            MP_ROM_INT(FLASH_AREA_GET_ERASE_SIZE(part)), \
+        } \
+    };
+
+#define FLASH_AREA_TUPLE(part) COND_CODE_1(DT_NODE_HAS_STATUS_OKAY(DT_MTD_FROM_FIXED_PARTITION(part)), \
+    (FLASH_AREA_DEFINE_TUPLE(part)), ())
+
+#define FLASH_AREA_DEFINE_DEFINE(part) { MP_ROM_QSTR(FLASH_AREA_DEFINE_GETNAME(part)), MP_ROM_PTR(&flash_area_tuple_##part) },
+
+#define FLASH_AREA_DEFINE(part) COND_CODE_1(DT_NODE_HAS_STATUS_OKAY(DT_MTD_FROM_FIXED_PARTITION(part)), \
+    (FLASH_AREA_DEFINE_DEFINE(part)), ())
+
+#define FOREACH_PARTITION(n) DT_FOREACH_CHILD(n, FLASH_AREA_DEFINE)
+#define FOREACH_PARTITION_TUPLE(n) DT_FOREACH_CHILD(n, FLASH_AREA_TUPLE)
+
 const mp_obj_type_t zephyr_flash_area_type;
+
+// Generate tuple definitions for all partitions
+DT_FOREACH_STATUS_OKAY(fixed_partitions, FOREACH_PARTITION_TUPLE)
 
 typedef struct _zephyr_flash_area_obj_t {
     mp_obj_base_t base;
@@ -240,13 +316,17 @@ static mp_obj_t zephyr_flash_area_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_ob
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(zephyr_flash_area_ioctl_obj, zephyr_flash_area_ioctl);
 
+static const mp_rom_map_elem_t zephyr_flash_areas_table[] = {
+    /* Generate list of partition IDs from Zephyr Devicetree */
+    DT_FOREACH_STATUS_OKAY(fixed_partitions, FOREACH_PARTITION)
+};
+static MP_DEFINE_CONST_DICT(zephyr_flash_areas_dict, zephyr_flash_areas_table);
+
 static const mp_rom_map_elem_t zephyr_flash_area_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&zephyr_flash_area_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&zephyr_flash_area_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&zephyr_flash_area_ioctl_obj) },
-    #if FIXED_PARTITION_EXISTS(storage_partition)
-    { MP_ROM_QSTR(MP_QSTR_STORAGE), MP_ROM_INT(FIXED_PARTITION_ID(storage_partition)) },
-    #endif
+    { MP_ROM_QSTR(MP_QSTR_areas), MP_ROM_PTR(&zephyr_flash_areas_dict) },
 };
 static MP_DEFINE_CONST_DICT(zephyr_flash_area_locals_dict, zephyr_flash_area_locals_dict_table);
 

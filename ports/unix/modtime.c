@@ -34,6 +34,7 @@
 
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "shared/timeutils/timeutils.h"
 
 #ifdef _WIN32
 static inline int msec_sleep_tv(struct timeval *tv) {
@@ -130,12 +131,7 @@ static mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, stru
     if (n_args == 0) {
         t = time(NULL);
     } else {
-        #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-        mp_float_t val = mp_obj_get_float(args[0]);
-        t = (time_t)MICROPY_FLOAT_C_FUN(trunc)(val);
-        #else
-        t = mp_obj_get_int(args[0]);
-        #endif
+        t = (time_t)timeutils_obj_get_timestamp(args[0]);
     }
     struct tm *tm = time_func(&t);
 
@@ -193,10 +189,10 @@ static mp_obj_t mod_time_mktime(mp_obj_t tuple) {
         time.tm_isdst = -1; // auto-detect
     }
     time_t ret = mktime(&time);
-    if (ret == -1) {
+    if (ret == (time_t)-1) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("invalid mktime usage"));
     }
-    return mp_obj_new_int(ret);
+    return timeutils_obj_from_timestamp(ret);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_time_mktime_obj, mod_time_mktime);
 

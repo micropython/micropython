@@ -36,6 +36,8 @@
 #if MICROPY_EMIT_RV32
 
 #include "py/asmrv32.h"
+#include "py/mpstate.h"
+#include "py/persistentcode.h"
 
 #if MICROPY_DEBUG_VERBOSE
 #define DEBUG_PRINT (1)
@@ -450,18 +452,24 @@ void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t
     asm_rv32_opcode_cadd(state, rd, ASM_RV32_REG_SP);
 }
 
-void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
-    mp_int_t scaled_offset = offset * sizeof(ASM_WORD_SIZE);
+static const uint8_t RV32_LOAD_OPCODE_TABLE[3] = {
+    0x04, 0x05, 0x02
+};
 
-    if (scaled_offset >= 0 && RV32_IS_IN_C_REGISTER_WINDOW(rd) && RV32_IS_IN_C_REGISTER_WINDOW(rs) && FIT_UNSIGNED(scaled_offset, 6)) {
+void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, int32_t offset, mp_uint_t operation_size) {
+    assert(operation_size <= 2 && "Operation size value out of range.");
+
+    int32_t scaled_offset = offset << operation_size;
+
+    if (scaled_offset >= 0 && operation_size == 2 && RV32_IS_IN_C_REGISTER_WINDOW(rd) && RV32_IS_IN_C_REGISTER_WINDOW(rs) && MP_FIT_UNSIGNED(6, scaled_offset)) {
         // c.lw rd', offset(rs')
         asm_rv32_opcode_clw(state, RV32_MAP_IN_C_REGISTER_WINDOW(rd), RV32_MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
         return;
     }
 
-    if (FIT_SIGNED(scaled_offset, 12)) {
-        // lw rd, offset(rs)
-        asm_rv32_opcode_lw(state, rd, rs, scaled_offset);
+    if (MP_FIT_SIGNED(12, scaled_offset)) {
+        // lbu|lhu|lw rd, offset(rs)
+        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_TABLE[operation_size], rd, rs, scaled_offset));
         return;
     }
 
@@ -469,12 +477,12 @@ void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_
     mp_uint_t lower = 0;
     split_immediate(scaled_offset, &upper, &lower);
 
-    // lui   rd, HI(offset) ; Or c.lui if possible
-    // c.add rd, rs
-    // lw    rd, LO(offset)(rd)
+    // lui        rd, HI(offset) ; Or c.lui if possible
+    // c.add      rd, rs
+    // lbu|lhu|lw rd, LO(offset)(rd)
     load_upper_immediate(state, rd, upper);
     asm_rv32_opcode_cadd(state, rd, rs);
-    asm_rv32_opcode_lw(state, rd, rd, lower);
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_TABLE[operation_size], rd, rd, lower));
 }
 
 void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
@@ -497,12 +505,20 @@ void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
     asm_rv32_opcode_jalr(state, ASM_RV32_REG_ZERO, REG_TEMP2, lower);
 }
 
-void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
-    mp_int_t scaled_offset = offset * ASM_WORD_SIZE;
+void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, int32_t offset, mp_uint_t operation_size) {
+    assert(operation_size <= 2 && "Operation size value out of range.");
 
-    if (FIT_SIGNED(scaled_offset, 12)) {
-        // sw rd, offset(rs)
-        asm_rv32_opcode_sw(state, rd, rs, scaled_offset);
+    int32_t scaled_offset = offset << operation_size;
+
+    if (scaled_offset >= 0 && operation_size == 2 && RV32_IS_IN_C_REGISTER_WINDOW(rd) && RV32_IS_IN_C_REGISTER_WINDOW(rs) && MP_FIT_UNSIGNED(6, scaled_offset)) {
+        // c.sw rd', offset(rs')
+        asm_rv32_opcode_csw(state, RV32_MAP_IN_C_REGISTER_WINDOW(rd), RV32_MAP_IN_C_REGISTER_WINDOW(rs), scaled_offset);
+        return;
+    }
+
+    if (MP_FIT_SIGNED(12, scaled_offset)) {
+        // sb|sh|sw rd, offset(rs)
+        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_S(0x23, operation_size, rs, rd, scaled_offset));
         return;
     }
 
@@ -510,12 +526,12 @@ void asm_rv32_emit_store_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint
     mp_uint_t lower = 0;
     split_immediate(scaled_offset, &upper, &lower);
 
-    // lui   temporary, HI(offset) ; Or c.lui if possible
-    // c.add temporary, rs
-    // sw    rd, LO(offset)(temporary)
+    // lui      temporary, HI(offset) ; Or c.lui if possible
+    // c.add    temporary, rs
+    // sb|sh|sw rd, LO(offset)(temporary)
     load_upper_immediate(state, REG_TEMP2, upper);
     asm_rv32_opcode_cadd(state, REG_TEMP2, rs);
-    asm_rv32_opcode_sw(state, rd, REG_TEMP2, lower);
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_S(0x23, operation_size, REG_TEMP2, rd, lower));
 }
 
 void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t label) {
@@ -530,27 +546,6 @@ void asm_rv32_emit_mov_reg_pcrel(asm_rv32_t *state, mp_uint_t rd, mp_uint_t labe
     asm_rv32_opcode_addi(state, rd, rd, lower);
 }
 
-void asm_rv32_emit_load16_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, mp_int_t offset) {
-    mp_int_t scaled_offset = offset * sizeof(uint16_t);
-
-    if (FIT_SIGNED(scaled_offset, 12)) {
-        // lhu rd, offset(rs)
-        asm_rv32_opcode_lhu(state, rd, rs, scaled_offset);
-        return;
-    }
-
-    mp_uint_t upper = 0;
-    mp_uint_t lower = 0;
-    split_immediate(scaled_offset, &upper, &lower);
-
-    // lui   rd, HI(offset) ; Or c.lui if possible
-    // c.add rd, rs
-    // lhu   rd, LO(offset)(rd)
-    load_upper_immediate(state, rd, upper);
-    asm_rv32_opcode_cadd(state, rd, rs);
-    asm_rv32_opcode_lhu(state, rd, rd, lower);
-}
-
 void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs) {
     if (rs == rd) {
         // c.li rd, 0
@@ -562,14 +557,39 @@ void asm_rv32_emit_optimised_xor(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs) 
     asm_rv32_opcode_xor(state, rd, rd, rs);
 }
 
+static bool asm_rv32_allow_zba_opcodes(void) {
+    return asm_rv32_allowed_extensions() & RV32_EXT_ZBA;
+}
+
+static void asm_rv32_fix_up_scaled_reg_reg_reg(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size) {
+    assert(operation_size <= 2 && "Operation size value out of range.");
+
+    if (operation_size > 0 && asm_rv32_allow_zba_opcodes()) {
+        // sh{1,2}add rs1, rs2, rs1
+        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, 1 << operation_size, 0x10, rs1, rs2, rs1));
+    } else {
+        if (operation_size > 0) {
+            asm_rv32_opcode_cslli(state, rs2, operation_size);
+        }
+        asm_rv32_opcode_cadd(state, rs1, rs2);
+    }
+}
+
+void asm_rv32_emit_load_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size) {
+    asm_rv32_fix_up_scaled_reg_reg_reg(state, rs1, rs2, operation_size);
+    asm_rv32_emit_load_reg_reg_offset(state, rd, rs1, 0, operation_size);
+}
+
+void asm_rv32_emit_store_reg_reg_reg(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t operation_size) {
+    asm_rv32_fix_up_scaled_reg_reg_reg(state, rs1, rs2, operation_size);
+    asm_rv32_emit_store_reg_reg_offset(state, rd, rs1, 0, operation_size);
+}
+
 void asm_rv32_meta_comparison_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd) {
-    // c.li rd, 1       ;
-    // beq  rs1, rs2, 6 ; PC + 0
-    // c.li rd, 0       ; PC + 4
-    // ...              ; PC + 6
-    asm_rv32_opcode_cli(state, rd, 1);
-    asm_rv32_opcode_beq(state, rs1, rs2, 6);
-    asm_rv32_opcode_cli(state, rd, 0);
+    // sub   rd, rs1, rs2
+    // sltiu rd, rd, 1
+    asm_rv32_opcode_sub(state, rd, rs1, rs2);
+    asm_rv32_opcode_sltiu(state, rd, rd, 1);
 }
 
 void asm_rv32_meta_comparison_ne(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd) {
@@ -580,26 +600,15 @@ void asm_rv32_meta_comparison_ne(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2
 }
 
 void asm_rv32_meta_comparison_lt(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd, bool unsigned_comparison) {
-    // slt(u) rd, rs1, rs2
-    if (unsigned_comparison) {
-        asm_rv32_opcode_sltu(state, rd, rs1, rs2);
-    } else {
-        asm_rv32_opcode_slt(state, rd, rs1, rs2);
-    }
+    // slt|sltu rd, rs1, rs2
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_R(0x33, (0x02 | (unsigned_comparison ? 1 : 0)), 0x00, rd, rs1, rs2));
 }
 
 void asm_rv32_meta_comparison_le(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t rd, bool unsigned_comparison) {
-    // c.li   rd, 1        ;
-    // beq    rs1, rs2, 8  ; PC + 0
-    // slt(u) rd, rs1, rs2 ; PC + 4
-    // ...                 ; PC + 8
-    asm_rv32_opcode_cli(state, rd, 1);
-    asm_rv32_opcode_beq(state, rs1, rs2, 8);
-    if (unsigned_comparison) {
-        asm_rv32_opcode_sltu(state, rd, rs1, rs2);
-    } else {
-        asm_rv32_opcode_slt(state, rd, rs1, rs2);
-    }
+    // slt[u] rd, rs2, rs1
+    // xori   rd, rd, 1
+    asm_rv32_meta_comparison_lt(state, rs2, rs1, rd, unsigned_comparison);
+    asm_rv32_opcode_xori(state, rd, rd, 1);
 }
 
 #endif // MICROPY_EMIT_RV32

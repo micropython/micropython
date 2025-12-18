@@ -30,13 +30,13 @@
 
 typedef struct _dma_descr_t dma_descr_t;
 
-#if defined(STM32H5)
-// STM32H5 GPDMA doesn't feature circular mode directly, so define doesn't exist in
+#if defined(STM32H5) || defined(STM32U5)
+// STM32H5/U5 GPDMA doesn't feature circular mode directly, so define doesn't exist in
 // stm32 driver header. Define it here to make users like DAC driver happy.
-#define DMA_CIRCULAR 0x00000001
+#define DMA_CIRCULAR 0x20000000
 #endif
 
-#if defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7)
+#if defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32U5)
 
 extern const dma_descr_t dma_I2C_1_RX;
 extern const dma_descr_t dma_SPI_3_RX;
@@ -147,6 +147,19 @@ extern const dma_descr_t dma_I2C_4_RX;
 extern const dma_descr_t dma_SPI_SUBGHZ_TX;
 extern const dma_descr_t dma_SPI_SUBGHZ_RX;
 
+#elif defined(STM32N6)
+
+extern const dma_descr_t dma_SPI_1_RX;
+extern const dma_descr_t dma_SPI_1_TX;
+extern const dma_descr_t dma_SPI_2_RX;
+extern const dma_descr_t dma_SPI_2_TX;
+extern const dma_descr_t dma_SPI_3_RX;
+extern const dma_descr_t dma_SPI_3_TX;
+extern const dma_descr_t dma_SPI_4_RX;
+extern const dma_descr_t dma_SPI_4_TX;
+extern const dma_descr_t dma_SPI_5_RX;
+extern const dma_descr_t dma_SPI_5_TX;
+
 #endif
 
 // API that configures the DMA via the HAL.
@@ -192,11 +205,11 @@ void dma_unprotect_rx_region(void *dest, size_t len);
 
 #else
 
-inline static void dma_protect_rx_region(uint8_t *dest, size_t len) {
+static inline void dma_protect_rx_region(uint8_t *dest, size_t len) {
     // No-ops on targets without D-Cache.
 }
 
-inline static void dma_unprotect_rx_region(void *dest, size_t len) {
+static inline void dma_unprotect_rx_region(void *dest, size_t len) {
 
 }
 

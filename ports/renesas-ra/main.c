@@ -29,7 +29,6 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -88,7 +87,7 @@ static machine_uart_obj_t machine_uart_repl_obj;
 static uint8_t machine_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
 #endif
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 1000000; delay++) {
     }
     led_state(1, 1);
@@ -295,11 +294,8 @@ soft_reset:
     mp_thread_init();
     #endif
 
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
     // Note: stack control relies on main thread being initialised above
-    mp_stack_set_top(&_estack);
-    mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
+    mp_cstack_init_with_top(&_estack, (char *)&_estack - (char *)&_sstack);
 
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);

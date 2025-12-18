@@ -42,4 +42,9 @@ prepare_buffer()
 fbuf.scroll(15, 7)
 fbuf.scroll(10, -1)
 fbuf.scroll(1, -10)
+try:
+    fbuf.scroll(1000000000000, -1)
+except OverflowError:
+    # When mp_int_t is 32 bits, this throws OverflowError.
+    pass
 printbuf()

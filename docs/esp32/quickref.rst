@@ -148,6 +148,7 @@ Required keyword arguments for the constructor:
 - ``mdc`` and ``mdio`` - :class:`machine.Pin` objects (or integers) specifying
   the MDC and MDIO pins.
 - ``phy_type`` - Select the PHY device type. Supported devices are
+  ``PHY_GENERIC``,
   ``PHY_LAN8710``, ``PHY_LAN8720``, ``PHY_IP101``, ``PHY_RTL8201``,
   ``PHY_DP83848``, ``PHY_KSZ8041`` and ``PHY_KSZ8081``. These values are all
   constants defined in the ``network`` module.
@@ -270,8 +271,10 @@ Use the :mod:`time <time>` module::
 Timers
 ------
 
-The ESP32 port has four hardware timers. Use the :ref:`machine.Timer <machine.Timer>` class
-with a timer ID from 0 to 3 (inclusive)::
+The ESP32 port has one, two or four hardware timers, depending on the ESP32 device type.
+There is 1 timer for ESP32C2, 2 timers for ESP32C4, ESP32C6 and ESP32H4, and
+4 timers otherwise. Use the :ref:`machine.Timer <machine.Timer>` class
+with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
 
     from machine import Timer
 
@@ -281,7 +284,12 @@ with a timer ID from 0 to 3 (inclusive)::
     tim1 = Timer(1)
     tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
-The period is in milliseconds.
+The period is in milliseconds. When using UART.IRQ_RXIDLE, timer 0 is needed for
+the IRQ_RXIDLE mechanism and must not be used otherwise.
+
+Timer callbacks are scheduled as soft interrupts on this port; hard
+callbacks are not implemented. Specifying ``hard=True`` will raise
+a ValueError.
 
 Virtual timers are not currently supported on this port.
 
@@ -383,7 +391,7 @@ for more details.
 
 Use the :ref:`machine.PWM <machine.PWM>` class::
 
-    from machine import Pin, PWM
+    from machine import Pin, PWM, lightsleep
 
     pwm0 = PWM(Pin(0), freq=5000, duty_u16=32768) # create PWM object from a pin
     freq = pwm0.freq()         # get current frequency
@@ -393,7 +401,7 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     pwm0.duty(256)             # set duty cycle from 0 to 1023 as a ratio duty/1023, (now 25%)
 
     duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65535
-    pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
+    pwm0.duty_u16(65536*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
 
     duty_ns = pwm0.duty_ns()   # get current pulse width in ns
     pwm0.duty_ns(250_000)      # set pulse width in nanoseconds from 0 to 1_000_000_000/freq, (now 25%)
@@ -402,19 +410,35 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
     print(pwm2)                               # view PWM settings
+    pwm2.deinit()                             # turn off PWM on the pin
+
+    pwm0 = PWM(Pin(0), duty_u16=16384)            # The output is at a high level 25% of the time.
+    pwm2 = PWM(Pin(2), duty_u16=16384, invert=1)  # The output is at a low level 25% of the time.
+
+    pwm4 = PWM(Pin(4), lightsleep=True)           # Allow PWM during light sleep mode
+
+    lightsleep(10*1000) # pwm0, pwm2 goes off, pwm4 stays on during 10s light sleep
+                        # pwm0, pwm2, pwm4 on after 10s light sleep
 
 ESP chips have different hardware peripherals:
 
-=====================================================  ========  ========  ========
-Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
------------------------------------------------------  --------  --------  --------
-Number of groups (speed modes)                                2         1         1
-Number of timers per group                                    4         4         4
-Number of channels per group                                  8         8         6
------------------------------------------------------  --------  --------  --------
-Different PWM frequencies (groups * timers)                   8         4         4
-Total PWM channels (Pins, duties) (groups * channels)        16         8         6
-=====================================================  ========  ========  ========
+=======================================================  ========  =========  ==========
+Hardware specification                                      ESP32  ESP32-S2,  ESP32-C2,
+                                                                   ESP32-S3,  ESP32-C3,
+                                                                   ESP32-P4   ESP32-C5,
+                                                                              ESP32-C6,
+                                                                              ESP32-H2
+-------------------------------------------------------  --------  ---------  ----------
+Number of groups (speed modes)                                  2          1         1
+Number of timers per group                                      4          4         4
+Number of channels per group                                    8          8         6
+-------------------------------------------------------  --------  ---------  ----------
+Different PWM frequencies = (groups * timers)                   8          4         4
+Total PWM channels (Pins, duties) = (groups * channels)        16          8         6
+=======================================================  ========  =========  ==========
+
+In light sleep, the ESP32 PWM can only operate in low speed mode, so only 4 timers and
+8 channels are available.
 
 A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
 but only 8 different PWM frequencies are available, the remaining 8 channels must
@@ -524,14 +548,63 @@ Legacy methods:
 
     Equivalent to ``ADC.block().init(bits=bits)``.
 
-For compatibility, the ``ADC`` object also provides constants matching the
-supported ADC resolutions:
+The only chip that can switch resolution to a lower one is the normal esp32.
+The C2 & S3 are stuck at 12 bits, while the S2 is at 13 bits.
 
+For compatibility, the ``ADC`` object also provides constants matching the
+supported ADC resolutions, per chip:
+
+ESP32:
   - ``ADC.WIDTH_9BIT`` = 9
   - ``ADC.WIDTH_10BIT`` = 10
   - ``ADC.WIDTH_11BIT`` = 11
   - ``ADC.WIDTH_12BIT`` = 12
 
+ESP32 C3 & S3:
+  - ``ADC.WIDTH_12BIT`` = 12
+
+ESP32 S2:
+  - ``ADC.WIDTH_13BIT`` = 13
+
+.. method:: ADC.deinit()
+
+    Provided to deinit the adc driver.
+
+Pulse Counter (pin pulse/edge counting)
+---------------------------------------
+
+The ESP32 provides up to 8 pulse counter peripherals depending on the hardware,
+with id 0..7. These can be configured to count rising and/or falling edges on
+any input pin.
+
+Use the :ref:`esp32.PCNT <esp32.PCNT>` class::
+
+    from machine import Pin
+    from esp32 import PCNT
+
+    counter = PCNT(0, pin=Pin(2), rising=PCNT.INCREMENT)        # create counter
+    counter.start()                                             # start counter
+    count = counter.value()                                     # read count, -32768..32767
+    counter.value(0)                                            # reset counter
+    count = counter.value(0)                                    # read and reset
+
+The PCNT hardware supports monitoring multiple pins in a single unit to
+implement quadrature decoding or up/down signal counters.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
+common pulse counting applications::
+
+    from machine import Pin, Counter
+
+    counter = Counter(0, Pin(2))    # create a counter as above and start it
+    count = counter.value()         # read the count as an arbitrary precision signed integer
+
+    encoder = Encoder(0, Pin(12), Pin(14))    # create an encoder and begin counting
+    count = encoder.value()                   # read the count as an arbitrary precision signed integer
+
+Note that the id passed to these ``Counter()`` and ``Encoder()`` objects must be
+a PCNT id.
 
 Software SPI bus
 ----------------
@@ -764,10 +837,13 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     import esp32
     from machine import Pin
 
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8)
-    r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
-    # The channel resolution is 100ns (1/(source_freq/clock_div)).
+    r = esp32.RMT(pin=Pin(18), resolution_hz=10000000)
+    r   # RMT(pin=18, source_freq=80000000, resolution_hz=10000000)
+    # The channel resolution is based on resolution_hz, i.e. 100ns for 10000000
     r.write_pulses((1, 20, 2, 40), 0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
+
+The ESP32-C2 family does not include any RMT peripheral, so this class is
+unavailable on those SoCs.
 
 OneWire driver
 --------------
@@ -827,8 +903,7 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
    ``NeoPixel`` object.
 
 For low-level driving of a NeoPixel see `machine.bitstream`.
-This low-level driver uses an RMT channel by default.  To configure this see
-`RMT.bitstream_channel`.
+This low-level driver uses an RMT channel by default.
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
 

@@ -36,20 +36,24 @@
 # as a command line tool and a library for interacting with devices.
 
 import ast, io, os, re, struct, sys, time
-from errno import EPERM
+import serial
+import serial.tools.list_ports
+from errno import EPERM, ENOTTY
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
 
+VID_SILICON_LABS = 0x10C4
+
+
 class SerialTransport(Transport):
+    fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
+
     def __init__(self, device, baudrate=115200, wait=0, exclusive=True, timeout=None):
         self.in_raw_repl = False
         self.use_raw_paste = True
         self.device_name = device
         self.mounted = False
-
-        import serial
-        import serial.tools.list_ports
 
         # Set options, and exclusive if pyserial supports it
         serial_kwargs = {
@@ -63,21 +67,27 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if device.startswith("rfc2217://"):
-                    self.serial = serial.serial_for_url(device, **serial_kwargs)
-                elif os.name == "nt":
-                    self.serial = serial.Serial(**serial_kwargs)
-                    self.serial.port = device
+                self.serial = serial.serial_for_url(device, do_not_open=True, **serial_kwargs)
+                if os.name == "nt":
                     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and portinfo[0].manufacturer != "Microsoft":
-                        # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
-                        # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
-                        # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
-                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
-                        self.serial.rts = False  # RTS False = EN High = MCU enabled
+                    if portinfo and getattr(portinfo[0], "vid", None) == VID_SILICON_LABS:
+                        # Silicon Labs CP210x driver on Windows has a quirk
+                        # where after a power on reset it will set DTR and RTS
+                        # at different times when the port is opened (it doesn't
+                        # happen on subsequent openings).
+                        #
+                        # To avoid issues with spurious reset on Espressif boards we clear DTR and RTS,
+                        # open the port, and then set them in an order which prevents triggering a reset.
+                        self.serial.dtr = False
+                        self.serial.rts = False
+                        self.serial.open()
+                        self.serial.dtr = True
+                        self.serial.rts = True
+
+                # On all other host/driver combinations we keep the default
+                # behaviour (pyserial will set DTR and RTS automatically on open)
+                if not self.serial.isOpen():
                     self.serial.open()
-                else:
-                    self.serial = serial.Serial(device, **serial_kwargs)
                 break
             except OSError:
                 if wait == 0:
@@ -96,6 +106,16 @@ class SerialTransport(Transport):
             print("")
 
     def close(self):
+        # ESP Windows quirk: Prevent target from resetting when Windows clears DTR before RTS
+        try:
+            self.serial.rts = False
+            self.serial.dtr = False
+        except OSError as er:
+            if er.errno == ENOTTY:
+                # Some devices (like QEMU pts) don't support RTS/DTR control
+                pass
+            else:
+                raise er
         self.serial.close()
 
     def read_until(
@@ -375,7 +395,11 @@ class SerialTransport(Transport):
         self.serial = self.serial.orig_serial
 
         # Provide a message about the remount.
-        out_callback(bytes(f"\r\nRemount local directory {self.cmd.root} at /remote\r\n", "utf8"))
+        out_callback(
+            bytes(
+                f"\r\nRemount local directory {self.cmd.root} at {self.fs_hook_mount}\r\n", "utf8"
+            )
+        )
 
         # Enter raw REPL and re-mount the remote filesystem.
         self.serial.write(b"\x01")
@@ -392,7 +416,7 @@ class SerialTransport(Transport):
 
     def umount_local(self):
         if self.mounted:
-            self.exec('os.umount("/remote")')
+            self.exec(f'os.umount("{self.fs_hook_mount}")')
             self.mounted = False
             self.serial = self.serial.orig_serial
 
@@ -413,7 +437,7 @@ fs_hook_cmds = {
     "CMD_RMDIR": 13,
 }
 
-fs_hook_code = """\
+fs_hook_code = f"""\
 import os, io, struct, micropython
 
 SEEK_SET = 0
@@ -746,8 +770,8 @@ class RemoteFS:
 
 
 def __mount():
-    os.mount(RemoteFS(RemoteCommand()), '/remote')
-    os.chdir('/remote')
+    os.mount(RemoteFS(RemoteCommand()), '{SerialTransport.fs_hook_mount}')
+    os.chdir('{SerialTransport.fs_hook_mount}')
 """
 
 # Apply basic compression on hook code.
@@ -784,7 +808,7 @@ class PyboardCommand:
         if n == 0:
             return ""
         else:
-            return str(self.fin.read(n), "utf8")
+            return str(self.fin.read(n), "utf8", errors="backslashreplace")
 
     def wr_s8(self, i):
         self.fout.write(struct.pack("<b", i))
@@ -914,7 +938,7 @@ class PyboardCommand:
         fd = self.rd_s8()
         buf = self.rd_bytes()
         if self.data_files[fd][1]:
-            buf = str(buf, "utf8")
+            buf = str(buf, "utf8", errors="backslashreplace")
         n = self.data_files[fd][0].write(buf)
         self.wr_s32(n)
         # self.log_cmd(f"write {fd} {len(buf)} -> {n}")

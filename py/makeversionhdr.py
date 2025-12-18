@@ -1,10 +1,8 @@
 """
 Generate header file with macros defining MicroPython version info.
 
-This script works with Python 2.6, 2.7, 3.3 and 3.4.
+This script works with Python 3.3+.
 """
-
-from __future__ import print_function
 
 import argparse
 import sys
@@ -22,16 +20,19 @@ import subprocess
 #   "vX.Y.Z-preview.N.gHASH.dirty" -- building at any subsequent commit in the cycle
 #                                     with local changes
 def get_version_info_from_git(repo_path):
-    # Python 2.6 doesn't have check_output, so check for that
-    try:
-        subprocess.check_output
-    except AttributeError:
-        return None
-
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            ["git", "describe", "--tags", "--dirty", "--always", "--match", "v[1-9].*"],
+            [
+                "git",
+                "describe",
+                "--tags",
+                "--dirty",
+                "--always",
+                "--match",
+                "v[1-9].*",
+                "--abbrev=10",
+            ],
             cwd=repo_path,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
@@ -48,12 +49,6 @@ def get_version_info_from_git(repo_path):
 
 
 def get_hash_from_git(repo_path):
-    # Python 2.6 doesn't have check_output, so check for that.
-    try:
-        subprocess.check_output
-    except AttributeError:
-        return None
-
     try:
         return subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"],
@@ -117,8 +112,8 @@ def make_version_header(repo_path, filename):
 
     build_date = datetime.date.today()
     if "SOURCE_DATE_EPOCH" in os.environ:
-        build_date = datetime.datetime.utcfromtimestamp(
-            int(os.environ["SOURCE_DATE_EPOCH"])
+        build_date = datetime.datetime.fromtimestamp(
+            int(os.environ["SOURCE_DATE_EPOCH"]), datetime.timezone.utc
         ).date()
 
     # Generate the file with the git and version info

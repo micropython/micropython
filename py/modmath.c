@@ -37,7 +37,7 @@
 #define MP_PI_4 MICROPY_FLOAT_CONST(0.78539816339744830962)
 #define MP_3_PI_4 MICROPY_FLOAT_CONST(2.35619449019234492885)
 
-static NORETURN void math_error(void) {
+static MP_NORETURN void math_error(void) {
     mp_raise_ValueError(MP_ERROR_TEXT("math domain error"));
 }
 
@@ -99,11 +99,15 @@ mp_float_t MICROPY_FLOAT_C_FUN(log2)(mp_float_t x) {
 MATH_FUN_1(sqrt, sqrt)
 // pow(x, y): returns x to the power of y
 #if MICROPY_PY_MATH_POW_FIX_NAN
-mp_float_t pow_func(mp_float_t x, mp_float_t y) {
+mp_float_t MICROPY_FLOAT_C_FUN(pow_func)(mp_float_t x, mp_float_t y) {
     // pow(base, 0) returns 1 for any base, even when base is NaN
     // pow(+1, exponent) returns 1 for any exponent, even when exponent is NaN
     if (x == MICROPY_FLOAT_CONST(1.0) || y == MICROPY_FLOAT_CONST(0.0)) {
         return MICROPY_FLOAT_CONST(1.0);
+    }
+    // pow(base, NaN) returns NaN for any other value of base
+    if (isnan(y)) {
+        return y;
     }
     return MICROPY_FLOAT_C_FUN(pow)(x, y);
 }
@@ -161,6 +165,11 @@ MATH_FUN_2(atan2, atan2)
 MATH_FUN_1_TO_INT(ceil, ceil)
 // copysign(x, y)
 static mp_float_t MICROPY_FLOAT_C_FUN(copysign_func)(mp_float_t x, mp_float_t y) {
+    #if MICROPY_PY_MATH_COPYSIGN_FIX_NAN
+    if (isnan(y)) {
+        y = 0.0;
+    }
+    #endif
     return MICROPY_FLOAT_C_FUN(copysign)(x, y);
 }
 MATH_FUN_2(copysign, copysign_func)

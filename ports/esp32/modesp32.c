@@ -30,7 +30,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include "driver/gpio.h"
-#include "driver/adc.h"
 #include "esp_heap_caps.h"
 #include "multi_heap.h"
 
@@ -47,23 +46,32 @@
 #define MULTI_HEAP_FREERTOS
 #include "../multi_heap_platform.h"
 #include "../heap_private.h"
+#include "driver/rtc_io.h"
 
+#if SOC_TOUCH_SENSOR_SUPPORTED
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
-    if (machine_rtc_config.ext0_pin != -1) {
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
+    if (machine_rtc_config.ext0_pin != -1 || machine_rtc_config.gpio_pins != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
+#endif
 
+#if SOC_PM_SUPPORT_EXT0_WAKEUP
 static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     if (machine_rtc_config.wake_on_touch) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
+
     enum {ARG_pin, ARG_level};
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,  MP_ARG_OBJ, {.u_obj = mp_obj_new_int(machine_rtc_config.ext0_pin)} },
@@ -90,7 +98,9 @@ static mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext0_obj, 0, esp32_wake_on_ext0);
+#endif
 
+#if SOC_PM_SUPPORT_EXT1_WAKEUP
 static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_pins, ARG_level};
     const mp_arg_t allowed_args[] = {
@@ -126,17 +136,67 @@ static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
+#endif
 
+#if SOC_ULP_SUPPORTED
 static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
-    if (machine_rtc_config.ext0_pin != -1) {
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
+    if (machine_rtc_config.ext0_pin != -1 || machine_rtc_config.gpio_pins != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
+    #endif
     machine_rtc_config.wake_on_ulp = mp_obj_is_true(wake);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
+#endif
 
-#if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
+static mp_obj_t esp32_wake_on_gpio(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_pins, ARG_level};
+    const mp_arg_t allowed_args[] = {
+        { MP_QSTR_pins, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_level, MP_ARG_BOOL, {.u_bool = machine_rtc_config.gpio_level} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    uint64_t gpio_pins = machine_rtc_config.gpio_pins;
+
+    #if SOC_ULP_SUPPORTED
+    if (machine_rtc_config.wake_on_ulp) {
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
+    }
+    #endif
+
+    #if SOC_TOUCH_SENSOR_SUPPORTED
+    if (machine_rtc_config.wake_on_touch) {
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
+    }
+    #endif
+
+    // Check that all pins are allowed
+    if (args[ARG_pins].u_obj != mp_const_none) {
+        size_t len = 0;
+        mp_obj_t *elem;
+        mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
+        gpio_pins = 0;
+
+        for (int i = 0; i < len; i++) {
+            // Don't validate the pins at this point, since we can be using
+            // gpio pins for deepsleep or light sleep.
+            // Validations happen in the relevant sleep functions.
+            gpio_num_t pin_id = machine_pin_get_id(elem[i]);
+            gpio_pins |= (1ll << pin_id);
+        }
+    }
+
+    machine_rtc_config.gpio_level = args[ARG_level].u_bool;
+    machine_rtc_config.gpio_pins = gpio_pins;
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_gpio_obj, 0, esp32_wake_on_gpio);
+
+#if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
 static mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     if (mp_obj_is_true(enable)) {
         gpio_deep_sleep_hold_en();
@@ -212,14 +272,66 @@ static mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
 
+#if CONFIG_FREERTOS_USE_TRACE_FACILITY
+static mp_obj_t esp32_idf_task_info(void) {
+    const size_t task_count_max = uxTaskGetNumberOfTasks();
+    TaskStatus_t *task_array = m_new(TaskStatus_t, task_count_max);
+    uint32_t total_time;
+    const size_t task_count = uxTaskGetSystemState(task_array, task_count_max, &total_time);
+
+    mp_obj_list_t *task_list = MP_OBJ_TO_PTR(mp_obj_new_list(task_count, NULL));
+    for (size_t i = 0; i < task_count; i++) {
+        mp_obj_t task_data[] = {
+            mp_obj_new_int_from_uint((mp_uint_t)task_array[i].xHandle),
+            mp_obj_new_str(task_array[i].pcTaskName, strlen(task_array[i].pcTaskName)),
+            MP_OBJ_NEW_SMALL_INT(task_array[i].eCurrentState),
+            MP_OBJ_NEW_SMALL_INT(task_array[i].uxCurrentPriority),
+            #if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
+            mp_obj_new_int_from_uint(task_array[i].ulRunTimeCounter),
+            #else
+            mp_const_none,
+            #endif
+            mp_obj_new_int_from_uint(task_array[i].usStackHighWaterMark),
+            #if CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
+            MP_OBJ_NEW_SMALL_INT(task_array[i].xCoreID),
+            #else
+            mp_const_none,
+            #endif
+        };
+        task_list->items[i] = mp_obj_new_tuple(7, task_data);
+    }
+
+    m_del(TaskStatus_t, task_array, task_count_max);
+    mp_obj_t task_stats[] = {
+        #if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
+        MP_OBJ_NEW_SMALL_INT(total_time),
+        #else
+        mp_const_none,
+        #endif
+        task_list
+    };
+    return mp_obj_new_tuple(2, task_stats);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(esp32_idf_task_info_obj, esp32_idf_task_info);
+#endif
+
 static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
+    #if SOC_TOUCH_SENSOR_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
+    #endif
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
+    #endif
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
+    #endif
+    #if SOC_ULP_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
-    #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_wake_on_gpio), MP_ROM_PTR(&esp32_wake_on_gpio_obj) },
+    #if SOC_GPIO_SUPPORT_HOLD_IO_IN_DSLP && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #endif
     #if CONFIG_IDF_TARGET_ESP32
@@ -228,10 +340,18 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mcu_temperature), MP_ROM_PTR(&esp32_mcu_temperature_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
+    #if CONFIG_FREERTOS_USE_TRACE_FACILITY
+    { MP_ROM_QSTR(MP_QSTR_idf_task_info), MP_ROM_PTR(&esp32_idf_task_info_obj) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_NVS), MP_ROM_PTR(&esp32_nvs_type) },
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
+    #if MICROPY_PY_ESP32_PCNT
+    { MP_ROM_QSTR(MP_QSTR_PCNT), MP_ROM_PTR(&esp32_pcnt_type) },
+    #endif
+    #if SOC_RMT_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_RMT), MP_ROM_PTR(&esp32_rmt_type) },
+    #endif
     #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
     #endif

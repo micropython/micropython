@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "WiFi"
+    ],
+    "images": [
+        "esp8684_devkitc.jpg"
+    ],
+    "mcu": "esp32c2",
+    "product": "ESP32-C2",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "variants": {
+        "FLASH_2M": "2MiB flash"
+    },
+    "vendor": "Espressif"
+}

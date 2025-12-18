@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include "py/mpconfig.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "src/zephyr_getchar.h"
 // Zephyr headers
 #include <zephyr/kernel.h>
@@ -51,6 +52,24 @@ static uint8_t mp_console_txbuf[CONFIG_CONSOLE_PUTCHAR_BUFSIZE];
 /*
  * Core UART functions to implement for a port
  */
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (poll_flags & MP_STREAM_POLL_RD) {
+        #ifdef CONFIG_CONSOLE_SUBSYS
+        // It's not easy to test if tty is readable, so just unconditionally set it for now.
+        ret |= MP_STREAM_POLL_RD;
+        #else
+        if (zephyr_getchar_check()) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        #endif
+    }
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        ret |= MP_STREAM_POLL_WR;
+    }
+    return ret;
+}
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {

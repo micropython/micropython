@@ -48,6 +48,8 @@
 #include "esp_hosted_wifi.h"
 #include "esp_hosted_hal.h"
 
+extern const mp_obj_type_t mod_network_esp_hosted_type;
+
 typedef struct _esp_hosted_obj_t {
     mp_obj_base_t base;
     uint32_t itf;

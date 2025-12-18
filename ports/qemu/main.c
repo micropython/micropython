@@ -28,7 +28,6 @@
 
 #include "py/compile.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "shared/runtime/gchelper.h"
@@ -41,8 +40,7 @@
 static uint32_t gc_heap[MICROPY_HEAP_SIZE / sizeof(uint32_t)];
 
 int main(int argc, char **argv) {
-    mp_stack_ctrl_init();
-    mp_stack_set_limit(10240);
+    mp_cstack_init_with_sp_here(10240);
     gc_init(gc_heap, (char *)gc_heap + MICROPY_HEAP_SIZE);
 
     for (;;) {

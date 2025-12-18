@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - docs/**
+      - py/**
+      - tests/cpydiff/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,9 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
     - name: Install Python packages
       run: pip install -r docs/requirements.txt
+    - name: Build unix port
+      run: tools/ci.sh unix_build_helper
     - name: Build docs
       run: make -C docs/ html

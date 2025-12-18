@@ -57,6 +57,7 @@
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
 #define MICROPY_PY_ASYNC_AWAIT      (0)
+#define MICROPY_MODULE___FILE__     (0)
 #define MICROPY_MODULE_BUILTIN_INIT         (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_DICT_FROMKEYS (1)
@@ -73,7 +74,6 @@
 #define MICROPY_PY_BUILTINS_STR_OP_MODULO (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
-#define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_COLLECTIONS      (1)
@@ -81,7 +81,6 @@
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_STRUCT           (1)
-#define MICROPY_PY_SYS              (1)
 #define MICROPY_MODULE_FROZEN_MPY   (1)
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
@@ -92,12 +91,6 @@
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
-
-// This port is 64-bit
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
-typedef signed long mp_int_t; // must be pointer size
-typedef unsigned long mp_uint_t; // must be pointer size
 
 typedef long mp_off_t;
 

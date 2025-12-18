@@ -1,4 +1,4 @@
-// The Sparkfun MicroMod spec uses a zero-based peripheral numbering scheme.
+// The SparkFun MicroMod spec uses a zero-based peripheral numbering scheme.
 // In cases where the 0th peripheral is the default, the "0" is omitted from
 // the name (e.g. "I2C" instead of "I2C0").
 //

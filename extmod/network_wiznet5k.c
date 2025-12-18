@@ -78,6 +78,8 @@
 
 #endif
 
+extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
+
 #ifndef printf
 #define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 #endif

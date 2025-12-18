@@ -28,13 +28,12 @@ jobs:
         visualstudio: ['2017', '2019', '2022']
         include:
         - visualstudio: '2017'
-          runner: windows-latest
           vs_version: '[15, 16)'
+          custom_vs_install: true
         - visualstudio: '2019'
-          runner: windows-2019
           vs_version: '[16, 17)'
+          custom_vs_install: true
         - visualstudio: '2022'
-          runner: windows-2022
           vs_version: '[17, 18)'
         # trim down the number of jobs in the matrix
         exclude:
@@ -42,24 +41,25 @@ jobs:
           configuration: Debug
         - visualstudio: '2019'
           configuration: Debug
+    runs-on: windows-latest
     env:
       CI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
-    runs-on: ${{ matrix.runner }}
     steps:
-    - name: Install Visual Studio 2017
-      if: matrix.visualstudio == '2017'
+    - name: Install Visual Studio ${{ matrix.visualstudio }}
+      if: matrix.custom_vs_install
+      shell: bash
+      # Shell functions in this block are to retry intermittent corrupt
+      # downloads (with a clean download dir) before failing the job outright
       run: |
-        choco install visualstudio2017buildtools
-        choco install visualstudio2017-workload-vctools
-        choco install windows-sdk-8.1
+        try () { ($@) || ($@) || ($@) || ($@) }
+        clean_install () ( rm -rf $TEMP/chocolatey; choco install $1 )
+        try clean_install visualstudio${{ matrix.visualstudio }}buildtools
+        try clean_install visualstudio${{ matrix.visualstudio }}-workload-vctools
+        try clean_install windows-sdk-8.1
     - uses: microsoft/setup-msbuild@v2
       with:
         vs-version: ${{ matrix.vs_version }}
-    - uses: actions/setup-python@v5
-      if: matrix.runner == 'windows-2019'
-      with:
-        python-version: '3.9'
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build mpy-cross.exe
       run: msbuild mpy-cross\mpy-cross.vcxproj -maxcpucount -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }}
     - name: Update submodules
@@ -103,14 +103,14 @@ jobs:
             env: i686
           - sys: mingw64
             env: x86_64
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       CHERE_INVOKING: enabled_from_arguments
     defaults:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       # note: can go back to installing mingw-w64-${{ matrix.env }}-python after
       # MSYS2 updates to Python >3.12 (due to settrace compatibility issue)
       with:
@@ -126,7 +126,7 @@ jobs:
           git
           diffutils
         path-type: inherit  # Remove when setup-python is removed
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build mpy-cross.exe
       run: make -C mpy-cross -j2
     - name: Update submodules
@@ -144,8 +144,8 @@ jobs:
   cross-build-on-linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install packages
-      run: source tools/ci.sh && ci_windows_setup
+      run: tools/ci.sh windows_setup
     - name: Build
-      run: source tools/ci.sh && ci_windows_build
+      run: tools/ci.sh windows_build

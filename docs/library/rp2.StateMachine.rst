@@ -58,6 +58,11 @@ Methods
     - *pull_thresh* is the threshold in bits before auto-pull or conditional
       re-pulling is triggered.
 
+    Note: pins used for *in_base* need to be configured manually for input (or
+    otherwise) so that the PIO can see the desired signal (they could be input
+    pins, output pins, or connected to a different peripheral).  The *jmp_pin*
+    can also be configured manually, but by default will be an input pin.
+
 .. method:: StateMachine.active([value])
 
     Gets or sets whether the state machine is currently running.

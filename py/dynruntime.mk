@@ -63,14 +63,14 @@ else ifeq ($(ARCH),armv6m)
 # thumb
 CROSS = arm-none-eabi-
 CFLAGS_ARCH += -mthumb -mcpu=cortex-m0
-MICROPY_FLOAT_IMPL ?= none
+MICROPY_FLOAT_IMPL ?= float
 
 else ifeq ($(ARCH),armv7m)
 
 # thumb
 CROSS = arm-none-eabi-
 CFLAGS_ARCH += -mthumb -mcpu=cortex-m3
-MICROPY_FLOAT_IMPL ?= none
+MICROPY_FLOAT_IMPL ?= float
 
 else ifeq ($(ARCH),armv7emsp)
 
@@ -124,6 +124,10 @@ else
 $(error architecture '$(ARCH)' not supported)
 endif
 
+ifneq ($(findstring -musl,$(shell $(CROSS)gcc -dumpmachine)),)
+USE_MUSL := 1
+endif
+
 MICROPY_FLOAT_IMPL_UPPER = $(shell echo $(MICROPY_FLOAT_IMPL) | tr '[:lower:]' '[:upper:]')
 CFLAGS += $(CFLAGS_ARCH) -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_$(MICROPY_FLOAT_IMPL_UPPER)
 
@@ -147,6 +151,8 @@ ifeq ($(LINK_RUNTIME),1)
 # distribution.
 ifeq ($(USE_PICOLIBC),1)
 LIBM_NAME := libc.a
+else ifeq ($(USE_MUSL),1)
+LIBM_NAME := libc.a
 else
 LIBM_NAME := libm.a
 endif
@@ -165,6 +171,9 @@ LIBM_PATH := $(PICOLIBC_ROOT)/$(PICOLIBC_ARCH)/$(PICOLIBC_ABI)/$(LIBM_NAME)
 endif
 endif
 MPY_LD_FLAGS += $(addprefix -l, $(LIBGCC_PATH) $(LIBM_PATH))
+endif
+ifneq ($(MPY_EXTERN_SYM_FILE),)
+MPY_LD_FLAGS += --externs "$(realpath $(MPY_EXTERN_SYM_FILE))"
 endif
 
 CFLAGS += $(CFLAGS_EXTRA)

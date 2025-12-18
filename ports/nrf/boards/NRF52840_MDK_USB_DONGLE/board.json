@@ -8,7 +8,7 @@
         "dongle_pcba_case.jpg"
     ],
     "mcu": "nrf52",
-    "product": "nrf52840-mdk-usb-dongle",
+    "product": "nrf52840 MDK USB Dongle",
     "thumbnail": "",
     "url": "https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle",
     "vendor": "Makerdiary"

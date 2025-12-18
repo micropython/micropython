@@ -44,6 +44,8 @@
 #include "device/usbd_pvt.h"
 #endif
 
+#define RHPORT TUD_OPT_RHPORT
+
 static bool in_usbd_task; // Flags if mp_usbd_task() is currently running
 
 // Some top-level functions that manage global TinyUSB USBD state, not the
@@ -233,7 +235,7 @@ static uint16_t _runtime_dev_claim_itfs(tusb_desc_interface_t const *itf_desc, u
         } else if (tu_desc_type(p_desc) == TUSB_DESC_ENDPOINT) {
             // Open any endpoints that we come across
             if (tu_desc_type(p_desc) == TUSB_DESC_ENDPOINT) {
-                bool r = usbd_edpt_open(USBD_RHPORT, (const void *)p_desc);
+                bool r = usbd_edpt_open(RHPORT, (const void *)p_desc);
                 if (!r) {
                     mp_obj_t exc = mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENODEV));
                     usbd_pend_exception(exc);
@@ -267,9 +269,11 @@ static uint16_t runtime_dev_open(uint8_t rhport, tusb_desc_interface_t const *it
     }
 
     // If TinyUSB built-in drivers are enabled, don't claim any interface in the built-in range
+    #if USBD_ITF_BUILTIN_MAX > 0
     if (mp_usb_device_builtin_enabled(usbd) && itf_desc->bInterfaceNumber < USBD_ITF_BUILTIN_MAX) {
         return 0;
     }
+    #endif
 
     // Determine the total descriptor length of the interface(s) we are going to claim
     uint8_t assoc_itf_count = _runtime_dev_count_itfs(itf_desc);
@@ -320,7 +324,7 @@ static bool runtime_dev_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_cont
 
     // Check if callback returned any data to submit
     if (mp_get_buffer(cb_res, &buf_info, dir == TUSB_DIR_IN ? MP_BUFFER_READ : MP_BUFFER_RW)) {
-        result = tud_control_xfer(USBD_RHPORT,
+        result = tud_control_xfer(RHPORT,
             request,
             buf_info.buf,
             buf_info.len);
@@ -428,6 +432,8 @@ void mp_usbd_init(void) {
     }
 
     if (need_usb) {
+        // Call any port-specific initialization code.
+        MICROPY_HW_TINYUSB_LL_INIT();
         // The following will call tusb_init(), which is safe to call redundantly.
         mp_usbd_init_tud();
         // Reconnect if mp_usbd_deinit() has disconnected.
@@ -464,7 +470,7 @@ static void mp_usbd_disconnect(mp_obj_usb_device_t *usbd) {
         for (int epnum = 0; epnum < CFG_TUD_ENDPPOINT_MAX; epnum++) {
             for (int dir = 0; dir < 2; dir++) {
                 if (usbd->xfer_data[epnum][dir] != mp_const_none) {
-                    usbd_edpt_stall(USBD_RHPORT, tu_edpt_addr(epnum, dir));
+                    usbd_edpt_stall(RHPORT, tu_edpt_addr(epnum, dir));
                     usbd->xfer_data[epnum][dir] = mp_const_none;
                 }
             }
@@ -475,7 +481,7 @@ static void mp_usbd_disconnect(mp_obj_usb_device_t *usbd) {
     // Ensure no pending static CDC writes, as these can cause TinyUSB to crash
     tud_cdc_write_clear();
     // Prevent cdc write flush from initiating any new transfers while disconnecting
-    usbd_edpt_stall(USBD_RHPORT, USBD_CDC_EP_IN);
+    usbd_edpt_stall(RHPORT, USBD_CDC_EP_IN);
     #endif
 
     bool was_connected = tud_connected();

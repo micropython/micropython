@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_UART_H
 #define MICROPY_INCLUDED_STM32_UART_H
 
+#include "py/mphal.h"
 #include "shared/runtime/mpirq.h"
 
 typedef enum {
@@ -63,6 +64,9 @@ typedef struct _machine_uart_obj_t {
     pyb_uart_t uart_id : 8;
     bool is_static : 1;
     bool is_enabled : 1;
+    #if defined(STM32F4) || defined(STM32L1)
+    bool suppress_idle_irq : 1;         // whether the RX idle IRQ is suppressed (F4/L1 only)
+    #endif
     bool attached_to_repl;              // whether the UART is attached to REPL
     byte char_width;                    // 0 for 7,8 bit chars, 1 for 9 bit chars
     uint16_t char_mask;                 // 0x7f for 7 bit, 0xff for 8 bit, 0x1ff for 9 bit
@@ -83,7 +87,7 @@ void uart_init0(void);
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
 bool uart_init(machine_uart_obj_t *uart_obj,
-    uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow);
+    uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow, uint32_t invert);
 void uart_irq_config(machine_uart_obj_t *self, bool enable);
 void uart_set_rxbuf(machine_uart_obj_t *self, size_t len, void *buf);
 void uart_deinit(machine_uart_obj_t *uart_obj);

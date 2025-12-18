@@ -84,7 +84,7 @@ static void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
         #endif
     }
     if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict && kind != PRINT_JSON) {
-        mp_printf(print, "%q(", self->base.type->name);
+        mp_printf(print, "%q(", (qstr)self->base.type->name);
     }
     mp_print_str(print, "{");
     size_t cur = 0;
@@ -521,7 +521,8 @@ static mp_obj_t dict_view_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     if (op == MP_UNARY_OP_HASH && o->kind == MP_DICT_VIEW_VALUES) {
         return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
     }
-    return MP_OBJ_NULL;
+    // delegate all other ops to dict unary op handler
+    return dict_unary_op(op, o->dict);
 }
 
 static mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {

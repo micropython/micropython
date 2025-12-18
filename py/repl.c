@@ -162,8 +162,11 @@ static bool test_qstr(mp_obj_t obj, qstr name) {
         return dest[0] != MP_OBJ_NULL;
     } else {
         // try builtin module
-        return mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP) ||
-               mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+        return mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP)
+               #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
+               || mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP)
+               #endif
+        ;
     }
 }
 
@@ -218,6 +221,10 @@ static void print_completions(const mp_print_t *print,
     for (qstr q = q_first; q <= q_last; ++q) {
         size_t d_len;
         const char *d_str = (const char *)qstr_data(q, &d_len);
+        // filter out words that begin with underscore unless there's already a partial match
+        if (s_len == 0 && d_str[0] == '_') {
+            continue;
+        }
         if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
             if (test_qstr(obj, q)) {
                 int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;

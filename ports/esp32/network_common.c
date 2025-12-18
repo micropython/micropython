@@ -45,7 +45,7 @@
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 
-NORETURN void esp_exceptions_helper(esp_err_t e) {
+MP_NORETURN void esp_exceptions_helper(esp_err_t e) {
     switch (e) {
         case ESP_ERR_WIFI_NOT_INIT:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Initialized"));
@@ -77,6 +77,8 @@ NORETURN void esp_exceptions_helper(esp_err_t e) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Would Block"));
         case ESP_ERR_WIFI_NOT_CONNECT:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Connected"));
+        case ESP_ERR_NO_MEM:
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("WiFi Out of Memory"));
         default:
             mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("Wifi Unknown Error 0x%04x"), e);
     }

@@ -28,8 +28,8 @@
 #include "shared/timeutils/timeutils.h"
 #include "rtc.h"
 
-// Return the localtime as an 8-tuple.
-static mp_obj_t mp_time_localtime_get(void) {
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
     // get current date and time
     // note: need to call get time then get date to correctly access the registers
     rtc_init_finalise();
@@ -37,17 +37,14 @@ static mp_obj_t mp_time_localtime_get(void) {
     RTC_TimeTypeDef time;
     HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
-    mp_obj_t tuple[8] = {
-        mp_obj_new_int(2000 + date.Year),
-        mp_obj_new_int(date.Month),
-        mp_obj_new_int(date.Date),
-        mp_obj_new_int(time.Hours),
-        mp_obj_new_int(time.Minutes),
-        mp_obj_new_int(time.Seconds),
-        mp_obj_new_int(date.WeekDay - 1),
-        mp_obj_new_int(timeutils_year_day(2000 + date.Year, date.Month, date.Date)),
-    };
-    return mp_obj_new_tuple(8, tuple);
+    tm->tm_year = 2000 + date.Year;
+    tm->tm_mon = date.Month;
+    tm->tm_mday = date.Date;
+    tm->tm_hour = time.Hours;
+    tm->tm_min = time.Minutes;
+    tm->tm_sec = time.Seconds;
+    tm->tm_wday = date.WeekDay - 1;
+    tm->tm_yday = timeutils_year_day(tm->tm_year, date.Month, date.Date);
 }
 
 // Returns the number of seconds, as an integer, since 1/1/2000.
@@ -59,5 +56,5 @@ static mp_obj_t mp_time_time_get(void) {
     RTC_TimeTypeDef time;
     HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
-    return mp_obj_new_int(timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds));
+    return timeutils_obj_from_timestamp(timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds));
 }

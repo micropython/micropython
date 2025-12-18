@@ -62,6 +62,9 @@
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/asn1.h"
 #endif
+#ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+#include "mbedtls/ssl_cookie.h"
+#endif
 
 #ifndef MICROPY_MBEDTLS_CONFIG_BARE_METAL
 #define MICROPY_MBEDTLS_CONFIG_BARE_METAL (0)
@@ -75,7 +78,7 @@
 #define MP_PROTOCOL_TLS_CLIENT  0
 #define MP_PROTOCOL_TLS_SERVER  MP_ENDPOINT_IS_SERVER
 #define MP_PROTOCOL_DTLS_CLIENT MP_TRANSPORT_IS_DTLS
-#define MP_PROTOCOL_DTLS_SERVER MP_ENDPOINT_IS_SERVER | MP_TRANSPORT_IS_DTLS
+#define MP_PROTOCOL_DTLS_SERVER (MP_ENDPOINT_IS_SERVER | MP_TRANSPORT_IS_DTLS)
 
 // This corresponds to an SSLContext object.
 typedef struct _mp_obj_ssl_context_t {
@@ -91,6 +94,10 @@ typedef struct _mp_obj_ssl_context_t {
     mp_obj_t handler;
     #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
     mp_obj_t ecdsa_sign_callback;
+    #endif
+    #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    bool is_dtls_server;
+    mbedtls_ssl_cookie_ctx cookie_ctx;
     #endif
 } mp_obj_ssl_context_t;
 
@@ -117,7 +124,8 @@ static const mp_obj_type_t ssl_socket_type;
 static const MP_DEFINE_STR_OBJ(mbedtls_version_obj, MBEDTLS_VERSION_STRING_FULL);
 
 static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
-    bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname);
+    bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname,
+    mp_obj_t client_id);
 
 /******************************************************************************/
 // Helper functions.
@@ -147,7 +155,7 @@ static const unsigned char *asn1_get_data(mp_obj_t obj, size_t *out_len) {
     return (const unsigned char *)str;
 }
 
-static NORETURN void mbedtls_raise_error(int err) {
+static MP_NORETURN void mbedtls_raise_error(int err) {
     // Handle special cases.
     if (err == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
         mp_raise_OSError(MP_ENOMEM);
@@ -296,7 +304,7 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     psa_crypto_init();
     #endif
 
-    const byte seed[] = "upy";
+    const byte seed[] = "mpy";
     int ret = mbedtls_ctr_drbg_seed(&self->ctr_drbg, mbedtls_entropy_func, &self->entropy, seed, sizeof(seed));
     if (ret != 0) {
         mbedtls_raise_error(ret);
@@ -319,6 +327,19 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&self->conf, mbedtls_debug, NULL);
     #endif
+
+    #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    self->is_dtls_server = (protocol == MP_PROTOCOL_DTLS_SERVER);
+    if (self->is_dtls_server) {
+        mbedtls_ssl_cookie_init(&self->cookie_ctx);
+        ret = mbedtls_ssl_cookie_setup(&self->cookie_ctx, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+        if (ret != 0) {
+            mbedtls_raise_error(ret);
+        }
+        mbedtls_ssl_conf_dtls_cookies(&self->conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check,
+            &self->cookie_ctx);
+    }
+    #endif // MBEDTLS_SSL_DTLS_HELLO_VERIFY
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -366,6 +387,11 @@ static mp_obj_t ssl_context___del__(mp_obj_t self_in) {
     mbedtls_ctr_drbg_free(&self->ctr_drbg);
     mbedtls_entropy_free(&self->entropy);
     mbedtls_ssl_config_free(&self->conf);
+    #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    if (self->is_dtls_server) {
+        mbedtls_ssl_cookie_free(&self->cookie_ctx);
+    }
+    #endif
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ssl_context___del___obj, ssl_context___del__);
@@ -468,11 +494,14 @@ static mp_obj_t ssl_context_load_verify_locations(mp_obj_t self_in, mp_obj_t cad
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_load_verify_locations_obj, ssl_context_load_verify_locations);
 
 static mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname };
+    enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname, ARG_client_id };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_do_handshake_on_connect, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+        { MP_QSTR_client_id, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        #endif
     };
 
     // Parse arguments.
@@ -481,9 +510,14 @@ static mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    mp_obj_t client_id = mp_const_none;
+    #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    client_id = args[ARG_client_id].u_obj;
+    #endif
+
     // Create and return the new SSLSocket object.
     return ssl_socket_make_new(self, sock, args[ARG_server_side].u_bool,
-        args[ARG_do_handshake_on_connect].u_bool, args[ARG_server_hostname].u_obj);
+        args[ARG_do_handshake_on_connect].u_bool, args[ARG_server_hostname].u_obj, client_id);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(ssl_context_wrap_socket_obj, 2, ssl_context_wrap_socket);
 
@@ -580,7 +614,7 @@ static int _mbedtls_timing_get_delay(void *ctx) {
 #endif
 
 static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
-    bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname) {
+    bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname, mp_obj_t client_id) {
 
     // Store the current SSL context.
     store_active_context(ssl_context);
@@ -605,7 +639,7 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
 
     ret = mbedtls_ssl_setup(&o->ssl, &ssl_context->conf);
     #if !MICROPY_MBEDTLS_CONFIG_BARE_METAL
-    if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
+    if (ret != 0) {
         // If mbedTLS relies on platform libc heap for buffers (i.e. esp32
         // port), then run a GC pass and then try again. This is useful because
         // it may free a Python object (like an old SSL socket) whose finaliser
@@ -633,6 +667,20 @@ static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
 
     #ifdef MBEDTLS_SSL_PROTO_DTLS
     mbedtls_ssl_set_timer_cb(&o->ssl, o, _mbedtls_timing_set_delay, _mbedtls_timing_get_delay);
+    #endif
+
+    #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
+    if (ssl_context->is_dtls_server) {
+        // require the client_id parameter for DTLS (as per mbedTLS requirement)
+        ret = MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
+        mp_buffer_info_t buf;
+        if (mp_get_buffer(client_id, &buf, MP_BUFFER_READ)) {
+            ret = mbedtls_ssl_set_client_transport_id(&o->ssl, buf.buf, buf.len);
+        }
+        if (ret != 0) {
+            goto cleanup;
+        }
+    }
     #endif
 
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);

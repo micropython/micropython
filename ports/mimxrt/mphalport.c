@@ -47,7 +47,9 @@ ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    #if MICROPY_HW_USB_CDC
     ret |= mp_usbd_cdc_poll_interfaces(poll_flags);
+    #endif
     #if MICROPY_PY_OS_DUPTERM
     ret |= mp_os_dupterm_poll(poll_flags);
     #endif
@@ -56,7 +58,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
+        #if MICROPY_HW_USB_CDC
         mp_usbd_cdc_poll_interfaces(0);
+        #endif
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
@@ -74,11 +78,13 @@ int mp_hal_stdin_rx_chr(void) {
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     mp_uint_t ret = len;
     bool did_write = false;
+    #if MICROPY_HW_USB_CDC
     mp_uint_t cdc_res = mp_usbd_cdc_tx_strn(str, len);
     if (cdc_res > 0) {
         did_write = true;
         ret = MIN(cdc_res, ret);
     }
+    #endif
     #if MICROPY_PY_OS_DUPTERM
     int dupterm_res = mp_os_dupterm_tx_strn(str, len);
     if (dupterm_res >= 0) {

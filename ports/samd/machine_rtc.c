@@ -133,6 +133,7 @@ static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args,
         }
         #endif
 
+        mp_hal_time_ns_set_from_rtc();
         return mp_const_none;
     }
 }

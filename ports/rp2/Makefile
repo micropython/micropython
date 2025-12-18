@@ -67,6 +67,9 @@ all:
 clean:
 	$(RM) -rf $(BUILD)
 
+deploy: all
+	$(Q)picotool load -x $(BUILD)/firmware.elf
+
 # First ensure that pico-sdk is initialised, then run CMake with the
 # UPDATE_SUBMODULES flag to update necessary submodules for this board.
 #

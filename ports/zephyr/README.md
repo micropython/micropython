@@ -4,10 +4,13 @@ MicroPython port to Zephyr RTOS
 This is a work-in-progress port of MicroPython to Zephyr RTOS
 (http://zephyrproject.org).
 
-This port requires Zephyr version v3.7.0, and may also work on higher
-versions.  All boards supported
-by Zephyr (with standard level of features support, like UART console)
-should work with MicroPython (but not all were tested).
+This port tries to support all Zephyr versions supported upstream,
+i.e. currently v3.7 (LTS), v4.2 and the development branch. The CI is
+setup to use the latest version, i.e. v4.2.
+
+All boards supported by Zephyr (with standard level of features
+support, like UART console) should work with MicroPython (but not all
+were tested).
 
 Features supported at this time:
 
@@ -16,7 +19,10 @@ Features supported at this time:
 * `machine.Pin` class for GPIO control, with IRQ support.
 * `machine.I2C` class for I2C control.
 * `machine.SPI` class for SPI control.
+* `machine.PWM` class for PWM control.
+* `machine.ADC` class for ADC control.
 * `socket` module for networking (IPv4/IPv6).
+* `zsensor` module for reading sensors.
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
   run-on-boot capability.
@@ -39,13 +45,13 @@ setup is correct.
 If you already have Zephyr installed but are having issues building the
 MicroPython port then try installing the correct version of Zephyr via:
 
-    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v3.7.0
+    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v4.2.0
 
 Alternatively, you don't have to redo the Zephyr installation to just
 switch from master to a tagged release, you can instead do:
 
     $ cd zephyrproject/zephyr
-    $ git checkout v3.7.0
+    $ git checkout v4.2.0
     $ west update
 
 With Zephyr installed you may then need to configure your environment,
@@ -91,7 +97,7 @@ qemu_cortex_m3):
 
 Networking is enabled with the default configuration, so you need to follow
 instructions in
-https://docs.zephyrproject.org/latest/guides/networking/qemu_setup.html#networking-with-qemu
+https://docs.zephyrproject.org/latest/connectivity/networking/qemu_setup.html#networking-with-qemu
 to setup the host side of TAP/SLIP networking. If you get an error like:
 
     could not connect serial device to character backend 'unix:/tmp/slip.sock'
@@ -115,7 +121,7 @@ To blink an LED:
         time.sleep(0.5)
 
 The above code uses an LED location for a FRDM-K64F board (port B, pin 21;
-following Zephyr conventions port are identified by their devicetree node
+following Zephyr conventions ports are identified by their devicetree node
 label. You will need to adjust it for another board (using board's reference
 materials). To execute the above sample, copy it to clipboard, in MicroPython
 REPL enter "paste mode" using Ctrl+E, paste clipboard, press Ctrl+D to finish
@@ -149,6 +155,35 @@ Example of using SPI to write a buffer to the MOSI pin:
     spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
     spi.write(b'abcd')
 
+Example of using ADC to read a pin's analog value (the 'zephyr,user' node must contain
+the 'io-channels' property with all the ADC channels):
+
+    from machine import ADC
+
+    adc = ADC(("adc", 0))
+    adc.read_uv()
+
+Example of using FlashArea for flash storage access:
+
+    from zephyr import FlashArea
+
+    # FlashArea.areas is a dictionary mapping partition labels to tuples
+    # Each tuple contains (partition_id, erase_block_size)
+    print(FlashArea.areas)  # e.g. {'storage': (3, 4096)}
+
+    # Create a FlashArea object for a specific partition
+    # Constructor takes (partition_id, block_size)
+    partition_id, erase_size = FlashArea.areas['storage']
+    flash = FlashArea(partition_id, erase_size)
+
+    # Use with virtual filesystem (see _boot.py for automatic mounting)
+    import os
+    os.VfsFat(flash)  # or os.VfsLfs2(flash)
+
+The `FlashArea.areas` dictionary provides partition information from the Zephyr
+devicetree. The erase block size is obtained from the flash controller's
+`erase-block-size` property, or defaults to 4096 bytes for devices (like QSPI
+NOR flash) that don't specify this property.
 
 Minimal build
 -------------
@@ -173,3 +208,47 @@ run the following after you built an image with the previous command:
 
     $ west build -t run
 
+File Systems
+------------
+
+The Zephyr Micropython port provides 2 options for handling filesystems on the device:
+The first is the Micropython filesystem management, which uses Micropython's filesystem code and
+relies on zephyr's FlashArea API, this is enabled by default when 
+`CONFIG_FLASH` and `CONFIG_FLASH_MAP` are turned on.
+The second option is using Zephyr's Filesystem management:
+This relies on Zephyr's File System features and enables sharing access between zephyr and
+micropython code. Several configuration options must be enabled:
+
+    CONFIG_FLASH_MAP=y # Requirement for the file system subsystem
+    CONFIG_FILE_SYSTEM=y # Enables the file system subsystem
+    CONFIG_FILE_SYSTEM_LITTLEFS=y # Enables the littlefs support in zephyr
+    CONFIG_FILE_SYSTEM_MKFS=y # Enables the ability to create new file systems
+
+Then, a fstab must be added to the dts overlay, for example:
+
+    
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs2: lfs2 {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<4096>;
+			cache-size=<4096>;
+			lookahead-size=<32>;
+			block-cycles=<4>;
+		};
+	};
+	
+It is then possible to use the FS like a normal Micropython filesystem:
+
+    import vfs, zephyr
+    zfs = zephyr.FileSystem(zephyr.FileSystem.fstab()[0])
+    vfs.mount(zfs, "/zephyr")
+
+You may disable Micropython's File system code to save space:
+    
+    CONFIG_MICROPY_VFS_FAT=n
+    CONFIG_MICROPY_VFS_LFS1=n
+    CONFIG_MICROPY_VFS_LFS2=n

@@ -5,6 +5,17 @@ except:
     print("SKIP")
     raise SystemExit
 
+# Skip this test on "REPR B" where (1<<29 + 1) is not a small int.
+k = 1 << 29
+micropython.heap_lock()
+try:
+    k = k + 1
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+finally:
+    micropython.heap_unlock()
+
 # All less than small int max.
 for d in (0, 27, 1<<29, -1861, -(1<<29)):
     i = 1<<70

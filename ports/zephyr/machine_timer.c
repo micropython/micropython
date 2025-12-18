@@ -27,9 +27,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
@@ -51,6 +53,7 @@ typedef struct _machine_timer_obj_t {
     uint32_t period_ms;
 
     mp_obj_t callback;
+    bool ishard;
 
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
@@ -62,11 +65,14 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 
 static void machine_timer_callback(struct k_timer *timer) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)k_timer_user_data_get(timer);
+
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception; disable the callback so it doesn't run again.
+        self->mode = TIMER_MODE_ONE_SHOT;
+    }
+
     if (self->mode == TIMER_MODE_ONE_SHOT) {
         machine_timer_deinit(self);
-    }
-    if (self->callback != mp_const_none) {
-        mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
     }
 }
 
@@ -77,9 +83,14 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    if (mp_obj_get_int(args[0]) != -1) {
+    // Get timer id (only soft timer (-1) supported at the moment)
+    mp_int_t id = -1;
+    if (n_args > 0) {
+        id = mp_obj_get_int(args[0]);
+        --n_args;
+        ++args;
+    }
+    if (id != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("only virtual timers are supported"));
     }
 
@@ -90,10 +101,10 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     self->next = MP_STATE_PORT(machine_timer_obj_head);
     MP_STATE_PORT(machine_timer_obj_head) = self;
 
-    if (n_args > 1 || n_kw > 0) {
+    if (n_args > 0 || n_kw > 0) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        machine_timer_init_helper(self, n_args - 1, args + 1, &kw_args);
+        machine_timer_init_helper(self, n_args, args, &kw_args);
     }
     return self;
 }
@@ -104,6 +115,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         ARG_callback,
         ARG_period,
         ARG_freq,
+        ARG_hard,
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_PERIODIC} },
@@ -114,6 +126,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         #else
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         #endif
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -134,6 +147,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 
     self->mode = args[ARG_mode].u_int;
     self->callback = args[ARG_callback].u_obj;
+    self->ishard = args[ARG_hard].u_bool;
 
     k_timer_init(&self->my_timer, machine_timer_callback, NULL);
     k_timer_user_data_set(&self->my_timer, self);

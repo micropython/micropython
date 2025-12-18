@@ -18,5 +18,8 @@
     "product": "Pro Micro RP2350",
     "thumbnail": "",
     "url": "https://www.sparkfun.com/products/24870",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
     "vendor": "SparkFun"
 }

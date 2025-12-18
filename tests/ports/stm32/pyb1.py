@@ -2,6 +2,10 @@
 
 import pyb
 
+if not hasattr(pyb, "delay"):
+    print("SKIP")
+    raise SystemExit
+
 # test delay
 
 pyb.delay(-1)

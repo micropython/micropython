@@ -23,6 +23,7 @@
 #define MICROPY_OPT_MATH_FACTORIAL              (0)
 #define MICROPY_REPL_EMACS_KEYS                 (0)
 #define MICROPY_PY_BUILTINS_COMPLEX             (0)
+#define MICROPY_MODULE___FILE__                 (0)
 #define MICROPY_PY_DELATTR_SETATTR              (0)
 #define MICROPY_PY_BUILTINS_STR_CENTER          (0)
 #define MICROPY_PY_BUILTINS_STR_PARTITION       (0)
@@ -32,7 +33,6 @@
 #define MICROPY_PY_BUILTINS_EXECFILE            (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED      (0)
 #define MICROPY_PY_BUILTINS_POW3                (0)
-#define MICROPY_PY___FILE__                     (0)
 #define MICROPY_PY_MATH_CONSTANTS               (0)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS       (0)
 #define MICROPY_PY_MATH_FACTORIAL               (0)
@@ -52,10 +52,12 @@
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT  (64)
 #define MICROPY_DEBUG_PRINTER       (&mp_debug_print)
 #define MICROPY_ENABLE_GC           (1)
+#define MICROPY_STACK_CHECK_MARGIN  (64)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (0)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT esp_help_text
+#define MICROPY_PY_HASHLIB_MD5      (0)
 #define MICROPY_PY_HASHLIB_SHA1     (MICROPY_PY_SSL && MICROPY_SSL_AXTLS)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC (*WDEV_HWRNG)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
@@ -106,6 +108,7 @@
 #define MICROPY_PY_OS_URANDOM       (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_FLOAT_FORMAT_IMPL   (MICROPY_FLOAT_FORMAT_IMPL_BASIC)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 #define MICROPY_STREAMS_POSIX_API   (1)
@@ -116,6 +119,9 @@
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_ESP8266_APA102         (1)
+
+// Print error information at reboot time if the board crashed.
+#define MICROPY_HW_HARD_FAULT_DEBUG    (0)
 
 // No blocking wait-for-event on ESP8266, only non-blocking pump of the "OS" event
 // loop
@@ -147,11 +153,6 @@
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 typedef uint32_t sys_prot_t; // for modlwip
 // ssize_t, off_t as required by POSIX-signatured functions in stream.h

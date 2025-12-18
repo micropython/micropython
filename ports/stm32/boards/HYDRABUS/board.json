@@ -10,6 +10,6 @@
     "mcu": "stm32f4",
     "product": "HydraBus v1.0",
     "thumbnail": "",
-    "url": "",
+    "url": "https://github.com/hydrabus/hydrabus",
     "vendor": "HydraBus"
 }

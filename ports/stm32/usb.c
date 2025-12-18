@@ -45,7 +45,7 @@
 #include "sdcard.h"
 #include "usb.h"
 
-#if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_STM_USB_STACK
 
 // Work out which USB device to use as the main one (the one with the REPL)
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
@@ -67,8 +67,10 @@
 #define MAX_ENDPOINT(dev_id) ((dev_id) == USB_PHY_FS_ID ? 3 : 5)
 #elif defined(STM32F7)
 #define MAX_ENDPOINT(dev_id) ((dev_id) == USB_PHY_FS_ID ? 5 : 8)
-#elif defined(STM32H7)
+#elif defined(STM32H7) || defined(STM32N6)
 #define MAX_ENDPOINT(dev_id) (8)
+#elif defined(STM32U5)
+#define MAX_ENDPOINT(dev_id) (9)
 #endif
 
 // Constants for USB_VCP.irq trigger.
@@ -90,7 +92,9 @@ typedef struct _usb_device_t {
 } usb_device_t;
 
 usb_device_t usb_device = {0};
+#if MICROPY_HW_USB_MSC
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
+#endif
 
 #if !MICROPY_HW_USB_IS_MULTI_OTG
 
@@ -1154,4 +1158,4 @@ MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_hid_report_desc);
 #endif
 MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_usb_vcp_irq[MICROPY_HW_USB_CDC_NUM]);
 
-#endif // MICROPY_HW_ENABLE_USB
+#endif // MICROPY_HW_STM_USB_STACK

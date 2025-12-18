@@ -22,6 +22,11 @@
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
 
+#define MICROPY_HW_USB_VID 0x2341
+#define MICROPY_HW_USB_PID 0x056B
+#define MICROPY_HW_USB_MANUFACTURER_STRING "Arduino"
+#define MICROPY_HW_USB_PRODUCT_FS_STRING "Nano ESP32"
+
 #define MICROPY_BOARD_STARTUP                           NANO_ESP32_board_startup
 void NANO_ESP32_board_startup(void);
 

@@ -267,3 +267,10 @@ removed directory: '/ramdisk/package'
 skipped: '/ramdisk' (vfs mountpoint)
 ls :/ramdisk
 -----
+Local directory ${TMP} is mounted at /remote
+rm :package
+mpremote: rm -r not permitted on /remote directory
+expect error
+-----
+expect error: 2
+-----

@@ -61,7 +61,7 @@ const byte mp_hal_status_to_errno_table[4] = {
     [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
-NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
+MP_NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
@@ -104,7 +104,7 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_indefinite();
     }
 }
 

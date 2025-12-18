@@ -145,6 +145,7 @@ Methods
    reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    txpower        Maximum transmit power in dBm (integer or float)
    pm             WiFi Power Management setting (see below for allowed values)
+   protocol       (ESP32 Only.) WiFi Low level 802.11 protocol. See `WLAN.PROTOCOL_DEFAULT`.
    =============  ===========
 
 Constants
@@ -161,3 +162,34 @@ Constants
         * ``PM_POWERSAVE``: enable WiFi power management with additional power
           savings and reduced WiFi performance
         * ``PM_NONE``: disable wifi power management
+
+
+ESP32 Protocol Constants
+------------------------
+
+The following ESP32-only constants relate to the ``WLAN.config(protocol=...)``
+network interface parameter:
+
+.. data:: WLAN.PROTOCOL_DEFAULT
+
+      A bitmap representing all of the default 802.11 Wi-Fi modes supported by
+      the chip. Consult `ESP-IDF Wi-Fi Protocols`_ documentation for details.
+
+.. data:: WLAN.PROTOCOL_LR
+
+      This value corresponds to the `Espressif proprietary "long-range" mode`_,
+      which is not compatible with standard Wi-Fi devices. By setting this
+      protocol it's possible for an ESP32 STA in long-range mode to connect to
+      an ESP32 AP in long-range mode, or to use `ESP-NOW long range modes
+      <espnow-long-range>`.
+
+      This mode can be bitwise ORed with some standard 802.11 protocol bits
+      (including `WLAN.PROTOCOL_DEFAULT`) in order to support a mix of standard
+      Wi-Fi modes as well as LR mode, consult the `Espressif long-range
+      documentation`_ for more details.
+
+      Long range mode is not supported on ESP32-C2.
+
+.. _ESP-IDF Wi-Fi Protocols: https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/wifi.html#wi-fi-protocol-mode
+.. _Espressif proprietary "long-range" mode:
+.. _Espressif long-range documentation: https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/wifi.html#long-range-lr

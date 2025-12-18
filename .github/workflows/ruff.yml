@@ -6,8 +6,8 @@ jobs:
   ruff:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    # ruff version should be kept in sync with .pre-commit-config.yaml
-    - run: pipx install ruff==0.9.6
+    - uses: actions/checkout@v6
+    # ruff version should be kept in sync with .pre-commit-config.yaml & also micropython-lib
+    - run: pipx install ruff==0.11.6
     - run: ruff check --output-format=github .
     - run: ruff format --diff .

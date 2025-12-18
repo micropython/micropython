@@ -1,0 +1,23 @@
+/*
+ * Copyright (c) 2025 Damien P. George
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* Delete the defined partitions and create bigger one for storage. */
+/delete-node/ &slot1_partition;
+/delete-node/ &scratch_partition;
+/delete-node/ &storage_partition;
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Storage slot: 424 KiB placed after slot0_partition. */
+		storage_partition: partition@70000 {
+			label = "storage";
+			reg = <0x00070000 DT_SIZE_K(424)>;
+		};
+	};
+};

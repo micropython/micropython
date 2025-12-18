@@ -1,7 +1,8 @@
 import pyb
 
 # test basic functionality
-ext = pyb.ExtInt("X5", pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_DOWN, lambda l: print("line:", l))
+pin = pyb.Pin.cpu.A4
+ext = pyb.ExtInt(pin, pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_DOWN, lambda l: print("line:", l))
 ext.disable()
 ext.enable()
 print(ext.line())

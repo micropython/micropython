@@ -1,11 +1,12 @@
 # test I2C errors, with polling (disabled irqs) and DMA
 
 import pyb
-from pyb import I2C
 
 if not hasattr(pyb, "Accel"):
     print("SKIP")
     raise SystemExit
+
+from pyb import I2C
 
 # init accelerometer
 pyb.Accel()

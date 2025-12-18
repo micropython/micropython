@@ -21,7 +21,7 @@ extern "C"
 // Software library version
 // Major (top-nibble), incremented on backwards incompatible changes
 // Minor (bottom-nibble), incremented on feature additions
-#define LFS2_VERSION 0x00020008
+#define LFS2_VERSION 0x0002000b
 #define LFS2_VERSION_MAJOR (0xffff & (LFS2_VERSION >> 16))
 #define LFS2_VERSION_MINOR (0xffff & (LFS2_VERSION >>  0))
 
@@ -52,16 +52,15 @@ typedef uint32_t lfs2_block_t;
 #endif
 
 // Maximum size of a file in bytes, may be redefined to limit to support other
-// drivers. Limited on disk to <= 4294967296. However, above 2147483647 the
-// functions lfs2_file_seek, lfs2_file_size, and lfs2_file_tell will return
-// incorrect values due to using signed integers. Stored in superblock and
-// must be respected by other littlefs drivers.
+// drivers. Limited on disk to <= 2147483647. Stored in superblock and must be
+// respected by other littlefs drivers.
 #ifndef LFS2_FILE_MAX
 #define LFS2_FILE_MAX 2147483647
 #endif
 
 // Maximum size of custom attributes in bytes, may be redefined, but there is
-// no real benefit to using a smaller LFS2_ATTR_MAX. Limited to <= 1022.
+// no real benefit to using a smaller LFS2_ATTR_MAX. Limited to <= 1022. Stored
+// in superblock and must be respected by other littlefs drivers.
 #ifndef LFS2_ATTR_MAX
 #define LFS2_ATTR_MAX 1022
 #endif
@@ -205,7 +204,8 @@ struct lfs2_config {
     // program sizes.
     lfs2_size_t block_size;
 
-    // Number of erasable blocks on the device.
+    // Number of erasable blocks on the device. Defaults to block_count stored
+    // on disk when zero.
     lfs2_size_t block_count;
 
     // Number of erase cycles before littlefs evicts metadata logs and moves
@@ -226,8 +226,19 @@ struct lfs2_config {
     // Size of the lookahead buffer in bytes. A larger lookahead buffer
     // increases the number of blocks found during an allocation pass. The
     // lookahead buffer is stored as a compact bitmap, so each byte of RAM
-    // can track 8 blocks. Must be a multiple of 8.
+    // can track 8 blocks.
     lfs2_size_t lookahead_size;
+
+    // Threshold for metadata compaction during lfs2_fs_gc in bytes. Metadata
+    // pairs that exceed this threshold will be compacted during lfs2_fs_gc.
+    // Defaults to ~88% block_size when zero, though the default may change
+    // in the future.
+    //
+    // Note this only affects lfs2_fs_gc. Normal compactions still only occur
+    // when full.
+    //
+    // Set to -1 to disable metadata compaction during lfs2_fs_gc.
+    lfs2_size_t compact_thresh;
 
     // Optional statically allocated read buffer. Must be cache_size.
     // By default lfs2_malloc is used to allocate this buffer.
@@ -237,25 +248,24 @@ struct lfs2_config {
     // By default lfs2_malloc is used to allocate this buffer.
     void *prog_buffer;
 
-    // Optional statically allocated lookahead buffer. Must be lookahead_size
-    // and aligned to a 32-bit boundary. By default lfs2_malloc is used to
-    // allocate this buffer.
+    // Optional statically allocated lookahead buffer. Must be lookahead_size.
+    // By default lfs2_malloc is used to allocate this buffer.
     void *lookahead_buffer;
 
     // Optional upper limit on length of file names in bytes. No downside for
     // larger names except the size of the info struct which is controlled by
-    // the LFS2_NAME_MAX define. Defaults to LFS2_NAME_MAX when zero. Stored in
-    // superblock and must be respected by other littlefs drivers.
+    // the LFS2_NAME_MAX define. Defaults to LFS2_NAME_MAX or name_max stored on
+    // disk when zero.
     lfs2_size_t name_max;
 
     // Optional upper limit on files in bytes. No downside for larger files
-    // but must be <= LFS2_FILE_MAX. Defaults to LFS2_FILE_MAX when zero. Stored
-    // in superblock and must be respected by other littlefs drivers.
+    // but must be <= LFS2_FILE_MAX. Defaults to LFS2_FILE_MAX or file_max stored
+    // on disk when zero.
     lfs2_size_t file_max;
 
     // Optional upper limit on custom attributes in bytes. No downside for
     // larger attributes size but must be <= LFS2_ATTR_MAX. Defaults to
-    // LFS2_ATTR_MAX when zero.
+    // LFS2_ATTR_MAX or attr_max stored on disk when zero.
     lfs2_size_t attr_max;
 
     // Optional upper limit on total space given to metadata pairs in bytes. On
@@ -263,6 +273,15 @@ struct lfs2_config {
     // can help bound the metadata compaction time. Must be <= block_size.
     // Defaults to block_size when zero.
     lfs2_size_t metadata_max;
+
+    // Optional upper limit on inlined files in bytes. Inlined files live in
+    // metadata and decrease storage requirements, but may be limited to
+    // improve metadata-related performance. Must be <= cache_size, <=
+    // attr_max, and <= block_size/8. Defaults to the largest possible
+    // inline_max when zero.
+    //
+    // Set to -1 to disable inlined files.
+    lfs2_size_t inline_max;
 
 #ifdef LFS2_MULTIVERSION
     // On-disk version to use when writing in the form of 16-bit major version
@@ -430,19 +449,20 @@ typedef struct lfs2 {
     lfs2_gstate_t gdisk;
     lfs2_gstate_t gdelta;
 
-    struct lfs2_free {
-        lfs2_block_t off;
+    struct lfs2_lookahead {
+        lfs2_block_t start;
         lfs2_block_t size;
-        lfs2_block_t i;
-        lfs2_block_t ack;
-        uint32_t *buffer;
-    } free;
+        lfs2_block_t next;
+        lfs2_block_t ckpoint;
+        uint8_t *buffer;
+    } lookahead;
 
     const struct lfs2_config *cfg;
     lfs2_size_t block_count;
     lfs2_size_t name_max;
     lfs2_size_t file_max;
     lfs2_size_t attr_max;
+    lfs2_size_t inline_max;
 
 #ifdef LFS2_MIGRATE
     struct lfs21 *lfs21;
@@ -712,18 +732,6 @@ lfs2_ssize_t lfs2_fs_size(lfs2_t *lfs2);
 // Returns a negative error code on failure.
 int lfs2_fs_traverse(lfs2_t *lfs2, int (*cb)(void*, lfs2_block_t), void *data);
 
-// Attempt to proactively find free blocks
-//
-// Calling this function is not required, but may allowing the offloading of
-// the expensive block allocation scan to a less time-critical code path.
-//
-// Note: littlefs currently does not persist any found free blocks to disk.
-// This may change in the future.
-//
-// Returns a negative error code on failure. Finding no free blocks is
-// not an error.
-int lfs2_fs_gc(lfs2_t *lfs2);
-
 #ifndef LFS2_READONLY
 // Attempt to make the filesystem consistent and ready for writing
 //
@@ -737,10 +745,32 @@ int lfs2_fs_mkconsistent(lfs2_t *lfs2);
 #endif
 
 #ifndef LFS2_READONLY
+// Attempt any janitorial work
+//
+// This currently:
+// 1. Calls mkconsistent if not already consistent
+// 2. Compacts metadata > compact_thresh
+// 3. Populates the block allocator
+//
+// Though additional janitorial work may be added in the future.
+//
+// Calling this function is not required, but may allow the offloading of
+// expensive janitorial work to a less time-critical code path.
+//
+// Returns a negative error code on failure. Accomplishing nothing is not
+// an error.
+int lfs2_fs_gc(lfs2_t *lfs2);
+#endif
+
+#ifndef LFS2_READONLY
 // Grows the filesystem to a new size, updating the superblock with the new
 // block count.
 //
-// Note: This is irreversible.
+// If LFS2_SHRINKNONRELOCATING is defined, this function will also accept
+// block_counts smaller than the current configuration, after checking
+// that none of the blocks that are being removed are in use.
+// Note that littlefs's pseudorandom block allocation means that
+// this is very unlikely to work in the general case.
 //
 // Returns a negative error code on failure.
 int lfs2_fs_grow(lfs2_t *lfs2, lfs2_size_t block_count);

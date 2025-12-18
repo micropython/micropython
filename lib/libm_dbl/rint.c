@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 
-#if FLT_EVAL_METHOD==0 || FLT_EVAL_METHOD==1
+#if FLT_EVAL_METHOD==0 || FLT_EVAL_METHOD==1 || FLT_EVAL_METHOD==16
 #define EPS DBL_EPSILON
 #elif FLT_EVAL_METHOD==2
 #define EPS LDBL_EPSILON

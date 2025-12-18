@@ -1,0 +1,17 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Ethernet"
+    ],
+    "images": [
+        "ensemble-devkit-gen-2.jpg"
+    ],
+    "mcu": "AE722F80F55D5XX",
+    "product": "Ensemble E7 DevKit",
+    "thumbnail": "",
+    "url": "https://alifsemi.com/support/kits/ensemble-devkit/",
+    "vendor": "Alif Semiconductor"
+}

@@ -34,6 +34,15 @@ def _ensure_path_exists(transport, path):
         prefix += "/"
 
 
+# Check if the specified path exists and matches the hash.
+def _check_exists(transport, path, short_hash):
+    try:
+        remote_hash = transport.fs_hashfile(path, "sha256")
+    except FileNotFoundError:
+        return False
+    return remote_hash.hex()[: len(short_hash)] == short_hash
+
+
 def _rewrite_url(url, branch=None):
     if not branch:
         branch = "HEAD"
@@ -115,8 +124,11 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
         raise CommandError(f"Invalid url for package: {package_json_url}")
     for target_path, short_hash in package_json.get("hashes", ()):
         fs_target_path = target + "/" + target_path
-        file_url = f"{index}/file/{short_hash[:2]}/{short_hash}"
-        _download_file(transport, file_url, fs_target_path)
+        if _check_exists(transport, fs_target_path, short_hash):
+            print("Exists:", fs_target_path)
+        else:
+            file_url = f"{index}/file/{short_hash[:2]}/{short_hash}"
+            _download_file(transport, file_url, fs_target_path)
     for target_path, url in package_json.get("urls", ()):
         fs_target_path = target + "/" + target_path
         if base_url and not url.startswith(allowed_mip_url_prefixes):

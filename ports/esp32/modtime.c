@@ -31,28 +31,16 @@
 #include "py/obj.h"
 #include "shared/timeutils/timeutils.h"
 
-// Return the localtime as an 8-tuple.
-static mp_obj_t mp_time_localtime_get(void) {
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    timeutils_struct_time_t tm;
-    timeutils_seconds_since_epoch_to_struct_time(tv.tv_sec, &tm);
-    mp_obj_t tuple[8] = {
-        tuple[0] = mp_obj_new_int(tm.tm_year),
-        tuple[1] = mp_obj_new_int(tm.tm_mon),
-        tuple[2] = mp_obj_new_int(tm.tm_mday),
-        tuple[3] = mp_obj_new_int(tm.tm_hour),
-        tuple[4] = mp_obj_new_int(tm.tm_min),
-        tuple[5] = mp_obj_new_int(tm.tm_sec),
-        tuple[6] = mp_obj_new_int(tm.tm_wday),
-        tuple[7] = mp_obj_new_int(tm.tm_yday),
-    };
-    return mp_obj_new_tuple(8, tuple);
+    timeutils_seconds_since_epoch_to_struct_time(tv.tv_sec, tm);
 }
 
 // Return the number of seconds since the Epoch.
 static mp_obj_t mp_time_time_get(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return mp_obj_new_int(tv.tv_sec);
+    return timeutils_obj_from_timestamp(tv.tv_sec);
 }

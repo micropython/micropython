@@ -36,9 +36,10 @@
 #include "py/parse.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/compile.h"
+#include "py/persistentcode.h"
+#include "extmod/misc.h"
 #include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 #include "readline.h"
@@ -107,7 +108,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
-void NORETURN _start(void) {
+void MP_NORETURN _start(void) {
     // Hook for a board to run code at start up, for example check if a
     // bootloader should be entered instead of the main application.
     MICROPY_BOARD_STARTUP();
@@ -124,11 +125,7 @@ soft_reset:
 
     led_state(1, 1); // MICROPY_HW_LED_1 aka MICROPY_HW_LED_RED
 
-    mp_stack_set_top(&_ram_end);
-
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_limit((char *)&_ram_end - (char *)&_heap_end - 400);
+    mp_cstack_init_with_top(&_ram_end, (char *)&_ram_end - (char *)&_heap_end);
 
     machine_init();
 
@@ -171,7 +168,8 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
             MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL_BAUD),
         };
-        MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        mp_obj_t uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        mp_os_dupterm_obj.fun.var(1, &uart);
     }
     #endif
 
@@ -353,7 +351,7 @@ void HardFault_Handler(void) {
     #endif
 }
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
     while (1) {
         ;
     }
@@ -369,3 +367,16 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     __fatal_error("Assertion failed");
 }
+
+#if MICROPY_EMIT_MACHINE_CODE
+void *nrf_native_code_commit(void *buf, unsigned int len, void *reloc) {
+    (void)len;
+    if (reloc) {
+        // Native code in RAM must execute from the IRAM region at 0x00800000, and so relocations
+        // to text must also point to this region.  The MICROPY_MAKE_POINTER_CALLABLE macro will
+        // adjust the `buf` address from RAM to IRAM.
+        mp_native_relocate(reloc, buf, (uintptr_t)MICROPY_MAKE_POINTER_CALLABLE(buf) & ~1);
+    }
+    return buf;
+}
+#endif

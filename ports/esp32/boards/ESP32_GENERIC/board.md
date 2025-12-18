@@ -1,5 +1,5 @@
 The following files are firmware that should work on most ESP32-based boards
-with 4MiB of flash, including WROOM WROVER, SOLO, PICO, and MINI modules.
+with 4MiB or more of flash, including WROOM WROVER, SOLO, PICO, and MINI modules.
 
 This board has multiple variants available:
 

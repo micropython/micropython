@@ -109,6 +109,7 @@
 #endif
 #elif PICO_RISCV
 #define MICROPY_EMIT_RV32                       (1)
+#define MICROPY_EMIT_RV32_ZBA                   (1)
 #define MICROPY_EMIT_INLINE_RV32                (1)
 #endif
 
@@ -150,6 +151,7 @@
 #define MICROPY_PY_OS_URANDOM                   (1)
 #define MICROPY_PY_RE_MATCH_GROUPS              (1)
 #define MICROPY_PY_RE_MATCH_SPAN_START_END      (1)
+#define MICROPY_PY_HASHLIB_MD5                  (1)
 #define MICROPY_PY_HASHLIB_SHA1                 (1)
 #define MICROPY_PY_CRYPTOLIB                    (1)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
@@ -171,6 +173,12 @@
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
+#ifndef MICROPY_PY_MACHINE_I2C_TARGET
+#define MICROPY_PY_MACHINE_I2C_TARGET           (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/rp2/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (2)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ  (1)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 #define MICROPY_PY_MACHINE_I2S                  (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/rp2/machine_i2s.c"
@@ -198,8 +206,9 @@
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
 
 // Hardware timer alarm index. Available range 0-3.
-// Number 3 is currently used by pico-sdk (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
+// Number 3 is currently used by pico-sdk alarm pool (PICO_TIME_DEFAULT_ALARM_POOL_HARDWARE_ALARM_NUM)
 #define MICROPY_HW_SOFT_TIMER_ALARM_NUM         (2)
+#define MICROPY_HW_LIGHTSLEEP_ALARM_NUM         (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (2)
@@ -241,46 +250,11 @@
 #endif
 #endif
 
-#if MICROPY_PY_NETWORK_CYW43
-extern const struct _mp_obj_type_t mp_network_cyw43_type;
-#define MICROPY_HW_NIC_CYW43 \
-    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) }, \
-    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(CYW43_LINK_DOWN) }, \
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(CYW43_LINK_JOIN) }, \
-    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(CYW43_LINK_BADAUTH) }, \
-    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(CYW43_LINK_NONET) }, \
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(CYW43_LINK_FAIL) }, \
-    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(CYW43_LINK_UP) },
-#else
-#define MICROPY_HW_NIC_CYW43
-#endif
-
-#if MICROPY_PY_NETWORK_NINAW10
-// This Network interface requires the extended socket state.
-#ifndef MICROPY_PY_SOCKET_EXTENDED_STATE
-#define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
-#endif
-extern const struct _mp_obj_type_t mod_network_nic_type_nina;
-#define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
-#else
-#define MICROPY_HW_NIC_NINAW10
-#endif
-
-#if MICROPY_PY_NETWORK_WIZNET5K
-extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
-#define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
-#else
-#define MICROPY_HW_NIC_WIZNET5K
-#endif
-
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
-    MICROPY_HW_NIC_CYW43 \
-    MICROPY_HW_NIC_NINAW10  \
-    MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Additional entries for use with pendsv_schedule_dispatch.
@@ -308,8 +282,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #endif
 
 #define MP_SSIZE_MAX (0x7fffffff)
-typedef intptr_t mp_int_t; // must be pointer size
-typedef uintptr_t mp_uint_t; // must be pointer size
 typedef intptr_t mp_off_t;
 
 // We need to provide a declaration/definition of alloca()

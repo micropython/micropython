@@ -1,3 +1,5 @@
+# Test sys.print_exception (MicroPython) / traceback.print_exception (CPython).
+
 try:
     import io
     import sys
@@ -18,11 +20,11 @@ def print_exc(e):
     print_exception(e, buf)
     s = buf.getvalue()
     for l in s.split("\n"):
-        # uPy on pyboard prints <stdin> as file, so remove filename.
+        # MPy on pyboard prints <stdin> as file, so remove filename.
         if l.startswith("  File "):
             l = l.split('"')
             print(l[0], l[2])
-        # uPy and CPy tracebacks differ in that CPy prints a source line for
+        # MPy and CPy tracebacks differ in that CPy prints a source line for
         # each traceback entry. In this case, we know that offending line
         # has 4-space indent, so filter it out.
         elif not l.startswith("    "):
@@ -69,7 +71,7 @@ try:
     except Exception as e:
         print("reraise")
         print_exc(e)
-        raise
+        raise e
 except Exception as e:
     print("caught")
     print_exc(e)
@@ -87,7 +89,7 @@ try:
 except Exception as e:
     print_exc(e)
 
-# Test non-stream object passed as output object, only valid for uPy
+# Test non-stream object passed as output object, only valid for MicroPython
 if hasattr(sys, "print_exception"):
     try:
         sys.print_exception(Exception, 1)

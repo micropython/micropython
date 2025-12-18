@@ -154,14 +154,24 @@ Regex objects
 Compiled regular expression. Instances of this class are created using
 `re.compile()`.
 
-.. method:: regex.match(string)
-            regex.search(string)
+.. method:: regex.match(string, [pos, [endpos]])
+            regex.search(string, [pos, [endpos]])
             regex.sub(replace, string, count=0, flags=0, /)
 
    Similar to the module-level functions :meth:`match`, :meth:`search`
    and :meth:`sub`.
    Using methods is (much) more efficient if the same regex is applied to
    multiple strings.
+
+   The optional second parameter *pos* gives an index in the string where the
+   search is to start; it defaults to ``0``. This is not completely equivalent
+   to slicing the string; the ``'^'`` pattern character matches at the real
+   beginning of the string and at positions just after a newline, but not
+   necessarily at the index where the search is to start.
+
+   The optional parameter *endpos* limits how far the string will be searched;
+   it will be as if the string is *endpos* characters long, so only the
+   characters from *pos* to ``endpos - 1`` will be searched for a match.
 
 .. method:: regex.split(string, max_split=-1, /)
 

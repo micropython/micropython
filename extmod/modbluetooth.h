@@ -295,7 +295,7 @@ extern const mp_obj_type_t mp_type_bluetooth_uuid;
 int mp_bluetooth_init(void);
 
 // Disables the Bluetooth stack. Is a no-op when not enabled.
-void mp_bluetooth_deinit(void);
+int mp_bluetooth_deinit(void);
 
 // Returns true when the Bluetooth stack is active.
 bool mp_bluetooth_is_active(void);

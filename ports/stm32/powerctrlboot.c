@@ -47,9 +47,15 @@ void stm32_system_init(void) {
 #endif
 
 void powerctrl_config_systick(void) {
+    #if defined(STM32N6)
+    uint32_t systick_source_freq = HAL_RCC_GetCpuClockFreq();
+    #else
+    uint32_t systick_source_freq = HAL_RCC_GetHCLKFreq();
+    #endif
+
     // Configure SYSTICK to run at 1kHz (1ms interval)
     SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
-    SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
+    SysTick_Config(systick_source_freq / 1000);
     NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
 
     #if !BUILDING_MBOOT && (defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB))
@@ -139,17 +145,12 @@ void SystemClock_Config(void) {
     }
 
     // Use the PLL to get a 64MHz SYSCLK
-    #define PLLM (HSI_VALUE / 16000000) // input is 8MHz
-    #define PLLN (8) // 8*16MHz = 128MHz
-    #define PLLP (2) // f_P = 64MHz
-    #define PLLQ (2) // f_Q = 64MHz
-    #define PLLR (2) // f_R = 64MHz
     RCC->PLLCFGR =
-        (PLLP - 1) << RCC_PLLCFGR_PLLP_Pos | RCC_PLLCFGR_PLLPEN
-            | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
-            | (PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
-            | PLLN << RCC_PLLCFGR_PLLN_Pos
-            | (PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
+        (MICROPY_HW_CLK_PLLP - 1) << RCC_PLLCFGR_PLLP_Pos | RCC_PLLCFGR_PLLPEN
+            | (MICROPY_HW_CLK_PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
+            | (MICROPY_HW_CLK_PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
+            | MICROPY_HW_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
+            | (MICROPY_HW_CLK_PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
             | RCC_PLLCFGR_PLLSRC_HSI;
 
     #else
@@ -379,7 +380,9 @@ void SystemClock_Config(void) {
     RCC->CFGR = RCC_CFGR_PLLSRC_HSI;
     #else
     // Enable the 8MHz external oscillator
+    #if MICROPY_HW_CLK_USE_BYPASS
     RCC->CR |= RCC_CR_HSEBYP;
+    #endif
     RCC->CR |= RCC_CR_HSEON;
     while (!(RCC->CR & RCC_CR_HSERDY)) {
     }
@@ -410,6 +413,129 @@ void SystemClock_Config(void) {
     DBGMCU->CR &= ~(DBGMCU_CR_DBG_SLEEP | DBGMCU_CR_DBG_STOP | DBGMCU_CR_DBG_STANDBY);
     #endif
 }
+
+#elif defined(STM32N6)
+
+void SystemClock_Config(void) {
+    // Enable HSI.
+    LL_RCC_HSI_Enable();
+    while (!LL_RCC_HSI_IsReady()) {
+    }
+
+    // Switch the CPU clock source to HSI.
+    LL_RCC_SetCpuClkSource(LL_RCC_CPU_CLKSOURCE_HSI);
+    while (LL_RCC_GetCpuClkSource() != LL_RCC_CPU_CLKSOURCE_STATUS_HSI) {
+    }
+
+    // Switch the system clock source to HSI.
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {
+    }
+
+    // Disable all ICx clocks.
+    RCC->DIVENCR = 0x000fffff;
+
+    // This doesn't work, VOSRDY never becomes active.
+    #if 0
+    LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE0);
+    while (!LL_PWR_IsActiveFlag_VOSRDY()) {
+    }
+    #endif
+
+    // Enable HSE.
+    LL_RCC_HSE_Enable();
+    while (!LL_RCC_HSE_IsReady()) {
+    }
+
+    // Disable PLL1.
+    LL_RCC_PLL1_Disable();
+    while (LL_RCC_PLL1_IsReady()) {
+    }
+
+    // Configure PLL1 for use as system clock.
+    LL_RCC_PLL1_SetSource(LL_RCC_PLLSOURCE_HSE);
+    LL_RCC_PLL1_DisableBypass();
+    LL_RCC_PLL1_DisableFractionalModulationSpreadSpectrum();
+    LL_RCC_PLL1_SetM(MICROPY_HW_CLK_PLLM);
+    LL_RCC_PLL1_SetN(MICROPY_HW_CLK_PLLN);
+    LL_RCC_PLL1_SetP1(MICROPY_HW_CLK_PLLP1);
+    LL_RCC_PLL1_SetP2(MICROPY_HW_CLK_PLLP2);
+    LL_RCC_PLL1_SetFRACN(MICROPY_HW_CLK_PLLFRAC);
+    LL_RCC_PLL1P_Enable();
+
+    // Enable PLL1.
+    LL_RCC_PLL1_Enable();
+    while (!LL_RCC_PLL1_IsReady()) {
+    }
+
+    // Configure IC1, IC2, IC6, IC11.
+    LL_RCC_IC1_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC1_SetDivider(1);
+    LL_RCC_IC1_Enable();
+    LL_RCC_IC2_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC2_SetDivider(2);
+    LL_RCC_IC2_Enable();
+    LL_RCC_IC6_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC6_SetDivider(1);
+    LL_RCC_IC6_Enable();
+    LL_RCC_IC11_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC11_SetDivider(1);
+    LL_RCC_IC11_Enable();
+
+    // Configure IC12 at 100MHz for ETH1CLKSEL.
+    LL_RCC_IC12_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC12_SetDivider(8);
+    LL_RCC_IC12_Enable();
+
+    // Configure IC14 at 100MHz for slower peripherals.
+    LL_RCC_IC14_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC14_SetDivider(8);
+    LL_RCC_IC14_Enable();
+
+    // Enable buses.
+    LL_BUS_EnableClock(LL_APB5 | LL_APB4 | LL_APB3 | LL_APB2 | LL_APB1 | LL_AHB5 | LL_AHB4 | LL_AHB3 | LL_AHB2 | LL_AHB1);
+    LL_MISC_EnableClock(LL_PER);
+
+    // Configure bus dividers.
+    LL_RCC_SetAHBPrescaler(LL_RCC_AHB_DIV_2);
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
+    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+    LL_RCC_SetAPB4Prescaler(LL_RCC_APB4_DIV_1);
+    LL_RCC_SetAPB5Prescaler(LL_RCC_APB5_DIV_1);
+
+    // Switch the CPU clock source to IC1 (connected to PLL1).
+    LL_RCC_SetCpuClkSource(LL_RCC_CPU_CLKSOURCE_IC1);
+    while (LL_RCC_GetCpuClkSource() != LL_RCC_CPU_CLKSOURCE_STATUS_IC1) {
+    }
+
+    // Switch the system clock source to IC2/IC6/IC11 (connected to PLL1).
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_IC2_IC6_IC11);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_IC2_IC6_IC11) {
+    }
+
+    // ADC clock configuration, HCLK/2.
+    LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_HCLK);
+    LL_RCC_SetADCPrescaler(2 - 1);
+
+    // USB clock configuration.
+    #if MICROPY_HW_ENABLE_USB
+
+    // Select HSE/2 as output of direct HSE signal.
+    LL_RCC_HSE_SelectHSEDiv2AsDiv2Clock();
+
+    // Select HSE/2 for OTG1 clock source.
+    LL_RCC_SetClockSource(LL_RCC_OTGPHY1_CLKSOURCE_HSE_DIV_2_OSC);
+    LL_RCC_SetClockSource(LL_RCC_OTGPHY1CKREF_CLKSOURCE_HSE_DIV_2_OSC);
+    LL_RCC_SetOTGPHYClockSource(LL_RCC_OTGPHY1_CLKSOURCE_HSE_DIV_2_OSC);
+    LL_RCC_SetOTGPHYCKREFClockSource(LL_RCC_OTGPHY1CKREF_CLKSOURCE_HSE_DIV_2_OSC);
+
+    #endif
+
+    // Reconfigure clock state and SysTick.
+    SystemCoreClockUpdate();
+    powerctrl_config_systick();
+}
+
 #elif defined(STM32WB)
 
 void SystemClock_Config(void) {

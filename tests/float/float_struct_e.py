@@ -32,7 +32,7 @@ for j in test_values:
     for i in (j, -j):
         x = struct.pack("<e", i)
         v = struct.unpack("<e", x)[0]
-        print("%.7f %s %.15f %s" % (i, x, v, i == v))
+        print("%.7f %s %.7f %s" % (i, x, v, i == v))
 
 # In CPython, packing a float that doesn't fit into a half-float raises OverflowError.
 # But in MicroPython it does not, but rather stores the value as inf.

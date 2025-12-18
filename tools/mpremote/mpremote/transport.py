@@ -24,8 +24,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import ast, errno, hashlib, os, sys
+import ast, errno, hashlib, os, re, sys
 from collections import namedtuple
+from .mp_errno import MP_ERRNO_TABLE
 
 
 def stdout_write_bytes(b):
@@ -55,18 +56,23 @@ listdir_result = namedtuple("dir_result", ["name", "st_mode", "st_ino", "st_size
 # Takes a Transport error (containing the text of an OSError traceback) and
 # raises it as the corresponding OSError-derived exception.
 def _convert_filesystem_error(e, info):
-    if "OSError" in e.error_output and "ENOENT" in e.error_output:
-        return FileNotFoundError(info)
-    if "OSError" in e.error_output and "EISDIR" in e.error_output:
-        return IsADirectoryError(info)
-    if "OSError" in e.error_output and "EEXIST" in e.error_output:
-        return FileExistsError(info)
-    if "OSError" in e.error_output and "ENODEV" in e.error_output:
-        return FileNotFoundError(info)
-    if "OSError" in e.error_output and "EINVAL" in e.error_output:
-        return OSError(errno.EINVAL, info)
-    if "OSError" in e.error_output and "EPERM" in e.error_output:
-        return OSError(errno.EPERM, info)
+    if "OSError" in e.error_output:
+        for code, estr in [
+            *errno.errorcode.items(),
+            (errno.EOPNOTSUPP, "EOPNOTSUPP"),
+        ]:
+            if estr in e.error_output:
+                return OSError(code, info)
+
+        # Some targets don't render OSError with the name of the errno, so in these
+        # cases support an explicit mapping of errnos to known numeric codes.
+        error_lines = e.error_output.splitlines()
+        match = re.match(r"OSError: (\d+)$", error_lines[-1])
+        if match:
+            value = int(match.group(1), 10)
+            if value in MP_ERRNO_TABLE:
+                return OSError(MP_ERRNO_TABLE[value], info)
+
     return e
 
 

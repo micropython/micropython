@@ -17,8 +17,8 @@
         "ABX00092_01.iso_1000x750.jpg"
     ],
     "mcu": "esp32s3",
-    "product": "Arduino Nano ESP32",
+    "product": "Nano ESP32",
     "thumbnail": "",
-    "url": "https://store.arduino.cc/products/arduino-nano-esp32",
+    "url": "https://docs.arduino.cc/hardware/nano-esp32/",
     "vendor": "Arduino"
 }

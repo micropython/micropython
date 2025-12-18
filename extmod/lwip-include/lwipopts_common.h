@@ -28,6 +28,9 @@
 
 #include "py/mpconfig.h"
 
+// This is needed to access `next_timeout` via `sys_timeouts_get_next_timeout()`.
+#define LWIP_TESTMODE                   1
+
 // This sys-arch protection is not needed.
 // Ports either protect lwIP code with flags, or run it at PendSV priority.
 #define SYS_ARCH_DECL_PROTECT(lev) do { } while (0)

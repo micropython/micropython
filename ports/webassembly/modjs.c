@@ -34,9 +34,7 @@
 // js module
 
 void mp_module_js_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_obj_jsproxy_t global_this;
-    global_this.ref = 0;
-    mp_obj_jsproxy_attr(MP_OBJ_FROM_PTR(&global_this), attr, dest);
+    mp_obj_jsproxy_global_this_attr(attr, dest);
 }
 
 static const mp_rom_map_elem_t mp_module_js_globals_table[] = {

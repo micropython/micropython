@@ -1,6 +1,10 @@
 # test some extreme cases of allocating exceptions and tracebacks
 
-import micropython
+try:
+    import micropython
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 # Check for stackless build, which can't call functions without
 # allocating a frame on the heap.

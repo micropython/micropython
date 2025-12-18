@@ -40,6 +40,19 @@
 #if MICROPY_PY_NETWORK_CYW43
 // So that CYW43_LINK_xxx constants are available to MICROPY_PORT_NETWORK_INTERFACES.
 #include "lib/cyw43-driver/src/cyw43.h"
+extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#endif
+
+#if MICROPY_PY_NETWORK_WIZNET5K
+extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
+#endif
+
+#if MICROPY_PY_NETWORK_NINAW10
+extern const struct _mp_obj_type_t mod_network_nic_type_nina;
+#endif
+
+#if MICROPY_PY_NETWORK_ESP_HOSTED
+extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
 #endif
 
 #ifdef MICROPY_PY_NETWORK_INCLUDEFILE
@@ -164,6 +177,32 @@ static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     #ifdef MICROPY_PORT_NETWORK_INTERFACES
     { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },
     MICROPY_PORT_NETWORK_INTERFACES
+    #endif
+
+    #if MICROPY_PY_NETWORK_CYW43
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
+    // CYW43 status constants, currently for rp2 port only.
+    // TODO move these to WIFI module for all ports.
+    #if defined(PICO_PROGRAM_NAME) && defined(CYW43_LINK_DOWN)
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(CYW43_LINK_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(CYW43_LINK_JOIN) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(CYW43_LINK_BADAUTH) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(CYW43_LINK_NONET) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(CYW43_LINK_FAIL) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(CYW43_LINK_UP) },
+    #endif
+    #endif
+
+    #if MICROPY_PY_NETWORK_WIZNET5K
+    { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+    #endif
+
+    #if MICROPY_PY_NETWORK_NINAW10
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
+    #endif
+
+    #if MICROPY_PY_NETWORK_ESP_HOSTED
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
     #endif
 
     // Allow a port to take mostly full control of the network module.

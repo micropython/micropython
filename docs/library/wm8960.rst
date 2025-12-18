@@ -358,13 +358,13 @@ Run WM8960 on a MIMXRT10xx_DEV board in secondary mode (default)::
         sysclk_source=wm8960.SYSCLK_MCLK)
 
 
-Record with a Sparkfun WM8960 breakout board with Teensy in secondary mode (default)::
+Record with a SparkFun WM8960 breakout board with Teensy in secondary mode (default)::
 
     # Micro_python WM8960 Codec driver
     #
     # The breakout board uses a fixed 24MHz MCLK. Therefore the internal
     # PLL must be used as sysclk, which is the master audio clock.
-    # The Sparkfun board has the WS pins for RX and TX connected on the
+    # The SparkFun board has the WS pins for RX and TX connected on the
     # board. Therefore adc_sync must be set to sync_adc, to configure
     # it's ADCLRC pin as input.
     #
@@ -379,11 +379,11 @@ Record with a Sparkfun WM8960 breakout board with Teensy in secondary mode (defa
         right_input=wm8960.INPUT_CLOSED)
 
 
-Play with a Sparkfun WM8960 breakout board with Teensy in secondary mode (default)::
+Play with a SparkFun WM8960 breakout board with Teensy in secondary mode (default)::
 
     # The breakout board uses a fixed 24MHz MCLK. Therefore the internal
     # PLL must be used as sysclk, which is the master audio clock.
-    # The Sparkfun board has the WS pins for RX and TX connected on the
+    # The SparkFun board has the WS pins for RX and TX connected on the
     # board. Therefore adc_sync must be set to sync_adc, to configure
     # it's ADCLRC pin as input.
 

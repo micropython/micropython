@@ -7,7 +7,7 @@ except NameError:
     raise SystemExit
 
 # completely empty string
-# uPy and CPy differ for this case
+# MPy and CPy differ for this case
 #try:
 #    compile("", "stdin", "single")
 #except SyntaxError:

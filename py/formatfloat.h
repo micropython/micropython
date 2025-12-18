@@ -29,6 +29,7 @@
 #include "py/mpconfig.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
+#define MP_FLOAT_REPR_PREC (99) // magic `prec` value for optimal `repr` behaviour
 int mp_format_float(mp_float_t f, char *buf, size_t bufSize, char fmt, int prec, char sign);
 #endif
 

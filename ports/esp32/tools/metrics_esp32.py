@@ -27,24 +27,32 @@
 #
 # 5) If all goes well, it will run for a while and then print a Markdown
 #    formatted table of binary sizes, sorted by board+variant.
-#
-# Note that for ESP32-S3 and C3, IRAM and DRAM are exchangeable so the IRAM size
-# column of the table is really D/IRAM.
+import json
 import os
 import re
+import shutil
 import sys
 import subprocess
 from dataclasses import dataclass
 
-IDF_VERS = ("v5.2.2",)
+IDF_VERS = ("v5.5.1", "v5.4.2")
 
 BUILDS = (
     ("ESP32_GENERIC", ""),
     ("ESP32_GENERIC", "D2WD"),
     ("ESP32_GENERIC", "SPIRAM"),
+    ("ESP32_GENERIC_C2", ""),
+    ("ESP32_GENERIC_C6", ""),
     ("ESP32_GENERIC_S3", ""),
     ("ESP32_GENERIC_S3", "SPIRAM_OCT"),
 )
+
+
+def rmtree(path):
+    try:
+        shutil.rmtree(path)
+    except FileNotFoundError:
+        pass
 
 
 @dataclass
@@ -52,9 +60,9 @@ class BuildSizes:
     idf_ver: str
     board: str
     variant: str
-    bin_size: str = ""
-    dram_size: str = ""
-    iram_size: str = ""
+    bin_size: int | str = ""
+    dram_size: int = 0
+    iram_size: int = 0
 
     def print_summary(self, include_ver=False):
         print(f"BOARD={self.board} BOARD_VARIANT={self.variant}")
@@ -72,7 +80,18 @@ class BuildSizes:
             "|-------|---------------|-------------|-------------|------------------|------------------|"
         )
 
-    def print_table_row(self, print_board):
+    def print_table_row(self, print_board, baseline=None):
+        def compare(field):
+            this = getattr(self, field)
+            if baseline and isinstance(this, int):
+                base = getattr(baseline, field)
+                delta = this - base
+                pct = ((this / base) * 100) - 100
+                plus = "+" if delta >= 0 else ""
+                return f"{this} ({plus}{delta}/{pct:.1f})"
+            else:
+                return str(this)
+
         print(
             "| "
             + " | ".join(
@@ -80,9 +99,9 @@ class BuildSizes:
                     self.board if print_board else "",
                     self.variant if print_board else "",
                     self.idf_ver,
-                    self.bin_size,
-                    self.iram_size,
-                    self.dram_size,
+                    compare("bin_size"),
+                    compare("iram_size"),
+                    compare("dram_size"),
                 )
             )
             + " |"
@@ -99,7 +118,7 @@ class BuildSizes:
 
     def build_dir(self):
         if self.variant:
-            return f"build-{self.board}_{self.variant}"
+            return f"build-{self.board}-{self.variant}"
         else:
             return f"build-{self.board}"
 
@@ -123,14 +142,19 @@ class BuildSizes:
 
     def make_size(self):
         try:
-            size_out = self.run_make("size")
-            # "Used static DRAM:" or "Used stat D/IRAM:"
-            RE_DRAM = r"Used stat(?:ic)? D.*: *(\d+) bytes"
-            RE_IRAM = r"Used static IRAM: *(\d+) bytes"
-            RE_BIN = r"Total image size: *(\d+) bytes"
-            self.dram_size = re.search(RE_DRAM, size_out).group(1)
-            self.iram_size = re.search(RE_IRAM, size_out).group(1)
-            self.bin_size = re.search(RE_BIN, size_out).group(1)
+            size_out = self.run_make("size SIZE_FLAGS='--format json'")
+            size_out = size_out[size_out.rindex("{") :]
+            size_out = json.loads(size_out)
+
+            def sum_sizes(*keys):
+                return sum(size_out.get(k, 0) for k in keys)
+
+            # Different targets report DRAM, IRAM, and/or D/IRAM separately
+            self.dram_size = sum_sizes(
+                "used_dram", "diram_data", "diram_bss", "diram_rodata", "diram_other"
+            )
+            self.iram_size = sum_sizes("used_iram", "diram_text", "diram_vectors")
+            self.bin_size = size_out["total_size"]
         except subprocess.CalledProcessError:
             self.bin_size = "build failed"
 
@@ -139,24 +163,42 @@ def main(do_clean):
     if "IDF_PATH" not in os.environ:
         raise RuntimeError("IDF_PATH must be set")
 
+    if not os.path.exists("Makefile"):
+        raise RuntimeError(
+            "This script must be run from the ports/esp32 directory, i.e. as ./tools/metrics_esp32.py"
+        )
+
+    if "IDF_PYTHON_ENV_PATH" in os.environ:
+        raise RuntimeError(
+            "Run this script without any existing ESP-IDF environment active/exported."
+        )
+
     sizes = []
     for idf_ver in IDF_VERS:
         switch_ver(idf_ver)
+        rmtree("managed_components")
         for board, variant in BUILDS:
             print(f"Building '{board}'/'{variant}'...", file=sys.stderr)
             result = BuildSizes(idf_ver, board, variant)
-            result.run_make("clean")
+            # Rather than running the 'clean' target, delete the build directory to avoid
+            # environment version mismatches, etc.
+            rmtree(result.build_dir())
             result.make_size()
             result.print_summary()
             sizes.append(result)
 
     # print everything again as a table sorted by board+variant
     last_bv = ""
+    baseline_sizes = None
     BuildSizes.print_table_heading()
     for build_sizes in sorted(sizes):
         bv = (build_sizes.board, build_sizes.variant)
-        build_sizes.print_table_row(last_bv != bv)
+        new_board = last_bv != bv
+        if new_board:
+            baseline_sizes = None
+        build_sizes.print_table_row(last_bv != bv, baseline_sizes)
         last_bv = bv
+        baseline_sizes = build_sizes
 
 
 def idf_git(*commands):

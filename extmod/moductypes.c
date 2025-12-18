@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "py/smallint.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/binary.h"
@@ -89,11 +90,22 @@ typedef struct _mp_obj_uctypes_struct_t {
     uint32_t flags;
 } mp_obj_uctypes_struct_t;
 
-static NORETURN void syntax_error(void) {
+static MP_NORETURN void syntax_error(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 
 static mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // Because mpy-cross turns an expression like `uctypes.INT8` into a single
+    // constant integer load, the uctypes constant values must be consistent, no
+    // matter the OBJ_REPR and mp_int_t type.
+    //
+    // However, these constants are 31 bits (counting the sign bit) while
+    // OBJ_REPR_B with 32-bit mp_int_t provides only 30 bits of small integer, so
+    // this combination is unsupported.
+    //
+    // For more information, see https://github.com/micropython/micropython/issues/18105
+    MP_STATIC_ASSERT(MP_SMALL_INT_BITS >= 31);
+
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
     mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
     o->addr = (void *)(uintptr_t)mp_obj_get_int_truncated(args[0]);
@@ -277,15 +289,18 @@ static mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
+static const char type2char[16] = {
+    'B', 'b', 'H', 'h', 'I', 'i', 'Q', 'q',
+    '-', '-', '-', '-', '-', '-', 'f', 'd'
+};
+
 static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
-    static const char type2char[16] = "BbHhIiQq------fd";
     return mp_binary_get_val(struct_type, type2char[val_type], p, &p);
 }
 
 static inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
     char struct_type = big_endian ? '>' : '<';
-    static const char type2char[16] = "BbHhIiQq------fd";
     mp_binary_set_val(struct_type, type2char[val_type], val, p, &p);
 }
 

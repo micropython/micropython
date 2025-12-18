@@ -28,7 +28,8 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "py/stackctrl.h"
+#include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
@@ -43,8 +44,8 @@ extern void pwm_deinit_all(void);
 extern void sercom_deinit_all(void);
 
 void samd_main(void) {
-    mp_stack_set_top(&_estack);
-    mp_stack_set_limit(&_estack - &_sstack - 1024);
+    mp_cstack_init_with_top(&_estack, &_estack - &_sstack);
+    mp_hal_time_ns_set_from_rtc();
 
     for (;;) {
         gc_init(&_sheap, &_eheap);
@@ -99,7 +100,7 @@ void samd_main(void) {
         mp_usbd_deinit();
         #endif
         gc_sweep_all();
-        #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+        #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
         sercom_deinit_all();
         #endif
         mp_deinit();

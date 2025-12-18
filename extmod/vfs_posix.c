@@ -137,7 +137,7 @@ static mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, siz
         vstr_add_char(&vfs->root, '/');
     }
     vfs->root_len = vfs->root.len;
-    vfs->readonly = false;
+    vfs->readonly = !MICROPY_VFS_POSIX_WRITABLE;
 
     return MP_OBJ_FROM_PTR(vfs);
 }
@@ -160,10 +160,21 @@ static mp_obj_t vfs_posix_umount(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_umount_obj, vfs_posix_umount);
 
+static inline bool vfs_posix_is_readonly(mp_obj_vfs_posix_t *self) {
+    return !MICROPY_VFS_POSIX_WRITABLE || self->readonly;
+}
+
+static void vfs_posix_require_writable(mp_obj_t self_in) {
+    mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
+    if (vfs_posix_is_readonly(self)) {
+        mp_raise_OSError(MP_EROFS);
+    }
+}
+
 static mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *mode = mp_obj_str_get_str(mode_in);
-    if (self->readonly
+    if (vfs_posix_is_readonly(self)
         && (strchr(mode, 'w') != NULL || strchr(mode, 'a') != NULL || strchr(mode, '+') != NULL)) {
         mp_raise_OSError(MP_EROFS);
     }
@@ -303,6 +314,7 @@ typedef struct _mp_obj_listdir_t {
 } mp_obj_listdir_t;
 
 static mp_obj_t vfs_posix_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
+    vfs_posix_require_writable(self_in);
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *path = vfs_posix_get_path_str(self, path_in);
     MP_THREAD_GIL_EXIT();
@@ -320,11 +332,13 @@ static mp_obj_t vfs_posix_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
 static MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_mkdir_obj, vfs_posix_mkdir);
 
 static mp_obj_t vfs_posix_remove(mp_obj_t self_in, mp_obj_t path_in) {
+    vfs_posix_require_writable(self_in);
     return vfs_posix_fun1_helper(self_in, path_in, unlink);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_remove_obj, vfs_posix_remove);
 
 static mp_obj_t vfs_posix_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_t new_path_in) {
+    vfs_posix_require_writable(self_in);
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *old_path = vfs_posix_get_path_str(self, old_path_in);
     const char *new_path = vfs_posix_get_path_str(self, new_path_in);
@@ -339,6 +353,7 @@ static mp_obj_t vfs_posix_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_
 static MP_DEFINE_CONST_FUN_OBJ_3(vfs_posix_rename_obj, vfs_posix_rename);
 
 static mp_obj_t vfs_posix_rmdir(mp_obj_t self_in, mp_obj_t path_in) {
+    vfs_posix_require_writable(self_in);
     return vfs_posix_fun1_helper(self_in, path_in, rmdir);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_rmdir_obj, vfs_posix_rmdir);

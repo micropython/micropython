@@ -1,0 +1,10 @@
+MicroPython \.\+ version
+Type "help()" for more information.
+>>> import micropython
+>>> micropython.heap_lock()
+>>> 1+1
+2
+>>> micropython.heap_lock()
+>>> None # Cause the repl's line storage to be enlarged ----------------
+>>> micropython.heap_lock()
+>>> raise SystemExit

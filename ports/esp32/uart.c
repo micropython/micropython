@@ -40,6 +40,10 @@
 
 static void uart_irq_handler(void *arg);
 
+#if CONFIG_IDF_TARGET_ESP32P4
+static uint8_t __DECLARE_RCC_ATOMIC_ENV __attribute__ ((unused));
+#endif
+
 // Declaring the HAL structure on the stack saves a tiny amount of static RAM
 #define REPL_HAL_DEFN() { .dev = UART_LL_GET_HW(MICROPY_HW_UART_REPL) }
 

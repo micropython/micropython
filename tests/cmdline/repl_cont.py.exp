@@ -1,5 +1,5 @@
 MicroPython \.\+ version
-Use \.\+
+Type "help()" for more information.
 >>> # check REPL allows to continue input
 >>> 1 \\\\
 ... + 2

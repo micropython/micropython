@@ -76,6 +76,7 @@ static int openamp_remoteproc_store_open(void *store, const char *path, const vo
 
     openamp_remoteproc_filestore_t *fstore = store;
     fstore->file = mp_vfs_open(MP_ARRAY_SIZE(args), args, (mp_map_t *)&mp_const_empty_map);
+    (void)mp_get_stream_raise(fstore->file, MP_STREAM_OP_READ);
 
     int error = 0;
     mp_uint_t bytes = mp_stream_read_exactly(fstore->file, fstore->buf, RPROC_FILE_STORE_BUF_SIZE, &error);

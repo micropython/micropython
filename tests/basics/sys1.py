@@ -30,6 +30,12 @@ else:
     # Effectively skip subtests
     print(str)
 
+if hasattr(sys.implementation, '_thread'):
+    print(sys.implementation._thread in ("GIL", "unsafe"))
+else:
+    # Effectively skip subtests
+    print(True)
+
 try:
     print(sys.intern('micropython') == 'micropython')
     has_intern = True

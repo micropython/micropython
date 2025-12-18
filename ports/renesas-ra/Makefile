@@ -157,9 +157,6 @@ LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
-# Hook tinyusb USB interrupt if used to service usb task.
-LDFLAGS += --wrap=dcd_event_handler
-
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=armv7m
 

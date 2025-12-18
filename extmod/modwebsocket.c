@@ -76,6 +76,7 @@ static mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
+
     const mp_stream_p_t *stream_p = mp_get_stream(self->sock);
     while (1) {
         if (self->to_recv != 0) {
@@ -93,9 +94,6 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
         switch (self->state) {
             case FRAME_HEADER: {
-                // TODO: Split frame handling below is untested so far, so conservatively disable it
-                assert(self->buf[0] & 0x80);
-
                 // "Control frames MAY be injected in the middle of a fragmented message."
                 // So, they must be processed before data frames (and not alter
                 // self->ws_flags)
@@ -120,14 +118,15 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
                     // Msg size is next 2 bytes
                     to_recv += 2;
                 } else if (sz == 127) {
-                    // Msg size is next 8 bytes
-                    assert(0);
+                    // Msg size is next 8 bytes (unsupported, no way to recover)
+                    mp_stream_close(self->sock);
+                    *errcode = MP_EIO;
+                    return MP_STREAM_ERROR;
                 }
                 if (self->buf[1] & 0x80) {
                     // Next 4 bytes is mask
                     to_recv += 4;
                 }
-
                 self->buf_pos = 0;
                 self->to_recv = to_recv;
                 self->msg_sz = sz; // May be overridden by FRAME_OPT
@@ -144,11 +143,13 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
             }
 
             case FRAME_OPT: {
-                if ((self->buf_pos & 3) == 2) {
-                    // First two bytes are message length
+                if (self->buf_pos & 2) { // to_recv was 2 or 6
+                    assert(self->buf_pos == 2 || self->buf_pos == 6);
+                    // First two bytes are message length. Technically the size must be at least 126 per RFC6455
+                    // but MicroPython skips checking that.
                     self->msg_sz = (self->buf[0] << 8) | self->buf[1];
                 }
-                if (self->buf_pos >= 4) {
+                if (self->buf_pos & 4) {
                     // Last 4 bytes is mask
                     memcpy(self->mask, self->buf + self->buf_pos - 4, 4);
                 }
@@ -218,9 +219,16 @@ static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
 static mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
-    assert(size < 0x10000);
+    if (size >= 0x10000) {
+        *errcode = MP_ENOBUFS;
+        return MP_STREAM_ERROR;
+    }
     byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
     int hdr_sz;
+    // "Note that in all cases, the minimal number of bytes MUST be used to
+    // encode the length, for example, the length of a 124-byte-long string
+    // can't be encoded as the sequence 126, 0, 124."
+    //   -- https://www.rfc-editor.org/rfc/rfc6455.html
     if (size < 126) {
         header[1] = size;
         hdr_sz = 2;

@@ -168,9 +168,6 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
   <Target Name="FreezeModules" Condition="'$(FrozenManifest)' != ''" DependsOnTargets="MakeQstrData;MakeRootPointers" Inputs="$(FrozenManifest)" Outputs="$(PyBuildDir)frozen_content.c">
     <ItemGroup>
       <ClCompile Include="$(PyBuildDir)frozen_content.c"/>
-      <ClCompile>
-        <PreprocessorDefinitions>MICROPY_MODULE_FROZEN_MPY=1;MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool;MPZ_DIG_SIZE=16;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      </ClCompile>
     </ItemGroup>
     <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)/lib/micropython-lib -v PORT_DIR=$(PyWinDir) -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>
     <WriteLinesToFile File="$(TLogLocation)frozen.read.1.tlog" Lines="$(FrozenManifest)" Overwrite="True"/>

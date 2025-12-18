@@ -28,7 +28,7 @@ l.pop()
 
 # Try to compress.  This will try to allocate a large window and fail.
 try:
-    g.write('test')
+    g.write("test")
 except MemoryError:
     print("MemoryError")
 

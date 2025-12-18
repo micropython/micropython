@@ -2,6 +2,7 @@
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
+import time
 import _thread
 
 
@@ -27,6 +28,6 @@ print("main", type(tid_main) == int, tid_main != 0)
 new_tid = _thread.start_new_thread(thread_entry, ())
 
 while not finished:
-    pass
+    time.sleep(0)
 
 print("done", type(new_tid) == int, new_tid == tid)

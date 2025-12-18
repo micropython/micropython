@@ -39,6 +39,7 @@ typedef struct _machine_spi_obj_t {
     uint8_t id;
     SPI_Type *inst;
     bool is_lp;
+    uint32_t bits;
 } machine_spi_obj_t;
 
 static machine_spi_obj_t machine_spi_obj[] = {
@@ -78,8 +79,8 @@ static inline uint32_t spi_get_clk(machine_spi_obj_t *spi) {
     return spi->is_lp ? GetSystemCoreClock() : GetSystemAHBClock();
 }
 
-static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
-    uint32_t polarity, uint32_t phase, uint32_t bits, uint32_t firstbit) {
+static void spi_init(machine_spi_obj_t *spi, int32_t baudrate,
+    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
     const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
     switch (spi->id) {
         #if defined(MICROPY_HW_SPI0_SCK)
@@ -160,7 +161,9 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     spi_mask_interrupts(spi->inst);
 
     // Configure baudrate clock
-    spi_set_bus_speed(spi->inst, baudrate, spi_get_clk(spi));
+    if (baudrate > 0) {
+        spi_set_bus_speed(spi->inst, baudrate, spi_get_clk(spi));
+    }
 
     // Configure FIFOs
     spi_set_tx_threshold(spi->inst, 0);
@@ -171,6 +174,21 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     }
 
     // Configure SPI bus mode.
+    if (!spi->is_lp) {
+        if (polarity < 0) {
+            polarity = (spi->inst->SPI_CTRLR0 & SPI_CTRLR0_SCPOL_HIGH) ? 1 : 0;
+        }
+        if (phase < 0) {
+            phase = (spi->inst->SPI_CTRLR0 & SPI_CTRLR0_SCPH_HIGH) ? 1 : 0;
+        }
+    } else {
+        if (polarity < 0) {
+            polarity = (spi->inst->SPI_CTRLR0 & LPSPI_CTRLR0_SCPOL_HIGH) ? 1 : 0;
+        }
+        if (phase < 0) {
+            phase = (spi->inst->SPI_CTRLR0 & LPSPI_CTRLR0_SCPH_HIGH) ? 1 : 0;
+        }
+    }
     uint32_t spi_mode = (polarity << 1) | phase;
     if (!spi->is_lp) {
         spi_set_mode(spi->inst, spi_mode);
@@ -192,10 +210,12 @@ static void spi_init(machine_spi_obj_t *spi, uint32_t baudrate,
     }
 
     // Configure frame size.
-    if (!spi->is_lp) {
-        spi_set_dfs(spi->inst, bits);
-    } else {
-        lpspi_set_dfs(spi->inst, bits);
+    if (bits > 0) {
+        if (!spi->is_lp) {
+            spi_set_dfs(spi->inst, bits);
+        } else {
+            lpspi_set_dfs(spi->inst, bits);
+        }
     }
 
     // Configure slave select pin
@@ -246,6 +266,9 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     // Get static peripheral object.
     machine_spi_obj_t *self = &machine_spi_obj[spi_id];
 
+    // Set args
+    self->bits = args[ARG_bits].u_int;
+
     // here we would check the sck/mosi/miso pins and configure them, but it's not implemented
     if (args[ARG_sck].u_obj != MP_OBJ_NULL ||
         args[ARG_mosi].u_obj != MP_OBJ_NULL ||
@@ -294,22 +317,50 @@ static void machine_spi_deinit(mp_obj_base_t *self_in) {
     }
 }
 
+static void machine_spi_poll_flag(SPI_Type *spi, uint32_t flag, uint32_t timeout) {
+    mp_uint_t tick_start = mp_hal_ticks_ms();
+    while (!(spi->SPI_SR & flag)) {
+        if (mp_hal_ticks_ms() - tick_start >= timeout) {
+            mp_raise_OSError(MP_ETIMEDOUT);
+        }
+        mp_event_handle_nowait();
+    }
+}
+
 static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
-    spi_transfer_t spi_xfer = {
-        .tx_buff = src,
-        .tx_total_cnt = len,
-        .rx_buff = dest,
-        .rx_total_cnt = len,
-        .tx_default_val = 0xFF,
-        .tx_default_enable = true,
-        .mode = SPI_TMOD_TX_AND_RX,
-    };
-    // TODO redo transfer_blocking to timeout and poll events.
-    if (!self->is_lp) {
-        spi_transfer_blocking(self->inst, &spi_xfer);
-    } else {
-        lpspi_transfer_blocking(self->inst, &spi_xfer);
+    volatile uint32_t *dr = self->inst->SPI_DR;
+
+    spi_set_tmod(self->inst, SPI_TMOD_TX_AND_RX);
+
+    for (size_t i = 0; i < len; i++) {
+        // Wait for space in the TX FIFO
+        machine_spi_poll_flag(self->inst, SPI_SR_TFNF, 100);
+
+        // Send data
+        if (src == NULL) {
+            *dr = 0xFFFFFFFFU;
+        } else if (self->bits > 16) {
+            *dr = ((uint32_t *)src)[i];
+        } else if (self->bits > 8) {
+            *dr = ((uint16_t *)src)[i];
+        } else {
+            *dr = ((uint8_t *)src)[i];
+        }
+
+        // Wait for data in the RX FIFO
+        machine_spi_poll_flag(self->inst, SPI_SR_RFNE, 100);
+
+        // Recv data
+        if (dest == NULL) {
+            (void)*dr;
+        } else if (self->bits > 16) {
+            ((uint32_t *)dest)[i] = *dr;
+        } else if (self->bits > 8) {
+            ((uint16_t *)dest)[i] = *dr;
+        } else {
+            ((uint8_t *)dest)[i] = *dr;
+        }
     }
 }
 

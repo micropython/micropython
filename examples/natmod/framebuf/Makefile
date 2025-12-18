@@ -8,6 +8,15 @@ MOD = framebuf_$(ARCH)
 SRC = framebuf.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
-ARCH = x64
+ARCH ?= x64
+
+ifeq ($(ARCH),armv6m)
+# Link with libgcc.a for division helper functions
+LINK_RUNTIME = 1
+endif
+
+ifeq ($(ARCH),xtensa)
+MPY_EXTERN_SYM_FILE=$(MPY_DIR)/ports/esp8266/boards/eagle.rom.addr.v6.ld
+endif
 
 include $(MPY_DIR)/py/dynruntime.mk

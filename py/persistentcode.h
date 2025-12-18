@@ -45,7 +45,7 @@
 
 // Macros to encode/decode native architecture to/from the feature byte
 #define MPY_FEATURE_ENCODE_ARCH(arch) ((arch) << 2)
-#define MPY_FEATURE_DECODE_ARCH(feat) ((feat) >> 2)
+#define MPY_FEATURE_DECODE_ARCH(feat) (((feat) >> 2) & 0x2F)
 
 // Define the host architecture
 #if MICROPY_EMIT_X86
@@ -85,6 +85,10 @@
 #define MPY_FILE_HEADER_INT (MPY_VERSION \
     | (MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
 
+// Architecture-specific flags are present in the .mpy file
+#define MPY_FEATURE_ARCH_FLAGS (0x40)
+#define MPY_FEATURE_ARCH_FLAGS_TEST(x) (((x) & MPY_FEATURE_ARCH_FLAGS) == MPY_FEATURE_ARCH_FLAGS)
+
 enum {
     MP_NATIVE_ARCH_NONE = 0,
     MP_NATIVE_ARCH_X86,
@@ -98,6 +102,7 @@ enum {
     MP_NATIVE_ARCH_XTENSA,
     MP_NATIVE_ARCH_XTENSAWIN,
     MP_NATIVE_ARCH_RV32IMC,
+    MP_NATIVE_ARCH_RV64IMC,
     MP_NATIVE_ARCH_DEBUG, // this entry should always be last
 };
 

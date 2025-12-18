@@ -19,3 +19,9 @@ print("%.14e" % float("." + "0" * 400 + "9e400"))
 print(float("1.00000000000000000000e-307"))
 print(float("10.0000000000000000000e-308"))
 print(float("100.000000000000000000e-309"))
+
+# ensure repr() adds an extra digit when needed for accurate parsing
+print(float(repr(float("2.0") ** 100)) == float("2.0") ** 100)
+
+# ensure repr does not add meaningless extra digits (1.234999999999)
+print(repr(1.2345))

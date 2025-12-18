@@ -1,4 +1,8 @@
 # This tests that recursion with iternext doesn't lead to segfault.
+#
+# This test segfaults CPython, but that's not a bug as CPython doesn't enforce
+# limits on C recursion - see
+# https://github.com/python/cpython/issues/58218#issuecomment-1093570209
 try:
     enumerate
     filter
@@ -9,49 +13,25 @@ except:
     print("SKIP")
     raise SystemExit
 
-# We need to pick an N that is large enough to hit the recursion
-# limit, but not too large that we run out of heap memory.
-try:
-    # large stack/heap, eg unix
-    [0] * 80000
-    N = 5000
-except:
-    try:
-        # medium, eg pyboard
-        [0] * 10000
-        N = 1000
-    except:
-        # small, eg esp8266
-        N = 100
 
-try:
+# Progressively build a bigger nested iterator structure (10 at a time for speed),
+# and then try to evaluate it via tuple(x) which makes deep recursive function calls.
+#
+# Eventually this should raise a RuntimeError as MicroPython runs out of stack.
+# It shouldn't ever raise a MemoryError, if it does then somehow MicroPython has
+# run out of heap (for the nested structure) before running out of stack.
+def recurse_iternext(nested_fn):
     x = (1, 2)
-    for i in range(N):
-        x = enumerate(x)
-    tuple(x)
-except RuntimeError:
-    print("RuntimeError")
+    while True:
+        for _ in range(10):
+            x = nested_fn(x)
+        try:
+            tuple(x)
+        except RuntimeError:
+            print("RuntimeError")
+            break
 
-try:
-    x = (1, 2)
-    for i in range(N):
-        x = filter(None, x)
-    tuple(x)
-except RuntimeError:
-    print("RuntimeError")
 
-try:
-    x = (1, 2)
-    for i in range(N):
-        x = map(max, x, ())
-    tuple(x)
-except RuntimeError:
-    print("RuntimeError")
-
-try:
-    x = (1, 2)
-    for i in range(N):
-        x = zip(x)
-    tuple(x)
-except RuntimeError:
-    print("RuntimeError")
+# Test on various nested iterator structures
+for nested_fn in [enumerate, lambda x: filter(None, x), lambda x: map(max, x, ()), zip]:
+    recurse_iternext(nested_fn)

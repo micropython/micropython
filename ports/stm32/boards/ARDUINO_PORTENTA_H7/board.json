@@ -16,7 +16,7 @@
         "ABX00042_01.iso_1000x750.jpg"
     ],
     "mcu": "stm32h7",
-    "product": "Arduino Portenta H7",
+    "product": "Portenta H7",
     "thumbnail": "",
     "url": "https://store.arduino.cc/products/portenta-h7",
     "vendor": "Arduino"

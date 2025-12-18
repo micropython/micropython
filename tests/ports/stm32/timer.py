@@ -1,10 +1,15 @@
 # check basic functionality of the timer class
 
-import pyb
+import sys
 from pyb import Timer
 
-tim = Timer(4)
-tim = Timer(4, prescaler=100, period=200)
+if "STM32WB" in sys.implementation._machine:
+    tim_id = 16
+else:
+    tim_id = 4
+
+tim = Timer(tim_id)
+tim = Timer(tim_id, prescaler=100, period=200)
 print(tim.prescaler())
 print(tim.period())
 tim.prescaler(300)

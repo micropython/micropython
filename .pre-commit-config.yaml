@@ -12,8 +12,8 @@ repos:
         verbose: true
         stages: [commit-msg]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    # Version should be kept in sync with .github/workflows/ruff.yml
-    rev: v0.9.6
+    # Version should be kept in sync with .github/workflows/ruff.yml & also micropython-lib
+    rev: v0.11.6
     hooks:
       - id: ruff
       - id: ruff-format

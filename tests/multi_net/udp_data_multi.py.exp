@@ -1,0 +1,15 @@
+--- instance0 ---
+test socket 0
+test socket 1
+test socket 2
+test socket 3
+pass group=0
+pass group=1
+pass group=2
+pass group=3
+pass group=4
+--- instance1 ---
+test socket 0
+test socket 1
+test socket 2
+test socket 3

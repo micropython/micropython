@@ -30,12 +30,12 @@
 #include "py/pystack.h"
 #include "py/cstack.h"
 
-// For use with mp_call_function_1_from_nlr_jump_callback.
+// Initialize an nlr_jump_callback_node_call_function_1_t struct for use with
+// nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
 #define MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, f, a) \
-    nlr_jump_callback_node_call_function_1_t ctx = { \
-        .func = (void (*)(void *))(f), \
-        .arg = (a), \
-    }
+    nlr_jump_callback_node_call_function_1_t ctx; \
+    ctx.func = (void (*)(void *))(f); \
+    ctx.arg = (a)
 
 typedef enum {
     MP_VM_RETURN_NORMAL,
@@ -51,6 +51,12 @@ typedef enum {
     MP_ARG_REQUIRED  = 0x100,
     MP_ARG_KW_ONLY   = 0x200,
 } mp_arg_flag_t;
+
+typedef enum {
+    MP_HANDLE_PENDING_CALLBACKS_ONLY,
+    MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS,
+    MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS,
+} mp_handle_pending_behaviour_t;
 
 typedef union _mp_arg_val_t {
     bool u_bool;
@@ -100,7 +106,14 @@ void mp_sched_keyboard_interrupt(void);
 #if MICROPY_ENABLE_VM_ABORT
 void mp_sched_vm_abort(void);
 #endif
-void mp_handle_pending(bool raise_exc);
+
+void mp_handle_pending_internal(mp_handle_pending_behaviour_t behavior);
+
+static inline void mp_handle_pending(bool raise_exc) {
+    mp_handle_pending_internal(raise_exc ?
+        MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS :
+        MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS);
+}
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
@@ -128,7 +141,7 @@ void mp_event_wait_indefinite(void);
 void mp_event_wait_ms(mp_uint_t timeout_ms);
 
 // extra printing method specifically for mp_obj_t's which are integral type
-int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
+int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, unsigned base, int base_char, int flags, char fill, int width, int prec);
 
 void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig);
 static inline void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
@@ -136,8 +149,8 @@ static inline void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_mi
 }
 void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
-NORETURN void mp_arg_error_terse_mismatch(void);
-NORETURN void mp_arg_error_unimpl_kw(void);
+MP_NORETURN void mp_arg_error_terse_mismatch(void);
+MP_NORETURN void mp_arg_error_unimpl_kw(void);
 
 static inline mp_obj_dict_t *mp_locals_get(void) {
     return MP_STATE_THREAD(dict_locals);
@@ -165,8 +178,15 @@ static inline void mp_thread_init_state(mp_state_thread_t *ts, size_t stack_size
     ts->gc_lock_depth = 0;
 
     // There are no pending jump callbacks or exceptions yet
+    ts->nlr_top = NULL;
     ts->nlr_jump_callback_top = NULL;
     ts->mp_pending_exception = MP_OBJ_NULL;
+
+    #if MICROPY_PY_SYS_SETTRACE
+    ts->prof_trace_callback = MP_OBJ_NULL;
+    ts->prof_callback_is_executing = false;
+    ts->current_code_state = NULL;
+    #endif
 
     // If locals/globals are not given, inherit from main thread
     if (locals == NULL) {
@@ -245,10 +265,10 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
-NORETURN void mp_raise_type(const mp_obj_type_t *exc_type);
-NORETURN void mp_raise_ValueError_no_msg(void);
-NORETURN void mp_raise_TypeError_no_msg(void);
-NORETURN void mp_raise_NotImplementedError_no_msg(void);
+MP_NORETURN void mp_raise_type(const mp_obj_type_t *exc_type);
+MP_NORETURN void mp_raise_ValueError_no_msg(void);
+MP_NORETURN void mp_raise_TypeError_no_msg(void);
+MP_NORETURN void mp_raise_NotImplementedError_no_msg(void);
 #define mp_raise_msg(exc_type, msg) mp_raise_type(exc_type)
 #define mp_raise_msg_varg(exc_type, ...) mp_raise_type(exc_type)
 #define mp_raise_ValueError(msg) mp_raise_ValueError_no_msg()
@@ -256,19 +276,19 @@ NORETURN void mp_raise_NotImplementedError_no_msg(void);
 #define mp_raise_NotImplementedError(msg) mp_raise_NotImplementedError_no_msg()
 #else
 #define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...);
-NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg);
-NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
-NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
+MP_NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
+MP_NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...);
+MP_NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg);
+MP_NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
+MP_NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 #endif
 
-NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
-NORETURN void mp_raise_StopIteration(mp_obj_t arg);
-NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg);
-NORETURN void mp_raise_OSError(int errno_);
-NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename);
-NORETURN void mp_raise_recursion_depth(void);
+MP_NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
+MP_NORETURN void mp_raise_StopIteration(mp_obj_t arg);
+MP_NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg);
+MP_NORETURN void mp_raise_OSError(int errno_);
+MP_NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename);
+MP_NORETURN void mp_raise_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
 #undef mp_check_self

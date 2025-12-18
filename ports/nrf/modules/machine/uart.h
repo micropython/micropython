@@ -34,8 +34,7 @@
 typedef struct _machine_uart_obj_t machine_uart_obj_t;
 
 void uart_init0(void);
-void uart_deinit(void);
-void uart_irq_handler(mp_uint_t uart_id);
+void uart_attach_to_repl(machine_uart_obj_t *self, bool attached);
 
 bool uart_rx_any(machine_uart_obj_t *uart_obj);
 int uart_rx_char(machine_uart_obj_t *uart_obj);

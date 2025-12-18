@@ -7,6 +7,7 @@
 import _thread
 import sys
 from time import ticks_ms, ticks_diff, sleep_ms
+import micropython
 
 
 done = False
@@ -21,6 +22,8 @@ if sys.platform in ("win32", "linux", "darwin"):
     MAX_DELTA = 100
 
 
+# This function must always use the bytecode emitter so the VM can bounce the GIL when running.
+@micropython.bytecode
 def busy_thread():
     while not done:
         pass

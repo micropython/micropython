@@ -26,45 +26,55 @@
 #include <alloca.h>
 
 // Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
-#include "autoconf.h"
+#include <zephyr/autoconf.h>
 // Included here to get basic Zephyr environment (macros, etc.)
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/spi.h>
+
+// Use the basic configuration level to get a balance between size and features.
+#ifndef MICROPY_CONFIG_ROM_LEVEL
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
+#endif
 
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
+// We can't guarantee object layout of nlr code so use long jump by default.
+#define MICROPY_NLR_THUMB_USE_LONG_JUMP (1)
+
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
+#define MICROPY_STACK_CHECK_MARGIN  (512)
+#define MICROPY_STACK_SIZE_HARD_IRQ (CONFIG_ISR_STACK_SIZE)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (MICROPY_VFS)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_KBD_EXCEPTION       (1)
-#define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_BUILTINS_BYTES_HEX (1)
-#define MICROPY_PY_BUILTINS_FILTER  (0)
-#define MICROPY_PY_BUILTINS_MIN_MAX (0)
-#define MICROPY_PY_BUILTINS_PROPERTY (0)
-#define MICROPY_PY_BUILTINS_RANGE_ATTRS (0)
-#define MICROPY_PY_BUILTINS_REVERSED (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
-#define MICROPY_PY_ARRAY            (0)
-#define MICROPY_PY_COLLECTIONS      (0)
-#define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_IO               (0)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/zephyr/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C      (1)
+#ifdef CONFIG_I2C_TARGET
+#define MICROPY_PY_MACHINE_I2C_TARGET (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/zephyr/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ (1)
+#endif
+#define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MSB (SPI_TRANSFER_MSB)
 #define MICROPY_PY_MACHINE_SPI_LSB (SPI_TRANSFER_LSB)
+#define MICROPY_PY_MACHINE_SOFTSPI  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/zephyr/machine_uart.c"
@@ -72,10 +82,12 @@
 #define MICROPY_PY_MACHINE_WDT      (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/zephyr/machine_wdt.c"
 #endif
-#define MICROPY_PY_STRUCT           (0)
-#ifdef CONFIG_NETWORKING
-// If we have networking, we likely want errno comfort
+#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/zephyr/machine_pwm.c"
+#if defined(CONFIG_NETWORKING) || defined(CONFIG_FILE_SYSTEM)
 #define MICROPY_PY_ERRNO            (1)
+#endif
+#ifdef CONFIG_NETWORKING
 #define MICROPY_PY_SOCKET           (1)
 #endif
 #ifdef CONFIG_BT
@@ -88,12 +100,12 @@
 #define MICROPY_PY_BINASCII         (1)
 #define MICROPY_PY_HASHLIB          (1)
 #define MICROPY_PY_OS               (1)
-#define MICROPY_PY_TIME             (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/zephyr/modtime.c"
 #define MICROPY_PY_ZEPHYR           (1)
 #define MICROPY_PY_ZSENSOR          (1)
-#define MICROPY_PY_SYS_MODULES      (0)
+#define MICROPY_PY_SYS_MAXSIZE      (1)
+#define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
@@ -107,11 +119,6 @@
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_NORTC            (1)
-
-// Saving extra crumbs to make sure binary fits in 128K
-#define MICROPY_COMP_CONST_FOLDING  (0)
-#define MICROPY_COMP_CONST (0)
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
 
 // When CONFIG_THREAD_CUSTOM_DATA is enabled, MICROPY_PY_THREAD is enabled automatically
 #ifdef CONFIG_THREAD_CUSTOM_DATA
@@ -137,11 +144,22 @@ void mp_hal_signal_event(void);
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
 
-typedef int mp_int_t; // must be pointer size
-typedef unsigned mp_uint_t; // must be pointer size
+#ifdef CONFIG_ADC
+#define MICROPY_PY_MACHINE_ADC (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/zephyr/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ (1)
+#define MICROPY_PY_MACHINE_ADC_READ_UV (1)
+#endif
+
+#if DT_HAS_COMPAT_STATUS_OKAY(micropython_heap)
+#define MICROPY_GC_SPLIT_HEAP (1)
+#endif
+
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
+
+#define MP_SSIZE_MAX (0x7fffffff)
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
@@ -163,4 +181,10 @@ typedef long mp_off_t;
         mp_handle_pending(true); \
         k_msleep(1); \
     } while (0);
+#endif
+
+// Compatibility switches
+
+#ifdef CONFIG_NEWLIB_LIBC
+#define MICROPY_PY_MATH_POW_FIX_NAN (1)
 #endif

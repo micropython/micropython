@@ -44,7 +44,7 @@ static void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
         module_name = mp_obj_str_get_str(elem->value);
     }
 
-    #if MICROPY_PY___FILE__
+    #if MICROPY_MODULE___FILE__
     // If we store __file__ to imported modules then try to lookup this
     // symbol to give more information about the module.
     elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);
@@ -152,11 +152,13 @@ static const mp_rom_map_elem_t mp_builtin_module_table[] = {
 };
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
+#if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
 static const mp_rom_map_elem_t mp_builtin_extensible_module_table[] = {
     // built-in modules declared with MP_REGISTER_EXTENSIBLE_MODULE()
     MICROPY_REGISTERED_EXTENSIBLE_MODULES
 };
 MP_DEFINE_CONST_MAP(mp_builtin_extensible_module_map, mp_builtin_extensible_module_table);
+#endif
 
 #if MICROPY_MODULE_ATTR_DELEGATION && defined(MICROPY_MODULE_DELEGATIONS)
 typedef struct _mp_module_delegation_entry_t {
@@ -173,7 +175,13 @@ static const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] =
 // Attempts to find (and initialise) a built-in, otherwise returns
 // MP_OBJ_NULL.
 mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
-    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)(extensible ? &mp_builtin_extensible_module_map : &mp_builtin_module_map), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
+    const mp_map_t *map = extensible ? &mp_builtin_extensible_module_map : &mp_builtin_module_map;
+    #else
+    const mp_map_t *map = &mp_builtin_module_map;
+    #endif
+    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+
     if (!elem) {
         #if MICROPY_PY_SYS
         // Special case for sys, which isn't extensible but can always be
@@ -183,6 +191,7 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
         }
         #endif
 
+        #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
         if (extensible) {
             // At this point we've already tried non-extensible built-ins, the
             // filesystem, and now extensible built-ins. No match, so fail
@@ -203,7 +212,9 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
         if (module_name_str[0] != 'u') {
             return MP_OBJ_NULL;
         }
-        elem = mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(qstr_from_strn(module_name_str + 1, module_name_len - 1)), MP_MAP_LOOKUP);
+        elem = mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(qstr_find_strn(module_name_str + 1, module_name_len - 1)), MP_MAP_LOOKUP);
+        #endif
+
         if (!elem) {
             return MP_OBJ_NULL;
         }

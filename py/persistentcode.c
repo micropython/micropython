@@ -63,6 +63,10 @@ typedef struct _bytecode_prelude_t {
     uint code_info_size;
 } bytecode_prelude_t;
 
+#if MICROPY_EMIT_RV32
+#include "py/asmrv32.h"
+#endif
+
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #if MICROPY_PERSISTENT_CODE_LOAD
@@ -71,6 +75,8 @@ typedef struct _bytecode_prelude_t {
 
 static int read_byte(mp_reader_t *reader);
 static size_t read_uint(mp_reader_t *reader);
+
+#if MICROPY_EMIT_MACHINE_CODE
 
 #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
 
@@ -85,8 +91,6 @@ static void track_root_pointer(void *ptr) {
 }
 
 #endif
-
-#if MICROPY_EMIT_MACHINE_CODE
 
 typedef struct _reloc_info_t {
     mp_reader_t *reader;
@@ -415,15 +419,17 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 
         // Relocate and commit code to executable address space
         reloc_info_t ri = {reader, context, rodata, bss};
+        #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
+        if (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
+            // Track the function data memory so it's not reclaimed by the GC.
+            track_root_pointer(fun_data);
+        }
+        #endif
         #if defined(MP_PLAT_COMMIT_EXEC)
         void *opt_ri = (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) ? &ri : NULL;
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len, opt_ri);
         #else
         if (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
-            #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
-            // Track the function data memory so it's not reclaimed by the GC.
-            track_root_pointer(fun_data);
-            #endif
             // Do the relocations.
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
         }
@@ -469,7 +475,7 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
         || header[3] > MP_SMALL_INT_BITS) {
         mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
-    if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
+    if (arch != MP_NATIVE_ARCH_NONE) {
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
             if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_NONE)) {
                 // On supported ports this can be resolved by enabling feature, eg
@@ -478,6 +484,23 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
             } else {
                 mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
             }
+        }
+    }
+
+    size_t arch_flags = 0;
+    if (MPY_FEATURE_ARCH_FLAGS_TEST(header[2])) {
+        #if MICROPY_EMIT_RV32
+        arch_flags = read_uint(reader);
+
+        if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_RV32IMC)) {
+            if ((arch_flags & (size_t)asm_rv32_allowed_extensions()) != arch_flags) {
+                mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+            }
+        } else
+        #endif
+        {
+            (void)arch_flags;
+            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
         }
     }
 
@@ -502,6 +525,7 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
     cm->has_native = MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE;
     cm->n_qstr = n_qstr;
     cm->n_obj = n_obj;
+    cm->arch_flags = arch_flags;
     #endif
 
     // Deregister exception handler and close the reader.
@@ -670,7 +694,7 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     byte header[4] = {
         'M',
         MPY_VERSION,
-        cm->has_native ? MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC) : 0,
+        (cm->arch_flags != 0 ? MPY_FEATURE_ARCH_FLAGS : 0) | (cm->has_native ? MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC) : 0),
         #if MICROPY_DYNAMIC_COMPILER
         mp_dynamic_compiler.small_int_bits,
         #else
@@ -678,6 +702,10 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
         #endif
     };
     mp_print_bytes(print, header, sizeof(header));
+
+    if (cm->arch_flags) {
+        mp_print_uint(print, cm->arch_flags);
+    }
 
     // Number of entries in constant table.
     mp_print_uint(print, cm->n_qstr);
@@ -757,7 +785,7 @@ static void bit_vector_clear(bit_vector_t *self) {
 static bool bit_vector_is_set(bit_vector_t *self, size_t index) {
     const size_t bits_size = sizeof(*self->bits) * MP_BITS_PER_BYTE;
     return index / bits_size < self->alloc
-           && (self->bits[index / bits_size] & (1 << (index % bits_size))) != 0;
+           && (self->bits[index / bits_size] & ((uintptr_t)1 << (index % bits_size))) != 0;
 }
 
 static void bit_vector_set(bit_vector_t *self, size_t index) {
@@ -768,7 +796,7 @@ static void bit_vector_set(bit_vector_t *self, size_t index) {
         self->bits = m_renew(uintptr_t, self->bits, self->alloc, new_alloc);
         self->alloc = new_alloc;
     }
-    self->bits[index / bits_size] |= 1 << (index % bits_size);
+    self->bits[index / bits_size] |= (uintptr_t)1 << (index % bits_size);
 }
 
 typedef struct _mp_opcode_t {

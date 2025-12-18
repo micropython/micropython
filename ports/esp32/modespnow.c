@@ -179,9 +179,23 @@ static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 // Forward declare the send and recv ESPNow callbacks
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
 static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
+#else
+static void send_cb(const esp_now_send_info_t *tx_info, esp_now_send_status_t status);
+#endif
 
 static void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, int msg_len);
+
+// Return the current wifi mode, or raise ValueError
+static wifi_mode_t get_wifi_mode(void) {
+    wifi_mode_t mode;
+    if (esp_wifi_get_mode(&mode) != ESP_OK || mode == WIFI_MODE_NULL) {
+        // network.WLAN STA or AP must be set active(True) before ESP-NOW can be used
+        mp_raise_OSError(MP_ENOENT);
+    }
+    return mode;
+}
 
 // ESPNow.init(): Initialise the data buffers and ESP-NOW functions.
 // Initialise the Espressif ESPNOW software stack, register callbacks and
@@ -193,7 +207,6 @@ static mp_obj_t espnow_init(mp_obj_t _) {
         self->recv_buffer = m_new_obj(ringbuf_t);
         ringbuf_alloc(self->recv_buffer, self->recv_buffer_size);
 
-        esp_initialise_wifi();  // Call the wifi init code in network_wlan.c
         check_esp_err(esp_now_init());
         check_esp_err(esp_now_register_recv_cb(recv_cb));
         check_esp_err(esp_now_register_send_cb(send_cb));
@@ -256,9 +269,13 @@ static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         self->recv_timeout_ms = args[ARG_timeout_ms].u_int;
     }
     if (args[ARG_rate].u_int >= 0) {
-        esp_initialise_wifi();  // Call the wifi init code in network_wlan.c
-        check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
-        check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
+        wifi_mode_t mode = get_wifi_mode();
+        if (mode == WIFI_MODE_STA || mode == WIFI_MODE_APSTA) {
+            check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
+        }
+        if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) {
+            check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
+        }
     }
     if (args[ARG_get].u_obj == MP_OBJ_NULL) {
         return mp_const_none;
@@ -539,7 +556,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_send_obj, 2, 4, espnow_send);
 // Callback triggered when a sent packet is acknowledged by the peer (or not).
 // Just count the number of responses and number of failures.
 // These are used in the send() logic.
-static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status) {
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
+static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
+#else
+static void send_cb(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
+#endif
+{
     esp_espnow_obj_t *self = _get_singleton();
     self->tx_responses++;
     if (status != ESP_NOW_SEND_SUCCESS) {
@@ -795,6 +817,22 @@ static const mp_rom_map_elem_t espnow_globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_KEY_LEN), MP_ROM_INT(ESP_NOW_KEY_LEN)},
     { MP_ROM_QSTR(MP_QSTR_MAX_TOTAL_PEER_NUM), MP_ROM_INT(ESP_NOW_MAX_TOTAL_PEER_NUM)},
     { MP_ROM_QSTR(MP_QSTR_MAX_ENCRYPT_PEER_NUM), MP_ROM_INT(ESP_NOW_MAX_ENCRYPT_PEER_NUM)},
+
+    #if !CONFIG_IDF_TARGET_ESP32C2
+    { MP_ROM_QSTR(MP_QSTR_RATE_LORA_250K), MP_ROM_INT(WIFI_PHY_RATE_LORA_250K)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_LORA_500K), MP_ROM_INT(WIFI_PHY_RATE_LORA_500K)},
+    #endif
+    // Note: specifying long preamble versions for the lower bit rates apart
+    // from the non-802.11b 6Mbit rate, for more robust error correction
+    { MP_ROM_QSTR(MP_QSTR_RATE_1M), MP_ROM_INT(WIFI_PHY_RATE_1M_L)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_2M), MP_ROM_INT(WIFI_PHY_RATE_2M_L)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_5M), MP_ROM_INT(WIFI_PHY_RATE_5M_L)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_6M), MP_ROM_INT(WIFI_PHY_RATE_6M)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_11M), MP_ROM_INT(WIFI_PHY_RATE_11M_L)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_12M), MP_ROM_INT(WIFI_PHY_RATE_12M)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_24M), MP_ROM_INT(WIFI_PHY_RATE_24M)},
+    { MP_ROM_QSTR(MP_QSTR_RATE_54M), MP_ROM_INT(WIFI_PHY_RATE_54M)},
+
 };
 static MP_DEFINE_CONST_DICT(espnow_globals_dict, espnow_globals_dict_table);
 

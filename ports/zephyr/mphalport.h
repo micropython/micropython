@@ -1,4 +1,5 @@
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
 #include "shared/runtime/interrupt_char.h"
 
 #define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
@@ -35,3 +36,48 @@ static inline uint64_t mp_hal_time_ns(void) {
 }
 
 #define mp_hal_delay_us_fast(us)   (mp_hal_delay_us(us))
+
+// C-level pin HAL
+
+#include "modmachine.h"
+
+#define MP_HAL_PIN_FMT "%u"
+#define mp_hal_pin_obj_t const machine_pin_obj_t *
+
+mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
+
+static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
+    // TODO make it include the port
+    return pin->pin;
+}
+
+static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
+    (void)gpio_pin_configure(pin->port, pin->pin, GPIO_INPUT);
+}
+
+static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
+    if (gpio_pin_configure(pin->port, pin->pin, GPIO_OUTPUT | GPIO_INPUT) == -ENOTSUP) {
+        // If GPIO_OUTPUT|GPIO_INPUT is not supported (eg frdm_k64f) then try just GPIO_OUTPUT.
+        (void)gpio_pin_configure(pin->port, pin->pin, GPIO_OUTPUT);
+    }
+}
+
+static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
+    (void)gpio_pin_configure(pin->port, pin->pin, GPIO_OUTPUT | GPIO_INPUT | GPIO_OPEN_DRAIN);
+}
+
+static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
+    return gpio_pin_get_raw(pin->port, pin->pin);
+}
+
+static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
+    (void)gpio_pin_set_raw(pin->port, pin->pin, v);
+}
+
+static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
+    (void)gpio_pin_set_raw(pin->port, pin->pin, 0);
+}
+
+static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
+    (void)gpio_pin_set_raw(pin->port, pin->pin, 1);
+}

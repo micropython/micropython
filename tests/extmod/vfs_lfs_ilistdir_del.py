@@ -1,8 +1,7 @@
 # Test ilistdir __del__ for VfsLittle using a RAM device.
-import gc
 
 try:
-    import vfs
+    import gc, vfs
 
     vfs.VfsLfs2
 except (ImportError, AttributeError):
@@ -71,5 +70,10 @@ def test(bdev, vfs_class):
         fs.open("/test", "w").close()
 
 
-bdev = RAMBlockDevice(30)
+try:
+    bdev = RAMBlockDevice(30)
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
 test(bdev, vfs.VfsLfs2)

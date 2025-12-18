@@ -64,3 +64,8 @@
 #define MICROPY_HW_PWM2_NAME        "PWM2"
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"
+
+// The JLink CDC on the PCA10040 cannot accept more than 64 incoming bytes at a time.
+// That makes the UART REPL unreliable in general.  But it can be improved to some
+// extent by setting the raw-paste buffer size to that limit of 64.
+#define MICROPY_REPL_STDIN_BUFFER_MAX (64)

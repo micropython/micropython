@@ -1,0 +1,44 @@
+# This is a collection of sdkconfig settings that frees RAM at runtime,
+# at the expense of performance.
+#
+# Not all options will work on all SoC families, but adding this sdkconfig
+# set to a board should increase the free memory.
+#
+# - Many options free IRAM, which on most ESP32 families leads to
+#   free DRAM at runtime (original ESP32 and S2 may not).
+# - The other options reduce runtime DRAM usage from the heap.
+#
+# IMPORTANT: If you enable these config settings on a custom build then you may
+# encounter bugs or crashes. If you choose to open a MicroPython bug report then
+# please mention these config settings!
+
+# Place functions in flash whenever possible to free IRAM
+CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH=y
+CONFIG_FREERTOS_PLACE_FUNCTIONS_INTO_FLASH=y
+CONFIG_HEAP_PLACE_FUNCTION_INTO_FLASH=y
+
+# Use the SPI flash functions in ROM (when available). This may limit flash chip
+# support and cause issues with some flash chips. Each SoC family has different
+# set of chip support baked into ROM.
+CONFIG_SPI_FLASH_ROM_IMPL=y
+
+# Run the Bluetooth controller from flash not IRAM
+CONFIG_BT_CTRL_RUN_IN_FLASH_ONLY=y
+
+# lwIP adjustments to limit runtime memory usage (at expense of performance, and/or
+# a reduction in number of active connections).
+CONFIG_LWIP_TCPIP_RECVMBOX_SIZE=16
+CONFIG_LWIP_MAX_SOCKETS=6
+CONFIG_LWIP_MAX_ACTIVE_TCP=8
+
+# These lwIP values are recommended to scale relative to the Wi-Fi buffer numbers
+CONFIG_LWIP_TCP_WND_DEFAULT=3072
+CONFIG_LWIP_TCP_SND_BUF_DEFAULT=3072
+
+# Wi-Fi adjustments to reduce peak runtime memory usage, at expense of peak
+# performance
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=8
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=12
+CONFIG_ESP_WIFI_DYNAMIC_TX_BUFFER_NUM=12
+CONFIG_ESP_WIFI_RX_MGMT_BUF_NUM_DEF=2
+CONFIG_ESP_WIFI_RX_BA_WIN=12

@@ -99,6 +99,11 @@ static mp_obj_t mp_machine_get_freq(void) {
 
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
+    #if CONFIG_IDF_TARGET_ESP32C2
+    if (freq != 80 && freq != 120) {
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 80MHz or 120MHz"));
+    }
+    #else
     if (freq != 20 && freq != 40 && freq != 80 && freq != 160
         #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
         && freq != 240
@@ -110,6 +115,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         #endif
     }
+    #endif
     esp_pm_config_t pm = {
         .max_freq_mhz = freq,
         .min_freq_mhz = freq,
@@ -125,6 +131,12 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 }
 
 static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *args) {
+    #if !SOC_DEEP_SLEEP_SUPPORTED
+    if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+        mp_raise_ValueError(MP_ERROR_TEXT("DEEPSLEEP not supported on this chip"));
+    }
+    #endif
+
     // First, disable any previously set wake-up source
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
@@ -164,6 +176,41 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
     }
     #endif
 
+    if (machine_rtc_config.gpio_pins != 0) {
+        #if !SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+        if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+            mp_raise_ValueError(MP_ERROR_TEXT("DEEPSLEEP with gpio pins not supported on this chip"));
+        }
+        #endif
+
+        gpio_int_type_t intr_type = machine_rtc_config.gpio_level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL;
+
+        for (int i = 0; i < GPIO_NUM_MAX; ++i) {
+            gpio_num_t gpio = (gpio_num_t)i;
+            uint64_t bm = 1ULL << i;
+
+            if (machine_rtc_config.gpio_pins & bm) {
+                gpio_sleep_set_direction(gpio, GPIO_MODE_INPUT);
+
+                if (MACHINE_WAKE_SLEEP == wake_type) {
+                    gpio_wakeup_enable(gpio, intr_type);
+                }
+            }
+        }
+
+        if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+            #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+            if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
+                machine_rtc_config.gpio_pins,
+                machine_rtc_config.gpio_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
+                mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));
+            }
+            #endif
+        } else {
+            esp_sleep_enable_gpio_wakeup();
+        }
+    }
+
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
             esp_light_sleep_start();
@@ -178,7 +225,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, args);
 };
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, args);
     mp_machine_reset();
 };
@@ -213,27 +260,36 @@ static mp_int_t mp_machine_reset_cause(void) {
 }
 
 #if MICROPY_ESP32_USE_BOOTLOADER_RTC
+#if !CONFIG_IDF_TARGET_ESP32P4
 #include "soc/rtc_cntl_reg.h"
 #include "usb.h"
+#else
+#include "soc/lp_system_reg.h"
+#endif
 #if CONFIG_IDF_TARGET_ESP32S3
 #include "esp32s3/rom/usb/usb_dc.h"
 #include "esp32s3/rom/usb/usb_persist.h"
 #include "esp32s3/rom/usb/chip_usb_dw_wrapper.h"
 #endif
 
-NORETURN static void machine_bootloader_rtc(void) {
+MP_NORETURN static void machine_bootloader_rtc(void) {
     #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_USB_CDC
     usb_usj_mode();
     usb_dc_prepare_persist();
     chip_usb_set_persist_flags(USBDC_BOOT_DFU);
     #endif
+    #if !CONFIG_IDF_TARGET_ESP32P4
     REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
     esp_restart();
+    #else
+    REG_WRITE(LP_SYSTEM_REG_SYS_CTRL_REG, LP_SYSTEM_REG_FORCE_DOWNLOAD_BOOT);
+    esp_restart();
+    #endif
 }
 #endif
 
 #ifdef MICROPY_BOARD_ENTER_BOOTLOADER
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     for (;;) {
     }
@@ -254,7 +310,7 @@ static mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     esp_restart();
 }
 

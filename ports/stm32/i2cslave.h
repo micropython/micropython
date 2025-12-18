@@ -28,6 +28,8 @@
 
 #include STM32_HAL_H
 
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+
 #if !defined(I2C2_BASE)
 // This MCU doesn't have I2C2_BASE, define it so that the i2c_idx calculation works.
 #define I2C2_BASE (I2C1_BASE + ((I2C3_BASE - I2C1_BASE) / 2))
@@ -51,7 +53,17 @@ static inline void i2c_slave_init(i2c_slave_t *i2c, int irqn, int irq_pri, int a
     RCC->APB1LENR |= 1 << (RCC_APB1LENR_I2C1EN_Pos + i2c_idx);
     volatile uint32_t tmp = RCC->APB1LENR; // Delay after enabling clock
     (void)tmp;
-    #elif defined(STM32WB)
+    #elif defined(STM32N6)
+    if (i2c_idx == 3) {
+        RCC->APB4ENR1 |= RCC_APB4ENR1_I2C4EN;
+        volatile uint32_t tmp = RCC->APB4ENR1; // Delay after enabling clock
+        (void)tmp;
+    } else {
+        RCC->APB1ENR1 |= 1 << (RCC_APB1ENR1_I2C1EN_Pos + i2c_idx);
+        volatile uint32_t tmp = RCC->APB1ENR1; // Delay after enabling clock
+        (void)tmp;
+    }
+    #elif defined(STM32L4) || defined(STM32WB)
     RCC->APB1ENR1 |= 1 << (RCC_APB1ENR1_I2C1EN_Pos + i2c_idx);
     volatile uint32_t tmp = RCC->APB1ENR1; // Delay after enabling clock
     (void)tmp;
@@ -68,13 +80,31 @@ static inline void i2c_slave_shutdown(i2c_slave_t *i2c, int irqn) {
     NVIC_DisableIRQ(irqn);
 }
 
-void i2c_slave_ev_irq_handler(i2c_slave_t *i2c);
+static inline void i2c_slave_write_byte(i2c_slave_t *i2c, uint8_t value) {
+    #if defined(STM32F4)
+    i2c->DR = value;
+    #else
+    i2c->TXDR = value;
+    #endif
+}
+
+static inline uint8_t i2c_slave_read_byte(i2c_slave_t *i2c) {
+    #if defined(STM32F4)
+    return i2c->DR;
+    #else
+    return i2c->RXDR;
+    #endif
+}
+
+void i2c_slave_irq_handler(i2c_slave_t *i2c);
 
 // These should be provided externally
 int i2c_slave_process_addr_match(i2c_slave_t *i2c, int rw);
-int i2c_slave_process_rx_byte(i2c_slave_t *i2c, uint8_t val);
+int i2c_slave_process_rx_byte(i2c_slave_t *i2c);
 void i2c_slave_process_rx_end(i2c_slave_t *i2c);
-uint8_t i2c_slave_process_tx_byte(i2c_slave_t *i2c);
+void i2c_slave_process_tx_byte(i2c_slave_t *i2c);
 void i2c_slave_process_tx_end(i2c_slave_t *i2c);
+
+#endif
 
 #endif // MICROPY_INCLUDED_STM32_I2CSLAVE_H

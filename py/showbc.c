@@ -144,17 +144,9 @@ void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, size_t 
         mp_uint_t source_line = 1;
         mp_printf(print, "  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         for (const byte *ci = code_info; ci < line_info_top;) {
-            if ((ci[0] & 0x80) == 0) {
-                // 0b0LLBBBBB encoding
-                bc += ci[0] & 0x1f;
-                source_line += ci[0] >> 5;
-                ci += 1;
-            } else {
-                // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
-                bc += ci[0] & 0xf;
-                source_line += ((ci[0] << 4) & 0x700) | ci[1];
-                ci += 2;
-            }
+            mp_code_lineinfo_t decoded = mp_bytecode_decode_lineinfo(&ci);
+            bc += decoded.bc_increment;
+            source_line += decoded.line_increment;
             mp_printf(print, "  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }

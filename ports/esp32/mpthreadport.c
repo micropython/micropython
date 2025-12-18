@@ -41,10 +41,16 @@
 #define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + MICROPY_STACK_CHECK_MARGIN)
 #define MP_THREAD_PRIORITY                              (ESP_TASK_PRIO_MIN + 1)
 
+typedef enum {
+    MP_THREAD_RUN_STATE_NEW,
+    MP_THREAD_RUN_STATE_RUNNING,
+    MP_THREAD_RUN_STATE_FINISHED,
+} mp_thread_run_state_t;
+
 // this structure forms a linked list, one node per active thread
 typedef struct _mp_thread_t {
     TaskHandle_t id;        // system id of thread
-    int ready;              // whether the thread is ready and running
+    mp_thread_run_state_t run_state; // current run state of the thread
     void *arg;              // thread Python args, a GC root pointer
     void *stack;            // pointer to the stack
     size_t stack_len;       // number of words in the stack
@@ -60,18 +66,16 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
     mp_thread_set_state(&mp_state_ctx.thread);
     // create the first entry in the linked list of all threads
     thread_entry0.id = xTaskGetCurrentTaskHandle();
-    thread_entry0.ready = 1;
+    thread_entry0.run_state = MP_THREAD_RUN_STATE_RUNNING;
     thread_entry0.arg = NULL;
     thread_entry0.stack = stack;
     thread_entry0.stack_len = stack_len;
     thread_entry0.next = NULL;
+    thread = &thread_entry0;
     mp_thread_mutex_init(&thread_mutex);
 
     // memory barrier to ensure above data is committed
     __sync_synchronize();
-
-    // vTaskPreDeletionHook needs the thread ready after thread_mutex is ready
-    thread = &thread_entry0;
 }
 
 void mp_thread_gc_others(void) {
@@ -82,7 +86,7 @@ void mp_thread_gc_others(void) {
         if (th->id == xTaskGetCurrentTaskHandle()) {
             continue;
         }
-        if (!th->ready) {
+        if (th->run_state != MP_THREAD_RUN_STATE_RUNNING) {
             continue;
         }
         gc_collect_root(th->stack, th->stack_len);
@@ -106,7 +110,7 @@ void mp_thread_start(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == xTaskGetCurrentTaskHandle()) {
-            th->ready = 1;
+            th->run_state = MP_THREAD_RUN_STATE_RUNNING;
             break;
         }
     }
@@ -116,12 +120,22 @@ void mp_thread_start(void) {
 static void *(*ext_thread_entry)(void *) = NULL;
 
 static void freertos_entry(void *arg) {
+    // Run the Python code.
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
-    vTaskDelete(NULL);
-    for (;;) {;
+
+    // Remove the thread from the linked-list of active threads.
+    mp_thread_mutex_lock(&thread_mutex, 1);
+    for (mp_thread_t **th = &thread; *th != NULL; th = &(*th)->next) {
+        if ((*th)->id == xTaskGetCurrentTaskHandle()) {
+            *th = (*th)->next;
+        }
     }
+    mp_thread_mutex_unlock(&thread_mutex);
+
+    // Delete this FreeRTOS task (this call to vTaskDelete will not return).
+    vTaskDelete(NULL);
 }
 
 mp_uint_t mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, char *name) {
@@ -147,7 +161,7 @@ mp_uint_t mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_s
     }
 
     // add thread to linked list of all threads
-    th->ready = 0;
+    th->run_state = MP_THREAD_RUN_STATE_NEW;
     th->arg = arg;
     th->stack = pxTaskGetStackStart(th->id);
     th->stack_len = *stack_size / sizeof(uintptr_t);
@@ -167,33 +181,7 @@ void mp_thread_finish(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == xTaskGetCurrentTaskHandle()) {
-            th->ready = 0;
-            break;
-        }
-    }
-    mp_thread_mutex_unlock(&thread_mutex);
-}
-
-// This is called either from vTaskDelete() or from the FreeRTOS idle task, so
-// may not be within Python context. Therefore MP_STATE_THREAD may not be valid
-// and it does not have the GIL.
-void vTaskPreDeletionHook(void *tcb) {
-    if (thread == NULL) {
-        // threading not yet initialised
-        return;
-    }
-    mp_thread_t *prev = NULL;
-    mp_thread_mutex_lock(&thread_mutex, 1);
-    for (mp_thread_t *th = thread; th != NULL; prev = th, th = th->next) {
-        // unlink the node from the list
-        if ((void *)th->id == tcb) {
-            if (prev != NULL) {
-                prev->next = th->next;
-            } else {
-                // move the start pointer
-                thread = th->next;
-            }
-            // The "th" memory will eventually be reclaimed by the GC.
+            th->run_state = MP_THREAD_RUN_STATE_FINISHED;
             break;
         }
     }
@@ -221,32 +209,22 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
 }
 
 void mp_thread_deinit(void) {
-    for (;;) {
-        // Find a task to delete
-        TaskHandle_t id = NULL;
-        mp_thread_mutex_lock(&thread_mutex, 1);
-        for (mp_thread_t *th = thread; th != NULL; th = th->next) {
-            // Don't delete the current task
-            if (th->id != xTaskGetCurrentTaskHandle()) {
-                id = th->id;
-                break;
-            }
-        }
-        mp_thread_mutex_unlock(&thread_mutex);
+    // The current task should be thread_entry0 and should be the last in the linked list.
+    assert(thread_entry0.id == xTaskGetCurrentTaskHandle());
+    assert(thread_entry0.next == NULL);
 
-        if (id == NULL) {
-            // No tasks left to delete
-            break;
-        } else {
-            // Call FreeRTOS to delete the task (it will call vTaskPreDeletionHook)
-            vTaskDelete(id);
+    // Delete all tasks except the main one.
+    mp_thread_mutex_lock(&thread_mutex, 1);
+    for (mp_thread_t *th = thread; th != NULL; th = th->next) {
+        if (th != &thread_entry0) {
+            vTaskDelete(th->id);
         }
     }
-}
+    thread = &thread_entry0;
+    mp_thread_mutex_unlock(&thread_mutex);
 
-#else
-
-void vTaskPreDeletionHook(void *tcb) {
+    // Give the idle task a chance to run, to clean up any deleted tasks.
+    vTaskDelay(1);
 }
 
 #endif // MICROPY_PY_THREAD

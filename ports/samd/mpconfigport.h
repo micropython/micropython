@@ -41,6 +41,7 @@
 
 // Python internal features
 #define MICROPY_ENABLE_GC                   (1)
+#define MICROPY_STACK_CHECK_MARGIN          (1024)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #ifndef MICROPY_PY_BUILTINS_COMPLEX
@@ -127,6 +128,10 @@
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/samd/machine_wdt.c"
 #define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS   (1)
 #define MICROPY_PLATFORM_VERSION            "ASF4"
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE  "ports/samd/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX   (SERCOM_INST_NUM)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_FINALISER (1)
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -170,8 +175,6 @@
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
-typedef int mp_int_t; // must be pointer size
-typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // Need an implementation of the log2 function which is not a macro.

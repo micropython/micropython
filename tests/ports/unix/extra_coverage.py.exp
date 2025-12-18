@@ -2,18 +2,34 @@
 -123 +123  123
 -0123
 123
-123
-1ABCDEF
+123f
+123F
+7fffffffffffffff
+7FFFFFFFFFFFFFFF
+18446744073709551615
+789f
+789F
 ab abc ' abc' ' True' 'Tru'
 
 false true
 (null)
 -2147483648
 2147483648
-80000000
-80000000
+8000000f
+8000000F
 abc
 %
+.a  .
+<%>
+<aaaa>
+<true>
+<43690>
+<43690>
+<43690>
+<test>
+<1000.000000>
+<True>
+<9223372036854775807>
 # GC
 0
 0
@@ -50,16 +66,16 @@ RuntimeError:
 ame__
 port 
 
-builtins        micropython     _asyncio        _thread
-array           binascii        btree           cexample
-cmath           collections     cppexample      cryptolib
-deflate         errno           example_package
-ffi             framebuf        gc              hashlib
-heapq           io              json            machine
-marshal         math            os              platform
-random          re              select          socket
-struct          sys             termios         time
-tls             uctypes         vfs             websocket
+builtins        micropython     array           binascii
+btree           cexample        cmath           collections
+cppexample      cryptolib       deflate         errno
+example_package                 ffi             framebuf
+gc              hashlib         heapq           io
+json            machine         marshal         math
+os              platform        random          re
+select          socket          struct          sys
+termios         time            tls             uctypes
+vfs             websocket
 me
 
 micropython     machine         marshal         math
@@ -68,8 +84,8 @@ argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation
 intern          maxsize         modules         path
 platform        print_exception                 ps1
-ps2             stderr          stdin           stdout
-tracebacklimit  version         version_info
+ps2             settrace        stderr          stdin
+stdout          tracebacklimit  version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -89,6 +105,16 @@ data
 12345
 6
 -1
+0
+1
+0
+0.000000
+deadbeef
+c0ffee777c0ffee
+deadbeef
+0deadbeef
+c0ffee
+000c0ffee
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
@@ -97,12 +123,10 @@ TypeError: unsupported types for __divmod__: 'str', 'str'
 2
 OverflowError: overflow converting long int to machine word
 OverflowError: overflow converting long int to machine word
+TypeError: can't convert NoneType to int
+TypeError: can't convert NoneType to int
 ValueError: 
 Warning: test
-# format float
-?
-+1e+00
-+1e+00
 # binary
 123
 456
@@ -122,6 +146,13 @@ unlocked
 KeyboardInterrupt: 
 KeyboardInterrupt: 
 10
+loop
+scheduled function
+loop
+scheduled function
+loop
+scheduled function
+scheduled function
 # ringbuf
 99 0
 98 1
@@ -183,11 +214,17 @@ None
 None
 None
 None
+None
 b'123'
 b'123'
 b'123'
 OSError
 0
+# stream.readinto
+OSError True
+bytearray(b'123\x00')
+3 bytearray(b'123\x00')
+# stream textio
 None
 None
 cpp None
@@ -213,7 +250,7 @@ b'\x00\xff'
 frzmpy4 1
 frzmpy4 2
 NULL
-uPy
+interned
 a long string that is not interned
 a string that has unicode αβγ chars
 b'bytes 1234\x01'

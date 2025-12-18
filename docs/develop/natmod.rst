@@ -67,6 +67,9 @@ The known limitations are:
 
 * static BSS variables are not supported; workaround: use global BSS variables
 
+* thread-local storage variables are not supported on rv32imc; workaround: use
+  global BSS variables or allocate some space on the heap to store them
+
 So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
 
@@ -81,7 +84,14 @@ Linker limitation: the native module is not linked against the symbol table of t
 full MicroPython firmware.  Rather, it is linked against an explicit table of exported
 symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware
 build time.  It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system
-function, for example.
+function, for example, unless that resides at a fixed address. In that case, the path
+of a linkerscript containing a series of symbol names and their fixed address can be
+passed to ``mpy_ld.py`` via the ``--externs`` command line argument. That way symbols
+appearing in the linkerscript will take precedence over what is provided from object
+files, but at the moment the object files' implementation will still reside in the
+final MPY file. The linkerscript parser is limited in its capabilities, and is
+currently used only for parsing the ESP8266 port ROM symbols list (see
+``ports/esp8266/boards/eagle.rom.addr.v6.ld``).
 
 New symbols can be added to the end of the table and the firmware rebuilt.
 The symbols also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the
@@ -217,6 +227,26 @@ other module, for example::
     import factorial
     print(factorial.factorial(10))
     # should display 3628800
+
+Using Picolibc when building modules
+------------------------------------
+
+Using `Picolibc <https://github.com/picolibc/picolibc>`_ as your C standard
+library is not only supported, but in fact it is the default for the rv32imc
+platform.  However, there are a couple of things worth mentioning to make sure
+you don't run into problems later when building code.
+
+Some pre-built Picolibc versions (for example, those provided by Ubuntu Linux
+as the ``picolibc-arm-none-eabi``, ``picolibc-riscv64-unknown-elf``, and
+``picolibc-xtensa-lx106-elf`` packages) assume thread-local storage (TLS) is
+available at runtime, but unfortunately MicroPython modules do not support that
+on some architectures (namely ``rv32imc``).  This means that some
+functionalities provided by Picolibc will default to use TLS, returning an
+error either during compilation or during linking.
+
+For an example on how this may affect you, the ``examples/natmod/btree``
+example module contains a workaround to make sure ``errno`` works (look for
+``__PICOLIBC_ERRNO_FUNCTION`` in the Makefile and follow the trail from there).
 
 Further examples
 ----------------

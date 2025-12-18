@@ -184,12 +184,12 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     powerctrl_mcu_reset();
 }
 
 // Activate the bootloader without BOOT* pins.
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_STORAGE
     storage_flush();
     #endif
@@ -232,7 +232,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     powerctrl_enter_stop_mode();
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         machine_rtc_wakeup(2, args2);

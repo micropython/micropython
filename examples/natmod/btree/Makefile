@@ -8,7 +8,7 @@ MOD = btree_$(ARCH)
 SRC = btree_c.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc)
-ARCH = x64
+ARCH ?= x64
 
 BTREE_DIR = $(MPY_DIR)/lib/berkeley-db-1.xx
 BERKELEY_DB_CONFIG_FILE ?= \"extmod/berkeley-db/berkeley_db_config_port.h\"
@@ -31,6 +31,18 @@ SRC += $(addprefix $(realpath $(BTREE_DIR))/,\
 	btree/bt_utils.c \
 	mpool/mpool.c \
 	)
+
+ifeq ($(ARCH),xtensa)
+MPY_EXTERN_SYM_FILE=$(MPY_DIR)/ports/esp8266/boards/eagle.rom.addr.v6.ld
+endif
+
+# Use our own errno implementation if Picolibc is used
+CFLAGS += -D__PICOLIBC_ERRNO_FUNCTION=__errno
+
+ifeq ($(ARCH),armv6m)
+# Link with libgcc.a for division helper functions
+LINK_RUNTIME = 1
+endif
 
 include $(MPY_DIR)/py/dynruntime.mk
 

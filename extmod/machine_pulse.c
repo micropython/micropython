@@ -30,20 +30,35 @@
 
 #if MICROPY_PY_MACHINE_PULSE
 
-MP_WEAK mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
+mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
+    mp_uint_t nchanges = 2;
     mp_uint_t start = mp_hal_ticks_us();
-    while (mp_hal_pin_read(pin) != pulse_level) {
-        if ((mp_uint_t)(mp_hal_ticks_us() - start) >= timeout_us) {
-            return (mp_uint_t)-2;
+    for (;;) {
+        // Sample ticks and pin as close together as possible, and always in the same
+        // order each time around the loop.  This gives the most accurate measurement.
+        mp_uint_t t = mp_hal_ticks_us();
+        int pin_value = mp_hal_pin_read(pin);
+
+        if (pin_value == pulse_level) {
+            // Pin is at desired value.  Flip desired value and see if we are done.
+            pulse_level = 1 - pulse_level;
+            if (--nchanges == 0) {
+                return t - start;
+            }
+            start = t;
+        } else {
+            // Pin hasn't changed yet, check for timeout.
+            mp_uint_t dt = t - start;
+            if (dt >= timeout_us) {
+                return -nchanges;
+            }
+
+            // Allow a port to perform background task processing if needed.
+            #ifdef MICROPY_PY_MACHINE_TIME_PULSE_US_HOOK
+            MICROPY_PY_MACHINE_TIME_PULSE_US_HOOK(dt);
+            #endif
         }
     }
-    start = mp_hal_ticks_us();
-    while (mp_hal_pin_read(pin) == pulse_level) {
-        if ((mp_uint_t)(mp_hal_ticks_us() - start) >= timeout_us) {
-            return (mp_uint_t)-1;
-        }
-    }
-    return mp_hal_ticks_us() - start;
 }
 
 static mp_obj_t machine_time_pulse_us_(size_t n_args, const mp_obj_t *args) {

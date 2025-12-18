@@ -18,10 +18,14 @@ Functions
     Configure whether or not a touch will wake the device from sleep.
     *wake* should be a boolean value.
 
+    .. note:: This is only available for boards that have touch sensor support.
+
 .. function:: wake_on_ulp(wake)
 
     Configure whether or not the Ultra-Low-Power co-processor can wake the
     device from sleep. *wake* should be a boolean value.
+
+    .. note:: This is only available for boards that have ULP coprocessor support.
 
 .. function:: wake_on_ext0(pin, level)
 
@@ -29,11 +33,24 @@ Functions
     or a valid Pin object.  *level* should be ``esp32.WAKEUP_ALL_LOW`` or
     ``esp32.WAKEUP_ANY_HIGH``.
 
+    .. note:: This is only available for boards that have ext0 support.
+
 .. function:: wake_on_ext1(pins, level)
 
     Configure how EXT1 wakes the device from sleep.  *pins* can be ``None``
     or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
     or ``esp32.WAKEUP_ANY_HIGH``.
+
+    .. note:: This is only available for boards that have ext1 support.
+
+.. function:: wake_on_gpio(pins, level)
+
+    Configure how GPIO wakes the device from sleep.  *pins* can be ``None``
+    or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
+    or ``esp32.WAKEUP_ANY_HIGH``.
+
+    .. note:: Some boards don't support waking on GPIO from deep sleep,
+       on those boards, the pins set here can only be used to wake from light sleep.
 
 .. function:: gpio_deep_sleep_hold(enable)
 
@@ -79,6 +96,29 @@ Functions
 
        The result of :func:`gc.mem_free()` is the total of the current "free"
        and "max new split" values printed by :func:`micropython.mem_info()`.
+
+.. function:: idf_task_info()
+
+    Returns information about running ESP-IDF/FreeRTOS tasks, which include
+    MicroPython threads. This data is useful to gain insight into how much time
+    tasks spend running or if they are blocked for significant parts of time,
+    and to determine if allocated stacks are fully utilized or might be reduced.
+
+    ``CONFIG_FREERTOS_USE_TRACE_FACILITY=y`` must be set in the board
+    configuration to make this method available. Additionally configuring
+    ``CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y`` and
+    ``CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID=y`` is recommended to be able to
+    retrieve the total and per-task runtime and the core ID respectively.
+
+    The return value is a 2-tuple where the first value is the total runtime,
+    and the second a list of tasks. Each task is a 7-tuple containing: the task
+    ID, name, current state, priority, runtime, stack high water mark, and the
+    ID of the core it is running on. Runtime and core ID will be None when the
+    respective FreeRTOS configuration option is not enabled.
+
+    .. note:: For an easier to use output based on this function you can use the
+       `utop library <https://github.com/micropython/micropython-lib/tree/master/micropython/utop>`_,
+       which implements a live overview similar to the Unix ``top`` command.
 
 
 Flash partitions
@@ -164,6 +204,151 @@ Constants
 
     Used in `idf_heap_info`.
 
+
+.. _esp32.PCNT:
+
+PCNT
+----
+
+This class provides access to the ESP32 hardware support for pulse counting.
+There are 8 pulse counter units, with id 0..7.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler and portable
+abstractions of common pulse counting applications. These classes are
+implemented as thin Python shims around :class:`PCNT`.
+
+.. class:: PCNT(id, *, ...)
+
+    Returns the singleton PCNT instance for the given unit ``id``.
+
+    Keyword arguments are passed to the ``init()`` method as described
+    below.
+
+.. method:: PCNT.init(*, ...)
+
+    (Re-)initialise a pulse counter unit. Supported keyword arguments are:
+
+      - ``channel``: see description below
+      - ``pin``: the input Pin to monitor for pulses
+      - ``rising``: an action to take on a rising edge - one of
+        ``PCNT.INCREMENT``, ``PCNT.DECREMENT`` or ``PCNT.IGNORE`` (the default)
+      - ``falling``: an action to take on a falling edge (takes the save values
+        as the ``rising`` argument).
+      - ``mode_pin``: ESP32 pulse counters support monitoring a second pin and
+        altering the behaviour of the counter based on its level - set this
+        keyword to any input Pin
+      - ``mode_low``: set to either ``PCNT.HOLD`` or ``PCNT.REVERSE`` to
+        either suspend counting or reverse the direction of the counter (i.e.,
+        ``PCNT.INCREMENT`` behaves as ``PCNT.DECREMENT`` and vice versa)
+        when ``mode_pin`` is low
+      - ``mode_high``: as ``mode_low`` but for the behaviour when ``mode_pin``
+        is high
+      - ``filter``: set to a value 1..1023, in ticks of the 80MHz clock, to
+        enable the pulse width filter
+      - ``min``: set to the minimum level of the counter value when
+        decrementing (-32768..-1) or 0 to disable
+      - ``max``: set to the maximum level of the counter value when
+        incrementing (1..32767) or 0 to disable
+      - ``threshold0``: sets the counter value for the
+        ``PCNT.IRQ_THRESHOLD0`` event (see ``irq`` method)
+      - ``threshold1``: sets the counter value for the
+        ``PCNT.IRQ_THRESHOLD1`` event (see ``irq`` method)
+      - ``value``: can be set to ``0`` to reset the counter value
+
+    The hardware initialisation is done in stages and so some of the keyword
+    arguments can be used in groups or in isolation to partially reconfigure a
+    unit:
+
+      - the ``pin`` keyword (optionally combined with ``mode_pin``) can be used
+        to change just the bound pin(s)
+      - ``rising``, ``falling``, ``mode_low`` and ``mode_high`` can be used
+        (singly or together) to change the counting logic - omitted keywords
+        use their default (``PCNT.IGNORE`` or ``PCNT.NORMAL``)
+      - ``filter`` can be used to change only the pulse width filter (with 0
+        disabling it)
+      - each of ``min``, ``max``, ``threshold0`` and ``threshold1`` can
+        be used to change these limit/event values individually; however,
+        setting any will reset the counter to zero (i.e., they imply
+        ``value=0``)
+
+    Each pulse counter unit supports two channels, 0 and 1, each able to
+    monitor different pins with different counting logic but updating the same
+    counter value. Use ``channel=1`` with the ``pin``, ``rising``, ``falling``,
+    ``mode_pin``, ``mode_low`` and ``mode_high`` keywords to configure the
+    second channel.
+
+    The second channel can be used to configure 4X quadrature decoding with a
+    single counter unit::
+
+        pin_a = Pin(2, Pin.INPUT, pull=Pin.PULL_UP)
+        pin_b = Pin(3, Pin.INPUT, pull=Pin.PULL_UP)
+        rotary = PCNT(0, min=-32000, max=32000)
+        rotary.init(channel=0, pin=pin_a, falling=PCNT.INCREMENT, rising=PCNT.DECREMENT, mode_pin=pin_b, mode_low=PCNT.REVERSE)
+        rotary.init(channel=1, pin=pin_b, falling=PCNT.DECREMENT, rising=PCNT.INCREMENT, mode_pin=pin_a, mode_low=PCNT.REVERSE)
+        rotary.start()
+
+.. method:: PCNT.value([value])
+
+    Call this method with no arguments to return the current counter value.
+
+    If the optional *value* argument is set to ``0`` then the counter is
+    reset (but the previous value is returned). Read and reset is not atomic and
+    so it is possible for a pulse to be missed. Any value other than ``0`` will
+    raise an error.
+
+.. method:: PCNT.irq(handler=None, trigger=PCNT.IRQ_ZERO)
+
+    ESP32 pulse counters support interrupts on these counter events:
+
+      - ``PCNT.IRQ_ZERO``: the counter has reset to zero
+      - ``PCNT.IRQ_MIN``: the counter has hit the ``min`` value
+      - ``PCNT.IRQ_MAX``: the counter has hit the ``max`` value
+      - ``PCNT.IRQ_THRESHOLD0``: the counter has hit the ``threshold0`` value
+      - ``PCNT.IRQ_THRESHOLD1``: the counter has hit the ``threshold1`` value
+
+    ``trigger`` should be a bit-mask of the desired events OR'ed together. The
+    ``handler`` function should take a single argument which is the
+    :class:`PCNT` instance that raised the event.
+
+    This method returns a callback object. The callback object can be used to
+    access the bit-mask of events that are outstanding on the PCNT unit.::
+
+        def pcnt_irq(pcnt):
+            flags = pcnt.irq().flags()
+            if flags & PCNT.IRQ_ZERO:
+               # reset
+            if flags & PCNT.IRQ_MAX:
+               # overflow...
+            ... etc
+
+        pcnt.irq(handler=pcnt_irq, trigger=PCNT.IRQ_ZERO | PCNT.IRQ_MAX | ...)
+
+    **Note:** Accessing ``irq.flags()`` will clear the flags, so only call it
+    once per invocation of the handler.
+
+    The handler is called with the MicroPython scheduler and so will run at a
+    point after the interrupt. If another interrupt occurs before the handler
+    has been called then the events will be coalesced together into a single
+    call and the bit mask will indicate all events that have occurred.
+
+    To avoid race conditions between a handler being called and retrieving the
+    current counter value, the ``value()`` method will force execution of any
+    pending events before returning the current counter value (and potentially
+    resetting the value).
+
+    Only one handler can be in place per-unit. Set ``handler`` to ``None`` to
+    disable the event interrupt.
+
+.. Note::
+    ESP32 pulse counters reset to *zero* when reaching the minimum or maximum
+    value. Thus the ``IRQ_ZERO`` event will also trigger when either of these
+    events occurs.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
+common pulse counting applications.
+
 .. _esp32.RMT:
 
 RMT
@@ -177,29 +362,24 @@ used to transmit or receive many other types of digital signals::
     import esp32
     from machine import Pin
 
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8)
-    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, idle_level=0)
+    r = esp32.RMT(pin=Pin(18), resolution_hz=10000000)
+    r  # RMT(pin=18, source_freq=80000000, resolution_hz=10000000, idle_level=0)
 
     # To apply a carrier frequency to the high output
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8, tx_carrier=(38000, 50, 1))
+    r = esp32.RMT(pin=Pin(18), resolution_hz=10000000, tx_carrier=(38000, 50, 1))
 
-    # The channel resolution is 100ns (1/(source_freq/clock_div)).
+    # The channel resolution is 100ns (1/resolution_hz)
     r.write_pulses((1, 20, 2, 40), 0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
 The input to the RMT module is an 80MHz clock (in the future it may be able to
-configure the input clock but, for now, it's fixed). ``clock_div`` *divides*
-the clock input which determines the resolution of the RMT channel. The
-numbers specified in ``write_pulses`` are multiplied by the resolution to
+configure the input clock but, for now, it's fixed). ``resolution_hz`` determines
+the resolution of the RMT channel. The numbers specified in ``write_pulses`` are
+multiplied by the resolution to
 define the pulses.
 
-``clock_div`` is an 8-bit divider (0-255) and each pulse can be defined by
-multiplying the resolution by a 15-bit (1-``PULSE_MAX``) number. There are eight
-channels (0-7) and each can have a different clock divider.
-
-So, in the example above, the 80MHz clock is divided by 8. Thus the
-resolution is (1/(80Mhz/8)) 100ns. Since the ``start`` level is 0 and toggles
-with each number, the bitstream is ``0101`` with durations of [100ns, 2000ns,
-100ns, 4000ns].
+So, in the example above, the resolution is resolution is (1/10Mhz) = 100ns.
+Since the ``start`` level is 0 and toggles with each number, the bitstream is
+``0101`` with durations of [100ns, 2000ns, 100ns, 4000ns].
 
 For more details see Espressif's `ESP-IDF RMT documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
@@ -210,13 +390,24 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, *, pin=None, clock_div=8, idle_level=False, tx_carrier=None)
+.. class:: RMT(channel, *, pin=None, resolution_hz=10000000, clock_div=None, idle_level=False, num_symbols=48|64, tx_carrier=None)
 
     This class provides access to one of the eight RMT channels. *channel* is
-    required and identifies which RMT channel (0-7) will be configured. *pin*,
-    also required, configures which Pin is bound to the RMT channel. *clock_div*
-    is an 8-bit clock divider that divides the source clock (80MHz) to the RMT
-    channel allowing the resolution to be specified. *idle_level* specifies
+    optional and a dummy parameter for backward compatibility. *pin* is required
+    and configures which Pin is bound to the RMT channel.
+    *resolution_hz* defines the resolution/unit of the samples.
+    For example, 1,000,000 means the unit is microsecond. The pulse widths can
+    assume values up to *RMT.PULSE_MAX*, so the resolution should be selected
+    accordingly to the signal to be transmitted.
+    *clock_div* (deprecated) is equivalent to *resolution_hz*, but expressed as
+    a clock divider that divides the source clock (80MHz) to the RMT
+    channel allowing the resolution to be specified. Either *clock_div* and
+    *resolution_hz* may be supplied, but not both.
+    *num_symbols* specifies the
+    RMT buffer allocated for this channel (minimum 48 or 64, depending on chip), from a small pool of
+    symbols (192 to 512, depending on chip) that are shared by all channels. This buffer does not limit the
+    size of the pulse train that you can send, but bigger buffers reduce the
+    CPU load and the potential of glitches/imprecise pulse lengths. *idle_level* specifies
     what level the output will be when no transmission is in progress and can
     be any value that converts to a boolean, with ``True`` representing high
     voltage and ``False`` representing low.
@@ -234,21 +425,52 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 .. method:: RMT.clock_div()
 
     Return the clock divider. Note that the channel resolution is
-    ``1 / (source_freq / clock_div)``.
+    ``1 / (source_freq / clock_div)``. (Method deprecated. The value may
+    not be faithful if resolution was supplied as *resolution_hz*.)
 
 .. method:: RMT.wait_done(*, timeout=0)
 
     Returns ``True`` if the channel is idle or ``False`` if a sequence of
     pulses started with `RMT.write_pulses` is being transmitted. If the
     *timeout* keyword argument is given then block for up to this many
-    milliseconds for transmission to complete.
+    milliseconds for transmission to complete. Timeout of -1 blocks until
+    transmission is complete (and blocks forever if loop is enabled).
 
 .. method:: RMT.loop(enable_loop)
 
     Configure looping on the channel. *enable_loop* is bool, set to ``True`` to
     enable looping on the *next* call to `RMT.write_pulses`. If called with
     ``False`` while a looping sequence is currently being transmitted then the
-    current loop iteration will be completed and then transmission will stop.
+    transmission will stop. (Method deprecated by `RMT.loop_count`.)
+
+.. method:: RMT.loop_count(n)
+
+    Configure looping on the channel. *n* is int. Affects the *next* call to
+    `RMT.write_pulses`. Set to ``0`` to disable looping, ``-1`` to enable
+    infinite looping, or a positive number to loop for a given number of times.
+    If *n* is changed, the current transmission is stopped.
+
+    Note: looping for a finite number of times is not supported by all flavors
+    of ESP32.
+
+.. method:: RMT.active([boolean])
+
+    If called without parameters, returns *True* if there is an ongoing transmission.
+
+    If called with parameter *False*, stops the ongoing transmission.
+    This is useful to stop an infinite transmission loop.
+    The current loop is finished and transmission stops.
+    The object is not invalidated, and the RMT channel is again enabled when a new
+    transmission is started.
+
+    Calling with parameter *True* does not restart transmission. A new transmission
+    should always be initiated by *write_pulses()*.
+
+.. method:: RMT.deinit()
+
+    Release all RMT resources and invalidate the object. All subsequent method
+    calls will raise OSError. Useful to free RMT resources without having to wait
+    for the object to be garbage-collected.
 
 .. method:: RMT.write_pulses(duration, data=True)
 
@@ -278,17 +500,28 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     new sequence of pulses. Looping sequences longer than 126 pulses is not
     supported by the hardware.
 
+.. staticmethod:: RMT.bitstream_rmt([value])
+
+    Configure RMT usage in the `machine.bitstream` implementation.
+
+    If *value* is ``True``, bitstream tries to use RMT if possible. If *value*
+    is ``False``, bitstream sticks to the bit-banging implementation.
+
+    If no parameter is supplied, it returns the current state. The default state
+    is ``True``.
+
 .. staticmethod:: RMT.bitstream_channel([value])
 
-    Select which RMT channel is used by the `machine.bitstream` implementation.
-    *value* can be ``None`` or a valid RMT channel number.  The default RMT
-    channel is the highest numbered one.
+    *This function is deprecated and will be replaced by `RMT.bitstream_rmt()`.*
 
-    Passing in ``None`` disables the use of RMT and instead selects a bit-banging
-    implementation for `machine.bitstream`.
+    Passing in no argument will return ``1`` if RMT was enabled for the `machine.bitstream`
+    feature, and ``None`` otherwise.
 
-    Passing in no argument will not change the channel.  This function returns
-    the current channel number.
+    Passing any non-negative integer argument is equivalent to calling ``RMT.bitstream_rmt(True)``.
+
+    .. note:: In previous versions of MicroPython it was necessary to use this function to assign
+              a specific RMT channel number for the bitstream, but the channel number is now assigned
+              dynamically.
 
 Constants
 ---------

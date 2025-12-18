@@ -56,7 +56,7 @@ static const char *ethertype_str(uint16_t type) {
 }
 
 void netutils_ethernet_trace(const mp_print_t *print, size_t len, const uint8_t *buf, unsigned int flags) {
-    mp_printf(print, "[% 8d] ETH%cX len=%u", mp_hal_ticks_ms(), flags & NETUTILS_TRACE_IS_TX ? 'T' : 'R', len);
+    mp_printf(print, "[% 8u] ETH%cX len=%u", (unsigned)mp_hal_ticks_ms(), flags & NETUTILS_TRACE_IS_TX ? 'T' : 'R', len);
     mp_printf(print, " dst=%02x:%02x:%02x:%02x:%02x:%02x", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
     mp_printf(print, " src=%02x:%02x:%02x:%02x:%02x:%02x", buf[6], buf[7], buf[8], buf[9], buf[10], buf[11]);
 

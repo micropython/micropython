@@ -78,7 +78,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0;
 }
 
-NORETURN void nlr_jump(void *val) {
+MP_NORETURN void nlr_jump(void *val) {
     MP_NLR_JUMP_HEAD(val, top)
 
     __asm__ volatile (
@@ -167,7 +167,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0;
 }
 
-NORETURN void nlr_jump(void *val) {
+MP_NORETURN void nlr_jump(void *val) {
     MP_NLR_JUMP_HEAD(val, top)
 
     __asm__ volatile (

@@ -1,6 +1,7 @@
 # MicroPython Test Suite
 
-This directory contains tests for most parts of MicroPython.
+This directory contains tests for most parts of MicroPython.  To run it you will need
+CPython 3.8.2 or newer, which is used to validate MicroPython's behaviour.
 
 To run all stable tests, run the "run-tests.py" script in this directory.  By default
 that will run the test suite against the unix port of MicroPython.
@@ -67,16 +68,14 @@ for a full list of command line options.
 
 ### Benchmarking a target
 
-To run tests on a firmware target using `pyboard.py`, run the command line like
+To run tests on a firmware target using a serial port, run the command line like
 this:
 
 ```
-./run-perfbench.py -p -d /dev/ttyACM0 168 100
+./run-perfbench.py -t /dev/ttyACM0 168 100
 ```
 
-* `-p` indicates running on a remote target via pyboard.py, not the host.
-* `-d PORTNAME` is the serial port, `/dev/ttyACM0` is the default if not
-  provided.
+* `-t PORTNAME` is the serial port to use (and it supports shorthand like `a0`).
 * `168` is value `N`, the approximate CPU frequency in MHz (in this case Pyboard
   V1.1 is 168MHz). It's possible to choose other values as well: lower values
   like `10` will run much the tests much quicker, higher values like `1000` will
@@ -136,11 +135,11 @@ Usually you want to know if something is faster or slower than a reference. To
 do this, copy the output of each `run-perfbench.py` run to a text file.
 
 This can be done multiple ways, but one way on Linux/macOS is with the `tee`
-utility: `./run-perfbench.py -p 168 100 | tee pyb-run1.txt`
+utility: `./run-perfbench.py -t a0 168 100 | tee pyb-run1.txt`
 
 Once you have two files with output from two different runs (maybe with
 different code or configuration), compare the runtimes with `./run-perfbench.py
--t pybv-run1.txt pybv-run2.txt` or compare scores with `./run-perfbench.py -s
+-m pybv-run1.txt pybv-run2.txt` or compare scores with `./run-perfbench.py -s
 pybv-run1.txt pybv-run2.txt`:
 
 ```
@@ -203,6 +202,18 @@ internal_bench/bytebuf:
     0.177s (+87.78%) internal_bench/bytebuf-3-bytarray_map.py
 1 tests performed (3 individual testcases)
 ```
+
+## Serial reliability and performance test
+
+Serial port reliability and performance can be tested using the `serial_test.py` script.
+Pass the name of the port to test against, for example:
+
+    $ ./serial_test.py -t /dev/ttyACM0
+
+If no port is specified then `/dev/ttyACM0` is used as the default.
+
+The test will send data out to the target, and receive data from the target, in various
+chunk sizes.  The throughput of the serial connection will be reported for each sub-test.
 
 ## Test key/certificates
 

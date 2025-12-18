@@ -43,6 +43,7 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_ENABLE_DOC_STRING   (0)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
+#define MICROPY_MODULE___FILE__     (0)
 #define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
@@ -51,7 +52,6 @@
 #define MICROPY_PY_BUILTINS_SLICE   (0)
 #define MICROPY_PY_BUILTINS_PROPERTY (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_COLLECTIONS      (0)
@@ -76,11 +76,6 @@
 // #define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
-
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
 
 typedef int mp_off_t;
 

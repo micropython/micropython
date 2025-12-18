@@ -42,6 +42,8 @@
 
 #define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC)
 
+#define RHPORT TUD_OPT_RHPORT
+
 const mp_obj_type_t machine_usb_device_type;
 
 static mp_obj_t usb_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -108,14 +110,14 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
         //
         // This C layer doesn't otherwise keep track of which endpoints the host
         // is aware of (or not).
-        mp_raise_ValueError("ep");
+        mp_raise_ValueError(MP_ERROR_TEXT("ep"));
     }
 
-    if (!usbd_edpt_claim(USBD_RHPORT, ep_addr)) {
+    if (!usbd_edpt_claim(RHPORT, ep_addr)) {
         mp_raise_OSError(MP_EBUSY);
     }
 
-    result = usbd_edpt_xfer(USBD_RHPORT, ep_addr, buf_info.buf, buf_info.len);
+    result = usbd_edpt_xfer(RHPORT, ep_addr, buf_info.buf, buf_info.len);
 
     if (result) {
         // Store the buffer object until the transfer completes
@@ -168,14 +170,14 @@ static mp_obj_t usb_device_stall(size_t n_args, const mp_obj_t *args) {
 
     usb_device_check_active(self);
 
-    mp_obj_t res = mp_obj_new_bool(usbd_edpt_stalled(USBD_RHPORT, epnum));
+    mp_obj_t res = mp_obj_new_bool(usbd_edpt_stalled(RHPORT, epnum));
 
     if (n_args == 3) { // Set stall state
         mp_obj_t stall = args[2];
         if (mp_obj_is_true(stall)) {
-            usbd_edpt_stall(USBD_RHPORT, epnum);
+            usbd_edpt_stall(RHPORT, epnum);
         } else {
-            usbd_edpt_clear_stall(USBD_RHPORT, epnum);
+            usbd_edpt_clear_stall(RHPORT, epnum);
         }
     }
 

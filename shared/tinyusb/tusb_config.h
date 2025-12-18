@@ -59,7 +59,7 @@
 #define MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING "1.00"
 #endif
 
-#ifndef CFG_TUSB_RHPORT0_MODE
+#if !defined(CFG_TUSB_RHPORT0_MODE) && !defined(CFG_TUSB_RHPORT1_MODE)
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
 #endif
 
@@ -83,7 +83,7 @@
 #ifndef CFG_TUD_CDC_TX_BUFSIZE
 #define CFG_TUD_CDC_TX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
 #endif
-#endif
+#endif // CFG_TUD_CDC
 
 // MSC Configuration
 #if CFG_TUD_MSC
@@ -92,9 +92,7 @@
 #endif
 // Set MSC EP buffer size to FatFS block size to avoid partial read/writes (offset arg).
 #define CFG_TUD_MSC_BUFSIZE (MICROPY_FATFS_MAX_SS)
-#endif
-
-#define USBD_RHPORT (0) // Currently only one port is supported
+#endif // CFG_TUD_MSC
 
 // Define built-in interface, string and endpoint numbering based on the above config
 

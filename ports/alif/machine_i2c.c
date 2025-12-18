@@ -125,9 +125,12 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->freq = args[ARG_freq].u_int;
     self->timeout = args[ARG_timeout].u_int;
 
-    // here we would check the scl/sda pins and configure them, but it's not implemented
-    if (args[ARG_scl].u_obj != mp_const_none || args[ARG_sda].u_obj != mp_const_none) {
-        mp_raise_ValueError(MP_ERROR_TEXT("explicit choice of scl/sda is not implemented"));
+    // Set SCL/SDA pins if given.
+    if (args[ARG_scl].u_obj != mp_const_none) {
+        self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
+    }
+    if (args[ARG_sda].u_obj != mp_const_none) {
+        self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
     }
 
     // Disable I2C controller.

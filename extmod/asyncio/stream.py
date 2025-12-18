@@ -180,11 +180,11 @@ async def start_server(cb, host, port, backlog=5, ssl=None):
     import socket
 
     # Create and bind server socket.
-    host = socket.getaddrinfo(host, port)[0]  # TODO this is blocking!
-    s = socket.socket()
+    addr_info = socket.getaddrinfo(host, port)[0]  # TODO this is blocking!
+    s = socket.socket(addr_info[0])  # Use address family from getaddrinfo
     s.setblocking(False)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(host[-1])
+    s.bind(addr_info[-1])
     s.listen(backlog)
 
     # Create and return server object and task.

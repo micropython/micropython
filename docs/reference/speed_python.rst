@@ -246,6 +246,13 @@ There are certain limitations in the current implementation of the native code e
 * Context managers are not supported (the ``with`` statement).
 * Generators are not supported.
 * If ``raise`` is used an argument must be supplied.
+* The background scheduler (see `micropython.schedule`) is not run during
+  execution of native code.
+* On targets with thrteading and the GIL, the GIL is not released during
+  execution of native code.
+
+To mitigate the last two points, long running native functions should call
+``time.sleep(0)`` periodically, which will run the scheduler and bounce the GIL.
 
 The trade-off for the improved performance (roughly twice as fast as bytecode) is an
 increase in compiled code size.

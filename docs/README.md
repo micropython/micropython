@@ -13,8 +13,7 @@ Building the documentation locally
 If you're making changes to the documentation, you may want to build the
 documentation locally so that you can preview your changes.
 
-Install Sphinx, and optionally (for the RTD-styling), sphinx_rtd_theme,
-preferably in a virtualenv:
+Install Sphinx and sphinx_rtd_theme, preferably in a virtualenv:
 
      pip install sphinx
      pip install sphinx_rtd_theme
@@ -24,6 +23,21 @@ In `micropython/docs`, build the docs:
     make html
 
 You'll find the index page at `micropython/docs/build/html/index.html`.
+
+Documentation autobuild
+-----------------------
+
+For a more convenient development experience, you can use `sphinx-autobuild`
+to automatically rebuild and serve the documentation when you make changes:
+
+    pip install sphinx-autobuild
+
+Then run from the `micropython/docs` directory:
+
+    sphinx-autobuild . build/html
+
+This will start a local web server (typically at `http://127.0.0.1:8000`)
+and automatically rebuild the documentation whenever you save changes to the source files.
 
 Having readthedocs.org build the documentation
 ----------------------------------------------

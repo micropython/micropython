@@ -315,7 +315,7 @@ static mp_obj_t rp2_dma_pack_ctrl(size_t n_pos_args, const mp_obj_t *pos_args, m
     // Pack keyword settings into a control register value, using either the default for this
     // DMA channel or the provided defaults
     rp2_dma_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    mp_uint_t value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << 11);
+    mp_uint_t value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
 
     if (n_pos_args > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("pack_ctrl only takes keyword arguments"));
@@ -427,6 +427,14 @@ static mp_obj_t rp2_dma_close(mp_obj_t self_in) {
     uint8_t channel = self->channel;
 
     if (channel != CHANNEL_CLOSED) {
+        // Reset this channel's registers to their default values (zeros).
+        dma_channel_config config = { .ctrl = 0 };
+        dma_channel_configure(channel, &config, NULL, NULL, 0, false);
+
+        // Abort this channel. Must be done after clearing EN bit in control
+        // register due to errata RP2350-E5.
+        dma_channel_abort(channel);
+
         // Clean up interrupt handler to ensure garbage collection
         mp_irq_obj_t *irq = MP_STATE_PORT(rp2_dma_irq_obj[channel]);
         MP_STATE_PORT(rp2_dma_irq_obj[channel]) = MP_OBJ_NULL;

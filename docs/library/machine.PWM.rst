@@ -11,20 +11,20 @@ Example usage::
     from machine import PWM
 
     pwm = PWM(pin, freq=50, duty_u16=8192)  # create a PWM object on a pin
-                                            # and set freq and duty
-    pwm.duty_u16(32768)     # set duty to 50%
+                                            # and set freq 50 Hz and duty 12.5%
+    pwm.duty_u16(32768)                     # set duty to 50%
 
     # reinitialise with a period of 200us, duty of 5us
     pwm.init(freq=5000, duty_ns=5000)
 
-    pwm.duty_ns(3000)       # set pulse width to 3us
+    pwm.duty_ns(3000)                       # set pulse width to 3us
 
     pwm.deinit()
 
 Constructors
 ------------
 
-.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert)
+.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert=False)
 
    Construct and return a new PWM object using the following parameters:
 
@@ -40,7 +40,7 @@ Constructors
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
    Only one of *duty_u16* and *duty_ns* should be specified at a time.
-   *invert* is not available at all ports.
+   *invert* is available only on the esp32, mimxrt, nrf, rp2, samd and zephyr ports.
 
 Methods
 -------
@@ -116,10 +116,10 @@ Limitations of PWM
   resolution of 8 bit, not 16-bit as may be expected.  In this case, the lowest
   8 bits of *duty_u16* are insignificant. So::
 
-    pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2)
+    pwm=PWM(Pin(13), freq=300_000, duty_u16=65536//2)
 
   and::
 
-    pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2 + 255)
+    pwm=PWM(Pin(13), freq=300_000, duty_u16=65536//2 + 255)
 
   will generate PWM with the same 50% duty cycle.

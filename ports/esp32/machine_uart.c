@@ -58,7 +58,8 @@
 #define UART_IRQ_RXIDLE (0x1000)
 #define UART_IRQ_BREAK (1 << UART_BREAK)
 #define MP_UART_ALLOWED_FLAGS (UART_IRQ_RX | UART_IRQ_RXIDLE | UART_IRQ_BREAK)
-#define RXIDLE_TIMER_MIN (5000)  // 500 us
+#define RXIDLE_TIMER_MIN (machine_timer_freq_hz() * 5 / 10000) // 500us minimum rxidle time
+#define UART_QUEUE_SIZE (3)
 
 enum {
     RXIDLE_INACTIVE,
@@ -66,6 +67,9 @@ enum {
     RXIDLE_ARMED,
     RXIDLE_ALERT,
 };
+
+// RXIDLE irq feature uses this machine.Timer id
+#define RXIDLE_TIMER_IDX 0
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -95,6 +99,14 @@ typedef struct _machine_uart_obj_t {
 
 static const char *_parity_name[] = {"None", "1", "0"};
 
+static bool uart_is_repl(uart_port_t uart_num) {
+    #if MICROPY_HW_ENABLE_UART_REPL
+    return uart_num == MICROPY_HW_UART_REPL;
+    #else
+    return false;
+    #endif
+}
+
 /******************************************************************************/
 // MicroPython bindings for UART
 
@@ -109,30 +121,19 @@ static const char *_parity_name[] = {"None", "1", "0"};
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_BREAK), MP_ROM_INT(UART_IRQ_BREAK) }, \
 
-static void uart_timer_callback(void *self_in) {
-    machine_timer_obj_t *self = self_in;
-
-    uint32_t intr_status = timer_ll_get_intr_status(self->hal_context.dev);
-
-    if (intr_status & TIMER_LL_EVENT_ALARM(self->index)) {
-        timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
-        if (self->repeat) {
-            timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
-        }
-    }
-
+static void uart_timer_callback(machine_timer_obj_t *timer) {
     // The UART object is referred here by the callback field.
-    machine_uart_obj_t *uart = (machine_uart_obj_t *)self->callback;
-    if (uart->rxidle_state == RXIDLE_ALERT) {
+    machine_uart_obj_t *self = (machine_uart_obj_t *)timer->callback;
+    if (self->rxidle_state == RXIDLE_ALERT) {
         // At the first call, just switch the state
-        uart->rxidle_state = RXIDLE_ARMED;
-    } else if (uart->rxidle_state == RXIDLE_ARMED) {
+        self->rxidle_state = RXIDLE_ARMED;
+    } else if (self->rxidle_state == RXIDLE_ARMED) {
         // At the second call, run the irq callback and stop the timer
-        uart->rxidle_state = RXIDLE_STANDBY;
-        uart->mp_irq_flags = UART_IRQ_RXIDLE;
-        mp_irq_handler(uart->mp_irq_obj);
+        self->rxidle_state = RXIDLE_STANDBY;
+        self->mp_irq_flags = UART_IRQ_RXIDLE;
+        mp_irq_handler(self->mp_irq_obj);
         mp_hal_wake_main_task_from_isr();
-        machine_timer_disable(uart->rxidle_timer);
+        machine_timer_disable(self->rxidle_timer);
     }
 }
 
@@ -149,9 +150,7 @@ static void uart_event_task(void *self_in) {
                     if (self->mp_irq_trigger & UART_IRQ_RXIDLE) {
                         if (self->rxidle_state != RXIDLE_INACTIVE) {
                             if (self->rxidle_state == RXIDLE_STANDBY) {
-                                self->rxidle_timer->repeat = true;
-                                self->rxidle_timer->handle = NULL;
-                                machine_timer_enable(self->rxidle_timer, uart_timer_callback);
+                                machine_timer_enable(self->rxidle_timer);
                             }
                         }
                         self->rxidle_state = RXIDLE_ALERT;
@@ -171,6 +170,13 @@ static void uart_event_task(void *self_in) {
                 mp_hal_wake_main_task_from_isr();
             }
         }
+    }
+}
+
+static inline void uart_event_task_create(machine_uart_obj_t *self) {
+    if (xTaskCreatePinnedToCore(uart_event_task, "uart_event_task", 2048, self,
+        ESP_TASKD_EVENT_PRIO, (TaskHandle_t *)&self->uart_event_task, MP_TASK_COREID) != pdPASS) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("failed to create UART event task"));
     }
 }
 
@@ -247,16 +253,78 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // wait for all data to be transmitted before changing settings
-    uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
+    // If UART is being freshly initialised then restore object defaults
+    if (!uart_is_driver_installed(self->uart_num)) {
+        self->bits = 8;
+        self->parity = 0;
+        self->stop = 1;
+        self->rts = UART_PIN_NO_CHANGE;
+        self->cts = UART_PIN_NO_CHANGE;
+        self->txbuf = 256;
+        self->rxbuf = 256; // IDF minimum
+        self->timeout = 0;
+        self->timeout_char = 0;
+        self->invert = 0;
+        self->flowcontrol = 0;
+        self->uart_event_task = NULL;
+        self->uart_queue = NULL;
+        self->rxidle_state = RXIDLE_INACTIVE;
 
-    if (args[ARG_txbuf].u_int >= 0 || args[ARG_rxbuf].u_int >= 0) {
-        // must reinitialise driver to change the tx/rx buffer size
-        #if MICROPY_HW_ENABLE_UART_REPL
-        if (self->uart_num == MICROPY_HW_UART_REPL) {
-            mp_raise_ValueError(MP_ERROR_TEXT("UART buffer size is fixed"));
+        // Set the MicroPython default UART pins. These may be overwritten with
+        // caller-provided pins, below
+        switch (self->uart_num) {
+            case UART_NUM_0:
+                self->rx = UART_PIN_NO_CHANGE; // GPIO 3
+                self->tx = UART_PIN_NO_CHANGE; // GPIO 1
+                break;
+            case UART_NUM_1:
+                self->rx = 9;
+                self->tx = 10;
+                break;
+            #if SOC_UART_HP_NUM > 2
+            case UART_NUM_2:
+                self->rx = 16;
+                self->tx = 17;
+                break;
+            #endif
+            #if SOC_UART_LP_NUM >= 1
+            case LP_UART_NUM_0:
+                self->rx = 4;
+                self->tx = 5;
+                break;
+            #endif
+            #if SOC_UART_HP_NUM > 3
+            case UART_NUM_3:
+                break;
+            #endif
+            #if SOC_UART_HP_NUM > 4
+            case UART_NUM_4:
+                break;
+            #endif
+            case UART_NUM_MAX:
+                assert(0); // Range is checked in mp_machine_uart_make_new, value should be unreachable
         }
-        #endif
+    } else {
+        // wait for all data to be transmitted before changing settings
+        uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
+    }
+
+    // Default driver parameters, should correspond to values set above
+    uart_config_t uartcfg = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .rx_flow_ctrl_thresh = 0,
+        .source_clk = UART_SOURCE_CLK,
+    };
+
+
+    if ((args[ARG_txbuf].u_int >= 0 && args[ARG_txbuf].u_int != self->txbuf) || (args[ARG_rxbuf].u_int >= 0 && args[ARG_rxbuf].u_int != self->rxbuf)) {
+        if (uart_is_repl(self->uart_num)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("REPL UART buffer size is fixed"));
+        }
 
         if (args[ARG_txbuf].u_int >= 0) {
             self->txbuf = args[ARG_txbuf].u_int;
@@ -264,20 +332,31 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         if (args[ARG_rxbuf].u_int >= 0) {
             self->rxbuf = args[ARG_rxbuf].u_int;
         }
-        uart_config_t uartcfg = {
-            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-            .rx_flow_ctrl_thresh = 0,
-            .source_clk = UART_SOURCE_CLK,
-        };
-        uint32_t baudrate;
-        check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
-        uartcfg.baud_rate = baudrate;
-        check_esp_err(uart_get_word_length(self->uart_num, &uartcfg.data_bits));
-        check_esp_err(uart_get_parity(self->uart_num, &uartcfg.parity));
-        check_esp_err(uart_get_stop_bits(self->uart_num, &uartcfg.stop_bits));
-        check_esp_err(uart_driver_delete(self->uart_num));
+
+        // must reinitialise driver to change the tx/rx buffer size
+        if (uart_is_driver_installed(self->uart_num)) {
+            // Update uartcfg with the current uart parameters
+            uint32_t baudrate;
+            check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
+            uartcfg.baud_rate = baudrate;
+            check_esp_err(uart_get_word_length(self->uart_num, &uartcfg.data_bits));
+            check_esp_err(uart_get_parity(self->uart_num, &uartcfg.parity));
+            check_esp_err(uart_get_stop_bits(self->uart_num, &uartcfg.stop_bits));
+            // De-initialise the driver
+            mp_machine_uart_deinit(self);
+        }
+    }
+
+    if (!uart_is_repl(self->uart_num) && !uart_is_driver_installed(self->uart_num)) {
+        // install the driver if needed - could be uninstalled for multiple reasons:
+        // 1. First time initialising this UART
+        // 2. Has been temporarily de-initialised to change the buffer size
+        // 3. Python code called .deinit() and now .init()
         check_esp_err(uart_param_config(self->uart_num, &uartcfg));
-        check_esp_err(uart_driver_install(self->uart_num, self->rxbuf, self->txbuf, 0, NULL, 0));
+        check_esp_err(uart_driver_install(self->uart_num, self->rxbuf, self->txbuf, UART_QUEUE_SIZE, &self->uart_queue, 0));
+        if (self->mp_irq_obj != NULL && self->mp_irq_obj->handler != mp_const_none) {
+            uart_event_task_create(self);
+        }
     }
 
     // set baudrate
@@ -401,6 +480,9 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
     uint8_t uart_fifo_len = UART_HW_FIFO_LEN(self->uart_num);
     check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, uart_fifo_len - uart_fifo_len / 4));
+
+    // discard any input from previous configuration
+    check_esp_err(uart_flush_input(self->uart_num));
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -411,71 +493,14 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     if (uart_num < 0 || uart_num >= UART_NUM_MAX) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) does not exist"), uart_num);
     }
+    _Static_assert(UART_NUM_MAX == SOC_UART_NUM, "SOC and driver constant should match");
 
-    // Defaults
-    uart_config_t uartcfg = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0,
-        .source_clk = UART_SOURCE_CLK,
-    };
-
-    // create instance
-    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
-    self->uart_num = uart_num;
-    self->bits = 8;
-    self->parity = 0;
-    self->stop = 1;
-    self->rts = UART_PIN_NO_CHANGE;
-    self->cts = UART_PIN_NO_CHANGE;
-    self->txbuf = 256;
-    self->rxbuf = 256; // IDF minimum
-    self->timeout = 0;
-    self->timeout_char = 0;
-    self->invert = 0;
-    self->flowcontrol = 0;
-    self->uart_event_task = 0;
-    self->rxidle_state = RXIDLE_INACTIVE;
-
-    switch (uart_num) {
-        case UART_NUM_0:
-            self->rx = UART_PIN_NO_CHANGE; // GPIO 3
-            self->tx = UART_PIN_NO_CHANGE; // GPIO 1
-            break;
-        case UART_NUM_1:
-            self->rx = 9;
-            self->tx = 10;
-            break;
-        #if SOC_UART_HP_NUM > 2
-        case UART_NUM_2:
-            self->rx = 16;
-            self->tx = 17;
-            break;
-        #endif
-        #if SOC_UART_LP_NUM >= 1
-        case LP_UART_NUM_0:
-            self->rx = 4;
-            self->tx = 5;
-        #endif
-
-    }
-
-    #if MICROPY_HW_ENABLE_UART_REPL
-    // Only reset the driver if it's not the REPL UART.
-    if (uart_num != MICROPY_HW_UART_REPL)
-    #endif
-    {
-        // Remove any existing configuration
-        check_esp_err(uart_driver_delete(self->uart_num));
-
-        // init the peripheral
-        // Setup
-        check_esp_err(uart_param_config(self->uart_num, &uartcfg));
-
-        check_esp_err(uart_driver_install(uart_num, self->rxbuf, self->txbuf, 3, &self->uart_queue, 0));
+    machine_uart_obj_t *self = MP_STATE_PORT(machine_uart_objs)[uart_num];
+    if (self == NULL) {
+        // Allocate a new UART object
+        self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
+        self->uart_num = uart_num;
+        // remaining fields are set from inside mp_machine_uart_init_helper()
     }
 
     mp_map_t kw_args;
@@ -485,11 +510,41 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     // Make sure pins are connected.
     check_esp_err(uart_set_pin(self->uart_num, self->tx, self->rx, self->rts, self->cts));
 
+    MP_STATE_PORT(machine_uart_objs)[uart_num] = self;
+
     return MP_OBJ_FROM_PTR(self);
 }
 
 static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
-    check_esp_err(uart_driver_delete(self->uart_num));
+    if (self->uart_event_task != NULL) {
+        vTaskDelete(self->uart_event_task);
+        self->uart_event_task = NULL;
+    }
+    if (self->rxidle_timer != NULL) {
+        machine_timer_disable(self->rxidle_timer);
+        if (self->rxidle_state > RXIDLE_STANDBY) {
+            // Currently deinit(),init() sequence resumes any previously
+            // configured irqs, and we currently also rely on this when changing
+            // buffer size - so keep rxidle in standby if it was active
+            self->rxidle_state = RXIDLE_STANDBY;
+        }
+    }
+    // Only stop the ESP-IDF driver entirely if it's not the REPL,
+    // (if it's the REPL then it shouldn't have any ISR configured anyway.)
+    if (!uart_is_repl(self->uart_num)) {
+        check_esp_err(uart_driver_delete(self->uart_num));
+        self->uart_queue = NULL;
+    }
+}
+
+void machine_uart_deinit_all(void) {
+    for (int i = 0; i < UART_NUM_MAX; i++) {
+        machine_uart_obj_t *uart = MP_STATE_PORT(machine_uart_objs)[i];
+        if (uart) {
+            mp_machine_uart_deinit(uart);
+            MP_STATE_PORT(machine_uart_objs)[i] = NULL;
+        }
+    }
 }
 
 static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
@@ -503,20 +558,21 @@ static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
 }
 
 static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
-    // Save settings
+    // Calculate the length of the break, as 13 bits.
     uint32_t baudrate;
     check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
+    uint32_t break_delay_us = 13000000 / baudrate;
 
-    // Synthesise the break condition by reducing the baud rate,
-    // and cater for the worst case of 5 data bits, no parity.
-    check_esp_err(uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000)));
-    check_esp_err(uart_set_baudrate(self->uart_num, baudrate * 6 / 15));
-    char buf[1] = {0};
-    uart_write_bytes(self->uart_num, buf, 1);
+    // Wait for any outstanding data to be transmitted.
     check_esp_err(uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000)));
 
-    // Restore original setting
-    check_esp_err(uart_set_baudrate(self->uart_num, baudrate));
+    // Set the TX pin to output, pull it low, and wait for the break period.
+    mp_hal_pin_output(self->tx);
+    mp_hal_pin_write(self->tx, 0);
+    mp_hal_delay_us(break_delay_us);
+
+    // Restore original UART pin settings.
+    check_esp_err(uart_set_pin(self->uart_num, self->tx, self->rx, self->rts, self->cts));
 }
 
 // Configure the timer used for IRQ_RXIDLE
@@ -529,17 +585,17 @@ static void uart_irq_configure_timer(machine_uart_obj_t *self, mp_uint_t trigger
         self->mp_irq_obj->ishard = false;
         uint32_t baudrate;
         uart_get_baudrate(self->uart_num, &baudrate);
-        mp_int_t period = TIMER_SCALE * 20 / baudrate + 1;
+        mp_int_t period = machine_timer_freq_hz() * 20 / baudrate + 1;
         if (period < RXIDLE_TIMER_MIN) {
             period = RXIDLE_TIMER_MIN;
         }
         self->rxidle_period = period;
         self->rxidle_timer->period = period;
+        self->rxidle_timer->handler = uart_timer_callback;
         // The Python callback is not used. So use this
         // data field to hold a reference to the UART object.
         self->rxidle_timer->callback = self;
         self->rxidle_timer->repeat = true;
-        self->rxidle_timer->handle = NULL;
         self->rxidle_state = RXIDLE_STANDBY;
     }
 }
@@ -568,6 +624,10 @@ static const mp_irq_methods_t uart_irq_methods = {
 };
 
 static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (uart_is_repl(self->uart_num)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("REPL UART does not support IRQs"));
+    }
+
     if (self->mp_irq_obj == NULL) {
         self->mp_irq_trigger = 0;
         self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
@@ -593,13 +653,12 @@ static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args
         }
         self->mp_irq_obj->ishard = false;
         self->mp_irq_trigger = trigger;
-        self->rxidle_timer = machine_timer_create(0);
+        self->rxidle_timer = machine_timer_create(RXIDLE_TIMER_IDX);
         uart_irq_configure_timer(self, trigger);
 
         // Start a task for handling events
-        if (handler != mp_const_none && self->uart_event_task == NULL) {
-            xTaskCreatePinnedToCore(uart_event_task, "uart_event_task", 2048, self,
-                ESP_TASKD_EVENT_PRIO, (TaskHandle_t *)&self->uart_event_task, MP_TASK_COREID);
+        if (handler != mp_const_none && self->uart_event_task == NULL && self->uart_queue != NULL) {
+            uart_event_task_create(self);
         } else if (handler == mp_const_none && self->uart_event_task != NULL) {
             vTaskDelete(self->uart_event_task);
             self->uart_event_task = NULL;
@@ -617,19 +676,18 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
         return 0;
     }
 
-    TickType_t time_to_wait;
-    if (self->timeout == 0) {
-        time_to_wait = 0;
-    } else {
-        time_to_wait = pdMS_TO_TICKS(self->timeout);
-    }
+    TickType_t time_to_wait = self->timeout > 0 ? pdMS_TO_TICKS(self->timeout) : 0;
 
-    bool release_gil = time_to_wait > 0;
+    bool release_gil = (self->timeout + self->timeout_char) > 0;
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
 
-    int bytes_read = uart_read_bytes(self->uart_num, buf_in, size, time_to_wait);
+    int bytes_read = uart_read_bytes(self->uart_num, buf_in, 1, time_to_wait);
+    if (size > 1 && bytes_read != 0) {
+        time_to_wait = self->timeout_char > 0 ? pdMS_TO_TICKS(self->timeout_char) : 0;
+        bytes_read += uart_read_bytes(self->uart_num, buf_in + 1, size - 1, time_to_wait);
+    }
 
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
@@ -689,3 +747,5 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
     }
     return ret;
 }
+
+MP_REGISTER_ROOT_POINTER(void *machine_uart_objs[SOC_UART_NUM]);

@@ -29,4 +29,5 @@ except OSError:
 
 for fun in (tgammaf,):
     for val in (0.5, 1, 1.0, 1.5, 4, 4.0):
-        print("%.6f" % fun(val))
+        # limit to 5 decimals in order to pass with REPR_C with FORMAT_IMPL_BASIC
+        print("%.5f" % fun(val))

@@ -1,0 +1,3 @@
+Unhandled exception in thread started by <function thread_entry at 0x\[0-9a-f\]\+>
+ValueError: 
+done

@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "shared/runtime/mpirq.h"
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"
@@ -131,6 +132,7 @@ typedef struct _pyb_timer_obj_t {
     uint8_t tim_id;
     uint8_t is_32bit;
     mp_obj_t callback;
+    bool ishard;
     TIM_HandleTypeDef tim;
     IRQn_Type irqn;
     pyb_timer_channel_obj_t *channel;
@@ -261,6 +263,12 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
         }
     }
 
+    #elif defined(STM32N6)
+
+    // Timers are clocked either by ck_timg1 or ck_timg2.
+    // Both of those have the same frequency: sys_bus_ck / prescaler(TIMPRE)
+    return LL_RCC_GetSystemClockFreq() / (1 << LL_RCC_GetTIMPrescaler());
+
     #else
 
     uint32_t source, clk_div;
@@ -275,6 +283,9 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
         #elif defined(STM32H7)
         source = HAL_RCC_GetPCLK2Freq();
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE2;
+        #elif defined(STM32U5)
+        source = HAL_RCC_GetPCLK2Freq();
+        clk_div = RCC->CFGR1 & RCC_CFGR2_PPRE2;
         #else
         source = HAL_RCC_GetPCLK2Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
@@ -288,6 +299,8 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
         clk_div = RCC->CDCFGR1 & RCC_CDCFGR2_CDPPRE1;
         #elif defined(STM32H7)
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE1;
+        #elif defined(STM32U5)
+        clk_div = RCC->CFGR1 & RCC_CFGR2_PPRE1;
         #else
         clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
         #endif
@@ -493,7 +506,7 @@ static uint32_t compute_dtg_from_ticks(mp_int_t ticks) {
 
 // Given the 8-bit value stored in the DTG field of the BDTR register, compute
 // the number of ticks.
-static mp_int_t compute_ticks_from_dtg(uint32_t dtg) {
+static unsigned compute_ticks_from_dtg(uint32_t dtg) {
     if ((dtg & 0x80) == 0) {
         return dtg & 0x7F;
     }
@@ -626,10 +639,14 @@ static void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///       BRK_IN input is triggered. It can be set to `BRK_OFF`, `BRK_LOW`
 ///       and `BRK_HIGH`.
 ///
+///   - `hard` - specifies if the timer and channel callbacks should be run
+///      in hard-IRQ context (the default on stm32) or scheduled as a soft
+///      handler.
+///
 ///
 ///  You must either specify freq or both of period and prescaler.
 static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime, ARG_brk };
+    enum { ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime, ARG_brk, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_prescaler,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
@@ -640,6 +657,7 @@ static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_deadtime,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_brk,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BRK_OFF} },
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
     // parse args
@@ -822,6 +840,7 @@ static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     self->tim.Instance->CR1 |= TIM_CR1_ARPE;
 
     // Start the timer running
+    self->ishard = args[ARG_hard].u_bool;
     if (args[ARG_callback].u_obj == mp_const_none) {
         HAL_TIM_Base_Start(&self->tim);
     } else {
@@ -846,7 +865,9 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
     #endif
     #endif
+
     TIM_ENTRY(2, TIM2_IRQn),
+
     #if defined(TIM3)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(3, TIM3_TIM4_IRQn),
@@ -854,27 +875,31 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(3, TIM3_IRQn),
     #endif
     #endif
+
     #if defined(TIM4)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
-    TIM_ENTRY(3, TIM3_TIM4_IRQn),
+    TIM_ENTRY(4, TIM3_TIM4_IRQn),
     #else
     TIM_ENTRY(4, TIM4_IRQn),
     #endif
     #endif
+
     #if defined(TIM5)
     TIM_ENTRY(5, TIM5_IRQn),
     #endif
+
     #if defined(TIM6)
     #if defined(STM32F412Zx) || defined(STM32L1)
     TIM_ENTRY(6, TIM6_IRQn),
     #elif defined(STM32G0)
     TIM_ENTRY(6, TIM6_DAC_LPTIM1_IRQn),
-    #elif defined(STM32H5)
+    #elif defined(STM32H5) || defined(STM32N6) || defined(STM32U5)
     TIM_ENTRY(6, TIM6_IRQn),
     #else
     TIM_ENTRY(6, TIM6_DAC_IRQn),
     #endif
     #endif
+
     #if defined(TIM7)
     #if defined(STM32G0)
     TIM_ENTRY(7, TIM7_LPTIM2_IRQn),
@@ -894,7 +919,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM9)
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32N6)
     TIM_ENTRY(9, TIM9_IRQn),
     #else
     TIM_ENTRY(9, TIM1_BRK_TIM9_IRQn),
@@ -902,7 +927,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM10)
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32N6)
     TIM_ENTRY(10, TIM10_IRQn),
     #else
     TIM_ENTRY(10, TIM1_UP_TIM10_IRQn),
@@ -910,7 +935,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM11)
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32N6)
     TIM_ENTRY(11, TIM11_IRQn),
     #else
     TIM_ENTRY(11, TIM1_TRG_COM_TIM11_IRQn),
@@ -918,7 +943,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM12)
-    #if defined(STM32H5)
+    #if defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(12, TIM12_IRQn),
     #else
     TIM_ENTRY(12, TIM8_BRK_TIM12_IRQn),
@@ -926,21 +951,21 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
 
     #if defined(TIM13)
-    #if defined(STM32H5)
+    #if defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(13, TIM13_IRQn),
     #else
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
     #endif
 
-    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(14, TIM14_IRQn),
     #elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
 
     #if defined(TIM15)
-    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5)
     TIM_ENTRY(15, TIM15_IRQn),
     #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
@@ -950,7 +975,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM16)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(16, TIM16_FDCAN_IT0_IRQn),
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5) || defined(STM32WL)
     TIM_ENTRY(16, TIM16_IRQn),
     #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
@@ -960,7 +985,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM17)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(17, TIM17_FDCAN_IT1_IRQn),
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5) || defined(STM32WL)
     TIM_ENTRY(17, TIM17_IRQn),
     #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
@@ -1696,29 +1721,10 @@ static void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
             // clear the interrupt
             __HAL_TIM_CLEAR_IT(&tim->tim, irq_mask);
 
-            // execute callback if it's set
-            if (callback != mp_const_none) {
-                mp_sched_lock();
-                // When executing code within a handler we must lock the GC to prevent
-                // any memory allocations.  We must also catch any exceptions.
-                gc_lock();
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
-                    nlr_pop();
-                } else {
-                    // Uncaught exception; disable the callback so it doesn't run again.
-                    tim->callback = mp_const_none;
-                    __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
-                    if (channel == 0) {
-                        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
-                    } else {
-                        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
-                    }
-                    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-                }
-                gc_unlock();
-                mp_sched_unlock();
+            if (mp_irq_dispatch(callback, MP_OBJ_FROM_PTR(tim), tim->ishard) < 0) {
+                // Uncaught exception; disable the callback so it doesn't run again.
+                tim->callback = mp_const_none;
+                __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
             }
         }
     }

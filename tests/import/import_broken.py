@@ -1,3 +1,9 @@
+try:
+    Exception.__class__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
 import sys, pkg
 
 # Modules we import are usually added to sys.modules.

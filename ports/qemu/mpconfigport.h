@@ -39,8 +39,9 @@
 #define MICROPY_EMIT_INLINE_THUMB   (1)
 #endif
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
-#elif defined(__riscv)
+#elif defined(__riscv) && (__riscv_xlen == 32)
 #define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_RV32_ZBA       (1)
 #define MICROPY_EMIT_INLINE_RV32    (1)
 #endif
 
@@ -51,12 +52,8 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_SYS_PLATFORM     "qemu"
-#define MICROPY_PY_SYS_STDIO_BUFFER (0)
-#define MICROPY_PY_SELECT           (0)
-#define MICROPY_PY_TIME             (0)
 #define MICROPY_PY_ASYNCIO          (0)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/qemu/modmachine.c"
@@ -68,13 +65,12 @@
 
 // type definitions for the specific machine
 
+#if defined(__riscv) && (__riscv_xlen == 64)
+#define MP_SSIZE_MAX (0x7fffffffffffffff)
+#else
 #define MP_SSIZE_MAX (0x7fffffff)
+#endif
 
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
-
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()

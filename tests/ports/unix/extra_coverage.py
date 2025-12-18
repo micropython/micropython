@@ -6,6 +6,16 @@ except NameError:
 
 import errno
 import io
+import uctypes
+
+# create an int-like variable used for coverage of `mp_obj_get_ll`
+buf = bytearray(b"\xde\xad\xbe\xef")
+struct = uctypes.struct(
+    uctypes.addressof(buf),
+    {"f32": uctypes.UINT32 | 0},
+    uctypes.BIG_ENDIAN,
+)
+deadbeef = struct.f32
 
 data = extra_coverage()
 
@@ -23,6 +33,7 @@ print(stream.read())  # read all encounters non-blocking error
 print(stream.read(1))  # read 1 byte encounters non-blocking error
 print(stream.readline())  # readline encounters non-blocking error
 print(stream.readinto(bytearray(10)))  # readinto encounters non-blocking error
+print(stream.readinto1(bytearray(10)))  # readinto1 encounters non-blocking error
 print(stream.write(b"1"))  # write encounters non-blocking error
 print(stream.write1(b"1"))  # write1 encounters non-blocking error
 stream.set_buf(b"123")
@@ -37,6 +48,28 @@ except OSError:
     print("OSError")
 stream.set_error(0)
 print(stream.ioctl(0, bytearray(10)))  # successful ioctl call
+
+print("# stream.readinto")
+
+# stream.readinto will read 3 bytes then try to read more to fill the buffer,
+# but on the second attempt will encounter EIO and should raise that error.
+stream.set_error(errno.EIO)
+stream.set_buf(b"123")
+buf = bytearray(4)
+try:
+    stream.readinto(buf)
+except OSError as er:
+    print("OSError", er.errno == errno.EIO)
+print(buf)
+
+# stream.readinto1 will read 3 bytes then should return them immediately, and
+# not encounter the EIO.
+stream.set_error(errno.EIO)
+stream.set_buf(b"123")
+buf = bytearray(4)
+print(stream.readinto1(buf), buf)
+
+print("# stream textio")
 
 stream2 = data[3]  # is textio
 print(stream2.read(1))  # read 1 byte encounters non-blocking error with textio stream
@@ -95,7 +128,7 @@ from frzqstr import returns_NULL
 
 print(returns_NULL())
 
-# test for freeze_mpy
+# test for freeze_mpy (importing prints several lines)
 import frozentest
 
 print(frozentest.__file__)

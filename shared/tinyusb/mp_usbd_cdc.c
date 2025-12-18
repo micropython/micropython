@@ -68,7 +68,7 @@ uintptr_t mp_usbd_cdc_poll_interfaces(uintptr_t poll_flags) {
     return ret;
 }
 
-void tud_cdc_rx_cb(uint8_t itf) {
+void MICROPY_WRAP_TUD_CDC_RX_CB(tud_cdc_rx_cb)(uint8_t itf) {
     // consume pending USB data immediately to free usb buffer and keep the endpoint from stalling.
     // in case the ringbuffer is full, mark the CDC interface that need attention later on for polling
     cdc_itf_pending &= ~(1 << itf);
@@ -98,37 +98,50 @@ mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
     if (!tusb_inited()) {
         return 0;
     }
+    mp_uint_t last_write = mp_hal_ticks_ms();
     size_t i = 0;
     while (i < len) {
         uint32_t n = len - i;
-        if (n > CFG_TUD_CDC_EP_BUFSIZE) {
-            n = CFG_TUD_CDC_EP_BUFSIZE;
-        }
-        if (tud_cdc_connected()) {
-            // If CDC port is connected but the buffer is full, wait for up to USC_CDC_TIMEOUT ms.
-            mp_uint_t t0 = mp_hal_ticks_ms();
-            while (n > tud_cdc_write_available() && (mp_uint_t)(mp_hal_ticks_ms() - t0) < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
-                mp_event_wait_ms(1);
 
-                // Explicitly run the USB stack as the scheduler may be locked (eg we
-                // are in an interrupt handler), while there is data pending.
-                mp_usbd_task();
-            }
+        if (tud_cdc_connected()) {
             // Limit write to available space in tx buffer when connected.
+            //
+            // (If not connected then we write everything to the fifo, expecting
+            // it to overwrite old data so it will have latest data buffered
+            // when host connects.)
             n = MIN(n, tud_cdc_write_available());
-            if (n == 0) {
-                break;
-            }
         }
-        // When not connected we always write to usb fifo, ensuring it has latest data.
+
         uint32_t n2 = tud_cdc_write(str + i, n);
         tud_cdc_write_flush();
         i += n2;
+
+        if (i < len) {
+            if (n2 > 0) {
+                // reset the timeout each time we successfully write to the FIFO
+                last_write = mp_hal_ticks_ms();
+            } else {
+                if ((mp_uint_t)(mp_hal_ticks_ms() - last_write) >= MICROPY_HW_USB_CDC_TX_TIMEOUT) {
+                    break; // Timeout
+                }
+
+                if (tud_cdc_connected()) {
+                    // If we know we're connected then we can wait for host to make
+                    // more space
+                    mp_event_wait_ms(1);
+                }
+            }
+
+            // Always explicitly run the USB stack as the scheduler may be
+            // locked (eg we are in an interrupt handler), while there is data
+            // or a state change pending.
+            mp_usbd_task();
+        }
     }
     return i;
 }
 
-void tud_sof_cb(uint32_t frame_count) {
+void MICROPY_WRAP_TUD_SOF_CB(tud_sof_cb)(uint32_t frame_count) {
     if (--cdc_connected_flush_delay < 0) {
         // Finished on-connection delay, disable SOF interrupt again.
         tud_sof_cb_enable(false);
@@ -159,7 +172,7 @@ static struct {
 } prev_line_state = {0};
 #endif
 
-void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
+void MICROPY_WRAP_TUD_CDC_LINE_STATE_CB(tud_cdc_line_state_cb)(uint8_t itf, bool dtr, bool rts) {
     #if MICROPY_HW_USB_CDC && !MICROPY_EXCLUDE_SHARED_TINYUSB_USBD_CDC
     if (dtr) {
         // A host application has started to open the cdc serial port.

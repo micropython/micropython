@@ -123,7 +123,18 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
 #define MP_HAL_PIN_PULL_UP              (1)
 #define MP_HAL_PIN_PULL_DOWN            (2)
 
+// Open drain behaviour is simulated.
+#if NUM_BANK0_GPIOS > 32
 extern uint64_t machine_pin_open_drain_mask;
+#define GPIO_IS_OPEN_DRAIN(id)          (machine_pin_open_drain_mask & (1ULL << id))
+#define GPIO_ENABLE_OPEN_DRAIN(id)      (machine_pin_open_drain_mask |= (1ULL << id))
+#define GPIO_DISABLE_OPEN_DRAIN(id)     (machine_pin_open_drain_mask &= ~(1ULL << id))
+#else
+extern uint32_t machine_pin_open_drain_mask;
+#define GPIO_IS_OPEN_DRAIN(id)          (machine_pin_open_drain_mask & (1U << id))
+#define GPIO_ENABLE_OPEN_DRAIN(id)      (machine_pin_open_drain_mask |= (1U << id))
+#define GPIO_DISABLE_OPEN_DRAIN(id)     (machine_pin_open_drain_mask &= ~(1U << id))
+#endif
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
 
@@ -133,13 +144,13 @@ static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
 
 static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
     gpio_set_dir(pin, GPIO_IN);
-    machine_pin_open_drain_mask &= ~(1 << pin);
+    GPIO_DISABLE_OPEN_DRAIN(pin);
     gpio_set_function(pin, GPIO_FUNC_SIO);
 }
 
 static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
     gpio_set_dir(pin, GPIO_OUT);
-    machine_pin_open_drain_mask &= ~(1 << pin);
+    GPIO_DISABLE_OPEN_DRAIN(pin);
     gpio_set_function(pin, GPIO_FUNC_SIO);
 }
 
@@ -151,7 +162,7 @@ static inline void mp_hal_pin_open_drain_with_value(mp_hal_pin_obj_t pin, int v)
         gpio_put(pin, 0);
         gpio_set_dir(pin, GPIO_OUT);
     }
-    machine_pin_open_drain_mask |= 1 << pin;
+    GPIO_ENABLE_OPEN_DRAIN(pin);
     gpio_set_function(pin, GPIO_FUNC_SIO);
 }
 

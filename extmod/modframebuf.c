@@ -270,8 +270,7 @@ static void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, u
     formats[fb->format].fill_rect(fb, x, y, xend - x, yend - y, col);
 }
 
-static mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
-    mp_arg_check_num(n_args, n_kw, 4, 5, false);
+static mp_obj_t framebuf_make_new_helper(size_t n_args, const mp_obj_t *args_in, unsigned int buf_flags, mp_obj_framebuf_t *o) {
 
     mp_int_t width = mp_obj_get_int(args_in[1]);
     mp_int_t height = mp_obj_get_int(args_in[2]);
@@ -318,13 +317,15 @@ static mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args_in[0], &bufinfo, buf_flags);
 
     if ((strides_required * stride + (height_required - strides_required) * width_required) * bpp / 8 > bufinfo.len) {
         mp_raise_ValueError(NULL);
     }
 
-    mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, type);
+    if (o == NULL) {
+        o = mp_obj_malloc(mp_obj_framebuf_t, (const mp_obj_type_t *)&mp_type_framebuf);
+    }
     o->buf_obj = args_in[0];
     o->buf = bufinfo.buf;
     o->width = width;
@@ -333,6 +334,11 @@ static mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     o->stride = stride;
 
     return MP_OBJ_FROM_PTR(o);
+}
+
+static mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
+    mp_arg_check_num(n_args, n_kw, 4, 5, false);
+    return framebuf_make_new_helper(n_args, args_in, MP_BUFFER_WRITE, NULL);
 }
 
 static void framebuf_args(const mp_obj_t *args_in, mp_int_t *args_out, int n) {
@@ -477,9 +483,7 @@ static void line(const mp_obj_framebuf_t *fb, mp_int_t x1, mp_int_t y1, mp_int_t
         e += 2 * dy;
     }
 
-    if (0 <= x2 && x2 < fb->width && 0 <= y2 && y2 < fb->height) {
-        setpixel(fb, x2, y2, col);
-    }
+    setpixel_checked(fb, x2, y2, col, 1);
 }
 
 static mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args_in) {
@@ -707,13 +711,27 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_poly_obj, 5, 6, framebuf_pol
 
 #endif // MICROPY_PY_ARRAY
 
+static void get_readonly_framebuffer(mp_obj_t arg, mp_obj_framebuf_t *rofb) {
+    mp_obj_t fb = mp_obj_cast_to_native_base(arg, MP_OBJ_FROM_PTR(&mp_type_framebuf));
+    if (fb != MP_OBJ_NULL) {
+        *rofb = *(mp_obj_framebuf_t *)MP_OBJ_TO_PTR(fb);
+    } else {
+        // A tuple/list of the form: (buffer, width, height, format[, stride]).
+        size_t len;
+        mp_obj_t *items;
+        mp_obj_get_array(arg, &len, &items);
+        if (len < 4 || len > 5) {
+            mp_raise_ValueError(NULL);
+        }
+        framebuf_make_new_helper(len, items, MP_BUFFER_READ, rofb);
+    }
+}
+
 static mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
-    mp_obj_t source_in = mp_obj_cast_to_native_base(args_in[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
-    if (source_in == MP_OBJ_NULL) {
-        mp_raise_TypeError(NULL);
-    }
-    mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(source_in);
+
+    mp_obj_framebuf_t source;
+    get_readonly_framebuffer(args_in[1], &source);
 
     mp_int_t x = mp_obj_get_int(args_in[2]);
     mp_int_t y = mp_obj_get_int(args_in[3]);
@@ -721,16 +739,17 @@ static mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     if (n_args > 4) {
         key = mp_obj_get_int(args_in[4]);
     }
-    mp_obj_framebuf_t *palette = NULL;
+    mp_obj_framebuf_t palette;
+    palette.buf = NULL;
     if (n_args > 5 && args_in[5] != mp_const_none) {
-        palette = MP_OBJ_TO_PTR(mp_obj_cast_to_native_base(args_in[5], MP_OBJ_FROM_PTR(&mp_type_framebuf)));
+        get_readonly_framebuffer(args_in[5], &palette);
     }
 
     if (
         (x >= self->width) ||
         (y >= self->height) ||
-        (-x >= source->width) ||
-        (-y >= source->height)
+        (-x >= source.width) ||
+        (-y >= source.height)
         ) {
         // Out of bounds, no-op.
         return mp_const_none;
@@ -741,15 +760,15 @@ static mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     int y0 = MAX(0, y);
     int x1 = MAX(0, -x);
     int y1 = MAX(0, -y);
-    int x0end = MIN(self->width, x + source->width);
-    int y0end = MIN(self->height, y + source->height);
+    int x0end = MIN(self->width, x + source.width);
+    int y0end = MIN(self->height, y + source.height);
 
     for (; y0 < y0end; ++y0) {
         int cx1 = x1;
         for (int cx0 = x0; cx0 < x0end; ++cx0) {
-            uint32_t col = getpixel(source, cx1, y1);
-            if (palette) {
-                col = getpixel(palette, col, 0);
+            uint32_t col = getpixel(&source, cx1, y1);
+            if (palette.buf) {
+                col = getpixel(&palette, col, 0);
             }
             if (col != (uint32_t)key) {
                 setpixel(self, cx0, y0, col);
@@ -766,39 +785,40 @@ static mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ys
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t xstep = mp_obj_get_int(xstep_in);
     mp_int_t ystep = mp_obj_get_int(ystep_in);
-    int sx, y, xend, yend, dx, dy;
+    unsigned int sx, y, xend, yend;
+    int dx, dy;
     if (xstep < 0) {
-        sx = 0;
-        xend = self->width + xstep;
-        if (xend <= 0) {
+        if (-xstep >= self->width) {
             return mp_const_none;
         }
+        sx = 0;
+        xend = self->width + (int)xstep;
         dx = 1;
     } else {
-        sx = self->width - 1;
-        xend = xstep - 1;
-        if (xend >= sx) {
+        if (xstep >= self->width) {
             return mp_const_none;
         }
+        sx = self->width - 1;
+        xend = (int)xstep - 1;
         dx = -1;
     }
     if (ystep < 0) {
-        y = 0;
-        yend = self->height + ystep;
-        if (yend <= 0) {
+        if (-ystep >= self->height) {
             return mp_const_none;
         }
+        y = 0;
+        yend = self->height + (int)ystep;
         dy = 1;
     } else {
-        y = self->height - 1;
-        yend = ystep - 1;
-        if (yend >= y) {
+        if (ystep >= self->height) {
             return mp_const_none;
         }
+        y = self->height - 1;
+        yend = (int)ystep - 1;
         dy = -1;
     }
     for (; y != yend; y += dy) {
-        for (int x = sx; x != xend; x += dx) {
+        for (unsigned x = sx; x != xend; x += dx) {
             setpixel(self, x, y, getpixel(self, x - xstep, y - ystep));
         }
     }

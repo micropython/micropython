@@ -7,6 +7,9 @@
 # - IDF_PATH_V50 must be set
 # - MICROPY_AUTOBUILD_MICROPYTHON_REPO must be set to location of micropython repository
 # - MICROPY_AUTOBUILD_MAKE must be set to the make command to use, eg "make -j2"
+# - MICROPY_AUTOBUILD_DEST must be set to a directory name to place the output firmware
+#   (this directory will be created, and removed at the end if firmware is copied to a
+#   remote machine using MICROPY_AUTOBUILD_REMOTE_MACHINE and MICROPY_AUTOBUILD_REMOTE_DIR)
 #
 # Optional settings:
 # - MICROPY_AUTOBUILD_REMOTE_MACHINE can be set to a remote ssh machine to copy files to
@@ -27,6 +30,11 @@ if [ -z "$MICROPY_AUTOBUILD_MAKE" ]; then
     exit 1
 fi
 
+if [ -z "$MICROPY_AUTOBUILD_DEST" ]; then
+    echo "must set MICROPY_AUTOBUILD_DEST"
+    exit 1
+fi
+
 ########################################
 # Initialisation
 
@@ -37,7 +45,7 @@ AUTODIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source ${AUTODIR}/build-boards.sh
 
 # make local directory to put firmware
-LOCAL_FIRMWARE=/tmp/autobuild-firmware-$$
+LOCAL_FIRMWARE=${MICROPY_AUTOBUILD_DEST}
 mkdir -p ${LOCAL_FIRMWARE}
 
 # get latest MicroPython
@@ -47,6 +55,9 @@ git -C ${MICROPY_AUTOBUILD_MICROPYTHON_REPO}/lib/pico-sdk submodule update --ini
 
 ########################################
 # Build all firmware
+
+# Fail on some things which are warnings otherwise
+export MICROPY_MAINTAINER_BUILD=1
 
 pushd ${MICROPY_AUTOBUILD_MICROPYTHON_REPO}
 
@@ -58,7 +69,7 @@ make -C mpy-cross
 # where SEMVER is vX.Y.Z or vX.Y.Z-preview.N.gHASH or vX.Y.Z-preview.N.gHASH.dirty
 FW_DATE=$(date '+%Y%m%d')
 # same logic as makeversionhdr.py, convert git-describe output into semver-compatible
-FW_GIT_TAG="$(git describe --tags --dirty --always --match 'v[1-9].*')"
+FW_GIT_TAG="$(git describe --tags --dirty --always --match 'v[1-9].*' --abbrev=10)"
 FW_SEMVER_MAJOR_MINOR_PATCH="$(echo $FW_GIT_TAG | cut -d'-' -f1)"
 FW_SEMVER_PRERELEASE="$(echo $FW_GIT_TAG | cut -s -d'-' -f2-)"
 if [ -z "$FW_SEMVER_PRERELEASE" ]; then
@@ -69,7 +80,9 @@ fi
 FW_TAG="-$FW_DATE-$FW_SEMVER"
 
 # build new firmware
-cd ports/cc3200
+cd ports/alif
+build_alif_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../cc3200
 build_cc3200_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
 build_esp8266_boards ${FW_TAG} ${LOCAL_FIRMWARE}

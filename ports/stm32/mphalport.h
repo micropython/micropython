@@ -1,10 +1,13 @@
 // We use the ST Cube HAL library for most hardware peripherals
 #include STM32_HAL_H
 #include "pin.h"
+#include "usbd_conf.h"
+#include "py/ringbuf.h"
+#include "shared/runtime/interrupt_char.h"
 
 extern uint8_t mp_hal_unique_id_address[12];
 
-// F0-1.9.0+F4-1.16.0+F7-1.7.0+G0-1.5.1+G4-1.3.0+H7-1.6.0+L0-1.11.2+L4-1.17.0+WB-1.10.0+WL-1.1.0
+// F0-1.9.0+F4-1.16.0+F7-1.7.0+G0-1.5.1+G4-1.3.0+H5-1.0.0+H7-1.11.0+L0-1.11.2+L1-1.10.3+L4-1.17.0+N6-1.2.0+U5-1.8.0+WB-1.23.0+WL-1.1.0
 #if defined(STM32F0)
 #define MICROPY_PLATFORM_VERSION "HAL1.9.0"
 #elif defined(STM32F4)
@@ -25,8 +28,12 @@ extern uint8_t mp_hal_unique_id_address[12];
 #define MICROPY_PLATFORM_VERSION "HAL1.10.3"
 #elif defined(STM32L4)
 #define MICROPY_PLATFORM_VERSION "HAL1.17.0"
+#elif defined(STM32N6)
+#define MICROPY_PLATFORM_VERSION "HAL1.2.0"
+#elif defined(STM32U5)
+#define MICROPY_PLATFORM_VERSION "HAL1.8.0"
 #elif defined(STM32WB)
-#define MICROPY_PLATFORM_VERSION "HAL1.10.0"
+#define MICROPY_PLATFORM_VERSION "HAL1.23.0"
 #elif defined(STM32WL)
 #define MICROPY_PLATFORM_VERSION "HAL1.1.0"
 #endif
@@ -37,7 +44,9 @@ static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
     return -mp_hal_status_to_errno_table[status];
 }
 
-NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
+extern ringbuf_t stdin_ringbuf;
+
+MP_NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 // Atomic section helpers.
@@ -144,3 +153,7 @@ enum {
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
+
+static inline void mp_hal_wake_main_task_from_isr(void) {
+    // Defined for tinyusb support, nothing needs to be done here.
+}

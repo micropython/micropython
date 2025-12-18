@@ -34,13 +34,6 @@
 #include "hal/timer_ll.h"
 #include "soc/timer_periph.h"
 
-#define TIMER_DIVIDER  8
-
-// TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
-
-#define TIMER_FLAGS    0
-
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
 
@@ -55,12 +48,15 @@ typedef struct _machine_timer_obj_t {
     mp_obj_t callback;
 
     intr_handle_t handle;
+    void (*handler)(struct _machine_timer_obj_t *timer);
 
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
 
 machine_timer_obj_t *machine_timer_create(mp_uint_t timer);
-void machine_timer_enable(machine_timer_obj_t *self, void (*timer_isr));
+void machine_timer_enable(machine_timer_obj_t *self);
 void machine_timer_disable(machine_timer_obj_t *self);
+
+uint32_t machine_timer_freq_hz(void);
 
 #endif // MICROPY_INCLUDED_ESP32_MACHINE_TIMER_H

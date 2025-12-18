@@ -45,29 +45,18 @@ typedef struct _mp_obj_complex_t {
 static void complex_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_complex_t *o = MP_OBJ_TO_PTR(o_in);
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    char buf[16];
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
-    const int precision = 6;
-    #else
-    const int precision = 7;
-    #endif
-    #else
-    char buf[32];
-    const int precision = 16;
-    #endif
-    if (o->real == 0) {
-        mp_format_float(o->imag, buf, sizeof(buf), 'g', precision, '\0');
-        mp_printf(print, "%sj", buf);
+    const char *suffix;
+    int flags = 0;
+    if (o->real != 0) {
+        mp_print_str(print, "(");
+        mp_print_float(print, o->real, 'g', 0, '\0', -1, MP_FLOAT_REPR_PREC);
+        flags = PF_FLAG_SHOW_SIGN;
+        suffix = "j)";
     } else {
-        mp_format_float(o->real, buf, sizeof(buf), 'g', precision, '\0');
-        mp_printf(print, "(%s", buf);
-        if (o->imag >= 0 || isnan(o->imag)) {
-            mp_print_str(print, "+");
-        }
-        mp_format_float(o->imag, buf, sizeof(buf), 'g', precision, '\0');
-        mp_printf(print, "%sj)", buf);
+        suffix = "j";
     }
+    mp_print_float(print, o->imag, 'g', flags, '\0', -1, MP_FLOAT_REPR_PREC);
+    mp_print_str(print, suffix);
 }
 
 static mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {

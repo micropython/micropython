@@ -12,10 +12,6 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-giga-r1-wifi"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
-#define UINT_FMT                    "%u"
-#define INT_FMT                     "%d"
-typedef int mp_int_t;               // must be pointer size
-typedef unsigned int mp_uint_t;     // must be pointer size
 
 #define MICROPY_FATFS_EXFAT         (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
@@ -31,6 +27,7 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_MMCARD    (0)
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
 #define MICROPY_HW_TIM_IS_RESERVED(id) (id == 1)
+#define MICROPY_GC_SPLIT_HEAP       (1)
 
 // ROMFS config
 #define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI       (1)

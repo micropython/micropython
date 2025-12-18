@@ -105,7 +105,7 @@ static const char *const ssl_error_tab2[] = {
     "NOT_SUPPORTED",
 };
 
-static NORETURN void ssl_raise_error(int err) {
+static MP_NORETURN void ssl_raise_error(int err) {
     MP_STATIC_ASSERT(SSL_NOT_OK - 3 == SSL_EAGAIN);
     MP_STATIC_ASSERT(SSL_ERROR_CONN_LOST - 18 == SSL_ERROR_NOT_SUPPORTED);
 

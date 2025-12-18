@@ -45,6 +45,10 @@
 #include "modnetwork.h"
 #include "extmod/modnetwork.h"
 
+#if PHY_LAN867X_ENABLED
+#include "esp_eth_phy_lan867x.h"
+#endif
+
 typedef struct _lan_if_obj_t {
     base_if_obj_t base;
     bool initialized;
@@ -156,6 +160,12 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         args[ARG_phy_type].u_int != PHY_RTL8201 &&
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
         args[ARG_phy_type].u_int != PHY_KSZ8081 &&
+        #if PHY_LAN867X_ENABLED
+        args[ARG_phy_type].u_int != PHY_LAN8670 &&
+        #endif
+        #if PHY_GENERIC_ENABLED
+        args[ARG_phy_type].u_int != PHY_GENERIC &&
+        #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         args[ARG_phy_type].u_int != PHY_KSZ8851SNL &&
@@ -172,13 +182,13 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
-    #if CONFIG_IDF_TARGET_ESP32
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
     eth_esp32_emac_config_t esp32_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
     #endif
 
     esp_eth_mac_t *mac = NULL;
 
-    #if CONFIG_IDF_TARGET_ESP32
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
     // Dynamic ref_clk configuration.
     if (args[ARG_ref_clk_mode].u_int != -1) {
         // Map the GPIO_MODE constants to EMAC_CLK constants.
@@ -213,7 +223,7 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     #endif
 
     switch (args[ARG_phy_type].u_int) {
-        #if CONFIG_IDF_TARGET_ESP32
+        #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
         case PHY_LAN8710:
         case PHY_LAN8720:
             self->phy = esp_eth_phy_new_lan87xx(&phy_config);
@@ -231,7 +241,17 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         case PHY_KSZ8081:
             self->phy = esp_eth_phy_new_ksz80xx(&phy_config);
             break;
+        #if PHY_LAN867X_ENABLED
+        case PHY_LAN8670:
+            self->phy = esp_eth_phy_new_lan867x(&phy_config);
+            break;
         #endif
+        #if PHY_GENERIC_ENABLED
+        case PHY_GENERIC:
+            self->phy = esp_eth_phy_new_generic(&phy_config);
+            break;
+        #endif
+        #endif // CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         case PHY_KSZ8851SNL: {
@@ -266,7 +286,7 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #endif
     }
 
-    #if CONFIG_IDF_TARGET_ESP32
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
     if (!IS_SPI_PHY(args[ARG_phy_type].u_int)) {
         if (self->mdc_pin == -1 || self->mdio_pin == -1) {
             mp_raise_ValueError(MP_ERROR_TEXT("mdc and mdio must be specified"));

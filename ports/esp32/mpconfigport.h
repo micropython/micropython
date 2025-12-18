@@ -9,8 +9,6 @@
 #include "esp_random.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
-#include "driver/i2s_std.h"
-#include "esp_wifi_types.h"
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL            (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
@@ -32,7 +30,7 @@
 #ifndef MICROPY_GC_INITIAL_HEAP_SIZE
 #if CONFIG_IDF_TARGET_ESP32
 #define MICROPY_GC_INITIAL_HEAP_SIZE        (56 * 1024)
-#elif CONFIG_IDF_TARGET_ESP32S2 && !CONFIG_SPIRAM
+#elif CONFIG_IDF_TARGET_ESP32C2 || (CONFIG_IDF_TARGET_ESP32S2 && !CONFIG_SPIRAM)
 #define MICROPY_GC_INITIAL_HEAP_SIZE        (36 * 1024)
 #else
 #define MICROPY_GC_INITIAL_HEAP_SIZE        (64 * 1024)
@@ -62,13 +60,15 @@
 #define MICROPY_STACK_CHECK_MARGIN          (1024)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
+#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL) // Debugging Note: Increase the error reporting level to view
+                                                                             // __FUNCTION__, __LINE__, __FILE__ in check_esp_err() exceptions
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_POSIX_API           (1)
 #define MICROPY_USE_INTERNAL_ERRNO          (0) // errno.h from xtensa-esp32-elf/sys-include/sys
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
 #define MICROPY_SCHEDULER_DEPTH             (8)
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_VFS                         (1)
 
 // control over Python builtins
@@ -92,6 +92,9 @@
 #endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
+#endif
+
+#if MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS (1)
 #define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS_WITH_INTERLOCK (1)
 // Event stack size is the RTOS stack size minus an allowance for the stack used
@@ -102,11 +105,8 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (1)
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
-#endif
-#define MICROPY_PY_HASHLIB_MD5              (1)
-#define MICROPY_PY_HASHLIB_SHA1             (1)
-#define MICROPY_PY_HASHLIB_SHA256           (1)
-#define MICROPY_PY_CRYPTOLIB                (1)
+#endif // MICROPY_PY_BLUETOOTH
+
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (esp_random())
 #define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
@@ -123,6 +123,7 @@
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
 #define MICROPY_PY_MACHINE_ADC_INIT         (1)
+#define MICROPY_PY_MACHINE_ADC_DEINIT       (1)
 #define MICROPY_PY_MACHINE_ADC_READ         (1)
 #define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
 #define MICROPY_PY_MACHINE_ADC_BLOCK        (1)
@@ -136,6 +137,12 @@
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
+#ifndef MICROPY_PY_MACHINE_I2C_TARGET
+// I2C target hardware is limited on ESP32 (eg read event comes after the read) so we only support newer SoCs.
+#define MICROPY_PY_MACHINE_I2C_TARGET       (SOC_I2C_SUPPORT_SLAVE && !CONFIG_IDF_TARGET_ESP32)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/esp32/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX   (2)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
@@ -155,7 +162,9 @@
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
+#ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK (1)
+#endif
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #if CONFIG_IDF_TARGET_ESP32
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32"
@@ -163,10 +172,16 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s2"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s3"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c2"
 #elif CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c3"
+#elif CONFIG_IDF_TARGET_ESP32C5
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c5"
 #elif CONFIG_IDF_TARGET_ESP32C6
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c6"
+#elif CONFIG_IDF_TARGET_ESP32P4
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32p4"
 #endif
 #endif
 #define MICROPY_PY_NETWORK_INCLUDEFILE      "ports/esp32/modnetwork.h"
@@ -179,13 +194,19 @@
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (esp_rom_get_cpu_ticks_per_us() * 1000000 / 200) // roughly
-#define MICROPY_PY_SSL                      (1)
-#define MICROPY_SSL_MBEDTLS                 (1)
-#define MICROPY_PY_WEBSOCKET                (1)
-#define MICROPY_PY_WEBREPL                  (1)
+#ifndef MICROPY_HW_ESP_NEW_I2C_DRIVER
+#define MICROPY_HW_ESP_NEW_I2C_DRIVER       (0)
+#endif
+#define MICROPY_PY_SSL                      (MICROPY_PY_NETWORK)
+#define MICROPY_SSL_MBEDTLS                 (MICROPY_PY_SSL)
+#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_NETWORK)
+#define MICROPY_PY_WEBREPL                  (MICROPY_PY_NETWORK)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
+#ifndef MICROPY_PY_ESP32_PCNT
+#define MICROPY_PY_ESP32_PCNT               (SOC_PCNT_SUPPORTED)
+#endif
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -210,19 +231,14 @@
 
 #ifndef MICROPY_HW_USB_VID
 #define USB_ESPRESSIF_VID 0x303A
-#if CONFIG_TINYUSB_DESC_USE_ESPRESSIF_VID
 #define MICROPY_HW_USB_VID  (USB_ESPRESSIF_VID)
-#else
-#define MICROPY_HW_USB_VID  (CONFIG_TINYUSB_DESC_CUSTOM_VID)
 #endif
 
 #ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 #define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1) // Support machine.USBDevice
 #endif
-#endif
 
 #ifndef MICROPY_HW_USB_PID
-#if CONFIG_TINYUSB_DESC_USE_DEFAULT_PID
 #define _PID_MAP(itf, n) ((CFG_TUD_##itf) << (n))
 // A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
 // Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -231,24 +247,26 @@
 #define USB_TUSB_PID (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
     _PID_MAP(MIDI, 3))  // | _PID_MAP(AUDIO, 4) | _PID_MAP(VENDOR, 5) )
 #define MICROPY_HW_USB_PID  (USB_TUSB_PID)
-#else
-#define MICROPY_HW_USB_PID  (CONFIG_TINYUSB_DESC_CUSTOM_PID)
-#endif
 #endif
 
+// These Manufacturer & Product strings are the defaults when using the
+// esp_tinyusb component (which MicroPython used in the past).
 #ifndef MICROPY_HW_USB_MANUFACTURER_STRING
-#ifdef CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
-#define MICROPY_HW_USB_MANUFACTURER_STRING CONFIG_TINYUSB_DESC_MANUFACTURER_STRING
-#else
-#define MICROPY_HW_USB_MANUFACTURER_STRING "MicroPython"
-#endif
+#define MICROPY_HW_USB_MANUFACTURER_STRING "Espressif Systems"
 #endif
 
 #ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
-#ifdef CONFIG_TINYUSB_DESC_PRODUCT_STRING
-#define MICROPY_HW_USB_PRODUCT_FS_STRING CONFIG_TINYUSB_DESC_PRODUCT_STRING
-#else
-#define MICROPY_HW_USB_PRODUCT_FS_STRING "Board in FS mode"
+#define MICROPY_HW_USB_PRODUCT_FS_STRING "Espressif Device"
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32P4
+// By default, ESP32-P4 uses the HS USB PHY (RHPORT1) for TinyUSB
+// and configures the full speed USB port as USB Serial/JTAG device
+#ifndef MICROPY_HW_USB_HS
+#define MICROPY_HW_USB_HS 1
+#endif // MICROPY_HW_USB_HS
+#if MICROPY_HW_USB_HS && !defined(CFG_TUSB_RHPORT0_MODE) && !defined(CFG_TUSB_RHPORT1_MODE)
+#define CFG_TUSB_RHPORT1_MODE   (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
 #endif
 #endif
 
@@ -260,14 +278,14 @@
 #endif
 
 // Enable stdio over USB Serial/JTAG peripheral
+// (SOC_USB_OTG_PERIPH_NUM is only 2 on the ESP32-P4, which supports both native USB & Serial/JTAG simultaneously)
 #ifndef MICROPY_HW_ESP_USB_SERIAL_JTAG
-#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED && !MICROPY_HW_USB_CDC)
+#define MICROPY_HW_ESP_USB_SERIAL_JTAG      (SOC_USB_SERIAL_JTAG_SUPPORTED && (!MICROPY_HW_USB_CDC || SOC_USB_OTG_PERIPH_NUM > 1))
 #endif
 
-#if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG
+#if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG && (SOC_USB_OTG_PERIPH_NUM <= 1)
 #error "Invalid build config: Can't enable both native USB and USB Serial/JTAG peripheral"
 #endif
-
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
@@ -324,11 +342,6 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) IRAM_ATTR f
 
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 // ssize_t, off_t as required by POSIX-signatured functions in stream.h
 #include <sys/types.h>
@@ -351,7 +364,7 @@ typedef long mp_off_t;
 
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
 // RTC has a register to trigger bootloader on these targets
-#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32P4
 #define MICROPY_ESP32_USE_BOOTLOADER_RTC    (1)
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) machine_bootloader_rtc()
 #endif
@@ -390,4 +403,9 @@ void boardctrl_startup(void);
 // The minimum string length threshold for string printing to stdout operations to be GIL-aware.
 #ifndef MICROPY_PY_STRING_TX_GIL_THRESHOLD
 #define MICROPY_PY_STRING_TX_GIL_THRESHOLD  (20)
+#endif
+
+// Code can override this to provide a custom ESP-IDF entry point.
+#ifndef MICROPY_ESP_IDF_ENTRY
+#define MICROPY_ESP_IDF_ENTRY app_main
 #endif

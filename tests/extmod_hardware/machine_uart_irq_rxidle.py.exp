@@ -1,12 +1,30 @@
-write 2400
+========
+bits_per_s: 2400
+write
 ready
 IRQ_RXIDLE: True data: b'12345678'
 done
-write 9600
+write
+ready
+IRQ_RXIDLE: True data: b'abcdefgh'
+done
+========
+bits_per_s: 9600
+write
 ready
 IRQ_RXIDLE: True data: b'12345678'
 done
-write 115200
+write
+ready
+IRQ_RXIDLE: True data: b'abcdefgh'
+done
+========
+bits_per_s: 115200
+write
 ready
 IRQ_RXIDLE: True data: b'12345678'
+done
+write
+ready
+IRQ_RXIDLE: True data: b'abcdefgh'
 done
