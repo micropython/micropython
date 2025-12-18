@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2023 Damien P. George
+ * Copyright (c) 2013-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include "py/obj.h"
 #include "py/mphal.h"
+#include "shared/timeutils/timeutils.h"
 
-// Send string of given length to stdout, converting \n to \r\n.
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    printf("%.*s", (int)len, str);
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
+    mp_timestamp_t seconds = mp_hal_time_ns() / 1000000000;
+    timeutils_seconds_since_epoch_to_struct_time(seconds, tm);
+}
+
+// Returns the number of seconds, as an integer, since the Epoch.
+static mp_obj_t mp_time_time_get(void) {
+    return timeutils_obj_from_timestamp(mp_hal_time_ns() / 1000000000);
 }
