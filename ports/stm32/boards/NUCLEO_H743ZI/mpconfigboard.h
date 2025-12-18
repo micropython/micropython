@@ -17,7 +17,7 @@ void NUCLEO_H743ZI_board_early_init(void);
 #define MICROPY_HW_CLK_PLLM         (4)
 #define MICROPY_HW_CLK_PLLN         (400)
 #define MICROPY_HW_CLK_PLLP         (2)
-#define MICROPY_HW_CLK_PLLQ         (4)
+#define MICROPY_HW_CLK_PLLQ         (8)
 #define MICROPY_HW_CLK_PLLR         (2)
 #define MICROPY_HW_CLK_PLLVCI       (RCC_PLL1VCIRANGE_1)
 #define MICROPY_HW_CLK_PLLVCO       (RCC_PLL1VCOWIDE)
@@ -37,14 +37,16 @@ void NUCLEO_H743ZI_board_early_init(void);
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // UART config
+#define MICROPY_HW_UART1_TX         (pin_B6)
+#define MICROPY_HW_UART1_RX         (pin_B15)
 #define MICROPY_HW_UART2_TX         (pin_D5)
 #define MICROPY_HW_UART2_RX         (pin_D6)
 #define MICROPY_HW_UART2_RTS        (pin_D4)
 #define MICROPY_HW_UART2_CTS        (pin_D3)
 #define MICROPY_HW_UART3_TX         (pin_D8)
 #define MICROPY_HW_UART3_RX         (pin_D9)
-#define MICROPY_HW_UART5_TX         (pin_B6)
-#define MICROPY_HW_UART5_RX         (pin_B12)
+// #define MICROPY_HW_UART5_TX         (pin_B6)    // conflict with UART1_TX
+// #define MICROPY_HW_UART5_RX         (pin_B12)   // conflict with Ethernet MII mode
 #define MICROPY_HW_UART6_TX         (pin_C6)
 #define MICROPY_HW_UART6_RX         (pin_C7)
 #define MICROPY_HW_UART7_TX         (pin_F7)
