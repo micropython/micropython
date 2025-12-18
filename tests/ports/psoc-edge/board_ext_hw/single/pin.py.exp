@@ -2,7 +2,9 @@ Pin(Pin.cpu.P16_0, mode=Pin.OUT)
 Pin(Pin.cpu.P16_1, mode=Pin.IN, pull=Pin.PULL_UP)
 pin out initial value 1:  True
 pin out initial value 0:  True
+pin out (self) value 1:  True
 pin out value 1:  True
+pin out (self) value 0:  True
 pin out value 0:  True
 pin out value True:  True
 pin out value False:  True
