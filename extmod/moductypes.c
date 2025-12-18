@@ -635,7 +635,7 @@ static mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, 
 
     bufinfo->buf = self->addr;
     bufinfo->len = size;
-    bufinfo->typecode = BYTEARRAY_TYPECODE;
+    bufinfo->typecode = MP_TYPECODE_BYTEARRAY;
     return 0;
 }
 

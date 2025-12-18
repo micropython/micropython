@@ -831,7 +831,7 @@ static mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         if (args[1] != mp_const_none) {
             mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-            if (bufinfo.typecode == BYTEARRAY_TYPECODE) {
+            if (bufinfo.typecode == MP_TYPECODE_BYTEARRAY) {
                 bufinfo.typecode = 'b';
             } else {
                 bufinfo.typecode |= 0x20; // make lowercase to support upper and lower
@@ -893,7 +893,7 @@ static mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
     const uint8_t *src_top = src + bufinfo.len;
     while (src < src_top) {
         uint32_t value;
-        if (bufinfo.typecode == 'B' || bufinfo.typecode == BYTEARRAY_TYPECODE) {
+        if (bufinfo.typecode == 'B' || bufinfo.typecode == MP_TYPECODE_BYTEARRAY) {
             value = *(uint8_t *)src;
             src += sizeof(uint8_t);
         } else if (bufinfo.typecode == 'H') {

@@ -73,7 +73,7 @@ static mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 static void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
-    if (o->typecode == BYTEARRAY_TYPECODE) {
+    if (o->typecode == MP_TYPECODE_BYTEARRAY) {
         mp_print_str(print, "bytearray(b");
         mp_str_print_quoted(print, o->items, o->len, true);
     } else {
@@ -98,7 +98,7 @@ static mp_obj_array_t *array_new(char typecode, size_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
-    o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
+    o->base.type = (typecode == MP_TYPECODE_BYTEARRAY) ? &mp_type_bytearray : &mp_type_array;
     #elif MICROPY_PY_BUILTINS_BYTEARRAY
     o->base.type = &mp_type_bytearray;
     #else
@@ -131,7 +131,7 @@ static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     // other arrays can only be raw-initialised from bytes and bytearray objects
     mp_buffer_info_t bufinfo;
     if (((MICROPY_PY_BUILTINS_BYTEARRAY
-          && typecode == BYTEARRAY_TYPECODE)
+          && typecode == MP_TYPECODE_BYTEARRAY)
          || (MICROPY_PY_ARRAY
              && (mp_obj_is_type(initializer, &mp_type_bytes)
                  || (MICROPY_PY_BUILTINS_BYTEARRAY && mp_obj_is_type(initializer, &mp_type_bytearray)))))
@@ -186,11 +186,11 @@ static mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 
     if (n_args == 0) {
         // no args: construct an empty bytearray
-        return MP_OBJ_FROM_PTR(array_new(BYTEARRAY_TYPECODE, 0));
+        return MP_OBJ_FROM_PTR(array_new(MP_TYPECODE_BYTEARRAY, 0));
     } else if (mp_obj_is_int(args[0])) {
         // 1 arg, an integer: construct a blank bytearray of that length
         mp_uint_t len = mp_obj_get_int(args[0]);
-        mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
+        mp_obj_array_t *o = array_new(MP_TYPECODE_BYTEARRAY, len);
         memset(o->items, 0, len);
         return MP_OBJ_FROM_PTR(o);
     } else {
@@ -203,7 +203,7 @@ static mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
             mp_raise_TypeError(MP_ERROR_TEXT("string argument without an encoding"));
             #endif
         }
-        return array_construct(BYTEARRAY_TYPECODE, args[0]);
+        return array_construct(MP_TYPECODE_BYTEARRAY, args[0]);
     }
 }
 #endif
@@ -280,7 +280,7 @@ static mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 }
 
 static int typecode_for_comparison(int typecode, bool *is_unsigned) {
-    if (typecode == BYTEARRAY_TYPECODE) {
+    if (typecode == MP_TYPECODE_BYTEARRAY) {
         typecode = 'B';
     }
     if (typecode <= 'Z') {
@@ -674,7 +674,7 @@ size_t mp_obj_array_len(mp_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items) {
-    mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
+    mp_obj_array_t *o = array_new(MP_TYPECODE_BYTEARRAY, n);
     memcpy(o->items, items, n);
     return MP_OBJ_FROM_PTR(o);
 }
@@ -682,7 +682,7 @@ mp_obj_t mp_obj_new_bytearray(size_t n, const void *items) {
 // Create bytearray which references specified memory area
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items) {
     mp_obj_array_t *o = mp_obj_malloc(mp_obj_array_t, &mp_type_bytearray);
-    o->typecode = BYTEARRAY_TYPECODE;
+    o->typecode = MP_TYPECODE_BYTEARRAY;
     o->free = 0;
     o->len = n;
     o->items = items;
