@@ -55,9 +55,6 @@ mp_uint_t mp_verbose_flag = 0;
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
-    #if MICROPY_PY_SYS_SETTRACE
-    rc->line_of_definition = 0;
-    #endif
     return rc;
 }
 
@@ -75,13 +72,22 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     rc->children = children;
 
     #if MICROPY_PERSISTENT_CODE_SAVE
+    #if MICROPY_LIMIT_RAWCODE_SIZE
+    assert(len < 65536);
+    #endif
     rc->fun_data_len = len;
     rc->n_children = n_children;
     #endif
 
     #if MICROPY_PY_SYS_SETTRACE
-    mp_bytecode_prelude_t *prelude = &rc->prelude;
-    mp_prof_extract_prelude(code, prelude);
+    size_t makefun_lineno = (size_t)rc->specific.bytecode.line_info;
+    mp_prof_settrace_data_t *settrace_data = &rc->specific.bytecode;
+    mp_prof_extract_prelude(code, settrace_data);
+    if (makefun_lineno) {
+        uint first_stmt_lineno = mp_prof_bytecode_lineno(rc, 0);
+        uint delta_line = first_stmt_lineno - makefun_lineno;
+        settrace_data->line_of_definition_delta = (delta_line < 256 ? delta_line : 0);
+    }
     #endif
 
     #if DEBUG_PRINT
@@ -137,19 +143,29 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, cons
     rc->fun_data = fun_data;
 
     #if MICROPY_PERSISTENT_CODE_SAVE
+    #if MICROPY_LIMIT_RAWCODE_SIZE
+    assert(fun_len < 65536);
+    #endif
     rc->fun_data_len = fun_len;
     #endif
     rc->children = children;
 
     #if MICROPY_PERSISTENT_CODE_SAVE
     rc->n_children = n_children;
-    rc->prelude_offset = prelude_offset;
-    #endif
-
+    if (kind == MP_CODE_NATIVE_PY) {
+        rc->specific.native_py.prelude_offset = prelude_offset;
     #if MICROPY_EMIT_INLINE_ASM
-    // These two entries are only needed for MP_CODE_NATIVE_ASM.
-    rc->asm_n_pos_args = asm_n_pos_args;
-    rc->asm_type_sig = asm_type_sig;
+    } else if (kind == MP_CODE_NATIVE_ASM) {
+        rc->specific.native_asm.n_pos_args = asm_n_pos_args;
+        rc->specific.native_asm.type_sig = asm_type_sig;
+    #endif
+    }
+    #elif MICROPY_EMIT_INLINE_ASM
+    // MICROPY_PERSISTENT_CODE_SAVE is false: in this specific case
+    // the .specific field is not an union, so we don't need to
+    // check the code kind before assignment (to keep code small)
+    rc->specific.native_asm.n_pos_args = asm_n_pos_args;
+    rc->specific.native_asm.type_sig = asm_type_sig;
     #endif
 
     #if DEBUG_PRINT
@@ -183,31 +199,35 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     // def_kw_args must be MP_OBJ_NULL or a dict
     assert(def_args == NULL || def_args[1] == MP_OBJ_NULL || mp_obj_is_type(def_args[1], &mp_type_dict));
 
-    #if MICROPY_MODULE_FROZEN_MPY
+    #if MICROPY_MODULE_FROZEN_MPY && !MICROPY_PERSISTENT_CODE_SAVE && !MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
     if (mp_proto_fun_is_bytecode(proto_fun)) {
         const uint8_t *bc = proto_fun;
-        mp_obj_t fun = mp_obj_new_fun_bc(def_args, bc, context, NULL);
         MP_BC_PRELUDE_SIG_DECODE(bc);
-        if (scope_flags & MP_SCOPE_FLAG_GENERATOR) {
-            ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
-        }
-        return fun;
+        const mp_obj_type_t *bc_type = (scope_flags & MP_SCOPE_FLAG_GENERATOR ? &mp_type_gen_wrap : &mp_type_fun_bc);
+        return mp_obj_new_fun_py(def_args, proto_fun, context, NULL, bc_type);
     }
+    #else
+    assert(!mp_proto_fun_is_bytecode(proto_fun));
     #endif
 
     // the proto-function is a mp_raw_code_t
     const mp_raw_code_t *rc = proto_fun;
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    if (rc->has_const_fun_obj) {
+        // we have a ready-to-use frozen function object
+        const mp_obj_fun_bc_t *fun_bc = (void *)((mp_raw_code_truncated_t *)rc)->fun_obj;
+        return MP_OBJ_FROM_PTR(fun_bc);
+    }
+    #endif
 
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-            fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
-            // Check for a generator function, and if so change the type of the object
-            if (rc->is_generator) {
-                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
-            }
+            ;
+            const mp_obj_type_t *native_type = (rc->is_generator ? &mp_type_native_gen_wrap : &mp_type_fun_native);
+            fun = mp_obj_new_fun_py(def_args, rc->fun_data, context, rc->children, native_type);
             break;
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_viper(rc->fun_data, context, rc->children);
@@ -215,17 +235,14 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
         #endif
         #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
-            fun = mp_obj_new_fun_asm(rc->asm_n_pos_args, rc->fun_data, rc->asm_type_sig);
+            fun = mp_obj_new_fun_asm(rc->specific.native_asm.n_pos_args, rc->fun_data, rc->specific.native_asm.type_sig);
             break;
         #endif
         default:
             // rc->kind should always be set and BYTECODE is the only remaining case
             assert(rc->kind == MP_CODE_BYTECODE);
-            fun = mp_obj_new_fun_bc(def_args, rc->fun_data, context, rc->children);
-            // check for generator functions and if so change the type of the object
-            if (rc->is_generator) {
-                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
-            }
+            const mp_obj_type_t *bc_type = (rc->is_generator ? &mp_type_gen_wrap : &mp_type_fun_bc);
+            fun = mp_obj_new_fun_py(def_args, rc->fun_data, context, rc->children, bc_type);
 
             #if MICROPY_PY_SYS_SETTRACE
             mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)MP_OBJ_TO_PTR(fun);

@@ -57,14 +57,16 @@ static mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     // The call to mp_parse_compile_execute() in mp_builtin_compile() below passes
     // NULL for the globals, so repopulate that entry now with the correct globals.
     mp_obj_t module_fun = self->module_fun;
-    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)
-        #if MICROPY_EMIT_NATIVE
-        || mp_obj_is_type(self->module_fun, &mp_type_fun_native)
-        #endif
-        ) {
+    if (mp_obj_is_type(module_fun, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(module_fun);
         ((mp_module_context_t *)fun_bc->context)->module.globals = globals;
     }
+    #if MICROPY_EMIT_NATIVE
+    else if (mp_obj_is_type(module_fun, &mp_type_fun_native)) {
+        mp_obj_fun_native_t *fun_native = MP_OBJ_TO_PTR(module_fun);
+        ((mp_module_context_t *)fun_native->context)->module.globals = globals;
+    }
+    #endif
     #endif
 
     // execute code

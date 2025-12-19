@@ -536,6 +536,13 @@ typedef uint64_t mp_uint_t;
 // Convenience definition for whether any native or inline assembler emitter is enabled
 #define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
 
+// Whether the size of raw_code for each function can be limited to 64 KB max.
+// Enabling this option can save 4 bytes per function and method in frozen code,
+// and in RAM for each dynamically loaded function when SYS_SETTRACE is enabled.
+#ifndef MICROPY_LIMIT_RAWCODE_SIZE
+#define MICROPY_LIMIT_RAWCODE_SIZE (1)
+#endif
+
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
@@ -1144,6 +1151,13 @@ typedef time_t mp_timestamp_t;
 // Whether frozen modules are supported in the form of .mpy files
 #ifndef MICROPY_MODULE_FROZEN_MPY
 #define MICROPY_MODULE_FROZEN_MPY (0)
+#endif
+
+// Whether frozen modules as .mpy files should also freeze bytecode function objects to save RAM.
+// It saves 16 bytes of RAM per function, but costs 12 bytes of ROM per function when SYS_SETTRACE
+// is enabled, or 16/24 bytes of ROM per function or without SYS_SETTRACE, depending on the case.
+#ifndef MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+#define MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC (MICROPY_MODULE_FROZEN_MPY && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
 // Convenience macro for whether frozen modules are supported
@@ -1790,6 +1804,19 @@ typedef time_t mp_timestamp_t;
 // Whether to provide "sys.settrace" function
 #ifndef MICROPY_PY_SYS_SETTRACE
 #define MICROPY_PY_SYS_SETTRACE (0)
+#endif
+
+// Whether to enable optimizations to reduce the memory overhead of SYS_SETTRACE
+#ifndef MICROPY_PY_SYS_SETTRACE_REDUCE_MEM_USAGE
+#define MICROPY_PY_SYS_SETTRACE_REDUCE_MEM_USAGE (1)
+#endif
+
+// Whether each function prelude information should be stored in decoded form
+// for debugging, when SYS_SETTRACE is enabled.
+// This option requires 16 extra bytes for each function, either from
+// flash memory for frozen code or from RAM for dynamically loaded code.
+#ifndef MICROPY_PY_SYS_SETTRACE_USE_FULL_PRELUDE
+#define MICROPY_PY_SYS_SETTRACE_USE_FULL_PRELUDE (!MICROPY_PY_SYS_SETTRACE_REDUCE_MEM_USAGE)
 #endif
 
 // Whether to provide "sys.getsizeof" function

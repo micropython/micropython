@@ -662,7 +662,7 @@ static void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
     #if MICROPY_EMIT_MACHINE_CODE
     if (rc->kind == MP_CODE_NATIVE_PY) {
         // Save prelude size
-        mp_print_uint(print, rc->prelude_offset);
+        mp_print_uint(print, rc->specific.native_py.prelude_offset);
     } else if (rc->kind == MP_CODE_NATIVE_VIPER || rc->kind == MP_CODE_NATIVE_ASM) {
         // Save basic scope info for viper and asm
         // Viper/asm functions don't support generator, variable args, or default keyword args
@@ -670,8 +670,8 @@ static void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
         mp_print_uint(print, 0);
         #if MICROPY_EMIT_INLINE_ASM
         if (rc->kind == MP_CODE_NATIVE_ASM) {
-            mp_print_uint(print, rc->asm_n_pos_args);
-            mp_print_uint(print, rc->asm_type_sig);
+            mp_print_uint(print, rc->specific.native_asm.n_pos_args);
+            mp_print_uint(print, rc->specific.native_asm.type_sig);
         }
         #endif
     }

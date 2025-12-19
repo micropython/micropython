@@ -67,6 +67,50 @@ static inline bool mp_proto_fun_is_bytecode(mp_proto_fun_t proto_fun) {
     return (header[0] | (header[1] << 8)) != (MP_PROTO_FUN_INDICATOR_RAW_CODE_0 | (MP_PROTO_FUN_INDICATOR_RAW_CODE_1 << 8));
 }
 
+// Type used to store the size of a function raw data (can be bytecode or native code)
+#if MICROPY_LIMIT_RAWCODE_SIZE
+typedef uint16_t mp_fun_data_size_t; // max 64KB, should easily cover most cases
+#else
+typedef uint32_t mp_fun_data_size_t; // aka unlimited
+#endif
+
+// Specific data required for native py functions: compact signature storage
+typedef struct _mp_native_py_rcdata_t {
+    uint16_t prelude_offset;
+} mp_native_py_rcdata_t;
+
+// Specific data required for inline asm functions: compact signature storage
+typedef struct _mp_native_asm_rcdata_t {
+    uint32_t n_pos_args : 8;
+    uint32_t type_sig : 24; // compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
+} mp_native_asm_rcdata_t;
+
+#if MICROPY_PERSISTENT_CODE_SAVE
+#define MICROPY_HAS_SPECIFIC_UNION (MICROPY_PY_SYS_SETTRACE || MICROPY_EMIT_MACHINE_CODE || MICROPY_EMIT_INLINE_ASM)
+#else
+#define MICROPY_HAS_SPECIFIC_UNION (0)
+#endif
+
+#if MICROPY_HAS_SPECIFIC_UNION
+// The mp_raw_code_t struct needs to store different information depending on the function kind.
+// We use an union to avoid wasting memory in the case where this structure stays in memory
+// (in ROM from frozen code, and in RAM for bytecode when SYS_SETTRACE is active).
+typedef union _mp_code_specific_data {
+    // when kind is MP_CODE_BYTECODE
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_prof_settrace_data_t bytecode;
+    #endif
+    // when kind is MP_CODE_NATIVE_PY
+    #if MICROPY_EMIT_MACHINE_CODE
+    mp_native_py_rcdata_t native_py;
+    #endif
+    // when kind is MP_CODE_NATIVE_ASM
+    #if MICROPY_EMIT_INLINE_ASM
+    mp_native_asm_rcdata_t native_asm;
+    #endif
+} mp_code_specific_data;
+#endif
+
 // The mp_raw_code_t struct appears in the following places:
 // compiled bytecode: instance in RAM, referenced by outer scope, usually freed after first (and only) use
 // mpy file: instance in RAM, created when .mpy file is loaded (same comments as above)
@@ -74,49 +118,56 @@ static inline bool mp_proto_fun_is_bytecode(mp_proto_fun_t proto_fun) {
 typedef struct _mp_raw_code_t {
     uint8_t proto_fun_indicator[2];
     uint8_t kind; // of type mp_raw_code_kind_t; only 3 bits used
-    bool is_generator;
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    uint8_t is_generator : 1;
+    uint8_t has_const_fun_obj : 1;
+    #else
+    uint8_t is_generator;
+    #endif
     const void *fun_data;
     struct _mp_raw_code_t **children;
     #if MICROPY_PERSISTENT_CODE_SAVE
-    uint32_t fun_data_len; // for mp_raw_code_save
+    mp_fun_data_size_t fun_data_len; // for mp_raw_code_save
     uint16_t n_children;
-    #if MICROPY_EMIT_MACHINE_CODE
-    uint16_t prelude_offset;
     #endif
-    #if MICROPY_PY_SYS_SETTRACE
-    // line_of_definition is a Python source line where the raw_code was
-    // created e.g. MP_BC_MAKE_FUNCTION. This is different from lineno info
-    // stored in prelude, which provides line number for first statement of
-    // a function. Required to properly implement "call" trace event.
-    uint32_t line_of_definition;
-    mp_bytecode_prelude_t prelude;
-    #endif
-    #endif
-    #if MICROPY_EMIT_INLINE_ASM
-    uint32_t asm_n_pos_args : 8;
-    uint32_t asm_type_sig : 24; // compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
+    #if MICROPY_HAS_SPECIFIC_UNION
+    mp_code_specific_data specific;
+    #elif MICROPY_EMIT_INLINE_ASM
+    // Online asm needs the signature info even without MICROPY_PERSISTENT_CODE_SAVE,
+    // but to save space we add it separately only if we can't reuse the union.
+    union {
+        mp_native_asm_rcdata_t native_asm;
+    } specific;
     #endif
 } mp_raw_code_t;
 
-// Version of mp_raw_code_t but without the asm_n_pos_args/asm_type_sig entries, which are
-// only needed when the kind is MP_CODE_NATIVE_ASM.  So this struct can be used when the
+// Version of mp_raw_code_t but without the final native_asm entry, which is only need
+// when the kind is MP_CODE_NATIVE_ASM. So this struct can be used for frozen code when the
 // kind is MP_CODE_BYTECODE, MP_CODE_NATIVE_PY or MP_CODE_NATIVE_VIPER, to reduce its size.
+// This version of mp_raw_code_t also includes a variable-length field that can be used
+// to create a frozen mp_obj_fun_bc_t, which is not really part of mp_raw_code_t but
+// can be conveniently retrieved in this way without having to add an extra pointer.
 typedef struct _mp_raw_code_truncated_t {
     uint8_t proto_fun_indicator[2];
     uint8_t kind;
-    bool is_generator;
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    uint8_t is_generator : 1;
+    uint8_t has_const_fun_obj : 1;
+    #else
+    uint8_t is_generator;
+    #endif
     const void *fun_data;
     struct _mp_raw_code_t **children;
     #if MICROPY_PERSISTENT_CODE_SAVE
-    uint32_t fun_data_len;
+    mp_fun_data_size_t fun_data_len;
     uint16_t n_children;
-    #if MICROPY_EMIT_MACHINE_CODE
-    uint16_t prelude_offset;
     #endif
-    #if MICROPY_PY_SYS_SETTRACE
-    uint32_t line_of_definition;
-    mp_bytecode_prelude_t prelude;
+    #if MICROPY_HAS_SPECIFIC_UNION
+    mp_code_specific_data specific;
     #endif
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    // Variable-length storage space for an optional mp_obj_fun_bc_t, when has_const_fun_obj is true
+    mp_const_obj_t fun_obj[];
     #endif
 } mp_raw_code_truncated_t;
 

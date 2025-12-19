@@ -173,18 +173,25 @@
 #define MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp) ((exc_sp) + 1 - (exc_stack))
 #define MP_CODE_STATE_EXC_SP_IDX_TO_PTR(exc_stack, exc_sp_idx) ((exc_stack) + (exc_sp_idx) - 1)
 
-typedef struct _mp_bytecode_prelude_t {
+typedef struct _mp_prof_settrace_data_t {
+    #if MICROPY_PY_SYS_SETTRACE_USE_FULL_PRELUDE
     uint n_state;
-    uint n_exc_stack;
-    uint scope_flags;
-    uint n_pos_args;
-    uint n_kwonly_args;
-    uint n_def_pos_args;
+    uint16 n_exc_stack;
+    uint16 scope_flags;
+    uint16 n_pos_args;
+    uint16 n_kwonly_args;
+    uint16 n_def_pos_args;
+    uint16 line_of_definition_delta;    // line count between def stmt and first function stmt
     qstr qstr_block_name_idx;
+    #else
+    byte n_args;                        // n_pos_args + n_kwonly_args
+    byte line_of_definition_delta;      // line count between def stmt and first function stmt
+    qstr_short_t qstr_block_name_idx;
+    #endif
     const byte *line_info;
     const byte *line_info_top;
     const byte *opcodes;
-} mp_bytecode_prelude_t;
+} mp_prof_settrace_data_t;
 
 // Exception stack entry
 typedef struct _mp_exc_stack_t {
@@ -225,18 +232,42 @@ typedef struct _mp_compiled_module_t {
 } mp_compiled_module_t;
 
 // Outer level struct defining a frozen module.
+// When MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC is defined, this structure matches
+// `mp_module_context_t` and can be used directly as such, except that globals is
+// an indirect pointer to the globals
 typedef struct _mp_frozen_module_t {
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    mp_obj_base_t base;
+    mp_obj_dict_t **globals_ref;
+    #endif
     const mp_module_constants_t constants;
     const void *proto_fun;
 } mp_frozen_module_t;
 
+static inline mp_obj_dict_t *mp_module_get_globals(const mp_obj_module_t *module) {
+    mp_obj_dict_t *dict = module->globals;
+    #if MICROPY_MODULE_FROZEN_MPY_FREEZE_FUN_BC
+    if (dict->base.type != &mp_type_dict) {
+        // not a dictionary: we are dealing with a frozen module_context
+        const mp_frozen_module_t *frozen_module = (const mp_frozen_module_t *)(void *)module;
+        dict = *frozen_module->globals_ref;
+        assert(dict->base.type == &mp_type_dict);
+    }
+    #endif
+    return dict;
+}
+
+static inline mp_obj_dict_t *mp_module_context_get_globals(const mp_module_context_t *module_ctx) {
+    return mp_module_get_globals(&module_ctx->module);
+}
+
 // State for an executing function.
 typedef struct _mp_code_state_t {
-    // The fun_bc entry points to the underlying function object that is being executed.
+    // The fun_obj entry points to the underlying function object that is being executed.
     // It is needed to access the start of bytecode and the const_table.
     // It is also needed to prevent the GC from reclaiming the bytecode during execution,
     // because the ip pointer below will always point to the interior of the bytecode.
-    struct _mp_obj_fun_bc_t *fun_bc;
+    void *fun_obj;
     const byte *ip;
     mp_obj_t *sp;
     uint16_t n_state;
@@ -257,7 +288,7 @@ typedef struct _mp_code_state_t {
 
 // State for an executing native function (based on mp_code_state_t).
 typedef struct _mp_code_state_native_t {
-    struct _mp_obj_fun_bc_t *fun_bc;
+    void *fun_obj;
     const byte *ip;
     mp_obj_t *sp;
     uint16_t n_state;

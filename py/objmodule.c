@@ -39,7 +39,8 @@ static void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
 
     const char *module_name = "";
-    mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
+    mp_obj_dict_t *globals = mp_module_get_globals(self);
+    mp_map_elem_t *elem = mp_map_lookup(&globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
     if (elem != NULL) {
         module_name = mp_obj_str_get_str(elem->value);
     }
@@ -47,7 +48,7 @@ static void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     #if MICROPY_MODULE___FILE__
     // If we store __file__ to imported modules then try to lookup this
     // symbol to give more information about the module.
-    elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);
+    elem = mp_map_lookup(&globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);
     if (elem != NULL) {
         mp_printf(print, "<module '%s' from '%s'>", module_name, mp_obj_str_get_str(elem->value));
         return;
@@ -61,18 +62,19 @@ static void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *de
 
 static void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_dict_t *globals = mp_module_get_globals(self);
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
-        mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+        mp_map_elem_t *elem = mp_map_lookup(&globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
         #if MICROPY_CPYTHON_COMPAT
         } else if (attr == MP_QSTR___dict__) {
-            dest[0] = MP_OBJ_FROM_PTR(self->globals);
+            dest[0] = MP_OBJ_FROM_PTR(globals);
         #endif
         #if MICROPY_MODULE_GETATTR
         } else if (attr != MP_QSTR___getattr__) {
-            elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
+            elem = mp_map_lookup(&globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
             } else {
@@ -84,14 +86,13 @@ static void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
     } else {
         // delete/store attribute
-        mp_obj_dict_t *dict = self->globals;
-        if (dict->map.is_fixed) {
+        if (globals->map.is_fixed) {
             #if MICROPY_CAN_OVERRIDE_BUILTINS
-            if (dict == &mp_module_builtins_globals) {
+            if (globals == &mp_module_builtins_globals) {
                 if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
                     MP_STATE_VM(mp_module_builtins_override_dict) = MP_OBJ_TO_PTR(mp_obj_new_dict(1));
                 }
-                dict = MP_STATE_VM(mp_module_builtins_override_dict);
+                globals = MP_STATE_VM(mp_module_builtins_override_dict);
             } else
             #endif
             {
@@ -102,10 +103,10 @@ static void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
         if (dest[1] == MP_OBJ_NULL) {
             // delete attribute
-            mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
+            mp_obj_dict_delete(MP_OBJ_FROM_PTR(globals), MP_OBJ_NEW_QSTR(attr));
         } else {
             // store attribute
-            mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), dest[1]);
+            mp_obj_dict_store(MP_OBJ_FROM_PTR(globals), MP_OBJ_NEW_QSTR(attr), dest[1]);
         }
         dest[0] = MP_OBJ_NULL; // indicate success
     }
@@ -134,7 +135,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     o->module.globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
     // store __name__ entry in the module
-    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->module.globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_module_context_get_globals(o)), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
     el->value = MP_OBJ_FROM_PTR(o);

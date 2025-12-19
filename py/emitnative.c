@@ -96,13 +96,13 @@
 #endif
 #define SIZEOF_CODE_STATE (sizeof(mp_code_state_native_t) / sizeof(uintptr_t))
 #define OFFSETOF_CODE_STATE_STATE (offsetof(mp_code_state_native_t, state) / sizeof(uintptr_t))
-#define OFFSETOF_CODE_STATE_FUN_BC (offsetof(mp_code_state_native_t, fun_bc) / sizeof(uintptr_t))
+#define OFFSETOF_CODE_STATE_FUN_OBJ (offsetof(mp_code_state_native_t, fun_obj) / sizeof(uintptr_t))
 #define OFFSETOF_CODE_STATE_IP (offsetof(mp_code_state_native_t, ip) / sizeof(uintptr_t))
 #define OFFSETOF_CODE_STATE_SP (offsetof(mp_code_state_native_t, sp) / sizeof(uintptr_t))
 #define OFFSETOF_CODE_STATE_N_STATE (offsetof(mp_code_state_native_t, n_state) / sizeof(uintptr_t))
-#define OFFSETOF_OBJ_FUN_BC_CONTEXT (offsetof(mp_obj_fun_bc_t, context) / sizeof(uintptr_t))
-#define OFFSETOF_OBJ_FUN_BC_CHILD_TABLE (offsetof(mp_obj_fun_bc_t, child_table) / sizeof(uintptr_t))
-#define OFFSETOF_OBJ_FUN_BC_BYTECODE (offsetof(mp_obj_fun_bc_t, bytecode) / sizeof(uintptr_t))
+#define OFFSETOF_OBJ_FUN_NATIVE_CONTEXT (offsetof(mp_obj_fun_native_t, context) / sizeof(uintptr_t))
+#define OFFSETOF_OBJ_FUN_NATIVE_CHILD_TABLE (offsetof(mp_obj_fun_native_t, child_table) / sizeof(uintptr_t))
+#define OFFSETOF_OBJ_FUN_NATIVE_BYTECODE (offsetof(mp_obj_fun_native_t, bytecode) / sizeof(uintptr_t))
 #define OFFSETOF_MODULE_CONTEXT_QSTR_TABLE (offsetof(mp_module_context_t, constants.qstr_table) / sizeof(uintptr_t))
 #define OFFSETOF_MODULE_CONTEXT_OBJ_TABLE (offsetof(mp_module_context_t, constants.obj_table) / sizeof(uintptr_t))
 #define OFFSETOF_MODULE_CONTEXT_GLOBALS (offsetof(mp_module_context_t, module.globals) / sizeof(uintptr_t))
@@ -142,7 +142,7 @@
 #define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) (SIZEOF_NLR_BUF + 1) // this needs a dedicated variable outside nlr_buf_t
 #define LOCAL_IDX_THROW_VAL(emit) (SIZEOF_NLR_BUF + 2) // needs a dedicated variable outside nlr_buf_t, following inject_exc in py/vm.c
 #define LOCAL_IDX_RET_VAL(emit) (SIZEOF_NLR_BUF) // needed when NEED_GLOBAL_EXC_HANDLER is true
-#define LOCAL_IDX_FUN_OBJ(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_FUN_BC)
+#define LOCAL_IDX_FUN_OBJ(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_FUN_OBJ)
 #define LOCAL_IDX_OLD_GLOBALS(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_IP)
 #define LOCAL_IDX_GEN_PC(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_IP)
 #define LOCAL_IDX_LOCAL_VAR(emit, local_num) ((emit)->stack_start + (emit)->n_state - 1 - (local_num))
@@ -507,7 +507,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         #endif
 
         // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
-        ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CONTEXT);
+        ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_NATIVE_CONTEXT);
         #if MICROPY_PERSISTENT_CODE_SAVE
         ASM_LOAD_REG_REG_OFFSET(emit->as, REG_QSTR_TABLE, REG_FUN_TABLE, OFFSETOF_MODULE_CONTEXT_QSTR_TABLE);
         #endif
@@ -592,7 +592,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
             // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_GENERATOR_STATE, LOCAL_IDX_FUN_OBJ(emit));
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_BC_CONTEXT);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_NATIVE_CONTEXT);
             #if MICROPY_PERSISTENT_CODE_SAVE
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_QSTR_TABLE, REG_TEMP0, OFFSETOF_MODULE_CONTEXT_QSTR_TABLE);
             #endif
@@ -615,14 +615,14 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             #endif
 
             // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CONTEXT);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_NATIVE_CONTEXT);
             #if MICROPY_PERSISTENT_CODE_SAVE
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_QSTR_TABLE, REG_FUN_TABLE, OFFSETOF_MODULE_CONTEXT_QSTR_TABLE);
             #endif
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, fun_table_off);
 
-            // Set code_state.fun_bc
+            // Set code_state.fun_obj
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_PARENT_ARG_1);
 
             // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
@@ -1161,7 +1161,7 @@ static void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
     emit->scope->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
     size_t table_off = mp_emit_common_use_const_obj(emit->emit_common, obj);
     emit_native_mov_reg_state(emit, REG_TEMP0, LOCAL_IDX_FUN_OBJ(emit));
-    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_BC_CONTEXT);
+    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_NATIVE_CONTEXT);
     ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
     ASM_LOAD_REG_REG_OFFSET(emit->as, reg, REG_TEMP0, table_off);
 }
@@ -1169,7 +1169,7 @@ static void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
 static void emit_load_reg_with_child(emit_t *emit, int reg, mp_raw_code_t *rc) {
     size_t table_off = mp_emit_common_alloc_const_child(emit->emit_common, rc);
     emit_native_mov_reg_state(emit, REG_TEMP0, LOCAL_IDX_FUN_OBJ(emit));
-    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_BC_CHILD_TABLE);
+    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_NATIVE_CHILD_TABLE);
     ASM_LOAD_REG_REG_OFFSET(emit->as, reg, REG_TEMP0, table_off);
 }
 
@@ -1214,7 +1214,7 @@ static void emit_native_global_exc_entry(emit_t *emit) {
         if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
             // Set new globals
             emit_native_mov_reg_state(emit, REG_ARG_1, LOCAL_IDX_FUN_OBJ(emit));
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, OFFSETOF_OBJ_FUN_BC_CONTEXT);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, OFFSETOF_OBJ_FUN_NATIVE_CONTEXT);
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, OFFSETOF_MODULE_CONTEXT_GLOBALS);
             emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
 
@@ -2768,7 +2768,7 @@ static void emit_native_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     emit_native_pre(emit);
     emit_native_mov_reg_state(emit, REG_ARG_2, LOCAL_IDX_FUN_OBJ(emit));
-    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_2, REG_ARG_2, OFFSETOF_OBJ_FUN_BC_CONTEXT);
+    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_2, REG_ARG_2, OFFSETOF_OBJ_FUN_NATIVE_CONTEXT);
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         need_reg_all(emit);
         ASM_MOV_REG_IMM(emit->as, REG_ARG_3, 0);
@@ -2785,7 +2785,7 @@ static void emit_native_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_c
     // make function
     emit_native_pre(emit);
     emit_native_mov_reg_state(emit, REG_ARG_2, LOCAL_IDX_FUN_OBJ(emit));
-    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_2, REG_ARG_2, OFFSETOF_OBJ_FUN_BC_CONTEXT);
+    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_2, REG_ARG_2, OFFSETOF_OBJ_FUN_NATIVE_CONTEXT);
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         need_reg_all(emit);
         ASM_MOV_REG_IMM(emit->as, REG_ARG_3, 0);

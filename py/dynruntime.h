@@ -249,6 +249,10 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 #define mp_arg_parse_all_kw_array(n_pos, n_kw, args, n_allowed, allowed, out_vals) \
     (mp_fun_table.arg_parse_all_kw_array((n_pos), (n_kw), (args), (n_allowed), (allowed), (out_vals)))
 
+// This definition is not very nice, but this is required for backward compatibility with existing
+// user-written viper functions, which declares their first argument as `mp_obj_fun_bc_t *self`
+#define mp_obj_fun_bc_t mp_obj_fun_viper_t
+
 #define MP_DYNRUNTIME_INIT_ENTRY \
     mp_obj_t old_globals = mp_fun_table.swap_globals(self->context->module.globals); \
     mp_raw_code_truncated_t rc; \

@@ -34,6 +34,7 @@
 #include "py/objgenerator.h"
 #include "py/objfun.h"
 #include "py/cstack.h"
+#include "py/emitglue.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj};
@@ -55,7 +56,7 @@ static mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // bytecode prelude: get state size and exception stack size
-    const uint8_t *ip = self_fun->bytecode;
+    const uint8_t *ip = MP_FUN_BC_GET_BYTECODE(self_fun);
     MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // allocate the generator object, with room for local stack and exception stack
@@ -64,14 +65,14 @@ static mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
         &mp_type_gen_instance);
 
     o->pend_exc = mp_const_none;
-    o->code_state.fun_bc = self_fun;
+    o->code_state.fun_obj = self_fun;
     o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
     return MP_OBJ_FROM_PTR(o);
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
-#define GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#define GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_attr,
 #else
 #define GEN_WRAP_TYPE_ATTR
 #endif
@@ -98,7 +99,7 @@ typedef struct _mp_obj_gen_instance_native_t {
 
 static mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // The state for a native generating function is held in the same struct as a bytecode function
-    mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
+    mp_obj_fun_native_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // Determine start of prelude.
     const uint8_t *prelude_ptr = mp_obj_fun_native_get_prelude_ptr(self_fun);
@@ -112,7 +113,7 @@ static mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
     // Parse the input arguments and set up the code state
     o->pend_exc = mp_const_none;
-    o->code_state.fun_bc = self_fun;
+    o->code_state.fun_obj = self_fun;
     o->code_state.n_state = n_state;
     mp_setup_code_state_native(&o->code_state, n_args, n_kw, args);
 
@@ -126,7 +127,7 @@ static mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
-#define NATIVE_GEN_WRAP_TYPE_ATTR , attr, mp_obj_fun_bc_attr
+#define NATIVE_GEN_WRAP_TYPE_ATTR , attr, mp_obj_fun_attr
 #else
 #define NATIVE_GEN_WRAP_TYPE_ATTR
 #endif
@@ -147,7 +148,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 static void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+    mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_obj)), self);
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
@@ -191,22 +192,27 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     // Mark as running
     self->pend_exc = MP_OBJ_NULL;
 
-    // Set up the correct globals context for the generator and execute it
+    // Prepare to switch globals
     self->code_state.old_globals = mp_globals_get();
-    mp_globals_set(self->code_state.fun_bc->context->module.globals);
 
     mp_vm_return_kind_t ret_kind;
 
     #if MICROPY_EMIT_NATIVE
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         // A native generator.
+        mp_obj_fun_native_t *fun_native = self->code_state.fun_obj;
+        // Set up the correct globals context for the generator and execute it
+        mp_globals_set(fun_native->context->module.globals);
         typedef uintptr_t (*mp_fun_native_gen_t)(void *, mp_obj_t);
-        mp_fun_native_gen_t fun = mp_obj_fun_native_get_generator_resume(self->code_state.fun_bc);
+        mp_fun_native_gen_t fun = mp_obj_fun_native_get_generator_resume(fun_native);
         ret_kind = fun((void *)&self->code_state, throw_value);
     } else
     #endif
     {
         // A bytecode generator
+        mp_obj_fun_bc_t *fun_bc = self->code_state.fun_obj;
+        // Set up the correct globals context for the generator and execute it
+        mp_globals_set(fun_bc->context->module.globals);
         ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
     }
 

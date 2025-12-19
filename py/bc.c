@@ -32,6 +32,7 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 #include "py/objfun.h"
+#include "py/emitglue.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -88,7 +89,7 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     return ptr;
 }
 
-static MP_NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
+static MP_NORETURN void fun_pos_args_mismatch(mp_const_obj_t f, size_t expected, size_t given) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
     (void)f;
@@ -102,7 +103,7 @@ static MP_NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expecte
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     mp_raise_msg_varg(&mp_type_TypeError,
         MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
-        mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
+        mp_obj_fun_get_name(f), expected, given);
     #endif
 }
 
@@ -120,16 +121,21 @@ static void dump_args(const mp_obj_t *a, size_t sz) {
 
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
-//    - code_state->fun_bc should contain a pointer to the function object
+//    - code_state->fun_obj should contain a pointer to the function object
 //    - code_state->ip should contain a pointer to the beginning of the prelude
 //    - code_state->sp should be: &code_state->state[0] - 1
 //    - code_state->n_state should be the number of objects in the local state
-static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args,
+    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+    qstr_short_t *qstr_table,
+    #endif
+    mp_obj_t *extra_args
+    ) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
 
     // get the function object that we want to set up (could be bytecode or native code)
-    mp_obj_fun_bc_t *self = code_state->fun_bc;
+    mp_obj_t fun_obj = MP_OBJ_FROM_PTR(code_state->fun_obj);
 
     // Get cached n_state (rather than decode it again)
     size_t n_state = code_state->n_state;
@@ -157,7 +163,7 @@ static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
     if (n_args > n_pos_args) {
         // given more than enough arguments
         if ((scope_flags & MP_SCOPE_FLAG_VARARGS) == 0) {
-            fun_pos_args_mismatch(self, n_pos_args, n_args);
+            fun_pos_args_mismatch(fun_obj, n_pos_args, n_args);
         }
         // put extra arguments in varargs tuple
         *var_pos_kw_args-- = mp_obj_new_tuple(n_args - n_pos_args, args + n_pos_args);
@@ -173,10 +179,10 @@ static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
             if (n_args >= (size_t)(n_pos_args - n_def_pos_args)) {
                 // given enough arguments, but may need to use some default arguments
                 for (size_t i = n_args; i < n_pos_args; i++) {
-                    code_state_state[n_state - 1 - i] = self->extra_args[i - (n_pos_args - n_def_pos_args)];
+                    code_state_state[n_state - 1 - i] = extra_args[i - (n_pos_args - n_def_pos_args)];
                 }
             } else {
-                fun_pos_args_mismatch(self, n_pos_args - n_def_pos_args, n_args);
+                fun_pos_args_mismatch(fun_obj, n_pos_args - n_def_pos_args, n_args);
             }
         }
     }
@@ -209,7 +215,7 @@ static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
             for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
                 qstr arg_qstr = mp_decode_uint(&arg_names);
                 #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
-                arg_qstr = self->context->constants.qstr_table[arg_qstr];
+                arg_qstr = qstr_table[arg_qstr];
                 #endif
                 if (wanted_arg_name == MP_OBJ_NEW_QSTR(arg_qstr)) {
                     if (code_state_state[n_state - 1 - j] != MP_OBJ_NULL) {
@@ -244,7 +250,7 @@ static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
 
         // fill in defaults for positional args
         mp_obj_t *d = &code_state_state[n_state - n_pos_args];
-        mp_obj_t *s = &self->extra_args[n_def_pos_args - 1];
+        mp_obj_t *s = &extra_args[n_def_pos_args - 1];
         for (size_t i = n_def_pos_args; i > 0; i--, d++, s--) {
             if (*d == MP_OBJ_NULL) {
                 *d = *s;
@@ -271,12 +277,12 @@ static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
         for (size_t i = 0; i < n_kwonly_args; i++) {
             qstr arg_qstr = mp_decode_uint(&arg_names);
             #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
-            arg_qstr = self->context->constants.qstr_table[arg_qstr];
+            arg_qstr = qstr_table[arg_qstr];
             #endif
             if (code_state_state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
-                    elem = mp_map_lookup(&((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, MP_OBJ_NEW_QSTR(arg_qstr), MP_MAP_LOOKUP);
+                    elem = mp_map_lookup(&((mp_obj_dict_t *)MP_OBJ_TO_PTR(extra_args[n_def_pos_args]))->map, MP_OBJ_NEW_QSTR(arg_qstr), MP_MAP_LOOKUP);
                 }
                 if (elem != NULL) {
                     code_state_state[n_state - 1 - n_pos_args - i] = elem->value;
@@ -317,10 +323,11 @@ static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
 
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
-//    - code_state->fun_bc should contain a pointer to the function object
+//    - code_state->fun_obj should contain a pointer to the function object
 //    - code_state->n_state should be the number of objects in the local state
 void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    code_state->ip = code_state->fun_bc->bytecode;
+    mp_obj_fun_bc_t *fun = code_state->fun_obj;
+    code_state->ip = MP_FUN_BC_GET_BYTECODE(fun);
     code_state->sp = &code_state->state[0] - 1;
     #if MICROPY_STACKLESS
     code_state->prev = NULL;
@@ -329,17 +336,26 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     code_state->prev_state = NULL;
     code_state->frame = NULL;
     #endif
-    mp_setup_code_state_helper(code_state, n_args, n_kw, args);
+    mp_setup_code_state_helper(code_state, n_args, n_kw, args,
+        #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+        fun->context->constants.qstr_table,
+        #endif
+        fun->extra_args);
 }
 
 #if MICROPY_EMIT_NATIVE
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
-//    - code_state->fun_bc should contain a pointer to the function object
+//    - code_state->fun_obj should contain a pointer to the function object
 //    - code_state->n_state should be the number of objects in the local state
 void mp_setup_code_state_native(mp_code_state_native_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    code_state->ip = mp_obj_fun_native_get_prelude_ptr(code_state->fun_bc);
+    mp_obj_fun_native_t *fun = code_state->fun_obj;
+    code_state->ip = mp_obj_fun_native_get_prelude_ptr(fun);
     code_state->sp = &code_state->state[0] - 1;
-    mp_setup_code_state_helper((mp_code_state_t *)code_state, n_args, n_kw, args);
+    mp_setup_code_state_helper((mp_code_state_t *)code_state, n_args, n_kw, args,
+        #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+        fun->context->constants.qstr_table,
+        #endif
+        fun->extra_args);
 }
 #endif
