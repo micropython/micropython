@@ -152,19 +152,9 @@ static void next_char(mp_lexer_t *lex) {
     #if MICROPY_PY_FSTRINGS
     if (lex->inject_chrs_idx) {
         // if there are saved chars, then we're currently injecting them
-        if (lex->inject_chrs_idx < lex->inject_chrs.len) {
-            lex->chr2 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
-        } else {
-            // no more characters to inject
-            lex->chr2 = '\0';
-        }
-
-        if (lex->chr0 == '\0') {
-            // consumed all injected characters, restore saved input queue
-            lex->chr0 = lex->chr0_saved;
-            lex->chr1 = lex->chr1_saved;
-            lex->chr2 = lex->chr2_saved;
-            // stop consuming injected characters
+        lex->chr2 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+        if (lex->inject_chrs_idx >= lex->inject_chrs.len) {
+            // consumed all injected characters, switch back to the input stream
             vstr_reset(&lex->inject_chrs);
             lex->inject_chrs_idx = 0;
         }
@@ -565,9 +555,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         vstr_add_byte(&lex->fstring_args, ')');
         if (lex->inject_chrs_idx == 0) {
             // switch from stream to inject_chrs
-            lex->chr0_saved = lex->chr0;
-            lex->chr1_saved = lex->chr1;
-            lex->chr2_saved = lex->chr2;
+            vstr_add_byte(&lex->inject_chrs, lex->chr0);
+            vstr_add_byte(&lex->inject_chrs, lex->chr1);
+            vstr_add_byte(&lex->inject_chrs, lex->chr2);
         } else {
             // already consuming from inject_chrs, rewind cached chars to insert new ones
             assert(lex->inject_chrs_idx >= 3);
