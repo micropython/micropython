@@ -41,9 +41,9 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
-    qstr name;
-    uint8_t pin;
     const machine_pin_adc_obj_t *ad;
+    qstr_short_t name;
+    uint8_t pin;
 } machine_pin_obj_t;
 
 // Include all of the individual pin objects
