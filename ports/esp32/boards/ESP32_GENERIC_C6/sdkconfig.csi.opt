@@ -1,0 +1,5 @@
+# ESP32-C6 is single core, use unicore configuration
+CONFIG_FREERTOS_UNICORE=y
+
+# WiFi 6 (802.11ax) support
+CONFIG_ESP_WIFI_11AX_SUPPORT=y
