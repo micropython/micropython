@@ -172,6 +172,16 @@ The following libraries are specific to the ESP8266 and ESP32.
   espnow.rst
 
 
+Libraries specific to NXP i.MXRT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following libraries are specific to the NXP i.MXRT family of microcontrollers.
+
+.. toctree::
+  :maxdepth: 2
+
+  mimxrt.rst
+
 Libraries specific to the RP2040
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
