@@ -36,7 +36,7 @@ ESP-NOW is a connection-less wireless communication protocol supporting:
 
 - Encrypted and unencrypted communication (up to 6 encrypted peers),
 
-- Message sizes up to 250 bytes,
+- Message sizes up to 1490 bytes (For ESP-NOW v2),
 
 - Can operate alongside Wifi operation (:doc:`network.WLAN<network.WLAN>`) on
   ESP32 and ESP8266 devices.
@@ -44,6 +44,15 @@ ESP-NOW is a connection-less wireless communication protocol supporting:
 It is especially useful for small IoT networks, latency sensitive or power
 sensitive applications (such as battery operated devices) and for long-range
 communication between devices (hundreds of metres).
+
+According to ESP-IDF, ESP-NOW supports two versions: v1.0 and v2.0. The maximum
+packet length supported by v2.0 devices is 1490 bytes, while the maximum packet
+length supported by v1.0 devices is 250 bytes. The v2.0 devices are capable of
+receiving packets from both v2.0 and v1.0 devices. In contrast, v1.0 devices can
+only receive packets from other v1.0 devices. However, v1.0 devices can receive
+v2.0 packets if the packet length is less than or equal to 250. For packets
+exceeding this length, the v1.0 devices will either truncate the data to the
+first 250 bytes or discard the packet entirely.
 
 This module also supports tracking the Wifi signal strength (RSSI) of peer
 devices.
@@ -148,10 +157,10 @@ Configuration
 
     .. data:: Options:
 
-        *rxbuf*: (default=526) Get/set the size in bytes of the internal
+        *rxbuf*: (default=528 or 3008) Get/set the size in bytes of the internal
         buffer used to store incoming ESPNow packet data. The default size is
-        selected to fit two max-sized ESPNow packets (250 bytes) with associated
-        mac_address (6 bytes), a message byte count (1 byte) and RSSI data plus
+        selected to fit two max-sized ESPNow packets (250 or 1490 bytes) with associated
+        mac_address (6 bytes), a message byte count (2 byte) and RSSI data plus
         buffer overhead. Increase this if you expect to receive a lot of large
         packets or expect bursty incoming traffic.
 
@@ -219,7 +228,7 @@ after reboot/reset). This reduces the reliability of receiving ESP-NOW messages
         to all registered peers, except any broadcast or multicast MAC
         addresses.
 
-      - *msg*: string or byte-string up to ``espnow.MAX_DATA_LEN`` (250)
+      - *msg*: string or byte-string up to ``espnow.MAX_DATA_LEN`` (250 or 1490)
         bytes long.
 
       - *sync*:
@@ -327,7 +336,7 @@ after reboot/reset). This reduces the reliability of receiving ESP-NOW messages
     .. data:: Arguments:
 
         *data*: A list of at least two elements, ``[peer, msg]``. ``msg`` must
-        be a bytearray large enough to hold the message (250 bytes). On the
+        be a bytearray large enough to hold the message (250 or 1490 bytes). On the
         ESP8266, ``peer`` should be a bytearray of 6 bytes. The MAC address of
         the sender and the message will be stored in these bytearrays (see Note
         on ESP32 below).
@@ -570,7 +579,7 @@ Callback Methods
 Constants
 ---------
 
-.. data:: espnow.MAX_DATA_LEN(=250)
+.. data:: espnow.MAX_DATA_LEN(=250 or 1490)
           espnow.KEY_LEN(=16)
           espnow.ADDR_LEN(=6)
           espnow.MAX_TOTAL_PEER_NUM(=20)
