@@ -1,0 +1,34 @@
+Test 1: __init_subclass__ without decorator
+__init_subclass__ called for cls
+Derived.from_init_subclass: True
+
+Test 2: __init_subclass__ with multiple parameters
+__init_subclass__ (with *args, **kwargs) for cls
+  args: ()
+  kwargs: {}
+Derived2.marker: has_args
+
+Test 3: __init_subclass__ with kwargs
+__init_subclass__ for <class 'Derived3'> with kwargs: {'foo': 'bar', 'init': True}
+Derived3.kwargs: {'foo': 'bar', 'init': True}
+
+Test 4: Dataclass-style __init_subclass__
+ModelBase.__init_subclass__ for <class 'CustomerModel'>
+  init=False, frozen=True, eq=False
+CustomerModel.config: {'eq': False, 'init': False, 'frozen': True}
+
+Test 5: Multiple levels of inheritance
+GrandParent.__init_subclass__ for <class 'Parent'>
+Parent.__init_subclass__ for <class 'Child'>
+Child.from_parent: True
+Child.from_grandparent: True
+
+Test 6: Multiple inheritance
+BaseA.__init_subclass__ for <class 'Multi'>
+Multi.from_a: True
+Multi.from_b: AttributeError (as expected - only first base called)
+
+Test 7: Base without __init_subclass__
+DerivedNoInit created successfully
+
+All tests passed!
