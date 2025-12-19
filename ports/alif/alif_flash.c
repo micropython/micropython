@@ -26,6 +26,7 @@
 
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "py/binary.h"
 #include "extmod/vfs.h"
 #include "modalif.h"
 #include "ospi_flash.h"
@@ -85,7 +86,7 @@ static mp_int_t alif_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinf
     if (flags == MP_BUFFER_READ) {
         bufinfo->buf = (void *)(ospi_flash_get_xip_base() + self->flash_base_addr);
         bufinfo->len = self->flash_size;
-        bufinfo->typecode = 'B';
+        bufinfo->typecode = MP_TYPECODE_C(unsigned char);
         return 0;
     } else {
         // Can't return a writable buffer.

@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/objarray.h"
+#include "py/binary.h"
 #include "shared/runtime/mpirq.h"
 #include "modrp2.h"
 
@@ -185,7 +186,7 @@ static void rp2_dma_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
             dest[0] = mp_obj_new_int_from_uint(self->channel);
         } else if (attr_in == MP_QSTR_registers) {
             mp_obj_array_t *reg_view = m_new_obj(mp_obj_array_t);
-            mp_obj_memoryview_init(reg_view, 'I' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, 16, dma_channel_hw_addr(self->channel));
+            mp_obj_memoryview_init(reg_view, 'I' | MP_TYPECODE_FLAG_RW, 0, 16, dma_channel_hw_addr(self->channel));
             dest[0] = reg_view;
         } else {
             // Continue attribute search in locals dict.

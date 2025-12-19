@@ -213,7 +213,7 @@ static mp_int_t bluetooth_uuid_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bu
 
     bufinfo->buf = self->data;
     bufinfo->len = self->type;
-    bufinfo->typecode = 'B';
+    bufinfo->typecode = MP_TYPECODE_C(unsigned char);
     return 0;
 }
 
@@ -273,9 +273,9 @@ static mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
         o->irq_data_tuple = mp_obj_new_tuple(MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN, NULL);
 
         // Pre-allocated buffers for address, payload and uuid.
-        mp_obj_memoryview_init(&o->irq_data_addr, 'B', 0, 0, o->irq_data_addr_bytes);
+        mp_obj_memoryview_init(&o->irq_data_addr, MP_TYPECODE_C(unsigned char), 0, 0, o->irq_data_addr_bytes);
         o->irq_data_data_alloc = MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN(MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
-        mp_obj_memoryview_init(&o->irq_data_data, 'B', 0, 0, m_new(uint8_t, o->irq_data_data_alloc));
+        mp_obj_memoryview_init(&o->irq_data_data, MP_TYPECODE_C(unsigned char), 0, 0, m_new(uint8_t, o->irq_data_data_alloc));
         o->irq_data_uuid.base.type = &mp_type_bluetooth_uuid;
 
         // Allocate the default ringbuf.
@@ -1157,7 +1157,7 @@ static mp_obj_t invoke_irq_handler_run(uint16_t event,
         data_tuple->items[data_tuple->len++] = MP_OBJ_NEW_SMALL_INT(numeric[i]);
     }
     if (addr) {
-        mp_obj_memoryview_init(&mv_addr, 'B', 0, 6, (void *)addr);
+        mp_obj_memoryview_init(&mv_addr, MP_TYPECODE_C(unsigned char), 0, 6, (void *)addr);
         data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(&mv_addr);
     }
     for (size_t i = 0; i < n_signed; ++i) {
@@ -1198,7 +1198,7 @@ static mp_obj_t invoke_irq_handler_run(uint16_t event,
 
     for (size_t i = 0; i < n_data; ++i) {
         if (data[i]) {
-            mp_obj_memoryview_init(&mv_data[i], 'B', 0, data_len[i], (void *)data[i]);
+            mp_obj_memoryview_init(&mv_data[i], MP_TYPECODE_C(unsigned char), 0, data_len[i], (void *)data[i]);
             data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(&mv_data[i]);
         } else {
             data_tuple->items[data_tuple->len++] = mp_const_none;

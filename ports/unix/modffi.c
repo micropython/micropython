@@ -115,39 +115,40 @@ static const mp_obj_type_t ffivar_type;
 
 static ffi_type *char2ffi_type(char c) {
     switch (c) {
-        case 'b':
+        case MP_TYPECODE_C(signed char):
             return &ffi_type_schar;
-        case 'B':
+        case MP_TYPECODE_C(unsigned char):
             return &ffi_type_uchar;
-        case 'h':
+        case MP_TYPECODE_C(short):
             return &ffi_type_sshort;
-        case 'H':
+        case MP_TYPECODE_C(unsigned short):
             return &ffi_type_ushort;
-        case 'i':
+        case MP_TYPECODE_C(int):
             return &ffi_type_sint;
-        case 'I':
+        case MP_TYPECODE_C(unsigned int):
             return &ffi_type_uint;
-        case 'l':
+        case MP_TYPECODE_C(long):
             return &ffi_type_slong;
-        case 'L':
+        case MP_TYPECODE_C(unsigned long):
             return &ffi_type_ulong;
-        case 'q':
+        case MP_TYPECODE_C(long long):
             return &ffi_type_sint64;
-        case 'Q':
+        case MP_TYPECODE_C(unsigned long long):
             return &ffi_type_uint64;
         #if MICROPY_PY_BUILTINS_FLOAT
-        case 'f':
+        case MP_TYPECODE_C(float):
             return &ffi_type_float;
-        case 'd':
+        case MP_TYPECODE_C(double):
             return &ffi_type_double;
         #endif
-        case 'O': // mp_obj_t
-        case 'C': // (*)()
-        case 'P': // const void*
-        case 'p': // void*
-        case 's':
+        case MP_TYPECODE_OBJECT:
+        case MP_TYPECODE_CALLBACK:
+        case MP_TYPECODE_C(const void *):
+        case MP_TYPECODE_C(void *):
+        case MP_TYPECODE_C(const char *):
+        case MP_TYPECODE_C(char *):
             return &ffi_type_pointer;
-        case 'v':
+        case MP_TYPECODE_VOID:
             return &ffi_type_void;
         default:
             return NULL;
@@ -169,41 +170,41 @@ static ffi_type *get_ffi_type(mp_obj_t o_in) {
 
 static mp_obj_t return_ffi_value(ffi_union_t *val, char type) {
     switch (type) {
-        case 's': {
+        case MP_TYPECODE_C(const char *): {
             const char *s = (const char *)(intptr_t)val->ffi;
             if (!s) {
                 return mp_const_none;
             }
             return mp_obj_new_str_from_cstr(s);
         }
-        case 'v':
+        case MP_TYPECODE_VOID:
             return mp_const_none;
         #if MICROPY_PY_BUILTINS_FLOAT
-        case 'f': {
+        case MP_TYPECODE_C(float): {
             return mp_obj_new_float_from_f(val->flt);
         }
-        case 'd': {
+        case MP_TYPECODE_C(double): {
             return mp_obj_new_float_from_d(val->dbl);
         }
         #endif
-        case 'b':
-        case 'h':
-        case 'i':
-        case 'l':
+        case MP_TYPECODE_C(char):
+        case MP_TYPECODE_C(short):
+        case MP_TYPECODE_C(int):
+        case MP_TYPECODE_C(long):
             return mp_obj_new_int((ffi_sarg)val->ffi);
-        case 'I':
+        case MP_TYPECODE_C(unsigned int):
             // On RV64, 32-bit values are stored as signed integers inside the
             // holding register.
             return mp_obj_new_int_from_uint(val->ffi & 0xFFFFFFFF);
-        case 'B':
-        case 'H':
-        case 'L':
+        case MP_TYPECODE_C(unsigned char):
+        case MP_TYPECODE_C(unsigned short):
+        case MP_TYPECODE_C(unsigned long):
             return mp_obj_new_int_from_uint(val->ffi);
-        case 'q':
+        case MP_TYPECODE_C(long long):
             return mp_obj_new_int_from_ll(val->Q);
-        case 'Q':
+        case MP_TYPECODE_C(unsigned long long):
             return mp_obj_new_int_from_ull(val->Q);
-        case 'O':
+        case MP_TYPECODE_OBJECT:
             return (mp_obj_t)(intptr_t)val->ffi;
         default:
             return mp_obj_new_int(val->ffi);
@@ -453,26 +454,26 @@ static unsigned long long ffi_get_int_value(mp_obj_t o) {
 
 static ffi_union_t ffi_int_obj_to_ffi_union(mp_obj_t o, const char argtype) {
     ffi_union_t ret;
-    if ((argtype | 0x20) == 'q') {
+    if ((argtype | 0x20) == MP_TYPECODE_C(long long)) {
         ret.Q = ffi_get_int_value(o);
         return ret;
     } else {
         mp_uint_t val = mp_obj_int_get_truncated(o);
         switch (argtype) {
-            case 'b':
-            case 'B':
+            case MP_TYPECODE_C(char):
+            case MP_TYPECODE_C(unsigned char):
                 ret.B = val;
                 break;
-            case 'h':
-            case 'H':
+            case MP_TYPECODE_C(short):
+            case MP_TYPECODE_C(unsigned short):
                 ret.H = val;
                 break;
-            case 'i':
-            case 'I':
+            case MP_TYPECODE_C(int):
+            case MP_TYPECODE_C(unsigned int):
                 ret.I = val;
                 break;
-            case 'l':
-            case 'L':
+            case MP_TYPECODE_C(long):
+            case MP_TYPECODE_C(unsigned long):
                 ret.L = val;
                 break;
             default:
@@ -494,12 +495,12 @@ static mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     const char *argtype = self->argtypes;
     for (uint i = 0; i < n_args; i++, argtype++) {
         mp_obj_t a = args[i];
-        if (*argtype == 'O') {
+        if (*argtype == MP_TYPECODE_OBJECT) {
             values[i].ffi = (ffi_arg)(intptr_t)a;
         #if MICROPY_PY_BUILTINS_FLOAT
-        } else if (*argtype == 'f') {
+        } else if (*argtype == MP_TYPECODE_C(float)) {
             values[i].flt = mp_obj_get_float_to_f(a);
-        } else if (*argtype == 'd') {
+        } else if (*argtype == MP_TYPECODE_C(double)) {
             values[i].dbl = mp_obj_get_float_to_d(a);
         #endif
         } else if (a == mp_const_none) {

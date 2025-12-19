@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/cstack.h"
 #include "py/objtuple.h"
+#include "py/binary.h"
 
 #if MICROPY_PY_BUILTINS_STR_OP_MODULO
 static mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
@@ -2064,7 +2065,7 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
         GET_STR_DATA_LEN(self_in, str_data, str_len);
         bufinfo->buf = (void *)str_data;
         bufinfo->len = str_len;
-        bufinfo->typecode = 'B'; // bytes should be unsigned, so should unicode byte-access
+        bufinfo->typecode = MP_TYPECODE_C(unsigned char); // bytes should be unsigned, so should unicode byte-access
         return 0;
     } else {
         // can't write to a string
