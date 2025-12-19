@@ -183,7 +183,7 @@ void vstr_add_strn(vstr_t *vstr, const char *str, size_t len) {
     vstr->len += len;
 }
 
-static char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
+char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
     size_t l = vstr->len;
     if (byte_pos > l) {
         byte_pos = l;
@@ -197,17 +197,6 @@ static char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len
         vstr->len += byte_len;
     }
     return vstr->buf + byte_pos;
-}
-
-void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
-    char *s = vstr_ins_blank_bytes(vstr, byte_pos, 1);
-    *s = b;
-}
-
-void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
-    // TODO UNICODE
-    char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
-    *s = chr;
 }
 
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut) {
