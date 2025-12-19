@@ -132,6 +132,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/stream.c
     ${MICROPY_PY_DIR}/unicode.c
     ${MICROPY_PY_DIR}/vm.c
+    ${MICROPY_PY_DIR}/vm_outer.c
     ${MICROPY_PY_DIR}/vstr.c
     ${MICROPY_PY_DIR}/warning.c
 )
