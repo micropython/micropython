@@ -1,0 +1,4 @@
+# Files created by ci.sh embed_build
+embed
+main.o
+micropython_embed
