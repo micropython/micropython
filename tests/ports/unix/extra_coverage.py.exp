@@ -270,3 +270,4 @@ example_package.foo.bar.f
 True
 example_package.foo.f
 True
+0.25

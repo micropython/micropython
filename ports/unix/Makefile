@@ -242,7 +242,9 @@ endif
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
-RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-march=x86'
+$(info RUN_TESTS_MPY_CROSS_FLAGS=$(RUN_TESTS_MPY_CROSS_FLAGS))
+RUN_TESTS_MPY_CROSS_FLAGS ?= --mpy-cross-flags='-march=x86'
+$(info RUN_TESTS_MPY_CROSS_FLAGS=$(RUN_TESTS_MPY_CROSS_FLAGS))
 endif
 
 ifeq ($(CROSS_COMPILE),arm-linux-gnueabi-)

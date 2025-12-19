@@ -159,6 +159,22 @@
 // to the garbage collector.
 #define MICROPY_OBJ_REPR_D (3)
 
+// A MicroPython object is a machine word having the following form (called R):
+//  - pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
+//  - iiiiiiii iiiiiiii iiiiiiii iiiiii01 small int with 30-bit signed value
+//  - 00000000 00qqqqqq qqqqqqqq qqqqq010 str with 19-bit qstr value
+//  - 00000000 00000000 00000000 0ssss110 immediate object with 4-bit value
+//  - xxxxxxxx xxxxxxxx xxxxxxxx xxxxxx11 limited-exponent 32-bit fp.
+// Float stored by: O = (R + 0x30800000 >>> 3), R = (O <<< 3) - 0x30800000
+// where <<< and >>> denote a 32-bit rotate operation.
+// This scheme only works with 32-bit word size and float enabled.
+// zeros, infinities, nan, and values with large/small exponents are "boxed"
+// This representation is loosely inspired by the paper Float Self-Tagging
+// by Olivier Melançon, Manuel Serrano, Marc Feeley
+// (https://arxiv.org/abs/2411.16544)
+#define MICROPY_OBJ_REPR_E (4)
+
+
 #ifndef MICROPY_OBJ_REPR
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_A)
 #endif

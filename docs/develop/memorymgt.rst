@@ -61,6 +61,9 @@ See ``py/mpconfig.h`` for the specific details of the available representations.
 
 **Pointer tagging**
 
+This section describes how objects are stored in ``OBJ_REPR_A``. Terser descriptions of other object
+representations are in ``py/mpconfig.h``.
+
 Because pointers are word-aligned, when they are stored in an ``mp_obj_t`` the
 lower bits of this object handle will be zero.  For example on a 32-bit architecture
 the lower 2 bits will be zero:

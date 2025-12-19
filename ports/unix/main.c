@@ -61,6 +61,11 @@
 bool mp_compile_only = false;
 static uint emit_opt = MP_EMIT_OPT_NONE;
 
+
+#if defined(MICROPY_UNIX_COVERAGE) && !defined(NO_QSTR)
+#include "genhdr/float_consts.h"
+#endif
+
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
@@ -571,6 +576,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
         mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
         mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
+        mp_store_global(MP_QSTR_one_quarter, (mp_obj_t)MP_CONST_FLOAT_0__25);
     }
     #endif
 

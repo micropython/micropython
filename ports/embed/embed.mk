@@ -25,6 +25,7 @@ CFLAGS += -Wall -Werror -std=c99
 
 # Define the required generated header files.
 GENHDR_OUTPUT = $(addprefix $(BUILD)/genhdr/, \
+	float_consts.h \
 	moduledefs.h \
 	mpversion.h \
 	qstrdefs.generated.h \
