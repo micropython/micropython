@@ -443,7 +443,7 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #elif defined(STM32H5)
 #define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/???*08Kg"
 #define INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE (1)
-#elif defined(STM32H743xx)
+#elif defined(STM32H743xx) || defined(STM32H753xx)
 #define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/16*128Kg"
 #elif defined(STM32H750xx)
 #define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/01*128Kg"
