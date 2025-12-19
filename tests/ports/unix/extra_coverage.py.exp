@@ -45,6 +45,7 @@ m_tracked_head = 0
 5 1
 6 1
 7 1
+1
 0 1
 1 1
 2 1
@@ -54,6 +55,19 @@ m_tracked_head = 0
 6 1
 7 1
 m_tracked_head = 0
+# tracked realloc list positions
+list count: 3
+tail realloc marker: A
+head realloc marker: C
+middle realloc marker: B
+list count after reallocs: 3
+backward traversal count: 3
+realloc(NULL) marker: X
+realloc(ptr, 0) result: 1
+shrink realloc marker: B
+single node realloc marker: S
+single node list count: 1
+m_tracked_head after cleanup: 0
 # vstr
 tests
 sts
