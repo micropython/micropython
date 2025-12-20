@@ -368,7 +368,7 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 
-#if MICROPY_EMIT_MACHINE_CODE
+#if MICROPY_EMIT_INLINE_THUMB || MICROPY_ENABLE_NATIVE_CODE
 void *nrf_native_code_commit(void *buf, unsigned int len, void *reloc) {
     (void)len;
     if (reloc) {
