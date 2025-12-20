@@ -332,7 +332,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     mp_setup_code_state_helper(code_state, n_args, n_kw, args);
 }
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_ENABLE_NATIVE_CODE
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
 //    - code_state->fun_bc should contain a pointer to the function object

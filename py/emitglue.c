@@ -92,7 +92,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     #endif
 }
 
-#if MICROPY_EMIT_MACHINE_CODE
+#if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, const void *fun_data, mp_uint_t fun_len,
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
@@ -201,7 +201,7 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
-        #if MICROPY_EMIT_NATIVE
+        #if MICROPY_ENABLE_NATIVE_CODE
         case MP_CODE_NATIVE_PY:
             fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
             // Check for a generator function, and if so change the type of the object
