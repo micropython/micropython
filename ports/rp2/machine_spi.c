@@ -261,6 +261,10 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
 
 static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
+
+    // Fix for #18471
+    #if !MICROPY_HW_ENABLE_PSRAM
+
     // Use DMA for large transfers if channels are available
     const size_t dma_min_size_threshold = 32;
     int chan_tx = -1;
@@ -309,13 +313,17 @@ static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         dma_channel_unclaim(chan_tx);
     }
 
-    if (!use_dma) {
-        // Use software for small transfers, or if couldn't claim two DMA channels
-        if (write_only) {
-            spi_write_blocking(self->spi_inst, src, len);
-        } else {
-            spi_write_read_blocking(self->spi_inst, src, dest, len);
-        }
+    // Return if DMA transfer was used
+    if (use_dma) {
+        return;
+    }
+    #endif
+
+    // Use software transfer
+    if (write_only) {
+        spi_write_blocking(self->spi_inst, src, len);
+    } else {
+        spi_write_read_blocking(self->spi_inst, src, dest, len);
     }
 }
 
