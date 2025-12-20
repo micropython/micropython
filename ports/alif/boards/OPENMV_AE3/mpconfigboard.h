@@ -67,8 +67,8 @@ extern void board_exit_standby(void);
 // This is used for alif.Flash() and USB MSC.
 #define MICROPY_HW_FLASH_STORAGE_BASE_ADDR      (0)
 #define MICROPY_HW_FLASH_STORAGE_BYTES          (32 * 1024 * 1024)
-#define MICROPY_HW_FLASH_STORAGE_FS_BYTES       (16 * 1024 * 1024)
-#define MICROPY_HW_FLASH_STORAGE_ROMFS_BYTES    (16 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_FS_BYTES       (8 * 1024 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_ROMFS_BYTES    (24 * 1024 * 1024)
 
 // Murata 1YN configuration
 #define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE     "lib/cyw43-driver/firmware/w43439_sdio_1yn_7_95_59_combined.h"
