@@ -52,9 +52,9 @@ static mp_obj_t machine_bitstream_(size_t n_args, const mp_obj_t *args) {
             for (size_t i = 0; i < 4; ++i) {
                 timing_ns[i] = mp_obj_get_int(timing[i]);
             }
-            MP_THREAD_GIL_EXIT()
+            MP_THREAD_GIL_EXIT();
             machine_bitstream_high_low(pin, timing_ns, bufinfo.buf, bufinfo.len);
-            MP_THREAD_GIL_ENTER()
+            MP_THREAD_GIL_ENTER();
             break;
         }
         default:

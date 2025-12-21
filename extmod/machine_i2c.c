@@ -296,9 +296,9 @@ static int mp_machine_i2c_readfrom(mp_obj_base_t *self, uint16_t addr, uint8_t *
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
     mp_machine_i2c_buf_t buf = {.len = len, .buf = dest};
     unsigned int flags = MP_MACHINE_I2C_FLAG_READ | (stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
-    MP_THREAD_GIL_EXIT()
+    MP_THREAD_GIL_EXIT();
     int ret = i2c_p->transfer(self, addr, 1, &buf, flags);
-    MP_THREAD_GIL_ENTER()
+    MP_THREAD_GIL_ENTER();
     return ret;
 }
 
@@ -306,9 +306,9 @@ static int mp_machine_i2c_writeto(mp_obj_base_t *self, uint16_t addr, const uint
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
     mp_machine_i2c_buf_t buf = {.len = len, .buf = (uint8_t *)src};
     unsigned int flags = stop ? MP_MACHINE_I2C_FLAG_STOP : 0;
-    MP_THREAD_GIL_EXIT()
+    MP_THREAD_GIL_EXIT();
     int ret = i2c_p->transfer(self, addr, 1, &buf, flags);
-    MP_THREAD_GIL_ENTER()
+    MP_THREAD_GIL_ENTER();
     return ret;
 }
 
@@ -495,9 +495,9 @@ static mp_obj_t machine_i2c_writevto(size_t n_args, const mp_obj_t *args) {
 
     // Do the I2C transfer
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
-    MP_THREAD_GIL_EXIT()
+    MP_THREAD_GIL_EXIT();
     int ret = i2c_p->transfer(self, addr, nbufs, bufs, stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
-    MP_THREAD_GIL_ENTER()
+    MP_THREAD_GIL_ENTER();
     mp_local_free(bufs);
 
     if (ret < 0) {
@@ -538,10 +538,10 @@ static int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
         };
 
         // Do write+read I2C transfer
-        MP_THREAD_GIL_EXIT()
+        MP_THREAD_GIL_EXIT();
         int ret = i2c_p->transfer(self, addr, 2, bufs,
             MP_MACHINE_I2C_FLAG_WRITE1 | MP_MACHINE_I2C_FLAG_READ | MP_MACHINE_I2C_FLAG_STOP);
-        MP_THREAD_GIL_ENTER()
+        MP_THREAD_GIL_ENTER();
         return ret;
     }
     #endif
@@ -570,9 +570,9 @@ static int write_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t 
 
     // Do I2C transfer
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
-    MP_THREAD_GIL_EXIT()
+    MP_THREAD_GIL_EXIT();
     int ret = i2c_p->transfer(self, addr, 2, bufs, MP_MACHINE_I2C_FLAG_STOP);
-    MP_THREAD_GIL_ENTER()
+    MP_THREAD_GIL_ENTER();
     return ret;
 }
 
@@ -739,8 +739,8 @@ int mp_machine_soft_i2c_write(mp_obj_base_t *self_in, const uint8_t *src, size_t
 
 static const mp_machine_i2c_p_t mp_machine_soft_i2c_p = {
     .init = mp_machine_soft_i2c_init,
-    .start = (int (*)(mp_obj_base_t *))mp_hal_i2c_start,
-    .stop = (int (*)(mp_obj_base_t *))mp_hal_i2c_stop,
+    .start = (int (*)(mp_obj_base_t *)) mp_hal_i2c_start,
+    .stop = (int (*)(mp_obj_base_t *)) mp_hal_i2c_stop,
     .read = mp_machine_soft_i2c_read,
     .write = mp_machine_soft_i2c_write,
     .transfer = mp_machine_soft_i2c_transfer,
