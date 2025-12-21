@@ -121,6 +121,32 @@ static mp_import_stat_t stat_module(vstr_t *path) {
     return stat_file_py_or_mpy(path);
 }
 
+#if MICROPY_PY_SYS && MICROPY_PY_SYS_PATH
+// Helper for stat_find_module
+static void stat_build_path(vstr_t *dest, mp_obj_t *path_item, qstr mod_name) {
+    vstr_reset(dest);
+    size_t p_len;
+    const char *dot, *rest;
+    const char *p = mp_obj_str_get_data(path_item, &p_len);
+    if (p_len > 0) {
+        // Add the path separator (unless the entry is "", i.e. cwd).
+        vstr_add_strn(dest, p, p_len);
+        vstr_add_char(dest, PATH_SEP_CHAR[0]);
+    }
+    // Convert the dotted module name to a path.
+    rest = qstr_str(mod_name);
+    dot = strchr(rest, '.');
+    while (dot) {
+        vstr_add_strn(dest, rest, dot - rest);
+        vstr_add_char(dest, PATH_SEP_CHAR[0]);
+        rest = dot + 1;
+        dot = strchr(rest, '.');
+    }
+    vstr_add_str(dest, rest);
+    vstr_str(dest)[vstr_len(dest)] = 0;
+}
+#endif
+
 // Given a top-level module name, try and find it in each of the sys.path
 // entries. Note: On success, the dest argument will be updated to the matching
 // path (i.e. "<entry>/mod_name(.py)").
@@ -132,40 +158,27 @@ static mp_import_stat_t stat_find_module(qstr mod_name, vstr_t *dest) {
     mp_obj_get_array(mp_sys_path, &path_num, &path_items);
 
     // go through each sys.path entry, trying to import "<entry>/<mod_name>".
-    bool dir_seen = false;
+    size_t dir_idx = path_num;
     for (size_t i = 0; i < path_num; i++) {
-        vstr_reset(dest);
-        size_t p_len;
-        const char *dot, *rest;
-        const char *p = mp_obj_str_get_data(path_items[i], &p_len);
-        if (p_len > 0) {
-            // Add the path separator (unless the entry is "", i.e. cwd).
-            vstr_add_strn(dest, p, p_len);
-            vstr_add_char(dest, PATH_SEP_CHAR[0]);
-        }
-        // Convert the dotted module name to a path.
-        rest = qstr_str(mod_name);
-        dot = strchr(rest, '.');
-        while (dot) {
-            vstr_add_strn(dest, rest, dot - rest);
-            vstr_add_char(dest, PATH_SEP_CHAR[0]);
-            rest = dot + 1;
-            dot = strchr(rest, '.');
-        }
-        vstr_add_str(dest, rest);
-        vstr_str(dest)[vstr_len(dest)] = 0;
-        // was: vstr_add_str(dest, qstr_str(mod_name));
+        stat_build_path(dest, path_items[i], mod_name);
         mp_import_stat_t stat = stat_module(dest);
         if (stat >= MP_IMPORT_STAT_FILE) {
             return stat;
         }
-        if (stat == MP_IMPORT_STAT_DIR) {
-            dir_seen = true;
+        if (stat == MP_IMPORT_STAT_DIR && dir_idx == path_num) {
+            dir_idx = i;
         }
     }
 
     // sys.path was empty or no matches
-    return dir_seen ? MP_IMPORT_STAT_DIR : MP_IMPORT_STAT_NO_EXIST;
+    if (dir_idx == path_num) {
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+    // Rebuild the path to the first directory seen, for __path__
+    if (dir_idx + 1 < path_num) {
+        stat_build_path(dest, path_items[dir_idx], mod_name);
+    }
+    return MP_IMPORT_STAT_DIR;
 
     #else
 
