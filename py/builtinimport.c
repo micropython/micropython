@@ -105,7 +105,15 @@ static mp_import_stat_t stat_module(vstr_t *path) {
     mp_import_stat_t stat = stat_path(path);
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
-        return stat;
+        size_t orig_path_len = path->len;
+        vstr_add_str(path, PATH_SEP_CHAR "__init__.py");
+        if (stat_file_py_or_mpy(path) == MP_IMPORT_STAT_FILE) {
+            return MP_IMPORT_STAT_FILE_PKG;
+        }
+
+        // remove __init__.py
+        path->len = orig_path_len;
+        return MP_IMPORT_STAT_DIR;
     }
 
     // Not a directory, add .py and try as a file.
@@ -124,6 +132,7 @@ static mp_import_stat_t stat_find_module(qstr mod_name, vstr_t *dest) {
     mp_obj_get_array(mp_sys_path, &path_num, &path_items);
 
     // go through each sys.path entry, trying to import "<entry>/<mod_name>".
+    bool dir_seen = false;
     for (size_t i = 0; i < path_num; i++) {
         vstr_reset(dest);
         size_t p_len;
@@ -147,14 +156,16 @@ static mp_import_stat_t stat_find_module(qstr mod_name, vstr_t *dest) {
         vstr_str(dest)[vstr_len(dest)] = 0;
         // was: vstr_add_str(dest, qstr_str(mod_name));
         mp_import_stat_t stat = stat_module(dest);
-        if (stat != MP_IMPORT_STAT_NO_EXIST) {
+        if (stat >= MP_IMPORT_STAT_FILE) {
             return stat;
+        }
+        if (stat == MP_IMPORT_STAT_DIR) {
+            dir_seen = true;
         }
     }
 
-    // sys.path was empty or no matches, do not search the filesystem or
-    // frozen code.
-    return MP_IMPORT_STAT_NO_EXIST;
+    // sys.path was empty or no matches
+    return dir_seen ? MP_IMPORT_STAT_DIR : MP_IMPORT_STAT_NO_EXIST;
 
     #else
 
@@ -498,22 +509,16 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // Store the __path__ attribute onto this module.
         // https://docs.python.org/3/reference/import.html
         // "Specifically, any module that contains a __path__ attribute is considered a package."
-        // This gets used later to locate any subpackages of this module.
         mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path)));
-        size_t orig_path_len = path.len;
-        vstr_add_str(&path, PATH_SEP_CHAR "__init__.py");
-
-        // execute "path/__init__.py" (if available).
-        if (stat_file_py_or_mpy(&path) == MP_IMPORT_STAT_FILE) {
-            do_load(MP_OBJ_TO_PTR(module_obj), &path);
-        } else {
-            // this should not happen
-            // mp_raise_msg(&mp_type_ImportError, MP_ERROR_TEXT("load error"));
-        }
-        // Remove /__init__.py suffix from path.
-        path.len = orig_path_len;
-    } else { // MP_IMPORT_STAT_FILE
+    } else { // MP_IMPORT_STAT_FILE or FILE_PKG
         // File -- execute "path.(m)py".
+        if (stat == MP_IMPORT_STAT_FILE_PKG) {
+            // add path attribute
+            size_t path_len = path.len;
+            mp_store_attr(module_obj, MP_QSTR___path__,
+                mp_obj_new_str(vstr_str(&path),
+                    path_len - 11 - (path.buf[path_len - 3] == 'm')));
+        }
         do_load(MP_OBJ_TO_PTR(module_obj), &path);
         // Note: This should be the last component in the import path. If
         // there are remaining components then in the next call to
