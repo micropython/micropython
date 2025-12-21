@@ -36,3 +36,14 @@ class SubTimer(AdvancedTimer):
 
 
 watch = SubTimer()
+
+# Storing the native "seconds" property must be delegated to the native attr
+# handler and not shadowed in the instance dict.
+# See https://github.com/micropython/micropython/issues/18592.
+print("seconds" in watch.__dict__)
+
+# Attributes that the native handler does not own fall through to normal
+# instance-dict storage, so a subclass can still hold arbitrary attributes.
+watch.extra = "hello"
+print(watch.extra)
+print("extra" in watch.__dict__)
