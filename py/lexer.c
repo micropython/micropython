@@ -563,9 +563,10 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         vstr_add_byte(&lex->fstring_args, ')');
         if (lex->inject_chrs_idx == 0) {
             // switch from stream to inject_chrs
-            vstr_add_byte(&lex->inject_chrs, lex->chr0);
-            vstr_add_byte(&lex->inject_chrs, lex->chr1);
-            vstr_add_byte(&lex->inject_chrs, lex->chr2);
+            char *s = vstr_add_len(&lex->inject_chrs, 3);
+            s[0] = lex->chr0;
+            s[1] = lex->chr1;
+            s[2] = lex->chr2;
         } else {
             // already consuming from inject_chrs, rewind cached chars to insert new ones
             assert(lex->inject_chrs_idx >= 3);
