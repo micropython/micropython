@@ -162,7 +162,7 @@ typedef struct _mp_lexer_t {
     qstr source_name;           // name of source
     mp_reader_t reader;         // stream source
 
-    unichar chr0, chr1, chr2;   // current cached characters from source
+    uint8_t chr0, chr1, chr2;   // current cached characters from source
 
     size_t line;                // current source line
     size_t column;              // current source column
