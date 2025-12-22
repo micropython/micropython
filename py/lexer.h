@@ -162,9 +162,10 @@ typedef struct _mp_lexer_t {
     qstr source_name;           // name of source
     mp_reader_t reader;         // stream source
 
-    unichar chr0, chr1, chr2;   // current cached characters from source
+    uint32_t chr0;              // first cached byte from source (32-bits for efficient access)
+    uint8_t chr1, chr2;         // subsequent cached bytes from source
     #if MICROPY_PY_FSTRINGS
-    unichar chr0_saved, chr1_saved, chr2_saved; // current cached characters from alt source
+    uint8_t chr0_saved, chr1_saved, chr2_saved; // current cached bytes from alt source
     #endif
 
     size_t line;                // current source line
