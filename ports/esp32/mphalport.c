@@ -138,6 +138,12 @@ int mp_hal_stdin_rx_chr(void) {
         if (c != -1) {
             return c;
         }
+        #if MICROPY_PY_OS_DUPTERM
+        int dupterm_c = mp_os_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
+        }
+        #endif
         MICROPY_EVENT_POLL_HOOK
     }
 }
