@@ -54,11 +54,6 @@ typedef struct _machine_i2c_target_obj_t {
     size_t rx_index;
 } machine_i2c_target_obj_t;
 
-// Forward declare MAX_I2C from mpconfigboard.h
-#ifndef MAX_I2C
-#define MAX_I2C MICROPY_HW_MAX_I2C
-#endif
-
 static machine_i2c_target_obj_t machine_i2c_target_obj[MAX_I2C];
 
 /******************************************************************************/
@@ -202,7 +197,7 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
         .useRxFifo = false,  // PDL recommends false for slave to avoid side effects
         .useTxFifo = true,
         .slaveAddress = addr,
-        .slaveAddressMask = (addrsize == 7) ? 0xFEU : 0xFCU, // Mask for 7-bit or 10-bit
+        .slaveAddressMask = 0xFEU,
         .acceptAddrInFifo = false,
         .ackGeneralAddr = false,
         .enableWakeFromSleep = false,
