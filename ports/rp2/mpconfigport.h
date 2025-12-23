@@ -110,6 +110,7 @@
 #elif PICO_RISCV
 #define MICROPY_EMIT_RV32                       (1)
 #define MICROPY_EMIT_RV32_ZBA                   (1)
+#define MICROPY_EMIT_RV32_ZCMP                  (1)
 #define MICROPY_EMIT_INLINE_RV32                (1)
 #endif
 

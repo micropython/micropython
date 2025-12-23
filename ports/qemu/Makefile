@@ -153,7 +153,8 @@ endif
 ################################################################################
 # Project specific settings and compiler/linker flags
 
-QEMU_SYSTEM = qemu-system-$(QEMU_ARCH)
+QEMU_BASE ?= qemu-system-
+QEMU_SYSTEM = $(QEMU_BASE)$(QEMU_ARCH)
 QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null -semihosting
 QEMU_ARGS += $(QEMU_EXTRA)
 

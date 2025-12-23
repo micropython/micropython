@@ -244,7 +244,11 @@ set(MICROPY_TARGET ${COMPONENT_TARGET})
 if(CONFIG_IDF_TARGET_ARCH_XTENSA)
     set(MICROPY_CROSS_FLAGS -march=xtensawin)
 elseif(CONFIG_IDF_TARGET_ARCH_RISCV)
-    set(MICROPY_CROSS_FLAGS -march=rv32imc)
+    if (CONFIG_IDF_TARGET_ESP32P4)
+        set(MICROPY_CROSS_FLAGS "-march=rv32imc -march-flags=zcmp")
+    else()
+        set(MICROPY_CROSS_FLAGS -march=rv32imc)
+    endif()
 endif()
 
 # Set compile options for this port.

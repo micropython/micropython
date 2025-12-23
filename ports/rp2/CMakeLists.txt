@@ -487,7 +487,16 @@ list(APPEND MICROPY_SOURCE_QSTR
 )
 
 # Define mpy-cross flags
-set(MICROPY_CROSS_FLAGS -march=armv6m)
+if (${PICO_PLATFORM} STREQUAL "rp2040")
+    set(MICROPY_CROSS_FLAGS "-march=armv6m")
+elseif (${PICO_PLATFORM} STREQUAL "rp2350-arm-s")
+    set(MICROPY_CROSS_FLAGS "-march=armv7m")
+elseif (${PICO_PLATFORM} STREQUAL "rp2350-riscv")
+    set(MICROPY_CROSS_FLAGS "-march=rv32imc -march-flags=zba,zcmp")
+else()
+    message(WARNING "Unknown PICO_PLATFORM version (${PICO_PLATFORM}), falling back to rp2040")
+    set(MICROPY_CROSS_FLAGS "-march=armv6m")
+endif()
 
 # Set the frozen manifest file
 if (MICROPY_USER_FROZEN_MANIFEST)
