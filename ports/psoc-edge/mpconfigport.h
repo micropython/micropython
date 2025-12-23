@@ -47,28 +47,6 @@
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_SLICE (1)
 
-// Disable optional modules, only use bytearray
-#define MICROPY_PY_ARRAY                (0)
-#define MICROPY_PY_BINASCII             (0)
-#define MICROPY_PY_COLLECTIONS          (0)
-#define MICROPY_PY_ERRNO                (0)
-#define MICROPY_PY_HASHLIB              (0)
-#define MICROPY_PY_HEAPQ                (0)
-#define MICROPY_PY_IO                   (0)
-#define MICROPY_PY_JSON                 (0)
-#define MICROPY_PY_OS                   (0)
-#define MICROPY_PY_PLATFORM             (0)
-#define MICROPY_PY_RANDOM               (0)
-#define MICROPY_PY_RE                   (0)
-#define MICROPY_PY_SELECT               (0)
-#define MICROPY_PY_STRUCT               (0)
-#define MICROPY_PY_DEFLATE              (0)
-#define MICROPY_PY_FRAMEBUF             (0)
-#define MICROPY_PY_GC                   (0)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
-#define MICROPY_PY_UCTYPES              (0)
-#define MICROPY_PY_ASYNCIO              (0)
-
 // You can disable the built-in MicroPython compiler by setting the following
 // config option to 0.  If you do this then you won't get a REPL prompt, but you
 // will still be able to execute pre-compiled scripts, compiled with mpy-cross.
