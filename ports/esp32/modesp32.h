@@ -67,6 +67,9 @@ extern const mp_obj_type_t esp32_nvs_type;
 extern const mp_obj_type_t esp32_partition_type;
 extern const mp_obj_type_t esp32_rmt_type;
 extern const mp_obj_type_t esp32_ulp_type;
+#if MICROPY_PY_MACHINE_MCPWM
+extern const mp_obj_type_t esp32_mcpwm_type;
+#endif
 
 #if MICROPY_PY_ESP32_PCNT
 extern const mp_obj_type_t esp32_pcnt_type;
