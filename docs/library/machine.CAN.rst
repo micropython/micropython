@@ -13,7 +13,7 @@ voltage levels on the bus.
 Example usage (must have transceiver connected)::
 
    from machine import CAN
-   can = CAN(0, tx=4, rx=5, extframe=True, mode=CAN.LOOPBACK, baudrate=500000)
+   can = CAN(0, tx=4, rx=5, extframe=True, mode=CAN.LOOPBACK, bitrate=500000)
    can.setfilter(0, CAN.FILTER_ADDRESS, [0x102, 0])  # set a filter to receive messages with id = 0x102
 
    can.send([1,2,3], 123)      # send a message with id 123 and payload b'\x01\x02\x03'
@@ -41,7 +41,7 @@ Constructors
 Methods
 -------
 
-.. method:: CAN.init(bus, *, tx, rx, baudrate, prescaler, mode, extframe=False)
+.. method:: CAN.init(bus, *, tx, rx, bitrate, prescaler, mode, extframe=False)
 
    Initialise the CAN bus with the given parameters:
 
@@ -49,7 +49,7 @@ Methods
      - *mode* is one of:  NORMAL, LOOPBACK, SILENT, SILENT_LOOPBACK
      - if *extframe* is True then the bus uses extended identifiers in the frames
        (29 bits); otherwise it uses standard 11 bit identifiers
-     - *baudrate* is used to define a standard speed. Standard speeds are 25000, 50000, 100000, 125000, 250000, 500000, 1000000
+     - *bitrate* is used to define a standard speed. Standard speeds are 25000, 50000, 100000, 125000, 250000, 500000, 1000000
        If it is defined, the *prescaler*, *sjw*, *bs1*, *bs2* will be ignored.
      - *prescaler* is used to set the duration of 1 time quanta; the time quanta
        will be the input clock divided by the prescaler
