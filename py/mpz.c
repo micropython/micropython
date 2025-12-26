@@ -1658,6 +1658,7 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 }
 #endif
 
+// assumes the value is nonzero (micropython always uses small ints for zero)
 // assumes enough space in str as calculated by mp_int_format_size
 // base must be between 2 and 32 inclusive
 // returns length of string, not including null byte
@@ -1666,20 +1667,11 @@ size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, ch
     assert(2 <= base && base <= 32);
 
     size_t ilen = i->len;
+    assert(ilen);
 
     int n_comma = (base == 10) ? 3 : 4;
 
     char *s = str;
-    if (ilen == 0) {
-        if (prefix) {
-            while (*prefix) {
-                *s++ = *prefix++;
-            }
-        }
-        *s++ = '0';
-        *s = '\0';
-        return s - str;
-    }
 
     // make a copy of mpz digits, so we can do the div/mod calculation
     mpz_dig_t *dig = m_new(mpz_dig_t, ilen);
