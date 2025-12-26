@@ -50,7 +50,7 @@ can = CAN(
     0,
     extframe=True,
     mode=CAN.SILENT_LOOPBACK,
-    bitrate=CAN.BAUDRATE_500k,
+    bitrate=500_000,
     tx=4,
     rx=5,
     auto_restart=False,
