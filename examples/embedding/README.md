@@ -10,22 +10,33 @@ simple Python scripts which print things to the standard output.
 Building the example
 --------------------
 
-First build the embed port using:
+To build the example project, based on `main.c`, use:
+
+    $ make
+
+This will first build the micropython embedded sources using the
+`micropython_embed.mk` sub-make, then compile those sources together with `main.c`
+using the `makefile.mk` sub-make. (It's done this way, so that the second sub-make
+can discover sources that might not exist until after the first when building from
+clean.)
+
+That will create an executable called `embed` which you can run:
+
+    $ ./embed
+
+Building the embed port manually
+--------------------------------
+
+You can also building the embed port directly using:
 
     $ make -f micropython_embed.mk
 
 This will generate the `micropython_embed` directory which is a self-contained
 copy of MicroPython suitable for embedding.  The .c files in this directory need
 to be compiled into your project, in whatever way your project can do that.  The
-example here uses make and a provided `Makefile`.
+example here uses make and the provided `makefile.mk`.
 
-To build the example project, based on `main.c`, use:
-
-    $ make
-
-That will create an executable called `embed` which you can run:
-
-    $ ./embed
+    $ make -f makefile.mk
 
 Out of tree build
 -----------------
