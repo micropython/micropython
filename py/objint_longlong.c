@@ -298,14 +298,18 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     return mp_obj_new_int_from_ll(value);
 }
 
+mp_obj_t mp_obj_new_bigint_from_ll(long long val) {
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
+    o->val = val;
+    return MP_OBJ_FROM_PTR(o);
+}
+
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
     if ((long long)(mp_int_t)val == val && MP_SMALL_INT_FITS(val)) {
         return MP_OBJ_NEW_SMALL_INT(val);
     }
 
-    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
-    o->val = val;
-    return MP_OBJ_FROM_PTR(o);
+    return mp_obj_new_bigint_from_ll(val);
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
