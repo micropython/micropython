@@ -136,3 +136,6 @@
     { IOMUXC_GPIO_B1_11_ENET_RX_ER, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_B1_15_ENET_MDIO, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_B1_14_ENET_MDC, 0, 0xB0E9u },
+
+// Enable PSRAM support
+#define MICROPY_HW_ENABLE_PSRAM (1)
