@@ -92,17 +92,17 @@ typedef enum {
 } error_state_t;
 
 typedef enum {
-    RTR = 1,
-    EXTENDED_ID,
-    FD_F,
-    BRS,
+    FLAG_RTR = 1,
+    FLAG_EXT_ID,
+    FLAG_FD_F,
+    FLAG_BRS,
+    FLAG_UNORDERED,
 } message_flags_t;
 
 typedef enum {
-    CRC = 1,
-    FORM,
-    OVERRUN,
-    ESI,
+    RECV_ERR_FULL = 1,
+    RECV_ERR_OVERRUN,
+    RECV_ERR_ESI,
 } recv_errors_t;
 
 typedef enum {

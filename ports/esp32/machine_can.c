@@ -188,16 +188,16 @@ static void esp32_can_irq_task(void *self_in) {
 }
 
 static mp_obj_t esp32_can_init_helper(esp32_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_bitrate, ARG_extframe,
+    enum { ARG_bitrate, ARG_mode, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_extframe,
            ARG_tx_io, ARG_rx_io, ARG_clkout_io, ARG_bus_off_io, ARG_tx_queue, ARG_rx_queue};
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500000} },
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = TWAI_MODE_NORMAL} },
         { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_PRESCALER} },
         { MP_QSTR_sjw, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_SJW} },
         { MP_QSTR_bs1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_BS1} },
         { MP_QSTR_bs2, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_BS2} },
         { MP_QSTR_auto_restart, MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_bitrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500000} },
         { MP_QSTR_extframe, MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_tx, MP_ARG_INT, {.u_int = 4} },
         { MP_QSTR_rx, MP_ARG_INT, {.u_int = 5} },
@@ -816,12 +816,12 @@ static const mp_rom_map_elem_t esp32_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_alerts), MP_ROM_PTR(&esp32_can_alert_obj) },
     // CAN_MODE
     // class CAN.Mode
-    { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(MODE_NORMAL) },
-    { MP_ROM_QSTR(MP_QSTR_SLEEP), MP_ROM_INT(MODE_SLEEP) },
-    { MP_ROM_QSTR(MP_QSTR_LOOPBACK), MP_ROM_INT(MODE_LOOPBACK) },
-    { MP_ROM_QSTR(MP_QSTR_SILENT), MP_ROM_INT(MODE_SILENT) },
-    { MP_ROM_QSTR(MP_QSTR_SILENT_LOOPBACK), MP_ROM_INT(MODE_SILENT_LOOPBACK) },
-    { MP_ROM_QSTR(MP_QSTR_LISTEN_ONLY), MP_ROM_INT(MODE_LISTEN_ONLY) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_NORMAL), MP_ROM_INT(MODE_NORMAL) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_SLEEP), MP_ROM_INT(MODE_SLEEP) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_LOOPBACK), MP_ROM_INT(MODE_LOOPBACK) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_SILENT), MP_ROM_INT(MODE_SILENT) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_SILENT_LOOPBACK), MP_ROM_INT(MODE_SILENT_LOOPBACK) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_LISTEN_ONLY), MP_ROM_INT(MODE_LISTEN_ONLY) },
 /* esp32 can modes
 TWAI_MODE_NORMAL      - Normal operating mode where TWAI controller can send/receive/acknowledge messages
 TWAI_MODE_NO_ACK      - Transmission does not require acknowledgment. Use this mode for self testing. // This mode is useful when self testing the TWAI controller (loopback of transmissions).
@@ -835,23 +835,23 @@ TWAI_MODE_LISTEN_ONLY - The TWAI controller will not influence the bus (No trans
 */
     // CAN_STATE
     // class CAN.State
-    { MP_ROM_QSTR(MP_QSTR_STOPPED), MP_ROM_INT(TWAI_STATE_STOPPED) },
-    { MP_ROM_QSTR(MP_QSTR_ERROR_ACTIVE), MP_ROM_INT(TWAI_STATE_RUNNING) },
-    { MP_ROM_QSTR(MP_QSTR_ERROR_WARNING), MP_ROM_INT(-1) },
-    { MP_ROM_QSTR(MP_QSTR_ERROR_PASSIVE), MP_ROM_INT(-1) },
-    { MP_ROM_QSTR(MP_QSTR_BUS_OFF), MP_ROM_INT(TWAI_STATE_BUS_OFF) },
-    { MP_ROM_QSTR(MP_QSTR_RECOVERING), MP_ROM_INT(TWAI_STATE_RECOVERING) }, // esp32 specific
+    { MP_ROM_QSTR(MP_QSTR_STATE_STOPPED), MP_ROM_INT(TWAI_STATE_STOPPED) },
+    { MP_ROM_QSTR(MP_QSTR_STATE_ACTIVE), MP_ROM_INT(TWAI_STATE_RUNNING) },
+    { MP_ROM_QSTR(MP_QSTR_STATE_WARNING), MP_ROM_INT(-1) },
+    { MP_ROM_QSTR(MP_QSTR_STATE_PASSIVE), MP_ROM_INT(-1) },
+    { MP_ROM_QSTR(MP_QSTR_STATE_BUS_OFF), MP_ROM_INT(TWAI_STATE_BUS_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_STATE_RECOVERING), MP_ROM_INT(TWAI_STATE_RECOVERING) }, // esp32 specific
 
     // class CAN.MessageFlags
-    { MP_ROM_QSTR(MP_QSTR_RTR), MP_ROM_INT(RTR) },
-    { MP_ROM_QSTR(MP_QSTR_EXTENDED_ID), MP_ROM_INT(EXTENDED_ID) },
-    { MP_ROM_QSTR(MP_QSTR_FD_F), MP_ROM_INT(FD_F) },
-    { MP_ROM_QSTR(MP_QSTR_BRS), MP_ROM_INT(BRS) },
+    { MP_ROM_QSTR(MP_QSTR_FLAG_RTR), MP_ROM_INT(FLAG_RTR) },
+    { MP_ROM_QSTR(MP_QSTR_FLAG_EXT_ID), MP_ROM_INT(FLAG_EXT_ID) },
+    { MP_ROM_QSTR(MP_QSTR_FLAG_FD_F), MP_ROM_INT(FLAG_FD_F) },
+    { MP_ROM_QSTR(MP_QSTR_FLAG_BRS), MP_ROM_INT(FLAG_BRS) },
+    { MP_ROM_QSTR(FLAG_UNORDERED), MP_ROM_INT(FLAG_UNORDERED) },
     // class CAN.RecvErrors
-    { MP_ROM_QSTR(MP_QSTR_CRC), MP_ROM_INT(CRC) },
-    { MP_ROM_QSTR(MP_QSTR_FORM), MP_ROM_INT(FORM) },
-    { MP_ROM_QSTR(MP_QSTR_OVERRUN), MP_ROM_INT(OVERRUN) },
-    { MP_ROM_QSTR(MP_QSTR_ESI), MP_ROM_INT(ESI) },
+    { MP_ROM_QSTR(MP_QSTR_RECV_ERR_FULL), MP_ROM_INT(RECV_ERR_FULL) },
+    { MP_ROM_QSTR(MP_QSTR_RECV_ERR_OVERRUN), MP_ROM_INT(RECV_ERR_OVERRUN) },
+    { MP_ROM_QSTR(MP_QSTR_RECV_ERR_ESI), MP_ROM_INT(RECV_ERR_ESI) },
     // class CAN.SendErrors
     { MP_ROM_QSTR(MP_QSTR_ARB), MP_ROM_INT(ARB) },
     { MP_ROM_QSTR(MP_QSTR_NACK), MP_ROM_INT(NACK) },
