@@ -316,7 +316,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 }
                 mp_obj_int_t *quo = mp_obj_int_new_mpz();
                 mpz_divmod_inpl(&quo->mpz, &res->mpz, zlhs, zrhs);
-                mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
+                mp_obj_t tuple[2] = {mp_int_maybe_narrow(quo), mp_int_maybe_narrow(res)};
                 return mp_obj_new_tuple(2, tuple);
             }
 
