@@ -1658,15 +1658,6 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 }
 #endif
 
-#if 0
-this function is unused
-char *mpz_as_str(const mpz_t *i, unsigned int base) {
-    char *s = m_new(char, mp_int_format_size(mpz_max_num_bits(i), base, NULL, '\0'));
-    mpz_as_str_inpl(i, base, NULL, 'a', '\0', s);
-    return s;
-}
-#endif
-
 // assumes enough space in str as calculated by mp_int_format_size
 // base must be between 2 and 32 inclusive
 // returns length of string, not including null byte
