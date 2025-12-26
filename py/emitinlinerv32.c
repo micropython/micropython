@@ -505,7 +505,7 @@ static bool serialise_argument(emit_inline_asm_t *emit, const opcode_t *opcode, 
                 return false;
             }
 
-            mp_uint_t immediate = mp_obj_get_int_truncated(object) << shift;
+            mp_uint_t immediate = ((mp_uint_t)mp_obj_get_int_truncated(object)) << shift;
             if (kind & U) {
                 if (!is_in_unsigned_mask(mask, immediate)) {
                     goto out_of_range;
