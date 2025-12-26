@@ -146,12 +146,9 @@ static mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t 
 static mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
 
-    if (request != MP_STREAM_CLOSE) {
-        check_fd_is_open(o);
-    }
-
     switch (request) {
         case MP_STREAM_FLUSH: {
+            check_fd_is_open(o);
             int ret;
             // fsync(stdin/stdout/stderr) may fail with EINVAL (or ENOTSUP on macos or EBADF
             // on windows), because the OS doesn't buffer these except for instance when they
@@ -190,6 +187,7 @@ static mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             return 0;
         }
         case MP_STREAM_SEEK: {
+            check_fd_is_open(o);
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
             MP_THREAD_GIL_EXIT();
             off_t off = lseek(o->fd, s->offset, s->whence);
@@ -210,12 +208,14 @@ static mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             o->fd = -1;
             return 0;
         case MP_STREAM_GET_FILENO:
+            check_fd_is_open(o);
             return o->fd;
         #if MICROPY_PY_SELECT && !MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
         case MP_STREAM_POLL: {
             #ifdef _WIN32
             mp_raise_NotImplementedError(MP_ERROR_TEXT("poll on file not available on win32"));
             #else
+            check_fd_is_open(o);
             mp_uint_t ret = 0;
             uint8_t pollevents = 0;
             if (arg & MP_STREAM_POLL_RD) {
