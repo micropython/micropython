@@ -48,31 +48,44 @@
 #define MPY_FEATURE_DECODE_ARCH(feat) (((feat) >> 2) & 0x2F)
 
 // Define the host architecture
-#if MICROPY_EMIT_X86
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
-#elif MICROPY_EMIT_X64
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
-#elif MICROPY_EMIT_THUMB
-    #if defined(__thumb2__)
-        #if defined(__ARM_FP) && (__ARM_FP & 8) == 8
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMDP)
-        #elif defined(__ARM_FP) && (__ARM_FP & 4) == 4
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMSP)
+#if MICROPY_PERSISTENT_CODE_LOAD_NATIVE
+    #if defined(__i386__) || defined(_M_IX86)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
+    #elif defined(__x86_64__) || defined(_M_X64)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
+    #elif defined(__thumb2__) || defined(__thumb__)
+        #if defined(__thumb2__)
+            #if defined(__ARM_FP) && (__ARM_FP & 8) == 8
+                #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMDP)
+            #elif defined(__ARM_FP) && (__ARM_FP & 4) == 4
+                #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMSP)
+            #else
+                #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
+            #endif
         #else
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6M)
+        #endif
+        #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
+    #elif defined(__arm__)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
+    #elif defined(__xtensa__)
+        #include <xtensa/config/core-isa.h>
+        #if XCHAL_HAVE_WINDOWED
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
+        #else
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
+        #endif
+    #elif defined(__riscv)
+        #if __riscv_xlen == 32
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV32IMC)
+        #elif __riscv_xlen == 64
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV64IMC)
+        #else
+            #error "Unsupported RISC-V architecture."
         #endif
     #else
-        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6M)
+        #error "Unsupported native architecture."
     #endif
-    #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
-#elif MICROPY_EMIT_ARM
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
-#elif MICROPY_EMIT_XTENSA
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
-#elif MICROPY_EMIT_XTENSAWIN
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
-#elif MICROPY_EMIT_RV32
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV32IMC)
 #else
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif

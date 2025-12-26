@@ -32,7 +32,7 @@
 
 #include "py/mpstate.h"
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_ENABLE_NATIVE_CODE
 
 #if defined(__OpenBSD__) || defined(__MACH__)
 #define MAP_ANONYMOUS MAP_ANON
@@ -80,4 +80,4 @@ void mp_unix_free_exec(void *ptr, size_t size) {
 
 MP_REGISTER_ROOT_POINTER(void *mmap_region_head);
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_ENABLE_NATIVE_CODE

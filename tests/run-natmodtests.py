@@ -133,13 +133,6 @@ def detect_architecture(target):
 
 
 def run_tests(target_truth, target, args, resolved_arch):
-    global injected_import_hook_code
-
-    prelude = ""
-    if args.begin:
-        prelude = args.begin.read()
-    injected_import_hook_code = injected_import_hook_code.replace("{import_prelude}", prelude)
-
     test_results = []
     for test_file in args.files:
         # Find supported test
@@ -223,6 +216,8 @@ def run_tests(target_truth, target, args, resolved_arch):
 
 
 def main():
+    global injected_import_hook_code
+
     cmd_parser = argparse.ArgumentParser(
         description="Run dynamic-native-module tests under MicroPython",
         epilog=run_tests_module.test_instance_epilog,
@@ -240,7 +235,7 @@ def main():
     cmd_parser.add_argument(
         "-b",
         "--begin",
-        type=argparse.FileType("rt"),
+        metavar="PROLOGUE",
         default=None,
         help="prologue python file to execute before module import",
     )
@@ -252,6 +247,12 @@ def main():
     )
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
+
+    prologue = ""
+    if args.begin:
+        with open(args.begin, "rt") as source:
+            prologue = source.read()
+    injected_import_hook_code = injected_import_hook_code.replace("{import_prelude}", prologue)
 
     target_truth = TargetSubprocess([CPYTHON3])
 

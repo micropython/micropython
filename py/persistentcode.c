@@ -76,7 +76,7 @@ typedef struct _bytecode_prelude_t {
 static int read_byte(mp_reader_t *reader);
 static size_t read_uint(mp_reader_t *reader);
 
-#if MICROPY_EMIT_MACHINE_CODE
+#if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
 
 #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA || MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA
 
@@ -222,7 +222,7 @@ static mp_obj_t mp_obj_new_str_static(const mp_obj_type_t *type, const byte *dat
 
 static mp_obj_t load_obj(mp_reader_t *reader) {
     byte obj_type = read_byte(reader);
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
     if (obj_type == MP_PERSISTENT_OBJ_FUN_TABLE) {
         return MP_OBJ_FROM_PTR(&mp_fun_table);
     } else
@@ -295,14 +295,14 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
     bool has_children = !!(kind_len & 4);
     size_t fun_data_len = kind_len >> 3;
 
-    #if !MICROPY_EMIT_MACHINE_CODE
+    #if !(MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE)
     if (kind != MP_CODE_BYTECODE) {
         mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     #endif
 
     uint8_t *fun_data = NULL;
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
     size_t prelude_offset = 0;
     mp_uint_t native_scope_flags = 0;
     mp_uint_t native_n_pos_args = 0;
@@ -322,7 +322,7 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
             read_bytes(reader, fun_data, fun_data_len);
         }
 
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
     } else {
         // Allocate memory for native data and load it
         size_t fun_alloc;
@@ -349,7 +349,7 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
     size_t n_children = 0;
     mp_raw_code_t **children = NULL;
 
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
     // Load optional BSS/rodata for viper.
     uint8_t *rodata = NULL;
     uint8_t *bss = NULL;
@@ -404,7 +404,7 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
             #endif
             scope_flags);
 
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
     } else {
         const uint8_t *prelude_ptr = NULL;
         #if MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE

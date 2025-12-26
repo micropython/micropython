@@ -87,7 +87,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 // native generator wrapper
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_ENABLE_NATIVE_CODE
 
 // Based on mp_obj_gen_instance_t.
 typedef struct _mp_obj_gen_instance_native_t {
@@ -139,7 +139,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     NATIVE_GEN_WRAP_TYPE_ATTR
     );
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_ENABLE_NATIVE_CODE
 
 /******************************************************************************/
 /* generator instance                                                         */
@@ -175,7 +175,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     // If the generator is started, allow sending a value.
     void *state_start = self->code_state.state - 1;
-    #if MICROPY_EMIT_NATIVE
+    #if MICROPY_ENABLE_NATIVE_CODE
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         state_start = ((mp_obj_gen_instance_native_t *)self)->code_state.state - 1;
     }
@@ -197,7 +197,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     mp_vm_return_kind_t ret_kind;
 
-    #if MICROPY_EMIT_NATIVE
+    #if MICROPY_ENABLE_NATIVE_CODE
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         // A native generator.
         typedef uintptr_t (*mp_fun_native_gen_t)(void *, mp_obj_t);
@@ -235,7 +235,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
         case MP_VM_RETURN_EXCEPTION: {
             self->code_state.ip = 0;
-            #if MICROPY_EMIT_NATIVE
+            #if MICROPY_ENABLE_NATIVE_CODE
             if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
                 *ret_val = ((mp_obj_gen_instance_native_t *)self)->code_state.state[0];
             } else

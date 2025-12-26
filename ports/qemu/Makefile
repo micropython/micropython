@@ -164,6 +164,9 @@ QEMU_DEBUG_ARGS ?= -s
 QEMU_ARGS += -S $(QEMU_DEBUG_ARGS) $(QEMU_DEBUG_EXTRA)
 endif
 
+# Allow selecting a subset of natmods to test.
+TEST_NATMODS ?= btree deflate framebuf heapq random_basic re
+
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
@@ -265,7 +268,7 @@ test_full: $(BUILD)/firmware.elf
 test_natmod: $(BUILD)/firmware.elf
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && \
-		for natmod in btree deflate framebuf heapq random_basic re; do \
+		for natmod in $(TEST_NATMODS); do \
 		./run-natmodtests.py -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_EXTRA) extmod/$$natmod*.py; \
 		done
 
