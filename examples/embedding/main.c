@@ -38,7 +38,7 @@ int main() {
     // eg. pthread_get_stackaddr_np, pthread_getattr_np,
     // __builtin_frame_address/__builtin_stack_address, etc.
     int stack_top;
-    mp_embed_init(&heap[0], sizeof(heap), &stack_top);
+    mp_embed_init(&heap[0], sizeof(heap), &stack_top, 8192);
 
     // Run the example scripts (they will be compiled first).
     mp_embed_exec_str(example_1);

@@ -29,9 +29,15 @@
 #if MICROPY_PY_VFS
 
 #include "extmod/vfs.h"
+#if MICROPY_VFS_FAT
 #include "extmod/vfs_fat.h"
+#endif
+#if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
 #include "extmod/vfs_lfs.h"
+#endif
+#if MICROPY_VFS_POSIX
 #include "extmod/vfs_posix.h"
+#endif
 #include "extmod/vfs_rom.h"
 
 #if !MICROPY_VFS
