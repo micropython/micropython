@@ -304,9 +304,16 @@ static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         while (spi_is_busy(self->spi_inst) || spi_is_readable(self->spi_inst)) {
         }
         if (spi_get_const_hw(self->spi_inst)->ris & SPI_SSPRIS_RORRIS_BITS) {
-            // RX overrun occurred, RX DMA channel needs to be manually aborted
-            success = false;
+            // RX overrun occurred. Clear the flag for future transfers
+            spi_get_hw(self->spi_inst)->icr = SPI_SSPICR_RORIC_BITS;
+
+            // RX DMA channel needs to be manually aborted
             dma_channel_abort(chan_rx);
+
+            // An RX overrun is only a problem if we were actually reading
+            if (!write_only) {
+                success = false;
+            }
         }
     }
 
