@@ -10,11 +10,11 @@
         "USB"
     ],
     "images": [
-        "W5500-EVB-Pico.jpg"
+        "W55RP20-EVB-Pico.jpg"
     ],
     "mcu": "rp2040",
-    "product": "W5500-EVB-Pico",
+    "product": "Wiznet W55RP20-EVB-Pico",
     "thumbnail": "",
-    "url": "https://docs.wiznet.io/Product/Chip/Ethernet/W5500/w5500-evb-pico",
-    "vendor": "WIZnet"
+    "url": "https://docs.wiznet.io/Product/iMCU/W55RP20/w55rp20-evb-pico",
+    "vendor": "Wiznet"
 }
