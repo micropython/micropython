@@ -1,6 +1,6 @@
-# cmake file for Wiznet W5500-EVB-Pico.
-set(PICO_BOARD wiznet_w5100s_evb_pico)
-set(MICROPY_PY_NETWORK_WIZNET6K W5500)
+# cmake file for Wiznet W5100S-EVB-Pico2.
+set(PICO_BOARD "pico2")
+set(MICROPY_PY_NETWORK_WIZNET6K W5100S)
 set(MICROPY_PY_LWIP 1)
 set(MICROPY_WIZNET_PIO 0)
 set(MICROPY_PY_NETWORK 1)
@@ -10,4 +10,4 @@ if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
     set(MICROPY_HW_FLASH_STORAGE_BYTES 1441792)  # 1408 * 1024
 endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-but-set-variable -Wno-unused-variable -Wno-misleading-indentation -Wno-incompatible-pointer-types -Wno-error=unused-function -Wno-comment -Wno-unused-function")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mthumb -mcpu=cortex-m0plus")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mthumb -mcpu=cortex-m33")
