@@ -1,4 +1,4 @@
-# Wiznet W5500-EVB-Pico
+# Wiznet W5100S-EVB-Pico2
 
 ## Network Example
 

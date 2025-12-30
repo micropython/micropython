@@ -356,6 +356,11 @@ mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
         return MP_OBJ_TO_PTR(o);
     }
     #endif
+    #if MICROPY_PY_MACHINE_WIZNET_PIO_SPI
+    else if (mp_obj_is_type(o, &machine_wiznet_pio_spi_type)) {
+        return MP_OBJ_TO_PTR(o);
+    }
+    #endif
     else {
         mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
     }

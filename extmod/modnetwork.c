@@ -47,6 +47,10 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #endif
 
+#if MICROPY_PY_NETWORK_WIZNET6K
+extern const struct _mp_obj_type_t mod_network_nic_type_wiznet6k;
+#endif
+
 #if MICROPY_PY_NETWORK_NINAW10
 extern const struct _mp_obj_type_t mod_network_nic_type_nina;
 #endif
@@ -196,7 +200,9 @@ static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     #if MICROPY_PY_NETWORK_WIZNET5K
     { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
     #endif
-
+    #if MICROPY_PY_NETWORK_WIZNET6K
+    { MP_ROM_QSTR(MP_QSTR_WIZNET6K), MP_ROM_PTR(&mod_network_nic_type_wiznet6k) },
+    #endif
     #if MICROPY_PY_NETWORK_NINAW10
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
     #endif
