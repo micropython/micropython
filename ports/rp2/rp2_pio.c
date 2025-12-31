@@ -230,7 +230,7 @@ typedef struct _asm_pio_config_t {
 
 static void asm_pio_override_shiftctrl(mp_obj_t arg, uint32_t bits, uint32_t lsb, pio_sm_config *config) {
     if (arg != mp_const_none) {
-        config->shiftctrl = (config->shiftctrl & ~bits) | (mp_obj_get_int(arg) << lsb);
+        config->shiftctrl = (config->shiftctrl & ~bits) | ((mp_obj_get_int(arg) << lsb) & bits);
     }
 }
 
