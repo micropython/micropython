@@ -277,8 +277,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_riscv64:
-    # ubuntu-22.04 is needed for older libffi.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
     - name: Install packages

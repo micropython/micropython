@@ -946,26 +946,34 @@ function ci_unix_qemu_arm_run_tests {
 }
 
 function ci_unix_qemu_riscv64_setup {
+    ci_gcc_riscv_setup
     sudo apt-get update
-    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
-    sudo apt-get install qemu-user
-    qemu-riscv64 --version
-    sudo mkdir /etc/qemu-binfmt
-    sudo ln -s /usr/riscv64-linux-gnu/ /etc/qemu-binfmt/riscv64
+    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libltdl-dev
+    sudo pip3 install pyelftools
+    sudo pip3 install ar
+    sudo apt-get install qemu-user-static
+    qemu-riscv64-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/riscv64-linux-gnu /usr/gnemul/qemu-riscv64
 }
 
 function ci_unix_qemu_riscv64_build {
     ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}"
     ci_unix_build_ffi_lib_helper riscv64-linux-gnu-gcc
+    ci_native_mpy_modules_build rv64imc
 }
 
 function ci_unix_qemu_riscv64_run_tests {
     # Issues with RISCV-64 tests:
-    # - thread/stress_aes.py takes around 140 seconds
+    # - misc/sys_settrace_features.py doesn't work with CPython 3.12
+    # - thread/stress_aes.py takes around 180 seconds
     # - thread/stress_recurse.py is flaky
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    pushd tests
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=200 ./run-tests.py --exclude 'misc/sys_settrace_features.py|thread/stress_recurse.py|thread/thread_gc1.py'
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
+    popd
 }
 
 function ci_unix_repr_b_build {
