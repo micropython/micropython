@@ -158,6 +158,10 @@
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
+#define MICROPY_PY_MACHINE_UART     (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/windows/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK (1)
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
