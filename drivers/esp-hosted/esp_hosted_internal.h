@@ -73,6 +73,7 @@ typedef struct esp_hosted_state {
     uint8_t flags;
     uint16_t seq_num;
     uint32_t last_hb_ms;
+    uint32_t fw_version[5];
     struct netif netif[ESP_STATE_NUM_ITFS];
     struct dhcp dhcp_client;
     dhcp_server_t dhcp_server;

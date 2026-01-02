@@ -183,6 +183,11 @@ static int32_t esp_hosted_resp_value(CtrlMsg *ctrl_msg) {
         offsetof(CtrlMsgRespSetWifiMaxTxPower, resp),
         offsetof(CtrlMsgRespGetWifiCurrTxPower, resp),
         offsetof(CtrlMsgRespConfigHeartbeat, resp),
+        offsetof(CtrlMsgRespEnableDisable, resp),
+        offsetof(CtrlMsgRespGetFwVersion, resp),
+        offsetof(CtrlMsgRespSetCountryCode, resp),
+        offsetof(CtrlMsgRespGetCountryCode, resp),
+        offsetof(CtrlMsgRespCustomRpcUnserialisedMsg, resp),
     };
 
     int32_t resp = -1;
@@ -402,25 +407,13 @@ int esp_hosted_wifi_poll(void) {
                 return 0;
             case CTRL_MSG_ID__Event_StationDisconnectFromESPSoftAP:
                 return 0;
+            case CTRL_MSG_ID__Event_StationConnectedToAP:
+                esp_state.flags |= ESP_HOSTED_FLAGS_STA_CONNECTED;
+                info_printf("esp_hosted_poll() connected to AP\n");
+                return 0;
             default:
                 error_printf("esp_hosted_poll() unexpected event %d\n", ctrl_msg->msg_id);
                 return 0;
-        }
-    }
-
-    // Responses that should be handled here.
-    if (ctrl_msg->msg_type == CTRL_MSG_TYPE__Resp) {
-        switch (ctrl_msg->msg_id) {
-            case CTRL_MSG_ID__Resp_ConnectAP: {
-                if (esp_hosted_resp_value(ctrl_msg) == 0) {
-                    esp_state.flags |= ESP_HOSTED_FLAGS_STA_CONNECTED;
-                }
-                ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
-                debug_printf("esp_hosted_poll() state %d\n", esp_state.flags);
-                return 0;
-            }
-            default:
-                break;
         }
     }
 
@@ -442,6 +435,7 @@ int esp_hosted_wifi_init(uint32_t itf) {
 
         // Low-level pins and SPI init, memory pool allocation etc...
         if (esp_hosted_hal_init(ESP_HOSTED_MODE_WIFI) != 0) {
+            error_printf("esp_hosted_init() low-level error\n");
             return -1;
         }
 
@@ -453,15 +447,35 @@ int esp_hosted_wifi_init(uint32_t itf) {
         // Wait for an ESPInit control event.
         ctrl_msg = esp_hosted_response(CTRL_MSG_ID__Event_ESPInit, ESP_SYNC_REQ_TIMEOUT);
         if (ctrl_msg == NULL) {
+            error_printf("esp_hosted_init() espinit event timeout\n");
             return -1;
         }
         ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
 
+        // Get firmware version
+        CtrlMsgReqGetFwVersion ctrl_payload_fw;
+        ctrl_msg__req__get_fw_version__init(&ctrl_payload_fw);
+        if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetFwVersion, &ctrl_payload_fw, &ctrl_msg) != 0) {
+            // Legacy firmware doesn't support this command.
+            info_printf("legacy firmware detected\n");
+        } else {
+            CtrlMsgRespGetFwVersion *fw = ctrl_msg->resp_get_fw_version;
+            esp_state.fw_version[0] = fw->major1;
+            esp_state.fw_version[1] = fw->major2;
+            esp_state.fw_version[2] = fw->minor;
+            esp_state.fw_version[3] = fw->rev_patch1;
+            esp_state.fw_version[4] = fw->rev_patch2;
+            info_printf("firmware version: v%u.%u.%u.%u.%u\n",
+                        fw->major1, fw->major2, fw->minor, fw->rev_patch1, fw->rev_patch2);
+            ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
+        }
+
         // Set WiFi mode to STA/AP.
-        CtrlMsgReqSetMode ctrl_payload;
-        ctrl_msg__req__set_mode__init(&ctrl_payload);
-        ctrl_payload.mode = CTRL__WIFI_MODE__APSTA;
-        if (esp_hosted_ctrl(CTRL_MSG_ID__Req_SetWifiMode, &ctrl_payload, &ctrl_msg) != 0) {
+        CtrlMsgReqSetMode ctrl_payload_mode;
+        ctrl_msg__req__set_mode__init(&ctrl_payload_mode);
+        ctrl_payload_mode.mode = CTRL__WIFI_MODE__APSTA;
+        if (esp_hosted_ctrl(CTRL_MSG_ID__Req_SetWifiMode, &ctrl_payload_mode, &ctrl_msg) != 0) {
+            error_printf("esp_hosted_init() failed to set WiFi mode\n");
             return -1;
         }
         ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
@@ -515,11 +529,11 @@ void *esp_hosted_wifi_get_netif(uint32_t itf) {
 }
 
 int esp_hosted_wifi_get_mac(int itf, uint8_t *mac) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqGetMacAddress ctrl_payload;
     ctrl_msg__req__get_mac_address__init(&ctrl_payload);
     ctrl_payload.mode = (itf == ESP_HOSTED_STA_IF) ? CTRL__WIFI_MODE__STA : CTRL__WIFI_MODE__AP;
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetMACAddress, &ctrl_payload, &ctrl_msg) != 0) {
         error_printf("esp_hosted_get_mac() request failed\n");
         return -1;
@@ -529,11 +543,13 @@ int esp_hosted_wifi_get_mac(int itf, uint8_t *mac) {
     if (macstr.data) {
         esp_hosted_macstr_to_bytes(macstr.data, macstr.len, mac);
     }
+
     ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
 int esp_hosted_wifi_connect(const char *ssid, const char *bssid, esp_hosted_security_t security, const char *key, uint16_t channel) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqConnectAP ctrl_payload;
     ctrl_msg__req__connect_ap__init(&ctrl_payload);
 
@@ -548,13 +564,19 @@ int esp_hosted_wifi_connect(const char *ssid, const char *bssid, esp_hosted_secu
     ctrl_payload.is_wpa3_supported = false;
     ctrl_payload.listen_interval = 0;
 
-    if (esp_hosted_request(CTRL_MSG_ID__Req_ConnectAP, &ctrl_payload) != 0) {
+    if (esp_hosted_ctrl(CTRL_MSG_ID__Req_ConnectAP, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
+
+    if (esp_state.fw_version[0] < 1) {
+        esp_state.flags |= ESP_HOSTED_FLAGS_STA_CONNECTED;
+    }
+    ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
 int esp_hosted_wifi_start_ap(const char *ssid, esp_hosted_security_t security, const char *key, uint16_t channel) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqStartSoftAP ctrl_payload;
     ctrl_msg__req__start_soft_ap__init(&ctrl_payload);
 
@@ -570,12 +592,12 @@ int esp_hosted_wifi_start_ap(const char *ssid, esp_hosted_security_t security, c
     ctrl_payload.ssid_hidden = false;
     ctrl_payload.bw = CTRL__WIFI_BW__HT40;
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_StartSoftAP, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
-    ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
+
     esp_state.flags |= ESP_HOSTED_FLAGS_AP_STARTED;
+    ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
@@ -595,6 +617,7 @@ int esp_hosted_wifi_disconnect(uint32_t itf) {
             return -1;
         }
     }
+
     ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
@@ -619,10 +642,10 @@ int esp_hosted_wifi_is_connected(uint32_t itf) {
 }
 
 int esp_hosted_wifi_get_stations(uint8_t *sta_list, size_t *sta_count) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqSoftAPConnectedSTA ctrl_payload;
     ctrl_msg__req__soft_apconnected_sta__init(&ctrl_payload);
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetSoftAPConnectedSTAList, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
@@ -633,15 +656,16 @@ int esp_hosted_wifi_get_stations(uint8_t *sta_list, size_t *sta_count) {
         ProtobufCBinaryData mac = resp->stations[i]->mac;
         esp_hosted_macstr_to_bytes(mac.data, mac.len, &sta_list[i * 6]);
     }
+
     ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
 int esp_hosted_wifi_netinfo(esp_hosted_netinfo_t *netinfo) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqGetAPConfig ctrl_payload;
     ctrl_msg__req__get_apconfig__init(&ctrl_payload);
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetAPConfig, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
@@ -667,10 +691,10 @@ int esp_hosted_wifi_netinfo(esp_hosted_netinfo_t *netinfo) {
 }
 
 int esp_hosted_wifi_scan(esp_hosted_scan_callback_t scan_callback, void *arg, uint32_t timeout) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqScanResult ctrl_payload;
     ctrl_msg__req__scan_result__init(&ctrl_payload);
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetAPScanList, &ctrl_payload, &ctrl_msg) != 0) {
         return -MP_ETIMEDOUT;
     }
