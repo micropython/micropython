@@ -493,9 +493,21 @@ ESP_HOSTED_DIR = drivers/esp-hosted
 PROTOBUF_C_DIR = lib/protobuf-c
 PROTOC ?= protoc-c
 GIT_SUBMODULES += $(PROTOBUF_C_DIR)
+MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY ?= 0
 
-CFLAGS += -DMICROPY_PY_NETWORK_ESP_HOSTED=1
-CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_ESP_HOSTED=1
+ifeq ($(MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY),1)
+ESP_HOSTED_PROTO = esp_hosted_legacy
+else
+ESP_HOSTED_PROTO = esp_hosted_latest
+endif
+
+ESP_HOSTED_CFLAGS = -DMICROPY_PY_NETWORK_ESP_HOSTED=1 \
+                    -DMICROPY_PY_NETWORK_ESP_HOSTED_PROTO_H=\"$(ESP_HOSTED_PROTO).pb-c.h\" \
+                    -DMICROPY_PY_NETWORK_ESP_HOSTED_LEGACY=$(MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY)
+
+CFLAGS += $(ESP_HOSTED_CFLAGS)
+CFLAGS_EXTMOD += $(ESP_HOSTED_CFLAGS)
+
 INC += -I$(TOP)/$(ESP_HOSTED_DIR)
 
 ESP_HOSTED_SRC_C = $(addprefix $(ESP_HOSTED_DIR)/,\
@@ -516,10 +528,10 @@ ESP_HOSTED_SRC_C += $(addprefix $(PROTOBUF_C_DIR)/,\
 $(BUILD)/$(PROTOBUF_C_DIR)/%.o: CFLAGS += -Wno-unused-but-set-variable
 
 # Generate esp_hosted-pb-c.c|h from esp_hosted.proto
-PROTO_GEN_SRC = $(BUILD)/extmod/esp_hosted.pb-c.c
+PROTO_GEN_SRC = $(BUILD)/extmod/$(ESP_HOSTED_PROTO).pb-c.c
 ESP_HOSTED_SRC_C += $(PROTO_GEN_SRC)
 
-$(PROTO_GEN_SRC): $(TOP)/$(ESP_HOSTED_DIR)/esp_hosted.proto
+$(PROTO_GEN_SRC): $(TOP)/$(ESP_HOSTED_DIR)/$(ESP_HOSTED_PROTO).proto
 	$(PROTOC) --proto_path=$(dir $<) --c_out=$(dir $@) $<
 
 # Scope the protobuf include paths to the esp_hosted source files, only
