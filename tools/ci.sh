@@ -936,11 +936,11 @@ function ci_unix_qemu_mips_run_tests {
 
 function ci_unix_qemu_arm_setup {
     sudo apt-get update
-    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
-    sudo apt-get install qemu-user
-    qemu-arm --version
-    sudo mkdir /etc/qemu-binfmt
-    sudo ln -s /usr/arm-linux-gnueabi/ /etc/qemu-binfmt/arm
+    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libltdl-dev
+    sudo apt-get install qemu-user-static
+    qemu-arm-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/arm-linux-gnueabi /usr/gnemul/qemu-arm
 }
 
 function ci_unix_qemu_arm_build {
@@ -950,12 +950,11 @@ function ci_unix_qemu_arm_build {
 
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
-    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     # - thread/stress_aes.py takes around 70 seconds
     # - thread/stress_recurse.py is flaky
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py|thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
