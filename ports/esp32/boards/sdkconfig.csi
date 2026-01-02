@@ -1,0 +1,28 @@
+# =============================================================================
+# CSI (Channel State Information) Configuration
+# Shared configuration for CSI/WiFi Sensing applications
+# Based on Espressif esp-csi recommended settings:
+# https://github.com/espressif/esp-csi/blob/master/examples/get-started/csi_recv_router/sdkconfig.defaults
+# =============================================================================
+
+# CSI Support (required for Channel State Information extraction)
+CONFIG_ESP_WIFI_CSI_ENABLED=y
+
+# Power saving modes can cause packet loss and timing issues with CSI callbacks
+CONFIG_PM_ENABLE=n
+CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE=n
+
+# Disable AMPDU aggregation: More individual packets = more CSI callbacks
+# This is critical for motion detection which needs high packet rate
+CONFIG_ESP_WIFI_AMPDU_TX_ENABLED=n
+CONFIG_ESP_WIFI_AMPDU_RX_ENABLED=n
+
+# Larger RX buffer for high CSI callback rate (default is 32)
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=128
+
+# Higher tick rate: reduces callback latency by 10x compared to default 100Hz
+CONFIG_FREERTOS_HZ=1000
+
+# Watchdog timeout (prevent resets during heavy CSI processing)
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=30
+
