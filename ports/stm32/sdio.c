@@ -131,10 +131,6 @@ void sdio_init(uint32_t irq_pri) {
     mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CMD);
 
     SDMMC_CLK_ENABLE(); // enable SDIO peripheral
-    #if defined(STM32N6)
-    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_SDMMC1);
-    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_SDMMC2);
-    #endif
 
     SDMMC_TypeDef *SDIO = SDMMC;
     #if defined(STM32F7)
