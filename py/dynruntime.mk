@@ -194,6 +194,9 @@ endif
 ifneq ($(MPY_EXTERN_SYM_FILE),)
 MPY_LD_FLAGS += --externs "$(realpath $(MPY_EXTERN_SYM_FILE))"
 endif
+ifneq ($(ARCH_FLAGS),)
+MPY_LD_FLAGS += --arch-flags "$(ARCH_FLAGS)"
+endif
 
 CFLAGS += $(CFLAGS_EXTRA)
 

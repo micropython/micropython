@@ -38,6 +38,7 @@ import makeqstrdata as qstrutil
 # MicroPython constants
 MPY_VERSION = 6
 MPY_SUB_VERSION = 3
+MPY_ARCH_FLAGS = 0x40
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
 MP_NATIVE_ARCH_X86 = 1
@@ -1341,7 +1342,7 @@ class MPYOutput:
             self.write_uint(n)
 
 
-def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
+def build_mpy(env, entry_offset, fmpy, native_qstr_vals, arch_flags):
     # Write jump instruction to start of text
     jump = env.arch.asm_jump(entry_offset)
     env.full_text[: len(jump)] = jump
@@ -1358,12 +1359,16 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
     out = MPYOutput()
     out.open(fmpy)
 
+    header_flags = env.arch.mpy_feature | MPY_SUB_VERSION
+    if arch_flags != 0:
+        header_flags |= MPY_ARCH_FLAGS
+
     # MPY: header
-    out.write_bytes(
-        bytearray(
-            [ord("M"), MPY_VERSION, env.arch.mpy_feature | MPY_SUB_VERSION, MP_SMALL_INT_BITS]
-        )
-    )
+    out.write_bytes(bytearray([ord("M"), MPY_VERSION, header_flags, MP_SMALL_INT_BITS]))
+
+    # MPY: arch flags
+    if arch_flags != 0:
+        out.write_uint(arch_flags)
 
     # MPY: n_qstr
     out.write_uint(1 + len(native_qstr_vals))
@@ -1512,7 +1517,7 @@ def do_link(args):
                     load_object_file(env, f, obj_name)
 
         link_objects(env, len(native_qstr_vals))
-        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals)
+        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals, args.arch_flags)
     except LinkError as er:
         print("LinkError:", er.args[0])
         sys.exit(1)
@@ -1562,6 +1567,35 @@ def parse_linkerscript(source):
     return symbols
 
 
+RV32_EXTENSIONS = {
+    "zba": 1 << 0,
+    "zcmp": 1 << 1,
+}
+
+
+def validate_arch_flags(args):
+    if args.arch_flags is None:
+        args.arch_flags = 0
+        return
+    if args.arch != "rv32imc":
+        raise ValueError('Architecture "{}" does not support extra flags'.format(args.arch))
+    if (args.arch_flags.startswith("0") and len(args.arch_flags) > 2) or args.arch_flags.isdigit():
+        if args.arch_flags[1] in "bB":
+            base = 2
+        elif args.arch_flags[1] in "xX":
+            base = 16
+        else:
+            base = 10
+        args.arch_flags = int(args.arch_flags, base)
+    else:
+        flags_value = 0
+        for flag in args.arch_flags.lower().split(","):
+            if flag not in RV32_EXTENSIONS:
+                raise ValueError('Invalid architecture flags value "{}"'.format(flag))
+            flags_value |= RV32_EXTENSIONS[flag]
+        args.arch_flags = flags_value
+
+
 def main():
     import argparse
 
@@ -1570,6 +1604,7 @@ def main():
         "--verbose", "-v", action="count", default=1, help="increase verbosity"
     )
     cmd_parser.add_argument("--arch", default="x64", help="architecture")
+    cmd_parser.add_argument("--arch-flags", default=None, help="optional architecture flags")
     cmd_parser.add_argument("--preprocess", action="store_true", help="preprocess source files")
     cmd_parser.add_argument("--qstrs", default=None, help="file defining additional qstrs")
     cmd_parser.add_argument(
@@ -1590,6 +1625,8 @@ def main():
 
     global log_level
     log_level = args.verbose
+
+    validate_arch_flags(args)
 
     if args.preprocess:
         do_preprocess(args)
