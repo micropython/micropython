@@ -37,6 +37,18 @@ def toggle(times):
         out_pin(0)
 
 
+class TestConnections(unittest.TestCase):
+    def setUp(self):
+        in_pin.init(Pin.IN)
+
+    def test_connections(self):
+        # Test the hardware connections are correct. If this test fails, all tests will fail.
+        out_pin(1)
+        self.assertEqual(1, in_pin())
+        out_pin(0)
+        self.assertEqual(0, in_pin())
+
+
 class TestCounter(unittest.TestCase):
     def setUp(self):
         out_pin(0)
@@ -47,14 +59,6 @@ class TestCounter(unittest.TestCase):
 
     def assertCounter(self, value):
         self.assertEqual(self.counter.value(), value)
-
-    @unittest.skipIf(sys.platform == "mimxrt", "cannot read back the pin")
-    def test_connections(self):
-        # Test the hardware connections are correct. If this test fails, all tests will fail.
-        out_pin(1)
-        self.assertEqual(1, in_pin())
-        out_pin(0)
-        self.assertEqual(0, in_pin())
 
     def test_count_rising(self):
         self.assertCounter(0)
