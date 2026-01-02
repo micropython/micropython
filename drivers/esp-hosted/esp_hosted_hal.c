@@ -44,6 +44,7 @@
 
 extern void mod_network_poll_events(void);
 
+#ifdef MICROPY_HW_WIFI_IRQ_PIN
 static mp_obj_t esp_hosted_pin_irq_callback(mp_obj_t self_in) {
     #ifdef MICROPY_HW_WIFI_LED
     led_toggle(MICROPY_HW_WIFI_LED);
@@ -52,6 +53,7 @@ static mp_obj_t esp_hosted_pin_irq_callback(mp_obj_t self_in) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp_hosted_pin_irq_callback_obj, esp_hosted_pin_irq_callback);
+#endif // MICROPY_HW_WIFI_IRQ_PIN
 
 MP_WEAK int esp_hosted_hal_init(uint32_t mode) {
     // Perform a hard reset and set pins to their defaults.
@@ -185,10 +187,6 @@ MP_WEAK int esp_hosted_hal_spi_transfer(const uint8_t *tx_buf, uint8_t *rx_buf, 
     spi_proto->transfer(mp_wifi_spi, size, tx_buf, rx_buf);
     mp_hal_pin_write(MICROPY_HW_WIFI_SPI_CS, 1);
     mp_hal_delay_us(100);
-
-    if (esp_hosted_hal_data_ready()) {
-        mod_network_poll_events();
-    }
     return 0;
 }
 
