@@ -613,3 +613,30 @@ supports 32-bit signed integers and blobs.
 .. method:: NVS.commit()
 
     Commits changes made by *set_xxx* methods to flash.
+
+.. _esp32.LDO:
+
+Low Dropout Voltage Regulator (LDO)
+-----------------------------------
+
+This class gives access to the Low Dropout Voltage Regulator (LDO) on the ESP32P4 chip.
+
+For more details see Espressif's `ESP-IDF LDO documentation.
+<https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/ldo_regulator.html>`_.
+
+.. class:: LDO(channel, voltage_mv, adjustable=False)
+
+    Create an object providing access to the Low Dropout Voltage Regulator for a given LDO *channel*.
+
+    Supported keyword arguments:
+
+      - *voltage_mv*: The voltage value to be set to the LDO channel, in millivolts
+      - *adjustable*: (Optional): Whether the LDO channel is adjustable, and the voltage can be updated by `adjust_voltage`
+
+.. method:: LDO.adjust_voltage(voltage_mv)
+
+    Adjust the voltage of the LDO channel.
+
+.. method:: LDO.release()
+
+    Release the LDO channel.
