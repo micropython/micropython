@@ -297,6 +297,9 @@ int mp_bluetooth_init(void);
 // Disables the Bluetooth stack. Is a no-op when not enabled.
 int mp_bluetooth_deinit(void);
 
+// Aborts a pending operation by triggering the bluetooth timeout.
+void mp_bluetooth_abort(void);
+
 // Returns true when the Bluetooth stack is active.
 bool mp_bluetooth_is_active(void);
 
