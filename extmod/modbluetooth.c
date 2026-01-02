@@ -717,7 +717,7 @@ static mp_obj_t bluetooth_ble_gap_pair(mp_obj_t self_in, mp_obj_t conn_handle_in
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_pair_obj, bluetooth_ble_gap_pair);
 
-STATIC mp_obj_t bluetooth_ble_gap_unpair(mp_obj_t self_in, mp_obj_t key_buff) {
+static mp_obj_t bluetooth_ble_gap_unpair(mp_obj_t self_in, mp_obj_t key_buff) {
     (void)self_in;
 
     uint8_t *key = NULL;
@@ -730,9 +730,9 @@ STATIC mp_obj_t bluetooth_ble_gap_unpair(mp_obj_t self_in, mp_obj_t key_buff) {
 
     return bluetooth_handle_errno(mp_bluetooth_gap_unpair(key, key_len));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_unpair_obj, bluetooth_ble_gap_unpair);
+static MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_unpair_obj, bluetooth_ble_gap_unpair);
 
-STATIC mp_obj_t bluetooth_ble_gap_passkey(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t bluetooth_ble_gap_passkey(size_t n_args, const mp_obj_t *args) {
     uint16_t conn_handle = mp_obj_get_int(args[1]);
     uint8_t action = mp_obj_get_int(args[2]);
     mp_int_t passkey = mp_obj_get_int(args[3]);
