@@ -582,7 +582,7 @@ Example usage::
 
 The Quadrature Encoder is hardware based. It is available at all MIMXRT devices except the ones
 based on the i.MX RT 1010 MCU. For details about using the Encoder with a MIMXRT board
-see :ref:`machine.Encoder <mimxrt_machine.Encoder>`:
+see :ref:`machine.Encoder <machine.Encoder>`:
 
 
 class Counter-- Signal counter for i.MXRT MCUs
@@ -609,7 +609,7 @@ Example usage::
 
 The Counter is hardware based. It is available at all MIMXRT devices except the ones
 based on the i.MX RT 1010 MCU. For details about using the Counter with a MIMXRT board
-see :ref:`machine.Counter <mimxrt_machine.Counter>`:
+see :ref:`machine.Counter <machine.Counter>`:
 
 
 Transferring files
