@@ -1,0 +1,5 @@
+-----
+touch :a.py
+touch :b.py
+cp ${TMP}/package :
+mpremote: cp: No such file or directory: No such file or directory.
