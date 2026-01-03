@@ -1,14 +1,15 @@
 import codecs
 import io
-import os
-import sys, time
+import os, sys, time
 
 try:
-    import select, termios
+    import select
+    import termios
 except ImportError:
     termios = None
     select = None
-    import msvcrt, signal
+    import msvcrt
+    import signal
 
 
 class ConsolePosix:
@@ -40,8 +41,21 @@ class ConsolePosix:
         termios.tcsetattr(self.infd, termios.TCSANOW, self.orig_attr)
 
     def waitchar(self, pyb_serial):
-        # TODO pyb_serial might not have fd
-        select.select([self.infd, pyb_serial.fd], [], [])
+        # Get file descriptor for select - works for serial ports and socket-based connections
+        try:
+            serial_fd = pyb_serial.fileno()
+        except Exception:
+            # RFC2217 doesn't implement fileno(), use internal socket
+            serial_fd = pyb_serial._socket.fileno() if hasattr(pyb_serial, "_socket") else None
+
+        if serial_fd is not None:
+            select.select([self.infd, serial_fd], [], [])
+        else:
+            # Fallback: poll with timeout
+            while not pyb_serial.in_waiting:
+                res = select.select([self.infd], [], [], 0.01)
+                if res[0]:
+                    break
 
     def readchar(self):
         res = select.select([self.infd], [], [], 0)
