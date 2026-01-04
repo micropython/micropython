@@ -119,6 +119,15 @@ void wiznet5k_try_poll(void) {
 }
 #endif
 
+#if MICROPY_PY_NETWORK_WIZNET6K
+void wiznet6k_poll(void);
+void wiznet6k_deinit(void);
+
+void wiznet6k_try_poll(void) {
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet6k_poll);
+}
+#endif
+
 u32_t sys_now(void) {
     // Used by LwIP
     return mp_hal_ticks_ms();
@@ -141,6 +150,9 @@ static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
 
     #if MICROPY_PY_NETWORK_WIZNET5K
     wiznet5k_poll();
+    #endif
+    #if MICROPY_PY_NETWORK_WIZNET6K
+    wiznet6k_poll();
     #endif
 
     // Only keep the timer running if any TCP sockets are active, or any netif is up
