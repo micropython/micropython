@@ -1,0 +1,21 @@
+--- instance0 ---
+recv 0x500
+recv 0x501
+recv 0x502
+recv 0x503
+recv 0x504
+received expected messages
+done
+--- instance1 ---
+0 cancel result True
+0 send result True
+1 cancel result True
+1 send result True
+2 cancel result True
+2 send result True
+3 cancel result True
+3 send result True
+4 cancel result True
+4 send result True
+total cancels 5
+total sent OK
