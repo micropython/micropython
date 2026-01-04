@@ -25,5 +25,28 @@ To run a single test do:
 
     $ ./run-mpremote-tests.sh test_filesystem.sh
 
-Each test should print "OK" if it passed.  Otherwise it will print "CRASH", or "FAIL"
-and a diff of the expected and actual test output.
+To run tests against a specific device:
+
+    $ ./run-mpremote-tests.sh -t /dev/ttyACM0
+    $ ./run-mpremote-tests.sh -t rfc2217://localhost:2217
+
+Device shortcuts are supported: `a0` → `/dev/ttyACM0`, `u0` → `/dev/ttyUSB0`, `c0` → `COM0`.
+
+Each test should print "OK" if it passed.  Otherwise it will print "CRASH", "FAIL"
+(with a diff of expected vs actual output), or "skip" if the test was skipped.
+
+## Skipping Tests
+
+Tests can skip themselves by outputting `SKIP` on a line by itself and exiting with
+code 0. This is useful when a test is not applicable to a particular device or
+configuration.
+
+Example in a test script:
+```bash
+if [[ "${MPREMOTE_DEVICE}" == rfc2217://* ]]; then
+    echo "SKIP"
+    exit 0
+fi
+```
+
+The `MPREMOTE_DEVICE` environment variable contains the device path passed via `-t`.

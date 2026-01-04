@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Skip this test for RFC2217 and socket devices to avoid accidentally deleting the host filesystem
+# The unix port uses the host filesystem directly, not a VFS
+if [[ "${MPREMOTE_DEVICE}" == rfc2217://* ]] || [[ "${MPREMOTE_DEVICE}" == socket://* ]]; then
+    echo "SKIP"
+    exit 0
+fi
+
 # Creates a RAM disk big enough to hold two copies of the test directory
 # structure.
 cat << EOF > "${TMP}/ramdisk.py"
@@ -171,4 +178,73 @@ $MPREMOTE resume cp -r "${TMP}/package" :
 $MPREMOTE resume ls : :package :package/subpackage
 $MPREMOTE resume exec "import package; package.x(); package.y()"
 
+echo -----
+# Test rm -r functionality
+# start with a fresh ramdisk before each test
+# rm -r MCU current working directory
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume rm -r -v :
+$MPREMOTE resume ls :
+$MPREMOTE resume ls :/ramdisk
+
+echo -----
+# rm -r relative subfolder
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume mkdir :testdir
+$MPREMOTE resume cp -r "${TMP}/package" :testdir/package
+$MPREMOTE resume ls :testdir
+$MPREMOTE resume ls :testdir/package
+$MPREMOTE resume rm -r :testdir/package
+$MPREMOTE resume ls :/ramdisk
+$MPREMOTE resume ls :testdir
+
+echo -----
+# rm -r non-existent path
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume ls :
+$MPREMOTE resume rm -r :nonexistent || echo "expect error"
+
+echo -----
+# This test would delete attempt to delete thr linux root on rfc2217 bridge devices
+# rm -r absolute root
+# no -v to generate same output on stm32 and other ports
+# $MPREMOTE run "${TMP}/ramdisk.py"
+# $MPREMOTE resume touch :a.py
+# $MPREMOTE resume touch :b.py
+# $MPREMOTE resume cp -r "${TMP}/package" :
+# $MPREMOTE resume cp -r "${TMP}/package" :package2
+# $MPREMOTE resume rm -r :/ || echo "expect error"
+# $MPREMOTE resume ls :
+# $MPREMOTE resume ls :/ramdisk
+
+echo -----
+# rm -r relative mountpoint
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume exec "import os;os.chdir('/')"
+$MPREMOTE resume rm -r -v :ramdisk
+$MPREMOTE resume ls :/ramdisk
+
+echo -----
+# rm -r absolute mountpoint
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume exec "import os;os.chdir('/')"
+$MPREMOTE resume rm -r -v :/ramdisk
+$MPREMOTE resume ls :/ramdisk
+
+echo -----
+# try to delete existing folder in mounted filesystem
+$MPREMOTE mount "${TMP}" + rm -rv :package || echo "expect error"
+echo -----
+# fs without command should raise error
+$MPREMOTE fs 2>/dev/null || echo "expect error: $?"
 echo -----
