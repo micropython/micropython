@@ -961,8 +961,8 @@ function ci_unix_qemu_riscv64_setup {
     ci_gcc_riscv_setup
     sudo apt-get update
     sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libltdl-dev
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    python3 -m pip install pyelftools
+    python3 -m pip install ar
     sudo apt-get install qemu-user-static
     qemu-riscv64-static --version
     sudo mkdir -p /usr/gnemul
@@ -977,13 +977,12 @@ function ci_unix_qemu_riscv64_build {
 
 function ci_unix_qemu_riscv64_run_tests {
     # Issues with RISCV-64 tests:
-    # - misc/sys_settrace_features.py doesn't work with CPython 3.12
     # - thread/stress_aes.py takes around 180 seconds
     # - thread/stress_recurse.py is flaky
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
     pushd tests
-    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=200 ./run-tests.py --exclude 'misc/sys_settrace_features.py|thread/stress_recurse.py|thread/thread_gc1.py'
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=200 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py'
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
     popd
 }
