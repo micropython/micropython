@@ -383,8 +383,8 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DRIVE_6),                MP_ROM_INT(CY_GPIO_DRIVE_SEL_6) },
     { MP_ROM_QSTR(MP_QSTR_DRIVE_7),                MP_ROM_INT(CY_GPIO_DRIVE_SEL_7) },
 
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),             MP_ROM_INT(GPIO_IRQ_FALLING)},
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),              MP_ROM_INT(GPIO_IRQ_RISING)},
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),             MP_ROM_INT(CY_GPIO_INTR_FALLING)},
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),              MP_ROM_INT(CY_GPIO_INTR_RISING)},
 };
 
 static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
