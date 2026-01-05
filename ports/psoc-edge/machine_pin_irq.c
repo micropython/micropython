@@ -144,8 +144,8 @@ int machine_pin_irq_obj_get_index(uint8_t port, uint8_t pin) {
 void port_any_irq_handler(uint8_t port) {
     /**
      * All pins in the same port will run the same handler.
-     * Therefore we iterate over all the pins and check if they if their interrupt
-     * status.
+     * Therefore we iterate over all the pins and check if their interrupt
+     * status are active.
      */
     for (uint8_t pin = 0; pin < CY_GPIO_PINS_MAX; pin++) {
         if (Cy_GPIO_GetInterruptStatus(Cy_GPIO_PortToAddr(port), pin)) {
@@ -155,12 +155,6 @@ void port_any_irq_handler(uint8_t port) {
             /* TODO: This should be later handled by mp_irq_handler() which
             will schedule this call (all this requires the gc and the scheduler) */
             mp_call_function_0(irq->base.handler);
-
-            {
-                /* TODO: This is just used currently for debugging. It will be removed */
-                Cy_GPIO_Inv(CYBSP_USER_LED2_PORT, CYBSP_USER_LED2_PIN);
-                mp_printf(&mp_plat_print, "hi, port=%d pin=%d\n", port, pin);
-            }
 
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(port), pin);
             NVIC_ClearPendingIRQ(gpio_port_irq_num[port]);
@@ -178,11 +172,6 @@ static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
     Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
     IRQn_Type irq_num = gpio_port_irq_num[self->port];
 
-    {
-        // TODO: Remove this once ongoing dev debugging is no longer required.
-        mp_printf(&mp_plat_print, "machine_pin_irq: irq_num=%d\n", irq_num);
-    }
-
     NVIC_ClearPendingIRQ(irq_num);
     NVIC_DisableIRQ(irq_num);
 
@@ -196,6 +185,7 @@ static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
     pin_irq_assert_raise_val("Pin IRQ init failed (PSE PDL error code: %lx)", rslt);
 
     Cy_GPIO_SetInterruptEdge(Cy_GPIO_PortToAddr(self->port), self->pin, trigger);
+    Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 1u);
 
     NVIC_EnableIRQ(intrCfg.intrSrc);
 
@@ -223,7 +213,6 @@ static const mp_irq_methods_t machine_pin_irq_methods = {
 
 machine_pin_irq_obj_t *machine_pin_irq_get_irq(const machine_pin_obj_t *self) {
     int idx = machine_pin_irq_obj_get_index(self->port, self->pin);
-    mp_printf(&mp_plat_print, "machine_pin_irq_get_irq: idx=%d\n", idx);
     machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
 
     if (irq == NULL) {
@@ -246,7 +235,7 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     enum { ARG_handler, ARG_trigger, ARG_hard, ARG_priority };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_IRQ_RISING | GPIO_IRQ_FALLING} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = CY_GPIO_INTR_RISING | CY_GPIO_INTR_FALLING} },
         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_priority,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 7 }},
     };
