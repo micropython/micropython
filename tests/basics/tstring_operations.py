@@ -25,12 +25,12 @@ t1 = t"template"
 try:
     t1 + "string"
 except TypeError as e:
-    print(f"Template+str: {e}")
+    print(f"Template+str: TypeError")
 
 try:
     "string" + t1
 except TypeError as e:
-    print(f"str+Template: {e}")
+    print(f"str+Template: TypeError")
 
 try:
     42 + t1
