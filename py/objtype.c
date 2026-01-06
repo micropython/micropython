@@ -93,7 +93,7 @@ static mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args, mp
     self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, kw_args->used, args + 1);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_KW(native_base_init_wrapper_obj, 1, native_base_init_wrapper);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_native_base_init_wrapper_obj, 1, native_base_init_wrapper);
 
 #if !MICROPY_CPYTHON_COMPAT
 static
@@ -107,7 +107,7 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
     // object.  It doesn't matter which object, so long as it can be uniquely
     // distinguished from a native class that is initialised.
     if (num_native_bases != 0) {
-        o->subobj[0] = MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj);
+        o->subobj[0] = MP_OBJ_FROM_PTR(&mp_native_base_init_wrapper_obj);
     }
     return o;
 }
@@ -173,7 +173,7 @@ static void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
                         // If we're dealing with native base class, then it applies to native sub-object
                         obj_obj = obj->subobj[0];
                         #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
-                        if (obj_obj == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+                        if (obj_obj == MP_OBJ_FROM_PTR(&mp_native_base_init_wrapper_obj)) {
                             // But we shouldn't attempt lookups on object that is not yet instantiated.
                             mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("call super().__init__() first"));
                         }
@@ -369,7 +369,7 @@ static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_arg
 
     // If the type had a native base that was not explicitly initialised
     // (constructed) by the Python __init__() method then construct it now.
-    if (native_base != NULL && o->subobj[0] == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+    if (native_base != NULL && o->subobj[0] == MP_OBJ_FROM_PTR(&mp_native_base_init_wrapper_obj)) {
         o->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args, n_kw, args);
     }
 
@@ -1400,7 +1400,7 @@ static void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         if (dest[0] == MP_OBJ_SENTINEL) {
             // Looked up native __init__ so defer to it
-            dest[0] = MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj);
+            dest[0] = MP_OBJ_FROM_PTR(&mp_native_base_init_wrapper_obj);
             dest[1] = self->obj;
         }
         return;
