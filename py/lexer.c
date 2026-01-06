@@ -558,30 +558,6 @@ static bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
-    #if MICROPY_PY_FSTRINGS
-    if (lex->fstring_args.len) {
-        // moving onto the next token means the literal string is complete.
-        // switch into injecting the format args.
-        vstr_add_byte(&lex->fstring_args, ')');
-        if (lex->inject_chrs_idx == 0) {
-            // switch from stream to inject_chrs
-            char *s = vstr_add_len(&lex->inject_chrs, 3);
-            s[0] = lex->chr0;
-            s[1] = lex->chr1;
-            s[2] = lex->chr2;
-        } else {
-            // already consuming from inject_chrs, rewind cached chars to insert new ones
-            assert(lex->inject_chrs_idx >= 3);
-            lex->inject_chrs_idx -= 3;
-        }
-        vstr_ins_strn(&lex->inject_chrs, lex->inject_chrs_idx, lex->fstring_args.buf, lex->fstring_args.len);
-        vstr_reset(&lex->fstring_args);
-        lex->chr0 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
-        lex->chr1 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
-        lex->chr2 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
-    }
-    #endif
-
     // start new token text
     vstr_reset(&lex->vstr);
 
@@ -705,6 +681,30 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             skip_whitespace(lex, true);
 
         } while (is_string_or_bytes(lex));
+
+        #if MICROPY_PY_FSTRINGS
+        if (lex->fstring_args.len) {
+            // If there was an f-string then it's now complete.
+            // Switch into injecting the format args.
+            vstr_add_byte(&lex->fstring_args, ')');
+            if (lex->inject_chrs_idx == 0) {
+                // switch from stream to inject_chrs
+                char *s = vstr_add_len(&lex->inject_chrs, 3);
+                s[0] = lex->chr0;
+                s[1] = lex->chr1;
+                s[2] = lex->chr2;
+            } else {
+                // already consuming from inject_chrs, rewind cached chars to insert new ones
+                assert(lex->inject_chrs_idx >= 3);
+                lex->inject_chrs_idx -= 3;
+            }
+            vstr_ins_strn(&lex->inject_chrs, lex->inject_chrs_idx, lex->fstring_args.buf, lex->fstring_args.len);
+            vstr_reset(&lex->fstring_args);
+            lex->chr0 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+            lex->chr1 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+            lex->chr2 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+        }
+        #endif
 
     } else if (is_head_of_identifier(lex)) {
         lex->tok_kind = MP_TOKEN_NAME;
