@@ -30,7 +30,8 @@ class ConsolePosix:
         attr[0] &= ~(
             termios.BRKINT | termios.ICRNL | termios.INPCK | termios.ISTRIP | termios.IXON
         )
-        attr[1] = 0
+        # Keep OPOST and ONLCR for proper newline handling (NL -> CR-NL translation)
+        attr[1] = termios.OPOST | termios.ONLCR
         attr[2] = attr[2] & ~(termios.CSIZE | termios.PARENB) | termios.CS8
         attr[3] = 0
         attr[6][termios.VMIN] = 1
