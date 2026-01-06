@@ -1044,6 +1044,10 @@ class SerialIntercept:
         self._check_input(False)
         return len(self.buf)
 
+    @property
+    def in_waiting(self):
+        return self.inWaiting()
+
     def read(self, n):
         while len(self.buf) < n:
             self._check_input(True)
