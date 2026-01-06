@@ -236,7 +236,7 @@ except Exception as e:
 
 try:
     x = 'test'
-    exec('result = t"{x!a\\n:10}"')
+    exec('result = t"{x!r\\n:10}"')
     print('Newline after conversion: OK')
 except Exception as e:
     print(f'Unexpected error: {e}')
