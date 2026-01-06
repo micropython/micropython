@@ -1,6 +1,6 @@
 === Constructor error messages ===
-Keyword args: Template.__new__ only accepts *args arguments
-Invalid type: Template.__new__ args must be str or Interpolation, got 'int'
-Invalid type in varargs: Template.__new__ args must be str or Interpolation, got 'int'
+Keyword args: function doesn't take keyword arguments
+Invalid type: expected str or Interpolation
+Invalid type in varargs: expected str or Interpolation
 
 Constructor error tests completed!
