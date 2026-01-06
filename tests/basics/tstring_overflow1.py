@@ -1,3 +1,7 @@
+# new version of t-string parser does not have these limitations
+print("SKIP")
+raise SystemExit
+
 try:
     from string.templatelib import Template, Interpolation
 except ImportError:
