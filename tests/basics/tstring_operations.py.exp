@@ -1,7 +1,7 @@
 
 === Binary operations ===
-Template+str: can only concatenate string.templatelib.Template (not "str") to string.templatelib.Template
-str+Template: can only concatenate str (not "string.templatelib.Template") to str
+Template+str: TypeError
+str+Template: TypeError
 int+Template: TypeError
 -: unsupported
 *: unsupported
