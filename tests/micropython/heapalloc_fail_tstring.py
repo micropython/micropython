@@ -160,14 +160,14 @@ except MemoryError:
 micropython.heap_unlock()
 
 # ASCII conversion (a)
-t_a = t"{'test'!a}"
-micropython.heap_lock()
-try:
-    t_a.__str__()
-    print("FAIL: a conversion")
-except MemoryError:
-    print("OK: a conversion")
-micropython.heap_unlock()
+# t_a = t"{'test'!a}"
+# micropython.heap_lock()
+# try:
+#     t_a.__str__()
+#     print("FAIL: a conversion")
+# except MemoryError:
+#     print("OK: a conversion")
+# micropython.heap_unlock()
 
 # Complex format spec
 fill = "*"

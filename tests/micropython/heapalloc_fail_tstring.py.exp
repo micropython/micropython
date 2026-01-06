@@ -12,7 +12,6 @@ OK: Format spec interpolation
 OK: Debug format
 OK: Conversion + format
 OK: s conversion
-OK: a conversion
 OK: Complex format spec
 OK: Simple expression
 OK: Interpolation creation

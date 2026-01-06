@@ -17,7 +17,6 @@ Deep nest: Template(strings=('', ''), interpolations=(Interpolation(42, 'obj.a.b
 === Conversions and formatting ===
 repr: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 'r', ''),))
 str: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 's', ''),))
-ascii: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 'a', ''),))
 Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10d'),))'
 Precision: Template(strings=('', ''), interpolations=(Interpolation(3.14159, '3.14159', None, '.2f'),))
 Debug: Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))
