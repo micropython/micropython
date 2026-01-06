@@ -45,10 +45,6 @@ typedef struct _machine_pin_irq_obj_t {
 
 machine_pin_irq_obj_t *machine_pin_irq_obj[MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES];
 
-// Just added as we are using LED defines for debugging.
-// TODO: This include will be removed.
-#include "cycfg_pins.h"
-
 // TODO: This port number max need to be automatically generated from the make_pins.
 #define PORT_NUMBER_MAX 22
 // TODO: This can be generated automatically based on the number of ports available?
@@ -260,9 +256,27 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 void machine_pin_irq_deinit_all(void) {
-    // TODO: Implement irq deinitialization for all pins (To be used after softreset in main)
-}
+    for (uint32_t i = 0; i < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; i++) {
+        machine_pin_irq_obj_t *irq = machine_pin_irq_obj[i];
+        if (irq != NULL) {
+            /* If there are several pins connected to the same IRQ
+            the NVIC will be disabled already when the first pin is deinitialized.
+            This implementation assumes subsequent calls after disabling the IRQ
+            have no effect and are handled gracefully.
+            And simplifies the implementation, as we don't need to keep track of
+            the state of each port separately. */
+            NVIC_ClearPendingIRQ(irq->irq_num);
+            NVIC_DisableIRQ(irq->irq_num);
 
+            machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent);
+            Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
+            Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 0u);
+
+            m_del_obj(machine_pin_irq_obj_t, irq);
+            machine_pin_irq_obj[i] = NULL;
+        }
+    }
+}
 
 // TODO: This will be enabled once the mpirq is fully functional
 // and when the gc is enabled.

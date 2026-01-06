@@ -50,6 +50,7 @@ __attribute__((section(".bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
 #endif
 
 extern void time_init(void);
+extern void machine_pin_irq_deinit_all(void);
 
 int main(void) {
     cy_rslt_t result = CY_RSLT_SUCCESS;
@@ -92,17 +93,15 @@ soft_reset:
     }
 
     mp_printf(&mp_plat_print, "MPY: soft reboot\n");
-    // Deinitialise the runtime.
+
+    machine_pin_irq_deinit_all();
+
     #if MICROPY_ENABLE_GC
     gc_sweep_all();
     #endif
     mp_deinit();
 
     goto soft_reset;
-
-    // Should never get here
-    CY_ASSERT(0);
-    return 0;
 }
 
 // Handle uncaught exceptions (should never be reached in a correct C implementation).
