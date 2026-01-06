@@ -59,7 +59,11 @@ static bool is_char_or3(mp_lexer_t *lex, byte c1, byte c2, byte c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
-#if MICROPY_PY_FSTRINGS
+#if MICROPY_PY_TSTRINGS
+static bool is_char_or5(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4, byte c5) {
+    return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4 || lex->chr0 == c5;
+}
+#elif MICROPY_PY_FSTRINGS
 static bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
 }
@@ -108,7 +112,11 @@ static bool is_following_odigit(mp_lexer_t *lex) {
 
 static bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
-           #if MICROPY_PY_FSTRINGS
+           #if MICROPY_PY_TSTRINGS
+           || (is_char_or5(lex, 'r', 'u', 'b', 'f', 't') && is_char_following_or(lex, '\'', '\"'))
+           || (((is_char_and(lex, 'r', 'f') || is_char_and(lex, 'f', 'r') || is_char_and(lex, 'r', 't') || is_char_and(lex, 't', 'r'))
+               && is_char_following_following_or(lex, '\'', '\"')))
+           #elif MICROPY_PY_FSTRINGS
            || (is_char_or4(lex, 'r', 'u', 'b', 'f') && is_char_following_or(lex, '\'', '\"'))
            || (((is_char_and(lex, 'r', 'f') || is_char_and(lex, 'f', 'r'))
                && is_char_following_following_or(lex, '\'', '\"')))
@@ -312,7 +320,7 @@ static bool get_hex(mp_lexer_t *lex, size_t num_digits, mp_uint_t *result) {
     return true;
 }
 
-static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) {
+static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, bool is_tstring) {
     // get first quoting character
     char quote_char = '\'';
     if (is_char(lex, '\"')) {
@@ -345,20 +353,50 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
         }
     }
     #endif
+    #if MICROPY_PY_TSTRINGS
+    if (is_tstring) {
+        if (vstr_len(&lex->fstring_args) == 0) {
+            vstr_add_byte(&lex->vstr, '(');
+            vstr_add_byte(&lex->vstr, '(');
+            vstr_add_byte(&lex->vstr, quote_char);
+            vstr_add_byte(&lex->fstring_args, ',');
+        }
+    }
+    #endif
+
+    #if MICROPY_PY_TSTRINGS
+    size_t end_of_format_index = 0;
+    size_t nested_formatting_in_tstring = 0;
+    bool nested_formatting_needs_fstring = false;
+    #endif
 
     while (!is_end(lex) && (num_quotes > 1 || !is_char(lex, '\n')) && n_closing < num_quotes) {
         if (is_char(lex, quote_char)) {
             n_closing += 1;
             vstr_add_char(&lex->vstr, CUR_CHAR(lex));
+        #if MICROPY_PY_TSTRINGS
+        } else if (is_tstring && is_char(lex, '\n')) {
+            // handle multi-line t-strings
+            vstr_add_byte(&lex->vstr, '\\');
+            vstr_add_byte(&lex->vstr, 'n');
+        #endif
         } else {
             n_closing = 0;
 
             #if MICROPY_PY_FSTRINGS
-            while (is_fstring && is_char(lex, '{')) {
+            while ((is_fstring || is_tstring) && is_char(lex, '{')) {
+                #if MICROPY_PY_TSTRINGS
+                if (nested_formatting_in_tstring) {
+                    ++nested_formatting_in_tstring;
+                    break;
+                }
+                #endif
                 next_char(lex);
                 if (is_char(lex, '{')) {
                     // "{{" is passed through unchanged to be handled by str.format
-                    vstr_add_byte(&lex->vstr, '{');
+                    if (!is_tstring) {
+                        vstr_add_byte(&lex->vstr, '{');
+                    }
                     next_char(lex);
                 } else {
                     // wrap each argument in (), e.g.
@@ -395,23 +433,89 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                         vstr_add_byte(&lex->fstring_args, c);
                         next_char(lex);
                     }
+                    #if MICROPY_PY_TSTRINGS
+                    bool was_debug = false;
+                    #endif
                     if (lex->fstring_args.buf[lex->fstring_args.len - 1] == '=') {
                         // if the last character of the arg was '=', then inject "arg=" before the '{'.
                         // f'{a=}' --> 'a={}'.format(a)
                         vstr_add_strn(&lex->vstr, lex->fstring_args.buf + i, lex->fstring_args.len - i);
                         // remove the trailing '='
                         lex->fstring_args.len--;
+                        #if MICROPY_PY_TSTRINGS
+                        if (is_tstring) {
+                            // truncate trailing spaces
+                            while (lex->fstring_args.len && unichar_isspace(lex->fstring_args.buf[lex->fstring_args.len - 1])) {
+                                lex->fstring_args.len--;
+                            }
+                        }
+                        was_debug = true;
+                        #endif
                     }
                     // close the paren-wrapped arg to .format().
                     vstr_add_byte(&lex->fstring_args, ')');
                     // comma-separate args to .format().
                     vstr_add_byte(&lex->fstring_args, ',');
+                    #if MICROPY_PY_TSTRINGS
+                    if (is_tstring) {
+                        // duplicate expression to a string
+                        vstr_add_byte(&lex->fstring_args, quote_char);
+                        size_t nn = lex->fstring_args.len - i - 3;
+                        for (size_t j = 0; j < nn; ++j) {
+                            byte b = lex->fstring_args.buf[i + j];
+                            if (b == quote_char) {
+                                vstr_add_byte(&lex->fstring_args, '\\');
+                            } else if (b == '\\') {
+                                vstr_add_byte(&lex->fstring_args, '\\');
+                            }
+                            vstr_add_byte(&lex->fstring_args, b);
+                        }
+                        vstr_add_byte(&lex->fstring_args, quote_char);
+                        vstr_add_byte(&lex->fstring_args, ',');
+
+                        // start next part of string as next __template__ argument
+                        vstr_add_byte(&lex->vstr, quote_char);
+                        vstr_add_byte(&lex->vstr, ',');
+                        vstr_add_byte(&lex->vstr, quote_char);
+
+                        // process conv and format spec
+                        if (is_char(lex, '!')) {
+                            next_char(lex);
+                            vstr_add_byte(&lex->fstring_args, quote_char);
+                            vstr_add_byte(&lex->fstring_args, CUR_CHAR(lex));
+                            next_char(lex);
+                            vstr_add_byte(&lex->fstring_args, quote_char);
+                            vstr_add_byte(&lex->fstring_args, ',');
+                        } else if (was_debug && !is_char(lex, ':')) {
+                            vstr_add_str(&lex->fstring_args, "'r',");
+                        } else {
+                            vstr_add_str(&lex->fstring_args, "None,");
+                        }
+
+                        // start format str
+                        if (is_char(lex, ':')) {
+                            next_char(lex);
+                        }
+                        nested_formatting_in_tstring = 1;
+                        end_of_format_index = lex->vstr.len;
+                    }
+                    #endif
                 }
                 vstr_add_byte(&lex->vstr, '{');
+                goto continue_outer; // also fixes f'{{' parsing
             }
             #endif
 
-            if (is_char(lex, '\\')) {
+            if (is_tstring && is_char(lex, '\\')) {
+                // it'll be reparsed as a string
+                vstr_add_byte(&lex->vstr, '\\');
+                if (is_raw) {
+                    vstr_add_byte(&lex->vstr, '\\');
+                } else {
+                    next_char(lex);
+                    vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
+                }
+            } else if (is_char(lex, '\\')) {
                 next_char(lex);
                 unichar c = CUR_CHAR(lex);
                 if (is_raw) {
@@ -510,14 +614,39 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     // Character out of range; this raises a generic SyntaxError.
                     lex->tok_kind = MP_TOKEN_INVALID;
                 }
+            #if MICROPY_PY_TSTRINGS
+            } else if (is_tstring && nested_formatting_in_tstring && is_char(lex, '}')) {
+                if (--nested_formatting_in_tstring > 0) {
+                    nested_formatting_needs_fstring = true;
+                    vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
+                } else {
+                    if (nested_formatting_needs_fstring) {
+                        vstr_add_byte(&lex->fstring_args, 'f');
+                        nested_formatting_needs_fstring = false;
+                    }
+                    vstr_add_byte(&lex->fstring_args, quote_char);
+                    vstr_add_strn(&lex->fstring_args, lex->vstr.buf + end_of_format_index + 1, lex->vstr.len - end_of_format_index - 1);
+                    lex->vstr.len = end_of_format_index;
+                    vstr_add_byte(&lex->fstring_args, quote_char);
+                    vstr_add_byte(&lex->fstring_args, ',');
+                }
+            #endif
             } else {
                 // Add the "character" as a byte so that we remain 8-bit clean.
                 // This way, strings are parsed correctly whether or not they contain utf-8 chars.
                 vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
+                #if MICROPY_PY_TSTRINGS
+                if (is_tstring && is_char_and(lex, '}', '}')) {
+                    next_char(lex);
+                }
+                #endif
             }
         }
     continue_parsing_string_literal:
         next_char(lex);
+        #if MICROPY_PY_FSTRINGS
+    continue_outer:;
+        #endif
     }
 
     // check we got the required end quotes
@@ -527,6 +656,12 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
 
     // cut off the end quotes from the token text
     vstr_cut_tail_bytes(&lex->vstr, n_closing);
+
+    #if MICROPY_PY_TSTRINGS
+    if (is_tstring) {
+        vstr_add_byte(&lex->vstr, quote_char);
+    }
+    #endif
 }
 
 // This function returns whether it has crossed a newline or not.
@@ -617,11 +752,16 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         // MP_TOKEN_END is used to indicate that this is the first string token
         lex->tok_kind = MP_TOKEN_END;
 
+        #if MICROPY_PY_TSTRINGS
+        bool had_tstring = false;
+        #endif
+
         // Loop to accumulate string/bytes literals
         do {
             // parse type codes
             bool is_raw = false;
             bool is_fstring = false;
+            bool is_tstring = false;
             mp_token_kind_t kind = MP_TOKEN_STRING;
             int n_char = 0;
             if (is_char(lex, 'u')) {
@@ -641,8 +781,14 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     n_char = 2;
                 }
                 #if MICROPY_PY_FSTRINGS
-                if (is_char_following(lex, 'f')) {
+                else if (is_char_following(lex, 'f')) {
                     is_fstring = true;
+                    n_char = 2;
+                }
+                #endif
+                #if MICROPY_PY_TSTRINGS
+                else if (is_char_following(lex, 't')) {
+                    is_tstring = true;
                     n_char = 2;
                 }
                 #endif
@@ -655,6 +801,22 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     is_raw = true;
                     n_char = 2;
                 }
+            }
+            #endif
+            #if MICROPY_PY_TSTRINGS
+            else if (is_char(lex, 't')) {
+                is_tstring = true;
+                n_char = 1;
+                if (is_char_following(lex, 'r')) {
+                    is_raw = true;
+                    n_char = 2;
+                }
+            }
+            #endif
+
+            #if MICROPY_PY_TSTRINGS
+            if (is_tstring) {
+                had_tstring = true;
             }
             #endif
 
@@ -675,12 +837,24 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             }
 
             // Parse the literal
-            parse_string_literal(lex, is_raw, is_fstring);
+            parse_string_literal(lex, is_raw, is_fstring, is_tstring);
 
             // Skip whitespace so we can check if there's another string following
             skip_whitespace(lex, true);
 
         } while (is_string_or_bytes(lex));
+
+        #if MICROPY_PY_TSTRINGS
+        if (had_tstring) {
+            vstr_add_byte(&lex->vstr, ',');
+            vstr_add_byte(&lex->vstr, ')');
+            vstr_ins_strn(&lex->fstring_args, 0, lex->vstr.buf, lex->vstr.len);
+            // next token is __template__ for the function
+            lex->tok_kind = MP_TOKEN_NAME;
+            vstr_reset(&lex->vstr);
+            vstr_add_str(&lex->vstr, "__template__");
+        }
+        #endif
 
         #if MICROPY_PY_FSTRINGS
         if (lex->fstring_args.len) {
@@ -703,6 +877,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             lex->chr0 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
             lex->chr1 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
             lex->chr2 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+            // printf("inject >%.*s<\n", (int)lex->inject_chrs.len, lex->inject_chrs.buf);
         }
         #endif
 
