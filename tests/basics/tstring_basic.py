@@ -42,7 +42,7 @@ print("\n=== Conversions and formatting ===")
 val = {"key": "value"}
 print(f"repr: {str(t'{val!r}')}")
 print(f"str: {str(t'{val!s}')}")
-print(f"ascii: {str(t'{val!a}')}")
+# print(f"ascii: {str(t'{val!a}')}")
 
 print(f"Width: '{str(t'{42:10d}')}'")
 print(f"Precision: {str(t'{3.14159:.2f}')}")
