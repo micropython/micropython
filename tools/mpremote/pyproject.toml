@@ -30,6 +30,14 @@ classifiers = [
 requires-python = ">=3.4"
 dynamic = ["dependencies", "version"]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pexpect",
+    "coverage",
+    "pytest-cov",
+]
+
 [project.scripts]
 mpremote = "mpremote.main:main"
 
@@ -51,3 +59,34 @@ packages = ["mpremote"]
 
 [tool.hatch.build.targets.sdist.force-include]
 "requirements.txt" = "requirements.txt"
+
+
+[tool.pytest.ini_options]
+# https://docs.pytest.org/en/stable/reference/reference.html#ini-options-ref
+# --cov: enable coverage (source is set in [tool.coverage.run])
+# --cov-context=test: each test gets its own context for scenario tracking
+addopts = "--cov --cov-context=test --cov-report=term"
+testpaths = [
+    "tests",
+]
+
+
+
+[tool.coverage.run]
+# parallel = true enables collection of coverage from subprocesses
+# This is for coverage data collection, not pytest parallelization
+parallel = true
+source = ["mpremote"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.html]
+# Show contexts in HTML report - see which scenarios covered each line
+show_contexts = true
+
+[tool.coverage.json]
+# Include contexts in JSON report for programmatic analysis
+show_contexts = true
+
