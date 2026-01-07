@@ -24,6 +24,51 @@ class PSE84Pin(boardgen.Pin):
 class PSE84PinGenerator(boardgen.PinGenerator):
     def __init__(self):
         super().__init__(pin_type=PSE84Pin, enable_af=False)
+        self._unhidden_ports = []
+        self._port_max_index = 0
+
+    # Collect all unhidden ports from the available
+    # pins.
+    # This function can be only used after parse_board_csv()
+    # has run, as the available_pin generator is constructed
+    # there.
+    def add_ports(self):
+        for pin in self.available_pins():
+            if pin._port > self._port_max_index:
+                self._port_max_index = pin._port
+            if pin._port not in self._unhidden_ports and not pin._hidden:
+                self._unhidden_ports.append(pin._port)
+
+    # Overwrite the parse_board_csv to add
+    # the unhidden ports after parsing the board CSV.
+    def parse_board_csv(self, filename):
+        super().parse_board_csv(filename)
+        self.add_ports()
+
+    def print_port_defines(self, out_header):
+        print(file=out_header)
+        print(
+            f"#define MICROPY_PY_MACHINE_PIN_PORT_NUM_ENTRIES ({self._port_max_index + 1})",
+            file=out_header,
+        )
+
+        print(file=out_header)
+        print("// The MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(DO) macro will", file=out_header)
+        print("// apply the DO macro to all user available ports.", file=out_header)
+        print("// The DO macro takes the port as argument: DO(port).", file=out_header)
+        print("#define MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(DO) \\", file=out_header)
+
+        lines = [f"DO({port})" for port in self._unhidden_ports]
+        macro_body = " \\\n".join(lines)
+        print(macro_body, file=out_header)
+
+        print(file=out_header)
+
+    # Overwrite print_header to extend the print header base class
+    # function with the pin port defines
+    def print_header(self, out_header):
+        super().print_header(out_header)
+        self.print_port_defines(out_header)
 
 
 if __name__ == "__main__":
