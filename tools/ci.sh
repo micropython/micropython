@@ -777,9 +777,8 @@ function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
     sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
-    sudo pip3 install setuptools
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    python -m pip install pyelftools
+    python -m pip install ar
     gcc --version
     python3 --version
 }
