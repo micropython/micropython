@@ -53,6 +53,14 @@ class TransportExecError(TransportError):
 listdir_result = namedtuple("dir_result", ["name", "st_mode", "st_ino", "st_size"])
 
 
+def _quote_path(path: str) -> str:
+    """
+    Properly escape a path string for use in Python code sent to the REPL.
+    Uses repr() to handle all special characters including quotes, backslashes, and Unicode characters.
+    """
+    return repr(path)
+
+
 # Takes a Transport error (containing the text of an OSError traceback) and
 # raises it as the corresponding OSError-derived exception.
 def _convert_filesystem_error(e, info):
@@ -84,7 +92,7 @@ class Transport:
             buf.extend(b.replace(b"\x04", b""))
 
         cmd = "import os\nfor f in os.ilistdir(%s):\n print(repr(f), end=',')" % (
-            ("'%s'" % src) if src else ""
+            _quote_path(src) if src else ""
         )
         try:
             buf.extend(b"[")
@@ -101,7 +109,7 @@ class Transport:
     def fs_stat(self, src):
         try:
             self.exec("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src)))
+            return os.stat_result(self.eval("os.stat(%s)" % _quote_path(src)))
         except TransportExecError as e:
             raise _convert_filesystem_error(e, src) from None
 
@@ -122,8 +130,8 @@ class Transport:
 
     def fs_printfile(self, src, chunk_size=256):
         cmd = (
-            "with open('%s') as f:\n while 1:\n"
-            "  b=f.read(%u)\n  if not b:break\n  print(b,end='')" % (src, chunk_size)
+            "with open(%s) as f:\n while 1:\n"
+            "  b=f.read(%u)\n  if not b:break\n  print(b,end='')" % (_quote_path(src), chunk_size)
         )
         try:
             self.exec(cmd, data_consumer=stdout_write_bytes)
@@ -137,7 +145,7 @@ class Transport:
         contents = bytearray()
 
         try:
-            self.exec("f=open('%s','rb')\nr=f.read" % src)
+            self.exec("f=open(%s,'rb')\nr=f.read" % _quote_path(src))
             while True:
                 chunk = self.eval("r({})".format(chunk_size))
                 if not chunk:
@@ -157,7 +165,7 @@ class Transport:
             written = 0
 
         try:
-            self.exec("f=open('%s','wb')\nw=f.write" % dest)
+            self.exec("f=open(%s,'wb')\nw=f.write" % _quote_path(dest))
             while data:
                 chunk = data[:chunk_size]
                 self.exec("w(" + repr(chunk) + ")")
@@ -171,25 +179,25 @@ class Transport:
 
     def fs_mkdir(self, path):
         try:
-            self.exec("import os\nos.mkdir('%s')" % path)
+            self.exec("import os\nos.mkdir(%s)" % _quote_path(path))
         except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
     def fs_rmdir(self, path):
         try:
-            self.exec("import os\nos.rmdir('%s')" % path)
+            self.exec("import os\nos.rmdir(%s)" % _quote_path(path))
         except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
     def fs_rmfile(self, path):
         try:
-            self.exec("import os\nos.remove('%s')" % path)
+            self.exec("import os\nos.remove(%s)" % _quote_path(path))
         except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
     def fs_touchfile(self, path):
         try:
-            self.exec("f=open('%s','a')\nf.close()" % path)
+            self.exec("f=open(%s,'a')\nf.close()" % _quote_path(path))
         except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
@@ -202,8 +210,8 @@ class Transport:
             return getattr(hashlib, algo)(data).digest()
         try:
             self.exec(
-                "buf = memoryview(bytearray({chunk_size}))\nwith open('{path}', 'rb') as f:\n while True:\n  n = f.readinto(buf)\n  if n == 0:\n   break\n  h.update(buf if n == {chunk_size} else buf[:n])\n".format(
-                    chunk_size=chunk_size, path=path
+                "buf = memoryview(bytearray({chunk_size}))\nwith open({path}, 'rb') as f:\n while True:\n  n = f.readinto(buf)\n  if n == 0:\n   break\n  h.update(buf if n == {chunk_size} else buf[:n])\n".format(
+                    chunk_size=chunk_size, path=_quote_path(path)
                 )
             )
             return self.eval("h.digest()")
