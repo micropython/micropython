@@ -45,29 +45,39 @@ typedef struct _machine_pin_irq_obj_t {
 
 machine_pin_irq_obj_t *machine_pin_irq_obj[MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES];
 
-// TODO: This port number max need to be automatically generated from the make_pins.
-#define PORT_NUMBER_MAX 22
-// TODO: This can be generated automatically based on the number of ports available?
-// These are currently (manually) removed as not part of the pin cpu dictionary
-// which is automatically generated in build-<board>/pins_<board>.c
-// PM() -> PIN_MACRO will be overwritten to generate all the static structures supporting
-// the pin_irq objects.
-#define GPIO_PORTS_AVAILABLE \
-    PM(3) PM(6) PM(7) PM(8) PM(9) PM(10) PM(11) PM(12) PM(13) PM(14) PM(15) PM(16) PM(17) PM(18) PM(19) PM(20) PM(21)
+/*
+ * The file build-<board>/genhdr/pins.h contains the macro
+ *
+ *  MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(DO)
+ *
+ *  which uses the X-macro (as argument) pattern to pass a worker
+ *  macro DO(port) for the list of all user available ports.
+ *
+ * The available (not hidden) user ports are those defined in the
+ * boards/<board>/pins.csv file, which are not prefixed
+ * with a hyphen(-).
+ * See tools/boardgen.py and psoc-edge/boards/make-pins.py
+ * for more information.
+ */
 
 /* Forward declaration of all ports IRQ handler*/
 void port_any_irq_handler(uint8_t port);
-// All the pins of one port share the same IRQ handler. Therefore, we can replicate the handlers
-// based on the available CPU GPIO ports that are exposed to the users.
+
+/**
+ * All the pins of one port share the same IRQ handler.
+ * Therefore, we can replicate the handlers based on the
+ * available CPU GPIO ports that are exposed to the users.
+ * Alternatively, a single handler can be used for all ports
+ * and pins, but that would require sweeping all ports and
+ * pins, which could be inefficient, specially for a ISR.
+ */
 #define DEFINE_GPIO_PORT_IRQ_HANDLER(port) \
     void PORT##port##_IRQ_Handler(void) { \
         port_any_irq_handler(port); \
     }
 
 /* Define all GPIO port IRQ handlers */
-#define PM(port) DEFINE_GPIO_PORT_IRQ_HANDLER(port)
-GPIO_PORTS_AVAILABLE
-#undef PM
+MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(DEFINE_GPIO_PORT_IRQ_HANDLER)
 
 /**
  * Array of GPIO port IRQ numbers look up table.
@@ -77,18 +87,17 @@ GPIO_PORTS_AVAILABLE
  * The IRQn_Type value naming are different for the
  * secure core as they include "_sec_" in the names.
  * TODO: Review if secure core needs to be supported.
+ * We can add conditional compilation using the macro CY_DEVICE_SECURE.
  */
-const static IRQn_Type gpio_port_irq_num[PORT_NUMBER_MAX] = {
-    #define PM(port) [port] = ioss_interrupts_gpio_##port##_IRQn,
-    GPIO_PORTS_AVAILABLE
-#undef PM
+const static IRQn_Type gpio_port_irq_num[MICROPY_PY_MACHINE_PIN_PORT_NUM_ENTRIES] = {
+    #define MAP_GPIO_PORT_IRQ_NUM(port) [port] = ioss_interrupts_gpio_##port##_IRQn,
+    MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(MAP_GPIO_PORT_IRQ_NUM)
 };
 
 /* Array of GPIO port IRQ handlers look up table */
-const static void (*gpio_port_irq_handlers[PORT_NUMBER_MAX])(void) = {
-    #define PM(port) [port] = PORT##port##_IRQ_Handler,
-    GPIO_PORTS_AVAILABLE
-#undef PM
+const static void (*gpio_port_irq_handlers[MICROPY_PY_MACHINE_PIN_PORT_NUM_ENTRIES])(void) = {
+    #define MAP_GPIO_PORT_IRQ_HANDLER(port) [port] = PORT##port##_IRQ_Handler,
+    MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(MAP_GPIO_PORT_IRQ_HANDLER)
 };
 
 uint32_t machine_pin_irq_obj_find_index(uint8_t port, uint8_t pin) {
