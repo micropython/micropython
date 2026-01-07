@@ -1,3 +1,4 @@
+import io
 import sys
 import time
 
@@ -192,3 +193,38 @@ else:
         VT_ENABLED = True
     except WindowsError:
         VT_ENABLED = False
+
+
+def configure_unicode_output():
+    """
+    Configure stdout/stderr for Unicode support on Windows legacy consoles.
+
+    Only applies when the current encoding doesn't support full Unicode
+    (e.g., cp1252, cp850). Modern terminals (Windows Terminal, VS Code)
+    already use UTF-8 and are not affected.
+    """
+    if sys.platform != "win32":
+        return
+
+    # Full Unicode encodings that don't need fixing
+    unicode_encodings = {"utf-8", "utf-16", "utf-16-le", "utf-16-be", "utf-32"}
+
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is None or not hasattr(stream, "encoding"):
+            continue
+
+        encoding = (stream.encoding or "").lower().replace("_", "-")
+
+        # Skip if already a full Unicode encoding
+        if encoding in unicode_encodings:
+            continue
+
+        # Reconfigure with UTF-8 and error handling for limited encodings
+        if hasattr(stream, "buffer"):
+            wrapped = io.TextIOWrapper(
+                stream.buffer,
+                encoding="utf-8",
+                errors="backslashreplace",
+            )
+            setattr(sys, stream_name, wrapped)
