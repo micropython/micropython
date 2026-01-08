@@ -72,17 +72,18 @@ Python 3 is required, but you can install some other version of python3 instead 
 ## Unix (MAC OS) port
 
 1. `brew install sdl2 pkg-config`
-2. `git clone https://github.com/lvgl/lv_micropython.git`
-3. `cd lv_micropython`
-4. `git submodule update --init --recursive user_modules/lv_binding_micropython`
-5. `sudo mkdir -p /usr/local/lib/`
-6. `sudo cp /opt/homebrew/Cellar/sdl2/2.24.0/lib/libSDL2.dylib /usr/local/lib/`
-7. `sudo cp -r /opt/homebrew/Cellar/sdl2/2.24.0/include /usr/local/`
-8. `sed -i '' 's/ -Werror//' ports/unix/Makefile mpy-cross/Makefile` Remove -Werror from compiler parameters as Mac fails compilation otherwise
-9. `make -C mpy-cross`
-10. `make -C ports/unix submodules`
-11. `make -C ports/unix`
-12. `./ports/unix/build-lvgl/micropython`
+2. `sdl2-config --version` Get the sdl2 version
+3. `git clone https://github.com/lvgl/lv_micropython.git`
+4. `cd lv_micropython`
+5. `git submodule update --init --recursive user_modules/lv_binding_micropython`
+6. `sudo mkdir -p /usr/local/lib/`
+7. `sudo cp /opt/homebrew/Cellar/sdl2/<YOUR_SDL_VERSION>/lib/libSDL2.dylib /usr/local/lib/`
+8. `sudo cp -r /opt/homebrew/Cellar/sdl2/<YOUR_SDL_VERSION>/include /usr/local/`
+9. `sed -i '' 's/ -Werror//' ports/unix/Makefile mpy-cross/Makefile` Remove -Werror from compiler parameters as Mac fails compilation otherwise
+10. `make -C mpy-cross`
+11. `make -C ports/unix submodules`
+12. `make -C ports/unix VARIANT=lvgl`
+13. `./ports/unix/build-lvgl/micropython`
 
 ### ESP32 port
 
