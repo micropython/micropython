@@ -326,6 +326,34 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 extern mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
+/**
+ * void machine_pin_deinit_all(void) {
+ *    Not implemented.
+ *
+ *    Rationale:
+ *    There is no PDL API to deinitialize a single pin, only at the port level via
+ *    void Cy_GPIO_Port_Deinit(GPIO_PRT_Type *base).
+ *    If we deinitialize an entire port, we will end up deinitializing other
+ *    pins that are used by MicroPython but not defined at the user level,
+ *    such as the REPL UART interface pins. Thus, breaking basic core functionalities.
+ *
+ *    This means that after a soft reset, pins will retain their
+ *    configuration, which is not ideal since the system is not starting in
+ *    the same state.
+ *    This should not be a problem since pins can be reconfigured if reused,
+ *    and if not reused, they won't be in scope after reset.
+ *    The pin itself is not deinitialized, but its IRQ (if enabled) will be cleared,
+ *    disabled, and deinitialized upon soft reset. That should be sufficient to
+ *    prevent unexpected behavior.
+ *
+ *    Discarded solutions:
+ *    We could reset pins to default values, but we don't know if there is
+ *    a single valid default configuration for all pins. Other initial
+ *    value tracking mechanisms would also overcomplicate the code.
+ *    Therefore, at the moment, such solutions don't seem worth it.
+ * }
+ */
+
 static mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     // TODO: Placeholder.
     return 0;
