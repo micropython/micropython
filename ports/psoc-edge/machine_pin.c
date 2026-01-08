@@ -100,8 +100,8 @@ static uint32_t get_drive_mode(uint8_t mode, uint8_t pull) {
         } else {
             drive_mode = CY_GPIO_DM_HIGHZ;
         }
-        // TODO: Check if this will be used.
-        // CY_GPIO_DM_STRONG ??
+        // Additional available unused modes:
+        // - CY_GPIO_DM_STRONG
     } else if (mode == GPIO_MODE_OUT) {
         if (pull == GPIO_PULL_UP) {
             drive_mode = CY_GPIO_DM_PULLUP_IN_OFF;
@@ -114,9 +114,9 @@ static uint32_t get_drive_mode(uint8_t mode, uint8_t pull) {
         }
     } else if (mode == GPIO_MODE_OPEN_DRAIN) {
         drive_mode = CY_GPIO_DM_OD_DRIVESLOW_IN_OFF;
-        // TODO: Check if we support other open drain modes
-        // CY_GPIO_DM_OD_DRIVESLOW
-        // CY_GPIO_DM_OD_DRIVESHIGH
+        // Additional available unused modes:
+        // - CY_GPIO_DM_OD_DRIVESLOW
+        // - CY_GPIO_DM_OD_DRIVESHIGH
     } else if (mode == GPIO_MODE_NONE) {
         drive_mode = CY_GPIO_DM_INVALID;
     }
