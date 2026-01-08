@@ -49,6 +49,7 @@ typedef struct _machine_encoder_obj_t {
     uint8_t mode;
     bool is_signed;
     uint8_t match_pin;
+    uint8_t phases_inv;
     uint32_t cpc;
     uint32_t filter;
     uint16_t status;
@@ -214,10 +215,15 @@ __attribute__((section(".ram_functions"))) void ENC4_IRQHandler(void) {
 
 static void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print,
-        self->is_signed ? "%s %d cpc=%lu match=%ld filter=%luns>\n" : "%s %d cpc=%lu match=%lu filter=%luns>\n",
-        self->mode == MODE_ENCODER ? "<Encoder" : "<Counter",
-        self->id, self->cpc, self->enc_config.positionCompareValue, self->filter);
+    if (self->mode == MODE_ENCODER) {
+        mp_printf(print, "<Encoder %d, phases=%d, cpc=%lu, match=%ld, filter=%luns>\n",
+            self->id, 4 / self->phases_inv, self->cpc / self->phases_inv,
+            self->enc_config.positionCompareValue / self->phases_inv, self->filter);
+    } else {
+        mp_printf(print, "<Counter %d, cpc=%lu, match=%ld, filter=%luns>\n",
+            self->id, self->cpc / self->phases_inv, self->enc_config.positionCompareValue,
+            self->filter);
+    }
 }
 
 // Utility functions
@@ -363,7 +369,7 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     }
 
     if (args[ARG_cpc].u_obj != mp_const_none) {
-        uint32_t cpc = mp_obj_int_get_truncated(args[ARG_cpc].u_obj);
+        uint32_t cpc = mp_obj_int_get_truncated(args[ARG_cpc].u_obj) * self->phases_inv;
         self->cpc = cpc;
         if (cpc == 0) {
             enc_config->enableModuloCountMode = false;
@@ -403,7 +409,7 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
 static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_phase_a, ARG_phase_b, ARG_home,
-           ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed, ARG_index};
+           ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed, ARG_index, ARG_phases};
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -414,6 +420,7 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
         { MP_QSTR_cpc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
+        { MP_QSTR_phases, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args,
@@ -440,6 +447,14 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
         } else {
             XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_home);
         }
+    }
+
+    // Get the Phases argument
+    if (args[ARG_phases].u_int != -1) {
+        if ((args[ARG_phases].u_int != 1) && (args[ARG_phases].u_int != 2) && (args[ARG_phases].u_int != 4)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid value for phases"));
+        }
+        self->phases_inv = 4 / args[ARG_phases].u_int;
     }
 
     // Set the common options
@@ -481,6 +496,7 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     self->irq = NULL;
     self->match_pin = 0;
     self->is_signed = true;
+    self->phases_inv = 4;  // default: phases = 1
     self->mode = MODE_ENCODER;
 
     // Set defaults for ENC Config
@@ -552,7 +568,7 @@ static mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
     uint32_t actual_value = ENC_GetPositionValue(self->instance);
     if (n_args > 1) {
         // Set the encoder position value and clear the rev counter.
-        uint32_t value = mp_obj_int_get_truncated(args[1]);
+        uint32_t value = mp_obj_int_get_truncated(args[1]) * self->phases_inv;
         clear_encoder_registers(self);
         // Set the position and rev register
         ENC_SetInitialPositionValue(self->instance, value);
@@ -562,9 +578,13 @@ static mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
     }
     // Get the position as signed or unsigned 32 bit value.
     if (self->is_signed) {
-        return mp_obj_new_int((int32_t)actual_value);
+        int32_t value = (int32_t)actual_value;
+        if (value > 0) {
+            value += (self->phases_inv - 1);
+        }
+        return mp_obj_new_int(value / self->phases_inv);
     } else {
-        return mp_obj_new_int_from_uint(actual_value);
+        return mp_obj_new_int_from_uint((actual_value + (self->phases_inv - 1)) / self->phases_inv);
     }
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_value_obj, 1, 2, machine_encoder_value);
@@ -613,7 +633,7 @@ static mp_obj_t machine_encoder_irq(size_t n_args, const mp_obj_t *pos_args, mp_
         (ENCODER_TRIGGER_MATCH | ENCODER_TRIGGER_ROLL_UNDER | ENCODER_TRIGGER_ROLL_OVER);
 
     if (args[ARG_value].u_obj != mp_const_none) {
-        uint32_t value = mp_obj_int_get_truncated(args[ARG_value].u_obj);
+        uint32_t value = mp_obj_int_get_truncated(args[ARG_value].u_obj) * self->phases_inv;
         self->enc_config.positionCompareValue = value;
         self->instance->LCOMP = (uint16_t)(value) & 0xffff;        /* Lower 16 pos bits. */
         self->instance->UCOMP = (uint16_t)(value >> 16U) & 0xffff; /* Upper 16 pos bits. */
@@ -751,6 +771,7 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     self->irq = NULL;
     self->match_pin = 0;
     self->is_signed = true;
+    self->phases_inv = 1;
     self->mode = MODE_COUNTER;
 
     // Set defaults for ENC Config
