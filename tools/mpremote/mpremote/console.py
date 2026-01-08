@@ -1,4 +1,6 @@
+import codecs
 import io
+import os
 import sys
 import time
 
@@ -100,6 +102,40 @@ class ConsoleWindows:
 
     def __init__(self):
         self.ctrl_c = 0
+        self._use_raw_output = self._detect_modern_console()
+        if self._use_raw_output:
+            # Modern console: write raw UTF-8 bytes like POSIX
+            self.outfile = sys.stdout.buffer
+            if hasattr(self.outfile, "raw"):
+                self.outfile = self.outfile.raw
+            # Ensure console interprets output as UTF-8
+            try:
+                import ctypes
+
+                ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+            except Exception:
+                pass
+        else:
+            # Legacy console: use incremental decoder to handle split UTF-8 sequences
+            self._decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+
+    def _detect_modern_console(self):
+        """Detect if running in a modern Windows console that supports raw UTF-8."""
+        # Windows Terminal
+        if os.environ.get("WT_SESSION"):
+            return True
+        # VS Code integrated terminal
+        if os.environ.get("TERM_PROGRAM") == "vscode":
+            return True
+        # ConEmu/Cmder
+        if os.environ.get("ConEmuANSI") == "ON":
+            return True
+        # Check if stdout encoding is already UTF-8
+        if hasattr(sys.stdout, "encoding"):
+            encoding = (sys.stdout.encoding or "").lower().replace("_", "-")
+            if encoding in ("utf-8", "utf8"):
+                return True
+        return False
 
     def _sigint_handler(self, signo, frame):
         self.ctrl_c += 1
@@ -134,14 +170,19 @@ class ConsoleWindows:
             return ch
 
     def write(self, buf):
-        buf = buf.decode() if isinstance(buf, bytes) else buf
-        sys.stdout.write(buf)
-        sys.stdout.flush()
-        # for b in buf:
-        #     if isinstance(b, bytes):
-        #         msvcrt.putch(b)
-        #     else:
-        #         msvcrt.putwch(b)
+        if self._use_raw_output:
+            # Modern console: write raw UTF-8 bytes directly (like POSIX)
+            if isinstance(buf, str):
+                buf = buf.encode("utf-8")
+            self.outfile.write(buf)
+            self.outfile.flush()
+        else:
+            # Legacy console: use incremental decoder to handle split UTF-8 sequences
+            if isinstance(buf, bytes):
+                buf = self._decoder.decode(buf)
+            if buf:
+                sys.stdout.write(buf)
+                sys.stdout.flush()
 
 
 if termios:
@@ -205,6 +246,14 @@ def configure_unicode_output():
     """
     if sys.platform != "win32":
         return
+
+    # Set console output code page to UTF-8 for raw byte output
+    try:
+        import ctypes
+
+        ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+    except Exception:
+        pass
 
     # Full Unicode encodings that don't need fixing
     unicode_encodings = {"utf-8", "utf-16", "utf-16-le", "utf-16-be", "utf-32"}
