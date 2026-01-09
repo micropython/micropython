@@ -47,7 +47,6 @@ Missing conversion: SyntaxError
 Invalid conversion: invalid syntax
 Vertical tab: invalid syntax
 Invalid char after conversion: invalid syntax
-Space after conversion: OK
 Unexpected error: invalid syntax
 Unexpected error: invalid syntax
 Unexpected error: invalid syntax

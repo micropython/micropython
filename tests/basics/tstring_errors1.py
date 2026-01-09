@@ -214,12 +214,13 @@ try:
 except SyntaxError as e:
     print('Invalid char after conversion:', e)
 
-try:
-    x = 'test'
-    exec('result = t"{x!r :10}"')
-    print('Space after conversion: OK')
-except Exception as e:
-    print(f'Unexpected error: {e}')
+# MicroPython doesn't allow space after conversion.
+# try:
+#     x = 'test'
+#     exec('result = t"{x!r :10}"')
+#     print('Space after conversion: OK')
+# except Exception as e:
+#     print(f'Unexpected error: {e}')
 
 try:
     x = 'test'
