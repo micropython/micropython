@@ -20,24 +20,24 @@ except (ImportError, MemoryError):
 
 print("\n=== Edge cases ===")
 t_empty = Template()
-print(f"Empty template: '{t_empty.__str__()}'")
+print(f"Empty template: '{t_empty}'")
 
 t_empty_strs = Template("", Interpolation(1, "a"), "", Interpolation(2, "b"), "")
 print(f"Empty strings: {list(t_empty_strs)}")
 
 t_adj = t"{1}{2}{3}"
-print(f"Adjacent: '{t_adj.__str__()}'")
+print(f"Adjacent: '{t_adj}'")
 
 t_single = Template("only")
 print(f"Single iter: {list(t_single)}")
 
 t_self = t"test"
-print(f"Self+self: '{(t_self + t_self).__str__()}'")
+print(f"Self+self: '{(t_self + t_self)}'")
 
 print("\n=== Additional coverage tests ===")
 
 t_str_literal = t"{'hello'}"
-print(f"String literal: {t_str_literal.__str__()}")
+print(f"String literal: {t_str_literal}")
 
 path = "/usr/local/bin"
 count = 42
@@ -49,7 +49,7 @@ print(f"Raw regex strings: {raw_regex.strings}, value={raw_regex.interpolations[
 
 try:
     t_str_expr = t'{"test"}'
-    print(f"String expr: '{t_str_expr.__str__()}'")
+    print(f"String expr: '{t_str_expr}'")
 except Exception as e:
     print(f"String expr error: {e}")
 
@@ -58,7 +58,7 @@ def raise_error():
 
 try:
     t_exc = t"{raise_error()}"
-    print(t_exc.__str__())
+    print(t_exc)
 except ValueError as e:
     print(f"Re-raised exception: {e}")
 
@@ -76,13 +76,13 @@ except (ValueError, MemoryError, SyntaxError, RuntimeError) as e:
 
 try:
     exec('''t_triple = t"""Triple "quoted" string"""''')
-    print(f"Triple quoted: '{t_triple.__str__()}'")
+    print(f"Triple quoted: '{t_triple}'")
 except Exception as e:
     print(f"Triple quoted error: {e}")
 
 try:
     exec(r'''t_raw_triple = rt"""Raw triple\n{42}"""''')
-    print(f"Raw triple: '{t_raw_triple.__str__()}'")
+    print(f"Raw triple: '{t_raw_triple}'")
 except Exception as e:
     print(f"Raw triple error: {e}")
 
@@ -94,7 +94,7 @@ print(f"Complex concat: strings={t_concat3.strings}, values={t_concat3.values}")
 t_empty = Template()
 t_nonempty = t"test{42}"
 t_concat_empty = t_empty + t_nonempty
-print(f"Empty concat: '{t_concat_empty.__str__()}'")
+print(f"Empty concat: '{t_concat_empty}'")
 
 t_self_interp = t"x{1}y"
 t_self_concat = t_self_interp + t_self_interp
@@ -107,7 +107,7 @@ except SyntaxError as e:
 
 try:
     t_edge = t""
-    print(f"Empty t-string: '{t_edge.__str__()}'")
+    print(f"Empty t-string: '{t_edge}'")
 except Exception as e:
     print(f"Empty t-string error: {e}")
 
