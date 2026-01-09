@@ -4,4 +4,5 @@
 #define MICROPY_HW_MCU_NAME                 "ESP32C5"
 
 #define MICROPY_PY_MACHINE_I2S              (0)
+#define MICROPY_PY_MACHINE_CAN              (0)
 #define MICROPY_HW_ENABLE_UART_REPL         (1)
