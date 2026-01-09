@@ -17,7 +17,7 @@ try:
 except SyntaxError as e:
     print(f"Empty expr: SyntaxError - {e}")
 
-# Whitespace in expression (MicroPython preserves, CPython strips trailing)
+# Whitespace in expression (Python semantics are to strip trailing)
 t_ws = t"{ 42 }"
 print(f"Whitespace: {str(t_ws)}")
 
@@ -86,14 +86,14 @@ x = 42
 tmpl_trail = t"{x   }"
 expr = tmpl_trail.interpolations[0].expression
 print(f"Expression with trailing spaces: |{expr}|")
-assert expr == "x   ", f"Expected 'x   ' but got '{expr}'"
-assert len(expr) == 4, f"Expected length 4 but got {len(expr)}"
+assert expr == "x", f"Expected 'x' but got '{expr}'"
+assert len(expr) == 1, f"Expected length 1 but got {len(expr)}"
 
 tmpl_both = t"{   x   }"
 expr2 = tmpl_both.interpolations[0].expression
 print(f"Expression with both spaces: |{expr2}|")
-assert expr2 == "   x   ", f"Expected '   x   ' but got '{expr2}'"
-assert len(expr2) == 7, f"Expected length 7 but got {len(expr2)}"
+assert expr2 == "   x", f"Expected '   x' but got '{expr2}'"
+assert len(expr2) == 4, f"Expected length 4 but got {len(expr2)}"
 
 tmpl_lead = t"{   x}"
 expr3 = tmpl_lead.interpolations[0].expression
