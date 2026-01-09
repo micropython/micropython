@@ -754,13 +754,13 @@ def do_relocation_text(env, text_addr, r):
         (addr, value) = process_riscv32_relocation(env, text_addr, r)
 
     elif env.arch.name == "EM_ARM" and r_info_type == R_ARM_ABS32:
-        # Absolute relocation, handled as a data relocation.
-        do_relocation_data(env, text_addr, r)
-        return
+        addr = s.section.addr + s["st_value"]
+        reloc = addr + r_addend
+        reloc_type = "le32"
 
     else:
         # Unknown/unsupported relocation
-        assert 0, (r_info_type, s.name, s.entry, env.arch.name)
+        assert 0, r_info_type
 
     # Write relocation
     if env.arch.name == "EM_RISCV":
@@ -1183,7 +1183,7 @@ def load_object_file(env, f, felf):
         elif sym.entry["st_shndx"] == "SHN_UNDEF" and sym["st_info"]["bind"] == "STB_GLOBAL":
             # Undefined global symbol, needs resolving
             env.unresolved_syms.append(sym)
-    if dup_errors:
+    if len(dup_errors) > 0:
         raise LinkError("\n".join(dup_errors))
 
 
@@ -1245,7 +1245,6 @@ def link_objects(env, native_qstr_vals_len):
             ]
         )
     }
-
     undef_errors = []
     for sym in env.unresolved_syms:
         assert sym["st_value"] == 0
@@ -1267,7 +1266,7 @@ def link_objects(env, native_qstr_vals_len):
                 sym.section = mp_fun_table_sec
                 sym.mp_fun_table_offset = fun_table[sym.name]
             else:
-                undef_errors.append("{}: undefined symbol: {}".format(sym.filename, sym.name))
+                raise LinkError("{}: undefined symbol: {}".format(sym.filename, sym.name))
 
     for sym in env.externs:
         if sym in env.known_syms:
@@ -1278,7 +1277,7 @@ def link_objects(env, native_qstr_vals_len):
                 ),
             )
 
-    if undef_errors:
+    if len(undef_errors) > 0:
         raise LinkError("\n".join(undef_errors))
 
     # Generate the entry trampoline assuming the offset is already known.
@@ -1551,7 +1550,6 @@ def do_link(args):
                 log(LOG_LEVEL_2, "using " + obj_name)
                 with ar.open(obj) as f:
                     load_object_file(env, f, obj_name)
-
         link_objects(env, len(native_qstr_vals))
         build_mpy(env, args.output, native_qstr_vals)
     except LinkError as er:
@@ -1606,16 +1604,14 @@ def parse_linkerscript(source):
 def main():
     import argparse
 
-    cmd_parser = argparse.ArgumentParser(description="Link native object files into a MPY bundle.")
+    cmd_parser = argparse.ArgumentParser(description="Run scripts on the pyboard.")
     cmd_parser.add_argument(
         "--verbose", "-v", action="count", default=1, help="increase verbosity"
     )
     cmd_parser.add_argument("--arch", default="x64", help="architecture")
     cmd_parser.add_argument("--preprocess", action="store_true", help="preprocess source files")
     cmd_parser.add_argument("--qstrs", default=None, help="file defining additional qstrs")
-    cmd_parser.add_argument(
-        "--libs", "-l", dest="libs", action="append", help="static .a libraries to link"
-    )
+    cmd_parser.add_argument("-l", dest="libs", action="append", help="Static .a libraries to link")
     cmd_parser.add_argument(
         "--output", "-o", default=None, help="output .mpy file (default to input with .o->.mpy)"
     )
