@@ -358,13 +358,15 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, 
         if (vstr_len(&lex->fstring_args) == 0) {
             vstr_add_byte(&lex->vstr, '(');
             vstr_add_byte(&lex->vstr, '(');
-            vstr_add_byte(&lex->vstr, quote_char);
-            vstr_add_byte(&lex->fstring_args, ',');
+            for (size_t q = 0; q < num_quotes; ++q) {
+                vstr_add_byte(&lex->vstr, quote_char);
+            }
         }
     }
     #endif
 
     #if MICROPY_PY_TSTRINGS
+    size_t tstring_num_interpolations = 0;
     size_t end_of_format_index = 0;
     size_t nested_formatting_in_tstring = 0;
     bool nested_formatting_needs_fstring = false;
@@ -443,14 +445,21 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, 
                         // remove the trailing '='
                         lex->fstring_args.len--;
                         #if MICROPY_PY_TSTRINGS
-                        if (is_tstring) {
-                            // truncate trailing spaces
-                            while (lex->fstring_args.len && unichar_isspace(lex->fstring_args.buf[lex->fstring_args.len - 1])) {
-                                lex->fstring_args.len--;
-                            }
-                        }
                         was_debug = true;
                         #endif
+                    }
+                    #if MICROPY_PY_TSTRINGS
+                    if (is_tstring) {
+                        // truncate trailing spaces
+                        while (lex->fstring_args.len && unichar_isspace(lex->fstring_args.buf[lex->fstring_args.len - 1])) {
+                            lex->fstring_args.len--;
+                        }
+                    }
+                    #endif
+                    if (lex->fstring_args.len == i) {
+                        // empty format, eg f'{}'
+                        // (should apply to both f-strings and t-strings, needs test)
+                        lex->tok_kind = MP_TOKEN_MALFORMED_FSTRING;
                     }
                     // close the paren-wrapped arg to .format().
                     vstr_add_byte(&lex->fstring_args, ')');
@@ -458,6 +467,8 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, 
                     vstr_add_byte(&lex->fstring_args, ',');
                     #if MICROPY_PY_TSTRINGS
                     if (is_tstring) {
+                        // start the interpolation part
+
                         // duplicate expression to a string
                         vstr_add_byte(&lex->fstring_args, quote_char);
                         size_t nn = lex->fstring_args.len - i - 3;
@@ -474,9 +485,13 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, 
                         vstr_add_byte(&lex->fstring_args, ',');
 
                         // start next part of string as next __template__ argument
-                        vstr_add_byte(&lex->vstr, quote_char);
+                        for (size_t q = 0; q < num_quotes; ++q) {
+                            vstr_add_byte(&lex->vstr, quote_char);
+                        }
                         vstr_add_byte(&lex->vstr, ',');
-                        vstr_add_byte(&lex->vstr, quote_char);
+                        for (size_t q = 0; q < num_quotes; ++q) {
+                            vstr_add_byte(&lex->vstr, quote_char);
+                        }
 
                         // process conv and format spec
                         if (is_char(lex, '!')) {
@@ -620,6 +635,8 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, 
                     nested_formatting_needs_fstring = true;
                     vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
                 } else {
+                    // finished the current interpolation
+                    ++tstring_num_interpolations;
                     if (nested_formatting_needs_fstring) {
                         vstr_add_byte(&lex->fstring_args, 'f');
                         nested_formatting_needs_fstring = false;
@@ -638,6 +655,8 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, 
                 #if MICROPY_PY_TSTRINGS
                 if (is_tstring && is_char_and(lex, '}', '}')) {
                     next_char(lex);
+                } else if (is_tstring && is_char(lex, '}')) {
+                    lex->tok_kind = MP_TOKEN_MALFORMED_FSTRING;
                 }
                 #endif
             }
@@ -654,14 +673,23 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring, 
         lex->tok_kind = MP_TOKEN_LONELY_STRING_OPEN;
     }
 
-    // cut off the end quotes from the token text
-    vstr_cut_tail_bytes(&lex->vstr, n_closing);
-
     #if MICROPY_PY_TSTRINGS
     if (is_tstring) {
-        vstr_add_byte(&lex->vstr, quote_char);
-    }
+        if (nested_formatting_in_tstring > 0) {
+            lex->tok_kind = MP_TOKEN_MALFORMED_FSTRING;
+        }
+
+        if (1 + tstring_num_interpolations * 4 > 255) {
+            // too many arguments for function call, so wrap interpolations in a tuple
+            vstr_ins_byte(&lex->fstring_args, 0, '(');
+            vstr_add_byte(&lex->fstring_args, ')');
+        }
+    } else
     #endif
+    {
+        // cut off the end quotes from the token text
+        vstr_cut_tail_bytes(&lex->vstr, n_closing);
+    }
 }
 
 // This function returns whether it has crossed a newline or not.
@@ -848,11 +876,14 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         if (had_tstring) {
             vstr_add_byte(&lex->vstr, ',');
             vstr_add_byte(&lex->vstr, ')');
+            vstr_add_byte(&lex->vstr, ',');
             vstr_ins_strn(&lex->fstring_args, 0, lex->vstr.buf, lex->vstr.len);
-            // next token is __template__ for the function
-            lex->tok_kind = MP_TOKEN_NAME;
-            vstr_reset(&lex->vstr);
-            vstr_add_str(&lex->vstr, "__template__");
+            if (lex->tok_kind > MP_TOKEN_MALFORMED_FSTRING) {
+                // next token is __template__ for the function
+                lex->tok_kind = MP_TOKEN_NAME;
+                vstr_reset(&lex->vstr);
+                vstr_add_str(&lex->vstr, "__template__");
+            }
         }
         #endif
 
