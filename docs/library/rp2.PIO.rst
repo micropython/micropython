@@ -103,3 +103,12 @@ Constants
 
     These constants are used for the *trigger* argument to `PIO.irq`.
 
+.. data:: PIO.STATUS_TXLEVEL
+          PIO.STATUS_RXLEVEL
+          PIO.STATUS_IRQ
+
+    These constants are used for the *execctrl* argument of `asm_pio`, to
+    configure the behaviour of ``mov(_, status)`` instructions. For example,
+    set ``execctrl=PIO.STATUS_TXLEVEL + n`` to detect when the TX FIFO has
+    fewer than *n* words left. Note that `PIO.STATUS_IRQ` is not available
+    on RP2040.
