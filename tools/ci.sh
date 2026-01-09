@@ -634,7 +634,6 @@ CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
 CI_UNIX_OPTS_REPR_B=(
     VARIANT=standard
     CFLAGS_EXTRA="-DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_B -DMICROPY_PY_UCTYPES=0 -Dmp_int_t=int32_t -Dmp_uint_t=uint32_t"
-    MICROPY_FORCE_32BIT=1
     RUN_TESTS_MPY_CROSS_FLAGS="--mpy-cross-flags=\"-march=x86 -msmall-int-bits=30\""
 )
 
@@ -788,12 +787,12 @@ function ci_unix_32bit_setup {
 }
 
 function ci_unix_coverage_32bit_build {
-    ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1 "${CI_UNIX_OPTS_X86[@]}"
+    ci_unix_build_helper VARIANT=coverage "${CI_UNIX_OPTS_X86[@]}"
     ci_unix_build_ffi_lib_helper i686-linux-gnu-gcc
 }
 
 function ci_unix_coverage_32bit_run_tests {
-    ci_unix_run_tests_full_helper coverage MICROPY_FORCE_32BIT=1 "${CI_UNIX_OPTS_X86[@]}"
+    ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_X86[@]}"
 }
 
 function ci_unix_coverage_32bit_run_native_mpy_tests {

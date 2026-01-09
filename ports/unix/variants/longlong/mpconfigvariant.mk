@@ -1,7 +1,7 @@
 # build interpreter with "bigints" implemented as "longlong"
 
-# otherwise, small int is essentially 64-bit
-MICROPY_FORCE_32BIT := 1
+# This needs to be built for a 32-bits target, otherwise small ints will
+# essentially be 64-bit wide.
 
 MICROPY_PY_FFI := 0
 
