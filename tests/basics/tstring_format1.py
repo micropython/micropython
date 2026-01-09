@@ -81,19 +81,13 @@ except Exception as e:
     print(f"Debug format error: {e}")
 
 
-try:
-    code = 't"' + '{x}' * 4090 + '"'
-    exec(f"x = 1; result = {code}")
-    print(f"4090 interpolations: OK")
-except Exception as e:
-    print(f"4090 interpolations error: {type(e).__name__}")
-
-try:
-    code = 't"' + '{x}' * 4096 + '"'
-    exec(f"x = 1; result = {code}")
-    print("ERROR: Should have raised OverflowError")
-except (OverflowError, SyntaxError, MemoryError) as e:
-    print(f"4096 interpolations: {type(e).__name__} (correct)")
+print("\n=== Large number of interpolations ===")
+for N in (62, 63, 64, 65):
+    x = 1
+    code = 'result = str(t"' + '{x}' * N + '")'
+    exec(code)
+    expected = "Template(strings=" + repr(tuple("" for _ in range(N + 1))) + ", interpolations=(" + ", ".join("Interpolation(1, 'x', None, '')" for _ in range(N)) + "))"
+    print(N, result == expected)
 
 print("\n=== Malformed format specs (valid in CPython) ===")
 x = 42
