@@ -16,6 +16,10 @@ endif
 # If the build directory is not given, make it reflect the variant name.
 BUILD ?= build-$(VARIANT)
 
+ifneq ($(MICROPY_FORCE_32BIT),)
+$(warning *** The MICROPY_FORCE_32BIT flag is no longer affecting builds, please update your environment ***)
+endif
+
 include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(VARIANT_DIR)/mpconfigvariant.mk
@@ -107,11 +111,7 @@ endif
 # while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
-ifeq ($(MICROPY_FORCE_32BIT),1)
-CC = clang -m32
-else
 CC = clang
-endif
 # Use clang syntax for map file
 LDFLAGS_ARCH = -Wl,-map,$@.map -Wl,-dead_strip
 else
@@ -174,11 +174,7 @@ ifeq ($(MICROPY_STANDALONE),1)
 GIT_SUBMODULES += lib/libffi
 DEPLIBS += libffi
 LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/include)
- ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib32/libffi.a
- else
-  LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib/libffi.a
- endif
+LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib/libffi.a
 else
 # Use system version of libffi.
 LIBFFI_CFLAGS := $(shell pkg-config --cflags libffi)
@@ -237,12 +233,6 @@ SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
-endif
-
-ifeq ($(MICROPY_FORCE_32BIT),1)
-ifeq ($(RUN_TESTS_MPY_CROSS_FLAGS),)
-RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-march=x86'
-endif
 endif
 
 ifeq ($(CROSS_COMPILE),arm-linux-gnueabi-)

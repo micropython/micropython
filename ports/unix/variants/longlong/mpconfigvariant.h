@@ -32,7 +32,7 @@
 
 // We build it on top of REPR C, which uses memory-efficient floating point
 // objects encoded directly mp_obj_t (30 bits only).
-// Therefore this variant should be built using MICROPY_FORCE_32BIT=1
+// Therefore this variant should be built for a 32-bits target.
 
 #define MICROPY_OBJ_REPR               (MICROPY_OBJ_REPR_C)
 #define MICROPY_FLOAT_IMPL             (MICROPY_FLOAT_IMPL_FLOAT)
