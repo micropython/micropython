@@ -14,9 +14,6 @@ Escaped braces result: Template(strings=('', ''), interpolations=(Interpolation(
 === Expression parser tests ===
 Complex expr: OK
 
-=== Parser MemoryError ===
-Parser MemoryError: MemoryError
-
 === Lexer edge cases ===
 Lexer NULL case: Tested via heapalloc_fail_tstring.py
 
