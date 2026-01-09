@@ -1,5 +1,7 @@
 .. _psoc_edge_general:
 
+.. include:: links.rst
+
 General information about the PSOC™ Edge port
 ==============================================
 
@@ -44,7 +46,7 @@ Technical specifications
 ************************
 Links for product details:
 
-* `KIT_PSE84_AI product page with relevant documents <https://www.infineon.com/evaluation-board/KIT-PSE84-AI>`_
-* `KIT_PSE84_AI MCU Datasheet <TODO: TO BE ADDED>`_
-
-
+* `KIT_PSE84_AI PSOC™ Edge E84 AI product page <pse84_kit_ai_product_page_>`_
+* `KIT_PSE84_AI PSOC™ Edge E84 AI Kit guide <pse84_kit_ai_guide_>`_  
+* `PSOC™ Edge E8x2, E8x3, E8x5, E8x6 Consumer Datasheet <pse8x_consumer_datasheet_>`_
+* `PSOC™ Edge E8x2, E8x3, E8x5, E8x6 Architecture Reference Manual <pse8x_arch_ref_manual_>`_
