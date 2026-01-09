@@ -12,7 +12,7 @@ Minimal example usage::
 
     from machine import Pin, Encoder
 
-    counter = Counter(0, Pin(0, Pin.IN), Pin(1, Pin.IN))   # create Encoder for pins 0, 1 and begin counting
+    counter = Encoder(0, Pin(2, Pin.IN), Pin(5, Pin.IN))   # create Encoder for pins 2, 5 and begin counting
     value = counter.value()                                # retrieve current count
 
 Availability: **ESP32**
