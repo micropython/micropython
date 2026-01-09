@@ -86,7 +86,7 @@ width = 5
 x = 42
 try:
     tmpl = t'{x:{width}{{literal}}}'
-    result = tmpl.__str__()
+    result = str(tmpl)
     print(f'Escaped braces result: {result}')
 except ValueError as e:
     print(f'Escaped braces ValueError: {e}')
