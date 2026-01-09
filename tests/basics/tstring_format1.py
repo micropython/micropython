@@ -20,22 +20,22 @@ except (ImportError, MemoryError):
     raise SystemExit
 
 print("\n=== Format spec edge cases ===")
-print(f"Empty fmt: {t'{42:}'.__str__()}")
-print(f"Width: '{t'{42:10}'.__str__()}'")
-print(f"Conv+fmt: '{t'{42!r:>10}'.__str__()}'")
+print(f"Empty fmt: {t'{42:}'}")
+print(f"Width: '{t'{42:10}'}'")
+print(f"Conv+fmt: '{t'{42!r:>10}'}'")
 
 width = 10
-print(f"Interp fmt: '{t'{3.14:{width}.2f}'.__str__()}'")
+print(f"Interp fmt: '{t'{3.14:{width}.2f}'}'")
 
 try:
     t_escaped = t"Hello {{name}} and {{{{value}}}}"
-    print(f"Escaped braces: '{t_escaped.__str__()}'")
+    print(f"Escaped braces: '{t_escaped}'")
 except Exception as e:
     print(f"Escaped braces error: {e}")
 
 try:
     t_conv_fmt = t"{42!r:}"
-    print(f"Conv empty fmt: '{t_conv_fmt.__str__()}'")
+    print(f"Conv empty fmt: '{t_conv_fmt}'")
 except Exception as e:
     print(f"Conv fmt error: {e}")
 

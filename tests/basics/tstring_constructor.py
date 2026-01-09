@@ -14,7 +14,7 @@ except (ImportError, MemoryError):
 
 print("=== Constructor basic usage ===")
 t = Template("hello ", Interpolation(42, "x"), "world")
-print(f"Template repr: {t.__str__()}")
+print(f"Template repr: {repr(t)}")
 
 t_varargs = Template("Hello ", Interpolation("World", "name"), "!")
 print(f"Varargs constructor: strings={t_varargs.strings}, values={t_varargs.values}")
@@ -40,22 +40,18 @@ except AttributeError:
     print("Interp read-only: AttributeError")
 
 t_ws_trim = Template("", Interpolation(None, "   ", None, ""), "")
-print(f"Whitespace trim: '{t_ws_trim.__str__()}'")
+print(f"Whitespace trim: '{t_ws_trim}'")
 
 t_debug = Template("", Interpolation(42, "x=", None, ""), "")
-print(f"Debug =: {t_debug.__str__()}")
+print(f"Debug =: {t_debug}")
 
 class Custom:
     def __repr__(self): return "CustomRepr"
     def __str__(self): return "CustomStr"
 
 obj = Custom()
-print(f"Custom !r: {t'{obj!r}'.__str__()}")
-print(f"Custom !s: {t'{obj!s}'.__str__()}")
-
-t_str = t"test"
-str_method = t_str.__str__
-print(f"__str__ bound: {str_method()}")
+print(f"Custom !r: {t'{obj!r}'}")
+print(f"Custom !s: {t'{obj!s}'}")
 
 t_empty_start = Template("", Interpolation(1, "1"), "text")
 print(f"Empty start iter: {[type(x).__name__ for x in t_empty_start]}")
@@ -99,7 +95,7 @@ except Exception as e:
 print("\n=== vstr string concatenation ===")
 try:
     t1 = Template("part1", "part2", "part3", "part4", Interpolation(1, "x"), "end")
-    result = t1.__str__()
+    result = str(t1)
     print(f"vstr concat: '{result}'")
 except Exception as e:
     print(f"vstr concat error: {e}")

@@ -41,7 +41,7 @@ micropython.heap_unlock()
 t = t"Hello {42} world {99}"
 micropython.heap_lock()
 try:
-    t.__str__()
+    str(t)
     print("FAIL: Template.__str__()")
 except MemoryError:
     print("OK: Template.__str__()")
@@ -121,7 +121,7 @@ width = 10
 t_fmt = t"{42:{width}d}"
 micropython.heap_lock()
 try:
-    t_fmt.__str__()
+    str(t_fmt)
     print("FAIL: Format spec interpolation")
 except MemoryError:
     print("OK: Format spec interpolation")
@@ -132,7 +132,7 @@ x = 42
 t_debug = t"{x=}"
 micropython.heap_lock()
 try:
-    t_debug.__str__()
+    str(t_debug)
     print("FAIL: Debug format")
 except MemoryError:
     print("OK: Debug format")
@@ -143,7 +143,7 @@ obj = "test"
 t_conv = t"{obj!r:>10}"
 micropython.heap_lock()
 try:
-    t_conv.__str__()
+    str(t_conv)
     print("FAIL: Conversion + format")
 except MemoryError:
     print("OK: Conversion + format")
@@ -153,7 +153,7 @@ micropython.heap_unlock()
 t_s = t"{'test'!s}"
 micropython.heap_lock()
 try:
-    t_s.__str__()
+    str(t_s)
     print("FAIL: s conversion")
 except MemoryError:
     print("OK: s conversion")
@@ -163,7 +163,7 @@ micropython.heap_unlock()
 # t_a = t"{'test'!a}"
 # micropython.heap_lock()
 # try:
-#     t_a.__str__()
+#     str(t_a)
 #     print("FAIL: a conversion")
 # except MemoryError:
 #     print("OK: a conversion")
@@ -177,7 +177,7 @@ precision = 2
 t_complex = t"{3.14159:{fill}{align}{width}.{precision}f}"
 micropython.heap_lock()
 try:
-    t_complex.__str__()
+    str(t_complex)
     print("FAIL: Complex format spec")
 except MemoryError:
     print("OK: Complex format spec")
@@ -188,7 +188,7 @@ x = 42
 t_simple = t"{x}"
 micropython.heap_lock()
 try:
-    t_simple.__str__()
+    str(t_simple)
     print("FAIL: Simple expression")
 except MemoryError:
     print("OK: Simple expression")
@@ -247,7 +247,7 @@ def test_template_str_heap():
     t = t"x{1}x{2}x{3}x{4}x"
     micropython.heap_lock()
     try:
-        s = t.__str__()
+        s = str(t)
         print("FAIL: Template str heap test")
     except MemoryError:
         print("OK: Template str heap test")
@@ -279,7 +279,7 @@ def test_format_spec_heap():
     t = t"{42:{width}d}"
     micropython.heap_lock()
     try:
-        s = t.__str__()
+        s = str(t)
         print("FAIL: Format spec heap test")
     except MemoryError:
         print("OK: Format spec heap test")
@@ -290,7 +290,7 @@ def test_debug_format_heap():
     t = t"{value}"
     micropython.heap_lock()
     try:
-        s = t.__str__()
+        s = str(t)
         print("FAIL: Debug format heap test")
     except MemoryError:
         print("OK: Debug format heap test")
