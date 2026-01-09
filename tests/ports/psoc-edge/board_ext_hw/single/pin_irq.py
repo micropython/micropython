@@ -7,7 +7,7 @@ pin_trigger = Pin("P16_0", mode=Pin.OUT, pull=Pin.PULL_UP, value=True)
 pin_irq = Pin("P16_1", mode=Pin.IN)
 
 
-def irq_handler():
+def irq_handler(pin):
     print("irq")
 
 
