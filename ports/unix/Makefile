@@ -240,7 +240,9 @@ CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 endif
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
+ifeq ($(RUN_TESTS_MPY_CROSS_FLAGS),)
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-march=x86'
+endif
 endif
 
 ifeq ($(CROSS_COMPILE),arm-linux-gnueabi-)
