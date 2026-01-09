@@ -225,16 +225,6 @@ static mp_obj_t mp_obj_template_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp
     }
 }
 
-static mp_obj_t template_str(mp_obj_t self_in) {
-    // Same as __repr__(), following CPython behavior
-    mp_print_t print;
-    vstr_t vstr;
-    vstr_init_print(&vstr, 16, &print);
-    mp_obj_template_print(&print, self_in, PRINT_STR);
-    return mp_obj_new_str_from_vstr(&vstr);
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(template_str_obj, template_str);
-
 static void mp_obj_template_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_template_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -252,9 +242,6 @@ static void mp_obj_template_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 values_tuple->items[i] = interp->value;
             }
             dest[0] = MP_OBJ_FROM_PTR(values_tuple);
-        } else if (attr == MP_QSTR___str__) {
-            dest[0] = MP_OBJ_FROM_PTR(&template_str_obj);
-            dest[1] = self_in;
         }
     }
 }
@@ -300,6 +287,17 @@ static mp_obj_t mp_obj_template_iter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_b
     return MP_OBJ_FROM_PTR(iter);
 }
 
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_template,
+    MP_QSTR_Template,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_obj_template_make_new,
+    print, mp_obj_template_print,
+    binary_op, mp_obj_template_binary_op,
+    attr, mp_obj_template_attr,
+    iter, mp_obj_template_iter
+    );
+
 mp_obj_t mp_obj_new_template(size_t n_args, const mp_obj_t *args) {
     #if 0
     printf("__template__(");
@@ -312,25 +310,24 @@ mp_obj_t mp_obj_new_template(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_template_t *o = mp_obj_malloc(mp_obj_template_t, &mp_type_template);
     o->strings = args[0];
-    size_t n_interpolations = (n_args - 1) / 4;
+    if (n_args == 2) {
+        // unpack interpolations from second argument (which is a tuple)
+        mp_obj_t *iargs;
+        mp_obj_get_array(args[1], &n_args, &iargs);
+        args = iargs;
+    } else {
+        // unpack interpolations directly from arguments
+        --n_args;
+        ++args;
+    }
+    size_t n_interpolations = n_args / 4;
     mp_obj_tuple_t *interpolations = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_interpolations, NULL));
     for (size_t i = 0; i < n_interpolations; ++i) {
-        interpolations->items[i] = mp_obj_new_interpolation(args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3], args[i * 4 + 4]);
+        interpolations->items[i] = mp_obj_new_interpolation(args[i * 4], args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3]);
     }
     o->interpolations = MP_OBJ_FROM_PTR(interpolations);
     return MP_OBJ_FROM_PTR(o);
 }
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_template,
-    MP_QSTR_Template,
-    MP_TYPE_FLAG_NONE,
-    make_new, mp_obj_template_make_new,
-    print, mp_obj_template_print,
-    binary_op, mp_obj_template_binary_op,
-    attr, mp_obj_template_attr,
-    iter, mp_obj_template_iter
-    );
 
 /////////////////////////////////////////////////////////////////
 
