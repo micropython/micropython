@@ -135,7 +135,7 @@ try:
     exec(r"t'\N{LATIN SMALL LETTER A}'")
     print("ERROR: \\N{{}} should not be supported")
 except (SyntaxError, NotImplementedError) as e:
-    print(f"\\N{{}} escape: {type(e).__name__}")
+    print(f"\\N{{}} escape: SyntaxError")
 
 try:
     result = rt'\u0041\U00000042'

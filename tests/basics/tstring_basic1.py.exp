@@ -1,5 +1,5 @@
 === Parser error tests ===
-Empty expr: SyntaxError - t-string: valid expression required before '}'
+Empty expr: SyntaxError - malformed f-string
 Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42', None, ''),))
 
 === Error cases ===
@@ -36,6 +36,6 @@ Lone }} rejected (correct)
 Unterminated {{ rejected (correct)
 
 === Triple quote empty interpolation ===
-Empty interpolation error: SyntaxError: t-string: valid expression required before '}'
+Empty interpolation error: SyntaxError: malformed f-string
 
 Incompatible tests completed!

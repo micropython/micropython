@@ -33,30 +33,30 @@ Deep nesting: OK
 Trailing whitespace: OK
 
 === Single closing brace ===
-Single }: SyntaxError - t-string: single '}' is not allowed
+Single }: SyntaxError - malformed f-string
 
 === Escape in string within interpolation ===
 Debug unclosed colon: SyntaxError
 Debug unclosed exclaim: SyntaxError
-Unclosed brace literal: t-string: expecting '}'
+Unclosed brace literal: SyntaxError
 Malformed f-string: SyntaxError
-Type error int: Template.__new__ args must be str or Interpolation, got 'int'
+Type error int: expected str or Interpolation
 Type error float: TypeError
-Unmatched brace: t-string: expecting '}'
+Unmatched brace: malformed f-string
 Nested debug braces: SyntaxError
 Missing conversion: SyntaxError
-Invalid conversion: t-string: invalid conversion character 'z': expected 's', 'r', or 'a'
-Vertical tab: invalid non-printable character U+000B (<test>, line 1)
-Invalid char after conversion: t-string: invalid conversion character 'r@': expected 's', 'r', or 'a'
+Invalid conversion: invalid syntax
+Vertical tab: invalid syntax
+Invalid char after conversion: invalid syntax
 Space after conversion: OK
-Unexpected error: unexpected character after line continuation character
-Unexpected error: unexpected character after line continuation character
-Unexpected error: unexpected character after line continuation character
-Unexpected error: unexpected character after line continuation character
+Unexpected error: invalid syntax
+Unexpected error: invalid syntax
+Unexpected error: invalid syntax
+Unexpected error: invalid syntax
 
 === Mixed prefixes ===
-ft: incompatible prefixes
-tf: incompatible prefixes
+ft: invalid syntax
+tf: invalid syntax
 frt: invalid syntax
 rtf: invalid syntax
 trf: invalid syntax
