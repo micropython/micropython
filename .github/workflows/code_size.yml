@@ -38,7 +38,7 @@ jobs:
       run: tools/ci.sh esp32_idf_ver | tee "${GITHUB_OUTPUT}"
     - name: Cached ESP-IDF install
       id: cache_esp_idf
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ./esp-idf/
