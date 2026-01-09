@@ -12,7 +12,6 @@ Whitespace trim: 'Template(strings=('', ''), interpolations=(Interpolation(None,
 Debug =: Template(strings=('', ''), interpolations=(Interpolation(42, 'x=', None, ''),))
 Custom !r: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 'r', ''),))
 Custom !s: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 's', ''),))
-__str__ bound: Template(strings=('test',), interpolations=())
 Empty start iter: ['Interpolation', 'str']
 Iterator edge: ['Interpolation', 'Interpolation']
 
