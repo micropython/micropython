@@ -245,7 +245,7 @@ static void machine_pin_irq_port_handler(uint8_t port) {
 
             /* TODO: This should be later handled by mp_irq_handler() which
             will schedule this call (all this requires the gc and the scheduler) */
-            mp_call_function_0(irq->base.handler);
+            mp_call_function_1(irq->base.handler, MP_OBJ_FROM_PTR(irq->base.parent));
 
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(port), pin);
             port_irq_clear(irq->port_cfg);
