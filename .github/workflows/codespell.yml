@@ -10,4 +10,6 @@ jobs:
     # codespell version should be kept in sync with .pre-commit-config.yml
     - run: pip install --user codespell==2.4.1 tomli
     - run: codespell
-
+    # additionally check for misspelling of "MicroPython"
+    - run: |
+        ! git grep -n Micropython -- ":(exclude).github/workflows/codespell.yml"
