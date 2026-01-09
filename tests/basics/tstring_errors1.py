@@ -166,7 +166,7 @@ except SyntaxError:
 try:
     compile('t"prefix{incomplete"', '<test>', 'exec')
 except SyntaxError as e:
-    print('Unclosed brace literal:', e)
+    print('Unclosed brace literal: SyntaxError')
 
 try:
     import sys

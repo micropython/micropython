@@ -1,7 +1,7 @@
 
 === Empty expression tests ===
-Empty expr SyntaxError: t-string: valid expression required before '}'
-Whitespace expr SyntaxError: t-string: empty expression not allowed
+Empty expr SyntaxError: malformed f-string
+Whitespace expr SyntaxError: malformed f-string
 Whitespace expr: SyntaxError
 Unterminated expr: SyntaxError
 Whitespace + conversion: SyntaxError
@@ -29,8 +29,8 @@ Raw nested spec: "QUOTED"
 Escaped quote spec: "QUOTED"
 Escaped backslash spec: \n
 Nested quoted spec: \
-Literal brace error: SyntaxError: t-string: single '}' is not allowed
-Unterminated field: t-string: expecting '}'
+Literal brace error: SyntaxError: malformed f-string
+Unterminated field: malformed f-string
 
 === Complex expression stress test ===
 60 terms: PASS
