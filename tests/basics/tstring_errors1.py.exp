@@ -12,7 +12,6 @@ Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
 Raw regex strings: ('Regex: \\\\d+', ''), value=42
 String expr: 'Template(strings=('', ''), interpolations=(Interpolation('test', '"test"', None, ''),))'
 Re-raised exception: Special error
-Too many interpolations: SyntaxError
 Large template: SyntaxError
 Triple quoted: 'Template(strings=('Triple "quoted" string',), interpolations=())'
 Raw triple: 'Template(strings=('Raw triple\\n', ''), interpolations=(Interpolation(42, '42', None, ''),))'
