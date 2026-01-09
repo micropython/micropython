@@ -117,12 +117,11 @@ For more information about drive strength, check the PSOC™ Edge `Datasheet <ps
 Methods
 ^^^^^^^
 
-.. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), priority=7, wake=None, hard=False)
+.. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), priority=7)
 
-This port has a few variations from the standard machine API for the ``irq()`` function:
+The following parameters have port-specific behavior:
 
-    - ``handler``: The handler function currently does not accept any arguments.
-    - ``priority``: Priority values range from 7 (lowest) to 0 (highest).
+    - ``priority``: Priority values range from 7 (lowest) to 0 (highest). Default is 7.
 
       .. note::
 
