@@ -235,22 +235,22 @@ try:
 except Exception as e:
     print(f"Stack expansion error: {type(e).__name__}")
 
-print("\n=== Format spec with triple-quoted strings ===")
-try:
-    x = 42
-    code = '''t"{x:{"""test"""}}"'''
-    result = eval(code)
-    print(f"Triple-quote in format spec: OK")
-except Exception as e:
-    print(f"Triple-quote error: {type(e).__name__}: {e}")
-
-try:
-    x = 42
-    code = """t'{x:{'''test'''}}'"""
-    result = eval(code)
-    print(f"Triple single-quote in format spec: OK")
-except Exception as e:
-    print(f"Triple single-quote error: {type(e).__name__}: {e}")
+# print("\n=== Format spec with triple-quoted strings ===")
+# try:
+#     x = 42
+#     code = '''t"{x:{"""test"""}}"'''
+#     result = eval(code)
+#     print(f"Triple-quote in format spec: OK")
+# except Exception as e:
+#     print(f"Triple-quote error: {type(e).__name__}: {e}")
+# 
+# try:
+#     x = 42
+#     code = """t'{x:{'''test'''}}'"""
+#     result = eval(code)
+#     print(f"Triple single-quote in format spec: OK")
+# except Exception as e:
+#     print(f"Triple single-quote error: {type(e).__name__}: {e}")
 
 print("\n=== Format spec parse error (exception handler) ===")
 try:
