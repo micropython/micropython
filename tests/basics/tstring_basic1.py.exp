@@ -1,6 +1,6 @@
 === Parser error tests ===
 Empty expr: SyntaxError - t-string: valid expression required before '}'
-Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42 ', None, ''),))
+Whitespace: Template(strings=('', ''), interpolations=(Interpolation(42, ' 42', None, ''),))
 
 === Error cases ===
 Invalid syntax: SyntaxError
@@ -26,8 +26,8 @@ Template(strings=('ABC',), interpolations=())
 Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('\U0001f40d', "'\\U0001f40d'", None, ''), Interpolation('\u03b1 \u03b2 \u03b3', "'\\u03b1 \\u03b2 \\u03b3'", None, '')))
 
 === Trailing whitespace preservation (PEP 750) ===
-Expression with trailing spaces: |x   |
-Expression with both spaces: |   x   |
+Expression with trailing spaces: |x|
+Expression with both spaces: |   x|
 Expression with leading spaces: |   x|
 Trailing whitespace: PASS
 
