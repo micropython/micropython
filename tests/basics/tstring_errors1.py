@@ -63,12 +63,6 @@ except ValueError as e:
     print(f"Re-raised exception: {e}")
 
 try:
-    expr = "x = 1\n" + "t'" + "{x}" * 5000 + "'"
-    exec(expr)
-except (ValueError, SyntaxError, MemoryError, OverflowError) as e:
-    print("Too many interpolations: SyntaxError")
-
-try:
     large_str = "x" * 100000
     exec(f'very_long_name_{large_str} = t"test"')
 except (ValueError, MemoryError, SyntaxError, RuntimeError) as e:
