@@ -23,8 +23,12 @@ Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42,
 Debug basic: strings=('value=', ''), conv=r
 Debug !s: strings=('value=', ''), conv=s
 Debug fmt: strings=('value=', ''), fmt_spec='>10'
-4090 interpolations error: MemoryError
-4096 interpolations: MemoryError (correct)
+
+=== Large number of interpolations ===
+62 True
+63 True
+64 True
+65 True
 
 === Malformed format specs (valid in CPython) ===
 Malformed 1: format_spec: '10!r', conversion: None
