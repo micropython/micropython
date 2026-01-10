@@ -105,7 +105,7 @@
 #define SDIO_HARDWARE_FLOW_CONTROL_ENABLE   SDMMC_HARDWARE_FLOW_CONTROL_ENABLE
 
 #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
-#define SDIO_TRANSFER_CLK_DIV               SDMMC_NSpeed_CLK_DIV
+#define SDIO_TRANSFER_CLK_DIV               SDMMC_HSPEED_CLK_DIV
 #define SDIO_USE_GPDMA                      0
 #else
 #define SDIO_TRANSFER_CLK_DIV               SDMMC_TRANSFER_CLK_DIV
