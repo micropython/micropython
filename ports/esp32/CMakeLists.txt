@@ -58,6 +58,26 @@ endforeach()
 configure_file(${CMAKE_BINARY_DIR}/sdkconfig.combined.in ${CMAKE_BINARY_DIR}/sdkconfig.combined COPYONLY)
 set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 
+# Register user module directories with IDF component manager so it can find idf_component.yml files
+# This must happen before the project() call so dependencies can be resolved
+if(USER_C_MODULES)
+    set(USER_C_MODULES_ABS "")
+    foreach(USER_C_MODULE_PATH ${USER_C_MODULES})
+        # Convert to absolute path and extract directory
+        get_filename_component(USER_C_MODULE_PATH_ABS "${USER_C_MODULE_PATH}" ABSOLUTE)
+        list(APPEND USER_C_MODULES_ABS "${USER_C_MODULE_PATH_ABS}")
+        get_filename_component(USER_C_MODULE_DIR "${USER_C_MODULE_PATH_ABS}" DIRECTORY)
+        
+        # Only register directories containing idf_component.yml and CMakeLists.txt
+        if(EXISTS "${USER_C_MODULE_DIR}/idf_component.yml" AND EXISTS "${USER_C_MODULE_DIR}/CMakeLists.txt")
+            list(APPEND EXTRA_COMPONENT_DIRS "${USER_C_MODULE_DIR}")
+        endif()
+    endforeach()
+    
+    # Override USER_C_MODULES with absolute paths for later cmake stages
+    set(USER_C_MODULES ${USER_C_MODULES_ABS})
+endif()
+
 # Include main IDF cmake file.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
