@@ -38,4 +38,11 @@ typedef struct _mp_obj_list_t {
 void mp_obj_list_init(mp_obj_list_t *o, size_t n);
 mp_obj_t mp_obj_list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
+// Helper function for pattern of an optional argument which can be a list of a specified size, and is
+// allocated on-demand otherwise
+mp_obj_list_t *mp_obj_list_optional_arg(mp_obj_t arg_in, size_t min_len);
+
+// Ensure provided object is a list of minimum length min_len. Raises TypeError & ValueError otherwise.
+mp_obj_list_t *mp_obj_list_ensure(mp_obj_t in, size_t min_len);
+
 #endif // MICROPY_INCLUDED_PY_OBJLIST_H
