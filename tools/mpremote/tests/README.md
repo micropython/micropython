@@ -50,3 +50,19 @@ fi
 ```
 
 The `MPREMOTE_DEVICE` environment variable contains the device path passed via `-t`.
+
+## Using the RAM Disk
+
+Tests that need a writable filesystem can use `ramdisk.py` to create a temporary
+FAT filesystem in RAM:
+
+```bash
+TEST_DIR=$(dirname $0)
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
+```
+Defaults to: block_size=512, num_blocks=50, mount_path='/ramdisk', do_chdir=True
+Custom parameters can be passed via `exec`:
+
+```bash
+$MPREMOTE exec "mount_path='/__ramdisk'; do_chdir=False" run "${TEST_DIR}/ramdisk.py"
+```
