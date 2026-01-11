@@ -1,0 +1,119 @@
+name: psoc-edge port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'shared/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/psoc-edge/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server-build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        board: 
+          - KIT_PSE84_AI
+    outputs:
+      commit_sha: ${{ steps.commit_sha.outputs.sha_short }}
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install packages
+        run: source tools/ci.sh && ci_psoc_edge_setup
+      - name: Build
+        run: source tools/ci.sh && ci_psoc_edge_build ${{ matrix.board }}
+
+      # Steps only relevant for Infineon fork 
+      # with self-hosted runner available
+      - name: Gets commit SHA
+        if: success() && github.repository_owner == 'infineon'
+        id: commit_sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Save firmware bin
+        if: success() && github.repository_owner == 'infineon'
+        uses: actions/upload-artifact@v4
+        with: 
+          name: mpy-psoc-edge_${{ matrix.board }}_${{ steps.commit_sha.outputs.sha_short }}
+          # TODO: Encapsulate and abstract path details from this workflow
+          path: lib/mtb-psoc-edge-libs/build/app_combined.hex
+
+  # Jobs only relevant for Infineon fork 
+  on-target-test:
+    if: github.repository_owner == 'infineon'
+    runs-on: 
+      - self-hosted  
+      - Linux  
+      - PSOC-EDGE 
+    needs: server-build
+    strategy:
+      matrix:
+        board:
+          - KIT_PSE84_AI
+    steps:
+      - name: Pre-cleanup workspace 
+        run: | 
+          echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo rm -rf *
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+      - name: Container setup
+        run: |
+          echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo -S chmod 666 /var/run/docker.sock
+          source tools/ci.sh && ci_psoc_edge_setup ${{ matrix.board }}
+      - name: Setup devices
+        run: |
+          cp mpy-psoc-edge_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/app_combined.hex tools/psoc-edge
+          source tools/ci.sh && ci_psoc_edge_deploy_multiple_devices ${{ matrix.board }} app_combined.hex tests/ports/psoc-edge/${{ runner.name }}-devs.yml
+      - name: Run psoc-edge tests
+        timeout-minutes: 12
+        env: 
+          pse_test_dir: ../../tests/ports/psoc-edge
+        run: |
+          cd lib/mpy-test-ext
+          python -u run_test_plan.py --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
+        
+      - name: Container teardown 
+        if: failure() || success()
+        run: |
+          source tools/ci.sh && ci_psoc_edge_teardown
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [server-build, on-target-test]
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        board: 
+          - KIT_PSE84_AI
+    if: startsWith(github.ref, 'refs/tags/v') && github.repository_owner == 'infineon'
+    steps:
+    - name: Download binaries
+      uses: actions/download-artifact@v4
+    - name: Prepare release assets
+      run: | 
+        cd mpy-psoc-edge_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}
+        mv app_combined.hex ../mpy-psoc-edge_${{ matrix.board }}.hex
+    - name: Build release changelog
+      id: build_changelog
+      uses: mikepenz/release-changelog-builder-action@v3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Micropython PSoC6 ${{  github.ref_name  }}
+        files: mpy-psoc-edge_${{ matrix.board }}.hex
+        body: ${{steps.build_changelog.outputs.changelog}}
