@@ -170,7 +170,7 @@
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
         __WFE(); \
     } while (0);
 

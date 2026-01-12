@@ -76,7 +76,7 @@
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
     } while (0);
 
 // Whether the VM will periodically call mp_js_hook(), which checks for

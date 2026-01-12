@@ -104,7 +104,7 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
         if (res != -1 || errno != EINTR) {
             break;
         }
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else
         break;
@@ -120,7 +120,7 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
         if (seconds == 0) {
             break;
         }
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
     }
     #endif
     return mp_const_none;

@@ -263,7 +263,7 @@ void mp_event_handle_nowait(void) {
     #else
     // Process any port layer (non-blocking) events.
     MICROPY_INTERNAL_EVENT_HOOK;
-    mp_handle_pending(true);
+    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
     #endif
 }
 
