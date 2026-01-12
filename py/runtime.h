@@ -52,10 +52,11 @@ typedef enum {
     MP_ARG_KW_ONLY   = 0x200,
 } mp_arg_flag_t;
 
+// These first two enum values match the original signature of `mp_handle_pending(bool)`.
 typedef enum {
+    MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS = false,
+    MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS = true,
     MP_HANDLE_PENDING_CALLBACKS_ONLY,
-    MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS,
-    MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS,
 } mp_handle_pending_behaviour_t;
 
 typedef union _mp_arg_val_t {
