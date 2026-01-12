@@ -108,13 +108,7 @@ void mp_sched_keyboard_interrupt(void);
 void mp_sched_vm_abort(void);
 #endif
 
-void mp_handle_pending_internal(mp_handle_pending_behaviour_t behavior);
-
-static inline void mp_handle_pending(bool raise_exc) {
-    mp_handle_pending_internal(raise_exc ?
-        MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS :
-        MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS);
-}
+void mp_handle_pending(mp_handle_pending_behaviour_t behavior);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);

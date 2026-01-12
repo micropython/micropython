@@ -213,7 +213,7 @@ MP_REGISTER_ROOT_POINTER(mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH]);
 
 // Called periodically from the VM or from "waiting" code (e.g. sleep) to
 // process background tasks and pending exceptions (e.g. KeyboardInterrupt).
-void mp_handle_pending_internal(mp_handle_pending_behaviour_t behavior) {
+void mp_handle_pending(mp_handle_pending_behaviour_t behavior) {
     bool handle_exceptions = (behavior != MP_HANDLE_PENDING_CALLBACKS_ONLY);
     bool raise_exceptions = (behavior == MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
 
