@@ -52,7 +52,7 @@ void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms) {
         k_poll_event_init(&wait_events[1], K_POLL_TYPE_SEM_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, sem);
     }
     for (;;) {
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         MP_THREAD_GIL_EXIT();
         k_timeout_t wait;
         uint32_t dt = mp_hal_ticks_ms() - t0;

@@ -5,7 +5,7 @@
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
     } while (0);
 
 // MIMXRT1170_EVK has 2 user LEDs

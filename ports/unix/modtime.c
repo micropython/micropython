@@ -95,7 +95,7 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     tv.tv_sec = (suseconds_t)ipart;
     int res;
     while (1) {
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         MP_THREAD_GIL_EXIT();
         res = sleep_select(0, NULL, NULL, NULL, &tv);
         MP_THREAD_GIL_ENTER();
@@ -114,7 +114,7 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #else
     int seconds = mp_obj_get_int(arg);
     for (;;) {
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         MP_THREAD_GIL_EXIT();
         seconds = sleep(seconds);
         MP_THREAD_GIL_ENTER();

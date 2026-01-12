@@ -197,7 +197,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     uint64_t dt;
     uint64_t t0 = esp_timer_get_time();
     for (;;) {
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         MICROPY_PY_SOCKET_EVENTS_HANDLER
         MP_THREAD_GIL_EXIT();
         uint64_t t1 = esp_timer_get_time();
@@ -240,7 +240,7 @@ void mp_hal_delay_us(mp_uint_t us) {
         if (dt + pend_overhead < us) {
             // we have enough time to service pending events
             // (don't use MICROPY_EVENT_POLL_HOOK because it also yields)
-            mp_handle_pending(true);
+            mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         }
     }
 }

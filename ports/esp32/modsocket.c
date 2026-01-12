@@ -156,7 +156,7 @@ void socket_events_handler(void) {
 #endif // MICROPY_PY_SOCKET_EVENTS
 
 static inline void check_for_exceptions(void) {
-    mp_handle_pending(true);
+    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
 }
 
 #if MICROPY_HW_ENABLE_MDNS_QUERIES

@@ -168,7 +168,7 @@ typedef long mp_off_t;
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
         MP_THREAD_GIL_EXIT(); \
         k_msleep(1); \
         MP_THREAD_GIL_ENTER(); \
@@ -176,7 +176,7 @@ typedef long mp_off_t;
 #else
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
         k_msleep(1); \
     } while (0);
 #endif

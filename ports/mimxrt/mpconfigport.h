@@ -224,7 +224,7 @@ extern const struct _mp_obj_type_t network_lan_type;
 #ifndef  MICROPY_EVENT_POLL_HOOK
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
         __WFE(); \
     } while (0);
 #endif
