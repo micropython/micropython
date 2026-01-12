@@ -53,6 +53,7 @@ typedef struct _machine_encoder_obj_t {
     uint32_t max_count;
     uint32_t min_count;
     uint32_t filter;
+    mp_obj_t home_pin;
     uint16_t status;
     uint16_t requested_irq;
     mp_irq_obj_t *irq;
@@ -310,8 +311,11 @@ static uint8_t connect_pin_to_encoder(mp_obj_t desc, xbar_output_signal_t encode
 
 static void clear_encoder_registers(machine_encoder_obj_t *self) {
     // Create a High pulse on the Trigger input, clearing Position, Revolution and Hold registers.
-    XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicHigh, xbar_signal_table[self->id].enc_trigger);
-    XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_trigger);
+    XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicHigh, xbar_signal_table[self->id].enc_home);
+    XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_home);
+    if (self->home_pin) {
+        connect_pin_to_encoder(self->home_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
+    }
 }
 
 //
@@ -414,9 +418,10 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     // Initialize the ENC module and start
     ENC_Init(self->instance, enc_config);
     clear_encoder_registers(self);
-    // Set the position and rev register
+    // Set the position and clear the rev register
     ENC_SetInitialPositionValue(self->instance, self->min_count);
     ENC_DoSoftwareLoadInitialPositionValue(self->instance);
+    self->instance->REV = 0;
     ENC_ClearStatusFlags(self->instance, 0xff); // Clear all status flags
     self->active = true;
 }
@@ -458,10 +463,12 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     // Check for a Home pin, resetting the counters
     if (args[ARG_home].u_obj != MP_ROM_INT(-1)) {
         if (args[ARG_home].u_obj != mp_const_none) {
-            connect_pin_to_encoder(args[ARG_home].u_obj, xbar_signal_table[self->id].enc_home, XBAR_IN);
+            self->home_pin = args[ARG_home].u_obj;
+            connect_pin_to_encoder(self->home_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
             self->enc_config.HOMETriggerMode = kENC_HOMETriggerOnRisingEdge;
         } else {
             XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_home);
+            self->home_pin = NULL;
         }
     }
 
@@ -514,11 +521,11 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     self->match_pin = 0;
     self->is_signed = true;
     self->phases_inv = 4;  // default: phases = 1
+    self->home_pin = NULL;
     self->mode = MODE_ENCODER;
 
     // Set defaults for ENC Config
     ENC_GetDefaultConfig(&self->enc_config);
-    self->enc_config.enableTRIGGERClearPositionCounter = true;
     self->enc_config.revolutionCountCondition = kENC_RevolutionCountOnRollOverModulus;
 
     // Process the remaining parameters
@@ -791,6 +798,7 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     self->match_pin = 0;
     self->is_signed = true;
     self->phases_inv = 1;
+    self->home_pin = NULL;
     self->mode = MODE_COUNTER;
 
     // Set defaults for ENC Config
@@ -798,7 +806,6 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
 
     // Set the mode to a 32 bit counter
     self->enc_config.decoderWorkMode = kENC_DecoderWorkAsSignalPhaseCountMode;
-    self->enc_config.enableTRIGGERClearPositionCounter = true;
     self->enc_config.revolutionCountCondition = kENC_RevolutionCountOnRollOverModulus;
 
     // Process the remaining parameters
