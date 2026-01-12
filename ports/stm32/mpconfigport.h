@@ -234,7 +234,6 @@ typedef long mp_off_t;
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
@@ -249,7 +248,6 @@ typedef long mp_off_t;
 #else
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
         __WFI(); \
     } while (0);

@@ -76,7 +76,6 @@
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
     } while (0);
 
