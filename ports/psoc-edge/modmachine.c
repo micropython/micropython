@@ -41,7 +41,6 @@
 #include "modmachine.h"
 #include "mplogger.h"
 #include "modpsocedge.h"
-#if MICROPY_PY_MACHINE
 
 enum clock_freq_type PLL0_freq = AUDIO_SYS_CLOCK_73_728_000_HZ;
 enum clock_freq_type freq_peri;
