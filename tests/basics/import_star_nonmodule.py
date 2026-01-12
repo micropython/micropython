@@ -2,7 +2,11 @@
 
 import sys
 
-if not hasattr(sys, "modules"):
+try:
+    next(iter([]), 42)
+except TypeError:
+    # Two-argument version of next() not supported.  We are probably not at
+    # MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES which is needed for "import *".
     print("SKIP")
     raise SystemExit
 
