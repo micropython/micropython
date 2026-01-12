@@ -54,9 +54,9 @@ typedef struct _machine_encoder_obj_t {
     uint32_t min_count;
     uint32_t filter;
     mp_obj_t home_pin;
-    uint16_t status;
-    uint16_t requested_irq;
-    mp_irq_obj_t *irq;
+    uint16_t mp_irq_flags;
+    uint16_t mp_irq_trigger;
+    mp_irq_obj_t *mp_irq_obj;
     enc_config_t enc_config;
 } machine_encoder_obj_t;
 
@@ -69,9 +69,6 @@ typedef struct _encoder_xbar_signal_t {
     xbar_input_signal_t enc_match;
 } encoder_xbar_signal_t;
 
-#define ENCODER_TRIGGER_MATCH      (kENC_PositionCompareFlag)
-#define ENCODER_TRIGGER_ROLL_OVER  (kENC_PositionRollOverFlag)
-#define ENCODER_TRIGGER_ROLL_UNDER (kENC_PositionRollUnderFlag)
 #define ENCODER_ALL_INTERRUPTS     (0x7f)
 
 #define XBAR_IN                    (1)
@@ -81,7 +78,7 @@ typedef struct _encoder_xbar_signal_t {
 #define COUNTER_DOWN               (-3)
 #define MODE_ENCODER               (0)
 #define MODE_COUNTER               (1)
-
+#define MP_ENCODER_ALLOWED_FLAGS   (kENC_HOMETransitionFlag | kENC_INDEXPulseFlag | kENC_PositionCompareFlag | kENC_PositionRollUnderFlag | kENC_PositionRollOverFlag)
 static void encoder_deinit_single(machine_encoder_obj_t *self);
 
 #if defined MIMXRT117x_SERIES
@@ -181,16 +178,16 @@ static IRQn_Type enc_irqn[] = ENC_COMPARE_IRQS;
 __attribute__((section(".ram_functions"))) void irq_callback(int irq_num) {
     machine_encoder_obj_t *self = encoder_table[irq_num];
     if (self != NULL) {
-        self->status = ENC_GetStatusFlags(self->instance);
+        self->mp_irq_flags = ENC_GetStatusFlags(self->instance);
         // In case of a position match event, disable that interrupt such that is is only handled
         // once until enabled again. This is needed since otherwise the match interrupt will
         // be triggered again as long as the match condition is true.
-        if (self->status & kENC_PositionCompareFlag) {
+        if (self->mp_irq_flags & kENC_PositionCompareFlag) {
             ENC_DisableInterrupts(self->instance, kENC_PositionCompareInerruptEnable);
         }
-        ENC_ClearStatusFlags(self->instance, self->status);
+        ENC_ClearStatusFlags(self->instance, self->mp_irq_flags);
         __DSB();
-        mp_irq_handler(self->irq);
+        mp_irq_handler(self->mp_irq_obj);
     }
 }
 
@@ -233,7 +230,7 @@ static void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, 
         mp_printf(print, "<Encoder %d, phases=%d, max=%ld, min=%ld, match=%ld, filter=%luns>\n",
             self->id, 4 / self->phases_inv,
             max / self->phases_inv, min / self->phases_inv,
-            match / self->phases_inv / self->phases_inv, self->filter);
+            match / self->phases_inv, self->filter);
     } else {
         mp_printf(print, "<Counter %d, max=%ld, min=%ld, match=%ld, filter=%luns>\n",
             self->id, self->max_count, self->min_count,
@@ -356,12 +353,24 @@ static uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *perio
     return ((1000000000 / freq_khz) + 1) * (*count + 3) * *period / 1000;
 }
 
-// Micropython API functions
+// MicroPython API functions
 //
 static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     mp_arg_val_t args[], enc_config_t *enc_config) {
 
-    enum { ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index };
+    enum { ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index };
+
+    // Check for a Home pin, resetting the counters
+    if (args[ARG_home].u_obj != MP_ROM_INT(-1)) {
+        if (args[ARG_home].u_obj != mp_const_none) {
+            self->home_pin = args[ARG_home].u_obj;
+            connect_pin_to_encoder(self->home_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
+            self->enc_config.HOMETriggerMode = kENC_HOMETriggerOnRisingEdge;
+        } else {
+            XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_home);
+            self->home_pin = NULL;
+        }
+    }
 
     // Check for a Match pin for the compare match signal
     if (args[ARG_match_pin].u_obj != MP_ROM_INT(-1)) {
@@ -379,6 +388,20 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
             IOMUXC_GPR->XBAR_ENC_DIR_REGISTER &= ~(1 << (self->match_pin + XBAR_ENC_DIR_OFFSET));
             #endif
         }
+    }
+
+    if (args[ARG_match].u_obj != mp_const_none) {
+        uint32_t compare = mp_obj_int_get_truncated(args[ARG_match].u_obj) * self->phases_inv;
+        self->enc_config.positionCompareValue = compare;
+        self->instance->LCOMP = (uint16_t)(compare) & 0xffff;        // Lower 16 pos bits.
+        self->instance->UCOMP = (uint16_t)(compare >> 16U) & 0xffff; // Upper 16 pos bits.
+    } else {
+        // Set to the reset value
+        self->enc_config.positionCompareValue = 0xFFFFFFFFU;
+        self->instance->LCOMP = 0xffff;
+        self->instance->UCOMP = 0xffff;
+        // disable the interrupt to avoid false trigger
+        ENC_DisableInterrupts(self->instance, kENC_PositionCompareInerruptEnable);
     }
 
     if (args[ARG_filter_ns].u_int >= 0) {
@@ -428,20 +451,21 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
 
 static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_phase_a, ARG_phase_b, ARG_home,
-           ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index, ARG_phases};
+    enum { ARG_phase_a, ARG_phase_b, ARG_phases, ARG_home,
+           ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index};
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_phase_b, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_phases, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_home, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
+        { MP_QSTR_match, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_match_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_max, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_min, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
-        { MP_QSTR_phases, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args,
@@ -460,18 +484,6 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("invalid or missing input pins"));
     }
 
-    // Check for a Home pin, resetting the counters
-    if (args[ARG_home].u_obj != MP_ROM_INT(-1)) {
-        if (args[ARG_home].u_obj != mp_const_none) {
-            self->home_pin = args[ARG_home].u_obj;
-            connect_pin_to_encoder(self->home_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
-            self->enc_config.HOMETriggerMode = kENC_HOMETriggerOnRisingEdge;
-        } else {
-            XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_home);
-            self->home_pin = NULL;
-        }
-    }
-
     // Get the Phases argument
     if (args[ARG_phases].u_int != -1) {
         if ((args[ARG_phases].u_int != 1) && (args[ARG_phases].u_int != 2) && (args[ARG_phases].u_int != 4)) {
@@ -481,7 +493,7 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     }
 
     // Set the common options
-    mp_machine_encoder_init_helper_common(self, args + ARG_match_pin, &self->enc_config);
+    mp_machine_encoder_init_helper_common(self, args + ARG_home, &self->enc_config);
 
     ENC_DoSoftwareLoadInitialPositionValue(self->instance); /* Update the position counter with initial value. */
 }
@@ -516,8 +528,9 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     self->instance = enc_instances[id + 1];
     self->max_count = 0;
     self->min_count = 0;
-    self->status = 0;
-    self->irq = NULL;
+    self->mp_irq_flags = 0;
+    self->mp_irq_trigger = 0;
+    self->mp_irq_obj = NULL;
     self->match_pin = 0;
     self->is_signed = true;
     self->phases_inv = 4;  // default: phases = 1
@@ -538,7 +551,7 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
 
 static void encoder_deinit_single(machine_encoder_obj_t *self) {
     if (self->active) {
-        if (self->irq && self->irq->handler) {
+        if (self->mp_irq_obj && self->mp_irq_obj->handler) {
             DisableIRQ(enc_irqn[self->id + 1]);
             ENC_DisableInterrupts(self->instance, ENCODER_ALL_INTERRUPTS);
         }
@@ -575,13 +588,6 @@ static mp_obj_t machine_encoder_deinit(mp_obj_t self_in) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_deinit_obj, machine_encoder_deinit);
-
-// encoder.status()
-mp_obj_t machine_encoder_status(mp_obj_t self_in) {
-    machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(self->status & (self->requested_irq | kENC_LastCountDirectionFlag));
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_status_obj, machine_encoder_status);
 
 // encoder.value([value])
 static mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
@@ -629,55 +635,79 @@ static mp_obj_t machine_encoder_cycles(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_cycles_obj, 1, 2, machine_encoder_cycles);
 
-// encoder.irq(trigger=ENCODER.IRQ_MATCH, value=nnn, handler=None, hard=False)
+// -------------------------------------- IRQ set-up --------------------------
+
+static mp_uint_t encoder_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->mp_irq_trigger = new_trigger;
+    // Clear previous interrupts and enable the requested interrupts.
+    ENC_ClearStatusFlags(self->instance, ENCODER_ALL_INTERRUPTS);
+    ENC_DisableInterrupts(self->instance, ENCODER_ALL_INTERRUPTS);
+    ENC_EnableInterrupts(self->instance, new_trigger);
+    return 0;
+}
+
+static mp_uint_t encoder_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t encoder_irq_methods = {
+    .trigger = encoder_irq_trigger,
+    .info = encoder_irq_info,
+};
+
+// encoder.irq(trigger=ENCODER.IRQ_MATCH, handler=None, hard=False)
 static mp_obj_t machine_encoder_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_trigger, ARG_value, ARG_handler, ARG_hard };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_hard, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_val_t args[MP_IRQ_ARG_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_IRQ_ARG_INIT_NUM_ARGS, mp_irq_init_args, args);
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    bool any_args = n_args > 1 || kw_args->used != 0;
+
     if (!self->active) {
         mp_raise_ValueError(MP_ERROR_TEXT("device stopped"));
     }
 
-    if (self->irq == NULL) {
-        self->irq = m_new_obj(mp_irq_obj_t);
-        self->irq->base.type = &mp_irq_type;
-        self->irq->parent = MP_OBJ_FROM_PTR(self);
-        self->irq->methods = NULL;
-        self->irq->ishard = false;
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_obj = mp_irq_new(&encoder_irq_methods, MP_OBJ_FROM_PTR(self));
+        self->mp_irq_obj->ishard = false;
     }
 
-    uint16_t trigger = args[ARG_trigger].u_int &
-        (ENCODER_TRIGGER_MATCH | ENCODER_TRIGGER_ROLL_UNDER | ENCODER_TRIGGER_ROLL_OVER);
+    if (any_args) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
 
-    if (args[ARG_value].u_obj != mp_const_none) {
-        uint32_t value = mp_obj_int_get_truncated(args[ARG_value].u_obj) * self->phases_inv;
-        self->enc_config.positionCompareValue = value;
-        self->instance->LCOMP = (uint16_t)(value) & 0xffff;        /* Lower 16 pos bits. */
-        self->instance->UCOMP = (uint16_t)(value >> 16U) & 0xffff; /* Upper 16 pos bits. */
-        trigger |= ENCODER_TRIGGER_MATCH;
-    }
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_ENCODER_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
+        }
 
-    self->irq->handler = args[ARG_handler].u_obj;
-    self->irq->ishard = args[ARG_hard].u_bool;
-    self->requested_irq = trigger;
-    // Clear pending interrupt flags
-    ENC_ClearStatusFlags(self->instance, ENCODER_ALL_INTERRUPTS);
-    if (self->irq->handler != mp_const_none) {
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+
+        // Clear pending interrupt flags
+        ENC_ClearStatusFlags(self->instance, ENCODER_ALL_INTERRUPTS);
         ENC_DisableInterrupts(self->instance, ENCODER_ALL_INTERRUPTS);
-        ENC_EnableInterrupts(self->instance, trigger);
-        EnableIRQ(enc_irqn[self->id + 1]);
-    } else {
-        ENC_DisableInterrupts(self->instance, trigger);
-        DisableIRQ(enc_irqn[self->id + 1]);
+        if (self->mp_irq_obj->handler != mp_const_none) {
+            ENC_EnableInterrupts(self->instance, trigger);
+            EnableIRQ(enc_irqn[self->id + 1]);
+        } else {
+            ENC_DisableInterrupts(self->instance, trigger);
+            DisableIRQ(enc_irqn[self->id + 1]);
+        }
     }
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(self->mp_irq_obj);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_encoder_irq_obj, 1, machine_encoder_irq);
 
@@ -688,25 +718,18 @@ static mp_obj_t machine_encoder_init(size_t n_args, const mp_obj_t *args, mp_map
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_encoder_init_obj, 1, machine_encoder_init);
 
-// encoder.id()
-static mp_obj_t machine_encoder_id(mp_obj_t self_in) {
-    machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(self->id);
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_id_obj, machine_encoder_id);
-
 static const mp_rom_map_elem_t machine_encoder_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_encoder_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_encoder_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_encoder_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_encoder_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_encoder_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_cycles), MP_ROM_PTR(&machine_encoder_cycles_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&machine_encoder_status_obj) },
-    { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&machine_encoder_id_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(ENCODER_TRIGGER_MATCH) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(ENCODER_TRIGGER_ROLL_UNDER) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_OVER), MP_ROM_INT(ENCODER_TRIGGER_ROLL_OVER) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_HOME), MP_ROM_INT(kENC_HOMETransitionFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_INDEX), MP_ROM_INT(kENC_INDEXPulseFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(kENC_PositionCompareFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(kENC_PositionRollUnderFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_OVER), MP_ROM_INT(kENC_PositionRollOverFlag) },
 };
 static MP_DEFINE_CONST_DICT(machine_encoder_locals_dict, machine_encoder_locals_dict_table);
 
@@ -724,10 +747,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_src, ARG_direction, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed,  ARG_index };
+    enum { ARG_src, ARG_direction, ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_src, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_direction, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
+        { MP_QSTR_home, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
+        { MP_QSTR_match, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_match_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_max, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -759,7 +784,7 @@ static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
     }
 
     // Set the common options and start
-    mp_machine_encoder_init_helper_common(self, args + ARG_match_pin, &self->enc_config);
+    mp_machine_encoder_init_helper_common(self, args + ARG_home, &self->enc_config);
 }
 
 // Counter(id, input, [args])
@@ -793,8 +818,9 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     self->instance = enc_instances[id + 1];
     self->max_count = 0;
     self->min_count = 0;
-    self->status = 0;
-    self->irq = NULL;
+    self->mp_irq_flags = 0;
+    self->mp_irq_trigger = 0;
+    self->mp_irq_obj = NULL;
     self->match_pin = 0;
     self->is_signed = true;
     self->phases_inv = 1;
@@ -824,17 +850,17 @@ static mp_obj_t machine_counter_init(size_t n_args, const mp_obj_t *args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_counter_init_obj, 1, machine_counter_init);
 
 static const mp_rom_map_elem_t machine_counter_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_counter_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_encoder_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_encoder_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_encoder_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_cycles), MP_ROM_PTR(&machine_encoder_cycles_obj) },
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_counter_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_encoder_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&machine_encoder_status_obj) },
-    { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&machine_encoder_id_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(ENCODER_TRIGGER_MATCH) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(ENCODER_TRIGGER_ROLL_UNDER) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_OVER), MP_ROM_INT(ENCODER_TRIGGER_ROLL_OVER) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_HOME), MP_ROM_INT(kENC_HOMETransitionFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_INDEX), MP_ROM_INT(kENC_INDEXPulseFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(kENC_PositionCompareFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(kENC_PositionRollUnderFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_OVER), MP_ROM_INT(kENC_PositionRollOverFlag) },
     { MP_ROM_QSTR(MP_QSTR_UP), MP_ROM_INT(COUNTER_UP) },
     { MP_ROM_QSTR(MP_QSTR_DOWN), MP_ROM_INT(COUNTER_DOWN) },
 };
