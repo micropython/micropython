@@ -50,7 +50,8 @@ typedef struct _machine_encoder_obj_t {
     bool is_signed;
     uint8_t match_pin;
     uint8_t phases_inv;
-    uint32_t cpc;
+    uint32_t max_count;
+    uint32_t min_count;
     uint32_t filter;
     uint16_t status;
     uint16_t requested_irq;
@@ -216,13 +217,26 @@ __attribute__((section(".ram_functions"))) void ENC4_IRQHandler(void) {
 static void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->mode == MODE_ENCODER) {
-        mp_printf(print, "<Encoder %d, phases=%d, cpc=%lu, match=%ld, filter=%luns>\n",
-            self->id, 4 / self->phases_inv, self->cpc / self->phases_inv,
-            self->enc_config.positionCompareValue / self->phases_inv, self->filter);
+        int32_t min = (int32_t)self->min_count;
+        if (min > 0) {
+            min += (self->phases_inv - 1);
+        }
+        int32_t max = (int32_t)self->max_count;
+        if (max > 0) {
+            max += (self->phases_inv - 1);
+        }
+        int32_t match = (int32_t)self->enc_config.positionCompareValue;
+        if (match > 0) {
+            match += (self->phases_inv - 1);
+        }
+        mp_printf(print, "<Encoder %d, phases=%d, max=%ld, min=%ld, match=%ld, filter=%luns>\n",
+            self->id, 4 / self->phases_inv,
+            max / self->phases_inv, min / self->phases_inv,
+            match / self->phases_inv / self->phases_inv, self->filter);
     } else {
-        mp_printf(print, "<Counter %d, cpc=%lu, match=%ld, filter=%luns>\n",
-            self->id, self->cpc / self->phases_inv, self->enc_config.positionCompareValue,
-            self->filter);
+        mp_printf(print, "<Counter %d, max=%ld, min=%ld, match=%ld, filter=%luns>\n",
+            self->id, self->max_count, self->min_count,
+            self->enc_config.positionCompareValue, self->filter);
     }
 }
 
@@ -343,7 +357,7 @@ static uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *perio
 static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     mp_arg_val_t args[], enc_config_t *enc_config) {
 
-    enum { ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed, ARG_index };
+    enum { ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index };
 
     // Check for a Match pin for the compare match signal
     if (args[ARG_match_pin].u_obj != MP_ROM_INT(-1)) {
@@ -368,20 +382,18 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
             &(enc_config->filterCount), &(enc_config->filterSamplePeriod));
     }
 
-    if (args[ARG_cpc].u_obj != mp_const_none) {
-        uint32_t cpc = mp_obj_int_get_truncated(args[ARG_cpc].u_obj) * self->phases_inv;
-        self->cpc = cpc;
-        if (cpc == 0) {
-            enc_config->enableModuloCountMode = false;
-            enc_config->positionModulusValue = 0;
-            enc_config->positionInitialValue = 0;
-            self->is_signed = false;
-        } else {
-            enc_config->enableModuloCountMode = true;
-            enc_config->positionModulusValue = cpc - 1;
-            self->is_signed = true;
-        }
+    if (args[ARG_max].u_obj != mp_const_none) {
+        self->max_count = mp_obj_int_get_truncated(args[ARG_max].u_obj) * self->phases_inv;
+        self->is_signed = true;
     }
+
+    if (args[ARG_min].u_obj != mp_const_none) {
+        self->min_count = mp_obj_int_get_truncated(args[ARG_min].u_obj) * self->phases_inv;
+        self->is_signed = true;
+    }
+    enc_config->positionModulusValue = self->max_count - 1;
+    enc_config->positionInitialValue = self->min_count;
+    enc_config->enableModuloCountMode = true;
 
     if (args[ARG_signed].u_int >= 0) {
         self->is_signed = !!args[ARG_signed].u_int;
@@ -402,6 +414,9 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     // Initialize the ENC module and start
     ENC_Init(self->instance, enc_config);
     clear_encoder_registers(self);
+    // Set the position and rev register
+    ENC_SetInitialPositionValue(self->instance, self->min_count);
+    ENC_DoSoftwareLoadInitialPositionValue(self->instance);
     ENC_ClearStatusFlags(self->instance, 0xff); // Clear all status flags
     self->active = true;
 }
@@ -409,7 +424,7 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
 static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_phase_a, ARG_phase_b, ARG_home,
-           ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed, ARG_index, ARG_phases};
+           ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index, ARG_phases};
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -417,7 +432,8 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
         { MP_QSTR_home, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_match_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_cpc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_max, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_min, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_phases, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -491,7 +507,8 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     self->input_b = 0;
     self->base.type = &machine_encoder_type;
     self->instance = enc_instances[id + 1];
-    self->cpc = 0;
+    self->max_count = 0;
+    self->min_count = 0;
     self->status = 0;
     self->irq = NULL;
     self->match_pin = 0;
@@ -700,13 +717,14 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_src, ARG_direction, ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed,  ARG_index };
+    enum { ARG_src, ARG_direction, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed,  ARG_index };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_src, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_direction, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_match_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_cpc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_max, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_min, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
     };
@@ -766,7 +784,8 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     self->input_b = 0;
     self->base.type = &machine_counter_type;
     self->instance = enc_instances[id + 1];
-    self->cpc = 0;
+    self->max_count = 0;
+    self->min_count = 0;
     self->status = 0;
     self->irq = NULL;
     self->match_pin = 0;
