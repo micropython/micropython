@@ -118,8 +118,6 @@
 
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 
-#define MICROPY_LOGGER_DEBUG                    (1)
-
 // VFS
 #define MICROPY_VFS                             (1)         // Can be removed once we add #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 #define MICROPY_PY_VFS                          (1)

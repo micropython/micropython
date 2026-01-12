@@ -106,14 +106,13 @@ SHARED_SRC_C += $(addprefix shared/,\
 	\
 	runtime/gchelper_native.c \
 	runtime/interrupt_char.c \
+	runtime/mpirq.c \
 	runtime/pyexec.c \
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	\
 	timeutils/timeutils.c \
 	)
-
-# TODO: Add this once gc is enabled, required in machine_pin_irq -> runtime/mpirq.c\
 
 
 DRIVERS_SRC_C += 
