@@ -1,0 +1,34 @@
+- name: CY8CPROTO-062-4343W
+  uid: 072002F302098400
+  features:
+    - 0.6.0.a
+
+- name: CY8CPROTO-062-4343W
+  uid: 1C14031D03201400
+  features:
+    - 0.6.0.b
+
+- name: CY8CPROTO-063-BLE
+  uid: 100D0F1400052400
+  features:
+    - 0.5.0.b
+
+- name: CY8CPROTO-063-BLE
+  uid: 03180F1400052400
+  features:
+    - 0.5.0.a
+
+- name: CY8CKIT-062S2-AI
+  uid: 1225085A012D2400
+  features:
+    - 0.1.0.a
+
+- name: CY8CKIT-062S2-AI
+  uid: 1A0A095A012D2400
+  features:
+    - 0.1.0.b
+
+- name: CY8CKIT-062S2-AI
+  uid: 132119A1002E0400
+  features:
+    - 0.1.0.c
