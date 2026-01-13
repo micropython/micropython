@@ -253,24 +253,12 @@ void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut);
 void vstr_cut_tail_bytes(vstr_t *vstr, size_t bytes_to_cut);
 void vstr_cut_out_bytes(vstr_t *vstr, size_t byte_pos, size_t bytes_to_cut);
 void vstr_printf(vstr_t *vstr, const char *fmt, ...);
-
-/** non-dynamic size-bounded variable buffer/string *************/
-
-#define CHECKBUF(buf, max_size) char buf[max_size + 1]; size_t buf##_len = max_size; char *buf##_p = buf;
-#define CHECKBUF_RESET(buf, max_size) buf##_len = max_size; buf##_p = buf;
-#define CHECKBUF_APPEND(buf, src, src_len) \
-    { size_t l = MIN(src_len, buf##_len); \
-      memcpy(buf##_p, src, l); \
-      buf##_len -= l; \
-      buf##_p += l; }
-#define CHECKBUF_APPEND_0(buf) { *buf##_p = 0; }
-#define CHECKBUF_LEN(buf) (buf##_p - buf)
-
 #ifdef va_start
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 #endif
 
-// Debugging helpers
+/** debugging helpers *******************************************/
+
 int DEBUG_printf(const char *fmt, ...);
 
 extern mp_uint_t mp_verbose_flag;
