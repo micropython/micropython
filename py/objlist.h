@@ -37,5 +37,11 @@ typedef struct _mp_obj_list_t {
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n);
 mp_obj_t mp_obj_list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
+mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
+void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
+void mp_obj_list_set_len(mp_obj_t self_in, size_t len);
+void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 
 #endif // MICROPY_INCLUDED_PY_OBJLIST_H
