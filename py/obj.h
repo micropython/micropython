@@ -1179,11 +1179,6 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
 #define mp_obj_is_float(o) (false)
 #endif
 
-// tuple
-void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
-void mp_obj_tuple_del(mp_obj_t self_in);
-mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
-
 // dict
 typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;
