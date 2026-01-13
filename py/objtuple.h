@@ -56,8 +56,6 @@ static inline void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **it
     *items = &self->items[0];
 }
 
-void mp_obj_tuple_del(mp_obj_t self_in);
-
 extern const mp_obj_type_t mp_type_attrtuple;
 
 #define MP_DEFINE_ATTRTUPLE(tuple_obj_name, fields, nitems, ...) \
