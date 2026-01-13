@@ -231,30 +231,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 typedef long mp_off_t;
 
-#if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-        if (pyb_thread_enabled) { \
-            MP_THREAD_GIL_EXIT(); \
-            pyb_thread_yield(); \
-            MP_THREAD_GIL_ENTER(); \
-        } else { \
-            __WFI(); \
-        } \
-    } while (0);
-
-#define MICROPY_THREAD_YIELD() pyb_thread_yield()
-#else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-        __WFI(); \
-    } while (0);
-
-#define MICROPY_THREAD_YIELD()
-#endif
-
 // Configuration for shared/runtime/softtimer.c.
 #define MICROPY_SOFT_TIMER_TICKS_MS uwTick
 

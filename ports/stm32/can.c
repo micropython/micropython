@@ -180,7 +180,7 @@ int can_receive(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, CanRxMsgTypeDef *msg
     // Wait for a message to become available, with timeout
     uint32_t start = HAL_GetTick();
     while ((*rfr & 3) == 0) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
         if (HAL_GetTick() - start >= timeout_ms) {
             return -MP_ETIMEDOUT;
         }

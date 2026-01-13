@@ -284,7 +284,7 @@ HAL_StatusTypeDef can_transmit(CAN_HandleTypeDef *can, CanTxMsgTypeDef *txmsg, u
                 mp_raise_OSError(MP_ETIMEDOUT);
             }
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     return HAL_FDCAN_AddMessageToTxFifoQ(can, txmsg, data);
 }
@@ -311,7 +311,7 @@ int can_receive(FDCAN_HandleTypeDef *can, can_rx_fifo_t fifo, FDCAN_RxHeaderType
                 return -MP_ETIMEDOUT;
             }
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 
     // Get pointer to incoming message
