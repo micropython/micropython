@@ -47,7 +47,6 @@ typedef struct _machine_encoder_obj_t {
     uint8_t input_a;
     uint8_t input_b;
     uint8_t mode;
-    bool is_signed;
     uint8_t match_pin;
     uint8_t phases_inv;
     uint32_t max_count;
@@ -358,7 +357,7 @@ static uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *perio
 static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     mp_arg_val_t args[], enc_config_t *enc_config) {
 
-    enum { ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index };
+    enum { ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index };
 
     // Check for a Home pin, resetting the counters
     if (args[ARG_home].u_obj != MP_ROM_INT(-1)) {
@@ -411,20 +410,15 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
 
     if (args[ARG_max].u_obj != mp_const_none) {
         self->max_count = mp_obj_int_get_truncated(args[ARG_max].u_obj) * self->phases_inv;
-        self->is_signed = true;
     }
 
     if (args[ARG_min].u_obj != mp_const_none) {
         self->min_count = mp_obj_int_get_truncated(args[ARG_min].u_obj) * self->phases_inv;
-        self->is_signed = true;
     }
+
     enc_config->positionModulusValue = self->max_count - 1;
     enc_config->positionInitialValue = self->min_count;
     enc_config->enableModuloCountMode = true;
-
-    if (args[ARG_signed].u_int >= 0) {
-        self->is_signed = !!args[ARG_signed].u_int;
-    }
 
     // Count cycles on RollOverModulus or index pulse
     if (args[ARG_index].u_obj != MP_ROM_INT(-1)) {
@@ -452,7 +446,7 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
 static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_phase_a, ARG_phase_b, ARG_phases, ARG_home,
-           ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index};
+           ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index};
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -464,7 +458,6 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_max, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_min, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -532,7 +525,6 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     self->mp_irq_trigger = 0;
     self->mp_irq_obj = NULL;
     self->match_pin = 0;
-    self->is_signed = true;
     self->phases_inv = 4;  // default: phases = 1
     self->home_pin = NULL;
     self->mode = MODE_ENCODER;
@@ -606,16 +598,12 @@ static mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
         // Reset the INIT Value
         ENC_SetInitialPositionValue(self->instance, 0);
     }
-    // Get the position as signed or unsigned 32 bit value.
-    if (self->is_signed) {
-        int32_t value = (int32_t)actual_value;
-        if (value > 0) {
-            value += (self->phases_inv - 1);
-        }
-        return mp_obj_new_int(value / self->phases_inv);
-    } else {
-        return mp_obj_new_int_from_uint((actual_value + (self->phases_inv - 1)) / self->phases_inv);
+    // Get the position as signed 32 bit value.
+    int32_t value = (int32_t)actual_value;
+    if (value > 0) {
+        value += (self->phases_inv - 1);
     }
+    return mp_obj_new_int(value / self->phases_inv);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_value_obj, 1, 2, machine_encoder_value);
 
@@ -747,7 +735,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_src, ARG_direction, ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_signed, ARG_index };
+    enum { ARG_src, ARG_direction, ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_src, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_direction, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
@@ -757,7 +745,6 @@ static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_max, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_min, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
     };
 
@@ -822,7 +809,6 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     self->mp_irq_trigger = 0;
     self->mp_irq_obj = NULL;
     self->match_pin = 0;
-    self->is_signed = true;
     self->phases_inv = 1;
     self->home_pin = NULL;
     self->mode = MODE_COUNTER;
