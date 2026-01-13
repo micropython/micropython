@@ -1248,8 +1248,6 @@ typedef struct _mp_obj_fun_builtin_var_t {
     } fun;
 } mp_obj_fun_builtin_var_t;
 
-qstr mp_obj_fun_get_name(mp_const_obj_t fun);
-
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
 

@@ -51,6 +51,7 @@ typedef struct _mp_obj_fun_asm_t {
 } mp_obj_fun_asm_t;
 
 mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_module_context_t *cm, struct _mp_raw_code_t *const *raw_code_table);
+qstr mp_obj_fun_get_name(mp_const_obj_t fun);
 void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
 #if MICROPY_ENABLE_NATIVE_CODE
