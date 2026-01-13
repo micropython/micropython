@@ -69,7 +69,8 @@ static void configure_pwm(machine_pwm_obj_t *self) {
 static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in,
     mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<PWM Controller %p channel=%d ", self->pwm, self->channel);
+    const char *name = zephyr_device_get_name(self->pwm);
+    mp_printf(print, "<PWM Controller %s channel=%d ", name, self->channel);
 
     if (self->duty_ns != VALUE_NOT_SET) {
         mp_printf(print, " duty_ns=%d", self->duty_ns);
