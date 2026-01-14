@@ -575,7 +575,7 @@ Example usage::
     qe.init(index=Pin("D3"))        # specify Pin 3 as Index pulse input
     qe.deinit()                     # turn off the Quadrature Encoder
     qe.init(match=64)               # set a match event at count 64
-    qe.irq(qe.IRQ_MATCH, value=100, handler=handler)
+    qe.irq(qe.IRQ_MATCH, handler=handler)
                                     # call the function handler at a match event
 
     qe                              # show the Encoder object properties
