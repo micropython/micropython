@@ -165,24 +165,6 @@ typedef long mp_off_t;
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
-#if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        MP_THREAD_GIL_EXIT(); \
-        k_msleep(1); \
-        MP_THREAD_GIL_ENTER(); \
-    } while (0);
-#else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        k_msleep(1); \
-    } while (0);
-#endif
-
 // Compatibility switches
 
 #ifdef CONFIG_NEWLIB_LIBC
