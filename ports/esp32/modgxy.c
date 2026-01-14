@@ -105,7 +105,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(gxy_wifi_eap_connect_obj, gxy_wifi_eap_connect)
 static const mp_rom_map_elem_t gxy_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__gxy) },
 
-    { MP_ROM_QSTR(MP_QSTR_VERSION), MP_ROM_INT(2) },
+    { MP_ROM_QSTR(MP_QSTR_VERSION), MP_ROM_INT(3) }, // 3 pour espnow  V2
     { MP_ROM_QSTR(MP_QSTR_dhcp_rem), MP_ROM_PTR(&gxy_dhcp_rem_obj) },
     { MP_ROM_QSTR(MP_QSTR_wifi_set_storage), MP_ROM_PTR(&gxy_wifi_set_storage_obj) },
     { MP_ROM_QSTR(MP_QSTR_wifi_eap_connect), MP_ROM_PTR(&gxy_wifi_eap_connect_obj) },

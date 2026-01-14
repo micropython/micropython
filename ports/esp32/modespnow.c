@@ -72,7 +72,7 @@ static const uint8_t ESPNOW_MAGIC = 0x99;
 // Use this for peeking at the header of the next packet in the buffer.
 typedef struct {
     uint8_t magic;              // = ESPNOW_MAGIC
-    uint8_t msg_len;            // Length of the message
+    uint16_t msg_len;            // Length of the message
     #if MICROPY_PY_ESPNOW_RSSI
     uint32_t time_ms;           // Timestamp (ms) when packet is received
     int8_t rssi;                // RSSI value (dBm) (-127 to 0)
@@ -87,7 +87,7 @@ typedef struct {
 
 // The maximum length of an espnow packet (bytes)
 static const size_t MAX_PACKET_LEN = (
-    (sizeof(espnow_pkt_t) + ESP_NOW_MAX_DATA_LEN));
+    (sizeof(espnow_pkt_t) + ESP_NOW_MAX_DATA_LEN_V2));
 
 // Enough for 2 full-size packets: 2 * (6 + 7 + 250) = 526 bytes
 // Will allocate an additional 7 bytes for buffer overhead
@@ -420,7 +420,7 @@ static mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
     #else
     uint8_t *peer_buf = _get_bytes_len_w(list->items[0], ESP_NOW_ETH_ALEN);
     #endif // MICROPY_PY_ESPNOW_RSSI
-    uint8_t *msg_buf = _get_bytes_len_w(msg, ESP_NOW_MAX_DATA_LEN);
+    uint8_t *msg_buf = _get_bytes_len_w(msg, ESP_NOW_MAX_DATA_LEN_V2);
 
     // Read the packet header from the incoming buffer
     espnow_hdr_t hdr;
@@ -431,7 +431,7 @@ static mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
 
     // Check the message packet header format and read the message data
     if (hdr.magic != ESPNOW_MAGIC
-        || msg_len > ESP_NOW_MAX_DATA_LEN
+        || msg_len > ESP_NOW_MAX_DATA_LEN_V2
         || ringbuf_get_bytes(self->recv_buffer, peer_buf, ESP_NOW_ETH_ALEN) < 0
         || ringbuf_get_bytes(self->recv_buffer, msg_buf, msg_len) < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("ESPNow.recv(): buffer error"));
@@ -790,7 +790,7 @@ static MP_DEFINE_CONST_DICT(esp_espnow_locals_dict, esp_espnow_locals_dict_table
 static const mp_rom_map_elem_t espnow_globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__espnow) },
     { MP_ROM_QSTR(MP_QSTR_ESPNowBase), MP_ROM_PTR(&esp_espnow_type) },
-    { MP_ROM_QSTR(MP_QSTR_MAX_DATA_LEN), MP_ROM_INT(ESP_NOW_MAX_DATA_LEN)},
+    { MP_ROM_QSTR(MP_QSTR_MAX_DATA_LEN), MP_ROM_INT(ESP_NOW_MAX_DATA_LEN_V2)},
     { MP_ROM_QSTR(MP_QSTR_ADDR_LEN), MP_ROM_INT(ESP_NOW_ETH_ALEN)},
     { MP_ROM_QSTR(MP_QSTR_KEY_LEN), MP_ROM_INT(ESP_NOW_KEY_LEN)},
     { MP_ROM_QSTR(MP_QSTR_MAX_TOTAL_PEER_NUM), MP_ROM_INT(ESP_NOW_MAX_TOTAL_PEER_NUM)},
