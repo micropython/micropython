@@ -485,7 +485,7 @@ def parser():
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description="Micropython PSOC Edge utility script",
+        description="MicroPython PSOC Edge utility script",
     )
     parser.add_argument("-v", "--version", action=ver_action, help="mpy-pse version")
     subparser = parser.add_subparsers()
