@@ -77,8 +77,6 @@ typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#define MICROPY_EVENT_POLL_HOOK
-
 // Compatibility switches
 
 #ifdef CONFIG_NEWLIB_LIBC
