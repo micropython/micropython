@@ -181,10 +181,6 @@ typedef long mp_off_t;
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
