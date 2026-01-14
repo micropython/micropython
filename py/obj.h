@@ -831,6 +831,8 @@ extern const mp_obj_type_t mp_type_NoneType;
 extern const mp_obj_type_t mp_type_bool;
 extern const mp_obj_type_t mp_type_int;
 extern const mp_obj_type_t mp_type_str;
+extern const mp_obj_type_t mp_type_template;
+extern const mp_obj_type_t mp_type_interpolation;
 extern const mp_obj_type_t mp_type_bytes;
 extern const mp_obj_type_t mp_type_bytearray;
 extern const mp_obj_type_t mp_type_memoryview;
@@ -1011,6 +1013,9 @@ mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items);
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
+#if MICROPY_PY_TSTRINGS
+mp_obj_t mp_obj_new_template(size_t n_args, const mp_obj_t *args);
+#endif
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
