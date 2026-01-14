@@ -1,0 +1,43 @@
+
+Checking TX-Filling before active
+True
+True
+True
+True
+Checking tx->rx transfer
+True
+True
+Checking receive order and value
+True
+True
+True
+True
+
+Checking initial fifo state on receive:
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+
+Check if parameter assembly leads to the same code as static
+True
+Checking the state machine with x=5
+True
+Check if sm works as expected (5 gets() lead to 0)
+True
+Checking the state machine with x=10
+True
+Check if sm works as expected (10 gets() lead to 0)
+True
+Checking the state machine with x=15
+True
+Check if sm works as expected (15 gets() lead to 0)
+True
