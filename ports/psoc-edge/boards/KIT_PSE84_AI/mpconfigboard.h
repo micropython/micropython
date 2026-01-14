@@ -29,5 +29,3 @@
 #define MICROPY_HW_BOARD_NAME                   "KIT_PSE84_AI"
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "KIT_PSE84_AI"
-
-#define MICROPY_GC_HEAP_SIZE                    (315 * 1024) // 315 KB

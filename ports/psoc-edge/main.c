@@ -45,8 +45,8 @@
 
 
 #if MICROPY_ENABLE_GC
-extern uint8_t __StackTop, __StackLimit;
-__attribute__((section(".bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
+extern uint8_t __StackTop, __StackSize;
+extern uint8_t __HeapBase, __HeapLimit;
 #endif
 
 extern void time_init(void);
@@ -69,10 +69,8 @@ int main(void) {
 
     // Initialise the MicroPython runtime.
     #if MICROPY_ENABLE_GC
-    mp_stack_set_top(&__StackTop);
-    // mp_stack_set_limit((mp_uint_t)&__StackTop - (mp_uint_t)&__StackLimit);
-    mp_stack_set_limit((mp_uint_t)&__StackLimit);
-    gc_init(&gc_heap[0], &gc_heap[MP_ARRAY_SIZE(gc_heap)]);
+    gc_init(&__HeapBase, &__HeapLimit);
+    mp_cstack_init_with_top((void *)&__StackTop, __StackSize);
     #endif
 
     time_init();
@@ -102,6 +100,12 @@ soft_reset:
     mp_deinit();
 
     goto soft_reset;
+}
+
+void gc_collect(void) {
+    gc_collect_start();
+    gc_helper_collect_regs_and_stack();
+    gc_collect_end();
 }
 
 // Handle uncaught exceptions (should never be reached in a correct C implementation).
