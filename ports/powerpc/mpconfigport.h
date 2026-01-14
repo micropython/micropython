@@ -94,10 +94,6 @@
 
 typedef long mp_off_t;
 
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
 #define MICROPY_HW_BOARD_NAME "bare-metal"
 #define MICROPY_HW_MCU_NAME "POWERPC"
 
