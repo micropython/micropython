@@ -6,7 +6,7 @@
 #define MICROPY_END_ATOMIC_SECTION irq_unlock
 
 void mp_hal_init(void);
-void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);
+void mp_hal_wait_event(bool exit_on_event, struct k_sem *sem, uint32_t timeout_ms);
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
     return k_cyc_to_ns_floor64(k_cycle_get_32()) / 1000;
@@ -28,7 +28,7 @@ static inline void mp_hal_delay_us(mp_uint_t delay) {
 }
 
 static inline void mp_hal_delay_ms(mp_uint_t delay) {
-    mp_hal_wait_sem(NULL, delay);
+    mp_hal_wait_event(false, NULL, delay);
 }
 
 static inline uint64_t mp_hal_time_ns(void) {
