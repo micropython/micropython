@@ -90,7 +90,12 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h : $(BOARD_DIR)/%.csv $(MAKE_PINS) $(PR
 
 LDFLAGS += $(LDFLAGS_MOD)
 
+AFLAGS = -mthumb -mcpu=cortex-m33 -c
+
 LIBS += 
+
+SRC_O += \
+	shared/runtime/gchelper_thumb2.o
 
 # TODO: All these shared sources are copied from
 # PSOC6 files. Do we need all of them?
@@ -127,6 +132,7 @@ SRC_ASM +=
 SRC_QSTR += $(SHARED_SRC_C) $(MOD_SRC_C) $(GEN_PINS_SRC)
 
 OBJ += $(PY_O) 
+OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o)) 
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o)) 
 OBJ += $(addprefix $(BUILD)/, $(MOD_SRC_C:.c=.o)) 

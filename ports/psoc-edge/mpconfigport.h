@@ -51,7 +51,9 @@
 // Enable scheduler for IRQ callbacks (required for PDM_PCM.irq())
 #define MICROPY_ENABLE_SCHEDULER          (1)
 
-#define MICROPY_ENABLE_GC                 (0)
+#define MICROPY_PY_GC                     (1)
+#define MICROPY_ENABLE_GC                 (1)
+
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 
@@ -103,18 +105,6 @@
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
-
-
-// #if defined(__linux__) || defined(__APPLE__)
-// #define MICROPY_MIN_USE_STDOUT (1)
-// #define MICROPY_HEAP_SIZE      (25600) // heap size 25 kilobytes
-// #endif
-
-// #ifdef __thumb__
-// #define MICROPY_MIN_USE_CORTEX_CPU (1)
-// #define MICROPY_MIN_USE_STM32_MCU (1)
-// #define MICROPY_HEAP_SIZE      (2048) // heap size 2 kilobytes
-// #endif
 
 #define MP_STATE_PORT MP_STATE_VM
 
