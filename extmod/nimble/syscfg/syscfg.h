@@ -19,7 +19,11 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 
 #define MYNEWT_VAL(x) MYNEWT_VAL_ ## x
 
+#if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING
+#define MYNEWT_VAL_LOG_LEVEL (0)
+#else
 #define MYNEWT_VAL_LOG_LEVEL (255)
+#endif
 
 /*** compiler/arm-none-eabi-m4 */
 #define MYNEWT_VAL_HARDFLOAT (1)
