@@ -1281,7 +1281,7 @@ typedef time_t mp_timestamp_t;
 
 // Whether to implement the __code__ attribute on functions, and function constructor
 #ifndef MICROPY_PY_FUNCTION_ATTRS_CODE
-#define MICROPY_PY_FUNCTION_ATTRS_CODE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#define MICROPY_PY_FUNCTION_ATTRS_CODE (MICROPY_PY_MARSHAL || MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
 #endif
 
 // Whether bound_method can just use == (feature disabled), or requires a call to
