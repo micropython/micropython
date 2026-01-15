@@ -626,6 +626,8 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
+                        import termios
+                        import fcntl
                     except ImportError:
                         # in case pty module is not available, like on Windows
                         return b"SKIP\n"
@@ -656,24 +658,44 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                     with open(test_file, "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
                         master, slave = pty.openpty()
-                        p = subprocess.Popen(
-                            args, stdin=slave, stdout=slave, stderr=subprocess.STDOUT, bufsize=0
-                        )
-                        banner = get(True)
-                        output_mupy = banner + b"".join(send_get(line) for line in f)
-                        send_get(b"\x04")  # exit the REPL, so coverage info is saved
-                        # At this point the process might have exited already, but trying to
-                        # kill it 'again' normally doesn't result in exceptions as Python and/or
-                        # the OS seem to try to handle this nicely. When running Linux on WSL
-                        # though, the situation differs and calling Popen.kill after the process
-                        # terminated results in a ProcessLookupError. Just catch that one here
-                        # since we just want the process to be gone and that's the case.
                         try:
-                            p.kill()
-                        except ProcessLookupError:
-                            pass
-                        os.close(master)
-                        os.close(slave)
+                            # Configure terminal attributes to enable Ctrl-C signal generation
+                            attrs = termios.tcgetattr(slave)
+                            attrs[3] |= termios.ISIG  # Enable signal generation (ISIG flag)
+                            attrs[6][termios.VINTR] = 3  # Set Ctrl-C (0x03) as interrupt character
+                            termios.tcsetattr(slave, termios.TCSANOW, attrs)
+
+                            def setup_controlling_terminal():
+                                """Set up the child process with the PTY as controlling terminal."""
+                                os.setsid()  # Create a new session
+                                fcntl.ioctl(
+                                    0, termios.TIOCSCTTY, 0
+                                )  # Make PTY the controlling terminal
+
+                            p = subprocess.Popen(
+                                args,
+                                stdin=slave,
+                                stdout=slave,
+                                stderr=subprocess.STDOUT,
+                                bufsize=0,
+                                preexec_fn=setup_controlling_terminal,
+                            )
+                            banner = get(True)
+                            output_mupy = banner + b"".join(send_get(line) for line in f)
+                            send_get(b"\x04")  # exit the REPL, so coverage info is saved
+                            # At this point the process might have exited already, but trying to
+                            # kill it 'again' normally doesn't result in exceptions as Python and/or
+                            # the OS seem to try to handle this nicely. When running Linux on WSL
+                            # though, the situation differs and calling Popen.kill after the process
+                            # terminated results in a ProcessLookupError. Just catch that one here
+                            # since we just want the process to be gone and that's the case.
+                            try:
+                                p.kill()
+                            except ProcessLookupError:
+                                pass
+                        finally:
+                            os.close(master)
+                            os.close(slave)
                 else:
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
