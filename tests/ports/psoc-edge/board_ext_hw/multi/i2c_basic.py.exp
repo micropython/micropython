@@ -9,7 +9,6 @@ Slave ready
 
 ***** Test 1: I2C Scan *****
 
-I2C initialized: requested=100000 Hz, actual=99206 Hz, clk_scb=2380952 Hz
 Found devices: ['0x43']
 Status: PASS
 
