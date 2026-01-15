@@ -183,7 +183,7 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     // def_kw_args must be MP_OBJ_NULL or a dict
     assert(def_args == NULL || def_args[1] == MP_OBJ_NULL || mp_obj_is_type(def_args[1], &mp_type_dict));
 
-    #if MICROPY_MODULE_FROZEN_MPY
+    #if MICROPY_MODULE_FROZEN_MPY || MICROPY_PY_FUNCTION_ATTRS_CODE
     if (mp_proto_fun_is_bytecode(proto_fun)) {
         const uint8_t *bc = proto_fun;
         mp_obj_t fun = mp_obj_new_fun_bc(def_args, bc, context, NULL);
