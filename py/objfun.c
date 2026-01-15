@@ -369,11 +369,24 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     #if MICROPY_PY_FUNCTION_ATTRS_CODE
     if (attr == MP_QSTR___code__) {
         const mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-        if ((self->base.type == &mp_type_fun_bc
-             || self->base.type == &mp_type_gen_wrap)
-            && self->child_table == NULL) {
+        if (self->base.type == &mp_type_fun_bc
+            || self->base.type == &mp_type_gen_wrap) {
             #if MICROPY_PY_BUILTINS_CODE <= MICROPY_PY_BUILTINS_CODE_BASIC
-            dest[0] = mp_obj_new_code(self->context->constants, self->bytecode);
+            #if MICROPY_PERSISTENT_CODE_SAVE
+            #error "MICROPY_PERSISTENT_CODE_SAVE can't be enabled at this level of MICROPY_PY_BUILTINS_CODE"
+            #endif
+            mp_proto_fun_t proto_fun;
+            if (self->child_table != NULL) {
+                mp_raw_code_truncated_t *rc = m_new0(mp_raw_code_truncated_t, 1);
+                rc->kind = MP_CODE_BYTECODE;
+                rc->is_generator = self->base.type == &mp_type_gen_wrap;
+                rc->fun_data = self->bytecode;
+                rc->children = (mp_raw_code_t **)self->child_table;
+                proto_fun = rc;
+            } else {
+                proto_fun = self->bytecode;
+            }
+            dest[0] = mp_obj_new_code(self->context->constants, proto_fun);
             #else
             dest[0] = mp_obj_new_code(self->context, self->rc, true);
             #endif
