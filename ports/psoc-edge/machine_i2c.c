@@ -178,7 +178,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     // 7. Enable I2C operation
     Cy_SCB_I2C_Enable(MICROPY_HW_I2C0_SCB);
 
-    mp_printf(&mp_plat_print, "I2C initialized: requested=%u Hz, actual=%u Hz, clk_scb=%u Hz\n",
+    mplogger_print("I2C initialized: requested=%u Hz, actual=%u Hz, clk_scb=%u Hz\n",
         freq_hz, actual_rate, clk_scb_freq);
 
     // Store requested frequency
@@ -315,7 +315,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // set id if provided
     if (args[ARG_id].u_int != -1) {
         self->id = args[ARG_id].u_int;
-        mp_printf(&mp_plat_print, "machine.I2C: ID parameter is ignored in this port.\n");
+        mplogger_print("machine.I2C: ID parameter is ignored in this port.\n");
     }
 
     // Parse and validate pin arguments, use defaults from mpconfigboard.h if not provided
