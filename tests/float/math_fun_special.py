@@ -51,6 +51,9 @@ for function_name, function, test_vals in functions:
             ans = "{:.4g}".format(function(value))
         except ValueError as e:
             ans = str(e)
+            if ans.startswith("expected a "):
+                # CPython 3.14 changed messages to be more detailed; convert them back to simple ones
+                ans = "math domain error"
         # a tiny error in REPR_C value for 1.5204998778 causes a wrong rounded value
         if is_REPR_C and function_name == "erfc" and ans == "1.521":
             ans = "1.52"
