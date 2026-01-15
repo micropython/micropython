@@ -215,7 +215,7 @@ async function runCLI() {
         }
     }
 
-    if (process.stdin.isTTY === false) {
+    if (!process.stdin.isTTY) {
         contents = fs.readFileSync(0, "utf8");
         repl = false;
     }
