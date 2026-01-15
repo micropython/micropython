@@ -35,13 +35,20 @@ uint32_t trng_random_u32(void);
 // Config level
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 
+#ifndef MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_HW_ENABLE_PSRAM (0)
+#endif
+
 // Memory allocation policies
-#if MICROPY_HW_SDRAM_AVAIL
+#if MICROPY_HW_SDRAM_AVAIL || MICROPY_HW_ENABLE_PSRAM
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint32_t
 #else
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #endif
 #define MICROPY_ALLOC_PATH_MAX              (256)
+#ifndef MICROPY_GC_SPLIT_HEAP
+#define MICROPY_GC_SPLIT_HEAP               MICROPY_HW_ENABLE_PSRAM
+#endif
 
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
