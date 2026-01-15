@@ -172,6 +172,7 @@ set(MICROPY_SOURCE_PORT
     mutex_extra.c
     pendsv.c
     rp2_flash.c
+    rp2_hstx.c
     rp2_pio.c
     rp2_psram.c
     rp2_dma.c
@@ -199,6 +200,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_PORT_DIR}/modrp2.c
     ${MICROPY_PORT_DIR}/modos.c
     ${MICROPY_PORT_DIR}/rp2_flash.c
+    ${MICROPY_PORT_DIR}/rp2_hstx.c
     ${MICROPY_PORT_DIR}/rp2_pio.c
     ${MICROPY_PORT_DIR}/rp2_dma.c
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
