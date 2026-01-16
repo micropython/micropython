@@ -536,6 +536,8 @@ class RemoteCommand:
         self.fout.write(self.buf4)
 
     def wr_bytes(self, b):
+        if isinstance(b, str):
+            b = bytes(b, 'utf8')
         self.wr_s32(len(b))
         self.fout.write(b)
 
