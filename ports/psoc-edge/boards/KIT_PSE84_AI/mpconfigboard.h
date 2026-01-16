@@ -29,3 +29,11 @@
 #define MICROPY_HW_BOARD_NAME                   "KIT_PSE84_AI"
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "KIT_PSE84_AI"
+
+#define MICROPY_PY_EXT_FLASH (1)
+#define EXT_FLASH_BASE              (0x00900000) 
+#define EXT_FLASH_SIZE              (0x04000000 - EXT_FLASH_BASE) 
+#define EXT_FLASH_SECTOR_SIZE       (0x00001000) /** 4KB */
+#define EXT_FLASH_BLOCK_SIZE_BYTES  (EXT_FLASH_SECTOR_SIZE) 
+#define EXT_FLASH_PAGE_SIZE         (0x00000100) /** 256 Bytes */
+

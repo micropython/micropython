@@ -40,9 +40,13 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
+#include "py/runtime.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/readline/readline.h"
 
+// port-specific includes
+#include "mplogger.h"
 
 #if MICROPY_ENABLE_GC
 extern uint8_t __StackTop, __StackSize;
@@ -77,6 +81,25 @@ int main(void) {
 
 soft_reset:
     mp_init();
+
+    readline_init0();
+   
+    #if MICROPY_VFS
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
+
+    #if MICROPY_VFS_LFS2
+    pyexec_frozen_module("vfs_lfs2.py", false);
+    #endif
+    #endif
+
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+            int ret = pyexec_file_if_exists("/main.py");
+
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset;
+            }
+        }
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -114,10 +137,12 @@ void nlr_jump_fail(void *val) {
     }
 }
 
-mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
-}
+// #if !MICROPY_VFS
+// mp_import_stat_t mp_import_stat(const char *path) {
+//     return MP_IMPORT_STAT_NO_EXIST;
+// }
 
-mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
-    mp_raise_OSError(MP_ENOENT);
-}
+// mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
+//     mp_raise_OSError(MP_ENOENT);
+// }
+// #endif
