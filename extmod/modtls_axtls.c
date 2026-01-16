@@ -389,6 +389,9 @@ static mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t ar
         ssl_free(self->ssl_sock);
         ssl_ctx_free(self->ssl_ctx);
         self->ssl_sock = NULL;
+    } else if (request == MP_STREAM_RAISE_ERROR) {
+        // Raise error with detailed error string
+        ssl_raise_error((int)arg);
     }
 
     if (self->sock == MP_OBJ_NULL) {
