@@ -55,8 +55,9 @@ typedef struct _machine_hard_spi_obj_t {
 
 static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = self_in;
-    mp_printf(print, "SPI(%s, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s)",
-        self->dev->name,
+    mp_printf(print, "SPI(");
+    zephyr_device_print_name(print, self->dev);
+    mp_printf(print, " baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s)",
         self->config.frequency,
         (self->config.operation & 0x2) >> 1,
         (self->config.operation & 0x4) >> 2,

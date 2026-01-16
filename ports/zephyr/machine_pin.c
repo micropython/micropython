@@ -69,7 +69,9 @@ static void gpio_callback_handler(const struct device *port, struct gpio_callbac
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "<Pin %p %d>", self->port, self->pin);
+    mp_printf(print, "<Pin ");
+    zephyr_device_print_name(print, self->port);
+    mp_printf(print, " %d>", self->pin);
 }
 
 // pin.init(mode, pull=None, *, value)
