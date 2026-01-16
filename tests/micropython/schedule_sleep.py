@@ -1,14 +1,17 @@
 # test micropython.schedule() function
-# this test should be manually kept in synch with
-# tests/micrpython/schedule_sleep.py.
+# this is the same as tests/micropython/schedule.py but the busy loops are
+# replaced with sleep/sleep_ms which allows the test to succeed when run under
+# the native emitter.
 
 try:
     import micropython
+    import time
 
     micropython.schedule
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
+
 
 # Basic test of scheduling a function.
 
@@ -22,7 +25,7 @@ def callback(arg):
 done = False
 micropython.schedule(callback, 1)
 while not done:
-    pass
+    time.sleep(0)
 
 # Test that callbacks can be scheduled from within a callback, but
 # that they don't execute until the outer callback is finished.
@@ -47,7 +50,7 @@ def callback_outer(arg):
 done = 0
 micropython.schedule(callback_outer, 0)
 while done != 2:
-    pass
+    time.sleep(0)
 
 # Test that scheduling too many callbacks leads to an exception.  To do this we
 # must schedule from within a callback to guarantee that the scheduler is locked.
@@ -66,4 +69,4 @@ def callback(arg):
 done = False
 micropython.schedule(callback, None)
 while not done:
-    pass
+    time.sleep_ms(0)
