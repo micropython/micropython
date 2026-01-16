@@ -1,0 +1,9 @@
+set(SDKCONFIG_DEFAULTS
+    ${SDKCONFIG_DEFAULTS}
+    boards/ESP32_GENERIC/sdkconfig.romfs
+)
+
+list(APPEND MICROPY_DEF_BOARD
+    MICROPY_HW_BOARD_NAME="Generic ESP32 module with ROMFS"
+    MICROPY_VFS_ROM=1
+)
