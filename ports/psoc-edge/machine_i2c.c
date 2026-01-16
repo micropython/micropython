@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2025 Infineon Technologies AG
+ * Copyright (c) 2022-2026 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -319,17 +319,29 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
 
     // Parse and validate pin arguments, use defaults from mpconfigboard.h if not provided
-    if (args[ARG_scl].u_obj != MP_ROM_NONE) {
-        self->scl_pin = mp_obj_get_int(args[ARG_scl].u_obj);
-    } else {
-        self->scl_pin = MICROPY_HW_I2C0_SCL;  // Default from mpconfigboard.h
+    // Note: KIT_PSE84_AI only has one hardware I2C with fixed pins P17_0 (SCL) and P17_1 (SDA)
+    bool warn_pins = false;
+    if (args[ARG_scl].u_obj != MP_ROM_NONE || args[ARG_sda].u_obj != MP_ROM_NONE) {
+        // Allow scl='P17_0', sda='P17_1' without warning
+        bool is_valid_scl = (args[ARG_scl].u_obj == MP_ROM_NONE) ||
+            (mp_obj_is_str(args[ARG_scl].u_obj) &&
+                strcmp(mp_obj_str_get_str(args[ARG_scl].u_obj), "P17_0") == 0);
+        bool is_valid_sda = (args[ARG_sda].u_obj == MP_ROM_NONE) ||
+            (mp_obj_is_str(args[ARG_sda].u_obj) &&
+                strcmp(mp_obj_str_get_str(args[ARG_sda].u_obj), "P17_1") == 0);
+
+        if (!is_valid_scl || !is_valid_sda) {
+            warn_pins = true;
+        }
     }
 
-    if (args[ARG_sda].u_obj != MP_ROM_NONE) {
-        self->sda_pin = mp_obj_get_int(args[ARG_sda].u_obj);
-    } else {
-        self->sda_pin = MICROPY_HW_I2C0_SDA;  // Default from mpconfigboard.h
+    if (warn_pins) {
+        mp_printf(&mp_plat_print, "I2C: KIT_PSE84_AI only supports fixed pins P17_0 (SCL) and P17_1 (SDA). Custom pins ignored.\n");
     }
+
+    // Always use hardware default pins
+    self->scl_pin = MICROPY_HW_I2C0_SCL;
+    self->sda_pin = MICROPY_HW_I2C0_SDA;
 
     // initialise I2C at hardware level
     // If this fails, free the allocated object
