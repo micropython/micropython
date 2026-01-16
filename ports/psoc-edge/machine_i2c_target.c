@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2025 Infineon Technologies AG
+ * Copyright (c) 2022-2026 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -370,6 +370,11 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
         mp_raise_ValueError(MP_ERROR_TEXT("addrsize must be 7 or 10"));
     }
 
+    // Validate memory address size - only 0 is currently supported
+    if (args[ARG_mem_addrsize].u_int != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("mem_addrsize must be 0 (EEPROM-like addressing not implemented)"));
+    }
+
     // Initialize indices
     self->tx_index = 0;
     self->rx_index = 0;
@@ -378,13 +383,29 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
     machine_i2c_target_data_t *data = &machine_i2c_target_data[i2c_id];
     machine_i2c_target_data_init(data, args[ARG_mem].u_obj, args[ARG_mem_addrsize].u_int);
 
-    // Set SCL/SDA pins if configured
-    if (args[ARG_scl].u_obj != mp_const_none) {
-        self->scl_pin = mp_obj_get_int(args[ARG_scl].u_obj);
+    // Note: KIT_PSE84_AI only has one hardware I2C with fixed pins P17_0 (SCL) and P17_1 (SDA)
+    bool warn_pins = false;
+    if (args[ARG_scl].u_obj != mp_const_none || args[ARG_sda].u_obj != mp_const_none) {
+        // Allow scl='P17_0', sda='P17_1' without warning
+        bool is_valid_scl = (args[ARG_scl].u_obj == mp_const_none) ||
+            (mp_obj_is_str(args[ARG_scl].u_obj) &&
+                strcmp(mp_obj_str_get_str(args[ARG_scl].u_obj), "P17_0") == 0);
+        bool is_valid_sda = (args[ARG_sda].u_obj == mp_const_none) ||
+            (mp_obj_is_str(args[ARG_sda].u_obj) &&
+                strcmp(mp_obj_str_get_str(args[ARG_sda].u_obj), "P17_1") == 0);
+
+        if (!is_valid_scl || !is_valid_sda) {
+            warn_pins = true;
+        }
     }
-    if (args[ARG_sda].u_obj != mp_const_none) {
-        self->sda_pin = mp_obj_get_int(args[ARG_sda].u_obj);
+
+    if (warn_pins) {
+        mp_printf(&mp_plat_print, "I2CTarget: KIT_PSE84_AI only supports fixed pins P17_0 (SCL) and P17_1 (SDA). Custom pins ignored.\n");
     }
+
+    // Always use hardware default pins
+    self->scl_pin = MICROPY_HW_I2C0_SCL;
+    self->sda_pin = MICROPY_HW_I2C0_SDA;
 
     // Initialize the I2C target
     i2c_target_init(self, data, args[ARG_addr].u_int, args[ARG_addrsize].u_int, first_init);
