@@ -173,7 +173,7 @@ static mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t 
     mp_prof_is_executing = false;
 
     if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
     }
     return top;
 }

@@ -675,7 +675,7 @@ static mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
 
         // shouldn't do anything while scheduler is locked
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
 
         // unlock scheduler
         mp_sched_unlock();
@@ -691,7 +691,7 @@ static mp_obj_t extra_coverage(void) {
         mp_sched_keyboard_interrupt();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            mp_handle_pending(true);
+            mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
             nlr_pop();
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
@@ -700,30 +700,30 @@ static mp_obj_t extra_coverage(void) {
         // setting the keyboard interrupt (twice) and cancelling it during mp_handle_pending
         mp_sched_keyboard_interrupt();
         mp_sched_keyboard_interrupt();
-        mp_handle_pending(false);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS);
 
         // setting keyboard interrupt and a pending event (intr should be handled first)
         mp_sched_schedule(MP_OBJ_FROM_PTR(&mp_builtin_print_obj), MP_OBJ_NEW_SMALL_INT(10));
         mp_sched_keyboard_interrupt();
         if (nlr_push(&nlr) == 0) {
-            mp_handle_pending(true);
+            mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
             nlr_pop();
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
-        mp_handle_pending(true);
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
 
         coverage_sched_function_continue = true;
         mp_sched_schedule_node(&mp_coverage_sched_node, coverage_sched_function);
         for (int i = 0; i < 3; ++i) {
             mp_printf(&mp_plat_print, "loop\n");
-            mp_handle_pending(true);
+            mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         }
         // Clear this flag to prevent the function scheduling itself again
         coverage_sched_function_continue = false;
         // Will only run the first time through this loop, then not scheduled again
         for (int i = 0; i < 3; ++i) {
-            mp_handle_pending(true);
+            mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         }
     }
 
