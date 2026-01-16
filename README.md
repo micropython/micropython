@@ -132,6 +132,7 @@ still fully supported:
 | [alif](ports/alif)               | Alif Semiconductor Ensemble MCUs (E3, E7)                   |                                                                         |
 | [embed](ports/embed)             | Generates a set of .c/.h files for embedding into a project |                                                                         |
 | [nrf](ports/nrf)                 | Nordic Semiconductor nRF51 and nRF52                        |                                                                         |
+| [psoc-edge](ports/edge)          | Infineon PSOC™ Edge                          | [here](https://docs.micropython.org/en/latest/psoc-edge/quickref.html)  |  
 | [renesas-ra](ports/renesas-ra)   | Renesas RA family                                           | [here](https://docs.micropython.org/en/latest/renesas-ra/quickref.html) |
 | [webassembly](ports/webassembly) | Emscripten port targeting browsers and NodeJS               |                                                                         |
 | [zephyr](ports/zephyr)           | Zephyr RTOS                                                 | [here](https://docs.micropython.org/en/latest/zephyr/quickref.html)     |
