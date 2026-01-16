@@ -74,12 +74,6 @@
 #define MICROPY_PY_JSFFI (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-    } while (0);
-
 // Whether the VM will periodically call mp_js_hook(), which checks for
 // interrupt characters on stdin (or equivalent input).
 #ifndef MICROPY_VARIANT_ENABLE_JS_HOOK
