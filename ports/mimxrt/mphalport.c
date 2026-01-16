@@ -34,7 +34,7 @@
 #include "extmod/misc.h"
 #include "ticks.h"
 #include "tusb.h"
-#include "fsl_snvs_lp.h"
+#include "modmachine.h"
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -96,10 +96,12 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 }
 
 uint64_t mp_hal_time_ns(void) {
-    snvs_lp_srtc_datetime_t t;
-    SNVS_LP_SRTC_GetDatetime(SNVS, &t);
-    uint64_t s = timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.minute, t.second);
-    return s * 1000000000ULL;
+    uint64_t ticks = machine_rtc_get_ticks();
+    // Need to compute:
+    //  nanoseconds = ticks * 1_000_000_000 / 32768
+    //              = ticks * 5**9 / 64
+    // but split it into upper and lower 32-bit values so the multiplication doesn't overflow.
+    return (((ticks >> 32U) * 1953125ULL) << 26U) + (((ticks & 0xffffffff) * 1953125ULL) >> 6U);
 }
 
 /*******************************************************************************/

@@ -26,14 +26,12 @@
  */
 
 #include "lib/oofatfs/ff.h"
-#include "fsl_snvs_lp.h"
-
+#include "shared/timeutils/timeutils.h"
+#include "modmachine.h"
 
 MP_WEAK DWORD get_fattime(void) {
-    snvs_lp_srtc_datetime_t srtcDate;
-
-    SNVS_LP_SRTC_GetDatetime(SNVS, &srtcDate);
-
-    return ((srtcDate.year - 1980) << 25) | (srtcDate.month << 21) | (srtcDate.day << 16) |
-           (srtcDate.hour << 11) | ((srtcDate.minute << 5) | (srtcDate.second / 2));
+    uint64_t seconds = machine_rtc_get_seconds();
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
+    return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21) | ((tm.tm_mday) << 16) | ((tm.tm_hour) << 11) | ((tm.tm_min) << 5) | (tm.tm_sec / 2);
 }

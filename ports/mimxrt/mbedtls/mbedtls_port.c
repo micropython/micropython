@@ -30,8 +30,8 @@
 
 #include "mbedtls_config_port.h"
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
-#include "fsl_snvs_lp.h"
 #include "shared/timeutils/timeutils.h"
+#include "modmachine.h"
 #include "mbedtls/platform_time.h"
 #endif
 
@@ -49,9 +49,7 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
 #if defined(MBEDTLS_HAVE_TIME)
 time_t mimxrt_rtctime_seconds(time_t *timer) {
     // Get date and date in CPython order.
-    snvs_lp_srtc_datetime_t date;
-    SNVS_LP_SRTC_GetDatetime(SNVS, &date);
-    return timeutils_seconds_since_epoch(date.year, date.month, date.day, date.hour, date.minute, date.second);
+    return machine_rtc_get_seconds();
 }
 
 mbedtls_ms_time_t mbedtls_ms_time(void) {
