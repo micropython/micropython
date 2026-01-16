@@ -1,7 +1,7 @@
 # I2C multi-device test
 # Tests I2C master and slave communication between two boards
 #
-# Hardware connections:
+# KIT_PSE84_AI board Hardware connections:
 #   Board 0 (Target)    Board 1 (Master)
 #   P17_0 (SCL)    <->  P17_0 (SCL)
 #   P17_1 (SDA)    <->  P17_1 (SDA)
