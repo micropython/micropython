@@ -27,17 +27,18 @@
 #define MICROPY_INCLUDED_PY_OBJTUPLE_H
 
 #include "py/obj.h"
+#include "py/misc.h"
 
 typedef struct _mp_obj_tuple_t {
     mp_obj_base_t base;
     size_t len;
-    mp_obj_t items[];
+    mp_obj_t items[] MP_ATTR_COUNTED_BY(len);
 } mp_obj_tuple_t;
 
 typedef struct _mp_rom_obj_tuple_t {
     mp_obj_base_t base;
     size_t len;
-    mp_rom_obj_t items[];
+    mp_rom_obj_t items[] MP_ATTR_COUNTED_BY(len);
 } mp_rom_obj_tuple_t;
 
 void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);

@@ -96,7 +96,7 @@ typedef struct _mpz_t {
     size_t fixed_dig : 1; // flag, 'dig' buffer cannot be reallocated
     size_t alloc : (8 * sizeof(size_t) - 2); // number of entries allocated in 'dig'
     size_t len; // number of entries used in 'dig'
-    mpz_dig_t *dig;
+    mpz_dig_t *dig MP_ATTR_COUNTED_BY(alloc);
 } mpz_t;
 
 // convenience macro to declare an mpz with a digit array from the stack, initialised by an integer
