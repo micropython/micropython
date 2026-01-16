@@ -1,4 +1,5 @@
 MTB_LIBS_DIR = ../../lib/mtb-psoc-edge-libs
+include mpconfigport.mk
 -include $(MTB_LIBS_DIR)/mtb-bsp-setup.mk
 
 # The only target allowed to run without BOARD defined is 'submodules' or 'help'
@@ -16,15 +17,15 @@ QSTR_DEFS = qstrdefsport.h #$(QSTR_GENERATED_HEADERS)
 QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h #$(QSTR_GENERATED_HEADERS)
 
 
-# TODO: Do we need this frozen manifest? In PSOC6 we are freezing mpip and asyncio?
-# MICROPY_FROZEN_MANIFEST      ?= $(BOARD_DIR)/manifest.py
-# FROZEN_MANIFEST              ?= $(MICROPY_FROZEN_MANIFEST)
-#
-# ifneq ($(FROZEN_MANIFEST),)
-#   CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-#   CFLAGS += -DMICROPY_MODULE_FROZEN_MPY=1
-#   CFLAGS += -DMICROPY_MODULE_FROZEN_STR=1
-# endif
+# Frozen manifest for VFS support
+MICROPY_FROZEN_MANIFEST = $(BOARD_DIR)/manifest.py
+FROZEN_MANIFEST         = $(MICROPY_FROZEN_MANIFEST)
+
+ifneq ($(FROZEN_MANIFEST),)
+  CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+  CFLAGS += -DMICROPY_MODULE_FROZEN_MPY=1
+  CFLAGS += -DMICROPY_MODULE_FROZEN_STR=1
+endif
 
 BUILD ?= build-$(BOARD)
 
@@ -124,6 +125,11 @@ MOD_SRC_C += \
 	\
 	modpsocedge.c
 
+ifeq ($(MICROPY_PY_EXT_FLASH),1)
+	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
+	MOD_SRC_C += psoc_edge_qspi_flash.c 
+endif
+
 SRC_C = help.c \
 		main.c \
 		mphalport.c 
@@ -142,7 +148,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
-MPY_CROSS_FLAGS += -march=armv8-m.main+dsp
+MPY_CROSS_FLAGS += -march=armv7emsp 
 
 MPY_APP_NAME = mpy_edge_app_ns
 

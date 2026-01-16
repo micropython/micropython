@@ -42,6 +42,7 @@
 
 // Use the minimal starting configuration (disables all optional features).
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
+// #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 
 // You can disable the built-in MicroPython compiler by setting the following
 // config option to 0.  If you do this then you won't get a REPL prompt, but you
@@ -99,6 +100,15 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 
 #define MICROPY_LOGGER_DEBUG                    (1)
+
+// VFS
+#define MICROPY_VFS                             (1)
+#define MICROPY_PY_VFS                          (1)
+#define MICROPY_READER_VFS                      (1)
+#define MICROPY_PY_IO                           (1)
+#define MICROPY_PY_IO_IOBASE                    (1)
+
+#define MICROPY_ENABLE_FINALISER                (1)
 
 // type definitions for the specific machine
 

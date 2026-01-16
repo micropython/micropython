@@ -31,4 +31,6 @@
 // micropython includes
 #include "py/obj.h"
 
+extern const mp_obj_type_t psoc_edge_qspi_flash_type;
+
 #endif // MICROPY_INCLUDED_PSOCEDGE_MODPSOCEDGE_H
