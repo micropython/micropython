@@ -1,21 +1,56 @@
 Programmable IO
 ===============
 
-The RP2040 has hardware support for standard communication protocols like I2C,
-SPI and UART. For protocols where there is no hardware support, or where there
-is a requirement of custom I/O behaviour, Programmable Input Output (PIO) comes
-into play.  Also, some MicroPython applications make use of a technique called
-bit banging in which pins are rapidly turned on and off to transmit data.  This
-can make the entire process slow as the processor concentrates on bit banging
-rather than executing other logic.  However, PIO allows bit banging to happen
-in the background while the CPU is executing the main work.
+The RP2xxx family of microcontrollers provides hardware support for standard
+communication protocols like I2C, SPI and UART. For protocols where there
+is no hardware support, or where there is a requirement of custom I/O
+behaviour, Programmable Input Output (PIO) comes into play. Also, some
+MicroPython applications make use of a technique called bit banging in which
+pins are rapidly turned on and off to transmit data. This can make the entire
+process slow as the processor concentrates on bit banging rather than executing
+other logic. However, PIO allows bit banging to happen in the background while
+the CPU is executing the main work.
 
-Along with the two central Cortex-M0+ processing cores, the RP2040 has two PIO
-blocks each of which has four independent state machines.  These state machines
-can transfer data to/from other entities using First-In-First-Out (FIFO) buffers,
-which allow the state machine and main processor to work independently yet also
-synchronise their data.  Each FIFO has four words (each of 32 bits) which can be
-linked to the DMA to transfer larger amounts of data.
+PIO State Machines
+------------------
+
+State machines transfer data to/from other entities using First-In-First-Out (FIFO)
+buffers, which allow the state machine and main processor to work independently
+yet also synchronise their data. The FIFOs can be linked to the DMA to transfer
+larger amounts of data.
+
+**RP2040**
+^^^^^^^^^^
+
+The RP2040 has two PIO blocks, each with four independent state machines (total of 8).
+
+Each FIFO has four words (each of 32 bits) per state machine (TX and RX).
+
+**RP2350**
+^^^^^^^^^^
+
+The RP2350 has three PIO blocks, each with four independent state machines (total of 12).
+
+Each block has 32 instructions of memory shared among its four state machines.
+
+FIFO depth is four 32-bit words per state machine (TX and RX), but RP2350 adds FJOIN modes:
+
+- Combine TX or RX into a single 8-word FIFO for higher bandwidth.
+- Random read/write access to RX FIFO registers (useful for status/control registers).
+
+RP2350 PIO is backward-compatible with RP2040, but adds enhancements including:
+
+- New instruction capabilities (e.g., ``MOV PINDIRS`` for bulk pin direction control from registers,
+  ``PINCTRL_JMP_PIN`` for per-SM pin-based jumps).
+- Extended IRQ handling (cross-block without delay penalty).
+- GPIOBASE register for relocating the 32-GPIO window (supports higher-numbered GPIOs
+  up to 47 on larger packages).
+- Security domain assignment (secure/non-secure via ACCESSCTRL, with restrictions on
+  GPIO access and cross-PIO operations).
+- Improved DMA integration (reduced latency), input synchronizer bypass, and coupling
+  with HSTX for high-speed output.
+- Independent fractional clock dividers per state machine, with support for higher system
+  clocks (up to 150 MHz).
 
 All PIO instructions follow a common pattern::
 
@@ -124,3 +159,18 @@ the following:
 
 The entire routine takes exactly 2000 cycles of the state machine.  Setting the
 frequency of the state machine to 2000Hz makes the LED blink at 1Hz.
+
+This example works identically on both RP2040 and RP2350 (using StateMachine ID 0). On
+RP2350, higher ``freq`` values are possible due to the faster system clock.
+
+Compatibility Notes
+-------------------
+
+PIO programs using the basic instructions shown here are fully compatible between RP2040
+and RP2350. The MicroPython ``rp2`` module API (including ``@rp2.asm_pio``,
+``StateMachine``, etc.) is the same, though RP2350 supports StateMachine IDs 0–11.
+
+RP2350 offers additional advanced features (new instructions, FIFO modes, security, GPIO
+relocation) not covered in this introduction; see the RP2350 datasheet for details. Some
+programs may require minor adjustments due to differences in default GPIO reset states
+between the two chips.
