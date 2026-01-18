@@ -997,6 +997,36 @@ function ci_unix_repr_b_run_tests {
     ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
 }
 
+function ci_unix_wasi_setup {
+    wget https://github.com/WebAssembly/binaryen/releases/download/version_123/binaryen-version_123-x86_64-linux.tar.gz
+    zcat binaryen-version_123-x86_64-linux.tar.gz | tar x
+    wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz
+    zcat wasi-sdk-25.0-x86_64-linux.tar.gz | tar x
+    wget https://github.com/yamt/toywasm/releases/download/v68.0.0/toywasm-v68.0.0-full-ubuntu-22.04-amd64.tgz
+    mkdir toywasm
+    zcat toywasm-v68.0.0-full-ubuntu-22.04-amd64.tgz | tar -C toywasm -x
+}
+
+function ci_unix_wasi_build {
+    make ${MAKEOPTS} -C ports/unix VARIANT=wasi \
+        WASI_SDK=$(pwd -P)/wasi-sdk-25.0-x86_64-linux \
+        WASM_OPT=$(pwd -P)/binaryen-version_123/bin/wasm-opt \
+        submodules
+    make ${MAKEOPTS} -C ports/unix VARIANT=wasi \
+        WASI_SDK=$(pwd -P)/wasi-sdk-25.0-x86_64-linux \
+        WASM_OPT=$(pwd -P)/binaryen-version_123/bin/wasm-opt
+}
+
+function ci_unix_wasi_run_tests {
+    # Note: for simplicity, use absolute path where possible
+    # because wasi doesn't have the concept of "current directory" natively.
+    (cd tests && \
+    MICROPY_MICROPYTHON=$(pwd -P)/../tools/run-with-toywasm.sh \
+    TOYWASM=$(pwd -P)/../toywasm/bin/toywasm \
+    MICROPY_MICROPYTHON_WASM=$(pwd -P)/../ports/unix/build-wasi/micropython.spilled.exnref \
+    ./run-tests.py -d $(pwd -P)/basics)
+}
+
 ########################################################################################
 # ports/windows
 
