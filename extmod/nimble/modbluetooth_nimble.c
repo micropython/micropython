@@ -53,7 +53,11 @@
 #include "nimble/host/src/ble_hs_hci_priv.h"
 #endif
 
-#define DEBUG_printf(...) // printf("nimble: " __VA_ARGS__)
+#if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING
+#define DEBUG_printf(...) printf("nimble: " __VA_ARGS__)
+#else
+#define DEBUG_printf(...)
+#endif
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
@@ -450,11 +454,13 @@ static int central_gap_event_cb(struct ble_gap_event *event, void *arg) {
             DEBUG_printf("central_gap_event_cb: connect: status=%d\n", event->connect.status);
             if (event->connect.status == 0) {
                 // Connection established.
+                DEBUG_printf("gap_event_cb: Connection established: %d\n", event->connect.conn_handle);
                 ble_gap_conn_find(event->connect.conn_handle, &desc);
                 reverse_addr_byte_order(addr, desc.peer_id_addr.val);
                 mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_CENTRAL_CONNECT, event->connect.conn_handle, desc.peer_id_addr.type, addr);
             } else {
                 // Connection failed.
+                DEBUG_printf("gap_event_cb: Connection failed: %d %d\n", event->connect.conn_handle, event->connect.status);
                 mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT, event->connect.conn_handle, 0xff, addr);
             }
             return 0;
@@ -839,15 +845,16 @@ int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, cons
 
     ret = ble_gap_adv_start(nimble_address_mode, NULL, BLE_HS_FOREVER, &adv_params, central_gap_event_cb, NULL);
     if (ret == 0) {
+        DEBUG_printf("ble_gap_adv_started with BLE_OWN_ADDR_PUBLIC\n");
         return 0;
     }
     DEBUG_printf("ble_gap_adv_start: %d\n", ret);
-
     return ble_hs_err_to_errno(ret);
 }
 
 void mp_bluetooth_gap_advertise_stop(void) {
     if (ble_gap_adv_active()) {
+        DEBUG_printf("mp_bluetooth_gap_advertise_stop\n");
         ble_gap_adv_stop();
     }
 }
@@ -906,6 +913,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
 }
 
 int mp_bluetooth_gatts_register_service_begin(bool append) {
+    DEBUG_printf("mp_bluetooth_gatts_register_service_begin\n");
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
@@ -940,6 +948,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 }
 
 int mp_bluetooth_gatts_register_service_end(void) {
+    DEBUG_printf("mp_bluetooth_gatts_register_service_end\n");
     int ret = ble_gatts_start();
     if (ret != 0) {
         return ble_hs_err_to_errno(ret);
@@ -952,6 +961,8 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
     if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services == MP_BLUETOOTH_NIMBLE_MAX_SERVICES) {
         return MP_E2BIG;
     }
+    DEBUG_printf("mp_bluetooth_gatts_register_service\n");
+
     size_t handle_index = 0;
     size_t descriptor_index = 0;
 
@@ -1022,8 +1033,10 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
     if (!mp_bluetooth_is_active()) {
+        DEBUG_printf("mp_bluetooth_gap_disconnect: already not active\n");
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
+    DEBUG_printf("mp_bluetooth_gap_disconnect\n");
     return ble_hs_err_to_errno(ble_gap_terminate(conn_handle, BLE_ERR_REM_USER_CONN_TERM));
 }
 
@@ -1031,6 +1044,7 @@ int mp_bluetooth_gatts_read(uint16_t value_handle, const uint8_t **value, size_t
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
+    DEBUG_printf("mp_bluetooth_gatts_read\n");
     return mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, value, value_len);
 }
 
@@ -1042,6 +1056,7 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     if (err == 0 && send_update) {
         ble_gatts_chr_updated(value_handle);
     }
+    DEBUG_printf("mp_bluetooth_gatts_write\n");
     return err;
 }
 
@@ -1212,11 +1227,13 @@ static int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
             DEBUG_printf("peripheral_gap_event_cb: status=%d\n", event->connect.status);
             if (event->connect.status == 0) {
                 // Connection established.
+                DEBUG_printf("periph_gap_event_cb: Connection established: %d\n", event->connect.conn_handle);
                 ble_gap_conn_find(event->connect.conn_handle, &desc);
                 reverse_addr_byte_order(addr, desc.peer_id_addr.val);
                 mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT, event->connect.conn_handle, desc.peer_id_addr.type, addr);
             } else {
                 // Connection failed.
+                DEBUG_printf("periph_gap_event_cb: Connection failed: %d %d\n", event->connect.conn_handle, event->connect.status);
                 mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT, event->connect.conn_handle, 0xff, addr);
             }
             return 0;
