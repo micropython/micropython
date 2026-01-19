@@ -184,7 +184,7 @@ Use the ``I2C`` class for controller (master) operations::
     i2c = I2C(freq=400000)
     
     # Pin parameters are optional but ignored on KIT_PSE84_AI
-    i2c = I2C(scl='P17_0', sda='P17_1', freq=100000)  # You can only uses P17_0/P17_1
+    i2c = I2C(scl='P17_0', sda='P17_1', freq=100000)  # You can only use P17_0/P17_1
 
 Constructor arguments:
 
