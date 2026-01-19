@@ -14,6 +14,10 @@ RP2040's DMA controller has 12 independent DMA channels that can run concurrentl
 details of the RP2040's DMA system see section 2.5 of the `RP2040 Datasheet
 <https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>`_.
 
+The companion class :class:`DMATimer` provides access to the DMA controller's pacing timers.
+These timers can be used to control the speed of transfers into memory or preipherals that do
+not have their one transfer request signalling.
+
 Examples
 --------
 
@@ -291,3 +295,55 @@ below is a Pythonic version of the example in sub-section 2.5.6.2.
 
 This example idles while waiting for the transfer to complete; alternatively it could
 set an interrupt handler and return immediately.
+
+class DMATimer -- pacing timers for DMA transfers
+=================================================
+
+The RP2040 and RP2350 DMA controllers provide four "pacing" timers that can be used to
+control the rate at which DMA transfers take place. In the absence specifying a transfer
+request signal using the ``treq_sel`` parameter in the control configuration the DMA controller
+will try to transfer data as fast as the bus will allow, which can be as fast as the system
+clock speed. Often I/O operations should happen
+at some lower rate, and it is also sometimes valuable to moderate the rate of transfers from
+memory to memory in order to avoid overloading the bus (particularly when using external
+PSRAM, which is much slower than the on-chip SRAM). By using a :class:`DMATimer` the user
+can select a rate that is a rational fraction of the system clock speed. Each timer can
+independently trigger transfer requests at rate that is ``X/Y`` times the system clock,
+where ``X < Y``.
+
+
+Constructor
+-----------
+
+.. class:: DMATimer(timer_id=None)
+
+    Claim one of the DMA pacing timers for exclusive use.
+
+    - *timer_id*: Which timer to use. Leave empty to select any unclaimed timer.
+
+Methods
+-------
+
+.. method:: DMATimer.close()
+
+    Release the exclusive claim on the underlying timer.
+
+Attributes
+----------
+
+.. attribute:: DMATimer.ratio
+
+    Set or read the ``(X, Y)`` tuple for the system clock division ratio. When setting the ratio
+    both X and Y need to in the range 0 < X, Y < 65536.
+
+.. attribute:: DMATimer.freq
+
+    Set or read the DMATimer frequency in Hz. When setting, the frequency will be set to the closest
+    frequency that can be achieved by the divider. Reading the frequency back will show the actual
+    selected frequency, to the nearest 1Hz. The requested value needs be less than or equal to the
+    system clock speed and greater than or equal to 1/65535 of the system clock.
+
+.. attribute:: DMATimer.treq_sel
+
+    Read the value that needs to be passed to `DMA.pack_ctrl` in order to use this timer
+    as the pacing timer for a DMA channel.
