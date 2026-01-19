@@ -42,6 +42,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
+INC += -I$(MTB_LIBS_DIR)/shared/include
 
 INC += -I$(MTB_LIBS_DIR)/shared/include
 
@@ -127,7 +128,8 @@ MOD_SRC_C += \
 	machine_i2c.c\
 	machine_rtc.c \
 	modpsocedge.c \
-	modipc.c
+	modipc.c \
+	modpsocedge.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
@@ -136,7 +138,8 @@ endif
 
 SRC_C = help.c \
 		main.c \
-		mphalport.c 
+		mphalport.c \
+		$(MTB_LIBS_DIR)/shared/source/COMPONENT_CM33/cm33_ipc_communication.c 
 
 SRC_ASM += 
 
