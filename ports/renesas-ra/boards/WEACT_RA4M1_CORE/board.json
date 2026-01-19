@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "WEACT_RA4M1_CORE.jpg"
+    ],
+    "mcu": "ra4m1",
+    "product": "WEACT_RA4M1_CORE",
+    "thumbnail": "",
+    "url": "https://github.com/WeActStudio/WeActStudio.RA4M1_64Pin_CoreBoard",
+    "vendor": "WeAct Studio"
+}
