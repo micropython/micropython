@@ -115,7 +115,14 @@ INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/porting/nimble/include
 
+# Compiler-specific warning flags for NimBLE
+ifeq ($(shell uname -s),Darwin)
+# macOS uses clang which has different warning flags
+$(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare -Wno-float-conversion
+else
+# GCC-specific flags
 $(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare -Wno-old-style-declaration
+endif
 
 endif
 
