@@ -104,6 +104,11 @@ int main(void) {
     /* Enable global interrupts */
     __enable_irq();
 
+    /* Boot CM55 core for dual-core operation */
+    #define CM55_APP_BOOT_ADDR          (CYMEM_CM33_0_m55_nvm_START + CYBSP_MCUBOOT_HEADER_SIZE)
+    #define CM55_BOOT_WAIT_TIME_USEC    (100000UL)
+    Cy_SysEnableCM55(MXCM55, CM55_APP_BOOT_ADDR, CM55_BOOT_WAIT_TIME_USEC);
+
     /* Initialize retarget-io middleware */
     init_retarget_io();
 

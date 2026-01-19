@@ -42,6 +42,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
+INC += -I$(MTB_LIBS_DIR)/shared/include
 
 # TODO: Review this flags. Are they all needed?
 CFLAGS_CORTEX_M33 = -mthumb -mcpu=cortex-m33 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion -Wno-error=float-conversion
@@ -133,7 +134,8 @@ endif
 
 SRC_C = help.c \
 		main.c \
-		mphalport.c 
+		mphalport.c \
+		$(MTB_LIBS_DIR)/shared/source/COMPONENT_CM33/cm33_ipc_communication.c 
 
 SRC_ASM += 
 
@@ -237,6 +239,23 @@ port_help:
 help: port_help mtb_bsp_help mtb_build_help
 .DEFAULT_GOAL := all
 
-.PHONY: all clean rebuild deploy qdeploy deploy_multi qdeploy_multi help
+.PHONY: all clean rebuild deploy qdeploy deploy_multi qdeploy_multi help deploy_dual
 
 include $(TOP)/py/mkrules.mk
+
+# Dual-core deployment target - flashes both CM33 (MicroPython) and CM55 (C app)
+deploy_dual: all
+	@echo ""
+	@echo "===================================================="
+	@echo "Flashing CM33 (MicroPython) + CM55 (C application)"
+	@echo "===================================================="
+	@echo ""
+	@echo "Flashing CM33 (MicroPython)..."
+	$(MAKE) -C $(MTB_LIBS_DIR)/proj_cm33_ns program BOARD=$(BOARD) CONFIG=$(CONFIG)
+	@echo ""
+	@echo "Flashing CM55 (C application)..."
+	$(MAKE) -C $(MTB_LIBS_DIR)/proj_cm55 program BOARD=$(BOARD) CONFIG=$(CONFIG)
+	@echo ""
+	@echo "===================================================="
+	@echo "Both CM33 (MicroPython) and CM55 (C app) flashed!"
+	@echo "===================================================="
