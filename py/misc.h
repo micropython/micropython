@@ -95,24 +95,30 @@ typedef unsigned int uint;
 
 /** memory allocation ******************************************/
 
+
+// Ensure that m_new does not overflow the multiplication when computing sizeof(type) * num.
+#define CAPPED_SIZE_NUM_OBJ(type, num) ((sizeof(type) * (num)) / sizeof(type) != (size_t)(num) ? SIZE_MAX : sizeof(type) * (num))
+// Ensure that the multiplication and the addition do not overflow.
+#define CAPPED_SIZE_OBJ_NUM_VAR(obj_type, var_type, var_num) ((sizeof(var_type) * (var_num)) / sizeof(var_type) != (size_t)(var_num) || sizeof(obj_type) + sizeof(var_type) * (var_num) < sizeof(var_type) * (var_num) ? SIZE_MAX : sizeof(obj_type) + sizeof(var_type) * (var_num))
+
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
-#define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
-#define m_new_maybe(type, num) ((type *)(m_malloc_maybe(sizeof(type) * (num))))
-#define m_new0(type, num) ((type *)(m_malloc0(sizeof(type) * (num))))
+#define m_new(type, num) ((type *)(m_malloc(CAPPED_SIZE_NUM_OBJ(type, num))))
+#define m_new_maybe(type, num) ((type *)(m_malloc_maybe(CAPPED_SIZE_NUM_OBJ(type, num))))
+#define m_new0(type, num) ((type *)(m_malloc0(CAPPED_SIZE_NUM_OBJ(type, num))))
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_maybe(type) (m_new_maybe(type, 1))
-#define m_new_obj_var(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
-#define m_new_obj_var0(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc0(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
-#define m_new_obj_var_maybe(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc_maybe(offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
+#define m_new_obj_var(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc(CAPPED_SIZE_OBJ_NUM_VAR(offsetof(obj_type, var_field), var_type, var_num)))
+#define m_new_obj_var0(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc0(CAPPED_SIZE_OBJ_NUM_VAR(offsetof(obj_type, var_field), var_type, var_num)))
+#define m_new_obj_var_maybe(obj_type, var_field, var_type, var_num) ((obj_type *)m_malloc_maybe(CAPPED_SIZE_OBJ_NUM_VAR(offsetof(obj_type, var_field), var_type, var_num)))
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
-#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num), (allow_move))))
-#define m_del(type, ptr, num) m_free(ptr, sizeof(type) * (num))
-#define m_del_var(obj_type, var_field, var_type, var_num, ptr) (m_free(ptr, offsetof(obj_type, var_field) + sizeof(var_type) * (var_num)))
+#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), CAPPED_SIZE_NUM_OBJ(type, old_num), CAPPED_SIZE_NUM_OBJ(type, new_num))))
+#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), CAPPED_SIZE_NUM_OBJ(type, old_num), CAPPED_SIZE_NUM_OBJ(type, new_num), (allow_move))))
+#define m_del(type, ptr, num) m_free(ptr,  CAPPED_SIZE_NUM_OBJ(type, num))
+#define m_del_var(obj_type, var_field, var_type, var_num, ptr) (m_free(ptr, CAPPED_SIZE_OBJ_NUM_VAR(offsetof(obj_type, var_field), var_type, var_num)))
 #else
-#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), sizeof(type) * (new_num))))
-#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), sizeof(type) * (new_num), (allow_move))))
+#define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), CAPPED_SIZE_NUM_OBJ(type, new_num))))
+#define m_renew_maybe(type, ptr, old_num, new_num, allow_move) ((type *)(m_realloc_maybe((ptr), CAPPED_SIZE_NUM_OBJ(type, new_num), (allow_move))))
 #define m_del(type, ptr, num) ((void)(num), m_free(ptr))
 #define m_del_var(obj_type, var_field, var_type, var_num, ptr) ((void)(var_num), m_free(ptr))
 #endif
