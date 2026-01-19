@@ -150,6 +150,13 @@ uint32_t ble_drv_stack_enable(void) {
         .rc_temp_ctiv = 2,
         .accuracy = NRF_CLOCK_LF_ACCURACY_250_PPM
     };
+  #elif BLUETOOTH_LFCLK_SYNTH
+    nrf_clock_lf_cfg_t clock_config = {
+        .source = NRF_CLOCK_LF_SRC_SYNTH,
+        .rc_ctiv = 0,
+        .rc_temp_ctiv = 0,
+        .accuracy = NRF_CLOCK_LF_ACCURACY_50_PPM
+    };
   #else
     nrf_clock_lf_cfg_t clock_config = {
         .source = NRF_CLOCK_LF_SRC_XTAL,
