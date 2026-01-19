@@ -129,6 +129,7 @@ void machine_pin_deinit(void) {
             continue;
         }
         gpio_set_irq_enabled(i, GPIO_IRQ_ALL, false);
+        gpio_set_dormant_irq_enabled(i, GPIO_IRQ_ALL, false);
     }
     irq_remove_handler(IO_IRQ_BANK0, gpio_irq);
 }
@@ -440,6 +441,7 @@ void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trig
 
     // Disable all IRQs while data is updated.
     gpio_set_irq_enabled(pin, GPIO_IRQ_ALL, false);
+    gpio_set_dormant_irq_enabled(pin, GPIO_IRQ_ALL, false);
 
     // Update IRQ data.
     irq->base.handler = handler;
@@ -447,9 +449,11 @@ void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trig
     irq->flags = 0;
     irq->trigger = trigger;
 
-    // Enable IRQ if a handler is given.
-    if (handler != mp_const_none && trigger != MP_HAL_PIN_TRIGGER_NONE) {
+    if (trigger != MP_HAL_PIN_TRIGGER_NONE) {
+        // Enable IRQ even if no handler is set, so pin can wake CPU from WFI/WFE
         gpio_set_irq_enabled(pin, trigger, true);
+        // Also have the IRQ wake us from indefinite lightsleep
+        gpio_set_dormant_irq_enabled(pin, trigger, true);
     }
 }
 
