@@ -92,8 +92,9 @@ static mp_obj_t machine_uart_list(void) {
         }
 
         if (type == REG_SZ) {
-            // portNameSize includes null terminator
-            mp_obj_list_append(list, mp_obj_new_str(portName, portNameSize - 1));
+            // Ensure null-termination (MS docs warn registry strings may not be terminated)
+            portName[portNameSize < sizeof(portName) ? portNameSize : sizeof(portName) - 1] = '\0';
+            mp_obj_list_append(list, mp_obj_new_str(portName, strlen(portName)));
         }
     }
 
