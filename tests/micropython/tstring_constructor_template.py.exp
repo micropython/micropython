@@ -1,3 +1,9 @@
-=== __template__ special cases ===
-__template__ error: invalid interpolation format
-__template__: Template
+Template(strings=(), interpolations=())
+Template(strings=(), interpolations=())
+Template(strings=(), interpolations=())
+Template(strings=(), interpolations=())
+Template(strings=(), interpolations=(Interpolation(None, None, None, None),))
+Template(strings=(), interpolations=(Interpolation(None, None, None, None),))
+Template(strings=('Hello ', '!'), interpolations=(Interpolation(42, 'x', None, ''),))
+TypeError('function missing 1 required positional arguments',)
+TypeError("object 'NoneType' isn't a tuple or list",)
