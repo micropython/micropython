@@ -387,7 +387,7 @@ The example below uses RMTRX to receive a signal coming from an EV1527 keyfob::
                      num_symbols=64, \
                      min_ns=3100, \
                      max_ns=5000*1000, \
-                     resolution_hz=1000000, \
+                     resolution_hz=1000*1000, \
                      soft_min_ns=150*1000, \
                      soft_max_ns=1500*1000, \
                      soft_min_len=49, \
@@ -418,10 +418,6 @@ This type of keyfob transmits a pulse train, delimited by long preambles
 
 For more details see Espressif's `ESP-IDF RMT documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
-
-.. Warning::
-   The current MicroPython RMT implementation lacks some features.
-   RMT should be considered a *beta feature* and the interface may change in the future.
 
 
 .. class:: RMT(channel, *, pin=None, resolution_hz=10000000, clock_div=None, idle_level=False, num_symbols=48|64, tx_carrier=None)
@@ -569,13 +565,13 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     CPU load and the potential of glitches/imprecise pulse lengths.
 
     *min_ns* is required and specifies the minimum pulse width considered valid.
-    Pulses shorter than *min_ns* don't close the RMT transaction, they are simply
+    Pulses shorter than *min_ns* nanoseconds are filtered out and ignored.
     filtered out.
     The hardware register that holds *min_ns* is 8-bit, so the maximum valid value is 3187 (255 * 12.5ns).
     If supplied value is too big for the hardware, it will fail when calling ``active(True)``.
 
     *max_ns* is required and specifies the maximum pulse width considered valid.
-    A pulse longer than *max_ns* closes an RMT transaction.
+    A pulse longer than *max_ns* signals the end of a received RMT transaction.
     The maximum value is such that (*resolution_hz* * *max_ns*) / 1,000,000,000
     does not exceed 65535 for ESP32/ESP32-S2, or 32767 for ESP32-S3/C3/C6/H2.
     If supplied value is too big for the hardware, it will fail when calling ``active(True)``.
@@ -591,7 +587,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 
     *soft_min_ns* is the minimum pulse width considered valid, in nanoseconds.
     Since *min_ns* ceiling is quite low, *soft_min_ns* allows for a more accurate
-    prefiltering of valid pulse widths. Different from *min_ns*, if a pulse shorter
+    prefiltering of valid pulse widths.  If a pulse longer than *min_ns* and shorter
     than *soft_min_ns* is detected, the RMT transaction is cancelled and restarted.
 
     *soft_max_ns* is the maximum pulse width considered valid, in nanoseconds.
@@ -600,10 +596,12 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     spurious pulses that are too long to be valid, but too short to signal
     closure.
 
-    *soft_min_len* is the minimum pulse train length considered valid.
+    *soft_min_len* is the minimum pulse train length considered valid. A pulse train shorter than this is
+    silently ignored and the RMT transaction restarts.
 
-    *soft_max_len* is the maximum pulse train length considered valid. If specified,
-    This value should be smaller than twice the parameter *num_symbols* i.e. the
+    *soft_max_len* is the maximum pulse train length considered valid. A pulse train longer
+    than this is silently ignored and the RMT transaction restarts. If specified,
+    this value should be smaller than twice the parameter *num_symbols* i.e. the
     transaction must fit in the RMT hardware buffer allocated for this task.
 
 .. method:: RMTRX.active([bool])
