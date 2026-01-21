@@ -6,3 +6,5 @@
 # UART("XA") is on X1/X2  (usually UART(4) on PA0/PA1).
 uart_loopback_args = ("XA",)
 uart_loopback_kwargs = {}
+
+spi_standalone_args_list = [(1,), (2,)]
