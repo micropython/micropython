@@ -1,20 +1,24 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
+# This tests the built-in __template__ (which is MicroPython specific).
 
-try:
-    exec('t"test"')
-except SyntaxError:
-    print("SKIP")
-    raise SystemExit
+# Test a varying number of arguments.
+print(__template__(()))
+print(__template__((), ()))
+print(__template__((), None, None))
+print(__template__((), None, None, None))
+print(__template__((), None, None, None, None))
+print(__template__((), None, None, None, None, None))
 
-print("=== __template__ special cases ===")
-try:
-    __template__(("test",), ((42,),))
-except ValueError as e:
-    print(f"__template__ error: {e}")
+# Test two strings and one interpolation.
+print(__template__(("Hello ", "!"), (42, "x", None, "")))
 
-result = __template__(("Hello ", "!"), ((42, "x", None, ""),))
-print(f"__template__: {type(result).__name__}")
+# Test not enough arguments.
+try:
+    print(__template__())
+except TypeError as er:
+    print(repr(er))
+
+# Test two arguments with second not being a tuple/list.
+try:
+    print(__template__((), None))
+except TypeError as er:
+    print(repr(er))
