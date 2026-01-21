@@ -83,7 +83,7 @@ soft_reset:
     mp_init();
 
     readline_init0();
-   
+
     #if MICROPY_VFS
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
@@ -93,13 +93,13 @@ soft_reset:
     #endif
     #endif
 
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-            int ret = pyexec_file_if_exists("/main.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        int ret = pyexec_file_if_exists("/main.py");
 
-            if (ret & PYEXEC_FORCED_EXIT) {
-                goto soft_reset;
-            }
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset;
         }
+    }
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -136,13 +136,3 @@ void nlr_jump_fail(void *val) {
     for (;;) {
     }
 }
-
-// #if !MICROPY_VFS
-// mp_import_stat_t mp_import_stat(const char *path) {
-//     return MP_IMPORT_STAT_NO_EXIST;
-// }
-
-// mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
-//     mp_raise_OSError(MP_ENOENT);
-// }
-// #endif
