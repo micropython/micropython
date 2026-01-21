@@ -183,9 +183,6 @@ platform_tests_to_skip = {
         "micropython/extreme_exc.py",
         "micropython/heapalloc_exc_compressed_emg_exc.py",
     ),
-    "win32": (
-        "ports/unix/tstring_large_coverage.py",  # exhausts pystack on Windows before overflow checks
-    ),
     "WiPy": (
         "misc/print_exception.py",  # requires error reporting full
     ),
@@ -877,7 +874,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
         is_fstring = test_name.startswith("string_fstring")
-        is_tstring = test_name.startswith("tstring") or "tstring" in test_name
+        is_tstring = test_name.startswith("string_tstring") or "tstring" in test_name
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = test_file in skip_tests
@@ -1270,15 +1267,13 @@ the last matching regex is used:
 
     if not args.keep_path:
         # Clear search path to make sure tests use only builtin modules, those in
-        # extmod, and a path to unittest and string in case they're needed.
+        # extmod, and a path to unittest in case it's needed.
         os.environ["MICROPYPATH"] = (
             ".frozen"
             + os.pathsep
             + base_path("../extmod")
             + os.pathsep
             + base_path("../lib/micropython-lib/python-stdlib/unittest")
-            + os.pathsep
-            + base_path("../lib/micropython-lib/python-stdlib/string")
         )
 
     try:
