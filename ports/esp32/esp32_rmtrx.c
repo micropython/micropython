@@ -99,7 +99,6 @@ out:
     return false;
 }
 
-
 static mp_obj_t esp32_rmtrx_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,           MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -205,7 +204,6 @@ static void esp32_rmtrx_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         self->soft_min_len, self->soft_max_len, self->soft_min_ns, self->soft_max_ns);
 }
 
-
 static mp_obj_t esp32_rmtrx_deinit(mp_obj_t self_in) {
     esp32_rmtrx_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -226,7 +224,6 @@ static mp_obj_t esp32_rmtrx_deinit(mp_obj_t self_in) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmtrx_deinit_obj, esp32_rmtrx_deinit);
-
 
 static mp_obj_t esp32_rmtrx_active(size_t n_args, const mp_obj_t *args) {
     esp32_rmtrx_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -254,9 +251,7 @@ static mp_obj_t esp32_rmtrx_active(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_false;
 }
-
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_rmtrx_active_obj, 1, 2, esp32_rmtrx_active);
-
 
 static mp_obj_t esp32_rmtrx_get_data(mp_obj_t self_in) {
     esp32_rmtrx_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -280,21 +275,7 @@ static mp_obj_t esp32_rmtrx_get_data(mp_obj_t self_in) {
 
     return list;
 }
-
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmtrx_get_data_obj, esp32_rmtrx_get_data);
-
-
-static const mp_rom_map_elem_t esp32_rmtrx_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmtrx_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmtrx_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp32_rmtrx_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_data), MP_ROM_PTR(&esp32_rmtrx_get_data_obj) },
-
-    // Constants
-    { MP_ROM_QSTR(MP_QSTR_PULSE_MAX), MP_ROM_INT(32767) },
-};
-static MP_DEFINE_CONST_DICT(esp32_rmtrx_locals_dict, esp32_rmtrx_locals_dict_table);
-
 
 static mp_uint_t esp32_rmtrx_stream_ioctl(
     mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
@@ -309,6 +290,18 @@ static mp_uint_t esp32_rmtrx_stream_ioctl(
     }
     return ret;
 }
+
+
+static const mp_rom_map_elem_t esp32_rmtrx_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmtrx_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmtrx_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp32_rmtrx_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_data), MP_ROM_PTR(&esp32_rmtrx_get_data_obj) },
+
+    // Constants
+    { MP_ROM_QSTR(MP_QSTR_PULSE_MAX), MP_ROM_INT(32767) },
+};
+static MP_DEFINE_CONST_DICT(esp32_rmtrx_locals_dict, esp32_rmtrx_locals_dict_table);
 
 static const mp_stream_p_t esp32_rmtrx_stream_p = {
     .ioctl = esp32_rmtrx_stream_ioctl,
