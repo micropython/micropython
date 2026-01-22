@@ -146,6 +146,3 @@ The following parameters have port-specific behavior:
         - ``wake``: The wake parameter is currently not supported.
         - ``hard``: This parameter is ignored. It can be passed but currently has no effect.
 
-.. note::
-
-    **None** of the non-core methods from the Pin API are currently implemented for this port.
