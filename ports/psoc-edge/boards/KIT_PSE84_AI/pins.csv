@@ -16,8 +16,8 @@
 ,-P2_0
 
 # I3C bus
-,P3_0
-,P3_1
+I3C_SCL,P3_0
+I3C_SDA,P3_1
 
 # PSRAM
 ,-P4_0
@@ -39,19 +39,19 @@
 ,-P6_3
 
 # Int magnetometer
-,P6_4
+MAG_INT,P6_4
 
 # KitProg UART RX
 ,-P6_5
 
 # Int IMU 
-,P6_6
+IMU0_INT,P6_6
 
 # KitProg UART TX
 ,-P6_7
 
 # User button
-,P7_0
+USER_BUTTON,P7_0
 
 # USB ID OGT
 ,-P7_1
@@ -72,11 +72,11 @@
 ,-P7_6
 
 # Int IMU1
-,P7_7
+IMU1_INT,P7_7
 
 # I2C 1.8V
-,P8_0
-,P8_1
+I2C_SCL_1V8,P8_0
+I2C_SDA_1V8,P8_1
 
 # Not connected
 #,-P8_2
@@ -88,17 +88,17 @@
 #,-P8_4
 
 # PDM
-,P8_5
-,P8_6
+PDM_CLK,P8_5
+PDM_DATA,P8_6
 
 # Not connected
 #,-P8_7
 
 # J5 connector
-,P9_0
-,P9_1
-,P9_2
-,P9_3
+SERIAL_INT0,P9_0
+SERIAL_INT1,P9_1
+SERIAL_INT2,P9_2
+SERIAL_INT3,P9_3
 
 # Bluetooth
 ,-P10_0
@@ -108,13 +108,13 @@
 ,-P10_4
 
 # User LED2
-,P10_5
+USER_LED2,P10_5
 
 # Bluetooth
 ,-P10_6
 
 # User LED1
-,P10_7
+USER_LED1,P10_7
 
 # Bluetooth
 ,-P11_0
@@ -126,7 +126,7 @@
 ,-P11_2
 
 # Int pressure sensor
-,P11_3
+PRESS_SENS_INT,P11_3
 
 # Wifi 
 ,-P11_4
@@ -146,7 +146,7 @@
 ,-P12_2
 
 # I2S FYSYNC
-,P12_3
+I2S_TX_FYSYNC,P12_3
 
 # Wifi
 ,-P12_4
@@ -163,14 +163,14 @@
 ,P13_7
 
 # Analog microphones
-,P14_0
-,P14_1
-,P14_2
-,P14_3
-,P14_4
-,P14_5
-,P14_6
-,P14_7
+AMIC1_CTB_INP,P14_0
+AMIC1_CTB_INN,P14_1
+AMIC1_CTB_OUT,P14_2
+AMIC2_CTB_OUT,P14_3
+AMIC2_CTB_INP,P14_4
+AMIC2_CTB_INN,P14_5
+AMIC1_CTB_REF,P14_6
+AMIC2_CTB_REF,P14_7
 
 # J17 expansion connector
 ,P15_0
@@ -191,8 +191,8 @@
 ,P16_5
 ,P16_6
 ,P16_7
-,P17_0
-,P17_1
+I2C_SCL_3V3,P17_0
+I2C_SDA_3V3,P17_1
 ,P17_2
 ,P17_3
 ,P17_4
@@ -216,28 +216,28 @@
 ,-P20_2
 
 # Int Radar
-,P20_3
+RADAR_INT,P20_3
 
 # USER LED RGB G
-,P20_4
+USER_LED_G,P20_4
 # USER LED RGB B
-,P20_5
+USER_LED_B,P20_5
 # USER LED RGB R
-,P20_6
+USER_LED_R,P20_6
 
 # Radar reset
-,P20_7
+RADAR_RESET,P20_7
 
 # Wifi 
 ,-P21_0
 
 # I2S
-,P21_1
-,P21_2
-,P21_3
+I2S_TX_SD,P21_1
+I2S_TX_SCK,P21_2
+I2S_TX_MCK,P21_3
 
 # Radar SPI
-,P21_4
-,P21_5
-,P21_6
-,P21_7
+RADAR_SPI_MISO,P21_4
+RADAR_SPI_MOSI,P21_5
+RADAR_SPI_CLK,P21_6
+RADAR_SPI_CS,P21_7
