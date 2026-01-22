@@ -27,6 +27,12 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 #include <alloca.h>
 #include <stdint.h>
+#include <limits.h>
+
+// Define SSIZE_MAX if not available (required for EXTRA_FEATURES level)
+#ifndef SSIZE_MAX
+#define SSIZE_MAX LONG_MAX
+#endif
 
 // #include "shared/runtime/interrupt_char.h"
 #include "mpconfigboard.h"
@@ -40,8 +46,8 @@
 #define MICROPY_REPL_INFO                       (1)
 #define MICROPY_HELPER_REPL                     (1)
 
-// Use the minimal starting configuration (disables all optional features).
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
+// Use core features for Thonny compatibility (larger firmware)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
 
 // You can disable the built-in MicroPython compiler by setting the following
 // config option to 0.  If you do this then you won't get a REPL prompt, but you
@@ -118,12 +124,12 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_EVENT_POLL_HOOK_FAST \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-    } while (0);
+        do { \
+            extern void mp_handle_pending(bool); \
+            mp_handle_pending(true); \
+        } while (0);
 
 #define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        MICROPY_EVENT_POLL_HOOK_FAST; \
-    } while (0);
+        do { \
+            MICROPY_EVENT_POLL_HOOK_FAST; \
+        } while (0);

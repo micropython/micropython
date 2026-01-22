@@ -88,18 +88,23 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
 
+
     #if MICROPY_VFS_LFS2
     pyexec_frozen_module("vfs_lfs2.py", false);
     #endif
     #endif
 
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        int ret = pyexec_file_if_exists("/main.py");
+    // Is this required?
 
-        if (ret & PYEXEC_FORCED_EXIT) {
-            goto soft_reset;
-        }
-    }
+    // pyexec_file_if_exists("boot.py");
+
+    // if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    //     int ret = pyexec_file_if_exists("/main.py");
+
+    //     if (ret & PYEXEC_FORCED_EXIT) {
+    //         goto soft_reset;
+    //     }
+    // }
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
