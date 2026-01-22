@@ -27,12 +27,6 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 #include <alloca.h>
 #include <stdint.h>
-#include <limits.h>
-
-// Define SSIZE_MAX if not available (required for EXTRA_FEATURES level)
-#ifndef SSIZE_MAX
-#define SSIZE_MAX LONG_MAX
-#endif
 
 // #include "shared/runtime/interrupt_char.h"
 #include "mpconfigboard.h"
@@ -124,12 +118,12 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_EVENT_POLL_HOOK_FAST \
-        do { \
-            extern void mp_handle_pending(bool); \
-            mp_handle_pending(true); \
-        } while (0);
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+    } while (0);
 
 #define MICROPY_EVENT_POLL_HOOK \
-        do { \
-            MICROPY_EVENT_POLL_HOOK_FAST; \
-        } while (0);
+    do { \
+        MICROPY_EVENT_POLL_HOOK_FAST; \
+    } while (0);
