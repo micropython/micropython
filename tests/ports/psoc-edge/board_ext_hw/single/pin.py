@@ -51,7 +51,7 @@ pin_out.toggle()
 print("pin out value toggled (0->1): ", pin_in.value() == 1)
 
 # Validating pull resistors configurations and open drain mode
-pin_out = Pin(pin_out_name, mode=Pin.OUT, pull=Pin.PULL_UP)
+pin_out = Pin(pin_out_name, mode=Pin.OUT, pull=Pin.PULL_UP, drive=Pin.DRIVE_0)
 print("pin out with pull up initially high: ", pin_in() == 1)
 
 # This does not work in the test, but does manually for P16_0 - P16_1
@@ -60,3 +60,15 @@ print("pin out with pull up initially high: ", pin_in() == 1)
 
 pin_out = Pin(pin_out_name, mode=Pin.OPEN_DRAIN)
 print("pin out with pull none initially 0: ", pin_in() == 0)
+
+# Validating config setters/getters
+print("pin out get mode: ", pin_out.mode() == Pin.OPEN_DRAIN)
+print("pin out get pull: ", pin_out.pull() == 0)
+print("pin out get drive: ", pin_out.drive() == Pin.DRIVE_0)
+
+pin_out.mode(Pin.OUT)
+pin_out.pull(Pin.PULL_UP)
+pin_out.drive(Pin.DRIVE_4)
+print("pin out set mode: ", pin_out.mode() == Pin.OUT)
+print("pin out set pull: ", pin_out.pull() == Pin.PULL_UP)
+print("pin out set drive: ", pin_out.drive() == Pin.DRIVE_4)
