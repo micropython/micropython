@@ -87,10 +87,19 @@ Instead, you can use ``init()`` to configure it.
     P8_6            P9_0            P9_1            P9_2
     P9_3
 
-    .. Add Pin.board.xxx when we define some pins. This will be more helpful.
+    >>> from machine import Pin
+    >>> Pin.board.
+    AMIC1_CTB_INN   AMIC1_CTB_INP   AMIC1_CTB_OUT   AMIC1_CTB_REF
+    AMIC2_CTB_INN   AMIC2_CTB_INP   AMIC2_CTB_OUT   AMIC2_CTB_REF
+    I2C_SCL_1V8     I2C_SCL_3V3     I2C_SDA_1V8     I2C_SDA_3V3
+    I2S_TX_FYSYNC   I2S_TX_MCK      I2S_TX_SCK      I2S_TX_SD
+    I3C_SCL         I3C_SDA         IMU0_INT        IMU1_INT
+    MAG_INT         PDM_CLK         PDM_DATA        PRESS_SENS_INT
+    RADAR_INT       RADAR_RESET     RADAR_SPI_CLK   RADAR_SPI_CS
+    RADAR_SPI_MISO  RADAR_SPI_MOSI  SERIAL_INT0     SERIAL_INT1
+    SERIAL_INT2     SERIAL_INT3     USER_BUTTON     USER_LED1
+    USER_LED2       USER_LED_B      USER_LED_G      USER_LED_R
 
-.. warning::
-    Currently no ``Pin.board.<pin>`` are defined for the PSOC™ Edge E84 AI Kit.
 
 In addition to the supported ``pull`` configuration values, ``PULL_UP_DOWN`` is also available in this port.
 
