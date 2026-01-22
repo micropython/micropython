@@ -120,6 +120,14 @@ uint32_t mp_hal_pin_read(mp_hal_pin_obj_t pin) {
     return Cy_GPIO_Read(Cy_GPIO_PortToAddr(pin->port), pin->pin);
 }
 
+uint32_t mp_hal_pin_get_drive(mp_hal_pin_obj_t pin) {
+    return Cy_GPIO_GetDriveSel(Cy_GPIO_PortToAddr(pin->port), pin->pin);
+}
+
+void mp_hal_pin_set_drive(mp_hal_pin_obj_t pin, uint32_t drive) {
+    Cy_GPIO_SetDriveSel(Cy_GPIO_PortToAddr(pin->port), pin->pin, drive);
+}
+
 void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
     Cy_GPIO_Write(Cy_GPIO_PortToAddr(pin->port), pin->pin, polarity);
 }
