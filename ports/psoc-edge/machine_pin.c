@@ -237,6 +237,16 @@ const machine_pin_obj_t *machine_pin_get_pin_obj(mp_obj_t obj) {
     mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%s) doesn't exist"), mp_obj_str_get_str(obj));
 }
 
+const machine_pin_af_obj_t *machine_pin_find_af(const machine_pin_obj_t *pin, machine_pin_af_fn_t fn, machine_pin_af_signal_t signal) {
+    for (uint8_t i = 0; i < pin->af_num; i++) {
+        const machine_pin_af_obj_t *af = &pin->af[i];
+        if (af->fn == fn && af->signal == signal) {
+            return af;
+        }
+    }
+    return NULL;
+}
+
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 6, true);
 

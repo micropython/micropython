@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_PSOC_EDGE_MACHINE_PIN_H
 
 #include "py/obj.h"
+#include "machine_pin_af.h"
 
 enum {GPIO_MODE_NONE = 0, GPIO_MODE_IN, GPIO_MODE_OUT, GPIO_MODE_OPEN_DRAIN};
 
@@ -38,6 +39,8 @@ typedef struct _machine_pin_obj_t {
     qstr name;
     uint8_t port;
     uint8_t pin;
+    uint8_t af_num;
+    const machine_pin_af_obj_t *af;
 } machine_pin_obj_t;
 
 extern const mp_obj_type_t machine_pin_type;
@@ -48,5 +51,6 @@ extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
 extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 const machine_pin_obj_t *machine_pin_get_pin_obj(mp_obj_t obj);
+const machine_pin_af_obj_t *machine_pin_find_af(const machine_pin_obj_t *pin, machine_pin_af_fn_t fn, machine_pin_af_signal_t signal);
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_MACHINE_PIN_H
