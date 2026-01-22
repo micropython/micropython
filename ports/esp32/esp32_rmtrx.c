@@ -299,6 +299,7 @@ static const mp_rom_map_elem_t esp32_rmtrx_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_data), MP_ROM_PTR(&esp32_rmtrx_get_data_obj) },
 
     // Constants
+    // PULSE_MAX = maximum value of rmt_symbol_word_t.duration0 and .duration1
     { MP_ROM_QSTR(MP_QSTR_PULSE_MAX), MP_ROM_INT(32767) },
 };
 static MP_DEFINE_CONST_DICT(esp32_rmtrx_locals_dict, esp32_rmtrx_locals_dict_table);
