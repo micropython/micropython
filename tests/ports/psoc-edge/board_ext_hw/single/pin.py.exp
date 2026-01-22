@@ -17,3 +17,9 @@ pin out value low:  True
 pin out value toggled (0->1):  True
 pin out with pull up initially high:  True
 pin out with pull none initially 0:  True
+pin out get mode:  True
+pin out get pull:  True
+pin out get drive:  True
+pin out set mode:  True
+pin out set pull:  True
+pin out set drive:  True
