@@ -60,6 +60,7 @@ typedef struct _machine_hw_i2c_obj_t {
     uint32_t scl_pin;
     uint32_t sda_pin;
     uint32_t freq;                 // Configured frequency
+    uint32_t timeout;              // Transfer timeout in microseconds
     cy_stc_scb_i2c_config_t cfg;   // PDL I2C configuration
     cy_stc_scb_i2c_context_t ctx;  // PDL I2C runtime context
 } machine_hw_i2c_obj_t;
@@ -235,14 +236,18 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
 
     mplogger_print("I2C Transfer started, waiting for completion...\n");
 
-    // Wait for transaction completion
+    // Wait for transaction completion using actual time-based timeout
     // The interrupt handler (Cy_SCB_I2C_MasterInterrupt) processes the transaction
-    uint32_t timeout = 100000;  // Timeout counter
+    uint32_t start_time = mp_hal_ticks_us();
+    uint32_t timeout_end = start_time + self->timeout;  // Both in microseconds
+
     while (0UL != (CY_SCB_I2C_MASTER_BUSY & Cy_SCB_I2C_MasterGetStatus(MICROPY_HW_I2C0_SCB, &self->ctx))) {
         // Yield to allow other tasks/interrupts to run
         MICROPY_EVENT_POLL_HOOK
-        if (--timeout == 0) {
-            mplogger_print("I2C Transfer timeout!\n");
+
+        // Check for timeout using actual elapsed time
+        if (mp_hal_ticks_us() >= timeout_end) {
+            mplogger_print("I2C Transfer timeout after %u us!\n", self->timeout);
             return -MP_ETIMEDOUT;
         }
     }
@@ -269,22 +274,24 @@ static void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // Print I2C configuration
-    mp_printf(print, "I2C(scl=%u, sda=%u, freq=%u)",
+    mp_printf(print, "I2C(scl=%u, sda=%u, freq=%u, timeout=%uus)",
         self->scl_pin,
         self->sda_pin,
-        self->freq);
+        self->freq,
+        self->timeout);
 }
 
 mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 4, true);
+    mp_arg_check_num(n_args, n_kw, 0, 5, true);
 
-    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
+    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda, ARG_timeout };
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,   MP_ARG_INT, {.u_int = -1}},
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} }
+        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50000} }  // Default 50000us (50ms)
     };
 
     // Parse args.
@@ -342,6 +349,12 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // Always use hardware default pins
     self->scl_pin = MICROPY_HW_I2C0_SCL;
     self->sda_pin = MICROPY_HW_I2C0_SDA;
+
+    // Set timeout value (in microseconds)
+    self->timeout = args[ARG_timeout].u_int;
+    if (self->timeout == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timeout must be > 0"));
+    }
 
     // initialise I2C at hardware level
     // If this fails, free the allocated object
