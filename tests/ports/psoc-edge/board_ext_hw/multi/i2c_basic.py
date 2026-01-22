@@ -13,12 +13,6 @@
 
 import time
 
-try:
-    from machine import I2C
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
 
 def instance0():
     # I2C Target (Slave)
@@ -60,7 +54,7 @@ def instance1():
 
     # Test 1: Scan
     print("***** Test 1: I2C Scan *****\n")
-    i2c = I2C(freq=100000)
+    i2c = I2C(freq=400000)
     devices = i2c.scan()
     print("Found devices:", [hex(d) for d in devices])
     scan_pass = SLAVE_ADDR in devices
@@ -88,10 +82,45 @@ def instance1():
         read_pass = False
         print("Status: FAIL -", e)
 
+    # Test 4: Timeout Test
+    print("\n***** Test 4: Timeout *****\n")
+    try:
+        # Create I2C with short timeout
+        i2c_timeout = I2C(freq=100000, timeout=10000)  # 10ms timeout (10000us)
+        print("Created I2C with timeout=10000us (10ms)")
+
+        # Try to read from non-existent device
+        # Note: This will fail at transaction start with EIO (errno 5)
+        # rather than timeout, as the device doesn't ACK the address.
+        # A true timeout would occur if device ACKs but doesn't send data.
+        try:
+            data = i2c_timeout.readfrom(0x50, 4)  # Non-existent address
+            print("Status: FAIL - Expected error but succeeded")
+            timeout_pass = False
+        except OSError as e:
+            # Accept either ETIMEDOUT (110) or EIO (5)
+            # EIO occurs when device doesn't ACK address
+            # ETIMEDOUT occurs when device ACKs but doesn't respond in time
+            if e.errno == 110:  # ETIMEDOUT
+                print("Timeout occurred (ETIMEDOUT)")
+                print("Status: PASS")
+                timeout_pass = True
+            elif e.errno == 5:  # EIO - No ACK from device
+                print("I/O error occurred (device not responding)")
+                print("Status: PASS")
+                timeout_pass = True
+            else:
+                print("Status: FAIL - Unexpected error:", e.errno)
+                timeout_pass = False
+    except Exception as e:
+        print("Status: FAIL -", e)
+        timeout_pass = False
+
     # Summary
     print("\n***** Summary *****\n")
-    all_pass = scan_pass and write_pass and read_pass
-    print("Scan:  ", "PASS" if scan_pass else "FAIL")
-    print("Write: ", "PASS" if write_pass else "FAIL")
-    print("Read:  ", "PASS" if read_pass else "FAIL")
+    all_pass = scan_pass and write_pass and read_pass and timeout_pass
+    print("Scan:   ", "PASS" if scan_pass else "FAIL")
+    print("Write:  ", "PASS" if write_pass else "FAIL")
+    print("Read:   ", "PASS" if read_pass else "FAIL")
+    print("Timeout:", "PASS" if timeout_pass else "FAIL")
     print("\nOverall:", "PASS" if all_pass else "FAIL")

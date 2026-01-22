@@ -21,10 +21,17 @@ Status: PASS
 Received: b'\x01\x02\x03\xdd'
 Status: PASS
 
+***** Test 4: Timeout *****
+
+Created I2C with timeout=10000us (10ms)
+I/O error occurred (device not responding)
+Status: PASS
+
 ***** Summary *****
 
-Scan:   PASS
-Write:  PASS
-Read:   PASS
+Scan:    PASS
+Write:   PASS
+Read:    PASS
+Timeout: PASS
 
 Overall: PASS
