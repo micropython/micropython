@@ -87,7 +87,7 @@ static uint8_t pin_get_pull(const machine_pin_obj_t *self) {
     }
 }
 
-static uint32_t get_drive_mode(uint8_t mode, uint8_t pull) {
+uint32_t get_drive_mode(uint8_t mode, uint8_t pull) {
     uint32_t drive_mode = CY_GPIO_DM_INVALID;
 
     if (mode == GPIO_MODE_IN) {
@@ -333,6 +333,41 @@ static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
+static mp_obj_t machine_pin_mode(size_t n_args, const mp_obj_t *args) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args == 1) {
+        return MP_OBJ_NEW_SMALL_INT(pin_get_mode(self));
+    } else {
+        mp_hal_pin_config(self, mp_obj_get_uint(args[1]), pin_get_pull(self));
+        return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_mode_obj, 1, 2, machine_pin_mode);
+
+static mp_obj_t machine_pin_pull(size_t n_args, const mp_obj_t *args) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args == 1) {
+        return MP_OBJ_NEW_SMALL_INT(pin_get_pull(self));
+    } else {
+        mp_hal_pin_config(self, pin_get_mode(self), mp_obj_get_uint(args[1]));
+        return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_pull_obj, 1, 2, machine_pin_pull);
+
+
+static mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args == 1) {
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_get_drive(self));
+    } else {
+        mp_hal_pin_set_drive(self, mp_obj_get_uint(args[1]));
+        return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_drive_obj, 1, 2, machine_pin_drive);
+
+
 extern mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
@@ -407,6 +442,9 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_toggle),  MP_ROM_PTR(&machine_pin_toggle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&machine_pin_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pull),    MP_ROM_PTR(&machine_pin_pull_obj) },
+    { MP_ROM_QSTR(MP_QSTR_drive),   MP_ROM_PTR(&machine_pin_drive_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&machine_pin_irq_obj) },
 
     // class attributes
