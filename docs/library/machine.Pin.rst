@@ -222,21 +222,21 @@ The following methods are not part of the core Pin API and only implemented on c
    Get or set the pin mode.
    See the constructor documentation for details of the ``mode`` argument.
 
-   Availability: cc3200, stm32 ports.
+   Availability: cc3200, psoc-edge, stm32 ports.
 
 .. method:: Pin.pull([pull])
 
    Get or set the pin pull state.
    See the constructor documentation for details of the ``pull`` argument.
 
-   Availability: cc3200, stm32 ports.
+   Availability: cc3200, psoc-edge, stm32 ports.
 
 .. method:: Pin.drive([drive])
 
    Get or set the pin drive strength.
    See the constructor documentation for details of the ``drive`` argument.
 
-   Availability: cc3200 port.
+   Availability: cc3200, psoc-edge ports.
 
 .. method:: Pin.toggle()
 
