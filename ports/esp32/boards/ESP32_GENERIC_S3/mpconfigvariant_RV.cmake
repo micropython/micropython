@@ -1,0 +1,9 @@
+set(SDKCONFIG_DEFAULTS
+    ${SDKCONFIG_DEFAULTS}
+    boards/sdkconfig.riscv_ulp
+)
+
+list(APPEND MICROPY_DEF_BOARD
+    MICROPY_HW_BOARD_NAME="Generic ESP32S3 module with RISCV ULP"
+    ESP_PREFER_RISCV_ULP=1
+)
