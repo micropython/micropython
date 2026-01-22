@@ -61,6 +61,7 @@ LD = arm-none-eabi-gcc
 HEADER_BUILD := $(BUILD)/genhdr
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = $(BOARD_DIR)/pins.csv
+AF_FILE = boards/pse8x_af.csv
 PREFIX_FILE = boards/pse84_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
@@ -78,9 +79,9 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h : $(BOARD_DIR)/%.csv $(MAKE_PINS) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h : $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --prefix $(PREFIX_FILE) \
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
 	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
 
 # TODO: Check required C++ additional flags.
