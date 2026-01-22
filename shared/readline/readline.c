@@ -101,6 +101,7 @@ typedef struct _readline_t {
     int hist_cur;
     size_t cursor_pos;
     char escape_seq_buf[1];
+    char last_nl;
     #if MICROPY_REPL_AUTO_INDENT
     uint8_t auto_indent_state;
     #endif
@@ -137,6 +138,17 @@ static size_t cursor_count_word(int forward) {
     return forward ? pos - rl.cursor_pos : rl.cursor_pos - pos;
 }
 #endif
+
+// Function returns true if newline character shall be processed.
+static bool process_nl(int c) {
+    if ((c == '\r' || c == '\n') && (rl.last_nl == 0 || rl.last_nl == c)) {
+        rl.last_nl = c;
+        return true;
+    }
+
+    rl.last_nl = 0;
+    return false;
+}
 
 int readline_process_char(int c) {
     size_t last_line_len = rl.line->len;
@@ -192,7 +204,7 @@ int readline_process_char(int c) {
         } else if (c == CHAR_CTRL_W) {
             goto backward_kill_word;
         #endif
-        } else if (c == '\r') {
+        } else if (process_nl(c)) {
             // newline
             mp_hal_stdout_tx_str("\r\n");
             readline_push_history(vstr_null_terminated_str(rl.line) + rl.orig_line_len);
