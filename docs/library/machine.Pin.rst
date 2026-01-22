@@ -243,6 +243,7 @@ The following methods are not part of the core Pin API and only implemented on c
    Toggle output pin from "0" to "1" or vice-versa.
 
    Availability: cc3200, esp32, esp8266, mimxrt, psoc-edge, rp2, samd ports.
+<<<<<<< HEAD
 
 Attributes
 ----------
@@ -283,6 +284,8 @@ first, then the cpu pins::
 
 Use ``help(Pin.board)`` or ``help(Pin.cpu)`` to list the pin names available
 on a particular board.
+=======
+>>>>>>> 7a19026fc (docs/library/machine.Pin: Added psoc-edge to extra funcs.)
 
 Constants
 ---------
