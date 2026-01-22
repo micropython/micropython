@@ -3,7 +3,8 @@
 # Note for maintainers: Where possible, functionality should be put into
 # esp32_common.cmake not this file. This is because this CMakeLists.txt file
 # needs to be duplicated for out-of-tree builds, and can easily get out of date.
-cmake_minimum_required(VERSION 3.12)
+
+cmake_minimum_required(VERSION 3.16)
 
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
