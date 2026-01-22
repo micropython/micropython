@@ -41,6 +41,15 @@ print("pin out callable 1: ", pin_in() == 1)
 pin_out(0)
 print("pin out callable 0: ", pin_in() == 0)
 
+pin_out.high()
+print("pin out value high: ", pin_in() == 1)
+
+pin_out.low()
+print("pin out value low: ", pin_in() == 0)
+
+pin_out.toggle()
+print("pin out value toggled (0->1): ", pin_in.value() == 1)
+
 # Validating pull resistors configurations and open drain mode
 pin_out = Pin(pin_out_name, mode=Pin.OUT, pull=Pin.PULL_UP)
 print("pin out with pull up initially high: ", pin_in() == 1)
