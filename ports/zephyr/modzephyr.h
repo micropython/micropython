@@ -41,4 +41,8 @@ extern const mp_obj_type_t zephyr_flash_area_type;
 extern const mp_obj_type_t zephyr_filesystem_type;
 #endif
 
+#ifdef CONFIG_REGULATOR
+extern const mp_obj_type_t zephyr_regulator_type;
+#endif
+
 #endif // MICROPY_INCLUDED_ZEPHYR_MODZEPHYR_H
