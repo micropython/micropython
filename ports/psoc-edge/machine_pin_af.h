@@ -33,7 +33,9 @@
 typedef enum {
     MACHINE_PIN_AF_FN_I2C,
     MACHINE_PIN_AF_FN_SPI,
-    MACHINE_PIN_AF_FN_UART
+    MACHINE_PIN_AF_FN_UART,
+
+    MACHINE_PIN_AF_FN_PDM,
     /* TODO: Add additional functionalities */
 } machine_pin_af_fn_t;
 
@@ -51,6 +53,9 @@ typedef enum {
     MACHINE_PIN_AF_SIGNAL_UART_RX,
     MACHINE_PIN_AF_SIGNAL_UART_CTS,
     MACHINE_PIN_AF_SIGNAL_UART_RTS,
+
+    MACHINE_PIN_AF_SIGNAL_PDM_CLK,
+    MACHINE_PIN_AF_SIGNAL_PDM_DATA,
 
     /* TODO: Add additional types */
 } machine_pin_af_signal_t;
