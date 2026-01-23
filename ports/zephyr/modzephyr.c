@@ -92,6 +92,9 @@ static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #if defined(CONFIG_DISPLAY)
     { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&zephyr_display_type) },
     #endif
+    #ifdef CONFIG_REGULATOR
+    { MP_ROM_QSTR(MP_QSTR_Regulator), MP_ROM_PTR(&zephyr_regulator_type) },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
