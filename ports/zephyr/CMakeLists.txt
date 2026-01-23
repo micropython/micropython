@@ -82,6 +82,7 @@ set(MICROPY_SOURCE_PORT
     zephyr_storage.c
     zephyr_filesystem.c
     zephyr_display.c
+    zephyr_regulator.c
     mpthreadport.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
