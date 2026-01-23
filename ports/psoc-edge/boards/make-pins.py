@@ -9,6 +9,7 @@ SUPPORTED_AF = {
     "I2C": ["SDA", "SCL"],
     "UART": ["TX", "RX", "CTS", "RTS"],
     "SPI": ["CLK", "MOSI", "MISO", "SELECT0", "SELECT1"],
+    "PDM": ["CLK", "DATA"],
     # TODO: Other active functionalities that we need to figure out:
     # - TDM
     # - TCPWM
@@ -77,7 +78,37 @@ class PSE84Pin(boardgen.Pin):
         af_supported = af_fn in SUPPORTED_AF and af_signal in SUPPORTED_AF[af_fn]
 
         pin_af = PinAf(af_idx, af_fn, af_unit, af_signal, af_supported, af_name, af_ptr)
-        print(pin_af)
+        self._afs.append(pin_af)
+
+    def add_af_pdm(self, af_idx, af_name, af):
+        # The PDM alternate function follow
+        # the convention:
+        # PDM_PDM_<signal><channel>
+
+        af_ptr = (
+            af.split("_")[0] + "0"
+        )  # The peripheral is PDM0 (this index is missing in .csv definition)
+        af_fn = af.split("_")[1]
+
+        # Split the signal+channel part into alphabetic (signal) and numeric (unit) parts
+        signal_channel = af.split("_")[2]
+
+        # Find where the numeric part starts
+        import re
+
+        match = re.match(r"^([A-Za-z]+)(\d+)$", signal_channel)
+
+        if match:
+            af_signal = match.group(1)  # Alphabetic part (e.g., "CLK", "DATA")
+            af_unit = match.group(2)  # Numeric part (e.g., "3", "15", "123")
+        else:
+            # Fallback for unexpected format
+            af_signal = signal_channel
+            af_unit = None
+
+        af_supported = af_fn in SUPPORTED_AF and af_signal in SUPPORTED_AF[af_fn]
+
+        pin_af = PinAf(af_idx, af_fn, af_unit, af_signal, af_supported, af_name, af_ptr)
         self._afs.append(pin_af)
 
     def add_af(self, af_idx, af_name, af):
@@ -108,6 +139,8 @@ class PSE84Pin(boardgen.Pin):
         # If the prefix match the format SBCx
         if af.startswith("SCB"):
             self.add_af_scb(af_idx, af_name, af)
+        elif af.startswith("PDM"):
+            self.add_af_pdm(af_idx, af_name, af)
         else:
             # TODO: Extend the parsing to other peripherals.
             pass
@@ -124,7 +157,7 @@ class PSE84Pin(boardgen.Pin):
                 print("    // ", end="", file=out_source)
             # AF(af_name_idx, af_fn, af_unit, af_signal, af_ptr)
             print(
-                "AF({:s}, {:s}, {:s}, {:s}, {:s}),  // {:s}_{:s}_{:s}".format(
+                "AF({:s}, {:s}, {:s}, {:s}, {:s}),  // {:s}_{:s}{:s}_{:s}".format(
                     af.af_name,
                     af.af_fn,
                     af.af_unit or 0,
@@ -132,6 +165,7 @@ class PSE84Pin(boardgen.Pin):
                     af.af_ptr,
                     af.af_ptr,
                     af.af_fn,
+                    af.af_unit,
                     af.af_signal,
                 ),
                 file=out_source,
