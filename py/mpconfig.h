@@ -1316,6 +1316,12 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_FSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Support for template strings, t-strings (see PEP 750, Python 3.14+)
+// Requires f-strings to be enabled
+#ifndef MICROPY_PY_TSTRINGS
+#define MICROPY_PY_TSTRINGS (0)
+#endif
+
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)
 #ifndef MICROPY_PY_ASSIGN_EXPR
 #define MICROPY_PY_ASSIGN_EXPR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)

@@ -46,6 +46,27 @@ struct _mp_lexer_t;
 #define MP_PARSE_NODE_ID        (0x02)
 #define MP_PARSE_NODE_STRING    (0x06)
 #define MP_PARSE_NODE_TOKEN     (0x0a)
+#define MP_PARSE_NODE_STRING_REF      (0x80)
+#define MP_PARSE_NODE_TEMPLATE_STRING (0x81)
+
+#define MP_PARSE_TSTR_HDR_SEG_SHIFT   (8)
+#define MP_PARSE_TSTR_HDR_INT_SHIFT   (20)
+
+#define MP_PARSE_TSTR_HDR_MAKE(seg_cnt, int_cnt) \
+    ((MP_PARSE_NODE_TEMPLATE_STRING | \
+    ((((seg_cnt) - 1) << MP_PARSE_TSTR_HDR_SEG_SHIFT)) | \
+    (((int_cnt) << MP_PARSE_TSTR_HDR_INT_SHIFT))))
+
+#define MP_PARSE_TSTR_HDR_GET_SEG_CNT(hdr) \
+    (((((hdr) >> MP_PARSE_TSTR_HDR_SEG_SHIFT) & UINT32_C(0xFFF)) + 1))
+
+#define MP_PARSE_TSTR_HDR_GET_INT_CNT(hdr) \
+    ((((hdr) >> MP_PARSE_TSTR_HDR_INT_SHIFT) & UINT32_C(0xFFF)))
+
+// Ensure header bit packing fits in 32 bits
+static inline void mp_parse_header_static_asserts(void) {
+    MP_STATIC_ASSERT(MP_PARSE_TSTR_HDR_INT_SHIFT + 12 <= 32);
+}
 
 typedef uintptr_t mp_parse_node_t; // must be pointer size
 
