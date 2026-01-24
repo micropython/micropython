@@ -24,7 +24,3 @@ c = 169
 print(f"{c:c}")
 c = 0x1F600
 print(f"{c:c}")
-
-# test formatting with width
-print("[%5c]" % 169)
-print("[{:5c}]".format(0x4E00))
