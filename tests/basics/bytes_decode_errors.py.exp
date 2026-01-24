@@ -1,0 +1,14 @@
+''
+UnicodeError
+UnicodeError
+'hello'
+'hello'
+'helloworld'
+''
+' '
+'hello'
+'\xa9'
+''
+'\ufffd\ufffd'
+'hello'
+'hello\ufffdworld'
