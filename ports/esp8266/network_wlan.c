@@ -275,7 +275,7 @@ static mp_obj_t esp_scan(mp_obj_t self_in) {
         // esp_scan_list variable to NULL without disabling interrupts
         if (MP_STATE_THREAD(mp_pending_exception) != NULL) {
             esp_scan_list = NULL;
-            mp_handle_pending(true);
+            mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         }
         ets_loop_iter();
     }

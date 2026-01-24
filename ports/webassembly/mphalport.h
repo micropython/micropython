@@ -51,7 +51,7 @@ int mp_hal_get_interrupt_char(void);
             if (ret == -1) { \
                 int err = errno; \
                 if (err == EINTR) { \
-                    mp_handle_pending(true); \
+                    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
                     continue; \
                 } \
                 raise; \

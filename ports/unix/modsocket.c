@@ -210,7 +210,7 @@ static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             int err = errno;
             if (self->blocking) {
                 if (err == EINTR) {
-                    mp_handle_pending(true);
+                    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
                     continue;
                 }
                 // EINPROGRESS on a blocking socket means the operation timed out
