@@ -1350,6 +1350,21 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_STR_UNICODE_CHECK (MICROPY_PY_BUILTINS_STR_UNICODE)
 #endif
 
+// Whether bytes.decode() supports the 'ignore' error handler
+// Can be explicitly set to 0 or 1 to override the default ROM level behavior
+// Default: enabled at EXTRA_FEATURES and above, disabled below
+#ifndef MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE
+#define MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether bytes.decode() supports the 'replace' error handler
+// Can be explicitly set to 0 or 1 to override the default
+// Default: follows MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE setting
+// Note: Only has effect when MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE is enabled
+#ifndef MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
+#define MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE (MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE)
+#endif
+
 // Whether str.center() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_CENTER
 #define MICROPY_PY_BUILTINS_STR_CENTER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
