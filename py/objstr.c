@@ -1042,14 +1042,33 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
 static mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
     GET_STR_DATA_LEN(str_in, str, str_len);
     mp_uint_t width = mp_obj_get_int(width_in);
+
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    // Get character count (not byte count) for proper Unicode handling
+    size_t char_len = utf8_charlen(str, str_len);
+    if (char_len >= width) {
+        return str_in;
+    }
+    // Calculate padding: width is in characters, need to convert to bytes for allocation
+    mp_uint_t padding_chars = width - char_len;
+    // Padding is always spaces (1 byte each), plus the original string bytes
+    mp_uint_t total_bytes = padding_chars + str_len;
+    #else
+    // Non-Unicode build: byte length equals character length
     if (str_len >= width) {
         return str_in;
     }
+    mp_uint_t total_bytes = width;
+    #endif
 
     vstr_t vstr;
-    vstr_init_len(&vstr, width);
-    memset(vstr.buf, ' ', width);
+    vstr_init_len(&vstr, total_bytes);
+    memset(vstr.buf, ' ', total_bytes);
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    int left = padding_chars / 2;
+    #else
     int left = (width - str_len) / 2;
+    #endif
     memcpy(vstr.buf + left, str, str_len);
     return mp_obj_new_str_type_from_vstr(mp_obj_get_type(str_in), &vstr);
 }
