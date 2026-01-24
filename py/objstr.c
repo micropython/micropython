@@ -1399,8 +1399,21 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     continue;
 
                 case 'c': {
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    mp_uint_t c = mp_obj_get_int(arg);
+                    if (c >= 0x110000) {
+                        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
+                    }
+                    vstr_t ch_vstr;
+                    vstr_init_len(&ch_vstr, 4);
+                    ch_vstr.len = 0;
+                    vstr_add_char(&ch_vstr, c);
+                    mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, fill, width);
+                    vstr_clear(&ch_vstr);
+                    #else
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, fill, width);
+                    #endif
                     continue;
                 }
 
@@ -1693,8 +1706,21 @@ static mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     }
                     mp_print_strn(&print, s, 1, flags, ' ', width);
                 } else if (arg_looks_integer(arg)) {
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    mp_uint_t c = mp_obj_get_int(arg);
+                    if (c >= 0x110000) {
+                        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("%c arg not in range(0x110000)"));
+                    }
+                    vstr_t ch_vstr;
+                    vstr_init_len(&ch_vstr, 4);
+                    ch_vstr.len = 0;
+                    vstr_add_char(&ch_vstr, c);
+                    mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, ' ', width);
+                    vstr_clear(&ch_vstr);
+                    #else
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, ' ', width);
+                    #endif
                 } else {
                     mp_raise_TypeError(MP_ERROR_TEXT("integer needed"));
                 }
