@@ -73,6 +73,7 @@ typedef struct _ospi_flash_settings_t {
     uint8_t read_dummy_cycles;
     uint16_t write_command;
     uint16_t erase_command;
+    uint16_t power_down_command;
 } ospi_flash_settings_t;
 
 // Provided by the board when it enables OSPI.
@@ -97,6 +98,7 @@ int ospi_flash_xip_exit(struct _ospi_flash_t *self);
 // SPI flash interface.
 int ospi_flash_init(void);
 uintptr_t ospi_flash_get_xip_base(void);
+void ospi_flash_sleep(void);
 int ospi_flash_erase_sector(uint32_t addr);
 int ospi_flash_read(uint32_t addr, uint32_t len, uint8_t *dest);
 int ospi_flash_write(uint32_t addr, uint32_t len, const uint8_t *src);
