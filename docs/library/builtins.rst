@@ -25,6 +25,35 @@ Functions and types
 
     |see_cpython| `python:bytes`.
 
+    .. method:: bytes.decode(encoding='utf-8', errors='strict')
+
+        Decode the bytes object to a string using the specified *encoding*.
+
+        MicroPython supports the following encodings:
+
+        - ``'utf-8'`` or ``'utf8'`` - UTF-8 encoding (default)
+        - ``'ascii'`` - ASCII encoding (subset of UTF-8)
+
+        The *errors* parameter controls how decoding errors are handled:
+
+        - ``'strict'`` - Raise a ``UnicodeError`` on invalid UTF-8 (default)
+        - ``'ignore'`` - Skip invalid bytes (requires ``MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE``)
+        - ``'replace'`` - Replace invalid bytes with U+FFFD � (requires ``MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE``)
+
+        .. note::
+            Error handler support depends on build configuration. On constrained
+            systems, only ``'strict'`` mode may be available.
+
+        Example::
+
+            >>> b'\\xc2\\xa9 2024'.decode('utf-8')  # © symbol
+            '© 2024'
+            >>> b'hello\\xffworld'.decode('utf-8', 'ignore')  # Skip invalid bytes
+            'helloworld'
+
+        Raises ``LookupError`` if the encoding is not supported, or
+        ``UnicodeError`` if the data contains invalid UTF-8 and ``errors='strict'``.
+
 .. function:: callable()
 
 .. function:: chr()
@@ -147,6 +176,56 @@ Functions and types
 .. function:: staticmethod()
 
 .. class:: str()
+
+    .. method:: str.encode(encoding='utf-8')
+
+        Encode the string to bytes using the specified *encoding*.
+
+        MicroPython supports the following encodings:
+
+        - ``'utf-8'`` or ``'utf8'`` - UTF-8 encoding (default)
+        - ``'ascii'`` - ASCII encoding (subset of UTF-8)
+
+        Example::
+
+            >>> '© 2024'.encode('utf-8')  # Copyright symbol
+            b'\\xc2\\xa9 2024'
+
+        Raises ``LookupError`` if the encoding is not supported.
+
+    .. method:: str.center(width)
+
+        Return a centered string of length *width*. Padding is done using spaces.
+
+        When Unicode support is enabled (``MICROPY_PY_BUILTINS_STR_UNICODE``), this
+        method counts Unicode characters rather than bytes, ensuring proper alignment
+        for multi-byte UTF-8 characters.
+
+        Example::
+
+            >>> 'café'.center(10)  # é is 2 bytes in UTF-8
+            '   café   '
+
+String Formatting
+-----------------
+
+MicroPython supports Unicode in string formatting when ``MICROPY_PY_BUILTINS_STR_UNICODE``
+is enabled.
+
+The ``%c`` and ``{:c}`` format specifiers accept Unicode codepoints in the range 0 to 0x10FFFF
+(1,114,111) and properly encode multi-byte UTF-8 characters.
+
+Example::
+
+    >>> '%c' % 0x1F389    # 🎉 emoji
+    '🎉'
+    >>> '{:c}'.format(0x4E2D)  # 中 (Chinese character)
+    '中'
+
+Invalid character codes raise ``ValueError``::
+
+    >>> '%c' % -1
+    ValueError: %c arg not in range(0x110000)
 
 .. function:: sum()
 
