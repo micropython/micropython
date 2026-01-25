@@ -132,8 +132,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 /* byte code functions                                                        */
 
-qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
-    const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
+qstr mp_obj_fun_bc_get_name(const mp_obj_fun_bc_t *fun) {
     const byte *bc = fun->bytecode;
 
     #if MICROPY_ENABLE_NATIVE_CODE
@@ -181,7 +180,7 @@ static mp_obj_t fun_bc_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 static void fun_bc_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(o_in);
-    mp_printf(print, "<function %q at 0x%p>", mp_obj_fun_get_name(o_in), o);
+    mp_printf(print, "<function %q at 0x%p>", mp_obj_fun_bc_get_name(o), o);
 }
 #endif
 
@@ -359,16 +358,15 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // not load attribute
         return;
     }
+    const mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
     if (attr == MP_QSTR___name__) {
-        dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(self_in));
+        dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_bc_get_name(self));
     }
     if (attr == MP_QSTR___globals__) {
-        mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_FROM_PTR(self->context->module.globals);
     }
     #if MICROPY_PY_FUNCTION_ATTRS_CODE
     if (attr == MP_QSTR___code__) {
-        const mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
         if (self->base.type == &mp_type_fun_bc
             || self->base.type == &mp_type_gen_wrap) {
             #if MICROPY_PY_BUILTINS_CODE <= MICROPY_PY_BUILTINS_CODE_BASIC
