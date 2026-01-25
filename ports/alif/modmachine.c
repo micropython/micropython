@@ -99,9 +99,13 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_STANDBY();
     #endif
 
+    __disable_irq();
+
     // This enters the deepest possible CPU sleep state, without
     // losing CPU state. CPU and subsystem power will remain on.
     pm_core_enter_deep_sleep();
+
+    __enable_irq();
 
     #ifdef MICROPY_BOARD_EXIT_STANDBY
     MICROPY_BOARD_EXIT_STANDBY();
@@ -120,6 +124,8 @@ MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args
     #ifdef MICROPY_BOARD_ENTER_STOP
     MICROPY_BOARD_ENTER_STOP();
     #endif
+
+    __disable_irq();
 
     // If power is removed from the subsystem, the function does
     // not return, and the CPU will reboot when/if the subsystem
