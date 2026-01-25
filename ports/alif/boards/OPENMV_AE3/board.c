@@ -152,7 +152,7 @@ void board_early_init(void) {
         .vtor_address = SCB->VTOR,
         .vtor_address_ns = SCB->VTOR,
         .ewic_cfg = EWIC_RTC_A,
-        .wakeup_events = WE_LPRTC,
+        .wakeup_events = WE_LPGPIO7 | WE_LPGPIO6 | WE_LPGPIO5 | WE_LPGPIO4 | WE_LPRTC,
     };
 
     if (se_services_set_off_profile(&off_profile)) {
@@ -163,6 +163,9 @@ void board_early_init(void) {
     if (se_services_select_pll_source(PLL_SOURCE_PLL, PLL_TARGET_PD4_SRAM)) {
         MICROPY_BOARD_FATAL_ERROR("se_services_select_pll_source");
     }
+
+    // Configure the user button as an input with pull-up enabled.
+    mp_hal_pin_config(pin_SW, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0, 0, 0, true);
 }
 
 MP_WEAK void board_enter_stop(void) {
