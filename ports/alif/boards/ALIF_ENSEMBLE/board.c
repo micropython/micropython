@@ -54,3 +54,12 @@ const ospi_flash_settings_t ospi_flash_settings[] = {
     },
 };
 const size_t ospi_flash_settings_len = 1;
+
+void board_early_init(void) {
+    // Configure the joystick buttons as an input with pull-up enabled.
+    mp_hal_pin_config(pin_JOY_LEFT, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0, 0, 0, true);
+    mp_hal_pin_config(pin_JOY_RIGHT, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0, 0, 0, true);
+    mp_hal_pin_config(pin_JOY_DOWN, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0, 0, 0, true);
+    mp_hal_pin_config(pin_JOY_UP, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0, 0, 0, true);
+    mp_hal_pin_config(pin_JOY_SW, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0, 0, 0, true);
+}
