@@ -3,6 +3,7 @@
 # Connect:
 # - GPIO4 to GPIO5
 # - GPIO12 to GPIO13
+# - GPIO2 to GPIO14
 
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {"tx": 4, "rx": 5}
@@ -10,3 +11,5 @@ uart_loopback_kwargs = {"tx": 4, "rx": 5}
 encoder_loopback_id = 0
 encoder_loopback_out_pins = (4, 12)
 encoder_loopback_in_pins = (5, 13)
+
+rmt_loopback_kwargs = {"send": 2, "recv": 14}
