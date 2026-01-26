@@ -457,6 +457,8 @@ static void udp_raw_incoming(lwip_socket_obj_t *socket, struct pbuf *p, const ip
         slot->peer_addr = *addr;
         slot->peer_port = port;
         socket->incoming.udp_raw.iput = (socket->incoming.udp_raw.iput + 1) % LWIP_INCOMING_PACKET_QUEUE_LEN;
+        // Notify user callback of the new packet
+        exec_user_callback(socket);
     }
 }
 
