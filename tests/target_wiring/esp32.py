@@ -10,3 +10,5 @@ uart_loopback_kwargs = {"tx": 4, "rx": 5}
 encoder_loopback_id = 0
 encoder_loopback_out_pins = (4, 12)
 encoder_loopback_in_pins = (5, 13)
+
+rmt_loopback_kwargs = {"send": 4, "recv": 5}
