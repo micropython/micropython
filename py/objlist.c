@@ -489,25 +489,6 @@ mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
-    mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
-    *len = self->len;
-    *items = self->items;
-}
-
-void mp_obj_list_set_len(mp_obj_t self_in, size_t len) {
-    // trust that the caller knows what it's doing
-    // TODO realloc if len got much smaller than alloc
-    mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
-    self->len = len;
-}
-
-void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
-    size_t i = mp_get_index(self->base.type, self->len, index, false);
-    self->items[i] = value;
-}
-
 /******************************************************************************/
 /* list iterator                                                              */
 

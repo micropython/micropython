@@ -1179,19 +1179,6 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
 #define mp_obj_is_float(o) (false)
 #endif
 
-// tuple
-void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
-void mp_obj_tuple_del(mp_obj_t self_in);
-mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
-
-// list
-mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
-mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
-void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
-void mp_obj_list_set_len(mp_obj_t self_in, size_t len);
-void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
-mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-
 // dict
 typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;
@@ -1248,8 +1235,6 @@ typedef struct _mp_obj_fun_builtin_var_t {
     } fun;
 } mp_obj_fun_builtin_var_t;
 
-qstr mp_obj_fun_get_name(mp_const_obj_t fun);
-
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
 
@@ -1258,9 +1243,6 @@ typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
 } mp_obj_module_t;
-static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
-    return ((mp_obj_module_t *)MP_OBJ_TO_PTR(module))->globals;
-}
 
 // staticmethod and classmethod types; defined here so we can make const versions
 // this structure is used for instances of both staticmethod and classmethod
