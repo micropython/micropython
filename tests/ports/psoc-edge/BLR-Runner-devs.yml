@@ -1,5 +1,10 @@
 - name: KIT_PSE84_AI
   uid: 0F16025A012D2400
+  features:
+    - pin
+    - i2c
 
 - name: KIT_PSE84_AI
   uid: 111B1698012D2400
+  features:
+    - i2c
