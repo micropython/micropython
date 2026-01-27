@@ -47,3 +47,21 @@ const struct device *zephyr_device_find(mp_obj_t name) {
 
     return dev;
 }
+
+void zephyr_device_print_name(const mp_print_t *print, const struct device *dev) {
+    mp_printf(print, "%s", dev->name);
+
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    const struct device_dt_nodelabels *nl = device_get_dt_nodelabels(dev);
+
+    if (nl != NULL && nl->num_nodelabels > 0) {
+        mp_printf(print, " (");
+        for (size_t j = 0; j < nl->num_nodelabels; j++) {
+            const char *nodelabel = nl->nodelabels[j];
+
+            mp_printf(print, (j == 0) ? "%s" : ", %s", nodelabel);
+        }
+        mp_printf(print, ")");
+    }
+    #endif
+}
