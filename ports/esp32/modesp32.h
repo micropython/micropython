@@ -89,4 +89,10 @@ extern const mp_obj_type_t esp32_pcnt_type;
 void esp32_pcnt_deinit_all(void);
 #endif
 
+#if ESP_PREFER_RISCV_ULP && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3)
+#define ULP_TYPE_RISCV 1
+#else
+#define ULP_TYPE_RISCV 0
+#endif
+
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H
