@@ -34,6 +34,7 @@ config MICROPY_HEAP_SIZE
 
 config MICROPY_VFS_FAT
 	bool "FatFS file system"
+	depends on !FAT_FILESYSTEM_ELM
 
 config MICROPY_VFS_LFS1
 	bool "LittleFs version 1 file system"
