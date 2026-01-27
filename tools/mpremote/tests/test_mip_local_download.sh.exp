@@ -1,0 +1,9 @@
+----- Setup
+
+---- Download package
+Install ${TMP}/example/package.json
+Installing: ${TMP}/lib/mip_example/__init__.py
+Installing: ${TMP}/lib/mip_example/hello.py
+Done
+
+---- Verify package

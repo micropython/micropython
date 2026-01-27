@@ -2,6 +2,7 @@
 # Ported from micropython-lib/micropython/mip/mip.py.
 # MIT license; Copyright (c) 2022 Jim Mussared
 
+import hashlib
 import urllib.error
 import urllib.request
 import json
@@ -19,6 +20,11 @@ allowed_mip_url_prefixes = ("http://", "https://", "github:", "gitlab:")
 
 # This implements os.makedirs(os.dirname(path))
 def _ensure_path_exists(transport, path):
+    if transport is None:
+        dir_name = os.path.dirname(path)
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
+        return
     split = path.split("/")
 
     # Handle paths starting with "/".
@@ -36,6 +42,20 @@ def _ensure_path_exists(transport, path):
 
 # Check if the specified path exists and matches the hash.
 def _check_exists(transport, path, short_hash):
+    if transport is None:
+        if not os.path.isfile(path):
+            return False
+        h = hashlib.sha256()
+        try:
+            with open(path, "rb") as f:
+                while True:
+                    chunk = f.read(4096)
+                    if not chunk:
+                        break
+                    h.update(chunk)
+        except OSError:
+            return False
+        return h.hexdigest()[: len(short_hash)] == short_hash
     try:
         remote_hash = transport.fs_hashfile(path, "sha256")
     except FileNotFoundError:
@@ -73,6 +93,22 @@ def _rewrite_url(url, branch=None):
     return url
 
 
+def _path_join(transport, base, target_path):
+    if transport is None:
+        # target_path uses "/" separators from package metadata; split to normalize for host OS.
+        return os.path.join(base, *target_path.split("/"))
+    return base + "/" + target_path
+
+
+def _write_file(transport, dest, data):
+    _ensure_path_exists(transport, dest)
+    if transport is None:
+        with open(dest, "wb") as f:
+            f.write(data)
+        return
+    transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
+
+
 def _download_file(transport, url, dest):
     if url.startswith(allowed_mip_url_prefixes):
         try:
@@ -95,11 +131,10 @@ def _download_file(transport, url, dest):
             raise CommandError(f"{e.strerror} opening {url}")
 
     print("Installing:", dest)
-    _ensure_path_exists(transport, dest)
-    transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
+    _write_file(transport, dest, data)
 
 
-def _install_json(transport, package_json_url, index, target, version, mpy):
+def _install_json(transport, package_json_url, index, target, version, mpy, mpy_version):
     base_url = ""
     if package_json_url.startswith(allowed_mip_url_prefixes):
         try:
@@ -123,27 +158,30 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
     else:
         raise CommandError(f"Invalid url for package: {package_json_url}")
     for target_path, short_hash in package_json.get("hashes", ()):
-        fs_target_path = target + "/" + target_path
+        fs_target_path = _path_join(transport, target, target_path)
         if _check_exists(transport, fs_target_path, short_hash):
             print("Exists:", fs_target_path)
         else:
             file_url = f"{index}/file/{short_hash[:2]}/{short_hash}"
             _download_file(transport, file_url, fs_target_path)
     for target_path, url in package_json.get("urls", ()):
-        fs_target_path = target + "/" + target_path
+        fs_target_path = _path_join(transport, target, target_path)
         if base_url and not url.startswith(allowed_mip_url_prefixes):
             url = f"{base_url}/{url}"  # Relative URLs
         _download_file(transport, _rewrite_url(url, version), fs_target_path)
     for dep, dep_version in package_json.get("deps", ()):
-        _install_package(transport, dep, index, target, dep_version, mpy)
+        _install_package(transport, dep, index, target, dep_version, mpy, mpy_version)
 
 
-def _install_package(transport, package, index, target, version, mpy):
+def _install_package(transport, package, index, target, version, mpy, mpy_version):
+    # transport=None routes file operations to the local filesystem instead of remote transport
     if package.startswith(allowed_mip_url_prefixes):
         if package.endswith(".py") or package.endswith(".mpy"):
             print(f"Downloading {package} to {target}")
             _download_file(
-                transport, _rewrite_url(package, version), target + "/" + package.rsplit("/")[-1]
+                transport,
+                _rewrite_url(package, version),
+                _path_join(transport, target, package.rsplit("/")[-1]),
             )
             return
         else:
@@ -159,61 +197,89 @@ def _install_package(transport, package, index, target, version, mpy):
             version = "latest"
         print(f"Installing {package} ({version}) from {index} to {target}")
 
-        mpy_version = "py"
-        if mpy:
-            transport.exec("import sys")
-            mpy_version = transport.eval("getattr(sys.implementation, '_mpy', 0) & 0xFF") or "py"
+        if not mpy:
+            mpy_version = "py"
+        elif not mpy_version:
+            raise CommandError("mpy version not specified, use --mpy-version")
 
         package = f"{index}/package/{mpy_version}/{package}/{version}.json"
 
-    _install_json(transport, package, index, target, version, mpy)
+    _install_json(transport, package, index, target, version, mpy, mpy_version)
 
 
 def do_mip(state, args):
     state.did_action()
 
-    if args.command[0] == "install":
+    command = args.command[0]
+    if command == "install":
         state.ensure_raw_repl()
-
-        for package in args.packages:
-            version = None
-            if "@" in package:
-                package, version = package.split("@")
-
-            print("Install", package)
-
-            if args.index is None:
-                args.index = _PACKAGE_INDEX
-
-            if args.target is None:
-                state.transport.exec("import sys")
-                lib_paths = [
-                    p
-                    for p in state.transport.eval("sys.path")
-                    if not p.startswith("/rom") and p.endswith("/lib")
-                ]
-                if lib_paths and lib_paths[0]:
-                    args.target = lib_paths[0]
-                else:
-                    raise CommandError(
-                        "Unable to find lib dir in sys.path, use --target to override"
-                    )
-
-            if args.mpy is None:
-                args.mpy = True
-
-            try:
-                _install_package(
-                    state.transport,
-                    package,
-                    args.index.rstrip("/"),
-                    args.target,
-                    version,
-                    args.mpy,
-                )
-            except CommandError:
-                print("Package may be partially installed")
-                raise
-            print("Done")
+        transport = state.transport
+        default_mpy = True
+    elif command == "download":
+        transport = None
+        default_mpy = False
     else:
         raise CommandError(f"mip: '{args.command[0]}' is not a command")
+
+    if args.mpy is None:
+        args.mpy = default_mpy
+
+    if args.mpy:
+        if args.mpy_version is None:
+            args.mpy_version = "auto"
+    elif args.mpy_version is not None:
+        raise CommandError("--mpy-version requires --mpy")
+
+    if args.target is None:
+        if command == "download":
+            args.target = "lib"
+        else:
+            state.transport.exec("import sys")
+            lib_paths = [
+                p
+                for p in state.transport.eval("sys.path")
+                if not p.startswith("/rom") and p.endswith("/lib")
+            ]
+            if lib_paths and lib_paths[0]:
+                args.target = lib_paths[0]
+            else:
+                raise CommandError("Unable to find lib dir in sys.path, use --target to override")
+
+    if args.mpy and args.mpy_version == "auto":
+        if command == "download":
+            # Only enter raw REPL for download when we need to probe the device.
+            state.ensure_raw_repl()
+        probe_transport = state.transport
+        if probe_transport is None:
+            raise CommandError(
+                "mpy version is auto but no device connected; use --mpy-version or --no-mpy"
+            )
+        probe_transport.exec("import sys")
+        args.mpy_version = (
+            probe_transport.eval("getattr(sys.implementation, '_mpy', 0) & 0xFF") or "py"
+        )
+
+    for package in args.packages:
+        version = None
+        if "@" in package:
+            package, version = package.split("@")
+
+        print("Install", package)
+
+        if args.index is None:
+            args.index = _PACKAGE_INDEX
+
+        try:
+            _install_package(
+                transport,
+                package,
+                args.index.rstrip("/"),
+                args.target,
+                version,
+                args.mpy,
+                args.mpy_version,
+            )
+        except CommandError:
+            print("Package may be partially installed")
+            raise
+        print("Done")
