@@ -122,7 +122,13 @@ static mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
     if (mp_obj_is_native_exception_instance(self_in)) {
         return MP_OBJ_TO_PTR(self_in);
     } else {
-        return MP_OBJ_TO_PTR(((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0]);
+        mp_obj_t subobj = ((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0];
+        if (mp_obj_is_native_exception_instance(subobj)) {
+            return MP_OBJ_TO_PTR(subobj);
+        } else {
+            // Native base not initialized (super().__init__() not called)
+            return NULL;
+        }
     }
 }
 
@@ -256,7 +262,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 // Get exception "value" - that is, first argument, or None
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
     mp_obj_exception_t *self = get_native_exception(self_in);
-    if (self->args->len == 0) {
+    if (self == NULL || self->args->len == 0) {
         return mp_const_none;
     } else {
         decompress_error_text_maybe(self);
@@ -571,6 +577,9 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type) {
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     mp_obj_exception_t *self = get_native_exception(self_in);
+    if (self == NULL) {
+        return;
+    }
     // just set the traceback to the null object
     // we don't want to call any memory management functions here
     self->traceback_data = NULL;
@@ -578,6 +587,9 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
     mp_obj_exception_t *self = get_native_exception(self_in);
+    if (self == NULL) {
+        return;
+    }
 
     // append this traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return
@@ -642,7 +654,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values) {
     mp_obj_exception_t *self = get_native_exception(self_in);
 
-    if (self->traceback_data == NULL) {
+    if (self == NULL || self->traceback_data == NULL) {
         *n = 0;
         *values = NULL;
     } else {
