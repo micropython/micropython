@@ -221,6 +221,15 @@ static inline unsigned long mp_random_seed_init(void) {
 #include <stdio.h>
 #endif
 
+#if MICROPY_PY_THREAD
+#if (defined(_POSIX_TIMEOUTS) && _POSIX_TIMEOUTS > 0) && (defined(_POSIX_THREADS) && _POSIX_THREADS > 0)
+// Enable lock timeout support
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT (1)
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX ((int64_t)UINT32_MAX * 1000000)
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ (1000000)
+#endif
+#endif
+
 // Configure the implementation of machine.idle().
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();
