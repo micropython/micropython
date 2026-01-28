@@ -66,13 +66,14 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 static void machine_timer_callback(struct k_timer *timer) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)k_timer_user_data_get(timer);
 
+    if (self->mode == TIMER_MODE_ONE_SHOT) {
+        k_timer_stop(&self->my_timer);
+    }
+
     if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
         // Uncaught exception; disable the callback so it doesn't run again.
         self->mode = TIMER_MODE_ONE_SHOT;
-    }
-
-    if (self->mode == TIMER_MODE_ONE_SHOT) {
-        machine_timer_deinit(self);
+        k_timer_stop(&self->my_timer);
     }
 }
 
