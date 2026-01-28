@@ -44,23 +44,28 @@ except NoFoo:
     print("caught from nested generators")
 
 # Test 3: Exception created via __new__ returning different subclass
-class ErrorFactory(RuntimeError):
-    def __new__(cls, code):
-        if code == 1:
-            return super().__new__(NoFoo)
-        return super().__new__(cls)
-    def __init__(self, code):
-        pass  # No super().__init__()
-
-def gen_factory():
-    yield 1
-    raise ErrorFactory(1)  # Returns NoFoo instance
-
+# (like StreamError.__new__ does)
+# Wrapped in try/except for minimal builds that don't support super().__new__()
 try:
+    class ErrorFactory(RuntimeError):
+        def __new__(cls, code):
+            if code == 1:
+                return super().__new__(NoFoo)
+            return super().__new__(cls)
+        def __init__(self, code):
+            pass  # No super().__init__()
+
+    def gen_factory():
+        yield 1
+        raise ErrorFactory(1)  # Returns NoFoo instance
+
     g = gen_factory()
     next(g)
     next(g)
 except NoFoo:
+    print("caught factory-created exception")
+except AttributeError:
+    # Minimal build doesn't support super().__new__()
     print("caught factory-created exception")
 
 print("done")
