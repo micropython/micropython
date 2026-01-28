@@ -67,6 +67,26 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
 #define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
 
+// Port level Wait-for-Event macro.
+// Do not use this macro directly, include py/runtime.h and
+// call mp_event_wait_indefinite() or mp_event_wait_ms(timeout).
+#if MICROPY_PY_THREAD
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do { \
+        if (pyb_thread_enabled) { \
+            MP_THREAD_GIL_EXIT(); \
+            pyb_thread_yield(); \
+            MP_THREAD_GIL_ENTER(); \
+        } else { \
+            __WFI(); \
+        } \
+    } while (0)
+#define MICROPY_THREAD_YIELD() pyb_thread_yield()
+#else
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) __WFI()
+#define MICROPY_THREAD_YIELD()
+#endif
+
 // Timing functions.
 
 #if __CORTEX_M == 0

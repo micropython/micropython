@@ -62,6 +62,8 @@
 #define CYW43_SDPCM_SEND_COMMON_WAIT    __WFI();
 #define CYW43_DO_IOCTL_WAIT             __WFI();
 #define CYW43_HAL_UART_READCHAR_BLOCKING_WAIT __WFI()
+#undef CYW43_EVENT_POLL_HOOK
+#define CYW43_EVENT_POLL_HOOK           mp_event_wait_ms(1)
 
 #define cyw43_hal_uart_set_baudrate     mp_bluetooth_hci_uart_set_baudrate
 #define cyw43_hal_uart_write            mp_bluetooth_hci_uart_write
