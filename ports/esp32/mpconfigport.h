@@ -50,6 +50,7 @@
 #endif
 #else
 #define MICROPY_EMIT_XTENSAWIN              (1)
+#define MICROPY_EMIT_INLINE_XTENSA_WINDOWED (1)
 #endif
 
 // optimisations

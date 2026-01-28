@@ -147,7 +147,7 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
     &emit_inline_thumb_method_table,
     &emit_inline_thumb_method_table,
     &emit_inline_xtensa_method_table,
-    NULL,
+    &emit_inline_xtensa_method_table,
     &emit_inline_rv32_method_table,
 };
 
@@ -3551,7 +3551,7 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
             // TODO this can be improved by calculating it during SCOPE pass
             // but that requires some other structural changes to the asm emitters
             #if MICROPY_DYNAMIC_COMPILER
-            if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSA)
+            if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSA || mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSAWIN)
             #endif
             {
                 compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);

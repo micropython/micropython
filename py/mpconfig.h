@@ -492,6 +492,11 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_EMIT_INLINE_XTENSA (0)
 #endif
 
+// Whether to emit inline Xtensa code for a windowed-capable core
+#ifndef MICROPY_EMIT_INLINE_XTENSA_WINDOWED
+#define MICROPY_EMIT_INLINE_XTENSA_WINDOWED (0)
+#endif
+
 // Whether to support uncommon Xtensa inline assembler opcodes
 #ifndef MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
 #define MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES (0)
