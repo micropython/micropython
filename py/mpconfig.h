@@ -971,6 +971,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_FLOAT (0)
 #endif
 
+// Whether to box some floats that would not otherwise be representable.
+// In REPR_C, only 1/4 of all floats are representable unboxed. Has an effect
+// only in REPR_C.
+#ifndef MICROPY_FLOAT_BOX_AS_NEEDED
+#define MICROPY_FLOAT_BOX_AS_NEEDED (0)
+#endif
+
 #ifndef MICROPY_PY_BUILTINS_COMPLEX
 #define MICROPY_PY_BUILTINS_COMPLEX (MICROPY_PY_BUILTINS_FLOAT)
 #endif
