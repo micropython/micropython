@@ -9,6 +9,10 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+if not hasattr(tls, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
