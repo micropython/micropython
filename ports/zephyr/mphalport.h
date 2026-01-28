@@ -5,8 +5,20 @@
 #define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
 #define MICROPY_END_ATOMIC_SECTION irq_unlock
 
+// Port level Wait-for-Event macro.
+// Do not use this macro directly, include py/runtime.h and
+// call mp_event_wait_indefinite() or mp_event_wait_ms(timeout).
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do {                                 \
+        if ((TIMEOUT_MS) < 0) { \
+            mp_hal_wait_event(true, NULL, (uint32_t)-1); \
+        } else { \
+            mp_hal_wait_event(true, NULL, (TIMEOUT_MS)); \
+        } \
+    } while (0)
+
 void mp_hal_init(void);
-void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);
+void mp_hal_wait_event(bool exit_on_event, struct k_sem *sem, uint32_t timeout_ms);
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
     return k_cyc_to_ns_floor64(k_cycle_get_32()) / 1000;
@@ -28,7 +40,7 @@ static inline void mp_hal_delay_us(mp_uint_t delay) {
 }
 
 static inline void mp_hal_delay_ms(mp_uint_t delay) {
-    mp_hal_wait_sem(NULL, delay);
+    mp_hal_wait_event(false, NULL, delay);
 }
 
 static inline uint64_t mp_hal_time_ns(void) {
