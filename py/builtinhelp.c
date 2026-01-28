@@ -32,6 +32,14 @@
 
 #if MICROPY_PY_BUILTINS_HELP
 
+#if MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS <= 0
+#error "MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS must be more then 0"
+#endif
+
+#if MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH <= 0
+#error "MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH must be more then 0"
+#endif
+
 const char mp_help_default_text[] =
     "Welcome to MicroPython!\n"
     "\n"
@@ -92,12 +100,10 @@ static void mp_help_print_modules(void) {
     mp_obj_list_sort(1, &list, (mp_map_t *)&mp_const_empty_map);
 
     // print the list of modules in a column-first order
-    #define NUM_COLUMNS (4)
-    #define COLUMN_WIDTH (18)
     size_t len;
     mp_obj_t *items;
     mp_obj_list_get(list, &len, &items);
-    unsigned int num_rows = (len + NUM_COLUMNS - 1) / NUM_COLUMNS;
+    unsigned int num_rows = (len + MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS - 1) / MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS;
     for (unsigned int i = 0; i < num_rows; ++i) {
         unsigned int j = i;
         for (;;) {
@@ -106,9 +112,9 @@ static void mp_help_print_modules(void) {
             if (j >= len) {
                 break;
             }
-            int gap = COLUMN_WIDTH - l;
+            int gap = MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH - l;
             while (gap < 1) {
-                gap += COLUMN_WIDTH;
+                gap += MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH;
             }
             while (gap--) {
                 mp_print_str(MP_PYTHON_PRINTER, " ");
