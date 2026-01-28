@@ -1,0 +1,4 @@
+caught NoFoo
+caught from nested generators
+caught factory-created exception
+done
