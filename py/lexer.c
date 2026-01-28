@@ -35,11 +35,8 @@
 #if MICROPY_ENABLE_COMPILER
 
 #define TAB_SIZE (8)
-
-// TODO seems that CPython allows NULL byte in the input stream
-// don't know if that's intentional or not, but we don't allow it
-
-#define MP_LEXER_EOF ((unichar)MP_READER_EOF)
+#define MP_LEXER_EOF ('\0')
+#define MP_LEXER_INVALID_BYTE ('\1')
 #define CUR_CHAR(lex) ((lex)->chr0)
 
 static bool is_end(mp_lexer_t *lex) {
@@ -148,45 +145,51 @@ static void next_char(mp_lexer_t *lex) {
     lex->chr0 = lex->chr1;
     lex->chr1 = lex->chr2;
 
-    // and add the next byte from either the fstring args or the reader
+    // and add the next byte from either inject_chrs or the reader
+    mp_uint_t chr2;
+fetch_next_byte:
     #if MICROPY_PY_FSTRINGS
-    if (lex->fstring_args_idx) {
-        // if there are saved chars, then we're currently injecting fstring args
-        if (lex->fstring_args_idx < lex->fstring_args.len) {
-            lex->chr2 = lex->fstring_args.buf[lex->fstring_args_idx++];
-        } else {
-            // no more fstring arg bytes
-            lex->chr2 = '\0';
-        }
-
-        if (lex->chr0 == '\0') {
-            // consumed all fstring data, restore saved input queue
-            lex->chr0 = lex->chr0_saved;
-            lex->chr1 = lex->chr1_saved;
-            lex->chr2 = lex->chr2_saved;
-            // stop consuming fstring arg data
-            vstr_reset(&lex->fstring_args);
-            lex->fstring_args_idx = 0;
+    if (lex->inject_chrs_idx) {
+        // if there are saved chars, then we're currently injecting them
+        chr2 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+        if (lex->inject_chrs_idx >= lex->inject_chrs.len) {
+            // consumed all injected characters, switch back to the input stream
+            vstr_reset(&lex->inject_chrs);
+            lex->inject_chrs_idx = 0;
         }
     } else
     #endif
     {
-        lex->chr2 = lex->reader.readbyte(lex->reader.data);
+        // get next byte from the reader
+        chr2 = lex->reader.readbyte(lex->reader.data);
+
+        // convert stream mp_uint_t value to lexer uint8_t value:
+        // - MP_READER_EOF indicates end-of-stream, for which lexer uses MP_LEXER_EOF
+        // - MP_LEXER_EOF is not allowed in the input stream, as is converted to
+        //   MP_LEXER_INVALID_BYTE so it's not interpreted as end-of-stream
+        // - all other byte values (1 through 255 inclusive) are passed through as-is
+        if (chr2 == MP_READER_EOF) {
+            chr2 = MP_LEXER_EOF;
+        } else if (chr2 == MP_LEXER_EOF) {
+            chr2 = MP_LEXER_INVALID_BYTE;
+        }
     }
 
     if (lex->chr1 == '\r') {
         // CR is a new line, converted to LF
         lex->chr1 = '\n';
-        if (lex->chr2 == '\n') {
+        if (chr2 == '\n') {
             // CR LF is a single new line, throw out the extra LF
-            lex->chr2 = lex->reader.readbyte(lex->reader.data);
+            goto fetch_next_byte;
         }
     }
 
     // check if we need to insert a newline at end of file
-    if (lex->chr2 == MP_LEXER_EOF && lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n') {
-        lex->chr2 = '\n';
+    if (chr2 == MP_LEXER_EOF && lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n') {
+        chr2 = '\n';
     }
+
+    lex->chr2 = chr2;
 }
 
 static void indent_push(mp_lexer_t *lex, size_t indent) {
@@ -333,8 +336,7 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
     #if MICROPY_PY_FSTRINGS
     if (is_fstring) {
         // assume there's going to be interpolation, so prep the injection data
-        // fstring_args_idx==0 && len(fstring_args)>0 means we're extracting the args.
-        // only when fstring_args_idx>0 will we consume the arg data
+        // len(fstring_args)>0 means we're extracting the args.
         // lex->fstring_args is reset when finished, so at this point there are two cases:
         // - lex->fstring_args is empty: start of a new f-string
         // - lex->fstring_args is non-empty: concatenation of adjacent f-strings
@@ -417,11 +419,9 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     vstr_add_char(&lex->vstr, '\\');
                 } else {
                     switch (c) {
-                        // note: "c" can never be MP_LEXER_EOF because next_char
-                        // always inserts a newline at the end of the input stream
                         case '\n':
-                            c = MP_LEXER_EOF;
-                            break;                          // backslash escape the newline, just ignore it
+                            // backslash escape the newline, just ignore it
+                            goto continue_parsing_string_literal;
                         case '\\':
                             break;
                         case '\'':
@@ -492,25 +492,23 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                             break;
                     }
                 }
-                if (c != MP_LEXER_EOF) {
-                    #if MICROPY_PY_BUILTINS_STR_UNICODE
-                    if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
-                        // Valid unicode character in a str object.
-                        vstr_add_char(&lex->vstr, c);
-                    } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
-                        // Valid byte in a bytes object.
-                        vstr_add_byte(&lex->vstr, c);
-                    }
-                    #else
-                    if (c < 0x100) {
-                        // Without unicode everything is just added as an 8-bit byte.
-                        vstr_add_byte(&lex->vstr, c);
-                    }
-                    #endif
-                    else {
-                        // Character out of range; this raises a generic SyntaxError.
-                        lex->tok_kind = MP_TOKEN_INVALID;
-                    }
+                #if MICROPY_PY_BUILTINS_STR_UNICODE
+                if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
+                    // Valid unicode character in a str object.
+                    vstr_add_char(&lex->vstr, c);
+                } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
+                    // Valid byte in a bytes object.
+                    vstr_add_byte(&lex->vstr, c);
+                }
+                #else
+                if (c < 0x100) {
+                    // Without unicode everything is just added as an 8-bit byte.
+                    vstr_add_byte(&lex->vstr, c);
+                }
+                #endif
+                else {
+                    // Character out of range; this raises a generic SyntaxError.
+                    lex->tok_kind = MP_TOKEN_INVALID;
                 }
             } else {
                 // Add the "character" as a byte so that we remain 8-bit clean.
@@ -518,6 +516,7 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                 vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
             }
         }
+    continue_parsing_string_literal:
         next_char(lex);
     }
 
@@ -559,23 +558,6 @@ static bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
-    #if MICROPY_PY_FSTRINGS
-    if (lex->fstring_args.len && lex->fstring_args_idx == 0) {
-        // moving onto the next token means the literal string is complete.
-        // switch into injecting the format args.
-        vstr_add_byte(&lex->fstring_args, ')');
-        lex->chr0_saved = lex->chr0;
-        lex->chr1_saved = lex->chr1;
-        lex->chr2_saved = lex->chr2;
-        lex->chr0 = lex->fstring_args.buf[0];
-        lex->chr1 = lex->fstring_args.buf[1];
-        lex->chr2 = lex->fstring_args.buf[2];
-        // we've already extracted 3 chars, but setting this non-zero also
-        // means we'll start consuming the fstring data
-        lex->fstring_args_idx = 3;
-    }
-    #endif
-
     // start new token text
     vstr_reset(&lex->vstr);
 
@@ -699,6 +681,30 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             skip_whitespace(lex, true);
 
         } while (is_string_or_bytes(lex));
+
+        #if MICROPY_PY_FSTRINGS
+        if (lex->fstring_args.len) {
+            // If there was an f-string then it's now complete.
+            // Switch into injecting the format args.
+            vstr_add_byte(&lex->fstring_args, ')');
+            if (lex->inject_chrs_idx == 0) {
+                // switch from stream to inject_chrs
+                char *s = vstr_add_len(&lex->inject_chrs, 3);
+                s[0] = lex->chr0;
+                s[1] = lex->chr1;
+                s[2] = lex->chr2;
+            } else {
+                // already consuming from inject_chrs, rewind cached chars to insert new ones
+                assert(lex->inject_chrs_idx >= 3);
+                lex->inject_chrs_idx -= 3;
+            }
+            vstr_ins_strn(&lex->inject_chrs, lex->inject_chrs_idx, lex->fstring_args.buf, lex->fstring_args.len);
+            vstr_reset(&lex->fstring_args);
+            lex->chr0 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+            lex->chr1 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+            lex->chr2 = lex->inject_chrs.buf[lex->inject_chrs_idx++];
+        }
+        #endif
 
     } else if (is_head_of_identifier(lex)) {
         lex->tok_kind = MP_TOKEN_NAME;
@@ -857,8 +863,9 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
     vstr_init(&lex->vstr, 32);
     #if MICROPY_PY_FSTRINGS
+    vstr_init(&lex->inject_chrs, 0);
+    lex->inject_chrs_idx = 0;
     vstr_init(&lex->fstring_args, 0);
-    lex->fstring_args_idx = 0;
     #endif
 
     // store sentinel for first indentation level
@@ -915,6 +922,7 @@ void mp_lexer_free(mp_lexer_t *lex) {
         lex->reader.close(lex->reader.data);
         vstr_clear(&lex->vstr);
         #if MICROPY_PY_FSTRINGS
+        vstr_clear(&lex->inject_chrs);
         vstr_clear(&lex->fstring_args);
         #endif
         m_del(uint16_t, lex->indent_level, lex->alloc_indent_level);
