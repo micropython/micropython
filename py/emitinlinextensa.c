@@ -35,6 +35,18 @@
 
 #if MICROPY_EMIT_INLINE_XTENSA
 
+#include "py/persistentcode.h"
+
+static inline bool emit_windowed_code() {
+    #if MICROPY_DYNAMIC_COMPILER
+    return mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSAWIN;
+    #elif MICROPY_EMIT_XTENSAWIN
+    return true;
+    #else
+    return false;
+    #endif
+}
+
 struct _emit_inline_asm_t {
     asm_xtensa_t as;
     uint16_t pass;
@@ -73,11 +85,19 @@ static void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t p
         memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
     }
     mp_asm_base_start_pass(&emit->as.base, pass == MP_PASS_EMIT ? MP_ASM_PASS_EMIT : MP_ASM_PASS_COMPUTE);
-    asm_xtensa_entry(&emit->as, 0);
+    if (emit_windowed_code()) {
+        asm_xtensa_entry_win(&emit->as, 0);
+    } else {
+        asm_xtensa_entry(&emit->as, 0);
+    }
 }
 
 static void emit_inline_xtensa_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
-    asm_xtensa_exit(&emit->as);
+    if (emit_windowed_code()) {
+        asm_xtensa_exit_win(&emit->as);
+    } else {
+        asm_xtensa_exit(&emit->as);
+    }
     asm_xtensa_end_pass(&emit->as);
 }
 
