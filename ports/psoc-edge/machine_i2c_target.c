@@ -142,8 +142,14 @@ static void i2c_slave_event_callback(uint32_t events) {
             Cy_SCB_I2C_SlaveConfigReadBuf(MICROPY_HW_I2C0_SCB, data->mem_buf, data->mem_len, &self->ctx);
         }
 
+        // Clear read status to prevent re-triggering on next interrupt
+        Cy_SCB_I2C_SlaveClearReadStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
+
         // Reset index for next transaction
         self->tx_index = 0;
+
+        // Set state to READING so extmod reset_helper triggers END_READ
+        data->state = STATE_READING;
 
         // Notify application layer - this triggers END_READ event
         machine_i2c_target_data_restart_or_stop(data);
@@ -170,6 +176,9 @@ static void i2c_slave_event_callback(uint32_t events) {
 
         // Clear write status to capture following updates
         Cy_SCB_I2C_SlaveClearWriteStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
+
+        // Ensure state is WRITING so extmod reset_helper triggers END_WRITE
+        data->state = STATE_WRITING;
 
         // Notify application layer - this triggers END_WRITE event
         machine_i2c_target_data_restart_or_stop(data);
@@ -268,6 +277,7 @@ static inline size_t mp_machine_i2c_target_get_index(machine_i2c_target_obj_t *s
 // IRQ event callback - called from extmod to trigger Python IRQ handler
 // This is called by handle_event() in extmod/machine_i2c_target.c
 static void mp_machine_i2c_target_event_callback(machine_i2c_target_irq_obj_t *irq) {
+    mplogger_print("[SW] mp_machine_i2c_target_event_callback: irq=%p, flags=0x%02X, handler=%p\n", irq, irq->flags, irq->base.handler);
     if (irq->base.handler != mp_const_none) {
         mp_irq_handler(&irq->base);
     }
