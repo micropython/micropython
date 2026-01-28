@@ -1,0 +1,7 @@
+=== Template string size limit ===
+Too many interpolations: template string too large for header format
+
+=== Too many segments ===
+Too many segments: MemoryError (correct)
+
+=== Template() constructor with many interpolations ===

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2026 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,59 +24,33 @@
  * THE SOFTWARE.
  */
 
-// *FORMAT-OFF*
-
-#include "py/mpconfig.h"
-
-// All the qstr definitions in this file are available as constants.
-// That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
-
-// qstr configuration passed to makeqstrdata.py of the form QCFG(key, value)
-QCFG(BYTES_IN_LEN, MICROPY_QSTR_BYTES_IN_LEN)
-QCFG(BYTES_IN_HASH, MICROPY_QSTR_BYTES_IN_HASH)
-
-Q()
-Q(*)
-Q(_)
-Q(/)
-#if MICROPY_PY_SYS_PS1_PS2
-Q(>>> )
-Q(... )
-#endif
-#if MICROPY_PY_BUILTINS_STR_OP_MODULO
-Q(%#o)
-Q(%#x)
-#else
-Q({:#o})
-Q({:#x})
-#endif
-Q({:#b})
-Q( )
-Q(\n)
-Q(maximum recursion depth exceeded)
-Q(<module>)
-Q(<lambda>)
-Q(<listcomp>)
-Q(<dictcomp>)
-Q(<setcomp>)
-Q(<genexpr>)
-Q(<string>)
-Q(<stdin>)
-Q(utf-8)
-
-#if MICROPY_MODULE_FROZEN
-Q(.frozen)
-#endif
-
-#if MICROPY_VFS_ROM && MICROPY_VFS_ROM_IOCTL
-Q(/rom)
-Q(/rom/lib)
-#endif
-
-#if MICROPY_ENABLE_PYSTACK
-Q(pystack exhausted)
-#endif
+#include "py/obj.h"
 
 #if MICROPY_PY_TSTRINGS
-Q(string.templatelib)
-#endif
+
+static const mp_rom_map_elem_t mp_module_string_templatelib_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_string_dot_templatelib) },
+    { MP_ROM_QSTR(MP_QSTR_Template), MP_ROM_PTR(&mp_type_template) },
+    { MP_ROM_QSTR(MP_QSTR_Interpolation), MP_ROM_PTR(&mp_type_interpolation) },
+};
+static MP_DEFINE_CONST_DICT(mp_module_string_templatelib_globals, mp_module_string_templatelib_globals_table);
+
+static const mp_obj_module_t mp_module_string_templatelib = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&mp_module_string_templatelib_globals,
+};
+
+static const mp_rom_map_elem_t mp_module_string_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_string) },
+    { MP_ROM_QSTR(MP_QSTR_templatelib), MP_ROM_PTR(&mp_module_string_templatelib) },
+};
+static MP_DEFINE_CONST_DICT(mp_module_string_globals, mp_module_string_globals_table);
+
+const mp_obj_module_t mp_module_string = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&mp_module_string_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_string, mp_module_string);
+
+#endif // MICROPY_PY_TSTRINGS

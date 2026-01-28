@@ -1,0 +1,40 @@
+=== Constructor basic usage ===
+Template repr: Template(strings=('hello ', 'world'), interpolations=(Interpolation(42, 'x', None, ''),))
+Varargs constructor: strings=('Hello ', '!'), values=('World',)
+Varargs merged strings: ('AB', 'CD')
+Leading interpolation strings: ('', ' tail')
+Trailing interpolation strings: ('head ', '')
+Interpolation only strings: ('', '', '')
+
+=== Special cases ===
+Interp read-only: AttributeError
+Whitespace trim: 'Template(strings=('', ''), interpolations=(Interpolation(None, '   ', None, ''),))'
+Debug =: Template(strings=('', ''), interpolations=(Interpolation(42, 'x=', None, ''),))
+Custom !r: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 'r', ''),))
+Custom !s: Template(strings=('', ''), interpolations=(Interpolation(CustomRepr, 'obj', 's', ''),))
+Empty start iter: ['Interpolation', 'str']
+Iterator edge: ['Interpolation', 'Interpolation']
+
+=== Values property ===
+Values[0]: ()
+Values[1]: (0,)
+Values[2]: (0, 1)
+Values[3]: (0, 1, 2)
+Values[4]: (0, 1, 2, 3)
+Values[5]: (0, 1, 2, 3, 4)
+Values[6]: (0, 1, 2, 3, 4, 5)
+
+=== Multiple consecutive strings ===
+Multiple strings concatenated: OK
+
+=== Template() constructor with many interpolations ===
+Template() constructor: OK (20 interpolations)
+
+=== vstr string concatenation ===
+vstr concat: 'Template(strings=('part1part2part3part4', 'end'), interpolations=(Interpolation(1, 'x', None, ''),))'
+
+=== High byte handling ===
+High bytes: len=5, first=0x7f, last=0xff
+Octal high bytes: OK, len=3
+
+Constructor tests completed!
