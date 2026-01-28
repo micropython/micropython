@@ -148,6 +148,9 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
+# PSoC Edge uses Cortex-M33 and Cortex-M55 (ARMv8-M architecture)
+# However, since ARMv8-M is not directly supported by mpy-cross,
+# we use armv7emsp as the closest compatible architecture
 MPY_CROSS_FLAGS += -march=armv7emsp 
 
 MPY_APP_NAME = mpy_edge_app_ns

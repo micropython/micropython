@@ -45,7 +45,7 @@
 #ifndef MICROPY_HW_FLASH_STORAGE_BYTES
 #define MICROPY_HW_FLASH_STORAGE_BYTES (EXT_FLASH_SIZE)
 #endif
-static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size must be a multiple of 4K");
+static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % EXT_FLASH_SECTOR_SIZE == 0, "Flash storage size must be a multiple of sector size");
 
 #ifndef MICROPY_HW_FLASH_STORAGE_BASE
 #define MICROPY_HW_FLASH_STORAGE_BASE (EXT_FLASH_BASE)
