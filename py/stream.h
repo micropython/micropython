@@ -44,6 +44,7 @@
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
 #define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
 #define MP_STREAM_GET_BUFFER_SIZE (11) // Get preferred buffer size for file
+#define MP_STREAM_RAISE_ERROR   (12) // Raise an error with detailed error string
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD       (0x0001)
@@ -68,8 +69,10 @@ struct mp_stream_seek_t {
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
-    // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
-    // are implementation-dependent, but will be exposed to user, e.g. via exception).
+    // On error, functions should return MP_STREAM_ERROR and fill in *errcode
+    // (values are are implementation-dependent, but will be exposed to user).
+    // If ioctl is set it will be called with MP_STREAM_RAISE_ERROR so it may
+    // raise a detailed exception, else a simple numeric OSError will raised.
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
