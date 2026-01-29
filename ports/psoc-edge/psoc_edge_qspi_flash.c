@@ -167,12 +167,15 @@ static mp_obj_t psoc_edge_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *
     // Erase before write only for full block writes (n_args == 3)
     // MTB flash library requires erased flash
     if (n_args == 3) {
-        cy_rslt_t erase_result = mtb_serial_memory_erase(&serial_memory_obj, offset, EXT_FLASH_SECTOR_SIZE);
-        if (erase_result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Erase before write failed: 0x%08lx"), erase_result);
+        uint32_t numSectors = bufinfo.len / EXT_FLASH_SECTOR_SIZE;
+
+        for (uint32_t i = 0; i < numSectors; i++) {
+            cy_rslt_t erase_result = mtb_serial_memory_erase(&serial_memory_obj, offset + (i * EXT_FLASH_SECTOR_SIZE), EXT_FLASH_SECTOR_SIZE);
+            if (erase_result != CY_RSLT_SUCCESS) {
+                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Erase before write failed: 0x%08lx"), erase_result);
+            }
         }
     } else {
-        // Partial write: offset adjustment
         offset += mp_obj_get_int(args[3]);
     }
 
