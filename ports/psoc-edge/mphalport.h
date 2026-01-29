@@ -77,5 +77,23 @@ void mp_hal_pin_set_drive(mp_hal_pin_obj_t pin, uint32_t drive);
 
 mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, uint32_t af_signal);
 
+typedef struct {
+    mp_hal_pin_obj_t pin;
+    machine_pin_af_signal_t signal;
+    uint32_t cy_drive_mode;
+    uint32_t init_value;
+    mp_hal_pin_af_obj_t af;
+}mp_hal_pin_af_config_t;
+
+#define MP_HAL_PIN_AF_CONF(_pin, _cy_drive_mode, _init_value, _af_signal) { \
+        .pin = _pin, \
+        .cy_drive_mode = _cy_drive_mode, \
+        .init_value = _init_value, \
+        .af = mp_hal_pin_af_find(_pin, _af_signal) \
+}
+
+typedef void *mp_hal_af_periph_t;
+
+mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins);
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H
