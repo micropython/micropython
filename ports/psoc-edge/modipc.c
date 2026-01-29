@@ -73,11 +73,14 @@ static mp_obj_t ipc_enable(void) {
         return mp_const_none;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
     mp_printf(&mp_plat_print, "Initializing IPC with CM55 (CM55 already booted by main.c)...\n");
 
 =======
+=======
+>>>>>>> 17931d7dd (psoc-edge: Add basic setup for module IPC.)
     
     mp_printf(&mp_plat_print, "Initializing IPC with CM55 (CM55 already booted by main.c)...\n");
     
@@ -91,10 +94,13 @@ static mp_obj_t ipc_enable(void) {
 
     cm55_enabled = true;
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
 >>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
+=======
+>>>>>>> 17931d7dd (psoc-edge: Add basic setup for module IPC.)
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ipc_enable_obj, ipc_enable);
@@ -173,7 +179,10 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
         ipc_enable();
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 17931d7dd (psoc-edge: Add basic setup for module IPC.)
     mp_printf(&mp_plat_print, "[CM33] Sending LED_SET_ON command to CM55...\n");
 
 =======
@@ -198,6 +207,7 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
     mp_printf(&mp_plat_print, "[CM33] IPC channel %d lock status: %s\n",
         CY_IPC_CHAN_CYPIPE_EP2, is_locked ? "LOCKED" : "UNLOCKED");
 
+<<<<<<< HEAD
     mp_printf(&mp_plat_print, "[CM33] IPC message prepared: client_id=%d, cmd=0x93\n",
         cm33_msg_data.client_id, cm33_msg_data.cmd);
 
@@ -211,6 +221,8 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
 
 
 =======
+=======
+>>>>>>> 17931d7dd (psoc-edge: Add basic setup for module IPC.)
     
     mp_printf(&mp_plat_print, "[CM33] IPC message prepared: client_id=%d, cmd=0x93\n", 
               cm33_msg_data.client_id, cm33_msg_data.cmd);
@@ -223,16 +235,22 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
     mp_printf(&mp_plat_print, "[CM33] IPC channel %d lock status: %s\n", 
               CY_IPC_CHAN_CYPIPE_EP2, is_locked ? "LOCKED" : "UNLOCKED");
     
+<<<<<<< HEAD
 >>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
+=======
+>>>>>>> 17931d7dd (psoc-edge: Add basic setup for module IPC.)
     if (is_locked) {
         mp_printf(&mp_plat_print, "[CM33] Channel is locked, cannot send\n");
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("IPC channel locked"));
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
 >>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
+=======
+>>>>>>> 17931d7dd (psoc-edge: Add basic setup for module IPC.)
     /* Write directly to IPC channel and trigger CM55 interrupt */
     cy_en_ipcdrv_status_t drv_status = Cy_IPC_Drv_SendMsgPtr(
         Cy_IPC_Drv_GetIpcBaseAddress(CY_IPC_CHAN_CYPIPE_EP2),
@@ -268,7 +286,14 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
     
     mp_printf(&mp_plat_print, "[CM33] Message sent and CM55 interrupt triggered\n");
     
+<<<<<<< HEAD
 >>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
+=======
+<<<<<<< HEAD
+>>>>>>> fc79f596e (psoc-edge: Add basic setup for module IPC.)
+=======
+>>>>>>> 0e6637c3c (psoc-edge: Add basic setup for module IPC.)
+>>>>>>> 17931d7dd (psoc-edge: Add basic setup for module IPC.)
     mp_printf(&mp_plat_print, "[CM33] LED will be set constantly ON on CM55\n");
     return mp_const_none;
 }
