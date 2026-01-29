@@ -138,8 +138,7 @@ endif
 
 SRC_C = help.c \
 		main.c \
-		mphalport.c \
-		$(MTB_LIBS_DIR)/shared/source/COMPONENT_CM33/cm33_ipc_communication.c 
+		mphalport.c
 
 SRC_ASM += 
 
