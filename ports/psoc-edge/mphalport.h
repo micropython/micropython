@@ -53,9 +53,6 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
-static inline mp_uint_t mp_hal_get_cpu_freq(void) {
-    return 1000000; // 1 MHz, this is a placeholder value
-}
 
 #define MP_HAL_PIN_FMT          "%q"
 #define mp_hal_pin_obj_t        const machine_pin_obj_t *
@@ -70,12 +67,15 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
 #define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 
 void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t value);
-
 void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity);
 uint32_t mp_hal_pin_read(mp_hal_pin_obj_t pin);
 
 uint32_t mp_hal_pin_get_drive(mp_hal_pin_obj_t pin);
 void mp_hal_pin_set_drive(mp_hal_pin_obj_t pin, uint32_t drive);
+
+#define mp_hal_pin_af_obj_t const machine_pin_af_obj_t *
+
+mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, uint32_t af_signal);
 
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H
