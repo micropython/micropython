@@ -90,11 +90,14 @@ Methods
 
    See `AbstractNIC.ifconfig`.
 
-.. method:: PPP.poll()
+.. method:: PPP.poll([irq_arg])
 
    Poll the underlying stream for data, and pass it up the PPP stack.
    This is called automatically if the stream is a UART with a RXIDLE interrupt,
    so it's not usually necessary to call it manually.
+
+   The optional *irq_arg* argument is ignored, this argument exists only so this
+   function is compatible with the :func:`machine.UART.irq` *handler* argument.
 
 Constants
 ---------
