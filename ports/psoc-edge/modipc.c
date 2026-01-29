@@ -30,6 +30,11 @@
 // micropython includes
 #include "py/runtime.h"
 #include "py/mphal.h"
+<<<<<<< HEAD
+=======
+
+// mtb includes  
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
 #include "cybsp.h"
 #include "cy_pdl.h"
 #include "ipc_communication.h"
@@ -67,10 +72,16 @@ static mp_obj_t ipc_enable(void) {
         mp_printf(&mp_plat_print, "CM55 already enabled and IPC initialized\n");
         return mp_const_none;
     }
+<<<<<<< HEAD
 
 
     mp_printf(&mp_plat_print, "Initializing IPC with CM55 (CM55 already booted by main.c)...\n");
 
+=======
+    
+    mp_printf(&mp_plat_print, "Initializing IPC with CM55 (CM55 already booted by main.c)...\n");
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     // ToDo: Enable IPC from here instead from main.c
     /* CM55 is already booted by main.c, IPC and callback are already set up */
     if (!cm55_ipc_initialized) {
@@ -79,7 +90,11 @@ static mp_obj_t ipc_enable(void) {
     }
 
     cm55_enabled = true;
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ipc_enable_obj, ipc_enable);
@@ -102,6 +117,47 @@ static MP_DEFINE_CONST_FUN_OBJ_0(ipc_status_obj, ipc_status);
 
 
 /*******************************************************************************
+<<<<<<< HEAD
+=======
+* Function Name: ipc_led_init
+********************************************************************************
+* Summary:
+*  Sends command to CM55 to initialize LED (runs on CM55)
+*
+* Return:
+*  mp_obj_t: None
+*
+*******************************************************************************/
+//static mp_obj_t ipc_led_init(void) {
+//    /* Auto-initialize if not enabled */
+//    if (!cm55_enabled) {
+//        ipc_enable();
+//    }
+//    
+//    mp_printf(&mp_plat_print, "[CM33] Sending LED_INIT command to CM55...\n");
+//    
+//    cm33_msg_data.client_id = CM55_IPC_PIPE_CLIENT_ID;  // Destination client ID
+//    cm33_msg_data.intr_mask = CY_IPC_CYPIPE_INTR_MASK;
+//    cm33_msg_data.cmd = IPC_CMD_LED_INIT;
+//    cm33_msg_data.value = 0;
+//    
+//    cy_en_ipc_pipe_status_t status;
+//    status = Cy_IPC_Pipe_SendMessage(CM55_IPC_PIPE_EP_ADDR,
+//                                     CM33_IPC_PIPE_EP_ADDR,
+//                                     (void *)&cm33_msg_data,
+//                                     NULL);
+//    
+//    if (status != CY_IPC_PIPE_SUCCESS) {
+//        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Failed to send LED init command"));
+//    }
+//    
+//    mp_printf(&mp_plat_print, "[CM33] LED init command sent to CM55\n");
+//    return mp_const_none;
+//}
+//static MP_DEFINE_CONST_FUN_OBJ_0(ipc_led_init_obj, ipc_led_init);
+
+/*******************************************************************************
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
 * Function Name: ipc_led_set_on
 ********************************************************************************
 * Summary:
@@ -116,13 +172,20 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
     if (!cm55_enabled) {
         ipc_enable();
     }
+<<<<<<< HEAD
 
     mp_printf(&mp_plat_print, "[CM33] Sending LED_SET_ON command to CM55...\n");
 
+=======
+    
+    mp_printf(&mp_plat_print, "[CM33] Sending LED_SET_ON command to CM55...\n");
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     cm33_msg_data.client_id = CM55_IPC_PIPE_CLIENT_ID;  // Destination client ID
     cm33_msg_data.intr_mask = CY_IPC_CYPIPE_INTR_MASK;
     cm33_msg_data.cmd = IPC_CMD_LED_SET_ON;
     cm33_msg_data.value = 0;
+<<<<<<< HEAD
 
     mp_printf(&mp_plat_print, "[CM33] IPC message prepared: client_id=%d, cmd=0x93\n",
         cm33_msg_data.client_id, cm33_msg_data.cmd);
@@ -147,16 +210,35 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
         CY_IPC_CHAN_CYPIPE_EP2, is_locked ? "LOCKED" : "UNLOCKED");
 
 
+=======
+    
+    mp_printf(&mp_plat_print, "[CM33] IPC message prepared: client_id=%d, cmd=0x93\n", 
+              cm33_msg_data.client_id, cm33_msg_data.cmd);
+    
+    /* Use direct IPC channel write instead of IPC Pipe to avoid blocking */
+    mp_printf(&mp_plat_print, "[CM33] Using direct IPC channel write (non-blocking)...\n");
+    
+    /* Check if IPC channel 15 (CM55's channel) is unlocked */
+    bool is_locked = Cy_IPC_Drv_IsLockAcquired(Cy_IPC_Drv_GetIpcBaseAddress(CY_IPC_CHAN_CYPIPE_EP2));
+    mp_printf(&mp_plat_print, "[CM33] IPC channel %d lock status: %s\n", 
+              CY_IPC_CHAN_CYPIPE_EP2, is_locked ? "LOCKED" : "UNLOCKED");
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     if (is_locked) {
         mp_printf(&mp_plat_print, "[CM33] Channel is locked, cannot send\n");
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("IPC channel locked"));
     }
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     /* Write directly to IPC channel and trigger CM55 interrupt */
     cy_en_ipcdrv_status_t drv_status = Cy_IPC_Drv_SendMsgPtr(
         Cy_IPC_Drv_GetIpcBaseAddress(CY_IPC_CHAN_CYPIPE_EP2),
         CY_IPC_CYPIPE_INTR_MASK_EP2,  // Notify mask - trigger interrupt on CM55
         (void *)&cm33_msg_data
+<<<<<<< HEAD
         );
 
     mp_printf(&mp_plat_print, "[CM33] Direct IPC send status: %d (0=success)\n", drv_status);
@@ -175,11 +257,24 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
 
     mp_printf(&mp_plat_print, "[CM33] Message sent and CM55 interrupt triggered\n");
 
+=======
+    );
+    
+    mp_printf(&mp_plat_print, "[CM33] Direct IPC send status: %d (0=success)\n", drv_status);
+    
+    if (drv_status != CY_IPC_DRV_SUCCESS) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("IPC direct send failed"));
+    }
+    
+    mp_printf(&mp_plat_print, "[CM33] Message sent and CM55 interrupt triggered\n");
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     mp_printf(&mp_plat_print, "[CM33] LED will be set constantly ON on CM55\n");
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ipc_sendcmd_led_on_obj, ipc_sendcmd_led_on);
 
+<<<<<<< HEAD
 /*******************************************************************************
 * Function Name: ipc_sendcmd_led_off
 ********************************************************************************
@@ -194,10 +289,17 @@ static MP_DEFINE_CONST_FUN_OBJ_0(ipc_sendcmd_led_on_obj, ipc_sendcmd_led_on);
 static mp_obj_t ipc_sendcmd_led_off(void) {
     mp_printf(&mp_plat_print, "[CM33] Sending LED_SET_OFF command to CM55...\n");
 
+=======
+// Turn LED OFF (constantly) - runs on CM55
+static mp_obj_t ipc_sendcmd_led_off(void) {
+    mp_printf(&mp_plat_print, "[CM33] Sending LED_SET_OFF command to CM55...\n");
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     // Prepare IPC message with LED_SET_OFF command
     cm33_msg_data.client_id = CM55_IPC_PIPE_CLIENT_ID;  // Destination is CM55
     cm33_msg_data.cmd = IPC_CMD_LED_SET_OFF;
     cm33_msg_data.intr_mask = 0;
+<<<<<<< HEAD
 
     mp_printf(&mp_plat_print, "[CM33] IPC message prepared: client_id=%d, cmd=0x%02X\n",
         cm33_msg_data.client_id, cm33_msg_data.cmd);
@@ -209,36 +311,69 @@ static mp_obj_t ipc_sendcmd_led_off(void) {
     mp_printf(&mp_plat_print, "[CM33] IPC channel 15 lock status: %s\n",
         is_locked ? "LOCKED" : "UNLOCKED");
 
+=======
+    
+    mp_printf(&mp_plat_print, "[CM33] IPC message prepared: client_id=%d, cmd=0x%02X\n",
+              cm33_msg_data.client_id, cm33_msg_data.cmd);
+    
+    mp_printf(&mp_plat_print, "[CM33] Using direct IPC channel write (non-blocking)...\n");
+    
+    // Check if channel is locked
+    bool is_locked = Cy_IPC_Drv_IsLockAcquired(Cy_IPC_Drv_GetIpcBaseAddress(CY_IPC_CHAN_CYPIPE_EP2));
+    mp_printf(&mp_plat_print, "[CM33] IPC channel 15 lock status: %s\n", 
+              is_locked ? "LOCKED" : "UNLOCKED");
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     // Use low-level IPC driver API (non-blocking)
     cy_en_ipcdrv_status_t drv_status = Cy_IPC_Drv_SendMsgPtr(
         Cy_IPC_Drv_GetIpcBaseAddress(CY_IPC_CHAN_CYPIPE_EP2),
         CY_IPC_CYPIPE_INTR_MASK_EP2,  // Trigger CM55 interrupt
         &cm33_msg_data
+<<<<<<< HEAD
         );
 
     mp_printf(&mp_plat_print, "[CM33] Direct IPC send status: %d (0=success)\n", drv_status);
 
+=======
+    );
+    
+    mp_printf(&mp_plat_print, "[CM33] Direct IPC send status: %d (0=success)\n", drv_status);
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     if (drv_status != CY_IPC_DRV_SUCCESS) {
         mp_printf(&mp_plat_print, "[CM33] Direct send failed with status: %d\n", drv_status);
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("IPC direct send failed"));
     }
+<<<<<<< HEAD
 
     mp_printf(&mp_plat_print, "[CM33] Message sent and CM55 interrupt triggered\n");
 
+=======
+    
+    mp_printf(&mp_plat_print, "[CM33] Message sent and CM55 interrupt triggered\n");
+    
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     mp_printf(&mp_plat_print, "[CM33] LED will be set constantly OFF on CM55\n");
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ipc_sendcmd_led_off_obj, ipc_sendcmd_led_off);
 
+<<<<<<< HEAD
 /*******************************************************************************
  * Module globals
  *******************************************************************************/
 
+=======
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
 // Module globals table
 static const mp_rom_map_elem_t ipc_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ipc) },
     { MP_ROM_QSTR(MP_QSTR_enable), MP_ROM_PTR(&ipc_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ipc_status_obj) },
+<<<<<<< HEAD
+=======
+    //{ MP_ROM_QSTR(MP_QSTR_led_init), MP_ROM_PTR(&ipc_led_init_obj) },
+>>>>>>> 4632cb93a (psoc-edge: Add basic setup for module IPC.)
     { MP_ROM_QSTR(MP_QSTR_sendcmd_led_on), MP_ROM_PTR(&ipc_sendcmd_led_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendcmd_led_off), MP_ROM_PTR(&ipc_sendcmd_led_off_obj) },
 };
