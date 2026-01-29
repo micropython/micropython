@@ -214,6 +214,18 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "samd/armv6m": (
+        # Fails timing bounds.
+        "extmod/time_res.py",
+        # Require more detailed error messages.
+        "micropython/emg_exc.py",
+        "micropython/heapalloc_exc_compressed.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        "micropython/native_with.py",
+        "micropython/opt_level_lineno.py",
+        "micropython/viper_with.py",
+        "misc/print_exception.py",
+    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
@@ -394,7 +406,12 @@ def get_test_instance(test_instance, baudrate, user, password):
 
     pyb = pyboard.Pyboard(port, baudrate, user, password)
     pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
-    pyb.enter_raw_repl()
+    try:
+        pyb.enter_raw_repl()
+    except pyboard.PyboardError as e:
+        print("error: could not detect test instance")
+        print(e)
+        sys.exit(2)
     return pyb
 
 
@@ -559,14 +576,17 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
         return True, script
 
     try:
-        had_crash = False
-        pyb.enter_raw_repl()
+        pyb.enter_raw_repl(timeout_overall=4)
         if test_file.endswith(tests_requiring_target_wiring) and pyb.target_wiring_script:
             pyb.exec_(
                 "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec("
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
+    except pyboard.PyboardError as e:
+        return True, b"enter_raw_repl failed\n"
+
+    try:
         output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
     except pyboard.PyboardError as e:
         had_crash = True
@@ -860,6 +880,7 @@ class PyboardNodeRunner:
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     testcase_count = ThreadSafeCounter()
+    enter_raw_repl_failure_count = ThreadSafeCounter()
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
@@ -1050,6 +1071,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.arch is not None:
+        skip_tests.update(platform_tests_to_skip.get(args.platform + "/" + args.arch, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
@@ -1218,6 +1241,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
+            if output_mupy == b"enter_raw_repl failed\n":
+                extra_info = "enter_raw_repl failed"
+                enter_raw_repl_failure_count.increment()
             print("FAIL ", test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
@@ -1248,10 +1274,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         else:
             for test in tests:
                 run_one_test(test)
+                if enter_raw_repl_failure_count.value >= 4:
+                    print("Too many enter_raw_repl failures, aborting test run")
+                    break
     except TestError as er:
         for line in er.args[0]:
             print(line)
-        sys.exit(1)
+        sys.exit(2)
 
     # Return test results.
     return test_results.value, testcase_count.value

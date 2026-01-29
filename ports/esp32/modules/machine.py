@@ -189,4 +189,7 @@ del esp32
 
 # Delegate to built-in machine module.
 def __getattr__(attr):
-    return getattr(_machine, attr)
+    value = getattr(_machine, attr, None)
+    if value is None:
+        raise ImportError(attr)
+    return value
