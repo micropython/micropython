@@ -42,6 +42,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
+#ToDo: Check if this is needed
 INC += -I$(MTB_LIBS_DIR)/shared/include
 
 # TODO: Review this flags. Are they all needed?
