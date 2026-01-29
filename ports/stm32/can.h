@@ -102,6 +102,8 @@ void can_disable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo);
 // Interrupt for CAN_INT_MESSAGE_RECEIVED is only enabled if enable_msg_received is set.
 void can_enable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, bool enable_msg_received);
 
+can_state_t can_get_state(CAN_HandleTypeDef *can);
+
 // Implemented in pyb_can.c, called from lower layer
 extern void can_irq_handler(uint can_id,  can_int_t interrupt, can_rx_fifo_t fifo);
 
