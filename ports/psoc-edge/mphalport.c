@@ -131,3 +131,13 @@ void mp_hal_pin_set_drive(mp_hal_pin_obj_t pin, uint32_t drive) {
 void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
     Cy_GPIO_Write(Cy_GPIO_PortToAddr(pin->port), pin->pin, polarity);
 }
+
+mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, uint32_t af_signal) {
+    for (uint8_t i = 0; i < pin->af_num; i++) {
+        const machine_pin_af_obj_t *af = &pin->af[i];
+        if (af->signal == af_signal) {
+            return af;
+        }
+    }
+    return NULL;
+}
