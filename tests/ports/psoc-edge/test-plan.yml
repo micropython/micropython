@@ -5,6 +5,16 @@
       - basics/gc1.py
     device: 
       - board: KIT_PSE84_AI
+
+- name: filesystem
+  test: 
+    script:
+      - extmod/vfs_basic.py
+      - extmod/vfs_lfs_ilistdir_del.py
+      - extmod/vfs_lfs_superblock.py
+      - extmod/vfs_mountinfo.py
+    device: 
+      - board: KIT_PSE84_AI
       
 - name: no-extended-hardware
   test: 
