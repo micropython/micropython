@@ -139,5 +139,35 @@ mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, uint32_t af_signal)
             return af;
         }
     }
-    return NULL;
+
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin '%q' does not support '%s'."), pin->name, machine_pin_af_signal_str[af_signal]);
+}
+
+mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins) {
+    /**
+     * If there is more than one pin,
+     * validate if all pins share
+     * the same AF peripheral pointer and unit
+     */
+    if (num_pins > 1) {
+        const mp_hal_pin_af_config_t *first_pin_cfg = &periph_pins_config[0];
+        mp_hal_af_periph_t periph_ptr = first_pin_cfg->af->periph;
+        uint32_t unit = first_pin_cfg->af->unit;
+        for (uint8_t i = 1; i < num_pins; i++) {
+            const mp_hal_pin_af_config_t *pin_cfg = &periph_pins_config[i];
+            if (pin_cfg->af->periph != periph_ptr) {
+                mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("All pins must belong to the same peripheral."));
+            }
+            if (pin_cfg->af->unit != unit) {
+                mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("All pins must belong to the same unit."));
+            }
+        }
+    }
+
+    for (uint8_t i = 0; i < num_pins; i++) {
+        const mp_hal_pin_af_config_t *pin_cfg = &periph_pins_config[i];
+        Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(pin_cfg->pin->port), pin_cfg->pin->pin, pin_cfg->cy_drive_mode, pin_cfg->init_value, pin_cfg->af->idx);
+    }
+
+    return periph_pins_config[0].af->periph;
 }
