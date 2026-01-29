@@ -348,7 +348,7 @@ static mp_obj_t machine_pin_mode(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         return MP_OBJ_NEW_SMALL_INT(pin_get_mode(self));
     } else {
-        mp_hal_pin_config(self, mp_obj_get_uint(args[1]), pin_get_pull(self));
+        mp_hal_pin_config(self, mp_obj_get_uint(args[1]), pin_get_pull(self), mp_hal_pin_read(self));
         return mp_const_none;
     }
 }
@@ -359,7 +359,7 @@ static mp_obj_t machine_pin_pull(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         return MP_OBJ_NEW_SMALL_INT(pin_get_pull(self));
     } else {
-        mp_hal_pin_config(self, pin_get_mode(self), mp_obj_get_uint(args[1]));
+        mp_hal_pin_config(self, pin_get_mode(self), mp_obj_get_uint(args[1]), mp_hal_pin_read(self));
         return mp_const_none;
     }
 }

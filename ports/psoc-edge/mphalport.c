@@ -104,9 +104,9 @@ void mp_hal_set_interrupt_char(int c) {
 
 extern uint32_t get_drive_mode(uint8_t mode, uint8_t pull);
 
-void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull) {
+void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t value) {
     uint32_t drive_mode = get_drive_mode(mode, pull);
-    Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(pin->port), pin->pin, drive_mode, 0, HSIOM_SEL_GPIO);
+    Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(pin->port), pin->pin, drive_mode, value, HSIOM_SEL_GPIO);
 }
 
 extern uint8_t pin_get_mode(const machine_pin_obj_t *self);

@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H
+#define MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H
+
 // std includes
 #include <stdio.h>
 #include <unistd.h>
@@ -66,9 +69,13 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
 #define mp_hal_pin_od_low(p)    mp_hal_pin_low(p)
 #define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 
-void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull);
+void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t value);
+
 void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity);
 uint32_t mp_hal_pin_read(mp_hal_pin_obj_t pin);
 
 uint32_t mp_hal_pin_get_drive(mp_hal_pin_obj_t pin);
 void mp_hal_pin_set_drive(mp_hal_pin_obj_t pin, uint32_t drive);
+
+
+#endif // MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H
