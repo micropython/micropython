@@ -407,33 +407,11 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_restart_obj, pyb_can_restart);
 // Get the state of the controller
 static mp_obj_t pyb_can_state(mp_obj_t self_in) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t state = CAN_STATE_STOPPED;
     if (self->is_enabled) {
-        CAN_TypeDef *can = self->can.Instance;
-        #if MICROPY_HW_ENABLE_FDCAN
-        uint32_t psr = can->PSR;
-        if (psr & FDCAN_PSR_BO) {
-            state = CAN_STATE_BUS_OFF;
-        } else if (psr & FDCAN_PSR_EP) {
-            state = CAN_STATE_ERROR_PASSIVE;
-        } else if (psr & FDCAN_PSR_EW) {
-            state = CAN_STATE_ERROR_WARNING;
-        } else {
-            state = CAN_STATE_ERROR_ACTIVE;
-        }
-        #else
-        if (can->ESR & CAN_ESR_BOFF) {
-            state = CAN_STATE_BUS_OFF;
-        } else if (can->ESR & CAN_ESR_EPVF) {
-            state = CAN_STATE_ERROR_PASSIVE;
-        } else if (can->ESR & CAN_ESR_EWGF) {
-            state = CAN_STATE_ERROR_WARNING;
-        } else {
-            state = CAN_STATE_ERROR_ACTIVE;
-        }
-        #endif
+        return MP_OBJ_NEW_SMALL_INT(can_get_state(&self->can));
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(CAN_STATE_STOPPED);
     }
-    return MP_OBJ_NEW_SMALL_INT(state);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_state_obj, pyb_can_state);
 

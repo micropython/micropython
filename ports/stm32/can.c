@@ -307,6 +307,25 @@ HAL_StatusTypeDef can_transmit(CAN_HandleTypeDef *hcan, CanTxMsgTypeDef *txmsg, 
     }
 }
 
+can_state_t can_get_state(CAN_HandleTypeDef *can) {
+    uint32_t esr;
+
+    if (can->State == HAL_CAN_STATE_RESET) {
+        return CAN_STATE_STOPPED;
+    }
+
+    esr = can->Instance->ESR;
+    if (esr & CAN_ESR_BOFF) {
+        return CAN_STATE_BUS_OFF;
+    } else if (esr & CAN_ESR_EPVF) {
+        return CAN_STATE_ERROR_PASSIVE;
+    } else if (esr & CAN_ESR_EWGF) {
+        return CAN_STATE_ERROR_WARNING;
+    } else {
+        return CAN_STATE_ERROR_ACTIVE;
+    }
+}
+
 // Workaround for the __HAL_CAN macros expecting a CAN_HandleTypeDef which we
 // don't have in the ISR. Using this "fake" struct instead of CAN_HandleTypeDef
 // so it's not possible to accidentally call an API that uses one of the other
