@@ -101,47 +101,8 @@ static mp_obj_t ipc_status(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ipc_status_obj, ipc_status);
 
-
 /*******************************************************************************
-* Function Name: ipc_led_init
-********************************************************************************
-* Summary:
-*  Sends command to CM55 to initialize LED (runs on CM55)
-*
-* Return:
-*  mp_obj_t: None
-*
-*******************************************************************************/
-//static mp_obj_t ipc_led_init(void) {
-//    /* Auto-initialize if not enabled */
-//    if (!cm55_enabled) {
-//        ipc_enable();
-//    }
-//    
-//    mp_printf(&mp_plat_print, "[CM33] Sending LED_INIT command to CM55...\n");
-//    
-//    cm33_msg_data.client_id = CM55_IPC_PIPE_CLIENT_ID;  // Destination client ID
-//    cm33_msg_data.intr_mask = CY_IPC_CYPIPE_INTR_MASK;
-//    cm33_msg_data.cmd = IPC_CMD_LED_INIT;
-//    cm33_msg_data.value = 0;
-//    
-//    cy_en_ipc_pipe_status_t status;
-//    status = Cy_IPC_Pipe_SendMessage(CM55_IPC_PIPE_EP_ADDR,
-//                                     CM33_IPC_PIPE_EP_ADDR,
-//                                     (void *)&cm33_msg_data,
-//                                     NULL);
-//    
-//    if (status != CY_IPC_PIPE_SUCCESS) {
-//        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Failed to send LED init command"));
-//    }
-//    
-//    mp_printf(&mp_plat_print, "[CM33] LED init command sent to CM55\n");
-//    return mp_const_none;
-//}
-//static MP_DEFINE_CONST_FUN_OBJ_0(ipc_led_init_obj, ipc_led_init);
-
-/*******************************************************************************
-* Function Name: ipc_led_set_on
+* Function Name: ipc_sendcmd_led_on
 ********************************************************************************
 * Summary:
 *  Sends command to CM55 to set LED constantly ON (runs on CM55)
@@ -199,7 +160,16 @@ static mp_obj_t ipc_sendcmd_led_on(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ipc_sendcmd_led_on_obj, ipc_sendcmd_led_on);
 
-// Turn LED OFF (constantly) - runs on CM55
+/*******************************************************************************
+* Function Name: ipc_sendcmd_led_off
+********************************************************************************
+* Summary:
+*  Sends command to CM55 to set LED constantly OFF (runs on CM55)
+*
+* Return:
+*  mp_obj_t: None
+*
+*******************************************************************************/
 static mp_obj_t ipc_sendcmd_led_off(void) {
     mp_printf(&mp_plat_print, "[CM33] Sending LED_SET_OFF command to CM55...\n");
     
@@ -239,12 +209,15 @@ static mp_obj_t ipc_sendcmd_led_off(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ipc_sendcmd_led_off_obj, ipc_sendcmd_led_off);
 
+/*******************************************************************************
+ * Module globals
+ *******************************************************************************/
+
 // Module globals table
 static const mp_rom_map_elem_t ipc_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ipc) },
     { MP_ROM_QSTR(MP_QSTR_enable), MP_ROM_PTR(&ipc_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ipc_status_obj) },
-    //{ MP_ROM_QSTR(MP_QSTR_led_init), MP_ROM_PTR(&ipc_led_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendcmd_led_on), MP_ROM_PTR(&ipc_sendcmd_led_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendcmd_led_off), MP_ROM_PTR(&ipc_sendcmd_led_off_obj) },
 };
