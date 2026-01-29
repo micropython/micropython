@@ -181,26 +181,8 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         drive = mp_obj_get_uint(args[ARG_drive].u_obj);
     }
 
-    cy_stc_gpio_pin_config_t pin_config = {
-        .outVal = get_validated_initial_value(mode, pull, value),
-        .driveMode = get_drive_mode(mode, pull),
-        .hsiom = HSIOM_SEL_GPIO,
-        .intEdge = CY_GPIO_INTR_DISABLE,
-        .intMask = 0UL,
-        .vtrip = CY_GPIO_VTRIP_CMOS,
-        .slewRate = CY_GPIO_SLEW_FAST,
-        .driveSel = drive,
-        .vregEn = 0UL,
-        .ibufMode = 0UL,
-        .vtripSel = 0UL,
-        .vrefSel = 0UL,
-        .vohSel = 0UL,
-        .pullUpRes = CY_GPIO_PULLUP_RES_DISABLE,
-        .nonSec = 1,
-    };
-
-    cy_en_gpio_status_t rslt = Cy_GPIO_Pin_Init(Cy_GPIO_PortToAddr(self->port), self->pin, &pin_config);
-    pin_assert_raise_val("Pin initialization failed (PSE PDL error code: %lx)", rslt);
+    mp_hal_pin_config(self, mode, pull, get_validated_initial_value(mode, pull, value));
+    mp_hal_pin_set_drive(self, drive);
 
     return mp_const_none;
 }
