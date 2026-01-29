@@ -42,10 +42,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
-<<<<<<< HEAD
-#ToDo: Check if this is needed
-=======
->>>>>>> f2ea1ad88 (psoc-edge: WIP-Blink LED on CM55.)
+
 INC += -I$(MTB_LIBS_DIR)/shared/include
 
 # TODO: Review this flags. Are they all needed?
@@ -139,7 +136,7 @@ endif
 
 SRC_C = help.c \
 		main.c \
-		mphalport.c \
+		mphalport.c 
 
 SRC_ASM += 
 
