@@ -4,7 +4,7 @@
 #include "cycfg_peripherals.h"
 #include "py/ringbuf.h"
 
-#define MICROPY_HW_MAX_PDM_PCM              1
+#define MICROPY_HW_MAX_PDM_PCM              6   // TODO: Shall we get this value from the make-pins and set it in mpconfigboard.h?
 #define DEFAULT_LEFT_GAIN                   0
 #define DEFAULT_RIGHT_GAIN                  0
 
@@ -39,6 +39,8 @@
 
 // Constructor args
 enum {
+    ARG_sck,
+    ARG_data,
     ARG_sample_rate,
     ARG_decimation_rate,
     ARG_bits,
@@ -98,6 +100,8 @@ typedef struct _non_blocking_descriptor_t {
 typedef struct _machine_pdm_pcm_obj_t {
     mp_obj_base_t base;
     uint8_t pdm_pcm_id;     // Private variable in this port. ID not associated to any port pin pdm-pcm group.
+    mp_hal_pin_obj_t sck;
+    mp_hal_pin_obj_t data;
     io_mode_t io_mode;
     format_t format;
     uint8_t bits;
