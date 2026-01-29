@@ -362,6 +362,30 @@ int can_receive(FDCAN_HandleTypeDef *can, can_rx_fifo_t fifo, FDCAN_RxHeaderType
     return 0; // success
 }
 
+can_state_t can_get_state(CAN_HandleTypeDef *can) {
+    uint32_t psr;
+
+    if (can->State != HAL_FDCAN_STATE_BUSY) {
+        // The HAL states which map to "stopped" are:
+        // HAL_FDCAN_STATE_RESET - peripheral never initialised
+        // HAL_FDCAN_STATE_READY - CAN is stopped (i.e. HAL_FDCAN_CAN_Stop() called)
+        // HAL_FDCAN_STATE_ERROR - Internal transition timeout, mostly relates to
+        //                         low-power states we currently don't use
+        return CAN_STATE_STOPPED;
+    }
+
+    psr = can->Instance->PSR;
+    if (psr & FDCAN_PSR_BO) {
+        return CAN_STATE_BUS_OFF;
+    } else if (psr & FDCAN_PSR_EP) {
+        return CAN_STATE_ERROR_PASSIVE;
+    } else if (psr & FDCAN_PSR_EW) {
+        return CAN_STATE_ERROR_WARNING;
+    } else {
+        return CAN_STATE_ERROR_ACTIVE;
+    }
+}
+
 static void can_rx_irq_handler(uint can_id, CAN_TypeDef *instance, can_rx_fifo_t fifo) {
     uint32_t ints, rx_fifo_ints, error_ints;
 
