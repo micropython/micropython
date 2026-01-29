@@ -3,7 +3,7 @@
 Working with MicroPython
 =========================
 
-With MicroPython already installed on your board, there are several flavors and tools to work with MicroPython. (:ref:`Installing MicroPython <psoc_edge_mpy_install>`). 
+With MicroPython already installed on your board, there are several flavors and tools to work with MicroPython. (See :ref:`pse_mpy_install` for installation instructions). 
 In this section, we introduce some of the ways you can work with MicroPython.
 
 Serial prompt (REPL Mode)
