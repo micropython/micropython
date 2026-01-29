@@ -126,6 +126,9 @@ MOD_SRC_C += \
 	machine_i2c.c\
 	machine_rtc.c \
 	modpsocedge.c
+	\
+	modpsocedge.c \
+	modipc.c
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
@@ -134,8 +137,7 @@ endif
 
 SRC_C = help.c \
 		main.c \
-		mphalport.c \
-		$(MTB_LIBS_DIR)/shared/source/COMPONENT_CM33/cm33_ipc_communication.c 
+		mphalport.c
 
 SRC_ASM += 
 
@@ -243,19 +245,5 @@ help: port_help mtb_bsp_help mtb_build_help
 
 include $(TOP)/py/mkrules.mk
 
-# Dual-core deployment target - flashes both CM33 (MicroPython) and CM55 (C app)
-deploy_dual: all
-	@echo ""
-	@echo "===================================================="
-	@echo "Flashing CM33 (MicroPython) + CM55 (C application)"
-	@echo "===================================================="
-	@echo ""
-	@echo "Flashing CM33 (MicroPython)..."
-	$(MAKE) -C $(MTB_LIBS_DIR)/proj_cm33_ns program BOARD=$(BOARD) CONFIG=$(CONFIG)
-	@echo ""
-	@echo "Flashing CM55 (C application)..."
-	$(MAKE) -C $(MTB_LIBS_DIR)/proj_cm55 program BOARD=$(BOARD) CONFIG=$(CONFIG)
-	@echo ""
-	@echo "===================================================="
-	@echo "Both CM33 (MicroPython) and CM55 (C app) flashed!"
-	@echo "===================================================="
+# ToDo: Dual-core deployment target - flashes both CM33 (MicroPython) and CM55 (C app) currently but see if this can be changed to flash specific core
+deploy_dual: all mtb_program
