@@ -629,42 +629,19 @@ static machine_pdm_pcm_obj_t *mp_machine_pdm_pcm_make_new_instance(mp_int_t pdm_
     return self;
 }
 
-static void mp_machine_pdm_pcm_pin_init(machine_pdm_pcm_obj_t *self, mp_arg_val_t *args) {
-    /*
-     * This function is a candidate to be generalized to any peripheral.
-     * For every pin in the peripheral:
-     * 1. Get the pin objects (it will raise an exepction if they don´t exist)
-     * 2. Get the pin af objects (it will raise an exception if they don´t exist)
-     * 3. Check if the pins belong to the same af periph, and af unit (raise exception if not)
-     * 4. Configure pins with the right drive_mode, hsiom, out value.
-     * 4. Return the periph.
-     */
-
-    self->sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
-    self->data = mp_hal_get_pin_obj(args[ARG_data].u_obj);
-
-    mp_hal_pin_af_obj_t sck_af = mp_hal_pin_af_find(self->sck, MACHINE_PIN_AF_SIGNAL_PDM_CLK);
-    if (sck_af == NULL) {
-        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("SCK pin is not PDM capable"));
-    }
-    mp_hal_pin_af_obj_t data_af = mp_hal_pin_af_find(self->data, MACHINE_PIN_AF_SIGNAL_PDM_DATA);
-    if (data_af == NULL) {
-        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("DATA pin is not PDM capable"));
-    }
-
-    if (data_af->unit != sck_af->unit) {
-        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("SCK and DATA pins must be on the same unit"));
-    }
-
-    Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(self->sck->port), self->sck->pin, CY_GPIO_DM_STRONG_IN_OFF, 1, sck_af->idx);
-    Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(self->data->port), self->data->pin, CY_GPIO_DM_HIGHZ, 1, data_af->idx);
-}
-
 // init.helper()
 static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_val_t *args) {
     mplogger_print("mp_machine_pdm_pcm_init_helper \r\n");
 
-    mp_machine_pdm_pcm_pin_init(self, args);
+    self->sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+    self->data = mp_hal_get_pin_obj(args[ARG_data].u_obj);
+
+    const mp_hal_pin_af_config_t pdm_pins_config[] = {
+        MP_HAL_PIN_AF_CONF(self->sck, CY_GPIO_DM_STRONG_IN_OFF, 1, MACHINE_PIN_AF_SIGNAL_PDM_CLK),
+        MP_HAL_PIN_AF_CONF(self->data, CY_GPIO_DM_HIGHZ, 1, MACHINE_PIN_AF_SIGNAL_PDM_DATA),
+    };
+
+    mp_hal_periph_pins_af_config(pdm_pins_config, 2);
 
     // Assign configurable parameters
     // PDM_PCM Mode
