@@ -184,7 +184,7 @@ $(BUILD)/$(MPY_APP_NAME).hex: $(BUILD)/$(MPY_APP_NAME).elf
 
 mpy_build: $(BUILD)/$(MPY_APP_NAME).hex
 
-all: mtb_init mpy_build mtb_build_s mtb_build_m55
+all: mtb_init mpy_build mtb_build_m55 mtb_build_s
 
 rebuild: clean all
 
