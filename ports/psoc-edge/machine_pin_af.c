@@ -24,52 +24,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_PSOC_EDGE_MACHINE_PIN_AF_H
-#define MICROPY_INCLUDED_PSOC_EDGE_MACHINE_PIN_AF_H
+#include "machine_pin_af.h"
 
-#include "py/obj.h"
-#include "gpio_pse84_bga_220.h"
+const char *machine_pin_af_signal_str[] = {
+    [MACHINE_PIN_AF_SIGNAL_I2C_SDA] = "I2C_SDA",
+    [MACHINE_PIN_AF_SIGNAL_I2C_SCL] = "I2C_SCL",
 
-typedef enum {
-    MACHINE_PIN_AF_FN_I2C,
-    MACHINE_PIN_AF_FN_SPI,
-    MACHINE_PIN_AF_FN_UART,
+    [MACHINE_PIN_AF_SIGNAL_SPI_MOSI] = "SPI_MOSI",
+    [MACHINE_PIN_AF_SIGNAL_SPI_MISO] = "SPI_MISO",
+    [MACHINE_PIN_AF_SIGNAL_SPI_CLK] = "SPI_CLK",
+    [MACHINE_PIN_AF_SIGNAL_SPI_SELECT0] = "SPI_SELECT0",
+    [MACHINE_PIN_AF_SIGNAL_SPI_SELECT1] = "SPI_SELECT1",
 
-    MACHINE_PIN_AF_FN_PDM,
-    /* TODO: Add additional functionalities */
-} machine_pin_af_fn_t;
+    [MACHINE_PIN_AF_SIGNAL_UART_TX] = "UART_TX",
+    [MACHINE_PIN_AF_SIGNAL_UART_RX] = "UART_RX",
+    [MACHINE_PIN_AF_SIGNAL_UART_CTS] = "UART_CTS",
+    [MACHINE_PIN_AF_SIGNAL_UART_RTS] = "UART_RTS",
 
-typedef enum {
-    MACHINE_PIN_AF_SIGNAL_I2C_SDA,
-    MACHINE_PIN_AF_SIGNAL_I2C_SCL,
-
-    MACHINE_PIN_AF_SIGNAL_SPI_MOSI,
-    MACHINE_PIN_AF_SIGNAL_SPI_MISO,
-    MACHINE_PIN_AF_SIGNAL_SPI_CLK,
-    MACHINE_PIN_AF_SIGNAL_SPI_SELECT0,
-    MACHINE_PIN_AF_SIGNAL_SPI_SELECT1,
-
-    MACHINE_PIN_AF_SIGNAL_UART_TX,
-    MACHINE_PIN_AF_SIGNAL_UART_RX,
-    MACHINE_PIN_AF_SIGNAL_UART_CTS,
-    MACHINE_PIN_AF_SIGNAL_UART_RTS,
-
-    MACHINE_PIN_AF_SIGNAL_PDM_CLK,
-    MACHINE_PIN_AF_SIGNAL_PDM_DATA,
+    [MACHINE_PIN_AF_SIGNAL_PDM_CLK] = "PDM_CLK",
+    [MACHINE_PIN_AF_SIGNAL_PDM_DATA] = "PDM_DATA",
 
     /* TODO: Add additional types */
-} machine_pin_af_signal_t;
-
-extern const char *machine_pin_af_signal_str[];
-
-typedef struct {
-    en_hsiom_sel_t idx;
-    machine_pin_af_fn_t fn;
-    uint8_t unit;
-    machine_pin_af_signal_t signal;
-    void *periph;
-} machine_pin_af_obj_t;
-
-extern const mp_obj_type_t machine_pin_af_type;
-
-#endif // MICROPY_INCLUDED_PSOC_EDGE_MACHINE_PIN_AF_H
+};
