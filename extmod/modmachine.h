@@ -203,6 +203,7 @@ extern const machine_mem_obj_t machine_mem32_obj;
 // is provided by a port.
 extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_adc_block_type;
+extern const mp_obj_type_t machine_can_type;
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_i2c_target_type;
 extern const mp_obj_type_t machine_i2s_type;
