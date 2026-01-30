@@ -267,6 +267,7 @@ tests_requiring_slice = (
 
 # Tests that require `import target_wiring` to work.
 tests_requiring_target_wiring = (
+    "extmod/machine_spi_rate.py",
     "extmod/machine_uart_irq_txidle.py",
     "extmod/machine_uart_tx.py",
     "extmod_hardware/machine_encoder.py",
