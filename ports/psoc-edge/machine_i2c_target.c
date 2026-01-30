@@ -99,50 +99,35 @@ static void i2c_slave_event_callback(uint32_t events) {
 
     machine_i2c_target_data_t *data = &machine_i2c_target_data[self->id];
 
-    // Handle slave read request (master wants to read - address match)
-    // This is triggered when master sends slave address with READ bit
     if (events & CY_SCB_I2C_SLAVE_READ_EVENT) {
         mplogger_print("I2C Slave: Read request (address matched)\n");
-
-        // Call extmod helper for address match with read
         machine_i2c_target_data_addr_match(data, true);
     }
 
-    // Handle slave write request (master wants to write - address match)
-    // This is triggered when master sends slave address with WRITE bit
+
     if (events & CY_SCB_I2C_SLAVE_WRITE_EVENT) {
         mplogger_print("I2C Slave: Write request (address matched)\n");
-
-        // Call extmod helper for address match with write
         machine_i2c_target_data_addr_match(data, false);
     }
 
-    // Handle slave read buffer empty (master has read all configured data)
-    // This allows application to provide more data dynamically
+
     if (events & CY_SCB_I2C_SLAVE_RD_BUF_EMPTY_EVENT) {
         mplogger_print("I2C Slave: Read buffer empty\n");
-
-        // Trigger read request events to refill buffer
         if (data->mem_buf != NULL && data->mem_len > 0) {
-            // Request more data to send
             machine_i2c_target_data_read_request(self, data);
         }
     }
 
-    // Handle slave read complete (master read data from slave)
     if (events & CY_SCB_I2C_SLAVE_RD_CMPLT_EVENT) {
         if (!(events & CY_SCB_I2C_SLAVE_ERR_EVENT)) {
-            // Read complete without errors
             mplogger_print("I2C Slave: Read complete, %u bytes sent\n",
                 Cy_SCB_I2C_SlaveGetReadTransferCount(MICROPY_HW_I2C0_SCB, &self->ctx));
         }
 
-        // Reconfigure read buffer for next transaction (per PDL documentation)
         if (data->mem_buf != NULL && data->mem_len > 0) {
             Cy_SCB_I2C_SlaveConfigReadBuf(MICROPY_HW_I2C0_SCB, data->mem_buf, data->mem_len, &self->ctx);
         }
 
-        // Clear read status to prevent re-triggering on next interrupt
         Cy_SCB_I2C_SlaveClearReadStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
 
         // Reset index for next transaction
@@ -155,26 +140,20 @@ static void i2c_slave_event_callback(uint32_t events) {
         machine_i2c_target_data_restart_or_stop(data);
     }
 
-    // Handle slave write complete (master wrote data to slave)
     if (events & CY_SCB_I2C_SLAVE_WR_CMPLT_EVENT) {
         if (!(events & CY_SCB_I2C_SLAVE_ERR_EVENT)) {
-            // Write complete without errors
             uint32_t bytes_received = Cy_SCB_I2C_SlaveGetWriteTransferCount(MICROPY_HW_I2C0_SCB, &self->ctx);
             mplogger_print("I2C Slave: Write complete, %u bytes received\n", bytes_received);
-
-            // Process received data through write request events
             self->rx_index = 0;
             while (self->rx_index < bytes_received) {
                 machine_i2c_target_data_write_request(self, data);
             }
         }
 
-        // Reconfigure write buffer for next transaction (per PDL documentation)
         if (data->mem_buf != NULL && data->mem_len > 0) {
             Cy_SCB_I2C_SlaveConfigWriteBuf(MICROPY_HW_I2C0_SCB, data->mem_buf, data->mem_len, &self->ctx);
         }
 
-        // Clear write status to capture following updates
         Cy_SCB_I2C_SlaveClearWriteStatus(MICROPY_HW_I2C0_SCB, &self->ctx);
 
         // Ensure state is WRITING so extmod reset_helper triggers END_WRITE
