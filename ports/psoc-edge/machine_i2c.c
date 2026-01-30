@@ -109,7 +109,6 @@ static inline void machine_hw_i2c_obj_free(machine_hw_i2c_obj_t *i2c_obj_ptr) {
 static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     cy_rslt_t result;
 
-    // 1. Populate I2C master configuration structure (following PDL example)
     self->cfg = (cy_stc_scb_i2c_config_t) {
         .i2cMode = CY_SCB_I2C_MASTER,
         .useRxFifo = false,
@@ -124,19 +123,16 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
         .highPhaseDutyCycle = 8U,
     };
 
-    // 2. Configure pins for I2C operation
     Cy_GPIO_SetHSIOM(MICROPY_HW_I2C0_SCL_PORT, self->scl_pin, MICROPY_HW_I2C0_SCL_HSIOM);
     Cy_GPIO_SetHSIOM(MICROPY_HW_I2C0_SDA_PORT, self->sda_pin, MICROPY_HW_I2C0_SDA_HSIOM);
     Cy_GPIO_SetDrivemode(MICROPY_HW_I2C0_SCL_PORT, self->scl_pin, CY_GPIO_DM_OD_DRIVESLOW);
     Cy_GPIO_SetDrivemode(MICROPY_HW_I2C0_SDA_PORT, self->sda_pin, CY_GPIO_DM_OD_DRIVESLOW);
 
-    // 3. Initialize I2C with PDL (configure I2C to operate)
     result = Cy_SCB_I2C_Init(MICROPY_HW_I2C0_SCB, &self->cfg, &self->ctx);
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C init failed: 0x%lx"), result);
     }
 
-    // 4. Configure clock divider for I2C (balanced performance and power)
     // For desired data rate, clk_scb frequency must be in valid range (see TRM I2C Oversampling section)
     // For 100kHz: clk_scb range is 1.55 - 3.2 MHz (architecture reference manual 002-38331 Rev. P685 table 355)
     //   - clk_peri = 100 MHz, divider = 42 → clk_scb = 2.38 MHz ✓ (mid-range)
@@ -149,7 +145,6 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_8_BIT, 2U, divider);
     Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_8_BIT, 2U);
 
-    // 5. Configure master data rate
     uint32_t clk_scb_freq = Cy_SysClk_PeriphGetFrequency(CY_SYSCLK_DIV_8_BIT, 2U);
     mplogger_print("DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
 
@@ -162,8 +157,6 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
             freq_hz, actual_rate);
     }
 
-    // 6. Configure interrupt (mandatory for I2C operation)
-    // Populate interrupt configuration structure
     const cy_stc_sysint_t i2cIntrConfig = {
         .intrSrc = MICROPY_HW_I2C_IRQn,
         .intrPriority = MICROPY_HW_I2C_INTR_PRIORITY,
@@ -176,7 +169,6 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     }
     NVIC_EnableIRQ(MICROPY_HW_I2C_IRQn);
 
-    // 7. Enable I2C operation
     Cy_SCB_I2C_Enable(MICROPY_HW_I2C0_SCB);
 
     mplogger_print("I2C initialized: requested=%u Hz, actual=%u Hz, clk_scb=%u Hz\n",
