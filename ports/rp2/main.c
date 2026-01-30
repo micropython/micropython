@@ -190,6 +190,9 @@ int main(int argc, char **argv) {
         // Initialise sub-systems.
         readline_init0();
         machine_pin_init();
+        #ifdef PICO_RP2350
+        rp2_hstx_init();
+        #endif
         rp2_pio_init();
         rp2_dma_init();
         #if MICROPY_PY_MACHINE_I2S
@@ -256,6 +259,9 @@ int main(int argc, char **argv) {
         #endif
         rp2_dma_deinit();
         rp2_pio_deinit();
+        #ifdef PICO_RP2350
+        rp2_hstx_deinit();
+        #endif
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
