@@ -6,7 +6,6 @@ import hashlib
 import urllib.error
 import urllib.request
 import json
-import tempfile
 import os
 import os.path
 
@@ -134,7 +133,9 @@ def _download_file(transport, url, dest):
     _write_file(transport, dest, data)
 
 
-def _install_json(transport, package_json_url, index, target, version, mpy, mpy_version):
+def _install_json(
+    transport, package_json_url, index, target, version, mpy_version, mpy_set_by_user
+):
     base_url = ""
     if package_json_url.startswith(allowed_mip_url_prefixes):
         try:
@@ -170,12 +171,18 @@ def _install_json(transport, package_json_url, index, target, version, mpy, mpy_
             url = f"{base_url}/{url}"  # Relative URLs
         _download_file(transport, _rewrite_url(url, version), fs_target_path)
     for dep, dep_version in package_json.get("deps", ()):
-        _install_package(transport, dep, index, target, dep_version, mpy, mpy_version)
+        _install_package(transport, dep, index, target, dep_version, mpy_version, mpy_set_by_user)
 
 
-def _install_package(transport, package, index, target, version, mpy, mpy_version):
+def _install_package(transport, package, index, target, version, mpy_version, mpy_set_by_user):
     # transport=None routes file operations to the local filesystem instead of remote transport
+    # mpy_version
     if package.startswith(allowed_mip_url_prefixes):
+        if mpy_set_by_user:
+            print(
+                f"Warning: --mpy and --mpy-version only affect downloads from index, package {package} will be downloaded as-is"
+            )
+
         if package.endswith(".py") or package.endswith(".mpy"):
             print(f"Downloading {package} to {target}")
             _download_file(
@@ -191,20 +198,18 @@ def _install_package(transport, package, index, target, version, mpy, mpy_versio
                 package += "package.json"
             print(f"Installing {package} to {target}")
     elif package.endswith(".json"):
-        pass
+        if mpy_set_by_user:
+            print(
+                f"Warning: --mpy and --mpy-version only affect downloads from index, package {package} will be downloaded as-is"
+            )
     else:
         if not version:
             version = "latest"
         print(f"Installing {package} ({version}) from {index} to {target}")
 
-        if not mpy:
-            mpy_version = "py"
-        elif not mpy_version:
-            raise CommandError("mpy version not specified, use --mpy-version")
+        package = f"{index}/package/{mpy_version or 'py'}/{package}/{version}.json"
 
-        package = f"{index}/package/{mpy_version}/{package}/{version}.json"
-
-    _install_json(transport, package, index, target, version, mpy, mpy_version)
+    _install_json(transport, package, index, target, version, mpy_version, mpy_set_by_user)
 
 
 def do_mip(state, args):
@@ -222,12 +227,12 @@ def do_mip(state, args):
         raise CommandError(f"mip: '{args.command[0]}' is not a command")
 
     if args.mpy is None:
+        mpy_set_by_user = False
         args.mpy = default_mpy
+    else:
+        mpy_set_by_user = True
 
-    if args.mpy:
-        if args.mpy_version is None:
-            args.mpy_version = "auto"
-    elif args.mpy_version is not None:
+    if not args.mpy and args.mpy_version is not None:
         raise CommandError("--mpy-version requires --mpy")
 
     if args.target is None:
@@ -245,7 +250,7 @@ def do_mip(state, args):
             else:
                 raise CommandError("Unable to find lib dir in sys.path, use --target to override")
 
-    if args.mpy and args.mpy_version == "auto":
+    if args.mpy and args.mpy_version is None:
         if command == "download":
             # Only enter raw REPL for download when we need to probe the device.
             state.ensure_raw_repl()
@@ -276,8 +281,8 @@ def do_mip(state, args):
                 args.index.rstrip("/"),
                 args.target,
                 version,
-                args.mpy,
                 args.mpy_version,
+                mpy_set_by_user,
             )
         except CommandError:
             print("Package may be partially installed")

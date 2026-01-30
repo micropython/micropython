@@ -30,6 +30,9 @@ echo
 echo ---- Download package
 "${MPREMOTE}" mip download --target="${TARGET_DIR}" "${PACKAGE_DIR}/package.json"
 echo
+echo ---- Download package with --mpy and --mpy-version set to get a warning
+"${MPREMOTE}" mip download --mpy-version=6 --mpy --target="${TARGET_DIR}" "${PACKAGE_DIR}/package.json"
+echo
 echo ---- Verify package
 diff -u "${MODULE_DIR}/__init__.py" "${TARGET_DIR}/${PACKAGE}/__init__.py"
 diff -u "${MODULE_DIR}/hello.py" "${TARGET_DIR}/${PACKAGE}/hello.py"
