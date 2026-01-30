@@ -91,6 +91,7 @@
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS            (1)
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc-edge/modtime.c"
+#define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX    (2)
 
 // Logger
 #define MICROPY_LOGGER_DEBUG                    (0)
