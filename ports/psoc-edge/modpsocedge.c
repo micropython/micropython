@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020-2021 Damien P. George
- * Copyright (c) 2022-2025 Infineon Technologies AG
+ * Copyright (c) 2022-2024 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
