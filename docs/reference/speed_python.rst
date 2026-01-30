@@ -182,9 +182,13 @@ The const() declaration
 
 MicroPython provides a ``const()`` declaration. This works in a similar way
 to ``#define`` in C in that when the code is compiled to bytecode the compiler
-substitutes the numeric value for the identifier. This avoids a dictionary
+substitutes the constant value for the identifier. This avoids a dictionary
 lookup at runtime. The argument to ``const()`` may be anything which, at
-compile time, evaluates to an integer e.g. ``0x100`` or ``1 << 8``.
+compile time, evaluates to a constant e.g. ``0x100``, ``1 << 8``, or
+``"string"``.
+
+See :func:`micropython.const` for complete documentation including usage
+requirements, limitations, and examples.
 
 .. _Caching:
 
