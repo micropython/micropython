@@ -45,7 +45,6 @@
 
 // port-specific includes
 #include "modmachine.h"
-// #include "machine_pin_phy.h"
 #include "mplogger.h"
 
 #define DEFAULT_I2C_FREQ     (400000)
@@ -174,7 +173,6 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     mplogger_print("I2C initialized: requested=%u Hz, actual=%u Hz, clk_scb=%u Hz\n",
         freq_hz, actual_rate, clk_scb_freq);
 
-    // Store requested frequency
     self->freq = freq_hz;
 }
 
