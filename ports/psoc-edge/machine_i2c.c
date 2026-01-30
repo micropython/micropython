@@ -338,7 +338,6 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 static const mp_machine_i2c_p_t machine_hw_i2c_p = {
-    .stop = machine_hw_i2c_deinit,  // Map stop() to deinit functionality
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_hw_i2c_transfer,
 };
