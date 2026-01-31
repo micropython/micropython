@@ -7,6 +7,9 @@
 // Matches: DSWdsw
 #define MATCH_NAMED_CLASS_CHAR(c) (((c) | 0x20) == 'd' || ((c) | 0x24) == 'w')
 
+// Maximum nesting depth for regex groups to prevent stack overflow
+#define RE1_5_MAX_RECURSION_DEPTH 100
+
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(code + at + num, code + at, pc - at) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
@@ -21,13 +24,18 @@ static void _emit_checked(int at, char *code, int val, bool *err) {
     }
 }
 
-static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
+static const char *_compilecode(const char *re, ByteProg *prog, int sizecode, int depth)
 {
     char *code = sizecode ? NULL : prog->insts;
     bool err = false;
     int start = PC;
     int term = PC;
     int alt_label = 0;
+
+    // Check recursion depth to prevent stack overflow
+    if (depth > RE1_5_MAX_RECURSION_DEPTH) {
+        return NULL;
+    }
 
     for (; *re && *re != ')'; re++) {
         switch (*re) {
@@ -100,7 +108,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
                     re += 2;
             }
 
-            re = _compilecode(re + 1, prog, sizecode);
+            re = _compilecode(re + 1, prog, sizecode, depth + 1);
             if (re == NULL || *re != ')') return NULL; // error, or no matching paren
 
             if (capture) {
@@ -191,7 +199,7 @@ int re1_5_sizecode(const char *re)
         .bytelen = 5 + NON_ANCHORED_PREFIX
     };
 
-    if (_compilecode(re, &dummyprog, /*sizecode*/1) == NULL) return -1;
+    if (_compilecode(re, &dummyprog, /*sizecode*/1, /*depth*/0) == NULL) return -1;
 
     return dummyprog.bytelen;
 }
@@ -216,7 +224,7 @@ int re1_5_compilecode(ByteProg *prog, const char *re)
     prog->insts[prog->bytelen++] = 0;
     prog->len++;
 
-    re = _compilecode(re, prog, /*sizecode*/0);
+    re = _compilecode(re, prog, /*sizecode*/0, /*depth*/0);
     if (re == NULL || *re) return 1;
 
     prog->insts[prog->bytelen++] = Save;
