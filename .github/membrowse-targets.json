@@ -1,0 +1,95 @@
+[
+  {
+    "target_name": "mpy-cross",
+    "port": "mpy-cross",
+    "board": "",
+    "setup_cmd": "sudo apt-get update && sudo apt-get install -y build-essential",
+    "build_cmd": "make -C mpy-cross DEBUG=1",
+    "elf": "mpy-cross/build/mpy-cross",
+    "ld": ""
+  },
+  {
+    "target_name": "bare-arm",
+    "port": "bare-arm",
+    "board": "",
+    "setup_cmd": "sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi",
+    "build_cmd": "make -C mpy-cross && make -C ports/bare-arm",
+    "elf": "ports/bare-arm/build/firmware.elf",
+    "ld": "ports/bare-arm/stm32f405.ld"
+  },
+  {
+    "target_name": "minimal-x86",
+    "port": "minimal",
+    "board": "",
+    "setup_cmd": "sudo apt-get update && sudo apt-get install -y gcc-multilib",
+    "build_cmd": "make -C mpy-cross && make -C ports/minimal",
+    "elf": "ports/minimal/build/firmware.elf",
+    "ld": ""
+  },
+  {
+    "target_name": "minimal-arm",
+    "port": "minimal",
+    "board": "",
+    "setup_cmd": "sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi",
+    "build_cmd": "make -C mpy-cross && make -C ports/minimal CROSS=1",
+    "elf": "ports/minimal/build/firmware.elf",
+    "ld": "ports/minimal/stm32f405.ld"
+  },
+  {
+    "target_name": "unix-standard",
+    "port": "unix",
+    "board": "",
+    "setup_cmd": "sudo apt-get update && sudo apt-get install -y build-essential libffi-dev pkg-config",
+    "build_cmd": "make -C mpy-cross && make -C ports/unix submodules && make -C ports/unix deplibs && make -C ports/unix STRIP=",
+    "elf": "ports/unix/build-standard/micropython",
+    "ld": ""
+  },
+  {
+    "target_name": "stm32-pybv10",
+    "port": "stm32",
+    "board": "PYBV10",
+    "setup_cmd": "sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi",
+    "build_cmd": "make -C mpy-cross && make -C ports/stm32 submodules && make -C ports/stm32 BOARD=PYBV10",
+    "elf": "ports/stm32/build-PYBV10/firmware.elf",
+    "ld": "ports/stm32/boards/stm32f405.ld ports/stm32/boards/common_ifs.ld"
+  },
+  {
+    "target_name": "mimxrt-teensy40",
+    "port": "mimxrt",
+    "board": "TEENSY40",
+    "setup_cmd": "tools/ci.sh mimxrt_setup",
+    "build_cmd": "make -C mpy-cross && make -C ports/mimxrt BOARD=TEENSY40 submodules && make -C ports/mimxrt BOARD=TEENSY40",
+    "elf": "ports/mimxrt/build-TEENSY40/firmware.elf",
+    "ld": "ports/mimxrt/boards/MIMXRT1062.ld ports/mimxrt/boards/common.ld",
+    "linker_vars": "flash_start=0x60000000 flash_size=0x200000 vfs_start=0x60100000 vfs_size=0x100000 reserved_size=0"
+  },
+  {
+    "target_name": "rp2-pico-w",
+    "port": "rp2",
+    "board": "RPI_PICO_W",
+    "setup_cmd": "tools/ci.sh rp2_setup",
+    "build_cmd": "make -C mpy-cross && make -C ports/rp2 BOARD=RPI_PICO_W submodules && make -C ports/rp2 BOARD=RPI_PICO_W",
+    "elf": "ports/rp2/build-RPI_PICO_W/firmware.elf",
+    "ld": "ports/rp2/memmap_mp_rp2040.ld",
+    "linker_vars": "__micropy_flash_size__=2048k __micropy_c_heap_size__=4096"
+  },
+  {
+    "target_name": "samd-itsybitsy-m4",
+    "port": "samd",
+    "board": "ADAFRUIT_ITSYBITSY_M4_EXPRESS",
+    "setup_cmd": "tools/ci.sh samd_setup",
+    "build_cmd": "make -C mpy-cross && make -C ports/samd submodules && make -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M4_EXPRESS",
+    "elf": "ports/samd/build-ADAFRUIT_ITSYBITSY_M4_EXPRESS/firmware.elf",
+    "ld": "ports/samd/boards/samd51x19a.ld ports/samd/sections.ld",
+    "linker_vars": "_codesize=496K"
+  },
+  {
+    "target_name": "qemu-virt-rv32",
+    "port": "qemu",
+    "board": "VIRT_RV32",
+    "setup_cmd": "tools/ci.sh qemu_setup_rv32",
+    "build_cmd": "make -C mpy-cross && make -C ports/qemu BOARD=VIRT_RV32 submodules && make -C ports/qemu BOARD=VIRT_RV32",
+    "elf": "ports/qemu/build-VIRT_RV32/firmware.elf",
+    "ld": "ports/qemu/mcu/rv32/virt.ld"
+  }
+]
