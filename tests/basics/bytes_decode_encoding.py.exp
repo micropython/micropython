@@ -1,0 +1,23 @@
+hello
+hello
+hello
+b'hello'
+b'hello'
+b'hello'
+test
+©
+b'\xc2\xa9'
+👍
+b'\xf0\x9f\x91\x8d'
+LookupError: latin-1
+LookupError: latin1
+LookupError: utf-16
+LookupError: utf-32
+LookupError: iso-8859-1
+LookupError: cp1252
+LookupError: latin-1
+LookupError: latin1
+LookupError: utf-16
+LookupError: utf-32
+LookupError: iso-8859-1
+LookupError: cp1252
