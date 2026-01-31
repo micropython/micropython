@@ -60,6 +60,7 @@
 #include "extmod/vfs.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
+extern void machine_encoder_deinit_all(void);
 
 void board_init(void);
 
@@ -195,6 +196,9 @@ int main(void) {
         machine_pwm_deinit_all();
         #endif
         soft_timer_deinit();
+        #if MICROPY_PY_MACHINE_QECNT
+        machine_encoder_deinit_all();
+        #endif
         gc_sweep_all();
         mp_deinit();
     }
