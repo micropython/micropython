@@ -87,7 +87,20 @@ static int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
 // This wrapper function allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
 static mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // Validate that self is actually an instance object, not a corrupted value
+    // (e.g., from `self = integer` in __init__). If self is invalid, accessing
+    // it as mp_obj_instance_t will cause segfault.
+    if (!mp_obj_is_obj(args[0])) {
+        mp_raise_TypeError(MP_ERROR_TEXT("invalid self argument in __init__"));
+    }
+
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    // Additional check: verify self is actually an instance type
+    if (!mp_obj_is_instance_type(mp_obj_get_type(args[0]))) {
+        mp_raise_TypeError(MP_ERROR_TEXT("invalid self argument in __init__"));
+    }
+
     const mp_obj_type_t *native_base = NULL;
     instance_count_native_bases(self->base.type, &native_base);
     self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, kw_args->used, args + 1);
