@@ -55,7 +55,7 @@ static err_t netif_struct_init(struct netif *netif) {
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
     esp_hosted_wifi_get_mac(netif->name[1] - '0', netif->hwaddr);
     netif->hwaddr_len = sizeof(netif->hwaddr);
-    info_printf("netif_init() netif initialized\n");
+    info_printf("netif initialized\n");
     return ERR_OK;
 }
 
@@ -122,19 +122,19 @@ int esp_hosted_netif_input(esp_hosted_state_t *state, uint32_t itf, const void *
 
     struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
     if (p == NULL) {
-        error_printf("esp_hosted_netif_input() failed to alloc pbuf %d\n", len);
+        error_printf("failed to alloc pbuf %d\n", len);
         return -1;
     }
     // Copy buf to pbuf
     pbuf_take(p, buf, len);
 
     if (netif->input(p, netif) != ERR_OK) {
-        error_printf("esp_hosted_netif_input() netif input failed\n");
+        error_printf("netif input failed\n");
         pbuf_free(p);
         return -1;
     }
 
-    debug_printf("esp_hosted_netif_input() eth frame input %d\n", len);
+    debug_printf("eth frame input %d\n", len);
     return 0;
 }
 
@@ -142,7 +142,7 @@ err_t esp_hosted_netif_output(struct netif *netif, struct pbuf *p) {
     esp_hosted_state_t *state = netif->state;
 
     if (p->tot_len > ESP_FRAME_MAX_PAYLOAD) {
-        error_printf("esp_hosted_netif_output() pbuf len > SPI buf len\n");
+        error_printf("pbuf len > SPI buf len\n");
         return ERR_IF;
     }
 
@@ -158,10 +158,10 @@ err_t esp_hosted_netif_output(struct netif *netif, struct pbuf *p) {
 
     size_t frame_size = (sizeof(esp_header_t) + esp_header->len + 3) & ~3U;
     if (esp_hosted_hal_spi_transfer(state->buf, NULL, frame_size) != 0) {
-        error_printf("esp_hosted_netif_output() failed to send eth frame\n");
+        error_printf("failed to send eth frame\n");
         return ERR_IF;
     }
-    debug_printf("esp_hosted_netif_output() if %d pbuf len %d\n", esp_header->if_type, esp_header->len);
+    debug_printf("if %d pbuf len %d\n", esp_header->if_type, esp_header->len);
     return ERR_OK;
 }
 #endif

@@ -43,7 +43,7 @@
 #include "shared/netutils/netutils.h"
 #include "shared/netutils/dhcpserver.h"
 
-#include "esp_hosted.pb-c.h"
+#include MICROPY_PY_NETWORK_ESP_HOSTED_PROTO_H
 
 #include "esp_hosted_hal.h"
 #include "esp_hosted_stack.h"
@@ -183,6 +183,13 @@ static int32_t esp_hosted_resp_value(CtrlMsg *ctrl_msg) {
         offsetof(CtrlMsgRespSetWifiMaxTxPower, resp),
         offsetof(CtrlMsgRespGetWifiCurrTxPower, resp),
         offsetof(CtrlMsgRespConfigHeartbeat, resp),
+        #if !MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY
+        offsetof(CtrlMsgRespEnableDisable, resp),
+        offsetof(CtrlMsgRespGetFwVersion, resp),
+        offsetof(CtrlMsgRespSetCountryCode, resp),
+        offsetof(CtrlMsgRespGetCountryCode, resp),
+        offsetof(CtrlMsgRespCustomRpcUnserialisedMsg, resp),
+        #endif  // !MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY
     };
 
     int32_t resp = -1;
@@ -211,7 +218,7 @@ static int esp_hosted_request(CtrlMsgId msg_id, void *ctrl_payload) {
     // Pack protobuf
     size_t payload_size = ctrl_msg__get_packed_size(&ctrl_msg);
     if ((payload_size + sizeof(tlv_header_t)) > ESP_FRAME_MAX_PAYLOAD) {
-        error_printf("esp_hosted_request() payload size > max payload %d\n", msg_id);
+        error_printf("payload size > max payload %d\n", msg_id);
         return -1;
     }
 
@@ -235,7 +242,7 @@ static int esp_hosted_request(CtrlMsgId msg_id, void *ctrl_payload) {
 
     size_t frame_size = (sizeof(esp_header_t) + esp_header->len + 3) & ~3U;
     if (esp_hosted_hal_spi_transfer(esp_state.buf, NULL, frame_size) != 0) {
-        error_printf("esp_hosted_request() request %d failed\n", msg_id);
+        error_printf("request %d failed\n", msg_id);
         return -1;
     }
     return 0;
@@ -251,7 +258,7 @@ static CtrlMsg *esp_hosted_response(CtrlMsgId msg_id, uint32_t timeout) {
                 break;
             }
 
-            debug_printf("esp_hosted_response() waiting for id %lu last id %lu\n", msg_id, ctrl_msg->msg_id);
+            debug_printf("waiting for id %lu last id %lu\n", msg_id, ctrl_msg->msg_id);
             ctrl_msg = NULL;
         }
 
@@ -268,7 +275,7 @@ static CtrlMsg *esp_hosted_response(CtrlMsgId msg_id, uint32_t timeout) {
 
     // If message type is a response, check the response struct's return value.
     if (ctrl_msg->msg_type == CTRL_MSG_TYPE__Resp && esp_hosted_resp_value(ctrl_msg) != 0) {
-        error_printf("esp_hosted_response() response %d failed %d\n", msg_id, esp_hosted_resp_value(ctrl_msg));
+        error_printf("response %d failed %d\n", msg_id, esp_hosted_resp_value(ctrl_msg));
         ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
         return NULL;
     }
@@ -300,12 +307,12 @@ int esp_hosted_wifi_poll(void) {
         esp_header_t *frag_header = (esp_header_t *)(esp_state.buf + offset);
         if ((ESP_STATE_BUF_SIZE - offset) < ESP_FRAME_MAX_SIZE) {
             // This shouldn't happen, but if it did stop polling.
-            error_printf("esp_hosted_poll() spi buffer overflow offs %d\n", offset);
+            error_printf("spi buffer overflow offs %d\n", offset);
             return -1;
         }
 
         if (esp_hosted_hal_spi_transfer(NULL, esp_state.buf + offset, ESP_FRAME_MAX_SIZE) != 0) {
-            error_printf("esp_hosted_poll() spi transfer failed\n");
+            error_printf("spi transfer failed\n");
             return 0;
         }
 
@@ -313,7 +320,7 @@ int esp_hosted_wifi_poll(void) {
             frag_header->len > ESP_FRAME_MAX_PAYLOAD ||
             frag_header->offset != sizeof(esp_header_t)) {
             // Invalid or empty packet, just ignore it silently.
-            warn_printf("esp_hosted_poll() invalid frame size %d offset %d\n",
+            warn_printf("invalid frame size %d offset %d\n",
                 esp_header->len, esp_header->offset);
             return 0;
         }
@@ -321,20 +328,20 @@ int esp_hosted_wifi_poll(void) {
         uint16_t checksum = frag_header->checksum;
         frag_header->checksum = esp_hosted_checksum(frag_header);
         if (frag_header->checksum != checksum) {
-            warn_printf("esp_hosted_poll() invalid checksum, expected %d\n", checksum);
+            warn_printf("invalid checksum, expected %d\n", checksum);
             return 0;
         }
 
         if (offset) {
             // Combine fragmented packet
             if ((esp_header->seq_num + 1) != frag_header->seq_num) {
-                error_printf("esp_hosted_poll() fragmented frame sequence mismatch\n");
+                error_printf("fragmented frame sequence mismatch\n");
                 return 0;
             }
             esp_header->len += frag_header->len;
             esp_header->seq_num = frag_header->seq_num;
             esp_header->flags = frag_header->flags;
-            info_printf("esp_hosted_poll() received fragmented packet %d\n", frag_header->len);
+            info_printf("received fragmented packet %d\n", frag_header->len);
             // Append the current fragment's payload to the previous one.
             memcpy(esp_state.buf + offset, frag_header->payload, frag_header->len);
         }
@@ -353,10 +360,10 @@ int esp_hosted_wifi_poll(void) {
             uint32_t itf = esp_header->if_type;
             if (netif_is_link_up(&esp_state.netif[itf])) {
                 if (esp_hosted_netif_input(&esp_state, itf, esp_header->payload, esp_header->len) != 0) {
-                    error_printf("esp_hosted_poll() netif input failed\n");
+                    error_printf("netif input failed\n");
                     return -1;
                 }
-                debug_printf("esp_hosted_poll() eth frame input %d\n", esp_header->len);
+                debug_printf("eth frame input %d\n", esp_header->len);
             }
             return 0;
         }
@@ -367,7 +374,7 @@ int esp_hosted_wifi_poll(void) {
                 esp_state.chip_id = priv_event->event_data[2];
                 esp_state.spi_clk = priv_event->event_data[5];
                 esp_state.chip_flags = priv_event->event_data[8];
-                info_printf("esp_hosted_poll() chip id %d spi_mhz %d caps 0x%x\n",
+                info_printf("chip id %d spi_mhz %d caps 0x%x\n",
                     esp_state.chip_id, esp_state.spi_clk, esp_state.chip_flags);
             }
             return 0;
@@ -375,7 +382,7 @@ int esp_hosted_wifi_poll(void) {
         case ESP_HOSTED_HCI_IF:
         case ESP_HOSTED_TEST_IF:
         case ESP_HOSTED_MAX_IF:
-            error_printf("esp_hosted_poll() unexpected interface type %d\n", esp_header->if_type);
+            error_printf("unexpected interface type %d\n", esp_header->if_type);
             return 0;
         case ESP_HOSTED_SERIAL_IF:
             // Requires further processing
@@ -384,7 +391,7 @@ int esp_hosted_wifi_poll(void) {
 
     CtrlMsg *ctrl_msg = ctrl_msg__unpack(&protobuf_alloc, tlv_header->data_length, tlv_header->data);
     if (ctrl_msg == NULL) {
-        error_printf("esp_hosted_poll() failed to unpack protobuf\n");
+        error_printf("failed to unpack protobuf\n");
         return 0;
     }
 
@@ -395,42 +402,32 @@ int esp_hosted_wifi_poll(void) {
                 break;
             case CTRL_MSG_ID__Event_Heartbeat:
                 esp_state.last_hb_ms = mp_hal_ticks_ms();
-                info_printf("esp_hosted_poll() heartbeat %lu\n", esp_state.last_hb_ms);
+                info_printf("heartbeat %lu\n", esp_state.last_hb_ms);
                 return 0;
             case CTRL_MSG_ID__Event_StationDisconnectFromAP:
                 esp_state.flags &= ~ESP_HOSTED_FLAGS_STA_CONNECTED;
                 return 0;
             case CTRL_MSG_ID__Event_StationDisconnectFromESPSoftAP:
                 return 0;
-            default:
-                error_printf("esp_hosted_poll() unexpected event %d\n", ctrl_msg->msg_id);
+            #if !MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY
+            case CTRL_MSG_ID__Event_StationConnectedToAP:
+                esp_state.flags |= ESP_HOSTED_FLAGS_STA_CONNECTED;
+                info_printf("connected to AP\n");
                 return 0;
-        }
-    }
-
-    // Responses that should be handled here.
-    if (ctrl_msg->msg_type == CTRL_MSG_TYPE__Resp) {
-        switch (ctrl_msg->msg_id) {
-            case CTRL_MSG_ID__Resp_ConnectAP: {
-                if (esp_hosted_resp_value(ctrl_msg) == 0) {
-                    esp_state.flags |= ESP_HOSTED_FLAGS_STA_CONNECTED;
-                }
-                ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
-                debug_printf("esp_hosted_poll() state %d\n", esp_state.flags);
-                return 0;
-            }
+            #endif  // !MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY
             default:
-                break;
+                error_printf("unexpected event %d\n", ctrl_msg->msg_id);
+                return 0;
         }
     }
 
     // A control message resp/event will be pushed on the stack for further processing.
     if (!esp_hosted_stack_push(&esp_state.stack, ctrl_msg)) {
-        error_printf("esp_hosted_poll() message stack full\n");
+        error_printf("message stack full\n");
         return -1;
     }
 
-    debug_printf("esp_hosted_poll() pushed msg_type %lu msg_id %lu\n", ctrl_msg->msg_type, ctrl_msg->msg_id);
+    debug_printf("pushed msg_type %lu msg_id %lu\n", ctrl_msg->msg_type, ctrl_msg->msg_id);
     return 0;
 }
 
@@ -442,6 +439,7 @@ int esp_hosted_wifi_init(uint32_t itf) {
 
         // Low-level pins and SPI init, memory pool allocation etc...
         if (esp_hosted_hal_init(ESP_HOSTED_MODE_WIFI) != 0) {
+            error_printf("low-level error\n");
             return -1;
         }
 
@@ -453,26 +451,47 @@ int esp_hosted_wifi_init(uint32_t itf) {
         // Wait for an ESPInit control event.
         ctrl_msg = esp_hosted_response(CTRL_MSG_ID__Event_ESPInit, ESP_SYNC_REQ_TIMEOUT);
         if (ctrl_msg == NULL) {
+            error_printf("espinit event timeout\n");
             return -1;
         }
         ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
+
+        // Get firmware version
+        #if MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY
+        // No firmware version command in old firmware releases.
+        info_printf("firmware version: v0.0.5 (legacy)\n");
+        #else
+        CtrlMsgReqGetFwVersion ctrl_payload_fw;
+        ctrl_msg__req__get_fw_version__init(&ctrl_payload_fw);
+        if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetFwVersion, &ctrl_payload_fw, &ctrl_msg) != 0) {
+            error_printf("failed to read firmware version\n");
+            return -1;
+        }
+
+        CtrlMsgRespGetFwVersion *fw = ctrl_msg->resp_get_fw_version;
+        (void) fw;
+        info_printf("firmware version: v%u.%u.%u.%u.%u\n",
+                    fw->major1, fw->major2, fw->minor, fw->rev_patch1, fw->rev_patch2);
+        ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
+        #endif  // !MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY
 
         // Set WiFi mode to STA/AP.
-        CtrlMsgReqSetMode ctrl_payload;
-        ctrl_msg__req__set_mode__init(&ctrl_payload);
-        ctrl_payload.mode = CTRL__WIFI_MODE__APSTA;
-        if (esp_hosted_ctrl(CTRL_MSG_ID__Req_SetWifiMode, &ctrl_payload, &ctrl_msg) != 0) {
+        CtrlMsgReqSetMode ctrl_payload_mode;
+        ctrl_msg__req__set_mode__init(&ctrl_payload_mode);
+        ctrl_payload_mode.mode = CTRL__WIFI_MODE__APSTA;
+        if (esp_hosted_ctrl(CTRL_MSG_ID__Req_SetWifiMode, &ctrl_payload_mode, &ctrl_msg) != 0) {
+            error_printf("failed to set WiFi mode\n");
             return -1;
         }
         ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
 
-        info_printf("esp_hosted_init() device initialized\n");
+        info_printf("device initialized\n");
     }
 
     if (!netif_is_link_up(&esp_state.netif[itf])) {
         // Init lwip netif, and start DHCP client/server.
         esp_hosted_netif_init(&esp_state, itf);
-        info_printf("esp_hosted_init() initialized itf %lu\n", itf);
+        info_printf("initialized itf %lu\n", itf);
     }
 
     // Re/enable IRQ pin.
@@ -491,7 +510,7 @@ int esp_hosted_wifi_disable(uint32_t itf) {
         esp_state.flags &= ~ESP_HOSTED_FLAGS_AP_STARTED;
     }
 
-    info_printf("esp_hosted_deinit() deinitialized itf %lu\n", itf);
+    info_printf("deinitialized itf %lu\n", itf);
     return 0;
 }
 
@@ -505,7 +524,7 @@ int esp_hosted_wifi_deinit(void) {
         memset(&esp_state, 0, sizeof(esp_hosted_state_t));
         esp_hosted_stack_init(&esp_state.stack);
 
-        info_printf("esp_hosted_deinit() deinitialized\n");
+        info_printf("deinitialized\n");
     }
     return 0;
 }
@@ -515,13 +534,13 @@ void *esp_hosted_wifi_get_netif(uint32_t itf) {
 }
 
 int esp_hosted_wifi_get_mac(int itf, uint8_t *mac) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqGetMacAddress ctrl_payload;
     ctrl_msg__req__get_mac_address__init(&ctrl_payload);
     ctrl_payload.mode = (itf == ESP_HOSTED_STA_IF) ? CTRL__WIFI_MODE__STA : CTRL__WIFI_MODE__AP;
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetMACAddress, &ctrl_payload, &ctrl_msg) != 0) {
-        error_printf("esp_hosted_get_mac() request failed\n");
+        error_printf("request failed\n");
         return -1;
     }
 
@@ -529,11 +548,13 @@ int esp_hosted_wifi_get_mac(int itf, uint8_t *mac) {
     if (macstr.data) {
         esp_hosted_macstr_to_bytes(macstr.data, macstr.len, mac);
     }
+
     ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
 int esp_hosted_wifi_connect(const char *ssid, const char *bssid, esp_hosted_security_t security, const char *key, uint16_t channel) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqConnectAP ctrl_payload;
     ctrl_msg__req__connect_ap__init(&ctrl_payload);
 
@@ -548,13 +569,19 @@ int esp_hosted_wifi_connect(const char *ssid, const char *bssid, esp_hosted_secu
     ctrl_payload.is_wpa3_supported = false;
     ctrl_payload.listen_interval = 0;
 
-    if (esp_hosted_request(CTRL_MSG_ID__Req_ConnectAP, &ctrl_payload) != 0) {
+    if (esp_hosted_ctrl(CTRL_MSG_ID__Req_ConnectAP, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
+
+    #if MICROPY_PY_NETWORK_ESP_HOSTED_LEGACY
+    esp_state.flags |= ESP_HOSTED_FLAGS_STA_CONNECTED;
+    #endif
+    ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
 int esp_hosted_wifi_start_ap(const char *ssid, esp_hosted_security_t security, const char *key, uint16_t channel) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqStartSoftAP ctrl_payload;
     ctrl_msg__req__start_soft_ap__init(&ctrl_payload);
 
@@ -570,12 +597,12 @@ int esp_hosted_wifi_start_ap(const char *ssid, esp_hosted_security_t security, c
     ctrl_payload.ssid_hidden = false;
     ctrl_payload.bw = CTRL__WIFI_BW__HT40;
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_StartSoftAP, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
-    ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
+
     esp_state.flags |= ESP_HOSTED_FLAGS_AP_STARTED;
+    ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
@@ -595,6 +622,7 @@ int esp_hosted_wifi_disconnect(uint32_t itf) {
             return -1;
         }
     }
+
     ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
@@ -619,10 +647,10 @@ int esp_hosted_wifi_is_connected(uint32_t itf) {
 }
 
 int esp_hosted_wifi_get_stations(uint8_t *sta_list, size_t *sta_count) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqSoftAPConnectedSTA ctrl_payload;
     ctrl_msg__req__soft_apconnected_sta__init(&ctrl_payload);
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetSoftAPConnectedSTAList, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
@@ -633,15 +661,16 @@ int esp_hosted_wifi_get_stations(uint8_t *sta_list, size_t *sta_count) {
         ProtobufCBinaryData mac = resp->stations[i]->mac;
         esp_hosted_macstr_to_bytes(mac.data, mac.len, &sta_list[i * 6]);
     }
+
     ctrl_msg__free_unpacked(ctrl_msg, &protobuf_alloc);
     return 0;
 }
 
 int esp_hosted_wifi_netinfo(esp_hosted_netinfo_t *netinfo) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqGetAPConfig ctrl_payload;
     ctrl_msg__req__get_apconfig__init(&ctrl_payload);
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetAPConfig, &ctrl_payload, &ctrl_msg) != 0) {
         return -1;
     }
@@ -667,10 +696,10 @@ int esp_hosted_wifi_netinfo(esp_hosted_netinfo_t *netinfo) {
 }
 
 int esp_hosted_wifi_scan(esp_hosted_scan_callback_t scan_callback, void *arg, uint32_t timeout) {
+    CtrlMsg *ctrl_msg = NULL;
     CtrlMsgReqScanResult ctrl_payload;
     ctrl_msg__req__scan_result__init(&ctrl_payload);
 
-    CtrlMsg *ctrl_msg = NULL;
     if (esp_hosted_ctrl(CTRL_MSG_ID__Req_GetAPScanList, &ctrl_payload, &ctrl_msg) != 0) {
         return -MP_ETIMEDOUT;
     }
