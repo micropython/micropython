@@ -48,4 +48,10 @@ def test():
     # hashing a compiled function object
     print(type(hash(compile("", "", "exec"))))
 
+    # test invalid syntax that leaves emitter in bad state (issue #17817)
+    try:
+        compile("a\\\n", "", "eval")
+    except SyntaxError:
+        print("SyntaxError")
+
 test()
