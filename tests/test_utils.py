@@ -206,7 +206,12 @@ def get_test_instance(test_instance, baudrate, user, password):
 
     pyb = pyboard.Pyboard(port, baudrate, user, password)
     pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
-    pyb.enter_raw_repl()
+    try:
+        pyb.enter_raw_repl()
+    except pyboard.PyboardError as e:
+        print("error: could not detect test instance")
+        print(e)
+        sys.exit(2)
     return pyb
 
 
@@ -266,14 +271,17 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
         return True, script
 
     try:
-        had_crash = False
-        pyb.enter_raw_repl()
+        pyb.enter_raw_repl(timeout_overall=4)
         if requires_target_wiring and pyb.target_wiring_script:
             pyb.exec_(
                 "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec("
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
+    except pyboard.PyboardError as e:
+        return True, b"enter_raw_repl failed\n"
+
+    try:
         output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
     except pyboard.PyboardError as e:
         had_crash = True

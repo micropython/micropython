@@ -16,6 +16,9 @@ MAX_DELTA_MS = 8
 if "alif" in sys.platform:
     MAX_DELTA_MS = 20
     spi_instances = ((0, None, None, None),)
+elif "samd" in sys.platform:
+    # Use default SPI instance (tested working on ADAFRUIT_ITSYBITSY_M0_EXPRESS).
+    spi_instances = ((None, None, None, None),)
 elif "pyboard" in sys.platform:
     spi_instances = (
         (1, None, None, None),  # "explicit choice of sck/mosi/miso is not implemented"
@@ -25,13 +28,19 @@ elif "rp2" in sys.platform:
     spi_instances = ((0, Pin(18), Pin(19), Pin(16)),)
 elif "esp32" in sys.platform:
     impl = str(sys.implementation)
-    if any(soc in impl for soc in ("ESP32C2", "ESP32C3", "ESP32C6")):
-        spi_instances = ((1, Pin(4), Pin(5), Pin(6)),)
+    if any(soc in impl for soc in ("ESP32C2", "ESP32C3", "ESP32-C3", "ESP32C6")):
+        spi_instances = ((1, None, None, None),)
     else:
-        spi_instances = ((1, Pin(18), Pin(19), Pin(21)), (2, Pin(18), Pin(19), Pin(21)))
+        spi_instances = ((1, None, None, None), (2, None, None, None))
 elif "esp8266" in sys.platform:
     MAX_DELTA_MS = 50  # port requires much looser timing requirements
     spi_instances = ((1, None, None, None),)  # explicit pin choice not allowed
+elif "mimxrt" in sys.platform:
+    # Use default SPI instance (tested working on TEENSY40).
+    spi_instances = ((None, None, None, None),)
+elif "nrf" in sys.platform:
+    # Tested working on ARDUINO_NANO_33_BLE_SENSE.
+    spi_instances = ((1, None, None, None),)
 else:
     print("Please add support for this test on this platform.")
     raise SystemExit
@@ -111,8 +120,10 @@ def test_spi(spi_id, sck, mosi, miso, baudrate, polarity, phase, print_results):
             polarity=polarity,
             phase=phase,
         )
-    else:
+    elif spi_id is not None:
         s = SPI(spi_id, baudrate=baudrate, polarity=polarity, phase=phase)
+    else:
+        s = SPI(baudrate=baudrate, polarity=polarity, phase=phase)
 
     # to keep the test runtime down, use shorter buffer for lower baud rate
     wr_buf = wr_long if baudrate > 500_000 else wr_short
