@@ -634,9 +634,12 @@ CI_UNIX_OPTS_SANITIZE_UNDEFINED=(
 CI_UNIX_OPTS_REPR_B=(
     VARIANT=standard
     CFLAGS_EXTRA="-DMICROPY_OBJ_REPR=MICROPY_OBJ_REPR_B -DMICROPY_PY_UCTYPES=0 -Dmp_int_t=int32_t -Dmp_uint_t=uint32_t"
-    MICROPY_FORCE_32BIT=1
     RUN_TESTS_MPY_CROSS_FLAGS="--mpy-cross-flags=\"-march=x86 -msmall-int-bits=30\""
+)
 
+CI_UNIX_OPTS_X86=(
+    CROSS_COMPILE=i686-linux-gnu-
+    RUN_TESTS_MPY_CROSS_FLAGS=${RUN_TESTS_MPY_CROSS_FLAGS:-"--mpy-cross-flags=\"-march=x86\""}
 )
 
 function ci_unix_build_helper {
@@ -776,20 +779,20 @@ function ci_unix_coverage_run_native_mpy_tests {
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
+    sudo apt-get install gcc-i686-linux-gnu g++-i686-linux-gnu patchelf libffi-dev:i386
     python -m pip install pyelftools
     python -m pip install ar
-    gcc --version
+    i686-linux-gnu-gcc --version
     python3 --version
 }
 
 function ci_unix_coverage_32bit_build {
-    ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1
-    ci_unix_build_ffi_lib_helper gcc -m32
+    ci_unix_build_helper VARIANT=coverage "${CI_UNIX_OPTS_X86[@]}"
+    ci_unix_build_ffi_lib_helper i686-linux-gnu-gcc
 }
 
 function ci_unix_coverage_32bit_run_tests {
-    ci_unix_run_tests_full_helper coverage MICROPY_FORCE_32BIT=1
+    ci_unix_run_tests_full_helper coverage "${CI_UNIX_OPTS_X86[@]}"
 }
 
 function ci_unix_coverage_32bit_run_native_mpy_tests {
@@ -797,8 +800,8 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 }
 
 function ci_unix_nanbox_build {
-    ci_unix_build_helper VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1"
-    ci_unix_build_ffi_lib_helper gcc -m32
+    ci_unix_build_helper VARIANT=nanbox CFLAGS_EXTRA="-DMICROPY_PY_MATH_CONSTANTS=1" "${CI_UNIX_OPTS_X86[@]}"
+    ci_unix_build_ffi_lib_helper i686-linux-gnu-gcc
 }
 
 function ci_unix_nanbox_run_tests {
@@ -806,7 +809,8 @@ function ci_unix_nanbox_run_tests {
 }
 
 function ci_unix_longlong_build {
-    ci_unix_build_helper VARIANT=longlong "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}"
+    ci_unix_build_helper VARIANT=longlong "${CI_UNIX_OPTS_SANITIZE_UNDEFINED[@]}" "${CI_UNIX_OPTS_X86[@]}"
+    patchelf --add-rpath "/usr/i686-linux-gnu/lib" ports/unix/build-longlong/micropython
 }
 
 function ci_unix_longlong_run_tests {
@@ -987,14 +991,14 @@ function ci_unix_qemu_riscv64_run_tests {
 }
 
 function ci_unix_repr_b_build {
-    ci_unix_build_helper "${CI_UNIX_OPTS_REPR_B[@]}"
-    ci_unix_build_ffi_lib_helper gcc -m32
+    ci_unix_build_helper "${CI_UNIX_OPTS_REPR_B[@]}" "${CI_UNIX_OPTS_X86[@]}"
+    ci_unix_build_ffi_lib_helper i686-linux-gnu-gcc
 }
 
 function ci_unix_repr_b_run_tests {
     # ci_unix_run_tests_full_no_native_helper is not used due to
     # https://github.com/micropython/micropython/issues/18105
-    ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
+    ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}" "${CI_UNIX_OPTS_X86[@]}"
 }
 
 ########################################################################################
