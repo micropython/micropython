@@ -98,7 +98,7 @@ static void mp_usbd_ll_init_fs(void) {
         const uint32_t otg_alt = GPIO_AF0_USB;
         #elif defined(STM32L432xx) || defined(STM32L452xx)
         const uint32_t otg_alt = GPIO_AF10_USB_FS;
-        #elif defined(STM32H5) || defined(STM32WB)
+        #elif defined(STM32H5) || defined(STM32U5) || defined(STM32WB)
         const uint32_t otg_alt = GPIO_AF10_USB;
         #else
         const uint32_t otg_alt = GPIO_AF10_OTG_FS;
@@ -139,7 +139,7 @@ static void mp_usbd_ll_init_fs(void) {
         // Enable VDDUSB
         #if defined(STM32H5) || defined(STM32WB)
         HAL_PWREx_EnableVddUSB();
-        #elif defined(STM32L4)
+        #elif defined(STM32L4) || defined(STM32U5)
         if (__HAL_RCC_PWR_IS_CLK_DISABLED()) {
             __HAL_RCC_PWR_CLK_ENABLE();
             HAL_PWREx_EnableVddUSB();

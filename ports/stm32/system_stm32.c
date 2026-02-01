@@ -193,10 +193,12 @@ MP_WEAK void SystemClock_Config(void) {
     // H7 MCUs without SMPS, lock the power supply configuration update.
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
     #elif defined(STM32U5)
+    #if defined(STM32U5A5xx)
     HAL_PWREx_DisableUCPDDeadBattery();
     if (HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_PWREx_ConfigSupply");
     }
+    #endif
     #else
     // other MCUs, enable power control clock.
     __PWR_CLK_ENABLE();
@@ -565,9 +567,14 @@ MP_WEAK void SystemClock_Config(void) {
     PeriphClkInitStruct.AdcDacClockSelection = RCC_ADCDACCLKSOURCE_HSE;
     PeriphClkInitStruct.Dac1ClockSelection = RCC_DAC1CLKSOURCE_LSE;
     #endif
-    #if defined(MICROPY_HW_ENABLE_USB)
+    #if defined(MICROPY_HW_ENABLE_USB) && (MICROPY_HW_ENABLE_USB)
+    #if defined(STM32U5A5xx)
     PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_USBPHY;
     PeriphClkInitStruct.UsbPhyClockSelection = RCC_USBPHYCLKSOURCE_PLL1;
+    #elif defined(STM32U585xx)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_CLK48;
+    PeriphClkInitStruct.IclkClockSelection = RCC_CLK48CLKSOURCE_HSI48;
+    #endif
     #endif
 
     #if defined(MICROPY_HW_RCC_RTC_CLKSOURCE)

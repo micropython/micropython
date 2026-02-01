@@ -470,7 +470,7 @@ void OTG_FS_WKUP_IRQHandler(void) {
 
     #if defined(STM32L4)
     EXTI->PR1 = USB_OTG_FS_WAKEUP_EXTI_LINE;
-    #elif !defined(STM32H5) && !defined(STM32H7)
+    #elif !defined(STM32H5) && !defined(STM32H7) && !defined(STM32U5)
     /* Clear EXTI pending Bit*/
     __HAL_USB_FS_EXTI_CLEAR_FLAG();
     #endif
