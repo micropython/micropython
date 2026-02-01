@@ -18,6 +18,7 @@ from test_utils import (
     base_path,
     pyboard,
     TEST_TIMEOUT,
+    TEST_MAXIMUM_RAW_REPL_FAILURES,
     MPYCROSS,
     test_instance_description,
     test_instance_epilog,
@@ -635,6 +636,7 @@ class ThreadSafeCounter:
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     testcase_count = ThreadSafeCounter()
+    raw_repl_failure_count = ThreadSafeCounter()
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
@@ -993,6 +995,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
+            if output_mupy == b"could not enter raw repl\nCRASH":
+                extra_info = "raw REPL failed"
+                raw_repl_failure_count.increment()
             print("FAIL ", test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
@@ -1023,6 +1028,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         else:
             for test in tests:
                 run_one_test(test)
+                if raw_repl_failure_count.value > TEST_MAXIMUM_RAW_REPL_FAILURES:
+                    print("Too many raw REPL failures, aborting test run")
+                    break
     except TestError as er:
         for line in er.args[0]:
             print(line)

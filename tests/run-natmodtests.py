@@ -12,6 +12,8 @@ import argparse
 from test_utils import (
     base_path,
     pyboard,
+    TEST_ENTER_RAW_REPL_TIMEOUT,
+    TEST_MAXIMUM_RAW_REPL_FAILURES,
     test_instance_epilog,
     get_test_instance,
     create_test_report,
@@ -112,7 +114,7 @@ class TargetPyboard:
 
     def run_script(self, script):
         try:
-            self.pyb.enter_raw_repl()
+            self.pyb.enter_raw_repl(timeout_overall=TEST_ENTER_RAW_REPL_TIMEOUT)
             output = self.pyb.exec_(script)
             output = output.replace(b"\r\n", b"\n")
             return output, None
@@ -140,6 +142,7 @@ def detect_architecture(target):
 
 
 def run_tests(target_truth, target, args, resolved_arch):
+    raw_repl_failure_count = 0
     test_results = []
     for test_file in args.files:
         # Find supported test
@@ -190,6 +193,8 @@ def run_tests(target_truth, target, args, resolved_arch):
         elif error is not None:
             result = "FAIL"
             extra = " - " + str(error)
+            if extra == " - could not enter raw repl":
+                raw_repl_failure_count += 1
         else:
             # Check result against truth
             try:
@@ -218,6 +223,10 @@ def run_tests(target_truth, target, args, resolved_arch):
 
         # Print result
         print("{:4}  {}{}".format(result, test_file, extra))
+
+        if raw_repl_failure_count > TEST_MAXIMUM_RAW_REPL_FAILURES:
+            print("Too many raw REPL failures, aborting test run")
+            break
 
     return test_results
 

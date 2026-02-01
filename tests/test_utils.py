@@ -28,6 +28,12 @@ _RESULTS_FILE = "_results.json"
 # Maximum time to run a single test, in seconds.
 TEST_TIMEOUT = float(os.environ.get("MICROPY_TEST_TIMEOUT", 30))
 
+# Maximum time to wait to enter the raw REPL at the start of a test, in seconds.
+TEST_ENTER_RAW_REPL_TIMEOUT = 5
+
+# Maximum number of raw REPL failures to tolerate before aborting the entire test run.
+TEST_MAXIMUM_RAW_REPL_FAILURES = 3
+
 # mpy-cross is only needed if --via-mpy command-line arg is passed
 if os.name == "nt":
     MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/build/mpy-cross.exe"))
@@ -271,8 +277,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
         return True, script
 
     try:
-        had_crash = False
-        pyb.enter_raw_repl()
+        pyb.enter_raw_repl(timeout_overall=TEST_ENTER_RAW_REPL_TIMEOUT)
         if requires_target_wiring and pyb.target_wiring_script:
             pyb.exec_(
                 "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec("
