@@ -278,7 +278,7 @@ def main():
         target_platform, target_arch, error = detect_architecture(target)
         if error:
             print("Cannot run tests: {}".format(error))
-            sys.exit(1)
+            sys.exit(2)
     target_arch = ARCH_MAPPINGS.get(target_arch, target_arch)
 
     if target_platform:

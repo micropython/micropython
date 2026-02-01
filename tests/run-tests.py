@@ -1026,7 +1026,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     except TestError as er:
         for line in er.args[0]:
             print(line)
-        sys.exit(1)
+        sys.exit(2)
 
     # Return test results.
     return test_results.value, testcase_count.value
