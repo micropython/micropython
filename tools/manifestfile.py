@@ -203,7 +203,9 @@ class ManifestFile:
         # List of directories to search for packages.
         self._library_dirs = []
         # Add default micropython-lib libraries if $(MPY_LIB_DIR) has been specified.
-        if self._path_vars["MPY_LIB_DIR"]:
+        # Use .get() to avoid KeyError if MPY_LIB_DIR wasn't passed (shouldn't happen
+        # in normal cmake/make builds, but be defensive for direct tool invocations).
+        if self._path_vars.get("MPY_LIB_DIR"):
             for lib in BASE_LIBRARY_NAMES:
                 self.add_library(lib, os.path.join("$(MPY_LIB_DIR)", lib))
 

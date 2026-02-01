@@ -75,7 +75,9 @@ if (MICROPY_FROZEN_MANIFEST)
     endforeach()
 
     # Extract C module paths from manifest if it exists.
-    if (EXISTS ${MICROPY_FROZEN_MANIFEST})
+    # Skip during submodule initialization (UPDATE_SUBMODULES) as micropython-lib
+    # may not exist yet and require() calls would fail.
+    if (EXISTS ${MICROPY_FROZEN_MANIFEST} AND NOT UPDATE_SUBMODULES)
         # Find Python if not already found.
         if (NOT Python3_EXECUTABLE)
             find_package(Python3 REQUIRED COMPONENTS Interpreter)
