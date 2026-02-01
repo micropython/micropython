@@ -29,14 +29,24 @@
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
 
 // UART config
+#define MICROPY_HW_UART1_TX         (pin_B6)
+#define MICROPY_HW_UART1_RX         (pin_B7)
 #define MICROPY_HW_UART2_TX         (pin_D5)
 #define MICROPY_HW_UART2_RX         (pin_D6)
 #define MICROPY_HW_UART2_RTS        (pin_D4)
 #define MICROPY_HW_UART2_CTS        (pin_D3)
 #define MICROPY_HW_UART3_TX         (pin_D8)
 #define MICROPY_HW_UART3_RX         (pin_D9)
+#define MICROPY_HW_UART4_TX         (pin_C10)
+#define MICROPY_HW_UART4_RX         (pin_C11)
+#define MICROPY_HW_UART5_TX         (pin_C12)
+#define MICROPY_HW_UART5_RX         (pin_D2)
 #define MICROPY_HW_UART6_TX         (pin_G14)
 #define MICROPY_HW_UART6_RX         (pin_G9)
+#define MICROPY_HW_UART7_TX         (pin_E8)
+#define MICROPY_HW_UART7_RX         (pin_E7)
+#define MICROPY_HW_UART8_TX         (pin_E1)
+#define MICROPY_HW_UART8_RX         (pin_E0)
 #define MICROPY_HW_UART_REPL        PYB_UART_3
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
