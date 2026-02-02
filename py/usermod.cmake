@@ -99,8 +99,8 @@ if (MICROPY_FROZEN_MANIFEST)
 
         # Append manifest C modules to USER_C_MODULES list.
         if (MANIFEST_C_MODULES)
-            # Convert space-separated string to CMake list.
-            string(REPLACE " " ";" MANIFEST_C_MODULES_LIST "${MANIFEST_C_MODULES}")
+            # Convert newline-separated string to CMake list
+            string(REPLACE "\n" ";" MANIFEST_C_MODULES_LIST "${MANIFEST_C_MODULES}")
             list(APPEND USER_C_MODULES ${MANIFEST_C_MODULES_LIST})
         endif()
     endif()

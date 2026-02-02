@@ -170,7 +170,9 @@ def main():
     if args.list_c_modules:
         c_modules = manifest.c_modules()
         if c_modules:
-            print(" ".join(c_modules))
+            # Output one path per line to handle paths with spaces
+            for module in c_modules:
+                print(module)
         sys.exit(0)
 
     # Get paths to tools
