@@ -242,7 +242,7 @@ function ci_esp32_build_cmod_spiram_s2 {
     ci_esp32_build_common
 
     make ${MAKEOPTS} -C ports/esp32 \
-        FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
+        FROZEN_MANIFEST="$(pwd)/ports/esp32/boards/manifest_test.py"
 
     # Test building native .mpy with xtensawin architecture.
     ci_native_mpy_modules_build xtensawin
@@ -489,7 +489,7 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C ports/rp2 submodules
     make ${MAKEOPTS} -C ports/rp2
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
-    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W FROZEN_MANIFEST=$(pwd)/ports/rp2/boards/manifest_test.py
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W FROZEN_MANIFEST="$(pwd)/ports/rp2/boards/manifest_test.py"
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2 submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
@@ -551,7 +551,7 @@ function ci_stm32_pyb_build {
 function ci_stm32_build_cmod {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 MICROPY_PY_NETWORK_WIZNET5K=5200 submodules
-    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 FROZEN_MANIFEST=$(pwd)/ports/stm32/boards/manifest_test.py
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 FROZEN_MANIFEST="$(pwd)/ports/stm32/boards/manifest_test.py"
 }
 
 function ci_stm32_nucleo_build {
