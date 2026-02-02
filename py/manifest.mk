@@ -19,9 +19,14 @@ MICROPY_MANIFEST_MPY_LIB_DIR ?= $(MPY_LIB_DIR)
 MANIFEST_VARIABLES = $(foreach var,$(filter MICROPY_MANIFEST_%, $(.VARIABLES)),-v "$(subst MICROPY_MANIFEST_,,$(var))=$($(var))")
 
 # Extract C module paths from manifest for early build phase.
-# Only extract if the manifest file exists.
+# Only extract if the manifest file exists and micropython-lib is initialized.
+# Skip if micropython-lib doesn't exist yet (e.g., during initial submodule setup).
 ifeq ($(wildcard $(FROZEN_MANIFEST)),$(FROZEN_MANIFEST))
+ifeq ($(wildcard $(MPY_LIB_DIR)/README.md),$(MPY_LIB_DIR)/README.md)
 MANIFEST_C_MODULES := $(shell $(MAKE_MANIFEST) --list-c-modules $(MANIFEST_VARIABLES) $(FROZEN_MANIFEST))
+else
+MANIFEST_C_MODULES :=
+endif
 else
 MANIFEST_C_MODULES :=
 endif
