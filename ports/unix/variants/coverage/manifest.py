@@ -7,3 +7,4 @@ require("ssl")
 # Include example user C modules.
 c_module("$(MPY_DIR)/examples/usercmodule/cexample")
 c_module("$(MPY_DIR)/examples/usercmodule/cppexample")
+c_module("$(MPY_DIR)/examples/usercmodule/subpackage")
