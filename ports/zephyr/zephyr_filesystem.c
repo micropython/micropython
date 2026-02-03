@@ -71,21 +71,25 @@ typedef struct _zephyr_fs_obj_t {
 
 const char *zephyr_fs_make_path(zephyr_fs_obj_t *self, mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
+    size_t path_len = strlen(path);
+    size_t l = vstr_len(&self->root_dir);
 
     if (path[0] != '/') {
-        size_t l = vstr_len(&self->root_dir);
         size_t lc = vstr_len(&self->cur_dir);
         vstr_add_str(&self->root_dir, "/");
         vstr_add_strn(&self->root_dir, self->cur_dir.buf, lc);
-        vstr_add_str(&self->root_dir, path);
-        path = vstr_null_terminated_str(&self->root_dir);
-        self->root_dir.len = l;
-    } else {
-        size_t l = vstr_len(&self->root_dir);
-        vstr_add_str(&self->root_dir, path);
-        path = vstr_null_terminated_str(&self->root_dir);
-        self->root_dir.len = l;
     }
+
+    if (path_len > 0 &&
+        (path[path_len - 1] == '.' && (path_len == 1 || path[path_len - 2] == '/'))) {
+        // if path ends with '/.', remove the trailing dot
+        path_len--;
+    }
+
+    vstr_add_strn(&self->root_dir, path, path_len);
+    path = vstr_null_terminated_str(&self->root_dir);
+    self->root_dir.len = l;
+
     return path;
 }
 
