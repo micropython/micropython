@@ -113,6 +113,26 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 
+#if defined(CONFIG_RISCV_ISA_RV32I) && defined(CONFIG_RISCV_ISA_EXT_M) && defined(CONFIG_RISCV_ISA_EXT_C)
+
+#ifndef MICROPY_EMIT_RV32
+#define MICROPY_EMIT_RV32        (1)
+#endif
+
+#ifndef MICROPY_EMIT_INLINE_RV32
+#define MICROPY_EMIT_INLINE_RV32 (1)
+#endif
+
+#ifdef CONFIG_RISCV_ISA_EXT_ZBA
+#define MICROPY_EMIT_RV32_ZBA (1)
+#endif
+
+#ifdef CONFIG_RISCV_ISA_EXT_ZCMP
+#define MICROPY_EMIT_RV32_ZCMP (1)
+#endif
+
+#endif // CONFIG_RISCV_ISA_RV32I
+
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
