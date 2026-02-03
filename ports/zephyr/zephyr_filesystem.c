@@ -658,19 +658,25 @@ static MP_DEFINE_CONST_FUN_OBJ_1(zephyr_fs_umount_obj, zephyr_fs_umount);
 
 static mp_obj_t zephyr_fs_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
     zephyr_fs_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    struct fs_mount_t *mount = self->mount;
     int err;
     (void)readonly;
     (void)mkfs;
 
-    err = fs_mount(self->mount);
+    if (sys_dnode_is_linked(&mount->node) && (mount->flags & FS_MOUNT_FLAG_AUTOMOUNT) != 0) {
+        // Already mounted with automount, nothing to do
+        return mp_const_none;
+    }
+
+    err = fs_mount(mount);
     if (err == -EBUSY) {
-        err = fs_unmount(self->mount);
+        err = fs_unmount(mount);
         if (err < 0) {
             mp_raise_msg_varg(&mp_type_OSError,
                 MP_ERROR_TEXT("error un-mounting Zephyr File System: %q"), mp_errno_to_str(MP_OBJ_NEW_SMALL_INT(-err)));
             return mp_const_none;
         }
-        err = fs_mount(self->mount);
+        err = fs_mount(mount);
     }
 
     if (err == -EROFS) {
