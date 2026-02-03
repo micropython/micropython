@@ -1,5 +1,5 @@
 /*
-    GNU linker script for STM32F072xZ
+    GNU linker script for STM32L072xZ
 */
 
 /* Specify the memory areas */
