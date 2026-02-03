@@ -453,6 +453,11 @@ static mp_obj_t zephyr_fs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
         return mp_const_none;
     }
 
+    if (stats.type != FS_DIR_ENTRY_DIR) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("is not a directory"));
+        return mp_const_none;
+    }
+
     vstr_reset(&self->cur_dir);
     vstr_add_strn(&self->cur_dir, chdir.buf, lc);
 
