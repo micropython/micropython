@@ -25,23 +25,21 @@ def mount_filesystem_flash():
     and mount it on /flash.
     Return True if successful, False otherwise.
     """
-    if _FLASH in FileSystem.fstab():
-        fs = FileSystem(_FLASH)
-        retval = True
+    if _FLASH not in FileSystem.fstab():
+        return False
+    fs = FileSystem(_FLASH)
+    try:
+        vfs.mount(fs, _FLASH)
+    except OSError:
+        if not hasattr(fs, "mkfs"):
+            return False
         try:
+            fs.mkfs()
             vfs.mount(fs, _FLASH)
         except OSError:
-            if getattr(fs, "mkfs", None):
-                try:
-                    fs.mkfs()
-                    vfs.mount(fs, _FLASH)
-                except OSError:
-                    print("Error formatting flash partition")
-                    retval = False
-            else:
-                retval = False
-        return retval
-    return False
+            print("Error formatting flash partition")
+            return False
+    return True
 
 
 def create_flash_partition():
@@ -49,20 +47,21 @@ def create_flash_partition():
     and mount it on /flash.
     Return True if successful, False otherwise.
     """
-    if _STORAGE_KEY in FlashArea.areas:
-        bdev = FlashArea(*FlashArea.areas[_STORAGE_KEY])
-        retval = True
+    if _STORAGE_KEY not in FlashArea.areas:
+        return False
+    bdev = FlashArea(*FlashArea.areas[_STORAGE_KEY])
+    try:
+        vfs.mount(bdev, _FLASH)
+    except OSError:
+        if not hasattr(vfs, "VfsLfs2"):
+            return False
         try:
+            vfs.VfsLfs2.mkfs(bdev)
             vfs.mount(bdev, _FLASH)
         except OSError:
-            try:
-                vfs.VfsLfs2.mkfs(bdev)
-                vfs.mount(bdev, _FLASH)
-            except OSError:
-                print("Error formatting flash partition")
-                retval = False
-        return retval
-    return False
+            print("Error formatting flash partition")
+            return False
+    return True
 
 
 def mount_all_disks():
