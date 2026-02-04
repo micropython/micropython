@@ -83,7 +83,7 @@ DT_FOREACH_STATUS_OKAY(micropython_heap, MICROPY_HEAP_DEFINE)
 #include "modmachine.h"
 #include "modzephyr.h"
 
-static char heap[MICROPY_HEAP_SIZE];
+static __noinit char heap[MICROPY_HEAP_SIZE];
 
 #if defined(CONFIG_USB_DEVICE_STACK_NEXT)
 extern int mp_usbd_init(void);
