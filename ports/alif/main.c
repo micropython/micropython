@@ -92,8 +92,8 @@ static void set_off_profile(void) {
         .vtor_address = SCB->VTOR,
         .vtor_address_ns = SCB->VTOR,
         // Configure wake-up sources.
-        .ewic_cfg = EWIC_VBAT_GPIO | EWIC_RTC_A,
-        .wakeup_events = WE_LPGPIO7 | WE_LPGPIO6 | WE_LPGPIO5 | WE_LPGPIO4 | WE_LPRTC,
+        .ewic_cfg = EWIC_VBAT_GPIO | EWIC_VBAT_TIMER | EWIC_RTC_A,
+        .wakeup_events = WE_LPGPIO7 | WE_LPGPIO6 | WE_LPGPIO5 | WE_LPGPIO4 | WE_LPTIMER0 | WE_LPRTC,
     };
 
     if (se_services_set_off_profile(&off_profile)) {
