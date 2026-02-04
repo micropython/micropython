@@ -383,11 +383,22 @@ static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     && ptr < (void *)MP_STATE_MEM(area).gc_pool_end         /* must be below end of pool */ \
     )
 
-#ifndef TRACE_MARK
+#ifdef TRACE_MARK
+#error "TRACE_MARK is replaced by TRACE_MARK_R and TRACE_MARK_S"
+#endif
+// R for root pointer, S for subtree.
+#ifndef TRACE_MARK_R
 #if DEBUG_PRINT
-#define TRACE_MARK(block, ptr) DEBUG_printf("gc_mark(%p)\n", ptr)
+#define TRACE_MARK_R(block, ptr) DEBUG_printf("gc_mark_r(%p)\n", ptr)
 #else
-#define TRACE_MARK(block, ptr)
+#define TRACE_MARK_R(block, ptr)
+#endif
+#endif
+#ifndef TRACE_MARK_S
+#if DEBUG_PRINT
+#define TRACE_MARK_S(block, ptr) DEBUG_printf("gc_mark_s(%p)\n", ptr)
+#else
+#define TRACE_MARK_S(block, ptr)
 #endif
 #endif
 
@@ -439,7 +450,7 @@ void gc_collect_root(void **ptrs, size_t len) {
         size_t block = BLOCK_FROM_PTR(area, ptr);
         if (ATB_GET_KIND(area, block) == AT_HEAD) {
             // An unmarked head: mark it, and mark all its children
-            TRACE_MARK(ptr_block, ptr);
+            TRACE_MARK_R(ptr_block, ptr);
             ATB_HEAD_TO_MARK(area, block);
             #if MICROPY_GC_SPLIT_HEAP
             gc_mark_subtree(area, block);
@@ -501,7 +512,7 @@ static void gc_mark_subtree(size_t block)
                 continue;
             }
             // An unmarked head. Mark it, and push it on gc stack.
-            TRACE_MARK(ptr_block, ptr);
+            TRACE_MARK_S(ptr_block, ptr);
             ATB_HEAD_TO_MARK(ptr_area, ptr_block);
             if (sp < MICROPY_ALLOC_GC_STACK_SIZE) {
                 MP_STATE_MEM(gc_block_stack)[sp] = ptr_block;
