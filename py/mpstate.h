@@ -107,6 +107,9 @@ typedef struct _mp_state_mem_area_t {
     #if MICROPY_ENABLE_FINALISER
     byte *gc_finaliser_table_start;
     #endif
+    #if MICROPY_PY_WEAKREF
+    byte *gc_weakref_table_start;
+    #endif
     byte *gc_pool_start;
     byte *gc_pool_end;
 
