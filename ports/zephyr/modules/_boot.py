@@ -18,6 +18,7 @@ _FLASH = const("/flash")
 _FLASH_LIB = const("/flash/lib")
 _STORAGE_KEY = const("storage")
 _FLASH_EXISTS = False
+_FS_EXISTS = False
 
 
 def mount_filesystem_flash():
@@ -64,6 +65,25 @@ def create_flash_partition():
     return True
 
 
+def mount_all_filesystems():
+    """Mount all filesystems excluding "/flash"
+    Return True if successful, False otherwise.
+    """
+    retval = False
+    for fs_str in FileSystem.fstab():
+        if fs_str == _FLASH:
+            continue
+        fs = FileSystem(fs_str)
+        try:
+            vfs.mount(fs, fs_str)
+            sys.path.append(f"{fs_str}/lib")
+            os.chdir(fs_str)
+            retval = True
+        except OSError as e:
+            print(f"Error mounting {fs_str}: {e}")
+    return retval
+
+
 def mount_all_disks():
     """Now mount all the DiskAreas (if any)."""
     retval = False
@@ -81,13 +101,16 @@ def mount_all_disks():
 
 
 # Prefer FileSystem over FlashArea Access
+if FileSystem and mount_all_filesystems():
+    _FS_EXISTS = True
 if FileSystem and mount_filesystem_flash():
     _FLASH_EXISTS = True
 elif FlashArea and create_flash_partition():
     _FLASH_EXISTS = True
 
+# Prefer filesystems (excluding /flash) to disks
 # Prefer disks to /flash
-if not (DiskAccess and mount_all_disks()):
+if not (_FS_EXISTS or (DiskAccess and mount_all_disks())):
     if _FLASH_EXISTS:
         os.chdir(_FLASH)
 
@@ -98,4 +121,5 @@ if _FLASH_EXISTS:
 # Cleanup globals for boot.py/main.py
 del FlashArea, DiskAccess, FileSystem, zephyr
 del sys, vfs, os, const
-del mount_filesystem_flash, create_flash_partition, mount_all_disks, _FLASH_EXISTS
+del mount_filesystem_flash, create_flash_partition, mount_all_disks, mount_all_filesystems
+del _FLASH_EXISTS, _FS_EXISTS
