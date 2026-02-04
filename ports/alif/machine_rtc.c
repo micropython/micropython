@@ -29,6 +29,7 @@
 #include "py/mperrno.h"
 #include "extmod/modmachine.h"
 #include "shared/timeutils/timeutils.h"
+#include "modmachine.h"
 #include "rtc.h"
 #include "sys_ctrl_rtc.h"
 
@@ -53,6 +54,27 @@ static const machine_rtc_obj_t machine_rtc = {{&machine_rtc_type}, (LPRTC_Type *
 void LPRTC_IRQHandler(void) {
     lprtc_interrupt_ack(machine_rtc.rtc);
     lprtc_interrupt_disable(machine_rtc.rtc);
+}
+
+void machine_rtc_init(void) {
+    lprtc_interrupt_ack(machine_rtc.rtc);
+    lprtc_interrupt_disable(machine_rtc.rtc);
+    lprtc_interrupt_unmask(machine_rtc.rtc);
+
+    // Initialise the LPRTC if it's not already enabled.
+    if (!((VBAT->RTC_CLK_EN & RTC_CLK_ENABLE)
+          && (machine_rtc.rtc->LPRTC_CCR & CCR_LPRTC_EN)
+          && (machine_rtc.rtc->LPRTC_CPSR == LPRTC_PRESCALER_SETTING))) {
+        enable_lprtc_clk();
+        machine_rtc.rtc->LPRTC_CCR = 0;
+        lprtc_load_prescaler(machine_rtc.rtc, LPRTC_PRESCALER_SETTING);
+        lprtc_load_count(machine_rtc.rtc, 0);
+        machine_rtc.rtc->LPRTC_CCR = CCR_LPRTC_PSCLR_EN | CCR_LPRTC_EN;
+    }
+
+    NVIC_SetPriority(LPRTC_IRQ_IRQn, IRQ_PRI_RTC);
+    NVIC_ClearPendingIRQ(LPRTC_IRQ_IRQn);
+    NVIC_EnableIRQ(LPRTC_IRQ_IRQn);
 }
 
 // Returns the number of seconds and microseconds since the Epoch.
@@ -84,25 +106,18 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     // Check arguments.
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
-    lprtc_interrupt_disable(self->rtc);
-    lprtc_interrupt_unmask(self->rtc);
-
-    // Initialise the LPRTC if it's not already enabled.
-    if (!((VBAT->RTC_CLK_EN & RTC_CLK_ENABLE)
-          && (self->rtc->LPRTC_CCR & CCR_LPRTC_EN)
-          && (self->rtc->LPRTC_CPSR == LPRTC_PRESCALER_SETTING))) {
-        enable_lprtc_clk();
-        self->rtc->LPRTC_CCR = 0;
-        lprtc_load_prescaler(self->rtc, LPRTC_PRESCALER_SETTING);
-        lprtc_load_count(self->rtc, 0);
-        self->rtc->LPRTC_CCR = CCR_LPRTC_PSCLR_EN | CCR_LPRTC_EN;
-    }
-
-    NVIC_SetPriority(LPRTC_IRQ_IRQn, IRQ_PRI_RTC);
-    NVIC_ClearPendingIRQ(LPRTC_IRQ_IRQn);
-    NVIC_EnableIRQ(LPRTC_IRQ_IRQn);
-
     return MP_OBJ_FROM_PTR(self);
+}
+
+void machine_rtc_set_wakeup(uint32_t seconds) {
+    LPRTC_Type *rtc = (LPRTC_Type *)LPRTC_BASE;
+
+    // Configure the counter match as atomically as possible.
+    uint32_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    lprtc_interrupt_ack(rtc);
+    lprtc_load_counter_match_register(rtc, lprtc_get_count(rtc) + seconds);
+    lprtc_interrupt_enable(rtc);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
 static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
@@ -155,8 +170,6 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
         { MP_QSTR_repeat,  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
-    machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-
     // Parse args.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), allowed_args, args);
@@ -170,12 +183,7 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
         // - if seconds >= 2 then it will always fire (when read/written close enough)
         seconds = MAX(2, seconds);
 
-        // Configure the counter match as atomically as possible.
-        uint32_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-        lprtc_interrupt_ack(self->rtc);
-        lprtc_load_counter_match_register(self->rtc, lprtc_get_count(self->rtc) + seconds);
-        lprtc_interrupt_enable(self->rtc);
-        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        machine_rtc_set_wakeup(seconds);
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s)"));
     }
