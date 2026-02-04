@@ -439,6 +439,7 @@ void gc_collect_root(void **ptrs, size_t len) {
         size_t block = BLOCK_FROM_PTR(area, ptr);
         if (ATB_GET_KIND(area, block) == AT_HEAD) {
             // An unmarked head: mark it, and mark all its children
+            TRACE_MARK(ptr_block, ptr);
             ATB_HEAD_TO_MARK(area, block);
             #if MICROPY_GC_SPLIT_HEAP
             gc_mark_subtree(area, block);
