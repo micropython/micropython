@@ -143,8 +143,10 @@ MP_WEAK void board_enter_stop(void) {
     // Let USB_D_SEL float, so it doesn't source 30uA through the 110k resistors to GND.
     mp_hal_pin_input(pin_USB_D_SEL);
 
+    #if MICROPY_HW_ENABLE_OSPI
     // SPI deep power down reduces deepsleep consumption by about 10uA at 3.3V.
     ospi_flash_sleep();
+    #endif
 
     // Disable NPU interrupt
     NVIC_DisableIRQ(NPU_IRQ_NUMBER);
