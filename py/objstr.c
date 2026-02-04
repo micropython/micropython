@@ -282,7 +282,10 @@ static mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         }
         vstr_t vstr;
         vstr_init_len(&vstr, len);
+        // If this config is set then the GC clears all memory, so we don't need to.
+        #if !MICROPY_GC_CONSERVATIVE_CLEAR
         memset(vstr.buf, 0, len);
+        #endif
         return mp_obj_new_bytes_from_vstr(&vstr);
     }
 
