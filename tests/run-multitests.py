@@ -276,19 +276,22 @@ class PyInstancePyboard(PyInstance):
     def readline(self):
         if self.finished:
             return None, None
-        if self.pyb.serial.inWaiting() == 0:
-            return None, None
-        out = self.pyb.read_until(1, (b"\r\n", b"\x04"))
-        if out.endswith(b"\x04"):
-            self.finished = True
-            out = out[:-1]
-            err = decode(self.pyb.read_until(1, b"\x04"))
-            err = err[:-1]
-            if not out and not err:
+        try:
+            if self.pyb.serial.inWaiting() == 0:
                 return None, None
-        else:
-            err = None
-        return decode(out.rstrip()), err
+            out = self.pyb.read_until(1, (b"\r\n", b"\x04"))
+            if out.endswith(b"\x04"):
+                self.finished = True
+                out = out[:-1]
+                err = decode(self.pyb.read_until(1, b"\x04"))
+                err = err[:-1]
+                if not out and not err:
+                    return None, None
+            else:
+                err = None
+            return decode(out.rstrip()), err
+        except OSError as e:
+            return None, "Failed to read from instance: {}".format(e)
 
     def write(self, data):
         self.pyb.serial.write(data)
@@ -434,7 +437,10 @@ def run_test_on_instances(test_file, num_instances, instances):
 
     # Stop all instances
     for idx in range(num_instances):
-        instances[idx].stop()
+        try:
+            instances[idx].stop()
+        except OSError as e:
+            output[idx].append("Runner failed to stop instance: {}".format(e))
 
     output_str = ""
     for idx, lines in enumerate(output):
