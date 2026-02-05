@@ -466,7 +466,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
 
             default:
                 mp_raise_ValueError(MP_ERROR_TEXT("eap_method wrong, missing or EAP_NONE: not allowed for WPA Enterprise."));
-                break;                
+                break;
         }
         esp_exceptions(esp_eap_client_set_eap_methods(esp_eap_method));
 
