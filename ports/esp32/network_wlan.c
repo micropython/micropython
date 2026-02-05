@@ -331,9 +331,9 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
            ARG_eap_method, ARG_username, ARG_password,
            ARG_identity, ARG_ca_cert, ARG_ttls_phase2_method,
            ARG_client_cert, ARG_private_key, ARG_private_key_password, ARG_disable_time_check,
-#if CONFIG_SOC_WIFI_SUPPORT_5G
+           #if CONFIG_SOC_WIFI_SUPPORT_5G
            ARG_band_mode,
-#endif           
+           #endif
            ARG_pmf_req};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -353,9 +353,9 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_private_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_private_key_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_disable_time_check, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-#if CONFIG_SOC_WIFI_SUPPORT_5G
+        #if CONFIG_SOC_WIFI_SUPPORT_5G
         { MP_QSTR_band_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_BAND_MODE_AUTO} },
-#endif         
+        #endif
         { MP_QSTR_pmf_req, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} }
     };
 
@@ -406,7 +406,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             // map to WPA2, otherwise defaults to WPA3 only
             // ESP-IDF always chooses the strongest available auth
             min_sec = WIFI_AUTH_WPA2_PSK;
-            // fall through
+        // fall through
 
         case WIFI_AUTH_WPA2_PSK:
             break;
@@ -418,7 +418,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             // map to WPA2, otherwise defaults to WPA3 only
             // ESP-IDF always chooses the strongest available auth
             min_sec = WIFI_AUTH_WPA2_ENTERPRISE;
-            // fall through
+        // fall through
 
         case WIFI_AUTH_WPA2_ENTERPRISE:
             break;
@@ -436,15 +436,15 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             break;
     }
     wifi_sta_config.sta.threshold.authmode = min_sec;
-    
+
     esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     // that's it for WPA Personal
-        
+
     if (min_sec == WIFI_AUTH_WPA2_ENTERPRISE || min_sec == WIFI_AUTH_WPA3_ENTERPRISE) {
         int16_t esp_eap_method;
         int16_t eap_method = (int16_t)args[ARG_eap_method].u_int;
         int16_t ttls_phase2_method = (int16_t)args[ARG_ttls_phase2_method].u_int;
-        
+
         // set esp_eap_method explicitly, otherwise ESP-IDF defaults to EAP-PEAP with MSCHAPv2
         switch (eap_method) {
             case WIFI_AUTH_EAP_PWD:
@@ -561,7 +561,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
 
         esp_exceptions(esp_wifi_sta_enterprise_enable());
     } // WPA*_ENTERPRISE
-    
+
     esp_exceptions(esp_netif_set_hostname(wlan_sta_obj.netif, mod_network_hostname_data));
 
     if (!wifi_started) {
@@ -570,11 +570,11 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
 
     // ESP-IDF should always auto connect to 5G if available
     // in some eduroam networks, it seems to default to 2G nonetheless
-#if CONFIG_SOC_WIFI_SUPPORT_5G   
+    #if CONFIG_SOC_WIFI_SUPPORT_5G
     int16_t band_mode = (int16_t)args[ARG_band_mode].u_int;
     esp_exceptions(esp_wifi_set_band_mode(band_mode));
-#endif
-    
+    #endif
+
     wifi_sta_reconnects = 0;
     // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
