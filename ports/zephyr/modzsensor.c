@@ -212,6 +212,10 @@ static const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     C(VOC),
     C(GAS_RES),
     C(VOLTAGE),
+    C(VSHUNT),
+    C(CURRENT),
+    C(POWER),
+    C(RESISTANCE),
 #undef C
 #define C(name) { MP_ROM_QSTR(MP_QSTR_ATTR_##name), MP_ROM_INT(SENSOR_ATTR_##name) }
     C(SAMPLING_FREQUENCY),
