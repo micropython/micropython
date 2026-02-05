@@ -243,7 +243,7 @@ static inline void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
 static inline void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
     // TODO UNICODE
     char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
-    *s = chr;
+    *s = (char)chr;
 }
 static inline void vstr_ins_strn(vstr_t *vstr, size_t byte_pos, const char *str, size_t len) {
     char *s = vstr_ins_blank_bytes(vstr, byte_pos, len);
