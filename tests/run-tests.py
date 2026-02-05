@@ -80,6 +80,7 @@ via_mpy_tests_to_skip = {
         "misc/sys_settrace_features.py",
         "misc/sys_settrace_generator.py",
         "misc/sys_settrace_loop.py",
+        "micropython/traceback.py",
     ),
 }
 
@@ -108,6 +109,8 @@ emitter_tests_to_skip = {
         "micropython/schedule.py",
         # These require sys.exc_info().
         "misc/sys_exc_info.py",
+        # These require exception tracebacks.
+        "micropython/traceback.py",
         # These require sys.settrace().
         "misc/sys_settrace_cov.py",
         "misc/sys_settrace_features.py",
@@ -125,9 +128,7 @@ platform_tests_to_skip = {
         "stress/list_sort.py",  # watchdog kicks in because it takes too long
     ),
     "minimal": (
-        "basics/class_inplace_op.py",  # all special methods not supported
-        "basics/subclass_native_init.py",  # native subclassing corner cases not support
-        "micropython/opt_level.py",  # don't assume line numbers are stored
+        "micropython/traceback.py",  # no line numbers, no list[N:] syntax
     ),
     "nrf": (
         "basics/io_buffered_writer.py",
@@ -827,6 +828,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.build == "minimal":
+        skip_tests.update(platform_tests_to_skip.get(args.build, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
