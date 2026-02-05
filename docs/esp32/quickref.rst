@@ -150,7 +150,7 @@ WPA Enterprise Extensions
         * for WPA Enterprise: SEC_WPA2_ENT (default), SEC_WPA2_WPA3_ENT, SEC_WPA3_ENT
     
     Please note that although SEC_NONE and SEC_WPA are supported for WPA Personal for legacy networks, 
-    they are considered unsecure and should be avoided.
+    they are considered insecure and should be avoided.
     
     Please also note that ESP-IDF 5.5 treats the WPA2/WPA3 transition modes as "WPA3 only", i.e. a connection will fail 
     if the AP does not advertise WPA3. This is not as defined in the WPA Standard v3.5 chapter 1.3.3 "Definitions", which 
