@@ -32,82 +32,14 @@ Methods
     argument is passed. Otherwise, query current state if no argument is
     provided. Most other methods require active interface.
 
-.. method:: WLAN.connect(ssid=None, key=None, *, bssid=None, wpa3=False, param=value, ...)
+.. method:: WLAN.connect(ssid=None, key=None, *, bssid=None, param=value, ...)
 
     Connect to the specified wireless network, using the specified key.
     If *bssid* is given then the connection will be restricted to the
     access-point with that MAC address (the *ssid* must also be specified
-    in this case). *wpa3* enforces WPA3 authentication and will reject the
-    network if WPA3 is not supported.
+    in this case). 
 
-    WPA Enterprise (ESP32 port only)
-
-        * eap_method -- EAP method to use (string)
-
-    Connect to the specified wireless network, using WPA-Enterprise authentication and
-    the specified parameters. The EAP methods provided are EAP-PWD, EAP-PEAP,
-    EAP-TTLS, and EAP-TLS. EAP-TLS is UNTESTED and thus EXPERIMENTAL.
-
-    Common parameters:
-
-        * ssid -- WiFi access point name, (string, e.g. "eduroam")
-
-    EAP-PWD parameters
-
-        * username -- your network username (string)
-        * password -- your network password (string)
-
-    EAP-PEAP parameters:
-
-        * username -- your network username (string)
-        * password -- your network password (string)
-        * identity -- anonymous identity (string)
-        * ca_cert -- the CA certificate (filename, string)
-
-    EAP-TTLS parameters:
-
-        * username -- your network username (string)
-        * password -- your network password (string)
-        * identity -- anonymous identity (string)
-        * ca_cert -- the CA certificate (filename, string)
-        * ttls_phase2_method -- TTLS Phase 2 method (integer)
-
-    EAP-TTLS supports the following TTLS Phase 2 methods: 
-
-        * 0 -- PWD
-        * 1 -- MSCHAPv2 (default)
-        * 2 -- MSCHAP
-        * 3 -- PAP
-        * 4 -- CHAP
-
-    Please note that MSCHAPv2 and CHAP have known security issues and should be avoided.
-
-    EAP-TLS parameters:
-
-        * client_cert -- client certificate filename (string)
-        * private_key -- private key filename (string)
-        * private_key_password -- private key password (string, optional)
-        * disable_time_check -- suppress the validity check for the local client certificate when using EAP-TLS (boolean, default False)
-
-    disable_time_check is only included for the sake of completeness. In practice,
-    you want to renew the client certificate before expiry.
-
-    Certificate files need to be uploaded first, e.g.::
-
-     mpremote cp <file> :
-
-    EAP-PWD should be used whenever possible. It connects swiftly and uses the least resources.
-    When using one of the other methods, make sure the system time is correct to prevent
-    certificate validation errors. Best practice is to use a battery buffered RTC and to set
-    the system time using NTP regularly. A temporary workaround if no battery buffered RTC is
-    available is to set the system time to the image build time, like:
-
-     import sys
-     import machine
-     (year, month, day) = sys.version.split(" on ")[1].split("-")
-     rtc = machine.RTC()
-     date_time = (int(year), int(month), int(day), 0, 0, 0, 0, 0)
-     rtc.init(date_time)
+    For WPA Enterprise extensions (ESP32 port only) see :ref:`esp32_network_wlan`.
 
 .. method:: WLAN.disconnect()
 
@@ -235,6 +167,7 @@ Constants
           savings and reduced WiFi performance
         * ``PM_NONE``: disable wifi power management
 
+
 ESP32 Protocol Constants
 ------------------------
 
@@ -348,5 +281,7 @@ ESP32 Specific Extensions
      rtc.init(date_time)
 
     (1) Please note that some eduroam networks appear to default to MSCHAPv2 in all cases, of all methods.
+=======
+
 
 
