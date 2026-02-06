@@ -43,7 +43,7 @@
 #define EXT_FLASH_SIZE              (0x04000000 - EXT_FLASH_BASE)
 
 // Erase sector size: Fixed by flash chip hardware (minimum erasable unit)
-#define EXT_FLASH_SECTOR_SIZE       (0x00001000) /** 4KB */
+#define EXT_FLASH_SECTOR_SIZE       (0x40000) /** 256KB */
 
 // Block device block size: Must match erase sector size for proper filesystem operation
 #define EXT_FLASH_BLOCK_SIZE_BYTES  (EXT_FLASH_SECTOR_SIZE)

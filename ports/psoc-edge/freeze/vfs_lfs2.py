@@ -7,7 +7,7 @@ bdev = psocedge.QSPI_Flash()
 # sector size 4 KB for external flash
 read_size = 0x1000
 # page size 256 B
-write_size = 0x100
+write_size = 0x4000
 
 try:
     vfs = os.VfsLfs2(bdev, progsize=write_size, readsize=read_size)
