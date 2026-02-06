@@ -536,11 +536,33 @@ Ultra-Low-Power co-processor
 This class gives access to the Ultra Low Power (ULP) co-processor on the ESP32,
 ESP32-S2 and ESP32-S3 chips.
 
-.. warning::
+For hardware specifics and differences between different ULP types, see `ESP-IDF ULP documentation.
+<https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/ulp.html>`_.
 
-    This class does not provide access to the RISCV ULP co-processor available
-    on the ESP32-S2 and ESP32-S3 chips.
+.. note::
 
+    In the default scenario, the FSM ULP type is used by default
+    To use RISCV ULP, users will need to compile custom versions of MicroPython with ::
+    
+        make BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=RV 
+    
+    Supported chips include esp32s2 and esp32s3.
+    
+.. note::
+    If you require an even more customized board definition which uses Octal SPI RAM, and you would like to use RISCV ULP, 
+    you need to modify an existing board definition or create a custom one,
+    where these additions need to be made to compile RISCV support and modify
+    ``mpconfigboard.cmake`` in the board definitions folder and include::
+
+        set(SDKCONFIG_DEFAULTS
+            ${SDKCONFIG_DEFAULTS}
+            boards/sdkconfig.riscv_ulp
+        )
+
+        list(APPEND MICROPY_DEF_BOARD
+            ESP_PREFER_RISCV_ULP=1
+        )
+    
 .. class:: ULP()
 
     This class provides access to the Ultra-Low-Power co-processor.
@@ -557,9 +579,63 @@ ESP32-S2 and ESP32-S3 chips.
 
     Start the ULP running at the given *entry_point*.
 
+.. method:: ULP.pause()
+
+    Pauses the timer powering the ULP, halting code execution.
+
+.. method:: ULP.resume()
+
+    Resumes the timer and code execution.
+
+.. method:: ULP.rtc_init(pin_number)
+    
+    Changes pin from standard to RTC mode.
+
+    Convenience function which enables the ULP to use a given pin in sleep and normal operational modes.
+    On RISCV this is needed to allow the ULP to interface the pins at all.
+    On FSM, there are macros that allow you to do it from within ULP code.
+
+.. method:: ULP.rtc_deinit(pin_number)
+    
+    Changes pin mode from RTC back to standard.
+
+
+.. method:: ULP.adc_init(channel_number)
+    
+    Initializes the ADC to work in ULP mode. Given the *channel_number*, the ADC will sample said pin using 
+    ULP and related functions / instructions, depending on which ULP type is in use.
+
+    Currently only ADC1 / ADC Block 1 is used which works for both FSM and RISCV ULP types.
+
+    Throws a ``ValueError`` if you try to initialize an already initialized ADC block.
+
+
+.. method:: ULP.adc_deinit()
+    
+    Removes ULP exclusive access to the pin and restores default ADC behavior.
+
+    Throws a ``ValueError`` if you try to de-initialize an already de-initialized ADC block.
+
+.. warning::
+    When compiled for RISCV ULP, the default ``ULP`` class is renamed to ``ULP_RV``
+    and changes the signature of these functions
+
+.. class:: ULP_RV()
+
+.. method:: ULP_RV.load_binary(program_binary)
+
+    Load a *program_binary* into memory, ready for execution.
+
+.. method:: ULP_RV.run()
+
+    Start the ULP running which was loaded into memory.
 
 Constants
 ---------
+
+.. data:: esp32.ULP.RESERVE_MEM
+
+    The amount of reserved RTC_SLOW_MEM in bytes.
 
 .. data:: esp32.WAKEUP_ALL_LOW
           esp32.WAKEUP_ANY_HIGH
