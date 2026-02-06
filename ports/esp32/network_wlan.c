@@ -340,7 +340,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         // min_sec defaults to SEC_WPA2 Personal mode
-        { MP_QSTR_min_sec, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_AUTH_WPA2_PSK} }, 
+        { MP_QSTR_min_sec, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_AUTH_WPA2_PSK} },
         // eap_method defaults to EAP_NONE for WPA Personal compatibility
         { MP_QSTR_eap_method, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_AUTH_EAP_NONE} },
         { MP_QSTR_username, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
