@@ -193,7 +193,7 @@ def run_tests(target_truth, target, args, resolved_arch):
         elif error is not None:
             result = "FAIL"
             extra = " - " + str(error)
-            if extra == " - could not enter raw repl":
+            if str(error).startswith("could not enter raw repl"):
                 raw_repl_failure_count += 1
         else:
             # Check result against truth

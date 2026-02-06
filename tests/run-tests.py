@@ -995,7 +995,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            if output_mupy == b"could not enter raw repl\nCRASH":
+            if output_mupy.startswith(b"could not enter raw repl"):
                 extra_info = "raw REPL failed"
                 raw_repl_failure_count.increment()
             print("FAIL ", test_file, extra_info)
