@@ -198,7 +198,7 @@ network interface parameter:
 .. _Espressif proprietary "long-range" mode:
 .. _Espressif long-range documentation: https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/wifi.html#long-range-lr
 
-=======
+
 ESP32 Specific Extensions
 -------------------------
 
@@ -281,7 +281,8 @@ ESP32 Specific Extensions
      rtc.init(date_time)
 
     (1) Please note that some eduroam networks appear to default to MSCHAPv2 in all cases, of all methods.
-=======
+
+
 
 
 
