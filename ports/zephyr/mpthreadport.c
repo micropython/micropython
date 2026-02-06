@@ -105,7 +105,7 @@ void mp_thread_gc_others(void) {
         return;
     }
 
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
 
     // get the kernel to iterate over all the existing threads
     DEBUG_printf("Iterating...\n");
@@ -160,7 +160,7 @@ mp_uint_t mp_thread_get_id(void) {
 }
 
 void mp_thread_start(void) {
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == k_current_get()) {
             th->status = MP_THREAD_STATUS_READY;
@@ -197,7 +197,7 @@ mp_uint_t mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_s
     // Allocate linked-list node (must be outside thread_mutex lock)
     mp_thread_t *th = m_new_obj(mp_thread_t);
 
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
 
     int32_t _slot = mp_thread_find_stack_slot();
     if (_slot >= 0) {
@@ -245,7 +245,7 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
 }
 
 void mp_thread_finish(void) {
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == k_current_get()) {
             th->status = MP_THREAD_STATUS_FINISHED;
@@ -263,8 +263,8 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     k_sem_give(&mutex->handle);
 }
 
-int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    return k_sem_take(&mutex->handle, wait ? K_FOREVER : K_NO_WAIT) == 0;
+int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int64_t timeout) {
+    return k_sem_take(&mutex->handle, timeout < 0 ? K_FOREVER : (timeout > 0 ? K_TIMEOUT_ABS_TICKS(timeout) : K_NO_WAIT)) == 0;
 }
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
@@ -274,7 +274,7 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
 
 void mp_thread_deinit(void) {
     // abort all threads except for the main thread
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         // don't delete the current task
         if ((th->id != k_current_get()) && (th->status != MP_THREAD_STATUS_FINISHED)) {

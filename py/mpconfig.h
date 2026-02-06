@@ -1902,6 +1902,21 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_THREAD_RECURSIVE_MUTEX (MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL)
 #endif
 
+// Whether to support timeouts in the _thread.Lock.acquire method
+#ifndef MICROPY_PY_THREAD_LOCK_TIMEOUT
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT (0)
+#endif
+
+// C type the _thread.Lock.acquire timeout parameter
+#ifndef MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX (INT64_MAX)
+#endif
+
+// Resolution of the _thread.Lock.acquire timeout parameter
+#ifndef MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ (1000000)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_ASYNCIO

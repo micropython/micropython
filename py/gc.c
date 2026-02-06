@@ -114,7 +114,7 @@
 
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
 #define GC_MUTEX_INIT() mp_thread_recursive_mutex_init(&MP_STATE_MEM(gc_mutex))
-#define GC_ENTER() mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), 1)
+#define GC_ENTER() mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), MP_THREAD_MUTEX_TIMEOUT_FOREVER)
 #define GC_EXIT() mp_thread_recursive_mutex_unlock(&MP_STATE_MEM(gc_mutex))
 #else
 // Either no threading, or assume callers to gc_collect() hold the GIL

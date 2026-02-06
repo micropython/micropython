@@ -122,9 +122,16 @@
 
 // When CONFIG_THREAD_CUSTOM_DATA is enabled, MICROPY_PY_THREAD is enabled automatically
 #ifdef CONFIG_THREAD_CUSTOM_DATA
-#define MICROPY_PY_THREAD                   (1)
-#define MICROPY_PY_THREAD_GIL               (1)
-#define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
+#define MICROPY_PY_THREAD                               (1)
+#define MICROPY_PY_THREAD_GIL                           (1)
+#define MICROPY_PY_THREAD_GIL_VM_DIVISOR                (32)
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT                  (1)
+#ifdef CONFIG_TIMEOUT_64BIT
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX              (INT64_MAX)
+#else
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX              (UINT32_MAX - 1)
+#endif
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ    (CONFIG_SYS_CLOCK_TICKS_PER_SEC)
 #endif
 
 void mp_hal_signal_event(void);
