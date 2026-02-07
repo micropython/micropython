@@ -122,6 +122,10 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
 }
 
 static inline void mp_hal_delay_ms(mp_uint_t ms) {
+    if (ms == 0) {
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
+        return;
+    }
     uint64_t us = (uint64_t)ms * 1000;
     ticks_delay_us64(us);
 }
