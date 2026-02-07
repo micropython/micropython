@@ -1579,13 +1579,12 @@ static mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     }
 
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t ret;
+    mp_uint_t ret = 0;
 
     MICROPY_PY_LWIP_ENTER
 
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
-        ret = 0;
 
         if (flags & MP_STREAM_POLL_RD) {
             if (socket->state == STATE_LISTENING) {
@@ -1691,7 +1690,6 @@ static mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 
         socket->pcb.tcp = NULL;
         socket->state = _ERR_BADF;
-        ret = 0;
     }
 
     MICROPY_PY_LWIP_EXIT
