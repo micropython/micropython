@@ -55,6 +55,7 @@
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
+extern void machine_pwm_deinit_all(void);
 extern void machine_pin_irq_deinit(void);
 
 MP_NORETURN void panic(const char *msg) {
@@ -167,6 +168,7 @@ int main(void) {
         mp_machine_i2c_target_deinit_all();
         #endif
         soft_timer_deinit();
+        machine_pwm_deinit_all();
         machine_pin_irq_deinit();
         gc_sweep_all();
         mp_deinit();

@@ -133,6 +133,8 @@
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE      "ports/alif/machine_adc.c"
 #define MICROPY_PY_MACHINE_DHT_READINTO         (1)
 #define MICROPY_PY_MACHINE_PULSE                (1)
+#define MICROPY_PY_MACHINE_PWM                  (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/alif/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (MICROPY_HW_ENABLE_HW_I2C)
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1  (1)
 #ifndef MICROPY_PY_MACHINE_I2C_TARGET
