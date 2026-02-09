@@ -887,6 +887,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             print("skip ", test_file)
             test_results.append((test_file, "skip", ""))
             return
+        elif args.dry_run:
+            print("found", test_file)
+            test_results.append((test_file, "found", ""))
+            return
 
         # Run the test on the MicroPython target.
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
@@ -1108,6 +1112,11 @@ the last matching regex is used:
         metavar="REGEX",
         dest="filters",
         help="include test by regex on path/name.py",
+    )
+    cmd_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show tests which would run (though might still be skipped at runtime)",
     )
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
