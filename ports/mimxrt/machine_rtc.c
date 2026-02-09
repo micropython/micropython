@@ -73,18 +73,33 @@ void machine_rtc_alarm_on() {
     machine_rtc_alarm_set_en();
 }
 
-uint32_t machine_rtc_get_seconds() {
-    uint32_t seconds = 0;
-    uint32_t tmp = 0;
+// Returned ticks are in units of 1/32768 seconds.
+uint64_t machine_rtc_get_ticks(void) {
+    uint64_t ticks = 0;
+    uint64_t tmp = 0;
 
     // Do consecutive reads until value is correct
+    uint32_t state = disable_irq();
     do {
-        seconds = tmp;
-        tmp = (SNVS->LPSRTCMR << 17U);
-        tmp |= (SNVS->LPSRTCLR >> 15U);
-    } while (tmp != seconds);
+        ticks = tmp;
+        tmp = (uint64_t)SNVS->LPSRTCMR << 32U;
+        tmp |= SNVS->LPSRTCLR;
+    } while (tmp != ticks);
+    enable_irq(state);
 
-    return seconds;
+    return ticks;
+}
+
+uint64_t machine_rtc_get_seconds(void) {
+    return machine_rtc_get_ticks() / 32768U;
+}
+
+// Input ticks are in units of 1/32768 seconds.
+static void machine_rtc_set_ticks(uint64_t ticks) {
+    SNVS_LP_SRTC_StopTimer(SNVS);
+    SNVS->LPSRTCMR = (uint32_t)(ticks >> 32U);
+    SNVS->LPSRTCLR = (uint32_t)ticks;
+    SNVS_LP_SRTC_StartTimer(SNVS);
 }
 
 void machine_rtc_alarm_helper(int seconds, bool repeat) {
@@ -164,18 +179,9 @@ void machine_rtc_start(void) {
     SNVS_LP_SRTC_StartTimer(SNVS);
     // If the date is not set, set it to a more recent start date,
     // MicroPython's first commit.
-    snvs_lp_srtc_datetime_t srtc_date;
-    SNVS_LP_SRTC_GetDatetime(SNVS, &srtc_date);
-    if (srtc_date.year <= 1970) {
-        srtc_date = (snvs_lp_srtc_datetime_t) {
-            .year = 2013,
-            .month = 10,
-            .day = 14,
-            .hour = 19,
-            .minute = 53,
-            .second = 11,
-        };
-        SNVS_LP_SRTC_SetDatetime(SNVS, &srtc_date);
+    if (machine_rtc_get_ticks() < 10) {
+        mp_timestamp_t seconds = timeutils_seconds_since_epoch(2013, 10, 14, 19, 53, 11);
+        machine_rtc_set_ticks((uint64_t)seconds * 32768ULL);
     }
 }
 
@@ -190,39 +196,34 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
 static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args, int hour_index) {
     if (n_args == 1) {
         // Get date and time.
-        snvs_lp_srtc_datetime_t srtc_date;
-        SNVS_LP_SRTC_GetDatetime(SNVS, &srtc_date);
-
+        uint64_t ticks = machine_rtc_get_ticks();
+        timeutils_struct_time_t tm;
+        timeutils_seconds_since_epoch_to_struct_time(ticks / 32768U, &tm);
         mp_obj_t tuple[8] = {
-            mp_obj_new_int(srtc_date.year),
-            mp_obj_new_int(srtc_date.month),
-            mp_obj_new_int(srtc_date.day),
-            mp_obj_new_int(timeutils_calc_weekday(srtc_date.year, srtc_date.month, srtc_date.day)),
-            mp_obj_new_int(srtc_date.hour),
-            mp_obj_new_int(srtc_date.minute),
-            mp_obj_new_int(srtc_date.second),
-            mp_obj_new_int(0),
+            mp_obj_new_int(tm.tm_year),
+            mp_obj_new_int(tm.tm_mon),
+            mp_obj_new_int(tm.tm_mday),
+            mp_obj_new_int(tm.tm_wday),
+            mp_obj_new_int(tm.tm_hour),
+            mp_obj_new_int(tm.tm_min),
+            mp_obj_new_int(tm.tm_sec),
+            mp_obj_new_int((ticks % 32768) * 15625U / 512U),
         };
         return mp_obj_new_tuple(8, tuple);
     } else {
         // Set date and time.
         mp_obj_t *items;
-        mp_int_t year;
         mp_obj_get_array_fixed_n(args[1], 8, &items);
-
-        snvs_lp_srtc_datetime_t srtc_date;
-        year = mp_obj_get_int(items[0]);
-        srtc_date.year = year >= 100 ? year : year + 2000; // allow 21 for 2021
-        srtc_date.month = mp_obj_get_int(items[1]);
-        srtc_date.day = mp_obj_get_int(items[2]);
-        // Ignore weekday at items[3]
-        srtc_date.hour = mp_obj_get_int(items[hour_index]);
-        srtc_date.minute = mp_obj_get_int(items[hour_index + 1]);
-        srtc_date.second = mp_obj_get_int(items[hour_index + 2]);
-        if (SNVS_LP_SRTC_SetDatetime(SNVS, &srtc_date) != kStatus_Success) {
-            mp_raise_ValueError(NULL);
-        }
-
+        timeutils_struct_time_t tm = {
+            .tm_year = mp_obj_get_int(items[0]),
+            .tm_mon = mp_obj_get_int(items[1]),
+            .tm_mday = mp_obj_get_int(items[2]),
+            .tm_hour = mp_obj_get_int(items[4]),
+            .tm_min = mp_obj_get_int(items[5]),
+            .tm_sec = mp_obj_get_int(items[6]),
+        };
+        uint32_t seconds = timeutils_seconds_since_epoch(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+        machine_rtc_set_ticks((uint64_t)seconds * 32768ULL);
         return mp_const_none;
     }
 }

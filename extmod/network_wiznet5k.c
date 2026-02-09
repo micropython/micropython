@@ -147,7 +147,7 @@ void mpy_wiznet_yield(void) {
     #if MICROPY_PY_THREAD
     MICROPY_THREAD_YIELD();
     #else
-    mp_handle_pending(true);
+    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
     #endif
 }
 

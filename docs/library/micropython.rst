@@ -130,6 +130,11 @@ Functions
      a critical region but they will not be executed until that region
      is exited.  An example of a critical region is a preempting interrupt
      handler (an IRQ).
+   - Inside native code functions, scheduled functions are not called unless
+     the native code calls a function that specifically does so.
+   - Certain functions including ``poll.poll``, ``poll.ipoll``,
+     ``time.sleep`` and ``time.sleep_ms`` (including zero-duration sleeps)
+     will call scheduled functions.
 
    A use for this function is to schedule a callback from a preempting IRQ.
    Such an IRQ puts restrictions on the code that runs in the IRQ (for example

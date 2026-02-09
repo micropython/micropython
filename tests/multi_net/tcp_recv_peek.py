@@ -9,7 +9,7 @@ import random
 
 # Server
 def instance0():
-    PORT = random.randrange(10000, 50000)
+    PORT = 10000 + random.getrandbits(15)
     multitest.globals(IP=multitest.get_network_ip(), PORT=PORT)
     s = socket.socket()
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

@@ -69,6 +69,11 @@
 #define MICROPY_VFS                        (CORE_FEAT)
 #endif
 
+// VfsROM filesystem
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM                    (CORE_FEAT)
+#endif
+
 // micro:bit filesystem
 #ifndef MICROPY_MBFS
 #define MICROPY_MBFS                       (!MICROPY_VFS)
@@ -374,8 +379,7 @@ long unsigned int rng_generate_random_word(void);
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
         __WFI(); \
     } while (0);
 

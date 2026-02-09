@@ -56,7 +56,7 @@ USBD_DEVICE_DEFINE(mp_usbd,
 
 USBD_DESC_LANG_DEFINE(mp_lang);
 USBD_DESC_MANUFACTURER_DEFINE(mp_mfr, "Zephyr Project");
-USBD_DESC_PRODUCT_DEFINE(mp_product, "Micropython on Zephyr RTOS");
+USBD_DESC_PRODUCT_DEFINE(mp_product, "MicroPython on Zephyr RTOS");
 USBD_DESC_SERIAL_NUMBER_DEFINE(mp_sn);
 
 USBD_DESC_CONFIG_DEFINE(fs_cfg_desc, "FS Configuration");

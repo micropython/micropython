@@ -32,6 +32,21 @@
     )
     #define RTC_LAST_EXT_PIN 21
 
+#elif CONFIG_IDF_TARGET_ESP32C6
+
+    #define RTC_VALID_EXT_PINS \
+    ( \
+    (1ll << 0) | \
+    (1ll << 1) | \
+    (1ll << 2) | \
+    (1ll << 3) | \
+    (1ll << 4) | \
+    (1ll << 5) | \
+    (1ll << 6) | \
+    (1ll << 7)   \
+    )
+    #define RTC_LAST_EXT_PIN 7
+
 #else
 
     #define RTC_VALID_EXT_PINS \
@@ -67,6 +82,7 @@ extern const mp_obj_type_t esp32_nvs_type;
 extern const mp_obj_type_t esp32_partition_type;
 extern const mp_obj_type_t esp32_rmt_type;
 extern const mp_obj_type_t esp32_ulp_type;
+extern const mp_obj_type_t esp32_ldo_type;
 
 #if MICROPY_PY_ESP32_PCNT
 extern const mp_obj_type_t esp32_pcnt_type;

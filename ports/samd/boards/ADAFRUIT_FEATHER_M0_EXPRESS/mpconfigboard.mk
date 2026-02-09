@@ -5,4 +5,4 @@ TEXT0 = 0x2000
 
 # The ?='s allow overriding in mpconfigboard.mk.
 # MicroPython settings
-MICROPY_HW_CODESIZE ?= 248K
+MICROPY_HW_CODESIZE ?= 236K

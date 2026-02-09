@@ -342,6 +342,8 @@ static mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
     mp_uint_t start_ticks = mp_hal_ticks_ms();
     bool has_timeout = timeout != (mp_uint_t)-1;
 
+    mp_handle_pending(true);
+
     #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
 
     for (;;) {

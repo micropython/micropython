@@ -35,13 +35,14 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
+    # Needs to be kept in synch with code_size.yml
     - id: idf_ver
-      name: Read the ESP-IDF version (including Python version)
-      run: source tools/ci.sh && echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
+      name: Read the ESP-IDF version (including Python version) and set outputs.IDF_VER
+      run: tools/ci.sh esp32_idf_ver | tee "${GITHUB_OUTPUT}"
 
     - name: Cached ESP-IDF install
       id: cache_esp_idf
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ./esp-idf/
@@ -54,6 +55,7 @@ jobs:
       if: steps.cache_esp_idf.outputs.cache-hit != 'true'
       run: tools/ci.sh esp32_idf_setup
 
+    # Needs to be kept in synch with code_size.yml
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:

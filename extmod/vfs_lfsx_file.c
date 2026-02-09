@@ -152,11 +152,8 @@ static mp_uint_t MP_VFS_LFSx(file_write)(mp_obj_t self_in, const void *buf, mp_u
 static mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     MP_OBJ_VFS_LFSx_FILE *self = MP_OBJ_TO_PTR(self_in);
 
-    if (request != MP_STREAM_CLOSE) {
-        MP_VFS_LFSx(check_open)(self);
-    }
-
     if (request == MP_STREAM_SEEK) {
+        MP_VFS_LFSx(check_open)(self);
         struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
         int res = LFSx_API(file_seek)(&self->vfs->lfs, &self->file, s->offset, s->whence);
         if (res < 0) {
@@ -171,6 +168,7 @@ static mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
         s->offset = res;
         return 0;
     } else if (request == MP_STREAM_FLUSH) {
+        MP_VFS_LFSx(check_open)(self);
         int res = LFSx_API(file_sync)(&self->vfs->lfs, &self->file);
         if (res < 0) {
             *errcode = -res;

@@ -193,14 +193,13 @@ static void esp32_rmt_deactivate(esp32_rmt_obj_t *self) {
     if (self->enabled) {
         // FIXME: panics in ESP32 if called while TX is ongoing and TX sequence is long (>300ms)
         // Does not panic in ESP32-S3, ESP32-C3 and ESP32-C6.
-        // Tested with ESP-IDF up to 5.5
-        // ESP-IDF issue: https://github.com/espressif/esp-idf/issues/17692
+        // Happens with ESP-IDF up to 5.5.1. Fixed in ESP-IDF 5.5.2.
+        // ESP-IDF GitHub issue: https://github.com/espressif/esp-idf/issues/17692
         //
-        // Cause is Interrupt WDT to trigger because ESP-IDF rmt_disable() disables
-        // interrupts and spinlocks until the ongoing TX sequence is finished.
-        //
-        // Workaround is never try to stop RMT sequences longer than 300ms (which are unusual
-        // anyway). Or apply the patch mentioned at the GitHub issue to ESP-IDF.
+        // Workarounds:
+        // - recompile with ESP-IDF 5.5.2 or better
+        // - never try to stop RMT sequences longer than 300ms
+        // - apply to ESP-IDF the patch mentioned at the GitHub issue
         rmt_disable(self->channel);
         self->enabled = false;
     }

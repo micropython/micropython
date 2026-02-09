@@ -67,40 +67,42 @@ PWM pin assignment
 Pins are specified in the same way as for the Pin class.  The following tables show
 the assignment of the board Pins to PWM modules:
 
-===========  ==========  ==========  ======  ==========  ======  ========
-Pin/ MIMXRT  1010        1015        1020    1050/60/64  1170    Metro M7
-===========  ==========  ==========  ======  ==========  ======  ========
-D0           -           Q1/1        F1/1/B  -           -       -
-D1           -           Q1/0        F1/1/A  -           -       -
-D2           F1/3/B      F1/3/A      -       F1/3/B      -       -
-D3           F1/3/A      F1/0/A      F2/3/B  F4/0/A      F1/2/A  -
-D4           F1/3/A (*)  Q1/2        Q2/1    F2/3/A      Q4/2    F1/0/B
-D5           F1/0/B (*)  F1/0/B      F2/3/A  F1/3/A      F1/2/B  F1/0/A
-D6           -           F1/2/B      F2/0/A  Q3/2        F1/0/A  -
-D7           -           -           F1/0/A  Q3/3        -       -
-D8           F1/0/A      F1/1/B      F1/0/B  F1/1/X      Q4/3    F1/3/A
-D9           F1/1/B (*)  F1/2/A      F2/0/B  F1/0/X      F1/0/B  F1/3/B
-D10          F1/3/B      -           F2/2/B  F1/0/B (*)  F2/2/B  F1/2/A
-D11          F1/2/A      -           F2/1/A  F1/1/A (*)  -       F1/2/B
-D12          F1/2/B      -           F2/1/B  F1/1/B (*)  -       F1/1/A
-D13          F1/3/A      -           F2/2/A  F1/0/A (*)  F2/2/A  F1/1/B
-D14          F1/0/B      -           -       F2/3/B      -       F1/0/B
-D15          F1/0/A      -           -       F2/3/A      -       F1/0/A
-A0           -           -           F1/2/A  -           -       -
-A1           F1/3/X      F1/3/B      F1/2/B  -           -       -
-A2           F1/2/X      F1/3/A      F1/3/A  -           -       -
-A3           -           F1/2/A      F1/3/B  -           -       F1/3/B
-A4           -           -           -       Q3/1        -       F1/2/X
-A5           -           -           -       Q3/0        -       -
-D31          -           -           -       -           F1/2/B  -
-D32          -           -           -       -           F1/2/A  -
-D33          -           -           -       -           F1/1/B  -
-D34          -           -           -       -           F1/1/A  -
-D35          -           -           -       -           F1/0/B  -
-D36          -           -           -       -           F1/0/A  -
-===========  ==========  ==========  ======  ==========  ======  ========
+===========  ==========  ==========  ======  ==========  ===========  ========
+Pin/ MIMXRT  1010        1015        1020    1050/60/64  1170         Metro M7
+===========  ==========  ==========  ======  ==========  ===========  ========
+D0           -           Q1/1        F1/1/B  -           -            -
+D1           -           Q1/0        F1/1/A  -           -            -
+D2           F1/3/B      F1/3/A      -       F1/3/B      -            -
+D3           F1/3/A      F1/0/A      F2/3/B  F4/0/A      F1/2/A (&)   -
+D4           F1/3/A (*)  Q1/2        Q2/1    F2/3/A      F1/0/X (&)   F1/0/B
+D5           F1/0/B (*)  F1/0/B      F2/3/A  F1/3/A      F1/2/B (&)   F1/0/A
+D6           -           F1/2/B      F2/0/A  Q3/2        F1/0/A       -
+D7           -           -           F1/0/A  Q3/3        F3/0/X       -
+D8           F1/0/A      F1/1/B      F1/0/B  F1/1/X      F1/1/X (&)   F1/3/A
+D9           F1/1/B (*)  F1/2/A      F2/0/B  F1/0/X      F1/0/B       F1/3/B
+D10          F1/3/B      -           F2/2/B  F1/0/B (*)  F2/2/B       F1/2/A
+D11          F1/2/A      -           F2/1/A  F1/1/A (*)  -            F1/2/B
+D12          F1/2/B      -           F2/1/B  F1/1/B (*)  -            F1/1/A
+D13          F1/3/A      -           F2/2/A  F1/0/A (*)  F2/2/A       F1/1/B
+D14          F1/0/B      -           -       F2/3/B      -            F1/0/B
+D15          F1/0/A      -           -       F2/3/A      -            F1/0/A
+A0           -           -           F1/2/A  -           F2/0/X       -
+A1           F1/3/X      F1/3/B      F1/2/B  -           F2/1/X       -
+A2           F1/2/X      F1/3/A      F1/3/A  -           F2/2/X       -
+A3           -           F1/2/A      F1/3/B  -           F2/3/X       F1/3/B
+A4           -           -           -       Q3/1        F1/3/X       F1/2/X
+A5           -           -           -       Q3/0        F1/2/X       -
+D31          -           -           -       -           F1/2/B (&)   -
+D32          -           -           -       -           F1/2/A (&)   -
+D33          -           -           -       -           F1/1/B       -
+D34          -           -           -       -           F1/1/A       -
+D35          -           -           -       -           F1/0/B       -
+D36          -           -           -       -           F1/0/A       -
+===========  ==========  ==========  ======  ==========  ===========  ========
 
 Pins denoted with (*) are by default not wired at the board.
+
+Pins denoted with (&) have alternative PWM options available.
 
 ====   ==========  ====   ==========
 Pin    Teensy 4.0  Pin    Teensy 4.1
@@ -317,6 +319,10 @@ Pin.cpu.GPIO_EMC_B1_29  FLEXPWM3 Channel A (*)
 Pin.cpu.GPIO_EMC_B1_30  FLEXPWM3 Channel B (*)
 Pin.cpu.GPIO_AD_00      FLEXPWM1 Channel A
 Pin.cpu.GPIO_AD_01      FLEXPWM1 Channel B
+Pin.cpu.GPIO_AD_06      FLEXPWM1 Channel X
+Pin.cpu.GPIO_AD_10      FLEXPWM2 Channel X
+Pin.cpu.GPIO_AD_14      FLEXPWM3 Channel X
+Pin.cpu.GPIO_AD_18      FLEXPWM4 Channel X
 Pin.cpu.GPIO_AD_24      FLEXPWM2 Channel A
 Pin.cpu.GPIO_AD_25      FLEXPWM2 Channel B
 ======================  ======================

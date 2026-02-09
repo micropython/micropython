@@ -37,5 +37,27 @@ typedef struct _mp_obj_list_t {
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n);
 mp_obj_t mp_obj_list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
+mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
+
+static inline void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
+    mp_obj_list_t *self = (mp_obj_list_t *)MP_OBJ_TO_PTR(self_in);
+    *len = self->len;
+    *items = self->items;
+}
+
+static inline void mp_obj_list_set_len(mp_obj_t self_in, size_t len) {
+    // trust that the caller knows what it's doing
+    // TODO realloc if len got much smaller than alloc
+    mp_obj_list_t *self = (mp_obj_list_t *)MP_OBJ_TO_PTR(self_in);
+    self->len = len;
+}
+
+static inline void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    mp_obj_list_t *self = (mp_obj_list_t *)MP_OBJ_TO_PTR(self_in);
+    size_t i = mp_get_index(self->base.type, self->len, index, false);
+    self->items[i] = value;
+}
 
 #endif // MICROPY_INCLUDED_PY_OBJLIST_H

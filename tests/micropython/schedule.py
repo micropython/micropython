@@ -1,4 +1,6 @@
 # test micropython.schedule() function
+# this test should be manually kept in synch with
+# tests/micrpython/schedule_sleep.py.
 
 try:
     import micropython

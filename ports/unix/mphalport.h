@@ -99,7 +99,7 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
             if (ret == -1) { \
                 int err = errno; \
                 if (err == EINTR) { \
-                    mp_handle_pending(true); \
+                    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
                     continue; \
                 } \
                 raise; \

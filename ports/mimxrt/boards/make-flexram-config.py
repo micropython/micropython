@@ -55,9 +55,14 @@ ocram_min_size = 0x00010000  # 64 KB
 
 
 # Value parser
-def mimxrt_default_parser(defines_file, features_file, ld_script):
-    with open(ld_script, "r") as input_file:
-        input_str = input_file.read()
+def mimxrt_default_parser(defines_file, features_file, ld_scripts):
+    input_str = ""
+    if ld_scripts is None:
+        # Default linker script
+        ld_scripts = ["boards/MIMXRT1021.ld"]
+    for ld_script in ld_scripts:
+        with open(ld_script, "r") as input_file:
+            input_str += input_file.read()
     #
     ocram_match = re.search(ocram_regex, input_str, re.MULTILINE)
     dtcm_match = re.search(dtcm_regex, input_str, re.MULTILINE)
@@ -249,7 +254,9 @@ if __name__ == "__main__":
         "--ld_file",
         dest="linker_file",
         help="Path to the aggregated linker-script",
-        default="MIMXRT1021.ld",
+        action="append",
+        # Can't specify default here when using 'append' action, see
+        # https://github.com/python/cpython/issues/60603
     )
     parser.add_argument(
         "-c", "--controller", dest="controller", help="Controller name", default="MIMXRT1021"

@@ -638,3 +638,75 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
     }
     return ret;
 }
+
+// =============================================================================
+// LPUART IRQ Handler Wrapper for UART.IRQ_RXIDLE Support
+// =============================================================================
+//
+// Problem: SDK 2.16's LPUART_TransferHandleIDLEReady() only invokes the idle line callback
+// when rxDataSize != 0. MicroPython uses ring buffer mode where rxDataSize is always 0,
+// preventing IRQ_RXIDLE from ever firing.
+//
+// Solution: Use linker wrapping (see Makefile LDFLAGS) to intercept the IRQ handler and
+// handle the idle line interrupt before the SDK processes it.
+//
+// Why double wrapping is needed:
+// - The SDK's LPUART_TransferCreateHandle stores the address of LPUART_TransferHandleIRQ
+//   into the s_lpuartIsr[] dispatch table (not a direct call).
+// - GCC's --wrap flag only intercepts direct function calls, not address-of operations.
+// - Therefore we must also wrap CreateHandle to inject our IRQ wrapper's address.
+//
+// See Makefile: LDFLAGS += --wrap=LPUART_TransferCreateHandle --wrap=LPUART_TransferHandleIRQ
+//
+
+// Linker wrapper declarations - these are provided by --wrap linkage
+extern void __real_LPUART_TransferCreateHandle(LPUART_Type *base, lpuart_handle_t *handle,
+    lpuart_transfer_callback_t callback, void *userData);
+extern void __real_LPUART_TransferHandleIRQ(LPUART_Type *base, void *irqHandle);
+
+// Forward declaration of our IRQ wrapper (defined below)
+void __wrap_LPUART_TransferHandleIRQ(LPUART_Type *base, void *irqHandle);
+
+// SDK's ISR dispatch table - defined in lib/nxp_driver/sdk/drivers/lpuart/fsl_lpuart.c
+extern lpuart_isr_t s_lpuartIsr[];
+
+// Wrapper for LPUART_TransferCreateHandle to inject our IRQ wrapper into SDK's dispatch table.
+// This is called instead of the SDK's function due to --wrap=LPUART_TransferCreateHandle in Makefile.
+// After the SDK initializes, we replace s_lpuartIsr[instance] with our wrapper's address.
+void __wrap_LPUART_TransferCreateHandle(LPUART_Type *base, lpuart_handle_t *handle,
+    lpuart_transfer_callback_t callback, void *userData) {
+    // Call the real SDK function to perform normal initialization
+    __real_LPUART_TransferCreateHandle(base, handle, callback, userData);
+
+    // Override the ISR dispatch table entry with our wrapper's address
+    // (SDK stored __real_LPUART_TransferHandleIRQ, we want __wrap_LPUART_TransferHandleIRQ)
+    uint32_t instance = LPUART_GetInstance(base);
+    s_lpuartIsr[instance] = __wrap_LPUART_TransferHandleIRQ;
+}
+
+// Wrapper for LPUART_TransferHandleIRQ to handle UART.IRQ_RXIDLE in ring buffer mode.
+// This is installed into s_lpuartIsr[] by __wrap_LPUART_TransferCreateHandle above.
+// Processes the IDLE line interrupt and invokes the MicroPython callback unconditionally,
+// then calls the SDK's handler for remaining interrupt processing.
+void __wrap_LPUART_TransferHandleIRQ(LPUART_Type *base, void *irqHandle) {
+    uint32_t status = LPUART_GetStatusFlags(base);
+    uint32_t enabledInterrupts = LPUART_GetEnabledInterrupts(base);
+    lpuart_handle_t *handle = (lpuart_handle_t *)irqHandle;
+
+    // Check if IDLE flag is set and IDLE interrupt is enabled
+    if ((0U != ((uint32_t)kLPUART_IdleLineFlag & status)) &&
+        (0U != ((uint32_t)kLPUART_IdleLineInterruptEnable & enabledInterrupts))) {
+        // Clear IDLE flag to prevent SDK's handler from seeing it
+        // (SDK would disable the interrupt due to rxDataSize == 0)
+        LPUART_ClearStatusFlags(base, kLPUART_IdleLineFlag);
+        // Invoke MicroPython's idle handler callback
+        if (NULL != handle->callback) {
+            handle->callback(base, handle, kStatus_LPUART_IdleLineDetected, handle->userData);
+        } else {
+            /* Avoid MISRA 15.7 */
+        }
+    }
+
+    // Call SDK's handler for all other interrupt processing
+    __real_LPUART_TransferHandleIRQ(base, irqHandle);
+}

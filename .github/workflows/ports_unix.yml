@@ -103,9 +103,14 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   coverage_32bit:
-    runs-on: ubuntu-22.04 # use 22.04 to get libffi-dev:i386
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -121,9 +126,14 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   nanbox:
-    runs-on: ubuntu-22.04 # use 22.04 to get libffi-dev:i386
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -135,9 +145,14 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   longlong:
-    runs-on: ubuntu-22.04 # use 22.04 to get libffi-dev:i386
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -218,9 +233,14 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   repr_b:
-    runs-on: ubuntu-22.04 # use 22.04 to get libffi-dev:i386
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -247,10 +267,14 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_mips:
-    # ubuntu-22.04 is needed for older libffi.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_qemu_mips_setup
     - name: Build
@@ -262,10 +286,14 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_arm:
-    # ubuntu-22.04 is needed for older libffi.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_qemu_arm_setup
     - name: Build
@@ -277,10 +305,14 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_riscv64:
-    # ubuntu-22.04 is needed for older libffi.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_qemu_riscv64_setup
     - name: Build

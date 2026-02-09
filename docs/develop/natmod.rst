@@ -41,10 +41,16 @@ options for the ``ARCH`` variable, see below):
 * ``xtensa`` (non-windowed, eg ESP8266)
 * ``xtensawin`` (windowed with window size 8, eg ESP32, ESP32S3)
 * ``rv32imc`` (RISC-V 32 bits with compressed instructions, eg ESP32C3, ESP32C6)
+* ``rv64imc`` (RISC-V 64 bits with compressed instructions)
+
+If the chosen platform supports explicit architecture flags and you want to let
+the output .mpy file carry those flags' value, you must pass them to the
+``ARCH_FLAGS`` flags variable when building the .mpy file.
 
 When compiling and linking the native .mpy file the architecture must be chosen
-and the corresponding file can only be imported on that architecture.  For more
-details about .mpy files see :ref:`mpy_files`.
+and the corresponding file can only be imported on that architecture (and if
+architecture flags are present, only if they match the target's capabilities).
+For more details about .mpy files see :ref:`mpy_files`.
 
 Native code must be compiled as position independent code (PIC) and use a global
 offset table (GOT), although the details of this varies from architecture to
@@ -123,7 +129,8 @@ The filesystem layout consists of two main parts, the source files and the Makef
   location of the MicroPython repository (to find header files, the relevant Makefile
   fragment, and the ``mpy_ld.py`` tool), ``MOD`` as the name of the module, ``SRC``
   as the list of source files, optionally specify the machine architecture via ``ARCH``,
-  and then include ``py/dynruntime.mk``.
+  along with optional machine architecture flags specified via ``ARCH_FLAGS``, and
+  then include ``py/dynruntime.mk``.
 
 Minimal example
 ---------------
@@ -190,7 +197,7 @@ The file ``Makefile`` contains:
     # Source files (.c or .py)
     SRC = factorial.c
 
-    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc)
+    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc, rv64imc)
     ARCH = x64
 
     # Include to get the rules for compiling and linking the module
@@ -216,6 +223,10 @@ Without modifying the Makefile you can specify the target architecture via::
 
     $ make ARCH=armv7m
 
+Same applies for optional architecture flags via::
+
+    $ make ARCH=rv32imc ARCH_FLAGS=zba
+
 Module usage in MicroPython
 ---------------------------
 
@@ -232,15 +243,15 @@ Using Picolibc when building modules
 ------------------------------------
 
 Using `Picolibc <https://github.com/picolibc/picolibc>`_ as your C standard
-library is not only supported, but in fact it is the default for the rv32imc
-platform.  However, there are a couple of things worth mentioning to make sure
-you don't run into problems later when building code.
+library is not only supported, but in fact it is the default for the rv32imc and
+rv64imc platforms.  However, there are a couple of things worth mentioning to make
+sure you don't run into problems later when building code.
 
 Some pre-built Picolibc versions (for example, those provided by Ubuntu Linux
 as the ``picolibc-arm-none-eabi``, ``picolibc-riscv64-unknown-elf``, and
 ``picolibc-xtensa-lx106-elf`` packages) assume thread-local storage (TLS) is
 available at runtime, but unfortunately MicroPython modules do not support that
-on some architectures (namely ``rv32imc``).  This means that some
+on some architectures (namely ``rv32imc`` and ``rv64imc``).  This means that some
 functionalities provided by Picolibc will default to use TLS, returning an
 error either during compilation or during linking.
 

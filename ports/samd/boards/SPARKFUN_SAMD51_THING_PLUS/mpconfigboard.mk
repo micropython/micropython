@@ -5,4 +5,7 @@ TEXT0 = 0x4000
 
 # The ?='s allow overriding in mpconfigboard.mk.
 # MicroPython settings
-MICROPY_HW_CODESIZE ?= 1008K
+# The size of a MCU flash filesystem will be
+# 1008k - MICROPY_HW_CODESIZE - MICROPY_HW_ROMFS_BYTES
+MICROPY_HW_CODESIZE ?= 752K
+MICROPY_HW_ROMFS_BYTES ?= 256K

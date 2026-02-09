@@ -138,6 +138,7 @@ list(APPEND MICROPY_SOURCE_PORT
     esp32_pcnt.c
     esp32_rmt.c
     esp32_ulp.c
+    esp32_ldo.c
     modesp32.c
     machine_hw_spi.c
     mpthreadport.c
@@ -288,6 +289,7 @@ endif()
 # Add additional extmod and usermod components.
 if (MICROPY_PY_BTREE)
     target_link_libraries(${MICROPY_TARGET} $<TARGET_OBJECTS:micropy_extmod_btree>)
+    target_link_libraries(${MICROPY_TARGET} "-u abort_")  # micropy_extmod_btree links to this symbol found in MICROPY_TARGET
 endif()
 target_link_libraries(${MICROPY_TARGET} usermod)
 

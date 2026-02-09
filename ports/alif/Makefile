@@ -82,17 +82,17 @@ $(BUILD):
 	$(MKDIR) -p $@
 
 $(BUILD)/M55_HP/firmware.bin:
-	make -f alif.mk BUILD=$(BUILD)/M55_HP MCU_CORE=M55_HP MICROPY_PY_OPENAMP_MODE=0
+	$(MAKE) -f alif.mk BUILD=$(BUILD)/M55_HP MCU_CORE=M55_HP MICROPY_PY_OPENAMP_MODE=0
 
 $(BUILD)/M55_HE/firmware.bin:
-	make -f alif.mk BUILD=$(BUILD)/M55_HE MCU_CORE=M55_HE MICROPY_PY_OPENAMP_MODE=1
+	$(MAKE) -f alif.mk BUILD=$(BUILD)/M55_HE MCU_CORE=M55_HE MICROPY_PY_OPENAMP_MODE=1
 
 $(BUILD)/$(ALIF_TOC_CONFIG): mcu/$(ALIF_TOC_CONFIG).in | $(BUILD)
 	$(ECHO) "Preprocess toc config $@"
 	$(Q)$(CPP) -P -E $(ALIF_TOC_CFLAGS) - < mcu/$(ALIF_TOC_CONFIG).in > $@
 
 $(ALIF_TOC_BIN): $(ALIF_TOC_APPS)
-	$(Q)python $(ALIF_TOOLS)/app-gen-toc.py \
+	$(Q)$(PYTHON) $(ALIF_TOOLS)/app-gen-toc.py \
 		--filename $(abspath $(BUILD)/$(ALIF_TOC_CONFIG)) \
 		--output-dir $(BUILD) \
 		--firmware-dir $(BUILD) \
@@ -105,7 +105,7 @@ $(BUILD)/firmware.zip: $(ALIF_TOC_BIN) $(ALIF_TOC_APPS)
 .PHONY: deploy
 deploy: $(ALIF_TOC_BIN)
 	$(ECHO) "Writing $< to the board"
-	$(Q)python $(ALIF_TOOLS)/app-write-mram.py \
+	$(Q)$(PYTHON) $(ALIF_TOOLS)/app-write-mram.py \
 		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
 		--port $(PORT) \
 		--pad \
@@ -117,13 +117,13 @@ deploy-jlink: $(ALIF_TOC_APPS)
 
 .PHONY: maintenance
 maintenance:
-	$(Q)python $(ALIF_TOOLS)/maintenance.py \
+	$(Q)$(PYTHON) $(ALIF_TOOLS)/maintenance.py \
 		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
 		--port $(PORT)
 
 .PHONY: update-system-package
 update-system-package:
-	$(Q)python $(ALIF_TOOLS)/updateSystemPackage.py \
+	$(Q)$(PYTHON) $(ALIF_TOOLS)/updateSystemPackage.py \
 		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
 		--port $(PORT)
 

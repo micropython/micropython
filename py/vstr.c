@@ -183,31 +183,19 @@ void vstr_add_strn(vstr_t *vstr, const char *str, size_t len) {
     vstr->len += len;
 }
 
-static char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
+char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
     size_t l = vstr->len;
     if (byte_pos > l) {
         byte_pos = l;
     }
-    if (byte_len > 0) {
-        // ensure room for the new bytes
-        vstr_ensure_extra(vstr, byte_len);
-        // copy up the string to make room for the new bytes
-        memmove(vstr->buf + byte_pos + byte_len, vstr->buf + byte_pos, l - byte_pos);
-        // increase the length
-        vstr->len += byte_len;
-    }
+    // ensure room for the new bytes
+    vstr_ensure_extra(vstr, byte_len);
+    // copy up the string to make room for the new bytes
+    memmove(vstr->buf + byte_pos + byte_len, vstr->buf + byte_pos, l - byte_pos);
+    // increase the length
+    vstr->len += byte_len;
+    // return a pointer to the location to insert new bytes at
     return vstr->buf + byte_pos;
-}
-
-void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
-    char *s = vstr_ins_blank_bytes(vstr, byte_pos, 1);
-    *s = b;
-}
-
-void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
-    // TODO UNICODE
-    char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
-    *s = chr;
 }
 
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut) {

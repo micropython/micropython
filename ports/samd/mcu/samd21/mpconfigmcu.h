@@ -2,11 +2,6 @@
 #include "samd21.h"
 
 #define MICROPY_CONFIG_ROM_LEVEL        (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
-#if MICROPY_HW_CODESIZE == 248
-#define SAMD21_EXTRA_FEATURES           1
-#else
-#define SAMD21_EXTRA_FEATURES           0
-#endif
 
 // MicroPython emitters
 #define MICROPY_EMIT_THUMB              (SAMD21_EXTRA_FEATURES)

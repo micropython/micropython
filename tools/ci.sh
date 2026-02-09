@@ -87,7 +87,7 @@ function _ci_is_git_merge {
 function ci_code_size_build {
     # check the following ports for the change in their code size
     # Override the list by setting PORTS_TO_CHECK in the environment before invoking ci.
-    : ${PORTS_TO_CHECK:=bmusxpdv}
+    : ${PORTS_TO_CHECK:=bmus3xpdv}
     
     SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/btstack lib/cyw43-driver lib/lwip lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
@@ -195,6 +195,15 @@ function ci_cc3200_build {
 }
 
 ########################################################################################
+# ports/embed
+
+function ci_embedding_build {
+    make ${MAKEOPTS} -C examples/embedding -f micropython_embed.mk
+    make ${MAKEOPTS} -C examples/embedding
+    ./examples/embedding/embed | grep "hello world"
+}
+
+########################################################################################
 # ports/esp32
 
 # GitHub tag of ESP-IDF to use for CI, extracted from the esp32 dependency lockfile
@@ -205,6 +214,10 @@ PYTHON=$(command -v python3 2> /dev/null)
 PYTHON_VER=$(${PYTHON:-python} --version | cut -d' ' -f2)
 
 export IDF_CCACHE_ENABLE=1
+
+function ci_esp32_idf_ver {
+    echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}"
+}
 
 function ci_esp32_idf_setup {
     echo "Using ESP-IDF version $IDF_VER"
@@ -378,6 +391,8 @@ function ci_qemu_setup_rv64 {
     ci_gcc_riscv_setup
     sudo apt-get update
     sudo apt-get install qemu-system
+    sudo pip3 install pyelftools
+    sudo pip3 install ar
     qemu-system-riscv64 --version
 }
 
@@ -436,6 +451,10 @@ function ci_qemu_build_rv64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 submodules
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test
+
+    # Test building and running native .mpy with rv64imc architecture.
+    ci_native_mpy_modules_build rv64imc
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test_natmod
 }
 
 ########################################################################################
@@ -669,9 +688,9 @@ function ci_native_mpy_modules_build {
         make -C examples/natmod/$natmod ARCH=$arch
     done
 
-    # features2 requires soft-float on rv32imc and xtensa.
+    # features2 requires soft-float on rv32imc, rv64imc, and xtensa.
     make -C examples/natmod/features2 ARCH=$arch clean
-    if [ $arch = "rv32imc" ] || [ $arch = "xtensa" ]; then
+    if [ $arch = "rv32imc" ] || [ $arch = "rv64imc" ] || [ $arch = "xtensa" ]; then
         make -C examples/natmod/features2 ARCH=$arch MICROPY_FLOAT_IMPL=float
     else
         make -C examples/natmod/features2 ARCH=$arch
@@ -758,9 +777,8 @@ function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
     sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
-    sudo pip3 install setuptools
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    python -m pip install pyelftools
+    python -m pip install ar
     gcc --version
     python3 --version
 }
@@ -894,11 +912,11 @@ function ci_unix_macos_run_tests {
 
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross
-    sudo apt-get install qemu-user
-    qemu-mips --version
-    sudo mkdir /etc/qemu-binfmt
-    sudo ln -s /usr/mips-linux-gnu/ /etc/qemu-binfmt/mips
+    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross libltdl-dev
+    sudo apt-get install qemu-user-static
+    qemu-mips-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/mips-linux-gnu /usr/gnemul/qemu-mips
 }
 
 function ci_unix_qemu_mips_build {
@@ -908,20 +926,20 @@ function ci_unix_qemu_mips_build {
 
 function ci_unix_qemu_mips_run_tests {
     # Issues with MIPS tests:
-    # - thread/stress_aes.py takes around 50 seconds
+    # - thread/stress_aes.py takes around 90 seconds
     # - thread/stress_recurse.py is flaky
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_arm_setup {
     sudo apt-get update
-    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
-    sudo apt-get install qemu-user
-    qemu-arm --version
-    sudo mkdir /etc/qemu-binfmt
-    sudo ln -s /usr/arm-linux-gnueabi/ /etc/qemu-binfmt/arm
+    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libltdl-dev
+    sudo apt-get install qemu-user-static
+    qemu-arm-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/arm-linux-gnueabi /usr/gnemul/qemu-arm
 }
 
 function ci_unix_qemu_arm_build {
@@ -931,35 +949,41 @@ function ci_unix_qemu_arm_build {
 
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
-    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     # - thread/stress_aes.py takes around 70 seconds
     # - thread/stress_recurse.py is flaky
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'vfs_posix.*\.py|thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
+    ci_gcc_riscv_setup
     sudo apt-get update
-    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
-    sudo apt-get install qemu-user
-    qemu-riscv64 --version
-    sudo mkdir /etc/qemu-binfmt
-    sudo ln -s /usr/riscv64-linux-gnu/ /etc/qemu-binfmt/riscv64
+    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libltdl-dev
+    python3 -m pip install pyelftools
+    python3 -m pip install ar
+    sudo apt-get install qemu-user-static
+    qemu-riscv64-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/riscv64-linux-gnu /usr/gnemul/qemu-riscv64
 }
 
 function ci_unix_qemu_riscv64_build {
     ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_RISCV64[@]}"
     ci_unix_build_ffi_lib_helper riscv64-linux-gnu-gcc
+    ci_native_mpy_modules_build rv64imc
 }
 
 function ci_unix_qemu_riscv64_run_tests {
     # Issues with RISCV-64 tests:
-    # - thread/stress_aes.py takes around 140 seconds
+    # - thread/stress_aes.py takes around 180 seconds
     # - thread/stress_recurse.py is flaky
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    pushd tests
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=200 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py'
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
+    popd
 }
 
 function ci_unix_repr_b_build {

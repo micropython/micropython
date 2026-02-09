@@ -45,6 +45,12 @@ jobs:
     env:
       CI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
     steps:
+    - name: Install Python 3.11
+      # As of 20260112 the default Python version in Windows image is 3.12, which breaks settrace tests
+      # Use 3.11 for now
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
     - name: Install Visual Studio ${{ matrix.visualstudio }}
       if: matrix.custom_vs_install
       shell: bash

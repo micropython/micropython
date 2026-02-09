@@ -137,7 +137,7 @@
 #ifndef MICROPY_PY_THREAD
 #define MICROPY_PY_THREAD                       (1)
 #define MICROPY_PY_THREAD_GIL                   (0)
-#define MICROPY_THREAD_YIELD()                  mp_handle_pending(true)
+#define MICROPY_THREAD_YIELD()                  mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS)
 #endif
 
 // Extended modules

@@ -36,17 +36,7 @@ static mp_obj_t marshal_dumps(mp_obj_t value_in) {
     if (mp_obj_is_type(value_in, &mp_type_code)) {
         mp_obj_code_t *code = MP_OBJ_TO_PTR(value_in);
         const void *proto_fun = mp_code_get_proto_fun(code);
-        const uint8_t *bytecode;
-        if (mp_proto_fun_is_bytecode(proto_fun)) {
-            bytecode = proto_fun;
-        } else {
-            const mp_raw_code_t *rc = proto_fun;
-            if (!(rc->kind == MP_CODE_BYTECODE && rc->children == NULL)) {
-                mp_raise_ValueError(MP_ERROR_TEXT("function must be bytecode with no children"));
-            }
-            bytecode = rc->fun_data;
-        }
-        return mp_raw_code_save_fun_to_bytes(mp_code_get_constants(code), bytecode);
+        return mp_raw_code_save_fun_to_bytes(mp_code_get_constants(code), proto_fun);
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("unmarshallable object"));
     }

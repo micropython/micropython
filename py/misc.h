@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_MISC_H
 #define MICROPY_INCLUDED_PY_MISC_H
 
+#include <string.h>
 #include "py/mpconfig.h"
 
 // a mini library of useful types and functions
@@ -234,30 +235,30 @@ void vstr_add_byte(vstr_t *vstr, byte v);
 void vstr_add_char(vstr_t *vstr, unichar chr);
 void vstr_add_str(vstr_t *vstr, const char *str);
 void vstr_add_strn(vstr_t *vstr, const char *str, size_t len);
-void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b);
-void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr);
+char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len);
+static inline void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
+    char *s = vstr_ins_blank_bytes(vstr, byte_pos, 1);
+    *s = b;
+}
+static inline void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
+    // TODO UNICODE
+    char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
+    *s = (char)chr;
+}
+static inline void vstr_ins_strn(vstr_t *vstr, size_t byte_pos, const char *str, size_t len) {
+    char *s = vstr_ins_blank_bytes(vstr, byte_pos, len);
+    memcpy(s, str, len);
+}
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut);
 void vstr_cut_tail_bytes(vstr_t *vstr, size_t bytes_to_cut);
 void vstr_cut_out_bytes(vstr_t *vstr, size_t byte_pos, size_t bytes_to_cut);
 void vstr_printf(vstr_t *vstr, const char *fmt, ...);
-
-/** non-dynamic size-bounded variable buffer/string *************/
-
-#define CHECKBUF(buf, max_size) char buf[max_size + 1]; size_t buf##_len = max_size; char *buf##_p = buf;
-#define CHECKBUF_RESET(buf, max_size) buf##_len = max_size; buf##_p = buf;
-#define CHECKBUF_APPEND(buf, src, src_len) \
-    { size_t l = MIN(src_len, buf##_len); \
-      memcpy(buf##_p, src, l); \
-      buf##_len -= l; \
-      buf##_p += l; }
-#define CHECKBUF_APPEND_0(buf) { *buf##_p = 0; }
-#define CHECKBUF_LEN(buf) (buf##_p - buf)
-
 #ifdef va_start
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 #endif
 
-// Debugging helpers
+/** debugging helpers *******************************************/
+
 int DEBUG_printf(const char *fmt, ...);
 
 extern mp_uint_t mp_verbose_flag;
@@ -551,6 +552,32 @@ static inline bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long
 
 #ifndef MP_SANITIZER_BUILD
 #define MP_SANITIZER_BUILD (MP_UBSAN || MP_ASAN)
+#endif
+
+// halfword/word/longword swapping macros
+
+#if __has_builtin(__builtin_bswap16)
+#define MP_BSWAP16(x) __builtin_bswap16(x)
+#else
+#define MP_BSWAP16(x) ((uint16_t)((((x) & 0xFF) << 8) | (((x) >> 8) & 0xFF)))
+#endif
+
+#if __has_builtin(__builtin_bswap32)
+#define MP_BSWAP32(x) __builtin_bswap32(x)
+#else
+#define MP_BSWAP32(x) \
+    ((uint32_t)((((x) & 0xFF) << 24) | (((x) & 0xFF00) << 8) | \
+    (((x) >> 8) & 0xFF00) | (((x) >> 24) & 0xFF)))
+#endif
+
+#if __has_builtin(__builtin_bswap64)
+#define MP_BSWAP64(x) __builtin_bswap64(x)
+#else
+#define MP_BSWAP64(x) \
+    ((uint64_t)((((x) & 0xFF) << 56) | (((x) & 0xFF00) << 40) | \
+    (((x) & 0xFF0000) << 24) | (((x) & 0xFF000000) << 8) | \
+    (((x) >> 8) & 0xFF000000) | (((x) >> 24) & 0xFF0000) | \
+    (((x) >> 40) & 0xFF00) | (((x) >> 56) & 0xFF)))
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

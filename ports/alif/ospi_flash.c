@@ -274,11 +274,6 @@ int ospi_flash_init(void) {
     if (pin->pin_rwds != NULL) {
         mp_hal_pin_config(pin->pin_rwds, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
             MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_RXDS, unit), true);
-        if (pin->pin_rwds->port == PORT_10 && pin->pin_rwds->pin == PIN_7) {
-            // Alif: P5_6 is needed to support proper alt function selection of P10_7.
-            mp_hal_pin_config(pin_P5_6, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
-                MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_RXDS, unit), true);
-        }
     }
     mp_hal_pin_config(pin->pin_d0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
         MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_12MA, MP_HAL_PIN_ALT(OSPI_D0, unit), true);

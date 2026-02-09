@@ -38,6 +38,7 @@ import makeqstrdata as qstrutil
 # MicroPython constants
 MPY_VERSION = 6
 MPY_SUB_VERSION = 3
+MPY_ARCH_FLAGS = 0x40
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
 MP_NATIVE_ARCH_X86 = 1
@@ -49,6 +50,7 @@ MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_NATIVE_ARCH_RV32IMC = 11
+MP_NATIVE_ARCH_RV64IMC = 12
 MP_PERSISTENT_OBJ_STR = 5
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
@@ -62,6 +64,7 @@ R_RISCV_32 = 1
 R_X86_64_64 = 1
 R_XTENSA_32 = 1
 R_386_PC32 = 2
+R_RISCV_64 = 2
 R_X86_64_PC32 = 2
 R_ARM_ABS32 = 2
 R_386_GOT32 = 3
@@ -121,7 +124,7 @@ R_XTENSA_PDIFF32 = 59
 R_RISCV_SET_ULEB128 = 60
 R_RISCV_SUB_ULEB128 = 61
 R_RISCV_TLSDESC_HI20 = 62
-R_RISCC_TLSDESC_LOAD_LO12 = 63
+R_RISCV_TLSDESC_LOAD_LO12 = 63
 R_RISCV_TLSDESC_ADD_LO12 = 64
 R_RISCV_TLSDESC_CALL = 65
 
@@ -129,66 +132,93 @@ R_RISCV_TLSDESC_CALL = 65
 # Architecture configuration
 
 
+def fit_signed(bits, value):
+    return (value >> bits) == 0 or (value >> bits) == -1
+
+
+# Note: all trampoline jump function arguments are raw offsets calculated from
+#       the start of the text segment with no relocation applied beforehand.
+
+
 def asm_jump_x86(entry):
-    return struct.pack("<BI", 0xE9, entry - 5)
+    return struct.pack("<BI", 0xE9, entry)
 
 
 def asm_jump_thumb(entry):
-    # This function must return the same number of bytes for the encoding of the jump
-    # regardless of the value of `entry`.
-    b_off = entry - 4
-    if b_off >> 11 == 0 or b_off >> 11 == -1:
+    if fit_signed(11, entry):
         # Signed value fits in 12 bits.
-        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
-        b1 = 0
-        b2 = 0
-        b3 = 0
+        b0 = 0xE000 | ((entry >> 1) & 0x07FF)
+        return struct.pack("<H", b0)
     else:
         # Use bl to do a large jump/call:
         #   push {r0, lr}
         #   bl <dest>
         #   pop {r0, pc}
-        b_off -= 2  # skip "push {r0, lr}"
+        entry += 2  # skip "push {r0, lr}"
         b0 = 0xB400 | 0x0100 | 0x0001  # push, lr, r0
-        b1 = 0xF000 | (((b_off) >> 12) & 0x07FF)
-        b2 = 0xF800 | (((b_off) >> 1) & 0x07FF)
+        b1 = 0xF000 | ((entry >> 12) & 0x07FF)
+        b2 = 0xF800 | ((entry >> 1) & 0x07FF)
         b3 = 0xBC00 | 0x0100 | 0x0001  # pop, pc, r0
-    return struct.pack("<HHHH", b0, b1, b2, b3)
+        return struct.pack("<HHHH", b0, b1, b2, b3)
 
 
 def asm_jump_thumb2(entry):
-    b_off = entry - 4
-    if b_off >> 11 == 0 or b_off >> 11 == -1:
+    if fit_signed(11, entry):
         # Signed value fits in 12 bits
-        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
-        b1 = 0
+        b0 = 0xE000 | ((entry >> 1) & 0x07FF)
+        return struct.pack("<H", b0)
     else:
         # Use large jump
-        b0 = 0xF000 | (b_off >> 12 & 0x07FF)
-        b1 = 0xB800 | (b_off >> 1 & 0x7FF)
-    return struct.pack("<HH", b0, b1)
+        b0 = 0xF000 | ((entry >> 12) & 0x07FF)
+        b1 = 0xB800 | ((entry >> 1) & 0x07FF)
+        return struct.pack("<HH", b0, b1)
 
 
 def asm_jump_xtensa(entry):
-    jump_offset = entry - 4
-    jump_op = jump_offset << 6 | 6
-    return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
+    if fit_signed(17, entry):
+        jump_op = (entry - 4) << 6 | 6
+        return struct.pack("<BH", jump_op & 0xFF, jump_op >> 8)
+    else:
+        raise LinkError("Large jumps are not yet supported on Xtensa")
 
 
-def asm_jump_rv32(entry):
-    # This could be 6 bytes shorter, but the code currently cannot
-    # support a trampoline with varying length depending on the offset.
-
-    # auipc t6, HI(entry)
-    # jalr  zero, t6, LO(entry)
-    upper, lower = split_riscv_address(entry)
-    return struct.pack(
-        "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
-    )
+def asm_jump_riscv(entry):
+    if fit_signed(11, entry):
+        entry += 2
+        # c.j entry
+        return struct.pack(
+            "<H",
+            0xA001
+            | ((entry & 0x0E) << 2)
+            | ((entry & 0x300) << 1)
+            | ((entry & 0x800) << 1)
+            | ((entry & 0x400) >> 2)
+            | ((entry & 0x80) >> 1)
+            | ((entry & 0x40) << 1)
+            | ((entry & 0x20) >> 3)
+            | ((entry & 0x10) << 7),
+        )
+    else:
+        # auipc t6, HI(entry)
+        # jalr  zero, t6, LO(entry)
+        upper, lower = split_riscv_address(entry + 8)
+        return struct.pack(
+            "<II", (upper | 0x00000F97) & 0xFFFFFFFF, ((lower << 20) | 0x000F8067) & 0xFFFFFFFF
+        )
 
 
 class ArchData:
-    def __init__(self, name, mpy_feature, word_size, arch_got, asm_jump, *, separate_rodata=False):
+    def __init__(
+        self,
+        name,
+        mpy_feature,
+        word_size,
+        arch_got,
+        asm_jump,
+        *,
+        separate_rodata=False,
+        delayed_entry_offset=False,
+    ):
         self.name = name
         self.mpy_feature = mpy_feature
         self.qstr_entry_size = 2
@@ -196,6 +226,7 @@ class ArchData:
         self.arch_got = arch_got
         self.asm_jump = asm_jump
         self.separate_rodata = separate_rodata
+        self.delayed_entry_offset = delayed_entry_offset
 
 
 ARCH_DATA = {
@@ -247,6 +278,7 @@ ARCH_DATA = {
         4,
         (R_XTENSA_32, R_XTENSA_PLT),
         asm_jump_xtensa,
+        delayed_entry_offset=True,
     ),
     "xtensawin": ArchData(
         "EM_XTENSA",
@@ -255,13 +287,21 @@ ARCH_DATA = {
         (R_XTENSA_32, R_XTENSA_PLT),
         asm_jump_xtensa,
         separate_rodata=True,
+        delayed_entry_offset=True,
     ),
     "rv32imc": ArchData(
         "EM_RISCV",
         MP_NATIVE_ARCH_RV32IMC << 2,
         4,
         (R_RISCV_32, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
-        asm_jump_rv32,
+        asm_jump_riscv,
+    ),
+    "rv64imc": ArchData(
+        "EM_RISCV",
+        MP_NATIVE_ARCH_RV64IMC << 2,
+        8,
+        (R_RISCV_64, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
+        asm_jump_riscv,
     ),
 }
 
@@ -418,6 +458,9 @@ class LinkEnv:
             s = self.known_syms[name]
             return s.section.addr + s["st_value"]
         raise LinkError("unknown symbol: {}".format(name))
+
+    def find_entry_addr(self):
+        return self.find_addr("mpy_init")
 
 
 def build_got_generic(env):
@@ -682,6 +725,7 @@ def do_relocation_text(env, text_addr, r):
     elif env.arch.name == "EM_RISCV" and r_info_type in (
         R_RISCV_TLS_GD_HI20,
         R_RISCV_TLSDESC_HI20,
+        R_RISCV_TLSDESC_LOAD_LO12,
         R_RISCV_TLSDESC_ADD_LO12,
         R_RISCV_TLSDESC_CALL,
     ):
@@ -778,7 +822,7 @@ def do_relocation_data(env, text_addr, r):
         or env.arch.name == "EM_XTENSA"
         and r_info_type == R_XTENSA_32
         or env.arch.name == "EM_RISCV"
-        and r_info_type == R_RISCV_32
+        and r_info_type in (R_RISCV_32, R_RISCV_64)
     ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
@@ -829,10 +873,10 @@ RISCV_RELOCATIONS_TYPE_MAP = {
     R_RISCV_SUB16: ("riscv_addsub", "<H", 16, -1),
     R_RISCV_SUB32: ("riscv_addsub", "<I", 32, -1),
     R_RISCV_SUB64: ("riscv_addsub", "<Q", 64, -1),
-    R_RISCV_SET6: ("riscv_set6", "B", 6),
-    R_RISCV_SET8: ("riscv_set8", "B", 8),
-    R_RISCV_SET16: ("riscv_set16", "<H", 16),
-    R_RISCV_SET32: ("riscv_set32", "<I", 32),
+    R_RISCV_SET6: ("riscv_set", "B", 6),
+    R_RISCV_SET8: ("riscv_set", "B", 8),
+    R_RISCV_SET16: ("riscv_set", "<H", 16),
+    R_RISCV_SET32: ("riscv_set", "<I", 32),
     R_RISCV_JAL: "riscv_j",
     R_RISCV_BRANCH: "riscv_b",
     R_RISCV_RVC_BRANCH: "riscv_cb",
@@ -876,7 +920,7 @@ def process_riscv32_relocation(env, text_addr, r):
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
         value = addr + r_addend - r_offset
-        reloc_type = "riscv_set32"
+        reloc_type, *reloc_args = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
 
     elif r_info_type == R_RISCV_PCREL_HI20:
         addr = s.section.addr + s["st_value"]
@@ -1238,8 +1282,13 @@ def link_objects(env, native_qstr_vals_len):
     if undef_errors:
         raise LinkError("\n".join(undef_errors))
 
+    # Generate the entry trampoline assuming the offset is already known.
+    env.entry_point = env.find_entry_addr()
+    jump = env.arch.asm_jump(env.entry_point)
+    env.entry_trampoline_len = len(jump)
+
     # Align sections, assign their addresses, and create full_text
-    env.full_text = bytearray(env.arch.asm_jump(8))  # dummy, to be filled in later
+    env.full_text = bytearray(jump)
     env.full_rodata = bytearray(0)
     env.full_bss = bytearray(0)
     for sec in env.sections:
@@ -1331,10 +1380,13 @@ class MPYOutput:
             self.write_uint(n)
 
 
-def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
-    # Write jump instruction to start of text
-    jump = env.arch.asm_jump(entry_offset)
-    env.full_text[: len(jump)] = jump
+def build_mpy(env, fmpy, native_qstr_vals, arch_flags):
+    # Rewrite the entry trampoline if the proper value isn't known earlier, and
+    # ensure the trampoline size remains the same.
+    if env.arch.delayed_entry_offset:
+        jump = env.arch.asm_jump(env.find_entry_addr())
+        env.full_text[: len(jump)] = jump
+        assert len(jump) == env.entry_trampoline_len
 
     log(LOG_LEVEL_1, "arch:         {}".format(env.arch.name))
     log(LOG_LEVEL_1, "text size:    {}".format(len(env.full_text)))
@@ -1348,12 +1400,16 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
     out = MPYOutput()
     out.open(fmpy)
 
+    header_flags = env.arch.mpy_feature | MPY_SUB_VERSION
+    if arch_flags != 0:
+        header_flags |= MPY_ARCH_FLAGS
+
     # MPY: header
-    out.write_bytes(
-        bytearray(
-            [ord("M"), MPY_VERSION, env.arch.mpy_feature | MPY_SUB_VERSION, MP_SMALL_INT_BITS]
-        )
-    )
+    out.write_bytes(bytearray([ord("M"), MPY_VERSION, header_flags, MP_SMALL_INT_BITS]))
+
+    # MPY: arch flags
+    if arch_flags != 0:
+        out.write_uint(arch_flags)
 
     # MPY: n_qstr
     out.write_uint(1 + len(native_qstr_vals))
@@ -1502,7 +1558,7 @@ def do_link(args):
                     load_object_file(env, f, obj_name)
 
         link_objects(env, len(native_qstr_vals))
-        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals)
+        build_mpy(env, args.output, native_qstr_vals, args.arch_flags)
     except LinkError as er:
         print("LinkError:", er.args[0])
         sys.exit(1)
@@ -1552,6 +1608,35 @@ def parse_linkerscript(source):
     return symbols
 
 
+RV32_EXTENSIONS = {
+    "zba": 1 << 0,
+    "zcmp": 1 << 1,
+}
+
+
+def validate_arch_flags(args):
+    if args.arch_flags is None:
+        args.arch_flags = 0
+        return
+    if args.arch != "rv32imc":
+        raise ValueError('Architecture "{}" does not support extra flags'.format(args.arch))
+    if (args.arch_flags.startswith("0") and len(args.arch_flags) > 2) or args.arch_flags.isdigit():
+        if args.arch_flags[1] in "bB":
+            base = 2
+        elif args.arch_flags[1] in "xX":
+            base = 16
+        else:
+            base = 10
+        args.arch_flags = int(args.arch_flags, base)
+    else:
+        flags_value = 0
+        for flag in args.arch_flags.lower().split(","):
+            if flag not in RV32_EXTENSIONS:
+                raise ValueError('Invalid architecture flags value "{}"'.format(flag))
+            flags_value |= RV32_EXTENSIONS[flag]
+        args.arch_flags = flags_value
+
+
 def main():
     import argparse
 
@@ -1560,6 +1645,7 @@ def main():
         "--verbose", "-v", action="count", default=1, help="increase verbosity"
     )
     cmd_parser.add_argument("--arch", default="x64", help="architecture")
+    cmd_parser.add_argument("--arch-flags", default=None, help="optional architecture flags")
     cmd_parser.add_argument("--preprocess", action="store_true", help="preprocess source files")
     cmd_parser.add_argument("--qstrs", default=None, help="file defining additional qstrs")
     cmd_parser.add_argument(
@@ -1580,6 +1666,8 @@ def main():
 
     global log_level
     log_level = args.verbose
+
+    validate_arch_flags(args)
 
     if args.preprocess:
         do_preprocess(args)

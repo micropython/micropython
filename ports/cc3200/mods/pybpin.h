@@ -88,7 +88,7 @@ enum {
 };
 
 typedef struct {
-  qstr name;
+  qstr_short_t name;
   int8_t  idx;
   uint8_t fn;
   uint8_t unit;

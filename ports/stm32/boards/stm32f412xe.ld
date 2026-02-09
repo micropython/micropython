@@ -1,14 +1,14 @@
 /*
-    GNU linker script for STM32F412zx (1MB flash, 256kB RAM)
+    GNU linker script for STM32F412xe (512kB flash, 256kB RAM)
 */
 
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K /* entire flash */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K /* entire flash */
     FLASH_START (rx): ORIGIN = 0x08000000, LENGTH = 16K /* sector 0 */
     FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 64K /* sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K /* sectors 5,6,7,8,9,10,11 are 128K */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 384K /* sectors 5,6,7 are 128K */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 240K
     FS_CACHE (xrw)  : ORIGIN = 0x2003c000, LENGTH = 16K
 }

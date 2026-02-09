@@ -84,9 +84,6 @@ endif()
 list(APPEND GIT_SUBMODULES lib/mbedtls)
 list(APPEND GIT_SUBMODULES lib/tinyusb)
 
-# Workaround for pico-sdk host toolchain issue, see directory for details
-list(APPEND CMAKE_MODULE_PATH "${MICROPY_PORT_DIR}/tools_patch")
-
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
@@ -235,6 +232,7 @@ set(PICO_SDK_COMPONENTS
     pico_flash
     pico_multicore
     pico_platform
+    pico_platform_common
     pico_platform_compiler
     pico_platform_panic
     pico_platform_sections

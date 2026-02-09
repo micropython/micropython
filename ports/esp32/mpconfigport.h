@@ -309,8 +309,7 @@ void *esp_native_code_commit(void *, size_t, void *);
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
         MICROPY_PY_SOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
         ulTaskNotifyTake(pdFALSE, 1); \
@@ -324,8 +323,7 @@ void *esp_native_code_commit(void *, size_t, void *);
 #endif
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
         MICROPY_PY_SOCKET_EVENTS_HANDLER \
             MICROPY_PY_WAIT_FOR_INTERRUPT; \
     } while (0);

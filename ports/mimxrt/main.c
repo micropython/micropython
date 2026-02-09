@@ -37,6 +37,7 @@
 #include "ticks.h"
 #include "led.h"
 #include "pendsv.h"
+#include "psram.h"
 #include "modmachine.h"
 #include "modmimxrt.h"
 
@@ -66,6 +67,10 @@ int main(void) {
     board_init();
     ticks_init();
     pendsv_init();
+
+    #if MICROPY_HW_ENABLE_PSRAM
+    size_t psram_size = configure_external_ram();
+    #endif
 
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
@@ -101,7 +106,20 @@ int main(void) {
 
         mp_cstack_init_with_top(&_estack, &_estack - &_sstack);
 
+        #if MICROPY_HW_ENABLE_PSRAM
+        if (psram_size) {
+            #if MICROPY_GC_SPLIT_HEAP
+            gc_init(&_gc_heap_start, &_gc_heap_end);
+            gc_add((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
+            #else
+            gc_init((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
+            #endif
+        } else {
+            gc_init(&_gc_heap_start, &_gc_heap_end);
+        }
+        #else
         gc_init(&_gc_heap_start, &_gc_heap_end);
+        #endif
         mp_init();
 
         #if MICROPY_PY_NETWORK

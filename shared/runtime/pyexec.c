@@ -137,7 +137,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_call_function_0(module_fun);
         }
         mp_hal_set_interrupt_char(-1); // disable interrupt
-        mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         nlr_pop();
         ret = PYEXEC_NORMAL_EXIT;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
@@ -146,7 +146,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     } else {
         // uncaught exception
         mp_hal_set_interrupt_char(-1); // disable interrupt
-        mp_handle_pending(false); // clear any pending exceptions (and run any callbacks)
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_CLEAR_EXCEPTIONS);
 
         if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
             const mp_reader_t *reader = source;

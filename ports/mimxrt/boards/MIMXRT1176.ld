@@ -30,8 +30,10 @@ m_core1_image_start = vfs_start - 0x00040000;
 m_core1_image_size  = 0x00040000;
 #endif
 
-text_size           = ((vfs_start) - (text_start));
 vfs_size            = ((flash_end) - (vfs_start));
+_micropy_hw_romfs_part0_start = ((vfs_start) - MICROPY_HW_ROMFS_BYTES);
+_micropy_hw_romfs_part0_size = MICROPY_HW_ROMFS_BYTES;
+text_size           = ((_micropy_hw_romfs_part0_start) - (text_start));
 itcm_start          = 0x00000000;
 itcm_size           = 0x00020000;
 dtcm_start          = 0x20000000;

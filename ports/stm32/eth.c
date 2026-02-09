@@ -370,11 +370,6 @@ static int eth_mac_init(eth_t *self) {
     __HAL_RCC_ETH1RX_CLK_SLEEP_ENABLE();
     #elif defined(STM32N6)
     __HAL_RCC_ETH1_RELEASE_RESET();
-
-    __HAL_RCC_ETH1_CLK_SLEEP_ENABLE();
-    __HAL_RCC_ETH1MAC_CLK_SLEEP_ENABLE();
-    __HAL_RCC_ETH1TX_CLK_SLEEP_ENABLE();
-    __HAL_RCC_ETH1RX_CLK_SLEEP_ENABLE();
     #else
     __HAL_RCC_ETHMAC_RELEASE_RESET();
 

@@ -7,7 +7,7 @@ MOD = features2
 # Source files (.c or .py)
 SRC = main.c prod.c test.py
 
-# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
+# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc, rv64imc)
 ARCH = x64
 
 # Link with libm.a and libgcc.a from the toolchain

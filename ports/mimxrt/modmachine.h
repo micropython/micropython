@@ -42,6 +42,8 @@ void mimxrt_sdram_init(void);
 void machine_i2s_init0();
 void machine_i2s_deinit_all(void);
 void machine_rtc_start(void);
+uint64_t machine_rtc_get_ticks(void);
+uint64_t machine_rtc_get_seconds(void);
 void machine_rtc_alarm_helper(int seconds, bool repeat);
 void machine_uart_set_baudrate(mp_obj_t uart, uint32_t baudrate);
 

@@ -411,6 +411,11 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #endif
 
+// Whether to support loading of persistent native code
+#ifndef MICROPY_PERSISTENT_CODE_LOAD_NATIVE
+#define MICROPY_PERSISTENT_CODE_LOAD_NATIVE (MICROPY_EMIT_MACHINE_CODE)
+#endif
+
 // Whether to support saving of persistent code, i.e. for mpy-cross to
 // generate .mpy files. Enabling this enables additional metadata on raw code
 // objects which is also required for sys.settrace.
@@ -431,7 +436,7 @@ typedef uint64_t mp_uint_t;
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
-#define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE || MICROPY_MODULE_FROZEN_MPY)
+#define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_LOAD_NATIVE || MICROPY_PERSISTENT_CODE_SAVE || MICROPY_MODULE_FROZEN_MPY)
 #endif
 
 // Whether bytecode uses a qstr_table to map internal qstr indices in the bytecode
@@ -535,6 +540,10 @@ typedef uint64_t mp_uint_t;
 
 // Convenience definition for whether any native or inline assembler emitter is enabled
 #define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
+
+// Convenience definition for whether native code has to be dealt with (either
+// generated or loaded from a file).  This does not cover inline asm code.
+#define MICROPY_ENABLE_NATIVE_CODE (MICROPY_EMIT_NATIVE || MICROPY_PERSISTENT_CODE_LOAD_NATIVE)
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */
@@ -1088,6 +1097,12 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_STREAMS_POSIX_API (0)
 #endif
 
+// Whether to delegate error raising to stream implementations using the
+// MP_STREAM_RAISE_ERROR ioctl to support raising more detailed messages.
+#ifndef MICROPY_STREAMS_DELEGATE_ERROR
+#define MICROPY_STREAMS_DELEGATE_ERROR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to process __all__ when importing all public symbols from a module.
 #ifndef MICROPY_MODULE___ALL__
 #define MICROPY_MODULE___ALL__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
@@ -1272,7 +1287,7 @@ typedef time_t mp_timestamp_t;
 
 // Whether to implement the __code__ attribute on functions, and function constructor
 #ifndef MICROPY_PY_FUNCTION_ATTRS_CODE
-#define MICROPY_PY_FUNCTION_ATTRS_CODE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#define MICROPY_PY_FUNCTION_ATTRS_CODE (MICROPY_PY_MARSHAL || MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
 #endif
 
 // Whether bound_method can just use == (feature disabled), or requires a call to
@@ -2276,7 +2291,7 @@ typedef time_t mp_timestamp_t;
 // can be overridden if needed by defining both MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
 // and MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA.
 #ifndef MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
-#if MICROPY_EMIT_MACHINE_CODE && MICROPY_PERSISTENT_CODE_LOAD
+#if (MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE) && MICROPY_PERSISTENT_CODE_LOAD
 // Pointer tracking is required when loading native code is enabled.
 #if defined(MP_PLAT_ALLOC_EXEC) || defined(MP_PLAT_COMMIT_EXEC)
 // If a port defined a custom allocator or commit function for native text, then the
@@ -2297,7 +2312,7 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA (1)
 #define MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA (0)
 #endif
-#else // MICROPY_EMIT_MACHINE_CODE && MICROPY_PERSISTENT_CODE_LOAD
+#else // (MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE) && MICROPY_PERSISTENT_CODE_LOAD
 // Pointer tracking not needed when loading native code is disabled.
 #define MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA (0)
 #define MICROPY_PERSISTENT_CODE_TRACK_BSS_RODATA (0)
@@ -2385,7 +2400,7 @@ typedef time_t mp_timestamp_t;
 
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
-#define MP_HTOBE16(x) ((uint16_t)((((x) & 0xff) << 8) | (((x) >> 8) & 0xff)))
+#define MP_HTOBE16(x) MP_BSWAP16(x)
 #define MP_BE16TOH(x) MP_HTOBE16(x)
 #else
 #define MP_HTOBE16(x) (x)
@@ -2395,7 +2410,7 @@ typedef time_t mp_timestamp_t;
 
 #ifndef MP_HTOBE32
 #if MP_ENDIANNESS_LITTLE
-#define MP_HTOBE32(x) ((uint32_t)((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8) & 0xff00) | (((x) >> 24) & 0xff)))
+#define MP_HTOBE32(x) MP_BSWAP32(x)
 #define MP_BE32TOH(x) MP_HTOBE32(x)
 #else
 #define MP_HTOBE32(x) (x)
