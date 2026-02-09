@@ -838,6 +838,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # Works but CPython uses '\' path separator
             skip_tests.add("import/import_file.py")
 
+    skip_tests = [os.path.realpath(base_path(skip_test)) for skip_test in skip_tests]
+
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
@@ -869,7 +871,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_fstring = test_name.startswith("string_fstring")
         is_inlineasm = test_name.startswith("asm")
 
-        skip_it = test_file in skip_tests
+        skip_it = os.path.realpath(test_file) in skip_tests
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
