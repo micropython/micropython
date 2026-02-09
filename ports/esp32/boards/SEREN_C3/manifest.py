@@ -1,0 +1,12 @@
+# freeze("$(PORT_DIR)/seren_modules")
+freeze("$(PORT_DIR)/seren_modules_c3")
+include("$(MPY_DIR)/extmod/asyncio")
+
+# Useful networking-related packages.
+require("bundle-networking")
+
+# Require some micropython-lib modules.
+require("aioespnow")
+require("neopixel")
+# require("aioble")
+

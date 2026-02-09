@@ -1,0 +1,4 @@
+set(SDKCONFIG_DEFAULTS
+    ${SDKCONFIG_DEFAULTS}
+    boards/ESP32_GENERIC_C3/sdkconfig.ota
+)

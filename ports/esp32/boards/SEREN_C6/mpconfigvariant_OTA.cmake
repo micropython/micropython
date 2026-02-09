@@ -1,0 +1,4 @@
+set(SDKCONFIG_DEFAULTS
+    ${SDKCONFIG_DEFAULTS}
+    ${MICROPY_BOARD_DIR}/sdkconfig.ota
+)
