@@ -142,12 +142,14 @@ static mp_obj_t psoc_edge_qspi_flash_make_new(const mp_obj_type_t *type, size_t 
 
 static mp_obj_t psoc_edge_qspi_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     psoc_edge_qspi_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint32_t block_num = mp_obj_get_int(args[1]);
+    uint32_t offset = mp_obj_get_int(args[1]) * EXT_FLASH_BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
 
-    uint32_t offset = self->flash_base + (block_num * EXT_FLASH_SECTOR_SIZE);
-    cy_rslt_t result = mtb_serial_memory_read(&serial_memory_obj, offset, bufinfo.len, bufinfo.buf);
+    if (n_args == 4) {
+        offset += mp_obj_get_int(args[3]);
+    }
+    cy_rslt_t result = mtb_serial_memory_read(&serial_memory_obj, self->flash_base + offset, bufinfo.len, bufinfo.buf);
 
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Read failed: 0x%08lx"), result);
@@ -160,28 +162,26 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc_edge_qspi_flash_readblocks_obj, 
 
 static mp_obj_t psoc_edge_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     psoc_edge_qspi_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint32_t block_num = mp_obj_get_int(args[1]);
+    uint32_t offset = mp_obj_get_int(args[1]) * EXT_FLASH_BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
 
-    uint32_t offset = self->flash_base + (block_num * EXT_FLASH_SECTOR_SIZE);
-
-    // Erase before write only for full block writes (n_args == 3)
-    // MTB flash library requires erased flash
     if (n_args == 3) {
         uint32_t numSectors = bufinfo.len / EXT_FLASH_SECTOR_SIZE;
 
-        for (uint32_t i = 0; i < numSectors; i++) {
-            cy_rslt_t erase_result = mtb_serial_memory_erase(&serial_memory_obj, offset + (i * EXT_FLASH_SECTOR_SIZE), EXT_FLASH_SECTOR_SIZE);
-            if (erase_result != CY_RSLT_SUCCESS) {
-                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Erase before write failed: 0x%08lx"), erase_result);
+        for (uint32_t i = 0; i <= numSectors; ++i) {
+            cy_rslt_t result = mtb_serial_memory_erase(&serial_memory_obj, self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE, mtb_serial_memory_get_erase_size(&serial_memory_obj, self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE));
+            // the mtb_serial_memory_get_erase_size() function call is necessary to keep the erase at sector boundary, else it throws errors.
+
+            if (CY_RSLT_SUCCESS != result) {
+                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Erase before write failed: 0x%08lx"), result);
             }
         }
     } else {
         offset += mp_obj_get_int(args[3]);
     }
 
-    cy_rslt_t result = mtb_serial_memory_write(&serial_memory_obj, offset, bufinfo.len, bufinfo.buf);
+    cy_rslt_t result = mtb_serial_memory_write(&serial_memory_obj, self->flash_base + offset, bufinfo.len, bufinfo.buf);
 
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Write failed: 0x%08lx"), result);
@@ -207,9 +207,8 @@ static mp_obj_t psoc_edge_qspi_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
             return MP_OBJ_NEW_SMALL_INT(EXT_FLASH_SECTOR_SIZE);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
-            uint32_t block_num = mp_obj_get_int(arg_in);
-            uint32_t offset = self->flash_base + (block_num * EXT_FLASH_SECTOR_SIZE);
-            cy_rslt_t result = mtb_serial_memory_erase(&serial_memory_obj, offset, EXT_FLASH_SECTOR_SIZE);
+            uint32_t offset = mp_obj_get_int(arg_in) * EXT_FLASH_BLOCK_SIZE_BYTES;
+            cy_rslt_t result = mtb_serial_memory_erase(&serial_memory_obj, self->flash_base + offset, mtb_serial_memory_get_erase_size(&serial_memory_obj, self->flash_base + offset));
             if (result != CY_RSLT_SUCCESS) {
                 mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Erase failed: 0x%08lx"), result);
             }
