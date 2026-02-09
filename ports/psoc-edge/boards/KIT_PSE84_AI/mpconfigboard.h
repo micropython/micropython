@@ -36,20 +36,20 @@
 #define MICROPY_PY_EXT_FLASH (1)
 
 // Flash memory map: Total 64MB (0x04000000) QSPI flash
-// Base address starts at 9MB offset (0x00900000) - space reserved for firmware/bootloader
-#define EXT_FLASH_BASE              (0x00900000)
+// Move to 256KB sector region to avoid 128KB limitation
+#define EXT_FLASH_BASE              (0x00920000)
 
-// Usable filesystem space: 64MB - 9MB = 55MB (0x03700000 bytes)
-#define EXT_FLASH_SIZE              (0x04000000 - EXT_FLASH_BASE)
+// Usable filesystem space: ~54.5MB in 256KB sector region
+#define EXT_FLASH_SIZE              (218 * 0x40000)
 
-// Erase sector size: Fixed by flash chip hardware (minimum erasable unit)
-#define EXT_FLASH_SECTOR_SIZE       (0x40000) /** 256KB */
+// Logical block size: 16KB (RAM efficient, hardware erases 256KB behind the scenes)
+#define EXT_FLASH_SECTOR_SIZE        (0x40000)       /** 256KB*/
 
 // Block device block size: Must match erase sector size for proper filesystem operation
 #define EXT_FLASH_BLOCK_SIZE_BYTES  (EXT_FLASH_SECTOR_SIZE)
 
-// Program page size: Fixed by flash chip hardware (minimum writable unit)
-#define EXT_FLASH_PAGE_SIZE         (0x00000100) /** 256 Bytes */
+// Program page size: Fixed by flash chip hardware (minimum writable unit). Matches LittleFS write_size.
+#define EXT_FLASH_PAGE_SIZE         (0x200) /** 512 Bytes */
 
 // I2C Configuration
 #define MICROPY_HW_I2C0_SCB                     (SCB5)
