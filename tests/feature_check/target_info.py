@@ -36,4 +36,9 @@ try:
 except NameError:
     float_prec = 0
 
-print(platform, arch, arch_flags, build, thread, float_prec, len("α") == 1)
+try:
+    name_error
+except NameError as er:
+    error_reporting_normal = "name_error" in str(er)
+
+print(platform, arch, arch_flags, build, thread, float_prec, len("α") == 1, error_reporting_normal)
