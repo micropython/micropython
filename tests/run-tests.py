@@ -1222,7 +1222,19 @@ the last matching regex is used:
         if args.platform == "webassembly":
             test_extensions += ("*.js", "*.mjs")
 
-        if args.test_dirs is None:
+        all_test_dirs = []
+        main_tests_dir_in_args = None
+        if args.test_dirs is not None:
+            # Run tests from given directories though if user explicitly passes this directory as argument
+            # still do the normal test discovery to be consistent with running from within this directory.
+            main_tests_dir = os.path.realpath(base_path())
+            for test_dir in args.test_dirs:
+                if os.path.realpath(test_dir) == main_tests_dir:
+                    main_tests_dir_in_args = test_dir
+                else:
+                    all_test_dirs.append(test_dir)
+
+        if args.test_dirs is None or main_tests_dir_in_args is not None:
             test_dirs = (
                 "basics",
                 "micropython",
@@ -1246,13 +1258,18 @@ the last matching regex is used:
                 test_dirs += ("import",)
                 if args.build != "minimal":
                     test_dirs += ("cmdline", "io")
-        else:
-            # run tests from these directories
-            test_dirs = args.test_dirs
+
+            all_test_dirs.extend(
+                test_dir
+                if main_tests_dir_in_args is None
+                else os.path.join(main_tests_dir_in_args, test_dir)
+                for test_dir in test_dirs
+            )
+
         tests = sorted(
             test_file
             for test_files in (
-                glob(os.path.join(dir, ext)) for dir in test_dirs for ext in test_extensions
+                glob(os.path.join(dir, ext)) for dir in all_test_dirs for ext in test_extensions
             )
             for test_file in test_files
         )
