@@ -42,7 +42,7 @@
 // Usable filesystem space: ~54.5MB in 256KB sector region
 #define EXT_FLASH_SIZE              (218 * 0x40000)
 
-// Logical block size: 16KB (RAM efficient, hardware erases 256KB behind the scenes)
+// erase sector size : 256KB, fixed by flash chip hardware.
 #define EXT_FLASH_SECTOR_SIZE        (0x40000)       /** 256KB*/
 
 // Block device block size: Must match erase sector size for proper filesystem operation
