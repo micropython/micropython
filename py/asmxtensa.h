@@ -28,6 +28,7 @@
 
 #include "py/misc.h"
 #include "py/asmbase.h"
+#include "py/persistentcode.h"
 
 // calling conventions:
 // up to 6 args in a2-a7
@@ -119,6 +120,14 @@ typedef struct _asm_xtensa_t {
     uint32_t *const_table;
     uint32_t stack_adjust;
 } asm_xtensa_t;
+
+typedef struct {
+    // 0..2 : LX core version - 2 (eg. LX3 = 1)
+    // 3..7 : Reserved
+    uint8_t core_version : 3;
+} asm_xtensa_backend_options_t;
+
+#define MICROPY_XTENSA_FLAGS (MPY_XTENSA_LX_CORE - 2)
 
 void asm_xtensa_end_pass(asm_xtensa_t *as);
 
