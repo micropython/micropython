@@ -27,7 +27,7 @@ def get_test_input_files(test_type):
         "test_fs_medium_file.txt",
         "test_fs_large_file.txt",
     ]
-    input_files_sizes = ["10240", "511876", "1047584"]
+    input_files_sizes = ["10240", "512000", "1048576"]
 
     if test_type == "basic":
         return [cp_input_files[0]], [input_files_sizes[0]]
