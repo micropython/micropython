@@ -22,7 +22,6 @@
     script:
       - ports/psoc-edge/mp_custom/fs.py
     args:
-      - flash
       - basic
     device: 
       - board: KIT_PSE84_AI
