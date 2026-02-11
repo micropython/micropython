@@ -294,6 +294,7 @@ typedef intptr_t mp_off_t;
 #include "pico/rand.h"
 extern void lwip_lock_acquire(void);
 extern void lwip_lock_release(void);
+extern void lwip_poll_hook(void);
 
 #if MICROPY_PY_BLUETOOTH || MICROPY_PY_BLUETOOTH_CYW43
 // Bluetooth code only runs in the scheduler, no locking/mutex required.
