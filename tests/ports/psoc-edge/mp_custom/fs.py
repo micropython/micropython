@@ -10,10 +10,10 @@ device = sys.argv[1]
 test_type = sys.argv[2]
 
 # tests inputs and script paths
-test_input_dir = "./tests/ports/psoc-edge/inputs"
+test_input_dir = "./ports/psoc-edge/inputs"
 
 # List of mpremote commands
-mpr_connect = f"./tools/mpremote/mpremote.py connect {device}"
+mpr_connect = f"../tools/mpremote/mpremote.py connect {device}"
 
 # Remote directory path
 remote_directory_path = "/"
