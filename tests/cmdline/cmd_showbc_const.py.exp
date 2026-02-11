@@ -1,4 +1,4 @@
-File cmdline/cmd_showbc_const.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 198 bytes)
+File \.\*cmdline/cmd_showbc_const.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 198 bytes)
 Raw bytecode (code_info_size=40, bytecode_size=158):
  2c 4c 01 60 2c 46 22 65 27 4a 83 0c 20 27 40 20
  27 20 27 40 60 20 27 24 40 60 40 24 27 47 24 27
