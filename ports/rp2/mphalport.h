@@ -51,6 +51,7 @@
 #define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
 #define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
 #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
+#define MICROPY_PY_LWIP_POLL_HOOK lwip_poll_hook();
 
 // Port level Wait-for-Event macro
 //

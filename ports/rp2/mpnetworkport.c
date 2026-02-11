@@ -134,6 +134,15 @@ void lwip_lock_release(void) {
     pendsv_resume();
 }
 
+void lwip_poll_hook(void) {
+    // Start the network soft timer if necessary (it may still only run once,
+    // but ensure timeouts will complete inside any loop that's polling lwip)
+    if (mp_network_soft_timer.mode == SOFT_TIMER_MODE_ONE_SHOT) {
+        mp_network_soft_timer.mode = SOFT_TIMER_MODE_PERIODIC;
+        soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
+    }
+}
+
 // This is called by soft_timer and executes at PendSV level.
 static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
     // Run the lwIP internal updates.
@@ -179,10 +188,8 @@ void mod_network_lwip_init(void) {
 static void mp_network_netif_status_cb(struct netif *netif, netif_nsc_reason_t reason, const netif_ext_callback_args_t *args) {
     // Start the network soft timer any time an interface comes up, unless
     // it's already running
-    if (reason == LWIP_NSC_LINK_CHANGED && args->link_changed.state
-        && mp_network_soft_timer.mode == SOFT_TIMER_MODE_ONE_SHOT) {
-        mp_network_soft_timer.mode = SOFT_TIMER_MODE_PERIODIC;
-        soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
+    if (reason == LWIP_NSC_LINK_CHANGED && args->link_changed.state) {
+        lwip_poll_hook();
     }
 
     if (reason == LWIP_NSC_NETIF_REMOVED) {

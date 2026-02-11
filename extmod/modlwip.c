@@ -95,6 +95,11 @@
 #define MICROPY_PY_LWIP_EXIT
 #endif
 
+#ifndef MICROPY_PY_LWIP_POLL_HOOK
+// Optional port-level hook called if/when LWIP is being polled
+#define MICROPY_PY_LWIP_POLL_HOOK
+#endif
+
 #ifdef MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
 #include "lwip/sio.h"
@@ -360,6 +365,7 @@ static inline bool socket_is_timedout(lwip_socket_obj_t *socket, mp_uint_t ticks
 }
 
 static inline void poll_sockets(void) {
+    MICROPY_PY_LWIP_POLL_HOOK
     mp_event_wait_ms(1);
 }
 
