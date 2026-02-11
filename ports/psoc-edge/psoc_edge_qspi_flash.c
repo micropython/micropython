@@ -169,7 +169,7 @@ static mp_obj_t psoc_edge_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *
     if (n_args == 3) {
         uint32_t numSectors = bufinfo.len / EXT_FLASH_SECTOR_SIZE;
 
-        for (uint32_t i = 0; i <= numSectors; ++i) {
+        for (uint32_t i = 0; i < numSectors; ++i) {
             cy_rslt_t result = mtb_serial_memory_erase(&serial_memory_obj, self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE, mtb_serial_memory_get_erase_size(&serial_memory_obj, self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE));
             // the mtb_serial_memory_get_erase_size() function call is necessary to keep the erase at sector boundary, else it throws errors.
 
