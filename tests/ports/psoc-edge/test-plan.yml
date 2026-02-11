@@ -15,6 +15,17 @@
       - extmod/vfs_mountinfo.py
     device: 
       - board: KIT_PSE84_AI
+
+- name: filesystem_large
+  type: custom
+  test: 
+    script:
+      - ports/psoc-edge/mp_custom/fs.py
+    args:
+      - flash
+      - basic
+    device: 
+      - board: KIT_PSE84_AI
       
 - name: no-extended-hardware
   test: 
