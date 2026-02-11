@@ -192,7 +192,7 @@ def main():
             command.append("-v")
         else:
             command.append("-q")
-        command.append(".")
+        command.extend(files if files else ["."])
         subprocess.check_call(command, cwd=TOP)
 
 
