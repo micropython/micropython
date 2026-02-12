@@ -68,6 +68,14 @@ static void check_is_str_or_bytes(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_str_or_bytes(self_in));
 }
 
+static mp_obj_t make_empty_str_of_type(const mp_obj_type_t *type) {
+    if (type == &mp_type_str) {
+        return MP_OBJ_NEW_QSTR(MP_QSTR_); // empty str
+    } else {
+        return mp_const_empty_bytes;
+    }
+}
+
 static const byte *get_substring_data(const mp_obj_t obj, size_t n_args, const mp_obj_t *args, size_t *len) {
     // Get substring data from obj, using args[0,1] to specify start and end indices.
     GET_STR_DATA_LEN(obj, str, str_len);
@@ -383,11 +391,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             return MP_OBJ_NULL; // op not supported
         }
         if (n <= 0) {
-            if (lhs_type == &mp_type_str) {
-                return MP_OBJ_NEW_QSTR(MP_QSTR_); // empty str
-            } else {
-                return mp_const_empty_bytes;
-            }
+            return make_empty_str_of_type(lhs_type);
         }
         vstr_t vstr;
         vstr_init_len(&vstr, lhs_len * n);
@@ -906,11 +910,7 @@ static mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
 
     if (!first_good_char_pos_set) {
         // string is all whitespace, return ''
-        if (self_type == &mp_type_str) {
-            return MP_OBJ_NEW_QSTR(MP_QSTR_);
-        } else {
-            return mp_const_empty_bytes;
-        }
+        return make_empty_str_of_type(self_type);
     }
 
     assert(last_good_char_pos >= first_good_char_pos);
@@ -1836,15 +1836,9 @@ static mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
     }
 
     mp_obj_t result[3];
-    if (self_type == &mp_type_str) {
-        result[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-        result[1] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-        result[2] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    } else {
-        result[0] = mp_const_empty_bytes;
-        result[1] = mp_const_empty_bytes;
-        result[2] = mp_const_empty_bytes;
-    }
+    result[0] = make_empty_str_of_type(self_type);
+    result[1] = make_empty_str_of_type(self_type);
+    result[2] = make_empty_str_of_type(self_type);
 
     if (direction > 0) {
         result[0] = self_in;
