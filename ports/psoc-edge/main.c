@@ -48,6 +48,11 @@
 // port-specific includes
 #include "mplogger.h"
 
+typedef enum {
+    BOOT_MODE_NORMAL,
+    BOOT_MODE_SAFE
+} boot_mode_t;
+
 #if MICROPY_ENABLE_GC
 extern uint8_t __StackTop, __StackSize;
 extern uint8_t __HeapBase, __HeapLimit;
@@ -55,6 +60,36 @@ extern uint8_t __HeapBase, __HeapLimit;
 
 extern void time_init(void);
 extern void machine_pin_irq_deinit_all(void);
+
+boot_mode_t check_boot_mode(void) {
+    boot_mode_t boot_mode;
+
+    // Initialize user LED
+    Cy_GPIO_Pin_FastInit(CYBSP_USER_LED_PORT, CYBSP_USER_LED_NUM, CY_GPIO_DM_STRONG, 0, HSIOM_SEL_GPIO);
+
+    // Initialize user button
+    Cy_GPIO_Pin_FastInit(CYBSP_USER_BTN1_PORT, CYBSP_USER_BTN1_NUM, CY_GPIO_DM_PULLUP, 1, HSIOM_SEL_GPIO);
+
+    // Added 5ms delay to allow bypass capacitor connected to the user button without external pull-up to charge.
+    Cy_SysLib_Delay(5);
+
+    if (Cy_GPIO_Read(CYBSP_USER_BTN1_PORT, CYBSP_USER_BTN1_NUM) == CYBSP_BTN_PRESSED) {
+        // Blink LED twice to indicate safe boot mode was entered
+        for (int i = 0; i < 4; i++) {
+            Cy_GPIO_Inv(CYBSP_USER_LED_PORT, CYBSP_USER_LED_NUM);
+            Cy_SysLib_Delay(500); // delay in milliseconds
+        }
+        boot_mode = BOOT_MODE_SAFE;
+        mp_printf(&mp_plat_print, "- DEVICE IS IN SAFE BOOT MODE -\n");
+    } else {
+        boot_mode = BOOT_MODE_NORMAL;
+    }
+
+    // Turn off LED after boot mode check
+    Cy_GPIO_Clr(CYBSP_USER_LED_PORT, CYBSP_USER_LED_NUM);
+
+    return boot_mode;
+}
 
 int main(void) {
     cy_rslt_t result = CY_RSLT_SUCCESS;
@@ -94,17 +129,22 @@ soft_reset:
     #endif
     #endif
 
-    // Is this required?
+    if (check_boot_mode() == BOOT_MODE_NORMAL) {
+        // Execute user scripts.
+        int ret = pyexec_file_if_exists("/boot.py");
 
-    // pyexec_file_if_exists("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset;
+        }
 
-    // if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-    //     int ret = pyexec_file_if_exists("/main.py");
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+            ret = pyexec_file_if_exists("/main.py");
 
-    //     if (ret & PYEXEC_FORCED_EXIT) {
-    //         goto soft_reset;
-    //     }
-    // }
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset;
+            }
+        }
+    }
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
