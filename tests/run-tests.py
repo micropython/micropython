@@ -321,6 +321,10 @@ def map_rv32_arch_flags(flags):
     return mapped_flags
 
 
+def map_xtensa_arch_flags(flags):
+    return ["lx3" if flags == 0 else "lx{}".format(2 + (flags & 0x07))]
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
@@ -338,6 +342,8 @@ def detect_test_platform(pyb, args):
     unicode = unicode == "True"
     if arch == "rv32imc":
         arch_flags = map_rv32_arch_flags(int(arch_flags))
+    elif arch in ("xtensa", "xtensawin"):
+        arch_flags = map_xtensa_arch_flags(int(arch_flags))
     else:
         arch_flags = None
 
@@ -735,6 +741,20 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     output = run_feature_check(pyb, args, "inlineasm_rv32_{}.py".format(extension))
                     if output.strip() != "rv32_{}".format(extension).encode():
                         skip_tests.add("inlineasm/rv32/asm_ext_{}.py".format(extension))
+                except FileNotFoundError:
+                    pass
+
+        if args.inlineasm_arch == "xtensa":
+            import glob
+
+            for core_version in list(range(4, 8)):
+                try:
+                    output = run_feature_check(
+                        pyb, args, "inlineasm_xtensa_lx{}.py".format(core_version)
+                    )
+                    if output.strip() != "lx{}".format(core_version).encode():
+                        for test in glob.glob("inlineasm/xtensa/*_lx{}.py".format(core_version)):
+                            skip_tests.add(test)
                 except FileNotFoundError:
                     pass
 
