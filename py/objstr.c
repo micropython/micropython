@@ -1995,7 +1995,7 @@ mp_obj_t mp_obj_bytes_hex(size_t n_args, const mp_obj_t *args, const mp_obj_type
     // Code below assumes non-zero buffer length when computing size with
     // separator, so handle the zero-length case here.
     if (bufinfo.len == 0) {
-        return mp_const_empty_bytes;
+        return make_empty_str_of_type(type);
     }
 
     vstr_t vstr;
