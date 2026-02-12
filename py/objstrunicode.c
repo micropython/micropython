@@ -57,9 +57,11 @@ static void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
     mp_printf(print, "%c", quote_char);
     const byte *s = str_data, *top = str_data + str_len;
     while (s < top) {
+        const byte *seq_start = s;
         unichar ch;
         ch = utf8_get_char(s);
         s = utf8_next_char(s);
+        size_t seq_len = s - seq_start;
         if (ch == quote_char) {
             mp_printf(print, "\\%c", quote_char);
         } else if (ch == '\\') {
@@ -72,6 +74,12 @@ static void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
             mp_print_str(print, "\\r");
         } else if (ch == '\t') {
             mp_print_str(print, "\\t");
+        } else if (ch >= 128 && ch < 0xD800) {
+            // Printable Unicode character (excluding surrogates) - output UTF-8 bytes directly
+            print->print_strn(print->data, (const char *)seq_start, seq_len);
+        } else if (ch >= 0xE000 && ch < 0x110000) {
+            // Printable Unicode character (after surrogates) - output UTF-8 bytes directly
+            print->print_strn(print->data, (const char *)seq_start, seq_len);
         } else if (ch < 0x100) {
             mp_printf(print, "\\x%02x", ch);
         } else if (ch < 0x10000) {

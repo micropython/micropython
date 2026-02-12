@@ -201,19 +201,119 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         }
 
         default: // 2 or 3 args
-            // TODO: validate 2nd/3rd args
+            #if MICROPY_PY_BUILTINS_BYTEARRAY
+            if (mp_obj_is_type(args[0], &mp_type_bytes) || mp_obj_is_type(args[0], &mp_type_bytearray)) {
+            #else
             if (mp_obj_is_type(args[0], &mp_type_bytes)) {
+                #endif
                 GET_STR_DATA_LEN(args[0], str_data, str_len);
                 GET_STR_HASH(args[0], str_hash);
                 if (str_hash == 0) {
                     str_hash = qstr_compute_hash(str_data, str_len);
                 }
+
                 #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-                if (!utf8_check(str_data, str_len)) {
-                    mp_raise_msg(&mp_type_UnicodeError, NULL);
+                #if MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE
+                // Check if error handler is specified (3rd argument)
+                const char *errors = "strict";
+                if (n_args >= 3 && args[2] != mp_const_none) {
+                    errors = mp_obj_str_get_str(args[2]);
                 }
                 #endif
 
+                // Fast path: if data is valid UTF-8, return directly
+                if (utf8_check(str_data, str_len)) {
+                    // Check if a qstr with this data already exists
+                    qstr q = qstr_find_strn((const char *)str_data, str_len);
+                    if (q != MP_QSTRnull) {
+                        return MP_OBJ_NEW_QSTR(q);
+                    }
+
+                    mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(type, NULL, str_len));
+                    o->data = str_data;
+                    o->hash = str_hash;
+                    return MP_OBJ_FROM_PTR(o);
+                }
+
+                // Data has invalid UTF-8, handle based on error mode
+                #if MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE
+                // Error handlers are enabled
+                #if !MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
+                // Raise NotImplementedError if 'replace' is used but not enabled
+                if (strcmp(errors, "replace") == 0) {
+                    mp_raise_NotImplementedError(NULL);
+                }
+                #endif
+
+                if (strcmp(errors, "ignore") == 0
+                    #if MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
+                    || strcmp(errors, "replace") == 0
+                    #endif
+                    ) {
+                    // Build new string skipping/replacing invalid bytes
+                    vstr_t vstr;
+                    vstr_init(&vstr, str_len);
+                    const byte *p = str_data;
+                    const byte *end = str_data + str_len;
+
+                    while (p < end) {
+                        byte c = *p;
+                        if (c < 0x80) {
+                            // Valid ASCII
+                            vstr_add_byte(&vstr, c);
+                            p++;
+                        } else if (c >= 0xc0 && c < 0xf8) {
+                            // Potential multi-byte sequence
+                            uint8_t need = (0xe5 >> ((c >> 3) & 0x6)) & 3;
+                            const byte *seq_start = p;
+                            p++;
+
+                            // Check continuation bytes
+                            uint8_t got = 0;
+                            while (got < need && p < end && UTF8_IS_CONT(*p)) {
+                                got++;
+                                p++;
+                            }
+
+                            if (got == need) {
+                                // Valid complete sequence, decode and add the character
+                                unichar ch = *seq_start & (0x7f >> need);
+                                for (uint8_t i = 0; i < need; i++) {
+                                    ch = (ch << 6) | (seq_start[i + 1] & 0x3f);
+                                }
+                                vstr_add_char(&vstr, ch);
+                            }
+                            #if MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
+                            else if (strcmp(errors, "replace") == 0) {
+                                // Invalid or incomplete sequence - replace with U+FFFD
+                                vstr_add_char(&vstr, 0xFFFD);
+                            }
+                            #endif
+                            // For 'ignore' mode, do nothing (skip invalid bytes)
+                        }
+                        #if MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
+                        else if (strcmp(errors, "replace") == 0) {
+                            // Invalid start byte - replace with U+FFFD
+                            vstr_add_char(&vstr, 0xFFFD);
+                            p++;
+                        }
+                        #endif
+                        else {
+                            // Invalid start byte - skip for 'ignore' mode
+                            p++;
+                        }
+                    }
+
+                    return mp_obj_new_str_type_from_vstr(type, &vstr);
+                } else {
+                    // Strict mode (or unrecognized error handler)
+                    mp_raise_msg(&mp_type_UnicodeError, NULL);
+                }
+                #else
+                // Error handlers are not enabled - just raise UnicodeError on invalid UTF-8
+                mp_raise_msg(&mp_type_UnicodeError, NULL);
+                #endif
+                #else
                 // Check if a qstr with this data already exists
                 qstr q = qstr_find_strn((const char *)str_data, str_len);
                 if (q != MP_QSTRnull) {
@@ -224,6 +324,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 o->data = str_data;
                 o->hash = str_hash;
                 return MP_OBJ_FROM_PTR(o);
+                #endif
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
@@ -944,14 +1045,33 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
 static mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
     GET_STR_DATA_LEN(str_in, str, str_len);
     mp_uint_t width = mp_obj_get_int(width_in);
+
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    // Get character count (not byte count) for proper Unicode handling
+    size_t char_len = utf8_charlen(str, str_len);
+    if (char_len >= width) {
+        return str_in;
+    }
+    // Calculate padding: width is in characters, need to convert to bytes for allocation
+    mp_uint_t padding_chars = width - char_len;
+    // Padding is always spaces (1 byte each), plus the original string bytes
+    mp_uint_t total_bytes = padding_chars + str_len;
+    #else
+    // Non-Unicode build: byte length equals character length
     if (str_len >= width) {
         return str_in;
     }
+    mp_uint_t total_bytes = width;
+    #endif
 
     vstr_t vstr;
-    vstr_init_len(&vstr, width);
-    memset(vstr.buf, ' ', width);
+    vstr_init_len(&vstr, total_bytes);
+    memset(vstr.buf, ' ', total_bytes);
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    int left = padding_chars / 2;
+    #else
     int left = (width - str_len) / 2;
+    #endif
     memcpy(vstr.buf + left, str, str_len);
     return mp_obj_new_str_type_from_vstr(mp_obj_get_type(str_in), &vstr);
 }
@@ -1301,8 +1421,21 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     continue;
 
                 case 'c': {
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    mp_uint_t c = mp_obj_get_int(arg);
+                    if (c >= 0x110000) {
+                        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
+                    }
+                    vstr_t ch_vstr;
+                    vstr_init_len(&ch_vstr, 4);
+                    ch_vstr.len = 0;
+                    vstr_add_char(&ch_vstr, c);
+                    mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, fill, width);
+                    vstr_clear(&ch_vstr);
+                    #else
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, fill, width);
+                    #endif
                     continue;
                 }
 
@@ -1595,8 +1728,21 @@ static mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     }
                     mp_print_strn(&print, s, 1, flags, ' ', width);
                 } else if (arg_looks_integer(arg)) {
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    mp_uint_t c = mp_obj_get_int(arg);
+                    if (c >= 0x110000) {
+                        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("%c arg not in range(0x110000)"));
+                    }
+                    vstr_t ch_vstr;
+                    vstr_init_len(&ch_vstr, 4);
+                    ch_vstr.len = 0;
+                    vstr_add_char(&ch_vstr, c);
+                    mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, ' ', width);
+                    vstr_clear(&ch_vstr);
+                    #else
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, ' ', width);
+                    #endif
                 } else {
                     mp_raise_TypeError(MP_ERROR_TEXT("integer needed"));
                 }
@@ -1965,12 +2111,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 // constructors.
 // TODO: should accept kwargs too
 static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t new_args[2];
+    mp_obj_t new_args[3];
     if (n_args == 1) {
         new_args[0] = args[0];
         new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
         args = new_args;
         n_args++;
+    } else if (n_args >= 2) {
+        // Validate encoding parameter
+        // MicroPython only supports UTF-8 encoding
+        const char *encoding = mp_obj_str_get_str(args[1]);
+
+        // Accept utf-8 and ascii (ascii is a subset of utf-8)
+        if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
+              strcmp(encoding, "ascii") == 0)) {
+            mp_raise_msg_varg(&mp_type_LookupError,
+                MP_ERROR_TEXT("encoding not supported: %s"), encoding);
+        }
     }
     return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
@@ -1984,6 +2141,17 @@ static mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
         args = new_args;
         n_args++;
+    } else if (n_args >= 2) {
+        // Validate encoding parameter
+        // MicroPython only supports UTF-8 encoding
+        const char *encoding = mp_obj_str_get_str(args[1]);
+
+        // Accept utf-8 and ascii (ascii is a subset of utf-8)
+        if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
+              strcmp(encoding, "ascii") == 0)) {
+            mp_raise_msg_varg(&mp_type_LookupError,
+                MP_ERROR_TEXT("encoding not supported: %s"), encoding);
+        }
     }
     return bytes_make_new(NULL, n_args, 0, args);
 }

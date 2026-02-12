@@ -1,0 +1,6 @@
+GC available
+PASS: String with 0xff marker in heap preserved correctly
+PASS: String preserved under heap pressure
+PASS: ROM exception messages still work
+PASS: Exception chaining with heap strings works
+All tests passed
