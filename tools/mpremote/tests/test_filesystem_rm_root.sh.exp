@@ -1,0 +1,10 @@
+-----
+touch :a.py
+touch :b.py
+cp ${TMP}/package :
+cp ${TMP}/package :package2
+rm :/
+mpremote: rm -r: cannot remove :/ Operation not permitted
+expect error
+ls :
+ls :/ramdisk
