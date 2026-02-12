@@ -67,6 +67,8 @@ scripts in the device.
 
 You can split your program into different files, and use ``import`` to make use of the provided features
 in other scripts. 
+To run a script in the device at boot, two scripts need to be present in the file
+system: ``boot.py`` and ``main.py``. The scripts are executed in the sequence, first ``boot.py`` followed by ``main.py``. 
 
 User-defined Python modules or code can also be converted into bytecode (:ref:`mpy files <mpy_files>`) by using the ``mpy-cross`` tool and then copied onto the
 filesystem for getting speed benefits in execution. 
@@ -135,6 +137,11 @@ Also, entries can be renamed::
 
     >>> os.rename('data.txt','data_new.txt')  # os.rename('old_filepath','new_filepath')
     
+Start-up scripts
+~~~~~~~~~~~~~~~~
+
+As mentioned above, two files are treated specially by the port when it starts up:
+``boot.py`` and ``main.py``. The user can create these files and populate them with the code that can run at startup.
 
 Using MicroPython remote control (mpremote) for filesystem operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,6 +158,30 @@ The first way is to press CTRL-D at the MicroPython prompt, which performs a sof
 If that does not work, you can perform a hard reset by pressing the RESET button. 
 This will end your session, disconnecting whatever program (PuTTY, Thonny, etc.) you used to connect to the board.
 
+Boot modes
+----------
+
+There are 2 boot modes:
+
+  * Normal boot mode
+  * Safe boot mode
+
+``boot.py`` and ``main.py`` are executed in "Normal boot mode".
+
+``boot.py`` and ``main.py`` are **not** executed in "Safe boot mode".
+
+Changing boot mode:
+
+  * For normal boot mode, just press and release the RESET button on the board.
+
+  * For safe boot mode, press and release the RESET button while pressing the USER button on the board. Release the USER button after the LED on the board flashes twice.
+
+
+If you change the boot mode to safe boot mode, the MicroPython starts without
+the execution of ``main.py``. Then you can remove the ``main.py`` by following command: ::
+    
+    import os
+    os.remove('main.py')
 
 Using third-party IDEs for filesystem operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
