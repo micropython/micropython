@@ -35,5 +35,5 @@ for x in (
 ):
     try:
         print(bytes.fromhex(x))
-    except ValueError as e:
-        print("ValueError:", e)
+    except ValueError:
+        print("ValueError", x)
