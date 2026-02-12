@@ -44,8 +44,11 @@
 #define ENABLE_SPECIAL_ACCESSORS \
     (MICROPY_PY_DESCRIPTORS || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY)
 
+#if MICROPY_METACLASS || MICROPY_INIT_SUBCLASS
+static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict, const mp_obj_type_t *metaclass, mp_map_t *kw_args);
+#else
 static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
-static mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo);
+#endif
 static mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
@@ -1026,7 +1029,12 @@ static void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 static mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
 
+    #if MICROPY_INIT_SUBCLASS
+    // When MICROPY_INIT_SUBCLASS is enabled, allow keyword arguments
+    mp_arg_check_num(n_args, n_kw, 1, 3, true);
+    #else
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
+    #endif
 
     switch (n_args) {
         case 1:
@@ -1036,8 +1044,73 @@ static mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
             // args[0] = name
             // args[1] = bases tuple
             // args[2] = locals dict
+            #if !(MICROPY_METACLASS)
             return mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2]);
+            #else
+            {
+                mp_map_t *kw_args_ptr = NULL;
+                #if MICROPY_INIT_SUBCLASS
+                // args[3..] = keyword argument pairs (if n_kw > 0)
+                // Build kw_args map if there are keywords
+                mp_map_t kw_args_map;
+                if (n_kw > 0) {
+                    mp_map_init(&kw_args_map, n_kw);
+                    for (size_t i = 0; i < n_kw; i++) {
+                        mp_map_lookup(&kw_args_map, args[3 + i * 2], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[3 + i * 2 + 1];
+                    }
+                    kw_args_ptr = &kw_args_map;
+                }
+                #endif
 
+                mp_obj_t result = mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2], type_in, kw_args_ptr);
+
+                #if MICROPY_INIT_SUBCLASS
+                if (n_kw > 0) {
+                    mp_map_deinit(&kw_args_map);
+                }
+                #endif
+
+                // Call metaclass __init__ if it exists (PEP 3115)
+                // This is needed for custom metaclasses to initialize the class
+                #if MICROPY_METACLASS
+                if (type_in != &mp_type_type) {
+                    // Custom metaclass - look for __init__ in the metaclass's dict
+                    mp_obj_t init_fn[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+                    struct class_lookup_data lookup = {
+                        .obj = (mp_obj_instance_t *)type_in,
+                        .attr = MP_QSTR___init__,
+                        .slot_offset = 0,
+                        .dest = init_fn,
+                        .is_type = true,
+                    };
+                    mp_obj_class_lookup(&lookup, type_in);
+
+                    if (init_fn[0] != MP_OBJ_NULL && init_fn[0] != MP_OBJ_SENTINEL) {
+                        // __init__ exists, call it with (cls, name, bases, dict)
+                        // If init_fn[1] is not NULL, it's a bound method, otherwise it's a function
+                        if (init_fn[1] != MP_OBJ_NULL) {
+                            // Bound method - init_fn[0] is the function, init_fn[1] is self
+                            mp_obj_t call_args[4];
+                            call_args[0] = result;  // cls (the newly created class)
+                            call_args[1] = args[0]; // name
+                            call_args[2] = args[1]; // bases
+                            call_args[3] = args[2]; // dict
+                            mp_call_function_n_kw(init_fn[0], 4, 0, call_args);
+                        } else {
+                            // Unbound function - need to pass type_in as self? Or result?
+                            mp_obj_t call_args[4];
+                            call_args[0] = result;  // cls
+                            call_args[1] = args[0]; // name
+                            call_args[2] = args[1]; // bases
+                            call_args[3] = args[2]; // dict
+                            mp_call_function_n_kw(init_fn[0], 4, 0, call_args);
+                        }
+                    }
+                }
+                #endif
+                return result;
+            }
+            #endif
         default:
             mp_raise_TypeError(MP_ERROR_TEXT("type takes 1 or 3 arguments"));
     }
@@ -1064,7 +1137,13 @@ static mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
 }
 
 static void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    #if MICROPY_METACLASS
+    // With metaclass support, self_in may be an instance of a custom metaclass
+    // Check that its type is a subclass of type
+    assert(mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(self_in)), MP_OBJ_FROM_PTR(&mp_type_type)));
+    #else
     assert(mp_obj_is_type(self_in, &mp_type_type));
+    #endif
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (dest[0] == MP_OBJ_NULL) {
@@ -1165,7 +1244,18 @@ MP_DEFINE_CONST_OBJ_TYPE(
     attr, type_attr
     );
 
-static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
+// verbose macros needed to avoid crashing codeformat.py
+#if MICROPY_METACLASS || MICROPY_INIT_SUBCLASS
+static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict, const mp_obj_type_t *metaclass, mp_map_t *kw_args)
+#else
+static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict)
+#endif
+{
+    #if !(MICROPY_METACLASS || MICROPY_INIT_SUBCLASS)
+    const mp_obj_type_t *metaclass = &mp_type_type;
+    mp_map_t *kw_args = NULL;
+    (void)kw_args; // Suppress unused variable warning
+    #endif
     // Verify input objects have expected type
     if (!mp_obj_is_type(bases_tuple, &mp_type_tuple)) {
         mp_raise_TypeError(NULL);
@@ -1186,9 +1276,16 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
     for (size_t i = 0; i < bases_len; i++) {
+        // Check if base is an instance of type (handles custom metaclasses)
+        #if MICROPY_METACLASS
+        if (!mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(bases_items[i])), MP_OBJ_FROM_PTR(&mp_type_type))) {
+            mp_raise_TypeError(NULL);
+        }
+        #else
         if (!mp_obj_is_type(bases_items[i], &mp_type_type)) {
             mp_raise_TypeError(NULL);
         }
+        #endif
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
         if (!MP_OBJ_TYPE_HAS_SLOT(t, make_new)) {
@@ -1204,6 +1301,9 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
             t->flags |= MP_TYPE_FLAG_IS_SUBCLASSED;
             base_flags |= t->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
         }
+        #else
+        // Suppress unused variable warning when !ENABLE_SPECIAL_ACCESSORS
+        (void)t;
         #endif
     }
 
@@ -1217,18 +1317,76 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
     // Note: mp_obj_type_t is (2 + 3 + #slots) words, so going from 11 to 12 slots
     // moves from 4 to 5 gc blocks.
     mp_obj_type_t *o = m_new_obj_var0(mp_obj_type_t, slots, void *, 10 + (bases_len ? 1 : 0) + (base_protocol ? 1 : 0));
-    o->base.type = &mp_type_type;
+    o->base.type = metaclass; // Use the provided metaclass
     o->flags = base_flags;
     o->name = name;
-    MP_OBJ_TYPE_SET_SLOT(o, make_new, mp_obj_instance_make_new, 0);
-    MP_OBJ_TYPE_SET_SLOT(o, print, instance_print, 1);
-    MP_OBJ_TYPE_SET_SLOT(o, call, mp_obj_instance_call, 2);
-    MP_OBJ_TYPE_SET_SLOT(o, unary_op, instance_unary_op, 3);
-    MP_OBJ_TYPE_SET_SLOT(o, binary_op, instance_binary_op, 4);
-    MP_OBJ_TYPE_SET_SLOT(o, attr, mp_obj_instance_attr, 5);
-    MP_OBJ_TYPE_SET_SLOT(o, subscr, instance_subscr, 6);
-    MP_OBJ_TYPE_SET_SLOT(o, iter, mp_obj_instance_getiter, 7);
-    MP_OBJ_TYPE_SET_SLOT(o, buffer, instance_get_buffer, 8);
+    #if MICROPY_METACLASS
+    // TODO
+    #endif
+    // Check if the first base class is type (or a subclass of type), and if so, copy its make_new
+    // This is needed for metaclasses (subclasses of type) to work correctly
+    bool inherited_type_make_new = false;
+    if (bases_len > 0) {
+        mp_obj_type_t *first_base = MP_OBJ_TO_PTR(bases_items[0]);
+        // Check if first_base is type or inherits from type
+        mp_obj_type_t *check = first_base;
+        while (check != NULL) {
+            if (check == &mp_type_type) {
+                // This class inherits from type, so it's a metaclass
+                // Copy type_make_new from the base
+                if (MP_OBJ_TYPE_HAS_SLOT(first_base, make_new)) {
+                    void *base_make_new = (void *)MP_OBJ_TYPE_GET_SLOT(first_base, make_new);
+                    MP_OBJ_TYPE_SET_SLOT(o, make_new, base_make_new, 0);
+                    inherited_type_make_new = true;
+                }
+                break;
+            }
+            // Walk up parent chain
+            if (MP_OBJ_TYPE_HAS_SLOT(check, parent)) {
+                const void *parent_slot = MP_OBJ_TYPE_GET_SLOT(check, parent);
+                mp_obj_t parent = MP_OBJ_FROM_PTR(parent_slot);
+                if (mp_obj_is_type(parent, &mp_type_tuple)) {
+                    // Multiple inheritance - check first parent only
+                    size_t len;
+                    mp_obj_t *items;
+                    mp_obj_tuple_get(parent, &len, &items);
+                    if (len > 0) {
+                        check = MP_OBJ_TO_PTR(items[0]);
+                    } else {
+                        break;
+                    }
+                } else {
+                    check = MP_OBJ_TO_PTR(parent);
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    if (!inherited_type_make_new) {
+        MP_OBJ_TYPE_SET_SLOT(o, make_new, mp_obj_instance_make_new, 0);
+    }
+
+    // Also check if we should use type's other slots (print, attr, call)
+    // This is needed for metaclasses (subclasses of type)
+    if (inherited_type_make_new) {
+        // This is a metaclass - use type's slots for proper class behavior
+        MP_OBJ_TYPE_SET_SLOT(o, print, type_print, 1);
+        MP_OBJ_TYPE_SET_SLOT(o, call, type_call, 2);
+        MP_OBJ_TYPE_SET_SLOT(o, attr, type_attr, 3);
+        // Slots 4-8 are unused for metaclasses
+    } else {
+        // Regular class - use instance slots
+        MP_OBJ_TYPE_SET_SLOT(o, print, instance_print, 1);
+        MP_OBJ_TYPE_SET_SLOT(o, call, mp_obj_instance_call, 2);
+        MP_OBJ_TYPE_SET_SLOT(o, unary_op, instance_unary_op, 3);
+        MP_OBJ_TYPE_SET_SLOT(o, binary_op, instance_binary_op, 4);
+        MP_OBJ_TYPE_SET_SLOT(o, attr, mp_obj_instance_attr, 5);
+        MP_OBJ_TYPE_SET_SLOT(o, subscr, instance_subscr, 6);
+        MP_OBJ_TYPE_SET_SLOT(o, iter, mp_obj_instance_getiter, 7);
+        MP_OBJ_TYPE_SET_SLOT(o, buffer, instance_get_buffer, 8);
+    }
 
     mp_obj_dict_t *locals_ptr = MP_OBJ_TO_PTR(locals_dict);
     MP_OBJ_TYPE_SET_SLOT(o, locals_dict, locals_ptr, 9);
@@ -1303,6 +1461,74 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
 
     #if MICROPY_PY_DESCRIPTORS
     setname_consume_call_all(&setname_list, MP_OBJ_FROM_PTR(o));
+    #endif
+
+    #if MICROPY_INIT_SUBCLASS
+    // Call __init_subclass__ on base classes (PEP 487)
+    // Per PEP 487, __init_subclass__ is implicitly a classmethod and is called
+    // on the first base that defines it (following MRO), unless it chains via super().
+    // __init_subclass__ does NOT need @classmethod decorator.
+
+    // Extract kwargs (excluding 'metaclass') to pass to __init_subclass__
+    size_t n_kw = 0;
+    if (kw_args != NULL && kw_args->used > 0) {
+        // Count kwargs excluding 'metaclass'
+        for (size_t i = 0; i < kw_args->alloc; i++) {
+            if (mp_map_slot_is_filled(kw_args, i)) {
+                if (kw_args->table[i].key != MP_OBJ_NEW_QSTR(MP_QSTR_metaclass)) {
+                    n_kw++;
+                }
+            }
+        }
+    }
+
+    // Only call __init_subclass__ on the first base that has it (per PEP 487)
+    // The __init_subclass__ implementation can chain to others via super()
+    for (size_t i = 0; i < bases_len; i++) {
+        mp_obj_t base = bases_items[i];
+
+        // Use mp_load_method to properly handle __init_subclass__
+        // This will handle both @classmethod decorated and undecorated versions
+        mp_obj_t init_subclass_dest[2];
+        mp_load_method_maybe(base, MP_QSTR___init_subclass__, init_subclass_dest);
+
+        if (init_subclass_dest[0] != MP_OBJ_NULL) {
+            // __init_subclass__ exists
+            // Per PEP 487, call it as if it's a classmethod with the new subclass as cls
+            // When using mp_load_method, if it's a @classmethod, init_subclass_dest[0] is the function
+            // and init_subclass_dest[1] is the class it's bound to.
+            // If it's NOT a classmethod, init_subclass_dest[0] is the function and
+            // init_subclass_dest[1] is the instance (but we want the new class, not the base)
+
+            // Build call arguments
+            // For implicit classmethod behavior, we need to pass the new class (o) as the first arg
+            size_t total_args = 1 + (n_kw * 2);
+            mp_obj_t *args = m_new(mp_obj_t, total_args);
+            args[0] = MP_OBJ_FROM_PTR(o);  // cls argument (the new subclass being created)
+
+            // Add keyword arguments (excluding 'metaclass')
+            size_t kw_idx = 1;
+            if (n_kw > 0) {
+                for (size_t j = 0; j < kw_args->alloc; j++) {
+                    if (mp_map_slot_is_filled(kw_args, j)) {
+                        if (kw_args->table[j].key != MP_OBJ_NEW_QSTR(MP_QSTR_metaclass)) {
+                            args[kw_idx++] = kw_args->table[j].key;
+                            args[kw_idx++] = kw_args->table[j].value;
+                        }
+                    }
+                }
+            }
+
+            // Call __init_subclass__
+            // Use mp_call_function_n_kw to call the function directly with our args
+            mp_call_function_n_kw(init_subclass_dest[0], 1, n_kw, args);
+            m_del(mp_obj_t, args, total_args);
+
+            // Per PEP 487, only call __init_subclass__ on the first base that has it
+            // (the implementation can chain to others via super())
+            break;
+        }
+    }
     #endif
 
     return MP_OBJ_FROM_PTR(o);
@@ -1474,7 +1700,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
     }
 }
 
-static mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
+mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     size_t len;
     mp_obj_t *items;
     if (mp_obj_is_type(classinfo, &mp_type_type)) {

@@ -420,10 +420,25 @@ dispatch_loop:
                     // types are extremely common, so avoid all the other checks and
                     // calls that normally happen first.
                     mp_map_elem_t *elem = NULL;
+                    #if MICROPY_METACLASS
+                    // With metaclass support, need to check for type objects vs instances
+                    const mp_obj_type_t *top_type = mp_obj_get_type(top);
+                    if (mp_obj_is_instance_type(top_type)) {
+                        // Check that top is actually an instance, not a type object itself
+                        // (which can happen with custom metaclasses)
+                        // If top_type is a subclass of type, then top is a type object, not an instance
+                        if (!mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(top_type), MP_OBJ_FROM_PTR(&mp_type_type))) {
+                            mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
+                            elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                        }
+                    }
+                    #else
+                    // Original fast path without metaclass complexity
                     if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
                         elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
                     }
+                    #endif
                     if (elem) {
                         obj = elem->value;
                     } else

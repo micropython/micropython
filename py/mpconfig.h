@@ -1312,6 +1312,23 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_DELATTR_SETATTR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to support metaclasses as defined in PEP 3115
+#ifndef MICROPY_METACLASS
+#define MICROPY_METACLASS (0)
+#endif
+
+// Whether to support the __prepare__ method for metaclasses (PEP 3115)
+// This allows metaclasses to customize the namespace dict before class creation.
+// Rarely used in practice, so disabled by default even when MICROPY_METACLASS is enabled.
+#ifndef MICROPY_METACLASS_PREPARE
+#define MICROPY_METACLASS_PREPARE (0)
+#endif
+
+// Whether to support __init_subclass__ method (PEP 487)
+#ifndef MICROPY_INIT_SUBCLASS
+#define MICROPY_INIT_SUBCLASS (0)
+#endif
+
 // Support for async/await/async for/async with
 #ifndef MICROPY_PY_ASYNC_AWAIT
 #define MICROPY_PY_ASYNC_AWAIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
