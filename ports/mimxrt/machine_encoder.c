@@ -52,7 +52,7 @@ typedef struct _machine_encoder_obj_t {
     uint32_t max_count;
     uint32_t min_count;
     uint32_t filter;
-    mp_obj_t home_pin;
+    mp_obj_t reset_pin;
     uint16_t mp_irq_flags;
     uint16_t mp_irq_trigger;
     mp_irq_obj_t *mp_irq_obj;
@@ -309,8 +309,8 @@ static void clear_encoder_registers(machine_encoder_obj_t *self) {
     // Create a High pulse on the Trigger input, clearing Position, Revolution and Hold registers.
     XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicHigh, xbar_signal_table[self->id].enc_home);
     XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_home);
-    if (self->home_pin) {
-        connect_pin_to_encoder(self->home_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
+    if (self->reset_pin) {
+        connect_pin_to_encoder(self->reset_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
     }
 }
 
@@ -357,17 +357,17 @@ static uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *perio
 static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     mp_arg_val_t args[], enc_config_t *enc_config) {
 
-    enum { ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index };
+    enum { ARG_reset, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index };
 
     // Check for a Home pin, resetting the counters
-    if (args[ARG_home].u_obj != MP_ROM_INT(-1)) {
-        if (args[ARG_home].u_obj != mp_const_none) {
-            self->home_pin = args[ARG_home].u_obj;
-            connect_pin_to_encoder(self->home_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
+    if (args[ARG_reset].u_obj != MP_ROM_INT(-1)) {
+        if (args[ARG_reset].u_obj != mp_const_none) {
+            self->reset_pin = args[ARG_reset].u_obj;
+            connect_pin_to_encoder(self->reset_pin, xbar_signal_table[self->id].enc_home, XBAR_IN);
             self->enc_config.HOMETriggerMode = kENC_HOMETriggerOnRisingEdge;
         } else {
             XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_home);
-            self->home_pin = NULL;
+            self->reset_pin = NULL;
         }
     }
 
@@ -445,14 +445,14 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
 
 static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_phase_a, ARG_phase_b, ARG_phases, ARG_home,
+    enum { ARG_phase_a, ARG_phase_b, ARG_phases, ARG_reset,
            ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index};
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_phase_b, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_phases, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_home, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
+        { MP_QSTR_reset, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_match, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_match_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -486,7 +486,7 @@ static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     }
 
     // Set the common options
-    mp_machine_encoder_init_helper_common(self, args + ARG_home, &self->enc_config);
+    mp_machine_encoder_init_helper_common(self, args + ARG_reset, &self->enc_config);
 
     ENC_DoSoftwareLoadInitialPositionValue(self->instance); /* Update the position counter with initial value. */
 }
@@ -526,7 +526,7 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     self->mp_irq_obj = NULL;
     self->match_pin = 0;
     self->phases_inv = 4;  // default: phases = 1
-    self->home_pin = NULL;
+    self->reset_pin = NULL;
     self->mode = MODE_ENCODER;
 
     // Set defaults for ENC Config
@@ -713,7 +713,7 @@ static const mp_rom_map_elem_t machine_encoder_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_encoder_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_cycles), MP_ROM_PTR(&machine_encoder_cycles_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_IRQ_HOME), MP_ROM_INT(kENC_HOMETransitionFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RESET), MP_ROM_INT(kENC_HOMETransitionFlag) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_INDEX), MP_ROM_INT(kENC_INDEXPulseFlag) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(kENC_PositionCompareFlag) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(kENC_PositionRollUnderFlag) },
@@ -735,11 +735,11 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_src, ARG_direction, ARG_home, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index };
+    enum { ARG_src, ARG_direction, ARG_reset, ARG_match, ARG_match_pin, ARG_filter_ns, ARG_max, ARG_min, ARG_index };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_src, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_direction, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
-        { MP_QSTR_home, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
+        { MP_QSTR_reset, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_match, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_match_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -771,7 +771,7 @@ static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
     }
 
     // Set the common options and start
-    mp_machine_encoder_init_helper_common(self, args + ARG_home, &self->enc_config);
+    mp_machine_encoder_init_helper_common(self, args + ARG_reset, &self->enc_config);
 }
 
 // Counter(id, input, [args])
@@ -810,7 +810,7 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     self->mp_irq_obj = NULL;
     self->match_pin = 0;
     self->phases_inv = 1;
-    self->home_pin = NULL;
+    self->reset_pin = NULL;
     self->mode = MODE_COUNTER;
 
     // Set defaults for ENC Config
@@ -842,7 +842,7 @@ static const mp_rom_map_elem_t machine_counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_encoder_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_cycles), MP_ROM_PTR(&machine_encoder_cycles_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_IRQ_HOME), MP_ROM_INT(kENC_HOMETransitionFlag) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RESET), MP_ROM_INT(kENC_HOMETransitionFlag) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_INDEX), MP_ROM_INT(kENC_INDEXPulseFlag) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(kENC_PositionCompareFlag) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(kENC_PositionRollUnderFlag) },
