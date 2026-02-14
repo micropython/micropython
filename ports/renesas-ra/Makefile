@@ -432,9 +432,17 @@ $(TOP)/lib/fsp/README.md:
 	$(ECHO) "fsp submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/fsp)
 
+# Do not alter the body of NL. The 2 new lines in it matters !
+define NL
+
+
+endef
+
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
-	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(file >$(BUILD)/obj.list,)
+	$(Q)$(foreach o,$(2),$(file >>$(BUILD)/obj.list,$(o)$(NL)))
+	$(Q)$(LD) $(LDFLAGS) -o $(1) @$(BUILD)/obj.list $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $(1)
 endef
 
