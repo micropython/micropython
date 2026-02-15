@@ -1,4 +1,5 @@
 # Test weakref.finalize() functionality requiring gc.collect().
+# Should be kept in sync with tests/ports/webassembly/weakref_finalize_collect.py.
 
 try:
     import weakref
