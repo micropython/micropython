@@ -465,24 +465,28 @@ void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
 #define ASM_LOAD8_REG_REG_REG(as, reg_dest, reg_base, reg_index) asm_thumb_ldrb_rlo_rlo_rlo((as), (reg_dest), (reg_base), (reg_index))
 #define ASM_LOAD16_REG_REG_REG(as, reg_dest, reg_base, reg_index) \
     do { \
-        asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 1); \
-        asm_thumb_ldrh_rlo_rlo_rlo((as), (reg_dest), (reg_base), (reg_index)); \
+        asm_thumb_lsl_rlo_rlo_i5((as), REG_TEMP2, (reg_index), 1); \
+        asm_thumb_ldrh_rlo_rlo_rlo((as), (reg_dest), (reg_base), REG_TEMP2); \
     } while (0)
 #define ASM_LOAD32_REG_REG_REG(as, reg_dest, reg_base, reg_index) \
     do { \
-        asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 2); \
-        asm_thumb_ldr_rlo_rlo_rlo((as), (reg_dest), (reg_base), (reg_index)); \
+        asm_thumb_lsl_rlo_rlo_i5((as), REG_TEMP2, (reg_index), 2); \
+        asm_thumb_ldr_rlo_rlo_rlo((as), (reg_dest), (reg_base), REG_TEMP2); \
     } while (0)
 #define ASM_STORE8_REG_REG_REG(as, reg_val, reg_base, reg_index) asm_thumb_strb_rlo_rlo_rlo((as), (reg_val), (reg_base), (reg_index))
 #define ASM_STORE16_REG_REG_REG(as, reg_val, reg_base, reg_index) \
     do { \
+        asm_thumb_op16((as), 0xB400 | (1 << reg_index)); \
         asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 1); \
         asm_thumb_strh_rlo_rlo_rlo((as), (reg_val), (reg_base), (reg_index)); \
+        asm_thumb_op16((as), 0xBC00 | (1 << reg_index)); \
     } while (0)
 #define ASM_STORE32_REG_REG_REG(as, reg_val, reg_base, reg_index) \
     do { \
+        asm_thumb_op16((as), 0xB400 | (1 << reg_index)); \
         asm_thumb_lsl_rlo_rlo_i5((as), (reg_index), (reg_index), 2); \
         asm_thumb_str_rlo_rlo_rlo((as), (reg_val), (reg_base), (reg_index)); \
+        asm_thumb_op16((as), 0xBC00 | (1 << reg_index)); \
     } while (0)
 
 #define ASM_CLR_REG(as, reg_dest) asm_thumb_mov_rlo_i8((as), (reg_dest), 0)
