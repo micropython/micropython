@@ -19,6 +19,8 @@ class A:
 
 
 def test():
+    global r1, r2  # needed for webassembly port to retain references to them
+
     print("test having multiple ref and finalize objects referencing the same thing")
     a = A()
     r1 = weakref.ref(a, lambda r: print("ref1", r()))
