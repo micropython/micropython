@@ -1,0 +1,6 @@
+LOAD8 True True
+STORE8 True True
+LOAD16 True True
+STORE16 True True
+LOAD32 True True
+STORE32 True True
