@@ -167,7 +167,8 @@ static mp_obj_t psoc_edge_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
 
     if (n_args == 3) {
-        uint32_t numSectors = bufinfo.len / EXT_FLASH_SECTOR_SIZE;
+        // Round up to ensure we erase all sectors that will be written to
+        uint32_t numSectors = (bufinfo.len + EXT_FLASH_SECTOR_SIZE - 1) / EXT_FLASH_SECTOR_SIZE;
 
         for (uint32_t i = 0; i < numSectors; ++i) {
             cy_rslt_t result = mtb_serial_memory_erase(&serial_memory_obj, self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE, mtb_serial_memory_get_erase_size(&serial_memory_obj, self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE));
@@ -197,8 +198,21 @@ static mp_obj_t psoc_edge_qspi_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp
 
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT:
+            if (!qspi_flash_init) {
+                mtb_serial_memory_setup(&serial_memory_obj,
+                    MTB_SERIAL_MEMORY_CHIP_SELECT_1,
+                    CYBSP_SMIF_CORE_0_XSPI_FLASH_hal_config.base,
+                    CYBSP_SMIF_CORE_0_XSPI_FLASH_hal_config.clock,
+                    &smif_mem_context,
+                    &smif_mem_info,
+                    &smif0BlockConfig);
+                qspi_flash_init = true;
+            }
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_DEINIT:
+            if (qspi_flash_init) {
+                qspi_flash_init = false;
+            }
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_SYNC:
             return MP_OBJ_NEW_SMALL_INT(0);

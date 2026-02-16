@@ -6,7 +6,7 @@ bdev = psocedge.QSPI_Flash()
 
 # sector size 4 KB for external flash
 read_size = 0x1000
-# page size 512 B
+# page size 256 B
 write_size = 0x200
 
 try:
