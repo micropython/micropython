@@ -161,6 +161,18 @@ Functions
    There is a finite queue to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the queue is full.
 
+.. function:: repl_autocomplete(line)
+
+   Perform REPL tab-completion on *line*, a string containing the partial input
+   typed so far.
+
+   Returns the longest unambiguous completion suffix to append (e.g.
+   ``"rt "`` for input ``"impo"``), an empty string if there is no match or
+   the name is already complete, or ``None`` if multiple matches exist with no
+   further common prefix (in which case the candidates are printed to stdout).
+
+   Availability: requires ``MICROPY_HELPER_REPL``.
+
 Classes
 -------
 
