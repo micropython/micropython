@@ -938,9 +938,9 @@ function ci_unix_qemu_arm_build {
 
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
-    # - thread/stress_aes.py takes around 70 seconds
+    # - thread/stress_aes.py takes around 90 seconds
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=120 ./run-tests.py)
 }
 
 function ci_unix_qemu_riscv64_setup {
