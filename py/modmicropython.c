@@ -167,6 +167,18 @@ static mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
 #endif
 
+#if MICROPY_PY_MICROPYTHON_STDIO_RAW
+static mp_obj_t mp_micropython_stdio_mode_raw(mp_obj_t enabled) {
+    if (mp_obj_is_true(enabled)) {
+        mp_hal_stdio_mode_raw();
+    } else {
+        mp_hal_stdio_mode_orig();
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_stdio_mode_raw_obj, mp_micropython_stdio_mode_raw);
+#endif
+
 #if MICROPY_HELPER_REPL
 static mp_obj_t mp_micropython_repl_autocomplete(mp_obj_t cur_line) {
     const char *compl_str = NULL;
@@ -218,6 +230,9 @@ static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #endif
     #if MICROPY_ENABLE_SCHEDULER
     { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
+    #endif
+    #if MICROPY_PY_MICROPYTHON_STDIO_RAW
+    { MP_ROM_QSTR(MP_QSTR_stdio_mode_raw), MP_ROM_PTR(&mp_micropython_stdio_mode_raw_obj) },
     #endif
     #if MICROPY_HELPER_REPL
     { MP_ROM_QSTR(MP_QSTR_repl_autocomplete), MP_ROM_PTR(&mp_micropython_repl_autocomplete_obj) },
