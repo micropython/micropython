@@ -166,6 +166,9 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 if (pfd.revents & POLLIN) {
                     ret |= MP_STREAM_POLL_RD;
                 }
+                if (pfd.revents & POLLPRI) {
+                    ret |= MP_STREAM_POLL_PRI;
+                }
                 if (pfd.revents & POLLOUT) {
                     ret |= MP_STREAM_POLL_WR;
                 }
