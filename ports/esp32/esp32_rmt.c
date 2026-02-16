@@ -275,16 +275,24 @@ static mp_obj_t esp32_rmt_wait_done(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0].u_obj);
+    mp_int_t timeout = args[1].u_int;
     if (self->pin == -1) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("already deinitialized"));
     } else if (!self->enabled) {
         return mp_const_true;
-    } else if (args[1].u_int == 0 && self->tx_ongoing > 0) {
+    } else if (timeout == 0 && self->tx_ongoing > 0) {
         // shortcut to avoid console spamming with timeout msgs by rmt_tx_wait_all_done()
         return mp_const_false;
     }
 
-    esp_err_t err = rmt_tx_wait_all_done(self->channel, args[1].u_int);
+    if (timeout != 0) {
+        MP_THREAD_GIL_EXIT();
+    }
+    esp_err_t err = rmt_tx_wait_all_done(self->channel, timeout);
+    if (timeout != 0) {
+        MP_THREAD_GIL_ENTER();
+    }
+
     return err == ESP_OK ? mp_const_true : mp_const_false;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_wait_done_obj, 1, esp32_rmt_wait_done);
