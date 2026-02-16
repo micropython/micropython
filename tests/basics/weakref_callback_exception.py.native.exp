@@ -1,0 +1,8 @@
+test ref with exception in the callback
+Unhandled exception in weakref callback:
+ZeroDivisionError: divide by zero
+collect done
+test finalize with exception in the callback
+Unhandled exception in weakref callback:
+ZeroDivisionError: divide by zero
+collect done
