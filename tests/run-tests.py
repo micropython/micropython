@@ -81,6 +81,8 @@ via_mpy_tests_to_skip = {
         "misc/sys_settrace_features.py",
         "misc/sys_settrace_generator.py",
         "misc/sys_settrace_loop.py",
+        # REPL autocomplete results differ for pre-compiled .mpy modules.
+        "micropython/repl_autocomplete.py",
     ),
 }
 
@@ -873,7 +875,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     def run_one_test(test_file):
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
         # If test_file is one of our own tests always make it relative to our tests/ dir and
-        # otherwise use the abosulte path, irregardless of actual path passed,
+        # otherwise use the absolute path, regardless of actual path passed,
         # such that display and result output is always the same.
         try:
             test_file_relpath = os.path.relpath(test_file, start=base_path())
