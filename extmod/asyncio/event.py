@@ -62,5 +62,10 @@ try:
                 yield core._io_queue.queue_read(self)
             self.state = 0
 
+        async def wait_pri(self):
+            if not self.state:
+                yield core._io_queue.queue_pri(self)
+            self.state = 0
+
 except ImportError:
     pass
