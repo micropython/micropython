@@ -949,11 +949,11 @@ function ci_unix_qemu_arm_build {
 
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
-    # - thread/stress_aes.py takes around 70 seconds
+    # - thread/stress_aes.py takes around 90 seconds
     # - thread/stress_recurse.py is flaky
     # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=120 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
 }
 
 function ci_unix_qemu_riscv64_setup {
