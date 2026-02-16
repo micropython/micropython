@@ -1,0 +1,12 @@
+test ref with exception in the callback
+Unhandled exception in weakref callback:
+Traceback (most recent call last):
+  File "\.\+weakref_callback_exception.py", line 23, in <lambda>
+ZeroDivisionError: divide by zero
+collect done
+test finalize with exception in the callback
+Unhandled exception in weakref callback:
+Traceback (most recent call last):
+  File "\.\+weakref_callback_exception.py", line 31, in <lambda>
+ZeroDivisionError: divide by zero
+collect done
