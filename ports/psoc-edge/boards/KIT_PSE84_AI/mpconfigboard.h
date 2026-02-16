@@ -35,14 +35,18 @@
 // and memory map layout for the KIT_PSE84_AI board
 #define MICROPY_PY_EXT_FLASH (1)
 
-// Flash memory map: Total 64MB (0x04000000) QSPI flash
-// Move to 256KB sector region to avoid 128KB limitation
-#define EXT_FLASH_BASE              (0x00920000)
+// Flash memory map: Total 64MB (0x04000000) QSPI flash (S25HS512T hybrid flash)
+// S25HS512T Memory Map:
+//   Region 0: 0x000000-0x01FFFF (32 x 4KB sectors)
+//   Region 1: 0x020000-0x03FFFF (1 x 128KB sector)
+//   Region 2: 0x040000-0x3FFFFFF (255 x 256KB sectors) <- We use this region
+// CRITICAL: Base address MUST be aligned to 256KB (0x40000) sector boundary!
+#define EXT_FLASH_BASE              (0x00900000)  // Aligned to sector 36
 
-// Usable filesystem space: ~54.5MB in 256KB sector region
-#define EXT_FLASH_SIZE              (218 * 0x40000)
+// Usable filesystem space: 64MB - 9MB = 55MB (0x03700000 bytes)
+#define EXT_FLASH_SIZE              (0x04000000 - EXT_FLASH_BASE)
 
-// erase sector size : 256KB, fixed by flash chip hardware.
+// erase sector size : 256KB, fixed by flash chip hardware in Region 2.
 #define EXT_FLASH_SECTOR_SIZE        (0x40000)       /** 256KB*/
 
 // Block device block size: Must match erase sector size for proper filesystem operation
