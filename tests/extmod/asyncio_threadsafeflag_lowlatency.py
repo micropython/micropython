@@ -13,7 +13,6 @@ class MillisecTimer:
     def __init__(self):
         self.tsf = asyncio.ThreadSafeFlag()
         self.tim = machine.Timer()
-        self.wait_fn = getattr(self.tsf, "wait_pri", self.tsf.wait)
 
     def isr(self, tim):
         self.tsf.set()
@@ -25,7 +24,7 @@ class MillisecTimer:
             callback=self.isr,
             hard=True,
         )
-        await self.wait_fn()
+        await self.wait(priority=True)
 
 
 async def block(n):  # Blocking task
