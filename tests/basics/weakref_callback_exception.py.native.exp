@@ -1,8 +1,8 @@
 test ref with exception in the callback
 Unhandled exception in weakref callback:
-ZeroDivisionError: divide by zero
+ValueError: ('weakref callback', (<ref>,))
 collect done
 test finalize with exception in the callback
 Unhandled exception in weakref callback:
-ZeroDivisionError: divide by zero
+ValueError: ('weakref callback', ())
 collect done

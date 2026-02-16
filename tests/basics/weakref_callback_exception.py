@@ -17,10 +17,14 @@ class A:
         return "<A object>"
 
 
+def callback(*args):
+    raise ValueError("weakref callback", args)
+
+
 def test():
     print("test ref with exception in the callback")
     a = A()
-    r = weakref.ref(a, lambda r: 1 / 0)
+    r = weakref.ref(a, callback)
     a = None
     clean_the_stack = [0, 0, 0, 0]
     gc.collect()
@@ -28,7 +32,7 @@ def test():
 
     print("test finalize with exception in the callback")
     a = A()
-    weakref.finalize(a, lambda: 1 / 0)
+    weakref.finalize(a, callback)
     a = None
     clean_the_stack = [0, 0, 0, 0]
     gc.collect()
