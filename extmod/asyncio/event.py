@@ -64,3 +64,31 @@ try:
 
 except ImportError:
     pass
+
+
+# MicroPython-extension: This async context runs its body as an interrupt directly,
+# rather than as a task in an event loop, to achieve <100us latency in an async
+# context (but still with all the same foot-gun caveats as normal interrupts handlers).
+class Interrupt:
+    def __init__(self):
+        self.state = False
+        self.waiting = core.TaskQueue()
+
+    def __call__(self, arg):
+        try:
+            self.state = True
+            while self.waiting.peek():
+                t = self.waiting.pop()
+                t.coro.send(arg)
+                core._task_queue.push(t)
+        finally:
+            self.state = False
+
+    async def __aenter__(self):
+        self.waiting.push(core.cur_task)
+        return (yield)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.state:
+            yield
+        return

@@ -11,6 +11,7 @@ _attrs = {
     "gather": "funcs",
     "Event": "event",
     "ThreadSafeFlag": "event",
+    "Interrupt": "event",
     "Lock": "lock",
     "open_connection": "stream",
     "start_server": "stream",
