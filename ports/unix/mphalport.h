@@ -117,6 +117,7 @@ void mp_hal_get_random(size_t n, void *buf);
 #ifndef _WIN32
 void mp_unix_init_sched_signal(void);
 void mp_unix_deinit_sched_signal(void);
+void mp_unix_sched_sleep(uint32_t timeout_ms);
 #endif
 
 #if MICROPY_PY_BLUETOOTH

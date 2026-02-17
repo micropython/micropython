@@ -87,6 +87,21 @@ void mp_hal_signal_event(void) {
     sched_event_pending = 1;
     kill(getpid(), MP_SCHED_SIGNAL);
 }
+
+void mp_unix_sched_sleep(uint32_t timeout_ms) {
+    // The sched signal is blocked process-wide (from init). pselect()
+    // atomically unblocks it and sleeps, avoiding the TOCTOU race
+    // between the flag check and entering the wait.
+    sigset_t unblocked;
+    MP_SIGMASK(SIG_BLOCK, NULL, &unblocked);
+    sigdelset(&unblocked, MP_SCHED_SIGNAL);
+
+    if (!sched_event_pending) {
+        struct timespec ts = {timeout_ms / 1000, (timeout_ms % 1000) * 1000000L};
+        pselect(0, NULL, NULL, NULL, &ts, &unblocked);
+    }
+    sched_event_pending = 0;
+}
 #endif
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
