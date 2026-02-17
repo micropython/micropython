@@ -28,6 +28,7 @@
 
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_NETWORK_ESP_HOSTED
 
@@ -146,7 +147,7 @@ err_t esp_hosted_netif_output(struct netif *netif, struct pbuf *p) {
         return ERR_IF;
     }
 
-    esp_header_t *esp_header = (esp_header_t *)(state->buf);
+    esp_header_t *esp_header = (esp_header_t *)(state->tx_buf);
     esp_header->if_type = netif->name[1] - '0';
     esp_header->if_num = 0;
     esp_header->flags = 0;
@@ -156,11 +157,17 @@ err_t esp_hosted_netif_output(struct netif *netif, struct pbuf *p) {
     pbuf_copy_partial(p, esp_header->payload, p->tot_len, 0);
     esp_header->checksum = esp_hosted_checksum(esp_header);
 
-    size_t frame_size = (sizeof(esp_header_t) + esp_header->len + 3) & ~3U;
-    if (esp_hosted_hal_spi_transfer(state->buf, NULL, frame_size) != 0) {
-        error_printf("failed to send eth frame\n");
-        return ERR_IF;
+    // Can't busy-wait here because this function can be called
+    // from wifi_poll, which would leade to a deadlock.
+    if (esp_hosted_queue_put(&state->tx_queue, state->tx_buf) != 0) {
+        error_printf("tx queue full\n");
+        return ERR_MEM;
     }
+
+    // Schedule wifi_poll so the queued frame gets sent as soon
+    // as possible, instead of waiting for the periodic poll.
+    mod_network_poll_events();
+
     debug_printf("if %d pbuf len %d\n", esp_header->if_type, esp_header->len);
     return ERR_OK;
 }

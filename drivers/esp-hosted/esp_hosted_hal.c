@@ -42,8 +42,6 @@
 #include "esp_hosted_hal.h"
 #include "esp_hosted_wifi.h"
 
-extern void mod_network_poll_events(void);
-
 #ifdef MICROPY_HW_WIFI_IRQ_PIN
 static mp_obj_t esp_hosted_pin_irq_callback(mp_obj_t self_in) {
     #ifdef MICROPY_HW_WIFI_LED
@@ -172,11 +170,10 @@ MP_WEAK int esp_hosted_hal_spi_transfer(const uint8_t *tx_buf, uint8_t *rx_buf, 
 
     // Wait for handshake pin to go high.
     for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(1)) {
-        if (mp_hal_pin_read(MICROPY_HW_WIFI_HANDSHAKE) &&
-           (rx_buf == NULL || mp_hal_pin_read(MICROPY_HW_WIFI_DATAREADY))) {
+        if (mp_hal_pin_read(MICROPY_HW_WIFI_HANDSHAKE)) {
             break;
         }
-        if ((mp_hal_ticks_ms() - start) >= 1000) {
+        if ((mp_hal_ticks_ms() - start) >= 250) {
             error_printf("timeout waiting for handshake\n");
             return -1;
         }
