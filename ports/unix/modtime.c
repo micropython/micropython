@@ -90,6 +90,21 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
+    if (val < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
+    }
+    // Drain any already-pending callbacks before computing sleep time,
+    // subtracting the time taken from the requested sleep duration.
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_uint_t drain_start = mp_hal_ticks_ms();
+    while (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
+    }
+    val -= (mp_hal_ticks_ms() - drain_start) / MICROPY_FLOAT_CONST(1000.0);
+    if (val <= 0) {
+        return mp_const_none;
+    }
+    #endif
     mp_float_t ipart;
     tv.tv_usec = (time_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
     tv.tv_sec = (suseconds_t)ipart;
@@ -105,7 +120,6 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
         if (res != -1 || errno != EINTR) {
             break;
         }
-        // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else
         break;
         #endif
@@ -113,6 +127,15 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     RAISE_ERRNO(res, errno);
     #else
     int seconds = mp_obj_get_int(arg);
+    if (seconds < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
+    }
+    // Drain any already-pending callbacks.
+    #if MICROPY_ENABLE_SCHEDULER
+    while (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
+    }
+    #endif
     for (;;) {
         mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         MP_THREAD_GIL_EXIT();

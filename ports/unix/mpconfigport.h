@@ -121,6 +121,10 @@ typedef long mp_off_t;
 // port modtime functions use time_t
 #define MICROPY_TIMESTAMP_IMPL      (MICROPY_TIMESTAMP_IMPL_TIME_T)
 
+// Assume that select() call, interrupted with a signal, and erroring
+// with EINTR, updates remaining timeout value.
+#define MICROPY_SELECT_REMAINING_TIME (1)
+
 // Disable stackless by default.
 #ifndef MICROPY_STACKLESS
 #define MICROPY_STACKLESS           (0)
