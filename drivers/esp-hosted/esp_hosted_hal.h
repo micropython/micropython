@@ -80,4 +80,8 @@ void *esp_hosted_hal_alloc(void *user, size_t size);
 void esp_hosted_hal_free(void *user, void *ptr);
 void *esp_hosted_hal_calloc(size_t nmemb, size_t size);
 void *esp_hosted_hal_realloc(void *ptr, size_t size);
+
+// Schedules the driver's polling function (implemented by ports).
+extern void mod_network_poll_events(void);
+
 #endif // MICROPY_INCLUDED_DRIVERS_ESP_HOSTED_HAL_H
