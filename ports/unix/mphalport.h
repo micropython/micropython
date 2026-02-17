@@ -37,16 +37,23 @@
 #define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
 #endif
 
-// In lieu of a WFI(), slow down polling from being a tight loop.
-//
-// Note that we don't delay for the full TIMEOUT_MS, as execution
-// can't be woken from the delay.
+// Wait for an event (scheduled callback) or timeout. A signal from
+// mp_hal_signal_event() causes select() to return EINTR, waking the wait.
+#ifndef _WIN32
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do { \
+        MP_THREAD_GIL_EXIT(); \
+        mp_unix_sched_sleep(TIMEOUT_MS); \
+        MP_THREAD_GIL_ENTER(); \
+    } while (0)
+#else
 #define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
     do { \
         MP_THREAD_GIL_EXIT(); \
         mp_hal_delay_us(500); \
         MP_THREAD_GIL_ENTER(); \
     } while (0)
+#endif
 
 // The port provides `mp_hal_stdio_mode_raw()` and `mp_hal_stdio_mode_orig()`.
 #define MICROPY_HAL_HAS_STDIO_MODE_SWITCH (1)
