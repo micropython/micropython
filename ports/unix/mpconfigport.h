@@ -180,10 +180,10 @@ void mp_unix_free_exec(void *ptr, size_t size);
 // If enabled, configure how to seed random on init.
 #ifdef MICROPY_PY_RANDOM_SEED_INIT_FUNC
 #include <stddef.h>
-void mp_hal_get_random(size_t n, void *buf);
+void mp_hal_get_random(size_t n, uint8_t *buf);
 static inline unsigned long mp_random_seed_init(void) {
     unsigned long r;
-    mp_hal_get_random(sizeof(r), &r);
+    mp_hal_get_random(sizeof(r), (uint8_t *)&r);
     return r;
 }
 #endif

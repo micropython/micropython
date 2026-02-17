@@ -75,3 +75,5 @@ extern void mp_hal_set_interrupt_char (int c);
 #define mp_hal_delay_us(usec) UtilsDelay(UTILS_DELAY_US_TO_COUNT(usec))
 #define mp_hal_ticks_cpu() (SysTickPeriodGet() - SysTickValueGet())
 #define mp_hal_time_ns() (0) // not implemented
+
+void mp_hal_get_random(size_t n, uint8_t *buf);

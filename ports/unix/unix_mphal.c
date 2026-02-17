@@ -253,7 +253,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 }
 #endif
 
-void mp_hal_get_random(size_t n, void *buf) {
+void mp_hal_get_random(size_t n, uint8_t *buf) {
     #ifdef _HAVE_GETRANDOM
     RAISE_ERRNO(getrandom(buf, n, 0), errno);
     #else

@@ -142,7 +142,6 @@
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
-#define MICROPY_PY_OS_INCLUDEFILE               "ports/rp2/modos.c"
 #ifndef MICROPY_PY_OS_DUPTERM
 #define MICROPY_PY_OS_DUPTERM                   (1)
 #define MICROPY_PY_OS_DUPTERM_NOTIFY            (1)

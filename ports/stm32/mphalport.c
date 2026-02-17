@@ -7,6 +7,7 @@
 #include "extmod/misc.h"
 #include "usb.h"
 #include "uart.h"
+#include "rng.h"
 
 #if MICROPY_HW_TINYUSB_STACK
 #include "shared/tinyusb/mp_usbd_cdc.h"
@@ -218,6 +219,17 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
     mp_hal_get_mac(idx, mac);
     for (; chr_len; ++chr_off, --chr_len) {
         *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
+    }
+}
+
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    uint32_t val = 0;
+    for (int i = 0; i < n; i++) {
+        if ((i & 3) == 0) {
+            val = rng_get();
+        }
+        buf[i] = val;
+        val >>= 8;
     }
 }
 

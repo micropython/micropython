@@ -35,17 +35,6 @@ static const char *mp_os_uname_release(void) {
     return system_get_sdk_version();
 }
 
-static mp_obj_t mp_os_urandom(mp_obj_t num) {
-    mp_int_t n = mp_obj_get_int(num);
-    vstr_t vstr;
-    vstr_init_len(&vstr, n);
-    for (int i = 0; i < n; i++) {
-        vstr.buf[i] = *WDEV_HWRNG;
-    }
-    return mp_obj_new_bytes_from_vstr(&vstr);
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
-
 void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t stream_attached) {
     if (mp_obj_get_type(stream_attached) == &machine_uart_type) {
         ++uart_attached_to_dupterm;

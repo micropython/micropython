@@ -39,6 +39,7 @@
 #include "hardware/irq.h"
 #include "pico/unique_id.h"
 #include "pico/aon_timer.h"
+#include "pico/rand.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
@@ -276,4 +277,11 @@ int mp_hal_is_pin_reserved(int n) {
     #else
     return false;
     #endif
+}
+
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (int i = 0; i < n; i += 8) {
+        uint64_t rand64 = get_rand_64();
+        memcpy(buf + i, &rand64, MIN(n - i, 8));
+    }
 }

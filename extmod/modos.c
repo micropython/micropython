@@ -145,6 +145,18 @@ static mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
 #endif
 
+#if MICROPY_PY_OS_URANDOM
+// This wraps the port-specific mp_hal_get_random(), which is usually defined in mphalport.c.
+static mp_obj_t mp_os_urandom(mp_obj_t num) {
+    mp_int_t n = mp_obj_get_int(num);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n);
+    mp_hal_get_random(n, (uint8_t *)vstr.buf);
+    return mp_obj_new_bytes_from_vstr(&vstr);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
+#endif
+
 static const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 

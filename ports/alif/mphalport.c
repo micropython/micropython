@@ -269,3 +269,17 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
         *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
     }
 }
+
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    uint64_t rnd = 0;
+    size_t rnd_bits = 0;
+    for (int i = 0; i < n; i++) {
+        if (rnd_bits == 0) {
+            rnd = se_services_rand64();
+            rnd_bits = 64;
+        }
+        buf[i] = rnd;
+        rnd >>= 8;
+        rnd_bits -= 8;
+    }
+}

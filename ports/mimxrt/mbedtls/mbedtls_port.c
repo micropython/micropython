@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+#include "mphalport.h"
 
 #ifdef MICROPY_SSL_MBEDTLS
 
@@ -35,13 +36,9 @@
 #include "mbedtls/platform_time.h"
 #endif
 
-void trng_random_data(unsigned char *output, size_t len);
-
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
-
-    // assumes that TRNG_Init was called during startup
     *olen = len;
-    trng_random_data(output, len);
+    mp_hal_get_random(len, output);
 
     return 0;
 }

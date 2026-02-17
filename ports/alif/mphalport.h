@@ -375,3 +375,5 @@ void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
 
 uint32_t mp_hal_time_get(uint32_t *microseconds);
+
+void mp_hal_get_random(size_t n, uint8_t *buf);

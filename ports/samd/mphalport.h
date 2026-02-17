@@ -171,4 +171,6 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     gpio_set_pin_pull_mode(pin, GPIO_PULL_UP);
 }
 
+void mp_hal_get_random(size_t n, uint8_t *buf);
+
 #endif // MICROPY_INCLUDED_SAMD_MPHALPORT_H
