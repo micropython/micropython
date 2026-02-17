@@ -114,6 +114,11 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
 
 void mp_hal_get_random(size_t n, void *buf);
 
+#ifndef _WIN32
+void mp_unix_init_sched_signal(void);
+void mp_unix_deinit_sched_signal(void);
+#endif
+
 #if MICROPY_PY_BLUETOOTH
 enum {
     MP_HAL_MAC_BDADDR,

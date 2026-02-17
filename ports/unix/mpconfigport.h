@@ -121,10 +121,6 @@ typedef long mp_off_t;
 // port modtime functions use time_t
 #define MICROPY_TIMESTAMP_IMPL      (MICROPY_TIMESTAMP_IMPL_TIME_T)
 
-// Assume that select() call, interrupted with a signal, and erroring
-// with EINTR, updates remaining timeout value.
-#define MICROPY_SELECT_REMAINING_TIME (1)
-
 // Disable stackless by default.
 #ifndef MICROPY_STACKLESS
 #define MICROPY_STACKLESS           (0)
@@ -224,6 +220,11 @@ static inline unsigned long mp_random_seed_init(void) {
 // Configure the implementation of machine.idle().
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();
+
+#ifndef _WIN32
+void mp_hal_signal_event(void);
+#define MICROPY_SCHED_HOOK_SCHEDULED mp_hal_signal_event()
+#endif
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
