@@ -65,6 +65,12 @@
 // as (SRAMCAN_BASE + FDCAN_MESSAGE_RAM_SIZE - 0x4U) limits the usable number of words to 2559 words.
 #define FDCAN_MESSAGE_RAM_SIZE  (2560 - 1)
 
+#if defined(STM32G4)
+// These HAL APIs are not implemented for STM32G4, so we implement them here...
+static HAL_StatusTypeDef HAL_FDCAN_AddMessageToTxBuffer(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTypeDef *pTxHeader, uint8_t *pTxData, uint32_t BufferIndex);
+static HAL_StatusTypeDef HAL_FDCAN_EnableTxBufferRequest(FDCAN_HandleTypeDef *hfdcan, uint32_t BufferIndex);
+#endif // STM32G4
+
 // also defined in <PROC>_hal_fdcan.c, but not able to declare extern and reach the variable
 const uint8_t DLCtoBytes[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
 
@@ -459,4 +465,148 @@ void FDCAN2_IT1_IRQHandler(void) {
 }
 #endif
 
+#if defined(STM32G4)
+// These implementations are copied from stm32h7xx_hal_fdcan.c with modifications for different G4 registers & code formatting
+
+// *FORMAT-OFF*
+// ^^^ Keep original STM HAL code style for easier comparison
+
+static void FDCAN_CopyMessageToRAM(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTypeDef *pTxHeader, uint8_t *pTxData, uint32_t BufferIndex);
+
+static HAL_StatusTypeDef HAL_FDCAN_AddMessageToTxBuffer(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTypeDef *pTxHeader, uint8_t *pTxData, uint32_t BufferIndex)
+{
+  HAL_FDCAN_StateTypeDef state = hfdcan->State;
+
+  /* Check function parameters */
+  assert_param(IS_FDCAN_ID_TYPE(pTxHeader->IdType));
+  if (pTxHeader->IdType == FDCAN_STANDARD_ID)
+  {
+    assert_param(IS_FDCAN_MAX_VALUE(pTxHeader->Identifier, 0x7FFU));
+  }
+  else /* pTxHeader->IdType == FDCAN_EXTENDED_ID */
+  {
+    assert_param(IS_FDCAN_MAX_VALUE(pTxHeader->Identifier, 0x1FFFFFFFU));
+  }
+  assert_param(IS_FDCAN_FRAME_TYPE(pTxHeader->TxFrameType));
+  assert_param(IS_FDCAN_DLC(pTxHeader->DataLength));
+  assert_param(IS_FDCAN_ESI(pTxHeader->ErrorStateIndicator));
+  assert_param(IS_FDCAN_BRS(pTxHeader->BitRateSwitch));
+  assert_param(IS_FDCAN_FDF(pTxHeader->FDFormat));
+  assert_param(IS_FDCAN_EFC(pTxHeader->TxEventFifoControl));
+  assert_param(IS_FDCAN_MAX_VALUE(pTxHeader->MessageMarker, 0xFFU));
+  assert_param(IS_FDCAN_TX_LOCATION(BufferIndex));
+
+  if ((state == HAL_FDCAN_STATE_READY) || (state == HAL_FDCAN_STATE_BUSY))
+  {
+    /* Check that the selected buffer has an allocated area into the RAM */
+    if (POSITION_VAL(BufferIndex) >= CAN_TX_QUEUE_LEN) // Note: Modified for G4 here
+    {
+      /* Update error code */
+      hfdcan->ErrorCode |= HAL_FDCAN_ERROR_PARAM;
+
+      return HAL_ERROR;
+    }
+
+    /* Check that there is no transmission request pending for the selected buffer */
+    if ((hfdcan->Instance->TXBRP & BufferIndex) != 0U)
+    {
+      /* Update error code */
+      hfdcan->ErrorCode |= HAL_FDCAN_ERROR_PENDING;
+
+      return HAL_ERROR;
+    }
+    else
+    {
+      /* Add the message to the Tx buffer */
+      FDCAN_CopyMessageToRAM(hfdcan, pTxHeader, pTxData, POSITION_VAL(BufferIndex));
+    }
+
+    /* Return function status */
+    return HAL_OK;
+  }
+  else
+  {
+    /* Update error code */
+    hfdcan->ErrorCode |= HAL_FDCAN_ERROR_NOT_INITIALIZED;
+
+    return HAL_ERROR;
+  }
+}
+
+static HAL_StatusTypeDef HAL_FDCAN_EnableTxBufferRequest(FDCAN_HandleTypeDef *hfdcan, uint32_t BufferIndex)
+{
+  if (hfdcan->State == HAL_FDCAN_STATE_BUSY)
+  {
+    /* Add transmission request */
+    hfdcan->Instance->TXBAR = BufferIndex;
+
+    /* Return function status */
+    return HAL_OK;
+  }
+  else
+  {
+    /* Update error code */
+    hfdcan->ErrorCode |= HAL_FDCAN_ERROR_NOT_STARTED;
+
+    return HAL_ERROR;
+  }
+}
+
+#define SRAMCAN_TFQ_SIZE            (18U * 4U)         /* TX FIFO/Queue Elements Size in bytes  */
+
+// This function is copied 100% as-is from stm32g4xx_hal_fdcan.c, unfortunately
+static void FDCAN_CopyMessageToRAM(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTypeDef *pTxHeader, uint8_t *pTxData,
+                                   uint32_t BufferIndex)
+{
+  uint32_t TxElementW1;
+  uint32_t TxElementW2;
+  uint32_t *TxAddress;
+  uint32_t ByteCounter;
+
+  /* Build first word of Tx header element */
+  if (pTxHeader->IdType == FDCAN_STANDARD_ID)
+  {
+    TxElementW1 = (pTxHeader->ErrorStateIndicator |
+                   FDCAN_STANDARD_ID |
+                   pTxHeader->TxFrameType |
+                   (pTxHeader->Identifier << 18U));
+  }
+  else /* pTxHeader->IdType == FDCAN_EXTENDED_ID */
+  {
+    TxElementW1 = (pTxHeader->ErrorStateIndicator |
+                   FDCAN_EXTENDED_ID |
+                   pTxHeader->TxFrameType |
+                   pTxHeader->Identifier);
+  }
+
+  /* Build second word of Tx header element */
+  TxElementW2 = ((pTxHeader->MessageMarker << 24U) |
+                 pTxHeader->TxEventFifoControl |
+                 pTxHeader->FDFormat |
+                 pTxHeader->BitRateSwitch |
+                 pTxHeader->DataLength);
+
+  /* Calculate Tx element address */
+  TxAddress = (uint32_t *)(hfdcan->msgRam.TxFIFOQSA + (BufferIndex * SRAMCAN_TFQ_SIZE));
+
+  /* Write Tx element header to the message RAM */
+  *TxAddress = TxElementW1;
+  TxAddress++;
+  *TxAddress = TxElementW2;
+  TxAddress++;
+
+  /* Write Tx payload to the message RAM */
+  for (ByteCounter = 0; ByteCounter < DLCtoBytes[pTxHeader->DataLength >> 16U]; ByteCounter += 4U)
+  {
+    *TxAddress = (((uint32_t)pTxData[ByteCounter + 3U] << 24U) |
+                  ((uint32_t)pTxData[ByteCounter + 2U] << 16U) |
+                  ((uint32_t)pTxData[ByteCounter + 1U] << 8U)  |
+                  (uint32_t)pTxData[ByteCounter]);
+    TxAddress++;
+  }
+}
+
+#endif // STM32G4
+
+// *FORMAT-ON*
 #endif // MICROPY_HW_ENABLE_CAN && MICROPY_HW_ENABLE_FDCAN
