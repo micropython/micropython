@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 #include <py/mpconfig.h>
+#include <py/misc.h>
+#include <string.h>
 
 #ifdef MICROPY_SSL_MBEDTLS
 
@@ -33,12 +35,13 @@
 #include "mbedtls/platform_time.h"
 #include "pico/aon_timer.h"
 
-extern uint8_t rosc_random_u8(size_t cycles);
+#include "pico/rand.h"
 
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
     *olen = len;
-    for (size_t i = 0; i < len; i++) {
-        output[i] = rosc_random_u8(8);
+    for (size_t i = 0; i < len; i += 8) {
+        uint64_t rand64 = get_rand_64();
+        memcpy(output + i, &rand64, MIN(len - i, 8));
     }
     return 0;
 }

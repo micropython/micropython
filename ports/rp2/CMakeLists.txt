@@ -236,6 +236,7 @@ set(PICO_SDK_COMPONENTS
     pico_platform_compiler
     pico_platform_panic
     pico_platform_sections
+    pico_rand
     pico_runtime
     pico_runtime_init
     pico_stdio

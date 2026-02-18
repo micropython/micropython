@@ -25,15 +25,15 @@
  */
 
 #include "py/runtime.h"
-
-uint8_t rosc_random_u8(size_t cycles);
+#include "pico/rand.h"
 
 static mp_obj_t mp_os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
     vstr_init_len(&vstr, n);
-    for (int i = 0; i < n; i++) {
-        vstr.buf[i] = rosc_random_u8(8);
+    for (int i = 0; i < n; i += 8) {
+        uint64_t rand64 = get_rand_64();
+        memcpy(vstr.buf + i, &rand64, MIN(n - i, 8));
     }
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
