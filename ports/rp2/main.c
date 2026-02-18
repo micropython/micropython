@@ -53,7 +53,6 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "pico/unique_id.h"
-#include "hardware/structs/rosc.h"
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
@@ -314,22 +313,3 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     panic("Assertion failed");
 }
 #endif
-
-#define POLY (0xD5)
-
-uint8_t rosc_random_u8(size_t cycles) {
-    static uint8_t r;
-    for (size_t i = 0; i < cycles; ++i) {
-        r = ((r << 1) | rosc_hw->randombit) ^ (r & 0x80 ? POLY : 0);
-        mp_hal_delay_us_fast(1);
-    }
-    return r;
-}
-
-uint32_t rosc_random_u32(void) {
-    uint32_t value = 0;
-    for (size_t i = 0; i < 4; ++i) {
-        value = value << 8 | rosc_random_u8(32);
-    }
-    return value;
-}
