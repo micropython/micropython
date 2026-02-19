@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "SPI Flash",
+        "USB-C"
+    ],
+    "id": "rp2-waveshare-rp2040-plus",
+    "images": [
+        "rp2040-plus-1_5.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040 Plus",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/rp2040-plus.htm",
+    "variants": {
+        "flash_4mb": "4 MiB Flash",
+        "flash_16mb": "16 MiB Flash"
+    },
+    "vendor": "Waveshare"
+}
