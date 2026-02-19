@@ -343,6 +343,13 @@ static mp_obj_t extra_coverage(void) {
             gc_collect();
         }
 
+        // resize one of the blocks
+        void *before = ptrs[1];
+        ptrs[1] = FLIP_POINTER(m_tracked_realloc(FLIP_POINTER(ptrs[1]), 2 * NUM_BYTES));
+        void *after = ptrs[1];
+        bool location_changed = before != after;
+        mp_printf(&mp_plat_print, "%d\n", location_changed);
+
         // check the memory blocks have the correct content
         for (size_t i = 0; i < NUM_PTRS; ++i) {
             bool correct_contents = true;
@@ -361,6 +368,65 @@ static mp_obj_t extra_coverage(void) {
         }
 
         mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
+
+        // Test realloc with black-box behavioral testing
+        mp_printf(&mp_plat_print, "# tracked realloc\n");
+
+        // Test 1: Basic realloc with data preservation
+        uint8_t *test_ptr = m_tracked_calloc(1, 32);
+        for (int i = 0; i < 32; i++) {
+            test_ptr[i] = i;
+        }
+
+        test_ptr = m_tracked_realloc(test_ptr, 64);  // Grow
+        bool data_preserved = (test_ptr[0] == 0 && test_ptr[31] == 31);
+        mp_printf(&mp_plat_print, "grow preserves data: %d\n", data_preserved);
+
+        test_ptr = m_tracked_realloc(test_ptr, 16);  // Shrink
+        bool shrink_ok = (test_ptr[0] == 0 && test_ptr[15] == 15);
+        mp_printf(&mp_plat_print, "shrink preserves data: %d\n", shrink_ok);
+
+        m_tracked_free(test_ptr);
+
+        // Test 2: Multiple allocations + reallocs + GC stability
+        uint8_t *realloc_ptrs[5];
+        for (int i = 0; i < 5; i++) {
+            realloc_ptrs[i] = m_tracked_calloc(1, 32);
+            realloc_ptrs[i][0] = 'A' + i;  // Mark each
+        }
+
+        // Realloc some in different positions
+        realloc_ptrs[0] = m_tracked_realloc(realloc_ptrs[0], 64);  // First allocated (tail of list)
+        realloc_ptrs[2] = m_tracked_realloc(realloc_ptrs[2], 64);  // Middle
+        realloc_ptrs[4] = m_tracked_realloc(realloc_ptrs[4], 64);  // Last allocated (head of list)
+
+        // Run GC - if list corrupted, this might crash/fail
+        gc_collect();
+
+        // Verify markers intact
+        bool markers_ok = true;
+        for (int i = 0; i < 5; i++) {
+            if (realloc_ptrs[i][0] != 'A' + i) {
+                markers_ok = false;
+                break;
+            }
+        }
+        mp_printf(&mp_plat_print, "realloc gc stable: %d\n", markers_ok);
+
+        // Cleanup
+        for (int i = 0; i < 5; i++) {
+            m_tracked_free(realloc_ptrs[i]);
+        }
+
+        // Test 3: Edge cases
+        uint8_t *null_alloc = m_tracked_realloc(NULL, 32);
+        null_alloc[0] = 'X';
+        mp_printf(&mp_plat_print, "realloc(NULL) ok: %d\n", null_alloc[0] == 'X');
+
+        void *free_result = m_tracked_realloc(null_alloc, 0);
+        mp_printf(&mp_plat_print, "realloc(ptr, 0) returns NULL: %d\n", free_result == NULL);
+
+        mp_printf(&mp_plat_print, "m_tracked_head after cleanup: %p\n", MP_STATE_VM(m_tracked_head));
     }
 
     // vstr
