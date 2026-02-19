@@ -138,6 +138,7 @@ MP_NORETURN void m_malloc_fail(size_t num_bytes);
 // These alloc/free functions track the pointers in a linked list so the GC does not reclaim
 // them.  They can be used by code that requires traditional C malloc/free semantics.
 void *m_tracked_calloc(size_t nmemb, size_t size);
+void *m_tracked_realloc(void *ptr_in, size_t n_bytes);
 void m_tracked_free(void *ptr_in);
 #endif
 
