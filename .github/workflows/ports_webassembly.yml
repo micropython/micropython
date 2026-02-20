@@ -12,6 +12,14 @@ on:
       - 'lib/**'
       - 'ports/webassembly/**'
       - 'tests/**'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number (for retest command)'
+        required: false
+      pr_sha:
+        description: 'PR SHA (for retest command)'
+        required: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -1,6 +1,16 @@
 name: Check spelling with codespell
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number (for retest command)'
+        required: false
+      pr_sha:
+        description: 'PR SHA (for retest command)'
+        required: false
 
 jobs:
   codespell:

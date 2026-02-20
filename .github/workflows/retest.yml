@@ -1,0 +1,336 @@
+name: Retest on PR Comment
+
+# This workflow allows authorized users to trigger re-runs of failed tests
+# by commenting "/retest" or "/retest <workflow>" on a pull request.
+# It safely handles PRs from forks without exposing secrets.
+
+on:
+  issue_comment:
+    types: [created]
+
+# Minimal permissions - we request elevated permissions only when needed
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write  # Needed to post comments
+  actions: write  # Needed to dispatch workflows
+
+jobs:
+  authorize-and-dispatch:
+    # Only run on PR comments that start with /retest
+    if: |
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/retest')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      
+      - name: Check commenter authorization
+        id: auth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import sys
+          import json
+          import urllib.request
+          import urllib.error
+          
+          def github_api_request(url, method='GET', data=None):
+              """Make a GitHub API request with authentication."""
+              headers = {
+                  'Authorization': f'Bearer {os.environ["GITHUB_TOKEN"]}',
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28'
+              }
+              
+              req = urllib.request.Request(url, headers=headers, method=method)
+              if data:
+                  req.data = json.dumps(data).encode('utf-8')
+                  headers['Content-Type'] = 'application/json'
+              
+              try:
+                  with urllib.request.urlopen(req) as response:
+                      return json.loads(response.read().decode('utf-8'))
+              except urllib.error.HTTPError as e:
+                  if method != 'GET' or e.code not in [404, 403]:
+                      raise
+                  return None
+          
+          commenter = os.environ['COMMENTER']
+          owner = os.environ['REPO_OWNER']
+          repo = os.environ['REPO_NAME']
+          issue_number = os.environ['ISSUE_NUMBER']
+          
+          # Check collaborator permission level
+          perm_url = f'https://api.github.com/repos/{owner}/{repo}/collaborators/{commenter}/permission'
+          user_permission = github_api_request(perm_url)
+          
+          permission = user_permission.get('permission', 'none') if user_permission else 'none'
+          allowed_permissions = ['write', 'admin', 'maintain']
+          is_authorized = permission in allowed_permissions
+          
+          # Check if user is org member
+          org_url = f'https://api.github.com/orgs/{owner}/members/{commenter}'
+          is_org_member = github_api_request(org_url) is not None
+          
+          You can also add a hardcoded allowlist here if needed:
+          allowlist = ['josverl', 'dgeorge', 'otheruser']
+          is_allowlisted = commenter in allowlist
+          
+          authorized = is_authorized or is_org_member or is_allowlisted
+          
+          if not authorized:
+              # Post unauthorized comment
+              comment_url = f'https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/comments'
+              comment_data = {
+                  'body': f'@{commenter} Sorry, you don\'t have permission to trigger retests. Only repository collaborators and organization members can use this command.'
+              }
+              github_api_request(comment_url, method='POST', data=comment_data)
+              print(f'::error::User {commenter} not authorized to trigger retest')
+              sys.exit(1)
+          
+          print(f'User {commenter} is authorized (permission: {permission}, org member: {is_org_member})')
+          print('::set-output name=authorized::true')
+          
+          # Write to GITHUB_OUTPUT
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write('authorized=true\n')
+          EOF
+      
+      - name: Get PR details
+        id: pr
+        if: steps.auth.outputs.authorized == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import json
+          import urllib.request
+          
+          def github_api_request(url):
+              """Make a GitHub API request with authentication."""
+              headers = {
+                  'Authorization': f'Bearer {os.environ["GITHUB_TOKEN"]}',
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28'
+              }
+              
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req) as response:
+                  return json.loads(response.read().decode('utf-8'))
+          
+          owner = os.environ['REPO_OWNER']
+          repo = os.environ['REPO_NAME']
+          issue_number = os.environ['ISSUE_NUMBER']
+          
+          # Get PR details
+          pr_url = f'https://api.github.com/repos/{owner}/{repo}/pulls/{issue_number}'
+          pr = github_api_request(pr_url)
+          
+          ref = pr['head']['ref']
+          sha = pr['head']['sha']
+          repo_full_name = pr['head']['repo']['full_name']
+          
+          # Parse comment to determine which workflow to run
+          comment = os.environ['COMMENT_BODY'].strip()
+          parts = comment.split()
+          workflow = parts[1] if len(parts) > 1 else 'all'
+          
+          print(f'PR #{issue_number} - ref: {ref}, sha: {sha}')
+          print(f'Requested workflow: {workflow}')
+          
+          # Write to GITHUB_OUTPUT
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f'ref={ref}\n')
+              f.write(f'sha={sha}\n')
+              f.write(f'repo={repo_full_name}\n')
+              f.write(f'pr_number={issue_number}\n')
+              f.write(f'workflow={workflow}\n')
+          EOF
+      
+      - name: Parse workflow request
+        id: parse
+        if: steps.auth.outputs.authorized == 'true'
+        run: |
+          WORKFLOW="${{ steps.pr.outputs.workflow }}"
+          echo "workflow=$WORKFLOW" >> $GITHUB_OUTPUT
+          
+          # Map friendly names to workflow file names
+          case "$WORKFLOW" in
+            all)
+              echo "workflows=unix,qemu,stm32,esp32,esp8266,rp2,mimxrt,nrf,samd,zephyr,webassembly,windows,formatting,codespell,ruff,biome" >> $GITHUB_OUTPUT
+              ;;
+            unix)
+              echo "workflows=unix" >> $GITHUB_OUTPUT
+              ;;
+            qemu)
+              echo "workflows=qemu" >> $GITHUB_OUTPUT
+              ;;
+            stm32)
+              echo "workflows=stm32" >> $GITHUB_OUTPUT
+              ;;
+            esp32)
+              echo "workflows=esp32" >> $GITHUB_OUTPUT
+              ;;
+            esp8266)
+              echo "workflows=esp8266" >> $GITHUB_OUTPUT
+              ;;
+            rp2)
+              echo "workflows=rp2" >> $GITHUB_OUTPUT
+              ;;
+            mimxrt)
+              echo "workflows=mimxrt" >> $GITHUB_OUTPUT
+              ;;
+            nrf)
+              echo "workflows=nrf" >> $GITHUB_OUTPUT
+              ;;
+            samd)
+              echo "workflows=samd" >> $GITHUB_OUTPUT
+              ;;
+            zephyr)
+              echo "workflows=zephyr" >> $GITHUB_OUTPUT
+              ;;
+            webassembly|wasm)
+              echo "workflows=webassembly" >> $GITHUB_OUTPUT
+              ;;
+            windows|win)
+              echo "workflows=windows" >> $GITHUB_OUTPUT
+              ;;
+            formatting|format)
+              echo "workflows=formatting,ruff,biome" >> $GITHUB_OUTPUT
+              ;;
+            codespell|spell)
+              echo "workflows=codespell" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "workflows=$WORKFLOW" >> $GITHUB_OUTPUT
+              ;;
+          esac
+      
+      - name: Dispatch workflows
+        if: steps.auth.outputs.authorized == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+          PR_REF: ${{ steps.pr.outputs.ref }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          WORKFLOWS: ${{ steps.parse.outputs.workflows }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import json
+          import urllib.request
+          import urllib.error
+          
+          def github_api_request(url, method='GET', data=None):
+              """Make a GitHub API request with authentication."""
+              headers = {
+                  'Authorization': f'Bearer {os.environ["GITHUB_TOKEN"]}',
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28'
+              }
+              
+              req = urllib.request.Request(url, headers=headers, method=method)
+              if data:
+                  req.data = json.dumps(data).encode('utf-8')
+                  req.add_header('Content-Type', 'application/json')
+              
+              try:
+                  with urllib.request.urlopen(req) as response:
+                      return json.loads(response.read().decode('utf-8'))
+              except urllib.error.HTTPError as e:
+                  raise Exception(f'HTTP {e.code}: {e.read().decode("utf-8")}')
+          
+          workflows = os.environ['WORKFLOWS'].split(',')
+          pr_sha = os.environ['PR_SHA']
+          pr_ref = os.environ['PR_REF']
+          pr_number = os.environ['PR_NUMBER']
+          owner = os.environ['REPO_OWNER']
+          repo = os.environ['REPO_NAME']
+          issue_number = os.environ['ISSUE_NUMBER']
+          commenter = os.environ['COMMENTER']
+          
+          # Map workflow names to file names
+          workflow_map = {
+              'unix': 'ports_unix.yml',
+              'qemu': 'ports_qemu.yml',
+              'stm32': 'ports_stm32.yml',
+              'esp32': 'ports_esp32.yml',
+              'esp8266': 'ports_esp8266.yml',
+              'rp2': 'ports_rp2.yml',
+              'mimxrt': 'ports_mimxrt.yml',
+              'nrf': 'ports_nrf.yml',
+              'samd': 'ports_samd.yml',
+              'zephyr': 'ports_zephyr.yml',
+              'webassembly': 'ports_webassembly.yml',
+              'windows': 'ports_windows.yml',
+              'formatting': 'code_formatting.yml',
+              'codespell': 'codespell.yml',
+              'ruff': 'ruff.yml',
+              'biome': 'biome.yml',
+          }
+          
+          dispatched_workflows = []
+          failed_workflows = []
+          
+          for workflow in workflows:
+              workflow = workflow.strip()
+              workflow_file = workflow_map.get(workflow)
+              
+              if not workflow_file:
+                  failed_workflows.append(f'{workflow} (unknown workflow)')
+                  continue
+              
+              try:
+                  dispatch_url = f'https://api.github.com/repos/{owner}/{repo}/actions/workflows/{workflow_file}/dispatches'
+                  dispatch_data = {
+                      'ref': pr_ref,
+                      'inputs': {
+                          'pr_number': pr_number,
+                          'pr_sha': pr_sha,
+                      }
+                  }
+                  github_api_request(dispatch_url, method='POST', data=dispatch_data)
+                  dispatched_workflows.append(workflow)
+                  print(f'Dispatched workflow: {workflow_file}')
+              except Exception as e:
+                  print(f'::warning::Failed to dispatch {workflow_file}: {str(e)}')
+                  failed_workflows.append(f'{workflow} ({str(e)})')
+          
+          # Post a comment with the results
+          comment_body = f'🔄 Retest triggered by @{commenter}\n\n'
+          
+          if dispatched_workflows:
+              comment_body += '**Dispatched workflows:**\n'
+              for w in dispatched_workflows:
+                  comment_body += f'- ✅ {w}\n'
+          
+          if failed_workflows:
+              comment_body += '\n**Failed to dispatch:**\n'
+              for w in failed_workflows:
+                  comment_body += f'- ❌ {w}\n'
+          
+          comment_body += f'\n*Testing commit: {pr_sha[:7]}*'
+          
+          comment_url = f'https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/comments'
+          comment_data = {'body': comment_body}
+          github_api_request(comment_url, method='POST', data=comment_data)
+          EOF

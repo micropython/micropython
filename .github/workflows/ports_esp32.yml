@@ -12,6 +12,14 @@ on:
       - 'lib/**'
       - 'drivers/**'
       - 'ports/esp32/**'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number (for retest command)'
+        required: false
+      pr_sha:
+        description: 'PR SHA (for retest command)'
+        required: false
   schedule:
      # Scheduled run exists to keep master branch ESP-IDF cache entry hot
      # and prevent creating many redundant per-branch cache entries instead.
