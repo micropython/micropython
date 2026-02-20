@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Memories xmlns=":/dtd/cydatamemories_v1.xsd" xml_version="1">
+  <PhysicalMemories>
+    <ExternalMemory memoryId="SMIF0MEM1" displayName="Serial Memory Interface block 0, memory 1 (S25HS512T)" description="S25HS512T 512-Mb (64-MB) 1.8-V Semper Flash" size="0x4000000" eraseSize="262144" reservationId="XIP_PORT0" offset="0x00000000">
+      <Capabilities>
+        <Capability>Executable</Capability>
+        <Capability>Readable</Capability>
+        <Capability>Programmable</Capability>
+        <Capability>Nonvolatile</Capability>
+      </Capabilities>
+    </ExternalMemory>
+  </PhysicalMemories>
+</Memories>
