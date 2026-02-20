@@ -40,11 +40,16 @@
 #define MICROPY_PY_MACHINE_RESET_ENTRY
 #endif
 
+#ifndef MICROPY_PY_MACHINE_BOARD_EXTRA_GLOBALS
+#define MICROPY_PY_MACHINE_BOARD_EXTRA_GLOBALS
+#endif
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     MICROPY_PY_MACHINE_RESET_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
+    MICROPY_PY_MACHINE_BOARD_EXTRA_GLOBALS \
 
 static mp_obj_t machine_reset(void) {
     sys_reboot(SYS_REBOOT_COLD);
@@ -62,3 +67,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 static void mp_machine_idle(void) {
     k_yield();
 }
+
+// A board can provide additional machine-module implementation in this file.
+#ifdef MICROPY_PY_MACHINE_BOARD_INCLUDEFILE
+#include MICROPY_PY_MACHINE_BOARD_INCLUDEFILE
+#endif
