@@ -1,39 +1,11 @@
 #!/bin/bash
 set -e
 
-# Creates a RAM disk big enough to hold two copies of the test directory
-# structure.
-cat << EOF > "${TMP}/ramdisk.py"
-class RAMBlockDev:
-    def __init__(self, block_size, num_blocks):
-        self.block_size = block_size
-        self.data = bytearray(block_size * num_blocks)
-
-    def readblocks(self, block_num, buf):
-        for i in range(len(buf)):
-            buf[i] = self.data[block_num * self.block_size + i]
-
-    def writeblocks(self, block_num, buf):
-        for i in range(len(buf)):
-            self.data[block_num * self.block_size + i] = buf[i]
-
-    def ioctl(self, op, arg):
-        if op == 4: # get number of blocks
-            return len(self.data) // self.block_size
-        if op == 5: # get block size
-            return self.block_size
-
-import os
-
-bdev = RAMBlockDev(512, 50)
-os.VfsFat.mkfs(bdev)
-os.mount(bdev, '/ramdisk')
-os.chdir('/ramdisk')
-EOF
-
+# Get the test directory (where this script and ramdisk.py are located)
+TEST_DIR=$(dirname $0)
 
 echo -----
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume ls
 
 echo -----
@@ -108,7 +80,7 @@ cat << EOF > "${TMP}/package/subpackage/y.py"
 def y():
   print("y")
 EOF
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume cp -r "${TMP}/package" :
 $MPREMOTE resume ls : :package :package/subpackage
 $MPREMOTE resume exec "import package; package.x(); package.y()"
@@ -116,7 +88,7 @@ $MPREMOTE resume exec "import package; package.x(); package.y()"
 
 # Same thing except with a destination directory name.
 echo -----
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume cp -r "${TMP}/package" :package2
 $MPREMOTE resume ls : :package2 :package2/subpackage
 $MPREMOTE resume exec "import package2; package2.x(); package2.y()"
@@ -124,7 +96,7 @@ $MPREMOTE resume exec "import package2; package2.x(); package2.y()"
 
 # Copy to an existing directory, it will be copied inside.
 echo -----
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume mkdir :test
 $MPREMOTE resume cp -r "${TMP}/package" :test
 $MPREMOTE resume ls :test :test/package :test/package/subpackage
@@ -148,14 +120,14 @@ ls "${TMP}/copy" "${TMP}/copy/package2" "${TMP}/copy/package2/subpackage"
 
 # Copy from device to another location on the device with destination directory name.
 echo -----
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume cp -r "${TMP}/package" :
 $MPREMOTE resume cp -r :package :package3
 $MPREMOTE resume ls : :package3 :package3/subpackage
 
 # Copy from device to another location on the device into an existing directory.
 echo -----
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume cp -r "${TMP}/package" :
 $MPREMOTE resume mkdir :package4
 $MPREMOTE resume cp -r :package :package4
@@ -175,7 +147,7 @@ echo -----
 # Test rm -r functionality
 # start with a fresh ramdisk before each test
 # rm -r MCU current working directory
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume touch :a.py
 $MPREMOTE resume touch :b.py
 $MPREMOTE resume cp -r "${TMP}/package" :
@@ -185,7 +157,7 @@ $MPREMOTE resume ls :/ramdisk
 
 echo -----
 # rm -r relative subfolder
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume touch :a.py
 $MPREMOTE resume mkdir :testdir
 $MPREMOTE resume cp -r "${TMP}/package" :testdir/package
@@ -197,14 +169,14 @@ $MPREMOTE resume ls :testdir
 
 echo -----
 # rm -r non-existent path
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume ls :
 $MPREMOTE resume rm -r :nonexistent || echo "expect error"
 
 echo -----
 # rm -r absolute root
 # no -v to generate same output on stm32 and other ports
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume touch :a.py
 $MPREMOTE resume touch :b.py
 $MPREMOTE resume cp -r "${TMP}/package" :
@@ -215,7 +187,7 @@ $MPREMOTE resume ls :/ramdisk
 
 echo -----
 # rm -r relative mountpoint
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume touch :a.py
 $MPREMOTE resume touch :b.py
 $MPREMOTE resume cp -r "${TMP}/package" :
@@ -225,7 +197,7 @@ $MPREMOTE resume ls :/ramdisk
 
 echo -----
 # rm -r absolute mountpoint
-$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
 $MPREMOTE resume touch :a.py
 $MPREMOTE resume touch :b.py
 $MPREMOTE resume cp -r "${TMP}/package" :
