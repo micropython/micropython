@@ -16,6 +16,9 @@
 #define MICROPY_HW_CLK_PLLQ         (8)
 #define MICROPY_HW_CLK_PLLR         (2)
 
+// The board has a 32.768 kHz LSE, solder bridge selectable, on by default
+#define MICROPY_HW_RTC_USE_LSE      (1)
+
 #define MICROPY_HW_CLK_USE_HSI48    (1) // for RNG
 
 // 4 wait states

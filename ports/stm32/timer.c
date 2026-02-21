@@ -903,7 +903,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM7)
     #if defined(STM32G0)
     TIM_ENTRY(7, TIM7_LPTIM2_IRQn),
-    #elif defined(STM32G4)
+    #elif defined(STM32G473xx) || defined(STM32G474xx) || defined(STM32G483xx) || defined(STM32G484xx)
     TIM_ENTRY(7, TIM7_DAC_IRQn),
     #else
     TIM_ENTRY(7, TIM7_IRQn),
