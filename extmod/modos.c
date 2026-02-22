@@ -149,6 +149,9 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify)
 // This wraps the port-specific mp_hal_get_random(), which is usually defined in mphalport.c.
 static mp_obj_t mp_os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
+    if (n < 0) {
+        mp_raise_ValueError(NULL);
+    }
     vstr_t vstr;
     vstr_init_len(&vstr, n);
     mp_hal_get_random(n, (uint8_t *)vstr.buf);
