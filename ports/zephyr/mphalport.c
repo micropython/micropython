@@ -46,7 +46,12 @@ void mp_hal_signal_event(void) {
     k_poll_signal_raise(&wait_signal, 0);
 }
 
-void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms) {
+// Wait for an event or semaphore to be set, with a timeout.
+// Arguments:
+// - exit_on_event: set to true to exit on any event signalled via `mp_hal_signal_event()`
+// - sem: set to a semaphore to exit when that semaphore is set
+// - timeout_ms: maximum time to wait, or -1 to wait forever
+void mp_hal_wait_event(bool exit_on_event, struct k_sem *sem, uint32_t timeout_ms) {
     mp_uint_t t0 = mp_hal_ticks_ms();
     if (sem) {
         k_poll_event_init(&wait_events[1], K_POLL_TYPE_SEM_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, sem);
@@ -65,11 +70,16 @@ void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms) {
         if (wait_events[0].state == K_POLL_STATE_SIGNALED) {
             wait_events[0].signal->signaled = 0;
             wait_events[0].state = K_POLL_STATE_NOT_READY;
+            if (exit_on_event) {
+                MP_THREAD_GIL_ENTER();
+                return;
+            }
         } else if (sem && wait_events[1].state == K_POLL_STATE_SEM_AVAILABLE) {
             wait_events[1].state = K_POLL_STATE_NOT_READY;
             MP_THREAD_GIL_ENTER();
             return;
         }
+        dt = mp_hal_ticks_ms() - t0;
         if (dt >= timeout_ms) {
             MP_THREAD_GIL_ENTER();
             return;

@@ -217,7 +217,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
 
     // wait for any pending transmission to complete
     while (!mp_machine_uart_txdone(self)) {
-        MICROPY_EVENT_POLL_HOOK;
+        mp_event_wait_indefinite();
     }
 
     int _ex_size = 0;
@@ -252,7 +252,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
         }
     } else if (request == MP_STREAM_FLUSH) {
         while (!mp_machine_uart_txdone(self)) {
-            MICROPY_EVENT_POLL_HOOK;
+            mp_event_wait_indefinite();
         }
     } else {
         *errcode = MP_EINVAL;
@@ -264,6 +264,8 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
 
 static void uart_interrupt_handler(const struct device *dev, void *user_data) {
     machine_uart_obj_t *self = (machine_uart_obj_t *)user_data;
+
+    mp_hal_signal_event();
 
     while (uart_irq_update(dev) && uart_irq_is_pending(dev)) {
         if (uart_irq_rx_ready(dev)) {
