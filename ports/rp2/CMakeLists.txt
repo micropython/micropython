@@ -24,6 +24,9 @@ set(PICO_BTSTACK_PATH ${MICROPY_DIR}/lib/btstack)
 # Set the location of this port's directory.
 set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
 
+# Replace the pico/assert.h assertion mechanism with one that raises python exceptions.
+list(APPEND PICO_CONFIG_HEADER_FILES ${MICROPY_PORT_DIR}/pico_assert.h)
+
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
     set(MICROPY_BOARD RPI_PICO)
@@ -168,6 +171,7 @@ set(MICROPY_SOURCE_PORT
     mpthreadport.c
     mutex_extra.c
     pendsv.c
+    pico_assert.c
     rp2_flash.c
     rp2_pio.c
     rp2_psram.c
@@ -195,6 +199,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_PORT_DIR}/machine_wdt.c
     ${MICROPY_PORT_DIR}/modrp2.c
     ${MICROPY_PORT_DIR}/modos.c
+    ${MICROPY_PORT_DIR}/pico_assert.c
     ${MICROPY_PORT_DIR}/rp2_flash.c
     ${MICROPY_PORT_DIR}/rp2_pio.c
     ${MICROPY_PORT_DIR}/rp2_dma.c
