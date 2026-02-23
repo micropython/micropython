@@ -58,6 +58,7 @@ extern uint8_t __StackTop, __StackSize;
 extern uint8_t __HeapBase, __HeapLimit;
 #endif
 
+extern void machine_rtc_init_all(void);
 extern void time_init(void);
 extern void machine_pin_irq_deinit_all(void);
 
@@ -115,6 +116,7 @@ int main(void) {
     time_init();
 
 soft_reset:
+    machine_rtc_init_all();
     mp_init();
 
     readline_init0();

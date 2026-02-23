@@ -42,5 +42,6 @@ enum clock_freq_type {
 
 extern enum clock_freq_type PLL0_freq;
 extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_rtc_type;
 
 #endif // MICROPY_INCLUDED_PSOCEDGE_MODMACHINE_H

@@ -73,5 +73,6 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     /* Modules */ \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_PDM_PCM),             MP_ROM_PTR(&machine_pdm_pcm_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
 
 #endif // MICROPY_PY_MACHINE
