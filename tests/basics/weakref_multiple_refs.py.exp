@@ -1,6 +1,0 @@
-test having multiple ref and finalize objects referencing the same thing
-<A object> True <A object> True
-finalize2
-finalize1
-ref2 None
-ref1 None

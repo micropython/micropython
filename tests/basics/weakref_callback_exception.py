@@ -11,32 +11,42 @@ except ImportError:
 
 import gc
 
-
 class A:
     def __str__(self):
         return "<A object>"
 
 
-def callback(*args):
+def throw(*args):
     raise ValueError("weakref callback", args)
+def noop(*args):
+    pass
+
+test_table = [
+    (weakref.ref, noop, None),
+    (weakref.ref, throw, "test ref with exception in the callback"),
+    (weakref.ref, noop, None),
+    (weakref.ref, noop, "collect done"),
+    (weakref.finalize, noop, None),
+    (weakref.finalize, throw, "test finalize with exception in the callback"),
+    (weakref.finalize, noop, None),
+    (weakref.finalize, noop, "collect done"),
+]
 
 
 def test():
-    print("test ref with exception in the callback")
-    a = A()
-    r = weakref.ref(a, callback)
-    a = None
-    clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
-    print("collect done")
+    for RefType, callback, msg in test_table:
+        if msg:
+            print(msg)
+        a = A()
+        r = RefType(a, callback)
+        a = None
 
-    print("test finalize with exception in the callback")
-    a = A()
-    weakref.finalize(a, callback)
-    a = None
-    clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
-    print("collect done")
-
+        clean_the_stack = [0, 0, 0, 0]
+        gc.collect()
+        try:
+            raise Exception
+        except Exception:
+            pass
+        gc.collect()
 
 test()

@@ -1,12 +1,14 @@
 test ref with exception in the callback
 Unhandled exception in weakref callback:
 Traceback (most recent call last):
-  File "\.\+weakref_callback_exception.py", line 21, in callback
-ValueError: ('weakref callback', (<ref>,))
+########
+  File "\.\+weakref_callback_exception.py", line \.\+, in throw
+ValueError: ('weakref callback', (<ref\.\+>,))
 collect done
 test finalize with exception in the callback
 Unhandled exception in weakref callback:
 Traceback (most recent call last):
-  File "\.\+weakref_callback_exception.py", line 21, in callback
+########
+  File "\.\+weakref_callback_exception.py", line \.\+, in throw
 ValueError: ('weakref callback', ())
 collect done

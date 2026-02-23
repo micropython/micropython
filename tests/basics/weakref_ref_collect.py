@@ -9,6 +9,14 @@ except ImportError:
 # gc module must be available if weakref is.
 import gc
 
+def collect_tryveryhard():
+    gc.collect()
+    try:
+        raise Exception  # nlr.ret_val seems to be a major culprit for spurious reachability
+    except Exception:
+        pass
+    gc.collect()
+
 # Cannot reference non-heap objects.
 for value in (None, False, True, Ellipsis, 0, "", ()):
     try:
@@ -33,7 +41,7 @@ def test():
     print(r())
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
     print(r())
 
     print("test use of ref() with a callback")
@@ -42,7 +50,7 @@ def test():
     print(r())
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
     print(r())
 
     print("test when weakref gets collected before the object it refs")
@@ -51,7 +59,7 @@ def test():
     print(r())
     r = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
     a = None
 
     print("test a double reference")
@@ -61,7 +69,7 @@ def test():
     print(r1(), r2())
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
     print(r1(), r2())
 
 

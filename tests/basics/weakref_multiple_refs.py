@@ -27,7 +27,13 @@ def test():
     f2 = weakref.finalize(a, lambda: print("finalize2"))
     print(r1(), f1.alive, r2(), f2.alive)
     a = None
+
     clean_the_stack = [0, 0, 0, 0]
+    gc.collect()
+    try:
+        raise Exception  # nlr.ret_val seems to be a major culprit for spurious reachability
+    except Exception:
+        pass
     gc.collect()
 
 

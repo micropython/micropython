@@ -9,6 +9,14 @@ except ImportError:
 # gc module must be available if weakref is.
 import gc
 
+def collect_tryveryhard():
+    gc.collect()
+    try:
+        raise Exception  # nlr.ret_val seems to be a major culprit for spurious reachability
+    except Exception:
+        pass
+    gc.collect()
+
 
 class A:
     def __str__(self):
@@ -26,7 +34,7 @@ def test():
     f = weakref.finalize(a, callback)
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
     print("alive", f.alive)
     print("peek", f.peek())
     print("detach", f.detach())
@@ -37,7 +45,7 @@ def test():
     f = weakref.finalize(a, callback, 1, 2, kwarg=3)
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
     print("alive", f.alive)
     print("peek", f.peek())
     print("detach", f.detach())
@@ -50,7 +58,7 @@ def test():
     print(a)
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
 
     print("test that calling detach cancels the finalizer")
     a = A()
@@ -59,17 +67,19 @@ def test():
     print(a)
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
 
     print("test that finalize does not get collected before its ref does")
     a = A()
     weakref.finalize(a, callback)
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
     print("free a")
     a = None
     clean_the_stack = [0, 0, 0, 0]
-    gc.collect()
+    collect_tryveryhard()
+    clean_the_stack = [0, 0, 0, 0]
+    collect_tryveryhard()
 
 
 test()
