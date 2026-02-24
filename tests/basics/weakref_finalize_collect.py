@@ -23,15 +23,23 @@ class A:
         return "<A object>"
 
 
-def callback(*args, **kwargs):
-    print("callback({}, {})".format(args, kwargs))
-    return 42
-
+class Callback:
+    all = []
+    def __init__(self):
+        self.args = None
+        self.kwargs = None
+        self.all.append(self)
+    def __call__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        return self
+    def __repr__(self):
+        return "callback()(*{}, **{})".format(self.args, self.kwargs)
 
 def test():
     print("test basic use of finalize() with a simple callback")
     a = A()
-    f = weakref.finalize(a, callback)
+    f = weakref.finalize(a, Callback())
     a = None
     clean_the_stack = [0, 0, 0, 0]
     collect_tryveryhard()
@@ -42,7 +50,7 @@ def test():
 
     print("test that a callback is passed the correct values")
     a = A()
-    f = weakref.finalize(a, callback, 1, 2, kwarg=3)
+    f = weakref.finalize(a, Callback(), 1, 2, kwarg=3)
     a = None
     clean_the_stack = [0, 0, 0, 0]
     collect_tryveryhard()
@@ -53,7 +61,7 @@ def test():
 
     print("test that calling the finalizer cancels the finalizer")
     a = A()
-    f = weakref.finalize(a, callback)
+    f = weakref.finalize(a, Callback())
     print(f())
     print(a)
     a = None
@@ -62,7 +70,7 @@ def test():
 
     print("test that calling detach cancels the finalizer")
     a = A()
-    f = weakref.finalize(a, callback)
+    f = weakref.finalize(a, Callback())
     print(len(f.detach()))
     print(a)
     a = None
@@ -71,7 +79,7 @@ def test():
 
     print("test that finalize does not get collected before its ref does")
     a = A()
-    weakref.finalize(a, callback)
+    weakref.finalize(a, Callback())
     clean_the_stack = [0, 0, 0, 0]
     collect_tryveryhard()
     print("free a")
@@ -80,6 +88,9 @@ def test():
     collect_tryveryhard()
     clean_the_stack = [0, 0, 0, 0]
     collect_tryveryhard()
+
+    for call in Callback.all:
+        print(call)
 
 
 test()
