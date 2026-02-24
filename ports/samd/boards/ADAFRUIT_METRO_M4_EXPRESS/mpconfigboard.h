@@ -2,7 +2,7 @@
 #define MICROPY_HW_MCU_NAME                 "SAMD51J19A"
 
 #define MICROPY_HW_XOSC32K                  (1)
-#define MICROPY_HW_QSPIFLASH                GD25Q16C
+#define MICROPY_HW_QSPIFLASH                S25FL116K, S25FL216K, GD25Q16C, W25Q16JV_IQ
 
 #define MICROPY_HW_DEFAULT_UART_ID          (3)
 #define MICROPY_HW_DEFAULT_I2C_ID           (5)
