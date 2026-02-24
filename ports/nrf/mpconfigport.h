@@ -31,8 +31,8 @@
 // Set default feature levels for each processor
 
 #if defined(NRF51822)
-#if defined(BLUETOOTH_SD)
-// If SoftDevice is used there is less flash/ram available for application
+#if BLUETOOTH_SD || MICROPY_PY_BLUETOOTH
+// If Bluetooth is used there is less flash/ram available for application
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
 #else
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
@@ -164,12 +164,9 @@
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
-#if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_ENABLE_SCHEDULER    (1)
-#define MICROPY_SCHEDULER_STATIC_NODES (1)
-#endif
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
+#define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
@@ -190,6 +187,8 @@
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_PULSE    (0)
 #define MICROPY_PY_MACHINE_SOFTI2C  (MICROPY_PY_MACHINE_I2C)
+#define MICROPY_ENABLE_SCHEDULER    (1)
+#define MICROPY_SCHEDULER_STATIC_NODES (1)
 
 #ifndef MICROPY_HW_LED_COUNT
 #define MICROPY_HW_LED_COUNT        (0)
@@ -256,9 +255,22 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
-// if sdk is in use, import configuration and enable some core features
+#define MICROPY_PY_TICKER (MICROPY_PY_MACHINE_SOFT_PWM || MICROPY_PY_BLUETOOTH)
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
+#endif
+
 #if BLUETOOTH_SD
 #include "bluetooth_conf.h"
+#endif
+
+// if Bluetooth is in use ensure some core features are enabled.
+#if BLUETOOTH_SD || MICROPY_PY_BLUETOOTH
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
 #define MICROPY_COMP_CONST                    (1)
 #define MICROPY_COMP_CONST_FOLDING            (1)
@@ -391,6 +403,37 @@ long unsigned int rng_generate_random_word(void);
 
 #ifndef MP_NEED_LOG2
 #define MP_NEED_LOG2                (1)
+
+// We have inlined IRQ functions for efficiency (they are generally
+// 1 machine instruction).
+//
+// Note on IRQ state: you should not need to know the specific
+// value of the state variable, but rather just pass the return
+// value from disable_irq back to enable_irq.  If you really need
+// to know the machine-specific values, see irq.h.
+
+#include <nrf.h>
+
+static inline void enable_irq(mp_uint_t state) {
+    __set_PRIMASK(state);
+}
+
+static inline mp_uint_t disable_irq(void) {
+    mp_uint_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
+
+#endif
+
+#define MICROPY_SOFT_TIMER_TICKS_MS uwTick
+
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
 
 #ifndef MICROPY_BOARD_STARTUP

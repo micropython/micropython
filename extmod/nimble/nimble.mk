@@ -86,7 +86,6 @@ SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_uuid.c \
 		) \
 	nimble/host/util/src/addr.c \
-	nimble/transport/uart/src/ble_hci_uart.c \
 	$(addprefix porting/nimble/src/, \
 		endian.c \
 		mem.c \
@@ -100,7 +99,6 @@ SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 
 SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
 	nimble/nimble_npl_os.c \
-	hal/hal_uart.c \
 	)
 
 INC += -I$(TOP)/$(NIMBLE_EXTMOD_DIR)
@@ -112,11 +110,60 @@ INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/services/gatt/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/store/ram/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/util/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/include
-INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/porting/nimble/include
 
 $(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare -Wno-old-style-declaration
 
 endif
 
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE_CONTROLLER),1)
+
+# Include controller layer to run entire stack on-chip
+CFLAGS_EXTMOD += -DMICROPY_BLUETOOTH_NIMBLE_CONTROLLER=1
+
+INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/controller/include
+
+SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
+	$(addprefix nimble/controller/src/, \
+		ble_ll.c \
+		ble_ll_adv.c \
+		ble_ll_conn.c \
+		ble_ll_conn_hci.c \
+		ble_ll_ctrl.c \
+		ble_ll_dtm.c \
+		ble_ll_hci.c \
+		ble_ll_hci_ev.c \
+		ble_ll_iso.c \
+		ble_ll_rand.c \
+		ble_ll_resolv.c \
+		ble_ll_rfmgmt.c \
+		ble_ll_scan.c \
+		ble_ll_sched.c \
+		ble_ll_supp_cmd.c \
+		ble_ll_sync.c \
+		ble_ll_trace.c \
+		ble_ll_utils.c \
+		ble_ll_whitelist.c \
+	) \
+)
+
+SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
+	$(addprefix porting/nimble/src/, \
+		hal_timer.c \
+		os_cputime.c \
+		os_cputime_pwr2.c \
+	) \
+)
+
+SRC_THIRDPARTY_C += $(NIMBLE_LIB_DIR)/nimble/transport/ram/src/ble_hci_ram.c
+INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/ram/include
+
+else # !MICROPY_BLUETOOTH_NIMBLE_CONTROLLER
+# External controller being used
+INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
+SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
+	hal/hal_uart.c \
+	)
+SRC_THIRDPARTY_C += $(NIMBLE_LIB_DIR)/nimble/transport/uart/src/ble_hci_uart.c
+endif
 endif
