@@ -32,6 +32,7 @@
 #include "py/obj.h"
 
 extern const mp_obj_type_t machine_pdm_pcm_type;
+extern const mp_obj_type_t machine_ipc_type;
 
 enum clock_freq_type {
     AUDIO_SYS_CLOCK_73_728_000_HZ = 73728000UL /* (Ideally 73.728 MHz) For sample rates: 8 KHz / 16 KHz / 48 KHz */,

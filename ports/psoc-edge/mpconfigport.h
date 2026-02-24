@@ -122,6 +122,9 @@
 #define MICROPY_PY_MACHINE_PDM_PCM              (1)
 #define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
 
+// ToDo: Should be board specific?
+#define MICROPY_PY_MACHINE_IPC                  (1)
+
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 
 // VFS
