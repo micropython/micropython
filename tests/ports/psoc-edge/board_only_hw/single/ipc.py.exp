@@ -1,0 +1,13 @@
+Initializing IPC pipe framework
+IPC pipe initialized successfully
+IPC initialized successfully
+IPC initialized successfully
+IRQ
+[IRQ] client_id=1
+[IRQ] Handler validated
+[IRQ] Registering callback
+[IRQ] Registration result=1
+IPC callback registered for client 1
+[IRQ] Returning
+IRQ registered successfully
+Enabling core: 1

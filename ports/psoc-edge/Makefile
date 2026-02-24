@@ -120,6 +120,7 @@ SHARED_SRC_C += $(addprefix shared/,\
 
 DRIVERS_SRC_C += 
 
+
 MOD_SRC_C += \
 	machine_pin.c \
 	machine_pin_af.c \
@@ -128,7 +129,8 @@ MOD_SRC_C += \
 	machine_i2c.c\
 	machine_rtc.c \
 	modpsocedge.c \
-	modipc.c \
+	machine_ipc.c \
+	\
 	modpsocedge.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
