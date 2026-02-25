@@ -59,7 +59,7 @@
 #define RTC_INIT_SECOND     0
 #define RTC_INIT_DST        0
 
-#define TM_YEAR_BASE        (1900u)
+// #define TM_YEAR_BASE        (1900u)
 #define RTC_CENTURY         (2000u)  /* RTC hardware supports years 0-99 = 2000-2099 */
 #define RTC_ACCESS_RETRY_COUNT      (500U)
 #define RTC_RETRY_DELAY_MS          (5U)
@@ -71,21 +71,74 @@
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     mp_obj_t callback;
-    mp_obj_t alarm_period_s;
-    mp_obj_t alarm_elapse_time_s;
+    uint64_t alarm_period_s;
+    uint64_t alarm_elapse_time_s;
     bool alarmset;
     bool repeat;
 } machine_rtc_obj_t;
+
+void srss_interrupt_rtc_IRQHandler(void);
 
 // singleton RTC object
 static machine_rtc_obj_t machine_rtc_obj = {
     .base = {&machine_rtc_type},
     .callback = NULL,
-    .alarm_period_s = NULL,
-    .alarm_elapse_time_s = NULL,
+    .alarm_period_s = 0,
+    .alarm_elapse_time_s = 0,
     .alarmset = false,
     .repeat = false
 };
+
+static bool rtc_irq_initialized = false;
+
+static void rtc_interrupt_init(void) {
+    if (rtc_irq_initialized) {
+        return;
+    }
+
+    cy_stc_sysint_t intr_cfg = {
+        srss_interrupt_rtc_IRQn,
+        3,
+    };
+
+    cy_en_sysint_status_t rslt = Cy_SysInt_Init(&intr_cfg, srss_interrupt_rtc_IRQHandler);
+    if (rslt != CY_SYSINT_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("RTC IRQ init failed"));
+    }
+
+    rtc_irq_initialized = true;
+}
+
+static bool rtc_validate_date_time(int sec, int min, int hour, int mday, int month, int year_full) {
+    if (year_full < RTC_CENTURY || year_full > RTC_CENTURY + 99) {
+        return false;
+    }
+    if (month < 1 || month > 12) {
+        return false;
+    }
+    if (mday < 1) {
+        return false;
+    }
+    if (hour < 0 || hour > 23) {
+        return false;
+    }
+    if (min < 0 || min > 59) {
+        return false;
+    }
+    if (sec < 0 || sec > 59) {
+        return false;
+    }
+
+    static const uint8_t days_in_month_table[12] = {
+        31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+    };
+    uint8_t days_in_month = days_in_month_table[month - 1];
+    if (month == 2 && Cy_RTC_IsLeapYear((uint32_t)year_full)) {
+        days_in_month++;
+    }
+
+    return mday <= days_in_month;
+}
 
 void machine_rtc_init_all(void) {
     /* Variable used to store return status of RTC API */
@@ -140,24 +193,8 @@ static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
         int min = mp_obj_get_int(items[5]);
         int sec = mp_obj_get_int(items[6]);
 
-        // Validate inputs
-        if (year_full < RTC_CENTURY || year_full > RTC_CENTURY + 99) {
-            mp_raise_ValueError(MP_ERROR_TEXT("year must be 2000-2099"));
-        }
-        if (month < 1 || month > 12) {
-            mp_raise_ValueError(MP_ERROR_TEXT("month must be 1-12"));
-        }
-        if (date < 1 || date > 31) {
-            mp_raise_ValueError(MP_ERROR_TEXT("date must be 1-31"));
-        }
-        if (hour > 23) {
-            mp_raise_ValueError(MP_ERROR_TEXT("hour must be 0-23"));
-        }
-        if (min > 59) {
-            mp_raise_ValueError(MP_ERROR_TEXT("minute must be 0-59"));
-        }
-        if (sec > 59) {
-            mp_raise_ValueError(MP_ERROR_TEXT("second must be 0-59"));
+        if (!rtc_validate_date_time(sec, min, hour, date, month, year_full)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid date/time"));
         }
 
         uint32_t year = year_full - RTC_CENTURY;
@@ -222,12 +259,12 @@ void srss_interrupt_rtc_IRQHandler(void) {
 
 /* Setup alarm hardware to trigger at the specified time */
 static void rtc_alarm_setup(machine_rtc_obj_t *self) {
-    if (self->alarm_elapse_time_s == NULL) {
+    if (!self->alarmset) {
         return;
     }
 
     /* Get the alarm time in seconds since epoch */
-    uint64_t alarm_time_s = mp_obj_get_int(self->alarm_elapse_time_s);
+    uint64_t alarm_time_s = self->alarm_elapse_time_s;
 
     /* Convert seconds since epoch to datetime components */
     timeutils_struct_time_t tm;
@@ -243,19 +280,30 @@ static void rtc_alarm_setup(machine_rtc_obj_t *self) {
     }
 
     /* Enable RTC ALARM1 interrupt */
-    Cy_RTC_ClearInterrupt(CY_RTC_INTR_ALARM1);
+    Cy_RTC_ClearInterrupt(CY_RTC_INTR_MASK);
     Cy_RTC_SetInterruptMask(CY_RTC_INTR_ALARM1);
 
-    /* Enable NVIC interrupt for RTC */
-    NVIC_SetPriority(srss_interrupt_rtc_IRQn, 3);
+    /* Initialize and enable NVIC interrupt for RTC */
+    rtc_interrupt_init();
+    NVIC_ClearPendingIRQ(srss_interrupt_rtc_IRQn);
     NVIC_EnableIRQ(srss_interrupt_rtc_IRQn);
 }
 
 /* Software IRQ handler callback */
 void rtc_irq_handler(void *self_in, uint32_t event) {
     machine_rtc_obj_t *self = (machine_rtc_obj_t *)self_in;
+
+    if (self->alarmset && self->repeat) {
+        self->alarm_elapse_time_s += self->alarm_period_s;
+        rtc_alarm_setup(self);
+    } else {
+        self->alarmset = false;
+        Cy_RTC_SetInterruptMask(0);
+        Cy_RTC_ClearInterrupt(CY_RTC_INTR_MASK);
+        NVIC_ClearPendingIRQ(srss_interrupt_rtc_IRQn);
+    }
+
     if (self->callback != NULL) {
-        /* Schedule callback to execute outside interrupt context */
         mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
     }
 }
@@ -269,8 +317,8 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t datetime) {
     machine_rtc_obj_t *self = (machine_rtc_obj_t *)self_in;
-    self->alarm_elapse_time_s = NULL;
-    self->alarm_period_s = NULL;
+    self->alarm_elapse_time_s = 0;
+    self->alarm_period_s = 0;
     self->alarmset = false;
     self->callback = NULL;
     self->repeat = false;
@@ -315,17 +363,28 @@ static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     self->repeat = args[1].u_bool;
 
+    if (args[0].u_obj == mp_const_none) {
+        mp_raise_ValueError(MP_ERROR_TEXT("missing alarm time"));
+    }
+
     if (mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) { // datetime tuple given
         // repeat cannot be used with a datetime tuple
         if (self->repeat) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
         }
         dtime_sec = rtc_get_datetime_in_sec(args[0].u_obj);
-        self->alarm_period_s = mp_obj_new_int_from_uint(dtime_sec - alarm_set_time_s);
+        if (dtime_sec < alarm_set_time_s) {
+            mp_raise_ValueError(MP_ERROR_TEXT("alarm time in past"));
+        }
+        self->alarm_period_s = dtime_sec - alarm_set_time_s;
     } else { // then it must be an integer
-        self->alarm_period_s = mp_obj_new_int_from_uint(mp_obj_get_int(args[0].u_obj) / 1000);
+        int64_t delay_ms = mp_obj_get_int(args[0].u_obj);
+        if (delay_ms <= 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("time must be > 0"));
+        }
+        self->alarm_period_s = ((uint64_t)delay_ms + 999) / 1000;
     }
-    self->alarm_elapse_time_s = mp_obj_new_int_from_uint(alarm_set_time_s + mp_obj_get_int(self->alarm_period_s));
+    self->alarm_elapse_time_s = alarm_set_time_s + self->alarm_period_s;
     self->alarmset = true;
 
     /* Configure hardware alarm */
@@ -342,7 +401,7 @@ static mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     }
     if (self->alarmset) {
         uint64_t curr_time = rtc_get_current_time_in_sec();
-        uint64_t alarm_time = mp_obj_get_int(self->alarm_elapse_time_s);
+        uint64_t alarm_time = self->alarm_elapse_time_s;
         return mp_obj_new_int_from_uint((alarm_time >= curr_time) ? ((alarm_time - curr_time) * 1000) : 0);
     }
     mp_raise_ValueError(MP_ERROR_TEXT("Alarm not set"));
@@ -363,6 +422,9 @@ static mp_obj_t machine_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
 
     /* Clear software alarm state */
     self->alarmset = false;
+    self->repeat = false;
+    self->alarm_period_s = 0;
+    self->alarm_elapse_time_s = 0;
 
     return mp_const_none;
 }
@@ -412,6 +474,7 @@ static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_now),         MP_ROM_PTR(&machine_rtc_now_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm),       MP_ROM_PTR(&machine_rtc_alarm_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm_left),  MP_ROM_PTR(&machine_rtc_alarm_left_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm_cancel), MP_ROM_PTR(&machine_rtc_alarm_cancel_obj) },
     { MP_ROM_QSTR(MP_QSTR_cancel),      MP_ROM_PTR(&machine_rtc_alarm_cancel_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),         MP_ROM_PTR(&machine_rtc_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_memory),      MP_ROM_PTR(&machine_rtc_memory_obj)},
