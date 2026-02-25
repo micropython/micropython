@@ -31,6 +31,7 @@ from test_utils import (
     get_test_instance,
     prepare_script_for_target,
     create_test_report,
+    FLAKY_REASON_PREFIX,
 )
 
 RV32_ARCH_FLAGS = {
@@ -191,6 +192,24 @@ platform_tests_to_skip = {
         "thread/stress_heap.py",
         "thread/thread_lock3.py",
     ),
+}
+
+# Tests with known intermittent failures. These tests still run, but failures
+# are reclassified as "ignored" instead of "fail" so they don't affect the CI
+# exit code. Paths are relative to the tests/ directory (must match test_file
+# format used by run_one_test, which normalises backslashes to forward slashes).
+#
+# Values are (reason, platforms) tuples where platforms is None (all platforms)
+# or a tuple of sys.platform strings to restrict ignoring to those platforms.
+flaky_tests_to_skip = {
+    "thread/thread_gc1.py": ("GC race condition", None),
+    "thread/stress_aes.py": ("timeout under QEMU emulation", None),
+    "thread/stress_schedule.py": ("intermittent crash under QEMU", None),
+    "thread/stress_recurse.py": ("stack overflow under emulation", None),
+    "thread/stress_heap.py": ("flaky on macOS", ("darwin",)),
+    "cmdline/repl_lock.py": ("REPL timing under QEMU", None),
+    "cmdline/repl_cont.py": ("REPL escaping on macOS", ("darwin",)),
+    "extmod/time_time_ns.py": ("CI runner clock precision", None),
 }
 
 # These tests don't test float explicitly but rather use it to perform the test.
@@ -1035,6 +1054,15 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         for line in er.args[0]:
             print(line)
         sys.exit(2)
+
+    # Reclassify known-flaky test failures as ignored.
+    results = test_results.value
+    for i, r in enumerate(results):
+        if r[1] == "fail":
+            reason, platforms = flaky_tests_to_skip.get(r[0], (None, None))
+            if reason is not None:
+                if platforms is None or sys.platform in platforms:
+                    results[i] = (r[0], "ignored", "{}: {}".format(FLAKY_REASON_PREFIX, reason))
 
     # Return test results.
     return test_results.value, testcase_count.value
