@@ -22,6 +22,9 @@ def base_path(*p):
 sys.path.append(base_path("../tools"))
 import pyboard
 
+# Prefix used by run-tests.py to tag known-flaky test results.
+FLAKY_REASON_PREFIX = "flaky"
+
 # File with the test results.
 _RESULTS_FILE = "_results.json"
 
@@ -313,11 +316,12 @@ def create_test_report(args, test_results, testcase_count=None):
         r for r in test_results if r[1] == "skip" and r[2] == "too large"
     )
     failed_tests = list(r for r in test_results if r[1] == "fail")
+    ignored_tests = list(r for r in test_results if r[1] == "ignored")
     dry_run = getattr(args, "dry_run", False)
     if dry_run:
         found_tests = list(r for r in test_results if r[1] == "found")
 
-    num_tests_performed = len(passed_tests) + len(failed_tests)
+    num_tests_performed = len(passed_tests) + len(failed_tests) + len(ignored_tests)
 
     if dry_run:
         print("{} tests found".format(len(found_tests)))
@@ -328,6 +332,14 @@ def create_test_report(args, test_results, testcase_count=None):
         print("{} tests performed{}".format(num_tests_performed, testcase_count_info))
 
         print("{} tests passed".format(len(passed_tests)))
+
+    if len(ignored_tests) > 0:
+        print(
+            "{} tests had known-flaky failures (ignored): {}".format(
+                len(ignored_tests),
+                " ".join("{} [{}]".format(t[0], t[2]) for t in ignored_tests),
+            )
+        )
 
     if len(skipped_tests) > 0:
         print(
@@ -365,6 +377,8 @@ def create_test_report(args, test_results, testcase_count=None):
                 "results": list(test for test in test_results),
                 # A list of failed tests.  This is deprecated, use the "results" above instead.
                 "failed_tests": [test[0] for test in failed_tests],
+                # A list of known-flaky tests whose failures were ignored.
+                "ignored_tests": [test[0] for test in ignored_tests],
             },
             f,
             default=to_json,
