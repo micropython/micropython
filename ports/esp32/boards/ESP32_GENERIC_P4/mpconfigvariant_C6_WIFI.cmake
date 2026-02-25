@@ -1,8 +1,4 @@
-set(IDF_TARGET esp32p4)
-
-set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.p4
+list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.p4_wifi_common
     boards/sdkconfig.p4_wifi_c6
 )

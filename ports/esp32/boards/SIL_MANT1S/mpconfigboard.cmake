@@ -1,7 +1,7 @@
-set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
+include(boards/mpconfigboard_esp32_common.cmake)
+
+list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.spiram
-    boards/sdkconfig.ble
     boards/sdkconfig.240mhz
     boards/SIL_MANT1S/sdkconfig.board
 )
