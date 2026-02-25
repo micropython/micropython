@@ -1,9 +1,5 @@
-set(IDF_TARGET esp32c6)
+include(boards/mpconfigboard_esp32c6_common.cmake)
 
-set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.riscv
-    boards/sdkconfig.c6
-    boards/sdkconfig.ble
-    boards/UM_TINYC6/sdkconfig.board
-)
+list(APPEND
+    SDKCONFIG_DEFAULTS
+    boards/UM_TINYC6/sdkconfig.board)
