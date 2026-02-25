@@ -89,6 +89,10 @@ static char heap[MICROPY_HEAP_SIZE];
 extern int mp_usbd_init(void);
 #endif // defined(CONFIG_USB_DEVICE_STACK_NEXT)
 
+#if CONFIG_PM_DEVICE
+#include <zephyr/pm/device.h>
+#endif
+
 void init_zephyr(void) {
     // We now rely on CONFIG_NET_APP_SETTINGS to set up bootstrap
     // network addresses.
@@ -161,6 +165,12 @@ soft_reset:
             goto soft_reset_exit;
         }
     }
+    #endif
+
+    #ifdef CONFIG_PM_DEVICE
+    const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    // Mark UART as busy to prevent it from being suspended
+    pm_device_busy_set(console);
     #endif
 
     for (;;) {

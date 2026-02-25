@@ -77,8 +77,11 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("value must be provided"));
     }
     mp_int_t milliseconds = mp_obj_get_int(args[0]);
+
     // Get the UART device
     const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    // Clear busy bit from UART
+    pm_device_busy_clear(console);
     // Set UART device to low power state
     pm_device_action_run(console, PM_DEVICE_ACTION_SUSPEND);
 
@@ -86,10 +89,12 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     k_sem_reset(&lightsleep_wake_sem);
 
     // Use semaphore with timeout instead of k_sleep to allow GPIO wake
-    k_sem_take(&lightsleep_wake_sem, K_MSEC(milliseconds));
+    k_sem_take(&lightsleep_wake_sem, (milliseconds > 0 ? K_MSEC(milliseconds) : K_FOREVER));
 
     // Set UART device back to active state
     pm_device_action_run(console, PM_DEVICE_ACTION_RESUME);
+    // Mark UART as busy to prevent it from being suspended
+    pm_device_busy_set(console);
 }
 #else
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
@@ -97,7 +102,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 }
 #endif
 
-#if defined(CONFIG_PM_DEVICE) && defined(CONFIG_SYS_POWER_OFF)
+#if defined(CONFIG_PM_DEVICE) && defined(CONFIG_POWEROFF)
 static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     // Check if argument is provided
     if (n_args > 0) {
@@ -105,6 +110,8 @@ static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     }
     // Get the UART device
     const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    // Clear busy bit from UART
+    pm_device_busy_clear(console);
     // Set UART device to low power state
     pm_device_action_run(console, PM_DEVICE_ACTION_SUSPEND);
     sys_poweroff();
