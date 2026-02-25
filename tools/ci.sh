@@ -905,9 +905,7 @@ function ci_unix_macos_run_tests {
     # Issues with macOS tests:
     # - float_parse and float_parse_doubleprec parse/print floats out by a few mantissa bits
     # - ffi_callback crashes for an unknown reason
-    # - thread/stress_heap.py is flaky
-    # - thread/thread_gc1.py is flaky
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback|thread/stress_heap|thread/thread_gc1).py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback).py')
 }
 
 function ci_unix_qemu_mips_setup {
@@ -927,10 +925,8 @@ function ci_unix_qemu_mips_build {
 function ci_unix_qemu_mips_run_tests {
     # Issues with MIPS tests:
     # - thread/stress_aes.py takes around 90 seconds
-    # - thread/stress_recurse.py is flaky
-    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py)
 }
 
 function ci_unix_qemu_arm_setup {
@@ -950,10 +946,8 @@ function ci_unix_qemu_arm_build {
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
     # - thread/stress_aes.py takes around 70 seconds
-    # - thread/stress_recurse.py is flaky
-    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py)
 }
 
 function ci_unix_qemu_riscv64_setup {
@@ -976,12 +970,10 @@ function ci_unix_qemu_riscv64_build {
 
 function ci_unix_qemu_riscv64_run_tests {
     # Issues with RISCV-64 tests:
-    # - thread/stress_aes.py takes around 180 seconds
-    # - thread/stress_recurse.py is flaky
-    # - thread/thread_gc1.py is flaky
+    # - thread/stress_aes.py takes ~180s vs 200s timeout; excluded to avoid burning CI time on timeouts
     file ./ports/unix/build-coverage/micropython
     pushd tests
-    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=200 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py'
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=200 ./run-tests.py --exclude 'thread/stress_aes.py'
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
     popd
 }
