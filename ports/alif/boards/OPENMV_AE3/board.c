@@ -135,6 +135,11 @@ void board_early_init(void) {
         MICROPY_BOARD_FATAL_ERROR("se_services_select_pll_source");
     }
 
+    // Configure the sensor interrupts inputs.
+    mp_hal_pin_input(pin_IMU_INT1);
+    mp_hal_pin_input(pin_IMU_INT2);
+    mp_hal_pin_input(pin_TOF_I2C_INT);
+
     // Configure the user button as an input (it has an external pull-up).
     mp_hal_pin_input(pin_SW);
 }
