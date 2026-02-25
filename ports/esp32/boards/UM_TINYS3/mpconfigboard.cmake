@@ -1,10 +1,8 @@
-set(IDF_TARGET esp32s3)
+include(boards/ESP32_GENERIC_S3/mpconfigboard.cmake)
 
 set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.ble
+    ${SDKCONFIG_DEFAULTS}
     boards/sdkconfig.240mhz
-    boards/sdkconfig.spiram_sx
     boards/UM_TINYS3/sdkconfig.board
 )
 
