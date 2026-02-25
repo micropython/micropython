@@ -135,8 +135,8 @@ void board_early_init(void) {
         MICROPY_BOARD_FATAL_ERROR("se_services_select_pll_source");
     }
 
-    // Configure the user button as an input with pull-up enabled.
-    mp_hal_pin_config(pin_SW, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0, 0, 0, true);
+    // Configure the user button as an input (it has an external pull-up).
+    mp_hal_pin_input(pin_SW);
 }
 
 MP_WEAK void board_enter_stop(void) {
