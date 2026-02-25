@@ -93,7 +93,10 @@ jobs:
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
     - name: Upload coverage to Codecov
+      if: env.CODECOV_TOKEN != ''
       uses: codecov/codecov-action@v5
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
         fail_ci_if_error: true
         verbose: true
