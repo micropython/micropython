@@ -35,7 +35,9 @@ def cback(event):
 
 def check_rtc_mem_write():
     rtc.memory((2023, 1, 1, 0, 0, 0, 0, 0))
-    print("\ndatetime to be retrieved post soft-reset : ", rtc.memory())
+    mem = rtc.memory()
+    mem_normalized = (mem[0], mem[1], mem[2], 0, mem[4], mem[5], mem[6], mem[7])
+    print("\ndatetime to be retrieved post soft-reset : ", mem_normalized)
 
 
 def reset_rtc():
