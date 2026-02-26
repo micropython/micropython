@@ -33,22 +33,6 @@
 #include "mbedtls/platform_time.h"
 #endif
 
-int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
-    uint32_t val = 0;
-    int n = 0;
-    *olen = len;
-    while (len--) {
-        if (!n) {
-            val = rng_read();
-            n = 4;
-        }
-        *output++ = val;
-        val >>= 8;
-        --n;
-    }
-    return 0;
-}
-
 #if defined(MBEDTLS_HAVE_TIME)
 time_t ra_rtctime_seconds(time_t *timer) {
     rtc_init_finalise();

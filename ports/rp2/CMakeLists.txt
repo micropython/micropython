@@ -477,6 +477,10 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
     )
 endif()
 
+list(APPEND MICROPY_SOURCE_EXTMOD
+    ${MICROPY_EXTMOD_DIR}/mbedtls/mbedtls_alt.c
+)
+
 # Add qstr sources for extmod and usermod, in case they are modified by components above.
 list(APPEND MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_EXTMOD}

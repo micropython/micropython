@@ -36,13 +36,6 @@
 #include "mbedtls/platform_time.h"
 #endif
 
-int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
-    *olen = len;
-    mp_hal_get_random(len, output);
-
-    return 0;
-}
-
 #if defined(MBEDTLS_HAVE_TIME)
 time_t mimxrt_rtctime_seconds(time_t *timer) {
     // Get date and date in CPython order.
