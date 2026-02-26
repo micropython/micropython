@@ -232,9 +232,24 @@ def argparse_mip():
     cmd_parser = argparse.ArgumentParser(
         description="install packages from micropython-lib or third-party sources"
     )
-    _bool_flag(cmd_parser, "mpy", "m", True, "download as compiled .mpy files (default)")
+    _bool_flag(
+        cmd_parser,
+        "mpy",
+        "m",
+        None,
+        "download as compiled .mpy files (install defaults to on; download defaults to off)",
+    )
     cmd_parser.add_argument(
-        "--target", type=str, required=False, help="destination direction on the device"
+        "--mpy-version",
+        type=str,
+        required=False,
+        help="mpy version to download when using --mpy (default: auto, probe connected device)",
+    )
+    cmd_parser.add_argument(
+        "--target",
+        type=str,
+        required=False,
+        help="destination directory on the device (install) or local fs (download)",
     )
     cmd_parser.add_argument(
         "--index",
