@@ -36,6 +36,12 @@
 #include "py/bc0.h"
 #include "py/profile.h"
 
+#ifndef MICROPY_VM_IS_STATIC
+#define MICROPY_VM_IS_STATIC (0)
+#endif
+
+#if !MICROPY_PY_SYS_SETTRACE_DUAL_VM || MICROPY_VM_IS_STATIC
+
 // *FORMAT-OFF*
 
 #if 0
@@ -176,6 +182,8 @@
     } \
 } while(0)
 
+#define FRAME_UPDATE_ALWAYS FRAME_UPDATE
+
 #define TRACE_TICK(current_ip, current_sp, is_exception) do { \
     assert(code_state != code_state->prev_state); \
     assert(MP_STATE_THREAD(current_code_state) == code_state); \
@@ -187,14 +195,50 @@
     } \
 } while(0)
 
+#elif MICROPY_PY_SYS_SETTRACE_DUAL_VM
+
+#define FRAME_SETUP() do { \
+    assert(code_state != code_state->prev_state); \
+    MP_STATE_THREAD(current_code_state) = code_state; \
+    assert(code_state != code_state->prev_state); \
+} while(0)
+
+#define FRAME_ENTER() do { \
+    assert(code_state != code_state->prev_state); \
+    code_state->prev_state = MP_STATE_THREAD(current_code_state); \
+    assert(code_state != code_state->prev_state); \
+    assert(!mp_prof_is_executing); \
+} while(0)
+
+#define FRAME_LEAVE() do { \
+    assert(code_state != code_state->prev_state); \
+    MP_STATE_THREAD(current_code_state) = code_state->prev_state; \
+    assert(code_state != code_state->prev_state); \
+} while(0)
+
+#define FRAME_UPDATE()
+
+#define FRAME_UPDATE_ALWAYS() do { \
+    assert(MP_STATE_THREAD(current_code_state) == code_state); \
+    assert(!mp_prof_is_executing); \
+    if (MP_STATE_THREAD(prof_trace_callback) != MP_OBJ_NULL) { \
+        code_state->frame = MP_OBJ_TO_PTR(mp_prof_frame_update(code_state)); \
+    } \
+} while(0)
+
+#define TRACE_TICK(current_ip, current_sp, is_exception)
+
 #else // MICROPY_PY_SYS_SETTRACE
 #define FRAME_SETUP()
 #define FRAME_ENTER()
 #define FRAME_LEAVE()
 #define FRAME_UPDATE()
+#define FRAME_UPDATE_ALWAYS()
 #define TRACE_TICK(current_ip, current_sp, is_exception)
 #endif // MICROPY_PY_SYS_SETTRACE
 
+// Only include this function once.
+#if !(MICROPY_VM_IS_STATIC && MICROPY_PY_SYS_SETTRACE)
 #if MICROPY_PY_BUILTINS_SLICE
 // This function is marked "no inline" so it doesn't increase the C stack usage of the main VM function.
 MP_NOINLINE static mp_obj_t *build_slice_stack_allocated(byte op, mp_obj_t *sp, mp_obj_t step) {
@@ -210,6 +254,7 @@ MP_NOINLINE static mp_obj_t *build_slice_stack_allocated(byte op, mp_obj_t *sp, 
     return sp;
 }
 #endif
+#endif
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
@@ -217,6 +262,9 @@ MP_NOINLINE static mp_obj_t *build_slice_stack_allocated(byte op, mp_obj_t *sp, 
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in state[0]
+#if MICROPY_VM_IS_STATIC
+static
+#endif
 mp_vm_return_kind_t MICROPY_WRAP_MP_EXECUTE_BYTECODE(mp_execute_bytecode)(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
 
 #define SELECTIVE_EXC_IP (0)
@@ -951,7 +999,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -986,7 +1034,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION_VAR_KW): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -1032,7 +1080,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_METHOD): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -1071,7 +1119,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_METHOD_VAR_KW): {
-                    FRAME_UPDATE();
+                    FRAME_UPDATE_ALWAYS();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -1514,3 +1562,5 @@ unwind_loop:
         }
     }
 }
+
+#endif // !MICROPY_PY_SYS_SETTRACE_DUAL_VM || MICROPY_VM_IS_STATIC

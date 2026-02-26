@@ -180,6 +180,15 @@ static mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t 
 
 mp_obj_t mp_prof_settrace(mp_obj_t callback) {
     if (mp_obj_is_callable(callback)) {
+        #if MICROPY_PY_SYS_SETTRACE_DUAL_VM
+        if (prof_trace_cb == MP_OBJ_NULL) {
+            mp_code_state_t *code_state = MP_STATE_THREAD(current_code_state);
+            if (code_state->frame == NULL) {
+                // In dual-VM mode, setup code-state frame now that tracing has started.
+                mp_prof_frame_enter(MP_STATE_THREAD(current_code_state));
+            }
+        }
+        #endif
         prof_trace_cb = callback;
     } else {
         prof_trace_cb = MP_OBJ_NULL;
