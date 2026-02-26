@@ -1,0 +1,82 @@
+--- 01
+T1 42
+T2 11
+--- 02
+T1 42
+T2 11
+--- 03
+T1 0
+T2 11
+--- 04
+ZERO
+NUM 0
+T2C True
+--- 05
+ZERO
+NUM 0
+T2 True
+RUN True
+--- 06
+D False
+CANCEL
+NUM 5
+--- 07
+D False
+CANCEL
+NUM 15
+--- 08
+Not handled: divide by zero
+D True
+ZERO
+--- 09
+ZERO
+T1 0
+T2 0
+--- 10
+ZERO
+T1 0
+T2 0
+--- 11
+Not handled: divide by zero
+D True
+ZERO
+--- 12
+Not handled: divide by zero
+R True
+ZERO
+--- 13
+E1
+VAL
+--- 14
+VAL
+--- 15
+R False
+ZERO
+--- 16
+R False
+ZERO
+--- 17
+R False
+CANCEL
+NUM 10
+--- 18
+R False
+EXC
+NUM 10
+--- 19
+EXC OK
+--- 20
+KBD
+--- 21
+KBD
+--- 22
+Cancelled
+T1 0
+T2 0
+--- 23
+END 0
+--- 24
+VAL
+VAL
+VAL
+--- END
