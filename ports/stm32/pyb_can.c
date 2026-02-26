@@ -39,6 +39,8 @@
 #include "pyb_can.h"
 #include "can.h"
 #include "irq.h"
+// For some non-port-specific utility functions
+#include "extmod/machine_can.h"
 
 #if MICROPY_HW_ENABLE_CAN
 
@@ -70,19 +72,12 @@
 #define CAN_MAXIMUM_DBS1            (32)
 #define CAN_MAXIMUM_DBS2            (16)
 
-#define CAN_MODE_NORMAL             FDCAN_MODE_NORMAL
-#define CAN_MODE_LOOPBACK           FDCAN_MODE_EXTERNAL_LOOPBACK
-#define CAN_MODE_SILENT             FDCAN_MODE_BUS_MONITORING
-#define CAN_MODE_SILENT_LOOPBACK    FDCAN_MODE_INTERNAL_LOOPBACK
-
 #define CAN1_RX0_IRQn               FDCAN1_IT0_IRQn
 #define CAN1_RX1_IRQn               FDCAN1_IT1_IRQn
 #if defined(CAN2)
 #define CAN2_RX0_IRQn               FDCAN2_IT0_IRQn
 #define CAN2_RX1_IRQn               FDCAN2_IT1_IRQn
 #endif
-
-extern const uint8_t DLCtoBytes[16];
 #else
 
 #define CAN_MAX_FILTER              (28)
@@ -115,6 +110,7 @@ void pyb_can_deinit_all(void) {
         pyb_can_obj_t *can_obj = MP_STATE_PORT(pyb_can_obj_all)[i];
         if (can_obj != NULL) {
             pyb_can_deinit(MP_OBJ_FROM_PTR(can_obj));
+            MP_STATE_PORT(pyb_can_obj_all)[i] = NULL;
         }
     }
 }
@@ -152,45 +148,10 @@ static void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-static uint32_t pyb_can_get_source_freq() {
-    uint32_t can_kern_clk = 0;
-
-    // Find CAN kernel clock
-    #if defined(STM32H7)
-    switch (__HAL_RCC_GET_FDCAN_SOURCE()) {
-        case RCC_FDCANCLKSOURCE_HSE:
-            can_kern_clk = HSE_VALUE;
-            break;
-        case RCC_FDCANCLKSOURCE_PLL: {
-            PLL1_ClocksTypeDef pll1_clocks;
-            HAL_RCCEx_GetPLL1ClockFreq(&pll1_clocks);
-            can_kern_clk = pll1_clocks.PLL1_Q_Frequency;
-            break;
-        }
-        case RCC_FDCANCLKSOURCE_PLL2: {
-            PLL2_ClocksTypeDef pll2_clocks;
-            HAL_RCCEx_GetPLL2ClockFreq(&pll2_clocks);
-            can_kern_clk = pll2_clocks.PLL2_Q_Frequency;
-            break;
-        }
-    }
-    #elif defined(STM32G4)
-    // STM32G4 CAN clock from reset is HSE, unchanged by MicroPython
-    can_kern_clk = HSE_VALUE;
-    #else // G0, F4, F7 and assume other MCUs too.
-    // CAN1/CAN2/CAN3 on APB1 use GetPCLK1Freq, alternatively use the following:
-    // can_kern_clk = ((HSE_VALUE / osc_config.PLL.PLLM ) * osc_config.PLL.PLLN) /
-    //  (osc_config.PLL.PLLQ * clk_init.AHBCLKDivider * clk_init.APB1CLKDivider);
-    can_kern_clk = HAL_RCC_GetPCLK1Freq();
-    #endif
-
-    return can_kern_clk;
-}
-
 static void pyb_can_get_bit_timing(mp_uint_t baudrate, mp_uint_t sample_point,
     uint32_t max_brp, uint32_t max_bs1, uint32_t max_bs2, uint32_t min_tseg,
     mp_int_t *bs1_out, mp_int_t *bs2_out, mp_int_t *prescaler_out) {
-    uint32_t can_kern_clk = pyb_can_get_source_freq();
+    uint32_t can_kern_clk = can_get_source_freq();
     mp_uint_t max_baud_error = baudrate / 1000; // Allow .1% deviation
     const mp_uint_t MAX_SAMPLE_ERROR = 5; // round to nearest 1%, which is the param resolution
     sample_point *= 10;
@@ -278,8 +239,9 @@ static mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     }
     #endif
 
-    if (!can_init(&self->can, self->can_id, args[ARG_mode].u_int, args[ARG_prescaler].u_int, args[ARG_sjw].u_int,
-        args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool)) {
+    // Note: undoing the 4-bit right shift from the constant definitions
+    if (!can_init(&self->can, self->can_id, CAN_TX_FIFO, args[ARG_mode].u_int << 4, args[ARG_prescaler].u_int, args[ARG_sjw].u_int,
+            args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) init failure"), self->can_id);
     }
 
@@ -297,45 +259,16 @@ static mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // work out port
-    mp_uint_t can_idx;
-    if (mp_obj_is_str(args[0])) {
-        const char *port = mp_obj_str_get_str(args[0]);
-        if (0) {
-        #ifdef MICROPY_HW_CAN1_NAME
-        } else if (strcmp(port, MICROPY_HW_CAN1_NAME) == 0) {
-            can_idx = PYB_CAN_1;
-        #endif
-        #ifdef MICROPY_HW_CAN2_NAME
-        } else if (strcmp(port, MICROPY_HW_CAN2_NAME) == 0) {
-            can_idx = PYB_CAN_2;
-        #endif
-        #ifdef MICROPY_HW_CAN3_NAME
-        } else if (strcmp(port, MICROPY_HW_CAN3_NAME) == 0) {
-            can_idx = PYB_CAN_3;
-        #endif
-        } else {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%s) doesn't exist"), port);
-        }
-    } else {
-        can_idx = mp_obj_get_int(args[0]);
-    }
-    if (can_idx < 1 || can_idx > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all))) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) doesn't exist"), can_idx);
-    }
-
-    // check if the CAN is reserved for system use or not
-    if (MICROPY_HW_CAN_IS_RESERVED(can_idx)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) is reserved"), can_idx);
-    }
+    mp_uint_t can_idx = machine_can_get_index(args[0]);  // 0-based index
 
     pyb_can_obj_t *self;
-    if (MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1] == NULL) {
+    if (MP_STATE_PORT(pyb_can_obj_all)[can_idx] == NULL) {
         self = mp_obj_malloc(pyb_can_obj_t, &pyb_can_type);
-        self->can_id = can_idx;
+        self->can_id = can_idx + 1; // ID is 1-based
         self->is_enabled = false;
-        MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1] = self;
+        MP_STATE_PORT(pyb_can_obj_all)[can_idx] = self;
     } else {
-        self = MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1];
+        self = MP_STATE_PORT(pyb_can_obj_all)[can_idx];
     }
 
     if (!self->is_enabled || n_args > 1) {
@@ -381,25 +314,7 @@ static mp_obj_t pyb_can_restart(mp_obj_t self_in) {
     if (!self->is_enabled) {
         mp_raise_ValueError(NULL);
     }
-    CAN_TypeDef *can = self->can.Instance;
-    #if MICROPY_HW_ENABLE_FDCAN
-    can->CCCR |= FDCAN_CCCR_INIT;
-    while ((can->CCCR & FDCAN_CCCR_INIT) == 0) {
-    }
-    can->CCCR |= FDCAN_CCCR_CCE;
-    while ((can->CCCR & FDCAN_CCCR_CCE) == 0) {
-    }
-    can->CCCR &= ~FDCAN_CCCR_INIT;
-    while ((can->CCCR & FDCAN_CCCR_INIT)) {
-    }
-    #else
-    can->MCR |= CAN_MCR_INRQ;
-    while ((can->MSR & CAN_MSR_INAK) == 0) {
-    }
-    can->MCR &= ~CAN_MCR_INRQ;
-    while ((can->MSR & CAN_MSR_INAK)) {
-    }
-    #endif
+    can_restart(&self->can);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_restart_obj, pyb_can_restart);
@@ -407,77 +322,30 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_restart_obj, pyb_can_restart);
 // Get the state of the controller
 static mp_obj_t pyb_can_state(mp_obj_t self_in) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t state = CAN_STATE_STOPPED;
     if (self->is_enabled) {
-        CAN_TypeDef *can = self->can.Instance;
-        #if MICROPY_HW_ENABLE_FDCAN
-        uint32_t psr = can->PSR;
-        if (psr & FDCAN_PSR_BO) {
-            state = CAN_STATE_BUS_OFF;
-        } else if (psr & FDCAN_PSR_EP) {
-            state = CAN_STATE_ERROR_PASSIVE;
-        } else if (psr & FDCAN_PSR_EW) {
-            state = CAN_STATE_ERROR_WARNING;
-        } else {
-            state = CAN_STATE_ERROR_ACTIVE;
-        }
-        #else
-        if (can->ESR & CAN_ESR_BOFF) {
-            state = CAN_STATE_BUS_OFF;
-        } else if (can->ESR & CAN_ESR_EPVF) {
-            state = CAN_STATE_ERROR_PASSIVE;
-        } else if (can->ESR & CAN_ESR_EWGF) {
-            state = CAN_STATE_ERROR_WARNING;
-        } else {
-            state = CAN_STATE_ERROR_ACTIVE;
-        }
-        #endif
+        return MP_OBJ_NEW_SMALL_INT(can_get_state(&self->can));
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(CAN_STATE_STOPPED);
     }
-    return MP_OBJ_NEW_SMALL_INT(state);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_state_obj, pyb_can_state);
 
 // Get info about error states and TX/RX buffers
 static mp_obj_t pyb_can_info(size_t n_args, const mp_obj_t *args) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_list_t *list;
-    if (n_args == 1) {
-        list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
-    } else {
-        if (!mp_obj_is_type(args[1], &mp_type_list)) {
-            mp_raise_TypeError(NULL);
-        }
-        list = MP_OBJ_TO_PTR(args[1]);
-        if (list->len < 8) {
-            mp_raise_ValueError(NULL);
-        }
-    }
+    mp_obj_list_t *list = mp_obj_list_optional_arg(n_args > 1 ? args[1] : mp_const_none, 8);
+    can_counters_t hw_counters;
 
-    #if MICROPY_HW_ENABLE_FDCAN
-    FDCAN_GlobalTypeDef *can = self->can.Instance;
-    uint32_t esr = can->ECR;
-    list->items[0] = MP_OBJ_NEW_SMALL_INT((esr & FDCAN_ECR_TEC_Msk) >> FDCAN_ECR_TEC_Pos);
-    list->items[1] = MP_OBJ_NEW_SMALL_INT((esr & FDCAN_ECR_REC_Msk) >> FDCAN_ECR_REC_Pos);
+    can_get_counters(&self->can, &hw_counters);
+
+    list->items[0] = MP_OBJ_NEW_SMALL_INT(hw_counters.tec);
+    list->items[1] = MP_OBJ_NEW_SMALL_INT(hw_counters.rec);
     list->items[2] = MP_OBJ_NEW_SMALL_INT(self->num_error_warning);
     list->items[3] = MP_OBJ_NEW_SMALL_INT(self->num_error_passive);
     list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off);
-    uint32_t TXEFS = can->TXEFS;
-    list->items[5] = MP_OBJ_NEW_SMALL_INT(TXEFS & 0x7);
-    list->items[6] = MP_OBJ_NEW_SMALL_INT((can->RXF0S & FDCAN_RXF0S_F0FL_Msk) >> FDCAN_RXF0S_F0FL_Pos);
-    list->items[7] = MP_OBJ_NEW_SMALL_INT((can->RXF1S & FDCAN_RXF1S_F1FL_Msk) >> FDCAN_RXF1S_F1FL_Pos);
-    #else
-    CAN_TypeDef *can = self->can.Instance;
-    uint32_t esr = can->ESR;
-    list->items[0] = MP_OBJ_NEW_SMALL_INT(esr >> CAN_ESR_TEC_Pos & 0xff);
-    list->items[1] = MP_OBJ_NEW_SMALL_INT(esr >> CAN_ESR_REC_Pos & 0xff);
-    list->items[2] = MP_OBJ_NEW_SMALL_INT(self->num_error_warning);
-    list->items[3] = MP_OBJ_NEW_SMALL_INT(self->num_error_passive);
-    list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off);
-    int n_tx_pending = 0x01121223 >> ((can->TSR >> CAN_TSR_TME_Pos & 7) << 2) & 0xf;
-    list->items[5] = MP_OBJ_NEW_SMALL_INT(n_tx_pending);
-    list->items[6] = MP_OBJ_NEW_SMALL_INT(can->RF0R >> CAN_RF0R_FMP0_Pos & 3);
-    list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3);
-    #endif
+    list->items[5] = MP_OBJ_NEW_SMALL_INT(hw_counters.tx_pending);
+    list->items[6] = MP_OBJ_NEW_SMALL_INT(hw_counters.rx_fifo0_pending);
+    list->items[7] = MP_OBJ_NEW_SMALL_INT(hw_counters.rx_fifo1_pending);
 
     return MP_OBJ_FROM_PTR(list);
 }
@@ -487,7 +355,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_can_info_obj, 1, 2, pyb_can_info)
 static mp_obj_t pyb_can_any(mp_obj_t self_in, mp_obj_t fifo_in) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     can_rx_fifo_t fifo = mp_obj_get_int(fifo_in);
-    return mp_obj_new_bool(can_rx_pending(&self->can, fifo) != 0);
+    return mp_obj_new_bool(can_is_rx_pending(&self->can, fifo) != 0);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_any_obj, pyb_can_any);
 
@@ -554,13 +422,7 @@ static mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     } else {
         tx_msg.BitRateSwitch = FDCAN_BRS_ON;
     }
-    // Roundup DataLength to next DLC size and encode to DLC.
-    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(DLCtoBytes); i++) {
-        if (bufinfo.len <= DLCtoBytes[i]) {
-            tx_msg.DataLength = (i << 16);
-            break;
-        }
-    }
+    tx_msg.DataLength = bufinfo.len; // Converted to DLC encoding inside can_transmit
     #else
     tx_msg.DLC = bufinfo.len;
     uint8_t *tx_data = tx_msg.Data; // Data is uint32_t but holds only 1 byte
@@ -634,7 +496,7 @@ static mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // Manage the rx state machine
     if ((fifo == CAN_RX_FIFO0 && self->rxcallback0 != mp_const_none) ||
         (fifo == CAN_RX_FIFO1 && self->rxcallback1 != mp_const_none)) {
-        bool fifo_empty = can_rx_pending(&self->can, fifo) == 0;
+        bool fifo_empty = can_is_rx_pending(&self->can, fifo) == 0;
         byte *state = (fifo == CAN_RX_FIFO0) ? &self->rx_state0 : &self->rx_state1;
         switch (*state) {
             case RX_STATE_FIFO_EMPTY:
@@ -656,24 +518,14 @@ static mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         can_enable_rx_interrupts(&self->can, fifo, fifo_empty);
     }
 
-    // Create the tuple, or get the list, that will hold the return values
+    // Create or get the list, that will hold the return values
     // Also populate the fifth element, either a new bytes or reuse existing memoryview
-    mp_obj_t ret_obj = args[ARG_list].u_obj;
-    mp_obj_t *items;
-    if (ret_obj == mp_const_none) {
-        ret_obj = mp_obj_new_tuple(5, NULL);
-        items = ((mp_obj_tuple_t *)MP_OBJ_TO_PTR(ret_obj))->items;
+    mp_obj_list_t *list = mp_obj_list_optional_arg(args[ARG_list].u_obj, 5);
+    mp_obj_t *items = list->items;
+    if (MP_OBJ_FROM_PTR(list) != args[ARG_list].u_obj) {
+        // If newly allocated, create item 4
         items[4] = mp_obj_new_bytes(rx_data, rx_dlc);
     } else {
-        // User should provide a list of length at least 5 to hold the values
-        if (!mp_obj_is_type(ret_obj, &mp_type_list)) {
-            mp_raise_TypeError(NULL);
-        }
-        mp_obj_list_t *list = MP_OBJ_TO_PTR(ret_obj);
-        if (list->len < 5) {
-            mp_raise_ValueError(NULL);
-        }
-        items = list->items;
         // Fifth element must be a memoryview which we assume points to a
         // byte-like array which is large enough, and then we resize it inplace
         if (!mp_obj_is_type(items[4], &mp_type_memoryview)) {
@@ -702,7 +554,7 @@ static mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #endif
 
     // Return the result
-    return ret_obj;
+    return MP_OBJ_FROM_PTR(list);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
 
@@ -921,20 +773,6 @@ static mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         *callback = callback_in;
     } else if (mp_obj_is_callable(callback_in)) {
         *callback = callback_in;
-        uint32_t irq = 0;
-        if (self->can_id == PYB_CAN_1) {
-            irq = (fifo == CAN_RX_FIFO0) ? CAN1_RX0_IRQn : CAN1_RX1_IRQn;
-        #if defined(CAN2)
-        } else if (self->can_id == PYB_CAN_2) {
-            irq = (fifo == CAN_RX_FIFO0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
-        #endif
-        #if defined(CAN3)
-        } else {
-            irq = (fifo == CAN_RX_FIFO0) ? CAN3_RX0_IRQn : CAN3_RX1_IRQn;
-        #endif
-        }
-        NVIC_SetPriority(irq, IRQ_PRI_CAN);
-        HAL_NVIC_EnableIRQ(irq);
         can_enable_rx_interrupts(&self->can, fifo, true);
     }
     return mp_const_none;
@@ -995,8 +833,8 @@ static mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
         uintptr_t flags = arg;
         ret = 0;
         if ((flags & MP_STREAM_POLL_RD)
-            && ((can_rx_pending(&self->can, 0) != 0)
-                || (can_rx_pending(&self->can, 1) != 0))) {
+            && ((can_is_rx_pending(&self->can, 0) != 0)
+                || (can_is_rx_pending(&self->can, 1) != 0))) {
             ret |= MP_STREAM_POLL_RD;
         }
         #if MICROPY_HW_ENABLE_FDCAN
@@ -1016,12 +854,15 @@ static mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 
 // IRQ handler, called from lower layer can.c or fdcan.c in ISR context
 
-void can_irq_handler(uint can_id,  can_int_t interrupt, can_rx_fifo_t fifo) {
+void pyb_can_irq_handler(uint can_id,  can_int_t interrupt, can_rx_fifo_t fifo) {
     mp_obj_t callback;
     pyb_can_obj_t *self;
     byte *state;
 
     self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
+    if (self == NULL) {
+        return;
+    }
 
     if (fifo == CAN_RX_FIFO0) {
         callback = self->rxcallback0;
@@ -1056,7 +897,7 @@ void can_irq_handler(uint can_id,  can_int_t interrupt, can_rx_fifo_t fifo) {
             return;
 
         default:
-            return; // Should be unreachable
+            return; // CAN_INT_TX_COMPLETE is ignored by pyb.CAN
     }
 
     // Run the callback

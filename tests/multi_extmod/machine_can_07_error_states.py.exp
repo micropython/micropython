@@ -1,0 +1,37 @@
+--- instance0 ---
+recv 0x100 5041594c4f4144
+can deinit()
+can init()
+can switch baud
+sending bad msg
+sending cancelling
+cancelled True
+re-init
+done
+--- instance1 ---
+started STATE_ACTIVE
+irq sent True
+irq state 2
+irq state 3
+STATE_PASSIVE
+tec increased True
+tec over thresh True
+counted warning True
+counted passive True
+some pending tx True
+irq sent True
+irq sent True
+STATE_WARNING
+tec decreased True
+tec below thresh True
+no new warning True
+no new passive True
+irq state 3
+queued yetmore True
+STATE_PASSIVE
+one over thresh True
+no new warning True
+counted passive True
+irq sent True
+queued moremore True
+done
