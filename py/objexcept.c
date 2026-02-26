@@ -130,7 +130,25 @@ static void decompress_error_text_maybe(mp_obj_exception_t *o) {
     #if MICROPY_ROM_TEXT_COMPRESSION
     if (o->args->len == 1 && mp_obj_is_exact_type(o->args->items[0], &mp_type_str)) {
         mp_obj_str_t *o_str = MP_OBJ_TO_PTR(o->args->items[0]);
-        if (MP_IS_COMPRESSED_ROM_STRING(o_str->data)) {
+        const byte *data = o_str->data;
+        // Fast path: check if string starts with compression marker (0xff).
+        // Only if true do we need to verify it's not in the GC heap (which would
+        // indicate a user-created string, not a compressed ROM string).
+        if (MP_IS_COMPRESSED_ROM_STRING(data)) {
+            bool is_in_heap;
+            #if MICROPY_GC_SPLIT_HEAP
+            // Check all heap areas to properly handle split heap configurations.
+            is_in_heap = gc_get_ptr_area(data) != NULL;
+            #else
+            // Single heap: check bounds of the one heap area.
+            is_in_heap = ((uintptr_t)data & (MICROPY_BYTES_PER_GC_BLOCK - 1)) == 0
+                && data >= (const byte *)MP_STATE_MEM(area).gc_pool_start
+                && data < (const byte *)MP_STATE_MEM(area).gc_pool_end;
+            #endif
+            if (is_in_heap) {
+                // String is in the heap, not a compressed ROM string, skip decompression.
+                goto skip_decompression;
+            }
             byte *buf = m_new_maybe(byte, MP_MAX_UNCOMPRESSED_TEXT_LEN + 1);
             if (!buf) {
                 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
@@ -152,6 +170,7 @@ static void decompress_error_text_maybe(mp_obj_exception_t *o) {
             o_str->len = strlen((const char *)buf);
             o_str->hash = 0;
         }
+    skip_decompression:
         // Lazily compute the string hash.
         if (o_str->hash == 0) {
             o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
