@@ -63,6 +63,10 @@ should follow this license.
 MicroPython design values
 -------------------------
 
+"Perfection is achieved, not when there is nothing more to add, but when there
+is nothing left to take away."
+― Antoine de Saint-Exupéry, Airman's Odyssey
+
 For its design and implementation, MicroPython aims to follow a set of values.
 Although not a strict set of rules, these values and principles serve as a
 useful guide for new and seasoned contributors, as well as maintainers.
