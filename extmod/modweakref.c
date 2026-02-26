@@ -61,23 +61,26 @@ static mp_obj_t weakref_ref_del(mp_obj_t self_in) {
     mp_obj_weakref_ref_t *self = (mp_obj_weakref_ref_t *)MP_OBJ_TO_PTR(self_in);
     mp_obj_t target = weakref_ref_get(self);
 
-    mp_obj_t target_callback_method[3];
-    mp_load_method_maybe(target, MP_QSTR___callback__, target_callback_method);
-
-    if (target_callback_method[0] == MP_OBJ_NULL) {
-        return mp_const_none;
-    }
-    target_callback_method[2] = target;
-
     nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        (void)mp_call_method_n_kw(1, 0, target_callback_method);
-        nlr_pop();
-    } else {
+    if (nlr_push(&nlr) != 0) {
         mp_print_str(MICROPY_ERROR_PRINTER, "Unhandled exception in weakref callback:\n");
         mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+        goto out;
     }
 
+    mp_obj_t dest[3];
+    mp_load_method_maybe(target, MP_QSTR___callback__, dest);
+
+    if (dest[0] == MP_OBJ_NULL) {
+        goto out_pop;
+    }
+
+    dest[2] = target;
+    (void)mp_call_method_n_kw(1, 0, dest);
+
+out_pop:
+    nlr_pop();
+out:
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(weakref_ref_del_obj, weakref_ref_del);
@@ -100,7 +103,7 @@ static MP_DEFINE_CONST_DICT(weakref_ref_locals_dict, weakref_ref_locals_dict_tab
 static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_weakref_ref,
     MP_QSTR_ref,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, weakref_ref_make_new,
     call, weakref_ref_call,
     locals_dict, &weakref_ref_locals_dict
