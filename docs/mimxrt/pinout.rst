@@ -419,3 +419,61 @@ Makerdiary RT1011  1   D8     SD1      D7      D4      D1       D2      D3
 
 Symbolic pin names are provided for the MIMXRT_10xx_DEV boards.
 These are provided for the other boards as well.
+
+.. _mimxrt_encoder_counter_pinout:
+
+|
+|
+
+Pin Assignment
+--------------
+
+Pins are specified in the same way as for the Pin class. The pins available for an
+assignment to the Encoder or Counter are:
+
+**IMXRT1010_EVK**, **iMX RT1011 Nano Kit**, **Olimex RT1010Py**:
+
+  Not supported.
+
+**IMXRT1015_EVK**:
+
+  J30, pins 1 and 3, with the pin names "ENC1" and "ENC2".
+
+**IMXRT1020_EVK**:
+
+  Pins D0 and D1.
+
+**IMXRT1050_EVK**, **IMXRT1050_EVKB**, **IMXRT1060_EVK**, **IMXRT1064_EBK**:
+
+  Pins D2, D4, D5, D8, D9, D10, D11, D12, D13, D14, D15, A4, A5.
+  Depending on the board configuration, not all pins may be wired.
+  Pins D2, D4 and D5 cannot be used for the match output.
+
+**IMXRT1170_EVK**:
+
+  Pins D0, D1, D2.
+
+  D2 is connected to the 1G PHY chip as well. So levels may be distorted.
+
+**Teensy 4.0**:
+
+  Pins D0, D1, D2, D3, D4, D5, D7, D8, D26, D27, D30, D31, D32, D33.
+  Pin D0 and D5 share the same signal and cannot be used independently.
+  Pins D26, D27, D30 and D31 cannot be used for the match output.
+
+**Teensy 4.1**:
+
+  Pins D0, D1, D2, D3, D4, D5, D7, D8, D26, D27, D30, D31, D32, D33,
+  D37, D42, D43, D44, D45, D46 and D47.
+  Pins D26, D27, D30 and D31 cannot be used for the match output.
+  Some pins are assigned to the same signal and cannot be used independently. These are:
+
+  - Pins D0, D5 and D37,
+  - Pins D2 and D43,
+  - Pins D3 and D42, and
+  - Pins D4 and D47.
+
+**Seeed ARCH MIX**
+
+  Pins J3_14, J3_15, J4_19, J4_20, J5_15, J5_16, J5_17, J5_22, J5_23, J5_24, J5_25 and J5_26.
+  Pins J3_14 and J3_15 cannot be used for the match output.
