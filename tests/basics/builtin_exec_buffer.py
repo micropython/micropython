@@ -4,7 +4,7 @@ try:
     exec
     bytearray
     memoryview
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

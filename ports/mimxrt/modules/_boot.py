@@ -11,7 +11,7 @@ from machine import Pin
 bdev = mimxrt.Flash()
 try:
     fs = vfs.VfsLfs2(bdev, progsize=256)
-except:
+except Exception:
     vfs.VfsLfs2.mkfs(bdev, progsize=256)
     fs = vfs.VfsLfs2(bdev, progsize=256)
 vfs.mount(fs, "/flash")
@@ -22,7 +22,7 @@ sys.path.append("/flash/lib")
 # do not mount the SD card if SKIPSD exists.
 try:
     os.stat("SKIPSD")
-except:
+except Exception:
     try:
         from machine import SDCard
 
@@ -32,5 +32,5 @@ except:
         vfs.mount(fat, "/sdcard")
         os.chdir("/sdcard")
         sys.path.append("/sdcard")
-    except:
+    except Exception:
         pass  # Fail silently

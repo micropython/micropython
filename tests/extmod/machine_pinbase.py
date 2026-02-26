@@ -2,7 +2,7 @@ try:
     import machine
 
     machine.PinBase
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

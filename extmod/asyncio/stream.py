@@ -159,7 +159,7 @@ class Server:
                     raise er
             try:
                 s2, addr = s.accept()
-            except:
+            except Exception:
                 # Ignore a failed accept
                 continue
             if ssl:

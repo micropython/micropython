@@ -87,14 +87,14 @@ class multitest:
     def get_network_ip():
         try:
             ip = nic.ifconfig()[0]
-        except:
+        except Exception:
             try:
                 import network
                 if hasattr(network, "WLAN"):
                     ip = network.WLAN().ifconfig()[0]
                 else:
                     ip = network.LAN().ifconfig()[0]
-            except:
+            except Exception:
                 ip = HOST_IP
         return ip
     @staticmethod
@@ -130,7 +130,7 @@ def get_host_ip(_ip_cache=[]):
             s.connect(("8.8.8.8", 80))
             _ip_cache.append(s.getsockname()[0])
             s.close()
-        except:
+        except Exception:
             _ip_cache.append("127.0.0.1")
     return _ip_cache[0]
 

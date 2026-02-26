@@ -387,7 +387,7 @@ _f = "{:<10}{:>9}{:>9}{:>9}{:>5} {}"
 print(_f.format("filesystem", "size", "used", "avail", "use%", "mounted on"))
 try:
  _ms = vfs.mount()
-except:
+except Exception:
  _ms = []
  for _m in [""] + os.listdir("/"):
   _m = "/" + _m

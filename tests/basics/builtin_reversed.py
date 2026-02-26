@@ -1,7 +1,7 @@
 # test the builtin reverse() function
 try:
     reversed
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

@@ -1,7 +1,7 @@
 # test builtin property combined with inheritance
 try:
     property
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

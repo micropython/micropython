@@ -3,7 +3,7 @@
 def f():
     try:
         raise ValueError("val", 3)
-    except:
+    except Exception:
         raise
 
 try:

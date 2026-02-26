@@ -1,6 +1,6 @@
 try:
     str.center
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

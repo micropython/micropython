@@ -92,27 +92,27 @@ for i in range(1000):
 # next ones must fail
 try:
     tim = Timer(0, mode=12)
-except:
+except Exception:
     print("Exception")
 
 try:
     tim = Timer(4, mode=Timer.ONE_SHOT)
-except:
+except Exception:
     print("Exception")
 
 try:
     tim = Timer(0, mode=Timer.PWM, width=32)
-except:
+except Exception:
     print("Exception")
 
 tim = Timer(0, mode=Timer.PWM)
 
 try:
     ch = tim.channel(TIMER_A | TIMER_B, freq=10)
-except:
+except Exception:
     print("Exception")
 
 try:
     ch = tim.channel(TIMER_A, freq=4)
-except:
+except Exception:
     print("Exception")

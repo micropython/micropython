@@ -1,7 +1,7 @@
 try:
     import micropython
     micropython.heap_lock
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

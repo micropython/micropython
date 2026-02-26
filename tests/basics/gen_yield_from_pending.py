@@ -14,7 +14,7 @@ def raise_task():
 def main():
     try:
         yield from raise_task()
-    except:
+    except Exception:
         print('main exception')
 
     yield from noop_task()

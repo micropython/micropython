@@ -22,7 +22,7 @@ l = []
 while True:
     try:
         l.append(bytearray(1000))
-    except:
+    except Exception:
         break
 l.pop()
 

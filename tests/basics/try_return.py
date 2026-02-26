@@ -4,7 +4,7 @@ def f():
     try:
         print(1)
         return
-    except:
+    except Exception:
         print(2)
     print(3)
 f()

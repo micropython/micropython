@@ -45,7 +45,7 @@ g = gen2()
 print(next(g))
 try:
     g.throw(ValueError)
-except:
+except Exception:
     print('ValueError')
 
 # the thrown 123 is not an exception so raises a TypeError

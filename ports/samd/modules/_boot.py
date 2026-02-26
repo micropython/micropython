@@ -10,7 +10,7 @@ fs_type = vfs.VfsLfs2 if hasattr(vfs, "VfsLfs2") else vfs.VfsLfs1
 
 try:
     fs = fs_type(bdev, progsize=256)
-except:
+except Exception:
     fs_type.mkfs(bdev, progsize=256)
     fs = fs_type(bdev, progsize=256)
 vfs.mount(fs, "/")

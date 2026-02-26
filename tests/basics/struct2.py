@@ -25,52 +25,52 @@ print(struct.pack('<0s1s0H2H', b'abc', b'abc', 258, 515))
 # check that we get an error if the buffer is too small
 try:
     struct.unpack('2H', b'\x00\x00')
-except:
+except Exception:
     print('Exception')
 try:
     struct.pack_into('2I', bytearray(4), 0, 0)
-except:
+except Exception:
     print('Exception')
 
 # check that unknown types raise an exception
 try:
     struct.unpack('z', b'1')
-except:
+except Exception:
     print('Exception')
 
 try:
     struct.pack('z', (b'1',))
-except:
+except Exception:
     print('Exception')
 
 try:
     struct.calcsize('0z')
-except:
+except Exception:
     print('Exception')
 
 # check that a count without a type specifier raises an exception
 
 try:
     struct.calcsize('1')
-except:
+except Exception:
     print('Exception')
 
 try:
     struct.pack('1')
-except:
+except Exception:
     print('Exception')
 
 try:
     struct.pack_into('1', bytearray(4), 0, 'xx')
-except:
+except Exception:
     print('Exception')
 
 try:
     struct.unpack('1', 'xx')
-except:
+except Exception:
     print('Exception')
 
 try:
     struct.unpack_from('1', 'xx')
-except:
+except Exception:
     print('Exception')

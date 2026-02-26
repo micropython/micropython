@@ -12,7 +12,7 @@ try:
     micropython.heap_lock()
     float(123)
     micropython.heap_unlock()
-except:
+except Exception:
     micropython.heap_unlock()
     print("SKIP")
     raise SystemExit

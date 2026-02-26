@@ -288,7 +288,7 @@ def get_drives():
     def has_info(d):
         try:
             return os.path.isfile(d + INFO_FILE)
-        except:
+        except Exception:
             return False
 
     return list(filter(has_info, drives))

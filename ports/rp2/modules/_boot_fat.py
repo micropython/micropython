@@ -6,7 +6,7 @@ import machine, rp2
 bdev = rp2.Flash()
 try:
     vfs.mount(vfs.VfsFat(bdev), "/")
-except:
+except Exception:
     vfs.VfsFat.mkfs(bdev)
     vfs.mount(vfs.VfsFat(bdev), "/")
 

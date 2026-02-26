@@ -7,7 +7,7 @@ import sys, select
 # Import TaskQueue and Task, preferring built-in C code over Python code
 try:
     from _asyncio import TaskQueue, Task
-except:
+except Exception:
     from .task import TaskQueue, Task
 
 

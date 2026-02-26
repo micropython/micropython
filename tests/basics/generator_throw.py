@@ -15,7 +15,7 @@ def gen():
     try:
         yield 1
         yield 2
-    except:
+    except Exception:
         pass
 g = gen()
 print(next(g))

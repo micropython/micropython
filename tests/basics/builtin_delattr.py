@@ -1,7 +1,7 @@
 # test builtin delattr
 try:
     delattr
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

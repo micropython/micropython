@@ -140,17 +140,17 @@ for i in range(0, 1000):
 # next ones must raise
 try:
     uart0_irq = uart0.irq(trigger=100, handler=uart0_handler)
-except:
+except Exception:
     print("Exception")
 
 try:
     uart0_irq = uart0.irq(trigger=0)
-except:
+except Exception:
     print("Exception")
 
 try:
     uart0_irq = uart0.irq(trigger=UART.RX_ANY, wake=Sleep.SUSPENDED)
-except:
+except Exception:
     print("Exception")
 
 uart0_irq.disable()

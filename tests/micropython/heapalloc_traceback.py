@@ -12,7 +12,7 @@ except ImportError:
 global_exc = StopIteration()
 try:
     raise global_exc
-except:
+except Exception:
     pass
 
 

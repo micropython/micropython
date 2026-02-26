@@ -6,7 +6,7 @@ def test_exc(code, exc):
         print("no exception")
     except exc:
         print("right exception")
-    except:
+    except Exception:
         print("wrong exception")
 
 # object with buffer protocol needed on rhs

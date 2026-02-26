@@ -7,7 +7,7 @@ from flashbdev import bdev
 if bdev:
     try:
         vfs.mount(bdev, "/")
-    except:
+    except Exception:
         import inisetup
 
         inisetup.setup()

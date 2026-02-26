@@ -2,7 +2,7 @@
 try:
     sorted
     set
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

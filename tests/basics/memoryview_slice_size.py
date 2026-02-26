@@ -5,7 +5,7 @@ try:
     from uctypes import bytearray_at
 
     memoryview
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

@@ -2,18 +2,18 @@
 def f():
     try:
         raise ValueError("val", 3)
-    except:
+    except Exception:
         try:
             print(1)
             raise TypeError
-        except:
+        except Exception:
             print(2)
             try:
                 print(3)
                 try:
                     print(4)
                     raise AttributeError
-                except:
+                except Exception:
                     print(5)
                     pass
                 print(6)

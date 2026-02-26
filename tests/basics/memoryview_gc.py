@@ -1,7 +1,7 @@
 # test memoryview retains pointer to original object/buffer
 try:
     memoryview
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

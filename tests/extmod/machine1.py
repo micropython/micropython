@@ -4,7 +4,7 @@ try:
     import machine
 
     machine.mem8
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

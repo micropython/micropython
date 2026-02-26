@@ -1,6 +1,6 @@
 try:
     filter
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

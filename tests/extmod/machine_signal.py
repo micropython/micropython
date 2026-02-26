@@ -5,7 +5,7 @@ try:
 
     machine.PinBase
     machine.Signal
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

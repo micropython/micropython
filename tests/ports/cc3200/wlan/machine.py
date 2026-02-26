@@ -38,5 +38,5 @@ print(machine.wake_reason() >= 0)
 
 try:
     machine.main(123456)
-except:
+except Exception:
     print("Exception")

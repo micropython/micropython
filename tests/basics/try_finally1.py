@@ -36,7 +36,7 @@ try:
     try:
         print("try2")
         foo()
-    except:
+    except Exception:
         print("except2")
 finally:
     print("finally1")
@@ -66,7 +66,7 @@ try:  # top-level catch-all except to not fail script
             print("finally2")
     finally:
         print("finally1")
-except:
+except Exception:
     print("catch-all except")
 print()
 
@@ -78,7 +78,7 @@ finally:
     try:
         print("try2")
         foo
-    except:
+    except Exception:
         print("except2")
     print("finally1")
 print()
@@ -92,5 +92,5 @@ def func():
     foo
 try:
     func()
-except:
+except Exception:
     print("except")

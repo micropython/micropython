@@ -2,7 +2,7 @@ import sys
 
 try:
     sys.exc_info
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 
@@ -14,7 +14,7 @@ def f():
 
 try:
     raise ValueError("value", 123)
-except:
+except Exception:
     print(sys.exc_info()[0], sys.exc_info()[1])
     f()
 

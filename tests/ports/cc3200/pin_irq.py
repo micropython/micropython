@@ -101,19 +101,19 @@ for i in range(0, 1000):
 # next ones must raise
 try:
     pin1_irq.init(trigger=123456, handler=pin_handler)
-except:
+except Exception:
     print("Exception")
 
 try:
     pin1_irq.init(trigger=Pin.IRQ_LOW_LEVEL, wake=1789456)
-except:
+except Exception:
     print("Exception")
 
 try:
     pin0_irq = pin0.irq(
         trigger=Pin.IRQ_RISING, wake=machine.SLEEP
     )  # GP16 can't wake up from DEEPSLEEP
-except:
+except Exception:
     print("Exception")
 
 pin0_irq.disable()

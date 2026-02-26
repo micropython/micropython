@@ -7,7 +7,7 @@ class A:
 
 try:
     t = A()[1:2]
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

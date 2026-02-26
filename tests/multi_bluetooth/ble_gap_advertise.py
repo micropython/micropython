@@ -51,7 +51,7 @@ def instance1():
 
     try:
         ble.config(rxbuf=2000)
-    except:
+    except Exception:
         pass
     ble.irq(irq)
     ble.gap_scan(2 * ADV_TIME_MS, 30000, 30000)

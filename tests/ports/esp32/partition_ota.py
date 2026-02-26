@@ -26,7 +26,7 @@ import os
 
 try:
     os.rename("boot.py", "boot-orig.py")
-except:
+except Exception:
     pass
 with open("boot.py", "w") as f:
     f.write("DEBUG=" + str(DEBUG))

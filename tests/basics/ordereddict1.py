@@ -39,5 +39,5 @@ print(d.popitem())
 print(d.popitem())
 try:
     d.popitem()
-except:
+except Exception:
     print('empty')

@@ -34,7 +34,7 @@ def instance0():
         for j in range(NUM_TRANSFERS):
             try:
                 data, addr = s.recvfrom(1000)
-            except:
+            except Exception:
                 continue
             if int(data) == seq:
                 if seq < (TOTAL_PACKETS - PACKET_LOSS_THRESH):
@@ -59,7 +59,7 @@ def instance1():
             s.sendto(b"%d" % (seq), ai)
             try:
                 data, addr = s.recvfrom(1000)
-            except:
+            except Exception:
                 continue
             if int(data) == seq + 1:
                 if seq < (TOTAL_PACKETS - PACKET_LOSS_THRESH):

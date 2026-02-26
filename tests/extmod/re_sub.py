@@ -58,13 +58,13 @@ else:
 # invalid group
 try:
     re.sub("(a)", "b\\2", "a")
-except:
+except Exception:
     print("invalid group")
 
 # invalid group with very large number (to test overflow in MicroPython)
 try:
     re.sub("(a)", "b\\199999999999999999999999999999999999999", "a")
-except:
+except Exception:
     print("invalid group")
 
 # Module function takes str/bytes/re.

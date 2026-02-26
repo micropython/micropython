@@ -48,7 +48,7 @@ print(struct.pack('!i', 123))
 # check that we get an error if the buffer is too small
 try:
     struct.unpack('I', b'\x00\x00\x00')
-except:
+except Exception:
     print('struct.error')
 
 # first arg must be a string
@@ -60,7 +60,7 @@ except TypeError:
 # make sure that unknown types are detected
 try:
     struct.pack("z", 1)
-except:
+except Exception:
     print("Unknown type")
 
 # Initially repetition counters were supported only for strings,
@@ -78,16 +78,16 @@ print(buf)
 # check that we get an error if the buffer is too small
 try:
     struct.pack_into('I', bytearray(1), 0, 0)
-except:
+except Exception:
     print('struct.error')
 
 try:
     struct.pack_into('<bbb', buf, 7, 0x41, 0x42, 0x43)
-except:
+except Exception:
     print('struct.error')
 try:
     struct.pack_into('<bbb', buf, -10, 0x41, 0x42, 0x43)
-except:
+except Exception:
     print('struct.error')
 
 # unpack_from
@@ -96,9 +96,9 @@ print(struct.unpack_from('<b', buf, 4))
 print(struct.unpack_from('<b', buf, -4))
 try:
     print(struct.unpack_from('<b', buf, 10))
-except:
+except Exception:
     print('struct.error')
 try:
     print(struct.unpack_from('<b', buf, -11))
-except:
+except Exception:
     print('struct.error')

@@ -2,7 +2,7 @@
 try:
     min
     max
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

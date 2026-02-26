@@ -7,7 +7,7 @@ while 1:
         while 1:
             print(3)
             break
-    except:
+    except Exception:
         print(4)
     print(5)
     break

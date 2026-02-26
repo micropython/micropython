@@ -31,7 +31,7 @@ read_test_script = """
 bin = True
 try:
     wr=__import__("pyb").USB_VCP(0).send
-except:
+except Exception:
     import sys
     if hasattr(sys.stdout,'buffer'):
         wr=sys.stdout.buffer.write
@@ -56,7 +56,7 @@ write_test_script_verified = """
 import sys
 try:
     rd=__import__("pyb").USB_VCP(0).recv
-except:
+except Exception:
     rd=sys.stdin.readinto
 b=bytearray(%u)
 for _ in range(%u):
@@ -75,7 +75,7 @@ write_test_script_unverified = """
 import sys
 try:
     rd=__import__("pyb").USB_VCP(0).recv
-except:
+except Exception:
     rd=sys.stdin.readinto
 b=bytearray(%u)
 for _ in range(%u):

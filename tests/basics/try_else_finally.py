@@ -3,7 +3,7 @@
 # base case
 try:
     print(1)
-except:
+except Exception:
     print(2)
 else:
     print(3)
@@ -14,7 +14,7 @@ finally:
 try:
     print(1)
     raise Exception
-except:
+except Exception:
     print(2)
 else:
     print(3)
@@ -32,7 +32,7 @@ try:
         print(3)
     finally:
         print(4)
-except:
+except Exception:
     print('caught')
 
 # nested within outer try
@@ -41,13 +41,13 @@ try:
     try:
         print(2)
         raise Exception
-    except:
+    except Exception:
         print(3)
     else:
         print(4)
     finally:
         print(5)
-except:
+except Exception:
     print(6)
 else:
     print(7)
@@ -58,11 +58,11 @@ finally:
 try:
     print(1)
     raise Exception
-except:
+except Exception:
     print(2)
     try:
         print(3)
-    except:
+    except Exception:
         print(4)
     else:
         print(5)
@@ -77,12 +77,12 @@ finally:
 try:
     print(1)
     raise Exception
-except:
+except Exception:
     print(2)
     try:
         print(3)
         raise Exception
-    except:
+    except Exception:
         print(4)
     else:
         print(5)

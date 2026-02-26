@@ -117,67 +117,67 @@ print(len(wifi.mac()) == 6)
 # next ones MUST raise
 try:
     wifi.init(mode=12345)
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.init(1, mode=WLAN.AP)
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.init(mode=WLAN.AP, ssid=None)
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi = WLAN(mode=WLAN.AP, channel=12)
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.antenna(2)
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.mode(10)
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.ssid(
         "11111sdfasdfasdfasdf564sdf654asdfasdf123451245ssdgfsdf1111111111111111111111111234123412341234asdfasdf"
     )
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.auth((0))
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.auth((0, None))
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.auth((10, 10))
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.channel(0)
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.ifconfig(1, "dhcp")
-except:
+except Exception:
     print("Exception")
 
 try:
     wifi.ifconfig(config=())
-except:
+except Exception:
     print("Exception")

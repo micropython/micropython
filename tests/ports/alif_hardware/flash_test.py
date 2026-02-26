@@ -16,7 +16,7 @@ hash_algo = "sha256"
 def flash_make_filesystem():
     try:
         vfs.umount("/flash")
-    except:
+    except Exception:
         pass
     bdev = alif.Flash()
     vfs.VfsFat.mkfs(bdev)
@@ -29,7 +29,7 @@ def flash_make_filesystem():
 def flash_block_test():
     try:
         vfs.umount("/flash")
-    except:
+    except Exception:
         pass
     dev = alif.Flash()
 
@@ -74,7 +74,7 @@ def flash_block_test():
         import uctypes
 
         xip = memoryview(dev)
-    except:
+    except Exception:
         xip = None
     if xip is not None:
         t0 = time.ticks_us()

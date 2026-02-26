@@ -152,7 +152,7 @@ def main():
     exc = Exception("my exception")
     try:
         raise exc
-    except:
+    except Exception:
         pass
 
     def h(e):

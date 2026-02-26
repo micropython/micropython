@@ -35,7 +35,7 @@ from collections import defaultdict
 
 try:
     from ar import Archive
-except:
+except Exception:
     Archive = None
 
 

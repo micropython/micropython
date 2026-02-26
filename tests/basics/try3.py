@@ -3,15 +3,15 @@
 def f():
     try:
         foo()
-    except:
+    except Exception:
         print("except 1")
         try:
             baz()
-        except:
+        except Exception:
             print("except 2")
         bar()
 
 try:
     f()
-except:
+except Exception:
     print("f except")

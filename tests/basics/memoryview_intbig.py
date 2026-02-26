@@ -1,7 +1,7 @@
 # test memoryview accessing maximum values for signed/unsigned elements
 try:
     memoryview
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 try:

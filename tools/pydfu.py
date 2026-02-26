@@ -283,7 +283,7 @@ def exit_dfu():
 
         # Release device
         usb.util.dispose_resources(__dev)
-    except:
+    except Exception:
         pass
 
 

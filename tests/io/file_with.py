@@ -6,7 +6,7 @@ with f as f2:
 # File should be closed
 try:
     f.read()
-except:
+except Exception:
     # Note: CPython and us throw different exception trying to read from
     # close file.
     print("can't read file after with")

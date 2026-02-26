@@ -2,7 +2,7 @@ import jni
 
 try:
     ArrayList = jni.cls("java/util/ArrayList")
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

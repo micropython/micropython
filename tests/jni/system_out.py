@@ -2,7 +2,7 @@ try:
     import jni
 
     System = jni.cls("java/lang/System")
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

@@ -85,7 +85,7 @@ print(m)
 
 try:
     re.compile("*")
-except:
+except Exception:
     print("Caught invalid regex")
 
 # bytes objects

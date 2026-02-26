@@ -84,10 +84,10 @@ while rtc_irq_count < 3:
 # next ones must raise
 try:
     rtc_irq = rtc.irq(trigger=10, handler=alarm_handler)
-except:
+except Exception:
     print("Exception")
 
 try:
     rtc_irq = rtc.irq(trigger=RTC.ALARM0, wake=1789456)
-except:
+except Exception:
     print("Exception")

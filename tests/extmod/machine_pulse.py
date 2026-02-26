@@ -3,7 +3,7 @@ try:
 
     machine.PinBase
     machine.time_pulse_us
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

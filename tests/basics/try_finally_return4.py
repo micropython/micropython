@@ -56,11 +56,11 @@ def f(x):
         print(5)
 try:
     print(f(0))
-except:
+except Exception:
     print('caught')
 try:
     print(f(1))
-except:
+except Exception:
     print('caught')
 
 # case where an unwinding return is cancelled then resumed

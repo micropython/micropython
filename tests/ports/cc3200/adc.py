@@ -56,56 +56,56 @@ for i in range(0, 1000):
 # next ones should raise
 try:
     adc = ADC(bits=17)
-except:
+except Exception:
     print("Exception")
 
 try:
     adc = ADC(id=1)
-except:
+except Exception:
     print("Exception")
 
 try:
     adc = ADC(0, 16)
-except:
+except Exception:
     print("Exception")
 
 adc = ADC()
 try:
     apin = adc.channel(4)
-except:
+except Exception:
     print("Exception")
 
 try:
     apin = adc.channel(-1)
-except:
+except Exception:
     print("Exception")
 
 try:
     apin = adc.channel(0, pin="GP3")
-except:
+except Exception:
     print("Exception")
 
 apin = adc.channel(1)
 apin.deinit()
 try:
     apin()
-except:
+except Exception:
     print("Exception")
 
 try:
     apin.value()
-except:
+except Exception:
     print("Exception")
 
 adc.deinit()
 try:
     apin.value()
-except:
+except Exception:
     print("Exception")
 
 try:
     apin = adc.channel(1)
-except:
+except Exception:
     print("Exception")
 
 # re-init must work

@@ -51,11 +51,11 @@ class TestEncoder(unittest.TestCase):
         self.enc.deinit()
         try:
             self.enc2.deinit()
-        except:
+        except Exception:
             pass
         try:
             self.enc4.deinit()
-        except:
+        except Exception:
             pass
 
     def rotate(self, pulses):

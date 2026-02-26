@@ -1,6 +1,6 @@
 try:
     memoryview(b'a').itemsize
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 try:

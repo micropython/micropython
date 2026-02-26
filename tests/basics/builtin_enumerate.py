@@ -1,6 +1,6 @@
 try:
     enumerate
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

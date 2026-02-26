@@ -1,4 +1,4 @@
 try:
     from . import foo
-except:
+except Exception:
     print("Invalid relative import caught")

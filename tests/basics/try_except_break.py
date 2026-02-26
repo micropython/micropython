@@ -26,48 +26,48 @@ while True:
                        print(2)
                        break
                        print(3)
-                      except:
+                      except Exception:
                        pass
-                     except:
+                     except Exception:
                       pass
-                    except:
+                    except Exception:
                      pass
-                   except:
+                   except Exception:
                     pass
-                  except:
+                  except Exception:
                    pass
-                 except:
+                 except Exception:
                   pass
-                except:
+                except Exception:
                  pass
-               except:
+               except Exception:
                 pass
-              except:
+              except Exception:
                pass
-             except:
+             except Exception:
               pass
-            except:
+            except Exception:
              pass
-           except:
+           except Exception:
             pass
-          except:
+          except Exception:
            pass
-         except:
+         except Exception:
           pass
-        except:
+        except Exception:
          pass
-       except:
+       except Exception:
         pass
-      except:
+      except Exception:
        pass
-     except:
+     except Exception:
       pass
-    except:
+    except Exception:
      pass
-   except:
+   except Exception:
     pass
-  except:
+  except Exception:
    pass
- except:
+ except Exception:
   pass
 print(4)

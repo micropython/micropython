@@ -88,37 +88,37 @@ spi = SPI(0, SPI.MASTER, baudrate=1000000)
 # next ones must fail
 try:
     spi = SPI(0, 10, baudrate=10000000, polarity=0, phase=0)
-except:
+except Exception:
     print("Exception")
 
 try:
     spi = SPI(0, mode=SPI.MASTER, baudrate=10000000, polarity=1, phase=2)
-except:
+except Exception:
     print("Exception")
 
 try:
     spi = SPI(1, mode=SPI.MASTER, baudrate=10000000, polarity=1, phase=1)
-except:
+except Exception:
     print("Exception")
 
 try:
     spi = SPI(0, mode=SPI.MASTER, baudrate=2000000, polarity=2, phase=0)
-except:
+except Exception:
     print("Exception")
 
 try:
     spi = SPI(0, mode=SPI.MASTER, baudrate=2000000, polarity=2, phase=0, firstbit=2)
-except:
+except Exception:
     print("Exception")
 
 try:
     spi = SPI(0, mode=SPI.MASTER, baudrate=2000000, polarity=2, phase=0, pins=("GP1", "GP2"))
-except:
+except Exception:
     print("Exception")
 
 try:
     spi = SPI(0, mode=SPI.MASTER, baudrate=2000000, polarity=0, phase=0, bits=9)
-except:
+except Exception:
     print("Exception")
 
 spi.deinit()

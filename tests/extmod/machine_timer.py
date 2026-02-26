@@ -3,7 +3,7 @@ import sys
 try:
     from machine import Timer
     from time import sleep_ms
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

@@ -27,15 +27,15 @@ print(server.isrunning() == True)
 
 try:
     server.init(1)
-except:
+except Exception:
     print("Exception")
 
 try:
     server.init(0, login=("0000000000011111111111222222222222333333", "abc"))
-except:
+except Exception:
     print("Exception")
 
 try:
     server.timeout(1)
-except:
+except Exception:
     print("Exception")

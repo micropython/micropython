@@ -164,7 +164,7 @@ class BLETemperature:
                 entries = json.load(f)
                 for sec_type, key, value in entries:
                     self._secrets[sec_type, binascii.a2b_base64(key)] = binascii.a2b_base64(value)
-        except:
+        except Exception:
             print("no secrets available")
 
     def _save_secrets(self):
@@ -175,7 +175,7 @@ class BLETemperature:
                     for (sec_type, key), value in self._secrets.items()
                 ]
                 json.dump(json_secrets, f)
-        except:
+        except Exception:
             print("failed to save secrets")
 
 

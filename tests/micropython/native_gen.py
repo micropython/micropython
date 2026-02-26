@@ -48,7 +48,7 @@ print(g.throw(ValueError(42)))
 def gen4():
     try:
         yield 1
-    except:
+    except Exception:
         print("raising GeneratorExit")
         raise GeneratorExit
 

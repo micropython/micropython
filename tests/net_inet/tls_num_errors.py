@@ -9,7 +9,7 @@ if not hasattr(tls, "MBEDTLS_VERSION"):
 
 try:
     from micropython import heap_lock, heap_unlock
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 
@@ -17,7 +17,7 @@ try:
     from micropython import alloc_emergency_exception_buf
 
     alloc_emergency_exception_buf(256)
-except:
+except Exception:
     pass
 
 

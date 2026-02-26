@@ -96,7 +96,7 @@ os.chdir("/flash")
 sd.deinit()
 try:
     os.listdir("/sd")
-except:
+except Exception:
     print("Exception")
 
 # re-initialization must work
@@ -105,58 +105,58 @@ print(os.listdir("/sd"))
 
 try:
     vfs.mount(sd, "/sd")
-except:
+except Exception:
     print("Exception")
 
 try:
     vfs.mount(sd, "/sd2")
-except:
+except Exception:
     print("Exception")
 
 os.unmount("/sd")
 try:
     os.listdir("/sd")
-except:
+except Exception:
     print("Exception")
 
 try:
     os.unmount("/flash")
-except:
+except Exception:
     print("Exception")
 
 try:
     os.unmount("/something")
-except:
+except Exception:
     print("Exception")
 
 try:
     os.unmount("something")
-except:
+except Exception:
     print("Exception")
 
 try:
     os.mkfs("flash")  # incorrect path format
-except:
+except Exception:
     print("Exception")
 
 try:
     os.remove("/flash/nofile.txt")
-except:
+except Exception:
     print("Exception")
 
 try:
     os.rename("/flash/nofile.txt", "/flash/nofile2.txt")
-except:
+except Exception:
     print("Exception")
 
 try:
     os.chdir("/flash/nodir")
-except:
+except Exception:
     print("Exception")
 
 try:
     os.listdir("/flash/nodir")
-except:
+except Exception:
     print("Exception")
 
 vfs.mount(sd, "/sd")

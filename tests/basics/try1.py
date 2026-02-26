@@ -2,7 +2,7 @@
 x = 1
 try:
     x.a()
-except:
+except Exception:
     print(x)
 
 try:

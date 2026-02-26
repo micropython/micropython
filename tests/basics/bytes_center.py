@@ -1,6 +1,6 @@
 try:
     bytes.center
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

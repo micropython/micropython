@@ -1,6 +1,6 @@
 try:
     import micropython
-except:
+except Exception:
     pass
 
 

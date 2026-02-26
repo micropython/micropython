@@ -148,7 +148,7 @@ if __name__ == "__main__":
             device = options.device
         try:
             v, d = map(lambda x: int(x, 0) & 0xFFFF, device.split(":", 1))
-        except:
+        except Exception:
             print("Invalid device '%s'." % device)
             sys.exit(1)
         build(outfile, [target], device)

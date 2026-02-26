@@ -1,7 +1,7 @@
 # test errors from bad operations (unary, binary, etc)
 try:
     memoryview
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

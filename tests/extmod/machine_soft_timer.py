@@ -5,7 +5,7 @@ try:
     import time, machine
 
     machine.Timer
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

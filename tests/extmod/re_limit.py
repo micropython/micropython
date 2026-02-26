@@ -10,7 +10,7 @@ except ImportError:
 def test_re(r):
     try:
         re.compile(r)
-    except:
+    except Exception:
         print("Error")
 
 

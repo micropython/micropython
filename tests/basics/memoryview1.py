@@ -1,7 +1,7 @@
 # test memoryview
 try:
     memoryview
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 try:

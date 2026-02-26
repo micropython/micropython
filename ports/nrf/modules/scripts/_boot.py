@@ -9,12 +9,12 @@ def setup_fs():
     try:
         bdev = nrf.Flash()
         vfs.mount(bdev, "/flash")
-    except:
+    except Exception:
         if fs_type is not None:
             try:
                 fs_type.mkfs(bdev)
                 vfs.mount(bdev, "/flash")
-            except:
+            except Exception:
                 return
 
     os.chdir("/flash")

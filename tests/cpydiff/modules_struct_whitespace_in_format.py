@@ -10,5 +10,5 @@ import struct
 try:
     print(struct.pack("b b", 1, 2))
     print("Should have worked")
-except:
+except Exception:
     print("struct.error")

@@ -2,7 +2,7 @@
 
 try:
     str.splitlines
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

@@ -214,7 +214,7 @@ class Pins(object):
             for row in rows:
                 try:
                     pin_num = parse_pin(row[pinname_col])
-                except:
+                except Exception:
                     continue
                 pin = Pin(pin_num)
                 for af_idx in range(af_col, len(row)):
@@ -230,7 +230,7 @@ class Pins(object):
             for row in rows:
                 try:
                     pin_num = parse_pin(row[1])
-                except:
+                except Exception:
                     continue
                 pin = self.find_pin(pin_num)
                 if pin:

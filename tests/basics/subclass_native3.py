@@ -22,7 +22,7 @@ except Exception as e:
 
 try:
     raise MyExc("Some error2")
-except:
+except Exception:
     print("Caught user exception")
 
 

@@ -238,7 +238,7 @@ def demo():
             v = str(i) + "_"
             print("TX", v)
             central.write(v, with_response)
-        except:
+        except Exception:
             print("TX failed")
         i += 1
         time.sleep_ms(400 if with_response else 30)

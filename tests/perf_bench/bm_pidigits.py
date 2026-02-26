@@ -7,7 +7,7 @@
 
 try:
     int("0x10000000000000000", 16)
-except:
+except Exception:
     print("SKIP")  # No support for >64-bit integers
     raise SystemExit
 

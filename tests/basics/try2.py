@@ -5,10 +5,10 @@ try:
     try:
         print("try 2")
         foo()
-    except:
+    except Exception:
         print("except 2")
     bar()
-except:
+except Exception:
     print("except 1")
 
 try:

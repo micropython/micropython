@@ -92,14 +92,14 @@ def f():
     try:
         while a:
             break
-    except:
+    except Exception:
         b
     finally:
         c
     while a:
         try:
             break
-        except:
+        except Exception:
             pass
 
     # with

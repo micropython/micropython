@@ -6,13 +6,13 @@ if hasattr(alif, "usb_msc"):
     try:
         # This may fail on VfsFat construction, or mount.
         os.mount(os.VfsFat(bdev), "/flash")
-    except:
+    except Exception:
         os.VfsFat.mkfs(bdev)
         os.mount(os.VfsFat(bdev), "/flash")
 else:
     try:
         os.mount(os.VfsLfs2(bdev, progsize=256), "/flash")
-    except:
+    except Exception:
         os.VfsLfs2.mkfs(bdev, progsize=256)
         os.mount(os.VfsLfs2(bdev, progsize=256), "/flash")
 

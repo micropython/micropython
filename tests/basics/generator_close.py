@@ -36,7 +36,7 @@ def gen2():
     try:
         yield 1
         yield 2
-    except:
+    except Exception:
         print('raising GeneratorExit')
         raise GeneratorExit
 
@@ -49,7 +49,7 @@ def gen3():
     try:
         yield 1
         yield 2
-    except:
+    except Exception:
         raise ValueError
 
 g = gen3()

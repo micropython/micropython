@@ -59,7 +59,7 @@ def f():
     try:
         try:
             raise ValueError
-        except:
+        except Exception:
             raise
         print('got here')
     finally:
@@ -74,9 +74,9 @@ def f():
         try:
             try:
                 raise ValueError
-            except:
+            except Exception:
                 raise
-        except:
+        except Exception:
             raise
     finally:
         print('finally')

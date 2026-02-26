@@ -90,30 +90,30 @@ rtc.deinit()
 # next ones must raise
 try:
     rtc.alarm(5000)
-except:
+except Exception:
     print("Exception")
 
 try:
     rtc.alarm_left(1)
-except:
+except Exception:
     print("Exception")
 
 try:
     rtc.alarm_cancel(1)
-except:
+except Exception:
     print("Exception")
 
 try:
     rtc.alarm(5000)
-except:
+except Exception:
     print("Exception")
 
 try:
     rtc = RTC(200000000)
-except:
+except Exception:
     print("Exception")
 
 try:
     rtc = RTC((2015, 8, 29, 9, 0, 0, 0, None))
-except:
+except Exception:
     print("Exception")

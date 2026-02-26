@@ -3,5 +3,5 @@ try:
     import os
 
     os.chdir("/rom")
-except:
+except Exception:
     pass

@@ -17,5 +17,5 @@ print(wipy.heartbeat() == True)
 
 try:
     wipy.heartbeat(True, 1)
-except:
+except Exception:
     print("Exception")

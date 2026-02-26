@@ -22,7 +22,7 @@ print(j)
 print(3 + 4)
 try:
     a = 4 // zero
-except:
+except Exception:
     print(8)
 print("xxxxxxxxx".count("x"))
 
@@ -104,7 +104,7 @@ while True:
         x = c25()
         print(x.x)
         raise
-    except:
+    except Exception:
         print(26)
     print(27 + zero)
     break
@@ -182,7 +182,7 @@ while True:
             break
         else:
             print(0)
-    except:
+    except Exception:
         print(0)
 print(46)
 print(46 + 1)

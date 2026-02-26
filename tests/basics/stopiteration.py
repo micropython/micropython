@@ -2,7 +2,7 @@
 
 try:
     enumerate, exec
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

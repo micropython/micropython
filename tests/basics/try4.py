@@ -3,19 +3,19 @@
 def f():
     try:
         foo()
-    except:
+    except Exception:
         print("except 1")
         try:
             bar()
-        except:
+        except Exception:
             print("except 2")
             try:
                 baz()
-            except:
+            except Exception:
                 print("except 3")
             bak()
 
 try:
     f()
-except:
+except Exception:
     print("f except")

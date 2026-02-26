@@ -9,7 +9,7 @@ try:
     map
     max
     zip
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

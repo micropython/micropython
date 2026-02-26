@@ -8,7 +8,7 @@ class A:
 # Make sure that we have slices and .indices()
 try:
     A()[2:5].indices(10)
-except:
+except Exception:
     print("SKIP")
     raise SystemExit
 

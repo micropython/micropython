@@ -31,7 +31,7 @@ def instance0():
             for group in range(NUM_PACKET_GROUPS):
                 try:
                     data, addr = s.recvfrom(1000)
-                except:
+                except Exception:
                     continue
                 recv_burst, recv_group = data.split(b":")
                 recv_burst = int(recv_burst)

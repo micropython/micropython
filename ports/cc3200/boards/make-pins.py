@@ -124,7 +124,7 @@ class Pins:
             for row in rows:
                 try:
                     (port_num, gpio_bit) = parse_port_pin(row[pinname_col])
-                except:
+                except Exception:
                     continue
                 if not row[pin_col].isdigit():
                     raise ValueError(
