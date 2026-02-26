@@ -45,6 +45,7 @@
 #include "lwip/raw.h"
 #include "lwip/dns.h"
 #include "lwip/igmp.h"
+#include "lwip/netif.h"
 #if LWIP_VERSION_MAJOR < 2
 #include "lwip/timers.h"
 #include "lwip/tcp_impl.h"
@@ -62,6 +63,9 @@
 // Timeout between closing a TCP socket and doing a tcp_abort on that
 // socket, if the connection isn't closed cleanly in that time.
 #define MICROPY_PY_LWIP_TCP_CLOSE_TIMEOUT_MS (10000)
+
+// Timeout for getaddrinfo DNS resolution, in milliseconds.
+#define MICROPY_PY_LWIP_GETADDRINFO_TIMEOUT_MS (20000)
 
 // All socket options should be globally distinct,
 // because we ignore option levels for efficiency.
@@ -1856,11 +1860,42 @@ static mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
             // cached
             state.status = 1;
             break;
-        case ERR_INPROGRESS:
+        case ERR_INPROGRESS: {
+            // If no network interface is fully connected, fail immediately
+            // rather than polling.  Cached DNS server addresses from a
+            // previous connection can cause lwIP to enqueue a query that
+            // can never succeed, and on some ports (e.g. rp2) the lwIP
+            // soft timer self-disables when no interface has link,
+            // preventing DNS retry timeouts from firing.
+            // Check three conditions: interface administratively up,
+            // physical link up (e.g. WiFi associated), and valid IP
+            // (DHCP complete).  After disconnect, LINK_UP is cleared
+            // but the IP may linger from the previous DHCP lease.
+            bool has_active_if = false;
+            struct netif *netif;
+            NETIF_FOREACH(netif) {
+                if (netif_is_up(netif) && netif_is_link_up(netif)
+                    && !ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+                    has_active_if = true;
+                    break;
+                }
+            }
+            if (!has_active_if) {
+                state.status = -2;
+                break;
+            }
+            // Safety-net timeout in case lwIP's internal DNS retry mechanism
+            // doesn't fire (e.g. soft timer disabled).
+            mp_uint_t start = mp_hal_ticks_ms();
             while (state.status == 0) {
                 poll_sockets();
+                if ((mp_uint_t)(mp_hal_ticks_ms() - start) > MICROPY_PY_LWIP_GETADDRINFO_TIMEOUT_MS) {
+                    state.status = -2;
+                    break;
+                }
             }
             break;
+        }
         default:
             state.status = ret;
     }
