@@ -14,6 +14,7 @@
 #include "hardware/irq.h"
 #include "hardware/gpio.h"
 #include "hardware/ticks.h"
+#include "hardware/vreg.h"
 
 #if PICO_RP2040
 // The RTC clock frequency is 48MHz divided by power of 2 (to ensure an integer
@@ -85,6 +86,13 @@ void runtime_init_clocks_optional_usb(bool init_usb) {
         0,             // No aux mux
         XOSC_HZ,
         XOSC_HZ);
+
+    #if SYS_CLK_VREG_VOLTAGE_AUTO_ADJUST && defined(SYS_CLK_VREG_VOLTAGE_MIN)
+    if (vreg_get_voltage() < SYS_CLK_VREG_VOLTAGE_MIN) {
+        vreg_set_voltage(SYS_CLK_VREG_VOLTAGE_MIN);
+        busy_wait_at_least_cycles((uint32_t)((SYS_CLK_VREG_VOLTAGE_AUTO_ADJUST_DELAY_US * (uint64_t)XOSC_HZ) / 1000000));
+    }
+    #endif
 
     /// \tag::configure_clk_sys[]
     // CLK SYS = PLL SYS (usually) 125MHz / 1 = 125MHz
