@@ -62,6 +62,8 @@ EXCLUSIONS = [
     "ports/nrf/modules/music/*.[ch]",
     "ports/nrf/modules/ubluepy/*.[ch]",
     "ports/nrf/modules/os/*.[ch]",
+    # PSoC 3rd party
+    "ports/psoc6/boards/**/*.[ch]",
     # STM32 USB dev/host code is mostly 3rd party.
     "ports/stm32/usbdev/**/*.[ch]",
     "ports/stm32/usbhost/**/*.[ch]",

@@ -1,0 +1,34 @@
+[
+    {
+        "asset-name": "cat1cm0p",
+        "locked-commit": "release-v1.7.0"
+    },
+    {
+        "asset-name": "cmsis",
+        "locked-commit": "release-v5.8.1"
+    },
+    {
+        "asset-name": "core-lib",
+        "locked-commit": "release-v1.4.2"
+    },
+    {
+        "asset-name": "core-make",
+        "locked-commit": "release-v3.3.1"
+    },
+    {
+        "asset-name": "device-db",
+        "locked-commit": "release-v4.18.0"
+    },
+    {
+        "asset-name": "mtb-hal-cat1",
+        "locked-commit": "release-v2.6.1"
+    },
+    {
+        "asset-name": "mtb-pdl-cat1",
+        "locked-commit": "release-v3.12.0"
+    },
+    {
+        "asset-name": "recipe-make-cat1a",
+        "locked-commit": "release-v2.2.1"
+    }
+]

@@ -1,0 +1,26 @@
+
+SD card mounted at /SDCardLfs2
+
+
+***** Test 1: Short string file transfer to SD Card in LFS2 format *****
+
+PASS
+
+***** Test 2: Long string file transfer to SD Card in LFS2 format *****
+
+PASS
+
+SD card mounted at /SDCardFat
+
+
+***** Test 3: Short string file transfer to SD Card in FAT format *****
+
+PASS
+
+***** Test 4: Long string file transfer to SD Card in FAT format *****
+
+PASS
+
+***** Test 5: reinitialize the same slot more than once *****
+
+PASS

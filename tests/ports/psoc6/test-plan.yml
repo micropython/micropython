@@ -1,0 +1,239 @@
+- name: vfs-flash
+  test: 
+    script: 
+      - extmod/vfs_basic.py
+      - extmod/vfs_lfs_superblock.py
+      - extmod/vfs_userfs.py
+    device:
+      - board: CY8CPROTO-062-4343W
+      - board: CY8CPROTO-063-BLE
+      - board: CY8CKIT-062S2-AI
+
+- name: vfs-flash-large
+  type: custom
+  test: 
+    script: 
+      -  ports/psoc6/mp_custom/fs.py
+    args:
+      - basic 
+      - flash
+    device:
+      - board: CY8CPROTO-062-4343W
+      - board: CY8CPROTO-063-BLE
+      - board: CY8CKIT-062S2-AI
+
+- name: vfs-sdcard
+  test: 
+    script: ports/psoc6/board_ext_hw/single/sdcard.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+
+- name: vfs-sdcard-large
+  type: custom
+  test: 
+    script: 
+      -  ports/psoc6/mp_custom/fs.py
+    args:
+      - basic
+      - sd
+    device:
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+
+- name: no-extended-hardware
+  test: 
+    script: ports/psoc6/board_only_hw/single
+    exclude:
+      - board_only_hw/single/wdt.py
+      - board_only_hw/single/wdt_reset_check.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+      - board: CY8CPROTO-063-BLE
+      - board: CY8CKIT-062S2-AI
+
+- name: pin
+  test: 
+    script: ports/psoc6/board_ext_hw/single/pin.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.a
+
+- name: signal
+  test: 
+    script: ports/psoc6/board_ext_hw/single/signal.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.a
+
+- name: pwm
+  test: 
+    script: ports/psoc6/board_ext_hw/single/pwm.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.a
+
+- name: adc
+  test: 
+    script: ports/psoc6/board_ext_hw/single/adc.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.b
+
+- name: i2c
+  test: 
+    script: ports/psoc6/board_ext_hw/single/i2c.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.a
+
+- name: uart
+  test:
+    script: ports/psoc6/board_ext_hw/single/uart.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.b
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.a
+
+- name: spi
+  test: 
+    script: ports/psoc6/board_ext_hw/multi/spi_master.py
+    device:
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.c
+  stub:
+    script: ports/psoc6/board_ext_hw/multi/spi_slave.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.b
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.b
+
+- name: i2s
+  test: 
+    script: ports/psoc6/board_ext_hw/multi/i2s_rx.py
+    device:
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.b
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.c
+  stub:
+    script: ports/psoc6/board_ext_hw/multi/i2s_tx.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.b
+
+- name: pdm-pcm
+  test: 
+    script: ports/psoc6/board_ext_hw/multi/pdm_pcm_rx.py
+    device:
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.b
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.c
+  stub:
+    script: ports/psoc6/board_ext_hw/multi/pdm_pcm_tx.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.b
+
+- name: bitstream
+  test: 
+    script: ports/psoc6/board_ext_hw/multi/bitstream_rx.py
+    device:
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.b
+  stub:
+    script: ports/psoc6/board_ext_hw/multi/bitstream_tx.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.b
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.c
+
+- name: time-pulse
+  test: 
+    script: ports/psoc6/board_ext_hw/multi/time_pulse_us.py
+    device:
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.a
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.a
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.b
+  stub:
+    script: ports/psoc6/board_ext_hw/multi/time_pulse_sig_gen.py
+    device: 
+      - board: CY8CPROTO-062-4343W
+        version: 0.6.0.b
+      - board: CY8CPROTO-063-BLE
+        version: 0.5.0.b
+      - board: CY8CKIT-062S2-AI
+        version: 0.1.0.c
+
+- name: watchdog
+  test: 
+    script: 
+      - ports/psoc6/board_only_hw/single/wdt.py
+      - ports/psoc6/board_only_hw/single/wdt_reset_check.py
+    post_test_delay_ms: 2000
+    device:
+      - board: CY8CPROTO-062-4343W
+      - board: CY8CPROTO-063-BLE
+      - board: CY8CKIT-062S2-AI
+
+- name: wifi
+  type: multi
+  test: 
+    script: ports/psoc6/board_only_hw/multi/
+    device:
+      - board: CY8CPROTO-062-4343W
+      - board: CY8CKIT-062S2-AI
+
