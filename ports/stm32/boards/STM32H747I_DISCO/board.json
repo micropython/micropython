@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "DAC",
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "External RAM",
+        "microSD",
+        "USB"
+    ],
+    "images": [
+        "stm32h747i_disco.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "Discovery Kit H747I",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/stm32h747i-disco.html",
+    "vendor": "ST Microelectronics"
+}
