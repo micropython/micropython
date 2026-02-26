@@ -1,0 +1,16 @@
+test basic use of ref() with only one argument
+<A object>
+(outside Python)
+<A object>
+(outside Python)
+None
+test use of ref() with a callback
+<A object>
+(outside Python)
+<A object>
+callback None
+(outside Python)
+None
+test when weakref gets collected before the object it refs
+<A object>
+(outside Python)
