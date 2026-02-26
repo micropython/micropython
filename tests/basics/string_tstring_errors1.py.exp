@@ -1,0 +1,60 @@
+
+=== Edge cases ===
+Empty template: 'Template(strings=('',), interpolations=())'
+Empty strings: [Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, '')]
+Adjacent: 'Template(strings=('', '', '', ''), interpolations=(Interpolation(1, '1', None, ''), Interpolation(2, '2', None, ''), Interpolation(3, '3', None, '')))'
+Single iter: ['only']
+Self+self: 'Template(strings=('testtest',), interpolations=())'
+
+=== Additional coverage tests ===
+String literal: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
+Raw path strings: ('Path: ', '\\n'), value=/usr/local/bin
+Raw regex strings: ('Regex: \\\\d+', ''), value=42
+String expr: 'Template(strings=('', ''), interpolations=(Interpolation('test', '"test"', None, ''),))'
+Re-raised exception: Special error
+Large template: SyntaxError
+Triple quoted: 'Template(strings=('Triple "quoted" string',), interpolations=())'
+Raw triple: 'Template(strings=('Raw triple\\n', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Complex concat: strings=('a', 'bc', 'd', 'e'), values=(1, 2, 3)
+Empty concat: 'Template(strings=('test', ''), interpolations=(Interpolation(42, '42', None, ''),))'
+Self interp concat: values=(1, 1)
+Lonely string: SyntaxError
+Empty t-string: 'Template(strings=('',), interpolations=())'
+
+=== High byte handling ===
+High bytes: len=5, first=0x7f, last=0xff
+Octal high bytes: OK, len=3
+
+=== Deep nesting test ===
+Deep nesting: OK
+
+=== Trailing whitespace in expression ===
+Trailing whitespace: OK
+
+=== Single closing brace ===
+Single }: SyntaxError - malformed f-string
+
+=== Escape in string within interpolation ===
+Debug unclosed colon: SyntaxError
+Debug unclosed exclaim: SyntaxError
+Unclosed brace literal: SyntaxError
+Malformed f-string: SyntaxError
+Type error int: expected str or Interpolation
+Type error float: TypeError
+Unmatched brace: malformed f-string
+Nested debug braces: SyntaxError
+Missing conversion: SyntaxError
+Invalid conversion: invalid syntax
+Vertical tab: invalid syntax
+Invalid char after conversion: invalid syntax
+Unexpected error: invalid syntax
+Unexpected error: invalid syntax
+Unexpected error: invalid syntax
+Unexpected error: invalid syntax
+
+=== Mixed prefixes ===
+ft: invalid syntax
+tf: invalid syntax
+frt: invalid syntax
+rtf: invalid syntax
+trf: invalid syntax

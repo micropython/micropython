@@ -599,6 +599,9 @@ MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_builtin_locals);
 // These are defined in terms of MicroPython API functions right away
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_obj_id);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
+#if MICROPY_PY_TSTRINGS
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___template___obj, 1, MP_OBJ_FUN_ARGS_MAX, mp_obj_new_template);
+#endif
 
 static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_builtins) },
@@ -607,6 +610,9 @@ static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___build_class__), MP_ROM_PTR(&mp_builtin___build_class___obj) },
     { MP_ROM_QSTR(MP_QSTR___import__), MP_ROM_PTR(&mp_builtin___import___obj) },
     { MP_ROM_QSTR(MP_QSTR___repl_print__), MP_ROM_PTR(&mp_builtin___repl_print___obj) },
+    #if MICROPY_PY_TSTRINGS
+    { MP_ROM_QSTR(MP_QSTR___template__), MP_ROM_PTR(&mp_builtin___template___obj) },
+    #endif
 
     // built-in types
     { MP_ROM_QSTR(MP_QSTR_bool), MP_ROM_PTR(&mp_type_bool) },

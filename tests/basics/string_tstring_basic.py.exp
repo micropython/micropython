@@ -1,0 +1,141 @@
+=== Basic functionality ===
+Template
+Strings: ('Hello ', '')
+Value: World
+str(): Template(strings=('Hello ', ''), interpolations=(Interpolation('World', 'name', None, ''),))
+Raw: 'Path: C:\test\'
+tr: 'Path: C:\test\'
+
+=== Parser tests ===
+Complex: Template(strings=('', ''), interpolations=(Interpolation(1, "data['a']['b'][0]", None, ''),))
+None: Template(strings=('', ''), interpolations=(Interpolation(None, 'None', None, ''),))
+True: Template(strings=('', ''), interpolations=(Interpolation(True, 'True', None, ''),))
+False: Template(strings=('', ''), interpolations=(Interpolation(False, 'False', None, ''),))
+Ellipsis: Template(strings=('', ''), interpolations=(Interpolation(Ellipsis, '...', None, ''),))
+Deep nest: Template(strings=('', ''), interpolations=(Interpolation(42, 'obj.a.b[0].c()', None, ''),))
+
+=== Conversions and formatting ===
+repr: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 'r', ''),))
+str: Template(strings=('', ''), interpolations=(Interpolation({'key': 'value'}, 'val', 's', ''),))
+Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10d'),))'
+Precision: Template(strings=('', ''), interpolations=(Interpolation(3.14159, '3.14159', None, '.2f'),))
+Debug: Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))
+
+=== Constructor tests ===
+Empty: ('',)
+Single: ('single',)
+Multi: ('abc',)
+Mixed: strings=('start', 'middle', 'end'), values=(1, 2)
+
+=== Operations ===
+Concat: 'Template(strings=('Hello World',), interpolations=())'
+Iterator: ['str', 'Interpolation', 'str', 'Interpolation', 'str']
+strings attr: ('test', '')
+interpolations attr: 1
+values attr: (42,)
+repr: Template(strings=(' World',), interpolations=())...
+
+=== Escaped braces evaluation ===
+Escaped eval: 'Template(strings=('{', '}', '{{', '}}'), interpolations=(Interpolation(42, 'x', None, ''), Interpolation(42, 'x', None, ''), Interpolation(42, 'x', None, '')))'
+Braces in strings: 'Template(strings=('{{hello}}', ' {', '} ', '{{world}}'), interpolations=(Interpolation(1, 'a', None, ''), Interpolation(2, 'b', None, ''), Interpolation(3, 'c', None, '')))'
+
+=== Memory stress test ===
+Memory test [10]: 450 chars
+Memory test [20]: 880 chars
+Memory test [30]: 1310 chars
+Large values: 20 values
+
+=== Nested quotes and braces tests ===
+Nested quotes 1: Template(strings=('', ''), interpolations=(Interpolation('{}', '"{}"', None, ''),))
+  Value: {}
+  Expression: "{}"
+Nested quotes 2: Template(strings=('', ''), interpolations=(Interpolation('hello', "'hello'", None, ''),))
+  Value: hello
+Nested quotes 3: Template(strings=('', ''), interpolations=(Interpolation('world', '"world"', None, ''),))
+  Value: world
+Nested quotes 4: Template(strings=('', ''), interpolations=(Interpolation('b', "['a', 'b', 'c'][1]", None, ''),))
+  Value: b
+Nested quotes 5: Template(strings=('', ''), interpolations=(Interpolation('value', "d['key']", None, ''),))
+  Value: value
+Escaped braces 1: Template(strings=('{""}',), interpolations=())
+  Strings: ('{""}',)
+Escaped braces 2: Template(strings=('{}}',), interpolations=())
+  Strings: ('{}}',)
+Mixed escaped: Template(strings=('{before} ', ' {after}'), interpolations=(Interpolation('test', 'x', None, ''),))
+  Strings: ('{before} ', ' {after}')
+  Value: test
+Escape sequences: Template(strings=('', ''), interpolations=(Interpolation('\n\t', "'\\n\\t'", None, ''),))
+  Value repr: '\n\t'
+Nested expr: Template(strings=('', ''), interpolations=(Interpolation('{}', 'inner', None, ''),))
+  Value: {}
+
+=== Interpolation attribute tests ===
+Basic conversion: None
+Basic format_spec: 
+With conversion: s
+With format_spec: :>10
+Full conversion: r
+Full format_spec: :>10
+Template conversion: s
+Template format_spec: >10
+Both conversion: r
+Both format_spec: >10
+
+=== Escape sequence tests ===
+Template(strings=('Line1\nLine2',), interpolations=())
+Template(strings=('Path\\to\\file',), interpolations=())
+Template(strings=("It's working",), interpolations=())
+Template(strings=('She said "Hello"',), interpolations=())
+Template(strings=('Bell\x07',), interpolations=())
+Template(strings=('Back\x08space',), interpolations=())
+Template(strings=('Tab\there',), interpolations=())
+Template(strings=('Vertical\x0btab',), interpolations=())
+Template(strings=('Form\x0cfeed',), interpolations=())
+Template(strings=('Carriage\rreturn',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\x7f',), interpolations=())
+Template(strings=('\x00',), interpolations=())
+Template(strings=('\x07',), interpolations=())
+Template(strings=('?',), interpolations=())
+Template(strings=('A',), interpolations=())
+Template(strings=('\x01a',), interpolations=())
+Template(strings=('Sc',), interpolations=())
+Template(strings=('First second',), interpolations=())
+Template(strings=('OneTwoThree',), interpolations=())
+Template(strings=('\n\t\r',), interpolations=())
+Template(strings=('\\n\\t\\x41',), interpolations=())
+Template(strings=('C:\\new\\test',), interpolations=())
+Template(strings=('\n\tA',), interpolations=())
+Template(strings=('\\n\\t\\x41',), interpolations=())
+
+=== Triple quote edge cases ===
+Triple in interpolation: Template(strings=('Documentation:\n', '\nEnd of doc'), interpolations=(Interpolation('This is a\nmulti-line\ndocstring', 'doc', None, ''),))
+   Value: 'This is a\nmulti-line\ndocstring'
+Complex nested: Template(strings=('Users:\n', ': ', '\n', ': ', ''), interpolations=(Interpolation('Alice', "data['users'][0]['name']", None, ''), Interpolation('Say "Hello"', "data['users'][0]['msg']", None, ''), Interpolation('Bob', "data['users'][1]['name']", None, ''), Interpolation("It's great!", "data['users'][1]['msg']", None, '')))
+   Values: ('Alice', 'Say "Hello"', 'Bob', "It's great!")
+Raw with interpolation: Template(strings=('Path: C:\\Users\\', 'Documents\nRaw newline: \\n\nRaw tab: \\t'), interpolations=(Interpolation('/', 'path_sep', None, ''),))
+   String 0 repr: 'Path: C:\\Users\\'
+Long line: strings=('Start\n', '\nEnd')
+   Value length: 50
+Nested templates: Template(strings=('Outer template:\n', '\nEnd'), interpolations=(Interpolation(Template(strings=('inner ', ''), interpolations=(Interpolation(42, '42', None, ''),)), 'inner', None, ''),))
+   Inner value: Template(strings=('inner ', ''), interpolations=(Interpolation(42, '42', None, ''),))
+Formatted values: Template(strings=('Math constants:\nPi: ', '\nE: ', '\nSqrt(2): ', ''), interpolations=(Interpolation(314, '314', None, '.2f'), Interpolation(271, '271', None, '.1e'), Interpolation(141, '141', None, '.0f')))
+    Interpolation count: 3
+    Format specs: ['.2f', '.1e', '.0f']
+Debug complex: Template(strings=('Debug info:\nx + y=', ' x * y * z=', ' x < y < z=', ''), interpolations=(Interpolation(3, 'x + y', 'r', ''), Interpolation(6, 'x * y * z', 'r', ''), Interpolation(True, 'x < y < z', 'r', '')))
+    Expressions: ['x + y', 'x * y * z', 'x < y < z']
+Concatenated triple: Template(strings=('Part 1\nwith newlinePart 2\nalso multiline',), interpolations=())
+    Strings: ('Part 1\nwith newlinePart 2\nalso multiline',)
+
+=== PEP 701 brace compliance ===
+Escaped {{: ('{',)
+Escaped }}: ('}',)
+Mixed: ('test{escape}here',)
+
+=== Format spec scope resolution ===
+Local vars: width=10, x=42
+Format spec: 10
+Scope test: PASS
+Precision: format_spec=.2f
+
+Basic tests completed!

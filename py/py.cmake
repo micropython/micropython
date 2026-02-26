@@ -49,6 +49,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/modio.c
     ${MICROPY_PY_DIR}/modmath.c
     ${MICROPY_PY_DIR}/modmicropython.c
+    ${MICROPY_PY_DIR}/modstring.c
     ${MICROPY_PY_DIR}/modstruct.c
     ${MICROPY_PY_DIR}/modsys.c
     ${MICROPY_PY_DIR}/modthread.c
@@ -106,6 +107,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objstr.c
     ${MICROPY_PY_DIR}/objstringio.c
     ${MICROPY_PY_DIR}/objstrunicode.c
+    ${MICROPY_PY_DIR}/objtemplate.c
     ${MICROPY_PY_DIR}/objtuple.c
     ${MICROPY_PY_DIR}/objtype.c
     ${MICROPY_PY_DIR}/objzip.c

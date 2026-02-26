@@ -1137,7 +1137,7 @@ typedef time_t mp_timestamp_t;
 // have __init__ methods. Instead, the top-level package's __init__ should
 // initialise all sub-packages.
 #ifndef MICROPY_MODULE_BUILTIN_SUBPACKAGES
-#define MICROPY_MODULE_BUILTIN_SUBPACKAGES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#define MICROPY_MODULE_BUILTIN_SUBPACKAGES (MICROPY_PY_TSTRINGS || MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
 // Whether to support module-level __getattr__ (see PEP 562)
@@ -1320,6 +1320,12 @@ typedef time_t mp_timestamp_t;
 // Support for literal string interpolation, f-strings (see PEP 498, Python 3.6+)
 #ifndef MICROPY_PY_FSTRINGS
 #define MICROPY_PY_FSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Support for template strings, t-strings (see PEP 750, Python 3.14+)
+// Requires MICROPY_PY_FSTRINGS to be enabled.
+#ifndef MICROPY_PY_TSTRINGS
+#define MICROPY_PY_TSTRINGS (MICROPY_PY_FSTRINGS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)

@@ -413,6 +413,7 @@ tests_with_regex_output = [
         "micropython/meminfo.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
+        "basics/tstring_test.py",
         "misc/sys_settrace_cov.py",
         "net_inet/tls_text_errors.py",
         "thread/thread_exc2.py",
@@ -650,6 +651,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_const = False
     skip_revops = False
     skip_fstring = False
+    skip_tstring = False
     skip_endian = False
     skip_inlineasm = False
     has_complex = True
@@ -709,6 +711,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "fstring.py")
         if output != b"a=1\n":
             skip_fstring = True
+
+        # Check if tstring feature is enabled, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, "tstring.py")
+        if output != b"tstring\n":
+            skip_tstring = True
 
         if args.inlineasm_arch == "thumb":
             # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
@@ -881,6 +888,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
         is_fstring = test_name.startswith("string_fstring")
+        is_tstring = test_name.startswith("string_tstring") or "tstring" in test_name
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
@@ -895,6 +903,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_fstring and is_fstring
+        skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
