@@ -352,7 +352,7 @@ typedef struct {
 inline MP_ALWAYSINLINE const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
     // "genhdr/compressed.data.h" contains an invocation of the MP_MATCH_COMPRESSED macro for each compressed string.
     // The giant if(strcmp) tree is optimized by the compiler, which turns this into a direct return of the compressed data.
-    #define MP_MATCH_COMPRESSED(a, b) if (strcmp(msg, a) == 0) { return b; } else
+    #define MP_MATCH_COMPRESSED(a, b) if (__builtin_strcmp(msg, a) == 0) { return b; } else
 
     // It also contains a single invocation of the MP_COMPRESSED_DATA macro, we don't need that here.
     #define MP_COMPRESSED_DATA(x)
