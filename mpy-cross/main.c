@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -105,7 +110,28 @@ static int compile_and_save(const char *file, const char *output_file, const cha
 
         if ((output_file != NULL && strcmp(output_file, "-") == 0) ||
             (output_file == NULL && strcmp(file, "-") == 0)) {
+            // Windows defaults stdout to text mode which will corrupt the MPY
+            // output. Change it to binary mode to avoid this.
+            #ifdef _WIN32
+            fflush(stdout);
+            _setmode(fileno(stdout), _O_BINARY);
+
+            nlr_buf_t nlr2;
+            if (nlr_push(&nlr2) == 0) {
+                mp_raw_code_save(&cm, (mp_print_t *)&mp_stdout_print);
+                nlr_pop();
+
+                // Restore the original mode in case we have to print unhandled exceptions
+                fflush(stdout);
+                _setmode(fileno(stdout), _O_TEXT);
+            } else {
+                fflush(stdout);
+                _setmode(fileno(stdout), _O_TEXT);
+                nlr_jump(nlr2.ret_val);
+            }
+            #else
             mp_raw_code_save(&cm, (mp_print_t *)&mp_stdout_print);
+            #endif
         } else {
             vstr_t vstr;
             vstr_init(&vstr, 16);
