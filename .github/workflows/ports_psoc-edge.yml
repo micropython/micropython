@@ -1,0 +1,28 @@
+name: psoc-edge port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'shared/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/psoc-edge/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_psoc_edge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Install packages
+      run: tools/ci.sh psoc_edge_setup
+    - name: Build
+      run: tools/ci.sh psoc_edge_build
