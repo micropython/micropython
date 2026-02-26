@@ -245,6 +245,15 @@ typedef struct _m_tracked_node_t {
     uint8_t data[];
 } m_tracked_node_t;
 
+// Helper to get data size of a tracked node, abstracting MICROPY_TRACKED_ALLOC_STORE_SIZE.
+static inline size_t get_tracked_node_size(m_tracked_node_t *node) {
+    #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+    return node->size;
+    #else
+    return gc_nbytes(node) - sizeof(m_tracked_node_t);
+    #endif
+}
+
 #if MICROPY_DEBUG_VERBOSE
 static size_t m_tracked_count_links(size_t *nb) {
     m_tracked_node_lock();
@@ -292,6 +301,40 @@ void *m_tracked_calloc(size_t nmemb, size_t size) {
     return &node->data[0];
 }
 
+void *m_tracked_realloc(void *ptr_in, size_t n_bytes) {
+    // Handle pure allocation
+    if (ptr_in == NULL) {
+        return m_tracked_calloc(1, n_bytes);
+    }
+
+    // Handle pure free
+    if (n_bytes == 0) {
+        m_tracked_free(ptr_in);
+        return NULL;
+    }
+// To keep the implementation simple, we always allocate a new buffer and copy the old data into it.
+// This could be optimised if faster performance or lower worst-case memory usage is required.
+    // Get old size
+    m_tracked_node_t *old_node = (m_tracked_node_t *)((uint8_t *)ptr_in - sizeof(m_tracked_node_t));
+    size_t old_size = get_tracked_node_size(old_node);
+
+    // Allocate new buffer
+    void *new_ptr = m_tracked_calloc(1, n_bytes);
+    if (new_ptr == NULL) {
+        // Allocation failed, return NULL but leave original pointer intact
+        return NULL;
+    }
+
+    // Copy data (minimum of old and new size)
+    size_t copy_size = MIN(old_size, n_bytes);
+    memcpy(new_ptr, ptr_in, copy_size);
+
+    // Free old buffer
+    m_tracked_free(ptr_in);
+
+    return new_ptr;
+}
+
 void m_tracked_free(void *ptr_in) {
     if (ptr_in == NULL) {
         return;
@@ -299,11 +342,7 @@ void m_tracked_free(void *ptr_in) {
     m_tracked_node_t *node = (m_tracked_node_t *)((uint8_t *)ptr_in - sizeof(m_tracked_node_t));
     #if MICROPY_DEBUG_VERBOSE
     size_t data_bytes;
-    #if MICROPY_TRACKED_ALLOC_STORE_SIZE
-    data_bytes = node->size;
-    #else
-    data_bytes = gc_nbytes(node);
-    #endif
+    data_bytes = get_tracked_node_size(node);
     size_t nb;
     size_t n = m_tracked_count_links(&nb);
     DEBUG_printf("m_tracked_free(%p, [%p, %p], nbytes=%u, links=%u;%u)\n", node, node->prev, node->next, (int)data_bytes, (int)n, (int)nb);
