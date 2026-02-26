@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Celluar network",
+        "bsp",
+        "USB"
+    ],
+    "images": [
+        "ec600ucn_lb.jpg"
+    ],
+    "mcu": "ec600ucnlb",
+    "product": "EC600UCN_LB",
+    "thumbnail": "",
+    "url": "https://developer.quectel.com/modules-cat/ec600u-series",
+    "vendor": "Unisoc"
+}
