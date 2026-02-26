@@ -20,7 +20,9 @@ duty_margin_per_thousand = 0
 timing_margin_us = 5
 
 # Configure pins based on the target.
-if "esp32" in sys.platform:
+if "alif" in sys.platform:
+    pwm_pulse_pins = (("P0_4", "P0_5"),)
+elif "esp32" in sys.platform:
     pwm_pulse_pins = ((4, 5),)
     freq_margin_per_thousand = 2
     duty_margin_per_thousand = 1
