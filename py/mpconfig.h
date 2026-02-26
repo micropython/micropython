@@ -1555,6 +1555,16 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_HELP_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Use this to configure output of help('modules')
+#ifndef MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS
+#define MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS (4)
+#endif
+
+// Use this to configure output of help('modules')
+#ifndef MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH
+#define MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH (18)
+#endif
+
 // Whether to provide mem-info related functions in micropython module
 #ifndef MICROPY_PY_MICROPYTHON_MEM_INFO
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
