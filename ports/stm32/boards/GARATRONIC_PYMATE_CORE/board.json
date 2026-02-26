@@ -5,11 +5,11 @@
     "docs": "",
     "features": [],
     "images": [
-        "pybstick26_f412.jpg"
+        "PyMateIO_Core.jpg"
     ],
     "mcu": "stm32f4",
-    "product": "GARATRONIC_PYBSTICK26_F412",
+    "product": "GARATRONIC_PYMATE_CORE",
     "thumbnail": "",
-    "url": "https://shop.mchobby.be/product.php?id_product=1844",
-    "vendor": "McHobby"
+    "url": "https://aceautomation.eu/product/core8adi8dosc-pymateio-core-8-digital-analog-inputs-8-digital-outputs-rs485-port-can-port/",
+    "vendor": "Ace_Automation"
 }
