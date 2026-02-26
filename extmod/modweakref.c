@@ -81,7 +81,7 @@ static mp_obj_t weakref_ref_del(mp_obj_t self_in) {
 out_pop:
     nlr_pop();
 out:
-    return mp_const_none;
+    return mp_const_false;  // callback may have reattached things!
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(weakref_ref_del_obj, weakref_ref_del);
 
