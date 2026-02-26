@@ -116,18 +116,21 @@ int esp_hosted_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_
     return buf[6];
 }
 
-int mp_bluetooth_hci_controller_init(void) {
-    // Low-level pins init, memory pool allocation etc...
-    esp_hosted_hal_init(ESP_HOSTED_MODE_BT);
-
+static void mp_bluetooth_hci_controller_drain_rx(size_t timeout_ms) {
     mp_uint_t start = mp_hal_ticks_ms();
-    // Skip bootloader messages.
-    while ((mp_hal_ticks_ms() - start) < 2500) {
+
+    while ((mp_hal_ticks_ms() - start) < timeout_ms) {
         if (mp_bluetooth_hci_uart_any()) {
             mp_bluetooth_hci_uart_readchar();
         }
         mp_event_wait_ms(1);
     }
+}
+
+int mp_bluetooth_hci_controller_init(void) {
+    // Low-level pins init, memory pool allocation etc...
+    esp_hosted_hal_init(ESP_HOSTED_MODE_BT);
+    mp_bluetooth_hci_controller_drain_rx(2500);
 
     #ifdef MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY
     mp_bluetooth_hci_uart_set_baudrate(MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY);
@@ -136,9 +139,16 @@ int mp_bluetooth_hci_controller_init(void) {
     mp_hal_pin_output(MICROPY_HW_BLE_UART_RTS);
     mp_hal_pin_write(MICROPY_HW_BLE_UART_RTS, 0);
 
-    // Send reset command
-    // It seems that nothing else is needed for now.
-    return esp_hosted_hci_cmd(OGF_HOST_CTL, OCF_RESET, 0, NULL);
+    for (size_t i=0; i<3; i++ ){
+        // Send reset command
+        if (!esp_hosted_hci_cmd(OGF_HOST_CTL, OCF_RESET, 0, NULL)) {
+            return 0;
+        }
+    
+        mp_bluetooth_hci_controller_drain_rx(100);
+        debug_printf("HCI reset failed, retry...\n");
+    }
+    return -1;
 }
 
 int mp_bluetooth_hci_controller_deinit(void) {

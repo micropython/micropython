@@ -28,6 +28,7 @@
 
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_NETWORK_ESP_HOSTED
 
@@ -55,7 +56,7 @@ static err_t netif_struct_init(struct netif *netif) {
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
     esp_hosted_wifi_get_mac(netif->name[1] - '0', netif->hwaddr);
     netif->hwaddr_len = sizeof(netif->hwaddr);
-    info_printf("netif_init() netif initialized\n");
+    info_printf("netif initialized\n");
     return ERR_OK;
 }
 
@@ -122,19 +123,19 @@ int esp_hosted_netif_input(esp_hosted_state_t *state, uint32_t itf, const void *
 
     struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
     if (p == NULL) {
-        error_printf("esp_hosted_netif_input() failed to alloc pbuf %d\n", len);
+        error_printf("failed to alloc pbuf %d\n", len);
         return -1;
     }
     // Copy buf to pbuf
     pbuf_take(p, buf, len);
 
     if (netif->input(p, netif) != ERR_OK) {
-        error_printf("esp_hosted_netif_input() netif input failed\n");
+        error_printf("netif input failed\n");
         pbuf_free(p);
         return -1;
     }
 
-    debug_printf("esp_hosted_netif_input() eth frame input %d\n", len);
+    debug_printf("eth frame input %d\n", len);
     return 0;
 }
 
@@ -142,11 +143,11 @@ err_t esp_hosted_netif_output(struct netif *netif, struct pbuf *p) {
     esp_hosted_state_t *state = netif->state;
 
     if (p->tot_len > ESP_FRAME_MAX_PAYLOAD) {
-        error_printf("esp_hosted_netif_output() pbuf len > SPI buf len\n");
+        error_printf("pbuf len > SPI buf len\n");
         return ERR_IF;
     }
 
-    esp_header_t *esp_header = (esp_header_t *)(state->buf);
+    esp_header_t *esp_header = (esp_header_t *)(state->tx_buf);
     esp_header->if_type = netif->name[1] - '0';
     esp_header->if_num = 0;
     esp_header->flags = 0;
@@ -156,12 +157,18 @@ err_t esp_hosted_netif_output(struct netif *netif, struct pbuf *p) {
     pbuf_copy_partial(p, esp_header->payload, p->tot_len, 0);
     esp_header->checksum = esp_hosted_checksum(esp_header);
 
-    size_t frame_size = (sizeof(esp_header_t) + esp_header->len + 3) & ~3U;
-    if (esp_hosted_hal_spi_transfer(state->buf, NULL, frame_size) != 0) {
-        error_printf("esp_hosted_netif_output() failed to send eth frame\n");
-        return ERR_IF;
+    // Can't busy-wait here because this function can be called
+    // from wifi_poll, which would leade to a deadlock.
+    if (esp_hosted_queue_put(&state->tx_queue, state->tx_buf) != 0) {
+        error_printf("tx queue full\n");
+        return ERR_MEM;
     }
-    debug_printf("esp_hosted_netif_output() if %d pbuf len %d\n", esp_header->if_type, esp_header->len);
+
+    // Schedule wifi_poll so the queued frame gets sent as soon
+    // as possible, instead of waiting for the periodic poll.
+    mod_network_poll_events();
+
+    debug_printf("if %d pbuf len %d\n", esp_header->if_type, esp_header->len);
     return ERR_OK;
 }
 #endif

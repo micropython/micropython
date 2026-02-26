@@ -29,13 +29,24 @@
 #ifndef MICROPY_INCLUDED_DRIVERS_ESP_HOSTED_INTERNAL_H
 #define MICROPY_INCLUDED_DRIVERS_ESP_HOSTED_INTERNAL_H
 
+#include "esp_hosted_queue.h"
+
+#ifndef MICROPY_HW_ESP_HOSTED_TX_QUEUE_SIZE
+#define MICROPY_HW_ESP_HOSTED_TX_QUEUE_SIZE (8)
+#endif
+
+#ifndef MICROPY_HW_ESP_HOSTED_RX_QUEUE_SIZE
+#define MICROPY_HW_ESP_HOSTED_RX_QUEUE_SIZE (8)
+#endif
+
 #define ESP_FRAME_MAX_SIZE          (1600)
 #define ESP_FRAME_MAX_PAYLOAD       (ESP_FRAME_MAX_SIZE - sizeof(esp_header_t))
 #define ESP_FRAME_FLAGS_FRAGMENT    (1 << 0)
 
 #define ESP_STATE_NUM_ITFS          (2)
 #define ESP_STATE_BUF_SIZE          (ESP_FRAME_MAX_SIZE * 2)
-#define ESP_STACK_CAPACITY          (32)
+#define ESP_TX_QUEUE_SIZE           MICROPY_HW_ESP_HOSTED_TX_QUEUE_SIZE
+#define ESP_RX_QUEUE_SIZE           MICROPY_HW_ESP_HOSTED_RX_QUEUE_SIZE
 #define ESP_SYNC_REQ_TIMEOUT        (5000)
 
 #define TLV_HEADER_TYPE_EP          (1)
@@ -60,12 +71,6 @@ typedef enum {
     ESP_PRIV_EVENT_INIT,
 } esp_hosted_priv_event_t;
 
-typedef struct esp_hosted_stack {
-    size_t capacity;
-    size_t top;
-    void *buff[ESP_STACK_CAPACITY];
-} esp_hosted_stack_t;
-
 typedef struct esp_hosted_state {
     uint8_t chip_id;
     uint8_t spi_clk;
@@ -73,11 +78,17 @@ typedef struct esp_hosted_state {
     uint8_t flags;
     uint16_t seq_num;
     uint32_t last_hb_ms;
+    uint32_t fw_version[5];
     struct netif netif[ESP_STATE_NUM_ITFS];
     struct dhcp dhcp_client;
     dhcp_server_t dhcp_server;
-    esp_hosted_stack_t stack;
-    uint8_t buf[ESP_STATE_BUF_SIZE];
+    // Scratch buffers for constructing TX/RX frames.
+    uint8_t tx_buf[ESP_FRAME_MAX_SIZE];
+    uint8_t rx_buf[ESP_STATE_BUF_SIZE];
+    esp_hosted_queue_t tx_queue;
+    esp_hosted_queue_t rx_queue;
+    uint8_t tx_queue_buf[ESP_TX_QUEUE_SIZE][ESP_FRAME_MAX_SIZE];
+    void *rx_queue_buf[ESP_RX_QUEUE_SIZE];
 } esp_hosted_state_t;
 
 typedef struct __attribute__((packed)) {
