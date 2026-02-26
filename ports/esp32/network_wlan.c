@@ -40,6 +40,7 @@
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
+#include "esp_eap_client.h"
 #include "esp_log.h"
 #include "esp_psram.h"
 
@@ -307,12 +308,55 @@ static mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_wlan_active_obj, 1, 2, network_wlan_active);
 
+// WLAN connect including WPA2/WPA3 Enterprise Connect
+// there are no official constants in ESP-IDF for this so far
+// the ESP_EAP_TYPE constants are different (see below)
+#define WIFI_AUTH_EAP_NONE 0
+#define WIFI_AUTH_EAP_PWD 1
+#define WIFI_AUTH_EAP_PEAP 2
+#define WIFI_AUTH_EAP_TTLS 3
+#define WIFI_AUTH_EAP_TLS 4
+
+// ESP-IDF 5.5.1 appears to map WPA2/WPA3 transition mode (WPA2_WPA3 modes) to WPA3 only
+// this is different from the WPA Standard v3.5
+// OTOH if the AP advertises WPA3, ESP-IDF will connect using WPA3
+// so we map SEC_WPA2_WPA3{_ENT} to SEC_WPA2{_ENT} for better compatibility with the WPA Standard
+// so we support SEC_OPEN, SEC_WPA, SEC_WPA2, and SEC_WPA3 for WPA Personal (default SEC_WPA2)
+// as well as SEC_WPA2_ENT and SEC_WPA3_ENT for WPA Enterprise (default SEC_WPA2_ENT)
+// note that setting SEC_WPA2 does not mean WPA2 _only_ for ESP-IDF
+
 static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_key, ARG_bssid };
+    enum { ARG_ssid, ARG_key, ARG_bssid,
+           ARG_min_sec,
+           ARG_eap_method, ARG_username, ARG_password,
+           ARG_identity, ARG_ca_cert, ARG_ttls_phase2_method,
+           ARG_client_cert, ARG_private_key, ARG_private_key_password, ARG_disable_time_check,
+           #if CONFIG_SOC_WIFI_SUPPORT_5G
+           ARG_band_mode,
+           #endif
+           ARG_pmf_req};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        // min_sec defaults to SEC_WPA2 Personal mode
+        { MP_QSTR_min_sec, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_AUTH_WPA2_PSK} },
+        // eap_method defaults to EAP_NONE for WPA Personal compatibility
+        { MP_QSTR_eap_method, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_AUTH_EAP_NONE} },
+        { MP_QSTR_username, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_identity, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_ca_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        // ttls_phase2_method defaults to MSCHAPV2
+        { MP_QSTR_ttls_phase2_method, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ESP_EAP_TTLS_PHASE2_MSCHAPV2} },
+        { MP_QSTR_client_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_private_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_private_key_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_disable_time_check, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        #if CONFIG_SOC_WIFI_SUPPORT_5G
+        { MP_QSTR_band_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_BAND_MODE_AUTO} },
+        #endif
+        { MP_QSTR_pmf_req, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} }
     };
 
     // parse args
@@ -320,31 +364,216 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     wifi_config_t wifi_sta_config = {0};
+    size_t len;
+    const char *p;
+    int16_t min_sec = (int16_t)args[ARG_min_sec].u_int;
 
-    // configure any parameters that are given
-    if (n_args > 1) {
-        size_t len;
-        const char *p;
-        if (args[ARG_ssid].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
-            memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
-        }
-        if (args[ARG_key].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
-            memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
-        }
-        if (args[ARG_bssid].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
-            if (len != sizeof(wifi_sta_config.sta.bssid)) {
-                mp_raise_ValueError(NULL);
-            }
-            wifi_sta_config.sta.bssid_set = 1;
-            memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
-        }
-        esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
+    // this is mandatory and should not be None
+    if (args[ARG_ssid].u_obj != mp_const_none) {
+        p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
+        memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
     }
 
+    if (args[ARG_key].u_obj != mp_const_none) {
+        if (min_sec == WIFI_AUTH_WPA2_ENTERPRISE || min_sec == WIFI_AUTH_WPA3_ENTERPRISE) {
+            // setting dummy password to prevent warning if key = None for Enterprise modes
+            p = "dummypwd";
+        } else {
+            p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
+        }
+        memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
+    }
+
+    if (args[ARG_bssid].u_obj != mp_const_none) {
+        p = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
+        if (len != sizeof(wifi_sta_config.sta.bssid)) {
+            mp_raise_ValueError(NULL);
+        }
+        wifi_sta_config.sta.bssid_set = 1;
+        memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
+    }
+
+    switch (min_sec) {
+        case WIFI_AUTH_OPEN:
+            mp_printf(&mp_plat_print, "Warning: SEC_OPEN is insecure and should be avoided!\n");
+            break;
+
+        case WIFI_AUTH_WPA_PSK:
+            mp_printf(&mp_plat_print, "Warning: SEC_WPA is insecure and should be avoided!\n");
+            break;
+
+        case WIFI_AUTH_WPA2_WPA3_PSK:
+            // map to WPA2, otherwise defaults to WPA3 only
+            // ESP-IDF always chooses the strongest available auth
+            min_sec = WIFI_AUTH_WPA2_PSK;
+        // fall through
+
+        case WIFI_AUTH_WPA2_PSK:
+            break;
+
+        case WIFI_AUTH_WPA3_PSK:
+            break;
+
+        case WIFI_AUTH_WPA2_WPA3_ENTERPRISE:
+            // map to WPA2, otherwise defaults to WPA3 only
+            // ESP-IDF always chooses the strongest available auth
+            min_sec = WIFI_AUTH_WPA2_ENTERPRISE;
+        // fall through
+
+        case WIFI_AUTH_WPA2_ENTERPRISE:
+            break;
+
+        case WIFI_AUTH_WPA3_ENTERPRISE:
+            // Device will always connect in PMF mode if AP advertises PMF capability
+            // in all WPA_ENT methods
+            // But we want to be able to enforce this on the client side
+            wifi_sta_config.sta.pmf_cfg.required = args[ARG_pmf_req].u_bool;
+            break;
+
+        default:
+            // issue parameter not supported error
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config value for min_sec."));
+            break;
+    }
+    wifi_sta_config.sta.threshold.authmode = min_sec;
+
+    esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
+    // that's it for WPA Personal
+
+    if (min_sec == WIFI_AUTH_WPA2_ENTERPRISE || min_sec == WIFI_AUTH_WPA3_ENTERPRISE) {
+        int16_t esp_eap_method;
+        int16_t eap_method = (int16_t)args[ARG_eap_method].u_int;
+        int16_t ttls_phase2_method = (int16_t)args[ARG_ttls_phase2_method].u_int;
+
+        // set esp_eap_method explicitly, otherwise ESP-IDF defaults to EAP-PEAP with MSCHAPv2
+        switch (eap_method) {
+            case WIFI_AUTH_EAP_PWD:
+                // TYPE_PWD is not provided so we set it to ALL
+                esp_eap_method = ESP_EAP_TYPE_ALL;
+                break;
+
+            case WIFI_AUTH_EAP_PEAP:
+                esp_eap_method = ESP_EAP_TYPE_PEAP;
+                break;
+
+            case WIFI_AUTH_EAP_TTLS:
+                esp_eap_method = ESP_EAP_TYPE_TTLS;
+                break;
+
+            case WIFI_AUTH_EAP_TLS:
+                esp_eap_method = ESP_EAP_TYPE_TLS;
+                break;
+
+            default:
+                mp_raise_ValueError(MP_ERROR_TEXT("eap_method wrong, missing or EAP_NONE: not allowed for WPA Enterprise."));
+                break;
+        }
+        esp_exceptions(esp_eap_client_set_eap_methods(esp_eap_method));
+
+        if (eap_method == WIFI_AUTH_EAP_PWD || eap_method == WIFI_AUTH_EAP_PEAP || eap_method == WIFI_AUTH_EAP_TTLS) {
+            // use username and password
+            if (args[ARG_username].u_obj != mp_const_none) {
+                p = mp_obj_str_get_data(args[ARG_username].u_obj, &len);
+                esp_exceptions(esp_eap_client_set_username((const unsigned char *)p, len));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("missing config param username."));
+            }
+            if (args[ARG_password].u_obj != mp_const_none) {
+                p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
+                esp_exceptions(esp_eap_client_set_password((const unsigned char *)p, len));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("missing config param password."));
+            }
+        }
+
+        if (eap_method == WIFI_AUTH_EAP_PEAP || eap_method == WIFI_AUTH_EAP_TTLS) {
+            // additionally use identity and ca_cert
+            if (args[ARG_identity].u_obj != mp_const_none) {
+                p = mp_obj_str_get_data(args[ARG_identity].u_obj, &len);
+                esp_exceptions(esp_eap_client_set_identity((const unsigned char *)p, len));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("missing config param identity."));
+            }
+            if (args[ARG_ca_cert].u_obj != mp_const_none) {
+                p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
+                // see comment (1) below.
+                esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("missing config param ca_cert."));
+            }
+        }
+
+        if (eap_method == WIFI_AUTH_EAP_TTLS) {
+            // additionally use ttls_phase2_method, defaulting to MSCHAPV2 (and then very similar to EAP-PEAP)
+            // tested and verified with all 5 supported phase 2 methods
+            if (ttls_phase2_method < ESP_EAP_TTLS_PHASE2_EAP || ttls_phase2_method > ESP_EAP_TTLS_PHASE2_CHAP) {
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown config value for ttls_phase2_method."));
+            }
+            esp_exceptions(esp_eap_client_set_ttls_phase2_method(ttls_phase2_method));
+        }
+
+        if (eap_method == WIFI_AUTH_EAP_TLS) {
+            // UNTESTED!
+            // EAP-TLS uses client cert, private key, and (optionally) private key password, and (optionally) ca_cert
+            // please note that this release does not implement WIFI_AUTH_WPA3_ENT_192
+            // The reason is outlined here: https://eduroam.org/eduroam-and-wpa3/
+            size_t client_cert_len = 0;
+            const char *client_cert = NULL;
+            size_t private_key_len = 0;
+            const char *private_key = NULL;
+            size_t private_key_password_len = 0;
+            const char *private_key_password = NULL;
+
+            mp_printf(&mp_plat_print, "\nPlease note that EAP-TLS is so far UNTESTED and thus EXPERIMENTAL.\nUse at your own risk!\n\n");
+            if (args[ARG_client_cert].u_obj != mp_const_none) {
+                client_cert = mp_obj_str_get_data(args[ARG_client_cert].u_obj, &client_cert_len);
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("missing config param client_cert."));
+            }
+            if (args[ARG_private_key].u_obj != mp_const_none) {
+                private_key = mp_obj_str_get_data(args[ARG_private_key].u_obj, &private_key_len);
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("missing config param private_key."));
+            }
+            if (args[ARG_private_key_password].u_obj != mp_const_none) {        // password is optional
+                private_key_password = mp_obj_str_get_data(args[ARG_private_key_password].u_obj, &private_key_password_len);
+            }
+            // disable time check or not
+            if (args[ARG_disable_time_check].u_bool == true) {
+                esp_exceptions(esp_eap_client_set_disable_time_check(true));
+            }
+
+            // (1) the documentation for esp_eap_client_set_certificate_and_key() says,
+            // "2. The client_cert, private_key, and private_key_password should be zero-terminated."
+            // so we copy 1 byte more to include the null
+            // in the esp-idf wifi_enterprise example, the null is appended when converting the cert files to byte arrays
+            esp_exceptions(esp_eap_client_set_certificate_and_key(
+                (const unsigned char *)client_cert, client_cert_len + 1,
+                (const unsigned char *)private_key, private_key_len + 1,
+                (const unsigned char *)private_key_password, private_key_password_len + 1)
+                );
+            // according to the esp-idf wifi_enterprise example, the ca_cert is optional for EAP-TLS
+            if (args[ARG_ca_cert].u_obj != mp_const_none) {
+                p = mp_obj_str_get_data(args[ARG_ca_cert].u_obj, &len);
+                esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
+            }
+        }
+
+        esp_exceptions(esp_wifi_sta_enterprise_enable());
+    } // WPA*_ENTERPRISE
+
     esp_exceptions(esp_netif_set_hostname(wlan_sta_obj.netif, mod_network_hostname_data));
+
+    if (!wifi_started) {
+        esp_exceptions(esp_wifi_start());
+    }
+
+    // ESP-IDF should always auto connect to 5G if available
+    // in some eduroam networks, it seems to default to 2G nonetheless
+    #if CONFIG_SOC_WIFI_SUPPORT_5G
+    int16_t band_mode = (int16_t)args[ARG_band_mode].u_int;
+    esp_exceptions(esp_wifi_set_band_mode(band_mode));
+    #endif
 
     wifi_sta_reconnects = 0;
     // connect to the WiFi AP
@@ -360,6 +589,7 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_connect_obj, 1, network_wlan_conn
 static mp_obj_t network_wlan_disconnect(mp_obj_t self_in) {
     wifi_sta_connect_requested = false;
     esp_exceptions(esp_wifi_disconnect());
+    esp_exceptions(esp_wifi_sta_enterprise_disable());
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_wlan_disconnect_obj, network_wlan_disconnect);
@@ -784,6 +1014,17 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     #if !CONFIG_IDF_TARGET_ESP32C2
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_EAP_NONE), MP_ROM_INT(WIFI_AUTH_EAP_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_PWD), MP_ROM_INT(WIFI_AUTH_EAP_PWD) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_PEAP), MP_ROM_INT(WIFI_AUTH_EAP_PEAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS), MP_ROM_INT(WIFI_AUTH_EAP_TTLS) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TLS), MP_ROM_INT(WIFI_AUTH_EAP_TLS) },
+
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_EAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_EAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_MSCHAPV2), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_MSCHAPV2) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_MSCHAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_MSCHAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_PAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_PAP) },
+    { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_CHAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_CHAP) },
 
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(WIFI_PS_NONE) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(WIFI_PS_MIN_MODEM) },
