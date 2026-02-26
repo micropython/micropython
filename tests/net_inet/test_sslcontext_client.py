@@ -6,17 +6,11 @@ if not hasattr(ssl, "CERT_REQUIRED"):
     print("SKIP")
     raise SystemExit
 
-# This certificate was obtained from micropython.org using openssl:
+# This ISRG Root X1 certificate was downloaded from https://letsencrypt.org/certificates/#root-cas
+# This cert is used to sign the intermediate cert in use by micropython.org
+# To check the current intermediate cert, can run:
 # $ openssl s_client -showcerts -connect micropython.org:443 </dev/null 2>/dev/null
-# The certificate is from Let's Encrypt:
-# 1 s:C=US, O=Let's Encrypt, CN=R11
-#   i:C=US, O=Internet Security Research Group, CN=ISRG Root X1
-#   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
-#   v:NotBefore: Mar 13 00:00:00 2024 GMT; NotAfter: Mar 12 23:59:59 2027 GMT
-# Copy PEM content to a file (mpycert.pem) and convert to DER e.g.
-# $ openssl x509 -in mpycert.pem -out mpycert.der -outform DER
-
-ca_cert_chain = "mpycert.der"
+root_cert_path = "isrgrootx1.der"
 
 
 def main(use_stream=True):
@@ -25,7 +19,7 @@ def main(use_stream=True):
     context.verify_mode = ssl.CERT_REQUIRED
     assert context.verify_mode == ssl.CERT_REQUIRED
 
-    context.load_verify_locations(cafile=ca_cert_chain)
+    context.load_verify_locations(cafile=root_cert_path)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     addr = socket.getaddrinfo("micropython.org", 443)[0][-1]
