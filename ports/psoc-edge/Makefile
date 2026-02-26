@@ -40,11 +40,11 @@ PSOC_LIB_REL_TOP ?= lib/psoc-edge
 PSOC_LIB_REL_HERE ?= $(TOP)/$(PSOC_LIB_REL_TOP)
 
 INC += -I.
-INC += -Ibsp
 INC += -Imcu
 INC += -I$(TOP)
-INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
+INC += -I$(BOARD_DIR)/bsp
+INC += -I$(BUILD)
 INC += -I$(CMSIS_DIR)
 INC += -I$(PSOC_LIB_REL_HERE)/TARGET_KIT_PSE84_AI
 INC += -I$(PSOC_LIB_REL_HERE)/TARGET_KIT_PSE84_AI/COMPONENT_CM33/COMPONENT_SECURE_DEVICE
@@ -116,7 +116,7 @@ LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
 $(BUILD)/lib/libm/%.o: CFLAGS += -Wno-maybe-uninitialized
 endif
 
-BSP_SRC_C += \
+BSP_SRC_C += $(addprefix $(BOARD_DIR)/,\
 	bsp/cycfg.c \
 	bsp/cycfg_clocks.c \
 	bsp/cycfg_peripheral_clocks.c \
@@ -125,6 +125,7 @@ BSP_SRC_C += \
 	bsp/cycfg_routing.c \
 	bsp/cycfg_protection.c \
 	bsp/cycfg_pins.c \
+	)
 
 PSOC_LIB_SRC_C += $(addprefix $(PSOC_LIB_REL_TOP)/,\
 	TARGET_KIT_PSE84_AI/COMPONENT_CM33/COMPONENT_SECURE_DEVICE/s_start_pse84.c \
