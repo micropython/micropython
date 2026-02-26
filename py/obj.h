@@ -40,9 +40,11 @@
 #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 typedef uint64_t mp_obj_t;
 typedef uint64_t mp_const_obj_t;
+typedef uint64_t mp_weak_obj_t;
 #else
 typedef void *mp_obj_t;
 typedef const void *mp_const_obj_t;
+typedef void *mp_weak_obj_t;
 #endif
 
 // This mp_obj_type_t struct is a concrete MicroPython object which holds info
@@ -126,6 +128,8 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 3) == 0;
 }
 
+#define MP_WEAKOBJ_MASK (0x80000001)
+
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
 
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
@@ -170,6 +174,8 @@ mp_obj_t mp_obj_new_float(mp_float_t value);
 static inline bool mp_obj_is_obj(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 1) == 0;
 }
+
+#define MP_WEAKOBJ_MASK (0x80000002)
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
 
@@ -241,6 +247,8 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 3) == 0;
 }
 
+#define MP_WEAKOBJ_MASK (0x80000001)
+
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
@@ -308,6 +316,8 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 #define MP_OBJ_TO_PTR(o) ((void *)(uintptr_t)(o))
 #define MP_OBJ_FROM_PTR(p) ((mp_obj_t)((uintptr_t)(p)))
 
+#define MP_WEAKOBJ_MASK (0x0000800000000001)
+
 // rom object storage needs special handling to widen 32-bit pointer to 64-bits
 typedef union _mp_rom_obj_t {
     uint64_t u64;
@@ -371,6 +381,16 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 #define MP_ROM_QSTR(q) {MP_OBJ_NEW_QSTR(q)}
 #define MP_ROM_PTR(p) {.o = p}
 */
+#endif
+
+// Macros for weakening and unweakening object pointers.
+// This is used to blind the garbage collector to certain references.
+#ifndef MP_OBJ_TO_WEAK
+#define MP_OBJ_TO_WEAK(o) ((mp_weak_obj_t)((uintptr_t)(o) ^ MP_WEAKOBJ_MASK))
+#endif
+
+#ifndef MP_OBJ_FROM_WEAK
+#define MP_OBJ_FROM_WEAK(w) ((mp_obj_t)((uintptr_t)(w) ^ MP_WEAKOBJ_MASK))
 #endif
 
 // These macros are used to declare and define constant function objects
@@ -562,6 +582,10 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // If MP_TYPE_FLAG_INSTANCE_TYPE is set then this is an instance type (i.e. defined in Python).
 // If MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE is set then the "subscr" slot allows a stack
 //   allocated slice to be passed in (no references to it will be retained after the call).
+// If MP_TYPE_FLAG_IS_INSTANCED is set, then instances of this class have been created.
+//   Mutations to this class that would require updating all instances must be rejected.
+// If MP_TYPE_FLAG_HAS_FINALISER is set, then instances of this class have a `__del__` method
+//   and need to be marked as finalisable as they are allocated.
 #define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
@@ -576,6 +600,8 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_ITER_IS_STREAM (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM)
 #define MP_TYPE_FLAG_INSTANCE_TYPE (0x0200)
 #define MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE (0x0400)
+#define MP_TYPE_FLAG_IS_INSTANCED (0x0800)
+#define MP_TYPE_FLAG_HAS_FINALISER (0x1000)
 
 typedef enum {
     PRINT_STR = 0,
@@ -928,6 +954,7 @@ extern const struct _mp_obj_bool_t mp_const_true_obj;
 // The below macros are for convenience only.
 #define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))
 #define mp_const_empty_tuple (MP_OBJ_FROM_PTR(&mp_const_empty_tuple_obj))
+#define mp_const_ellipsis (MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj))
 #define mp_const_notimplemented (MP_OBJ_FROM_PTR(&mp_const_notimplemented_obj))
 extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;

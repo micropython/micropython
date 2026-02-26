@@ -1,0 +1,9 @@
+package(
+    "weakref",
+    (
+        "__init__.py",
+        "core.py",
+    ),
+    base_path="..",
+    opt=3,
+)

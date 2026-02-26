@@ -536,7 +536,7 @@ static MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_tab
 static MP_DEFINE_CONST_OBJ_TYPE(
     ssl_context_type,
     MP_QSTR_SSLContext,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, ssl_context_make_new,
     attr, ssl_context_attr,
     locals_dict, &ssl_context_locals_dict
@@ -931,7 +931,7 @@ static const mp_stream_p_t ssl_socket_stream_p = {
 static MP_DEFINE_CONST_OBJ_TYPE(
     ssl_socket_type,
     MP_QSTR_SSLSocket,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     protocol, &ssl_socket_stream_p,
     locals_dict, &ssl_socket_locals_dict
     );

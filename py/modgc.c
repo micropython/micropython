@@ -100,6 +100,19 @@ static mp_obj_t gc_threshold(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gc_threshold_obj, 0, 1, gc_threshold);
 #endif
 
+#if MICROPY_ENABLE_FINALISER
+static mp_obj_t gc_is_finalized(mp_obj_t obj) {
+    if (!mp_obj_is_obj(obj)) {
+        return mp_const_false;
+    }
+    mp_obj_base_t *base = (mp_obj_base_t *)MP_OBJ_TO_PTR(obj);
+
+    // finaliser clears the allocation's FTB bit after the finaliser has been run
+    return mp_obj_new_bool((base->type->flags & MP_TYPE_FLAG_HAS_FINALISER) && !gc_ftb_get(base));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(gc_is_finalized_obj, gc_is_finalized);
+#endif
+
 static const mp_rom_map_elem_t mp_module_gc_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gc) },
     { MP_ROM_QSTR(MP_QSTR_collect), MP_ROM_PTR(&gc_collect_obj) },
@@ -110,6 +123,9 @@ static const mp_rom_map_elem_t mp_module_gc_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem_alloc), MP_ROM_PTR(&gc_mem_alloc_obj) },
     #if MICROPY_GC_ALLOC_THRESHOLD
     { MP_ROM_QSTR(MP_QSTR_threshold), MP_ROM_PTR(&gc_threshold_obj) },
+    #endif
+    #if MICROPY_ENABLE_FINALISER
+    { MP_ROM_QSTR(MP_QSTR_is_finalized), MP_ROM_PTR(&gc_is_finalized_obj) },
     #endif
 };
 

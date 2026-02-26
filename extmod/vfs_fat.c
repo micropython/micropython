@@ -438,7 +438,7 @@ static const mp_vfs_proto_t fat_vfs_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_fat_vfs_type,
     MP_QSTR_VfsFat,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, fat_vfs_make_new,
     protocol, &fat_vfs_proto,
     locals_dict, &fat_vfs_locals_dict

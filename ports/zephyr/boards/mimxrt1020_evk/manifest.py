@@ -4,3 +4,4 @@ freeze("$(PORT_DIR)/modules")
 
 require("upysh")
 require("aiorepl")
+include("$(MPY_DIR)/extmod/weakref")

@@ -673,7 +673,11 @@ static const mp_stream_p_t i2s_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_i2s_type,
     MP_QSTR_I2S,
+    #if MICROPY_PY_MACHINE_I2S_FINALISER
+    MP_TYPE_FLAG_ITER_IS_STREAM | MP_TYPE_FLAG_HAS_FINALISER,
+    #else
     MP_TYPE_FLAG_ITER_IS_STREAM,
+    #endif
     make_new, machine_i2s_make_new,
     print, machine_i2s_print,
     protocol, &i2s_stream_p,
