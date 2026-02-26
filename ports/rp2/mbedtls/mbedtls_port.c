@@ -35,17 +35,6 @@
 #include "mbedtls/platform_time.h"
 #include "pico/aon_timer.h"
 
-#include "pico/rand.h"
-
-int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
-    *olen = len;
-    for (size_t i = 0; i < len; i += 8) {
-        uint64_t rand64 = get_rand_64();
-        memcpy(output + i, &rand64, MIN(len - i, 8));
-    }
-    return 0;
-}
-
 time_t rp2_rtctime_seconds(time_t *timer) {
     struct timespec ts;
     aon_timer_get_time(&ts);
