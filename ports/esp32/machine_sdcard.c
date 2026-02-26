@@ -549,7 +549,7 @@ static MP_DEFINE_CONST_DICT(machine_sdcard_locals_dict, machine_sdcard_locals_di
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_sdcard_type,
     MP_QSTR_SDCard,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, machine_sdcard_make_new,
     locals_dict, &machine_sdcard_locals_dict
     );

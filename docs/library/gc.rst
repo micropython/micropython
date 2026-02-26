@@ -64,3 +64,8 @@ Functions
       This function is a MicroPython extension. CPython has a similar
       function - ``set_threshold()``, but due to different GC
       implementations, its signature and semantics are different.
+
+.. function:: is_finalized(obj)
+
+   Returns `True` if the given object has been finalized by the garbage
+   collector, `False` otherwise.

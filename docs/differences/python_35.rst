@@ -19,6 +19,8 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
   +--------------------------------------------------------+-----------------------------------------------------+--------------------+
   | **Extensions and changes to runtime**                                                                                             |
   +--------------------------------------------------------+-----------------------------------------------------+--------------------+
+  | `PEP 442 <https://www.python.org/dev/peps/pep-0442/>`_ | Safe object finalization with __del__               | Complete           |
+  +--------------------------------------------------------+-----------------------------------------------------+--------------------+
   | `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ | % formatting for binary strings                     | Complete           |
   +--------------------------------------------------------+-----------------------------------------------------+--------------------+
   | `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ | Retrying system calls that fail with ``EINTR``      | Complete           |

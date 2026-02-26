@@ -590,7 +590,7 @@ static mp_obj_t jsproxy_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_jsproxy,
     MP_QSTR_JsProxy,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_FINALISER,
     print, jsproxy_print,
     call, jsproxy_call,
     binary_op, jsproxy_binary_op,

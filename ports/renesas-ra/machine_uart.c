@@ -44,6 +44,8 @@
     { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(UART_IRQ_RX) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
 
+#define MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS (MP_TYPE_FLAG_NONE)
+
 static const char *_parity_name[] = {"None", "ODD", "EVEN"};
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

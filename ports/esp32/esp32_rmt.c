@@ -488,7 +488,7 @@ static MP_DEFINE_CONST_DICT(esp32_rmt_locals_dict, esp32_rmt_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     esp32_rmt_type,
     MP_QSTR_RMT,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, esp32_rmt_make_new,
     print, esp32_rmt_print,
     locals_dict, &esp32_rmt_locals_dict,

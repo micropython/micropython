@@ -530,7 +530,7 @@ static const mp_stream_p_t socket_stream_p = {
 static MP_DEFINE_CONST_OBJ_TYPE(
     socket_type,
     MP_QSTR_socket,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, socket_make_new,
     protocol, &socket_stream_p,
     locals_dict, &socket_locals_dict,
