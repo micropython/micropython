@@ -148,6 +148,11 @@ static mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
         }
         cyw43_wifi_set_up(self->cyw, self->itf, value, get_country_code());
         if_active[self->itf] = value;
+
+        if (value && self->itf == CYW43_ITF_STA) {
+            netif_set_default(&self->cyw->netif[self->itf]);
+        }
+
         return mp_const_none;
     }
 }
