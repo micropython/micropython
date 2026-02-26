@@ -188,7 +188,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // Note: Some flash controllers have erase-block-size, others (like QSPI NOR) don't
 // For devices without this property, use 4096 as a common default for NOR flash
 #define FLASH_AREA_GET_ERASE_SIZE(part) \
-    DT_PROP_OR(DT_MTD_FROM_FIXED_PARTITION(part), erase_block_size, 4096)
+    DT_PROP_OR(DT_GPARENT(part), erase_block_size, 4096)
 
 // Create a static tuple for each partition containing (id, erase_block_size)
 #define FLASH_AREA_DEFINE_TUPLE(part) \
