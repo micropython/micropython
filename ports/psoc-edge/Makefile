@@ -26,6 +26,9 @@ include $(TOP)/extmod/extmod.mk
 ################################################################################
 # Project specific settings and compiler/linker flags
 
+# Required git submodules.
+GIT_SUBMODULES += lib/psoc-edge/core-lib lib/psoc-edge/mtb-dsl-pse8xxgp lib/psoc-edge/mtb-srf lib/psoc-edge/se-rt-services-utils lib/psoc-edge/TARGET_KIT_PSE84_AI
+
 # Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-
 EDGEPROTECTTOOLS ?= edgeprotecttools
