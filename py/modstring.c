@@ -51,6 +51,6 @@ const mp_obj_module_t mp_module_string = {
     .globals = (mp_obj_dict_t *)&mp_module_string_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_string, mp_module_string);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_string, mp_module_string);
 
 #endif // MICROPY_PY_TSTRINGS
