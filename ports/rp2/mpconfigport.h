@@ -189,6 +189,11 @@
 #define MICROPY_PY_MACHINE_SPI_MSB              (SPI_MSB_FIRST)
 #define MICROPY_PY_MACHINE_SPI_LSB              (SPI_LSB_FIRST)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
+#if defined(MICROPY_WIZNET_PIO) && (MICROPY_WIZNET_PIO == 1)
+#define MICROPY_PY_MACHINE_WIZNET_PIO_SPI       (1)
+#else
+#define MICROPY_PY_MACHINE_WIZNET_PIO_SPI       (0)
+#endif
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/rp2/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
