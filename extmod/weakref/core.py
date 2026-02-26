@@ -140,7 +140,10 @@ class finalize:
             self._alive = False
             return self._func(*self._args, **self._kwargs)
 
-    __del__ = __call__  # in case of GC in same generation as _ptr()
+    def __del__(self):
+        if self._alive:
+            self._alive = False
+            self._func(*self._args, **self._kwargs)  # must strip return value
 
     def _atexit(self):
         try:
