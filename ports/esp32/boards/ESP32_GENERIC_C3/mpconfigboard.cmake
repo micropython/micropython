@@ -4,5 +4,5 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.base
     boards/sdkconfig.riscv
     boards/sdkconfig.ble
-    boards/ESP32_GENERIC_C3/sdkconfig.c3usb
+    boards/ESP32_GENERIC_C3/sdkconfig.c3
 )
