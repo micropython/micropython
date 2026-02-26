@@ -634,19 +634,27 @@ static void gc_finalise_if_unmarked(mp_state_mem_area_t *area, size_t block) {
         #endif
     }
 
-    mp_obj_t dest[2];
-    mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
-
-    if (dest[0] == MP_OBJ_NULL) {
-        return;
-    }
-
     #if MICROPY_ENABLE_SCHEDULER
     mp_sched_lock();
     #endif
 
-    mp_call_function_1_protected(dest[0], dest[1]);
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) != 0) {
+        mp_print_str(MICROPY_ERROR_PRINTER, "Unhandled exception in finaliser:\n");
+        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+        goto out_unlock;
+    }
 
+    mp_obj_t dest[2];
+    mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
+
+    if (dest[0] != MP_OBJ_NULL) {
+        mp_call_method_n_kw(0, 0, dest);
+    }
+
+    nlr_pop();
+
+out_unlock:
     #if MICROPY_ENABLE_SCHEDULER
     mp_sched_unlock();
     #endif
