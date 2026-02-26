@@ -130,6 +130,37 @@ void board_early_init(void) {
         MICROPY_BOARD_FATAL_ERROR("se_services_set_run_profile");
     }
 
+    off_profile_t off_profile = {
+        .dcdc_mode = DCDC_MODE_PWM,
+        .dcdc_voltage = DCDC_VOUT_0825,
+        // CLK_SRC_LFRC or CLK_SRC_LFXO
+        .aon_clk_src = CLK_SRC_LFXO,
+        // CLK_SRC_HFRC, CLK_SRC_HFXO or CLK_SRC_PLL
+        .stby_clk_src = CLK_SRC_HFRC,
+        .stby_clk_freq = SCALED_FREQ_RC_STDBY_76_8_MHZ,
+        // Disable all power domains except AON.
+        .power_domains = PD_VBAT_AON_MASK,
+        // Keep SERAM, MRAM and backup SRAM on.
+        // (SRAM0 also needs to stay on because it's used for .bss.sram0 which is zerod
+        // by the runtime before the run profile is configured.)
+        .memory_blocks = SERAM_MASK | SRAM0_MASK | MRAM_MASK | BACKUP4K_MASK,
+        // Gate the clocks of IP blocks.
+        .ip_clock_gating = 0x3ffb,
+        // Gate PHY power (saves 0.5uA).
+        .phy_pwr_gating = LDO_PHY_MASK | USB_PHY_MASK | MIPI_TX_DPHY_MASK | MIPI_RX_DPHY_MASK |
+            MIPI_PLL_DPHY_MASK,
+        .vdd_ioflex_3V3 = IOFLEX_LEVEL_3V3,
+        .vtor_address = SCB->VTOR,
+        .vtor_address_ns = SCB->VTOR,
+        // Configure wake-up sources.
+        .ewic_cfg = EWIC_VBAT_GPIO | EWIC_VBAT_TIMER | EWIC_RTC_A,
+        .wakeup_events = WE_LPGPIO7 | WE_LPGPIO6 | WE_LPGPIO5 | WE_LPGPIO4 | WE_LPTIMER0 | WE_LPRTC,
+    };
+
+    if (se_services_set_off_profile(&off_profile)) {
+        MICROPY_BOARD_FATAL_ERROR("se_services_set_off_profile");
+    }
+
     // Select PLL for PD4 memory.
     if (se_services_select_pll_source(PLL_SOURCE_PLL, PLL_TARGET_PD4_SRAM)) {
         MICROPY_BOARD_FATAL_ERROR("se_services_select_pll_source");
