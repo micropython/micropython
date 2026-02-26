@@ -77,6 +77,13 @@ static void stringio_copy_on_write(mp_obj_stringio_t *o) {
 
 static mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
+
+    if (!mp_obj_is_type(o_in, &mp_type_stringio)) {
+
+        if (!mp_obj_is_type(o_in, &mp_type_bytesio)) {
+            mp_raise_TypeError(MP_ERROR_TEXT("expecting a StringIO or BytesIO object"));
+        }
+    }
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
 
