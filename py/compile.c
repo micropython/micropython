@@ -2434,8 +2434,17 @@ static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                 }
                 star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
                 star_args |= (mp_uint_t)1 << i;
+
+                if (n_keyword == 0) {
+                    // star-args before kwargs encoded as positional arg
+                    n_positional++;
+                } else {
+                    // star-args after kwargs encoded as kw arg with key=NULL
+                    EMIT(load_null);
+                    n_keyword++;
+                }
+
                 compile_node(comp, pns_arg->nodes[0]);
-                n_positional++;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_dbl_star) {
                 star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
                 // double-star args are stored as kw arg with key of None
