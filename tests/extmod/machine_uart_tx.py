@@ -36,8 +36,8 @@ elif "samd" in sys.platform:
     bit_margin = 1
 
 # Test that write+flush takes the expected amount of time to execute.
-for bits_per_s in (2400, 9600, 115200):
-    text = "Hello World"
+for bits_per_s in (4800, 9600, 38400, 115200):
+    text = "Hello World from MicroPython"
     uart = UART(*uart_loopback_args, baudrate=bits_per_s, **uart_loopback_kwargs)
     time.sleep_ms(initial_delay_ms)
 

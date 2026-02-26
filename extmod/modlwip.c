@@ -932,20 +932,26 @@ static void lwip_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 static mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
+    uint8_t socket_domain = MOD_NETWORK_AF_INET;
+    uint8_t socket_type = MOD_NETWORK_SOCK_STREAM;
+    uint8_t socket_proto = 0;
+    if (n_args >= 1) {
+        socket_domain = mp_obj_get_int(args[0]);
+        if (n_args >= 2) {
+            socket_type = mp_obj_get_int(args[1]);
+            if (n_args >= 3) {
+                socket_proto = mp_obj_get_int(args[2]);
+            }
+        }
+    }
+
     lwip_socket_obj_t *socket = mp_obj_malloc_with_finaliser(lwip_socket_obj_t, &lwip_socket_type);
     socket->timeout = -1;
     socket->recv_offset = 0;
-    socket->domain = MOD_NETWORK_AF_INET;
-    socket->type = MOD_NETWORK_SOCK_STREAM;
+    socket->domain = socket_domain;
+    socket->type = socket_type;
     socket->callback = MP_OBJ_NULL;
     socket->state = STATE_NEW;
-
-    if (n_args >= 1) {
-        socket->domain = mp_obj_get_int(args[0]);
-        if (n_args >= 2) {
-            socket->type = mp_obj_get_int(args[1]);
-        }
-    }
 
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM:
@@ -962,8 +968,7 @@ static mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
             }
             #if MICROPY_PY_LWIP_SOCK_RAW
             else {
-                mp_int_t proto = n_args <= 2 ? 0 : mp_obj_get_int(args[2]);
-                socket->pcb.raw = raw_new(proto);
+                socket->pcb.raw = raw_new(socket_proto);
             }
             #endif
             socket->incoming.udp_raw.iget = 0;
