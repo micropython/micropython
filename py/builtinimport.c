@@ -58,6 +58,7 @@
 // path to a file or directory (e.g. "foo/bar", foo/bar.py" or "foo/bar.mpy"),
 // will return whether the path is a file, directory, or doesn't exist.
 static mp_import_stat_t stat_path(vstr_t *path) {
+    mp_import_stat_t stat;
     const char *str = vstr_null_terminated_str(path);
     #if MICROPY_MODULE_FROZEN
     // Only try and load as a frozen module if it starts with .frozen/.
@@ -67,7 +68,8 @@ static mp_import_stat_t stat_path(vstr_t *path) {
         return mp_find_frozen_module(str + frozen_path_prefix_len, NULL, NULL);
     }
     #endif
-    return mp_import_stat(str);
+    stat = mp_import_stat(str);
+    return stat;
 }
 
 // Stat a given filesystem path to a .py file. If the file does not exist,
@@ -103,7 +105,15 @@ static mp_import_stat_t stat_module(vstr_t *path) {
     mp_import_stat_t stat = stat_path(path);
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
-        return stat;
+        size_t orig_path_len = path->len;
+        vstr_add_str(path, PATH_SEP_CHAR "__init__.py");
+        if (stat_file_py_or_mpy(path) == MP_IMPORT_STAT_FILE) {
+            return MP_IMPORT_STAT_FILE_PKG;
+        }
+
+        // remove __init__.py
+        path->len = orig_path_len;
+        return MP_IMPORT_STAT_DIR;
     }
 
     // Not a directory, add .py and try as a file.
@@ -111,36 +121,64 @@ static mp_import_stat_t stat_module(vstr_t *path) {
     return stat_file_py_or_mpy(path);
 }
 
+#if MICROPY_PY_SYS && MICROPY_PY_SYS_PATH
+// Helper for stat_find_module
+static void stat_build_path(vstr_t *dest, mp_obj_t *path_item, qstr mod_name) {
+    vstr_reset(dest);
+    size_t p_len;
+    const char *dot, *rest;
+    const char *p = mp_obj_str_get_data(path_item, &p_len);
+    if (p_len > 0) {
+        // Add the path separator (unless the entry is "", i.e. cwd).
+        vstr_add_strn(dest, p, p_len);
+        vstr_add_char(dest, PATH_SEP_CHAR[0]);
+    }
+    // Convert the dotted module name to a path.
+    rest = qstr_str(mod_name);
+    dot = strchr(rest, '.');
+    while (dot) {
+        vstr_add_strn(dest, rest, dot - rest);
+        vstr_add_char(dest, PATH_SEP_CHAR[0]);
+        rest = dot + 1;
+        dot = strchr(rest, '.');
+    }
+    vstr_add_str(dest, rest);
+    vstr_str(dest)[vstr_len(dest)] = 0;
+}
+#endif
+
 // Given a top-level module name, try and find it in each of the sys.path
 // entries. Note: On success, the dest argument will be updated to the matching
 // path (i.e. "<entry>/mod_name(.py)").
-static mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
-    DEBUG_printf("stat_top_level: '%s'\n", qstr_str(mod_name));
+static mp_import_stat_t stat_find_module(qstr mod_name, vstr_t *dest) {
+    DEBUG_printf("stat_find_module: '%s'\n", qstr_str(mod_name));
     #if MICROPY_PY_SYS && MICROPY_PY_SYS_PATH
     size_t path_num;
     mp_obj_t *path_items;
     mp_obj_get_array(mp_sys_path, &path_num, &path_items);
 
     // go through each sys.path entry, trying to import "<entry>/<mod_name>".
+    size_t dir_idx = path_num;
     for (size_t i = 0; i < path_num; i++) {
-        vstr_reset(dest);
-        size_t p_len;
-        const char *p = mp_obj_str_get_data(path_items[i], &p_len);
-        if (p_len > 0) {
-            // Add the path separator (unless the entry is "", i.e. cwd).
-            vstr_add_strn(dest, p, p_len);
-            vstr_add_char(dest, PATH_SEP_CHAR[0]);
-        }
-        vstr_add_str(dest, qstr_str(mod_name));
+        stat_build_path(dest, path_items[i], mod_name);
         mp_import_stat_t stat = stat_module(dest);
-        if (stat != MP_IMPORT_STAT_NO_EXIST) {
+        if (stat >= MP_IMPORT_STAT_FILE) {
             return stat;
+        }
+        if (stat == MP_IMPORT_STAT_DIR && dir_idx == path_num) {
+            dir_idx = i;
         }
     }
 
-    // sys.path was empty or no matches, do not search the filesystem or
-    // frozen code.
-    return MP_IMPORT_STAT_NO_EXIST;
+    // sys.path was empty or no matches
+    if (dir_idx == path_num) {
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+    // Rebuild the path to the first directory seen, for __path__
+    if (dir_idx + 1 < path_num) {
+        stat_build_path(dest, path_items[dir_idx], mod_name);
+    }
+    return MP_IMPORT_STAT_DIR;
 
     #else
 
@@ -399,22 +437,9 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
             return module_obj;
         }
 
-        // Next try the filesystem. Search for a directory or file relative to
-        // all the locations in sys.path.
-        stat = stat_top_level(level_mod_name, &path);
-
-        #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
-        // If filesystem failed, now try and see if it matches an extensible
-        // built-in module.
-        if (stat == MP_IMPORT_STAT_NO_EXIST) {
-            module_obj = mp_module_get_builtin(level_mod_name, true);
-            if (module_obj != MP_OBJ_NULL) {
-                return module_obj;
-            }
-        }
-        #endif
     } else {
         DEBUG_printf("Searching for sub-module\n");
+
 
         #if MICROPY_MODULE_BUILTIN_SUBPACKAGES
         // If the outer module is a built-in (because its map is in ROM), then
@@ -430,21 +455,22 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         }
         #endif
 
-        // If the outer module is a package, it will have __path__ set.
-        // We can use that as the path to search inside.
-        mp_obj_t dest[2];
-        mp_load_method_maybe(outer_module_obj, MP_QSTR___path__, dest);
-        if (dest[0] != MP_OBJ_NULL) {
-            // e.g. __path__ will be "<matched search path>/foo/bar"
-            vstr_add_str(&path, mp_obj_str_get_str(dest[0]));
+    }
 
-            // Add the level module name to the path to get "<matched search path>/foo/bar/baz".
-            vstr_add_char(&path, PATH_SEP_CHAR[0]);
-            vstr_add_str(&path, qstr_str(level_mod_name));
+    // Next try the filesystem. Search for a directory or file relative to
+    // all the locations in sys.path.
+    stat = stat_find_module(full_mod_name, &path);
 
-            stat = stat_module(&path);
+    #if MICROPY_HAVE_REGISTERED_EXTENSIBLE_MODULES
+    // If filesystem failed, now try and see if it matches an extensible
+    // built-in module.
+    if (stat == MP_IMPORT_STAT_NO_EXIST) {
+        module_obj = mp_module_get_builtin(level_mod_name, true);
+        if (module_obj != MP_OBJ_NULL) {
+            return module_obj;
         }
     }
+    #endif
 
     // Not already loaded, and not a built-in, so look at the stat result from the filesystem/frozen.
 
@@ -496,22 +522,16 @@ static mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // Store the __path__ attribute onto this module.
         // https://docs.python.org/3/reference/import.html
         // "Specifically, any module that contains a __path__ attribute is considered a package."
-        // This gets used later to locate any subpackages of this module.
         mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path)));
-        size_t orig_path_len = path.len;
-        vstr_add_str(&path, PATH_SEP_CHAR "__init__.py");
-
-        // execute "path/__init__.py" (if available).
-        if (stat_file_py_or_mpy(&path) == MP_IMPORT_STAT_FILE) {
-            do_load(MP_OBJ_TO_PTR(module_obj), &path);
-        } else {
-            // No-op. Nothing to load.
-            // mp_warning("%s is imported as namespace package", vstr_str(&path));
-        }
-        // Remove /__init__.py suffix from path.
-        path.len = orig_path_len;
-    } else { // MP_IMPORT_STAT_FILE
+    } else { // MP_IMPORT_STAT_FILE or FILE_PKG
         // File -- execute "path.(m)py".
+        if (stat == MP_IMPORT_STAT_FILE_PKG) {
+            // add path attribute
+            size_t path_len = path.len;
+            mp_store_attr(module_obj, MP_QSTR___path__,
+                mp_obj_new_str(vstr_str(&path),
+                    path_len - 11 - (path.buf[path_len - 3] == 'm')));
+        }
         do_load(MP_OBJ_TO_PTR(module_obj), &path);
         // Note: This should be the last component in the import path. If
         // there are remaining components then in the next call to
