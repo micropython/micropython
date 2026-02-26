@@ -44,7 +44,8 @@
     .read_id_dummy_cycles = 4, \
     .read_command = 0xee11, \
     .write_command = 0x12ed, \
-    .erase_command = 0x21de
+    .erase_command = 0x21de, \
+    .power_down_command = 0xb946
 
 // Everspin EM.
 #define OSPI_FLASH_SETTINGS_EM \
@@ -61,7 +62,8 @@
     .read_id_dummy_cycles = 8, \
     .read_command = 0xfd, \
     .write_command = 0xc2, \
-    .erase_command = 0x21
+    .erase_command = 0x21, \
+    .power_down_command = 0xb9
 
 // ISSI IS25.
 #define OSPI_FLASH_SETTINGS_IS25 \
@@ -78,5 +80,7 @@
     .read_id_dummy_cycles = 8, \
     .read_command = 0xfd, \
     .write_command = 0xc2, \
-    .erase_command = 0x21
+    .erase_command = 0x21, \
+    .power_down_command = 0xb9
+
 #endif  // __OSPI_FLASH_SETTINGS_H__

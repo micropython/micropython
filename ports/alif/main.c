@@ -38,6 +38,7 @@
 #include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "tusb.h"
+#include "modmachine.h"
 #include "mpbthciport.h"
 #include "mpuart.h"
 #include "ospi_flash.h"
@@ -76,6 +77,8 @@ int main(void) {
     se_services_init();
 
     MICROPY_BOARD_EARLY_INIT();
+
+    machine_rtc_init();
 
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_init_repl();

@@ -7,6 +7,11 @@ LED_RED,P0_0
 LED_GREEN,P6_3
 LED_BLUE,P6_0
 
+# Sensor interrupts
+IMU_INT1,P15_4
+IMU_INT2,P15_5
+TOF_I2C_INT,P15_6
+
 # User switch
 SW,P15_7
 
