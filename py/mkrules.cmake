@@ -260,10 +260,9 @@ if(MICROPY_FROZEN_MANIFEST)
 
     # Note: target_compile_definitions already added earlier.
 
-    if(NOT MICROPY_LIB_DIR)
-        list(APPEND GIT_SUBMODULES lib/micropython-lib)
-        set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
-    endif()
+    # Ensure micropython-lib is included in submodule updates.
+    # MICROPY_LIB_DIR is set in py.cmake, so always add to GIT_SUBMODULES.
+    list(APPEND GIT_SUBMODULES lib/micropython-lib)
 
     if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
         message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
