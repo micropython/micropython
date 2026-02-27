@@ -435,6 +435,7 @@ fs_hook_cmds = {
     "CMD_RENAME": 11,
     "CMD_MKDIR": 12,
     "CMD_RMDIR": 13,
+    "CMD_TELL": 14,
 }
 
 fs_hook_code = f"""\
@@ -657,6 +658,15 @@ class RemoteFile(io.IOBase):
             raise OSError(n)
         return n
 
+    def tell(self) :
+        c = self.cmd
+        c.begin(CMD_TELL)
+        c.wr_s8(self.fd)
+        n = c.rd_s32()
+        c.end()
+        if n < 0:
+            raise OSError(n)
+        return n
 
 class RemoteFS:
     def __init__(self, cmd):
@@ -934,6 +944,14 @@ class PyboardCommand:
             n = -1
         self.wr_s32(n)
 
+    def do_tell (self) :
+        fd = self.rd_s8()
+        try:
+            n = self.data_files[fd][0].tell()
+        except io.UnsupportedOperation:
+            n = -1
+        self.wr_s32(n)
+
     def do_write(self):
         fd = self.rd_s8()
         buf = self.rd_bytes()
@@ -1003,6 +1021,7 @@ class PyboardCommand:
         fs_hook_cmds["CMD_RENAME"]: do_rename,
         fs_hook_cmds["CMD_MKDIR"]: do_mkdir,
         fs_hook_cmds["CMD_RMDIR"]: do_rmdir,
+        fs_hook_cmds["CMD_TELL"]: do_tell,
     }
 
 
