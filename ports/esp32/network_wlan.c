@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2016, 2017 Nick Moore @mnemote
  * Copyright (c) 2017 "Eric Poulsen" <eric@zyxod.com>
+ * Copyright (c) 2025 "Trent Walraven" <trwbox@gmail.com>
  *
  * Based on esp8266/modnetwork.c which is Copyright (c) 2015 Paul Sokolovsky
  * And the ESP IDF example code which is Public Domain / CC0
@@ -87,6 +88,113 @@ static uint8_t wifi_sta_reconnects;
 #else
 #define WIFI_PROTOCOL_DEFAULT (WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N)
 #endif
+
+// TODO: Can/should these be dynamically allocated?
+static uint8_t scan_config_ssid[33]; // The maximum length of an SSID is 32 bytes, plus a null terminator
+static uint8_t scan_config_bssid[6];
+
+static wifi_event_sta_scan_done_t scan_event_data;
+
+// Set to "true" while there is an in-progress scan.
+static bool scan_in_progress = false;
+// If the scan in progress is a background scan
+static bool scan_in_background = false;
+
+// If a soft reset happens between the time a scan has started, and the scan is complete,
+// then the callback function provided by the user is no longer valid and should not be called.
+// So track the case of a soft-reboot
+static bool soft_reboot_happened = false;
+
+// Gets the wifi scan results and returns them as a list of tuples in the expected format.
+static mp_obj_t read_wifi_scan_results() {
+    ESP_LOGI("wifi", "Reading wifi scan results");
+
+    // Create the list the results will be added to
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+
+    uint16_t count = 0;
+    esp_exceptions(esp_wifi_scan_get_ap_num(&count));
+    if (count == 0) {
+        // esp_wifi_scan_get_ap_records must be called to free internal buffers from the scan.
+        // But it returns an error if wifi_ap_records==NULL. So allocate at least 1 AP entry.
+        // esp_wifi_scan_get_ap_records will then return the actual number of APs in count.
+        count = 1;
+    }
+    // The array to hold the scan results
+    wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
+    esp_exceptions(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
+    for (uint16_t i = 0; i < count; i++) {
+        // The new tuple for the record with the values (ssid, bssid, channel, rssi, security, hidden)
+        mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
+        uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
+        int ssid_len = x ? x - wifi_ap_records[i].ssid : sizeof(wifi_ap_records[i].ssid);
+        t->items[0] = mp_obj_new_bytes(wifi_ap_records[i].ssid, ssid_len);
+        t->items[1] = mp_obj_new_bytes(wifi_ap_records[i].bssid, sizeof(wifi_ap_records[i].bssid));
+        t->items[2] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].primary);
+        t->items[3] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].rssi);
+        t->items[4] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].authmode);
+        // Hidden is not a direct field in ESP-IDF wifi, but setting show_hidden=False will cause all networks
+        //       with no SSID to be removed from the list even if the BSSID is explicitly set.
+        if (ssid_len == 0) {
+            // If the SSID length is 0, then it is a hidden network
+            t->items[5] = mp_const_true;
+        } else {
+            // Otherwise, it is not a hidden network
+            t->items[5] = mp_const_false;
+        }
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
+    }
+    // Free the array of scan results
+    free(wifi_ap_records);
+
+    ESP_LOGI("wifi", "Read %d scan results into the list", count);
+    return list;
+}
+
+// This function is used to get execution back into the main MicroPython thread during the wifi event handler
+// this is done to allow this function have MicroPython exceptions raised and handled, when setting up and calling
+// the user's callback function after a background wifi scan has completed.
+static mp_obj_t scan_done_cb(mp_obj_t arg) {
+    ESP_LOGI("wifi_callback", "Scan status: %lu", scan_event_data.status);
+
+    bool skip_callback = false;
+    // Check if a soft reboot happened, making the user callback invalid
+    if (soft_reboot_happened) {
+        ESP_LOGI("wifi_callback", "Soft reboot happened, skipping user callback");
+        // Reset the flag so that it doesn't affect future scans
+        soft_reboot_happened = false;
+        skip_callback = true;
+    }
+
+    // We always need to save the results from the scan, even if the user callback is not made
+    // as that is the only way that the results are freed from memory.
+    mp_obj_t results_list = read_wifi_scan_results();
+
+    // The scan is done, so set the pair of flags to false
+    scan_in_progress = false;
+    scan_in_background = false;
+
+    if (!skip_callback) {
+        // Get the user's callback function
+        mp_obj_t user_callback = MP_STATE_VM(user_scan_callback);
+        // Create a new bool object to indicate the status of the scan
+        mp_obj_t status = mp_obj_new_bool(scan_event_data.status == 0);
+
+        // Setup the tuple for the user callback
+        mp_obj_t callback_args[2] = {
+            status, // The status of the scan
+            results_list // The list of results from the scan
+        };
+        mp_obj_t callback_args_tuple = mp_obj_new_tuple(2, callback_args);
+
+        ESP_LOGI("wifi", "Results gathered, calling user provided callback function.");
+        // Make the protected call to the user's callback function with the arguments.
+        mp_call_function_2_protected(user_callback, MP_OBJ_FROM_PTR(&wlan_sta_obj), callback_args_tuple);
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(scan_done_cb_obj, scan_done_cb);
 
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
@@ -176,8 +284,37 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
             wlan_ap_obj.active = false;
             break;
 
+        case WIFI_EVENT_SCAN_DONE:
+            // If the scan was a background scan we need to call the user callback
+            if (scan_in_background) {
+                ESP_LOGI("wifi", "Scan completed when non-blocking scan was requested. Running callback");
+                // This event is triggered whenever a wifi scan completes
+                wifi_event_sta_scan_done_t *scan_done = event_data;
+                // Copy the scan data to a global so it doesn't get removed before the callback is called
+                memcpy(&scan_event_data, scan_done, sizeof(wifi_event_sta_scan_done_t));
+
+                // Since the system thread can't raise exceptions, schedule our handler in the micropython thread
+                if (!mp_sched_schedule(MP_OBJ_FROM_PTR(&scan_done_cb_obj), mp_const_none)) {
+                    ESP_LOGE("wifi", "Failed to schedule internal scan_done callback");
+                }
+            } else if (soft_reboot_happened) {
+                // Since this method is always called after a scan, it can be used to reset the soft_reset flag
+                // if the reset occurred when there was a scan happening, but it was not a non-blocking scan.
+                // TODO: Not sure that this branch is ever take, but in the event it is, I think it might need to run
+                //      read_wifi_scan_results() to free the scan results from memory?
+                soft_reboot_happened = false;
+            }
+            break;
         default:
             break;
+    }
+}
+
+// This is called from the Ctrl-D soft reboot to handle when there is an in-progress scan.
+void network_wlan_deinit(void) {
+    if (scan_in_progress) {
+        ESP_LOGI("wifi", "soft reboot is happening, while a scan is in progress, setting the flag to ignore scan callback");
+        soft_reboot_happened = true;
     }
 }
 
@@ -434,7 +571,44 @@ static mp_obj_t network_wlan_status(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_wlan_status_obj, 1, 2, network_wlan_status);
 
-static mp_obj_t network_wlan_scan(mp_obj_t self_in) {
+static mp_obj_t network_wlan_scan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_self, ARG_blocking, ARG_callback, ARG_channel, ARG_ssid, ARG_bssid, ARG_show_hidden,
+           ARG_active_scan, ARG_scan_time_passive, ARG_scan_time_active_min, ARG_scan_time_active_max,
+           ARG_home_chan_dwell_time};
+
+    static const mp_arg_t allowed_args[] = {
+        // Create the list of optional elements that can be given, starting with the self object that
+        // will always exist
+        { MP_QSTR_self, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = mp_const_none }},
+        // If the scan should be sent to the blocking
+        { MP_QSTR_blocking, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = true }},
+        // Callback function that will be called with the results from the scan after the non-blocking scan has completed
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none }},
+        // The channel, or list of channels that should be scanned
+        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none }},
+        // The ssid string that should be scanned for, default of None
+        { MP_QSTR_ssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none }},
+        // The mac address bssid as bytes that should be scanned for, default is None
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none }},
+        // If hidden networks should be shown, default of true based on the original implementation
+        { MP_QSTR_show_hidden, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = true }},
+        // If the scan should be active with WIFI_SCAN_TYPE_ACTIVE, default of true based on the ESP-IDF defaults
+        { MP_QSTR_active_scan, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = true }},
+        // Time to passive scan, default 360 ms based on the ESP-IDF defaults
+        { MP_QSTR_scan_time_passive, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 360 }},
+        // Min time to spend actively scanning, default of 0 ms based on the ESP-IDF defaults
+        { MP_QSTR_scan_time_active_min, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 }},
+        // Max time to spend actively scanning, default of 120 ms based on the ESP-IDF defaults
+        { MP_QSTR_scan_time_active_max, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 120 }},
+        // Time to spend on the home channel between hops if connected to a wifi network to not lose connection,
+        // defaults to 30ms based on the ESP-IDF defaults
+        { MP_QSTR_home_chan_dwell_time, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 30 }}
+    };
+
+    // Get the args to the function based on the keywords
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     // check that STA mode is active
     wifi_mode_t mode;
     esp_exceptions(esp_wifi_get_mode(&mode));
@@ -442,40 +616,220 @@ static mp_obj_t network_wlan_scan(mp_obj_t self_in) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
     }
 
-    mp_obj_t list = mp_obj_new_list(0, NULL);
-    wifi_scan_config_t config = { 0 };
-    config.show_hidden = true;
-    MP_THREAD_GIL_EXIT();
-    esp_err_t status = esp_wifi_scan_start(&config, 1);
-    MP_THREAD_GIL_ENTER();
-    if (status == 0) {
-        uint16_t count = 0;
-        esp_exceptions(esp_wifi_scan_get_ap_num(&count));
-        if (count == 0) {
-            // esp_wifi_scan_get_ap_records must be called to free internal buffers from the scan.
-            // But it returns an error if wifi_ap_records==NULL.  So allocate at least 1 AP entry.
-            // esp_wifi_scan_get_ap_records will then return the actual number of APs in count.
-            count = 1;
-        }
-        wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
-        esp_exceptions(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
-        for (uint16_t i = 0; i < count; i++) {
-            mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-            uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
-            int ssid_len = x ? x - wifi_ap_records[i].ssid : sizeof(wifi_ap_records[i].ssid);
-            t->items[0] = mp_obj_new_bytes(wifi_ap_records[i].ssid, ssid_len);
-            t->items[1] = mp_obj_new_bytes(wifi_ap_records[i].bssid, sizeof(wifi_ap_records[i].bssid));
-            t->items[2] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].primary);
-            t->items[3] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].rssi);
-            t->items[4] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].authmode);
-            t->items[5] = mp_const_false; // XXX hidden?
-            mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
-        }
-        free(wifi_ap_records);
+    // Raise an error if the scan is already happening
+    if (scan_in_progress) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("WiFi scan already in progress, wait for it to finish"));
+    } else if (!scan_in_progress && soft_reboot_happened) {
+        // This is a weird state to be in, since the soft_reboot flag should only be set when scan_in_progress is set
+        ESP_LOGW("wifi", "Scan not in progress with soft_reboot_happened set, resetting the flag");
+        // Reset the flag if somehow this is the case
+        soft_reboot_happened = false;
     }
+
+    // Create the scan config object to be filled in with the scan parameters
+    wifi_scan_config_t config = { 0 };
+
+    config.show_hidden = args[ARG_show_hidden].u_bool;
+
+    config.scan_type = args[ARG_active_scan].u_bool ? WIFI_SCAN_TYPE_ACTIVE : WIFI_SCAN_TYPE_PASSIVE;
+
+    if (args[ARG_home_chan_dwell_time].u_int < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("home_chan_dwell_time must be a positive integer"));
+    } else if (args[ARG_home_chan_dwell_time].u_int > 255) {
+        mp_raise_ValueError(MP_ERROR_TEXT("home_chan_dwell_time must be less than 256"));
+    }
+    config.home_chan_dwell_time = (uint8_t)args[ARG_home_chan_dwell_time].u_int;
+
+    // Set the scan times
+    if (args[ARG_scan_time_passive].u_int < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("scan_time_passive must be a positive integer"));
+    } else if (args[ARG_scan_time_passive].u_int > 1500) {
+        // TODO: It appears that the ESP-IDF sets a hard limit of 1500 ms for the passive scan time,
+        //       but the documentation reads more like a recommendation than a hard limit.
+        //       So, should this be a warning instead of an error?
+        mp_raise_ValueError(MP_ERROR_TEXT("scan_time_passive must be less than or equal to 1500"));
+    }
+    config.scan_time.passive = args[ARG_scan_time_passive].u_int;
+
+    if (args[ARG_scan_time_active_min].u_int < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("scan_time_active_min must be a positive integer"));
+    } else if (args[ARG_scan_time_active_min].u_int > 1500) {
+        // TODO: There is no note in the documentation about a limit for the min scan time, but logically
+        //       it would also not be allowed over the 1500 ms limit if the max is 1500ms?
+        mp_raise_ValueError(MP_ERROR_TEXT("scan_time_active_min must be less than or equal to 1500"));
+    }
+
+    if (args[ARG_scan_time_active_max].u_int < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("scan_time_active_max must be a positive integer"));
+    } else if (args[ARG_scan_time_active_max].u_int > 1500) {
+        // TODO: There appears to be a hard limit of 1500 ms for the active scan time in the ESP-IDF,
+        //       but the documentation reads more like a recommendation than a hard limit.
+        //       So, should this be a warning instead of an error?
+        mp_raise_ValueError(MP_ERROR_TEXT("scan_time_active_max must be less than or equal to 1500"));
+    }
+    if (args[ARG_scan_time_active_min].u_int > args[ARG_scan_time_active_max].u_int) {
+        mp_raise_ValueError(MP_ERROR_TEXT("scan_time_active_min must be less than or equal to scan_time_active_max"));
+    }
+    config.scan_time.active.min = args[ARG_scan_time_active_min].u_int;
+    config.scan_time.active.max = args[ARG_scan_time_active_max].u_int;
+
+
+    if (args[ARG_ssid].u_obj != mp_const_none) {
+        size_t len;
+        const char *ssid_str;
+
+        ssid_str = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
+        // Maximum length of the SSID is 32 bytes, array is 33 bytes to include the null terminator
+        if (len >= sizeof(scan_config_ssid)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("SSID too long"));
+        }
+        // Clear the SSID array before copying the new SSID into it
+        memset(scan_config_ssid, 0, sizeof(scan_config_ssid));
+        // TODO: This is technically an *uint8_t for the SSID in the ESP-IDF, does signedness of char matter?
+        // Copy the SSID into the scan_config_ssid array
+        memcpy(scan_config_ssid, ssid_str, len);
+        config.ssid = scan_config_ssid;
+    }
+
+    if (args[ARG_bssid].u_obj != mp_const_none) {
+        size_t len;
+        const char *addr_bytes;
+
+        addr_bytes = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
+        if (len != sizeof(scan_config_bssid)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("BSSID must be 6 bytes"));
+        }
+        // Clear the BSSID array before copying the new BSSID into it.
+        // This probably isn't strictly required since it will always be 6 bytes, but a good practice
+        memset(scan_config_bssid, 0, sizeof(scan_config_bssid));
+
+        // TODO: This is technically an *uint8_t for the BSSID in the ESP-IDF, does signedness of char matter?
+        memcpy(scan_config_bssid, addr_bytes, sizeof(scan_config_bssid));
+        config.bssid = scan_config_bssid;
+    }
+
+    if (mp_obj_is_int(args[ARG_channel].u_obj)) {
+        // If the channel argument is a single channel, set the channel in the config
+        // NOTE: This check won't be good enough if support for 5GHz is added with the esp32-c5
+        // TODO: Should this allow for an int 0 which would cause a scan of all channels?
+        if (mp_obj_get_int(args[ARG_channel].u_obj) < 1 || mp_obj_get_int(args[ARG_channel].u_obj) > 14) {
+            mp_raise_ValueError(MP_ERROR_TEXT("Unsupported channel number"));
+        }
+
+        config.channel = mp_obj_get_int(args[ARG_channel].u_obj);
+    } else if (mp_obj_is_type(args[ARG_channel].u_obj, &mp_type_list) || mp_obj_is_type(args[ARG_channel].u_obj, &mp_type_tuple)) {
+        // If channel argument is a list or tuple, try to use the channel bitmap to scan them all
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
+        // The channel bitmap only supports ESP-IDF versions 5.3.0 and above
+        // Start with the empty bitmap
+        wifi_scan_channel_bitmap_t channel_bitmap = {0};
+
+        // Get the list of channels
+        mp_obj_t channel_list = args[ARG_channel].u_obj;
+        int channel_count = mp_obj_get_int(mp_obj_len(channel_list));
+        ESP_LOGI("wifi", "There were %d channels given in the channel list", channel_count);
+
+        if (channel_count == 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("No channels given in channel list"));
+        }
+
+        // Get the channels themselves
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(channel_list, channel_count, &items);
+        for (int i = 0; i < channel_count; i++) {
+            if (!mp_obj_is_int(items[i])) {
+                mp_raise_TypeError(MP_ERROR_TEXT("The wifi channels must be specified as integers"));
+            }
+
+            // Check that it is a valid channel
+            int temp_channel_number = mp_obj_get_int(items[i]);
+            // NOTE: This check won't be good enough if support for 5GHz is added with the esp32-c5
+            if (temp_channel_number < 1 || temp_channel_number > 14) {
+                mp_raise_ValueError(MP_ERROR_TEXT("Unsupported channel number in channel list"));
+            }
+
+            // Set the channel in the bitmap
+            channel_bitmap.ghz_2_channels |= 1 << (temp_channel_number);
+        }
+
+        // Set the channel bitmap, and clear the channel number since 0 is required for the bitmap
+        config.channel = 0;
+        config.channel_bitmap = channel_bitmap;
+        #else
+        // If the version is less than 5.3.0, raise an error when trying to use a list or tuple of channels
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Using a list of channels is not supported on this version of ESP-IDF"));
+        #endif
+    } else if (args[ARG_channel].u_obj == mp_const_none) {
+        // If no channel is given, set the channel to 0 to scan all channels
+        config.channel = 0;
+    } else {
+        // If it is neither of those, raise an error
+        mp_raise_msg(&mp_type_TypeError, MP_ERROR_TEXT("Channel must be an integer or a list of integers"));
+    }
+
+    // If the scan is non-blocking, run checks on the callback
+    if (args[ARG_blocking].u_bool == false) {
+        // Check that a callback is given
+        if (args[ARG_callback].u_obj == mp_const_none) {
+            mp_raise_TypeError(MP_ERROR_TEXT("Callback must be given for non-blocking scan"));
+        }
+
+        // Check that the callback is a callable object
+        if (!mp_obj_is_callable(args[ARG_callback].u_obj)) {
+            mp_raise_TypeError(MP_ERROR_TEXT("Callback must be a callable object"));
+        }
+
+        // Set the callback to the global callback object
+        MP_STATE_VM(user_scan_callback) = args[ARG_callback].u_obj;
+    } else if (args[ARG_callback].u_obj != mp_const_none) {
+        // TODO: Should the callback be allowed for blocking scans too if desired?
+        //      I don't think so, since that could lead to backwards compatibility issues.
+        // If the scan is blocking, but a callback is given, raise an error
+        mp_raise_TypeError(MP_ERROR_TEXT("Callback cannot be given for blocking scan"));
+    }
+
+    MP_THREAD_GIL_EXIT();
+    // Set the flags for the scan that is going to happen
+    scan_in_progress = true;
+    scan_in_background = !args[ARG_blocking].u_bool;
+    esp_err_t status = esp_wifi_scan_start(&config, args[ARG_blocking].u_bool);
+    MP_THREAD_GIL_ENTER();
+
+    if (!args[ARG_blocking].u_bool) {
+        // If this is a non-blocking scan check the error code
+        // NOTE: Choosing not to use esp_exceptions here to make it more clear it was a non-blocking scan,
+        //       but unsure if that is the correct approach.
+        if (status != ESP_OK) {
+            // Clear the scan in flags if there was an error
+            scan_in_progress = false;
+            scan_in_background = false;
+            mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Non-blocking WiFi scan failed: %s"), esp_err_to_name(status));
+        }
+        ESP_LOGI("wifi", "The non-blocking scan started successfully, with a callback upon completion.");
+
+        // Then return None immediately since the callback will handle the rest
+        return mp_const_none;
+    }
+
+    // If the scan was blacking, it will have completed or errored by reaching this code
+    // Verify the status of the scan
+    esp_exceptions(status);
+    // If the scan was successful, read the results and return them
+    mp_obj_t list = read_wifi_scan_results();
+    // Clear the scan in progress flag
+    scan_in_progress = false;
+    ESP_LOGI("wifi", "The blocking scan completed successfully, returning the results.");
     return list;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(network_wlan_scan_obj, network_wlan_scan);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_scan_obj, 1, network_wlan_scan);
+
+// TODO: Should this be a property somehow instead of a method?
+// This allows the user to check if a scan is in progress. This is useful for a
+// non-blocking scan, but also in a multi-threaded environment.
+static mp_obj_t network_wlan_scan_in_progress(mp_obj_t self_in) {
+    return mp_obj_new_bool(scan_in_progress);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(network_wlan_scan_in_progress_obj, network_wlan_scan_in_progress);
 
 static mp_obj_t network_wlan_isconnected(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -747,6 +1101,7 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&network_wlan_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&network_wlan_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&network_wlan_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan_in_progress), MP_ROM_PTR(&network_wlan_scan_in_progress_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_wlan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_wlan_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_network_ifconfig_obj) },
@@ -810,5 +1165,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, network_wlan_make_new,
     locals_dict, &wlan_if_locals_dict
     );
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t * user_scan_callback);
 
 #endif // MICROPY_PY_NETWORK_WLAN
