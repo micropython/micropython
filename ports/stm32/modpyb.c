@@ -253,7 +253,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&pyb_dac_type) },
     #endif
 
-    #if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3
+    #if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3 || MICROPY_HW_HAS_LIS2DH12TR
     { MP_ROM_QSTR(MP_QSTR_Accel), MP_ROM_PTR(&pyb_accel_type) },
     #endif
 

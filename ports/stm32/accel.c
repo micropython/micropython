@@ -33,7 +33,7 @@
 #include "i2c.h"
 #include "accel.h"
 
-#if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3
+#if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3 || MICROPY_HW_HAS_LIS2DH12TR
 
 /// \moduleref pyb
 /// \class Accel - accelerometer control
@@ -79,10 +79,62 @@
 #define ACCEL_REG_DATA_CTRL_REG     (0x21)
 #define ACCEL_AXIS_SIGNED_VALUE(i)  (((i) & 0x7f) | ((i) & 0x80 ? (~0x7f) : 0))
 
+#elif MICROPY_HW_HAS_LIS2DH12TR
+
+#define ACCEL_ADDR                  (0x19)
+#define ACCEL_ADDR_SUB              (0x80)
+#define ACCEL_REG_STATUS_REG_AUX    (0x07)
+#define ACCEL_REG_OUT_TEMP_L        (0x0C)
+#define ACCEL_REG_OUT_TEMP_H        (0x0D)
+#define ACCEL_REG_WHO_AM_I          (0x0f)
+
+#define ACCEL_REG_CTRL_REG0         (0x1E)
+#define ACCEL_REG_TEMP_CFG_REG      (0x1F)
+#define ACCEL_REG_CTRL_REG1         (0x20)
+#define ACCEL_REG_CTRL_REG2         (0x21)
+#define ACCEL_REG_CTRL_REG3         (0x22)
+#define ACCEL_REG_CTRL_REG4         (0x23)
+#define ACCEL_REG_CTRL_REG5         (0x24)
+#define ACCEL_REG_CTRL_REG6         (0x25)
+#define ACCEL_REG_REFERENCE         (0x26)
+
+#define ACCEL_REG_STATUS_REG        (0x27)
+
+#define ACCEL_REG_X                 (0x28) // XOUT_L
+#define ACCEL_REG_Y                 (0x2A) // YOUT_L
+#define ACCEL_REG_Z                 (0x2C) // ZOUT_L
+
+#define ACCEL_REG_FIFO_CTRL_REG     (0x2E)
+#define ACCEL_REG_FIFO_SRC_REG      (0x2F)
+
+#define ACCEL_REG_INT1_CFG          (0x30)
+#define ACCEL_REG_INT1_SRC          (0x31)
+#define ACCEL_REG_INT1_THS          (0x32)
+#define ACCEL_REG_INT1_DURATION     (0x33)
+
+#define ACCEL_REG_INT2_CFG          (0x34)
+#define ACCEL_REG_INT2_SRC          (0x35)
+#define ACCEL_REG_INT2_THS          (0x36)
+#define ACCEL_REG_INT2_DURATION     (0x37)
+
+#define ACCEL_REG_CLICK_CFG         (0x38)
+#define ACCEL_REG_CLICK_SRC         (0x39)
+#define ACCEL_REG_CLICK_THS         (0x3A)
+
+#define ACCEL_REG_TIME_LIMIT        (0x3B)
+#define ACCEL_REG_TIME_LATENCY      (0x3C)
+#define ACCEL_REG_TIME_WINDOW       (0x3D)
+
+#define ACCEL_REG_ACT_THS           (0x3E)
+#define ACCEL_REG_ACT_DUR           (0x3F)
+
+
+#define ACCEL_AXIS_SIGNED_VALUE(lsb)  (lsb>>4)*1//±2g
+
 #endif
 
 void accel_init(void) {
-    #if MICROPY_HW_HAS_MMA7660
+    #if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_LIS2DH12TR
     // PB5 is connected to AVDD; pull high to enable MMA accel device
     mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off AVDD
     mp_hal_pin_output(MICROPY_HW_MMA_AVDD_PIN);
@@ -139,6 +191,38 @@ static void accel_start(void) {
     data[1] = 0x04;
     i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
 
+    #elif MICROPY_HW_HAS_LIS2DH12TR
+        // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
+    mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off
+    mp_hal_delay_ms(30);
+    mp_hal_pin_high(MICROPY_HW_MMA_AVDD_PIN); // turn on
+    mp_hal_delay_ms(30);
+
+    int ret;
+    for (int i = 0; i < 4; i++) {
+        ret = i2c_writeto(I2C1, ACCEL_ADDR, NULL, 0, true);
+        if (ret == 0) {
+            break;
+        }
+    }
+    if (ret != 0) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("accelerometer not found"));
+    }
+
+    uint8_t data[2] = { ACCEL_REG_WHO_AM_I };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
+    if (data[0] != 0x33) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("accelerometer is not LIS2DH12TR"));
+    }
+    data[0] = ACCEL_REG_CTRL_REG1;
+    data[1] = 0x17;//1Hz,xyz enable
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
+
+    data[0] = ACCEL_REG_CTRL_REG4;
+    data[1] = 0x08;//BDU enable,±2g,12bit
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
+
     #endif
 }
 
@@ -178,10 +262,31 @@ static mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, siz
 }
 
 static mp_obj_t read_axis(int axis) {
+
+    #if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3
+    
     uint8_t data[1] = { axis };
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(ACCEL_AXIS_SIGNED_VALUE(data[0]));
+
+    #elif MICROPY_HW_HAS_LIS2DH12TR
+
+    uint8_t data[2] = { ACCEL_REG_STATUS_REG };
+    do
+    {
+        data[0] = ACCEL_REG_STATUS_REG;
+        i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+        i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
+    } while (!(data[0]&0x80));
+    data[0] = axis|ACCEL_ADDR_SUB;//set SUB
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 2, true);
+    int16_t acc = data[1];
+    acc = (acc<<8)|data[0];
+    return mp_obj_new_int(ACCEL_AXIS_SIGNED_VALUE(acc));
+
+    #endif
 }
 
 /// \method x()
@@ -213,7 +318,7 @@ static mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
-    #elif MICROPY_HW_HAS_KXTJ3
+    #elif MICROPY_HW_HAS_KXTJ3 || MICROPY_HW_HAS_LIS2DH12TR
     /// No tilt like register with KXTJ3 accelerometer
     return 0;
     #endif
@@ -224,7 +329,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
 /// Get a 3-tuple of filtered x, y and z values.
 static mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     pyb_accel_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
+loop:
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 
     #if MICROPY_HW_HAS_MMA7660
@@ -233,20 +338,37 @@ static mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     #elif MICROPY_HW_HAS_KXTJ3
     const size_t DATA_SIZE = 5;
     const size_t DATA_STRIDE = 2;
+    #elif MICROPY_HW_HAS_LIS2DH12TR
+    const size_t DATA_SIZE = 6;
+    const size_t DATA_STRIDE = 2;
     #endif
     uint8_t data[DATA_SIZE];
     data[0] = ACCEL_REG_X;
+    #if MICROPY_HW_HAS_LIS2DH12TR
+    data[0] = ACCEL_REG_X|ACCEL_ADDR_SUB;
+    #endif
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, DATA_SIZE, true);
 
     mp_obj_t tuple[NUM_AXIS];
     for (int i = 0; i < NUM_AXIS; i++) {
+        #if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3
         self->buf[NUM_AXIS * (FILT_DEPTH - 1) + i] = ACCEL_AXIS_SIGNED_VALUE(data[i * DATA_STRIDE]);
+        #elif MICROPY_HW_HAS_LIS2DH12TR
+        int16_t acc = data[i * DATA_STRIDE+1];
+        acc = (acc<<8)|data[i * DATA_STRIDE];
+        self->buf[NUM_AXIS * (FILT_DEPTH - 1) + i] = ACCEL_AXIS_SIGNED_VALUE(acc);//9 10 11 = x y z 
+        #endif
+
         int32_t val = 0;
         for (int j = 0; j < FILT_DEPTH; j++) {
             val += self->buf[i + NUM_AXIS * j];
         }
-        tuple[i] = mp_obj_new_int(val);
+        tuple[i] = mp_obj_new_int(val/FILT_DEPTH);
+    }
+    if(self->buf[ 0]==0&&self->buf[1]==0&&self->buf[2]==0)
+    {
+        goto loop;
     }
 
     return mp_obj_new_tuple(3, tuple);
