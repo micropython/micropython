@@ -36,7 +36,11 @@ typedef struct _fs_user_mount_t {
     FATFS fatfs;
 } fs_user_mount_t;
 
+#if MICROPY_USE_INTERNAL_ERRNO
 extern const byte fresult_to_errno_table[20];
+#else
+extern const int fresult_to_errno_table[20];
+#endif
 extern const mp_obj_type_t mp_fat_vfs_type;
 extern const mp_obj_type_t mp_type_vfs_fat_fileio;
 extern const mp_obj_type_t mp_type_vfs_fat_textio;
