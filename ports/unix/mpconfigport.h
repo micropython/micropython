@@ -227,6 +227,11 @@ static inline unsigned long mp_random_seed_init(void) {
 #include <stdio.h>
 #endif
 
+#ifdef __GNU__
+// GNU/Hurd uses large error numbers.
+#define MICROPY_ERRNO_POSIX (1)
+#endif
+
 // Configure the implementation of machine.idle().
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();
