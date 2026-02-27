@@ -1,0 +1,168 @@
+MONO_VLSB 8x4:
+width: 8
+height: 4
+format: 0
+stride: 8
+format == MONO_VLSB: True
+Raised AttributeError correctly
+
+MONO_HLSB 8x4:
+width: 8
+height: 4
+format: 3
+stride: 8
+format == MONO_HLSB: True
+Raised AttributeError correctly
+
+MONO_HMSB 8x4:
+width: 8
+height: 4
+format: 4
+stride: 8
+format == MONO_HMSB: True
+Raised AttributeError correctly
+
+RGB565 8x4:
+width: 8
+height: 4
+format: 1
+stride: 8
+format == RGB565: True
+Raised AttributeError correctly
+
+GS2_HMSB 8x4:
+width: 8
+height: 4
+format: 5
+stride: 8
+format == GS2_HMSB: True
+Raised AttributeError correctly
+
+GS4_HMSB 8x4:
+width: 8
+height: 4
+format: 2
+stride: 8
+format == GS4_HMSB: True
+Raised AttributeError correctly
+
+GS8 8x4:
+width: 8
+height: 4
+format: 6
+stride: 8
+format == GS8: True
+Raised AttributeError correctly
+
+MONO_VLSB 16x8:
+width: 16
+height: 8
+format: 0
+stride: 16
+format == MONO_VLSB: True
+Raised AttributeError correctly
+
+MONO_HLSB 16x8:
+width: 16
+height: 8
+format: 3
+stride: 16
+format == MONO_HLSB: True
+Raised AttributeError correctly
+
+MONO_HMSB 16x8:
+width: 16
+height: 8
+format: 4
+stride: 16
+format == MONO_HMSB: True
+Raised AttributeError correctly
+
+RGB565 16x8:
+width: 16
+height: 8
+format: 1
+stride: 16
+format == RGB565: True
+Raised AttributeError correctly
+
+GS2_HMSB 16x8:
+width: 16
+height: 8
+format: 5
+stride: 16
+format == GS2_HMSB: True
+Raised AttributeError correctly
+
+GS4_HMSB 16x8:
+width: 16
+height: 8
+format: 2
+stride: 16
+format == GS4_HMSB: True
+Raised AttributeError correctly
+
+GS8 16x8:
+width: 16
+height: 8
+format: 6
+stride: 16
+format == GS8: True
+Raised AttributeError correctly
+
+MONO_VLSB 128x64:
+width: 128
+height: 64
+format: 0
+stride: 128
+format == MONO_VLSB: True
+Raised AttributeError correctly
+
+MONO_HLSB 128x64:
+width: 128
+height: 64
+format: 3
+stride: 128
+format == MONO_HLSB: True
+Raised AttributeError correctly
+
+MONO_HMSB 128x64:
+width: 128
+height: 64
+format: 4
+stride: 128
+format == MONO_HMSB: True
+Raised AttributeError correctly
+
+RGB565 128x64:
+width: 128
+height: 64
+format: 1
+stride: 128
+format == RGB565: True
+Raised AttributeError correctly
+
+GS2_HMSB 128x64:
+width: 128
+height: 64
+format: 5
+stride: 128
+format == GS2_HMSB: True
+Raised AttributeError correctly
+
+GS4_HMSB 128x64:
+width: 128
+height: 64
+format: 2
+stride: 128
+format == GS4_HMSB: True
+Raised AttributeError correctly
+
+GS8 128x64:
+width: 128
+height: 64
+format: 6
+stride: 128
+format == GS8: True
+Raised AttributeError correctly
+
