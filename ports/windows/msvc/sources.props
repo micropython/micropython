@@ -21,6 +21,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\modre.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modselect.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modtime.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modtyping.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\virtpin.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\vfs.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\vfs_posix.c" />

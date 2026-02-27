@@ -66,16 +66,18 @@ RuntimeError:
 ame__
 port 
 
-builtins        micropython     array           binascii
+builtins        micropython     __future__      _asyncio
+_thread         abc             array           binascii
 btree           cexample        cmath           collections
 cppexample      cryptolib       deflate         errno
 example_package                 ffi             framebuf
 gc              hashlib         heapq           io
-json            machine         marshal         math
-os              platform        random          re
-select          socket          struct          sys
-termios         time            tls             uctypes
-vfs             websocket
+json            machine         math            os
+platform        random          re              select
+socket          struct          sys             termios
+time            tls             typing
+typing_extensions               uctypes         vfs
+websocket
 me
 
 micropython     machine         marshal         math

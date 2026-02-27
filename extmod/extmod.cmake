@@ -45,6 +45,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modtls_axtls.c
     ${MICROPY_EXTMOD_DIR}/modtls_mbedtls.c
     ${MICROPY_EXTMOD_DIR}/modtime.c
+    ${MICROPY_EXTMOD_DIR}/modtyping.c
     ${MICROPY_EXTMOD_DIR}/modvfs.c
     ${MICROPY_EXTMOD_DIR}/modwebsocket.c
     ${MICROPY_EXTMOD_DIR}/modwebrepl.c
