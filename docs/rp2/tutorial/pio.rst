@@ -124,3 +124,64 @@ the following:
 
 The entire routine takes exactly 2000 cycles of the state machine.  Setting the
 frequency of the state machine to 2000Hz makes the LED blink at 1Hz.
+
+Variables inside PIO
+----------
+
+Due to the process of converting pythonic PioASM-Code into HexCode, 
+it is not possible to access to global references inside a pio-function. 
+However, keyword arguments can be used to manipulate the asm-program.
+
+This mechanic allows to write a pio program "template" 
+and calculate/determine the necessary values for the PIO-variables at runtime.
+
+The following example demonstrates how to calculate the delay for a given frequency
+and how to use the calculated values in the PIO program.
+
+.. code-block:: python3
+
+    def calc_delay(freq):
+        """Calculate the pio-variables for a given frequency"""
+        half_period = int(1000/freq) # 2000Hz PIO frequency, devided in high and low phase
+        error = round(1000/half_period - freq, 3) # calculate the integer cast error
+        loop_count = (half_period // 31) # 31 cycles for the delay loop
+        set_delay = half_period - loop_count * 31 - 2 # 2 cycles for the set and irq instructions
+        loop_count -= 1  # compensate for the first loop
+        assert 31 >= loop_count >= 0, "Frequency out of range"
+        assert 31 >= set_delay >= 0, "Frequency out of range"
+        return loop_count, set_delay, error
+
+    
+    def blink_template(loop_count, set_delay):
+        # Cycles: 1 + 1 + 1 + set_delay + (loop_count+1) * (30 + 1)
+        irq(rel(0))
+        set(pins, 1)
+        set(x, loop_count)          [set_delay]
+        label("delay_high")
+        nop()                       [29]
+        jmp(x_dec, "delay_high")
+
+        # Cycles: 1 + 1 + 1 + set_delay + (loop_count+1) * (30 + 1)
+        nop()
+        set(pins, 0)
+        set(x, loop_count)          [set_delay]
+        label("delay_low")
+        nop()                       [29]
+        jmp(x_dec, "delay_low")
+
+    
+    # Example using PIO to blink an LED and raise an IRQ at dynamic frequency.
+    freq = 1
+    loop_count, set_delay, error = calc_delay(freq)
+    
+    # call the asm-decorator with the calculated values
+    blink_freq = rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)(blink_template, loop_count, set_delay)
+
+    # Create the StateMachine with the blink program, outputting on Pin(25).
+    sm = rp2.StateMachine(0, pio_code_blink, freq=2000, set_base=Pin(25))
+
+    # Set the IRQ handler to print the millisecond timestamp.
+    sm.irq(lambda p: print(time.ticks_ms()))
+
+    # Start the StateMachine.
+    sm.active(1)
