@@ -241,10 +241,12 @@ That should give a MicroPython REPL.  You can then run commands like:
 
 .. code-block:: bash
 
-   MicroPython v1.13 on 2021-01-01; example-board with unknown-cpu
-   >>> import sys
-   >>> sys.implementation
-   ('micropython', (1, 13, 0))
+   MicroPython v1.26.0-preview on 2025-08-01; minimal with unknown-cpu
+   >>> def sum(n,m):
+   ...     return n+m
+   ...
+   >>> 3,4,sum(3,4)
+   (3, 4, 7)
    >>>
 
 Use Ctrl-D to exit, and then run ``reset`` to reset the terminal.
