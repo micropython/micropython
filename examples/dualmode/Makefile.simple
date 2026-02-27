@@ -1,0 +1,22 @@
+# Native module makefile for dualmode_simple
+
+# Location of top-level MicroPython directory
+MPY_DIR = ../..
+
+# Name of module
+MOD = dualmode_simple
+
+# Source files
+SRC = dualmode_simple.c
+
+# Architecture to build for
+ARCH = x64
+
+# Add include path for header
+CFLAGS += -I.
+
+# Use the simple qstrdefs
+QSTR_DEFS = qstrdefsport_simple.h
+
+# Include to get the rules for compiling and linking the module
+include $(MPY_DIR)/py/dynruntime.mk

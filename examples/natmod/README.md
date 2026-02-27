@@ -39,6 +39,10 @@ two main categories:
 
     * `features4` - A module that demonstrates how to define a class.
 
+    * `static_module_hybrid` - A module that demonstrates a cleaner approach to
+      defining module attributes using macros, reducing boilerplate code in the
+      `mpy_init` function.
+
 2.  Dynamic version of existing built-ins.
 
     This provides a way to add missing functionality to firmware that doesn't
