@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "py/mpprint.h"
+#include "py/misc.h"
 
 void gc_init(void *start, void *end);
 
@@ -62,10 +63,10 @@ enum {
     GC_ALLOC_FLAG_HAS_FINALISER = 1,
 };
 
-void *gc_alloc(size_t n_bytes, unsigned int alloc_flags);
 void gc_free(void *ptr); // does not call finaliser
+void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC(gc_free);
 size_t gc_nbytes(const void *ptr);
-void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);
+void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move) MP_ATTR_ALLOC_SIZE(2);
 
 typedef struct _gc_info_t {
     size_t total;

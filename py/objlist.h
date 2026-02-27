@@ -27,12 +27,13 @@
 #define MICROPY_INCLUDED_PY_OBJLIST_H
 
 #include "py/obj.h"
+#include "py/misc.h"
 
 typedef struct _mp_obj_list_t {
     mp_obj_base_t base;
     size_t alloc;
     size_t len;
-    mp_obj_t *items;
+    mp_obj_t *items MP_ATTR_COUNTED_BY(alloc);
 } mp_obj_list_t;
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n);

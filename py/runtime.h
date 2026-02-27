@@ -29,6 +29,7 @@
 #include "py/mpstate.h"
 #include "py/pystack.h"
 #include "py/cstack.h"
+#include "py/misc.h"
 
 // Initialize an nlr_jump_callback_node_call_function_1_t struct for use with
 // nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
@@ -221,7 +222,7 @@ mp_obj_t mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2
 typedef struct _mp_call_args_t {
     mp_obj_t fun;
     size_t n_args, n_kw, n_alloc;
-    mp_obj_t *args;
+    mp_obj_t *args MP_ATTR_COUNTED_BY(n_alloc);
 } mp_call_args_t;
 
 #if MICROPY_STACKLESS

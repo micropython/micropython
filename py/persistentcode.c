@@ -35,6 +35,7 @@
 #include "py/bc0.h"
 #include "py/objstr.h"
 #include "py/mpthread.h"
+#include "py/misc.h"
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -769,7 +770,7 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
 typedef struct _bit_vector_t {
     size_t max_bit_set;
     size_t alloc;
-    uintptr_t *bits;
+    uintptr_t *bits MP_ATTR_COUNTED_BY(alloc);
 } bit_vector_t;
 
 static void bit_vector_init(bit_vector_t *self) {
