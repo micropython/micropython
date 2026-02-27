@@ -66,6 +66,7 @@ SRC_C = \
 	ports/unix/input.c \
 	ports/unix/gccollect.c \
 	windows_mphal.c \
+	mpthreadport.c \
 	realpath.c \
 	init.c \
 	fmode.c \
