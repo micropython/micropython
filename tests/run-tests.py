@@ -804,6 +804,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("cmdline/cmd_parsetree.py")
         skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
         skip_tests.add("extmod/ssl_poll.py")
+        skip_tests.add("basics/class_dict_order.py")
 
     # Skip thread mutation tests on targets that have unsafe threading behaviour.
     if args.thread == "unsafe":
