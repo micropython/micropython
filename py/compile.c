@@ -280,6 +280,7 @@ static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
 static void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind);
 static void compile_atom_brace_helper(compiler_t *comp, mp_parse_node_struct_t *pns, bool create_map);
 static void compile_node(compiler_t *comp, mp_parse_node_t pn);
+static void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn, bool store_to_func_attr);
 
 static uint comp_next_label(compiler_t *comp) {
     return comp->next_label++;
@@ -796,6 +797,9 @@ static qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns
 
     // compile the function definition
     compile_funcdef_lambdef(comp, fscope, pns->nodes[1], PN_typedargslist);
+
+    // check the function body/suite for a docstring
+    check_for_doc_string(comp, pns->nodes[3], true);
 
     // return its name (the 'f' in "def f(...):")
     return fscope->simple_name;
@@ -2990,7 +2994,7 @@ tail_recursion:
     EMIT(for_iter_end);
 }
 
-static void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
+static void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn, bool store_to_func_attr) {
     #if MICROPY_ENABLE_DOC_STRING
     // see http://www.python.org/dev/peps/pep-0257/
 
@@ -3023,10 +3027,20 @@ static void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
              && MP_PARSE_NODE_LEAF_KIND(pns->nodes[0]) == MP_PARSE_NODE_STRING)
             || (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_const_object)
                 && mp_obj_is_str(get_const_object((mp_parse_node_struct_t *)pns->nodes[0])))) {
+            if (store_to_func_attr) {
+                // duplicate the function on the stack
+                EMIT(dup_top);
+            }
             // compile the doc string
             compile_node(comp, pns->nodes[0]);
-            // store the doc string
-            compile_store_id(comp, MP_QSTR___doc__);
+            if (store_to_func_attr) {
+                // store the doc string into the function
+                EMIT(rot_two);
+                EMIT_ARG(attr, MP_QSTR___doc__, MP_EMIT_ATTR_STORE);
+            } else {
+                // store the doc string to the module/class dict
+                compile_store_id(comp, MP_QSTR___doc__);
+            }
         }
     }
     #else
@@ -3058,7 +3072,7 @@ static bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         EMIT(return_value);
     } else if (scope->kind == SCOPE_MODULE) {
         if (!comp->is_repl) {
-            check_for_doc_string(comp, scope->pn);
+            check_for_doc_string(comp, scope->pn, false);
         }
         compile_node(comp, scope->pn);
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
@@ -3177,7 +3191,7 @@ static bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // 0 is class name
         compile_store_id(comp, MP_QSTR___qualname__);
 
-        check_for_doc_string(comp, pns->nodes[2]);
+        check_for_doc_string(comp, pns->nodes[2], false);
         compile_node(comp, pns->nodes[2]); // 2 is class body
 
         id_info_t *id = scope_find(scope, MP_QSTR___class__);
@@ -3194,6 +3208,7 @@ static bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 
     // make sure we match all the exception levels
     assert(comp->cur_except_level == 0);
+
 
     return pass_complete;
 }
