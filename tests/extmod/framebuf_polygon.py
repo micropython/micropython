@@ -11,6 +11,11 @@ if not hasattr(framebuf.FrameBuffer, "poly"):
     print("SKIP")
     raise SystemExit
 
+if framebuf.ALPHA:
+    # This tests non-alpha version
+    print("SKIP")
+    raise SystemExit
+
 
 def print_buffer(buffer, width, height):
     for row in range(height):

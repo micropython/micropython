@@ -49,6 +49,16 @@ palette = (b"\xa1\xa2", 2, 1, framebuf.GS8)
 fbuf.blit(image, 1, 1, -1, palette)
 printbuf()
 
+# Blit with a mono mask
+mask = framebuf.FrameBuffer(bytearray(4), 2, 2, framebuf.MONO_HLSB)
+for x in [0, 1]:
+    for y in [0, 1]:
+        mask.pixel(x, y, (x + y) % 2)
+
+fbuf.fill(0)
+fbuf.blit(fbuf2, 1, 1, -1, None, mask)
+printbuf()
+
 # Not enough elements in the tuple.
 try:
     fbuf.blit((0, 0, 0), 0, 0)
