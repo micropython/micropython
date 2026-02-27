@@ -1779,6 +1779,34 @@ static mp_obj_t str_replace(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 
+#if MICROPY_PY_BUILTINS_STR_REMOVESUFFIX
+static mp_obj_t str_removeprefixsuffix(mp_obj_t obj_in, mp_obj_t arg_in, bool is_suffix) {
+    const mp_obj_type_t *self_type = mp_obj_get_type(obj_in);
+    str_check_arg_type(self_type, arg_in);
+    GET_STR_DATA_LEN(obj_in, str, str_len);
+    GET_STR_DATA_LEN(arg_in, arg, arg_len);
+
+    if (arg_len <= str_len) {
+        const byte *body_ptr = is_suffix ? str : str + arg_len;
+        const byte *presuffix_ptr = is_suffix ? str + str_len - arg_len : str;
+        if (memcmp(presuffix_ptr, arg, arg_len) == 0) {
+            return mp_obj_new_str_of_type(self_type, body_ptr, str_len - arg_len);
+        }
+    }
+    return obj_in;
+}
+
+static mp_obj_t str_removeprefix(mp_obj_t obj_in, mp_obj_t arg_in) {
+    return str_removeprefixsuffix(obj_in, arg_in, false);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(str_removeprefix_obj, str_removeprefix);
+
+static mp_obj_t str_removesuffix(mp_obj_t obj_in, mp_obj_t arg_in) {
+    return str_removeprefixsuffix(obj_in, arg_in, true);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(str_removesuffix_obj, str_removesuffix);
+#endif // MICROPY_PY_BUILTINS_STR_REMOVEPREFIX
+
 #if MICROPY_PY_BUILTINS_STR_COUNT
 static mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
@@ -2112,6 +2140,10 @@ static const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rstrip), MP_ROM_PTR(&str_rstrip_obj) },
     { MP_ROM_QSTR(MP_QSTR_format), MP_ROM_PTR(&str_format_obj) },
     { MP_ROM_QSTR(MP_QSTR_replace), MP_ROM_PTR(&str_replace_obj) },
+    #if MICROPY_PY_BUILTINS_STR_REMOVESUFFIX
+    { MP_ROM_QSTR(MP_QSTR_removeprefix), MP_ROM_PTR(&str_removeprefix_obj) },
+    { MP_ROM_QSTR(MP_QSTR_removesuffix), MP_ROM_PTR(&str_removesuffix_obj) },
+    #endif
     #if MICROPY_PY_BUILTINS_STR_COUNT
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&str_count_obj) },
     #endif
