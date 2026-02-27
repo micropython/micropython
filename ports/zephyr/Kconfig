@@ -59,6 +59,30 @@ config MICROPY_USB_DEVICE_PID
 	hex "USB PID"
 	default 0x0001
 
+choice MICROPY_CONFIG_ROM_LEVEL
+	prompt  "Micropython Features level"
+	default MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES
+
+	config MICROPY_CONFIG_ROM_LEVEL_MINIMUM
+		bool "Disable all optional features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES
+		bool "Only enable core features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES
+		bool "Enable most common features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES
+		bool "Enable convenience features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES
+		bool "Enable everything"
+
+	config MICROPY_CONFIG_ROM_LEVEL_EVERYTHING
+		bool "Enable everything"
+
+endchoice
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
