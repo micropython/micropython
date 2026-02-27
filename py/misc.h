@@ -52,6 +52,13 @@ typedef unsigned int uint;
 // This macro is supported by Clang and gcc>=14
 #define __has_feature(x) (0)
 #endif
+#ifndef __has_extension
+// This macro is supported by Clang and gcc>=14
+#define __has_extension(x) (0)
+#endif
+#ifndef __has_attribute
+#define __has_attribute(x) (0)
+#endif
 
 
 /** generic ops *************************************************/
@@ -96,6 +103,27 @@ typedef unsigned int uint;
 
 /** memory allocation ******************************************/
 
+// indicate which malloc argument is the allocation size
+#if __has_attribute(__alloc_size__)
+#define MP_ATTR_ALLOC_SIZE(...) __attribute__((alloc_size(__VA_ARGS__)))
+#else
+#define MP_ATTR_ALLOC_SIZE(...)
+#endif
+
+// declare the alignment of the output pointer
+#if __has_attribute(__assume_aligned__)
+#define MP_ATTR_ASSUME_ALIGNED(alignment) __attribute__((assume_aligned(alignment)))
+#else
+#define MP_ATTR_ASSUME_ALIGNED(alignment)
+#endif
+
+// associate allocators with their corresponding free functions
+#if __has_attribute(__malloc__) && (defined(__GNUC__) ? __GNUC__ >= 11 : true)
+#define MP_ATTR_MALLOC(...) __attribute__((malloc(__VA_ARGS__)))
+#else
+#define MP_ATTR_MALLOC(...)
+#endif
+
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
 #define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
@@ -119,26 +147,32 @@ typedef unsigned int uint;
 #endif
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
-void *m_malloc(size_t num_bytes);
-void *m_malloc_maybe(size_t num_bytes);
-void *m_malloc_with_finaliser(size_t num_bytes);
-void *m_malloc0(size_t num_bytes);
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr, size_t num_bytes);
 #else
-void *m_realloc(void *ptr, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
+#endif
+#define MP_M_MALLOC_ATTRS MP_ATTR_ALLOC_SIZE(1) MP_ATTR_ASSUME_ALIGNED(__BIGGEST_ALIGNMENT__) MP_ATTR_MALLOC(m_free)
+void *m_malloc(size_t num_bytes) MP_M_MALLOC_ATTRS;
+void *m_malloc_maybe(size_t num_bytes) MP_M_MALLOC_ATTRS;
+void *m_malloc_with_finaliser(size_t num_bytes) MP_M_MALLOC_ATTRS;
+void *m_malloc0(size_t num_bytes) MP_M_MALLOC_ATTRS;
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+#define MP_M_REALLOC_ATTRS MP_ATTR_ALLOC_SIZE(3) MP_ATTR_ASSUME_ALIGNED(__BIGGEST_ALIGNMENT__)
+void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes) MP_M_REALLOC_ATTRS;
+void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move) MP_M_REALLOC_ATTRS;
+#else
+#define MP_M_REALLOC_ATTRS MP_ATTR_ALLOC_SIZE(2) MP_ATTR_ASSUME_ALIGNED(__BIGGEST_ALIGNMENT__)
+void *m_realloc(void *ptr, size_t new_num_bytes) MP_M_REALLOC_ATTRS;
+void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) MP_M_REALLOC_ATTRS;
 #endif
 MP_NORETURN void m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_TRACKED_ALLOC
 // These alloc/free functions track the pointers in a linked list so the GC does not reclaim
 // them.  They can be used by code that requires traditional C malloc/free semantics.
-void *m_tracked_calloc(size_t nmemb, size_t size);
 void m_tracked_free(void *ptr_in);
+void *m_tracked_calloc(size_t nmemb, size_t size) MP_ATTR_ALLOC_SIZE(1, 2) MP_ATTR_ASSUME_ALIGNED(__BIGGEST_ALIGNMENT__) MP_ATTR_MALLOC(m_tracked_free);
 #endif
 
 #if MICROPY_MEM_STATS
