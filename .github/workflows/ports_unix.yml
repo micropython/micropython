@@ -372,3 +372,17 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+
+  wasi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: source tools/ci.sh && ci_unix_wasi_setup
+    - name: Build
+      run: source tools/ci.sh && ci_unix_wasi_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_wasi_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
