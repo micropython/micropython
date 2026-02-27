@@ -155,7 +155,9 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
     # Download the contents of source.
     try:
         if src.startswith(":"):
-            data = state.transport.fs_readfile(src[1:], progress_callback=show_progress_bar)
+            data = state.transport.fs_readfile(
+                src[1:], progress_callback=show_progress_bar, verify_hash=check_hash
+            )
             filename = _remote_path_basename(src[1:])
         else:
             with open(src, "rb") as f:
@@ -183,8 +185,10 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
             except OSError:
                 pass
 
-        # Write to remote.
-        state.transport.fs_writefile(dest[1:], data, progress_callback=show_progress_bar)
+        # Write to remote with hash verification if check_hash is enabled.
+        state.transport.fs_writefile(
+            dest[1:], data, progress_callback=show_progress_bar, verify_hash=check_hash
+        )
     else:
         # If the destination path is just the directory, then add the source filename.
         if dest_isdir:
