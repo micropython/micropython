@@ -174,11 +174,7 @@ ifeq ($(MICROPY_STANDALONE),1)
 GIT_SUBMODULES += lib/libffi
 DEPLIBS += libffi
 LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/include)
- ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib32/libffi.a
- else
   LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib/libffi.a
- endif
 else
 # Use system version of libffi.
 LIBFFI_CFLAGS := $(shell pkg-config --cflags libffi)
