@@ -166,6 +166,14 @@ static mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
 #endif
 
+#if MICROPY_KBD_EXCEPTION
+static mp_obj_t mp_micropython_keyboard_interrupt(void) {
+    mp_sched_keyboard_interrupt();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_keyboard_interrupt_obj, mp_micropython_keyboard_interrupt);
+#endif
+
 static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
     { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
@@ -205,6 +213,9 @@ static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #endif
     #if MICROPY_ENABLE_SCHEDULER
     { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
+    #endif
+    #if MICROPY_KBD_EXCEPTION
+    {MP_ROM_QSTR(MP_QSTR_keyboard_interrupt), MP_ROM_PTR(&mp_micropython_keyboard_interrupt_obj)},
     #endif
 };
 
