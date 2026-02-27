@@ -61,19 +61,6 @@
 #include "class/cdc/cdc_device.h"
 #endif
 
-// Initialise TinyUSB device.
-static inline void mp_usbd_init_tud(void) {
-    tusb_init();
-    #if MICROPY_HW_USB_CDC
-    tud_cdc_configure_t cfg = {
-        .rx_persistent = 0,
-        .tx_persistent = 1,
-        .tx_overwritabe_if_not_connected = 1,
-    };
-    tud_cdc_configure(&cfg);
-    #endif
-}
-
 // Run the TinyUSB device task
 void mp_usbd_task(void);
 
@@ -89,6 +76,138 @@ extern void mp_usbd_port_get_serial_number(char *buf);
 // length (2 * bytes_len + 1) (including NUL terminator).
 void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
+// Per-class runtime enable/disable state
+typedef struct {
+    uint8_t flags;  // Bitfield of enabled USB classes (USB_BUILTIN_FLAG_*)
+} mp_usbd_class_state_t;
+
+// Global class enable state
+extern mp_usbd_class_state_t mp_usbd_class_state;
+
+// Descriptor template entry for lookup table
+typedef struct {
+    uint8_t flag_mask;     // USB_BUILTIN_FLAG_* to check
+    uint8_t desc_len;      // Length of descriptor in bytes
+    uint8_t itf_count;     // Number of interfaces used
+    const uint8_t *template; // Descriptor bytes (0xFF = interface number placeholder)
+} usb_desc_entry_t;
+
+// External reference to descriptor lookup table for inline functions
+extern const usb_desc_entry_t usb_desc_table[];
+
+// Number of entries in usb_desc_table
+#define USB_DESC_TABLE_SIZE ((CFG_TUD_CDC ? 1 : 0) + (CFG_TUD_MSC ? 1 : 0))
+
+// Descriptor info structure for combined length/count calculation
+typedef struct {
+    size_t length;
+    uint8_t interface_count;
+} usb_desc_info_t;
+
+// Allow runtime override of VID/PID defaults
+#ifndef MICROPY_HW_USB_RUNTIME_VID
+#define MICROPY_HW_USB_RUNTIME_VID MICROPY_HW_USB_VID
+#endif
+#ifndef MICROPY_HW_USB_RUNTIME_PID
+#define MICROPY_HW_USB_RUNTIME_PID MICROPY_HW_USB_PID
+#endif
+
+// Forward declarations for USBBuiltin type
+typedef struct _mp_obj_usb_builtin_t mp_obj_usb_builtin_t;
+extern const mp_obj_type_t mp_type_usb_builtin;
+
+// Individual USB class flags for bitfield operations
+#define USB_BUILTIN_FLAG_NONE  0x00
+#define USB_BUILTIN_FLAG_CDC   0x01
+#define USB_BUILTIN_FLAG_MSC   0x02
+#define USB_BUILTIN_FLAG_NCM   0x04
+
+// Helper macros for checking enabled classes
+#define MP_USBD_CDC_ENABLED() (mp_usbd_class_state.flags & USB_BUILTIN_FLAG_CDC)
+#define MP_USBD_MSC_ENABLED() (mp_usbd_class_state.flags & USB_BUILTIN_FLAG_MSC)
+
+// Initialize class state based on compile-time configuration and runtime mode
+static inline void mp_usbd_init_class_state(void) {
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    // In runtime mode, only CDC enabled by default
+    mp_usbd_class_state.flags = (CFG_TUD_CDC ? USB_BUILTIN_FLAG_CDC : 0);
+    #else
+    // In static mode, enable all compiled classes
+    mp_usbd_class_state.flags =
+        (CFG_TUD_CDC ? USB_BUILTIN_FLAG_CDC : 0) |
+        (CFG_TUD_MSC ? USB_BUILTIN_FLAG_MSC : 0);
+    #endif
+}
+
+// Calculate descriptor length from flags using compile-time conditionals
+static inline size_t mp_usbd_get_descriptor_cfg_len_from_flags(uint8_t flags) {
+    size_t len = TUD_CONFIG_DESC_LEN;
+    #if CFG_TUD_CDC
+    if (flags & USB_BUILTIN_FLAG_CDC) {
+        len += TUD_CDC_DESC_LEN;
+    }
+    #endif
+    #if CFG_TUD_MSC
+    if (flags & USB_BUILTIN_FLAG_MSC) {
+        len += TUD_MSC_DESC_LEN;
+    }
+    #endif
+    return len;
+}
+
+// Calculate interface count from flags using compile-time conditionals
+static inline uint8_t mp_usbd_get_interface_count_from_flags(uint8_t flags) {
+    uint8_t count = 0;
+    #if CFG_TUD_CDC
+    if (flags & USB_BUILTIN_FLAG_CDC) {
+        count += 2;  // CDC uses 2 interfaces
+    }
+    #endif
+    #if CFG_TUD_MSC
+    if (flags & USB_BUILTIN_FLAG_MSC) {
+        count += 1;  // MSC uses 1 interface
+    }
+    #endif
+    return count;
+}
+
+// Combined descriptor info calculation using compile-time conditionals
+static inline usb_desc_info_t mp_usbd_get_desc_info_from_flags(uint8_t flags) {
+    usb_desc_info_t info = { .length = TUD_CONFIG_DESC_LEN, .interface_count = 0 };
+    #if CFG_TUD_CDC
+    if (flags & USB_BUILTIN_FLAG_CDC) {
+        info.length += TUD_CDC_DESC_LEN;
+        info.interface_count += 2;
+    }
+    #endif
+    #if CFG_TUD_MSC
+    if (flags & USB_BUILTIN_FLAG_MSC) {
+        info.length += TUD_MSC_DESC_LEN;
+        info.interface_count += 1;
+    }
+    #endif
+    return info;
+}
+
+// Initialise TinyUSB device
+static inline void mp_usbd_init_tud(void) {
+    // Initialize class state before TinyUSB init
+    mp_usbd_init_class_state();
+
+    tusb_init();
+    #if MICROPY_HW_USB_CDC
+    tud_cdc_configure_t cfg = {
+        .rx_persistent = 0,
+        .tx_persistent = 1,
+        .tx_overwritabe_if_not_connected = 1,
+    };
+    tud_cdc_configure(&cfg);
+    #endif
+}
+
+// Get dynamic descriptor length based on enabled classes
+size_t mp_usbd_get_descriptor_cfg_len(void);
+
 // Length of built-in configuration descriptor
 #define MP_USBD_BUILTIN_DESC_CFG_LEN (TUD_CONFIG_DESC_LEN +                     \
     (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
@@ -97,7 +216,16 @@ void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
 // Built-in USB device and configuration descriptor values
 extern const tusb_desc_device_t mp_usbd_builtin_desc_dev;
+
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+// Static mode: Use static descriptor array
 extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
+#else
+// Runtime mode: Use buffer and generation functions
+extern uint8_t mp_usbd_desc_cfg_buffer[MP_USBD_BUILTIN_DESC_CFG_LEN];
+const uint8_t *mp_usbd_get_default_desc(void);
+const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer);
+#endif
 
 void mp_usbd_task_callback(mp_sched_node_t *node);
 
@@ -114,6 +242,13 @@ static inline void mp_usbd_deinit(void) {
     // Called in soft reset path. No-op if no runtime USB devices require cleanup.
 }
 
+// Minimal USB device structure for static mode (builtin_driver control only)
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t builtin_driver; // Points to a USBBuiltin constant object
+    bool active; // Has the user set the USB device active?
+} mp_obj_usb_device_t;
+
 #else
 // Runtime USB Device support requires more complex init/deinit
 void mp_usbd_init(void);
@@ -124,6 +259,7 @@ const char *mp_usbd_runtime_string_cb(uint8_t index);
 // Maximum number of pending exceptions per single TinyUSB task execution
 #define MP_USBD_MAX_PEND_EXCS 2
 
+// Full runtime USB device structure
 typedef struct {
     mp_obj_base_t base;
 
@@ -137,7 +273,7 @@ typedef struct {
     mp_obj_t control_xfer_cb;
     mp_obj_t xfer_cb;
 
-    mp_obj_t builtin_driver; // Points to one of mp_type_usb_device_builtin_nnn
+    uint8_t builtin_driver; // Bitfield of USB_BUILTIN_FLAG_* values
 
     bool active; // Has the user set the USB device active?
     bool trigger; // Has the user requested the active state change (or re-activate)?
@@ -158,18 +294,10 @@ typedef struct {
     mp_obj_t pend_excs[MP_USBD_MAX_PEND_EXCS];
 } mp_obj_usb_device_t;
 
-// Built-in constant objects, possible values of builtin_driver
-//
-// (Currently not possible to change built-in drivers at runtime, just enable/disable.)
-extern const mp_obj_type_t mp_type_usb_device_builtin_default;
-extern const mp_obj_type_t mp_type_usb_device_builtin_none;
+#endif
 
 // Return true if any built-in driver is enabled
-static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
-    return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
-}
-
-#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd);
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 

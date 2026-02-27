@@ -233,7 +233,7 @@ extern const mp_machine_spi_p_t mp_machine_soft_spi_p;
 extern const mp_obj_dict_t mp_machine_spi_locals_dict;
 #endif
 
-#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#if MICROPY_HW_ENABLE_USBDEV
 extern const mp_obj_type_t machine_usb_device_type;
 #endif
 
