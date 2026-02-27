@@ -162,6 +162,9 @@
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
+#ifndef MICROPY_PY_MACHINE_CAN
+#define MICROPY_PY_MACHINE_CAN              (SOC_TWAI_SUPPORTED)
+#endif
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
 #ifndef MICROPY_PY_NETWORK

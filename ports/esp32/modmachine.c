@@ -35,6 +35,7 @@
 #include "esp_mac.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
+#include "soc/soc_caps.h"
 
 #include "modmachine.h"
 #include "machine_rtc.h"
@@ -51,6 +52,12 @@
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY
 #endif
 
+#if MICROPY_PY_MACHINE_CAN
+#define MICROPY_PY_MACHINE_CAN_ENTRY { MP_ROM_QSTR(MP_QSTR_CAN), MP_ROM_PTR(&machine_can_type) },
+#else
+#define MICROPY_PY_MACHINE_CAN_ENTRY
+#endif
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
@@ -58,6 +65,7 @@
     MICROPY_PY_MACHINE_SDCARD_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
     MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY \
+    MICROPY_PY_MACHINE_CAN_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) }, \
     \
     /* wake abilities */ \

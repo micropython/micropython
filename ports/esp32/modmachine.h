@@ -1,6 +1,7 @@
 #ifndef MICROPY_INCLUDED_ESP32_MODMACHINE_H
 #define MICROPY_INCLUDED_ESP32_MODMACHINE_H
 
+#include "soc/soc_caps.h"
 #include "py/obj.h"
 
 typedef enum {
@@ -12,6 +13,9 @@ typedef enum {
 extern const mp_obj_type_t machine_touchpad_type;
 extern const mp_obj_type_t machine_dac_type;
 extern const mp_obj_type_t machine_sdcard_type;
+#if MICROPY_PY_MACHINE_CAN
+extern const mp_obj_type_t machine_can_type;
+#endif
 
 void machine_init(void);
 void machine_deinit(void);
