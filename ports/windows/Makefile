@@ -65,6 +65,11 @@ SRC_C = \
 	ports/unix/main.c \
 	ports/unix/input.c \
 	ports/unix/gccollect.c \
+	ports/unix/mpbtstackport_common.c \
+	ports/unix/mpbtstackport_h4.c \
+	ports/unix/mpbtstackport_usb.c \
+	ports/unix/mpnimbleport.c \
+	mpbthciport.c \
 	windows_mphal.c \
 	realpath.c \
 	init.c \
@@ -78,6 +83,7 @@ SHARED_SRC_C += $(addprefix shared/,\
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 ifeq ($(MICROPY_USE_READLINE),1)
@@ -89,7 +95,7 @@ endif
 LIB += -lws2_32
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMPZ_DIG_SIZE=16
@@ -104,7 +110,62 @@ ifeq ($(shell $(CC) -dumpmachine),i686-w64-mingw32)
 CFLAGS += -msse -mfpmath=sse -march=pentium4
 endif
 
+# If the variant enables it, enable modbluetooth.
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+
+# Only one stack can be enabled.
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+$(error Cannot enable both NimBLE and BTstack at the same time)
+endif
+endif
+
+# Default to btstack, but a variant (or make command line) can set NimBLE
+# explicitly (which is always via H4 UART).
+ifneq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifneq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+MICROPY_BLUETOOTH_BTSTACK ?= 1
+endif
+endif
+
+CFLAGS += -mno-ms-bitfields
+CFLAGS += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+
+# Figure out which BTstack transport to use.
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+$(error Cannot enable BTstack support for USB and H4 UART at the same time)
+endif
+else
+ifeq ($(HAVE_LIBUSB),1)
+# Default to btstack-over-usb.
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+else
+# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
+endif
+endif
+
+# BTstack is enabled.
+GIT_SUBMODULES += lib/btstack
+include $(TOP)/extmod/btstack/btstack.mk
+SRC_BTSTACK += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
+
+else
+
+# NimBLE is enabled.
+GIT_SUBMODULES += lib/mynewt-nimble
+CFLAGS += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
+include $(TOP)/extmod/nimble/nimble.mk
+
+endif
+endif
+
 CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))
+
 
 include $(TOP)/py/mkrules.mk
 
