@@ -60,7 +60,7 @@
 #define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
 
-#if MICROPY_PY_LWIP_PPP
+#if MICROPY_PY_NETWORK_PPP_LWIP
 #define PPP_SUPPORT                     1
 #define PAP_SUPPORT                     1
 #define CHAP_SUPPORT                    1
