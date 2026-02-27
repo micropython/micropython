@@ -41,7 +41,7 @@
 
 #include "mpbtstackport.h"
 
-// Called by the UART polling thread in mpbthciport.c, or by the USB polling thread in mpbtstackport_usb.c.
+// Called by the UART polling thread in mpbthciport.c
 bool mp_bluetooth_hci_poll(void) {
     if (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_STARTING || mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE || mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_HALTING) {
         // Pretend like we're running in IRQ context (i.e. other things can't be running at the same time).
@@ -80,9 +80,11 @@ uint32_t hal_time_ms(void) {
 }
 
 void mp_bluetooth_btstack_port_init(void) {
+    #if !MICROPY_BLUETOOTH_BTSTACK_USB
     btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
 
     // hci_dump_init(hci_dump_embedded_stdout_get_instance());
+    #endif
 
     #if MICROPY_BLUETOOTH_BTSTACK_H4
     mp_bluetooth_btstack_port_init_h4();
