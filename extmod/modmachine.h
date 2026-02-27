@@ -238,10 +238,10 @@ extern const mp_obj_type_t machine_usb_device_type;
 #endif
 
 #if defined(MICROPY_MACHINE_MEM_GET_READ_ADDR)
-uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(mp_obj_t addr_o, uint align);
+uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(uintptr_t addr, uint align);
 #endif
 #if defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
-uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(mp_obj_t addr_o, uint align);
+uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(uintptr_t addr, uint align);
 #endif
 
 MP_NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
