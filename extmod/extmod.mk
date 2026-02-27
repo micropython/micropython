@@ -242,6 +242,11 @@ SRC_THIRDPARTY_C += $(addprefix $(AXTLS_DIR)/,\
 	crypto/sha1.c \
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
+ifeq (${MBEDTLS_PREBUILT},1)     # Use prebuilt mbedtls
+MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config_port.h\"
+CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1
+CFLAGS_EXTMOD += -DMBEDTLS_CONFIG_FILE=$(MBEDTLS_CONFIG_FILE)
+else                             # Use mbedtls submodule
 MBEDTLS_DIR = lib/mbedtls
 MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config_port.h\"
 GIT_SUBMODULES += $(MBEDTLS_DIR)
@@ -327,6 +332,7 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	x509write_crt.c \
 	x509write_csr.c \
 	)
+endif
 endif
 endif
 
