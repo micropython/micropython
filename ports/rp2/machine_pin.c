@@ -195,11 +195,26 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     machine_pin_obj_t *self = self_in;
     uint funcsel = gpio_get_function(self->id);
     qstr mode_qst;
+    bool is_output;
+    mp_uint_t drive;
+    mp_uint_t slew;
+    static const qstr drive2str[] = {
+        [GPIO_DRIVE_STRENGTH_2MA] = MP_QSTR_DRIVE_2,
+        [GPIO_DRIVE_STRENGTH_4MA] = MP_QSTR_DRIVE_4,
+        [GPIO_DRIVE_STRENGTH_8MA] = MP_QSTR_DRIVE_8,
+        [GPIO_DRIVE_STRENGTH_12MA] = MP_QSTR_DRIVE_12
+    };
+    static const qstr slew2str[] = {
+        [GPIO_SLEW_RATE_SLOW] = MP_QSTR_SLEW_SLOW,
+        [GPIO_SLEW_RATE_FAST] = MP_QSTR_SLEW_FAST,
+    };
+
     if (!is_ext_pin(self)) {
+        is_output = gpio_is_dir_out(self->id);
         if (funcsel == GPIO_FUNC_SIO) {
             if (GPIO_IS_OPEN_DRAIN(self->id)) {
                 mode_qst = MP_QSTR_OPEN_DRAIN;
-            } else if (gpio_is_dir_out(self->id)) {
+            } else if (is_output) {
                 mode_qst = MP_QSTR_OUT;
             } else {
                 mode_qst = MP_QSTR_IN;
@@ -220,6 +235,12 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
                 mp_printf(print, ", pull=%q", MP_QSTR_PULL_DOWN);
             }
         }
+
+        if (is_output) {
+            drive = (mp_uint_t)gpio_get_drive_strength(self->id);
+            mp_printf(print, ", drive=%q", drive2str[drive]);
+        }
+
         if (funcsel != GPIO_FUNC_SIO) {
             const machine_pin_af_obj_t *af = machine_pin_find_alt_by_index(self, funcsel);
             if (af == NULL) {
@@ -227,6 +248,11 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
             } else {
                 mp_printf(print, ", alt=%q", af->name);
             }
+        }
+
+        if (is_output) {
+            slew = gpio_get_slew_rate(self->id);
+            mp_printf(print, ", slew=%q", slew2str[slew]);
         }
     } else {
         #if MICROPY_HW_PIN_EXT_COUNT
@@ -238,13 +264,20 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 enum {
-    ARG_mode, ARG_pull, ARG_value, ARG_alt
+    ARG_mode,
+    ARG_pull,
+    ARG_value,
+    ARG_drive,
+    ARG_alt,
+    ARG_slew,
 };
 static const mp_arg_t allowed_args[] = {
     {MP_QSTR_mode,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_pull,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+    {MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
     {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_FUNC_SIO}},
+    {MP_QSTR_slew,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
 };
 
 static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -284,6 +317,18 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 gpio_put(self->id, value);
             }
             mp_hal_pin_output(self->id);
+
+            // Configure drive strength
+            mp_uint_t drive = args[ARG_drive].u_int;
+            if (drive != -1) {
+                gpio_set_drive_strength(self->id, drive);
+            }
+
+            // Configure slew rate
+            mp_uint_t slew = args[ARG_slew].u_int;
+            if (slew != -1) {
+                gpio_set_slew_rate(self->id, slew);
+            }
         } else if (mode == MACHINE_PIN_MODE_OPEN_DRAIN) {
             mp_hal_pin_open_drain_with_value(self->id, value == -1 ? 1 : value);
         } else {
@@ -504,6 +549,12 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ALT), MP_ROM_INT(MACHINE_PIN_MODE_ALT) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_2), MP_ROM_INT(GPIO_DRIVE_STRENGTH_2MA) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_4), MP_ROM_INT(GPIO_DRIVE_STRENGTH_4MA) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_8), MP_ROM_INT(GPIO_DRIVE_STRENGTH_8MA) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_12), MP_ROM_INT(GPIO_DRIVE_STRENGTH_12MA) },
+    { MP_ROM_QSTR(MP_QSTR_SLEW_SLOW), MP_ROM_INT(GPIO_SLEW_RATE_SLOW) },
+    { MP_ROM_QSTR(MP_QSTR_SLEW_FAST), MP_ROM_INT(GPIO_SLEW_RATE_FAST) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_IRQ_EDGE_RISE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_IRQ_EDGE_FALL) },
 
