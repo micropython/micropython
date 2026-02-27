@@ -47,6 +47,7 @@
 #include "../multi_heap_platform.h"
 #include "../heap_private.h"
 #include "driver/rtc_io.h"
+#include "extmod/modmachine.h"
 
 #if SOC_TOUCH_SENSOR_SUPPORTED
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
@@ -116,11 +117,21 @@ static mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
     if (args[ARG_pins].u_obj != mp_const_none) {
         size_t len = 0;
         mp_obj_t *elem;
-        mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
+        mp_obj_t pins_obj = args[ARG_pins].u_obj;
+
+        // Support both a single Pin object and a tuple/list of Pins
+        if (mp_obj_is_type(pins_obj, &machine_pin_type)) {
+            // Single Pin object - treat as a single-element array
+            elem = &pins_obj;
+            len = 1;
+        } else {
+            // Tuple or list of Pins
+            mp_obj_get_array(pins_obj, &len, &elem);
+        }
+
         ext1_pins = 0;
 
         for (int i = 0; i < len; i++) {
-
             gpio_num_t pin_id = machine_pin_get_id(elem[i]);
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
@@ -177,7 +188,18 @@ static mp_obj_t esp32_wake_on_gpio(size_t n_args, const mp_obj_t *pos_args, mp_m
     if (args[ARG_pins].u_obj != mp_const_none) {
         size_t len = 0;
         mp_obj_t *elem;
-        mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
+        mp_obj_t pins_obj = args[ARG_pins].u_obj;
+
+        // Support both a single Pin object and a tuple/list of Pins
+        if (mp_obj_is_type(pins_obj, &machine_pin_type)) {
+            // Single Pin object - treat as a single-element array
+            elem = &pins_obj;
+            len = 1;
+        } else {
+            // Tuple or list of Pins
+            mp_obj_get_array(pins_obj, &len, &elem);
+        }
+
         gpio_pins = 0;
 
         for (int i = 0; i < len; i++) {
