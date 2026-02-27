@@ -316,6 +316,7 @@ SRC_C += \
 	sdio.c \
 	subghz.c \
 	xspi.c \
+	mpinit_register.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
@@ -630,7 +631,7 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
-TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .gc.blocks.table .data .ARM
+TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .gc.blocks.table .mp_init_early .mp_init_core .mp_init_driver .mp_init_service .mp_deinit_early .mp_deinit_core .mp_deinit_driver .mp_deinit_service .data .ARM
 
 deploy-stlink: $(BUILD)/firmware.bin
 	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
