@@ -80,8 +80,13 @@
 
 #if MICROPY_GC_SPLIT_HEAP
 #define NEXT_AREA(area) ((area)->next)
+#define FOR_ALL_AREAS(x) \
+    assert(&MP_STATE_MEM(area) != NULL); \
+    if (&MP_STATE_MEM(area) == NULL) { MP_UNREACHABLE; } \
+    for (mp_state_mem_area_t *x = &MP_STATE_MEM(area); x != NULL; x = NEXT_AREA(x))
 #else
 #define NEXT_AREA(area) (NULL)
+#define FOR_ALL_AREAS(x) mp_state_mem_area_t *x = &MP_STATE_MEM(area); if (true)
 #endif
 
 #define BLOCK_SHIFT(block) (2 * ((block) & (BLOCKS_PER_ATB - 1)))
@@ -94,6 +99,7 @@
 
 #define BLOCK_FROM_PTR(area, ptr) (((byte *)(ptr) - area->gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(area, block) (((block) * BYTES_PER_BLOCK + (uintptr_t)area->gc_pool_start))
+static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr);
 
 // After the ATB, there must be a byte filled with AT_FREE so that gc_mark_tree
 // cannot erroneously conclude that a block extends past the end of the GC heap
@@ -126,14 +132,13 @@
 // Static functions for individual steps of the GC mark/sweep sequence
 static void gc_collect_start_common(void);
 static void *gc_get_ptr(void **ptrs, int i);
-#if MICROPY_GC_SPLIT_HEAP
 static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block);
-#else
-static void gc_mark_subtree(size_t block);
+static void gc_maybe_resweep(void);
+#if MICROPY_ENABLE_FINALISER
+static void gc_finalise_all_unmarked(void);
+static void gc_finalise_if_unmarked(const mp_state_mem_area_t *area, size_t block);
 #endif
-static void gc_deal_with_stack_overflow(void);
-static void gc_sweep_run_finalisers(void);
-static void gc_sweep_free_blocks(void);
+static void gc_free_all_unmarked(void);
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
@@ -298,9 +303,7 @@ static bool gc_try_add_heap(size_t failed_alloc) {
 
     // Compute total number of blocks in the current heap.
     size_t total_blocks = 0;
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area);
-         area != NULL;
-         area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         total_blocks += area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
     }
 
@@ -359,14 +362,13 @@ bool gc_is_locked(void) {
     return MP_STATE_THREAD(gc_lock_depth) != 0;
 }
 
-#if MICROPY_GC_SPLIT_HEAP
 // Returns the area to which this pointer belongs, or NULL if it isn't
 // allocated on the GC-managed heap.
-static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
+static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {   // must be aligned on a block
         return NULL;
     }
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         if (ptr >= (void *)area->gc_pool_start   // must be above start of pool
             && ptr < (void *)area->gc_pool_end) {   // must be below end of pool
             return area;
@@ -374,14 +376,6 @@ static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     }
     return NULL;
 }
-#endif
-
-// ptr should be of type void*
-#define VERIFY_PTR(ptr) ( \
-    ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-    && ptr >= (void *)MP_STATE_MEM(area).gc_pool_start      /* must be above start of pool */ \
-    && ptr < (void *)MP_STATE_MEM(area).gc_pool_end         /* must be below end of pool */ \
-    )
 
 #ifdef TRACE_MARK
 #error "TRACE_MARK is replaced by TRACE_MARK_R and TRACE_MARK_S"
@@ -427,36 +421,23 @@ static void gc_collect_start_common(void) {
     GC_ENTER();
     assert((MP_STATE_THREAD(gc_lock_depth) & GC_COLLECT_FLAG) == 0);
     MP_STATE_THREAD(gc_lock_depth) |= GC_COLLECT_FLAG;
-    MP_STATE_MEM(gc_stack_overflow) = 0;
+    MP_STATE_MEM(gc_needs_resweep) = 0;
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
-    #if !MICROPY_GC_SPLIT_HEAP
-    mp_state_mem_area_t *area = &MP_STATE_MEM(area);
-    #endif
     for (size_t i = 0; i < len; i++) {
         MICROPY_GC_HOOK_LOOP(i);
         void *ptr = gc_get_ptr(ptrs, i);
-        #if MICROPY_GC_SPLIT_HEAP
         mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
         if (!area) {
             continue;
         }
-        #else
-        if (!VERIFY_PTR(ptr)) {
-            continue;
-        }
-        #endif
         size_t block = BLOCK_FROM_PTR(area, ptr);
         if (ATB_GET_KIND(area, block) == AT_HEAD) {
             // An unmarked head: mark it, and mark all its children
             TRACE_MARK_R(ptr_block, ptr);
             ATB_HEAD_TO_MARK(area, block);
-            #if MICROPY_GC_SPLIT_HEAP
             gc_mark_subtree(area, block);
-            #else
-            gc_mark_subtree(block);
-            #endif
         }
     }
 }
@@ -465,19 +446,10 @@ void gc_collect_root(void **ptrs, size_t len) {
 // children: mark the unmarked child blocks and put those newly marked
 // blocks on the stack. When all children have been checked, pop off the
 // topmost block on the stack and repeat with that one.
-#if MICROPY_GC_SPLIT_HEAP
-static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block)
-#else
-static void gc_mark_subtree(size_t block)
-#endif
-{
+static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block) {
     // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
-        #if !MICROPY_GC_SPLIT_HEAP
-        mp_state_mem_area_t *area = &MP_STATE_MEM(area);
-        #endif
-
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -494,18 +466,11 @@ static void gc_mark_subtree(size_t block)
             void *ptr = *ptrs;
             // If this is a heap pointer that hasn't been marked, mark it and push
             // it's children to the stack.
-            #if MICROPY_GC_SPLIT_HEAP
             mp_state_mem_area_t *ptr_area = gc_get_ptr_area(ptr);
             if (!ptr_area) {
                 // Not a heap-allocated pointer (might even be random data).
                 continue;
             }
-            #else
-            if (!VERIFY_PTR(ptr)) {
-                continue;
-            }
-            mp_state_mem_area_t *ptr_area = area;
-            #endif
             size_t ptr_block = BLOCK_FROM_PTR(ptr_area, ptr);
             if (ATB_GET_KIND(ptr_area, ptr_block) != AT_HEAD) {
                 // This block is already marked.
@@ -521,7 +486,7 @@ static void gc_mark_subtree(size_t block)
                 #endif
                 sp += 1;
             } else {
-                MP_STATE_MEM(gc_stack_overflow) = 1;
+                MP_STATE_MEM(gc_needs_resweep) = 1;
             }
         }
 
@@ -545,46 +510,44 @@ void gc_sweep_all(void) {
 }
 
 void gc_collect_end(void) {
-    gc_deal_with_stack_overflow();
-    gc_sweep_run_finalisers();
-    gc_sweep_free_blocks();
+    gc_maybe_resweep();
+    #if MICROPY_ENABLE_FINALISER
+    gc_finalise_all_unmarked();
+    #endif
+    gc_free_all_unmarked();
     #if MICROPY_GC_SPLIT_HEAP
     MP_STATE_MEM(gc_last_free_area) = &MP_STATE_MEM(area);
     #endif
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         area->gc_last_free_atb_index = 0;
     }
     MP_STATE_THREAD(gc_lock_depth) &= ~GC_COLLECT_FLAG;
     GC_EXIT();
 }
 
-static void gc_deal_with_stack_overflow(void) {
-    while (MP_STATE_MEM(gc_stack_overflow)) {
-        MP_STATE_MEM(gc_stack_overflow) = 0;
+// Scan entire memory looking for blocks which have been marked but not their children, and mark them.
+static void gc_maybe_resweep(void) {
+    while (MP_STATE_MEM(gc_needs_resweep)) {
+        MP_STATE_MEM(gc_needs_resweep) = 0;
 
         // scan entire memory looking for blocks which have been marked but not their children
-        for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        FOR_ALL_AREAS(area) {
             for (size_t block = 0; block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
                 MICROPY_GC_HOOK_LOOP(block);
                 // trace (again) if mark bit set
                 if (ATB_GET_KIND(area, block) == AT_MARK) {
-                    #if MICROPY_GC_SPLIT_HEAP
                     gc_mark_subtree(area, block);
-                    #else
-                    gc_mark_subtree(block);
-                    #endif
                 }
             }
         }
     }
 }
 
-// Run finalisers for all to-be-freed blocks
-static void gc_sweep_run_finalisers(void) {
-    #if MICROPY_ENABLE_FINALISER
+#if MICROPY_ENABLE_FINALISER
+// Run finalisers for all unmarked heads.
+static void gc_finalise_all_unmarked(void) {
     for (const mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
-        // Small speed optimisation: skip over empty FTB blocks
         size_t ftb_end = area->gc_last_used_block / BLOCKS_PER_FTB; // index is inclusive
         for (size_t ftb_idx = 0; ftb_idx <= ftb_end; ftb_idx++) {
             byte ftb = area->gc_finaliser_table_start[ftb_idx];
@@ -592,37 +555,53 @@ static void gc_sweep_run_finalisers(void) {
             while (ftb) {
                 MICROPY_GC_HOOK_LOOP(block);
                 if (ftb & 1) { // FTB_GET(area, block) shortcut
-                    if (ATB_GET_KIND(area, block) == AT_HEAD) {
-                        mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
-                        if (obj->type != NULL) {
-                            // if the object has a type then see if it has a __del__ method
-                            mp_obj_t dest[2];
-                            mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
-                            if (dest[0] != MP_OBJ_NULL) {
-                                // load_method returned a method, execute it in a protected environment
-                                #if MICROPY_ENABLE_SCHEDULER
-                                mp_sched_lock();
-                                #endif
-                                mp_call_function_1_protected(dest[0], dest[1]);
-                                #if MICROPY_ENABLE_SCHEDULER
-                                mp_sched_unlock();
-                                #endif
-                            }
-                        }
-                        // clear finaliser flag
-                        FTB_CLEAR(area, block);
-                    }
+                    gc_finalise_if_unmarked(area, block);
                 }
                 ftb >>= 1;
                 block++;
             }
         }
     }
-    #endif // MICROPY_ENABLE_FINALISER
 }
 
+// Run finaliser on the indicated head, if not marked as reachable.
+static void gc_finalise_if_unmarked(const mp_state_mem_area_t *area, size_t block) {
+    assert(FTB_GET(area, block));
+
+    if (ATB_GET_KIND(area, block) == AT_MARK) {
+        return; // block is still reachable
+    }
+
+    // even if later checks decide this isn't finalisable, still clear the ftb bit
+    FTB_CLEAR(area, block);
+
+    mp_obj_base_t *obj = (mp_obj_base_t *)PTR_FROM_BLOCK(area, block);
+
+    if (obj->type == NULL) {
+        return;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
+
+    if (dest[0] == MP_OBJ_NULL) {
+        return;
+    }
+
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_lock();
+    #endif
+
+    mp_call_function_1_protected(dest[0], dest[1]);
+
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_unlock();
+    #endif
+}
+#endif // MICROPY_ENABLE_FINALISER
+
 // Free unmarked heads and their tails
-static void gc_sweep_free_blocks(void) {
+static void gc_free_all_unmarked(void) {
     #if MICROPY_PY_GC_COLLECT_RETVAL
     MP_STATE_MEM(gc_collected) = 0;
     #endif
@@ -631,7 +610,7 @@ static void gc_sweep_free_blocks(void) {
     mp_state_mem_area_t *prev_area = NULL;
     #endif
 
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         size_t last_used_block = 0;
         assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 
@@ -640,7 +619,7 @@ static void gc_sweep_free_blocks(void) {
             switch (ATB_GET_KIND(area, block)) {
                 case AT_HEAD:
                     free_tail = 1;
-                    DEBUG_printf("gc_sweep_free_blocks(%p)\n", (void *)PTR_FROM_BLOCK(area, block));
+                    DEBUG_printf("gc_free_all_unmarked(%p)\n", (void *)PTR_FROM_BLOCK(area, block));
                     #if MICROPY_PY_GC_COLLECT_RETVAL
                     MP_STATE_MEM(gc_collected)++;
                     #endif
@@ -671,7 +650,7 @@ static void gc_sweep_free_blocks(void) {
         #if MICROPY_GC_SPLIT_HEAP_AUTO
         // Free any empty area, aside from the first one
         if (last_used_block == 0 && prev_area != NULL) {
-            DEBUG_printf("gc_sweep_free_blocks free empty area %p\n", area);
+            DEBUG_printf("gc_free_all_unmarked free empty area %p\n", area);
             NEXT_AREA(prev_area) = NEXT_AREA(area);
             MP_PLAT_FREE_HEAP(area);
             area = prev_area;
@@ -705,7 +684,7 @@ void gc_info(gc_info_t *info) {
     info->num_1block = 0;
     info->num_2block = 0;
     info->max_block = 0;
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         bool finish = false;
         info->total += area->gc_pool_end - area->gc_pool_start;
         for (size_t block = 0, len = 0, len_free = 0; !finish;) {
@@ -950,14 +929,8 @@ void gc_free(void *ptr) {
     }
 
     // get the GC block number corresponding to this pointer
-    mp_state_mem_area_t *area;
-    #if MICROPY_GC_SPLIT_HEAP
-    area = gc_get_ptr_area(ptr);
+    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
     assert(area);
-    #else
-    assert(VERIFY_PTR(ptr));
-    area = &MP_STATE_MEM(area);
-    #endif
 
     size_t block = BLOCK_FROM_PTR(area, ptr);
     assert(ATB_GET_KIND(area, block) == AT_HEAD
@@ -1003,16 +976,7 @@ void gc_free(void *ptr) {
 size_t gc_nbytes(const void *ptr) {
     GC_ENTER();
 
-    mp_state_mem_area_t *area;
-    #if MICROPY_GC_SPLIT_HEAP
-    area = gc_get_ptr_area(ptr);
-    #else
-    if (VERIFY_PTR(ptr)) {
-        area = &MP_STATE_MEM(area);
-    } else {
-        area = NULL;
-    }
-    #endif
+    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
 
     if (area) {
         size_t block = BLOCK_FROM_PTR(area, ptr);
@@ -1053,14 +1017,9 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     GC_ENTER();
 
     // get the GC block number corresponding to this pointer
-    mp_state_mem_area_t *area;
-    #if MICROPY_GC_SPLIT_HEAP
-    area = gc_get_ptr_area(ptr);
+    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
     assert(area);
-    #else
-    assert(VERIFY_PTR(ptr));
-    area = &MP_STATE_MEM(area);
-    #endif
+
     size_t block = BLOCK_FROM_PTR(area, ptr);
     assert(ATB_GET_KIND(area, block) == AT_HEAD);
 
@@ -1197,7 +1156,7 @@ void gc_dump_info(const mp_print_t *print) {
 void gc_dump_alloc_table(const mp_print_t *print) {
     GC_ENTER();
     static const size_t DUMP_BYTES_PER_LINE = 64;
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    FOR_ALL_AREAS(area) {
         #if !EXTENSIVE_HEAP_PROFILING
         // When comparing heap output we don't want to print the starting
         // pointer of the heap because it changes from run to run.
