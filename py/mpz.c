@@ -850,7 +850,7 @@ size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigne
     return cur - str;
 }
 
-void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) {
+void mpz_set_from_bytes(mpz_t *z, bool big_endian, bool is_signed, size_t len, const byte *buf) {
     int delta = 1;
     if (big_endian) {
         buf += len - 1;
@@ -862,6 +862,9 @@ void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) 
     mpz_dig_t d = 0;
     int num_bits = 0;
     z->neg = 0;
+    if ((is_signed) && (buf[len - 1] & 0x80)) {
+        z->neg = 1;
+    }
     z->len = 0;
     while (len) {
         while (len && num_bits < DIG_SIZE) {
@@ -879,7 +882,14 @@ void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) 
         #endif
         num_bits -= DIG_SIZE;
     }
-
+    if (z->neg) {
+        // sign extend
+        while (num_bits < DIG_SIZE) {
+            d |= DIG_MSB << num_bits;
+            num_bits += DIG_SIZE;
+        }
+        z->dig[z->len++] = d & DIG_MASK;
+    }
     z->len = mpn_remove_trailing_zeros(z->dig, z->dig + z->len);
 }
 
