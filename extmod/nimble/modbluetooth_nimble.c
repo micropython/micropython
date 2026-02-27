@@ -1111,6 +1111,15 @@ int mp_bluetooth_gap_pair(uint16_t conn_handle) {
     return ble_hs_err_to_errno(ble_gap_security_initiate(conn_handle));
 }
 
+int mp_bluetooth_gap_unpair(uint8_t *key, size_t key_len) {
+    if (sizeof(ble_addr_t) != key_len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Incorrect key length"));
+    }
+
+    DEBUG_printf("mp_bluetooth_gap_unpair: specific\n");
+    return ble_hs_err_to_errno(ble_gap_unpair((ble_addr_t *)key));
+}
+
 int mp_bluetooth_gap_passkey(uint16_t conn_handle, uint8_t action, mp_int_t passkey) {
     struct ble_sm_io io = {0};
 

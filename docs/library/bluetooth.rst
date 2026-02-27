@@ -733,6 +733,11 @@ Pairing and bonding
 
     On successful pairing, the ``_IRQ_ENCRYPTION_UPDATE`` event will be raised.
 
+.. method:: BLE.gap_unpair(key, /)
+
+    Removes pairing details from the bond database, where ``key`` is the entry key 
+    as provided in _IRQ_GET_SECRET/_IRQ_SET_SECRET events.
+
 .. method:: BLE.gap_passkey(conn_handle, action, passkey, /)
 
     Respond to a ``_IRQ_PASSKEY_ACTION`` event for the specified *conn_handle*
