@@ -40,8 +40,10 @@ For example to be notified when the memory is read/written::
         flags = i2c_target.irq().flags()
         if flags & I2CTarget.IRQ_END_READ:
             print("controller read target at addr", i2c_target.memaddr)
+            print("controller read", i2c_target.numbytes, "bytes from target")
         if flags & I2CTarget.IRQ_END_WRITE:
             print("controller wrote target at addr", i2c_target.memaddr)
+            print("controller wrote", i2c_target.numbytes, "bytes to target")
 
     # Create the I2C target and register to receive default events.
     mem = bytearray(8)
@@ -160,6 +162,12 @@ General Methods
 
    The integer value of the most recent memory address that was selected by the I2C
    controller (only valid if ``mem`` was specified in the constructor).
+
+.. attribute:: I2CTarget.numbytes
+
+   The number of bytes read or written in the most recent transaction.  This is
+   updated after each read or write operation.  (only valid if ``mem`` was specified in
+   the constructor).
 
 Constants
 ---------
