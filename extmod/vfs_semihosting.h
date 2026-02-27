@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the MicroPython project, https://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,45 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+#ifndef MICROPY_INCLUDED_EXTMOD_VFS_SEMIHOSTING_H
+#define MICROPY_INCLUDED_EXTMOD_VFS_SEMIHOSTING_H
 
-#include "uart.h"
-#include "py/mpconfig.h"
-#include "shared/runtime/semihosting.h"
+#include "py/obj.h"
 
-extern void set_interrupt_table(void);
-extern int main(int argc, char **argv);
+extern const mp_obj_type_t mp_type_vfs_semihosting;
+extern const mp_obj_type_t mp_type_vfs_semihosting_fileio;
+extern const mp_obj_type_t mp_type_vfs_semihosting_textio;
 
-void _entry_point(void) {
-    // Set interrupt table
-    set_interrupt_table();
-    // Initialise semihosting
-    mp_semihosting_init();
-    // Enable UART
-    uart_init();
-    // Now that we have a basic system up and running we can call main
-    main(0, 0);
-    // Finished
-    exit(0);
-}
+mp_obj_t mp_vfs_semihosting_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_obj_t mode_in);
 
-void exit(int status) {
-    mp_semihosting_terminate(MP_SEMIHOSTING_EXIT_APPLICATION_EXIT, status);
-    MP_UNREACHABLE;
-}
-
-#ifndef NDEBUG
-void __assert_func(const char *file, int line, const char *func, const char *expr) {
-    (void)func;
-    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
-    exit(1);
-}
-#endif
-
-// Picolibc requires `stdout` to be explicitly defined.
-
-#ifdef _PICOLIBC__
-FILE *const stdout;
-#endif
+#endif // MICROPY_INCLUDED_EXTMOD_VFS_SEMIHOSTING_H

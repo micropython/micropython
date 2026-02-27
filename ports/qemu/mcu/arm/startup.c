@@ -30,7 +30,7 @@
 
 #include "py/runtime.h"
 
-#include "shared/runtime/semihosting_arm.h"
+#include "shared/runtime/semihosting.h"
 #include "uart.h"
 
 extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
@@ -134,9 +134,8 @@ void _start(void) {
 
 void exit(int status) {
     // Force qemu to exit using ARM Semihosting
-    mp_semihosting_exit(status);
-    for (;;) {
-    }
+    mp_semihosting_terminate(MP_SEMIHOSTING_EXIT_APPLICATION_EXIT, status);
+    MP_UNREACHABLE;
 }
 
 #ifndef NDEBUG

@@ -29,6 +29,8 @@
 #include <stdlib.h>
 
 #include "uart.h"
+#include "py/mpconfig.h"
+#include "shared/runtime/semihosting.h"
 
 extern void set_interrupt_table(void);
 extern int main(int argc, char **argv);
@@ -36,6 +38,8 @@ extern int main(int argc, char **argv);
 void _entry_point(void) {
     // Set interrupt table
     set_interrupt_table();
+    // Initialise semihosting
+    mp_semihosting_init();
     // Enable UART
     uart_init();
     // Now that we have a basic system up and running we can call main
@@ -45,30 +49,8 @@ void _entry_point(void) {
 }
 
 void exit(int status) {
-    uint32_t semihosting_arguments[2] = { 0 };
-
-    // Exit via QEMU's RISC-V semihosting support.
-    __asm volatile (
-        ".option push            \n" // Transient options
-        ".option norvc           \n" // Do not emit compressed instructions
-        ".align 4                \n" // 16 bytes alignment
-        "mv     a1, %0           \n" // Load buffer
-        "li     t0, 0x20026      \n" // ADP_Stopped_ApplicationExit
-        "sw     t0, 0(a1)        \n" // ADP_Stopped_ApplicationExit
-        "sw     %1, 4(a1)        \n" // Exit code
-        "addi   a0, zero, 0x20   \n" // TARGET_SYS_EXIT_EXTENDED
-        "slli   zero, zero, 0x1F \n" // Entry NOP
-        "ebreak                  \n" // Give control to the debugger
-        "srai   zero, zero, 7    \n" // Semihosting call
-        ".option pop             \n" // Restore previous options set
-        :
-        : "r" (semihosting_arguments), "r" (status)
-        : "memory"
-        );
-
-    // Should never reach here.
-    for (;;) {
-    }
+    mp_semihosting_terminate(MP_SEMIHOSTING_EXIT_APPLICATION_EXIT, status);
+    MP_UNREACHABLE;
 }
 
 #ifndef NDEBUG
