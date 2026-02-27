@@ -36,6 +36,7 @@
 #include "esp_sleep.h"
 #include "esp_pm.h"
 
+#include "py/objtuple.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -79,6 +80,7 @@
     { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) }, \
     { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) }, \
     { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) }, \
+    { MP_ROM_QSTR(MP_QSTR_wake_pins), MP_ROM_PTR(&machine_wake_pins_obj) }, \
 
 typedef enum {
     MP_PWRON_RESET = 1,
@@ -309,6 +311,39 @@ static mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_
     return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
+
+static mp_obj_t machine_wake_pins(void) {
+    uint64_t status = 0;
+    int len, index;
+
+    // There will be only one wake-up source, so it is OK to logically OR all the
+    // wake-up source statuses.
+    #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP && SOC_DEEP_SLEEP_SUPPORTED
+    status |= esp_sleep_get_gpio_wakeup_status();
+    #endif
+
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP && SOC_RTCIO_PIN_COUNT > 0
+    status |= esp_sleep_get_ext1_wakeup_status();
+    #endif
+
+    // Only a few (~8) pins might cause wakeup.
+    // Therefore, we calculate the required space in a first pass.
+    for (index = 0, len = 0; index < 64; index++) {
+        len += (status & ((uint64_t)1 << index)) ? 1 : 0;
+    }
+    if (len) {
+        mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
+
+        for (index = 0, len = 0; index < 64; index++) {
+            if (status & ((uint64_t)1 << index)) {
+                tuple->items[len++] = MP_OBJ_NEW_SMALL_INT(index);
+            }
+        }
+        return MP_OBJ_FROM_PTR(tuple);
+    }
+    return mp_obj_new_tuple(0, NULL);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_pins_obj, machine_wake_pins);
 
 MP_NORETURN static void mp_machine_reset(void) {
     esp_restart();

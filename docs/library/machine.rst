@@ -163,6 +163,13 @@ Power related functions
 
    Availability: ESP32, WiPy.
 
+.. function:: wake_pins()
+
+   Returns the GPIO pin numbers of those pins which caused wakeup from deep sleep as a
+   tuple of integers.
+
+   Availability: ESP32.
+
 Miscellaneous functions
 -----------------------
 
