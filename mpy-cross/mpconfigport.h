@@ -26,7 +26,11 @@
 
 // options to control how MicroPython is built
 
+#ifdef PATH_MAX
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
+#else
+#define MICROPY_ALLOC_PATH_MAX      (4096)
+#endif
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_PERSISTENT_CODE_LOAD_NATIVE (0)
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
