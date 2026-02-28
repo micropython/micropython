@@ -24,8 +24,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import ast, errno, hashlib, os, re, sys
+import ast, binascii, errno, hashlib, os, re, sys
 from collections import namedtuple
+from .compression_utils import (
+    compress_chunk,
+    test_compression_ratio,
+    MIN_COMPRESS_SIZE,
+    MIN_COMPRESS_RATIO,
+    DEFLATE_CHUNK_SIZE,
+    DEFLATE_WBITS,
+    BASE64_CHUNK_SIZE,
+)
 from .mp_errno import MP_ERRNO_TABLE
 
 
@@ -151,16 +160,124 @@ class Transport:
 
         return contents
 
-    def fs_writefile(self, dest, data, chunk_size=256, progress_callback=None):
+    def detect_encoding_capabilities(self):
+        """Detect available encoding methods on device. Cached after first call."""
+        if hasattr(self, "_fs_encoding_caps"):
+            return self._fs_encoding_caps
+
+        # Probe base64 and bytesio independently from deflate, so that a missing
+        # deflate module doesn't prevent base64 from being detected.
+        try:
+            caps = self.eval(
+                "{"
+                "'bytesio':hasattr(__import__('io'),'BytesIO'),"
+                "'base64':hasattr(__import__('binascii'),'a2b_base64'),"
+                "}"
+            )
+        except TransportExecError:
+            caps = {}
+
+        try:
+            has_deflate = self.eval("hasattr(__import__('deflate'),'DeflateIO')")
+        except TransportExecError:
+            has_deflate = False
+
+        self._fs_encoding_caps = {
+            "deflate": has_deflate and caps.get("bytesio") and caps.get("base64"),
+            "base64": caps.get("base64", False),
+        }
+
+        return self._fs_encoding_caps
+
+    def _choose_encoding_for_data(self, data):
+        """Choose best encoding based on device capabilities and data compressibility.
+
+        Three-tier fallback:
+        1. deflate+base64 - if device has deflate/io/binascii and data compresses well
+        2. base64 - if device has binascii.a2b_base64
+        3. repr - universal fallback
+
+        Returns: (encoding, ratio) where encoding is 'deflate', 'base64', or 'repr',
+            and ratio is the compression ratio (float) for deflate, or None otherwise.
+        """
+        caps = self.detect_encoding_capabilities()
+
+        if caps.get("deflate") and len(data) > MIN_COMPRESS_SIZE:
+            ratio = test_compression_ratio(data)
+            if ratio < MIN_COMPRESS_RATIO:
+                return "deflate", ratio
+
+        if caps.get("base64"):
+            return "base64", None
+
+        return "repr", None
+
+    _VALID_ENCODINGS = ("deflate", "base64", "repr")
+
+    def fs_writefile(self, dest, data, chunk_size=None, progress_callback=None, encoding=None):
+        """Write data to a file on the device.
+
+        Automatically selects the best encoding based on device capabilities and
+        data compressibility, with dynamic chunk sizing per encoding method.
+
+        Args:
+            dest: Destination path on device
+            data: Bytes to write
+            chunk_size: Chunk size in bytes, or None for encoding-appropriate default.
+            progress_callback: Optional callback(written, total)
+            encoding: Force encoding: 'deflate', 'base64', 'repr', or None (auto-select)
+        """
         if progress_callback:
             src_size = len(data)
             written = 0
 
+        # Auto-select encoding based on data compressibility
+        if encoding is None:
+            encoding, _ratio = self._choose_encoding_for_data(data)
+
+        if encoding not in self._VALID_ENCODINGS:
+            raise ValueError(
+                "encoding must be one of %s, got %r" % (self._VALID_ENCODINGS, encoding)
+            )
+
+        # Dynamic chunk sizing: larger chunks = fewer exec() round trips.
+        # Only auto-size when caller didn't specify.
+        if chunk_size is None:
+            if encoding == "deflate":
+                chunk_size = DEFLATE_CHUNK_SIZE
+            elif encoding == "base64":
+                chunk_size = BASE64_CHUNK_SIZE
+            else:
+                chunk_size = 256
+
         try:
-            self.exec("f=open('%s','wb')\nw=f.write" % dest)
+            # Setup imports and file handle on device
+            if encoding == "deflate":
+                self.exec(
+                    "from binascii import a2b_base64\n"
+                    "from io import BytesIO\n"
+                    "from deflate import DeflateIO,RAW\n"
+                    "f=open('%s','wb')\nw=f.write" % dest
+                )
+            elif encoding == "base64":
+                self.exec("from binascii import a2b_base64\nf=open('%s','wb')\nw=f.write" % dest)
+            else:
+                self.exec("f=open('%s','wb')\nw=f.write" % dest)
+
             while data:
                 chunk = data[:chunk_size]
-                self.exec("w(" + repr(chunk) + ")")
+                if encoding == "deflate":
+                    compressed = compress_chunk(chunk)
+                    b64 = binascii.b2a_base64(compressed).strip()
+                    self.exec(
+                        "w(DeflateIO(BytesIO(a2b_base64(%s)),RAW,%d).read())"
+                        % (b64, DEFLATE_WBITS)
+                    )
+                elif encoding == "base64":
+                    b64 = binascii.b2a_base64(chunk).strip()
+                    self.exec("w(a2b_base64(%s))" % b64)
+                else:
+                    self.exec("w(" + repr(chunk) + ")")
                 data = data[len(chunk) :]
                 if progress_callback:
                     written += len(chunk)

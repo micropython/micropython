@@ -4,10 +4,9 @@ import hashlib
 import os
 import sys
 import tempfile
-import zlib
-
 import serial.tools.list_ports
 
+from .compression_utils import compress_chunk, DEFLATE_WBITS
 from .transport import TransportError, TransportExecError, stdout_write_bytes
 from .transport_serial import SerialTransport
 from .romfs import make_romfs, VfsRomWriter
@@ -682,18 +681,20 @@ def _do_romfs_deploy(state, args):
         chunk_size = max(chunk_size, rom_min_write)
 
     # Detect capabilities of the device to use the fastest method of transfer.
+    caps = transport.detect_encoding_capabilities()
+    has_deflate_io = caps.get("deflate", False)
+    has_a2b_base64 = caps.get("base64", False)
     has_bytes_fromhex = transport.eval("hasattr(bytes,'fromhex')")
-    try:
+
+    # Import encoding modules on device (detection uses hasattr, not exec).
+    if has_deflate_io:
+        transport.exec(
+            "from binascii import a2b_base64\n"
+            "from io import BytesIO\n"
+            "from deflate import DeflateIO,RAW"
+        )
+    elif has_a2b_base64:
         transport.exec("from binascii import a2b_base64")
-        has_a2b_base64 = True
-    except TransportExecError:
-        has_a2b_base64 = False
-    try:
-        transport.exec("from io import BytesIO")
-        transport.exec("from deflate import DeflateIO,RAW")
-        has_deflate_io = True
-    except TransportExecError:
-        has_deflate_io = False
 
     # Deploy the ROMFS filesystem image to the device.
     for offset in range(0, len(romfs), chunk_size):
@@ -701,14 +702,12 @@ def _do_romfs_deploy(state, args):
         romfs_chunk += bytes(chunk_size - len(romfs_chunk))
         if has_deflate_io:
             # Needs: binascii.a2b_base64, io.BytesIO, deflate.DeflateIO.
-            compressor = zlib.compressobj(wbits=-9)
-            romfs_chunk_compressed = compressor.compress(romfs_chunk)
-            romfs_chunk_compressed += compressor.flush()
+            romfs_chunk_compressed = compress_chunk(romfs_chunk)
             buf = binascii.b2a_base64(romfs_chunk_compressed).strip()
-            transport.exec(f"buf=DeflateIO(BytesIO(a2b_base64({buf})),RAW,9).read()")
+            transport.exec(f"buf=DeflateIO(BytesIO(a2b_base64({buf})),RAW,{DEFLATE_WBITS}).read()")
         elif has_a2b_base64:
             # Needs: binascii.a2b_base64.
-            buf = binascii.b2a_base64(romfs_chunk)
+            buf = binascii.b2a_base64(romfs_chunk).strip()
             transport.exec(f"buf=a2b_base64({buf})")
         elif has_bytes_fromhex:
             # Needs: bytes.fromhex.
