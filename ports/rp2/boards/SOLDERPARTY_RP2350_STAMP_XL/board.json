@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB-C",
+        "External RAM",
+        "Battery Charging"
+    ],
+    "images": [
+        "solder_party_rp2350_stamp_xl2.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "RP2350 Stamp XL",
+    "thumbnail": "",
+    "url": "https://www.solder.party/docs/rp2350-stamp-xl/",
+    "vendor": "Solder Party"
+}
