@@ -1,7 +1,9 @@
 # rp2 module: uses C code from _rp2, plus asm_pio decorator implemented in Python.
 # MIT license; Copyright (c) 2020-2021 Damien P. George
 
+from math import frexp
 from _rp2 import *
+from machine import freq
 from micropython import const
 
 _PROG_DATA = const(0)
@@ -295,3 +297,47 @@ def asm_pio_encode(instr, sideset_count, sideset_opt=False):
     if len(emit.prog[_PROG_DATA]) != 1:
         raise PIOASMError("expecting exactly 1 instruction")
     return emit.prog[_PROG_DATA][0]
+
+
+def _float_ratio(f):
+    m, e = frexp(f)
+    n = int(m * 2**21) * 2**e
+    d = 2**21
+    while d > 1 and n & 1 == 0:
+        n >>= 1
+        d >>= 1
+    return n, d
+
+
+def _as_ratio(clk):
+    if isinstance(clk, int):
+        return clk, 1
+    if isinstance(clk, float):
+        return _float_ratio(clk)
+    n, d = clk
+    return n, d
+
+
+def pio_clock_divisor(pio_clk, sys_clk=None):
+    if sys_clk is None:
+        sys_clk = freq()
+    sys_clk_num, sys_clk_den = _as_ratio(sys_clk)
+    pio_clk_num, pio_clk_den = _as_ratio(pio_clk)
+    div_lo = sys_clk_num * pio_clk_den * 256 // (sys_clk_den * pio_clk_num)
+    div_hi = div_lo + 1
+    c1 = pio_clk_num * sys_clk_den
+    c2 = sys_clk_num * pio_clk_den * 256
+    c3 = sys_clk_den * pio_clk_den
+    err_lo = c1 * div_lo - c2
+    err_hi = c1 * div_hi - c2
+    if -err_lo <= err_hi:
+        div = div_lo
+        err = err_lo
+    else:
+        div = div_hi
+        err = err_hi
+    return (
+        div // 256,  # clkdiv_int
+        div % 256,  # clkdiv_frac
+        err / (c3 * 256),  # err
+    )

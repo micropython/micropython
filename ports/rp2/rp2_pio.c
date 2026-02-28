@@ -616,13 +616,15 @@ static void rp2_state_machine_print(const mp_print_t *print, mp_obj_t self_in, m
 // )
 static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_prog, ARG_freq,
+        ARG_prog, ARG_freq, ARG_clkdiv_int, ARG_clkdiv_frac,
         ARG_in_base, ARG_out_base, ARG_set_base, ARG_jmp_pin, ARG_sideset_base,
         ARG_in_shiftdir, ARG_out_shiftdir, ARG_push_thresh, ARG_pull_thresh
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_prog, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_clkdiv_int, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_clkdiv_frac, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_in_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_out_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_set_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -653,7 +655,11 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     // Compute the clock divider.
     uint16_t clkdiv_int;
     uint8_t clkdiv_frac;
-    if (args[ARG_freq].u_int < 0) {
+    if (args[ARG_clkdiv_int].u_obj != mp_const_none) {
+        // Integer divider defined: use it and fractional part.
+        clkdiv_int = args[ARG_clkdiv_int].u_int;
+        clkdiv_frac = args[ARG_clkdiv_frac].u_int;
+    } else if (args[ARG_freq].u_int < 0) {
         // Default: run at CPU frequency.
         clkdiv_int = 1;
         clkdiv_frac = 0;
