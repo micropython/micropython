@@ -53,6 +53,9 @@ Constructors
     optionally *stride*.  Invalid *buffer* size or dimensions may lead to
     unexpected errors.
 
+    Buffer size depends on the pixel format. See below for additional details.
+    A `ValueError` is thrown if the buffer size is too small.
+
 Drawing primitive shapes
 ------------------------
 
@@ -205,3 +208,27 @@ Constants
 .. data:: framebuf.GS8
 
     Grayscale (8-bit) color format
+
+Buffer size requirements
+------------------------
+
+The following lists the minimal size requirements of the *buffer*
+in bytes, depending on the framebuf pixel mode used. 
+
+- `framebuf.MONO_VLSB`
+    size = *width* * ((*height* + 7) & ~7) / 8 
+
+- `framebuf.MONO_HLSB`, `framebuf.MONO_HMSB`
+    size = ((*width* + 7) & ~7) * *height* / 8
+
+- `framebuf.GS2_HMSB`
+    size = ((*width* + 3) & ~3) * *height* / 4;
+
+- `framebuf.GS4_HMSB`
+    size = ((*width* + 1) & ~1) * *height* / 2;
+
+- `framebuf.RGB565`
+    size = *width* * *height* * 2
+
+- `framebuf.GS8`  
+    size = *width* * *height*
