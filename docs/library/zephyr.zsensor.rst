@@ -90,6 +90,48 @@ Methods
     Returns only the integer value of the channel's attribute.
     (Ex. value of ``(1, 500000)`` returns as ``1``)
 
+.. method:: Sensor.trigger_set(trigger_type, sensor_channel, [callback])
+
+   Configure a sensor interrupt trigger. Each sensor can have multiple independent triggers.
+
+   :param trigger_type: The type of trigger (e.g., ``TRIG_DATA_READY``)
+   :param sensor_channel: (Optional) The sensor channel to monitor (e.g., ``ACCEL_X``, ``ACCEL_Y``). Defaults to all channels if not specified.
+   :param callback: Function to call when trigger fires, or ``None`` to disable
+
+   The callback function receives the sensor object as its only argument.
+   Multiple triggers can be set for the same sensor with different trigger types
+   and/or channels. Each trigger maintains its own independent callback.
+
+   If ``sensor_channel`` is not specified, the trigger applies to all sensor channels
+   (``SENSOR_CHAN_ALL``), which is the most common use case.
+
+   To disable a specific trigger, call with ``callback=None`` using the same
+   trigger type and channel that was previously configured.
+
+   **Example**::
+
+       def motion_callback(sensor):
+           x = sensor.get_float(zsensor.ACCEL_X)
+           y = sensor.get_float(zsensor.ACCEL_Y)
+           z = sensor.get_float(zsensor.ACCEL_Z)
+           print(f"Motion: X={x:.2f}, Y={y:.2f}, Z={z:.2f}")
+
+       def x_callback(sensor):
+           x = sensor.get_float(zsensor.ACCEL_X)
+           print(f"X: {x:.2f}")
+
+       # Simple trigger for all channels (most common)
+       accel.trigger_set(zsensor.TRIG_DATA_READY, motion_callback)
+
+       # Channel-specific trigger
+       accel.trigger_set(zsensor.TRIG_DATA_READY, zsensor.ACCEL_X, x_callback)
+
+       # Disable simple trigger (uses default channel)
+       accel.trigger_set(zsensor.TRIG_DATA_READY, None)
+
+       # Disable specific channel trigger
+       accel.trigger_set(zsensor.TRIG_DATA_READY, zsensor.ACCEL_X, None)
+
 Channels
 ~~~~~~~~
 
