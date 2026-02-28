@@ -1,0 +1,2 @@
+# ESP32-C3 is single core, use unicore configuration
+CONFIG_FREERTOS_UNICORE=y

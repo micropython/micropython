@@ -19,6 +19,7 @@
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
     "variants": {
+        "CSI": "Optimized for CSI-based motion detection (no gain lock)",
         "D2WD": "ESP32 D2WD",
         "SPIRAM": "Support for SPIRAM / WROVER",
         "UNICORE": "ESP32 Unicore",
