@@ -8,6 +8,3 @@ set(PICO_NUM_GPIOS 48)
 # which will instruct pico-sdk to look for waveshare_rp2350b_core.h
 list(APPEND PICO_BOARD_HEADER_DIRS ${MICROPY_BOARD_DIR})
 set(PICO_BOARD "waveshare_rp2350b_core")
-
-# Freeze manifest and modules
-set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
