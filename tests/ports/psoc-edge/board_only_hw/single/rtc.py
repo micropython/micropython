@@ -4,7 +4,7 @@ import time
 
 # PSoC Edge RTC test compatibility notes:
 # 1) Weekday is auto-calculated by RTC hardware, so datetime checks ignore wday.
-# 2) rtc.irq() trigger uses 0 (RTC.ALARM0 constant is not exposed in this port).
+# 2) rtc.irq() trigger uses alarm 0 (RTC.ALARM0).
 # 3) After one-shot expiry, rtc.alarm_left() may raise ValueError (alarm no longer set).
 # 4) Periodic mode is valid only for millisecond alarm input, not datetime tuple.
 
@@ -34,10 +34,11 @@ def cback(event):
 
 
 def check_rtc_mem_write():
-    rtc.memory((2023, 1, 1, 0, 0, 0, 0, 0))
-    mem = rtc.memory()
-    mem_normalized = (mem[0], mem[1], mem[2], 0, mem[4], mem[5], mem[6], mem[7])
-    print("\ndatetime to be retrieved post soft-reset : ", mem_normalized)
+    mem_set = b"rtc_mem_psoc_edge"
+    rtc.memory(mem_set)
+    mem_get = rtc.memory()
+    print("\nRTC memory readback success : ", mem_get == mem_set)
+    print("RTC memory bytes : ", mem_get)
 
 
 def reset_rtc():
@@ -54,7 +55,7 @@ def set_alarm_ms(rtc, alarm_type, period_ms):
 
 def set_alarm_datetime(rtc, alarm_type, datetime):
     rtc.datetime(initial_dtime)
-    rtc_irq = rtc.irq(trigger=0, handler=cback)
+    rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=cback)
     rtc.alarm(datetime, repeat=alarm_type)
 
 

@@ -59,10 +59,18 @@
 #define RTC_INIT_SECOND     0
 #define RTC_INIT_DST        0
 
-// #define TM_YEAR_BASE        (1900u)
 #define RTC_CENTURY         (2000u)  /* RTC hardware supports years 0-99 = 2000-2099 */
 #define RTC_ACCESS_RETRY_COUNT      (500U)
 #define RTC_RETRY_DELAY_MS          (5U)
+
+#define RTC_BREG_WORDS              (8U)
+#define RTC_BREG_META_INDEX         (RTC_BREG_WORDS - 1U)
+#define RTC_BREG_DATA_WORDS         (RTC_BREG_WORDS - 1U)
+#define RTC_BREG_MAGIC              (0x5254U)
+
+#ifndef MICROPY_HW_RTC_USER_MEM_MAX
+#define MICROPY_HW_RTC_USER_MEM_MAX (RTC_BREG_DATA_WORDS * 4U)
+#endif
 
 #define rtc_assert_raise(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_ValueError(MP_ERROR_TEXT(msg)); \
@@ -90,6 +98,14 @@ static machine_rtc_obj_t machine_rtc_obj = {
 };
 
 static bool rtc_irq_initialized = false;
+
+static inline uint32_t rtc_breg_read(uint32_t index) {
+    return BACKUP_BREG_SET2[index];
+}
+
+static inline void rtc_breg_write(uint32_t index, uint32_t value) {
+    BACKUP_BREG_SET2[index] = value;
+}
 
 static void rtc_interrupt_init(void) {
     if (rtc_irq_initialized) {
@@ -431,9 +447,61 @@ static mp_obj_t machine_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_cancel_obj, 1, 2, machine_rtc_alarm_cancel);
 
 static mp_obj_t machine_rtc_memory(size_t n_args, const mp_obj_t *args) {
-    // For this implementation, memory() is an alias for datetime()
-    // as the RTC hardware persists across soft resets
-    return machine_rtc_datetime_helper(n_args, args);
+    if (n_args == 1) {
+        Cy_RTC_SyncFromRtc();
+
+        uint32_t meta = rtc_breg_read(RTC_BREG_META_INDEX);
+        uint32_t magic = (meta >> 16) & 0xFFFFU;
+        uint32_t stored_len = meta & 0xFFFFU;
+
+        if ((magic != RTC_BREG_MAGIC) || (stored_len > MICROPY_HW_RTC_USER_MEM_MAX)) {
+            return mp_obj_new_bytes((const uint8_t *)"", 0);
+        }
+
+        uint8_t data[MICROPY_HW_RTC_USER_MEM_MAX] = {0};
+        for (uint32_t index = 0; index < RTC_BREG_DATA_WORDS; ++index) {
+            uint32_t value = rtc_breg_read(index);
+            data[index * 4U + 0U] = (uint8_t)((value >> 0U) & 0xFFU);
+            data[index * 4U + 1U] = (uint8_t)((value >> 8U) & 0xFFU);
+            data[index * 4U + 2U] = (uint8_t)((value >> 16U) & 0xFFU);
+            data[index * 4U + 3U] = (uint8_t)((value >> 24U) & 0xFFU);
+        }
+
+        return mp_obj_new_bytes(data, stored_len);
+    }
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+
+    if (bufinfo.len > MICROPY_HW_RTC_USER_MEM_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer too long"));
+    }
+
+    cy_en_rtc_status_t write_status = Cy_RTC_WriteEnable(CY_RTC_WRITE_ENABLED);
+    if (write_status != CY_RTC_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("RTC memory write unavailable"));
+    }
+
+    uint8_t data[MICROPY_HW_RTC_USER_MEM_MAX] = {0};
+    memcpy(data, bufinfo.buf, bufinfo.len);
+
+    for (uint32_t index = 0; index < RTC_BREG_DATA_WORDS; ++index) {
+        uint32_t value = ((uint32_t)data[index * 4U + 0U] << 0U)
+            | ((uint32_t)data[index * 4U + 1U] << 8U)
+            | ((uint32_t)data[index * 4U + 2U] << 16U)
+            | ((uint32_t)data[index * 4U + 3U] << 24U);
+        rtc_breg_write(index, value);
+    }
+
+    uint32_t meta = (RTC_BREG_MAGIC << 16) | ((uint32_t)bufinfo.len & 0xFFFFU);
+    rtc_breg_write(RTC_BREG_META_INDEX, meta);
+
+    write_status = Cy_RTC_WriteEnable(CY_RTC_WRITE_DISABLED);
+    if (write_status != CY_RTC_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("RTC memory write finalize failed"));
+    }
+
+    return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_memory_obj, 1, 2, machine_rtc_memory);
 
@@ -478,6 +546,7 @@ static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cancel),      MP_ROM_PTR(&machine_rtc_alarm_cancel_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),         MP_ROM_PTR(&machine_rtc_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_memory),      MP_ROM_PTR(&machine_rtc_memory_obj)},
+    { MP_ROM_QSTR(MP_QSTR_ALARM0),      MP_ROM_INT(0) },
 
 };
 static MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
