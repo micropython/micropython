@@ -39,6 +39,8 @@ void timer_init0(void);
 void timer_tim5_init(void);
 TIM_HandleTypeDef *timer_tim6_init(uint freq);
 void timer_deinit(void);
+TIM_TypeDef *timer_id_to_reg(uint32_t tim_id);
+void timer_clock_enable(size_t tim_id);
 uint32_t timer_get_source_freq(uint32_t tim_id);
 void timer_irq_handler(uint tim_id);
 

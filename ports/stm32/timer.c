@@ -149,6 +149,8 @@ TIM_HandleTypeDef TIM6_Handle;
 
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
 
+static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER];
+
 static mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
 static mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
 static mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
@@ -227,6 +229,124 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
         servo_timer_irq_callback();
     }
     #endif
+}
+
+TIM_TypeDef *timer_id_to_reg(uint32_t tim_id) {
+    return (TIM_TypeDef *)(tim_instance_table[tim_id - 1] & 0xffffff00);
+}
+
+void timer_clock_enable(size_t tim_id) {
+    // enable TIM clock
+    switch (tim_id) {
+        #if defined(TIM1)
+        case 1:
+            __HAL_RCC_TIM1_CLK_ENABLE();
+            break;
+        #endif
+        case 2:
+            __HAL_RCC_TIM2_CLK_ENABLE();
+            break;
+        #if defined(TIM3)
+        case 3:
+            __HAL_RCC_TIM3_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM4)
+        case 4:
+            __HAL_RCC_TIM4_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM5)
+        case 5:
+            __HAL_RCC_TIM5_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM6)
+        case 6:
+            __HAL_RCC_TIM6_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM7)
+        case 7:
+            __HAL_RCC_TIM7_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM8)
+        case 8:
+            __HAL_RCC_TIM8_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM9)
+        case 9:
+            __HAL_RCC_TIM9_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM10)
+        case 10:
+            __HAL_RCC_TIM10_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM11)
+        case 11:
+            __HAL_RCC_TIM11_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM12)
+        case 12:
+            __HAL_RCC_TIM12_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM13)
+        case 13:
+            __HAL_RCC_TIM13_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM14)
+        case 14:
+            __HAL_RCC_TIM14_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM15)
+        case 15:
+            __HAL_RCC_TIM15_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM16)
+        case 16:
+            __HAL_RCC_TIM16_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM17)
+        case 17:
+            __HAL_RCC_TIM17_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM18)
+        case 18:
+            __HAL_RCC_TIM18_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM19)
+        case 19:
+            __HAL_RCC_TIM19_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM20)
+        case 20:
+            __HAL_RCC_TIM20_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM21)
+        case 21:
+            __HAL_RCC_TIM21_CLK_ENABLE();
+            break;
+        #endif
+        #if defined(TIM22)
+        case 22:
+            __HAL_RCC_TIM22_CLK_ENABLE();
+            break;
+        #endif
+    }
 }
 
 // Get the frequency (in Hz) of the source clock for the given timer.
@@ -694,117 +814,7 @@ static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     init->RepetitionCounter = 0;
     #endif
 
-    // enable TIM clock
-    switch (self->tim_id) {
-        #if defined(TIM1)
-        case 1:
-            __HAL_RCC_TIM1_CLK_ENABLE();
-            break;
-        #endif
-        case 2:
-            __HAL_RCC_TIM2_CLK_ENABLE();
-            break;
-        #if defined(TIM3)
-        case 3:
-            __HAL_RCC_TIM3_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM4)
-        case 4:
-            __HAL_RCC_TIM4_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM5)
-        case 5:
-            __HAL_RCC_TIM5_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM6)
-        case 6:
-            __HAL_RCC_TIM6_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM7)
-        case 7:
-            __HAL_RCC_TIM7_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM8)
-        case 8:
-            __HAL_RCC_TIM8_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM9)
-        case 9:
-            __HAL_RCC_TIM9_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM10)
-        case 10:
-            __HAL_RCC_TIM10_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM11)
-        case 11:
-            __HAL_RCC_TIM11_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM12)
-        case 12:
-            __HAL_RCC_TIM12_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM13)
-        case 13:
-            __HAL_RCC_TIM13_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM14)
-        case 14:
-            __HAL_RCC_TIM14_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM15)
-        case 15:
-            __HAL_RCC_TIM15_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM16)
-        case 16:
-            __HAL_RCC_TIM16_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM17)
-        case 17:
-            __HAL_RCC_TIM17_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM18)
-        case 18:
-            __HAL_RCC_TIM18_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM19)
-        case 19:
-            __HAL_RCC_TIM19_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM20)
-        case 20:
-            __HAL_RCC_TIM20_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM21)
-        case 21:
-            __HAL_RCC_TIM21_CLK_ENABLE();
-            break;
-        #endif
-        #if defined(TIM22)
-        case 22:
-            __HAL_RCC_TIM22_CLK_ENABLE();
-            break;
-        #endif
-    }
+    timer_clock_enable(self->tim_id);
 
     // set IRQ priority (if not a special timer)
     if (self->tim_id != 5) {
