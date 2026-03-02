@@ -26,4 +26,5 @@ invalid argument(s) value
 
 RTC reset done:  True
 
-datetime to be retrieved post soft-reset :  (2023, 1, 1, 0, 0, 0, 0, 0)
+RTC memory readback success :  True
+RTC memory bytes :  b'rtc_mem_psoc_edge'
