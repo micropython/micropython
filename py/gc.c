@@ -134,7 +134,7 @@ static void gc_mark_subtree(size_t block);
 static void gc_maybe_resweep(void);
 #if MICROPY_ENABLE_FINALISER
 static void gc_finalise_all_unmarked(void);
-static void gc_finalise_if_unmarked(const mp_state_mem_area_t *area, size_t block);
+static void gc_finalise_if_unmarked(mp_state_mem_area_t *area, size_t block);
 #endif
 static void gc_free_all_unmarked(void);
 
@@ -549,6 +549,7 @@ void gc_collect_end(void) {
     gc_maybe_resweep();
     #if MICROPY_ENABLE_FINALISER
     gc_finalise_all_unmarked();
+    gc_maybe_resweep();
     #endif
     gc_free_all_unmarked();
     #if MICROPY_GC_SPLIT_HEAP
@@ -586,7 +587,7 @@ static void gc_maybe_resweep(void) {
 #if MICROPY_ENABLE_FINALISER
 // Run finalisers for all unmarked heads.
 static void gc_finalise_all_unmarked(void) {
-    for (const mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
         size_t ftb_end = area->gc_last_used_block / BLOCKS_PER_FTB; // index is inclusive
         for (size_t ftb_idx = 0; ftb_idx <= ftb_end; ftb_idx++) {
@@ -605,7 +606,7 @@ static void gc_finalise_all_unmarked(void) {
 }
 
 // Run finaliser on the indicated head, if not marked as reachable.
-static void gc_finalise_if_unmarked(const mp_state_mem_area_t *area, size_t block) {
+static void gc_finalise_if_unmarked(mp_state_mem_area_t *area, size_t block) {
     assert(FTB_GET(area, block));
 
     if (ATB_GET_KIND(area, block) == AT_MARK) {
@@ -619,6 +620,18 @@ static void gc_finalise_if_unmarked(const mp_state_mem_area_t *area, size_t bloc
 
     if (obj->type == NULL) {
         return;
+    }
+
+    if (obj->type->flags & MP_TYPE_FLAG_INSTANCE_TYPE) {
+        // sum this object's closure into the marked set
+        // i.e. instead of checking later for any new unmarked heads in the graph
+        // preemptively mark any head that the callback _could_ reattach
+        ATB_HEAD_TO_MARK(area, block);
+        #if MICROPY_GC_SPLIT_HEAP
+        gc_mark_subtree(area, block);
+        #else
+        gc_mark_subtree(block);
+        #endif
     }
 
     mp_obj_t dest[2];
