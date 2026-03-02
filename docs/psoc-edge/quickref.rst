@@ -152,6 +152,63 @@ The following parameters have port-specific behavior:
     **None** of the non-core methods from the Pin API are currently implemented for this port.
 
 
+Real time clock (RTC)
+---------------------
+
+See :ref:`machine.RTC <machine.RTC>`: ::
+
+    from machine import RTC
+    import time
+
+    irq_counter = 0
+
+    def cback(event):
+        global irq_counter
+        irq_counter += 1
+
+    rtc = RTC()
+    rtc.init((2023, 1, 1, 0, 0, 0, 0, 0)) # initialise rtc with specific date and time,
+                                          # eg. 2023/1/1 00:00:00
+    rtc.datetime((2017, 8, 23, 2, 12, 48, 0, 0)) # set a specific date and
+                                                 # time, eg. 2017/8/23 1:12:48
+    rtc.datetime() # get date and time
+
+    rtc.irq(trigger=RTC.ALARM0, handler=cback)
+    rtc.alarm(1000, repeat=False) # set one-shot short alarm in ms
+    rtc.alarm_left() # Read the time left for the alarm to expire
+    time.sleep_ms(1008) # wait sufficient time
+    print(irq_counter) # Check irq counter
+
+    rtc.irq(trigger=RTC.ALARM0, handler=cback)
+    rtc.alarm(3000, repeat=True) # set periodic short alarm in ms
+    rtc.cancel() # cancel the alarm
+
+    rtc.irq(trigger=RTC.ALARM0, handler=cback)
+    rtc.alarm((2023, 1, 1, 0, 0, 1, 0, 0), repeat=False) # set one-shot longer duration alarm
+
+    rtc.memory(b"hello") # write bytes into RTC user memory
+    rtc.memory() # read bytes from RTC user memory
+
+
+.. note::
+    Setting a random week day in 'wday' field is not valid. The underlying library implements the logic to always
+    calculate the right weekday based on the year, date and month passed. However, datetime() will not raise an error 
+    for this but rather re-write the field with the last calculated actual value.
+
+.. note::
+    RTC API behavior on this port has the following specifics:
+
+    - ``RTC()`` is a singleton constructor with no ``id`` or additional constructor arguments.
+    - ``rtc.irq()`` accepts alarm trigger ``0`` (``RTC.ALARM0``); ``wake`` is not implemented.
+    - ``rtc.alarm()`` accepts ``time`` and optional ``repeat``; no positional alarm ``id`` argument is used.
+    - Input ``weekday`` in datetime tuples is ignored and hardware computes the weekday from date fields.
+    - The current ``rtc.memory([data])`` maximum payload on KIT_PSE84_AI is 28 bytes.
+
+.. warning::
+    RTC alarm timing on this port has second-level resolution. Millisecond alarm values are accepted, but are rounded
+    up to whole seconds internally.
+
+
 Hardware I2C bus
 ----------------
 
@@ -161,7 +218,6 @@ Hardware I2C is available on the PSOC™ Edge E84 using the SCB (Serial Communic
 peripheral. The port supports both controller (master) and target (slave) modes.
 
 .. note::
-
     External pull-up resistors (typically 4.7kΩ) are required on both SCL and SDA lines.
     Only one I2C instance (controller or target) can be active at a time, as both modes 
     share the same SCB peripheral and pins.
