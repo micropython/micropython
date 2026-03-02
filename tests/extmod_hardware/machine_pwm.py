@@ -42,6 +42,8 @@ elif "mimxrt" in sys.platform:
         )
     else:
         pwm_pulse_pins = (("D0", "D1"),)
+elif "pyboard" in sys.platform:
+    pwm_pulse_pins = ((Pin.cpu.A0, Pin.cpu.A1),)
 elif "rp2" in sys.platform:
     pwm_pulse_pins = (("GPIO0", "GPIO1"),)
 elif "samd" in sys.platform:
