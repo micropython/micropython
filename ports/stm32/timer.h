@@ -26,6 +26,11 @@
 #ifndef MICROPY_INCLUDED_STM32_TIMER_H
 #define MICROPY_INCLUDED_STM32_TIMER_H
 
+// Define this helper macro for MCUs that the HAL misses.
+#if defined(STM32L0)
+#define IS_TIM_32B_COUNTER_INSTANCE(tim) (false)
+#endif
+
 extern TIM_HandleTypeDef TIM5_Handle;
 
 extern const mp_obj_type_t pyb_timer_type;

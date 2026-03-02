@@ -1026,15 +1026,11 @@ static mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         memset(tim, 0, sizeof(*tim));
         tim->base.type = &pyb_timer_type;
         tim->tim_id = tim_id;
-        #if defined(STM32L1)
-        tim->is_32bit = tim_id == 5;
-        #else
-        tim->is_32bit = tim_id == 2 || tim_id == 5;
-        #endif
         tim->callback = mp_const_none;
         uint32_t ti = tim_instance_table[tim_id - 1];
         tim->tim.Instance = (TIM_TypeDef *)(ti & 0xffffff00);
         tim->irqn = ti & 0xff;
+        tim->is_32bit = IS_TIM_32B_COUNTER_INSTANCE(tim->tim.Instance);
         MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] = tim;
     } else {
         // reference existing Timer object
