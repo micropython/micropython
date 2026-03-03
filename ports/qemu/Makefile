@@ -78,7 +78,6 @@ SRC_C += \
 	mcu/arm/errorhandler.c \
 	mcu/arm/startup.c \
 	mcu/arm/ticks.c \
-	shared/runtime/semihosting_arm.c \
 
 endif
 
@@ -213,6 +212,7 @@ SRC_C += \
 	shared/readline/readline.c \
 	shared/runtime/interrupt_char.c \
 	shared/runtime/pyexec.c \
+	shared/runtime/semihosting.c \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 
@@ -243,11 +243,19 @@ SRC_QSTR += $(SRC_C) $(LIBM_SRC_C)
 ################################################################################
 # Main targets
 
+ifneq ($(strip $(QEMU_FS_ROOT)),)
+ifneq ($(wildcard $(QEMU_FS_ROOT)/.),)
+QEMU_ARGS += -semihosting-config arg="-mp $(QEMU_FS_ROOT)"
+else
+$(error "$(QEMU_FS_ROOT)" is not a directory.)
+endif
+endif
+
 all: $(BUILD)/firmware.elf
 
 .PHONY: repl
 repl: $(BUILD)/firmware.elf
-	$(ECHO) "Use machine.reset() to exit"
+	$(ECHO) "Use \"import machine; machine.reset()\" to exit, or press CTRL+A followed by X"
 	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial mon:stdio -kernel $<
 
 .PHONY: run
