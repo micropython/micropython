@@ -47,8 +47,6 @@
 #define CM55_IPC_PIPE_EP_ADDR           (2UL)
 #define CM55_IPC_PIPE_CLIENT_ID         (5UL)
 
-/* Combined Interrupt Mask */
-#define CY_IPC_CYPIPE_INTR_MASK         (CY_IPC_CYPIPE_CHAN_MASK_EP1 | CY_IPC_CYPIPE_CHAN_MASK_EP2)
 
 // Fix IPC commands for now to start and stop as 0x82 and 0x83, can be extended in the future as needed
 // ToDo: How can this be generic and not hardcoded?
