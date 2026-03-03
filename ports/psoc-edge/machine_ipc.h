@@ -31,27 +31,50 @@
 #include "cy_ipc_pipe.h"
 #include "ipc_communication.h"
 
-// Structure for client: Register sender clients using this structure
-typedef struct {
-    uint32_t client_id;
-    mp_obj_t cback_handler;  // Python callback to invoke when message received from CM55 in CM33-NS
-} ipc_client_t;
+/* IPC Pipe Endpoint-1 config */
+#define CY_IPC_CYPIPE_CHAN_MASK_EP1     CY_IPC_CH_MASK(CY_IPC_CHAN_CYPIPE_EP1)
+#define CY_IPC_CYPIPE_INTR_MASK_EP1     CY_IPC_INTR_MASK(CY_IPC_INTR_CYPIPE_EP1)
+#define CY_IPC_INTR_CYPIPE_PRIOR_EP1    (1UL)
+#define CY_IPC_INTR_CYPIPE_MUX_EP1      (CY_IPC0_INTR_MUX(CY_IPC_INTR_CYPIPE_EP1))
+#define CM33_IPC_PIPE_EP_ADDR           (1UL)
+#define CM33_IPC_PIPE_CLIENT_ID         (3UL) // Pre-defined
 
-// Array of sender client max of 8
-ipc_client_t sender_clients_arr[8];
+/* IPC Pipe Endpoint-2 config */
+#define CY_IPC_CYPIPE_CHAN_MASK_EP2     CY_IPC_CH_MASK(CY_IPC_CHAN_CYPIPE_EP2)
+#define CY_IPC_CYPIPE_INTR_MASK_EP2     CY_IPC_INTR_MASK(CY_IPC_INTR_CYPIPE_EP2)
+#define CY_IPC_INTR_CYPIPE_PRIOR_EP2    (1UL)
+#define CY_IPC_INTR_CYPIPE_MUX_EP2      (CY_IPC0_INTR_MUX(CY_IPC_INTR_CYPIPE_EP2))
+#define CM55_IPC_PIPE_EP_ADDR           (2UL)
+#define CM55_IPC_PIPE_CLIENT_ID         (5UL)
+
+/* Combined Interrupt Mask */
+#define CY_IPC_CYPIPE_INTR_MASK         (CY_IPC_CYPIPE_CHAN_MASK_EP1 | CY_IPC_CYPIPE_CHAN_MASK_EP2)
+
+// Fix IPC commands for now to start and stop as 0x82 and 0x83, can be extended in the future as needed
+// ToDo: How can this be generic and not hardcoded?
+#define IPC_CMD_START                   (0x82)
+#define IPC_CMD_STOP                    (0x83)
+
+/* Sentinel value meaning a slot in sender_clients_arr is free (not yet registered) */
+#define IPC_CLIENT_ID_UNREGISTERED      (0xFFU)
 
 typedef struct {
     uint8_t ep_sender_id;
     uint8_t ep_sender_addr;
-    ipc_client_t *sender_client; // Points to sender_clients_arr
+    uint8_t client_id; // ID provided by client during registration; IPC_CLIENT_ID_UNREGISTERED means slot is free
+    mp_obj_t cback_handler; // Python callback to invoke when message received from CM55 in CM33-NS, stored here for easy access during send operation to invoke callback when response received from CM55
 } ipc_sender_endpoint_t;
 
+// Array of sender client max of 8
+ipc_sender_endpoint_t sender_clients_arr[8];
+
 // DO NOT USE THIS FROM MPY SIDE TO SET UP
-typedef struct {
+/*typedef struct {
     uint8_t ep_receiver_id;
     uint8_t ep_receiver_addr;
-    ipc_client_t *receiver_client;
-} ipc_receiver_endpoint_t;
+    uint32_t client_id;
+    mp_obj_t cback_handler;
+} ipc_receiver_endpoint_t;*/
 
 // A singleton IPC instance should be created for each core and clients can register to this instance to send messages to the other core. For receiving messages, clients will register their callbacks to the endpoint structure which will be used by the IPC ISR to call the appropriate callback when message is received from the other core.
 typedef struct _machine_ipc_obj_t {
@@ -72,7 +95,9 @@ typedef struct
 
 
 bool is_cm55_enabled;
+extern const mp_obj_type_t ipc_sender_endpoint_type;
 extern const mp_obj_type_t machine_ipc_type;
+
 
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_MODIPC_H

@@ -41,38 +41,27 @@
 /*******************************************************************************
 * Macros
 *******************************************************************************/
-#define MICROPY_MAX_IPC_CH_INSTANCES    (8UL)
-#define MICROPY_MAX_IPC_ENDPOINTS       (5UL)
-#define CY_IPC_MAX_ENDPOINTS            (5UL) // Are fixed and pre-defined for platform based on hardware capabilities
-#define CY_IPC_CYPIPE_CLIENT_CNT        (8UL)
+#define IPC_MAX_CLIENTS_PER_EP      (8UL)
+#define IPC_MAX_ENDPOINTS           (5UL)
 #define CM55_APP_BOOT_ADDR          (CYMEM_CM33_0_m55_nvm_START + CYBSP_MCUBOOT_HEADER_SIZE)
 #define CM55_BOOT_WAIT_TIME_USEC    (10U)
 #define CM55_APP_DELAY_MS           (50U)
 
 #define CM33_APP_DELAY_MS           (50U)
 
-/* Core ID constants exposed to user */
-#define IPC_CORE_CM33               (0U)
-#define IPC_CORE_CM55               (1U)
-
-/* LED command constants exposed to user */
-#define IPC_CMD_LED_INIT            (0x92)
-#define IPC_CMD_LED_SET_ON          (0x93)
-#define IPC_CMD_LED_SET_OFF         (0x94)
+/* Core ID constants */
+#define CM33               (0U)
+#define CM55               (1U)
 
 /*******************************************************************************
 * Global Variables
 *******************************************************************************/
 static bool cm55_enabled = false;
 CY_SECTION_SHAREDMEM static ipc_msg_t ipc_msg_buffer;
-machine_ipc_obj_t *machine_ipc_obj[MICROPY_MAX_IPC_CH_INSTANCES] = {NULL};
-// static cy_stc_ipc_pipe_ep_t ipc_endpoints[CY_IPC_MAX_ENDPOINTS]; //ToDo: Should be inside the IPC object struct
-// static cy_ipc_pipe_callback_ptr_t ep2_callbacks[CY_IPC_CYPIPE_CLIENT_CNT]; //ToDo: Should be inside the IPC object struct
+machine_ipc_obj_t *machine_ipc_obj[IPC_MAX_CLIENTS_PER_EP] = {NULL};
 
-
-// Helper functions
 /*******************************************************************************
-* Dynamic IPC Configuration Structure Builder
+* IPC Helper functions
 *******************************************************************************/
 
 /**
@@ -86,7 +75,7 @@ static void get_endpoint_config_for_core(uint8_t core_id,
     uint32_t *ep_intr_mux,
     uint32_t *ep_intr_priority) {
     switch (core_id) {
-        case IPC_CORE_CM33:
+        case CM33:
             *ep_addr = CM33_IPC_PIPE_EP_ADDR;
             *ep_channel = CY_IPC_CHAN_CYPIPE_EP1;
             *ep_intr = CY_IPC_INTR_CYPIPE_EP1;
@@ -94,7 +83,7 @@ static void get_endpoint_config_for_core(uint8_t core_id,
             *ep_intr_priority = CY_IPC_INTR_CYPIPE_PRIOR_EP1;
             break;
 
-        case IPC_CORE_CM55:
+        case CM55:
             *ep_addr = CM55_IPC_PIPE_EP_ADDR;
             *ep_channel = CY_IPC_CHAN_CYPIPE_EP2;
             *ep_intr = CY_IPC_INTR_CYPIPE_EP2;
@@ -113,6 +102,37 @@ static void get_endpoint_config_for_core(uint8_t core_id,
     }
 }
 
+/**
+ * Get endpoint address for a given core ID
+ */
+static uint32_t get_ep_addr_for_core(uint8_t core_id) {
+    switch (core_id) {
+        case CM33:
+            return CM33_IPC_PIPE_EP_ADDR;
+        case CM55:
+            return CM55_IPC_PIPE_EP_ADDR;
+        default:
+            return 0;
+    }
+}
+
+/**
+ * Get channel for a given core ID
+ */
+static uint32_t get_channel_for_core(uint8_t core_id) {
+    switch (core_id) {
+        case CM33:
+            return CY_IPC_CHAN_CYPIPE_EP1;
+        case CM55:
+            return CY_IPC_CHAN_CYPIPE_EP2;
+        default:
+            return 0;
+    }
+}
+
+/**
+ * Build IPC pipe configuration structure
+ */
 static bool build_ipc_pipe_config(cy_stc_ipc_pipe_config_t *config_out,
     uint8_t src_core,
     uint8_t target_core,
@@ -120,7 +140,7 @@ static bool build_ipc_pipe_config(cy_stc_ipc_pipe_config_t *config_out,
     void (*isr_handler)(void)) {
 
     // Validate cores
-    if (src_core >= IPC_CORE_CM55 + 1 || target_core >= IPC_CORE_CM55 + 1) {
+    if (src_core >= CM55 + 1 || target_core >= CM55 + 1) {
         printf("Error: Invalid core IDs (src=%d, target=%d)\r\n", src_core, target_core);
         return false;
     }
@@ -140,8 +160,8 @@ static bool build_ipc_pipe_config(cy_stc_ipc_pipe_config_t *config_out,
     get_endpoint_config_for_core(target_core, &tgt_addr, &tgt_channel, &tgt_intr,
         &tgt_intr_mux, &tgt_intr_priority);
 
-    // Build configuration structure
-    // Endpoint 0: Source (receiver) endpoint
+    // Build configuration structure to match static config roles
+    // Endpoint 0: Source core (CM33 - receiver for messages from CM55)
     config_out->ep0ConfigData.ipcNotifierNumber = src_intr;
     config_out->ep0ConfigData.ipcNotifierPriority = src_intr_priority;
     config_out->ep0ConfigData.ipcNotifierMuxNumber = src_intr_mux;
@@ -150,7 +170,7 @@ static bool build_ipc_pipe_config(cy_stc_ipc_pipe_config_t *config_out,
     config_out->ep0ConfigData.epConfig.epIntr = src_intr;
     config_out->ep0ConfigData.epConfig.epIntrmask = CY_IPC_CYPIPE_INTR_MASK;
 
-    // Endpoint 1: Target (sender) endpoint
+    // Endpoint 1: Target core (CM55 - sender of messages to CM33)
     config_out->ep1ConfigData.ipcNotifierNumber = tgt_intr;
     config_out->ep1ConfigData.ipcNotifierPriority = tgt_intr_priority;
     config_out->ep1ConfigData.ipcNotifierMuxNumber = tgt_intr_mux;
@@ -160,107 +180,10 @@ static bool build_ipc_pipe_config(cy_stc_ipc_pipe_config_t *config_out,
     config_out->ep1ConfigData.epConfig.epIntrmask = CY_IPC_CYPIPE_INTR_MASK;
 
     // Common configuration
-    config_out->endpointClientsCount = CY_IPC_CYPIPE_CLIENT_CNT;
+    config_out->endpointClientsCount = IPC_MAX_CLIENTS_PER_EP;
     config_out->endpointsCallbacksArray = callbacks_array;
     config_out->userPipeIsrHandler = isr_handler;
 
-    return true;
-}
-
-/*******************************************************************************
-* CM33 Message Callback - receives messages from CM55
-*******************************************************************************/
-/*static uint32_t machine_ipc_obj_find_ch_index(uint8_t target_core, uint8_t client_id) {
-    uint32_t idx = 0;
-    for (idx = 0; idx < MICROPY_MAX_IPC_CH_INSTANCES; idx++) {
-        machine_ipc_obj_t *ipc = machine_ipc_obj[idx];
-        if (ipc != NULL) {
-            if (ipc->target_core == target_core && ipc->client_id == client_id) {
-                return idx;
-            }
-        }
-    }
-    return -1; // Not found - should not happen if called correctly
-}*/
-
-/*******************************************************************************
-* CM33 Message Callback - receives messages from CM55
-* This callback is invoked by the IPC pipe ISR when a message arrives
-*
-* @param msgData Pointer to the received message data
-*******************************************************************************/
-/*void cm33_msg_callback(uint32_t *msgData) {
-    if (msgData == NULL) {
-        return;
-    }
-
-    ipc_msg_t *ipc_recv_msg = (ipc_msg_t *)msgData;
-
-}*/
-
-void cm33_msg_callback(uint32_t *msg_data) {
-    // ipc_msg_t *ipc_recv_msg;
-
-    if (msg_data != NULL) {
-        /* Cast the message received to the IPC structure */
-        // ipc_recv_msg = (ipc_msg_t *) msg_data;
-
-        /* Extract the command to be processed in the main loop */
-        // msg_cmd = ipc_recv_msg->cmd;
-    }
-}
-
-
-
-/*******************************************************************************
-* IPC Helper Functions
-*******************************************************************************/
-
-/**
- * Register a client callback for receiving IPC messages
- *
- * @param client_id Client ID (0-7)
- * @param callback_handler Python callback function object
- * @param endpoint_addr Endpoint address to register with (e.g., CM33_IPC_PIPE_EP_ADDR)
- * @return true if registration successful, false otherwise
- */
-static bool ipc_register_client_callback(uint8_t client_id,
-    mp_obj_t callback_handler,
-    uint32_t endpoint_addr) {
-    // Validate client_id
-    if (client_id >= CY_IPC_CYPIPE_CLIENT_CNT) {
-        printf("[CM33] Error: Invalid client_id %d (max %ld)\r\n",
-            client_id, CY_IPC_CYPIPE_CLIENT_CNT - 1);
-        return false;
-    }
-
-    // Validate callback
-    if (callback_handler != mp_const_none && !mp_obj_is_callable(callback_handler)) {
-        printf("[CM33] Error: Callback is not callable\r\n");
-        return false;
-    }
-
-    // Store the Python callback in the global client array
-    sender_clients_arr[client_id].client_id = client_id;
-    sender_clients_arr[client_id].cback_handler = callback_handler;
-
-    printf("[CM33] Registering callback for client %d at endpoint 0x%08lX\r\n",
-        client_id, endpoint_addr);
-
-    // Register the C callback with IPC pipe framework
-    // The client_id parameter is the index in the callback array where the function pointer is saved
-    cy_en_ipc_pipe_status_t status = Cy_IPC_Pipe_RegisterCallback(
-        endpoint_addr,           // Endpoint address (CM33_IPC_PIPE_EP_ADDR)
-        &cm33_msg_callback,       // Callback function pointer
-        (uint32_t)client_id      // Client ID - index in callback array
-        );
-
-    if (status != CY_IPC_PIPE_SUCCESS) {
-        printf("[CM33] Error: Cy_IPC_Pipe_RegisterCallback failed with status %d\r\n", status);
-        return false;
-    }
-
-    printf("[CM33] Client %d callback registered successfully\r\n", client_id);
     return true;
 }
 
@@ -280,13 +203,10 @@ static bool ipc_send_message(uint32_t src_endpoint_addr,
     uint8_t cmd,
     uint32_t value) {
     // Validate client_id
-    if (target_client_id >= CY_IPC_CYPIPE_CLIENT_CNT) {
-        printf("[CM33] Error: Invalid target_client_id %d\r\n", target_client_id);
+    if (target_client_id >= IPC_MAX_CLIENTS_PER_EP) {
+        mp_printf(&mp_plat_print, "[CM33] Error: Invalid target_client_id %d\r\n", target_client_id);
         return false;
     }
-
-    printf("[CM33] Sending: client=%d, cmd=0x%02X, value=0x%08lX\r\n",
-        target_client_id, cmd, value);
 
     // Prepare message in shared memory buffer
     ipc_msg_buffer.client_id = target_client_id;
@@ -297,14 +217,14 @@ static bool ipc_send_message(uint32_t src_endpoint_addr,
     // Wait for channel to be free, then send
     cy_en_ipc_pipe_status_t status;
     uint32_t retry_count = 0;
-    const uint32_t MAX_RETRIES = 100000;  // Allow more retries
+    const uint32_t MAX_RETRIES = 100000;  // Allow retry to avoid intermittent failure
 
     do {
         status = Cy_IPC_Pipe_SendMessage(
-            src_endpoint_addr,
-            target_endpoint_addr,
+            target_endpoint_addr,    // toAddr   = destination (CM55)
+            src_endpoint_addr,       // fromAddr = source      (CM33)
             (void *)&ipc_msg_buffer,
-            NULL  // No release callback
+            NULL
             );
 
         if (status == CY_IPC_PIPE_SUCCESS) {
@@ -317,36 +237,16 @@ static bool ipc_send_message(uint32_t src_endpoint_addr,
             retry_count++;
         } else {
             // Other error - fail immediately
-            printf("[CM33] Error: Cy_IPC_Pipe_SendMessage failed with status %d\r\n", status);
+            mp_printf(&mp_plat_print, "[CM33] Error: Cy_IPC_Pipe_SendMessage failed with status %d\r\n", status);
             return false;
         }
     } while (retry_count < MAX_RETRIES);
 
     if (status != CY_IPC_PIPE_SUCCESS) {
-        printf("[CM33] Error: Channel busy after %lu retries, status %d\r\n", retry_count, status);
+        mp_printf(&mp_plat_print, "[CM33] Error: Channel busy after %lu retries, status %d\r\n", retry_count, status);
         return false;
     }
 
-    printf("[CM33] Message sent successfully\r\n");
-    return true;
-}
-
-/**
- * Unregister a client callback
- *
- * @param client_id Client ID to unregister (0-7)
- * @return true if successful, false otherwise
- */
-static bool ipc_unregister_client_callback(uint8_t client_id) {
-    if (client_id >= CY_IPC_CYPIPE_CLIENT_CNT) {
-        printf("[CM33] Error: Invalid client_id %d\r\n", client_id);
-        return false;
-    }
-
-    // Clear the callback
-    sender_clients_arr[client_id].cback_handler = mp_const_none;
-
-    printf("[CM33] Client %d callback unregistered\r\n", client_id);
     return true;
 }
 
@@ -354,41 +254,33 @@ static bool ipc_unregister_client_callback(uint8_t client_id) {
 * Setup Functions
 *******************************************************************************/
 
-/* Create an array of endpoint structures */
-static cy_stc_ipc_pipe_ep_t cm33_ipc_pipe_ep_array[CY_IPC_MAX_ENDPOINTS];
-
-/* CB Array for EP1 */
-static cy_ipc_pipe_callback_ptr_t ep1_cb_array[CY_IPC_CYPIPE_CLIENT_CNT];
-
-/* Allocate and initialize semaphores for the system operations. */
-CY_SECTION_SHAREDMEM
-static uint32_t ipc_sema_array[CY_IPC_SEMA_COUNT / CY_IPC_SEMA_PER_WORD];
-
-
 void cm33_ipc_pipe_isr(void) {
     Cy_IPC_Pipe_ExecuteCallback(CM33_IPC_PIPE_EP_ADDR);
 }
 
 /**
- * Initialize IPC pipe with dynamic configuration
+ * Initialize IPC pipe
  *
  * @param src_core Source core ID
  * @param target_core Target core ID
  * @return true if initialization successful, false otherwise
  */
-static bool ipc_pipe_init_dynamic(uint8_t src_core, uint8_t target_core) {
+static bool ipc_pipe_init(uint8_t src_core, uint8_t target_core) {
+    static cy_stc_ipc_pipe_ep_t cm33_ipc_pipe_ep_array[IPC_MAX_ENDPOINTS];
+    static cy_ipc_pipe_callback_ptr_t ep1_cb_array[IPC_MAX_CLIENTS_PER_EP];
+    CY_SECTION_SHAREDMEM static uint32_t ipc_sema_array[CY_IPC_SEMA_COUNT / CY_IPC_SEMA_PER_WORD];
 
     // Allocate configuration structure
     cy_stc_ipc_pipe_config_t pipe_config;
 
     // Build configuration dynamically
-    bool config_ok = build_ipc_pipe_config(&pipe_config,
+    bool config_set = build_ipc_pipe_config(&pipe_config,
         src_core,
         target_core,
         ep1_cb_array,
         &cm33_ipc_pipe_isr);
 
-    if (!config_ok) {
+    if (!config_set) {
         printf("Error: Failed to build IPC pipe configuration\r\n");
         return false;
     }
@@ -402,53 +294,12 @@ static bool ipc_pipe_init_dynamic(uint8_t src_core, uint8_t target_core) {
     // Initialize pipe with dynamic configuration
     Cy_IPC_Pipe_Init(&pipe_config);
 
-    printf("IPC pipe initialized successfully\r\n");
     return true;
-}
-
-void ipc_pipe_init(void) {
-    /* IPC pipe endpoint-1 and endpoint-2. CM33 <--> CM55 */
-    static const cy_stc_ipc_pipe_config_t cm33_ipc_pipe_config =
-    {
-        /* receiver endpoint CM33 */
-        {
-            .ipcNotifierNumber = CY_IPC_INTR_CYPIPE_EP1,
-            .ipcNotifierPriority = CY_IPC_INTR_CYPIPE_PRIOR_EP1,
-            .ipcNotifierMuxNumber = CY_IPC_INTR_CYPIPE_MUX_EP1,
-            .epAddress = CM33_IPC_PIPE_EP_ADDR,
-            {
-                .epChannel = CY_IPC_CHAN_CYPIPE_EP1,
-                .epIntr = CY_IPC_INTR_CYPIPE_EP1,
-                .epIntrmask = CY_IPC_CYPIPE_INTR_MASK
-            }
-        },
-        /* sender endpoint CM55 */
-        {
-            .ipcNotifierNumber = CY_IPC_INTR_CYPIPE_EP2,
-            .ipcNotifierPriority = CY_IPC_INTR_CYPIPE_PRIOR_EP2,
-            .ipcNotifierMuxNumber = CY_IPC_INTR_CYPIPE_MUX_EP2,
-            .epAddress = CM55_IPC_PIPE_EP_ADDR,
-            {
-                .epChannel = CY_IPC_CHAN_CYPIPE_EP2,
-                .epIntr = CY_IPC_INTR_CYPIPE_EP2,
-                .epIntrmask = CY_IPC_CYPIPE_INTR_MASK
-            }
-        },
-        .endpointClientsCount = CY_IPC_CYPIPE_CLIENT_CNT,
-        .endpointsCallbacksArray = ep1_cb_array,
-        .userPipeIsrHandler = &cm33_ipc_pipe_isr
-    };
-
-    Cy_IPC_Sema_Init(IPC0_SEMA_CH_NUM, CY_IPC_SEMA_COUNT, ipc_sema_array);
-
-    Cy_IPC_Pipe_Config(cm33_ipc_pipe_ep_array);
-
-    Cy_IPC_Pipe_Init(&cm33_ipc_pipe_config);
 }
 
 /********************************************************************************************************
 * MicroPython Constructor:
-*  IPC(name, src_core, target_core) - Create an IPC object with for a specific service.
+*  IPC(src_core, target_core) - Create an IPC object to function between 2 cores.
 *  Max of 5 IPC objects can be created (based on hardware capabilities) and each object can represent
 *  an endpoint/channel to communicate with the target core. The src_core and target_core
 *  parameters can be used to set up the endpoint based on the cores involved in communication. Currently,
@@ -459,14 +310,14 @@ void ipc_pipe_init(void) {
 static mp_obj_t machine_ipc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_src_core, ARG_target_core };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_src_core, MP_ARG_INT, {.u_int = IPC_CORE_CM33} },
-        { MP_QSTR_target_core, MP_ARG_INT, {.u_int = IPC_CORE_CM55} },
+        { MP_QSTR_src_core, MP_ARG_INT, {.u_int = CM33} },
+        { MP_QSTR_target_core, MP_ARG_INT, {.u_int = CM55} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     machine_ipc_obj_t *self = NULL;
-    for (uint8_t i = 0; i < MICROPY_MAX_IPC_ENDPOINTS; i++) {
+    for (uint8_t i = 0; i < IPC_MAX_ENDPOINTS; i++) {
         if (MP_STATE_PORT(machine_ipc_obj[i]) == NULL) {
             self = mp_obj_malloc(machine_ipc_obj_t, &machine_ipc_type);
             MP_STATE_PORT(machine_ipc_obj[i]) = self;
@@ -477,91 +328,141 @@ static mp_obj_t machine_ipc_make_new(const mp_obj_type_t *type, size_t n_args, s
         mp_raise_ValueError(MP_ERROR_TEXT("all available IPC instances are allocated"));
     }
     self->base.type = &machine_ipc_type;
-    // Check if sender is not None and Set all sender endpoint details
-    if (args[ARG_src_core].u_int != IPC_CORE_CM33) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid src_core value, only CM33 is supported as source core for now"));
+
+    // Initialise all client slots to unregistered sentinel so duplicate-check works
+    for (uint8_t i = 0; i < IPC_MAX_CLIENTS_PER_EP; i++) {
+        sender_clients_arr[i].client_id = IPC_CLIENT_ID_UNREGISTERED;
     }
 
-    self->src_core = args[ARG_src_core].u_int;
+    // Validate cores selected
+    if (args[ARG_src_core].u_int != CM33 || args[ARG_target_core].u_int != CM55) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid core values: Only CM33<->CM55 communication is supported"));
+    }
 
-    self->sender_endpoint = mp_obj_malloc(ipc_sender_endpoint_t, NULL);
+    // Store core information in the object for future reference (e.g., during endpoint registration)
+    self->src_core = args[ARG_src_core].u_int;
+    self->target_core = args[ARG_target_core].u_int;
+
+    // Initialize sender endpoint structure based on source and target cores. Each endpoint can have max of IPC_MAX_CLIENTS_PER_EP clients,
+    self->sender_endpoint = &sender_clients_arr[0];
     self->sender_endpoint->ep_sender_id = args[ARG_src_core].u_int;
     self->sender_endpoint->ep_sender_addr = CM33_IPC_PIPE_EP_ADDR;
-    // Point to NULL for now and later in register_client function allocate to point to sender_clients_arr[id]
-    self->sender_endpoint->sender_client = NULL;
 
-    if (args[ARG_target_core].u_int != IPC_CORE_CM55) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid target_core value, only CM55 is supported as target core for now"));
-    }
-
-    self->target_core = args[ARG_target_core].u_int;
     return MP_OBJ_FROM_PTR(self);
 }
 
-/*static mp_obj_t machine_ipc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_core };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_core, MP_ARG_INT, {.u_int = IPC_CORE_CM55} },
-    };
+/* Callback function to handle messages received from CM55 in CM33-NS. This will be registered with the IPC driver for the source endpoint (CM33) and will be called when a message is received from CM55.
+*  The callback will extract the message data and invoke the appropriate MPY callback based on the client_id in the message which indicates which client registered for this message.
+*  The client callback information is stored in the sender_clients_arr based on client_id during client registration.
+*/
+void cm33_msg_callback(uint32_t *msg_data) {
+    if (msg_data != NULL) {
+        /* Cast the message received to the IPC structure */
+        ipc_msg_t *ipc_recv_msg = (ipc_msg_t *)msg_data;
 
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        /* Extract the command to be processed in the main loop */
+        uint8_t msg_cmd = ipc_recv_msg->cmd;
+        uint32_t msg_value = ipc_recv_msg->value;
+        uint8_t client_id = ipc_recv_msg->client_id;
 
-    machine_ipc_obj_t *self = NULL;
-    for (uint8_t i = 0; i < MICROPY_MAX_IPC_CH_INSTANCES; i++) {
-        if (MP_STATE_PORT(machine_ipc_obj[i]) == NULL) {
-            self = mp_obj_malloc(machine_ipc_obj_t, &machine_ipc_type);
-            MP_STATE_PORT(machine_ipc_obj[i]) = self;
-            self->client_id = i;
-            break;
+        // Find the registered client callback based on client_id and invoke it with the message data
+        if (client_id < IPC_MAX_CLIENTS_PER_EP) {
+            mp_obj_t callback = sender_clients_arr[client_id].cback_handler;
+            if (callback != mp_const_none) {
+                // Create a tuple with the message data to pass to the callback
+                mp_obj_t callback_args[3];
+                callback_args[0] = mp_obj_new_int(msg_cmd);
+                callback_args[1] = mp_obj_new_int_from_uint(msg_value);
+                callback_args[2] = mp_obj_new_int(client_id);
+
+                // Call the Python callback with the message data
+                mp_call_function_n_kw(callback, 3, 0, callback_args);
+            } else {
+                mp_printf(&mp_plat_print, "[CM33] No callback registered for client_id %d\r\n", client_id);
+            }
+        } else {
+            mp_printf(&mp_plat_print, "[CM33] Invalid client_id %d in received message\r\n", client_id);
         }
     }
-    if (self == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("all available IPC instances are allocated"));
+}
+/********************************************************************************************************
+// IPC.register_client(client_id, callback, endpoint_id, endpoint_addr) - Register a client to receive messages from the other core. The client_id is an identifier for the client (0-7) and should be unique for each client. The callback is the Python function that will be called when a message is received for this client. The endpoint_id and endpoint_addr are used to register the callback with the IPC driver for the correct endpoint.
+* @param args[0] self - IPC object
+* @param args[1] client_id - Unique client identifier (0-7)
+* @param args[2] callback - Python function to call when message received for this client
+* @param args[3] endpoint_id - Endpoint ID to register with IPC driver (e.g., CM33_IPC_PIPE_EP_ADDR)
+* @param args[4] endpoint_addr - Endpoint address to register with IPC driver (e.g., CM33_IPC_PIPE_EP_ADDR)
+********************************************************************************************************/
+
+static mp_obj_t machine_ipc_register_client(size_t n_args, const mp_obj_t *args) {
+    uint8_t client_id = mp_obj_get_int(args[1]);
+    mp_obj_t callback_handler = args[2];
+    uint8_t endpoint_id = mp_obj_get_int(args[3]);
+    uint32_t endpoint_addr = mp_obj_get_int(args[4]);
+
+
+    // Validate client_id : Should be unique i.e no two clients can have same id and should be less than IPC_MAX_CLIENTS_PER_EP
+    if (client_id >= IPC_MAX_CLIENTS_PER_EP) {
+        mp_printf(&mp_plat_print, "Error: Invalid client_id %d (max %ld)\r\n",
+            client_id, IPC_MAX_CLIENTS_PER_EP - 1);
+        return mp_const_false;
     }
-    self->base.type = &machine_ipc_type;
 
-    self->target_core = args[ARG_core].u_int; // Should help fix the endpoint related structures based on the core selected. Currently only CM55 is supported so this is not being used but it is added with a future vision to support multiple cores and dynamic endpoint allocation based on core selection.
-    // Set endpoint addresses based on target_core selected and current core. Should there be a function to get current core? Let's hardcore now to CM33 for this use case
+    // Validate callback
+    if (callback_handler != mp_const_none && !mp_obj_is_callable(callback_handler)) {
+        mp_printf(&mp_plat_print, "Error: Callback is not callable\r\n");
+        return mp_const_false;
+    }
 
+    // Check if client_id is already registered (unregistered slots have IPC_CLIENT_ID_UNREGISTERED)
+    for (uint8_t i = 0; i < IPC_MAX_CLIENTS_PER_EP; i++) {
+        if (sender_clients_arr[i].client_id != IPC_CLIENT_ID_UNREGISTERED &&
+            sender_clients_arr[i].client_id == client_id) {
+            mp_printf(&mp_plat_print, "Error: client_id %d is already registered\r\n", client_id);
+            return mp_const_false;
+        }
+    }
 
-    self->is_initialized = false;
-    self->client_info = NULL; // No client information registered initially
+    // Set the client information in the global sender_clients_arr based on client_id which will be used during send operation to get the callback handler and other client information when message is received from CM55 in CM33-NS to invoke the correct callback based on client_id
+    sender_clients_arr[client_id].client_id = client_id;
+    sender_clients_arr[client_id].cback_handler = callback_handler;
+    sender_clients_arr[client_id].ep_sender_addr = endpoint_addr;
+    sender_clients_arr[client_id].ep_sender_id = endpoint_id;
 
-    return MP_OBJ_FROM_PTR(self);
-}*/
+    // Register the C callback with IPC pipe framework. The client_id parameter is the index in the callback array where the function pointer is saved
+    cy_en_ipc_pipe_status_t status = Cy_IPC_Pipe_RegisterCallback(
+        endpoint_addr,           // Endpoint address (CM33_IPC_PIPE_EP_ADDR)
+        &cm33_msg_callback,       // Callback function pointer
+        (uint32_t)client_id      // Client ID - index in callback array
+        );
+    if (status != CY_IPC_PIPE_SUCCESS) {
+        mp_printf(&mp_plat_print, "Error: Cy_IPC_Pipe_RegisterCallback failed with status %d\r\n", status);
+        return mp_const_false;
+    }
+
+    mp_printf(&mp_plat_print, "[CM33] -> Registered client with ID: %d successfully \r\n", client_id);
+
+    return mp_const_true;
+
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_ipc_register_client_obj, 5, 5, machine_ipc_register_client);
+
 
 /*******************************************************************************
 * IPC.init() - Initialize IPC communication
+* @param args[0] self - IPC object
 *******************************************************************************/
 static mp_obj_t machine_ipc_init(mp_obj_t self_in) {
     machine_ipc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(&mp_plat_print, "Initializing IPC pipe framework\r\n");
-
     // Initialize IPC pipe with dynamic configuration based on object's cores
-    bool init_ok = ipc_pipe_init_dynamic(self->src_core, self->target_core);
+    bool init_ok = ipc_pipe_init(self->src_core, self->target_core);
 
     if (!init_ok) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("IPC pipe initialization failed"));
     }
 
-
-    // Initialize IPC pipe
-    // ipc_pipe_init();
-
     Cy_SysLib_Delay(CM33_APP_DELAY_MS);
-
-    // Register callback for CM33 endpoint to receive messages from CM55
-    /*cy_en_ipc_pipe_status_t status = Cy_IPC_Pipe_RegisterCallback(
-        CM33_IPC_PIPE_EP_ADDR,
-        &cm33_msg_callback,
-        (uint32_t)CM33_IPC_PIPE_CLIENT_ID
-    );
-
-    if (status != CY_IPC_PIPE_SUCCESS) {
-        mp_raise_msg(&mp_type_RuntimeError,  MP_ERROR_TEXT("IPC callback registration failed"));
-    }*/
 
     mp_printf(&mp_plat_print, "IPC initialized successfully\r\n");
 
@@ -571,13 +472,16 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_ipc_init_obj, machine_ipc_init);
 
 /*******************************************************************************
 * IPC.enable_core(core_id) - Enable target core
+* @param args[0] self - IPC object
+* @param args[1] core_id - Core to enable (default: CM55)
 *******************************************************************************/
+// Not required as API to user? Call this from constructor or init?
 static mp_obj_t machine_ipc_enable_core(size_t n_args, const mp_obj_t *args) {
-    // Default to CM55 (IPC_CORE_CM55) if no argument provided
-    uint8_t core_id = (n_args > 1) ? mp_obj_get_int(args[1]) : IPC_CORE_CM55;
+    // Default to CM55 (CM55) if no argument provided
+    uint8_t core_id = (n_args > 1) ? mp_obj_get_int(args[1]) : CM55;
 
-    // Currently only CM55 (IPC_CORE_CM55) is supported
-    if (core_id == IPC_CORE_CM55) {
+    // Currently only CM55 (CM55) is supported
+    if (core_id == CM55) {
         if (cm55_enabled) {
             mp_printf(&mp_plat_print, "CM55 already enabled\r\n");
             return mp_const_true;
@@ -589,7 +493,7 @@ static mp_obj_t machine_ipc_enable_core(size_t n_args, const mp_obj_t *args) {
         mp_printf(&mp_plat_print, "Enabling CM55 core at boot address: 0x%08X\r\n", CM55_APP_BOOT_ADDR);
 
         return mp_const_true;
-    } else if (core_id == IPC_CORE_CM33) {
+    } else if (core_id == CM33) {
         mp_raise_ValueError(MP_ERROR_TEXT("Invalid operation: CM33 core is already active and cannot be re-enabled"));
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("Unsupported Core. Currently only CM55 is supported")); // ToDo: This should be generalised
@@ -605,23 +509,26 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_ipc_enable_core_obj, 1, 2, ma
 * @param args[0] self - IPC object
 * @param args[1] cmd - Command byte
 * @param args[2] value - Optional data value (default: 0)
-* @param args[3] client_id - Optional target client ID (default: 0)
+* @param args[3] client_id - Target client ID
 *******************************************************************************/
 static mp_obj_t machine_ipc_send(size_t n_args, const mp_obj_t *args) {
-    // machine_ipc_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    machine_ipc_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     // Parse arguments
     uint32_t cmd = mp_obj_get_int(args[1]);
     uint32_t value = (n_args > 2) ? mp_obj_get_int(args[2]) : 0;
-    uint8_t client_id = (n_args > 3) ? mp_obj_get_int(args[3]) : CM55_IPC_PIPE_CLIENT_ID;
+    uint8_t client_id = mp_obj_get_int(args[3]);
+
+    uint32_t src_ep_addr = self->sender_endpoint->ep_sender_addr;
+    uint32_t target_ep_addr = get_ep_addr_for_core(self->target_core);
 
     // Use helper function to send message
     bool success = ipc_send_message(
-        CM33_IPC_PIPE_EP_ADDR,       // Source endpoint
-        CM55_IPC_PIPE_EP_ADDR,       // Target endpoint (based on self->target_core)
-        client_id,                    // Target client
-        (uint8_t)cmd,                 // Command
-        value                         // Value
+        src_ep_addr,     // Source endpoint (from self)
+        target_ep_addr,  // Target endpoint (from self->target_core)
+        client_id,       // Target client
+        (uint8_t)cmd,    // Command
+        value            // Value
         );
 
     if (!success) {
@@ -633,96 +540,48 @@ static mp_obj_t machine_ipc_send(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_ipc_send_obj, 2, 4, machine_ipc_send);
 
 /*******************************************************************************
-* IPC.is_busy() - Check if channel is busy
+* IPC.is_busy() - Check if IPC is busy
+* @param args[0] self - IPC object
+* @param args[1] Optional core_id to check specific core's IPC status (default: target_core)
 *******************************************************************************/
-static mp_obj_t machine_ipc_is_busy(mp_obj_t self_in) {
-    bool locked = Cy_IPC_Drv_IsLockAcquired(Cy_IPC_Drv_GetIpcBaseAddress(CY_IPC_CHAN_CYPIPE_EP2));
+static mp_obj_t machine_ipc_is_busy(size_t n_args, const mp_obj_t *args) {
+    machine_ipc_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint8_t core_id = (n_args > 1) ? mp_obj_get_int(args[1]) : self->target_core;
+
+    uint32_t channel = get_channel_for_core(core_id);
+    if (channel == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid core ID"));
+    }
+    bool locked = Cy_IPC_Drv_IsLockAcquired(Cy_IPC_Drv_GetIpcBaseAddress(channel));
     return mp_obj_new_bool(locked);
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_ipc_is_busy_obj, machine_ipc_is_busy);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_ipc_is_busy_obj, 1, 2, machine_ipc_is_busy);
 
 /*******************************************************************************
-* IPC.irq(handler, client_id) - Register Python callback for received messages
-*
-* @param self_in IPC object
-* @param handler Python callback function or None to clear
-* @param client_id Optional client ID (default: 0)
-*******************************************************************************/
-static mp_obj_t machine_ipc_irq(size_t n_args, const mp_obj_t *args) {
-    mp_printf(&mp_plat_print, "IRQ\r\n");
-
-    // machine_ipc_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_t handler = args[1];
-    uint8_t client_id = (n_args > 2) ? mp_obj_get_int(args[2]) : CM33_IPC_PIPE_CLIENT_ID;
-
-    printf("[IRQ] client_id=%d\r\n", client_id);
-
-    // Validate handler
-    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("callback must be callable or None"));
-    }
-
-    printf("[IRQ] Handler validated\r\n");
-
-    bool success;
-
-    if (handler == mp_const_none) {
-        printf("[IRQ] Clearing callback\r\n");
-        // Unregister callback
-        success = ipc_unregister_client_callback(client_id);
-        if (!success) {
-            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Failed to unregister callback"));
-        }
-        printf("IPC callback cleared for client %d\r\n", client_id);
-    } else {
-        printf("[IRQ] Registering callback\r\n");
-        // Register callback using helper function
-        success = ipc_register_client_callback(
-            client_id,
-            handler,
-            CM33_IPC_PIPE_EP_ADDR
-            );
-
-        printf("[IRQ] Registration result=%d\r\n", success);
-
-        if (!success) {
-            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("IPC callback registration failed"));
-        }
-
-        printf("IPC callback registered for client %d\r\n", client_id);
-    }
-
-    printf("[IRQ] Returning\r\n");
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_ipc_irq_obj, 2, 3, machine_ipc_irq);
-
-/*******************************************************************************
-* Class Definition
+* IPC locals dictionary
 *******************************************************************************/
 static const mp_rom_map_elem_t machine_ipc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_ipc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_core), MP_ROM_PTR(&machine_ipc_enable_core_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_ipc_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_is_busy), MP_ROM_PTR(&machine_ipc_is_busy_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_ipc_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_register_client), MP_ROM_PTR(&machine_ipc_register_client_obj) },
 
-    // ToDo: API encapsulation for model fns - also similar to openamp?
+    // ToDo: API encapsulation for model fns - also similar to openamp Should be a wrapper on send()?
     // { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&machine_ipc_start_obj) },
     // { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&machine_ipc_stop_obj) },
 
     // Core ID constants
-    { MP_ROM_QSTR(MP_QSTR_CM33), MP_ROM_INT(IPC_CORE_CM33) },
-    { MP_ROM_QSTR(MP_QSTR_CM55), MP_ROM_INT(IPC_CORE_CM55) },
+    { MP_ROM_QSTR(MP_QSTR_CM33), MP_ROM_INT(CM33) },
+    { MP_ROM_QSTR(MP_QSTR_CM55), MP_ROM_INT(CM55) },
 
-    // LED command constants : #ToDo: Not needed once start stop enabled
-    { MP_ROM_QSTR(MP_QSTR_CMD_LED_INIT), MP_ROM_INT(IPC_CMD_LED_INIT) },
-    { MP_ROM_QSTR(MP_QSTR_CMD_LED_ON), MP_ROM_INT(IPC_CMD_LED_SET_ON) },
-    { MP_ROM_QSTR(MP_QSTR_CMD_LED_OFF), MP_ROM_INT(IPC_CMD_LED_SET_OFF) },
+    // Command constants
+    { MP_ROM_QSTR(MP_QSTR_CMD_START), MP_ROM_INT(IPC_CMD_START) },
+    { MP_ROM_QSTR(MP_QSTR_CMD_STOP), MP_ROM_INT(IPC_CMD_STOP) },
 };
 static MP_DEFINE_CONST_DICT(machine_ipc_locals_dict, machine_ipc_locals_dict_table);
 
-MP_REGISTER_ROOT_POINTER(struct _machine_ipc_obj_t *machine_ipc_obj[MICROPY_MAX_IPC_CH_INSTANCES]);
+MP_REGISTER_ROOT_POINTER(struct _machine_ipc_obj_t *machine_ipc_obj[IPC_MAX_CLIENTS_PER_EP]);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_ipc_type,

@@ -44,8 +44,6 @@ INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -I$(MTB_LIBS_DIR)/shared/include
 
-INC += -I$(MTB_LIBS_DIR)/shared/include
-
 # TODO: Review this flags. Are they all needed?
 CFLAGS_CORTEX_M33 = -mthumb -mcpu=cortex-m33 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion -Wno-error=float-conversion
 
@@ -130,8 +128,6 @@ MOD_SRC_C += \
 	machine_rtc.c \
 	modpsocedge.c \
 	machine_ipc.c \
-	\
-	modpsocedge.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
