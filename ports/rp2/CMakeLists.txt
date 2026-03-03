@@ -161,6 +161,7 @@ set(MICROPY_SOURCE_PORT
     machine_rtc.c
     machine_spi.c
     machine_timer.c
+    machine_wiznet_pio_spi.c
     main.c
     modrp2.c
     mphalport.c
@@ -168,6 +169,7 @@ set(MICROPY_SOURCE_PORT
     mpthreadport.c
     mutex_extra.c
     pendsv.c
+    wiznet_pio_spi.c
     rp2_flash.c
     rp2_pio.c
     rp2_psram.c
@@ -193,6 +195,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_PORT_DIR}/machine_timer.c
     ${MICROPY_PORT_DIR}/machine_uart.c
     ${MICROPY_PORT_DIR}/machine_wdt.c
+    ${MICROPY_PORT_DIR}/machine_wiznet_pio_spi.c
     ${MICROPY_PORT_DIR}/modrp2.c
     ${MICROPY_PORT_DIR}/rp2_flash.c
     ${MICROPY_PORT_DIR}/rp2_pio.c
@@ -474,6 +477,60 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
+    )
+endif()
+
+
+if (MICROPY_PY_NETWORK_WIZNET6K)
+    list(APPEND GIT_SUBMODULES lib/wiznet6k)
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_DIR}/lib/wiznet6k/README.md)
+        message(FATAL_ERROR " wiznet6k not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    endif()
+
+    if(NOT DEFINED MICROPY_WIZNET_PIO)
+        set(MICROPY_WIZNET_PIO 0)
+    endif()
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_NETWORK_WIZNET6K=1
+        _WIZCHIP_=${MICROPY_PY_NETWORK_WIZNET6K}
+        WIZCHIP_PREFIXED_EXPORTS=0
+        MICROPY_WIZNET_PIO=${MICROPY_WIZNET_PIO}
+        MICROPY_PY_WIZNET6K_QSPI_MODE=${MICROPY_PY_WIZNET6K_QSPI_MODE}
+        WIZCHIP_YIELD=mpy_wiznet_yield
+    )
+
+    if(MICROPY_PY_NETWORK_WIZNET6K EQUAL W6300)
+        if(NOT DEFINED MICROPY_WIZNET_PIO)
+                set(MICROPY_WIZNET_PIO 1)
+        endif()
+    endif()
+
+    if (MICROPY_PY_LWIP)
+        target_compile_definitions(${MICROPY_TARGET} PRIVATE
+            # When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
+            WIZCHIP_USE_MAX_BUFFER=1
+        )
+    endif()
+
+
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_DIR}/lib/wiznet6k/
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/
+    )
+    pico_generate_pio_header(${MICROPY_TARGET} ${MICROPY_PORT_DIR}/wiznet_pio_spi.pio)
+
+
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/W5100/w5100.c
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/W5100S/w5100s.c
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/W5500/w5500.c
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/W6100/w6100.c
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/W6300/w6300.c
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/socket.c
+        ${MICROPY_DIR}/lib/wiznet6k/Ethernet/wizchip_conf.c
+        ${MICROPY_DIR}/lib/wiznet6k/Internet/DNS/dns.c
+        ${MICROPY_DIR}/lib/wiznet6k/Internet/DHCP/dhcp.c
     )
 endif()
 
