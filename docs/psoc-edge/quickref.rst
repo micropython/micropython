@@ -280,3 +280,170 @@ Only transaction-level events are supported (soft IRQ only):
 
     - ``I2CTarget.IRQ_END_READ``: Triggered when master completes reading from slave
     - ``I2CTarget.IRQ_END_WRITE``: Triggered when master completes writing to slave
+
+Inter-Processor Communication (IPC)
+-------------------------------------
+
+The ``IPC`` class provides message-passing between the two cores using the
+hardware IPC pipe peripheral. This is a PSOC™ Edge-specific module — it is not part of
+the standard MicroPython ``machine`` API. Currently, for this port, IPC is supported to enable communication from the CM33 core to the CM55 core.
+.. note::
+
+    IPC is only available on builds compiled with the ``MULTI_CORE`` flag. The module is
+    not present on single-core firmware images. By default it is enabled for this port.
+
+.. note::
+
+    Only CM33 → CM55 communication is currently supported. The CM33 core always acts as
+    the initiating side; the CM55 firmware must be built and deployed separately.
+
+The constructor
+^^^^^^^^^^^^^^^
+
+::
+
+    from machine import IPC
+
+    ipc = IPC(src_core=IPC.CM33, target_core=IPC.CM55)
+
+Constructor arguments:
+
+    - ``src_core``: Source core ID. Currently only ``IPC.CM33`` (``0``) is supported.
+      Default is ``IPC.CM33``.
+    - ``target_core``: Destination core ID. Currently only ``IPC.CM55`` (``1``) is supported.
+      Default is ``IPC.CM55``.
+
+Up to 5 IPC object instances can be created and this is enforced by the constructor. Each instance can be configured with different source and target cores, but currently only CM33 → CM55 communication is supported regardless of the constructor arguments.
+
+Core ID and command constants
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following class-level constants are available on every ``IPC`` object:
+
+    - ``IPC.CM33``: Core ID for the CM33 core (``0``).
+    - ``IPC.CM55``: Core ID for the CM55 core (``1``).
+    - ``IPC.CMD_START``: Pre-defined start command (``0x82``).
+    - ``IPC.CMD_STOP``: Pre-defined stop command (``0x83``).
+
+Methods
+^^^^^^^
+
+.. method:: IPC.init()
+
+    Initialise the IPC pipe hardware. Must be called once after construction and before
+    any other IPC operation::
+
+        ipc.init()
+
+.. method:: IPC.register_client(client_id, callback, endpoint_id, endpoint_addr)
+
+    Register a client on the source endpoint so that incoming messages addressed
+    to ``client_id`` invoke ``callback``.
+
+        - ``client_id``: Unique client identifier (``0``–``7``). Each registered client
+          must have a unique ID.
+        - ``callback``: A callable invoked as ``callback(cmd, value, client_id)`` when a
+          message arrives for this client. The callback parameters are:
+            - ``cmd``: Command byte received from the target core.
+            - ``value``: 32-bit value received from the target core.
+            - ``client_id``: The client ID that the message was sent to (same as the
+              ``client_id`` argument passed to this method).
+
+        - ``endpoint_id``: Endpoint index for source core.
+        - ``endpoint_addr``: Endpoint address for the source core.
+
+    Returns ``True`` on success, ``False`` otherwise.
+
+    Maximum of 8 clients can be registered per endpoint. This is a PSOC™ Edge-specific limit.
+
+    Example — registering two independent services::
+
+        def svc1_cb(cmd, val, cid):
+            print("Service1 received cmd=0x{:02X}".format(cmd))
+
+        def svc2_cb(cmd, val, cid):
+            print("Service2 received cmd=0x{:02X}".format(cmd))
+
+        ipc.register_client(3, svc1_cb, 1, 1)   # Service 1
+        ipc.register_client(4, svc2_cb, 1, 1)   # Service 2
+
+.. method:: IPC.enable_core(core_id=IPC.CM55)
+
+    Boot the target core and wait for it to start. Currently only ``IPC.CM55`` is
+    supported.
+
+        - ``core_id``: The core to enable. Default is ``IPC.CM55``.
+
+    Calling this when the CM55 is already running prints a notice and returns immediately.
+    Allow a short delay after this call for CM55 initialisation
+    to complete before sending messages::
+
+        ipc.enable_core(IPC.CM55)
+        time.sleep(1)   # Wait for CM55 firmware to initialise
+
+.. method:: IPC.send(cmd, value=0, client_id)
+
+    Send a message to a client on the target core.
+
+        - ``cmd``: Command byte. Use ``IPC.CMD_START``, ``IPC.CMD_STOP``, or any
+          application-defined value.
+        - ``value``: Optional 32-bit data payload. Default is ``0``.
+        - ``client_id``: Client ID on the target core.
+
+    Raises ``OSError`` if the send fails after the maximum number of retries
+
+        ipc.send(IPC.CMD_START, 0, 5)   # Send CMD_START to CM55 client 5
+        ipc.send(IPC.CMD_STOP,  0, 6)   # Send CMD_STOP  to CM55 client 6
+
+.. method:: IPC.is_busy([core_id])
+
+    Check whether the IPC channel for the given core is currently locked.
+
+        - ``core_id``: ``IPC.CM33`` or ``IPC.CM55``
+
+    Returns ``True`` if the channel is busy, ``False`` otherwise::
+
+        if not ipc.is_busy():
+            ipc.send(IPC.CMD_START, 0, 5)
+
+        # Check a specific core explicitly
+        if ipc.is_busy(IPC.CM55):
+            print("CM33 channel is locked")
+
+Complete example
+^^^^^^^^^^^^^^^^
+
+The following example demonstrates two independent services sharing a single IPC endpoint,
+with each service using its own client IDs on both the CM33 and CM55 sides::
+
+    import time
+    from machine import IPC
+
+    ipc = IPC(src_core=IPC.CM33, target_core=IPC.CM55)
+    ipc.init()
+
+    # Per-service receive state
+    svc1 = {"received": False, "cmd": None}
+    svc2 = {"received": False, "cmd": None}
+
+    def svc1_cb(cmd, val, cid):
+        svc1["received"] = True
+        svc1["cmd"] = cmd
+
+    def svc2_cb(cmd, val, cid):
+        svc2["received"] = True
+        svc2["cmd"] = cmd
+
+    # Register both services on the CM33 endpoint (endpoint_id=1, endpoint_addr=1)
+    ipc.register_client(3, svc1_cb, 1, 1)   # Service 1 -- CM33 client_id=3
+    ipc.register_client(4, svc2_cb, 1, 1)   # Service 2 -- CM33 client_id=4
+
+    # Boot CM55 and wait for it to initialise
+    ipc.enable_core(IPC.CM55)
+    time.sleep(1)
+
+    # Send CMD_START to CM55 Service 1 (client_id=5); echo comes back to CM33 client_id=3
+    ipc.send(IPC.CMD_START, 0, 5)
+
+    # Send CMD_STOP to CM55 Service 2 (client_id=6); echo comes back to CM33 client_id=4
+    ipc.send(IPC.CMD_STOP, 0, 6)

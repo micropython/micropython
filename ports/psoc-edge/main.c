@@ -47,7 +47,6 @@
 
 // port-specific includes
 #include "mplogger.h"
-#include "ipc_communication.h"
 
 typedef enum {
     BOOT_MODE_NORMAL,

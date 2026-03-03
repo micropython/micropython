@@ -1,13 +1,14 @@
-Initializing IPC pipe framework
-IPC pipe initialized successfully
 IPC initialized successfully
-IPC initialized successfully
-IRQ
-[IRQ] client_id=1
-[IRQ] Handler validated
-[IRQ] Registering callback
-[IRQ] Registration result=1
-IPC callback registered for client 1
-[IRQ] Returning
-IRQ registered successfully
-Enabling core: 1
+[CM33] -> Registered client with ID: 3 successfully 
+Service1 registered: True
+[CM33] -> Registered client with ID: 4 successfully 
+Service2 registered: True
+
+
+Enabling CM55 core at boot address: 0x60580400
+CM55 enabled successfully 
+
+Sent cmd=0x82 to CM55 client_id=5
+PASS: Service1 CMD_START received; cmd=0x82
+Sent cmd=0x83 to CM55 client_id=6
+PASS: Service2 CMD_STOP received; cmd=0x83
