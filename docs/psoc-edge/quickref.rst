@@ -344,10 +344,10 @@ Methods
           must have a unique ID.
         - ``callback``: A callable invoked as ``callback(cmd, value, client_id)`` when a
           message arrives for this client. The callback parameters are:
-            - ``cmd``: Command byte received from the target core.
-            - ``value``: 32-bit value received from the target core.
-            - ``client_id``: The client ID that the message was sent to (same as the
-              ``client_id`` argument passed to this method).
+          
+        1. ``cmd``: Command byte received from the target core.
+        2. ``value``: 32-bit value received from the target core.
+        3. ``client_id``: The client ID that the message was sent to (same as the ``client_id`` argument passed to this method).
 
         - ``endpoint_id``: Endpoint index for source core.
         - ``endpoint_addr``: Endpoint address for the source core.
