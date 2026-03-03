@@ -388,7 +388,7 @@ hal/resethandler_MIMXRT10xx.S: $(GEN_FLEXRAM_CONFIG_SRC)
 # =============================================================================
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX) $(GEN_PINS_SRC)
 
 # =============================================================================
 # Compiler Flags
@@ -506,6 +506,7 @@ MPY_CROSS_FLAGS += -march=armv7m
 # =============================================================================
 
 LDFLAGS += \
+	-nostdlib \
 	--cref \
 	--gc-sections \
 	--print-memory-usage \
@@ -539,6 +540,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
