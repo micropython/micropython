@@ -2,6 +2,7 @@
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
 from . import core
+from .funcs import wait_for_ms
 
 
 class Stream:
@@ -9,6 +10,7 @@ class Stream:
         self.s = s
         self.e = e
         self.out_buf = b""
+        self._server = False
 
     def get_extra_info(self, v):
         return self.e[v]
@@ -17,7 +19,15 @@ class Stream:
         pass
 
     async def wait_closed(self):
-        # TODO yield?
+        while True and self._server:
+            try:
+                # this makes sure there is no pending data in the socket
+                # to avoid ECONNRESET at client side.
+                if not await wait_for_ms(self.read(), 10):
+                    break
+            except Exception:  # ECONNRESET, TimeoutError
+                break
+
         self.s.close()
 
     # async
@@ -171,6 +181,7 @@ class Server:
                     continue
             s2.setblocking(False)
             s2s = Stream(s2, {"peername": addr})
+            s2s._server = True
             core.create_task(cb(s2s, s2s))
 
 
