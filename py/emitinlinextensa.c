@@ -37,6 +37,15 @@
 
 #include "py/persistentcode.h"
 
+#if MICROPY_DYNAMIC_COMPILER
+// Make sure all instructions are available to `mpy-cross`.
+#define XTENSA_MIN_CORE_TARGET 9999
+#elif MICROPY_EMIT_INLINE_XTENSA_TARGET > 0
+#define XTENSA_MIN_CORE_TARGET (MICROPY_EMIT_INLINE_XTENSA_TARGET)
+#else
+#define XTENSA_MIN_CORE_TARGET (MPY_XTENSA_LX_CORE)
+#endif
+
 static inline bool emit_windowed_code() {
     #if MICROPY_DYNAMIC_COMPILER
     return mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSAWIN;
@@ -44,6 +53,27 @@ static inline bool emit_windowed_code() {
     return true;
     #else
     return false;
+    #endif
+}
+
+#define LX3 (0)
+#define LX4 (1)
+#define LX5 (2)
+#define LX6 (3)
+#define LX7 (4)
+#define LX8 (5)
+
+static inline int minimum_allowed_lx_core_version(void) {
+    #if MICROPY_DYNAMIC_COMPILER
+    if (mp_dynamic_compiler.backend_options != NULL) {
+        return ((asm_xtensa_backend_options_t *)mp_dynamic_compiler.backend_options)->core_version;
+    } else {
+        // Be compatible with Espressif targets at least.
+        return mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSAWIN ? LX6 : LX3;
+    }
+    #else
+    assert(XTENSA_MIN_CORE_TARGET >= 3 && XTENSA_MIN_CORE_TARGET <= 8 && "Invalid Xtensa LX core version");
+    return XTENSA_MIN_CORE_TARGET - 2;
     #endif
 }
 
@@ -202,74 +232,134 @@ static const qstr_short_t BRANCH_OPCODE_NAMES[] = {
 #define RRI8   (1)
 #define RRRN   (2)
 
+// Some of the opcode discriminants are not entirely correct, on purpose.
+// The Xtensa HAL header files provide a lot of definitions indicating
+// available CPU features, going deeper than it's needed for this.
+//
+// As a compromise, for "small" feature flags that cover features that are
+// not found in the ESP8266 core (eg. XCHAL_HAVE_MINMAX, XCHAL_HAVE_LOOPS,
+// etc.), it is assumed that any core version more recent than LX3 already has
+// all of those small bits in.  This should help in reducing keep complexity
+// and footprint of a feature that is not even enabled by default on certain
+// ports/boards.
+
+// Windowed opcodes marker
+#define _ (0)
+#define W (1)
+
 static const struct opcode_entry_t {
     qstr_short_t name;
     uint16_t operands : 2;
     uint16_t op2 : 4;
     uint16_t op1 : 4;
     uint16_t op0 : 4;
-    // 2 bits available here
+    uint16_t windowed : 1;
+    // 1 bit available here
     uint32_t r : 6;
     uint32_t s : 6;
     uint32_t t : 6;
     uint32_t shift : 3;
     uint32_t kind : 2;
-    // 9 bits available here
+    uint32_t min_core : 3;
+    // 6 bits available here
 } OPCODE_TABLE[] = {
-    { MP_QSTR_abs_,   2,  6, 0, 0, RRR_R0, 1,      RRR_R1, 0, RRR  },
-    { MP_QSTR_add,    3,  8, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_add_n,  3,  0, 0, 10, RRR_R0, RRR_R1, RRR_R2, 0, RRRN },
-    { MP_QSTR_addi,   3,  0, 0, 2, 12,     RRR_R1, RRR_R0, 0, RRI8 },
-    { MP_QSTR_addx2,  3,  9, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_addx4,  3, 10, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_addx8,  3, 11, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_and_,   3,  1, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_callx0, 1,  0, 0, 0, 0,      RRR_R0, 12,     0, RRR  },
-    { MP_QSTR_jx,     1,  0, 0, 0, 0,      RRR_R0, 10,     0, RRR  },
-    { MP_QSTR_l16si,  3,  0, 0, 2, 9,      RRR_R1, RRR_R0, 3, RRI8 },
-    { MP_QSTR_l16ui,  3,  0, 0, 2, 1,      RRR_R1, RRR_R0, 3, RRI8 },
-    { MP_QSTR_l32i,   3,  0, 0, 2, 2,      RRR_R1, RRR_R0, 5, RRI8 },
-    { MP_QSTR_l8ui,   3,  0, 0, 2, 0,      RRR_R1, RRR_R0, 1, RRI8 },
-    { MP_QSTR_mov,    2,  0, 0, 13, 0,      RRR_R1, RRR_R0, 0, RRRN },
-    { MP_QSTR_mov_n,  2,  0, 0, 13, 0,      RRR_R1, RRR_R0, 0, RRRN },
-    { MP_QSTR_mull,   3,  8, 2, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_neg,    2,  6, 0, 0, RRR_R0, 0,      RRR_R1, 0, RRR  },
-    { MP_QSTR_nop,    0,  0, 0, 0, 2,      0,      15,     0, RRR  },
-    { MP_QSTR_nop_n,  0,  0, 0, 13, 15,     0,      3,      0, RRRN },
-    { MP_QSTR_nsa,    2,  4, 0, 0, 14,     RRR_R1, RRR_R0, 0, RRR  },
-    { MP_QSTR_nsau,   2,  4, 0, 0, 15,     RRR_R1, RRR_R0, 0, RRR  },
-    { MP_QSTR_or_,    3,  2, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_ret,    0,  0, 0, 13, 15,     0,      0,      0, RRRN },
-    { MP_QSTR_ret_n,  0,  0, 0, 13, 15,     0,      0,      0, RRRN },
-    { MP_QSTR_s16i,   3,  0, 0, 2, 5,      RRR_R1, RRR_R0, 3, RRI8 },
-    { MP_QSTR_s32i,   3,  0, 0, 2, 6,      RRR_R1, RRR_R0, 5, RRI8 },
-    { MP_QSTR_s8i,    3,  0, 0, 2, 4,      RRR_R1, RRR_R0, 1, RRI8 },
-    { MP_QSTR_sll,    2, 10, 1, 0, RRR_R0, RRR_R1, 0,      0, RRR  },
-    { MP_QSTR_sra,    2, 11, 1, 0, RRR_R0, 0,      RRR_R1, 0, RRR  },
-    { MP_QSTR_src,    3,  8, 1, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_srl,    2,  9, 1, 0, RRR_R0, 0,      RRR_R1, 0, RRR  },
-    { MP_QSTR_ssa8b,  1,  4, 0, 0, 3,      RRR_R0, 0,      0, RRR  },
-    { MP_QSTR_ssa8l,  1,  4, 0, 0, 2,      RRR_R0, 0,      0, RRR  },
-    { MP_QSTR_ssl,    1,  4, 0, 0, 1,      RRR_R0, 0,      0, RRR  },
-    { MP_QSTR_ssr,    1,  4, 0, 0, 0,      RRR_R0, 0,      0, RRR  },
-    { MP_QSTR_sub,    3, 12, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_subx2,  3, 13, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_subx4,  3, 14, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_subx8,  3, 15, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
-    { MP_QSTR_xor,    3,  3, 0, 0, RRR_R0, RRR_R1, RRR_R2, 0, RRR  },
+    { MP_QSTR_abs_,    2,  6, 0,  0, _, RRR_R0,     1,  RRR_R1, 0, RRR,  LX3 },
+    { MP_QSTR_add,     3,  8, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_add_n,   3,  0, 0, 10, _, RRR_R0, RRR_R1, RRR_R2, 0, RRRN, LX3 },
+    { MP_QSTR_addi,    3,  0, 0,  2, _,     12, RRR_R1, RRR_R0, 0, RRI8, LX3 },
+    { MP_QSTR_addx2,   3,  9, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_addx4,   3, 10, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_addx8,   3, 11, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_and_,    3,  1, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_callx0,  1,  0, 0,  0, _,      0, RRR_R0,     12, 0, RRR,  LX3 },
+    #if XTENSA_MIN_CORE_TARGET >= 4
+    { MP_QSTR_callx4,  1,  0, 0,  0, W,      0, RRR_R0,     13, 0, RRR,  LX4 },
+    { MP_QSTR_callx8,  1,  0, 0,  0, W,      0, RRR_R0,     14, 0, RRR,  LX4 },
+    { MP_QSTR_callx12, 1,  0, 0,  0, W,      0, RRR_R0,     15, 0, RRR,  LX4 },
+    #endif
+    { MP_QSTR_jx,      1,  0, 0,  0, _,      0, RRR_R0,     10, 0, RRR,  LX3 },
+    { MP_QSTR_l16si,   3,  0, 0,  2, _,      9, RRR_R1, RRR_R0, 3, RRI8, LX3 },
+    { MP_QSTR_l16ui,   3,  0, 0,  2, _,      1, RRR_R1, RRR_R0, 3, RRI8, LX3 },
+    { MP_QSTR_l32i,    3,  0, 0,  2, _,      2, RRR_R1, RRR_R0, 5, RRI8, LX3 },
+    { MP_QSTR_l8ui,    3,  0, 0,  2, _,      0, RRR_R1, RRR_R0, 1, RRI8, LX3 },
+    #if XTENSA_MIN_CORE_TARGET >= 4
+    { MP_QSTR_max_,    3,  6, 3,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    { MP_QSTR_maxu,    3,  7, 3,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    { MP_QSTR_min_,    3,  4, 3,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    { MP_QSTR_minu,    3,  6, 3,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    #endif
+    { MP_QSTR_mov,     2,  0, 0, 13, _,      0, RRR_R1, RRR_R0, 0, RRRN, LX3 },
+    { MP_QSTR_mov_n,   2,  0, 0, 13, _,      0, RRR_R1, RRR_R0, 0, RRRN, LX3 },
+    { MP_QSTR_mull,    3,  8, 2,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_neg,     2,  6, 0,  0, _, RRR_R0,     0,  RRR_R1, 0, RRR,  LX3 },
+    { MP_QSTR_nop,     0,  0, 0,  0, _,      2,     0,      15, 0, RRR,  LX3 },
+    { MP_QSTR_nop_n,   0,  0, 0, 13, _,     15,     0,       3, 0, RRRN, LX3 },
+    { MP_QSTR_nsa,     2,  4, 0,  0, _,     14, RRR_R1, RRR_R0, 0, RRR,  LX3 },
+    { MP_QSTR_nsau,    2,  4, 0,  0, _,     15, RRR_R1, RRR_R0, 0, RRR,  LX3 },
+    { MP_QSTR_or_,     3,  2, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    #if XTENSA_MIN_CORE_TARGET >= 4
+    { MP_QSTR_quos,    3, 13, 2,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    { MP_QSTR_quou,    3, 12, 2,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    { MP_QSTR_rems,    3, 15, 2,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    { MP_QSTR_remu,    3, 14, 2,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX4 },
+    #endif
+    { MP_QSTR_ret,     0,  0, 0, 13, _,     15,     0,       0, 0, RRRN, LX3 },
+    { MP_QSTR_ret_n,   0,  0, 0, 13, _,     15,     0,       0, 0, RRRN, LX3 },
+    #if XTENSA_MIN_CORE_TARGET >= 4
+    { MP_QSTR_retw,    0,  0, 1, 13, W,     15,     0,       0, 0, RRRN, LX4 },
+    { MP_QSTR_retw_n,  0,  0, 1, 13, W,     15,     0,       0, 0, RRRN, LX4 },
+    #endif
+    { MP_QSTR_s16i,    3,  0, 0,  2, _,      5, RRR_R1, RRR_R0, 3, RRI8, LX3 },
+    { MP_QSTR_s32i,    3,  0, 0,  2, _,      6, RRR_R1, RRR_R0, 5, RRI8, LX3 },
+    { MP_QSTR_s8i,     3,  0, 0,  2, _,      4, RRR_R1, RRR_R0, 1, RRI8, LX3 },
+    #if XTENSA_MIN_CORE_TARGET >= 6
+    { MP_QSTR_salt,    3,  7, 2,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX7 },
+    { MP_QSTR_saltu,   3,  6, 2,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX7 },
+    #endif
+    { MP_QSTR_sll,     2, 10, 1,  0, _, RRR_R0, RRR_R1,      0, 0, RRR,  LX3 },
+    { MP_QSTR_sra,     2, 11, 1,  0, _, RRR_R0,      0, RRR_R1, 0, RRR,  LX3 },
+    { MP_QSTR_src,     3,  8, 1,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_srl,     2,  9, 1,  0, _, RRR_R0,      0, RRR_R1, 0, RRR,  LX3 },
+    { MP_QSTR_ssa8b,   1,  4, 0,  0, _,      3, RRR_R0,      0, 0, RRR,  LX3 },
+    { MP_QSTR_ssa8l,   1,  4, 0,  0, _,      2, RRR_R0,      0, 0, RRR,  LX3 },
+    { MP_QSTR_ssl,     1,  4, 0,  0, _,      1, RRR_R0,      0, 0, RRR,  LX3 },
+    { MP_QSTR_ssr,     1,  4, 0,  0, _,      0, RRR_R0,      0, 0, RRR,  LX3 },
+    { MP_QSTR_sub,     3, 12, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_subx2,   3, 13, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_subx4,   3, 14, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_subx8,   3, 15, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
+    { MP_QSTR_xor,     3,  3, 0,  0, _, RRR_R0, RRR_R1, RRR_R2, 0, RRR,  LX3 },
     #if MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
-    { MP_QSTR_dsync,  0,  0, 0, 0, 2,      0,      3,      0, RRR  },
-    { MP_QSTR_esync,  0,  0, 0, 0, 2,      0,      2,      0, RRR  },
-    { MP_QSTR_extw,   0,  0, 0, 0, 2,      0,      13,     0, RRR  },
-    { MP_QSTR_ill,    0,  0, 0, 0, 2,      0,      0,      0, RRR  },
-    { MP_QSTR_ill_n,  0,  0, 0, 13, 15,     0,      6,      0, RRRN },
-    { MP_QSTR_isync,  0,  0, 0, 0, 2,      0,      0,      0, RRR  },
-    { MP_QSTR_memw,   0,  0, 0, 0, 2,      0,      12,     0, RRR  },
-    { MP_QSTR_rer,    2,  4, 0, 0, 6,      RRR_R1, RRR_R0, 0, RRR  },
-    { MP_QSTR_rsync,  0,  0, 0, 0, 2,      0,      1,      0, RRR  },
-    { MP_QSTR_wer,    2,  4, 0, 0, 7,      RRR_R1, RRR_R0, 0, RRR  },
+    { MP_QSTR_dsync,   0,  0, 0,  0, _,      2,      0,      3, 0, RRR,  LX3 },
+    { MP_QSTR_esync,   0,  0, 0,  0, _,      2,      0,      2, 0, RRR,  LX3 },
+    { MP_QSTR_extw,    0,  0, 0,  0, _,      2,      0,     13, 0, RRR,  LX3 },
+    { MP_QSTR_ill,     0,  0, 0,  0, _,      2,      0,      0, 0, RRR,  LX3 },
+    { MP_QSTR_ill_n,   0,  0, 0, 13, _,     15,      0,      6, 0, RRRN, LX3 },
+    { MP_QSTR_isync,   0,  0, 0,  0, _,      2,      0,      0, 0, RRR,  LX3 },
+    { MP_QSTR_memw,    0,  0, 0,  0, _,      2,      0,     12, 0, RRR,  LX3 },
+    #if XTENSA_MIN_CORE_TARGET >= 4
+    { MP_QSTR_movsp,   2,  0, 0,  0, W,      1, RRR_R1, RRR_R0, 0, RRR,  LX4 },
+    #endif
+    { MP_QSTR_rer,     2,  4, 0,  0, _,      6, RRR_R1, RRR_R0, 0, RRR,  LX3 },
+    { MP_QSTR_rsync,   0,  0, 0,  0, _,      2,      0,      1, 0, RRR,  LX3 },
+    { MP_QSTR_wer,     2,  4, 0,  0, _,      7, RRR_R1, RRR_R0, 0, RRR,  LX3 },
     #endif
 };
+
+#if XTENSA_MIN_CORE_TARGET >= 4
+static const struct bri8_branch_opcode_t {
+    qstr_short_t name;
+    uint8_t t : 4;
+    // 12 bits available here.
+} BRI8_BRANCH_OPCODES[] = {
+    { MP_QSTR_beqi,   2, },
+    { MP_QSTR_bgei,  14, },
+    { MP_QSTR_bgeui, 15, },
+    { MP_QSTR_blti,  10, },
+    { MP_QSTR_bltui, 11, },
+    { MP_QSTR_bnei,   6, },
+};
+#endif
 
 // The index of the first four qstrs matches the CCZ condition value to be
 // embedded into the opcode.
@@ -285,7 +375,7 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
     for (size_t index = 0; index < MP_ARRAY_SIZE(OPCODE_TABLE); index++) {
         const struct opcode_entry_t *entry = &OPCODE_TABLE[index];
         if (entry->name == op) {
-            if (n_args != entry->operands) {
+            if (n_args != entry->operands || minimum_allowed_lx_core_version() < entry->min_core || (entry->windowed && !emit_windowed_code())) {
                 goto unknown_op;
             }
 
@@ -335,10 +425,26 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
         } else if (op == MP_QSTR_call0) {
             mp_uint_t label = get_arg_label(emit, op_str, pn_args[0]);
             asm_xtensa_call0(&emit->as, label);
+        #if XTENSA_MIN_CORE_TARGET >= 4
+        } else if (op == MP_QSTR_call4 && emit_windowed_code()) {
+            mp_uint_t label = get_arg_label(emit, op_str, pn_args[0]);
+            asm_xtensa_op_call4(&emit->as, label);
+        } else if (op == MP_QSTR_call8 && emit_windowed_code()) {
+            mp_uint_t label = get_arg_label(emit, op_str, pn_args[0]);
+            asm_xtensa_op_call8(&emit->as, label);
+        } else if (op == MP_QSTR_call12 && emit_windowed_code()) {
+            mp_uint_t label = get_arg_label(emit, op_str, pn_args[0]);
+            asm_xtensa_op_call12(&emit->as, label);
+        #endif
         #if MICROPY_EMIT_INLINE_XTENSA_UNCOMMON_OPCODES
         } else if (op == MP_QSTR_fsync) {
             mp_uint_t imm3 = get_arg_i(emit, op_str, pn_args[0], 0, 7);
             asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 0, 2, 8 | imm3, 0));
+        #endif
+        #if XTENSA_MIN_CORE_TARGET >= 4
+        } else if (op == MP_QSTR_rotw && emit_windowed_code()) {
+            mp_uint_t imm4 = get_arg_i(emit, op_str, pn_args[0], -8, 7);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 0, 4, 8, 0, imm4));
         #endif
         } else {
             goto unknown_op;
@@ -381,6 +487,28 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
             asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RSR(0, 1, 6, sr, r0));
         } else
         #endif
+        #if XTENSA_MIN_CORE_TARGET >= 4
+        if (op == MP_QSTR_loop || op == MP_QSTR_loopnez || op == MP_QSTR_loopgtz) {
+            mp_uint_t as = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t label = get_arg_label(emit, op_str, pn_args[1]);
+            mp_uint_t condition = 8;
+            switch (op) {
+                case MP_QSTR_loop:
+                    condition |= ASM_XTENSA_LOOP_AL;
+                    break;
+                case MP_QSTR_loopnez:
+                    condition |= ASM_XTENSA_LOOP_NEZ;
+                    break;
+                case MP_QSTR_loopgtz:
+                    condition |= ASM_XTENSA_LOOP_GTZ;
+                    break;
+                default:
+                    assert(!"Should not get here.");
+                    break;
+            }
+            asm_xtensa_bri8(&emit->as, condition, as, 7, label, op);
+        } else
+        #endif
         {
             goto unknown_op;
         }
@@ -394,6 +522,20 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
                 return;
             }
         }
+
+        #if XTENSA_MIN_CORE_TARGET >= 4
+        if (minimum_allowed_lx_core_version() >= 4) {
+            for (size_t index = 0; index < MP_ARRAY_SIZE(BRI8_BRANCH_OPCODES); index++) {
+                if (BRI8_BRANCH_OPCODES[index].name == op) {
+                    int r0 = get_arg_reg(emit, op_str, pn_args[0]);
+                    int imm = get_arg_i(emit, op_str, pn_args[1], -1, 256);
+                    int label = get_arg_label(emit, op_str, pn_args[2]);
+                    asm_xtensa_reg_imm_compare_branch(&emit->as, r0, imm, label, BRI8_BRANCH_OPCODES[index].t, op);
+                    return;
+                }
+            }
+        }
+        #endif
 
         if (op == MP_QSTR_addi_n) {
             mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
@@ -452,10 +594,29 @@ static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
             } else {
                 asm_xtensa_op_s32i_n(&emit->as, r0, r1, imm >> 2);
             }
+        #if XTENSA_MIN_CORE_TARGET >= 4
+        } else if (op == MP_QSTR_clamps) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t imm = get_arg_i(emit, op_str, pn_args[2], 7, 22);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 3, 3, r0, r1, imm - 7));
+        } else if (op == MP_QSTR_sext) {
+            mp_uint_t r0 = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t r1 = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t imm = get_arg_i(emit, op_str, pn_args[2], 7, 22);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 3, 2, r0, r1, imm - 7));
+        #endif
         } else {
             goto unknown_op;
         }
-
+    } else if (n_args == 4) {
+        if (op == MP_QSTR_extui) {
+            mp_uint_t r = get_arg_reg(emit, op_str, pn_args[0]);
+            mp_uint_t t = get_arg_reg(emit, op_str, pn_args[1]);
+            mp_uint_t shiftimm = get_arg_i(emit, op_str, pn_args[2], 0, 31);
+            mp_uint_t maskimm = get_arg_i(emit, op_str, pn_args[3], 1, 16);
+            asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, 4 | (shiftimm & 0x10) >> 4, maskimm - 1, r, shiftimm & 0x0F, t));
+        }
     } else {
         goto unknown_op;
     }
