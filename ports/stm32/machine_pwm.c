@@ -122,7 +122,7 @@ typedef struct _pwm_t {
     uint8_t channel; // one of PWM_CH1-PWM_CH4
 } pwm_t;
 
-void pwm_init(pwm_t *pwm) {
+static void pwm_init(pwm_t *pwm) {
     // The following code assumes each channel has 8 bits in CCMR1/2.
     MP_STATIC_ASSERT(TIM_CCMR1_CC1S_Pos + 8 == TIM_CCMR1_CC2S_Pos);
     MP_STATIC_ASSERT(TIM_CCMR2_CC3S_Pos + 8 == TIM_CCMR2_CC4S_Pos);
@@ -154,7 +154,7 @@ void pwm_init(pwm_t *pwm) {
     if (pwm->channel == PWM_CH1 || pwm->channel == PWM_CH2) {
         tim->CCMR1 = (tim->CCMR1 & ~(0xff << shift)) | reg << shift;
     } else {
-        tim->CCMR2 = (tim->CCMR1 & ~(0xff << shift)) | reg << shift;
+        tim->CCMR2 = (tim->CCMR2 & ~(0xff << shift)) | reg << shift;
     }
 
     #if defined(IS_TIM_BREAK_INSTANCE)
@@ -165,38 +165,26 @@ void pwm_init(pwm_t *pwm) {
     #endif
 }
 
-unsigned int pwm_get_polarity(pwm_t *pwm) {
+static void pwm_set_polarity(pwm_t *pwm, unsigned int polarity) {
     // The following code assumes each channel has 4 bits in CCER.
     MP_STATIC_ASSERT(TIM_CCER_CC1P_Pos + 4 == TIM_CCER_CC2P_Pos);
 
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     unsigned int shift = 4 * pwm->channel;
-    return ((tim->CCER >> shift) >> TIM_CCER_CC1P_Pos) & 1;
-}
-
-void pwm_enable_output(pwm_t *pwm, unsigned int polarity) {
-    // The following code assumes each channel has 4 bits in CCER.
-    MP_STATIC_ASSERT(TIM_CCER_CC1E_Pos + 4 == TIM_CCER_CC2E_Pos);
-
-    TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
-
-    // Enable output on pin, active high for normal channel, active low for inverted channel,
-    // so that both normal and inverted channels can be used for PWM in the same way.
-    uint32_t reg = TIM_CCER_CC1E;
-    if (polarity == PWM_POLARITY_INVERTED) {
-        reg |= TIM_CCER_CC1P;
+    if (polarity == PWM_POLARITY_NORMAL) {
+        tim->CCER &= ~(TIM_CCER_CC1P << shift);
+    } else {
+        tim->CCER |= TIM_CCER_CC1P << shift;
     }
-    unsigned int shift = 4 * pwm->channel;
-    tim->CCER = (tim->CCER & ~(0xf << shift)) | reg << shift;
 }
 
-void pwm_deinit(pwm_t *pwm) {
+static void pwm_deinit(pwm_t *pwm) {
     // The following code assumes each channel has 4 bits in CCER.
     MP_STATIC_ASSERT(TIM_CCER_CC1E_Pos + 4 == TIM_CCER_CC2E_Pos);
 
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
 
-    // Disable the normal outputs.
+    // Disable the normal output.
     tim->CCER &= ~(TIM_CCER_CC1E << (4 * pwm->channel));
 
     // Disable the TIM peripheral if all channels are disabled.
@@ -214,13 +202,16 @@ void pwm_deinit(pwm_t *pwm) {
     }
 }
 
-bool pwm_freq_is_valid(pwm_t *pwm) {
+static bool pwm_freq_is_valid(pwm_t *pwm) {
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     return tim->ARR != 0;
 }
 
 // The ARR needs to be configured (eg `pwm_set_freq()`) before this function is called.
-void pwm_start(pwm_t *pwm) {
+static void pwm_start(pwm_t *pwm) {
+    // The following code assumes each channel has 4 bits in CCER.
+    MP_STATIC_ASSERT(TIM_CCER_CC1E_Pos + 4 == TIM_CCER_CC2E_Pos);
+
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     if (!(tim->CR1 & TIM_CR1_CEN)) {
         // Reinitialise the counter and update the registers.
@@ -229,9 +220,13 @@ void pwm_start(pwm_t *pwm) {
         // Enable the timer if it's not already running.
         tim->CR1 |= TIM_CR1_CEN;
     }
+
+    // Enable output on pin.
+    unsigned int shift = 4 * pwm->channel;
+    tim->CCER |= TIM_CCER_CC1E << shift;
 }
 
-uint32_t pwm_get_freq(pwm_t *pwm) {
+static uint32_t pwm_get_freq(pwm_t *pwm) {
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     uint32_t prescaler = tim->PSC;
     uint32_t period = tim->ARR;
@@ -241,7 +236,7 @@ uint32_t pwm_get_freq(pwm_t *pwm) {
 
 // Input freq_hz must be > 0.
 // Returns false if freq_hz is too large.
-bool pwm_set_freq(pwm_t *pwm, uint32_t freq_hz) {
+static bool pwm_set_freq(pwm_t *pwm, uint32_t freq_hz) {
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
 
     uint32_t source_freq = timer_get_source_freq(pwm->tim_id);
@@ -280,14 +275,14 @@ bool pwm_set_freq(pwm_t *pwm, uint32_t freq_hz) {
     return true;
 }
 
-uint16_t pwm_get_duty_u16(pwm_t *pwm) {
+static uint16_t pwm_get_duty_u16(pwm_t *pwm) {
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     uint32_t top = tim->ARR + 1;
     uint32_t cc = CCRx(tim, pwm->channel);
     return (cc * 65535ULL + top / 2U) / top;
 }
 
-void pwm_set_duty_u16(pwm_t *pwm, uint32_t duty_u16) {
+static void pwm_set_duty_u16(pwm_t *pwm, uint32_t duty_u16) {
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     uint32_t top = tim->ARR + 1;
     uint32_t cc = ((uint64_t)duty_u16 * top + 65535ULL / 2) / 65535U;
@@ -297,14 +292,14 @@ void pwm_set_duty_u16(pwm_t *pwm, uint32_t duty_u16) {
     CCRx(tim, pwm->channel) = cc;
 }
 
-uint32_t pwm_get_duty_ns(pwm_t *pwm) {
+static uint32_t pwm_get_duty_ns(pwm_t *pwm) {
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     uint32_t source_freq = timer_get_source_freq(pwm->tim_id);
     uint32_t cc = CCRx(tim, pwm->channel);
     return ((uint64_t)cc * 1000000000ULL + source_freq / 2U) / source_freq;
 }
 
-void pwm_set_duty_ns(pwm_t *pwm, uint32_t duty_ns) {
+static void pwm_set_duty_ns(pwm_t *pwm, uint32_t duty_ns) {
     TIM_TypeDef *tim = timer_id_to_reg(pwm->tim_id);
     uint32_t source_freq = timer_get_source_freq(pwm->tim_id);
     uint32_t top = tim->ARR + 1;
@@ -501,9 +496,7 @@ static inline machine_pwm_state_t *get_state(machine_pwm_obj_t *pwm) {
 
 static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<PWM TIM%u_CH%u invert=%u>",
-        self->pwm.tim_id, self->pwm.channel,
-        pwm_get_polarity(&self->pwm) == PWM_POLARITY_INVERTED);
+    mp_printf(print, "<PWM TIM%u_CH%u>", self->pwm.tim_id, self->pwm.channel + 1);
 }
 
 static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
@@ -521,7 +514,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_invert].u_int != -1) {
-        pwm_enable_output(&self->pwm, args[ARG_invert].u_int ? PWM_POLARITY_INVERTED : PWM_POLARITY_NORMAL);
+        pwm_set_polarity(&self->pwm, args[ARG_invert].u_int ? PWM_POLARITY_INVERTED : PWM_POLARITY_NORMAL);
     }
     if (args[ARG_freq].u_int != -1) {
         mp_machine_pwm_freq_set(self, args[ARG_freq].u_int);
@@ -531,6 +524,9 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     }
     if (args[ARG_duty_ns].u_int != -1) {
         mp_machine_pwm_duty_set_ns(self, args[ARG_duty_ns].u_int);
+    }
+    if (pwm_freq_is_valid(&self->pwm)) {
+        pwm_start(&self->pwm);
     }
 }
 
@@ -570,7 +566,12 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 
     // Initialise the TIM and the output driver.
     pwm_init(&self->pwm);
-    pwm_enable_output(&self->pwm, pwm_get_polarity(&self->pwm));
+    if (n_args > 1 || n_kw > 0) {
+        // Arguments given, so reset the state.
+        machine_pwm_state_t *state = get_state(self);
+        state->duty_type = DUTY_NOT_SET;
+        pwm_set_polarity(&self->pwm, PWM_POLARITY_NORMAL);
+    }
 
     // Process the remaining parameters.
     mp_map_t kw_args;
@@ -587,6 +588,7 @@ void machine_pwm_deinit_all(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(machine_pwm_obj); ++i) {
         machine_pwm_state_t *state = &machine_pwm_state[i];
         if (state->duty_type != DUTY_NOT_SET) {
+            state->duty_type = DUTY_NOT_SET;
             mp_machine_pwm_deinit((machine_pwm_obj_t *)&machine_pwm_obj[i]);
         }
     }
@@ -594,8 +596,6 @@ void machine_pwm_deinit_all(void) {
 }
 
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    machine_pwm_state_t *state = get_state(self);
-    state->duty_type = DUTY_NOT_SET;
     pwm_deinit(&self->pwm);
 }
 
