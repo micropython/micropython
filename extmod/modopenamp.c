@@ -133,7 +133,7 @@ static MP_DEFINE_CONST_DICT(virtio_dev_locals_dict, virtio_dev_locals_dict_table
 static MP_DEFINE_CONST_OBJ_TYPE(
     virtio_dev_type,
     MP_QSTR_VirtIODev,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     locals_dict, &virtio_dev_locals_dict
     );
 
@@ -258,7 +258,7 @@ static MP_DEFINE_CONST_DICT(endpoint_locals_dict, endpoint_locals_dict_table);
 static MP_DEFINE_CONST_OBJ_TYPE(
     endpoint_type,
     MP_QSTR_Endpoint,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, endpoint_make_new,
     locals_dict, &endpoint_locals_dict
     );

@@ -940,7 +940,7 @@ static const mp_stream_p_t pyb_usb_vcp_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_usb_vcp_type,
     MP_QSTR_USB_VCP,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
+    MP_TYPE_FLAG_ITER_IS_STREAM | MP_TYPE_FLAG_HAS_FINALISER,
     make_new, pyb_usb_vcp_make_new,
     print, pyb_usb_vcp_print,
     protocol, &pyb_usb_vcp_stream_p,
