@@ -408,6 +408,7 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     vstr_add_byte(&lex->fstring_args, ',');
                 }
                 vstr_add_byte(&lex->vstr, '{');
+                goto continue_outer;
             }
             #endif
 
@@ -518,6 +519,9 @@ static void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
         }
     continue_parsing_string_literal:
         next_char(lex);
+        #if MICROPY_PY_FSTRINGS
+    continue_outer:;
+        #endif
     }
 
     // check we got the required end quotes
