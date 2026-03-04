@@ -362,7 +362,7 @@ bool gc_is_locked(void) {
 #if MICROPY_GC_SPLIT_HEAP
 // Returns the area to which this pointer belongs, or NULL if it isn't
 // allocated on the GC-managed heap.
-static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
+struct _mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {   // must be aligned on a block
         return NULL;
     }
