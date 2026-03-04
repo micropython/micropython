@@ -30,32 +30,9 @@
 #include "helios_os.h"
 #include "helios_uart.h"
 
-#if defined(PLAT_RDA)
-#define QPY_REPL_UART   HELIOS_UART0
-#define		HAL_TICK1S	16.384
-/*Due to low power consumption of BC25 series, the baud rate needs to be set to 57600, please do not modify.*/
-#define HELIOS_UART_BAUD   HELIOS_UART_BAUD_57600 
-#elif defined(PLAT_Qualcomm)
-#define		HAL_TICK1S	32.768
+#define	HAL_TICK1S	32.768
 #define QPY_REPL_UART   HELIOS_UART3
 #define HELIOS_UART_BAUD   HELIOS_UART_BAUD_115200
-#elif defined(PLAT_EIGEN) || defined(PLAT_EIGEN_718)
-#define		HAL_TICK1S	3.25
-#define QPY_REPL_UART   HELIOS_UART3
-#define HELIOS_UART_BAUD   HELIOS_UART_BAUD_115200
-#elif defined(PLAT_ECR6600)
-#define	HAL_TICK1S	0.5
-#define QPY_REPL_UART   HELIOS_UART2
-#define HELIOS_UART_BAUD   HELIOS_UART_BAUD_115200
-#elif defined(PLAT_aic8800m40)
-#define		HAL_TICK1S	32.768
-#define QPY_REPL_UART   HELIOS_UART1
-#define HELIOS_UART_BAUD   HELIOS_UART_BAUD_115200
-#else
-#define		HAL_TICK1S	32.768
-#define QPY_REPL_UART   HELIOS_UART3
-#define HELIOS_UART_BAUD   HELIOS_UART_BAUD_115200
-#endif
 
 //mia.zhong @20220308 input接口多线程调用导致dump问题
 typedef struct Input_ListNode

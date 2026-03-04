@@ -46,7 +46,6 @@
 #include "helios_os.h"
 #include "helios_debug.h"
 #include "mphalport.h"
-#include "callbackdeal.h"
 #if MICROPY_KBD_EXCEPTION
 #include "shared/runtime/interrupt_char.h"
 #endif
@@ -109,13 +108,7 @@ void __assert_fail(const char *__message,
 
 static char *stack_top;
 #if MICROPY_ENABLE_GC
-#if defined(PLAT_ECR6600)
-static char __attribute__((__section__(".data"))) heap[MICROPY_GC_HEAP_SIZE];
-#elif defined(PLAT_SONY_ALT1350)
-static char __attribute__((__section__("gpm1_working_data"))) heap[MICROPY_GC_HEAP_SIZE];
-#else
 static char heap[MICROPY_GC_HEAP_SIZE];
-#endif
 #endif
 
 extern pyexec_mode_kind_t pyexec_mode_kind;
@@ -180,21 +173,7 @@ soft_reset:
     readline_init0();
     
 	// run boot-up scripts
-#if defined(PLAT_RDA)
-    pyexec_frozen_module("_boot_RDA.py");
-#elif defined(PLAT_Qualcomm)
-	pyexec_frozen_module("_boot_Qualcomm.py");
-#elif defined(BOARD_EC800ECN_LC_WDF)
-    pyexec_frozen_module("_boot_WDF.py");//EIGEN WDF CUNSTOMER BOOT WITH SINGEL FILE SYSTEM
-#elif defined(PLAT_ECR6600) || defined(PLAT_aic8800m40)
-    pyexec_frozen_module("_boot_WIFI.py");
-#elif defined(BOARD_EC600GCN_LA_CDD)
-    pyexec_frozen_module("_boot_dsds.py");
-#elif defined(PLAT_SONY_ALT1350)
-    pyexec_frozen_module("_boot_SONY.py", false);
-#else
     pyexec_frozen_module("_boot.py", false);
-#endif
 
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL
     #if MICROPY_PY_KBD_EXCEPTION
