@@ -69,6 +69,10 @@ void mp_hal_clr_pin_mux(mp_hal_pin_obj_t pin) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
+    if (ms == 0) {
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
+        return;
+    }
     uint32_t t0 = systick_ms;
     while (systick_ms - t0 < ms) {
         MICROPY_EVENT_POLL_HOOK
