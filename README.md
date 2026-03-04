@@ -78,11 +78,11 @@ design and implementation.
 
 The key concepts that focus the development of MicroPython are:
 - Minimalism: do lots with little.
-- Efficiency, in all respects: coding, build, execution, power consumption.
+- Efficiency: engineering, build, execution, storage, power consumption.
 - Consistency: the whole system feels like it was designed at once.
 
-When using MicroPython, the Python language is used as the human interface to an
-embedded system, giving fine control over the entities attached to that system.
+When using MicroPython, the Python language is used as the human interface to a
+system, giving fine control over the entities attached to that system.
 In a hardware setting, MicroPython aims to give the user a bare-metal feeling:
 one should feel like they have complete control over the system, with very
 little between the programmer and the physical world.
@@ -93,7 +93,7 @@ user-friendly way to harness the complexity of a system.
 
 Python language compatibility is very important to MicroPython, and at first
 glance MicroPython should look just like regular Python.  In the first instance,
-a Python script should run unchanged on MicroPython, even on devices with very
+most Python scripts should run unchanged on MicroPython, even on devices with very
 tight resources.  Beyond that, there are ways to extend MicroPython if needed to
 better match Python.  The provided built-in modules are an efficient subset of
 the corresponding Python ones, without duplication of functionality, and allow
