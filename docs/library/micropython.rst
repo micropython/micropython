@@ -161,6 +161,30 @@ Functions
    There is a finite queue to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the queue is full.
 
+.. function:: repl_autocomplete(line)
+
+   Perform REPL tab-completion on *line*, a string containing the partial input
+   typed so far.
+
+   Returns the longest unambiguous completion suffix to append (e.g.
+   ``"rt "`` for input ``"impo"``), an empty string if there is no match or
+   the name is already complete, or ``None`` if multiple matches exist with no
+   further common prefix (in which case the candidates are printed to stdout).
+
+   Availability: requires ``MICROPY_HELPER_REPL``.
+
+.. function:: stdio_mode_raw(enabled)
+
+   Switch the terminal (stdin/stdout) between raw and original mode.  When
+   *enabled* is ``True`` the terminal is placed in raw mode (no echo, no line
+   editing, characters available immediately).  When *enabled* is ``False`` the
+   terminal settings are restored to their original state.
+
+   This is useful for code that needs to take over terminal I/O, for example
+   an alternative REPL such as `aiorepl`.
+
+   Availability: Unix port.  Requires ``MICROPY_PY_MICROPYTHON_STDIO_RAW``.
+
 Classes
 -------
 

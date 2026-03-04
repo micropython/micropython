@@ -225,6 +225,8 @@ static inline unsigned long mp_random_seed_init(void) {
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();
 
+#define MICROPY_PY_MICROPYTHON_STDIO_RAW (1)
+
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
 #endif

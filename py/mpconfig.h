@@ -1575,6 +1575,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_MICROPYTHON_RINGIO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to provide "micropython.stdio_mode_raw" function
+#ifndef MICROPY_PY_MICROPYTHON_STDIO_RAW
+#define MICROPY_PY_MICROPYTHON_STDIO_RAW (0)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
