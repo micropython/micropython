@@ -858,6 +858,34 @@ static mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 4, str_endswith);
 
+#if MICROPY_PY_BUILTINS_STR_REMOVEFIX
+static mp_obj_t str_removeprefix(mp_obj_t self_in, mp_obj_t prefix_in) {
+    check_is_str_or_bytes(self_in);
+    const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    str_check_arg_type(self_type, prefix_in);
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    GET_STR_DATA_LEN(prefix_in, prefix_data, prefix_len);
+    if (prefix_len <= self_len && memcmp(self_data, prefix_data, prefix_len) == 0) {
+        return mp_obj_new_str_of_type(self_type, self_data + prefix_len, self_len - prefix_len);
+    }
+    return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(str_removeprefix_obj, str_removeprefix);
+
+static mp_obj_t str_removesuffix(mp_obj_t self_in, mp_obj_t suffix_in) {
+    check_is_str_or_bytes(self_in);
+    const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    str_check_arg_type(self_type, suffix_in);
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    GET_STR_DATA_LEN(suffix_in, suffix_data, suffix_len);
+    if (suffix_len <= self_len && memcmp(self_data + self_len - suffix_len, suffix_data, suffix_len) == 0) {
+        return mp_obj_new_str_of_type(self_type, self_data, self_len - suffix_len);
+    }
+    return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(str_removesuffix_obj, str_removesuffix);
+#endif
+
 enum { LSTRIP, RSTRIP, STRIP };
 
 static mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
@@ -956,6 +984,56 @@ static mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
     return mp_obj_new_str_type_from_vstr(mp_obj_get_type(str_in), &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(str_center_obj, str_center);
+
+static mp_obj_t str_ljust(size_t n_args, const mp_obj_t *args) {
+    GET_STR_DATA_LEN(args[0], str, str_len);
+    mp_uint_t width = mp_obj_get_int(args[1]);
+    if (str_len >= width) {
+        return args[0];
+    }
+    byte fillchar = (n_args > 2) ? (byte) * mp_obj_str_get_str(args[2]) : ' ';
+    vstr_t vstr;
+    vstr_init_len(&vstr, width);
+    memcpy(vstr.buf, str, str_len);
+    memset(vstr.buf + str_len, fillchar, width - str_len);
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(args[0]), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_ljust_obj, 2, 3, str_ljust);
+
+static mp_obj_t str_rjust(size_t n_args, const mp_obj_t *args) {
+    GET_STR_DATA_LEN(args[0], str, str_len);
+    mp_uint_t width = mp_obj_get_int(args[1]);
+    if (str_len >= width) {
+        return args[0];
+    }
+    byte fillchar = (n_args > 2) ? (byte) * mp_obj_str_get_str(args[2]) : ' ';
+    vstr_t vstr;
+    vstr_init_len(&vstr, width);
+    memset(vstr.buf, fillchar, width - str_len);
+    memcpy(vstr.buf + (width - str_len), str, str_len);
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(args[0]), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rjust_obj, 2, 3, str_rjust);
+
+static mp_obj_t str_zfill(mp_obj_t self_in, mp_obj_t width_in) {
+    GET_STR_DATA_LEN(self_in, str, str_len);
+    mp_uint_t width = mp_obj_get_int(width_in);
+    if (str_len >= width) {
+        return self_in;
+    }
+    vstr_t vstr;
+    vstr_init_len(&vstr, width);
+    size_t pad = width - str_len;
+    size_t sign = 0;
+    if (str_len > 0 && (str[0] == '+' || str[0] == '-')) {
+        vstr.buf[0] = str[0];
+        sign = 1;
+    }
+    memset(vstr.buf + sign, '0', pad);
+    memcpy(vstr.buf + pad + sign, str + sign, str_len - sign);
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(self_in), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(str_zfill_obj, str_zfill);
 #endif
 
 // Takes an int arg, but only parses unsigned numbers, and only changes
@@ -1896,6 +1974,94 @@ static mp_obj_t str_upper(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
 
+#if MICROPY_PY_BUILTINS_STR_CAPITALIZE
+static mp_obj_t str_capitalize(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    vstr_t vstr;
+    vstr_init_len(&vstr, self_len);
+    byte *data = (byte *)vstr.buf;
+    for (size_t i = 0; i < self_len; i++) {
+        *data++ = (i == 0) ? unichar_toupper(*self_data++) : unichar_tolower(*self_data++);
+    }
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(self_in), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_capitalize_obj, str_capitalize);
+
+static mp_obj_t str_swapcase(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    vstr_t vstr;
+    vstr_init_len(&vstr, self_len);
+    byte *data = (byte *)vstr.buf;
+    for (size_t i = 0; i < self_len; i++) {
+        unichar c = *self_data++;
+        if (unichar_isupper(c)) {
+            *data++ = unichar_tolower(c);
+        } else if (unichar_islower(c)) {
+            *data++ = unichar_toupper(c);
+        } else {
+            *data++ = c;
+        }
+    }
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(self_in), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_swapcase_obj, str_swapcase);
+#endif
+
+#if MICROPY_PY_BUILTINS_STR_TITLE
+static mp_obj_t str_title(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    vstr_t vstr;
+    vstr_init_len(&vstr, self_len);
+    byte *data = (byte *)vstr.buf;
+    bool boundary = true;
+    for (size_t i = 0; i < self_len; i++) {
+        unichar c = *self_data++;
+        if (unichar_isalpha(c)) {
+            *data++ = boundary ? unichar_toupper(c) : unichar_tolower(c);
+            boundary = false;
+        } else {
+            *data++ = c;
+            boundary = true;
+        }
+    }
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(self_in), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_title_obj, str_title);
+
+static mp_obj_t str_istitle(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    if (self_len == 0) {
+        return mp_const_false;
+    }
+    bool boundary = true;
+    bool has_cased = false;
+    for (size_t i = 0; i < self_len; i++) {
+        unichar c = *self_data++;
+        if (unichar_isupper(c)) {
+            if (!boundary) {
+                return mp_const_false;
+            }
+            has_cased = true;
+            boundary = false;
+        } else if (unichar_islower(c)) {
+            if (boundary) {
+                return mp_const_false;
+            }
+            has_cased = true;
+        } else {
+            boundary = true;
+        }
+    }
+    return has_cased ? mp_const_true : mp_const_false;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_istitle_obj, str_istitle);
+
+static mp_obj_t str_casefold(mp_obj_t self_in) {
+    return str_caseconv(unichar_tolower, self_in);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_casefold_obj, str_casefold);
+#endif
+
 static mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
 
@@ -1954,6 +2120,67 @@ static mp_obj_t str_islower(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 
+#if MICROPY_PY_BUILTINS_STR_IS_CHECKS
+static mp_obj_t str_isalnum(mp_obj_t self_in) {
+    return str_uni_istype(unichar_isalnum, self_in);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_isalnum_obj, str_isalnum);
+
+static mp_obj_t str_isascii(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    // Empty string returns True (differs from other is* methods)
+    for (size_t i = 0; i < self_len; i++) {
+        if (self_data[i] >= 128) {
+            return mp_const_false;
+        }
+    }
+    return mp_const_true;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_isascii_obj, str_isascii);
+
+static mp_obj_t str_isdecimal(mp_obj_t self_in) {
+    return str_uni_istype(unichar_isdigit, self_in);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_isdecimal_obj, str_isdecimal);
+
+static mp_obj_t str_isnumeric(mp_obj_t self_in) {
+    return str_uni_istype(unichar_isdigit, self_in);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_isnumeric_obj, str_isnumeric);
+
+static mp_obj_t str_isidentifier(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    if (self_len == 0) {
+        return mp_const_false;
+    }
+    if (!unichar_isalpha(self_data[0]) && self_data[0] != '_') {
+        return mp_const_false;
+    }
+    for (size_t i = 1; i < self_len; i++) {
+        if (!unichar_isident(self_data[i])) {
+            return mp_const_false;
+        }
+    }
+    return mp_const_true;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_isidentifier_obj, str_isidentifier);
+
+static mp_obj_t str_isprintable(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    // Empty string returns True
+    // Python's isprintable: space (0x20) through tilde (0x7e) are printable
+    // Unlike C isprint, tab/newline/etc are NOT printable
+    for (size_t i = 0; i < self_len; i++) {
+        unichar c = self_data[i];
+        if (c < 0x20 || c == 0x7f) {
+            return mp_const_false;
+        }
+    }
+    return mp_const_true;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(str_isprintable_obj, str_isprintable);
+#endif
+
 #if MICROPY_CPYTHON_COMPAT
 // These methods are superfluous in the presence of str() and bytes()
 // constructors.
@@ -1982,6 +2209,97 @@ static mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
     return bytes_make_new(NULL, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
+#endif
+
+#if MICROPY_PY_BUILTINS_STR_EXPANDTABS
+static mp_obj_t str_expandtabs(size_t n_args, const mp_obj_t *args) {
+    GET_STR_DATA_LEN(args[0], self_data, self_len);
+    mp_int_t tabsize = (n_args > 1) ? mp_obj_get_int(args[1]) : 8;
+    vstr_t vstr;
+    vstr_init(&vstr, self_len);
+    size_t col = 0;
+    for (size_t i = 0; i < self_len; i++) {
+        byte c = self_data[i];
+        if (c == '\t') {
+            size_t spaces = (tabsize > 0) ? (tabsize - col % tabsize) : 0;
+            for (size_t j = 0; j < spaces; j++) {
+                vstr_add_byte(&vstr, ' ');
+            }
+            col += spaces;
+        } else if (c == '\n' || c == '\r') {
+            vstr_add_byte(&vstr, c);
+            col = 0;
+        } else {
+            vstr_add_byte(&vstr, c);
+            col++;
+        }
+    }
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(args[0]), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_expandtabs_obj, 1, 2, str_expandtabs);
+#endif
+
+#if MICROPY_PY_BUILTINS_STR_FORMAT_MAP
+static mp_obj_t str_format_map(mp_obj_t self_in, mp_obj_t mapping_in) {
+    check_is_str_or_bytes(self_in);
+    GET_STR_DATA_LEN(self_in, str, len);
+    mp_obj_dict_t *dict = MP_OBJ_TO_PTR(mapping_in);
+    if (!mp_obj_is_dict_or_ordereddict(mapping_in)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("mapping must be a dict"));
+    }
+    int arg_i = 0;
+    vstr_t vstr = mp_obj_str_format_helper((const char *)str, (const char *)str + len, &arg_i, 1, &self_in, &dict->map);
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(self_in), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(str_format_map_obj, str_format_map);
+#endif
+
+#if MICROPY_PY_BUILTINS_STR_TRANSLATE
+static mp_obj_t str_translate(mp_obj_t self_in, mp_obj_t table_in) {
+    check_is_str_or_bytes(self_in);
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    mp_obj_dict_t *table = MP_OBJ_TO_PTR(table_in);
+    if (!mp_obj_is_dict_or_ordereddict(table_in)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("translate table must be a dict"));
+    }
+    vstr_t vstr;
+    vstr_init(&vstr, self_len);
+    for (size_t i = 0; i < self_len; i++) {
+        mp_obj_t key = MP_OBJ_NEW_SMALL_INT(self_data[i]);
+        mp_map_elem_t *elem = mp_map_lookup(&table->map, key, MP_MAP_LOOKUP);
+        if (elem == NULL) {
+            vstr_add_byte(&vstr, self_data[i]);
+        } else if (elem->value == mp_const_none) {
+            // delete character
+        } else {
+            mp_int_t val = mp_obj_get_int(elem->value);
+            vstr_add_byte(&vstr, val);
+        }
+    }
+    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(self_in), &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(str_translate_obj, str_translate);
+
+static mp_obj_t str_maketrans(size_t n_args, const mp_obj_t *args) {
+    GET_STR_DATA_LEN(args[0], x_data, x_len);
+    GET_STR_DATA_LEN(args[1], y_data, y_len);
+    if (x_len != y_len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("maketrans arguments must have same length"));
+    }
+    mp_obj_t dict = mp_obj_new_dict(x_len);
+    for (size_t i = 0; i < x_len; i++) {
+        mp_obj_dict_store(dict, MP_OBJ_NEW_SMALL_INT(x_data[i]), MP_OBJ_NEW_SMALL_INT(y_data[i]));
+    }
+    if (n_args > 2) {
+        GET_STR_DATA_LEN(args[2], z_data, z_len);
+        for (size_t i = 0; i < z_len; i++) {
+            mp_obj_dict_store(dict, MP_OBJ_NEW_SMALL_INT(z_data[i]), mp_const_none);
+        }
+    }
+    return dict;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_maketrans_fun_obj, 2, 3, str_maketrans);
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(str_maketrans_obj, MP_ROM_PTR(&str_maketrans_fun_obj));
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTES_HEX
@@ -2115,6 +2433,27 @@ static const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     #endif
     #if MICROPY_PY_BUILTINS_STR_CENTER
     { MP_ROM_QSTR(MP_QSTR_center), MP_ROM_PTR(&str_center_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ljust), MP_ROM_PTR(&str_ljust_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rjust), MP_ROM_PTR(&str_rjust_obj) },
+    { MP_ROM_QSTR(MP_QSTR_zfill), MP_ROM_PTR(&str_zfill_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_CAPITALIZE
+    { MP_ROM_QSTR(MP_QSTR_capitalize), MP_ROM_PTR(&str_capitalize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_swapcase), MP_ROM_PTR(&str_swapcase_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_TITLE
+    { MP_ROM_QSTR(MP_QSTR_title), MP_ROM_PTR(&str_title_obj) },
+    { MP_ROM_QSTR(MP_QSTR_istitle), MP_ROM_PTR(&str_istitle_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_TRANSLATE
+    { MP_ROM_QSTR(MP_QSTR_translate), MP_ROM_PTR(&str_translate_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_REMOVEFIX
+    { MP_ROM_QSTR(MP_QSTR_removeprefix), MP_ROM_PTR(&str_removeprefix_obj) },
+    { MP_ROM_QSTR(MP_QSTR_removesuffix), MP_ROM_PTR(&str_removesuffix_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_EXPANDTABS
+    { MP_ROM_QSTR(MP_QSTR_expandtabs), MP_ROM_PTR(&str_expandtabs_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_lower), MP_ROM_PTR(&str_lower_obj) },
     { MP_ROM_QSTR(MP_QSTR_upper), MP_ROM_PTR(&str_upper_obj) },
@@ -2123,6 +2462,26 @@ static const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isdigit), MP_ROM_PTR(&str_isdigit_obj) },
     { MP_ROM_QSTR(MP_QSTR_isupper), MP_ROM_PTR(&str_isupper_obj) },
     { MP_ROM_QSTR(MP_QSTR_islower), MP_ROM_PTR(&str_islower_obj) },
+    #if MICROPY_PY_BUILTINS_STR_IS_CHECKS
+    { MP_ROM_QSTR(MP_QSTR_isalnum), MP_ROM_PTR(&str_isalnum_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isascii), MP_ROM_PTR(&str_isascii_obj) },
+    #endif
+    // --- str-only entries below (not available on bytes/bytearray) ---
+    #if MICROPY_PY_BUILTINS_STR_TITLE
+    { MP_ROM_QSTR(MP_QSTR_casefold), MP_ROM_PTR(&str_casefold_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_TRANSLATE
+    { MP_ROM_QSTR(MP_QSTR_maketrans), MP_ROM_PTR(&str_maketrans_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_IS_CHECKS
+    { MP_ROM_QSTR(MP_QSTR_isdecimal), MP_ROM_PTR(&str_isdecimal_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isidentifier), MP_ROM_PTR(&str_isidentifier_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isnumeric), MP_ROM_PTR(&str_isnumeric_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isprintable), MP_ROM_PTR(&str_isprintable_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_FORMAT_MAP
+    { MP_ROM_QSTR(MP_QSTR_format_map), MP_ROM_PTR(&str_format_map_obj) },
+    #endif
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj) },
     #endif
@@ -2146,22 +2505,30 @@ static const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
 #define TABLE_ENTRIES_ARRAY 0
 #endif
 
+// Count of str-only entries at end of table (not shared with bytes/bytearray)
+#define TABLE_ENTRIES_STR_ONLY ( \
+    (MICROPY_PY_BUILTINS_STR_TITLE ? 1 : 0) /* casefold */ \
+    + (MICROPY_PY_BUILTINS_STR_TRANSLATE ? 1 : 0) /* maketrans */ \
+    + (MICROPY_PY_BUILTINS_STR_IS_CHECKS ? 4 : 0) /* isdecimal, isidentifier, isnumeric, isprintable */ \
+    + (MICROPY_PY_BUILTINS_STR_FORMAT_MAP ? 1 : 0) /* format_map */ \
+    )
+
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_str_locals_dict,
     array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_HEX + TABLE_ENTRIES_COMPAT,
     MP_ARRAY_SIZE(array_bytearray_str_bytes_locals_table) - (TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_HEX + TABLE_ENTRIES_COMPAT));
 
-#if TABLE_ENTRIES_COMPAT == 0
+#if TABLE_ENTRIES_COMPAT == 0 && TABLE_ENTRIES_STR_ONLY == 0
 #define mp_obj_bytes_locals_dict mp_obj_str_locals_dict
 #else
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_bytes_locals_dict,
     array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY,
-    MP_ARRAY_SIZE(array_bytearray_str_bytes_locals_table) - (TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_COMPAT));
+    MP_ARRAY_SIZE(array_bytearray_str_bytes_locals_table) - (TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_COMPAT + TABLE_ENTRIES_STR_ONLY));
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_bytearray_locals_dict,
     array_bytearray_str_bytes_locals_table,
-    MP_ARRAY_SIZE(array_bytearray_str_bytes_locals_table) - TABLE_ENTRIES_COMPAT);
+    MP_ARRAY_SIZE(array_bytearray_str_bytes_locals_table) - (TABLE_ENTRIES_COMPAT + TABLE_ENTRIES_STR_ONLY));
 #endif
 
 #if MICROPY_PY_ARRAY
