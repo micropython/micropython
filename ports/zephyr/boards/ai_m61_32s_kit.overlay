@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2025 MASSDRIVER EI (massdriver.space)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<256>;
+			cache-size=<1024>;
+			lookahead-size=<32>;
+			block-cycles=<4>;
+		};
+	};
+
+	heap_sram1 {
+		compatible = "micropython,heap";
+		size = <DT_SIZE_K(140)>;
+		memory-region = <&sram1>;
+	};
+
+	heap_psram {
+		compatible = "micropython,heap";
+		size = <DT_SIZE_M(4)>;
+		memory-region = <&psram>;
+	};
+};
