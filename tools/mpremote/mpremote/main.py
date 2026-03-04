@@ -28,6 +28,8 @@ from .commands import (
     CommandError,
     do_connect,
     do_disconnect,
+    do_reconnect,
+    do_once_cmd,
     do_edit,
     do_filesystem,
     do_mount,
@@ -303,6 +305,10 @@ _COMMANDS = {
         do_resume,
         argparse_none("resume a previous mpremote session (will not auto soft-reset)"),
     ),
+    "once": (
+        do_once_cmd,
+        argparse_none("disable automatic reconnection on disconnect"),
+    ),
     "soft-reset": (
         do_soft_reset,
         argparse_none("perform a soft-reset of the device"),
@@ -529,10 +535,25 @@ def do_command_expansion(args):
 
 
 class State:
-    def __init__(self):
+    def __init__(self, config=None):
         self.transport = None
         self._did_action = False
         self._auto_soft_reset = True
+
+        # Read reconnect default from config, env var, or hardcoded default
+        # Priority: env var > config file > default (True)
+        env_value = os.getenv("MPREMOTE_RECONNECT")
+        if env_value is not None:
+            # Environment variable overrides everything
+            self.reconnect_enabled = env_value.lower() in ("1", "true", "yes", "on")
+        elif config is not None:
+            # Config file setting
+            self.reconnect_enabled = getattr(config, "reconnect", True)
+        else:
+            # Default is True
+            self.reconnect_enabled = True
+        self.connect_device = None
+        self.was_resumed = False
 
     def did_action(self):
         self._did_action = True
@@ -562,7 +583,7 @@ def main():
     prepare_command_expansions(config)
 
     remaining_args = sys.argv[1:]
-    state = State()
+    state = State(config)
 
     try:
         while remaining_args:
@@ -611,7 +632,26 @@ def main():
             args = cmd_parser.parse_args(command_args)
 
             # Execute command.
-            handler_func(state, args)
+            # Special handling for explicit repl command with reconnection support
+            if cmd == "repl":
+                while True:
+                    disconnected = handler_func(state, args)
+
+                    # Handle disconnection
+                    if disconnected:
+                        print("\nDevice disconnected")
+
+                        # Try to reconnect if enabled
+                        if state.reconnect_enabled:
+                            do_disconnect(state)  # Clean up current connection state
+                            if do_reconnect(state):
+                                # Successfully reconnected, continue the loop
+                                continue
+
+                    # If not reconnecting or reconnect failed, exit the loop
+                    break
+            else:
+                handler_func(state, args)
 
             # Get any leftover unprocessed args.
             remaining_args = args.next_command + extra_args
@@ -619,11 +659,24 @@ def main():
         # If no commands were "actions" then implicitly finish with the REPL
         # using default args.
         if state.run_repl_on_completion():
-            disconnected = do_repl(state, argparse_repl().parse_args([]))
+            while True:
+                disconnected = do_repl(state, argparse_repl().parse_args([]))
 
-            # Handle disconnection message
-            if disconnected:
-                print("\ndevice disconnected")
+                # Handle disconnection message
+                if disconnected:
+                    print("\nDevice disconnected")
+
+                    # Try to reconnect if enabled
+                    if state.reconnect_enabled:
+                        do_disconnect(state)  # Clean up current connection state
+                        if do_reconnect(state):
+                            # Successfully reconnected, continue the loop
+                            # Reset action state for the new connection
+                            state._did_action = False
+                            continue
+
+                # If not reconnecting or reconnect failed, exit
+                break
 
         return 0
     except CommandError as e:
