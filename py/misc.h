@@ -52,6 +52,13 @@ typedef unsigned int uint;
 // This macro is supported by Clang and gcc>=14
 #define __has_feature(x) (0)
 #endif
+#ifndef __has_extension
+// This macro is supported by Clang and gcc>=14
+#define __has_extension(x) (0)
+#endif
+#ifndef __has_attribute
+#define __has_attribute(x) (0)
+#endif
 
 
 /** generic ops *************************************************/
@@ -154,6 +161,55 @@ size_t m_get_peak_bytes_allocated(void);
 
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
+
+// ensure a variable or type declaration has a particular minimum alignment
+// e.g. `MP_ALIGNAS(32, char buf[256]);`
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)) || (defined(__cplusplus) && (__cplusplus >= 201103L)) || __has_extension(cxx_alignas) || (defined(__alignas_is_defined) && (__alignas_is_defined == 1))
+// C23 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// C++11 specifier: https://en.cppreference.com/w/cpp/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c-11-alignment-specifiers
+// stdalign.h macro: https://en.cppreference.com/w/c/header/stdalign.html
+// e.g. `alignas(32) char buf[256];`
+#define MP_ALIGNAS(alignment, decl) alignas(alignment) decl
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)) || __has_extension(c_alignas)
+// C11 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c11-alignment-specifiers
+// e.g. `_Alignas(32) char buf[256];`
+#define MP_ALIGNAS(alignment, decl) _Alignas(alignment) decl
+#elif defined(__GNUC__) || __has_attribute(__aligned__)
+// GCC attribute: https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-aligned-variable-attribute
+// e.g. `char buf[256] __attribute__((aligned(32)));`
+#define MP_ALIGNAS(alignment, decl) decl __attribute__((aligned(alignment)))
+#elif defined(_MSC_VER)
+// MSVC declspec: https://learn.microsoft.com/en-us/cpp/cpp/align-cpp
+// e.g. `__declspec(align(32))char buf[256];`
+#define MP_ALIGNAS(alignment, decl) __declspec(align(alignment))decl
+#else
+// e.g. `char buf[256];`
+#define MP_ALIGNAS(alignment, decl) decl
+#endif
+
+// get the minimum alignment of a type
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)) || (defined(__cplusplus) && (__cplusplus >= 201103L)) || __has_extension(cxx_alignof) || (defined(__alignof_is_defined) && (__alignof_is_defined == 1))
+// C23 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// C++11 operator: https://en.cppreference.com/w/cpp/language/alignof.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c-11-alignment-specifiers
+// stdalign.h macro: https://en.cppreference.com/w/c/header/stdalign.html
+#define MP_ALIGNOF(type) alignof(type)
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)) || __has_extension(c_alignof)
+// C11 keyword: https://en.cppreference.com/w/c/language/alignas.html
+// Clang feature: https://clang.llvm.org/docs/LanguageExtensions.html#c11-alignment-specifiers
+#define MP_ALIGNOF(type) _Alignof(type)
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC keyword: https://gcc.gnu.org/onlinedocs/gcc/Alignment.html
+// Clang keyword: https://clang.llvm.org/docs/LanguageExtensions.html#alignof-alignof
+#define MP_ALIGNOF(type) __alignof__(type)
+#elif defined(_MSC_VER)
+// MSVC operator: https://learn.microsoft.com/en-us/cpp/cpp/alignof-operator
+#define MP_ALIGNOF(type) __alignof(type)
+#else
+#define MP_ALIGNOF(type) 4
+#endif
 
 /** unichar / UTF-8 *********************************************/
 
