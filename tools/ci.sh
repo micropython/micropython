@@ -367,6 +367,22 @@ function ci_powerpc_build {
 }
 
 ########################################################################################
+# ports/psoc-edge
+
+function ci_psoc_edge_setup {
+    ci_gcc_arm_setup
+    git clone https://github.com/Infineon/edgeprotecttools.git
+    sudo apt remove python3-packaging python3-jsonschema
+    sudo pip3 install edgeprotecttools
+}
+
+function ci_psoc_edge_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/psoc-edge submodules
+    make ${MAKEOPTS} -C ports/psoc-edge BOARD=KIT_PSE84_AI
+}
+
+########################################################################################
 # ports/qemu
 
 function ci_qemu_setup_arm {
