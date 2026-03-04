@@ -1,5 +1,6 @@
 #define MICROPY_PY_ARRAY (1)
 #define MICROPY_PY_FRAMEBUF (1)
+#define MICROPY_PY_FRAMEBUF_ALPHA (1)
 
 #include "py/dynruntime.h"
 
@@ -44,11 +45,15 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     mp_store_global(MP_QSTR_MVLSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB));
     mp_store_global(MP_QSTR_MONO_VLSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB));
     mp_store_global(MP_QSTR_RGB565, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565));
+    mp_store_global(MP_QSTR_RGB565_BS, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565_BS));
+    mp_store_global(MP_QSTR_RGB565_BE, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565_BE));
+    mp_store_global(MP_QSTR_RGB565_LE, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565_LE));
     mp_store_global(MP_QSTR_GS2_HMSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS2_HMSB));
     mp_store_global(MP_QSTR_GS4_HMSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS4_HMSB));
     mp_store_global(MP_QSTR_GS8, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS8));
     mp_store_global(MP_QSTR_MONO_HLSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MHLSB));
     mp_store_global(MP_QSTR_MONO_HMSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MHMSB));
+    mp_store_global(MP_QSTR_ALPHA, MP_OBJ_NEW_SMALL_INT(MICROPY_PY_FRAMEBUF_ALPHA));
 
     MP_DYNRUNTIME_INIT_EXIT
 }
