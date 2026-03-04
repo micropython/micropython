@@ -1780,3 +1780,64 @@ MP_NORETURN void mp_raise_recursion_depth(void) {
     mp_raise_type_arg(&mp_type_RuntimeError, MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded));
 }
 #endif
+
+#if MICROPY_ENABLE_INIT_LEVELS
+
+// Multi-level initialization implementation
+
+// External linker symbols for each level
+extern mp_init_func_t __mp_init_early_start[], __mp_init_early_end[];
+extern mp_init_func_t __mp_init_core_start[], __mp_init_core_end[];
+extern mp_init_func_t __mp_init_driver_start[], __mp_init_driver_end[];
+extern mp_init_func_t __mp_init_service_start[], __mp_init_service_end[];
+
+extern mp_init_func_t __mp_deinit_early_start[], __mp_deinit_early_end[];
+extern mp_init_func_t __mp_deinit_core_start[], __mp_deinit_core_end[];
+extern mp_init_func_t __mp_deinit_driver_start[], __mp_deinit_driver_end[];
+extern mp_init_func_t __mp_deinit_service_start[], __mp_deinit_service_end[];
+
+// Tables of start/end pointers
+static const struct {
+    mp_init_func_t *start;
+    mp_init_func_t *end;
+} mp_init_table[] = {
+    { __mp_init_early_start, __mp_init_early_end },
+    { __mp_init_core_start, __mp_init_core_end },
+    { __mp_init_driver_start, __mp_init_driver_end },
+    { __mp_init_service_start, __mp_init_service_end },
+};
+
+static const struct {
+    mp_init_func_t *start;
+    mp_init_func_t *end;
+} mp_deinit_table[] = {
+    { __mp_deinit_early_start, __mp_deinit_early_end },
+    { __mp_deinit_core_start, __mp_deinit_core_end },
+    { __mp_deinit_driver_start, __mp_deinit_driver_end },
+    { __mp_deinit_service_start, __mp_deinit_service_end },
+};
+
+void mp_init_run_level(mp_init_level_t level) {
+    if (level >= MP_INIT_NUM_LEVELS) {
+        return;
+    }
+    for (mp_init_func_t *f = mp_init_table[level].start;
+         f < mp_init_table[level].end;
+         f++) {
+        (*f)();
+    }
+}
+
+void mp_deinit_run_level(mp_init_level_t level) {
+    if (level >= MP_INIT_NUM_LEVELS) {
+        return;
+    }
+    // Iterate BACKWARDS
+    for (mp_init_func_t *f = mp_deinit_table[level].end - 1;
+         f >= mp_deinit_table[level].start;
+         f--) {
+        (*f)();
+    }
+}
+
+#endif // MICROPY_ENABLE_INIT_LEVELS
