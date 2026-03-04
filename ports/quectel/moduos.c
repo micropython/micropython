@@ -122,20 +122,7 @@ static mp_obj_t os_uname(void) {
     return mp_obj_new_tuple(6, tuple);
 }
 
-
 static MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
-
-#include "quectel_version.h"
-static mp_obj_t os_sdkver(void) {
-#if defined(PLAT_Qualcomm)
-    return mp_obj_new_str(mob_sw_rev, strlen(mob_sw_rev));
-#else
-    extern mp_obj_t queclib_dev_fw_version();
-    return queclib_dev_fw_version();
-#endif    
-}
-
-static MP_DEFINE_CONST_FUN_OBJ_0(os_sdkver_obj, os_sdkver);
 
 // Work out if the seed will be set on import or not.
 #if MICROPY_MODULE_BUILTIN_INIT && defined(MICROPY_PY_URANDOM_SEED_INIT_FUNC)
@@ -182,7 +169,6 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
     #endif
 	{ MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_uname2), MP_ROM_PTR(&os_uname2_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sdkver), MP_ROM_PTR(&os_sdkver_obj) },
     #if MICROPY_PY_OS_DUPTERM
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&os_dupterm_notify_obj) },

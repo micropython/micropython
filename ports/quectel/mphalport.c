@@ -39,10 +39,8 @@
 #include "mpconfigport.h"
 #include "helios_uart.h"
 #include "helios_rtc.h"
-#if MICROPY_PY_KBD_EXCEPTION
 #include "shared/runtime/interrupt_char.h"
 #include "py/runtime.h"
-#endif
 
 #define QPY_MTHREAD_SLEEP_DEAL_MSG_MAX_NUM (2 * MICROPY_SCHEDULER_DEPTH)
 static Helios_MsgQ_t qpy_mthread_sleep_queue = 0;
@@ -152,39 +150,8 @@ void mp_main_thread_wakeup()
 static void mp_hal_stdin_cb(uint64_t ind_type, Helios_UARTNum port, uint64_t size)
 {
 	if(MP_HAL_PORT_CHECK_OPEN) {
-#if MICROPY_PY_KBD_EXCEPTION
-	    if(IS_MAINPY_RUNNING_FLAG_TRUE() && Head_node == NULL)
-	    {
-	        uint64_t i = 0;
-	        volatile unsigned char c = 0;
-	        for(i= 0; i < size; i++)
-	        {
-	            if(Helios_UART_Read(QPY_REPL_UART, (void *)&c, sizeof(unsigned char)) >0 ) {
-        			if (!IS_REPL_REFUSED() && (c == mp_interrupt_char)) {
-                        // Signal keyboard interrupt to be raised as soon as the VM resumes
-                        mp_sched_keyboard_interrupt();
-                        break;
-                    }
-                    continue;
-        		}
-        		break;
-            }
-            if(i < size)
-            {
-                for(; i < size; i++)
-                {
-                    if(Helios_UART_Read(QPY_REPL_UART, (void *)&c, sizeof(unsigned char)) >0 ) {
-                        continue;
-        		    }
-        		    break;
-                }
-            }
-        }
-        else
-#endif
         {
             mp_main_thread_wakeup();
-    	    
         }
 	}
 }
@@ -381,4 +348,3 @@ static bool mp_mthread_sleep_deal_is_inited(void)
 {
     return (0 != qpy_mthread_sleep_queue);
 }
-

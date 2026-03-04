@@ -44,6 +44,7 @@
 #define MICROPY_PY_IO                       (1)
 #define MICROPY_PY_JSON            		    (1)
 #define MICROPY_VFS                         (1)
+#define MICROPY_QPY_MODULE_UOS              (1)
 #define MICROPY_PY_VFS                      (0)
 #define MICROPY_PY_TIME                     (0)
 #define MICROPY_PY_HEAPQ                    (0)
@@ -94,7 +95,7 @@
 
 #define MICROPY_PY_THREAD           	  (1)
 #define MICROPY_PY_THREAD_GIL       	  (1)
-#define MICROPY_ENABLE_CALLBACK_DEAL      (1)
+#define MICROPY_ENABLE_CALLBACK_DEAL      (0)
 #define MICROPY_READER_VFS                (1)
 
 #define MICROPY_KBD_EXCEPTION             (1)
@@ -142,20 +143,8 @@
 #define MICROPY_SSL_MBEDTLS           (1)
 #endif
 
-#if defined(PLAT_Qualcomm)
-#define mp_type_fileio                      mp_type_vfs_efs_fileio
-#define mp_type_textio                      mp_type_vfs_efs_textio
-#elif defined(PLAT_EIGEN)
-#define mp_type_fileio                      mp_type_vfs_lfs2_fileio
-#define mp_type_textio                      mp_type_vfs_lfs2_textio
-#elif defined(PLAT_EIGEN_718)
-#define mp_type_fileio                      mp_type_vfs_lfs2_fileio
-#define mp_type_textio                      mp_type_vfs_lfs2_textio
-#else
 #define mp_type_fileio                      mp_type_vfs_lfs1_fileio
 #define mp_type_textio                      mp_type_vfs_lfs1_textio
-#endif
-
 
 // type definitions for the specific machine
 
@@ -173,32 +162,7 @@ typedef long mp_off_t;
 #define MICROPY_GC_HEAP_SIZE    (MICROPY_QPY_GC_HEAP_SIZE)
 #endif
 
-#ifdef MICROPY_QPY_MAIN_TASK_STACK_SIZE
-#define MP_QPY_TASK_STACK_SIZE      (MICROPY_QPY_MAIN_TASK_STACK_SIZE)
-#else
-#if defined(PLAT_RDA)
-#define MP_QPY_TASK_STACK_SIZE      (32 * 1024)
-#elif defined(PLAT_EIGEN)
-#define MP_QPY_TASK_STACK_SIZE      (32 * 1024)
-#elif defined(PLAT_EIGEN_718)
-#define MP_QPY_TASK_STACK_SIZE      (8 * 1024)
-#elif defined(PLAT_ECR6600)
-#define MP_QPY_TASK_STACK_SIZE      (8 * 1024)
-#elif defined(PLAT_aic8800m40)
-#define MP_QPY_TASK_STACK_SIZE      (10 * 1024)
-#elif defined(PLAT_Unisoc_8850) || defined(PLAT_Unisoc_8850_R02)
-	#if defined(BOARD_EC600GCN_LD) || defined(BOARD_EC800GCN_LD) || defined(BOARD_EC800GCN_LD_XBND) \
-	|| defined(BOARD_EC800GCN_LD_HRXM) || defined(BOARD_EC600GCN_LD_YM) || defined(BOARD_EC800GCN_TT) \
-	|| defined(BOARD_EG800GLA_LD)
-		#define MP_QPY_TASK_STACK_SIZE      (16 * 1024)
-	#else
-		#define MP_QPY_TASK_STACK_SIZE      (64 * 1024)
-	#endif
-#else
 #define MP_QPY_TASK_STACK_SIZE      (64 * 1024)
-#endif
-#endif
-
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -226,7 +190,7 @@ typedef long mp_off_t;
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
 		do { \
-			extern void mp_handle_pending(bool); \
+			extern void mp_handle_pending(mp_handle_pending_behaviour_t behavior); \
 			mp_handle_pending(true); \
 			MP_THREAD_GIL_EXIT(); \
 			MP_THREAD_GIL_ENTER(); \
