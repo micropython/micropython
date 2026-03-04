@@ -1,7 +1,7 @@
-set(IDF_TARGET esp32s2)
+include(boards/ESP32_GENERIC_S2/mpconfigboard.cmake)
+
 set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.spiram_sx
+    ${SDKCONFIG_DEFAULTS}
     boards/UM_FEATHERS2/sdkconfig.board
 )
 
