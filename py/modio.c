@@ -34,6 +34,7 @@
 #include "py/objarray.h"
 #include "py/objstringio.h"
 #include "py/frozenmod.h"
+#include "py/misc.h"
 
 #if MICROPY_PY_IO
 
@@ -113,7 +114,7 @@ typedef struct _mp_obj_bufwriter_t {
     mp_obj_t stream;
     size_t alloc;
     size_t len;
-    byte buf[0];
+    byte buf[] MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING;
 } mp_obj_bufwriter_t;
 
 static mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
