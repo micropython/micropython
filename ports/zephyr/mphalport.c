@@ -29,14 +29,6 @@
 #include "extmod/modmachine.h"
 
 static struct k_poll_signal wait_signal;
-static struct k_poll_event wait_events[2] = {
-    K_POLL_EVENT_INITIALIZER(K_POLL_TYPE_SIGNAL,
-        K_POLL_MODE_NOTIFY_ONLY,
-        &wait_signal),
-    K_POLL_EVENT_STATIC_INITIALIZER(K_POLL_TYPE_SEM_AVAILABLE,
-        K_POLL_MODE_NOTIFY_ONLY,
-        NULL, 0),
-};
 
 void mp_hal_init(void) {
     k_poll_signal_init(&wait_signal);
@@ -46,34 +38,28 @@ void mp_hal_signal_event(void) {
     k_poll_signal_raise(&wait_signal, 0);
 }
 
-void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms) {
-    mp_uint_t t0 = mp_hal_ticks_ms();
-    if (sem) {
-        k_poll_event_init(&wait_events[1], K_POLL_TYPE_SEM_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, sem);
-    }
+void mp_hal_delay_ms(mp_uint_t ms) {
+    uint64_t dt;
+    uint32_t t0 = mp_hal_ticks_ms();
     for (;;) {
         mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         MP_THREAD_GIL_EXIT();
-        k_timeout_t wait;
-        uint32_t dt = mp_hal_ticks_ms() - t0;
-        if (timeout_ms == (uint32_t)-1) {
-            wait = K_FOREVER;
+        uint32_t t1 = mp_hal_ticks_ms();
+        dt = t1 - t0;
+        if (dt + 1 >= ms) {
+            // doing a k_msleep would take us beyond requested delay time
+            k_yield();
+            MP_THREAD_GIL_ENTER();
+            t1 = mp_hal_ticks_ms();
+            dt = t1 - t0;
+            break;
         } else {
-            wait = K_MSEC((timeout_ms > dt) ? (timeout_ms - dt) : 0);
-        }
-        k_poll(wait_events, sem ? 2 : 1, wait);
-        if (wait_events[0].state == K_POLL_STATE_SIGNALED) {
-            wait_events[0].signal->signaled = 0;
-            wait_events[0].state = K_POLL_STATE_NOT_READY;
-        } else if (sem && wait_events[1].state == K_POLL_STATE_SEM_AVAILABLE) {
-            wait_events[1].state = K_POLL_STATE_NOT_READY;
+            k_msleep(1);
             MP_THREAD_GIL_ENTER();
-            return;
         }
-        if (dt >= timeout_ms) {
-            MP_THREAD_GIL_ENTER();
-            return;
-        }
+    }
+    if (dt < ms) {
+        mp_hal_delay_us(500);
     }
 }
 
