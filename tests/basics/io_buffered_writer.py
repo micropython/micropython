@@ -7,6 +7,12 @@ except (AttributeError, ImportError):
     print('SKIP')
     raise SystemExit
 
+# Test that BufferedWriter requires a valid stream object
+try:
+    io.BufferedWriter(None, 8)
+except (TypeError, OSError) as e:
+    print("caught error for invalid stream")
+
 bts = io.BytesIO()
 buf = io.BufferedWriter(bts, 8)
 
