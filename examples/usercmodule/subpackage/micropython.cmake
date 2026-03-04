@@ -3,7 +3,7 @@ add_library(usermod_subpackage_example INTERFACE)
 
 # Add our source files to the lib
 target_sources(usermod_subpackage_example INTERFACE
-    ${CMAKE_CURRENT_LIST_DIR}/examplemodule.c
+    ${CMAKE_CURRENT_LIST_DIR}/modexamplepackage.c
 )
 
 # Add the current directory as an include directory.
