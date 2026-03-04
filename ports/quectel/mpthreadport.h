@@ -68,4 +68,3 @@ void mp_thread_semphore_del(mp_thread_semphore_t *sem);
 void mp_new_thread_add(uint32_t th_id, uint32_t stack_size);
 
 #endif // MICROPY_INCLUDED_MPTHREADPORT_H
-

@@ -330,5 +330,4 @@ unsigned int mp_get_available_memory_size(void)
     return Helios_GetAvailableMemorySize();
 }
 
-
 #endif // MICROPY_PY_THREAD
