@@ -34,6 +34,7 @@ string(TOUPPER          ZEPHYR_${BOARD} MICROPY_BOARD)
 
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
+include(${MICROPY_DIR}/py/usermod.cmake)
 
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/dts)
 
@@ -135,6 +136,7 @@ list(TRANSFORM MICROPY_SOURCE_LIB PREPEND ${MICROPY_DIR}/lib/)
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_USERMOD}
     ${MICROPY_SOURCE_SHARED}
     ${MICROPY_SOURCE_DRIVERS}
     ${MICROPY_SOURCE_LIB}
@@ -153,6 +155,7 @@ zephyr_library_named(${MICROPY_TARGET})
 zephyr_library_include_directories(
     ${MICROPY_INC_CORE}
     ${MICROPY_PORT_DIR}
+    ${MICROPY_INC_USERMOD}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
