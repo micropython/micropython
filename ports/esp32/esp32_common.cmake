@@ -273,6 +273,11 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
     -Wno-missing-field-initializers
 )
 
+# User C modules don't pick up certain compile options set by the IDF, most
+# importantly the optimisation level.  So set them here.
+idf_build_get_property(idf_compile_options COMPILE_OPTIONS)
+target_compile_options(usermod INTERFACE ${idf_compile_options})
+
 # Additional include directories needed for private NimBLE headers.
 target_include_directories(${MICROPY_TARGET} PUBLIC
     ${IDF_PATH}/components/bt/host/nimble/nimble
