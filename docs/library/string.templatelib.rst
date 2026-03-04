@@ -71,8 +71,8 @@ Classes
 
    .. attribute:: conversion
 
-      The conversion specifier (``'s'``, ``'r'``, or ``'a'``) if present,
-      otherwise ``None``.
+      The conversion specifier (``'s'`` or ``'r'``) if present, otherwise ``None``.
+      Note that MicroPython does not support the ``'a'`` conversion.
 
    .. attribute:: format_spec
 
@@ -140,14 +140,6 @@ The debug format ``{expr=}`` is supported::
    MicroPython does not provide the ``format()`` built-in function. Use
    string formatting methods like ``str.format()`` instead.
 
-Differences from CPython
-------------------------
-
-This implementation follows PEP 750 with these MicroPython-specific details:
-
-**Memory Limits**: Template strings are subject to MicroPython's memory
-constraints. Very large templates may raise ``MemoryError``.
-
 Availability
 ------------
 
@@ -179,8 +171,6 @@ Processing template with format support::
             return repr(value)
         elif conversion == "s":
             return str(value)
-        elif conversion == "a":
-            return ascii(value)
         return value
 
     def process_template(template):
