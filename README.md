@@ -50,16 +50,6 @@ the officially supported board from the
 see the [schematics and pinouts](http://github.com/micropython/pyboard) and
 [documentation](https://docs.micropython.org/en/latest/pyboard/quickref.html).
 
-Contributing
-------------
-
-MicroPython is an open-source project and welcomes contributions. To be
-productive, please be sure to follow the
-[Contributors' Guidelines](https://github.com/micropython/micropython/wiki/ContributorGuidelines)
-and the [Code Conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md).
-Note that MicroPython is licenced under the MIT license, and all contributions
-should follow this license.
-
 MicroPython design values
 -------------------------
 
@@ -98,6 +88,16 @@ tight resources.  Beyond that, there are ways to extend MicroPython if needed to
 better match Python.  The provided built-in modules are an efficient subset of
 the corresponding Python ones, without duplication of functionality, and allow
 extension in Python if needed.
+
+Contributing
+------------
+
+MicroPython is an open-source project and welcomes contributions. To be
+productive, please be sure to follow the
+[Contributors' Guidelines](https://github.com/micropython/micropython/wiki/ContributorGuidelines)
+and the [Code Conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md).
+Note that MicroPython is licenced under the MIT license, and all contributions
+should follow this license.
 
 About this repository
 ---------------------
