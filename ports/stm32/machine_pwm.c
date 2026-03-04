@@ -241,11 +241,6 @@ static bool pwm_set_freq(pwm_t *pwm, uint32_t freq_hz) {
 
     uint32_t source_freq = timer_get_source_freq(pwm->tim_id);
 
-    if (freq_hz > source_freq) {
-        // Requested frequency too high.
-        return false;
-    }
-
     // Find optimal prescaler and period values for the given frequency:
     // - For 32-bit TIM, the prescaler is always 1 to get maximum precision.
     // - For 16-bit TIM, find the smallest prescaler with a period that fits 16-bits.
@@ -266,6 +261,11 @@ static bool pwm_set_freq(pwm_t *pwm, uint32_t freq_hz) {
                 period >>= 1;
             }
         }
+    }
+
+    if (period <= 1) {
+        // Requested frequency too high.
+        return false;
     }
 
     // Set the prescaler and period registers.
