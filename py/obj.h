@@ -177,6 +177,10 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 #error "MICROPY_OBJ_REPR_C requires float to be enabled."
 #endif
 
+static inline bool mp_obj_is_obj(mp_const_obj_t o) {
+    return (((mp_int_t)(o)) & 3) == 0;
+}
+
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 1) != 0;
 }
@@ -187,31 +191,37 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
 #include <math.h>
 // note: MP_OBJ_NEW_CONST_FLOAT should be a MP_ROM_PTR but that macro isn't available yet
 #define MP_OBJ_NEW_CONST_FLOAT(f) ((mp_obj_t)((((((uint64_t)f) & ~3) | 2) + 0x80800000) & 0xffffffff))
-#define mp_const_float_e  MP_OBJ_NEW_CONST_FLOAT(0x402df854)
-#define mp_const_float_pi MP_OBJ_NEW_CONST_FLOAT(0x40490fdb)
 #define mp_const_float_nan MP_OBJ_NEW_CONST_FLOAT(0x7fc00000)
 #if MICROPY_PY_MATH_CONSTANTS
-#define mp_const_float_tau MP_OBJ_NEW_CONST_FLOAT(0x40c90fdb)
 #define mp_const_float_inf MP_OBJ_NEW_CONST_FLOAT(0x7f800000)
 #endif
+#if MICROPY_FLOAT_BOX_AS_NEEDED
+extern const struct _mp_obj_float_t mp_const_float_e_obj;
+extern const struct _mp_obj_float_t mp_const_float_pi_obj;
+#define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
+#define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
+#if MICROPY_PY_MATH_CONSTANTS
+extern const struct _mp_obj_float_t mp_const_float_tau_obj;
+#define mp_const_float_tau MP_ROM_PTR(&mp_const_float_tau_obj)
+#endif
+#else
+#define mp_const_float_e  MP_OBJ_NEW_CONST_FLOAT(0x402df854)
+#define mp_const_float_pi MP_OBJ_NEW_CONST_FLOAT(0x40490fdb)
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau MP_OBJ_NEW_CONST_FLOAT(0x40c90fdb)
+#endif
+#endif
 
-static inline bool mp_obj_is_float(mp_const_obj_t o) {
+static inline bool mp_obj_is_unboxed_float(mp_const_obj_t o) {
     // Ensure that 32-bit arch can only use single precision.
     MP_STATIC_ASSERT(sizeof(mp_float_t) <= sizeof(mp_obj_t));
 
     return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006;
 }
-static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
-    union {
-        mp_float_t f;
-        mp_uint_t u;
-    } num = {.u = ((mp_uint_t)o - 0x80800000u) & ~3u};
-    // Rather than always truncating toward zero, which creates a strong
-    // bias, copy the two previous bits to fill in the two missing bits.
-    // This appears to be a pretty good heuristic.
-    num.u |= (num.u >> 2) & 3u;
-    return num.f;
-}
+#if MICROPY_FLOAT_BOX_AS_NEEDED
+mp_obj_t mp_obj_new_float_boxed(mp_float_t value);
+mp_float_t mp_obj_float_get_boxed(mp_const_obj_t self_in);
+#endif
 static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
     if (isnan(f)) {
         // prevent creation of bad nanboxed pointers via array.array or struct
@@ -221,6 +231,12 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
         mp_float_t f;
         mp_uint_t u;
     } num = {.f = f};
+    #if MICROPY_FLOAT_BOX_AS_NEEDED
+    mp_uint_t lobits = num.u & 3u;
+    if (lobits) { // synthesized low bits do NOT match, must box
+        return mp_obj_new_float_boxed(f);
+    }
+    #endif
     return (mp_obj_t)(((num.u & ~0x3u) | 2u) + 0x80800000u);
 }
 #endif
@@ -236,10 +252,6 @@ static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 }
 #define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 4)
 #define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 4) | 0xe))
-
-static inline bool mp_obj_is_obj(mp_const_obj_t o) {
-    return (((mp_int_t)(o)) & 3) == 0;
-}
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 
@@ -1299,6 +1311,38 @@ mp_obj_t mp_seq_extract_slice(const mp_obj_t *seq, mp_bound_slice_t *indexes);
 #define MP_MAP_SLOT_IS_FILLED mp_map_slot_is_filled
 #define MP_SET_SLOT_IS_FILLED mp_set_slot_is_filled
 
+#endif
+
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+static inline bool mp_obj_is_boxed_float(mp_const_obj_t o) {
+    return mp_obj_is_exact_type(o, &mp_type_float);
+}
+static inline bool mp_obj_is_float(mp_const_obj_t o) {
+    #if MICROPY_FLOAT_BOX_AS_NEEDED
+    if (mp_obj_is_boxed_float(o)) {
+        return true;
+    }
+    #endif
+    return mp_obj_is_unboxed_float(o);
+}
+static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
+    #if MICROPY_FLOAT_BOX_AS_NEEDED
+    if (mp_obj_is_obj(o)) {
+        return mp_obj_float_get_boxed(o);
+    }
+    #endif
+    union {
+        mp_float_t f;
+        mp_uint_t u;
+    } num = {.u = ((mp_uint_t)o - 0x80800000u) & ~3u};
+    #if !MICROPY_FLOAT_BOX_AS_NEEDED
+    // Rather than always truncating toward zero, which creates a strong
+    // bias, copy the two previous bits to fill in the two missing bits.
+    // This appears to be a pretty good heuristic.
+    num.u |= (num.u >> 2) & 3u;
+    #endif
+    return num.f;
+}
 #endif
 
 #endif // MICROPY_INCLUDED_PY_OBJ_H
