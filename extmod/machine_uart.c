@@ -177,7 +177,7 @@ static const mp_stream_p_t uart_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_uart_type,
     MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
+    MP_TYPE_FLAG_ITER_IS_STREAM | MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS,
     make_new, mp_machine_uart_make_new,
     print, mp_machine_uart_print,
     protocol, &uart_stream_p,

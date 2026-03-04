@@ -562,6 +562,10 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // If MP_TYPE_FLAG_INSTANCE_TYPE is set then this is an instance type (i.e. defined in Python).
 // If MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE is set then the "subscr" slot allows a stack
 //   allocated slice to be passed in (no references to it will be retained after the call).
+// If MP_TYPE_FLAG_IS_INSTANCED is set, then instances of this class have been created.
+//   Mutations to this class that would require updating all instances must be rejected.
+// If MP_TYPE_FLAG_HAS_FINALISER is set, then instances of this class have a `__del__` method
+//   and need to be marked as finalisable as they are allocated.
 #define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
@@ -576,6 +580,8 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_ITER_IS_STREAM (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM)
 #define MP_TYPE_FLAG_INSTANCE_TYPE (0x0200)
 #define MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE (0x0400)
+#define MP_TYPE_FLAG_IS_INSTANCED (0x0800)
+#define MP_TYPE_FLAG_HAS_FINALISER (0x1000)
 
 typedef enum {
     PRINT_STR = 0,
@@ -928,6 +934,7 @@ extern const struct _mp_obj_bool_t mp_const_true_obj;
 // The below macros are for convenience only.
 #define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))
 #define mp_const_empty_tuple (MP_OBJ_FROM_PTR(&mp_const_empty_tuple_obj))
+#define mp_const_ellipsis (MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj))
 #define mp_const_notimplemented (MP_OBJ_FROM_PTR(&mp_const_notimplemented_obj))
 extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
