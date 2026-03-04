@@ -2212,10 +2212,13 @@ typedef time_t mp_timestamp_t;
 
 // All MicroPython objects in ROM must be aligned on at least a 4 byte boundary
 // so that the small-int/qstr/pointer distinction can be made.  For machines
-// that don't do this (eg 16-bit CPU), define the following macro to something
-// like __attribute__((aligned(4))).
-#ifndef MICROPY_OBJ_BASE_ALIGNMENT
-#define MICROPY_OBJ_BASE_ALIGNMENT
+// that don't do this (eg 16-bit CPU), define MICROPY_OBJ_BASE_ALIGNMENT as 4.
+#if defined(MICROPY_OBJ_BASE_ALIGNMENT)
+#define MICROPY_OBJ_BASE_ALIGNMENT_ATTR __attribute__((aligned(MICROPY_OBJ_BASE_ALIGNMENT)))
+#elif defined(__BIGGEST_ALIGNMENT__) && __BIGGEST_ALIGNMENT__ < 4
+#define MICROPY_OBJ_BASE_ALIGNMENT_ATTR __attribute__((4))
+#else
+#define MICROPY_OBJ_BASE_ALIGNMENT_ATTR /* default alignment */
 #endif
 
 // String used for the banner, and sys.version additional information
