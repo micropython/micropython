@@ -42,8 +42,6 @@ static inline int msec_sleep_tv(struct timeval *tv) {
     return 0;
 }
 #define sleep_select(a, b, c, d, e) msec_sleep_tv((e))
-#else
-#define sleep_select select
 #endif
 
 // mingw32 defines CLOCKS_PER_SEC as ((clock_t)<somevalue>) but preprocessor does not handle casts
@@ -88,41 +86,39 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
 static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
-    mp_float_t ipart;
-    tv.tv_usec = (time_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
-    tv.tv_sec = (suseconds_t)ipart;
-    int res;
-    while (1) {
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
-        MP_THREAD_GIL_EXIT();
-        res = sleep_select(0, NULL, NULL, NULL, &tv);
-        MP_THREAD_GIL_ENTER();
-        #if MICROPY_SELECT_REMAINING_TIME
-        // TODO: This assumes Linux behavior of modifying tv to the remaining
-        // time.
-        if (res != -1 || errno != EINTR) {
-            break;
-        }
-        // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
-        #else
-        break;
-        #endif
+    if (val < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
     }
-    RAISE_ERRNO(res, errno);
+    uint64_t total_ms = (uint64_t)(val * MICROPY_FLOAT_CONST(1000.0));
     #else
-    int seconds = mp_obj_get_int(arg);
+    mp_int_t secs = mp_obj_get_int(arg);
+    if (secs < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
+    }
+    uint64_t total_ms = (uint64_t)secs * 1000;
+    #endif
+
+    uint64_t start = mp_hal_ticks_ms();
     for (;;) {
         mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
-        MP_THREAD_GIL_EXIT();
-        seconds = sleep(seconds);
-        MP_THREAD_GIL_ENTER();
-        if (seconds == 0) {
+        uint64_t elapsed = mp_hal_ticks_ms() - start;
+        if (elapsed >= total_ms) {
             break;
         }
+        uint64_t remain = total_ms - elapsed;
+        uint32_t chunk = remain > UINT32_MAX ? UINT32_MAX : (uint32_t)remain;
+        #ifndef _WIN32
+        MP_THREAD_GIL_EXIT();
+        mp_unix_sched_sleep(chunk);
+        MP_THREAD_GIL_ENTER();
+        #else
+        struct timeval tv = {chunk / 1000, (chunk % 1000) * 1000};
+        MP_THREAD_GIL_EXIT();
+        sleep_select(0, NULL, NULL, NULL, &tv);
+        MP_THREAD_GIL_ENTER();
+        #endif
     }
-    #endif
     return mp_const_none;
 }
 

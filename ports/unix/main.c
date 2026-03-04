@@ -495,6 +495,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_init();
 
+    #ifndef _WIN32
+    mp_unix_init_sched_signal();
+    #endif
+
     #if MICROPY_EMIT_NATIVE
     // Set default emitter options
     MP_STATE_VM(default_emit_opt) = emit_opt;
@@ -736,6 +740,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     #if defined(MICROPY_UNIX_COVERAGE)
     gc_sweep_all();
+    #endif
+
+    #ifndef _WIN32
+    mp_unix_deinit_sched_signal();
     #endif
 
     mp_deinit();
