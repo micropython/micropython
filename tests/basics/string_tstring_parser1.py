@@ -1,23 +1,4 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-# Check if t-strings are supported
-try:
-    exec('t"test"')
-except SyntaxError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    import gc
-    import sys
-    gc.collect()
-except (ImportError, MemoryError):
-    print("SKIP")
-    raise SystemExit
+from string.templatelib import Template
 
 print("\n=== Empty expression tests ===")
 try:
@@ -59,7 +40,6 @@ except Exception as e:
     print(f"Long expr error: {type(e).__name__}: {e}")
 
 try:
-    from string.templatelib import Template
     large_str = 'x' * 1099
     tmpl = Template(large_str)
     result = str(tmpl)

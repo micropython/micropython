@@ -1,22 +1,4 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    exec('t"test"')
-except SyntaxError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    import gc
-    import sys
-    gc.collect()
-except (ImportError, MemoryError):
-    print("SKIP")
-    raise SystemExit
+from string.templatelib import Template, Interpolation
 
 print("\n=== Edge cases ===")
 t_empty = Template()

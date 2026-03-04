@@ -1,8 +1,4 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
+from string.templatelib import Template, Interpolation
 
 print("=== Basic functionality ===")
 t = t"Hello World"

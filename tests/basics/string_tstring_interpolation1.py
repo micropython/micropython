@@ -1,24 +1,3 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-# Check if t-strings are supported
-try:
-    exec('t"test"')
-except SyntaxError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    import gc
-    import sys
-    gc.collect()
-except (ImportError, MemoryError):
-    print("SKIP")
-    raise SystemExit
-
 print("\n=== Bracket/paren depth tracking ===")
 d = {'a': 1, 'b:c': 2}
 items = [10, 20, 30]

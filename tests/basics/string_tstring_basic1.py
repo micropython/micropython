@@ -1,15 +1,3 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    exec('t"test"')
-except SyntaxError:
-    print("SKIP")
-    raise SystemExit
-
 print("=== Parser error tests ===")
 try:
     exec('t_empty = t"{}"')

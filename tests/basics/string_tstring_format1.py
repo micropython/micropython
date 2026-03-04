@@ -1,24 +1,3 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-# Check if t-strings are supported
-try:
-    exec('t"test"')
-except SyntaxError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    import gc
-    import sys
-    gc.collect()
-except (ImportError, MemoryError):
-    print("SKIP")
-    raise SystemExit
-
 print("\n=== Format spec edge cases ===")
 print(f"Empty fmt: {t'{42:}'}")
 print(f"Width: '{t'{42:10}'}'")

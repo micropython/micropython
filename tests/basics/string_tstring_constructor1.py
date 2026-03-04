@@ -1,27 +1,9 @@
-try:
-    from string.templatelib import Template, Interpolation
-except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    exec('t"test"')
-except SyntaxError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    import gc
-    import sys
-    gc.collect()
-except (ImportError, MemoryError):
-    print("SKIP")
-    raise SystemExit
-
 # NOTE: Error messages are shortened in MicroPython to avoid stack overflow
 # during ROM compression on constrained platforms (Windows x86, ASan).
 # CPython 3.14 message: "Template.__new__ *args need to be of type 'str' or 'Interpolation', got int"
 # MicroPython message: "Template.__new__ args must be str or Interpolation, got 'int'"
+
+from string.templatelib import Template
 
 print("=== Constructor error messages ===")
 try:
