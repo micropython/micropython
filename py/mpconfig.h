@@ -1325,7 +1325,7 @@ typedef time_t mp_timestamp_t;
 // Support for template strings, t-strings (see PEP 750, Python 3.14+)
 // Requires MICROPY_PY_FSTRINGS to be enabled.
 #ifndef MICROPY_PY_TSTRINGS
-#define MICROPY_PY_TSTRINGS (MICROPY_PY_FSTRINGS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#define MICROPY_PY_TSTRINGS (MICROPY_PY_FSTRINGS && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
 #endif
 
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)
