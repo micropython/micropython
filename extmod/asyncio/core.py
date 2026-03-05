@@ -116,11 +116,11 @@ class IOQueue:
             # print('poll', s, sm, ev)
             if ev & ~select.POLLOUT and sm[0] is not None:
                 # POLLIN or error
-                _task_queue.push(sm[0])
+                _task_queue.push_raw(sm[0])
                 sm[0] = None
             if ev & ~select.POLLIN and sm[1] is not None:
                 # POLLOUT or error
-                _task_queue.push(sm[1])
+                _task_queue.push_raw(sm[1])
                 sm[1] = None
             if sm[0] is None and sm[1] is None:
                 self._dequeue(s)
@@ -144,7 +144,7 @@ def create_task(coro):
     if not hasattr(coro, "send"):
         raise TypeError("coroutine expected")
     t = Task(coro, globals())
-    _task_queue.push(t)
+    _task_queue.push_raw(t)
     return t
 
 
@@ -216,7 +216,7 @@ def run_until_complete(main_task=None):
                 else:
                     # Schedule any other tasks waiting on the completion of this task.
                     while t.state.peek():
-                        _task_queue.push(t.state.pop())
+                        _task_queue.push_raw(t.state.pop())
                         awaited = True
                     # "False" indicates that the task is complete and has been await'ed on.
                     t.state = False
@@ -224,7 +224,7 @@ def run_until_complete(main_task=None):
                     # An exception ended this detached task, so queue it for later
                     # execution to handle the uncaught exception if no other task retrieves
                     # the exception in the meantime (this is handled by Task.throw).
-                    _task_queue.push(t)
+                    _task_queue.push_raw(t)
                 # Save return value of coro to pass up to caller.
                 t.data = er
             elif t.state is None:
@@ -278,7 +278,7 @@ class Loop:
     def stop():
         global _stop_task
         if _stop_task is not None:
-            _task_queue.push(_stop_task)
+            _task_queue.push_raw(_stop_task)
             # If stop() is called again, do nothing
             _stop_task = None
 
