@@ -33,37 +33,34 @@
 #include "gccollect.h"
 
 #if defined(PLAT_RDA)
-unsigned int ReadSP(void)
-{
+unsigned int ReadSP(void) {
     uint32_t res;
     __asm volatile (
         "move %0, $29\n"
-        :"=r"(res)
+        : "=r" (res)
         :
         :
-    );
-    
+        );
+
     return res;
 }
 #elif defined(PLAT_ECR6600)
 
 #else
-unsigned int ReadSP(void)
-{
+unsigned int ReadSP(void) {
     uint32_t res;
     __asm volatile (
         "mov %0, r13\n"
-        :"=r"(res)
+        : "=r" (res)
         :
         :
-    );
-    
+        );
+
     return res;
 }
 #endif
 
-void gc_stacktop_set(void * ptr)
-{
+void gc_stacktop_set(void *ptr) {
     MP_STATE_PORT(global_stacktop_ptr) = ptr;
 }
 
@@ -72,31 +69,26 @@ void gc_collect(void) {
     #if 0
     uint32_t start = mp_hal_ticks_us();
     #endif
-#if defined(PLAT_ECR6600)
-	int val = 0;
-#endif
+    #if defined(PLAT_ECR6600)
+    int val = 0;
+    #endif
     // start the GC
     gc_collect_start();
-#if defined(PLAT_ECR6600)
-	uintptr_t sp = (uintptr_t)&val;
-#else
+    #if defined(PLAT_ECR6600)
+    uintptr_t sp = (uintptr_t)&val;
+    #else
     // get the registers and the sp
     uintptr_t sp = (uintptr_t)ReadSP();
-#endif
-    if(mp_is_python_thread())
-    {
+    #endif
+    if (mp_is_python_thread()) {
         // trace the stack, including the registers (since they live on the stack in this function)
         gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
-    }
-    else if(NULL != MP_STATE_PORT(global_stacktop_ptr))
-    {
+    } else if (NULL != MP_STATE_PORT(global_stacktop_ptr)) {
         gc_collect_root((void **)sp, ((uint32_t)MP_STATE_PORT(global_stacktop_ptr) - sp) / sizeof(uint32_t));
+    } else {
+        // do nothing
     }
-    else
-    {
-        //do nothing
-    }
-    
+
     // trace root pointers from any threads
     #if MICROPY_PY_THREAD
     mp_thread_gc_others();
@@ -117,4 +109,4 @@ void gc_collect(void) {
     #endif
 }
 
-MP_REGISTER_ROOT_POINTER(volatile void * global_stacktop_ptr);
+MP_REGISTER_ROOT_POINTER(volatile void *global_stacktop_ptr);

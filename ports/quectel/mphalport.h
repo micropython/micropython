@@ -30,14 +30,14 @@
 #include "helios_os.h"
 #include "helios_uart.h"
 
-#define	HAL_TICK1S	32.768
+#define HAL_TICK1S      32.768
 #define QPY_REPL_UART   HELIOS_UART3
 #define HELIOS_UART_BAUD   HELIOS_UART_BAUD_115200
 
-//mia.zhong @20220308 input接口多线程调用导致dump问题
+// mia.zhong @20220308 input接口多线程调用导致dump问题
 typedef struct Input_ListNode
 {
-    //int id;
+    // int id;
     int mthread_sleep_flag;
     Helios_MsgQ_t msg_q;
     void *next_node;
