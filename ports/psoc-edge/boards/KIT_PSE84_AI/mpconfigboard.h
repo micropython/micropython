@@ -30,8 +30,6 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "KIT_PSE84_AI"
 
-#define MULTI_CORE (1) // Set to 1 if multi core operation is needed and supported
-
 // External QSPI Flash Configuration
 // These sizes are determined by the physical flash chip specifications
 // and memory map layout for the KIT_PSE84_AI board
