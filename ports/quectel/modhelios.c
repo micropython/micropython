@@ -34,7 +34,7 @@
 
 #include "quectel_version.h"
 
-static mp_obj_t helios_platform(void) {	
+static mp_obj_t helios_platform(void) {
     char platform[64] = {0};
     snprintf(platform, sizeof(platform), "%s%d.%d.%d", "heliossdk-v", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
     return mp_obj_new_str(platform, strlen(platform));

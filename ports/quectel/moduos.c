@@ -50,16 +50,16 @@ extern const mp_obj_type_t mp_fat_vfs_type;
 
 
 static const qstr os_uname_info_fields[] = {
-    MP_QSTR_sysname, MP_QSTR_nodename,MP_QSTR_release,
+    MP_QSTR_sysname, MP_QSTR_nodename, MP_QSTR_release,
     MP_QSTR_version, MP_QSTR_machine, MP_QSTR_qpyver,
 };
 
-static  MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, sysname);
-static  MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, nodename);
-static  MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
-static  MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
-static  MP_DEFINE_STR_OBJ(os_uname_info_machine_obj, machine);
-static  MP_DEFINE_STR_OBJ(os_uname_info_qpyver_obj, QUECPYTHON_VERSION_STRING);
+static MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, sysname);
+static MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, nodename);
+static MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
+static MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
+static MP_DEFINE_STR_OBJ(os_uname_info_machine_obj, machine);
+static MP_DEFINE_STR_OBJ(os_uname_info_qpyver_obj, QUECPYTHON_VERSION_STRING);
 
 static MP_DEFINE_ATTRTUPLE(
     os_uname_info_obj,
@@ -74,51 +74,51 @@ static MP_DEFINE_ATTRTUPLE(
     );
 
 static mp_obj_t os_uname2(void) {
-	Helios_Dev_GetProductName((void *)sysname, sizeof(sysname));
+    Helios_Dev_GetProductName((void *)sysname, sizeof(sysname));
     Helios_Dev_GetModel((void *)nodename, sizeof(nodename));
-	snprintf(machine, sizeof(machine), "%s with QUECTEL", nodename);
-	
-	os_uname_info_sysname_obj.len = strlen(sysname);
-	os_uname_info_nodename_obj.len = strlen(nodename);
-	os_uname_info_machine_obj.len = strlen(machine);
-	os_uname_info_qpyver_obj.len = strlen(QUECPYTHON_VERSION_STRING);
-	return (mp_obj_t)&os_uname_info_obj;
+    snprintf(machine, sizeof(machine), "%s with QUECTEL", nodename);
+
+    os_uname_info_sysname_obj.len = strlen(sysname);
+    os_uname_info_nodename_obj.len = strlen(nodename);
+    os_uname_info_machine_obj.len = strlen(machine);
+    os_uname_info_qpyver_obj.len = strlen(QUECPYTHON_VERSION_STRING);
+    return (mp_obj_t)&os_uname_info_obj;
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(os_uname2_obj, os_uname2);
 
 
 static mp_obj_t os_uname(void) {
-	char sysname[40] = {0};
-	char nodname[20] = {0};
-	char release[20] = {0};
-	char machine[30] = {0};
-	char version[128] = {0};
-	//char qpy_ver[20] = {0};
+    char sysname[40] = {0};
+    char nodname[20] = {0};
+    char release[20] = {0};
+    char machine[30] = {0};
+    char version[128] = {0};
+    // char qpy_ver[20] = {0};
 
     char mob_usb_product[64] = {0};
     char mob_model_id[64] = {0};
-    //char _qpy_ver[20] = {0};
+    // char _qpy_ver[20] = {0};
 
     Helios_Dev_GetProductName((void *)mob_usb_product, sizeof(mob_usb_product));
     Helios_Dev_GetModel((void *)mob_model_id, sizeof(mob_model_id));
-    //Helios_Dev_GetQpyVersion((void *)_qpy_ver, sizeof(_qpy_ver));
+    // Helios_Dev_GetQpyVersion((void *)_qpy_ver, sizeof(_qpy_ver));
 
-	snprintf(sysname, sizeof(sysname), "sysname=%s", mob_usb_product);
-	snprintf(nodname, sizeof(nodname), "nodename=%s", mob_model_id);
-	snprintf(release, sizeof(release), "release=%s", MICROPY_VERSION_STRING);
-	snprintf(version, sizeof(version), "version=%s on %s", MICROPY_GIT_TAG, MICROPY_BUILD_DATE);
-	snprintf(machine, sizeof(machine), "machine=%s with QUECTEL", mob_model_id);
-	//snprintf(qpy_ver, sizeof(qpy_ver), "qpyver=%s", _qpy_ver);
+    snprintf(sysname, sizeof(sysname), "sysname=%s", mob_usb_product);
+    snprintf(nodname, sizeof(nodname), "nodename=%s", mob_model_id);
+    snprintf(release, sizeof(release), "release=%s", MICROPY_VERSION_STRING);
+    snprintf(version, sizeof(version), "version=%s on %s", MICROPY_GIT_TAG, MICROPY_BUILD_DATE);
+    snprintf(machine, sizeof(machine), "machine=%s with QUECTEL", mob_model_id);
+    // snprintf(qpy_ver, sizeof(qpy_ver), "qpyver=%s", _qpy_ver);
 
-	mp_obj_t tuple[6] = {
-		mp_obj_new_str(sysname, strlen(sysname)), 
-		mp_obj_new_str(nodname, strlen(nodname)), 
-		mp_obj_new_str(release, strlen(release)),
-		mp_obj_new_str(version, strlen(version)), 
-		mp_obj_new_str(machine, strlen(machine)), 
-		mp_obj_new_str("qpyver="QUECPYTHON_VERSION_STRING, strlen("qpyver="QUECPYTHON_VERSION_STRING)),
-	};
-			
+    mp_obj_t tuple[6] = {
+        mp_obj_new_str(sysname, strlen(sysname)),
+        mp_obj_new_str(nodname, strlen(nodname)),
+        mp_obj_new_str(release, strlen(release)),
+        mp_obj_new_str(version, strlen(version)),
+        mp_obj_new_str(machine, strlen(machine)),
+        mp_obj_new_str("qpyver="QUECPYTHON_VERSION_STRING, strlen("qpyver="QUECPYTHON_VERSION_STRING)),
+    };
+
     return mp_obj_new_tuple(6, tuple);
 }
 
@@ -167,8 +167,8 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
     #if OS_URANDOM_SEED_ON_IMPORT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&os_urandom___init___obj) },
     #endif
-	{ MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_uname2), MP_ROM_PTR(&os_uname2_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uname2), MP_ROM_PTR(&os_uname2_obj) },
     #if MICROPY_PY_OS_DUPTERM
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&os_dupterm_notify_obj) },
@@ -196,22 +196,22 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_VFS_LFS2
     { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
     #endif
-	#if defined(PLAT_Qualcomm)
-	{ MP_ROM_QSTR(MP_QSTR_VfsEfs), MP_ROM_PTR(&mp_type_vfs_efs) },
-	#endif
+    #if defined(PLAT_Qualcomm)
+    { MP_ROM_QSTR(MP_QSTR_VfsEfs), MP_ROM_PTR(&mp_type_vfs_efs) },
+    #endif
     #if defined(PLAT_Unisoc_8910_R05) || defined(PLAT_Unisoc_8910_R06)
-        { MP_ROM_QSTR(MP_QSTR_VfsTemp), MP_ROM_PTR(&mp_type_vfs_temp) },
+    { MP_ROM_QSTR(MP_QSTR_VfsTemp), MP_ROM_PTR(&mp_type_vfs_temp) },
     #endif
     #if defined(PLAT_Unisoc_8910_R05) || defined(PLAT_Unisoc_8910_R06) || (defined(PLAT_Unisoc_8850_R02) && !defined(BOARD_EC800GCN_LD_XBND))
-        { MP_ROM_QSTR(MP_QSTR_VfsSd), MP_ROM_PTR(&mp_type_vfs_temp) },
+    { MP_ROM_QSTR(MP_QSTR_VfsSd), MP_ROM_PTR(&mp_type_vfs_temp) },
     #endif
-#if MICROPY_VFS_FAT_SDIO
+    #if MICROPY_VFS_FAT_SDIO
     { MP_ROM_QSTR(MP_QSTR_VfsEmmc), MP_ROM_PTR(&mp_type_vfs_sdio_emmc) },
     { MP_ROM_QSTR(MP_QSTR_VfsSd), MP_ROM_PTR(&mp_type_vfs_sdio_sd) },
-#endif
-#if MICROPY_VFS_QUECFS
+    #endif
+    #if MICROPY_VFS_QUECFS
     { MP_ROM_QSTR(MP_QSTR_VfsQuecfs), MP_ROM_PTR(&mp_type_vfs_quecfs) },
-#endif
+    #endif
     #endif
 };
 

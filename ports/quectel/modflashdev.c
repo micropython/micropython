@@ -33,7 +33,7 @@
 #include "helios_flash.h"
 #include "helios_debug.h"
 
-#define MOD_FLASHDEV_LOG(msg, ...)      custom_log('flashdev', msg, ##__VA_ARGS__)
+#define MOD_FLASHDEV_LOG(msg, ...)      custom_log('flashdev', msg,##__VA_ARGS__)
 
 const mp_obj_type_t helios_flash_device_type;
 
@@ -52,46 +52,46 @@ typedef struct _helios_flash_device_obj_t {
     char partition_name[32];
 } helios_flash_device_obj_t;
 
-static mp_obj_t helios_flash_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
-{
+static mp_obj_t helios_flash_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     helios_flash_device_obj_t *self = mp_obj_malloc(helios_flash_device_obj_t, type);
 
     mp_buffer_info_t bufinfo;
     memset(self->partition_name, 0x0, sizeof(self->partition_name));
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-    if( bufinfo.len >= sizeof(self->partition_name)) {
+    if (bufinfo.len >= sizeof(self->partition_name)) {
         mp_raise_ValueError(MP_ERROR_TEXT("partition name is invalid"));
     }
     memcpy(self->partition_name, bufinfo.buf, bufinfo.len);
-    
+
     self->block_size = mp_obj_get_int(args[1]);
 
     if (self->block_size <= 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid block size"));
     }
 
-    HeliosFlashPartiCtx *FlashPartiCtx = Helios_Flash_GetPartiCtx((const char*)self->partition_name);
-    if(!FlashPartiCtx) mp_raise_OSError(19);
+    HeliosFlashPartiCtx *FlashPartiCtx = Helios_Flash_GetPartiCtx((const char *)self->partition_name);
+    if (!FlashPartiCtx) {
+        mp_raise_OSError(19);
+    }
 
     uint32_t FlashPartiAddr = FlashPartiCtx->addr;
     size_t FlashPartiSize = FlashPartiCtx->size;
     MOD_FLASHDEV_LOG("flash addr:%x", FlashPartiAddr);
     MOD_FLASHDEV_LOG("flash size:%x", FlashPartiSize);
-	self->info.LfsStartAddress = (FlashPartiAddr) / self->block_size * self->block_size;
-#if MICROPY_VFS_LFS2
+    self->info.LfsStartAddress = (FlashPartiAddr) / self->block_size * self->block_size;
+    #if MICROPY_VFS_LFS2
     self->info.LfsEndAddress = ((FlashPartiAddr + FlashPartiSize) / self->block_size) * self->block_size;
-#else
-	self->info.LfsEndAddress = ((FlashPartiAddr + FlashPartiSize - 1) / self->block_size) * self->block_size;
-#endif
+    #else
+    self->info.LfsEndAddress = ((FlashPartiAddr + FlashPartiSize - 1) / self->block_size) * self->block_size;
+    #endif
 
     self->block_count = FlashPartiSize / self->block_size;
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-static mp_obj_t helios_flash_device_readblocks(size_t n_args, const mp_obj_t *args)
-{
+static mp_obj_t helios_flash_device_readblocks(size_t n_args, const mp_obj_t *args) {
     helios_flash_device_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t FlashAddrss = 0;
     uint32_t block_num = mp_obj_get_int(args[1]);
@@ -110,8 +110,7 @@ static mp_obj_t helios_flash_device_readblocks(size_t n_args, const mp_obj_t *ar
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(helios_flash_device_readblocks_obj, 3, 4, helios_flash_device_readblocks);
 
-static mp_obj_t helios_flash_device_writeblocks(size_t n_args, const mp_obj_t *args)
-{
+static mp_obj_t helios_flash_device_writeblocks(size_t n_args, const mp_obj_t *args) {
     helios_flash_device_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_num = mp_obj_get_int(args[1]);
     uint32_t offset = block_num * self->block_size;
@@ -134,8 +133,7 @@ static mp_obj_t helios_flash_device_writeblocks(size_t n_args, const mp_obj_t *a
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(helios_flash_device_writeblocks_obj, 3, 4, helios_flash_device_writeblocks);
 
-static mp_obj_t helios_flash_device_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in)
-{
+static mp_obj_t helios_flash_device_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     helios_flash_device_obj_t *self = self_in;
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     mp_int_t block_num = mp_obj_get_int(arg_in);
