@@ -105,10 +105,6 @@ int main(void) {
     /* Enable global interrupts */
     __enable_irq();
 
-    /* Keep CM55 in reset - will be released by machine.IPC.enable_core() */
-    /* This should prevent CM55 from auto-starting even if binary is flashed? */
-    Cy_SysResetCM55(MXCM55, 10U);
-
     /* Initialize retarget-io middleware */
     init_retarget_io();
 

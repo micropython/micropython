@@ -33,8 +33,6 @@
 #include "cy_pdl.h"
 #include "cy_ipc_pipe.h"
 
-
-#if MULTI_CORE
 // port-specific includes
 #include "machine_ipc.h"
 
@@ -590,5 +588,3 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, machine_ipc_make_new,
     locals_dict, &machine_ipc_locals_dict
     );
-
-#endif // MULTI_CORE

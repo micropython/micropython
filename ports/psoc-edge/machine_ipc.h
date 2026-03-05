@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_PSOC_EDGE_MODIPC_H
-#define MICROPY_INCLUDED_PSOC_EDGE_MODIPC_H
+#ifndef MICROPY_INCLUDED_PSOC_EDGE_MACHINE_IPC_H
+#define MICROPY_INCLUDED_PSOC_EDGE_MACHINE_IPC_H
 
 #include "py/obj.h"
 #include "cy_ipc_pipe.h"
@@ -77,9 +77,9 @@ ipc_sender_endpoint_t sender_clients_arr[8];
 // A singleton IPC instance should be created for each core and clients can register to this instance to send messages to the other core. For receiving messages, clients will register their callbacks to the endpoint structure which will be used by the IPC ISR to call the appropriate callback when message is received from the other core.
 typedef struct _machine_ipc_obj_t {
     mp_obj_base_t base;
-    ipc_sender_endpoint_t *sender_endpoint;     // Pointer to client information structure, can be extended in the future to support multiple clients
-    // ipc_receiver_endpoint_t *receiver_endpoint; // Pointer to receiver information structure, can be extended in the future to support multiple receivers
-    uint8_t target_core;     // #ToDo: This can be extended in the future to support multiple cores, currently it is just used to indicate CM55
+    ipc_sender_endpoint_t *sender_endpoint;
+    // ipc_receiver_endpoint_t *receiver_endpoint; // Pointer to receiver information structure
+    uint8_t target_core;
     uint8_t src_core;
 } machine_ipc_obj_t; // Endpoint same as core
 
@@ -96,6 +96,4 @@ bool is_cm55_enabled;
 extern const mp_obj_type_t ipc_sender_endpoint_type;
 extern const mp_obj_type_t machine_ipc_type;
 
-
-
-#endif // MICROPY_INCLUDED_PSOC_EDGE_MODIPC_H
+#endif // MICROPY_INCLUDED_PSOC_EDGE_MACHINE_IPC_H
