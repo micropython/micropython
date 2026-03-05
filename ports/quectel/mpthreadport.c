@@ -127,15 +127,15 @@ static void thread_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
-	_vPortCleanUpTCB((void*)Helios_Thread_GetID());
+    _vPortCleanUpTCB((void *)Helios_Thread_GetID());
     Helios_Thread_Exit();
 }
 
 
 int mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, char *name) {
     // store thread entry function into a global variable so we can access it
-	ext_thread_entry = entry;
-	if (*stack_size == 0) {
+    ext_thread_entry = entry;
+    if (*stack_size == 0) {
         *stack_size = MP_THREAD_DEFAULT_STACK_SIZE; // default stack size
     } else if (*stack_size < MP_THREAD_MIN_STACK_SIZE) {
         *stack_size = MP_THREAD_MIN_STACK_SIZE; // minimum stack size
@@ -155,11 +155,10 @@ int mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, i
         .argv = arg
     };
     Helios_Thread_t thread_id = Helios_Thread_Create(&ThreadAttr);
-	if(thread_id == 0)
-	{
-		mp_thread_mutex_unlock(&thread_mutex);
-		mp_raise_msg(&mp_type_OSError, (mp_rom_error_text_t)"can't create thread");
-	}
+    if (thread_id == 0) {
+        mp_thread_mutex_unlock(&thread_mutex);
+        mp_raise_msg(&mp_type_OSError, (mp_rom_error_text_t)"can't create thread");
+    }
 
     // add thread to linked list of all threads
     th->id = thread_id;
@@ -167,7 +166,7 @@ int mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, i
     th->arg = arg;
     th->stack = Helios_Thread_GetStaskPtr(th->id);
 
-	//stack_len must be 1/4 of ThreadAttr.stack_size 
+    // stack_len must be 1/4 of ThreadAttr.stack_size
     th->stack_len = ThreadAttr.stack_size / sizeof(uint32_t);
     th->next = thread;
     thread = th;
@@ -177,10 +176,10 @@ int mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, i
 
     mp_thread_mutex_unlock(&thread_mutex);
 
-    return (int)th;//return task_node
+    return (int)th;// return task_node
 }
 
-//forrest.liu@20210408 increase the priority for that python thread can,t be scheduled 
+// forrest.liu@20210408 increase the priority for that python thread can,t be scheduled
 mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     int th_node = mp_thread_create_ex(entry, arg, stack_size, (MP_THREAD_PRIORITY - 1), "mp_thread");
     return th_node;
@@ -194,7 +193,7 @@ void mp_new_thread_add(uint32_t th_id, uint32_t stack_size) {
     th->ready = 0;
     th->arg = NULL;
     th->stack = Helios_Thread_GetStaskPtr((Helios_Thread_t)th->id);
-	
+
     th->stack_len = stack_size / sizeof(uint32_t);
     th->next = thread;
     thread = th;
@@ -225,11 +224,11 @@ bool mp_thread_finish_by_threadid(int thread_id) {
 }
 
 bool mp_is_python_thread(void) {
-	Helios_Thread_t curr_id = Helios_Thread_GetID(); 
+    Helios_Thread_t curr_id = Helios_Thread_GetID();
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == curr_id) {
-        	mp_thread_mutex_unlock(&thread_mutex);
+            mp_thread_mutex_unlock(&thread_mutex);
             return true;
         }
     }
@@ -238,7 +237,7 @@ bool mp_is_python_thread(void) {
 }
 
 int mp_thread_get_current_tsknode(void) {
-    Helios_Thread_t curr_id = Helios_Thread_GetID(); 
+    Helios_Thread_t curr_id = Helios_Thread_GetID();
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == (Helios_Thread_t)curr_id) {
@@ -279,7 +278,7 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     Helios_Mutex_Unlock(*mutex);
 }
 
-//Added by Freddy @20210818 delete a lock
+// Added by Freddy @20210818 delete a lock
 void mp_thread_mutex_del(mp_thread_mutex_t *mutex) {
     Helios_Mutex_Delete(*mutex);
 }
@@ -320,14 +319,14 @@ void mp_thread_deinit(void) {
         } else {
             // Call qpy_thread_delete to delete the task (it will call vPortCleanUpTCB)
             Helios_Thread_Delete(id);
-			_vPortCleanUpTCB((void*)id);
+            _vPortCleanUpTCB((void *)id);
         }
     }
 }
 
-unsigned int mp_get_available_memory_size(void) 
-{  
+unsigned int mp_get_available_memory_size(void) {
     return Helios_GetAvailableMemorySize();
 }
+
 
 #endif // MICROPY_PY_THREAD

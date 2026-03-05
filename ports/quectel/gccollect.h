@@ -27,15 +27,14 @@
 #ifndef __MICROPY_INCLUDED_QUECTEL_GCCOLLECT_H__
 #define __MICROPY_INCLUDED_QUECTEL_GCCOLLECT_H__
 
-void gc_stacktop_set(void * ptr);
+void gc_stacktop_set(void *ptr);
 void gc_collect(void);
 
-//Set a stack address as the end address of the GC collection
-//Do not add {} to the macro definition to prevent the scoping of stack_dummy from changing
-#define GC_STACKTOP_SET()  int stack_dummy;gc_stacktop_set(&stack_dummy);
+// Set a stack address as the end address of the GC collection
+// Do not add {} to the macro definition to prevent the scoping of stack_dummy from changing
+#define GC_STACKTOP_SET()  int stack_dummy; gc_stacktop_set(&stack_dummy);
 
-//Clears the gc collection end stack pointer for global non-Python threads
+// Clears the gc collection end stack pointer for global non-Python threads
 #define GC_STACKTOP_CLEAR() gc_stacktop_set(NULL);
 
 #endif
-
