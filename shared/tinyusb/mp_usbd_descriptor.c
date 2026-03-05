@@ -71,6 +71,16 @@ const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
     #endif
 };
 
+#if CFG_TUD_CDC
+// CDC-only default descriptor, used when no boot.py configures USB classes.
+const uint8_t mp_usbd_default_desc_cfg[MP_USBD_DEFAULT_DESC_CFG_LEN] = {
+    TUD_CONFIG_DESCRIPTOR(1, 2, USBD_STR_0, MP_USBD_DEFAULT_DESC_CFG_LEN,
+        0, USBD_MAX_POWER_MA),
+    TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
+        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
+};
+#endif
+
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     char serial_buf[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes terminating NUL byte
     static uint16_t desc_wstr[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes prefix uint16_t
@@ -151,6 +161,144 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     return desc_wstr;
 }
 
+// Byte offsets within each class descriptor fragment that contain
+// interface numbers or endpoint addresses, derived from TUD_*_DESCRIPTOR
+// macro layouts in TinyUSB (lib/tinyusb, commit aa0fc2e08).
+// The asserts in mp_usbd_build_cfg_desc() verify the first patched byte
+// of each class against the expected value; a TinyUSB update that changes
+// descriptor layouts will trigger a build failure.
+
+#if CFG_TUD_CDC
+static const uint8_t cdc_itf_patch[] = {2, 10, 26, 34, 35, 45};
+static const uint8_t cdc_ep_patch[] = {38, 54, 61};
+#endif
+
+#if CFG_TUD_MSC
+static const uint8_t msc_itf_patch[] = {2};
+static const uint8_t msc_ep_patch[] = {11, 18};
+#endif
+
+#if CFG_TUD_NCM
+static const uint8_t ncm_itf_patch[] = {2, 10, 25, 26, 55, 64};
+static const uint8_t ncm_ep_patch[] = {48, 73, 80};
+#endif
+
+// Apply interface and endpoint offset deltas to a copied descriptor fragment.
+static void patch_desc_frag(uint8_t *frag,
+    const uint8_t *itf_off, uint8_t n_itf,
+    const uint8_t *ep_off, uint8_t n_ep,
+    int8_t itf_delta, int8_t ep_delta) {
+    for (uint8_t i = 0; i < n_itf; i++) {
+        frag[itf_off[i]] += itf_delta;
+    }
+    for (uint8_t i = 0; i < n_ep; i++) {
+        frag[ep_off[i]] += ep_delta;
+    }
+}
+
+uint16_t mp_usbd_build_cfg_desc(uint8_t class_mask, uint8_t *buf,
+    uint8_t *out_itf_max, uint8_t *out_ep_max, uint8_t *out_str_max) {
+    // Verify that the first patched interface byte in each class fragment
+    // holds the expected value. This catches TinyUSB descriptor layout
+    // changes at compile time (the compiler constant-folds the array access).
+    #if CFG_TUD_CDC
+    MP_STATIC_ASSERT_NONCONSTEXPR(mp_usbd_builtin_desc_cfg[TUD_CONFIG_DESC_LEN + cdc_itf_patch[0]] == USBD_ITF_CDC);
+    #endif
+    #if CFG_TUD_MSC
+    MP_STATIC_ASSERT_NONCONSTEXPR(mp_usbd_builtin_desc_cfg[TUD_CONFIG_DESC_LEN
+                                                           + (CFG_TUD_CDC ? TUD_CDC_DESC_LEN : 0) + msc_itf_patch[0]] == USBD_ITF_MSC);
+    #endif
+    #if CFG_TUD_NCM
+    MP_STATIC_ASSERT_NONCONSTEXPR(mp_usbd_builtin_desc_cfg[TUD_CONFIG_DESC_LEN
+                                                           + (CFG_TUD_CDC ? TUD_CDC_DESC_LEN : 0)
+                                                           + (CFG_TUD_MSC ? TUD_MSC_DESC_LEN : 0) + ncm_itf_patch[0]] == USBD_ITF_NET);
+    #endif
+
+    // Copy selected class fragments from mp_usbd_builtin_desc_cfg and
+    // patch interface/endpoint numbers for compact numbering (no gaps).
+    uint8_t *p = buf + TUD_CONFIG_DESC_LEN;
+    const uint8_t *src = mp_usbd_builtin_desc_cfg + TUD_CONFIG_DESC_LEN;
+    uint8_t num_itf = 0;
+    uint8_t itf = 0;
+    uint8_t ep = 1;
+    uint8_t str_max = USBD_STR_SERIAL + 1;
+
+    #if CFG_TUD_CDC
+    if (class_mask & MP_USBD_FLAG_CDC) {
+        memcpy(p, src, TUD_CDC_DESC_LEN);
+        patch_desc_frag(p,
+            cdc_itf_patch, sizeof(cdc_itf_patch),
+            cdc_ep_patch, sizeof(cdc_ep_patch),
+            itf - USBD_ITF_CDC, ep - (USBD_CDC_EP_CMD & 0x7F));
+        p += TUD_CDC_DESC_LEN;
+        itf += 2;
+        ep += 2;
+        num_itf += 2;
+        str_max = USBD_STR_CDC + 1;
+    }
+    src += TUD_CDC_DESC_LEN;
+    #endif
+
+    #if CFG_TUD_MSC
+    if (class_mask & MP_USBD_FLAG_MSC) {
+        memcpy(p, src, TUD_MSC_DESC_LEN);
+        patch_desc_frag(p,
+            msc_itf_patch, sizeof(msc_itf_patch),
+            msc_ep_patch, sizeof(msc_ep_patch),
+            itf - USBD_ITF_MSC, ep - (USBD_MSC_EP_IN & 0x7F));
+        p += TUD_MSC_DESC_LEN;
+        itf += 1;
+        ep += 1;
+        num_itf += 1;
+        str_max = USBD_STR_MSC + 1;
+    }
+    src += TUD_MSC_DESC_LEN;
+    #endif
+
+    #if CFG_TUD_NCM
+    if (class_mask & MP_USBD_FLAG_NCM) {
+        memcpy(p, src, TUD_CDC_NCM_DESC_LEN);
+        patch_desc_frag(p,
+            ncm_itf_patch, sizeof(ncm_itf_patch),
+            ncm_ep_patch, sizeof(ncm_ep_patch),
+            itf - USBD_ITF_NET, ep - (USBD_NET_EP_CMD & 0x7F));
+        p += TUD_CDC_NCM_DESC_LEN;
+        itf += 2;
+        ep += 2;
+        num_itf += 2;
+        str_max = USBD_STR_NET_MAC + 1;
+    }
+    src += TUD_CDC_NCM_DESC_LEN;
+    #endif
+
+    (void)src;
+
+    // Write config descriptor header now that total length is known.
+    // TUD_CONFIG_DESCRIPTOR requires compile-time constant args and cannot be
+    // used here; fields are written individually using the USB 2.0 §9.6.3 layout.
+    uint16_t total_len = p - buf;
+    buf[0] = TUD_CONFIG_DESC_LEN;
+    buf[1] = TUSB_DESC_CONFIGURATION;
+    buf[2] = total_len & 0xFF;
+    buf[3] = (total_len >> 8) & 0xFF;
+    buf[4] = num_itf;
+    buf[5] = 1;
+    buf[6] = USBD_STR_0;
+    buf[7] = 0x80;
+    buf[8] = USBD_MAX_POWER_MA / 2;
+
+    if (out_itf_max) {
+        *out_itf_max = itf;
+    }
+    if (out_ep_max) {
+        *out_ep_max = ep;
+    }
+    if (out_str_max) {
+        *out_str_max = str_max;
+    }
+
+    return total_len;
+}
 
 #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
@@ -160,6 +308,8 @@ const uint8_t *tud_descriptor_device_cb(void) {
 
 const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;
+    // Without RUNTIME_DEVICE, there is no machine.USBDevice to select
+    // classes from boot.py, so expose all compiled-in classes.
     return mp_usbd_builtin_desc_cfg;
 }
 

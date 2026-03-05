@@ -204,7 +204,7 @@ enum _USBD_EP {
     (CFG_TUD_MSC ? 1 : 0) + \
     (CFG_TUD_NCM ? 2 : 0))
 
-// 1 plus the number of interfaces used by all enabled classes
+// 1 plus the highest endpoint number used by all enabled classes
 #define USBD_EP_BUILTIN_MAX ( \
     (CFG_TUD_CDC ? 2 : 0) + \
     (CFG_TUD_MSC ? 1 : 0) + \

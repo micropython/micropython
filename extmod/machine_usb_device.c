@@ -31,6 +31,7 @@
 #include "mp_usbd.h"
 #include "py/mperrno.h"
 #include "py/objstr.h"
+#include "py/objtuple.h"
 
 // Implements the singleton runtime USB object
 //
@@ -39,8 +40,6 @@
 #ifndef NO_QSTR
 #include "device/usbd_pvt.h"
 #endif
-
-#define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC)
 
 #define RHPORT TUD_OPT_RHPORT
 
@@ -234,16 +233,16 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_config_obj, 1, usb_device_config);
 static const MP_DEFINE_BYTES_OBJ(builtin_default_desc_dev_obj,
     &mp_usbd_builtin_desc_dev, sizeof(tusb_desc_device_t));
 
-#if HAS_BUILTIN_DRIVERS
-// BUILTIN_DEFAULT Python object holds properties of the built-in USB configuration
-// (i.e. values used by the C implementation of TinyUSB devices.)
+#if MICROPY_HW_USB_CDC
+// BUILTIN_DEFAULT Python object holds CDC-only properties.
+// MSC and NCM are opt-in via BUILTIN_FLAG_ masks in boot.py.
 static const MP_DEFINE_BYTES_OBJ(builtin_default_desc_cfg_obj,
-    mp_usbd_builtin_desc_cfg, MP_USBD_BUILTIN_DESC_CFG_LEN);
+    mp_usbd_default_desc_cfg, MP_USBD_DEFAULT_DESC_CFG_LEN);
 
 static const mp_rom_map_elem_t usb_device_builtin_default_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_itf_max), MP_OBJ_NEW_SMALL_INT(USBD_ITF_BUILTIN_MAX) },
-    { MP_ROM_QSTR(MP_QSTR_ep_max), MP_OBJ_NEW_SMALL_INT(USBD_EP_BUILTIN_MAX) },
-    { MP_ROM_QSTR(MP_QSTR_str_max), MP_OBJ_NEW_SMALL_INT(USBD_STR_BUILTIN_MAX) },
+    { MP_ROM_QSTR(MP_QSTR_itf_max), MP_OBJ_NEW_SMALL_INT(2) },   // CDC: itf 0, 1
+    { MP_ROM_QSTR(MP_QSTR_ep_max), MP_OBJ_NEW_SMALL_INT(3) },    // CDC: ep 1, 2
+    { MP_ROM_QSTR(MP_QSTR_str_max), MP_OBJ_NEW_SMALL_INT(USBD_STR_CDC + 1) },
     { MP_ROM_QSTR(MP_QSTR_desc_dev), MP_ROM_PTR(&builtin_default_desc_dev_obj)  },
     { MP_ROM_QSTR(MP_QSTR_desc_cfg), MP_ROM_PTR(&builtin_default_desc_cfg_obj) },
 };
@@ -255,7 +254,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     locals_dict, &usb_device_builtin_default_dict
     );
-#endif // HAS_BUILTIN_DRIVERS
+#endif // MICROPY_HW_USB_CDC
 
 // BUILTIN_NONE holds properties for no enabled built-in USB device support
 static const mp_rom_map_elem_t usb_device_builtin_none_dict_table[] = {
@@ -284,24 +283,24 @@ static const mp_rom_map_elem_t usb_device_locals_dict_table[] = {
     // Built-in driver constants
     { MP_ROM_QSTR(MP_QSTR_BUILTIN_NONE), MP_ROM_PTR(&mp_type_usb_device_builtin_none) },
 
-    #if !HAS_BUILTIN_DRIVERS
-    // No builtin-in drivers, so BUILTIN_DEFAULT is BUILTIN_NONE
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_DEFAULT), MP_ROM_PTR(&mp_type_usb_device_builtin_none) },
-    #else
+    #if MICROPY_HW_USB_CDC
     { MP_ROM_QSTR(MP_QSTR_BUILTIN_DEFAULT), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
+    #else
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_DEFAULT), MP_ROM_PTR(&mp_type_usb_device_builtin_none) },
+    #endif
 
-    // Specific driver constant names are to support future switching of built-in drivers,
-    // but currently only one is present and it maps directly to BUILTIN_DEFAULT
-    #if MICROPY_HW_USB_CDC && !MICROPY_HW_USB_MSC
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
+    // Flag constants for runtime USB class selection via builtin_driver setter.
+    // Use MICROPY_HW_* guards (not CFG_TUD_*) because tusb.h is excluded
+    // during the QSTR extraction pass.
+    #if MICROPY_HW_USB_CDC
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_FLAG_CDC), MP_OBJ_NEW_SMALL_INT(MP_USBD_FLAG_CDC) },
     #endif
-    #if MICROPY_HW_USB_MSC && !MICROPY_HW_USB_CDC
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_MSC), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
+    #if MICROPY_HW_USB_MSC
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_FLAG_MSC), MP_OBJ_NEW_SMALL_INT(MP_USBD_FLAG_MSC) },
     #endif
-    #if MICROPY_HW_USB_CDC && MICROPY_HW_USB_MSC
-    { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC_MSC), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
+    #if MICROPY_HW_NETWORK_USBNET
+    { MP_ROM_QSTR(MP_QSTR_BUILTIN_FLAG_NCM), MP_OBJ_NEW_SMALL_INT(MP_USBD_FLAG_NCM) },
     #endif
-    #endif // !HAS_BUILTIN_DRIVERS
 };
 static MP_DEFINE_CONST_DICT(usb_device_locals_dict, usb_device_locals_dict_table);
 
@@ -321,9 +320,72 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             if (self->active) {
                 mp_raise_OSError(MP_EINVAL); // Need to deactivate first
             }
-            // Note: this value should be one of the BUILTIN_nnn constants,
-            // but not checked here to save code size in a low level API
-            self->builtin_driver = dest[1];
+            if (mp_obj_is_small_int(dest[1])) {
+                // Flag mask — build custom descriptors for selected classes.
+                mp_int_t raw = mp_obj_get_int(dest[1]);
+                if (raw < 0 || raw > 0xFF) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("unsupported USB class"));
+                }
+                uint8_t mask = (uint8_t)raw;
+
+                // Validate: only compiled-in classes allowed.
+                uint8_t valid = 0
+                    #if MICROPY_HW_USB_CDC
+                    | MP_USBD_FLAG_CDC
+                    #endif
+                    #if MICROPY_HW_USB_MSC
+                    | MP_USBD_FLAG_MSC
+                    #endif
+                    #if MICROPY_HW_NETWORK_USBNET
+                    | MP_USBD_FLAG_NCM
+                    #endif
+                ;
+                if (!mask || (mask & ~valid)) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("unsupported USB class"));
+                }
+
+                // Build config descriptor with compact interface/endpoint numbering.
+                // Buffer is sized to MP_USBD_BUILTIN_DESC_CFG_LEN (the maximum
+                // possible output of mp_usbd_build_cfg_desc for any class mask).
+                uint8_t cfg_buf[MP_USBD_BUILTIN_DESC_CFG_LEN];
+                uint8_t itf_max, ep_max, str_max;
+                uint16_t cfg_len = mp_usbd_build_cfg_desc(mask, cfg_buf,
+                    &itf_max, &ep_max, &str_max);
+                mp_obj_t desc_cfg_obj = mp_obj_new_bytes(cfg_buf, cfg_len);
+
+                // Build device descriptor with varied PID so the host sees a
+                // distinct device for each class combination. Shift mask
+                // into bits [6:4] to avoid colliding with existing PIDs
+                // in the MICROPY_HW_USB_PID_xxx range (0x9800-0x980a).
+                MP_STATIC_ASSERT((MP_USBD_FLAG_CDC | MP_USBD_FLAG_MSC | MP_USBD_FLAG_NCM) <= 0x07);
+                tusb_desc_device_t dev = mp_usbd_builtin_desc_dev;
+                dev.idProduct = MICROPY_HW_USB_PID + ((mask & 0x07) << 4);
+                mp_obj_t desc_dev_obj = mp_obj_new_bytes((const byte *)&dev, sizeof(dev));
+
+                // Create dynamic builtin driver attrtuple.
+                static const qstr fields[] = {
+                    MP_QSTR_itf_max, MP_QSTR_ep_max, MP_QSTR_str_max,
+                    MP_QSTR_desc_dev, MP_QSTR_desc_cfg,
+                };
+                mp_obj_t items[] = {
+                    MP_OBJ_NEW_SMALL_INT(itf_max),
+                    MP_OBJ_NEW_SMALL_INT(ep_max),
+                    MP_OBJ_NEW_SMALL_INT(str_max),
+                    desc_dev_obj,
+                    desc_cfg_obj,
+                };
+                self->builtin_driver = mp_obj_new_attrtuple(fields, 5, items);
+
+                // Set desc_dev/desc_cfg so runtime descriptor callbacks use them.
+                self->desc_dev = desc_dev_obj;
+                self->desc_cfg = desc_cfg_obj;
+            } else {
+                // Existing path: BUILTIN_DEFAULT, BUILTIN_NONE, or other object.
+                // Clear any stale flag-mask descriptors so callbacks revert to defaults.
+                self->desc_dev = mp_const_none;
+                self->desc_cfg = mp_const_none;
+                self->builtin_driver = dest[1];
+            }
             dest[0] = MP_OBJ_NULL;
         }
     }
