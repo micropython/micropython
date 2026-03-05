@@ -17,7 +17,7 @@ def ffi_open(names):
     raise err
 
 
-libc = ffi_open(("libc.so", "libc.so.0", "libc.so.6", "libc.dylib"))
+libc = ffi_open(("libc.so", "libc.so.0", "libc.so.6", "libc.so.7", "libc.dylib"))
 
 try:
     strtof = libc.func("f", "strtof", "sp")
@@ -33,7 +33,9 @@ strtod = libc.func("d", "strtod", "sp")
 print("%.6f" % strtod("1.23", None))
 
 # test passing double and float args
-libm = ffi_open(("libm.so", "libm.so.6", "libc.so.0", "libc.so.6", "libc.dylib"))
+libm = ffi_open(
+    ("libm.so", "libm.so.5", "libm.so.6", "libc.so.0", "libc.so.6", "libc.so.7", "libc.dylib")
+)
 tgamma = libm.func("d", "tgamma", "d")
 for fun_name in ("tgamma",):
     fun = globals()[fun_name]
