@@ -40,7 +40,7 @@ Constructors
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
    Only one of *duty_u16* and *duty_ns* should be specified at a time.
-   *invert* is available only on the esp32, mimxrt, nrf, rp2, samd and zephyr ports.
+   *invert* is available only on the alif, esp32, mimxrt, nrf, rp2, samd, stm32 and zephyr ports.
 
 Methods
 -------
