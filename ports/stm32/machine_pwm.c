@@ -319,14 +319,25 @@ typedef struct _pwm_pin_config_t {
     uint8_t alt;
 } pwm_pin_config_t;
 
+// Search for the second TIMx_CHx alt configuration on the given pin (or the first if it only has one).
+// This heuristic gives the best overall assignment of TIMx_CHx to pins, which is deterministic (doesn't
+// depend on order of allocation) and maximises the number of unique assignments.
 static bool pin_find_af_for_pwm(mp_hal_pin_obj_t pin, pwm_pin_config_t *cfg) {
+    const pin_af_obj_t *pin_af = NULL;
     for (size_t i = 0; i < pin->num_af; ++i) {
         if (pin->af[i].fn == AF_FN_TIM && pin->af[i].type >= AF_PIN_TYPE_TIM_CH1 && pin->af[i].type <= AF_PIN_TYPE_TIM_CH4) {
-            cfg->timer_id = pin->af[i].unit;
-            cfg->timer_channel = pin->af[i].type - AF_PIN_TYPE_TIM_CH1;
-            cfg->alt = pin->af[i].idx;
-            return true;
+            if (pin_af != NULL) {
+                pin_af = &pin->af[i];
+                break;
+            }
+            pin_af = &pin->af[i];
         }
+    }
+    if (pin_af != NULL) {
+        cfg->timer_id = pin_af->unit;
+        cfg->timer_channel = pin_af->type - AF_PIN_TYPE_TIM_CH1;
+        cfg->alt = pin_af->idx;
+        return true;
     }
     return false;
 }
