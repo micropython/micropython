@@ -103,6 +103,27 @@ extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
 extern const tusb_desc_device_qualifier_t mp_usbd_builtin_desc_qual;
 #endif
 
+// Default descriptor: CDC + MSC when compiled; NCM is opt-in via boot.py.
+#if CFG_TUD_CDC
+#define MP_USBD_DEFAULT_DESC_CFG_LEN ( \
+    TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + \
+    (CFG_TUD_MSC ? TUD_MSC_DESC_LEN : 0))
+extern const uint8_t mp_usbd_default_desc_cfg[MP_USBD_DEFAULT_DESC_CFG_LEN];
+#endif
+
+// USB class selection flags (OR-able)
+#define MP_USBD_FLAG_CDC  0x01
+#define MP_USBD_FLAG_MSC  0x02
+#define MP_USBD_FLAG_NCM  0x04
+
+// Build a configuration descriptor containing only the classes in class_mask.
+// buf must be at least MP_USBD_BUILTIN_DESC_CFG_LEN bytes.
+// Returns actual descriptor length. Optionally outputs the interface, endpoint,
+// and string descriptor maxima (one past the highest value used) for the
+// selected class combination.
+uint16_t mp_usbd_build_cfg_desc(uint8_t class_mask, uint8_t *buf,
+    uint8_t *out_itf_max, uint8_t *out_ep_max, uint8_t *out_str_max);
+
 void mp_usbd_task_callback(mp_sched_node_t *node);
 
 #if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
@@ -145,6 +166,7 @@ typedef struct {
 
     bool active; // Has the user set the USB device active?
     bool trigger; // Has the user requested the active state change (or re-activate)?
+    uint8_t builtin_itf_max; // Interface count from a flag-mask builtin config (0 = use USBD_ITF_BUILTIN_MAX)
 
     // Temporary pointers for xfer data in progress on each endpoint
     // Ensuring they aren't garbage collected until the xfer completes
