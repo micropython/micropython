@@ -86,6 +86,11 @@ Functions
 Classes
 -------
 
+.. toctree::
+   :maxdepth: 1
+
+   io.IOBase.rst
+
 .. class:: StringIO([string])
 .. class:: BytesIO([string])
 
