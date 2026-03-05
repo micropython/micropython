@@ -9,6 +9,10 @@ This module provides support for template strings (t-strings) as defined in
 using the ``t`` prefix and provide access to both the literal string parts and
 interpolated values before they are combined.
 
+**Availability:** template strings require ``MICROPY_PY_TSTRINGS`` to be enabled
+at compile time. They are enabled by default in the unix, windows, and webassembly
+ports.
+
 Classes
 -------
 
@@ -139,12 +143,6 @@ The debug format ``{expr=}`` is supported::
 
    MicroPython does not provide the ``format()`` built-in function. Use
    string formatting methods like ``str.format()`` instead.
-
-Availability
-------------
-
-Template strings require ``MICROPY_PY_TSTRINGS`` to be enabled at compile time.
-They are enabled by default in the unix, windows, and webassembly ports.
 
 Example Usage
 -------------
