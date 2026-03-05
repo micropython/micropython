@@ -311,6 +311,18 @@ static void pwm_set_duty_ns(pwm_t *pwm, uint32_t duty_ns) {
 /******************************************************************************/
 // Pin helper
 
+// The heuristic to search for a TIMx_CHy alt configuration depends on the MCU.
+// Some use "first available" and others use "second available".  The scheme is
+// chosen to give the best overall assignment of TIMx_CHy to pins which is:
+// - deterministic (doesn't depend on order of allocation);
+// - maximises the number of unique assignments;
+// - guarantees that PA0-PA3 are on a 32-bit timer.
+#if defined(STM32G0) || defined(STM32L432xx) || defined(STM32L452xx)
+#define TIM_SEARCH_FOR_SECOND (0)
+#else
+#define TIM_SEARCH_FOR_SECOND (1)
+#endif
+
 typedef struct _pwm_pin_config_t {
     uint8_t timer_id;
     uint8_t timer_channel;
@@ -318,13 +330,28 @@ typedef struct _pwm_pin_config_t {
 } pwm_pin_config_t;
 
 static bool pin_find_af_for_pwm(mp_hal_pin_obj_t pin, pwm_pin_config_t *cfg) {
+    const pin_af_obj_t *pin_af = NULL;
     for (size_t i = 0; i < pin->num_af; ++i) {
         if (pin->af[i].fn == AF_FN_TIM && pin->af[i].type >= AF_PIN_TYPE_TIM_CH1 && pin->af[i].type <= AF_PIN_TYPE_TIM_CH4) {
-            cfg->timer_id = pin->af[i].unit;
-            cfg->timer_channel = pin->af[i].type - AF_PIN_TYPE_TIM_CH1;
-            cfg->alt = pin->af[i].idx;
-            return true;
+            #if TIM_SEARCH_FOR_SECOND
+            // Get the second TIMx_CHy configuration (or first if there's only one).
+            if (pin_af != NULL) {
+                pin_af = &pin->af[i];
+                break;
+            }
+            pin_af = &pin->af[i];
+            #else
+            // Get the first TIMx_CHy configuration.
+            pin_af = &pin->af[i];
+            break;
+            #endif
         }
+    }
+    if (pin_af != NULL) {
+        cfg->timer_id = pin_af->unit;
+        cfg->timer_channel = pin_af->type - AF_PIN_TYPE_TIM_CH1;
+        cfg->alt = pin_af->idx;
+        return true;
     }
     return false;
 }
