@@ -433,7 +433,6 @@ CFLAGS += \
 	-mcpu=cortex-m7 \
 	-mthumb \
 	-mtune=cortex-m7 \
-	-nostdlib \
 	-std=c99 \
 	-Wall \
 	-Wdouble-promotion \
@@ -506,6 +505,7 @@ MPY_CROSS_FLAGS += -march=armv7m
 # =============================================================================
 
 LDFLAGS += \
+	-nostdlib \
 	--cref \
 	--gc-sections \
 	--print-memory-usage \
