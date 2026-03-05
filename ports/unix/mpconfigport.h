@@ -51,7 +51,12 @@
 #endif
 
 #ifndef MICROPY_PY_SYS_PATH_DEFAULT
-#define MICROPY_PY_SYS_PATH_DEFAULT ".frozen:~/.micropython/lib:/usr/lib/micropython"
+#if defined(__FreeBSD__)
+#define SYSTEM_LIB_PATH "/usr/local/lib/micropython"
+#else
+#define SYSTEM_LIB_PATH "/usr/lib/micropython"
+#endif
+#define MICROPY_PY_SYS_PATH_DEFAULT ".frozen:~/.micropython/lib:" SYSTEM_LIB_PATH
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
