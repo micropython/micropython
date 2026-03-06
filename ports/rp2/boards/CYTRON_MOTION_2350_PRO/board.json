@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB-C",
+        "RGB LED"
+    ],
+    "images": [
+        "motion-2350-pro.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "MOTION 2350 Pro",
+    "thumbnail": "",
+    "url": "https://www.cytron.io/p-motion-2350-pro",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
+    "vendor": "Cytron"
+}
