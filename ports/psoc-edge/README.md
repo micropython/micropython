@@ -2,56 +2,31 @@
 
 This port is intended to run on PSOC™ Edge microcontrollers.
 
-## Pre-requisites
+## Build environment
 
-The instruction below assumes you are running on a Linux host.
+- an ARM cross compiler such as `arm-none-eabi-gcc` and associated binary utilities and libc. Built against version [GCC ARM Embedded 14.2.1](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.mtbgccpackage/versions/14.2.1.265/artifacts/mtbgccpackage_14.2.1.265_Linux_x64.deb/download)
+  
+- [Infineon edgeprotecttools](https://github.com/Infineon/edgeprotecttools/). Built against version 1.6.0.
 
-### Installation of MTB PSOC Edge Tools
-
-1. Download the [ModusToolbox Tools Package 3.6](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.modustoolbox/versions/3.6.0.17979/artifacts/modustoolbox_3.6.0.17979_Linux_x64.deb/download). and install the toolbox package:
-
-```
-sudo apt install ./modustoolbox_3.6.0.17979_Linux_x64.deb
-```
-
-And go to the `/opt/Tools/ModusToolbox/tools_3.6/modus-shell` directory and run the postinstall script:
-
-```
-cd /opt/Tools/ModusToolbox/tools_3.6/modus-shell
-./postinstall
-```
-
-2. Install the compiler  [GCC ARM Embedded 14.2.1](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.mtbgccpackage/versions/14.2.1.265/artifacts/mtbgccpackage_14.2.1.265_Linux_x64.deb/download):
-
-```
-sudo apt install ./mtbgccpackage_14.2.1.265_Linux_x64.deb
-```
-3. Install the [Edge Protect Security Suite 1.6.0](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.modustoolboxedgeprotectsecuritysuite/versions/1.6.0.512/artifacts/modustoolboxedgeprotectsecuritysuite_1.6.0.512_Linux_x64.deb/download):
-
-```
-sudo apt install ./modustoolboxedgeprotectsecuritysuite_1.6.0.512_Linux_x64.deb
-```
-
-4. Install the [ModusToolbox Programming Tools 1.5.0](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.modustoolboxprogtools/versions/1.5.0.1534/artifacts/ModusToolboxProgtools_1.5.0.1534.deb/download):
-
-```
-sudo apt install ./ModusToolboxProgtools_1.5.0.1534.deb
-```
+Furthermore, to deploy firmware to a device requires a custom [Infineon OpenOCD](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.modustoolboxprogtools/versions/1.5.0.1534/artifacts/ModusToolboxProgtools_1.5.0.1534.deb/download). Validated version is 1.5.0.
 
 ### Setting up the environment
 
-Run the following script from MicroPython repository root to add the required tools to the system PATH:
+Make sure that `arm-none-eabi-gcc`, `edgeprotecttools` and `openocd` are in your `PATH`. For example, if you have installed the tools in `/opt`, you can add the following lines to your `.bashrc`:
 
-    source tools/psoc-edge/dev-setup.sh && toolchain_setup
-
-> [!NOTE] 
-> This command needs to be run every time you open a new shell session, as it only sets environment variables for the current session. 
+    export PATH="/opt/gcc-arm-none-eabi-14.2.1/bin:/opt/edgeprotecttools-1.6.0/bin:/opt/openocd-1.5.0/bin:$PATH"
 
 ## Building and running on Linux
 
 As we are working on the `psoc-edge-main` branch, first checkout that branch after cloning this repo:
 
     git checkout --track origin/psoc-edge-main
+
+Before building the firmware for a given board the MicroPython cross-compiler
+must be built; it will be used to pre-compile some of the built-in scripts to
+bytecode.  The cross-compiler is built and run on the host machine, using:
+
+    make -C mpy-cross
 
 The following build commands should be run from the `ports/psoc-edge` directory:
 
@@ -63,24 +38,17 @@ Build the firmware:
 
     make BOARD=KIT_PSE84_AI
 
-> [!NOTE] 
-> The first time we call `make` the board needs to be specified with 
-> `BOARD=<board>`. This is required as the ModusToolbox libraries need to be
-> initialized for the selected board. 
-> This board will then be set as the default board for subsequent builds, you
-> can just call `make` without the `BOARD=` argument.
-
 And flash it to the board:
 
     make deploy
 
 > [!NOTE]
 > This will also build the firmware if it has not been built yet.
-> Use `deploy` target to avoid rebuilding the firmware.
+> Use `qdeploy` target to avoid rebuilding the firmware.
 
 If you have multiple boards connected, you can specify the serial number of the board to be programmed:
 
-    make deploy DEVICE_SN=123456
+    make deploy DEV_SERIAL_NUMBER=123456
 
 Find more information about the all available makefile targets:
 
