@@ -95,7 +95,7 @@ LDFLAGS += $(LDFLAGS_MOD)
 
 AFLAGS = -mthumb -mcpu=cortex-m33 -c
 
-LIBS += 
+LIBS += -lm
 
 SRC_O += \
 	shared/runtime/gchelper_thumb2.o
