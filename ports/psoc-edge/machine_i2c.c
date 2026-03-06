@@ -3,11 +3,7 @@
  *
  * The MIT License (MIT)
  *
-<<<<<<< HEAD
  * Copyright (c) 2022-2026 Infineon Technologies AG
-=======
- * Copyright (c) 2022-2024 Infineon Technologies AG
->>>>>>> 7d7864a47 (psoc-edge: Initialize I2C module.)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
