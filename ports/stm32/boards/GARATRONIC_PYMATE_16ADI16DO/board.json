@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "PyMateIO_16ADI16DO.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "GARATRONIC_PYMATE_16ADI16DO",
+    "thumbnail": "",
+    "url": "https://aceautomation.eu/product/pymateio-16adi16do16-digital-analog-inputs-16-digital-outputs/",
+    "vendor": "Ace_Automation"
+}
