@@ -31,9 +31,6 @@
 // micropython includes
 #include "py/obj.h"
 
-extern const mp_obj_type_t machine_pdm_pcm_type;
-extern const mp_obj_type_t machine_ipc_type;
-
 enum clock_freq_type {
     AUDIO_SYS_CLOCK_73_728_000_HZ = 73728000UL /* (Ideally 73.728 MHz) For sample rates: 8 KHz / 16 KHz / 48 KHz */,
     AUDIO_SYS_CLOCK_169_344_000_HZ = 169344000UL /* (Ideally 169.344 MHz) For sample rates: 22.05 KHz / 44.1 KHz */,
@@ -43,6 +40,8 @@ enum clock_freq_type {
 
 extern enum clock_freq_type PLL0_freq;
 extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_pdm_pcm_type;
 extern const mp_obj_type_t machine_rtc_type;
+extern const mp_obj_type_t machine_ipc_type;
 
 #endif // MICROPY_INCLUDED_PSOCEDGE_MODMACHINE_H

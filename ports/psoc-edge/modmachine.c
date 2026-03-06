@@ -53,7 +53,7 @@ enum clock_freq_type freq_peri;
 static void mp_machine_idle(void) {
     __WFI(); // standard ARM instruction
 }
-
+/* TODO: currently unused
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     freq_peri = mp_obj_get_int(args[0]); // Assuming the enum values are used as integers
     switch (freq_peri) {
@@ -68,6 +68,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
             break;
     }
 }
+*/
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     /* Modules */ \
