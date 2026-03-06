@@ -1908,6 +1908,17 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_THREAD_RECURSIVE_MUTEX (MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL)
 #endif
 
+// Whether to provide the minimal typing module.
+#ifndef MICROPY_PY_TYPING
+#define MICROPY_PY_TYPING (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to provide the minimal abc and typing_extensions modules.
+// They will simply be aliases for the typing module.
+#ifndef MICROPY_PY_TYPING_EXTRA_MODULES
+#define MICROPY_PY_TYPING_EXTRA_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_ASYNCIO
