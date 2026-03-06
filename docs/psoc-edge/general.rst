@@ -39,7 +39,8 @@ KIT_PSE84_AI
 Pinout
 ******
 
-*TODO: Image placeholder*
+.. image:: img/kit_pse84_ai_pinout.png
+        :width: 500
 
     
 Technical specifications
