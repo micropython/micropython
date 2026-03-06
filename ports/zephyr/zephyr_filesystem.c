@@ -71,21 +71,25 @@ typedef struct _zephyr_fs_obj_t {
 
 const char *zephyr_fs_make_path(zephyr_fs_obj_t *self, mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
+    size_t path_len = strlen(path);
+    size_t l = vstr_len(&self->root_dir);
 
     if (path[0] != '/') {
-        size_t l = vstr_len(&self->root_dir);
         size_t lc = vstr_len(&self->cur_dir);
         vstr_add_str(&self->root_dir, "/");
         vstr_add_strn(&self->root_dir, self->cur_dir.buf, lc);
-        vstr_add_str(&self->root_dir, path);
-        path = vstr_null_terminated_str(&self->root_dir);
-        self->root_dir.len = l;
-    } else {
-        size_t l = vstr_len(&self->root_dir);
-        vstr_add_str(&self->root_dir, path);
-        path = vstr_null_terminated_str(&self->root_dir);
-        self->root_dir.len = l;
     }
+
+    if (path_len > 0 &&
+        (path[path_len - 1] == '.' && (path_len == 1 || path[path_len - 2] == '/'))) {
+        // if path ends with '/.', remove the trailing dot
+        path_len--;
+    }
+
+    vstr_add_strn(&self->root_dir, path, path_len);
+    path = vstr_null_terminated_str(&self->root_dir);
+    self->root_dir.len = l;
+
     return path;
 }
 
@@ -453,6 +457,11 @@ static mp_obj_t zephyr_fs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
         return mp_const_none;
     }
 
+    if (stats.type != FS_DIR_ENTRY_DIR) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("is not a directory"));
+        return mp_const_none;
+    }
+
     vstr_reset(&self->cur_dir);
     vstr_add_strn(&self->cur_dir, chdir.buf, lc);
 
@@ -649,19 +658,25 @@ static MP_DEFINE_CONST_FUN_OBJ_1(zephyr_fs_umount_obj, zephyr_fs_umount);
 
 static mp_obj_t zephyr_fs_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
     zephyr_fs_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    struct fs_mount_t *mount = self->mount;
     int err;
     (void)readonly;
     (void)mkfs;
 
-    err = fs_mount(self->mount);
+    if (sys_dnode_is_linked(&mount->node) && (mount->flags & FS_MOUNT_FLAG_AUTOMOUNT) != 0) {
+        // Already mounted with automount, nothing to do
+        return mp_const_none;
+    }
+
+    err = fs_mount(mount);
     if (err == -EBUSY) {
-        err = fs_unmount(self->mount);
+        err = fs_unmount(mount);
         if (err < 0) {
             mp_raise_msg_varg(&mp_type_OSError,
                 MP_ERROR_TEXT("error un-mounting Zephyr File System: %q"), mp_errno_to_str(MP_OBJ_NEW_SMALL_INT(-err)));
             return mp_const_none;
         }
-        err = fs_mount(self->mount);
+        err = fs_mount(mount);
     }
 
     if (err == -EROFS) {
