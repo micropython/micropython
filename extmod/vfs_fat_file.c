@@ -36,7 +36,12 @@
 #include "extmod/vfs_fat.h"
 
 // this table converts from FRESULT to POSIX errno
-const byte fresult_to_errno_table[20] = {
+#if MICROPY_USE_INTERNAL_ERRNO
+const byte
+#else
+const int
+#endif
+fresult_to_errno_table[20] = {
     [FR_OK] = 0,
     [FR_DISK_ERR] = MP_EIO,
     [FR_INT_ERR] = MP_EIO,
