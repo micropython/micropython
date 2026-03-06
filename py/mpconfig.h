@@ -1381,6 +1381,41 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether str.capitalize()/str.swapcase() methods provided
+#ifndef MICROPY_PY_BUILTINS_STR_CAPITALIZE
+#define MICROPY_PY_BUILTINS_STR_CAPITALIZE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether str.title()/str.istitle()/str.casefold() methods provided
+#ifndef MICROPY_PY_BUILTINS_STR_TITLE
+#define MICROPY_PY_BUILTINS_STR_TITLE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether str.translate()/str.maketrans() methods provided
+#ifndef MICROPY_PY_BUILTINS_STR_TRANSLATE
+#define MICROPY_PY_BUILTINS_STR_TRANSLATE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether str.removeprefix()/str.removesuffix() methods provided
+#ifndef MICROPY_PY_BUILTINS_STR_REMOVEFIX
+#define MICROPY_PY_BUILTINS_STR_REMOVEFIX (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether additional str.is*() check methods provided
+#ifndef MICROPY_PY_BUILTINS_STR_IS_CHECKS
+#define MICROPY_PY_BUILTINS_STR_IS_CHECKS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether str.expandtabs() method provided
+#ifndef MICROPY_PY_BUILTINS_STR_EXPANDTABS
+#define MICROPY_PY_BUILTINS_STR_EXPANDTABS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#endif
+
+// Whether str.format_map() method provided
+#ifndef MICROPY_PY_BUILTINS_STR_FORMAT_MAP
+#define MICROPY_PY_BUILTINS_STR_FORMAT_MAP (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#endif
+
 // Whether to support bytearray object
 #ifndef MICROPY_PY_BUILTINS_BYTEARRAY
 #define MICROPY_PY_BUILTINS_BYTEARRAY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
