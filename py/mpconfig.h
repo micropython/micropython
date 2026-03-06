@@ -1910,6 +1910,11 @@ typedef time_t mp_timestamp_t;
 
 // Extended modules
 
+// Whether to provide the "_weakref" module.
+#ifndef MICROPY_PY_WEAKREF
+#define MICROPY_PY_WEAKREF (1)
+#endif
+
 #ifndef MICROPY_PY_ASYNCIO
 #define MICROPY_PY_ASYNCIO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif

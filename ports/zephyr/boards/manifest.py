@@ -5,3 +5,4 @@ freeze("$(PORT_DIR)/modules")
 
 # Require a micropython-lib module.
 require("upysh")
+include("$(MPY_DIR)/extmod/weakref")

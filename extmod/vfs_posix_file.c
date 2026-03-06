@@ -279,7 +279,7 @@ static const mp_stream_p_t vfs_posix_fileio_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_posix_fileio,
     MP_QSTR_FileIO,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
+    MP_TYPE_FLAG_ITER_IS_STREAM | MP_TYPE_FLAG_HAS_FINALISER,
     print, vfs_posix_file_print,
     protocol, &vfs_posix_fileio_stream_p,
     locals_dict, &vfs_posix_rawfile_locals_dict
@@ -340,7 +340,7 @@ static void vfs_posix_textio_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_posix_textio,
     MP_QSTR_TextIOWrapper,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
+    MP_TYPE_FLAG_ITER_IS_STREAM | MP_TYPE_FLAG_HAS_FINALISER,
     print, vfs_posix_file_print,
     protocol, &vfs_posix_textio_stream_p,
     VFS_POSIX_TEXTIO_TYPE_ATTR
