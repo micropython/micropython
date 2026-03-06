@@ -358,9 +358,23 @@ function ci_powerpc_build {
 ########################################################################################
 # ports/psoc-edge
 
+function ci_psoc_edge_setup {
+    ci_gcc_arm_setup
+    git clone https://github.com/Infineon/edgeprotecttools.git
+    sudo apt remove python3-packaging python3-jsonschema
+    sudo pip3 install edgeprotecttools
+}
+
+function ci_psoc_edge_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/psoc-edge submodules
+    make ${MAKEOPTS} -C ports/psoc-edge BOARD=KIT_PSE84_AI
+}
+
+
 MPY_MTB36_CI_DOCKER_VERSION=0.2.0
 
-function ci_psoc_edge_setup {
+function ci_psoc_edge_setup_docker {
     # Access to serial device 
     if [ "$1" = "--dev-access" ]; then
         device0_flag=--device=/dev/ttyACM0 
@@ -391,17 +405,17 @@ function ci_psoc_edge_setup {
     sudo pip install --upgrade etdevs
 }
 
-function ci_psoc_edge_build {
+function ci_psoc_edge_build_docker {
     board=$1
     docker exec mtb36-ci make BOARD=${board}
 }
 
-function ci_psoc_edge_deploy {
+function ci_psoc_edge_deploy_docker {
     board=$1
     docker exec mtb36-ci make BOARD=${board} deploy
 }
 
-function ci_psoc_edge_deploy_multiple_devices {
+function ci_psoc_edge_deploy_multiple_devices_docker {
     board=$1
     # hex file including path with respect to micropython root
     hex_file=$2
@@ -409,7 +423,7 @@ function ci_psoc_edge_deploy_multiple_devices {
     docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board $1 --hex-file $2 --devs-file ../../$3 -q"
 }
 
-function ci_psoc_edge_teardown {
+function ci_psoc_edge_teardown_docker {
     docker stop mtb36-ci
 }
 
