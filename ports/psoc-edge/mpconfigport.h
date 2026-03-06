@@ -92,12 +92,6 @@
 #define MICROPY_PY_TIME_TIME_TIME_NS            (1)
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc-edge/modtime.c"
 
-// Machine module
-#define MICROPY_PY_MACHINE                      (1)
-#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
-#define MICROPY_PY_MACHINE_I2C                  (1)
-// #define MICROPY_PY_MACHINE_SOFTI2C              (1)
-
 // Logger
 #define MICROPY_LOGGER_DEBUG                    (0)
 
