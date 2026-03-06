@@ -98,6 +98,9 @@
 [submodule "lib/psoc-edge/se-rt-services-utils"]
 	path = lib/psoc-edge/se-rt-services-utils
 	url = https://github.com/Infineon/se-rt-services-utils.git
+[submodule "lib/psoc-edge/cmsis"]
+	path = lib/psoc-edge/cmsis
+	url = https://github.com/Infineon/cmsis.git
 [submodule "lib/psoc-edge/serial-memory"]
 	path = lib/psoc-edge/serial-memory
 	url = https://github.com/Infineon/serial-memory.git
