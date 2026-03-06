@@ -1908,6 +1908,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_THREAD_RECURSIVE_MUTEX (MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL)
 #endif
 
+// Whether to provide the "weakref" module.
+#ifndef MICROPY_PY_WEAKREF
+#define MICROPY_PY_WEAKREF (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_ASYNCIO

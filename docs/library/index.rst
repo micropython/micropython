@@ -81,6 +81,7 @@ library.
    struct.rst
    sys.rst
    time.rst
+   weakref.rst
    zlib.rst
    _thread.rst
 

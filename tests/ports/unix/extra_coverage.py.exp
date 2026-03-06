@@ -75,7 +75,7 @@ json            machine         marshal         math
 os              platform        random          re
 select          socket          struct          sys
 termios         time            tls             uctypes
-vfs             websocket
+vfs             weakref         websocket
 me
 
 micropython     machine         marshal         math
