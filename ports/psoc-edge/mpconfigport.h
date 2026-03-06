@@ -72,6 +72,7 @@
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
+#define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 
 // Enable os module
 #define MICROPY_PY_OS                           (1)
@@ -85,6 +86,13 @@
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
 #define MICROPY_PY_SYS_EXC_INFO                 (1)
+
+// Float and Math support
+#define MICROPY_PY_BUILTINS_FLOAT               (1)
+#define MICROPY_PY_MATH                         (1)
+
+// Enable f-string support (e.g., f"Hello {name}")
+#define MICROPY_PY_FSTRINGS                     (1)
 
 // Extended modules
 #define MICROPY_PY_TIME                         (1)
