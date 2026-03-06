@@ -909,9 +909,9 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_SOURCE_LINE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to include doc strings (increases RAM usage)
+// Whether to include doc strings for functions, classes and modules (increases RAM usage)
 #ifndef MICROPY_ENABLE_DOC_STRING
-#define MICROPY_ENABLE_DOC_STRING (0)
+#define MICROPY_ENABLE_DOC_STRING (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
 // Exception messages are removed (requires disabling MICROPY_ROM_TEXT_COMPRESSION)
