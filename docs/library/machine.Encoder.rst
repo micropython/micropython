@@ -60,9 +60,9 @@ Methods
      either 1, 2, or 4 phases and the default is 1 phase. *(Supported on ESP32 and MIMXRT)*
 
    - *max* Specify the upper counting range. The position counter will count up
-     from a *min* start value up to *max* - 1, then roll over to the init value and
+     from a *min* start value up to *max*, then roll over to the init value and
      increase the cycles counter by one. When counting down, the cycles counter
-     decreases at the transition from *min* to max - 1. The range is reset by defining
+     decreases at the transition from *min* to *max*. The range is reset by defining
      both *max* and *min* to 0. The default value is the hardware's counter range.
      *(Supported by MIMXRT and the ESP32 PCNT module)*
  
@@ -105,7 +105,7 @@ Methods
 
    See :meth:`machine.Counter.value` for details about overflow of this value.
 
-.. method:: cycles=Encoder.cycles([value])
+.. method:: Encoder.cycles([value])
 
    Get or set the current cycles counter of the counter as signed 16 bit integer.
    The value represents the overflow or underflow events of the count range.
@@ -114,7 +114,7 @@ Methods
    base counter is not changed. The method returns the previous value.
    *(Supported on MIMXRT)*
 
-.. method:: Encoder.irq(trigger=event, value=nnn, handler=handler, hard=False)
+.. method:: Encoder.irq(handler=None, trigger=0, hard=False)
 
    Specifies, that the *handler* is called when the respective *event* happens.
 
@@ -127,8 +127,9 @@ Methods
     - Encoder.IRQ_ROLL_UNDER Triggered when the position counter rolls under from the lowest
       to the highest value.
 
-   The callback is called, when the Encoder is at *value*. For fast signals, the actual counter
-   value may be different from the trigger value.
+   The callback is called, when the Counter value matches the value defined by the
+   *match* keyword option of the constructor or the :meth:`Counter.init()` method. For fast signals,
+   the actual counter value may be different from the trigger value.
    The callback function *handler* receives a single argument, which is the Encoder object. All
    events share the same callback. The event which triggers the callback can be identified
    with the irq.flags() method. The argument *hard* specifies, whether the callback is called

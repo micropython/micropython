@@ -57,10 +57,10 @@ Methods
      should use the longest filter supported by the hardware that is less than
      or equal to this value. The default is 0 (no filter). *(Supported on ESP32 and MIMXRT)*
  
-   - Specify the upper counting range. The position counter will count up
-     from a *min* start value up to *max* - 1, then roll over to the init value and
+   - *max* Specify the upper counting range. The position counter will count up
+     from a *min* start value up to *max*, then roll over to the init value and
      increase the cycles counter by one. When counting down, the cycles counter
-     decreases at the transition from *min* to max - 1. The range is reset by defining
+     decreases at the transition from *min* to *max*. The range is reset by defining
      both *max* and *min* to 0. The default value is the hardware's counter range.
      *(Supported by MIMXRT and the ESP32 PCNT module)*
  
@@ -116,7 +116,7 @@ Methods
    the counter (i.e. to measure the counts since the last call), and this will
    avoid this problem.
 
-.. method:: cycles=Counter.cycles([value])
+.. method:: Counter.cycles([value])
 
    Get or set the current cycles counter of the counter as signed 16 bit integer.
    The value represents the overflow or underflow events of the count range.
@@ -125,7 +125,7 @@ Methods
    base counter is not changed. The method returns the previous value.
    *(Supported on MIMXRT)*
 
-.. method:: Counter.irq(trigger=event, value=nnn, handler=handler, hard=False)
+.. method:: Counter.irq(handler=None, trigger=0, hard=False)
 
    Specifies, that the *handler* is called when the respective *event* happens.
 
@@ -138,8 +138,9 @@ Methods
     - Counter.IRQ_ROLL_UNDER Triggered when the position counter rolls under from the lowest
       to the highest value.
 
-   The callback is called, when the Counter is at *value*. For fast signals, the actual counter
-   value may be different from the trigger value.
+   The callback is called, when the Counter value matches the value defined by the
+   *match* keyword option of the constructor or the :meth:`Counter.init()` method. For fast signals,
+   the actual counter value may be different from the trigger value.
    The callback function *handler* receives a single argument, which is the Counter object. All
    events share the same callback. The event which triggers the callback can be identified
    with the irq.flags() method. The argument *hard* specifies, whether the callback is called
@@ -148,7 +149,7 @@ Methods
    in what can be used, but depending on the load of the device execution may be delayed.
    Under low load, the difference in latency is minor.
 
-   The default arguments values are trigger=0, handler=None, hard=False. The callback will be
+   The default arguments values are handler=None, trigger=0, hard=False. The callback will be
    disabled, when called with handler=None.
 
    The position match event is triggered as long as the position and match value are identical.
