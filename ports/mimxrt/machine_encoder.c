@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020-2021 Damien P. George
- * Copyright (c) 2021 Robert Hammelrath
+ * Copyright (c) 2026 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -226,12 +226,12 @@ static void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, 
         if (match > 0) {
             match += (self->phases_inv - 1);
         }
-        mp_printf(print, "<Encoder %d, phases=%d, max=%ld, min=%ld, match=%ld, filter=%luns>\n",
+        mp_printf(print, "Encoder(%d, phases=%d, max=%ld, min=%ld, match=%ld, filter=%luns)",
             self->id, 4 / self->phases_inv,
             max / self->phases_inv, min / self->phases_inv,
             match / self->phases_inv, self->filter);
     } else {
-        mp_printf(print, "<Counter %d, max=%ld, min=%ld, match=%ld, filter=%luns>\n",
+        mp_printf(print, "Counter(%d, max=%ld, min=%ld, match=%ld, filter=%luns)",
             self->id, self->max_count, self->min_count,
             self->enc_config.positionCompareValue, self->filter);
     }
@@ -416,7 +416,8 @@ static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
         self->min_count = mp_obj_int_get_truncated(args[ARG_min].u_obj) * self->phases_inv;
     }
 
-    enc_config->positionModulusValue = self->max_count - 1;
+    enc_config->positionModulusValue =
+        self->max_count == 0 ? 0xffffffff : self->max_count + self->phases_inv - 1;
     enc_config->positionInitialValue = self->min_count;
     enc_config->enableModuloCountMode = true;
 
@@ -503,7 +504,7 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     if (id < 0 || id >= FSL_FEATURE_SOC_ENC_COUNT) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid encoder/counter id"));
     }
-    // check, if the encoder is already in use, and if yes, dinit it
+    // check, if the encoder is already in use, and if yes, deinit it
     if (encoder_table[id] != NULL) {
         encoder_deinit_single(encoder_table[id]);
     }
@@ -511,13 +512,16 @@ static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     // Connect the trigger input to low level
     XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[id].enc_trigger);
 
-    // Create and populate the Qencoder object.
-    machine_encoder_obj_t *self = m_new_obj(machine_encoder_obj_t);
-    encoder_table[id] = self;
+    // Create and populate the Encoder object.
+    machine_encoder_obj_t *self = encoder_table[id];
+    if (self == NULL) {
+        self = mp_obj_malloc(machine_encoder_obj_t, &machine_encoder_type);
+        encoder_table[id] = self;
+    }
+    // Set defaults for ENC Config.
     self->id = id;
     self->input_a = 0;
     self->input_b = 0;
-    self->base.type = &machine_encoder_type;
     self->instance = enc_instances[id + 1];
     self->max_count = 0;
     self->min_count = 0;
@@ -589,13 +593,11 @@ static mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
     }
     uint32_t actual_value = ENC_GetPositionValue(self->instance);
     if (n_args > 1) {
-        // Set the encoder position value and clear the rev counter.
         uint32_t value = mp_obj_int_get_truncated(args[1]) * self->phases_inv;
-        clear_encoder_registers(self);
-        // Set the position and rev register
+        // Set the position register
         ENC_SetInitialPositionValue(self->instance, value);
         ENC_DoSoftwareLoadInitialPositionValue(self->instance);
-        // Reset the INIT Value
+        // Reset the INIT Value, unlocking the counter.
         ENC_SetInitialPositionValue(self->instance, 0);
     }
     // Get the position as signed 32 bit value.
@@ -786,7 +788,7 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     if (id < 0 || id >= FSL_FEATURE_SOC_ENC_COUNT) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid encoder/counter id"));
     }
-    // check, if the encoder is already in use, and if yes, dinit it
+    // check, if the encoder is already in use, and if yes, deinit it
     if (encoder_table[id] != NULL) {
         encoder_deinit_single(encoder_table[id]);
     }
@@ -796,12 +798,14 @@ static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
     XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[id].enc_trigger);
 
     // Create and populate the Qencoder object.
-    machine_encoder_obj_t *self = m_new_obj(machine_encoder_obj_t);
-    encoder_table[id] = self;
+    machine_encoder_obj_t *self = encoder_table[id];
+    if (self == NULL) {
+        self = mp_obj_malloc(machine_encoder_obj_t, &machine_counter_type);
+        encoder_table[id] = self;
+    }
     self->id = id;
     self->input_a = 0;
     self->input_b = 0;
-    self->base.type = &machine_counter_type;
     self->instance = enc_instances[id + 1];
     self->max_count = 0;
     self->min_count = 0;
@@ -860,5 +864,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, mp_machine_encoder_print,
     locals_dict, &machine_counter_locals_dict
     );
+
+MP_REGISTER_ROOT_POINTER(struct _machine_encoder_obj_t *encoder_table[FSL_FEATURE_SOC_ENC_COUNT]);
 
 #endif // MICROPY_PY_MACHINE_QECNT
