@@ -102,8 +102,8 @@ typedef struct _mp_state_mem_area_t {
     struct _mp_state_mem_area_t *next;
     #endif
 
-    MP_ATTR_COUNTED_BY(gc_alloc_table_byte_len) MP_ATTR_NONSTRING byte *gc_alloc_table_start;
     size_t gc_alloc_table_byte_len;
+    MP_ATTR_COUNTED_BY(gc_alloc_table_byte_len) MP_ATTR_NONSTRING byte *gc_alloc_table_start;
     #if MICROPY_ENABLE_FINALISER
     byte *gc_finaliser_table_start;
     #endif
