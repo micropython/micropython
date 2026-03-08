@@ -222,7 +222,7 @@ mp_obj_t mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2
 typedef struct _mp_call_args_t {
     mp_obj_t fun;
     size_t n_args, n_kw, n_alloc;
-    MP_ATTR_COUNTED_BY(n_alloc) mp_obj_t *args;
+    MP_ATTR_PTR_COUNTED_BY(n_alloc) mp_obj_t *args;
 } mp_call_args_t;
 
 #if MICROPY_STACKLESS

@@ -36,7 +36,7 @@ typedef struct _mp_obj_deque_t {
     size_t alloc;
     size_t i_get;
     size_t i_put;
-    MP_ATTR_COUNTED_BY(alloc) mp_obj_t *items;
+    MP_ATTR_PTR_COUNTED_BY(alloc) mp_obj_t *items;
     uint32_t flags;
     #define FLAG_CHECK_OVERFLOW 1
 } mp_obj_deque_t;

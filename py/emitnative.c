@@ -258,15 +258,15 @@ struct _emit_t {
     bool do_viper_types;
 
     mp_uint_t local_vtype_alloc;
-    MP_ATTR_COUNTED_BY(local_vtype_alloc) vtype_kind_t *local_vtype;
+    MP_ATTR_PTR_COUNTED_BY(local_vtype_alloc) vtype_kind_t *local_vtype;
 
     mp_uint_t stack_info_alloc;
-    MP_ATTR_COUNTED_BY(stack_info_alloc) stack_info_t *stack_info;
+    MP_ATTR_PTR_COUNTED_BY(stack_info_alloc) stack_info_t *stack_info;
     vtype_kind_t saved_stack_vtype;
 
     size_t exc_stack_alloc;
     size_t exc_stack_size;
-    MP_ATTR_COUNTED_BY(exc_stack_alloc) exc_stack_entry_t *exc_stack;
+    MP_ATTR_PTR_COUNTED_BY(exc_stack_alloc) exc_stack_entry_t *exc_stack;
 
     int prelude_offset;
     int prelude_ptr_index;

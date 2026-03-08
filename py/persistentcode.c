@@ -770,7 +770,7 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
 typedef struct _bit_vector_t {
     size_t max_bit_set;
     size_t alloc;
-    MP_ATTR_COUNTED_BY(alloc) uintptr_t *bits;
+    MP_ATTR_PTR_COUNTED_BY(alloc) uintptr_t *bits;
 } bit_vector_t;
 
 static void bit_vector_init(bit_vector_t *self) {

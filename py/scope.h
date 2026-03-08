@@ -91,7 +91,7 @@ typedef struct _scope_t {
     uint16_t exc_stack_size; // maximum size of the exception stack
     uint16_t id_info_alloc;
     uint16_t id_info_len;
-    MP_ATTR_COUNTED_BY(id_info_alloc) id_info_t *id_info;
+    MP_ATTR_PTR_COUNTED_BY(id_info_alloc) id_info_t *id_info;
 } scope_t;
 
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, mp_uint_t emit_options);

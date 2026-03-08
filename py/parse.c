@@ -227,11 +227,11 @@ typedef struct _mp_parse_chunk_t {
 typedef struct _parser_t {
     size_t rule_stack_alloc;
     size_t rule_stack_top;
-    MP_ATTR_COUNTED_BY(rule_stack_alloc) rule_stack_t *rule_stack;
+    MP_ATTR_PTR_COUNTED_BY(rule_stack_alloc) rule_stack_t *rule_stack;
 
     size_t result_stack_alloc;
     size_t result_stack_top;
-    MP_ATTR_COUNTED_BY(result_stack_alloc) mp_parse_node_t *result_stack;
+    MP_ATTR_PTR_COUNTED_BY(result_stack_alloc) mp_parse_node_t *result_stack;
 
     mp_lexer_t *lexer;
 

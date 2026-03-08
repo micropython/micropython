@@ -437,7 +437,7 @@ struct _exc_printer_t {
     bool allow_realloc;
     size_t alloc;
     size_t len;
-    MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING byte *buf;
+    MP_ATTR_PTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING byte *buf;
 };
 
 static void exc_add_strn(void *data, const char *str, size_t len) {
