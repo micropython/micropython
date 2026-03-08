@@ -156,26 +156,29 @@ typedef unsigned int uint;
 #endif
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
-void *m_malloc(size_t num_bytes);
-void *m_malloc_maybe(size_t num_bytes);
-void *m_malloc_with_finaliser(size_t num_bytes);
-void *m_malloc0(size_t num_bytes);
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr, size_t num_bytes);
 #else
-void *m_realloc(void *ptr, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
+#endif
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_malloc(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc_maybe(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_malloc_with_finaliser(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_malloc0(size_t num_bytes);
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
+MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
+#else
+MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc(void *ptr, size_t new_num_bytes);
+MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 #endif
 MP_NORETURN void m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_TRACKED_ALLOC
 // These alloc/free functions track the pointers in a linked list so the GC does not reclaim
 // them.  They can be used by code that requires traditional C malloc/free semantics.
-void *m_tracked_calloc(size_t nmemb, size_t size);
 void m_tracked_free(void *ptr_in);
+MP_ATTR_ALLOC_SIZE(1, 2) MP_ATTR_MALLOC MP_ATTR_MFREE(m_tracked_free, 1) void *m_tracked_calloc(size_t nmemb, size_t size);
 #endif
 
 #if MICROPY_MEM_STATS
