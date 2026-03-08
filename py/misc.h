@@ -161,16 +161,16 @@ void m_free(void *ptr, size_t num_bytes);
 #else
 void m_free(void *ptr);
 #endif
-MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_malloc(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc(size_t num_bytes);
 MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc_maybe(size_t num_bytes);
-MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_malloc_with_finaliser(size_t num_bytes);
-MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_malloc0(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc_with_finaliser(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc0(size_t num_bytes);
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
-MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
+MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
+MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
 #else
-MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc(void *ptr, size_t new_num_bytes);
-MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
+MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) void *m_realloc(void *ptr, size_t new_num_bytes);
+MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 #endif
 MP_NORETURN void m_malloc_fail(size_t num_bytes);
 
