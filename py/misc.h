@@ -103,6 +103,36 @@ typedef unsigned int uint;
 
 /** memory allocation ******************************************/
 
+// annotate malloc return size for better ASAN and debug info
+#if __has_attribute(alloc_size)
+#define MP_ATTR_ALLOC_SIZE(...) __attribute__((alloc_size(__VA_ARGS__)))
+#else
+#define MP_ATTR_ALLOC_SIZE(...)
+#endif
+
+// annotate malloc methods for better ASAN and debug info
+#if __has_attribute(malloc)
+#define MP_ATTR_MALLOC __attribute__((malloc))
+#else
+#define MP_ATTR_MALLOC
+#endif
+
+// annotate associated free methods for better ASAN and debug info
+#if  __has_attribute(malloc) && ((defined(__clang__) && __clang_major >= 15) || (defined(__GNUC__) && __GNUC__ >= 11))
+#define MP_ATTR_MFREE(...) __attribute__((malloc(__VA_ARGS__)))
+#else
+#define MP_ATTR_MFREE(...)
+#endif
+
+// annotate infallible mallocs for better ASAN and debug info
+#if __has_attribute(returns_nonnull) || (defined(__GNUC__) && __GNUC__ >= 9)
+#define MP_ATTR_RETURNS_NONNULL __attribute__((returns_nonnull))
+#elif defined(_MSC_VER)
+#define MP_ATTR_RETURNS_NONNULL _Ret_notnull_
+#else
+#define MP_ATTR_RETURNS_NONNULL
+#endif
+
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
 #define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
