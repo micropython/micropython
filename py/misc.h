@@ -195,13 +195,20 @@ size_t m_get_peak_bytes_allocated(void);
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
 
-// associate struct flex and pointer members to corresponding length fields
+// associate struct flex members to corresponding length fields
 #if __has_attribute(counted_by)
 #define MP_ATTR_COUNTED_BY(count) __attribute__((counted_by(count)))
 #elif defined(_MSC_VER)
 #define MP_ATTR_COUNTED_BY(count) _Field_size_(count)
 #else
 #define MP_ATTR_COUNTED_BY(count)
+#endif
+
+// associate struct pointer members to corresponding length fields
+#if __has_attribute(counted_by) && (defined(__GNUC__) && __GNUC__ >= 16)
+#define MP_ATTR_PTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#else
+#define MP_ATTR_PTR_COUNTED_BY(count)
 #endif
 
 // annotate char arrays or pointers that are meant to contain null bytes
@@ -259,7 +266,7 @@ mp_uint_t unichar_xdigit_value(unichar c);
 typedef struct _vstr_t {
     size_t alloc;
     size_t len;
-    MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING char *buf;
+    MP_ATTR_PTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING char *buf;
     bool fixed_buf;
 } vstr_t;
 
