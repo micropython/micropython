@@ -259,7 +259,7 @@ mp_uint_t unichar_xdigit_value(unichar c);
 typedef struct _vstr_t {
     size_t alloc;
     size_t len;
-    char *buf;
+    MP_ATTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING char *buf;
     bool fixed_buf;
 } vstr_t;
 

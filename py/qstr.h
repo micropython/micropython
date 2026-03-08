@@ -85,10 +85,10 @@ typedef struct _qstr_pool_t {
     size_t alloc;
     size_t len;
     #if MICROPY_QSTR_BYTES_IN_HASH
-    qstr_hash_t *hashes;
+    MP_ATTR_COUNTED_BY(alloc) qstr_hash_t *hashes;
     #endif
-    qstr_len_t *lengths;
-    const char *qstrs[];
+    MP_ATTR_COUNTED_BY(alloc) qstr_len_t *lengths;
+    MP_ATTR_COUNTED_BY(alloc) const char *qstrs[];
 } qstr_pool_t;
 
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
