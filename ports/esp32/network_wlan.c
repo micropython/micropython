@@ -40,6 +40,7 @@
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
+#include "esp_idf_version.h"
 
 #if MICROPY_PY_NETWORK_WLAN_CSI
 #include "modwifi_csi.h"
@@ -91,6 +92,122 @@ static uint8_t wifi_sta_reconnects;
 #else
 #define WIFI_PROTOCOL_DEFAULT (WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N)
 #endif
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+#define MICROPY_ESP_WIFI_HAS_DUAL_BAND_API (1)
+#else
+#define MICROPY_ESP_WIFI_HAS_DUAL_BAND_API (0)
+#endif
+
+// Keep Python-level constants stable across targets/IDF versions.
+#define MICROPY_WIFI_BAND_MODE_2G_ONLY (1)
+#define MICROPY_WIFI_BAND_MODE_5G_ONLY (2)
+#define MICROPY_WIFI_BAND_MODE_AUTO (3)
+
+static bool network_wlan_band_mode_is_auto(void) {
+    #if MICROPY_ESP_WIFI_HAS_DUAL_BAND_API
+    wifi_band_mode_t band_mode;
+    if (esp_wifi_get_band_mode(&band_mode) == ESP_OK) {
+        return band_mode == WIFI_BAND_MODE_AUTO;
+    }
+    #endif
+    return false;
+}
+
+static esp_err_t network_wlan_set_protocol(wifi_interface_t ifx, uint16_t protocol_bitmap) {
+    #if MICROPY_ESP_WIFI_HAS_DUAL_BAND_API
+    if (network_wlan_band_mode_is_auto()) {
+        wifi_protocols_t protocols;
+        esp_err_t err = esp_wifi_get_protocols(ifx, &protocols);
+        if (err != ESP_OK) {
+            return err;
+        }
+        protocols.ghz_2g = protocol_bitmap;
+        return esp_wifi_set_protocols(ifx, &protocols);
+    }
+    #endif
+    return esp_wifi_set_protocol(ifx, (uint8_t)protocol_bitmap);
+}
+
+static esp_err_t network_wlan_get_protocol(wifi_interface_t ifx, uint16_t *protocol_bitmap) {
+    #if MICROPY_ESP_WIFI_HAS_DUAL_BAND_API
+    if (network_wlan_band_mode_is_auto()) {
+        wifi_protocols_t protocols;
+        esp_err_t err = esp_wifi_get_protocols(ifx, &protocols);
+        if (err != ESP_OK) {
+            return err;
+        }
+        // Preserve legacy semantics: protocol is reported as the 2.4 GHz view.
+        *protocol_bitmap = protocols.ghz_2g;
+        return ESP_OK;
+    }
+    #endif
+    uint8_t protocol_bitmap_legacy;
+    esp_err_t err = esp_wifi_get_protocol(ifx, &protocol_bitmap_legacy);
+    if (err == ESP_OK) {
+        *protocol_bitmap = protocol_bitmap_legacy;
+    }
+    return err;
+}
+
+static esp_err_t network_wlan_set_bandwidth(wifi_interface_t ifx, wifi_bandwidth_t bandwidth) {
+    #if MICROPY_ESP_WIFI_HAS_DUAL_BAND_API
+    if (network_wlan_band_mode_is_auto()) {
+        wifi_bandwidths_t bandwidths;
+        esp_err_t err = esp_wifi_get_bandwidths(ifx, &bandwidths);
+        if (err != ESP_OK) {
+            return err;
+        }
+        bandwidths.ghz_2g = bandwidth;
+        return esp_wifi_set_bandwidths(ifx, &bandwidths);
+    }
+    #endif
+    return esp_wifi_set_bandwidth(ifx, bandwidth);
+}
+
+static esp_err_t network_wlan_get_bandwidth(wifi_interface_t ifx, wifi_bandwidth_t *bandwidth) {
+    #if MICROPY_ESP_WIFI_HAS_DUAL_BAND_API
+    if (network_wlan_band_mode_is_auto()) {
+        wifi_bandwidths_t bandwidths;
+        esp_err_t err = esp_wifi_get_bandwidths(ifx, &bandwidths);
+        if (err != ESP_OK) {
+            return err;
+        }
+        // Preserve legacy semantics: bandwidth is reported as the 2.4 GHz view.
+        *bandwidth = bandwidths.ghz_2g;
+        return ESP_OK;
+    }
+    #endif
+    return esp_wifi_get_bandwidth(ifx, bandwidth);
+}
+
+static esp_err_t network_wlan_set_band_mode(uint8_t band_mode) {
+    #if MICROPY_ESP_WIFI_HAS_DUAL_BAND_API
+    switch (band_mode) {
+        case MICROPY_WIFI_BAND_MODE_2G_ONLY:
+        case MICROPY_WIFI_BAND_MODE_5G_ONLY:
+        case MICROPY_WIFI_BAND_MODE_AUTO:
+            return esp_wifi_set_band_mode((wifi_band_mode_t)band_mode);
+        default:
+            return ESP_ERR_INVALID_ARG;
+    }
+    #else
+    return band_mode == MICROPY_WIFI_BAND_MODE_2G_ONLY ? ESP_OK : ESP_ERR_NOT_SUPPORTED;
+    #endif
+}
+
+static esp_err_t network_wlan_get_band_mode(uint8_t *band_mode) {
+    #if MICROPY_ESP_WIFI_HAS_DUAL_BAND_API
+    wifi_band_mode_t band_mode_raw;
+    esp_err_t err = esp_wifi_get_band_mode(&band_mode_raw);
+    if (err == ESP_OK) {
+        *band_mode = (uint8_t)band_mode_raw;
+        return ESP_OK;
+    }
+    #endif
+    *band_mode = MICROPY_WIFI_BAND_MODE_2G_ONLY;
+    return ESP_OK;
+}
 
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
@@ -618,7 +735,7 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         break;
                     }
                     case MP_QSTR_protocol: {
-                        esp_exceptions(esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
+                        esp_exceptions(network_wlan_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
                         break;
                     }
                     case MP_QSTR_pm: {
@@ -626,7 +743,11 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         break;
                     }
                     case MP_QSTR_bandwidth: {
-                        esp_exceptions(esp_wifi_set_bandwidth(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
+                        esp_exceptions(network_wlan_set_bandwidth(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
+                        break;
+                    }
+                    case MP_QSTR_band_mode: {
+                        esp_exceptions(network_wlan_set_band_mode(mp_obj_get_int(kwargs->table[i].value)));
                         break;
                     }
                     case MP_QSTR_promiscuous: {
@@ -726,8 +847,8 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             break;
         }
         case MP_QSTR_protocol: {
-            uint8_t protocol_bitmap;
-            esp_exceptions(esp_wifi_get_protocol(self->if_id, &protocol_bitmap));
+            uint16_t protocol_bitmap = 0;
+            esp_exceptions(network_wlan_get_protocol(self->if_id, &protocol_bitmap));
             val = MP_OBJ_NEW_SMALL_INT(protocol_bitmap);
             break;
         }
@@ -739,8 +860,14 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
         }
         case MP_QSTR_bandwidth: {
             wifi_bandwidth_t bw;
-            esp_exceptions(esp_wifi_get_bandwidth(self->if_id, &bw));
+            esp_exceptions(network_wlan_get_bandwidth(self->if_id, &bw));
             val = MP_OBJ_NEW_SMALL_INT(bw);
+            break;
+        }
+        case MP_QSTR_band_mode: {
+            uint8_t band_mode;
+            esp_exceptions(network_wlan_get_band_mode(&band_mode));
+            val = MP_OBJ_NEW_SMALL_INT(band_mode);
             break;
         }
         case MP_QSTR_promiscuous: {
@@ -826,6 +953,10 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_BW_HT20), MP_ROM_INT(WIFI_BW_HT20) },
     { MP_ROM_QSTR(MP_QSTR_BW_HT40), MP_ROM_INT(WIFI_BW_HT40) },
+
+    { MP_ROM_QSTR(MP_QSTR_BAND_MODE_2G_ONLY), MP_ROM_INT(MICROPY_WIFI_BAND_MODE_2G_ONLY) },
+    { MP_ROM_QSTR(MP_QSTR_BAND_MODE_5G_ONLY), MP_ROM_INT(MICROPY_WIFI_BAND_MODE_5G_ONLY) },
+    { MP_ROM_QSTR(MP_QSTR_BAND_MODE_AUTO), MP_ROM_INT(MICROPY_WIFI_BAND_MODE_AUTO) },
 };
 static MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 

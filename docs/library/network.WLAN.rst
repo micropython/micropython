@@ -147,8 +147,13 @@ Methods
    pm             WiFi Power Management setting (see below for allowed values)
    protocol       (ESP32 Only.) WiFi Low level 802.11 protocol. See `WLAN.PROTOCOL_DEFAULT` and protocol mode constants.
    bandwidth      (ESP32 Only.) WiFi channel bandwidth. See `WLAN.BW_HT20` and `WLAN.BW_HT40`.
+   band_mode      (ESP32 Only.) WiFi band mode. See `WLAN.BAND_MODE_2G_ONLY`, `WLAN.BAND_MODE_5G_ONLY`, and `WLAN.BAND_MODE_AUTO`.
    promiscuous    (ESP32 Only.) Enable promiscuous mode (boolean). Captures packets from all sources, not just connected AP.
    =============  ===========
+
+   On dual-band targets (for example ESP32-C5), ``band_mode`` can switch between
+   2.4GHz-only, 5GHz-only, and AUTO. ESP32-C6 is 2.4GHz-only in hardware, so
+   requesting 5GHz-only or AUTO may raise ``OSError``.
 
 CSI Methods (ESP32 only)
 ------------------------
@@ -646,3 +651,22 @@ network interface parameter:
 
       40MHz channel bandwidth (HT40). Provides higher throughput but may be
       less stable for CSI applications.
+
+
+ESP32 Band Mode Constants
+-------------------------
+
+The following ESP32-only constants relate to the ``WLAN.config(band_mode=...)``
+network interface parameter:
+
+.. data:: WLAN.BAND_MODE_2G_ONLY
+
+      Use 2.4GHz-only operation.
+
+.. data:: WLAN.BAND_MODE_5G_ONLY
+
+      Use 5GHz-only operation (supported on dual-band targets such as ESP32-C5).
+
+.. data:: WLAN.BAND_MODE_AUTO
+
+      Use both 2.4GHz and 5GHz bands where supported.
