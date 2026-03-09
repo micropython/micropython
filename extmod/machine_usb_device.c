@@ -332,14 +332,14 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 mp_raise_OSError(MP_EINVAL); // Need to deactivate first
             }
             if (mp_obj_is_small_int(dest[1])) {
-                // Flag mask — build custom descriptors for selected classes.
+                // Flag mask - build custom descriptors for selected classes.
                 mp_int_t raw = mp_obj_get_int(dest[1]);
                 if (raw < 0 || raw > 0xFF) {
-                    mp_raise_ValueError(MP_ERROR_TEXT("unsupported USB class"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("invalid USB class mask"));
                 }
                 uint8_t mask = (uint8_t)raw;
 
-                // Validate: only compiled-in classes allowed.
+                // Validate: zero mask and unknown flags are rejected.
                 uint8_t valid = 0
                     #if MICROPY_HW_USB_CDC
                     | MP_USBD_FLAG_CDC
@@ -352,7 +352,7 @@ static void usb_device_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                     #endif
                 ;
                 if (!mask || (mask & ~valid)) {
-                    mp_raise_ValueError(MP_ERROR_TEXT("unsupported USB class"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("invalid USB class mask (use BUILTIN_CDC | BUILTIN_NCM etc.)"));
                 }
 
                 // Build config descriptor with compact interface/endpoint numbering.
