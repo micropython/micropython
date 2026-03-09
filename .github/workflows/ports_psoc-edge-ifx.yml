@@ -31,7 +31,7 @@ jobs:
       commit_sha: ${{ steps.commit_sha.outputs.sha_short }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install packages
         run: source tools/ci.sh && ci_psoc_edge_setup
       - name: Build
@@ -59,7 +59,7 @@ jobs:
           - KIT_PSE84_AI
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Download binaries
         uses: actions/download-artifact@v4
       - name: Container setup
