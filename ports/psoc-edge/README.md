@@ -4,17 +4,42 @@ This port is intended to run on PSOC™ Edge microcontrollers.
 
 ## Build environment
 
-- an ARM cross compiler such as `arm-none-eabi-gcc` and associated binary utilities and libc. Built against version [GCC ARM Embedded 14.2.1](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.mtbgccpackage/versions/14.2.1.265/artifacts/mtbgccpackage_14.2.1.265_Linux_x64.deb/download)
-  
-- [Infineon edgeprotecttools](https://github.com/Infineon/edgeprotecttools/). Built against version 1.6.0.
+Install the following tools on your Linux host machine: 
 
-Furthermore, to deploy firmware to a device requires a custom [Infineon OpenOCD](https://softwaretools-hosting.infineon.com/packages/com.ifx.tb.tool.modustoolboxprogtools/versions/1.5.0.1534/artifacts/ModusToolboxProgtools_1.5.0.1534.deb/download). Validated version is 1.5.0.
+ - An ARM cross compiler such as `arm-none-eabi-gcc` and associated binary utilities and libc. The minimum required version is 14.2.1. 
+ 
+    Download the [Infineon MTB GCC package](https://softwaretools.infineon.com/tools/com.ifx.tb.tool.mtbgccpackage) and install it with the command:
+   
+        sudo apt install ./mtbgccpackage_14.2.1.265_Linux_x64.deb
+        
+    Alternatively, you can also install the `gcc-arm-none-eabi` official package:
+  
+        sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
+  
+- [edgeprotecttools](https://github.com/Infineon/edgeprotecttools/). The minimum required version is 1.6.0. 
+
+    It can be installed from PyPi via `pip`:
+
+        sudo pip install edgeprotecttools
+        
+- [Infineon OpenOCD](https://softwaretools.infineon.com/tools/com.ifx.tb.tool.modustoolboxprogtools). The minimum required version is 1.5.0.
+
+    Download it and install with the command:
+
+        sudo apt install ./ModusToolboxProgtools_1.5.0.1534.deb
+
+    Alternatively, you can download it from this [release GitHub repo](https://github.com/Infineon/openocd/releases)
+
+        wget -O openocd.tar.gz https://github.com/Infineon/openocd/releases/download/release-v5.12.0/openocd-5.12.0.4170-linux.tar.gz
+        
+    And unarchive it in the desired location. For example, in the `/opt/openocd` dir:
+
+        mkdir -p /opt/openocd
+        tar -xzf openocd.tar.gz -C /opt/openocd --strip-components=1
 
 ### Setting up the environment
 
-Make sure that `arm-none-eabi-gcc`, `edgeprotecttools` and `openocd` are in your `PATH`. For example, if you have installed the tools in `/opt`, you can add the following lines to your `.bashrc`:
-
-    export PATH="/opt/gcc-arm-none-eabi-14.2.1/bin:/opt/edgeprotecttools-1.6.0/bin:/opt/openocd-1.5.0/bin:$PATH"
+Make sure that `arm-none-eabi-gcc`, `edgeprotecttools` and `openocd` are added to the system `PATH`.
 
 ## Building and running on Linux
 
@@ -50,12 +75,12 @@ If you have multiple boards connected, you can specify the serial number of the 
 
     make deploy DEV_SERIAL_NUMBER=123456
 
-Find more information about the all available makefile targets:
+Find more information about all the available makefile targets:
 
     make help
 -----------------------------------------------------
 
 # Run micropython
 
-Use any serial terminal (putty, minicom..) and establish a session with your device with 115200 bauds and 8-N-1 configuration. 
+Use any serial terminal (e.g. putty, minicom..) and establish a session with your device with 115200 bauds and 8-N-1 configuration. 
 
