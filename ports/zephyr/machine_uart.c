@@ -83,8 +83,8 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_RX_RING_BUF_DEF_SIZE} },
-        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_TX_RING_BUF_DEF_SIZE} },
+        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_TX_RING_BUF_DEF_SIZE} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_RX_RING_BUF_DEF_SIZE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -126,7 +126,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     if (args[ARG_stop].u_int == 1) {
         stop_bits = UART_CFG_STOP_BITS_1;
     } else if (args[ARG_stop].u_int == 2) {
-        data_bits = UART_CFG_STOP_BITS_2;
+        stop_bits = UART_CFG_STOP_BITS_2;
     } else {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid stop bits"));
     }
@@ -143,7 +143,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     const struct uart_config cfg = {
         .baudrate = args[ARG_baudrate].u_int,
         .parity = parity,
-        .stop_bits = args[ARG_stop].u_int,
+        .stop_bits = stop_bits,
         .data_bits = data_bits,
         .flow_ctrl = flow_ctrl
     };
