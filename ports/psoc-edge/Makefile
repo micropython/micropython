@@ -51,6 +51,8 @@ GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
 	TARGET_KIT_PSE84_AI \
 )
 
+GIT_SUBMODULES += lib/mpy-test-ext
+
 # Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-
 EDGEPROTECTTOOLS ?= edgeprotecttools
@@ -461,7 +463,7 @@ all: $(BUILD)/firmware.signed.merged.hex
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "Link $@"
-	@$(Q)$(CC) $(LDFLAGS) $(LIBS) -o $@ $(OBJ) 
+	@$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	@$(Q)$(SIZE) $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
