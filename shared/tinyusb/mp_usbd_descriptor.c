@@ -179,13 +179,12 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     return desc_wstr;
 }
 
-
 // Byte offsets within each class descriptor fragment that contain
 // interface numbers or endpoint addresses, derived from TUD_*_DESCRIPTOR
 // macro layouts in TinyUSB (lib/tinyusb, commit aa0fc2e08).
-// These offsets must be reverified if TinyUSB is updated, as there is no
-// compile-time or runtime check that the patched bytes contain the expected
-// values.
+// The asserts in mp_usbd_build_cfg_desc() verify the first patched byte
+// of each class against the expected value; a TinyUSB update that changes
+// descriptor layouts will trigger a build failure.
 
 #if CFG_TUD_CDC
 static const uint8_t cdc_itf_patch[] = {2, 10, 26, 34, 35, 45};
@@ -322,6 +321,13 @@ uint16_t mp_usbd_build_cfg_desc(uint8_t class_mask, uint8_t *buf,
     #endif
 
     (void)src;
+
+    // Caller is expected to validate class_mask before calling, but guard
+    // here too: returning a header-only descriptor confuses the USB host.
+    assert(num_itf > 0);
+
+    // Check endpoint count fits TinyUSB's compiled limit.
+    assert(ep <= CFG_TUD_ENDPPOINT_MAX);
 
     // Write config descriptor header now that total length is known.
     // TUD_CONFIG_DESCRIPTOR requires compile-time constant args and cannot be
