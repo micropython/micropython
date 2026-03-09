@@ -1,11 +1,11 @@
 # Copyright (c) Quectel Wireless Solution, Co., Ltd.All Rights Reserved.
-#  
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#  
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-#  
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,54 +15,52 @@
 import uos
 import ujson
 
-'''
+"""
 Mark.Zhu - 2022/12/02
 Added the littlefs2 mount function,it will be called after a failed attempt to mount littlefs1
-'''
+"""
 # global datacall_flag
 datacall_flag = 1
+
 
 def _repl_enable():
     global datacall_flag
     if "system_config.json" in uos.listdir("/"):
-        with open("/system_config.json", "r", encoding='utf-8') as fd:
+        with open("/system_config.json", "r", encoding="utf-8") as fd:
             try:
                 json_data = ujson.load(fd)
                 datacall_flag = json_data.get("datacallFlag", 1)
-                
             except ValueError:
-                with open("/usr/system_config.json", "w", encoding='utf-8') as fdw:
+                with open("/usr/system_config.json", "w", encoding="utf-8") as fdw:
                     new_json_data = ujson.dumps({"replFlag": 0, "datacallFlag": datacall_flag})
                     fdw.write(new_json_data)
     else:
-        with open("/system_config.json", "w+", encoding='utf-8') as fd:
+        with open("/system_config.json", "w+", encoding="utf-8") as fd:
             repl_data = ujson.dumps({"replFlag": 0})
             fd.write(repl_data)
 
-try: 
+
+try:
     udev = None
     try:
         from uos import VfsLfs1 as VfsLfs
     except Exception:
         from uos import VfsLfs2 as VfsLfs
 
-    udev = uos.FlashDevice('customer_fs', 4096)
+    udev = uos.FlashDevice("customer_fs", 4096)
     try:
-        uos.mount(udev, '/')
+        uos.mount(udev, "/")
     except Exception as e:
-        if 'ENODEV' in str(e):
+        if "ENODEV" in str(e):
             VfsLfs.mkfs(udev)
-            uos.mount(udev, '/')
-        else:
-            raise ValueError("LFS usr mount fail".format(e))
-    if 'usr' not in uos.listdir():
-        uos.mkdir('usr')
-    if 'bak' not in uos.listdir():
-        uos.mkdir('bak')
-
+            uos.mount(udev, "/")
+    if "usr" not in uos.listdir():
+        uos.mkdir("usr")
+    if "bak" not in uos.listdir():
+        uos.mkdir("bak")
 
 except Exception:
-    print('error occurs in boot step.')
+    print("error occurs in boot step.")
 
 finally:
     _repl_enable()
