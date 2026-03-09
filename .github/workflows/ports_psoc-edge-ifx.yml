@@ -58,6 +58,8 @@ jobs:
         board:
           - KIT_PSE84_AI
     steps:
+      - name: Fix permissions
+        run: echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo -S chown -R $(whoami):$(whoami) .
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Download binaries
