@@ -366,15 +366,20 @@ function ci_psoc_edge_setup {
 }
 
 function ci_psoc_edge_build {
+    board_arg=""
+
+    if [ -n "$1" ]; then
+        board_arg="BOARD=$1"
+    fi
+    
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/psoc-edge submodules
-    make ${MAKEOPTS} -C ports/psoc-edge BOARD=KIT_PSE84_AI
+    make ${MAKEOPTS} -C ports/psoc-edge ${board_arg}
 }
 
+MPY_PSOC_CI_DOCKER_VERSION=0.1.0
 
-MPY_MTB36_CI_DOCKER_VERSION=0.2.0
-
-function ci_psoc_edge_setup_docker {
+function ci_psoc_edge_setup_hil {
     # Access to serial device 
     if [ "$1" = "--dev-access" ]; then
         device0_flag=--device=/dev/ttyACM0 
@@ -384,47 +389,46 @@ function ci_psoc_edge_setup_docker {
         device1_flag=
     fi
 
-    docker pull ifxmakers/mpy-mtb36-ci:${MPY_MTB36_CI_DOCKER_VERSION}
-    docker run --name mtb36-ci --rm --privileged -d -it \
+    docker pull ifxmakers/mpy-psoc-ci:${MPY_PSOC_CI_DOCKER_VERSION}
+    docker run --name mpy-ci --rm --privileged -d -it \
       ${device0_flag} \
       ${device1_flag} \
       -v "$(pwd)":/micropython-psoc-edge \
       -w /micropython-psoc-edge/ports/psoc-edge \
-      ifxmakers/mpy-mtb36-ci:${MPY_MTB36_CI_DOCKER_VERSION}
+      ifxmakers/mpy-psoc-ci:${MPY_PSOC_CI_DOCKER_VERSION}
     docker ps -a
 
     # This command prevents the issue "fatal: detected dubious ownership in repository at '/micropython'""
-    docker exec mtb36-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge"
-    docker exec mtb36-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge/lib/mtb-psoc-edge-libs"
-    docker exec mtb36-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge/lib/mpy-test-ext"
+    docker exec mpy-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge"
+    docker exec mpy-ci /bin/bash -c "git config --global --add safe.directory /micropython-psoc-edge/lib/mpy-test-ext"
 
     # Initialize the submodules
-    docker exec mtb36-ci make submodules
-
-    # Test device management library installation
-    sudo pip install --upgrade etdevs
+    docker exec mpy-ci make submodules
 }
 
-function ci_psoc_edge_build_docker {
+function ci_psoc_edge_build_hil {
     board=$1
-    docker exec mtb36-ci make BOARD=${board}
+    docker exec mpy-ci make BOARD=${board}
 }
 
-function ci_psoc_edge_deploy_docker {
-    board=$1
-    docker exec mtb36-ci make BOARD=${board} deploy
-}
-
-function ci_psoc_edge_deploy_multiple_devices_docker {
+function ci_psoc_edge_deploy_hil {
     board=$1
     # hex file including path with respect to micropython root
     hex_file=$2
     devs_file=$3
-    docker exec mtb36-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board $1 --hex-file $2 --devs-file ../../$3 -q"
+
+    # if no devices file is provided, don´t add the --devs-file argument to the command
+    if [ -z "$devs_file" ]; then
+        dev_files_arg=""
+    else
+        dev_files_arg="--devs-file ../../${devs_file}"
+    fi
+    
+    docker exec mpy-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board ${board} --hex-file ${hex_file} ${dev_files_arg} -q"
 }
 
-function ci_psoc_edge_teardown_docker {
-    docker stop mtb36-ci
+function ci_psoc_edge_teardown_hil {
+    docker stop mpy-ci
 }
 
 ########################################################################################
