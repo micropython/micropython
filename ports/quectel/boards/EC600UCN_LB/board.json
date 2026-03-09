@@ -3,11 +3,7 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [
-        "Celluar network",
-        "bsp",
-        "USB"
-    ],
+    "features": [],
     "images": [
         "ec600ucn_lb.jpg"
     ],
