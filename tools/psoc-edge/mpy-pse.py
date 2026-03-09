@@ -148,9 +148,15 @@ def openocd_download_install():
             if err:
                 return False
             out_str = out.decode()
-            if "0.12.0+dev-5.11.0.4042" in out_str or "0.12.0+dev-5.8.0.3960" in out_str:
-                print_f(f"openocd found in system path : {shutil.which('openocd')}")
-                return True
+            supported_versions = [
+                "0.12.0+dev-5.8.0.3960",
+                "0.12.0+dev-5.11.0.4042",
+                "0.12.0+dev-5.12.0.4170",
+            ]
+            for ver in supported_versions:
+                if ver in out_str:
+                    print_f(f"openocd found in system path : {shutil.which('openocd')}")
+                    return True
         except:
             return False
 
