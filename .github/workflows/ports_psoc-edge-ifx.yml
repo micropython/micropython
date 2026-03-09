@@ -58,9 +58,6 @@ jobs:
         board:
           - KIT_PSE84_AI
     steps:
-      - name: Pre-cleanup workspace 
-        run: | 
-          echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo -S rm -rf *
       - name: Checkout code
         uses: actions/checkout@v5
       - name: Download binaries
