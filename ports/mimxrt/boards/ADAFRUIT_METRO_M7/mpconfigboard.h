@@ -70,3 +70,5 @@
 
 #define MICROPY_HW_NINA_RTS          pin_find(MP_OBJ_NEW_QSTR(MP_QSTR_MOSI))
 #define MICROPY_HW_NINA_CTS          MICROPY_HW_NINA_ACK
+
+#define XBARA1  XBARA
