@@ -15,6 +15,7 @@ skip = """
 ./ports/cc3200/telnet,\
 ./ports/esp32/managed_components,\
 ./ports/nrf/drivers/bluetooth/s1*,\
+./ports/psoc-edge/boards/*/bsp-cfg,\
 ./ports/stm32/usbhost,\
 ./tests,\
 ACKNOWLEDGEMENTS,\
