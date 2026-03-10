@@ -1,38 +1,58 @@
 #!/bin/bash
 
 # Use this script to setup your development environment.
-# With the ModusToolbox installed:
+# With the required tools installed:
 #
-# $ source dev-setup.sh && toolchain_setup [path_to_modustoolbox]
-# 
-# The path to the ModusToolbox is required if installed somewhere
-# else than in the default home path (~/ModusToolbox)
+# $ source dev-setup.sh && toolchain_setup
 
-function set_mtb_tools_path {
-    mtb_path=$1
-    if [ -z "$mtb_path" ]; then
-        mtb_path=/opt/Tools/ModusToolbox
-    fi
-    
-    echo ${mtb_path}/tools_3.6
+SEARCH_PATHS=(
+    /opt/Tools
+    /opt
+    /usr/local
+)
+
+REQUIRED_TOOLS=(
+    edgeprotecttools
+    arm-none-eabi-gcc
+    openocd
+)
+
+function find_tool_path {
+    local tool=$1
+    for search_path in "${SEARCH_PATHS[@]}"; do
+        local result
+        result=$(find "$search_path" -maxdepth 5 -type f -name "${tool}" 2>/dev/null | head -n 1)
+        if [ -n "$result" ]; then
+            echo "$(dirname "$result")"
+            return 0
+        fi
+    done
+    return 1
 }
 
-function set_gcc_path {
-    tools_path=$2
-    if [ -z "$tools_path" ]; then
-        tools_path=/opt/Tools
+function is_tool_in_path {
+    local tool=$1
+    local result=$(which "${tool}")
+    if [ -z "$result" ]; then
+        return 1
     fi
-    
-    echo ${tools_path}/mtb-gcc-arm-eabi/14.2.1
-}
 
-function export_path {
-    mtb_tools_path=$(set_mtb_tools_path "$1")
-    gcc_path=$(set_gcc_path "$1" "$2")
-    export PATH=${mtb_tools_path}/library-manager:${gcc_path}/gcc/bin:$PATH
+    return 0
 }
 
 function toolchain_setup {
-    mtb_path=$1
-    export_path ${mtb_path}
+    for tool in "${REQUIRED_TOOLS[@]}"; do
+        if ! is_tool_in_path "$tool"; then
+            tool_path=$(find_tool_path "$tool")
+            if [ -n "$tool_path" ]; then
+                export PATH="$tool_path:$PATH"
+                printf "%-25s: %s\n" "$tool" "$tool_path"
+            else
+                echo "Error: $tool not found in any of the search paths. Please install it or add it to PATH."
+            fi
+        else
+            printf "%-25s: %s\n" "$tool" "$(which "${tool}")"
+        fi
+
+    done
 }
