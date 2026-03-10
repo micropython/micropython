@@ -22,7 +22,7 @@ def instance0():
 
     # Create target with memory buffer
     mem = bytearray([0xAA, 0xBB, 0xCC, 0xDD, 0x00, 0x00, 0x00, 0x00])
-    i2c_target = I2CTarget(addr=SLAVE_ADDR, mem=mem)
+    i2c_target = I2CTarget(addr=SLAVE_ADDR, mem=mem, scl="P17_0", sda="P17_1")
 
     # Signal to master that slave is ready
     multitest.next()
@@ -54,7 +54,7 @@ def instance1():
 
     # Test 1: Scan
     print("***** Test 1: I2C Scan *****\n")
-    i2c = I2C(freq=400000)
+    i2c = I2C(scl="P17_0", sda="P17_1", freq=400000)
     devices = i2c.scan()
     print("Found devices:", [hex(d) for d in devices])
     scan_pass = SLAVE_ADDR in devices
@@ -86,7 +86,9 @@ def instance1():
     print("\n***** Test 4: Timeout *****\n")
     try:
         # Create I2C with short timeout
-        i2c_timeout = I2C(freq=100000, timeout=10000)  # 10ms timeout (10000us)
+        i2c_timeout = I2C(
+            scl="P17_0", sda="P17_1", freq=100000, timeout=10000
+        )  # 10ms timeout (10000us)
         print("Created I2C with timeout=10000us (10ms)")
 
         # Try to read from non-existent device
