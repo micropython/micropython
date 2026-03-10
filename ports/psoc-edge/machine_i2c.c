@@ -46,6 +46,7 @@
 // port-specific includes
 #include "modmachine.h"
 #include "mplogger.h"
+#include "machine_scb.h"
 
 #define DEFAULT_I2C_FREQ     (400000)
 
@@ -60,25 +61,13 @@ typedef struct _machine_hw_i2c_obj_t {
     mp_hal_pin_obj_t sda;
     uint32_t freq;
     uint32_t timeout;
-    CySCB_Type *scb;
+    machine_scb_obj_t *scb_obj;
     cy_stc_scb_i2c_config_t cfg;   // PDL I2C configuration
     cy_stc_scb_i2c_context_t ctx;  // PDL I2C runtime context
 } machine_hw_i2c_obj_t;
 
+#define MAX_I2C                                 1
 machine_hw_i2c_obj_t *machine_hw_i2c_obj[MAX_I2C] = { NULL };
-
-// I2C interrupt service routine
-// Note: Using master-specific interrupt function to reduce flash consumption
-static void machine_i2c_isr(void) {
-    // Find which I2C instance triggered the interrupt
-    for (uint8_t i = 0; i < MAX_I2C; i++) {
-        if (machine_hw_i2c_obj[i] != NULL) {
-            // Call I2C master interrupt handler (more efficient than generic Cy_SCB_I2C_Interrupt)
-            // TODO:  Review for each SCB!!!
-            Cy_SCB_I2C_MasterInterrupt(SCB5, &machine_hw_i2c_obj[i]->ctx);
-        }
-    }
-}
 
 static inline machine_hw_i2c_obj_t *machine_hw_i2c_obj_alloc(void) {
     for (uint8_t i = 0; i < MAX_I2C; i++)
@@ -107,6 +96,11 @@ static inline void machine_hw_i2c_obj_free(machine_hw_i2c_obj_t *i2c_obj_ptr) {
     }
 }
 
+static void machine_hw_i2c_scb_isr(mp_obj_t hw_i2c_obj) {
+    machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(hw_i2c_obj);
+    Cy_SCB_I2C_MasterInterrupt(self->scb_obj->scb, &self->ctx);
+}
+
 static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     cy_rslt_t result;
 
@@ -129,11 +123,12 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
         MP_HAL_PIN_AF_CONF(self->sda, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SDA),
     };
 
+    uint8_t scb_unit = i2c_pins_config[0].af->unit;
+    self->scb_obj = machine_scb_obj_alloc(scb_unit, self, machine_hw_i2c_scb_isr);
+
     mp_hal_periph_pins_af_config(i2c_pins_config, 2);
 
-    self->scb = (CySCB_Type *)i2c_pins_config[0].af->periph;
-
-    result = Cy_SCB_I2C_Init(self->scb, &self->cfg, &self->ctx);
+    result = Cy_SCB_I2C_Init(self->scb_obj->scb, &self->cfg, &self->ctx);
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C init failed: 0x%lx"), result);
     }
@@ -145,7 +140,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     //   - clk_peri = 100 MHz, divider = 11 → clk_scb = 9.09 MHz ✓ (within range)
     // Note: Cy_SysClk_PeriphSetDivider takes (divider - 1), so divider=11 → value=10
     /* Connect assigned divider to be a clock source for I2C */
-    Cy_SysClk_PeriphAssignDivider(MICROPY_HW_I2C_PCLK, CY_SYSCLK_DIV_8_BIT, 2U);
+    Cy_SysClk_PeriphAssignDivider(self->scb_obj->clk, CY_SYSCLK_DIV_8_BIT, 2U);
     uint32_t divider = (freq_hz <= 100000) ? 41U : 10U;
     Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_8_BIT, 2U, divider);
     Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_8_BIT, 2U);
@@ -153,7 +148,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     uint32_t clk_scb_freq = Cy_SysClk_PeriphGetFrequency(CY_SYSCLK_DIV_8_BIT, 2U);
     mplogger_print("DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
 
-    uint32_t actual_rate = Cy_SCB_I2C_SetDataRate(self->scb, freq_hz, clk_scb_freq);
+    uint32_t actual_rate = Cy_SCB_I2C_SetDataRate(self->scb_obj->scb, freq_hz, clk_scb_freq);
     mplogger_print("DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
 
     if ((actual_rate > freq_hz) || (actual_rate == 0U)) {
@@ -162,19 +157,9 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
             freq_hz, actual_rate);
     }
 
-    const cy_stc_sysint_t i2cIntrConfig = {
-        .intrSrc = MICROPY_HW_I2C_IRQn,
-        .intrPriority = MICROPY_HW_I2C_INTR_PRIORITY,
-    };
+    sys_int_init(&(self->scb_obj->irq));
 
-    // Hook interrupt service routine and enable interrupt in NVIC
-    result = Cy_SysInt_Init(&i2cIntrConfig, &machine_i2c_isr);
-    if (result != CY_RSLT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C interrupt init failed: 0x%lx"), result);
-    }
-    NVIC_EnableIRQ(MICROPY_HW_I2C_IRQn);
-
-    Cy_SCB_I2C_Enable(self->scb);
+    Cy_SCB_I2C_Enable(self->scb_obj->scb);
 
     mplogger_print("I2C initialized: requested=%u Hz, actual=%u Hz, clk_scb=%u Hz\n",
         freq_hz, actual_rate, clk_scb_freq);
@@ -186,10 +171,11 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 static int machine_hw_i2c_deinit(mp_obj_base_t *self_in) {
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    Cy_SCB_I2C_Disable(self->scb, &self->ctx);
-    NVIC_DisableIRQ(MICROPY_HW_I2C_IRQn);
+    Cy_SCB_I2C_Disable(self->scb_obj->scb, &self->ctx);
+    sys_int_deinit(&self->scb_obj->irq);
     Cy_SysClk_PeriphDisableDivider(CY_SYSCLK_DIV_8_BIT, 0U);
 
+    machine_scb_obj_free(self->scb_obj);
     machine_hw_i2c_obj_free(self);
 
     return 0;  // Success
@@ -210,9 +196,9 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     transfer.xferPending = !(flags & MP_MACHINE_I2C_FLAG_STOP);
 
     if (flags & MP_MACHINE_I2C_FLAG_READ) {
-        result = Cy_SCB_I2C_MasterRead(self->scb, &transfer, &self->ctx);
+        result = Cy_SCB_I2C_MasterRead(self->scb_obj->scb, &transfer, &self->ctx);
     } else {
-        result = Cy_SCB_I2C_MasterWrite(self->scb, &transfer, &self->ctx);
+        result = Cy_SCB_I2C_MasterWrite(self->scb_obj->scb, &transfer, &self->ctx);
     }
 
     if (result != CY_RSLT_SUCCESS) {
@@ -225,7 +211,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     uint32_t start_time = mp_hal_ticks_us();
     uint32_t timeout_end = start_time + self->timeout;  // Both in microseconds
 
-    while (0UL != (CY_SCB_I2C_MASTER_BUSY & Cy_SCB_I2C_MasterGetStatus(self->scb, &self->ctx))) {
+    while (0UL != (CY_SCB_I2C_MASTER_BUSY & Cy_SCB_I2C_MasterGetStatus(self->scb_obj->scb, &self->ctx))) {
         // Yield to allow other tasks/interrupts to run
         MICROPY_EVENT_POLL_HOOK
 
@@ -236,7 +222,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
         }
     }
 
-    uint32_t master_status = Cy_SCB_I2C_MasterGetStatus(self->scb, &self->ctx);
+    uint32_t master_status = Cy_SCB_I2C_MasterGetStatus(self->scb_obj->scb, &self->ctx);
 
     mplogger_print("I2C Transfer complete, status=0x%08lX\n", master_status);
 
