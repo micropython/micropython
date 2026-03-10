@@ -188,6 +188,10 @@ soft_reset_exit:
     mp_bluetooth_deinit();
     #endif
 
+    #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+    esp_mdns_deinit();
+    #endif
+
     #if MICROPY_PY_ESPNOW
     espnow_deinit(mp_const_none);
     MP_STATE_PORT(espnow_singleton) = NULL;
