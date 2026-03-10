@@ -50,6 +50,7 @@ Tier 2 ports:
   - alif
   - embed
   - nrf
+  - psoc-edge
   - renesas-ra
   - webassembly
   - zephyr
