@@ -28,15 +28,25 @@
 
 #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_TINYUSB_STACK
 
+#include <string.h>
 #include "mp_usbd.h"
-#include "py/mpconfig.h"
-#include "string.h"
 #include "mphalport.h"
 
 void mp_usbd_port_get_serial_number(char *serial_buf) {
+    // Use the same algorithm as the ST DFU bootloader so that the serial
+    // number is consistent across all USB modes.
+    MP_STATIC_ASSERT(12 <= MICROPY_HW_USB_DESC_STR_MAX); // 6 derived bytes x 2 hex digits + NUL
+    static const char hexdig[] = "0123456789ABCDEF";
     uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
-    MP_STATIC_ASSERT(12 * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
-    mp_usbd_hex_str(serial_buf, id, 12);
+    uint8_t bytes[] = {
+        id[11], (uint8_t)(id[10] + id[2]), id[9],
+        (uint8_t)(id[8] + id[0]), id[7], id[6],
+    };
+    for (int i = 0; i < 6; i++) {
+        serial_buf[i * 2] = hexdig[bytes[i] >> 4];
+        serial_buf[i * 2 + 1] = hexdig[bytes[i] & 0x0f];
+    }
+    serial_buf[12] = '\0';
 }
 
 #endif
