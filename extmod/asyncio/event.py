@@ -57,9 +57,12 @@ try:
         def clear(self):
             self.state = 0
 
-        async def wait(self):
+        async def wait(self, priority=False):
             if not self.state:
-                yield core._io_queue.queue_read(self)
+                if priority:
+                    yield core._io_queue.queue_pri(self)
+                else:
+                    yield core._io_queue.queue_read(self)
             self.state = 0
 
 except ImportError:
