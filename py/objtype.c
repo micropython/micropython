@@ -691,6 +691,38 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 static bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
 
+    // Check if there's a native base class with an attr handler that should handle this store/delete.
+    // This must be checked early, before storing in the instance dict, to ensure that subclasses
+    // of native types properly delegate attribute storage to the native type's attr handler.
+    const mp_obj_type_t *native_base = NULL;
+    if (instance_count_native_bases(self->base.type, &native_base) != 0 && native_base != &mp_type_object) {
+        if (MP_OBJ_TYPE_HAS_SLOT(native_base, attr)) {
+            // Try calling the native attr handler. If it raises an exception (e.g., KeyError for
+            // unknown attributes), we catch it and proceed with normal dict storage.
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                mp_obj_t dest[2] = {MP_OBJ_SENTINEL, value};
+                MP_OBJ_TYPE_GET_SLOT(native_base, attr)(self->subobj[0], attr, dest);
+                nlr_pop();
+
+                // If dest[0] is no longer MP_OBJ_SENTINEL, the attr handler handled the operation
+                if (dest[0] != MP_OBJ_SENTINEL) {
+                    return true;  // Native attr handler handled it
+                }
+            } else {
+                // Exception occurred in attr handler. Check if it's an AttributeError or KeyError
+                // which indicates the attribute isn't handled by the native type.
+                mp_obj_t exc = MP_OBJ_FROM_PTR(nlr.ret_val);
+                if (!(mp_obj_is_type(exc, &mp_type_AttributeError) || mp_obj_is_type(exc, &mp_type_KeyError))) {
+                    // Some other exception - re-raise it (never returns)
+                    nlr_jump(nlr.ret_val);
+                }
+                // Attribute not recognized by native handler, fall through to dict storage
+            }
+            // Attr handler didn't handle it, continue with normal lookup
+        }
+    }
+
     if (!(self->base.type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
         // Class doesn't have any special accessors so skip their checks
         goto skip_special_accessors;
