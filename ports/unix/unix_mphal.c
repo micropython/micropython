@@ -30,11 +30,79 @@
 #include <time.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
+
+#ifndef _WIN32
+
+// Use a real-time signal if available, avoiding conflicts with GC
+// (SIGRTMIN + 5) and thread terminate (SIGRTMIN + 6). Fall back to
+// SIGURG which is ignored by default and rarely used.
+#ifdef SIGRTMIN
+#define MP_SCHED_SIGNAL (SIGRTMIN + 7)
+#else
+#define MP_SCHED_SIGNAL (SIGURG)
+#endif
+
+#if MICROPY_PY_THREAD
+#define MP_SIGMASK pthread_sigmask
+#else
+#define MP_SIGMASK sigprocmask
+#endif
+
+static volatile sig_atomic_t sched_event_pending;
+static sigset_t sched_signal_mask;
+
+static void sched_sighandler(int signum) {
+    (void)signum;
+    sched_event_pending = 1;
+}
+
+void mp_unix_init_sched_signal(void) {
+    struct sigaction sa;
+    sa.sa_flags = 0; // No SA_RESTART: pselect() returns EINTR.
+    sa.sa_handler = sched_sighandler;
+    sigemptyset(&sa.sa_mask);
+    sigaction(MP_SCHED_SIGNAL, &sa, NULL);
+
+    sigemptyset(&sched_signal_mask);
+    sigaddset(&sched_signal_mask, MP_SCHED_SIGNAL);
+
+    // Block the signal process-wide so that only the thread inside
+    // pselect() (which atomically unblocks it) can receive the signal.
+    // New threads inherit this blocked mask via pthread_create().
+    MP_SIGMASK(SIG_BLOCK, &sched_signal_mask, NULL);
+}
+
+void mp_unix_deinit_sched_signal(void) {
+    MP_SIGMASK(SIG_UNBLOCK, &sched_signal_mask, NULL);
+    signal(MP_SCHED_SIGNAL, SIG_DFL);
+}
+
+void mp_hal_signal_event(void) {
+    sched_event_pending = 1;
+    kill(getpid(), MP_SCHED_SIGNAL);
+}
+
+void mp_unix_sched_sleep(uint32_t timeout_ms) {
+    // The sched signal is blocked process-wide (from init). pselect()
+    // atomically unblocks it and sleeps, avoiding the TOCTOU race
+    // between the flag check and entering the wait.
+    sigset_t unblocked;
+    MP_SIGMASK(SIG_BLOCK, NULL, &unblocked);
+    sigdelset(&unblocked, MP_SCHED_SIGNAL);
+
+    if (!sched_event_pending) {
+        struct timespec ts = {timeout_ms / 1000, (timeout_ms % 1000) * 1000000L};
+        pselect(0, NULL, NULL, NULL, &ts, &unblocked);
+    }
+    sched_event_pending = 0;
+}
+#endif
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 25)
@@ -44,8 +112,6 @@
 #endif
 
 #ifndef _WIN32
-#include <signal.h>
-
 static void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
