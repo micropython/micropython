@@ -320,6 +320,7 @@ SRC_C += \
 	help.c \
 	main.c \
 	mphalport.c \
+	sys_int.c \
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(MOD_SRC_C) $(GEN_PINS_SRC)
