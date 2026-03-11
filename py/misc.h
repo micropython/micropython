@@ -52,6 +52,13 @@ typedef unsigned int uint;
 // This macro is supported by Clang and gcc>=14
 #define __has_feature(x) (0)
 #endif
+#ifndef __has_extension
+// This macro is supported by Clang and gcc>=14
+#define __has_extension(x) (0)
+#endif
+#ifndef __has_attribute
+#define __has_attribute(x) (0)
+#endif
 
 
 /** generic ops *************************************************/
@@ -96,6 +103,36 @@ typedef unsigned int uint;
 
 /** memory allocation ******************************************/
 
+// annotate malloc return size for better ASAN and debug info
+#if __has_attribute(alloc_size)
+#define MP_ATTR_ALLOC_SIZE(...) __attribute__((alloc_size(__VA_ARGS__)))
+#else
+#define MP_ATTR_ALLOC_SIZE(...)
+#endif
+
+// annotate malloc methods for better ASAN and debug info
+#if __has_attribute(malloc)
+#define MP_ATTR_MALLOC __attribute__((malloc))
+#else
+#define MP_ATTR_MALLOC
+#endif
+
+// annotate associated free methods for better ASAN and debug info
+#if  __has_attribute(malloc) && ((defined(__clang__) && __clang_major >= 15) || (defined(__GNUC__) && __GNUC__ >= 11))
+#define MP_ATTR_MFREE(...) __attribute__((malloc(__VA_ARGS__)))
+#else
+#define MP_ATTR_MFREE(...)
+#endif
+
+// annotate infallible mallocs for better ASAN and debug info
+#if __has_attribute(returns_nonnull) || (defined(__GNUC__) && __GNUC__ >= 9)
+#define MP_ATTR_RETURNS_NONNULL __attribute__((returns_nonnull))
+#elif defined(_MSC_VER)
+#define MP_ATTR_RETURNS_NONNULL _Ret_notnull_
+#else
+#define MP_ATTR_RETURNS_NONNULL
+#endif
+
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
 #define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
@@ -119,26 +156,29 @@ typedef unsigned int uint;
 #endif
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
-void *m_malloc(size_t num_bytes);
-void *m_malloc_maybe(size_t num_bytes);
-void *m_malloc_with_finaliser(size_t num_bytes);
-void *m_malloc0(size_t num_bytes);
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr, size_t num_bytes);
 #else
-void *m_realloc(void *ptr, size_t new_num_bytes);
-void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
+#endif
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc_maybe(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc_with_finaliser(size_t num_bytes);
+MP_ATTR_ALLOC_SIZE(1) MP_ATTR_MALLOC MP_ATTR_MFREE(m_free, 1) void *m_malloc0(size_t num_bytes);
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
+MP_ATTR_ALLOC_SIZE(3) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);
+#else
+MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) void *m_realloc(void *ptr, size_t new_num_bytes);
+MP_ATTR_ALLOC_SIZE(2) MP_ATTR_MFREE(m_free, 1) MP_ATTR_RETURNS_NONNULL void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 #endif
 MP_NORETURN void m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_TRACKED_ALLOC
 // These alloc/free functions track the pointers in a linked list so the GC does not reclaim
 // them.  They can be used by code that requires traditional C malloc/free semantics.
-void *m_tracked_calloc(size_t nmemb, size_t size);
 void m_tracked_free(void *ptr_in);
+MP_ATTR_ALLOC_SIZE(1, 2) MP_ATTR_MALLOC MP_ATTR_MFREE(m_tracked_free, 1) void *m_tracked_calloc(size_t nmemb, size_t size);
 #endif
 
 #if MICROPY_MEM_STATS
@@ -154,6 +194,29 @@ size_t m_get_peak_bytes_allocated(void);
 
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
+
+// associate struct flex members to corresponding length fields
+#if __has_attribute(counted_by)
+#define MP_ATTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#elif defined(_MSC_VER)
+#define MP_ATTR_COUNTED_BY(count) _Field_size_(count)
+#else
+#define MP_ATTR_COUNTED_BY(count)
+#endif
+
+// associate struct pointer members to corresponding length fields
+#if __has_attribute(counted_by) && (defined(__GNUC__) && __GNUC__ >= 16)
+#define MP_ATTR_PTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#else
+#define MP_ATTR_PTR_COUNTED_BY(count)
+#endif
+
+// annotate char arrays or pointers that are meant to contain null bytes
+#if __has_attribute(nonstring)
+#define MP_ATTR_NONSTRING __attribute__((nonstring))
+#else
+#define MP_ATTR_NONSTRING
+#endif
 
 /** unichar / UTF-8 *********************************************/
 
@@ -203,7 +266,7 @@ mp_uint_t unichar_xdigit_value(unichar c);
 typedef struct _vstr_t {
     size_t alloc;
     size_t len;
-    char *buf;
+    MP_ATTR_PTR_COUNTED_BY(alloc) MP_ATTR_NONSTRING char *buf;
     bool fixed_buf;
 } vstr_t;
 
