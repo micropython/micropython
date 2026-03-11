@@ -76,6 +76,8 @@ Celsius::
 Networking
 ----------
 
+.. _esp32_network_wlan:
+
 WLAN
 ^^^^
 
@@ -120,6 +122,119 @@ connection succeeds or the interface gets disabled.  This can be changed by
 calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
 attempts (0 means it won't retry, -1 will restore the default behaviour of trying
 to reconnect forever).
+
+
+WPA Enterprise Extensions
+"""""""""""""""""""""""""
+
+    The ESP32 port supports WPA2/3 Personal and Enterprise modes as well as 5 GHz band mode (on 5 GHz capable devices only). 
+    All constants mentioned below live in the network.WLAN namespace. 
+
+.. method:: WLAN.connect(ssid=None, key=None, *, bssid=None, param=value, ...)
+
+    Common parameters:
+
+        * ssid -- WiFi access point name, (string, e.g. "eduroam")
+        * key -- WiFi access password for WPA Personal; ignored for Enterprise modes
+        * bssid -- as above
+
+    Extended Parameters:
+
+        * band_mode -- one of WIFI_BAND_MODE_2G_ONLY, WIFI_BAND_MODE_5G_ONLY, or WIFI_BAND_MODE_AUTO (default)
+        * pmf_req -- can be set to true to require Protected Management Frames on the client - default is "capable". Usually not needed. 
+        * min_sec -- Minimum security association
+
+    The supported types of security association are:
+    
+        * for WPA Personal: SEC_NONE, SEC_WPA, SEC_WPA2 (default), SEC_WPA2_WPA3, SEC_WPA3
+        * for WPA Enterprise: SEC_WPA2_ENT (default), SEC_WPA2_WPA3_ENT, SEC_WPA3_ENT
+    
+    Please note that although SEC_NONE and SEC_WPA are supported for WPA Personal for legacy networks, 
+    they are considered insecure and should be avoided.
+    
+    Please also note that ESP-IDF 5.5 treats the WPA2/WPA3 transition modes as "WPA3 only", i.e. a connection will fail 
+    if the AP does not advertise WPA3. This is not as defined in the WPA Standard v3.5 chapter 1.3.3 "Definitions", which 
+    requires a station to connect using WPA3 if available, else WPA2. On the other hand, ESP-IDF will always default to the 
+    strongest authentication advertised by both access point and station. This implementation thus maps 
+    SEC_WPA2_WPA3{_ENT} to SEC_WPA2{_ENT} for better standard compliance. Consequently, there is no way of setting "WPA2 only"
+    (which makes little sense anyway). 
+        
+        * eap_method -- EAP method to use for WPA Enterprise (integer)
+
+    The supported EAP methods are:
+
+        * EAP-PWD
+        * EAP-PEAP
+        * EAP-TTLS
+        * EAP-TLS
+
+    EAP-TLS is UNTESTED and thus EXPERIMENTAL. Use at your own risk. Feedback appreciated if it works for you.
+
+    EAP-PWD parameters
+
+        * username -- your network username (string)
+        * password -- your network password (string)
+
+    EAP-PEAP parameters:
+
+        * username -- your network username (string)
+        * password -- your network password (string)
+        * identity -- anonymous identity (string)
+        * ca_cert -- the CA certificate (binary)
+
+    EAP-TTLS parameters:
+
+        * username -- your network username (string)
+        * password -- your network password (string)
+        * identity -- anonymous identity (string)
+        * ca_cert -- the CA certificate (binary)
+        * ttls_phase2_method -- TTLS Phase 2 method (integer)
+
+    EAP-TTLS supports the following TTLS Phase 2 methods:
+
+        * EAP_TTLS_PHASE2_EAP (0)
+        * EAP_TTLS_PHASE2_MSCHAPV2 (1)
+        * EAP_TTLS_PHASE2_MSCHAP (2)
+        * EAP_TTLS_PHASE2_PAP (3)
+        * EAP_TTLS_PHASE2_CHAP (4)
+
+    Please note that MSCHAPv2 and CHAP have known security issues and should be avoided (but MSCHAPv2 seems to 
+    be the default in some Enterprise networks, e.g. eduroam, in particular for EAP-PEAP).
+
+    EAP-TLS parameters:
+
+        * client_cert -- client certificate (binary)
+        * private_key -- private key (binary)
+        * private_key_password -- private key password (string, optional)
+        * disable_time_check -- suppress the validity check for the local client certificate when using EAP-TLS (boolean,
+          default False). This option is included for the sake of completeness only. In practice,
+          you want to renew the client certificate before expiry.
+        * ca_cert -- the CA certificate (binary, optional)
+    
+    CA Certificate files need to be uploaded to the VFS / FAT partition first, e.g.
+
+     mpremote cp certfile :
+     
+    and read in Python like this
+    
+     with open (certfile, 'rb') as file:
+         ca_cert = file.read()
+ 
+    and then you pass ca_cert to the connect() function.
+
+    EAP-PWD should be used whenever possible. It connects swiftly and uses the least resources.
+    When using one of the other methods, make sure the system time is correct to prevent
+    certificate validation errors. Best practice is to use a battery buffered RTC and to set
+    the system time using NTP regularly. A temporary workaround if no battery buffered RTC is
+    available is to set the system time to the image build time, like:
+
+     import sys
+     import machine
+     (year, month, day) = sys.version.split(" on ")[1].split("-")
+     rtc = machine.RTC()
+     date_time = (int(year), int(month), int(day), 0, 0, 0, 0, 0)
+     rtc.init(date_time)
+
 
 .. _esp32_network_lan:
 
