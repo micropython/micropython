@@ -310,6 +310,7 @@ MOD_SRC_C += \
 	machine_rtc.c \
 	modpsocedge.c \
 	machine_ipc.c \
+	machine_scb.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
