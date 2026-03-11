@@ -72,8 +72,8 @@ static bool wifi_sta_connected = false;
 static uint8_t wifi_sta_disconn_reason = 0;
 
 #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
-// Whether mDNS has been initialised or not
-static bool mdns_initialised = false;
+// Whether mDNS has been initialised or not (shared with network_lan.c)
+bool mdns_initialised = false;
 #endif
 
 static uint8_t conf_wifi_sta_reconnects = 0;
