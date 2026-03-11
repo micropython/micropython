@@ -243,6 +243,47 @@ import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
 
+WLAN `config()` dual-band notes (ESP32-C5)
+------------------------------------------
+
+On modern ESP-IDF with dual-band support (for example ESP32-C5), Wi-Fi
+`protocol` and `bandwidth` use dual-band aware APIs when the radio is in
+`WIFI_BAND_MODE_AUTO` (2.4GHz + 5GHz).
+ESP32-C6 uses the same API family but is 2.4GHz-only in hardware.
+
+- `wlan.config(protocol=...)` keeps backward-compatible behavior by applying
+  the value to the 2.4GHz view.
+- `wlan.config('protocol')` returns the 2.4GHz protocol bitmap.
+- `wlan.config(bandwidth=...)` keeps backward-compatible behavior by applying
+  the value to the 2.4GHz view.
+- `wlan.config('bandwidth')` returns the 2.4GHz bandwidth.
+
+This preserves existing application code while avoiding legacy API paths that
+are not valid/reliable in dual-band auto mode.
+
+`band_mode` is also available in `WLAN.config()`:
+
+```python
+import network
+wlan = network.WLAN(network.WLAN.IF_STA)
+
+wlan.config(band_mode=network.WLAN.BAND_MODE_2G_ONLY)
+wlan.config(band_mode=network.WLAN.BAND_MODE_5G_ONLY)
+wlan.config(band_mode=network.WLAN.BAND_MODE_AUTO)
+
+mode = wlan.config("band_mode")
+```
+
+Constants exported by `network.WLAN`:
+
+- `BAND_MODE_2G_ONLY`
+- `BAND_MODE_5G_ONLY`
+- `BAND_MODE_AUTO`
+
+On targets/IDF combinations without dual-band band-mode support, the
+implementation automatically falls back to legacy behavior for `protocol` and
+`bandwidth`, and reports `band_mode` as 2.4GHz-only.
+
 Partition table and filesystem size
 -----------------------------------
 
