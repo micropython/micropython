@@ -29,12 +29,13 @@ LD += -m32
 endif
 
 # External modules written in C.
-ifneq ($(USER_C_MODULES),)
+
+# Process manifest for C module extraction (sets USER_C_MODULES_ALL).
+include $(TOP)/py/manifest.mk
+
+ifneq ($(USER_C_MODULES_ALL),)
 # pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
-
-# Confirm the provided path exists, show abspath if not to make it clearer to fix.
-$(if $(wildcard $(USER_C_MODULES)/.),,$(error USER_C_MODULES doesn't exist: $(abspath $(USER_C_MODULES))))
 
 # C/C++ files that are included in the QSTR/module build
 SRC_USERMOD_C :=
@@ -52,19 +53,27 @@ LDFLAGS_USERMOD :=
 # added to SRC_USERMOD_C below
 SRC_USERMOD :=
 
-$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
-    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
-    $(info Including User C Module from $(USERMOD_DIR))\
-	$(eval include $(module))\
+# For each C module directory, scan for micropython.mk and include it.
+$(foreach _UDIR, $(USER_C_MODULES_ALL), \
+    $(if $(wildcard $(_UDIR)/.),,$(error USER_C_MODULES path doesn't exist: $(abspath $(_UDIR)))) \
+    $(foreach module, $(wildcard $(_UDIR)/micropython.mk) $(wildcard $(_UDIR)/*/micropython.mk), \
+        $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
+        $(info Including User C Module from $(USERMOD_DIR))\
+        $(eval include $(module))\
+    )\
 )
 
 SRC_USERMOD_C += $(SRC_USERMOD)
 
-SRC_USERMOD_PATHFIX_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_C))
-SRC_USERMOD_PATHFIX_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_CXX))
-SRC_USERMOD_PATHFIX_LIB_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_LIB_C))
-SRC_USERMOD_PATHFIX_LIB_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_LIB_CXX))
-SRC_USERMOD_PATHFIX_LIB_ASM += $(patsubst $(USER_C_MODULES)/%.S,%.S,$(SRC_USERMOD_LIB_ASM))
+# Convert all source paths to be relative to TOP for consistent build output paths.
+# This handles both USER_C_MODULES (command line) and c_module() (manifest) sources
+# by converting to absolute paths and stripping the TOP prefix.
+_ABS_TOP := $(abspath $(TOP))/
+SRC_USERMOD_PATHFIX_C := $(patsubst $(_ABS_TOP)%,%,$(abspath $(SRC_USERMOD_C)))
+SRC_USERMOD_PATHFIX_CXX := $(patsubst $(_ABS_TOP)%,%,$(abspath $(SRC_USERMOD_CXX)))
+SRC_USERMOD_PATHFIX_LIB_C := $(patsubst $(_ABS_TOP)%,%,$(abspath $(SRC_USERMOD_LIB_C)))
+SRC_USERMOD_PATHFIX_LIB_CXX := $(patsubst $(_ABS_TOP)%,%,$(abspath $(SRC_USERMOD_LIB_CXX)))
+SRC_USERMOD_PATHFIX_LIB_ASM := $(patsubst $(_ABS_TOP)%,%,$(abspath $(SRC_USERMOD_LIB_ASM)))
 
 CFLAGS += $(CFLAGS_USERMOD)
 CXXFLAGS += $(CXXFLAGS_USERMOD)
