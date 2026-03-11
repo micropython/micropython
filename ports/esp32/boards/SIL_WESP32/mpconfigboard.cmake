@@ -1,6 +1,7 @@
+include(boards/ESP32_GENERIC/mpconfigboard.cmake)
+
 set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.ble
+    ${SDKCONFIG_DEFAULTS}
     boards/sdkconfig.240mhz
     boards/SIL_WESP32/sdkconfig.board
 )
