@@ -40,7 +40,7 @@ Constructors
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
    Only one of *duty_u16* and *duty_ns* should be specified at a time.
-   *invert* is available only on the esp32, mimxrt, nrf, rp2, samd and zephyr ports.
+   *invert* is available only on the alif, esp32, mimxrt, nrf, rp2, samd, stm32 and zephyr ports.
 
 Methods
 -------
@@ -83,6 +83,22 @@ Methods
 
 Specific PWM class implementations
 ----------------------------------
+
+On the alif port there are 11 independent PWM blocks with independent
+frequencies, and they have 2 outputs each.  The underlying counter is
+32-bits wide for all 11 PWM blocks.
+
+On the rp2 port there are 8 independent PWM blocks on RP2040 and 12 on
+RP2350, each with independent frequencies, and each with 2 outputs.
+The underlying counter is 16-bits wide for all PWM blocks.
+
+On the stm32 port the number of independent PWM blocks depends on the MCU
+and can range between 4 and 19.  TIM2 and TIM5 blocks (also TIM3 and TIM4
+blocks on STM32U5 and STM32N6) are 32-bits wide, and the others are
+16-bits wide.  All MCUs supported by MicroPython have at least one 32-bit
+block available, and most have two.   MCUs will have pins PA0 through PA3
+assigned to a 32-bit PWM block (except STM32N6 which has a 16-bit PWM
+block on PA3).  PWM blocks have up to 4 outputs each.
 
 The following concrete class(es) implement enhancements to the PWM class.
 

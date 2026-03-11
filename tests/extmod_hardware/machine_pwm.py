@@ -42,6 +42,8 @@ elif "mimxrt" in sys.platform:
         )
     else:
         pwm_pulse_pins = (("D0", "D1"),)
+elif "pyboard" in sys.platform:
+    pwm_pulse_pins = ((Pin.cpu.A0, Pin.cpu.A1),)
 elif "rp2" in sys.platform:
     pwm_pulse_pins = (("GPIO0", "GPIO1"),)
 elif "samd" in sys.platform:
@@ -68,8 +70,8 @@ def _test_freq_duty(self, pulse_in, pwm, freq, duty_u16):
     self.assertLessEqual(duty_error, duty_margin_per_thousand)
 
     # Calculate expected timing.
-    expected_total_us = 1_000_000 // freq
-    expected_high_us = expected_total_us * duty_u16 // 65535
+    expected_total_us = (1_000_000 + freq // 2) // freq
+    expected_high_us = (expected_total_us * duty_u16 + 65535 // 2) // 65535
     expected_low_us = expected_total_us - expected_high_us
     expected_us = (expected_low_us, expected_high_us)
     timeout = 2 * expected_total_us
