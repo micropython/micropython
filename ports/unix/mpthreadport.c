@@ -245,6 +245,10 @@ void mp_thread_start(void) {
 }
 
 mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
+    // GNU/Hurd does not define PTHREAD_STACK_MIN, nor support
+    // pthread_attr_setstacksize() / pthread_attr_getstacksize(). Do not bother
+    // with it.
+    #ifdef PTHREAD_STACK_MIN
     // default stack size
     if (*stack_size == 0) {
         *stack_size = 32768 * UNIX_STACK_MULTIPLIER;
@@ -259,6 +263,7 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
     if (*stack_size < 2 * THREAD_STACK_OVERFLOW_MARGIN) {
         *stack_size = 2 * THREAD_STACK_OVERFLOW_MARGIN;
     }
+    #endif
 
     // set thread attributes
     pthread_attr_t attr;
@@ -266,10 +271,12 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
     if (ret != 0) {
         goto er;
     }
+    #ifdef PTHREAD_STACK_MIN
     ret = pthread_attr_setstacksize(&attr, *stack_size);
     if (ret != 0) {
         goto er;
     }
+    #endif
 
     ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     if (ret != 0) {
