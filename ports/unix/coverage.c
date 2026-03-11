@@ -528,9 +528,9 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%f\n", mpz_as_float(&mpz));
 
         // convert a large integer value (stored in a mpz) to mp_uint_t and to ll;
-        mp_obj_t obj_bigint = mp_obj_new_int_from_uint((mp_uint_t)0xdeadbeef);
+        mp_obj_t obj_bigint = mp_obj_new_int_from_ull((unsigned long long)0xdeadbeef);
         mp_printf(&mp_plat_print, "%x\n", (int)mp_obj_get_uint(obj_bigint));
-        obj_bigint = mp_obj_new_int_from_ll(0xc0ffee777c0ffeell);
+        obj_bigint = mp_obj_new_bigint_from_ll(0xc0ffee777c0ffeell);
         long long value_ll = mp_obj_get_ll(obj_bigint);
         mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
 
@@ -542,7 +542,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
 
         // convert a smaller integer value to mp_uint_t and to ll
-        obj_bigint = mp_obj_new_int_from_uint(0xc0ffee);
+        obj_bigint = mp_obj_new_int_from_ull(0xc0ffeeull);
         mp_printf(&mp_plat_print, "%x\n", (int)mp_obj_get_uint(obj_bigint));
         value_ll = mp_obj_get_ll(obj_bigint);
         mp_printf(&mp_plat_print, "%x%08x\n", (uint32_t)(value_ll >> 32), (uint32_t)value_ll);
@@ -569,7 +569,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
 
         // mp_obj_int_get_uint_checked with non-negative big-int
-        mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(2)));
+        mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(mp_obj_new_bigint_from_ll(2)));
 
         // mp_obj_int_get_uint_checked with negative small-int (should raise exception)
         nlr_buf_t nlr;
@@ -582,7 +582,7 @@ static mp_obj_t extra_coverage(void) {
 
         // mp_obj_int_get_uint_checked with negative big-int (should raise exception)
         if (nlr_push(&nlr) == 0) {
-            mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(-2));
+            mp_obj_int_get_uint_checked(mp_obj_new_bigint_from_ll(-2));
             nlr_pop();
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
@@ -854,12 +854,12 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_bool(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_bool(mp_const_none));
 
         // mp_obj_is_integer accepts ints and booleans
-        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_int_from_ll(1)));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_bigint_from_ll(1)));
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_const_true), mp_obj_is_integer(mp_const_false));
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str_from_cstr("1")), mp_obj_is_integer(mp_const_none));
 
         // mp_obj_is_int accepts small int and object ints
-        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_bigint_from_ll(1)));
     }
 
     // Legacy stackctrl.h API, this has been replaced by cstack.h

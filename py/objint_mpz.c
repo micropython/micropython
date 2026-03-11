@@ -74,6 +74,18 @@ const mp_obj_int_t mp_sys_maxsize_obj = {
 #undef NUM_DIG
 #endif
 
+static mp_obj_t mp_int_maybe_narrow(mp_obj_int_t *res) {
+    // Check if the result fits in a small-int, and if so just return that.
+    mp_int_t res_small;
+    if (mpz_as_int_checked(&res->mpz, &res_small)) {
+        if (MP_SMALL_INT_FITS(res_small)) {
+            return MP_OBJ_NEW_SMALL_INT(res_small);
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(res);
+}
+
 mp_obj_int_t *mp_obj_int_new_mpz(void) {
     mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     mpz_init_zero(&o->mpz);
@@ -304,7 +316,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 }
                 mp_obj_int_t *quo = mp_obj_int_new_mpz();
                 mpz_divmod_inpl(&quo->mpz, &res->mpz, zlhs, zrhs);
-                mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
+                mp_obj_t tuple[2] = {mp_int_maybe_narrow(quo), mp_int_maybe_narrow(res)};
                 return mp_obj_new_tuple(2, tuple);
             }
 
@@ -312,16 +324,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return MP_OBJ_NULL; // op not supported
         }
 
-        // Check if the result fits in a small-int, and if so just return that.
-        mp_int_t res_small;
-        if (mpz_as_int_checked(&res->mpz, &res_small)) {
-            if (MP_SMALL_INT_FITS(res_small)) {
-                return MP_OBJ_NEW_SMALL_INT(res_small);
-            }
-        }
-
-        return MP_OBJ_FROM_PTR(res);
-
+        return mp_int_maybe_narrow(res);
     } else {
         int cmp = mpz_cmp(zlhs, zrhs);
         switch (op) {
@@ -377,28 +380,44 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         if (mod == &m_temp) {
             mpz_deinit(mod);
         }
-        return MP_OBJ_FROM_PTR(res_p);
+
+        return mp_int_maybe_narrow(res_p);
     }
 }
 #endif
+
+// This routine *always* returns an mpz integer. Call it only if the value is *known*
+// to exceed the small integer range, because integers that fit are required to always
+// be returned as small integers.
+static mp_obj_t mp_obj_new_mpz_from_ll(long long val, bool is_signed) {
+    mp_obj_int_t *o = mp_obj_int_new_mpz();
+    mpz_set_from_ll(&o->mpz, val, is_signed);
+    return MP_OBJ_FROM_PTR(o);
+}
+
+mp_obj_t mp_obj_new_bigint_from_ll(long long val) {
+    return mp_obj_new_mpz_from_ll(val, true);
+}
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    return mp_obj_new_int_from_ll(value);
+    return mp_obj_new_mpz_from_ll(value, true);
 }
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
-    mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mpz_set_from_ll(&o->mpz, val, true);
-    return MP_OBJ_FROM_PTR(o);
+    if (val == (mp_int_t)val && MP_SMALL_INT_FITS((mp_int_t)val)) {
+        return MP_OBJ_NEW_SMALL_INT(val);
+    }
+    return mp_obj_new_mpz_from_ll(val, true);
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
-    mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mpz_set_from_ll(&o->mpz, val, false);
-    return MP_OBJ_FROM_PTR(o);
+    if ((val & ~(unsigned long long)MP_SMALL_INT_POSITIVE_MASK) == 0) {
+        return mp_obj_new_int(val);
+    }
+    return mp_obj_new_mpz_from_ll(val, false);
 }
 
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
@@ -407,7 +426,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     if ((value & ~MP_SMALL_INT_POSITIVE_MASK) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    return mp_obj_new_int_from_ull(value);
+    return mp_obj_new_mpz_from_ll(value, false);
 }
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
