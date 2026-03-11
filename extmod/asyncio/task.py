@@ -100,10 +100,19 @@ class TaskQueue:
         return self.heap
 
     def push(self, v, key=None):
+        v.ph_key = key
+        self.push_raw(v)
+
+    def push_raw(self, v):
         assert v.ph_child is None
         assert v.ph_next is None
         v.data = None
-        v.ph_key = key if key is not None else core.ticks()
+        if v.ph_key is None:
+            if isinstance(v.state, TaskQueue):
+                # RTOS-like priority inheritance
+                v.ph_key = v.state.peek().ph_key
+            else:
+                v.ph_key = core.ticks()
         self.heap = ph_meld(v, self.heap)
 
     def pop(self):
@@ -111,10 +120,12 @@ class TaskQueue:
         assert v.ph_next is None
         self.heap = ph_pairing(v.ph_child)
         v.ph_child = None
+        v.ph_key = None
         return v
 
     def remove(self, v):
         self.heap = ph_delete(self.heap, v)
+        v.ph_key = None
 
 
 # Task class representing a coroutine, can be waited on and cancelled.
@@ -123,7 +134,7 @@ class Task:
         self.coro = coro  # Coroutine of this Task
         self.data = None  # General data for queue it is waiting on
         self.state = True  # None, False, True, a callable, or a TaskQueue instance
-        self.ph_key = 0  # Pairing heap
+        self.ph_key = None  # Pairing heap
         self.ph_child = None  # Paring heap
         self.ph_child_last = None  # Paring heap
         self.ph_next = None  # Paring heap
@@ -147,7 +158,7 @@ class Task:
             raise self.data
         else:
             # Put calling task on waiting queue.
-            self.state.push(core.cur_task)
+            self.state.push_raw(core.cur_task)
             # Set calling task's data to this task that it waits on, to double-link it.
             core.cur_task.data = self
 
@@ -175,3 +186,23 @@ class Task:
             core._task_queue.push(self)
         self.data = core.CancelledError
         return True
+
+    def prioritize(self, relative=0):
+        # set this tasks's queue priority
+        return self.prioritize_raw(core.ticks_add(core.ticks(), relative))
+
+    def prioritize_raw(self, ph_key):
+        if not self.state:
+            return False
+
+        if self.ph_key is None or core.ticks_diff(ph_key, self.ph_key) < 0:
+            self.ph_key = ph_key
+
+            if isinstance(self.data, Task):
+                # waiting on another task, bump that task's priority forward
+                return self.data.prioritize_raw(ph_key)
+
+            elif isinstance(self.data, TaskQueue):
+                # waiting in a queue, bump ourselves forward in that queue
+                self.data.remove(self)
+                self.data.push_raw(self)
