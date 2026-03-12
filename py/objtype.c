@@ -98,11 +98,22 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_native_base_init_wrapper_obj, 1, native_base_init_
 #if !MICROPY_CPYTHON_COMPAT
 static
 #endif
-mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_type_t **native_base) {
+mp_obj_instance_t *mp_obj_new_instance(mp_obj_type_t *class, const mp_obj_type_t **native_base) {
     size_t num_native_bases = instance_count_native_bases(class, native_base);
     assert(num_native_bases < 2);
-    mp_obj_instance_t *o = mp_obj_malloc_var(mp_obj_instance_t, subobj, mp_obj_t, num_native_bases, class);
+    mp_obj_instance_t *o;
+    #if MICROPY_ENABLE_FINALISER
+    if (class->flags & MP_TYPE_FLAG_HAS_FINALISER) {
+        o = mp_obj_malloc_var_with_finaliser(mp_obj_instance_t, subobj, mp_obj_t, num_native_bases, class);
+    } else
+    #endif
+    {
+        o = mp_obj_malloc_var(mp_obj_instance_t, subobj, mp_obj_t, num_native_bases, class);
+    }
     mp_map_init(&o->members, 0);
+    if (mp_obj_is_instance_type(class)) {
+        class->flags |= MP_TYPE_FLAG_IS_INSTANCED;
+    }
     // Initialise the native base-class slot (should be 1 at most) with a valid
     // object.  It doesn't matter which object, so long as it can be uniquely
     // distinguished from a native class that is initialised.
@@ -285,7 +296,7 @@ static void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "<%s object at %p>", mp_obj_get_type_str(self_in), self);
 }
 
-static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_obj_instance_make_new(mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_instance_type(self));
 
     // look for __new__ function
@@ -975,6 +986,15 @@ static bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
 }
 #endif
 
+#if MICROPY_ENABLE_FINALISER
+static bool check_for_finaliser(mp_obj_t key) {
+    if (key == MP_OBJ_NEW_QSTR(MP_QSTR___del__)) {
+        return true;
+    }
+    return false;
+}
+#endif
+
 #if MICROPY_PY_DESCRIPTORS
 // Shared data layout for the __set_name__ call and a linked list of calls to be made.
 typedef union _setname_list_t setname_list_t;
@@ -1146,6 +1166,19 @@ static void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 }
                 #endif
 
+                #if MICROPY_ENABLE_FINALISER
+                // Check if we add a finaliser with this store
+                if (!(self->flags & MP_TYPE_FLAG_HAS_FINALISER)) {
+                    if (check_for_finaliser(MP_OBJ_NEW_QSTR(attr))) {
+                        if (self->flags & MP_TYPE_FLAG_IS_INSTANCED) {
+                            // This class is already instanced, so can't have a finaliser added
+                            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("can't add special method to already-instanced class"));
+                        }
+                        self->flags |= MP_TYPE_FLAG_HAS_FINALISER;
+                    }
+                }
+                #endif
+
                 // store attribute
                 mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
                 elem->value = dest[1];
@@ -1199,12 +1232,15 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
                 MP_ERROR_TEXT("type '%q' isn't an acceptable base type"), t->name);
             #endif
         }
-        #if ENABLE_SPECIAL_ACCESSORS
         if (mp_obj_is_instance_type(t)) {
+            #if ENABLE_SPECIAL_ACCESSORS
             t->flags |= MP_TYPE_FLAG_IS_SUBCLASSED;
             base_flags |= t->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
+            #endif
+            #if MICROPY_ENABLE_FINALISER
+            base_flags |= t->flags & MP_TYPE_FLAG_HAS_FINALISER;
+            #endif
         }
-        #endif
     }
 
     const void *base_protocol = NULL;
@@ -1260,31 +1296,48 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
     setname_list_t *setname_tail = &setname_list;
     #endif
 
-    #if ENABLE_SPECIAL_ACCESSORS
+    #if ENABLE_SPECIAL_ACCESSORS || MICROPY_ENABLE_FINALISER || MICROPY_PY_DESCRIPTORS
     // Check if the class has any special accessor methods,
+    // check if it has a __del__ finaliser,
     // and accumulate bound __set_name__ methods that need to be called
     for (size_t i = 0; i < locals_ptr->map.alloc; i++) {
-        #if !MICROPY_PY_DESCRIPTORS
-        // __set_name__ needs to scan the entire locals map, can't early-terminate
-        if (o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) {
-            break;
+        if (true
+            #if ENABLE_SPECIAL_ACCESSORS
+            && (o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)
+            #endif
+            #if MICROPY_ENABLE_FINALISER
+            && (o->flags & MP_TYPE_FLAG_HAS_FINALISER)
+            #endif
+            #if MICROPY_PY_DESCRIPTORS
+            && false
+            #endif
+            ) {
+            break; // early terminate if everything we might possibly find has already been found
         }
-        #endif
 
         if (mp_map_slot_is_filled(&locals_ptr->map, i)) {
             const mp_map_elem_t *elem = &locals_ptr->map.table[i];
 
-            if (!(o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) // elidable when the early-termination check is enabled
+            #if ENABLE_SPECIAL_ACCESSORS
+            if (!(o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)
                 && check_for_special_accessors(elem->key, elem->value)) {
                 o->flags |= MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
             }
+            #endif
+
+            #if MICROPY_ENABLE_FINALISER
+            if (!(o->flags & MP_TYPE_FLAG_HAS_FINALISER)
+                && check_for_finaliser(elem->key)) {
+                o->flags |= MP_TYPE_FLAG_HAS_FINALISER;
+            }
+            #endif
 
             #if MICROPY_PY_DESCRIPTORS
             setname_tail = setname_maybe_bind_append(setname_tail, elem->key, elem->value);
             #endif
         }
     }
-    #endif // ENABLE_SPECIAL_ACCESSORS
+    #endif
 
     const mp_obj_type_t *native_base;
     size_t num_native_bases = instance_count_native_bases(o, &native_base);
