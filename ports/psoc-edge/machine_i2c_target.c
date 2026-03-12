@@ -359,5 +359,7 @@ static void mp_machine_i2c_target_deinit(machine_i2c_target_obj_t *self) {
     sys_int_deinit(&(self->scb_obj->irq));
     self->base.type = NULL;
 
+    machine_scb_obj_free(self->scb_obj);
+
     mplogger_print("I2C Target deinitialized\n");
 }

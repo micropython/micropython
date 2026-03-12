@@ -39,8 +39,6 @@
 // MTB includes
 #include "cybsp.h"
 #include "cy_scb_i2c.h"
-#include "cy_sysint.h"
-#include "cy_sysclk.h"
 
 
 // port-specific includes
@@ -76,12 +74,6 @@ static inline machine_hw_i2c_obj_t *machine_hw_i2c_obj_alloc(void) {
             machine_hw_i2c_obj[i] = mp_obj_malloc(machine_hw_i2c_obj_t, &machine_i2c_type);
             return machine_hw_i2c_obj[i];
         }
-    }
-
-    // Debug: print status of all slots
-    mplogger_print("I2C alloc failed - all slots occupied:\n");
-    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++) {
-        mplogger_print("  Slot %u: %p\n", i, machine_hw_i2c_obj[i]);
     }
 
     return NULL;
@@ -129,9 +121,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     mp_hal_periph_pins_af_config(i2c_pins_config, 2);
 
     result = Cy_SCB_I2C_Init(self->scb_obj->scb, &self->cfg, &self->ctx);
-    if (result != CY_RSLT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C init failed: 0x%lx"), result);
-    }
+    i2c_assert_raise_val("I2C init failed: 0x%lx", result);
 
     // For desired data rate, clk_scb frequency must be in valid range (see TRM I2C Oversampling section)
     // For 100kHz: clk_scb range is 1.55 - 3.2 MHz (architecture reference manual 002-38331 Rev. P685 table 355)
@@ -168,7 +158,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 }
 
 
-static int machine_hw_i2c_deinit(mp_obj_base_t *self_in) {
+static void machine_hw_i2c_deinit(mp_obj_base_t *self_in) {
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     Cy_SCB_I2C_Disable(self->scb_obj->scb, &self->ctx);
@@ -177,8 +167,6 @@ static int machine_hw_i2c_deinit(mp_obj_base_t *self_in) {
 
     machine_scb_obj_free(self->scb_obj);
     machine_hw_i2c_obj_free(self);
-
-    return 0;  // Success
 }
 
 static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
@@ -264,24 +252,9 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Check if an I2C instance already exists for this ID
-    // If so, deinitialize it first (allows reinitialization)
-    // TODO: Is this needed?
-    int requested_id = args[ARG_id].u_int;
-    if (requested_id == -1) {
-        requested_id = 0;  // Default to ID 0
-    }
-    // For single I2C port, reuse the existing object if present
-    machine_hw_i2c_obj_t *self = machine_hw_i2c_obj[0];
-    if (self != NULL) {
-        // Deinitialize existing instance
-        mplogger_print("Reinitializing existing I2C instance\n");
-        machine_hw_i2c_deinit((mp_obj_base_t *)self);
-    }
-
-    self = machine_hw_i2c_obj_alloc();
+    machine_hw_i2c_obj_t *self = machine_hw_i2c_obj_alloc();
     if (self == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Maximum number of I2C instances reached"));
+        mp_raise_ValueError(MP_ERROR_TEXT("machine.I2C: Maximum number of I2C instances reached"));
     }
 
     if (args[ARG_id].u_int != -1) {
@@ -294,7 +267,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     self->timeout = args[ARG_timeout].u_int;
     if (self->timeout == 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("timeout must be > 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("machine.I2C: timeout must be > 0"));
     }
 
     nlr_buf_t nlr;
@@ -311,6 +284,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 static const mp_machine_i2c_p_t machine_hw_i2c_p = {
+    .deinit = machine_hw_i2c_deinit,
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_hw_i2c_transfer,
 };
