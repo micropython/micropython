@@ -55,6 +55,12 @@ The ESP-IDF changes quickly and MicroPython only supports certain versions. The
 current recommended version of ESP-IDF for MicroPython is v5.5.1. MicroPython
 also supports v5.2, v5.2.2, v5.3, v5.4, v5.4.1 and v5.4.2.
 
+<!-- Important: If updating the above, please also update:
+     * IDF_OLDEST_VER & IDF_NEWEST_VER in .github/workflows/port_esp32.yml
+     * minimum version at bottom of main/idf_component.yml
+     * the lockfiles/ subdirectory.
+-->
+
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
 
