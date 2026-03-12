@@ -183,7 +183,15 @@ void machine_timer_enable(machine_timer_obj_t *self) {
     }
 
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
+
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
     esp_clk_tree_enable_src(TIMER_CLK_SRC, true);
+    #elif TIMER_CLK_SRC != SOC_MOD_CLK_APB
+    // esp_clk_tree_enable_src() is only required on some newer chips where timer
+    // source clock may not be enabled by default
+    #error "This chip requires ESP-IDF v5.4 or newer for working Timer."
+    #endif
+
     #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
     timer_ll_set_clock_source(self->hal_context.dev, self->index, TIMER_CLK_SRC);
     timer_ll_enable_clock(self->hal_context.dev, self->index, true);
