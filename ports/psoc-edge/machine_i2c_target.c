@@ -36,6 +36,7 @@
 #include "extmod/modmachine.h"
 
 // port-specific includes
+#include "genhdr/pins_af.h"
 #include "modmachine.h"
 #include "mplogger.h"
 #include "machine_scb.h"
@@ -57,8 +58,7 @@ typedef struct _machine_i2c_target_obj_t {
     size_t rx_index;
 } machine_i2c_target_obj_t;
 
-#define MAX_I2C                                 1
-static machine_i2c_target_obj_t machine_i2c_target_obj[MAX_I2C];
+static machine_i2c_target_obj_t machine_i2c_target_obj[MICROPY_PY_MACHINE_I2C_NUM_ENTRIES];
 
 /******************************************************************************/
 // PSOC PDL hardware bindings
@@ -78,7 +78,7 @@ static machine_i2c_target_obj_t machine_i2c_target_obj[MAX_I2C];
 static void i2c_slave_event_callback(uint32_t events) {
     // Find the active slave instance
     machine_i2c_target_obj_t *self = NULL;
-    for (uint8_t i = 0; i < MAX_I2C; i++) {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++) {
         if (machine_i2c_target_obj[i].base.type != NULL) {
             self = &machine_i2c_target_obj[i];
             break;
@@ -311,7 +311,7 @@ static mp_obj_t mp_machine_i2c_target_make_new(const mp_obj_type_t *type, size_t
 
     int i2c_id = args[ARG_id].u_int;
 
-    if (i2c_id < 0 || i2c_id >= MAX_I2C) {
+    if (i2c_id < 0 || i2c_id >= MICROPY_PY_MACHINE_I2C_NUM_ENTRIES) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2CTarget(%d) doesn't exist"), i2c_id);
     }
 

@@ -29,25 +29,8 @@
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
 
 #include "py/runtime.h"
-
+#include "genhdr/pins_af.h"
 #include "machine_scb.h"
-
-// These will be automatically generated so that only the required SCBs are included
-// based on the available pins.
-#define MICROPY_PY_MACHINE_SCB_NUM_ENTRIES 12
-#define MICROPY_PY_MACHINE_SCB_FOR_ALL_SCB(DO) \
-    DO(0) \
-    DO(1) \
-    DO(2) \
-    DO(3) \
-    DO(4) \
-    DO(5) \
-    DO(6) \
-    DO(7) \
-    DO(8) \
-    DO(9) \
-    DO(10) \
-    DO(11)
 
 #define scb_irq_assert_raise_val(msg, ret)   if (ret != CY_SYSINT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
@@ -61,7 +44,25 @@ static void machine_scb_irq_handler(uint8_t scb);
         machine_scb_irq_handler(scb); \
     }
 
-MICROPY_PY_MACHINE_SCB_FOR_ALL_SCB(DEFINE_SCB_IRQ_HANDLER)
+/**
+ * The file build-<board>/genhdr/pins_af.h contains the macro
+ *
+ *  MICROPY_PY_MACHINE_FOR_ALL_SCB(DO)
+ *
+ *  which uses the X-macro (as argument) pattern to pass a worker
+ *  macro DO(port) for the list of all user available ports.
+ *
+ * The available (not hidden) user SCBs are those alternate
+ * functions defined in the boards/pse8x_af.csv file, for which
+ * the corresponding pin are available for the user.
+ * The available pins are those defined in the
+ * boards/<board>/pins.csv file, which are not prefixed
+ * with a hyphen(-).
+ * See tools/boardgen.py and psoc-edge/boards/make-pins.py
+ * for more information.
+ */
+
+MICROPY_PY_MACHINE_FOR_ALL_SCB(DEFINE_SCB_IRQ_HANDLER)
 
 #define MAP_SCB_IRQ_CONFIG(scb) \
     [scb] = { \
@@ -77,7 +78,7 @@ MICROPY_PY_MACHINE_SCB_FOR_ALL_SCB(DEFINE_SCB_IRQ_HANDLER)
     },
 
 static machine_scb_obj_t machine_scb_obj[MICROPY_PY_MACHINE_SCB_NUM_ENTRIES] = {
-    MICROPY_PY_MACHINE_SCB_FOR_ALL_SCB(MAP_SCB_IRQ_CONFIG)
+    MICROPY_PY_MACHINE_FOR_ALL_SCB(MAP_SCB_IRQ_CONFIG)
 };
 
 static void machine_scb_irq_handler(uint8_t scb) {

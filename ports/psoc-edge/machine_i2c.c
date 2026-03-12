@@ -44,6 +44,7 @@
 
 
 // port-specific includes
+#include "genhdr/pins_af.h"
 #include "modmachine.h"
 #include "mplogger.h"
 #include "machine_scb.h"
@@ -66,11 +67,10 @@ typedef struct _machine_hw_i2c_obj_t {
     cy_stc_scb_i2c_context_t ctx;  // PDL I2C runtime context
 } machine_hw_i2c_obj_t;
 
-#define MAX_I2C                                 1
-machine_hw_i2c_obj_t *machine_hw_i2c_obj[MAX_I2C] = { NULL };
+machine_hw_i2c_obj_t *machine_hw_i2c_obj[MICROPY_PY_MACHINE_I2C_NUM_ENTRIES] = { NULL };
 
 static inline machine_hw_i2c_obj_t *machine_hw_i2c_obj_alloc(void) {
-    for (uint8_t i = 0; i < MAX_I2C; i++)
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++)
     {
         if (machine_hw_i2c_obj[i] == NULL) {
             machine_hw_i2c_obj[i] = mp_obj_malloc(machine_hw_i2c_obj_t, &machine_i2c_type);
@@ -80,7 +80,7 @@ static inline machine_hw_i2c_obj_t *machine_hw_i2c_obj_alloc(void) {
 
     // Debug: print status of all slots
     mplogger_print("I2C alloc failed - all slots occupied:\n");
-    for (uint8_t i = 0; i < MAX_I2C; i++) {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++) {
         mplogger_print("  Slot %u: %p\n", i, machine_hw_i2c_obj[i]);
     }
 
@@ -88,7 +88,7 @@ static inline machine_hw_i2c_obj_t *machine_hw_i2c_obj_alloc(void) {
 }
 
 static inline void machine_hw_i2c_obj_free(machine_hw_i2c_obj_t *i2c_obj_ptr) {
-    for (uint8_t i = 0; i < MAX_I2C; i++)
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++)
     {
         if (machine_hw_i2c_obj[i] == i2c_obj_ptr) {
             machine_hw_i2c_obj[i] = NULL;
