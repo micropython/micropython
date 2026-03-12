@@ -169,7 +169,6 @@ list(APPEND IDF_COMPONENTS
     esp_app_format
     esp_mm
     esp_common
-    esp_driver_touch_sens
     esp_eth
     esp_event
     esp_hw_support
@@ -197,6 +196,11 @@ list(APPEND IDF_COMPONENTS
     usb
     vfs
 )
+
+if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")
+    list(APPEND IDF_COMPONENTS
+        esp_driver_touch_sens)
+endif()
 
 # Provide the default LD fragment if not set
 if (MICROPY_USER_LDFRAGMENTS)
