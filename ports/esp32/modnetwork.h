@@ -29,8 +29,8 @@
 #include "esp_wifi_types.h"
 #include "esp_netif.h"
 
-// lan867x component requires newer IDF version
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0) && CONFIG_IDF_TARGET_ESP32
+// lan867x component requires Original ESP32
+#if CONFIG_IDF_TARGET_ESP32
 #define PHY_LAN867X_ENABLED (1)
 #else
 #define PHY_LAN867X_ENABLED (0)
