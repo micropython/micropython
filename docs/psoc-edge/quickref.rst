@@ -222,12 +222,6 @@ peripheral. The port supports both controller (master) and target (slave) modes.
     Only one I2C instance (controller or target) can be active at a time, as both modes 
     share the same SCB peripheral and pins.
 
-.. warning::
-
-    The KIT_PSE84_AI board has only one hardware I2C peripheral with fixed pins:
-    P17_0 (SCL) and P17_1 (SDA). These pins cannot be changed. If you specify 
-    custom pins in the constructor, they will be ignored and a warning message 
-    will be printed.
 
 Controller mode (Master)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -235,51 +229,56 @@ Controller mode (Master)
 Use the ``I2C`` class for controller (master) operations::
 
     from machine import I2C
-
-    # Create I2C - uses fixed pins P17_0 (SCL) and P17_1 (SDA)
-    i2c = I2C(freq=400000)
     
-    # With custom timeout (default is 50000us = 50ms)
-    i2c = I2C(freq=100000, timeout=100000)  # 100ms timeout
-    
-    # Pin parameters are optional but ignored on KIT_PSE84_AI
-    i2c = I2C(scl='P17_0', sda='P17_1', freq=100000)  # You can only use P17_0/P17_1
+    i2c = I2C(scl='P17_0', sda='P17_1', freq=100000) 
 
 Constructor arguments:
 
     - ``id``: I2C bus number (currently only 0 is available).
       **This parameter is ignored**.
+    - ``scl``: SCL pin (string 'P<port>_<pin>' or Pin object).
+    - ``sda``: SDA pin (string 'P<port>_<pin>' or Pin object).
     - ``freq``: I2C clock frequency in Hz. Supported: 100000 (100kHz) or
       400000 (400kHz). Default is 400000.
     - ``timeout``: Transfer timeout in microseconds. Must be > 0.
       Default is 50000 (50ms).
-    - ``scl``: SCL pin (string 'P<port>_<pin>' or Pin object).
-      **Ignored on KIT_PSE84_AI** - always uses P17_0. Prints warning if
-      specified.
-    - ``sda``: SDA pin (string 'P<port>_<pin>' or Pin object).
-      **Ignored on KIT_PSE84_AI** - always uses P17_1. Prints warning if
-      specified.
 
-Target mode (Slave)
-^^^^^^^^^^^^^^^^^^^
+The ``scl`` and ``sda`` pins are the only mandatory arguments. 
 
-The I2CTarget implementation on PSoC Edge has the following port-specific details:
+Methods
+~~~~~~~
 
-**Fixed pins (KIT_PSE84_AI):**
-    - SCL: P17_0
-    - SDA: P17_1
-    - Custom pin parameters are ignored with a warning message
+All the methods(functions) given in :ref:`machine.I2C <machine.I2C>` class have been implemented in this port except:
 
-**Memory addressing:**
-    - ``mem_addrsize``: Only 0 is supported (no memory addressing)
-    - EEPROM-like addressing (8/16/24/32 bit) is not yet implemented
+.. method:: I2C.init()
 
-**Supported IRQ triggers:**
+Additionally, the following functions are enabled:
 
-Only transaction-level events are supported (soft IRQ only):
+.. method:: I2C.deinit()
 
-    - ``I2CTarget.IRQ_END_READ``: Triggered when master completes reading from slave
-    - ``I2CTarget.IRQ_END_WRITE``: Triggered when master completes writing to slave
+.. Target mode (Slave)
+.. ^^^^^^^^^^^^^^^^^^^
+..
+.. Use the ``I2CTarget`` class for target (slave) operations::
+..
+..     from machine import I2CTarget
+..     
+..     mem = bytearray([0xAA, 0xBB, 0xCC, 0xDD, 0x00, 0x00, 0x00, 0x00])
+..     i2c_target = I2CTarget(scl="P17_0", sda="P17_1", addr=0x43, mem=mem)
+..
+..
+.. The I2CTarget implementation on PSoC Edge has the following port-specific details:
+..
+.. **Memory addressing:**
+..     - ``mem_addrsize``: Only 0 is supported (no memory addressing)
+..     - EEPROM-like addressing (8/16/24/32 bit) is not yet implemented
+..
+.. **Supported IRQ triggers:**
+..
+.. Only transaction-level events are supported (soft IRQ only):
+..
+..     - ``I2CTarget.IRQ_END_READ``: Triggered when master completes reading from slave
+..     - ``I2CTarget.IRQ_END_WRITE``: Triggered when master completes writing to slave
 
 Inter-Processor Communication (IPC)
 -------------------------------------
