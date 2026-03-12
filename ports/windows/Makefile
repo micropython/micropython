@@ -104,8 +104,6 @@ ifeq ($(shell $(CC) -dumpmachine),i686-w64-mingw32)
 CFLAGS += -msse -mfpmath=sse -march=pentium4
 endif
 
-CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))
-
 include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
