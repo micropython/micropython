@@ -112,17 +112,21 @@ class PSE84Pin(boardgen.Pin):
         self._afs.append(pin_af)
 
     def add_af(self, af_idx, af_name, af):
-        if af_idx > 15:
-            # The AF csv files should not have more than 15 AF
-            #  TODO: Check if DeepSleep functions and ADC need to be added here.
+        if af_idx > 19:
             return
 
-        if af_name != "ACT_{:d}".format(af_idx):
-            ## TODO: Support later DS_ and the other HSIOM select macros.
-            raise boardgen.PinGeneratorError(
-                "Invalid AF column name '{:s}' for AF index {:d}.".format(af_name, af_idx)
-            )
+        if af_idx <= 15:
+            if af_name != "ACT_{:d}".format(af_idx):
+                raise boardgen.PinGeneratorError(
+                    "Invalid AF column name '{:s}' for AF index {:d}.".format(af_name, af_idx)
+                )
 
+        if af_idx > 15:
+            format_idx = af_idx - 15 + 1  # DS2 to DS5  are valid
+            if af_name != "DS_{:d}".format(format_idx):
+                raise boardgen.PinGeneratorError(
+                    "Invalid AF column name '{:s}' for AF index {:d}.".format(af_name, af_idx)
+                )
         # TODO: Review implementation.
         # The names have the following patterns:
         #
@@ -179,6 +183,13 @@ class PSE84PinGenerator(boardgen.PinGenerator):
         self._unhidden_ports = []
         self._port_max_index = 0
 
+        self._unhidden_scb = []
+        self._scb_max_index = 0
+
+        self._unhidden_i2c = []
+        self._unhidden_spi = []
+        self._unhidden_uart = []
+
     # Collect all unhidden ports from the available
     # pins.
     # This function can be only used after parse_board_csv()
@@ -191,11 +202,42 @@ class PSE84PinGenerator(boardgen.PinGenerator):
             if pin._port not in self._unhidden_ports and not pin._hidden:
                 self._unhidden_ports.append(pin._port)
 
+    # Collect all unhidden SCB units from the available pins.
+    # And the each of the potential available I2C, SPI and UART units
+    # It will not verify that all signals are available for a given unit.
+    # Therefore, the actual amount of available units for each protocol
+    # may be lower than the one collected here.
+    def add_scbs(self):
+        for pin in self.available_pins():
+            if not pin._hidden:
+                for af in pin._afs:
+                    if af.af_ptr.startswith("SCB"):
+                        if af.af_unit not in self._unhidden_scb:
+                            self._unhidden_scb.append(af.af_unit)
+                            if int(af.af_unit) > self._scb_max_index:
+                                self._scb_max_index = int(af.af_unit)
+
+                        if af.af_fn == "I2C":
+                            if af.af_unit not in self._unhidden_i2c:
+                                self._unhidden_i2c.append(af.af_unit)
+                        elif af.af_fn == "SPI":
+                            if af.af_unit not in self._unhidden_spi:
+                                self._unhidden_spi.append(af.af_unit)
+                        elif af.af_fn == "UART":
+                            if af.af_unit not in self._unhidden_uart:
+                                self._unhidden_uart.append(af.af_unit)
+
+        self._unhidden_scb.sort(key=int)
+        self._unhidden_i2c.sort(key=int)
+        self._unhidden_spi.sort(key=int)
+        self._unhidden_uart.sort(key=int)
+
     # Override the parse_board_csv to add
     # the unhidden ports after parsing the board CSV.
     def parse_board_csv(self, filename):
         super().parse_board_csv(filename)
         self.add_ports()
+        self.add_scbs()
 
     # Override the default implementation just to change the default arguments
     # (extra header row, skip first column).
@@ -221,11 +263,58 @@ class PSE84PinGenerator(boardgen.PinGenerator):
 
         print(file=out_header)
 
+    def print_scb_defines(self, out_header):
+        print(file=out_header)
+        print(
+            f"#define MICROPY_PY_MACHINE_SCB_NUM_ENTRIES ({self._scb_max_index + 1})",
+            file=out_header,
+        )
+
+        print(
+            f"#define MICROPY_PY_MACHINE_I2C_NUM_ENTRIES ({len(self._unhidden_i2c)})",
+            file=out_header,
+        )
+
+        print(
+            f"#define MICROPY_PY_MACHINE_SPI_NUM_ENTRIES ({len(self._unhidden_spi)})",
+            file=out_header,
+        )
+
+        print(
+            f"#define MICROPY_PY_MACHINE_UART_NUM_ENTRIES ({len(self._unhidden_uart)})",
+            file=out_header,
+        )
+
+        print(file=out_header)
+        print("// The MICROPY_PY_MACHINE_FOR_ALL_SCB(DO) macro will", file=out_header)
+        print("// apply the DO macro to all user available SCB units.", file=out_header)
+        print("// The DO macro takes the SCB unit as argument: DO(unit).", file=out_header)
+        print("#define MICROPY_PY_MACHINE_FOR_ALL_SCB(DO) \\", file=out_header)
+
+        lines = [f"DO({scb})" for scb in self._unhidden_scb]
+        macro_body = " \\\n".join(lines)
+        print(macro_body, file=out_header)
+
+        print(file=out_header)
+
     # Overwrite print_header to extend the print header base class
     # function with the pin port defines
     def print_header(self, out_header):
         super().print_header(out_header)
         self.print_port_defines(out_header)
+
+    def print_af_header(self, out_af_header):
+        self.print_scb_defines(out_af_header)
+
+    # Add additional header file for AF defines and constants
+    def extra_args(self, parser):
+        parser.add_argument("--output-af-header")
+
+    # Called in main() after everything else is done to write additional files.
+    def generate_extra_files(self):
+        if self.args.output_af_header:
+            with open(self.args.output_af_header, "w") as out_af_header:
+                self.print_af_header(out_af_header)
 
 
 if __name__ == "__main__":

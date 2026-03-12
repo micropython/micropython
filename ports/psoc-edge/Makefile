@@ -72,6 +72,7 @@ AF_FILE = boards/pse8x_af.csv
 PREFIX_FILE = boards/pse84_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_AF_HDR= $(HEADER_BUILD)/pins_af.h
 
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
@@ -89,7 +90,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h : $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
-	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) --output-af-header $(GEN_PINS_AF_HDR)
 
 #################################################################################
 # PSOC Edge source files and libraries
