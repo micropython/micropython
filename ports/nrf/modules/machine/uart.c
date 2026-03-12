@@ -222,8 +222,10 @@ void uart_tx_strn_cooked(machine_uart_obj_t *uart_obj, const char *str, uint len
     { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(NRFX_UART_IRQ_RX) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(NRFX_UART_IRQ_TXIDLE) }, \
 
+#define MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS (MP_TYPE_FLAG_NONE)
 #else
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
+#define MICROPY_PY_MACHINE_UART_CLASS_EXTRAFLAGS (MP_TYPE_FLAG_NONE)
 #endif
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

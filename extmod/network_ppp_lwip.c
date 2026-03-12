@@ -367,7 +367,7 @@ static MP_DEFINE_CONST_DICT(network_ppp_locals_dict, network_ppp_locals_dict_tab
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_network_ppp_lwip_type,
     MP_QSTR_PPP,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_FINALISER,
     make_new, network_ppp_make_new,
     locals_dict, &network_ppp_locals_dict
     );
