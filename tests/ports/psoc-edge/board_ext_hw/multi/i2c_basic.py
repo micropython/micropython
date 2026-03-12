@@ -82,6 +82,9 @@ def instance1():
         read_pass = False
         print("Status: FAIL -", e)
 
+    # Deinit i2c instance
+    i2c.deinit()
+
     # Test 4: Timeout Test
     print("\n***** Test 4: Timeout *****\n")
     try:
@@ -114,6 +117,8 @@ def instance1():
             else:
                 print("Status: FAIL - Unexpected error:", e.errno)
                 timeout_pass = False
+
+        i2c_timeout.deinit()
     except Exception as e:
         print("Status: FAIL -", e)
         timeout_pass = False
