@@ -360,7 +360,6 @@ function ci_powerpc_build {
 
 function ci_psoc_edge_setup {
     ci_gcc_arm_setup
-    git clone https://github.com/Infineon/edgeprotecttools.git
     sudo apt remove python3-packaging python3-jsonschema
     sudo pip3 install edgeprotecttools
 }
