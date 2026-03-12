@@ -26,40 +26,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Build for both oldest and newest supported ESP-IDF versions, as per ports/esp32/README.md
+        # (if updating here, also update "IDF_LATEST_VER" below)
+        idf_ver:
+          - "v5.3"
+          - "v5.5.1"
         ci_func:  # names are functions in ci.sh
           - esp32_build_cmod_spiram_s2
           - esp32_build_s3_c3
           - esp32_build_c2_c5_c6
           - esp32_build_p4
+    env:
+        IDF_LATEST_VER: "v5.5.1"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
 
-    # Needs to be kept in synch with code_size.yml
-    - id: idf_ver
-      name: Read the ESP-IDF version (including Python version) and set outputs.IDF_VER
-      run: tools/ci.sh esp32_idf_ver | tee "${GITHUB_OUTPUT}"
+    # Only the latest IDF version will build the ESP-IDF lockfiles correctly,
+    # so we need to disable MICROPY_MAINTAINER_BUILD on older versions.
+    - name: Disable extra checks for older ESP-IDF
+      id: check_latest_ver
+      if: ${{ matrix.idf_ver != env.IDF_LATEST_VER }}
+      run: echo "MICROPY_MAINTAINER_BUILD=0" >> ${GITHUB_ENV}
 
-    - name: Cached ESP-IDF install
-      id: cache_esp_idf
-      uses: actions/cache@v5
+    - name: Setup ESP-IDF
+      uses: ./.github/actions/setup_esp32
       with:
-        path: |
-          ./esp-idf/
-          ~/.espressif/
-          !~/.espressif/dist/
-          ~/.cache/pip/
-        key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}
+        idf_ver: ${{ matrix.idf_ver }}
+        ccache_key: ${{ matrix.ci_func }}
 
-    - name: Install ESP-IDF packages
-      if: steps.cache_esp_idf.outputs.cache-hit != 'true'
-      run: tools/ci.sh esp32_idf_setup
 
-    # Needs to be kept in synch with code_size.yml
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        key: esp32-${{ matrix.ci_func }}
-
-    - name: Build ci_${{matrix.ci_func }}
+    - name: Build ci_${{matrix.ci_func }} on ESP-IDF ${{ matrix.idf_ver }}
       run: tools/ci.sh ${{ matrix.ci_func }}
