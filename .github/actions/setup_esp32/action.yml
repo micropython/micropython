@@ -1,0 +1,47 @@
+name: Setup ESP-IDF for CI
+description: Install ESP-IDF (from cache if possible) and setup
+inputs:
+  idf_ver:
+    required: true
+    type: string
+  ccache_key:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+
+  steps:
+  - id: python_ver
+    name: Read the Python version
+    run: echo PYTHON_VER=py$(python --version | cut -d' ' -f2) | tee "${GITHUB_OUTPUT}"
+    shell: bash
+
+  - name: Cached ESP-IDF install
+    id: cache_esp_idf
+    uses: actions/cache@v5
+    with:
+      path: |
+        ./esp-idf/
+        ~/.espressif/
+        !~/.espressif/dist/
+        ~/.cache/pip/
+      # Cache is keyed on both IDF version (from the job) and Python version (from the runner)
+      key: esp-idf-${{ inputs.idf_ver }}-${{ steps.python_ver.outputs.PYTHON_VER }}
+
+  - name: Install ESP-IDF packages
+    if: steps.cache_esp_idf.outputs.cache-hit != 'true'
+    env:
+       IDF_VER: ${{ inputs.idf_ver }}
+    run: tools/ci.sh esp32_idf_setup
+    shell: bash
+
+  - name: ccache
+    uses: hendrikmuhs/ccache-action@v1.2
+    with:
+      key: esp32-${{ inputs.idf_ver }}-${{ inputs.ccache_key }}
+
+  - name: Enable CCache for ESP-IDF
+    run: echo "IDF_CCACHE_ENABLE=1" >> ${GITHUB_ENV}
+    shell: bash
+
