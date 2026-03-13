@@ -120,6 +120,25 @@ Drawing text
     dimensions of 8x8 pixels and there is currently no way to change the font.
 
 
+Attributes
+----------
+
+.. attribute:: FrameBuffer.width
+
+    Gets the width of the FrameBuffer in pixels.
+
+.. attribute:: FrameBuffer.height
+
+    Gets the height of the FrameBuffer in pixels.
+
+.. attribute:: FrameBuffer.format
+
+    Gets the format of the FrameBuffer, which is one of the constants defined in this module.
+
+.. attribute:: FrameBuffer.stride
+
+    Gets the stride of the FrameBuffer in pixels (horizontal offset between lines).
+
 Other methods
 -------------
 
