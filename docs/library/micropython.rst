@@ -9,23 +9,89 @@ Functions
 
 .. function:: const(expr)
 
-   Used to declare that the expression is a constant so that the compiler can
-   optimise it.  The use of this function should be as follows::
+   Declares a compile-time constant for bytecode optimization. The compiler performs
+   constant folding, replacing all references to the constant with its literal value
+   in the bytecode, eliminating runtime dictionary lookups.
+
+   **Usage**::
 
     from micropython import const
 
     CONST_X = const(123)
     CONST_Y = const(2 * CONST_X + 1)
 
-   Constants declared this way are still accessible as global variables from
-   outside the module they are declared in.  On the other hand, if a constant
-   begins with an underscore then it is hidden, it is not available as a global
-   variable, and does not take up any memory during execution.
+   **How it works:** This function is recognized directly by the MicroPython parser
+   as a builtin optimization. During compilation, when the parser sees the pattern
+   ``IDENTIFIER = const(EXPR)``, it evaluates the expression at compile time and
+   substitutes the constant value directly at each usage site. For example,
+   ``print(CONST_X)`` compiles to the equivalent of ``print(123)`` with the value
+   embedded in the bytecode. No import is required in MicroPython.
 
-   This `const` function is recognised directly by the MicroPython parser and is
-   provided as part of the :mod:`micropython` module mainly so that scripts can be
-   written which run under both CPython and MicroPython, by following the above
-   pattern.
+   **Important:** The parser only recognizes the bare name ``const``. Using
+   ``micropython.const()`` (with module prefix) or an aliased import (e.g.,
+   ``from micropython import const as c``) will not trigger the optimization
+   because the parser specifically looks for the unqualified name ``const`` in the
+   pattern ``IDENTIFIER = const(EXPR)``.
+
+   **Scope:** Constants should only be declared at module level (global scope).
+   While ``const()`` can technically be used inside functions or classes, this
+   creates module-level constants regardless of the syntactic location, violating
+   normal Python scoping rules and causing confusing behavior. Always use ``const()``
+   at module level.
+
+   **Storage and visibility:**
+
+   By default (e.g. ``X = const(1)``), even though the constant value is inlined at
+   all usage sites within the defining module, the variable ``X`` is still created as
+   a global variable in the module's dictionary. This means the variable can be
+   accessed from other modules (e.g. ``import mymodule; print(mymodule.X)``). Other
+   modules can even reassign this global variable, but this does not affect the
+   inlined constant values within the defining module where ``const()`` replaced all
+   references with the literal value.
+
+   This default behavior occupies at least 2 machine words of RAM for the dictionary
+   entry. To save this RAM, prefix the variable name with an underscore (e.g.
+   ``_X = const(1)``). This prevents the variable from being stored in the global
+   dictionary, making it inaccessible from other modules while still inlining the
+   value at all usage sites within the defining module. Use this for internal
+   constants.
+
+   **Valid expressions:** The expression must be evaluable at compile time. Supported
+   types include integers, floats, strings, bytes, booleans (``True``, ``False``),
+   ``None``, ellipsis (``...``), and tuples of constants (if ``MICROPY_COMP_CONST_TUPLE``
+   is enabled). The expression can use arithmetic, bitwise, and logical operators, and
+   can reference other already-defined constants. Using runtime variables or function
+   calls raises ``SyntaxError: not a constant``.
+
+   Examples of valid expressions::
+
+    BUFFER_SIZE = const(1024)
+    BUFFER_MASK = const(BUFFER_SIZE - 1)
+    FLAGS = const(0x1 | 0x2)
+    REGISTER_ADDR = const(0x40000000)
+    _INTERNAL_MAX = const(100)
+
+   **Limitations:**
+
+   - Cannot be redefined within the same module
+   - Does not enforce immutability (constants can be reassigned from other modules);
+     for stricter immutability checking, consider using ``typing.Final`` with static
+     type checkers
+   - Currently incompatible with type hints: ``X: int = const(1)`` is not optimized
+   - Only substitutes standalone identifier references; does not substitute when the
+     identifier appears after a dot (``obj.CONST``), as a function/class name, as a
+     parameter name, or on the left side of an assignment
+
+   **CPython compatibility:** While MicroPython recognizes ``const`` as a builtin
+   parser optimization, it is also exported from the :mod:`micropython` module (as
+   an identity function) to allow scripts to run on CPython without errors. The
+   typical pattern for cross-platform compatibility is::
+
+    try:
+        from micropython import const
+    except ImportError:
+        def const(x):
+            return x
 
 .. function:: opt_level([level])
 
