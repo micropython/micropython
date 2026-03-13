@@ -68,6 +68,7 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_ROM             (1)
 #define MICROPY_VFS_ROM_IOCTL       (0)
+#define MICROPY_VFS_SEMIHOSTING     (1)
 
 // type definitions for the specific machine
 
