@@ -491,10 +491,10 @@ void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t ind
         uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID:
-                mp_printf(print, "id(%s)\n", qstr_str(arg));
+                mp_printf(print, "id(%q)\n", (qstr)arg);
                 break;
             case MP_PARSE_NODE_STRING:
-                mp_printf(print, "str(%s)\n", qstr_str(arg));
+                mp_printf(print, "str(%q)\n", (qstr)arg);
                 break;
             default:
                 assert(MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_TOKEN);
