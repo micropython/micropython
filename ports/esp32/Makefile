@@ -39,7 +39,11 @@ BAUD_ARG := -b $(BAUD)
 endif
 DEVICE += $(PORT_ARG) $(BAUD_ARG)
 
+ifeq ($(OS),Windows_NT)
+PYTHON ?= python
+else
 PYTHON ?= python3
+endif
 
 .PHONY: all clean deploy erase submodules FORCE
 
