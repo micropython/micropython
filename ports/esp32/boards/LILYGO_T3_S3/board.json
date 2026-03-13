@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Display",
+        "External Flash",
+        "External RAM",
+        "LoRa",
+        "SDCard",
+        "USB-C",
+        "WiFi"
+    ],
+    "mcu": "esp32s3",
+    "product": "T3-S3",
+    "thumbnail": "",
+    "url": "https://www.lilygo.cc/products/t3s3-v1-0",
+    "vendor": "LILYGO"
+}
