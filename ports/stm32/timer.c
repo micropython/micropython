@@ -1583,10 +1583,10 @@ MP_DEFINE_CONST_OBJ_TYPE(
 static void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%s)",
+    mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%q)",
         self->timer->tim_id,
         self->channel,
-        qstr_str(channel_mode_info[self->mode].name));
+        (qstr)channel_mode_info[self->mode].name);
 }
 
 /// \method capture([value])
