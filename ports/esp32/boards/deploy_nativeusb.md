@@ -29,7 +29,7 @@ esptool.py --port PORTNAME erase_flash
 Then deploy the firmware to the board, starting at address {deploy_options[flash_offset]}:
 
 ```bash
-esptool.py write_flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
+esptool.py write-flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
 ```
 
 Replace `ESP32_BOARD_NAME-DATE-VERSION.bin` with the `.bin` file downloaded from this page.
@@ -38,7 +38,7 @@ As above, if `esptool.py` can't automatically detect the serial port
 then you can pass it explicitly on the command line instead. For example:
 
 ```bash
-esptool.py --port PORTNAME write_flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
+esptool.py --port PORTNAME write-flash {deploy_options[flash_offset]} ESP32_BOARD_NAME-DATE-VERSION.bin
 ```
 
 ### Troubleshooting
