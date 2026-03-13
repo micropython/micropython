@@ -81,47 +81,62 @@ class TestMemory(unittest.TestCase):
         self.mem[:] = b"01234567"
         self.i2c.writeto_mem(ADDR, 0, b"test")
         self.assertEqual(self.mem, bytearray(b"test4567"))
+        self.assertEqual(self.i2c_target.numbytes, 4)
         self.i2c.writeto_mem(ADDR, 4, b"TEST")
         self.assertEqual(self.mem, bytearray(b"testTEST"))
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
     def test_write_wrap(self):
         self.mem[:] = b"01234567"
         self.i2c.writeto_mem(ADDR, 6, b"test")
         self.assertEqual(self.mem, bytearray(b"st2345te"))
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
     @unittest.skipIf(sys.platform == "esp32", "write lengths larger than buffer unsupported")
     def test_write_wrap_large(self):
         self.mem[:] = b"01234567"
         self.i2c.writeto_mem(ADDR, 0, b"testTESTmore")
         self.assertEqual(self.mem, bytearray(b"moreTEST"))
+        self.assertEqual(self.i2c_target.numbytes, 12)
 
     def test_read(self):
         self.mem[:] = b"01234567"
         self.assertEqual(self.i2c.readfrom_mem(ADDR, 0, 4), b"0123")
+        self.assertEqual(self.i2c_target.numbytes, 4)
         self.assertEqual(self.i2c.readfrom_mem(ADDR, 4, 4), b"4567")
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
     def test_read_wrap(self):
         self.mem[:] = b"01234567"
         self.assertEqual(self.i2c.readfrom_mem(ADDR, 0, 4), b"0123")
+        self.assertEqual(self.i2c_target.numbytes, 4)
         self.assertEqual(self.i2c.readfrom_mem(ADDR, 2, 4), b"2345")
+        self.assertEqual(self.i2c_target.numbytes, 4)
         self.assertEqual(self.i2c.readfrom_mem(ADDR, 6, 4), b"6701")
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
     @unittest.skipIf(sys.platform == "esp32", "read lengths larger than buffer unsupported")
     def test_read_wrap_large(self):
         self.mem[:] = b"01234567"
         self.assertEqual(self.i2c.readfrom_mem(ADDR, 0, 12), b"012345670123")
+        self.assertEqual(self.i2c_target.numbytes, 12)
 
     def test_write_read(self):
         self.mem[:] = b"01234567"
         self.assertEqual(self.i2c.writeto(ADDR, b"\x02"), 1)
+        self.assertEqual(self.i2c_target.numbytes, 1)
         self.assertEqual(self.i2c.readfrom(ADDR, 4), b"2345")
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
     @unittest.skipIf(sys.platform == "esp32", "read after read unsupported")
     def test_write_read_read(self):
         self.mem[:] = b"01234567"
         self.assertEqual(self.i2c.writeto(ADDR, b"\x02"), 1)
+        self.assertEqual(self.i2c_target.numbytes, 1)
         self.assertEqual(self.i2c.readfrom(ADDR, 4), b"2345")
+        self.assertEqual(self.i2c_target.numbytes, 4)
         self.assertEqual(self.i2c.readfrom(ADDR, 4), b"7012")
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
 
 @unittest.skipUnless(hasattr(I2CTarget, "IRQ_END_READ"), "IRQ unsupported")
@@ -159,12 +174,14 @@ class TestMemoryIRQ(unittest.TestCase):
         self.i2c.writeto_mem(ADDR, 2, b"test")
         self.assertEqual(self.mem, bytearray(b"01test67"))
         self.assertEqual(self.events[: self.num_events], [I2CTarget.IRQ_END_WRITE, 2])
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
     def test_read(self):
         TestMemoryIRQ.num_events = 0
         self.mem[:] = b"01234567"
         self.assertEqual(self.i2c.readfrom_mem(ADDR, 2, 4), b"2345")
         self.assertEqual(self.events[: self.num_events], [I2CTarget.IRQ_END_READ, 2])
+        self.assertEqual(self.i2c_target.numbytes, 4)
 
 
 @unittest.skipUnless(hasattr(I2CTarget, "IRQ_WRITE_REQ"), "IRQ unsupported")
