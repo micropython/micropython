@@ -4,12 +4,13 @@
 class USBDevice -- USB Device driver
 ====================================
 
-.. note:: ``machine.USBDevice`` is currently only supported for esp32, rp2 and
-          samd ports. Native USB support is also required, and not every board
-          supports native USB.
+.. note:: ``machine.USBDevice`` is currently only supported for esp32, rp2,
+          samd, and stm32 (with TinyUSB) ports. Native USB support is also
+          required, and not every board supports native USB.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
-Python code.
+Python code. This includes both runtime device descriptor configuration and
+build-time customization of USB Vendor ID (VID) and Product ID (PID).
 
 .. warning:: This low-level API assumes familiarity with the USB standard. There
    are high-level `usb driver modules in micropython-lib`_ which provide a
@@ -188,7 +189,8 @@ Methods
 .. attribute:: USBDevice.builtin_driver
 
    This attribute holds the current built-in driver configuration, and must be
-   set to one of the ``USBDevice.BUILTIN_`` named constants defined on this object.
+   set to one of the ``USBDevice.BUILTIN_`` constants or a combination of them
+   using the bitwise OR operator (``|``).
 
    By default it holds the value :data:`USBDevice.BUILTIN_NONE`.
 
@@ -203,8 +205,8 @@ Methods
      accessible via :data:`USBDevice.builtin_driver` attribute ``desc_cfg``.
      Descriptors appended after the built-in configuration descriptors should use
      interface, string and endpoint numbers starting from the max built-in values
-     defined in :data:`USBDevice.builtin_driver` attributes ``itf_max``, ``str_max`` and
-     ``ep_max``.
+     defined in :data:`USBDevice.builtin_driver` attributes ``itf_max``, ``str_max``
+     and ``ep_max``.
 
    - The ``bNumInterfaces`` field in the built-in configuration
      descriptor will also need to be updated if any new interfaces
@@ -266,39 +268,49 @@ Constants
 ---------
 
 .. data:: USBDevice.BUILTIN_NONE
+
+          Constant representing no built-in USB drivers enabled. This is the
+          default value for :data:`USBDevice.builtin_driver`.
+
 .. data:: USBDevice.BUILTIN_DEFAULT
+
+          Constant representing the default combination of built-in USB drivers
+          for this firmware build. The exact combination depends on compile-time
+          configuration options.
+
 .. data:: USBDevice.BUILTIN_CDC
+
+          Constant representing the built-in USB CDC (serial port) driver.
+          Can be combined with other ``BUILTIN_`` constants using the bitwise
+          OR operator (``|``).
+
 .. data:: USBDevice.BUILTIN_MSC
-.. data:: USBDevice.BUILTIN_CDC_MSC
 
-          These constant objects hold the built-in descriptor data which is
-          compiled into the MicroPython firmware. ``USBDevice.BUILTIN_NONE`` and
-          ``USBDevice.BUILTIN_DEFAULT`` are always present. Additional objects may be present
-          depending on the firmware build configuration and the actual built-in drivers.
+          Constant representing the built-in USB MSC (mass storage) driver.
+          Can be combined with other ``BUILTIN_`` constants using the bitwise
+          OR operator (``|``).
 
-          .. note:: Currently at most one of ``USBDevice.BUILTIN_CDC``,
-                    ``USBDevice.BUILTIN_MSC`` and ``USBDevice.BUILTIN_CDC_MSC`` is defined
-                    and will be the same object as ``USBDevice.BUILTIN_DEFAULT``.
-                    These constants are defined to allow run-time detection of
-                    the built-in driver (if any). Support for selecting one of
-                    multiple built-in driver configurations may be added in the
-                    future.
+Usage Examples
+--------------
 
-          These values are assigned to :data:`USBDevice.builtin_driver` to get/set the
-          built-in configuration.
+**Enable CDC only:**
+::
 
-          Each object contains the following read-only fields:
+    import machine
 
-          - ``itf_max`` - One more than the highest bInterfaceNumber value used
-            in the built-in configuration descriptor.
-          - ``ep_max`` - One more than the highest bEndpointAddress value used
-            in the built-in configuration descriptor. Does not include any
-            ``IN`` flag bit (0x80).
-          - ``str_max`` - One more than the highest string descriptor index
-            value used by any built-in descriptor.
-          - ``desc_dev`` - ``bytes`` object containing the built-in USB device
-            descriptor.
-          - ``desc_cfg`` - ``bytes`` object containing the complete built-in USB
-            configuration descriptor.
+    usb = machine.USBDevice()
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC
+    usb.active(True)
+
+**Enable both CDC and MSC:**
+::
+
+    import machine
+
+    usb = machine.USBDevice()
+    usb.active(False)
+    usb.builtin_driver = usb.BUILTIN_CDC | usb.BUILTIN_MSC
+    usb.active(True)
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme
