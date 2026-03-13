@@ -31,6 +31,9 @@
 
 #include "py/obj.h"
 
+#define MP_PARSE_PARSING_ARGLIST    (0x1)
+#define MP_PARSE_IS_PARSING_ARGLIST(parser) (((parser)->cur_view) & MP_PARSE_PARSING_ARGLIST)
+
 struct _mp_lexer_t;
 
 // a mp_parse_node_t is:
