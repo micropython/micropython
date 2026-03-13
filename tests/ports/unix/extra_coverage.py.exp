@@ -45,6 +45,7 @@ m_tracked_head = 0
 5 1
 6 1
 7 1
+1
 0 1
 1 1
 2 1
@@ -54,6 +55,13 @@ m_tracked_head = 0
 6 1
 7 1
 m_tracked_head = 0
+# tracked realloc
+grow preserves data: 1
+shrink preserves data: 1
+realloc gc stable: 1
+realloc(NULL) ok: 1
+realloc(ptr, 0) returns NULL: 1
+m_tracked_head after cleanup: 0
 # vstr
 tests
 sts
