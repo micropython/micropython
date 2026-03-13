@@ -99,8 +99,8 @@ void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, size_t 
     #else
     qstr source_file = cm->source_file;
     #endif
-    mp_printf(print, "File %s, code block '%s' (descriptor: %p, bytecode @%p %u bytes)\n",
-        qstr_str(source_file), qstr_str(block_name), rc, ip_start, (unsigned)fun_data_len);
+    mp_printf(print, "File %q, code block '%q' (descriptor: %p, bytecode @%p %u bytes)\n",
+        source_file, block_name, rc, ip_start, (unsigned)fun_data_len);
 
     // raw bytecode dump
     size_t prelude_size = ip - ip_start + n_info + n_cell;
@@ -121,7 +121,7 @@ void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, size_t 
         #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
         qst = cm->qstr_table[qst];
         #endif
-        mp_printf(print, " %s", qstr_str(qst));
+        mp_printf(print, " %q", qst);
     }
     mp_printf(print, "\n");
 
@@ -189,7 +189,7 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
 
         case MP_BC_LOAD_CONST_STRING:
             DECODE_QSTR;
-            mp_printf(print, "LOAD_CONST_STRING '%s'", qstr_str(qst));
+            mp_printf(print, "LOAD_CONST_STRING '%q'", qst);
             break;
 
         case MP_BC_LOAD_CONST_OBJ:
@@ -214,27 +214,27 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
 
         case MP_BC_LOAD_NAME:
             DECODE_QSTR;
-            mp_printf(print, "LOAD_NAME %s", qstr_str(qst));
+            mp_printf(print, "LOAD_NAME %q", qst);
             break;
 
         case MP_BC_LOAD_GLOBAL:
             DECODE_QSTR;
-            mp_printf(print, "LOAD_GLOBAL %s", qstr_str(qst));
+            mp_printf(print, "LOAD_GLOBAL %q", qst);
             break;
 
         case MP_BC_LOAD_ATTR:
             DECODE_QSTR;
-            mp_printf(print, "LOAD_ATTR %s", qstr_str(qst));
+            mp_printf(print, "LOAD_ATTR %q", qst);
             break;
 
         case MP_BC_LOAD_METHOD:
             DECODE_QSTR;
-            mp_printf(print, "LOAD_METHOD %s", qstr_str(qst));
+            mp_printf(print, "LOAD_METHOD %q", qst);
             break;
 
         case MP_BC_LOAD_SUPER_METHOD:
             DECODE_QSTR;
-            mp_printf(print, "LOAD_SUPER_METHOD %s", qstr_str(qst));
+            mp_printf(print, "LOAD_SUPER_METHOD %q", qst);
             break;
 
         case MP_BC_LOAD_BUILD_CLASS:
@@ -257,17 +257,17 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
 
         case MP_BC_STORE_NAME:
             DECODE_QSTR;
-            mp_printf(print, "STORE_NAME %s", qstr_str(qst));
+            mp_printf(print, "STORE_NAME %q", qst);
             break;
 
         case MP_BC_STORE_GLOBAL:
             DECODE_QSTR;
-            mp_printf(print, "STORE_GLOBAL %s", qstr_str(qst));
+            mp_printf(print, "STORE_GLOBAL %q", qst);
             break;
 
         case MP_BC_STORE_ATTR:
             DECODE_QSTR;
-            mp_printf(print, "STORE_ATTR %s", qstr_str(qst));
+            mp_printf(print, "STORE_ATTR %q", qst);
             break;
 
         case MP_BC_STORE_SUBSCR:
@@ -286,12 +286,12 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
 
         case MP_BC_DELETE_NAME:
             DECODE_QSTR;
-            mp_printf(print, "DELETE_NAME %s", qstr_str(qst));
+            mp_printf(print, "DELETE_NAME %q", qst);
             break;
 
         case MP_BC_DELETE_GLOBAL:
             DECODE_QSTR;
-            mp_printf(print, "DELETE_GLOBAL %s", qstr_str(qst));
+            mp_printf(print, "DELETE_GLOBAL %q", qst);
             break;
 
         case MP_BC_DUP_TOP:
@@ -506,12 +506,12 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
 
         case MP_BC_IMPORT_NAME:
             DECODE_QSTR;
-            mp_printf(print, "IMPORT_NAME '%s'", qstr_str(qst));
+            mp_printf(print, "IMPORT_NAME '%q'", qst);
             break;
 
         case MP_BC_IMPORT_FROM:
             DECODE_QSTR;
-            mp_printf(print, "IMPORT_FROM '%s'", qstr_str(qst));
+            mp_printf(print, "IMPORT_FROM '%q'", qst);
             break;
 
         case MP_BC_IMPORT_STAR:
@@ -527,10 +527,10 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
                 mp_printf(print, "STORE_FAST " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_STORE_FAST_MULTI);
             } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NUM_BYTECODE) {
                 mp_uint_t op = ip[-1] - MP_BC_UNARY_OP_MULTI;
-                mp_printf(print, "UNARY_OP " UINT_FMT " %s", op, qstr_str(mp_unary_op_method_name[op]));
+                mp_printf(print, "UNARY_OP " UINT_FMT " %q", op, (qstr)mp_unary_op_method_name[op]);
             } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE) {
                 mp_uint_t op = ip[-1] - MP_BC_BINARY_OP_MULTI;
-                mp_printf(print, "BINARY_OP " UINT_FMT " %s", op, qstr_str(mp_binary_op_method_name[op]));
+                mp_printf(print, "BINARY_OP " UINT_FMT " %q", op, (qstr)mp_binary_op_method_name[op]);
             } else {
                 mp_printf(print, "code %p, byte code 0x%02x not implemented\n", ip - 1, ip[-1]);
                 assert(0);
