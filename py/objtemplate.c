@@ -152,9 +152,9 @@ static mp_obj_t mp_obj_template_make_new(const mp_obj_type_t *type, size_t n_arg
 static void mp_obj_template_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_template_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "%q(%q=", MP_QSTR_Template, MP_QSTR_strings);
+    mp_printf(print, "%q(%q=", (qstr)MP_QSTR_Template, (qstr)MP_QSTR_strings);
     mp_obj_print_helper(print, self->strings, PRINT_REPR);
-    mp_printf(print, ", %q=", MP_QSTR_interpolations);
+    mp_printf(print, ", %q=", (qstr)MP_QSTR_interpolations);
     mp_obj_print_helper(print, self->interpolations, PRINT_REPR);
     mp_print_str(print, ")");
 }
@@ -346,7 +346,7 @@ static mp_obj_t mp_obj_interpolation_make_new(const mp_obj_type_t *type, size_t 
 static void mp_obj_interpolation_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_interpolation_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "%q(", MP_QSTR_Interpolation);
+    mp_printf(print, "%q(", (qstr)MP_QSTR_Interpolation);
     mp_obj_print_helper(print, self->value, PRINT_REPR);
     mp_print_str(print, ", ");
     mp_obj_print_helper(print, self->expression, PRINT_REPR);
