@@ -14,6 +14,11 @@ TOP := $(patsubst %/py/mkenv.mk,%,$(THIS_MAKEFILE))
 
 include $(TOP)/py/verbose.mk
 
+# depend_var is a function that can be used to add a virtual dependency
+# to a target based on the given make variable.
+# eg. $(OBJ): $(call depend_var, MY_VAR)
+depend_var = $(BUILD)/dependvar/$(strip $(1))+$(shell echo $($(strip $(1))) | md5sum | cut -d ' ' -f 1)
+
 # default settings; can be overridden in main Makefile
 
 PY_SRC ?= $(TOP)/py
