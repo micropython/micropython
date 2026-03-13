@@ -52,7 +52,7 @@ typedef struct _mp_obj_type_t mp_obj_type_t;
 // Anything that wants to be a concrete MicroPython object must have mp_obj_base_t
 // as its first member (small ints, qstr objs and inline floats are not concrete).
 struct _mp_obj_base_t {
-    const mp_obj_type_t *type MICROPY_OBJ_BASE_ALIGNMENT;
+    const mp_obj_type_t *type MICROPY_OBJ_BASE_ALIGNMENT_ATTR;
 };
 typedef struct _mp_obj_base_t mp_obj_base_t;
 
