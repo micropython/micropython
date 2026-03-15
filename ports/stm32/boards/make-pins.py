@@ -319,8 +319,10 @@ class Stm32PinGenerator(boardgen.PinGenerator):
                     "    #if defined({:s})".format(CONDITIONAL_VAR[af_fn].format(num=af_unit)),
                     file=out_af_const,
                 )
+            # For CAN, use FDCAN in the GPIO constant name (for STM32G0/etc compat).
+            gpio_name = name.replace("_CAN", "_FDCAN")
             print(
-                "    {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_INT(GPIO_{:s}) }},".format(name, name),
+                "    {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_INT(GPIO_{:s}) }},".format(name, gpio_name),
                 file=out_af_const,
             )
             if af_fn in CONDITIONAL_VAR:
