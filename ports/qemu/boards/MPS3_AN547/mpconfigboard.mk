@@ -5,6 +5,7 @@ CFLAGS += -mthumb -mcpu=cortex-m55 -mfloat-abi=hard -mfpu=fpv5-d16
 CFLAGS += -DQEMU_SOC_MPS3
 CFLAGS += -DMICROPY_HW_MCU_NAME='"Cortex-M55"'
 CFLAGS += -DCPU_FREQ_HZ=32000000
+CFLAGS += -DMICROPY_HW_ROMFS_ENABLE_PART0=1
 
 LDSCRIPT = mcu/arm/mps3.ld
 

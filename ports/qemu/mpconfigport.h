@@ -67,7 +67,7 @@
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_ROM             (1)
-#define MICROPY_VFS_ROM_IOCTL       (0)
+#define MICROPY_VFS_ROM_IOCTL       (MICROPY_HW_ROMFS_ENABLE_PART0 || MICROPY_HW_ROMFS_ENABLE_PART1)
 
 // type definitions for the specific machine
 
