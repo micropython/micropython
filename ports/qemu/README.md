@@ -166,6 +166,7 @@ The following options can be specified on the `make` command line:
 - `QEMU_DEBUG_ARGS`: defaults to `-s` (gdb on TCP port 1234), but can be overridden
   with different qemu gdb arguments.
 - `QEMU_DEBUG_EXTRA`: extra options to pass to qemu when `QEMU_DEBUG=1` is used.
+- `QEMU_ROMFS_IMG<n>`: pass in romfs image to be loaded by qemu (if enabled by the board).
 - `TEST_NATMODS`: pass an optional list of space-separated names of natmods to test,
   so only the given subset of example natmods will be used by `test_natmod` (for
   example, `make test_natmod TEST_NATMODS="btree heapq re"`).
