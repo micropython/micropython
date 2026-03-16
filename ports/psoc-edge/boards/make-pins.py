@@ -1,3 +1,4 @@
+from operator import add
 import os
 import sys
 from collections import defaultdict, namedtuple
@@ -112,17 +113,25 @@ class PSE84Pin(boardgen.Pin):
         self._afs.append(pin_af)
 
     def add_af(self, af_idx, af_name, af):
-        if af_idx > 19:
+        # The AF index matches the column index for the ACTx functions 0-15
+        # while for DSx functions the columns 16-19 are mapped to DS2-DS5 respectively.
+        af_act_max_idx = 15
+        af_ds_num = 4
+
+        if af_idx > af_act_max_idx + af_ds_num:
             return
 
-        if af_idx <= 15:
+        if af_idx <= af_act_max_idx:
             if af_name != "ACT_{:d}".format(af_idx):
                 raise boardgen.PinGeneratorError(
                     "Invalid AF column name '{:s}' for AF index {:d}.".format(af_name, af_idx)
                 )
 
-        if af_idx > 15:
-            format_idx = af_idx - 15 + 1  # DS2 to DS5  are valid
+        if af_idx > af_act_max_idx:
+            format_idx = (
+                af_idx - af_act_max_idx + 1
+            )  # The starting index is 2, so we need to subtract
+            # the max ACTx index and add 1 to get the correct DS index.
             if af_name != "DS_{:d}".format(format_idx):
                 raise boardgen.PinGeneratorError(
                     "Invalid AF column name '{:s}' for AF index {:d}.".format(af_name, af_idx)
