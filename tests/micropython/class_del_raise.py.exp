@@ -1,0 +1,20 @@
+Unhandled exception in finaliser:
+Traceback (most recent call last):
+  File "\.\+", line \.\+, in __del__
+Exception: 1
+Unhandled exception in finaliser:
+Traceback (most recent call last):
+  File "\.\+", line \.\+, in __del__
+Exception: 2
+Unhandled exception in finaliser:
+Traceback (most recent call last):
+  File "\.\+", line \.\+, in __del__
+Exception: 3
+Unhandled exception in finaliser:
+Traceback (most recent call last):
+  File "\.\+", line \.\+, in __del__
+Exception: 4
+Unhandled exception in finaliser:
+Traceback (most recent call last):
+  File "\.\+", line \.\+, in __del__
+Exception: 5
