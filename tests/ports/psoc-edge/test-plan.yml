@@ -1,0 +1,5 @@
+- name: no-extended-hardware
+  test: 
+    script: ports/psoc-edge/board_only_hw/single
+    device: 
+      - board: KIT_PSE84_AI
