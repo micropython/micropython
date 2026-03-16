@@ -32,10 +32,6 @@
 #include "genhdr/pins_af.h"
 #include "machine_scb.h"
 
-#define scb_irq_assert_raise_val(msg, ret)   if (ret != CY_SYSINT_SUCCESS) { \
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
-}
-
 /* Forward declaration */
 static void machine_scb_irq_handler(uint8_t scb);
 
