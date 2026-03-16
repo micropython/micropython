@@ -222,6 +222,15 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     return len;
 }
 
+void machine_hw_i2c_deinit_all(void) {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++)
+    {
+        if (machine_hw_i2c_obj[i] != NULL) {
+            machine_hw_i2c_deinit((mp_obj_base_t *)machine_hw_i2c_obj[i]);
+        }
+    }
+}
+
 /******************************************************************************/
 // MicroPython bindings for machine API
 
