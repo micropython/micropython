@@ -1,0 +1,24 @@
+--- instance0 ---
+ap instance created
+ap config get channel:  True
+ap config get ssid:  True
+ap config get security:  True
+network conf password only queryable for default password
+ap is activated
+ap ip settings:  True
+ > yield station
+ap has clients:  True
+ap status has stations:  True
+<IFX WCM AP up 10.20.0.1>
+--- instance1 ---
+sta instance created
+sta attempt connection to ap
+sta is (now) active:  True
+sta is (now) connected:  True
+sta assoc ap channel config:  True
+sta assoc ap ssid config:  True
+sta assoc ap security config:  True
+network access point required
+sta ip settings:  True
+network access point required
+<IFX WCM STA joined 10.20.0.2>
