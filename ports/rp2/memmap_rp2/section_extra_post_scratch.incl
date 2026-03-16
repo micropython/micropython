@@ -1,0 +1,9 @@
+/* Overrides the following symbols for use by code:
+    __HeapLimit
+*/
+
+SECTIONS
+{
+    /* Change for MicroPython: reduce __HeapLimit, to reduce reported firmware size. */
+    __HeapLimit = ADDR(.heap) + SIZEOF(.heap);
+}

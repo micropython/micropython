@@ -1,0 +1,26 @@
+/* Defines/overrides the following symbols for use by code:
+    __GcHeapStart, __GcHeapEnd
+    __StackLimit
+    __StackBottom
+*/
+
+SECTIONS
+{
+    /* Change for MicroPython: set __StackLimit to end of heap */
+    __StackLimit = __bss_end__ + __micropy_c_heap_size__;
+
+    /* Define start and end of GC heap */
+    __GcHeapStart = __StackLimit; /* after the C heap (sbrk limit) */
+    __GcHeapEnd = ORIGIN(RAM) + LENGTH(RAM) - __micropy_extra_stack__;
+
+    /* Change for MicroPython: expand C stack down to __GcHeapEnd */
+    __StackBottom = __GcHeapEnd;
+
+    /* Check GC heap is at least 64 KB */
+    /* This is half the minimum RAM suggested for full-featured MicroPython.
+     * This value accounts for large static buffers included in user C or C++
+     * modules, which might significantly reduce the available heap but also
+     * lower demand for memory at runtime.
+     */
+    ASSERT((__GcHeapEnd - __GcHeapStart) > 64*1024, "GcHeap is too small")
+}
