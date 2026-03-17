@@ -333,6 +333,12 @@ static mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int flags = 0;
 
+    bool is_sendall = false;
+    if (n_args < 2) {
+        is_sendall = true;
+        n_args += 2;
+    }
+
     if (n_args > 2) {
         flags = mp_obj_get_int(args[2]);
     }
@@ -342,9 +348,18 @@ static mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
     ssize_t out_sz;
     MP_HAL_RETRY_SYSCALL(out_sz, send(self->fd, bufinfo.buf, bufinfo.len, flags),
         mp_raise_OSError(err));
+    if (is_sendall && ((size_t)out_sz != bufinfo.len)) {
+        mp_raise_OSError(MP_EINTR);
+    }
     return MP_OBJ_NEW_SMALL_INT(out_sz);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
+
+static mp_obj_t socket_sendall(size_t n_args, const mp_obj_t *args) {
+    socket_send(n_args - 2, args);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_sendall_obj, 2, 3, socket_sendall);
 
 static mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -511,6 +526,7 @@ static const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socket_sendall_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
