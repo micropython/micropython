@@ -243,12 +243,10 @@ no adaptation (but see below). It is invoked by means of a function decorator:
 
 There are certain limitations in the current implementation of the native code emitter.
 
-* Context managers are not supported (the ``with`` statement).
-* Generators are not supported.
 * If ``raise`` is used an argument must be supplied.
 * The background scheduler (see `micropython.schedule`) is not run during
   execution of native code.
-* On targets with thrteading and the GIL, the GIL is not released during
+* On targets with threading and the GIL, the GIL is not released during
   execution of native code.
 
 To mitigate the last two points, long running native functions should call
