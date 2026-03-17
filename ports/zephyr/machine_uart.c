@@ -265,7 +265,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
 static void uart_interrupt_handler(const struct device *dev, void *user_data) {
     machine_uart_obj_t *self = (machine_uart_obj_t *)user_data;
 
-    while (uart_irq_update(dev) && uart_irq_is_pending(dev)) {
+    while (uart_irq_update(dev), uart_irq_is_pending(dev)) {
         if (uart_irq_rx_ready(dev)) {
             uint8_t _rx_buffer[32];
             size_t _free_space = MIN(ringbuf_free(&self->rx_ringbuffer), sizeof(_rx_buffer));
