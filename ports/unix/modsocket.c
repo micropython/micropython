@@ -166,6 +166,9 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 if (pfd.revents & POLLIN) {
                     ret |= MP_STREAM_POLL_RD;
                 }
+                if (pfd.revents & POLLPRI) {
+                    ret |= MP_STREAM_POLL_PRI;
+                }
                 if (pfd.revents & POLLOUT) {
                     ret |= MP_STREAM_POLL_WR;
                 }
@@ -702,6 +705,9 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     C(MSG_DONTROUTE),
     C(MSG_DONTWAIT),
     C(MSG_PEEK),
+    #if !defined(__APPLE__)
+    C(MSG_OOB),
+    #endif
 
     C(SOL_SOCKET),
     C(SO_BROADCAST),
