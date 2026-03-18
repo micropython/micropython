@@ -86,3 +86,9 @@
 #define MICROPY_HW_CAN1_NAME        "FDCAN1"
 #define MICROPY_HW_CAN1_TX          (pin_A12) // A12, B9, D1
 #define MICROPY_HW_CAN1_RX          (pin_A11) // A11, B8, D0
+
+#define MICROPY_HW_CAN2_NAME        "FDCAN2"
+#define MICROPY_HW_CAN2_TX          (pin_B13) // B13, B6
+#define MICROPY_HW_CAN2_RX          (pin_B12) // B12, B5
+
+// Note: This MCU has an FDCAN3 peripheral, but not currently supported in MicroPython
