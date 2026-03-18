@@ -1,10 +1,7 @@
 # Test machine.PWM, frequency and duty cycle (using machine.time_pulse_us).
 #
 # IMPORTANT: This test requires hardware connections: the PWM-output and pulse-input
-# pins must be wired together (see the variable `pwm_pulse_pins`).
-
-import sys
-import time
+# pins must be wired together (see the variable `pwm_loopback_pins`).
 
 try:
     from machine import time_pulse_us, Pin, PWM
@@ -12,48 +9,34 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-import unittest
+import machine, sys, time, unittest
+from target_wiring import pwm_loopback_pins
 
 pwm_freq_limit = 1000000
 freq_margin_per_thousand = 0
 duty_margin_per_thousand = 0
 timing_margin_us = 5
 
-# Configure pins based on the target.
-if "alif" in sys.platform:
-    pwm_pulse_pins = (("P0_4", "P0_5"),)
-elif "esp32" in sys.platform:
-    pwm_pulse_pins = ((4, 5),)
+# Slow MCUs cannot capture short pulses using `time_pulse_us` so limit the maximum PWM
+# frequency tested on such targets.
+if hasattr(machine, "freq"):
+    f = machine.freq()
+    if isinstance(f, tuple):
+        f = f[0]
+    if f <= 48_000_000:
+        pwm_freq_limit = 2_000
+    elif f <= 64_000_000:
+        pwm_freq_limit = 5_000
+
+# Tune test parameters based on the target.
+if "esp32" in sys.platform:
     freq_margin_per_thousand = 2
     duty_margin_per_thousand = 1
     timing_margin_us = 20
 elif "esp8266" in sys.platform:
-    pwm_pulse_pins = ((4, 5),)
     pwm_freq_limit = 1_000
     duty_margin_per_thousand = 3
     timing_margin_us = 50
-elif "mimxrt" in sys.platform:
-    if "Teensy" in sys.implementation._machine:
-        # Teensy 4.x
-        pwm_pulse_pins = (
-            ("D0", "D1"),  # FLEXPWM X and UART 1
-            ("D2", "D3"),  # FLEXPWM A/B
-            ("D11", "D12"),  # QTMR and MOSI/MISO of SPI 0
-        )
-    else:
-        pwm_pulse_pins = (("D0", "D1"),)
-elif "pyboard" in sys.platform:
-    pwm_pulse_pins = ((Pin.cpu.A0, Pin.cpu.A1),)
-elif "rp2" in sys.platform:
-    pwm_pulse_pins = (("GPIO0", "GPIO1"),)
-elif "samd" in sys.platform:
-    pwm_pulse_pins = (("D0", "D1"),)
-    if "SAMD21" in sys.implementation._machine:
-        # MCU is too slow to capture short pulses.
-        pwm_freq_limit = 2_000
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
 
 
 # Test a specific frequency and duty cycle.
@@ -160,7 +143,7 @@ class TestBase:
 
 
 # Generate test classes, one for each set of pins to test.
-for pwm, pulse in pwm_pulse_pins:
+for pwm, pulse in pwm_loopback_pins:
     cls_name = "Test_{}_{}".format(pwm, pulse)
     globals()[cls_name] = type(
         cls_name, (TestBase, unittest.TestCase), {"pwm_pin": pwm, "pulse_pin": pulse}

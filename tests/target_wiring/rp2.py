@@ -7,3 +7,5 @@ uart_loopback_args = (0,)
 uart_loopback_kwargs = {"tx": "GPIO0", "rx": "GPIO1"}
 
 spi_standalone_args_list = [(0,), (1,)]
+
+pwm_loopback_pins = [("GPIO0", "GPIO1")]

@@ -48,6 +48,20 @@ SPI instances will be created using:
     for spi_args in spi_standalone_args_list:
         machine.SPI(*spi_args)
 
+### PWM tests
+
+PWM tests require a PWM output to be connected in loopback mode to another GPIO pin
+that will use `machine.time_pulse_us()` to time the PWM output signal.  The variables
+are:
+
+    pwm_loopback_pins: list[tuple[Any, Any]]
+
+The PWM and input Pin instances will be created using:
+
+    for pwm_pin, pulse_pin in pwm_loopback_pins:
+        machine.PWM(pwm_pin)
+        machine.Pin(pulse_pin, Pin.IN)
+
 ### Encoder tests
 
 Encoder tests require one encoder to be connected in loopback mode to two other GPIO

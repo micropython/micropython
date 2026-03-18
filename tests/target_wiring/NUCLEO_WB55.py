@@ -8,3 +8,5 @@ uart_loopback_args = ("LP1",)
 uart_loopback_kwargs = {}
 
 spi_standalone_args_list = [(1,), (2,)]
+
+pwm_loopback_pins = [("D1", "D0")]

@@ -12,3 +12,5 @@ spi_standalone_args_list = [(1,), (2,)]
 # CAN args assume no connection for single device tests
 can_args = (1,)
 can_kwargs = {}
+
+pwm_loopback_pins = [("X1", "X2")]
