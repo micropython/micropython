@@ -273,8 +273,9 @@ static mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     #else
     // Init filter banks for classic CAN.
     can2_start_bank = args[ARG_num_filter_banks].u_int;
+    int bank_offs = (self->can_id == 2) ? can2_start_bank : 0;
     for (int f = 0; f < CAN_MAX_FILTER; f++) {
-        can_clearfilter(&self->can, f, can2_start_bank);
+        can_clearfilter(&self->can, f + bank_offs, can2_start_bank);
     }
     #endif
 
