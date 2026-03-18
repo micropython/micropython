@@ -1,6 +1,6 @@
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME                   "Soldered NULA RP2350"
-#define MICROPY_HW_FLASH_STORAGE_BYTES          (14 * 1024 *1024)
+#define MICROPY_HW_FLASH_STORAGE_BYTES          (14 * 1024 * 1024)
 
 // Enable networking.
 #define MICROPY_PY_NETWORK 1
