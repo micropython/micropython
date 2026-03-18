@@ -90,7 +90,6 @@ typedef enum {
 bool can_init(CAN_HandleTypeDef *can, int can_id, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart);
 void can_deinit(CAN_HandleTypeDef *can);
 
-void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, uint8_t bank);
 int can_receive(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
 HAL_StatusTypeDef can_transmit(CAN_HandleTypeDef *hcan, CanTxMsgTypeDef *txmsg, uint8_t *data, uint32_t Timeout);
 
@@ -111,11 +110,15 @@ static inline unsigned can_rx_pending(CAN_HandleTypeDef *can, can_rx_fifo_t fifo
     return HAL_FDCAN_GetRxFifoFillLevel(can, fifo == CAN_RX_FIFO0 ? FDCAN_RX_FIFO0 : FDCAN_RX_FIFO1);
 }
 
+void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, bool is_extid);
+
 #else
 
 static inline unsigned can_rx_pending(CAN_HandleTypeDef *can, can_rx_fifo_t fifo) {
     return __HAL_CAN_MSG_PENDING(can, fifo == CAN_RX_FIFO0 ? CAN_FIFO0 : CAN_FIFO1);
 }
+
+void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, uint8_t can2_start_bank);
 
 #endif // MICROPY_HW_ENABLE_FDCAN
 

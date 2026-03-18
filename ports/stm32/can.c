@@ -152,7 +152,7 @@ void can_enable_rx_interrupts(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, bool e
         ((enable_msg_received ? CAN_IT_FMP1 : 0) | CAN_IT_FF1 | CAN_IT_FOV1)));
 }
 
-void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, uint8_t bank) {
+void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, uint8_t can2_start_bank) {
     CAN_FilterConfTypeDef filter;
 
     filter.FilterIdHigh = 0;
@@ -164,7 +164,7 @@ void can_clearfilter(CAN_HandleTypeDef *can, uint32_t filter_num, uint8_t bank) 
     filter.FilterMode = CAN_FILTERMODE_IDMASK;
     filter.FilterScale = CAN_FILTERSCALE_16BIT;
     filter.FilterActivation = DISABLE;
-    filter.BankNumber = bank;
+    filter.BankNumber = can2_start_bank;
 
     HAL_CAN_ConfigFilter(can, &filter);
 }
