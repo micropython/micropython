@@ -2,6 +2,7 @@
 
 try:
     from cexample import AdvancedTimer
+    import time
 except ImportError:
     print("SKIP")
     raise SystemExit

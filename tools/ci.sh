@@ -294,7 +294,7 @@ function ci_esp8266_build {
     make ${MAKEOPTS} -C ports/esp8266 submodules
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_512K
-    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_1M
+    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_1M USER_C_MODULES=../../examples/usercmodule
 
     # Test building native .mpy with xtensa architecture.
     ci_native_mpy_modules_build xtensa
@@ -331,7 +331,7 @@ function ci_mimxrt_build {
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 submodules
-    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK CFLAGS_EXTRA=-DMICROPY_HW_USB_MSC=1
 }
@@ -469,7 +469,7 @@ function ci_renesas_ra_board_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/renesas-ra submodules
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA4M1_CLICKER
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M2
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M2 USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M1
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4M1
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4W1
@@ -702,7 +702,7 @@ function ci_native_mpy_modules_32bit_build {
 }
 
 function ci_unix_minimal_build {
-    make ${MAKEOPTS} -C ports/unix VARIANT=minimal
+    make ${MAKEOPTS} -C ports/unix VARIANT=minimal USER_C_MODULES=../../examples/usercmodule
 }
 
 function ci_unix_minimal_run_tests {
@@ -736,6 +736,7 @@ function ci_unix_coverage_setup {
 }
 
 function ci_unix_coverage_build {
+    # note: the coverage variant incorporates ../../examples/usercmodule, set in mpconfigvariant.mk
     ci_unix_build_helper VARIANT=coverage
     ci_unix_build_ffi_lib_helper gcc
 }
@@ -994,13 +995,13 @@ function ci_unix_repr_b_run_tests {
 
 function ci_windows_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mingw-w64
+    sudo apt-get install gcc-mingw-w64 g++-mingw-w64
 }
 
 function ci_windows_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/windows submodules
-    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+    make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32- USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=x86_64-w64-mingw32- BUILD=build-standard-w64
 }
 
