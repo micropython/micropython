@@ -248,15 +248,12 @@ void can_deinit(FDCAN_HandleTypeDef *can) {
     }
 }
 
-void can_clearfilter(FDCAN_HandleTypeDef *can, uint32_t f, uint8_t extid) {
-    FDCAN_FilterTypeDef filter = {0};
-    if (extid == 1) {
-        filter.IdType = FDCAN_EXTENDED_ID;
-    } else {
-        filter.IdType = FDCAN_STANDARD_ID;
-    }
-    filter.FilterIndex = f;
-    filter.FilterConfig = FDCAN_FILTER_DISABLE;
+void can_clearfilter(FDCAN_HandleTypeDef *can, uint32_t f, bool is_extid) {
+    FDCAN_FilterTypeDef filter = {
+        .IdType = is_extid ? FDCAN_EXTENDED_ID : FDCAN_STANDARD_ID,
+        .FilterIndex = f,
+        .FilterConfig = FDCAN_FILTER_DISABLE,
+    };
     HAL_FDCAN_ConfigFilter(can, &filter);
 }
 
