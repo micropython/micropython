@@ -106,26 +106,25 @@
 
 // Machine module
 #define MICROPY_PY_MACHINE                      (1)
-// Use extmod's modmachine.c which includes I2CTarget
+
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
+
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (0)
 
-// I2C Target support (requires GC and Scheduler for IRQ framework)
 #define MICROPY_PY_MACHINE_I2C_TARGET           (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/psoc-edge/machine_i2c_target.c"
+
+#define MICROPY_PY_MACHINE_PDM_PCM              (1)
+#define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
+#define MICROPY_PY_MACHINE_PDM_PCM_INCLUDEFILE  "machine_pdm_pcm.c"
+
 #define MICROPY_ENABLE_SCHEDULER                (1)
 #define MICROPY_SCHEDULER_DEPTH                 (8)
 
 #define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
-
-#define MICROPY_PY_MACHINE                      (1)
-#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
-#define MICROPY_PY_MACHINE_PDM_PCM              (1)
-#define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
-
-#define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 
 // VFS
 #define MICROPY_VFS                             (1)         // Can be removed once we add #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)

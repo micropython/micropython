@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2025 Infineon Technologies AG
+ * Copyright (c) 2026 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,366 +25,129 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
+#include <math.h>
+#include "cy_pdl.h"
+#include "cybsp.h"
 
-#include "py/runtime.h"
+#include "sys_int.h"
+
+#include "extmod/vfs.h"
 #include "py/stream.h"
-#include "py/mphal.h"
-#include "py/ringbuf.h"
-#include "modmachine.h"
-#include "mphalport.h"
-#include "mplogger.h"
-#include "cycfg_pins.h"
+#include "py/runtime.h"
 
-#if MICROPY_PY_MACHINE_PDM_PCM
-#include "machine_pdm_pcm.h"
-#include "cy_sysclk.h"
 
-#if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
-
-static uint8_t channel_index = RIGHT_CH_INDEX;
-
-static cy_stc_pdm_pcm_channel_config_t channel_config = {
-    .sampledelay = 1,
-    .wordSize = CY_PDM_PCM_WSIZE_16_BIT,
-    .signExtension = true,
-    .rxFifoTriggerLevel = 31,
-    .fir0_enable = false,
-    .cic_decim_code = CY_PDM_PCM_CHAN_CIC_DECIM_32,
-    .fir0_decim_code = CY_PDM_PCM_CHAN_FIR0_DECIM_1,
-    .fir0_scale = 0,
-    .fir1_decim_code = CY_PDM_PCM_CHAN_FIR1_DECIM_3,
-    .fir1_scale = 10,
-    .dc_block_disable = false,
-    .dc_block_code = CY_PDM_PCM_CHAN_DCBLOCK_CODE_16,
-};
-
-static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_info_t *appbuf) {
-    uint32_t num_bytes_copied_to_appbuf = 0;
-    uint8_t *app_p = (uint8_t *)appbuf->buf;
-    uint8_t appbuf_sample_size_in_bytes = (self->bits == 16? 2 : 3) * (self->format == STEREO ? 2: 1);
-    uint32_t num_bytes_needed_from_ringbuf = appbuf->len * (PDM_PCM_RX_FRAME_SIZE_IN_BYTES / appbuf_sample_size_in_bytes);
-    while (num_bytes_needed_from_ringbuf) {
-
-        uint8_t f_index = get_frame_mapping_index(self->bits, self->format);
-
-        for (uint8_t i = 0; i < PDM_PCM_RX_FRAME_SIZE_IN_BYTES; i++) {
-            int8_t r_to_a_mapping = pdm_pcm_frame_map[f_index][i];
-            if (r_to_a_mapping != -1) {
-                if (self->io_mode == BLOCKING) {
-                    int data;
-                    while ((data = ringbuf_get(&self->ring_buffer)) == -1) {
-                        ;
-                    }
-                    app_p[r_to_a_mapping] = (uint8_t)data;
-                    num_bytes_copied_to_appbuf++;
-                } else {
-                    return 0;  // should never get here (non-blocking mode does not use this function)
-                }
-            } else { // r_a_mapping == -1
-                // discard unused byte from ring buffer
-                if (self->io_mode == BLOCKING) {
-                    // poll the ringbuf until a sample becomes available
-                    while (ringbuf_get(&self->ring_buffer) == -1) {
-                        ;
-                    }
-                } else {
-                    return 0;  // should never get here (non-blocking mode does not use this function)
-                }
-            }
-            num_bytes_needed_from_ringbuf--;
-        }
-        app_p += appbuf_sample_size_in_bytes;
-    }
-    return num_bytes_copied_to_appbuf;
+#define pdm_pcm_assert_raise_val(msg, ret)   if (ret != CY_PDM_PCM_SUCCESS) { \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
-// Copy from ringbuf to appbuf as soon as ASYNC_TRANSFER_COMPLETE is triggered
-static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) {
-    uint32_t num_bytes_copied_to_appbuf = 0;
-    uint8_t *app_p = &(((uint8_t *)self->non_blocking_descriptor.appbuf.buf)[self->non_blocking_descriptor.index]);
+/* -------------------------------- Rx FIFO Ping-Pong Buffer -------------------------------- */
 
-    uint8_t appbuf_sample_size_in_bytes = (self->bits == 16? 2 : 3) * (self->format == STEREO ? 2: 1);
-    uint32_t num_bytes_remaining_to_copy_to_appbuf = self->non_blocking_descriptor.appbuf.len - self->non_blocking_descriptor.index;
-    uint32_t num_bytes_remaining_to_copy_from_ring_buffer = num_bytes_remaining_to_copy_to_appbuf *
-        (PDM_PCM_RX_FRAME_SIZE_IN_BYTES / appbuf_sample_size_in_bytes);
-    uint32_t num_bytes_needed_from_ringbuf = MIN(SIZEOF_NON_BLOCKING_COPY_IN_BYTES, num_bytes_remaining_to_copy_from_ring_buffer);
-    if (ringbuf_avail(&self->ring_buffer) >= num_bytes_needed_from_ringbuf) {
-        while (num_bytes_needed_from_ringbuf) {
+/**
+ * Number of FIFO frames that will be stored
+ * in each half of the ping-pong buffer.
+ */
+#define NUM_OF_RX_HW_FIFO_FRAMES_IN_RX_BUFFER         16
+#define NUM_OF_RX_HW_FIFO_FRAMES_IN_HALF_RX_BUFFER    (NUM_OF_RX_HW_FIFO_FRAMES_IN_RX_BUFFER / 2)
 
-            uint8_t f_index = get_frame_mapping_index(self->bits, self->format);
+/**
+ * The PDM PCM peripheral has hardware FIFO capable
+ * of up to 64 samples.
+ * The IRQ trigger level is set to half of the FIFO size.
+ * That way we can process the samples when the FIFO is
+ * half full, ensuring that we read the samples before the
+ * FIFO is full and we lose data.
+ * Each half size FIFO read will compose a frame that will
+ * be added to the ping-pong buffer.
+ * As each sample is considered to be 8 bytes,
+ * a frame match the actual size of the hardware FIFO for
+ * a mono channel, or 2 halves FIFO for stereo.
+ */
+#define MAX_SAMPLES_RX_HW_FIFO                 64
+#define NUM_OF_SAMPLES_IN_RX_HW_FIFO_FRAME     32
+#define NUM_OF_WORDS_IN_RX_HW_FIFO_FRAME       (NUM_OF_SAMPLES_IN_RX_HW_FIFO_FRAME * 2)
+#define RX_HW_FIFO_IRQ_TRIGGER_LEVEL           (NUM_OF_SAMPLES_IN_RX_HW_FIFO_FRAME)
 
-            for (uint8_t i = 0; i < PDM_PCM_RX_FRAME_SIZE_IN_BYTES; i++) {
-                int8_t r_to_a_mapping = pdm_pcm_frame_map[f_index][i];
-                if (r_to_a_mapping != -1) {
-                    int data = ringbuf_get(&self->ring_buffer);
-                    if (data != -1) {
-                        app_p[r_to_a_mapping] = (uint8_t)data;
-                        num_bytes_copied_to_appbuf++;
-                    }
-                } else { // r_a_mapping == -1
-                    // discard unused byte from ring buffer
-                    ringbuf_get(&self->ring_buffer);
-                }
-                num_bytes_needed_from_ringbuf--;
-            }
-            app_p += appbuf_sample_size_in_bytes;
-        }
-        self->non_blocking_descriptor.index += num_bytes_copied_to_appbuf;
+/**
+ * A ping-pong buffer implementation will store the samples read
+ * from the PDM PCM hardware FIFO.
+ *
+ * Each sample will contain up to 8 bytes of data, being able
+ * to store up to 32-bit stereo samples.
+ * As the buffer is a uint32_t array, each sample will take
+ * 2 positions in the buffer.
+ * In case of mono audio, the odd positions will be empty.
+ *
+ * The buffer is split into two halves.
+ * The active half will be the one used in the IRQ handler to
+ * store the incoming samples from the FIFO.
+ * The processing half will be used to copy the samples
+ * into the ring buffer.
+ *
+ * The ring buffer will be used to transfer the data stream
+ * into the application provided buffer.
+ */
+#define SIZEOF_RX_BUFFER_IN_SAMPLES            (NUM_OF_RX_HW_FIFO_FRAMES_IN_RX_BUFFER * NUM_OF_SAMPLES_IN_RX_HW_FIFO_FRAME)
+#define SIZEOF_RX_BUFFER_IN_WORDS              (SIZEOF_RX_BUFFER_IN_SAMPLES * 2)
+#define SIZEOF_HALF_RX_BUFFER_IN_SAMPLES       (SIZEOF_RX_BUFFER_IN_SAMPLES / 2)
+#define SIZEOF_HALF_RX_BUFFER_IN_WORDS         (SIZEOF_HALF_RX_BUFFER_IN_SAMPLES * 2)
 
-        if (self->non_blocking_descriptor.index >= self->non_blocking_descriptor.appbuf.len) {
-            self->non_blocking_descriptor.copy_in_progress = false;
-            mp_sched_schedule(self->callback_for_non_blocking, MP_OBJ_FROM_PTR(self));
-        }
-    }
-}
-#endif // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+#define SIZEOF_PDM_PCM_SAMPLE_IN_BYTES          8
 
-/*========================================================================================================================*/
-// PDM_PCM higher level MPY functions (extmod/machine_pdm_pcm.c)
+typedef struct _pcm_pdm_rx_fifo_ping_pong_buffer_t {
+    uint32_t rx_fifo_buffer[SIZEOF_RX_BUFFER_IN_WORDS];
+    uint32_t *active_half_rx_fifo_buf_ptr;
+    uint32_t *processing_half_rx_fifo_buf_ptr;
+    volatile uint8_t rx_hw_fifo_frame_count;
+} pcm_pdm_rx_fifo_ping_pong_buffer_t;
 
-static void machine_pdm_pcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print,
-        "PDM_PCM(id=%u,\n"
-        "sample_rate=%ld,\n"
-        "decimation_rate=%d,\n"
-        "bits=%u,\n"
-        "format=%u,\n"
-        "left_gain=%d,\n"
-        "right_gain=%d)",
-        self->pdm_pcm_id,
-        self->sample_rate,
-        self->decimation_rate,
-        self->bits,
-        self->format,
-        self->left_gain,
-        self->right_gain
-        );
-}
-
-// PDM_PCM.init(...)
-static mp_obj_t machine_pdm_pcm_init(mp_obj_t self_in) {
-    mplogger_print("machine_pdm_pcm_init \r\n");
-    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_machine_pdm_pcm_init(self);
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_pdm_pcm_init_obj, machine_pdm_pcm_init);
-
-// PDM_PCM.deinit()
-static mp_obj_t machine_pdm_pcm_deinit(mp_obj_t self_in) {
-    mplogger_print("machine_pdm_pcm_deinit \r\n");
-    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_machine_pdm_pcm_deinit(self);
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_pdm_pcm_deinit_obj, machine_pdm_pcm_deinit);
-
-// PDM_PCM.set_gain()
-static mp_obj_t machine_pdm_pcm_set_gain(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mplogger_print("machine_pdm_pcm_set_gain \r\n");
-
-    enum { ARG_left_gain, ARG_right_gain};
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_left_gain,       MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = DEFAULT_LEFT_GAIN} },
-        { MP_QSTR_right_gain,      MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = DEFAULT_RIGHT_GAIN} }
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-
-    int16_t left_gain = args[ARG_left_gain].u_int;
-    int16_t right_gain = args[ARG_right_gain].u_int;
-
-    int16_t prev_left_gain = self->left_gain;
-    int16_t prev_right_gain = self->right_gain;
-
-    self->left_gain = (left_gain == prev_left_gain) ? prev_left_gain : left_gain;
-    self->right_gain = (right_gain == prev_right_gain) ? prev_right_gain : right_gain;
-
-    mp_machine_pdm_pcm_set_gain(self, left_gain, right_gain);
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pdm_pcm_set_gain_obj, 1, machine_pdm_pcm_set_gain);
-
-// PDM_PCM.irq(handler)
-static mp_obj_t machine_pdm_pcm_irq(mp_obj_t self_in, mp_obj_t handler) {
-    mplogger_print("machine_pdm_pcm_irq \r\n");
-    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
-    }
-
-    if (handler != mp_const_none) {
-        self->io_mode = NON_BLOCKING;
-    } else {
-        self->io_mode = BLOCKING;
-    }
-
-    self->callback_for_non_blocking = handler;
-
-    mp_machine_pdm_pcm_irq_update(self);
-
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_2(machine_pdm_pcm_irq_obj, machine_pdm_pcm_irq);
-
-
-cy_en_pdm_pcm_ch_fir1_decimcode_t pdm_pcm_convert_decim_rate(uint8_t decim_rate) {
-    cy_en_pdm_pcm_ch_fir1_decimcode_t pdl_code = CY_PDM_PCM_CHAN_FIR1_DECIM_1;
-
-    switch (decim_rate)
-    {
-        case 32:
-            pdl_code = CY_PDM_PCM_CHAN_FIR1_DECIM_1;
-            break;
-        case 64:
-            pdl_code = CY_PDM_PCM_CHAN_FIR1_DECIM_2;
-            break;
-        case 96:
-            pdl_code = CY_PDM_PCM_CHAN_FIR1_DECIM_3;
-            break;
-        case 128:
-            pdl_code = CY_PDM_PCM_CHAN_FIR1_DECIM_4;
-            break;
-        default:
-            break;
-    }
-
-    return pdl_code;
+static void pdm_pcm_rx_buffer_init(pcm_pdm_rx_fifo_ping_pong_buffer_t *self) {
+    memset(self->rx_fifo_buffer, 0, sizeof(self->rx_fifo_buffer));
+    self->active_half_rx_fifo_buf_ptr = self->rx_fifo_buffer;
+    self->processing_half_rx_fifo_buf_ptr = &self->rx_fifo_buffer[SIZEOF_HALF_RX_BUFFER_IN_WORDS];
+    self->rx_hw_fifo_frame_count = 0;
 }
 
-// Helper: Configure PDM PCM interrupts
-static void pdm_pcm_configure_interrupts(machine_pdm_pcm_obj_t *self) {
-    mplogger_print("pdm_pcm_configure_interrupts \r\n");
-
-    /* As interrupt is registered for right channel, clear and set masks for it. */
-    Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, channel_index, CY_PDM_PCM_INTR_MASK);
-    Cy_PDM_PCM_Channel_SetInterruptMask(PDM0, channel_index, CY_PDM_PCM_INTR_MASK);
+static inline bool pdm_pcm_rx_buffer_is_half_full(pcm_pdm_rx_fifo_ping_pong_buffer_t *self) {
+    return self->rx_hw_fifo_frame_count == 0;
 }
 
-// Helper: Configure DPLL for audio clock generation
-static cy_rslt_t dpll_lp_configure(uint32_t target_freq) {
-    mplogger_print("dpll_lp_configure \r\n");
-    cy_rslt_t result;
-
-    /* Check if the current DPLL_LP_1 frequency is already set to target */
-    uint32_t current_freq = Cy_SysClk_PllGetFrequency(SRSS_DPLL_LP_1_PATH_NUM);
-    if (current_freq == target_freq) {
-        mplogger_print("DPLL_LP_1 already at target frequency\r\n");
-        return CY_RSLT_SUCCESS;
-    }
-
-    /* Configure DPLL_LP_1 PLL */
-    cy_stc_pll_config_t dpll_config = {
-        .inputFreq = DPLL_INPUT_FREQ_HZ,
-        .outputFreq = target_freq,
-        .outputMode = CY_SYSCLK_FLLPLL_OUTPUT_AUTO,
-        .lfMode = false,
-    };
-
-    /* Disable the DPLL_LP_1 PLL path */
-    Cy_SysClk_PllDisable(SRSS_DPLL_LP_1_PATH_NUM);
-
-    /* Configure the PLL with the specified settings */
-    result = Cy_SysClk_PllConfigure(SRSS_DPLL_LP_1_PATH_NUM, &dpll_config);
-    if (result != CY_SYSCLK_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_ValueError,
-            MP_ERROR_TEXT("DPLL LP1 configuration failed with return code %lx"),
-            result);
-    }
-
-    /* Enable the DPLL_LP_1 PLL path with a timeout */
-    result = Cy_SysClk_PllEnable(SRSS_DPLL_LP_1_PATH_NUM, DPLL_ENABLE_TIMEOUT_MS);
-    if (result != CY_SYSCLK_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_ValueError,
-            MP_ERROR_TEXT("DPLL LP1 enable failed with return code %lx"),
-            result);
-    }
-
-    return CY_RSLT_SUCCESS;
-}
-
-// Helper: Determine appropriate DPLL frequency for sample rate
-static uint32_t pdm_pcm_get_dpll_freq(uint32_t sample_rate) {
-    mplogger_print("pdm_pcm_get_dpll_freq \r\n");
-    switch (sample_rate) {
-        case SAMPLE_RATE_8000:
-        case SAMPLE_RATE_16000:
-        case SAMPLE_RATE_48000:
-            return DPLL_OUTPUT1_FREQ_HZ;
-
-        case SAMPLE_RATE_22050:
-        case SAMPLE_RATE_44100:
-            return DPLL_OUTPUT2_FREQ_HZ;
-
-        default:
-            return 0;  // Invalid sample rate
+static void _pdm_pcm_rx_buffer_update_hw_fifo_frame_counter(pcm_pdm_rx_fifo_ping_pong_buffer_t *self) {
+    self->rx_hw_fifo_frame_count++;
+    if (self->rx_hw_fifo_frame_count == NUM_OF_RX_HW_FIFO_FRAMES_IN_HALF_RX_BUFFER) {
+        self->rx_hw_fifo_frame_count = 0;
     }
 }
 
-// Helper: Calculate optimal clock divider with rounding
-static uint16_t pdm_pcm_calculate_clk_div(uint32_t dpll_freq, uint32_t sample_rate, uint8_t decimation_rate) {
-    mplogger_print("pdm_pcm_calculate_clk_div \r\n");
-    uint32_t required_clk = sample_rate * decimation_rate * PDM_PCM_CLK_OVERSAMPLING_FACTOR;
-
-    /* Calculate divider with rounding for better accuracy */
-    uint16_t clk_div = (dpll_freq + (required_clk / 2)) / required_clk;
-
-    /* Ensure divider is at least 1 */
-    return (clk_div > 0) ? clk_div : 1;
-}
-
-// Helper: Configure peripheral clock divider
-static void pdm_pcm_configure_clock_divider(uint16_t clk_div) {
-    mplogger_print("pdm_pcm_configure_clock_divider \r\n");
-    /* Disable the clock divider before reconfiguration */
-    Cy_SysClk_PeriPclkDisableDivider((en_clk_dst_t)CYBSP_PDM_CLK_DIV_GRP_NUM,
-        CY_SYSCLK_DIV_16_5_BIT, 1U);
-
-    /* Set the fractional divider (integer part only, fractional part = 0) */
-    Cy_SysClk_PeriPclkSetFracDivider((en_clk_dst_t)CYBSP_PDM_CLK_DIV_GRP_NUM,
-        CY_SYSCLK_DIV_16_5_BIT, 1U, clk_div, 0U);
-
-    /* Enable the configured clock divider */
-    Cy_SysClk_PeriPclkEnableDivider((en_clk_dst_t)CYBSP_PDM_CLK_DIV_GRP_NUM,
-        CY_SYSCLK_DIV_16_5_BIT, 1U);
-}
-
-// Initialize PDM PCM sample rate and clock configuration
-static PDM_PCM_STATUS_t pdm_pcm_init_sample_rate(uint32_t sample_rate, uint8_t decimation_rate) {
-    mplogger_print("pdm_pcm_init_sample_rate \r\n");
-    /* Determine the appropriate DPLL frequency for the sample rate */
-    uint32_t dpll_freq = pdm_pcm_get_dpll_freq(sample_rate);
-    if (dpll_freq == 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported sample rate"));
-        return PDM_PCM_STATUS_BAD_PARAM;
+static void _pdm_pcm_rx_buffer_swap_halves(pcm_pdm_rx_fifo_ping_pong_buffer_t *self) {
+    if (pdm_pcm_rx_buffer_is_half_full(self)) {
+        uint32_t *temp = self->active_half_rx_fifo_buf_ptr;
+        self->active_half_rx_fifo_buf_ptr = self->processing_half_rx_fifo_buf_ptr;
+        self->processing_half_rx_fifo_buf_ptr = temp;
     }
-
-    /* Configure DPLL to the required frequency */
-    dpll_lp_configure(dpll_freq);
-
-    /* Calculate optimal clock divider */
-    uint16_t clk_div = pdm_pcm_calculate_clk_div(dpll_freq, sample_rate, decimation_rate);
-
-    /* Configure the peripheral clock divider */
-    pdm_pcm_configure_clock_divider(clk_div);
-
-    mplogger_print("PDM PCM clock configured: DPLL=%lu Hz, div=%u\r\n", dpll_freq, clk_div);
-
-    return PDM_PCM_STATUS_SUCCESS;
 }
 
-// Init hardware block
-static void pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
-    cy_rslt_t result;
-    mplogger_print("pdm_pcm_init \r\n");
+static inline uint32_t *pdm_pcm_rx_buffer_get_next_frame_to_fill(pcm_pdm_rx_fifo_ping_pong_buffer_t *self) {
+    uint32_t *next_writable_frame_segment = &self->active_half_rx_fifo_buf_ptr[NUM_OF_WORDS_IN_RX_HW_FIFO_FRAME * self->rx_hw_fifo_frame_count];
+    _pdm_pcm_rx_buffer_update_hw_fifo_frame_counter(self);
+    _pdm_pcm_rx_buffer_swap_halves(self);
+    return next_writable_frame_segment;
+}
 
-    // Configure PDM PCM block
-    cy_stc_pdm_pcm_config_v2_t PDM_config = {
+/* -------------------------------- PDM Block -------------------------------- */
+
+typedef struct _pdm_pcm_block_obj_t {
+    uint8_t id;
+    PDM_Type *periph;
+    bool inited;
+} pdm_pcm_block_obj_t;
+
+/**
+ * For the current PSE8x family there is only one PDM block.
+ */
+static pdm_pcm_block_obj_t pdm_pcm_block_obj[1] = { { 0, PDM0, false } };
+
+static void pdm_pcm_block_init(pdm_pcm_block_obj_t *block) {
+    cy_stc_pdm_pcm_config_v2_t pdm_pcm_block_conf = {
         .clkDiv = 7,
         .clksel = CY_PDM_PCM_SEL_SRSS_CLOCK,
         .halverate = CY_PDM_PCM_RATE_FULL,
@@ -393,246 +156,321 @@ static void pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
         .fir1_coeff_user_value = false,
     };
 
-    // Initialize PDM PCM block
-    result = Cy_PDM_PCM_Init(PDM0, &PDM_config);
-    pdm_pcm_assert_raise_val("PDM_PCM initialisation failed with return code %lx !", result);
-    pdm_pcm_init_sample_rate(self->sample_rate, self->decimation_rate);
-    // Initialize left channel if needed
-    if ((self->format == MONO_LEFT) || (self->format == STEREO)) {
-        channel_index = LEFT_CH_INDEX;
-        Cy_PDM_PCM_Channel_Enable(PDM0, channel_index);
-        channel_config.sampledelay = 1;
-        result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, channel_index);
-        pdm_pcm_assert_raise_val("PDM_PCM left channel init failed with return code %lx !", result);
-        result = Cy_PDM_PCM_SetGain(PDM0, channel_index, self->left_gain);
-        pdm_pcm_assert_raise_val("PDM_PCM set left channel gain failed with return code %lx !", result);
-    }
-
-    // Initialize right channel if needed
-    if ((self->format == MONO_RIGHT) || (self->format == STEREO)) {
-        channel_index = RIGHT_CH_INDEX; // if stereo mode, right channel gets interrupt
-        Cy_PDM_PCM_Channel_Enable(PDM0, channel_index);
-        channel_config.sampledelay = 5;
-        result = Cy_PDM_PCM_Channel_Init(PDM0, &channel_config, channel_index);
-        pdm_pcm_assert_raise_val("PDM_PCM right channel init failed with return code %lx !", result);
-        result = Cy_PDM_PCM_SetGain(PDM0, channel_index, self->right_gain);
-        pdm_pcm_assert_raise_val("PDM_PCM set right channel gain failed with return code %lx !", result);
-    }
-
-    // Determine IRQ number based on which channel is used for interrupts
-    self->irq_num = (IRQn_Type)(pdm_0_interrupts_0_IRQn + channel_index);
-
-    // Configure interrupts
-    pdm_pcm_configure_interrupts(self);
-
-    self->pdm_pcm_initialized = true;
+    cy_en_pdm_pcm_status_t ret = Cy_PDM_PCM_Init(block->periph, &pdm_pcm_block_conf);
+    pdm_pcm_assert_raise_val("PDM PCM initialization failed with code: %d \r\n", ret);
+    block->inited = true;
 }
 
+static inline bool pdm_pcm_block_is_inited(pdm_pcm_block_obj_t *block) {
+    return block->inited;
+}
+
+static inline void pdm_pcm_block_deinit(pdm_pcm_block_obj_t *block) {
+    Cy_PDM_PCM_DeInit(block->periph);
+    block->inited = false;
+}
+
+/* -------------------------------- PDM Channel -------------------------------- */
+
+#define MICROPY_PY_MACHINE_FOR_ALL_PDM_PCM(DO) \
+    DO(0) \
+    DO(1) \
+    DO(2) \
+    DO(3) \
+    DO(4) \
+    DO(5)
+
+#define MICROPY_PY_MACHINE_PDM_PCM_NUM_ENTRIES 6
+
+typedef struct _pdm_pcm_channel_obj_t {
+    pdm_pcm_block_obj_t *block;
+    uint8_t id;
+    sys_int_cfg_t irq;
+    mp_obj_t parent;
+} pdm_pcm_channel_obj_t;
+
+/* Forward declaration */
+static void pdm_pcm_channel_irq_handler(uint8_t pdm_pcm_channel);
+
+#define DEFINE_PDM_PCM_CHANNEL_IRQ_HANDLER(pdm_pcm_channel) \
+    void PDM_PCM##pdm_pcm_channel##_Channel_IRQ_Handler(void) { \
+        pdm_pcm_channel_irq_handler(pdm_pcm_channel); \
+    }
+
+MICROPY_PY_MACHINE_FOR_ALL_PDM_PCM(DEFINE_PDM_PCM_CHANNEL_IRQ_HANDLER)
+
+#define MAP_PDM_PCM_IRQ_CONFIG(pdm_pcm_channel) \
+    [pdm_pcm_channel] = { \
+        &pdm_pcm_block_obj[0], \
+        pdm_pcm_channel, \
+        { \
+            pdm_0_interrupts_##pdm_pcm_channel##_IRQn, \
+            SYS_INT_IRQ_LOWEST_PRIORITY, \
+            PDM_PCM##pdm_pcm_channel##_Channel_IRQ_Handler \
+        }, \
+        NULL, \
+    },
+
+static pdm_pcm_channel_obj_t pdm_pcm_channel_obj[MICROPY_PY_MACHINE_PDM_PCM_NUM_ENTRIES] = {
+    MICROPY_PY_MACHINE_FOR_ALL_PDM_PCM(MAP_PDM_PCM_IRQ_CONFIG)
+};
+
+static pdm_pcm_channel_obj_t *pdm_pcm_channel_alloc(uint8_t channel_id, mp_obj_t parent) {
+    if (pdm_pcm_channel_obj[channel_id].parent != NULL) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PDM0 channel %u is already in use by another instance."), channel_id);
+    }
+    pdm_pcm_channel_obj[channel_id].parent = parent;
+    return &pdm_pcm_channel_obj[channel_id];
+}
+
+static void pdm_pcm_channel_free(pdm_pcm_channel_obj_t *chan_obj) {
+    if (chan_obj->id >= MICROPY_PY_MACHINE_PDM_PCM_NUM_ENTRIES) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid channel id"));
+    }
+    chan_obj->parent = NULL;
+}
+
+static void pdm_pcm_channel_init(pdm_pcm_channel_obj_t *chan_obj, sample_rate_t sample_rate, pdm_pcm_word_length_t word_length, bool second_channel) {
+    if (!pdm_pcm_block_is_inited(chan_obj->block)) {
+        pdm_pcm_block_init(chan_obj->block);
+    }
+
+    Cy_PDM_PCM_Channel_Enable(chan_obj->block->periph, chan_obj->id);
+
+    /**
+     * Configuration notes:
+     * - For stereo channels, the second channel should
+     *   set a sample delay. See more in the
+     *   PSOC™ Edge E8x2, E8x3, E8x5, E8x6 architecture reference manual Rev. *A
+     *   Section 29.3.3, page 773.
+     * - TODO: Filter configuration base on sample_rate and PDM0 clock config.
+     */
+    cy_stc_pdm_pcm_channel_config_t channel_config = {
+        .sampledelay = (second_channel) ? 5: 1,
+        .wordSize = (word_length == BITS_16) ? CY_PDM_PCM_WSIZE_16_BIT : CY_PDM_PCM_WSIZE_32_BIT,
+        .signExtension = true,
+        .rxFifoTriggerLevel = RX_HW_FIFO_IRQ_TRIGGER_LEVEL - 1,
+        .fir0_enable = false,
+        .cic_decim_code = CY_PDM_PCM_CHAN_CIC_DECIM_32,
+        .fir0_decim_code = CY_PDM_PCM_CHAN_FIR0_DECIM_1,
+        .fir0_scale = 0,
+        .fir1_decim_code = CY_PDM_PCM_CHAN_FIR1_DECIM_3,
+        .fir1_scale = 10,
+        .dc_block_disable = false,
+        .dc_block_code = CY_PDM_PCM_CHAN_DCBLOCK_CODE_16,
+    };
+
+    cy_en_pdm_pcm_status_t ret = Cy_PDM_PCM_Channel_Init(chan_obj->block->periph, &channel_config, chan_obj->id);
+    pdm_pcm_assert_raise_val("PDM PCM channel initialization failed with code: %d \r\n", ret);
+}
+
+static void pdm_pcm_channel_deinit(pdm_pcm_channel_obj_t *chan_obj) {
+    Cy_PDM_PCM_Channel_DeInit(chan_obj->block->periph, chan_obj->id);
+    Cy_PDM_PCM_Channel_Disable(chan_obj->block->periph, chan_obj->id);
+}
+
+static void pdm_pcm_channel_irq_init(pdm_pcm_channel_obj_t *chan_obj) {
+    Cy_PDM_PCM_Channel_ClearInterrupt(chan_obj->block->periph, chan_obj->id, CY_PDM_PCM_INTR_MASK);
+    Cy_PDM_PCM_Channel_SetInterruptMask(chan_obj->block->periph, chan_obj->id, CY_PDM_PCM_INTR_MASK);
+
+    sys_int_init(&(chan_obj->irq));
+}
+
+static void pdm_pcm_channel_irq_deinit(pdm_pcm_channel_obj_t *chan_obj) {
+    sys_int_deinit(&(chan_obj->irq));
+    Cy_PDM_PCM_Channel_ClearInterrupt(chan_obj->block->periph, chan_obj->id, CY_PDM_PCM_INTR_MASK);
+}
+
+/* -------------------------------- PDM PCM Object -------------------------------- */
+
+typedef struct _machine_pdm_pcm_obj_t {
+    mp_obj_base_t base;
+    uint8_t id;     // Private variable in this port. ID not associated to any port pin pdm-pcm group.
+    mp_hal_pin_obj_t sck;
+    mp_hal_pin_obj_t data;
+    io_mode_t io_mode;
+    format_t format;
+    uint8_t bits;
+    uint32_t sample_rate;
+    float gain_db;
+    pdm_pcm_channel_obj_t *channels[2];
+    pdm_pcm_channel_obj_t *irq_channel;
+    pcm_pdm_rx_fifo_ping_pong_buffer_t rx_buffer;
+    ringbuf_t ring_buffer;
+} machine_pdm_pcm_obj_t;
+
+static void pdm_pcm_read_half_rx_fifo_into_rx_buffer(machine_pdm_pcm_obj_t *self, uint32_t *rx_buf_next_frame_start_ptr) {
+    for (uint32_t index = 0; index < RX_HW_FIFO_IRQ_TRIGGER_LEVEL; index++)
+    {
+        uint32_t data = (uint32_t)Cy_PDM_PCM_Channel_ReadFifo(self->channels[0]->block->periph, self->channels[0]->id);
+        /**
+         * The mono/stereo first channel uses the even indexes.
+         */
+        rx_buf_next_frame_start_ptr[index * 2] = data;
+        if (self->format == STEREO) {
+            data = Cy_PDM_PCM_Channel_ReadFifo(self->channels[1]->block->periph, self->channels[1]->id);
+            /**
+             * The stereo second channel uses the odd indexes.
+             */
+            rx_buf_next_frame_start_ptr[index * 2 + 1] = data;
+        }
+    }
+}
+
+static void pdm_pcm_read_into_rx_buffer(machine_pdm_pcm_obj_t *self) {
+    uint32_t *rx_buf_next_frame_start_ptr = pdm_pcm_rx_buffer_get_next_frame_to_fill(&self->rx_buffer);
+    pdm_pcm_read_half_rx_fifo_into_rx_buffer(self, rx_buf_next_frame_start_ptr);
+}
+
+/* -------------------------------- Ring Buffer Transfer IRQ -------------------------------- */
+
+#define PDM_PCM_RX_FRAME_SIZE_IN_BYTES     (8)
+
+static const int8_t pdm_pcm_frame_map[4][PDM_PCM_RX_FRAME_SIZE_IN_BYTES] = {
+    { 0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
+    { 0,  1,  2,  3, -1, -1, -1, -1 },  // Mono, 32-bits
+    { 0,  1, -1, -1,  2,  3, -1, -1 },  // Stereo, 16-bits
+    { 0,  1,  2,  3,  4,  5,  6,  7 },  // Stereo, 32-bits
+};
+
 int8_t get_frame_mapping_index(int8_t bits, format_t format) {
-    if ((format == MONO_LEFT) | (format == MONO_RIGHT)) {
+    if (format == MONO) {
         if (bits == 16) {
             return 0;
+        } else if (bits == 32) {
+            return 1;
         }
     } else { // STEREO
         if (bits == 16) {
             return 2;
+        } else if (bits == 32) {
+            return 3;
         }
     }
     return -1;
 }
 
+static void pdm_pcm_copy_rx_buffer_to_ringbuf(machine_pdm_pcm_obj_t *self) {
+    // uint8_t sample_size_in_bytes = (self->bits == BITS_16 ? 2 : 4) * (self->format == STEREO ? 2: 1);
+    uint8_t *rx_buf_sample_ptr = (uint8_t *)self->rx_buffer.processing_half_rx_fifo_buf_ptr;
+    uint32_t num_bytes_needed_from_ringbuf = SIZEOF_HALF_RX_BUFFER_IN_SAMPLES * SIZEOF_PDM_PCM_SAMPLE_IN_BYTES;
 
-// First read and start the hw block
-static void pdm_pcm_rx_init(machine_pdm_pcm_obj_t *self) {
-    mplogger_print("pdm_pcm_rx_init \r\n");
-
-    if (!self->pdm_pcm_initialized) {
-        mp_raise_ValueError(MP_ERROR_TEXT("PDM_PCM not initialized"));
-        return;
-    }
-
-    /* Set up pointers to two buffers to implement a ping-pong buffer system */
-    memset(self->audio_buffer0, 0, FRAME_SIZE * sizeof(int16_t));
-    memset(self->audio_buffer1, 0, FRAME_SIZE * sizeof(int16_t));
-    self->active_rx_buffer = self->audio_buffer0;
-    self->full_rx_buffer = self->audio_buffer1;
-    self->have_data = false;
-    self->init_discard_counter = 4; /* Skip the first 4 frames */
-
-    /* Activate channels - CRITICAL STEP! */
-    if ((self->format == MONO_LEFT) || (self->format == STEREO)) {
-        Cy_PDM_PCM_Activate_Channel(PDM0, LEFT_CH_INDEX);
-        mplogger_print("Activated left channel\r\n");
-    }
-
-    if ((self->format == MONO_RIGHT) || (self->format == STEREO)) {
-        Cy_PDM_PCM_Activate_Channel(PDM0, RIGHT_CH_INDEX);
-        mplogger_print("Activated right channel\r\n");
-    }
-
-    mplogger_print("PDM_PCM started successfully\r\n");
-}
-
-// IRQ Handler
-static void pdm_pcm_irq_handler(void) {
-    machine_pdm_pcm_obj_t *self = MP_STATE_PORT(machine_pdm_pcm_obj[0]);
-    if (self == NULL) {
-        return;
-    }
-
-    uint8_t num_channels = (self->format == STEREO) ? 2 : 1;
-
-    /* Used to track how full the buffer is */
-    static uint16_t frame_counter = 0;
-
-    /* Check the interrupt status */
-    uint32_t intr_status = Cy_PDM_PCM_Channel_GetInterruptStatusMasked(PDM0, channel_index);
-
-    if (intr_status & CY_PDM_PCM_INTR_RX_TRIGGER) {
-        /* Move data from the PDM fifo and place it in a buffer */
-        uint32_t index = 0;
-        for (uint32_t i = 0; i < (RX_FIFO_TRIG_LEVEL / num_channels); i++) {
-            if (self->format == STEREO) {
-                int32_t data_left = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, LEFT_CH_INDEX);
-                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data_left);
-                index++;
-                int32_t data_right = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, RIGHT_CH_INDEX);
-                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data_right);
-                index++;
-            } else {
-                int32_t data = (int32_t)Cy_PDM_PCM_Channel_ReadFifo(PDM0, channel_index);
-                self->active_rx_buffer[frame_counter * RX_FIFO_TRIG_LEVEL + index] = (int16_t)(data);
-                index++;
+    // when space exists, copy samples into ring buffer
+    if (ringbuf_free(&self->ring_buffer) >= num_bytes_needed_from_ringbuf) {
+        uint8_t f_index = get_frame_mapping_index(self->bits, self->format);
+        uint32_t i = 0;
+        while (i < num_bytes_needed_from_ringbuf) {
+            for (uint8_t j = 0; j < SIZEOF_PDM_PCM_SAMPLE_IN_BYTES; j++) {
+                int8_t r_to_a_mapping = pdm_pcm_frame_map[f_index][j];
+                if (r_to_a_mapping != -1) {
+                    ringbuf_put(&self->ring_buffer, rx_buf_sample_ptr[i]);
+                } else { // r_a_mapping == -1
+                    ringbuf_put(&self->ring_buffer, -1);
+                }
+                i++;
             }
         }
-
-        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, channel_index, CY_PDM_PCM_INTR_RX_TRIGGER);
-        frame_counter++;
     }
+}
 
-    /* Check if the buffer is full */
-    if (frame_counter >= NUMBER_INTERRUPTS_FOR_FRAME) {
-        /* Flip the active and the next rx buffers */
-        int16_t *temp = self->active_rx_buffer;
-        self->active_rx_buffer = self->full_rx_buffer;
-        self->full_rx_buffer = temp;
-
-        /* Set the have_data flag as true, signaling there is data ready for use */
-        if (self->init_discard_counter > 0) {
-            self->init_discard_counter--;
-            memset(self->full_rx_buffer, 0, FRAME_SIZE * sizeof(int16_t));
-        } else {
-            self->have_data = true;
-
-            #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
-            // Copy data to ring buffer for both BLOCKING and NON_BLOCKING modes
-            // This enables seamless switching between modes
-            uint8_t *buf_p = (uint8_t *)self->full_rx_buffer;
-            uint32_t buf_size = FRAME_SIZE * sizeof(int16_t);
-            for (uint32_t i = 0; i < buf_size; i++) {
-                ringbuf_put(&self->ring_buffer, buf_p[i]);
-            }
-
-            // For NON_BLOCKING mode, trigger callback processing
-            if ((self->io_mode == NON_BLOCKING) && (self->non_blocking_descriptor.copy_in_progress)) {
-                fill_appbuf_from_ringbuf_non_blocking(self);
-            }
-            #else // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
-            // Call user callback if registered (for BLOCKING mode without ringbuf)
-            if (self->callback_for_non_blocking != mp_const_none && self->callback_for_non_blocking != MP_OBJ_NULL) {
-                mp_sched_schedule(self->callback_for_non_blocking, MP_OBJ_FROM_PTR(self));
-            }
-            #endif // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+static void pdm_pcm_channel_irq_handler(uint8_t pdm_pcm_channel) {
+    machine_pdm_pcm_obj_t *pdm_pcm_obj = (machine_pdm_pcm_obj_t *)pdm_pcm_channel_obj[pdm_pcm_channel].parent;
+    volatile uint32_t intr_status = Cy_PDM_PCM_Channel_GetInterruptStatusMasked(pdm_pcm_obj->irq_channel->block->periph, pdm_pcm_obj->irq_channel->id);
+    if (CY_PDM_PCM_INTR_RX_TRIGGER & intr_status) {
+        pdm_pcm_read_into_rx_buffer(pdm_pcm_obj);
+        Cy_PDM_PCM_Channel_ClearInterrupt(pdm_pcm_obj->irq_channel->block->periph, pdm_pcm_obj->irq_channel->id, CY_PDM_PCM_INTR_RX_TRIGGER);
+        if (pdm_pcm_rx_buffer_is_half_full(&pdm_pcm_obj->rx_buffer)) {
+            pdm_pcm_copy_rx_buffer_to_ringbuf(pdm_pcm_obj);
         }
-        frame_counter = 0;
-    }
-
-    /* Handle overflow/underflow errors */
-    if (intr_status & (CY_PDM_PCM_INTR_RX_FIR_OVERFLOW | CY_PDM_PCM_INTR_RX_OVERFLOW |
-                       CY_PDM_PCM_INTR_RX_IF_OVERFLOW | CY_PDM_PCM_INTR_RX_UNDERFLOW)) {
-        Cy_PDM_PCM_Channel_ClearInterrupt(PDM0, channel_index, CY_PDM_PCM_INTR_MASK);
-    }
-}
-
-// Configure PDM_PCM IRQ
-static void pdm_pcm_irq_configure(machine_pdm_pcm_obj_t *self) {
-    mplogger_print("pdm_pcm_irq_configure \r\n");
-
-    cy_stc_sysint_t irq_cfg = {
-        .intrSrc = self->irq_num,
-        .intrPriority = PDM_PCM_ISR_PRIORITY
-    };
-
-    cy_rslt_t result = Cy_SysInt_Init(&irq_cfg, pdm_pcm_irq_handler);
-    if (result != CY_SYSINT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_ValueError,
-            MP_ERROR_TEXT("PDM_PCM interrupt configuration failed with return code %lx !"), result);
-    }
-
-    NVIC_ClearPendingIRQ(irq_cfg.intrSrc);
-    NVIC_EnableIRQ(irq_cfg.intrSrc);
-}
-
-
-// =======================================================================================
-// MPY bindings for PDM_PCM
-
-MP_NOINLINE static void machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mplogger_print("machine_pdm_pcm_init_helper \r\n");
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sck,             MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_data,            MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_sample_rate,     MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = 16000} },
-        { MP_QSTR_decimation_rate, MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = 96} },
-        { MP_QSTR_bits,            MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = 16} },
-        { MP_QSTR_format,          MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = MONO_LEFT} },
-        { MP_QSTR_left_gain,       MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = DEFAULT_LEFT_GAIN} },
-        { MP_QSTR_right_gain,      MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = DEFAULT_RIGHT_GAIN} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_pos_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    mp_machine_pdm_pcm_init_helper(self, args);
-}
-
-// PDM_PCM(...) Constructor
-static mp_obj_t machine_pdm_pcm_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
-    mplogger_print("machine_pdm_pcm_make_new \r\n");
-    mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    mp_int_t pdm_pcm_id = mp_obj_get_int(args[0]);
-
-    machine_pdm_pcm_obj_t *self = mp_machine_pdm_pcm_make_new_instance(pdm_pcm_id);
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
-    machine_pdm_pcm_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
-
-    return MP_OBJ_FROM_PTR(self);
-}
-
-// constructor()
-static machine_pdm_pcm_obj_t *mp_machine_pdm_pcm_make_new_instance(mp_int_t pdm_pcm_id) {
-    mplogger_print("mp_machine_pdm_pcm_make_new_instance \r\n");
-    (void)pdm_pcm_id;
-    machine_pdm_pcm_obj_t *self = NULL;
-    for (uint8_t i = 0; i < MICROPY_HW_MAX_PDM_PCM; i++) {
-        if (MP_STATE_PORT(machine_pdm_pcm_obj[i]) == NULL) {
-            self = mp_obj_malloc(machine_pdm_pcm_obj_t, &machine_pdm_pcm_type);
-            MP_STATE_PORT(machine_pdm_pcm_obj[i]) = self;
-            self->pdm_pcm_id = i;
-            break;
+        if ((CY_PDM_PCM_INTR_RX_FIR_OVERFLOW | CY_PDM_PCM_INTR_RX_OVERFLOW | CY_PDM_PCM_INTR_RX_IF_OVERFLOW |
+             CY_PDM_PCM_INTR_RX_UNDERFLOW) & intr_status) {
+            Cy_PDM_PCM_Channel_ClearInterrupt(pdm_pcm_obj->irq_channel->block->periph, pdm_pcm_obj->irq_channel->id, CY_PDM_PCM_INTR_MASK);
         }
     }
-    if (self == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("all available pdm pcm instances are allocated"));
-    }
-    return self;
 }
 
-// init.helper()
+/* -------------------------------- Private Functions -------------------------------- */
+
+static void pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
+    self->irq_channel = self->channels[0];
+    pdm_pcm_channel_init(self->channels[0], self->sample_rate, self->bits, false);
+    if (self->format == STEREO) {
+        self->irq_channel = self->channels[1];
+        pdm_pcm_channel_init(self->channels[1], self->sample_rate, self->bits, true);
+    }
+    pdm_pcm_channel_irq_init(self->irq_channel);
+}
+
+static void pdm_pcm_start(machine_pdm_pcm_obj_t *self) {
+    Cy_PDM_PCM_Activate_Channel(self->channels[0]->block->periph, self->channels[0]->id);
+    if (self->format == STEREO) {
+        Cy_PDM_PCM_Activate_Channel(self->channels[1]->block->periph, self->channels[1]->id);
+    }
+};
+
+static void pdm_pcm_stop(machine_pdm_pcm_obj_t *self) {
+    Cy_PDM_PCM_DeActivate_Channel(self->channels[0]->block->periph, self->channels[0]->id);
+    if (self->format == STEREO) {
+        Cy_PDM_PCM_DeActivate_Channel(self->channels[1]->block->periph, self->channels[1]->id);
+    }
+}
+
+#define PDM_PCM_DEFAULT_GAIN_DB     (23.0)
+#define PDM_PCM_MIN_GAIN_DB         (-103.0)
+#define PDM_PCM_MAX_GAIN_DB         (83.0)
+
+
+static float pdm_pcm_get_valid_gain_db(float gain_db) {
+    if (gain_db < PDM_PCM_MIN_GAIN_DB) {
+        return PDM_PCM_MIN_GAIN_DB;
+    } else if (gain_db > PDM_PCM_MAX_GAIN_DB) {
+        return PDM_PCM_MAX_GAIN_DB;
+    } else {
+        return gain_db;
+    }
+}
+
+static cy_en_pdm_pcm_gain_sel_t pdm_pcm_gain_db_to_scale(float gain_db) {
+    /**
+    * The gain scale goes from PDM_PCM_MIN_GAIN_DB to PDM_PCM_MAX_GAIN_DB in
+    * steps of 6 dB. The db gains map to an enum in the range from 0 to
+    * (PDM_PCM_MAX_GAIN_DB - PDM_PCM_MIN_GAIN_DB) / 6 dB.
+    */
+    return (cy_en_pdm_pcm_gain_sel_t)roundf((PDM_PCM_MAX_GAIN_DB - gain_db) / 6.0);
+}
+
+static void pdm_pcm_set_gain(machine_pdm_pcm_obj_t *self) {
+    cy_en_pdm_pcm_gain_sel_t gain_scale = pdm_pcm_gain_db_to_scale(self->gain_db);
+    Cy_PDM_PCM_SetGain(self->channels[0]->block->periph, self->channels[0]->id, gain_scale);
+    if (self->format == STEREO) {
+        Cy_PDM_PCM_SetGain(self->channels[1]->block->periph, self->channels[1]->id, gain_scale);
+    }
+}
+
+static inline void pdm_pcm_alloc_channels(machine_pdm_pcm_obj_t *self, format_t format, const mp_hal_pin_af_config_t *af_config) {
+    /**
+     * The allowed pairs are form or consecutive odd + even channel starting
+     * from 0.
+     * Therefore, to find the secondary channel  id, XORing the primary
+     * channel id with 0x01 will give the id of the other channel in the pair.
+     */
+    self->channels[0] = pdm_pcm_channel_alloc(af_config->af->unit, self);
+    if (format == STEREO) {
+        self->channels[1] = pdm_pcm_channel_alloc(af_config->af->unit ^ 0x01, self);
+    }
+}
+
+/* -------------------------------- Extmod API -------------------------------- */
+
+
 static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_val_t *args) {
-    mplogger_print("mp_machine_pdm_pcm_init_helper \r\n");
-
+    /**
+     * Get the pin objects passed by the constructor.
+     * Validate that they are valid PDM block and channel,
+     * and configure them with the adequate drive mode and
+     * alternate function.
+     * {
+     */
     self->sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
     self->data = mp_hal_get_pin_obj(args[ARG_data].u_obj);
 
@@ -642,203 +480,126 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
     };
 
     mp_hal_periph_pins_af_config(pdm_pins_config, 2);
+    /** } */
 
-    // Assign configurable parameters
-    // PDM_PCM Mode
+    /**
+     * Depending on the format, one or two channels
+     * are then allocated from the available channels.
+     * {
+     */
     format_t pdm_pcm_format = args[ARG_format].u_int;
-    if ((pdm_pcm_format != MONO_LEFT) &&
-        (pdm_pcm_format != MONO_RIGHT) &&
-        (pdm_pcm_format != STEREO)) {
+    /** if ((pdm_pcm_format != MONO) && TODO: Enable MONO */
+    if ((pdm_pcm_format != STEREO)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid format"));
     }
     self->format = pdm_pcm_format;
 
-    // Check word length
+    pdm_pcm_alloc_channels(self, self->format, &pdm_pins_config[0]);
+    /** } */
+
     uint8_t pdm_pcm_word_length = args[ARG_bits].u_int;
-    if (pdm_pcm_word_length < BITS_16 || pdm_pcm_word_length > BITS_24) {
+    if (pdm_pcm_word_length < BITS_16) {
+        /** || pdm_pcm_word_length > BITS_32) {  TODO: Enable 32 bits*/
         mp_raise_ValueError(MP_ERROR_TEXT("invalid word length"));
     }
     self->bits = args[ARG_bits].u_int;
 
-    // Set gains
-    self->left_gain = args[ARG_left_gain].u_int;
-    self->right_gain = args[ARG_right_gain].u_int;
+    self->gain_db = PDM_PCM_DEFAULT_GAIN_DB;
+    if (args[ARG_gain].u_obj != mp_const_none) {
+        self->gain_db = mp_obj_get_float(args[ARG_gain].u_obj);
+    }
 
-    // Set sampling and decimation rates (as given by user)
     self->sample_rate = args[ARG_sample_rate].u_int;
-
-    if (self->sample_rate == 8000 ||
-        self->sample_rate == 16000 ||
-        self->sample_rate == 48000) {
-        if (PLL0_freq != AUDIO_SYS_CLOCK_73_728_000_HZ) {
-            mp_raise_ValueError(MP_ERROR_TEXT("Invalid clock frequency set for the sample rate/ PDM_PCM Clock not set . Set the right clock before initialising PDM_PCM"));
-        }
-    } else if (self->sample_rate == 22050 ||
-               self->sample_rate == 44100) {
-        if (PLL0_freq != AUDIO_SYS_CLOCK_169_344_000_HZ) {
-            mp_raise_ValueError(MP_ERROR_TEXT("Invalid clock frequency set for the sample rate/ PDM_PCM Clock not set. Set the right clock before initialising PDM_PCM"));
-        }
+    if (self->sample_rate == 16000) {
+        /**
+         * TODO: Enable different sample rates
+         */
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("rate not supported"));
     }
 
-    self->decimation_rate = args[ARG_decimation_rate].u_int;
-    if (self->decimation_rate < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid decimation rate"));
-    }
-
-    int32_t ring_buffer_len = 20000;
+    int32_t ring_buffer_len = args[ARG_ibuf].u_int;
     if (ring_buffer_len < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid ibuf"));
     }
-    self->ibuf = ring_buffer_len;
-    self->callback_for_non_blocking = MP_OBJ_NULL;
+
     self->io_mode = BLOCKING;
 
-    // Initialize buffer pointers
-    self->active_rx_buffer = NULL;
-    self->full_rx_buffer = NULL;
-    self->have_data = false;
-    self->pdm_pcm_initialized = false;
-    self->init_discard_counter = 0;
-
-    mplogger_print("PDM_PCM configured: sample_rate=%ld, decimation_rate=%d, bits=%u, format=%u, left_gain=%d, right_gain=%d\r\n",
-        args[ARG_sample_rate].u_int,
-        args[ARG_decimation_rate].u_int,
-        args[ARG_bits].u_int,
-        args[ARG_format].u_int,
-        args[ARG_left_gain].u_int,
-        args[ARG_right_gain].u_int);
-
     ringbuf_alloc(&self->ring_buffer, ring_buffer_len);
+    pdm_pcm_rx_buffer_init(&self->rx_buffer);
     pdm_pcm_init(self);
-    pdm_pcm_irq_configure(self);
+    pdm_pcm_set_gain(self);
+    pdm_pcm_start(self);
 }
 
-// init()
-static void mp_machine_pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
-    mplogger_print("mp_machine_pdm_pcm_init \r\n");
-    pdm_pcm_rx_init(self);
-}
-
-// deinit()
-static void mp_machine_pdm_pcm_deinit(machine_pdm_pcm_obj_t *self) {
-    mplogger_print("mp_machine_pdm_pcm_deinit \r\n");
-
-    if ((self->format == MONO_LEFT) || (self->format == STEREO)) {
-        Cy_PDM_PCM_DeActivate_Channel(PDM0, LEFT_CH_INDEX);
-    }
-    if ((self->format == MONO_RIGHT) || (self->format == STEREO)) {
-        Cy_PDM_PCM_DeActivate_Channel(PDM0, RIGHT_CH_INDEX);
-    }
-    MP_STATE_PORT(machine_pdm_pcm_obj[self->pdm_pcm_id]) = NULL;
-}
-
-// set_gain()
-static void mp_machine_pdm_pcm_set_gain(machine_pdm_pcm_obj_t *self, int16_t left_gain, int16_t right_gain) {
-    mplogger_print("mp_machine_pdm_pcm_set_gain \r\n");
-    cy_rslt_t result = Cy_PDM_PCM_SetGain(PDM0, LEFT_CH_INDEX, left_gain);
-    pdm_pcm_assert_raise_val("PDM_PCM set left channel gain failed with return code %lx !", result);
-    result = Cy_PDM_PCM_SetGain(PDM0, RIGHT_CH_INDEX, right_gain);
-    pdm_pcm_assert_raise_val("PDM_PCM set right channel gain failed with return code %lx !", result);
-
-}
-
-// irq update
-static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self) {
-    (void)self;
-}
-
-// =======================================================================================
-// Implementation for stream protocol
-static mp_uint_t machine_pdm_pcm_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    uint8_t appbuf_sample_size_in_bytes = (self->bits / 8) * (self->format == STEREO ? 2: 1);
-    if (size % appbuf_sample_size_in_bytes != 0) { // size should be multiple of sample size
-        *errcode = MP_EINVAL;
-        return MP_STREAM_ERROR;
-    }
-    if (size == 0) {
-        return 0;
-    }
-
-    if (self->io_mode == BLOCKING) {
-        mp_buffer_info_t appbuf;
-        appbuf.buf = (void *)buf_in;
-        appbuf.len = size;
-        #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
-        uint32_t num_bytes_read = fill_appbuf_from_ringbuf(self, &appbuf);
-        #else
-        // Blocking read from ping-pong buffers
-        // Wait for data to be available
-        while (!self->have_data) {
-            __WFI();  // Wait for interrupt
+static machine_pdm_pcm_obj_t *mp_machine_pdm_pcm_make_new_instance(mp_int_t pdm_pcm_id) {
+    (void)pdm_pcm_id;
+    machine_pdm_pcm_obj_t *self = NULL;
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PDM_PCM_NUM_ENTRIES; i++) {
+        if (MP_STATE_PORT(machine_pdm_pcm_obj[i]) == NULL) {
+            self = mp_obj_malloc(machine_pdm_pcm_obj_t, &machine_pdm_pcm_type);
+            MP_STATE_PORT(machine_pdm_pcm_obj[i]) = self;
+            self->id = i;
+            break;
         }
+    }
 
-        // Calculate how many bytes to copy
-        uint32_t buffer_size_bytes = FRAME_SIZE * sizeof(int16_t);
-        uint32_t num_bytes_read = (size < buffer_size_bytes) ? size : buffer_size_bytes;
+    if (self == NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("All available PDM_PCM instances are allocated"));
+    }
 
-        // Copy data from full_rx_buffer to application buffer
-        memcpy(buf_in, self->full_rx_buffer, num_bytes_read);
+    return self;
+}
 
-        // Clear the have_data flag
-        self->have_data = false;
-        #endif
-        return num_bytes_read;
+static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self) {
+    /** TODO: Implementation of non-blocking  */
+}
+
+static mp_obj_t machine_pdm_pcm_gain(size_t n_args, const mp_obj_t *args) {
+    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (n_args == 1) {
+        return mp_obj_new_float(self->gain_db);
     } else {
-        #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
-        self->non_blocking_descriptor.appbuf.buf = (void *)buf_in;
-        self->non_blocking_descriptor.appbuf.len = size;
-        self->non_blocking_descriptor.index = 0;
-        self->non_blocking_descriptor.copy_in_progress = true;
-        return size;
-        #else
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Non-blocking mode requires ring buffer support"));
-        return 0;
-        #endif
+        self->gain_db = pdm_pcm_get_valid_gain_db(mp_obj_get_float(args[1]));
+        pdm_pcm_set_gain(self);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pdm_pcm_gain_obj, 1, 2, machine_pdm_pcm_gain);
+
+
+#define MICROPY_PY_MACHINE_PDM_PDM_CLASS_EXTRAS \
+    { MP_ROM_QSTR(MP_QSTR_gain),            MP_ROM_PTR(&machine_pdm_pcm_gain_obj) }, \
+
+
+static void mp_machine_pdm_pcm_deinit(machine_pdm_pcm_obj_t *self) {
+    pdm_pcm_stop(self);
+    pdm_pcm_channel_irq_deinit(self->irq_channel);
+    pdm_pcm_channel_deinit(self->channels[0]);
+    pdm_pcm_channel_free(self->channels[0]);
+    if (self->format == STEREO) {
+        pdm_pcm_channel_deinit(self->channels[1]);
+        pdm_pcm_channel_free(self->channels[1]);
+    }
+    MP_STATE_PORT(machine_pdm_pcm_obj[self->id]) = NULL;
+
+    /* Deinit the block if no other instances are using it */
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PDM_PCM_NUM_ENTRIES; i++) {
+        if (MP_STATE_PORT(machine_pdm_pcm_obj[i]) != NULL) {
+            return;
+        }
+    }
+    pdm_pcm_block_deinit(self->channels[0]->block);
+}
+
+void machine_pdm_pcm_deinit_all(void) {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PDM_PCM_NUM_ENTRIES; i++) {
+        machine_pdm_pcm_obj_t *pdm_pcm_obj = MP_STATE_PORT(machine_pdm_pcm_obj[i]);
+        if (pdm_pcm_obj != NULL) {
+            mp_machine_pdm_pcm_deinit(pdm_pcm_obj);
+        }
     }
 }
 
-static const mp_stream_p_t pdm_pcm_stream_p = {
-    .read = machine_pdm_pcm_stream_read,
-    .is_text = false,
-};
-
-static const mp_rom_map_elem_t machine_pdm_pcm_locals_dict_table[] = {
-    // Methods
-    { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&machine_pdm_pcm_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_pdm_pcm_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_gain),        MP_ROM_PTR(&machine_pdm_pcm_set_gain_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_pdm_pcm_irq_obj) },
-
-    #if MICROPY_PY_MACHINE_PDM_PCM_FINALISER
-    { MP_ROM_QSTR(MP_QSTR___del__),         MP_ROM_PTR(&machine_pdm_pcm_deinit_obj) },
-    #endif
-
-    // Constants
-    // Word lengths
-    { MP_ROM_QSTR(MP_QSTR_BITS_16),          MP_ROM_INT(BITS_16) },
-
-    // Modes
-    { MP_ROM_QSTR(MP_QSTR_STEREO),          MP_ROM_INT(STEREO) },
-    { MP_ROM_QSTR(MP_QSTR_MONO_LEFT),       MP_ROM_INT(MONO_LEFT) },
-    { MP_ROM_QSTR(MP_QSTR_MONO_RIGHT),      MP_ROM_INT(MONO_RIGHT) },
-};
-MP_DEFINE_CONST_DICT(machine_pdm_pcm_locals_dict, machine_pdm_pcm_locals_dict_table);
-
-MP_REGISTER_ROOT_POINTER(struct _machine_pdm_pcm_obj_t *machine_pdm_pcm_obj[MICROPY_HW_MAX_PDM_PCM]);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_pdm_pcm_type,
-    MP_QSTR_PDM_PCM,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_pdm_pcm_make_new,
-    print, machine_pdm_pcm_print,
-    protocol, &pdm_pcm_stream_p,
-    locals_dict, &machine_pdm_pcm_locals_dict
-    );
-
-#endif // MICROPY_PY_MACHINE_PDM_PCM
+MP_REGISTER_ROOT_POINTER(struct _machine_pdm_pcm_obj_t *machine_pdm_pcm_obj[MICROPY_PY_MACHINE_PDM_PCM_NUM_ENTRIES]);
