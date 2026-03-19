@@ -140,7 +140,7 @@ static void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
             self->can_id,
             mode,
             #if MICROPY_HW_ENABLE_FDCAN
-            (self->can.Instance->CCCR & FDCAN_CCCR_DAR) ? MP_QSTR_True : MP_QSTR_False
+            MP_QSTR_False // auto_restart not supported on FDCAN hardware
             #else
                 (self->can.Instance->MCR & CAN_MCR_ABOM) ? MP_QSTR_True : MP_QSTR_False
             #endif
