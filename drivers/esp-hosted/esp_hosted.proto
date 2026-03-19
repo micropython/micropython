@@ -1,9 +1,5 @@
-/* Copyright (C) 2015-2023 Espressif Systems (Shanghai) PTE LTD */
-/* SPDX-License-Identifier: Apache-2.0 */
-
-/* This file is sourced from
-   https://github.com/espressif/esp-hosted/blob/master/esp_hosted_fg/common/proto/esp_hosted_config.proto
-*/
+/* Copyright (C) 2015-2025 Espressif Systems (Shanghai) PTE LTD */
+/* SPDX-License-Identifier: GPL-2.0-only OR Apache-2.0 */
 
 syntax = "proto3";
 
@@ -35,9 +31,10 @@ enum Ctrl_WifiBw {
 }
 
 enum Ctrl_WifiPowerSave {
-    PS_Invalid = 0;
+    NO_PS = 0;
     MIN_MODEM = 1;
     MAX_MODEM = 2;
+    PS_Invalid = 3;
 }
 
 enum Ctrl_WifiSecProt {
@@ -103,9 +100,14 @@ enum CtrlMsgId {
     Req_GetWifiCurrTxPower = 120;
 
     Req_ConfigHeartbeat = 121;
+    Req_EnableDisable = 122;
+    Req_GetFwVersion = 123;
+    Req_SetCountryCode = 124;
+    Req_GetCountryCode = 125;
+    Req_Custom_RPC_Unserialised_Msg = 126;
     /* Add new control path command response before Req_Max
      * and update Req_Max */
-    Req_Max = 122;
+    Req_Max = 127;
 
     /** Response Msgs **/
     Resp_Base = 200;
@@ -137,9 +139,14 @@ enum CtrlMsgId {
     Resp_GetWifiCurrTxPower = 220;
 
     Resp_ConfigHeartbeat = 221;
+    Resp_EnableDisable = 222;
+    Resp_GetFwVersion = 223;
+    Resp_SetCountryCode = 224;
+    Resp_GetCountryCode = 225;
+    Resp_Custom_RPC_Unserialised_Msg = 226;
     /* Add new control path command response before Resp_Max
      * and update Resp_Max */
-    Resp_Max = 222;
+    Resp_Max = 227;
 
     /** Event Msgs **/
     Event_Base = 300;
@@ -147,9 +154,19 @@ enum CtrlMsgId {
     Event_Heartbeat = 302;
     Event_StationDisconnectFromAP = 303;
     Event_StationDisconnectFromESPSoftAP = 304;
+    Event_StationConnectedToAP = 305;
+    Event_StationConnectedToESPSoftAP = 306;
+    Event_Custom_RPC_Unserialised_Msg = 307;
     /* Add new control path command notification before Event_Max
      * and update Event_Max */
-    Event_Max = 305;
+    Event_Max = 308;
+}
+
+enum HostedFeature {
+    Hosted_InvalidFeature = 0;
+    Hosted_Wifi = 1;
+    Hosted_Bluetooth = 2;
+    /* Add your new features here and re-build prot using build_proto.sh */
 }
 
 /* internal supporting structures for CtrlMsg */
@@ -220,6 +237,7 @@ message CtrlMsg_Resp_GetAPConfig {
     int32 chnl = 4;
     Ctrl_WifiSecProt sec_prot = 5;
     int32 resp = 6;
+    int32 band_mode = 7;
 }
 
 message CtrlMsg_Req_ConnectAP {
@@ -228,11 +246,13 @@ message CtrlMsg_Req_ConnectAP {
     string bssid = 3;
     bool is_wpa3_supported = 4;
     int32 listen_interval = 5;
+    int32 band_mode = 6;
 }
 
 message  CtrlMsg_Resp_ConnectAP {
     int32 resp = 1;
     bytes mac = 2;
+    int32 band_mode = 3;
 }
 
 message CtrlMsg_Req_GetSoftAPConfig {
@@ -247,6 +267,7 @@ message CtrlMsg_Resp_GetSoftAPConfig {
     bool ssid_hidden = 6;
     int32 bw = 7;
     int32 resp = 8;
+    int32 band_mode = 9;
 }
 
 message CtrlMsg_Req_StartSoftAP {
@@ -257,11 +278,13 @@ message CtrlMsg_Req_StartSoftAP {
     int32 max_conn = 5;
     bool ssid_hidden = 6;
     int32 bw = 7;
+    int32 band_mode = 8;
 }
 
 message CtrlMsg_Resp_StartSoftAP {
     int32 resp = 1;
     bytes mac = 2;
+    int32 band_mode = 3;
 }
 
 message CtrlMsg_Req_ScanResult {
@@ -348,6 +371,45 @@ message CtrlMsg_Resp_ConfigHeartbeat {
     int32 resp = 1;
 }
 
+message CtrlMsg_Req_EnableDisable {
+    uint32 feature = 1;
+    bool enable = 2;
+}
+
+message CtrlMsg_Resp_EnableDisable {
+    int32 resp = 1;
+}
+
+message CtrlMsg_Req_GetFwVersion {
+}
+
+message CtrlMsg_Resp_GetFwVersion {
+    int32 resp = 1;
+    string name = 2;
+    uint32 major1 = 3;
+    uint32 major2 = 4;
+    uint32 minor = 5;
+    uint32 rev_patch1 = 6;
+    uint32 rev_patch2 = 7;
+}
+
+message CtrlMsg_Req_SetCountryCode {
+    bytes country = 1;
+    bool ieee80211d_enabled = 2;
+}
+
+message CtrlMsg_Resp_SetCountryCode {
+    int32 resp = 1;
+}
+
+message CtrlMsg_Req_GetCountryCode {
+}
+
+message CtrlMsg_Resp_GetCountryCode {
+    int32 resp = 1;
+    bytes country = 2;
+}
+
 /** Event structure **/
 message CtrlMsg_Event_ESPInit {
     bytes init_data = 1;
@@ -359,11 +421,55 @@ message CtrlMsg_Event_Heartbeat {
 
 message CtrlMsg_Event_StationDisconnectFromAP {
     int32 resp = 1;
+    bytes ssid = 2;
+    uint32 ssid_len = 3;
+    bytes bssid = 4;
+    uint32 reason = 5;
+    int32 rssi = 6;
 }
+
+message CtrlMsg_Event_StationConnectedToAP {
+    int32 resp = 1;
+    bytes ssid = 2;
+    uint32 ssid_len = 3;
+    bytes bssid = 4;
+    uint32 channel = 5;
+    int32 authmode = 6;
+    int32 aid = 7;
+}
+
 
 message CtrlMsg_Event_StationDisconnectFromESPSoftAP {
     int32 resp = 1;
     bytes mac = 2;
+    uint32 aid = 3;
+    bool is_mesh_child = 4;
+    uint32 reason = 5;
+}
+
+message CtrlMsg_Event_StationConnectedToESPSoftAP {
+    int32 resp = 1;
+    bytes mac = 2;
+    uint32 aid = 3;
+    bool is_mesh_child = 4;
+}
+
+/* Add Custom RPC message structures after existing message structures to make it easily notice */
+message CtrlMsg_Req_CustomRpcUnserialisedMsg {
+    uint32 custom_msg_id = 1;
+    bytes data = 2;
+}
+
+message CtrlMsg_Resp_CustomRpcUnserialisedMsg {
+    int32 resp = 1;
+    uint32 custom_msg_id = 2;
+    bytes data = 3;
+}
+
+message CtrlMsg_Event_CustomRpcUnserialisedMsg {
+    int32 resp = 1;
+    uint32 custom_evt_id = 2;
+    bytes data = 3;
 }
 
 message CtrlMsg {
@@ -372,6 +478,12 @@ message CtrlMsg {
 
     /* msg id */
     CtrlMsgId msg_id = 2;
+
+    /* UID of message */
+    int32 uid = 3;
+
+    /* Request/response type: sync or async */
+    uint32 req_resp_type = 4;
 
     /* union of all msg ids */
     oneof payload {
@@ -402,6 +514,11 @@ message CtrlMsg {
         CtrlMsg_Req_SetWifiMaxTxPower req_set_wifi_max_tx_power = 119;
         CtrlMsg_Req_GetWifiCurrTxPower req_get_wifi_curr_tx_power = 120;
         CtrlMsg_Req_ConfigHeartbeat req_config_heartbeat = 121;
+        CtrlMsg_Req_EnableDisable req_enable_disable_feat = 122;
+        CtrlMsg_Req_GetFwVersion req_get_fw_version = 123;
+        CtrlMsg_Req_SetCountryCode req_set_country_code = 124;
+        CtrlMsg_Req_GetCountryCode req_get_country_code = 125;
+        CtrlMsg_Req_CustomRpcUnserialisedMsg req_custom_rpc_unserialised_msg = 126;
 
         /** Responses **/
         CtrlMsg_Resp_GetMacAddress resp_get_mac_address = 201;
@@ -429,11 +546,19 @@ message CtrlMsg {
         CtrlMsg_Resp_SetWifiMaxTxPower resp_set_wifi_max_tx_power = 219;
         CtrlMsg_Resp_GetWifiCurrTxPower resp_get_wifi_curr_tx_power = 220;
         CtrlMsg_Resp_ConfigHeartbeat resp_config_heartbeat = 221;
+        CtrlMsg_Resp_EnableDisable resp_enable_disable_feat = 222;
+        CtrlMsg_Resp_GetFwVersion resp_get_fw_version = 223;
+        CtrlMsg_Resp_SetCountryCode resp_set_country_code = 224;
+        CtrlMsg_Resp_GetCountryCode resp_get_country_code = 225;
+        CtrlMsg_Resp_CustomRpcUnserialisedMsg resp_custom_rpc_unserialised_msg = 226;
 
         /** Notifications **/
         CtrlMsg_Event_ESPInit event_esp_init = 301;
         CtrlMsg_Event_Heartbeat event_heartbeat = 302;
         CtrlMsg_Event_StationDisconnectFromAP event_station_disconnect_from_AP = 303;
         CtrlMsg_Event_StationDisconnectFromESPSoftAP event_station_disconnect_from_ESP_SoftAP = 304;
+        CtrlMsg_Event_StationConnectedToAP event_station_connected_to_AP = 305;
+        CtrlMsg_Event_StationConnectedToESPSoftAP event_station_connected_to_ESP_SoftAP = 306;
+        CtrlMsg_Event_CustomRpcUnserialisedMsg event_custom_rpc_unserialised_msg = 307;
     }
 }
