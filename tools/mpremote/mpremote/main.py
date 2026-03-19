@@ -245,7 +245,7 @@ def argparse_mip():
     cmd_parser.add_argument("command", nargs=1, help="mip command (e.g. install)")
     cmd_parser.add_argument(
         "packages",
-        nargs="+",
+        nargs="*",
         help="list package specifications, e.g. name, name@version, github:org/repo, github:org/repo@branch, gitlab:org/repo, gitlab:org/repo@branch",
     )
     return cmd_parser
