@@ -59,6 +59,9 @@ Compiles to:
     X = 1
     foo(1, 2)
 
+See :func:`micropython.const` for complete details on usage requirements and
+limitations.
+
 Allocation of memory
 --------------------
 
