@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uos
+import os
 import ujson
 
 """
@@ -25,7 +25,7 @@ datacall_flag = 1
 
 def _repl_enable():
     global datacall_flag
-    if "system_config.json" in uos.listdir("/"):
+    if "system_config.json" in os.listdir("/"):
         with open("/system_config.json", "r", encoding="utf-8") as fd:
             try:
                 json_data = ujson.load(fd)
@@ -43,21 +43,21 @@ def _repl_enable():
 try:
     udev = None
     try:
-        from uos import VfsLfs1 as VfsLfs
+        from os import VfsLfs1 as VfsLfs
     except Exception:
-        from uos import VfsLfs2 as VfsLfs
+        from os import VfsLfs2 as VfsLfs
 
-    udev = uos.FlashDevice("customer_fs", 4096)
+    udev = os.FlashDevice("customer_fs", 4096)
     try:
-        uos.mount(udev, "/")
+        os.mount(udev, "/")
     except Exception as e:
         if "ENODEV" in str(e):
             VfsLfs.mkfs(udev)
-            uos.mount(udev, "/")
-    if "usr" not in uos.listdir():
-        uos.mkdir("usr")
-    if "bak" not in uos.listdir():
-        uos.mkdir("bak")
+            os.mount(udev, "/")
+    if "usr" not in os.listdir():
+        os.mkdir("usr")
+    if "bak" not in os.listdir():
+        os.mkdir("bak")
 
 except Exception:
     print("error occurs in boot step.")
