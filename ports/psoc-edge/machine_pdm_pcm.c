@@ -297,6 +297,8 @@ typedef struct _machine_pdm_pcm_obj_t {
     pdm_pcm_channel_obj_t *irq_channel;
     pcm_pdm_rx_fifo_ping_pong_buffer_t rx_buffer;
     ringbuf_t ring_buffer;
+    mp_obj_t callback_for_non_blocking;
+    non_blocking_descriptor_t non_blocking_descriptor;
 } machine_pdm_pcm_obj_t;
 
 static void pdm_pcm_read_half_rx_fifo_into_rx_buffer(machine_pdm_pcm_obj_t *self, uint32_t *rx_buf_next_frame_start_ptr) {
@@ -325,6 +327,7 @@ static void pdm_pcm_read_into_rx_buffer(machine_pdm_pcm_obj_t *self) {
 /* -------------------------------- Ring Buffer Transfer IRQ -------------------------------- */
 
 #define PDM_PCM_RX_FRAME_SIZE_IN_BYTES     (8)
+#define PDM_PCM_SIZEOF_NON_BLOCKING_COPY_IN_BYTES    (SIZEOF_HALF_RX_BUFFER_IN_SAMPLES * PDM_PCM_RX_FRAME_SIZE_IN_BYTES)
 
 static const int8_t pdm_pcm_frame_map[4][PDM_PCM_RX_FRAME_SIZE_IN_BYTES] = {
     { 0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
@@ -351,7 +354,6 @@ int8_t get_frame_mapping_index(int8_t bits, format_t format) {
 }
 
 static void pdm_pcm_copy_rx_buffer_to_ringbuf(machine_pdm_pcm_obj_t *self) {
-    // uint8_t sample_size_in_bytes = (self->bits == BITS_16 ? 2 : 4) * (self->format == STEREO ? 2: 1);
     uint8_t *rx_buf_sample_ptr = (uint8_t *)self->rx_buffer.processing_half_rx_fifo_buf_ptr;
     uint32_t num_bytes_needed_from_ringbuf = SIZEOF_HALF_RX_BUFFER_IN_SAMPLES * SIZEOF_PDM_PCM_SAMPLE_IN_BYTES;
 
@@ -381,6 +383,9 @@ static void pdm_pcm_channel_irq_handler(uint8_t pdm_pcm_channel) {
         Cy_PDM_PCM_Channel_ClearInterrupt(pdm_pcm_obj->irq_channel->block->periph, pdm_pcm_obj->irq_channel->id, CY_PDM_PCM_INTR_RX_TRIGGER);
         if (pdm_pcm_rx_buffer_is_half_full(&pdm_pcm_obj->rx_buffer)) {
             pdm_pcm_copy_rx_buffer_to_ringbuf(pdm_pcm_obj);
+            if ((pdm_pcm_obj->io_mode == NON_BLOCKING) && (pdm_pcm_obj->non_blocking_descriptor.copy_in_progress)) {
+                fill_appbuf_from_ringbuf_non_blocking(pdm_pcm_obj);
+            }
         }
         if ((CY_PDM_PCM_INTR_RX_FIR_OVERFLOW | CY_PDM_PCM_INTR_RX_OVERFLOW | CY_PDM_PCM_INTR_RX_IF_OVERFLOW |
              CY_PDM_PCM_INTR_RX_UNDERFLOW) & intr_status) {
@@ -401,6 +406,19 @@ static void pdm_pcm_init(machine_pdm_pcm_obj_t *self) {
     pdm_pcm_channel_irq_init(self->irq_channel);
 }
 
+static inline void pdm_pcm_alloc_channels(machine_pdm_pcm_obj_t *self, format_t format, const mp_hal_pin_af_config_t *af_config) {
+    /**
+     * The allowed pairs are form or consecutive odd + even channel starting
+     * from 0.
+     * Therefore, to find the secondary channel  id, XORing the primary
+     * channel id with 0x01 will give the id of the other channel in the pair.
+     */
+    self->channels[0] = pdm_pcm_channel_alloc(af_config->af->unit, self);
+    if (format == STEREO) {
+        self->channels[1] = pdm_pcm_channel_alloc(af_config->af->unit ^ 0x01, self);
+    }
+}
+
 static void pdm_pcm_start(machine_pdm_pcm_obj_t *self) {
     Cy_PDM_PCM_Activate_Channel(self->channels[0]->block->periph, self->channels[0]->id);
     if (self->format == STEREO) {
@@ -418,7 +436,6 @@ static void pdm_pcm_stop(machine_pdm_pcm_obj_t *self) {
 #define PDM_PCM_DEFAULT_GAIN_DB     (23.0)
 #define PDM_PCM_MIN_GAIN_DB         (-103.0)
 #define PDM_PCM_MAX_GAIN_DB         (83.0)
-
 
 static float pdm_pcm_get_valid_gain_db(float gain_db) {
     if (gain_db < PDM_PCM_MIN_GAIN_DB) {
@@ -444,19 +461,6 @@ static void pdm_pcm_set_gain(machine_pdm_pcm_obj_t *self) {
     Cy_PDM_PCM_SetGain(self->channels[0]->block->periph, self->channels[0]->id, gain_scale);
     if (self->format == STEREO) {
         Cy_PDM_PCM_SetGain(self->channels[1]->block->periph, self->channels[1]->id, gain_scale);
-    }
-}
-
-static inline void pdm_pcm_alloc_channels(machine_pdm_pcm_obj_t *self, format_t format, const mp_hal_pin_af_config_t *af_config) {
-    /**
-     * The allowed pairs are form or consecutive odd + even channel starting
-     * from 0.
-     * Therefore, to find the secondary channel  id, XORing the primary
-     * channel id with 0x01 will give the id of the other channel in the pair.
-     */
-    self->channels[0] = pdm_pcm_channel_alloc(af_config->af->unit, self);
-    if (format == STEREO) {
-        self->channels[1] = pdm_pcm_channel_alloc(af_config->af->unit ^ 0x01, self);
     }
 }
 
@@ -524,6 +528,7 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
     }
 
     self->io_mode = BLOCKING;
+    self->callback_for_non_blocking = MP_OBJ_NULL;
 
     ringbuf_alloc(&self->ring_buffer, ring_buffer_len);
     pdm_pcm_rx_buffer_init(&self->rx_buffer);

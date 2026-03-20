@@ -77,6 +77,12 @@ enum {
 
 #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
 
+typedef struct _non_blocking_descriptor_t {
+    mp_buffer_info_t appbuf;
+    uint32_t index;
+    bool copy_in_progress;
+} non_blocking_descriptor_t;
+
 static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self);
 
 #endif // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
@@ -95,7 +101,7 @@ static void mp_machine_pdm_pcm_irq_update(machine_pdm_pcm_obj_t *self);
 static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_info_t *appbuf) {
     uint32_t num_bytes_copied_to_appbuf = 0;
     uint8_t *app_p = (uint8_t *)appbuf->buf;
-    uint8_t appbuf_sample_size_in_bytes = (self->bits == BITS_16 ? 2 : 4) * (self->format == STEREO ? 2: 1);
+    uint8_t appbuf_sample_size_in_bytes = (self->bits / 8) * (self->format == STEREO ? 2: 1);
     uint32_t num_bytes_needed_from_ringbuf = appbuf->len * (PDM_PCM_RX_FRAME_SIZE_IN_BYTES / appbuf_sample_size_in_bytes);
     int data;
 
@@ -135,7 +141,41 @@ static uint32_t fill_appbuf_from_ringbuf(machine_pdm_pcm_obj_t *self, mp_buffer_
 }
 
 static void fill_appbuf_from_ringbuf_non_blocking(machine_pdm_pcm_obj_t *self) {
-    /** TODO: Implement non-blocking version */
+    uint32_t num_bytes_copied_to_appbuf = 0;
+    uint8_t *app_p = &(((uint8_t *)self->non_blocking_descriptor.appbuf.buf)[self->non_blocking_descriptor.index]);
+
+    uint8_t appbuf_sample_size_in_bytes = (self->bits / 8) * (self->format == STEREO ? 2: 1);
+    uint32_t num_bytes_remaining_to_copy_to_appbuf = self->non_blocking_descriptor.appbuf.len - self->non_blocking_descriptor.index;
+    uint32_t num_bytes_remaining_to_copy_from_ring_buffer = num_bytes_remaining_to_copy_to_appbuf *
+        (PDM_PCM_RX_FRAME_SIZE_IN_BYTES / appbuf_sample_size_in_bytes);
+    uint32_t num_bytes_needed_from_ringbuf = MIN(PDM_PCM_SIZEOF_NON_BLOCKING_COPY_IN_BYTES, num_bytes_remaining_to_copy_from_ring_buffer);
+    uint8_t discard_byte;
+    if (ringbuf_avail(&self->ring_buffer) >= num_bytes_needed_from_ringbuf) {
+        while (num_bytes_needed_from_ringbuf) {
+
+            uint8_t f_index = get_frame_mapping_index(self->bits, self->format);
+
+            for (uint8_t i = 0; i < PDM_PCM_RX_FRAME_SIZE_IN_BYTES; i++) {
+                int8_t r_to_a_mapping = pdm_pcm_frame_map[f_index][i];
+                if (r_to_a_mapping != -1) {
+                    app_p[r_to_a_mapping] = ringbuf_get(&self->ring_buffer);
+                    num_bytes_copied_to_appbuf++;
+                } else {
+                    // discard unused byte from ring buffer
+                    discard_byte = ringbuf_get(&self->ring_buffer);
+                    (void)discard_byte;
+                }
+                num_bytes_needed_from_ringbuf--;
+            }
+            app_p += appbuf_sample_size_in_bytes;
+        }
+        self->non_blocking_descriptor.index += num_bytes_copied_to_appbuf;
+
+        if (self->non_blocking_descriptor.index >= self->non_blocking_descriptor.appbuf.len) {
+            self->non_blocking_descriptor.copy_in_progress = false;
+            mp_sched_schedule(self->callback_for_non_blocking, MP_OBJ_FROM_PTR(self));
+        }
+    }
 }
 
 #endif // MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
@@ -202,11 +242,32 @@ static mp_obj_t machine_pdm_pcm_deinit(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pdm_pcm_deinit_obj, machine_pdm_pcm_deinit);
 
+static mp_obj_t machine_pdm_pcm_irq(mp_obj_t self_in, mp_obj_t handler) {
+    machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
+    }
+
+    if (handler != mp_const_none) {
+        self->io_mode = NON_BLOCKING;
+    } else {
+        self->io_mode = BLOCKING;
+    }
+
+    self->callback_for_non_blocking = handler;
+
+    mp_machine_pdm_pcm_irq_update(self);
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_pdm_pcm_irq_obj, machine_pdm_pcm_irq);
+
 static const mp_rom_map_elem_t machine_pdm_pcm_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&machine_pdm_pcm_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_pdm_pcm_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_pdm_pcm_irq_obj) },
 
     // Constants
     // Word lengths
@@ -246,8 +307,16 @@ static mp_uint_t machine_pdm_pcm_stream_read(mp_obj_t self_in, void *buf_in, mp_
         uint32_t num_bytes_read = fill_appbuf_from_dma(self, &appbuf);
         #endif
         return num_bytes_read;
+    } else if (self->io_mode == NON_BLOCKING) {
+        #if MICROPY_PY_MACHINE_PDM_PCM_RING_BUF
+        self->non_blocking_descriptor.appbuf.buf = (void *)buf_in;
+        self->non_blocking_descriptor.appbuf.len = size;
+        self->non_blocking_descriptor.index = 0;
+        self->non_blocking_descriptor.copy_in_progress = true;
+        #else
+        #error "Non-blocking mode without ring buffer is not supported yet for PDM_PCM"
+        #endif
     }
-    /** TODO: NON-BLOCKING implementation */
 
     return 0;
 }
@@ -256,7 +325,6 @@ static const mp_stream_p_t pdm_pcm_stream_p = {
     .read = machine_pdm_pcm_stream_read,
     .is_text = false,
 };
-
 
 MP_DEFINE_CONST_DICT(machine_pdm_pcm_locals_dict, machine_pdm_pcm_locals_dict_table);
 
