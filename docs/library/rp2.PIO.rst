@@ -4,7 +4,7 @@
 class PIO -- advanced PIO usage
 ===============================
 
-The :class:`PIO` class gives access to an instance of the RP2040's PIO
+The :class:`PIO` class gives access to an instance of the RP2040/RP2350's PIO
 (programmable I/O) interface.
 
 The preferred way to interact with PIO is using :class:`rp2.StateMachine`, the
@@ -18,8 +18,8 @@ Constructors
 
 .. class:: PIO(id)
 
-    Gets the PIO instance numbered *id*. The RP2040 has two PIO instances,
-    numbered 0 and 1.
+    Gets the PIO instance numbered *id*. The RP2040 has two PIO instances
+    (0 and 1); the RP2350 has three (0, 1 and 2).
 
     Raises a ``ValueError`` if any other argument is provided.
 
@@ -56,8 +56,8 @@ Methods
 
 .. method:: PIO.state_machine(id, [program, ...])
 
-    Gets the state machine numbered *id*. On the RP2040, each PIO instance has
-    four state machines, numbered 0 to 3.
+    Gets the state machine numbered *id*. Each PIO instance has four state
+    machines, numbered 0 to 3.
 
     Optionally initialize it with a *program*: see `StateMachine.init`.
 

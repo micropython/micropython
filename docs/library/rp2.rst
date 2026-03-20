@@ -23,7 +23,7 @@ The ``rp2`` module includes functions for assembling PIO programs.
 
 For running PIO programs, see :class:`rp2.StateMachine`.
 
-.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, side_pindir=False, in_shiftdir=PIO.SHIFT_LEFT, out_shiftdir=PIO.SHIFT_LEFT, autopush=False, autopull=False, push_thresh=32, pull_thresh=32, fifo_join=PIO.JOIN_NONE)
+.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, side_pindir=False, in_shiftdir=PIO.SHIFT_LEFT, out_shiftdir=PIO.SHIFT_LEFT, autopush=False, autopull=False, push_thresh=32, pull_thresh=32, fifo_join=PIO.JOIN_NONE, in_count=0)
 
     Assemble a PIO program.
 
@@ -56,9 +56,15 @@ For running PIO programs, see :class:`rp2.StateMachine`.
 
     - *autopush* configures whether auto-push is enabled.
     - *autopull* configures whether auto-pull is enabled.
-    - *fifo_join* configures whether the 4-word TX and RX FIFOs should be
-      combined into a single 8-word FIFO for one direction only. The options
-      are `PIO.JOIN_NONE`, `PIO.JOIN_RX` and `PIO.JOIN_TX`.
+    - *fifo_join* configures the FIFO mode. The options are `PIO.JOIN_NONE`,
+      `PIO.JOIN_RX` and `PIO.JOIN_TX`. On RP2350 the additional modes
+      ``PIO.JOIN_TXGET`` (4), ``PIO.JOIN_TXPUT`` (8) and ``PIO.JOIN_PUTGET``
+      (12) enable random read/write access to the RX FIFO storage registers
+      via ``StateMachine.putget()``.
+    - *in_count* (RP2350 only) is the number of IN-mapped pins that are not
+      masked to zero when read by ``in_(pins, ...)``, ``wait(pin, ...)``, or
+      ``mov(x, pins)``. Pins beyond this count read as zero. Default is 0,
+      which means all 32 pins are visible (no masking).
 
 .. function:: asm_pio_encode(instr, sideset_count, sideset_opt=False)
 
@@ -93,7 +99,9 @@ PIO-machine instructions.  In MicroPython, PIO assembly routines are written as
 a Python function with the decorator ``@rp2.asm_pio()``, and they use Python
 syntax.  Such routines support standard Python variables and arithmetic, as well
 as the following custom functions that encode PIO instructions and direct the
-assembler.  See sec 3.4 of the RP2040 datasheet for further details.
+assembler.  See sec 3.4 of the RP2040 datasheet or sec 3.5 of the RP2350
+datasheet for further details.  Instructions marked *RP2350 only* encode
+correctly on RP2040 but produce undefined behaviour at runtime.
 
 wrap_target()
     Specify the location where execution continues after program wrapping.
@@ -138,9 +146,15 @@ wait(polarity, src, index)
     Block, waiting for high/low on a pin or IRQ line.
 
     - *polarity*: 0 or 1, whether to wait for a low or high value
-    - *src*: one of: ``gpio`` (absolute pin), ``pin`` (pin relative to
-      StateMachine's ``in_base`` argument), ``irq``
-    - *index*: 0-31, the index for *src*
+    - *src*: one of:
+
+        - ``gpio``: absolute GPIO pin number
+        - ``pin``: pin index relative to the StateMachine's ``in_base``
+        - ``irq``: IRQ flag number
+        - ``jmp_pin``: *(RP2350 only)* PINCTRL_JMP_PIN, with *index* as a
+          2-bit offset (0-3) added to the configured JMP pin
+
+    - *index*: 0-31 for ``gpio``/``pin``/``irq``; 0-3 for ``jmp_pin``
 
 in_(src, bit_count)
     Shift data in from *src* to ISR.
@@ -188,7 +202,9 @@ pull(...)
 mov(dest, src)
     Move into *dest* the value from *src*.
 
-    - *dest*: one of: ``pins``, ``x``, ``y``, ``exec``, ``pc``, ``isr``, ``osr``
+    - *dest*: one of: ``pins``, ``x``, ``y``, ``exec``, ``pc``, ``isr``,
+      ``osr``, ``pindirs`` *(RP2350 only — sets direction of all OUT-mapped
+      pins; use* ``null`` *or* ``invert(null)`` *as src)*
     - *src*: one of: ``pins``, ``x``, ``y``, ``null``, ``status``, ``isr``,
       ``osr``; this argument can be optionally modified by wrapping it in
       ``invert()`` or ``reverse()`` (but not both together)
@@ -207,8 +223,13 @@ irq(...)
     If ``block`` is used then the instruction stalls until the flag is cleared
     by another entity.  If ``clear`` is used then the flag is cleared instead of
     being set.  Relative IRQ indices add the state machine ID to the IRQ index
-    with modulo-4 addition.  IRQs 0-3 are visible from to the processor, 4-7 are
+    with modulo-4 addition.  IRQs 0-3 are visible from the processor, 4-7 are
     internal to the state machines.
+
+    On RP2350, the index argument can be wrapped in ``next_pio()`` or
+    ``prev_pio()`` to target IRQ flags in a neighbouring PIO block instead of
+    the current one, e.g. ``irq(next_pio(2))`` or ``irq(clear, prev_pio(0))``.
+    Cross-PIO IRQ flags are observed on the next cycle with no delay penalty.
 
 set(dest, data)
     Set *dest* with the value *data*.
