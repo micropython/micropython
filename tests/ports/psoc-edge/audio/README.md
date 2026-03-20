@@ -83,7 +83,7 @@ python record-audio.py clean
 
 ## Validation matrix
 
-Mark each combination as validated (`✅`), failed (`❌`), or not tested (leave blank).
+Mark each combination as validated (`✅`), failed (`❌`), poor audio quality (`👂`), or not tested (leave blank).
 
 | Sample Rate | Bits per Sample | Format | Mode | Validated |
 |---|---|---|---|---|
@@ -95,14 +95,14 @@ Mark each combination as validated (`✅`), failed (`❌`), or not tested (leave
 | 8000 | 32 | MONO | non-blocking | |
 | 8000 | 32 | STEREO | blocking | |
 | 8000 | 32 | STEREO | non-blocking | |
-| 16000 | 16 | MONO | blocking | |
-| 16000 | 16 | MONO | non-blocking | |
+| 16000 | 16 | MONO | blocking | `✅` |
+| 16000 | 16 | MONO | non-blocking | `✅` |
 | 16000 | 16 | STEREO | blocking | `✅` |
 | 16000 | 16 | STEREO | non-blocking | `✅` |
-| 16000 | 32 | MONO | blocking | |
-| 16000 | 32 | MONO | non-blocking | |
-| 16000 | 32 | STEREO | blocking | |
-| 16000 | 32 | STEREO | non-blocking | |
+| 16000 | 32 | MONO | blocking | `✅` |
+| 16000 | 32 | MONO | non-blocking | `✅` |
+| 16000 | 32 | STEREO | blocking | `✅` |
+| 16000 | 32 | STEREO | non-blocking | `👂` Electric sound|
 | 32000 | 16 | MONO | blocking | |
 | 32000 | 16 | MONO | non-blocking | |
 | 32000 | 16 | STEREO | blocking | |
