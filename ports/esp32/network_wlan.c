@@ -37,11 +37,15 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/modnetwork.h"
+#include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
 #include "esp_log.h"
 #include "esp_psram.h"
+#if !CONFIG_ESP_HOSTED_ENABLED
+#include "esp_wifi_ap_get_sta_list.h"
+#endif
 
 #ifndef NO_QSTR
 #include "mdns.h"
@@ -409,11 +413,28 @@ static mp_obj_t network_wlan_status(size_t n_args, const mp_obj_t *args) {
             require_if(args[0], ESP_IF_WIFI_AP);
             wifi_sta_list_t station_list;
             esp_exceptions(esp_wifi_ap_get_sta_list(&station_list));
-            wifi_sta_info_t *stations = (wifi_sta_info_t *)station_list.sta;
+            #if !CONFIG_ESP_HOSTED_ENABLED
+            wifi_sta_mac_ip_list_t mac_ip_list;
+            esp_exceptions(esp_wifi_ap_get_sta_list_with_ip(&station_list, &mac_ip_list));
+            #endif
             mp_obj_t list = mp_obj_new_list(0, NULL);
-            for (int i = 0; i < station_list.num; ++i) {
+            #if CONFIG_ESP_HOSTED_ENABLED
+            int count = station_list.num;
+            wifi_sta_info_t *source = (wifi_sta_info_t *)station_list.sta;
+            #else
+            int count = mac_ip_list.num;
+            esp_netif_pair_mac_ip_t *source = (esp_netif_pair_mac_ip_t *)mac_ip_list.sta;
+            #endif
+            for (int i = 0; i < count; ++i) {
+                #if CONFIG_ESP_HOSTED_ENABLED
                 mp_obj_tuple_t *t = mp_obj_new_tuple(1, NULL);
-                t->items[0] = mp_obj_new_bytes(stations[i].mac, sizeof(stations[i].mac));
+                #else
+                mp_obj_tuple_t *t = mp_obj_new_tuple(2, NULL);
+                #endif
+                t->items[0] = mp_obj_new_bytes(source[i].mac, sizeof(source[i].mac));
+                #if !CONFIG_ESP_HOSTED_ENABLED
+                t->items[1] = source[i].ip.addr != 0 ? netutils_format_ipv4_addr((uint8_t *)(&source[i].ip), NETUTILS_BIG) : mp_const_none;
+                #endif
                 mp_obj_list_append(list, t);
             }
             return list;
