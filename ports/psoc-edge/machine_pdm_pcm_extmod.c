@@ -55,8 +55,8 @@ typedef enum {
 } pdm_pcm_word_length_t;
 
 typedef enum {
-    MONO,
-    STEREO
+    MONO = 1,
+    STEREO = 2
 } format_t;
 
 typedef enum {
