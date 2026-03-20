@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "BLE",
+        "External Flash",
+        "WiFi",
+        "USB",
+        "USB-C"
+    ],
+    "images": [
+        "seeed_xiao_esp32c6.jpg"
+    ],
+    "mcu": "esp32c6",
+    "product": "XIAO ESP32C6",
+    "url": "https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html",
+    "vendor": "Seeed Studio"
+}
