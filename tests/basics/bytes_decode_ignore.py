@@ -97,6 +97,10 @@ print(repr(b'\xf0\x9f\x98\x20'.decode('utf-8', 'ignore')))
 print(repr(b'hello\xe4world'.decode('utf-8', 'ignore')))
 print(repr(b'hello\xf0world'.decode('utf-8', 'ignore')))
 
+# Test valid multi-byte sequence mixed with invalid bytes (exercises got==need path)
+print(repr(b'\xff\xc2\xa9'.decode('utf-8', 'ignore')))    # © preserved after invalid \xff
+print(repr(b'\xff\xe4\xb8\x80'.decode('utf-8', 'ignore')))  # 一 preserved after invalid \xff
+
 # Test multiple incomplete sequences in a row
 print(repr(b'\xe4\xf0\xe4'.decode('utf-8', 'ignore')))
 

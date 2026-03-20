@@ -46,3 +46,13 @@ try:
     str(b"\xf0\xe0\xed\xe8", "utf8")
 except UnicodeError:
     print("UnicodeError")
+
+# test surrogate repr uses \uXXXX escape
+print(repr(chr(0xD800)))
+
+# test str() from buffer-protocol object (memoryview)
+print(str(memoryview(b"hello"), "utf-8"))
+try:
+    str(memoryview(b"\xff"), "utf-8")
+except UnicodeError:
+    print("UnicodeError")
