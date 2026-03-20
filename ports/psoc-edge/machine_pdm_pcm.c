@@ -492,8 +492,8 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
      * {
      */
     format_t pdm_pcm_format = args[ARG_format].u_int;
-    /** if ((pdm_pcm_format != MONO) && TODO: Enable MONO */
-    if ((pdm_pcm_format != STEREO)) {
+    if ((pdm_pcm_format != MONO) &&
+        (pdm_pcm_format != STEREO)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid format"));
     }
     self->format = pdm_pcm_format;
@@ -502,8 +502,8 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
     /** } */
 
     uint8_t pdm_pcm_word_length = args[ARG_bits].u_int;
-    if (pdm_pcm_word_length < BITS_16) {
-        /** || pdm_pcm_word_length > BITS_32) {  TODO: Enable 32 bits*/
+    if (pdm_pcm_word_length != BITS_16 &&
+        pdm_pcm_word_length != BITS_32) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid word length"));
     }
     self->bits = args[ARG_bits].u_int;
