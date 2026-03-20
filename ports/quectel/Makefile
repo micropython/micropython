@@ -1,5 +1,9 @@
 TOP := ../..
+ifneq ($(HeliosSDK_PATH),)
+ROOT := $(HeliosSDK_PATH)
+else
 ROOT := $(TOP)/../..
+endif
 
 include ../../py/mkenv.mk
 include mpconfigport.mk
