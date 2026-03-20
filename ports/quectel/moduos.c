@@ -40,7 +40,7 @@
 #include "vfs_quecfs.h"
 #endif
 
-#if MICROPY_QPY_MODULE_UOS
+#if MICROPY_QPY_MODULE_OS
 
 static char sysname[30] = {0};
 static char nodename[20] = {0};
@@ -150,7 +150,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(os_urandom___init___obj, os_urandom___init__);
 static mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
     (void)obj_in;
     for (;;) {
-        int c = mp_uos_dupterm_rx_chr();
+        int c = mp_os_dupterm_rx_chr();
         if (c < 0) {
             break;
         }
@@ -163,14 +163,14 @@ static MP_DEFINE_CONST_FUN_OBJ_1(os_dupterm_notify_obj, os_dupterm_notify);
 
 extern const mp_obj_type_t helios_flash_device_type;
 static const mp_rom_map_elem_t os_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
     #if OS_URANDOM_SEED_ON_IMPORT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&os_urandom___init___obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
     { MP_ROM_QSTR(MP_QSTR_uname2), MP_ROM_PTR(&os_uname2_obj) },
     #if MICROPY_PY_OS_DUPTERM
-    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_os_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&os_dupterm_notify_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_FlashDevice), MP_ROM_PTR(&helios_flash_device_type) },
@@ -217,10 +217,10 @@ static const mp_rom_map_elem_t os_module_globals_table[] = {
 
 static MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
-const mp_obj_module_t uos_module = {
+const mp_obj_module_t os_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&os_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uos, uos_module);
+MP_REGISTER_MODULE(MP_QSTR_os, os_module);
 #endif
