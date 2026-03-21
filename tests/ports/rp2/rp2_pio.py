@@ -50,6 +50,8 @@ class TestPIOAssemblerEncoding(unittest.TestCase):
 
     def test_wait_jmp_pin(self):
         # RP2350: wait(polarity, jmp_pin, offset) uses src=3 in instruction bits [6:5].
+        if not is_rp2350:
+            return
         # 0x2000 | polarity<<7 | 3<<5 | offset
         self.assertEqual(rp2.asm_pio_encode("wait(1, jmp_pin, 2)", 0), 0x20E2)
         self.assertEqual(rp2.asm_pio_encode("wait(0, jmp_pin, 0)", 0), 0x2060)
@@ -62,6 +64,8 @@ class TestPIOAssemblerEncoding(unittest.TestCase):
 
     def test_irq_cross_pio(self):
         # RP2350: next_pio(n) sets bits [4:3]=01 in the irq index field.
+        if not is_rp2350:
+            return
         # irq(next_pio(2)) -> index = 2 | 0x08 = 0x0A -> 0xC00A
         self.assertEqual(rp2.asm_pio_encode("irq(next_pio(2))", 0), 0xC00A)
         # irq(prev_pio(1)) -> index = 1 | 0x18 = 0x19 -> 0xC019
@@ -84,7 +88,10 @@ class TestPIOAssemblerEncoding(unittest.TestCase):
         self.assertEqual(p[5] & 0x1F, 0)
 
     def test_in_count_nonzero(self):
-        # in_count encodes into shiftctrl bits [4:0]; other bits unaffected.
+        # RP2350: in_count encodes into shiftctrl bits [4:0]; other bits unaffected.
+        if not is_rp2350:
+            return
+
         @rp2.asm_pio(in_count=5)
         def p():
             nop()
@@ -96,7 +103,10 @@ class TestPIOAssemblerEncoding(unittest.TestCase):
         self.assertEqual((shiftctrl >> 30) & 0x3, 0)
 
     def test_in_count_max(self):
-        # Maximum useful in_count is 32 (5 bits); 32 & 0x1F == 0
+        # RP2350: Maximum useful in_count is 32 (5 bits); 32 & 0x1F == 0
+        if not is_rp2350:
+            return
+
         @rp2.asm_pio(in_count=31)
         def p():
             nop()
@@ -123,6 +133,8 @@ class TestPIOAssemblerEncoding(unittest.TestCase):
 
     def test_fifo_join_rp2350_modes(self):
         # RP2350 TXGET(4)/TXPUT(8)/PUTGET(12) encode into shiftctrl bits [15:14].
+        if not is_rp2350:
+            return
         for join_val, expected_bits14 in ((4, 1), (8, 2), (12, 3)):
 
             @rp2.asm_pio(fifo_join=join_val)
@@ -142,7 +154,10 @@ class TestPIOAssemblerEncoding(unittest.TestCase):
             )
 
     def test_in_count_with_fifo_join(self):
-        # Verify in_count and fifo_join can coexist in shiftctrl.
+        # RP2350: Verify in_count and fifo_join can coexist in shiftctrl.
+        if not is_rp2350:
+            return
+
         @rp2.asm_pio(fifo_join=rp2.PIO.JOIN_TX, in_count=7)
         def p():
             nop()
