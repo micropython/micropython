@@ -72,6 +72,34 @@ Methods
 
     Optionally configure it.
 
+.. method:: PIO.version()
+
+    Returns the hardware version of this PIO instance as an integer:
+    0 for PIO v0 (RP2040), 1 for PIO v1 (RP2350).
+
+    This can be used to detect at runtime which PIO features are available.
+
+.. method:: PIO.sm_mask_enable(sm_mask, *, next_mask=0, prev_mask=0)
+
+    Atomically enable state machines across PIO blocks in a single write to
+    the ``CTRL`` register.
+
+    *sm_mask* is a 4-bit mask of state machines (bits 0–3) to enable on
+    this PIO instance.
+
+    *next_mask* and *prev_mask* are 4-bit masks of state machines to enable
+    simultaneously on the neighbouring (next/previous) PIO instance.
+    Setting either causes the ``NEXTPREV_SM_ENABLE`` bit to be asserted in
+    the same write, making the enable across all specified PIO blocks
+    simultaneous.
+
+    Only available on RP2350 (PIO v1).
+
+    Example — start SM0 on PIO0 and SM0 on PIO1 at exactly the same time::
+
+        p0 = rp2.PIO(0)
+        p0.sm_mask_enable(0b0001, next_mask=0b0001)
+
 
 Constants
 ---------
@@ -95,6 +123,24 @@ Constants
           PIO.JOIN_RX
 
     These constants are used for the *fifo_join* argument to `asm_pio`.
+
+.. data:: PIO.JOIN_RX_PUT
+          PIO.JOIN_RX_GET
+
+    RP2350 (PIO v1) FIFO join modes, used for the *fifo_join* argument to
+    `asm_pio`.
+
+    ``JOIN_RX_PUT``: the state machine writes to its RX FIFO entries with
+    ``MOV rxfifo[n], ISR``, and the host reads them with
+    `StateMachine.putget`.  The entries act as status registers: the state
+    machine updates them and the host reads them at any time.
+
+    ``JOIN_RX_GET``: the host writes to the RX FIFO entries with
+    `StateMachine.putget`, and the state machine reads them with
+    ``MOV OSR, rxfifo[n]``.  The entries act as configuration registers:
+    the host updates them and the state machine reads them at any time.
+
+    Only available on RP2350.
 
 .. data:: PIO.IRQ_SM0
           PIO.IRQ_SM1
