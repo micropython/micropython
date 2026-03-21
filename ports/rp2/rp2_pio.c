@@ -642,11 +642,19 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     mp_obj_t *prog;
     mp_obj_get_array_fixed_n(args[ARG_prog].u_obj, PROG_MAX_FIELDS, &prog);
 
-    // Get and the program offset, and load it into memory if it's not already there.
-    mp_int_t offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + pio_get_index(self->pio)]);
-    if (offset < 0) {
-        rp2_pio_add_program(&rp2_pio_obj[pio_get_index(self->pio)], args[ARG_prog].u_obj);
-        offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + pio_get_index(self->pio)]);
+    // Get the program offset, and load the program into memory if it's not already there.
+    uint pio_idx = pio_get_index(self->pio);
+    mp_int_t offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + pio_idx]);
+    if (offset < 0 || !(rp2_pio_instruction_memory_usage_mask[pio_idx] & (1u << offset))) {
+        // Program is not in instruction memory: either it was never loaded (offset < 0),
+        // or remove_program() was called without arguments and cleared all SDK tracking
+        // without resetting this program object's cached offset.
+        if (offset >= 0) {
+            // Invalidate the stale cached offset before re-adding.
+            prog[PROG_OFFSET_PIO0 + pio_idx] = MP_OBJ_NEW_SMALL_INT(-1);
+        }
+        rp2_pio_add_program(&rp2_pio_obj[pio_idx], args[ARG_prog].u_obj);
+        offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + pio_idx]);
     }
     rp2_state_machine_initial_pc[self->id] = offset;
 
