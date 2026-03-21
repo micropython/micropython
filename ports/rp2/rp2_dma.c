@@ -34,6 +34,7 @@
 
 #include "hardware/irq.h"
 #include "hardware/dma.h"
+#include "hardware/clocks.h"
 
 #define CHANNEL_CLOSED 0xff
 
@@ -55,6 +56,194 @@ typedef struct _rp2_dma_ctrl_field_t {
     uint8_t length : 3;
     uint8_t read_only : 1;
 } rp2_dma_ctrl_field_t;
+
+typedef struct _rp2_dma_timer_obj_t {
+    mp_obj_base_t base;
+    uint8_t timer_id;
+    bool closed;
+} rp2_dma_timer_obj_t;
+
+
+static mp_obj_t rp2_dma_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+
+    int dma_timer_id;
+
+    if (n_args == 1) {
+        dma_timer_id = (int)mp_obj_get_int(args[0]);
+        if (dma_timer_id < 0 || dma_timer_id >= 4) {
+            mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
+        }
+        if (dma_timer_is_claimed(dma_timer_id)) {
+            mp_raise_OSError(MP_EBUSY);
+        }
+        dma_timer_claim(dma_timer_id);
+    } else {
+        dma_timer_id = dma_claim_unused_timer(false);
+        if (dma_timer_id < 0) {
+            mp_raise_OSError(MP_EBUSY);
+        }
+    }
+
+    rp2_dma_timer_obj_t *self = mp_obj_malloc_with_finaliser(rp2_dma_timer_obj_t, &rp2_dma_timer_type);
+    self->timer_id = dma_timer_id;
+    self->closed = false;
+
+    // Return the DMA object.
+    return MP_OBJ_FROM_PTR(self);
+}
+
+static void rp2_dma_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    rp2_dma_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "DMATimer(%u)", self->timer_id);
+}
+
+#define DMA_TIMER_MAX_TERMS 65536
+static inline void rp2_timer_find_best_ratio(uint32_t p, uint32_t q, uint32_t *x, uint32_t *y) {
+    // Find the values x and y such that x/y is the closest faction to p/q for which
+    // both terms are less than DMA_TIMER_MAX_TERMS.
+
+    // This implementation comptes the continued fraction and then checks if the
+    // best semi-convergent is obviously better (i.e. > a/2)
+
+    uint32_t h_curr = 1, k_curr = 0;
+    uint32_t h_prev = 0, k_prev = 1;
+
+    while (q != 0) {
+        uint32_t a = p / q;
+        uint32_t h_next = a * h_curr + h_prev;
+        uint32_t k_next = a * k_curr + k_prev;
+
+        if (h_next >= DMA_TIMER_MAX_TERMS || k_next >= DMA_TIMER_MAX_TERMS) {
+            // The next convergent would overflow. Check of there is obviously a better semi-convergent.
+            // If there is a value os n that is >= a/2 then it will always be better than the current ratio.
+            uint32_t n = DMA_TIMER_MAX_TERMS;
+            if (h_curr) {
+                n = (DMA_TIMER_MAX_TERMS - 1 - h_prev) / h_curr;
+            }
+            if (k_curr) {
+                uint32_t nk = (DMA_TIMER_MAX_TERMS - 1 - k_prev) / k_curr;
+                if (nk < n) {
+                    n = nk;
+                }
+            }
+
+            if (n != DMA_TIMER_MAX_TERMS && n > 0 && n >= (a + 1) / 2) {
+                *x = n * h_curr + h_prev;
+                *y = n * k_curr + k_prev;
+                return;
+            }
+            // We didn't find a better n, so break out of the loop
+            break;
+        }
+        uint32_t r = p % q;
+        p = q;
+        q = r;
+        h_prev = h_curr;
+        k_prev = k_curr;
+        h_curr = h_next;
+        k_curr = k_next;
+    }
+
+    *x = h_curr;
+    *y = k_curr;
+}
+
+static void rp2_dma_timer_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
+    rp2_dma_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load attribute
+        if (attr_in == MP_QSTR_treq_sel) {  // Use the same name (and QSTR) as the CTRL register field
+            dest[0] = mp_obj_new_int_from_uint((mp_uint_t)dma_get_timer_dreq(self->timer_id));
+        } else if (attr_in == MP_QSTR_freq) {
+            uint32_t sys_clk_hz = clock_get_hz(clk_sys);
+            uint32_t reg_value = dma_hw->timer[self->timer_id];
+            uint32_t num = (reg_value >> DMA_TIMER0_X_LSB) & 0xffff;
+            uint32_t dom = (reg_value >> DMA_TIMER0_Y_LSB) & 0xffff;
+            uint64_t fx = ((uint64_t)sys_clk_hz) * ((uint64_t)num);
+            fx /= dom;
+            dest[0] = mp_obj_new_int_from_uint((uint)fx);
+        } else if (attr_in == MP_QSTR_ratio) {
+            uint32_t reg_value = dma_hw->timer[self->timer_id];
+            mp_obj_t num_dom[2];
+            num_dom[0] = mp_obj_new_int_from_uint((reg_value >> DMA_TIMER0_X_LSB) & 0xffff);
+            num_dom[1] = mp_obj_new_int_from_uint((reg_value >> DMA_TIMER0_Y_LSB) & 0xffff);
+
+            dest[0] = mp_obj_new_tuple(2, num_dom);
+        } else {
+            // Continue attribute search in locals dict.
+            dest[1] = MP_OBJ_SENTINEL;
+        }
+    } else {
+        // Set or delete attribute
+        if (dest[1] == MP_OBJ_NULL) {
+            // We don't support deleting attributes.
+            return;
+        }
+
+        if (attr_in == MP_QSTR_freq) {
+            mp_int_t freq = mp_obj_get_int(dest[1]);
+            uint32_t sys_clk_hz = clock_get_hz(clk_sys);
+
+            // Value needs to be between 1 and 1/65535 times the sysclk frequency
+            if (freq > sys_clk_hz || (sys_clk_hz / freq) > 65535) {
+                mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
+            }
+            uint32_t x, y;
+            rp2_timer_find_best_ratio(freq, sys_clk_hz, &x, &y);
+            dma_timer_set_fraction(self->timer_id, (uint16_t)x, (uint16_t)y);
+
+            dest[0] = MP_OBJ_NULL; // indicate success
+        } else if (attr_in == MP_QSTR_ratio) {
+            // Value needs to be a 2-tuple
+            size_t count = 2;
+            mp_obj_t *num_dom;
+            mp_obj_tuple_get(dest[1], &count, &num_dom);
+
+            if (count != 2) {
+                mp_raise_ValueError(NULL);
+            }
+
+            mp_int_t numerator = mp_obj_get_int(num_dom[0]);
+            mp_int_t denominator = mp_obj_get_int(num_dom[1]);
+            if (numerator < 1 || numerator > 65535 || denominator < 1 || denominator > 65535 || numerator > denominator) {
+                mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
+            }
+
+            dma_timer_set_fraction(self->timer_id, (uint16_t)numerator, (uint16_t)denominator);
+
+            dest[0] = MP_OBJ_NULL; // indicate success
+        }
+    }
+}
+
+static mp_obj_t rp2_dma_timer_close(mp_obj_t self_in) {
+    rp2_dma_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (!self->closed) {
+        dma_timer_unclaim(self->timer_id);
+        self->closed = true;
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(rp2_dma_timer_close_obj, rp2_dma_timer_close);
+
+static const mp_rom_map_elem_t rp2_dma_timer_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&rp2_dma_timer_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&rp2_dma_timer_close_obj) },
+};
+static MP_DEFINE_CONST_DICT(rp2_dma_timer_locals_dict, rp2_dma_timer_locals_dict_table);
+
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2_dma_timer_type,
+    MP_QSTR_DMATimer,
+    MP_TYPE_FLAG_NONE,
+    make_new, rp2_dma_timer_make_new,
+    print, rp2_dma_timer_print,
+    attr, rp2_dma_timer_attr,
+    locals_dict, &rp2_dma_timer_locals_dict
+    );
 
 static rp2_dma_ctrl_field_t rp2_dma_ctrl_fields_table[] = {
     { MP_QSTR_enable, DMA_CH0_CTRL_TRIG_EN_LSB, 1, 0 },
@@ -157,7 +346,7 @@ static mp_obj_t rp2_dma_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(self);
 }
 
-static void rp2_dma_error_if_closed(rp2_dma_obj_t *self) {
+static void rp2_dma_error_if_closed(rp2_dma_obj_t const *self) {
     if (self->channel == CHANNEL_CLOSED) {
         mp_raise_ValueError(MP_ERROR_TEXT("channel closed"));
     }
