@@ -241,6 +241,9 @@ ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 PROG := $(PROG).exe
 endif
 
+DBG_INFO_SECTION=".debug_gdb_scripts"
+DBG_INFO_FILE=$(HEADER_BUILD)/debug_info.bin
+
 all: $(BUILD)/$(PROG)
 
 $(BUILD)/$(PROG): $(OBJ)
@@ -251,6 +254,20 @@ $(BUILD)/$(PROG): $(OBJ)
 ifndef DEBUG
 ifdef STRIP
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $@
+endif
+else
+# MinGW requires finding out the end address of the mapped sections block and
+# then set the VMA in order to be placed at the end of the binary once loaded.
+# This hasn't been tested on macOS, so limit the feature to Linux for now.
+ifeq (linux,$(findstring linux,$(COMPILER_TARGET)))
+ifneq (,$(EMBED_DEBUG_INFO))
+	$(ECHO) "GEN $(DBG_INFO_FILE)"
+	$(Q)CPP="$(CPP)" CFLAGS="$(CFLAGS)" $(PYTHON) $(PY_SRC)/writedebuginfo.py > $(DBG_INFO_FILE)
+	$(Q)$(OBJCOPY) \
+		--add-section $(DBG_INFO_SECTION)=$(DBG_INFO_FILE) \
+		--set-section-flags $(DBG_INFO_SECTION)=readonly,merge,strings \
+		$(BUILD)/$(PROG)
+endif
 endif
 endif
 	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $@
