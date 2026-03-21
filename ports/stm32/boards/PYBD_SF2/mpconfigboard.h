@@ -27,6 +27,9 @@
 #define MICROPY_HW_BOARD_NAME       "PYBD-SF2W"
 #define MICROPY_HW_MCU_NAME         "STM32F722IEK"
 
+// Flash is too tight to include the bytes.decode() error handlers
+#define MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE (0)
+
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "PYBD"
 
 #define MICROPY_PY_PYB_LEGACY       (1)
