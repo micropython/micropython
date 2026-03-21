@@ -15,7 +15,8 @@ main work.
 The RP2040 has two PIO blocks each with four independent state machines (8
 total).  The RP2350 adds a third PIO block for 12 state machines in total, and
 introduces PIO version 1 with additional instruction capabilities (see
-`PIO assembly language instructions`).  These state machines can transfer
+:ref:`PIO assembly language instructions <pio_assembly_instructions>`).
+These state machines can transfer
 data to/from other entities using First-In-First-Out (FIFO) buffers, which
 allow the state machine and main processor to work independently yet also
 synchronise their data.  Each FIFO has four words (each of 32 bits) which can

@@ -91,6 +91,8 @@ For running PIO programs, see :class:`rp2.StateMachine`.
     an error assembling a PIO program.
 
 
+.. _pio_assembly_instructions:
+
 PIO assembly language instructions
 ----------------------------------
 
