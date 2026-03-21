@@ -1,0 +1,34 @@
+# --------------------------------------------------------------------
+# Target
+# --------------------------------------------------------------------
+CONFIG_IDF_TARGET="esp32"
+
+# --------------------------------------------------------------------
+# Flash (ESP32-WROVER-E-N16R8 → 16MB QIO @ 80MHz)
+# --------------------------------------------------------------------
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# --------------------------------------------------------------------
+# PSRAM (8MB, Octal, 80MHz)
+# --------------------------------------------------------------------
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_SPEED_80M=y
+
+# --------------------------------------------------------------------
+# Console / REPL (UART0)
+# --------------------------------------------------------------------
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_UART=y
+CONFIG_ESP_CONSOLE_UART_NUM=0
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=115200
+
+# --------------------------------------------------------------------
+# Partition table
+# --------------------------------------------------------------------
+CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-mch2022.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
