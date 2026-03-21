@@ -9,8 +9,10 @@ MEMORY
     FLASH_APP  (rx) : ORIGIN = 0x08020000, LENGTH = 640K    /* sectors 1-5 */
     FLASH_FS (r)    : ORIGIN = 0x080c0000, LENGTH = 256K    /* sectors 6-7 */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for FS storage cache */
-    RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 128K    /* AXI SRAM (could extend +192K from ITCM) */
+    RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 320K    /* AXI SRAM (128k) + ITCM/AXI SRAM (192k) */
     RAM_SRAM1 (xrw) : ORIGIN = 0x30000000, LENGTH = 16K     /* SRAM1 */
+    RAM_SRAM2 (xrw) : ORIGIN = 0x30004000, LENGTH = 16K     /* SRAM2 */
+    RAM_SRAM4 (xrw) : ORIGIN = 0x38000000, LENGTH = 16K     /* SRAM4 */
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
