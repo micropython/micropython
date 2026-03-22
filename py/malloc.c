@@ -344,3 +344,7 @@ size_t m_get_peak_bytes_allocated(void) {
     return MP_STATE_MEM(peak_bytes_allocated);
 }
 #endif
+
+#undef free
+#undef malloc
+#undef realloc
