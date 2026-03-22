@@ -11,6 +11,12 @@ if not hasattr(framebuf.FrameBuffer, "poly"):
     print("SKIP")
     raise SystemExit
 
+try:
+    buf = bytearray(70 * 70)
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
 
 def print_buffer(buffer, width, height):
     for row in range(height):
@@ -19,8 +25,6 @@ def print_buffer(buffer, width, height):
             print(" {:02x}".format(val) if val else " ··", end="")
         print()
 
-
-buf = bytearray(70 * 70)
 
 w = 30
 h = 25
