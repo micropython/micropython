@@ -335,6 +335,11 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
         if (ret == 0) {
             return 1;
         }
+        #if defined(__FreeBSD__)
+        else if (ret == EDEADLK) {
+            return 0;
+        }
+        #endif
     } else {
         ret = pthread_mutex_trylock(mutex);
         if (ret == 0) {
@@ -342,6 +347,11 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
         } else if (ret == EBUSY) {
             return 0;
         }
+        #if defined(__FreeBSD__)
+        else if (ret == EDEADLK) {
+            return 0;
+        }
+        #endif
     }
     return -ret;
 }

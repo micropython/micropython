@@ -103,6 +103,9 @@
 #elif defined(__ANDROID__)
 #define MICROPY_PLATFORM_LIBC_LIB       "bionic"
 #define MICROPY_PLATFORM_LIBC_VER       MP_STRINGIFY(__ANDROID_API__)
+#elif defined(__FreeBSD__)
+#define MICROPY_PLATFORM_LIBC_LIB       "libc"
+#define MICROPY_PLATFORM_LIBC_VER       ""
 #else
 #define MICROPY_PLATFORM_LIBC_LIB       ""
 #define MICROPY_PLATFORM_LIBC_VER       ""
@@ -112,6 +115,8 @@
 #define MICROPY_PLATFORM_SYSTEM         "Android"
 #elif defined(__linux)
 #define MICROPY_PLATFORM_SYSTEM         "Linux"
+#elif defined(__FreeBSD__)
+#define MICROPY_PLATFORM_SYSTEM         "FreeBSD"
 #elif defined(__unix__)
 #define MICROPY_PLATFORM_SYSTEM         "Unix"
 #elif defined(__CYGWIN__)
