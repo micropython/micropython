@@ -1,0 +1,7 @@
+# ESP-IDF Partition Table for the MCH2022 badge
+# Name,   Type,  SubType,  Offset,   Size,    Flags
+nvs,      data,  nvs,      0x9000,   16K,
+phy_init, data,  phy,      0xF000,   4K,
+app0,     app,   factory,  0x10000,  3200K,
+appfs,    data,  fat,      0x330000, 8000K,
+locfd,    data,  fat,      0xB00000, 5120K,
