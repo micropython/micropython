@@ -300,6 +300,7 @@ tests_requiring_target_wiring = (
     "extmod_hardware/machine_uart_irq_break.py",
     "extmod_hardware/machine_uart_irq_rx.py",
     "extmod_hardware/machine_uart_irq_rxidle.py",
+    "ports/stm32_hardware/dma_alignment.py",
 )
 
 
