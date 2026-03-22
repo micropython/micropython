@@ -24,6 +24,19 @@ There are three ways to provide the target wiring configuration:
 A target wiring script should define the following variables if the corresponding test
 is to be supported.
 
+### Pin tests
+
+Pin tests require two GPIO pins to be connected in loopback mode.
+The variables are:
+
+    pin_loopback_pins: list[tuple[Any, Any]]
+
+The two Pin instances will be created using:
+
+    for p0, p1 in pin_loopback_pins:
+        machine.Pin(p0)
+        machine.Pin(p1)
+
 ### UART tests
 
 UART tests require one UART to be connected in loopback mode, ie TX connected physically
