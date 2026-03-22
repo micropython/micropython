@@ -59,8 +59,31 @@
 #define MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING "1.00"
 #endif
 
-#if !defined(CFG_TUSB_RHPORT0_MODE) && !defined(CFG_TUSB_RHPORT1_MODE)
-#define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
+// Configure RHPORT modes based on board USB PHY configuration.
+// Uses MICROPY_HW_USB_HS and MICROPY_HW_USB_HS_IN_FS which are integer
+// macros, not C enum values, so they work correctly in #if directives.
+// Note: STM32N6 pre-defines CFG_TUSB_RHPORT0_MODE in mpconfigboard_common.h
+// so the #ifndef guards here let it pass through. Any future STM32U5 HS
+// enablement would need a similar board-level override.
+
+#ifndef CFG_TUSB_RHPORT0_MODE
+#if MICROPY_HW_USB_HS && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_NONE)
+#else
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
+#endif
+#endif
+
+#ifndef CFG_TUSB_RHPORT1_MODE
+#if MICROPY_HW_USB_HS && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
+#if MICROPY_HW_USB_HS_IN_FS
+#define CFG_TUSB_RHPORT1_MODE (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
+#else
+#define CFG_TUSB_RHPORT1_MODE (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#endif
+#else
+#define CFG_TUSB_RHPORT1_MODE (OPT_MODE_NONE)
+#endif
 #endif
 
 #if MICROPY_HW_USB_CDC
