@@ -1,5 +1,20 @@
 # Test select.poll in combination with file descriptors.
 
+# FreeBSD allows to have up to ~120k file descriptor by default, so this test
+# will fail on such a system.  Since there's no provision to query sysctl
+# values or an easy way to parse the output of `ulimit -n` the test is just
+# skipped on FreeBSD.
+
+try:
+    import sys
+
+    if sys.platform == "freebsd":
+        print("SKIP")
+        raise SystemExit
+except (ImportError, AttributeError):
+    print("SKIP")
+    raise SystemExit
+
 try:
     import select, errno
 
