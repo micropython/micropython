@@ -146,7 +146,11 @@ typedef long mp_off_t;
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
+#ifdef PATH_MAX
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
+#else
+#define MICROPY_ALLOC_PATH_MAX      (4096)
+#endif
 
 // Ensure builtinimport.c works with -m.
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
