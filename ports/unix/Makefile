@@ -163,6 +163,12 @@ else
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
 
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+# ../../lib/btstack/platform/libusb/hci_transport_h2_libusb.c:1354:13:
+# error: ‘signal_sco_can_send_now’ defined but not used [-Werror=unused-function]
+CFLAGS += -Wno-error=unused-function
+endif
+
 SRC_BTSTACK_C += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 endif
 endif
