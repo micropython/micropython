@@ -331,5 +331,137 @@ class TestPIORp2350(unittest.TestCase):
         rp2.PIO(2).remove_program()
 
 
+# ---------------------------------------------------------------------------
+# RP2350 PIO v1 C-layer feature tests
+# ---------------------------------------------------------------------------
+
+
+class TestPIOV1Constants(unittest.TestCase):
+    def test_pio_version(self):
+        # PIO.version() returns the hardware version: 0 on RP2040, 1 on RP2350.
+        expected = 1 if is_rp2350 else 0
+        self.assertEqual(rp2.PIO(0).version(), expected)
+        self.assertEqual(rp2.PIO(1).version(), expected)
+
+    def test_join_rp2350_constants(self):
+        # JOIN_RX_GET and JOIN_RX_PUT are RP2350-only FIFO mode constants.
+        if not is_rp2350:
+            return
+        self.assertEqual(rp2.PIO.JOIN_RX_GET, 4)
+        self.assertEqual(rp2.PIO.JOIN_RX_PUT, 8)
+
+    def test_dreq_constants_pio0_pio1(self):
+        # DREQ constants for PIO0 and PIO1 are contiguous starting at 0 and 8.
+        self.assertEqual(rp2.DREQ_PIO0_TX0, 0)
+        self.assertEqual(rp2.DREQ_PIO0_TX1, 1)
+        self.assertEqual(rp2.DREQ_PIO0_TX2, 2)
+        self.assertEqual(rp2.DREQ_PIO0_TX3, 3)
+        self.assertEqual(rp2.DREQ_PIO0_RX0, 4)
+        self.assertEqual(rp2.DREQ_PIO0_RX1, 5)
+        self.assertEqual(rp2.DREQ_PIO0_RX2, 6)
+        self.assertEqual(rp2.DREQ_PIO0_RX3, 7)
+        self.assertEqual(rp2.DREQ_PIO1_TX0, 8)
+        self.assertEqual(rp2.DREQ_PIO1_TX1, 9)
+        self.assertEqual(rp2.DREQ_PIO1_TX2, 10)
+        self.assertEqual(rp2.DREQ_PIO1_TX3, 11)
+        self.assertEqual(rp2.DREQ_PIO1_RX0, 12)
+        self.assertEqual(rp2.DREQ_PIO1_RX1, 13)
+        self.assertEqual(rp2.DREQ_PIO1_RX2, 14)
+        self.assertEqual(rp2.DREQ_PIO1_RX3, 15)
+
+    def test_dreq_constants_pio2(self):
+        # PIO2 DREQ constants exist only on RP2350, starting at 16.
+        if not is_rp2350:
+            with self.assertRaises(AttributeError):
+                _ = rp2.DREQ_PIO2_TX0
+            return
+        self.assertEqual(rp2.DREQ_PIO2_TX0, 16)
+        self.assertEqual(rp2.DREQ_PIO2_TX1, 17)
+        self.assertEqual(rp2.DREQ_PIO2_TX2, 18)
+        self.assertEqual(rp2.DREQ_PIO2_TX3, 19)
+        self.assertEqual(rp2.DREQ_PIO2_RX0, 20)
+        self.assertEqual(rp2.DREQ_PIO2_RX1, 21)
+        self.assertEqual(rp2.DREQ_PIO2_RX2, 22)
+        self.assertEqual(rp2.DREQ_PIO2_RX3, 23)
+
+
+# FJOIN_RX_PUT (bit 15): RX FIFO replaced by 4 random-access slots.
+# CPU has read access via putget(); SM has write access via put instruction.
+@rp2.asm_pio(fifo_join=8)
+def prog_fjoin_rx_put():
+    nop()
+
+
+# FJOIN_RX_GET (bit 14): RX FIFO replaced by 4 random-access slots.
+# CPU has write access via putget(); SM has read access via get instruction.
+@rp2.asm_pio(fifo_join=4)
+def prog_fjoin_rx_get():
+    nop()
+
+
+class TestPIOV1Hardware(unittest.TestCase):
+    def test_putget_absent_on_rp2040(self):
+        # putget() must not exist on RP2040.
+        if is_rp2350:
+            return
+        sm = rp2.StateMachine(0, prog_loopback)
+        with self.assertRaises(AttributeError):
+            sm.putget(0)
+        rp2.PIO(0).remove_program()
+
+    def test_putget_read_returns_int(self):
+        # In FJOIN_RX_PUT mode the CPU has read access to the 4 PUTGET slots.
+        # Verify each slot returns an integer (contents may be non-zero if
+        # the SM was used previously in this session).
+        if not is_rp2350:
+            return
+        sm = rp2.StateMachine(0, prog_fjoin_rx_put)
+        for i in range(4):
+            val = sm.putget(i)
+            self.assertIsInstance(val, int)
+        sm.active(False)
+        rp2.PIO(0).remove_program()
+
+    def test_putget_write_no_exception(self):
+        # In FJOIN_RX_GET mode the CPU has write access to the 4 PUTGET slots.
+        # Verify writes succeed without raising.
+        if not is_rp2350:
+            return
+        sm = rp2.StateMachine(0, prog_fjoin_rx_get)
+        for i in range(4):
+            sm.putget(i, 0xA0000000 | i)
+        sm.active(False)
+        rp2.PIO(0).remove_program()
+
+    def test_putget_index_bounds(self):
+        # putget() rejects indices outside 0-3.
+        if not is_rp2350:
+            return
+        sm = rp2.StateMachine(0, prog_fjoin_rx_put)
+        with self.assertRaises(ValueError):
+            sm.putget(-1)
+        with self.assertRaises(ValueError):
+            sm.putget(4)
+        sm.active(False)
+        rp2.PIO(0).remove_program()
+
+    def test_sm_mask_enable(self):
+        # PIO.sm_mask_enable() atomically enables SMs via CTRL register.
+        # Enabling sm_mask=0 is a no-op that should not raise.
+        if not is_rp2350:
+            pio = rp2.PIO(0)
+            with self.assertRaises(AttributeError):
+                pio.sm_mask_enable(0)
+            return
+        pio = rp2.PIO(0)
+        sm = rp2.StateMachine(0, prog_loopback)
+        # Enable SM0 via mask, then verify it's running.
+        pio.sm_mask_enable(0x1)
+        sm.put(0xCAFE)
+        self.assertEqual(sm.get(), 0xCAFE)
+        sm.active(False)
+        rp2.PIO(0).remove_program()
+
+
 if __name__ == "__main__":
     unittest.main()
