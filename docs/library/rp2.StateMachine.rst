@@ -1,11 +1,11 @@
 .. currentmodule:: rp2
 .. _rp2.StateMachine:
 
-class StateMachine -- access to the RP2040's programmable I/O interface
-=======================================================================
+class StateMachine -- access to the RP2040/RP2350's programmable I/O interface
+===============================================================================
 
-The :class:`StateMachine` class gives access to the RP2040's PIO (programmable
-I/O) interface.
+The :class:`StateMachine` class gives access to the RP2040/RP2350's PIO
+(programmable I/O) interface.
 
 For assembling PIO programs, see :func:`rp2.asm_pio`.
 
@@ -15,9 +15,8 @@ Constructors
 
 .. class:: StateMachine(id, [program, ...])
 
-    Get the state machine numbered *id*. The RP2040 has two identical PIO
-    instances, each with 4 state machines: so there are 8 state machines in
-    total, numbered 0 to 7.
+    Get the state machine numbered *id*. The RP2040 has 8 state machines in
+    total (numbered 0 to 7); the RP2350 has 12 (numbered 0 to 11).
 
     Optionally initialize it with the given program *program*: see
     `StateMachine.init`.
@@ -26,7 +25,7 @@ Constructors
 Methods
 -------
 
-.. method:: StateMachine.init(program, freq=-1, *, in_base=None, out_base=None, set_base=None, jmp_pin=None, sideset_base=None, in_shiftdir=None, out_shiftdir=None, push_thresh=None, pull_thresh=None)
+.. method:: StateMachine.init(program, freq=-1, *, in_base=None, out_base=None, set_base=None, jmp_pin=None, sideset_base=None, in_shiftdir=None, out_shiftdir=None, push_thresh=None, pull_thresh=None, in_count=None)
 
     Configure the state machine instance to run the given *program*.
 
@@ -57,6 +56,9 @@ Methods
       re-pushing is triggered.
     - *pull_thresh* is the threshold in bits before auto-pull or conditional
       re-pulling is triggered.
+    - *in_count* overrides the ``IN_COUNT`` field in ``SHIFTCTRL`` (bits 4:0),
+      masking unneeded IN-mapped pins to zero.  Only effective on RP2350.
+      Usually set via the `asm_pio` decorator instead.
 
     Note: pins used for *in_base* need to be configured manually for input (or
     otherwise) so that the PIO can see the desired signal (they could be input
@@ -144,6 +146,40 @@ Methods
      Returns the IRQ object for the given StateMachine.
 
      Optionally configure it.
+
+.. method:: StateMachine.putget(index, [value])
+
+    Read or write a single RX FIFO storage register by index (0–3).  This is
+    only meaningful when the state machine's FIFO join mode is
+    `PIO.JOIN_RX_PUT` or `PIO.JOIN_RX_GET`.
+
+    The direction of access depends on the FIFO join mode:
+
+    - `PIO.JOIN_RX_GET` (host writes, SM reads): call ``putget(index, value)``
+      to write a configuration word that the state machine can read with
+      ``MOV OSR, rxfifo[n]``.
+    - `PIO.JOIN_RX_PUT` (SM writes, host reads): call ``putget(index)`` to
+      read a status word that the state machine wrote with
+      ``MOV rxfifo[n], ISR``.
+
+    *index* must be in the range 0–3; a ``ValueError`` is raised otherwise.
+
+    If *value* is given, writes it to the selected FIFO register and returns
+    ``None``.  If *value* is omitted, returns the current value of the
+    selected FIFO register as an integer.
+
+    Only available on RP2350 (PIO v1).
+
+    Example — host writes configuration registers for a UART TX program::
+
+        @rp2.asm_pio(fifo_join=rp2.PIO.JOIN_RX_GET)
+        def uart_tx():
+            ...
+
+        sm = rp2.StateMachine(0, uart_tx)
+        sm.putget(0, 8)   # configure: 8 data bits
+        sm.putget(1, 1)   # configure: 1 stop bit
+        sm.active(1)
 
 Buffer protocol
 ---------------
