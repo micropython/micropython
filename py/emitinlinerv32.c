@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -693,6 +694,193 @@ static void handle_opcode(emit_inline_asm_t *emit, const opcode_t *opcode_data, 
     }
 }
 
+static bool extract_register_list(emit_inline_asm_t *emit, qstr opcode, mp_parse_node_t node, mp_uint_t *reglist) {
+    assert(reglist != NULL && "Register list pointer is NULL.");
+
+    // As per §28.9, valid register list values are as follows:
+    //
+    // {ra}, {ra, s0}, {ra, s0-s1}, {ra, s0-s2}, ..., {ra, s0-s8},
+    // {ra, s0-s9}, {ra, s0-s11}
+    //
+    // {ra, s0-s10} is *not* valid
+
+    // case 1: {ra}
+    // PN_atom_brace { ID("ra") }
+    //
+    // case 2: {ra,s0} ->
+    // PN_atom_brace { PN_dictorsetmaker { ID("ra")
+    //     PN_dictorsetmaker_list { ID("s0") } } }
+    //
+    // case 3: {ra,s0-s1} ->
+    // PN_atom_brace { PN_dictorsetmaker { ID("ra")
+    //     PN_dictorsetmaker_list { PN_arith_expr {
+    //       ID("s0") TOKEN(MP_TOKEN_OP_MINUS) ID("s1") } } } }
+
+    if (!MP_PARSE_NODE_IS_STRUCT_KIND(node, PN_atom_brace) ||
+        MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t *)node) != 1) {
+        return false;
+    }
+
+    mp_parse_node_struct_t *nodes = (mp_parse_node_struct_t *)node;
+    mp_uint_t register_id = 0;
+
+    if (MP_PARSE_NODE_IS_ID(nodes->nodes[0])) {
+        if (!parse_register_node(nodes->nodes[0], &register_id, false)) {
+            return false;
+        }
+        *reglist = 4;
+        return register_id == ASM_RV32_REG_RA;
+    }
+
+    if (!MP_PARSE_NODE_IS_STRUCT_KIND(nodes->nodes[0], PN_dictorsetmaker) ||
+        MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t *)nodes->nodes[0]) != 2) {
+        return false;
+    }
+    nodes = (mp_parse_node_struct_t *)nodes->nodes[0];
+    if (!MP_PARSE_NODE_IS_ID(nodes->nodes[0]) ||
+        !MP_PARSE_NODE_IS_STRUCT_KIND(nodes->nodes[1], PN_dictorsetmaker_list) ||
+        !parse_register_node(nodes->nodes[0], &register_id, false) ||
+        register_id != ASM_RV32_REG_RA) {
+        return false;
+    }
+    mp_parse_node_t *list_nodes;
+    size_t list_nodes_count = mp_parse_node_extract_list(&nodes->nodes[1], PN_dictorsetmaker_list2, &list_nodes);
+    if (list_nodes_count != 1 || !MP_PARSE_NODE_IS_STRUCT_KIND(list_nodes[0], PN_dictorsetmaker_list)) {
+        return false;
+    }
+    nodes = (mp_parse_node_struct_t *)list_nodes[0];
+    if (MP_PARSE_NODE_STRUCT_NUM_NODES(nodes) != 1) {
+        return false;
+    }
+    if (MP_PARSE_NODE_IS_ID(nodes->nodes[0])) {
+        if (!parse_register_node(nodes->nodes[0], &register_id, false) ||
+            register_id != ASM_RV32_REG_S0) {
+            return false;
+        }
+        *reglist = 5;
+        return true;
+    }
+
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes->nodes[0], PN_arith_expr)) {
+        nodes = (mp_parse_node_struct_t *)nodes->nodes[0];
+        if (MP_PARSE_NODE_STRUCT_NUM_NODES(nodes) != 3 ||
+            !MP_PARSE_NODE_IS_ID(nodes->nodes[0]) ||
+            !MP_PARSE_NODE_IS_TOKEN_KIND(nodes->nodes[1], MP_TOKEN_OP_MINUS) ||
+            !MP_PARSE_NODE_IS_ID(nodes->nodes[2])) {
+            return false;
+        }
+        if (!parse_register_node(nodes->nodes[0], &register_id, false) ||
+            register_id != ASM_RV32_REG_S0) {
+            return false;
+        }
+        if (!parse_register_node(nodes->nodes[2], &register_id, false) ||
+            register_id == ASM_RV32_REG_S10) {
+            return false;
+        }
+        if (register_id == ASM_RV32_REG_S1) {
+            *reglist = 6;
+            return true;
+        }
+        if (register_id >= ASM_RV32_REG_S2 && register_id <= ASM_RV32_REG_S11) {
+            *reglist = 7 + MIN(register_id, ASM_RV32_REG_S10) - ASM_RV32_REG_S2;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static const qstr_short_t ZCMP_OPCODE_NAMES[] = {
+    MP_QSTR_cm_push, MP_QSTR_cm_pop, MP_QSTR_cm_popret,
+    MP_QSTR_cm_popretz, MP_QSTR_cm_mva01s, MP_QSTR_cm_mvsa01,
+};
+
+static const void *ZCMP_OPCODE_HANDLERS[] = {
+    asm_rv32_opcode_cmpush, asm_rv32_opcode_cmpop,
+    asm_rv32_opcode_cmpopret, asm_rv32_opcode_cmpopretz,
+    asm_rv32_opcode_cmmva01s, asm_rv32_opcode_cmmvsa01,
+};
+
+typedef void (*call_xi_t)(asm_rv32_t *state, mp_uint_t register_list, mp_int_t adjustment);
+typedef void (*call_ss_t)(asm_rv32_t *state, mp_uint_t r1, mp_uint_t r2);
+
+static bool handle_zcmp_opcode(emit_inline_asm_t *emit, qstr opcode, mp_parse_node_t *argument_nodes) {
+    mp_uint_t argument_index = 0;
+
+    for (size_t index = 0; index < MP_ARRAY_SIZE(ZCMP_OPCODE_NAMES); index++) {
+        if (ZCMP_OPCODE_NAMES[index] != opcode) {
+            continue;
+        }
+        const void *handler = ZCMP_OPCODE_HANDLERS[index];
+        if (opcode == MP_QSTR_cm_mva01s || opcode == MP_QSTR_cm_mvsa01) {
+            mp_uint_t register_lhs = 0;
+            mp_uint_t register_rhs = 0;
+
+            if (!parse_register_node(argument_nodes[0], &register_lhs, false) ||
+                ((1U << register_lhs) & 0x00FC0300) == 0) {
+                goto invalid_s_register;
+            }
+
+            if (
+                !parse_register_node(argument_nodes[1], &register_rhs, false) ||
+                ((1U << register_rhs) & 0x00FC0300) == 0) {
+                argument_index = 1;
+                goto invalid_s_register;
+            }
+
+            if (register_lhs == register_rhs) {
+                emit_inline_rv32_error_exc(emit,
+                    mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                        MP_ERROR_TEXT("opcode '%q': registers must be different"),
+                        opcode));
+                return false;
+            }
+
+            ((call_ss_t)handler)(&emit->as, register_lhs, register_rhs);
+            return true;
+        }
+
+        mp_uint_t register_list;
+        if (!extract_register_list(emit, opcode, argument_nodes[0], &register_list)) {
+            emit_inline_rv32_error_exc(emit,
+                mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("opcode '%q': malformed register list"),
+                    opcode));
+            return false;
+        }
+
+        mp_obj_t stack_adjustment_object;
+        if (!mp_parse_node_get_int_maybe(argument_nodes[1], &stack_adjustment_object)) {
+            emit_inline_rv32_error_exc(emit,
+                mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                    ET_WRONG_ARGUMENT_KIND, opcode, 2, MP_QSTR_integer));
+            return false;
+        }
+        mp_int_t stack_adjustment = mp_obj_get_int(stack_adjustment_object);
+        // Either 0, 16, 32, or 48.
+        if ((abs((int32_t)stack_adjustment) & ~0x30U) != 0 ||
+            ((opcode == MP_QSTR_cm_push) && stack_adjustment > 0) ||
+            (opcode != MP_QSTR_cm_push && stack_adjustment < 0)) {
+            emit_inline_rv32_error_exc(emit,
+                mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("opcode '%q': invalid stack adjustment"),
+                    opcode));
+            return false;
+        }
+        ((call_xi_t)handler)(&emit->as, register_list, abs((int32_t)stack_adjustment));
+        return true;
+    }
+
+    return false;
+
+invalid_s_register:
+    emit_inline_rv32_error_exc(emit,
+        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+            MP_ERROR_TEXT("opcode '%q' argument %d: wrong register(s)"),
+            opcode, argument_index + 1));
+    return false;
+}
+
 static void emit_inline_rv32_opcode(emit_inline_asm_t *emit, qstr opcode, mp_uint_t arguments_count, mp_parse_node_t *argument_nodes) {
     const opcode_t *opcode_data = NULL;
     for (mp_uint_t index = 0; index < MP_ARRAY_SIZE(OPCODES); index++) {
@@ -700,6 +888,10 @@ static void emit_inline_rv32_opcode(emit_inline_asm_t *emit, qstr opcode, mp_uin
             opcode_data = &OPCODES[index];
             break;
         }
+    }
+
+    if ((asm_rv32_allowed_extensions() & RV32_EXT_ZCMP) && !opcode_data && (arguments_count == 2) && handle_zcmp_opcode(emit, opcode, argument_nodes)) {
+        return;
     }
 
     if (!opcode_data || (asm_rv32_allowed_extensions() & opcode_data->required_extensions) != opcode_data->required_extensions) {
