@@ -1,0 +1,16 @@
+----- Setup
+
+---- Download package
+Install ${TMP}/example/package.json
+Installing: ${TMP}/lib/mip_example/__init__.py
+Installing: ${TMP}/lib/mip_example/hello.py
+Done
+
+---- Download package with --mpy and --mpy-version set to get a warning
+Install ${TMP}/example/package.json
+Warning: --mpy and --mpy-version only affect downloads from index, package ${TMP}/example/package.json will be downloaded as-is
+Installing: ${TMP}/lib/mip_example/__init__.py
+Installing: ${TMP}/lib/mip_example/hello.py
+Done
+
+---- Verify package

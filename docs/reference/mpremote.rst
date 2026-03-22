@@ -325,7 +325,26 @@ The full list of supported commands are:
 
   .. code-block:: bash
 
-      $ mpremote mip install <packages...>
+      $ mpremote mip <sub-command> [options] <packages...>
+
+  ``<sub-command>`` may be:
+
+  - ``install`` to install packages on the connected device
+  - ``download`` to download packages to the local filesystem
+
+  Options are:
+
+  - ``-m``, ``--mpy``, ``--no-mpy``: download compiled ``.mpy`` files. Defaults
+    to on for ``install`` and off for ``download``.
+  - ``--mpy-version``: mpy version to download when using ``--mpy``. If unset,
+    connected device will be probed to get the matching version.
+  - ``--target``: destination directory on the device (``install``) or local
+    filesystem (``download``). The default is ``/lib`` path for ``install`` and
+    ``./lib`` for ``download``.
+  - ``--index``: package index to use (defaults to :term:`micropython-lib`).
+
+  The ``mpy`` option only affects downloads from the index, and will be ignored
+  for all other package specifications.
 
   See :ref:`packages` for more information.
 
@@ -739,6 +758,13 @@ Copy ``a.py`` and ``b.py`` from the local directory to the device, then run the
 
 Install the ``aioble`` package from :term:`micropython-lib` to the device.
 See :ref:`packages`.
+
+.. code-block:: bash
+
+  mpremote mip download aioble
+
+Download the ``aioble`` package from :term:`micropython-lib` to the local
+``./lib`` directory. See :ref:`packages`.
 
 .. code-block:: bash
 
