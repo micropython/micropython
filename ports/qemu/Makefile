@@ -158,6 +158,14 @@ QEMU_SYSTEM = $(QEMU_BASE)$(QEMU_ARCH)
 QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null -semihosting
 QEMU_ARGS += $(QEMU_EXTRA)
 
+# Load ROMFS images into emulated memory if configured.
+ifneq ($(QEMU_ROMFS_IMG0),)
+QEMU_ARGS += -device loader,file=$(QEMU_ROMFS_IMG0),addr=$(MICROPY_HW_ROMFS_PART0_START),force-raw=on
+endif
+ifneq ($(QEMU_ROMFS_IMG1),)
+QEMU_ARGS += -device loader,file=$(QEMU_ROMFS_IMG1),addr=$(MICROPY_HW_ROMFS_PART1_START),force-raw=on
+endif
+
 # Specifying QEMU_DEBUG=1 will block qemu until a debugger is connected.
 ifeq ($(QEMU_DEBUG),1)
 QEMU_DEBUG_ARGS ?= -s
@@ -215,6 +223,7 @@ SRC_C += \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
+	vfs_rom_ioctl.c \
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
