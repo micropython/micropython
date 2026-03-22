@@ -462,6 +462,7 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
     target_include_directories(${MICROPY_TARGET} PRIVATE
         ${MICROPY_DIR}/lib/wiznet5k/
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/
+        ${MICROPY_DIR}/drivers/wiznet
     )
 
     list(APPEND MICROPY_SOURCE_LIB
@@ -474,6 +475,7 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
+        ${MICROPY_DIR}/drivers/wiznet/macraw.c
     )
 endif()
 
