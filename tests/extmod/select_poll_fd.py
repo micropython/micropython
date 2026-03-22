@@ -1,10 +1,18 @@
 # Test select.poll in combination with file descriptors.
 
 try:
-    import select, errno
+    import sys, select, errno
 
     select.poll  # Raises AttributeError for CPython implementations without poll()
 except (ImportError, AttributeError):
+    print("SKIP")
+    raise SystemExit
+
+# FreeBSD allows to have up to ~120k file descriptor by default, so this test
+# will fail on such a system.  Since there's no provision to query sysctl
+# values or an easy way to parse the output of `ulimit -n` the test is just
+# skipped on FreeBSD.
+if sys.platform == "freebsd":
     print("SKIP")
     raise SystemExit
 
