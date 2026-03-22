@@ -1,3 +1,6 @@
+import codecs
+import io
+import os
 import sys, time
 
 try:
@@ -52,6 +55,9 @@ class ConsolePosix:
 
 
 class ConsoleWindows:
+    _USE_RAW_OUTPUT = None
+    _CONSOLE_CP_UTF8_SET = False
+
     KEY_MAP = {
         b"H": b"A",  # UP
         b"P": b"B",  # DOWN
@@ -82,6 +88,19 @@ class ConsoleWindows:
 
     def __init__(self):
         self.ctrl_c = 0
+        self._use_raw_output = ConsoleWindows._USE_RAW_OUTPUT
+        if self._use_raw_output is None:
+            self._use_raw_output = ConsoleWindows._detect_modern_console(sys.stdout)
+        if self._use_raw_output:
+            # Modern console: write raw UTF-8 bytes like POSIX
+            self.outfile = sys.stdout.buffer
+            if hasattr(self.outfile, "raw"):
+                self.outfile = self.outfile.raw
+            # Ensure console interprets output as UTF-8
+            ConsoleWindows._ensure_console_output_utf8()
+        else:
+            # Legacy console: use incremental decoder to handle split UTF-8 sequences
+            self._decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
 
     def _sigint_handler(self, signo, frame):
         self.ctrl_c += 1
@@ -116,14 +135,130 @@ class ConsoleWindows:
             return ch
 
     def write(self, buf):
-        buf = buf.decode() if isinstance(buf, bytes) else buf
-        sys.stdout.write(buf)
-        sys.stdout.flush()
-        # for b in buf:
-        #     if isinstance(b, bytes):
-        #         msvcrt.putch(b)
-        #     else:
-        #         msvcrt.putwch(b)
+        if self._use_raw_output:
+            # Modern console: write raw UTF-8 bytes directly (like POSIX)
+            if isinstance(buf, str):
+                buf = buf.encode("utf-8")
+            self.outfile.write(buf)
+            self.outfile.flush()
+        else:
+            # Legacy console: use incremental decoder to handle split UTF-8 sequences
+            if isinstance(buf, bytes):
+                buf = self._decoder.decode(buf)
+            if buf:
+                sys.stdout.write(buf)
+                sys.stdout.flush()
+
+    @staticmethod
+    def enable_vt_mode():
+        # Windows VT mode (>= win10 only)
+        # https://bugs.python.org/msg291732
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+
+        ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+
+        def _check_bool(result, func, args):
+            if not result:
+                raise ctypes.WinError(ctypes.get_last_error())
+            return args
+
+        lpdword = ctypes.POINTER(wintypes.DWORD)
+        kernel32.GetConsoleMode.errcheck = _check_bool
+        kernel32.GetConsoleMode.argtypes = (wintypes.HANDLE, lpdword)
+        kernel32.SetConsoleMode.errcheck = _check_bool
+        kernel32.SetConsoleMode.argtypes = (wintypes.HANDLE, wintypes.DWORD)
+
+        def set_conout_mode(new_mode, mask=0xFFFFFFFF):
+            # Don't assume StandardOutput is a console.
+            # Open CONOUT$ instead.
+            fdout = os.open("CONOUT$", os.O_RDWR)
+            try:
+                hout = msvcrt.get_osfhandle(fdout)
+                old_mode = wintypes.DWORD()
+                kernel32.GetConsoleMode(hout, ctypes.byref(old_mode))
+                mode = (new_mode & mask) | (old_mode.value & ~mask)
+                kernel32.SetConsoleMode(hout, mode)
+                return old_mode.value
+            finally:
+                os.close(fdout)
+
+        mode = mask = ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        try:
+            set_conout_mode(mode, mask)
+            return True
+        except WindowsError:
+            return False
+
+    @classmethod
+    def configure_unicode_output(cls):
+        """Configure stdout/stderr for Unicode support on Windows legacy consoles."""
+        if sys.platform != "win32":
+            return
+
+        # Cache the modern-console detection result for ConsoleWindows.
+        if cls._USE_RAW_OUTPUT is None:
+            cls._USE_RAW_OUTPUT = cls._detect_modern_console(sys.stdout)
+
+        # Set console output code page to UTF-8 for raw byte output.
+        cls._ensure_console_output_utf8()
+
+        # Full Unicode encodings that don't need fixing.
+        unicode_encodings = {"utf-8", "utf-16", "utf-16-le", "utf-16-be", "utf-32"}
+
+        for stream_name in ("stdout", "stderr"):
+            stream = getattr(sys, stream_name, None)
+            if stream is None or not hasattr(stream, "encoding"):
+                continue
+
+            encoding = (stream.encoding or "").lower().replace("_", "-")
+
+            # Skip if already a full Unicode encoding.
+            if encoding in unicode_encodings:
+                continue
+
+            # Reconfigure with UTF-8 and error handling for limited encodings.
+            if hasattr(stream, "buffer"):
+                wrapped = io.TextIOWrapper(
+                    stream.buffer,
+                    encoding="utf-8",
+                    errors="backslashreplace",
+                )
+                setattr(sys, stream_name, wrapped)
+
+    @staticmethod
+    def _detect_modern_console(stream):
+        """Detect if running in a modern Windows console that supports raw UTF-8."""
+        # Windows Terminal
+        if os.environ.get("WT_SESSION"):
+            return True
+        # VS Code integrated terminal
+        if os.environ.get("TERM_PROGRAM") == "vscode":
+            return True
+        # ConEmu/Cmder
+        if os.environ.get("ConEmuANSI") == "ON":
+            return True
+
+        encoding = getattr(stream, "encoding", None)
+        if encoding:
+            encoding = encoding.lower().replace("_", "-")
+            if encoding in ("utf-8", "utf8"):
+                return True
+        return False
+
+    @classmethod
+    def _ensure_console_output_utf8(cls):
+        if cls._CONSOLE_CP_UTF8_SET:
+            return
+        try:
+            import ctypes
+
+            ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+        except Exception:
+            pass
+        cls._CONSOLE_CP_UTF8_SET = True
 
 
 if termios:
@@ -131,46 +266,4 @@ if termios:
     VT_ENABLED = True
 else:
     Console = ConsoleWindows
-
-    # Windows VT mode ( >= win10 only)
-    # https://bugs.python.org/msg291732
-    import ctypes, os
-    from ctypes import wintypes
-
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-
-    ERROR_INVALID_PARAMETER = 0x0057
-    ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
-
-    def _check_bool(result, func, args):
-        if not result:
-            raise ctypes.WinError(ctypes.get_last_error())
-        return args
-
-    LPDWORD = ctypes.POINTER(wintypes.DWORD)
-    kernel32.GetConsoleMode.errcheck = _check_bool
-    kernel32.GetConsoleMode.argtypes = (wintypes.HANDLE, LPDWORD)
-    kernel32.SetConsoleMode.errcheck = _check_bool
-    kernel32.SetConsoleMode.argtypes = (wintypes.HANDLE, wintypes.DWORD)
-
-    def set_conout_mode(new_mode, mask=0xFFFFFFFF):
-        # don't assume StandardOutput is a console.
-        # open CONOUT$ instead
-        fdout = os.open("CONOUT$", os.O_RDWR)
-        try:
-            hout = msvcrt.get_osfhandle(fdout)
-            old_mode = wintypes.DWORD()
-            kernel32.GetConsoleMode(hout, ctypes.byref(old_mode))
-            mode = (new_mode & mask) | (old_mode.value & ~mask)
-            kernel32.SetConsoleMode(hout, mode)
-            return old_mode.value
-        finally:
-            os.close(fdout)
-
-    # def enable_vt_mode():
-    mode = mask = ENABLE_VIRTUAL_TERMINAL_PROCESSING
-    try:
-        set_conout_mode(mode, mask)
-        VT_ENABLED = True
-    except WindowsError:
-        VT_ENABLED = False
+    VT_ENABLED = ConsoleWindows.enable_vt_mode()
