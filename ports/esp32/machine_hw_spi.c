@@ -37,6 +37,16 @@
 #include "soc/gpio_sig_map.h"
 #include "soc/spi_pins.h"
 
+// Bare-metal SPI support for ESP32 rev 3.1+ (spi_master driver bug workaround)
+#if CONFIG_IDF_TARGET_ESP32
+#include "esp_chip_info.h"
+#include "soc/dport_reg.h"
+#include "soc/spi_struct.h"
+#include "soc/spi_reg.h"
+#include "esp_rom_gpio.h"
+#include "driver/gpio.h"
+#endif
+
 // SPI mappings by device, naming used by IDF old/new
 // MicroPython | ESP32     | ESP32S2   | ESP32S3 | ESP32C3 | ESP32C6
 // ------------+-----------+-----------+---------+---------+---------
@@ -107,6 +117,10 @@ typedef struct _machine_hw_spi_obj_t {
     int8_t mosi;
     int8_t miso;
     spi_device_handle_t spi;
+    #if CONFIG_IDF_TARGET_ESP32
+    bool use_bare_metal;             // true on ESP32 rev >= 3.1
+    volatile spi_dev_t *spi_hw;     // direct register pointer for bare-metal mode
+    #endif
     enum {
         MACHINE_HW_SPI_STATE_NONE,
         MACHINE_HW_SPI_STATE_INIT,
@@ -139,7 +153,224 @@ static const mp_arg_t spi_allowed_args[] = {
 // Static objects mapping to SPI2 (and SPI3 if available) hardware peripherals.
 static machine_hw_spi_obj_t machine_hw_spi_obj[MICROPY_HW_SPI_MAX];
 
+// ============================================================================
+// Bare-metal SPI for ESP32 rev 3.1+
+// Workaround for ESP-IDF spi_master driver bug that breaks GPIO matrix output
+// ============================================================================
+#if CONFIG_IDF_TARGET_ESP32
+
+static bool esp32_needs_bare_metal_spi(void) {
+    esp_chip_info_t info;
+    esp_chip_info(&info);
+    // revision >= 3.1 (encoded as 301)
+    return info.revision >= 301;
+}
+
+// Calculate SPI clock divider registers from target frequency
+// Returns actual frequency achieved
+static uint32_t bare_metal_spi_calc_clock(uint32_t target_hz, volatile spi_dev_t *hw) {
+    uint32_t apb = APB_CLK_FREQ;  // 80 MHz
+
+    if (target_hz >= apb) {
+        // Use APB clock directly
+        hw->clock.clk_equ_sysclk = 1;
+        return apb;
+    }
+
+    hw->clock.clk_equ_sysclk = 0;
+
+    // Find best divider: freq = APB / (pre+1) / (n+1)
+    // For simplicity, use pre=0 and vary n
+    uint32_t best_n = 1;
+    uint32_t best_freq = apb / 2;
+
+    for (uint32_t n = 1; n <= 63; n++) {
+        uint32_t freq = apb / (n + 1);
+        if (freq <= target_hz && freq > best_freq) {
+            best_freq = freq;
+            best_n = n;
+            if (freq == target_hz) break;
+        }
+        // Also try with best_freq tracking closest <= target
+        if (freq <= target_hz) {
+            best_freq = freq;
+            best_n = n;
+            break;
+        }
+    }
+
+    hw->clock.clkdiv_pre = 0;
+    hw->clock.clkcnt_n = best_n;
+    hw->clock.clkcnt_h = (best_n + 1) / 2 - 1;
+    hw->clock.clkcnt_l = best_n;
+
+    return apb / (best_n + 1);
+}
+
+static void bare_metal_spi_init(machine_hw_spi_obj_t *self) {
+    // Get the right SPI peripheral
+    volatile spi_dev_t *hw;
+    uint32_t clk_en_bit, rst_bit;
+    uint8_t clk_out_sig, mosi_out_sig, miso_in_sig;
+
+    if (self->host == SPI2_HOST) {
+        hw = (volatile spi_dev_t *)0x3FF64000;  // SPI2 (HSPI)
+        clk_en_bit = DPORT_SPI2_CLK_EN;
+        rst_bit = DPORT_SPI2_RST;
+        clk_out_sig = HSPICLK_OUT_IDX;
+        mosi_out_sig = HSPID_OUT_IDX;
+        miso_in_sig = HSPIQ_IN_IDX;
+    } else {
+        hw = (volatile spi_dev_t *)0x3FF65000;  // SPI3 (VSPI)
+        clk_en_bit = DPORT_SPI3_CLK_EN;
+        rst_bit = DPORT_SPI3_RST;
+        clk_out_sig = VSPICLK_OUT_IDX;
+        mosi_out_sig = VSPID_OUT_IDX;
+        miso_in_sig = VSPIQ_IN_IDX;
+    }
+
+    self->spi_hw = hw;
+
+    // Enable peripheral clock, clear reset
+    DPORT_SET_PERI_REG_MASK(DPORT_PERIP_CLK_EN_REG, clk_en_bit);
+    DPORT_CLEAR_PERI_REG_MASK(DPORT_PERIP_RST_EN_REG, rst_bit);
+
+    // Clear all registers (Arduino-style init)
+    hw->slave.trans_done = 0;
+    hw->slave.slave_mode = 0;
+    hw->pin.val = 0;
+    hw->user.val = 0;
+    hw->user1.val = 0;
+    hw->ctrl.val = 0;
+    hw->ctrl1.val = 0;
+    hw->ctrl2.val = 0;
+    hw->clock.val = 0;
+
+    // SPI mode (CPOL/CPHA)
+    hw->pin.ck_idle_edge = self->polarity;
+    hw->user.ck_out_edge = (self->polarity ^ self->phase) ? 1 : 0;
+
+    // Clock configuration
+    bare_metal_spi_calc_clock(self->baudrate, hw);
+
+    // Enable MOSI, full-duplex
+    hw->user.usr_mosi = 1;
+    hw->user.doutdin = 1;
+
+    // LSB first if requested
+    if (self->firstbit == MICROPY_PY_MACHINE_SPI_LSB) {
+        hw->ctrl.wr_bit_order = 1;
+        hw->ctrl.rd_bit_order = 1;
+    }
+
+    // Attach SCK pin
+    if (self->sck != -1) {
+        gpio_set_direction(self->sck, GPIO_MODE_OUTPUT);
+        esp_rom_gpio_connect_out_signal(self->sck, clk_out_sig, false, false);
+    }
+
+    // Attach MOSI pin
+    if (self->mosi != -1) {
+        gpio_set_direction(self->mosi, GPIO_MODE_OUTPUT);
+        esp_rom_gpio_connect_out_signal(self->mosi, mosi_out_sig, false, false);
+    }
+
+    // Attach MISO pin (input)
+    if (self->miso != -1) {
+        gpio_set_direction(self->miso, GPIO_MODE_INPUT);
+        esp_rom_gpio_connect_in_signal(self->miso, miso_in_sig, false);
+    }
+}
+
+static void bare_metal_spi_deinit(machine_hw_spi_obj_t *self) {
+    // Disable peripheral clock
+    uint32_t clk_en_bit;
+    if (self->host == SPI2_HOST) {
+        clk_en_bit = DPORT_SPI2_CLK_EN;
+    } else {
+        clk_en_bit = DPORT_SPI3_CLK_EN;
+    }
+    DPORT_CLEAR_PERI_REG_MASK(DPORT_PERIP_CLK_EN_REG, clk_en_bit);
+
+    // Reset GPIO pins
+    int8_t pins[3] = {self->miso, self->mosi, self->sck};
+    for (int i = 0; i < 3; i++) {
+        if (pins[i] != -1) {
+            esp_rom_gpio_pad_select_gpio(pins[i]);
+            esp_rom_gpio_connect_out_signal(pins[i], SIG_GPIO_OUT_IDX, false, false);
+            gpio_set_direction(pins[i], GPIO_MODE_INPUT);
+        }
+    }
+
+    self->spi_hw = NULL;
+}
+
+static void bare_metal_spi_transfer(machine_hw_spi_obj_t *self, size_t len, const uint8_t *src, uint8_t *dest) {
+    volatile spi_dev_t *hw = self->spi_hw;
+
+    while (len > 0) {
+        int chunk = (len > 64) ? 64 : len;
+        int bits = chunk * 8;
+        int words = (chunk + 3) / 4;
+
+        hw->mosi_dlen.usr_mosi_dbitlen = bits - 1;
+        hw->miso_dlen.usr_miso_dbitlen = bits - 1;
+
+        // Fill TX FIFO
+        if (src != NULL) {
+            volatile uint32_t *fifo = hw->data_buf;
+            for (int i = 0; i < words; i++) {
+                uint32_t word = 0;
+                for (int j = 0; j < 4 && (i * 4 + j) < chunk; j++) {
+                    word |= ((uint32_t)src[i * 4 + j]) << (j * 8);
+                }
+                fifo[i] = word;
+            }
+        } else {
+            // Send zeros
+            volatile uint32_t *fifo = hw->data_buf;
+            for (int i = 0; i < words; i++) {
+                fifo[i] = 0;
+            }
+        }
+
+        // Start transaction
+        hw->cmd.usr = 1;
+        while (hw->cmd.usr) {
+            // Busy wait — transactions are very short at MHz speeds
+        }
+
+        // Read RX FIFO
+        if (dest != NULL) {
+            volatile uint32_t *fifo = hw->data_buf;
+            for (int i = 0; i < words; i++) {
+                uint32_t word = fifo[i];
+                for (int j = 0; j < 4 && (i * 4 + j) < chunk; j++) {
+                    dest[i * 4 + j] = (word >> (j * 8)) & 0xFF;
+                }
+            }
+        }
+
+        if (src != NULL) src += chunk;
+        if (dest != NULL) dest += chunk;
+        len -= chunk;
+    }
+}
+
+#endif // CONFIG_IDF_TARGET_ESP32
+
+// ============================================================================
+// Standard ESP-IDF SPI driver (original MicroPython code)
+// ============================================================================
+
 static void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
+    #if CONFIG_IDF_TARGET_ESP32
+    if (self->use_bare_metal) {
+        bare_metal_spi_deinit(self);
+        return;
+    }
+    #endif
+
     switch (spi_bus_remove_device(self->spi)) {
         case ESP_ERR_INVALID_ARG:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid configuration"));
@@ -238,6 +469,17 @@ static void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_
         return; // no changes
     }
 
+    #if CONFIG_IDF_TARGET_ESP32
+    // Check if we need bare-metal SPI (ESP32 rev 3.1+ workaround)
+    self->use_bare_metal = esp32_needs_bare_metal_spi();
+
+    if (self->use_bare_metal) {
+        bare_metal_spi_init(self);
+        self->state = MACHINE_HW_SPI_STATE_INIT;
+        return;
+    }
+    #endif
+
     spi_bus_config_t buscfg = {
         .miso_io_num = self->miso,
         .mosi_io_num = self->mosi,
@@ -333,6 +575,13 @@ static void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
     if (!bits_to_send) {
         mp_raise_ValueError(MP_ERROR_TEXT("buffer too short"));
     }
+
+    #if CONFIG_IDF_TARGET_ESP32
+    if (self->use_bare_metal) {
+        bare_metal_spi_transfer(self, len, src, dest);
+        return;
+    }
+    #endif
 
     if (len <= 4) {
         spi_transaction_t transaction = { 0 };
