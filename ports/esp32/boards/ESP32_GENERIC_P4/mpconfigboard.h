@@ -12,6 +12,7 @@
 #define MICROPY_PY_ESPNOW                (0)
 
 #define MICROPY_HW_ENABLE_SDCARD            (1)
+#define MICROPY_HW_SDMMC_LDO_CHAN_ID        (4)
 
 #ifndef USB_SERIAL_JTAG_PACKET_SZ_BYTES
 #define USB_SERIAL_JTAG_PACKET_SZ_BYTES (64)
