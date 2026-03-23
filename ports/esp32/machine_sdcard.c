@@ -35,6 +35,9 @@
 
 #if SOC_SDMMC_HOST_SUPPORTED
 #include "driver/sdmmc_host.h"
+#if SOC_SDMMC_IO_POWER_EXTERNAL && defined(MICROPY_HW_SDMMC_LDO_CHAN_ID)
+#include "sd_pwr_ctrl_by_on_chip_ldo.h"
+#endif
 #endif
 #include "driver/sdspi_host.h"
 #include "sdmmc_cmd.h"
@@ -310,6 +313,14 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         self->host = _temp_host;
     }
     #endif
+    #if SOC_SDMMC_IO_POWER_EXTERNAL && defined(MICROPY_HW_SDMMC_LDO_CHAN_ID)
+    sd_pwr_ctrl_ldo_config_t ldo_config = {
+        .ldo_chan_id = MICROPY_HW_SDMMC_LDO_CHAN_ID,
+    };
+    sd_pwr_ctrl_handle_t pwr_ctrl_handle = NULL;
+    check_esp_err(sd_pwr_ctrl_new_on_chip_ldo(&ldo_config, &pwr_ctrl_handle));
+    self->host.pwr_ctrl_handle = pwr_ctrl_handle;
+    #endif
 
     DEBUG_printf("  Calling host.init()");
 
@@ -431,6 +442,11 @@ static mp_obj_t sd_deinit(mp_obj_t self_in) {
             // SD card used a (dedicated) SPI bus, so free that SPI bus.
             spi_bus_free(self->host.slot);
         }
+        #if SOC_SDMMC_IO_POWER_EXTERNAL && defined(MICROPY_HW_SDMMC_LDO_CHAN_ID)
+        if (self->host.pwr_ctrl_handle) {
+            check_esp_err(sd_pwr_ctrl_del_on_chip_ldo(self->host.pwr_ctrl_handle));
+        }
+        #endif
         self->flags &= ~SDCARD_CARD_FLAGS_HOST_INIT_DONE;
     }
 
