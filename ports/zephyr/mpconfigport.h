@@ -64,6 +64,7 @@
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/zephyr/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #ifdef CONFIG_I2C_TARGET
 #define MICROPY_PY_MACHINE_I2C_TARGET (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/zephyr/machine_i2c_target.c"
