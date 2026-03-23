@@ -859,29 +859,27 @@ static mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 4, str_endswith);
 
 #if MICROPY_PY_BUILTINS_STR_REMOVEFIX
-static mp_obj_t str_removeprefix(mp_obj_t self_in, mp_obj_t prefix_in) {
+static mp_obj_t str_removefix(mp_obj_t self_in, mp_obj_t fix_in, bool is_prefix) {
     check_is_str_or_bytes(self_in);
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
-    str_check_arg_type(self_type, prefix_in);
+    str_check_arg_type(self_type, fix_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
-    GET_STR_DATA_LEN(prefix_in, prefix_data, prefix_len);
-    if (prefix_len <= self_len && memcmp(self_data, prefix_data, prefix_len) == 0) {
-        return mp_obj_new_str_of_type(self_type, self_data + prefix_len, self_len - prefix_len);
+    GET_STR_DATA_LEN(fix_in, fix_data, fix_len);
+    if (fix_len <= self_len
+        && memcmp(is_prefix ? self_data : self_data + self_len - fix_len, fix_data, fix_len) == 0) {
+        const byte *new_data = is_prefix ? self_data + fix_len : self_data;
+        return mp_obj_new_str_of_type(self_type, new_data, self_len - fix_len);
     }
     return self_in;
+}
+
+static mp_obj_t str_removeprefix(mp_obj_t self_in, mp_obj_t prefix_in) {
+    return str_removefix(self_in, prefix_in, true);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(str_removeprefix_obj, str_removeprefix);
 
 static mp_obj_t str_removesuffix(mp_obj_t self_in, mp_obj_t suffix_in) {
-    check_is_str_or_bytes(self_in);
-    const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
-    str_check_arg_type(self_type, suffix_in);
-    GET_STR_DATA_LEN(self_in, self_data, self_len);
-    GET_STR_DATA_LEN(suffix_in, suffix_data, suffix_len);
-    if (suffix_len <= self_len && memcmp(self_data + self_len - suffix_len, suffix_data, suffix_len) == 0) {
-        return mp_obj_new_str_of_type(self_type, self_data, self_len - suffix_len);
-    }
-    return self_in;
+    return str_removefix(self_in, suffix_in, false);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(str_removesuffix_obj, str_removesuffix);
 #endif
@@ -985,7 +983,7 @@ static mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(str_center_obj, str_center);
 
-static mp_obj_t str_ljust(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t str_justify(size_t n_args, const mp_obj_t *args, bool right) {
     GET_STR_DATA_LEN(args[0], str, str_len);
     mp_uint_t width = mp_obj_get_int(args[1]);
     if (str_len >= width) {
@@ -994,24 +992,21 @@ static mp_obj_t str_ljust(size_t n_args, const mp_obj_t *args) {
     byte fillchar = (n_args > 2) ? (byte) * mp_obj_str_get_str(args[2]) : ' ';
     vstr_t vstr;
     vstr_init_len(&vstr, width);
-    memcpy(vstr.buf, str, str_len);
-    memset(vstr.buf + str_len, fillchar, width - str_len);
+    size_t pad = width - str_len;
+    size_t str_offset = right ? pad : 0;
+    size_t fill_offset = right ? 0 : str_len;
+    memcpy(vstr.buf + str_offset, str, str_len);
+    memset(vstr.buf + fill_offset, fillchar, pad);
     return mp_obj_new_str_type_from_vstr(mp_obj_get_type(args[0]), &vstr);
+}
+
+static mp_obj_t str_ljust(size_t n_args, const mp_obj_t *args) {
+    return str_justify(n_args, args, false);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_ljust_obj, 2, 3, str_ljust);
 
 static mp_obj_t str_rjust(size_t n_args, const mp_obj_t *args) {
-    GET_STR_DATA_LEN(args[0], str, str_len);
-    mp_uint_t width = mp_obj_get_int(args[1]);
-    if (str_len >= width) {
-        return args[0];
-    }
-    byte fillchar = (n_args > 2) ? (byte) * mp_obj_str_get_str(args[2]) : ' ';
-    vstr_t vstr;
-    vstr_init_len(&vstr, width);
-    memset(vstr.buf, fillchar, width - str_len);
-    memcpy(vstr.buf + (width - str_len), str, str_len);
-    return mp_obj_new_str_type_from_vstr(mp_obj_get_type(args[0]), &vstr);
+    return str_justify(n_args, args, true);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rjust_obj, 2, 3, str_rjust);
 
@@ -2143,11 +2138,6 @@ static mp_obj_t str_isdecimal(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(str_isdecimal_obj, str_isdecimal);
 
-static mp_obj_t str_isnumeric(mp_obj_t self_in) {
-    return str_uni_istype(unichar_isdigit, self_in);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(str_isnumeric_obj, str_isnumeric);
-
 static mp_obj_t str_isidentifier(mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (self_len == 0) {
@@ -2476,7 +2466,7 @@ static const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     #if MICROPY_PY_BUILTINS_STR_IS_CHECKS
     { MP_ROM_QSTR(MP_QSTR_isdecimal), MP_ROM_PTR(&str_isdecimal_obj) },
     { MP_ROM_QSTR(MP_QSTR_isidentifier), MP_ROM_PTR(&str_isidentifier_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isnumeric), MP_ROM_PTR(&str_isnumeric_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isnumeric), MP_ROM_PTR(&str_isdecimal_obj) },
     { MP_ROM_QSTR(MP_QSTR_isprintable), MP_ROM_PTR(&str_isprintable_obj) },
     #endif
     #if MICROPY_PY_BUILTINS_STR_FORMAT_MAP
