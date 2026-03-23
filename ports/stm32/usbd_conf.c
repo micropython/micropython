@@ -32,7 +32,9 @@
 #include "usbd_core.h"
 #include "py/obj.h"
 #include "py/mphal.h"
+#if !BUILDING_MBOOT
 #include "shared/tinyusb/mp_usbd.h"
+#endif
 #include "irq.h"
 #include "usb.h"
 
