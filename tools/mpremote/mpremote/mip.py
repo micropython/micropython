@@ -5,7 +5,6 @@
 import urllib.error
 import urllib.request
 import json
-import tempfile
 import os
 import os.path
 
@@ -14,7 +13,13 @@ from .commands import CommandError, show_progress_bar
 
 _PACKAGE_INDEX = "https://micropython.org/pi/v2"
 
-allowed_mip_url_prefixes = ("http://", "https://", "github:", "gitlab:")
+_KNOWN_PROVIDERS = {
+    "codeberg:": "https://codeberg.org/api/v1/repos/{org}/{repo}/raw/{path}?ref={branch}",
+    "github:": "https://raw.githubusercontent.com/{org}/{repo}/{branch}/{path}",
+    "gitlab:": "https://gitlab.com/{org}/{repo}/-/raw/{branch}/{path}",
+}
+
+allowed_mip_url_prefixes = tuple(["http://", "https://"] + list(_KNOWN_PROVIDERS.keys()))
 
 
 # This implements os.makedirs(os.dirname(path))
@@ -46,29 +51,12 @@ def _check_exists(transport, path, short_hash):
 def _rewrite_url(url, branch=None):
     if not branch:
         branch = "HEAD"
-    if url.startswith("github:"):
-        url = url[7:].split("/")
-        url = (
-            "https://raw.githubusercontent.com/"
-            + url[0]
-            + "/"
-            + url[1]
-            + "/"
-            + branch
-            + "/"
-            + "/".join(url[2:])
-        )
-    elif url.startswith("gitlab:"):
-        url = url[7:].split("/")
-        url = (
-            "https://gitlab.com/"
-            + url[0]
-            + "/"
-            + url[1]
-            + "/-/raw/"
-            + branch
-            + "/"
-            + "/".join(url[2:])
+    for provider, url_format in _KNOWN_PROVIDERS.items():
+        if not url.startswith(provider):
+            continue
+        components = url[len(provider) :].split("/")
+        return url_format.format(
+            org=components[0], repo=components[1], branch=branch, path="/".join(components[2:])
         )
     return url
 
