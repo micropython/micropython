@@ -41,6 +41,7 @@ typedef struct _dhcp_server_t {
     ip_addr_t nm;
     dhcp_server_lease_t lease[DHCPS_MAX_IP];
     struct udp_pcb *udp;
+    bool send_router; // advertise server IP as default gateway
 } dhcp_server_t;
 
 void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm);

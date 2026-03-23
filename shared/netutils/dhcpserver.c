@@ -280,7 +280,9 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 
     opt_write_n(&opt, DHCP_OPT_SERVER_ID, 4, &ip_2_ip4(&d->ip)->addr);
     opt_write_n(&opt, DHCP_OPT_SUBNET_MASK, 4, &ip_2_ip4(&d->nm)->addr);
-    opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &ip_2_ip4(&d->ip)->addr); // aka gateway; can have multiple addresses
+    if (d->send_router) {
+        opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &ip_2_ip4(&d->ip)->addr); // aka gateway; can have multiple addresses
+    }
     opt_write_n(&opt, DHCP_OPT_DNS, 4, &ip_2_ip4(&d->ip)->addr);
     opt_write_u32(&opt, DHCP_OPT_IP_LEASE_TIME, DEFAULT_LEASE_TIME_S);
     *opt++ = DHCP_OPT_END;
@@ -295,6 +297,7 @@ void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm) {
     ip_addr_copy(d->ip, *ip);
     ip_addr_copy(d->nm, *nm);
     memset(d->lease, 0, sizeof(d->lease));
+    d->send_router = true;
     if (dhcp_socket_new_dgram(&d->udp, d, dhcp_server_process) != 0) {
         return;
     }
