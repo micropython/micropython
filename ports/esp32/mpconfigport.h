@@ -162,6 +162,20 @@
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
+#ifndef MICROPY_PY_MACHINE_CAN
+#define MICROPY_PY_MACHINE_CAN              (SOC_TWAI_SUPPORTED)
+#endif
+#if MICROPY_PY_MACHINE_CAN
+#ifndef MICROPY_HW_CAN_IS_RESERVED
+#define MICROPY_HW_CAN_IS_RESERVED(can_id) (false)
+#endif
+#define MICROPY_HW_NUM_CAN                  SOC_TWAI_CONTROLLER_NUM
+#define CAN_TX_QUEUE_LEN                    8
+#define CAN_HW_MAX_FILTER                   8
+#define CAN_BRP_MIN                         TWAI_BRP_MIN
+#define CAN_BRP_MAX                         TWAI_BRP_MAX
+#define MICROPY_PY_MACHINE_CAN_INCLUDEFILE "ports/esp32/machine_can.c"
+#endif
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
 #ifndef MICROPY_PY_NETWORK
