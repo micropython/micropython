@@ -446,3 +446,95 @@ with each service using its own client IDs on both the CM33 and CM55 sides::
 
     # Send CMD_STOP to CM55 Service 2 (client_id=6); echo comes back to CM33 client_id=4
     ipc.send(IPC.CMD_STOP, 0, 6)
+
+PDM - PCM bus
+--------------
+
+PDM/PCM is a asynchronous operation used to connect digital audio devices.
+At the physical level, a bus consists of 2 lines: CLK, DATA.
+
+.. warning:: 
+    This is not part of the core MicroPython libraries. Therefore, not mapping any existing machine class API and neither supported by other ports.
+
+PDM-PCM objects can be created and initialized using::
+
+    from machine import PDM_PCM
+
+    clk_pin = "P8_5"
+    data_pin = "P8_6"
+
+    pdm_pcm = PDM_PCM(
+    sck=clk_pin,
+    data=data_pin,
+    sample_rate=16000,
+    bits=PDM_PCM.BITS_16,
+    format=PDM_PCM.MONO,
+    gain=0,
+    )
+
+2 modes of operation are supported:
+ - blocking
+ - non-blocking
+
+
+Constructor
+^^^^^^^^^^^^
+
+.. class:: PDM_PCM(clk, data, sample_rate, bits, format, gain, ibuf)
+
+   Keyword-only parameters that are supported on this port:
+
+     - ``clk`` is a pin object for the clock line
+     - ``data`` is a pin object for the data line
+     - ``sample_rate`` specifies audio sampling rate. **Currently only 16 KHz sample rate is supported**.
+     - ``bits`` specifies word length - 16 and 32 being accepted values.
+     - ``format`` specifies channel format - STEREO or MONO.
+     - ``gain`` is the gain in dB. In case of STEREO format is applies to both channels. The range goes from -103 to +83 dB with 6 dB step. Values will be rounded to the closest step.
+     - ``ibuf`` is the size of the internal ring buffer (in bytes) storing the incoming audio data stream. Default is 20000.
+
+Methods
+^^^^^^^^
+
+.. method:: PDM_PCM.init(clk, data, sample_rate, bits, format, gain, ibuf)
+    
+    Initializes the PDM_PCM hardware as per the specified parameters. See the constructor for details on the supported parameters.
+
+.. method:: PDM_PCM.deinit()
+
+    Deinitializes the PDM_PCM object.
+
+.. method::  PDM_PCM.readinto(buf)
+
+    Read audio samples into the buffer specified by ``buf``. ``buf`` must support the buffer protocol, such as bytearray or array.
+    Sample size can be calculated as (PCM_bits/8) * (format_size); where format_size is 2(stereo mode) and 1(mono mode).
+    Returns number of bytes read.
+
+.. method::  PDM_PCM.irq(handler)
+
+    Set the callback.``handler`` is called when ``buf`` becomes full (``readinto`` method).
+    Setting a callback changes the ``readinto`` method to non-blocking operation.
+    ``handler`` is called in the context of the MicroPython scheduler.
+
+.. method::  PDM_PCM.gain([gain])
+    
+    Set/get the gain for of all the channels. The gain is specified in dB. The range goes from -103 to +83 dB with 6 dB step. Values will be rounded to the closest step.
+    Default is 0 dB.
+
+Constants
+^^^^^^^^^^
+
+.. data:: PDM_PCM.STEREO
+
+   for initialising the PDM_PCM ``format`` to stereo
+
+.. data:: PDM_PCM.MONO
+
+   for initialising the PDM_PCM ``format`` to mono
+
+.. data:: PDM_PCM.BITS_16
+
+   for initialising the PDM_PCM ``bits`` to 16
+
+.. data:: PDM_PCM.BITS_32
+
+   for initialising the PDM_PCM ``bits`` to 32
