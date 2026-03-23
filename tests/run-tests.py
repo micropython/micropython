@@ -187,6 +187,10 @@ platform_tests_to_skip = {
         "micropython/extreme_exc.py",
         "micropython/heapalloc_exc_compressed_emg_exc.py",
     ),
+    "win32": (
+        "thread/thread_stacksize1.py",  # stack too small for debug builds
+        "thread/thread_stdin.py",  # stdin polling not supported in threads
+    ),
     "WiPy": (
         "misc/print_exception.py",  # requires error reporting full
     ),
@@ -873,7 +877,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     def run_one_test(test_file):
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
         # If test_file is one of our own tests always make it relative to our tests/ dir and
-        # otherwise use the abosulte path, irregardless of actual path passed,
+        # otherwise use the absolute path, regardless of actual path passed,
         # such that display and result output is always the same.
         try:
             test_file_relpath = os.path.relpath(test_file, start=base_path())
