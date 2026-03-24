@@ -42,8 +42,9 @@ const mp_obj_dict_t mp_const_empty_dict_obj = {
     .map = {
         .all_keys_are_qstrs = 0,
         .is_fixed = 1,
-        .is_ordered = 1,
+        _MP_MAP_IS_ORDERED_INIT
         .used = 0,
+        _MP_MAP_FILLED_INIT(0)
         .alloc = 0,
         .table = NULL,
     }
@@ -55,8 +56,13 @@ static mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
 // the iteration is held in *cur and should be initialised with zero for the
 // first call.  Will return NULL when no more elements are available.
 static mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
-    size_t max = dict->map.alloc;
     mp_map_t *map = &dict->map;
+    #if MICROPY_PY_MAP_ORDERED
+    // Ordered maps have entries dense in [0, used); no need to scan beyond.
+    size_t max = map->is_fixed ? map->alloc : map->used;
+    #else
+    size_t max = map->alloc;
+    #endif
 
     size_t i = *cur;
     for (; i < max; i++) {
@@ -66,7 +72,7 @@ static mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
         }
     }
 
-    assert(map->used == 0 || i == max);
+    assert(mp_map_len(map) == 0 || i == max);
     return NULL;
 }
 
@@ -115,7 +121,7 @@ mp_obj_t mp_obj_dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_obj_t dict_out = mp_obj_new_dict(0);
     mp_obj_dict_t *dict = MP_OBJ_TO_PTR(dict_out);
     dict->base.type = type;
-    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    #if !MICROPY_PY_MAP_ORDERED && MICROPY_PY_COLLECTIONS_ORDEREDDICT
     if (type == &mp_type_ordereddict) {
         dict->map.is_ordered = 1;
     }
@@ -133,9 +139,9 @@ static mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
-            return mp_obj_new_bool(mp_map_num_filled_slots(&self->map) != 0);
+            return mp_obj_new_bool(mp_map_len(&self->map) != 0);
         case MP_UNARY_OP_LEN:
-            return MP_OBJ_NEW_SMALL_INT(mp_map_num_filled_slots(&self->map));
+            return MP_OBJ_NEW_SMALL_INT(mp_map_len(&self->map));
         #if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(*self->map.table) * self->map.alloc;
@@ -172,7 +178,7 @@ static mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
 
             if (mp_obj_is_type(rhs_in, &mp_type_dict)) {
                 mp_obj_dict_t *rhs = MP_OBJ_TO_PTR(rhs_in);
-                if (o->map.used != rhs->map.used) {
+                if (mp_map_len(&o->map) != mp_map_len(&rhs->map)) {
                     return mp_const_false;
                 }
 
@@ -350,9 +356,21 @@ static mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);
-    if (self->map.used == 0) {
+    if (mp_map_len(&self->map) == 0) {
         mp_raise_msg(&mp_type_KeyError, MP_ERROR_TEXT("popitem(): dictionary is empty"));
     }
+    #if MICROPY_PY_MAP_ORDERED
+    // Scan backward from the high-water mark to find the last live entry (LIFO).
+    size_t cur = self->map.used;
+    while (cur > 0) {
+        --cur;
+        if (mp_map_slot_is_filled(&self->map, cur)) {
+            break;
+        }
+    }
+    mp_map_elem_t *next = &self->map.table[cur];
+    assert(mp_map_slot_is_filled(&self->map, cur));
+    #else
     size_t cur = 0;
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
     if (self->map.is_ordered) {
@@ -362,9 +380,19 @@ static mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_map_elem_t *next = dict_iter_next(self, &cur);
     assert(next);
     self->map.used--;
-    mp_obj_t items[] = {next->key, next->value};
-    next->key = MP_OBJ_SENTINEL; // must mark key as sentinel to indicate that it was deleted
+    #endif
+    mp_obj_t key = next->key;
+    #if MICROPY_PY_MAP_ORDERED
+    // Delegate deletion to mp_map_lookup so tombstone/compact logic is in one place.
+    mp_map_elem_t *elem = mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_obj_t items[] = {key, elem->value};
+    elem->value = MP_OBJ_NULL;
+    #else
+    mp_obj_t items[] = {key, next->value};
+    next->key = MP_OBJ_SENTINEL;
     next->value = MP_OBJ_NULL;
+    #endif
+
     mp_obj_t tuple = mp_obj_new_tuple(2, items);
 
     return tuple;
@@ -376,7 +404,7 @@ static mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_ensure_not_fixed(self);
 
-    mp_arg_check_num(n_args, kwargs->used, 1, 2, true);
+    mp_arg_check_num(n_args, mp_map_len(kwargs), 1, 2, true);
 
     if (n_args == 2) {
         // given a positional argument
@@ -649,7 +677,7 @@ mp_obj_t mp_obj_new_dict(size_t n_args) {
 
 size_t mp_obj_dict_len(mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->map.used;
+    return mp_map_len(&self->map);
 }
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {

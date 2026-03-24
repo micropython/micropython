@@ -51,7 +51,9 @@ static mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     // make it an OrderedDict
     mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
     dictObj->base.type = &mp_type_ordereddict;
+    #if !MICROPY_PY_MAP_ORDERED
     dictObj->map.is_ordered = 1;
+    #endif
     for (size_t i = 0; i < self->tuple.len; ++i) {
         mp_obj_dict_store(dict, MP_OBJ_NEW_QSTR(fields[i]), self->tuple.items[i]);
     }

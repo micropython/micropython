@@ -412,12 +412,21 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
 
+#if MICROPY_PY_MAP_ORDERED
+#define _MP_MAP_FILLED_INIT(n) .filled = (n),
+#define _MP_MAP_IS_ORDERED_INIT
+#else
+#define _MP_MAP_FILLED_INIT(n)
+#define _MP_MAP_IS_ORDERED_INIT .is_ordered = 1,
+#endif
+
 #define MP_DEFINE_CONST_MAP(map_name, table_name) \
     const mp_map_t map_name = { \
         .all_keys_are_qstrs = 1, \
         .is_fixed = 1, \
-        .is_ordered = 1, \
+        _MP_MAP_IS_ORDERED_INIT \
         .used = MP_ARRAY_SIZE(table_name), \
+        _MP_MAP_FILLED_INIT(MP_ARRAY_SIZE(table_name)) \
         .alloc = MP_ARRAY_SIZE(table_name), \
         .table = (mp_map_elem_t *)(mp_rom_map_elem_t *)table_name, \
     }
@@ -428,8 +437,9 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
         .map = { \
             .all_keys_are_qstrs = 1, \
             .is_fixed = 1, \
-            .is_ordered = 1, \
+            _MP_MAP_IS_ORDERED_INIT \
             .used = n, \
+            _MP_MAP_FILLED_INIT(n) \
             .alloc = n, \
             .table = (mp_map_elem_t *)(mp_rom_map_elem_t *)table_name, \
         }, \
@@ -481,11 +491,23 @@ typedef struct _mp_rom_map_elem_t {
 typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // if set, table is fixed/read-only and can't be modified
+    #if MICROPY_PY_MAP_ORDERED
+    size_t used : (4 * sizeof(size_t) - 1);   // high-water mark in dense array
+    size_t filled : (4 * sizeof(size_t) - 1);  // non-deleted entries (for O(1) len())
+    #else
     size_t is_ordered : 1;  // if set, table is an ordered array, not a hash map
-    size_t used : (8 * sizeof(size_t) - 3);
+    size_t used : (8 * sizeof(size_t) - 3);   // number of live entries
+    #endif
     size_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
+
+// Get the number of live entries in a map.
+#if MICROPY_PY_MAP_ORDERED
+#define mp_map_len(map) ((map)->filled)
+#else
+#define mp_map_len(map) ((map)->used)
+#endif
 
 // mp_set_lookup requires these constants to have the values they do
 typedef enum _mp_map_lookup_kind_t {
@@ -503,9 +525,7 @@ static inline bool mp_map_slot_is_filled(const mp_map_t *map, size_t pos) {
 void mp_map_init(mp_map_t *map, size_t n);
 void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table);
 void mp_map_init_copy(mp_map_t *map, const mp_map_t *src);
-mp_map_t *mp_map_new(size_t n);
 void mp_map_deinit(mp_map_t *map);
-void mp_map_free(mp_map_t *map);
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
 void mp_map_dump(mp_map_t *map);

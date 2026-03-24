@@ -874,7 +874,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
                 // dictionary
                 mp_map_t *map = mp_obj_dict_get_map(kw_value);
                 // should have enough, since kw_dict_len is in this case hinted correctly above
-                assert(args2_len + 2 * map->used <= args2_alloc);
+                assert(args2_len + 2 * mp_map_len(map) <= args2_alloc);
                 for (size_t j = 0; j < map->alloc; j++) {
                     if (mp_map_slot_is_filled(map, j)) {
                         // the key must be a qstr, so intern it if it's a string
