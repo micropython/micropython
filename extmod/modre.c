@@ -80,7 +80,13 @@ static mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
         // no match for this group
         return mp_const_none;
     }
-    return mp_obj_new_str_of_type(mp_obj_get_type(self->str),
+    const mp_obj_type_t *str_type = mp_obj_get_type(self->str);
+    if (str_type != &mp_type_str) {
+        // bytes, bytearray etc. args should return bytes
+        str_type = &mp_type_bytes;
+    }
+
+    return mp_obj_new_str_of_type(str_type,
         (const byte *)start, self->caps[no * 2 + 1] - start);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
@@ -120,7 +126,9 @@ static void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
     const char *start = self->caps[no * 2];
     if (start != NULL) {
         // have a match for this group
-        const char *begin = mp_obj_str_get_str(self->str);
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(self->str, &bufinfo, MP_BUFFER_READ);
+        const char *begin = bufinfo.buf;
         s = start - begin;
         e = self->caps[no * 2 + 1] - begin;
     }
@@ -205,15 +213,16 @@ static mp_obj_t re_exec_helper(bool is_anchored, uint n_args, const mp_obj_t *ar
         self = MP_OBJ_TO_PTR(mod_re_compile(1, args));
     }
     Subject subj;
-    size_t len;
-    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
-    subj.end = subj.begin + len;
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    subj.begin_line = subj.begin = bufinfo.buf;
+    subj.end = subj.begin + bufinfo.len;
 
     if (was_compiled && n_args > 2) {
         // Arg #2 is starting-pos
         mp_int_t startpos = mp_obj_get_int(args[2]);
-        if (startpos > (mp_int_t)len) {
-            startpos = len;
+        if (startpos > (mp_int_t)bufinfo.len) {
+            startpos = bufinfo.len;
         } else if (startpos < 0) {
             startpos = 0;
         }
@@ -221,8 +230,8 @@ static mp_obj_t re_exec_helper(bool is_anchored, uint n_args, const mp_obj_t *ar
         if (n_args > 3) {
             // Arg #3 is ending-pos
             mp_int_t endpos = mp_obj_get_int(args[3]);
-            if (endpos > (mp_int_t)len) {
-                endpos = len;
+            if (endpos > (mp_int_t)bufinfo.len) {
+                endpos = bufinfo.len;
             } else if (endpos < startpos) {
                 endpos = startpos;
             }
@@ -259,10 +268,15 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 static mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
-    size_t len;
+    mp_buffer_info_t bufinfo;
     const mp_obj_type_t *str_type = mp_obj_get_type(args[1]);
-    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
-    subj.end = subj.begin + len;
+    if (str_type != &mp_type_str) {
+        // bytes, bytearray etc. args should return bytes
+        str_type = &mp_type_bytes;
+    }
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    subj.begin_line = subj.begin = bufinfo.buf;
+    subj.end = subj.begin + bufinfo.len;
     int caps_num = (self->re.sub + 1) * 2;
 
     int maxsplit = 0;
@@ -318,11 +332,11 @@ static mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
         // Note: flags are currently ignored
     }
 
-    size_t where_len;
-    const char *where_str = mp_obj_str_get_data(where, &where_len);
     Subject subj;
-    subj.begin_line = subj.begin = where_str;
-    subj.end = subj.begin + where_len;
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(where, &bufinfo, MP_BUFFER_READ);
+    subj.begin_line = subj.begin = bufinfo.buf;
+    subj.end = subj.begin + bufinfo.len;
     int caps_num = (self->re.sub + 1) * 2;
 
     vstr_t vstr_return;
@@ -351,26 +365,32 @@ static mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
         vstr_add_strn(&vstr_return, subj.begin, match->caps[0] - subj.begin);
 
         // Get replacement string
-        const char *repl = mp_obj_str_get_str((mp_obj_is_callable(replace) ? mp_call_function_1(replace, MP_OBJ_FROM_PTR(match)) : replace));
+        mp_obj_t repl_obj = (mp_obj_is_callable(replace) ? mp_call_function_1(replace, MP_OBJ_FROM_PTR(match)) : replace);
+        mp_get_buffer_raise(repl_obj, &bufinfo, MP_BUFFER_READ);
+        const char *repl = bufinfo.buf;
+        const char *repl_top = repl + bufinfo.len;
 
         // Append replacement string to result, substituting any regex groups
-        while (*repl != '\0') {
+        while (repl < repl_top) {
             if (*repl == '\\') {
                 ++repl;
+                if (repl >= repl_top) {
+                    break;
+                }
                 bool is_g_format = false;
-                if (*repl == 'g' && repl[1] == '<') {
+                if (*repl == 'g' && repl_top - repl > 1 && repl[1] == '<') {
                     // Group specified with syntax "\g<number>"
                     repl += 2;
                     is_g_format = true;
                 }
 
-                if ('0' <= *repl && *repl <= '9') {
+                if (repl < repl_top && '0' <= *repl && *repl <= '9') {
                     // Group specified with syntax "\g<number>" or "\number"
                     unsigned int match_no = 0;
                     do {
                         match_no = match_no * 10 + (*repl++ - '0');
-                    } while ('0' <= *repl && *repl <= '9');
-                    if (is_g_format && *repl == '>') {
+                    } while (repl < repl_top && '0' <= *repl && *repl <= '9');
+                    if (is_g_format && repl < repl_top && *repl == '>') {
                         ++repl;
                     }
 
@@ -384,7 +404,7 @@ static mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
                         const char *end_match = match->caps[match_no * 2 + 1];
                         vstr_add_strn(&vstr_return, start_match, end_match - start_match);
                     }
-                } else if (*repl == '\\') {
+                } else if (repl < repl_top && *repl == '\\') {
                     // Add the \ character
                     vstr_add_byte(&vstr_return, *repl++);
                 }
@@ -447,8 +467,11 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 
 static mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    const char *re_str = mp_obj_str_get_str(args[0]);
-    int size = re1_5_sizecode(re_str);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+    const char *re_str = bufinfo.buf;
+    int size = re1_5_sizecode(re_str, bufinfo.len);
     if (size == -1) {
         #if MICROPY_ERROR_REPORTING >= MICROPY_ERROR_REPORTING_NORMAL
         mp_raise_ValueError(MP_ERROR_TEXT("regex too complex"));
@@ -462,7 +485,7 @@ static mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
         flags = mp_obj_get_int(args[1]);
     }
     #endif
-    int error = re1_5_compilecode(&o->re, re_str);
+    int error = re1_5_compilecode(&o->re, re_str, bufinfo.len);
     if (error != 0) {
     error:
         mp_raise_ValueError(MP_ERROR_TEXT("error in regex"));
