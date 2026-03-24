@@ -365,6 +365,39 @@ The full list of supported commands are:
     local directory that is mounted.  This option disables this check for symbolic
     links, allowing the device to follow symbolic links outside of the local directory.
 
+.. _mpremote_command_manifest:
+
+- **manifest** -- compile a manifest.py and add output to device ``sys.path``:
+
+  .. code-block:: bash
+
+      $ mpremote manifest <path> [options]
+
+  This processes a MicroPython manifest file (as used by the build system's
+  freeze mechanism), compiles all ``.py`` files to ``.mpy`` using ``mpy-cross``,
+  and places the output in a local build directory (default ``_manifest``).
+  The build directory is then added to ``sys.path`` on the device, making the
+  compiled modules available for import.
+
+  When combined with ``mount``, the compiled modules are accessible alongside
+  the mounted local directory:
+
+  .. code-block:: bash
+
+      $ mpremote manifest . mount .
+
+  A soft-reset (Ctrl-D) will re-process the manifest file to include any
+  local updates.
+
+  The ``MPY_DIR``, ``MPY_LIB_DIR``, and ``PORT_DIR`` environment variables can
+  be set to control manifest path resolution.
+
+  Options are:
+
+  - ``-o``, ``--output``: Output directory for compiled ``.mpy`` files
+    (default: ``_manifest``).
+  - ``--mpy-cross-flags``: Additional flags to pass to ``mpy-cross``.
+
 .. _mpremote_command_unmount:
 
 - **unmount** -- unmount the local directory from the remote device:
