@@ -16,12 +16,17 @@ try:
 except KeyError as e:
     print("KeyError", e.args)
 
-# Verify slice-as-key in OrderedDict works or raises TypeError depending
-# on whether the ordered hash table is enabled (slices are not hashable).
+# Slice-as-key in OrderedDict: when backed by the ordered hash table
+# (MICROPY_PY_MAP_ORDERED=1) slices are not hashable so TypeError is raised.
+# When backed by linear scan (MAP_ORDERED=0) slices work as keys.
 x = OrderedDict()
 try:
     x[:"a"] = 1
     x["b"] = 2
+    # Linear scan path: verify keys and values are correct.
+    assert list(x.keys()) == [slice(None, "a", None), "b"]
+    assert list(x.values()) == [1, 2]
+    print("slice key OK")
 except TypeError:
-    pass
-print("OrderedDict slice test OK")
+    # Hash table path: slices not hashable, this is expected.
+    print("slice key TypeError")

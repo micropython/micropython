@@ -1,2 +1,2 @@
 KeyError (slice(None, None, None),)
-OrderedDict slice test OK
+slice key TypeError
