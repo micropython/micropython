@@ -195,6 +195,7 @@ list(APPEND IDF_COMPONENTS
     ulp
     usb
     vfs
+    wear_levelling
 )
 
 if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")

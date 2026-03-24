@@ -31,3 +31,6 @@
 #define MICROPY_HW_SPI1_SCK                 (GPIO_NUM_18)
 #define MICROPY_HW_SPI1_MOSI                (GPIO_NUM_23)
 #define MICROPY_HW_SPI1_MISO                (GPIO_NUM_19)
+
+#define MICROPY_BOARD_STARTUP                mch2022_board_startup
+void mch2022_board_startup(void);
