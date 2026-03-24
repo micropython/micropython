@@ -145,7 +145,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
             sce_irq = CAN2_SCE_IRQn;
             pins[0] = MICROPY_HW_CAN2_TX;
             pins[1] = MICROPY_HW_CAN2_RX;
-            __HAL_RCC_CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
+            __HAL_RCC_CAN1_CLK_ENABLE(); // CAN2 depends on CAN1 being enabled
             __HAL_RCC_CAN2_CLK_ENABLE();
             break;
         #endif
@@ -156,7 +156,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
             sce_irq = CAN3_SCE_IRQn;
             pins[0] = MICROPY_HW_CAN3_TX;
             pins[1] = MICROPY_HW_CAN3_RX;
-            __HAL_RCC_CAN3_CLK_ENABLE(); // CAN3 is a "master" and doesn't need CAN1 enabled as well
+            __HAL_RCC_CAN3_CLK_ENABLE(); // CAN3 is independent from CAN1/2
             break;
         #endif
 
@@ -190,15 +190,25 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
     return true;
 }
 
+static void can1_reset_disable(void) {
+    __HAL_RCC_CAN1_FORCE_RESET();
+    __HAL_RCC_CAN1_RELEASE_RESET();
+    __HAL_RCC_CAN1_CLK_DISABLE();
+}
+
 void can_deinit(CAN_HandleTypeDef *can) {
     HAL_CAN_DeInit(can);
     if (can->Instance == CAN1) {
         HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN1_RX1_IRQn);
         HAL_NVIC_DisableIRQ(CAN1_SCE_IRQn);
-        __HAL_RCC_CAN1_FORCE_RESET();
-        __HAL_RCC_CAN1_RELEASE_RESET();
-        __HAL_RCC_CAN1_CLK_DISABLE();
+        #if defined(CAN2)
+        if (!__HAL_RCC_CAN2_IS_CLK_ENABLED()) { // CAN2 depends on CAN1 being enabled
+            can1_reset_disable();
+        }
+        #else
+        can1_reset_disable();
+        #endif
     #if defined(CAN2)
     } else if (can->Instance == CAN2) {
         HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
@@ -207,6 +217,9 @@ void can_deinit(CAN_HandleTypeDef *can) {
         __HAL_RCC_CAN2_FORCE_RESET();
         __HAL_RCC_CAN2_RELEASE_RESET();
         __HAL_RCC_CAN2_CLK_DISABLE();
+        if (!NVIC_GetEnableIRQ(CAN1_SCE_IRQn)) {
+            can1_reset_disable();     // CAN1 isn't enabled, so safe to disable as well
+        }
     #endif
     #if defined(CAN3)
     } else if (can->Instance == CAN3) {
