@@ -59,6 +59,7 @@ typedef struct _machine_i2c_target_obj_t {
 } machine_i2c_target_obj_t;
 
 static machine_i2c_target_obj_t machine_i2c_target_obj[MICROPY_PY_MACHINE_I2C_NUM_ENTRIES];
+static machine_i2c_target_obj_t *machine_i2c_target_active_obj;
 
 /******************************************************************************/
 // PSOC PDL hardware bindings
@@ -76,14 +77,7 @@ static machine_i2c_target_obj_t machine_i2c_target_obj[MICROPY_PY_MACHINE_I2C_NU
 // where previous stopped (e.g., if master read 8 of 10 bytes, next read
 // starts at byte 9). This is PDL documented behavior.
 static void i2c_slave_event_callback(uint32_t events) {
-    // Find the active slave instance
-    machine_i2c_target_obj_t *self = NULL;
-    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++) {
-        if (machine_i2c_target_obj[i].base.type != NULL) {
-            self = &machine_i2c_target_obj[i];
-            break;
-        }
-    }
+    machine_i2c_target_obj_t *self = machine_i2c_target_active_obj;
 
     if (self == NULL) {
         return;
@@ -164,7 +158,10 @@ static void i2c_slave_event_callback(uint32_t events) {
 
 static void machine_i2c_target_scb_isr(mp_obj_t i2c_target_obj) {
     machine_i2c_target_obj_t *self = MP_OBJ_TO_PTR(i2c_target_obj);
+    machine_i2c_target_obj_t *prev_active_obj = machine_i2c_target_active_obj;
+    machine_i2c_target_active_obj = self;
     Cy_SCB_I2C_SlaveInterrupt(self->scb_obj->scb, &self->ctx);
+    machine_i2c_target_active_obj = prev_active_obj;
 }
 
 static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_data_t *data,
