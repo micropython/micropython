@@ -92,6 +92,12 @@ typedef struct {
         .af = mp_hal_pin_af_find(_pin, _af_signal) \
 }
 
+#define MP_HAL_PIN_AF_INIT(conf_obj, _pin, _cy_drive_mode, _init_value, _af_signal) \
+    conf_obj.pin = _pin; \
+    conf_obj.cy_drive_mode = _cy_drive_mode; \
+    conf_obj.init_value = _init_value; \
+    conf_obj.af = mp_hal_pin_af_find(_pin, _af_signal);
+
 typedef void *mp_hal_af_periph_t;
 
 mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins);

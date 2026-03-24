@@ -82,6 +82,9 @@
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (0)
 
+#define MICROPY_PY_MACHINE_UART                 (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/psoc-edge/machine_uart.c"
+
 #define MICROPY_PY_MACHINE_I2C_TARGET           (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/psoc-edge/machine_i2c_target.c"
