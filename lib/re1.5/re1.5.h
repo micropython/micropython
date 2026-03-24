@@ -146,8 +146,8 @@ int re1_5_recursiveloopprog(ByteProg*, Subject*, const char**, int, int);
 int re1_5_recursiveprog(ByteProg*, Subject*, const char**, int, int);
 int re1_5_thompsonvm(ByteProg*, Subject*, const char**, int, int);
 
-int re1_5_sizecode(const char *re);
-int re1_5_compilecode(ByteProg *prog, const char *re);
+int re1_5_sizecode(const char *re, size_t len);
+int re1_5_compilecode(ByteProg *prog, const char *re, size_t len);
 void re1_5_dumpcode(ByteProg *prog);
 void cleanmarks(ByteProg *prog);
 int _re1_5_classmatch(const char *pc, const char *sp);
