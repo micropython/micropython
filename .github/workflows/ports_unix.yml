@@ -95,8 +95,12 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
-        fail_ci_if_error: true
+        # Only fail the job on error if a token is set, or we're running against upstream repo.
+        # This avoids the annoying situation of the job failing on every push to a fork (if no token is set).
+        fail_ci_if_error: ${{ secrets.CODECOV_TOKEN != '' || github.repository_owner == 'micropython' }}
         verbose: true
+        # note: when a fork opens a PR into MicroPython repo, the pull_request trigger can't access
+        # secrets so this token value will be empty (codecov will do a 'tokenless' upload).
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Print failures
       if: failure()
