@@ -8,8 +8,8 @@ limitations with the Python environment, often due to an inability to access
 certain hardware resources or Python speed limitations.
 
 If your limitations can't be resolved with suggestions in :ref:`speed_python`,
-writing some or all of your module in C (and/or C++ if implemented for your port)
-is a viable option.
+writing some or all of your module in C (and/or
+:ref:`C++ if implemented for your port<cxx_support>`) is a viable option.
 
 If your module is designed to access or work with commonly available
 hardware or libraries please consider implementing it inside the MicroPython
@@ -285,3 +285,75 @@ can now be accessed in Python just like any other builtin module, e.g.
     sleep_ms(1000)
     print(watch.time())
     # should display approximately 1000
+
+
+.. _c_heap:
+
+C Dynamic Memory Allocation
+---------------------------
+
+MicroPython uses its own "Python heap" for `memorymanagement`,
+which is not the same as the "C heap" used by C library functions ``malloc()``,
+``free()``, etc. Not every MicroPython port comes with a "C heap" at all.
+
+Tier 1 & 2 ports have varying support for C dynamic memory allocation via a "C
+heap":
+
+- unix, windows, esp32 and webassembly ports support C dynamic memory
+  allocation.
+- rp2 port will fail to allocate any memory at runtime unless the firmware is
+  built with ``MICROPY_C_HEAP_SIZE=n`` to reserve ``n`` bytes of memory for a C
+  heap. This memory will not be available for Python code to use.
+- alif, mimxrt, nrf, renesas-ra, samd, and stm32 port builds that include
+  dynamic C allocation will fail at link-time with errors such as ``undefined
+  reference to `malloc'``. MicroPython has no built-in support for dynamic C
+  allocation on these ports. Any solution requires manually adding a C heap
+  implementation to the custom build.
+- zephyr port currently does not support building with user modules.
+
+Python heap as C heap
+~~~~~~~~~~~~~~~~~~~~~
+
+It may be practical for C code to call "Python heap" dynamic allocation
+functions such ``m_malloc()``, ``m_malloc0()`` and ``m_free()`` instead.
+
+Buffers allocated from the "Python heap" in this way are freed during a
+:ref:`soft_reset`. It's important to ensure any C static variables
+don't become "dangling pointers" after a soft reset.
+
+.. _cxx_support:
+
+C++ Modules
+-----------
+
+Most Tier 1 & 2 MicroPython ports (and some Tier 3) support building C++ user
+modules, using the C++-specific environment variables described above.
+
+Integrating C++ and MicroPython successfully involves some additional
+considerations:
+
+C++ Dynamic Memory Allocation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+C++ programs (as well as C++ Standard Library features) typically use dynamic
+memory allocation. The C++ default memory allocator (i.e. operators ``new`` and
+``delete``) is typically implemented as a layer on top of `c_heap`.
+
+For MicroPython ports which don't include C dynamic memory allocation support,
+C++ dynamic memory allocation can be supported in one of two ways:
+
+- Implement C dynamic memory allocation in your custom build.
+- Implement a custom C++ allocator in your custom build.
+
+Linkage Considerations
+~~~~~~~~~~~~~~~~~~~~~~
+
+Because MicroPython is a C-based project, any symbols which link to or from
+MicroPython need to be qualified ``extern "C"`` in C++ code.
+
+It's strongly recommended to follow the pattern demonstrated in
+`examples/usercmodule/cppexample
+<https://github.com/micropython/micropython/blob/master/examples/usercmodule/cppexample>`_,
+where the Python module is implemented in a minimal C file wrapper around the
+C++ code.
+

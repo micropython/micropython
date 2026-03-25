@@ -316,6 +316,11 @@ following periodically:
     gc.collect()
     gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
 
+For more technical details, see :doc:`/develop/memorymgt`.
+
+Note: The heap used by MicroPython is a specialised "Python heap", separate from
+any heap used for :ref:`c_heap`.
+
 Fragmentation
 ~~~~~~~~~~~~~
 
