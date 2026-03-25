@@ -166,6 +166,8 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    self->base.active = false;
+
     if (args[ARG_id].u_obj != mp_const_none) {
         if (mp_obj_get_int(args[ARG_id].u_obj) != 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid LAN interface identifier"));
@@ -379,44 +381,53 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
     self->base.netif = esp_netif_new(&cfg);
-
-    if (esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
+    if (self->base.netif == NULL) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_new failed"));
     }
 
-    if (esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
-    }
-
-    esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, self->phy);
-
-    esp_err_t esp_err = esp_eth_driver_install(&config, &self->eth_handle);
-    if (esp_err == ESP_OK) {
-        self->base.active = false;
-        self->initialized = true;
-    } else {
-        if (esp_err == ESP_ERR_INVALID_ARG) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed with invalid argument"));
-        } else if (esp_err == ESP_ERR_NO_MEM) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed with no memory for driver"));
-        } else {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed"));
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        if (esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
         }
-    }
 
-    if (esp_netif_attach(self->base.netif, esp_eth_new_netif_glue(self->eth_handle)) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_attach failed"));
-    }
+        if (esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
+        }
 
-    // If MAC address is unset, set it to the address reserved for the ESP32 ETH interface
-    uint8_t mac_addr[6];
-    esp_eth_ioctl(self->eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
-    if ((mac_addr[0] | mac_addr[1] | mac_addr[2] | mac_addr[3] | mac_addr[4] | mac_addr[5]) == 0) {
-        esp_read_mac(mac_addr, ESP_MAC_ETH);  // Get ESP32 MAC address for ETH iface
-        set_mac_address(self, mac_addr, sizeof(mac_addr));
+        esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, self->phy);
+
+        esp_err_t esp_err = esp_eth_driver_install(&config, &self->eth_handle);
+        if (esp_err != ESP_OK) {
+            if (esp_err == ESP_ERR_INVALID_ARG) {
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed with invalid argument"));
+            } else if (esp_err == ESP_ERR_NO_MEM) {
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed with no memory for driver"));
+            } else {
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed"));
+            }
+        }
+
+        if (esp_netif_attach(self->base.netif, esp_eth_new_netif_glue(self->eth_handle)) != ESP_OK) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_attach failed"));
+        }
+
+        // If MAC address is unset, set it to the address reserved for the ESP32 ETH interface
+        uint8_t mac_addr[6];
+        esp_eth_ioctl(self->eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
+        if ((mac_addr[0] | mac_addr[1] | mac_addr[2] | mac_addr[3] | mac_addr[4] | mac_addr[5]) == 0) {
+            esp_read_mac(mac_addr, ESP_MAC_ETH);  // Get ESP32 MAC address for ETH iface
+            set_mac_address(self, mac_addr, sizeof(mac_addr));
+        }
+
+        nlr_pop();
+    } else {
+        esp_netif_destroy(self->base.netif);
+        nlr_jump(nlr.ret_val);
     }
 
     eth_status = ETH_INITIALIZED;
+    self->initialized = true;
 
     return MP_OBJ_FROM_PTR(&lan_obj);
 }
