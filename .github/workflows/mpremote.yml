@@ -20,7 +20,17 @@ jobs:
     - name: Install build tools
       run: pip install build
     - name: Build mpremote wheel
-      run: cd tools/mpremote && python -m build --wheel
+      run: |
+        if ! git rev-parse --verify -q v1.23.0 >/dev/null; then
+          echo "::error::mpremote wheel build requires recent MicroPython version tags in the forked repo."
+          echo ""
+          echo "To fix, push tags from upstream:"
+          echo "  git remote add upstream https://github.com/micropython/micropython.git"
+          echo "  git fetch upstream --tags"
+          echo "  git push origin --tags"
+          exit 1
+        fi
+        cd tools/mpremote && python -m build --wheel
     - name: Archive mpremote wheel
       uses: actions/upload-artifact@v7
       with:
