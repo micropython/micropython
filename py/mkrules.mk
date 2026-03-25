@@ -39,7 +39,7 @@ endif
 endif
 
 # Add default C++ compiler flags based on CFLAGS. For use with C++ user modules.
-CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99 -std=c99,$(CFLAGS) $(CXXFLAGS_MOD))
+CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99 -std=c99 -std=c11,$(CFLAGS) $(CXXFLAGS_MOD))
 
 # Add LDFLAGS to link libstdc++ on bare metal ports. Added only if a port has
 # -nostdlib in LDFLAGS and C++ source files are provided.

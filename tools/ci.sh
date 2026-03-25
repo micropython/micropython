@@ -341,7 +341,7 @@ function ci_nrf_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/nrf submodules
     make ${MAKEOPTS} -C ports/nrf BOARD=PCA10040
-    make ${MAKEOPTS} -C ports/nrf BOARD=MICROBIT
+    make ${MAKEOPTS} -C ports/nrf BOARD=MICROBIT USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/nrf BOARD=PCA10056 SD=s140
     make ${MAKEOPTS} -C ports/nrf BOARD=PCA10090
 }
