@@ -22,3 +22,10 @@ print("0000".rfind('1', 3))
 print("0000".rfind('1', 4))
 print("0000".rfind('1', 5))
 print("aaaaaaaaaaa".rfind("bbb", 9, 2))
+
+try:
+    print("0000".rfind(48))
+except TypeError:
+    print("Raised TypeError")
+else:
+    print("Did not raise TypeError")

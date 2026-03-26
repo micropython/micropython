@@ -44,10 +44,10 @@ static MP_NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 
 static mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
 
-static void str_check_arg_type(const mp_obj_type_t *self_type, const mp_obj_t arg) {
+static void str_check_arg_type(const mp_obj_type_t *self_type, const mp_obj_t arg, bool allow_single_byte) {
     // String operations generally need the args type to match the object they're called on,
-    // e.g. str.find(str), byte.startswith(byte)
-    // with the exception that bytes may be used for bytearray and vice versa.
+    // e.g. str.find(str), bytes.startswith(byte) with the exception that bytes may be used
+    // for bytearray and vice versa, and for bytes/bytearray.find(int).
     const mp_obj_type_t *arg_type = mp_obj_get_type(arg);
 
     #if MICROPY_PY_BUILTINS_BYTEARRAY
@@ -58,6 +58,17 @@ static void str_check_arg_type(const mp_obj_type_t *self_type, const mp_obj_t ar
         self_type = &mp_type_bytes;
     }
     #endif
+
+    if (allow_single_byte && (
+        #if MICROPY_PY_BUILTINS_BYTEARRAY
+        self_type == &mp_type_bytearray ||
+        #endif
+        self_type == &mp_type_bytes) && mp_obj_is_small_int(arg)) {
+        mp_int_t value = MP_OBJ_SMALL_INT_VALUE(arg);
+        if (MP_FIT_UNSIGNED(8, value)) {
+            return;
+        }
+    }
 
     if (arg_type != self_type) {
         bad_implicit_conversion(arg);
@@ -619,7 +630,7 @@ mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
 
     } else {
         // sep given
-        str_check_arg_type(self_type, sep);
+        str_check_arg_type(self_type, sep, false);
 
         size_t sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
@@ -771,10 +782,21 @@ static mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, b
     check_is_str_or_bytes(args[0]);
 
     // check argument type
-    str_check_arg_type(self_type, args[1]);
+    str_check_arg_type(self_type, args[1], true);
 
+    size_t needle_len;
+    const byte *needle;
+    byte needle_temp;
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
-    GET_STR_DATA_LEN(args[1], needle, needle_len);
+    if (mp_obj_is_small_int(args[1])) {
+        needle_len = 1;
+        needle_temp = (byte)(MP_OBJ_SMALL_INT_VALUE(args[1]));
+        needle = &needle_temp;
+    } else {
+        GET_STR_DATA_LEN(args[1], str_needle, str_needle_len);
+        needle = str_needle;
+        needle_len = str_needle_len;
+    }
 
     const byte *start = haystack;
     const byte *end = haystack + haystack_len;
@@ -872,7 +894,7 @@ static mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
         chars_to_del = whitespace;
         chars_to_del_len = sizeof(whitespace) - 1;
     } else {
-        str_check_arg_type(self_type, args[1]);
+        str_check_arg_type(self_type, args[1], false);
         GET_STR_DATA_LEN(args[1], s, l);
         chars_to_del = s;
         chars_to_del_len = l;
@@ -1697,8 +1719,8 @@ static mp_obj_t str_replace(size_t n_args, const mp_obj_t *args) {
 
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
 
-    str_check_arg_type(self_type, args[1]);
-    str_check_arg_type(self_type, args[2]);
+    str_check_arg_type(self_type, args[1], false);
+    str_check_arg_type(self_type, args[2], false);
 
     // extract string data
 
@@ -1785,7 +1807,7 @@ static mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
     check_is_str_or_bytes(args[0]);
 
     // check argument type
-    str_check_arg_type(self_type, args[1]);
+    str_check_arg_type(self_type, args[1], false);
 
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
@@ -1826,7 +1848,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 static mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
     check_is_str_or_bytes(self_in);
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
-    str_check_arg_type(self_type, arg);
+    str_check_arg_type(self_type, arg, false);
 
     GET_STR_DATA_LEN(self_in, str, str_len);
     GET_STR_DATA_LEN(arg, sep, sep_len);

@@ -76,3 +76,10 @@ except ValueError:
     print("Raised ValueError")
 else:
     print("Did not raise ValueError")
+
+try:
+    print("0000".index(48))
+except TypeError:
+    print("Raised TypeError")
+else:
+    print("Did not raise TypeError")
