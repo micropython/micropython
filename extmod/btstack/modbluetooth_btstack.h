@@ -42,6 +42,9 @@ typedef struct _mp_bluetooth_btstack_root_pointers_t {
     // Characteristic (and descriptor) value storage.
     mp_gatts_db_t gatts_db;
 
+    // Encryption state cache for all connections (prevents duplicate events).
+    btstack_linked_list_t encryption_states;
+
     #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
     // Registration for notify/indicate events.
     gatt_client_notification_t notification;

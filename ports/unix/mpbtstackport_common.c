@@ -30,6 +30,9 @@
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
 
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "lib/btstack/src/btstack.h"
 
 #include "lib/btstack/platform/embedded/btstack_run_loop_embedded.h"
@@ -92,5 +95,22 @@ void mp_bluetooth_btstack_port_init(void) {
     mp_bluetooth_btstack_port_init_usb();
     #endif
 }
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+void mp_bluetooth_btstack_port_set_er_ir_keys(void) {
+    // Generate cryptographically secure ER and IR keys using system RNG
+    sm_key_t er_key, ir_key;
+
+    // Use /dev/urandom for secure random key generation on Unix systems
+    int fd = open("/dev/urandom", O_RDONLY);
+    if (fd >= 0) {
+        if (read(fd, er_key, 16) == 16 && read(fd, ir_key, 16) == 16) {
+            sm_set_er(er_key);
+            sm_set_ir(ir_key);
+        }
+        close(fd);
+    }
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
