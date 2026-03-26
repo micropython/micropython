@@ -39,6 +39,73 @@ function(usermod_gather_sources SOURCES_VARNAME INCLUDE_DIRECTORIES_VARNAME INCL
     endif()
 endfunction()
 
+# Allow command-line FROZEN_MANIFEST to override board-level setting.
+# Usage: cmake -DMICROPY_USER_FROZEN_MANIFEST=/path/to/manifest.py ...
+if (MICROPY_USER_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
+endif()
+
+# Extract C module paths from manifest if MICROPY_FROZEN_MANIFEST is set.
+if (MICROPY_FROZEN_MANIFEST)
+    # MICROPY_LIB_DIR is set in py.cmake (included before this file).
+    # Set default path variables to be passed to makemanifest.py. These will be
+    # available in path substitutions. Additional variables can be set per-board
+    # in mpconfigboard.cmake or on the cmake command line.
+    if(NOT DEFINED MICROPY_MANIFEST_PORT_DIR)
+        set(MICROPY_MANIFEST_PORT_DIR ${MICROPY_PORT_DIR})
+    endif()
+    if(NOT DEFINED MICROPY_MANIFEST_BOARD_DIR)
+        set(MICROPY_MANIFEST_BOARD_DIR ${MICROPY_BOARD_DIR})
+    endif()
+    if(NOT DEFINED MICROPY_MANIFEST_MPY_DIR)
+        set(MICROPY_MANIFEST_MPY_DIR ${MICROPY_DIR})
+    endif()
+    if(NOT DEFINED MICROPY_MANIFEST_MPY_LIB_DIR)
+        set(MICROPY_MANIFEST_MPY_LIB_DIR ${MICROPY_LIB_DIR})
+    endif()
+
+    # Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
+    get_cmake_property(_manifest_vars VARIABLES)
+    list(FILTER _manifest_vars INCLUDE REGEX "MICROPY_MANIFEST_.*")
+    set(_manifest_var_args)
+    foreach(_manifest_var IN LISTS _manifest_vars)
+        list(APPEND _manifest_var_args "-v")
+        string(REGEX REPLACE "MICROPY_MANIFEST_(.*)" "\\1" _manifest_var_name ${_manifest_var})
+        list(APPEND _manifest_var_args "${_manifest_var_name}=${${_manifest_var}}")
+    endforeach()
+
+    # Extract C module paths from manifest if it exists.
+    # Skip during submodule initialization (UPDATE_SUBMODULES) as micropython-lib
+    # may not exist yet and require() calls would fail.
+    if (EXISTS ${MICROPY_FROZEN_MANIFEST} AND NOT UPDATE_SUBMODULES)
+        # Find Python if not already found.
+        if (NOT Python3_EXECUTABLE)
+            find_package(Python3 REQUIRED COMPONENTS Interpreter)
+        endif()
+
+        execute_process(
+            COMMAND "${Python3_EXECUTABLE}" "${MICROPY_DIR}/tools/makemanifest.py"
+                --list-c-modules ${_manifest_var_args} "${MICROPY_FROZEN_MANIFEST}"
+            OUTPUT_VARIABLE MANIFEST_C_MODULES
+            ERROR_VARIABLE MANIFEST_ERROR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            RESULT_VARIABLE MANIFEST_RESULT
+        )
+
+        # Check if the command succeeded.
+        if (NOT MANIFEST_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to extract C modules from manifest: ${MICROPY_FROZEN_MANIFEST}\nError: ${MANIFEST_ERROR}")
+        endif()
+
+        # Append manifest C modules to USER_C_MODULES list.
+        if (MANIFEST_C_MODULES)
+            # Convert newline-separated string to CMake list
+            string(REPLACE "\n" ";" MANIFEST_C_MODULES_LIST "${MANIFEST_C_MODULES}")
+            list(APPEND USER_C_MODULES ${MANIFEST_C_MODULES_LIST})
+        endif()
+    endif()
+endif()
+
 # Include CMake files for user modules.
 if (USER_C_MODULES)
     foreach(USER_C_MODULE_PATH ${USER_C_MODULES})
