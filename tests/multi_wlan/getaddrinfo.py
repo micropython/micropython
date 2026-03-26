@@ -20,8 +20,11 @@ def instance0():
 
     multitest.next()
 
+    # Note: Lookup domain for this test doesn't need to exist, as the board
+    # isn't internet connected. It also shouldn't exist, so a cached result is
+    # never returned!
     try:
-        socket.getaddrinfo("micropython.org", 80)
+        socket.getaddrinfo("doesnotexist.example.com", 80)
     except OSError as er:
         print(
             "active(0) failed"
@@ -30,7 +33,7 @@ def instance0():
     wlan.active(1)
 
     try:
-        socket.getaddrinfo("micropython.org", 80)
+        socket.getaddrinfo("doesnotexist.example.com", 80)
     except OSError as er:
         print(
             "active(1) failed", er.errno in (-2, -202)
