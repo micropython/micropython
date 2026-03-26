@@ -66,6 +66,10 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mp_atexit_unregister_obj, mp_atexit_unregister)
 void mp_atexit_execute(void) {
     if (MP_STATE_VM(atexit_handlers) != NULL) {
         mp_obj_list_t *list = MP_STATE_VM(atexit_handlers);
+        // Clear the handler list before executing so handlers are not
+        // run again if mp_atexit_execute is called a second time (e.g.
+        // from both pyexec and the port's main loop).
+        MP_STATE_VM(atexit_handlers) = NULL;
         for (int i = list->len - 1; i >= 0; i--) {
             mp_obj_t function = list->items[i];
 
