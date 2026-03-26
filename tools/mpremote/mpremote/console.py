@@ -96,8 +96,19 @@ class ConsoleWindows:
         return 1 if self.ctrl_c or msvcrt.kbhit() else 0
 
     def waitchar(self, pyb_serial):
-        while not (self.inWaiting() or pyb_serial.inWaiting()):
-            time.sleep(0.01)
+        import serial
+
+        while True:
+            try:
+                if self.inWaiting() or pyb_serial.inWaiting():
+                    break
+                time.sleep(0.01)
+            except serial.SerialException as e:
+                if "ClearCommError failed" in str(e):
+                    # Device disconnected on Windows
+                    raise serial.SerialException("Device disconnected")
+                else:
+                    raise
 
     def readchar(self):
         if self.ctrl_c:
