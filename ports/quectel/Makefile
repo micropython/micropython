@@ -86,7 +86,8 @@ EXTMOD_SRC_C = extmod/vfs.c \
 	extmod/vfs_reader.c \
 	extmod/modre.c \
 	extmod/modhashlib.c \
-	extmod/moductypes.c
+	extmod/moductypes.c \
+	extmod/modos.c
 
 EXTMOD_SRC_C += $(SRC_THIRDPARTY_C)
 

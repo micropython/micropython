@@ -35,7 +35,7 @@
 
 #define MOD_FLASHDEV_LOG(msg, ...)      custom_log('flashdev', msg,##__VA_ARGS__)
 
-const mp_obj_type_t helios_flash_device_type;
+const mp_obj_type_t flash_device_type;
 
 struct lfs_flash_info
 {
@@ -44,17 +44,17 @@ struct lfs_flash_info
     uint32_t LfsEndAddress;
 };
 
-typedef struct _helios_flash_device_obj_t {
+typedef struct flash_device_obj_t {
     mp_obj_base_t base;
     int block_size;
     int block_count;
     struct lfs_flash_info info;
     char partition_name[32];
-} helios_flash_device_obj_t;
+} flash_device_obj_t;
 
-static mp_obj_t helios_flash_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t flash_init(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
-    helios_flash_device_obj_t *self = mp_obj_malloc(helios_flash_device_obj_t, type);
+    flash_device_obj_t *self = mp_obj_malloc(flash_device_obj_t, type);
 
     mp_buffer_info_t bufinfo;
     memset(self->partition_name, 0x0, sizeof(self->partition_name));
@@ -91,8 +91,8 @@ static mp_obj_t helios_flash_device_make_new(const mp_obj_type_t *type, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-static mp_obj_t helios_flash_device_readblocks(size_t n_args, const mp_obj_t *args) {
-    helios_flash_device_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+static mp_obj_t flash_readblocks(size_t n_args, const mp_obj_t *args) {
+    flash_device_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t FlashAddrss = 0;
     uint32_t block_num = mp_obj_get_int(args[1]);
     uint32_t offset = block_num * self->block_size;
@@ -108,10 +108,10 @@ static mp_obj_t helios_flash_device_readblocks(size_t n_args, const mp_obj_t *ar
     ret = Helios_Flash_Read((uint32_t)FlashAddrss, bufinfo.buf, bufinfo.len);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(helios_flash_device_readblocks_obj, 3, 4, helios_flash_device_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(flash_readblocks_obj, 3, 4, flash_readblocks);
 
-static mp_obj_t helios_flash_device_writeblocks(size_t n_args, const mp_obj_t *args) {
-    helios_flash_device_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+static mp_obj_t flash_writeblocks(size_t n_args, const mp_obj_t *args) {
+    flash_device_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t block_num = mp_obj_get_int(args[1]);
     uint32_t offset = block_num * self->block_size;
     mp_buffer_info_t bufinfo;
@@ -131,10 +131,10 @@ static mp_obj_t helios_flash_device_writeblocks(size_t n_args, const mp_obj_t *a
     ret = Helios_Flash_Write(FlashAddrss, bufinfo.buf, bufinfo.len);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(helios_flash_device_writeblocks_obj, 3, 4, helios_flash_device_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(flash_writeblocks_obj, 3, 4, flash_writeblocks);
 
-static mp_obj_t helios_flash_device_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
-    helios_flash_device_obj_t *self = self_in;
+static mp_obj_t flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+    flash_device_obj_t *self = self_in;
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     mp_int_t block_num = mp_obj_get_int(arg_in);
     int ret;
@@ -161,19 +161,31 @@ static mp_obj_t helios_flash_device_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_
             return MP_OBJ_NEW_SMALL_INT(-1);
     }
 }
-static MP_DEFINE_CONST_FUN_OBJ_3(helios_flash_device_ioctl_obj, helios_flash_device_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(flash_ioctl_obj, flash_ioctl);
 
-static const mp_rom_map_elem_t helios_flash_device_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&helios_flash_device_readblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&helios_flash_device_writeblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&helios_flash_device_ioctl_obj) },
-};
-static MP_DEFINE_CONST_DICT(helios_flash_device_locals_dict, helios_flash_device_locals_dict_table);
+static const mp_obj_dict_t flash_device_locals_dict;
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    helios_flash_device_type,
+    flash_device_type,
     MP_QSTR_FlashDevice,
     MP_TYPE_FLAG_NONE,
-    make_new, helios_flash_device_make_new,
-    locals_dict, &helios_flash_device_locals_dict
+    make_new, flash_init,
+    locals_dict, &flash_device_locals_dict
     );
+
+static const mp_rom_map_elem_t flash_device_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_myflash) },
+    { MP_ROM_QSTR(MP_QSTR_FlashDevice), MP_ROM_PTR(&flash_device_type)},
+    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&flash_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&flash_writeblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&flash_ioctl_obj) },
+};
+
+static MP_DEFINE_CONST_DICT(flash_device_locals_dict, flash_device_locals_dict_table);
+
+const mp_obj_module_t flashdev_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&flash_device_locals_dict,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_flashdev, flashdev_module);
