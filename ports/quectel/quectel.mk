@@ -78,7 +78,6 @@ QUEC_SRC += \
 # modules source file will used by gen
 QUEC_SRC_MOD +=  \
 	gccollect.c \
-	moduos.c \
 	modflashdev.c \
 	modhelios.c
 

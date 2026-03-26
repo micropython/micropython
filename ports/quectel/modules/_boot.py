@@ -14,6 +14,7 @@
 
 import os
 import ujson
+import flashdev
 
 """
 Mark.Zhu - 2022/12/02
@@ -46,14 +47,14 @@ try:
         from os import VfsLfs1 as VfsLfs
     except Exception:
         from os import VfsLfs2 as VfsLfs
-
-    udev = os.FlashDevice("customer_fs", 4096)
+    dev = flashdev.FlashDevice("customer_fs", 4096)
     try:
+        udev = os.VfsLfs2(dev)
         os.mount(udev, "/")
-    except Exception as e:
-        if "ENODEV" in str(e):
-            VfsLfs.mkfs(udev)
-            os.mount(udev, "/")
+    except Exception:
+        os.VfsLfs2.mkfs(dev)
+        udev = os.VfsLfs2(dev)
+        os.mount(udev, "/")
     if "usr" not in os.listdir():
         os.mkdir("usr")
     if "bak" not in os.listdir():
