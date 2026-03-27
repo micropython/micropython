@@ -48,6 +48,10 @@ print("aaaa".count('a', 1, 5))
 print("aaaa".count('a', -1, 5))
 print("abbabba".count("abba"))
 
+# start > end: count must be 0 (CPython); empty needle hit buggy utf8 path.
+print("abc".count("", 2, 1))
+print("abc".count("a", 2, 1))
+
 def t():
     return True
 
