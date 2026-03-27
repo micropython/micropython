@@ -214,7 +214,7 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         ARG_freq,
     };
     #if SOC_SDMMC_HOST_SUPPORTED
-    static const int DEFAULT_SLOT = 1;
+    static const int DEFAULT_SLOT = MICROPY_HW_SDMMC_DEFAULT_SLOT;
     #else
     static const int DEFAULT_SLOT = SD_SLOT_MAX;
     #endif
