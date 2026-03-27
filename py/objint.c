@@ -383,7 +383,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
         // false acts as 0
         return mp_binary_op(op, lhs_in, MP_OBJ_NEW_SMALL_INT(0));
     } else if (rhs_in == mp_const_true) {
-        // true acts as 0
+        // true acts as 1
         return mp_binary_op(op, lhs_in, MP_OBJ_NEW_SMALL_INT(1));
     } else if (op == MP_BINARY_OP_MULTIPLY) {
         if (mp_obj_is_str_or_bytes(rhs_in) || mp_obj_is_type(rhs_in, &mp_type_tuple) || mp_obj_is_type(rhs_in, &mp_type_list)) {
