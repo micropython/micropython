@@ -32,6 +32,7 @@
 #include "tusb.h"
 #include "mp_usbd.h"
 
+
 #define USBD_CDC_CMD_MAX_SIZE (8)
 #define USBD_CDC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
 #define USBD_MSC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
@@ -44,8 +45,8 @@ const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
     .bDeviceSubClass = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol = MISC_PROTOCOL_IAD,
     .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
-    .idVendor = MICROPY_HW_USB_VID,
-    .idProduct = MICROPY_HW_USB_PID,
+    .idVendor = MICROPY_HW_USB_RUNTIME_VID,
+    .idProduct = MICROPY_HW_USB_RUNTIME_PID,
     .bcdDevice = 0x0100,
     .iManufacturer = USBD_STR_MANUF,
     .iProduct = USBD_STR_PRODUCT,
@@ -53,6 +54,145 @@ const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
     .bNumConfigurations = 1,
 };
 
+
+// Global class enable state
+mp_usbd_class_state_t mp_usbd_class_state;
+
+// CDC descriptor template with interface number placeholders (0xFF)
+// Expands TUD_CDC_DESCRIPTOR macro with 0xFF for interface numbers
+#if CFG_TUD_CDC
+static const uint8_t cdc_desc_template[] = {
+    // Interface Associate
+    8, TUSB_DESC_INTERFACE_ASSOCIATION, 0xFF, 2, TUSB_CLASS_CDC, CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL, CDC_COMM_PROTOCOL_NONE, 0,
+    // CDC Control Interface
+    9, TUSB_DESC_INTERFACE, 0xFF, 0, 1, TUSB_CLASS_CDC, CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL, CDC_COMM_PROTOCOL_NONE, USBD_STR_CDC,
+    // CDC Header
+    5, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_HEADER, U16_TO_U8S_LE(0x0120),
+    // CDC Call
+    5, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_CALL_MANAGEMENT, 0, 0xFE, // 0xFE = itf_num + 1
+    // CDC ACM
+    4, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_ABSTRACT_CONTROL_MANAGEMENT, 6,
+    // CDC Union
+    5, TUSB_DESC_CS_INTERFACE, CDC_FUNC_DESC_UNION, 0xFF, 0xFE, // 0xFF = itf_num, 0xFE = itf_num + 1
+    // Endpoint Notification
+    7, TUSB_DESC_ENDPOINT, USBD_CDC_EP_CMD, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(USBD_CDC_CMD_MAX_SIZE), 16,
+    // CDC Data Interface
+    9, TUSB_DESC_INTERFACE, 0xFE, 0, 2, TUSB_CLASS_CDC_DATA, 0, 0, 0, // 0xFE = itf_num + 1
+    // Endpoint Out
+    7, TUSB_DESC_ENDPOINT, USBD_CDC_EP_OUT, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_CDC_IN_OUT_MAX_SIZE), 0,
+    // Endpoint In
+    7, TUSB_DESC_ENDPOINT, USBD_CDC_EP_IN, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_CDC_IN_OUT_MAX_SIZE), 0
+};
+#endif
+
+// MSC descriptor template with interface number placeholders (0xFF)
+// Expands TUD_MSC_DESCRIPTOR macro with 0xFF for interface number
+#if CFG_TUD_MSC
+static const uint8_t msc_desc_template[] = {
+    // Interface
+    9, TUSB_DESC_INTERFACE, 0xFF, 0, 2, TUSB_CLASS_MSC, MSC_SUBCLASS_SCSI, MSC_PROTOCOL_BOT, USBD_STR_MSC,
+    // Endpoint Out
+    7, TUSB_DESC_ENDPOINT, USBD_MSC_EP_OUT, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_MSC_IN_OUT_MAX_SIZE), 0,
+    // Endpoint In
+    7, TUSB_DESC_ENDPOINT, USBD_MSC_EP_IN, TUSB_XFER_BULK, U16_TO_U8S_LE(USBD_MSC_IN_OUT_MAX_SIZE), 0
+};
+#endif
+
+// Lookup table for all USB class descriptors (extern for inlining in header)
+const usb_desc_entry_t usb_desc_table[] = {
+    #if CFG_TUD_CDC
+    {USB_BUILTIN_FLAG_CDC, TUD_CDC_DESC_LEN, 2, cdc_desc_template},
+    #endif
+    #if CFG_TUD_MSC
+    {USB_BUILTIN_FLAG_MSC, TUD_MSC_DESC_LEN, 1, msc_desc_template},
+    #endif
+};
+
+// Global descriptor buffer for runtime configuration (only needed in runtime mode)
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+uint8_t mp_usbd_desc_cfg_buffer[MP_USBD_BUILTIN_DESC_CFG_LEN];
+#endif
+
+// Unified descriptor generation function using lookup table
+const uint8_t *mp_usbd_generate_desc_cfg_unified(uint8_t flags, uint8_t *buffer) {
+    uint8_t *desc = buffer;
+    usb_desc_info_t info = mp_usbd_get_desc_info_from_flags(flags);
+    uint8_t interface_count = info.interface_count;
+    size_t total_len = info.length;
+
+    // Configuration descriptor header (unrolled for size optimization)
+    *desc++ = 9;                           // bLength
+    *desc++ = TUSB_DESC_CONFIGURATION;     // bDescriptorType
+    *desc++ = (total_len) & 0xFF;          // wTotalLength low
+    *desc++ = (total_len >> 8) & 0xFF;     // wTotalLength high
+    *desc++ = interface_count;             // bNumInterfaces
+    *desc++ = 1;                           // bConfigurationValue
+    *desc++ = USBD_STR_0;                  // iConfiguration
+    *desc++ = 0x80;                        // bmAttributes (bit 7 must be 1)
+    *desc++ = USBD_MAX_POWER_MA / 2;       // bMaxPower (in 2mA units)
+
+    // Track current interface number for dynamic assignment
+    uint8_t itf_num = 0;
+
+    // Iterate through lookup table and copy enabled class descriptors
+    for (size_t i = 0; i < MP_ARRAY_SIZE(usb_desc_table); i++) {
+        if (flags & usb_desc_table[i].flag_mask) {
+            const uint8_t *src = usb_desc_table[i].template;
+            uint8_t len = usb_desc_table[i].desc_len;
+
+            // Copy descriptor with interface number substitution
+            // 0xFF = itf_num, 0xFE = itf_num + 1
+            for (uint8_t j = 0; j < len; j++) {
+                uint8_t byte = src[j];
+                if (byte == 0xFF) {
+                    *desc++ = itf_num;
+                } else if (byte == 0xFE) {
+                    *desc++ = itf_num + 1;
+                } else {
+                    *desc++ = byte;
+                }
+            }
+
+            itf_num += usb_desc_table[i].itf_count;
+        }
+    }
+
+    return buffer;
+}
+
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+
+
+// Get dynamic descriptor length based on enabled classes
+size_t mp_usbd_get_descriptor_cfg_len(void) {
+    size_t len = TUD_CONFIG_DESC_LEN;
+
+    #if CFG_TUD_CDC
+    if (MP_USBD_CDC_ENABLED()) {
+        len += TUD_CDC_DESC_LEN;
+    }
+    #endif
+    #if CFG_TUD_MSC
+    if (MP_USBD_MSC_ENABLED()) {
+        len += TUD_MSC_DESC_LEN;
+    }
+    #endif
+
+    return len;
+}
+
+
+// Dynamic descriptor buffer for runtime configuration
+static uint8_t mp_usbd_dynamic_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
+
+// Generate dynamic configuration descriptor based on enabled classes
+static const uint8_t *mp_usbd_generate_desc_cfg(void) {
+    return mp_usbd_generate_desc_cfg_unified(mp_usbd_class_state.flags, mp_usbd_dynamic_desc_cfg);
+}
+#endif
+
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+// Static mode: Use TinyUSB macros directly for fixed descriptor
 const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
     TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_BUILTIN_MAX, USBD_STR_0, MP_USBD_BUILTIN_DESC_CFG_LEN,
         0, USBD_MAX_POWER_MA),
@@ -65,6 +205,23 @@ const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
     TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, EPNUM_MSC_OUT, EPNUM_MSC_IN, USBD_MSC_IN_OUT_MAX_SIZE),
     #endif
 };
+#else
+// Runtime mode: Generate default descriptor from templates into buffer at init
+// This eliminates duplication - we use templates for both dynamic and fallback descriptors
+static bool mp_usbd_default_desc_generated = false;
+
+const uint8_t *mp_usbd_get_default_desc(void) {
+    if (!mp_usbd_default_desc_generated) {
+        // Generate default descriptor (CDC only by default in runtime mode)
+        mp_usbd_generate_desc_cfg_unified(
+            (CFG_TUD_CDC ? USB_BUILTIN_FLAG_CDC : 0),
+            mp_usbd_desc_cfg_buffer
+            );
+        mp_usbd_default_desc_generated = true;
+    }
+    return mp_usbd_desc_cfg_buffer;
+}
+#endif
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     char serial_buf[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes terminating NUL byte
@@ -146,7 +303,8 @@ const uint8_t *tud_descriptor_device_cb(void) {
 
 const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;
-    return mp_usbd_builtin_desc_cfg;
+    // Use dynamic generation to include only enabled classes
+    return mp_usbd_generate_desc_cfg();
 }
 
 #else
