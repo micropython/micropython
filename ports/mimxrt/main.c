@@ -178,6 +178,9 @@ int main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        #if MICROPY_PY_MACHINE_CAN
+        machine_can_irq_deinit();
+        #endif
         machine_pin_irq_deinit();
         machine_rtc_irq_deinit();
         #if MICROPY_PY_MACHINE_I2S
