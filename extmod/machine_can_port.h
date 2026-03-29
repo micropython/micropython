@@ -92,7 +92,7 @@ typedef struct {
 typedef struct _machine_can_obj_t {
     mp_obj_base_t base;
     mp_uint_t can_idx;
-
+    uint32_t bitrate;
     // Timing register settings
     byte tseg1;
     byte tseg2;
