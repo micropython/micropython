@@ -52,7 +52,7 @@ static uint32_t  _evnt_buf[1024] CFG_TUSB_MEM_SECTION __attribute__((aligned(409
 static volatile uint32_t* _evnt_tail;
 
 static uint8_t  _ctrl_buf[64] CFG_TUSB_MEM_SECTION __attribute__((aligned(32))); // [TODO] runtime alloc
-static uint32_t _xfer_trb[8][4] CFG_TUSB_MEM_SECTION __attribute__((aligned(32))); // [TODO] runtime alloc
+static uint32_t _xfer_trb[8][8] CFG_TUSB_MEM_SECTION __attribute__((aligned(32))); // [TODO] runtime alloc
 static uint16_t _xfer_bytes[8];
 static bool     _ctrl_long_data = false;
 static bool     _xfer_cfgd = false;
