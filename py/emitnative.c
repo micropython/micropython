@@ -61,6 +61,10 @@
 // wrapper around everything in this file
 #if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32 || N_DEBUG
 
+#if !defined(N_NLR_SETJMP)
+#define N_NLR_SETJMP (MICROPY_NLR_SETJMP)
+#endif
+
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
 //                              return_value [optional word]
