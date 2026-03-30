@@ -110,3 +110,42 @@
 [submodule "lib/psoc-edge/async-transfer"]
 	path = lib/psoc-edge/async-transfer
 	url = https://github.com/Infineon/async-transfer.git
+[submodule "lib/psoc-edge/abstraction-rtos"]
+	path = lib/psoc-edge/abstraction-rtos
+	url = https://github.com/Infineon/abstraction-rtos.git
+[submodule "lib/psoc-edge/clib-support"]
+	path = lib/psoc-edge/clib-support
+	url = https://github.com/Infineon/clib-support.git
+[submodule "lib/psoc-edge/connectivity-utilities"]
+	path = lib/psoc-edge/connectivity-utilities
+	url = https://github.com/cypresssemiconductorco/connectivity-utilities.git
+[submodule "lib/psoc-edge/cy-mbedtls-acceleration"]
+	path = lib/psoc-edge/cy-mbedtls-acceleration
+	url = https://github.com/Infineon/cy-mbedtls-acceleration.git
+[submodule "lib/psoc-edge/freertos"]
+	path = lib/psoc-edge/freertos
+	url = https://github.com/Infineon/freertos.git
+[submodule "lib/psoc-edge/lwip-freertos-integration"]
+	path = lib/psoc-edge/lwip-freertos-integration
+	url = https://github.com/Infineon/lwip-freertos-integration.git
+[submodule "lib/psoc-edge/lwip-network-interface-integration"]
+	path = lib/psoc-edge/lwip-network-interface-integration
+	url = https://github.com/Infineon/lwip-network-interface-integration.git
+[submodule "lib/psoc-edge/lwip"]
+	path = lib/psoc-edge/lwip
+	url = https://git.savannah.nongnu.org/git/lwip
+[submodule "lib/psoc-edge/secure-sockets"]
+	path = lib/psoc-edge/secure-sockets
+	url = https://github.com/cypresssemiconductorco/secure-sockets.git
+[submodule "lib/psoc-edge/whd-bsp-integration"]
+	path = lib/psoc-edge/whd-bsp-integration
+	url = https://github.com/cypresssemiconductorco/whd-bsp-integration.git
+[submodule "lib/psoc-edge/wifi-connection-manager"]
+	path = lib/psoc-edge/wifi-connection-manager
+	url = https://github.com/cypresssemiconductorco/wifi-connection-manager.git
+[submodule "lib/psoc-edge/wifi-host-driver"]
+	path = lib/psoc-edge/wifi-host-driver
+	url = https://github.com/cypresssemiconductorco/wifi-host-driver.git
+[submodule "lib/psoc-edge/wpa3-external-supplicant"]
+	path = lib/psoc-edge/wpa3-external-supplicant
+	url = https://github.com/Infineon/wpa3-external-supplicant.git
