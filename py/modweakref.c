@@ -77,6 +77,24 @@ void gc_weakref_about_to_be_freed(void *ptr) {
     }
 }
 
+static void call_callbacks(mp_obj_ref_t *ref) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        if (ref->base.type == &mp_type_ref) {
+            // weakref.ref() type.
+            mp_call_function_1(ref->callback, MP_OBJ_FROM_PTR(ref));
+        } else {
+            // weakref.finalize() type.
+            mp_obj_finalize_t *fin = (mp_obj_finalize_t *)ref;
+            mp_call_function_n_kw(fin->base.callback, fin->n_args, fin->n_kw, fin->args);
+        }
+        nlr_pop();
+    } else {
+        mp_printf(MICROPY_ERROR_PRINTER, "Unhandled exception in weakref callback:\n");
+        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+    }
+}
+
 void gc_weakref_sweep(void) {
     mp_map_t *map = &MP_STATE_VM(mp_weakref_map);
     for (size_t i = 0; i < map->alloc; i++) {
@@ -87,27 +105,14 @@ void gc_weakref_sweep(void) {
             mp_obj_ref_t *ref = REF_FIN_LIST_OBJ_TO_PTR(map->table[i].value);
             map->table[i].value = MP_OBJ_NULL;
             while (ref != NULL) {
+
                 // Invalidate the weak reference.
                 assert(ref->obj_weak_ref != mp_const_none);
                 ref->obj_weak_ref = mp_const_none;
 
                 // Call any registered callbacks.
                 if (ref->callback != mp_const_none) {
-                    nlr_buf_t nlr;
-                    if (nlr_push(&nlr) == 0) {
-                        if (ref->base.type == &mp_type_ref) {
-                            // weakref.ref() type.
-                            mp_call_function_1(ref->callback, MP_OBJ_FROM_PTR(ref));
-                        } else {
-                            // weakref.finalize() type.
-                            mp_obj_finalize_t *fin = (mp_obj_finalize_t *)ref;
-                            mp_call_function_n_kw(fin->base.callback, fin->n_args, fin->n_kw, fin->args);
-                        }
-                        nlr_pop();
-                    } else {
-                        mp_printf(MICROPY_ERROR_PRINTER, "Unhandled exception in weakref callback:\n");
-                        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
-                    }
+                    call_callbacks(ref);
                 }
 
                 // Unlink the node.
