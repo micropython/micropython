@@ -149,3 +149,6 @@
 [submodule "lib/psoc-edge/wpa3-external-supplicant"]
 	path = lib/psoc-edge/wpa3-external-supplicant
 	url = https://github.com/Infineon/wpa3-external-supplicant.git
+[submodule "lib/psoc-edge/wifi-resources"]
+	path = lib/psoc-edge/wifi-resources
+	url = https://github.com/Infineon/wifi-resources.git
