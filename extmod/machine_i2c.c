@@ -329,20 +329,11 @@ static mp_obj_t machine_i2c_init(size_t n_args, const mp_obj_t *args, mp_map_t *
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_init_obj, 1, machine_i2c_init);
 
 static mp_obj_t machine_i2c_deinit(mp_obj_t self_in) {
-<<<<<<< HEAD
     mp_obj_base_t *self = (mp_obj_base_t *)MP_OBJ_TO_PTR(self_in);
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
     if (i2c_p->deinit != NULL) {
         i2c_p->deinit(self);
     }
-=======
-    mp_obj_base_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
-    if (i2c_p->deinit == NULL) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("I2C operation not supported"));
-    }
-    i2c_p->deinit(self);
->>>>>>> a04ae9c01 (extmod/machine_i2c: Added support for deinit() function.)
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_deinit_obj, machine_i2c_deinit);

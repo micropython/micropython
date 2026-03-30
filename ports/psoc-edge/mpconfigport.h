@@ -93,6 +93,38 @@
 #define MICROPY_PY_MACHINE_PWM_MAX_OBJS         (7)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc-edge/machine_pwm.c"
 
+
+// VFS
+#define MICROPY_PY_VFS                          (1)
+#define MICROPY_PY_IO                           (1)
+#define MICROPY_PY_IO_IOBASE                    (1)
+
+#define MICROPY_ENABLE_FINALISER                (1)
+
+#define MICROPY_PY_CRYPTOLIB                    (MICROPY_PY_SSL)
+#define MICROPY_PY_CRYPTOLIB_CTR                (MICROPY_PY_SSL)
+#define MICROPY_PY_CRYPTOLIB_CONSTS             (MICROPY_PY_SSL)
+
+#define MICROPY_PY_SSL_DTLS                     (0)
+
+// By default networking should include sockets, ssl, websockets, webrepl
+
+#if MICROPY_PY_NETWORK
+
+#define MICROPY_PY_SOCKET                       (0)
+#define MICROPY_PY_WEBSOCKET                    (1)
+#define MICROPY_PY_WEBREPL                      (1)
+#define MICROPY_PY_OS_DUPTERM                   (1)
+
+extern const struct _mp_obj_type_t mp_network_ifx_wcm_type;
+#define MICROPY_HW_NIC_IFX_WCM  \
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_ifx_wcm_type) },
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_IFX_WCM
+
+#endif // MICROPY_PY_NETWORK
+
 // type definitions for the specific machine
 #define MP_SSIZE_MAX (0x7fffffff)
 
