@@ -50,13 +50,14 @@ typedef struct _rp2_dma_obj_t {
 } rp2_dma_obj_t;
 
 typedef struct _rp2_dma_ctrl_field_t {
-    qstr name;
-    uint8_t shift : 5;
-    uint8_t length : 3;
-    uint8_t read_only : 1;
+    qstr_short_t name;
+    uint16_t shift : 5;
+    uint16_t length : 3;
+    uint16_t read_only : 1;
+    // 7 bits available here.
 } rp2_dma_ctrl_field_t;
 
-static rp2_dma_ctrl_field_t rp2_dma_ctrl_fields_table[] = {
+static const rp2_dma_ctrl_field_t rp2_dma_ctrl_fields_table[] = {
     { MP_QSTR_enable, DMA_CH0_CTRL_TRIG_EN_LSB, 1, 0 },
     { MP_QSTR_high_pri, DMA_CH0_CTRL_TRIG_HIGH_PRIORITY_LSB, 1, 0 },
     { MP_QSTR_size, DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB, 2, 0 },
