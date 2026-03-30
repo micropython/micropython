@@ -29,6 +29,12 @@ include ../../py/mkenv.mk
 include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
+# extmod/extmod.mk enables mbedTLS sources based on MICROPY_SSL_MBEDTLS.
+ifeq ($(MICROPY_PSOC6_SSL_MBEDTLS),1)
+MICROPY_SSL_MBEDTLS = 1
+MBEDTLS_CONFIG_FILE = \"mbedtls/mbedtls_config_port.h\"
+endif
+
 # Include py core make definitions.
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
@@ -39,17 +45,32 @@ include $(TOP)/extmod/extmod.mk
 # Required git submodules.
 GIT_SUBMODULES += lib/CMSIS_6
 GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
+	abstraction-rtos \
     async-transfer \
+	clib-support \
+	connectivity-utilities \
 	core-lib \
+	cy-mbedtls-acceleration \
+	freertos \
+	lwip \
+	lwip-freertos-integration \
+	lwip-network-interface-integration \
 	mtb-dsl-pse8xxgp \
 	mtb-ipc \
 	mtb-srf \
 	retarget-io \
+	secure-sockets \
 	se-rt-services-utils \
 	serial-memory \
 	TARGET_KIT_PSE84_AI \
+	whd-bsp-integration \
+	wifi-connection-manager \
+	wifi-host-driver \
+	wifi-resources \
+	wpa3-external-supplicant \
 )
 
+GIT_SUBMODULES += lib/mbedtls
 GIT_SUBMODULES += lib/mpy-test-ext
 
 # Define toolchain and other tools.
@@ -60,6 +81,10 @@ OPENOCD ?= openocd
 # SDK locations.
 PSE_LIB_TOP_DIR ?= lib/psoc-edge
 PSE_LIB_DIR ?= $(TOP)/$(PSE_LIB_TOP_DIR)
+
+# WHD resource configuration for standalone MicroPython build.
+WHD_FW_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/firmware/COMPONENT_55500/COMPONENT_SM/55500A1.trxcse
+WHD_NVRAM_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-resources/nvram/COMPONENT_WIFI6/COMPONENT_55500/COMPONENT_MURATA-2FY/cyw55500-sdio-mur-2FY.txt
 
 ################################################################################
 # Pin generation
@@ -106,12 +131,18 @@ INC += $(addprefix -I$(TOP)/lib/,\
 
 DEFINES = \
 	-DCOMPONENT_CM33 \
+	-DCOMPONENT_FREERTOS \
+	-DCOMPONENT_PSE84 \
+	-DCOMPONENT_55500 \
+	-DCYBSP_WIFI_CAPABLE \
+	-DCOMPONENT_WIFI_INTERFACE_SDIO \
 	-DCORE_NAME_CM33_0=1 \
 	-DCOMPONENT_MTB_HAL \
 	-DCOMPONENT_MW_ASYNC_TRANSFER \
 	-DCOMPONENT_MW_MTB_IPC \
 	-DCOMPONENT_MW_MTB_SRF \
 	-DCOMPONENT_NON_SECURE_DEVICE \
+	-DCY_RTOS_AWARE \
 	-DCYBSP_MCUBOOT_HEADER_SIZE=0x400 \
 	-DCY_RETARGET_IO_CONVERT_LF_TO_CRLF \
 
@@ -154,6 +185,41 @@ INC += \
     -I$(BOARD_DIR)/bsp-cfg \
 	-I$(BOARD_DIR)/mtb-prj \
 	-Idualcore/include
+
+ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
+WHD_FW_SIZE := $(shell stat -c%s $(WHD_FW_FILE))
+WHD_NVRAM_SIZE := $(shell stat -c%s $(WHD_NVRAM_FILE))
+
+INC += \
+	-I$(PSE_LIB_DIR)/wifi-host-driver \
+	-I$(PSE_LIB_DIR)/abstraction-rtos/include \
+	-I$(PSE_LIB_DIR)/abstraction-rtos/include/COMPONENT_FREERTOS \
+	-I$(PSE_LIB_DIR)/clib-support/include \
+	-I$(PSE_LIB_DIR)/clib-support/source/TOOLCHAIN_GCC_ARM \
+	-I$(PSE_LIB_DIR)/connectivity-utilities \
+	-I$(PSE_LIB_DIR)/connectivity-utilities/cy_log \
+	-I$(PSE_LIB_DIR)/connectivity-utilities/network \
+	-I$(PSE_LIB_DIR)/freertos/Source/include \
+	-I$(PSE_LIB_DIR)/freertos/Source/portable/COMPONENT_CM33 \
+	-I$(PSE_LIB_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ \
+	-I$(PSE_LIB_DIR)/lwip-network-interface-integration/include \
+	-I$(PSE_LIB_DIR)/lwip-network-interface-integration/source \
+	-I$(PSE_LIB_DIR)/lwip-freertos-integration/arch \
+	-I$(PSE_LIB_DIR)/lwip/src/include \
+	-I$(PSE_LIB_DIR)/whd-bsp-integration \
+	-I$(PSE_LIB_DIR)/wifi-connection-manager/include \
+	-I$(PSE_LIB_DIR)/wifi-connection-manager/source/COMPONENT_55500 \
+	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/inc \
+	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources \
+	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/firmware \
+	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/resource_imp \
+	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src \
+	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/include
+
+DEFINES += -DNO_CLM_BLOB_FILE \
+	-DFW_IMAGE_SIZE=$(WHD_FW_SIZE) -DFW_IMAGE_NAME=\"$(WHD_FW_FILE)\" \
+	-DNVRAM_IMAGE_SIZE=$(WHD_NVRAM_SIZE) -DNVRAM_IMAGE_NAME=\"$(WHD_NVRAM_FILE)\"
+endif
 
 MACHINE_FLAGS = \
 	-mcpu=cortex-m33 \
@@ -207,6 +273,10 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	\
 	mtb-dsl-pse8xxgp/hal/source/mtb_hal_clock.c \
 	mtb-dsl-pse8xxgp/hal/source/mtb_hal_gpio.c \
+	mtb-dsl-pse8xxgp/hal/source/mtb_hal_lptimer.c \
+	mtb-dsl-pse8xxgp/hal/source/mtb_hal_lptimer_common.c \
+	mtb-dsl-pse8xxgp/hal/source/mtb_hal_sdhc.c \
+	mtb-dsl-pse8xxgp/hal/source/mtb_hal_syspm.c \
 	mtb-dsl-pse8xxgp/hal/source/mtb_hal_system.c \
 	mtb-dsl-pse8xxgp/hal/source/mtb_hal_timer.c \
 	mtb-dsl-pse8xxgp/hal/source/mtb_hal_uart.c \
@@ -218,9 +288,12 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_ipc_pipe.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_ipc_sema.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_pdm_pcm_v2.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_crypto_core_hw.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_crypto_core_trng.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_rtc.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_common.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_i2c.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_sd_host.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_uart.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_smif.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_smif_hb_flash.c \
@@ -254,6 +327,44 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
     TARGET_$(BOARD)/COMPONENT_CM33/COMPONENT_NON_SECURE_DEVICE/ns_system_pse84.c \
 	)
 
+ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
+PSE_LIB_SRC_C += \
+	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/cy_worker_thread.c \
+	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_freertos_common.c \
+	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_freertos_helpers.c \
+	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_rtos_freertos.c \
+	$(PSE_LIB_TOP_DIR)/clib-support/source/cy_time.c \
+	$(PSE_LIB_TOP_DIR)/clib-support/source/COMPONENT_FREERTOS/cy_mutex_pool.c \
+	$(PSE_LIB_TOP_DIR)/clib-support/source/TOOLCHAIN_GCC_ARM/cy_clib_support_newlib.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/croutine.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/event_groups.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/list.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/queue.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/stream_buffer.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/tasks.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/timers.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/port.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/portasm.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/portdsram.c \
+	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/MemMang/heap_3.c \
+	$(PSE_LIB_TOP_DIR)/connectivity-utilities/network/cy_nw_helper_common.c \
+	$(PSE_LIB_TOP_DIR)/wifi-connection-manager/source/cy_wcm.c \
+	$(PSE_LIB_TOP_DIR)/whd-bsp-integration/COMPONENT_LWIP/cy_network_buffer_lwip.c \
+	$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/resource_imp/whd_resources.c \
+	$(PSE_LIB_TOP_DIR)/lwip-network-interface-integration/source/cy_ethernetif.c \
+	$(PSE_LIB_TOP_DIR)/lwip-network-interface-integration/source/cy_lwip_dhcp_server.c \
+	$(PSE_LIB_TOP_DIR)/lwip-network-interface-integration/source/cy_network_mw_core.c \
+	$(PSE_LIB_TOP_DIR)/lwip-freertos-integration/arch/sys_arch.c \
+	$(PSE_LIB_TOP_DIR)/whd-bsp-integration/cybsp_wifi.c \
+	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/*.c)) \
+	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/*.c)) \
+	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/api/*.c)) \
+	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/core/*.c)) \
+	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/core/ipv4/*.c)) \
+	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/core/ipv6/*.c)) \
+	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/netif/*.c))
+endif
+
 PSE_SRC_ASM = $(PSE_LIB_TOP_DIR)/mtb-dsl-pse8xxgp/pdl/drivers/source/TOOLCHAIN_GCC_ARM/cy_syslib_ext.S \
 
 PSE_SRC_O = secboot/nsc_veneer.o
@@ -270,6 +381,18 @@ OBJ += $(addprefix $(BUILD)/, $(PSE_SRC_ASM:.S=.o))
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
+
+ifeq ($(MICROPY_PSOC6_LWIP),1)
+	INC += -Ilwip_inc
+endif
+
+ifeq ($(MICROPY_PSOC6_SSL_MBEDTLS),1)
+  INC += -I$(TOP)/extmod/mbedtls
+	INC += -I$(TOP)/ports/psoc-edge/mbedtls
+	CFLAGS += -DMICROPY_SSL_MBEDTLS=1 -DMICROPY_MBEDTLS_USE_MTB_ENTROPY=1
+endif
+
+CFLAGS += -DMICROPY_TRACKED_ALLOC=1
 
 CFLAGS += $(INC)
 
@@ -308,6 +431,14 @@ SHARED_SRC_C += $(addprefix shared/,\
 	timeutils/timeutils.c \
 	)
 
+ifeq ($(MICROPY_PSOC6_LWIP),1)
+  SHARED_SRC_C += $(addprefix shared/,\
+	netutils/dhcpserver.c \
+	netutils/netutils.c \
+	netutils/trace.c \
+  )
+endif
+
 MOD_SRC_C += \
 	machine_pin.c \
 	machine_pin_af.c \
@@ -322,6 +453,11 @@ MOD_SRC_C += \
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
 	MOD_SRC_C += psoc_edge_qspi_flash.c 
+endif
+
+ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
+CFLAGS += -DMICROPY_PY_NETWORK=1 -DMICROPY_PY_NETWORK_IFX_WCM=1 -Wno-stringop-truncation
+	MOD_SRC_C += network_ifx_wcm.c 
 endif
 
 SRC_C += \
