@@ -102,4 +102,6 @@ typedef void *mp_hal_af_periph_t;
 
 mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins);
 
+void mp_hal_get_random(size_t n, uint8_t *buf);
+
 #endif // MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H
