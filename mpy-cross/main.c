@@ -143,8 +143,8 @@ static int usage(char **argv) {
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
         "-march=<arch> : set architecture for native emitter;\n"
-        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
-        "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug\n"
+        "                x86, x64, x64-linux-sjlj, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
+        "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug, debug-sjlj\n"
         "-march-flags=<flags> : set architecture-specific flags (can be either a dec/hex/bin value or a comma-separated flags string)\n"
         "                       supported flags for rv32imc: zba, zcmp\n"
         "\n"
@@ -367,6 +367,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "x64") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
                     mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
+                } else if (strcmp(arch, "x64-linux-sjlj") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
+                    mp_dynamic_compiler.nlr_setjmp = 1;
+                    mp_dynamic_compiler.local_idx_exc_handler_pc = (2 + 0);
                 } else if (strcmp(arch, "armv6") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
@@ -401,6 +406,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "debug") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_DEBUG;
                     mp_dynamic_compiler.nlr_buf_num_regs = 0;
+                } else if (strcmp(arch, "debug-sjlj") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_DEBUG;
+                    mp_dynamic_compiler.nlr_buf_num_regs = 1;
+                    mp_dynamic_compiler.nlr_setjmp = 1;
+                    mp_dynamic_compiler.local_idx_exc_handler_pc = (2 + 0);
                 } else if (strcmp(arch, "host") == 0) {
                     #if defined(__i386__) || defined(_M_IX86)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
