@@ -7,7 +7,12 @@ def test_ticks_ms():
     time.sleep_ms(1)
     t1 = time.ticks_ms()
     diff = time.ticks_diff(t1, t0)
-    tick_val = [t0, t1, diff, 0 <= diff <= 1]
+    tick_val = [
+        t0,
+        t1,
+        diff,
+        0 <= diff <= 2,
+    ]  # allow up to 2ms: FreeRTOS 1ms tick can add one extra tick
     if tick_val[3]:
         print("Status: PASS")
     else:
