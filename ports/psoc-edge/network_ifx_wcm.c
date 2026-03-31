@@ -53,6 +53,7 @@
 static mtb_hal_sdio_t sdio_obj;
 static cy_stc_sd_host_context_t sdhc_ctx;
 static cy_wcm_config_t wcm_config;
+static bool wcm_initialized = false;
 
 static void wifi_sdio_isr(void) {
     mtb_hal_sdio_process_interrupt(&sdio_obj);
@@ -101,19 +102,39 @@ static void wifi_sdio_init(void) {
 // ---------------------------------------------------------------------------
 
 void network_init(void) {
+    // Full WiFi init: SDIO hardware setup then cy_wcm_init() (firmware download).
+    // Called once before the soft_reset loop from main.c, after a short vTaskDelay
+    // so FreeRTOS is stable enough to service SDIO bulk DMA interrupts.
     wifi_sdio_init();
-
     wcm_config.interface = CY_WCM_INTERFACE_TYPE_STA;
     wcm_config.wifi_interface_instance = &sdio_obj;
 
     cy_rslt_t ret = cy_wcm_init(&wcm_config);
     if (ret != CY_RSLT_SUCCESS) {
-        mp_printf(&mp_plat_print, "network_init: cy_wcm_init failed (0x%08lX)\r\n", (unsigned long)ret);
+        mp_printf(&mp_plat_print, "network_init: cy_wcm_init failed (0x%08X)\r\n", (unsigned int)ret);
+        return;
     }
+    wcm_initialized = true;
 }
 
 void network_deinit(void) {
-    cy_wcm_deinit();
+    if (wcm_initialized) {
+        cy_wcm_deinit();
+        wcm_initialized = false;
+    }
+}
+
+// Safety guard: if network_init() failed, make_new retries WCM init.
+static void wcm_ensure_init(void) {
+    if (wcm_initialized) {
+        return;
+    }
+    cy_rslt_t ret = cy_wcm_init(&wcm_config);
+    if (ret != CY_RSLT_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_OSError,
+            MP_ERROR_TEXT("WiFi init failed (0x%08X)"), (unsigned int)ret);
+    }
+    wcm_initialized = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +142,8 @@ void network_deinit(void) {
 // ---------------------------------------------------------------------------
 
 static mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("WiFi not yet implemented"));
+    wcm_ensure_init();
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("WiFi WLAN object not yet implemented"));
 }
 
 static void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

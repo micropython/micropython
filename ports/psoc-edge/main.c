@@ -157,33 +157,23 @@ void mpy_task(void *arg) {
     mp_cstack_init_with_top((void *)&arg, MPY_TASK_STACK_SIZE * sizeof(StackType_t));
     #endif
 
-    printf("MPY: time_init\r\n");
     time_init();
 
+    #if MICROPY_PY_NETWORK
+    // A short delay lets the FreeRTOS scheduler settle so that SDIO bulk
+    // DMA interrupts (used by WHD firmware upload) are serviced correctly.
+    vTaskDelay(pdMS_TO_TICKS(3000));
+    network_init();
+    #endif
+
 soft_reset:
-    printf("MPY: machine_rtc_init_all\r\n");
     machine_rtc_init_all();
-    printf("MPY: mp_init\r\n");
     mp_init();
 
     readline_init0();
 
     #if MICROPY_PY_NETWORK
-    printf("MPY: network_init\r\n");
-    {
-        nlr_buf_t nlr;
-        if (nlr_push(&nlr) == 0) {
-            network_init();
-            mod_network_init();
-            nlr_pop();
-        } else {
-            // network init raised an exception – print a warning and continue
-            // so the REPL still starts even if WiFi hardware is unavailable.
-            mp_printf(&mp_plat_print, "Warning: network init failed\n");
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-        }
-    }
-    printf("MPY: network_init done\r\n");
+    mod_network_init();
     #endif
 
     #if MICROPY_VFS
@@ -234,7 +224,8 @@ soft_reset:
 
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
-    network_deinit();
+    // network_deinit() is intentionally not called on soft reset:
+    // cy_wcm_deinit() + re-init would re-download WiFi firmware each time.
     #endif
 
     #if MICROPY_ENABLE_GC
