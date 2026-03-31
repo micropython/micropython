@@ -310,6 +310,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
+    mp_dynamic_compiler.nlr_setjmp = 0;
+    mp_dynamic_compiler.local_idx_exc_handler_pc = -1;
     mp_dynamic_compiler.backend_options = NULL;
 
     const char *input_file = NULL;
@@ -389,6 +391,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "xtensawin") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
+                    mp_dynamic_compiler.nlr_setjmp = 1;
                 } else if (strcmp(arch, "rv32imc") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV32IMC;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV32I;

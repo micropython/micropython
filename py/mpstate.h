@@ -69,6 +69,8 @@ typedef struct mp_dynamic_compiler_t {
     uint8_t small_int_bits; // must be <= host small_int_bits
     uint8_t native_arch;
     uint8_t nlr_buf_num_regs;
+    uint8_t nlr_setjmp;
+    int8_t local_idx_exc_handler_pc;
 } mp_dynamic_compiler_t;
 extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
