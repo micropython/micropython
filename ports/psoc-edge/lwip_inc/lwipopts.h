@@ -214,8 +214,10 @@
 
 /**
  * PBUF_POOL_SIZE: the number of buffers in the pbuf pool.
+ * 400 was copied from an MTB reference app and bloats static RAM by ~640 KB.
+ * 24 is sufficient for MicroPython use (matches PSoC6 port).
  */
-#define PBUF_POOL_SIZE                  400
+#define PBUF_POOL_SIZE                  24
 
 /**
  * MEMP_NUM_NETBUF: the number of struct netbufs.
