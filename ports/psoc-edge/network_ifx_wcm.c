@@ -25,24 +25,95 @@
  * THE SOFTWARE.
  */
 
-// Placeholder implementation of the IFX WCM network module.
-// Full WiFi/WCM integration to be added in a subsequent commit.
-
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "extmod/modnetwork.h"
 #include "network_ifx_wcm.h"
 
+#include "cybsp.h"
+#include "cy_wcm.h"
+#include "mtb_hal_sdio.h"
+#include "mtb_hal_gpio.h"
+#include "cy_sd_host.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+
 #if MICROPY_PY_NETWORK_IFX_WCM
 
 // ---------------------------------------------------------------------------
-// Stub init / deinit called from main.c
+// SDIO / GPIO hardware state
+// ---------------------------------------------------------------------------
+
+#define WIFI_SDIO_INTERRUPT_PRIORITY    (7U)
+#define WIFI_HOST_WAKE_INTERRUPT_PRIORITY (2U)
+#define WIFI_SDIO_FREQUENCY_HZ          (25000000U)
+#define WIFI_SDIO_BLOCK_SIZE            (64U)
+
+static mtb_hal_sdio_t sdio_obj;
+static cy_stc_sd_host_context_t sdhc_ctx;
+static cy_wcm_config_t wcm_config;
+
+static void wifi_sdio_isr(void) {
+    mtb_hal_sdio_process_interrupt(&sdio_obj);
+}
+
+static void wifi_host_wake_isr(void) {
+    mtb_hal_gpio_process_interrupt(&wcm_config.wifi_host_wake_pin);
+}
+
+static void wifi_sdio_init(void) {
+    cy_stc_sysint_t sdio_intr = {
+        .intrSrc = CYBSP_WIFI_SDIO_IRQ,
+        .intrPriority = WIFI_SDIO_INTERRUPT_PRIORITY
+    };
+    cy_stc_sysint_t wake_intr = {
+        .intrSrc = CYBSP_WIFI_HOST_WAKE_IRQ,
+        .intrPriority = WIFI_HOST_WAKE_INTERRUPT_PRIORITY
+    };
+
+    Cy_SysInt_Init(&sdio_intr, wifi_sdio_isr);
+    NVIC_EnableIRQ(CYBSP_WIFI_SDIO_IRQ);
+
+    mtb_hal_sdio_setup(&sdio_obj, &CYBSP_WIFI_SDIO_sdio_hal_config, NULL, &sdhc_ctx);
+
+    Cy_SD_Host_Enable(CYBSP_WIFI_SDIO_HW);
+    Cy_SD_Host_Init(CYBSP_WIFI_SDIO_HW, CYBSP_WIFI_SDIO_sdio_hal_config.host_config, &sdhc_ctx);
+    Cy_SD_Host_SetHostBusWidth(CYBSP_WIFI_SDIO_HW, CY_SD_HOST_BUS_WIDTH_4_BIT);
+
+    mtb_hal_sdio_cfg_t sdio_cfg = {
+        .frequencyhal_hz = WIFI_SDIO_FREQUENCY_HZ,
+        .block_size = WIFI_SDIO_BLOCK_SIZE
+    };
+    mtb_hal_sdio_configure(&sdio_obj, &sdio_cfg);
+
+    mtb_hal_gpio_setup(&wcm_config.wifi_wl_pin,
+        CYBSP_WIFI_WL_REG_ON_PORT_NUM, CYBSP_WIFI_WL_REG_ON_PIN);
+    mtb_hal_gpio_setup(&wcm_config.wifi_host_wake_pin,
+        CYBSP_WIFI_HOST_WAKE_PORT_NUM, CYBSP_WIFI_HOST_WAKE_PIN);
+
+    Cy_SysInt_Init(&wake_intr, wifi_host_wake_isr);
+    NVIC_EnableIRQ(CYBSP_WIFI_HOST_WAKE_IRQ);
+}
+
+// ---------------------------------------------------------------------------
+// network_init / network_deinit called from main.c
 // ---------------------------------------------------------------------------
 
 void network_init(void) {
+    wifi_sdio_init();
+
+    wcm_config.interface = CY_WCM_INTERFACE_TYPE_STA;
+    wcm_config.wifi_interface_instance = &sdio_obj;
+
+    cy_rslt_t ret = cy_wcm_init(&wcm_config);
+    if (ret != CY_RSLT_SUCCESS) {
+        mp_printf(&mp_plat_print, "network_init: cy_wcm_init failed (0x%08lX)\r\n", (unsigned long)ret);
+    }
 }
 
 void network_deinit(void) {
+    cy_wcm_deinit();
 }
 
 // ---------------------------------------------------------------------------
