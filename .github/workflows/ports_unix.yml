@@ -55,6 +55,18 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  sjlj:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Build
+      run: tools/ci.sh unix_sjlj_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_sjlj_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   standard_v2:
     runs-on: ubuntu-latest
     steps:
