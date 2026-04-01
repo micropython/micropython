@@ -316,10 +316,11 @@ following periodically:
     gc.collect()
     gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
 
-For more technical details, see :doc:`/develop/memorymgt`.
+For more information, see below and the documentation for built-in module
+:mod:`gc`.
 
-Note: The heap used by MicroPython is a specialised "Python heap", separate from
-any heap used for :ref:`c_heap`.
+For details from MicroPython internals/developer perspective, see also
+:doc:`/develop/memorymgt`.
 
 Fragmentation
 ~~~~~~~~~~~~~
@@ -381,28 +382,8 @@ Running the function uses over 10KiB, but on return ``a`` is garbage because it
 is out of scope and cannot be referenced. The final `gc.collect()` recovers
 that memory.
 
-The final output produced by ``micropython.mem_info(1)`` will vary in detail but
-may be interpreted as follows:
-
-====== =================
-Symbol Meaning
-====== =================
-   .   free block
-   h   head block
-   =   tail block
-   m   marked head block
-   T   tuple
-   L   list
-   D   dict
-   F   float
-   B   byte code
-   M   module
-   S   string or bytes
-   A   bytearray
-====== =================
-
-Each letter represents a single block of memory, a block being 16 bytes. So each
-line of the heap dump represents 0x400 bytes or 1KiB of RAM.
+The verbose output from ``micropython.mem_info(1)`` is documented at
+`micropython.mem_info()`.
 
 Control of garbage collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

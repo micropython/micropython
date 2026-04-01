@@ -2,7 +2,8 @@
 ==========================================
 
 .. module:: gc
-   :synopsis: control the garbage collector
+   :synopsis: control the garbage collector which automatically frees
+              :ref:`heap memory <heap>`
 
 |see_cpython_module| :mod:`python:gc`.
 
@@ -64,3 +65,29 @@ Functions
       This function is a MicroPython extension. CPython has a similar
       function - ``set_threshold()``, but due to different GC
       implementations, its signature and semantics are different.
+
+Example
+-------
+
+.. code-block:: bash
+
+    >>> import gc
+    >>> gc.mem_free() # Gets number of bytes free in memory
+    8192
+    >>> gc.mem_alloc() # Gets number of bytes allocated in memory
+    1024
+    >>> foo = bytearray(1000) # Create a big array of data
+    >>> gc.mem_free() # Show that there's less memory available
+    7168
+    >>> gc.mem_alloc() # Show that there's more memory used
+    2048
+    >>> del foo # Delete the object
+    >>> gc.mem_free() # Show that collection hasn't run yet
+    7168
+    >>> gc.mem_alloc() # That memory is still allocated
+    2048
+    >>> gc.collect() # Manually run the collection
+    >>> gc.mem_free() # Now we have reclaimed that memory
+    8192
+    >>> gc.mem_alloc() # That memory is no longer allocated
+    1024

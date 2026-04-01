@@ -15,27 +15,8 @@ garbage collection algorithm. This algorithm has a mark phase that scans the
 heap marking all live objects, and then a sweep phase goes through the heap
 reclaiming all unmarked objects.
 
-The MicroPython garbage collector is normally automatic, but manual control is
-available through the :mod:`gc` built-in module:
-
-.. code-block:: bash
-
-   >>> x = 5
-   >>> x
-   5
-   >>> import gc
-   >>> gc.enable()
-   >>> gc.mem_alloc()
-   1312
-   >>> gc.mem_free()
-   2071392
-   >>> gc.collect()
-   19
-   >>> gc.disable()
-   >>>
-
-Even when ``gc.disable()`` is invoked, collection can be manually triggered with
-``gc.collect()``.
+The MicroPython garbage collector is by default automatic, but manual control is
+available through the :mod:`gc` built-in module.
 
 .. _python_memory_from_c:
 
@@ -93,6 +74,10 @@ Ways to avoid use-after-free in these scenarios:
 .. note:: :ref:`soft_reset` always clears the Python heap and frees all memory.
           It's important not to hold any pointers to the heap after a soft
           reset, as they will become dangling pointers to freed memory.
+
+          Some ports support a "C heap" as well (see `c_heap`), in which case
+          you can allocate memory that will stay valid over soft reset by
+          calling standard C functions ``malloc``, etc.
 
 The object model
 ----------------
