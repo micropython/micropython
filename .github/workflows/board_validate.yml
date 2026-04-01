@@ -1,0 +1,134 @@
+name: Validate new board definitions
+
+on:
+  pull_request:
+    paths:
+      - 'ports/*/boards/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-boards:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install --system jsonschema
+
+    - name: Get changed files
+      id: changed
+      run: |
+        FILES=$(git diff --name-only \
+          ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} \
+          -- 'ports/*/boards/**' | tr '\n' ' ')
+        echo "files=$FILES" >> "$GITHUB_OUTPUT"
+        if [ -z "$FILES" ]; then
+          echo "has_files=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "has_files=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Validate new boards
+      if: steps.changed.outputs.has_files == 'true'
+      run: |
+        python tools/validate_board.py \
+          --repo-root . \
+          --base-ref ${{ github.event.pull_request.base.sha }} \
+          --schema tools/board_schema.json \
+          --results-json /tmp/validation_results.json \
+          --comment-md /tmp/validation_comment.md \
+          ${{ steps.changed.outputs.files }}
+
+    - name: Post validation results as step summary
+      if: always() && steps.changed.outputs.has_files == 'true'
+      run: |
+        if [ -f /tmp/validation_comment.md ]; then
+          cat /tmp/validation_comment.md >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: Post review comments for warnings and notices
+      if: always() && steps.changed.outputs.has_files == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const resultsPath = '/tmp/validation_results.json';
+
+          if (!fs.existsSync(resultsPath)) return;
+
+          const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+          const items = [
+            ...results.errors.map(e => ({...e, level: 'Error'})),
+            ...results.warnings.map(w => ({...w, level: 'Warning'})),
+            ...results.notices.map(n => ({...n, level: 'Notice'})),
+          ];
+
+          if (items.length === 0) return;
+
+          const headSha = context.payload.pull_request.head.sha;
+          const prNumber = context.payload.pull_request.number;
+
+          // Get list of files in the PR diff so we can attach comments
+          const { data: prFiles } = await github.rest.pulls.listFiles({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+          });
+          const diffFiles = new Set(prFiles.map(f => f.filename));
+
+          const prefixes = {
+            Error: ':x: **Error**',
+            Warning: ':warning: **Warning**',
+            Notice: ':information_source: **Notice**',
+          };
+
+          for (const item of items) {
+            // Attach to the referenced file if it's in the diff,
+            // otherwise attach to board.json in the same board dir
+            let targetPath = item.file;
+            if (!diffFiles.has(targetPath)) {
+              const parts = targetPath.split('/');
+              if (parts.length >= 4 && parts[0] === 'ports' && parts[2] === 'boards') {
+                const boardJson = parts.slice(0, 4).join('/') + '/board.json';
+                if (diffFiles.has(boardJson)) {
+                  targetPath = boardJson;
+                }
+              }
+            }
+
+            // Skip if we still can't find a file in the diff
+            if (!diffFiles.has(targetPath)) {
+              console.log(`Skipping comment for ${item.file}: not in PR diff`);
+              continue;
+            }
+
+            const body = `${prefixes[item.level]}: ${item.message}`;
+
+            try {
+              await github.rest.pulls.createReviewComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                commit_id: headSha,
+                path: targetPath,
+                subject_type: 'file',
+                body: body,
+              });
+              console.log(`Posted ${item.level} on ${targetPath}`);
+            } catch (err) {
+              console.log(`Failed to post comment on ${targetPath}: ${err.message}`);
+            }
+          }
