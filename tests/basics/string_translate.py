@@ -28,3 +28,15 @@ print("hello".translate({108: None}))  # delete l
 
 # translate no match - passthrough
 print("abc".translate({}))
+
+# translate with non-dict argument
+try:
+    "abc".translate(42)
+except TypeError:
+    print("TypeError")
+
+# maketrans with mismatched lengths
+try:
+    str.maketrans("abc", "xy")
+except ValueError:
+    print("ValueError")
