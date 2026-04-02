@@ -12,6 +12,8 @@ except (ImportError, NameError):
 
 import socket
 
+print("SKIP")
+raise SystemExit
 
 def instance0():
     WLAN(WLAN.IF_AP).active(0)

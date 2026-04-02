@@ -98,6 +98,8 @@ builtin tests suitable for the target platform are ran.
 # Code to allow a target MicroPython to import an .mpy from RAM
 # Note: the module is named `__injected_test` but it needs to have `__name__` set to
 # `__main__` so that the test sees itself as the main module, eg so unittest works.
+# Use `sys.path.append()` to make it visible, so things in existing current dir (eg
+# target_wiring.py) can still be imported.
 _injected_import_hook_code = """\
 import sys, os, io, vfs
 class __File(io.IOBase):
@@ -126,7 +128,7 @@ class __FS:
   def getcwd(self):
     return ""
   def stat(self, path):
-    if path == '__injected_test.mpy':
+    if path == '/__injected_test.mpy':
       return (0,0,0,0,0,0,0,0,0,0)
     else:
       raise OSError(2) # ENOENT
@@ -134,7 +136,8 @@ class __FS:
     self.stat(path)
     return __File()
 vfs.mount(__FS(), '/__vfstest')
-os.chdir('/__vfstest')
+#os.chdir('/__vfstest')
+sys.path.append('/__vfstest')
 {import_prologue}
 __import__('__injected_test')
 """
