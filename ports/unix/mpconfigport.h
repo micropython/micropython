@@ -45,6 +45,8 @@
 #ifndef MICROPY_PY_SYS_PLATFORM
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
+#elif defined(__GNU__)
+    #define MICROPY_PY_SYS_PLATFORM  "GNU"
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
 #endif
