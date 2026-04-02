@@ -16,14 +16,14 @@ Template(strings=('\\k',), interpolations=())
 Invalid \x escape: SyntaxError
 Invalid \u escape: SyntaxError
 Invalid \U escape: SyntaxError
-Template(strings=('\x00\x01\xff',), interpolations=())
+Template(strings=('\x00\x01ÿ',), interpolations=())
 Template(strings=('A',), interpolations=())
-Template(strings=('\u03b1',), interpolations=())
-Template(strings=('\u2764',), interpolations=())
+Template(strings=('α',), interpolations=())
+Template(strings=('❤',), interpolations=())
 Template(strings=('A',), interpolations=())
-Template(strings=('\U0001f600',), interpolations=())
+Template(strings=('😀',), interpolations=())
 Template(strings=('ABC',), interpolations=())
-Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('\U0001f40d', "'\\U0001f40d'", None, ''), Interpolation('\u03b1 \u03b2 \u03b3', "'\\u03b1 \\u03b2 \\u03b3'", None, '')))
+Unicode: Template(strings=('Unicode test:\nEmoji: ', '\nSpecial: ', ''), interpolations=(Interpolation('🐍', "'\\U0001f40d'", None, ''), Interpolation('α β γ', "'\\u03b1 \\u03b2 \\u03b3'", None, '')))
 
 === Trailing whitespace preservation (PEP 750) ===
 Expression with trailing spaces: |x|
