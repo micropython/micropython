@@ -213,7 +213,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             if (mp_obj_is_type(args[0], &mp_type_bytes) || mp_obj_is_type(args[0], &mp_type_bytearray)) {
             #else
             if (mp_obj_is_type(args[0], &mp_type_bytes)) {
-            #endif
+                #endif
                 GET_STR_DATA_LEN(args[0], str_data, str_len);
                 GET_STR_HASH(args[0], str_hash);
                 if (str_hash == 0) {
@@ -246,10 +246,18 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 // Data has invalid UTF-8, handle based on error mode
                 #if MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
                 // Error handlers are enabled
-                bool do_ignore = strcmp(errors, "ignore") == 0;
-                bool do_replace = strcmp(errors, "replace") == 0;
+                #if !MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
+                // Raise NotImplementedError if 'replace' is used but not enabled
+                if (strcmp(errors, "replace") == 0) {
+                    mp_raise_NotImplementedError(NULL);
+                }
+                #endif
 
-                if (do_ignore || do_replace) {
+                if (strcmp(errors, "ignore") == 0
+                    #if MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
+                    || strcmp(errors, "replace") == 0
+                    #endif
+                    ) {
                     // Build new string skipping/replacing invalid bytes
                     vstr_t vstr;
                     vstr_init(&vstr, str_len);
@@ -2054,6 +2062,17 @@ static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
         args = new_args;
         n_args++;
+    } else if (n_args >= 2) {
+        // Validate encoding parameter
+        // MicroPython only supports UTF-8 encoding
+        const char *encoding = mp_obj_str_get_str(args[1]);
+
+        // Accept utf-8 and ascii (ascii is a subset of utf-8)
+        if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
+              strcmp(encoding, "ascii") == 0)) {
+            mp_raise_msg_varg(&mp_type_LookupError,
+                MP_ERROR_TEXT("encoding not supported: %s"), encoding);
+        }
     }
     return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
@@ -2067,6 +2086,17 @@ static mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
         args = new_args;
         n_args++;
+    } else if (n_args >= 2) {
+        // Validate encoding parameter
+        // MicroPython only supports UTF-8 encoding
+        const char *encoding = mp_obj_str_get_str(args[1]);
+
+        // Accept utf-8 and ascii (ascii is a subset of utf-8)
+        if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
+              strcmp(encoding, "ascii") == 0)) {
+            mp_raise_msg_varg(&mp_type_LookupError,
+                MP_ERROR_TEXT("encoding not supported: %s"), encoding);
+        }
     }
     return bytes_make_new(NULL, n_args, 0, args);
 }
