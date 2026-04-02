@@ -7,7 +7,7 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
-# Check if error handlers are available (requires MICROPY_PY_BUILTINS_BYTES_DECODE_IGNORE)
+# Check if error handlers are available (requires MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS)
 # When feature is disabled, invalid UTF-8 raises LookupError even with 'ignore'
 # When feature is enabled, invalid UTF-8 with 'ignore' returns a string
 try:
@@ -96,6 +96,10 @@ print(repr(b'\xf0\x9f\x98\x20'.decode('utf-8', 'ignore')))
 # Test mixed valid and incomplete sequences
 print(repr(b'hello\xe4world'.decode('utf-8', 'ignore')))
 print(repr(b'hello\xf0world'.decode('utf-8', 'ignore')))
+
+# Test valid multi-byte sequence mixed with invalid bytes (exercises got==need path)
+print(repr(b'\xff\xc2\xa9'.decode('utf-8', 'ignore')))    # © preserved after invalid \xff
+print(repr(b'\xff\xe4\xb8\x80'.decode('utf-8', 'ignore')))  # 一 preserved after invalid \xff
 
 # Test multiple incomplete sequences in a row
 print(repr(b'\xe4\xf0\xe4'.decode('utf-8', 'ignore')))

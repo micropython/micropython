@@ -15,6 +15,8 @@ LookupError: utf-16
 LookupError: utf-32
 LookupError: iso-8859-1
 LookupError: cp1252
+6
+6
 LookupError: latin-1
 LookupError: latin1
 LookupError: utf-16
