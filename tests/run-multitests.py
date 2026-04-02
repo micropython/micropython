@@ -547,6 +547,14 @@ def run_tests(test_files, instances_truth, instances_test):
                 print("### DIFF ###")
                 print_diff(output_truth, output_test)
 
+            # Save results to file.
+            test_basename = instances_str.replace("|", "_") + "_" + test_file.replace("..", "_").replace("./", "").replace("/", "_")
+            result_filename = os.path.join(cmd_args.result_dir, test_basename)
+            with open(result_filename + ".exp", "w") as f:
+                f.write(output_truth)
+            with open(result_filename + ".out", "w") as f:
+                f.write(output_test)
+
         # Print test output metrics, if there are any.
         if output_metrics:
             for metric in output_metrics:

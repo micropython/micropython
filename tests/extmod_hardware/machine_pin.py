@@ -9,7 +9,11 @@ except ImportError:
     raise SystemExit
 
 import unittest
-from target_wiring import pwm_loopback_pins
+
+try:
+    from target_wiring import pin_loopback_pins
+except:
+    from target_wiring import pwm_loopback_pins as pin_loopback_pins
 
 
 class TestBase:
@@ -33,7 +37,7 @@ class TestBase:
 
 
 # Generate test classes, one for each set of pins to test.
-for pin_out, pin_in in pwm_loopback_pins:
+for pin_out, pin_in in pin_loopback_pins:
     cls_name = "Test_{}_{}".format(pin_out, pin_in)
     globals()[cls_name] = type(
         cls_name, (TestBase, unittest.TestCase), {"pin_out": pin_out, "pin_in": pin_in}

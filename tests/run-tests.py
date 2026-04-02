@@ -296,6 +296,7 @@ tests_requiring_target_wiring = (
     "extmod/machine_uart_tx.py",
     "extmod_hardware/machine_can_timings.py",
     "extmod_hardware/machine_encoder.py",
+    "extmod_hardware/machine_i2c_target.py",
     "extmod_hardware/machine_pin.py",
     "extmod_hardware/machine_pwm.py",
     "extmod_hardware/machine_uart_irq_break.py",
@@ -662,32 +663,34 @@ class ThreadSafeCounter:
         return self._value
 
 
-stdout_isatty = sys.stdout.isatty()
+verbose_each_test = not sys.stdout.isatty()
 end_erase = "                                 \r"
 
 
 def print_output_skip(test):
-    if stdout_isatty:
+    if not verbose_each_test:
         print("skip ", test, end=end_erase)
     else:
         print("skip ", test)
 
 
 def print_output_start(test):
-    if stdout_isatty:
+    if not verbose_each_test:
+        print(".... ", test, end=end_erase)
+    else:
         print(".... ", test, end=end_erase)
 
 
 def print_output_end_skip(test, reason):
-    if stdout_isatty:
+    if not verbose_each_test:
         return
         print(reason, test, end=end_erase)
     else:
-        print(reason, test)
+        print(reason + " ", test)
 
 
 def print_output_end_pass(test, extra_info):
-    if stdout_isatty:
+    if not verbose_each_test:
         return
         print("pass ", test, extra_info, end=end_erase)
     else:
@@ -1262,7 +1265,15 @@ the last matching regex is used:
         default=None,
         help="force the given script to be used as target_wiring.py",
     )
+    cmd_parser.add_argument(
+        "--verbose-each-test",
+        action="store_true",
+        help="print the result for each test",
+    )
     args = cmd_parser.parse_args()
+
+    global verbose_each_test
+    verbose_each_test = args.verbose_each_test
 
     prologue = ""
     if args.begin:

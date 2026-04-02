@@ -8,7 +8,7 @@ try:
     from machine import CAN
 
     CAN(2, 125_000)
-except (ImportError, ValueError):
+except (AttributeError, ImportError, ValueError):
     print("SKIP")
     raise SystemExit
 
