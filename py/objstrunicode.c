@@ -82,10 +82,9 @@ static void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
             print->print_strn(print->data, (const char *)seq_start, seq_len);
         } else if (ch < 0x100) {
             mp_printf(print, "\\x%02x", ch);
-        } else if (ch < 0x10000) {
-            mp_printf(print, "\\u%04x", ch);
         } else {
-            mp_printf(print, "\\U%08x", ch);
+            // Surrogate character (0xD800-0xDFFF) - use \uXXXX escape
+            mp_printf(print, "\\u%04x", ch);
         }
     }
     mp_printf(print, "%c", quote_char);
