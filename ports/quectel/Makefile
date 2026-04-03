@@ -6,7 +6,6 @@ ROOT := $(TOP)/../..
 endif
 
 include ../../py/mkenv.mk
-include mpconfigport.mk
 include quectel.mk
 
 CROSS = 1
@@ -26,7 +25,6 @@ QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
-
 
 FROZEN_MANIFEST = $(QUEC_PY_MOD)
 
@@ -66,7 +64,8 @@ CXXFLAGS += $(CXXFLAGS_MOD)
 CFLAGS += $(CFLAGS_MOD)
 LDFLAGS += $(LDFLAGS_MOD)
 
-LIBS =
+LIBS = lib/littlefs/lfs2.c \
+	lib/littlefs/lfs2_util.c
 
 SHARED_SRC_C = shared/libc/printf.c \
 	shared/readline/readline.c \
@@ -77,31 +76,18 @@ SHARED_SRC_C = shared/libc/printf.c \
 	shared/runtime/interrupt_char.c \
 	shared/timeutils/timeutils.c
 
-EXTMOD_SRC_C = extmod/vfs.c \
-	extmod/vfs_lfs.c \
-	extmod/vfs_blockdev.c \
-	extmod/modrandom.c \
-	extmod/modjson.c \
-	extmod/modbinascii.c \
-	extmod/vfs_reader.c \
-	extmod/modre.c \
-	extmod/modhashlib.c \
-	extmod/moductypes.c \
-	extmod/modos.c
-
-EXTMOD_SRC_C += $(SRC_THIRDPARTY_C)
-
 SRC_MOD += $(QUEC_SRC_MOD)
 
 SRC_C += $(SRC_MOD) \
 		 $(SHARED_SRC_C) \
-		 $(EXTMOD_SRC_C) \
+		 $(SRC_EXTMOD_C) \
+		 $(LIBS) \
 		 $(QUEC_SRC) \
 		 $(BUILD)/frozen_content.c
 
 SRC_CXX += $(SRC_MOD_CXX)
 
-SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX) $(SHARED_SRC_C) $(SRC_EXTMOD_C)
 
 OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))

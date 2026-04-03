@@ -1,4 +1,3 @@
-
 PLAT_DFLAGS = $(addprefix -D,$(DFLAGS))
 PLAT_CFLAGS = $(QUEC_CFLAGS)
 PLAT_CFLAGS += -Wno-unused-parameter -Wformat=0 -Wno-unused-function
@@ -33,19 +32,6 @@ INC += -I$(ROOT)/system/at
 INC += -I$(ROOT)/system/aliiot
 
 ifeq ($(strip $(PLAT)),Unisoc)
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/include
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/lwip
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/lwip/apps
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/lwip/priv
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/lwip/prot
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/netif
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/posix
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/posix/arpa
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/posix/net
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/posix/netinet
-INC += -I$(ROOT)/system/lwip/$(strip $(PLAT))/src/include/posix/sys
 INC += -I$(ROOT)/system/at
 INC += -I$(ROOT)/system/esim
 endif
