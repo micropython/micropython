@@ -32,21 +32,6 @@
 #include "mpthread.h"
 #include "gccollect.h"
 
-#if defined(PLAT_RDA)
-unsigned int ReadSP(void) {
-    uint32_t res;
-    __asm volatile (
-        "move %0, $29\n"
-        : "=r" (res)
-        :
-        :
-        );
-
-    return res;
-}
-#elif defined(PLAT_ECR6600)
-
-#else
 unsigned int ReadSP(void) {
     uint32_t res;
     __asm volatile (
@@ -58,7 +43,6 @@ unsigned int ReadSP(void) {
 
     return res;
 }
-#endif
 
 void gc_stacktop_set(void *ptr) {
     MP_STATE_PORT(global_stacktop_ptr) = ptr;
@@ -69,17 +53,11 @@ void gc_collect(void) {
     #if 0
     uint32_t start = mp_hal_ticks_us();
     #endif
-    #if defined(PLAT_ECR6600)
-    int val = 0;
-    #endif
     // start the GC
     gc_collect_start();
-    #if defined(PLAT_ECR6600)
-    uintptr_t sp = (uintptr_t)&val;
-    #else
     // get the registers and the sp
     uintptr_t sp = (uintptr_t)ReadSP();
-    #endif
+
     if (mp_is_python_thread()) {
         // trace the stack, including the registers (since they live on the stack in this function)
         gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
@@ -96,17 +74,6 @@ void gc_collect(void) {
 
     // end the GC
     gc_collect_end();
-
-    #if 0
-    // print GC info
-    uint32_t ticks = mp_hal_ticks_us() - start;
-    gc_info_t info;
-    gc_info(&info);
-    printf("GC@%lu %lums\n", start, ticks);
-    printf(" " UINT_FMT " total\n", info.total);
-    printf(" " UINT_FMT " : " UINT_FMT "\n", info.used, info.free);
-    printf(" 1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
-    #endif
 }
 
 MP_REGISTER_ROOT_POINTER(volatile void *global_stacktop_ptr);
