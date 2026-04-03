@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include "helios.h"
 #include "helios_os.h"
+#include "helios_rtc.h"
 #include "helios_debug.h"
 #include "mphalport.h"
 #if MICROPY_KBD_EXCEPTION
@@ -64,6 +65,8 @@ Helios_Thread_t ql_micropython_task_ref;
 #if (defined(PLAT_Unisoc))
 #define QPY_ASSERT_SUPPORT 1
 #endif
+
+extern uint64_t mp_time_start_second;
 
 void nlr_jump_fail(void *val) {
     #if QPY_ASSERT_SUPPORT
@@ -171,6 +174,7 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py", false);
+    mp_time_start_second = Helios_RTC_GetSecond();
 
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL
         #if MICROPY_PY_KBD_EXCEPTION

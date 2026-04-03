@@ -46,7 +46,7 @@
 #define MICROPY_VFS                         (1)
 #define MICROPY_PY_VFS                      (0)
 #define MICROPY_VFS_LFS2                    (1)
-#define MICROPY_PY_TIME                     (0)
+#define MICROPY_PY_TIME                     (1)
 #define MICROPY_PY_HEAPQ                    (0)
 #define MICROPY_PY_OS                       (1)
 #define MICROPY_PY_PLATFORM                 (0)
@@ -57,6 +57,10 @@
 #define MICROPY_PY_UCTYPES                  (0)
 #define MICROPY_PY_DEFLATE                  (0)
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/quectel/modtime.c"
 
 /******************************** base define **********************************/
 // options to control how MicroPython is built
