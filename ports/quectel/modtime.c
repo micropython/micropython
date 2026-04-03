@@ -24,44 +24,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MPHAL_PORT_H
-#define __MPHAL_PORT_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "py/runtime.h"
+#include "shared/timeutils/timeutils.h"
 
-#include "helios_os.h"
-#include "helios_uart.h"
+#include "helios_debug.h"
+#include "helios_rtc.h"
 
-#define HAL_TICK1S      32.768
-#define QPY_REPL_UART   HELIOS_UART3
-#define HELIOS_UART_BAUD   HELIOS_UART_BAUD_115200
+uint64_t mp_time_start_second;
 
-// mia.zhong @20220308 input接口多线程调用导致dump问题
-typedef struct Input_ListNode
-{
-    // int id;
-    int mthread_sleep_flag;
-    Helios_MsgQ_t msg_q;
-    void *next_node;
-} Input_ListNode_t;
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
+    Helios_RTCTime rtc_tm;
+    Helios_RTC_GetLocalTime(&rtc_tm);
+    tm->tm_year = rtc_tm.tm_year;
+    tm->tm_mon = rtc_tm.tm_mon;
+    tm->tm_mday = rtc_tm.tm_mday;
+    tm->tm_hour = rtc_tm.tm_hour;
+    tm->tm_min = rtc_tm.tm_min;
+    tm->tm_sec = rtc_tm.tm_sec;
+    tm->tm_wday = rtc_tm.tm_wday;
+    tm->tm_yday = 0;
+}
 
-void _add_list_node();
-void _delete_list_node();
-mp_uint_t mp_hal_ticks_cpu(void);
+// return rtc seconds since power on
+static mp_obj_t mp_time_time_get(void) {
+    uint64_t seconds = Helios_RTC_GetSecond() - mp_time_start_second;
+    return mp_obj_new_int_from_ull(seconds);
+}
 
-void mp_mthread_sleep_deal_init(void);
-int mp_mthread_sleep(uint32_t ms);
-void mp_mthread_wakeup(void);
-int mp_mthread_sleep_child(uint32_t ms);
-void mp_mthread_wakeup_child(void);
-
-int mp_hal_stdio_init(void);
-
-int mp_hal_stdin_rx_chr(void);
-
-void mp_hal_port_open(uint8_t state);
-
-void mp_hal_set_interrupt_char(int c);
-
-static void mp_hal_random_init(void);
-void mp_hal_get_random(size_t n, uint8_t *buf);
-
-#endif
+uint64_t mp_hal_time_ns(void) {
+    return (Helios_RTC_GetSecond() - mp_time_start_second) * 1000000000ULL;
+}

@@ -209,10 +209,6 @@ mp_uint_t mp_hal_ticks_us(void) {
     return (mp_uint_t)Helios_RTC_TicksToUs();
 }
 
-uint64_t mp_hal_time_ns(void) {
-    return 0;
-}
-
 static void mp_hal_random_init(void) {
     static bool seeded = false;
     if (!seeded) {
