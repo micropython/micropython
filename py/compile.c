@@ -2028,14 +2028,15 @@ static void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         int kind = MP_PARSE_NODE_STRUCT_KIND(pns1);
         if (kind == PN_annassign) {
             // the annotation is in pns1->nodes[0] and is ignored
+            if (!MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
+                compile_syntax_error(comp, pns->nodes[0], MP_ERROR_TEXT("illegal target for annotation"));
+            }
             if (MP_PARSE_NODE_IS_NULL(pns1->nodes[1])) {
                 // an annotation of the form "x: y"
                 // inside a function this declares "x" as a local
+                qstr lhs = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
                 if (comp->scope_cur->kind == SCOPE_FUNCTION) {
-                    if (MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
-                        qstr lhs = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-                        scope_find_or_add_id(comp->scope_cur, lhs, ID_INFO_KIND_LOCAL);
-                    }
+                    scope_find_or_add_id(comp->scope_cur, lhs, ID_INFO_KIND_LOCAL);
                 }
             } else {
                 // an assigned annotation of the form "x: y = z"

@@ -18,8 +18,11 @@ def f():
         print("NameError")
 f()
 
-# here, "x" should remain a global
-def f():
-    x.y: int
-    print(x)
-f()
+# An annotation like `f(): int` is correctly rejected
+try:
+    eval("def f():\n    f(): int")
+    print("OK")
+except SyntaxError as e:
+    print("SyntaxError")
+
+# Note: Annotations like `x.y: int` are not tested here, see cpydiff/syntax_annotation_expression.py
