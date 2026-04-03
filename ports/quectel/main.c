@@ -61,8 +61,7 @@ Helios_Thread_t ql_micropython_task_ref;
 #define MP_TASK_STACK_SIZE      (MP_QPY_TASK_STACK_SIZE)
 #define MP_TASK_STACK_LEN       (MP_TASK_STACK_SIZE / sizeof(uint32_t))
 
-#if (defined(PLAT_ASR) || defined(PLAT_Unisoc) || defined(PLAT_ASR_1803s) || defined(PLAT_ASR_1803sc) || defined(PLAT_Qualcomm) \
-    || defined(PLAT_ASR_1606) || defined(PLAT_ASR_1609) || defined(PLAT_Unisoc_8910_R05) || defined(PLAT_Unisoc_8910_R06) || defined(PLAT_ASR_1602)) // support
+#if (defined(PLAT_Unisoc))
 #define QPY_ASSERT_SUPPORT 1
 #endif
 
@@ -85,7 +84,6 @@ void NORETURN __fatal_error(const char *msg) {
 }
 
 #ifndef NDEBUG
-#if !defined(PLAT_Qualcomm)
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     #if QPY_ASSERT_SUPPORT
     Helios_Assert(expr, file, line, "");
@@ -108,17 +106,9 @@ void __assert_fail(const char *__message,
 }
 #endif
 
-#endif
-
 static char *stack_top;
 #if MICROPY_ENABLE_GC
-#if defined(PLAT_ECR6600)
-static char __attribute__((__section__(".data"))) heap[MICROPY_GC_HEAP_SIZE];
-#elif defined(PLAT_SONY_ALT1350)
-static char __attribute__((__section__("gpm1_working_data"))) heap[MICROPY_GC_HEAP_SIZE];
-#else
 static char heap[MICROPY_GC_HEAP_SIZE];
-#endif
 #endif
 
 extern pyexec_mode_kind_t pyexec_mode_kind;
@@ -168,11 +158,7 @@ void quecpython_task(void *arg) {
 
 soft_reset:
     mp_stack_set_top((void *)&stack_dummy);
-    #if defined(PLAT_ECR6600) || defined(PLAT_aic8800m40) // unit: Byte
-    mp_stack_set_limit(MP_TASK_STACK_SIZE * sizeof(uint32_t) - 1024);
-    #else
     mp_stack_set_limit(MP_TASK_STACK_SIZE - 1024);
-    #endif
     stack_top = (char *)&stack_dummy;
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
@@ -184,21 +170,7 @@ soft_reset:
     readline_init0();
 
     // run boot-up scripts
-    #if defined(PLAT_RDA)
-    pyexec_frozen_module("_boot_RDA.py");
-    #elif defined(PLAT_Qualcomm)
-    pyexec_frozen_module("_boot_Qualcomm.py");
-    #elif defined(BOARD_EC800ECN_LC_WDF)
-    pyexec_frozen_module("_boot_WDF.py");// EIGEN WDF CUNSTOMER BOOT WITH SINGLE FILE SYSTEM
-    #elif defined(PLAT_ECR6600) || defined(PLAT_aic8800m40)
-    pyexec_frozen_module("_boot_WIFI.py");
-    #elif defined(BOARD_EC600GCN_LA_CDD)
-    pyexec_frozen_module("_boot_dsds.py");
-    #elif defined(PLAT_SONY_ALT1350)
-    pyexec_frozen_module("_boot_SONY.py", false);
-    #else
     pyexec_frozen_module("_boot.py", false);
-    #endif
 
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL
         #if MICROPY_PY_KBD_EXCEPTION
@@ -213,7 +185,7 @@ soft_reset:
         MAINPY_RUNNING_FLAG_SET();
         #endif
 
-        int ret = pyexec_file_if_exists("/usr/main.py");
+        int ret = pyexec_file_if_exists("/main.py");
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
@@ -285,9 +257,7 @@ soft_reset_exit:
     qpy_callback_para_link_free_all();
     #endif
     mp_deinit();
-    #if !defined(PLAT_RDA)
     fflush(stdout);
-    #endif
     goto soft_reset;
 }
 

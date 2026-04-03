@@ -29,15 +29,9 @@
 
 #include "helios_os.h"
 
-#if defined(PLAT_EIGEN) || defined(PLAT_EIGEN_718)
-#define MP_THREAD_MIN_STACK_SIZE                        (4 * 1024)
-#define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + 1024 + 1024)
-#define MP_THREAD_PRIORITY                              100
-#else
 #define MP_THREAD_MIN_STACK_SIZE                        (32 * 1024)
 #define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + 1024)
 #define MP_THREAD_PRIORITY                              100
-#endif
 
 
 typedef Helios_Mutex_t mp_thread_mutex_t;
