@@ -62,4 +62,8 @@ void mp_hal_port_open(uint8_t state);
 void mp_hal_set_interrupt_char(int c);
 
 uint64_t mp_hal_time_ns(void);
+
+static void mp_hal_random_init(void);
+void mp_hal_get_random(size_t n, uint8_t *buf);
+
 #endif

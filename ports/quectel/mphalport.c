@@ -51,6 +51,10 @@ static int mthread_sleep_flag = 0;
 #define IS_MTHREAD_IN_SLEEP()   (1 == mthread_sleep_flag)
 #define MP_HAL_PORT_CHECK_OPEN  (mp_hal_cdcPort_State == 1)
 
+#if !defined(MICROPY_PY_RANDOM_SEED_INIT_FUNC)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC        Helios_RTC_GetSecond()
+#endif
+
 static uint8_t stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
@@ -207,6 +211,26 @@ mp_uint_t mp_hal_ticks_us(void) {
 
 uint64_t mp_hal_time_ns(void) {
     return 0;
+}
+
+static void mp_hal_random_init(void) {
+    static bool seeded = false;
+    if (!seeded) {
+        seeded = true;
+        srand(MICROPY_PY_RANDOM_SEED_INIT_FUNC);
+    }
+}
+
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    mp_hal_random_init();
+    uint32_t r = 0;
+    for (size_t i = 0; i < n; i++) {
+        if ((i & 3) == 0) {
+            r = rand(); // returns 32-bit random number
+        }
+        buf[i] = r;
+        r >>= 8;
+    }
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
