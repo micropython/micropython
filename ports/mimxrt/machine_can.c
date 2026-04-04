@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2023 Kwabena W. Agyeman
+ * Copyright (c) 2026 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -316,6 +317,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     port->flexcan_config->enableLoopBack = can_port_mode(self->mode) & CAN_LOOPBACK_FLAG;
     port->flexcan_config->enableListenOnlyMode = can_port_mode(self->mode) & CAN_SILENT_FLAG;
     port->flexcan_config->bitRate = self->bitrate;
+    port->flexcan_config->enableIndividMask = true;
 
     uint32_t sourceClock_Hz = machine_can_port_f_clock(self);
 
@@ -425,9 +427,12 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
         can_id |= 1 << 30;
         mask |= 1 << 30;
     }
-    port->flexcan_rx_fifo_config->idFilterTable[filter_idx * 2] = can_id << 1;
-    port->flexcan_rx_fifo_config->idFilterTable[(filter_idx * 2) + 1] = mask << 1;
-
+    port->flexcan_rx_fifo_config->idFilterTable[filter_idx] = can_id << 1;
+    if (filter_idx < 64) {
+        FLEXCAN_EnterFreezeMode(port->can_inst);
+        port->can_inst->RXIMR[filter_idx] = mask << 1;
+        FLEXCAN_ExitFreezeMode(port->can_inst);
+    }
     FLEXCAN_SetRxFifoConfig(port->can_inst, port->flexcan_rx_fifo_config, true);
 }
 
@@ -618,7 +623,7 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
 
     *flags = (rx_frame.format ? CAN_MSG_FLAG_EXT_ID : 0) |
         (rx_frame.type ? CAN_MSG_FLAG_RTR : 0);
-    *id = rx_frame.idhit;
+    *id = (rx_frame.id & 0x3fffffff) >> (rx_frame.format ? 0 : 18);
 
     return true;
 }
