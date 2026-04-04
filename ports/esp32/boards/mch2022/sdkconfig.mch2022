@@ -3,6 +3,12 @@
 # --------------------------------------------------------------------
 CONFIG_IDF_TARGET="esp32"
 
+# ============================
+# CPU / Performance
+# ============================
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=240
+
 # --------------------------------------------------------------------
 # Flash (ESP32-WROVER-E-N16R8 → 16MB QIO @ 80MHz)
 # --------------------------------------------------------------------
@@ -32,3 +38,12 @@ CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-mch2022.csv"
 CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# ============================
+# Power Management
+# ============================
+CONFIG_PM_ENABLE=y
+CONFIG_PM_DFS_INIT_AUTO=y
+
+
+

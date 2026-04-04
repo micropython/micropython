@@ -21,16 +21,21 @@
 
 // WiFi + BLE supported by ESP32-WROVER-E
 #define MICROPY_PY_NETWORK                  (0)
+
 #define MICROPY_PY_BLUETOOTH                (0)
+#define MICROPY_BLUETOOTH_NIMBLE            (0)
 
 // Default I2C bus (for sensors: BNO055, BME680)
-#define MICROPY_HW_I2C0_SCL                 (GPIO_NUM_22)
-#define MICROPY_HW_I2C0_SDA                 (GPIO_NUM_21)
+#define MICROPY_HW_I2C0_SCL                 (GPIO_NUM_21)
+#define MICROPY_HW_I2C0_SDA                 (GPIO_NUM_22)
 
 // SPI bus (for SD-card or peripherals)
 #define MICROPY_HW_SPI1_SCK                 (GPIO_NUM_18)
 #define MICROPY_HW_SPI1_MOSI                (GPIO_NUM_23)
 #define MICROPY_HW_SPI1_MISO                (GPIO_NUM_19)
 
+
 #define MICROPY_BOARD_STARTUP                mch2022_board_startup
 void mch2022_board_startup(void);
+
+#include "board_kconfig.h"

@@ -1,19 +1,17 @@
 #include "esp_log.h"
-#include "py/obj.h"
-#include "driver/gpio.h"
-#include "py/runtime.h"
-#include "py/obj.h"
-#include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
+#include "nvs_flash.h"
 
-extern mp_obj_t wl_blockdev_make_new(void);
+esp_err_t start_buses();
+void driver_mch22_init();
+int sndmixer_init(int p_no_channels, int stereo);
+esp_err_t driver_ili9341_init(void);
+esp_err_t driver_framebuffer_init();
 
 void mch2022_board_startup(void) {
-    gpio_config_t io_conf = {
-        .pin_bit_mask = 1ULL << 19,
-        .mode = GPIO_MODE_OUTPUT,
-    };
-    gpio_config(&io_conf);
-
-    gpio_set_level(19, 1);
+	nvs_flash_init();
+	start_buses();
+	driver_mch22_init();
+	driver_ili9341_init();
+	driver_framebuffer_init();
+	sndmixer_init(2, 1);
 }
