@@ -1,10 +1,10 @@
 import uos, gc, sys
 
 import vfs
-import mch2022
+import machine
 
 # initialize internal flash
-bdev = mch2022.wl_blockdev_make_new()
+bdev =  machine.FlashWL()
 vfs = uos.VfsFat(bdev)
 uos.mount(vfs, "/internal")
 

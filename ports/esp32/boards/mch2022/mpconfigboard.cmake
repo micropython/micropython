@@ -36,8 +36,6 @@ set(MICROPY_BLUETOOTH_NIMBLE 1)
 
 set(MICROPY_SOURCE_BOARD
     ${MICROPY_BOARD_DIR}/board_init.c
-    ${MICROPY_BOARD_DIR}/wl_blockdev.c
-    ${MICROPY_BOARD_DIR}/modmch2022.c
     ${MICROPY_BOARD_DIR}/modconsts.c
 )
 
