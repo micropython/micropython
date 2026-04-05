@@ -36,9 +36,7 @@
 #include "freertos/portmacro.h"
 
 // Number of bytes in the input buffer, and number of bytes for output chunking.
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
 #define USB_SERIAL_JTAG_PACKET_SZ_BYTES (64)
-#endif
 
 static DRAM_ATTR portMUX_TYPE rx_mux = portMUX_INITIALIZER_UNLOCKED;
 static uint8_t rx_buf[USB_SERIAL_JTAG_PACKET_SZ_BYTES];

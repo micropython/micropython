@@ -111,10 +111,10 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (1)
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
+#define MICROPY_BLUETOOTH_NIMBLE_PORT_INIT_RETURNS_ERROR (1)
 #endif // MICROPY_PY_BLUETOOTH
 
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (esp_random())
-#define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_OS_DUPTERM_NOTIFY        (1)
 #define MICROPY_PY_OS_SYNC                  (1)
@@ -144,8 +144,8 @@
 #define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #ifndef MICROPY_PY_MACHINE_I2C_TARGET
-// I2C target hardware is limited on ESP32 (eg read event comes after the read) so we only support newer SoCs.
-#define MICROPY_PY_MACHINE_I2C_TARGET       (SOC_I2C_SUPPORT_SLAVE && !CONFIG_IDF_TARGET_ESP32)
+// I2C target hardware is limited on ESP32 (eg read event comes after the read) so we only support newer SoCs & ESP-IDF v5.4 or newer
+#define MICROPY_PY_MACHINE_I2C_TARGET       (SOC_I2C_SUPPORT_SLAVE && !CONFIG_IDF_TARGET_ESP32 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0))
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/esp32/machine_i2c_target.c"
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX   (2)
 #endif

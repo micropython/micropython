@@ -54,3 +54,7 @@
 #define MICROPY_HW_FLASH_STORAGE_BYTES          (32 * 1024 * 1024)
 #define MICROPY_HW_FLASH_STORAGE_FS_BYTES       (16 * 1024 * 1024)
 #define MICROPY_HW_FLASH_STORAGE_ROMFS_BYTES    (16 * 1024 * 1024)
+
+#define MICROPY_BOARD_EARLY_INIT                board_early_init
+
+void board_early_init(void);

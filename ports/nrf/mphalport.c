@@ -38,6 +38,7 @@
 #include "nrfx_config.h"
 #include "drivers/bluetooth/ble_uart.h"
 #include "shared/tinyusb/mp_usbd_cdc.h"
+#include "drivers/rng.h"
 
 #if MICROPY_PY_TIME_TICKS
 #include "nrfx_rtc.h"
@@ -279,6 +280,12 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     }
     #endif
     return did_write ? ret : 0;
+}
+
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (int i = 0; i < n; i++) {
+        buf[i] = (uint8_t)(rng_generate_random_word() & 0xFF);
+    }
 }
 
 #if MICROPY_PY_TIME_TICKS

@@ -1,4 +1,4 @@
-File cmdline/cmd_showbc_opt.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 35 bytes)
+File \.\*cmdline/cmd_showbc_opt.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 35 bytes)
 Raw bytecode (code_info_size=13, bytecode_size=22):
  00 16 01 60 20 64 40 84 07 64 40 84 07 32 00 16
  02 32 01 16 03 32 02 16 04 32 03 16 05 32 04 16
@@ -27,7 +27,7 @@ arg names:
 18 STORE_NAME f4
 20 LOAD_CONST_NONE
 21 RETURN_VALUE
-File cmdline/cmd_showbc_opt.py, code block 'f0' (descriptor: \.\+, bytecode @\.\+ 8 bytes)
+File \.\*cmdline/cmd_showbc_opt.py, code block 'f0' (descriptor: \.\+, bytecode @\.\+ 8 bytes)
 Raw bytecode (code_info_size=6, bytecode_size=2):
  08 08 02 60 40 22 80 63
 arg names:
@@ -39,7 +39,7 @@ arg names:
   bc=2 line=7
 00 LOAD_CONST_SMALL_INT 0
 01 RETURN_VALUE
-File cmdline/cmd_showbc_opt.py, code block 'f1' (descriptor: \.\+, bytecode @\.\+ 22 bytes)
+File \.\*cmdline/cmd_showbc_opt.py, code block 'f1' (descriptor: \.\+, bytecode @\.\+ 22 bytes)
 Raw bytecode (code_info_size=9, bytecode_size=13):
  11 0e 03 08 80 0a 23 22 20 b0 44 42 51 63 12 07
  82 34 01 59 51 63
@@ -61,7 +61,7 @@ arg names: x
 10 POP_TOP
 11 LOAD_CONST_NONE
 12 RETURN_VALUE
-File cmdline/cmd_showbc_opt.py, code block 'f2' (descriptor: \.\+, bytecode @\.\+ 10 bytes)
+File \.\*cmdline/cmd_showbc_opt.py, code block 'f2' (descriptor: \.\+, bytecode @\.\+ 10 bytes)
 Raw bytecode (code_info_size=7, bytecode_size=3):
  11 0a 04 08 80 11 23 12 09 65
 arg names: x
@@ -72,7 +72,7 @@ arg names: x
   bc=3 line=19
 00 LOAD_GLOBAL Exception
 02 RAISE_OBJ
-File cmdline/cmd_showbc_opt.py, code block 'f3' (descriptor: \.\+, bytecode @\.\+ 24 bytes)
+File \.\*cmdline/cmd_showbc_opt.py, code block 'f3' (descriptor: \.\+, bytecode @\.\+ 24 bytes)
 Raw bytecode (code_info_size=9, bytecode_size=15):
  11 0e 05 08 80 16 22 22 23 42 42 42 43 b0 43 3b
  12 07 82 34 01 59 51 63
@@ -94,7 +94,7 @@ arg names: x
 12 POP_TOP
 13 LOAD_CONST_NONE
 14 RETURN_VALUE
-File cmdline/cmd_showbc_opt.py, code block 'f4' (descriptor: \.\+, bytecode @\.\+ 24 bytes)
+File \.\*cmdline/cmd_showbc_opt.py, code block 'f4' (descriptor: \.\+, bytecode @\.\+ 24 bytes)
 Raw bytecode (code_info_size=9, bytecode_size=15):
  11 0e 06 08 80 1d 22 22 23 42 42 42 40 b0 43 3b
  12 07 82 34 01 59 51 63

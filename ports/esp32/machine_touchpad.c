@@ -31,14 +31,6 @@
 
 #if SOC_TOUCH_SENSOR_SUPPORTED
 
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
-#if SOC_TOUCH_VERSION_1
-#define SOC_TOUCH_SENSOR_VERSION (1)
-#elif SOC_TOUCH_VERSION_2
-#define SOC_TOUCH_SENSOR_VERSION (2)
-#endif
-#endif
-
 #if SOC_TOUCH_SENSOR_VERSION == 1 // ESP32 only
 #include "driver/touch_pad.h"
 #elif SOC_TOUCH_SENSOR_VERSION == 2 // most ESP32

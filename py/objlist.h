@@ -60,4 +60,11 @@ static inline void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t 
     self->items[i] = value;
 }
 
+// Helper function for pattern of an optional argument which can be a list of a specified size, and is
+// allocated on-demand otherwise
+mp_obj_list_t *mp_obj_list_optional_arg(mp_obj_t arg_in, size_t min_len);
+
+// Ensure provided object is a list of minimum length min_len. Raises TypeError & ValueError otherwise.
+mp_obj_list_t *mp_obj_list_ensure(mp_obj_t in, size_t min_len);
+
 #endif // MICROPY_INCLUDED_PY_OBJLIST_H

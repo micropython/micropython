@@ -353,10 +353,11 @@ long unsigned int rng_generate_random_word(void);
 #include "boardmodules.h"
 #endif // BOARD_SPECIFIC_MODULES
 
-// extra built in names to add to the global namespace
+#if MICROPY_MBFS
+// The builtins.open function must be explicitly added when using the micro:bit filesystem.
 #define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_help), MP_ROM_PTR(&mp_builtin_help_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+#endif
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \

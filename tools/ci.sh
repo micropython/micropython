@@ -10,7 +10,9 @@ fi
 ulimit -n 1024
 
 # Fail on some things which are warnings otherwise
-export MICROPY_MAINTAINER_BUILD=1
+if [ -z "$MICROPY_MAINTAINER_BUILD" ]; then
+    export MICROPY_MAINTAINER_BUILD=1
+fi
 
 ########################################################################################
 # general helper functions
@@ -206,20 +208,11 @@ function ci_embedding_build {
 ########################################################################################
 # ports/esp32
 
-# GitHub tag of ESP-IDF to use for CI, extracted from the esp32 dependency lockfile
-# This should end up as a tag name like vX.Y.Z
-# (note: This hacky parsing can be replaced with 'yq' once Ubuntu >=24.04 is in use)
-IDF_VER=v$(grep -A10 "idf:" ports/esp32/lockfiles/dependencies.lock.esp32 | grep "version:" | head -n1 | sed -E 's/ +version: //')
-PYTHON=$(command -v python3 2> /dev/null)
-PYTHON_VER=$(${PYTHON:-python} --version | cut -d' ' -f2)
-
-export IDF_CCACHE_ENABLE=1
-
-function ci_esp32_idf_ver {
-    echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}"
-}
-
 function ci_esp32_idf_setup {
+    if [ -z "$IDF_VER" ]; then
+        echo "IDF_VER environment variable must be set before running"
+        return 1
+    fi
     echo "Using ESP-IDF version $IDF_VER"
     git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
     # doing a treeless clone isn't quite as good as --shallow-submodules, but it
@@ -905,9 +898,7 @@ function ci_unix_macos_run_tests {
     # Issues with macOS tests:
     # - float_parse and float_parse_doubleprec parse/print floats out by a few mantissa bits
     # - ffi_callback crashes for an unknown reason
-    # - thread/stress_heap.py is flaky
-    # - thread/thread_gc1.py is flaky
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback|thread/stress_heap|thread/thread_gc1).py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback).py')
 }
 
 function ci_unix_qemu_mips_setup {
@@ -927,10 +918,8 @@ function ci_unix_qemu_mips_build {
 function ci_unix_qemu_mips_run_tests {
     # Issues with MIPS tests:
     # - thread/stress_aes.py takes around 90 seconds
-    # - thread/stress_recurse.py is flaky
-    # - thread/thread_gc1.py is flaky
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py)
 }
 
 function ci_unix_qemu_arm_setup {
@@ -949,11 +938,9 @@ function ci_unix_qemu_arm_build {
 
 function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
-    # - thread/stress_aes.py takes around 70 seconds
-    # - thread/stress_recurse.py is flaky
-    # - thread/thread_gc1.py is flaky
+    # - thread/stress_aes.py takes around 90 seconds
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=90 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=120 ./run-tests.py)
 }
 
 function ci_unix_qemu_riscv64_setup {
@@ -976,12 +963,10 @@ function ci_unix_qemu_riscv64_build {
 
 function ci_unix_qemu_riscv64_run_tests {
     # Issues with RISCV-64 tests:
-    # - thread/stress_aes.py takes around 180 seconds
-    # - thread/stress_recurse.py is flaky
-    # - thread/thread_gc1.py is flaky
+    # - thread/stress_aes.py takes around 180 seconds, so exclude it to keep execution time down
     file ./ports/unix/build-coverage/micropython
     pushd tests
-    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=200 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py'
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'thread/stress_aes.py'
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
     popd
 }

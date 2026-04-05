@@ -1,0 +1,23 @@
+
+=== Binary operations ===
+Template+str: TypeError
+str+Template: TypeError
+int+Template: TypeError
+-: unsupported
+*: unsupported
+/: unsupported
+%: unsupported
+**: unsupported
+&: unsupported
+|: unsupported
+^: unsupported
+<<: unsupported
+>>: unsupported
+
+=== Template.__add__ with multiple interpolations ===
+Template.__add__: OK (40 interpolations)
+
+=== Template + non-string object ===
+Template + custom object: TypeError (correct)
+
+=== 2-tuple constructor overflow ===

@@ -1,0 +1,29 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x2000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
+        "Feather",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+        "WiFi",
+        "microSD"
+    ],
+    "images": [
+        "30678-Thing-Plus-ESP32-C5-Feature.jpg"
+    ],
+    "mcu": "esp32c5",
+    "product": "Thing Plus ESP32-C5",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/sparkfun-thing-plus-esp32-c5.html",
+    "vendor": "SparkFun"
+}

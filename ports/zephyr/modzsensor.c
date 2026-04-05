@@ -46,6 +46,12 @@ static mp_obj_t sensor_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(o);
 }
 
+static void sensor_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_obj_sensor_t *self = self_in;
+    const char *name = zephyr_device_get_name(self->dev);
+    mp_printf(print, "<Sensor %s>", name);
+}
+
 static mp_obj_t sensor_measure(mp_obj_t self_in) {
     mp_obj_sensor_t *self = MP_OBJ_TO_PTR(self_in);
     int st = sensor_sample_fetch(self->dev);
@@ -173,6 +179,7 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Sensor,
     MP_TYPE_FLAG_NONE,
     make_new, sensor_make_new,
+    print, sensor_print,
     locals_dict, &sensor_locals_dict
     );
 

@@ -130,7 +130,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all repl min test test_min
+.PHONY: all repl min test test//% test_min
 
 all: $(BUILD)/micropython.mjs
 
@@ -149,6 +149,9 @@ min: $(BUILD)/micropython.min.mjs
 
 test: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+
+test//%: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly -i "$*"
 
 test_min: $(BUILD)/micropython.min.mjs $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly

@@ -82,7 +82,7 @@ AF_FILE = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 
-CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU) -fsingle-precision-constant -Wdouble-promotion
+CFLAGS += $(INC) -Wall -Werror -std=c99 -mthumb $(CFLAGS_MCU) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_EXTRA)
 

@@ -28,6 +28,21 @@ out1_pin = Pin(out1_pin, mode=Pin.OUT)
 in1_pin = Pin(in1_pin, mode=Pin.IN)
 
 
+class TestConnections(unittest.TestCase):
+    def setUp(self):
+        in0_pin.init(Pin.IN)
+        in1_pin.init(Pin.IN)
+
+    def test_connections(self):
+        # Test the hardware connections are correct. If this test fails, all tests will fail.
+        for ch, outp, inp in ((0, out0_pin, in0_pin), (1, out1_pin, in1_pin)):
+            print("Testing channel ", ch)
+            outp(1)
+            self.assertEqual(1, inp())
+            outp(0)
+            self.assertEqual(0, inp())
+
+
 class TestEncoder(unittest.TestCase):
     def setUp(self):
         out0_pin(PIN_INIT_VALUE)
@@ -92,16 +107,6 @@ class TestEncoder(unittest.TestCase):
         if not value4 is None:
             self.assertEqual(self.enc4.value(), value4)
         pass
-
-    @unittest.skipIf(sys.platform == "mimxrt", "cannot read back the pin")
-    def test_connections(self):
-        # Test the hardware connections are correct. If this test fails, all tests will fail.
-        for ch, outp, inp in ((0, out0_pin, in0_pin), (1, out1_pin, in1_pin)):
-            print("Testing channel ", ch)
-            outp(1)
-            self.assertEqual(1, inp())
-            outp(0)
-            self.assertEqual(0, inp())
 
     def test_basics(self):
         self.assertPosition(0)

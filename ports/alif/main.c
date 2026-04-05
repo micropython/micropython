@@ -38,6 +38,7 @@
 #include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "tusb.h"
+#include "modmachine.h"
 #include "mpbthciport.h"
 #include "mpuart.h"
 #include "ospi_flash.h"
@@ -55,6 +56,7 @@
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
+extern void machine_pwm_deinit_all(void);
 extern void machine_pin_irq_deinit(void);
 
 MP_NORETURN void panic(const char *msg) {
@@ -76,6 +78,8 @@ int main(void) {
     se_services_init();
 
     MICROPY_BOARD_EARLY_INIT();
+
+    machine_rtc_init();
 
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_init_repl();
@@ -167,6 +171,7 @@ int main(void) {
         mp_machine_i2c_target_deinit_all();
         #endif
         soft_timer_deinit();
+        machine_pwm_deinit_all();
         machine_pin_irq_deinit();
         gc_sweep_all();
         mp_deinit();

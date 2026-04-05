@@ -61,8 +61,8 @@ mp_uint_t mp_thread_get_id(void) {
 mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     if (*stack_size == 0) {
         *stack_size = 4096; // default stack size
-    } else if (*stack_size < 2048) {
-        *stack_size = 2048; // minimum stack size
+    } else if (*stack_size < 2560) {
+        *stack_size = 2560; // minimum stack size
     }
 
     // round stack size to a multiple of the word size

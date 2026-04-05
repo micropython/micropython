@@ -31,6 +31,7 @@ from test_utils import (
     get_test_instance,
     prepare_script_for_target,
     create_test_report,
+    FLAKY_REASON_PREFIX,
 )
 
 RV32_ARCH_FLAGS = {
@@ -157,6 +158,9 @@ platform_tests_to_skip = {
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
+        "basics/weakref_callback_exception.py",  # has different exception printing output
+        "basics/weakref_ref_collect.py",  # requires custom test due to GC behaviour
+        "basics/weakref_finalize_collect.py",  # requires custom test due to GC behaviour
         "extmod/asyncio_basic2.py",
         "extmod/asyncio_cancel_self.py",
         "extmod/asyncio_current_task.py",
@@ -191,6 +195,23 @@ platform_tests_to_skip = {
         "thread/stress_heap.py",
         "thread/thread_lock3.py",
     ),
+}
+
+# Tests with known intermittent failures. These tests still run, but failures
+# are reclassified as "ignored" instead of "fail" so they don't affect the CI
+# exit code. Paths are relative to the tests/ directory (must match test_file
+# format used by run_one_test, which normalises backslashes to forward slashes).
+#
+# Values are (reason, platforms) tuples where platforms is None (all platforms)
+# or a tuple of sys.platform strings to restrict ignoring to those platforms.
+flaky_tests_to_ignore = {
+    "thread/thread_gc1.py": ("GC race condition", None),
+    "thread/stress_schedule.py": ("intermittent crash under QEMU", None),
+    "thread/stress_recurse.py": ("stack overflow under emulation", None),
+    "thread/stress_heap.py": ("flaky on macOS", ("darwin",)),
+    "cmdline/repl_lock.py": ("REPL timing under QEMU", None),
+    "cmdline/repl_cont.py": ("REPL escaping on macOS", ("darwin",)),
+    "extmod/time_time_ns.py": ("CI runner clock precision", None),
 }
 
 # These tests don't test float explicitly but rather use it to perform the test.
@@ -271,7 +292,9 @@ tests_requiring_target_wiring = (
     "extmod/machine_spi_rate.py",
     "extmod/machine_uart_irq_txidle.py",
     "extmod/machine_uart_tx.py",
+    "extmod_hardware/machine_can_timings.py",
     "extmod_hardware/machine_encoder.py",
+    "extmod_hardware/machine_pwm.py",
     "extmod_hardware/machine_uart_irq_break.py",
     "extmod_hardware/machine_uart_irq_rx.py",
     "extmod_hardware/machine_uart_irq_rxidle.py",
@@ -413,6 +436,7 @@ tests_with_regex_output = [
         "micropython/meminfo.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
+        "basics/weakref_callback_exception.py",
         "misc/sys_settrace_cov.py",
         "net_inet/tls_text_errors.py",
         "thread/thread_exc2.py",
@@ -650,6 +674,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_const = False
     skip_revops = False
     skip_fstring = False
+    skip_tstring = False
     skip_endian = False
     skip_inlineasm = False
     has_complex = True
@@ -709,6 +734,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "fstring.py")
         if output != b"a=1\n":
             skip_fstring = True
+
+        # Check if tstring feature is enabled, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, "tstring.py")
+        if output != b"tstring\n":
+            skip_tstring = True
 
         if args.inlineasm_arch == "thumb":
             # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
@@ -838,9 +868,23 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # Works but CPython uses '\' path separator
             skip_tests.add("import/import_file.py")
 
+    skip_tests = [os.path.realpath(base_path(skip_test)) for skip_test in skip_tests]
+
     def run_one_test(test_file):
-        test_file = test_file.replace("\\", "/")
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
+        # If test_file is one of our own tests always make it relative to our tests/ dir and
+        # otherwise use the abosulte path, irregardless of actual path passed,
+        # such that display and result output is always the same.
+        try:
+            test_file_relpath = os.path.relpath(test_file, start=base_path())
+            if not test_file_relpath.startswith(".."):
+                test_file = test_file_relpath
+            else:
+                test_file = test_file_abspath
+        except ValueError:
+            # Path on different drive on Windows.
+            test_file = test_file_abspath
+        test_file = test_file.replace("\\", "/")
 
         if args.filters:
             # Default verdict is the opposite of the first action
@@ -867,9 +911,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
         is_fstring = test_name.startswith("string_fstring")
+        is_tstring = test_name.startswith("string_tstring") or test_name.endswith("_tstring")
         is_inlineasm = test_name.startswith("asm")
 
-        skip_it = test_file in skip_tests
+        skip_it = os.path.realpath(test_file) in skip_tests
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
@@ -881,11 +926,16 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_fstring and is_fstring
+        skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
             print("skip ", test_file)
             test_results.append((test_file, "skip", ""))
+            return
+        elif args.dry_run:
+            print("found", test_file)
+            test_results.append((test_file, "found", ""))
             return
 
         # Run the test on the MicroPython target.
@@ -1036,6 +1086,16 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             print(line)
         sys.exit(2)
 
+    # Reclassify known-flaky test failures as ignored.
+    # Safe to mutate: thread pool has joined.
+    results = test_results.value
+    for i, r in enumerate(results):
+        if r[1] == "fail":
+            reason, platforms = flaky_tests_to_ignore.get(r[0], (None, None))
+            if reason is not None:
+                if platforms is None or sys.platform in platforms:
+                    results[i] = (r[0], "ignored", "{}: {}".format(FLAKY_REASON_PREFIX, reason))
+
     # Return test results.
     return test_results.value, testcase_count.value
 
@@ -1108,6 +1168,11 @@ the last matching regex is used:
         metavar="REGEX",
         dest="filters",
         help="include test by regex on path/name.py",
+    )
+    cmd_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show tests which would run (though might still be skipped at runtime)",
     )
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
@@ -1211,7 +1276,19 @@ the last matching regex is used:
         if args.platform == "webassembly":
             test_extensions += ("*.js", "*.mjs")
 
-        if args.test_dirs is None:
+        all_test_dirs = []
+        main_tests_dir_in_args = None
+        if args.test_dirs is not None:
+            # Run tests from given directories though if user explicitly passes this directory as argument
+            # still do the normal test discovery to be consistent with running from within this directory.
+            main_tests_dir = os.path.realpath(base_path())
+            for test_dir in args.test_dirs:
+                if os.path.realpath(test_dir) == main_tests_dir:
+                    main_tests_dir_in_args = test_dir
+                else:
+                    all_test_dirs.append(test_dir)
+
+        if args.test_dirs is None or main_tests_dir_in_args is not None:
             test_dirs = (
                 "basics",
                 "micropython",
@@ -1235,13 +1312,18 @@ the last matching regex is used:
                 test_dirs += ("import",)
                 if args.build != "minimal":
                     test_dirs += ("cmdline", "io")
-        else:
-            # run tests from these directories
-            test_dirs = args.test_dirs
+
+            all_test_dirs.extend(
+                test_dir
+                if main_tests_dir_in_args is None
+                else os.path.join(main_tests_dir_in_args, test_dir)
+                for test_dir in test_dirs
+            )
+
         tests = sorted(
             test_file
             for test_files in (
-                glob(os.path.join(dir, ext)) for dir in test_dirs for ext in test_extensions
+                glob(os.path.join(dir, ext)) for dir in all_test_dirs for ext in test_extensions
             )
             for test_file in test_files
         )

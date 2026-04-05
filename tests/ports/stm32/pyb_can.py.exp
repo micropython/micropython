@@ -1,0 +1,49 @@
+ValueError -1
+ValueError 0
+CAN 1
+ValueError 3
+CAN(1)
+True
+CAN(1, CAN.LOOPBACK, auto_restart=False)
+any False
+error_active True
+info [0, 0, 0, 0, 0, 0, 0, 0]
+any+info True [0, 0, 0, 0, 0, 0, 1, 0]
+[123, False, False, 0, b'abcd']
+[2047, False, False, 0, b'abcd']
+[0, False, False, 0, b'abcd']
+overlong passed
+[42, False, False, 0, <memoryview>] 0 bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+[42, False, False, 0, <memoryview>] 4 bytearray(b'1234\x00\x00\x00\x00\x00\x00')
+[42, False, False, 0, <memoryview>] 8 bytearray(b'01234567\x00\x00')
+[42, False, False, 0, <memoryview>] 3 bytearray(b'abc34567\x00\x00')
+b'abc'
+b'def'
+TypeError
+ValueError
+TypeError
+ValueError
+ValueError
+==== TEST extframe=True ====
+CAN(1, CAN.LOOPBACK, auto_restart=False)
+extframe passed
+('0x8', '0x1c', '0xa', True, b'ok')
+('0x800', '0x1c00', '0xa00', True, b'ok')
+('0x80000', '0x1c0000', '0xa0000', True, b'ok')
+('0x8000000', '0x1c000000', '0xa000000', True, b'ok')
+==== TEST async send ====
+any False
+[1, False, False, 0, b'abcde']
+send fail ok
+[2, False, False, 0, b'abcde']
+[3, False, False, 0, b'abcde']
+[4, False, False, 0, b'abcde']
+==== TEST rtr messages ====
+any False
+5 False True b''
+6 False True b''
+7 False True b''
+any False
+32 False True b''
+==== TEST errors ====
+timeout OSError(110,)

@@ -131,3 +131,5 @@ enum {
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 
 void mp_hal_set_interrupt_char(int c); // -1 to disable
+
+void mp_hal_get_random(size_t n, uint8_t *buf);

@@ -37,6 +37,7 @@
 #include "shared/tinyusb/mp_usbd_cdc.h"
 #include "tusb.h"
 #include "uart.h"
+#include "rng.h"
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 void flash_cache_commit(void);
@@ -172,6 +173,14 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
         *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
     }
 }
+
+#if MICROPY_HW_ENABLE_RNG
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (int i = 0; i < n; i++) {
+        buf[i] = rng_read();
+    }
+}
+#endif
 
 #if MICROPY_HW_ENABLE_USBDEV
 void usbfs_interrupt_handler(void) {

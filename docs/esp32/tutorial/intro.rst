@@ -85,7 +85,7 @@ after flashing, here are some troubleshooting recommendations:
 * Esptool will try to detect the serial port where your ESP32 is connected. If
   this doesn't work, or you have multiple serial ports, then you may need to
   manually specify the port by adding the ``--port`` option to the start of the
-  ``esptool.py`` command line. For example, ``esptool.py --port /dev/ttyUSB0
+  ``esptool`` command line. For example, ``esptool --port /dev/ttyUSB0
   <rest of line>`` for Linux or ``esptool --port COM4 <rest of line>`` for
   Windows.
 * If the board isn't responding to esptool at all, it may need to be manually

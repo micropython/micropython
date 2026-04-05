@@ -180,6 +180,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objstr.o \
 	objstrunicode.o \
 	objstringio.o \
+	objtemplate.o \
 	objtuple.o \
 	objtype.o \
 	objzip.o \
@@ -198,10 +199,12 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	modmath.o \
 	modcmath.o \
 	modmicropython.o \
+	modstring.o \
 	modstruct.o \
 	modsys.o \
 	moderrno.o \
 	modthread.o \
+	modweakref.o \
 	vm.o \
 	bc.o \
 	showbc.o \

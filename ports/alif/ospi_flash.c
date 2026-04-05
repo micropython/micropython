@@ -391,6 +391,11 @@ int ospi_flash_xip_restore(ospi_flash_t *self) {
 /******************************************************************************/
 // Top-level read/erase/write functions.
 
+void ospi_flash_sleep(void) {
+    ospi_flash_t *self = &global_flash;
+    ospi_flash_write_cmd(self, self->set->power_down_command);
+}
+
 int ospi_flash_erase_sector(uint32_t addr) {
     ospi_flash_t *self = &global_flash;
 

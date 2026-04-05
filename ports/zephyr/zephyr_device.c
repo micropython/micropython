@@ -47,3 +47,15 @@ const struct device *zephyr_device_find(mp_obj_t name) {
 
     return dev;
 }
+
+const char *zephyr_device_get_name(const struct device *dev) {
+    #ifdef CONFIG_DEVICE_DT_METADATA
+    const struct device_dt_nodelabels *nl = device_get_dt_nodelabels(dev);
+
+    if (nl != NULL && nl->num_nodelabels > 0) {
+        return nl->nodelabels[0];
+    }
+    #endif
+
+    return dev->name;
+}

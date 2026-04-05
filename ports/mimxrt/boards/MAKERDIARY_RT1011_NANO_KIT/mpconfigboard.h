@@ -85,3 +85,5 @@
         I2S_GPIO(3, WS, TX, GPIO_SD_00, IOMUXC_GPIO_SD_00_SAI3_TX_SYNC), /* pin SD0 */ \
         I2S_GPIO(3, SD, TX, GPIO_SD_02, IOMUXC_GPIO_SD_02_SAI3_TX_DATA) /* pin SD2 */ \
     }
+
+#define XBARA1  XBARA

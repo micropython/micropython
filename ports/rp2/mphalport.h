@@ -51,6 +51,7 @@
 #define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
 #define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
 #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
+#define MICROPY_PY_LWIP_POLL_HOOK lwip_poll_hook();
 
 // Port level Wait-for-Event macro
 //
@@ -222,5 +223,6 @@ void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
 int mp_hal_is_pin_reserved(int n);
+void mp_hal_get_random(size_t n, uint8_t *buf);
 
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H

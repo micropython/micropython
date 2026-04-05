@@ -28,3 +28,4 @@
 #include "py/obj.h"
 
 const struct device *zephyr_device_find(mp_obj_t name);
+const char *zephyr_device_get_name(const struct device *dev);

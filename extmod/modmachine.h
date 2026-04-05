@@ -203,6 +203,7 @@ extern const machine_mem_obj_t machine_mem32_obj;
 // is provided by a port.
 extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_adc_block_type;
+extern const mp_obj_type_t machine_can_type;
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_i2c_target_type;
 extern const mp_obj_type_t machine_i2s_type;
@@ -217,6 +218,10 @@ extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_usbd_type;
 extern const mp_obj_type_t machine_wdt_type;
+#if MICROPY_PY_MACHINE_QECNT
+extern const mp_obj_type_t machine_encoder_type;
+extern const mp_obj_type_t machine_counter_type;
+#endif
 
 #if MICROPY_PY_MACHINE_SOFTI2C
 extern const mp_obj_type_t mp_machine_soft_i2c_type;

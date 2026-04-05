@@ -272,3 +272,14 @@ void mp_hal_wake_main_task_from_isr(void) {
         portYIELD_FROM_ISR();
     }
 }
+
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    uint32_t r = 0;
+    for (int i = 0; i < n; i++) {
+        if ((i & 3) == 0) {
+            r = esp_random(); // returns 32-bit hardware random number
+        }
+        buf[i] = r;
+        r >>= 8;
+    }
+}

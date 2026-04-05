@@ -100,7 +100,7 @@ void mp_hal_delay_ms(mp_uint_t Delay) {
             // This macro will execute the necessary idle behaviour.  It may
             // raise an exception, switch threads or enter sleep mode (waiting for
             // (at least) the SysTick interrupt).
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         } while (uwTick - start < Delay);
     } else {
         // IRQs disabled, so need to use a busy loop for the delay.

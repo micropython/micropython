@@ -193,10 +193,12 @@ MP_WEAK void SystemClock_Config(void) {
     // H7 MCUs without SMPS, lock the power supply configuration update.
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
     #elif defined(STM32U5)
+    #if defined(STM32U5A5xx)
     HAL_PWREx_DisableUCPDDeadBattery();
     if (HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_PWREx_ConfigSupply");
     }
+    #endif
     #else
     // other MCUs, enable power control clock.
     __PWR_CLK_ENABLE();
@@ -535,15 +537,26 @@ MP_WEAK void SystemClock_Config(void) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCC_ClockConfig");
     }
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_LPUART1
-        | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12 | RCC_PERIPHCLK_ADC345
+        | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12
         | RCC_PERIPHCLK_FDCAN | RCC_PERIPHCLK_USB;
+    #if defined(RCC_PERIPHCLK_ADC345)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_ADC345;
+    PeriphClkInitStruct.Adc345ClockSelection = RCC_ADC345CLKSOURCE_SYSCLK;
+    #endif
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
     PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
+    #if MICROPY_HW_CLK_USE_HSI
+    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PCLK1;
+    #else
     PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
+    #endif
     PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
     PeriphClkInitStruct.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
-    PeriphClkInitStruct.Adc345ClockSelection = RCC_ADC345CLKSOURCE_SYSCLK;
+    #if MICROPY_HW_RTC_USE_LSE
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+    #else
+    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+    #endif
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
     }
@@ -565,9 +578,14 @@ MP_WEAK void SystemClock_Config(void) {
     PeriphClkInitStruct.AdcDacClockSelection = RCC_ADCDACCLKSOURCE_HSE;
     PeriphClkInitStruct.Dac1ClockSelection = RCC_DAC1CLKSOURCE_LSE;
     #endif
-    #if defined(MICROPY_HW_ENABLE_USB)
+    #if defined(MICROPY_HW_ENABLE_USB) && (MICROPY_HW_ENABLE_USB)
+    #if defined(STM32U5A5xx)
     PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_USBPHY;
     PeriphClkInitStruct.UsbPhyClockSelection = RCC_USBPHYCLKSOURCE_PLL1;
+    #elif defined(STM32U585xx)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_CLK48;
+    PeriphClkInitStruct.IclkClockSelection = RCC_CLK48CLKSOURCE_HSI48;
+    #endif
     #endif
 
     #if defined(MICROPY_HW_RCC_RTC_CLKSOURCE)

@@ -120,3 +120,5 @@ static inline int mp_hal_pin_read_output(mp_hal_pin_obj_t pin) {
 
 void *ets_get_esf_buf_ctlblk(void);
 int ets_esf_free_bufs(int idx);
+
+void mp_hal_get_random(size_t n, uint8_t *buf);

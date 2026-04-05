@@ -28,22 +28,6 @@
 #include "se_services.h"
 #include "mbedtls_config_port.h"
 
-int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
-    uint32_t val = 0;
-    int n = 0;
-    *olen = len;
-    while (len--) {
-        if (!n) {
-            val = se_services_rand64();
-            n = 4;
-        }
-        *output++ = val;
-        val >>= 8;
-        --n;
-    }
-    return 0;
-}
-
 #if defined(MBEDTLS_HAVE_TIME)
 
 time_t alif_mbedtls_time(time_t *timer) {

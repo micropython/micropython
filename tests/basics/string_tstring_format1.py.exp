@@ -1,0 +1,54 @@
+
+=== Format spec edge cases ===
+Empty fmt: Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, ''),))
+Width: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', None, '10'),))'
+Conv+fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', '>10'),))'
+Interp fmt: 'Template(strings=('', ''), interpolations=(Interpolation(3.14, '3.14', None, '10.2f'),))'
+Escaped braces: 'Template(strings=('Hello {name} and {{value}}',), interpolations=())'
+Conv empty fmt: 'Template(strings=('', ''), interpolations=(Interpolation(42, '42', 'r', ''),))'
+
+=== Format spec edge cases ===
+Full format: 'Template(strings=('', ''), interpolations=(Interpolation(42, 'x', 'r', '0>+#10.5'),))'
+
+=== Format spec with special characters ===
+Format spec '!r': True
+Conversion is None: True
+
+Coverage tests completed!
+
+=== Debug format edge cases ===
+Debug with conv: 'Template(strings=('x=', ''), interpolations=(Interpolation(42, 'x', 'r', ''),))'
+
+=== Debug specifier tests ===
+Debug basic: strings=('value=', ''), conv=r
+Debug !s: strings=('value=', ''), conv=s
+Debug fmt: strings=('value=', ''), fmt_spec='>10'
+
+=== Large number of interpolations ===
+62 True
+63 True
+64 True
+65 True
+
+=== Malformed format specs (valid in CPython) ===
+Malformed 1: format_spec: '10!r', conversion: None
+Malformed 2: format_spec: '^10!s', conversion: None
+Malformed 3: format_spec: '>!10', conversion: None
+Invalid unicode: SyntaxError - invalid syntax
+Custom exception re-raised: Test exception
+
+NULL lexer: Tested in heapalloc_fail_tstring.py
+\N{} escape: SyntaxError
+Raw Unicode escapes: '\u0041\U00000042'
+CR LF handling: OK
+Deep indent: OK
+Trailing backslash: SyntaxError
+
+=== Empty format spec node ===
+Empty format after colon: OK
+
+=== Format spec with special characters (coverage) ===
+Double quotes expr: format_spec='^^^^^'
+Backslash raw: format_spec='<5\\\\'
+Backslash non-raw: format_spec='<5\\'
+Multiple escapes: format_spec='<5\n\t\r'

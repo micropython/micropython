@@ -289,7 +289,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     #endif
 }
 
-void mp_hal_get_random(size_t n, void *buf) {
+void mp_hal_get_random(size_t n, uint8_t *buf) {
     NTSTATUS result = BCryptGenRandom(NULL, (unsigned char *)buf, n, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
     if (!BCRYPT_SUCCESS(result)) {
         mp_raise_OSError(errno);

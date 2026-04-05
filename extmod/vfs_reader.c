@@ -56,6 +56,7 @@ static mp_uint_t mp_reader_vfs_readbyte(void *data) {
             return MP_READER_EOF;
         } else {
             int errcode;
+            mp_event_handle_nowait();
             reader->buflen = mp_stream_rw(reader->file, reader->buf, reader->bufsize, &errcode, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
             if (errcode != 0) {
                 // TODO handle errors properly

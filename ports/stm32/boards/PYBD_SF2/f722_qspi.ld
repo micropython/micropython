@@ -50,6 +50,7 @@ SECTIONS
     .text_ext :
     {
         . = ALIGN(4);
+        *py/emit*(.text.emit_inline_thumb_* .rodata.emit_inline_thumb_*)
         *lib/btstack/*(.text* .rodata*)
         *lib/mbedtls/*(.text* .rodata*)
         *lib/mynewt-nimble/*(.text* .rodata*)

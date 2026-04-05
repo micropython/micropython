@@ -26,3 +26,5 @@
 
 #include <stddef.h>
 #include "shared/runtime/interrupt_char.h"
+
+void mp_hal_get_random(size_t n, uint8_t *buf);

@@ -14,6 +14,8 @@ if "ESP32C" in sys.implementation._machine:
 else:
     spi_standalone_args_list = [(1,), (2,)]
 
+pwm_loopback_pins = [(4, 5)]
+
 encoder_loopback_id = 0
 encoder_loopback_out_pins = (4, 12)
 encoder_loopback_in_pins = (5, 13)

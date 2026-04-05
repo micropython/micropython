@@ -27,6 +27,7 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
 
+#include "modmachine.h"
 #include "se_services.h"
 #include "tusb.h"
 
@@ -99,9 +100,13 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_STANDBY();
     #endif
 
+    __disable_irq();
+
     // This enters the deepest possible CPU sleep state, without
     // losing CPU state. CPU and subsystem power will remain on.
     pm_core_enter_deep_sleep();
+
+    __enable_irq();
 
     #ifdef MICROPY_BOARD_EXIT_STANDBY
     MICROPY_BOARD_EXIT_STANDBY();
@@ -112,7 +117,37 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     #endif
 }
 
+#include "lptimer.h"
+#include "sys_ctrl_lptimer.h"
+
+#define LPTIMER ((LPTIMER_Type *)LPTIMER_BASE)
+#define LPTIMER_CH_A (0)
+
+static void lptimer_set_wakeup(uint64_t timeout_us) {
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_A);
+
+    ANA_REG->MISC_CTRL |= 1 << 0; // SEL_32K, select LXFO
+
+    select_lptimer_clk(LPTIMER_CLK_SOURCE_32K, LPTIMER_CH_A);
+
+    // Maximum 131 second timeout, to not overflow 32-bit ticks when
+    // LPTIMER is clocked at 32768Hz.
+    uint32_t timeout_ticks = (uint64_t)MIN(timeout_us, 131000000) * 32768 / 1000000;
+
+    // Set up the LPTIMER interrupt to fire after the given timeout.
+    lptimer_set_mode_userdefined(LPTIMER, LPTIMER_CH_A);
+    lptimer_load_count(LPTIMER, LPTIMER_CH_A, &timeout_ticks);
+    lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_A);
+    lptimer_unmask_interrupt(LPTIMER, LPTIMER_CH_A);
+    lptimer_enable_counter(LPTIMER, LPTIMER_CH_A);
+}
+
 MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_int_t sleep_ms = -1;
+    if (n_args != 0) {
+        sleep_ms = mp_obj_get_int(args[0]);
+    }
+
     #if MICROPY_HW_ENABLE_USBDEV
     mp_machine_enable_usb(false);
     #endif
@@ -120,6 +155,16 @@ MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args
     #ifdef MICROPY_BOARD_ENTER_STOP
     MICROPY_BOARD_ENTER_STOP();
     #endif
+
+    __disable_irq();
+
+    if (sleep_ms >= 0) {
+        if (sleep_ms < 10000) {
+            lptimer_set_wakeup(sleep_ms * 1000);
+        } else {
+            machine_rtc_set_wakeup(sleep_ms / 1000);
+        }
+    }
 
     // If power is removed from the subsystem, the function does
     // not return, and the CPU will reboot when/if the subsystem

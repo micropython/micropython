@@ -31,6 +31,8 @@ print(f"a{ {0,1,2}}")
 
 # PEP-0498 specifies that handling of double braces '{{' or '}}' should
 # behave like str.format.
+print(f'{{')
+print(f'}}')
 print(f'{{}}')
 print(f'{{{4*10}}}', '{40}')
 

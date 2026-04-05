@@ -179,6 +179,10 @@ void mp_init(void) {
     MP_STATE_VM(usbd) = MP_OBJ_NULL;
     #endif
 
+    #if MICROPY_PY_WEAKREF
+    mp_map_init(&MP_STATE_VM(mp_weakref_map), 0);
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
@@ -1508,7 +1512,7 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
     }
 
     if (mp_obj_is_exception_instance(o)) {
-        // o is an instance of an exception, so use it as the exception
+        // o is a fully-constructed instance of an exception, so use it as the exception
         return o;
     } else {
         // o cannot be used as an exception, so return a type error (which will be raised by the caller)

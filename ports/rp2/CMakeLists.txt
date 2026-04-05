@@ -194,7 +194,6 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_PORT_DIR}/machine_uart.c
     ${MICROPY_PORT_DIR}/machine_wdt.c
     ${MICROPY_PORT_DIR}/modrp2.c
-    ${MICROPY_PORT_DIR}/modos.c
     ${MICROPY_PORT_DIR}/rp2_flash.c
     ${MICROPY_PORT_DIR}/rp2_pio.c
     ${MICROPY_PORT_DIR}/rp2_dma.c
@@ -236,6 +235,7 @@ set(PICO_SDK_COMPONENTS
     pico_platform_compiler
     pico_platform_panic
     pico_platform_sections
+    pico_rand
     pico_runtime
     pico_runtime_init
     pico_stdio
@@ -476,6 +476,10 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
     )
 endif()
+
+list(APPEND MICROPY_SOURCE_EXTMOD
+    ${MICROPY_EXTMOD_DIR}/mbedtls/mbedtls_alt.c
+)
 
 # Add qstr sources for extmod and usermod, in case they are modified by components above.
 list(APPEND MICROPY_SOURCE_QSTR

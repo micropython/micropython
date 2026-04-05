@@ -49,7 +49,8 @@ typedef struct _machine_hard_i2c_obj_t {
 
 static void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = self_in;
-    mp_printf(print, "%s", self->dev->name);
+    const char *name = zephyr_device_get_name(self->dev);
+    mp_printf(print, "<I2C %s>", name);
 }
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

@@ -1116,7 +1116,7 @@ bool uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 }
 
@@ -1169,7 +1169,7 @@ bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 }
 

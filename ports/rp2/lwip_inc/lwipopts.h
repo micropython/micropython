@@ -9,11 +9,11 @@
 #define LWIP_ND6_NUM_DESTINATIONS       4
 #define LWIP_ND6_QUEUEING               0
 
-#define LWIP_RAND() rosc_random_u32()
+#define LWIP_RAND() get_rand_32()
 
 // Include common lwIP configuration.
 #include "extmod/lwip-include/lwipopts_common.h"
 
-extern uint32_t rosc_random_u32(void);
+#include "pico/rand.h"
 
 #endif // MICROPY_INCLUDED_RP2_LWIP_LWIPOPTS_H

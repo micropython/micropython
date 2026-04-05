@@ -50,7 +50,7 @@ static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
 #include MICROPY_PY_MACHINE_PWM_INCLUDEFILE
 
 static mp_obj_t machine_pwm_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_machine_pwm_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    mp_machine_pwm_init_helper(MP_OBJ_TO_PTR(args[0]), n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pwm_init_obj, 1, machine_pwm_init);

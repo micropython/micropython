@@ -17,6 +17,11 @@ except TypeError:
     print("TypeError")
 
 try:
+    s = socket.socket(socket.AF_INET, 123456)
+except OSError:
+    print("OSError")
+
+try:
     s = socket.socket(socket.AF_INET, socket.SOCK_RAW, None)
 except TypeError:
     print("TypeError")

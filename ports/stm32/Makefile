@@ -114,7 +114,7 @@ INC += -I$(TOP)/lib/tinyusb/src
 INC += -I$(TOP)/shared/tinyusb/
 INC += -Ilwip_inc
 
-CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU) -DUSE_FULL_LL_DRIVER
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)

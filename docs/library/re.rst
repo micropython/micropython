@@ -54,6 +54,10 @@ Supported operators and special sequences are:
    Grouping. Each group is capturing (a substring it captures can be accessed
    with `match.group()` method).
 
+``(?:...)``
+   Non-capturing grouping. Each group is matched using the same rules as
+   regular grouping, but will not be part of the match object.
+
 ``\d``
    Matches digit. Equivalent to ``[0-9]``.
 
@@ -87,7 +91,6 @@ Supported operators and special sequences are:
 
 * counted repetitions (``{m,n}``)
 * named groups (``(?P<name>...)``)
-* non-capturing groups (``(?:...)``)
 * more advanced assertions (``\b``, ``\B``)
 * special character escapes like ``\r``, ``\n`` - use Python's own escaping
   instead
