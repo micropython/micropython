@@ -63,6 +63,10 @@ static mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int 
     }
     mp_int_t ret = mp_obj_get_int(ret_obj);
     if (ret >= 0) {
+        if ((mp_uint_t)ret > size) {
+            *errcode = MP_EIO;
+            return MP_STREAM_ERROR;
+        }
         return ret;
     } else {
         *errcode = -ret;
