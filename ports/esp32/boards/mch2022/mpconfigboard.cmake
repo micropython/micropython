@@ -3,6 +3,10 @@
 
 set(IDF_TARGET esp32)
 
+set(BOARD_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(PORT_DIR ${BOARD_DIR}/../..)   # ports/esp32
+set(TOOLS_DIR ${PORT_DIR}/tools)
+
 # Add driver_mch22 module to QSTR sources
 list(APPEND MICROPY_SOURCE_QSTR
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_mch22/modmch22.c
@@ -11,16 +15,17 @@ list(APPEND MICROPY_SOURCE_QSTR
     ${CMAKE_CURRENT_SOURCE_DIR}/components/pynvs/modnvs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_rtcmem/modrtcmem.c
 )
-	
+
 # Use our board-specific sdkconfig fragment
 set(SDKCONFIG_DEFAULTS
     ${CMAKE_CURRENT_LIST_DIR}/sdkconfig.mch2022
+    ${PORT_DIR}/.config
 )
 
 set(MICROPY_PY_MACHINE_I2S 0)
 
 # Optional: include a frozen manifest if you want built-in Python modules
-set(MICROPY_FROZEN_MANIFEST ${CMAKE_CURRENT_LIST_DIR}/mch2022.py)
+set(MICROPY_FROZEN_MANIFEST ${BOARD_DIR}/mch2022.py)
 
 # Enable PSRAM (WROVER-E-N16R8 includes 8MB)
 set(MICROPY_BOARD_ENABLE_PSRAM 1)
@@ -40,10 +45,6 @@ set(MICROPY_SOURCE_BOARD
 )
 
 set(MICROPY_FATFS_MAX_SS 4096)
-
-set(BOARD_DIR ${CMAKE_CURRENT_LIST_DIR})
-set(PORT_DIR ${BOARD_DIR}/../..)   # ports/esp32
-set(TOOLS_DIR ${PORT_DIR}/tools)
 
 # 1. Scan components for Kconfig files
 execute_process(
