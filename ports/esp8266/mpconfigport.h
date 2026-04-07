@@ -64,7 +64,6 @@
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/esp8266/modtime.c"
 #define MICROPY_PY_LWIP             (1)
-#define MICROPY_PY_LWIP_SOCK_RAW    (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/esp8266/modmachine.c"
 #define MICROPY_PY_MACHINE_RESET    (1)
