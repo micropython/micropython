@@ -6,7 +6,6 @@
 // MicroPython emitters
 #define MICROPY_EMIT_THUMB              (SAMD21_EXTRA_FEATURES)
 #define MICROPY_EMIT_INLINE_THUMB       (SAMD21_EXTRA_FEATURES)
-#define MICROPY_EMIT_THUMB_ARMV7M       (0)
 #define MICROPY_MODULE_BUILTIN_INIT     (1)
 
 // Selected extensions beyond the basic features set.
