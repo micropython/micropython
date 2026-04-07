@@ -85,6 +85,7 @@ PSE_LIB_DIR ?= $(TOP)/$(PSE_LIB_TOP_DIR)
 # WHD resource configuration for standalone MicroPython build.
 WHD_FW_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/firmware/COMPONENT_55500/COMPONENT_SM/55500A1.trxcse
 WHD_NVRAM_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-resources/nvram/COMPONENT_WIFI6/COMPONENT_55500/COMPONENT_MURATA-2FY/cyw55500-sdio-mur-2FY.txt
+WHD_CLM_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-resources/clm/COMPONENT_WIFI6/COMPONENT_55500/COMPONENT_CYW55513_MOD_PSE84_SOM/55500A1.clm_blob
 
 ################################################################################
 # Pin generation
@@ -195,6 +196,7 @@ INC += \
 ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
 WHD_FW_SIZE := $(shell stat -c%s $(WHD_FW_FILE))
 WHD_NVRAM_SIZE := $(shell stat -c%s $(WHD_NVRAM_FILE))
+WHD_CLM_SIZE := $(shell stat -c%s $(WHD_CLM_FILE))
 
 INC += \
 	-I$(PSE_LIB_DIR)/wifi-host-driver \
@@ -222,9 +224,10 @@ INC += \
 	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src \
 	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/include
 
-DEFINES += -DNO_CLM_BLOB_FILE \
+DEFINES += \
 	-DFW_IMAGE_SIZE=$(WHD_FW_SIZE) -DFW_IMAGE_NAME=\"$(WHD_FW_FILE)\" \
-	-DNVRAM_IMAGE_SIZE=$(WHD_NVRAM_SIZE) -DNVRAM_IMAGE_NAME=\"$(WHD_NVRAM_FILE)\"
+	-DNVRAM_IMAGE_SIZE=$(WHD_NVRAM_SIZE) -DNVRAM_IMAGE_NAME=\"$(WHD_NVRAM_FILE)\" \
+	-DCLM_IMAGE_SIZE=$(WHD_CLM_SIZE) -DCLM_IMAGE_NAME=\"$(WHD_CLM_FILE)\"
 endif
 
 MACHINE_FLAGS = \
