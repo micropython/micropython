@@ -2,11 +2,13 @@
 #
 # Connect:
 # - X1 to X2
-# - X7 to X9
-# - X8 to X10
+# - X3 to X9
+# - X4 to X10
+#
+# May need to tweak pins to avoid CAN test failures (CAN is on X9/X10).
 
 # Test all connected pin pairs.
-pin_loopback_pins = [("X1", "X2"), ("X7", "X9"), ("X8", "X10")]
+pin_loopback_pins = [("X1", "X2"), ("X3", "X9"), ("X4", "X10")]
 
 # Test all connected pin pairs to test multiple different TIMs.
 pwm_loopback_pins = pin_loopback_pins
@@ -20,3 +22,6 @@ spi_standalone_args_list = [(1,), (2,)]
 # CAN args assume no connection for single device tests.
 can_args = (1,)
 can_kwargs = {}
+
+i2c_args_controller = {"scl": "X3", "sda": "X4"}
+i2c_args_target = ("X",)
