@@ -1,25 +1,62 @@
+# Test pyb.SPI basic behaviour.
+
 from pyb import SPI
 
-# test we can correctly create by id
-for bus in (-1, 0, 1, 2):
+# Test invalid SPI identifiers.
+for bus in (-1, 0, 100, "doesnotexist"):
     try:
         SPI(bus)
-        print("SPI", bus)
     except ValueError:
         print("ValueError", bus)
 
-spi = SPI(1)
-print(spi)
+# Find the first available SPI (assume there is one).
+spi_id = None
+for bus in (1, 2, 3):
+    try:
+        SPI(bus)
+        spi_id = bus
+        break
+    except ValueError:
+        pass
 
-spi = SPI(1, SPI.CONTROLLER)
-spi = SPI(1, SPI.CONTROLLER, baudrate=500000)
+
+# Print SPI without id, baudrate or prescaler.
+def print_spi(spi):
+    s = str(spi)
+    assert s.startswith("SPI(") and s.endswith(")")
+    s = s[4:-1].split(", ")
+    assert s[0].isdigit()
+    del s[0]
+    if len(s) > 1 and s[0] == "SPI.CONTROLLER":
+        assert s[1].startswith("baudrate=")
+        assert s[2].startswith("prescaler=")
+        del s[1:3]
+    print("SPI(", ", ".join(s), ")", sep="")
+
+
+# Test constructing SPI with various parameters.
+spi = SPI(spi_id)
+print_spi(spi)
+spi = SPI(spi_id, SPI.CONTROLLER)
+print_spi(spi)
+spi = SPI(spi_id, SPI.CONTROLLER, baudrate=500000)
+print_spi(spi)
 spi = SPI(
-    1, SPI.CONTROLLER, 500000, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None
+    spi_id,
+    SPI.CONTROLLER,
+    500000,
+    polarity=1,
+    phase=0,
+    bits=8,
+    firstbit=SPI.MSB,
+    ti=False,
+    crc=None,
 )
-print(str(spi)[:32], str(spi)[53:])  # don't print baudrate/prescaler
+print_spi(spi)
 
+# Test SPI.PERIPHERAL mode.
 spi.init(SPI.PERIPHERAL, phase=1)
-print(spi)
+print_spi(spi)
 try:
     # need to flush input before we get an error (error is what we want to test)
     for i in range(10):
