@@ -35,6 +35,8 @@
 #include "mtb_hal_sdio.h"
 #include "mtb_hal_gpio.h"
 #include "cy_sd_host.h"
+#include "cy_syspm.h"
+#include "cycfg_system.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -53,7 +55,22 @@
 static mtb_hal_sdio_t sdio_obj;
 static cy_stc_sd_host_context_t sdhc_ctx;
 static cy_wcm_config_t wcm_config;
-static bool wcm_initialized = false;
+
+#if (CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_DEEPSLEEP)
+static cy_stc_syspm_callback_params_t sdhc_ds_params = {
+    .context = &sdhc_ctx,
+    .base = CYBSP_WIFI_SDIO_HW
+};
+static cy_stc_syspm_callback_t sdhc_ds_cb = {
+    .callback = Cy_SD_Host_DeepSleepCallback,
+    .skipMode = 0U,
+    .type = CY_SYSPM_DEEPSLEEP,
+    .callbackParams = &sdhc_ds_params,
+    .prevItm = NULL,
+    .nextItm = NULL,
+    .order = 1U
+};
+#endif
 
 static void wifi_sdio_isr(void) {
     mtb_hal_sdio_process_interrupt(&sdio_obj);
@@ -100,41 +117,26 @@ static void wifi_sdio_init(void) {
 // ---------------------------------------------------------------------------
 // network_init / network_deinit called from main.c
 // ---------------------------------------------------------------------------
+#define wcm_assert_raise(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+}
 
 void network_init(void) {
-    // Full WiFi init: SDIO hardware setup then cy_wcm_init() (firmware download).
-    // Called once before the soft_reset loop from main.c, after a short vTaskDelay
-    // so FreeRTOS is stable enough to service SDIO bulk DMA interrupts.
     wifi_sdio_init();
+    #if (CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_DEEPSLEEP)
+    Cy_SysPm_RegisterCallback(&sdhc_ds_cb);
+    #endif
     wcm_config.interface = CY_WCM_INTERFACE_TYPE_STA;
     wcm_config.wifi_interface_instance = &sdio_obj;
 
     cy_rslt_t ret = cy_wcm_init(&wcm_config);
-    if (ret != CY_RSLT_SUCCESS) {
-        mp_printf(&mp_plat_print, "network_init: cy_wcm_init failed (0x%08X)\r\n", (unsigned int)ret);
-        return;
-    }
-    wcm_initialized = true;
+    wcm_assert_raise("network init error (code: %d)", ret);
 }
+
 
 void network_deinit(void) {
-    if (wcm_initialized) {
-        cy_wcm_deinit();
-        wcm_initialized = false;
-    }
-}
-
-// Safety guard: if network_init() failed, make_new retries WCM init.
-static void wcm_ensure_init(void) {
-    if (wcm_initialized) {
-        return;
-    }
-    cy_rslt_t ret = cy_wcm_init(&wcm_config);
-    if (ret != CY_RSLT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_OSError,
-            MP_ERROR_TEXT("WiFi init failed (0x%08X)"), (unsigned int)ret);
-    }
-    wcm_initialized = true;
+    cy_rslt_t ret = cy_wcm_deinit();
+    wcm_assert_raise("network deinit error (code: %d)", ret);
 }
 
 // ---------------------------------------------------------------------------
@@ -142,8 +144,7 @@ static void wcm_ensure_init(void) {
 // ---------------------------------------------------------------------------
 
 static mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    wcm_ensure_init();
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("WiFi WLAN object not yet implemented"));
+    return mp_const_none;
 }
 
 static void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

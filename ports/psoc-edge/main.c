@@ -159,13 +159,6 @@ void mpy_task(void *arg) {
 
     time_init();
 
-    #if MICROPY_PY_NETWORK
-    // A short delay lets the FreeRTOS scheduler settle so that SDIO bulk
-    // DMA interrupts (used by WHD firmware upload) are serviced correctly.
-    vTaskDelay(pdMS_TO_TICKS(3000));
-    network_init();
-    #endif
-
 soft_reset:
     machine_rtc_init_all();
     mp_init();
@@ -173,6 +166,7 @@ soft_reset:
     readline_init0();
 
     #if MICROPY_PY_NETWORK
+    network_init();
     mod_network_init();
     #endif
 
@@ -224,8 +218,7 @@ soft_reset:
 
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
-    // network_deinit() is intentionally not called on soft reset:
-    // cy_wcm_deinit() + re-init would re-download WiFi firmware each time.
+    network_deinit();
     #endif
 
     #if MICROPY_ENABLE_GC
