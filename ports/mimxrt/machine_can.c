@@ -83,6 +83,8 @@
 #define kFLEXCAN_TxMbInactive           (0x8)
 #define kFLEXCAN_TxMbAbort              (0x9)
 #define kFLEXCAN_TxMbDataOrRemote       (0xC)
+#define kFLEXCAN_TxMbTanswer            (0xE)
+#define kFLEXCAN_TxMbNotUsed            (0xF)
 
 enum {
     CAN_STATE_STOPPED,
@@ -161,37 +163,49 @@ void machine_can_handler(CAN_Type *base) {
     }
     if (self != NULL) {
         struct machine_can_port *port = self->port;
+        // check generic IRQ flags
+        mp_int_t irq_flags = 0;
         uint32_t result = FLEXCAN_GetStatusFlags(port->can_inst);
         if (result & FLEXCAN_ERROR_AND_STATUS_INIT_FLAG) {
             uint32_t flt_conf = (result & CAN_ESR1_FLTCONF_MASK) >> CAN_ESR1_FLTCONF_SHIFT;
             if (flt_conf > 1) {
                 ++port->num_bus_off;
+                irq_flags |= MP_CAN_IRQ_STATE;
             } else if (flt_conf == 1) {
                 ++port->num_error_passive;
+                irq_flags |= MP_CAN_IRQ_STATE;
             } else if ((result & CAN_ESR1_RXWRN_MASK) || (result & CAN_ESR1_TXWRN_MASK)) {
                 ++port->num_error_warning;
+                irq_flags |= MP_CAN_IRQ_STATE;
             }
             FLEXCAN_ClearStatusFlags(port->can_inst, FLEXCAN_ERROR_AND_STATUS_INIT_FLAG);
         }
 
-        mp_int_t irq_flags = 0;
+        uint64_t mb_status_flags = FLEXCAN_GetMbStatusFlags(port->can_inst, 0xffffffffffffffff);
 
-        // Maybe not disable the interrupts.
-        if (FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoOverflowFlag)) {
-            FLEXCAN_DisableMbInterrupts(port->can_inst,
-                kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag);
+        // Check the FIFO interrupt flags
+        if (mb_status_flags & (uint32_t)kFLEXCAN_RxFifoOverflowFlag) {
             irq_flags |= MP_CAN_IRQ_RX_OVERFLOW;
         }
-        if (FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoWarningFlag)) {
-            FLEXCAN_DisableMbInterrupts(port->can_inst, kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag);
+        if (mb_status_flags & (uint32_t)kFLEXCAN_RxFifoWarningFlag) {
             irq_flags |= MP_CAN_IRQ_RX_WARNING;
         }
-        if (FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag)) {
-            FLEXCAN_DisableMbInterrupts(port->can_inst, kFLEXCAN_RxFifoFrameAvlFlag);
+        if (mb_status_flags & (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag) {
             irq_flags |= MP_CAN_IRQ_RX;
         }
-        port->mp_irq_flags = irq_flags;
+        // Disable the set RX MB interrupts
+        FLEXCAN_DisableMbInterrupts(port->can_inst, mb_status_flags &
+            (kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag));
 
+        // Check the TX MB interrupt flags. Assume flexcan_txmb_start >= 32.
+        uint64_t irq_tx_mask = ~((1ULL << port->flexcan_txmb_start) - 1);
+        mb_status_flags &= irq_tx_mask;
+        if (mb_status_flags) {
+            // Clear the TX status flags
+            FLEXCAN_ClearMbStatusFlags(port->can_inst, mb_status_flags);
+            irq_flags |= MP_CAN_IRQ_TX;
+        }
+        port->mp_irq_flags = irq_flags;
         if (irq_flags & self->mp_irq_trigger) {
             mp_irq_handler(self->mp_irq_obj);
         }
@@ -390,9 +404,6 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     port->num_error_passive = 0;
     port->num_bus_off = 0;
 
-    FLEXCAN_EnableMbInterrupts(port->can_inst,
-        kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag);
-
     FLEXCAN_EnableInterrupts(port->can_inst,
         kFLEXCAN_BusOffInterruptEnable | kFLEXCAN_ErrorInterruptEnable |
         kFLEXCAN_RxWarningInterruptEnable | kFLEXCAN_TxWarningInterruptEnable);
@@ -483,37 +494,47 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
 static void machine_can_update_irqs(machine_can_obj_t *self) {
     struct machine_can_port *port = self->port;
     uint16_t triggers = self->mp_irq_trigger;
-    mp_uint_t enable_flags = 0;
+    uint32_t irq_rx_flags = 0;
+    uint64_t irq_tx_flags = 0;
+    uint64_t irq_tx_mask = ~((1ULL << port->flexcan_txmb_start) - 1);
     if (triggers & MP_CAN_IRQ_RX) {
-        enable_flags |= kFLEXCAN_RxFifoFrameAvlFlag;
+        irq_rx_flags |= kFLEXCAN_RxFifoFrameAvlFlag;
     }
     if (triggers & MP_CAN_IRQ_RX_OVERFLOW) {
-        enable_flags |= kFLEXCAN_RxFifoOverflowFlag;
+        irq_rx_flags |= kFLEXCAN_RxFifoOverflowFlag;
     }
     if (triggers & MP_CAN_IRQ_RX_WARNING) {
-        enable_flags |= kFLEXCAN_RxFifoWarningFlag;
+        irq_rx_flags |= kFLEXCAN_RxFifoWarningFlag;
+    }
+    if (triggers & MP_CAN_IRQ_TX) {
+        irq_tx_flags = irq_tx_mask;
     }
     FLEXCAN_DisableMbInterrupts(port->can_inst,
-        ~enable_flags & (kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag));
-    FLEXCAN_EnableMbInterrupts(port->can_inst, enable_flags);
+        irq_tx_mask | (kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag));
+    FLEXCAN_EnableMbInterrupts(port->can_inst, irq_rx_flags | irq_tx_flags);
 }
 
-// Return the irq().flags() result. Calling this function may also update the hardware state machine.
+// Return the irq().flags() result as registered by the handler.
 static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     struct machine_can_port *port = self->port;
     mp_int_t irq_flags = 0;
+    uint32_t mb_status_flags = port->can_inst->IMASK1;
 
-    // Maybe not disable the interrupts.
-    if (FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoOverflowFlag)) {
+    if (mb_status_flags & (uint32_t)kFLEXCAN_RxFifoOverflowFlag) {
         irq_flags |= MP_CAN_IRQ_RX_OVERFLOW;
     }
-    if (FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoWarningFlag)) {
+    if (mb_status_flags & (uint32_t)kFLEXCAN_RxFifoWarningFlag) {
         irq_flags |= MP_CAN_IRQ_RX_WARNING;
     }
-    if (FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag)) {
+    if (mb_status_flags & (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag) {
         irq_flags |= MP_CAN_IRQ_RX;
     }
-    return irq_flags;
+    uint32_t irq_tx_flags = ~((1 << (port->flexcan_txmb_start - 32)) - 1);
+    mb_status_flags = port->can_inst->IMASK2;
+    if (mb_status_flags & irq_tx_flags) {
+        irq_flags |= MP_CAN_IRQ_TX;
+    }
+    return port->mp_irq_flags | irq_flags;
 }
 
 static mp_uint_t can_find_txmb(machine_can_obj_t *self, flexcan_frame_t *frame) {
