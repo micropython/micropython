@@ -290,8 +290,72 @@ static mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, network_ifx_wcm_active);
 
+static mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
+        mp_raise_ValueError(MP_ERROR_TEXT("network STA required"));
+    }
+
+    enum { ARG_ssid, ARG_key, ARG_bssid };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ssid,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_key,   MP_ARG_OBJ,                   {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_rom_obj = MP_ROM_NONE} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    cy_wcm_connect_params_t connect_param;
+    cy_wcm_ip_address_t ip_address;
+    memset(&connect_param, 0, sizeof(cy_wcm_connect_params_t));
+
+    // SSID
+    mp_buffer_info_t ssid;
+    mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
+    if (ssid.len > CY_WCM_MAX_SSID_LEN) {
+        mp_raise_TypeError(MP_ERROR_TEXT("network connect SSID too long"));
+    }
+    memcpy(connect_param.ap_credentials.SSID, ssid.buf, ssid.len);
+
+    // Key (optional)
+    if (args[ARG_key].u_obj != mp_const_none) {
+        mp_buffer_info_t key;
+        mp_get_buffer_raise(args[ARG_key].u_obj, &key, MP_BUFFER_READ);
+        if (key.len > CY_WCM_MAX_PASSPHRASE_LEN) {
+            mp_raise_TypeError(MP_ERROR_TEXT("network connect key too long"));
+        }
+        memcpy(connect_param.ap_credentials.password, key.buf, key.len);
+    }
+
+    // BSSID (optional)
+    if (args[ARG_bssid].u_obj != mp_const_none) {
+        mp_buffer_info_t bssid;
+        mp_get_buffer_raise(args[ARG_bssid].u_obj, &bssid, MP_BUFFER_READ);
+        if (bssid.len != CY_WCM_MAC_ADDR_LEN) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bssid address invalid length"));
+        }
+        memcpy(connect_param.BSSID, bssid.buf, bssid.len);
+    }
+
+    // Let WCM discover security type
+    connect_param.ap_credentials.security = CY_WCM_SECURITY_UNKNOWN;
+
+    network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+    uint8_t retries = sta_conf->connect_retries;
+    cy_rslt_t ret;
+    do {
+        ret = cy_wcm_connect_ap(&connect_param, &ip_address);
+    } while (ret != CY_RSLT_SUCCESS && --retries > 0);
+    wcm_assert_raise("network sta connect error (with code: %d)", ret);
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_connect_obj, 1, network_ifx_wcm_connect);
+
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_ifx_wcm_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_active),      MP_ROM_PTR(&network_ifx_wcm_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),     MP_ROM_PTR(&network_ifx_wcm_connect_obj) },
 };
 static MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
