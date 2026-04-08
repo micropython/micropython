@@ -220,6 +220,16 @@ CFLAGS += $(SPECS_FRAGMENT)
 LDFLAGS += $(SPECS_FRAGMENT)
 endif
 
+# Mount the ROMFS test image only if no other ROMFS partition has been mounted on slot 0.
+
+ROMFS_TEST_IMAGE = assets/random_romfs.bin
+
+ifneq ($(MICROPY_HW_ROMFS_PART0_START),)
+ifeq ($(QEMU_ROMFS_IMG0),)
+QEMU_ARGS += -device loader,file=$(ROMFS_TEST_IMAGE),addr=$(MICROPY_HW_ROMFS_PART0_START),force-raw=on
+endif
+endif
+
 RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../ports/qemu/$<" $(RUN_TESTS_ARGS)
 
 ################################################################################
