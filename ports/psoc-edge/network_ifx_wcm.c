@@ -164,7 +164,37 @@ static mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 static void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    mp_printf(print, "<IFX_WCM>");
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    const char *status_str;
+    if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+        if (cy_wcm_is_connected_to_ap()) {
+            status_str = "joined";
+        } else {
+            status_str = "down";
+        }
+    } else {
+        if (cy_wcm_is_ap_up()) {
+            status_str = "up";
+        } else {
+            status_str = "down";
+        }
+    }
+
+    cy_wcm_ip_address_t ip_address;
+    cy_rslt_t ret = cy_wcm_get_ip_addr(self->itf, &ip_address);
+    if (ret != CY_RSLT_SUCCESS) {
+        ip_address.ip.v4 = 0;
+    }
+
+    mp_printf(print, "<IFX WCM %s %s %u.%u.%u.%u>",
+        self->itf == CY_WCM_INTERFACE_TYPE_STA ? "STA" : "AP",
+        status_str,
+        ip_address.ip.v4 & 0xff,
+        ip_address.ip.v4 >> 8 & 0xff,
+        ip_address.ip.v4 >> 16 & 0xff,
+        ip_address.ip.v4 >> 24
+        );
 }
 
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
