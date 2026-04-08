@@ -365,10 +365,37 @@ static mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_disconnect_obj, network_ifx_wcm_disconnect);
 
+static mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+        return mp_obj_new_bool(cy_wcm_is_connected_to_ap());
+    } else if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+        // Return False immediately if AP is not running
+        if (!cy_wcm_is_ap_up()) {
+            return mp_obj_new_bool(false);
+        }
+        // True if at least one client is associated
+        bool is_a_sta_connected = false;
+        cy_wcm_mac_t sta[1] = {0};
+        cy_wcm_mac_t not_conn_sta = {0, 0, 0, 0, 0, 0};
+        cy_rslt_t ret = cy_wcm_get_associated_client_list(sta, 1);
+        wcm_assert_raise("network ap isconnected error (with code: %d)", ret);
+        if (memcmp(&sta[0], &not_conn_sta, CY_WCM_MAC_ADDR_LEN) != 0) {
+            is_a_sta_connected = true;
+        }
+        return mp_obj_new_bool(is_a_sta_connected);
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_isconnected_obj, network_ifx_wcm_isconnected);
+
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),      MP_ROM_PTR(&network_ifx_wcm_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),     MP_ROM_PTR(&network_ifx_wcm_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),  MP_ROM_PTR(&network_ifx_wcm_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_ifx_wcm_isconnected_obj) },
 };
 static MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
