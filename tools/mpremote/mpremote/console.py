@@ -1,14 +1,14 @@
-import codecs
-import io
-import os
-import sys, time
+import sys
+import time
 
 try:
-    import select, termios
+    import select
+    import termios
 except ImportError:
     termios = None
     select = None
-    import msvcrt, signal
+    import msvcrt
+    import signal
 
 
 class ConsolePosix:
@@ -40,8 +40,21 @@ class ConsolePosix:
         termios.tcsetattr(self.infd, termios.TCSANOW, self.orig_attr)
 
     def waitchar(self, pyb_serial):
-        # TODO pyb_serial might not have fd
-        select.select([self.infd, pyb_serial.fd], [], [])
+        # Get file descriptor for select - works for serial ports and socket-based connections
+        try:
+            serial_fd = pyb_serial.fileno()
+        except Exception:
+            # RFC2217 doesn't implement fileno(), use internal socket
+            serial_fd = pyb_serial._socket.fileno() if hasattr(pyb_serial, "_socket") else None
+
+        if serial_fd is not None:
+            select.select([self.infd, serial_fd], [], [])
+        else:
+            # Fallback: poll with timeout
+            while not pyb_serial.in_waiting:
+                res = select.select([self.infd], [], [], 0.01)
+                if res[0]:
+                    break
 
     def readchar(self):
         res = select.select([self.infd], [], [], 0)
@@ -266,4 +279,47 @@ if termios:
     VT_ENABLED = True
 else:
     Console = ConsoleWindows
-    VT_ENABLED = ConsoleWindows.enable_vt_mode()
+
+    # Windows VT mode ( >= win10 only)
+    # https://bugs.python.org/msg291732
+    import ctypes
+    import os
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+
+    ERROR_INVALID_PARAMETER = 0x0057
+    ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+
+    def _check_bool(result, func, args):
+        if not result:
+            raise ctypes.WinError(ctypes.get_last_error())
+        return args
+
+    LPDWORD = ctypes.POINTER(wintypes.DWORD)
+    kernel32.GetConsoleMode.errcheck = _check_bool
+    kernel32.GetConsoleMode.argtypes = (wintypes.HANDLE, LPDWORD)
+    kernel32.SetConsoleMode.errcheck = _check_bool
+    kernel32.SetConsoleMode.argtypes = (wintypes.HANDLE, wintypes.DWORD)
+
+    def set_conout_mode(new_mode, mask=0xFFFFFFFF):
+        # don't assume StandardOutput is a console.
+        # open CONOUT$ instead
+        fdout = os.open("CONOUT$", os.O_RDWR)
+        try:
+            hout = msvcrt.get_osfhandle(fdout)
+            old_mode = wintypes.DWORD()
+            kernel32.GetConsoleMode(hout, ctypes.byref(old_mode))
+            mode = (new_mode & mask) | (old_mode.value & ~mask)
+            kernel32.SetConsoleMode(hout, mode)
+            return old_mode.value
+        finally:
+            os.close(fdout)
+
+    # def enable_vt_mode():
+    mode = mask = ENABLE_VIRTUAL_TERMINAL_PROCESSING
+    try:
+        set_conout_mode(mode, mask)
+        VT_ENABLED = True
+    except WindowsError:
+        VT_ENABLED = False
