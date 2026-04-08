@@ -53,16 +53,31 @@
 
 #if MICROPY_HW_ENABLE_FDCAN
 #define CAN_BRP_MIN 1
-#define CAN_BRP_MAX 512
+#define CAN_BRP_MAX 255
 #define CAN_FD_BRS_BRP_MIN 1
 #define CAN_FD_BRS_BRP_MAX 32
 #define CAN_FILTERS_STD_EXT_SEPARATE 1
 
 #else // Classic bxCAN
 #define CAN_BRP_MIN 1
-#define CAN_BRP_MAX 1024
-#define CAN_FILTERS_STD_EXT_SEPARATE 0
+#define CAN_BRP_MAX (CAN_CTRL1_PRESDIV_MASK >> CAN_CTRL1_PRESDIV_SHIFT)
+// #define CAN_FILTERS_STD_EXT_SEPARATE 0
 #endif
+
+#define CAN_PROPSEG_MAX (CAN_CTRL1_PROPSEG_MASK >> CAN_CTRL1_PROPSEG_SHIFT)
+#define CAN_PSEG1_MAX (CAN_CTRL1_PSEG1_MASK >> CAN_CTRL1_PSEG1_SHIFT)
+#define CAN_PSEG2_MAX (CAN_CTRL1_PSEG2_MASK >> CAN_CTRL1_PSEG2_SHIFT)
+
+#define CAN_TSEG1_MIN 2
+#define CAN_TSEG1_MAX (CAN_PROPSEG_MAX + CAN_PSEG1_MAX + 2)
+#define CAN_TSEG2_MIN 2
+#define CAN_TSEG2_MAX (CAN_PSEG2_MAX + 1)
+#define CAN_SJW_MIN 1
+#define CAN_SJW_MAX ((CAN_CTRL1_RJW_MASK >> CAN_CTRL1_RJW_SHIFT) + 1)
+#define CAN_USE_UPSTREAM_TIMING  (1)
+
+#define CAN_IDFILTERNUM_MAX (((CAN_CTRL2_RFFN_MASK >> CAN_CTRL2_RFFN_SHIFT) + 1) * 8)
+#define CAN_FILTER_MASK_NUM             (64)
 
 // matches fsl_flexcan.c enum _flexcan_mb_code_tx
 #define kFLEXCAN_TxMbInactive           (0x8)
@@ -321,10 +336,35 @@ static void machine_can_port_init(machine_can_obj_t *self) {
 
     uint32_t sourceClock_Hz = machine_can_port_f_clock(self);
 
+    #if CAN_USE_UPSTREAM_TIMING
+    // Load the configured timing parameters
+    // brp will be calculated during FLEXCAN_Init
+    port->flexcan_config->timingConfig.rJumpwidth = self->sjw - 1;
+    port->flexcan_config->timingConfig.propSeg = 4; // Default start-up value
+    // Fit tseg1 and propseg to the margins.
+    if ((self->tseg1 - 2) < port->flexcan_config->timingConfig.propSeg) {
+        // MIN(tseg1) = 2, so split the times with propSeg >= 0.
+        port->flexcan_config->timingConfig.propSeg = (self->tseg1 - 2) / 2;
+    }
+    if ((self->tseg1 - port->flexcan_config->timingConfig.propSeg - 2) > CAN_PSEG1_MAX) {
+        port->flexcan_config->timingConfig.propSeg = CAN_PROPSEG_MAX;
+    }
+    port->flexcan_config->timingConfig.phaseSeg1 = self->tseg1 - port->flexcan_config->timingConfig.propSeg - 2;
+    port->flexcan_config->timingConfig.phaseSeg2 = self->tseg2 - 1;
+    #else
+    // Let the NXP lib calculate the timing and store them back for reporting.
+    FLEXCAN_CalculateImprovedTimingValues(port->can_inst, self->bitrate, sourceClock_Hz, &port->flexcan_config->timingConfig);
+    self->sjw = port->flexcan_config->timingConfig.rJumpwidth + 1;
+    self->tseg1 = port->flexcan_config->timingConfig.phaseSeg1 + port->flexcan_config->timingConfig.propSeg + 2;
+    self->tseg2 = port->flexcan_config->timingConfig.phaseSeg2 + 1;
+    #endif
+
     // Initialise the CAN peripheral.
     FLEXCAN_Init(port->can_inst, port->flexcan_config, sourceClock_Hz);
-    memset(port->flexcan_rx_fifo_config->idFilterTable, 0,
-        sizeof(uint32_t) * port->flexcan_rx_fifo_config->idFilterNum);
+    // Flexcan_Init may change brp, so report it back.
+    self->brp = ((port->can_inst->CTRL1 & CAN_CTRL1_PRESDIV_MASK) >> CAN_CTRL1_PRESDIV_SHIFT) + 1;
+    // Clear filters and filter masks
+    machine_can_port_clear_filters(self);
     FLEXCAN_SetRxFifoConfig(port->can_inst, port->flexcan_rx_fifo_config, true);
 
     // Calculate the Number of Mailboxes occupied by RX Legacy FIFO and the filter.
@@ -359,20 +399,13 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     EnableIRQ(((IRQn_Type [])CAN_Error_IRQS)[instance]);
     EnableIRQ(((IRQn_Type [])CAN_Bus_Off_IRQS)[instance]);
     EnableIRQ(((IRQn_Type [])CAN_ORed_Message_buffer_IRQS)[instance]);
-
-    // Store the configured timing parameters in the CAN object for reporting.
-    self->brp = port->flexcan_config->timingConfig.preDivider;
-    self->sjw = port->flexcan_config->timingConfig.rJumpwidth;
-    self->tseg1 = port->flexcan_config->timingConfig.phaseSeg1 + port->flexcan_config->timingConfig.propSeg + 2;
-    self->tseg2 = port->flexcan_config->timingConfig.phaseSeg2 + 1;
-
 }
 
 // The port must provide implementations of these low-level CAN functions
 static int machine_can_port_f_clock(const machine_can_obj_t *self) {
     uint32_t sourceClock_Hz;
     #ifdef MIMXRT117x_SERIES
-    sourceClock_Hz = can_clock_index_table[self->can_hw_id];
+    sourceClock_Hz = can_clock_index_table[can_index_table[self->can_idx] - 1];
     #else
     sourceClock_Hz = BOARD_BOOTCLOCKRUN_CAN_CLK_ROOT;
     #endif
