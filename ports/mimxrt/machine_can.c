@@ -244,7 +244,6 @@ static void machine_can_port_deinit(machine_can_obj_t *self) {
             kFLEXCAN_RxWarningInterruptEnable | kFLEXCAN_TxWarningInterruptEnable);
         FLEXCAN_DisableMbInterrupts(port->can_inst,
             kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag);
-        MP_STATE_PORT(machine_can_objs[self->can_idx]) = NULL;
         port->is_enabled = false;
         FLEXCAN_Deinit(port->can_inst);
     }
@@ -260,24 +259,6 @@ void machine_can_irq_deinit(void) {
     }
 }
 
-// Convert the port agnostic CAN mode to the ST mode
-static uint32_t can_port_mode(machine_can_mode_t mode) {
-    switch (mode) {
-        case MP_CAN_MODE_NORMAL:
-            return CAN_NORMAL_MODE;
-        case MP_CAN_MODE_SLEEP:
-            return CAN_SILENT_FLAG; // Sleep is not an operating mode for ST's peripheral
-        case MP_CAN_MODE_LOOPBACK:
-            return CAN_LOOPBACK_FLAG;
-        case MP_CAN_MODE_SILENT:
-            return CAN_SILENT_FLAG;
-        case MP_CAN_MODE_SILENT_LOOPBACK:
-            return CAN_LOOPBACK_FLAG | CAN_SILENT_FLAG;
-        default:
-            assert(0); // Mode should have been checked already
-            return CAN_NORMAL_MODE;
-    }
-}
 static void machine_can_port_init(machine_can_obj_t *self) {
     // Get peripheral object and do the first level config.
     struct machine_can_port *port = self->port;
@@ -292,7 +273,6 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         FLEXCAN_GetDefaultConfig(port->flexcan_config);
         mp_uint_t maxMbNum = FSL_FEATURE_FLEXCAN_HAS_MESSAGE_BUFFER_MAX_NUMBERn(port->can_inst);
         port->flexcan_config->maxMbNum = maxMbNum;
-        port->flexcan_config->disableSelfReception = true;
 
         port->flexcan_rx_fifo_config = m_new_obj(flexcan_rx_fifo_config_t);
         // Set the number of filters here. RFFN will be set accordingly.
@@ -319,8 +299,15 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     }
 
     // (Re-)configuration after init().
-    port->flexcan_config->enableLoopBack = can_port_mode(self->mode) & CAN_LOOPBACK_FLAG;
-    port->flexcan_config->enableListenOnlyMode = can_port_mode(self->mode) & CAN_SILENT_FLAG;
+    if (self->mode == MP_CAN_MODE_LOOPBACK || self->mode == MP_CAN_MODE_SILENT_LOOPBACK) {
+        port->flexcan_config->enableLoopBack = true;
+        port->flexcan_config->disableSelfReception = false;
+    } else {
+        port->flexcan_config->disableSelfReception = true;
+    }
+    if (self->mode == MP_CAN_MODE_SILENT || self->mode == MP_CAN_MODE_SILENT_LOOPBACK) {
+        port->flexcan_config->enableListenOnlyMode = true;
+    }
     port->flexcan_config->bitRate = self->bitrate;
     port->flexcan_config->enableIndividMask = true;
 
