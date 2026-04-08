@@ -52,6 +52,14 @@
 #define WIFI_SDIO_FREQUENCY_HZ          (25000000U)
 #define WIFI_SDIO_BLOCK_SIZE            (64U)
 
+typedef struct _network_ifx_wcm_obj_t {
+    mp_obj_base_t base;
+    cy_wcm_interface_t itf;
+} network_ifx_wcm_obj_t;
+
+static network_ifx_wcm_obj_t network_ifx_wcm_wl_sta = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_STA };
+static network_ifx_wcm_obj_t network_ifx_wcm_wl_ap = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_AP };
+
 static mtb_hal_sdio_t sdio_obj;
 static cy_stc_sd_host_context_t sdhc_ctx;
 static cy_wcm_config_t wcm_config;
@@ -146,7 +154,13 @@ void network_deinit(void) {
 // ---------------------------------------------------------------------------
 
 static mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    return mp_const_none;
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+
+    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+        return MP_OBJ_FROM_PTR(&network_ifx_wcm_wl_sta);
+    } else {
+        return MP_OBJ_FROM_PTR(&network_ifx_wcm_wl_ap);
+    }
 }
 
 static void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
