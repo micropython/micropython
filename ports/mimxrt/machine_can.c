@@ -570,6 +570,8 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     tx_msg.dataWord0 = 0;
     tx_msg.dataWord1 = 0;
 
+    // The readable size of data is guaranteed to be data_len.
+    // So it has to be considered during transfer.
     if (data_len > 0) {
         tx_msg.dataByte0 = data[0];
     }
@@ -597,34 +599,14 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     tx_msg.length = data_len;
     tx_msg.type = (flags & CAN_MSG_FLAG_RTR) != 0;
     tx_msg.format = (flags & CAN_MSG_FLAG_EXT_ID) != 0;
+    tx_msg.id = tx_msg.format ? FLEXCAN_ID_EXT(id) : FLEXCAN_ID_STD(id);
 
-    if (tx_msg.format) {
-        tx_msg.id = FLEXCAN_ID_EXT(id);
+    mp_uint_t mbIdx = can_find_txmb(self, &tx_msg);
+    if (mbIdx && (FLEXCAN_WriteTxMb(self->port->can_inst, mbIdx, &tx_msg) == kStatus_Success)) {
+        return mbIdx - self->port->flexcan_txmb_start;
     } else {
-        tx_msg.id = FLEXCAN_ID_STD(id);
+        return -1;
     }
-
-    uint32_t timeout_ms = 1000;
-    uint32_t start = mp_hal_ticks_ms();
-    mp_uint_t mbIdx;
-
-    while (true) {
-        mbIdx = can_find_txmb(self, &tx_msg);
-        if (mbIdx && (FLEXCAN_WriteTxMb(self->port->can_inst, mbIdx, &tx_msg) == kStatus_Success)) {
-            break;
-        }
-        if (timeout_ms == 0) {
-            return -1;
-        }
-        // Check for the Timeout
-        if (timeout_ms != UINT32_MAX) {
-            if (mp_hal_ticks_ms() - start >= timeout_ms) {
-                return -1;
-            }
-        }
-        MICROPY_EVENT_POLL_HOOK
-    }
-    return mbIdx - self->port->flexcan_txmb_start;
 }
 
 static bool machine_can_port_cancel_send(machine_can_obj_t *self, mp_uint_t idx) {
@@ -644,47 +626,28 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
     if (!FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag)) {
         return false;
     }
-
     flexcan_frame_t rx_frame;
     status_t status = FLEXCAN_ReadRxFifo(port->can_inst, &rx_frame);
-    FLEXCAN_ClearMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag);
     *errors = status;
-
+    FLEXCAN_ClearMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag);
     FLEXCAN_EnableMbInterrupts(port->can_inst,
         kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag);
 
     if (status != kStatus_Success) {
         return false;
     }
-
+    uint8_t *rx_data = (uint8_t *)data;
+    // rx_data is guaranteed to have a size of 8 bytes at least.
+    // So this amount can be copied regardless of the actual frame length.
+    rx_data[0] = rx_frame.dataByte0;
+    rx_data[1] = rx_frame.dataByte1;
+    rx_data[2] = rx_frame.dataByte2;
+    rx_data[3] = rx_frame.dataByte3;
+    rx_data[4] = rx_frame.dataByte4;
+    rx_data[5] = rx_frame.dataByte5;
+    rx_data[6] = rx_frame.dataByte6;
+    rx_data[7] = rx_frame.dataByte7;
     *dlen = rx_frame.length;
-    uint8_t *rx_data = data;
-
-    if (*dlen > 0) {
-        rx_data[0] = rx_frame.dataByte0;
-    }
-    if (*dlen > 1) {
-        rx_data[1] = rx_frame.dataByte1;
-    }
-    if (*dlen > 2) {
-        rx_data[2] = rx_frame.dataByte2;
-    }
-    if (*dlen > 3) {
-        rx_data[3] = rx_frame.dataByte3;
-    }
-    if (*dlen > 4) {
-        rx_data[4] = rx_frame.dataByte4;
-    }
-    if (*dlen > 5) {
-        rx_data[5] = rx_frame.dataByte5;
-    }
-    if (*dlen > 6) {
-        rx_data[6] = rx_frame.dataByte6;
-    }
-    if (*dlen > 7) {
-        rx_data[7] = rx_frame.dataByte7;
-    }
-
     *flags = (rx_frame.format ? CAN_MSG_FLAG_EXT_ID : 0) |
         (rx_frame.type ? CAN_MSG_FLAG_RTR : 0);
     *id = (rx_frame.id & 0x3fffffff) >> (rx_frame.format ? 0 : 18);
