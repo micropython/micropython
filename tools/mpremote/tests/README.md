@@ -66,3 +66,62 @@ Custom parameters can be passed via `exec`:
 ```bash
 $MPREMOTE exec "mount_path='/__ramdisk'; do_chdir=False" run "${TEST_DIR}/ramdisk.py"
 ```
+## Running with Coverage
+
+Both bash tests and pytest tests can collect coverage data. To get combined coverage
+from both test suites:
+
+```bash
+cd tools/mpremote
+
+# 1. Start fresh
+coverage erase
+
+# 2. Run bash tests with coverage (creates parallel data files)
+./tests/run-mpremote-tests.sh -c
+
+# 3. Combine bash test coverage into .coverage
+coverage combine
+
+# 4. Run pytest (appends to existing coverage data)
+MPREMOTE_DEVICES="socket://localhost:2218,rfc2217://localhost:2217" pytest tests/
+
+# 5. View reports
+coverage report          # Terminal summary
+coverage html            # HTML report in htmlcov/
+```
+
+**Important:** Run bash tests first, then `coverage combine`, then pytest. The pytest
+configuration includes `--cov-append` which adds to existing coverage data rather than
+replacing it.
+
+The HTML report shows which tests covered each line, including scenario contexts
+(e.g., `[socket]`, `[rfc2217]`) for device-specific coverage tracking.
+
+### Coverage Options
+
+- Pytest automatically collects coverage with append mode (configured in `pyproject.toml`)
+- Bash tests: use `-c` flag to enable coverage
+- Device shortcuts work with coverage: `./tests/run-mpremote-tests.sh -t a0 -c`
+
+### Subprocess Coverage
+
+Both test frameworks collect coverage from subprocesses (the actual `mpremote` commands
+being tested), not just from the test harness code.
+
+**Bash tests:** When using `-c`, the script wraps each `mpremote` invocation with
+`coverage run --context=<test_name>`. This creates parallel coverage data files
+(`.coverage.<hostname>.<pid>.<random>`) that are later combined with `coverage combine`.
+
+**Pytest tests:** The `conftest.py` sets up subprocess coverage by:
+1. Setting `COVERAGE_PROCESS_START` to point to `pyproject.toml`
+2. Adding the tests directory to `PYTHONPATH` so `sitecustomize.py` is discovered
+3. Passing the test context via `MPREMOTE_COVERAGE_CONTEXT` environment variable
+
+When a subprocess starts, Python automatically imports `sitecustomize.py`, which starts
+coverage collection with the test's context. This allows tracking which device scenarios
+(socket, rfc2217, serial) covered each line of code.
+
+The coverage configuration in `pyproject.toml` uses `parallel = true` to support
+collecting data from multiple subprocesses without conflicts.
+

@@ -65,7 +65,8 @@ packages = ["mpremote"]
 # https://docs.pytest.org/en/stable/reference/reference.html#ini-options-ref
 # --cov: enable coverage (source is set in [tool.coverage.run])
 # --cov-context=test: each test gets its own context for scenario tracking
-addopts = "--cov --cov-context=test --cov-report=term"
+# --cov-append: append to existing coverage data (for combining with bash tests)
+addopts = "--cov --cov-context=test --cov-append --cov-report=term"
 testpaths = [
     "tests",
 ]

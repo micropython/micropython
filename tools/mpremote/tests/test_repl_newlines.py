@@ -54,11 +54,17 @@ def is_wsl():
 
 def get_devices():
     """
-    Get list of devices to test against from MPREMOTE_DEVICES env var.
+    Get list of devices to test against from MPREMOTE_DEVICES or MPREMOTE_DEVICE env var.
 
     Returns list of (device_url, scenario_name) tuples.
     """
     devices_str = os.environ.get("MPREMOTE_DEVICES", "")
+    if not devices_str:
+        # Fall back to singular MPREMOTE_DEVICE
+        device_str = os.environ.get("MPREMOTE_DEVICE", "")
+        if device_str:
+            devices_str = device_str
+
     if not devices_str:
         return []
 
