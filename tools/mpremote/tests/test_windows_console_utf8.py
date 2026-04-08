@@ -38,7 +38,10 @@ UTF8_TEST_CASES = [
 ]
 
 
-@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only test")
+@pytest.mark.skipif(
+    sys.platform != "win32" or sys.version_info < (3, 14),
+    reason="Windows-only, Python >= 3.14 test",
+)
 class TestConsoleWindowsModernDetection:
     """Unit tests for modern Windows console detection."""
 
@@ -46,6 +49,7 @@ class TestConsoleWindowsModernDetection:
     def console_class(self):
         """Import ConsoleWindows."""
         from mpremote.console import ConsoleWindows
+
         return ConsoleWindows
 
     def test_detect_windows_terminal(self, console_class, monkeypatch):
@@ -97,7 +101,10 @@ class TestConsoleWindowsModernDetection:
             assert hasattr(console, "_decoder")
 
 
-@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only test")
+@pytest.mark.skipif(
+    sys.platform != "win32" or sys.version_info < (3, 14),
+    reason="Windows-only, Python >= 3.14 test",
+)
 class TestConsoleWindowsIncrementalDecoder:
     """Unit tests for the incremental UTF-8 decoder in legacy mode."""
 
@@ -105,6 +112,7 @@ class TestConsoleWindowsIncrementalDecoder:
     def legacy_console(self):
         """Create a ConsoleWindows instance forced to legacy mode."""
         from mpremote.console import ConsoleWindows
+
         console = ConsoleWindows()
         # Force legacy mode
         console._use_raw_output = False
@@ -124,7 +132,7 @@ class TestConsoleWindowsIncrementalDecoder:
         legacy_console.write(b"\xc3")  # First byte
         captured = capsys.readouterr()
         assert captured.out == ""  # Should buffer, not output yet
-        
+
         legacy_console.write(b"\xa9")  # Second byte
         captured = capsys.readouterr()
         assert captured.out == "é"
@@ -134,10 +142,10 @@ class TestConsoleWindowsIncrementalDecoder:
         # 中 = \xe4\xb8\xad (3 bytes)
         legacy_console.write(b"\xe4")
         assert capsys.readouterr().out == ""
-        
+
         legacy_console.write(b"\xb8")
         assert capsys.readouterr().out == ""
-        
+
         legacy_console.write(b"\xad")
         assert capsys.readouterr().out == "中"
 
@@ -146,13 +154,13 @@ class TestConsoleWindowsIncrementalDecoder:
         # 🎉 = \xf0\x9f\x8e\x89 (4 bytes)
         legacy_console.write(b"\xf0")
         assert capsys.readouterr().out == ""
-        
+
         legacy_console.write(b"\x9f")
         assert capsys.readouterr().out == ""
-        
+
         legacy_console.write(b"\x8e")
         assert capsys.readouterr().out == ""
-        
+
         legacy_console.write(b"\x89")
         assert capsys.readouterr().out == "🎉"
 
@@ -161,10 +169,10 @@ class TestConsoleWindowsIncrementalDecoder:
         # "Hi 中!" split awkwardly
         legacy_console.write(b"Hi ")
         assert capsys.readouterr().out == "Hi "
-        
+
         legacy_console.write(b"\xe4\xb8")  # Partial 中
         assert capsys.readouterr().out == ""
-        
+
         legacy_console.write(b"\xad!")  # Complete 中 + !
         assert capsys.readouterr().out == "中!"
 
@@ -175,7 +183,10 @@ class TestConsoleWindowsIncrementalDecoder:
         assert captured.out == "Hello 世界"
 
 
-@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only test")
+@pytest.mark.skipif(
+    sys.platform != "win32" or sys.version_info < (3, 14),
+    reason="Windows-only, Python >= 3.14 test",
+)
 class TestConsoleWindowsModernOutput:
     """Unit tests for modern console raw output mode."""
 
@@ -183,6 +194,7 @@ class TestConsoleWindowsModernOutput:
     def modern_console(self):
         """Create a ConsoleWindows instance forced to modern mode."""
         from mpremote.console import ConsoleWindows
+
         console = ConsoleWindows()
         # Force modern mode with mock outfile
         console._use_raw_output = True
@@ -203,6 +215,7 @@ class TestConsoleWindowsModernOutput:
         assert modern_console.outfile.read() == b"\xe4\xbd\xa0\xe5\xa5\xbd"
 
 
+@pytest.mark.skipif(sys.version_info < (3, 14), reason="Python >= 3.14 test")
 class TestStdoutWriteBytesBuffering:
     """Unit tests for stdout_write_bytes UTF-8 buffering."""
 
@@ -210,6 +223,7 @@ class TestStdoutWriteBytesBuffering:
     def reset_buffer(self):
         """Reset the global buffer before each test."""
         import mpremote.transport as transport
+
         transport._stdout_buffer = b""
         yield
         transport._stdout_buffer = b""
@@ -227,8 +241,9 @@ class TestStdoutWriteBytesBuffering:
     def test_complete_utf8_written_immediately(self, mock_stdout):
         """Complete UTF-8 sequences should be written immediately."""
         from mpremote.transport import stdout_write_bytes
+
         mock, buffer = mock_stdout
-        
+
         with patch.object(sys, "stdout", mock):
             stdout_write_bytes(b"Hello")
             buffer.seek(0)
@@ -237,19 +252,20 @@ class TestStdoutWriteBytesBuffering:
     def test_split_utf8_buffered(self, mock_stdout):
         """Split UTF-8 sequences should be buffered until complete."""
         from mpremote.transport import stdout_write_bytes
+
         mock, buffer = mock_stdout
-        
+
         with patch.object(sys, "stdout", mock):
             # Write first byte of 3-byte sequence
             stdout_write_bytes(b"\xe4")
             buffer.seek(0)
             assert buffer.read() == b""  # Should be buffered
-            
+
             # Write second byte
             stdout_write_bytes(b"\xbd")
             buffer.seek(0)
             assert buffer.read() == b""  # Still buffered
-            
+
             # Write third byte - now complete
             stdout_write_bytes(b"\xa0")
             buffer.seek(0)
@@ -259,8 +275,9 @@ class TestStdoutWriteBytesBuffering:
         """ASCII followed by partial UTF-8 should write ASCII, buffer partial."""
         from mpremote.transport import stdout_write_bytes
         import mpremote.transport as transport
+
         mock, buffer = mock_stdout
-        
+
         with patch.object(sys, "stdout", mock):
             # Write ASCII + first byte of multi-byte
             stdout_write_bytes(b"Hi\xe4")
@@ -271,8 +288,9 @@ class TestStdoutWriteBytesBuffering:
     def test_control_char_removed(self, mock_stdout):
         """Control character 0x04 should be removed."""
         from mpremote.transport import stdout_write_bytes
+
         mock, buffer = mock_stdout
-        
+
         with patch.object(sys, "stdout", mock):
             stdout_write_bytes(b"Hello\x04World")
             buffer.seek(0)
@@ -281,8 +299,9 @@ class TestStdoutWriteBytesBuffering:
     def test_empty_input_noop(self, mock_stdout):
         """Empty input should be a no-op."""
         from mpremote.transport import stdout_write_bytes
+
         mock, buffer = mock_stdout
-        
+
         with patch.object(sys, "stdout", mock):
             stdout_write_bytes(b"")
             assert not mock.buffer.flush.called
@@ -292,13 +311,14 @@ class TestStdoutWriteBytesBuffering:
         """Bytes written one at a time should reassemble correctly."""
         from mpremote.transport import stdout_write_bytes
         import mpremote.transport as transport
+
         mock, buffer = mock_stdout
-        
+
         with patch.object(sys, "stdout", mock):
             # Write each byte individually (simulating slow serial read)
             for byte in utf8_bytes:
                 stdout_write_bytes(bytes([byte]))
-            
+
             # All bytes should now be written
             buffer.seek(0)
             written = buffer.read()
@@ -312,7 +332,10 @@ class TestIntegrationModernConsole:
     @pytest.fixture
     def device(self):
         """Get device from environment, skip if not available."""
-        device = os.environ.get("MPREMOTE_DEVICE") or os.environ.get("MPREMOTE_DEVICES", "").split(",")[0]
+        device = (
+            os.environ.get("MPREMOTE_DEVICE")
+            or os.environ.get("MPREMOTE_DEVICES", "").split(",")[0]
+        )
         if not device:
             pytest.skip("No device configured (set MPREMOTE_DEVICES)")
         return device.strip()
@@ -321,19 +344,21 @@ class TestIntegrationModernConsole:
     def test_print_unicode(self, device, desc, text, _, tmp_path):
         """Printing Unicode characters should work correctly."""
         import subprocess
-        
+
         # Create a test script that prints the text
         script = tmp_path / "test_print.py"
-        script.write_text(f'print({text!r})', encoding="utf-8")
-        
+        script.write_text(f"print({text!r})", encoding="utf-8")
+
         # Run via mpremote - capture as binary to avoid encoding issues
         result = subprocess.run(
             [sys.executable, "-m", "mpremote", "connect", device, "run", str(script)],
             capture_output=True,
             timeout=30,
         )
-        
-        assert result.returncode == 0, f"Failed for {desc}: {result.stderr.decode('utf-8', errors='replace')}"
+
+        assert result.returncode == 0, (
+            f"Failed for {desc}: {result.stderr.decode('utf-8', errors='replace')}"
+        )
         # Decode stdout as UTF-8 explicitly
         stdout = result.stdout.decode("utf-8", errors="replace")
         assert text in stdout, f"Expected {text!r} in output for {desc}, got {stdout!r}"
@@ -345,7 +370,10 @@ class TestIntegrationLegacyConsole:
     @pytest.fixture
     def device(self):
         """Get device from environment, skip if not available."""
-        device = os.environ.get("MPREMOTE_DEVICE") or os.environ.get("MPREMOTE_DEVICES", "").split(",")[0]
+        device = (
+            os.environ.get("MPREMOTE_DEVICE")
+            or os.environ.get("MPREMOTE_DEVICES", "").split(",")[0]
+        )
         if not device:
             pytest.skip("No device configured (set MPREMOTE_DEVICES)")
         return device.strip()
@@ -353,17 +381,17 @@ class TestIntegrationLegacyConsole:
     def test_print_unicode_legacy_simulation(self, device, tmp_path):
         """Test Unicode output with simulated legacy console environment."""
         import subprocess
-        
+
         # Create a test script
         script = tmp_path / "test_print.py"
         script.write_text('print("你好世界")', encoding="utf-8")
-        
+
         # Run with environment variables cleared to simulate legacy
         env = os.environ.copy()
         env.pop("WT_SESSION", None)
         env.pop("TERM_PROGRAM", None)
         env.pop("ConEmuANSI", None)
-        
+
         # Capture as binary to avoid encoding issues
         result = subprocess.run(
             [sys.executable, "-m", "mpremote", "connect", device, "run", str(script)],
@@ -371,7 +399,7 @@ class TestIntegrationLegacyConsole:
             timeout=30,
             env=env,
         )
-        
+
         # Should still work due to SetConsoleOutputCP(65001) and buffering
         assert result.returncode == 0, f"Failed: {result.stderr.decode('utf-8', errors='replace')}"
         # Decode stdout as UTF-8 explicitly
@@ -379,6 +407,7 @@ class TestIntegrationLegacyConsole:
         assert "你好世界" in stdout, f"Expected '你好世界' in output, got {stdout!r}"
 
 
+@pytest.mark.skipif(sys.version_info < (3, 14), reason="Python >= 3.14 test")
 class TestConfigureUnicodeOutput:
     """Unit tests for configure_unicode_output function."""
 
@@ -386,6 +415,7 @@ class TestConfigureUnicodeOutput:
         """Should be a no-op on non-Windows platforms."""
         monkeypatch.setattr(sys, "platform", "linux")
         from mpremote.console import configure_unicode_output
+
         # Should not raise
         configure_unicode_output()
 
@@ -393,16 +423,18 @@ class TestConfigureUnicodeOutput:
     def test_sets_console_code_page(self, monkeypatch):
         """Should call SetConsoleOutputCP(65001) on Windows."""
         import ctypes
+
         calls = []
-        
+
         def mock_set_cp(cp):
             calls.append(cp)
-        
+
         mock_kernel32 = MagicMock()
         mock_kernel32.SetConsoleOutputCP = mock_set_cp
-        
+
         with patch.object(ctypes, "windll", MagicMock(kernel32=mock_kernel32)):
             from mpremote.console import configure_unicode_output
+
             configure_unicode_output()
-        
+
         assert 65001 in calls
