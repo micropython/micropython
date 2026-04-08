@@ -6,6 +6,7 @@ Named 'shared_utils' (not 'test_*') to avoid pytest collection.
 """
 
 import os
+import subprocess
 import sys
 
 
@@ -127,3 +128,21 @@ except ImportError:
     # pytest not available - create dummy markers
     requires_pexpect = None
     requires_unix = None
+
+
+def run_mpremote(device, *args, check=True):
+    """
+    Run mpremote with the given device and arguments.
+
+    Returns (returncode, stdout, stderr) tuple.
+    """
+    mpremote = get_mpremote_path()
+    cmd = [sys.executable, mpremote, "connect", device] + list(args)
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    return result.returncode, result.stdout, result.stderr
