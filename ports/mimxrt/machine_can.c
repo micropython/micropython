@@ -56,7 +56,7 @@
 #define CAN_BRP_MAX 255
 #define CAN_FD_BRS_BRP_MIN 1
 #define CAN_FD_BRS_BRP_MAX 32
-#define CAN_FILTERS_STD_EXT_SEPARATE 1
+// #define CAN_FILTERS_STD_EXT_SEPARATE 1
 
 #else // Classic bxCAN
 #define CAN_BRP_MIN 1
@@ -308,7 +308,10 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         port->flexcan_config->disableSelfReception = true;
 
         port->flexcan_rx_fifo_config = m_new_obj(flexcan_rx_fifo_config_t);
-        mp_uint_t idFilterNum = maxMbNum * 2;
+        // Set the number of filters here. RFFN will be set accordingly.
+        // This largest possible value is (CAN_CTRL2_RFFN_MASK >> CAN_CTRL2_RFFN_SHIFT) + 1) * 8.
+        // If needed, lower these in steps of 8.
+        mp_uint_t idFilterNum = CAN_IDFILTERNUM_MAX;
         port->flexcan_rx_fifo_config->idFilterNum = idFilterNum;
         port->flexcan_rx_fifo_config->idFilterType = kFLEXCAN_RxFifoFilterTypeA;
         port->flexcan_rx_fifo_config->priority = kFLEXCAN_RxFifoPrioHigh;
@@ -367,6 +370,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     machine_can_port_clear_filters(self);
     FLEXCAN_SetRxFifoConfig(port->can_inst, port->flexcan_rx_fifo_config, true);
 
+    // FLEXCAN_SetRxFifoConfig() sets CTRL2->RFFN based on the above configured number of filters.
     // Calculate the Number of Mailboxes occupied by RX Legacy FIFO and the filter.
     mp_uint_t rffn = (uint8_t)((port->can_inst->CTRL2 & CAN_CTRL2_RFFN_MASK) >> CAN_CTRL2_RFFN_SHIFT);
     port->flexcan_txmb_start = 6U + (rffn + 1U) * 2U;
@@ -428,12 +432,18 @@ static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
 // Clear all filters
 static void machine_can_port_clear_filters(machine_can_obj_t *self) {
     struct machine_can_port *port = self->port;
-    mp_uint_t bank;
-    for (bank = 0; bank < port->flexcan_config->maxMbNum; bank++) {
-        port->flexcan_rx_fifo_config->idFilterTable[bank * 2] = 0;
-        port->flexcan_rx_fifo_config->idFilterTable[(bank * 2) + 1] = 0;
-    }
+
+    // Clear the filters
+    memset(port->flexcan_rx_fifo_config->idFilterTable, 0,
+        sizeof(uint32_t) * port->flexcan_rx_fifo_config->idFilterNum);
     FLEXCAN_SetRxFifoConfig(port->can_inst, port->flexcan_rx_fifo_config, true);
+    // Clear the masks. Kind of obsolete, since the mask is always
+    // set with the filter.
+    FLEXCAN_EnterFreezeMode(port->can_inst);
+    for (int idx = 0; idx < CAN_FILTER_MASK_NUM; idx++) {
+        port->can_inst->RXIMR[idx] = 0x3fffffff;
+    }
+    FLEXCAN_ExitFreezeMode(port->can_inst);
 }
 
 // The extmod layer calls this function in a loop with incrementing filter_idx
@@ -446,7 +456,7 @@ static void machine_can_port_clear_filters(machine_can_obj_t *self) {
 static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx, mp_uint_t can_id, mp_uint_t mask, mp_uint_t flags) {
     struct machine_can_port *port = self->port;
 
-    if (filter_idx >= port->flexcan_config->maxMbNum) {
+    if (filter_idx >= port->flexcan_rx_fifo_config->idFilterNum) {
         return;
     }
     if (flags & CAN_MSG_FLAG_EXT_ID) {
@@ -461,11 +471,11 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
         mask |= 1 << 30;
     }
     port->flexcan_rx_fifo_config->idFilterTable[filter_idx] = can_id << 1;
-    if (filter_idx < 64) {
-        FLEXCAN_EnterFreezeMode(port->can_inst);
-        port->can_inst->RXIMR[filter_idx] = mask << 1;
-        FLEXCAN_ExitFreezeMode(port->can_inst);
+    if (filter_idx < CAN_FILTER_MASK_NUM) {
+        FLEXCAN_SetRxIndividualMask(port->can_inst, filter_idx, mask << 1);
     }
+    // t.b.d.: Set a single filter instead of reloading all filters of the table
+    // multiple times.
     FLEXCAN_SetRxFifoConfig(port->can_inst, port->flexcan_rx_fifo_config, true);
 }
 
@@ -705,10 +715,11 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
         FLEXCAN_ClearMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag);
     }
     // Clear all filters
-    // machine_can_port_clear_filters(self);
+    machine_can_port_clear_filters(self);
     // Re-enable FLEXCAN MB interrupts
     FLEXCAN_EnableMbInterrupts(port->can_inst,
         kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag);
+    // Since Bit BOFF_REC of CTRL1 is 0, bus off recovery happens automatic.
 }
 
 static mp_uint_t can_count_txmb_pending(machine_can_port_t *port) {
