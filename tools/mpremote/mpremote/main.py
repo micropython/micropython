@@ -20,35 +20,21 @@ MicroPython device over a serial connection.  Commands supported are:
 import sys
 
 if sys.platform == "win32":
-    # Configure stdout/stderr before any imports that might print: on some Windows
-    # consoles the default code page/encoding can't represent all Unicode.
-    from .console import ConsoleWindows
-
-    ConsoleWindows.configure_unicode_output()
+    # if needed, apply Unicode fix before other imports that might print
+    from .console import configure_unicode_output
+    configure_unicode_output()
 
 import argparse
-import os, time
+import os
+import time
 from collections.abc import Mapping
 from textwrap import dedent
 
 import platformdirs
 
-from .commands import (
-    CommandError,
-    do_connect,
-    do_disconnect,
-    do_edit,
-    do_filesystem,
-    do_mount,
-    do_umount,
-    do_exec,
-    do_eval,
-    do_run,
-    do_resume,
-    do_rtc,
-    do_soft_reset,
-    do_romfs,
-)
+from .commands import (CommandError, do_connect, do_disconnect, do_edit,
+                       do_eval, do_exec, do_filesystem, do_mount, do_resume,
+                       do_romfs, do_rtc, do_run, do_soft_reset, do_umount)
 from .mip import do_mip
 from .repl import do_repl
 
