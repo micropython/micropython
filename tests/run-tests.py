@@ -178,6 +178,7 @@ platform_tests_to_skip = {
         "extmod/binascii_a2b_base64.py",
         "extmod/deflate_compress_memory_error.py",  # tries to allocate unlimited memory
         "extmod/re_stack_overflow.py",
+        "extmod/re_stack_overflow2.py",
         "extmod/time_res.py",
         "extmod/vfs_posix.py",
         "extmod/vfs_posix_enoent.py",
