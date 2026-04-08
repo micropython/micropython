@@ -52,7 +52,7 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: '3.11'
-    - uses: microsoft/setup-msbuild@v2
+    - uses: microsoft/setup-msbuild@v3
       with:
         vs-version: ${{ matrix.vs_version }}
     - uses: actions/checkout@v6
