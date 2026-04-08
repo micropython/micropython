@@ -70,6 +70,17 @@ Functions
       function - ``set_threshold()``, but due to different GC
       implementations, its signature and semantics are different.
 
+   Examples
+   ^^^^^^^^
+
+   To trigger a garbage collection each time 32768 bytes of RAM have been allocated in total::
+
+       gc.threshold(32768)
+
+   To restore the default behaviour, only triggering garbage collection when out of memory::
+
+       gc.threshold(-1)
+
 Example
 -------
 
