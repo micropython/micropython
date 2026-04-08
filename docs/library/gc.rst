@@ -19,6 +19,10 @@ Functions
    Disable automatic garbage collection.  Heap memory can still be allocated,
    and garbage collection can still be initiated manually using :meth:`gc.collect`.
 
+.. function:: isenabled()
+
+   Returns True if automatic garbage collection is enabled, and False otherwise.
+
 .. function:: collect()
 
    Run a garbage collection.
