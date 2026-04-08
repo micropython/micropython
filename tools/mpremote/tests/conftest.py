@@ -127,29 +127,18 @@ def pytest_generate_tests(metafunc):
     Tests can simply declare (device, scenario) as parameters and this hook will
     populate them from MPREMOTE_DEVICES environment variable.
 
-    If no devices are configured, tests are skipped with a clear message.
+    If no devices are configured, defaults to "auto" for automatic device detection.
     """
     # Only parametrize if test requests both device and scenario
     if "device" in metafunc.fixturenames and "scenario" in metafunc.fixturenames:
         devices = _get_cached_devices()
 
-        if devices:
-            metafunc.parametrize(
-                "device,scenario",
-                devices,
-                ids=[d[1] for d in devices],  # Use scenario as test ID
-            )
-        else:
-            # No devices configured - add a skipped placeholder
-            metafunc.parametrize(
-                "device,scenario",
-                [
-                    pytest.param(
-                        "", "no-device", marks=pytest.mark.skip(reason="No devices configured")
-                    )
-                ],
-                ids=["no-device"],
-            )
+        # devices will always have at least one entry (defaults to "auto")
+        metafunc.parametrize(
+            "device,scenario",
+            devices,
+            ids=[d[1] for d in devices],  # Use scenario as test ID
+        )
 
 
 class ScenarioPrefixPlugin:

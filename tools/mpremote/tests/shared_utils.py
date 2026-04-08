@@ -74,6 +74,7 @@ def get_devices():
     Get list of devices to test against from MPREMOTE_DEVICES or MPREMOTE_DEVICE env var.
 
     Returns list of (device_url, scenario_name) tuples.
+    If no devices are configured, defaults to "auto" for automatic device detection.
     """
     devices_str = os.environ.get("MPREMOTE_DEVICES", "")
     if not devices_str:
@@ -83,7 +84,8 @@ def get_devices():
             devices_str = device_str
 
     if not devices_str:
-        return []
+        # Default to "auto" for automatic device detection
+        return [("auto", "auto")]
 
     devices = [d.strip() for d in devices_str.split(",") if d.strip()]
     return [(device, get_scenario_from_device(device)) for device in devices]
