@@ -301,10 +301,21 @@ not all constants are available on all ports.
 
 .. data:: Pin.PULL_UP
           Pin.PULL_DOWN
-          Pin.PULL_HOLD
 
    Selects whether there is a pull up/down resistor.  Use the value
    ``None`` for no pull.
+
+   Some ports have a different constants set that can be used to select
+   hardware-specific behaviour:
+
+   - The esp8266 port does not have pull-down resistors on GPIO pins, hence
+     ``Pin.PULL_DOWN`` is not supported.
+   - The mimxrt port has several extra constants to enable different pull
+     modes: ``Pin.PULL_UP_22K`` enables a 22KΩ pull-up on the pin,
+     ``Pin.PULL_UP_47K`` enables a 47KΩ pull-up on the pin, and
+     ``Pin.PULL_HOLD`` that puts the pin into high-impedance mode.  The
+     ``Pin.PULL_UP`` and ``Pin.PULL_DOWN`` constants will use a 100KΩ internal
+     resistor.
 
 .. data:: Pin.DRIVE_0
           Pin.DRIVE_1
