@@ -45,7 +45,7 @@
 #define CAN_LOOPBACK_FLAG               (1)
 #define CAN_SILENT_FLAG                 (2)
 
-#define CAN_PORT_PRINT_FUNCTION         (1)
+#define CAN_PORT_PRINT_FUNCTION         (0)
 
 // Port-specific IRQ flags
 #define MP_CAN_IRQ_RX_OVERFLOW      (1 << 4)
@@ -259,33 +259,6 @@ void machine_can_irq_deinit(void) {
         }
     }
 }
-
-#if CAN_PORT_PRINT_FUNCTION
-static void machine_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    struct machine_can_port *port = self->port;
-
-    if (!port->is_enabled) {
-        mp_printf(print, "CAN(%u)", self->can_idx + 1);
-    } else {
-        qstr mode = MP_QSTR_MODE_NORMAL;
-        if (port->flexcan_config->enableLoopBack) {
-            if (port->flexcan_config->enableListenOnlyMode) {
-                mode = MP_QSTR_MODE_SILENT_LOOPBACK;
-            } else {
-                mode = MP_QSTR_MODE_LOOPBACK;
-            }
-        } else if (port->flexcan_config->enableListenOnlyMode) {
-            mode = MP_QSTR_MODE_SILENT;
-        }
-        mp_printf(print, "CAN(%u, bitrate=%u, mode=CAN.%q, auto_restart=%q)",
-            self->can_idx + 1,
-            port->flexcan_config->bitRate,
-            mode,
-            (port->can_inst->CTRL1 & CAN_CTRL1_BOFFREC_MASK) ? MP_QSTR_False : MP_QSTR_True);
-    }
-}
-#endif
 
 // Convert the port agnostic CAN mode to the ST mode
 static uint32_t can_port_mode(machine_can_mode_t mode) {
