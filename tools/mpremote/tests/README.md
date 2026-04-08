@@ -107,21 +107,24 @@ The HTML report shows which tests covered each line, including scenario contexts
 ### Subprocess Coverage
 
 Both test frameworks collect coverage from subprocesses (the actual `mpremote` commands
-being tested), not just from the test harness code.
+being tested), not just from the test harness code. They use the same approach:
 
-**Bash tests:** When using `-c`, the script wraps each `mpremote` invocation with
-`coverage run --context=<test_name>`. This creates parallel coverage data files
-(`.coverage.<hostname>.<pid>.<random>`) that are later combined with `coverage combine`.
+**Pattern:** Wrap mpremote invocations with `coverage run --context=<test_name>`.
 
-**Pytest tests:** The `conftest.py` sets up subprocess coverage by:
-1. Setting `COVERAGE_PROCESS_START` to point to `pyproject.toml`
-2. Adding the tests directory to `PYTHONPATH` so `sitecustomize.py` is discovered
-3. Passing the test context via `MPREMOTE_COVERAGE_CONTEXT` environment variable
+**Bash tests:** When using `-c`, the script sets:
+```bash
+MPREMOTE="coverage run --context=${TEST_NAME} ${TEST_DIR}/../mpremote.py"
+```
 
-When a subprocess starts, Python automatically imports `sitecustomize.py`, which starts
-coverage collection with the test's context. This allows tracking which device scenarios
-(socket, rfc2217, serial) covered each line of code.
+**Pytest tests:** The `get_spawn_command()` helper detects when coverage is active
+(via `COVERAGE_PROCESS_START` env var set by conftest.py) and wraps commands:
+```python
+# Returns: ("coverage", ["run", "--context=...", "mpremote.py", ...])
+cmd, args = get_spawn_command(mpremote, ["connect", device], request.node.nodeid)
+child = pexpect.spawn(cmd, args, ...)
+```
 
-The coverage configuration in `pyproject.toml` uses `parallel = true` to support
-collecting data from multiple subprocesses without conflicts.
+Both approaches create parallel coverage data files (`.coverage.<hostname>.<pid>.*`)
+that are combined with `coverage combine`. The `parallel = true` setting in
+`pyproject.toml` enables this.
 

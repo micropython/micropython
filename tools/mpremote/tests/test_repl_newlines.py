@@ -33,102 +33,17 @@ import time
 
 import pytest
 
-# Import scenario helper from conftest
-from conftest import get_scenario_from_device
-
-# Check for required dependencies
-try:
-    import pexpect
-except ImportError:
-    pexpect = None
-
-
-def is_wsl():
-    """Detect if running under Windows Subsystem for Linux (WSL)."""
-    try:
-        with open("/proc/version", "r") as f:
-            return "microsoft" in f.read().lower()
-    except (FileNotFoundError, PermissionError):
-        return False
-
-
-def get_devices():
-    """
-    Get list of devices to test against from MPREMOTE_DEVICES or MPREMOTE_DEVICE env var.
-
-    Returns list of (device_url, scenario_name) tuples.
-    """
-    devices_str = os.environ.get("MPREMOTE_DEVICES", "")
-    if not devices_str:
-        # Fall back to singular MPREMOTE_DEVICE
-        device_str = os.environ.get("MPREMOTE_DEVICE", "")
-        if device_str:
-            devices_str = device_str
-
-    if not devices_str:
-        return []
-
-    devices = [d.strip() for d in devices_str.split(",") if d.strip()]
-    return [(device, get_scenario_from_device(device)) for device in devices]
-
-
-def get_mpremote_path():
-    """Get the path to mpremote.py."""
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(test_dir, "..", "mpremote.py")
-
-
-def build_subprocess_env(test_nodeid=None):
-    """
-    Build environment dict for subprocess with coverage support.
-
-    This ensures subprocesses:
-    1. Can find sitecustomize.py (via PYTHONPATH)
-    2. Know the coverage config file (via COVERAGE_PROCESS_START - inherited)
-    3. Know which test context to use (via MPREMOTE_COVERAGE_CONTEXT)
-
-    Args:
-        test_nodeid: The pytest node ID (already has scenario prefix from conftest)
-
-    Returns:
-        Environment dict for subprocess
-    """
-    env = os.environ.copy()
-
-    # Ensure mpremote directory is in PYTHONPATH for sitecustomize.py
-    mpremote_path = get_mpremote_path()
-    mpremote_dir = os.path.dirname(mpremote_path)
-
-    if "PYTHONPATH" in env:
-        if mpremote_dir not in env["PYTHONPATH"]:
-            env["PYTHONPATH"] = f"{mpremote_dir}:{env['PYTHONPATH']}"
-    else:
-        env["PYTHONPATH"] = mpremote_dir
-
-    # Set coverage context for subprocess (nodeid from conftest already has [scenario] prefix)
-    if test_nodeid:
-        env["MPREMOTE_COVERAGE_CONTEXT"] = test_nodeid
-
-    return env
-
-
-# Skip conditions
-requires_pexpect = pytest.mark.skipif(pexpect is None, reason="pexpect is required for REPL tests")
-requires_unix = pytest.mark.skipif(
-    sys.platform == "win32", reason="PTY tests only work on Unix-like systems"
+# Import shared utilities
+from shared_utils import (
+    get_mpremote_path,
+    get_spawn_command,
+    is_wsl,
+    requires_pexpect,
+    requires_unix,
 )
 
-# Get devices for parametrization at module load time
-_DEVICES = get_devices()
-
-
-# Parametrize decorator for device tests
-device_params = pytest.mark.parametrize(
-    "device,scenario",
-    _DEVICES
-    if _DEVICES
-    else [pytest.param("", "no-device", marks=pytest.mark.skip(reason="No devices configured"))],
-    ids=[d[1] for d in _DEVICES] if _DEVICES else ["no-device"],
+pexpect = pytest.importorskip(
+    "pexpect", reason="The 'pexpect' module is required for PTY-based tests"
 )
 
 
@@ -137,7 +52,6 @@ device_params = pytest.mark.parametrize(
 class TestReplNewlines:
     """Tests for REPL newline handling in interactive mode."""
 
-    @device_params
     def test_repl_newline_no_staircase(self, device, scenario, request):
         """
         Test that print() output has proper newlines (no staircase effect).
@@ -179,16 +93,15 @@ class TestReplNewlines:
             connect_timeout = 10
             prompt_timeout = 5
 
-        # Build environment for subprocess with coverage context
-        env = build_subprocess_env(request.node.nodeid)
+        # Get command with optional coverage wrapping
+        cmd, args = get_spawn_command(mpremote, ["connect", device], request.node.nodeid)
 
         # Spawn mpremote in a PTY
         child = pexpect.spawn(
-            sys.executable,
-            [mpremote, "connect", device],
+            cmd,
+            args,
             encoding="utf-8",
             timeout=connect_timeout,
-            env=env,
         )
         # Use CRLF line endings for serial devices - MicroPython REPL expects CR
         child.linesep = "\r\n"
@@ -552,7 +465,6 @@ class TestConsolePosixTerminalSettings:
 class TestReplMultipleCommands:
     """Additional REPL tests to verify multiple tests can run sequentially."""
 
-    @device_params
     def test_repl_simple_expression(self, device, scenario, request):
         """
         Test that a simple expression evaluates correctly in the REPL.
@@ -579,15 +491,14 @@ class TestReplMultipleCommands:
             connect_timeout = 10
             prompt_timeout = 5
 
-        # Build environment for subprocess with coverage context
-        env = build_subprocess_env(request.node.nodeid)
+        # Get command with optional coverage wrapping
+        cmd, args = get_spawn_command(mpremote, ["connect", device], request.node.nodeid)
 
         child = pexpect.spawn(
-            sys.executable,
-            [mpremote, "connect", device],
+            cmd,
+            args,
             encoding="utf-8",
             timeout=connect_timeout,
-            env=env,
         )
         child.linesep = "\r\n"
 

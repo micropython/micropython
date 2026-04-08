@@ -16,37 +16,12 @@ import os
 from pathlib import Path
 
 import pytest
+from shared_utils import get_scenario_from_device
 
 # Module-level paths for subprocess coverage
 _TESTS_DIR = Path(__file__).parent.absolute()
 _MPREMOTE_DIR = _TESTS_DIR.parent
 _CONFIG_FILE = _MPREMOTE_DIR / "pyproject.toml"
-
-
-def get_scenario_from_device(device):
-    """
-    Determine the scenario name from a device URL.
-
-    Returns a human-readable scenario name like:
-    - "socket" for socket://... connections
-    - "rfc2217" for rfc2217://... connections
-    - "ttyACM0" for /dev/ttyACM0
-    - "COM3" for COM3
-    - "unittest" for tests without a device
-    """
-    if not device:
-        return "unittest"
-    elif device.startswith("socket://"):
-        return "socket"
-    elif device.startswith("rfc2217://"):
-        return "rfc2217"
-    elif device.startswith("/dev/"):
-        # Extract device name (e.g., ttyACM0 from /dev/ttyACM0)
-        return device.split("/")[-1]
-    elif device.startswith("COM"):
-        return device
-    else:
-        return "other"
 
 
 def get_device_scenario():
@@ -120,6 +95,63 @@ def device():
     return _DEVICE
 
 
+# Cache devices at session level - only computed once
+_CACHED_DEVICES = None
+
+
+def _get_cached_devices():
+    """Get devices list, cached for the session."""
+    global _CACHED_DEVICES
+    if _CACHED_DEVICES is None:
+        from shared_utils import get_devices
+
+        _CACHED_DEVICES = get_devices()
+    return _CACHED_DEVICES
+
+
+@pytest.fixture(scope="session")
+def devices():
+    """
+    Session-scoped fixture providing the list of configured devices.
+
+    Returns list of (device_url, scenario_name) tuples.
+    """
+    return _get_cached_devices()
+
+
+def pytest_generate_tests(metafunc):
+    """
+    Dynamically parametrize tests that request 'device' and 'scenario' parameters.
+
+    This is the pytest-native way to do dynamic parametrization at collection time.
+    Tests can simply declare (device, scenario) as parameters and this hook will
+    populate them from MPREMOTE_DEVICES environment variable.
+
+    If no devices are configured, tests are skipped with a clear message.
+    """
+    # Only parametrize if test requests both device and scenario
+    if "device" in metafunc.fixturenames and "scenario" in metafunc.fixturenames:
+        devices = _get_cached_devices()
+
+        if devices:
+            metafunc.parametrize(
+                "device,scenario",
+                devices,
+                ids=[d[1] for d in devices],  # Use scenario as test ID
+            )
+        else:
+            # No devices configured - add a skipped placeholder
+            metafunc.parametrize(
+                "device,scenario",
+                [
+                    pytest.param(
+                        "", "no-device", marks=pytest.mark.skip(reason="No devices configured")
+                    )
+                ],
+                ids=["no-device"],
+            )
+
+
 class ScenarioPrefixPlugin:
     """
     Plugin to prefix coverage context with the scenario name.
@@ -187,15 +219,11 @@ def _setup_subprocess_coverage(config):
     """
     Configure environment for subprocess coverage collection.
 
-    This sets up the environment so that subprocesses (like mpremote run via pexpect)
-    will also collect coverage data, which can then be combined with the main coverage.
+    Sets COVERAGE_PROCESS_START so that test helpers can detect when coverage
+    is active and wrap subprocess calls with `coverage run --context=...`.
 
-    Required environment variables:
-    - COVERAGE_PROCESS_START: Path to coverage config file (pyproject.toml)
-    - PYTHONPATH: Must include tests directory so sitecustomize.py is found
-
-    The sitecustomize.py file in the tests directory will start coverage
-    if COVERAGE_PROCESS_START is set.
+    The actual coverage wrapping is done by get_spawn_command() in the test files,
+    using the same pattern as the bash tests in run-mpremote-tests.sh.
     """
     # Only set up if we're collecting coverage
     if not hasattr(config, "_cov"):
@@ -207,17 +235,6 @@ def _setup_subprocess_coverage(config):
     # Set COVERAGE_PROCESS_START to our config file
     if _CONFIG_FILE.exists():
         os.environ["COVERAGE_PROCESS_START"] = str(_CONFIG_FILE)
-
-        # Add tests directory to PYTHONPATH for sitecustomize.py
-        # This keeps sitecustomize.py separate from the module under test
-        current_pythonpath = os.environ.get("PYTHONPATH", "")
-        tests_dir = str(_TESTS_DIR)
-
-        if tests_dir not in current_pythonpath:
-            if current_pythonpath:
-                os.environ["PYTHONPATH"] = f"{tests_dir}:{current_pythonpath}"
-            else:
-                os.environ["PYTHONPATH"] = tests_dir
 
         # Store for validation later
         config._subprocess_coverage_enabled = True
