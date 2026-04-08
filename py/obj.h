@@ -117,7 +117,7 @@ extern const struct _mp_obj_float_t mp_const_float_inf_obj;
 extern const struct _mp_obj_float_t mp_const_float_nan_obj;
 #endif
 
-#define mp_obj_is_float(o) mp_obj_is_type((o), &mp_type_float)
+#define mp_obj_is_float(o) mp_obj_is_exact_type((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_new_float(mp_float_t value);
 #endif
@@ -162,7 +162,7 @@ extern const struct _mp_obj_float_t mp_const_float_inf_obj;
 extern const struct _mp_obj_float_t mp_const_float_nan_obj;
 #endif
 
-#define mp_obj_is_float(o) mp_obj_is_type((o), &mp_type_float)
+#define mp_obj_is_float(o) mp_obj_is_exact_type((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_new_float(mp_float_t value);
 #endif
@@ -977,8 +977,13 @@ void *mp_obj_malloc_with_finaliser_helper(size_t num_bytes, const mp_obj_type_t 
     MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_str), assert((t) != &mp_type_str),           \
     MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_NoneType), assert((t) != &mp_type_NoneType), \
     1)
+#if MICROPY_PY_BUILTINS_FLOAT
+#define mp_type_assert_not_float(t) (MP_STATIC_ASSERT_NONCONSTEXPR((t) != &mp_type_float), assert((t) != &mp_type_float), 1)
+#else
+#define mp_type_assert_not_float(t) (1)
+#endif
 
-#define mp_obj_is_type(o, t) (mp_type_assert_not_bool_int_str_nonetype(t) && mp_obj_is_exact_type(o, t))
+#define mp_obj_is_type(o, t) (mp_type_assert_not_bool_int_str_nonetype(t) && mp_type_assert_not_float(t) && mp_obj_is_exact_type(o, t))
 #if MICROPY_OBJ_IMMEDIATE_OBJS
 // bool's are immediates, not real objects, so test for the 2 possible values.
 #define mp_obj_is_bool(o) ((o) == mp_const_false || (o) == mp_const_true)
