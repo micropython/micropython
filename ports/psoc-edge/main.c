@@ -158,6 +158,9 @@ void mpy_task(void *arg) {
     #endif
 
     time_init();
+    #if MICROPY_PY_NETWORK
+    network_hw_init();
+    #endif
 
 soft_reset:
     machine_rtc_init_all();

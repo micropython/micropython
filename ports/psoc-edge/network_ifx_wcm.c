@@ -115,24 +115,26 @@ static void wifi_sdio_init(void) {
 }
 
 // ---------------------------------------------------------------------------
-// network_init / network_deinit called from main.c
+// network_hw_init  — one-time HW bring-up, called before the soft_reset loop
+// network_init / network_deinit — called every soft reset from main.c
 // ---------------------------------------------------------------------------
 #define wcm_assert_raise(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
-void network_init(void) {
+void network_hw_init(void) {
     wifi_sdio_init();
     #if (CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_DEEPSLEEP)
     Cy_SysPm_RegisterCallback(&sdhc_ds_cb);
     #endif
     wcm_config.interface = CY_WCM_INTERFACE_TYPE_STA;
     wcm_config.wifi_interface_instance = &sdio_obj;
+}
 
+void network_init(void) {
     cy_rslt_t ret = cy_wcm_init(&wcm_config);
     wcm_assert_raise("network init error (code: %d)", ret);
 }
-
 
 void network_deinit(void) {
     cy_rslt_t ret = cy_wcm_deinit();
