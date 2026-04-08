@@ -30,6 +30,8 @@
 #include "extmod/modnetwork.h"
 #include "network_ifx_wcm.h"
 
+#include <string.h>
+
 #include "cybsp.h"
 #include "cy_wcm.h"
 #include "mtb_hal_sdio.h"
@@ -43,6 +45,15 @@
 
 #if MICROPY_PY_NETWORK_IFX_WCM
 
+#define NETWORK_WLAN_DEFAULT_SSID       "mpy-psoc-edge-wlan"
+#define NETWORK_WLAN_DEFAULT_PASSWORD   "mpy_PSoC_w3lc0me!"
+#define NETWORK_WLAN_DEFAULT_SECURITY   CY_WCM_SECURITY_WPA2_AES_PSK
+#define NETWORK_WLAN_DEFAULT_CHANNEL    9
+
+#define NETWORK_WLAN_AP_IP              "192.168.0.1"
+#define NETWORK_WLAN_AP_GATEWAY_IP      "192.168.0.1"
+#define NETWORK_WLAN_AP_NETMASK_IP      "255.255.255.0"
+
 // ---------------------------------------------------------------------------
 // SDIO / GPIO hardware state
 // ---------------------------------------------------------------------------
@@ -52,13 +63,33 @@
 #define WIFI_SDIO_FREQUENCY_HZ          (25000000U)
 #define WIFI_SDIO_BLOCK_SIZE            (64U)
 
+typedef struct {
+    cy_wcm_ap_config_t ap_config;
+} network_ifx_wcm_ap_obj_t;
+
+typedef struct {
+    cy_wcm_associated_ap_info_t ap_info;
+    uint8_t connect_retries;
+} network_ifx_wcm_sta_obj_t;
+
+typedef union {
+    network_ifx_wcm_ap_obj_t ap_obj;
+    network_ifx_wcm_sta_obj_t sta_obj;
+} itf_obj_t;
+
 typedef struct _network_ifx_wcm_obj_t {
     mp_obj_base_t base;
     cy_wcm_interface_t itf;
+    itf_obj_t itf_obj;
 } network_ifx_wcm_obj_t;
 
 static network_ifx_wcm_obj_t network_ifx_wcm_wl_sta = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_STA };
 static network_ifx_wcm_obj_t network_ifx_wcm_wl_ap = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_AP };
+
+#define wcm_get_ap_conf_ptr(net_obj) & (net_obj.itf_obj.ap_obj.ap_config)
+#define wcm_get_sta_conf_ptr(net_obj) & (net_obj.itf_obj.sta_obj)
+
+extern uint8_t cy_wcm_is_ap_up(void);
 
 static mtb_hal_sdio_t sdio_obj;
 static cy_stc_sd_host_context_t sdhc_ctx;
@@ -130,18 +161,50 @@ static void wifi_sdio_init(void) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
+// Network Access Point initialization with default network parameters
+void network_ap_init() {
+    cy_rslt_t ret = CY_RSLT_SUCCESS;
+    cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+    cy_wcm_ip_setting_t *ap_ip_settings = &(ap_conf->ip_settings);
+
+    ap_conf->channel = NETWORK_WLAN_DEFAULT_CHANNEL;
+    memcpy(ap_conf->ap_credentials.SSID, NETWORK_WLAN_DEFAULT_SSID, strlen(NETWORK_WLAN_DEFAULT_SSID) + 1);
+    memcpy(ap_conf->ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD, strlen(NETWORK_WLAN_DEFAULT_PASSWORD) + 1);
+    ap_conf->ap_credentials.security = NETWORK_WLAN_DEFAULT_SECURITY;
+
+    cy_wcm_set_ap_ip_setting(ap_ip_settings, NETWORK_WLAN_AP_IP, NETWORK_WLAN_AP_NETMASK_IP, NETWORK_WLAN_AP_GATEWAY_IP, CY_WCM_IP_VER_V4);
+    wcm_assert_raise("network ap ip setting error (code: %d)", ret);
+}
+
+static void restart_ap(cy_wcm_ap_config_t *ap_conf) {
+    if (cy_wcm_is_ap_up()) {
+        uint32_t ret = cy_wcm_stop_ap();
+        wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
+        ret = cy_wcm_start_ap(ap_conf);
+        wcm_assert_raise("network ap active error (with code: %d)", ret);
+    }
+}
+
+void network_sta_init() {
+    network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+    sta_conf->connect_retries = 3; // Default connect retries
+}
+
 void network_hw_init(void) {
     wifi_sdio_init();
     #if (CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_DEEPSLEEP)
     Cy_SysPm_RegisterCallback(&sdhc_ds_cb);
     #endif
-    wcm_config.interface = CY_WCM_INTERFACE_TYPE_STA;
+    wcm_config.interface = CY_WCM_INTERFACE_TYPE_AP_STA;
     wcm_config.wifi_interface_instance = &sdio_obj;
 }
 
 void network_init(void) {
     cy_rslt_t ret = cy_wcm_init(&wcm_config);
     wcm_assert_raise("network init error (code: %d)", ret);
+
+    network_ap_init();
+    network_sta_init();
 }
 
 void network_deinit(void) {
@@ -197,7 +260,38 @@ static void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_
         );
 }
 
+/*******************************************************************************/
+// network API
+
+static mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
+    cy_rslt_t ret = CY_RSLT_SUCCESS;
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+        if (n_args == 1) {
+            return mp_obj_new_bool(cy_wcm_is_connected_to_ap());
+        }
+    } else if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+        if (n_args == 1) {
+            return mp_obj_new_bool(cy_wcm_is_ap_up());
+        } else {
+            if (mp_obj_is_true(args[1])) {
+                cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+                ret = cy_wcm_start_ap(ap_conf);
+                wcm_assert_raise("network ap active error (with code: %d)", ret);
+            } else {
+                ret = cy_wcm_stop_ap();
+                wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
+            }
+        }
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, network_ifx_wcm_active);
+
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_ifx_wcm_active_obj) },
 };
 static MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
