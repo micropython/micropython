@@ -267,6 +267,7 @@ tests_requiring_slice = (
     "extmod/time_mktime.py",
     "extmod/time_res.py",
     "extmod/tls_sslcontext_ciphers.py",
+    "extmod/vfs_blockdev_invalid2.py",
     "extmod/vfs_fat_fileio1.py",
     "extmod/vfs_fat_finaliser.py",
     "extmod/vfs_fat_more.py",
@@ -873,7 +874,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     def run_one_test(test_file):
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
         # If test_file is one of our own tests always make it relative to our tests/ dir and
-        # otherwise use the abosulte path, irregardless of actual path passed,
+        # otherwise use the absolute path, regardless of actual path passed,
         # such that display and result output is always the same.
         try:
             test_file_relpath = os.path.relpath(test_file, start=base_path())
