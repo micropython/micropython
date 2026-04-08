@@ -50,6 +50,11 @@
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
 #define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
 
+// Port level Wait-for-Event macro.
+#ifndef MICROPY_INTERNAL_WFE
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) __WFE()
+#endif
+
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT   (500)
 
 #define MP_HAL_PIN_FMT                  "%q"

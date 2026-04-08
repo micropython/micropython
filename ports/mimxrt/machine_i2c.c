@@ -170,7 +170,7 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     }
     //  Wait for the transfer to complete
     while (self->transfer_busy) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 
     // Transfer will not send a stop in case of errors like NAK. So it's done here.

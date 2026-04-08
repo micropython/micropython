@@ -223,14 +223,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_USB_PID (0x9802)
 #endif
 
-#ifndef  MICROPY_EVENT_POLL_HOOK
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-        __WFE(); \
-    } while (0);
-#endif
-
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \

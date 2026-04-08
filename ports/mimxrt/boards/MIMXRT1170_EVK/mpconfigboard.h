@@ -3,10 +3,8 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1070evk"
 
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-    } while (0);
+// Do not use WFE when waiting for an event.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS)
 
 // MIMXRT1170_EVK has 2 user LEDs
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_04)
