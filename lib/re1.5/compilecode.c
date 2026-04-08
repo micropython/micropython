@@ -29,6 +29,8 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
     int term = PC;
     int alt_label = 0;
 
+    re1_5_stack_chk();
+
     for (; *re && *re != ')'; re++) {
         switch (*re) {
         case '\\':
