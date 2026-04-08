@@ -8,6 +8,12 @@ CFLAGS += -DMICROPY_HW_MCU_NAME='"Cortex-A9"'
 # Cortex-A9 should support unaligned-access, but qemu doesn't seem to.
 CFLAGS += -mno-unaligned-access
 
+# If the ROMFS partition size is not enough, remember to change
+# ports/qemu/mcu/arm/imx6.ld to resize the ROMFS section as well.
+
+MICROPY_HW_ROMFS_PART0_START = 0x17C00000
+MICROPY_HW_ROMFS_PART0_SIZE = 0x00400000
+
 LDSCRIPT = mcu/arm/imx6.ld
 
 SRC_BOARD_O = shared/runtime/gchelper_generic.o
