@@ -353,9 +353,22 @@ static mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args,
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_connect_obj, 1, network_ifx_wcm_connect);
 
+static mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
+        mp_raise_ValueError(MP_ERROR_TEXT("network STA required"));
+    }
+    cy_rslt_t ret = cy_wcm_disconnect_ap();
+    wcm_assert_raise("network sta disconnect error (with code: %d)", ret);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_disconnect_obj, network_ifx_wcm_disconnect);
+
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),      MP_ROM_PTR(&network_ifx_wcm_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),     MP_ROM_PTR(&network_ifx_wcm_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),  MP_ROM_PTR(&network_ifx_wcm_disconnect_obj) },
 };
 static MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
