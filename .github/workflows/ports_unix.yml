@@ -93,7 +93,7 @@ jobs:
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
       with:
         # Only fail the job on error if a token is set, or we're running against upstream repo.
         # This avoids the annoying situation of the job failing on every push to a fork (if no token is set).
