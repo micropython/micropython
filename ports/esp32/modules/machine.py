@@ -3,7 +3,7 @@ import sys
 _path = sys.path
 sys.path = ()
 try:
-    import machine as _machine
+    from machine import *
 finally:
     sys.path = _path
     del _path
@@ -185,8 +185,3 @@ if hasattr(esp32, "PCNT"):
 
 
 del esp32
-
-
-# Delegate to built-in machine module.
-def __getattr__(attr):
-    return getattr(_machine, attr)
