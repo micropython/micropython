@@ -304,7 +304,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, net
 
 typedef struct
 {
-    mp_obj_t scan_list;
+    mp_obj_t *scan_list;
     cy_wcm_scan_status_t status;
 }scan_user_data_t;
 
@@ -360,7 +360,7 @@ uint8_t get_mpy_security_type(cy_wcm_security_t wcm_sec) {
 // Callback function for scan method. After each scan result, the scan callback is executed.
 static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user_data, cy_wcm_scan_status_t status) {
     scan_user_data_t *scan_user_data = (scan_user_data_t *)user_data;
-    mp_obj_t scan_list = scan_user_data->scan_list;
+    mp_obj_t scan_list = MP_OBJ_FROM_PTR(scan_user_data->scan_list);
     uint8_t hidden_status = 1; // HIDDEN
     uint8_t security_type = NET_IFX_WCM_SEC_OPEN;
 
@@ -390,13 +390,6 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
 static mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    enum { ARG_ssid, ARG_bssid };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-    };
-    mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
-
     cy_rslt_t ret = CY_RSLT_SUCCESS;
     cy_wcm_scan_filter_t scan_filter;
     bool is_filter_used = false;
@@ -409,36 +402,44 @@ static mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
         mp_raise_TypeError(MP_ERROR_TEXT("network scan accepts no query parameters"));
     }
 
-    mp_arg_parse_all(n_args - 1, args + 1, kwargs, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
-
-    if (parsed_args[ARG_ssid].u_obj != mp_const_none && parsed_args[ARG_bssid].u_obj != mp_const_none) {
-        mp_raise_TypeError(MP_ERROR_TEXT("network scan only accepts one filter mode"));
-    }
-
-    if (parsed_args[ARG_ssid].u_obj != mp_const_none) {
-        scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_SSID;
-        size_t len;
-        const char *ssid = mp_obj_str_get_data(parsed_args[ARG_ssid].u_obj, &len);
-        if (len > CY_WCM_MAX_SSID_LEN) {
-            mp_raise_ValueError(MP_ERROR_TEXT("network scan SSID too long"));
+    if (kwargs->used != 0) {
+        if (kwargs->alloc != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("network scan only accepts one filter mode"));
         }
-        memset(scan_filter.param.SSID, 0, sizeof(scan_filter.param.SSID));
-        memcpy(scan_filter.param.SSID, ssid, len);
+
         is_filter_used = true;
-    } else if (parsed_args[ARG_bssid].u_obj != mp_const_none) {
-        scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_MAC;
-        mp_buffer_info_t bssid;
-        mp_get_buffer_raise(parsed_args[ARG_bssid].u_obj, &bssid, MP_BUFFER_READ);
-        if (bssid.len != CY_WCM_MAC_ADDR_LEN) {
-            mp_raise_ValueError(MP_ERROR_TEXT("bssid address invalid length"));
+        mp_map_elem_t *e = &kwargs->table[0];
+        switch (mp_obj_str_get_qstr(e->key))
+        {
+            case MP_QSTR_ssid: {
+                scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_SSID;
+                size_t len;
+                const char *ssid = mp_obj_str_get_data(e->value, &len);
+                len = MIN(len, CY_WCM_MAX_SSID_LEN + 1);
+                memcpy(scan_filter.param.SSID, ssid, len);
+                memset(&scan_filter.param.SSID[len], 0, 1); // null terminated str.
+                break;
+            }
+
+            case MP_QSTR_bssid: {
+                scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_MAC;
+                mp_buffer_info_t bssid;
+                mp_get_buffer(e->value, &bssid, MP_BUFFER_READ);
+                if (bssid.len != CY_WCM_MAC_ADDR_LEN) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("bssid address invalid length"));
+                }
+                memcpy(scan_filter.param.BSSID, bssid.buf, bssid.len);
+                break;
+            }
+
+            default:
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
-        memcpy(scan_filter.param.BSSID, bssid.buf, bssid.len);
-        is_filter_used = true;
     }
 
     mp_obj_t network_list = mp_obj_new_list(0, NULL);
     scan_user_data_t scan_user_params;
-    scan_user_params.scan_list = network_list;
+    scan_user_params.scan_list = MP_OBJ_TO_PTR(network_list);
     scan_user_params.status = CY_WCM_SCAN_INCOMPLETE;
 
     cy_wcm_scan_filter_t *scan_filter_ptr = NULL;
@@ -450,10 +451,9 @@ static mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
     wcm_assert_raise("network scan error (with code: %d)", ret);
 
     while (scan_user_params.status == CY_WCM_SCAN_INCOMPLETE /*|| TODO: timeout_expired */) {
-        MICROPY_EVENT_POLL_HOOK;
     }
 
-    return network_list;
+    return scan_user_params.scan_list;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_scan_obj, 1, network_ifx_wcm_scan);
 
@@ -558,6 +558,48 @@ static mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_isconnected_obj, network_ifx_wcm_isconnected);
 
+static mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (n_args != 2) {
+        mp_raise_TypeError(MP_ERROR_TEXT("network status expects 1 argument"));
+    }
+
+    qstr query = mp_obj_str_get_qstr(args[1]);
+
+    if (query == MP_QSTR_rssi) {
+        if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
+            mp_raise_ValueError(MP_ERROR_TEXT("network station required"));
+        }
+        cy_wcm_associated_ap_info_t ap_info;
+        cy_rslt_t ret = cy_wcm_get_associated_ap_info(&ap_info);
+        wcm_assert_raise("network status error (with code: %d)", ret);
+        return mp_obj_new_int(ap_info.signal_strength);
+    } else if (query == MP_QSTR_stations) {
+        if (self->itf != CY_WCM_INTERFACE_TYPE_AP) {
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+        }
+
+        #define NETWORK_WLAN_MAX_AP_STATIONS 8
+        cy_wcm_mac_t sta_list[NETWORK_WLAN_MAX_AP_STATIONS];
+        cy_wcm_mac_t not_conn_sta = {0, 0, 0, 0, 0, 0};
+
+        cy_rslt_t ret = cy_wcm_get_associated_client_list(&sta_list[0], NETWORK_WLAN_MAX_AP_STATIONS);
+        wcm_assert_raise("network status error (with code: %d)", ret);
+
+        mp_obj_t list = mp_obj_new_list(0, NULL);
+        for (int i = 0; i < NETWORK_WLAN_MAX_AP_STATIONS; ++i) {
+            if (memcmp(&sta_list[i], &not_conn_sta, CY_WCM_MAC_ADDR_LEN) != 0) {
+                mp_obj_list_append(list, mp_obj_new_bytes(sta_list[i], CY_WCM_MAC_ADDR_LEN));
+            }
+        }
+        return list;
+    }
+
+    mp_raise_ValueError(MP_ERROR_TEXT("network status unknown param"));
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_status_obj, 1, 2, network_ifx_wcm_status);
+
 static mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
@@ -611,7 +653,8 @@ static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_connect),     MP_ROM_PTR(&network_ifx_wcm_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),  MP_ROM_PTR(&network_ifx_wcm_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_ifx_wcm_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_ifx_wcm_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status),      MP_ROM_PTR(&network_ifx_wcm_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig),    MP_ROM_PTR(&network_ifx_wcm_ifconfig_obj) },
 
     // Network WCM constants
     // Security modes
