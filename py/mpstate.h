@@ -231,6 +231,9 @@ typedef struct _mp_state_vm_t {
     #if MICROPY_EMIT_NATIVE
     uint8_t default_emit_opt; // one of MP_EMIT_OPT_xxx
     #endif
+    #if MICROPY_ENABLE_SOURCE_LINE
+    bool include_source_lines;
+    #endif
     #endif
 
     // size of the emergency exception buf, if it's dynamically allocated

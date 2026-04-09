@@ -105,6 +105,9 @@ void mp_init(void) {
     #if MICROPY_EMIT_NATIVE
     MP_STATE_VM(default_emit_opt) = MP_EMIT_OPT_NONE;
     #endif
+    #if MICROPY_ENABLE_SOURCE_LINE
+    MP_STATE_VM(include_source_lines) = true;
+    #endif
     #endif
 
     // init global module dict

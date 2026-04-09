@@ -50,6 +50,10 @@ static asm_rv32_backend_options_t rv32_options = { 0 };
 static uint emit_opt = MP_EMIT_OPT_NONE;
 mp_uint_t mp_verbose_flag = 0;
 
+#if MICROPY_ENABLE_SOURCE_LINE
+static bool include_source_lines = true;
+#endif
+
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
@@ -163,6 +167,12 @@ static int usage(char **argv) {
         "  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
         , heap_size);
     impl_opts_cnt++;
+    #if MICROPY_ENABLE_SOURCE_LINE
+    printf(
+        "  source-lines    -- include source line numbers (default)\n"
+        "  no-source-lines -- exclude source line numbers\n");
+    impl_opts_cnt += 2;
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
@@ -186,6 +196,14 @@ static void pre_process_options(int argc, char **argv) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #if MICROPY_ENABLE_SOURCE_LINE
+                } else if (strcmp(argv[a + 1], "source-lines") == 0) {
+                    // Allow excluding source lines for debug builds.
+                    include_source_lines = true;
+                } else if (strcmp(argv[a + 1], "no-source-lines") == 0) {
+                    // Allow excluding source lines for debug builds.
+                    include_source_lines = false;
+                #endif
                 #endif
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
@@ -303,6 +321,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     MP_STATE_VM(default_emit_opt) = emit_opt;
     #else
     (void)emit_opt;
+    #endif
+
+    #if MICROPY_ENABLE_SOURCE_LINE
+    MP_STATE_VM(include_source_lines) = include_source_lines;
     #endif
 
     // set default compiler configuration
