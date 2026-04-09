@@ -58,6 +58,14 @@
 #define NETWORK_WLAN_AP_GATEWAY_IP      "192.168.0.1"
 #define NETWORK_WLAN_AP_NETMASK_IP      "255.255.255.0"
 
+#define NET_IFX_WCM_SEC_OPEN 0
+#define NET_IFX_WCM_SEC_WEP  1
+#define NET_IFX_WCM_SEC_WPA  2
+#define NET_IFX_WCM_SEC_WPA2 3
+#define NET_IFX_WCM_SEC_WPA_WPA2 4
+#define NET_IFX_WCM_SEC_WPA3 5
+#define NET_IFX_WCM_SEC_UNKNOWN 6
+
 // ---------------------------------------------------------------------------
 // SDIO / GPIO hardware state
 // ---------------------------------------------------------------------------
@@ -294,6 +302,161 @@ static mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, network_ifx_wcm_active);
 
+typedef struct
+{
+    mp_obj_t scan_list;
+    cy_wcm_scan_status_t status;
+}scan_user_data_t;
+
+// Based on the scan result, get micropython defined equivalent security type (possible value 0-4, extended till 7 to include all cases) and security string (mapped to IFX stack)
+uint8_t get_mpy_security_type(cy_wcm_security_t wcm_sec) {
+    uint8_t mpy_sec_type = NET_IFX_WCM_SEC_UNKNOWN;
+
+    switch (wcm_sec)
+    {
+        case CY_WCM_SECURITY_OPEN:
+            mpy_sec_type = NET_IFX_WCM_SEC_OPEN;
+            break;
+        case CY_WCM_SECURITY_WEP_PSK:
+        case CY_WCM_SECURITY_WEP_SHARED:
+        case CY_WCM_SECURITY_IBSS_OPEN:
+            mpy_sec_type = NET_IFX_WCM_SEC_WEP;
+            break;
+        case CY_WCM_SECURITY_WPA_AES_PSK:
+        case CY_WCM_SECURITY_WPA_MIXED_PSK:
+        case CY_WCM_SECURITY_WPA_TKIP_PSK:
+        case CY_WCM_SECURITY_WPA_TKIP_ENT:
+        case CY_WCM_SECURITY_WPA_AES_ENT:
+        case CY_WCM_SECURITY_WPA_MIXED_ENT:
+            mpy_sec_type = NET_IFX_WCM_SEC_WPA;
+            break;
+        case CY_WCM_SECURITY_WPA2_AES_PSK:
+        case CY_WCM_SECURITY_WPA2_TKIP_PSK:
+        case CY_WCM_SECURITY_WPA2_MIXED_PSK:
+        case CY_WCM_SECURITY_WPA2_FBT_PSK:
+        case CY_WCM_SECURITY_WPA2_TKIP_ENT:
+        case CY_WCM_SECURITY_WPA2_AES_ENT:
+        case CY_WCM_SECURITY_WPA2_MIXED_ENT:
+        case CY_WCM_SECURITY_WPA2_FBT_ENT:
+            mpy_sec_type = NET_IFX_WCM_SEC_WPA2;
+            break;
+        case CY_WCM_SECURITY_WPA2_WPA_AES_PSK:
+        case CY_WCM_SECURITY_WPA2_WPA_MIXED_PSK:
+            mpy_sec_type = NET_IFX_WCM_SEC_WPA_WPA2;
+            break;
+        case CY_WCM_SECURITY_WPA3_SAE:
+        case CY_WCM_SECURITY_WPA3_WPA2_PSK:
+            mpy_sec_type = NET_IFX_WCM_SEC_WPA3;
+            break;
+        case CY_WCM_SECURITY_WPS_SECURE:
+        case CY_WCM_SECURITY_UNKNOWN:
+        default:
+            mpy_sec_type = NET_IFX_WCM_SEC_UNKNOWN;
+            break;
+    }
+    return mpy_sec_type;
+}
+
+// Callback function for scan method. After each scan result, the scan callback is executed.
+static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user_data, cy_wcm_scan_status_t status) {
+    scan_user_data_t *scan_user_data = (scan_user_data_t *)user_data;
+    mp_obj_t scan_list = scan_user_data->scan_list;
+    uint8_t hidden_status = 1; // HIDDEN
+    uint8_t security_type = NET_IFX_WCM_SEC_OPEN;
+
+    if (status == CY_WCM_SCAN_INCOMPLETE) {
+        // Get the network status : hidden(1) or open(0)
+        if (strlen((const char *)result_ptr->SSID) != 0) {
+            hidden_status = 0;
+        }
+
+        // Get security type as mapped in micropython function description
+        security_type = get_mpy_security_type(result_ptr->security);
+
+        mp_obj_t tuple[6] = {
+            mp_obj_new_bytes(result_ptr->SSID, strlen((const char *)result_ptr->SSID)),
+            mp_obj_new_bytes(result_ptr->BSSID, CY_WCM_MAC_ADDR_LEN),
+            MP_OBJ_NEW_SMALL_INT(result_ptr->channel),
+            MP_OBJ_NEW_SMALL_INT(result_ptr->signal_strength),
+            MP_OBJ_NEW_SMALL_INT(security_type),
+            MP_OBJ_NEW_SMALL_INT(hidden_status)
+        };
+        mp_obj_list_append(scan_list, mp_obj_new_tuple(6, tuple));
+    }
+
+    scan_user_data->status = status;
+}
+
+static mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    enum { ARG_ssid, ARG_bssid };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+    mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
+
+    cy_rslt_t ret = CY_RSLT_SUCCESS;
+    cy_wcm_scan_filter_t scan_filter;
+    bool is_filter_used = false;
+
+    if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
+        mp_raise_ValueError(MP_ERROR_TEXT("network STA required"));
+    }
+
+    if (n_args != 1) {
+        mp_raise_TypeError(MP_ERROR_TEXT("network scan accepts no query parameters"));
+    }
+
+    mp_arg_parse_all(n_args - 1, args + 1, kwargs, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
+
+    if (parsed_args[ARG_ssid].u_obj != mp_const_none && parsed_args[ARG_bssid].u_obj != mp_const_none) {
+        mp_raise_TypeError(MP_ERROR_TEXT("network scan only accepts one filter mode"));
+    }
+
+    if (parsed_args[ARG_ssid].u_obj != mp_const_none) {
+        scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_SSID;
+        size_t len;
+        const char *ssid = mp_obj_str_get_data(parsed_args[ARG_ssid].u_obj, &len);
+        if (len > CY_WCM_MAX_SSID_LEN) {
+            mp_raise_ValueError(MP_ERROR_TEXT("network scan SSID too long"));
+        }
+        memset(scan_filter.param.SSID, 0, sizeof(scan_filter.param.SSID));
+        memcpy(scan_filter.param.SSID, ssid, len);
+        is_filter_used = true;
+    } else if (parsed_args[ARG_bssid].u_obj != mp_const_none) {
+        scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_MAC;
+        mp_buffer_info_t bssid;
+        mp_get_buffer_raise(parsed_args[ARG_bssid].u_obj, &bssid, MP_BUFFER_READ);
+        if (bssid.len != CY_WCM_MAC_ADDR_LEN) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bssid address invalid length"));
+        }
+        memcpy(scan_filter.param.BSSID, bssid.buf, bssid.len);
+        is_filter_used = true;
+    }
+
+    mp_obj_t network_list = mp_obj_new_list(0, NULL);
+    scan_user_data_t scan_user_params;
+    scan_user_params.scan_list = network_list;
+    scan_user_params.status = CY_WCM_SCAN_INCOMPLETE;
+
+    cy_wcm_scan_filter_t *scan_filter_ptr = NULL;
+    if (is_filter_used) {
+        scan_filter_ptr = &scan_filter;
+    }
+
+    ret = cy_wcm_start_scan(network_ifx_wcm_scan_cb, (void *)&scan_user_params, scan_filter_ptr);
+    wcm_assert_raise("network scan error (with code: %d)", ret);
+
+    while (scan_user_params.status == CY_WCM_SCAN_INCOMPLETE /*|| TODO: timeout_expired */) {
+        MICROPY_EVENT_POLL_HOOK;
+    }
+
+    return network_list;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_scan_obj, 1, network_ifx_wcm_scan);
+
 static mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -444,11 +607,21 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_ifconfig_obj, 1, 2, network_
 
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),      MP_ROM_PTR(&network_ifx_wcm_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan),        MP_ROM_PTR(&network_ifx_wcm_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),     MP_ROM_PTR(&network_ifx_wcm_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),  MP_ROM_PTR(&network_ifx_wcm_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_ifx_wcm_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_ifx_wcm_ifconfig_obj) },
 
+    // Network WCM constants
+    // Security modes
+    { MP_ROM_QSTR(MP_QSTR_OPEN), MP_ROM_INT(NET_IFX_WCM_SEC_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_WEP), MP_ROM_INT(NET_IFX_WCM_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(NET_IFX_WCM_SEC_WPA) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(NET_IFX_WCM_SEC_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_WPA3), MP_ROM_INT(NET_IFX_WCM_SEC_WPA3) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2_WPA_PSK), MP_ROM_INT(NET_IFX_WCM_SEC_WPA_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_UNKNOWN), MP_ROM_INT(NET_IFX_WCM_SEC_UNKNOWN) },
 };
 static MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
