@@ -37,5 +37,3 @@
 
 #define MICROPY_BOARD_STARTUP                mch2022_board_startup
 void mch2022_board_startup(void);
-
-#include "board_kconfig.h"

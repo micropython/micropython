@@ -14,6 +14,7 @@ list(APPEND MICROPY_SOURCE_QSTR
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_framebuffer/moddisplay.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/pynvs/modnvs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_rtcmem/modrtcmem.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/components/consts/modconsts.c
 )
 
 # Use our board-specific sdkconfig fragment
@@ -41,19 +42,6 @@ set(MICROPY_BLUETOOTH_NIMBLE 1)
 
 set(MICROPY_SOURCE_BOARD
     ${MICROPY_BOARD_DIR}/board_init.c
-    ${MICROPY_BOARD_DIR}/modconsts.c
 )
 
 set(MICROPY_FATFS_MAX_SS 4096)
-
-# 1. Scan components for Kconfig files
-execute_process(
-    COMMAND python3 ${TOOLS_DIR}/kconfig_scan.py
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-# 2. Generate board_kconfig.h
-execute_process(
-    COMMAND python3 ${TOOLS_DIR}/kconfig_gen_header.py
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
