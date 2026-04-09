@@ -158,7 +158,7 @@ function ci_mpy_format_setup {
 
 function ci_mpy_format_test {
     # Test mpy-tool.py dump feature on bytecode
-    python3 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
+    python3 ./tools/mpy-tool.py -xd tests/assets/frozentest.mpy
 
     # Build MicroPython
     ci_unix_standard_build
@@ -167,7 +167,7 @@ function ci_mpy_format_test {
     export MICROPYPATH=.
 
     # Test mpy-tool.py running under MicroPython
-    $micropython ./tools/mpy-tool.py -x -d tests/frozen/frozentest.mpy
+    $micropython ./tools/mpy-tool.py -x -d tests/assets/frozentest.mpy
 
     # Test mpy-tool.py dump feature on native code
     make -C examples/natmod/features1
