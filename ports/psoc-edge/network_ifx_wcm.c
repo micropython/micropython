@@ -43,6 +43,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "lwip/dns.h"
+#include "lwip/ip4_addr.h"
+#include "shared/netutils/netutils.h"
+
 #if MICROPY_PY_NETWORK_IFX_WCM
 
 #define NETWORK_WLAN_DEFAULT_SSID       "mpy-psoc-edge-wlan"
@@ -391,11 +395,60 @@ static mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_isconnected_obj, network_ifx_wcm_isconnected);
 
+static mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args == 1) {
+        const ip_addr_t *dns = dns_getserver(0);
+        cy_wcm_ip_address_t ip_address;
+        cy_wcm_ip_address_t net_mask_addr;
+        cy_wcm_ip_address_t gateway_addr;
+        cy_rslt_t ret = cy_wcm_get_ip_addr(self->itf, &ip_address);
+        wcm_assert_raise("network ifconfig error (with code: %d)", ret);
+        ret = cy_wcm_get_gateway_ip_address(self->itf, &gateway_addr);
+        wcm_assert_raise("network ifconfig error (with code: %d)", ret);
+        ret = cy_wcm_get_ip_netmask(self->itf, &net_mask_addr);
+        wcm_assert_raise("network ifconfig error (with code: %d)", ret);
+        mp_obj_t tuple[4] = {
+            mp_obj_new_str(ip4addr_ntoa((const ip4_addr_t *)&ip_address.ip.v4), strlen(ip4addr_ntoa((const ip4_addr_t *)&ip_address.ip.v4))),
+            mp_obj_new_str(ip4addr_ntoa((const ip4_addr_t *)&net_mask_addr.ip.v4), strlen(ip4addr_ntoa((const ip4_addr_t *)&net_mask_addr.ip.v4))),
+            mp_obj_new_str(ip4addr_ntoa((const ip4_addr_t *)&gateway_addr.ip.v4), strlen(ip4addr_ntoa((const ip4_addr_t *)&gateway_addr.ip.v4))),
+            netutils_format_ipv4_addr((uint8_t *)dns, NETUTILS_BIG),
+        };
+        return mp_obj_new_tuple(4, tuple);
+    } else {
+        if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+            const mp_obj_t *argss = args + 1;
+            mp_obj_t *items;
+            mp_obj_get_array_fixed_n(argss[0], 4, &items);
+            const char *ip_address = mp_obj_str_get_str(items[0]);
+            const char *net_mask_addr = mp_obj_str_get_str(items[1]);
+            const char *gateway_addr = mp_obj_str_get_str(items[2]);
+            cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+            cy_rslt_t ret = cy_wcm_set_ap_ip_setting(&(ap_conf->ip_settings), ip_address, net_mask_addr, gateway_addr, CY_WCM_IP_VER_V4);
+            wcm_assert_raise("network ifconfig error (with code: %d)", ret);
+
+            ip_addr_t dns;
+            netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
+            dns_setserver(0, &dns);
+
+            restart_ap(ap_conf);
+        } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+        }
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_ifconfig_obj, 1, 2, network_ifx_wcm_ifconfig);
+
+
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),      MP_ROM_PTR(&network_ifx_wcm_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),     MP_ROM_PTR(&network_ifx_wcm_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),  MP_ROM_PTR(&network_ifx_wcm_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_ifx_wcm_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_ifx_wcm_ifconfig_obj) },
+
 };
 static MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
