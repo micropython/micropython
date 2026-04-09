@@ -69,6 +69,9 @@ typedef struct mp_dynamic_compiler_t {
     uint8_t small_int_bits; // must be <= host small_int_bits
     uint8_t native_arch;
     uint8_t nlr_buf_num_regs;
+    #if MICROPY_ENABLE_SOURCE_LINE
+    bool include_source_lines;
+    #endif
 } mp_dynamic_compiler_t;
 extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
