@@ -58,6 +58,8 @@
 #define NETWORK_WLAN_AP_GATEWAY_IP      "192.168.0.1"
 #define NETWORK_WLAN_AP_NETMASK_IP      "255.255.255.0"
 
+#define NETWORK_WLAN_MAX_AP_STATIONS    8
+
 #define NET_IFX_WCM_SEC_OPEN 0
 #define NET_IFX_WCM_SEC_WEP  1
 #define NET_IFX_WCM_SEC_WPA  2
@@ -301,6 +303,12 @@ static mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, network_ifx_wcm_active);
+
+static mp_obj_t network_ifx_wcm_deinit(mp_obj_t self_in) {
+    network_deinit();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_deinit_obj, network_ifx_wcm_deinit);
 
 typedef struct
 {
@@ -580,7 +588,6 @@ static mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
         }
 
-        #define NETWORK_WLAN_MAX_AP_STATIONS 8
         cy_wcm_mac_t sta_list[NETWORK_WLAN_MAX_AP_STATIONS];
         cy_wcm_mac_t not_conn_sta = {0, 0, 0, 0, 0, 0};
 
@@ -599,6 +606,193 @@ static mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
     mp_raise_ValueError(MP_ERROR_TEXT("network status unknown param"));
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_status_obj, 1, 2, network_ifx_wcm_status);
+
+static cy_wcm_security_t get_wcm_security_type(mp_obj_t mpy_sec) {
+    switch (mp_obj_get_int(mpy_sec)) {
+        case NET_IFX_WCM_SEC_OPEN:
+            return CY_WCM_SECURITY_OPEN;
+        case NET_IFX_WCM_SEC_WPA:
+            return CY_WCM_SECURITY_WPA_MIXED_PSK;
+        case NET_IFX_WCM_SEC_WPA2:
+            return CY_WCM_SECURITY_WPA2_MIXED_PSK;
+        case NET_IFX_WCM_SEC_WPA3:
+            return CY_WCM_SECURITY_WPA3_SAE;
+        case NET_IFX_WCM_SEC_WPA_WPA2:
+            return CY_WCM_SECURITY_WPA2_WPA_MIXED_PSK;
+        default:
+            return CY_WCM_SECURITY_UNKNOWN;
+    }
+}
+
+static mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr query_opt) {
+    switch (query_opt) {
+        case MP_QSTR_channel:
+            return MP_OBJ_NEW_SMALL_INT(ap_conf->channel);
+        case MP_QSTR_ssid:
+        case MP_QSTR_essid:
+            return mp_obj_new_str((const char *)ap_conf->ap_credentials.SSID, strlen((const char *)ap_conf->ap_credentials.SSID));
+        case MP_QSTR_security:
+            return MP_OBJ_NEW_SMALL_INT(get_mpy_security_type(ap_conf->ap_credentials.security));
+        case MP_QSTR_key:
+        case MP_QSTR_password:
+            if (strcmp((const char *)ap_conf->ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD) == 0) {
+                return mp_obj_new_str((const char *)NETWORK_WLAN_DEFAULT_PASSWORD, strlen((const char *)NETWORK_WLAN_DEFAULT_PASSWORD));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("network conf password only queryable for default password"));
+            }
+            break;
+        case MP_QSTR_mac: {
+            cy_wcm_mac_t mac;
+            cy_rslt_t ret = cy_wcm_get_mac_addr(CY_WCM_INTERFACE_TYPE_AP, &mac);
+            wcm_assert_raise("network config mac (code: %d)", ret);
+            return mp_obj_new_bytes(mac, CY_WCM_MAC_ADDR_LEN);
+        }
+        case MP_QSTR_hostname:
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead"));
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+}
+
+static mp_obj_t network_sta_get_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr query_opt) {
+    switch (query_opt) {
+        case MP_QSTR_channel: {
+            cy_wcm_associated_ap_info_t ap_info;
+            cy_rslt_t ret = cy_wcm_get_associated_ap_info(&ap_info);
+            wcm_assert_raise("network config error (with code: %d)", ret);
+            return MP_OBJ_NEW_SMALL_INT(ap_info.channel);
+        }
+        case MP_QSTR_ssid:
+        case MP_QSTR_essid: {
+            cy_wcm_associated_ap_info_t ap_info;
+            cy_rslt_t ret = cy_wcm_get_associated_ap_info(&ap_info);
+            wcm_assert_raise("network config error (with code: %d)", ret);
+            return mp_obj_new_str((const char *)ap_info.SSID, strlen((const char *)ap_info.SSID));
+        }
+        case MP_QSTR_mac: {
+            cy_wcm_mac_t mac;
+            cy_rslt_t ret = cy_wcm_get_mac_addr(CY_WCM_INTERFACE_TYPE_STA, &mac);
+            wcm_assert_raise("network config mac (code: %d)", ret);
+            return mp_obj_new_bytes(mac, CY_WCM_MAC_ADDR_LEN);
+        }
+        case MP_QSTR_security: {
+            cy_wcm_associated_ap_info_t ap_info;
+            cy_rslt_t ret = cy_wcm_get_associated_ap_info(&ap_info);
+            wcm_assert_raise("network config error (with code: %d)", ret);
+            return MP_OBJ_NEW_SMALL_INT(get_mpy_security_type(ap_info.security));
+        }
+        case MP_QSTR_key:
+        case MP_QSTR_password:
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+            break;
+        case MP_QSTR_hostname:
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead"));
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+}
+
+static void network_ap_set_config_param(cy_wcm_ap_config_t *ap_conf, qstr opt, mp_obj_t opt_value, bool hold) {
+    static bool required_ap_restart = false;
+
+    switch (opt) {
+        case MP_QSTR_channel:
+            ap_conf->channel = mp_obj_get_int(opt_value);
+            required_ap_restart = true;
+            break;
+        case MP_QSTR_ssid:
+        case MP_QSTR_essid: {
+            size_t len;
+            const char *ssid_str = mp_obj_str_get_data(opt_value, &len);
+            memset(ap_conf->ap_credentials.SSID, 0, CY_WCM_MAX_SSID_LEN + 1);
+            memcpy(ap_conf->ap_credentials.SSID, ssid_str, len);
+            required_ap_restart = true;
+            break;
+        }
+        case MP_QSTR_security:
+            ap_conf->ap_credentials.security = get_wcm_security_type(opt_value);
+            required_ap_restart = true;
+            break;
+        case MP_QSTR_key:
+        case MP_QSTR_password: {
+            size_t len;
+            const char *pass_str = mp_obj_str_get_data(opt_value, &len);
+            memset(ap_conf->ap_credentials.password, 0, CY_WCM_MAX_PASSPHRASE_LEN + 1);
+            memcpy(ap_conf->ap_credentials.password, pass_str, len);
+            break;
+        }
+        case MP_QSTR_hostname:
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead"));
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+
+    if (required_ap_restart && !hold) {
+        restart_ap(ap_conf);
+        required_ap_restart = false;
+    }
+}
+
+static void network_sta_set_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr opt, mp_obj_t opt_value) {
+    switch (opt) {
+        case MP_QSTR_channel:
+        case MP_QSTR_key:
+        case MP_QSTR_password:
+        case MP_QSTR_ssid:
+        case MP_QSTR_essid:
+        case MP_QSTR_hostname:
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+}
+
+static mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+            cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+            return network_ap_get_config_param(ap_conf, mp_obj_str_get_qstr(args[1]));
+        } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+            network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+            return network_sta_get_config_param(sta_conf, mp_obj_str_get_qstr(args[1]));
+        }
+    } else {
+        // Set config value(s)
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+        size_t kwargs_num = kwargs->used;
+        size_t matched = 0;
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                matched++;
+                mp_map_elem_t *e = &kwargs->table[i];
+                bool hold_config = (matched < kwargs_num);
+
+                if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+                    cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+                    network_ap_set_config_param(ap_conf, mp_obj_str_get_qstr(e->key), e->value, hold_config);
+                } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+                    network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+                    network_sta_set_config_param(sta_conf, mp_obj_str_get_qstr(e->key), e->value);
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_config_obj, 1, network_ifx_wcm_config);
 
 static mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -648,12 +842,14 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_ifconfig_obj, 1, 2, network_
 
 
 static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&network_ifx_wcm_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_active),      MP_ROM_PTR(&network_ifx_wcm_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),        MP_ROM_PTR(&network_ifx_wcm_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),     MP_ROM_PTR(&network_ifx_wcm_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),  MP_ROM_PTR(&network_ifx_wcm_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_ifx_wcm_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status),      MP_ROM_PTR(&network_ifx_wcm_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config),      MP_ROM_PTR(&network_ifx_wcm_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig),    MP_ROM_PTR(&network_ifx_wcm_ifconfig_obj) },
 
     // Network WCM constants
