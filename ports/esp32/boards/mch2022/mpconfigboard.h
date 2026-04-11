@@ -21,6 +21,7 @@
 
 // WiFi + BLE supported by ESP32-WROVER-E
 #define MICROPY_PY_NETWORK                  (0)
+#define MICROPY_PY_NETWORK_WLAN             (0)
 
 #define MICROPY_PY_BLUETOOTH                (0)
 #define MICROPY_BLUETOOTH_NIMBLE            (0)

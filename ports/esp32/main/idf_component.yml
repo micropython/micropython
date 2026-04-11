@@ -7,17 +7,18 @@ dependencies:
     # Can be removed once fix is released in espressif/tinyusb
     git: https://github.com/micropython/tinyusb-espressif.git
     version: cherrypick/dwc2_zlp_fix
-  espressif/esp_hosted:
-    rules:
-      - if: "target == esp32p4"
-    version: "2.7.0"
-  espressif/esp_wifi_remote:
-    rules:
-      - if: "target == esp32p4"
-    version: "0.15.2"
+#  espressif/esp_hosted:
+#    rules:
+#      - if: "target == esp32p4"
+#    version: "2.7.0"
+#  espressif/esp_wifi_remote:
+#    rules:
+#      - if: "target == esp32p4"
+#    version: "0.15.2"
   espressif/lan867x:
     version: "~1.0.0"
     rules:
       - if: "target == esp32"
   idf:
     version: ">=5.3.0"
+  badgeteam/badge-bsp: "^0.9.3"

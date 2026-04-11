@@ -12,8 +12,10 @@
 // No UART console
 #define MICROPY_HW_ENABLE_UART_REPL (0)
 
+#define MICROPY_HW_ESP_NEW_I2C_DRIVER  (1)
+
 // No PSRAM
-#define MICROPY_HW_ENABLE_SDCARD (0)
+#define MICROPY_HW_ENABLE_SDCARD (1)
 #define MICROPY_HW_ENABLE_SPIRAM (0)
 
 // Internal flash

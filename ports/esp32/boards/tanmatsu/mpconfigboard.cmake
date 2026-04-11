@@ -15,13 +15,17 @@ list(APPEND MICROPY_SOURCE_QSTR
     ${CMAKE_CURRENT_SOURCE_DIR}/components/pynvs/modnvs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_rtcmem/modrtcmem.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/consts/modconsts.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_framebuffer/moddisplay.c
 )
 
 # Use our board-specific sdkconfig fragment
 set(SDKCONFIG_DEFAULTS
     ${CMAKE_CURRENT_LIST_DIR}/sdkconfig.tanmatsu
-#    ${PORT_DIR}/.config
+    boards/sdkconfig.p4	
+    ${PORT_DIR}/.config
 )
+
+set(MICROPY_HW_ESP_NEW_I2C_DRIVER 1)
 
 set(MICROPY_PY_MACHINE_I2S 0)
 
