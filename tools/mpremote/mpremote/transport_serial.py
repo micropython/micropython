@@ -443,6 +443,7 @@ import os, io, struct, micropython
 SEEK_SET = 0
 
 class RemoteCommand:
+
     def __init__(self):
         import select, sys
         self.buf4 = bytearray(4)
@@ -536,12 +537,20 @@ class RemoteCommand:
         self.fout.write(self.buf4)
 
     def wr_bytes(self, b):
-        self.wr_s32(len(b))
+        self.wr_s32(self.buffer_nbytes(b))
         self.fout.write(b)
 
     # str and bytes act the same in MicroPython
     wr_str = wr_bytes
 
+    def buffer_nbytes(self, obj):
+        if isinstance(obj, (str, bytes, bytearray)):
+            return len(obj) 
+        mv = memoryview(obj)
+        if hasattr(mv, "itemsize"):
+            return len(mv) * mv.itemsize
+        # Fallback for uncommon buffer providers.
+        return len(bytes(obj))
 
 class RemoteFile(io.IOBase):
     def __init__(self, cmd, fd, is_text):
@@ -611,7 +620,7 @@ class RemoteFile(io.IOBase):
         c = self.cmd
         c.begin(CMD_READ)
         c.wr_s8(self.fd)
-        c.wr_s32(len(buf))
+        c.wr_s32(c.buffer_nbytes(buf))
         n = c.rd_bytes(buf)
         c.end()
         return n
