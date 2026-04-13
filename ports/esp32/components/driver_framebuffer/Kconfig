@@ -1,0 +1,65 @@
+menu "Driver: framebuffer support"
+	config DRIVER_FRAMEBUFFER_ENABLE
+		bool "Enable the framebuffer driver"
+		default n
+	config DRIVER_FRAMEBUFFER_FLIP
+		depends on DRIVER_FRAMEBUFFER_ENABLE
+		bool "Flip by 180 degrees"
+		default n
+    config DRIVER_FRAMEBUFFER_SWAP_R_AND_B
+        bool "Swap red and blue"
+        default n
+    config DRIVER_FRAMEBUFFER_CORRECT_GAMMA
+        bool "Apply gamma correction to LED brightness values"
+        default n
+    config DRIVER_FRAMEBUFFER_CORRECT_GB
+        bool "Correct LED brightness for green and blue channel (needed for some LEDs)"
+        default n
+    config DRIVER_FRAMEBUFFER_G_RATIO
+		depends on DRIVER_FRAMEBUFFER_CORRECT_GB
+        int "Multiply blue colour channel by (this/255) to correct for LED channel brightness"
+        default 167
+    config DRIVER_FRAMEBUFFER_B_RATIO
+		depends on DRIVER_FRAMEBUFFER_CORRECT_GB
+        int "Multiply blue colour channel by (this/255) to correct for LED channel brightness"
+        default 240
+	config G_MATRIX_ENABLE
+		bool "Enable the matrix stack, allowing for 2D transformations"
+		default n
+	config MATRIX_STACK_SIZE
+		depends on G_MATRIX_ENABLE
+		int "Maximum size, in entries, of the matrix stack, at most 65535"
+		# When empty, no memory is used for 2D matrix stacks, a single entry being 6 floats + 1 pointer or 28 bytes
+		# When empty, no memory is used for 3D matrix stacks, a single entry being 12 floats + 1 pointer or 52 bytes
+		default 64
+		
+	config G_NEW_TRIANGLE
+		depends on G_MATRIX_ENABLE
+		bool "Enable triangle drawing"
+		default y
+	config G_NEW_CIRCLE
+		depends on G_NEW_TRIANGLE
+		bool "Enable new circle drawing, enables matrix stack for circles and optimises circle drawing"
+		default y
+	config G_NEW_QUAD
+		depends on G_NEW_TRIANGLE
+		bool "Enable quad drawing, used also for rectangle drawing"
+		default y
+	config G_NEW_RECT
+		depends on G_NEW_QUAD
+		bool "Enable new rectangle drawing, enables matrix stack for rectangles"
+		default y
+	config G_NEW_TEXT
+		depends on G_MATRIX_ENABLE
+		bool "Enable new text drawing, enables matrix stack for text but uses more memory when transformed"
+		default y
+
+	config LIB3D_ENABLE
+		depends on G_MATRIX_ENABLE
+		bool "Enable 3D drawing and rendering (experimental)"
+		default n
+	config LIB3D_TRI_BUFFER_SIZE
+		depends on LIB3D_ENABLE
+		int "Triangle buffer size for 3D rendering, used for 3D rendering"
+		default 32
+endmenu

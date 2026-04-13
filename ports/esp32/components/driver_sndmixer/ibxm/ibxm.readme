@@ -1,0 +1,27 @@
+
+This library originally came from https://github.com/martincameron/micromod . It has been
+modified to use in-memory samples and patterns as much as possible, to save RAM on the 
+ESP32 (because the samples etc can stay in flash.) As such, ibmxm is NOT original anymore 
+and while the original readme is reproduced below, it is suggested not to contact the 
+original author with issues that cannot be reproduced in the original code.
+
+The xm2wav host application is also modified slightly. To compile it, you can just run 'make'
+in this directory. Then use 'xm2wav file.[xm|mod|s3m] outfile.wav' to see how a module would
+render; the xm2wav program will also give an indication of the amount of memory used while 
+rendering.
+
+-Jeroen
+
+------------------------
+Original readme:
+
+IBXM (c)2017 mumart@gmail.com
+
+A good quality player library for the ProTracker MOD,
+Scream Tracker 3 S3M, and FastTracker 2 XM music formats.
+
+If you have any questions or feedback please feel free to
+contact me at the above email address!
+
+Cheers,
+Martin
