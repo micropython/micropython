@@ -30,7 +30,7 @@ set(MICROPY_HW_ESP_NEW_I2C_DRIVER 1)
 set(MICROPY_PY_MACHINE_I2S 0)
 
 # Optional: include a frozen manifest if you want built-in Python modules
-# set(MICROPY_FROZEN_MANIFEST ${BOARD_DIR}/tanmatsu.py)
+set(MICROPY_FROZEN_MANIFEST ${BOARD_DIR}/tanmatsu.py)
 
 # Enable PSRAM (WROVER-E-N16R8 includes 8MB)
 set(MICROPY_BOARD_ENABLE_PSRAM 1)
