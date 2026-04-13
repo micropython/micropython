@@ -1,5 +1,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/random/random.h>
 #include "shared/runtime/interrupt_char.h"
 
 #define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
@@ -93,3 +94,9 @@ static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     (void)gpio_pin_set_raw(pin->port, pin->pin, 1);
 }
+
+#if CONFIG_HARDWARE_DEVICE_CS_GENERATOR || CONFIG_PSA_CSPRNG_GENERATOR
+static inline void mp_hal_get_random(size_t n, uint8_t *buf) {
+    sys_csrand_get(buf, n);
+}
+#endif
