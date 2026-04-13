@@ -581,7 +581,7 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     // Wait for the tx buffer to drain.
     #if MICROPY_HW_UART_TXBUF
     while (ringbuf_avail(&self->write_buffer) > 0) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     #endif
     // Wait for the TX queue & register to clear
@@ -699,7 +699,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
                     return i;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
         i++;
@@ -751,7 +751,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
                     return i;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         if (bits >= 9) {
             mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
@@ -778,7 +778,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
                     return i;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         if (self->bits > 8 && i < (size - 1)) {
             uart->USART.DATA.bit.DATA = *(uint16_t *)src;
@@ -822,7 +822,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
             if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         } while (mp_hal_ticks_ms_64() < timeout);
         *errcode = MP_ETIMEDOUT;
         ret = MP_STREAM_ERROR;

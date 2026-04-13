@@ -224,7 +224,7 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     self->buf = buf;
     // Wait a while if the bus is busy
     while (IS_BUS_BUSY && self->timer) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
         if (--self->timer == 0) {
             return -MP_ETIMEDOUT;
         }
@@ -240,7 +240,7 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     self->timer = self->timeout;
     while (self->state == state_busy && self->timer) {
         self->timer--;
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     i2c->I2CM.INTENCLR.reg = SERCOM_I2CM_INTENSET_MB | SERCOM_I2CM_INTENSET_SB | SERCOM_I2CM_INTENSET_ERROR;
 
