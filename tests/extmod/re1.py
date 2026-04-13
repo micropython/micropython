@@ -93,6 +93,23 @@ m = re.match(rb"a+?", b"ab")
 print(m.group(0))
 print("===")
 
+# bytearray / memoryview objects
+m = re.match(rb"a.", bytearray(b"ab"))
+print(m.group(0))
+m = re.match(rb"a.", memoryview(b"ab"))
+print(m.group(0))
+# While micropython supports bytearray pattern, cpython does not.
+# m = re.match(bytearray(b"a."), b"ab")
+# print(m.group(0))
+print("===")
+
+# null chars
+m = re.match("ab.d", "ab\x00d")
+print(list(m.group(0)))
+m = re.match("ab\x00d", "ab\x00d")
+print(list(m.group(0)))
+print("===")
+
 # escaping
 m = re.match(r"a\.c", "a.c")
 print(m.group(0) if m else "")
