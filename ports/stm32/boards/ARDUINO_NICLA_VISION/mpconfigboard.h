@@ -227,7 +227,9 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE (3000000)
 
 #define MICROPY_HW_USB_VID                      0x2341
+#ifndef MICROPY_HW_USB_PID
 #define MICROPY_HW_USB_PID                      0x055F
+#endif
 #define MICROPY_HW_USB_PID_CDC_MSC              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC_HID              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC                  (MICROPY_HW_USB_PID)
