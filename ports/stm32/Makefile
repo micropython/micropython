@@ -720,7 +720,7 @@ $(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)/qstr.i.last
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 $(HEADER_BUILD)/modstm_const.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
 	$(ECHO) "GEN stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) $(CFLAGS_MCU) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
