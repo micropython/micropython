@@ -46,6 +46,7 @@ INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/config/
 INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/include/
 INC += -I$(ALIF_DFP_REL_HERE)/Device/$(MCU_SERIES)/$(MCU_VARIANT)/
 INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb
 INC += -Itinyusb_port
 INC += -Ilwip_inc
 
