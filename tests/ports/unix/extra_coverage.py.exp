@@ -33,6 +33,8 @@ abc
 # GC
 0
 0
+1
+1
 # GC part 2
 pass
 # tracked allocation
