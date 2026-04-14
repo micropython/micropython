@@ -185,6 +185,42 @@ function ci_mpy_cross_debug_emitter {
 }
 
 ########################################################################################
+# ports/alif
+
+function ci_alif_setup {
+    ci_gcc_arm_setup
+}
+
+function ci_alif_ae3_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HP submodules
+    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HE submodules
+    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_DUAL
+    make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL
+}
+
+function _ci_help {
+    # Note: these lines must be indented with tab characters (required by bash <<-EOF)
+    cat <<-EOF
+	ci.sh: Script fragments used during CI
+
+	When invoked as a script, runs a sequence of ci steps,
+	stopping after the first error.
+
+	Usage:
+	    ${BASH_SOURCE} step1 step2...
+
+	Steps:
+	EOF
+    if type -path column > /dev/null 2>&1; then
+        grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//' | column
+    else
+        grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//'
+    fi
+    exit
+}
+
+########################################################################################
 # ports/cc3200
 
 function ci_cc3200_setup {
@@ -291,25 +327,6 @@ function ci_esp8266_build {
 
     # Test building native .mpy with xtensa architecture.
     ci_native_mpy_modules_build xtensa
-}
-
-########################################################################################
-# ports/webassembly
-
-function ci_webassembly_setup {
-    npm install terser
-    git clone https://github.com/emscripten-core/emsdk.git
-    (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
-}
-
-function ci_webassembly_build {
-    source emsdk/emsdk_env.sh
-    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
-    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
-}
-
-function ci_webassembly_run_tests {
-    make -C ports/webassembly VARIANT=pyscript test_min
 }
 
 ########################################################################################
@@ -983,6 +1000,25 @@ function ci_unix_repr_b_run_tests {
 }
 
 ########################################################################################
+# ports/webassembly
+
+function ci_webassembly_setup {
+    npm install terser
+    git clone https://github.com/emscripten-core/emsdk.git
+    (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
+}
+
+function ci_webassembly_build {
+    source emsdk/emsdk_env.sh
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
+}
+
+function ci_webassembly_run_tests {
+    make -C ports/webassembly VARIANT=pyscript test_min
+}
+
+########################################################################################
 # ports/windows
 
 function ci_windows_setup {
@@ -1054,40 +1090,7 @@ function ci_zephyr_run_tests {
 }
 
 ########################################################################################
-# ports/alif
-
-function ci_alif_setup {
-    ci_gcc_arm_setup
-}
-
-function ci_alif_ae3_build {
-    make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HP submodules
-    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HE submodules
-    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_DUAL
-    make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL
-}
-
-function _ci_help {
-    # Note: these lines must be indented with tab characters (required by bash <<-EOF)
-    cat <<-EOF
-	ci.sh: Script fragments used during CI
-
-	When invoked as a script, runs a sequence of ci steps,
-	stopping after the first error.
-
-	Usage:
-	    ${BASH_SOURCE} step1 step2...
-
-	Steps:
-	EOF
-    if type -path column > /dev/null 2>&1; then
-        grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//' | column
-    else
-        grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//'
-    fi
-    exit
-}
+# Helpers to run this script as a CLI tool.
 
 function _ci_bash_completion {
     echo "alias ci=\"$(readlink -f "$0")\"; complete -W '$(grep '^function ci_' $0 | awk '{print $2}' | sed 's/^ci_//')' ci"
