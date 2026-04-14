@@ -1,11 +1,5 @@
-/**************************************************************************//**
- * @file     cmsis_version.h
- * @brief    CMSIS Core(M) Version definitions
- * @version  V5.0.5
- * @date     02. February 2022
- ******************************************************************************/
 /*
- * Copyright (c) 2009-2022 ARM Limited. All rights reserved.
+ * Copyright (c) 2009-2023 ARM Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,6 +16,10 @@
  * limitations under the License.
  */
 
+/*
+ * CMSIS Core Version Definitions
+ */
+
 #if   defined ( __ICCARM__ )
   #pragma system_include         /* treat file as system include file for MISRA check */
 #elif defined (__clang__)
@@ -31,9 +29,16 @@
 #ifndef __CMSIS_VERSION_H
 #define __CMSIS_VERSION_H
 
-/*  CMSIS Version definitions */
-#define __CM_CMSIS_VERSION_MAIN  ( 5U)                                      /*!< [31:16] CMSIS Core(M) main version */
-#define __CM_CMSIS_VERSION_SUB   ( 6U)                                      /*!< [15:0]  CMSIS Core(M) sub version */
+/*  CMSIS-Core(M) Version definitions */
+#define __CM_CMSIS_VERSION_MAIN  ( 6U)                                    /*!< \brief [31:16] CMSIS-Core(M) main version */
+#define __CM_CMSIS_VERSION_SUB   ( 1U)                                    /*!< \brief [15:0]  CMSIS-Core(M) sub version */
 #define __CM_CMSIS_VERSION       ((__CM_CMSIS_VERSION_MAIN << 16U) | \
-                                   __CM_CMSIS_VERSION_SUB           )       /*!< CMSIS Core(M) version number */
+                                   __CM_CMSIS_VERSION_SUB           )     /*!< \brief CMSIS Core(M) version number */
+
+/*  CMSIS-Core(A) Version definitions */
+#define __CA_CMSIS_VERSION_MAIN  ( 6U)                                    /*!< \brief [31:16] CMSIS-Core(A) main version */
+#define __CA_CMSIS_VERSION_SUB   ( 1U)                                    /*!< \brief [15:0]  CMSIS-Core(A) sub version */
+#define __CA_CMSIS_VERSION       ((__CA_CMSIS_VERSION_MAIN << 16U) | \
+                                   __CA_CMSIS_VERSION_SUB          )      /*!< \brief CMSIS-Core(A) version number */
+
 #endif

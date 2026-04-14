@@ -1,9 +1,3 @@
-/******************************************************************************
- * @file     pac_armv81.h
- * @brief    CMSIS PAC key functions for Armv8.1-M PAC extension
- * @version  V1.0.0
- * @date     23. March 2022
- ******************************************************************************/
 /*
  * Copyright (c) 2022 Arm Limited. All rights reserved.
  *
@@ -22,15 +16,18 @@
  * limitations under the License.
  */
 
+/*
+ * CMSIS-Core(M) PAC key functions for Armv8.1-M PAC extension
+ */
+
+#ifndef PAC_ARMV81_H
+#define PAC_ARMV81_H
+
 #if   defined ( __ICCARM__ )
   #pragma system_include         /* treat file as system include file for MISRA check */
 #elif defined (__clang__)
   #pragma clang system_header    /* treat file as system include file */
 #endif
-
-#ifndef PAC_ARMV81_H
-#define PAC_ARMV81_H
-
 
 /* ###################  PAC Key functions  ########################### */
 /**
