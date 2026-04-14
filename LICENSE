@@ -37,6 +37,8 @@ used during the build process and is not part of the compiled source code.
     /drivers
         /cc3100 (BSD-3-clause)
     /lib
+        /CMSIS_5 (Apache-2.0)
+        /CMSIS_6 (Apache-2.0)
         /asf4 (Apache-2.0)
         /axtls (BSD-3-clause)
             /config
@@ -45,7 +47,6 @@ used during the build process and is not part of the compiled source code.
                 /Rules.mak (GPL-2.0)
         /berkeley-db-1xx (BSD-4-clause)
         /btstack (See btstack/LICENSE)
-        /cmsis (BSD-3-clause)
         /crypto-algorithms (NONE)
         /libhydrogen (ISC)
         /libmetal (BSD-3-clause)
