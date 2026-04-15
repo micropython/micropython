@@ -586,7 +586,12 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
 
     if is_special or test_file_abspath in tests_with_regex_output:
         # convert parts of the output that are not stable across runs
-        with open(test_file + (".native.exp" if args.emit == "native" else ".exp"), "rb") as f:
+        # check for and use ".native.exp" if testing native emitter.
+        if args.emit == "native" and os.path.isfile(test_file + ".native.exp"):
+            exp_file = test_file + ".native.exp"
+        else:
+            exp_file = test_file + ".exp"
+        with open(exp_file, "rb") as f:
             lines_exp = []
             for line in f.readlines():
                 if line == b"########\n":
