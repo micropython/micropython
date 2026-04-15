@@ -9,13 +9,11 @@ set(TOOLS_DIR ${PORT_DIR}/tools)
 
 # Add driver_mch22 module to QSTR sources
 list(APPEND MICROPY_SOURCE_QSTR
-#    ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_mch22/modmch22.c
-#    ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_sndmixer/modsndmixer.c
-#    ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_framebuffer/moddisplay.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/pynvs/modnvs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_rtcmem/modrtcmem.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/consts/modconsts.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_framebuffer/moddisplay.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_badge_bsp/modbadgebsp.c
 )
 
 # Use our board-specific sdkconfig fragment

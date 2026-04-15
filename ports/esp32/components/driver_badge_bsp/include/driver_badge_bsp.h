@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <esp_err.h>
 #include "bsp/display.h"
+#include "bsp/input.h"
 
 __BEGIN_DECLS
 

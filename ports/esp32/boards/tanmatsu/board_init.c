@@ -63,6 +63,7 @@ static esp_err_t reset_sd_card(void) {
     return ESP_OK;
 }
 
+void driver_badgebsp_init();
 void tanmatsu_board_startup(void) {
 	// Initialize the Board Support Package
     const bsp_configuration_t bsp_configuration = {
@@ -75,6 +76,7 @@ void tanmatsu_board_startup(void) {
 	reset_sd_card();
     if (bsp_device_initialize(&bsp_configuration) == ESP_OK) {
 		if (driver_badge_bsp_init() == ESP_OK) {
+			driver_badgebsp_init();
 			driver_framebuffer_init();
 		}
 	}
