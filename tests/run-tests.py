@@ -440,6 +440,7 @@ tests_with_regex_output = [
         "basics/weakref_callback_exception.py",
         "misc/sys_settrace_cov.py",
         "net_inet/tls_text_errors.py",
+        "ports/unix/extra_coverage.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
     )
