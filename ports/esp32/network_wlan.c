@@ -51,6 +51,7 @@
 #include "mdns.h"
 #endif
 
+#undef MICROPY_PY_NETWORK_WLAN
 #if MICROPY_PY_NETWORK_WLAN
 
 #if (WIFI_MODE_STA & WIFI_MODE_AP != WIFI_MODE_NULL || WIFI_MODE_STA | WIFI_MODE_AP != WIFI_MODE_APSTA)
@@ -185,23 +186,53 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
     }
 }
 
-static void network_wlan_ip_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+static void network_wlan_ip_event_handler(void *event_handler_arg,
+                                          esp_event_base_t event_base,
+                                          int32_t event_id,
+                                          void *event_data) {
     switch (event_id) {
-        case IP_EVENT_STA_GOT_IP:
+        case IP_EVENT_STA_GOT_IP: {
             ESP_LOGI("network", "GOT_IP");
             wifi_sta_connected = true;
-            wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
-            #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+            wifi_sta_disconn_reason = 0;
+
+            // --- NEW: detect the correct STA netif created by Tanmatsu ---
+            esp_netif_t *netif = NULL;
+            esp_netif_t *it = NULL;
+
+            while ((it = esp_netif_next(it)) != NULL) {
+                const char *key = esp_netif_get_ifkey(it);
+                ESP_LOGI("network", "netif found: %s (%p)", key, it);
+
+                if (key &&
+                    (!strcmp(key, "WIFI_STA_DEF") ||
+                     !strcmp(key, "ESP_NETIF_STA") ||
+                     !strcmp(key, "STA"))) {
+                    netif = it;
+                    break;
+                }
+            }
+
+            if (netif) {
+                wlan_sta_obj.netif = netif;
+                ESP_LOGI("network", "Using existing STA netif: %p", netif);
+            } else {
+                ESP_LOGW("network", "No existing STA netif found!");
+            }
+            // --- END NEW ---
+
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
             if (!mdns_initialised) {
                 mdns_init();
-                #if MICROPY_HW_ENABLE_MDNS_RESPONDER
+#if MICROPY_HW_ENABLE_MDNS_RESPONDER
                 mdns_hostname_set(mod_network_hostname_data);
                 mdns_instance_name_set(mod_network_hostname_data);
-                #endif
+#endif
                 mdns_initialised = true;
             }
-            #endif
+#endif
             break;
+        }
 
         default:
             break;

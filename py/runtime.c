@@ -172,7 +172,7 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PY_BLUETOOTH
-    MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
+    //MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE

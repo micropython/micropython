@@ -34,6 +34,8 @@
 #include "hal/i2c_ll.h"
 #include "../i2c_private.h"
 
+#if MICROPY_PY_MACHINE_I2C_TARGET
+
 typedef struct _machine_i2c_target_obj_t {
     mp_obj_base_t base;
     i2c_slave_dev_handle_t handle;
@@ -223,3 +225,4 @@ static void mp_machine_i2c_target_deinit(machine_i2c_target_obj_t *self) {
         self->handle = NULL;
     }
 }
+#endif

@@ -99,7 +99,7 @@ static mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     uint32_t clock_freq;
     check_esp_err(esp_clk_tree_src_get_freq_hz(RMT_CLK_SRC_DEFAULT, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &clock_freq));
 
-    mp_uint_t resolution_hz;
+    mp_uint_t resolution_hz = 0;
     if (args[2].u_obj != mp_const_none && args[3].u_obj != mp_const_none) {
         mp_raise_ValueError(MP_ERROR_TEXT("resolution_hz and clock_div are mutually exclusive"));
     } else if (args[2].u_obj == mp_const_none && args[3].u_obj == mp_const_none) {

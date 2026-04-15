@@ -1,0 +1,47 @@
+menu "Driver: ILI9341 LCD display"
+	config DRIVER_ILI9341_ENABLE
+		depends on BUS_VSPI_ENABLE
+		bool "Enable the ILI9341 display driver"
+		default n
+		
+	config PIN_NUM_ILI9341_RESET
+		depends on DRIVER_ILI9341_ENABLE
+		int "GPIO pin used for RESET"
+		default -1
+	
+	config PIN_NUM_ILI9341_DCX
+		depends on DRIVER_ILI9341_ENABLE
+		int "GPIO pin used for D/CX"
+		default -1
+		
+	config PIN_NUM_ILI9341_CS
+		depends on DRIVER_ILI9341_ENABLE
+		int "GPIO pin used for CS"
+		default -1
+	
+	config PIN_NUM_ILI9341_MODE
+		depends on DRIVER_ILI9341_ENABLE
+		int "GPIO pin used for mode"
+		default -1
+
+	config PIN_NUM_ILI9341_BACKLIGHT
+		depends on DRIVER_ILI9341_ENABLE
+		int "GPIO pin used for backlight"
+		default -1
+	
+	config ILI9341_ORIENTATION
+		depends on DRIVER_ILI9341_ENABLE
+		int "Hardware orientation (0-3)"
+		range 0 3
+		default 0
+	
+	config ILI9341_COLOR_SWAP
+		depends on DRIVER_ILI9341_ENABLE
+		bool "Swap red and blue"
+		default n
+	
+	config DRIVER_ILI9341_8C
+		depends on DRIVER_ILI9341_ENABLE
+		bool "Reduce color depth to 256 colors"
+		default n
+endmenu

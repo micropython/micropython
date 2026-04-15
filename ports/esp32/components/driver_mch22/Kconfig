@@ -1,0 +1,5 @@
+menu "Driver: MCH2022 rp2040 driver"
+	config DRIVER_MCH22_RP2040_ENABLE
+		bool "Enable the mch2022 rp2040 driver"
+		default n
+endmenu

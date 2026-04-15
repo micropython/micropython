@@ -1,0 +1,129 @@
+menu "Buses"
+    config BUS_VSPI_ENABLE
+        bool "Enable the VSPI bus"
+        default n
+
+    config PIN_NUM_VSPI_CLK
+        depends on BUS_VSPI_ENABLE
+        int "GPIO pin used for VSPI CLK"
+
+    config PIN_NUM_VSPI_MOSI
+        depends on BUS_VSPI_ENABLE
+        int "GPIO pin used for VSPI MOSI"
+
+    config PIN_NUM_VSPI_MISO
+        depends on BUS_VSPI_ENABLE
+        int "GPIO pin used for VSPI MISO"
+
+    config PIN_NUM_VSPI_WP
+        depends on BUS_VSPI_ENABLE
+        int "GPIO pin used for VSPI WP"
+        default -1
+
+    config PIN_NUM_VSPI_HD
+        depends on BUS_VSPI_ENABLE
+        int "GPIO pin used for VSPI HD"
+        default -1
+
+    config BUS_VSPI_DMA_CHANNEL
+        depends on BUS_VSPI_ENABLE
+        int "VSPI DMA channel"
+        default 2
+        range 0 2
+
+    config BUS_VSPI_MAX_TRANSFERSIZE
+        depends on BUS_VSPI_ENABLE
+        int "VSPI Maximum transfer size (in bytes)"
+        default 4094
+
+    config BUS_HSPI_ENABLE
+        bool "Enable the HSPI bus"
+        default n
+
+    config PIN_NUM_HSPI_CLK
+        depends on BUS_HSPI_ENABLE
+        int "GPIO pin used for HSPI CLK"
+
+    config PIN_NUM_HSPI_MOSI
+        depends on BUS_HSPI_ENABLE
+        int "GPIO pin used for HSPI MOSI"
+
+    config PIN_NUM_HSPI_MISO
+        depends on BUS_HSPI_ENABLE
+        int "GPIO pin used for HSPI MISO"
+
+    config PIN_NUM_HSPI_WP
+        depends on BUS_HSPI_ENABLE
+        int "GPIO pin used for HSPI WP"
+        default -1
+
+    config PIN_NUM_HSPI_HD
+        depends on BUS_HSPI_ENABLE
+        int "GPIO pin used for HSPI HD"
+        default -1
+
+    config BUS_HSPI_DMA_CHANNEL
+        depends on BUS_HSPI_ENABLE
+        int "HSPI DMA channel"
+        default 2
+        range 0 2
+
+    config BUS_HSPI_MAX_TRANSFERSIZE
+        depends on BUS_HSPI_ENABLE
+        int "HSPI Maximum transfer size (in bytes)"
+        default 4094
+        
+    config BUS_I2C0_ENABLE
+        bool "Enable I2C controller 0"
+        default n
+    
+    config PIN_NUM_I2C0_DATA
+        depends on BUS_I2C0_ENABLE
+        int "GPIO pin used for I2C0 data"
+    
+    config PIN_NUM_I2C0_CLK
+        depends on BUS_I2C0_ENABLE
+        int "GPIO pin used for I2C0 clock"
+    
+    config PIN_PULL_I2C0_DATA
+        depends on BUS_I2C0_ENABLE
+        bool "Enable the built-in pull-up for the I2C0 data pin"
+        default n
+    
+    config PIN_PULL_I2C0_CLK
+        depends on BUS_I2C0_ENABLE
+        bool "Enable the built-in pull-up for the I2C0 clock pin"
+        default n
+    
+    config I2C0_MASTER_FREQ_HZ
+        depends on BUS_I2C0_ENABLE
+        int "I2C0 speed in Hz"
+        default 100000
+
+    config BUS_I2C1_ENABLE
+        bool "Enable I2C controller 1"
+        default n
+    
+    config PIN_NUM_I2C1_DATA
+        depends on BUS_I2C1_ENABLE
+        int "GPIO pin used for I2C1 data"
+    
+    config PIN_NUM_I2C1_CLK
+        depends on BUS_I2C1_ENABLE
+        int "GPIO pin used for I2C1 clock"
+    
+    config PIN_PULL_I2C1_DATA
+        depends on BUS_I2C1_ENABLE
+        bool "Enable the built-in pull-up for the I2C1 data pin"
+        default n
+    
+    config PIN_PULL_I2C1_CLK
+        depends on BUS_I2C1_ENABLE
+        bool "Enable the built-in pull-up for the I2C1 clock pin"
+        default n
+    
+    config I2C1_MASTER_FREQ_HZ
+        depends on BUS_I2C1_ENABLE
+        int "I2C1 speed in Hz"
+        default 100000
+endmenu
