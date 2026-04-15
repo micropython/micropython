@@ -110,12 +110,6 @@ uint32_t trng_random_u32(void);
 #ifndef MICROPY_HW_CAN_IS_RESERVED
 #define MICROPY_HW_CAN_IS_RESERVED(can_id) (false)
 #endif
-#ifndef CAN_TX_QUEUE_LEN
-#define CAN_TX_QUEUE_LEN                    (16) // Must be checked
-#endif
-#ifndef CAN_HW_MAX_FILTER
-#define CAN_HW_MAX_FILTER                   (128)
-#endif
 #ifndef MICROPY_PY_MACHINE_I2C_TARGET
 #define MICROPY_PY_MACHINE_I2C_TARGET       (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/mimxrt/machine_i2c_target.c"
