@@ -53,6 +53,11 @@ This command will take care of the following steps:
 * Download the latest ``.hex`` file for your selected board
 * Deploy the latest version of MicroPython firmware on your board
 
+To flash a specific ``.hex`` to specifically CM55 core of this device:
+.. code-block:: bash
+    
+    $ python mpy-pse.py device-setup --core cm55 -f pathtodir/mpy-psoc-edge_KIT_PSE84_AI_CM55.hex
+
 Install a specific version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
