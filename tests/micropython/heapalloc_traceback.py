@@ -30,13 +30,13 @@ def test():
 # call test() with heap allocation disabled
 test()
 
-# print the exception that was raised
+# print the exception that was raised. Use repr() to make the whitespace visible.
 buf = io.StringIO()
 sys.print_exception(global_exc, buf)
 for l in buf.getvalue().split("\n"):
     # MicroPython on pyboard prints <stdin> as file, so remove filename.
     if l.startswith("  File "):
         l = l.split('"')
-        print(l[0], l[2])
+        print(repr(l[0]), repr(l[2]))
     else:
-        print(l)
+        print(repr(l))
