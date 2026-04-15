@@ -71,6 +71,18 @@ def mpy_firmware_deploy(file_name, board, serial_adapter_sn=None, silent=False):
         print_f(colour_str_success(f"Firmware {file_name} deployed successfully"))
 
 
+def flash_cm55(board, hex_file, serial_adapter_sn=None):
+    """Flash a CM55 hex file to the PSoC Edge device."""
+    if not os.path.exists(hex_file):
+        sys.exit(colour_str_error(f"error: CM55 hex file not found: {hex_file}"))
+
+    print_f(f"Flashing CM55 hex file '{hex_file}' to board {board} ...")
+    openocd_download_install()
+    openocd_board_conf_download(board)
+    openocd_program(board, hex_file, serial_adapter_sn)
+    print_f(colour_str_success(f"CM55 core flashed with hex file '{hex_file}' successfully"))
+
+
 def mpy_firmware_download(file_name, board, version, silent=False):
     def mpy_firmware_clean(file_name, board):
         file_name_for_board = mpy_get_fw_hex_file_name(file_name, board)
@@ -304,12 +316,12 @@ def openocd_program(board, hex_file, serial_adapter_sn=None):
 
     ocd_proc = subprocess.Popen(openocd_args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
-        out, err = ocd_proc.communicate(timeout=30)
+        out, err = ocd_proc.communicate(timeout=120)
     except:
         ocd_proc.kill()
         sys.exit(colour_str_error("openocd error."))
-    if err:
-        sys.exit(colour_str_error(err.decode() + "Are you sure the board is connected?"))
+    if ocd_proc.returncode != 0:
+        sys.exit(colour_str_error(err.decode() + "\nAre you sure the board is connected?"))
 
 
 def openocd_remove():
@@ -474,9 +486,20 @@ def parser():
         parser.print_help()
 
     def parser_device_setup(args):
-        device_setup(
-            args.board, args.version, args.hex_file, args.serial_num, args.devs_file, args.q
-        )
+        if args.core == "cm55":
+            if args.hex_file is None:
+                sys.exit(colour_str_error("error: -f/--hex-file is required when --core cm55"))
+            board = args.board if args.board is not None else "KIT_PSE84_AI"
+            validate_board_name(board)
+            flash_cm55(board, args.hex_file, args.serial_num)
+        else:
+            device_setup(
+                args.board, args.version, args.hex_file, args.serial_num, args.devs_file, args.q
+            )
+
+    def parser_flash_cm55(args):
+        validate_board_name(args.board)
+        flash_cm55(args.board, args.hex_file, args.serial_num)
 
     # Main parser
     class ver_action(argparse.Action):
@@ -527,7 +550,41 @@ def parser():
     parser_ds.add_argument(
         "-q", action="store_true", help="Quiet. Do not prompt any user confirmation request"
     )
+    parser_ds.add_argument(
+        "--core",
+        default="cm33",
+        choices=["cm33", "cm55"],
+        help="Target core to flash: 'cm33' (default) for MicroPython firmware, 'cm55' for a CM55 hex file",
+    )
     parser_ds.set_defaults(func=parser_device_setup)
+
+    # flash-cm55
+    parser_fc55 = subparser.add_parser(
+        "flash-cm55",
+        description="Flash a hex file to the CM55 core of the PSOC Edge device.",
+    )
+    parser_fc55.add_argument(
+        "-b",
+        "--board",
+        default="KIT_PSE84_AI",
+        type=str,
+        help="PSOC Edge prototyping kit name (default: KIT_PSE84_AI)",
+    )
+    parser_fc55.add_argument(
+        "-f",
+        "--hex-file",
+        required=True,
+        type=str,
+        help="CM55 firmware .hex file to flash",
+    )
+    parser_fc55.add_argument(
+        "-n",
+        "--serial-num",
+        default=None,
+        type=str,
+        help="Serial number of the board serial adapter",
+    )
+    parser_fc55.set_defaults(func=parser_flash_cm55)
 
     # Parser call
     args = parser.parse_args()
