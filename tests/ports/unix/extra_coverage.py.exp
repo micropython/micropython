@@ -68,11 +68,11 @@ sts
 
 test
 tes
-RuntimeError: 
-RuntimeError: 
+RuntimeError: \$
+RuntimeError: \$
 # repl
 ame__
-port 
+port \$
 
 builtins        micropython     array           binascii
 btree           cexample        cmath           collections
@@ -124,8 +124,8 @@ deadbeef
 c0ffee
 000c0ffee
 # list argument helpers
-TypeError: 
-ValueError: 
+TypeError: \$
+ValueError: \$
 mp_obj_list_ensure same list? 1
 mp_obj_list_optional_arg same list? 1
 mp_obj_list_optional_arg new list len 3
@@ -140,7 +140,7 @@ OverflowError: overflow converting long int to machine word
 OverflowError: overflow converting long int to machine word
 TypeError: can't convert NoneType to int
 TypeError: can't convert NoneType to int
-ValueError: 
+ValueError: \$
 Warning: test
 # binary
 123
@@ -158,8 +158,8 @@ unlocked
 1
 2
 3
-KeyboardInterrupt: 
-KeyboardInterrupt: 
+KeyboardInterrupt: \$
+KeyboardInterrupt: \$
 10
 loop
 scheduled function
