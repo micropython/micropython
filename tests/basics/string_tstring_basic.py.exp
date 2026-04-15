@@ -71,7 +71,7 @@ Nested expr: Template(strings=('', ''), interpolations=(Interpolation('{}', 'inn
 
 === Interpolation attribute tests ===
 Basic conversion: None
-Basic format_spec: 
+Basic format_spec: ''
 With conversion: s
 With format_spec: :>10
 Full conversion: r
