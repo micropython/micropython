@@ -76,8 +76,9 @@
 #define CAN_SJW_MAX ((CAN_CTRL1_RJW_MASK >> CAN_CTRL1_RJW_SHIFT) + 1)
 #define CAN_USE_UPSTREAM_TIMING  (1)
 
-#define CAN_IDFILTERNUM_MAX (((CAN_CTRL2_RFFN_MASK >> CAN_CTRL2_RFFN_SHIFT) + 1) * 8)
+#define CAN_HW_MAX_FILTER (((CAN_CTRL2_RFFN_MASK >> CAN_CTRL2_RFFN_SHIFT) + 1) * 8)
 #define CAN_FILTER_MASK_NUM             (64)
+#define CAN_TX_QUEUE_LEN                (64 - 7 - (CAN_HW_MAX_FILTER / 4))
 
 // matches fsl_flexcan.c enum _flexcan_mb_code_tx
 #define kFLEXCAN_TxMbInactive           (0x8)
@@ -278,7 +279,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         // Set the number of filters here. RFFN will be set accordingly.
         // This largest possible value is (CAN_CTRL2_RFFN_MASK >> CAN_CTRL2_RFFN_SHIFT) + 1) * 8.
         // If needed, lower these in steps of 8.
-        mp_uint_t idFilterNum = CAN_IDFILTERNUM_MAX;
+        mp_uint_t idFilterNum = CAN_HW_MAX_FILTER;
         port->flexcan_rx_fifo_config->idFilterNum = idFilterNum;
         port->flexcan_rx_fifo_config->idFilterType = kFLEXCAN_RxFifoFilterTypeA;
         port->flexcan_rx_fifo_config->priority = kFLEXCAN_RxFifoPrioHigh;
