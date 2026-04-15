@@ -28,6 +28,13 @@ SECTIONS
         *(.text*)
         *(.rodata*)
         . = ALIGN(4);
+        *(.ARM.extab*)
+        *(.gnulinkonce.armextab.*)
+        . = ALIGN(4);
+        __exidx_start = .;
+        *(.ARM.exidx*)
+        *(.gnu.linkonce.armexidx.*)
+        __exidx_end = .;
         _etext = .;
         _sidata = _etext;
     } > RAM
