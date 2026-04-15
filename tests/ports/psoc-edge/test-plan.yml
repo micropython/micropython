@@ -74,3 +74,12 @@
       - board: KIT_PSE84_AI
         features:
           - pwm
+          
+- name: network
+  type: multi
+  test:
+    script:
+      - ports/psoc-edge/board_only_hw/multi/network.py
+      - ports/psoc-edge/board_only_hw/multi/network_config.py
+    device:
+      - board: KIT_PSE84_AI
