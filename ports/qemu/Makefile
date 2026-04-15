@@ -224,13 +224,12 @@ endif
 
 ROMFS_TEST_IMAGE = assets/random_romfs.bin
 
+# Mount the ROMFS test image specifically for test runs (if there is a slot 0).
 ifneq ($(MICROPY_HW_ROMFS_PART0_START),)
-ifeq ($(QEMU_ROMFS_IMG0),)
-QEMU_ARGS += -device loader,file=$(ROMFS_TEST_IMAGE),addr=$(MICROPY_HW_ROMFS_PART0_START),force-raw=on
-endif
+QEMU_TEST_ARGS = -device loader,file=$(ROMFS_TEST_IMAGE),addr=$(MICROPY_HW_ROMFS_PART0_START),force-raw=on
 endif
 
-RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../ports/qemu/$<" $(RUN_TESTS_ARGS)
+RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) $(QEMU_TEST_ARGS) -serial pty -kernel ../ports/qemu/$<" $(RUN_TESTS_ARGS)
 
 ################################################################################
 # Source files and libraries
