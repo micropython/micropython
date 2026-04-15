@@ -123,7 +123,11 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     if (usbd) {
         result = usbd_get_buffer_in_cb(usbd->desc_cfg, MP_BUFFER_READ);
     }
-    return result ? result : &mp_usbd_builtin_desc_cfg;
+    #if CFG_TUD_CDC
+    return result ? result : mp_usbd_default_desc_cfg;
+    #else
+    return result ? result : mp_usbd_builtin_desc_cfg;
+    #endif
 }
 
 const char *mp_usbd_runtime_string_cb(uint8_t index) {
@@ -419,11 +423,11 @@ void mp_usbd_init(void) {
 
     if (usbd == NULL) {
         // No runtime USB device
-        #if CFG_TUD_CDC || CFG_TUD_MSC
-        // Builtin  drivers are available, so initialise as defaults
+        #if CFG_TUD_CDC
+        // CDC is available, so initialise USB for the serial REPL
         need_usb = true;
         #else
-        // No builtin drivers, nothing to initialise
+        // No CDC, nothing to initialise by default
         need_usb = false;
         #endif
     } else {

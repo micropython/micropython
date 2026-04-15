@@ -57,8 +57,11 @@
 #define LWIP_DHCP_DOES_ACD_CHECK        0 // to speed DHCP up
 #define LWIP_DNS                        1
 #define LWIP_DNS_SUPPORT_MDNS_QUERIES   1
-#define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
+
+#ifndef LWIP_MDNS_RESPONDER
+#define LWIP_MDNS_RESPONDER             1
+#endif
 
 #if MICROPY_PY_LWIP_PPP
 #define PPP_SUPPORT                     1

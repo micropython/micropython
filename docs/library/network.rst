@@ -193,6 +193,7 @@ provide a way to control networking interfaces of various kinds.
    network.WIZNET5K.rst
    network.LAN.rst
    network.PPP.rst
+   network.USB_NET.rst
 
 Network functions
 =================

@@ -90,14 +90,34 @@ extern void mp_usbd_port_get_serial_number(char *buf);
 void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
 // Length of built-in configuration descriptor
-#define MP_USBD_BUILTIN_DESC_CFG_LEN (TUD_CONFIG_DESC_LEN +                     \
-    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
-    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
-    )
+#define MP_USBD_BUILTIN_DESC_CFG_LEN ( \
+    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) + \
+    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0) + \
+    (CFG_TUD_NCM ? (TUD_CDC_NCM_DESC_LEN) : 0) + \
+    TUD_CONFIG_DESC_LEN)
 
 // Built-in USB device and configuration descriptor values
 extern const tusb_desc_device_t mp_usbd_builtin_desc_dev;
 extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
+
+// CDC-only default descriptor (used by BUILTIN_DEFAULT and fallback callbacks)
+#if CFG_TUD_CDC
+#define MP_USBD_DEFAULT_DESC_CFG_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
+extern const uint8_t mp_usbd_default_desc_cfg[MP_USBD_DEFAULT_DESC_CFG_LEN];
+#endif
+
+// USB class selection flags (OR-able)
+#define MP_USBD_FLAG_CDC  0x01
+#define MP_USBD_FLAG_MSC  0x02
+#define MP_USBD_FLAG_NCM  0x04
+
+// Build a configuration descriptor containing only the classes in class_mask.
+// buf must be at least MP_USBD_BUILTIN_DESC_CFG_LEN bytes.
+// Returns actual descriptor length. Optionally outputs the interface, endpoint,
+// and string descriptor maxima (one past the highest value used) for the
+// selected class combination.
+uint16_t mp_usbd_build_cfg_desc(uint8_t class_mask, uint8_t *buf,
+    uint8_t *out_itf_max, uint8_t *out_ep_max, uint8_t *out_str_max);
 
 void mp_usbd_task_callback(mp_sched_node_t *node);
 

@@ -4,9 +4,9 @@
 class USBDevice -- USB Device driver
 ====================================
 
-.. note:: ``machine.USBDevice`` is currently only supported for esp32, rp2 and
-          samd ports. Native USB support is also required, and not every board
-          supports native USB.
+.. note:: ``machine.USBDevice`` is currently only supported for esp32, rp2,
+          samd and stm32 (TinyUSB) ports. Native USB support is also required,
+          and not every board supports native USB.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
 Python code.
@@ -187,10 +187,17 @@ Methods
 
 .. attribute:: USBDevice.builtin_driver
 
-   This attribute holds the current built-in driver configuration, and must be
-   set to one of the ``USBDevice.BUILTIN_`` named constants defined on this object.
+   This attribute holds the current built-in driver configuration and must be
+   set to one of the ``USBDevice.BUILTIN_`` named constants defined on this
+   object, or to an integer flag mask combining one or more ``BUILTIN_FLAG_``
+   constants (see below).
 
    By default it holds the value :data:`USBDevice.BUILTIN_NONE`.
+
+   When set to an integer flag mask, a dynamic configuration descriptor is
+   built at runtime containing only the selected USB classes. The USB Product
+   ID (PID) is automatically varied per combination so that the host
+   re-enumerates correctly when classes change.
 
    Runtime USB device must be inactive when setting this field. Call the
    :func:`USBDevice.active` function to deactivate before setting if necessary
@@ -267,25 +274,17 @@ Constants
 
 .. data:: USBDevice.BUILTIN_NONE
 .. data:: USBDevice.BUILTIN_DEFAULT
-.. data:: USBDevice.BUILTIN_CDC
-.. data:: USBDevice.BUILTIN_MSC
-.. data:: USBDevice.BUILTIN_CDC_MSC
 
           These constant objects hold the built-in descriptor data which is
-          compiled into the MicroPython firmware. ``USBDevice.BUILTIN_NONE`` and
-          ``USBDevice.BUILTIN_DEFAULT`` are always present. Additional objects may be present
-          depending on the firmware build configuration and the actual built-in drivers.
+          compiled into the MicroPython firmware.
 
-          .. note:: Currently at most one of ``USBDevice.BUILTIN_CDC``,
-                    ``USBDevice.BUILTIN_MSC`` and ``USBDevice.BUILTIN_CDC_MSC`` is defined
-                    and will be the same object as ``USBDevice.BUILTIN_DEFAULT``.
-                    These constants are defined to allow run-time detection of
-                    the built-in driver (if any). Support for selecting one of
-                    multiple built-in driver configurations may be added in the
-                    future.
+          ``USBDevice.BUILTIN_NONE`` disables all built-in USB classes.
+          ``USBDevice.BUILTIN_DEFAULT`` enables CDC (USB serial REPL) only.
+          To enable additional classes such as MSC or NCM, use the
+          ``BUILTIN_FLAG_`` constants described below.
 
-          These values are assigned to :data:`USBDevice.builtin_driver` to get/set the
-          built-in configuration.
+          These values are assigned to :data:`USBDevice.builtin_driver` to
+          get/set the built-in configuration.
 
           Each object contains the following read-only fields:
 
@@ -300,5 +299,39 @@ Constants
             descriptor.
           - ``desc_cfg`` - ``bytes`` object containing the complete built-in USB
             configuration descriptor.
+
+.. data:: USBDevice.BUILTIN_FLAG_CDC
+.. data:: USBDevice.BUILTIN_FLAG_MSC
+.. data:: USBDevice.BUILTIN_FLAG_NCM
+
+          Integer flag constants that can be OR'd together and assigned to
+          :data:`USBDevice.builtin_driver` to select a subset of compiled-in USB
+          classes at runtime. Only flags for classes compiled into the firmware
+          are defined; using a flag for a class not compiled in raises
+          ``ValueError``.
+
+          When a flag mask is assigned to ``builtin_driver``, a dynamic
+          configuration descriptor and device descriptor are built containing
+          only the selected classes. The resulting driver object has the same
+          read-only fields as ``BUILTIN_NONE`` / ``BUILTIN_DEFAULT``
+          (``itf_max``, ``ep_max``, ``str_max``, ``desc_dev``, ``desc_cfg``).
+
+          Example - select CDC + NCM, omitting MSC::
+
+              # boot.py
+              import machine
+              usb = machine.USBDevice()
+              usb.builtin_driver = (
+                  machine.USBDevice.BUILTIN_FLAG_CDC
+                  | machine.USBDevice.BUILTIN_FLAG_NCM
+              )
+
+          .. warning:: Omitting ``BUILTIN_FLAG_CDC`` disables the USB serial
+                       REPL. Ensure an alternative REPL (e.g. hardware UART) is
+                       available before doing so.
+
+          .. note:: The ``BUILTIN_CDC``, ``BUILTIN_MSC``, and ``BUILTIN_CDC_MSC``
+                    constants from earlier versions of this API have been removed.
+                    Use the ``BUILTIN_FLAG_*`` integer mask constants instead.
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme
