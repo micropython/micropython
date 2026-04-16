@@ -123,6 +123,9 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
 }
 
 static inline void mp_hal_delay_ms(mp_uint_t ms) {
+    // This function must run events at least once, so do that now.
+    mp_event_handle_nowait();
+
     uint64_t us = (uint64_t)ms * 1000;
     ticks_delay_us64(us);
 }
