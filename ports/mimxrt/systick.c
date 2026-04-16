@@ -24,10 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/mphal.h"
 #include "systick.h"
-
 #include "pendsv.h"
 #include "shared/runtime/softtimer.h"
 

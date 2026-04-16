@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_MIMXRT_SYSTICK_H
 #define MICROPY_INCLUDED_MIMXRT_SYSTICK_H
 
+#include "py/mpconfig.h"
+
 // Works for x between 0 and 16 inclusive
 #define POW2_CEIL(x) ((((x) - 1) | ((x) - 1) >> 1 | ((x) - 1) >> 2 | ((x) - 1) >> 3) + 1)
 
