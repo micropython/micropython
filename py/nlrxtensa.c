@@ -77,7 +77,7 @@ MP_NORETURN void nlr_jump(void *val) {
         : "memory"                  // clobbered registers
         );
 
-    MP_UNREACHABLE
+    MP_UNREACHABLE;
 }
 
 #endif // MICROPY_NLR_XTENSA

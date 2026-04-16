@@ -2444,9 +2444,9 @@ typedef time_t mp_timestamp_t;
 // To annotate that code is unreachable
 #ifndef MP_UNREACHABLE
 #if defined(__GNUC__)
-#define MP_UNREACHABLE __builtin_unreachable();
+#define MP_UNREACHABLE __builtin_unreachable()
 #else
-#define MP_UNREACHABLE for (;;);
+#define MP_UNREACHABLE do {} while (1)
 #endif
 #endif
 

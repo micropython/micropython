@@ -75,7 +75,7 @@ MP_NORETURN void nlr_jump(void *val) {
         : "memory"             // Clobbered.
         );
 
-    MP_UNREACHABLE
+    MP_UNREACHABLE;
 }
 
 #endif // MICROPY_NLR_RV64I

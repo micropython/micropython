@@ -78,7 +78,7 @@ MP_NORETURN void nlr_jump(void *val) {
         : "memory"
         );
 
-    MP_UNREACHABLE
+    MP_UNREACHABLE;
 }
 
 #endif // MICROPY_NLR_AARCH64
