@@ -32,7 +32,6 @@ try:
 except OSError as e:
     exc = e
 micropython.heap_unlock()
-# use repr to make empty string visible
 print("exc:", repr(exc))  # exc empty due to no memory
 
 # same again but having an emergency buffer
