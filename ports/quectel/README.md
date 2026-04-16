@@ -5,13 +5,12 @@ This is a port of MicroPython to the Quectel series of
 microcontrollers.  It uses the HeliosSDK and MicroPython runs as
 a task under FreeRTOS.
 
-Support Eigencomm, Unisoc, Qualcomm and ASR cellular modules.
+Supports Unisoc cellular modules.
 
 Supported features include:
 - REPL (Python prompt) over usb.
 - Python 3.4 syntax and built-in rich functional modules.
-- The machine module with GPIO, EXTINT, UART, SPI, ADC, WDT RTC, and Timer.
-- The network module with cellular modem support.
+- File system with ability to create, edit and import files.
 - etc.
 
 Setting up HeliosSDK and the build environment
@@ -22,7 +21,7 @@ manage the quectel microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 To install the HeliosSDK the full instructions can be found at the
-[HeliosSDK Development Guide](https://python.quectel.com/doc/Application_guide/zh/helios-sdk/quick-start.html).
+[HeliosSDK Development Guide](https://developer.quectel.com/doc/quecpython/Application_guide/en/helios-sdk/quick-start.html).
 
 **Windows 10 Environment Setup**
 
@@ -56,7 +55,7 @@ sudo apt install p7zip-full git make python3
 
 *Source Code*
 
-For HeliosSDK, please contact the [QuecPython technical team](https://python.quectel.com/en/contact) for the source code of HeliosSDK(We are preparing to open source), You can also get supports through email QuecPython@quectel.com.
+For HeliosSDK, please contact the [QuecPython technical team](https://developer.quectel.com/contact) for the source code of HeliosSDK(We are preparing to open source), You can also get supports through email QuecPython@quectel.com.
 
 For MicroPython, You can directly pull the official code, but you need to pull MicroPython into the heliossdk directory, for example, create a services directory under heliossdk and place MicroPython in the services directory.
 
@@ -127,10 +126,10 @@ helios clean
 
 *Flash the firmware*
 
-You need to use QPYcom or VSCode tool to burn the firmware. Please refer to [Quectel_QFlash_User_Guide](https://python.quectel.com/doc/Getting_started/en/flash_firmware.html) for firmware flashing.
+You need to use QPYcom or VSCode tool to burn the firmware. Please refer to [Quectel_QFlash_User_Guide](https://developer.quectel.com/doc/quecpython/Getting_started/en/4G/flash_firmware.html) for firmware flashing.
 
 
 Accessing the board
 -------------------------------------
 
-You can access via the `USB REPL` port, which stands for `Read-Eval-Print-Loop` (interactive interpreter). Please refer to [Quectel_Getting_Started](https://python.quectel.com/doc/Getting_started/en/REPL_dev.html) for firmware debugging.
+You can access via the `USB REPL` port, which stands for `Read-Eval-Print-Loop` (interactive interpreter). Please refer to [Quectel_Getting_Started](https://developer.quectel.com/doc/quecpython/Getting_started/en/4G/REPL_dev.html) for firmware debugging.
