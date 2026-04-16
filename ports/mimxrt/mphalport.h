@@ -80,10 +80,6 @@
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
-// Define an alias for systick_ms, because the shared softtimer.c uses
-// the symbol uwTick for the systick ms counter.
-#define uwTick systick_ms
-
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   pin_find(o)
 #define mp_hal_pin_name(p)      ((p)->name)
