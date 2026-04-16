@@ -16,11 +16,14 @@ static size_t                       v_res;
 static lcd_color_rgb_pixel_format_t color_fmt;
 static lcd_rgb_data_endian_t        data_endian;
 
+static uint16_t                    *dma_row = NULL;
+
 esp_err_t driver_badge_bsp_init(void)
 {
 	esp_err_t err = bsp_display_get_parameters(&h_res, &v_res, &color_fmt, &data_endian);
 	if (err == ESP_OK) {
 		ESP_LOGI(TAG, "h_res: %d, v_res: %d, color_fmt: %d, data_endian: %d", h_res, v_res, color_fmt, data_endian);
+		dma_row = heap_caps_malloc(h_res * sizeof(uint16_t), MALLOC_CAP_DMA);
 	} else {
 		ESP_LOGI(TAG, "error: %d", err);
 	}
@@ -48,6 +51,24 @@ esp_err_t driver_badge_bsp_set_backlight_brightness(uint8_t percentage)
 	return bsp_display_set_backlight_brightness(percentage);
 }
 
-esp_err_t driver_badge_bsp_flush(const uint8_t *buffer, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-	return bsp_display_blit(x0, y0, x1 - x0 + 1, y1 - y0 + 1, buffer);
+esp_err_t driver_badge_bsp_flush(
+	const uint8_t *buffer,
+	uint16_t x0, uint16_t y0,
+	uint16_t x1, uint16_t y1
+)
+{
+    int w = x1 - x0 + 1;
+    int h = y1 - y0 + 1;
+
+    for (int row = 0; row < h; row++) {
+        int src_offset = (y0 + row) * h_res + x0;
+
+        memcpy(dma_row,
+               &((uint16_t*)buffer)[src_offset],
+               w * 2);
+
+        bsp_display_blit(x0, y0 + row, x1 + 1, y0 + row + 1, dma_row);
+    }
+
+    return ESP_OK;
 }

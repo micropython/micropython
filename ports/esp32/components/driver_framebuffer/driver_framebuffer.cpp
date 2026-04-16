@@ -9,7 +9,7 @@
 #include "esp_log.h"
 #include "esp_system.h"
 
-
+#define CONFIG_DRIVER_FRAMEBUFFER_SWAP_R_AND_B
 
 #include "include/driver_framebuffer_internal.h"
 #define TAG "fb"
@@ -46,7 +46,10 @@ inline uint16_t convert24to16(uint32_t in) //RGB24 to 565
 	uint8_t b = in&0xFF;
 #endif
 	uint8_t g = (in>>8)&0xFF;
-	return ((b & 0b11111000) << 8) | ((r & 0b11111100) << 3) | (g >> 3);
+	
+	uint16_t px = ((b & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (r >> 3);
+	uint16_t px_swapped = (px >> 8) | (px << 8);
+	return px_swapped;
 }
 
 inline uint8_t convert24to8C(uint32_t in) //RGB24 to 256-color

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <esp_err.h>
+#include "bsp/device.h"
 #include "bsp/display.h"
 #include "bsp/input.h"
 
