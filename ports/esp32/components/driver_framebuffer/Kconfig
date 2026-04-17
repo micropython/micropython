@@ -9,6 +9,9 @@ menu "Driver: framebuffer support"
     config DRIVER_FRAMEBUFFER_SWAP_R_AND_B
         bool "Swap red and blue"
         default n
+    config DRIVER_FRAMEBUFFER_BIG_ENDIAN
+        bool "Big endian framebuffer"
+        default n
     config DRIVER_FRAMEBUFFER_CORRECT_GAMMA
         bool "Apply gamma correction to LED brightness values"
         default n

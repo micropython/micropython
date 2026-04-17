@@ -47,9 +47,7 @@ inline uint16_t convert24to16(uint32_t in) //RGB24 to 565
 #endif
 	uint8_t g = (in>>8)&0xFF;
 	
-	uint16_t px = ((b & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (r >> 3);
-	uint16_t px_swapped = (px >> 8) | (px << 8);
-	return px_swapped;
+	return ((b & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (r >> 3);
 }
 
 inline uint8_t convert24to8C(uint32_t in) //RGB24 to 256-color
@@ -278,8 +276,13 @@ void driver_framebuffer_fill(Window* window, uint32_t value)
 		}
 	#elif defined(FB_TYPE_16BPP)
 		value = convert24to16(value);
+#ifdef CONFIG_DRIVER_FRAMEBUFFER_BIG_ENDIAN
+		uint8_t c0 = value&0xFF;
+		uint8_t c1 = (value>>8)&0xFF;
+#else
 		uint8_t c0 = (value>>8)&0xFF;
 		uint8_t c1 = value&0xFF;
+#endif
 		for (uint32_t i = 0; i < width*height*2; i+=2) {
 			buffer[i + 0] = c0;
 			buffer[i + 1] = c1;
@@ -396,8 +399,13 @@ void driver_framebuffer_setPixel(Window* window, int16_t x, int16_t y, uint32_t 
 		}
 	#elif defined(FB_TYPE_16BPP)
 		value = convert24to16(value);
+#ifdef CONFIG_DRIVER_FRAMEBUFFER_BIG_ENDIAN
+		uint8_t c0 = value&0xFF;
+		uint8_t c1 = (value>>8)&0xFF;
+#else
 		uint8_t c0 = (value>>8)&0xFF;
 		uint8_t c1 = value&0xFF;
+#endif
 		uint32_t position = (y * width * 2) + (x * 2);
 		if (buffer[position + 0] != c0 || buffer[position + 1] != c1) changed = true;
 		buffer[position + 0] = c0;

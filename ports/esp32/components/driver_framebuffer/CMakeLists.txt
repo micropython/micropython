@@ -64,7 +64,7 @@ set(IDF_COMPONENTS
     micropython
     buses
     driver_display_ili9341
-	driver_badge_bsp
+    driver_badge_bsp
 #    driver_display_depg0290b1
 #    driver_display_ssd1306
 #    driver_io_disobey_samd
