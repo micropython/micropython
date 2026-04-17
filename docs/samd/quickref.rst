@@ -278,7 +278,8 @@ The resolution of the ADC is set by the bits keyword option. The default is 12.
 Suitable values are 8, 10 and 12. If you need a higher resolution or better
 accuracy, use an external ADC. The default value of average is 16.
 Averaging is used to reduce the noise. With a value of 16 the LSB noise is
-about 1 digit. The vref=n option sets the reference voltage for the ADC.
+about 1 digit. When averaging is enabled, the resolution is forced to
+12 bits. The vref=n option sets the reference voltage for the ADC.
 The default setting is for 3.3V. Other values are:
 
 ========= ===== ==============================  =============================

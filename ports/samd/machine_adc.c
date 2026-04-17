@@ -211,6 +211,11 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     uint32_t avg = log2i(args[ARG_average].u_int);
     self->avg = (avg <= 10 ? avg : 10);
 
+    // Enforce 12 bits with averaging. Maybe raise an exception.
+    if (self->avg != 0) {
+        self->bits = 12;
+    }
+
     uint8_t vref = args[ARG_vref].u_int;
     if (0 <= vref && vref <= MAX_ADC_VREF) {
         self->vref = vref;
@@ -227,8 +232,6 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
         device_mgmt[adc_config.device].self = self;
     }
 
-    // flag the device/channel as being in use.
-    ch_busy_flags |= (1 << (self->adc_config.device * 16 + self->adc_config.channel));
     self->dma_channel = -1;
     self->tc_index = -1;
     #endif
@@ -241,8 +244,6 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
 // read_u16()
 static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     Adc *adc = adc_bases[self->adc_config.device];
-    // Set the reference voltage. Default: external AREFA.
-    adc->REFCTRL.reg = adc_vref_table[self->vref];
 
     #if MICROPY_PY_MACHINE_ADC_READ_TIMED
     if (device_mgmt[self->adc_config.device].busy != 0) {
@@ -250,11 +251,15 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     }
     #endif
 
+    // Set the reference voltage. Default: external AREFA.
+    adc->REFCTRL.reg = adc_vref_table[self->vref];
+    // Average: Accumulate samples and scale them down accordingly
+    adc->AVGCTRL.reg = self->avg | ADC_AVGCTRL_ADJRES(self->avg < 4 ? self->avg : 4);
     // Set Input channel and resolution
     // Select the pin as positive input and gnd as negative input reference, non-diff mode by default
     adc->INPUTCTRL.reg = ADC_INPUTCTRL_MUXNEG_GND | self->adc_config.channel;
-    // set resolution. Scale 8-16 to 0 - 4 for table access.
-    adc->CTRLB.bit.RESSEL = resolution[(self->bits - 8) / 2];
+    // Set the resolution to 16 bit with AVG enabled or to 8-12 bit w/o average.
+    adc->CTRLB.bit.RESSEL = (self->avg != 0 ? ADC_CTRLB_RESSEL_16BIT_Val : resolution[(self->bits - 8) / 2]);
 
     #if defined(MCU_SAMD21)
     // Stop the ADC sampling by timer
@@ -267,8 +272,8 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     adc->SWTRIG.bit.START = 1;
     while (adc->INTFLAG.bit.RESRDY == 0) {
     }
-    // Get and return the result
-    return adc->RESULT.reg * (65536 / (1 << self->bits));
+    // Get and return the result. When averaging is enabled, the result size is always 12 bit.
+    return adc->RESULT.reg << (16 - self->bits);
 }
 
 #if MICROPY_PY_MACHINE_ADC_READ_TIMED
@@ -286,14 +291,15 @@ static void mp_machine_adc_read_timed(machine_adc_obj_t *self, mp_obj_t values, 
             dma_init();
             dma_register_irq(self->dma_channel, adc_irq_handler);
         }
-        if (self->tc_index == -1) {
-            self->tc_index = allocate_tc_instance();
-        }
+        // Set the reference voltage. Default: external AREFA.
+        adc->REFCTRL.reg = adc_vref_table[self->vref];
+        // Average: Accumulate samples and scale them down accordingly
+        adc->AVGCTRL.reg = self->avg | ADC_AVGCTRL_ADJRES(self->avg < 4 ? self->avg : 4);
         // Set Input channel and resolution
         // Select the pin as positive input and gnd as negative input reference, non-diff mode by default
         adc->INPUTCTRL.reg = ADC_INPUTCTRL_MUXNEG_GND | self->adc_config.channel;
-        // set resolution. Scale 8-16 to 0 - 4 for table access.
-        adc->CTRLB.bit.RESSEL = resolution[(self->bits - 8) / 2];
+        // Set the resolution to 16 bit with AVG enabled or to 8-12 bit w/o average.
+        adc->CTRLB.bit.RESSEL = (self->avg != 0 ? ADC_CTRLB_RESSEL_16BIT_Val : resolution[(self->bits - 8) / 2]);
 
         // Configure DMA for halfword output to the DAC
         #if defined(MCU_SAMD21)
@@ -448,10 +454,6 @@ static void adc_init(machine_adc_obj_t *self) {
         ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity);
         // Divide a 48MHz clock by 32 to obtain 1.5 MHz clock to adc
         adc->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV32;
-        // Select external AREFA as reference voltage.
-        adc->REFCTRL.reg = self->vref;
-        // Average: Accumulate samples and scale them down accordingly
-        adc->AVGCTRL.reg = self->avg | ADC_AVGCTRL_ADJRES(self->avg);
         // Enable ADC and wait to be ready
         adc->CTRLA.bit.ENABLE = 1;
         while (adc->STATUS.bit.SYNCBUSY) {
@@ -490,10 +492,6 @@ static void adc_init(machine_adc_obj_t *self) {
         adc->CTRLA.reg = ADC_CTRLA_PRESCALER_DIV4;
         // Enable the offset compensation
         adc->SAMPCTRL.reg = ADC_SAMPCTRL_OFFCOMP;
-        // Set the reference voltage. Default: external AREFA.
-        adc->REFCTRL.reg = adc_vref_table[self->vref];
-        // Average: Accumulate samples and scale them down accordingly
-        adc->AVGCTRL.reg = self->avg | ADC_AVGCTRL_ADJRES(self->avg);
         // Enable ADC and wait to be ready
         adc->CTRLA.bit.ENABLE = 1;
         while (adc->SYNCBUSY.bit.ENABLE) {
