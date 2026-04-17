@@ -16,9 +16,6 @@
 #include "nvs_flash.h"
 
 #include "driver/gpio.h"
-//#include "driver/adc.h"
-//#include "driver/dac.h"
-#include "soc/rtc_cntl_reg.h"
 
 // Start audio output driver
 void driver_i2s_sound_start();

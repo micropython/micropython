@@ -14,6 +14,7 @@ list(APPEND MICROPY_SOURCE_QSTR
     ${CMAKE_CURRENT_SOURCE_DIR}/components/consts/modconsts.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_framebuffer/moddisplay.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_badge_bsp/modbadgebsp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/components/driver_sndmixer/modsndmixer.c
 )
 
 # Use our board-specific sdkconfig fragment

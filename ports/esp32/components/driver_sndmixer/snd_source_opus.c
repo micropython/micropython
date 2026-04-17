@@ -104,7 +104,7 @@ static int IRAM_ATTR ctx_decode(void *_ctx) {
 int IRAM_ATTR opus_init_source(const void *data_start, const void *data_end, int req_sample_rate, void **_ctx,
                      int *stereo) {
   // Allocate space for the information struct
-  opus_ctx_t *ctx = calloc(sizeof(opus_ctx_t), 1);
+  opus_ctx_t *ctx = calloc(1, sizeof(opus_ctx_t));
   if (!ctx)
     goto err;
 

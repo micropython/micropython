@@ -109,7 +109,7 @@ const uint8_t noise[] = {
 
 int IRAM_ATTR synth_init_source(const void *data_start, const void *data_end, int req_sample_rate, void **ctx,
                       int *stereo) {
-  synth_ctx_t *synth = calloc(sizeof(synth_ctx_t), 1);
+  synth_ctx_t *synth = calloc(1, sizeof(synth_ctx_t));
   if (!synth)
     return -1;
 

@@ -9,19 +9,49 @@
 int min_val = 0, max_val = 0;
 #endif
 
+static i2s_chan_handle_t tx_chan = NULL;
+
+static int soundRunning = 0;
+
 struct Config {
     uint8_t volume;
 } config;
 
-static int soundRunning = 0;
+#ifdef CONFIG_DRIVER_BADGE_BSP_ENABLE
 
+#include "bsp/audio.h"
+
+static const char TAG[] = "driver_i2s";
+
+void driver_i2s_sound_start(void) {
+	if (soundRunning) return;
+	
+    config.volume = 255;
+
+    int rate     = CONFIG_DRIVER_SNDMIXER_SAMPLE_RATE;
+	ESP_ERROR_CHECK(bsp_audio_set_volume(0.0f));
+	ESP_ERROR_CHECK(bsp_audio_get_i2s_handle(&tx_chan));
+	ESP_ERROR_CHECK(i2s_channel_disable(tx_chan));
+	ESP_ERROR_CHECK(bsp_audio_set_rate(rate));
+	ESP_ERROR_CHECK(i2s_channel_enable(tx_chan));
+	ESP_ERROR_CHECK(bsp_audio_set_volume(80.0f));
+	ESP_ERROR_CHECK(bsp_audio_set_amplifier(true));
+    soundRunning = 1;
+	ESP_LOGI(TAG, "driver_i2s_sound_start, tx_chan = %p, sample rate = %d", tx_chan, rate); 
+}
+
+void driver_i2s_sound_stop(void) {
+}
+
+void driver_i2s_sound_mute(int doMute) {
+}
+
+#else /* CONFIG_DRIVER_BADGE_BSP_ENABLE */
 #ifdef CONFIG_DRIVER_SNDMIXER_I2S_PORT1
 static const i2s_port_t g_i2s_port = I2S_NUM_1;
 #else
 static const i2s_port_t g_i2s_port = I2S_NUM_0;
 #endif
-
-static i2s_chan_handle_t tx_chan = NULL;
 
 void driver_i2s_sound_start(void) {
 	if (soundRunning) return;
@@ -88,6 +118,26 @@ void driver_i2s_sound_stop(void) {
     soundRunning = 0;
 }
 
+void driver_i2s_sound_mute(int doMute) {
+    if (!tx_chan) {
+        return;
+    }
+    if (doMute) {
+        i2s_channel_disable(tx_chan);
+    } else {
+        i2s_channel_enable(tx_chan);
+    }
+}
+
+#endif /* CONFIG_DRIVER_BADGE_BSP_ENABLE */
+void driver_i2s_set_volume(uint8_t new_volume) {
+    config.volume = new_volume;
+}
+
+uint8_t driver_i2s_get_volume(void) {
+    return config.volume;
+}
+
 #define SND_CHUNKSZ 32
 void driver_i2s_sound_push(int16_t *buf, int len, int stereo_input) {
     if (!tx_chan || !soundRunning) {
@@ -138,24 +188,4 @@ void driver_i2s_sound_push(int16_t *buf, int len, int stereo_input) {
         i += plen;
     }
 }
-
-void driver_i2s_set_volume(uint8_t new_volume) {
-    config.volume = new_volume;
-}
-
-uint8_t driver_i2s_get_volume(void) {
-    return config.volume;
-}
-
-void driver_i2s_sound_mute(int doMute) {
-    if (!tx_chan) {
-        return;
-    }
-    if (doMute) {
-        i2s_channel_disable(tx_chan);
-    } else {
-        i2s_channel_enable(tx_chan);
-    }
-}
-
 #endif

@@ -15,7 +15,7 @@ typedef struct {
 
 int mod_init_source(const void *data_start, const void *data_end, int req_sample_rate, void **ctx,
                     int *stereo) {
-  mod_ctx_t *mod = calloc(sizeof(mod_ctx_t), 1);
+  mod_ctx_t *mod = calloc(1, sizeof(mod_ctx_t));
   if (!mod)
     return -1;
   char error[64];

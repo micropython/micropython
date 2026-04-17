@@ -38,11 +38,12 @@ set(includes
 
 set(IDF_COMPONENTS
     nvs_flash
-	esp_driver_i2s
-	esp_driver_gpio
-	esp_driver_spi
-	esp_mm
+    esp_driver_i2s
+    esp_driver_gpio
+    esp_driver_spi
+    esp_mm
     libopus
+    badge-bsp
     micropython
 )
 
@@ -50,8 +51,8 @@ set(IDF_COMPONENTS
 set(MP_ROOT ${PROJECT_DIR}/../..)
 
 idf_component_register(
-	SRCS "${srcs}"
-	INCLUDE_DIRS ${includes}
+    SRCS "${srcs}"
+    INCLUDE_DIRS ${includes}
     PRIV_INCLUDE_DIRS
         ${MP_ROOT}             # micropython/
         ${MP_ROOT}/py          # micropython/py
@@ -59,5 +60,5 @@ idf_component_register(
         ${MICROPY_BOARD_DIR}   # board headers (mpconfigboard.h)
         ${CMAKE_CURRENT_LIST_DIR}/..
         ${BUILD_DIR}
-	REQUIRES ${IDF_COMPONENTS}
+    REQUIRES ${IDF_COMPONENTS}
 )
