@@ -1,0 +1,15 @@
+MicroPython \.\+ version
+Type "help()" for more information.
+>>> # sigint: deliver via controlling terminal
+>>> # Test that Ctrl-C (SIGINT) interrupts blocking code execution.
+>>> # MicroPython restores original terminal mode (ISIG on) during
+>>> # execution, so the PTY terminal driver generates SIGINT from \x03.
+>>> import time
+>>> time.sleep(10)
+########
+\.\*Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyboardInterrupt: 
+>>> print('repl still responds')
+repl still responds
+>>> 

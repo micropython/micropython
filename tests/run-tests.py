@@ -457,11 +457,16 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
         if is_special:
             # check for any cmdline options needed for this test
             args = [MICROPYTHON]
+            send_sigint = False
             with open(test_file, "rb") as f:
-                line = f.readline()
-                if line.startswith(b"# cmdline:"):
-                    # subprocess.check_output on Windows only accepts strings, not bytes
-                    args += [str(c, "utf-8") for c in line[10:].strip().split()]
+                for line in f:
+                    if line.startswith(b"# cmdline:"):
+                        # subprocess.check_output on Windows only accepts strings, not bytes
+                        args += [str(c, "utf-8") for c in line[10:].strip().split()]
+                    elif line.startswith(b"# sigint:"):
+                        send_sigint = True
+                    elif not line.startswith(b"#"):
+                        break
 
             # run the test, possibly with redirected input
             try:
@@ -496,27 +501,76 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                         os.write(master, what)
                         return get()
 
+                    def send_ctrl_c():
+                        # Send \x03 without trailing newline and wait for
+                        # the full response (traceback + new prompt).
+                        os.write(master, b"\x03")
+                        return get(True)
+
                     with open(test_file, "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
                         master, slave = pty.openpty()
-                        p = subprocess.Popen(
-                            args, stdin=slave, stdout=slave, stderr=subprocess.STDOUT, bufsize=0
-                        )
-                        banner = get(True)
-                        output_mupy = banner + b"".join(send_get(line) for line in f)
-                        send_get(b"\x04")  # exit the REPL, so coverage info is saved
-                        # At this point the process might have exited already, but trying to
-                        # kill it 'again' normally doesn't result in exceptions as Python and/or
-                        # the OS seem to try to handle this nicely. When running Linux on WSL
-                        # though, the situation differs and calling Popen.kill after the process
-                        # terminated results in a ProcessLookupError. Just catch that one here
-                        # since we just want the process to be gone and that's the case.
                         try:
-                            p.kill()
-                        except ProcessLookupError:
-                            pass
-                        os.close(master)
-                        os.close(slave)
+                            preexec_fn = None
+                            use_sigint_kill = False
+                            # Tests with "# sigint:" need Ctrl-C (\x03) to
+                            # generate SIGINT. MicroPython restores original
+                            # terminal mode (ISIG on) during code execution,
+                            # so on Linux we set up the PTY as a controlling
+                            # terminal for proper signal delivery. On macOS,
+                            # setsid/TIOCSCTTY breaks PTY I/O, so we fall
+                            # back to os.kill().
+                            if send_sigint:
+                                if sys.platform == "darwin":
+                                    use_sigint_kill = True
+                                else:
+                                    import fcntl
+                                    import termios
+
+                                    def preexec_fn():
+                                        os.setsid()
+                                        fcntl.ioctl(0, termios.TIOCSCTTY, 0)
+                                        os.tcsetpgrp(0, os.getpid())
+
+                            p = subprocess.Popen(
+                                args,
+                                stdin=slave,
+                                stdout=slave,
+                                stderr=subprocess.STDOUT,
+                                bufsize=0,
+                                preexec_fn=preexec_fn,
+                            )
+                            banner = get(True)
+                            if send_sigint:
+                                import signal
+
+                                parts = []
+                                for line in f:
+                                    if b"{\\x03}" in line:
+                                        if use_sigint_kill:
+                                            os.kill(p.pid, signal.SIGINT)
+                                            parts.append(get(True))
+                                        else:
+                                            parts.append(send_ctrl_c())
+                                    else:
+                                        parts.append(send_get(line))
+                                output_mupy = banner + b"".join(parts)
+                            else:
+                                output_mupy = banner + b"".join(send_get(line) for line in f)
+                            send_get(b"\x04")  # exit the REPL, so coverage info is saved
+                            # At this point the process might have exited already, but trying to
+                            # kill it 'again' normally doesn't result in exceptions as Python and/or
+                            # the OS seem to try to handle this nicely. When running Linux on WSL
+                            # though, the situation differs and calling Popen.kill after the process
+                            # terminated results in a ProcessLookupError. Just catch that one here
+                            # since we just want the process to be gone and that's the case.
+                            try:
+                                p.kill()
+                            except ProcessLookupError:
+                                pass
+                        finally:
+                            os.close(master)
+                            os.close(slave)
                 else:
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
