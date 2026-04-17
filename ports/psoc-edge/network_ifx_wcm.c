@@ -400,6 +400,7 @@ static mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
 
     cy_rslt_t ret = CY_RSLT_SUCCESS;
     cy_wcm_scan_filter_t scan_filter;
+    memset(&scan_filter, 0, sizeof(scan_filter));
     bool is_filter_used = false;
 
     if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
@@ -458,7 +459,8 @@ static mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
     ret = cy_wcm_start_scan(network_ifx_wcm_scan_cb, (void *)&scan_user_params, scan_filter_ptr);
     wcm_assert_raise("network scan error (with code: %d)", ret);
 
-    while (scan_user_params.status == CY_WCM_SCAN_INCOMPLETE /*|| TODO: timeout_expired */) {
+    while (scan_user_params.status == CY_WCM_SCAN_INCOMPLETE) {
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     return scan_user_params.scan_list;
@@ -513,8 +515,12 @@ static mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args,
         memcpy(connect_param.BSSID, bssid.buf, bssid.len);
     }
 
-    // Let WCM discover security type
-    connect_param.ap_credentials.security = CY_WCM_SECURITY_UNKNOWN;
+    // OPEN for unencrypted networks; UNKNOWN for WPA/etc to let WCM discover variant.
+    if (args[ARG_key].u_obj == mp_const_none) {
+        connect_param.ap_credentials.security = CY_WCM_SECURITY_OPEN;
+    } else {
+        connect_param.ap_credentials.security = CY_WCM_SECURITY_UNKNOWN;
+    }
 
     network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
     uint8_t retries = sta_conf->connect_retries;
