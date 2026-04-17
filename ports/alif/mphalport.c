@@ -133,7 +133,7 @@ mp_uint_t mp_hal_ticks_us(void) {
 mp_uint_t mp_hal_ticks_ms(void) {
     // Convert system tick to millisecond counter.
     #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
-    return system_tick_get_u64() / 1000ULL;
+    return system_tick_get_ms_fast();
     #elif MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
     return system_tick_get_u64() * 1000ULL / system_tick_source_hz;
     #else
