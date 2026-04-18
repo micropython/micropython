@@ -244,6 +244,7 @@ INC += $(INC_HAL_IMX)
 
 # C source files
 SRC_C += \
+	machine_mem_backup.c \
 	board_init.c \
 	boards/$(MCU_SERIES)_clock_config.c \
 	dma_manager.c \
