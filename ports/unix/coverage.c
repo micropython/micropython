@@ -1009,3 +1009,8 @@ static mp_obj_t extra_coverage(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
 
 #endif
+
+// Static backing store for machine.backup_memory testing on unix.
+#if MICROPY_PY_MACHINE_BACKUP_MEMORY
+uint8_t machine_backup_memory_buf[MICROPY_HW_BACKUP_MEMORY_BYTES];
+#endif
