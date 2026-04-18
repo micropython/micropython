@@ -474,6 +474,11 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
                 // Note: overflow checks are disabled in this code path but enabled for V2 in mp_binary_set_val_array()
+                if (size <= sizeof(mp_uint_t)) {
+                    // Aligned store; byte-wise path corrupts word-only registers.
+                    val = mp_obj_int_get_truncated(val_in);
+                    break;
+                }
                 mp_obj_int_to_bytes(val_in, size, p, struct_type == '>', is_signed(val_type), false);
                 return;
             }
@@ -508,6 +513,14 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
                 size_t size = mp_binary_get_size('@', typecode, NULL);
+                #if !OVERFLOW_CHECKS
+                if (size <= sizeof(mp_int_t)) {
+                    // Aligned store; byte-wise path corrupts word-only registers.
+                    mp_binary_set_val_array_from_int(typecode, p, index,
+                        mp_obj_int_get_truncated(val_in));
+                    return;
+                }
+                #endif
                 p = (uint8_t *)p + index * size;
                 byte *dest;
                 #if OVERFLOW_CHECKS
