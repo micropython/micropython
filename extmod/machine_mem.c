@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+#include "py/objarray.h"
 #include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_MEMX
@@ -114,3 +115,38 @@ const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
 const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
 
 #endif // MICROPY_PY_MACHINE_MEMX
+
+#if MICROPY_PY_MACHINE_MEM_BACKUP
+
+#if !MICROPY_PY_BUILTINS_MEMORYVIEW
+#error "machine.mem_backup requires MICROPY_PY_BUILTINS_MEMORYVIEW"
+#endif
+
+// Convenience initialiser for a read-write memoryview entry in the
+// machine_mem_backup_regions[] table provided by each port.  typecode is the
+// base array typecode char ('B' for uint8, 'I' for uint32).
+#define BACKUP_MV(typecode, len, ptr) \
+    {{&mp_type_memoryview}, (typecode) | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, (len), (ptr)}
+
+// The port provides machine_mem_backup_regions[] in this file.
+#include MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE
+
+// region=0 (default) returns region 0, region=-1 returns a tuple of all regions.
+static mp_obj_t machine_mem_backup(size_t n_args, const mp_obj_t *args) {
+    mp_int_t r = n_args ? mp_obj_get_int(args[0]) : 0;
+    if (r == -1) {
+        size_t n = MP_ARRAY_SIZE(machine_mem_backup_regions);
+        mp_obj_tuple_t *tup = MP_OBJ_TO_PTR(mp_obj_new_tuple(n, NULL));
+        for (size_t i = 0; i < n; i++) {
+            tup->items[i] = MP_OBJ_FROM_PTR(&machine_mem_backup_regions[i]);
+        }
+        return MP_OBJ_FROM_PTR(tup);
+    }
+    if (r < 0 || (size_t)r >= MP_ARRAY_SIZE(machine_mem_backup_regions)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid region"));
+    }
+    return MP_OBJ_FROM_PTR(&machine_mem_backup_regions[r]);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_mem_backup_fun_obj, 0, 1, machine_mem_backup);
+
+#endif // MICROPY_PY_MACHINE_MEM_BACKUP

@@ -53,3 +53,7 @@
 #define MICROPY_HW_MCU_NAME            MICROPY_PY_SYS_PLATFORM
 // Keep the standard banner message
 #define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
+
+// Enable machine.mem_backup with a static RAM buffer for coverage testing.
+#define MICROPY_PY_MACHINE_MEM_BACKUP    (1)
+#define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "ports/unix/coverage_backup.c"

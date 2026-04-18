@@ -203,6 +203,10 @@ extern const machine_mem_obj_t machine_mem8_obj;
 extern const machine_mem_obj_t machine_mem16_obj;
 extern const machine_mem_obj_t machine_mem32_obj;
 
+#if MICROPY_PY_MACHINE_MEM_BACKUP
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_mem_backup_fun_obj);
+#endif
+
 // These classes correspond to machine.Type entries in the machine module.
 // Their Python bindings are implemented in extmod, and their implementation
 // is provided by a port.
