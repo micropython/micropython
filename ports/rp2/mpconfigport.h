@@ -206,6 +206,10 @@
 #define MICROPY_PY_MACHINE_UART_IRQ             (1)
 #define MICROPY_PY_MACHINE_WDT                  (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/rp2/machine_wdt.c"
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP           (1)
+#endif
+#define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "ports/rp2/machine_mem_backup.c"
 #define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX    (2)
 #define MICROPY_PY_ONEWIRE                      (1)
 #define MICROPY_VFS                             (1)
