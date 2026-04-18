@@ -151,6 +151,7 @@ set(MICROPY_SOURCE_DRIVERS
 )
 
 set(MICROPY_SOURCE_PORT
+    machine_mem_backup.c
     clocks_extra.c
     datetime_patch.c
     fatfs_port.c
