@@ -88,6 +88,8 @@ INC += -I../../lib/nrfx/drivers
 INC += -I../../lib/nrfx/drivers/include
 INC += -I../../lib/nrfx/mdk
 INC += -I../../lib/nrfx/hal
+INC += -I../../lib/nrfx/haly
+INC += -I../../lib/nrfx/helpers
 INC += -I../../lib/nrfx/drivers/src/
 INC += -I../../shared/readline
 
@@ -99,6 +101,7 @@ SYSTEM_C_SRC :=
 ifeq ($(MCU_SUB_VARIANT),nrf51822)
 	SYSTEM_C_SRC += $(addprefix lib/nrfx/mdk/, system_nrf51.c)
         NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
+        NRF_DEFINES += -DNRF51822_XXAA
 else ifeq ($(MCU_SUB_VARIANT),nrf52832)
 	SYSTEM_C_SRC += $(addprefix lib/nrfx/mdk/, system_nrf52.c)
         NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
@@ -223,6 +226,10 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	nrfx_power.c \
 	nrfx_clock.c \
 	)
+
+SRC_NRFX += \
+	lib/nrfx/soc/nrfx_atomic.c \
+	lib/nrfx/helpers/nrfx_flag32_allocator.c
 
 SRC_C += \
 	main.c \
