@@ -43,7 +43,8 @@
 
 #ifdef MPU_REGION_NUMBER8
 #define MPU_REGION_OPENAMP  (MPU_REGION_NUMBER8)
-#define MPU_REGION_LAST_USED (MPU_REGION_NUMBER8)
+#define MPU_REGION_BKPSRAM  (MPU_REGION_NUMBER9)
+#define MPU_REGION_LAST_USED (MPU_REGION_NUMBER9)
 #else
 #define MPU_REGION_LAST_USED (MPU_REGION_NUMBER7)
 #endif
@@ -143,7 +144,8 @@ static inline void mpu_config_end(uint32_t irq_state) {
 #define MPU_REGION_ETH      (MPU_REGION_NUMBER1)
 #define MPU_REGION_DMA_UNCACHED_1 (MPU_REGION_NUMBER2)
 #define MPU_REGION_DMA_UNCACHED_2 (MPU_REGION_NUMBER3)
-#define MPU_REGION_LAST_USED (MPU_REGION_NUMBER3)
+#define MPU_REGION_BKPSRAM  (MPU_REGION_NUMBER4)
+#define MPU_REGION_LAST_USED (MPU_REGION_NUMBER4)
 
 #define ST_DEVICE_SIGNATURE_BASE (0x08fff800)
 #define ST_DEVICE_SIGNATURE_LIMIT (0x08ffffff)
@@ -192,7 +194,7 @@ static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32
         // Disable MPU for this region.
         MPU->RNR = region;
         MPU->RLAR &= ~MPU_RLAR_EN_Msk;
-    } else if (region == MPU_REGION_ETH || region == MPU_REGION_DMA_UNCACHED_1 || region == MPU_REGION_DMA_UNCACHED_2) {
+    } else if (region == MPU_REGION_ETH || region == MPU_REGION_DMA_UNCACHED_1 || region == MPU_REGION_DMA_UNCACHED_2 || region == MPU_REGION_BKPSRAM) {
         // Configure region to make DMA memory non-cacheable.
 
         __DMB();

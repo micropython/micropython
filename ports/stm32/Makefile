@@ -236,6 +236,7 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	)
 
 SRC_C += \
+	machine_mem_backup.c \
 	boardctrl.c \
 	main.c \
 	stm32_it.c \
