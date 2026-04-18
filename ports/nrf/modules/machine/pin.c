@@ -38,11 +38,29 @@
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
 
+#if defined(NRF9160_XXAA)
+static const nrfx_gpiote_t gpiote_inst = NRFX_GPIOTE_INSTANCE(1);
+#else
+static const nrfx_gpiote_t gpiote_inst = NRFX_GPIOTE_INSTANCE(0);
+#endif
+
 #if defined(NRF52840_XXAA)
 #define NUM_OF_PINS 48
 #else
 #define NUM_OF_PINS 32
 #endif
+
+static uint8_t pin_gpiote_ch[NUM_OF_PINS];
+
+#define PIN_GPIOTE_CH_NONE UINT8_MAX
+
+static void pin_gpiote_release(nrfx_gpiote_pin_t pin) {
+    nrfx_gpiote_pin_uninit(&gpiote_inst, pin);
+    if (pin_gpiote_ch[pin] != PIN_GPIOTE_CH_NONE) {
+        nrfx_gpiote_channel_free(&gpiote_inst, pin_gpiote_ch[pin]);
+        pin_gpiote_ch[pin] = PIN_GPIOTE_CH_NONE;
+    }
+}
 
 extern const pin_obj_t machine_board_pin_obj[];
 extern const uint8_t machine_pin_num_of_board_pins;
@@ -119,10 +137,17 @@ void pin_init0(void) {
     for (int i = 0; i < NUM_OF_PINS; i++) {
         MP_STATE_PORT(pin_irq_handlers)[i] = mp_const_none;
     }
-    // Initialize GPIOTE if not done yet.
-    if (!nrfx_gpiote_is_init()) {
-        nrfx_gpiote_init(NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY);
+    if (!nrfx_gpiote_init_check(&gpiote_inst)) {
+        nrfx_gpiote_init(&gpiote_inst, NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY);
+    } else {
+        // Soft reset: free GPIOTE channels from the previous cycle.
+        for (int i = 0; i < NUM_OF_PINS; i++) {
+            if (pin_gpiote_ch[i] != PIN_GPIOTE_CH_NONE) {
+                pin_gpiote_release(i);
+            }
+        }
     }
+    memset(pin_gpiote_ch, PIN_GPIOTE_CH_NONE, sizeof(pin_gpiote_ch));
 
     #if PIN_DEBUG
     pin_class_debug = false;
@@ -494,7 +519,8 @@ static mp_obj_t pin_af(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
 
-static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
+static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrfx_gpiote_trigger_t action, void *p_context) {
+    (void)p_context;
     mp_obj_t pin_handler = MP_STATE_PORT(pin_irq_handlers)[pin];
     mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
     const pin_obj_t *pin_obj = pin_find(pin_number);
@@ -513,7 +539,7 @@ static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t 
         } else {
             // Uncaught exception; disable the callback so it doesn't run again.
             MP_STATE_PORT(pin_irq_handlers)[pin] = mp_const_none;
-            nrfx_gpiote_in_uninit(pin);
+            pin_gpiote_release(pin);
             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in interrupt handler for Pin('%q')\n", pin_obj->name);
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
@@ -537,29 +563,49 @@ static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     nrfx_gpiote_pin_t pin = self->pin;
 
-    if (args[ARG_handler].u_obj != mp_const_none) {
-        nrfx_gpiote_in_config_t config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-        if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_LOTOHI) {
-            config.sense = NRF_GPIOTE_POLARITY_LOTOHI;
-        } else if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_HITOLO) {
-            config.sense = NRF_GPIOTE_POLARITY_HITOLO;
-        }
-        config.pull = NRF_GPIO_PIN_PULLUP;
-        config.skip_gpio_setup = true;
+    pin_gpiote_release(pin);
 
-        nrfx_err_t err_code = nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
-        if (err_code == NRFX_ERROR_INVALID_STATE) {
-            // Re-init if already configured.
-            nrfx_gpiote_in_uninit(pin);
-            nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
+    if (args[ARG_handler].u_obj != mp_const_none) {
+        nrfx_gpiote_trigger_t trigger = NRFX_GPIOTE_TRIGGER_TOGGLE;
+        if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_LOTOHI) {
+            trigger = NRFX_GPIOTE_TRIGGER_LOTOHI;
+        } else if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_HITOLO) {
+            trigger = NRFX_GPIOTE_TRIGGER_HITOLO;
         }
-    } else {
-        nrfx_gpiote_in_uninit(pin);
+
+        uint8_t gpiote_ch;
+        nrfx_err_t err = nrfx_gpiote_channel_alloc(&gpiote_inst, &gpiote_ch);
+
+        nrfx_gpiote_trigger_config_t trigger_config = {
+            .trigger = trigger,
+            .p_in_channel = (err == NRFX_SUCCESS) ? &gpiote_ch : NULL,
+        };
+        nrfx_gpiote_handler_config_t handler_config = {
+            .handler = pin_common_irq_handler,
+            .p_context = NULL,
+        };
+        nrfx_gpiote_input_pin_config_t input_config = {
+            .p_pull_config = NULL,
+            .p_trigger_config = &trigger_config,
+            .p_handler_config = &handler_config,
+        };
+
+        nrfx_err_t cfg_err = nrfx_gpiote_input_configure(&gpiote_inst, pin, &input_config);
+        if (cfg_err != NRFX_SUCCESS) {
+            if (err == NRFX_SUCCESS) {
+                nrfx_gpiote_channel_free(&gpiote_inst, gpiote_ch);
+            }
+            mp_raise_ValueError(MP_ERROR_TEXT("pin IRQ config failed"));
+        }
+
+        if (err == NRFX_SUCCESS) {
+            pin_gpiote_ch[pin] = gpiote_ch;
+        }
+
+        nrfx_gpiote_trigger_enable(&gpiote_inst, pin, true);
     }
 
     MP_STATE_PORT(pin_irq_handlers)[pin] = args[ARG_handler].u_obj;
-
-    nrfx_gpiote_in_event_enable(pin, true);
 
     // return the irq object
     return mp_const_none;

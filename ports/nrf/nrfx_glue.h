@@ -44,7 +44,6 @@
 void mp_hal_delay_us(mp_uint_t us);
 #define NRFX_DELAY_US            mp_hal_delay_us
 
-// Atomic operations (required by nrfx v3+)
 #define nrfx_atomic_t nrfx_atomic_u32_t
 #define NRFX_ATOMIC_FETCH_STORE(p_data, value) nrfx_atomic_u32_fetch_store(p_data, value)
 #define NRFX_ATOMIC_FETCH_OR(p_data, value)    nrfx_atomic_u32_fetch_or(p_data, value)
@@ -55,7 +54,6 @@ void mp_hal_delay_us(mp_uint_t us);
 #define NRFX_ATOMIC_CAS(p_data, old_value, new_value) \
     nrfx_atomic_u32_cmp_exch(p_data, &(old_value), new_value)
 
-// CLZ/CTZ intrinsics
 #define NRFX_CLZ(value) __CLZ(value)
 #define NRFX_CTZ(value) __CLZ(__RBIT(value))
 
@@ -68,7 +66,6 @@ void mp_hal_delay_us(mp_uint_t us);
 #define NRFY_CACHE_WB(p_buffer, size) do { (void)(p_buffer); (void)(size); } while (0)
 #define NRFY_CACHE_WBINV(p_buffer, size) do { (void)(p_buffer); (void)(size); } while (0)
 
-// Resource usage tracking
 #define NRFX_DPPI_CHANNELS_USED   0
 #define NRFX_DPPI_GROUPS_USED     0
 #define NRFX_PPI_CHANNELS_USED    0
