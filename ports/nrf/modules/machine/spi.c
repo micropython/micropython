@@ -75,7 +75,7 @@
 #define nrfx_spi_config_t           nrfx_spim_config_t
 #define nrfx_spi_xfer_desc_t        nrfx_spim_xfer_desc_t
 
-#define NRFX_SPI_PIN_NOT_USED       NRFX_SPIM_PIN_NOT_USED
+#define NRFX_SPI_PIN_NOT_USED       NRF_SPIM_PIN_NOT_CONNECTED
 #define NRFX_SPI_INSTANCE           NRFX_SPIM_INSTANCE
 #define NRF_SPI_BIT_ORDER_LSB_FIRST NRF_SPIM_BIT_ORDER_LSB_FIRST
 #define NRF_SPI_BIT_ORDER_MSB_FIRST NRF_SPIM_BIT_ORDER_MSB_FIRST

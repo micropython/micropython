@@ -116,8 +116,14 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const machine_hard_i2c_obj_t *self = &machine_hard_i2c_obj[i2c_id];
 
     nrfx_twi_config_t config;
+    memset(&config, 0, sizeof(config));
+    #if NRFX_TWI_ENABLED
     config.scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj)->pin;
     config.sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj)->pin;
+    #else
+    config.scl_pin = mp_hal_get_pin_obj(args[ARG_scl].u_obj)->pin;
+    config.sda_pin = mp_hal_get_pin_obj(args[ARG_sda].u_obj)->pin;
+    #endif
 
     int freq = NRF_TWI_FREQ_400K;
     if (args[ARG_freq].u_int != -1) {
