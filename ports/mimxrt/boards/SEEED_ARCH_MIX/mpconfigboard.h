@@ -192,3 +192,7 @@
 #define MIMXRT_IOMUXC_SEMC_WE IOMUXC_GPIO_EMC_28_SEMC_WE
 
 #define MIMXRT_IOMUXC_SEMC_CS0 IOMUXC_GPIO_EMC_29_SEMC_CS0
+
+// LPGPR[3] is used by the TinyUF2 bootloader for double-tap entry detection;
+// exclude it from machine.mem_backup() to prevent accidental corruption.
+#define MICROPY_HW_SNVS_LPGPR_SAFE_COUNT (3)
