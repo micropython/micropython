@@ -143,6 +143,7 @@ list(APPEND MICROPY_SOURCE_PORT
     modesp32.c
     machine_hw_spi.c
     mpthreadport.c
+    machine_mem_backup.c
     machine_rtc.c
     machine_sdcard.c
     modespnow.c
