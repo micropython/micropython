@@ -147,6 +147,10 @@
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/alif/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_IRQ             (1)
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP           (1)
+#endif
+#define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "ports/alif/machine_mem_backup.c"
 #define MICROPY_PY_NETWORK                      (CORE_M55_HP)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "mpy-alif"
