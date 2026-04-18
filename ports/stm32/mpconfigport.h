@@ -158,6 +158,10 @@
 #define MICROPY_PY_MACHINE_WDT      (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE "ports/stm32/machine_wdt.c"
 #endif
+
+// Backup memory: BKPSRAM or BKP register detection and config macros.
+#include "backup_memory.h"
+
 #define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_WEBSOCKET        (MICROPY_PY_LWIP)

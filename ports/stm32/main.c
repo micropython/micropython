@@ -500,6 +500,55 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_HW_ENABLE_RTC
     rtc_init_start(false);
     #endif
+
+    // Enable BKPSRAM clock and backup regulator for battery-backed SRAM.
+    #if defined(MICROPY_HW_STM32_BKPSRAM_BASE)
+    #if defined(RCC_AHB1ENR_BKPSRAMEN)
+    // F4, F7, U5: BKPSRAM clock on AHB1.
+    __HAL_RCC_BKPSRAM_CLK_ENABLE();
+    #elif defined(RCC_AHB4ENR_BKPRAMEN)
+    // H7: BKPRAM clock on AHB4.
+    __HAL_RCC_BKPRAM_CLK_ENABLE();
+    #elif defined(RCC_MEMENR_BKPSRAMEN)
+    // N6: memory enable register.
+    LL_MEM_EnableClock(LL_MEM_BKPSRAM);
+    #endif
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+    HAL_PWREx_EnableBkUpReg();
+    #elif defined(PWR_BDCR_BREN)
+    SET_BIT(PWR->BDCR, PWR_BDCR_BREN);
+    {
+        uint32_t ticks = HAL_GetTick();
+        while (!READ_BIT(PWR->BDSR, PWR_BDSR_BRRDY)) {
+            if (HAL_GetTick() - ticks > 1000) {
+                break;
+            }
+        }
+    }
+    #elif defined(PWR_BDCR1_BREN)
+    SET_BIT(PWR->BDCR1, PWR_BDCR1_BREN);
+    #elif defined(PWR_BDCR2_BKPRBSEN)
+    SET_BIT(PWR->BDCR2, PWR_BDCR2_BKPRBSEN);
+    #endif
+    #if defined(STM32H7)
+    {
+        uint32_t irq_state = mpu_config_start();
+        mpu_config_region(MPU_REGION_BKPSRAM,
+            MICROPY_HW_STM32_BKPSRAM_BASE,
+            MPU_CONFIG_UNCACHED(MPU_REGION_SIZE_4KB));
+        mpu_config_end(irq_state);
+    }
+    #elif defined(STM32N6)
+    {
+        uint32_t irq_state = mpu_config_start();
+        mpu_config_region(MPU_REGION_BKPSRAM,
+            MICROPY_HW_STM32_BKPSRAM_BASE,
+            MICROPY_HW_BACKUP_MEMORY_BYTES);
+        mpu_config_end(irq_state);
+    }
+    #endif
+    #endif
+
     uart_init0();
 
     #if defined(MICROPY_HW_UART_REPL)
