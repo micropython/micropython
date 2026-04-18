@@ -56,10 +56,6 @@ typedef struct _machine_rtc_obj_t {
     If MICROPY_HW_RTC_USER_MEM_MAX is set to 0, the RTC.memory() functionality will be not
     be compiled which frees some extra flash and RTC memory.
 */
-#ifndef MICROPY_HW_RTC_USER_MEM_MAX
-#define MICROPY_HW_RTC_USER_MEM_MAX     2048
-#endif
-
 // A board can enable MICROPY_HW_RTC_MEM_INIT_ALWAYS to always clear out RTC memory on boot.
 // Defaults to RTC_NOINIT_ATTR so the user memory survives WDT resets and the like.
 #if MICROPY_HW_RTC_MEM_INIT_ALWAYS
