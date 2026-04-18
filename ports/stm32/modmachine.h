@@ -32,6 +32,9 @@ void machine_init(void);
 void machine_deinit(void);
 void machine_i2s_init0();
 void machine_pwm_deinit_all(void);
+#if MICROPY_PY_MACHINE_MEM_BACKUP
+void machine_mem_backup_init(void);
+#endif
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
 

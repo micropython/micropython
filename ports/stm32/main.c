@@ -501,6 +501,11 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_HW_ENABLE_RTC
     rtc_init_start(false);
     #endif
+
+    #if MICROPY_PY_MACHINE_MEM_BACKUP
+    machine_mem_backup_init();
+    #endif
+
     uart_init0();
 
     #if defined(MICROPY_HW_UART_REPL)
