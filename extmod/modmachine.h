@@ -203,6 +203,22 @@ extern const machine_mem_obj_t machine_mem8_obj;
 extern const machine_mem_obj_t machine_mem16_obj;
 extern const machine_mem_obj_t machine_mem32_obj;
 
+#if MICROPY_PY_MACHINE_MEM_BACKUP
+#include "py/objarray.h"
+
+// Convenience initialiser for a read-write memoryview entry in the
+// machine_mem_backup_regions[] table provided by each port.  typecode is the
+// base array typecode char ('B' for uint8, 'I' for uint32).
+#define BACKUP_MV(typecode, len, ptr) \
+    {{&mp_type_memoryview}, (typecode) | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, (len), (ptr)}
+
+// Provided by each port's machine_mem_backup.c
+extern const mp_obj_array_t machine_mem_backup_regions[];
+extern const size_t machine_mem_backup_region_count;
+
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_mem_backup_fun_obj);
+#endif
+
 // These classes correspond to machine.Type entries in the machine module.
 // Their Python bindings are implemented in extmod, and their implementation
 // is provided by a port.
