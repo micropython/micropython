@@ -102,6 +102,18 @@ Methods
 
    Availability: esp32, esp8266 ports.
 
+   .. note::
+
+      For cross-port persistent storage, see :func:`machine.mem_backup`
+      which is available on more ports and provides direct memoryview access.
+
+   .. warning::
+
+      On esp32, ``RTC.memory()`` and :func:`machine.mem_backup` share the same
+      backing buffer but track length independently. Writes through one API
+      are not reflected in the length seen by the other. Avoid mixing the two
+      in the same application.
+
 Constants
 ---------
 
