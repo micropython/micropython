@@ -139,6 +139,14 @@ uint32_t trng_random_u32(void);
 #endif
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#ifndef MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_PY_MACHINE_BACKUP_MEMORY    (1)
+#endif
+#if MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_HW_BACKUP_MEMORY_BYTES      (SNVS_LPGPR_COUNT * 4)
+#define MICROPY_HW_BACKUP_MEMORY_ITEMSIZE   (4)
+#define MICROPY_HW_BACKUP_MEMORY_ADDR       ((void *)&SNVS->LPGPR[0])
+#endif
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (2)
