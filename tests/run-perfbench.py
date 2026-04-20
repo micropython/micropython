@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import argparse
+import re
 from glob import glob
 
 from test_utils import (
@@ -119,6 +120,19 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
         with open(BENCH_SCRIPT_DIR + "benchrun.py", "rb") as f:
             test_script += f.read()
         test_script += b"bm_run(%u, %u)\n" % (param_n, param_m)
+
+        # Search for the bm_params dict, to extract the minimum memory required.
+        m = re.search(rb"bm_params = {\s+\((\d+), (\d+)\):", test_script)
+        if not m:
+            print(f"Test file '{test_file}' doesn't contain valid 'bm_params'")
+            sys.exit(2)
+        min_m = int(m.group(2))
+
+        # Skip the test if the target doesn't have enough memory.
+        if param_m < min_m:
+            test_results.append((test_file, "skip", "too large"))
+            print("SKIP: too large")
+            continue
 
         # Write full test script if needed
         if 0:
@@ -314,14 +328,10 @@ def main():
             args.mpy_cross_flags = "-march=armv7m"
 
     if len(args.files) == 0:
-        tests_skip = ("benchrun.py",)
-        if M <= 25:
-            # These scripts are too big to be compiled by the target
-            tests_skip += ("bm_chaos.py", "bm_hexiom.py", "misc_raytrace.py")
         tests = sorted(
             BENCH_SCRIPT_DIR + test_file
             for test_file in os.listdir(BENCH_SCRIPT_DIR)
-            if test_file.endswith(".py") and test_file not in tests_skip
+            if test_file.endswith(".py") and test_file != "benchrun.py"
         )
     else:
         tests = sorted(args.files)
