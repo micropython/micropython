@@ -201,6 +201,14 @@ void asm_rv32_end_pass(asm_rv32_t *state);
     ((op & 0x03) | ((ft6 & 0x3F) << 10) | ((ft2 & 0x03) << 8) | \
     ((rlist & 0x0F) << 4) | ((imm & 0x03) << 2))
 
+#define RV32_ENCODE_TYPE_CMMV(op, ft6, ft2, r1s, r2s) \
+    ((op & 0x03) | ((ft6 & 0x3F) << 10) | ((ft2 & 0x03) << 5) | \
+    ((((r1s >= ASM_RV32_REG_S0 && r1s <= ASM_RV32_REG_S1) ? \
+    (r1s - ASM_RV32_REG_S0) : (r1s - ASM_RV32_REG_S2 + 2)) & 0x07) << 7) | \
+    ((((r2s >= ASM_RV32_REG_S0 && r2s <= ASM_RV32_REG_S1) ? \
+    (r2s - ASM_RV32_REG_S0) : (r2s - ASM_RV32_REG_S2 + 2)) & 0x07) << 2))
+
+
 #define RV32_ENCODE_TYPE_CR(op, ft4, rs1, rs2) \
     ((op & 0x03) | ((rs2 & 0x1F) << 2) | ((rs1 & 0x1F) << 7) | ((ft4 & 0x0F) << 12))
 
@@ -444,10 +452,34 @@ static inline void asm_rv32_opcode_cxor(asm_rv32_t *state, mp_uint_t rd, mp_uint
     asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CA(0x01, 0x23, 0x01, rd, rs));
 }
 
+// CM.MVA01S R1S', R2S'
+static inline void asm_rv32_opcode_cmmva01s(asm_rv32_t *state, mp_uint_t r1s, mp_uint_t r2s) {
+    // CMMV: 101011 ... 11 ... 10
+    asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMMV(0x02, 0x2B, 0x03, r1s, r2s));
+}
+
+// CM.MVSA01 R1S', R2S'
+static inline void asm_rv32_opcode_cmmvsa01(asm_rv32_t *state, mp_uint_t r1s, mp_uint_t r2s) {
+    // CMMV: 101011 ... 01 ... 10
+    asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMMV(0x02, 0x2B, 0x01, r1s, r2s));
+}
+
+// CM.POP {REG_LIST}, IMMEDIATE
+static inline void asm_rv32_opcode_cmpop(asm_rv32_t *state, mp_uint_t reg_list, mp_uint_t immediate) {
+    // CMPP: 10111010 .... .. 10
+    asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMPP(0x02, 0x2E, 0x02, reg_list, immediate));
+}
+
 // CM.POPRET {REG_LIST}, IMMEDIATE
 static inline void asm_rv32_opcode_cmpopret(asm_rv32_t *state, mp_uint_t reg_list, mp_uint_t immediate) {
-    // CMPP: 10111110 ... .. 10
+    // CMPP: 10111110 .... .. 10
     asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMPP(0x02, 0x2F, 0x02, reg_list, immediate));
+}
+
+// CM.POPRETZ {REG_LIST}, IMMEDIATE
+static inline void asm_rv32_opcode_cmpopretz(asm_rv32_t *state, mp_uint_t reg_list, mp_uint_t immediate) {
+    // CMPP: 10111100 .... .. 10
+    asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMPP(0x02, 0x2F, 0x00, reg_list, immediate));
 }
 
 // CM.PUSH {REG_LIST}, -IMMEDIATE
