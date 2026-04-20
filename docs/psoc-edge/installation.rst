@@ -56,7 +56,7 @@ s
 To flash a specific ``.hex`` to CM55 core of this device:
 .. code-block:: bash
     
-    $ python mpy-pse.py device-setup --hex-file pathtodir/mpy-psoc-edge_KIT_PSE84_AI_CM55.hexs
+    $ python mpy-pse.py device-setup --hex-file pathtodir/mpy-psoc-edge_KIT_PSE84_AI_CM55.hex
 
 Install a specific version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
