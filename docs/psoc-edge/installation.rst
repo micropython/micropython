@@ -59,7 +59,7 @@ To flash a specific ``.hex`` to CM55 core of this device:
     $ python mpy-pse.py device-setup --hex-file pathtodir/mpy-psoc-edge_KIT_PSE84_AI_CM55.hex
 
 Install a specific version
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you want to setup the device with a specific firmware version, you can check the list of available releases in the `GitHub release section <https://github.com/infineon/micropython-psoc-edge/releases>`_. 
 
