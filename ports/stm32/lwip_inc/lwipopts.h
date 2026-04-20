@@ -8,8 +8,6 @@
 #define LWIP_LOOPIF_MULTICAST           1
 #define LWIP_LOOPBACK_MAX_PBUFS         8
 
-#define LWIP_IPV6                       0
-
 #define LWIP_RAND() rng_get()
 
 // Increase memory for lwIP to get better performance.
