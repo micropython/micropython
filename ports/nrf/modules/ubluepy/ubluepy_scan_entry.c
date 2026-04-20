@@ -94,7 +94,7 @@ static mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
         mp_map_t *constant_map = mp_obj_dict_get_map(MP_OBJ_TYPE_GET_SLOT(&ubluepy_constants_ad_types_type, locals_dict));
         mp_map_elem_t *ad_types_table = MP_OBJ_TO_PTR(constant_map->table);
 
-        uint16_t num_of_elements = constant_map->used;
+        uint16_t num_of_elements = mp_map_len(constant_map);
 
         for (uint16_t i = 0; i < num_of_elements; i++) {
             mp_map_elem_t element = (mp_map_elem_t)*ad_types_table;

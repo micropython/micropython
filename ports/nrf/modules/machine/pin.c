@@ -441,7 +441,7 @@ static mp_obj_t pin_names(mp_obj_t self_in) {
     mp_map_t *map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
     mp_map_elem_t *elem = map->table;
 
-    for (mp_uint_t i = 0; i < map->used; i++, elem++) {
+    for (mp_uint_t i = 0; i < mp_map_len(map); i++, elem++) {
         if (elem->value == self) {
             mp_obj_list_append(result, elem->key);
         }

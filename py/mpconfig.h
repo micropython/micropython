@@ -1633,6 +1633,21 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether dicts use CPython-style ordered hash tables (dense array + sparse
+// hash indices) that preserve insertion order, matching CPython 3.7+ semantics.
+// When disabled, dicts use the original flat open-addressing hash table.
+#ifndef MICROPY_PY_MAP_ORDERED
+#define MICROPY_PY_MAP_ORDERED (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to support ordered dicts with >65535 elements (uint32_t hash indices).
+// Only meaningful when MICROPY_PY_MAP_ORDERED is enabled.
+#if MICROPY_PY_MAP_ORDERED
+#ifndef MICROPY_PY_MAP_LARGE
+#define MICROPY_PY_MAP_LARGE (0)
+#endif
+#endif
+
 // Whether to provide the _asdict function for namedtuple
 #ifndef MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
