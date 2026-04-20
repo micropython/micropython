@@ -97,5 +97,6 @@ static inline void esp_exceptions(esp_err_t e) {
 
 void socket_events_deinit(void);
 void esp_initialise_wifi(void);
+void network_wlan_deinit(void);
 
 #endif
