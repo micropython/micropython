@@ -48,7 +48,7 @@ MicroPython firmware version:
 
 You can run this command whenever you want to upgrade to the latest MicroPython firmware version.
 This command will take care of the following steps:
-s
+
 * Download and install openocd, which is the software required to deploy a firmware file on PSOC™ Edge controllers
 * Download the latest ``.hex`` file for your selected board
 * Deploy the latest version of MicroPython firmware on your board
