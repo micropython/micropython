@@ -259,3 +259,13 @@ size_t strcspn(const char *s, const char *reject) {
     }
     return s - ss;
 }
+
+// Decimal-only, non-negative integers; no leading whitespace handling.
+// Marked weak so a libc-provided atoi() takes precedence if available.
+__attribute__((weak)) int atoi(const char *num) {
+    int value = 0;
+    while (*num >= '0' && *num <= '9') {
+        value = value * 10 + (*num++ - '0');
+    }
+    return value;
+}
