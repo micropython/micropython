@@ -28,6 +28,11 @@ unsigned long trng_random_u32(void);
 
 #define VFS_BLOCK_SIZE_BYTES            (2048) //
 
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP   (1)
+#endif
+#define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "ports/samd/machine_mem_backup.c"
+
 #ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
 #endif
