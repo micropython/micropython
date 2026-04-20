@@ -45,6 +45,18 @@
 #include "modnetwork.h"
 #include "extmod/modnetwork.h"
 
+#ifndef NO_QSTR
+#include "mdns.h"
+#endif
+
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+#if MICROPY_PY_NETWORK_WLAN
+extern bool mdns_initialised;  // Defined in network_wlan.c
+#else
+static bool mdns_initialised = false;  // Define locally when WiFi is disabled
+#endif
+#endif
+
 #if PHY_LAN867X_ENABLED
 #include "esp_eth_phy_lan867x.h"
 #endif
@@ -87,9 +99,27 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
             eth_status = ETH_STOPPED;
             ESP_LOGI("ethernet", "Ethernet Stopped");
             break;
+        default:
+            break;
+    }
+}
+
+static void eth_ip_event_handler(void *arg, esp_event_base_t event_base,
+    int32_t event_id, void *event_data) {
+    switch (event_id) {
         case IP_EVENT_ETH_GOT_IP:
             eth_status = ETH_GOT_IP;
             ESP_LOGI("ethernet", "Ethernet Got IP");
+            #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+            if (!mdns_initialised) {
+                mdns_init();
+                #if MICROPY_HW_ENABLE_MDNS_RESPONDER
+                mdns_hostname_set(mod_network_hostname_data);
+                mdns_instance_name_set(mod_network_hostname_data);
+                #endif
+                mdns_initialised = true;
+            }
+            #endif
             break;
         default:
             break;
@@ -308,7 +338,7 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
     }
 
-    if (esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
+    if (esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &eth_ip_event_handler, NULL) != ESP_OK) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
     }
 
