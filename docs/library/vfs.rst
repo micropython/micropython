@@ -50,6 +50,9 @@ represented by VFS classes.
 
     Will raise ``OSError(EINVAL)`` if *mount_point* is not found.
 
+Filesystem Types
+----------------
+
 .. class:: VfsFat(block_dev)
 
     Create a filesystem object that uses the FAT filesystem format.  Storage of
@@ -106,6 +109,46 @@ represented by VFS classes.
     If *root* is specified then it should be a path in the host filesystem to use
     as the root of the ``VfsPosix`` object.  Otherwise the current directory of
     the host filesystem is used.
+
+
+.. class:: VfsRom(buffer)
+
+    This class is only available when the firmware is built with
+    ``MICROPY_VFS_ROM`` enabled.
+
+    Create a filesystem object that uses the :ref:`ROMFS read-only filesystem
+    format <romfs>`.  *buffer* must be an object supporting the buffer protocol
+    (e.g. ``bytes``, ``bytearray``, or ``memoryview``) that contains a valid
+    ROMFS image.
+    The constructor validates that *buffer* begins with the ROMFS magic bytes
+    (``b"\xd2\xcd\x31"``).  If the buffer is too small or not a valid ROMFS
+    then ``OSError(ENODEV)`` is raised.
+
+
+
+
+    See :ref:`romfs` for more information on the ROMFS filesystem and how to
+    deploy images using :ref:`mpremote <mpremote>`.
+
+   .. method:: VfsRom.open(path, mode)
+
+       Open a file from the ROMFS.  Only read modes (``''``, ``'r'``,
+       ``'rt'``, ``'rb'``) are supported. 
+       For binary files opened in read mode,
+       the returned object also supports the buffer protocol so that a
+       ``memoryview`` of the file data can be obtained, which refers
+       directly into the ROMFS memory (zero-copy).
+
+   .. method:: VfsRom.statvfs(path)
+
+       The block size is reported as 1 and
+       the block count represents the total size of the ROMFS image in bytes.
+
+   .. method:: VfsRom.chdir(path)
+
+       Change directory within the ROMFS.  Only the root (``'/'``) is
+       supported; changing to any subdirectory raises ``OSError(EOPNOTSUPP)``.
+
 
 .. _littlefs v1 filesystem format: https://github.com/ARMmbed/littlefs/tree/v1
 .. _littlefs v2 filesystem format: https://github.com/ARMmbed/littlefs
@@ -214,3 +257,32 @@ that the block device supports the extended interface.
        ``op`` is intercepted, the return value for operations 4 and 5 are as
        detailed above. Other operations should return 0 on success and non-zero
        for failure, with the value returned being an ``OSError`` errno code.
+
+
+Miscellaneous Functions
+-----------------------
+
+.. function:: rom_ioctl(op, ...)
+
+   Low-level interface for accessing the read-only memory (ROM) partition(s)
+   of the device. This function is only available on ports that support ROMFS
+   (i.e. where ``MICROPY_VFS_ROM_IOCTL`` is enabled).
+
+   The supported operations are:
+
+   - ``vfs.rom_ioctl(1)`` -- Return the number of available ROM partitions.
+   - ``vfs.rom_ioctl(2, id)`` -- Return the ROM partition with index *id* as
+     a ``memoryview`` object. The memory can be read but not written directly.
+   - ``vfs.rom_ioctl(3, id, length)`` -- Prepare a ROM partition for writing.
+     Erases the first *length* bytes of the partition with index *id*.
+     Returns the minimum write size in bytes (the alignment required for
+     subsequent writes).
+   - ``vfs.rom_ioctl(4, id, offset, buf)`` -- Write *buf* (a bytes-like object)
+     to the ROM partition with index *id* at byte *offset*.
+   - ``vfs.rom_ioctl(5, id)`` -- Complete a write sequence to partition *id*
+     (performs any finalisation needed after writing, such as cache flushing).
+
+   These operations are used internally by ``mpremote`` to deploy ROMFS images.
+   Most users do not need to call ``vfs.rom_ioctl()`` directly.
+
+See :ref:`romfs` for more information.
