@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018-2019 Damien P. George
+ * Copyright (c) 2024 Andrew Leech
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
-#define MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
 
-#include "lwip/ip_addr.h"
+#ifndef MICROPY_INCLUDED_EXTMOD_NETWORK_USBD_NCM_H
+#define MICROPY_INCLUDED_EXTMOD_NETWORK_USBD_NCM_H
 
-#define DHCPS_BASE_IP (16)
-#define DHCPS_MAX_IP (8)
+// Start dhcp server on this interface by default as this allows the host computer
+// to be automatically / quickly allocated a suitable ip address to be able to
+// communicate over the usb network link.
+#ifndef MICROPY_HW_NETWORK_USBNET_DHCP_SERVER
+#define MICROPY_HW_NETWORK_USBNET_DHCP_SERVER  (1)
+#endif
 
-typedef struct _dhcp_server_lease_t {
-    uint8_t mac[6];
-    uint16_t expiry;
-} dhcp_server_lease_t;
+// Initialise the NCM netif early (before USB enumeration).
+void usbnet_auto_init(void);
 
-typedef struct _dhcp_server_t {
-    ip_addr_t ip;
-    ip_addr_t nm;
-    dhcp_server_lease_t lease[DHCPS_MAX_IP];
-    struct udp_pcb *udp;
-    bool send_router; // advertise server IP as default gateway
-} dhcp_server_t;
-
-void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm);
-void dhcp_server_deinit(dhcp_server_t *d);
-
-#endif // MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
+#endif // MICROPY_INCLUDED_EXTMOD_NETWORK_USBD_NCM_H
