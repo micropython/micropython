@@ -89,11 +89,12 @@ me
 micropython     machine         marshal         math
 
 argv            atexit          byteorder       exc_info
-executable      exit            getsizeof       implementation
-intern          maxsize         modules         path
-platform        print_exception                 ps1
-ps2             settrace        stderr          stdin
-stdout          tracebacklimit  version         version_info
+executable      exit            getsizeof       gettrace
+implementation  intern          maxsize         modules
+path            platform        print_exception
+ps1             ps2             settrace        stderr
+stdin           stdout          tracebacklimit  version
+version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)

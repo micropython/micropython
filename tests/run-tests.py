@@ -109,7 +109,8 @@ emitter_tests_to_skip = {
         "micropython/schedule.py",
         # These require sys.exc_info().
         "misc/sys_exc_info.py",
-        # These require sys.settrace().
+        # These require sys.settrace() / sys._getframe().
+        "misc/sys__getframe.py",
         "misc/sys_settrace_cov.py",
         "misc/sys_settrace_features.py",
         "misc/sys_settrace_generator.py",
