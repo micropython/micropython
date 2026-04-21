@@ -137,6 +137,7 @@ list(APPEND MICROPY_SOURCE_PORT
     esp32_partition.c
     esp32_pcnt.c
     esp32_rmt.c
+    esp32_rmtrx.c
     esp32_ulp.c
     esp32_ldo.c
     modesp32.c
