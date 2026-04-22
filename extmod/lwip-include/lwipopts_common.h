@@ -109,6 +109,13 @@
 // Needed for PPP.
 #define sys_jiffies sys_now
 
+#if MICROPY_PY_LWIP_SECTION
+// Place lwIP memory in a dedicated section to allow relocating it.
+// Note: alignment is enforced without adding trailing padding bytes.
+#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name, size) \
+    __attribute__((section(".lwip"), aligned(MEM_ALIGNMENT))) u8_t variable_name[size]
+#endif
+
 typedef uint32_t sys_prot_t;
 
 #endif // MICROPY_INCLUDED_LWIPOPTS_COMMON_H
