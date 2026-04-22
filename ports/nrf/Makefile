@@ -443,12 +443,12 @@ sd: nrfutil_dfu_sd nrfutil_dfu_deploy
 
 nrfutil_dfu_sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)hexmerge.py -o $(BUILD)/stripped_sd.hex --range=0x1000: $(SOFTDEV_HEX)
-	$(Q)nrfutil pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
-	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
+	$(Q)nrfutil nrf5sdk-tools pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
+	$(Q)nrfutil nrf5sdk-tools dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
 
 nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
-	$(Q)nrfutil pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
-	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
+	$(Q)nrfutil nrf5sdk-tools pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
+	$(Q)nrfutil nrf5sdk-tools dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
 
 deploy: nrfutil_dfu_deploy
 
