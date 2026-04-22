@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+TEST_DIR=$(dirname $0)
+
 # Create a local directory structure and mount the parent directory on the device.
 echo -----
 mkdir -p "${TMP}/mount_package"
@@ -30,3 +32,12 @@ cat "${TMP}/test.txt"
 # Test RemoteFile.readline and RemoteFile.readlines methods.
 echo -----
 $MPREMOTE mount ${TMP} exec "print(open('test.txt').readlines())"
+
+echo -----
+# Test write() with array returns byte count, not item count.
+# See https://github.com/micropython/micropython/issues/17665
+$MPREMOTE mount ${TMP} run "${TEST_DIR}/test_mount_write_array_mpy.py"
+
+# Test readinto() with array returns byte count and fills correctly.
+echo -----
+$MPREMOTE mount ${TMP} run "${TEST_DIR}/test_mount_readinto_array_mpy.py"
