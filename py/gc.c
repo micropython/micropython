@@ -825,6 +825,25 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
+// Fast version of gc_info that only computes total/used/free.
+void gc_info_fast(gc_info_t *info) {
+    GC_ENTER();
+    memset(info, 0, sizeof(*info));
+    const uint8_t lut[16] = {2, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0};
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        size_t free_blocks = 0;
+        info->total += area->gc_pool_end - area->gc_pool_start;
+        for (size_t i = 0; i < area->gc_alloc_table_byte_len; i++) {
+            uint8_t atb = area->gc_alloc_table_start[i];
+            free_blocks += lut[atb & 0xF] + lut[atb >> 4];
+        }
+        info->free += free_blocks;
+    }
+    info->free *= BYTES_PER_BLOCK;
+    info->used = info->total - info->free;
+    GC_EXIT();
+}
+
 #if MICROPY_PY_WEAKREF
 // Mark the GC heap pointer as having a weakref.
 void gc_weakref_mark(void *ptr) {
