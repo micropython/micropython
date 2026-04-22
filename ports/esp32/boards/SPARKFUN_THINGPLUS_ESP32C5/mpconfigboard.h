@@ -1,7 +1,7 @@
 // Board specific definitions for the SparkFun Thing Plus ESP32-C5.
 
 #define MICROPY_HW_BOARD_NAME               "SparkFun Thing Plus ESP32-C5"
-#define MICROPY_HW_MCU_NAME                 "ESP32C5"
+#define MICROPY_HW_MCU_NAME                 "ESP32-C5"
 
 #define MICROPY_HW_I2C0_SCL            (24)
 #define MICROPY_HW_I2C0_SDA            (23)
