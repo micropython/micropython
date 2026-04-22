@@ -6,7 +6,7 @@
 #endif
 
 #ifndef MICROPY_HW_MCU_NAME
-#define MICROPY_HW_MCU_NAME "ESP32P4"
+#define MICROPY_HW_MCU_NAME "ESP32-P4"
 #endif
 
 #define MICROPY_PY_ESPNOW                (0)
