@@ -26,7 +26,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "micro:bit"
 #define MICROPY_HW_MCU_NAME         "NRF51822"
-#define MICROPY_PY_SYS_PLATFORM     "nrf51"
 
 #define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MUSIC            (1)

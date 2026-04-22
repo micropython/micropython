@@ -26,7 +26,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "IDK-BLYST-NANO"
 #define MICROPY_HW_MCU_NAME         "NRF52832"
-#define MICROPY_PY_SYS_PLATFORM     "BLYST Nano"
 
 #define MICROPY_PY_MACHINE_SOFT_PWM (1)
 #define MICROPY_PY_MUSIC            (1)
