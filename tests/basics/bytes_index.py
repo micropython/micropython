@@ -97,3 +97,13 @@ try:
     print(b"0000".index(b'0', 91273611))
 except ValueError:
     print("ValueError")
+
+# Out of bounds search argument.
+try:
+    print(b"0000".index(-1))
+except ValueError:
+    print("ValueError")
+try:
+    print(b"0000".index(256))
+except ValueError:
+    print("ValueError")
