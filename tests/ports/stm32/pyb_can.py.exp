@@ -1,7 +1,7 @@
 ValueError -1
 ValueError 0
 CAN 1
-ValueError 3
+ValueError 4
 CAN(1)
 True
 CAN(1, CAN.LOOPBACK, auto_restart=False)
@@ -27,6 +27,7 @@ ValueError
 ==== TEST extframe=True ====
 CAN(1, CAN.LOOPBACK, auto_restart=False)
 extframe passed
+==== TEST filters ====
 ('0x8', '0x1c', '0xa', True, b'ok')
 ('0x800', '0x1c00', '0xa00', True, b'ok')
 ('0x80000', '0x1c0000', '0xa0000', True, b'ok')
