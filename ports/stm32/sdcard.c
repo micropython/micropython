@@ -38,6 +38,15 @@
 #include "dma.h"
 #include "irq.h"
 
+#if !BUILDING_MBOOT
+#include "usbd_msc_interface.h"
+#else
+// For mboot, act like the SDCard is always exposed via USB MSC
+inline static bool usbd_msc_lu_includes_sdcard(void) {
+    return true;
+}
+#endif // !BUILDING_MBOOT
+
 #if MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD
 
 #if defined(STM32F7) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32N6)
@@ -541,8 +550,14 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
     }
 
     if (query_irq() == IRQ_STATE_ENABLED) {
-        // we must disable USB irqs to prevent MSC contention with SD card
-        uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+        #if MICROPY_HW_USB_MSC
+        uint32_t basepri;
+        bool usb_msc_sdcard = usbd_msc_lu_includes_sdcard();
+        if (usb_msc_sdcard) {
+            // we must disable USB irqs to prevent MSC contention with SD card
+            basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+        }
+        #endif
 
         #if SDIO_USE_GPDMA
         DMA_HandleTypeDef sd_dma;
@@ -586,7 +601,11 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         }
         #endif
 
-        restore_irq_pri(basepri);
+        #if MICROPY_HW_USB_MSC
+        if (usb_msc_sdcard) {
+            restore_irq_pri(basepri);
+        }
+        #endif
     } else {
         #if MICROPY_HW_ENABLE_MMCARD
         if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_MMC) {
@@ -635,8 +654,14 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
     }
 
     if (query_irq() == IRQ_STATE_ENABLED) {
-        // we must disable USB irqs to prevent MSC contention with SD card
-        uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+        #if MICROPY_HW_USB_MSC
+        uint32_t basepri;
+        bool usb_msc_sdcard = usbd_msc_lu_includes_sdcard();
+        if (usb_msc_sdcard) {
+            // we must disable USB irqs to prevent MSC contention with SD card
+            basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+        }
+        #endif
 
         #if SDIO_USE_GPDMA
         DMA_HandleTypeDef sd_dma;
@@ -679,7 +704,11 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         }
         #endif
 
-        restore_irq_pri(basepri);
+        #if MICROPY_HW_USB_MSC
+        if (usb_msc_sdcard) {
+            restore_irq_pri(basepri);
+        }
+        #endif
     } else {
         #if MICROPY_HW_ENABLE_MMCARD
         if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_MMC) {

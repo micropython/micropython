@@ -109,6 +109,15 @@ void usbd_msc_init_lu(size_t lu_n, const void *lu_data) {
     usbd_msc_lu_flags = 0;
 }
 
+bool usbd_msc_lu_includes_sdcard(void) {
+    for (int i = 0; i < usbd_msc_lu_num; i++) {
+        if (usbd_msc_lu_data[i] == &pyb_sdcard_type) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Helper function to perform an ioctl on a logical unit
 static int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
     if (lun >= usbd_msc_lu_num) {
