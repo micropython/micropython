@@ -99,6 +99,11 @@ class PyProxy {
             }
             Module._free(item);
             js_obj_out = js_dict;
+        } else if (type === 4) {
+            // Buffer protocol; create a copy of the data to a new Uint8Array.
+            const len = Module.getValue(obj_data, "i32");
+            const buf = Module.getValue(obj_data + 4, "i32");
+            js_obj_out = Module.HEAPU8.slice(buf, buf + len);
         } else {
             // Cannot convert to JS, leave as a PyProxy.
             js_obj_out = js_obj;

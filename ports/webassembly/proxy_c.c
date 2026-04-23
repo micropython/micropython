@@ -387,6 +387,7 @@ bool proxy_c_to_js_delete_attr(uint32_t c_ref, const char *attr_in) {
 uint32_t proxy_c_to_js_get_type_and_data(uint32_t c_ref, uint32_t *out) {
     mp_obj_t obj = proxy_c_get_obj(c_ref);
     const mp_obj_type_t *type = mp_obj_get_type(obj);
+    mp_buffer_info_t bufinfo;
     if (type == &mp_type_tuple || type == &mp_type_list) {
         size_t len;
         mp_obj_t *items;
@@ -403,6 +404,10 @@ uint32_t proxy_c_to_js_get_type_and_data(uint32_t c_ref, uint32_t *out) {
         out[0] = map->alloc;
         out[1] = (uintptr_t)map->table;
         return 3;
+    } else if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
+        out[0] = bufinfo.len;
+        out[1] = (uintptr_t)bufinfo.buf;
+        return 4;
     } else {
         return 0;
     }

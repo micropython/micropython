@@ -26,3 +26,22 @@ console.log(Reflect.ownKeys(y));
 console.log(Array.isArray(z));
 console.log(z);
 console.log(Reflect.ownKeys(z));
+
+/**********************************************************/
+// Test using to_js on objects with the buffer protocol.
+
+console.log("= TEST BUFFER =====");
+
+mp.runPython(`
+import jsffi
+buf1 = jsffi.to_js(b"1234")
+print(buf1)
+buf2 = jsffi.to_js(bytearray(b"5678"))
+print(buf2)
+buf3 = jsffi.to_js(memoryview(b"abcd"))
+print(buf3)
+`);
+
+console.log(mp.globals.get("buf1"));
+console.log(mp.globals.get("buf2"));
+console.log(mp.globals.get("buf3"));
