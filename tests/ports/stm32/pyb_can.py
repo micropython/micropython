@@ -18,7 +18,7 @@ IS_CLASSIC = hasattr(CAN, "MASK16")
 IS_H7 = (not IS_CLASSIC) and "STM32H7" in str(sys.implementation)
 
 # test we can correctly create by id (2 handled in can2.py test)
-for bus in (-1, 0, 1, 3):
+for bus in (-1, 0, 1, 4):
     try:
         CAN(bus, CAN.LOOPBACK)
         print("CAN", bus)
@@ -176,6 +176,7 @@ else:
         print("failed, wrong data received", r)
 
 # Test filters
+print("==== TEST filters ====")
 for n in [0, 8, 16, 24]:
     filter_id = 0b00001000 << n
     filter_mask = 0b00011100 << n
