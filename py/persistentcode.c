@@ -67,6 +67,10 @@ typedef struct _bytecode_prelude_t {
 #include "py/asmrv32.h"
 #endif
 
+#if MICROPY_EMIT_XTENSA
+#include "py/asmxtensa.h"
+#endif
+
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #if MICROPY_PERSISTENT_CODE_LOAD
@@ -494,6 +498,14 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
 
         if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_RV32IMC)) {
             if ((arch_flags & (size_t)asm_rv32_allowed_extensions()) != arch_flags) {
+                mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+            }
+        } else
+        #elif MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN
+        arch_flags = read_uint(reader);
+
+        if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_XTENSA) || MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_XTENSAWIN)) {
+            if ((arch_flags + 2) > MPY_XTENSA_LX_CORE) {
                 mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
             }
         } else
