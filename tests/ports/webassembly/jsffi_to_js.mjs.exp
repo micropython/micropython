@@ -9,3 +9,10 @@ true
 false
 { three: 3 }
 [ 'three' ]
+= TEST BUFFER =====
+<JsProxy 4>
+<JsProxy 5>
+<JsProxy 6>
+Uint8Array(4) [ 49, 50, 51, 52 ]
+Uint8Array(4) [ 53, 54, 55, 56 ]
+Uint8Array(4) [ 97, 98, 99, 100 ]

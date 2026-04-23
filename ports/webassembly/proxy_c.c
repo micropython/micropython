@@ -384,34 +384,33 @@ bool proxy_c_to_js_delete_attr(uint32_t c_ref, const char *attr_in) {
     return proxy_c_to_js_store_helper(c_ref, attr_in, NULL);
 }
 
-uint32_t proxy_c_to_js_get_type(uint32_t c_ref) {
+uint32_t proxy_c_to_js_get_type_and_data(uint32_t c_ref, uint32_t *out) {
     mp_obj_t obj = proxy_c_get_obj(c_ref);
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (type == &mp_type_tuple) {
-        return 1;
-    } else if (type == &mp_type_list) {
-        return 2;
+    mp_buffer_info_t bufinfo;
+    if (type == &mp_type_tuple || type == &mp_type_list) {
+        size_t len;
+        mp_obj_t *items;
+        mp_obj_get_array(obj, &len, &items);
+        out[0] = len;
+        out[1] = (uintptr_t)items;
+        if (type == &mp_type_tuple) {
+            return 1;
+        } else {
+            return 2;
+        }
     } else if (type == &mp_type_dict) {
+        mp_map_t *map = mp_obj_dict_get_map(obj);
+        out[0] = map->alloc;
+        out[1] = (uintptr_t)map->table;
         return 3;
-    } else {
+    } else if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
+        out[0] = bufinfo.len;
+        out[1] = (uintptr_t)bufinfo.buf;
         return 4;
+    } else {
+        return 0;
     }
-}
-
-void proxy_c_to_js_get_array(uint32_t c_ref, uint32_t *out) {
-    mp_obj_t obj = proxy_c_get_obj(c_ref);
-    size_t len;
-    mp_obj_t *items;
-    mp_obj_get_array(obj, &len, &items);
-    out[0] = len;
-    out[1] = (uintptr_t)items;
-}
-
-void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
-    mp_obj_t obj = proxy_c_get_obj(c_ref);
-    mp_map_t *map = mp_obj_dict_get_map(obj);
-    out[0] = map->alloc;
-    out[1] = (uintptr_t)map->table;
 }
 
 EM_JS(void, js_get_error_info, (int jsref, uint32_t * out_name, uint32_t * out_message), {
