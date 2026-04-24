@@ -54,6 +54,9 @@ class SerialTransport(Transport):
         self.use_raw_paste = True
         self.device_name = device
         self.mounted = False
+        self.manifest_path = None
+        self.manifest_dir = None
+        self.manifest_mpy_cross_flags = ""
 
         # Set options, and exclusive if pyserial supports it
         serial_kwargs = {
@@ -321,13 +324,16 @@ class SerialTransport(Transport):
         if not self.eval('"RemoteFS" in globals()'):
             self.exec(fs_hook_code)
         self.exec("__mount()")
+        if self.manifest_path:
+            device_path = f"{self.fs_hook_mount}/{self.manifest_dir}"
+            self.exec(f"__manifest_path('{device_path}')")
         self.mounted = True
         self.cmd = PyboardCommand(self.serial, fout, path, unsafe_links=unsafe_links)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
     def write_ctrl_d(self, out_callback):
         self.serial.write(b"\x04")
-        if not self.mounted:
+        if not self.mounted and not self.manifest_path:
             return
 
         # Read response from the device until it is quiet (with a timeout).
@@ -391,28 +397,46 @@ class SerialTransport(Transport):
             prompt = data_all.rsplit(b"\r\n", 1)[-1]
 
         # Clear state while board remounts, it will be re-set once mounted.
+        do_mount = self.mounted
         self.mounted = False
-        self.serial = self.serial.orig_serial
+        if hasattr(self.serial, "orig_serial"):
+            self.serial = self.serial.orig_serial
 
-        # Provide a message about the remount.
-        out_callback(
-            bytes(
-                f"\r\nRemount local directory {self.cmd.root} at {self.fs_hook_mount}\r\n", "utf8"
-            )
-        )
-
-        # Enter raw REPL and re-mount the remote filesystem.
+        # Enter raw REPL and re-run remote hooks.
         self.serial.write(b"\x01")
         self.exec(fs_hook_code)
-        self.exec("__mount()")
-        self.mounted = True
+
+        if do_mount:
+            # Provide a message about the remount.
+            out_callback(
+                bytes(
+                    f"\r\nRemount local directory {self.cmd.root} at {self.fs_hook_mount}\r\n",
+                    "utf8",
+                )
+            )
+            self.exec("__mount()")
+            self.mounted = True
+
+        if self.manifest_path:
+            from .commands import _build_manifest
+
+            _build_manifest(
+                self.manifest_path,
+                self.manifest_dir,
+                self.manifest_mpy_cross_flags,
+            )
+            if self.mounted:
+                device_path = f"{self.fs_hook_mount}/{self.manifest_dir}"
+                self.exec(f"__manifest_path('{device_path}')")
+            out_callback(b"\r\nRe-built manifest\r\n")
 
         # Exit raw REPL if needed, and wait for the friendly REPL prompt.
         if in_friendly_repl:
             self.exit_raw_repl()
         self.read_until(len(prompt), prompt)
         out_callback(prompt)
-        self.serial = SerialIntercept(self.serial, self.cmd)
+        if self.mounted:
+            self.serial = SerialIntercept(self.serial, self.cmd)
 
     def umount_local(self):
         if self.mounted:
@@ -772,6 +796,12 @@ class RemoteFS:
 def __mount():
     os.mount(RemoteFS(RemoteCommand()), '{SerialTransport.fs_hook_mount}')
     os.chdir('{SerialTransport.fs_hook_mount}')
+
+
+def __manifest_path(path):
+    import sys
+    if path not in sys.path:
+        sys.path.insert(0, path)
 """
 
 # Apply basic compression on hook code.

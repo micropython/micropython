@@ -515,6 +515,140 @@ def do_run(state, args):
     _do_execbuffer(state, buf, args.follow)
 
 
+def _get_mpy_cross():
+    """Find or locate the mpy-cross compiler."""
+    # Try the repo's mpy-cross module first.
+    tools_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+    sys.path.insert(0, os.path.join(tools_dir, "mpy-cross"))
+    try:
+        import mpy_cross
+
+        return mpy_cross
+    except ImportError:
+        pass
+    finally:
+        sys.path.pop(0)
+
+    # Try the pip-installed mpy-cross package.
+    try:
+        import mpy_cross
+
+        return mpy_cross
+    except ImportError:
+        pass
+
+    return None
+
+
+def _build_manifest(manifest_path, build_dir, mpy_cross_flags=""):
+    """Process a manifest file and compile .py files to .mpy.
+
+    Returns list of all output .mpy files and list of newly compiled files.
+    """
+    tools_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+    sys.path.insert(0, tools_dir)
+    try:
+        import manifestfile
+    except ImportError:
+        raise CommandError(
+            "manifest: cannot import manifestfile module"
+            " (must be run from a MicroPython source tree)"
+        )
+    finally:
+        sys.path.pop(0)
+
+    mpy_cross = _get_mpy_cross()
+    if mpy_cross is None:
+        raise CommandError("manifest: mpy-cross not found (build it or pip install mpy-cross)")
+
+    # Set up path variables for manifest resolution.
+    path_vars = {
+        "MPY_DIR": os.environ.get("MPY_DIR", tools_dir),
+        "MPY_LIB_DIR": os.environ.get(
+            "MPY_LIB_DIR", os.path.join(tools_dir, "lib/micropython-lib")
+        ),
+    }
+    port_dir = os.environ.get("PORT_DIR")
+    if port_dir:
+        path_vars["PORT_DIR"] = port_dir
+
+    manifest = manifestfile.ManifestFile(manifestfile.MODE_COMPILE, path_vars)
+
+    if os.path.isdir(manifest_path):
+        manifest_path = os.path.join(manifest_path, "manifest.py")
+
+    try:
+        manifest.execute(manifest_path)
+    except manifestfile.ManifestFileError as er:
+        raise CommandError(f'manifest: error executing "{manifest_path}": {er.args[0]}')
+
+    all_files = []
+    new_files = []
+    for result in manifest.files():
+        if result.kind != manifestfile.KIND_COMPILE_AS_MPY:
+            continue
+
+        infile = result.full_path
+        outfile = os.path.join(build_dir, result.target_path[:-3] + ".mpy")
+
+        # Check if recompilation is needed.
+        try:
+            ts_in = os.stat(infile).st_mtime
+            ts_out = os.stat(outfile).st_mtime
+        except OSError:
+            ts_in = 1
+            ts_out = 0
+
+        if ts_in >= ts_out:
+            os.makedirs(os.path.dirname(outfile), exist_ok=True)
+            try:
+                mpy_cross.compile(
+                    infile,
+                    dest=outfile,
+                    src_path=result.target_path,
+                    opt=result.opt,
+                    extra_args=mpy_cross_flags.split() if mpy_cross_flags else [],
+                )
+            except mpy_cross.CrossCompileError as ex:
+                raise CommandError(f"manifest: error compiling {result.target_path}: {ex.args[0]}")
+            new_files.append(outfile)
+            print("MPY", result.target_path)
+
+        all_files.append(outfile)
+
+    return all_files, new_files
+
+
+def do_manifest(state, args):
+    state.ensure_raw_repl()
+
+    manifest_path = args.path[0]
+    build_dir = args.output or "_manifest"
+
+    all_files, new_files = _build_manifest(manifest_path, build_dir, args.mpy_cross_flags or "")
+
+    # Store manifest info on the transport for remount support.
+    state.transport.manifest_path = manifest_path
+    state.transport.manifest_dir = build_dir
+    state.transport.manifest_mpy_cross_flags = args.mpy_cross_flags or ""
+
+    # Inject the manifest output directory into sys.path on the device.
+    # When mount is active, the device sees local files at /remote/, so
+    # the manifest dir is accessible at /remote/<build_dir>.
+    # When mount is not active, inject the fs_hook_code so __manifest_path
+    # is available, though the files won't be accessible until mount runs.
+    if not state.transport.eval('"RemoteFS" in globals()'):
+        from .transport_serial import fs_hook_code
+
+        state.transport.exec(fs_hook_code)
+
+    if state.transport.mounted:
+        device_path = f"{SerialTransport.fs_hook_mount}/{build_dir}"
+        state.transport.exec(f"__manifest_path('{device_path}')")
+
+    print(f"Manifest built: {len(all_files)} files ({len(new_files)} compiled)")
+
+
 def do_mount(state, args):
     state.ensure_raw_repl()
     path = args.path[0]

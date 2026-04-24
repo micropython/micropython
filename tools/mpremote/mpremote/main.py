@@ -30,6 +30,7 @@ from .commands import (
     do_disconnect,
     do_edit,
     do_filesystem,
+    do_manifest,
     do_mount,
     do_umount,
     do_exec,
@@ -128,6 +129,29 @@ def argparse_mount():
         "follow symbolic links pointing outside of local directory",
     )
     cmd_parser.add_argument("path", nargs=1, help="local path to mount")
+    return cmd_parser
+
+
+def argparse_manifest():
+    cmd_parser = argparse.ArgumentParser(
+        description="compile a manifest.py and add output to device sys.path"
+    )
+    cmd_parser.add_argument(
+        "path", nargs=1, help="path to manifest.py or directory containing one"
+    )
+    cmd_parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default="_manifest",
+        help="output directory for compiled .mpy files (default: _manifest)",
+    )
+    cmd_parser.add_argument(
+        "--mpy-cross-flags",
+        type=str,
+        default="",
+        help="flags to pass to mpy-cross",
+    )
     return cmd_parser
 
 
@@ -306,6 +330,10 @@ _COMMANDS = {
     "soft-reset": (
         do_soft_reset,
         argparse_none("perform a soft-reset of the device"),
+    ),
+    "manifest": (
+        do_manifest,
+        argparse_manifest,
     ),
     "mount": (
         do_mount,
