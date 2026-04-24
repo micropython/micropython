@@ -52,8 +52,8 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions. The
-current recommended version of ESP-IDF for MicroPython is v5.5.1. MicroPython
-also supports v5.3, v5.4, v5.4.1 and v5.4.2.
+current recommended version of ESP-IDF for MicroPython is v5.5.4. MicroPython
+also supports v5.3, v5.4, v5.4.1, v5.4.2 and v5.5.1.
 
 <!-- Important: If updating the above, please also update:
      * IDF_OLDEST_VER & IDF_NEWEST_VER in .github/workflows/port_esp32.yml

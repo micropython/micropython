@@ -18,3 +18,7 @@ CONFIG_BT_NIMBLE_PINNED_TO_CORE=1
 # Increase NimBLE task stack size from the default, because Python code
 # (BLE IRQ handlers) will most likely run on this task.
 CONFIG_BT_NIMBLE_TASK_STACK_SIZE=6144
+
+# The MicroPython NimBLE bindings do not currently support dynamic NimBLE
+# state, so disable it.
+CONFIG_BT_NIMBLE_STATIC_TO_DYNAMIC=n
