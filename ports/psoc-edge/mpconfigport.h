@@ -84,6 +84,10 @@
 
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/psoc-edge/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
+#define MICROPY_PY_MACHINE_UART_IRQ             (1)
+#define MICROPY_STREAMS_NON_BLOCK               (1)
 
 #define MICROPY_PY_MACHINE_I2C_TARGET           (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (1)
