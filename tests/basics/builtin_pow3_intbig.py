@@ -25,3 +25,9 @@ try:
     print(pow(1, 2, 0))
 except ValueError:
     print("ValueError")
+
+# bool False as modulus should raise ValueError, like int 0
+try:
+    print(pow(1, 2, False))
+except ValueError:
+    print("ValueError")

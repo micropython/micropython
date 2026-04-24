@@ -28,3 +28,11 @@ try:
     print(pow(4, 5, "z"))
 except TypeError:
     print("TypeError expected")
+
+# bool acts as int in all three positions (CPython compat)
+print(pow(True, 1, 1))
+print(pow(1, True, 1))
+print(pow(1, 1, True))
+print(pow(False, 5, 7))
+print(pow(2, False, 7))
+print(pow(2, 5, True))

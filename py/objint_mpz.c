@@ -343,9 +343,12 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 }
 
 #if MICROPY_PY_BUILTINS_POW3
-static mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
+static mpz_t *mp_mpz_for_integer(mp_obj_t arg, mpz_t *temp) {
     if (mp_obj_is_small_int(arg)) {
         mpz_init_from_int(temp, MP_OBJ_SMALL_INT_VALUE(arg));
+        return temp;
+    } else if (mp_obj_is_bool(arg)) {
+        mpz_init_from_int(temp, arg == mp_const_true);
         return temp;
     } else {
         mp_obj_int_t *arp_p = MP_OBJ_TO_PTR(arg);
@@ -354,17 +357,17 @@ static mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
 }
 
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
-    if (!mp_obj_is_int(base) || !mp_obj_is_int(exponent) || !mp_obj_is_int(modulus)) {
+    if (!mp_obj_is_integer(base) || !mp_obj_is_integer(exponent) || !mp_obj_is_integer(modulus)) {
         mp_raise_TypeError(MP_ERROR_TEXT("pow() with 3 arguments requires integers"));
-    } else if (modulus == MP_OBJ_NEW_SMALL_INT(0)) {
+    } else if (modulus == MP_OBJ_NEW_SMALL_INT(0) || modulus == mp_const_false) {
         mp_raise_ValueError(MP_ERROR_TEXT("divide by zero"));
     } else {
         mp_obj_int_t *res_p = mp_obj_int_new_mpz();
 
         mpz_t l_temp, r_temp, m_temp;
-        mpz_t *lhs = mp_mpz_for_int(base,     &l_temp);
-        mpz_t *rhs = mp_mpz_for_int(exponent, &r_temp);
-        mpz_t *mod = mp_mpz_for_int(modulus,  &m_temp);
+        mpz_t *lhs = mp_mpz_for_integer(base,     &l_temp);
+        mpz_t *rhs = mp_mpz_for_integer(exponent, &r_temp);
+        mpz_t *mod = mp_mpz_for_integer(modulus,  &m_temp);
 
         mpz_pow3_inpl(&(res_p->mpz), lhs, rhs, mod);
 
