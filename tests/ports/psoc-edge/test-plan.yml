@@ -58,3 +58,11 @@
       - board: KIT_PSE84_AI
         features:
           - i2c
+
+- name: uart
+  test: 
+    script: ports/psoc-edge/board_ext_hw/single/uart.py
+    device: 
+      - board: KIT_PSE84_AI
+        features:
+          - uart

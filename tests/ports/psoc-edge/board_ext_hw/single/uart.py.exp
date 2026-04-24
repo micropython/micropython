@@ -1,0 +1,12 @@
+Break Sent is received by Rx:  True
+Timeout Expired with no data received:  True
+Tx char is received by Rx char:  True
+Tx written bytes by write():  True
+Tx is received by Rx(read()):  True
+Tx is received by Rx(readline()):  True
+Tx is received by Rx(read(nbytes)): True
+Tx Ongoing:  True
+Tx Done:  True
+Tx is received by Rx(readinto(buf)):  True
+Tx written bytes by write():  512
+Tx is received by Rx(readinto(buf)) for large data:  True
