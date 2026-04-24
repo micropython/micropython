@@ -371,21 +371,14 @@ function ci_powerpc_build {
 
 function ci_psoc_edge_setup {
     ci_gcc_arm_setup
-    git clone https://github.com/Infineon/edgeprotecttools.git
-    sudo apt remove python3-packaging python3-jsonschema
+    sudo apt remove python3-packaging python3-jsonschema python3-cryptography
     sudo pip3 install edgeprotecttools
 }
 
 function ci_psoc_edge_build {
-    board_arg=""
-
-    if [ -n "$1" ]; then
-        board_arg="BOARD=$1"
-    fi
-    
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/psoc-edge submodules
-    make ${MAKEOPTS} -C ports/psoc-edge ${board_arg}
+    make ${MAKEOPTS} -C ports/psoc-edge
 }
 
 ########################################################################################
