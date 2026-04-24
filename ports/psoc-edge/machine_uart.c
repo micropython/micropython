@@ -316,9 +316,6 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     if (self->baudrate == 0U) {
         mp_raise_ValueError(MP_ERROR_TEXT("baudrate must be non-zero"));
     }
-    /**
-     * TODO: Configure baudrate.
-     */
     machine_uart_baudrate_set(self);
 
     // -- Data bits --
@@ -387,7 +384,6 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
 
     machine_scb_obj_free(self->scb_obj);
     mp_machine_uart_free(self);
-
 }
 
 static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
