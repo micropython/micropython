@@ -28,10 +28,12 @@
 #define MICROPY_HW_SPI0_MOSI (4)
 #define MICROPY_HW_SPI0_MISO (5)
 
-#define MICROPY_PY_NETWORK                  (0)
+#define MICROPY_PY_NETWORK                  (1)
+#define MICROPY_PY_NETWORK_WLAN             (0)
 
 #define MICROPY_PY_BLUETOOTH                (0)
 #define MICROPY_BLUETOOTH_NIMBLE            (0)
+
 #define MICROPY_PY_MACHINE_I2C_TARGET       (0)
 #define MICROPY_PY_ESPNOW                   (0)
 

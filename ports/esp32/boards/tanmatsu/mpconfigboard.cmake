@@ -20,7 +20,8 @@ list(APPEND MICROPY_SOURCE_QSTR
 # Use our board-specific sdkconfig fragment
 set(SDKCONFIG_DEFAULTS
     ${CMAKE_CURRENT_LIST_DIR}/sdkconfig.tanmatsu
-    boards/sdkconfig.p4	
+    boards/sdkconfig.base
+    boards/sdkconfig.p4
     ${PORT_DIR}/.config
 )
 
@@ -39,6 +40,9 @@ set(MICROPY_BOARD_FLASH_SIZE 16MB)
 
 # MCH2022 partition table
 set(MICROPY_BOARD_PARTITION_TABLE_FILENAME "partitions-tanmatsu.csv")
+
+set(MICROPY_PY_NETWORK 1)
+set(MICROPY_PY_NETWORK_WLAN 0)
 
 set(MICROPY_PY_BLUETOOTH 0)
 set(MICROPY_BLUETOOTH_NIMBLE 0)
