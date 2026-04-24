@@ -163,5 +163,8 @@ idf_component_register(SRCS "${srcs}"
                        REQUIRES ${IDF_COMPONENTS})
 
 
-idf_build_set_property(COMPILE_OPTIONS "-DVAR_ARRAYS" APPEND)
-idf_build_set_property(COMPILE_OPTIONS "-DHAVE_CONFIG_H" APPEND)
+target_compile_definitions(${COMPONENT_LIB} PRIVATE
+    VAR_ARRAYS
+	HAVE_CONFIG_H
+)
+target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-maybe-uninitialized)
