@@ -357,7 +357,7 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
     if (!mp_obj_is_int(base) || !mp_obj_is_int(exponent) || !mp_obj_is_int(modulus)) {
         mp_raise_TypeError(MP_ERROR_TEXT("pow() with 3 arguments requires integers"));
     } else if (modulus == MP_OBJ_NEW_SMALL_INT(0)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("divide by zero"));
+        mp_raise_ValueError(MP_ERROR_TEXT("pow() 3rd argument cannot be 0"));
     } else {
         mp_obj_int_t *res_p = mp_obj_int_new_mpz();
 
