@@ -9,8 +9,6 @@
 #include "esp_log.h"
 #include "esp_system.h"
 
-#define CONFIG_DRIVER_FRAMEBUFFER_SWAP_R_AND_B
-
 #include "include/driver_framebuffer_internal.h"
 #define TAG "fb"
 

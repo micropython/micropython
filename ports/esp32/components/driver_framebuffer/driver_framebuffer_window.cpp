@@ -155,7 +155,7 @@ bool driver_framebuffer_window_rename(Window* window, const char* newName) {
 	char* newNameBuffer = (char*) malloc(strlen(newName) + 1);
 	if (newNameBuffer == NULL) return false;
     memset(newNameBuffer, 0, strlen(newName) + 1);
-	strncpy(newNameBuffer, newName, strlen(newName));
+	memcpy(newNameBuffer, newName, strlen(newName));
 	free(window->name);
 	window->name = newNameBuffer;
     return true;
