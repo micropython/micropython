@@ -93,6 +93,8 @@
 
 // Configure the "os" module with extra unix features.
 #define MICROPY_PY_OS_INCLUDEFILE      "ports/unix/modos.c"
+#define MICROPY_PY_OS_DUPTERM          (2)
+#define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
 #define MICROPY_PY_OS_ERRNO            (1)
 #define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
 #define MICROPY_PY_OS_SYSTEM           (1)
