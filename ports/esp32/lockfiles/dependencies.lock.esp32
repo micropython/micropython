@@ -25,7 +25,7 @@ dependencies:
   idf:
     source:
       type: idf
-    version: 5.5.1
+    version: 5.5.2
 direct_dependencies:
 - espressif/lan867x
 - espressif/mdns
