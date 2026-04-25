@@ -38,6 +38,12 @@ jobs:
           echo "IDF_VER="$(yq .env.IDF_NEWEST_VER < .github/workflows/ports_esp32.yml) \
           | tee "${GITHUB_OUTPUT}"
 
+    # The reference and current commit may be configured for different ESP-IDF versions
+    # but we use the same ESP-IDF version to build both, so disable the
+    # MICROPY_MAINTAINER_BUILD check (it'll be verified on the normal esp32 CI).
+    - name: Disable extra checks for older ESP-IDF
+      run: echo "MICROPY_MAINTAINER_BUILD=0" >> ${GITHUB_ENV}
+
     - name: Setup ESP-IDF
       uses: ./.github/actions/setup_esp32
       with:
