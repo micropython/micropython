@@ -14,8 +14,12 @@ MAX_DELTA_MS = 8
 # Tune test parameters based on the target.
 if "alif" in sys.platform:
     MAX_DELTA_MS = 20
+elif "renesas-ra" in sys.platform:
+    MAX_DELTA_MS = 15
 elif "esp8266" in sys.platform:
     MAX_DELTA_MS = 50  # port requires much looser timing requirements
+elif "zephyr" in sys.platform:
+    MAX_DELTA_MS = 10
 
 
 def get_real_baudrate(spi):

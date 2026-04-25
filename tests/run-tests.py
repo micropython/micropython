@@ -39,6 +39,8 @@ RV32_ARCH_FLAGS = {
     "zcmp": 1 << 1,
 }
 
+VERBOSE = False
+
 # Tests require at least CPython 3.3. If your default python3 executable
 # is of lower version, you can point MICROPY_CPYTHON3 environment var
 # to the correct executable.
@@ -295,10 +297,13 @@ tests_requiring_target_wiring = (
     "extmod/machine_uart_tx.py",
     "extmod_hardware/machine_can_timings.py",
     "extmod_hardware/machine_encoder.py",
+    "extmod_hardware/machine_i2c_target.py",
+    "extmod_hardware/machine_pin.py",
     "extmod_hardware/machine_pwm.py",
     "extmod_hardware/machine_uart_irq_break.py",
     "extmod_hardware/machine_uart_irq_rx.py",
     "extmod_hardware/machine_uart_irq_rxidle.py",
+    "ports/stm32_hardware/dma_alignment.py",
 )
 
 
@@ -659,6 +664,44 @@ class ThreadSafeCounter:
         return self._value
 
 
+verbose_each_test = not sys.stdout.isatty()
+end_erase = "                                 \r"
+
+
+def print_output_skip(test):
+    if not verbose_each_test:
+        print("skip ", test, end=end_erase)
+    else:
+        print("skip ", test)
+
+
+def print_output_start(test):
+    if not verbose_each_test:
+        print(".... ", test, end=end_erase)
+    else:
+        print(".... ", test, end=end_erase)
+
+
+def print_output_end_skip(test, reason):
+    if not verbose_each_test:
+        return
+        print(reason, test, end=end_erase)
+    else:
+        print(reason + " ", test)
+
+
+def print_output_end_pass(test, extra_info):
+    if not verbose_each_test:
+        return
+        print("pass ", test, extra_info, end=end_erase)
+    else:
+        print("pass ", test, extra_info)
+
+
+def print_output_end_fail(test, extra_info):
+    print("FAIL ", test, extra_info)
+
+
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
     testcase_count = ThreadSafeCounter()
     raw_repl_failure_count = ThreadSafeCounter()
@@ -931,13 +974,15 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_inlineasm and is_inlineasm
 
         if skip_it:
-            print("skip ", test_file)
+            print_output_skip(test_file)
             test_results.append((test_file, "skip", ""))
             return
         elif args.dry_run:
             print("found", test_file)
             test_results.append((test_file, "found", ""))
             return
+
+        print_output_start(test_file)
 
         # Run the test on the MicroPython target.
         output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
@@ -950,11 +995,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # reset.  Wait for the soft reset to finish, so we don't interrupt the
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
-            print("skip ", test_file)
+            print_output_end_skip(test_file, "skip")
             test_results.append((test_file, "skip", ""))
             return
         elif output_mupy == b"SKIP-TOO-LARGE\n":
-            print("lrge ", test_file)
+            print_output_end_skip(test_file, "lrge")
             test_results.append((test_file, "skip", "too large"))
             return
 
@@ -1041,7 +1086,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
-            print("pass ", test_file, extra_info)
+            print_output_end_pass(test_file, extra_info)
             test_results.append((test_file, "pass", ""))
             rm_f(filename_expected)
             rm_f(filename_mupy)
@@ -1049,7 +1094,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             if output_mupy.startswith(b"could not enter raw repl"):
                 extra_info = "raw REPL failed"
                 raw_repl_failure_count.increment()
-            print("FAIL ", test_file, extra_info)
+            print_output_end_fail(test_file, extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
                     f.write(output_expected)
@@ -1221,7 +1266,15 @@ the last matching regex is used:
         default=None,
         help="force the given script to be used as target_wiring.py",
     )
+    cmd_parser.add_argument(
+        "--verbose-each-test",
+        action="store_true",
+        help="print the result for each test",
+    )
     args = cmd_parser.parse_args()
+
+    global verbose_each_test
+    verbose_each_test = args.verbose_each_test
 
     prologue = ""
     if args.begin:
@@ -1259,6 +1312,21 @@ the last matching regex is used:
 
     # Automatically detect the platform.
     detect_test_platform(pyb, args)
+
+    if False and args.platform == "esp8266":
+        print(pyb.exec_("import os; u=os.dupterm(None,1);os.dupterm(u,1)"))
+        print("A", pyb.exec_("print(u)"))
+        pyb.exec_raw_no_follow("u.init(baudrate=2*115200)")
+        pyb.serial.baudrate = 2*115200
+        import time
+        time.sleep(0.2)
+        while pyb.serial.inWaiting() > 0:
+            print("-", pyb.serial.read(pyb.serial.inWaiting()))
+        time.sleep(0.2)
+        print('next')
+        pyb.enter_raw_repl(soft_reset=0)
+        print("B", pyb.exec_("print(u)"))
+        # unfortunately the baudrate is reset back to 115200 upon soft reset
 
     if args.run_failures and (any(args.files) or args.test_dirs is not None):
         raise ValueError(
@@ -1353,7 +1421,7 @@ the last matching regex is used:
     try:
         os.makedirs(args.result_dir, exist_ok=True)
         test_results, testcase_count = run_tests(pyb, tests, args, args.result_dir, args.jobs)
-        res = create_test_report(args, test_results, testcase_count)
+        res = create_test_report(args, test_results, testcase_count, verbose=VERBOSE)
     finally:
         if pyb:
             pyb.close()
@@ -1363,4 +1431,13 @@ the last matching regex is used:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
+        print("INTERRUPT")
+        sys.exit(2)
+    except Exception as er:
+        print("ERROR:")
+        print(er)
+        sys.exit(2)

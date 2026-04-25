@@ -2,7 +2,7 @@
 
 try:
     from machine import Pin, I2S
-except ImportError:
+except (AttributeError, ImportError):
     print("SKIP")
     raise SystemExit
 

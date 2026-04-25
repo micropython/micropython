@@ -6,7 +6,7 @@
 
 try:
     from machine import Encoder
-except ImportError:
+except (AttributeError, ImportError):
     print("SKIP")
     raise SystemExit
 

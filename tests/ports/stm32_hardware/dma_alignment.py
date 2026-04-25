@@ -6,7 +6,9 @@
 import unittest
 from machine import SPI
 
-SPI_NUM = 2
+from target_wiring import spi_standalone_args_list
+
+SPI_NUM = spi_standalone_args_list[0][0]
 BAUDRATE = 5_000_000
 
 

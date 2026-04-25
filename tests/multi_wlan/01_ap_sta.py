@@ -64,9 +64,9 @@ def instance0():
         raise RuntimeError("Timed out waiting for station, status ", ap.status())
 
     print("AP got station")
-    time.sleep(
-        3
-    )  # depending on port, may still need to negotiate DHCP lease for STA to see connection
+
+    # depending on port, may still need to negotiate DHCP lease for STA to see connection
+    multitest.wait("STA waiting disconnect")
 
     print("AP disabling...")
     ap.active(False)
@@ -99,6 +99,8 @@ def instance1():
     print("channel", sta.config("channel"))
 
     print("STA waiting for disconnect...")
+
+    multitest.broadcast("STA waiting disconnect")
 
     # Expect the AP to disconnect us immediately
     if not wait_for(lambda: not sta.isconnected()):

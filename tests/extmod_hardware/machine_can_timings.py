@@ -4,7 +4,7 @@
 
 try:
     from machine import CAN
-except ImportError:
+except (AttributeError, ImportError):
     print("SKIP")
     raise SystemExit
 

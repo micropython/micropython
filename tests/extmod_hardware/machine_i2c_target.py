@@ -7,7 +7,7 @@ import sys
 
 try:
     from machine import Pin, SoftI2C, I2CTarget
-except ImportError:
+except (AttributeError, ImportError):
     print("SKIP")
     raise SystemExit
 
@@ -30,10 +30,10 @@ elif sys.platform == "rp2":
     args_target = (1,)
 elif sys.platform == "pyboard":
     if sys.implementation._build == "NUCLEO_WB55":
-        args_controller = {"scl": "B8", "sda": "B9"}
-        args_target = (3,)
+        args_controller = {"scl": "D13", "sda": "D12"}  # Arduino header D13/D12
+        args_target = (1,)  # PB8/PB9, Arduino header D15/D14
     else:
-        args_controller = {"scl": "X1", "sda": "X2"}
+        args_controller = {"scl": "X7", "sda": "X8"}
         args_target = ("X",)
 elif "zephyr-nucleo_wb55rg" in sys.implementation._machine:
     # PB8=I2C1_SCL, PB9=I2C1_SDA (on Arduino header D15/D14)
@@ -52,15 +52,37 @@ elif sys.platform == "mimxrt":
 elif sys.platform == "samd":
     args_controller = {"scl": "D5", "sda": "D1"}
     args_target = ()
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
 
 
 def config_pull_up():
     Pin(args_controller["scl"], Pin.OPEN_DRAIN, Pin.PULL_UP)
     Pin(args_controller["sda"], Pin.OPEN_DRAIN, Pin.PULL_UP)
 
+
+def config_pull_up_disable():
+    pass
+
+
+if hasattr(Pin, "board") and hasattr(Pin.board, "PULL_SCL"):
+
+    def config_pull_up():
+        Pin("PULL_SCL", Pin.OUT, value=1)
+        Pin("PULL_SDA", Pin.OUT, value=1)
+
+    def config_pull_up_disable():
+        Pin("PULL_SCL", Pin.ANALOG)
+        Pin("PULL_SDA", Pin.ANALOG)
+
+try:
+    from target_wiring import i2c_args_controller as args_controller
+    from target_wiring import i2c_args_target as args_target
+    from target_wiring import i2c_kwargs_target as kwargs_target
+except:
+    pass
+
+if "args_controller" not in globals():
+    print("Please add support for this test on this platform.")
+    raise SystemExit
 
 class TestMemory(unittest.TestCase):
     @classmethod
@@ -72,6 +94,7 @@ class TestMemory(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        config_pull_up_disable()
         cls.i2c_target.deinit()
 
     def test_scan(self):
@@ -145,6 +168,7 @@ class TestMemoryIRQ(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        config_pull_up_disable()
         cls.i2c_target.deinit()
 
     @unittest.skipIf(sys.platform == "esp32", "scan doesn't trigger IRQ_END_WRITE")
@@ -192,6 +216,7 @@ class TestPolling(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        config_pull_up_disable()
         cls.i2c_target.deinit()
 
     def test_read(self):
@@ -241,6 +266,7 @@ class TestIRQ(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        config_pull_up_disable()
         cls.i2c_target.deinit()
 
     def test_scan(self):

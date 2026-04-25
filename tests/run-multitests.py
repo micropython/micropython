@@ -118,6 +118,7 @@ IGNORE_OUTPUT_MATCHES = (
     "hci_number_completed_packet",  # Warning from unix btstack.
     "lld_pdu_get_tx_flush_nb HCI packet count mismatch (",  # From ESP-IDF, see https://github.com/espressif/esp-idf/issues/5105
     " ets_task(",  # ESP8266 port debug output
+    "DHCPS: client connected: MAC=",  # cyw43 AP
 )
 
 
@@ -538,13 +539,21 @@ def run_tests(test_files, instances_truth, instances_test):
         else:
             print("FAIL")
             test_results.append((test_file, "fail", ""))
-            if not cmd_args.show_output:
+            if False and not cmd_args.show_output:
                 print("### TEST ###")
                 print(output_test, end="")
                 print("### TRUTH ###")
                 print(output_truth, end="")
                 print("### DIFF ###")
                 print_diff(output_truth, output_test)
+
+            # Save results to file.
+            test_basename = instances_str.replace("|", "_") + "_" + test_file.replace("..", "_").replace("./", "").replace("/", "_")
+            result_filename = os.path.join(cmd_args.result_dir, test_basename)
+            with open(result_filename + ".exp", "w") as f:
+                f.write(output_truth)
+            with open(result_filename + ".out", "w") as f:
+                f.write(output_test)
 
         # Print test output metrics, if there are any.
         if output_metrics:

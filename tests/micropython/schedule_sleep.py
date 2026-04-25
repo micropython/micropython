@@ -12,6 +12,10 @@ except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
+import sys
+if sys.platform in ("mimxrt", "nrf", "samd"):
+    print("this port needs a better mp_hal_delay_ms")
+    FAIL
 
 # Basic test of scheduling a function.
 
