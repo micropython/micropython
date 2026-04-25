@@ -42,7 +42,11 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
-#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
+#if MICROPY_FLOAT_BOX_AS_NEEDED || (MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D)
+typedef struct _mp_obj_float_t {
+    mp_obj_base_t base;
+    mp_float_t value;
+} mp_obj_float_t;
 
 // M_E and M_PI are not part of the math.h standard and may not be defined
 #ifndef M_E
@@ -52,11 +56,6 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
-typedef struct _mp_obj_float_t {
-    mp_obj_base_t base;
-    mp_float_t value;
-} mp_obj_float_t;
-
 const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, (mp_float_t)M_E};
 const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t)M_PI};
 #if MICROPY_PY_MATH_CONSTANTS
@@ -64,8 +63,10 @@ const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t)M_PI
 #error NAN macro is not defined
 #endif
 const mp_obj_float_t mp_const_float_tau_obj = {{&mp_type_float}, (mp_float_t)(2.0 * M_PI)};
+#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 const mp_obj_float_t mp_const_float_inf_obj = {{&mp_type_float}, (mp_float_t)INFINITY};
 const mp_obj_float_t mp_const_float_nan_obj = {{&mp_type_float}, (mp_float_t)NAN};
+#endif
 #endif
 
 #endif
@@ -179,8 +180,23 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, float_binary_op
     );
 
-#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
+#if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C && MICROPY_FLOAT_BOX_AS_NEEDED)
+mp_obj_t mp_obj_new_float_boxed(mp_float_t value) {
+    // Don't use mp_obj_malloc here to avoid extra function call overhead.
+    mp_obj_float_t *o = m_new_obj(mp_obj_float_t);
+    o->base.type = &mp_type_float;
+    o->value = value;
+    return MP_OBJ_FROM_PTR(o);
+}
 
+mp_float_t mp_obj_float_get_boxed(mp_const_obj_t self_in) {
+    assert(mp_obj_is_boxed_float(self_in));
+    mp_obj_float_t *self = MP_OBJ_TO_PTR(self_in);
+    return self->value;
+}
+#endif
+
+#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 mp_obj_t mp_obj_new_float(mp_float_t value) {
     // Don't use mp_obj_malloc here to avoid extra function call overhead.
     mp_obj_float_t *o = m_new_obj(mp_obj_float_t);
