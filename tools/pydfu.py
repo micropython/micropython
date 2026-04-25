@@ -101,15 +101,23 @@ def find_dfu_cfg_descr(descr):
     return None
 
 
-def init(**kwargs):
+def init(serial_number, **kwargs):
     """Initializes the found DFU device so that we can program it."""
     global __dev, __cfg_descr
     devices = get_dfu_devices(**kwargs)
     if not devices:
         raise ValueError("No DFU device found")
-    if len(devices) > 1:
-        raise ValueError("Multiple DFU devices found")
-    __dev = devices[0]
+    elif serial_number is not None:
+        for dev in devices:
+            if dev.serial_number == serial_number:
+                __dev = dev
+                break
+        else:
+            raise ValueError(f"DFU device with serial number: {serial_number} was not found")
+    elif len(devices) > 1:
+        raise ValueError("Multiple DFU devices found, use --serial to select device")
+    else:
+        __dev = devices[0]
     __dev.set_configuration()
 
     # Claim DFU interface
@@ -563,6 +571,7 @@ def main():
     parser.add_argument(
         "-m", "--mass-erase", help="mass erase device", action="store_true", default=False
     )
+    parser.add_argument("--serial", help="Serial number of required DFU", default=None)
     parser.add_argument(
         "-u", "--upload", help="read file from DFU device", dest="path", default=False
     )
@@ -585,7 +594,7 @@ def main():
         list_dfu_devices(**kwargs)
         return
 
-    init(**kwargs)
+    init(args.serial, **kwargs)
 
     command_run = False
     if args.mass_erase:
