@@ -20,7 +20,6 @@ working with this port it may be useful to get an overview of the microcontrolle
 
    general.rst
    installation.rst
-   mpy-usage.rst
 
 Pins and GPIO
 -------------
