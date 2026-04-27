@@ -31,8 +31,8 @@ With your serial program open (PuTTY, screen, picocom, etc) you may see a
 blank screen with a flashing cursor. Press Enter (or reset the board) and
 you should be presented with the following text::
 
-        *** Booting Zephyr OS build v4.2.0 ***
-        MicroPython v1.26.0-preview.451.gebc9525c9 on 2025-07-25; zephyr-frdm_k64f with mk64f12
+        *** Booting Zephyr OS build v4.4.0 ***
+        MicroPython v1.29.0-preview.69.g8a56be6660 on 2026-04-27; zephyr-frdm_k64f with mk64f12
         Type "help()" for more information.
         >>>
 

@@ -1001,9 +1001,9 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.28.1
-ZEPHYR_SDK_VERSION=0.17.2
-ZEPHYR_VERSION=v4.2.0
+ZEPHYR_DOCKER_VERSION=v0.29.2
+ZEPHYR_SDK_VERSION=1.0.1
+ZEPHYR_VERSION=v4.4.0
 
 function ci_zephyr_setup {
     IMAGE=ghcr.io/zephyrproject-rtos/ci:${ZEPHYR_DOCKER_VERSION}
@@ -1045,7 +1045,7 @@ function ci_zephyr_build {
     git submodule update --init lib/micropython-lib
     docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE='prj_minimal.conf;boards/qemu_x86.conf'
     docker exec zephyr-ci west build -p auto -b frdm_k64f
-    docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
+    docker exec zephyr-ci west build -p auto -b mimxrt1050_evk/mimxrt1052/qspi
     docker exec zephyr-ci west build -p auto -b nucleo_wb55rg # for bluetooth
 }
 
