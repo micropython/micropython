@@ -128,7 +128,7 @@ soft_reset:
 
 
     #if MICROPY_VFS_LFS2
-    pyexec_frozen_module("vfs_lfs2.py", false);
+    pyexec_frozen_module("_boot.py", false);
     #endif
     #endif
 

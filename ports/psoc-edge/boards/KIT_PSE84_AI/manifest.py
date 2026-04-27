@@ -1,1 +1,1 @@
-freeze("$(PORT_DIR)/freeze")
+freeze("$(PORT_DIR)/modules")
