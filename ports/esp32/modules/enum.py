@@ -1,5 +1,5 @@
 # enum.py
-# version="1.2.5"
+# version="1.2.6"
 
 
 class EnumValue:
@@ -14,11 +14,112 @@ class EnumValue:
     def __call__(self):
         return self.value
 
-    def __eq__(self, o):
-        return self.value == (o.value if isinstance(o, EnumValue) else o)
-
     def __setattr__(self, k, v):
         raise AttributeError("EnumValue is immutable")
+
+    # Helper function to extract the raw value
+    def _get_value(self, o):
+        return o.value if isinstance(o, EnumValue) else o
+
+    # Arithmetic and Bitwise operations (Forward)
+    def __add__(self, o):
+        return self.value + self._get_value(o)
+
+    def __sub__(self, o):
+        return self.value - self._get_value(o)
+
+    def __mul__(self, o):
+        return self.value * self._get_value(o)
+
+    def __truediv__(self, o):
+        return self.value / self._get_value(o)
+
+    def __floordiv__(self, o):
+        return self.value // self._get_value(o)
+
+    def __mod__(self, o):
+        return self.value % self._get_value(o)
+
+    def __pow__(self, o):
+        return self.value ** self._get_value(o)
+
+    def __and__(self, o):
+        return self.value & self._get_value(o)
+
+    def __or__(self, o):
+        return self.value | self._get_value(o)
+
+    def __xor__(self, o):
+        return self.value ^ self._get_value(o)
+
+    def __lshift__(self, o):
+        return self.value << self._get_value(o)
+
+    def __rshift__(self, o):
+        return self.value >> self._get_value(o)
+
+    # Arithmetic and Bitwise operations (Reflected)
+    def __radd__(self, o):
+        return self._get_value(o) + self.value
+
+    def __rsub__(self, o):
+        return self._get_value(o) - self.value
+
+    def __rmul__(self, o):
+        return self._get_value(o) * self.value
+
+    def __rtruediv__(self, o):
+        return self._get_value(o) / self.value
+
+    def __rfloordiv__(self, o):
+        return self._get_value(o) // self.value
+
+    def __rand__(self, o):
+        return self._get_value(o) & self.value
+
+    def __ror__(self, o):
+        return self._get_value(o) | self.value
+
+    def __rxor__(self, o):
+        return self._get_value(o) ^ self.value
+
+    def __rlshift__(self, o):
+        return self._get_value(o) << self.value
+
+    def __rrshift__(self, o):
+        return self._get_value(o) >> self.value
+
+    # Unary operators
+    def __neg__(self):
+        return -self.value
+
+    def __pos__(self):
+        return +self.value
+
+    def __abs__(self):
+        return abs(self.value)
+
+    def __invert__(self):
+        return ~self.value
+
+    # Comparison
+    def __eq__(self, o):
+        return self.value == self._get_value(o)
+
+    def __lt__(self, o):
+        return self.value < self._get_value(o)
+
+    def __le__(self, o):
+        return self.value <= self._get_value(o)
+
+    def __gt__(self, o):
+        return self.value > self._get_value(o)
+
+    def __ge__(self, o):
+        return self.value >= self._get_value(o)
+
+    def __ne__(self, o):
+        return self.value != self._get_value(o)
 
 
 class Enum:
@@ -27,7 +128,7 @@ class Enum:
         if name and names:
             # Support Functional API: Enum("Name", {"KEY": VALUE})
             # Dynamically create: class <name>
-            new_cls = type(name, (cls, ), {})
+            new_cls = type(name, (cls,), {})
             for k, v in names.items():
                 new_cls._up(k, v)
             new_cls._inited = True
