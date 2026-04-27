@@ -76,12 +76,6 @@
 
 // Enable os module
 #define MICROPY_PY_OS                           (1)
-#define MICROPY_PY_OS_INCLUDEFILE               "ports/psoc-edge/modos.c"
-#define MICROPY_PY_OS_UNAME                     (0)
-#define MICROPY_PY_OS_URANDOM                   (0)
-#define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV    (0)
-#define MICROPY_PY_OS_SYSTEM                    (1)
-#define MICROPY_PY_OS_ERRNO                     (1)
 
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
