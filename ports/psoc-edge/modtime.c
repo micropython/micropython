@@ -111,10 +111,6 @@ void time_init(void) {
     }
 }
 
-void time_deinit(void) {
-    mtb_hal_timer_stop(&psoc_edge_timer);
-}
-
 static void mp_time_localtime_get(timeutils_struct_time_t *time) {
     cy_stc_rtc_config_t current_date_time = {0};
     Cy_RTC_GetDateAndTime(&current_date_time);
