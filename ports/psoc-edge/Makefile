@@ -467,6 +467,7 @@ endif
 ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1 -DMICROPY_PY_NETWORK_IFX_WCM=1 -Wno-stringop-truncation
 	MOD_SRC_C += network_ifx_wcm.c 
+	MOD_SRC_C += modsocket.c
 endif
 
 SRC_C += \
