@@ -170,6 +170,7 @@ list(APPEND IDF_COMPONENTS
     esp_app_format
     esp_mm
     esp_common
+    esp_driver_gptimer
     esp_eth
     esp_event
     esp_hw_support
