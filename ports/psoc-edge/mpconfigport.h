@@ -27,12 +27,12 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 #include <alloca.h>
 #include <stdint.h>
-
-// #include "shared/runtime/interrupt_char.h"
 #include "mpconfigboard.h"
 
-// options to control how MicroPython is built
+// Use core features for Thonny compatibility (larger firmware)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
 
+// options to control how MicroPython is built
 #define MICROPY_PY_BUILTINS_HELP                (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES        (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT           psoc_edge_help_text
@@ -40,31 +40,15 @@
 #define MICROPY_REPL_INFO                       (1)
 #define MICROPY_HELPER_REPL                     (1)
 
-// Use core features for Thonny compatibility (larger firmware)
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
-
-// Enable bytearray for I2C Target memory buffers
-#define MICROPY_PY_BUILTINS_BYTEARRAY (1)
-#define MICROPY_PY_BUILTINS_SLICE (1)
-
-// You can disable the built-in MicroPython compiler by setting the following
-// config option to 0.  If you do this then you won't get a REPL prompt, but you
-// will still be able to execute pre-compiled scripts, compiled with mpy-cross.
-#define MICROPY_ENABLE_COMPILER           (1)
-
 // Enable scheduler for IRQ callbacks (required for PDM_PCM.irq())
 #define MICROPY_ENABLE_SCHEDULER          (1)
-
-#define MICROPY_PY_GC                     (1)
+#define MICROPY_PY_OS                     (1)
 #define MICROPY_ENABLE_GC                 (1)
 
 #define MICROPY_HELPER_REPL               (1)
-#define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 
 // Enable essential built-in types
-#define MICROPY_PY_BUILTINS_BYTEARRAY     (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW    (1)
-#define MICROPY_PY_ARRAY                  (1)
 
 #define MICROPY_ALLOC_PATH_MAX            (256)
 
@@ -74,22 +58,12 @@
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 
-// Enable os module
-#define MICROPY_PY_OS                           (1)
-#define MICROPY_PY_OS_INCLUDEFILE               "ports/psoc-edge/modos.c"
-#define MICROPY_PY_OS_UNAME                     (0)
-#define MICROPY_PY_OS_URANDOM                   (0)
-#define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV    (0)
-#define MICROPY_PY_OS_SYSTEM                    (1)
-#define MICROPY_PY_OS_ERRNO                     (1)
-
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
 #define MICROPY_PY_SYS_EXC_INFO                 (1)
 
 // Float and Math support
 #define MICROPY_PY_BUILTINS_FLOAT               (1)
-#define MICROPY_PY_MATH                         (1)
 
 // Enable f-string support (e.g., f"Hello {name}")
 #define MICROPY_PY_FSTRINGS                     (1)
@@ -130,8 +104,6 @@
 #define MICROPY_VFS                             (1)         // Can be removed once we add #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 #define MICROPY_PY_VFS                          (1)
 #define MICROPY_READER_VFS                      (1)
-#define MICROPY_PY_IO                           (1)
-#define MICROPY_PY_IO_IOBASE                    (1)
 
 #define MICROPY_ENABLE_FINALISER                (1)
 
