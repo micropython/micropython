@@ -98,9 +98,9 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_set_interrupt_char(int c) {
-    // TODO: Implement this function
-}
+// void mp_hal_set_interrupt_char(int c) {
+//     // TODO: Implement this function
+// }
 
 extern uint32_t get_drive_mode(uint8_t mode, uint8_t pull);
 

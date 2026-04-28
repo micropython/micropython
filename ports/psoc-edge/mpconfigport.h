@@ -30,30 +30,19 @@
 #include "mpconfigboard.h"
 
 // Use core features for Thonny compatibility (larger firmware)
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
 // options to control how MicroPython is built
-#define MICROPY_PY_BUILTINS_HELP                (1)
-#define MICROPY_PY_BUILTINS_HELP_MODULES        (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT           psoc_edge_help_text
 #define MICROPY_USE_INTERNAL_PRINTF             (0)
 #define MICROPY_REPL_INFO                       (1)
-#define MICROPY_HELPER_REPL                     (1)
 
-// Enable scheduler for IRQ callbacks (required for PDM_PCM.irq())
-#define MICROPY_ENABLE_SCHEDULER          (1)
-#define MICROPY_PY_OS                     (1)
 #define MICROPY_ENABLE_GC                 (1)
-
-#define MICROPY_HELPER_REPL               (1)
-
-// Enable essential built-in types
-#define MICROPY_PY_BUILTINS_MEMORYVIEW    (1)
-
+#define MICROPY_STACK_CHECK                (0)
 #define MICROPY_ALLOC_PATH_MAX            (256)
 
 // Use the minimum headroom in the chunk allocator for parse nodes.
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT          (16)
 
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
@@ -65,11 +54,7 @@
 // Float and Math support
 #define MICROPY_PY_BUILTINS_FLOAT               (1)
 
-// Enable f-string support (e.g., f"Hello {name}")
-#define MICROPY_PY_FSTRINGS                     (1)
-
 // Extended modules
-#define MICROPY_PY_TIME                         (1)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS            (1)
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc-edge/modtime.c"
@@ -95,7 +80,6 @@
 #define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
 #define MICROPY_PY_MACHINE_PDM_PCM_INCLUDEFILE  "machine_pdm_pcm.c"
 
-#define MICROPY_ENABLE_SCHEDULER                (1)
 #define MICROPY_SCHEDULER_DEPTH                 (8)
 
 #define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
@@ -105,9 +89,8 @@
 #define MICROPY_PY_VFS                          (1)
 #define MICROPY_READER_VFS                      (1)
 
-#define MICROPY_ENABLE_FINALISER                (1)
-
 // type definitions for the specific machine
+#define MP_SSIZE_MAX (0x7fffffff)
 
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
