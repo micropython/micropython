@@ -35,200 +35,212 @@
 #include "py/runtime.h"
 #include "modmachine.h"
 
-#include "hal/timer_hal.h"
-#include "hal/timer_ll.h"
-#include "soc/timer_periph.h"
-#include "esp_private/esp_clk_tree_common.h"
-#include "esp_private/periph_ctrl.h"
 #include "machine_timer.h"
+#include "esp_clk_tree.h"
+
+#if !MICROPY_ENABLE_FINALISER
+#error "machine.Timer requires MICROPY_ENABLE_FINALISER."
+#endif
 
 #define TIMER_CLK_SRC GPTIMER_CLK_SRC_DEFAULT
 #define TIMER_DIVIDER  8
 
-#define TIMER_FLAGS    0
-
-#if CONFIG_IDF_TARGET_ESP32P4
-static uint8_t __DECLARE_RCC_ATOMIC_ENV __attribute__ ((unused));
-#endif
 const mp_obj_type_t machine_timer_type;
 
-static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
-static mp_obj_t machine_timer_deinit(mp_obj_t self_in);
+uint32_t machine_timer_freq_hz(machine_timer_obj_t *self) {
+    if (self->id >= 0) {
+        // The timer source clock is APB or a fixed PLL (depending on chip), both constant frequency.
+        uint32_t freq;
+        check_esp_err(esp_clk_tree_src_get_freq_hz(TIMER_CLK_SRC, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &freq));
+        assert(freq % TIMER_DIVIDER == 0); // Source clock should divide evenly into TIMER_DIVIDER
+        return freq / TIMER_DIVIDER;
+    }
 
-uint32_t machine_timer_freq_hz(void) {
-    // The timer source clock is APB or a fixed PLL (depending on chip), both constant frequency.
-    uint32_t freq;
-    check_esp_err(esp_clk_tree_src_get_freq_hz(TIMER_CLK_SRC, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &freq));
-    assert(freq % TIMER_DIVIDER == 0); // Source clock should divide evenly into TIMER_DIVIDER
-    return freq / TIMER_DIVIDER;
+    // Virtual timers always use microsecond resolution
+    return 1000000;
 }
 
-void machine_timer_deinit_all(void) {
-    // Disable, deallocate and remove all timers from list
-    machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
-    while (*t != NULL) {
-        machine_timer_deinit(*t);
-        machine_timer_obj_t *next = (*t)->next;
-        m_del_obj(machine_timer_obj_t, *t);
-        *t = next;
+static bool machine_timer_isr_hardware(gptimer_handle_t timer, const gptimer_alarm_event_data_t *event_data, void *self_in) {
+    machine_timer_obj_t *self = self_in;
+    return self->handler(self);
+}
+
+static void machine_timer_isr_virtual(void *self_in) {
+    machine_timer_obj_t *self = self_in;
+    if (self->repeat) {
+        self->virtual_started = esp_timer_get_time();
+    } else {
+        self->virtual_stopped = esp_timer_get_time();
+    }
+    if (self->handler(self)) {
+        #if CONFIG_ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD
+        esp_timer_isr_dispatch_need_yield();
+        #endif
     }
 }
 
-static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_timer_obj_t *self = self_in;
-    qstr mode = self->repeat ? MP_QSTR_PERIODIC : MP_QSTR_ONE_SHOT;
-    uint64_t period = self->period / (machine_timer_freq_hz() / 1000); // convert to ms
-    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP == 1
-    mp_printf(print, "Timer(%u, mode=%q, period=%lu)", self->group, mode, period);
-    #else
-    mp_printf(print, "Timer(%u, mode=%q, period=%lu)", (self->group << 1) | self->index, mode, period);
-    #endif
+static bool machine_timer_handler(machine_timer_obj_t *self) {
+    mp_sched_schedule(self->handler_ctx, self);
+    mp_hal_wake_main_task_from_isr();
+    // Above function already yields, thus we return false
+    // so the timer ISR doesn't needlessly yield again
+    return false;
 }
 
-machine_timer_obj_t *machine_timer_create(mp_uint_t timer) {
+machine_timer_obj_t *machine_timer_create(mp_int_t id) {
+    // Check hardware timer number is valid
+    if (id >= SOC_TIMER_GROUP_TOTAL_TIMERS) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(%d) doesn't exist, there are only %d hardware timers"), id, SOC_TIMER_GROUP_TOTAL_TIMERS);
+    }
 
-    machine_timer_obj_t *self = NULL;
-    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP == 1
-    mp_uint_t group = timer & 1;
-    mp_uint_t index = 0;
-    #else
-    mp_uint_t group = (timer >> 1) & 1;
-    mp_uint_t index = timer & 1;
-    #endif
-
-    // Check whether the timer is already initialized, if so use it
-    for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
-        if (t->group == group && t->index == index) {
-            self = t;
-            break;
+    // Check whether this hardware timer is already initialized, if so reuse it
+    if (id >= 0) {
+        for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
+            if (t->id == id) {
+                return t;
+            }
         }
     }
-    // The timer does not exist, create it.
-    if (self == NULL) {
-        self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
-        self->group = group;
-        self->index = index;
-        self->handle = NULL;
 
-        // Add the timer to the linked-list of timers
+    // To ensure numbering stays consistent, we need to enforce
+    // the hardware timers are always created in the same order
+    if (id > 0) {
+        machine_timer_create(id - 1);
+    }
+
+    machine_timer_obj_t *self = mp_obj_malloc_with_finaliser(machine_timer_obj_t, &machine_timer_type);
+    self->id = id;
+    self->period = 0;
+    self->virtual_started = 0;
+    self->virtual_stopped = 0;
+    self->handler = NULL;
+    self->handler_ctx = NULL;
+
+    if (id >= 0) {
+        const gptimer_config_t hardware_config = {
+            .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+            .direction = GPTIMER_COUNT_UP,
+            .resolution_hz = machine_timer_freq_hz(self),
+        };
+        check_esp_err(gptimer_new_timer(&hardware_config, &self->handle.hardware));
+        gptimer_event_callbacks_t hardware_event_callbacks = {
+            .on_alarm = machine_timer_isr_hardware
+        };
+        esp_err_t result = gptimer_register_event_callbacks(self->handle.hardware, &hardware_event_callbacks, (void *)self);
+        if (result != ESP_OK) {
+            gptimer_del_timer(self->handle.hardware);
+            check_esp_err(result);
+        }
+
+        // Hardware timers are immediately added to the
+        // linked-list of timers so they can be reused
+        self->next = MP_STATE_PORT(machine_timer_obj_head);
+        MP_STATE_PORT(machine_timer_obj_head) = self;
+    } else {
+        const esp_timer_create_args_t virtual_args = {
+            .callback = machine_timer_isr_virtual,
+            .arg = (void *)self,
+            .dispatch_method = ESP_TIMER_TASK,
+            .name = "mpy_machine_timer",
+            .skip_unhandled_events = true,
+        };
+        check_esp_err(esp_timer_create(&virtual_args, &self->handle.virtual));
+    }
+
+    return self;
+}
+
+void machine_timer_configure(machine_timer_obj_t *self) {
+    // Period must be non-zero
+    if (self->period == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer period is too short for this timer"));
+    }
+
+    if (self->id >= 0) {
+        gptimer_alarm_config_t alarm_config = {
+            .reload_count = 0,
+            .alarm_count = self->period,
+            .flags.auto_reload_on_alarm = self->repeat,
+        };
+        check_esp_err(gptimer_set_alarm_action(self->handle.hardware, &alarm_config));
+        esp_err_t result = gptimer_enable(self->handle.hardware);
+        if (result != ESP_ERR_INVALID_STATE) {
+            check_esp_err(result);
+        }
+    } else {
+        // Virtual timers need no configuration but should be
+        // be added to the linked-list of timers so they are
+        // not automatically garbage collected while running
+        for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
+            if (t == self) {
+                return;
+            }
+        }
         self->next = MP_STATE_PORT(machine_timer_obj_head);
         MP_STATE_PORT(machine_timer_obj_head) = self;
     }
-    return self;
 }
 
-static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    // Create the new timer.
-    uint32_t timer_number = mp_obj_get_int(args[0]);
-    if (timer_number >= SOC_TIMER_GROUP_TOTAL_TIMERS) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid Timer number"));
-    }
-    machine_timer_obj_t *self = machine_timer_create(timer_number);
-
-    if (n_args > 1 || n_kw > 0) {
-        mp_map_t kw_args;
-        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        machine_timer_init_helper(self, n_args - 1, args + 1, &kw_args);
-    }
-
-    return self;
-}
-
-void machine_timer_disable(machine_timer_obj_t *self) {
-    if (self->hal_context.dev != NULL) {
-        // Disable the counter and alarm.
-        timer_ll_enable_counter(self->hal_context.dev, self->index, false);
-        timer_ll_enable_alarm(self->hal_context.dev, self->index, false);
-    }
-
-    if (self->handle) {
-        // Disable the interrupt
-        ESP_ERROR_CHECK(esp_intr_disable(self->handle));
-    }
-
-    // We let the disabled timer stay in the list, as it might be
-    // referenced elsewhere
-}
-
-static void machine_timer_isr(void *self_in) {
-    machine_timer_obj_t *self = self_in;
-
-    uint32_t intr_status = timer_ll_get_intr_status(self->hal_context.dev);
-
-    if (intr_status & TIMER_LL_EVENT_ALARM(self->index)) {
-        timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
-        if (self->repeat) {
-            timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
-        }
-        self->handler(self);
-    }
-}
-
-static void machine_timer_isr_handler(machine_timer_obj_t *self) {
-    mp_sched_schedule(self->callback, self);
-    mp_hal_wake_main_task_from_isr();
-}
-
-void machine_timer_enable(machine_timer_obj_t *self) {
-    // Initialise the timer.
-    timer_hal_init(&self->hal_context, self->group, self->index);
-
-    PERIPH_RCC_ACQUIRE_ATOMIC(timer_group_periph_signals.groups[self->index].module, ref_count) {
-        if (ref_count == 0) {
-            timer_ll_enable_bus_clock(self->index, true);
-            timer_ll_reset_register(self->index);
-        }
-    }
-
-    timer_ll_enable_counter(self->hal_context.dev, self->index, false);
-
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
-    esp_clk_tree_enable_src(TIMER_CLK_SRC, true);
-    #elif TIMER_CLK_SRC != SOC_MOD_CLK_APB
-    // esp_clk_tree_enable_src() is only required on some newer chips where timer
-    // source clock may not be enabled by default
-    #error "This chip requires ESP-IDF v5.4 or newer for working Timer."
-    #endif
-
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
-    timer_ll_set_clock_source(self->hal_context.dev, self->index, TIMER_CLK_SRC);
-    timer_ll_enable_clock(self->hal_context.dev, self->index, true);
-    #else
-    timer_ll_set_clock_source(self->group, self->index, TIMER_CLK_SRC);
-    timer_ll_enable_clock(self->group, self->index, true);
-    #endif
-    timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
-    timer_hal_set_counter_value(&self->hal_context, 0);
-    timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);
-
-    // Allocate and enable the alarm interrupt.
-    timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), false);
-    timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
-    if (self->handle) {
-        ESP_ERROR_CHECK(esp_intr_enable(self->handle));
+void machine_timer_start(machine_timer_obj_t *self) {
+    if (self->id >= 0) {
+        check_esp_err(gptimer_set_raw_count(self->handle.hardware, 0));
+        check_esp_err(gptimer_start(self->handle.hardware));
     } else {
-        ESP_ERROR_CHECK(esp_intr_alloc(
-            timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
-            TIMER_FLAGS,
-            machine_timer_isr,
-            self,
-            &self->handle
-            ));
+        self->virtual_started = esp_timer_get_time();
+        if (self->repeat) {
+            check_esp_err(esp_timer_start_periodic(self->handle.virtual, self->period));
+        } else {
+            check_esp_err(esp_timer_start_once(self->handle.virtual, self->period));
+        }
     }
-    timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), true);
+}
 
-    // Enable the alarm to trigger at the given period.
-    timer_ll_set_alarm_value(self->hal_context.dev, self->index, self->period);
-    timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
+void machine_timer_stop(machine_timer_obj_t *self) {
+    esp_err_t result;
+    if (self->id >= 0) {
+        result = gptimer_stop(self->handle.hardware);
+    } else {
+        result = esp_timer_stop(self->handle.virtual);
+        if (result == ESP_OK) {
+            self->virtual_stopped = esp_timer_get_time();
+        }
+    }
+    if (result != ESP_ERR_INVALID_STATE) {
+        check_esp_err(result);
+    }
+}
 
-    // Set the counter to reload at 0 if it's in repeat mode.
-    timer_ll_set_reload_value(self->hal_context.dev, self->index, 0);
-    timer_ll_enable_auto_reload(self->hal_context.dev, self->index, self->repeat);
+mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
+    machine_timer_obj_t *self = self_in;
+    machine_timer_stop(self);
+    if (self->id >= 0) {
+        esp_err_t result = gptimer_disable(self->handle.hardware);
+        if (result != ESP_ERR_INVALID_STATE) {
+            check_esp_err(result);
+        }
+    } else {
+        // Virtual timers may be immediately garbage collected,
+        // hardware timers must stay in the list to be reused
+        for (machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head); *t != NULL; t = &(*t)->next) {
+            if (*t == self) {
+                *t = self->next;
+                break;
+            }
+        }
+    }
 
-    // Enable the counter.
-    timer_ll_enable_counter(self->hal_context.dev, self->index, true);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
+
+// Called by board port soft reset routine to deactivate all timers before reboot.
+void machine_timer_deinit_all(void) {
+    machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
+    while (*t != NULL) {
+        machine_timer_obj_t *next = (*t)->next;
+        machine_timer_deinit(*t);
+        *t = next;
+    }
 }
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -253,7 +265,8 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
-    machine_timer_disable(self);
+    // Before (re)initializing, ensure timer is stopped and disabled
+    machine_timer_deinit(self);
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -264,56 +277,101 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 
     #if MICROPY_PY_BUILTINS_FLOAT
     if (args[ARG_freq].u_obj != mp_const_none) {
-        self->period = (uint64_t)(machine_timer_freq_hz() / mp_obj_get_float(args[ARG_freq].u_obj));
+        self->period = (uint64_t)(machine_timer_freq_hz(self) / mp_obj_get_float(args[ARG_freq].u_obj));
     }
     #else
     if (args[ARG_freq].u_int != 0xffffffff) {
-        self->period = TIMER_SCALE / ((uint64_t)args[ARG_freq].u_int);
+        self->period = machine_timer_freq_hz(self) / ((uint64_t)args[ARG_freq].u_int);
     }
     #endif
     else {
-        self->period = (((uint64_t)args[ARG_period].u_int) * machine_timer_freq_hz()) / args[ARG_tick_hz].u_int;
+        self->period = (((uint64_t)args[ARG_period].u_int) * machine_timer_freq_hz(self)) / args[ARG_tick_hz].u_int;
     }
 
     self->repeat = args[ARG_mode].u_int;
-    self->handler = machine_timer_isr_handler;
-    self->callback = args[ARG_callback].u_obj;
 
-    machine_timer_enable(self);
+    self->handler = machine_timer_handler;
+    self->handler_ctx = args[ARG_callback].u_obj;
+
+    machine_timer_configure(self);
+    machine_timer_start(self);
 
     return mp_const_none;
 }
 
-static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
-    machine_timer_obj_t *self = self_in;
-
-    machine_timer_disable(self);
-    if (self->handle) {
-        ESP_ERROR_CHECK(esp_intr_free(self->handle));
-        self->handle = NULL;
+static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // Get timer ID, or default to -1 (virtual)
+    mp_int_t id = -1;
+    if (n_args > 0) {
+        id = mp_obj_get_int(args[0]);
+        --n_args;
+        ++args;
     }
 
-    return mp_const_none;
+    machine_timer_obj_t *self = machine_timer_create(id);
+
+    if (n_args > 0 || n_kw > 0) {
+        // Start the timer
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        machine_timer_init_helper(self, n_args, args, &kw_args);
+    }
+
+    return self;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
 
 static mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init);
 
+static mp_obj_t machine_timer_del(mp_obj_t self_in) {
+    machine_timer_obj_t *self = self_in;
+
+    machine_timer_deinit(self);
+    if (self->id >= 0) {
+        // Hardware timers must first be removed from the linked-list of timers,
+        // virtual timers will already have been removed during deinitialization
+        for (machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head); *t != NULL; t = &(*t)->next) {
+            if (*t == self) {
+                *t = self->next;
+                break;
+            }
+        }
+        check_esp_err(gptimer_del_timer(self->handle.hardware));
+    } else {
+        check_esp_err(esp_timer_delete(self->handle.virtual));
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_del_obj, machine_timer_del);
+
 static mp_obj_t machine_timer_value(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
-    if (self->handle == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("timer not set"));
+    uint64_t result;
+    if (self->id >= 0) {
+        check_esp_err(gptimer_get_raw_count(self->handle.hardware, &result));
+    } else {
+        if (esp_timer_is_active(self->handle.virtual)) {
+            result = esp_timer_get_time() - self->virtual_started;
+        } else {
+            result = self->virtual_stopped - self->virtual_started;
+        }
     }
-    uint64_t result = timer_ll_get_counter_value(self->hal_context.dev, self->index);
-    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (machine_timer_freq_hz() / 1000))); // value in ms
+    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (machine_timer_freq_hz(self) / 1000))); // value in ms
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 
+static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_timer_obj_t *self = self_in;
+    qstr mode = self->repeat ? MP_QSTR_ONE_SHOT : MP_QSTR_PERIODIC;
+    uint64_t period = self->period / (machine_timer_freq_hz(self) / 1000); // convert to ms
+    mp_printf(print, "Timer(%d, mode=%q, period=%lu)", self->id, mode, period);
+}
+
 static const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_del_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_timer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_timer_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_timer_value_obj) },
