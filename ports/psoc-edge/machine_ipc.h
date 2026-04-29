@@ -95,5 +95,6 @@ typedef struct
 bool is_cm55_enabled;
 extern const mp_obj_type_t ipc_sender_endpoint_type;
 extern const mp_obj_type_t machine_ipc_type;
+void machine_ipc_deinit_all(void);
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_MACHINE_IPC_H

@@ -330,6 +330,7 @@ static mp_obj_t machine_ipc_make_new(const mp_obj_type_t *type, size_t n_args, s
     // Initialise all client slots to unregistered sentinel so duplicate-check works
     for (uint8_t i = 0; i < IPC_MAX_CLIENTS_PER_EP; i++) {
         sender_clients_arr[i].client_id = IPC_CLIENT_ID_UNREGISTERED;
+        sender_clients_arr[i].cback_handler = mp_const_none;
     }
 
     // Validate cores selected
@@ -580,6 +581,14 @@ static const mp_rom_map_elem_t machine_ipc_locals_dict_table[] = {
 static MP_DEFINE_CONST_DICT(machine_ipc_locals_dict, machine_ipc_locals_dict_table);
 
 MP_REGISTER_ROOT_POINTER(struct _machine_ipc_obj_t *machine_ipc_obj[IPC_MAX_CLIENTS_PER_EP]);
+
+void machine_ipc_deinit_all(void) {
+    cm55_enabled = false;
+    for (uint8_t i = 0; i < IPC_MAX_CLIENTS_PER_EP; i++) {
+        sender_clients_arr[i].client_id = IPC_CLIENT_ID_UNREGISTERED;
+        sender_clients_arr[i].cback_handler = mp_const_none;
+    }
+}
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_ipc_type,
