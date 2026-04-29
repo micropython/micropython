@@ -78,7 +78,47 @@ jobs:
           pse_test_dir: ../../tests/ports/psoc-edge
         run: |
           cd lib/mpy-test-ext
-          python -u run_test_plan.py --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
+          suites=$(python - <<'PY'
+          import os
+          import yaml
+
+          test_plan = os.path.join(os.environ["pse_test_dir"], "test-plan.yml")
+          with open(test_plan, "r") as f:
+              tests = yaml.safe_load(f) or []
+
+          names = [
+              t["name"]
+              for t in tests
+              if "optional" not in (t.get("tags") or [])
+          ]
+          print(" ".join(names))
+          PY
+          )
+          python -u run_test_plan.py \
+            $suites \
+            --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
+
+      - name: Decrypt Wi-Fi secrets
+        if: ${{ hashFiles('tests/ports/psoc-edge/mp_custom/secrets.py.gpg') != '' && secrets.LARGE_SECRET_PASSPHRASE != '' }}
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.LARGE_SECRET_PASSPHRASE }}" \
+            --output tests/ports/psoc-edge/mp_custom/secrets.py \
+            tests/ports/psoc-edge/mp_custom/secrets.py.gpg
+
+      - name: Run psoc-edge internet socket tests
+        if: ${{ hashFiles('tests/ports/psoc-edge/mp_custom/secrets.py.gpg') != '' && secrets.LARGE_SECRET_PASSPHRASE != '' }}
+        timeout-minutes: 8
+        env:
+          pse_test_dir: ../../tests/ports/psoc-edge
+        run: |
+          cd lib/mpy-test-ext
+          python -u run_test_plan.py \
+            socket-internet \
+            --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
+
+      - name: Remove decrypted Wi-Fi secrets
+        if: ${{ always() && hashFiles('tests/ports/psoc-edge/mp_custom/secrets.py.gpg') != '' }}
+        run: rm -f tests/ports/psoc-edge/mp_custom/secrets.py
         
       - name: Container teardown 
         if: failure() || success()
