@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "modpsocedge.h"
-#include "mplogger.h"
+#include "py/misc.h"
 
 // MTB includes
 #include "cybsp.h"
@@ -41,6 +41,8 @@
 #include "mphalport.h"
 #include "cycfg_qspi_memslot.h"
 #include "mtb_serial_memory.h"
+
+#define DEBUG_printf(...) // printf(__VA_ARGS__)
 
 #ifndef MICROPY_HW_FLASH_STORAGE_BYTES
 #define MICROPY_HW_FLASH_STORAGE_BYTES (EXT_FLASH_SIZE)
@@ -94,7 +96,7 @@ static mp_obj_t psoc_edge_qspi_flash_make_new(const mp_obj_type_t *type, size_t 
         if (result == CY_RSLT_SUCCESS) {
             qspi_flash_init = true;
         } else {
-            mplogger_print("psoc_edge_qspi_flash_make_new() failed with error code: 0x%08lx\n", result);
+            DEBUG_printf("psoc_edge_qspi_flash_make_new() failed with error code: 0x%08lx\n", result);
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc_edge_qspi_flash_make_new() - QSPI flash init failed!\n"));
         }
     }
