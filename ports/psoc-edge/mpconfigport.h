@@ -44,7 +44,7 @@
 #define MICROPY_REPL_INFO                       (1)
 
 #define MICROPY_ENABLE_GC                       (1)
-#define MICROPY_STACK_CHECK                     (0)
+#define MICROPY_STACK_CHECK_MARGIN              (1024)
 #define MICROPY_ALLOC_PATH_MAX                  (256)
 
 // Use the minimum headroom in the chunk allocator for parse nodes.

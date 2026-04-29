@@ -113,7 +113,7 @@ int main(void) {
     // Initialise the MicroPython runtime.
     #if MICROPY_ENABLE_GC
     gc_init(&__HeapBase, &__HeapLimit);
-    mp_cstack_init_with_top((void *)&__StackTop, __StackSize);
+    mp_cstack_init_with_top((void *)&__StackTop, (size_t)&__StackSize);
     #endif
 
     time_init();
