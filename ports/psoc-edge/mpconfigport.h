@@ -30,16 +30,16 @@
 #include "mpconfigboard.h"
 
 // Use core features for Thonny compatibility (larger firmware)
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
 // options to control how MicroPython is built
 #define MICROPY_PY_BUILTINS_HELP_TEXT           psoc_edge_help_text
 #define MICROPY_USE_INTERNAL_PRINTF             (0)
 #define MICROPY_REPL_INFO                       (1)
 
-#define MICROPY_ENABLE_GC                 (1)
-#define MICROPY_STACK_CHECK                (0)
-#define MICROPY_ALLOC_PATH_MAX            (256)
+#define MICROPY_ENABLE_GC                       (1)
+#define MICROPY_STACK_CHECK                     (0)
+#define MICROPY_ALLOC_PATH_MAX                  (256)
 
 // Use the minimum headroom in the chunk allocator for parse nodes.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT          (16)
@@ -50,9 +50,6 @@
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
 #define MICROPY_PY_SYS_EXC_INFO                 (1)
-
-// Float and Math support
-#define MICROPY_PY_BUILTINS_FLOAT               (1)
 
 // Extended modules
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
@@ -85,25 +82,12 @@
 #define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
 
 // VFS
-#define MICROPY_VFS                             (1)         // Can be removed once we add #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
-#define MICROPY_PY_VFS                          (1)
+#define MICROPY_VFS                             (1)
 #define MICROPY_READER_VFS                      (1)
 
 // type definitions for the specific machine
 #define MP_SSIZE_MAX (0x7fffffff)
 
-typedef intptr_t mp_int_t; // must be pointer size
-typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_EVENT_POLL_HOOK_FAST \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-    } while (0);
-
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        MICROPY_EVENT_POLL_HOOK_FAST; \
-    } while (0);

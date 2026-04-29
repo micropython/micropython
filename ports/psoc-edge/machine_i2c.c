@@ -201,7 +201,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
 
     while (0UL != (CY_SCB_I2C_MASTER_BUSY & Cy_SCB_I2C_MasterGetStatus(self->scb_obj->scb, &self->ctx))) {
         // Yield to allow other tasks/interrupts to run
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_handle_nowait();
 
         // Check for timeout using actual elapsed time
         if (mp_hal_ticks_us() >= timeout_end) {
