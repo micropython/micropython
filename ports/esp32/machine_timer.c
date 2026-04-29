@@ -233,16 +233,6 @@ mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
 
-// Called by board port soft reset routine to deactivate all timers before reboot.
-void machine_timer_deinit_all(void) {
-    machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
-    while (*t != NULL) {
-        machine_timer_obj_t *next = (*t)->next;
-        machine_timer_deinit(*t);
-        *t = next;
-    }
-}
-
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
         ARG_mode,

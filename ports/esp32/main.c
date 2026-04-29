@@ -190,12 +190,9 @@ soft_reset_exit:
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif
 
-    // Deinit uart before timers, as esp32 uart
-    // depends on a timer instance
     #if MICROPY_PY_MACHINE_UART
     machine_uart_deinit_all();
     #endif
-    machine_timer_deinit_all();
 
     #if MICROPY_PY_ESP32_PCNT
     esp32_pcnt_deinit_all();
