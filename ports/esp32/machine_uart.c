@@ -93,8 +93,9 @@ enum {
     RXIDLE_ALERT,
 };
 
-// RXIDLE irq feature uses this machine.Timer id
-#define RXIDLE_TIMER_IDX 0
+// machine.Timer id used for RXIDLE IRQ. If a hardware timer it should not be
+// used elsewhere (and thus also no more than one RXIDLE IRQ should be used).
+#define RXIDLE_TIMER_IDX (-1)
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
