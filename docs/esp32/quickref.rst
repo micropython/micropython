@@ -284,8 +284,7 @@ with a timer ID of 0, 0 and 1, or from 0 to 3 (inclusive)::
     tim1 = Timer(1)
     tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
-The period is in milliseconds. When using UART.IRQ_RXIDLE, timer 0 is needed for
-the IRQ_RXIDLE mechanism and must not be used otherwise.
+The period is in milliseconds.
 
 Timer callbacks are scheduled as soft interrupts on this port; hard
 callbacks are not implemented. Specifying ``hard=True`` will raise

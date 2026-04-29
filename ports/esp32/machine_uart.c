@@ -69,7 +69,7 @@ enum {
 };
 
 // RXIDLE irq feature uses this machine.Timer id
-#define RXIDLE_TIMER_IDX 0
+#define RXIDLE_TIMER_IDX (-1)
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
