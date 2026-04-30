@@ -29,7 +29,7 @@
 #if MICROPY_HW_ENABLE_USBDEV && MICROPY_HW_TINYUSB_STACK
 
 #include <string.h>
-#include "mp_usbd.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "mphalport.h"
 
 void mp_usbd_port_get_serial_number(char *serial_buf) {

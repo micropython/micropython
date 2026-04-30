@@ -28,7 +28,7 @@
 
 #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
-#include "mp_usbd.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "py/mperrno.h"
 #include "py/objstr.h"
 
