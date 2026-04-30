@@ -78,7 +78,7 @@ jobs:
           pse_test_dir: ../../tests/ports/psoc-edge
         run: |
           cd lib/mpy-test-ext
-          suites=$(python - <<'PY'
+          suites=$(python3 - <<'PY'
           import os
           import yaml
 
@@ -94,7 +94,7 @@ jobs:
           print(" ".join(names))
           PY
           )
-          python -u run_test_plan.py \
+          python3 -u run_test_plan.py \
             $suites \
             --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
 
@@ -112,7 +112,7 @@ jobs:
           pse_test_dir: ../../tests/ports/psoc-edge
         run: |
           cd lib/mpy-test-ext
-          python -u run_test_plan.py \
+          python3 -u run_test_plan.py \
             socket-internet \
             --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
 
