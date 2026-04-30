@@ -8,7 +8,7 @@ Requirements:
   as `mpremote`.
 - If the device has an SDcard or other vfs mounted, the vfs's filesystem must be empty
   to pass the filesystem test.
-- Python 3.x, `bash` and various Unix tools such as `find`, `mktemp`, `sed`, `sort`, `tr`.
+- Python 3.x, `bash` and various Unix tools such as `find`, `mktemp`, `sed`, `sort`, `tr`, `diff`.
 - To test on Windows, you can either:
     - Run the (Linux) tests in WSL2 against a USB device that is passed though to WSL2.
     - Use the `Git Bash` terminal to run the tests against a device connected to a COM
