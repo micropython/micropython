@@ -46,6 +46,14 @@ if is_float32 and val_str == "2147483500.000000":
 if is_REPR_C and val_str == "2147483200.000000":
     val_str = "2147483520.000000"
 
+# When using REPR_C, x86 and clang, 2147483520.0 is the same
+# as 2147483100.0, the second being "simple" but rounded differently
+# due to x87 extra precision on intermediates.
+# Both representations are valid.
+if is_REPR_C and val_str == "2147483100.000000":
+    val_str = "2147483520.000000"
+
+
 print(val_str)
 
 # Very large positive integers can be a test for precision and resolution.
