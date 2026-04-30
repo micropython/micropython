@@ -1,0 +1,30 @@
+name: quectel port
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+          curl -L http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu55_55.1-7ubuntu0.5_amd64.deb -o libicu55.deb
+          sudo dpkg -i libicu55.deb || true
+          curl -L "https://github.com/QuecPython/toolchain/releases/download/V1.1.0/helios-toolchain" -o $HOME/helios-toolchain
+          chmod +x $HOME/helios-toolchain
+          cd $HOME/
+          ./helios-toolchain
+          echo "$HOME/helios/bin" >> $GITHUB_PATH
+
+      - name: Build Firmware
+        run: | 
+          make -C mpy-cross
+          cd ports/quectel
+          make submodules
+          make BOARD=EC600UCN_LB
