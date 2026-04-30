@@ -2,7 +2,7 @@ TOP := ../..
 ifneq ($(HeliosSDK_PATH),)
 ROOT := $(HeliosSDK_PATH)
 else
-ROOT := $(TOP)/../..
+ROOT := $(TOP)/lib/helios
 endif
 
 include ../../py/mkenv.mk
@@ -18,7 +18,12 @@ CFLAGS = $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(C
 LDFLAGS = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 
+CFLAGS += -mcpu=cortex-a5 -mtune=generic-armv7-a -mthumb \
+		  -mfpu=neon-vfpv4 -mfloat-abi=hard -mno-unaligned-access
+
 CSUPEROPT = -Os # save some code space
+
+GIT_SUBMODULES += lib/helios
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -105,5 +110,6 @@ $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 $(BUILD)/firmware.a: $(OBJ)
 	$(ECHO) "AR $@"
 	$(Q)$(AR) -cr $@ $^
+	cd $(ROOT) && helios make ../../../micropython $(BOARD)
 
 include $(TOP)/py/mkrules.mk
