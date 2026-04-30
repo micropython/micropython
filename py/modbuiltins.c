@@ -155,6 +155,7 @@ static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 
+#if MICROPY_PY_BUILTINS_DIR
 static mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
     mp_obj_t dir = mp_obj_new_list(0, NULL);
     if (n_args == 0) {
@@ -187,6 +188,7 @@ static mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
     return dir;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
+#endif
 
 static mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     return mp_binary_op(MP_BINARY_OP_DIVMOD, o1_in, o2_in);
@@ -684,7 +686,9 @@ static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_delattr), MP_ROM_PTR(&mp_builtin_delattr_obj) },
     #endif
+    #if MICROPY_PY_BUILTINS_DIR
     { MP_ROM_QSTR(MP_QSTR_dir), MP_ROM_PTR(&mp_builtin_dir_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_divmod), MP_ROM_PTR(&mp_builtin_divmod_obj) },
     #if MICROPY_PY_BUILTINS_EVAL_EXEC
     { MP_ROM_QSTR(MP_QSTR_eval), MP_ROM_PTR(&mp_builtin_eval_obj) },
