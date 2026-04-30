@@ -815,6 +815,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("float/float_parse_doubleprec.py")
 
     if not args.unicode:
+        if args.via_mpy:
+            skip_tests.add("basics/string_escape.py")  # stores a utf-8 character in the mpy file
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
 
     if skip_slice:
