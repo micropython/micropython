@@ -380,7 +380,7 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     Cy_SCB_UART_Disable(self->scb_obj->scb, &self->ctx);
     sys_int_deinit(&self->scb_obj->irq);
 
-    ringbuf_alloc(&self->rx_ringbuf, self->rx_ringbuf.size);
+    m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
 
     machine_scb_obj_free(self->scb_obj);
     mp_machine_uart_free(self);
@@ -448,7 +448,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
                     return read_count;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_handle_nowait();
         }
 
         to_read = (size < ringbuf_avail(&self->rx_ringbuf)) ? size : ringbuf_avail(&self->rx_ringbuf);
@@ -483,7 +483,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
                     return write_count;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_handle_nowait();
         }
         uint32_t written = Cy_SCB_UART_PutArray(self->scb_obj->scb, (void *)buf_in, size);
         buf_in = (const uint8_t *)buf_in + written;
