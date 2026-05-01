@@ -702,6 +702,15 @@ function ci_unix_minimal_run_tests {
     make -C ports/unix VARIANT=minimal test
 }
 
+function ci_unix_sjlj_build {
+    ci_unix_build_helper VARIANT=sjlj
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_sjlj_run_tests {
+    ci_unix_run_tests_full_helper sjlj
+}
+
 function ci_unix_standard_build {
     ci_unix_build_helper VARIANT=standard
     ci_unix_build_ffi_lib_helper gcc

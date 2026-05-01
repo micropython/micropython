@@ -88,10 +88,12 @@
 //                              locals (reversed, L0 at end)    |
 //                              (L0-L2 may be in regs instead)
 
-// Native emitter needs to know the following sizes and offsets of C structs (on the target):
+// Native emitter needs to know the following flags, sizes and offsets of C structs (on the target):
 #if MICROPY_DYNAMIC_COMPILER
+#define EMIT_NLR_SETJMP (mp_dynamic_compiler.nlr_setjmp)
 #define SIZEOF_NLR_BUF (2 + mp_dynamic_compiler.nlr_buf_num_regs + 1) // the +1 is conservative in case MICROPY_ENABLE_PYSTACK enabled
 #else
+#define EMIT_NLR_SETJMP (N_NLR_SETJMP)
 #define SIZEOF_NLR_BUF (sizeof(nlr_buf_t) / sizeof(uintptr_t))
 #endif
 #define SIZEOF_CODE_STATE (sizeof(mp_code_state_native_t) / sizeof(uintptr_t))
@@ -138,7 +140,11 @@
 
 // Indices within the local C stack for various variables
 #define LOCAL_IDX_EXC_VAL(emit) (NLR_BUF_IDX_RET_VAL)
+#if MICROPY_DYNAMIC_COMPILER
+#define LOCAL_IDX_EXC_HANDLER_PC(emit) (mp_dynamic_compiler.local_idx_exc_handler_pc == -1 ? NLR_BUF_IDX_LOCAL_1 : mp_dynamic_compiler.local_idx_exc_handler_pc)
+#else
 #define LOCAL_IDX_EXC_HANDLER_PC(emit) (NLR_BUF_IDX_LOCAL_1)
+#endif
 #define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) (SIZEOF_NLR_BUF + 1) // this needs a dedicated variable outside nlr_buf_t
 #define LOCAL_IDX_THROW_VAL(emit) (SIZEOF_NLR_BUF + 2) // needs a dedicated variable outside nlr_buf_t, following inject_exc in py/vm.c
 #define LOCAL_IDX_RET_VAL(emit) (SIZEOF_NLR_BUF) // needed when NEED_GLOBAL_EXC_HANDLER is true
@@ -1231,10 +1237,10 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             // Wrap everything in an nlr context
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
             emit_call(emit, MP_F_NLR_PUSH);
-            #if N_NLR_SETJMP
-            ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 2);
-            emit_call(emit, MP_F_SETJMP);
-            #endif
+            if (EMIT_NLR_SETJMP) {
+                ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 2);
+                emit_call(emit, MP_F_SETJMP);
+            }
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, true);
         } else {
             // Clear the unwind state
@@ -1251,10 +1257,10 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             emit_native_label_assign(emit, nlr_label);
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
             emit_call(emit, MP_F_NLR_PUSH);
-            #if N_NLR_SETJMP
-            ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 2);
-            emit_call(emit, MP_F_SETJMP);
-            #endif
+            if (EMIT_NLR_SETJMP) {
+                ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 2);
+                emit_call(emit, MP_F_SETJMP);
+            }
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
 
             // Clear PC of current code block, and jump there to resume execution
