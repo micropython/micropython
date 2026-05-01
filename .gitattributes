@@ -5,6 +5,7 @@
 *.vcxproj text eol=crlf
 *.props text eol=crlf
 *.bat text eol=crlf
+*.cmd text eol=crlf
 
 # These are binary so should never be modified by git.
 *.a binary
