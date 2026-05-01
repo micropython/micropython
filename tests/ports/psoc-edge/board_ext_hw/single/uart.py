@@ -3,7 +3,7 @@ import time
 
 uart_pins_args = {"tx": "P17_1", "rx": "P17_0"}
 uart_basic_conf = {
-    "baudrate": 115200,
+    "baudrate": 9600,
     "bits": 8,
     "parity": None,
     "stop": 1,
@@ -12,6 +12,10 @@ uart_basic_conf = {
 }
 
 uart = UART(**uart_pins_args, **uart_basic_conf)
+
+# Check that reconfiguration of same UART object SCB is allowed by init()
+uart_basic_conf["baudrate"] = 115200
+uart.init(**uart_pins_args, **uart_basic_conf)
 
 
 def uart_tests():
