@@ -23,3 +23,7 @@ else:
 encoder_loopback_id = 0
 encoder_loopback_out_pins = ("D0", "D2")
 encoder_loopback_in_pins = ("D1", "D3")
+
+# CAN args assume no connection for single device tests
+can_args = (1,)
+can_kwargs = {}
