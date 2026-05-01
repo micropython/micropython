@@ -133,6 +133,8 @@ OverflowError: overflow converting long int to machine word
 TypeError: can't convert NoneType to int
 TypeError: can't convert NoneType to int
 ValueError: 
+# exception heap str with 0xff prefix
+data[0]=0xff len=20 hash_set=1
 Warning: test
 # binary
 123

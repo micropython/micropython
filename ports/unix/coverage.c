@@ -647,6 +647,33 @@ static mp_obj_t extra_coverage(void) {
         mp_obj_print_exception(&mp_plat_print, mp_obj_new_exception_args(&mp_type_ValueError, 0, NULL));
     }
 
+    // exception with heap-allocated str whose data byte starts with 0xff
+    // (the ROM-string compression marker). Exercises the is_in_heap branch
+    // and the skip_decompression label in py/objexcept.c
+    // decompress_error_text_maybe(), which is otherwise unreachable from
+    // Python code when MICROPY_PY_BUILTINS_STR_UNICODE_CHECK is enabled.
+    {
+        mp_printf(&mp_plat_print, "# exception heap str with 0xff prefix\n");
+        static const char marker[] = "\xff" "non-rom-heap-string";
+        const size_t mlen = sizeof(marker) - 1;
+        byte *buf = m_new(byte, mlen);
+        memcpy(buf, marker, mlen);
+        mp_obj_str_t *o_str = m_new_obj(mp_obj_str_t);
+        o_str->base.type = &mp_type_str;
+        o_str->hash = 0; // force the lazy-hash path after skip_decompression
+        o_str->len = mlen;
+        o_str->data = buf;
+        mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
+        mp_obj_t exc = mp_obj_new_exception_args(&mp_type_ValueError, 1, &arg);
+        // Trigger decompress_error_text_maybe() via the .args attr accessor.
+        mp_obj_t dest[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+        mp_load_method_maybe(exc, MP_QSTR_args, dest);
+        // Confirm the heap string was preserved (not overwritten by decompression)
+        // and that the lazy-hash branch ran.
+        mp_printf(&mp_plat_print, "data[0]=0x%02x len=%u hash_set=%d\n",
+            o_str->data[0], (unsigned)o_str->len, o_str->hash != 0);
+    }
+
     // warning
     {
         mp_emitter_warning(MP_PASS_CODE_SIZE, "test");
