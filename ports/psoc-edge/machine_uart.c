@@ -270,6 +270,16 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    Cy_SCB_UART_Disable(self->scb_obj->scb, &self->ctx);
+    sys_int_deinit(&self->scb_obj->irq);
+
+    m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
+
+    machine_scb_obj_free(self->scb_obj);
+    mp_machine_uart_free(self);
+}
+
 /**
  * TODO: Do we need to implement txbuf ?? That would only make sense if we implement an
  * intermediate (ring) buffer.
@@ -312,6 +322,10 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     MP_HAL_PIN_AF_INIT(uart_pins_config[1], self->rx, CY_GPIO_DM_HIGHZ, 0, MACHINE_PIN_AF_SIGNAL_UART_RX);
 
     uint8_t scb_unit = uart_pins_config[0].af->unit;
+
+    if (self->scb_obj != NULL) {
+        mp_machine_uart_deinit(self);
+    }
     self->scb_obj = machine_scb_obj_alloc(scb_unit, self, machine_uart_scb_isr);
 
     // -- Flow control pins --
@@ -406,16 +420,6 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
 
     // -- Initialise hardware --
     machine_uart_hw_init(self);
-}
-
-static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
-    Cy_SCB_UART_Disable(self->scb_obj->scb, &self->ctx);
-    sys_int_deinit(&self->scb_obj->irq);
-
-    m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
-
-    machine_scb_obj_free(self->scb_obj);
-    mp_machine_uart_free(self);
 }
 
 static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
