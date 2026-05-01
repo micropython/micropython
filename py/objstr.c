@@ -1799,6 +1799,10 @@ static mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
         end = str_index_to_ptr(self_type, haystack, haystack_len, args[3], true);
     }
 
+    if (end < start) {
+        return MP_OBJ_NEW_SMALL_INT(0);
+    }
+
     // if needle_len is zero then we count each gap between characters as an occurrence
     if (needle_len == 0) {
         return MP_OBJ_NEW_SMALL_INT(utf8_charlen(start, end - start) + 1);
