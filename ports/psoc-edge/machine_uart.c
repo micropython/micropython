@@ -223,8 +223,40 @@ static void machine_uart_hw_init(machine_uart_obj_t *self) {
 // MicroPython bindings
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    /** TODO: Implement! */
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "UART(tx="MP_HAL_PIN_FMT ",\n"
+        "rx="MP_HAL_PIN_FMT ",\n"
+        "baudrate=%ld,\n"
+        "bits=%u,\n"
+        "parity=%u,\n"
+        "stop=%u,\n",
+        mp_hal_pin_name(self->tx),
+        mp_hal_pin_name(self->rx),
+        self->baudrate,
+        self->bits,
+        self->parity,
+        self->stop
+        );
+
+    if (self->rts != NULL) {
+        mp_printf(print, "rts="MP_HAL_PIN_FMT ",\n", mp_hal_pin_name(self->rts));
+    }
+
+    if (self->cts != NULL) {
+        mp_printf(print, "cts="MP_HAL_PIN_FMT ",\n", mp_hal_pin_name(self->cts));
+    }
+
+    mp_printf(print, "flow=%u,\n"
+        "timeout=%ld,\n"
+        "timeout_char=%ld,\n"
+        "rxbuf=%d)",
+        self->flow,
+        self->timeout_ms,
+        self->timeout_char_ms,
+        self->rx_ringbuf.size
+        );
 }
+
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);

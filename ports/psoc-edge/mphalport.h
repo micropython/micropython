@@ -54,7 +54,7 @@ int mp_hal_stdin_rx_chr(void);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 
-#define MP_HAL_PIN_FMT          "%q"
+#define MP_HAL_PIN_FMT          "\'%q\'"
 #define mp_hal_pin_obj_t        const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   machine_pin_get_pin_obj(o)
 #define mp_hal_pin_name(p)      ((p)->name)
