@@ -130,8 +130,7 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 #if PICO_RISCV
 __attribute__((naked)) mp_uint_t mp_hal_ticks_cpu(void) {
     __asm volatile (
-        "li a0, 4\n" // mask value to uninhibit mcycle counter
-        "csrw mcountinhibit, a0\n" // uninhibit mcycle counter
+        "csrci mcountinhibit, 1\n" // uninhibit mcycle counter
         "csrr a0, mcycle\n" // get mcycle counter
         "ret\n"
         );
