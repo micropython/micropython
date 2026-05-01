@@ -3,6 +3,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2025 Andrew Leech
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -22,6 +24,22 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#include "storage.h"
+#include "qspi.h"
 
-#include "../mpconfigport.h"
+#if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+// Shared cache for QSPI block device
+static mp_spiflash_cache_t spi_bdev_cache;
+#endif
+
+// External QSPI flash uses hardware QSPI interface
+const mp_spiflash_config_t spiflash_config = {
+    .bus_kind = MP_SPIFLASH_BUS_QSPI,
+    .bus.u_qspi.data = NULL,
+    .bus.u_qspi.proto = &qspi_proto,
+    #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+    .cache = &spi_bdev_cache,
+    #endif
+};
+
+spi_bdev_t spi_bdev;

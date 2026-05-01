@@ -45,6 +45,7 @@ m_tracked_head = 0
 5 1
 6 1
 7 1
+1
 0 1
 1 1
 2 1
@@ -54,17 +55,24 @@ m_tracked_head = 0
 6 1
 7 1
 m_tracked_head = 0
+# tracked realloc
+grow preserves data: 1
+shrink preserves data: 1
+realloc gc stable: 1
+realloc(NULL) ok: 1
+realloc(ptr, 0) returns NULL: 1
+m_tracked_head after cleanup: 0
 # vstr
 tests
 sts
 
 test
 tes
-RuntimeError: 
-RuntimeError: 
+RuntimeError: \$
+RuntimeError: \$
 # repl
 ame__
-port 
+port \$
 
 builtins        micropython     array           binascii
 btree           cexample        cmath           collections
@@ -116,8 +124,8 @@ deadbeef
 c0ffee
 000c0ffee
 # list argument helpers
-TypeError: 
-ValueError: 
+TypeError: \$
+ValueError: \$
 mp_obj_list_ensure same list? 1
 mp_obj_list_optional_arg same list? 1
 mp_obj_list_optional_arg new list len 3
@@ -152,8 +160,8 @@ unlocked
 1
 2
 3
-KeyboardInterrupt: 
-KeyboardInterrupt: 
+KeyboardInterrupt: \$
+KeyboardInterrupt: \$
 10
 loop
 scheduled function

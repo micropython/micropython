@@ -3,10 +3,8 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-phyboard"
 
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-    } while (0);
+// Do not use WFE when waiting for an event.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS)
 
 // phyBOARD-RT1170 SoM onboard LEDs (red and green from phyCORE SoM)
 // Carrier board provides additional RGB LEDs via GPIO

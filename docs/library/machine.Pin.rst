@@ -244,6 +244,46 @@ The following methods are not part of the core Pin API and only implemented on c
 
    Availability: cc3200, esp32, esp8266, mimxrt, rp2, samd ports.
 
+Attributes
+----------
+
+.. data:: Pin.board
+
+   Contains pins named after the board's silkscreen or schematic labels.
+   For example ``Pin.board.X1`` or ``Pin.board.LED``.
+
+   Availability: alif, esp32, mimxrt, nrf, renesas-ra, rp2, samd, stm32 ports.
+
+.. data:: Pin.cpu
+
+   Contains the MCU pin names as given in the datasheet.
+   For example ``Pin.cpu.A0`` or ``Pin.cpu.GPIO0``.
+
+   Availability: alif, mimxrt, nrf, renesas-ra, rp2, samd, stm32 ports.
+
+Multiple board pins can refer to the same CPU pin. Not all ports provide
+both attributes, and the available names depend on the board definition. On
+the esp32 port only ``Pin.board`` is provided, and only for boards whose
+definition includes named pins (e.g. ``UM_TINYS3``, ``M5STACK_NANOC6``).
+Generic ESP32 boards do not define any board pin names.
+
+When constructing a ``Pin`` from a string name, the board pins are searched
+first, then the cpu pins::
+
+    from machine import Pin
+
+    # On a Pyboard v1.0, these all refer to the same physical pin:
+    p = Pin(Pin.board.X1, Pin.OUT)
+    p = Pin(Pin.cpu.A0, Pin.OUT)
+    p = Pin("X1", Pin.OUT)         # searches Pin.board, then Pin.cpu
+
+    # On a Raspberry Pi Pico W:
+    p = Pin(Pin.board.LED, Pin.OUT)
+    p = Pin("LED", Pin.OUT)
+
+Use ``help(Pin.board)`` or ``help(Pin.cpu)`` to list the pin names available
+on a particular board.
+
 Constants
 ---------
 
@@ -261,10 +301,21 @@ not all constants are available on all ports.
 
 .. data:: Pin.PULL_UP
           Pin.PULL_DOWN
-          Pin.PULL_HOLD
 
    Selects whether there is a pull up/down resistor.  Use the value
    ``None`` for no pull.
+
+   Some ports have a different constants set that can be used to select
+   hardware-specific behaviour:
+
+   - The esp8266 port does not have pull-down resistors on GPIO pins, hence
+     ``Pin.PULL_DOWN`` is not supported.
+   - The mimxrt port has several extra constants to enable different pull
+     modes: ``Pin.PULL_UP_22K`` enables a 22KΩ pull-up on the pin,
+     ``Pin.PULL_UP_47K`` enables a 47KΩ pull-up on the pin, and
+     ``Pin.PULL_HOLD`` that puts the pin into high-impedance mode.  The
+     ``Pin.PULL_UP`` and ``Pin.PULL_DOWN`` constants will use a 100KΩ internal
+     resistor.
 
 .. data:: Pin.DRIVE_0
           Pin.DRIVE_1

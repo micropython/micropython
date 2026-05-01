@@ -302,6 +302,16 @@ static const mp_rom_map_elem_t usb_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BUILTIN_CDC_MSC), MP_ROM_PTR(&mp_type_usb_device_builtin_default) },
     #endif
     #endif // !HAS_BUILTIN_DRIVERS
+
+    // xfer_cb result values
+    // These are a subset of tusb_xfer_result_t
+    { MP_ROM_QSTR(MP_QSTR_XFER_SUCCESS), MP_OBJ_NEW_SMALL_INT(XFER_RESULT_SUCCESS) },
+    { MP_ROM_QSTR(MP_QSTR_XFER_FAILED), MP_OBJ_NEW_SMALL_INT(XFER_RESULT_FAILED) },
+    { MP_ROM_QSTR(MP_QSTR_XFER_STALLED), MP_OBJ_NEW_SMALL_INT(XFER_RESULT_STALLED) },
+    // Some values of tusb_xfer_result_t are not exposed here:
+    // - XFER_RESULT_TIMEOUT only appears if you call the "sync" API subset, or in one
+    //   case from the samd host controller.
+    // - XFER_RESULT_INVALID only appears in the host controller APIs
 };
 static MP_DEFINE_CONST_DICT(usb_device_locals_dict, usb_device_locals_dict_table);
 

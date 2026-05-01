@@ -357,7 +357,7 @@ static void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     (void)kind;
     mp_obj_jmethod_t *self = MP_OBJ_TO_PTR(self_in);
     // Variable value printed as cast to int
-    mp_printf(print, "<jmethod '%s'>", qstr_str(self->name));
+    mp_printf(print, "<jmethod '%q'>", (qstr)self->name);
 }
 
 #define IMATCH(s, static) ((!strncmp(s, static, sizeof(static) - 1)) && (s += sizeof(static) - 1))

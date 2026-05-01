@@ -16,4 +16,4 @@ Type "help()" for more information.
 >>> t = 121
 >>> \.\+
 'foobar'
->>> 
+>>> \$

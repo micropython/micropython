@@ -50,6 +50,11 @@
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
 #define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
 
+// Port level Wait-for-Event macro.
+#ifndef MICROPY_INTERNAL_WFE
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) __WFE()
+#endif
+
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT   (500)
 
 #define MP_HAL_PIN_FMT                  "%q"
@@ -74,10 +79,6 @@
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
-
-// Define an alias for systick_ms, because the shared softtimer.c uses
-// the symbol uwTick for the systick ms counter.
-#define uwTick systick_ms
 
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   pin_find(o)
@@ -122,6 +123,9 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
 }
 
 static inline void mp_hal_delay_ms(mp_uint_t ms) {
+    // This function must run events at least once, so do that now.
+    mp_event_handle_nowait();
+
     uint64_t us = (uint64_t)ms * 1000;
     ticks_delay_us64(us);
 }

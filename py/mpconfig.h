@@ -39,7 +39,7 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 28
+#define MICROPY_VERSION_MINOR 29
 #define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 1
 
@@ -464,7 +464,11 @@ typedef uint64_t mp_uint_t;
 
 // Whether to emit ARMv7-M instruction support in thumb native code
 #ifndef MICROPY_EMIT_THUMB_ARMV7M
+#if defined(__ARM_ARCH_ISA_THUMB) && __ARM_ARCH_ISA_THUMB == 2
 #define MICROPY_EMIT_THUMB_ARMV7M (1)
+#else
+#define MICROPY_EMIT_THUMB_ARMV7M (0)
+#endif
 #endif
 
 // Whether to enable the thumb inline assembler
@@ -474,7 +478,11 @@ typedef uint64_t mp_uint_t;
 
 // Whether to enable float support in the Thumb2 inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB_FLOAT
+#if defined(__ARM_ARCH_ISA_THUMB) && __ARM_ARCH_ISA_THUMB == 2 && defined(__ARM_FP)
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
+#else
+#define MICROPY_EMIT_INLINE_THUMB_FLOAT (0)
+#endif
 #endif
 
 // Whether to emit ARM native code

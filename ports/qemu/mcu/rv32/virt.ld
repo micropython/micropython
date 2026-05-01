@@ -38,12 +38,14 @@ OUTPUT_FORMAT("elf32-littleriscv", "elf32-littleriscv", "elf32-littleriscv");
  * 0x8060_0000: .stack
  * 0x8060_0000: _sstack
  * 0x8060_FFFF: _estack
+ * 0x8061_0000: .romfs
  */
 MEMORY
 {
-    ROM   (xr)  : ORIGIN = 0x80000000,                LENGTH = 4M
-    RAM   (xrw) : ORIGIN = ORIGIN(ROM) + LENGTH(ROM), LENGTH = 2M
-    STACK (rw)  : ORIGIN = ORIGIN(RAM) + LENGTH(RAM), LENGTH = 64K
+    ROM   (xr)  : ORIGIN = 0x80000000,                    LENGTH = 4M
+    RAM   (xrw) : ORIGIN = ORIGIN(ROM) + LENGTH(ROM),     LENGTH = 2M
+    STACK (rw)  : ORIGIN = ORIGIN(RAM) + LENGTH(RAM),     LENGTH = 64K
+    ROMFS (xr)  : ORIGIN = ORIGIN(STACK) + LENGTH(STACK), LENGTH = 4M
 }
 
 SECTIONS

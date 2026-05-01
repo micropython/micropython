@@ -475,6 +475,10 @@ class PinGenerator:
     def generate_extra_files(self):
         pass
 
+    def print_pin_source(self, out_source):
+        for pin in self.available_pins():
+            pin.print_source(out_source)
+
     def main(self):
         parser = argparse.ArgumentParser(description="Generate board specific pin file")
         parser.add_argument("--board-csv")
@@ -495,8 +499,7 @@ class PinGenerator:
                 self.load_inputs(out_source)
 
                 # Allow a port to print arbitrary per-pin content.
-                for pin in self.available_pins():
-                    pin.print_source(out_source)
+                self.print_pin_source(out_source)
 
                 # Print the tables and dictionaries.
                 self.print_source(out_source)

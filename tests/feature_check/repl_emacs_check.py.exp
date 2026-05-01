@@ -4,4 +4,4 @@ Type "help()" for more information.
 >>> t = \.\+
 >>> t == 2
 True
->>> 
+>>> \$

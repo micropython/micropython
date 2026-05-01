@@ -24,10 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/mphal.h"
 #include "systick.h"
-
 #include "pendsv.h"
 #include "shared/runtime/softtimer.h"
 
@@ -36,9 +33,7 @@ volatile uint32_t systick_ms = 0;
 systick_dispatch_t systick_dispatch_table[SYSTICK_DISPATCH_NUM_SLOTS];
 
 void SysTick_Handler(void) {
-    // Instead of calling HAL_IncTick we do the increment here of the counter.
-    // This is purely for efficiency, since SysTick is called 1000 times per
-    // second at the highest interrupt priority.
+    // Increment the systick millisecond counter.
     uint32_t uw_tick = systick_ms + 1;
     systick_ms = uw_tick;
 
@@ -50,18 +45,5 @@ void SysTick_Handler(void) {
 
     if (soft_timer_next == uw_tick) {
         pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
-    }
-}
-
-bool systick_has_passed(uint32_t start_tick, uint32_t delay_ms) {
-    return systick_ms - start_tick >= delay_ms;
-}
-
-// waits until at least delay_ms milliseconds have passed from the sampling of
-// startTick. Handles overflow properly. Assumes stc was taken from
-// HAL_GetTick() some time before calling this function.
-void systick_wait_at_least(uint32_t start_tick, uint32_t delay_ms) {
-    while (!systick_has_passed(start_tick, delay_ms)) {
-        __WFI(); // enter sleep mode, waiting for interrupt
     }
 }

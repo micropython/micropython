@@ -184,7 +184,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
-        mp_print_str(print, qstr_str(o->base.type->name));
+        mp_print_str(print, mp_obj_get_type_str(o_in));
     }
 
     if (k == PRINT_EXC) {

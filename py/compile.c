@@ -2421,6 +2421,14 @@ static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                     compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("* arg after **"));
                     return;
                 }
+                if (n_keyword) {
+                    // Support for *arg after kwarg is a CPython feature omitted
+                    // from MicroPython in order to reduce code size. See
+                    // https://github.com/micropython/micropython/issues/11439 for
+                    // more info.
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("* arg after kwarg"));
+                    return;
+                }
                 #if MICROPY_DYNAMIC_COMPILER
                 if (i >= (size_t)mp_dynamic_compiler.small_int_bits - 1)
                 #else

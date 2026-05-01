@@ -364,24 +364,15 @@ static int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     return 0;
 }
 
-typedef struct _cc_name_t { byte cc;
-                            byte name[2];
-} cc_name_t;
-static const cc_name_t cc_name_table[] = {
-    { ASM_THUMB_CC_EQ, { 'e', 'q' }},
-    { ASM_THUMB_CC_NE, { 'n', 'e' }},
-    { ASM_THUMB_CC_CS, { 'c', 's' }},
-    { ASM_THUMB_CC_CC, { 'c', 'c' }},
-    { ASM_THUMB_CC_MI, { 'm', 'i' }},
-    { ASM_THUMB_CC_PL, { 'p', 'l' }},
-    { ASM_THUMB_CC_VS, { 'v', 's' }},
-    { ASM_THUMB_CC_VC, { 'v', 'c' }},
-    { ASM_THUMB_CC_HI, { 'h', 'i' }},
-    { ASM_THUMB_CC_LS, { 'l', 's' }},
-    { ASM_THUMB_CC_GE, { 'g', 'e' }},
-    { ASM_THUMB_CC_LT, { 'l', 't' }},
-    { ASM_THUMB_CC_GT, { 'g', 't' }},
-    { ASM_THUMB_CC_LE, { 'l', 'e' }},
+#define ENCODE_CC(c1, c2) (((uint16_t)(c1) << 8) | (uint16_t)(c2))
+
+// Positions in the table match the condition code value.
+static const uint16_t CONDITION_CODES[] = {
+    ENCODE_CC('e', 'q'), ENCODE_CC('n', 'e'), ENCODE_CC('c', 's'),
+    ENCODE_CC('c', 'c'), ENCODE_CC('m', 'i'), ENCODE_CC('p', 'l'),
+    ENCODE_CC('v', 's'), ENCODE_CC('v', 'c'), ENCODE_CC('h', 'i'),
+    ENCODE_CC('l', 's'), ENCODE_CC('g', 'e'), ENCODE_CC('l', 't'),
+    ENCODE_CC('g', 't'), ENCODE_CC('l', 'e'),
 };
 
 typedef struct _format_4_op_t { byte op;
@@ -574,9 +565,11 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                                         || (op_len == 5 && op_str[3] == '_'
                                             && (op_str[4] == 'n' || (ARMV7M && op_str[4] == 'w'))))) {
             mp_uint_t cc = -1;
-            for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
-                if (op_str[1] == cc_name_table[i].name[0] && op_str[2] == cc_name_table[i].name[1]) {
-                    cc = cc_name_table[i].cc;
+            uint16_t condition_code = ENCODE_CC(op_str[1], op_str[2]);
+            for (size_t i = 0; i < MP_ARRAY_SIZE(CONDITION_CODES); ++i) {
+                if (condition_code == CONDITION_CODES[i]) {
+                    cc = i;
+                    break;
                 }
             }
             if (cc == (mp_uint_t)-1) {
@@ -592,12 +585,14 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             }
         } else if (ARMV7M && op_str[0] == 'i' && op_str[1] == 't') {
             const char *arg_str = get_arg_str(pn_args[0]);
+            if (strlen(arg_str) != 2) {
+                goto unknown_op;
+            }
             mp_uint_t cc = -1;
-            for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
-                if (arg_str[0] == cc_name_table[i].name[0]
-                    && arg_str[1] == cc_name_table[i].name[1]
-                    && arg_str[2] == '\0') {
-                    cc = cc_name_table[i].cc;
+            uint16_t condition_code = ENCODE_CC(arg_str[0], arg_str[1]);
+            for (size_t i = 0; i < MP_ARRAY_SIZE(CONDITION_CODES); ++i) {
+                if (condition_code == CONDITION_CODES[i]) {
+                    cc = i;
                     break;
                 }
             }

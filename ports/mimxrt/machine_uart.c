@@ -527,7 +527,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
                     return received;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         // Get as many bytes as possible to meet the need.
         nget = avail < (size - received) ? avail : size - received;
@@ -558,7 +558,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
             *errcode = MP_ETIMEDOUT;
             return MP_STREAM_ERROR;
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 
     // Check if the first part has to be sent semi-blocking.
@@ -581,7 +581,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
                     return size - self->handle.txDataSize;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         remaining = self->txbuf_len;
     } else {
@@ -627,7 +627,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
             if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         } while (ticks_us64() < timeout);
 
         *errcode = MP_ETIMEDOUT;

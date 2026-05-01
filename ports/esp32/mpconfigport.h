@@ -195,6 +195,13 @@
 #ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #endif
+#ifndef MICROPY_HW_SDMMC_DEFAULT_SLOT
+#if CONFIG_IDF_TARGET_ESP32P4
+#define MICROPY_HW_SDMMC_DEFAULT_SLOT       (0)
+#else
+#define MICROPY_HW_SDMMC_DEFAULT_SLOT       (1)
+#endif
+#endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (esp_rom_get_cpu_ticks_per_us() * 1000000 / 200) // roughly
 #ifndef MICROPY_HW_ESP_NEW_I2C_DRIVER
