@@ -157,7 +157,6 @@ uint32_t trng_random_u32(void);
 #endif
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
-#define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_NETWORK_PPP_LWIP
 #define MICROPY_PY_NETWORK_PPP_LWIP         (MICROPY_PY_LWIP)
 #endif

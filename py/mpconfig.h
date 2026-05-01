@@ -2118,6 +2118,16 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (2)
 #endif
 
+// Whether to enable lwIP bindings to be used as the implementation of the `socket` module
+#ifndef MICROPY_PY_LWIP
+#define MICROPY_PY_LWIP (0)
+#endif
+
+// Whether to support raw sockets via the `socket.SOCK_RAW` constant
+#ifndef MICROPY_PY_LWIP_SOCK_RAW
+#define MICROPY_PY_LWIP_SOCK_RAW (MICROPY_PY_LWIP)
+#endif
+
 #ifndef MICROPY_PY_SSL
 #define MICROPY_PY_SSL (0)
 #endif
