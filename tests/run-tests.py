@@ -155,6 +155,18 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "samd/armv6m": (
+        # Fails timing bounds.
+        "extmod/time_res.py",
+        # Require more detailed error messages.
+        "micropython/emg_exc.py",
+        "micropython/heapalloc_exc_compressed.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        "micropython/native_with.py",
+        "micropython/opt_level_lineno.py",
+        "micropython/viper_with.py",
+        "misc/print_exception.py",
+    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
@@ -303,6 +315,14 @@ tests_requiring_target_wiring = (
     "extmod_hardware/machine_uart_irq_rxidle.py",
 )
 
+# Tests that require at least level MICROPY_ERROR_REPORTING_NORMAL to work.
+tests_requiring_error_reporting_normal = (
+    "micropython/heapalloc_exc_compressed.py",
+    "micropython/heapalloc_exc_compressed_emg_exc.py",
+    "micropython/opt_level_lineno.py",
+    "misc/print_exception.py",
+)
+
 
 # unescape wanted regex chars and escape unwanted ones
 def convert_regex_escapes(line):
@@ -352,7 +372,7 @@ def detect_test_platform(pyb, args):
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch, arch_flags, build, thread, float_prec, unicode = (
+    platform, arch, arch_flags, build, thread, float_prec, unicode, error_reporting_normal = (
         str(output, "ascii").strip().split()
     )
     if arch == "None":
@@ -362,6 +382,7 @@ def detect_test_platform(pyb, args):
         thread = None
     float_prec = int(float_prec)
     unicode = unicode == "True"
+    error_reporting_normal = error_reporting_normal == "True"
     if arch == "rv32imc":
         arch_flags = map_rv32_arch_flags(int(arch_flags))
     else:
@@ -379,6 +400,7 @@ def detect_test_platform(pyb, args):
     args.thread = thread
     args.float_prec = float_prec
     args.unicode = unicode
+    args.error_reporting_normal = error_reporting_normal
 
     # Print the detected information about the target.
     print("platform={}".format(platform), end="")
@@ -825,6 +847,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if not args.unicode:
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
 
+    if not args.error_reporting_normal:
+        skip_tests.update(tests_requiring_error_reporting_normal)
+
     if skip_slice:
         skip_tests.update(tests_requiring_slice)
 
@@ -866,6 +891,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.arch is not None:
+        skip_tests.update(platform_tests_to_skip.get(args.platform + "/" + args.arch, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":

@@ -9,7 +9,7 @@ import sys
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {"tx": 4, "rx": 5}
 
-if "ESP32C" in sys.implementation._machine:
+if "ESP32C" in sys.implementation._machine or "ESP32-C" in sys.implementation._machine:
     spi_standalone_args_list = [(1,)]
 else:
     spi_standalone_args_list = [(1,), (2,)]

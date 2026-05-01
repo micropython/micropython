@@ -16,10 +16,12 @@ try:
 except TypeError:
     print("TypeError")
 
+# This may or may not raise an exception, depending on the socket implementation.
+# The test is here for coverage.
 try:
     s = socket.socket(socket.AF_INET, 123456)
 except OSError:
-    print("OSError")
+    pass
 
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_RAW, None)
