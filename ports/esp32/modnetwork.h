@@ -37,7 +37,7 @@
 #endif
 
 // PHY_GENERIC support requires newer IDF version
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0) && CONFIG_IDF_TARGET_ESP32
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
 #define PHY_GENERIC_ENABLED (1)
 #else
 #define PHY_GENERIC_ENABLED (0)
