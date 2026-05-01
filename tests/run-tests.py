@@ -270,6 +270,7 @@ tests_requiring_slice = (
     "extmod/time_mktime.py",
     "extmod/time_res.py",
     "extmod/tls_sslcontext_ciphers.py",
+    "extmod/vfs_blockdev_invalid2.py",
     "extmod/vfs_fat_fileio1.py",
     "extmod/vfs_fat_finaliser.py",
     "extmod/vfs_fat_more.py",

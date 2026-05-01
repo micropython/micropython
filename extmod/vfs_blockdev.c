@@ -49,7 +49,11 @@ void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
 // Helper function to minimise code size of read/write functions
 // note the n_args argument is moved to the end for further code size reduction (args keep same position in caller and callee).
 static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t block_off, size_t len, void *buf, size_t n_args) {
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW
+    mp_obj_array_t ar = {{&mp_type_memoryview}, 'B' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, len, buf};
+    #else
     mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, len, buf};
+    #endif
     args[2] = MP_OBJ_NEW_SMALL_INT(block_num);
     args[3] = MP_OBJ_FROM_PTR(&ar);
     args[4] = MP_OBJ_NEW_SMALL_INT(block_off); // ignored for n_args == 2
