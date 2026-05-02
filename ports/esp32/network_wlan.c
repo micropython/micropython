@@ -41,6 +41,7 @@
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
+#include "esp_err.h"
 #include "esp_log.h"
 #include "esp_psram.h"
 #if !CONFIG_ESP_HOSTED_ENABLED
@@ -174,6 +175,7 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
 
         case WIFI_EVENT_AP_START:
             wlan_ap_obj.active = true;
+            esp_network_reapply_lan_ap_napt();
             break;
 
         case WIFI_EVENT_AP_STOP:
@@ -215,12 +217,51 @@ static void require_if(mp_obj_t wlan_if, int if_no) {
     }
 }
 
+#if MICROPY_PY_NETWORK_WLAN && CONFIG_LWIP_IPV4_NAPT
+static bool esp_network_stop_ap_dhcps(void) {
+    esp_err_t err = esp_netif_dhcps_stop(wlan_ap_obj.netif);
+    return err == ESP_OK || err == ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED;
+}
+
+static void esp_network_start_ap_dhcps(void) {
+    (void)esp_netif_dhcps_start(wlan_ap_obj.netif);
+}
+
+void esp_network_enable_ap_napt(esp_netif_t *uplink_netif) {
+    if (uplink_netif == NULL || wlan_ap_obj.netif == NULL || !wlan_ap_obj.active) {
+        return;
+    }
+
+    if (!esp_netif_is_netif_up(wlan_ap_obj.netif)) {
+        return;
+    }
+
+    (void)esp_netif_set_default_netif(uplink_netif);
+
+    esp_netif_dns_info_t dns;
+    if (esp_netif_get_dns_info(uplink_netif, ESP_NETIF_DNS_MAIN, &dns) == ESP_OK) {
+        uint8_t dhcps_offer_dns = 0x02;
+        if (esp_network_stop_ap_dhcps()) {
+            (void)esp_netif_dhcps_option(
+                wlan_ap_obj.netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER,
+                &dhcps_offer_dns, sizeof(dhcps_offer_dns));
+            (void)esp_netif_set_dns_info(wlan_ap_obj.netif, ESP_NETIF_DNS_MAIN, &dns);
+            esp_network_start_ap_dhcps();
+        }
+    }
+
+    (void)esp_netif_napt_disable(wlan_ap_obj.netif);
+    (void)esp_netif_napt_enable(wlan_ap_obj.netif);
+}
+#else
+void esp_network_enable_ap_napt(esp_netif_t *uplink_netif) {
+    (void)uplink_netif;
+}
+#endif
+
 void esp_initialise_wifi(void) {
     static int wifi_initialized = 0;
     if (!wifi_initialized) {
-        esp_exceptions(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, network_wlan_wifi_event_handler, NULL, NULL));
-        esp_exceptions(esp_event_handler_instance_register(IP_EVENT, ESP_EVENT_ANY_ID, network_wlan_ip_event_handler, NULL, NULL));
-
         wlan_sta_obj.base.type = &esp_network_wlan_type;
         wlan_sta_obj.if_id = ESP_IF_WIFI_STA;
         wlan_sta_obj.netif = esp_netif_create_default_wifi_sta();
@@ -230,6 +271,9 @@ void esp_initialise_wifi(void) {
         wlan_ap_obj.if_id = ESP_IF_WIFI_AP;
         wlan_ap_obj.netif = esp_netif_create_default_wifi_ap();
         wlan_ap_obj.active = false;
+
+        esp_exceptions(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, network_wlan_wifi_event_handler, NULL, NULL));
+        esp_exceptions(esp_event_handler_instance_register(IP_EVENT, ESP_EVENT_ANY_ID, network_wlan_ip_event_handler, NULL, NULL));
 
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         #if CONFIG_SPIRAM_IGNORE_NOTFOUND
@@ -304,6 +348,9 @@ static mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
         // Wait for the interface to be in the correct state.
         while (self->active != active) {
             MICROPY_EVENT_POLL_HOOK;
+        }
+        if (active && self->if_id == ESP_IF_WIFI_AP) {
+            esp_network_reapply_lan_ap_napt();
         }
     }
 
