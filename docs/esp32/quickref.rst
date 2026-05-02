@@ -195,6 +195,15 @@ These are working configurations for LAN interfaces of some popular ESP32 boards
     lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
                       phy_type=network.PHY_IP101, phy_addr=1)
 
+Custom builds can also enable LAN uplink forwarding to the WiFi access-point
+interface. On such builds, once the LAN interface obtains an IPv4 address,
+MicroPython configures the AP DHCP server to advertise the LAN DNS server and
+enables IPv4 NAPT on the AP interface.
+
+For example, to enable this on ``ESP32_GENERIC`` builds::
+
+    make BOARD=ESP32_GENERIC CMAKE_ARGS='-DMICROPY_PY_ESP32_LWIP_NAT=1'
+
 
 .. _esp32_spi_ethernet:
 

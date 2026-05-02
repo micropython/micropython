@@ -1,0 +1,4 @@
+# MicroPython on ESP32, ESP IDF configuration for LAN forwarding/NAT
+
+CONFIG_LWIP_IP_FORWARD=y
+CONFIG_LWIP_IPV4_NAPT=y
