@@ -161,7 +161,7 @@ int16_t machine_adc_value_read(machine_adc_obj_t *adc_obj) {
 
     nrfx_adc_sample_convert(&channel_config, &value);
     #else // NRF52
-    nrf_saadc_value_t value = 0;
+    int16_t value = 0;
 
     nrfx_saadc_simple_mode_set((1 << adc_obj->id), NRF_SAADC_RESOLUTION_8BIT, NRF_SAADC_INPUT_DISABLED, NULL);
     nrfx_saadc_buffer_set(&value, 1);
@@ -248,7 +248,7 @@ mp_obj_t machine_adc_battery_level(void) {
 
     nrfx_adc_sample_convert(&channel_config, &value);
     #else // NRF52
-    nrf_saadc_value_t value = 0;
+    int16_t value = 0;
 
     const nrfx_saadc_channel_t config = {                                                           \
         .channel_config =

@@ -34,15 +34,92 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/gc.h"
+#include "shared/runtime/mpirq.h"
 #include "pin.h"
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
+
+#if defined(NRF9160_XXAA)
+static const nrfx_gpiote_t gpiote_inst = NRFX_GPIOTE_INSTANCE(1);
+#else
+static const nrfx_gpiote_t gpiote_inst = NRFX_GPIOTE_INSTANCE(0);
+#endif
 
 #if defined(NRF52840_XXAA)
 #define NUM_OF_PINS 48
 #else
 #define NUM_OF_PINS 32
 #endif
+
+#if MICROPY_ENABLE_SCHEDULER
+typedef struct _machine_pin_irq_obj_t {
+    mp_irq_obj_t base;
+    uint32_t flags;
+    uint32_t trigger;
+} machine_pin_irq_obj_t;
+
+static const mp_irq_methods_t machine_pin_irq_methods;
+#endif
+
+static uint8_t pin_gpiote_ch[NUM_OF_PINS];
+
+#define PIN_GPIOTE_CH_NONE UINT8_MAX
+
+static void pin_gpiote_release(nrfx_gpiote_pin_t pin) {
+    nrfx_gpiote_pin_uninit(&gpiote_inst, pin);
+    if (pin_gpiote_ch[pin] != PIN_GPIOTE_CH_NONE) {
+        nrfx_gpiote_channel_free(&gpiote_inst, pin_gpiote_ch[pin]);
+        pin_gpiote_ch[pin] = PIN_GPIOTE_CH_NONE;
+    }
+}
+
+static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrfx_gpiote_trigger_t action, void *p_context);
+
+static mp_uint_t machine_pin_irq_trigger_set(nrfx_gpiote_pin_t pin, mp_uint_t new_trigger) {
+    pin_gpiote_release(pin);
+
+    if (new_trigger) {
+        nrfx_gpiote_trigger_t trigger = NRFX_GPIOTE_TRIGGER_TOGGLE;
+        if (new_trigger == NRF_GPIOTE_POLARITY_LOTOHI) {
+            trigger = NRFX_GPIOTE_TRIGGER_LOTOHI;
+        } else if (new_trigger == NRF_GPIOTE_POLARITY_HITOLO) {
+            trigger = NRFX_GPIOTE_TRIGGER_HITOLO;
+        }
+
+        uint8_t gpiote_ch;
+        nrfx_err_t err = nrfx_gpiote_channel_alloc(&gpiote_inst, &gpiote_ch);
+
+        nrfx_gpiote_trigger_config_t trigger_config = {
+            .trigger = trigger,
+            .p_in_channel = (err == NRFX_SUCCESS) ? &gpiote_ch : NULL,
+        };
+        nrfx_gpiote_handler_config_t handler_config = {
+            .handler = pin_common_irq_handler,
+            .p_context = NULL,
+        };
+        nrfx_gpiote_input_pin_config_t input_config = {
+            .p_pull_config = NULL,
+            .p_trigger_config = &trigger_config,
+            .p_handler_config = &handler_config,
+        };
+
+        nrfx_err_t cfg_err = nrfx_gpiote_input_configure(&gpiote_inst, pin, &input_config);
+        if (cfg_err != NRFX_SUCCESS) {
+            if (err == NRFX_SUCCESS) {
+                nrfx_gpiote_channel_free(&gpiote_inst, gpiote_ch);
+            }
+            mp_raise_ValueError(MP_ERROR_TEXT("pin IRQ config failed"));
+        }
+
+        if (err == NRFX_SUCCESS) {
+            pin_gpiote_ch[pin] = gpiote_ch;
+        }
+
+        nrfx_gpiote_trigger_enable(&gpiote_inst, pin, true);
+    }
+
+    return 0;
+}
 
 extern const pin_obj_t machine_board_pin_obj[];
 extern const uint8_t machine_pin_num_of_board_pins;
@@ -116,13 +193,24 @@ static bool pin_class_debug;
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
     MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
+    #if MICROPY_ENABLE_SCHEDULER
+    memset(MP_STATE_PORT(machine_pin_irq_obj), 0, sizeof(MP_STATE_PORT(machine_pin_irq_obj)));
+    #else
     for (int i = 0; i < NUM_OF_PINS; i++) {
         MP_STATE_PORT(pin_irq_handlers)[i] = mp_const_none;
     }
-    // Initialize GPIOTE if not done yet.
-    if (!nrfx_gpiote_is_init()) {
-        nrfx_gpiote_init(NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY);
+    #endif
+    if (!nrfx_gpiote_init_check(&gpiote_inst)) {
+        nrfx_gpiote_init(&gpiote_inst, NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY);
+    } else {
+        // Soft reset: free GPIOTE channels from the previous cycle.
+        for (int i = 0; i < NUM_OF_PINS; i++) {
+            if (pin_gpiote_ch[i] != PIN_GPIOTE_CH_NONE) {
+                pin_gpiote_release(i);
+            }
+        }
     }
+    memset(pin_gpiote_ch, PIN_GPIOTE_CH_NONE, sizeof(pin_gpiote_ch));
 
     #if PIN_DEBUG
     pin_class_debug = false;
@@ -494,77 +582,119 @@ static mp_obj_t pin_af(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
 
-static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
+#if MICROPY_ENABLE_SCHEDULER
+
+static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrfx_gpiote_trigger_t action, void *p_context) {
+    (void)p_context;
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[pin]);
+    if (irq != NULL) {
+        irq->flags = action;
+        mp_irq_handler(&irq->base);
+    }
+}
+
+static machine_pin_irq_obj_t *machine_pin_get_irq(nrfx_gpiote_pin_t pin) {
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[pin]);
+    if (irq == NULL) {
+        irq = m_new_obj(machine_pin_irq_obj_t);
+        irq->base.base.type = &mp_irq_type;
+        irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
+        mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
+        irq->base.parent = (mp_obj_t)pin_find(pin_number);
+        irq->base.handler = mp_const_none;
+        irq->base.ishard = false;
+        irq->flags = 0;
+        irq->trigger = 0;
+        MP_STATE_PORT(machine_pin_irq_obj[pin]) = irq;
+    }
+    return irq;
+}
+
+static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger, ARG_hard };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = NRF_GPIOTE_POLARITY_LOTOHI | NRF_GPIOTE_POLARITY_HITOLO} },
+        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+    };
+    pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    machine_pin_irq_obj_t *irq = machine_pin_get_irq(self->pin);
+
+    if (n_args > 1 || kw_args->used != 0) {
+        mp_obj_t handler = args[ARG_handler].u_obj;
+        mp_uint_t trigger = args[ARG_trigger].u_int;
+        bool hard = args[ARG_hard].u_bool;
+
+        irq->base.handler = handler;
+        irq->base.ishard = hard;
+        irq->flags = 0;
+        irq->trigger = trigger;
+
+        if (handler != mp_const_none) {
+            machine_pin_irq_trigger_set(self->pin, trigger);
+        } else {
+            machine_pin_irq_trigger_set(self->pin, 0);
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(irq);
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
+
+#else // !MICROPY_ENABLE_SCHEDULER
+// Note: this path is dead code on the nrf port (MICROPY_ENABLE_SCHEDULER is
+// always 1). It is retained for custom board configurations that may disable
+// the scheduler. Limitations vs the scheduler-enabled path:
+// - The "hard" parameter is accepted but ignored; handler always runs in ISR.
+// - Returns mp_const_none instead of an mp_irq_obj_t.
+
+static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrfx_gpiote_trigger_t action, void *p_context) {
+    (void)p_context;
     mp_obj_t pin_handler = MP_STATE_PORT(pin_irq_handlers)[pin];
     mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
     const pin_obj_t *pin_obj = pin_find(pin_number);
 
     if (pin_handler != mp_const_none) {
-        #if MICROPY_ENABLE_SCHEDULER
-        mp_sched_lock();
-        #endif
-        // When executing code within a handler we must lock the GC to prevent
-        // any memory allocations.  We must also catch any exceptions.
         gc_lock();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
             nlr_pop();
         } else {
-            // Uncaught exception; disable the callback so it doesn't run again.
             MP_STATE_PORT(pin_irq_handlers)[pin] = mp_const_none;
-            nrfx_gpiote_in_uninit(pin);
+            pin_gpiote_release(pin);
             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in interrupt handler for Pin('%q')\n", pin_obj->name);
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
         gc_unlock();
-        #if MICROPY_ENABLE_SCHEDULER
-        mp_sched_unlock();
-        #endif
     }
 }
 
 static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {ARG_handler, ARG_trigger, ARG_wake};
+    enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler, MP_ARG_OBJ | MP_ARG_REQUIRED,  {.u_obj = mp_const_none} },
-        { MP_QSTR_trigger, MP_ARG_INT,  {.u_int = NRF_GPIOTE_POLARITY_LOTOHI | NRF_GPIOTE_POLARITY_HITOLO} },
-        { MP_QSTR_wake,    MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_handler, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = mp_const_none} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = NRF_GPIOTE_POLARITY_LOTOHI | NRF_GPIOTE_POLARITY_HITOLO} },
+        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
     };
     pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     nrfx_gpiote_pin_t pin = self->pin;
-
-    if (args[ARG_handler].u_obj != mp_const_none) {
-        nrfx_gpiote_in_config_t config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-        if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_LOTOHI) {
-            config.sense = NRF_GPIOTE_POLARITY_LOTOHI;
-        } else if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_HITOLO) {
-            config.sense = NRF_GPIOTE_POLARITY_HITOLO;
-        }
-        config.pull = NRF_GPIO_PIN_PULLUP;
-        config.skip_gpio_setup = true;
-
-        nrfx_err_t err_code = nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
-        if (err_code == NRFX_ERROR_INVALID_STATE) {
-            // Re-init if already configured.
-            nrfx_gpiote_in_uninit(pin);
-            nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
-        }
-    } else {
-        nrfx_gpiote_in_uninit(pin);
-    }
+    mp_uint_t trigger = args[ARG_handler].u_obj != mp_const_none ? args[ARG_trigger].u_int : 0;
+    machine_pin_irq_trigger_set(pin, trigger);
 
     MP_STATE_PORT(pin_irq_handlers)[pin] = args[ARG_handler].u_obj;
 
-    nrfx_gpiote_in_event_enable(pin, true);
-
-    // return the irq object
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
+
+#endif // MICROPY_ENABLE_SCHEDULER
 
 static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
@@ -708,6 +838,36 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &pin_af_locals_dict
     );
 
+#if MICROPY_ENABLE_SCHEDULER
+static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->pin]);
+    irq->flags = 0;
+    irq->trigger = new_trigger;
+    return machine_pin_irq_trigger_set(self->pin, new_trigger);
+}
+
+static mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->pin]);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return irq->flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return irq->trigger;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t machine_pin_irq_methods = {
+    .trigger = machine_pin_irq_trigger,
+    .info = machine_pin_irq_info,
+};
+#endif
+
 MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_mapper);
 MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_map_dict);
+#if MICROPY_ENABLE_SCHEDULER
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[NUM_OF_PINS]);
+#else
 MP_REGISTER_ROOT_POINTER(mp_obj_t pin_irq_handlers[NUM_OF_PINS]);
+#endif
