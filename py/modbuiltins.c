@@ -220,12 +220,20 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hex_obj, mp_builtin_hex);
 #endif
 
 static mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
+    const char *prompt_str = "";
+    vstr_t prompt;
     if (n_args == 1) {
-        mp_obj_print(args[0], PRINT_STR);
+        vstr_init(&prompt, 0);
+        mp_print_t print = { &prompt, (mp_print_strn_t)vstr_add_strn };
+        mp_obj_print_helper(&print, args[0], PRINT_STR);
+        prompt_str = vstr_null_terminated_str(&prompt);
     }
     vstr_t line;
     vstr_init(&line, 16);
-    int ret = mp_hal_readline(&line, "");
+    int ret = mp_hal_readline(&line, prompt_str);
+    if (n_args == 1) {
+        vstr_clear(&prompt);
+    }
     if (ret == CHAR_CTRL_C) {
         mp_raise_type(&mp_type_KeyboardInterrupt);
     }
