@@ -96,6 +96,11 @@ void board_startup(void) {
 
 void board_enter_bootloader(void) {
     *((uint32_t *)OMV_BOOT_MAGIC_ADDR) = OMV_BOOT_MAGIC_VALUE;
+
+    // Clear TRCENA (if it was enabled for DWT CYCCNT) before
+    // calling NVIC_SystemReset(), otherwise it spins forever.
+    CoreDebug->DEMCR &= ~(CoreDebug_DEMCR_TRCENA_Msk);
+
     NVIC_SystemReset();
 }
 
