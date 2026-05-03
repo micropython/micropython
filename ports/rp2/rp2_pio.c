@@ -230,7 +230,7 @@ typedef struct _asm_pio_config_t {
 
 static void asm_pio_override_shiftctrl(mp_obj_t arg, uint32_t bits, uint32_t lsb, pio_sm_config *config) {
     if (arg != mp_const_none) {
-        config->shiftctrl = (config->shiftctrl & ~bits) | (mp_obj_get_int(arg) << lsb);
+        config->shiftctrl = (config->shiftctrl & ~bits) | ((mp_obj_get_int(arg) << lsb) & bits);
     }
 }
 
@@ -487,6 +487,46 @@ static mp_obj_t rp2_pio_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(rp2_pio_irq_obj, 1, rp2_pio_irq);
 
+// PIO.version()
+static mp_obj_t rp2_pio_version(mp_obj_t self_in) {
+    #if PICO_RP2350
+    rp2_pio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT((self->pio->dbg_cfginfo >> PIO_DBG_CFGINFO_VERSION_LSB) & 0xf);
+    #else
+    (void)self_in;
+    return MP_OBJ_NEW_SMALL_INT(0);
+    #endif
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(rp2_pio_version_obj, rp2_pio_version);
+
+#if PICO_RP2350
+// PIO.sm_mask_enable(sm_mask, next_mask=0, prev_mask=0)
+// Atomically enable SMs on this PIO and neighbouring PIOs via CTRL NEXT/PREV_PIO_MASK bits.
+static mp_obj_t rp2_pio_sm_mask_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_sm_mask, ARG_next_mask, ARG_prev_mask };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_sm_mask, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_next_mask, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_prev_mask, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+    rp2_pio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint32_t ctrl = args[ARG_sm_mask].u_int & 0xf;
+    uint32_t next_mask = args[ARG_next_mask].u_int & 0xf;
+    uint32_t prev_mask = args[ARG_prev_mask].u_int & 0xf;
+    if (next_mask || prev_mask) {
+        ctrl |= (next_mask << PIO_CTRL_NEXT_PIO_MASK_LSB)
+            | (prev_mask << PIO_CTRL_PREV_PIO_MASK_LSB)
+            | PIO_CTRL_NEXTPREV_SM_ENABLE_BITS;
+    }
+    self->pio->ctrl = ctrl;
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(rp2_pio_sm_mask_enable_obj, 1, rp2_pio_sm_mask_enable);
+#endif
+
 static const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
     #if PICO_PIO_USE_GPIO_BASE
     { MP_ROM_QSTR(MP_QSTR_gpio_base), MP_ROM_PTR(&rp2_pio_gpio_base_obj) },
@@ -495,6 +535,10 @@ static const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_remove_program), MP_ROM_PTR(&rp2_pio_remove_program_obj) },
     { MP_ROM_QSTR(MP_QSTR_state_machine), MP_ROM_PTR(&rp2_pio_state_machine_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&rp2_pio_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_version), MP_ROM_PTR(&rp2_pio_version_obj) },
+    #if PICO_RP2350
+    { MP_ROM_QSTR(MP_QSTR_sm_mask_enable), MP_ROM_PTR(&rp2_pio_sm_mask_enable_obj) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_IN_LOW), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_IN_HIGH), MP_ROM_INT(1) },
@@ -507,6 +551,10 @@ static const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_JOIN_NONE), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_JOIN_TX), MP_ROM_INT(1) },
     { MP_ROM_QSTR(MP_QSTR_JOIN_RX), MP_ROM_INT(2) },
+    #if PICO_RP2350
+    { MP_ROM_QSTR(MP_QSTR_JOIN_RX_GET), MP_ROM_INT(4) },
+    { MP_ROM_QSTR(MP_QSTR_JOIN_RX_PUT), MP_ROM_INT(8) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM0), MP_ROM_INT(0x100) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM1), MP_ROM_INT(0x200) },
@@ -618,7 +666,10 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     enum {
         ARG_prog, ARG_freq,
         ARG_in_base, ARG_out_base, ARG_set_base, ARG_jmp_pin, ARG_sideset_base,
-        ARG_in_shiftdir, ARG_out_shiftdir, ARG_push_thresh, ARG_pull_thresh
+        ARG_in_shiftdir, ARG_out_shiftdir, ARG_push_thresh, ARG_pull_thresh,
+        #if PICO_RP2350
+        ARG_in_count,
+        #endif
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_prog, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -632,6 +683,9 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
         { MP_QSTR_out_shiftdir, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_push_thresh, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_pull_thresh, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        #if PICO_RP2350
+        { MP_QSTR_in_count, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        #endif
     };
 
     // Parse the arguments.
@@ -728,6 +782,9 @@ static mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     asm_pio_override_shiftctrl(args[ARG_out_shiftdir].u_obj, PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_BITS, PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB, &config);
     asm_pio_override_shiftctrl(args[ARG_push_thresh].u_obj, PIO_SM0_SHIFTCTRL_PUSH_THRESH_BITS, PIO_SM0_SHIFTCTRL_PUSH_THRESH_LSB, &config);
     asm_pio_override_shiftctrl(args[ARG_pull_thresh].u_obj, PIO_SM0_SHIFTCTRL_PULL_THRESH_BITS, PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB, &config);
+    #if PICO_RP2350
+    asm_pio_override_shiftctrl(args[ARG_in_count].u_obj, PIO_SM0_SHIFTCTRL_IN_COUNT_BITS, PIO_SM0_SHIFTCTRL_IN_COUNT_LSB, &config);
+    #endif
 
     // Configure the state machine.
     pio_sm_set_config(self->pio, self->sm, &config);
@@ -1003,6 +1060,23 @@ static mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, m
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(rp2_state_machine_irq_obj, 1, rp2_state_machine_irq);
 
+#if PICO_RP2350
+// StateMachine.putget(index[, value]) -- read or write RXF_PUTGET register slot (FJOIN_RX_PUT/GET mode)
+static mp_obj_t rp2_state_machine_putget(size_t n_args, const mp_obj_t *args) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t index = mp_obj_get_int(args[1]);
+    if (index < 0 || index > 3) {
+        mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
+    }
+    if (n_args > 2) {
+        self->pio->rxf_putget[self->sm][index] = mp_obj_get_int_truncated(args[2]);
+        return mp_const_none;
+    }
+    return mp_obj_new_int_from_uint(self->pio->rxf_putget[self->sm][index]);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_state_machine_putget_obj, 2, 3, rp2_state_machine_putget);
+#endif
+
 static const mp_rom_map_elem_t rp2_state_machine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&rp2_state_machine_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&rp2_state_machine_active_obj) },
@@ -1013,6 +1087,9 @@ static const mp_rom_map_elem_t rp2_state_machine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rx_fifo), MP_ROM_PTR(&rp2_state_machine_rx_fifo_obj) },
     { MP_ROM_QSTR(MP_QSTR_tx_fifo), MP_ROM_PTR(&rp2_state_machine_tx_fifo_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&rp2_state_machine_irq_obj) },
+    #if PICO_RP2350
+    { MP_ROM_QSTR(MP_QSTR_putget), MP_ROM_PTR(&rp2_state_machine_putget_obj) },
+    #endif
 };
 static MP_DEFINE_CONST_DICT(rp2_state_machine_locals_dict, rp2_state_machine_locals_dict_table);
 

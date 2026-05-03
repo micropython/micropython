@@ -30,6 +30,7 @@
 #include "modrp2.h"
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
+#include "hardware/pio.h"
 #include "hardware/sync.h"
 #include "hardware/structs/ioqspi.h"
 #include "hardware/structs/sio.h"
@@ -96,6 +97,36 @@ static const mp_rom_map_elem_t rp2_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_StateMachine),        MP_ROM_PTR(&rp2_state_machine_type) },
     { MP_ROM_QSTR(MP_QSTR_DMA),                 MP_ROM_PTR(&rp2_dma_type) },
     { MP_ROM_QSTR(MP_QSTR_bootsel_button),      MP_ROM_PTR(&rp2_bootsel_button_obj) },
+
+    // DREQ constants for PIO0 and PIO1 (available on RP2040 and RP2350).
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_TX0), MP_ROM_INT(DREQ_PIO0_TX0) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_TX1), MP_ROM_INT(DREQ_PIO0_TX1) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_TX2), MP_ROM_INT(DREQ_PIO0_TX2) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_TX3), MP_ROM_INT(DREQ_PIO0_TX3) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_RX0), MP_ROM_INT(DREQ_PIO0_RX0) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_RX1), MP_ROM_INT(DREQ_PIO0_RX1) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_RX2), MP_ROM_INT(DREQ_PIO0_RX2) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO0_RX3), MP_ROM_INT(DREQ_PIO0_RX3) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_TX0), MP_ROM_INT(DREQ_PIO1_TX0) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_TX1), MP_ROM_INT(DREQ_PIO1_TX1) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_TX2), MP_ROM_INT(DREQ_PIO1_TX2) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_TX3), MP_ROM_INT(DREQ_PIO1_TX3) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_RX0), MP_ROM_INT(DREQ_PIO1_RX0) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_RX1), MP_ROM_INT(DREQ_PIO1_RX1) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_RX2), MP_ROM_INT(DREQ_PIO1_RX2) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO1_RX3), MP_ROM_INT(DREQ_PIO1_RX3) },
+
+    #if NUM_PIOS >= 3
+    // DREQ constants for PIO2 (RP2350 only).
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_TX0), MP_ROM_INT(DREQ_PIO2_TX0) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_TX1), MP_ROM_INT(DREQ_PIO2_TX1) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_TX2), MP_ROM_INT(DREQ_PIO2_TX2) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_TX3), MP_ROM_INT(DREQ_PIO2_TX3) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_RX0), MP_ROM_INT(DREQ_PIO2_RX0) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_RX1), MP_ROM_INT(DREQ_PIO2_RX1) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_RX2), MP_ROM_INT(DREQ_PIO2_RX2) },
+    { MP_ROM_QSTR(MP_QSTR_DREQ_PIO2_RX3), MP_ROM_INT(DREQ_PIO2_RX3) },
+    #endif
 
     #if MICROPY_PY_NETWORK_CYW43
     // Deprecated (use network.country instead).
