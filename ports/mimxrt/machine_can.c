@@ -482,31 +482,42 @@ static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     return irq_flags;
 }
 
-static mp_uint_t can_find_txmb(machine_can_obj_t *self, flexcan_frame_t *frame) {
+#define IS_MATCHING_ID_TYPE(i, cs) (((frame->format == kFLEXCAN_FrameFormatStandard) || (cs & CAN_CS_IDE_MASK)) \
+    && ((frame->type == kFLEXCAN_FrameTypeData) || (cs & CAN_CS_RTR_MASK)) \
+    && (port->can_inst->MB[i].ID == frame->id))
+#define IS_TX_PENDING(cs) ((cs & CAN_CS_CODE_MASK) == CAN_CS_CODE(kFLEXCAN_TxMbDataOrRemote))
+
+static mp_uint_t can_find_txmb(machine_can_obj_t *self, flexcan_frame_t *frame, mp_uint_t flags) {
     struct machine_can_port *port = self->port;
 
     // See if this frame id has been used before. If so, reuse the same mailbox to keep message ordering.
-    for (mp_uint_t i = 0; i < port->flexcan_txmb_count; i++) {
-        uint32_t cs_temp = port->can_inst->MB[port->flexcan_txmb_start + i].CS;
-        if (((frame->format == kFLEXCAN_FrameFormatStandard) || (cs_temp & CAN_CS_IDE_MASK))
-            && ((frame->type == kFLEXCAN_FrameTypeData) || (cs_temp & CAN_CS_RTR_MASK))
-            && (port->can_inst->MB[port->flexcan_txmb_start + i].ID == frame->id)) {
-            if ((cs_temp & CAN_CS_CODE_MASK) != CAN_CS_CODE(kFLEXCAN_TxMbDataOrRemote)) {
-                return port->flexcan_txmb_start + i;
+    for (mp_uint_t i = port->flexcan_txmb_start; i < (port->flexcan_txmb_count + port->flexcan_txmb_start); i++) {
+        uint32_t cs_temp = port->can_inst->MB[i].CS;
+        if (IS_MATCHING_ID_TYPE(i, cs_temp)) {
+            if (!IS_TX_PENDING(cs_temp)) {
+                return i;
             } else {
-                return 0;
+                // Matching ID, but MB is still busy
+                if (flags & CAN_MSG_FLAG_UNORDERED) {
+                    // Allow to select a different Frame ID.
+                    break;
+                } else {
+                    return 0;
+                }
             }
         }
     }
-    // Frame id has never been used before so just pick the first empty mailbox.
-    for (mp_uint_t i = 0; i < port->flexcan_txmb_count; i++) {
-        uint32_t cs_temp = port->can_inst->MB[port->flexcan_txmb_start + i].CS;
-        if ((cs_temp & CAN_CS_CODE_MASK) != CAN_CS_CODE(kFLEXCAN_TxMbDataOrRemote)) {
-            return port->flexcan_txmb_start + i;
+    // The frame id has never been used before or CAN_MSG_FLAG_UNORDERED is set.
+    // Pick the first available mailbox.
+    for (mp_uint_t i = port->flexcan_txmb_start; i < (port->flexcan_txmb_count + port->flexcan_txmb_start); i++) {
+        uint32_t cs_temp = port->can_inst->MB[i].CS;
+        if (!IS_TX_PENDING(cs_temp)) {
+            return i;
         }
     }
     return 0;
 }
+
 
 static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, const byte *data, size_t data_len, mp_uint_t flags) {
 
@@ -710,8 +721,7 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
 static mp_uint_t can_count_txmb_pending(machine_can_port_t *port) {
     mp_uint_t count = 0;
     for (mp_uint_t i = 0; i < port->flexcan_txmb_count; i++) {
-        uint32_t cs_temp = port->can_inst->MB[port->flexcan_txmb_start + i].CS;
-        if ((cs_temp & CAN_CS_CODE_MASK) == CAN_CS_CODE(kFLEXCAN_TxMbDataOrRemote)) {
+        if (IS_TX_PENDING(port->can_inst->MB[port->flexcan_txmb_start + i].CS)) {
             count++;
         }
     }
