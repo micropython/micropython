@@ -1,5 +1,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/cache.h>
 #include "shared/runtime/interrupt_char.h"
 
 #define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
@@ -93,3 +94,11 @@ static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     (void)gpio_pin_set_raw(pin->port, pin->pin, 1);
 }
+
+/* Provide cache clean when possible */
+#ifdef CONFIG_CACHE_MANAGEMENT
+#define MP_HAL_CLEAN_DCACHE(fun_data, fun_len) \
+    if (sys_cache_data_flush_and_invd_range((void *)fun_data, fun_len) != 0) {   \
+        sys_cache_data_flush_and_invd_all();                                     \
+    }
+#endif
