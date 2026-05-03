@@ -35,6 +35,7 @@
 #include "systick.h"
 #include "pendsv.h"
 #include "extmod/modnetwork.h"
+#include "eth.h"
 
 #if MICROPY_PY_LWIP
 #include "lwip/netif.h"
@@ -72,6 +73,10 @@ static void pyb_lwip_poll(void) {
 
     // Run the lwIP internal updates
     sys_check_timeouts();
+
+    #if defined(MICROPY_HW_ETH_MDC)
+    eth_phy_link_status_poll();
+    #endif
 
     #if LWIP_NETIF_LOOPBACK
     netif_poll_all();
