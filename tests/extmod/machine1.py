@@ -22,15 +22,24 @@ class Test(unittest.TestCase):
         with self.assertRaises(ValueError):
             machine.mem16[1] = 1
 
+        with self.assertRaises(ValueError):
+            machine.mem32[2]
+
+        with self.assertRaises(ValueError):
+            machine.mem32[2] = 1
+
     def test_operations(self):
         with self.assertRaises(TypeError):
             del machine.mem8[0]
 
         with self.assertRaises(TypeError):
-            machine.mem8[0:1]
-
-        with self.assertRaises(TypeError):
             machine.mem8[0:1] = 10
+
+        with self.assertRaises(ValueError):
+            try:
+                machine.mem8[0:1] = bytes([0, 1, 2])
+            except TypeError:
+                raise ValueError("Slice support not enabled")
 
         with self.assertRaises(TypeError):
             machine.mem8["hello"]
