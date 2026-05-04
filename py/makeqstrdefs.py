@@ -5,7 +5,7 @@ qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 This script works with Python 3.3+.
 """
 
-import io
+import gzip
 import os
 import re
 import subprocess
@@ -71,7 +71,7 @@ def preprocess():
     except NotImplementedError:
         cpus = 1
     p = multiprocessing.dummy.Pool(cpus)
-    with open(args.output[0], "wb") as out_file:
+    with gzip.open(args.output[0], "wb", compresslevel=1) as out_file:
         for flags, sources in (
             (args.cflags, csources),
             (args.cxxflags, cxxsources),
@@ -230,7 +230,7 @@ if __name__ == "__main__":
         pass
 
     if args.command == "split":
-        with io.open(args.input_filename, encoding="utf-8") as infile:
+        with gzip.open(args.input_filename, "rt", encoding="utf-8") as infile:
             process_file(infile)
 
     if args.command == "cat":

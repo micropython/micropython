@@ -4,6 +4,7 @@ the CPU frequency to a given value.  The algorithm here appears as C code
 for the machine.freq() function.
 """
 
+import gzip
 import re
 
 
@@ -231,7 +232,7 @@ def search_header_for_hsx_values(filename):
     regex_def = re.compile(
         r"static.* +(micropy_hw_hs[ei]_value) = +([0-9 +-/\*()]+);",
     )
-    with open(filename) as f:
+    with gzip.open(filename, "rt") as f:
         for line in f:
             line = line.strip()
             m = regex_def.match(line)

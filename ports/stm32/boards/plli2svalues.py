@@ -4,6 +4,7 @@ processors supporting an I2S PLL in the clock tree.
 Those processors are listed below in the mcu_support_plli2s[] list.
 """
 
+import gzip
 import re
 from collections import namedtuple
 
@@ -129,7 +130,7 @@ def generate_c_table(plli2s_table, hse, pllm):
 def search_header(filename, re_define, lookup):
     regex_define = re.compile(re_define)
     val = None
-    with open(filename) as f:
+    with gzip.open(filename, "rt") as f:
         for line in f:
             line = line.strip()
             m = regex_define.match(line)
