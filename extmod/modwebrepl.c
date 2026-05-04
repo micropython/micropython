@@ -73,6 +73,25 @@ static const char denied_prompt[] = "\r\nAccess denied\r\n";
 
 static char webrepl_passwd[10];
 
+// Compare input against the stored WebREPL password without early exit.
+// Returns 0 if equal, non-zero otherwise.
+//
+// Copying input into a fixed-size zero-padded buffer before the loop means
+// the loop body has no data-dependent branches: every iteration performs the
+// same operations regardless of the actual byte values or string lengths.
+// The volatile accumulator prevents the compiler from short-circuiting.
+static int webrepl_passwd_check(const char *input, size_t input_len) {
+    unsigned char buf[sizeof(webrepl_passwd)];
+    size_t n = input_len < sizeof(buf) ? input_len : sizeof(buf) - 1;
+    memcpy(buf, input, n);
+    memset(buf + n, 0, sizeof(buf) - n);
+    volatile unsigned int diff = 0;
+    for (size_t i = 0; i < sizeof(webrepl_passwd); i++) {
+        diff |= buf[i] ^ (unsigned char)webrepl_passwd[i];
+    }
+    return (int)diff;
+}
+
 static void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
     const mp_stream_p_t *sock_stream = mp_get_stream(websock);
     int err;
@@ -200,7 +219,7 @@ static mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             self->hdr.fname[self->data_to_recv] = 0;
             DEBUG_printf("webrepl: entered password: %s\n", self->hdr.fname);
 
-            if (strcmp(self->hdr.fname, webrepl_passwd) != 0) {
+            if (webrepl_passwd_check(self->hdr.fname, self->data_to_recv) != 0) {
                 write_webrepl_str(self->sock, SSTR(denied_prompt));
                 return 0;
             }
