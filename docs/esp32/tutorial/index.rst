@@ -16,9 +16,9 @@ to `<https://www.python.org>`__.
 
 .. toctree::
    :maxdepth: 1
-   :numbered:
 
    intro.rst
    pwm.rst
    peripheral_access.rst
    reset.rst
+   udp_multicast.rst
