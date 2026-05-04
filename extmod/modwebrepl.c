@@ -73,6 +73,21 @@ static const char denied_prompt[] = "\r\nAccess denied\r\n";
 
 static char webrepl_passwd[10];
 
+// Compare two strings in constant time to mitigate timing side-channel attacks
+// on the WebREPL password. Returns 0 if equal, non-zero otherwise.
+static int webrepl_passwd_check(const char *input, size_t input_len) {
+    size_t passwd_len = strlen(webrepl_passwd);
+    // Length mismatch is not secret, but we still run the byte loop so that
+    // the timing does not depend on where the first differing character is.
+    volatile unsigned int diff = (unsigned int)(input_len ^ passwd_len);
+    for (size_t i = 0; i < sizeof(webrepl_passwd) - 1; i++) {
+        unsigned char a = (i < input_len) ? (unsigned char)input[i] : 0;
+        unsigned char b = (i < passwd_len) ? (unsigned char)webrepl_passwd[i] : 0;
+        diff |= a ^ b;
+    }
+    return (int)diff;
+}
+
 static void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
     const mp_stream_p_t *sock_stream = mp_get_stream(websock);
     int err;
@@ -200,7 +215,7 @@ static mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             self->hdr.fname[self->data_to_recv] = 0;
             DEBUG_printf("webrepl: entered password: %s\n", self->hdr.fname);
 
-            if (strcmp(self->hdr.fname, webrepl_passwd) != 0) {
+            if (webrepl_passwd_check(self->hdr.fname, self->data_to_recv) != 0) {
                 write_webrepl_str(self->sock, SSTR(denied_prompt));
                 return 0;
             }
