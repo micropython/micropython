@@ -93,18 +93,30 @@ static size_t calc_size_items(const char *fmt, size_t *total_sz) {
         }
 
         if (*fmt == 'x') {
+            if (cnt > SIZE_MAX - size) {
+                mp_raise_ValueError(MP_ERROR_TEXT("pack format too large"));
+            }
             size += cnt;
         } else if (*fmt == 's') {
             total_cnt += 1;
+            if (cnt > SIZE_MAX - size) {
+                mp_raise_ValueError(MP_ERROR_TEXT("pack format too large"));
+            }
             size += cnt;
         } else {
             total_cnt += cnt;
             size_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
             while (cnt--) {
-                // Apply alignment
-                size = (size + align - 1) & ~(align - 1);
-                size += sz;
+                // Apply alignment, checking for overflow in the rounding step.
+                if (align > 1 && size > SIZE_MAX - (align - 1)) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("pack format too large"));
+                }
+                size_t aligned = (size + align - 1) & ~(align - 1);
+                if (sz > SIZE_MAX - aligned) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("pack format too large"));
+                }
+                size = aligned + sz;
             }
         }
     }
