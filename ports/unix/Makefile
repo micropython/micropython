@@ -51,6 +51,12 @@ CWARN = -Wall -Werror
 CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
+# Enable stack smashing protection.  -fstack-protector-strong instruments
+# functions with large buffers or address-taken locals; it has negligible
+# performance impact and catches real stack overflows in development builds.
+# The flag is supported by GCC 4.9+ and all relevant Clang versions.
+CFLAGS += -fstack-protector-strong
+
 # Force the use of 64-bits for file sizes in C library functions on 32-bit platforms.
 # This option has no effect on 64-bit builds.
 CFLAGS += -D_FILE_OFFSET_BITS=64
