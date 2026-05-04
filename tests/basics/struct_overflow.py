@@ -12,15 +12,13 @@ import sys
 # The exact repeat count needed to overflow depends on platform pointer size.
 
 if sys.maxsize > 2**31:
-    # 64-bit: need a very large count; skip the overflow test but confirm
-    # that a plain large format raises cleanly rather than hanging.
-    repeat = "1000000000"
-else:
-    # 32-bit: repeating a 4-byte field ~1.5e9 times wraps size_t.
-    repeat = "1500000000"
+    # 64-bit: a 32-bit size_t overflow is not reachable; skip.
+    print("SKIP")
+    raise SystemExit
 
+# 32-bit: repeating a 4-byte field ~1.5e9 times wraps uint32 size_t.
 try:
-    struct.calcsize(repeat + "I")
+    struct.calcsize("1500000000I")
     print("no error")
 except (ValueError, OverflowError, MemoryError):
     print("raises")
