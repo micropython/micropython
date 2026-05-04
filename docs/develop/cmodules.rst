@@ -216,11 +216,13 @@ Then build with:
 .. code-block:: bash
 
     cd my_project/micropython/ports/esp32
-    make USER_C_MODULES=../../../../modules/micropython.cmake
+    make USER_C_MODULES=../../../modules/micropython.cmake
 
-Note that the esp32 port needs the extra ``..`` for relative paths due to the
-location of its main ``CMakeLists.txt`` file.   You can also specify absolute
-paths to ``USER_C_MODULES``.
+Previously, the esp32 port required an extra ``..`` in relative paths (e.g.,
+``../../../../modules/micropython.cmake``) due to path resolution happening from
+the ``main`` subdirectory. This has been fixed and paths are now resolved
+consistently from the port directory (``ports/esp32``), matching other ports.
+You can also specify absolute paths to ``USER_C_MODULES``.
 
 All modules specified by the ``USER_C_MODULES`` variable (either found in this
 directory when using Make, or added via ``include`` when using CMake) will be
