@@ -435,7 +435,9 @@ void stm32_main(uint32_t reset_mode) {
     HAL_InitTick(TICK_INT_PRIORITY);
 
     // set the system clock to be HSE
-    SystemClock_Config();
+    if (SystemClock_Config() < 0) {
+        MICROPY_BOARD_FATAL_ERROR("SystemClock_Config");
+    }
 
     #if defined(STM32N6)
     risaf_init();

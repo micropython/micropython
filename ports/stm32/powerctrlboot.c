@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "irq.h"
 #include "powerctrl.h"
@@ -66,7 +67,7 @@ void powerctrl_config_systick(void) {
 
 #if defined(STM32F0)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // Enable power control peripheral
     __HAL_RCC_PWR_CLK_ENABLE();
 
@@ -126,11 +127,13 @@ void SystemClock_Config(void) {
 
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    return 0;
 }
 
 #elif defined(STM32G0)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // Enable power control peripheral
     __HAL_RCC_PWR_CLK_ENABLE();
 
@@ -191,11 +194,13 @@ void SystemClock_Config(void) {
         | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
     #endif
     #endif
+
+    return 0;
 }
 
 #elif defined(STM32H5)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // Set power voltage scaling.
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
@@ -303,11 +308,13 @@ void SystemClock_Config(void) {
     #ifdef NDEBUG
     DBGMCU->CR = 0;
     #endif
+
+    return 0;
 }
 
 #elif defined(STM32L0)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // Enable power control peripheral
     __HAL_RCC_PWR_CLK_ENABLE();
 
@@ -356,11 +363,13 @@ void SystemClock_Config(void) {
         | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
     #endif
     #endif
+
+    return 0;
 }
 
 #elif defined(STM32L1)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // Enable power control peripheral
     __HAL_RCC_PWR_CLK_ENABLE();
 
@@ -412,11 +421,13 @@ void SystemClock_Config(void) {
     #if !defined(NDEBUG)
     DBGMCU->CR &= ~(DBGMCU_CR_DBG_SLEEP | DBGMCU_CR_DBG_STOP | DBGMCU_CR_DBG_STANDBY);
     #endif
+
+    return 0;
 }
 
 #elif defined(STM32N6)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // Enable HSI.
     LL_RCC_HSI_Enable();
     while (!LL_RCC_HSI_IsReady()) {
@@ -534,24 +545,34 @@ void SystemClock_Config(void) {
     // Reconfigure clock state and SysTick.
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    return 0;
 }
 
 #elif defined(STM32WB)
 
-void SystemClock_Config(void) {
-    while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
+int SystemClock_Config(void) {
+    int fail;
+
+    RCC_WAIT(LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID), 500, fail);
+    if (fail) {
+        return -MP_ETIMEDOUT;
     }
 
     // Enable the 32MHz external oscillator
     RCC->CR |= RCC_CR_HSEON;
-    while (!(RCC->CR & RCC_CR_HSERDY)) {
+    RCC_WAIT(!(RCC->CR & RCC_CR_HSERDY), 100, fail);
+    if (fail) {
+        goto fail_rcc;
     }
 
     // Prevent CPU2 from disabling CLK48.
     // This semaphore protected access to the CLK48 configuration.
     // CPU1 should hold this semaphore while the USB peripheral is in use.
     // See AN5289 and https://github.com/micropython/micropython/issues/6316.
-    while (LL_HSEM_1StepLock(HSEM, CFG_HW_CLK48_CONFIG_SEMID)) {
+    RCC_WAIT(LL_HSEM_1StepLock(HSEM, CFG_HW_CLK48_CONFIG_SEMID), 500, fail);
+    if (fail) {
+        goto fail_rcc;
     }
 
     // Use HSE and the PLL to get a 64MHz SYSCLK
@@ -566,8 +587,9 @@ void SystemClock_Config(void) {
             | (PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
             | 3 << RCC_PLLCFGR_PLLSRC_Pos;
     RCC->CR |= RCC_CR_PLLON;
-    while (!(RCC->CR & RCC_CR_PLLRDY)) {
-        // Wait for PLL to lock
+    RCC_WAIT(!(RCC->CR & RCC_CR_PLLRDY), 2, fail);
+    if (fail) {
+        goto fail_clk48;
     }
     const uint32_t sysclk_src = 3;
 
@@ -579,8 +601,9 @@ void SystemClock_Config(void) {
 
     // Select SYSCLK source
     RCC->CFGR |= sysclk_src << RCC_CFGR_SW_Pos;
-    while (((RCC->CFGR >> RCC_CFGR_SWS_Pos) & 0x3) != sysclk_src) {
-        // Wait for SYSCLK source to change
+    RCC_WAIT(((RCC->CFGR >> RCC_CFGR_SWS_Pos) & 0x3) != sysclk_src, 5000, fail);
+    if (fail) {
+        goto fail_clk48;
     }
 
     // Select PLLQ as 48MHz source for USB and RNG
@@ -591,13 +614,20 @@ void SystemClock_Config(void) {
 
     // Release RCC semaphore
     LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+    return 0;
+
+fail_clk48:
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_CLK48_CONFIG_SEMID, 0);
+fail_rcc:
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+    return -MP_ETIMEDOUT;
 }
 
 #elif defined(STM32WL)
 
 #include "stm32wlxx_ll_utils.h"
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // Set flash latency (2 wait states, sysclk > 36MHz)
     LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
     while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2) {
@@ -688,6 +718,8 @@ void SystemClock_Config(void) {
 
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    return 0;
 }
 
 #endif
