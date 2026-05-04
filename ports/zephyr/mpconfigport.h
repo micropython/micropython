@@ -193,6 +193,10 @@ typedef long mp_off_t;
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
+#if CONFIG_HARDWARE_DEVICE_CS_GENERATOR || CONFIG_PSA_CSPRNG_GENERATOR
+#define MICROPY_PY_OS_URANDOM (1)
+#endif
+
 // Compatibility switches
 
 #ifdef CONFIG_NEWLIB_LIBC
