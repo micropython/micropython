@@ -106,3 +106,5 @@
       - ports/psoc-edge/mp_custom/secrets.py
     device:
       - board: KIT_PSE84_AI
+        features:
+          - wifi-idn-b0653ac13e11

@@ -4,6 +4,7 @@
     - pin
     - i2c
     - pwm
+    - wifi-idn-b0653ac13e11
 
 - name: KIT_PSE84_AI
   uid: 111B1698012D2400
