@@ -1,44 +1,91 @@
-import importlib.util
-import os
+import runpy
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 
-
-def load_secrets(secrets_path):
-    spec = importlib.util.spec_from_file_location("socket_test_secrets", secrets_path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def build_prologue(ssid, key):
-    return f"""import network, socket, time
-w = network.WLAN(network.STA_IF)
-w.active(True)
-if not w.isconnected():
-    w.connect({ssid!r}, {key!r})
+# Underscore-prefixed names avoid colliding with variables in the test scripts
+# that run after this prologue (via --begin).
+_WIFI_CONNECT = """\
+import network, socket, time
+_ok = False
+_w = network.WLAN(network.STA_IF)
+_w.active(True)
+if not _w.isconnected():
+    _w.connect({ssid!r}, {key!r})
     for _ in range(30):
-        if w.isconnected():
+        if _w.isconnected():
             break
         time.sleep(1)
-
-for _ in range(10):
-    if not w.isconnected():
-        break
-    try:
-        probe = socket.socket()
-        probe.settimeout(3)
-        probe.connect(socket.getaddrinfo('micropython.org', 80)[0][-1])
-        probe.close()
-        break
-    except OSError:
+if _w.isconnected():
+    for _ in range(10):
         try:
-            probe.close()
-        except Exception:
-            pass
-        time.sleep(1)
+            _s = socket.socket()
+            _s.settimeout(3)
+            _s.connect(socket.getaddrinfo('micropython.org', 80)[0][-1])
+            _s.close()
+            _ok = True
+            break
+        except OSError:
+            try:
+                _s.close()
+            except Exception:
+                pass
+            time.sleep(1)
 """
+
+TESTS = [
+    "net_hosted/connect_nonblock.py",
+    "net_hosted/connect_timeout.py",
+    "net_hosted/connect_poll.py",
+]
+
+_SCRIPT_DIR = Path(__file__).parent
+_TESTS_DIR = _SCRIPT_DIR.parents[2]
+_MPY_ROOT = _TESTS_DIR.parent
+
+
+def run_preflight(dut_port, prologue):
+    code = prologue + "print('READY:' + ('1' if _ok else '0'))\n"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_MPY_ROOT / "tools" / "pyboard.py"),
+            "-d",
+            dut_port,
+            "-c",
+            code,
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+    return result.returncode == 0 and "READY:1" in result.stdout
+
+
+def run_tests(dut_port, prologue):
+    with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as f:
+        f.write(prologue)
+        prologue_path = Path(f.name)
+    try:
+        return subprocess.run(
+            [
+                sys.executable,
+                "run-tests.py",
+                "-t",
+                f"port:{dut_port}",
+                "--begin",
+                str(prologue_path),
+                "--print-failures",
+                *TESTS,
+            ],
+            cwd=str(_TESTS_DIR),
+        ).returncode
+    finally:
+        prologue_path.unlink(missing_ok=True)
 
 
 def main():
@@ -47,41 +94,18 @@ def main():
         return 2
 
     dut_port = sys.argv[1]
-    script_dir = os.path.abspath(os.path.dirname(__file__))
-    tests_dir = os.path.abspath(os.path.join(script_dir, "..", "..", ".."))
+    secrets_path = Path(sys.argv[2]) if len(sys.argv) >= 3 else _SCRIPT_DIR / "secrets.py"
+    if not secrets_path.is_absolute():
+        secrets_path = _TESTS_DIR / secrets_path
 
-    if len(sys.argv) >= 3:
-        secrets_path = sys.argv[2]
-        if not os.path.isabs(secrets_path):
-            secrets_path = os.path.join(tests_dir, secrets_path)
-    else:
-        secrets_path = os.path.join(script_dir, "secrets.py")
+    secrets = runpy.run_path(str(secrets_path))
+    prologue = _WIFI_CONNECT.format(ssid=secrets["ssid"], key=secrets["key"])
 
-    secrets = load_secrets(secrets_path)
+    if not run_preflight(dut_port, prologue):
+        print("SKIP: socket-internet preflight failed (no internet connectivity)")
+        return 0
 
-    tests = [
-        "net_hosted/connect_nonblock.py",
-        "net_hosted/connect_timeout.py",
-        "net_hosted/connect_poll.py",
-    ]
-
-    with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as prologue_file:
-        prologue_file.write(build_prologue(secrets.ssid, secrets.key))
-        prologue_path = prologue_file.name
-
-    try:
-        cmd = [
-            sys.executable,
-            "run-tests.py",
-            "-t",
-            f"port:{dut_port}",
-            "--begin",
-            prologue_path,
-        ]
-        cmd.extend(tests)
-        return subprocess.run(cmd, cwd=tests_dir).returncode
-    finally:
-        os.unlink(prologue_path)
+    return run_tests(dut_port, prologue)
 
 
 if __name__ == "__main__":

@@ -55,6 +55,7 @@ jobs:
     needs: server-build
     env:
       LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
+      pse_test_dir: ../../tests/ports/psoc-edge
     strategy:
       matrix:
         board:
@@ -76,26 +77,36 @@ jobs:
           source tools/ci.sh && ci_psoc_edge_deploy_hil ${{ matrix.board }} ${{ env.mpy_hex_file }} tests/ports/psoc-edge/${{ runner.name }}-devs.yml
       - name: Run psoc-edge tests
         timeout-minutes: 12
-        env: 
-          pse_test_dir: ../../tests/ports/psoc-edge
         run: |
           cd lib/mpy-test-ext
+          suites=$(python - <<'PY'
+          import os
+          import yaml
+
+          test_plan = os.path.join(os.environ['pse_test_dir'], 'test-plan.yml')
+          with open(test_plan, 'r') as f:
+              tests = yaml.safe_load(f) or []
+
+          names = [
+              test['name']
+              for test in tests
+              if 'optional' not in (test.get('tags') or [])
+          ]
+          print(' '.join(names))
+          PY
+          )
           python -u run_test_plan.py \
-            general filesystem filesystem_large no-extended-hardware pin pin_irq i2c network socket-no-internet \
+            $suites \
             --board ${{ matrix.board }} --max-retries 2 --test-plan $pse_test_dir/test-plan.yml --hil-devs $pse_test_dir/${{ runner.name }}-devs.yml
 
       - name: Decrypt Wi-Fi secrets
         if: ${{ hashFiles('tests/ports/psoc-edge/mp_custom/secrets.py.gpg') != '' && env.LARGE_SECRET_PASSPHRASE != '' }}
         run: |
-          gpg --quiet --batch --yes --decrypt --passphrase="$LARGE_SECRET_PASSPHRASE" \
-            --output tests/ports/psoc-edge/mp_custom/secrets.py \
-            tests/ports/psoc-edge/mp_custom/secrets.py.gpg
+          sh tools/psoc-edge/decrypt_secrets.sh
 
       - name: Run psoc-edge internet socket tests
         if: ${{ hashFiles('tests/ports/psoc-edge/mp_custom/secrets.py.gpg') != '' && env.LARGE_SECRET_PASSPHRASE != '' }}
         timeout-minutes: 8
-        env:
-          pse_test_dir: ../../tests/ports/psoc-edge
         run: |
           cd lib/mpy-test-ext
           python -u run_test_plan.py \
@@ -107,7 +118,7 @@ jobs:
         run: rm -f tests/ports/psoc-edge/mp_custom/secrets.py
 
       - name: Container teardown 
-        if: failure() || success()
+        if: always()
         run: |
           source tools/ci.sh && ci_psoc_edge_teardown_hil
 
