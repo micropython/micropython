@@ -54,6 +54,16 @@ typedef struct _lan_if_obj_t {
     bool initialized;
     int8_t mdc_pin;
     int8_t mdio_pin;
+    #if CONFIG_IDF_TARGET_ESP32P4
+    int8_t crs_dv_pin;
+    int8_t rxd0_pin;
+    int8_t rxd1_pin;
+    int8_t tx_en_pin;
+    int8_t txd0_pin;
+    int8_t txd1_pin;
+    int8_t clk_in_pin;
+    int8_t clk_out_pin;
+    #endif
     int8_t phy_reset_pin;
     int8_t phy_power_pin;
     int8_t phy_cs_pin;
@@ -115,7 +125,12 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     enum { ARG_id, ARG_mdc, ARG_mdio, ARG_reset, ARG_power, ARG_phy_addr, ARG_phy_type,
-           ARG_spi, ARG_cs, ARG_int, ARG_ref_clk_mode, ARG_ref_clk };
+           ARG_spi, ARG_cs, ARG_int, ARG_ref_clk_mode, ARG_ref_clk,
+           #if CONFIG_IDF_TARGET_ESP32P4
+           ARG_crs_dv, ARG_rxd0, ARG_rxd1, ARG_tx_en,
+           ARG_txd0, ARG_txd1, ARG_clk_in, ARG_clk_out,
+           #endif
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,           MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -129,6 +144,16 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         { MP_QSTR_int,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_ref_clk,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #if CONFIG_IDF_TARGET_ESP32P4
+        { MP_QSTR_crs_dv,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rxd0,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rxd1,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_tx_en,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_txd0,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_txd1,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_clk_in,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_clk_out,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #endif
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -148,6 +173,16 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     self->phy_power_pin = GET_PIN(ARG_power);
     self->phy_cs_pin = GET_PIN(ARG_cs);
     self->phy_int_pin = GET_PIN(ARG_int);
+    #if CONFIG_IDF_TARGET_ESP32P4
+    self->crs_dv_pin = GET_PIN(ARG_crs_dv);
+    self->rxd0_pin = GET_PIN(ARG_rxd0);
+    self->rxd1_pin = GET_PIN(ARG_rxd1);
+    self->tx_en_pin = GET_PIN(ARG_tx_en);
+    self->txd0_pin = GET_PIN(ARG_txd0);
+    self->txd1_pin = GET_PIN(ARG_txd1);
+    self->clk_in_pin = GET_PIN(ARG_clk_in);
+    self->clk_out_pin = GET_PIN(ARG_clk_out);
+    #endif
 
     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
@@ -293,6 +328,40 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         }
         esp32_config.smi_mdc_gpio_num = self->mdc_pin;
         esp32_config.smi_mdio_gpio_num = self->mdio_pin;
+
+        #if CONFIG_IDF_TARGET_ESP32P4
+        if (self->crs_dv_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.crs_dv_num = self->crs_dv_pin;
+        }
+        if (self->rxd0_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.rxd0_num = self->rxd0_pin;
+        }
+        if (self->rxd1_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.rxd1_num = self->rxd1_pin;
+        }
+        if (self->tx_en_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.tx_en_num = self->tx_en_pin;
+        }
+        if (self->txd0_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.txd0_num = self->txd0_pin;
+        }
+        if (self->txd1_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.txd1_num = self->txd1_pin;
+        }
+        if (self->clk_out_pin != -1) {
+            if (self->clk_in_pin == -1) {
+                mp_raise_ValueError(MP_ERROR_TEXT("clk_in must be specified if clk_out is specified"));
+            }
+            esp32_config.clock_config.rmii.clock_mode = EMAC_CLK_OUT;
+            esp32_config.clock_config.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_out_pin;
+            esp32_config.clock_config_out_in.rmii.clock_mode = EMAC_CLK_EXT_IN;
+            esp32_config.clock_config_out_in.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_in_pin;
+        } else if (self->clk_in_pin != -1) {
+            esp32_config.clock_config.rmii.clock_mode = EMAC_CLK_EXT_IN;
+            esp32_config.clock_config.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_in_pin;
+        }
+        #endif
+
         mac = esp_eth_mac_new_esp32(&esp32_config, &mac_config);
     }
     #endif
