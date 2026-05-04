@@ -239,9 +239,9 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         #endif
         #if SOC_SDMMC_IO_POWER_EXTERNAL
         #ifdef MICROPY_HW_SDMMC_LDO_CHAN_ID
-        { MP_QSTR_ldo,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_SDMMC_LDO_CHAN_ID} },
+        { MP_QSTR_ldo,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_SDMMC_LDO_CHAN_ID)} },
         #else
-        { MP_QSTR_ldo,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_ldo,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         #endif
         #endif
         // freq is valid for both SPI and SDMMC interfaces
@@ -324,9 +324,9 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     }
     #endif
     #if SOC_SDMMC_IO_POWER_EXTERNAL
-    if (arg_vals[ARG_ldo].u_int != -1) {
+    if (arg_vals[ARG_ldo].u_obj != mp_const_none) {
         sd_pwr_ctrl_ldo_config_t ldo_config = {
-            .ldo_chan_id = arg_vals[ARG_ldo].u_int,
+            .ldo_chan_id = mp_obj_get_int(arg_vals[ARG_ldo].u_obj),
         };
         sd_pwr_ctrl_handle_t pwr_ctrl_handle = NULL;
         check_esp_err(sd_pwr_ctrl_new_on_chip_ldo(&ldo_config, &pwr_ctrl_handle));
