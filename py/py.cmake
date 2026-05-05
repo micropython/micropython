@@ -42,6 +42,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/malloc.c
     ${MICROPY_PY_DIR}/map.c
     ${MICROPY_PY_DIR}/modarray.c
+    ${MICROPY_PY_DIR}/modatexit.c
     ${MICROPY_PY_DIR}/modbuiltins.c
     ${MICROPY_PY_DIR}/modcmath.c
     ${MICROPY_PY_DIR}/modcollections.c
