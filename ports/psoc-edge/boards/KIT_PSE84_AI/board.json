@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Dual-core",
+        "External Flash",
+        "WiFi",
+        "Microphone",
+        "IMU",
+        "RGB LED",
+        "USB-C"
+    ],
+    "images": [
+        "kit_pse84_ai.jpg"
+    ],
+    "mcu": "PSE846GPS2DBZC4",
+    "product": "KIT_PSE84_AI",
+    "thumbnail": "",
+    "url": "https://www.infineon.com/evaluation-board/kit-pse84-ai",
+    "vendor": "Infineon Technologies"
+}

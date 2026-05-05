@@ -1,0 +1,29 @@
+{
+    "schema-version": 1.0,
+    "content":
+    [
+        {
+            "name": "relocate_non_secure_hex",
+            "enabled" : true,
+            "commands" :
+            [
+                {
+                    "command" : "hex-relocate",
+                    "inputs" :
+                    [
+                        {
+                            "file" : "{{ ns_hex }}",
+                            "regions" : "{{RelocationTable}}"
+                        }
+                    ],
+                    "outputs":
+                    [
+                        {
+                            "file" : "{{ ns_shifted_hex }}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

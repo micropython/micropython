@@ -360,6 +360,21 @@ function ci_powerpc_build {
 }
 
 ########################################################################################
+# ports/psoc-edge
+
+function ci_psoc_edge_setup {
+    ci_gcc_arm_setup
+    sudo apt remove python3-packaging python3-jsonschema python3-cryptography
+    sudo pip3 install edgeprotecttools
+}
+
+function ci_psoc_edge_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/psoc-edge submodules
+    make ${MAKEOPTS} -C ports/psoc-edge
+}
+
+########################################################################################
 # ports/qemu
 
 function ci_qemu_setup_arm {
