@@ -129,7 +129,35 @@ gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "Pin(%u)", PIN_OBJ_PTR_INDEX(self));
+    gpio_num_t gpio_num = PIN_OBJ_PTR_INDEX(self);
+
+    mp_printf(print, "Pin(%u", gpio_num);
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+    gpio_io_config_t gpio_io_config;
+    gpio_get_io_config(gpio_num, &gpio_io_config);
+    qstr mode;
+    if (gpio_io_config.oe) {
+        mode = MP_QSTR_OUT;
+    } else if (gpio_io_config.od) {
+        mode = MP_QSTR_OPEN_DRAIN;
+    } else { // if (gpio_io_config.ie)
+        mode = MP_QSTR_IN;
+    }
+    mp_printf(print, ", mode=%q.%q", MP_QSTR_Pin, mode);
+    qstr pull = MP_QSTRnull;
+    if (gpio_io_config.pu) {
+        pull = MP_QSTR_PULL_UP;
+    } else if (gpio_io_config.pd) {
+        pull = MP_QSTR_PULL_DOWN;
+    }
+    if (pull != MP_QSTRnull) {
+        mp_printf(print, ", pull=%q.%q", MP_QSTR_Pin, pull);
+    }
+    if (gpio_io_config.drv != GPIO_DRIVE_CAP_2) {
+        mp_printf(print, ", drive=Pin.DRIVE_%u", gpio_io_config.drv);
+    }
+    #endif
+    mp_printf(print, ")");
 }
 
 // pin.init(mode=None, pull=-1, *, value, drive, hold)
