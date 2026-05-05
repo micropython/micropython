@@ -101,8 +101,6 @@ General Methods
 
    Turn off the I2C bus.
 
-   Availability: WiPy.
-
 .. method:: I2C.scan()
 
    Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
