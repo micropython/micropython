@@ -36,7 +36,7 @@
 #include "extmod/vfs_fat.h"
 
 // this table converts from FRESULT to POSIX errno
-const byte fresult_to_errno_table[20] = {
+const mp_errno_t fresult_to_errno_table[20] = {
     [FR_OK] = 0,
     [FR_DISK_ERR] = MP_EIO,
     [FR_INT_ERR] = MP_EIO,
