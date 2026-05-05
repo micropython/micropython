@@ -1,0 +1,56 @@
+inited
+after 10ms
+callback one-shot {'freq': 50} locked
+after 30ms
+after 70ms
+deiniting
+inited
+after 10ms
+after 30ms
+callback one-shot {'freq': 25} locked
+after 70ms
+deiniting
+inited
+after 10ms
+callback one-shot {'period': 20} locked
+after 30ms
+after 70ms
+deiniting
+inited
+after 10ms
+after 30ms
+callback one-shot {'period': 40} locked
+after 70ms
+deiniting
+inited
+after 10ms
+callback periodic {'freq': 50} locked
+after 30ms
+callback periodic {'freq': 50} locked
+callback periodic {'freq': 50} locked
+after 70ms
+callback periodic {'freq': 50} locked
+deiniting
+inited
+after 10ms
+after 30ms
+callback periodic {'freq': 25} locked
+after 70ms
+callback periodic {'freq': 25} locked
+deiniting
+inited
+after 10ms
+callback periodic {'period': 20} locked
+after 30ms
+callback periodic {'period': 20} locked
+callback periodic {'period': 20} locked
+after 70ms
+callback periodic {'period': 20} locked
+deiniting
+inited
+after 10ms
+after 30ms
+callback periodic {'period': 40} locked
+after 70ms
+callback periodic {'period': 40} locked
+deiniting
