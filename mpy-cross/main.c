@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,7 +35,8 @@
 #include "py/persistentcode.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/parsenum.h"
+#include "py/parsenumbase.h"
+#include "py/misc.h"
 #include "genhdr/mpversion.h"
 #ifdef _WIN32
 #include "ports/windows/fmode.h"
@@ -227,36 +229,31 @@ static char *backslash_to_forwardslash(char *path) {
     return path;
 }
 
+#define MP_UINT_ALL_ONES (MP_OBJ_WORD_MSBIT_HIGH | (MP_OBJ_WORD_MSBIT_HIGH - 1))
+
 // This will need to be reworked in case mpy-cross needs to set more bits than
-// what its small int representation allows to fit in there.
+// what `mp_uint_t` can fit.
 static bool parse_integer(const char *value, mp_uint_t *integer) {
     assert(value && "Attempting to parse a NULL string");
     assert(integer && "Attempting to store into a NULL integer buffer");
 
     size_t value_length = strlen(value);
-    int base = 10;
-    if (value_length > 2 && value[0] == '0') {
-        if ((value[1] | 0x20) == 'b') {
-            base = 2;
-        } else if ((value[1] | 0x20) == 'x') {
-            base = 16;
-        } else {
-            return false;
-        }
+    int base = 0;
+    size_t skip = mp_parse_num_base(value, value_length, &base);
+    // These can trip strtoul up.
+    if (base < 2 || value_length == skip || value[skip] == '+') {
+        return false;
     }
-
-    bool valid = false;
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t parsed = mp_parse_num_integer(value, value_length, base, NULL);
-        if (mp_obj_is_small_int(parsed)) {
-            *integer = MP_OBJ_SMALL_INT_VALUE(parsed);
-            valid = true;
-        }
-        nlr_pop();
+    errno = 0;
+    char *end = NULL;
+    unsigned long parsed = strtoul(value + skip, &end, base);
+    if (end != (value + value_length) || errno != 0 ||
+        // Check that the parsed value doesn't overflow mp_uint_t
+        (sizeof(unsigned long) > MP_BYTES_PER_OBJ_WORD && parsed > (unsigned long)MP_UINT_ALL_ONES)) {
+        return false;
     }
-
-    return valid;
+    *integer = (mp_uint_t)parsed;
+    return true;
 }
 
 #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
