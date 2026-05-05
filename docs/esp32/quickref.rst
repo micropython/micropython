@@ -259,7 +259,7 @@ an ESP32-S3 development board::
 UDP MULTICAST
 ^^^^^^^^^^^^^
 
-See client/server example in the :ref:`esp32_udp_multicast` tutorial.
+See client/server example in the :ref:`udp_multicast` tutorial.
 
 
 Delay and timing

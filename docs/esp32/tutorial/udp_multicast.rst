@@ -1,4 +1,4 @@
-.. _esp32_udp_multicast:
+.. _udp_multicast:
 
 UDP MULTICAST
 =============
