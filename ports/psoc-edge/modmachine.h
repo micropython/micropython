@@ -46,5 +46,6 @@ extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_pdm_pcm_type;
 extern const mp_obj_type_t machine_rtc_type;
 extern const mp_obj_type_t machine_ipc_type;
+extern const mp_obj_type_t machine_pwm_type;
 
 #endif // MICROPY_INCLUDED_PSOCEDGE_MODMACHINE_H

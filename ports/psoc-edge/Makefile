@@ -233,6 +233,7 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_syspm_ppu.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_syspm_v4.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_tcpwm_counter.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_tcpwm_pwm.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/ppu_v1.c \
 	\
 	mtb-dsl-pse8xxgp/support/source/mtb_stdlib_stubs.c \
@@ -316,6 +317,7 @@ MOD_SRC_C += \
 	modpsocedge.c \
 	machine_ipc.c \
 	machine_scb.c \
+	machine_pwm.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
