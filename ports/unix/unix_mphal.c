@@ -30,11 +30,61 @@
 #include <time.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
+
+#if MICROPY_ENABLE_SCHEDULER && !defined(_WIN32)
+
+// Use a real-time signal if available, avoiding conflicts with GC
+// (SIGRTMIN + 5) and thread terminate (SIGRTMIN + 6). Fall back to
+// SIGURG which is ignored by default and rarely used.
+#ifdef SIGRTMIN
+#define MP_SCHED_SIGNAL (SIGRTMIN + 7)
+#else
+#define MP_SCHED_SIGNAL (SIGURG)
+#endif
+
+static void sched_sighandler(int signum) {
+    (void)signum;
+}
+
+void mp_unix_init_sched_signal(void) {
+    struct sigaction sa;
+    sa.sa_flags = 0; // No SA_RESTART: select() returns EINTR.
+    sa.sa_handler = sched_sighandler;
+    sigemptyset(&sa.sa_mask);
+    sigaction(MP_SCHED_SIGNAL, &sa, NULL);
+}
+
+void mp_unix_deinit_sched_signal(void) {
+    signal(MP_SCHED_SIGNAL, SIG_DFL);
+}
+
+void mp_hal_signal_event(void) {
+    kill(getpid(), MP_SCHED_SIGNAL);
+}
+
+// Wait for an event or timeout. Returns early if callbacks are already
+// pending (checked via sched_state) or if a signal interrupts select().
+//
+// Note: there is a narrow race on threaded builds where a signal could
+// arrive between the sched_state check and the select() call, causing
+// select() to block despite a newly-pending callback. The impact is
+// bounded -- the caller's next timeout expiry will process it. This is
+// a deliberate simplification over pselect() with process-wide signal
+// masking.
+void mp_unix_sched_sleep(uint32_t timeout_ms) {
+    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+        return;
+    }
+    struct timeval tv = {timeout_ms / 1000, (timeout_ms % 1000) * 1000};
+    select(0, NULL, NULL, NULL, &tv);
+}
+#endif
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 25)
@@ -44,8 +94,6 @@
 #endif
 
 #ifndef _WIN32
-#include <signal.h>
-
 static void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
