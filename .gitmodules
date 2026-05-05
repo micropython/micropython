@@ -152,3 +152,6 @@
 [submodule "lib/psoc-edge/wifi-resources"]
 	path = lib/psoc-edge/wifi-resources
 	url = https://github.com/Infineon/wifi-resources.git
+[submodule "lib/micropython-deepcraft-model-interface"]
+	path = lib/micropython-deepcraft-model-interface
+	url = https://github.com/Infineon/micropython-deepcraft-model-interface

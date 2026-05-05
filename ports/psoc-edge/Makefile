@@ -521,6 +521,12 @@ CFLAGS += -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
+MICROPY_PY_DEEPCRAFT ?= 0
+ifeq ($(MICROPY_PY_DEEPCRAFT),1)
+DEEPCRAFT_MODEL_LIB_DIR := ../../lib/micropython-deepcraft-model-interface/
+include $(DEEPCRAFT_MODEL_LIB_DIR)deepcraft_interface.mk
+endif
+
 AFLAGS = -mthumb -march=armv8.1-m.main+fp+mve.fp
 
 LDFLAGS +=
