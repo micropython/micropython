@@ -100,6 +100,40 @@ represented by VFS classes.
     .. note:: There are reports of littlefs v2 failing in certain situations,
               for details see `littlefs issue 295`_.
 
+.. class:: VfsRom(buffer)
+
+    Create a filesystem object that uses the :ref:`ROMFS read-only filesystem
+    format <romfs>`.  *buffer* must be an object supporting the buffer protocol
+    (e.g. ``bytes``, ``bytearray``, or ``memoryview``) that contains a valid
+    ROMFS image.
+
+    Objects created by this constructor can be mounted using :func:`mount`.
+
+    This class is only available when the firmware is built with
+    ``MICROPY_VFS_ROM`` enabled.
+
+    See :ref:`romfs` for more information on the ROMFS filesystem and how to
+    deploy images using :ref:`mpremote <mpremote>`.
+
+.. function:: rom_ioctl(op, ...)
+
+    Low-level interface for accessing the read-only memory (ROM) partition(s)
+    of the device.  Only available on ports that support ROMFS
+    (``MICROPY_VFS_ROM_IOCTL`` enabled).
+
+    The supported operations are:
+
+    - ``rom_ioctl(1)`` -- Return the number of available ROM partitions.
+    - ``rom_ioctl(2, id)`` -- Return partition *id* as a ``memoryview``.
+    - ``rom_ioctl(3, id, length)`` -- Erase the first *length* bytes of
+      partition *id* in preparation for writing.  Returns the minimum write
+      alignment in bytes.
+    - ``rom_ioctl(4, id, offset, buf)`` -- Write *buf* to partition *id*
+      at byte *offset*.
+    - ``rom_ioctl(5, id)`` -- Finalise a write sequence to partition *id*.
+
+    See :ref:`romfs` for more information.
+
 .. class:: VfsPosix(root=None)
 
     Create a filesystem object that accesses the host POSIX filesystem.
