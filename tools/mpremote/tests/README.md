@@ -25,5 +25,106 @@ To run a single test do:
 
     $ ./run-mpremote-tests.sh test_filesystem.sh
 
-Each test should print "OK" if it passed.  Otherwise it will print "CRASH", or "FAIL"
-and a diff of the expected and actual test output.
+To run tests against a specific device:
+
+    $ ./run-mpremote-tests.sh -t /dev/ttyACM0
+    $ ./run-mpremote-tests.sh -t rfc2217://localhost:2217
+
+Device shortcuts are supported: `a0` → `/dev/ttyACM0`, `u0` → `/dev/ttyUSB0`, `c0` → `COM0`.
+
+Each test should print "OK" if it passed.  Otherwise it will print "CRASH", "FAIL"
+(with a diff of expected vs actual output), or "skip" if the test was skipped.
+
+## Skipping Tests
+
+Tests can skip themselves by outputting `SKIP` on a line by itself and exiting with
+code 0. This is useful when a test is not applicable to a particular device or
+configuration.
+
+Example in a test script:
+```bash
+if [[ "${MPREMOTE_DEVICE}" == rfc2217://* ]]; then
+    echo "SKIP"
+    exit 0
+fi
+```
+
+The `MPREMOTE_DEVICE` environment variable contains the device path passed via `-t`.
+
+## Using the RAM Disk
+
+Tests that need a writable filesystem can use `ramdisk.py` to create a temporary
+FAT filesystem in RAM:
+
+```bash
+TEST_DIR=$(dirname $0)
+$MPREMOTE run "${TEST_DIR}/ramdisk.py"
+```
+Defaults to: block_size=512, num_blocks=50, mount_path='/ramdisk', do_chdir=True
+Custom parameters can be passed via `exec`:
+
+```bash
+$MPREMOTE exec "mount_path='/__ramdisk'; do_chdir=False" run "${TEST_DIR}/ramdisk.py"
+```
+## Running with Coverage
+
+Both bash tests and pytest tests can collect coverage data. To get combined coverage
+from both test suites:
+
+```bash
+cd tools/mpremote
+
+# 1. Start fresh
+coverage erase
+
+# 2. Run bash tests with coverage (creates parallel data files)
+./tests/run-mpremote-tests.sh -c
+
+# 3. Combine bash test coverage into .coverage
+coverage combine
+
+# 4. Run pytest (appends to existing coverage data)
+MPREMOTE_DEVICES="socket://localhost:2218,rfc2217://localhost:2217" pytest tests/
+
+# 5. View reports
+coverage report          # Terminal summary
+coverage html            # HTML report in htmlcov/
+```
+
+**Important:** Run bash tests first, then `coverage combine`, then pytest. The pytest
+configuration includes `--cov-append` which adds to existing coverage data rather than
+replacing it.
+
+The HTML report shows which tests covered each line, including scenario contexts
+(e.g., `[socket]`, `[rfc2217]`) for device-specific coverage tracking.
+
+### Coverage Options
+
+- Pytest automatically collects coverage with append mode (configured in `pyproject.toml`)
+- Bash tests: use `-c` flag to enable coverage
+- Device shortcuts work with coverage: `./tests/run-mpremote-tests.sh -t a0 -c`
+
+### Subprocess Coverage
+
+Both test frameworks collect coverage from subprocesses (the actual `mpremote` commands
+being tested), not just from the test harness code. They use the same approach:
+
+**Pattern:** Wrap mpremote invocations with `coverage run --context=<test_name>`.
+
+**Bash tests:** When using `-c`, the script sets:
+```bash
+MPREMOTE="coverage run --context=${TEST_NAME} ${TEST_DIR}/../mpremote.py"
+```
+
+**Pytest tests:** The `get_spawn_command()` helper detects when coverage is active
+(via `COVERAGE_PROCESS_START` env var set by conftest.py) and wraps commands:
+```python
+# Returns: ("coverage", ["run", "--context=...", "mpremote.py", ...])
+cmd, args = get_spawn_command(mpremote, ["connect", device], request.node.nodeid)
+child = pexpect.spawn(cmd, args, ...)
+```
+
+Both approaches create parallel coverage data files (`.coverage.<hostname>.<pid>.*`)
+that are combined with `coverage combine`. The `parallel = true` setting in
+`pyproject.toml` enables this.
+

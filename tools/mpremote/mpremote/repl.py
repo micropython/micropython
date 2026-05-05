@@ -3,6 +3,11 @@ from .console import Console, ConsolePosix
 from .transport import TransportError
 
 
+def _is_rfc2217(serial):
+    """Check if the serial port is an RFC2217 connection."""
+    return hasattr(serial, "_socket")
+
+
 def do_repl_main_loop(
     state, console_in, console_out_write, *, escape_non_printable, code_to_inject, file_to_inject
 ):
@@ -32,21 +37,36 @@ def do_repl_main_loop(
                 else:
                     state.transport.serial.write(c)
 
+            # Read any data available from the device
             n = state.transport.serial.inWaiting()
-            if n > 0:
+            if n == 0 and _is_rfc2217(state.transport.serial):
+                # RFC2217 may have pending socket data. Non-blocking read triggers
+                # buffer processing (pyserial RFC2217 uses a background thread).
+                dev_data_in = state.transport.serial.read(1)
+                if dev_data_in:
+                    # Successfully read a byte, read any additional data now in buffer
+                    n = state.transport.serial.inWaiting()
+                    if n > 0:
+                        dev_data_in += state.transport.serial.read(n)
+                else:
+                    dev_data_in = None
+            elif n > 0:
                 dev_data_in = state.transport.serial.read(n)
-                if dev_data_in is not None:
-                    if escape_non_printable:
-                        # Pass data through to the console, with escaping of non-printables.
-                        console_data_out = bytearray()
-                        for c in dev_data_in:
-                            if c in (8, 9, 10, 13, 27) or 32 <= c <= 126:
-                                console_data_out.append(c)
-                            else:
-                                console_data_out.extend(b"[%02x]" % c)
-                    else:
-                        console_data_out = dev_data_in
-                    console_out_write(console_data_out)
+            else:
+                dev_data_in = None
+
+            if dev_data_in is not None:
+                if escape_non_printable:
+                    # Pass data through to the console, with escaping of non-printables.
+                    console_data_out = bytearray()
+                    for c in dev_data_in:
+                        if c in (8, 9, 10, 13, 27) or 32 <= c <= 126:
+                            console_data_out.append(c)
+                        else:
+                            console_data_out.extend(b"[%02x]" % c)
+                else:
+                    console_data_out = dev_data_in
+                console_out_write(console_data_out)
 
         except OSError as er:
             if _is_disconnect_exception(er):

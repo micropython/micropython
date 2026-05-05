@@ -30,3 +30,18 @@ cat "${TMP}/test.txt"
 # Test RemoteFile.readline and RemoteFile.readlines methods.
 echo -----
 $MPREMOTE mount ${TMP} exec "print(open('test.txt').readlines())"
+
+
+# todo REMOTE ACTIONS 
+# file.seek()
+# file read() # content= bytes 
+# file.fd
+# file.close()
+
+# fs.rename() 
+# fs.remove() 
+# fs.mkdir()
+# fs.rmdir()
+
+# access unsafe links ?
+# remount on Ctrl-D ? - perhaps with soft reboot ?

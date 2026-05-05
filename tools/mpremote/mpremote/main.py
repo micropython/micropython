@@ -17,29 +17,24 @@ MicroPython device over a serial connection.  Commands supported are:
     mpremote repl                    -- enter REPL
 """
 
+import sys
+
+if sys.platform == "win32":
+    # if needed, apply Unicode fix before other imports that might print
+    from .console import configure_unicode_output
+    configure_unicode_output()
+
 import argparse
-import os, sys, time
+import os
+import time
 from collections.abc import Mapping
 from textwrap import dedent
 
 import platformdirs
 
-from .commands import (
-    CommandError,
-    do_connect,
-    do_disconnect,
-    do_edit,
-    do_filesystem,
-    do_mount,
-    do_umount,
-    do_exec,
-    do_eval,
-    do_run,
-    do_resume,
-    do_rtc,
-    do_soft_reset,
-    do_romfs,
-)
+from .commands import (CommandError, do_connect, do_disconnect, do_edit,
+                       do_eval, do_exec, do_filesystem, do_mount, do_resume,
+                       do_romfs, do_rtc, do_run, do_soft_reset, do_umount)
 from .mip import do_mip
 from .repl import do_repl
 
@@ -492,6 +487,7 @@ def do_command_expansion(args):
 
     last_arg_idx = len(args)
     pre = []
+    exp_args = ()  # Initialize to empty tuple for commands with no expected args
     while args and args[0] in _command_expansions:
         cmd = args.pop(0)
         exp_args, exp_sub, _ = _command_expansions[cmd]
@@ -518,7 +514,7 @@ def do_command_expansion(args):
         args[0:0] = exp_sub
         last_arg_idx = len(exp_sub)
 
-    if last_arg_idx < len(args) and "=" in args[last_arg_idx]:
+    if exp_args and last_arg_idx < len(args) and "=" in args[last_arg_idx]:
         # Extra unknown arguments given.
         arg = args[last_arg_idx].split("=", 1)[0]
         usage_error(cmd, exp_args, f"given unexpected argument {arg}")
