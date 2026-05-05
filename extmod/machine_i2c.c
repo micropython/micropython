@@ -271,6 +271,15 @@ int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n
                 len += bufs[i].len;
             }
         }
+        #if MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1
+        if (flags & MP_MACHINE_I2C_FLAG_WRITE1) {
+            assert(flags & MP_MACHINE_I2C_FLAG_READ);
+            assert(n >= 1);
+            // If set, the "first mp_machine_i2c_buf_t in a transfer is a write",
+            // so we need to copy it.
+            memcpy(buf, bufs[0].buf, bufs[0].len);
+        }
+        #endif
     }
 
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
