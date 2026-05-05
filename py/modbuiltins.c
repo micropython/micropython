@@ -364,18 +364,21 @@ static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
 static mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
-    switch (n_args) {
-        case 2:
-            return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
-        default:
-            #if !MICROPY_PY_BUILTINS_POW3
-            mp_raise_NotImplementedError(MP_ERROR_TEXT("3-arg pow() not supported"));
-            #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
-            return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
-            #else
-            return mp_obj_int_pow3(args[0], args[1], args[2]);
-            #endif
+    // Treat pow(x, y, None) as pow(x, y), matching CPython.
+    if (n_args == 2
+        #if MICROPY_PY_BUILTINS_POW3
+        || args[2] == mp_const_none
+        #endif
+        ) {
+        return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
     }
+    #if !MICROPY_PY_BUILTINS_POW3
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("3-arg pow() not supported"));
+    #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
+    return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
+    #else
+    return mp_obj_int_pow3(args[0], args[1], args[2]);
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 

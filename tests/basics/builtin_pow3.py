@@ -28,3 +28,9 @@ try:
     print(pow(4, 5, "z"))
 except TypeError:
     print("TypeError expected")
+
+# pow(x, y, None) is equivalent to pow(x, y)
+print(pow(0, 1, None))
+print(pow(1, 0, None))
+print(pow(-2, 3, None))
+print(pow(3, 8, None))
