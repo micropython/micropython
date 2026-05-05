@@ -70,29 +70,36 @@ static uint8_t eth_status = 0;
 
 static void eth_event_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data) {
-    switch (event_id) {
-        case ETHERNET_EVENT_CONNECTED:
-            eth_status = ETH_CONNECTED;
-            ESP_LOGI("ethernet", "Ethernet Link Up");
-            break;
-        case ETHERNET_EVENT_DISCONNECTED:
-            eth_status = ETH_DISCONNECTED;
-            ESP_LOGI("ethernet", "Ethernet Link Down");
-            break;
-        case ETHERNET_EVENT_START:
-            eth_status = ETH_STARTED;
-            ESP_LOGI("ethernet", "Ethernet Started");
-            break;
-        case ETHERNET_EVENT_STOP:
-            eth_status = ETH_STOPPED;
-            ESP_LOGI("ethernet", "Ethernet Stopped");
-            break;
-        case IP_EVENT_ETH_GOT_IP:
-            eth_status = ETH_GOT_IP;
-            ESP_LOGI("ethernet", "Ethernet Got IP");
-            break;
-        default:
-            break;
+    if (event_base == ETH_EVENT) {
+        switch (event_id) {
+            case ETHERNET_EVENT_CONNECTED:
+                eth_status = ETH_CONNECTED;
+                ESP_LOGI("ethernet", "Ethernet Link Up");
+                break;
+            case ETHERNET_EVENT_DISCONNECTED:
+                eth_status = ETH_DISCONNECTED;
+                ESP_LOGI("ethernet", "Ethernet Link Down");
+                break;
+            case ETHERNET_EVENT_START:
+                eth_status = ETH_STARTED;
+                ESP_LOGI("ethernet", "Ethernet Started");
+                break;
+            case ETHERNET_EVENT_STOP:
+                eth_status = ETH_STOPPED;
+                ESP_LOGI("ethernet", "Ethernet Stopped");
+                break;
+            default:
+                break;
+        }
+    } else if (event_base == IP_EVENT) {
+        switch (event_id) {
+            case IP_EVENT_ETH_GOT_IP:
+                eth_status = ETH_GOT_IP;
+                ESP_LOGI("ethernet", "Ethernet Got IP");
+                break;
+            default:
+                break;
+        }
     }
 }
 
