@@ -21,4 +21,3 @@ to `<https://www.python.org>`__.
    pwm.rst
    peripheral_access.rst
    reset.rst
-   udp_multicast.rst
