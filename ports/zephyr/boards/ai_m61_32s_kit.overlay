@@ -31,3 +31,11 @@
 		memory-region = <&psram>;
 	};
 };
+
+&wdt0 {
+	status = "okay";
+};
+
+&sec_eng_trng {
+	status = "okay";
+};
