@@ -48,6 +48,16 @@
 #include "mbedtls/pk.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
+
+// Personalization string for the CTR-DRBG instance created per TLS context.
+// It is mixed into the DRBG seed alongside the entropy source.  Ports that
+// have access to a device-unique identifier (chip ID, MAC address, etc.)
+// should override this in their mpconfigport.h to improve DRBG diversity
+// across devices, e.g.:
+//   #define MICROPY_SSL_CTR_DRBG_PERS_STRING "mpy-" DEVICE_SERIAL_STR
+#ifndef MICROPY_SSL_CTR_DRBG_PERS_STRING
+#define MICROPY_SSL_CTR_DRBG_PERS_STRING "mpy"
+#endif
 #ifdef MBEDTLS_SSL_PROTO_DTLS
 #include "mbedtls/timing.h"
 #endif
@@ -304,7 +314,7 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     psa_crypto_init();
     #endif
 
-    const byte seed[] = "mpy";
+    const byte seed[] = MICROPY_SSL_CTR_DRBG_PERS_STRING;
     int ret = mbedtls_ctr_drbg_seed(&self->ctr_drbg, mbedtls_entropy_func, &self->entropy, seed, sizeof(seed));
     if (ret != 0) {
         mbedtls_raise_error(ret);
