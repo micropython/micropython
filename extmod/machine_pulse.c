@@ -30,8 +30,7 @@
 
 #if MICROPY_PY_MACHINE_PULSE
 
-mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
-    mp_uint_t nchanges = 2;
+mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us, mp_uint_t nchanges) {
     mp_uint_t start = mp_hal_ticks_us();
     for (;;) {
         // Sample ticks and pin as close together as possible, and always in the same
@@ -71,10 +70,14 @@ static mp_obj_t machine_time_pulse_us_(size_t n_args, const mp_obj_t *args) {
     if (n_args > 2) {
         timeout_us = mp_obj_get_int(args[2]);
     }
-    mp_uint_t us = machine_time_pulse_us(pin, level, timeout_us);
-    // May return -1 or -2 in case of timeout
+    mp_uint_t nchanges = 2;
+    if (n_args > 3) {
+        nchanges = mp_obj_get_int(args[3]);
+    }
+    mp_uint_t us = machine_time_pulse_us(pin, level, timeout_us, nchanges);
+    // May return -1 or -2 or -3 in case of timeout
     return mp_obj_new_int(us);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj, 2, 3, machine_time_pulse_us_);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj, 2, 4, machine_time_pulse_us_);
 
 #endif
