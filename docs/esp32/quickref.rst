@@ -255,6 +255,13 @@ an ESP32-S3 development board::
           ports, but using a :ref:`different software interface
           <network.WIZNET5K>`.
 
+
+UDP MULTICAST
+^^^^^^^^^^^^^
+
+See client/server example in the :ref:`udp_multicast` tutorial.
+
+
 Delay and timing
 ----------------
 

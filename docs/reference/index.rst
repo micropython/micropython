@@ -33,3 +33,4 @@ implementation and the best practices to use them.
    filesystem.rst
    pyboard.py.rst
    micropython2_migration.rst
+   udp_multicast.rst
