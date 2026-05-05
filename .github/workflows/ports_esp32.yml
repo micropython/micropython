@@ -20,7 +20,7 @@ concurrency:
 env:
    # Oldest and newest supported ESP-IDF versions, should match ports/esp32/README.md
    IDF_OLDEST_VER: &oldest "v5.3"
-   IDF_NEWEST_VER: &newest "v5.5.1"
+   IDF_NEWEST_VER: &newest "v5.5.4"
 
 jobs:
   build_idf:
