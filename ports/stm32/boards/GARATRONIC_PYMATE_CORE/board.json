@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "PyMateIO_Core.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "GARATRONIC_PYMATE_CORE",
+    "thumbnail": "",
+    "url": "https://aceautomation.eu/product/core8adi8dosc-pymateio-core-8-digital-analog-inputs-8-digital-outputs-rs485-port-can-port/",
+    "vendor": "Ace_Automation"
+}
