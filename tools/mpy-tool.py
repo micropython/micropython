@@ -1507,6 +1507,8 @@ def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
 
 
 def read_mpy(filename):
+    import re
+
     with open(filename, "rb") as fileobj:
         reader = MPYReader(filename, fileobj)
         segments = []
@@ -1551,7 +1553,14 @@ def read_mpy(filename):
             obj_table.append(read_obj(reader, segments))
 
         # Compute the compiled-module escaped name.
-        cm_escaped_name = qstr_table[0].str.replace("/", "_")[:-3]
+        module_name = qstr_table[0].str
+        for character in module_name:
+            codepoint = ord(character)
+            if codepoint < 0x20 or codepoint > 0x7F:
+                raise MPYReadError(filename, "cannot have unicode characters in module name")
+        identifier_sanitiser = re.compile("[^a-zA-Z0-9_]")
+        cm_escaped_name = module_name.replace("/", "_")[:-3]
+        cm_escaped_name = identifier_sanitiser.sub("_", cm_escaped_name)
 
         # Read the outer raw code, which will in turn read all its children.
         raw_code_file_offset = reader.tell()
