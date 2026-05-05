@@ -1479,6 +1479,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_ROUND_INT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to implement dir() to enumerate object fields.
+#ifndef MICROPY_PY_BUILTINS_DIR
+#define MICROPY_PY_BUILTINS_DIR (1)
+#endif
+
 // Whether to support complete set of special methods for user
 // classes, or only the most used ones. "Inplace" methods are
 // controlled by MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS below.
