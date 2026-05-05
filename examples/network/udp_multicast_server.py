@@ -1,6 +1,6 @@
 # udp_multicast_server.py::
 
-import network, socket, errno, struct, time
+import network, socket, errno, struct
 
 print("connect to AP")
 
