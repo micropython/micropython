@@ -135,17 +135,23 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
     gpio_io_config_t gpio_io_config;
     gpio_get_io_config(gpio_num, &gpio_io_config);
+    qstr mode;
     if (gpio_io_config.oe) {
-        mp_printf(print, ", mode=Pin.OUT");
+        mode = MP_QSTR_OUT;
     } else if (gpio_io_config.od) {
-        mp_printf(print, ", mode=Pin.OPEN_DRAIN");
-    } else if (gpio_io_config.ie) {
-        mp_printf(print, ", mode=Pin.IN");
+        mode = MP_QSTR_OPEN_DRAIN;
+    } else { // if (gpio_io_config.ie)
+        mode = MP_QSTR_IN;
     }
+    mp_printf(print, ", mode=%q.%q", MP_QSTR_Pin, mode);
+    qstr pull = MP_QSTRnull;
     if (gpio_io_config.pu) {
-        mp_printf(print, ", pull=Pin.PULL_UP");
+        pull = MP_QSTR_PULL_UP;
     } else if (gpio_io_config.pd) {
-        mp_printf(print, ", pull=Pin.PULL_DOWN");
+        pull = MP_QSTR_PULL_DOWN;
+    }
+    if (pull != MP_QSTRnull) {
+        mp_printf(print, ", pull=%q.%q", MP_QSTR_Pin, pull);
     }
     if (gpio_io_config.drv != GPIO_DRIVE_CAP_2) {
         mp_printf(print, ", drive=Pin.DRIVE_%u", gpio_io_config.drv);
