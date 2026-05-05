@@ -593,15 +593,16 @@ Constructor
    - ``id``
    - ``txbuf``
    - ``invert`` 
-
-
+  
+  
 Methods
 ^^^^^^^
 
 .. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, *, ...)
 
     The same parameters as the constructor are supported, with the same limitations.
-    
+
+
 PWM
 ----
 
@@ -669,3 +670,125 @@ Complete example
 
     # Stop and release the pin
     pwm.deinit()
+
+
+Network Module
+--------------
+
+The :mod:`network` module.
+
+See :ref:`network.WLAN <network.WLAN>`:
+
+This section documents only the PSOC™ Edge-specific WLAN behaviour.
+
+.. method:: WLAN.active([is_active])
+
+    Interface activation differs by interface type:
+
+    * STA: ``WLAN.active()`` returns the current connection state. Setting the STA active state is not supported.
+    * AP: ``WLAN.active()`` returns whether the access point is running, and ``WLAN.active(True/False)`` starts or stops it.
+
+.. method:: WLAN.scan(ssid=None, bssid=None)
+
+    STA only. Accepts one optional filter per call:
+
+    * ``ssid`` — return only networks matching this SSID.
+    * ``bssid`` — return only networks matching this BSSID (bytes of length 6).
+
+    Passing both filters together is not supported.
+
+.. method:: WLAN.connect(ssid, key=None, *, bssid=None)
+
+    Connect the STA interface to an access point.
+
+    * ``ssid`` is required.
+    * ``key`` is optional and may be omitted for open networks.
+    * ``bssid`` is optional and, if provided, must be 6 bytes.
+
+.. method:: WLAN.isconnected()
+
+    Return the interface connection state:
+
+    * STA: ``True`` when connected to an access point.
+    * AP: ``True`` when the access point is running and at least one station is associated.
+
+.. method:: WLAN.status('param')
+
+    .. warning::
+        This function does not provide link-up/down connection state. Use
+        ``isconnected()`` to check connection status.
+
+    The following query parameters are allowed:
+
+        * ``rssi`` — received signal strength in dBm (STA only).
+        * ``stations`` — list of connected station MAC addresses as bytes (AP only).
+
+.. method:: WLAN.config('param')
+            WLAN.config(param=value, ...)
+
+    Supported configuration parameters are:
+
+    * AP query parameters:
+
+        - ``channel``
+        - ``ssid``
+        - ``security``
+        - ``key`` / ``password`` — only queryable when the default AP password is set.
+        - ``mac``
+
+    * AP set parameters:
+
+        - ``channel``
+        - ``ssid``
+        - ``security``
+        - ``key`` / ``password``
+
+    * STA query parameters:
+
+        - ``channel``
+        - ``ssid``
+        - ``security``
+        - ``mac``
+
+    .. note::
+        STA has no settable config parameters. Use ``WLAN.connect(ssid, key)`` to associate to a network.
+
+Constants
+^^^^^^^^^
+
+Security mode constants:
+
+.. data:: WLAN.OPEN
+        WLAN.WEP
+        WLAN.WPA
+        WLAN.WPA2
+        WLAN.WPA3
+        WLAN.WPA2_WPA_PSK
+        WLAN.SEC_UNKNOWN
+
+The following helper can be run manually (or placed in ``boot.py``) to connect
+to a Wi-Fi network:
+
+::
+
+    def network_connect(ssid, key, timeout_s=30):
+        import network
+        import time
+
+        wlan = network.WLAN(network.STA_IF)
+
+        if wlan.isconnected():
+            print("[Network] Already connected")
+            print(wlan.ifconfig())
+            return
+
+        wlan.connect(ssid, key)
+
+        for _ in range(timeout_s):
+            if wlan.isconnected():
+                print("[Network] Connected")
+                print(wlan.ifconfig())
+                return
+            time.sleep(1)
+
+        print("[Network] Connection failed")
