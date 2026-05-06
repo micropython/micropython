@@ -155,6 +155,11 @@
 #define MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY  (3000000)
 #define MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE (3000000)
 
+// USB CDC config
+#define CFG_TUD_CDC_EP_BUFSIZE  (4096)
+#define CFG_TUD_CDC_RX_BUFSIZE  (4096)
+#define CFG_TUD_CDC_TX_BUFSIZE  (4096)
+
 /******************************************************************************/
 // Bootloader configuration
 
