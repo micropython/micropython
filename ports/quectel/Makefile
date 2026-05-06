@@ -110,6 +110,6 @@ $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 $(BUILD)/firmware.a: $(OBJ)
 	$(ECHO) "AR $@"
 	$(Q)$(AR) -cr $@ $^
-	cd $(ROOT) && helios make ../../../micropython $(BOARD)
+	cd $(ROOT) && helios make $(abspath $(TOP)) $(BOARD)
 
 include $(TOP)/py/mkrules.mk
