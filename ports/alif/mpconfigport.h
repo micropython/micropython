@@ -40,7 +40,7 @@
 #if !defined(MICROPY_HW_SYSTEM_TICK_USE_SYSTICK) \
     && !defined(MICROPY_HW_SYSTEM_TICK_USE_LPTIMER) \
     && !defined(MICROPY_HW_SYSTEM_TICK_USE_UTIMER)
-#if CORE_M55_HP
+#if CORE_RTSS_HP
 #define MICROPY_HW_SYSTEM_TICK_USE_UTIMER       (1)
 #else
 #define MICROPY_HW_SYSTEM_TICK_USE_SYSTICK      (1)
@@ -51,16 +51,16 @@
 #endif
 
 #ifndef MICROPY_HW_ENABLE_OSPI
-#define MICROPY_HW_ENABLE_OSPI                  (CORE_M55_HP)
+#define MICROPY_HW_ENABLE_OSPI                  (CORE_RTSS_HP)
 #endif
 #ifndef MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_ENABLE_USBDEV                (CORE_M55_HP)
+#define MICROPY_HW_ENABLE_USBDEV                (CORE_RTSS_HP)
 #endif
 #ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
 #define MICROPY_HW_USB_PRODUCT_FS_STRING        "Board in HS mode"
 #endif
 #ifndef MICROPY_HW_USB_CDC
-#define MICROPY_HW_USB_CDC                      (CORE_M55_HP)
+#define MICROPY_HW_USB_CDC                      (CORE_RTSS_HP)
 #endif
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT           (500)
 #ifndef MICROPY_HW_USB_MSC
@@ -147,7 +147,7 @@
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/alif/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_IRQ             (1)
-#define MICROPY_PY_NETWORK                      (CORE_M55_HP)
+#define MICROPY_PY_NETWORK                      (CORE_RTSS_HP)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "mpy-alif"
 #endif

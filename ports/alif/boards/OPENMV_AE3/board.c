@@ -32,7 +32,7 @@
 #define OMV_BOOT_MAGIC_ADDR     (0x200FFFFCU)
 #define OMV_BOOT_MAGIC_VALUE    (0xB00710ADU)
 
-#if CORE_M55_HP
+#if CORE_RTSS_HP
 #define NPU_IRQ_NUMBER          NPU_HP_IRQ_IRQn
 #define NPU_BASE_ADDRESS        (void *)NPU_HP_BASE
 #else
@@ -108,7 +108,7 @@ void board_early_init(void) {
         .aon_clk_src = CLK_SRC_LFXO,
         // CLK_SRC_HFRC, CLK_SRC_HFXO or CLK_SRC_PLL
         .run_clk_src = CLK_SRC_PLL,
-        #if CORE_M55_HP
+        #if CORE_RTSS_HP
         .cpu_clk_freq = CLOCK_FREQUENCY_400MHZ,
         #else
         .cpu_clk_freq = CLOCK_FREQUENCY_160MHZ,

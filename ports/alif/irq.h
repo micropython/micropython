@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_ALIF_IRQ_H
 
 #include <stdint.h>
-#include ALIF_CMSIS_H
+#include CMSIS_device_header
 
 // IRQ priority definitions.
 //

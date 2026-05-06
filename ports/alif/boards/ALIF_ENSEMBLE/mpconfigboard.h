@@ -1,14 +1,14 @@
 #define MICROPY_HW_BOARD_NAME                   "Alif Ensemble DevKit"
 #define MICROPY_HW_MCU_NAME                     "AE722F80F55D5XX"
 
-#define MICROPY_HW_ENABLE_UART_REPL             (CORE_M55_HP)
+#define MICROPY_HW_ENABLE_UART_REPL             (CORE_RTSS_HP)
 #define MICROPY_HW_UART_REPL                    (4)
 #define MICROPY_HW_USB_MSC                      (1)
 #define MICROPY_HW_ENABLE_HW_I2C                (1)
 
 // ROMFS partitions
 #define MICROPY_HW_ROMFS_ENABLE_PART0           (1)
-#define MICROPY_HW_ROMFS_ENABLE_PART1           (CORE_M55_HP)
+#define MICROPY_HW_ROMFS_ENABLE_PART1           (CORE_RTSS_HP)
 
 // I2C buses
 #define MICROPY_HW_I2C0_SCL                     (pin_P0_3)

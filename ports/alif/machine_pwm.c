@@ -30,7 +30,6 @@
 #include "py/mphal.h"
 #include "utimer.h"
 
-#define UTIMER ((UTIMER_Type *)UTIMER_BASE)
 #define UTIMER_SOURCE_HZ (400000000)
 
 // Each UTIMER channel has two independent output drivers.
