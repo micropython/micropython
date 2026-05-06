@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "py/mpconfig.h"
+#include "py/mperrno.h"
 #include "py/obj.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
@@ -46,7 +47,7 @@ static bool sflash_access (_u32 mode, _i32 (* sl_FsFunction)(_i32 FileHdl, _u32 
     return retval;
 }
 
-DRESULT sflash_disk_init (void) {
+int sflash_disk_init (void) {
     _i32 fileHandle;
     SlFsFileInfo_t FsFileInfo;
 
@@ -63,7 +64,7 @@ DRESULT sflash_disk_init (void) {
         sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
         if (!sl_FsGetInfo(sflash_block_name, 0, &FsFileInfo)) {
             sl_LockObjUnlock (&wlan_LockObj);
-            return RES_OK;
+            return 0;
         }
         sl_LockObjUnlock (&wlan_LockObj);
 
@@ -78,37 +79,37 @@ DRESULT sflash_disk_init (void) {
                     sl_LockObjUnlock (&wlan_LockObj);
                     memset(sflash_block_cache, 0xFF, SFLASH_BLOCK_SIZE);
                     if (!sflash_access(FS_MODE_OPEN_WRITE, sl_FsWrite)) {
-                        return RES_ERROR;
+                        return -MP_EIO;
                     }
                 }
                 else {
                     // Unexpected failure while creating the file
                     sl_LockObjUnlock (&wlan_LockObj);
-                    return RES_ERROR;
+                    return -MP_EIO;
                 }
             }
             sl_LockObjUnlock (&wlan_LockObj);
         }
     }
-    return RES_OK;
+    return 0;
 }
 
-DRESULT sflash_disk_status(void) {
+int sflash_disk_status(void) {
     if (!sflash_init_done) {
-        return STA_NOINIT;
+        return -MP_ENODEV;
     }
-    return RES_OK;
+    return 0;
 }
 
-DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
+int sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
     uint32_t secindex;
 
     if (!sflash_init_done) {
-        return STA_NOINIT;
+        return -MP_ENODEV;
     }
 
     if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
-        return RES_PARERR;
+        return -MP_EINVAL;
     }
 
     for (int i = 0; i < count; i++) {
@@ -116,33 +117,35 @@ DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
         sflash_ublock = (sector + i) / SFLASH_SECTORS_PER_BLOCK;
         // See if it's time to read a new block
         if (sflash_prblock != sflash_ublock) {
-            if (sflash_disk_flush() != RES_OK) {
-                return RES_ERROR;
+            int ret = sflash_disk_flush();
+            if (ret != 0) {
+                return ret;
             }
             sflash_prblock = sflash_ublock;
             print_block_name (sflash_ublock);
             if (!sflash_access(FS_MODE_OPEN_READ, sl_FsRead)) {
-                return RES_ERROR;
+                return -MP_EIO;
             }
         }
         // Copy the requested sector from the block cache
         memcpy (buff, &sflash_block_cache[(secindex * SFLASH_SECTOR_SIZE)], SFLASH_SECTOR_SIZE);
         buff += SFLASH_SECTOR_SIZE;
     }
-    return RES_OK;
+
+    return 0;
 }
 
-DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
+int sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
     uint32_t secindex;
     int32_t index = 0;
 
     if (!sflash_init_done) {
-        return STA_NOINIT;
+        return -MP_ENODEV;
     }
 
     if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
         sflash_disk_flush();
-        return RES_PARERR;
+        return -MP_EINVAL;
     }
 
     do {
@@ -150,14 +153,15 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         sflash_ublock = (sector + index) / SFLASH_SECTORS_PER_BLOCK;
         // Check if it's a different block than last time
         if (sflash_prblock != sflash_ublock) {
-            if (sflash_disk_flush() != RES_OK) {
-                return RES_ERROR;
+            int ret = sflash_disk_flush();
+            if (ret != 0) {
+                return ret;
             }
             sflash_prblock = sflash_ublock;
             print_block_name (sflash_ublock);
             // Read the block into the cache
             if (!sflash_access(FS_MODE_OPEN_READ, sl_FsRead)) {
-                return RES_ERROR;
+                return -MP_EIO;
             }
         }
         // Copy the input sector to the block cache
@@ -166,17 +170,16 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         sflash_cache_is_dirty = true;
     } while (++index < count);
 
-    return RES_OK;
+    return 0;
 }
 
-DRESULT sflash_disk_flush (void) {
+int sflash_disk_flush(void) {
     // Write back the cache if it's dirty
     if (sflash_cache_is_dirty) {
         if (!sflash_access(FS_MODE_OPEN_WRITE, sl_FsWrite)) {
-            return RES_ERROR;
+            return -MP_EIO;
         }
         sflash_cache_is_dirty = false;
     }
-    return RES_OK;
+    return 0;
 }
-
