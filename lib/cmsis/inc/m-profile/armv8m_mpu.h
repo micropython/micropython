@@ -1,11 +1,5 @@
-/******************************************************************************
- * @file     mpu_armv8.h
- * @brief    CMSIS MPU API for Armv8-M and Armv8.1-M MPU
- * @version  V5.1.3
- * @date     03. February 2021
- ******************************************************************************/
 /*
- * Copyright (c) 2017-2021 Arm Limited. All rights reserved.
+ * Copyright (c) 2017-2022 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,14 +16,18 @@
  * limitations under the License.
  */
 
+/*
+ * CMSIS-Core(M) MPU API for Armv8-M and Armv8.1-M MPU
+ */
+
+#ifndef ARM_MPU_ARMV8_H
+#define ARM_MPU_ARMV8_H
+
 #if   defined ( __ICCARM__ )
   #pragma system_include         /* treat file as system include file for MISRA check */
 #elif defined (__clang__)
   #pragma clang system_header    /* treat file as system include file */
 #endif
-
-#ifndef ARM_MPU_ARMV8_H
-#define ARM_MPU_ARMV8_H
 
 /** \brief Attribute for device memory (outer only) */
 #define ARM_MPU_ATTR_DEVICE                           ( 0U )
@@ -37,11 +35,11 @@
 /** \brief Attribute for non-cacheable, normal memory */
 #define ARM_MPU_ATTR_NON_CACHEABLE                    ( 4U )
 
-/** \brief Attribute for normal memory (outer and inner)
-* \param NT Non-Transient: Set to 1 for non-transient data.
-* \param WB Write-Back: Set to 1 to use write-back update policy.
-* \param RA Read Allocation: Set to 1 to use cache allocation on read miss.
-* \param WA Write Allocation: Set to 1 to use cache allocation on write miss.
+/** \brief Attribute for Normal memory, Outer and Inner cacheability.
+* \param NT Non-Transient: Set to 1 for Non-transient data. Set to 0 for Transient data.
+* \param WB Write-Back: Set to 1 to use a Write-Back policy. Set to 0 to use a Write-Through policy.
+* \param RA Read Allocation: Set to 1 to enable cache allocation on read miss. Set to 0 to disable cache allocation on read miss.
+* \param WA Write Allocation: Set to 1 to enable cache allocation on write miss. Set to 0 to disable cache allocation on write miss.
 */
 #define ARM_MPU_ATTR_MEMORY_(NT, WB, RA, WA) \
   ((((NT) & 1U) << 3U) | (((WB) & 1U) << 2U) | (((RA) & 1U) << 1U) | ((WA) & 1U))
@@ -58,33 +56,95 @@
 /** \brief Device memory type Gathering, Re-ordering, Early Write Acknowledgement */
 #define ARM_MPU_ATTR_DEVICE_GRE    (3U)
 
+/** \brief Normal memory outer-cacheable and inner-cacheable attributes
+* WT = Write Through, WB = Write Back, TR = Transient, RA = Read-Allocate, WA = Write Allocate
+*/
+#define MPU_ATTR_NORMAL_OUTER_NON_CACHEABLE (0b0100)
+#define MPU_ATTR_NORMAL_OUTER_WT_TR_RA      (0b0010)
+#define MPU_ATTR_NORMAL_OUTER_WT_TR_WA      (0b0001)
+#define MPU_ATTR_NORMAL_OUTER_WT_TR_RA_WA   (0b0011)
+#define MPU_ATTR_NORMAL_OUTER_WT_RA         (0b1010)
+#define MPU_ATTR_NORMAL_OUTER_WT_WA         (0b1001)
+#define MPU_ATTR_NORMAL_OUTER_WT_RA_WA      (0b1011)
+#define MPU_ATTR_NORMAL_OUTER_WB_TR_RA      (0b0110)
+#define MPU_ATTR_NORMAL_OUTER_WB_TR_WA      (0b0101)
+#define MPU_ATTR_NORMAL_OUTER_WB_TR_RA_WA   (0b0111)
+#define MPU_ATTR_NORMAL_OUTER_WB_RA         (0b1110)
+#define MPU_ATTR_NORMAL_OUTER_WB_WA         (0b1101)
+#define MPU_ATTR_NORMAL_OUTER_WB_RA_WA      (0b1111)
+#define MPU_ATTR_NORMAL_INNER_NON_CACHEABLE (0b0100)
+#define MPU_ATTR_NORMAL_INNER_WT_TR_RA      (0b0010)
+#define MPU_ATTR_NORMAL_INNER_WT_TR_WA      (0b0001)
+#define MPU_ATTR_NORMAL_INNER_WT_TR_RA_WA   (0b0011)
+#define MPU_ATTR_NORMAL_INNER_WT_RA         (0b1010)
+#define MPU_ATTR_NORMAL_INNER_WT_WA         (0b1001)
+#define MPU_ATTR_NORMAL_INNER_WT_RA_WA      (0b1011)
+#define MPU_ATTR_NORMAL_INNER_WB_TR_RA      (0b0110)
+#define MPU_ATTR_NORMAL_INNER_WB_TR_WA      (0b0101)
+#define MPU_ATTR_NORMAL_INNER_WB_TR_RA_WA   (0b0111)
+#define MPU_ATTR_NORMAL_INNER_WB_RA         (0b1110)
+#define MPU_ATTR_NORMAL_INNER_WB_WA         (0b1101)
+#define MPU_ATTR_NORMAL_INNER_WB_RA_WA      (0b1111)
+
 /** \brief Memory Attribute
 * \param O Outer memory attributes
 * \param I O == ARM_MPU_ATTR_DEVICE: Device memory attributes, else: Inner memory attributes
 */
 #define ARM_MPU_ATTR(O, I) ((((O) & 0xFU) << 4U) | ((((O) & 0xFU) != 0U) ? ((I) & 0xFU) : (((I) & 0x3U) << 2U)))
 
-/** \brief Normal memory non-shareable  */
+/* \brief Specifies MAIR_ATTR number */
+#define MAIR_ATTR(x)       ((x > 7 || x < 0) ? 0 : x)
+
+/**
+ * Shareability
+ */
+/** \brief Normal memory, non-shareable  */
 #define ARM_MPU_SH_NON   (0U)
 
-/** \brief Normal memory outer shareable  */
+/** \brief Normal memory, outer shareable  */
 #define ARM_MPU_SH_OUTER (2U)
 
-/** \brief Normal memory inner shareable  */
+/** \brief Normal memory, inner shareable  */
 #define ARM_MPU_SH_INNER (3U)
 
+/**
+ * Access permissions
+ * AP = Access permission, RO = Read-only, RW = Read/Write, NP = Any privilege, PO = Privileged code only
+ */
+/** \brief Normal memory, read/write */
+#define ARM_MPU_AP_RW (0U)
+
+/** \brief Normal memory, read-only */
+#define ARM_MPU_AP_RO (1U)
+
+/** \brief Normal memory, any privilege level */
+#define ARM_MPU_AP_NP (1U)
+
+/** \brief Normal memory, privileged access only */
+#define ARM_MPU_AP_PO (0U)
+
+/*
+ * Execute-never
+ * XN = Execute-never, EX = Executable
+ */
+/** \brief Normal memory, Execution not permitted */
+#define ARM_MPU_XN (1U)
+
+/** \brief Normal memory, Execution only permitted if read permitted */
+#define ARM_MPU_EX (0U)
+
 /** \brief Memory access permissions
-* \param RO Read-Only: Set to 1 for read-only memory.
-* \param NP Non-Privileged: Set to 1 for non-privileged memory.
+* \param RO Read-Only: Set to 1 for read-only memory. Set to 0 for a read/write memory.
+* \param NP Non-Privileged: Set to 1 for non-privileged memory. Set to 0 for privileged memory.
 */
 #define ARM_MPU_AP_(RO, NP) ((((RO) & 1U) << 1U) | ((NP) & 1U))
 
 /** \brief Region Base Address Register value
 * \param BASE The base address bits [31:5] of a memory region. The value is zero extended. Effective address gets 32 byte aligned.
 * \param SH Defines the Shareability domain for this memory region.
-* \param RO Read-Only: Set to 1 for a read-only memory region.
-* \param NP Non-Privileged: Set to 1 for a non-privileged memory region.
-* \oaram XN eXecute Never: Set to 1 for a non-executable memory region.
+* \param RO Read-Only: Set to 1 for a read-only memory region. Set to 0 for a read/write memory region.
+* \param NP Non-Privileged: Set to 1 for a non-privileged memory region. Set to 0 for privileged memory region.
+* \param XN eXecute Never: Set to 1 for a non-executable memory region. Set to 0 for an executable memory region.
 */
 #define ARM_MPU_RBAR(BASE, SH, RO, NP, XN) \
   (((BASE) & MPU_RBAR_BASE_Msk) | \
@@ -102,7 +162,7 @@
   (MPU_RLAR_EN_Msk))
 
 #if defined(MPU_RLAR_PXN_Pos)
-  
+
 /** \brief Region Limit Address Register with PXN value
 * \param LIMIT The limit address bits [31:5] for this memory region. The value is one extended.
 * \param PXN Privileged execute never. Defines whether code can be executed from this privileged region.
@@ -113,7 +173,7 @@
   (((PXN) << MPU_RLAR_PXN_Pos) & MPU_RLAR_PXN_Msk) | \
   (((IDX) << MPU_RLAR_AttrIndx_Pos) & MPU_RLAR_AttrIndx_Msk) | \
   (MPU_RLAR_EN_Msk))
-  
+
 #endif
 
 /**
@@ -123,7 +183,16 @@ typedef struct {
   uint32_t RBAR;                   /*!< Region Base Address Register value */
   uint32_t RLAR;                   /*!< Region Limit Address Register value */
 } ARM_MPU_Region_t;
-    
+
+/**
+  \brief  Read MPU Type Register
+  \return Number of MPU regions
+*/
+__STATIC_INLINE uint32_t ARM_MPU_TYPE(void)
+{
+  return ((MPU->TYPE) >> 8);
+}
+
 /** Enable the MPU.
 * \param MPU_Control Default access permissions for unconfigured regions.
 */
@@ -190,11 +259,11 @@ __STATIC_INLINE void ARM_MPU_SetMemAttrEx(MPU_Type* mpu, uint8_t idx, uint8_t at
   const uint8_t reg = idx / 4U;
   const uint32_t pos = ((idx % 4U) * 8U);
   const uint32_t mask = 0xFFU << pos;
-  
+
   if (reg >= (sizeof(mpu->MAIR) / sizeof(mpu->MAIR[0]))) {
     return; // invalid index
   }
-  
+
   mpu->MAIR[reg] = ((mpu->MAIR[reg] & ~mask) | ((attr << pos) & mask));
 }
 
@@ -241,7 +310,7 @@ __STATIC_INLINE void ARM_MPU_ClrRegion(uint32_t rnr)
 * \param rnr Region number to be cleared.
 */
 __STATIC_INLINE void ARM_MPU_ClrRegion_NS(uint32_t rnr)
-{  
+{
   ARM_MPU_ClrRegionEx(MPU_NS, rnr);
 }
 #endif
@@ -251,7 +320,7 @@ __STATIC_INLINE void ARM_MPU_ClrRegion_NS(uint32_t rnr)
 * \param rnr Region number to be configured.
 * \param rbar Value for RBAR register.
 * \param rlar Value for RLAR register.
-*/   
+*/
 __STATIC_INLINE void ARM_MPU_SetRegionEx(MPU_Type* mpu, uint32_t rnr, uint32_t rbar, uint32_t rlar)
 {
   mpu->RNR = rnr;
@@ -263,7 +332,7 @@ __STATIC_INLINE void ARM_MPU_SetRegionEx(MPU_Type* mpu, uint32_t rnr, uint32_t r
 * \param rnr Region number to be configured.
 * \param rbar Value for RBAR register.
 * \param rlar Value for RLAR register.
-*/   
+*/
 __STATIC_INLINE void ARM_MPU_SetRegion(uint32_t rnr, uint32_t rbar, uint32_t rlar)
 {
   ARM_MPU_SetRegionEx(MPU, rnr, rbar, rlar);
@@ -274,10 +343,10 @@ __STATIC_INLINE void ARM_MPU_SetRegion(uint32_t rnr, uint32_t rbar, uint32_t rla
 * \param rnr Region number to be configured.
 * \param rbar Value for RBAR register.
 * \param rlar Value for RLAR register.
-*/   
+*/
 __STATIC_INLINE void ARM_MPU_SetRegion_NS(uint32_t rnr, uint32_t rbar, uint32_t rlar)
 {
-  ARM_MPU_SetRegionEx(MPU_NS, rnr, rbar, rlar);  
+  ARM_MPU_SetRegionEx(MPU_NS, rnr, rbar, rlar);
 }
 #endif
 
@@ -289,7 +358,7 @@ __STATIC_INLINE void ARM_MPU_SetRegion_NS(uint32_t rnr, uint32_t rbar, uint32_t 
 __STATIC_INLINE void ARM_MPU_OrderedMemcpy(volatile uint32_t* dst, const uint32_t* __RESTRICT src, uint32_t len)
 {
   uint32_t i;
-  for (i = 0U; i < len; ++i) 
+  for (i = 0U; i < len; ++i)
   {
     dst[i] = src[i];
   }
@@ -301,7 +370,7 @@ __STATIC_INLINE void ARM_MPU_OrderedMemcpy(volatile uint32_t* dst, const uint32_
 * \param table Pointer to the MPU configuration table.
 * \param cnt Amount of regions to be configured.
 */
-__STATIC_INLINE void ARM_MPU_LoadEx(MPU_Type* mpu, uint32_t rnr, ARM_MPU_Region_t const* table, uint32_t cnt) 
+__STATIC_INLINE void ARM_MPU_LoadEx(MPU_Type* mpu, uint32_t rnr, ARM_MPU_Region_t const* table, uint32_t cnt)
 {
   const uint32_t rowWordSize = sizeof(ARM_MPU_Region_t)/4U;
   if (cnt == 1U) {
@@ -310,7 +379,7 @@ __STATIC_INLINE void ARM_MPU_LoadEx(MPU_Type* mpu, uint32_t rnr, ARM_MPU_Region_
   } else {
     uint32_t rnrBase   = rnr & ~(MPU_TYPE_RALIASES-1U);
     uint32_t rnrOffset = rnr % MPU_TYPE_RALIASES;
-    
+
     mpu->RNR = rnrBase;
     while ((rnrOffset + cnt) > MPU_TYPE_RALIASES) {
       uint32_t c = MPU_TYPE_RALIASES - rnrOffset;
@@ -321,7 +390,7 @@ __STATIC_INLINE void ARM_MPU_LoadEx(MPU_Type* mpu, uint32_t rnr, ARM_MPU_Region_
       rnrBase += MPU_TYPE_RALIASES;
       mpu->RNR = rnrBase;
     }
-    
+
     ARM_MPU_OrderedMemcpy(&(mpu->RBAR)+(rnrOffset*2U), &(table->RBAR), cnt*rowWordSize);
   }
 }
@@ -331,7 +400,7 @@ __STATIC_INLINE void ARM_MPU_LoadEx(MPU_Type* mpu, uint32_t rnr, ARM_MPU_Region_
 * \param table Pointer to the MPU configuration table.
 * \param cnt Amount of regions to be configured.
 */
-__STATIC_INLINE void ARM_MPU_Load(uint32_t rnr, ARM_MPU_Region_t const* table, uint32_t cnt) 
+__STATIC_INLINE void ARM_MPU_Load(uint32_t rnr, ARM_MPU_Region_t const* table, uint32_t cnt)
 {
   ARM_MPU_LoadEx(MPU, rnr, table, cnt);
 }
@@ -342,7 +411,7 @@ __STATIC_INLINE void ARM_MPU_Load(uint32_t rnr, ARM_MPU_Region_t const* table, u
 * \param table Pointer to the MPU configuration table.
 * \param cnt Amount of regions to be configured.
 */
-__STATIC_INLINE void ARM_MPU_Load_NS(uint32_t rnr, ARM_MPU_Region_t const* table, uint32_t cnt) 
+__STATIC_INLINE void ARM_MPU_Load_NS(uint32_t rnr, ARM_MPU_Region_t const* table, uint32_t cnt)
 {
   ARM_MPU_LoadEx(MPU_NS, rnr, table, cnt);
 }

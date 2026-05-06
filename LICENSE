@@ -45,7 +45,7 @@ used during the build process and is not part of the compiled source code.
                 /Rules.mak (GPL-2.0)
         /berkeley-db-1xx (BSD-4-clause)
         /btstack (See btstack/LICENSE)
-        /cmsis (BSD-3-clause)
+        /cmsis (Apache-2.0)
         /crypto-algorithms (NONE)
         /libhydrogen (ISC)
         /libmetal (BSD-3-clause)

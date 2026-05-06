@@ -1,6 +1,6 @@
 /* generated pin source file - do not edit */
 #include "bsp_api.h"
-#include "r_ioport_api.h"
+#include "r_ioport.h"
 
 const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = { { .pin = BSP_IO_PORT_00_PIN_00,
                                                   .pin_cfg = ((uint32_t)IOPORT_CFG_ANALOG_ENABLE) },
