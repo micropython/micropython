@@ -477,3 +477,34 @@ assignment to the Encoder or Counter are:
 
   Pins J3_14, J3_15, J4_19, J4_20, J5_15, J5_16, J5_17, J5_22, J5_23, J5_24, J5_25 and J5_26.
   Pins J3_14 and J3_15 cannot be used for the match output.
+
+
+.. _mimxrt_can_pinout:
+
+|
+|
+
+Pin Assignment
+--------------
+
+Pin assignments for a few MIMXRT boards. The list show the MCU TX/RX pins.
+
+=================  ===========  ===========  =======
+Board              CAN1         CAN2         CAN3
+=================  ===========  ===========  =======
+Teensy 4.0         A8/A9        D1/D0        -
+Teensy 4.1         A8/A9        D1/D0        D31/D30
+Seeed Arch MIX     J4_08/J4_09  J3_14/J3_15
+MIMXRT1020_DEV     Transceiver  -            -
+MIMXRT1050_DEV     Transceiver  -            -
+MIMXRT1060_DEV     Transceiver  -            -
+MIMXRT1064_DEV     Transceiver  -            -
+MIMXRT1170_DEV     Transceiver  D4/D8        -
+phyBOARD-RT1170    CAN port     -            -
+=================  ===========  ===========  =======
+
+All supported MIMXRT Developments boards are equipped with a CAN transceiver
+and do expose it's MCU pins. At the 3 pin transceiver connector
+CAN_H is as pin 1, CAN_L at Pin 3. Pin 2 is connected to GND.
+A documentation showing the CAN pin assignments of the phyBOARD-RT1170
+does not seem to be accessible.
