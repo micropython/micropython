@@ -119,6 +119,10 @@ function build_nrf_boards {
     build_boards nrfx_glue.h $1 $2 bin hex uf2
 }
 
+function build_psoc_edge_boards {
+    build_boards modpsocedge.c $1 $2 zip
+}
+
 function build_renesas_ra_boards {
     build_boards ra_it.c $1 $2 bin hex
 }
