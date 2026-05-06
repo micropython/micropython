@@ -212,7 +212,9 @@ extern struct _spi_bdev_t spi_bdev;
 // USB config
 #define MICROPY_HW_USB_FS                       (1)
 #define MICROPY_HW_USB_VID                      0x2341
+#ifndef MICROPY_HW_USB_PID
 #define MICROPY_HW_USB_PID                      0x0564
+#endif
 #define MICROPY_HW_USB_PID_CDC_MSC              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC_HID              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC                  (MICROPY_HW_USB_PID)
