@@ -98,7 +98,6 @@
 
 - name: socket-internet
   type: custom
-  tags: [optional]
   test:
     script:
       - ports/psoc-edge/mp_custom/socket_internet.py
