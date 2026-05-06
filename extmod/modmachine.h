@@ -198,6 +198,12 @@ extern const machine_mem_obj_t machine_mem8_obj;
 extern const machine_mem_obj_t machine_mem16_obj;
 extern const machine_mem_obj_t machine_mem32_obj;
 
+// Object for machine.backup_memory (static memoryview over persistent storage).
+#if MICROPY_PY_MACHINE_BACKUP_MEMORY
+#include "py/objarray.h"
+extern const mp_obj_array_t machine_backup_memory_obj;
+#endif
+
 // These classes correspond to machine.Type entries in the machine module.
 // Their Python bindings are implemented in extmod, and their implementation
 // is provided by a port.

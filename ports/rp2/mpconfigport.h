@@ -30,6 +30,7 @@
 #include "hardware/flash.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
+#include "hardware/structs/watchdog.h"
 #include "pico/binary_info.h"
 #include "pico/multicore.h"
 #include "mpconfigboard.h"
@@ -191,6 +192,14 @@
 #define MICROPY_PY_MACHINE_UART_IRQ             (1)
 #define MICROPY_PY_MACHINE_WDT                  (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/rp2/machine_wdt.c"
+#ifndef MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_PY_MACHINE_BACKUP_MEMORY        (1)
+#endif
+#if MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_HW_BACKUP_MEMORY_BYTES          (sizeof(watchdog_hw->scratch))
+#define MICROPY_HW_BACKUP_MEMORY_ITEMSIZE       (4)
+#define MICROPY_HW_BACKUP_MEMORY_ADDR           ((void *)&watchdog_hw->scratch[0])
+#endif
 #define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX    (2)
 #define MICROPY_PY_ONEWIRE                      (1)
 #define MICROPY_VFS                             (1)

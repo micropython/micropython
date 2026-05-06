@@ -53,3 +53,10 @@
 #define MICROPY_HW_MCU_NAME            MICROPY_PY_SYS_PLATFORM
 // Keep the standard banner message
 #define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
+
+// Enable machine.backup_memory with a static RAM buffer for coverage testing.
+#define MICROPY_PY_MACHINE_BACKUP_MEMORY    (1)
+#define MICROPY_HW_BACKUP_MEMORY_BYTES      (64)
+#define MICROPY_HW_BACKUP_MEMORY_ITEMSIZE   (1)
+extern uint8_t machine_backup_memory_buf[];
+#define MICROPY_HW_BACKUP_MEMORY_ADDR       ((void *)machine_backup_memory_buf)

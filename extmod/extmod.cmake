@@ -9,6 +9,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/btstack/modbluetooth_btstack.c
     ${MICROPY_EXTMOD_DIR}/machine_adc.c
     ${MICROPY_EXTMOD_DIR}/machine_adc_block.c
+    ${MICROPY_EXTMOD_DIR}/machine_backup_memory.c
     ${MICROPY_EXTMOD_DIR}/machine_bitstream.c
     ${MICROPY_EXTMOD_DIR}/machine_can.c
     ${MICROPY_EXTMOD_DIR}/machine_i2c.c
