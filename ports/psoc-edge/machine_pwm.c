@@ -27,8 +27,10 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "modmachine.h"
+#include "cy_gpio.h"
 #include "cy_tcpwm_pwm.h"
 #include "cycfg_peripherals.h"
+#include "machine_pin.h"
 
 typedef enum {
     VALUE_NOT_SET = -1,
@@ -40,7 +42,7 @@ typedef enum {
 typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;                     /**< MicroPython base object */
     cy_stc_tcpwm_pwm_config_t pwm_obj;      /**< PDL PWM configuration struct */
-    mp_obj_t dest;                          /**< PWM output destination: Pin object or integer pin number */
+    const machine_pin_obj_t *pin;           /**< Resolved GPIO pin object for PWM output */
     uint32_t frequency;                     /**< PWM output frequency in Hz */
     duty_type_t duty_type;                  /**< Indicates whether duty is set as DUTY_U16 or DUTY_NS */
     mp_int_t duty;                          /**< Duty cycle value: 0-65535 if DUTY_U16, nanoseconds if DUTY_NS */
@@ -52,6 +54,8 @@ typedef struct _machine_pwm_obj_t {
 
 // TCPWM clock = PCLK (100 MHz) / (divider+1) = 100,000,000 / 50,000 = 2000 Hz
 #define CYBSP_PWM_LED_CTRL_CLK_HZ   2000UL
+
+#define TCPWM_PWM_CTRL_NUM   (0UL)
 
 #define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
@@ -91,6 +95,20 @@ static void pwm_duty_ns_assert(mp_int_t duty_ns, uint32_t freq) {
     if (duty_ns > (int)(1000000000 / freq)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM duty in ns is larger than the period %d ns"), (int)(1000000000 / freq));
     }
+}
+
+// Configure the GPIO pin to route the TCPWM output via HSIOM (HSIOM_SEL_ACT_1 = 9 for all TCPWM0 outputs)
+static void pwm_pin_config(const machine_pin_obj_t *pin) {
+    GPIO_PRT_Type *port = Cy_GPIO_PortToAddr(pin->port);
+    Cy_GPIO_SetHSIOM(port, pin->pin, HSIOM_SEL_ACT_1);
+    Cy_GPIO_SetDrivemode(port, pin->pin, CY_GPIO_DM_STRONG_IN_OFF);
+}
+
+// Restore the GPIO pin to plain GPIO mode (Hi-Z, no peripheral routing)
+static void pwm_pin_restore(const machine_pin_obj_t *pin) {
+    GPIO_PRT_Type *port = Cy_GPIO_PortToAddr(pin->port);
+    Cy_GPIO_SetHSIOM(port, pin->pin, HSIOM_SEL_GPIO);    
+    Cy_GPIO_SetDrivemode(port, pin->pin, CY_GPIO_DM_HIGHZ);
 }
 
 // methods for machine.PWM
@@ -155,21 +173,25 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     /* Apply frequency and duty cycle to the PWM config struct */
     pwm_config(self);
 
-    cy_rslt_t result = Cy_TCPWM_PWM_Init(CYBSP_PWM_LED_CTRL_HW,
-            CYBSP_PWM_LED_CTRL_NUM, &self->pwm_obj);
+    /* Route the TCPWM output to the configured GPIO pin */
+    pwm_pin_config(self->pin);
+
+    cy_rslt_t result = Cy_TCPWM_PWM_Init(TCPWM0,
+            TCPWM_PWM_CTRL_NUM, &self->pwm_obj);
     pwm_assert_raise_val("PWM init failed with return code %lx !", result);
 
     /* Enable the TCPWM block */
-    Cy_TCPWM_PWM_Enable(CYBSP_PWM_LED_CTRL_HW, CYBSP_PWM_LED_CTRL_NUM);
+    Cy_TCPWM_PWM_Enable(TCPWM0, TCPWM_PWM_CTRL_NUM);
 
     /* Start the PWM */
-    Cy_TCPWM_TriggerReloadOrIndex_Single(CYBSP_PWM_LED_CTRL_HW, CYBSP_PWM_LED_CTRL_NUM);
+    Cy_TCPWM_TriggerReloadOrIndex_Single(TCPWM0, TCPWM_PWM_CTRL_NUM);
 }
 
 static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM(freq=%u, duty=%.2f%%)", 
-        self->frequency, 
+    mp_printf(print, "PWM(Pin.cpu.%q, freq=%u, duty=%.2f%%)",
+        self->pin->name,
+        self->frequency,
         self->duty_type == DUTY_U16 ? pwm_duty_cycle_u16_to_percent(self->duty) : pwm_duty_cycle_ns_to_percent(self->duty, self->frequency));
 }
 
@@ -181,8 +203,8 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // Get static peripheral object.
     machine_pwm_obj_t *self = pwm_obj_alloc();
 
-    // Store dest (Pin object or integer pin number)
-    self->dest = args[0];
+    // Resolve dest to a pin object (accepts Pin object, board name string, or CPU name string)
+    self->pin = machine_pin_get_pin_obj(args[0]);
 
     // Default config parameters for the PWM object.
     self->pwm_obj.pwmMode = CY_TCPWM_PWM_MODE_PWM;
@@ -236,7 +258,8 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    Cy_TCPWM_PWM_Disable(CYBSP_PWM_LED_CTRL_HW, CYBSP_PWM_LED_CTRL_NUM);
+    Cy_TCPWM_PWM_Disable(TCPWM0, TCPWM_PWM_CTRL_NUM);
+    pwm_pin_restore(self->pin);
     pwm_obj_free(self);
 }
 
