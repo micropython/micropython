@@ -98,8 +98,31 @@ def main():
     if not secrets_path.is_absolute():
         secrets_path = _TESTS_DIR / secrets_path
 
-    secrets = runpy.run_path(str(secrets_path))
-    prologue = _WIFI_CONNECT.format(ssid=secrets["ssid"], key=secrets["key"])
+    # Guard 1: Check if secrets file exists
+    if not secrets_path.exists():
+        print(f"SKIP: socket-internet secrets file not found: {secrets_path}")
+        return 0
+
+    # Guard 2: Safely load secrets file
+    try:
+        secrets = runpy.run_path(str(secrets_path))
+    except Exception as exc:
+        print(f"SKIP: socket-internet could not load secrets file: {exc}")
+        return 0
+
+    # Guard 3: Check for required keys
+    if "ssid" not in secrets or "key" not in secrets:
+        print("SKIP: socket-internet secrets file missing 'ssid' or 'key'")
+        return 0
+
+    # Guard 4: Validate types and content
+    ssid = secrets["ssid"]
+    key = secrets["key"]
+    if not isinstance(ssid, str) or not isinstance(key, str) or not ssid:
+        print("SKIP: socket-internet secrets must define non-empty string 'ssid' and string 'key'")
+        return 0
+
+    prologue = _WIFI_CONNECT.format(ssid=ssid, key=key)
 
     if not run_preflight(dut_port, prologue):
         print("SKIP: socket-internet preflight failed (no internet connectivity)")
