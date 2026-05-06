@@ -92,7 +92,31 @@ static void mp_machine_enable_usb(bool enable) {
 }
 #endif
 
+static void mp_machine_config_wakeup(mp_int_t sleep_ms, bool enable) {
+    if (sleep_ms >= 0) {
+        // RTC has a resolution of 1 second so use LPTIMER for small sleep duration.
+        if (sleep_ms < 10000) {
+            if (enable) {
+                lptimer_set_wakeup(sleep_ms * 1000);
+            } else {
+                lptimer_cancel_wakeup();
+            }
+        } else {
+            if (enable) {
+                machine_rtc_set_wakeup(sleep_ms / 1000);
+            } else {
+                machine_rtc_cancel_wakeup();
+            }
+        }
+    }
+}
+
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    mp_int_t sleep_ms = -1;
+    if (n_args != 0) {
+        sleep_ms = mp_obj_get_int(args[0]);
+    }
+
     #if MICROPY_HW_ENABLE_USBDEV
     mp_machine_enable_usb(false);
     #endif
@@ -103,9 +127,13 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     __disable_irq();
 
+    mp_machine_config_wakeup(sleep_ms, true);
+
     // This enters the deepest possible CPU sleep state, without
     // losing CPU state. CPU and subsystem power will remain on.
     pm_core_enter_deep_sleep();
+
+    mp_machine_config_wakeup(sleep_ms, false);
 
     __enable_irq();
 
@@ -134,13 +162,7 @@ MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args
 
     __disable_irq();
 
-    if (sleep_ms >= 0) {
-        if (sleep_ms < 10000) {
-            lptimer_set_wakeup(sleep_ms * 1000);
-        } else {
-            machine_rtc_set_wakeup(sleep_ms / 1000);
-        }
-    }
+    mp_machine_config_wakeup(sleep_ms, true);
 
     // If power is removed from the subsystem, the function does
     // not return, and the CPU will reboot when/if the subsystem
