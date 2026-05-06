@@ -116,7 +116,7 @@ INC += -Ilwip_inc
 
 CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU) -DUSE_FULL_LL_DRIVER
-CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
+CFLAGS += $(CFLAGS_MCU)
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
@@ -130,7 +130,7 @@ endif
 # as doesn't recognise -mcpu=cortex-m55
 AFLAGS += -march=armv8.1-m.main
 else
-AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
+AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU))
 endif
 
 # Configure for nan-boxing object model if requested
@@ -190,7 +190,7 @@ COPT ?= -Os -DNDEBUG
 endif
 
 # Options for mpy-cross
-MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH_$(MCU_SERIES))
+MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 
 SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
@@ -711,7 +711,7 @@ $(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)/qstr.i.last
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 $(HEADER_BUILD)/modstm_const.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
 	$(ECHO) "GEN stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) $(CFLAGS_MCU) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
