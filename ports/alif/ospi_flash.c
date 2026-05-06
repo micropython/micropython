@@ -316,7 +316,7 @@ int ospi_flash_init(void) {
     self->cfg.ddr_en = 0;
     self->cfg.wait_cycles = 0; // used only for ospi_xip_exit
     self->cfg.ospi_clock = 100000;  // use 100KHz for detection.
-    ospi_init(&self->cfg);
+    ospi_init(&self->cfg, OSPI_INSTANCE_0);
 
     // Read the device ID.
     uint32_t jedec_id = ospi_flash_read_id_spi(self);
@@ -337,7 +337,7 @@ int ospi_flash_init(void) {
 
     // Switch to the higher frequency.
     self->cfg.ospi_clock = set->freq_hz;
-    ospi_init(&self->cfg);
+    ospi_init(&self->cfg, OSPI_INSTANCE_0);
 
     // Switch to octal mode if needed.
     if (set->flash_init != NULL) {

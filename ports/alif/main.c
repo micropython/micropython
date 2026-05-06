@@ -198,3 +198,7 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     panic("Assertion failed");
 }
 #endif
+
+// Needed for se_services/source/services_host_system.c.
+void TEST_print(uint32_t services_handle, char *fmt, ...) {
+}

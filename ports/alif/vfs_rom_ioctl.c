@@ -33,6 +33,9 @@
 #include "mram.h"
 #include "ospi_flash.h"
 
+#define OSPI0_XIP_SIZE (0x20000000)
+#define OSPI1_XIP_SIZE (0x20000000)
+
 #if MICROPY_VFS_ROM_IOCTL
 
 #if MICROPY_HW_ROMFS_ENABLE_PART0 && !defined(MICROPY_HW_ROMFS_PART0_START)
@@ -61,7 +64,7 @@ static const mp_obj_array_t romfs_obj_table[] = {
 };
 
 static inline bool mram_is_valid_addr(uintptr_t addr) {
-    return MRAM_BASE <= addr && addr < MRAM_BASE + MRAM_SIZE;
+    return SOC_FEAT_MRAM_BASE <= addr && addr < SOC_FEAT_MRAM_BASE + SOC_FEAT_MRAM_SIZE;
 }
 
 static inline bool ospi_is_valid_addr(uintptr_t xip_base, uintptr_t addr) {
