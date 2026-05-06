@@ -9,7 +9,7 @@ class C:
         print("__enter__")
 
     def __exit__(self, a, b, c):
-        print("__exit__", a, b, c)
+        print("__exit__", a, repr(b)[:10], c)
 
 
 # basic with

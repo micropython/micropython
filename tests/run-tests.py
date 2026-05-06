@@ -198,6 +198,19 @@ platform_tests_to_skip = {
     ),
 }
 
+# Tests to skip when MICROPY_ERROR_REPORTING is at a certain level.
+error_reporting_tests_to_skip = {
+    # Skip at level MICROPY_ERROR_REPORTING_NONE.
+    "none": (
+        "micropython/heapalloc_exc_compressed.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        "micropython/opt_level_lineno.py",
+        "misc/print_exception.py",
+    ),
+}
+# Skip at level MICROPY_ERROR_REPORTING_TERSE.
+error_reporting_tests_to_skip["terse"] = error_reporting_tests_to_skip["none"]
+
 # Tests with known intermittent failures. These tests still run, but failures
 # are reclassified as "ignored" instead of "fail" so they don't affect the CI
 # exit code. Paths are relative to the tests/ directory (must match test_file
@@ -286,6 +299,7 @@ tests_requiring_slice = (
     "micropython/import_mpy_invalid.py",
     "micropython/import_mpy_native.py",
     "micropython/import_mpy_native_gc.py",
+    "micropython/ringio_big.py",
     "misc/non_compliant.py",
     "misc/rge_sm.py",
 )
@@ -352,7 +366,7 @@ def detect_test_platform(pyb, args):
     output = run_feature_check(pyb, args, "target_info.py")
     if output.endswith(b"CRASH"):
         raise ValueError("cannot detect platform: {}".format(output))
-    platform, arch, arch_flags, build, thread, float_prec, unicode = (
+    platform, arch, arch_flags, build, thread, float_prec, unicode, error_reporting = (
         str(output, "ascii").strip().split()
     )
     if arch == "None":
@@ -379,6 +393,7 @@ def detect_test_platform(pyb, args):
     args.thread = thread
     args.float_prec = float_prec
     args.unicode = unicode
+    args.error_reporting = error_reporting
 
     # Print the detected information about the target.
     print("platform={}".format(platform), end="")
@@ -866,6 +881,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+
+    # Skip error-reporting-specific tests.
+    skip_tests.update(error_reporting_tests_to_skip.get(args.error_reporting, ()))
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":

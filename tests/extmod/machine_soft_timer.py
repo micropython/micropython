@@ -9,8 +9,8 @@ except:
     print("SKIP")
     raise SystemExit
 
-if sys.platform in ("esp32", "esp8266"):
-    print("SKIP")  # TODO: Implement soft timers for esp32/esp8266 ports
+if sys.platform in ("esp32", "esp8266", "nrf"):
+    print("SKIP")  # TODO: Implement soft timers for esp32/esp8266/nrf ports
     raise SystemExit
 
 # create and deinit

@@ -101,15 +101,14 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
         print(test_file + ": ", end="")
 
         # Check if test should be skipped
-        skip = (
-            skip_complex
-            and test_file.find("bm_fft") != -1
-            or skip_native
-            and test_file.find("viper_") != -1
-        )
-        if skip:
-            test_results.append((test_file, "skip", ""))
-            print("SKIP")
+        skip_reason = None
+        if skip_complex and test_file.endswith(("bm_fft.py", "misc_mandel.py")):
+            skip_reason = "complex not supported"
+        elif skip_native and test_file.find("viper_") != -1:
+            skip_reason = "native not supported"
+        if skip_reason:
+            test_results.append((test_file, "skip", skip_reason))
+            print("SKIP:", skip_reason)
             continue
 
         # Create test script
