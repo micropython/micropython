@@ -73,6 +73,9 @@ GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
 )
 
 GIT_SUBMODULES += lib/mpy-test-ext
+ifeq ($(MICROPY_PY_DEEPCRAFT),1)
+GIT_SUBMODULES += lib/micropython-deepcraft-model-interface
+endif
 
 # Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-
@@ -519,12 +522,6 @@ CFLAGS += -Og
 else
 CFLAGS += -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
-endif
-
-MICROPY_PY_DEEPCRAFT ?= 0
-ifeq ($(MICROPY_PY_DEEPCRAFT),1)
-DEEPCRAFT_MODEL_LIB_DIR := ../../lib/micropython-deepcraft-model-interface/
-include $(DEEPCRAFT_MODEL_LIB_DIR)deepcraft_interface.mk
 endif
 
 AFLAGS = -mthumb -march=armv8.1-m.main+fp+mve.fp
