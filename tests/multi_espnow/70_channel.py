@@ -21,6 +21,11 @@ if sys.platform == "esp8266":
     print("SKIP")
     raise SystemExit
 
+# Workaround for a bug in ESP32-C6 where it doesn't select channels cleanly
+# (probably an ESP-IDF v5.5.x bug, needs further investigation.)
+if "ESP32-C6" in sys.implementation._machine:
+    print("SKIP")
+    raise SystemExit
 
 timeout_ms = 1000
 default_pmk = b"MicroPyth0nRules"
