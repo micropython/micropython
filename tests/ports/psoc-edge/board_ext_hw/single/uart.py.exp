@@ -8,5 +8,6 @@ Tx is received by Rx(read(nbytes)): True
 Tx Ongoing:  True
 Tx Done:  True
 Tx is received by Rx(readinto(buf)):  True
+Rx buffer is empty, read(nbytes) returns None:  True
 Tx written bytes by write():  512
 Tx is received by Rx(readinto(buf)) for large data:  True

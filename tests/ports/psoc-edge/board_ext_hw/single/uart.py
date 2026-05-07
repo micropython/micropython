@@ -82,6 +82,10 @@ def uart_tests():
     uart.readinto(uart_rx_buf)
     print("Tx is received by Rx(readinto(buf)): ", uart_rx_buf == tx_data)
 
+    # read() return None when timeout expired.
+    rx_data = uart.read(1)
+    print("Rx buffer is empty, read(nbytes) returns None: ", rx_data == None)
+
     # write()/read() large data
     uart_rx_buf = bytearray(512)
     tx_data = bytes([x % 256 for x in range(512)])
