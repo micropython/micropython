@@ -66,6 +66,8 @@ async def client(e):
     e.add_peer(peer)
     multitest.next()
 
+    multitest.wait("server ready")
+
     print("airecv() test...")
     msgs = []
     for i in range(5):
@@ -93,6 +95,7 @@ def instance0():
     init(e, True, False)
     multitest.globals(PEERS=[network.WLAN(i).config("mac") for i in (0, 1)])
     multitest.next()
+    multitest.broadcast("server ready")
     print("Server Start")
     echo_server(e)
     print("Server Done")
