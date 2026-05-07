@@ -99,6 +99,16 @@ def uart_tests():
         print("Num of bytes read:", read_num)
         print("Expected data:", tx_data)
 
+    # Check flush() is working.
+    uart.write(tx_data)
+    # Enable the timer and change the tx_data length if you
+    # want to see the different flush time.
+    # start = time.ticks_ms()
+    print("Tx Ongoing: ", uart.txdone() == False)
+    uart.flush()
+    # print("Flush time (ms): ", time.ticks_diff(time.ticks_ms(), start))
+    print("Tx Done after flush: ", uart.txdone() == True)
+
 
 uart_tests()
 
