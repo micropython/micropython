@@ -533,6 +533,38 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
 }
 
 static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    /** TODO: Implement! */
-    return 0;
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_uint_t ret;
+    if (request == MP_STREAM_POLL) {
+        uintptr_t flags = arg;
+        ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && ringbuf_avail(&self->rx_ringbuf) > 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && (Cy_SCB_UART_GetTxFifoStatus(self->scb_obj->scb) & CY_SCB_UART_TX_NOT_FULL)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else if (request == MP_STREAM_FLUSH) {
+        // Estimate the time required to shift out all remaining bytes from the TX hardware pipeline.
+        // Cy_SCB_UART_GetNumInTxFifo() returns the exact byte count in the TX FIFO but explicitly
+        // excludes the TX shifter register (1 byte). Adding 1 accounts for that shifter. The sum is
+        // multiplied by 10 bits per symbol (1 start + 8 data + 1 stop, no parity) and divided by
+        // the baudrate to get the duration in milliseconds. uint32_t is sufficient: max FIFO is
+        // < 256 bytes, so the worst-case duration is well within the uint32_t range even at the
+        // lowest supported baud rates.
+        uint32_t timeout = mp_hal_ticks_ms() + (1
+            + Cy_SCB_UART_GetNumInTxFifo(self->scb_obj->scb)
+            ) * 10000 / self->baudrate;
+        do {
+            if (mp_machine_uart_txdone(self)) {
+                return 0;
+            }
+        } while (mp_hal_ticks_ms() < timeout);
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    } else {
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
 }
