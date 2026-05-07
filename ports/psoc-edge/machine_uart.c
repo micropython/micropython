@@ -219,6 +219,31 @@ static void machine_uart_hw_init(machine_uart_obj_t *self) {
     Cy_SCB_UART_Enable(self->scb_obj->scb);
 }
 
+static bool machine_uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout_ms) {
+    uint32_t timeout_time_ms = mp_hal_ticks_ms() + timeout_ms;
+
+    while (ringbuf_avail(&self->rx_ringbuf) == 0) {
+        if (mp_hal_ticks_ms() > timeout_time_ms) {
+            return false;
+        }
+        mp_event_handle_nowait();
+    }
+
+    return true;
+}
+
+static bool machine_uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout_ms) {
+    uint32_t timeout_time_ms = mp_hal_ticks_ms() + timeout_ms;
+    while ((Cy_SCB_UART_GetTxFifoStatus(self->scb_obj->scb) & CY_SCB_UART_TX_NOT_FULL) == 0) {
+        if (mp_hal_ticks_ms() > timeout_time_ms) {
+            return false;
+        }
+        mp_event_handle_nowait();
+    }
+
+    return true;
+}
+
 /******************************************************************************/
 // MicroPython bindings
 
@@ -438,14 +463,18 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
 
 #if MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR
 static mp_int_t mp_machine_uart_readchar(machine_uart_obj_t *self) {
-    int data = ringbuf_get(&self->rx_ringbuf);
-    return (data != -1) ? (uint8_t)data : MP_STREAM_ERROR;
+    if (machine_uart_rx_wait(self, self->timeout_ms)) {
+        return (uint8_t)ringbuf_get(&self->rx_ringbuf);
+    }
+
+    return MP_STREAM_ERROR;
 }
 
 static void mp_machine_uart_writechar(machine_uart_obj_t *self, uint16_t data) {
-    uint32_t tx_fifo_status = Cy_SCB_UART_GetTxFifoStatus(self->scb_obj->scb);
-    if (tx_fifo_status & CY_SCB_UART_TX_NOT_FULL) {
+    if (machine_uart_tx_wait(self, self->timeout_ms)) {
         Cy_SCB_UART_Put(self->scb_obj->scb, (uint32_t)data);
+    } else {
+        mp_raise_OSError(MP_ETIMEDOUT);
     }
 }
 #endif
@@ -463,36 +492,21 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
         return 0;
     }
 
+    // wait for first char to become available
+    if (!machine_uart_rx_wait(self, self->timeout_ms)) {
+        // return EAGAIN error to indicate non-blocking (then read() method returns None)
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+
     uint32_t read_count = 0;
     uint32_t to_read;
-    // Wait for the first char to become available if timeout is set.
-    // After the first char is received, we can return whatever is available without the timer to expire.
-    uint32_t timeout_time_ms = mp_hal_ticks_ms() + self->timeout_ms;
     do {
-        // Wait for the first/next character
-        while (ringbuf_avail(&self->rx_ringbuf) == 0) {
-            if (mp_hal_ticks_ms() > timeout_time_ms) {
-                // If the timeout has expired and there is no
-                // data available, return with EAGAIN (return None).
-                // Otherwise, if the timeout char is expired, return
-                // any data that is available without error,
-                // even if it's less than requested.
-                if (read_count == 0) {
-                    *errcode = MP_EAGAIN;
-                    return MP_STREAM_ERROR;
-                } else {
-                    return read_count;
-                }
-            }
-            mp_event_handle_nowait();
-        }
-
         to_read = (size < ringbuf_avail(&self->rx_ringbuf)) ? size : ringbuf_avail(&self->rx_ringbuf);
         ringbuf_memcpy_get_internal(&self->rx_ringbuf, (uint8_t *)buf_in + read_count, to_read);
         read_count += to_read;
         size -= to_read;
-        timeout_time_ms = mp_hal_ticks_ms() + self->timeout_char_ms;
-    } while (size > 0);
+    } while (size > 0 && machine_uart_rx_wait(self, self->timeout_char_ms));
 
     return read_count;
 }
@@ -500,33 +514,20 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
 static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
+    // wait to be able to write the first character.
+    if (!machine_uart_tx_wait(self, self->timeout_ms)) {
+        // EAGAIN causes write to return None
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+
     uint32_t write_count = 0;
-    // Wait for the first char to become available if timeout is set.
-    // After the first char is received, we can return whatever is available without the timer to expire.
-    uint32_t timeout_time_ms = mp_hal_ticks_ms() + self->timeout_ms;
     do {
-        while ((Cy_SCB_UART_GetTxFifoStatus(self->scb_obj->scb) & CY_SCB_UART_TX_NOT_FULL) == 0) {
-            if (mp_hal_ticks_ms() > timeout_time_ms) {
-                // If the timeout has expired and there is no
-                // space available, return with EAGAIN (return None).
-                // Otherwise, if the timeout char is expired, return
-                // any data written without error,
-                // even if it's less than requested.
-                if (write_count == 0) {
-                    *errcode = MP_EAGAIN;
-                    return MP_STREAM_ERROR;
-                } else {
-                    return write_count;
-                }
-            }
-            mp_event_handle_nowait();
-        }
         uint32_t written = Cy_SCB_UART_PutArray(self->scb_obj->scb, (void *)buf_in, size);
         buf_in = (const uint8_t *)buf_in + written;
         size -= written;
         write_count += written;
-        timeout_time_ms = mp_hal_ticks_ms() + self->timeout_char_ms;
-    } while (size > 0);
+    } while (size > 0 && machine_uart_tx_wait(self, self->timeout_char_ms));
 
     return write_count;
 }
