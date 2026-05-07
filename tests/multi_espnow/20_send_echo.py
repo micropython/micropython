@@ -27,7 +27,7 @@ def echo_server(e):
 
         #  Echo the MAC and message back to the sender
         if not e.send(peer, msg, sync):
-            print("ERROR: send() failed to", peer)
+            print("ERROR: send() failed to", peer.hex())
             return
 
         if msg == b"!done":

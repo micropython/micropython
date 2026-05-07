@@ -45,7 +45,7 @@ def echo_server(e):
 
         #  Echo the message back to the sender
         if not e.send(peer, msg, sync):
-            print("ERROR: send() failed to", peer)
+            print("ERROR: send() failed to", peer.hex())
             return
 
         if peer not in peers:
