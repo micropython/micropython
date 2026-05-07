@@ -235,6 +235,8 @@ mp_obj_t espnow_deinit(mp_obj_t _) {
         check_esp_err(esp_now_unregister_recv_cb());
         check_esp_err(esp_now_unregister_send_cb());
         check_esp_err(esp_now_deinit());
+        self->recv_cb = mp_const_none;
+        self->recv_cb_arg = mp_const_none;
         self->recv_buffer->buf = NULL;
         self->recv_buffer = NULL;
         self->peer_count = 0; // esp_now_deinit() removes all peers.
