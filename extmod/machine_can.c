@@ -664,8 +664,8 @@ static void machine_can_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
             break;
     }
 
-    mp_printf(print, "CAN(%d, bitrate=%u, mode=CAN.%q, sjw=%u, tseg1=%u, tseg2=%u, f_clock=%u)",
-        self->can_idx + 1,
+    mp_printf(print, "CAN(" UINT_FMT ", bitrate=%u, mode=CAN.%q, sjw=%u, tseg1=%u, tseg2=%u, f_clock=%u)",
+        self->can_idx + 1U,
         actual_bitrate,
         mode,
         self->sjw,
