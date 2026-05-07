@@ -49,17 +49,21 @@ def init_sta():
 # Receiver
 def instance0():
     sta, e = init_sta()
-    multitest.globals(PEER=sta.config("mac"))
-    multitest.next()
-    while True:
-        peer, msg = e.recv(timeout_ms)
-        if peer is None:
-            print("Timeout")
-            break
-        # Note that we don't have any way in Python to tell what data rate this message
-        # was received with, so we're assuming the rate was correct.
-        print(msg)
-    e.active(False)
+    try:
+        multitest.globals(PEER=sta.config("mac"))
+        multitest.next()
+        while True:
+            peer, msg = e.recv(timeout_ms)
+            if peer is None:
+                print("Timeout")
+                break
+            # Note that we don't have any way in Python to tell what data rate this message
+            # was received with, so we're assuming the rate was correct.
+            print(msg)
+    finally:
+        # Important to stop both even if the test is skipped due to the other instance
+        sta.active(False)
+        e.active(False)
 
 
 # Sender
@@ -67,26 +71,27 @@ def instance1():
     sta, e = init_sta()
     multitest.next()
     peer = PEER
-
-    e.add_peer(peer)
-    # Test normal, non-LR rates
-    for msg, rate in (
-        (b"default rate", None),
-        (b"5Mbit", espnow.RATE_5M),
-        (b"11Mbit", espnow.RATE_11M),
-        (b"24Mbit", espnow.RATE_24M),
-        (b"54Mbit", espnow.RATE_54M),
-        (b"250K LR", espnow.RATE_LORA_250K),
-        (b"500K LR", espnow.RATE_LORA_500K),
-        # switch back to non-LR rates to check it's all OK
-        (b"1Mbit again", espnow.RATE_1M),
-        (b"11Mbit again", espnow.RATE_11M),
-    ):
-        if rate is not None:
-            e.config(rate=rate)
-        for _ in range(3):
-            e.send(peer, msg)
-        time.sleep_ms(50)  # give messages some time to be received before continuing
-    e.del_peer(peer)
-
-    e.active(False)
+    try:
+        e.add_peer(peer)
+        # Test normal, non-LR rates
+        for msg, rate in (
+            (b"default rate", None),
+            (b"5Mbit", espnow.RATE_5M),
+            (b"11Mbit", espnow.RATE_11M),
+            (b"24Mbit", espnow.RATE_24M),
+            (b"54Mbit", espnow.RATE_54M),
+            (b"250K LR", espnow.RATE_LORA_250K),
+            (b"500K LR", espnow.RATE_LORA_500K),
+            # switch back to non-LR rates to check it's all OK
+            (b"1Mbit again", espnow.RATE_1M),
+            (b"11Mbit again", espnow.RATE_11M),
+        ):
+            if rate is not None:
+                e.config(rate=rate)
+            for _ in range(3):
+                e.send(peer, msg)
+            time.sleep_ms(50)  # give messages some time to be received before continuing
+        e.del_peer(peer)
+    finally:
+        sta.active(False)
+        e.active(False)
