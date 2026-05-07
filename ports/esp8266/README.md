@@ -126,7 +126,7 @@ If you install MicroPython to your module for the first time, or after
 installing any other firmware, you should erase flash completely:
 
 ```bash
-$ esptool.py --port /dev/ttyXXX erase_flash
+$ esptool.py --port /dev/ttyXXX erase-flash
 ```
 
 Erasing the flash is also useful as a troubleshooting measure, if a module doesn't
