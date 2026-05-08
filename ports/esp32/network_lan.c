@@ -68,11 +68,26 @@ const mp_obj_type_t lan_if_type;
 static lan_if_obj_t lan_obj = {{{&lan_if_type}, ESP_IF_ETH, NULL}, false, false};
 static uint8_t eth_status = 0;
 
+static bool lan_has_ipv4(void) {
+    esp_netif_ip_info_t ip;
+    return lan_obj.base.netif != NULL
+           && esp_netif_get_ip_info(lan_obj.base.netif, &ip) == ESP_OK
+           && ip.ip.addr != 0;
+}
+
+void esp_network_reapply_lan_ap_napt(void) {
+    if (lan_obj.base.active && lan_has_ipv4()) {
+        esp_network_enable_ap_napt(lan_obj.base.netif);
+    }
+}
+
 static void eth_event_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data) {
     switch (event_id) {
         case ETHERNET_EVENT_CONNECTED:
-            eth_status = ETH_CONNECTED;
+            if (eth_status != ETH_GOT_IP) {
+                eth_status = ETH_CONNECTED;
+            }
             ESP_LOGI("ethernet", "Ethernet Link Up");
             break;
         case ETHERNET_EVENT_DISCONNECTED:
@@ -90,6 +105,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
         case IP_EVENT_ETH_GOT_IP:
             eth_status = ETH_GOT_IP;
             ESP_LOGI("ethernet", "Ethernet Got IP");
+            esp_network_reapply_lan_ap_napt();
             break;
         default:
             break;

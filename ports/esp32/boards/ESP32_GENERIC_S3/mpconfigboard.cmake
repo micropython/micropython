@@ -6,3 +6,9 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.spiram_sx
     boards/ESP32_GENERIC_S3/sdkconfig.board
 )
+
+if(MICROPY_PY_ESP32_LWIP_NAT)
+    list(APPEND SDKCONFIG_DEFAULTS
+        boards/sdkconfig.nat
+    )
+endif()
