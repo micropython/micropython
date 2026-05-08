@@ -58,26 +58,19 @@
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
-#define DEFAULT_UART_BAUDRATE     (115200)
-#define DEFAULT_UART_BITS         (8)
-#define DEFAULT_UART_STOP         (1)
-#define DEFAULT_UART_RXBUF_SIZE   (256)
-
-// Hardware flow control flags (compatible with machine.UART.RTS / machine.UART.CTS)
-#define UART_FLOW_CONTROL_NONE    (0)
-#define UART_FLOW_CONTROL_RTS     (1)
-#define UART_FLOW_CONTROL_CTS     (2)
-
 // Class-level constants exposed to Python
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(CY_SCB_RX_INTR_NOT_EMPTY) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_BREAK), MP_ROM_INT(CY_SCB_RX_INTR_UART_BREAK_DETECT) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(CY_SCB_TX_INTR_UART_DONE) }, \
+
+/**
+ * TODO: Enable CTS/RTS class constants and flow control settings
+
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_FLOW_CONTROL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_FLOW_CONTROL_CTS) }, \
-    /**
-     * TODO: Add IRQ flags
-     */
-    // { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(0) }, \
-    // { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(1) }, \
-    //     //
+ */
+
 /******************************************************************************/
 // Object type
 
@@ -98,6 +91,11 @@ typedef struct _machine_uart_obj_t {
     uint32_t timeout_char_ms;
     cy_stc_scb_uart_context_t ctx;
     ringbuf_t rx_ringbuf;
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    uint32_t mp_irq_trigger;
+    uint32_t mp_irq_flags;
+    mp_irq_obj_t *mp_irq_obj;
+    #endif
 } machine_uart_obj_t;
 
 static machine_uart_obj_t *mp_machine_uart_alloc(uint8_t uart_id) {
@@ -125,35 +123,58 @@ static void mp_machine_uart_free(machine_uart_obj_t *self) {
 
 MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *machine_uart_obj[MICROPY_PY_MACHINE_UART_NUM_ENTRIES]);
 
+#if MICROPY_PY_MACHINE_UART_IRQ
+static void machine_uart_irq_rx_idle(machine_uart_obj_t *self);
+static void machine_uart_irq_rx_break(machine_uart_obj_t *self);
+static void machine_uart_irq_tx_idle(machine_uart_obj_t *self);
+#endif
+
+static void machine_uart_fill_rx_ring_buff(machine_uart_obj_t *self) {
+    uint32_t available_rx_frames = Cy_SCB_UART_GetNumInRxFifo(self->scb_obj->scb);
+    for (uint32_t i = 0; i < available_rx_frames; i++) {
+        if (!ringbuf_put(&self->rx_ringbuf, (uint8_t)Cy_SCB_UART_Get(self->scb_obj->scb))) {
+            /**
+             * No overflow handling.
+             * Just return and wait for next interrupt
+             * to read the remaining data.
+             */
+            return;
+        }
+    }
+}
 
 static void machine_uart_scb_isr(mp_obj_t hw_uart_obj) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(hw_uart_obj);
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    self->mp_irq_flags = 0; // Clear flags at the beginning of the ISR.
+    #endif
 
     if (0UL != (CY_SCB_RX_INTR & Cy_SCB_GetInterruptCause(self->scb_obj->scb))) {
         if (0UL != (CY_SCB_RX_INTR_NOT_EMPTY & Cy_SCB_GetRxInterruptStatusMasked(self->scb_obj->scb))) {
-            uint32_t available_rx_frames = Cy_SCB_UART_GetNumInRxFifo(self->scb_obj->scb);
-            for (uint32_t i = 0; i < available_rx_frames; i++) {
-                /**
-                 * TODO: How do we handle overflows?
-                 */
-                ringbuf_put(&self->rx_ringbuf, (uint8_t)Cy_SCB_UART_Get(self->scb_obj->scb));
-            }
+            machine_uart_fill_rx_ring_buff(self);
+
+            #if MICROPY_PY_MACHINE_UART_IRQ
+            machine_uart_irq_rx_idle(self);
+            #endif
+
             Cy_SCB_ClearRxInterrupt(self->scb_obj->scb, CY_SCB_RX_INTR_NOT_EMPTY);
-            /**
-             * TODO: if irq set, call the handler
-             */
         }
+
+        #if MICROPY_PY_MACHINE_UART_IRQ
+        if (0UL != (CY_SCB_RX_INTR_UART_BREAK_DETECT & Cy_SCB_GetRxInterruptStatusMasked(self->scb_obj->scb))) {
+            machine_uart_irq_rx_break(self);
+            Cy_SCB_ClearRxInterrupt(self->scb_obj->scb, CY_SCB_RX_INTR_UART_BREAK_DETECT);
+        }
+        #endif
     }
 
-
-    if (0UL != (CY_SCB_TX_INTR & Cy_SCB_GetInterruptCause(self->scb_obj->scb))) {
-        if (0UL != (CY_SCB_TX_INTR_UART_DONE & Cy_SCB_GetTxInterruptStatusMasked(self->scb_obj->scb))) {
-            /**
-             * TODO:   if irq TX set, call the handler
-             */
-            Cy_SCB_ClearTxInterrupt(self->scb_obj->scb, CY_SCB_TX_INTR_UART_DONE);
-        }
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    if ((0UL != (CY_SCB_TX_INTR & Cy_SCB_GetInterruptCause(self->scb_obj->scb))) &&
+        (0UL != (CY_SCB_TX_INTR_UART_DONE & Cy_SCB_GetTxInterruptStatusMasked(self->scb_obj->scb)))) {
+        machine_uart_irq_tx_idle(self);
+        Cy_SCB_ClearTxInterrupt(self->scb_obj->scb, CY_SCB_TX_INTR_UART_DONE);
     }
+    #endif
 }
 
 static void machine_uart_baudrate_set(machine_uart_obj_t *self) {
@@ -172,6 +193,15 @@ static void machine_uart_baudrate_set(machine_uart_obj_t *self) {
     Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_16_BIT, 0UL);
 }
 
+static inline uint8_t machine_uart_break_width(machine_uart_obj_t *self) {
+    return 1 +  // Start bit
+           self->bits +
+           (self->stop == CY_SCB_UART_STOP_BITS_1 ? 1 : 2) +
+           (self->parity != CY_SCB_UART_PARITY_NONE ? 1 : 0) +
+           self->parity +
+           1; // Extra bit, make the frame longer
+}
+
 static void machine_uart_hw_init(machine_uart_obj_t *self) {
     cy_stc_scb_uart_config_t config =
     {
@@ -188,7 +218,7 @@ static void machine_uart_hw_init(machine_uart_obj_t *self) {
         .parity = self->parity,
         .stopBits = self->stop,
         .enableInputFilter = false,
-        .breakWidth = 11UL,
+        .breakWidth = machine_uart_break_width(self),
         .dropOnFrameError = false,
         .dropOnParityError = false,
 
@@ -305,15 +335,24 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     mp_machine_uart_free(self);
 }
 
+#define DEFAULT_UART_BAUDRATE     (115200)
+#define DEFAULT_UART_BITS         (8)
+#define DEFAULT_UART_STOP         (1)
+#define DEFAULT_UART_RXBUF_SIZE   (256)
 /**
- * TODO: Do we need to implement txbuf ?? That would only make sense if we implement an
- * intermediate (ring) buffer.
- */
+ * TODO: Enable CTS/RTS flow control settings and pins
+ * Hardware flow control flags (compatible with machine.UART.RTS / machine.UART.CTS)
+ *
+#define UART_FLOW_CONTROL_NONE    (0)
+#define UART_FLOW_CONTROL_RTS     (1)
+#define UART_FLOW_CONTROL_CTS     (2)
+*/
+
 enum {
     ARG_tx, ARG_rx,
     ARG_baudrate, ARG_bits, ARG_parity, ARG_stop,
-    ARG_rts, ARG_cts, ARG_flow,
-    ARG_timeout, ARG_timeout_char, ARG_rxbuf, ARG_txbuf
+    /* ARG_rts, ARG_cts, ARG_flow, */
+    ARG_timeout, ARG_timeout_char, ARG_rxbuf
 };
 
 static const mp_arg_t allowed_args[] = {
@@ -323,20 +362,21 @@ static const mp_arg_t allowed_args[] = {
     { MP_QSTR_bits,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_BITS} },
     { MP_QSTR_parity,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_stop,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_STOP} },
+    /* TODO: Enable rts and cts flow control
     { MP_QSTR_rts,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_cts,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_flow,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_FLOW_CONTROL_NONE} },
+    */
     { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_rxbuf,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_RXBUF_SIZE} },
-    { MP_QSTR_txbuf,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 };
 
 static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // -- TX / RX pins --
+    /* -- TX / RX pins -- */
     self->tx = mp_hal_get_pin_obj(args[ARG_tx].u_obj);
     self->rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
 
@@ -353,8 +393,15 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
     self->scb_obj = machine_scb_obj_alloc(scb_unit, self, machine_uart_scb_isr);
 
-    // -- Flow control pins --
     uint8_t num_af_pins = 2U; // TX and RX are always present, RTS and CTS are optional depending on flow control settings
+
+    /* -- Flow control pins -- */
+    self->flow = 0; // Default to no flow control
+    self->rts = NULL;
+    self->cts = NULL;
+
+    /**
+     * TODO: Enable CTS/RTS
     self->flow = (uint32_t)args[ARG_flow].u_int;
 
     if (self->flow & UART_FLOW_CONTROL_RTS) {
@@ -378,18 +425,19 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     } else {
         self->cts = NULL;
     }
+    */
 
-    // Configure the alternate functions for the selected pins
+    /* Configure the alternate functions for the selected pins */
     mp_hal_periph_pins_af_config(uart_pins_config, num_af_pins);
 
-    // -- Baudrate --
+    /* -- Baudrate -- */
     self->baudrate = (uint32_t)args[ARG_baudrate].u_int;
     if (self->baudrate == 0U) {
         mp_raise_ValueError(MP_ERROR_TEXT("baudrate must be non-zero"));
     }
     machine_uart_baudrate_set(self);
 
-    // -- Data bits --
+    /* -- Data bits -- */
     int bits = args[ARG_bits].u_int;
     /**
      * TODO: Add support for 7 (or below <8 bits) and 9 bits.
@@ -399,7 +447,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
     self->bits = (uint8_t)bits;
 
-    // -- Parity --
+    /* -- Parity -- */
     mp_obj_t parity_arg = args[ARG_parity].u_obj;
     if (parity_arg == mp_const_none) {
         self->parity = (uint8_t)CY_SCB_UART_PARITY_NONE;
@@ -414,7 +462,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         }
     }
 
-    // -- Stop bits --
+    /* -- Stop bits -- */
     int stop = args[ARG_stop].u_int;
     if (stop == 1) {
         self->stop = (uint8_t)CY_SCB_UART_STOP_BITS_1;
@@ -424,7 +472,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         mp_raise_ValueError(MP_ERROR_TEXT("stop bits must be 1 or 2"));
     }
 
-    // -- Timeouts --
+    /* -- Timeouts -- */
     if (args[ARG_timeout].u_int < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("timeout must be non-negative"));
     }
@@ -434,16 +482,23 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         mp_raise_ValueError(MP_ERROR_TEXT("timeout_char must be non-negative"));
     }
     self->timeout_char_ms = (uint32_t)args[ARG_timeout_char].u_int;
-    // Make sure timeout_char is at least as long as a whole character (13 bits to be safe).
+    /* Make sure timeout_char is at least as long as a whole character (13 bits to be safe). */
     uint32_t min_timeout_char = 13000 / self->baudrate + 1;
     if (self->timeout_char_ms < min_timeout_char) {
         self->timeout_char_ms = min_timeout_char;
     }
 
-    // -- RX software ring buffer --
+    /* -- RX software ring buffer -- */
     ringbuf_alloc(&self->rx_ringbuf, args[ARG_rxbuf].u_int);
 
-    // -- Initialise hardware --
+    /* -- IRQ init -- */
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    self->mp_irq_obj = NULL;
+    self->mp_irq_trigger = 0;
+    self->mp_irq_flags = 0;
+    #endif
+
+    /* -- Initialise hardware -- */
     machine_uart_hw_init(self);
 }
 
@@ -457,7 +512,7 @@ static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
 
 #if MICROPY_PY_MACHINE_UART_SENDBREAK
 static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
-    Cy_SCB_UART_SendBreakBlocking(self->scb_obj->scb, self->bits);
+    Cy_SCB_UART_SendBreakBlocking(self->scb_obj->scb, machine_uart_break_width(self));
 }
 #endif
 
@@ -479,12 +534,6 @@ static void mp_machine_uart_writechar(machine_uart_obj_t *self, uint16_t data) {
 }
 #endif
 
-#if MICROPY_PY_MACHINE_UART_IRQ
-static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
-    /** TODO: Implement! */
-}
-#endif
-
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -492,9 +541,9 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
         return 0;
     }
 
-    // wait for first char to become available
+    /* wait for first char to become available */
     if (!machine_uart_rx_wait(self, self->timeout_ms)) {
-        // return EAGAIN error to indicate non-blocking (then read() method returns None)
+        /* return EAGAIN error to indicate non-blocking (then read() method returns None) */
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
@@ -514,9 +563,9 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
 static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // wait to be able to write the first character.
+    /* wait to be able to write the first character. */
     if (!machine_uart_tx_wait(self, self->timeout_ms)) {
-        // EAGAIN causes write to return None
+        /* EAGAIN causes write to return None */
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
@@ -545,13 +594,15 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
             ret |= MP_STREAM_POLL_WR;
         }
     } else if (request == MP_STREAM_FLUSH) {
-        // Estimate the time required to shift out all remaining bytes from the TX hardware pipeline.
-        // Cy_SCB_UART_GetNumInTxFifo() returns the exact byte count in the TX FIFO but explicitly
-        // excludes the TX shifter register (1 byte). Adding 1 accounts for that shifter. The sum is
-        // multiplied by 13 bits per symbol (1 start + 8 data + 2 stop, 1 parity), and multiplied by 2
-        // (for safety margin) and divided by the baudrate to get the duration in milliseconds.
-        // uint32_t is sufficient: max FIFO is < 256 bytes, so the worst-case duration is well within
-        // the uint32_t range even at the lowest supported baud rates.
+        /**
+         * Estimate the time required to shift out all remaining bytes from the TX hardware pipeline.
+         * Cy_SCB_UART_GetNumInTxFifo() returns the exact byte count in the TX FIFO but explicitly
+         * excludes the TX shifter register (1 byte). Adding 1 accounts for that shifter. The sum is
+         * multiplied by 13 bits per symbol (1 start + 8 data + 2 stop, 1 parity), and multiplied by 2
+         * (for safety margin) and divided by the baudrate to get the duration in milliseconds.
+         * uint32_t is sufficient: max FIFO is < 256 bytes, so the worst-case duration is well within
+         * the uint32_t range even at the lowest supported baud rates.
+         */
         uint32_t timeout = mp_hal_ticks_ms() + (1
             + Cy_SCB_UART_GetNumInTxFifo(self->scb_obj->scb)
             ) * 13000 * 2 / self->baudrate;
@@ -569,3 +620,129 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
     }
     return ret;
 }
+
+#if MICROPY_PY_MACHINE_UART_IRQ
+
+#define MP_UART_ALLOWED_FLAGS (CY_SCB_RX_INTR_NOT_EMPTY | \
+    CY_SCB_RX_INTR_UART_BREAK_DETECT | \
+    CY_SCB_TX_INTR_UART_DONE)
+
+static void machine_uart_irq_rx_idle(machine_uart_obj_t *self) {
+    /**
+     * Use CY_SCB_RX_INTR_NOT_EMPTY as RX_IDLE combined with
+     * checking if the RX FIFO is empty. Therefore this function
+     * will be called after reading all the data in the
+     * RX FIFO.
+     */
+    if ((self->mp_irq_obj != NULL) &&
+        (self->mp_irq_obj->handler != NULL) &&
+        (self->mp_irq_trigger & CY_SCB_RX_INTR_NOT_EMPTY) &&
+        (Cy_SCB_UART_GetNumInRxFifo(self->scb_obj->scb) == 0)) {
+        self->mp_irq_flags |= CY_SCB_RX_INTR_NOT_EMPTY;
+        mp_irq_handler(self->mp_irq_obj);
+    }
+}
+
+static void machine_uart_irq_rx_break(machine_uart_obj_t *self) {
+    if ((self->mp_irq_obj != NULL) &&
+        (self->mp_irq_obj->handler != NULL) &&
+        (self->mp_irq_trigger & CY_SCB_RX_INTR_UART_BREAK_DETECT)) {
+        self->mp_irq_flags |= CY_SCB_RX_INTR_UART_BREAK_DETECT;
+        mp_irq_handler(self->mp_irq_obj);
+    }
+}
+
+static void machine_uart_irq_tx_idle(machine_uart_obj_t *self) {
+    if ((self->mp_irq_obj != NULL) &&
+        (self->mp_irq_obj->handler != NULL) &&
+        (self->mp_irq_trigger & CY_SCB_TX_INTR_UART_DONE)) {
+        self->mp_irq_flags |= CY_SCB_TX_INTR_UART_DONE;
+        mp_irq_handler(self->mp_irq_obj);
+    }
+}
+
+static void machine_uart_irq_scb_config(machine_uart_obj_t *self, bool enable) {
+    if (enable) {
+        /**
+         * CY_SCB_RX_INTR_NOT_EMPTY is always enabled.
+         */
+        if (self->mp_irq_trigger & CY_SCB_RX_INTR_UART_BREAK_DETECT) {
+            /**
+             * Clear any stale sticky status before unmasking to prevent a
+             * spurious ISR from a break that occurred before this irq() call.
+             */
+            Cy_SCB_ClearRxInterrupt(self->scb_obj->scb, CY_SCB_RX_INTR_UART_BREAK_DETECT);
+            Cy_SCB_SetRxInterruptMask(self->scb_obj->scb, CY_SCB_RX_INTR_UART_BREAK_DETECT | CY_SCB_RX_INTR_NOT_EMPTY);
+        }
+        if (self->mp_irq_trigger & CY_SCB_TX_INTR_UART_DONE) {
+            /**
+             * Clear any stale sticky status before unmasking to prevent a
+             * spurious ISR from a TX done that occurred before this irq() call.
+             */
+            Cy_SCB_ClearTxInterrupt(self->scb_obj->scb, CY_SCB_TX_INTR_UART_DONE);
+            Cy_SCB_SetTxInterruptMask(self->scb_obj->scb, CY_SCB_TX_INTR_UART_DONE);
+        }
+    } else {
+        /**
+         * If disabling, we want to keep the CY_SCB_RX_INTR_NOT_EMPTY
+         * enabled to be able to fill the RX ring buffer and avoid data loss.
+         */
+        Cy_SCB_SetRxInterruptMask(self->scb_obj->scb, CY_SCB_RX_INTR_NOT_EMPTY);
+        Cy_SCB_SetTxInterruptMask(self->scb_obj->scb, 0);
+    }
+}
+
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_uart_irq_scb_config(self, false);
+    self->mp_irq_trigger = new_trigger;
+    machine_uart_irq_scb_config(self, true);
+    return 0;
+}
+
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};
+
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+
+    if (any_args) {
+        /* Check the handler */
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        /* Check the trigger */
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
+        }
+
+        /* Reconfigure user IRQs */
+        machine_uart_irq_scb_config(self, false);
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+        machine_uart_irq_scb_config(self, true);
+    }
+
+    return self->mp_irq_obj;
+}
+#endif
