@@ -207,7 +207,8 @@ def wlan_connect(target, target_serial):
 import sys, machine, network, time
 wl = network.WLAN()
 wl.active(1)
-if not wl.isconnected():
+if not wl.isconnected() or wl.config('essid') != '{WLAN_SSID}':
+    wl.disconnect()
     wl.connect('{WLAN_SSID}', '{WLAN_PASS}')
     t0 = time.ticks_ms()
     print('connect')
@@ -222,9 +223,22 @@ if not wl.isconnected():
     return isconnected
 
 
-def do_test(cmd):
-    print("-" * 32)
+def do_test(test_group_name, cmd, targets=None):
+    # Add test instance(s) and result dir arguments.
+    if targets:
+        cmd_extra = []
+        result_dir = f"results_{test_group_name}"
+        for target in targets:
+            cmd_extra.extend(["-t", f"{target.device}"])
+            result_dir += f"_{target.device_suffix}"
+        cmd_extra.extend(["--result-dir", result_dir])
+        cmd = cmd[0:1] + cmd_extra + cmd[1:]
+
+    # Print command that will be run.
+    print("-" * 16, test_group_name, "-" * 16)
     print("RUN", " ".join(cmd))
+
+    # Run test.
     try:
         result = subprocess.run(cmd)
         if result.returncode == 0:
@@ -237,32 +251,34 @@ def do_test(cmd):
         time.sleep(2)
 
 
-def run_multitests_p2(instances, tests):
+def run_multitests_p2(targets, tests):
+    test_group_name = tests[0].split("/", 1)[0]
     cmd = ["./run-multitests.py", "-p2"]
-    for instance in instances:
-        cmd.extend(["--test-instance", f"{instance}"])
-    do_test(cmd + tests)
+    do_test(test_group_name, cmd + tests, targets)
 
 
 def run_multitests_on_two_targets(targets, tests):
     if len(targets) == 1:
         return
+    test_group_name = tests[0].split("/", 1)[0]
+    cmd = ["./run-multitests.py"]
     for i in range(len(targets)):
         target0 = targets[i]
         target1 = targets[(i + 1) % len(targets)]
-        do_test(
-            [
-                "./run-multitests.py",
-                "--test-instance",
-                f"{target0.device}",
-                "--test-instance",
-                f"{target1.device}",
-            ]
-            + tests
-        )
+        do_test(test_group_name, cmd + tests, [target0, target1])
 
 
-ALL_TEST_CODES = "sphmnwb"
+ALL_TEST_CODES = "syhmnwb"
+
+TEST_CODE_NAME = {
+    "s": "serial",
+    "y": "bytecode",
+    "h": "hardware",
+    "m": "via-mpy",
+    "n": "native",
+    "w": "wlan",
+    "b": "ble",
+}
 
 
 def main():
@@ -270,7 +286,7 @@ def main():
     cmd_parser.add_argument(
         "--build-natmods", action="store_true", help="build all/selected natmods"
     )
-    cmd_parser.add_argument("-s", "--tests", default=ALL_TEST_CODES, help="tests to run")
+    cmd_parser.add_argument("-s", "--tests", default=ALL_TEST_CODES, help="tests to run: " + ALL_TEST_CODES)
     cmd_parser.add_argument(
         "-r", "--reference", default=None, help="reference device for WLAN and BLE tests"
     )
@@ -287,24 +303,34 @@ def main():
             print(f"{test_code} is not a valid test code")
             sys.exit(1)
 
-    ref_target = None
-    if args.reference:
-        ref_device = map_device_name(args.reference)
-        ref_target = Target(ref_device, "")
-        ref_target.detect_features()
-
-    print("Selected tests:", selected_tests)
-
-    selected_devices = [map_device_name(d) for d in args.test_instances]
-    targets = list_targets(selected_devices, [ref_target.device] if ref_target else [])
-
     select_serial = "s" in selected_tests
-    select_python = "p" in selected_tests
+    select_bytecode = "y" in selected_tests
     select_hardware = "h" in selected_tests
     select_via_mpy = "m" in selected_tests
     select_native = "n" in selected_tests
     select_wlan = "w" in selected_tests
     select_ble = "b" in selected_tests
+
+    print("Selected tests:", ", ".join(TEST_CODE_NAME[t] for t in selected_tests))
+
+    ref_target = None
+    if args.reference:
+        ref_device = map_device_name(args.reference)
+        ref_target = Target(ref_device, "")
+        ref_target.detect_features()
+        print()
+        print("=" * 64)
+        print("REFERENCE")
+        print(ref_target.info())
+        if select_wlan and ref_target.has_wlan:
+            ref_target.setup_wlan()
+
+    print()
+    print("=" * 64)
+    print("TARGETS TO BE TESTED")
+
+    selected_devices = [map_device_name(d) for d in args.test_instances]
+    targets = list_targets(selected_devices, [ref_target.device] if ref_target else [])
 
     for target in targets:
         target.detect_features()
@@ -312,15 +338,7 @@ def main():
     for target in targets:
         print(target.info())
 
-    if ref_target:
-        print("=" * 64)
-        print("REFERENCE")
-        print(ref_target.info())
-        if select_wlan and ref_target.has_wlan:
-            ref_target.setup_wlan()
-
-    print("=" * 64)
-    print("=" * 64)
+    print()
 
     tests_natmod = [
         file for file in glob.iglob("extmod/*.py") if file.split("/")[1].startswith(NATMOD_LIBS)
@@ -336,9 +354,16 @@ def main():
         if file.startswith(("multi_net/asyncio_tcp_", "multi_net/tcp_", "multi_net/udp_"))
     ]
 
+    # Remove existing results for all given targets.
+    for target in targets:
+        for result_dir in glob.iglob(f"results_*{target.device_suffix}*"):
+            for f in glob.iglob(os.path.join(result_dir, "*")):
+                os.remove(f)
+
     try:
         for target in targets:
             print("=" * 64)
+            print("TEST")
             print(target.info())
             print(target.machine, "--", target.version)
 
@@ -348,18 +373,12 @@ def main():
                 mip_install(target, t, "unittest")
                 t.close()
 
-            run_tests_cmd = [
-                "./run-tests.py",
-                "--test-instance",
-                target.device,
-                "--result-dir",
-                f"results_{target.device_suffix}",
-            ]
+            run_tests_cmd = ["./run-tests.py"]
             run_tests_native_cmd = run_tests_cmd + ["--via-mpy", "--emit", "native"]
-
-            do_test(run_tests_cmd + ["--clean-failures"])
+            run_tests_target = [target]
 
             if select_serial:
+                print("-" * 16, "serial", "-" * 16)
                 serial_test.test_passed = True
                 try:
                     serial_test.do_test(target.device)
@@ -369,28 +388,28 @@ def main():
                     print("INTERRUPT")
                     time.sleep(2)
 
-            if select_python:
-                do_test(run_tests_cmd)
+            if select_bytecode:
+                do_test("bytecode", run_tests_cmd, run_tests_target)
 
             if select_via_mpy and target.can_import_mpy:
                 port_specific = []
                 if target.port == "esp8266":
                     # extreme_exc has a stack overflow and crashes the device
                     port_specific.extend(("--exclude", "extreme_exc"))
-                do_test(run_tests_cmd + ["--via-mpy"] + port_specific)
+                do_test("mpy", run_tests_cmd + ["--via-mpy"] + port_specific, run_tests_target)
 
             if select_native and target.arch is not None:
-                do_test(run_tests_native_cmd)
-                do_test(["./run-natmodtests.py", "--test-instance", target.device] + tests_natmod)
+                do_test("native", run_tests_native_cmd, run_tests_target)
+                do_test("natmod", ["./run-natmodtests.py"] + tests_natmod, run_tests_target)
 
             if select_hardware:
-                run_cmds = [run_tests_cmd]
+                run_cmds = [("", run_tests_cmd)]
                 if select_native and target.arch is not None:
-                    run_cmds.append(run_tests_native_cmd)
-                for run_cmd in run_cmds:
-                    do_test(run_cmd + ["-d", "extmod_hardware"])
+                    run_cmds.append(("_native", run_tests_native_cmd))
+                for run_name, run_cmd in run_cmds:
+                    do_test("extmod_hardware" + run_name, run_cmd + ["-d", "extmod_hardware"], run_tests_target)
                     if target.port == "pyboard":
-                        do_test(run_cmd + ["-d", "ports/stm32_hardware"])
+                        do_test("stm32_hardware" + run_name, run_cmd + ["-d", "ports/stm32_hardware"], run_tests_target)
 
             if select_wlan and target.has_wlan:
                 target.setup_wlan()
@@ -398,15 +417,15 @@ def main():
                     tests_net = tests_multi_net
                     if target.port == "esp8266":
                         tests_net = tests_multi_net_no_tls
-                    do_test(run_tests_cmd + ["-d", "net_hosted", "net_inet"])
-                    run_multitests_p2([target.device], tests_net)
+                    do_test("net", run_tests_cmd + ["-d", "net_hosted", "net_inet"], run_tests_target)
+                    run_multitests_p2([target], tests_net)
                     if ref_target and ref_target.has_wlan_connected:
-                        run_multitests_p2([target.device, ref_target.device], tests_net)
-                        run_multitests_p2([target.device, ref_target.device], tests_multi_wlan)
+                        run_multitests_p2([target, ref_target], tests_net)
+                        run_multitests_p2([target, ref_target], tests_multi_wlan)
 
             if select_ble and target.has_ble:
                 if ref_target and ref_target.has_ble:
-                    run_multitests_p2([target.device, ref_target.device], tests_multi_bluetooth)
+                    run_multitests_p2([target, ref_target], tests_multi_bluetooth)
 
         targets_wlan = [t for t in targets if t.has_wlan_connected]
         if select_wlan and targets_wlan:
