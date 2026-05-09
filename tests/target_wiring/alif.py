@@ -13,3 +13,6 @@ pwm_loopback_pins = [("P0_4", "P0_5")]
 # CAN args assume no connection for single device tests
 can_args = (1,)
 can_kwargs = {}
+
+i2c_args_controller = {"scl": "P1_1", "sda": "P1_0"}
+i2c_args_target = (0,)  # on pins P0_3/P0_2
