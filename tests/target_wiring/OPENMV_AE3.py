@@ -13,13 +13,17 @@
 # - P0 and P2
 # - P1 and P3
 
+pin_loopback_pins = [("P4", "P5"), ("P0", "P2"), ("P1", "P3")]
+
+pwm_loopback_pins = pin_loopback_pins
+
+# Test ADC on P4, P5.
+adc_loopback_pins = [("P4", "P5"), ("P5", "P4")]
+
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {}
 
 spi_standalone_args_list = [(0,)]
-
-pwm_loopback_pins = [("P4", "P5")]
-pwm_loopback_pins += [("P0", "P2"), ("P1", "P3")]
 
 i2c_args_controller = {"scl": "P2", "sda": "P3"}
 i2c_args_target = (2,)  # on pins P0/P1
