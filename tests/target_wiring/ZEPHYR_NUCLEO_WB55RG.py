@@ -7,13 +7,13 @@
 
 from machine import Pin
 
+pin_loopback_pins = [(("gpioc", 0), ("gpioc", 1)), (("gpioa", 5), ("gpiob", 8)), (("gpioa", 6), ("gpiob", 9))]
+adc_loopback_pins = []  # TODO, currently only configured on PA0 and PC2
+
 uart_loopback_args = ("lpuart1",)
 uart_loopback_kwargs = {}
 
 spi_standalone_args_list = [("spi1",)]
-
-# for machine.Pin
-pwm_loopback_pins = [(("gpioc", 0), ("gpioc", 1))]
 
 i2c_args_controller = {"scl": Pin(("gpioa", 5)), "sda": Pin(("gpioa", 6))}
 i2c_args_target = ("i2c1",)

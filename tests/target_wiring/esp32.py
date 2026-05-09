@@ -6,6 +6,10 @@
 
 import sys
 
+pin_loopback_pins = [(4, 5)]
+pwm_loopback_pins = pin_loopback_pins
+adc_loopback_pins = pin_loopback_pins
+
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {"tx": 4, "rx": 5}
 
@@ -13,8 +17,6 @@ if "ESP32-C" in sys.implementation._machine:
     spi_standalone_args_list = [(1,)]
 else:
     spi_standalone_args_list = [(1,), (2,)]
-
-pwm_loopback_pins = [(4, 5)]
 
 encoder_loopback_id = 0
 encoder_loopback_out_pins = (4, 12)
