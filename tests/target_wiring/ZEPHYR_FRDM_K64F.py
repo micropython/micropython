@@ -5,3 +5,6 @@
 
 uart_loopback_args = ("uart3",)
 uart_loopback_kwargs = {}  # TX/RX=PTC17/PTC16
+
+# for machine.Pin
+pwm_loopback_pins = [(("gpioc", 16), ("gpioc", 17))]
