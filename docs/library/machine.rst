@@ -240,6 +240,7 @@ Constants
           machine.WDT_RESET
           machine.DEEPSLEEP_RESET
           machine.SOFT_RESET
+          machine.BROWNOUT_RESET - (ESP32 specific) A note on hardware: add a decoupling capacitor (10µF - 100µF) or/and increase the power supply capacity.
 
     Reset causes.
 
