@@ -315,6 +315,7 @@ tests_requiring_target_wiring = (
     "extmod_hardware/machine_can_timings.py",
     "extmod_hardware/machine_encoder.py",
     "extmod_hardware/machine_i2c_target.py",
+    "extmod_hardware/machine_adc.py",
     "extmod_hardware/machine_pin.py",
     "extmod_hardware/machine_pwm.py",
     "extmod_hardware/machine_uart_irq_break.py",
