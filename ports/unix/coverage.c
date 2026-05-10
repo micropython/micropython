@@ -647,10 +647,10 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "mp_obj_list_optional_arg same list? %d\n", MP_OBJ_TO_PTR(list) == as_ptr);
 
         as_ptr = mp_obj_list_optional_arg(mp_const_none, list_len);
-        mp_printf(&mp_plat_print, "mp_obj_list_optional_arg new list len %d\n", as_ptr->len);
+        mp_printf(&mp_plat_print, "mp_obj_list_optional_arg new list len " SIZE_FMT "\n", as_ptr->len);
 
         as_ptr = mp_obj_list_optional_arg(MP_OBJ_NULL, list_len);
-        mp_printf(&mp_plat_print, "mp_obj_list_optional_arg new list from NULL len %d\n", as_ptr->len);
+        mp_printf(&mp_plat_print, "mp_obj_list_optional_arg new list from NULL len " SIZE_FMT "\n", as_ptr->len);
     }
 
     // runtime utils
