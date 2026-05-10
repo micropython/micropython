@@ -1,0 +1,1 @@
+The following files are firmware for the WAVESHARE_ESP32_S3_PICO.
