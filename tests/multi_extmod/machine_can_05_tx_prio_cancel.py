@@ -1,5 +1,6 @@
 from machine import CAN
 import time
+import sys
 
 # Check that cancelling a low priority outgoing message and replacing it with a
 # high priority message causes it to be transmitted successfully onto a busy bus
@@ -66,7 +67,7 @@ def irq_send(can):
 
 
 def instance1():
-    global last_idx
+    global last_idx, total_cancels
     can.irq(irq_send, trigger=can.IRQ_TX, hard=True)
 
     multitest.next()
@@ -95,6 +96,8 @@ def instance1():
         # try and cancel the last message we queued
         res = can.cancel_send(last_idx)
         print(i, "cancel result", res)
+        if ("mimxrt" in sys.platform) and res:
+            total_cancels += 1
 
         # send a high priority message, that we expect to go out
         idx = can.send(0x500 + i, b"HIPRIO", CAN.FLAG_EXT_ID)
