@@ -80,13 +80,14 @@ static void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         eth_id = 1;
     }
     #endif
+    const ip4_addr_t *ip4 = netif_ip4_addr(netif);
     mp_printf(print, "<ETH%d status=%u ip=%u.%u.%u.%u>",
         eth_id,
         status,
-        netif->ip_addr.addr & 0xff,
-        netif->ip_addr.addr >> 8 & 0xff,
-        netif->ip_addr.addr >> 16 & 0xff,
-        netif->ip_addr.addr >> 24
+        ip4_addr1(ip4),
+        ip4_addr2(ip4),
+        ip4_addr3(ip4),
+        ip4_addr4(ip4)
         );
 }
 
