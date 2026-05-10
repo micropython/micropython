@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "MPYB_v11.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "MPY v1.1",
+    "thumbnail": "",
+    "url": "",
+    "variants": {
+        "DP": "Double-precision float",
+        "DP_THREAD": "Double precision float + Threads",
+        "NETWORK": "Wiznet 5200 Driver",
+        "THREAD": "Threading"
+    },
+    "vendor": "NONE"
+}
