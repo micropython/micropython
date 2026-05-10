@@ -17,5 +17,8 @@
     "product": "ESP32-C6",
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
-    "vendor": "Espressif"
+    "vendor": "Espressif",
+    "variants": {
+        "CSI": "Optimized for CSI-based motion detection applications"
+    }
 }

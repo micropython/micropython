@@ -1,0 +1,4 @@
+# PSRAM Support
+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=32768    # Reserve 32KB internal for DMA
+CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY=y    # Required for some operations
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=n         # Disable WiFi allocation from PSRAM
