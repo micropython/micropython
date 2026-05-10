@@ -107,6 +107,7 @@ Filesystem access
 .. function:: sync()
 
    Sync all filesystems.
+   On some ports this function isn't present because it isn't necessary to sync after writes to the file-system.
 
 Terminal redirection and duplication
 ------------------------------------
