@@ -111,7 +111,7 @@ CONFIG_RMT_RX_ISR_HANDLER_IN_IRAM=n
 CONFIG_SPI_MASTER_ISR_IN_IRAM=n
 CONFIG_SPI_SLAVE_ISR_IN_IRAM=n
 CONFIG_ESP_EVENT_POST_FROM_IRAM_ISR=n
-CONFIG_PERIPH_CTRL_FUNC_IN_IRAM=n
+CONFIG_ESP_PERIPH_CTRL_FUNC_IN_IRAM=n
 
 # Legacy ADC Calibration Configuration
 # Only on: ESP32
@@ -135,7 +135,7 @@ CONFIG_ETH_SPI_ETHERNET_DM9051=y
 # functions are in ROM. ESP32-C6 (and possibly other new chips) have "full"
 # newlib formatting in ROM instead and should override this, check
 # ESP_ROM_HAS_NEWLIB_NANO_FORMAT in ESP-IDF.
-CONFIG_NEWLIB_NANO_FORMAT=y
+CONFIG_LIBC_NEWLIB_NANO_FORMAT=y
 
 # IRAM/DRAM split protection is a memory protection feature on some parts
 # that support SOC_CPU_IDRAM_SPLIT_USING_PMP, eg. C2, C5, C6, H2

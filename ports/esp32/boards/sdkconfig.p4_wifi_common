@@ -56,4 +56,4 @@ CONFIG_BT_HCI_LOG_DEBUG_EN=y
 
 # Increase NimBLE task stack size from the default, because Python code
 # (BLE IRQ handlers) will most likely run on this task.
-CONFIG_BT_NIMBLE_TASK_STACK_SIZE=6144
+CONFIG_BT_NIMBLE_HOST_TASK_STACK_SIZE=6144
