@@ -35,25 +35,20 @@ class PyProxy {
             return js_obj;
         }
 
+        const obj_data = Module._malloc(2 * 4);
         const type = Module.ccall(
-            "proxy_c_to_js_get_type",
+            "proxy_c_to_js_get_type_and_data",
             "number",
-            ["number"],
-            [js_obj._ref],
+            ["number", "pointer"],
+            [js_obj._ref, obj_data],
         );
 
+        let js_obj_out;
         if (type === 1 || type === 2) {
             // List or tuple.
-            const array_ref = Module._malloc(2 * 4);
             const item = Module._malloc(3 * 4);
-            Module.ccall(
-                "proxy_c_to_js_get_array",
-                "null",
-                ["number", "pointer"],
-                [js_obj._ref, array_ref],
-            );
-            const len = Module.getValue(array_ref, "i32");
-            const items_ptr = Module.getValue(array_ref + 4, "i32");
+            const len = Module.getValue(obj_data, "i32");
+            const items_ptr = Module.getValue(obj_data + 4, "i32");
             const js_array = [];
             for (let i = 0; i < len; ++i) {
                 Module.ccall(
@@ -65,23 +60,13 @@ class PyProxy {
                 const js_item = proxy_convert_mp_to_js_obj_jsside(item);
                 js_array.push(PyProxy.toJs(js_item));
             }
-            Module._free(array_ref);
             Module._free(item);
-            return js_array;
-        }
-
-        if (type === 3) {
+            js_obj_out = js_array;
+        } else if (type === 3) {
             // Dict.
-            const map_ref = Module._malloc(2 * 4);
             const item = Module._malloc(3 * 4);
-            Module.ccall(
-                "proxy_c_to_js_get_dict",
-                "null",
-                ["number", "pointer"],
-                [js_obj._ref, map_ref],
-            );
-            const alloc = Module.getValue(map_ref, "i32");
-            const table_ptr = Module.getValue(map_ref + 4, "i32");
+            const alloc = Module.getValue(obj_data, "i32");
+            const table_ptr = Module.getValue(obj_data + 4, "i32");
             const js_dict = {};
             for (let i = 0; i < alloc; ++i) {
                 const mp_key = Module.getValue(table_ptr + i * 8, "i32");
@@ -112,13 +97,20 @@ class PyProxy {
                     js_dict[js_key] = PyProxy.toJs(js_value);
                 }
             }
-            Module._free(map_ref);
             Module._free(item);
-            return js_dict;
+            js_obj_out = js_dict;
+        } else if (type === 4) {
+            // Buffer protocol; create a copy of the data to a new Uint8Array.
+            const len = Module.getValue(obj_data, "i32");
+            const buf = Module.getValue(obj_data + 4, "i32");
+            js_obj_out = Module.HEAPU8.slice(buf, buf + len);
+        } else {
+            // Cannot convert to JS, leave as a PyProxy.
+            js_obj_out = js_obj;
         }
 
-        // Cannot convert to JS, leave as a PyProxy.
-        return js_obj;
+        Module._free(obj_data);
+        return js_obj_out;
     }
 }
 
