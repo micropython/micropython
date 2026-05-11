@@ -548,19 +548,20 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
         // Estimate the time required to shift out all remaining bytes from the TX hardware pipeline.
         // Cy_SCB_UART_GetNumInTxFifo() returns the exact byte count in the TX FIFO but explicitly
         // excludes the TX shifter register (1 byte). Adding 1 accounts for that shifter. The sum is
-        // multiplied by 10 bits per symbol (1 start + 8 data + 1 stop, no parity) and divided by
-        // the baudrate to get the duration in milliseconds. uint32_t is sufficient: max FIFO is
-        // < 256 bytes, so the worst-case duration is well within the uint32_t range even at the
-        // lowest supported baud rates.
+        // multiplied by 13 bits per symbol (1 start + 8 data + 2 stop, 1 parity), and multiplied by 2
+        // (for safety margin) and divided by the baudrate to get the duration in milliseconds.
+        // uint32_t is sufficient: max FIFO is < 256 bytes, so the worst-case duration is well within
+        // the uint32_t range even at the lowest supported baud rates.
         uint32_t timeout = mp_hal_ticks_ms() + (1
             + Cy_SCB_UART_GetNumInTxFifo(self->scb_obj->scb)
-            ) * 10000 / self->baudrate;
+            ) * 13000 * 2 / self->baudrate;
         do {
             if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
+            mp_event_handle_nowait();
         } while (mp_hal_ticks_ms() < timeout);
-        *errcode = MP_EINVAL;
+        *errcode = MP_ETIMEDOUT;
         ret = MP_STREAM_ERROR;
     } else {
         *errcode = MP_EINVAL;
