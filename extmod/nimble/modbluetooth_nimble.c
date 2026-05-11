@@ -431,6 +431,16 @@ static int commmon_gap_event_cb(struct ble_gap_event *event, void *arg) {
             return 0;
         }
 
+        case BLE_GAP_EVENT_PASSKEY_ACTION: {
+            DEBUG_printf("commmon_gap_event_cb: passkey action: conn_handle=%d action=%d num=" UINT_FMT "\n", event->passkey.conn_handle, event->passkey.params.action, (mp_uint_t)event->passkey.params.numcmp);
+
+            #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+            mp_bluetooth_gap_on_passkey_action(event->passkey.conn_handle, event->passkey.params.action, event->passkey.params.numcmp);
+            #endif
+
+            return 0;
+        }
+
         default:
             DEBUG_printf("commmon_gap_event_cb: unknown type %d\n", event->type);
             return 0;
@@ -495,16 +505,6 @@ static int central_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
             // Allow re-pairing.
             return BLE_GAP_REPEAT_PAIRING_RETRY;
-        }
-
-        case BLE_GAP_EVENT_PASSKEY_ACTION: {
-            DEBUG_printf("central_gap_event_cb: passkey action: conn_handle=%d action=%d num=" UINT_FMT "\n", event->passkey.conn_handle, event->passkey.params.action, (mp_uint_t)event->passkey.params.numcmp);
-
-            #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-            mp_bluetooth_gap_on_passkey_action(event->passkey.conn_handle, event->passkey.params.action, event->passkey.params.numcmp);
-            #endif
-
-            return 0;
         }
 
         case BLE_GAP_EVENT_SUBSCRIBE: {
