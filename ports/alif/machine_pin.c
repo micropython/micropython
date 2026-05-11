@@ -52,11 +52,12 @@ typedef struct _machine_pin_irq_obj_t {
 // Defines a single GPIO IRQ handler
 #define DEFINE_GPIO_IRQ_HANDLER(pname, port, pin) \
     void pname##_IRQ##pin##Handler(void) { \
+        gpio_interrupt_eoi((GPIO_Type *)pname##_BASE, pin); \
         machine_pin_irq_obj_t *irq = MACHINE_PIN_IRQ_OBJECT(port, pin); \
-        machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent); \
-        gpio_interrupt_eoi(self->gpio, pin); \
-        irq->flags = irq->trigger; \
-        mp_irq_handler(&irq->base); \
+        if (irq != NULL) { \
+            irq->flags = irq->trigger; \
+            mp_irq_handler(&irq->base); \
+        } \
     }
 
 // Defines all 8 pin IRQ handlers for a port
