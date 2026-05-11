@@ -112,6 +112,11 @@ static mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(o);
 }
 
+static void signal_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_signal_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "Signal(%p%s)", self->pin, self->invert ? ", invert=True" : "");
+}
+
 static mp_uint_t signal_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_signal_t *self = MP_OBJ_TO_PTR(self_in);
@@ -163,7 +168,6 @@ static const mp_rom_map_elem_t signal_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&signal_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&signal_off_obj) },
 };
-
 static MP_DEFINE_CONST_DICT(signal_locals_dict, signal_locals_dict_table);
 
 static const mp_pin_p_t signal_pin_p = {
@@ -175,6 +179,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Signal,
     MP_TYPE_FLAG_NONE,
     make_new, signal_make_new,
+    print, signal_print,
     call, signal_call,
     protocol, &signal_pin_p,
     locals_dict, &signal_locals_dict
