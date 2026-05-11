@@ -117,6 +117,7 @@ typedef struct machine_can_port {
     uint16_t num_error_warning;
     uint16_t num_error_passive;
     uint16_t num_bus_off;
+    uint16_t num_rx_overrun;
 } machine_can_port_t;
 
 typedef struct _iomux_table_t {
@@ -227,7 +228,6 @@ void machine_can_handler(CAN_Type *base) {
             ++port->num_rx_overrun;
             FLEXCAN_ClearMbStatusFlags(port->can_inst, kFLEXCAN_RxFifoOverflowFlag);
         }
-
         // Check the TX MB interrupt flags.
         uint64_t irq_tx_mask = ~((1ULL << port->flexcan_txmb_start) - 1);
         if (mb_status_flags & irq_tx_mask) {
@@ -400,6 +400,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     port->num_error_warning = 0;
     port->num_error_passive = 0;
     port->num_bus_off = 0;
+    port->num_rx_overrun = 0;
     port->can_state = MP_CAN_STATE_ACTIVE;
     port->irq_state_changed = 0;
     port->flt_conf = 0;
@@ -407,6 +408,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     FLEXCAN_EnableInterrupts(port->can_inst,
         kFLEXCAN_BusOffInterruptEnable | kFLEXCAN_ErrorInterruptEnable |
         kFLEXCAN_RxWarningInterruptEnable | kFLEXCAN_TxWarningInterruptEnable);
+    FLEXCAN_EnableMbInterrupts(port->can_inst, kFLEXCAN_RxFifoOverflowFlag);
 
     mp_uint_t instance = FLEXCAN_GetInstance(port->can_inst);
     EnableIRQ(((IRQn_Type [])CAN_Rx_Warning_IRQS)[instance]);
@@ -729,6 +731,7 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
     port->num_error_warning = 0;
     port->num_error_passive = 0;
     port->num_bus_off = 0;
+    port->num_rx_overrun = 0;
     port->can_state = machine_can_port_get_state(self);
     port->irq_state_changed = false;
     // Drain the FIFO
@@ -741,7 +744,7 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
     // Clear all filters
     // machine_can_port_clear_filters(self);
     // Re-enable FLEXCAN MB receive interrupt
-    FLEXCAN_EnableMbInterrupts(port->can_inst, kFLEXCAN_RxFifoFrameAvlFlag);
+    FLEXCAN_EnableMbInterrupts(port->can_inst, kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoFrameAvlFlag);
     // Since Bit BOFF_REC of CTRL1 is 0, bus off recovery happens automatic.
 }
 
@@ -771,7 +774,7 @@ static void machine_can_port_update_counters(machine_can_obj_t *self) {
     counters->num_bus_off = port->num_bus_off;
     counters->tx_pending = can_count_txmb_pending(port);
     counters->rx_pending = FLEXCAN_GetMbStatusFlags(port->can_inst, (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag) != 0;
-    counters->rx_overruns = 0;
+    counters->rx_overruns = port->num_rx_overrun;
 }
 
 // Hook for port to fill in the final item of the get_timings() result list with controller-specific values
