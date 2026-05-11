@@ -88,6 +88,16 @@ const ospi_flash_settings_t ospi_flash_settings[] = {
 };
 const size_t ospi_flash_settings_len = 3;
 
+static void board_config_user_button_irq(void) {
+    #if CORE_M55_HP
+    // Configure the user button to wake on rising edge (button release).
+    mp_hal_pin_config_irq_rising(pin_SW, true);
+    NVIC_ClearPendingIRQ(LPGPIO_IRQ7_IRQn);
+    NVIC_SetPriority(LPGPIO_IRQ7_IRQn, IRQ_PRI_GPIO);
+    NVIC_EnableIRQ(LPGPIO_IRQ7_IRQn);
+    #endif
+}
+
 void board_startup(void) {
     // Switch the USB multiplexer to use the Alif USB port.
     mp_hal_pin_output(pin_USB_D_SEL);
@@ -182,6 +192,9 @@ void board_early_init(void) {
 }
 
 MP_WEAK void board_enter_stop(void) {
+    // Allow the user button to wake the device.
+    board_config_user_button_irq();
+
     // Let USB_D_SEL float, so it doesn't source 30uA through the 110k resistors to GND.
     mp_hal_pin_input(pin_USB_D_SEL);
 
@@ -209,7 +222,8 @@ MP_WEAK void board_enter_stop(void) {
 }
 
 MP_WEAK void board_enter_standby(void) {
-
+    // Allow the user button to wake the device.
+    board_config_user_button_irq();
 }
 
 MP_WEAK void board_exit_standby(void) {
