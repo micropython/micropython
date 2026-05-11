@@ -110,7 +110,45 @@ def uart_tests():
     print("Tx Done after flush: ", uart.txdone() == True)
 
 
+def uart_irq():
+    global handler_irq_flag
+    handler_irq_flag = False
+
+    def uart_irq_handler(arg):
+        global handler_irq_flag
+        handler_irq_flag = True
+        print(f"IRQ {event} handler called")
+
+    def wait_for_irq_handler():
+        global handler_irq_flag
+        while not handler_irq_flag:
+            time.sleep_ms(10)
+        handler_irq_flag = False
+
+    # BREAK Received check
+    event = "BREAK"
+    irq = uart.irq(handler=uart_irq_handler, trigger=(UART.IRQ_BREAK))
+    uart.sendbreak()
+    wait_for_irq_handler()
+    print("IRQ BREAK detected: ", irq.flags() & UART.IRQ_BREAK == UART.IRQ_BREAK)
+
+    # TXIDLE check
+    event = "TXIDLE"
+    uart.irq(handler=uart_irq_handler, trigger=(UART.IRQ_TXIDLE))
+    uart.write("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    wait_for_irq_handler()
+    print("IRQ TXIDLE detected: ", irq.flags() & UART.IRQ_TXIDLE == UART.IRQ_TXIDLE)
+
+    # RXIDLE check
+    event = "RXIDLE"
+    uart.irq(handler=uart_irq_handler, trigger=(UART.IRQ_RXIDLE))
+    uart.write("1")
+    wait_for_irq_handler()
+    print("IRQ RXIDLE detected: ", irq.flags() & UART.IRQ_RXIDLE == UART.IRQ_RXIDLE)
+
+
 uart_tests()
+uart_irq()
 
 
 uart.deinit()

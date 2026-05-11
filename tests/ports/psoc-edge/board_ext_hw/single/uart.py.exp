@@ -13,3 +13,9 @@ Tx written bytes by write():  512
 Tx is received by Rx(readinto(buf)) for large data:  True
 Tx Ongoing:  True
 Tx Done after flush:  True
+IRQ BREAK handler called
+IRQ BREAK detected:  True
+IRQ TXIDLE handler called
+IRQ TXIDLE detected:  True
+IRQ RXIDLE handler called
+IRQ RXIDLE detected:  True
