@@ -430,7 +430,7 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
         // If we compile with -O3, don't store line numbers.
         return;
     }
-    if (source_line > emit->last_source_line) {
+    if (MP_STATE_VM(include_source_lines) && source_line > emit->last_source_line) {
         mp_uint_t bytes_to_skip = emit->bytecode_offset - emit->last_source_line_offset;
         mp_uint_t lines_to_skip = source_line - emit->last_source_line;
         emit_write_code_info_bytes_lines(emit, bytes_to_skip, lines_to_skip);
