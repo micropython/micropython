@@ -538,3 +538,42 @@ Constants
 .. data:: PDM_PCM.BITS_32
 
    for initialising the PDM_PCM ``bits`` to 32
+
+
+UART
+----
+
+See :ref:`machine.UART <machine.UART>`.
+
+The following specialization applies to this port:
+
+Constructor
+^^^^^^^^^^^^
+
+.. class:: UART(id)
+
+   The following parameters are supported with limited configuration:
+   
+   - ``bits``. Only 8 bits.
+
+   These are planned for future implementation, but yet unavailable:
+
+   - ``rts``
+   - ``cts``
+   - ``flow``
+       
+.. Note::
+
+   These parameters are not implemented:
+   
+   - ``id``
+   - ``txbuf``
+   - ``invert`` 
+
+
+Methods
+^^^^^^^
+
+.. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, *, ...)
+
+    The same parameters as the constructor are supported, with the same limitations.
