@@ -8,3 +8,8 @@
   uid: 111B1698012D2400
   features:
     - i2c
+
+- name: KIT_PSE84_AI
+  uid: 101A1398012D2400
+  features:
+    - uart
