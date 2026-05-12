@@ -163,7 +163,7 @@ Methods
        For the esp8266 and nrf ports the call returns while the last byte is sent.
        If required, a one character wait time has to be added in the calling script.
 
-   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports, renesas-ra
+   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports, psoc-edge, renesas-ra
 
 .. method:: UART.txdone()
 
@@ -176,7 +176,7 @@ Methods
        of a transfer is still being sent. If required, a one character wait time has to be
        added in the calling script.
 
-   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports, renesas-ra
+   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports, psoc-edge, renesas-ra
 
 .. method:: UART.irq(handler=None, trigger=0, hard=False)
 
@@ -216,6 +216,7 @@ Methods
       ESP32            yes        yes                yes
       MIMXRT           yes                yes
       NRF                         yes     yes
+      PSOC-EDGE        yes                yes        yes
       RENESAS-RA       yes        yes
       RP2              yes                yes        yes
       SAMD             yes        yes     yes
@@ -241,7 +242,7 @@ Methods
        idle.
 
 
-   Availability: cc3200, esp32, mimxrt, nrf, renesas-ra, rp2, samd, stm32.
+   Availability: cc3200, esp32, mimxrt, nrf, psoc-edge, renesas-ra, rp2, samd, stm32.
 
 Constants
 ---------
@@ -260,4 +261,4 @@ Constants
 
     IRQ trigger sources.
 
-    Availability: renesas-ra, stm32, esp32, rp2040, mimxrt, samd, cc3200.
+    Availability: renesas-ra, stm32, esp32, rp2040, mimxrt, samd, cc3200, psoc-edge.
