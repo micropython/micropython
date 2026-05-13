@@ -10,6 +10,8 @@ else
 MICROPY_VFS_LFS2 = 1
 endif
 
+MICROPY_PY_ASYNCIO = 0
+
 LD_FILES += boards/nrf51x22_256k_16k.ld
 FLASHER = pyocd
 
