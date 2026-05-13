@@ -184,7 +184,7 @@ void common_uart_irq_handler(int uart_id) {
         // Check the flags to see if the uart user handler should be called
         // The handler for RXIDLE is called in the timer callback
         if (self->mp_irq_trigger & mp_irq_flags) {
-            self->mp_irq_flags = mp_irq_flags;
+            self->mp_irq_flags = self->mp_irq_trigger & mp_irq_flags;
             mp_irq_handler(self->mp_irq_obj);
         }
         #endif
