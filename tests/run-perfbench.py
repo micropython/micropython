@@ -127,7 +127,7 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
 
         # Process script through mpy-cross if needed
         if hasattr(target, "enter_raw_repl") or args.via_mpy:
-            crash, test_script_target = prepare_script_for_target(args, script_text=test_script)
+            crash, test_script_target = prepare_script_for_target(args, test_script, test_file)
             if crash:
                 test_results.append((test_file, "fail", "preparation"))
                 print("CRASH:", test_script_target)
