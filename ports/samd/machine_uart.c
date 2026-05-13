@@ -167,7 +167,7 @@ void common_uart_irq_handler(int uart_id) {
                     uart->USART.DATA.bit.DATA =
                         ringbuf_get(&self->write_buffer) | (ringbuf_get(&self->write_buffer) << 8);
                 }
-            } else {
+            } else if (uart->USART.INTENCLR.bit.DRE != 0) {
                 #if MICROPY_PY_MACHINE_UART_IRQ
                 // Set the TXIDLE flag
                 mp_irq_flags |= SERCOM_USART_INTFLAG_TXC;
