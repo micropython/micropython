@@ -183,6 +183,8 @@ Methods
 
      - ``pulse_width`` - determines the initial pulse width value to use.
      - ``pulse_width_percent`` - determines the initial pulse width percentage to use.
+     - ``pulse_width_us`` - determines the initial pulse width in microseconds.
+     - ``pulse_width_ns`` - determines the initial pulse width in nanoseconds.
 
    Keyword arguments for Timer.OC modes:
 
@@ -293,6 +295,22 @@ Methods
    for which the pulse is active.  The value can be an integer or
    floating-point number for more accuracy.  For example, a value of 25 gives
    a duty cycle of 25%.
+
+.. method:: timerchannel.pulse_width_us([value])
+
+   Get or set the pulse width in microseconds associated with a channel.
+   The value is converted to/from timer ticks using the timer's clock and
+   prescaler. Conversions are performed assuming simple up-counting and do not
+   account for center-aligned mode. For example, passing 1000 sets the pulse
+   width to 1 ms.
+
+.. method:: timerchannel.pulse_width_ns([value])
+
+   Get or set the pulse width in nanoseconds associated with a channel.
+   The value is converted to/from timer ticks using the timer's clock and
+   prescaler. Conversions are performed assuming simple up-counting and do not
+   account for center-aligned mode. This method offers finer resolution than
+   ``pulse_width_us()`` and matches the interface of :meth:`machine.PWM.duty_ns`.
 
 Constants
 ---------
