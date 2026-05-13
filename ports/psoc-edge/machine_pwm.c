@@ -68,14 +68,10 @@ static const struct {
     uint32_t counter_num;
     en_clk_dst_t pclk_dst;     // PCLK clock destination for Cy_SysClk_PeriPclkAssignDivider
 } pwm_pin_map[] = {
-    {0,  0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P0_0  - LINE0
-    {0,  1, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P0_1  - LINE_COMPL0
-    {7,  3, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P7_3  - LINE_COMPL0
-    {9,  1, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P9_1  - LINE0
-    {9,  3, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P9_3  - LINE_COMPL0
-    {11, 6, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P11_6 - LINE0
-    {14, 3, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P14_3 - LINE0
-    {14, 4, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P14_4 - LINE_COMPL0
+    // {9,  1, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P9_1  - LINE0       (shares counter 0)
+    // {9,  3, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P9_3  - LINE_COMPL0 (shares counter 0)
+    // {14, 3, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P14_3 - LINE0       (shares counter 0)
+    // {14, 4, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P14_4 - LINE_COMPL0 (shares counter 0)
     {16, 0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P16_0 - LINE0  (counter 0)
     {16, 1, 1, PCLK_TCPWM0_CLOCK_COUNTER_EN1},  // P16_1 - LINE1  (counter 1)
     {16, 2, 2, PCLK_TCPWM0_CLOCK_COUNTER_EN2},  // P16_2 - LINE2  (counter 2)
@@ -84,8 +80,8 @@ static const struct {
     {16, 5, 5, PCLK_TCPWM0_CLOCK_COUNTER_EN5},  // P16_5 - LINE5  (counter 5)
     {16, 6, 6, PCLK_TCPWM0_CLOCK_COUNTER_EN6},  // P16_6 - LINE6  (counter 6)
     {16, 7, 7, PCLK_TCPWM0_CLOCK_COUNTER_EN7},  // P16_7 - LINE7  (counter 7)
-    {17, 0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P17_0 - LINE_COMPL0
-    {20, 5, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P20_5 - LINE_COMPL0
+    // {17, 0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P17_0 - LINE_COMPL0 (shares counter 0)
+    // {20, 5, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P20_5 - LINE_COMPL0 (shares counter 0)
 };
 
 // Look up the pin→counter mapping. Returns false if the pin is not PWM-capable.
