@@ -1887,7 +1887,7 @@ typedef time_t mp_timestamp_t;
 // implementation). This is present for compatibility but can be disabled to
 // save space.
 #ifndef MICROPY_PY_SELECT_SELECT
-#define MICROPY_PY_SELECT_SELECT (1)
+#define MICROPY_PY_SELECT_SELECT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 // Whether to provide the "time" module
