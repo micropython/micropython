@@ -482,6 +482,7 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/rp2 submodules
     make ${MAKEOPTS} -C ports/rp2
+    make ${MAKEOPTS} -C ports/rp2 BOARD=DUALMCU_RP2040
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2 submodules
