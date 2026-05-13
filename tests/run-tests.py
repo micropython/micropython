@@ -29,7 +29,6 @@ from test_utils import (
     get_results_filename,
     convert_device_shortcut_to_real_device,
     get_test_instance,
-    prepare_script_for_target,
     create_test_report,
     FLAKY_REASON_PREFIX,
 )
