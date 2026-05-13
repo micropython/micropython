@@ -112,6 +112,15 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
 
 static machine_pwm_obj_t *pwm_obj[MICROPY_PY_MACHINE_PWM_MAX_OBJS] = { NULL };
 
+static inline machine_pwm_obj_t *pwm_obj_find_by_pin(uint8_t port, uint8_t pin) {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PWM_MAX_OBJS; i++) {
+        if (pwm_obj[i] != NULL && pwm_obj[i]->pin->port == port && pwm_obj[i]->pin->pin == pin) {
+            return pwm_obj[i];
+        }
+    }
+    return NULL;
+}
+
 static inline machine_pwm_obj_t *pwm_obj_alloc() {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PWM_MAX_OBJS; i++) {
         if (pwm_obj[i] == NULL) {
@@ -243,14 +252,22 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // Check number of arguments: dest is required
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
+    // Resolve dest to a pin object (accepts Pin object, board name string, or CPU name string)
+    const machine_pin_obj_t *pin = machine_pin_get_pin_obj(args[0]);
+
+    // Reject if a PWM instance already exists for this pin
+    if (pwm_obj_find_by_pin(pin->port, pin->pin) != NULL) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("PWM instance for Pin %q already exists, call deinit() first"), pin->name);
+    }
+
     // Get static peripheral object.
     machine_pwm_obj_t *self = pwm_obj_alloc();
     if (self == NULL) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM: maximum number of instances (%d) reached"), MICROPY_PY_MACHINE_PWM_MAX_OBJS);
     }
 
-    // Resolve dest to a pin object (accepts Pin object, board name string, or CPU name string)
-    self->pin = machine_pin_get_pin_obj(args[0]);
+    self->pin = pin;
 
     // Look up the TCPWM counter and PCLK destination for this pin
     if (!pwm_pin_get_counter(self->pin->port, self->pin->pin, &self->counter_num, &self->pclk_dst)) {
