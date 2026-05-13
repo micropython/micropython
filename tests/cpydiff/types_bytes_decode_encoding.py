@@ -7,13 +7,13 @@ workaround: Convert data to UTF-8 before processing, or implement custom encodin
 
 # CPython supports many encodings, MicroPython only utf-8 and ascii
 try:
-    b'\xe9'.decode('latin-1')  # 'é' in latin-1
+    b"\xe9".decode("latin-1")  # 'é' in latin-1
     print("latin-1 supported")
 except (ValueError, NotImplementedError, LookupError) as e:
     print("latin-1 not supported:", type(e).__name__)
 
 try:
-    b'\x80'.decode('cp1252')  # Euro sign in cp1252
+    b"\x80".decode("cp1252")  # Euro sign in cp1252
     print("cp1252 supported")
 except (ValueError, NotImplementedError, LookupError) as e:
     print("cp1252 not supported:", type(e).__name__)
