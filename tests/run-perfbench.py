@@ -13,6 +13,7 @@ from glob import glob
 from test_utils import (
     base_path,
     pyboard,
+    set_injected_prologue,
     get_test_instance,
     prepare_script_for_target,
     create_test_report,
@@ -278,6 +279,12 @@ def main():
     cmd_parser.add_argument("--via-mpy", action="store_true", help="compile code to .mpy first")
     cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
+        "--begin",
+        metavar="PROLOGUE",
+        default=None,
+        help="prologue python file to execute before module import",
+    )
+    cmd_parser.add_argument(
         "-r",
         "--result-dir",
         default=base_path("results"),
@@ -293,6 +300,12 @@ def main():
     if args.diff_time or args.diff_score:
         compute_diff(args.N[0], args.M[0], args.diff_score)
         sys.exit(0)
+
+    prologue = ""
+    if args.begin:
+        with open(args.begin, "rt") as source:
+            prologue = source.read()
+    set_injected_prologue(prologue)
 
     # N, M = 50, 25 # esp8266
     # N, M = 100, 100 # pyboard, esp32
