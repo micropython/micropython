@@ -167,7 +167,7 @@ void common_uart_irq_handler(int uart_id) {
                     uart->USART.DATA.bit.DATA =
                         ringbuf_get(&self->write_buffer) | (ringbuf_get(&self->write_buffer) << 8);
                 }
-            } else {
+            } else if (uart->USART.INTENCLR.bit.DRE != 0) {
                 #if MICROPY_PY_MACHINE_UART_IRQ
                 // Set the TXIDLE flag
                 mp_irq_flags |= SERCOM_USART_INTFLAG_TXC;
@@ -184,7 +184,7 @@ void common_uart_irq_handler(int uart_id) {
         // Check the flags to see if the uart user handler should be called
         // The handler for RXIDLE is called in the timer callback
         if (self->mp_irq_trigger & mp_irq_flags) {
-            self->mp_irq_flags = mp_irq_flags;
+            self->mp_irq_flags = self->mp_irq_trigger & mp_irq_flags;
             mp_irq_handler(self->mp_irq_obj);
         }
         #endif
