@@ -51,16 +51,8 @@
 #define MP_CAN_IRQ_RX_OVERFLOW      (1 << 4)
 #define MP_CAN_IRQ_RX_WARNING       (1 << 5)
 
-#if MICROPY_HW_ENABLE_FDCAN
-#define CAN_BRP_MIN 1
-#define CAN_BRP_MAX 255
-#define CAN_FD_BRS_BRP_MIN 1
-#define CAN_FD_BRS_BRP_MAX 32
-
-#else // Classic bxCAN
 #define CAN_BRP_MIN 1
 #define CAN_BRP_MAX (CAN_CTRL1_PRESDIV_MASK >> CAN_CTRL1_PRESDIV_SHIFT)
-#endif
 
 #define CAN_PROPSEG_MAX (CAN_CTRL1_PROPSEG_MASK >> CAN_CTRL1_PROPSEG_SHIFT)
 #define CAN_PSEG1_MAX (CAN_CTRL1_PSEG1_MASK >> CAN_CTRL1_PSEG1_SHIFT)
@@ -141,7 +133,7 @@ static const iomux_table_t iomux_table[] = {
     IOMUX_TABLE_CAN
 };
 
-bool can_set_iomux(int8_t can) {
+static bool can_set_iomux(int8_t can) {
     int index = (can - 1) * 2;
 
     if (CTX.muxRegister != 0) {
@@ -159,7 +151,7 @@ bool can_set_iomux(int8_t can) {
     }
 }
 
-void machine_can_handler(CAN_Type *base) {
+__attribute__((section(".ram_functions"))) static void machine_can_handler(CAN_Type *base) {
     machine_can_obj_t *self = NULL;
     for (int i = 0; i < MICROPY_HW_NUM_CAN_IRQS; ++i) {
         machine_can_obj_t *machine_can_obj = MP_STATE_PORT(machine_can_objs[i]);
@@ -215,7 +207,7 @@ void machine_can_handler(CAN_Type *base) {
         }
         FLEXCAN_ClearStatusFlags(port->can_inst, FLEXCAN_ERROR_AND_STATUS_INIT_FLAG);
 
-        uint64_t mb_status_flags = FLEXCAN_GetMbStatusFlags(port->can_inst, 0xffffffffffffffff);
+        uint64_t mb_status_flags = FLEXCAN_GetMbStatusFlags(port->can_inst, UINT64_MAX);
 
         // Check the FIFO interrupt flags
         if (mb_status_flags & (uint32_t)kFLEXCAN_RxFifoFrameAvlFlag) {
@@ -352,6 +344,11 @@ static void machine_can_port_init(machine_can_obj_t *self) {
 
     #if CAN_USE_UPSTREAM_TIMING
     // Load the configured timing parameters
+    // The MIMXRT CAN lib returns with timings calculations slightly different
+    // to extmod/machine_can.c. The behaviour with alternative
+    // configurations was not yet tested. So the code for using
+    // the MIMXRT lib values is kept as reminder and the
+    // values from extmod/machine_can.c are used, if possible.
     // brp will be calculated during FLEXCAN_Init
     port->flexcan_config->timingConfig.rJumpwidth = self->sjw - 1;
     port->flexcan_config->timingConfig.propSeg = 4; // Default start-up value
@@ -514,7 +511,7 @@ static void machine_can_update_irqs(machine_can_obj_t *self) {
 static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     struct machine_can_port *port = self->port;
     mp_int_t irq_flags = 0;
-    uint64_t mb_status_flags = FLEXCAN_GetMbStatusFlags(port->can_inst, 0xffffffffffffffff);
+    uint64_t mb_status_flags = FLEXCAN_GetMbStatusFlags(port->can_inst, UINT64_MAX);
 
     if ((uint32_t)mb_status_flags & kFLEXCAN_RxFifoFrameAvlFlag) {
         irq_flags |= MP_CAN_IRQ_RX;
@@ -604,15 +601,15 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     tx_msg.format = (flags & CAN_MSG_FLAG_EXT_ID) != 0;
     tx_msg.id = tx_msg.format ? FLEXCAN_ID_EXT(id) : FLEXCAN_ID_STD(id);
 
-    mp_uint_t mbIdx = can_find_txmb(self, &tx_msg, flags);
-    if (mbIdx && (FLEXCAN_WriteTxMb(port->can_inst, mbIdx, &tx_msg) == kStatus_Success)) {
-        uint64_t irq_tx_mask = 1ULL << mbIdx;
+    mp_uint_t mb_index = can_find_txmb(self, &tx_msg, flags);
+    if (mb_index && (FLEXCAN_WriteTxMb(port->can_inst, mb_index, &tx_msg) == kStatus_Success)) {
+        uint64_t irq_tx_mask = 1ULL << mb_index;
         FLEXCAN_ClearMbStatusFlags(port->can_inst, irq_tx_mask);
         // Enable TX interrupts if needed.
         if (self->mp_irq_trigger & MP_CAN_IRQ_TX) {
             FLEXCAN_EnableMbInterrupts(port->can_inst, irq_tx_mask);
         }
-        return mbIdx - port->flexcan_txmb_start;
+        return mb_index - port->flexcan_txmb_start;
     } else {
         return -1;
     }
@@ -722,7 +719,7 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
 
     struct machine_can_port *port = self->port;
     // Disable all FLEXCAN MB interrupts
-    FLEXCAN_DisableMbInterrupts(port->can_inst, 0xffffffffffffffffull);
+    FLEXCAN_DisableMbInterrupts(port->can_inst, UINT64_MAX);
     // Cancel all pending TX MBs
     for (mp_uint_t idx = 0; idx < self->port->flexcan_txmb_count; idx++) {
         machine_can_port_cancel_send(self, idx);
@@ -741,8 +738,6 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
         FLEXCAN_ClearMbStatusFlags(port->can_inst,
             kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag);
     }
-    // Clear all filters
-    // machine_can_port_clear_filters(self);
     // Re-enable FLEXCAN MB receive interrupt
     FLEXCAN_EnableMbInterrupts(port->can_inst, kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoFrameAvlFlag);
     // Since Bit BOFF_REC of CTRL1 is 0, bus off recovery happens automatic.
