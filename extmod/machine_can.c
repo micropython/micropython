@@ -568,6 +568,7 @@ static mp_obj_t machine_can_set_filters(mp_obj_t self_in, mp_obj_t filters) {
                 );
         }
     }
+    machine_can_port_set_filter_done(self);
 
     return mp_const_none;
 }
