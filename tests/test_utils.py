@@ -8,7 +8,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
@@ -224,34 +223,27 @@ def get_test_instance(test_instance, baudrate, user, password):
     return pyb
 
 
-def prepare_script_for_target(args, *, script_text=None, force_plain=False):
+def prepare_script_for_target(args, script_text, script_name, force_plain=False):
     if force_plain or (not args.via_mpy and args.emit == "bytecode"):
         # A plain test to run as-is, no processing needed.
         pass
     elif args.via_mpy:
-        tempname = tempfile.mktemp(dir="")
-        mpy_filename = tempname + ".mpy"
-
-        script_filename = tempname + ".py"
-        with open(script_filename, "wb") as f:
-            f.write(script_text)
-
         try:
-            subprocess.check_output(
+            # Compile the script with mpy-cross (using stdin/stdout).
+            p = subprocess.run(
                 [MPYCROSS]
                 + args.mpy_cross_flags.split()
-                + ["-o", mpy_filename, "-X", "emit=" + args.emit, script_filename],
-                stderr=subprocess.STDOUT,
+                + ["-s", script_name, "-X", "emit=" + args.emit, "--", "-"],
+                input=script_text,
+                capture_output=True,
+                check=True,
             )
+            assert p.stderr == b""
+            mpy_data = p.stdout
         except subprocess.CalledProcessError as er:
-            return True, b"mpy-cross crash\n" + er.output
+            return True, b"mpy-cross crash\n" + er.output + er.stderr
 
-        with open(mpy_filename, "rb") as f:
-            script_text = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
-
-        rm_f(mpy_filename)
-        rm_f(script_filename)
-
+        script_text = b"__buf=" + bytes(repr(mpy_data), "ascii") + b"\n"
         script_text += bytes(_injected_import_hook_code, "ascii")
     else:
         print("error: using emit={} must go via .mpy".format(args.emit))
@@ -274,7 +266,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
         else:
             script = b"print('START TEST')\n" + script
 
-    had_crash, script = prepare_script_for_target(args, script_text=script, force_plain=is_special)
+    had_crash, script = prepare_script_for_target(args, script, test_file, force_plain=is_special)
 
     if had_crash:
         return True, script
