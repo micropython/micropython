@@ -155,7 +155,9 @@ typedef long mp_off_t;
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 
 // Enable sys.executable.
+#ifndef MICROPY_PY_SYS_EXECUTABLE
 #define MICROPY_PY_SYS_EXECUTABLE (1)
+#endif
 
 // Enable support for compile-only mode.
 #define MICROPY_PYEXEC_COMPILE_ONLY (1)
