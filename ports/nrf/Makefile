@@ -61,7 +61,7 @@ endif
 # Enable asyncio by default and select appropriate manifest.
 MICROPY_PY_ASYNCIO ?= 1
 ifeq ($(MICROPY_PY_ASYNCIO),1)
-FROZEN_MANIFEST ?= modules/manifest.py
+FROZEN_MANIFEST ?= boards/manifest.py
 else
 FROZEN_MANIFEST ?= boards/manifest_minimal.py
 endif
