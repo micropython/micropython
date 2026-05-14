@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Dual-core",
+        "External Flash",
+        "Feather",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+	"HSTX"
+    ],
+    "images": [
+        "6000-07.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "Feather RP2350",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/6000",
+    "vendor": "Adafruit"
+}
