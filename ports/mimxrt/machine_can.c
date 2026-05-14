@@ -481,9 +481,11 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
     if (filter_idx < CAN_FILTER_MASK_NUM) {
         FLEXCAN_SetRxIndividualMask(port->can_inst, filter_idx, mask << 1);
     }
-    // TODO: Set a single filter instead of reloading all filters of the table
-    // multiple times.
-    FLEXCAN_SetRxFifoConfig(port->can_inst, port->flexcan_rx_fifo_config, true);
+}
+
+// Activate the filter table
+static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
+    FLEXCAN_SetRxFifoConfig(self->port->can_inst, self->port->flexcan_rx_fifo_config, true);
 }
 
 // Update interrupt configuration based on the new contents of 'self'
