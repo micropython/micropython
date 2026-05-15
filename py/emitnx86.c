@@ -9,8 +9,21 @@
 #define GENERIC_ASM_API (1)
 #include "py/asmx86.h"
 
+#if defined(__i386__)
+#if MICROPY_NLR_SETJMP
+#define N_NLR_SETJMP (1)
+#else
+#define N_NLR_SETJMP (0)
+#endif
+#endif
+
+#if !defined(NLR_BUF_IDX_LOCAL_1)
+#if N_NLR_SETJMP
+#error Must define NLR_BUF_IDX_LOCAL_1 (depends on layout of jmp_buf)
+#endif
 // Word indices of REG_LOCAL_x in nlr_buf_t
 #define NLR_BUF_IDX_LOCAL_1 (5) // ebx
+#endif
 
 // x86 needs a table to know how many args a given function has
 static byte mp_f_n_args[MP_F_NUMBER_OF] = {

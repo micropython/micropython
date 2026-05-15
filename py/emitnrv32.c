@@ -34,8 +34,21 @@
 #define GENERIC_ASM_API (1)
 #include "py/asmrv32.h"
 
+#if defined(__riscv) && __riscv_xlen == 32
+#if MICROPY_NLR_SETJMP
+#define N_NLR_SETJMP (1)
+#else
+#define N_NLR_SETJMP (0)
+#endif
+#endif
+
+#if !defined(NLR_BUF_IDX_LOCAL_1)
+#if N_NLR_SETJMP
+#error Must define NLR_BUF_IDX_LOCAL_1 (depends on layout of jmp_buf)
+#endif
 // Word indices of REG_LOCAL_x in nlr_buf_t
 #define NLR_BUF_IDX_LOCAL_1 (6) // S3
+#endif
 
 #define N_RV32 (1)
 #define EXPORT_FUN(name) emit_native_rv32_##name
