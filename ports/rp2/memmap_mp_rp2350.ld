@@ -274,6 +274,9 @@ SECTIONS
         PROVIDE(__flash_binary_end = .);
     } > FLASH =0xaa
 
+    ASSERT(__flash_binary_end <= ORIGIN(FLASH) + LENGTH(FLASH) - __micropy_flash_storage_bytes__,
+        "ERROR: Firmware too large: overlaps filesystem storage region. Reduce MICROPY_HW_FLASH_STORAGE_BYTES in mpconfigboard.cmake.")
+
     /* stack limit is poorly named, but historically is maximum heap ptr */
     __StackLimit = __bss_end__ + __micropy_c_heap_size__;
 

@@ -47,6 +47,12 @@ endif()
 
 set(MICROPY_USER_FROZEN_MANIFEST ${MICROPY_FROZEN_MANIFEST})
 
+# Allow MICROPY_HW_FLASH_STORAGE_BYTES to be set via environment variable,
+# taking precedence over board config defaults.
+if(DEFINED ENV{MICROPY_HW_FLASH_STORAGE_BYTES})
+    set(MICROPY_HW_FLASH_STORAGE_BYTES $ENV{MICROPY_HW_FLASH_STORAGE_BYTES})
+endif()
+
 # Include board config, it may override MICROPY_FROZEN_MANIFEST
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 if(NOT MICROPY_BOARD_VARIANT)
@@ -556,6 +562,15 @@ endif()
 if(PICO_RP2350)
     target_link_options(${MICROPY_TARGET} PRIVATE
         -Wl,--defsym=__micropy_extra_stack__=4096
+    )
+endif()
+
+# If MICROPY_HW_FLASH_STORAGE_BYTES is explicitly set (via board mpconfigboard.cmake,
+# -DMICROPY_HW_FLASH_STORAGE_BYTES=, or the environment variable), expose it as a linker
+# symbol so the linker script can assert the firmware doesn't overlap the filesystem.
+if(DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    target_link_options(${MICROPY_TARGET} PRIVATE
+        -Wl,--defsym=__micropy_flash_storage_bytes__=${MICROPY_HW_FLASH_STORAGE_BYTES}
     )
 endif()
 
