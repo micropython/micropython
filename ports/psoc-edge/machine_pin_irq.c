@@ -25,105 +25,14 @@
  */
 
 #include "cy_gpio.h"
-#include "cy_sysint.h"
-#include "cy_device_headers.h"
+#include "sys_int.h"
 
 #include "py/misc.h"
 #include "shared/runtime/mpirq.h"
 #include "machine_pin.h"
 
-#define pin_irq_assert_raise_val(msg, ret)   if (ret != CY_SYSINT_SUCCESS) { \
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
-}
-
 /* ======================================================================================================================== */
 /* Port IRQ structures and library API to support port-pin IRQ configuration */
-
-/**
- * Define the lowest interrupt priority.
- * The cy_device_headers_ns.h file might
- * define the interrupt priority levels.
- */
-#if defined(__NVIC_PRIO_BITS)
-    #define GPIO_PORT_IRQ_LOWEST_PRIORITY ((1 << __NVIC_PRIO_BITS) - 1)
-#else
-    #define GPIO_PORT_IRQ_LOWEST_PRIORITY 7
-#endif
-
-typedef struct _port_irq_cfg_t {
-    IRQn_Type irq_num;
-    uint32_t priority;
-    cy_israddress handler;
-} port_irq_cfg_t;
-
-/**
- * Initializes and enables the GPIO port IRQ.
- *
- * This function is meant to be called for each port pin IRQ enablement.
- * Therefore, the same port IRQ line can be reconfigured by calling this
- * function multiple times.
- * It enables as well the IRQ in the NVIC.
- */
-static void port_irq_init(port_irq_cfg_t *port_cfg) {
-    NVIC_ClearPendingIRQ(port_cfg->irq_num);
-    NVIC_DisableIRQ(port_cfg->irq_num);
-
-    cy_stc_sysint_t intr_cfg = {
-        port_cfg->irq_num,
-        port_cfg->priority
-    };
-
-    cy_en_sysint_status_t rslt = Cy_SysInt_Init(&intr_cfg, port_cfg->handler);
-    pin_irq_assert_raise_val("Pin IRQ init failed (PSE PDL error code: %lx)", rslt);
-
-    NVIC_EnableIRQ(port_cfg->irq_num);
-}
-
-/**
- * Deinit and disables the GPIO port IRQ.
- *
- * Calling deinit will disable the port interrupt for all registered IRQ pins
- * sharing the same port.
- * It can be called multiple times for the same port IRQ line,
- * without any adverse effects.
- */
-static void port_irq_deinit(port_irq_cfg_t *port_cfg) {
-    NVIC_ClearPendingIRQ(port_cfg->irq_num);
-    NVIC_DisableIRQ(port_cfg->irq_num);
-    port_cfg->priority = GPIO_PORT_IRQ_LOWEST_PRIORITY;
-}
-
-/* Forward declaration */
-static bool machine_pin_irq_are_multiple_pin_irqs_registered_in_port(uint32_t port);
-/**
- * Set the priority of the port interrupt.
- *
- * As all port pins share the same interrupt source, if multiple pins have an IRQ
- * registered, the desired new priority cannot be lower than the current configured priority.
- * This mechanism upgrades the priority of all pin port interrupts to ensure that higher priority
- * interrupts are not inadvertently masked by lower priority ones.
- */
-static void port_irq_set_priority(port_irq_cfg_t *port_cfg, uint32_t port, uint32_t priority) {
-    bool multiple_pin_irq_registered_in_port = machine_pin_irq_are_multiple_pin_irqs_registered_in_port(port);
-    if (!multiple_pin_irq_registered_in_port) {
-        port_cfg->priority = priority;
-    } else {
-        #define GPIO_PORT_HIGHER_PRIORITY(prio1, prio2) MIN(prio1, prio2) /* A smaller number means higher priority. */
-        port_cfg->priority = GPIO_PORT_HIGHER_PRIORITY(port_cfg->priority, priority);
-    }
-}
-
-static inline void port_irq_enable(port_irq_cfg_t *port_cfg) {
-    NVIC_EnableIRQ(port_cfg->irq_num);
-}
-
-static inline void port_irq_disable(port_irq_cfg_t *port_cfg) {
-    NVIC_DisableIRQ(port_cfg->irq_num);
-}
-
-static inline void port_irq_clear(port_irq_cfg_t *port_cfg) {
-    NVIC_ClearPendingIRQ(port_cfg->irq_num);
-}
 
 /* Forward declaration */
 static void machine_pin_irq_port_handler(uint8_t port);
@@ -169,8 +78,8 @@ MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(DEFINE_GPIO_PORT_IRQ_HANDLER)
  * TODO: Review if secure core needs to be supported.
  * We can add conditional compilation using the macro CY_DEVICE_SECURE.
  */
-static port_irq_cfg_t port_irq_cfg[MICROPY_PY_MACHINE_PIN_PORT_NUM_ENTRIES] = {
-    #define MAP_GPIO_PORT_IRQ_CONFIG(port) [port] = { ioss_interrupts_gpio_##port##_IRQn, GPIO_PORT_IRQ_LOWEST_PRIORITY, PORT##port##_IRQ_Handler},
+static sys_int_cfg_t port_irq_cfg[MICROPY_PY_MACHINE_PIN_PORT_NUM_ENTRIES] = {
+    #define MAP_GPIO_PORT_IRQ_CONFIG(port) [port] = { ioss_interrupts_gpio_##port##_IRQn, SYS_INT_IRQ_LOWEST_PRIORITY, PORT##port##_IRQ_Handler},
     MICROPY_PY_MACHINE_PIN_FOR_ALL_PORTS(MAP_GPIO_PORT_IRQ_CONFIG)
 };
 
@@ -181,7 +90,7 @@ typedef struct _machine_pin_irq_obj_t {
     mp_irq_obj_t base;
     uint32_t flags;
     uint32_t trigger;
-    port_irq_cfg_t *port_cfg;
+    sys_int_cfg_t *port_cfg;
 } machine_pin_irq_obj_t;
 
 machine_pin_irq_obj_t *machine_pin_irq_obj[MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES];
@@ -248,7 +157,7 @@ static void machine_pin_irq_port_handler(uint8_t port) {
             mp_call_function_1(irq->base.handler, MP_OBJ_FROM_PTR(irq->base.parent));
 
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(port), pin);
-            port_irq_clear(irq->port_cfg);
+            sys_int_clear(irq->port_cfg);
         }
     }
 }
@@ -273,6 +182,24 @@ static bool machine_pin_irq_are_multiple_pin_irqs_registered_in_port(uint32_t po
     return false;
 }
 
+/**
+ * Set the priority of the port interrupt.
+ *
+ * As all port pins share the same interrupt source, if multiple pins have an IRQ
+ * registered, the desired new priority cannot be lower than the current configured priority.
+ * This mechanism upgrades the priority of all pin port interrupts to ensure that higher priority
+ * interrupts are not inadvertently masked by lower priority ones.
+ */
+static void machine_pin_irq_set_priority(sys_int_cfg_t *port_cfg, uint32_t port, uint32_t priority) {
+    bool multiple_pin_irq_registered_in_port = machine_pin_irq_are_multiple_pin_irqs_registered_in_port(port);
+    if (!multiple_pin_irq_registered_in_port) {
+        port_cfg->priority = priority;
+    } else {
+        #define GPIO_PORT_HIGHER_PRIORITY(prio1, prio2) MIN(prio1, prio2) /* A smaller number means higher priority. */
+        port_cfg->priority = GPIO_PORT_HIGHER_PRIORITY(port_cfg->priority, priority);
+    }
+}
+
 static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_pin_irq_obj_t *irq = machine_pin_irq_obj[machine_pin_irq_obj_find_index(self->port, self->pin)];
@@ -284,7 +211,7 @@ static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
     Cy_GPIO_SetInterruptEdge(Cy_GPIO_PortToAddr(self->port), self->pin, trigger);
     Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 1u);
 
-    port_irq_init(irq->port_cfg);
+    sys_int_init(irq->port_cfg);
 
     return 0;
 }
@@ -334,7 +261,7 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = CY_GPIO_INTR_RISING | CY_GPIO_INTR_FALLING} },
         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_priority,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_PORT_IRQ_LOWEST_PRIORITY }},
+        { MP_QSTR_priority,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SYS_INT_IRQ_LOWEST_PRIORITY }},
     };
 
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -346,7 +273,7 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     if (n_args > 1 || kw_args->used != 0) {
         irq->base.handler = args[ARG_handler].u_obj;
         irq->base.ishard = args[ARG_hard].u_bool;
-        port_irq_set_priority(irq->port_cfg, self->port, args[ARG_priority].u_int);
+        machine_pin_irq_set_priority(irq->port_cfg, self->port, args[ARG_priority].u_int);
         machine_pin_irq_trigger(self, args[ARG_trigger].u_int);
     }
 
@@ -358,7 +285,7 @@ void machine_pin_irq_deinit_all(void) {
     for (uint32_t i = 0; i < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; i++) {
         machine_pin_irq_obj_t *irq = machine_pin_irq_obj[i];
         if (irq != NULL) {
-            port_irq_deinit(irq->port_cfg);
+            sys_int_deinit(irq->port_cfg);
 
             machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent);
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
