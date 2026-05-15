@@ -49,6 +49,9 @@ static void bound_meth_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
 
 mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // need to insert self before all other args and then call meth
+    if (n_kw > (size_t)-1 / 2 || n_args > (size_t)-1 - 2 * n_kw) {
+        mp_raise_ValueError(NULL);
+    }
     size_t n_total = n_args + 2 * n_kw;
     mp_obj_t *args2 = NULL;
     #if MICROPY_ENABLE_PYSTACK
