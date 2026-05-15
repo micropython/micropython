@@ -55,19 +55,12 @@
 
 #define nrfx_twi_xfer_desc_t nrfx_twim_xfer_desc_t
 
-#define nrfx_twi_evt_handler_t nrfx_twim_evt_handler_t
-#define nrfx_twi_evt_t         nrfx_twim_evt_t
-#define nrfx_twi_evt_type_t    nrfx_twim_evt_type_t
-
 #define NRFX_TWI_XFER_DESC_RX NRFX_TWIM_XFER_DESC_RX
 #define NRFX_TWI_XFER_DESC_TX NRFX_TWIM_XFER_DESC_TX
 
 #define NRFX_TWI_INSTANCE NRFX_TWIM_INSTANCE
 
-#define NRFX_TWI_EVT_DONE         NRFX_TWIM_EVT_DONE
-#define NRFX_TWI_EVT_ADDRESS_NACK NRFX_TWIM_EVT_ADDRESS_NACK
-#define NRFX_TWI_EVT_DATA_NACK    NRFX_TWIM_EVT_DATA_NACK
-#define NRFX_TWI_EVT_BUS_ERROR    NRFX_TWIM_EVT_BUS_ERROR
+#define NRFX_TWI_FLAG_TX_NO_STOP NRFX_TWIM_FLAG_TX_NO_STOP
 
 #define NRF_TWI_FREQ_100K NRF_TWIM_FREQ_100K
 #define NRF_TWI_FREQ_250K NRF_TWIM_FREQ_250K
@@ -79,8 +72,6 @@ typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
     nrfx_twi_t p_twi;     // Driver instance
     uint32_t timeout;
-    volatile bool xfer_done;
-    volatile nrfx_twi_evt_type_t xfer_evt;
 } machine_hard_i2c_obj_t;
 
 static machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
@@ -89,12 +80,6 @@ static machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
 };
 
 void i2c_init0(void) {
-}
-
-static void twi_event_handler(nrfx_twi_evt_t const *p_event, void *p_context) {
-    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)p_context;
-    self->xfer_evt = p_event->type;
-    self->xfer_done = true;
 }
 
 static int i2c_find(mp_obj_t id) {
@@ -161,8 +146,9 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     // First reset the TWI
     nrfx_twi_uninit(&self->p_twi);
 
-    // Set context to this object, use non-blocking mode with event handler.
-    nrfx_twi_init(&self->p_twi, &config, twi_event_handler, (void *)self);
+    // Use blocking mode (NULL handler); nrfx v3 TWIM PRS IRQ routing conflicts
+    // prevent reliable non-blocking operation when both SPIM and TWIM are enabled.
+    nrfx_twi_init(&self->p_twi, &config, NULL, NULL);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -172,9 +158,6 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
 
     nrfx_twi_enable(&self->p_twi);
 
-    self->xfer_done = false;
-    self->xfer_evt = NRFX_TWI_EVT_DONE;
-
     nrfx_err_t err_code;
     int transfer_ret = 0;
     if (flags & MP_MACHINE_I2C_FLAG_READ) {
@@ -182,42 +165,20 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
         err_code = nrfx_twi_xfer(&self->p_twi, &desc, 0);
     } else {
         nrfx_twi_xfer_desc_t desc = NRFX_TWI_XFER_DESC_TX(addr, buf, len);
-        err_code = nrfx_twi_xfer(&self->p_twi, &desc, (flags & MP_MACHINE_I2C_FLAG_STOP) == 0);
+        uint32_t xfer_flags = (flags & MP_MACHINE_I2C_FLAG_STOP) ? 0 : NRFX_TWI_FLAG_TX_NO_STOP;
+        err_code = nrfx_twi_xfer(&self->p_twi, &desc, xfer_flags);
         transfer_ret = len;
     }
 
-    // In non-blocking mode, ANACK/DNACK are delivered via the event handler.
-    // These checks handle transfer start failures (e.g. bus busy).
+    nrfx_twi_disable(&self->p_twi);
+
     if (err_code != NRFX_SUCCESS) {
-        nrfx_twi_disable(&self->p_twi);
         if (err_code == NRFX_ERROR_DRV_TWI_ERR_ANACK) {
             return -MP_ENODEV;
         } else if (err_code == NRFX_ERROR_DRV_TWI_ERR_DNACK) {
             return -MP_EIO;
         }
         return -MP_ETIMEDOUT;
-    }
-
-    // Poll for transfer completion with timeout (timeout=0 means no timeout,
-    // the loop relies on MICROPY_EVENT_POLL_HOOK for Ctrl-C).
-    mp_uint_t start = mp_hal_ticks_us();
-    while (!self->xfer_done) {
-        if (self->timeout > 0 && (mp_hal_ticks_us() - start) >= self->timeout) {
-            nrfx_twi_disable(&self->p_twi);
-            nrfx_twi_enable(&self->p_twi);
-            return -MP_ETIMEDOUT;
-        }
-        MICROPY_EVENT_POLL_HOOK;
-    }
-
-    nrfx_twi_disable(&self->p_twi);
-
-    if (self->xfer_evt == NRFX_TWI_EVT_ADDRESS_NACK) {
-        return -MP_ENODEV;
-    } else if (self->xfer_evt == NRFX_TWI_EVT_DATA_NACK) {
-        return -MP_EIO;
-    } else if (self->xfer_evt != NRFX_TWI_EVT_DONE) {
-        return -MP_EIO;
     }
 
     return transfer_ret;
