@@ -97,7 +97,7 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
 }
 
 #define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
 /* Unit conversion macros */
