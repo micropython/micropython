@@ -32,6 +32,11 @@
 #define LPTIMER ((LPTIMER_Type *)LPTIMER_BASE)
 #define LPTIMER_CH_A (0)
 
+void lptimer_init(void) {
+    // LPTIMER is not reset on CPU reset and may still be active, so reset it now.
+    lptimer_cancel_wakeup();
+}
+
 void lptimer_set_wakeup(uint64_t timeout_us) {
     lptimer_disable_counter(LPTIMER, LPTIMER_CH_A);
 
@@ -53,4 +58,10 @@ void lptimer_set_wakeup(uint64_t timeout_us) {
     lptimer_unmask_interrupt(LPTIMER, LPTIMER_CH_A);
 
     lptimer_enable_counter(LPTIMER, LPTIMER_CH_A);
+}
+
+void lptimer_cancel_wakeup(void) {
+    lptimer_disable_counter(LPTIMER, LPTIMER_CH_A);
+    lptimer_mask_interrupt(LPTIMER, LPTIMER_CH_A);
+    lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_A);
 }
