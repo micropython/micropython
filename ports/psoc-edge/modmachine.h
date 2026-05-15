@@ -39,6 +39,7 @@ enum clock_freq_type {
 };
 
 extern enum clock_freq_type PLL0_freq;
+extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_pdm_pcm_type;
 extern const mp_obj_type_t machine_rtc_type;
 
