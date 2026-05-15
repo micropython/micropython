@@ -398,4 +398,44 @@ void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label) {
     asm_xtensa_op_l32r(as, reg, as->base.code_offset, dest);
 }
 
+void asm_xtensa_bri8(asm_xtensa_t *as, mp_uint_t r, mp_uint_t s, mp_uint_t t, mp_uint_t label, qstr opcode) {
+    uint32_t dest = get_label_dest(as, label);
+    int32_t rel = dest - as->base.code_offset - 4;
+    if (as->base.pass == MP_ASM_PASS_EMIT) {
+        if (!MP_FIT_UNSIGNED(8, rel) || (rel <= 0)) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, opcode);
+        }
+    }
+    asm_xtensa_op24(as, ((rel & 0xFF) << 16) | (r << 12) | (s << 8) | (t << 4) | 0x06);
+}
+
+static bool encode_b4const(mp_int_t value, mp_uint_t *encoded) {
+    static const uint8_t B4CONST_TABLE[] = {
+        0, 1, 2, 3, 4, 5, 6, 7, 9, 11, 15, 31, 63, 127, 255
+    };
+
+    assert(encoded != NULL && "Encoded constant pointer is NULL.");
+
+    if (value == -1) {
+        *encoded = 0;
+        return true;
+    }
+
+    for (size_t index = 0; index < MP_ARRAY_SIZE(B4CONST_TABLE); index++) {
+        if (((mp_uint_t)value - 1) == B4CONST_TABLE[index]) {
+            *encoded = index + 1;
+            return true;
+        }
+    }
+    return false;
+}
+
+void asm_xtensa_reg_imm_compare_branch(asm_xtensa_t *as, mp_uint_t reg, mp_int_t imm, mp_uint_t label, mp_uint_t condition, qstr opcode) {
+    mp_uint_t comparison = (mp_uint_t)-1;
+    if (!encode_b4const(imm, &comparison)) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("ERROR: invalid comparison value %d"), imm);
+    }
+    asm_xtensa_bri8(as, comparison & 0x0F, reg, condition & 0x0F, label, opcode);
+}
+
 #endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN
