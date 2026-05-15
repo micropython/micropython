@@ -54,3 +54,8 @@
 
 // Program page size: Fixed by flash chip hardware (minimum writable unit). Matches LittleFS write_size.
 #define EXT_FLASH_PAGE_SIZE         (0x200) /** 512 Bytes */
+
+// REPL UART configuration
+#define MICROPYTHON_REPL_UART_RX_PIN   (pin_P6_5)
+#define MICROPYTHON_REPL_UART_TX_PIN   (pin_P6_7)
+#define MICROPYTHON_REPL_RINGBUF_SIZE     (1024)
