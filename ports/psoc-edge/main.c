@@ -32,7 +32,6 @@
 
 // MTB includes
 #include "cybsp.h"
-#include "retarget_io_init.h"
 
 // micropython includes
 #include "py/builtin.h"
@@ -44,6 +43,9 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
+
+// port-specific includes
+#include "mphalport.h"
 
 typedef enum {
     BOOT_MODE_NORMAL,
@@ -102,8 +104,8 @@ int main(void) {
     /* Enable global interrupts */
     __enable_irq();
 
-    /* Initialize retarget-io middleware */
-    init_retarget_io();
+    /* Initialize stdio interface */
+    mp_hal_stdio_init();
 
     // Initialise the MicroPython runtime.
     #if MICROPY_ENABLE_GC
