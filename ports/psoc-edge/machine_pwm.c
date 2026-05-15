@@ -97,7 +97,7 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
 }
 
 #define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
 /* Unit conversion macros */
@@ -155,7 +155,7 @@ static void pwm_pin_config(const machine_pin_obj_t *pin) {
 // Restore the GPIO pin to plain GPIO mode (Hi-Z, no peripheral routing)
 static void pwm_pin_restore(const machine_pin_obj_t *pin) {
     GPIO_PRT_Type *port = Cy_GPIO_PortToAddr(pin->port);
-    Cy_GPIO_SetHSIOM(port, pin->pin, HSIOM_SEL_GPIO);    
+    Cy_GPIO_SetHSIOM(port, pin->pin, HSIOM_SEL_GPIO);
     Cy_GPIO_SetDrivemode(port, pin->pin, CY_GPIO_DM_HIGHZ);
 }
 
@@ -167,7 +167,7 @@ static void pwm_config(machine_pwm_obj_t *self) {
     }
     self->pwm_obj.period0 = CYBSP_PWM_LED_CTRL_CLK_HZ / self->frequency;
     self->pwm_obj.period1 = CYBSP_PWM_LED_CTRL_CLK_HZ / self->frequency;
-    
+
     if (self->duty_type == DUTY_U16) {
         self->pwm_obj.compare0 = pwm_duty_cycle_u16_to_compare(self->duty, self->pwm_obj.period0);
         self->pwm_obj.compare1 = pwm_duty_cycle_u16_to_compare(self->duty, self->pwm_obj.period1);
@@ -216,8 +216,8 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
         self->duty_type = DUTY_NS;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM duty should be specified in either ns or u16"));
-    } 
-    
+    }
+
     /* Apply frequency and duty cycle to the PWM config struct */
     pwm_config(self);
 
@@ -229,7 +229,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     Cy_SysClk_PeriPclkAssignDivider(self->pclk_dst, CY_SYSCLK_DIV_16_BIT, CYBSP_PWM_LED_CTRL_CLK_DIV_NUM);
 
     cy_rslt_t result = Cy_TCPWM_PWM_Init(TCPWM0,
-            self->counter_num, &self->pwm_obj);
+        self->counter_num, &self->pwm_obj);
     pwm_assert_raise_val("PWM init failed with return code %lx !", result);
 
     /* Enable the TCPWM block */
@@ -278,12 +278,12 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // Default config parameters for the PWM object.
     self->pwm_obj.pwmMode = CY_TCPWM_PWM_MODE_PWM;
     self->pwm_obj.clockPrescaler = CY_TCPWM_PWM_PRESCALER_DIVBY_1;
-    self->pwm_obj.pwmAlignment = CY_TCPWM_PWM_LEFT_ALIGN;  
+    self->pwm_obj.pwmAlignment = CY_TCPWM_PWM_LEFT_ALIGN;
     self->pwm_obj.deadTimeClocks = 0;
     self->pwm_obj.runMode = CY_TCPWM_PWM_CONTINUOUS;
     self->pwm_obj.enablePeriodSwap = false;
     self->pwm_obj.enableCompareSwap = false;
-    self->pwm_obj.interruptSources = (CY_TCPWM_INT_ON_TC & 0U) | (CY_TCPWM_INT_ON_CC0 & 0U) | (CY_TCPWM_INT_ON_CC1 & 0U);    
+    self->pwm_obj.interruptSources = (CY_TCPWM_INT_ON_TC & 0U) | (CY_TCPWM_INT_ON_CC0 & 0U) | (CY_TCPWM_INT_ON_CC1 & 0U);
     self->pwm_obj.invertPWMOutN = CY_TCPWM_PWM_INVERT_ENABLE;
     self->pwm_obj.killMode = CY_TCPWM_PWM_ASYNC_KILL;
     self->pwm_obj.swapInputMode = CYBSP_PWM_LED_CTRL_INPUT_DISABLED & 0x3U;
@@ -355,5 +355,3 @@ static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
 }
-
-
