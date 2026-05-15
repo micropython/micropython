@@ -207,3 +207,40 @@ See :ref:`machine.RTC <machine.RTC>`: ::
     RTC alarm timing on this port has second-level resolution. Millisecond alarm values are accepted, but are rounded
     up to whole seconds internally.
 
+UART
+----
+
+See :ref:`machine.UART <machine.UART>`.
+
+The following specialization applies to this port:
+
+Constructor
+^^^^^^^^^^^^
+
+.. class:: UART(id)
+
+   The following parameters are supported with limited configuration:
+   
+   - ``bits``. Only 8 bits.
+
+   These are planned for future implementation, but yet unavailable:
+
+   - ``rts``
+   - ``cts``
+   - ``flow``
+       
+.. Note::
+
+   These parameters are not implemented:
+   
+   - ``id``
+   - ``txbuf``
+   - ``invert`` 
+
+
+Methods
+^^^^^^^
+
+.. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, *, ...)
+
+    The same parameters as the constructor are supported, with the same limitations.
