@@ -567,10 +567,14 @@ endif()
 
 # If MICROPY_HW_FLASH_STORAGE_BYTES is explicitly set (via board mpconfigboard.cmake,
 # -DMICROPY_HW_FLASH_STORAGE_BYTES=, or the environment variable), expose it as a linker
-# symbol so the linker script can assert the firmware doesn't overlap the filesystem.
+# symbol so the linker script can assert the firmware doesn't overlap the filesystem,
+# and as a compile definition so rp2_flash.c uses the correct storage base address.
 if(DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
     target_link_options(${MICROPY_TARGET} PRIVATE
         -Wl,--defsym=__micropy_flash_storage_bytes__=${MICROPY_HW_FLASH_STORAGE_BYTES}
+    )
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_HW_FLASH_STORAGE_BYTES=${MICROPY_HW_FLASH_STORAGE_BYTES}
     )
 endif()
 
