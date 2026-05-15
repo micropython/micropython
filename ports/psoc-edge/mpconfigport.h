@@ -69,6 +69,13 @@
 
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 
+#define MICROPY_PY_MACHINE_UART                 (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/psoc-edge/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
+#define MICROPY_PY_MACHINE_UART_IRQ             (1)
+#define MICROPY_STREAMS_NON_BLOCK               (1)
+
 // type definitions for the specific machine
 #define MP_SSIZE_MAX (0x7fffffff)
 
