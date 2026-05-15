@@ -32,6 +32,10 @@
 #define LPTIMER ((LPTIMER_Type *)LPTIMER_BASE)
 #define LPTIMER_CH_A (0)
 
+void LPTIMER0_IRQHandler(void) {
+    lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_A);
+}
+
 void lptimer_init(void) {
     // LPTIMER is not reset on CPU reset and may still be active, so reset it now.
     lptimer_cancel_wakeup();
@@ -56,6 +60,10 @@ void lptimer_set_wakeup(uint64_t timeout_us) {
     lptimer_load_count(LPTIMER, LPTIMER_CH_A, &timeout_ticks);
     lptimer_clear_interrupt(LPTIMER, LPTIMER_CH_A);
     lptimer_unmask_interrupt(LPTIMER, LPTIMER_CH_A);
+
+    NVIC_SetPriority(LPTIMER0_IRQ_IRQn, IRQ_PRI_RTC);
+    NVIC_ClearPendingIRQ(LPTIMER0_IRQ_IRQn);
+    NVIC_EnableIRQ(LPTIMER0_IRQ_IRQn);
 
     lptimer_enable_counter(LPTIMER, LPTIMER_CH_A);
 }
