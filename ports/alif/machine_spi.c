@@ -30,8 +30,8 @@
 #include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_SPI
-#include "clk.h"
 #include "spi.h"
+#include "sys_clocks.h"
 #include "sys_ctrl_spi.h"
 
 typedef struct _machine_spi_obj_t {

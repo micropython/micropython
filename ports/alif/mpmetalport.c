@@ -26,7 +26,6 @@
  * libmetal Alif port.
  */
 
-#include ALIF_CMSIS_H
 #include "py/mperrno.h"
 #include "py/mphal.h"
 

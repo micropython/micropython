@@ -33,6 +33,7 @@
 #include "mhu.h"
 #include "services_lib_bare_metal.h"
 #include "services_lib_protocol.h"
+#include "sys_utils.h"
 
 #include "py/mphal.h"
 

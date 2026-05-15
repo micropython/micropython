@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include ALIF_CMSIS_H
+#include CMSIS_device_header
 #include "ospi_ext.h"
 #include "ospi_xip_user.h"
 

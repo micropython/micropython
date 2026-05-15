@@ -31,7 +31,7 @@
 #include "se_services.h"
 #include "tusb.h"
 
-extern void dcd_uninit(void);
+bool dcd_deinit(uint8_t rhport);
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
@@ -86,7 +86,7 @@ static void mp_machine_enable_usb(bool enable) {
         // Deinitialize TinyUSB.
         tud_deinit(TUD_OPT_RHPORT);
         // Deinitialize DCD (disables IRQs).
-        dcd_uninit();
+        dcd_deinit(TUD_OPT_RHPORT);
     }
 }
 #endif
@@ -104,7 +104,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // This enters the deepest possible CPU sleep state, without
     // losing CPU state. CPU and subsystem power will remain on.
-    pm_core_enter_deep_sleep();
+    // TODO fix this
+    // pm_core_enter_deep_sleep();
 
     __enable_irq();
 
@@ -120,13 +121,12 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 #include "lptimer.h"
 #include "sys_ctrl_lptimer.h"
 
-#define LPTIMER ((LPTIMER_Type *)LPTIMER_BASE)
 #define LPTIMER_CH_A (0)
 
 static void lptimer_set_wakeup(uint64_t timeout_us) {
     lptimer_disable_counter(LPTIMER, LPTIMER_CH_A);
 
-    ANA_REG->MISC_CTRL |= 1 << 0; // SEL_32K, select LXFO
+    ANA->MISC_CTRL |= 1 << 0; // SEL_32K, select LXFO
 
     select_lptimer_clk(LPTIMER_CLK_SOURCE_32K, LPTIMER_CH_A);
 
@@ -169,6 +169,7 @@ MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args
     // If power is removed from the subsystem, the function does
     // not return, and the CPU will reboot when/if the subsystem
     // is next powered up.
-    pm_core_enter_deep_sleep_request_subsys_off();
+    // TODO fix this
+    // pm_core_enter_deep_sleep_request_subsys_off();
     mp_machine_reset();
 }

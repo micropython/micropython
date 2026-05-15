@@ -1,7 +1,7 @@
 BOARD ?= ALIF_ENSEMBLE
 BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
-MCU_CORE ?= M55_HP
+MCU_CORE ?= RTSS_HP
 GIT_SUBMODULES += lib/tinyusb lib/alif_ensemble-cmsis-dfp lib/alif-security-toolkit
 PORT ?= /dev/ttyACM0
 
@@ -25,7 +25,7 @@ ALIF_TOC_BIN = $(BUILD)/firmware.toc.bin
 ALIF_TOC_APPS = $(BUILD)/$(ALIF_TOC_CONFIG)
 ALIF_TOC_CFLAGS += -DTOC_CFG_FILE=$(ALIF_TOOLKIT_CFG_FILE)
 
-ifeq ($(MCU_CORE),M55_HP)
+ifeq ($(MCU_CORE),RTSS_HP)
 
 ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HP_APP=1
 ALIF_TOC_APPS += $(BUILD)/M55_HP/firmware.bin
@@ -34,7 +34,7 @@ $(JLINK_CMD_PREFIX)\
 LoadFile "$(BUILD)/M55_HP/firmware.bin",0x80020000\n\
 $(JLINK_CMD_SUFFIX)'
 
-else ifeq ($(MCU_CORE),M55_HE)
+else ifeq ($(MCU_CORE),RTSS_HE)
 
 ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HE_APP=1
 ALIF_TOC_APPS += $(BUILD)/M55_HE/firmware.bin
@@ -43,7 +43,7 @@ $(JLINK_CMD_PREFIX)\
 LoadFile "$(BUILD)/M55_HE/firmware.bin",0x80320000\n\
 $(JLINK_CMD_SUFFIX)'
 
-else ifeq ($(MCU_CORE),M55_DUAL)
+else ifeq ($(MCU_CORE),RTSS_DUAL)
 
 ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HP_APP=1
 ALIF_TOC_CFLAGS += -DTOC_CORE_M55_HE_APP=1
@@ -82,10 +82,10 @@ $(BUILD):
 	$(MKDIR) -p $@
 
 $(BUILD)/M55_HP/firmware.bin:
-	$(MAKE) -f alif.mk BUILD=$(BUILD)/M55_HP MCU_CORE=M55_HP MICROPY_PY_OPENAMP_MODE=0
+	$(MAKE) -f alif.mk BUILD=$(BUILD)/M55_HP MCU_CORE=RTSS_HP MICROPY_PY_OPENAMP_MODE=0
 
 $(BUILD)/M55_HE/firmware.bin:
-	$(MAKE) -f alif.mk BUILD=$(BUILD)/M55_HE MCU_CORE=M55_HE MICROPY_PY_OPENAMP_MODE=1
+	$(MAKE) -f alif.mk BUILD=$(BUILD)/M55_HE MCU_CORE=RTSS_HE MICROPY_PY_OPENAMP_MODE=1
 
 $(BUILD)/$(ALIF_TOC_CONFIG): mcu/$(ALIF_TOC_CONFIG).in | $(BUILD)
 	$(ECHO) "Preprocess toc config $@"

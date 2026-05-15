@@ -27,7 +27,10 @@
 #include "py/mpconfig.h"
 #include "irq.h"
 #include "mpu.h"
-#include ALIF_CMSIS_H
+
+#ifndef __STARTUP_RO_DATA_ATTRIBUTE
+#define __STARTUP_RO_DATA_ATTRIBUTE  __attribute__((section("startup_ro_data")))
+#endif
 
 static const ARM_MPU_Region_t mpu_table[] __STARTUP_RO_DATA_ATTRIBUTE = {
     [MP_MPU_REGION_SRAM0] = {   /* SRAM0 - 4MB : RO-0, NP-1, XN-0 */
@@ -86,8 +89,8 @@ void mpu_config_mram(bool read_only) {
     uintptr_t atomic = disable_irq();
     ARM_MPU_Disable();
     MPU->RNR = MP_MPU_REGION_MRAM;
-    MPU->RBAR = ARM_MPU_RBAR(MRAM_BASE, ARM_MPU_SH_NON, read_only, 1, 0);
-    MPU->RLAR = ARM_MPU_RLAR(MRAM_BASE + MRAM_SIZE - 1, MP_MPU_ATTR_NORMAL_WT_RA);
+    MPU->RBAR = ARM_MPU_RBAR(SOC_FEAT_MRAM_BASE, ARM_MPU_SH_NON, read_only, 1, 0);
+    MPU->RLAR = ARM_MPU_RLAR(SOC_FEAT_MRAM_BASE + SOC_FEAT_MRAM_SIZE - 1, MP_MPU_ATTR_NORMAL_WT_RA);
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_HFNMIENA_Msk);
     enable_irq(atomic);
 }

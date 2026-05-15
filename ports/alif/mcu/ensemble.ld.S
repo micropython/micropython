@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifdef CORE_M55_HP
+#ifdef CORE_RTSS_HP
 __DTCM_SIZE = 1024K;
 #else
 __DTCM_SIZE = 256K;
@@ -52,7 +52,7 @@ MEMORY
   SRAM9_B (rw) : ORIGIN = 0x60040000, LENGTH = 512K
 }
 
-#ifdef CORE_M55_HP
+#ifdef CORE_RTSS_HP
 REGION_ALIAS("ROM", MRAM_HP);
 __MP_HEAP_SIZE = 256K;
 #else

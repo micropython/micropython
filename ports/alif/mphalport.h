@@ -28,7 +28,7 @@
 #include "shared/runtime/interrupt_char.h"
 #include "irq.h"
 #include "system_tick.h"
-#include ALIF_CMSIS_H
+#include CMSIS_device_header
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)

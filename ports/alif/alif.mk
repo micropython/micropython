@@ -29,7 +29,8 @@ ALIF_DFP_REL_TOP ?= lib/alif_ensemble-cmsis-dfp
 ALIF_DFP_REL_HERE ?= $(TOP)/lib/alif_ensemble-cmsis-dfp
 CMSIS_DIR ?= $(TOP)/lib/cmsis/inc
 
-MCU_CORE ?= M55_HP
+MCU_CORE ?= RTSS_HP
+MCU_CORE_DFP ?= rtss_hp
 LD_FILE ?= mcu/ensemble.ld.S
 
 INC += -I.
@@ -37,14 +38,17 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -I$(CMSIS_DIR)
+INC += -I$(ALIF_DFP_REL_HERE)/Alif_CMSIS/Include/config
+INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE_DFP)/config/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/core/common/include
+INC += -I$(ALIF_DFP_REL_HERE)/Device/soc/AE722F80F55D5/config
+INC += -I$(ALIF_DFP_REL_HERE)/Device/soc/AE722F80F55D5/include
+INC += -I$(ALIF_DFP_REL_HERE)/Device/soc/AE722F80F55D5/include/$(MCU_CORE_DFP)
+INC += -I$(ALIF_DFP_REL_HERE)/Device/soc/AE722F80F55D5/rte
+INC += -I$(ALIF_DFP_REL_HERE)/Device/system/include
 INC += -I$(ALIF_DFP_REL_HERE)/drivers/include/
-INC += -I$(ALIF_DFP_REL_HERE)/se_services/include
 INC += -I$(ALIF_DFP_REL_HERE)/ospi_xip/source/ospi
-INC += -I$(ALIF_DFP_REL_HERE)/Device/common/config/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/common/include/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/config/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/include/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/$(MCU_SERIES)/$(MCU_VARIANT)/
+INC += -I$(ALIF_DFP_REL_HERE)/se_services/include
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -Itinyusb_port
 INC += -Ilwip_inc
@@ -72,9 +76,9 @@ CFLAGS += $(INC) \
           -fdata-sections \
           -ffunction-sections \
           --specs=nosys.specs \
-          -D$(MCU_CORE)=1 \
+          -D$(MCU_CORE) \
           -DCORE_$(MCU_CORE) \
-          -DALIF_CMSIS_H="\"$(MCU_CORE).h\""
+          -DCMSIS_device_header="\"alif.h\""
 
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 CFLAGS += -fsingle-precision-constant
@@ -179,17 +183,18 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 
 -include $(TOP)/lib/tinyusb/src/tinyusb.mk
 TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, $(TINYUSB_SRC_C)))
-TINYUSB_SRC_C += tinyusb_port/tusb_alif_dcd.c
+TINYUSB_SRC_C += tinyusb_port/dcd_ensemble.c
 
 ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
-	Device/common/source/clk.c \
-	Device/common/source/mpu_M55.c \
-	Device/common/source/system_M55.c \
-	Device/common/source/system_utils.c \
-	Device/common/source/tcm_partition.c \
-	Device/common/source/tgu_M55.c \
-	Device/common/source/pm.c \
-	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
+	Device/core/common/source/cache.c \
+	Device/core/common/source/mpu.c \
+	Device/core/common/source/sau_tcm_ns_setup.c \
+	Device/core/common/source/startup.c \
+	Device/core/common/source/system.c \
+	Device/core/common/source/tgu.c \
+	Device/core/common/source/vectors.c \
+	Device/system/source/sys_clocks.c \
+	Device/system/source/sys_utils.c \
 	drivers/source/adc.c \
 	drivers/source/i2c.c \
 	drivers/source/mhu_driver.c \
@@ -198,6 +203,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	drivers/source/mram.c \
 	drivers/source/pinconf.c \
 	drivers/source/spi.c \
+	drivers/source/sys_ctrl_analog.c \
 	drivers/source/uart.c \
 	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \
@@ -211,7 +217,6 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	se_services/source/services_host_maintenance.c \
 	)
 
-$(BUILD)/tinyusb_port/tusb_alif_dcd.o: CFLAGS += -Wno-unused-variable -DTUSB_ALIF_NO_IRQ_CFG=1
 $(BUILD)/$(ALIF_DFP_REL_TOP)/drivers/source/mram.o: CFLAGS += -Wno-strict-aliasing
 $(BUILD)/$(ALIF_DFP_REL_TOP)/drivers/source/spi.o: CFLAGS += -Wno-maybe-uninitialized
 $(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_boot.o: CFLAGS += -Wno-stringop-truncation

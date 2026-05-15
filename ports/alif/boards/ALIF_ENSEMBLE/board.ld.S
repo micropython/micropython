@@ -1,7 +1,7 @@
 #include "mcu/ensemble.ld.S"
 
 /* Define ROMFS partition locations. */
-#if CORE_M55_HP
+#if CORE_RTSS_HP
 /* The HP core has access to the external OSPI1 flash and MRAM ROMFS partitions. */
 _micropy_hw_romfs_part0_start = 0xc1000000;
 _micropy_hw_romfs_part0_size = 16M;

@@ -32,6 +32,7 @@
 #include "analog_config.h"
 #include "adc.h"
 #include "sys_ctrl_adc.h"
+#include "sys_ctrl_analog.h"
 
 #define ADC_CHANNEL_TEMP_SENSOR (6)
 #define ADC_CHANNEL_INT_VREF (7)
@@ -69,16 +70,16 @@ static void adc_init(uint8_t adc_periph) {
     conv_info_t *conv_info = &adc_conv_info_table[adc_periph];
 
     adc_set_clk_control(adc_instance, true);
-    enable_cmp_periph_clk();
-    analog_config_vbat_reg2();
-    analog_config_cmp_reg2();
+    enable_analog_periph_clk();
+    enable_analog_peripherals();
+    enable_adc_ref_voltage();
     adc_set_differential_ctrl(adc_instance, false);
     adc_set_comparator_ctrl(adc_instance, true, 2);
 
     if (adc_instance == ADC_INSTANCE_ADC24_0) {
-        enable_adc24();
-        set_adc24_output_rate(0);
-        set_adc24_bias(0);
+        enable_adc24(ADC_INSTANCE_ADC24_0);
+        set_adc24_output_rate(ADC_INSTANCE_ADC24_0, 0);
+        set_adc24_bias(ADC_INSTANCE_ADC24_0, 0);
     } else {
         adc_set_sample_width(regs, 32);
     }

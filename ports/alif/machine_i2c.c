@@ -31,6 +31,7 @@
 
 #if MICROPY_HW_ENABLE_HW_I2C
 #include "i2c.h"
+#include "sys_ctrl_i2c.h"
 
 #define I2C_DEFAULT_FREQ    (400000)
 #define I2C_DEFAULT_TIMEOUT (50000)
@@ -153,7 +154,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->i2c->I2C_RX_TL = I2C_RX_FIFO_LEN;
 
     // Configure clock.
-    i2c_master_set_clock(self->i2c, GetSystemAPBClock() / 1000, I2C_SPEED(self->freq));
+    i2c_master_set_clock(self->i2c, get_i2c_core_clock() / 1000, I2C_SPEED(self->freq));
 
     // Enable I2C controller.
     i2c_clear_all_interrupt(self->i2c);
