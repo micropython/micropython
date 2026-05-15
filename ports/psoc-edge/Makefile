@@ -45,7 +45,6 @@ GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
 	mtb-dsl-pse8xxgp \
 	mtb-ipc \
 	mtb-srf \
-	retarget-io \
 	se-rt-services-utils \
 	serial-memory \
 	TARGET_KIT_PSE84_AI \
@@ -70,6 +69,7 @@ AF_FILE = boards/pse8x_af.csv
 PREFIX_FILE = boards/pse84_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_AF_HDR= $(HEADER_BUILD)/pins_af.h
 
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
@@ -87,7 +87,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h : $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
-	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) --output-af-header $(GEN_PINS_AF_HDR)
 
 #################################################################################
 # PSOC Edge source files and libraries
@@ -101,7 +101,6 @@ DEFINES = \
 	-DCOMPONENT_MW_MTB_SRF \
 	-DCOMPONENT_NON_SECURE_DEVICE \
 	-DCYBSP_MCUBOOT_HEADER_SIZE=0x400 \
-	-DCY_RETARGET_IO_CONVERT_LF_TO_CRLF \
 
 INC += $(addprefix -I$(PSE_LIB_DIR)/,\
 	async-transfer/include \
@@ -132,8 +131,6 @@ INC += $(addprefix -I$(PSE_LIB_DIR)/,\
 	mtb-srf/include/COMPONENT_NON_SECURE_DEVICE \
 	mtb-srf/include/COMPONENT_NON_SECURE_DEVICE/COMPONENT_MW_MTB_IPC \
 	\
-	retarget-io/include \
-	\
 	serial-memory/include \
 	\
 	se-rt-services-utils \
@@ -145,7 +142,6 @@ INC += $(addprefix -I$(PSE_LIB_DIR)/,\
 INC += \
     -I$(BOARD_DIR) \
     -I$(BOARD_DIR)/bsp-cfg \
-	-I$(BOARD_DIR)/mtb-prj \
 	-Idualcore/include
 
 MACHINE_FLAGS = \
@@ -181,11 +177,6 @@ PSE_BSP_CFG_C += $(addprefix $(BOARD_DIR)/bsp-cfg/,\
 	cycfg_qspi_memslot.c \
 	cycfg_routing.c \
 	cycfg_system.c \
-	)
-
-# TODO: Move this retarget init to the uart driver.
-PSE_BSP_SRC_C += $(addprefix $(BOARD_DIR)/,\
-	mtb-prj/retarget_io_init.c \
 	)
 
 PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
@@ -230,8 +221,6 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	\
 	mtb-srf/source/COMPONENT_NON_SECURE_DEVICE/mtb_srf_pool.c \
 	mtb-srf/source/COMPONENT_NON_SECURE_DEVICE/COMPONENT_MW_MTB_IPC/mtb_srf_ipc.c \
-	\
-	retarget-io/source/cy_retarget_io.c \
 	\
 	serial-memory/source/mtb_serial_memory.c \
 	\
@@ -301,6 +290,7 @@ MOD_SRC_C += \
 	machine_pin_irq.c \
 	machine_rtc.c \
 	modpsocedge.c \
+	machine_scb.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
@@ -311,6 +301,7 @@ SRC_C += \
 	help.c \
 	main.c \
 	mphalport.c \
+	sys_int.c \
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(MOD_SRC_C) $(GEN_PINS_SRC)
