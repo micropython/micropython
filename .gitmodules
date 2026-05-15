@@ -101,9 +101,6 @@
 [submodule "lib/psoc-edge/serial-memory"]
 	path = lib/psoc-edge/serial-memory
 	url = https://github.com/Infineon/serial-memory.git
-[submodule "lib/psoc-edge/retarget-io"]
-	path = lib/psoc-edge/retarget-io
-	url = https://github.com/Infineon/retarget-io.git
 [submodule "lib/psoc-edge/mtb-ipc"]
 	path = lib/psoc-edge/mtb-ipc
 	url = https://github.com/Infineon/mtb-ipc.git
