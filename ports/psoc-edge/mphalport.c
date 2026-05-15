@@ -29,7 +29,8 @@
 #include "stdio.h"
 
 // MTB includes
-#include "retarget_io_init.h"
+#include "mtb_hal_system.h"
+#include "mtb_hal_timer.h"
 
 // micropython includes
 #include "mpconfigport.h"
@@ -38,7 +39,6 @@
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 
-extern mtb_hal_uart_t DEBUG_UART_hal_obj;
 extern mtb_hal_timer_t psoc_edge_timer;
 
 void mp_hal_delay_ms(mp_uint_t ms) {
@@ -73,29 +73,25 @@ mp_uint_t mp_hal_ticks_cpu(void) {
     return mtb_hal_timer_read(&psoc_edge_timer);
 }
 
-uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
-    printf("mp_hal_stdio_poll\n");
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("mp_hal_stdio_poll not implemented !"));
-    uintptr_t ret = 0;
-    return ret;
+extern void machine_uart_repl_init(void);
+extern int machine_uart_repl_readchar(void);
+extern void machine_uart_repl_write(const void *buf_in, mp_uint_t size);
+extern uintptr_t machine_uart_repl_ioctl(uintptr_t arg);
+
+void mp_hal_stdio_init(void) {
+    machine_uart_repl_init();
 }
 
-// Send string of given length
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    return machine_uart_repl_ioctl(poll_flags);
+}
+
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    int r = write(STDOUT_FILENO, str, len);
-    (void)r;
+    machine_uart_repl_write(str, len);
 }
 
 int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        uint8_t c = 0;
-        cy_rslt_t result;
-        result = mtb_hal_uart_get(&DEBUG_UART_hal_obj, &c, 1);
-        if (result == CY_RSLT_SUCCESS) {
-            return c;
-        }
-        mp_event_handle_nowait();
-    }
+    return machine_uart_repl_readchar();
 }
 
 extern uint32_t get_drive_mode(uint8_t mode, uint8_t pull);
