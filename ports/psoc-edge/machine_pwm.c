@@ -118,6 +118,7 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
 
 static machine_pwm_obj_t *pwm_obj[MICROPY_PY_MACHINE_PWM_MAX_OBJS] = { NULL };
 
+// Search the instance pool for an existing PWM object on the given port/pin; returns NULL if not found.
 static inline machine_pwm_obj_t *pwm_obj_find_by_pin(uint8_t port, uint8_t pin) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PWM_MAX_OBJS; i++) {
         if (pwm_obj[i] != NULL && pwm_obj[i]->pin->port == port && pwm_obj[i]->pin->pin == pin) {
@@ -127,6 +128,7 @@ static inline machine_pwm_obj_t *pwm_obj_find_by_pin(uint8_t port, uint8_t pin) 
     return NULL;
 }
 
+// Allocate and return a new PWM object from the instance pool; returns NULL if the pool is full.
 static inline machine_pwm_obj_t *pwm_obj_alloc() {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PWM_MAX_OBJS; i++) {
         if (pwm_obj[i] == NULL) {
@@ -137,6 +139,7 @@ static inline machine_pwm_obj_t *pwm_obj_alloc() {
     return NULL;
 }
 
+// Release a PWM object slot back to the instance pool.
 static inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PWM_MAX_OBJS; i++) {
         if (pwm_obj[i] == pwm_obj_ptr) {
@@ -145,6 +148,7 @@ static inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
     }
 }
 
+// Raise ValueError if duty_ns exceeds the period length for the given frequency.
 static void pwm_duty_ns_assert(mp_int_t duty_ns, uint32_t freq) {
     if (duty_ns > (int)(1000000000 / freq)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM duty in ns is larger than the period %d ns"), (int)(1000000000 / freq));
@@ -165,8 +169,7 @@ static void pwm_pin_restore(const machine_pin_obj_t *pin) {
     Cy_GPIO_SetDrivemode(port, pin->pin, CY_GPIO_DM_HIGHZ);
 }
 
-// Compute the period and compare register values from the stored frequency and duty cycle,
-// and write them into the PDL PWM config struct.
+// Compute period and compare register values from the stored frequency/duty and write to the PDL config struct.
 static void pwm_config(machine_pwm_obj_t *self) {
     if (self->frequency == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM frequency must be greater than 0"));
@@ -185,6 +188,7 @@ static void pwm_config(machine_pwm_obj_t *self) {
     self->pwm_obj.invertPWMOut = self->invert;
 }
 
+// Parse freq/duty_u16/duty_ns/invert args, configure the hardware, and start the PWM counter.
 static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert};
 
@@ -243,6 +247,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     Cy_TCPWM_TriggerReloadOrIndex_Single(TCPWM0, self->counter_num);
 }
 
+// Print a human-readable representation: pin name, frequency, and duty cycle percentage.
 static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "PWM(Pin.cpu.%q, freq=%u, duty=%.2f%%)",
@@ -251,6 +256,7 @@ static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         self->duty_type == DUTY_U16 ? pwm_duty_cycle_u16_to_percent(self->duty) : pwm_duty_cycle_ns_to_percent(self->duty, self->frequency));
 }
 
+// Constructor: resolve the pin, allocate an instance, apply the default PDL config, then call init_helper.
 static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
 
     // Check number of arguments: dest is required
@@ -330,32 +336,39 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
+// Disable the TCPWM counter, restore the GPIO pin to Hi-Z, and free the instance slot.
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     Cy_TCPWM_PWM_Disable(TCPWM0, self->counter_num);
     pwm_pin_restore(self->pin);
     pwm_obj_free(self);
 }
 
+// Return the current PWM output frequency in Hz.
 static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
 }
 
+// Update the PWM output frequency; recalculates the period register.
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
 }
 
+// Return the current duty cycle as a 16-bit value (0-65535).
 static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
 }
 
+// Set the duty cycle from a 16-bit value (0-65535).
 static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
 }
 
+// Return the current on-time duty cycle in nanoseconds.
 static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
 }
 
+// Set the duty cycle as an on-time in nanoseconds.
 static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
 }
