@@ -49,12 +49,13 @@ mp_uint_t mp_hal_ticks_us(void);
 mp_uint_t mp_hal_ticks_ms(void);
 mp_uint_t mp_hal_ticks_cpu(void);
 
+void mp_hal_stdio_init(void);
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 
-#define MP_HAL_PIN_FMT          "%q"
+#define MP_HAL_PIN_FMT          "\'%q\'"
 #define mp_hal_pin_obj_t        const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   machine_pin_get_pin_obj(o)
 #define mp_hal_pin_name(p)      ((p)->name)
@@ -91,6 +92,12 @@ typedef struct {
         .init_value = _init_value, \
         .af = mp_hal_pin_af_find(_pin, _af_signal) \
 }
+
+#define MP_HAL_PIN_AF_INIT(conf_obj, _pin, _cy_drive_mode, _init_value, _af_signal) \
+    conf_obj.pin = _pin; \
+    conf_obj.cy_drive_mode = _cy_drive_mode; \
+    conf_obj.init_value = _init_value; \
+    conf_obj.af = mp_hal_pin_af_find(_pin, _af_signal);
 
 typedef void *mp_hal_af_periph_t;
 
