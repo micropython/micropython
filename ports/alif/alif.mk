@@ -113,6 +113,7 @@ SRC_C = \
 	alif_flash.c \
 	cyw43_port_spi.c \
 	fatfs_port.c \
+	lptimer_ext.c \
 	machine_pin.c \
 	machine_i2c.c \
 	machine_spi.c \
