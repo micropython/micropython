@@ -28,5 +28,6 @@
 
 void machine_rtc_init(void);
 void machine_rtc_set_wakeup(uint32_t seconds);
+void machine_rtc_cancel_wakeup(void);
 
 #endif // MICROPY_INCLUDED_ALIF_MODMACHINE_H
