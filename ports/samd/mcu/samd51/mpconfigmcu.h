@@ -28,6 +28,15 @@ unsigned long trng_random_u32(void);
 
 #define VFS_BLOCK_SIZE_BYTES            (2048) //
 
+#ifndef MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_PY_MACHINE_BACKUP_MEMORY        (1)
+#endif
+#if MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_HW_BACKUP_MEMORY_BYTES          (BKUPRAM_SIZE)
+#define MICROPY_HW_BACKUP_MEMORY_ITEMSIZE       (1)
+#define MICROPY_HW_BACKUP_MEMORY_ADDR           ((void *)BKUPRAM_ADDR)
+#endif
+
 #ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
 #endif

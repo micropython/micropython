@@ -102,6 +102,11 @@ Methods
 
    Availability: esp32, esp8266 ports.
 
+   .. note::
+
+      For cross-port persistent storage, see :data:`machine.backup_memory`
+      which is available on more ports and provides direct memoryview access.
+
 Constants
 ---------
 

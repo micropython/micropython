@@ -1,0 +1,9 @@
+memoryview: True
+len > 0: True
+itemsize ok: True
+True
+True
+True
+True
+True
+True

@@ -49,6 +49,90 @@ Example use (registers are specific to an stm32 microcontroller):
     # read PA3
     value = (machine.mem32[GPIOA + GPIO_IDR] >> 3) & 1
 
+.. data:: backup_memory
+
+   A writable `memoryview` over persistent hardware memory that survives
+   restarts, including :ref:`soft_reset` and `machine.deepsleep()`.
+
+   The element type depends on the port's hardware alignment requirements:
+   ``'B'`` (unsigned byte) on ports with byte-addressable backup memory,
+   ``'I'`` (unsigned 32-bit) on ports backed by word-sized registers.
+   Use ``machine.backup_memory.itemsize`` to discover the access granularity
+   at runtime.
+
+   The total size in bytes is ``len(mem) * mem.itemsize``, where ``len(mem)``
+   is the number of elements and ``mem.itemsize`` is the size of each element.
+   For example, on a port with 4 word-sized registers, ``len(mem)`` is 4 and
+   ``mem.itemsize`` is 4, giving 16 bytes total. On a port with 4096 bytes
+   of byte-addressable backup SRAM, ``len(mem)`` is 4096 and ``mem.itemsize``
+   is 1.
+
+   Usage::
+
+      import machine
+
+      mem = machine.backup_memory
+      mem[0] = 0x12345678                # write element 0
+      print(hex(mem[0]))                 # read element 0
+      print(len(mem))                    # number of elements
+      print(mem.itemsize)                # bytes per element
+      print(len(mem) * mem.itemsize)     # total bytes available
+
+   The total byte size and backing hardware vary by port:
+
+   ======  ===================================  =============  ==============
+   Port    Backing storage                      Total bytes    Battery-backed
+   ======  ===================================  =============  ==============
+   alif    Backup SRAM                          4096           yes
+   esp32   RTC slow memory                      2048           no
+   mimxrt  SNVS LPGPR registers (4-8 per chip)  16-32          yes
+   rp2     Watchdog scratch registers (8)       32             no
+   samd    Backup RAM (SAMD51 only)             8192           yes
+   stm32   Backup SRAM (F4/F7/H5/H7/U5/N6)      2048-8192      yes
+   stm32   RTC BKP registers (other families)   20-128         yes
+   ======  ===================================  =============  ==============
+
+   .. note::
+
+      On esp32 and rp2, data persists across :ref:`soft_reset` and
+      `machine.deepsleep()` wake but is lost on power-off and on
+      poweron-style resets. On esp32 in particular this includes pressing
+      the EN/RESET button on most dev boards, which the chip reports as a
+      power-on reset.
+
+   Some registers may be reserved by the system depending on port and board
+   configuration. These are exposed in the memoryview but should not be
+   overwritten by application code:
+
+   ======  ==============  =========================================================
+   Port    Register(s)     Used by
+   ======  ==============  =========================================================
+   mimxrt  LPGPR[3]        UF2 bootloader double-tap (when ``USE_UF2_BOOTLOADER``)
+   rp2     scratch[4-7]    pico-sdk ``watchdog_reboot()`` / ``machine.deepsleep()``
+   stm32   BKP0R           Arduino bootloader (Portenta H7, Giga, Opta, Nicla)
+   stm32   BKP16R-BKP18R   ``rfcore_firmware.py`` on STM32WB
+   stm32   last BKP reg    clock frequency (``MICROPY_HW_CLK_LAST_FREQ``)
+   stm32   BKP31R (N6)     mboot bootloader entry
+   ======  ==============  =========================================================
+
+   The buffer allows direct register access and can be combined with
+   ``uctypes`` for structured layouts::
+
+      import machine, uctypes
+
+      mem = machine.backup_memory
+
+      # Structured access via uctypes (check len(mem) for your board)
+      layout = {
+          "flags": (0 * 4, uctypes.UINT32),    # register 0
+          "counter": (1 * 4, uctypes.UINT32),  # register 1
+      }
+      regs = uctypes.struct(uctypes.addressof(mem), layout)
+      regs.flags = 0x01
+      print(regs.counter)
+
+   Availability: alif, esp32, mimxrt, rp2, samd, stm32 ports.
+
 Reset related functions
 -----------------------
 

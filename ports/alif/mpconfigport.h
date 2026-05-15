@@ -147,6 +147,17 @@
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/alif/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_IRQ             (1)
+#ifndef MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_PY_MACHINE_BACKUP_MEMORY        (1)
+#endif
+#if MICROPY_PY_MACHINE_BACKUP_MEMORY
+#define MICROPY_HW_BACKUP_MEMORY_BYTES          (4096)
+// The 4KB region at 0x4902C000 is in peripheral space and does not
+// support sub-word writes (byte writes zero unaddressed bytes of the
+// containing word). Expose as uint32 memoryview to enforce word access.
+#define MICROPY_HW_BACKUP_MEMORY_ITEMSIZE       (4)
+#define MICROPY_HW_BACKUP_MEMORY_ADDR           ((void *)0x4902C000)
+#endif
 #define MICROPY_PY_NETWORK                      (CORE_M55_HP)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "mpy-alif"
