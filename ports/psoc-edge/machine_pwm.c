@@ -53,35 +53,41 @@ typedef struct _machine_pwm_obj_t {
     bool invert;                            /**< If true, inverts the PWM output signal polarity */
 } machine_pwm_obj_t;
 
-/** Input trigger mode value meaning "disabled" - passed to inputMode fields (masked with 0x3U to extract the 2-bit mode) */
+// Sentinel value meaning "no trigger"; masked with 0x3U when assigned to 2-bit inputMode fields.
 #define CYBSP_PWM_LED_CTRL_INPUT_DISABLED 0x7U
 
 // TCPWM clock = PCLK (100 MHz) / (divider+1) = 100,000,000 / 50,000 = 2000 Hz
 #define CYBSP_PWM_LED_CTRL_CLK_HZ   2000UL
 
-// Maps (port, pin) → TCPWM0 counter number for pins that support HSIOM_SEL_ACT_1 routing.
-// Only pins with a unique counter number can generate an independent PWM frequency.
-// Pins sharing counter 0 (e.g. P20_5, P17_0, P16_0) cannot have different frequencies simultaneously.
+// Maps (port, pin) → TCPWM0 counter index and PCLK destination for pins that support PWM via
+// HSIOM_SEL_ACT_1 routing. Each entry has a unique counter, so each pin can carry an independent
+// PWM frequency.
+//
+// PWM-capable pins on KIT_PSE84_AI:
+//     P16_0 → counter 0  (shared — P9_1, P9_3, P14_3, P14_4, P17_0, P20_5 also route to counter 0;
+//                          enabling any of those pins simultaneously will conflict with P16_0)
+//     P16_1 → counter 1
+//     P16_2 → counter 2
+//     P16_3 → counter 3
+//     P16_4 → counter 4
+//     P16_5 → counter 5
+//     P16_6 → counter 6
+//     P16_7 → counter 7
+
 static const struct {
     uint8_t port;
     uint8_t pin;
     uint32_t counter_num;
     en_clk_dst_t pclk_dst;     // PCLK clock destination for Cy_SysClk_PeriPclkAssignDivider
 } pwm_pin_map[] = {
-    // {9,  1, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P9_1  - LINE0       (shares counter 0)
-    // {9,  3, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P9_3  - LINE_COMPL0 (shares counter 0)
-    // {14, 3, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P14_3 - LINE0       (shares counter 0)
-    // {14, 4, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P14_4 - LINE_COMPL0 (shares counter 0)
-    {16, 0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P16_0 - LINE0  (counter 0)
-    {16, 1, 1, PCLK_TCPWM0_CLOCK_COUNTER_EN1},  // P16_1 - LINE1  (counter 1)
-    {16, 2, 2, PCLK_TCPWM0_CLOCK_COUNTER_EN2},  // P16_2 - LINE2  (counter 2)
-    {16, 3, 3, PCLK_TCPWM0_CLOCK_COUNTER_EN3},  // P16_3 - LINE3  (counter 3)
-    {16, 4, 4, PCLK_TCPWM0_CLOCK_COUNTER_EN4},  // P16_4 - LINE4  (counter 4)
-    {16, 5, 5, PCLK_TCPWM0_CLOCK_COUNTER_EN5},  // P16_5 - LINE5  (counter 5)
-    {16, 6, 6, PCLK_TCPWM0_CLOCK_COUNTER_EN6},  // P16_6 - LINE6  (counter 6)
-    {16, 7, 7, PCLK_TCPWM0_CLOCK_COUNTER_EN7},  // P16_7 - LINE7  (counter 7)
-    // {17, 0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P17_0 - LINE_COMPL0 (shares counter 0)
-    // {20, 5, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P20_5 - LINE_COMPL0 (shares counter 0)
+    {16, 0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P16_0
+    {16, 1, 1, PCLK_TCPWM0_CLOCK_COUNTER_EN1},  // P16_1
+    {16, 2, 2, PCLK_TCPWM0_CLOCK_COUNTER_EN2},  // P16_2
+    {16, 3, 3, PCLK_TCPWM0_CLOCK_COUNTER_EN3},  // P16_3
+    {16, 4, 4, PCLK_TCPWM0_CLOCK_COUNTER_EN4},  // P16_4
+    {16, 5, 5, PCLK_TCPWM0_CLOCK_COUNTER_EN5},  // P16_5
+    {16, 6, 6, PCLK_TCPWM0_CLOCK_COUNTER_EN6},  // P16_6
+    {16, 7, 7, PCLK_TCPWM0_CLOCK_COUNTER_EN7},  // P16_7
 };
 
 // Look up the pin→counter mapping. Returns false if the pin is not PWM-capable.
@@ -97,7 +103,7 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
 }
 
 #define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
 /* Unit conversion macros */
@@ -159,9 +165,9 @@ static void pwm_pin_restore(const machine_pin_obj_t *pin) {
     Cy_GPIO_SetDrivemode(port, pin->pin, CY_GPIO_DM_HIGHZ);
 }
 
-// methods for machine.PWM
+// Compute the period and compare register values from the stored frequency and duty cycle,
+// and write them into the PDL PWM config struct.
 static void pwm_config(machine_pwm_obj_t *self) {
-
     if (self->frequency == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM frequency must be greater than 0"));
     }
@@ -189,7 +195,6 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
         { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
-    // Parse the arguments.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -224,8 +229,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     /* Route the TCPWM output to the configured GPIO pin */
     pwm_pin_config(self->pin);
 
-    /* Assign the pre-configured 2000 Hz clock divider (16-bit div #3, peri group 1)
-     * to this counter's PCLK destination so it runs at the same clock as counter 0 */
+    /* Connect the pre-configured 2 kHz clock divider to this counter's PCLK input */
     Cy_SysClk_PeriPclkAssignDivider(self->pclk_dst, CY_SYSCLK_DIV_16_BIT, CYBSP_PWM_LED_CTRL_CLK_DIV_NUM);
 
     cy_rslt_t result = Cy_TCPWM_PWM_Init(TCPWM0,
@@ -261,7 +265,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
             MP_ERROR_TEXT("PWM instance for Pin %q already exists, call deinit() first"), pin->name);
     }
 
-    // Get static peripheral object.
+    // Allocate a new instance from the PWM object pool.
     machine_pwm_obj_t *self = pwm_obj_alloc();
     if (self == NULL) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM: maximum number of instances (%d) reached"), MICROPY_PY_MACHINE_PWM_MAX_OBJS);
