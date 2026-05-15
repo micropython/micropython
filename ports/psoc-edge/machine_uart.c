@@ -196,9 +196,8 @@ static void machine_uart_baudrate_set(machine_uart_obj_t *self) {
 static inline uint8_t machine_uart_break_width(machine_uart_obj_t *self) {
     return 1 +  // Start bit
            self->bits +
-           (self->stop == CY_SCB_UART_STOP_BITS_1 ? 1 : 2) +
            (self->parity != CY_SCB_UART_PARITY_NONE ? 1 : 0) +
-           self->parity +
+           (self->stop == CY_SCB_UART_STOP_BITS_1 ? 1 : 2) +
            1; // Extra bit, make the frame longer
 }
 
