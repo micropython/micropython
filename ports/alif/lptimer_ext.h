@@ -23,11 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ALIF_MODMACHINE_H
-#define MICROPY_INCLUDED_ALIF_MODMACHINE_H
+#ifndef MICROPY_INCLUDED_ALIF_LPTIMER_EXT_H
+#define MICROPY_INCLUDED_ALIF_LPTIMER_EXT_H
 
-void machine_rtc_init(void);
-void machine_rtc_set_wakeup(uint32_t seconds);
-void machine_rtc_cancel_wakeup(void);
+#include <stdint.h>
 
-#endif // MICROPY_INCLUDED_ALIF_MODMACHINE_H
+void lptimer_init(void);
+
+// Configure the LPTIMER to wake the CPU via an IRQ after the given timeout.
+void lptimer_set_wakeup(uint64_t timeout_us);
+
+// Cancel any pending wakeup started by lptimer_set_wakeup().
+void lptimer_cancel_wakeup(void);
+
+#endif // MICROPY_INCLUDED_ALIF_LPTIMER_EXT_H

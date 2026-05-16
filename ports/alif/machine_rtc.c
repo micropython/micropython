@@ -120,6 +120,10 @@ void machine_rtc_set_wakeup(uint32_t seconds) {
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
+void machine_rtc_cancel_wakeup(void) {
+    lprtc_interrupt_disable(machine_rtc.rtc);
+}
+
 static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // Get datetime.
