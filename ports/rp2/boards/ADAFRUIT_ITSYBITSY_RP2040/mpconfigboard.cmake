@@ -1,1 +1,5 @@
 # cmake file for Adafruit ItsyBitsy RP2040
+
+if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    set(MICROPY_HW_FLASH_STORAGE_BYTES 7340032)  # 7 * 1024 * 1024
+endif()

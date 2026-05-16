@@ -1,1 +1,5 @@
 # cmake file for Pololu Zumo 2040 Robot
+
+if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    set(MICROPY_HW_FLASH_STORAGE_BYTES 15728640)  # 15 * 1024 * 1024
+endif()
