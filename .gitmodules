@@ -80,3 +80,7 @@
 [submodule "lib/CMSIS_6"]
 	path = lib/CMSIS_6
 	url = https://github.com/ARM-software/CMSIS_6.git
+[submodule "lib/dabao-sdk"]
+	path = lib/dabao-sdk
+	url = https://github.com/andrewleech/dabao-sdk.git
+	branch = gpio-get-dir
