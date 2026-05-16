@@ -315,8 +315,10 @@ static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_config_irq_rising(mp_hal_pin_obj_t pin, bool enable) {
     if (enable) {
         gpio_enable_interrupt(pin->gpio, pin->pin);
+        gpio_unmask_interrupt(pin->gpio, pin->pin);
         gpio_interrupt_set_edge_trigger(pin->gpio, pin->pin);
         gpio_interrupt_set_polarity_high(pin->gpio, pin->pin);
+        gpio_interrupt_eoi(pin->gpio, pin->pin);
     } else {
         gpio_disable_interrupt(pin->gpio, pin->pin);
     }
@@ -325,8 +327,10 @@ static inline void mp_hal_pin_config_irq_rising(mp_hal_pin_obj_t pin, bool enabl
 static inline void mp_hal_pin_config_irq_falling(mp_hal_pin_obj_t pin, bool enable) {
     if (enable) {
         gpio_enable_interrupt(pin->gpio, pin->pin);
+        gpio_unmask_interrupt(pin->gpio, pin->pin);
         gpio_interrupt_set_edge_trigger(pin->gpio, pin->pin);
         gpio_interrupt_set_polarity_low(pin->gpio, pin->pin);
+        gpio_interrupt_eoi(pin->gpio, pin->pin);
     } else {
         gpio_disable_interrupt(pin->gpio, pin->pin);
     }
