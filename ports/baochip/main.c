@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/builtin.h"
 #include "py/compile.h"
 #include "py/gc.h"
@@ -40,6 +42,7 @@
 #include "hardware/regs/udma.h"
 #include "bao/platform.h"
 
+#include "machine_pin.h"
 #include "mphalport.h"
 
 // Heap and stack bounds defined by the linker script.  _stack_size is
@@ -109,10 +112,11 @@ int main(void) {
     // we tear down, re-init, and re-enter -- matching the soft-reset
     // semantics every other MicroPython port provides.
     for (;;) {
-        // Per-soft-reset hardware teardown.  Phase 1 has no peripheral
-        // drivers other than UART RX; pin OD mask reset is added by the
-        // machine.Pin commit later in this series.  As drivers land
-        // (I2C/SPI/PWM/...), their deinit hooks belong here.
+        // Per-soft-reset hardware teardown.  Currently only the pin OD
+        // emulation state needs clearing; as drivers land (I2C, SPI, PWM,
+        // ...), their deinit hooks belong here.
+        memset(machine_pin_open_drain_mask, 0, sizeof(machine_pin_open_drain_mask));
+
         trace("TRACE:gc_init\r\n");
         gc_init(&_heap_start, &_heap_end);
         trace("TRACE:mp_init\r\n");

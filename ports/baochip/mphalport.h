@@ -75,19 +75,31 @@ void mp_hal_stdin_uart_irq_init(void);
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 
 static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     PIN_DISABLE_OPEN_DRAIN(pin->port, pin->pin);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
     gpio_set_dir(pin->port, pin->pin, false);
 }
 
 static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     PIN_DISABLE_OPEN_DRAIN(pin->port, pin->pin);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
     gpio_set_dir(pin->port, pin->pin, true);
 }
 
+// Switch a pin to open-drain mode.  The DATA latch must be staged to 0
+// AND the direction set to input AND the OD bit set before any other
+// context observes the pin -- otherwise a preempter can see
+// direction=output with PIN_IS_OPEN_DRAIN clear (drives low).
+// These helpers (and mp_hal_pin_od_high/low below) are not safe to call
+// from an ISR while another caller may be mid-sequence.
 static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     gpio_put(pin->port, pin->pin, false);
     gpio_set_dir(pin->port, pin->pin, false);
     PIN_ENABLE_OPEN_DRAIN(pin->port, pin->pin);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
