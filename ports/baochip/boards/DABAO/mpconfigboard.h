@@ -7,10 +7,5 @@
 
 // REPL routed to UART2 (PB14 TX / PB13 RX) by default.  These are the
 // only UART pins broken out to the Dabao header.
-#define MICROPY_HW_REPL_UART        (2)
-#define MICROPY_HW_REPL_BAUDRATE    (115200)
-
-// PC13 is the PROG strap (SW2) used to signal boot1 on reset.
-// It is also the 0.85V regulator feedback pin -- hold LOW only briefly.
-#define MICROPY_HW_BOOTLOADER_PORT  (2)
-#define MICROPY_HW_BOOTLOADER_PIN   (13)
+#define MICROPY_HW_UART_REPL        (2)
+#define MICROPY_HW_UART_REPL_BAUD   (115200)

@@ -53,10 +53,17 @@
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_PLATFORM     "baochip"
-#define MICROPY_PY_SYS_STDFILES     (0) // enabled in commit 1.5 with stdout obj
+#define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_OS               (1)
 #define MICROPY_PY_OS_UNAME         (1)
 #define MICROPY_PY_GC               (1)
+#define MICROPY_PY_TIME             (1)
+// time.time / time.time_ns need a wall-clock source; deferred until the
+// RTC lands in Phase 2.
+#define MICROPY_PY_TIME_TIME_TIME_NS (0)
+
+// All port-side root pointers live alongside the vm-side ones.
+#define MP_STATE_PORT MP_STATE_VM
 
 // Type definitions for the specific machine.  mp_int_t / mp_uint_t are
 // already defined by py/mpconfig.h for the default MP_INT_TYPE_INTPTR.

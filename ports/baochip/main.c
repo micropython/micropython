@@ -32,45 +32,120 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 
+#include "hardware/irq.h"
 #include "hardware/uart.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/udma.h"
+#include "bao/platform.h"
 
-// Heap and stack bounds defined by the linker script.
+#include "mphalport.h"
+
+// Heap and stack bounds defined by the linker script.  _stack_size is
+// the stack reservation size (an absolute value, not an address), so it
+// has to be referenced via &_stack_size and cast through uintptr_t.
 extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 extern uint32_t _stack_top;
+extern uint32_t _stack_size;
 
-#define MICROPY_REPL_UART       (2)
-#define MICROPY_REPL_BAUDRATE   (115200)
+#ifndef MICROPY_HW_UART_REPL
+#define MICROPY_HW_UART_REPL        (2)
+#endif
+#ifndef MICROPY_HW_UART_REPL_BAUD
+#define MICROPY_HW_UART_REPL_BAUD   (115200)
+#endif
 
 // Stack guard size matches the linker's reservation minus a small
 // safety margin so MP_STACK_CHECK() trips before we hit the heap.
 #define STACK_GUARD_BYTES       (1024)
 
+#if MICROPY_DEBUG_VERBOSE
+static void trace(const char *msg) {
+    uart_write(MICROPY_HW_UART_REPL, (const uint8_t *)msg, strlen(msg));
+}
+#else
+#define trace(msg) ((void)0)
+#endif
+
 int main(void) {
+    // Pre-enable UART2 clock gate so detect_perclk() (called from inside
+    // uart_init) reads a valid SETUP register; uart_init ORs the same bit.
+    REG32(UDMA_CTRL_BASE + UDMA_CTRL_CG_OFFSET) |= UDMA_CG_UART2;
+
     // Configure UART2 (PB14 = TX, PB13 = RX) at 115200 8N1.  boot0/boot1
     // left it at 1 Mbaud; this retunes for user-firmware logging.
-    uart_init(MICROPY_REPL_UART, MICROPY_REPL_BAUDRATE);
+    uart_init(MICROPY_HW_UART_REPL, MICROPY_HW_UART_REPL_BAUD);
 
-    // MicroPython stack and heap setup.
+    // Abort any stale UDMA TX/RX from boot0/boot1 with the CLR bit, then
+    // write 0 to guarantee EN=0 regardless of CLR self-clear timing.
+    REG32(UDMA_UART2_BASE + UDMA_TX_CFG_OFFSET) = UDMA_CFG_CLR;
+    memory_fence();
+    REG32(UDMA_UART2_BASE + UDMA_TX_CFG_OFFSET) = 0u;
+    memory_fence();
+    REG32(UDMA_UART2_BASE + UDMA_RX_CFG_OFFSET) = UDMA_CFG_CLR;
+    memory_fence();
+    REG32(UDMA_UART2_BASE + UDMA_RX_CFG_OFFSET) = 0u;
+    memory_fence();
+
+    // Enable the per-character RX interrupt at the UART level.  Without
+    // this UART_IRQ_EN write, UART_VALID is never set even in poll mode
+    // (SETUP bit 4 = 1).
+    REG32(UDMA_UART2_BASE + UDMA_UART_IRQ_EN_OFFSET) = 0xFFFFFFFFu;
+
+    trace("TRACE:uart_ok\r\n");
+
+    mp_hal_ticktimer_init();
+    trace("TRACE:tick_ok\r\n");
+
+    // MicroPython stack bounds; the heap is set up per soft-reset
+    // iteration so Ctrl-D properly clears all dynamic state.
     mp_stack_set_top(&_stack_top);
-    mp_stack_set_limit((char *)&_stack_top - (char *)&_heap_end - STACK_GUARD_BYTES);
+    mp_stack_set_limit((size_t)(uintptr_t)&_stack_size - STACK_GUARD_BYTES);
 
-    gc_init(&_heap_start, &_heap_end);
-    mp_init();
-
-    static const char banner[] = "\r\nMicroPython baochip port (Phase 1.4)\r\n";
-    uart_write(MICROPY_REPL_UART, (const uint8_t *)banner, sizeof(banner) - 1);
-
-    mp_deinit();
-
-    // Subsequent commits add the REPL; for now spin so the banner stays
-    // visible until reset.
+    // Outer loop: each iteration is one full MicroPython session.
+    // pyexec_friendly_repl returns non-zero on Ctrl-D, at which point
+    // we tear down, re-init, and re-enter -- matching the soft-reset
+    // semantics every other MicroPython port provides.
     for (;;) {
+        // Per-soft-reset hardware teardown.  Phase 1 has no peripheral
+        // drivers other than UART RX; pin OD mask reset is added by the
+        // machine.Pin commit later in this series.  As drivers land
+        // (I2C/SPI/PWM/...), their deinit hooks belong here.
+        trace("TRACE:gc_init\r\n");
+        gc_init(&_heap_start, &_heap_end);
+        trace("TRACE:mp_init\r\n");
+        mp_init();
+        trace("TRACE:irq_init\r\n");
+
+        // UART RX IRQ feeds stdin_ringbuf; the handler may call
+        // mp_sched_keyboard_interrupt() on a Ctrl-C byte, which writes
+        // into MicroPython scheduler state, so this must run AFTER
+        // mp_init() has initialised that state.  Setting up once per
+        // session iteration is harmless -- irq_init clears the handler
+        // table and re-enables MIE/MEIE each time.
+        mp_hal_stdin_uart_irq_init();
+        trace("TRACE:repl\r\n");
+
+        for (;;) {
+            if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+                if (pyexec_raw_repl() != 0) {
+                    break;
+                }
+            } else {
+                if (pyexec_friendly_repl() != 0) {
+                    break;
+                }
+            }
+        }
+
+        mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        irq_disable(IRQ_UART);
+        mp_deinit();
     }
 }
 
-// GC root collection.
 void gc_collect(void) {
     gc_collect_start();
     gc_helper_collect_regs_and_stack();
