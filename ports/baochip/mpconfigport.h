@@ -50,6 +50,12 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_PY_BUILTINS_FLOAT   (0)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
+#define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/baochip/modmachine.c"
+#define MICROPY_PY_MACHINE_BOOTLOADER           (1)
+#define MICROPY_PY_MACHINE_RESET                (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_PLATFORM     "baochip"

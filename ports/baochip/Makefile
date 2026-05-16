@@ -91,7 +91,6 @@ CFLAGS += $(INC)
 SRC_C = \
     main.c \
     machine_pin.c \
-    modmachine.c \
     mphalport.c \
 
 # SDK sources compiled directly into the firmware. Listed here per file
