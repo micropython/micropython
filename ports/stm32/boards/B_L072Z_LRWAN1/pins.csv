@@ -1,0 +1,65 @@
+D0,PA3
+D1,PA2
+D2,PA10
+D3,PB13
+D4,PB5
+D5,PB7
+D6,PB2
+D7,PA8
+D8,PA9
+D9,PB12
+D10,PB6
+D11,PB15
+D12,PB14
+D13,PB13
+D14,PB9
+D15,PB8
+A0,PA0
+A2,PA4
+USER_B1,PB2
+LED2,PA5
+LED1,PB5
+LED3,PB6
+LED4,PB7
+LED_GREEN,PB5
+LED_BLUE,PB6
+LED_RED,PB7
+,PA0
+,PA2
+,PA3
+,PA4
+,PA5
+SX_MISO,PA6
+SX_MOSI,PA7
+,PA8
+,PA9
+,PA10
+,PA11
+SX_TCXO_VCC,PA12
+# Note about SX_TCXO_VCC: Unlike all of the other SX_ pins, PA12 is only
+# connected to TCXO_VCC on the Discovery Board and will have a different
+# connection on custom hardware using the same Murata module.
+#
+# By default it also does nothing, need to move jumper JP9 to make it control
+# TCXO_VCC at all. Note PA12 is by default also USB DP so need to disable
+# USB - call pyb.usb_mode(None) or rebuild without MICROPY_HW_ENABLE_USB -
+# in order to use it at all.
+,PA13
+,PA14
+SX_CS,PA15
+,PB2
+SX_SCK,PB3
+,PB5
+,PB6
+,PB7
+,PB8
+,PB9
+,PB12
+,PB13
+,PB14
+,PB15
+SX_RESET,PC0
+SX_DIO0,PB4
+SX_DIO1,PB1
+SX_DIO2,PB0
+SX_DIO3,PC13

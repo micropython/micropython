@@ -1,0 +1,14 @@
+mem: total=\\d\+, current=\\d\+, peak=\\d\+
+stack: \\d\+ out of \\d\+
+GC: total: \\d\+, used: \\d\+, free: \\d\+
+ No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+, max free sz: \\d\+
+mem: total=\\d\+, current=\\d\+, peak=\\d\+
+stack: \\d\+ out of \\d\+
+GC: total: \\d\+, used: \\d\+, free: \\d\+
+ No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+, max free sz: \\d\+
+GC memory layout; from \[0-9a-f\]\+:
+########
+qstr pool: n_pool=1, n_qstr=\\d, n_str_data_bytes=\\d\+, n_total_bytes=\\d\+
+qstr pool: n_pool=1, n_qstr=\\d, n_str_data_bytes=\\d\+, n_total_bytes=\\d\+
+########
+Q(SKIP)

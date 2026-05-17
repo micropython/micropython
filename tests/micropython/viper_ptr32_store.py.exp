@@ -1,0 +1,5 @@
+bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+bytearray(b'BBBB\x00\x00\x00\x00')
+bytearray(b'BBBBCCCC')
+bytearray(b'DDDDDDDD')
+bytearray(b'EEEEEEEE')

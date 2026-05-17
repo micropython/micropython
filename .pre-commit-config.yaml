@@ -1,0 +1,27 @@
+repos:
+  - repo: local
+    hooks:
+      - id: codeformat
+        name: MicroPython codeformat.py for changed C files
+        entry: tools/codeformat.py -v -c -f
+        language: python
+      - id: verifygitlog
+        name: MicroPython git commit message format checker
+        entry: tools/verifygitlog.py --check-file --ignore-rebase
+        language: python
+        verbose: true
+        stages: [commit-msg]
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    # Version should be kept in sync with .github/workflows/ruff.yml & also micropython-lib
+    rev: v0.11.6
+    hooks:
+      - id: ruff
+      - id: ruff-format
+  - repo: https://github.com/codespell-project/codespell
+    # Version should be kept in sync with .github/workflows/codespell.yml
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        name: Spellcheck for changed files (codespell)
+        additional_dependencies:
+          - tomli

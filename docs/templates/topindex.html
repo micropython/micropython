@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+{% set title = _('Overview') %}
+{% block body %}
+
+  <h1>MicroPython documentation</h1>
+
+  <p>
+    {{ _('Welcome! This is the documentation for MicroPython') }}{% if last_updated %}, {{ _('last updated') }} {{ last_updated|e }}{% endif %}.
+  </p>
+
+  <p>
+    MicroPython runs on a variety of systems and hardware platforms.  Here you can read
+    the general documentation which applies to all systems, as well as specific information
+    about the various platforms -
+    also known as <a href="{{ pathto("reference/glossary") }}#term-micropython-port">ports</a>
+    - that MicroPython runs on.
+  </p>
+
+  <p><strong>General documentation for MicroPython:</strong></p>
+
+  <table class="contentstable"><tr>
+    <td width="40%" style="padding-left:2em;">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("library/index") }}">Library Reference</a><br/>
+        <span class="linkdescr">MicroPython libraries and modules</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("genrst/index") }}">MicroPython Differences</a><br/>
+        <span class="linkdescr">MicroPython operations which differ from CPython</span>
+      </p>
+    </td>
+    <td width="40%" style="padding-left:2em;">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("reference/index") }}">Language Reference</a><br/>
+        <span class="linkdescr">information about MicroPython specific language features</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("license") }}">License</a><br/>
+        <span class="linkdescr">MicroPython license information</span>
+      </p>
+    </td>
+  </tr></table>
+
+  <p><strong>References and tutorials for specific platforms:</strong></p>
+
+  <table class="contentstable"><tr>
+    <td width="40%" style="padding-left:2em;">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("pyboard/quickref") }}">Quick reference for the pyboard</a><br/>
+        <span class="linkdescr">pinout for the pyboard, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("esp8266/quickref") }}">Quick reference for the ESP8266</a><br/>
+        <span class="linkdescr">pinout for ESP8266-based boards, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("esp32/quickref") }}">Quick reference for the ESP32</a><br/>
+        <span class="linkdescr">pinout for ESP32-based boards, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("rp2/quickref") }}">Quick reference for the Raspberry Pi RP2xxx</a><br/>
+        <span class="linkdescr">pinout for rp2xxx-based boards, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("mimxrt/quickref") }}">Quick reference for the NXP i.MXRT 10xx</a><br/>
+        <span class="linkdescr">general introduction, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("wipy/quickref") }}">Quick reference for the WiPy/CC3200</a><br/>
+        <span class="linkdescr">pinout for the WiPy/CC3200, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("unix/quickref") }}">Quick reference for UNIX and Windows</a><br/>
+        <span class="linkdescr">command-line reference</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("zephyr/quickref") }}">Quick reference for the Zephyr port</a><br/>
+        <span class="linkdescr">snippets of useful code and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("renesas-ra/quickref") }}">Quick reference for the Renesas RA</a><br/>
+        <span class="linkdescr">general information for Renesas RA based boards, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("samd/quickref") }}">Quick reference for the SAMD21/SAMD51</a><br/>
+        <span class="linkdescr">general information for SAMD21/SAMD51 based boards, snippets of useful code, and a tutorial</span>
+      </p>
+    </td>
+  </tr></table>
+
+  <p><strong>Indices and tables:</strong></p>
+
+  <table class="contentstable"><tr>
+    <td width="40%" style="padding-left:2em;">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("py-modindex") }}">Module index</a><br/>
+        <span class="linkdescr">quick access to all modules</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("genindex") }}">Full index</a><br/>
+        <span class="linkdescr">all functions, classes, constants</span>
+      </p>
+    </td>
+    <td width="40%" style="padding-left:2em;">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("reference/glossary") }}">Glossary</a><br/>
+        <span class="linkdescr">MicroPython terms explained</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("index") }}">Table of contents</a><br/>
+        <span class="linkdescr">a list of all sections and subsections</span>
+      </p>
+    </td></tr>
+  </table>
+
+  <p><strong>External links:</strong></p>
+
+  <table class="contentstable"><tr>
+    <td width="40%" style="padding-left:2em;">
+      <p class="biglink">
+      <a class="biglink" href="http://micropython.org">MicroPython homepage</a><br/>
+        <span class="linkdescr">the official MicroPython site</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="https://github.com/orgs/micropython/discussions">GitHub Discussions</a><br/>
+        <span class="linkdescr">community discussion for all things related to MicroPython</span>
+      </p>
+    </td>
+    <td width="40%" style="padding-left:2em;">
+      <p class="biglink">
+        <a class="biglink" href="https://github.com/micropython">MicroPython on GitHub</a><br/>
+        <span class="linkdescr">contribute to the source code on GitHub</span>
+      </p>
+    </td>
+  </tr></table>
+
+{% endblock %}

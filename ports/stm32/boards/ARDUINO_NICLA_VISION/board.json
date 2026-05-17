@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Dual-core",
+        "External Flash",
+        "Secure Element",
+        "USB",
+        "WiFi"
+    ],
+    "images": [
+        "ABX00051_01.iso_1000x750.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "Nicla Vision",
+    "thumbnail": "",
+    "url": "https://store.arduino.cc/products/nicla-vision",
+    "vendor": "Arduino"
+}

@@ -1,0 +1,91 @@
+----------------
+[   1] file_input_2(1) (n=10)
+         tok(5)
+[   4]   \(rule\|for_stmt\)(22) (n=4)
+           id(i)
+[   4]     \(rule\|atom_paren\)(45) (n=1)
+             NULL
+[   5]     \(rule\|pass_stmt\)(8) (n=0)
+           NULL
+[   6]   \(rule\|expr_stmt\)(5) (n=2)
+           id(a)
+           tok(15)
+[   7]   \(rule\|expr_stmt\)(5) (n=2)
+           id(b)
+           str(str)
+[   8]   \(rule\|expr_stmt\)(5) (n=2)
+           id(c)
+[   8]     literal \.\+
+[   9]   \(rule\|expr_stmt\)(5) (n=2)
+           id(d)
+[   9]     literal \.\+
+[  10]   \(rule\|expr_stmt\)(5) (n=2)
+           id(e)
+[  10]     literal \.\+
+[  11]   \(rule\|expr_stmt\)(5) (n=2)
+           id(f)
+[  11]     literal \.\+
+[  12]   \(rule\|expr_stmt\)(5) (n=2)
+           id(g)
+           int(123)
+[  13]   \(rule\|expr_stmt\)(5) (n=2)
+           id(h)
+[  13]     \(rule\|atom_expr_normal\)(44) (n=2)
+[  13]       literal const(\.\+)="fstring: '{}'"
+[  13]       \(rule\|atom_expr_trailers\)(142) (n=2)
+[  13]         \(rule\|trailer_period\)(50) (n=1)
+                 id(format)
+[  13]         \(rule\|trailer_paren\)(48) (n=1)
+[  13]           \(rule\|arglist\)(164) (n=1)
+                   id(b)
+----------------
+File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 62 bytes)
+Raw bytecode (code_info_size=13, bytecode_size=49):
+ 20 16 01 60 27 22 23 24 24 24 24 24 25 2a 00 5f
+ 4b 04 16 04 42 3a 51 16 05 10 02 16 06 23 00 16
+ 07 23 01 16 08 23 02 16 09 23 03 16 0a 22 80 7b
+ 16 0b 23 04 14 03 11 06 36 01 16 0c 51 63
+arg names:
+(N_STATE 5)
+(N_EXC_STACK 0)
+  bc=0 line=1
+  bc=0 line=4
+  bc=7 line=5
+  bc=9 line=6
+  bc=12 line=7
+  bc=16 line=8
+  bc=20 line=9
+  bc=24 line=10
+  bc=28 line=11
+  bc=32 line=12
+  bc=37 line=13
+00 BUILD_TUPLE 0
+02 GET_ITER_STACK
+03 FOR_ITER 9
+05 STORE_NAME i
+07 JUMP 3
+09 LOAD_CONST_NONE
+10 STORE_NAME a
+12 LOAD_CONST_STRING 'str'
+14 STORE_NAME b
+16 LOAD_CONST_OBJ \.\+='a very long str that will not be interned'
+18 STORE_NAME c
+20 LOAD_CONST_OBJ \.\+=b'bytes'
+22 STORE_NAME d
+24 LOAD_CONST_OBJ \.\+=b'a very long bytes that will not be interned'
+26 STORE_NAME e
+28 LOAD_CONST_OBJ \.\+=123456789012345678901234567890
+30 STORE_NAME f
+32 LOAD_CONST_SMALL_INT 123
+35 STORE_NAME g
+37 LOAD_CONST_OBJ \.\+="fstring: '{}'"
+39 LOAD_METHOD format
+41 LOAD_NAME b
+43 CALL_METHOD n=1 nkw=0
+45 STORE_NAME h
+47 LOAD_CONST_NONE
+48 RETURN_VALUE
+mem: total=\\d\+, current=\\d\+, peak=\\d\+
+stack: \\d\+ out of \\d\+
+GC: total: \\d\+, used: \\d\+, free: \\d\+
+ No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+, max free sz: \\d\+

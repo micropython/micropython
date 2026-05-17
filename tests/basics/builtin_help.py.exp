@@ -1,0 +1,14 @@
+########
+object <function> is of type function
+object <class 'int'> is of type type
+  from_bytes -- <classmethod>
+  to_bytes -- <function>
+object 1 is of type int
+  from_bytes -- <classmethod>
+  to_bytes -- <function>
+object <module 'micropython'> is of type module
+  __name__ -- micropython
+  const -- <function>
+  opt_level -- <function>
+########
+done

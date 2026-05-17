@@ -1,0 +1,7 @@
+<class 'bytearray'>
+<class 'int'>
+bytearray(b'0000')
+bytearray(b'1111')
+bytearray(b'2222')
+bytearray(b'2233')
+10

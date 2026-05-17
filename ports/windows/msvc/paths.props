@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PyPathsIncluded>True</PyPathsIncluded>
+
+    <!-- The properties below specify the directory structure.
+         This defaults to, for example for Configuration = Debug and Platform = x64:
+
+         micropython [PyBaseDir]
+          |- ...
+          |- ports/windows [PyWinDir]
+                    |- ...
+                    |- micropython.exe
+                    |- build-standard [PyBuildDir]
+                        |- Debugx64 [PyOutDir]
+                        |   |- ...
+                        |   |- micropython.exe
+                        |   |- micropython.map
+                        |   |- obj [PyIntDir]
+                        |- genhdr
+                    |- variants
+                        |- standard [PyVariantDir]
+
+         Note that the micropython executable will be copied from PyOutDir
+         to PyTargetDir after each build. -->
+
+    <!-- Start from project root -->
+    <PyBaseDir>$([System.IO.Path]::GetFullPath(`$(MSBuildThisFileDirectory)..\..\..`))\</PyBaseDir>
+    <PyWinDir>$(PyBaseDir)ports\windows\</PyWinDir>
+    <PyBuildDir Condition="'$(PyBuildDir)' == ''">$(PyWinDir)$(PyBuild)\</PyBuildDir>
+    <PyVariantDir Condition="'$(PyVariantDir)' == ''">$(PyWinDir)variants\$(PyVariant)\</PyVariantDir>
+    <PyTargetDir Condition="'$(PyTargetDir)' == ''">$(PyBuildDir)</PyTargetDir>
+
+    <!-- All include directories needed for MicroPython -->
+    <PyIncDirs>$(PyIncDirs);$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc;$(PyVariantDir)</PyIncDirs>
+
+    <!-- Within PyBuildDir different subdirectories are used based on configuration and platform.
+         By default these are chosen based on the Configuration and Platform properties, but
+         this file might be imported by other projects (to figure out where the artifacts go
+         or what the include files are) and those projects might already contain conflicting
+         Configuration/Platform properties, so allow to override these -->
+    <PyPlatform Condition="'$(PyPlatform)' == ''">$(Platform)</PyPlatform>
+    <PyConfiguration Condition="'$(PyConfiguration)' == ''">$(Configuration)</PyConfiguration>
+
+    <!-- The final destination directories -->
+    <PyOutDir>$(PyBuildDir)$(PyConfiguration)$(PyPlatform)\</PyOutDir>
+    <PyIntDir>$(PyOutDir)obj\</PyIntDir>
+  </PropertyGroup>
+</Project>

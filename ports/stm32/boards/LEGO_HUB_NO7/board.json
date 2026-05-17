@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "lego_hub_7.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Hub No.7",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "LEGO"
+}

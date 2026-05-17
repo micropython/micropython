@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "blyst-nano-fingertip-close_jpg_content-body-gallery.jpg"
+    ],
+    "mcu": "nrf52",
+    "product": "IDK BLYST Nano",
+    "thumbnail": "",
+    "url": "https://www.i-syst.com/products/blyst-nano",
+    "vendor": "I-SYST"
+}

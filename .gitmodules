@@ -1,0 +1,76 @@
+[submodule "lib/axtls"]
+	path = lib/axtls
+	url = https://github.com/micropython/axtls.git
+[submodule "lib/libffi"]
+	path = lib/libffi
+	url = https://github.com/libffi/libffi
+[submodule "lib/lwip"]
+	path = lib/lwip
+	url = https://github.com/lwip-tcpip/lwip.git
+[submodule "lib/berkeley-db-1.xx"]
+	path = lib/berkeley-db-1.xx
+	url = https://github.com/micropython/berkeley-db-1.xx
+[submodule "lib/stm32lib"]
+	path = lib/stm32lib
+	url = https://github.com/micropython/stm32lib
+	branch = work-F0-1.9.0+F4-1.16.0+F7-1.7.0+G0-1.5.1+G4-1.3.0+H7-1.6.0+L0-1.11.2+L1-1.10.3+L4-1.17.0+WB-1.10.0+WL-1.1.0
+[submodule "lib/nrfx"]
+	path = lib/nrfx
+	url = https://github.com/NordicSemiconductor/nrfx.git
+[submodule "lib/mbedtls"]
+	path = lib/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "lib/asf4"]
+	path = lib/asf4
+	url = https://github.com/adafruit/asf4
+	branch = circuitpython
+[submodule "lib/tinyusb"]
+	path = lib/tinyusb
+	url = https://github.com/hathach/tinyusb
+[submodule "lib/mynewt-nimble"]
+	path = lib/mynewt-nimble
+	url = https://github.com/micropython/mynewt-nimble.git
+[submodule "lib/btstack"]
+	path = lib/btstack
+	url = https://github.com/bluekitchen/btstack.git
+[submodule "lib/nxp_driver"]
+	path = lib/nxp_driver
+	url = https://github.com/micropython/nxp_driver.git
+[submodule "lib/libhydrogen"]
+	path = lib/libhydrogen
+	url = https://github.com/jedisct1/libhydrogen.git
+[submodule "lib/pico-sdk"]
+	path = lib/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "lib/fsp"]
+	path = lib/fsp
+	url = https://github.com/renesas/fsp.git
+[submodule "lib/wiznet"]
+	path = lib/wiznet5k
+	url = https://github.com/andrewleech/wiznet_ioLibrary_Driver.git
+	# Requires https://github.com/Wiznet/ioLibrary_Driver/pull/120
+	# url = https://github.com/Wiznet/ioLibrary_Driver.git
+[submodule "lib/cyw43-driver"]
+	path = lib/cyw43-driver
+	url = https://github.com/georgerobotics/cyw43-driver.git
+[submodule "lib/micropython-lib"]
+	path = lib/micropython-lib
+	url = https://github.com/micropython/micropython-lib.git
+[submodule "lib/protobuf-c"]
+	path = lib/protobuf-c
+	url = https://github.com/protobuf-c/protobuf-c.git
+[submodule "lib/open-amp"]
+	path = lib/open-amp
+	url = https://github.com/OpenAMP/open-amp.git
+[submodule "lib/libmetal"]
+	path = lib/libmetal
+	url = https://github.com/OpenAMP/libmetal.git
+[submodule "lib/arduino-lib"]
+	path = lib/arduino-lib
+	url = https://github.com/arduino/arduino-lib-mpy.git
+[submodule "lib/alif_ensemble-cmsis-dfp"]
+	path = lib/alif_ensemble-cmsis-dfp
+	url = https://github.com/alifsemi/alif_ensemble-cmsis-dfp.git
+[submodule "lib/alif-security-toolkit"]
+	path = lib/alif-security-toolkit
+	url = https://github.com/micropython/alif-security-toolkit.git

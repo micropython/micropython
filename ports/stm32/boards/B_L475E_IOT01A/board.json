@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "b-l475e-iot01a-discovery.jpg"
+    ],
+    "mcu": "stm32l4",
+    "product": "B_L475E_IOT01A",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html",
+    "vendor": "ST Microelectronics"
+}

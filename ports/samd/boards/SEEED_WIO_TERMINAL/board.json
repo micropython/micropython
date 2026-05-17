@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Display",
+        "External Flash",
+        "JST-PH",
+        "SDCard",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "wio-terminal.jpg"
+    ],
+    "mcu": "samd51",
+    "product": "Wio Terminal D51R",
+    "thumbnail": "",
+    "url": "https://www.seeedstudio.com/Wio-Terminal-p-4509.html",
+    "vendor": "Seeed Studio"
+}

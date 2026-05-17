@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "Ethernet",
+        "External Flash",
+        "WiFi",
+        "microSD"
+    ],
+    "images": [
+        "ESP32-EVB_Rev_K1.png"
+    ],
+    "mcu": "esp32",
+    "product": "ESP32 EVB",
+    "thumbnail": "",
+    "url": "https://www.olimex.com/Products/IoT/ESP32/ESP32-EVB",
+    "vendor": "Olimex"
+}

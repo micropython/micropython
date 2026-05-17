@@ -1,0 +1,17 @@
+CustomPollable.ioctl 3 1
+[(<class 'socket'>, 4)]
+CustomPollable.ioctl 3 1
+[(<class 'socket'>, 4)]
+CustomPollable.ioctl 3 1
+[(<class 'socket'>, 4), (<class 'CustomPollable'>, 1)]
+CustomPollable.ioctl 3 1
+CustomPollable.ioctl 3 1
+[(<class 'CustomPollable'>, 1)]
+CustomPollable.ioctl 3 1
+OSError 1000
+CustomPollable.ioctl 3 1
+[(<class 'CustomPollable'>, 1)]
+CustomPollable.ioctl 3 1
+[(<class 'CustomPollable'>, 1)]
+CustomPollable.ioctl 3 1
+[(<class 'CustomPollable'>, 1)]

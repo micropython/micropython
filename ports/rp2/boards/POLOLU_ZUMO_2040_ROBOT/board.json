@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "USB-C",
+        "JST-SH",
+        "IMU",
+        "RGB LED",
+        "Display",
+        "Dual-core",
+        "External Flash"
+    ],
+    "images": [
+        "pololu_zumo_2040_robot.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Zumo 2040 Robot",
+    "thumbnail": "",
+    "url": "https://www.pololu.com/zumo",
+    "vendor": "Pololu"
+}

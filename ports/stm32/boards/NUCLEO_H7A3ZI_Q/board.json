@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_h7a3zi_q.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "Nucleo H7A3ZI-Q",
+    "thumbnail": "",
+    "url": "https://www.st.com/ja/evaluation-tools/nucleo-h7a3zi-q.html",
+    "vendor": "ST Microelectronics"
+}

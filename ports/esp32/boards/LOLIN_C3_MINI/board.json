@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "lolin_c3_mini.jpg"
+    ],
+    "mcu": "esp32c3",
+    "product": "C3 mini",
+    "thumbnail": "",
+    "url": "https://www.wemos.cc/en/latest/c3/c3_mini.html",
+    "vendor": "Wemos"
+}

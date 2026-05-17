@@ -1,0 +1,4 @@
+This directory doesn't contain real tests, but code snippets to detect
+various interpreter features, which can't be/inconvenient to detect by
+other means. Scripts here are executed by run-tests.py at the beginning of
+testsuite to decide what other test groups to run/exclude.

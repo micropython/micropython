@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Dual-core",
+        "External Flash",
+        "Feather",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+        "microSD"
+    ],
+    "images": [
+        "17745-SparkFun_Thing_Plus_-_RP2040-01a.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Thing Plus - RP2040",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/products/17745",
+    "vendor": "SparkFun"
+}

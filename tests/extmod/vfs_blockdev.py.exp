@@ -1,0 +1,8 @@
+test <class 'VfsFat'>
+(512, 512, 16, 16, 16, 0, 0, 0, 0, 255)
+[('test', 32768, 0, 90)]
+some datasome datasome datasome datasome datasome datasome datasome datasome datasome data
+test <class 'VfsLfs2'>
+(512, 512, 50, 48, 48, 0, 0, 0, 0, 255)
+[('test', 32768, 0, 90)]
+some datasome datasome datasome datasome datasome datasome datasome datasome datasome data

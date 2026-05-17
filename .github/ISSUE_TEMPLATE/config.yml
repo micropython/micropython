@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: MicroPython GitHub Discussions
+    url: https://github.com/orgs/micropython/discussions
+    about: Community discussion about all things MicroPython. This is the best place to start if you have questions about using MicroPython or getting started with MicroPython development.
+  - name: MicroPython Documentation
+    url: https://docs.micropython.org/
+    about: Documentation for using and working with MicroPython and libraries.
+  - name: MicroPython Downloads
+    url: https://micropython.org/download/
+    about: Pre-built firmware and information for most supported boards.

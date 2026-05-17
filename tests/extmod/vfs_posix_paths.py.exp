@@ -1,0 +1,23 @@
+listdir("/"): ['subdir']
+listdir("."): ['subdir']
+getcwd() in ("", "/"): True
+chdir("subdir"): None
+getcwd(): /subdir
+mkdir("two"): None
+listdir("/"): ['subdir']
+listdir("/subdir"): ['file.py', 'one', 'two']
+listdir("."): ['file.py', 'one', 'two']
+print('hello')
+hello
+<module 'file' from 'file.py'>
+chdir("/mnt/dir"): None
+getcwd(): /mnt/dir
+chdir("/mnt"): None
+getcwd(): /mnt
+chdir("/"): None
+getcwd(): /
+chdir("/mnt/dir"): None
+getcwd(): /mnt/dir
+chdir(".."): None
+getcwd(): /mnt
+False

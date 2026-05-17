@@ -1,0 +1,225 @@
+-----
+ls :
+-----
+empty tree
+tree :
+:/ramdisk
+-----
+touch :a.py
+touch :b.py
+mkdir :foo
+touch :foo/aa.py
+touch :foo/ba.py
+small tree - :
+tree :
+:/ramdisk
+├── a.py
+├── b.py
+└── foo
+    ├── aa.py
+    └── ba.py
+-----
+no path
+tree :
+:/ramdisk
+├── a.py
+├── b.py
+└── foo
+    ├── aa.py
+    └── ba.py
+-----
+path = '.'
+tree :.
+:/ramdisk
+├── a.py
+├── b.py
+└── foo
+    ├── aa.py
+    └── ba.py
+-----
+path = ':.'
+tree :.
+:/ramdisk
+├── a.py
+├── b.py
+└── foo
+    ├── aa.py
+    └── ba.py
+-----
+multiple trees
+mkdir :bar
+touch :bar/aaa.py
+touch :bar/bbbb.py
+mkdir :bar/baz
+touch :bar/baz/aaa.py
+touch :bar/baz/bbbb.py
+mkdir :bar/baz/quux
+touch :bar/baz/quux/aaa.py
+touch :bar/baz/quux/bbbb.py
+mkdir :bar/baz/quux/xen
+touch :bar/baz/quux/xen/aaa.py
+tree :
+:/ramdisk
+├── a.py
+├── b.py
+├── bar
+│   ├── aaa.py
+│   ├── baz
+│   │   ├── aaa.py
+│   │   ├── bbbb.py
+│   │   └── quux
+│   │       ├── aaa.py
+│   │       ├── bbbb.py
+│   │       └── xen
+│   │           └── aaa.py
+│   └── bbbb.py
+└── foo
+    ├── aa.py
+    └── ba.py
+-----
+single path
+tree :foo
+:foo
+├── aa.py
+└── ba.py
+-----
+multiple paths
+tree :foo
+:foo
+├── aa.py
+└── ba.py
+tree :bar
+:bar
+├── aaa.py
+├── baz
+│   ├── aaa.py
+│   ├── bbbb.py
+│   └── quux
+│       ├── aaa.py
+│       ├── bbbb.py
+│       └── xen
+│           └── aaa.py
+└── bbbb.py
+-----
+subtree
+tree :bar/baz
+:bar/baz
+├── aaa.py
+├── bbbb.py
+└── quux
+    ├── aaa.py
+    ├── bbbb.py
+    └── xen
+        └── aaa.py
+-----
+mountpoint
+tree :/ramdisk
+:/ramdisk
+├── a.py
+├── b.py
+├── bar
+│   ├── aaa.py
+│   ├── baz
+│   │   ├── aaa.py
+│   │   ├── bbbb.py
+│   │   └── quux
+│   │       ├── aaa.py
+│   │       ├── bbbb.py
+│   │       └── xen
+│   │           └── aaa.py
+│   └── bbbb.py
+└── foo
+    ├── aa.py
+    └── ba.py
+-----
+non-existent folder : error
+tree :not_there
+mpremote: tree: 'not_there' is not a directory
+expect error: 1
+-----
+file : error
+tree :a.py
+mpremote: tree: 'a.py' is not a directory
+expect error: 1
+-----
+tree -s :
+cp ${TMP}/data :
+tree :
+:/ramdisk
+├── [        0]  a.py
+├── [        0]  b.py
+├── bar
+│   ├── [        0]  aaa.py
+│   ├── baz
+│   │   ├── [        0]  aaa.py
+│   │   ├── [        0]  bbbb.py
+│   │   └── quux
+│   │       ├── [        0]  aaa.py
+│   │       ├── [        0]  bbbb.py
+│   │       └── xen
+│   │           └── [        0]  aaa.py
+│   └── [        0]  bbbb.py
+├── data
+│   ├── [       20]  file1.txt
+│   ├── [      204]  file2.txt
+│   ├── [     1096]  file3.txt
+│   └── [     2192]  file4.txt
+└── foo
+    ├── [        0]  aa.py
+    └── [        0]  ba.py
+-----
+tree -s
+tree :
+:/ramdisk
+├── [        0]  a.py
+├── [        0]  b.py
+├── bar
+│   ├── [        0]  aaa.py
+│   ├── baz
+│   │   ├── [        0]  aaa.py
+│   │   ├── [        0]  bbbb.py
+│   │   └── quux
+│   │       ├── [        0]  aaa.py
+│   │       ├── [        0]  bbbb.py
+│   │       └── xen
+│   │           └── [        0]  aaa.py
+│   └── [        0]  bbbb.py
+├── data
+│   ├── [       20]  file1.txt
+│   ├── [      204]  file2.txt
+│   ├── [     1096]  file3.txt
+│   └── [     2192]  file4.txt
+└── foo
+    ├── [        0]  aa.py
+    └── [        0]  ba.py
+-----
+tree :
+:/ramdisk
+├── [     0]  a.py
+├── [     0]  b.py
+├── bar
+│   ├── [     0]  aaa.py
+│   ├── baz
+│   │   ├── [     0]  aaa.py
+│   │   ├── [     0]  bbbb.py
+│   │   └── quux
+│   │       ├── [     0]  aaa.py
+│   │       ├── [     0]  bbbb.py
+│   │       └── xen
+│   │           └── [     0]  aaa.py
+│   └── [     0]  bbbb.py
+├── data
+│   ├── [    20]  file1.txt
+│   ├── [   204]  file2.txt
+│   ├── [  1.1K]  file3.txt
+│   └── [  2.1K]  file4.txt
+└── foo
+    ├── [     0]  aa.py
+    └── [     0]  ba.py
+-----
+usage: fs [--help] [--recursive | --no-recursive] [--force | --no-force]
+          [--verbose | --no-verbose] [--size | --human]
+          command path [path ...] ...
+fs: error: argument --human/-h: not allowed with argument --size/-s
+expect error: 2
+-----

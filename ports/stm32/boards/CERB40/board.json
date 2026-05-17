@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "cerb40.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Cerb40",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Fez"
+}

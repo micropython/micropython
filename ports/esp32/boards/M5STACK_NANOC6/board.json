@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "RGB LED",
+        "USB",
+        "USB-C",
+        "JST-PH"
+    ],
+    "images": [
+        "m5stack_nanoc6.jpg"
+    ],
+    "mcu": "esp32c6",
+    "product": "NanoC6",
+    "url": "https://shop.m5stack.com/products/m5stack-nanoc6-dev-kit",
+    "vendor": "M5Stack"
+}

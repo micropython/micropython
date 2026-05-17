@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "RGB LED",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "rp2040-shim-product.jpg",
+        "RP2040-Shim-pinout.png"
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040-Shim",
+    "thumbnail": "",
+    "url": "https://silicognition.com/Products/rp2040-shim/",
+    "vendor": "Silicognition LLC"
+}

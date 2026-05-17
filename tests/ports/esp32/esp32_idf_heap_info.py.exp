@@ -1,0 +1,5 @@
+HEAP_DATA >=MIN: True
+HEAP_DATA [True, True, True, True]
+HEAP_EXEC >=MIN: True
+HEAP_EXEC [True, True, True, True]
+[]

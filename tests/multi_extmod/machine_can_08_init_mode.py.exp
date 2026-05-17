@@ -1,0 +1,14 @@
+--- instance0 ---
+Normal True
+Loopback True
+recv 0x51 b'Loopback'
+Silent False
+silent_rx_count True
+Silent Loopback True
+recv 0x54 b'SiLoop'
+Normal again True
+--- instance1 ---
+recv 0x50 b'Normal'
+recv 0x51 b'Loopback'
+send failed
+recv 0x55 b'Normal2'

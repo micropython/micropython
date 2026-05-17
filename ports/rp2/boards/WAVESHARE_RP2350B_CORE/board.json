@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "External RAM",
+        "USB-C"
+    ],
+    "images": [
+        "waveshare_rp2350b_core.png"
+    ],
+    "mcu": "rp2350",
+    "product": "RP2350B Core",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/core2350b.htm",
+    "variants": {
+        "RISCV": "RISC V"
+    },
+    "vendor": "Waveshare"
+}

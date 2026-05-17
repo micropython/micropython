@@ -1,0 +1,52 @@
+UART(0, baudrate=38400, bits=8, parity=None, stop=1)
+UART(1, baudrate=38400, bits=8, parity=None, stop=1)
+UART(0, baudrate=9600, bits=8, parity=None, stop=1)
+UART(0, baudrate=38400, bits=8, parity=None, stop=1)
+UART(0, baudrate=9600, bits=8, parity=None, stop=1)
+UART(1, baudrate=9600, bits=8, parity=None, stop=1)
+UART(1, baudrate=57600, bits=8, parity=None, stop=1)
+UART(0, baudrate=1000000, bits=8, parity=None, stop=1)
+UART(1, baudrate=1000000, bits=8, parity=None, stop=1)
+True
+True
+True
+True
+True
+True
+True
+bytearray(b'1\x00\x00')
+True
+bytearray(b'23\x00')
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+Pin('GP12', mode=Pin.IN, pull=None, drive=Pin.MED_POWER, alt=-1)
+Pin('GP13', mode=Pin.IN, pull=None, drive=Pin.MED_POWER, alt=-1)
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+UART(0)
+UART(0, baudrate=115200, bits=8, parity=None, stop=1)
+UART(1)
+UART(1, baudrate=115200, bits=8, parity=None, stop=1)

@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "W5500-EVB-Pico.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "W5500-EVB-Pico",
+    "thumbnail": "",
+    "url": "https://docs.wiznet.io/Product/iEthernet/W5500/w5500-evb-pico",
+    "vendor": "WIZnet"
+}

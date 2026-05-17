@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_g0b1re.jpg"
+    ],
+    "mcu": "stm32g0",
+    "product": "Nucleo G0B1RE",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/nucleo-g0b1re.html",
+    "vendor": "ST Microelectronics"
+}

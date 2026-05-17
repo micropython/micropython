@@ -1,0 +1,12 @@
+0x3130
+48 49
+TypeError
+arr: 48 49
+arr of struct: 48 49
+IndexError
+bf: 48 49
+bf 4bit: 3 1 3 0
+bytearray(b'21')
+bytearray(b'2Q')
+bytearray(b'5123')
+bytearray(b'51R3')

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_wb55.jpg"
+    ],
+    "mcu": "stm32wb",
+    "product": "Nucleo WB55",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

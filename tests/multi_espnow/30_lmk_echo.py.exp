@@ -1,0 +1,8 @@
+--- instance0 ---
+Server Start
+Server Done
+--- instance1 ---
+TEST: send/recv(msglen=5,sync=True): OK
+TEST: send/recv(msglen=250,sync=True): OK
+TEST: send/recv(msglen=250,sync=False): OK
+TEST: send/recv(msglen=5,sync=True): OK

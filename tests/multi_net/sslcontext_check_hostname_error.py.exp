@@ -1,0 +1,4 @@
+--- instance0 ---
+(-29312, 'MBEDTLS_ERR_SSL_CONN_EOF')
+--- instance1 ---
+CERT_REQUIRED requires server_hostname

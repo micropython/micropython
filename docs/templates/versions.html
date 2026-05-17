@@ -1,0 +1,31 @@
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Versions and Downloads</span>
+    {{ cur_version }}
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Versions</dt>
+      {% for slug, url in all_versions %}
+        <dd><a href="{{ url }}">{{ slug }}</a></dd>
+      {% endfor %}
+    </dl>
+    <dl>
+      <dt>Downloads</dt>
+      {% for type, url in downloads %}
+        <dd><a href="{{ url }}">{{ type }}</a></dd>
+      {% endfor %}
+    </dl>
+    <hr/>
+    <dl>
+      <dt>External links</dt>
+        <dd>
+          <a href="https://www.micropython.org">micropython.org</a>
+        </dd>
+        <dd>
+          <a href="https://github.com/micropython/micropython">GitHub</a>
+        </dd>
+    </dl>
+  </div>
+</div>

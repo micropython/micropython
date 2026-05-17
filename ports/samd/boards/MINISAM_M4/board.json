@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "External Flash",
+        "RGB LED",
+        "USB"
+    ],
+    "images": [
+        "mini_sam_m4.jpg"
+    ],
+    "mcu": "samd51",
+    "product": "Mini SAM M4",
+    "thumbnail": "",
+    "url": "https://minifigboards.com/products/mini-sam-m4",
+    "vendor": "MiniFig Boards"
+}

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "pybstick26_f411.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "GARATRONIC_PYBSTICK26_F411",
+    "thumbnail": "",
+    "url": "https://shop.mchobby.be/product.php?id_product=1844",
+    "vendor": "McHobby"
+}

@@ -1,0 +1,31 @@
+{% extends "!layout.html" %}
+{% set css_files = css_files + ["_static/customstyle.css"] %}
+
+{# we change the master_doc variable so that links to the index
+   page are to index.html instead of <port>_index.html #}
+{% set master_doc = "index" %}
+
+{% block document %}
+  {% if is_release %}
+    <div class="wy-alert wy-alert-danger">
+      <p>
+        This is the {{ release }} version of the MicroPython
+        documentation. The <a href="/en/latest/{{ pagename }}.html">latest
+        development version</a> of this page may be more current.
+      </p>
+    </div>
+  {% else %}
+    <div class="wy-alert wy-alert-danger">
+      <p>
+        This is the documentation for the latest development branch of
+        MicroPython and may refer to features that are not available in released
+        versions.
+      </p>
+      <p>
+        If you are looking for the documentation for a specific release, use
+        the drop-down menu on the left and select the desired version.
+      </p>
+    </div>
+  {% endif %}
+  {{ super() }}
+{% endblock %}

@@ -1,0 +1,19 @@
+b'ping'
+b'\x81\x04pong'
+b'pingPi'
+b'ngPI'
+b'NG'
+b''
+b'pingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingping'
+b'\x81~\x00\x80pongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpong'
+ioctl: EIO: True
+b'\x00\x00\x00\x00    '
+b'\x00\x00\x00\x00    '
+b''
+b'\x88\x00'
+b'ping'
+b'pong'
+0
+1
+2
+ioctl: EINVAL: True

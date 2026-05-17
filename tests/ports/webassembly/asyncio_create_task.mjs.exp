@@ -1,0 +1,14 @@
+start
+t1 False False
+end
+task start 1
+task start 2
+task await 1 123
+task await 1 123
+task end 1
+setTimeout resolved
+task await 2 456
+task await 2 456
+task end 2
+restart
+t1 True True

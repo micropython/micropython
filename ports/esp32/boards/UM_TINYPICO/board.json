@@ -1,0 +1,29 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "TinyPICO Compatible"
+    ],
+    "images": [
+        "unexpectedmaker_tinypico.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "TinyPICO",
+    "thumbnail": "",
+    "url": "https://www.tinypico.com/",
+    "vendor": "Unexpected Maker"
+}

@@ -1,0 +1,5 @@
+This directory contains network tests which require Internet connection.
+Note that these tests are not run as part of the main testsuite and need
+to be run separately (from the main test/ directory):
+
+    ./run-tests.py net_inet/*.py

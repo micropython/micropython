@@ -1,0 +1,23 @@
+name: Check examples
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'examples/**'
+      - 'ports/unix/**'
+      - 'py/**'
+      - 'shared/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  embedding:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Build
+      run: tools/ci.sh embedding_build

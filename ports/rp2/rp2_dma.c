@@ -1,0 +1,701 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Nicko van Someren
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include <string.h>
+
+#include "py/runtime.h"
+#include "py/mperrno.h"
+#include "py/objarray.h"
+#include "shared/runtime/mpirq.h"
+#include "modrp2.h"
+
+#include "hardware/irq.h"
+#include "hardware/dma.h"
+#include "hardware/clocks.h"
+
+#define CHANNEL_CLOSED 0xff
+
+typedef struct _rp2_dma_ctrl_obj_t {
+    mp_obj_base_t base;
+    uint32_t value;
+} rp2_dma_config_obj_t;
+
+typedef struct _rp2_dma_obj_t {
+    mp_obj_base_t base;
+    uint8_t channel;
+    uint8_t irq_flag : 1;
+    uint8_t irq_trigger : 1;
+} rp2_dma_obj_t;
+
+typedef struct _rp2_dma_ctrl_field_t {
+    qstr_short_t name;
+    uint16_t shift : 5;
+    uint16_t length : 3;
+    uint16_t read_only : 1;
+    // 7 bits available here.
+} rp2_dma_ctrl_field_t;
+
+typedef struct _rp2_dma_timer_obj_t {
+    mp_obj_base_t base;
+    uint8_t timer_id;
+    bool closed;
+} rp2_dma_timer_obj_t;
+
+
+#define DMA_TIMER_MAX_TERMS 65536
+static inline void rp2_timer_find_best_ratio(uint32_t p, uint32_t q, uint32_t *x, uint32_t *y) {
+    // Find the values x and y such that x/y is the closest fraction to p/q for which
+    // both terms are less than DMA_TIMER_MAX_TERMS.
+
+    // This implementation computes the continued fraction and then checks if the
+    // best semi-convergent is obviously better (i.e. > a/2)
+
+    uint32_t h_curr = 1, k_curr = 0;
+    uint32_t h_prev = 0, k_prev = 1;
+
+    while (q != 0) {
+        uint32_t a = p / q;
+        uint32_t h_next = a * h_curr + h_prev;
+        uint32_t k_next = a * k_curr + k_prev;
+
+        if (h_next >= DMA_TIMER_MAX_TERMS || k_next >= DMA_TIMER_MAX_TERMS) {
+            // The next convergent would overflow. Check if there is obviously a better semi-convergent.
+            // If there is a value of n that is >= a/2 then it will always be better than the current ratio.
+            uint32_t n = DMA_TIMER_MAX_TERMS;
+            if (h_curr) {
+                n = (DMA_TIMER_MAX_TERMS - 1 - h_prev) / h_curr;
+            }
+            if (k_curr) {
+                uint32_t nk = (DMA_TIMER_MAX_TERMS - 1 - k_prev) / k_curr;
+                if (nk < n) {
+                    n = nk;
+                }
+            }
+
+            if (n != DMA_TIMER_MAX_TERMS && n > 0 && n >= (a + 1) / 2) {
+                *x = n * h_curr + h_prev;
+                *y = n * k_curr + k_prev;
+                return;
+            }
+            // We didn't find a better n, so break out of the loop
+            break;
+        }
+        uint32_t r = p % q;
+        p = q;
+        q = r;
+        h_prev = h_curr;
+        k_prev = k_curr;
+        h_curr = h_next;
+        k_curr = k_next;
+    }
+
+    *x = h_curr;
+    *y = k_curr;
+}
+
+static void rp2_dma_timer_set_freq(rp2_dma_timer_obj_t *self, mp_obj_t f_obj) {
+    const mp_int_t freq = mp_obj_get_int(f_obj);
+    uint32_t sys_clk_hz = clock_get_hz(clk_sys);
+
+    // Value needs to be between 1 and 1/65535 times the sysclk frequency
+    if (freq > sys_clk_hz || (sys_clk_hz / 65535) > freq) {
+        mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
+    }
+    uint32_t x, y;
+    rp2_timer_find_best_ratio(freq, sys_clk_hz, &x, &y);
+    dma_timer_set_fraction(self->timer_id, (uint16_t)x, (uint16_t)y);
+}
+
+static void rp2_dma_timer_set_ratio(rp2_dma_timer_obj_t *self, mp_obj_t o) {
+    // Value needs to be a 2-tuple
+    mp_obj_t *num_dom;
+    mp_obj_get_array_fixed_n(o, 2, &num_dom);
+
+    const mp_int_t numerator = mp_obj_get_int(num_dom[0]);
+    const mp_int_t denominator = mp_obj_get_int(num_dom[1]);
+    if (numerator < 1 || numerator > 65535 || denominator < 1 || denominator > 65535 || numerator > denominator) {
+        mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
+    }
+    dma_timer_set_fraction(self->timer_id, (uint16_t)numerator, (uint16_t)denominator);
+}
+
+static mp_obj_t rp2_dma_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    enum { ARG_id, ARG_freq, ARG_ratio };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_,     MP_ARG_OBJ,                  {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_freq,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_ratio, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+    mp_arg_val_t parsed[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed);
+
+    int dma_timer_id;
+
+    if (parsed[ARG_id].u_obj != MP_OBJ_NULL) {
+        dma_timer_id = mp_obj_get_int(parsed[ARG_id].u_obj);
+        if (dma_timer_id < 0 || dma_timer_id >= 4) {
+            mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
+        }
+        if (dma_timer_is_claimed(dma_timer_id)) {
+            mp_raise_OSError(MP_EBUSY);
+        }
+        dma_timer_claim(dma_timer_id);
+    } else {
+        dma_timer_id = dma_claim_unused_timer(false);
+        if (dma_timer_id < 0) {
+            mp_raise_OSError(MP_EBUSY);
+        }
+    }
+
+    rp2_dma_timer_obj_t *self = mp_obj_malloc_with_finaliser(rp2_dma_timer_obj_t, &rp2_dma_timer_type);
+    self->timer_id = dma_timer_id;
+    self->closed = false;
+
+    // If you try to set both, "ratio" wins over "freq"
+    if (parsed[ARG_ratio].u_obj != MP_OBJ_NULL) {
+        rp2_dma_timer_set_ratio(self, parsed[ARG_ratio].u_obj);
+    } else if (parsed[ARG_freq].u_obj != MP_OBJ_NULL) {
+        rp2_dma_timer_set_freq(self, parsed[ARG_freq].u_obj);
+    }
+
+    // Return the DMA object.
+    return MP_OBJ_FROM_PTR(self);
+}
+
+static void rp2_dma_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    rp2_dma_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "%q(%u)", MP_QSTR_DMATimer, self->timer_id);
+}
+
+static void rp2_dma_timer_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
+    rp2_dma_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load attribute
+        if (attr_in == MP_QSTR_freq) {
+            uint32_t sys_clk_hz = clock_get_hz(clk_sys);
+            uint32_t reg_value = dma_hw->timer[self->timer_id];
+            uint32_t num = (reg_value >> DMA_TIMER0_X_LSB) & 0xffff;
+            uint32_t dom = (reg_value >> DMA_TIMER0_Y_LSB) & 0xffff;
+            uint64_t fx = ((uint64_t)sys_clk_hz) * ((uint64_t)num);
+            fx /= dom;
+            dest[0] = mp_obj_new_int_from_uint((uint)fx);
+        } else if (attr_in == MP_QSTR_ratio) {
+            uint32_t reg_value = dma_hw->timer[self->timer_id];
+            mp_obj_t num_dom[2];
+            num_dom[0] = mp_obj_new_int_from_uint((reg_value >> DMA_TIMER0_X_LSB) & 0xffff);
+            num_dom[1] = mp_obj_new_int_from_uint((reg_value >> DMA_TIMER0_Y_LSB) & 0xffff);
+
+            dest[0] = mp_obj_new_tuple(2, num_dom);
+        } else {
+            // Continue attribute search in locals dict.
+            dest[1] = MP_OBJ_SENTINEL;
+        }
+    } else {
+        // Set or delete attribute
+        if (dest[1] == MP_OBJ_NULL) {
+            // We don't support deleting attributes.
+            return;
+        }
+
+        if (attr_in == MP_QSTR_freq) {
+            rp2_dma_timer_set_freq(self, dest[1]);
+            dest[0] = MP_OBJ_NULL; // indicate success
+        } else if (attr_in == MP_QSTR_ratio) {
+            rp2_dma_timer_set_ratio(self, dest[1]);
+            dest[0] = MP_OBJ_NULL; // indicate success
+        }
+    }
+}
+
+static mp_obj_t rp2_dma_timer_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+    rp2_dma_timer_obj_t *self = MP_OBJ_TO_PTR(o_in);
+    if (op == MP_UNARY_OP_INT_MAYBE) {
+        // The value of int(timer) is the DMA pacing request index (treq_sel)
+        return mp_obj_new_int_from_uint((mp_uint_t)dma_get_timer_dreq(self->timer_id));
+    }
+    return MP_OBJ_NULL;
+}
+
+static mp_obj_t rp2_dma_timer_close(mp_obj_t self_in) {
+    rp2_dma_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (!self->closed) {
+        dma_timer_unclaim(self->timer_id);
+        self->closed = true;
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(rp2_dma_timer_close_obj, rp2_dma_timer_close);
+
+static const mp_rom_map_elem_t rp2_dma_timer_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&rp2_dma_timer_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&rp2_dma_timer_close_obj) },
+};
+static MP_DEFINE_CONST_DICT(rp2_dma_timer_locals_dict, rp2_dma_timer_locals_dict_table);
+
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2_dma_timer_type,
+    MP_QSTR_DMATimer,
+    MP_TYPE_FLAG_NONE,
+    make_new, rp2_dma_timer_make_new,
+    print, rp2_dma_timer_print,
+    attr, rp2_dma_timer_attr,
+    locals_dict, &rp2_dma_timer_locals_dict,
+    unary_op, rp2_dma_timer_unary_op
+    );
+
+static const rp2_dma_ctrl_field_t rp2_dma_ctrl_fields_table[] = {
+    { MP_QSTR_enable, DMA_CH0_CTRL_TRIG_EN_LSB, 1, 0 },
+    { MP_QSTR_high_pri, DMA_CH0_CTRL_TRIG_HIGH_PRIORITY_LSB, 1, 0 },
+    { MP_QSTR_size, DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB, 2, 0 },
+    { MP_QSTR_inc_read,     DMA_CH0_CTRL_TRIG_INCR_READ_LSB, 1, 0 },
+    #if PICO_RP2350
+    { MP_QSTR_inc_read_rev,  DMA_CH0_CTRL_TRIG_INCR_READ_REV_LSB, 1, 0 },
+    #endif
+    { MP_QSTR_inc_write,    DMA_CH0_CTRL_TRIG_INCR_WRITE_LSB, 1, 0 },
+    #if PICO_RP2350
+    { MP_QSTR_inc_write_rev, DMA_CH0_CTRL_TRIG_INCR_WRITE_REV_LSB, 1, 0 },
+    #endif
+    { MP_QSTR_ring_size,    DMA_CH0_CTRL_TRIG_RING_SIZE_LSB, 4, 0 },
+    { MP_QSTR_ring_sel,     DMA_CH0_CTRL_TRIG_RING_SEL_LSB, 1, 0 },
+    { MP_QSTR_chain_to,     DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB, 4, 0 },
+    { MP_QSTR_treq_sel,     DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB, 6, 0 },
+    { MP_QSTR_irq_quiet,    DMA_CH0_CTRL_TRIG_IRQ_QUIET_LSB, 1, 0 },
+    { MP_QSTR_bswap,        DMA_CH0_CTRL_TRIG_BSWAP_LSB, 1, 0 },
+    { MP_QSTR_sniff_en,     DMA_CH0_CTRL_TRIG_SNIFF_EN_LSB, 1, 0 },
+    { MP_QSTR_busy,         DMA_CH0_CTRL_TRIG_BUSY_LSB, 1, 1 },
+    { MP_QSTR_write_err,    DMA_CH0_CTRL_TRIG_WRITE_ERROR_LSB, 1, 0 },
+    { MP_QSTR_read_err,     DMA_CH0_CTRL_TRIG_READ_ERROR_LSB, 1, 0 },
+    { MP_QSTR_ahb_err,      DMA_CH0_CTRL_TRIG_AHB_ERROR_LSB, 1, 1 },
+};
+
+static const uint32_t rp2_dma_ctrl_field_count = MP_ARRAY_SIZE(rp2_dma_ctrl_fields_table);
+
+#define REG_TYPE_COUNT       0  // Accept just integers
+#define REG_TYPE_CONF        1  // Accept integers or ctrl values
+#define REG_TYPE_ADDR_READ   2  // Accept integers, buffers or objects that can be read from
+#define REG_TYPE_ADDR_WRITE  3  // Accept integers, buffers or objects that can be written to
+
+static uint32_t rp2_dma_register_value_from_obj(mp_obj_t o, int reg_type) {
+    if (reg_type == REG_TYPE_ADDR_READ || reg_type == REG_TYPE_ADDR_WRITE) {
+        mp_buffer_info_t buf_info;
+        mp_uint_t flags = (reg_type == REG_TYPE_ADDR_READ) ? MP_BUFFER_READ : MP_BUFFER_WRITE;
+        if (mp_get_buffer(o, &buf_info, flags)) {
+            return (uint32_t)buf_info.buf;
+        }
+    }
+
+    return mp_obj_get_int_truncated(o);
+}
+
+static void rp2_dma_irq_handler(void) {
+    // Main IRQ handler
+    uint32_t irq_bits = dma_hw->ints0;
+
+    for (int i = 0; i < NUM_DMA_CHANNELS; i++) {
+        if (irq_bits & (1u << i)) {
+            mp_irq_obj_t *handler = MP_STATE_PORT(rp2_dma_irq_obj[i]);
+            if (handler) {
+                // An rp2.DMA IRQ handler is registered for this channel, so handle it.
+                dma_channel_acknowledge_irq0(i);
+                rp2_dma_obj_t *self = (rp2_dma_obj_t *)handler->parent;
+                self->irq_flag = 1;
+                mp_irq_handler(handler);
+            }
+        }
+    }
+}
+
+static mp_uint_t rp2_dma_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    irq_set_enabled(DMA_IRQ_0, false);
+    self->irq_flag = 0;
+    dma_channel_set_irq0_enabled(self->channel, (new_trigger != 0));
+    irq_set_enabled(DMA_IRQ_0, true);
+    return 0;
+}
+
+static mp_uint_t rp2_dma_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->irq_flag;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return (dma_hw->ints0 & (1u << self->channel)) != 0;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t rp2_dma_irq_methods = {
+    .trigger = rp2_dma_irq_trigger,
+    .info = rp2_dma_irq_info,
+};
+
+static mp_obj_t rp2_dma_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    int dma_channel = dma_claim_unused_channel(false);
+    if (dma_channel < 0) {
+        mp_raise_OSError(MP_EBUSY);
+    }
+
+    rp2_dma_obj_t *self = mp_obj_malloc_with_finaliser(rp2_dma_obj_t, &rp2_dma_type);
+    self->channel = dma_channel;
+
+    // Return the DMA object.
+    return MP_OBJ_FROM_PTR(self);
+}
+
+static void rp2_dma_error_if_closed(rp2_dma_obj_t const *self) {
+    if (self->channel == CHANNEL_CLOSED) {
+        mp_raise_ValueError(MP_ERROR_TEXT("channel closed"));
+    }
+}
+
+static void rp2_dma_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load attribute
+        dma_channel_hw_t *reg_block = dma_channel_hw_addr(self->channel);
+        if (attr_in == MP_QSTR_read) {
+            rp2_dma_error_if_closed(self);
+            dest[0] = mp_obj_new_int_from_uint((mp_uint_t)reg_block->read_addr);
+        } else if (attr_in == MP_QSTR_write) {
+            rp2_dma_error_if_closed(self);
+            dest[0] = mp_obj_new_int_from_uint((mp_uint_t)reg_block->write_addr);
+        } else if (attr_in == MP_QSTR_count) {
+            rp2_dma_error_if_closed(self);
+            dest[0] = mp_obj_new_int_from_uint((mp_uint_t)reg_block->transfer_count);
+        } else if (attr_in == MP_QSTR_ctrl) {
+            rp2_dma_error_if_closed(self);
+            dest[0] = mp_obj_new_int_from_uint((mp_uint_t)reg_block->al1_ctrl);
+        } else if (attr_in == MP_QSTR_channel) {
+            dest[0] = mp_obj_new_int_from_uint(self->channel);
+        } else if (attr_in == MP_QSTR_registers) {
+            mp_obj_array_t *reg_view = m_new_obj(mp_obj_array_t);
+            mp_obj_memoryview_init(reg_view, 'I' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, 16, dma_channel_hw_addr(self->channel));
+            dest[0] = reg_view;
+        } else {
+            // Continue attribute search in locals dict.
+            dest[1] = MP_OBJ_SENTINEL;
+        }
+    } else {
+        // Set or delete attribute
+        if (dest[1] == MP_OBJ_NULL) {
+            // We don't support deleting attributes.
+            return;
+        }
+
+        rp2_dma_error_if_closed(self);
+
+        if (attr_in == MP_QSTR_read) {
+            uint32_t value = rp2_dma_register_value_from_obj(dest[1], REG_TYPE_ADDR_READ);
+            dma_channel_set_read_addr(self->channel, (volatile void *)value, false);
+            dest[0] = MP_OBJ_NULL; // indicate success
+        } else if (attr_in == MP_QSTR_write) {
+            uint32_t value = rp2_dma_register_value_from_obj(dest[1], REG_TYPE_ADDR_WRITE);
+            dma_channel_set_write_addr(self->channel, (volatile void *)value, false);
+            dest[0] = MP_OBJ_NULL; // indicate success
+        } else if (attr_in == MP_QSTR_count) {
+            uint32_t value = rp2_dma_register_value_from_obj(dest[1], REG_TYPE_COUNT);
+            dma_channel_set_trans_count(self->channel, value, false);
+            dest[0] = MP_OBJ_NULL; // indicate success
+        } else if (attr_in == MP_QSTR_ctrl) {
+            uint32_t value = rp2_dma_register_value_from_obj(dest[1], REG_TYPE_CONF);
+            dma_channel_set_config(self->channel, (dma_channel_config *)&value, false);
+            dest[0] = MP_OBJ_NULL; // indicate success
+        }
+    }
+}
+
+static void rp2_dma_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "DMA(%u)", self->channel);
+}
+
+// DMA.config(*, read, write, count, ctrl, trigger)
+static mp_obj_t rp2_dma_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(*pos_args);
+
+    rp2_dma_error_if_closed(self);
+
+    enum {
+        ARG_read,
+        ARG_write,
+        ARG_count,
+        ARG_ctrl,
+        ARG_trigger,
+    };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_read,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_write,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_count,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_ctrl,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_trigger,      MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    // Don't include self in arg parsing
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    // We only do anything if there was at least one argument
+    if (kw_args->used) {
+        bool trigger = args[ARG_trigger].u_bool;
+        mp_int_t value_count = trigger ? kw_args->used - 1 : kw_args->used;
+        if (trigger && (value_count == 0)) {
+            // Only a "true" trigger was passed; just start a transfer
+            dma_channel_start(self->channel);
+        } else {
+            if (args[ARG_read].u_obj != MP_OBJ_NULL) {
+                uint32_t value = rp2_dma_register_value_from_obj(args[ARG_read].u_obj, REG_TYPE_ADDR_READ);
+                value_count--;
+                dma_channel_set_read_addr(self->channel, (volatile void *)value, trigger && (value_count == 0));
+            }
+            if (args[ARG_write].u_obj != MP_OBJ_NULL) {
+                uint32_t value = rp2_dma_register_value_from_obj(args[ARG_write].u_obj, REG_TYPE_ADDR_WRITE);
+                value_count--;
+                dma_channel_set_write_addr(self->channel, (volatile void *)value, trigger && (value_count == 0));
+            }
+            if (args[ARG_count].u_obj != MP_OBJ_NULL) {
+                uint32_t value = rp2_dma_register_value_from_obj(args[ARG_count].u_obj, REG_TYPE_COUNT);
+                value_count--;
+                dma_channel_set_trans_count(self->channel, value, trigger && (value_count == 0));
+            }
+            if (args[ARG_ctrl].u_obj != MP_OBJ_NULL) {
+                uint32_t value = rp2_dma_register_value_from_obj(args[ARG_ctrl].u_obj, REG_TYPE_CONF);
+                value_count--;
+                dma_channel_set_config(self->channel, (dma_channel_config *)&value, trigger && (value_count == 0));
+            }
+        }
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(rp2_dma_config_obj, 1, rp2_dma_config);
+
+// DMA.active([value])
+static mp_obj_t rp2_dma_active(size_t n_args, const mp_obj_t *args) {
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    rp2_dma_error_if_closed(self);
+
+    if (n_args > 1) {
+        if (mp_obj_is_true(args[1])) {
+            dma_channel_start(self->channel);
+        } else {
+            dma_channel_abort(self->channel);
+        }
+    }
+
+    uint32_t busy = dma_channel_is_busy(self->channel);
+    return mp_obj_new_bool((mp_int_t)busy);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_dma_active_obj, 1, 2, rp2_dma_active);
+
+// Default is quiet, unpaced, read and write incrementing, word transfers, enabled
+#define DEFAULT_DMA_CONFIG (1 << DMA_CH0_CTRL_TRIG_IRQ_QUIET_LSB) | \
+    (DMA_CH0_CTRL_TRIG_TREQ_SEL_VALUE_PERMANENT << DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB) | \
+    (1 << DMA_CH0_CTRL_TRIG_INCR_WRITE_LSB) | \
+    (1 << DMA_CH0_CTRL_TRIG_INCR_READ_LSB) | \
+    (2 << DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB) | \
+    (1 << DMA_CH0_CTRL_TRIG_EN_LSB)
+
+// DMA.pack_ctrl(...)
+static mp_obj_t rp2_dma_pack_ctrl(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // Pack keyword settings into a control register value, using either the default for this
+    // DMA channel or the provided defaults
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_uint_t value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
+
+    if (n_pos_args > 1) {
+        mp_raise_TypeError(MP_ERROR_TEXT("pack_ctrl only takes keyword arguments"));
+    }
+    mp_uint_t remaining = kw_args->used;
+
+    mp_map_elem_t *default_entry = mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_default), MP_MAP_LOOKUP);
+    if (default_entry) {
+        remaining--;
+        value = mp_obj_get_int_truncated(default_entry->value);
+    }
+
+    for (mp_uint_t i = 0; i < rp2_dma_ctrl_field_count; i++) {
+        mp_map_elem_t *field_entry = mp_map_lookup(
+            kw_args,
+            MP_OBJ_NEW_QSTR(rp2_dma_ctrl_fields_table[i].name),
+            MP_MAP_LOOKUP
+            );
+        if (field_entry) {
+            remaining--;
+            // Silently ignore read-only fields, to allow the passing of a modified unpack_ctrl() results
+            if (!rp2_dma_ctrl_fields_table[i].read_only) {
+                mp_uint_t field_value = mp_obj_get_int_truncated(field_entry->value);
+                mp_uint_t mask = ((1 << rp2_dma_ctrl_fields_table[i].length) - 1);
+                mp_uint_t masked_value = field_value & mask;
+                if (field_value != masked_value) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("bad field value"));
+                }
+                value &= ~(mask << rp2_dma_ctrl_fields_table[i].shift);
+                value |= masked_value << rp2_dma_ctrl_fields_table[i].shift;
+            }
+        }
+    }
+
+    if (remaining) {
+        mp_raise_TypeError(NULL);
+    }
+
+    return mp_obj_new_int_from_uint(value);
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(rp2_dma_pack_ctrl_obj, 1, rp2_dma_pack_ctrl);
+
+// DMA.unpack_ctrl(value)
+static mp_obj_t rp2_dma_unpack_ctrl(mp_obj_t value_obj) {
+    // Return a dict representing the unpacked fields of a control register value
+    mp_obj_t result_dict[rp2_dma_ctrl_field_count * 2];
+
+    mp_uint_t value = mp_obj_get_int_truncated(value_obj);
+
+    for (mp_uint_t i = 0; i < rp2_dma_ctrl_field_count; i++) {
+        result_dict[i * 2] = MP_OBJ_NEW_QSTR(rp2_dma_ctrl_fields_table[i].name);
+        mp_uint_t field_value =
+            (value >> rp2_dma_ctrl_fields_table[i].shift) & ((1 << rp2_dma_ctrl_fields_table[i].length) - 1);
+        result_dict[i * 2 + 1] = MP_OBJ_NEW_SMALL_INT(field_value);
+    }
+
+    return mp_obj_dict_make_new(&mp_type_dict, 0, rp2_dma_ctrl_field_count, result_dict);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(rp2_dma_unpack_ctrl_fun_obj, rp2_dma_unpack_ctrl);
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(rp2_dma_unpack_ctrl_obj, MP_ROM_PTR(&rp2_dma_unpack_ctrl_fun_obj));
+
+static mp_obj_t rp2_dma_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_hard };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    // Parse the arguments.
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // Get the IRQ object.
+    mp_irq_obj_t *irq = MP_STATE_PORT(rp2_dma_irq_obj[self->channel]);
+
+    // Allocate the IRQ object if it doesn't already exist.
+    if (irq == NULL) {
+        irq = mp_irq_new(&rp2_dma_irq_methods, MP_OBJ_FROM_PTR(self));
+        MP_STATE_PORT(rp2_dma_irq_obj[self->channel]) = irq;
+
+        // Clear any existing IRQs on this DMA channel, they are not for us.
+        dma_channel_acknowledge_irq0(self->channel);
+    }
+
+    if (n_args > 1 || kw_args->used != 0) {
+        // Disable all IRQs while data is updated.
+        irq_set_enabled(DMA_IRQ_0, false);
+
+        // Update IRQ data.
+        irq->handler = args[ARG_handler].u_obj;
+        irq->ishard = args[ARG_hard].u_bool;
+        self->irq_flag = 0;
+
+        // Enable IRQ if a handler is given.
+        bool enable = (args[ARG_handler].u_obj != mp_const_none);
+        dma_channel_set_irq0_enabled(self->channel, enable);
+
+        irq_set_enabled(DMA_IRQ_0, true);
+    }
+
+    return MP_OBJ_FROM_PTR(irq);
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(rp2_dma_irq_obj, 1, rp2_dma_irq);
+
+// DMA.close()
+static mp_obj_t rp2_dma_close(mp_obj_t self_in) {
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint8_t channel = self->channel;
+
+    if (channel != CHANNEL_CLOSED) {
+        // Disable channel IRQ
+        dma_channel_set_irq0_enabled(channel, false);
+
+        // Reset this channel's registers to their default values (zeros).
+        dma_channel_config config = { .ctrl = 0 };
+        dma_channel_configure(channel, &config, NULL, NULL, 0, false);
+
+        // Abort this channel. Must be done after clearing EN bit in control
+        // register due to errata RP2350-E5.
+        dma_channel_abort(channel);
+
+        // Clean up interrupt handler to ensure garbage collection
+        mp_irq_obj_t *irq = MP_STATE_PORT(rp2_dma_irq_obj[channel]);
+        MP_STATE_PORT(rp2_dma_irq_obj[channel]) = MP_OBJ_NULL;
+        if (irq) {
+            irq->parent = MP_OBJ_NULL;
+            irq->handler = MP_OBJ_NULL;
+        }
+        dma_channel_unclaim(channel);
+        self->channel = CHANNEL_CLOSED;
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(rp2_dma_close_obj, rp2_dma_close);
+
+static const mp_rom_map_elem_t rp2_dma_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&rp2_dma_config_obj) },
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&rp2_dma_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&rp2_dma_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&rp2_dma_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&rp2_dma_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pack_ctrl), MP_ROM_PTR(&rp2_dma_pack_ctrl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unpack_ctrl), MP_ROM_PTR(&rp2_dma_unpack_ctrl_obj) },
+};
+static MP_DEFINE_CONST_DICT(rp2_dma_locals_dict, rp2_dma_locals_dict_table);
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2_dma_type,
+    MP_QSTR_DMA,
+    MP_TYPE_FLAG_NONE,
+    make_new, rp2_dma_make_new,
+    print, rp2_dma_print,
+    attr, rp2_dma_attr,
+    locals_dict, &rp2_dma_locals_dict
+    );
+
+void rp2_dma_init(void) {
+    // Set up interrupts.
+    memset(MP_STATE_PORT(rp2_dma_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_dma_irq_obj)));
+    irq_add_shared_handler(DMA_IRQ_0, rp2_dma_irq_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
+}
+
+void rp2_dma_deinit(void) {
+    // Disable and remove our interrupt handler.
+    irq_set_enabled(DMA_IRQ_0, false);
+    irq_remove_handler(DMA_IRQ_0, rp2_dma_irq_handler);
+}
+
+MP_REGISTER_ROOT_POINTER(void *rp2_dma_irq_obj[NUM_DMA_CHANNELS]);

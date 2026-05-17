@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "RGB LED",
+        "USB"
+    ],
+    "images": [
+        "pybstick-rp2040-26-broches-micropython-c.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040 PYBStick",
+    "thumbnail": "",
+    "url": "https://shop.mchobby.be/product.php?id_product=2331",
+    "vendor": "McHobby"
+}

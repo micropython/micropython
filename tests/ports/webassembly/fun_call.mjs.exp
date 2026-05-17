@@ -1,0 +1,27 @@
+undefined undefined undefined undefined undefined
+1 undefined undefined undefined undefined
+1 2 undefined undefined undefined
+1 2 3 undefined undefined
+1 2 3 4 undefined
+1 2 3 4 5
+1 2 3 4 5
+[]
+[ { a: 1 } ]
+[ { a: 1, b: 2 } ]
+[ { a: 1, b: 2, c: 3 } ]
+[ { a: 1, b: 2, c: 3, d: 4 } ]
+[ { a: 1, b: 2, c: 3, d: 4, e: 5 } ]
+[ 1 ]
+[ 1, { b: 2 } ]
+[ 1, { b: 2, c: 3 } ]
+[ 1, { b: 2, c: 3, d: 4 } ]
+[ 1, { b: 2, c: 3, d: 4, e: 5 } ]
+[ 1, 2 ]
+[ 1, 2, { c: 3 } ]
+[ 1, 2, { c: 3, d: 4 } ]
+[ 1, 2, { c: 3, d: 4, e: 5 } ]
+[ 1, 2, 3 ]
+[ 1, 2, 3, { d: 4 } ]
+[ 1, 2, 3, { d: 4, e: 5 } ]
+[ 1, 2, 3, 4 ]
+[ 1, 2, 3, 4, { e: 5 } ]

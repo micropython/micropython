@@ -1,0 +1,32 @@
+['main.py', 'sys', 'lib', 'cert', 'boot.py']
+[]
+/flash/test
+/flash
+/flash/test
+True
+True
+['newtest.txt']
+['main.py', 'sys', 'lib', 'cert', 'boot.py', 'newtest']
+/sd/test
+/sd
+/sd/test
+True
+True
+True
+True
+['flash', 'sd']
+['flash']
+['flash', 'sd']
+[]
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+['flash', 'sd']

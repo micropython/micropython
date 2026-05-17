@@ -1,0 +1,65 @@
+--- instance0 ---
+gap_advertise
+_IRQ_CENTRAL_CONNECT
+gattc_exchange_mtu
+_IRQ_MTU_EXCHANGED 256
+gatts_notify
+_IRQ_GATTS_WRITE
+gatts_read
+characteristic len: 253 a
+_IRQ_CENTRAL_DISCONNECT
+gap_advertise
+gap_advertise
+_IRQ_CENTRAL_CONNECT
+gattc_exchange_mtu
+_IRQ_MTU_EXCHANGED 190
+gatts_notify
+_IRQ_GATTS_WRITE
+gatts_read
+characteristic len: 187 b
+_IRQ_CENTRAL_DISCONNECT
+gap_advertise
+gap_advertise
+_IRQ_CENTRAL_CONNECT
+gattc_exchange_mtu
+_IRQ_MTU_EXCHANGED 290
+gatts_notify
+_IRQ_GATTS_WRITE
+gatts_read
+characteristic len: 287 c
+_IRQ_CENTRAL_DISCONNECT
+gap_advertise
+--- instance1 ---
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+_IRQ_MTU_EXCHANGED 256
+gattc_discover_characteristics
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID('00000000-1111-2222-3333-444444444444')
+_IRQ_GATTC_CHARACTERISTIC_DONE
+_IRQ_GATTC_NOTIFY 64 0
+gattc_write
+_IRQ_GATTC_WRITE_DONE
+gap_disconnect: True
+_IRQ_PERIPHERAL_DISCONNECT
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+_IRQ_MTU_EXCHANGED 190
+gattc_discover_characteristics
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID('00000000-1111-2222-3333-444444444444')
+_IRQ_GATTC_CHARACTERISTIC_DONE
+_IRQ_GATTC_NOTIFY 64 1
+gattc_write
+_IRQ_GATTC_WRITE_DONE
+gap_disconnect: True
+_IRQ_PERIPHERAL_DISCONNECT
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+_IRQ_MTU_EXCHANGED 290
+gattc_discover_characteristics
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID('00000000-1111-2222-3333-444444444444')
+_IRQ_GATTC_CHARACTERISTIC_DONE
+_IRQ_GATTC_NOTIFY 64 2
+gattc_write
+_IRQ_GATTC_WRITE_DONE
+gap_disconnect: True
+_IRQ_PERIPHERAL_DISCONNECT

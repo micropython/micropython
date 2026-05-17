@@ -1,0 +1,17 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "USB"
+    ],
+    "images": [
+        "generic_board.jpg"
+    ],
+    "mcu": "samd21",
+    "vendor": "Microchip",
+    "url": "https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d",
+    "product": "Generic SAMD21J18",
+    "thumbnail": ""
+}

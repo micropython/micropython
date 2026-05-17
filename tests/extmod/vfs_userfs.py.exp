@@ -1,0 +1,39 @@
+open /data.txt r
+some data in a text file
+stat /usermod1
+stat /usermod1.py
+open /usermod1.py rb
+ioctl 11 0
+ioctl 4 0
+in usermod1
+stat /usermod2
+stat /usermod2.py
+open /usermod2.py rb
+ioctl 11 0
+ioctl 4 0
+in usermod2
+stat /usermod3
+stat /usermod3.py
+open /usermod3.py rb
+ioctl 11 0
+ioctl 4 0
+SyntaxError in usermod3
+stat /usermod4
+stat /usermod4.py
+stat /usermod4.mpy
+open /usermod4.mpy rb
+ioctl 11 0
+ioctl 4 0
+ValueError in usermod4
+stat /usermod5
+stat /usermod5.py
+open /usermod5.py rb
+ioctl 11 0
+ioctl 4 0
+in usermod5
+stat /usermod6
+stat /usermod6.py
+open /usermod6.py rb
+ioctl 11 0
+ioctl 4 0
+in usermod6

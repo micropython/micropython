@@ -1,0 +1,26 @@
+----------
+cancel started
+awaiting started
+cancel wait()
+Got canceled
+awaiting canceled
+waiting got cancelled
+----------
+cancel started
+awaiting started
+cancel wait()
+Got canceled
+awaiting canceled
+waiting got cancelled
+----------
+cancel started
+awaiting started
+cancel wait()
+Got canceled
+awaiting canceled
+----------
+cancel started
+awaiting started
+cancel wait()
+Got canceled
+awaiting canceled

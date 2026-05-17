@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB-C"
+    ],
+    "images": [
+        "weact_rp2040.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Studio RP2040",
+    "url": "https://github.com/WeActTC/WeActStudio.RP2040CoreBoard",
+    "variants": {
+        "FLASH_2M": "2 MiB Flash",
+        "FLASH_4M": "4 MiB Flash",
+        "FLASH_8M": "8 MiB Flash"
+    },
+    "vendor": "WeAct"
+}

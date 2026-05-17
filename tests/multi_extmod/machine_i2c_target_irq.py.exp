@@ -1,0 +1,15 @@
+--- instance0 ---
+controller iteration 0
+b'0123'
+controller iteration 1
+b'0123'
+done
+--- instance1 ---
+target iteration 0
+IRQ_ADDR_MATCH_WRITE
+bytearray(b'--0123--')
+IRQ_ADDR_MATCH_WRITE
+IRQ_ADDR_MATCH_READ
+target iteration 1
+bytearray(b'--0123--')
+done

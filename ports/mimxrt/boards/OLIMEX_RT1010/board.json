@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "deploy_olimex.md"
+    ],
+    "docs": "",
+    "features": [
+        "External Flash",
+        "USB",
+        "microSD"
+    ],
+    "images": [
+        "OLIMEX_RT1010Py.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "RT1010-Py",
+    "thumbnail": "",
+    "url": "https://www.olimex.com/Products/MicroPython/RT1010-Py",
+    "vendor": "Olimex"
+}

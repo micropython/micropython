@@ -1,0 +1,10 @@
+<module 'sys'> False
+<module 'micropython'> False
+<module 'sys'> False
+<module 'sys'> False
+os from filesystem
+<module 'os' from 'ext/os.py'> True / 1
+time from filesystem
+<module 'time' from 'ext/time.py'> True <function> 1
+<module 'os'> False False
+<module 'time'> False False

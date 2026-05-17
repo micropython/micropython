@@ -1,0 +1,4 @@
+cond false
+cond false
+["RuntimeError('bytecode overflow',)", "RuntimeError('bytecode overflow',)", 'ok', 'ok']
+[123]

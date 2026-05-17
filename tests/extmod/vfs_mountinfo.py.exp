@@ -1,0 +1,11 @@
+[]
+mount Filesystem(1)
+[(Filesystem(1), '/foo')]
+mount Filesystem(2)
+[(Filesystem(1), '/foo'), (Filesystem(2), '/bar/baz')]
+mount Filesystem(3)
+[(Filesystem(1), '/foo'), (Filesystem(2), '/bar/baz'), (Filesystem(3), '/bar')]
+umount Filesystem(2)
+[(Filesystem(1), '/foo'), (Filesystem(3), '/bar')]
+mount Filesystem(4)
+[(Filesystem(1), '/foo'), (Filesystem(3), '/bar'), (Filesystem(4), '/')]

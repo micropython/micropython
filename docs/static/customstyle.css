@@ -1,0 +1,10 @@
+/* custom CSS for MicroPython docs
+ */
+
+.admonition-difference-to-cpython {
+    border: 1px solid black;
+}
+
+.admonition-difference-to-cpython .admonition-title {
+    margin: 4px;
+}

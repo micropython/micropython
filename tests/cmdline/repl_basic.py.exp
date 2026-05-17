@@ -1,0 +1,10 @@
+MicroPython \.\+ version
+Type "help()" for more information.
+>>> # basic REPL tests
+>>> print(1)
+1
+>>> print(1)
+1
+>>> 2
+2
+>>> \$

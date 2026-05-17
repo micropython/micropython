@@ -1,0 +1,53 @@
+[build-system]
+requires = [
+    "hatchling",
+    "hatch-requirements-txt",
+    "hatch-vcs",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "mpremote"
+description = "Tool for interacting remotely with MicroPython devices"
+readme = "README.md"
+authors = [
+    {name = "Damien George", email = "damien@micropython.org"},
+]
+urls = {Homepage = "https://github.com/micropython/micropython"}
+keywords = [
+    "hardware",
+    "micropython",
+]
+license = {text = "MIT"}
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: System :: Hardware",
+]
+requires-python = ">=3.4"
+dynamic = ["dependencies", "version"]
+
+[project.scripts]
+mpremote = "mpremote.main:main"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
+
+# This will be PEP-440 normalised into either:
+# mpremote-X.Y.Z (on vX.Y.Z release tag)
+# mpremote-X.Y.Zrc0 (on vX.Y.Z-preview tag, i.e. first commit in the cycle)
+# mpremote-X.Y.Zrc0.postN+gHASH (N commits past vX.Y.Z-preview tag)
+# mpremote-X.Y.Zrc0.postN+gHASH.dDATE (N commits past vX.Y.Z-preview tag, dirty)
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "(?P<version>v(\\d+).(\\d+).(\\d+)(-preview)?)"
+raw-options = { root = "../..", version_scheme = "post-release" }
+
+[tool.hatch.build]
+packages = ["mpremote"]
+
+[tool.hatch.build.targets.sdist.force-include]
+"requirements.txt" = "requirements.txt"

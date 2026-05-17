@@ -1,0 +1,30 @@
+{
+    "deploy": [
+        "../deploy_flashmode.md",
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "TinyPICO Compatible"
+    ],
+    "images": [
+        "unexpectedmaker_tinys2.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "TinyS2",
+    "thumbnail": "",
+    "url": "https://unexpectedmaker.com/tinys2",
+    "vendor": "Unexpected Maker"
+}

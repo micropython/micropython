@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_h723zg.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "Nucleo H723ZG",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/nucleo-h723zg.html",
+    "vendor": "ST Microelectronics"
+}

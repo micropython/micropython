@@ -1,0 +1,18 @@
+{
+    "deploy": [
+        "../deploy_teensy.md"
+    ],
+    "docs": "",
+    "features": [
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "teensy40_front.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "Teensy 4.0",
+    "thumbnail": "",
+    "url": "https://www.pjrc.com/store/teensy40.html",
+    "vendor": "PJRC"
+}

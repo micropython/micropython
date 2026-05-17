@@ -1,0 +1,38 @@
+= TEST 1 ==========
+1
+<JsProxy 2>
+py 1
+<JsProxy 4>
+py 2
+2
+resolved 123
+3
+= TEST 2 ==========
+1
+<JsProxy 5>
+py 1
+<JsProxy 6>
+py 2
+2
+setTimeout resolved
+resolved 123
+3
+= TEST 3 ==========
+1
+py 1
+setTimeout resolved
+resolved value: 123
+py 2
+2 null
+= TEST 4 ==========
+1
+py 1
+setTimeout A resolved
+resolved value: 123
+py 2
+resolved value: 123
+py 3
+setTimeout B resolved
+resolved value: 456
+py 4
+2 null

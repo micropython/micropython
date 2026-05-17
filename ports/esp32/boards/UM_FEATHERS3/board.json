@@ -1,0 +1,30 @@
+{
+    "deploy": [
+        "../deploy_flashmode.md",
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
+        "Feather",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [],
+    "images": [
+        "unexpectedmaker_feathers3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "FeatherS3",
+    "thumbnail": "",
+    "url": "https://feathers3.io",
+    "vendor": "Unexpected Maker"
+}

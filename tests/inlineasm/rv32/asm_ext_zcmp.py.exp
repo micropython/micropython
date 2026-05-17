@@ -1,0 +1,32 @@
+cm.mva01s syntax pass
+cm.mvsa01 syntax pass
+cm.push/cm.pop syntax pass
+cm.push/cm.popret syntax pass
+cm.push/cm.popretz syntax pass
+cm.push/cm.pop 0 True
+cm.push/cm.pop 16 True
+cm.push/cm.pop 32 True
+cm.push/cm.pop 48 True
+cm.push/cm.popret 0 True
+cm.push/cm.popret 16 True
+cm.push/cm.popret 32 True
+cm.push/cm.popret 48 True
+cm.push/cm.popretz 0 True
+cm.push/cm.popretz 16 True
+cm.push/cm.popretz 32 True
+cm.push/cm.popretz 48 True
+reglist {ra} True
+reglist {ra,s0} True
+reglist {ra,s0-s1} True
+reglist {ra,s0-s2} True
+reglist {ra,s0-s3} True
+reglist {ra,s0-s4} True
+reglist {ra,s0-s5} True
+reglist {ra,s0-s6} True
+reglist {ra,s0-s7} True
+reglist {ra,s0-s8} True
+reglist {ra,s0-s9} True
+reglist {ra,s0-s11} True
+reglist {ra,s0-s11} True
+cm.mva01s True
+cm.mvsa01 True

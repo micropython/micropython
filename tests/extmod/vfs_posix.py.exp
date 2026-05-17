@@ -1,0 +1,17 @@
+/
+True
+<class 'tuple'>
+<class 'list'>
+<io.TextIOWrapper 2>
+hello
+next_file_no <= base_file_no True
+['test2']
+['test2']
+<class 'tuple'>
+<class 'str'>
+<class 'bytes'>
+hello
+[]
+remove OSError
+False
+rmdir OSError

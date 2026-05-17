@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Environment Sensor",
+        "IMU",
+        "Microphone",
+        "Secure Element",
+        "USB"
+    ],
+    "images": [
+        "ABX00031_01.iso_998x749.jpg"
+    ],
+    "mcu": "nrf52",
+    "product": "Nano 33 BLE Sense",
+    "thumbnail": "",
+    "url": "https://store.arduino.cc/products/arduino-nano-33-ble-sense",
+    "vendor": "Arduino"
+}

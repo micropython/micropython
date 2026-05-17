@@ -1,0 +1,347 @@
+# CMake fragment for MicroPython rules
+
+set(MICROPY_GENHDR_DIR "${CMAKE_BINARY_DIR}/genhdr")
+set(MICROPY_MPVERSION "${MICROPY_GENHDR_DIR}/mpversion.h")
+set(MICROPY_QSTRDEFS_PY "${MICROPY_PY_DIR}/qstrdefs.h")
+set(MICROPY_QSTRDEFS_LAST "${MICROPY_GENHDR_DIR}/qstr.i.last")
+set(MICROPY_QSTRDEFS_SPLIT "${MICROPY_GENHDR_DIR}/qstr.split")
+set(MICROPY_QSTRDEFS_COLLECTED "${MICROPY_GENHDR_DIR}/qstrdefs.collected.h")
+set(MICROPY_QSTRDEFS_PREPROCESSED "${MICROPY_GENHDR_DIR}/qstrdefs.preprocessed.h")
+set(MICROPY_QSTRDEFS_GENERATED "${MICROPY_GENHDR_DIR}/qstrdefs.generated.h")
+set(MICROPY_MODULEDEFS_SPLIT "${MICROPY_GENHDR_DIR}/moduledefs.split")
+set(MICROPY_MODULEDEFS_COLLECTED "${MICROPY_GENHDR_DIR}/moduledefs.collected")
+set(MICROPY_MODULEDEFS "${MICROPY_GENHDR_DIR}/moduledefs.h")
+set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
+set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
+set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
+set(MICROPY_COMPRESSED_SPLIT "${MICROPY_GENHDR_DIR}/compressed.split")
+set(MICROPY_COMPRESSED_COLLECTED "${MICROPY_GENHDR_DIR}/compressed.collected")
+set(MICROPY_COMPRESSED_DATA "${MICROPY_GENHDR_DIR}/compressed.data.h")
+
+if(NOT MICROPY_PREVIEW_VERSION_2)
+    set(MICROPY_PREVIEW_VERSION_2 0)
+endif()
+
+# Set the board name.
+if(MICROPY_BOARD)
+    if(MICROPY_BOARD_VARIANT)
+        set(MICROPY_BOARD_BUILD_NAME ${MICROPY_BOARD}-${MICROPY_BOARD_VARIANT})
+    else()
+        set(MICROPY_BOARD_BUILD_NAME ${MICROPY_BOARD})
+    endif()
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_BOARD_BUILD_NAME="${MICROPY_BOARD_BUILD_NAME}"
+    )
+endif()
+
+# Need to do this before extracting MICROPY_CPP_DEF below.
+if(MICROPY_ROM_TEXT_COMPRESSION)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_ROM_TEXT_COMPRESSION=\(1\)
+    )
+endif()
+
+# Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
+# manifest handling is at the end of this file.
+if(MICROPY_FROZEN_MANIFEST)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+        MICROPY_MODULE_FROZEN_MPY=\(1\)
+    )
+endif()
+
+if(MICROPY_PREVIEW_VERSION_2)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_PREVIEW_VERSION_2=\(1\)
+    )
+endif()
+
+# Provide defaults for preprocessor flags if not already defined
+if(NOT MICROPY_CPP_FLAGS)
+    get_target_property(MICROPY_CPP_INC ${MICROPY_TARGET} INCLUDE_DIRECTORIES)
+    get_target_property(MICROPY_CPP_DEF ${MICROPY_TARGET} COMPILE_DEFINITIONS)
+endif()
+
+# Compute MICROPY_CPP_FLAGS for preprocessor
+list(APPEND MICROPY_CPP_INC ${MICROPY_CPP_INC_EXTRA})
+list(APPEND MICROPY_CPP_DEF ${MICROPY_CPP_DEF_EXTRA})
+set(_prefix "-I")
+foreach(_arg ${MICROPY_CPP_INC})
+    list(APPEND MICROPY_CPP_FLAGS ${_prefix}${_arg})
+endforeach()
+set(_prefix "-D")
+foreach(_arg ${MICROPY_CPP_DEF})
+    list(APPEND MICROPY_CPP_FLAGS ${_prefix}${_arg})
+endforeach()
+list(APPEND MICROPY_CPP_FLAGS ${MICROPY_CPP_FLAGS_EXTRA})
+
+# Include anything passed in via CFLAGS_EXTRA
+# in both MICROPY_CPP_FLAGS and CMAKE_C_FLAGS
+if(DEFINED ENV{CFLAGS_EXTRA})
+  set(CFLAGS_EXTRA $ENV{CFLAGS_EXTRA})
+  string(APPEND CMAKE_C_FLAGS " ${CFLAGS_EXTRA}")  # ... not a list
+  separate_arguments(CFLAGS_EXTRA)
+  list(APPEND MICROPY_CPP_FLAGS ${CFLAGS_EXTRA})  # ... a list
+endif()
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+target_sources(${MICROPY_TARGET} PRIVATE
+    ${MICROPY_MPVERSION}
+    ${MICROPY_QSTRDEFS_GENERATED}
+    ${MICROPY_MODULEDEFS}
+    ${MICROPY_ROOT_POINTERS}
+)
+
+if(MICROPY_ROM_TEXT_COMPRESSION)
+    target_sources(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_COMPRESSED_DATA}
+    )
+endif()
+
+# Ensure genhdr directory is removed on clean
+
+set_property(TARGET ${MICROPY_TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+    "${MICROPY_GENHDR_DIR}"
+)
+
+# Command to force the build of another command
+
+# Generate mpversion.h
+
+add_custom_target(
+    BUILD_VERSION_HEADER ALL
+    BYPRODUCTS ${MICROPY_MPVERSION}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${MICROPY_GENHDR_DIR}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/py/makeversionhdr.py ${MICROPY_MPVERSION}
+)
+
+# Generate qstrs
+
+# If any of the dependencies in this rule change then the C-preprocessor step must be run.
+# It only needs to be passed the list of MICROPY_SOURCE_QSTR files that have changed since
+# it was last run, but it looks like it's not possible to specify that with cmake.
+add_custom_command(
+    OUTPUT ${MICROPY_QSTRDEFS_LAST}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py pp ${CMAKE_C_COMPILER} -E output ${MICROPY_GENHDR_DIR}/qstr.i.last cflags ${MICROPY_CPP_FLAGS} -DNO_QSTR cxxflags ${MICROPY_CPP_FLAGS} -DNO_QSTR sources ${MICROPY_SOURCE_QSTR}
+    DEPENDS ${MICROPY_MPVERSION}
+        ${MICROPY_SOURCE_QSTR}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_QSTRDEFS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split qstr ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/qstr _
+    COMMAND touch ${MICROPY_QSTRDEFS_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_QSTRDEFS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat qstr _ ${MICROPY_GENHDR_DIR}/qstr ${MICROPY_QSTRDEFS_COLLECTED}
+    BYPRODUCTS "${MICROPY_QSTRDEFS_COLLECTED}.hash"
+    DEPENDS ${MICROPY_QSTRDEFS_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_QSTRDEFS_PREPROCESSED}
+    COMMAND cat ${MICROPY_QSTRDEFS_PY} ${MICROPY_QSTRDEFS_PORT} ${MICROPY_QSTRDEFS_COLLECTED} | sed "s/^Q(.*)/\"&\"/" | ${CMAKE_C_COMPILER} -E ${MICROPY_CPP_FLAGS} - | sed "s/^\\\"\\(Q(.*)\\)\\\"/\\1/" > ${MICROPY_QSTRDEFS_PREPROCESSED}
+    DEPENDS ${MICROPY_QSTRDEFS_PY}
+        ${MICROPY_QSTRDEFS_PORT}
+        ${MICROPY_QSTRDEFS_COLLECTED}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_QSTRDEFS_GENERATED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdata.py ${MICROPY_QSTRDEFS_PREPROCESSED} > ${MICROPY_QSTRDEFS_GENERATED}
+    DEPENDS ${MICROPY_QSTRDEFS_PREPROCESSED}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+# Generate moduledefs.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_MODULEDEFS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split module ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/module _
+    COMMAND touch ${MICROPY_MODULEDEFS_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_MODULEDEFS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat module _ ${MICROPY_GENHDR_DIR}/module ${MICROPY_MODULEDEFS_COLLECTED}
+    BYPRODUCTS "${MICROPY_MODULEDEFS_COLLECTED}.hash"
+    DEPENDS ${MICROPY_MODULEDEFS_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_MODULEDEFS}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makemoduledefs.py ${MICROPY_MODULEDEFS_COLLECTED} > ${MICROPY_MODULEDEFS}
+    DEPENDS ${MICROPY_MODULEDEFS_COLLECTED}
+)
+
+# Generate root_pointers.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split root_pointer ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/root_pointer _
+    COMMAND touch ${MICROPY_ROOT_POINTERS_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat root_pointer _ ${MICROPY_GENHDR_DIR}/root_pointer ${MICROPY_ROOT_POINTERS_COLLECTED}
+    BYPRODUCTS "${MICROPY_ROOT_POINTERS_COLLECTED}.hash"
+    DEPENDS ${MICROPY_ROOT_POINTERS_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/make_root_pointers.py ${MICROPY_ROOT_POINTERS_COLLECTED} > ${MICROPY_ROOT_POINTERS}
+    DEPENDS ${MICROPY_ROOT_POINTERS_COLLECTED} ${MICROPY_PY_DIR}/make_root_pointers.py
+)
+
+# Generate compressed.data.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split compress ${MICROPY_QSTRDEFS_LAST} ${MICROPY_GENHDR_DIR}/compress _
+    COMMAND touch ${MICROPY_COMPRESSED_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat compress _ ${MICROPY_GENHDR_DIR}/compress ${MICROPY_COMPRESSED_COLLECTED}
+    BYPRODUCTS "${MICROPY_COMPRESSED_COLLECTED}.hash"
+    DEPENDS ${MICROPY_COMPRESSED_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_DATA}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makecompresseddata.py ${MICROPY_COMPRESSED_COLLECTED} > ${MICROPY_COMPRESSED_DATA}
+    DEPENDS ${MICROPY_COMPRESSED_COLLECTED} ${MICROPY_PY_DIR}/makecompresseddata.py
+)
+
+# Build frozen code if enabled
+
+if(MICROPY_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_CONTENT "${CMAKE_BINARY_DIR}/frozen_content.c")
+
+    set_property(TARGET ${MICROPY_TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+        "${CMAKE_BINARY_DIR}/frozen_mpy"
+    )
+
+    target_sources(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_FROZEN_CONTENT}
+    )
+
+    # Note: target_compile_definitions already added earlier.
+
+    if(NOT MICROPY_LIB_DIR)
+        list(APPEND GIT_SUBMODULES lib/micropython-lib)
+        set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
+    endif()
+
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+        message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    endif()
+
+    # If MICROPY_MPYCROSS is not explicitly defined in the environment (which
+    # is what makemanifest.py will use) then create an mpy-cross dependency
+    # to automatically build mpy-cross if needed.
+    set(MICROPY_MPYCROSS $ENV{MICROPY_MPYCROSS})
+    if(NOT MICROPY_MPYCROSS)
+        set(MICROPY_MPYCROSS_DEPENDENCY ${MICROPY_DIR}/mpy-cross/build/mpy-cross)
+        if(NOT MICROPY_MAKE_EXECUTABLE)
+            set(MICROPY_MAKE_EXECUTABLE make)
+        endif()
+        add_custom_command(
+            OUTPUT ${MICROPY_MPYCROSS_DEPENDENCY}
+            COMMAND ${MICROPY_MAKE_EXECUTABLE} -C ${MICROPY_DIR}/mpy-cross USER_C_MODULES=
+        )
+    endif()
+
+    if(NOT MICROPY_CROSS_FLAGS)
+        set(MICROPY_CROSS_FLAGS "")
+    else()
+        set(MICROPY_CROSS_FLAGS "-f${MICROPY_CROSS_FLAGS}")
+    endif()
+
+    # Set default path variables to be passed to makemanifest.py. These will
+    # be available in path substitutions. Additional variables can be set
+    # per-board in mpconfigboard.cmake.
+    set(MICROPY_MANIFEST_PORT_DIR ${MICROPY_PORT_DIR})
+    set(MICROPY_MANIFEST_BOARD_DIR ${MICROPY_BOARD_DIR})
+    set(MICROPY_MANIFEST_MPY_DIR ${MICROPY_DIR})
+    set(MICROPY_MANIFEST_MPY_LIB_DIR ${MICROPY_LIB_DIR})
+
+    # Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
+    get_cmake_property(_manifest_vars VARIABLES)
+    list(FILTER _manifest_vars INCLUDE REGEX "MICROPY_MANIFEST_.*")
+    foreach(_manifest_var IN LISTS _manifest_vars)
+        list(APPEND _manifest_var_args "-v")
+        string(REGEX REPLACE "MICROPY_MANIFEST_(.*)" "\\1" _manifest_var_name ${_manifest_var})
+        list(APPEND _manifest_var_args "${_manifest_var_name}=${${_manifest_var}}")
+    endforeach()
+
+    add_custom_target(
+        BUILD_FROZEN_CONTENT ALL
+        BYPRODUCTS ${MICROPY_FROZEN_CONTENT}
+        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} ${_manifest_var_args} -b "${CMAKE_BINARY_DIR}" ${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
+        DEPENDS
+            ${MICROPY_QSTRDEFS_GENERATED}
+            ${MICROPY_ROOT_POINTERS}
+            ${MICROPY_MPYCROSS_DEPENDENCY}
+        VERBATIM
+    )
+endif()
+
+# Update submodules, this is invoked on some ports via 'make submodules'.
+#
+# Note: This logic has a Makefile equivalent in py/mkrules.mk
+if(UPDATE_SUBMODULES AND GIT_SUBMODULES)
+    macro(run_git)
+      execute_process(COMMAND git ${ARGV} WORKING_DIRECTORY ${MICROPY_DIR}
+          RESULT_VARIABLE RES)
+    endmacro()
+
+    list(JOIN GIT_SUBMODULES " " GIT_SUBMODULES_MSG)
+    message("Updating submodules: ${GIT_SUBMODULES_MSG}")
+    run_git(submodule sync ${GIT_SUBMODULES})
+    if(RES EQUAL 0)
+        # If available, do blobless partial clones of submodules to save time and space.
+        # A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).
+        run_git(submodule update --init --filter=blob:none ${GIT_SUBMODULES})
+        # Fallback to standard submodule update if blobless isn't available (earlier than git 2.36.0)
+        if (NOT RES EQUAL 0)
+            run_git(submodule update --init ${GIT_SUBMODULES})
+        endif()
+    endif()
+
+    if (NOT RES EQUAL 0)
+        message(FATAL_ERROR "Submodule update failed")
+    endif()
+endif()

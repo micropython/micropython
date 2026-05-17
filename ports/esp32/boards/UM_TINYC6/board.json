@@ -1,0 +1,26 @@
+{
+    "deploy": [
+        "deploy_flashmode.md",
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "BLE",
+        "External Flash",
+        "WiFi",
+        "RGB LED",
+        "USB",
+        "USB-C"
+    ],
+    "images": [
+        "unexpectedmaker_tinyc6.jpg"
+    ],
+    "mcu": "esp32c6",
+    "product": "TinyC6",
+    "url": "https://tinyc6.io",
+    "vendor": "Unexpected Maker"
+}

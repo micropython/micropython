@@ -1,0 +1,18 @@
+#pragma once
+
+// Board and hardware specific configuration
+#define MICROPY_HW_BOARD_NAME                   "Pololu 3pi+ 2040 Robot"
+#define MICROPY_HW_FLASH_STORAGE_BYTES          (15 * 1024 * 1024)
+
+#define MICROPY_HW_USB_MSC (1)
+#define MICROPY_HW_USB_VID (0x1FFB)
+#define MICROPY_HW_USB_PID (0x2043)
+#define MICROPY_HW_USB_DESC_STR_MAX (40)
+#define MICROPY_HW_USB_MANUFACTURER_STRING "Pololu Corporation"
+#define MICROPY_HW_USB_PRODUCT_FS_STRING MICROPY_HW_BOARD_NAME " MicroPython"
+
+#define MICROPY_BANNER_MACHINE MICROPY_HW_BOARD_NAME
+
+#define MICROPY_HW_I2C_NO_DEFAULT_PINS (1)
+#define MICROPY_HW_SPI_NO_DEFAULT_PINS (1)
+#define MICROPY_HW_UART_NO_DEFAULT_PINS (1)

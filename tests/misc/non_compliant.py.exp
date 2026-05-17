@@ -1,0 +1,22 @@
+SyntaxError
+AttributeError
+TypeError
+NotImplementedError
+NotImplementedError
+TypeError, ValueError
+NotImplementedError
+NotImplementedError
+NotImplementedError
+NotImplementedError
+NotImplementedError
+NotImplementedError
+NotImplementedError
+NotImplementedError
+NotImplementedError
+b'\x01\x02'
+b'\x01\x00'
+NotImplementedError
+AttributeError
+TypeError
+A.foo
+AttributeError

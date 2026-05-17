@@ -1,0 +1,28 @@
+test <class 'VfsLfs1'>
+mkfs OSError True
+mount OSError True
+ilistdir OSError [Errno 2] ENOENT
+remove OSError [Errno 2] ENOENT
+rmdir OSError [Errno 2] ENOENT
+rename OSError [Errno 2] ENOENT
+mkdir OSError [Errno 17] EEXIST
+chdir OSError [Errno 2] ENOENT
+/
+chdir OSError [Errno 2] ENOENT
+/
+stat OSError [Errno 2] ENOENT
+seek OSError [Errno 22] EINVAL
+test <class 'VfsLfs2'>
+mkfs OSError True
+mount OSError True
+ilistdir OSError [Errno 2] ENOENT
+remove OSError [Errno 2] ENOENT
+rmdir OSError [Errno 2] ENOENT
+rename OSError [Errno 2] ENOENT
+mkdir OSError [Errno 17] EEXIST
+chdir OSError [Errno 2] ENOENT
+/
+chdir OSError [Errno 2] ENOENT
+/
+stat OSError [Errno 2] ENOENT
+seek OSError [Errno 22] EINVAL

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_f722ze.jpg"
+    ],
+    "mcu": "stm32f7",
+    "product": "Nucleo F722ZE",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

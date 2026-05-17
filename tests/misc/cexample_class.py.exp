@@ -1,0 +1,9 @@
+<Timer>
+True
+True
+AdvancedTimer()
+AdvancedTimer()  # created 0 seconds ago
+0
+123
+True
+TypeError

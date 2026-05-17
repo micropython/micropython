@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../PYBV10/deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "weact_u585ci.jpg"
+    ],
+    "mcu": "stm32u5",
+    "product": "Mini STM32U585",
+    "thumbnail": "",
+    "url": "https://github.com/WeActStudio/WeActStudio.STM32U585Cx_CoreBoard",
+    "vendor": "WeAct Studio"
+}

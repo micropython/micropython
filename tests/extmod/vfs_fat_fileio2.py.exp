@@ -1,0 +1,11 @@
+True
+True
+True
+b'data in file'
+True
+[('sub_file.txt', 32768, 0, 11), ('file.txt', 32768, 0, 12)]
+[('foo_dir', 16384, 0, 0), ('moved-to-root.txt', 32768, 0, 12)]
+[('foo_dir', 16384, 0, 0), ('moved-to-root.txt', 32768, 0, 8)]
+new text
+[('moved-to-root.txt', 32768, 0, 8)]
+ENOSPC: True

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "STM32H743VIT6.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "H743VI",
+    "thumbnail": "",
+    "url": "http://vcc-gnd.com/",
+    "vendor": "VCC-GND Studio"
+}

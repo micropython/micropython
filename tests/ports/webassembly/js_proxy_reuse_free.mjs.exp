@@ -1,0 +1,7 @@
+JS obj: [ 1, 2 ]
+<JsProxy 2> <JsProxy 2> True
+Py obj: [ 1, 2 ]
+JS obj: [ 1, 2 ]
+<JsProxy 2> <JsProxy 2> True
+Py obj: [ 1, 2 ]
+JS obj: [ 1, 2 ]

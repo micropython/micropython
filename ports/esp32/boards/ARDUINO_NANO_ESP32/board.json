@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "ABX00092_01.iso_1000x750.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "Nano ESP32",
+    "thumbnail": "",
+    "url": "https://docs.arduino.cc/hardware/nano-esp32/",
+    "vendor": "Arduino"
+}

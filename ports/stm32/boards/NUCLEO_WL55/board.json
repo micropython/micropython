@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_wl55.jpg"
+    ],
+    "mcu": "stm32wl",
+    "product": "Nucleo WL55",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/nucleo-wl55jc.html",
+    "vendor": "ST Microelectronics"
+}

@@ -1,0 +1,11 @@
+--- instance0 ---
+server running
+close
+done
+--- instance1 ---
+2
+bytearray(b'ab')
+1
+array('b', [99])
+TypeError
+TypeError

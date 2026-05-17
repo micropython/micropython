@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "ra4m1_clicker_board.jpg",
+        "ra4m1_clicker_pins.jpg"
+    ],
+    "mcu": "ra4m1",
+    "product": "Mikroe RA4M1 Clicker",
+    "thumbnail": "",
+    "url": "https://www.mikroe.com/ra4m1-clicker",
+    "vendor": "MikroElektronika"
+}

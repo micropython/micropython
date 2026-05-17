@@ -1,0 +1,52 @@
+Timer(0, mode=Timer.PERIODIC)
+timer.channel(Timer.A, freq=5)
+timer.channel(Timer.B, freq=5)
+Timer(0, mode=Timer.ONE_SHOT)
+timer.channel(Timer.A, freq=50)
+timer.channel(Timer.B, freq=50)
+Timer(0, mode=Timer.PWM)
+timer.channel(Timer.A, freq=50000, polarity=Timer.POSITIVE, duty_cycle=20.00)
+timer.channel(Timer.B, freq=50000, polarity=Timer.NEGATIVE, duty_cycle=80.00)
+Timer(0, mode=Timer.PWM)
+Timer(1, mode=Timer.PERIODIC)
+timer.channel(Timer.A, freq=5)
+timer.channel(Timer.B, freq=5)
+Timer(1, mode=Timer.ONE_SHOT)
+timer.channel(Timer.A, freq=50)
+timer.channel(Timer.B, freq=50)
+Timer(1, mode=Timer.PWM)
+timer.channel(Timer.A, freq=50000, polarity=Timer.POSITIVE, duty_cycle=20.00)
+timer.channel(Timer.B, freq=50000, polarity=Timer.NEGATIVE, duty_cycle=80.00)
+Timer(1, mode=Timer.PWM)
+Timer(2, mode=Timer.PERIODIC)
+timer.channel(Timer.A, freq=5)
+timer.channel(Timer.B, freq=5)
+Timer(2, mode=Timer.ONE_SHOT)
+timer.channel(Timer.A, freq=50)
+timer.channel(Timer.B, freq=50)
+Timer(2, mode=Timer.PWM)
+timer.channel(Timer.A, freq=50000, polarity=Timer.POSITIVE, duty_cycle=20.00)
+timer.channel(Timer.B, freq=50000, polarity=Timer.NEGATIVE, duty_cycle=80.00)
+Timer(2, mode=Timer.PWM)
+Timer(3, mode=Timer.PERIODIC)
+timer.channel(Timer.A, freq=5)
+timer.channel(Timer.B, freq=5)
+Timer(3, mode=Timer.ONE_SHOT)
+timer.channel(Timer.A, freq=50)
+timer.channel(Timer.B, freq=50)
+Timer(3, mode=Timer.PWM)
+timer.channel(Timer.A, freq=50000, polarity=Timer.POSITIVE, duty_cycle=20.00)
+timer.channel(Timer.B, freq=50000, polarity=Timer.NEGATIVE, duty_cycle=80.00)
+Timer(3, mode=Timer.PWM)
+True
+True
+True
+True
+True
+True
+Timer(0, mode=Timer.ONE_SHOT)
+Exception
+Exception
+Exception
+Exception
+Exception

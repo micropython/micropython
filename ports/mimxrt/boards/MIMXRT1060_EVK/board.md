@@ -1,0 +1,1 @@
+The port for this board is experimental. It is made based on the documentation, but was not yet tested.

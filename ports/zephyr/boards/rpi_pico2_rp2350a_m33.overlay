@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2025 MASSDRIVER EI (massdriver.space)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		/* Use USB CDC ACM as the console. */
+		zephyr,console = &cdc_acm_uart0;
+	};
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		second_stage_bootloader: partition@0 {
+			label = "second_stage_bootloader";
+			reg = <0x00000000 0x100>;
+			read-only;
+		};
+
+		code_partition: partition@100 {
+			label = "code-partition";
+			reg = <0x0000100 (DT_SIZE_M(1) - 0x100)>;
+			read-only;
+		};
+
+		storage_partition: partition@100000 {
+			label = "storage";
+			reg = <0x00100000 DT_SIZE_M(3)>;
+		};
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};
+
+&i2c1 {
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	status = "okay";
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-names = "default";
+};

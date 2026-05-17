@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "External Flash",
+        "RGB LED",
+        "USB"
+    ],
+    "images": [
+        "itsybitsy_m4_express.jpg"
+    ],
+    "mcu": "samd51",
+    "product": "ItsyBitsy M4 Express",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/3800",
+    "vendor": "Adafruit"
+}

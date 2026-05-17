@@ -1,0 +1,12 @@
+write 2400
+IRQ_RX: True data: b'1'
+IRQ_RX: True data: b'2'
+IRQ_RX: True data: b'3'
+IRQ_RX: True data: b'4'
+done
+write 9600
+IRQ_RX: True data: b'1'
+IRQ_RX: True data: b'2'
+IRQ_RX: True data: b'3'
+IRQ_RX: True data: b'4'
+done

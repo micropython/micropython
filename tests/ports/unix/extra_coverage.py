@@ -1,0 +1,151 @@
+try:
+    extra_coverage
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
+import errno
+import io
+import uctypes
+
+# create an int-like variable used for coverage of `mp_obj_get_ll`
+buf = bytearray(b"\xde\xad\xbe\xef")
+struct = uctypes.struct(
+    uctypes.addressof(buf),
+    {"f32": uctypes.UINT32 | 0},
+    uctypes.BIG_ENDIAN,
+)
+deadbeef = struct.f32
+
+data = extra_coverage()
+
+# test hashing of str/bytes that have an invalid hash
+print(data[0], data[1])
+print(hash(data[0]))
+print(hash(data[1]))
+print(hash(bytes(data[0], "utf8")))
+print(hash(str(data[1], "utf8")))
+
+# test streams
+stream = data[2]  # has set_error and set_buf. Write always returns error
+stream.set_error(errno.EAGAIN)  # non-blocking error
+print(stream.read())  # read all encounters non-blocking error
+print(stream.read(1))  # read 1 byte encounters non-blocking error
+print(stream.readline())  # readline encounters non-blocking error
+print(stream.readinto(bytearray(10)))  # readinto encounters non-blocking error
+print(stream.readinto1(bytearray(10)))  # readinto1 encounters non-blocking error
+print(stream.write(b"1"))  # write encounters non-blocking error
+print(stream.write1(b"1"))  # write1 encounters non-blocking error
+stream.set_buf(b"123")
+print(stream.read(4))  # read encounters non-blocking error after successful reads
+stream.set_buf(b"123")
+print(stream.read1(4))  # read1 encounters non-blocking error after successful reads
+stream.set_buf(b"123")
+print(stream.readline(4))  # readline encounters non-blocking error after successful reads
+try:
+    print(stream.ioctl(0, 0))  # ioctl encounters non-blocking error; raises OSError
+except OSError:
+    print("OSError")
+stream.set_error(0)
+print(stream.ioctl(0, bytearray(10)))  # successful ioctl call
+
+print("# stream.readinto")
+
+# stream.readinto will read 3 bytes then try to read more to fill the buffer,
+# but on the second attempt will encounter EIO and should raise that error.
+stream.set_error(errno.EIO)
+stream.set_buf(b"123")
+buf = bytearray(4)
+try:
+    stream.readinto(buf)
+except OSError as er:
+    print("OSError", er.errno == errno.EIO)
+print(buf)
+
+# stream.readinto1 will read 3 bytes then should return them immediately, and
+# not encounter the EIO.
+stream.set_error(errno.EIO)
+stream.set_buf(b"123")
+buf = bytearray(4)
+print(stream.readinto1(buf), buf)
+
+print("# stream textio")
+
+stream2 = data[3]  # is textio
+print(stream2.read(1))  # read 1 byte encounters non-blocking error with textio stream
+
+# test BufferedWriter with stream errors
+stream.set_error(errno.EAGAIN)
+buf = io.BufferedWriter(stream, 8)
+print(buf.write(bytearray(16)))
+
+# function defined in C++ code
+print("cpp", extra_cpp_coverage())
+
+# test user C module mixed with C++ code
+import cppexample
+
+print(cppexample.cppfunc(1, 2))
+
+# test basic import of frozen scripts
+import frzstr1
+
+print(frzstr1.__file__)
+import frzmpy1
+
+print(frzmpy1.__file__)
+
+# test import of frozen packages with __init__.py
+import frzstr_pkg1
+
+print(frzstr_pkg1.__file__, frzstr_pkg1.x)
+import frzmpy_pkg1
+
+print(frzmpy_pkg1.__file__, frzmpy_pkg1.x)
+
+# test import of frozen packages without __init__.py
+from frzstr_pkg2.mod import Foo
+
+print(Foo.x)
+from frzmpy_pkg2.mod import Foo
+
+print(Foo.x)
+
+# test raising exception in frozen script
+try:
+    import frzmpy2
+except ZeroDivisionError:
+    print("ZeroDivisionError")
+
+# test importing various objects
+import frzmpy3
+
+# test importing other things
+import frzmpy4
+
+# test for MP_QSTR_NULL regression
+from frzqstr import returns_NULL
+
+print(returns_NULL())
+
+# test for freeze_mpy (importing prints several lines)
+import frozentest
+
+print(frozentest.__file__)
+
+# test for builtin sub-packages
+from example_package.foo import bar
+
+print(bar)
+bar.f()
+import example_package
+
+print(example_package, example_package.foo, example_package.foo.bar)
+example_package.f()
+example_package.foo.f()
+example_package.foo.bar.f()
+print(bar == example_package.foo.bar)
+from example_package.foo import f as foo_f
+
+foo_f()
+print(foo_f == example_package.foo.f)

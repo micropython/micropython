@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "stm32l496discovery.jpg"
+    ],
+    "mcu": "stm32l4",
+    "product": "Discovery L496G",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/32l496gdiscovery.html",
+    "vendor": "ST Microelectronics"
+}

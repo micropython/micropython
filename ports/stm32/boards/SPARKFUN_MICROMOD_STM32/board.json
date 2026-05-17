@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "sparkfun_micromod_stm32.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "MicroMod STM32",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/products/17713",
+    "vendor": "SparkFun"
+}
