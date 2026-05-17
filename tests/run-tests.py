@@ -465,7 +465,9 @@ tests_with_regex_output = [
 ]
 
 
-def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
+def run_micropython(
+    pyb, args, test_file, test_file_abspath, is_special=False, is_feature_check=False
+):
     had_crash = False
     if pyb is None:
         # run on PC
@@ -648,6 +650,10 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = normalize_newlines(output_mupy)
 
+    # for feature-check tests, return the output as-is
+    if is_feature_check:
+        return output_mupy
+
     # don't try to convert the output if we should skip this test
     if had_crash or output_mupy in (b"SKIP\n", b"SKIP-TOO-LARGE\n", b"CRASH"):
         return output_mupy
@@ -710,7 +716,9 @@ def run_feature_check(pyb, args, test_file):
         # REPL feature tests will not run via pyboard because they require prompt interactivity
         return b""
     test_file_path = base_path("feature_check", test_file)
-    return run_micropython(pyb, args, test_file_path, test_file_path, is_special=True)
+    return run_micropython(
+        pyb, args, test_file_path, test_file_path, is_special=True, is_feature_check=True
+    )
 
 
 class TestError(Exception):
