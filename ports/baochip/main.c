@@ -38,9 +38,6 @@
 
 #include "hardware/irq.h"
 #include "hardware/uart.h"
-#include "hardware/regs/addressmap.h"
-#include "hardware/regs/udma.h"
-#include "bao/platform.h"
 
 #include "machine_pin.h"
 #include "mphalport.h"
@@ -52,13 +49,6 @@ extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 extern uint32_t _stack_top;
 extern uint32_t _stack_size;
-
-#ifndef MICROPY_HW_UART_REPL
-#define MICROPY_HW_UART_REPL        (2)
-#endif
-#ifndef MICROPY_HW_UART_REPL_BAUD
-#define MICROPY_HW_UART_REPL_BAUD   (115200)
-#endif
 
 // Stack guard size matches the linker's reservation minus a small
 // safety margin so MP_STACK_CHECK() trips before we hit the heap.
@@ -73,30 +63,7 @@ static void trace(const char *msg) {
 #endif
 
 int main(void) {
-    // Pre-enable UART2 clock gate so detect_perclk() (called from inside
-    // uart_init) reads a valid SETUP register; uart_init ORs the same bit.
-    REG32(UDMA_CTRL_BASE + UDMA_CTRL_CG_OFFSET) |= UDMA_CG_UART2;
-
-    // Configure UART2 (PB14 = TX, PB13 = RX) at 115200 8N1.  boot0/boot1
-    // left it at 1 Mbaud; this retunes for user-firmware logging.
-    uart_init(MICROPY_HW_UART_REPL, MICROPY_HW_UART_REPL_BAUD);
-
-    // Abort any stale UDMA TX/RX from boot0/boot1 with the CLR bit, then
-    // write 0 to guarantee EN=0 regardless of CLR self-clear timing.
-    REG32(UDMA_UART2_BASE + UDMA_TX_CFG_OFFSET) = UDMA_CFG_CLR;
-    memory_fence();
-    REG32(UDMA_UART2_BASE + UDMA_TX_CFG_OFFSET) = 0u;
-    memory_fence();
-    REG32(UDMA_UART2_BASE + UDMA_RX_CFG_OFFSET) = UDMA_CFG_CLR;
-    memory_fence();
-    REG32(UDMA_UART2_BASE + UDMA_RX_CFG_OFFSET) = 0u;
-    memory_fence();
-
-    // Enable the per-character RX interrupt at the UART level.  Without
-    // this UART_IRQ_EN write, UART_VALID is never set even in poll mode
-    // (SETUP bit 4 = 1).
-    REG32(UDMA_UART2_BASE + UDMA_UART_IRQ_EN_OFFSET) = 0xFFFFFFFFu;
-
+    mp_hal_uart_repl_init();
     trace("TRACE:uart_ok\r\n");
 
     mp_hal_ticktimer_init();
@@ -162,7 +129,6 @@ void nlr_jump_fail(void *val) {
     }
 }
 
-// Filesystem stubs (no VFS yet in Phase 1).
 mp_import_stat_t mp_import_stat(const char *path) {
     (void)path;
     return MP_IMPORT_STAT_NO_EXIST;

@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-# Generate pin objects for the Baochip-1x GPIO block.
-# Usage: make-pins.py --board-csv <pins.csv> --prefix <prefix.c>
-#                     --output-source <pins.c> --output-header <pins.h>
 
 import os
 import re

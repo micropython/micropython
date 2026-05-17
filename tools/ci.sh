@@ -1121,6 +1121,22 @@ function ci_zephyr_run_tests {
 ########################################################################################
 # Helpers to run this script as a CLI tool.
 
+########################################################################################
+# ports/baochip
+
+function ci_baochip_setup {
+    ci_gcc_riscv_setup
+    # sign_and_uf2.py from the vendored dabao-sdk uses pure25519 to
+    # sign the UF2 image with the SDK's developer Ed25519ph key.
+    sudo pip3 install pure25519
+}
+
+function ci_baochip_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/baochip BOARD=DABAO submodules
+    make ${MAKEOPTS} -C ports/baochip BOARD=DABAO
+}
+
 function _ci_help {
     # Note: these lines must be indented with tab characters (required by bash <<-EOF)
     cat <<-EOF

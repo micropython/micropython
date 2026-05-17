@@ -66,9 +66,11 @@ extern ringbuf_t stdin_ringbuf;
 // called from main() before any time-dependent code runs.
 void mp_hal_ticktimer_init(void);
 
+// Configure the REPL UART (clock, init, UDMA clear).  Call before mp_init().
+void mp_hal_uart_repl_init(void);
+
 // Register and enable the UART RX interrupt that feeds stdin_ringbuf.
-// Must be called from main() after uart_init() configures the REPL
-// UART instance.
+// Must be called from main() after mp_init().
 void mp_hal_stdin_uart_irq_init(void);
 
 // Pin HAL type and access helpers.

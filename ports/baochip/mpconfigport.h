@@ -26,13 +26,9 @@
 
 #include <stdint.h>
 
-// We need a declaration of alloca().  GCC's freestanding builds still
-// resolve this to a builtin, but without the header MicroPython's
-// pystack.h emits implicit-declaration errors.
-#include <alloca.h>
+#include <alloca.h> // for alloca()
 
-// Options to control how MicroPython is built. Kept minimal for the
-// Phase 1 skeleton; features are enabled as drivers land.
+// Options to control how MicroPython is built.
 
 #define MICROPY_CONFIG_ROM_LEVEL    (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
@@ -64,8 +60,6 @@
 #define MICROPY_PY_OS_UNAME         (1)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_TIME             (1)
-// time.time / time.time_ns need a wall-clock source; deferred until the
-// RTC lands in Phase 2.
 #define MICROPY_PY_TIME_TIME_TIME_NS (0)
 
 // All port-side root pointers live alongside the vm-side ones.
@@ -79,6 +73,14 @@ typedef long mp_off_t;
 // port; define MP_SSIZE_MAX explicitly to the 32-bit signed maximum
 // (matches rp2/stm32/zephyr).
 #define MP_SSIZE_MAX (0x7fffffff)
+
+// REPL UART defaults; boards may override in mpconfigboard.h.
+#ifndef MICROPY_HW_UART_REPL
+#define MICROPY_HW_UART_REPL        (2)
+#endif
+#ifndef MICROPY_HW_UART_REPL_BAUD
+#define MICROPY_HW_UART_REPL_BAUD   (115200)
+#endif
 
 // Board-specific overrides.
 #include "mpconfigboard.h"

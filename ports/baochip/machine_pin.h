@@ -39,7 +39,11 @@ typedef struct _machine_pin_obj_t {
     uint8_t pin;
 } machine_pin_obj_t;
 
-// Open-drain emulation state: one bit per pin, one uint16_t per port.
+// Open-drain emulation: Baochip-1x has no hardware OD mode, so it is
+// emulated by toggling direction (output=drive-low, input=float-high).
+// The mask tracks which pins are in this mode so value() and toggle()
+// can choose direction vs data register.  Not replaced by the SDK PR
+// (which adds gpio_get_pull() only, not OD hardware).
 extern uint16_t machine_pin_open_drain_mask[BAOCHIP_NUM_PORTS];
 
 #define PIN_IS_OPEN_DRAIN(port, pin)     (machine_pin_open_drain_mask[(port)] & (1u << (pin)))
