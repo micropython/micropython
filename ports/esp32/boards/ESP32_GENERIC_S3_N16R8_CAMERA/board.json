@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "External RAM",
+        "WiFi"
+    ],
+    "images": [
+        "generic_s3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "ESP32-S3",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Espressif",
+    "variants": {
+        "SPIRAM_OCT": "Support for Octal-SPIRAM"
+    }
+}
