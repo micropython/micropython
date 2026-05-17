@@ -336,7 +336,7 @@ has the same methods as software I2C above::
 
     from machine import Pin, I2C
 
-    i2c = I2C(0)   # default assignment: scl=Pin(9), sda=Pin(8)
+    i2c = I2C(0)   # default assignment for Pico: scl=Pin(5), sda=Pin(4)
     i2c = I2C(1, scl=Pin(3), sda=Pin(2), freq=400_000)
 
 I2S bus
