@@ -89,6 +89,10 @@
 #define MICROPY_PY_MACHINE_PDM_PCM_RING_BUF     (1)
 #define MICROPY_PY_MACHINE_PDM_PCM_INCLUDEFILE  "machine_pdm_pcm.c"
 
+#define MICROPY_PY_MACHINE_PWM                  (1)
+#define MICROPY_PY_MACHINE_PWM_MAX_OBJS         (8)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc-edge/machine_pwm.c"
+
 // type definitions for the specific machine
 #define MP_SSIZE_MAX (0x7fffffff)
 
