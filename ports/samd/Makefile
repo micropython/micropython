@@ -52,14 +52,14 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/CMSIS_5 lib/asf4 lib/tinyusb
+GIT_SUBMODULES += lib/CMSIS_6 lib/asf4 lib/tinyusb
 
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -Imcu/$(MCU_SERIES_LOWER)
-INC += -I$(TOP)/lib/CMSIS_5/CMSIS/Core/Include
+INC += -I$(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/utils/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/config
