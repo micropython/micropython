@@ -29,14 +29,10 @@ in1_pin = Pin(in1_pin, mode=Pin.IN)
 
 
 class TestConnections(unittest.TestCase):
-    def setUp(self):
-        in0_pin.init(Pin.IN)
-        in1_pin.init(Pin.IN)
-
     def test_connections(self):
         # Test the hardware connections are correct. If this test fails, all tests will fail.
         for ch, outp, inp in ((0, out0_pin, in0_pin), (1, out1_pin, in1_pin)):
-            print("Testing channel ", ch)
+            print(" Testing channel", ch, end="")
             outp(1)
             self.assertEqual(1, inp())
             outp(0)
@@ -53,17 +49,23 @@ class TestEncoder(unittest.TestCase):
         self.pulses = 0  # track the expected encoder position in software
         if PRINT:
             print(
-                "\nout0_pin() out1_pin() enc.value() enc2.value() enc4.value() |",
+                "\nout0_pin() out1_pin() | enc.value() enc2.value() enc4.value() | pulses self.pulses |",
                 out0_pin(),
                 out1_pin(),
                 "|",
                 self.enc.value(),
                 self.enc2.value(),
                 self.enc4.value(),
+                "|",
+                0,
+                self.pulses,
             )
 
     def tearDown(self):
-        self.enc.deinit()
+        try:
+            self.enc.deinit()
+        except:
+            pass
         try:
             self.enc2.deinit()
         except:
@@ -88,7 +90,7 @@ class TestEncoder(unittest.TestCase):
                     out0_pin(not out0_pin())
         if PRINT:
             print(
-                "out0_pin() out1_pin() enc.value() enc2.value() enc4.value() pulses self.pulses |",
+                "out0_pin() out1_pin() | enc.value() enc2.value() enc4.value() | pulses self.pulses |",
                 out0_pin(),
                 out1_pin(),
                 "|",
@@ -100,24 +102,22 @@ class TestEncoder(unittest.TestCase):
                 self.pulses,
             )
 
-    def assertPosition(self, value, value2=None, value4=None):
+    def assertPosition(self, value, value2, value4):
         self.assertEqual(self.enc.value(), value)
-        if not value2 is None:
-            self.assertEqual(self.enc2.value(), value2)
-        if not value4 is None:
-            self.assertEqual(self.enc4.value(), value4)
-        pass
+        self.assertEqual(self.enc2.value(), value2)
+        self.assertEqual(self.enc4.value(), value4)
 
     def test_basics(self):
-        self.assertPosition(0)
+        self.assertPosition(0, 0, 0)
         self.rotate(100)
         self.assertPosition(100 // 4, 100 // 2, 100)
         self.rotate(-100)
-        self.assertPosition(0)
+        self.assertPosition(0, 0, 0)
 
     def test_partial(self):
         # With phase=1 (default), need 4x pulses to count a rotation
-        self.assertPosition(0)
+        self.assertPosition(0, 0, 0)
+
         self.rotate(1)
         self.assertPosition(1, 1, 1)
         self.rotate(1)
@@ -134,24 +134,49 @@ class TestEncoder(unittest.TestCase):
         self.assertPosition(2, 4, 7)
         self.rotate(1)
         self.assertPosition(2, 4, 8)  # +4
+
         self.rotate(-1)
         self.assertPosition(2, 4, 7)
-        self.rotate(-3)
+        self.rotate(-1)
+        self.assertPosition(1, 3, 6)
+        self.rotate(-1)
+        self.assertPosition(1, 3, 5)
+        self.rotate(-1)
         self.assertPosition(1, 2, 4)  # -4
-        self.rotate(-4)
+        self.rotate(-1)
+        self.assertPosition(1, 2, 3)
+        self.rotate(-1)
+        self.assertPosition(0, 1, 2)
+        self.rotate(-1)
+        self.assertPosition(0, 1, 1)
+        self.rotate(-1)
         self.assertPosition(0, 0, 0)  # -4
+
         self.rotate(-1)
         self.assertPosition(0, 0, -1)
         self.rotate(-1)
-        self.assertPosition(0, -1, -2)
+        self.assertPosition(-1, -1, -2)
         self.rotate(-1)
-        self.assertPosition(0, -1, -3)
+        self.assertPosition(-1, -1, -3)
         self.rotate(-1)
         self.assertPosition(-1, -2, -4)  # -4
         self.rotate(-1)
         self.assertPosition(-1, -2, -5)
-        self.rotate(-3)
+        self.rotate(-1)
+        self.assertPosition(-2, -3, -6)
+        self.rotate(-1)
+        self.assertPosition(-2, -3, -7)
+        self.rotate(-1)
         self.assertPosition(-2, -4, -8)  # -4
+
+        self.rotate(-1)
+        self.assertPosition(-2, -4, -9)
+        self.rotate(-1)
+        self.assertPosition(-3, -5, -10)
+        self.rotate(-1)
+        self.assertPosition(-3, -5, -11)
+        self.rotate(-1)
+        self.assertPosition(-3, -6, -12)  # -4
 
 
 if __name__ == "__main__":

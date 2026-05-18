@@ -124,6 +124,7 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_pin.c
     machine_touchpad.c
     machine_dac.c
+    machine_encoder.c
     machine_i2c.c
     network_common.c
     network_lan.c
@@ -136,7 +137,6 @@ list(APPEND MICROPY_SOURCE_PORT
     modesp.c
     esp32_nvs.c
     esp32_partition.c
-    esp32_pcnt.c
     esp32_rmt.c
     esp32_ulp.c
     esp32_ldo.c
