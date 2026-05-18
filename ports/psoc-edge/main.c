@@ -70,7 +70,7 @@
 // region (256 KB) while leaving adequate dynamic heap for FreeRTOS task stacks
 // (~40 KB) and the WiFi/WCM/LwIP stack (~60-80 KB).
 #ifndef MICROPY_GC_HEAP_SIZE
-#define MICROPY_GC_HEAP_SIZE    (64 * 1024u)
+#define MICROPY_GC_HEAP_SIZE    (96 * 1024u)
 #endif
 
 typedef enum {
