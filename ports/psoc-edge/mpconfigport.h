@@ -45,7 +45,11 @@
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_SCHEDULER_DEPTH                 (8)
+<<<<<<< HEAD
 #define MICROPY_SCHEDULER_STATIC_NODES          (1)
+=======
+#define MICROPY_SCHEDULER_STATIC_NODES          (0)
+>>>>>>> 61a015e49 (psoc-edge/mpconfigport: Increase scheduler depth to 8.)
 #define MICROPY_USE_INTERNAL_ERRNO              (1)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT          (16)
 #define MICROPY_PY_MATH_GAMMA_FIX_NEGINF        (1)
