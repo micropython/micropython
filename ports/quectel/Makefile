@@ -39,9 +39,7 @@ include $(TOP)/extmod/extmod.mk
 
 CLEAN_EXTRA += $(ROOT)/output
 
-ifeq ($(CROSS), 1)
 CROSS_COMPILE ?= arm-none-eabi-
-endif
 
 INC += -I.
 INC += -I$(TOP)
