@@ -217,7 +217,10 @@ The following specialization applies to this port:
 Constructor
 ^^^^^^^^^^^^
 
-.. class:: UART(id)
+.. class:: UART(id, ...)
+
+   The ``id`` parameter is ignored in this port if passed. 
+   All pins must be specified explicitly using the ``tx`` and ``rx`` parameters in the constructor or in ``init()``.
 
    The following parameters are supported with limited configuration:
    
