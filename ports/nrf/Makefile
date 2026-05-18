@@ -64,7 +64,7 @@ FROZEN_MANIFEST ?= modules/manifest.py
 include ../../py/py.mk
 include ../../extmod/extmod.mk
 
-GIT_SUBMODULES += lib/nrfx lib/tinyusb
+GIT_SUBMODULES += lib/CMSIS_5 lib/nrfx lib/tinyusb
 
 MICROPY_VFS_FAT ?= 0
 
@@ -73,7 +73,7 @@ CROSS_COMPILE ?= arm-none-eabi-
 INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
-INC += -I./../../lib/cmsis/inc
+INC += -I./../../lib/CMSIS_5/CMSIS/Core/Include
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/music

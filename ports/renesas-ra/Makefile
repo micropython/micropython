@@ -43,13 +43,13 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/fsp lib/tinyusb
+GIT_SUBMODULES += lib/CMSIS_5 lib/fsp lib/tinyusb
 
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
 
 LD_DIR=boards
-CMSIS_DIR=lib/cmsis/inc
+CMSIS_DIR=lib/CMSIS_5/CMSIS/Core/Include
 HAL_DIR=lib/fsp
 STARTUP_FILE ?= lib/fsp/ra/fsp/src/bsp/cmsis/Device/RENESAS/Source/startup.o
 SYSTEM_FILE ?= lib/fsp/ra/fsp/src/bsp/cmsis/Device/RENESAS/Source/system.o

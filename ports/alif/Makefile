@@ -2,7 +2,7 @@ BOARD ?= ALIF_ENSEMBLE
 BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
 MCU_CORE ?= M55_HP
-GIT_SUBMODULES += lib/tinyusb lib/alif_ensemble-cmsis-dfp lib/alif-security-toolkit
+GIT_SUBMODULES += lib/CMSIS_5 lib/tinyusb lib/alif_ensemble-cmsis-dfp lib/alif-security-toolkit
 PORT ?= /dev/ttyACM0
 
 ALIF_TOOLS ?= $(TOP)/lib/alif-security-toolkit/toolkit
