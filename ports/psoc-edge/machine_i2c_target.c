@@ -84,32 +84,26 @@ static void i2c_slave_event_callback(uint32_t events) {
     }
 
     machine_i2c_target_data_t *data = &machine_i2c_target_data[self->id];
-
+    // I2CTarget.IRQ_ADDR_MATCH_READ: master sent address with read bit.
     if (events & CY_SCB_I2C_SLAVE_READ_EVENT) {
-        mplogger_print("I2C Slave: Read request (address matched)\n");
         machine_i2c_target_data_addr_match(data, true);
     }
 
 
+    // I2CTarget.IRQ_ADDR_MATCH_WRITE: master sent address with write bit.
     if (events & CY_SCB_I2C_SLAVE_WRITE_EVENT) {
-        mplogger_print("I2C Slave: Write request (address matched)\n");
         machine_i2c_target_data_addr_match(data, false);
     }
 
 
     if (events & CY_SCB_I2C_SLAVE_RD_BUF_EMPTY_EVENT) {
-        mplogger_print("I2C Slave: Read buffer empty\n");
+        // I2CTarget.IRQ_READ_REQ: TX buffer consumed and another byte requested by master.
         if (data->mem_buf != NULL && data->mem_len > 0) {
             machine_i2c_target_data_read_request(self, data);
         }
     }
 
     if (events & CY_SCB_I2C_SLAVE_RD_CMPLT_EVENT) {
-        if (!(events & CY_SCB_I2C_SLAVE_ERR_EVENT)) {
-            mplogger_print("I2C Slave: Read complete, %u bytes sent\n",
-                Cy_SCB_I2C_SlaveGetReadTransferCount(self->scb_obj->scb, &self->ctx));
-        }
-
         if (data->mem_buf != NULL && data->mem_len > 0) {
             Cy_SCB_I2C_SlaveConfigReadBuf(self->scb_obj->scb, data->mem_buf, data->mem_len, &self->ctx);
         }
@@ -122,16 +116,16 @@ static void i2c_slave_event_callback(uint32_t events) {
         // Set state to READING so extmod reset_helper triggers END_READ
         data->state = STATE_READING;
 
-        // Notify application layer - this triggers END_READ event
+        // I2CTarget.IRQ_END_READ: read transaction completed (STOP/restart observed).
         machine_i2c_target_data_restart_or_stop(data);
     }
 
     if (events & CY_SCB_I2C_SLAVE_WR_CMPLT_EVENT) {
         if (!(events & CY_SCB_I2C_SLAVE_ERR_EVENT)) {
             uint32_t bytes_received = Cy_SCB_I2C_SlaveGetWriteTransferCount(self->scb_obj->scb, &self->ctx);
-            mplogger_print("I2C Slave: Write complete, %u bytes received\n", bytes_received);
             self->rx_index = 0;
             while (self->rx_index < bytes_received) {
+                // I2CTarget.IRQ_WRITE_REQ: incoming write payload available from master.
                 machine_i2c_target_data_write_request(self, data);
             }
         }
@@ -145,13 +139,12 @@ static void i2c_slave_event_callback(uint32_t events) {
         // Ensure state is WRITING so extmod reset_helper triggers END_WRITE
         data->state = STATE_WRITING;
 
-        // Notify application layer - this triggers END_WRITE event
+        // I2CTarget.IRQ_END_WRITE: write transaction completed (STOP/restart observed).
         machine_i2c_target_data_restart_or_stop(data);
     }
 
     // Handle errors
     if (events & CY_SCB_I2C_SLAVE_ERR_EVENT) {
-        mplogger_print("I2C Slave: Error event\n");
         machine_i2c_target_data_restart_or_stop(data);
     }
 }
@@ -235,7 +228,6 @@ static inline size_t mp_machine_i2c_target_get_index(machine_i2c_target_obj_t *s
 // IRQ event callback - called from extmod to trigger Python IRQ handler
 // This is called by handle_event() in extmod/machine_i2c_target.c
 static void mp_machine_i2c_target_event_callback(machine_i2c_target_irq_obj_t *irq) {
-    mplogger_print("[SW] mp_machine_i2c_target_event_callback: irq=%p, flags=0x%02X, handler=%p\n", irq, irq->flags, irq->base.handler);
     if (irq->base.handler != mp_const_none) {
         mp_irq_handler(&irq->base);
     }
