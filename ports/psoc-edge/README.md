@@ -22,15 +22,9 @@ Install the following tools on your Linux host machine:
 
         sudo pip install edgeprotecttools
         
-- [Infineon OpenOCD](https://softwaretools.infineon.com/tools/com.ifx.tb.tool.modustoolboxprogtools). The minimum required version is 1.5.0.
+- [Infineon OpenOCD](https://github.com/Infineon/openocd). Download the latest [release](https://github.com/Infineon/openocd/releases) manually or via `wget`. The minimum required version is v5.8.0. For example:
 
-    Download it and install with the command:
-
-        sudo apt install ./ModusToolboxProgtools_1.5.0.1534.deb
-
-    Alternatively, you can download it from this [release GitHub repo](https://github.com/Infineon/openocd/releases)
-
-        wget -O openocd.tar.gz https://github.com/Infineon/openocd/releases/download/release-v5.12.0/openocd-5.12.0.4170-linux.tar.gz
+        wget -O openocd.tar.gz https://github.com/Infineon/openocd/releases/download/release-v5.16.1/openocd-5.16.1.4486-linux.tar.gz
         
     And unarchive it in the desired location. For example, in the `/opt/openocd` dir:
 
