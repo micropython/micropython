@@ -8,15 +8,9 @@ endif
 include ../../py/mkenv.mk
 include quectel.mk
 
-CROSS = 1
+BUILD = build-$(BOARD)
 
-ifeq ($(CROSS), 1)
 CFLAGS = $(INC) $(QUEC_MOD_CFLAGS) $(PLAT_CFLAGS) $(PLAT_DFLAGS) $(COPT)
-else
-LD = gcc
-CFLAGS = $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
-LDFLAGS = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
-endif
 
 CFLAGS += -mcpu=cortex-a5 -mtune=generic-armv7-a -mthumb \
 		  -mfpu=neon-vfpv4 -mfloat-abi=hard -mno-unaligned-access
@@ -99,11 +93,8 @@ SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX) $(SHARED_SRC_C) $(SRC_EXTMOD_C)
 OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
-ifeq ($(CROSS), 1)
-all: $(BUILD)/firmware.a
-else
-all: $(BUILD)/firmware.elf
-endif
+all: $(BUILD)/firmware.a helios_build
+local: $(BUILD)/firmware.a
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
@@ -112,6 +103,8 @@ $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 $(BUILD)/firmware.a: $(OBJ)
 	$(ECHO) "AR $@"
 	$(Q)$(AR) -cr $@ $^
+
+helios_build: $(BUILD)/firmware.a
 	cd $(ROOT) && helios make $(abspath $(TOP)) $(BOARD)
 
 include $(TOP)/py/mkrules.mk
