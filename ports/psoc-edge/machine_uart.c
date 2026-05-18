@@ -344,6 +344,7 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
 */
 
 enum {
+    ARG_id,
     ARG_tx, ARG_rx,
     ARG_baudrate, ARG_bits, ARG_parity, ARG_stop,
     /* ARG_rts, ARG_cts, ARG_flow, */
@@ -351,6 +352,7 @@ enum {
 };
 
 static const mp_arg_t allowed_args[] = {
+    { MP_QSTR_id,           MP_ARG_INT, {.u_int = -1} },
     { MP_QSTR_tx,           MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_rx,           MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_baudrate,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_BAUDRATE} },
@@ -370,6 +372,8 @@ static const mp_arg_t allowed_args[] = {
 static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    /* ARG_id is unused, and ignored in this port.*/
 
     /* -- TX / RX pins -- */
     self->tx = mp_hal_get_pin_obj(args[ARG_tx].u_obj);
