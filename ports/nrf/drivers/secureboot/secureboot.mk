@@ -15,7 +15,7 @@ SRC_SECUREBOOT += $(addprefix $(TOP)/lib/nrfx/mdk/,\
 .PHONY: secureboot clean
 
 INC_SECUREBOOT += -I./../../lib/nrfx/mdk
-INC_SECUREBOOT += -I./../../lib/CMSIS_5/CMSIS/Core/Include
+INC_SECUREBOOT += -I./../../lib/CMSIS_6/CMSIS/Core/Include
 
 MCU_SERIES = m33
 
