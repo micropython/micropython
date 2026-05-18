@@ -241,8 +241,6 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     return ret;
 }
 
-#if MICROPY_ENABLE_COMPILER
-
 // This can be configured by a port (and even configured to a function to be
 // computed dynamically) to indicate the maximum number of bytes that can be
 // held in the stdin buffer.
@@ -758,7 +756,6 @@ friendly_repl_reset:
 }
 
 #endif // MICROPY_REPL_EVENT_DRIVEN
-#endif // MICROPY_ENABLE_COMPILER
 
 int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
