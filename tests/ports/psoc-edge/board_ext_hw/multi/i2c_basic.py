@@ -24,17 +24,34 @@ def instance0():
     mem = bytearray([0xAA, 0xBB, 0xCC, 0xDD, 0x00, 0x00, 0x00, 0x00])
     i2c_target = I2CTarget(addr=SLAVE_ADDR, mem=mem, scl="P17_0", sda="P17_1")
 
-    # Signal to master that slave is ready
+    # Minimal IRQ verification without additional output.
+    read_seen = [False]
+    write_seen = [False]
+
+    def irq_handler(i2c_target):
+        flags = i2c_target.irq().flags()
+        if flags & I2CTarget.IRQ_END_READ:
+            read_seen[0] = True
+        if flags & I2CTarget.IRQ_END_WRITE:
+            write_seen[0] = True
+
+    i2c_target.irq(irq_handler, hard=True)
+
+    # Signal to master that target is ready.
     multitest.next()
 
-    # Wait for transactions
-    time.sleep(10)
+    # Wait for master write transaction to update target memory.
+    timeout = 10  # seconds
+    start_time = time.time()
+    while (mem[0] != 0x01 or mem[1] != 0x02 or mem[2] != 0x03) and (
+        time.time() - start_time
+    ) < timeout:
+        time.sleep(0.1)
 
-    # Verify data was written by master
-    if mem[0] == 0x01 and mem[1] == 0x02 and mem[2] == 0x03:
-        print("target: PASS")
-    else:
-        print("target: FAIL")
+    data_pass = mem[0] == 0x01 and mem[1] == 0x02 and mem[2] == 0x03 and mem[3] == 0xDD
+    irq_pass = read_seen[0] and write_seen[0]
+    print("target: IRQ:", "PASS" if irq_pass else "FAIL")
+    print("target:", "PASS" if (data_pass and irq_pass) else "FAIL")
 
     i2c_target.deinit()
 
@@ -64,7 +81,6 @@ def instance1():
     print("\n***** Test 2: Write *****\n")
     try:
         i2c.writeto(SLAVE_ADDR, b"\x01\x02\x03")
-        time.sleep_ms(100)
         write_pass = True
         print("Status: PASS")
     except Exception as e:
