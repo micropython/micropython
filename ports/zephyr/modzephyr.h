@@ -45,4 +45,8 @@ extern const mp_obj_type_t zephyr_filesystem_type;
 extern const mp_obj_type_t zephyr_video_type;
 #endif
 
+#ifdef CONFIG_USB_DEVICE_STACK_NEXT
+extern const mp_obj_dict_t zephyr_usbd_type;
+#endif
+
 #endif // MICROPY_INCLUDED_ZEPHYR_MODZEPHYR_H

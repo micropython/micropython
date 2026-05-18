@@ -92,6 +92,9 @@ static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #ifdef CONFIG_VIDEO
     { MP_ROM_QSTR(MP_QSTR_Video), MP_ROM_PTR(&zephyr_video_type) },
     #endif
+    #ifdef CONFIG_USB_DEVICE_STACK_NEXT
+    { MP_ROM_QSTR(MP_QSTR_USBDevice), MP_ROM_PTR(&zephyr_usbd_type) },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);

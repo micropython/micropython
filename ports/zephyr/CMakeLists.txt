@@ -77,6 +77,7 @@ set(MICROPY_SOURCE_PORT
     uart_core.c
     zephyr_device.c
     zephyr_storage.c
+    zephyr_usbd.c
     zephyr_video.c
     zephyr_filesystem.c
     mpthreadport.c
@@ -185,7 +186,6 @@ add_dependencies(${MICROPY_TARGET} zephyr_generated_headers)
 target_sources(app PRIVATE
     src/zephyr_start.c
     src/zephyr_getchar.c
-    src/usbd.c
 )
 
 target_link_libraries(app PRIVATE ${MICROPY_TARGET})
