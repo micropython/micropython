@@ -20,7 +20,7 @@ endif
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
-GIT_SUBMODULES += lib/CMSIS_5 lib/tinyusb lib/nxp_driver
+GIT_SUBMODULES += lib/CMSIS_6 lib/tinyusb lib/nxp_driver
 UF2CONV ?= $(TOP)/tools/uf2conv.py
 
 # MicroPython feature configurations
@@ -73,7 +73,7 @@ GEN_PINS_SRC = $(BUILD)/pins_gen.c
 INC += -I$(BOARD_DIR)
 INC += -I$(BUILD)
 INC += -I$(TOP)
-INC += -I$(TOP)/lib/CMSIS_5/CMSIS/Core/Include
+INC += -I$(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 INC += -I$(TOP)/lib/oofatfs
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
