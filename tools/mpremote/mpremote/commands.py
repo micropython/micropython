@@ -479,12 +479,12 @@ def do_edit(state, args):
             os.unlink(dest)
 
 
-def _do_execbuffer(state, buf, follow):
+def _do_execbuffer(state, buf, follow, mpy=False):
     state.ensure_raw_repl()
     state.did_action()
 
     try:
-        state.transport.exec_raw_no_follow(buf)
+        state.transport.exec_raw_no_follow(buf, mpy=mpy)
         if follow:
             ret, ret_err = state.transport.follow(timeout=None, data_consumer=stdout_write_bytes)
             if ret_err:
@@ -512,7 +512,8 @@ def do_run(state, args):
             buf = f.read()
     except OSError:
         raise CommandError(f"could not read file '{filename}'")
-    _do_execbuffer(state, buf, args.follow)
+    mpy = filename.endswith(".mpy") and buf[0] == ord("M")
+    _do_execbuffer(state, buf, args.follow, mpy=mpy)
 
 
 def do_mount(state, args):
