@@ -256,29 +256,28 @@ Additionally, the following functions are enabled:
 
 .. method:: I2C.deinit()
 
-.. Target mode (Slave)
-.. ^^^^^^^^^^^^^^^^^^^
-..
-.. Use the ``I2CTarget`` class for target (slave) operations::
-..
-..     from machine import I2CTarget
-..     
-..     mem = bytearray([0xAA, 0xBB, 0xCC, 0xDD, 0x00, 0x00, 0x00, 0x00])
-..     i2c_target = I2CTarget(scl="P17_0", sda="P17_1", addr=0x43, mem=mem)
-..
-..
-.. The I2CTarget implementation on PSoC Edge has the following port-specific details:
-..
-.. **Memory addressing:**
-..     - ``mem_addrsize``: Only 0 is supported (no memory addressing)
-..     - EEPROM-like addressing (8/16/24/32 bit) is not yet implemented
-..
-.. **Supported IRQ triggers:**
-..
-.. Only transaction-level events are supported (soft IRQ only):
-..
-..     - ``I2CTarget.IRQ_END_READ``: Triggered when master completes reading from slave
-..     - ``I2CTarget.IRQ_END_WRITE``: Triggered when master completes writing to slave
+Target mode (Slave)
+^^^^^^^^^^^^^^^^^^^
+
+Use the ``I2CTarget`` class for target (slave) operations::
+
+    from machine import I2CTarget
+
+    mem = bytearray([0xAA, 0xBB, 0xCC, 0xDD])
+    i2c_target = I2CTarget(scl="P17_0", sda="P17_1", addr=0x43, mem=mem)
+
+
+The I2CTarget implementation on PSoC Edge has the following port-specific details:
+
+**Memory Addressing:**
+    - ``addrsize``: 7-bit and 10-bit addresses are accepted.
+    - ``mem_addrsize``: Only ``0`` is supported.
+    - EEPROM-like internal address phase (8/16/24/32-bit ``mem_addrsize``) is not implemented.
+
+**IRQ triggers:**
+
+The ``hard`` argument in ``i2c_target.irq(..., hard=True)`` is supported.
+When using hard IRQ callbacks, keep handlers short and allocation-free.
 
 Inter-Processor Communication (IPC)
 -------------------------------------
