@@ -46,7 +46,7 @@ typedef struct _machine_pwm_obj_t {
     cy_stc_tcpwm_pwm_config_t pwm_obj;      /**< PDL PWM configuration struct */
     const machine_pin_obj_t *pin;           /**< Resolved GPIO pin object for PWM output */
     uint32_t counter_num;                   /**< TCPWM0 counter index assigned to this PWM instance */
-    en_clk_dst_t pclk_dst;                 /**< PCLK clock destination for this counter's clock assignment */
+    en_clk_dst_t pclk_dst;                  /**< PCLK clock destination for this counter's clock assignment */
     uint32_t frequency;                     /**< PWM output frequency in Hz */
     duty_type_t duty_type;                  /**< Indicates whether duty is set as DUTY_U16 or DUTY_NS */
     mp_int_t duty;                          /**< Duty cycle value: 0-65535 if DUTY_U16, nanoseconds if DUTY_NS */
@@ -56,23 +56,27 @@ typedef struct _machine_pwm_obj_t {
 // Sentinel value meaning "no trigger"; masked with 0x3U when assigned to 2-bit inputMode fields.
 #define CYBSP_PWM_LED_CTRL_INPUT_DISABLED 0x7U
 
-// TCPWM clock = PCLK (100 MHz) / (divider+1) = 100,000,000 / 50,000 = 2000 Hz
-#define CYBSP_PWM_LED_CTRL_CLK_HZ   2000UL
+// TCPWM base clock: PCLK 100 MHz divided to 1 MHz for usable duty resolution at practical
+// frequencies. Divider register value 99 = divisor 100: 100 MHz / 100 = 1 MHz.
+// At 1 MHz a 32-bit counter gives period0 = 1,000,000 at 1 Hz and 1,000 at 1 kHz.
+// Maximum PWM output frequency = PWM_TCPWM_CLK_HZ / 2 = 500 kHz (period0 = 2).
+#define PWM_TCPWM_CLK_HZ        1000000UL
+#define PWM_TCPWM_CLK_DIV_VAL   99U
 
-// Maps (port, pin) → TCPWM0 counter index and PCLK destination for pins that support PWM via
+// Maps (port, pin) : TCPWM0 counter index and PCLK destination for pins that support PWM via
 // HSIOM_SEL_ACT_1 routing. Each entry has a unique counter, so each pin can carry an independent
 // PWM frequency.
 //
 // PWM-capable pins on KIT_PSE84_AI:
-//     P16_0 → counter 0  (shared — P9_1, P9_3, P14_3, P14_4, P17_0, P20_5 also route to counter 0;
-//                          enabling any of those pins simultaneously will conflict with P16_0)
-//     P16_1 → counter 1
-//     P16_2 → counter 2
-//     P16_3 → counter 3
-//     P16_4 → counter 4
-//     P16_5 → counter 5
-//     P16_6 → counter 6
-//     P16_7 → counter 7
+//     P16_0 : counter 0  (shared — P9_1, P9_3, P14_3, P14_4, P17_0, P20_5 also route to counter 0;
+//           :              enabling any of those pins simultaneously will conflict with P16_0)
+//     P16_1 : counter 1
+//     P16_2 : counter 2
+//     P16_3 : counter 3
+//     P16_4 : counter 4
+//     P16_5 : counter 5
+//     P16_6 : counter 6
+//     P16_7 : counter 7
 
 static const struct {
     uint8_t port;
@@ -103,7 +107,7 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
 }
 
 #define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
 /* Unit conversion macros */
@@ -117,6 +121,7 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
  #define pwm_duty_cycle_u16_to_compare(duty_u16, period) ((int)(((float)(duty_u16 + 1) / (float)65536) * (float)period))
 
 static machine_pwm_obj_t *pwm_obj[MICROPY_PY_MACHINE_PWM_MAX_OBJS] = { NULL };
+static bool pwm_clk_configured = false; // true after the shared divider is programmed to PWM_TCPWM_CLK_HZ
 
 // Search the instance pool for an existing PWM object on the given port/pin; returns NULL if not found.
 static inline machine_pwm_obj_t *pwm_obj_find_by_pin(uint8_t port, uint8_t pin) {
@@ -129,7 +134,7 @@ static inline machine_pwm_obj_t *pwm_obj_find_by_pin(uint8_t port, uint8_t pin) 
 }
 
 // Allocate and return a new PWM object from the instance pool; returns NULL if the pool is full.
-static inline machine_pwm_obj_t *pwm_obj_alloc() {
+static inline machine_pwm_obj_t *pwm_obj_alloc(void) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PWM_MAX_OBJS; i++) {
         if (pwm_obj[i] == NULL) {
             pwm_obj[i] = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
@@ -144,6 +149,7 @@ static inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_PWM_MAX_OBJS; i++) {
         if (pwm_obj[i] == pwm_obj_ptr) {
             pwm_obj[i] = NULL;
+            return;
         }
     }
 }
@@ -174,15 +180,16 @@ static void pwm_config(machine_pwm_obj_t *self) {
     if (self->frequency == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM frequency must be greater than 0"));
     }
-    self->pwm_obj.period0 = CYBSP_PWM_LED_CTRL_CLK_HZ / self->frequency;
-    self->pwm_obj.period1 = CYBSP_PWM_LED_CTRL_CLK_HZ / self->frequency;
+    self->pwm_obj.period0 = PWM_TCPWM_CLK_HZ / self->frequency;
+    self->pwm_obj.period1 = PWM_TCPWM_CLK_HZ / self->frequency;
 
     if (self->duty_type == DUTY_U16) {
         self->pwm_obj.compare0 = pwm_duty_cycle_u16_to_compare(self->duty, self->pwm_obj.period0);
         self->pwm_obj.compare1 = pwm_duty_cycle_u16_to_compare(self->duty, self->pwm_obj.period1);
     } else if (self->duty_type == DUTY_NS) {
-        self->pwm_obj.compare0 = pwm_duty_cycle_ns_to_u16(self->duty, self->frequency);
-        self->pwm_obj.compare1 = pwm_duty_cycle_ns_to_u16(self->duty, self->frequency);
+        int duty_u16 = pwm_duty_cycle_ns_to_u16(self->duty, self->frequency);
+        self->pwm_obj.compare0 = pwm_duty_cycle_u16_to_compare(duty_u16, self->pwm_obj.period0);
+        self->pwm_obj.compare1 = pwm_duty_cycle_u16_to_compare(duty_u16, self->pwm_obj.period1);
     }
 
     self->pwm_obj.invertPWMOut = self->invert;
@@ -193,7 +200,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert};
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = VALUE_NOT_SET} },
+        { MP_QSTR_freq,     MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT },
         { MP_QSTR_duty_u16, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_ns,  MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -203,13 +210,16 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_freq].u_int != VALUE_NOT_SET) {
-        self->frequency = args[ARG_freq].u_int;
+    if (args[ARG_freq].u_int <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("PWM frequency must be greater than 0"));
     }
+    if ((uint32_t)args[ARG_freq].u_int > PWM_TCPWM_CLK_HZ / 2) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("PWM frequency must not exceed %lu Hz"), (unsigned long)(PWM_TCPWM_CLK_HZ / 2));
+    }
+    self->frequency = (uint32_t)args[ARG_freq].u_int;
 
-    if (args[ARG_invert].u_bool) {
-        self->invert = true;
-    }
+    self->invert = args[ARG_invert].u_bool;
 
     if (args[ARG_duty_u16].u_int != VALUE_NOT_SET &&
         args[ARG_duty_ns].u_int != VALUE_NOT_SET) {
@@ -233,10 +243,21 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     /* Route the TCPWM output to the configured GPIO pin */
     pwm_pin_config(self->pin);
 
-    /* Connect the pre-configured 2 kHz clock divider to this counter's PCLK input */
+    /* Program the shared 16-bit divider to PWM_TCPWM_CLK_HZ on the first PWM init, then
+     * connect it to this counter's PCLK input. All channels share divider CYBSP_PWM_LED_CTRL_CLK_DIV_NUM
+     * so the reprogramming only needs to happen once. */
+    if (!pwm_clk_configured) {
+        Cy_SysClk_PeriPclkDisableDivider((en_clk_dst_t)CYBSP_PWM_LED_CTRL_CLK_DIV_GRP_NUM,
+            CY_SYSCLK_DIV_16_BIT, CYBSP_PWM_LED_CTRL_CLK_DIV_NUM);
+        Cy_SysClk_PeriPclkSetDivider((en_clk_dst_t)CYBSP_PWM_LED_CTRL_CLK_DIV_GRP_NUM,
+            CY_SYSCLK_DIV_16_BIT, CYBSP_PWM_LED_CTRL_CLK_DIV_NUM, PWM_TCPWM_CLK_DIV_VAL);
+        Cy_SysClk_PeriPclkEnableDivider((en_clk_dst_t)CYBSP_PWM_LED_CTRL_CLK_DIV_GRP_NUM,
+            CY_SYSCLK_DIV_16_BIT, CYBSP_PWM_LED_CTRL_CLK_DIV_NUM);
+        pwm_clk_configured = true;
+    }
     Cy_SysClk_PeriPclkAssignDivider(self->pclk_dst, CY_SYSCLK_DIV_16_BIT, CYBSP_PWM_LED_CTRL_CLK_DIV_NUM);
 
-    cy_rslt_t result = Cy_TCPWM_PWM_Init(TCPWM0,
+    cy_en_tcpwm_status_t result = Cy_TCPWM_PWM_Init(TCPWM0,
         self->counter_num, &self->pwm_obj);
     pwm_assert_raise_val("PWM init failed with return code %lx !", result);
 
@@ -289,11 +310,11 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->pwm_obj.pwmMode = CY_TCPWM_PWM_MODE_PWM;
     self->pwm_obj.clockPrescaler = CY_TCPWM_PWM_PRESCALER_DIVBY_1;
     self->pwm_obj.pwmAlignment = CY_TCPWM_PWM_LEFT_ALIGN;
-    self->pwm_obj.deadTimeClocks = 0;
+    self->pwm_obj.deadTimeClocks = 0U;
     self->pwm_obj.runMode = CY_TCPWM_PWM_CONTINUOUS;
     self->pwm_obj.enablePeriodSwap = false;
     self->pwm_obj.enableCompareSwap = false;
-    self->pwm_obj.interruptSources = (CY_TCPWM_INT_ON_TC & 0U) | (CY_TCPWM_INT_ON_CC0 & 0U) | (CY_TCPWM_INT_ON_CC1 & 0U);
+    self->pwm_obj.interruptSources = 0U;
     self->pwm_obj.invertPWMOutN = CY_TCPWM_PWM_INVERT_ENABLE;
     self->pwm_obj.killMode = CY_TCPWM_PWM_ASYNC_KILL;
     self->pwm_obj.swapInputMode = CYBSP_PWM_LED_CTRL_INPUT_DISABLED & 0x3U;
@@ -308,7 +329,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->pwm_obj.countInput = CY_TCPWM_INPUT_1;
     self->pwm_obj.swapOverflowUnderflow = false;
     self->pwm_obj.immediateKill = false;
-    self->pwm_obj.tapsEnabled = 45;
+    self->pwm_obj.tapsEnabled = CY_TCPWM_INPUT_0;
     self->pwm_obj.compare2 = CY_TCPWM_GRP_CNT_CC0_DEFAULT;
     self->pwm_obj.compare3 = CY_TCPWM_GRP_CNT_CC0_BUFF_DEFAULT;
     self->pwm_obj.enableCompare1Swap = false;
@@ -326,7 +347,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->pwm_obj.linecompl_out_sel = CY_TCPWM_OUTPUT_INVERTED_PWM_SIGNAL;
     self->pwm_obj.line_out_sel_buff = CY_TCPWM_OUTPUT_PWM_SIGNAL;
     self->pwm_obj.linecompl_out_sel_buff = CY_TCPWM_OUTPUT_INVERTED_PWM_SIGNAL;
-    self->pwm_obj.deadTimeClocks_linecompl_out = 0;
+    self->pwm_obj.deadTimeClocks_linecompl_out = 0U;
 
     // Process the remaining parameters (skip dest at args[0]).
     mp_map_t kw_args;
@@ -345,30 +366,30 @@ static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
 
 // Return the current PWM output frequency in Hz.
 static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
+    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM freq getter/setter not yet implemented"));
 }
 
 // Update the PWM output frequency; recalculates the period register.
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
+    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM freq getter/setter not yet implemented"));
 }
 
 // Return the current duty cycle as a 16-bit value (0-65535).
 static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
+    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
 }
 
 // Set the duty cycle from a 16-bit value (0-65535).
 static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
+    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
 }
 
 // Return the current on-time duty cycle in nanoseconds.
 static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
+    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
 }
 
 // Set the duty cycle as an on-time in nanoseconds.
 static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM not implemented"));
+    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
 }
