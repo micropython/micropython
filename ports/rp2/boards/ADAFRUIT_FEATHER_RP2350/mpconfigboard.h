@@ -12,3 +12,5 @@
 // Red user LED GPIO7
 
 // Optional PSRAM on GPIO8
+#define MICROPY_HW_PSRAM_CS_PIN (8)
+#define MICROPY_HW_ENABLE_PSRAM (1)
