@@ -10,12 +10,17 @@ except ImportError:
     raise SystemExit
 
 import sys
+import unittest
 from machine import Pin
+
+callback_counter_value = None
 
 if "esp32" in sys.platform:
     id = 0
     out_pin = 4
     in_pin = 5
+    out_dir_pin = 16
+    in_dir_pin = 17
 elif sys.platform == "mimxrt":
     if "Teensy" in sys.implementation._machine:
         id = 0
@@ -25,10 +30,11 @@ else:
     print("Please add support for this test on this platform.")
     raise SystemExit
 
-import unittest
-
-out_pin = Pin(out_pin, mode=Pin.OUT)
+out_pin = Pin(out_pin, mode=Pin.OUT, value=0)
 in_pin = Pin(in_pin, mode=Pin.IN)
+if "esp32" in sys.platform:
+    out_dir_pin = Pin(out_dir_pin, mode=Pin.OUT, value=0)
+    in_dir_pin = Pin(in_dir_pin, mode=Pin.IN)
 
 
 def toggle(times):
@@ -37,16 +43,25 @@ def toggle(times):
         out_pin(0)
 
 
-class TestConnections(unittest.TestCase):
-    def setUp(self):
-        in_pin.init(Pin.IN)
+def callback(counter):
+    global callback_counter_value
+    callback_counter_value = counter.value()
+    print(f"\n callback counter value:{callback_counter_value:10}")
 
+
+class TestConnections(unittest.TestCase):
     def test_connections(self):
         # Test the hardware connections are correct. If this test fails, all tests will fail.
         out_pin(1)
         self.assertEqual(1, in_pin())
         out_pin(0)
         self.assertEqual(0, in_pin())
+
+        if "esp32" in sys.platform:
+            out_dir_pin(1)
+            self.assertEqual(1, in_dir_pin())
+            out_dir_pin(0)
+            self.assertEqual(0, in_dir_pin())
 
 
 class TestCounter(unittest.TestCase):
@@ -60,7 +75,7 @@ class TestCounter(unittest.TestCase):
     def assertCounter(self, value):
         self.assertEqual(self.counter.value(), value)
 
-    def test_count_rising(self):
+    def test_count_rising_UP(self):
         self.assertCounter(0)
         toggle(100)
         self.assertCounter(100)
@@ -72,7 +87,7 @@ class TestCounter(unittest.TestCase):
         out_pin(1)
         self.assertCounter(1)
 
-    def test_change_directions(self):
+    def test_count_rising_DOWN(self):
         self.assertCounter(0)
         toggle(100)
         self.assertCounter(100)
@@ -84,7 +99,7 @@ class TestCounter(unittest.TestCase):
         self.assertCounter(75)
 
     @unittest.skipIf(sys.platform == "mimxrt", "FALLING edge not supported")
-    def test_count_falling(self):
+    def test_count_falling_UP_DOWN(self):
         self.counter.init(in_pin, direction=Counter.UP, edge=Counter.FALLING)
         toggle(20)
         self.assertCounter(20)
@@ -95,6 +110,42 @@ class TestCounter(unittest.TestCase):
         self.counter.value(-(2**24))
         toggle(20)
         self.assertCounter(-(2**24 - 20))
+        self.counter.init(in_pin, direction=Counter.DOWN)
+        self.counter.value(-(2**24))
+        toggle(20)
+        self.assertCounter(-(2**24 + 20))
+
+    @unittest.skipIf(sys.platform == "mimxrt", "Pin as a destination is not supported")
+    def test_count_pin_direction(self):
+        out_dir_pin(1)  # count UP
+        self.counter.init(in_pin, direction=in_dir_pin)
+        out_pin(0)
+        self.assertCounter(0)  # no rising edge
+        out_pin(1)
+        self.assertCounter(1)  # rising edge
+        out_pin(0)
+        self.assertCounter(1)  # no rising edge
+        toggle(100)
+        self.assertCounter(101)
+
+        out_dir_pin(0)  # count DOWN
+        out_pin(0)
+        self.assertCounter(101)  # no rising edge
+        out_pin(1)
+        self.assertCounter(100)  # rising edge
+        out_pin(0)
+        self.assertCounter(100)  # no rising edge
+        toggle(100)
+        self.assertCounter(0)
+
+    def test_irq(self):
+        self.counter.init(in_pin, direction=Counter.UP, match=100)
+        self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
+        # if "esp32" in sys.platform:
+        #     self.counter.irq(handler=callback, trigger=Counter.IRQ_ZERO)
+        toggle(200)
+        self.assertCounter(200)
+        self.assertEqual(callback_counter_value, 100)
 
 
 if __name__ == "__main__":
