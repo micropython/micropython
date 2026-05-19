@@ -79,6 +79,10 @@ test("@micropython.viper\ndef f(x:uint, y:uint): res = x // y")
 test("@micropython.viper\ndef f(x:uint, y:uint): res = x % y")
 test("@micropython.viper\ndef f(x:int): res = x in x")
 
+# raise with 0 or 2 args not implemented
+test("@micropython.viper\ndef f():\n try:\n  x\n except:\n  raise\n")
+test("@micropython.viper\ndef f(): raise Exception from Exception")
+
 # yield (from) not implemented
 test("@micropython.viper\ndef f(): yield")
 test("@micropython.viper\ndef f(): yield from f")
