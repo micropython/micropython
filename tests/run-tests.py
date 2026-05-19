@@ -81,6 +81,8 @@ via_mpy_tests_to_skip = {
         "misc/sys_settrace_features.py",
         "misc/sys_settrace_generator.py",
         "misc/sys_settrace_loop.py",
+        # REPL autocomplete results differ for pre-compiled .mpy modules.
+        "micropython/repl_autocomplete.py",
     ),
 }
 
