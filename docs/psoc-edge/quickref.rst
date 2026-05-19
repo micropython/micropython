@@ -279,6 +279,27 @@ The I2CTarget implementation on PSoC Edge has the following port-specific detail
 The ``hard`` argument in ``i2c_target.irq(..., hard=True)`` is supported.
 When using hard IRQ callbacks, keep handlers short and allocation-free.
 
+Current implementation notes for IRQ data-phase events:
+
+
+        - PSoC hardware events are limited and do not map
+            1:1 to MicroPython ``IRQ_READ_REQ``/ ``IRQ_WRITE_REQ`` semantics.
+        - Treat these two flags as optional notifications, not required control points.
+        - In the current PSOC Edge port implementation, data-path behavior is
+            strongly tied to ``mem`` buffer configuration. After address match, 
+            hardware/port state handling performs most data movement automatically (when ``mem`` is configured).
+       
+
+Practical guidance for this port:
+
+        - For robust target-mode operation, configure ``mem`` and size it to cover
+            expected master write payloads.
+        - With ``mem`` configured, explicit ``I2CTarget.readinto()``/
+          ``I2CTarget.write()`` calls are usually optional, and mainly needed for
+          custom protocol handling in IRQ callbacks.
+
+
+
 Inter-Processor Communication (IPC)
 -------------------------------------
 
