@@ -37,9 +37,9 @@ def gen4():
     yield -1
     try:
         print((yield from gen3()))
-    except GeneratorExit:
+    except GeneratorExit as e:
         print("delegating caught GeneratorExit")
-        raise
+        raise e
     yield 10
     yield 11
 
@@ -70,9 +70,9 @@ def gen6():
     yield -1
     try:
         print((yield from gen5()))
-    except GeneratorExit:
+    except GeneratorExit as e:
         print("delegating caught GeneratorExit")
-        raise
+        raise e
     yield 10
     yield 11
 
