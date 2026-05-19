@@ -20,9 +20,6 @@ MicroPython on quectel port requires the HeliosSDK.  The HeliosSDK includes the 
 manage the quectel microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
-To install the HeliosSDK the full instructions can be found at the
-[HeliosSDK Development Guide](https://developer.quectel.com/doc/quecpython/Application_guide/en/helios-sdk/quick-start.html).
-
 **Windows 10 Environment Setup**
 
 *Step 1: Download Toolchain*
@@ -52,12 +49,15 @@ Enter the following command in the terminal to install `p7zip-full`, `git`, `mak
 ```
 sudo apt install p7zip-full git make python3
 ```
+On Linux the sdk tools require a specific version of the libicu library which can be installed with the following commands:
+```
+curl -L http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu55_55.1-7ubuntu0.5_amd64.deb -o libicu55.deb
+sudo dpkg -i libicu55.deb || true
+```
 
 *Source Code*
 
-For HeliosSDK, please contact the [QuecPython technical team](https://developer.quectel.com/contact) for the source code of HeliosSDK(We are preparing to open source), You can also get supports through email QuecPython@quectel.com.
-
-For MicroPython, You can directly pull the official code, but you need to pull MicroPython into the heliossdk directory, for example, create a services directory under heliossdk and place MicroPython in the services directory.
+For MicroPython, You can directly pull the official code, and follow the steps below.
 
 Building the firmware
 ---------------------
@@ -67,21 +67,25 @@ Before you start building the firmware, you must build the MicroPython cross com
 > If you are in a Windows environment, you need a Windows compilation toolchain, such as MinGW.
 
 ```bash
-# path: heliossdk/services/micropython
 $ make -C mpy-cross
 ```
 
 Then to build MicroPython for the quectel run:
 
 ```bash
-# path: heliossdk/services/micropython
 $ cd ports/quectel
 $ make submodules
-$ make
+$ make BOARD=<board_name>
 ```
 
-This will produce a combined `firmware.a` lib in the `build/`
-subdirectory directly.The compiled MicroPython library will be used by HeliosSDK to build a complete firmware package. Of course, you can also build the entire firmware directly using the following method.
+This will compile the firmware in `micropython/lib/helios/output/release/<board_name>` directory. 
+
+It may be necessary to create a symlink to the micropython folder in the services directory of HeliosSDK. To do this create a services folder in the sdk directory and create the link with the following command:
+```
+ln -s path/to/micropython path/to/HeliosSDK/services
+```
+
+The firmware can also be built from the sdk directory by cloning the sdk from the https://github.com/QuecPython/Helios-SDK repository, and following the next steps to compile.
 
 *Check the usage of the helios compilation commands*
 
