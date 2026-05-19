@@ -243,8 +243,9 @@ def prepare_script_for_target(args, script_text, script_name, force_plain=False)
         except subprocess.CalledProcessError as er:
             return True, b"mpy-cross crash\n" + er.output + er.stderr
 
-        script_text = b"__buf=" + bytes(repr(mpy_data), "ascii") + b"\n"
-        script_text += bytes(_injected_import_hook_code, "ascii")
+        # script_text = b"__buf=" + bytes(repr(mpy_data), "ascii") + b"\n"
+        script_text = mpy_data
+        # script_text += bytes(_injected_import_hook_code, "ascii")
     else:
         print("error: using emit={} must go via .mpy".format(args.emit))
         sys.exit(1)
@@ -279,7 +280,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
-        output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
+        output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT, mpy=args.via_mpy and not is_special)
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
