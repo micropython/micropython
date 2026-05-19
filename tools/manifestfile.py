@@ -192,6 +192,8 @@ class ManifestFile:
         self._manifest_files = []
         # List of PyPI dependencies (when mode=MODE_PYPROJECT).
         self._pypi_dependencies = []
+        # List of C module directories.
+        self._c_modules = []
         # Don't allow including the same file twice.
         self._visited = set()
         # Stack of metadata for each level.
@@ -201,7 +203,9 @@ class ManifestFile:
         # List of directories to search for packages.
         self._library_dirs = []
         # Add default micropython-lib libraries if $(MPY_LIB_DIR) has been specified.
-        if self._path_vars["MPY_LIB_DIR"]:
+        # Use .get() to avoid KeyError if MPY_LIB_DIR wasn't passed (shouldn't happen
+        # in normal cmake/make builds, but be defensive for direct tool invocations).
+        if self._path_vars.get("MPY_LIB_DIR"):
             for lib in BASE_LIBRARY_NAMES:
                 self.add_library(lib, os.path.join("$(MPY_LIB_DIR)", lib))
 
@@ -221,6 +225,7 @@ class ManifestFile:
             "add_library": self.add_library,
             "package": self.package,
             "module": self.module,
+            "c_module": self.c_module,
             "options": IncludeOptions(**kwargs),
         }
 
@@ -243,6 +248,9 @@ class ManifestFile:
     def pypi_dependencies(self):
         # In MODE_PYPROJECT, this will return a list suitable for requirements.txt.
         return self._pypi_dependencies
+
+    def c_modules(self):
+        return self._c_modules
 
     def execute(self, manifest_file):
         if manifest_file.endswith(".py"):
@@ -500,6 +508,35 @@ class ManifestFile:
             raise ManifestFileError("module must be .py file")
         # TODO: version None
         self._add_file(os.path.join(base_path, module_path), module_path, opt=opt)
+
+    def c_module(self, module_path):
+        """
+        Include a C module directory in the build.
+
+        The module_path should be a directory containing a micropython.mk and/or
+        micropython.cmake file.
+
+        Supports $(VAR) path substitution:
+            c_module("$(MPY_DIR)/examples/usercmodule/cexample")
+            c_module("$(BOARD_DIR)/../../drivers/sensor")
+
+        Can be called multiple times to include multiple C modules.
+        """
+        module_path = self._resolve_path(module_path)
+        if not os.path.exists(module_path):
+            raise ManifestFileError("C module path does not exist: {}".format(module_path))
+        if not os.path.isdir(module_path):
+            raise ManifestFileError("C module path must be a directory: {}".format(module_path))
+        # Verify the directory contains a micropython.mk or micropython.cmake file.
+        has_mk = os.path.isfile(os.path.join(module_path, "micropython.mk"))
+        has_cmake = os.path.isfile(os.path.join(module_path, "micropython.cmake"))
+        if not has_mk and not has_cmake:
+            raise ManifestFileError(
+                "C module directory must contain micropython.mk or micropython.cmake: {}".format(
+                    module_path
+                )
+            )
+        self._c_modules.append(module_path)
 
     def _freeze_internal(self, path, script, exts, kind, opt):
         if script is None:
