@@ -465,11 +465,27 @@ class Pyboard:
         window_size = struct.unpack("<H", data)[0]
         window_remain = window_size
 
+        # expand escapes
+        #print('pres', len(command_bytes), command_bytes.hex(":"))
+        cb = []
+        for b in command_bytes:
+            if b == 3 or b == 4 or b == 5:
+                cb.append(5)
+                if b == 5:
+                    cb.append(b)
+                else:
+                    cb.append(ord("C") + b - 3)
+            else:
+                cb.append(b)
+        command_bytes = bytes(cb)
+        #print('send', len(command_bytes), command_bytes.hex(":"))
+
         # Write out the command_bytes data.
         i = 0
         while i < len(command_bytes):
             while window_remain == 0 or self.serial.inWaiting():
                 data = self.serial.read(1)
+                #print("read", data.hex())
                 if data == b"\x01":
                     # Device indicated that a new window of data can be sent.
                     window_remain += window_size
@@ -482,6 +498,7 @@ class Pyboard:
                     raise PyboardError("unexpected read during raw paste: {}".format(data))
             # Send out as much data as possible that fits within the allowed window.
             b = command_bytes[i : min(i + window_remain, len(command_bytes))]
+            #print("write", len(b))
             self.serial.write(b)
             window_remain -= len(b)
             i += len(b)
@@ -491,10 +508,11 @@ class Pyboard:
 
         # Wait for device to acknowledge end of data.
         data = self.read_until(1, b"\x04")
+        #print("ack", data)
         if not data.endswith(b"\x04"):
             raise PyboardError("could not complete raw paste: {}".format(data))
 
-    def exec_raw_no_follow(self, command):
+    def exec_raw_no_follow(self, command, mpy=False):
         if isinstance(command, bytes):
             command_bytes = command
         else:
@@ -507,7 +525,11 @@ class Pyboard:
 
         if self.use_raw_paste:
             # Try to enter raw-paste mode.
-            self.serial.write(b"\x05A\x01")
+            if mpy:
+                #print("exec raw mpy", command[:4].hex())
+                self.serial.write(b"\x05B\x01")
+            else:
+                self.serial.write(b"\x05A\x01")
             data = self.serial.read(2)
             if data == b"R\x00":
                 # Device understood raw-paste command but doesn't support it.
@@ -524,6 +546,9 @@ class Pyboard:
             # Don't try to use raw-paste mode again for this connection.
             self.use_raw_paste = False
 
+        if mpy:
+            raise PyboardError("could not enter raw repl for mpy")
+
         # Write command using standard raw REPL, 256 bytes every 10ms.
         for i in range(0, len(command_bytes), 256):
             self.serial.write(command_bytes[i : min(i + 256, len(command_bytes))])
@@ -535,8 +560,8 @@ class Pyboard:
         if data != b"OK":
             raise PyboardError("could not exec command (response: %r)" % data)
 
-    def exec_raw(self, command, timeout=10, data_consumer=None):
-        self.exec_raw_no_follow(command)
+    def exec_raw(self, command, timeout=10, data_consumer=None, mpy=False):
+        self.exec_raw_no_follow(command, mpy=mpy)
         return self.follow(timeout, data_consumer)
 
     def eval(self, expression, parse=False):
@@ -550,8 +575,8 @@ class Pyboard:
             return ret
 
     # In Python3, call as pyboard.exec(), see the setattr call below.
-    def exec_(self, command, timeout=10, data_consumer=None):
-        ret, ret_err = self.exec_raw(command, timeout, data_consumer)
+    def exec_(self, command, timeout=10, data_consumer=None, mpy=False):
+        ret, ret_err = self.exec_raw(command, timeout, data_consumer, mpy=mpy)
         if ret_err:
             raise PyboardError("exception", ret, ret_err)
         return ret
