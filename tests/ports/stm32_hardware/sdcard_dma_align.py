@@ -69,7 +69,7 @@ class TestSDAlign(unittest.TestCase):
                     raise RuntimeError("Corrupt test block in temporary file ", FILE_PATH)
         except OSError as e:
             if e.errno != errno.ENOENT:
-                raise
+                raise e
 
             print("Creating new temp file...")
             with open(FILE_PATH, "wb") as f:
