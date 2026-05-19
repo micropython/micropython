@@ -17,7 +17,7 @@ def test(addr, hostname, block=True):
         print("connected")
     except OSError as e:
         if e.errno != errno.EINPROGRESS:
-            raise
+            raise e
         print("EINPROGRESS")
 
     if sys.implementation.name != "micropython":

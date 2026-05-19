@@ -90,11 +90,9 @@ emitter_tests_to_skip = {
     # Remove them from the below when they work.
     "native": (
         # These require raise_varargs.
-        "basics/gen_yield_from_close.py",
         "basics/try_finally_return2.py",
         "basics/try_reraise.py",
         "basics/try_reraise2.py",
-        "misc/features.py",
         # These require checking for unbound local.
         "basics/annotate_var.py",
         "basics/del_deref.py",
