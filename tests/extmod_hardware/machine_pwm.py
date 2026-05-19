@@ -100,7 +100,7 @@ def _test_freq(self, freq):
         if sys.platform == "esp32":
             # TODO why is this bit needed to get it working on esp32?
             self.pwm.init(freq=freq, duty_u16=duty_u16)
-            time.sleep(0.1)
+            time.sleep_ms(100)
         self.pwm.duty_u16(duty_u16)
         _test_freq_duty(self, self.pulse_in, self.pwm, freq, duty_u16)
 
