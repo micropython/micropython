@@ -199,12 +199,12 @@ MP_NOINLINE static void machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self,
 
 static void machine_pdm_pcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pdm_pcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PDM_PCM(sck="MP_HAL_PIN_FMT ",\n"
-        "data="MP_HAL_PIN_FMT ",\n"
-        "sample_rate=%ld,\n"
-        "bits=%u,\n"
-        "format=%u,\n"
-        "gain=%f,\n"
+    mp_printf(print, "PDM_PCM(sck="MP_HAL_PIN_FMT ", "
+        "data="MP_HAL_PIN_FMT ", "
+        "sample_rate=%ld, "
+        "bits=%u, "
+        "format=%u, "
+        "gain=%f, "
         "ibuf=%d)",
         mp_hal_pin_name(self->sck),
         mp_hal_pin_name(self->data),
