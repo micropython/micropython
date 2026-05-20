@@ -46,7 +46,11 @@ def toggle(times):
 def callback(counter):
     global callback_counter_value
     callback_counter_value = counter.value()
-    print(f"\n callback counter value:{callback_counter_value:10}")
+    counter_irq_flags = counter.irq().flags()
+    print(
+        f"\n callback counter.value():{callback_counter_value:10}, counter.irq().flags():{counter_irq_flags:3}, flags.IRQ_MATCH:{counter_irq_flags & Counter.IRQ_MATCH > 0}"
+    )
+    # print(counter)
 
 
 class TestConnections(unittest.TestCase):
@@ -86,6 +90,8 @@ class TestCounter(unittest.TestCase):
         self.assertCounter(0)  # no rising edge
         out_pin(1)
         self.assertCounter(1)
+        out_pin(0)
+        self.assertCounter(1)  # no rising edge
 
     def test_count_rising_DOWN(self):
         self.assertCounter(0)
@@ -115,10 +121,11 @@ class TestCounter(unittest.TestCase):
         toggle(20)
         self.assertCounter(-(2**24 + 20))
 
-    @unittest.skipIf(sys.platform == "mimxrt", "Pin as a destination is not supported")
+    @unittest.skipIf(sys.platform == "mimxrt", "Pin as a count direction is not supported")
     def test_count_pin_direction(self):
+        self.counter.init(in_pin, direction=in_dir_pin, match=5_000)
+
         out_dir_pin(1)  # count UP
-        self.counter.init(in_pin, direction=in_dir_pin)
         out_pin(0)
         self.assertCounter(0)  # no rising edge
         out_pin(1)
@@ -138,14 +145,29 @@ class TestCounter(unittest.TestCase):
         toggle(100)
         self.assertCounter(0)
 
-    def test_irq(self):
-        self.counter.init(in_pin, direction=Counter.UP, match=100)
+        out_dir_pin(1)  # count UP
         self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
-        # if "esp32" in sys.platform:
-        #     self.counter.irq(handler=callback, trigger=Counter.IRQ_ZERO)
-        toggle(200)
-        self.assertCounter(200)
-        self.assertEqual(callback_counter_value, 100)
+        toggle(6_000)
+        self.assertCounter(6_000)
+        self.assertEqual(callback_counter_value, 5_000)
+
+        out_dir_pin(0)  # count DOWN
+        toggle(6_000 + 10)
+        self.assertCounter(-10)
+        self.assertEqual(callback_counter_value, 5_000)
+
+    def test_irq(self):
+        self.counter.init(in_pin, direction=Counter.UP, match=50_000)
+        self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
+        toggle(60_000)
+        self.assertCounter(60_000)
+        self.assertEqual(callback_counter_value, 50_000)
+
+        self.counter.init(in_pin, direction=Counter.DOWN, match=-50_000)
+        self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
+        toggle(60_000)
+        self.assertCounter(-60_000)
+        self.assertEqual(callback_counter_value, -50_000)
 
 
 if __name__ == "__main__":
