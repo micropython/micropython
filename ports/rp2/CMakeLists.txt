@@ -537,6 +537,7 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
 target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--defsym=__micropy_c_heap_size__=${MICROPY_C_HEAP_SIZE}
     -Wl,--wrap=runtime_init_clocks
+    -Wl,--print-memory-usage
 )
 
 if(DEFINED PICO_FLASH_SIZE_BYTES)
@@ -649,13 +650,6 @@ endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
 
-pico_find_compiler_with_triples(PICO_COMPILER_SIZE "${PICO_GCC_TRIPLE}" size)
-
-add_custom_command(TARGET ${MICROPY_TARGET}
-    POST_BUILD
-    COMMAND ${PICO_COMPILER_SIZE} --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
-    VERBATIM
-)
 
 # Collect all the include directories and compile definitions for the pico-sdk components.
 foreach(comp ${PICO_SDK_COMPONENTS})
