@@ -827,19 +827,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tstring = True
 
         if args.inlineasm_arch == "thumb":
-            if "thumb2" not in args.inlineasm_features:
-                skip_tests.add("inlineasm/thumb/asmbcc.py")
-                skip_tests.add("inlineasm/thumb/asmbitops.py")
-                skip_tests.add("inlineasm/thumb/asmconst.py")
-                skip_tests.add("inlineasm/thumb/asmdiv.py")
-                skip_tests.add("inlineasm/thumb/asmit.py")
-                skip_tests.add("inlineasm/thumb/asmspecialregs.py")
-            if "vfp" not in args.inlineasm_features:
-                skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
-                skip_tests.add("inlineasm/thumb/asmfpcmp.py")
-                skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
-                skip_tests.add("inlineasm/thumb/asmfpmuldiv.py")
-                skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
+            for feature in ("thumb2", "vfp"):
+                if feature not in args.inlineasm_features:
+                    for test in glob(f"inlineasm/thumb/asm_{feature}_*.py"):
+                        skip_tests.add(test)
 
         if args.inlineasm_arch == "rv32":
             for extension in RV32_ARCH_FLAGS:

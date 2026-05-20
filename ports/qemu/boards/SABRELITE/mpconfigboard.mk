@@ -26,4 +26,4 @@ MICROPY_HEAP_SIZE ?= 163840
 MPY_CROSS_FLAGS += -march=armv6
 
 # These tests don't work on Cortex-A9, so exclude them.
-RUN_TESTS_ARGS += --exclude 'inlineasm/thumb/(asmbcc|asmbitops|asmconst|asmdiv|asmit|asmspecialregs).py'
+RUN_TESTS_ARGS += --exclude 'inlineasm/thumb/asm_thumb2_.*.py'
