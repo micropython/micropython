@@ -439,6 +439,9 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
 
 static const mp_obj_type_t pyb_timer_channel_type;
 
+// All timers have a 16-bit prescaler (stored as prescaler-1).
+#define PRESCALER_MAX (0x10000U)
+
 // This is the largest value that we can multiply by 100 and have the result
 // fit in a uint32_t.
 #define MAX_PERIOD_DIV_100  42949672
@@ -473,16 +476,22 @@ static uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
     period = MAX(1, period);
     while (period > TIMER_CNT_MASK(self)) {
         // if we can divide exactly, do that first
-        if (period % 5 == 0) {
+        if (period % 5 == 0 && prescaler * 5 <= PRESCALER_MAX) {
             prescaler *= 5;
             period /= 5;
-        } else if (period % 3 == 0) {
+        } else if (period % 3 == 0 && prescaler * 3 <= PRESCALER_MAX) {
             prescaler *= 3;
             period /= 3;
-        } else {
+        } else if (prescaler * 2 <= PRESCALER_MAX) {
             // may not divide exactly, but loses minimal precision
             prescaler <<= 1;
             period >>= 1;
+        } else if (prescaler < PRESCALER_MAX) {
+            // at the limit: put prescaler to the maximum and rescale period
+            period = (uint64_t)period * (uint64_t)prescaler / PRESCALER_MAX;
+            prescaler = PRESCALER_MAX;
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("freq too small"));
         }
     }
     *period_out = (period - 1) & TIMER_CNT_MASK(self);
@@ -514,7 +523,7 @@ static uint32_t compute_prescaler_period_from_t(pyb_timer_obj_t *self, int32_t t
                 // round division up
                 prescaler |= period_lsb;
             }
-            if (prescaler > 0x10000) {
+            if (prescaler > PRESCALER_MAX) {
                 mp_raise_ValueError(MP_ERROR_TEXT("period too large"));
             }
         }
@@ -869,7 +878,7 @@ static const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
     #elif defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
-    #elif defined(STM32H7) || defined(STM32H5)
+    #elif defined(STM32H7) || defined(STM32H5) || defined(STM32N6)
     TIM_ENTRY(1, TIM1_UP_IRQn),
     #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),

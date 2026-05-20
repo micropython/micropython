@@ -678,7 +678,7 @@ void TIM1_UP_TIM16_IRQHandler(void) {
 }
 #endif
 
-#if defined(STM32H7)
+#if defined(STM32H7) || defined(STM32N6)
 void TIM1_UP_IRQHandler(void) {
     IRQ_ENTER(TIM1_UP_IRQn);
     timer_irq_handler(1);

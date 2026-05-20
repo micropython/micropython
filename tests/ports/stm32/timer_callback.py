@@ -4,10 +4,14 @@ import sys
 import time
 from pyb import Timer
 
-if "STM32WB" in sys.implementation._machine:
-    tim_extra_id = 16
-else:
-    tim_extra_id = 4
+tim_first = 1
+tim_second = 2
+tim_third = 4
+
+if "STM32L1" in sys.implementation._machine:
+    tim_first = 5
+elif "STM32WB" in sys.implementation._machine:
+    tim_third = 16
 
 
 # callback function that disables the callback when called
@@ -34,19 +38,19 @@ def cb3(x):
 
 
 # create a timer with a callback, using callback(None) to stop
-tim = Timer(1, freq=100, callback=cb1)
+tim = Timer(tim_first, freq=100, callback=cb1)
 time.sleep_ms(5)
 print("before cb1")
 time.sleep_ms(15)
 
 # create a timer with a callback, using deinit to stop
-tim = Timer(2, freq=100, callback=cb2)
+tim = Timer(tim_second, freq=100, callback=cb2)
 time.sleep_ms(5)
 print("before cb2")
 time.sleep_ms(15)
 
 # create a timer, then set the freq, then set the callback
-tim = Timer(tim_extra_id)
+tim = Timer(tim_third)
 tim.init(freq=100)
 tim.callback(cb1)
 time.sleep_ms(5)
