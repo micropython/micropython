@@ -32,17 +32,8 @@
 // port-specific includes
 #include "modpsocedge.h"
 
-mp_obj_t system_reset_cause(void) {
-    // TODO: Implement a way to get the reset cause.
-    // For now, we return 0 to indicate no specific reset cause.
-    uint32_t set_reset_cause = 0;
-    return MP_OBJ_NEW_SMALL_INT(set_reset_cause);
-}
-MP_DEFINE_CONST_FUN_OBJ_0(system_reset_cause_obj, system_reset_cause);
-
 static const mp_rom_map_elem_t psoc_edge_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),         MP_ROM_QSTR(MP_QSTR_psoc_edge) },
-    { MP_ROM_QSTR(MP_QSTR_system_reset_cause),  MP_ROM_PTR(&system_reset_cause_obj)},
     #if MICROPY_ENABLE_EXT_QSPI_FLASH
     { MP_ROM_QSTR(MP_QSTR_QSPI_Flash),       MP_ROM_PTR(&psoc_edge_qspi_flash_type) },
     #endif
