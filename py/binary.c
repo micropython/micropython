@@ -300,6 +300,21 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index) {
 // most 8 (for q and Q), so we will always be able to parse the given data
 // and fit it into a long long.
 long long mp_binary_get_int(size_t size, bool is_signed, bool big_endian, const byte *src) {
+    // If the requested endianness matches the native endianness and the memory address
+    // is aligned, we can read the entire integer using a cast instead of reading it as
+    // individual bytes. Besides being slightly more efficient it also makes reads from
+    // memory that is not byte-addressable work correctly.
+    if (big_endian == MP_ENDIANNESS_BIG && ((uintptr_t)src) % size == 0) {
+        switch (size) {
+            case 2:
+                return is_signed ? (uint64_t)*((int16_t *)src) : (uint64_t)*((uint16_t *)src);
+            case 4:
+                return is_signed ? (uint64_t)*((int32_t *)src) : (uint64_t)*((uint32_t *)src);
+            case 8:
+                return is_signed ? (uint64_t)*((int64_t *)src) : (uint64_t)*((uint64_t *)src);
+        }
+    }
+
     int delta;
     if (!big_endian) {
         delta = -1;
