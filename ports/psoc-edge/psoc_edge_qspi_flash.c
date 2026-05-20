@@ -125,7 +125,7 @@ static mp_obj_t psoc_edge_qspi_flash_make_new(const mp_obj_type_t *type, size_t 
     if (start == -1) {
         start = 0;
     } else if (!(0 <= start && start < MICROPY_HW_FLASH_STORAGE_BYTES && start % EXT_FLASH_SECTOR_SIZE == 0)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid 'start' value"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid 'start' value"));
     }
 
     mp_int_t len = args[ARG_len].u_int;
@@ -133,7 +133,7 @@ static mp_obj_t psoc_edge_qspi_flash_make_new(const mp_obj_type_t *type, size_t 
     if (len == -1) {
         len = MICROPY_HW_FLASH_STORAGE_BYTES - start;
     } else if (!(0 < len && start + len <= MICROPY_HW_FLASH_STORAGE_BYTES && len % EXT_FLASH_SECTOR_SIZE == 0)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid 'len' value"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid 'len' value"));
     }
 
     self->flash_base = MICROPY_HW_FLASH_STORAGE_BASE + start;
@@ -154,7 +154,7 @@ static mp_obj_t psoc_edge_qspi_flash_readblocks(size_t n_args, const mp_obj_t *a
     cy_rslt_t result = mtb_serial_memory_read(&serial_memory_obj, self->flash_base + offset, bufinfo.len, bufinfo.buf);
 
     if (result != CY_RSLT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Read failed: 0x%08lx"), result);
+        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("read failed: 0x%08lx"), result);
     }
 
     return mp_const_none;
@@ -177,7 +177,7 @@ static mp_obj_t psoc_edge_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *
             // the mtb_serial_memory_get_erase_size() function call is necessary to keep the erase at sector boundary, else it throws errors.
 
             if (CY_RSLT_SUCCESS != result) {
-                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Erase before write failed: 0x%08lx"), result);
+                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("erase before write failed: 0x%08lx"), result);
             }
         }
     } else {
@@ -187,7 +187,7 @@ static mp_obj_t psoc_edge_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *
     cy_rslt_t result = mtb_serial_memory_write(&serial_memory_obj, self->flash_base + offset, bufinfo.len, bufinfo.buf);
 
     if (result != CY_RSLT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Write failed: 0x%08lx"), result);
+        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("write failed: 0x%08lx"), result);
     }
 
     return mp_const_none;
@@ -226,7 +226,7 @@ static mp_obj_t psoc_edge_qspi_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp
             uint32_t offset = mp_obj_get_int(arg_in) * EXT_FLASH_BLOCK_SIZE_BYTES;
             cy_rslt_t result = mtb_serial_memory_erase(&serial_memory_obj, self->flash_base + offset, mtb_serial_memory_get_erase_size(&serial_memory_obj, self->flash_base + offset));
             if (result != CY_RSLT_SUCCESS) {
-                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Erase failed: 0x%08lx"), result);
+                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("erase failed: 0x%08lx"), result);
             }
             return MP_OBJ_NEW_SMALL_INT(0);
         }
