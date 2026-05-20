@@ -667,6 +667,12 @@ soft_reset:
     pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
     #endif
 
+    #if MICROPY_PY_NETWORK
+    // Initialize network subsystem before boot.py so that network
+    // interfaces can be instantiated in boot.py.
+    mod_network_init();
+    #endif
+
     // Run boot.py (or whatever else a board configures at this stage).
     if (MICROPY_BOARD_RUN_BOOT_PY(&state) == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
         goto soft_reset_exit;
