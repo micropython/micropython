@@ -13,3 +13,7 @@ set(MICROPY_PY_BLUETOOTH_CYW43 ON)
 
 # Board specific version of the frozen manifest
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
+
+if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    set(MICROPY_HW_FLASH_STORAGE_BYTES 14680064)  # 14 * 1024 * 1024
+endif()
