@@ -277,12 +277,12 @@ static bool machine_uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout_ms) 
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(tx="MP_HAL_PIN_FMT ",\n"
-        "rx="MP_HAL_PIN_FMT ",\n"
-        "baudrate=%ld,\n"
-        "bits=%u,\n"
-        "parity=%u,\n"
-        "stop=%u,\n",
+    mp_printf(print, "UART(tx="MP_HAL_PIN_FMT ", "
+        "rx="MP_HAL_PIN_FMT ", "
+        "baudrate=%ld, "
+        "bits=%u, "
+        "parity=%u, "
+        "stop=%u, ",
         mp_hal_pin_name(self->tx),
         mp_hal_pin_name(self->rx),
         self->baudrate,
@@ -291,19 +291,23 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         self->stop
         );
 
+    /**
+     * TODO: Implement RTS/CTS flow control print
     if (self->rts != NULL) {
-        mp_printf(print, "rts="MP_HAL_PIN_FMT ",\n", mp_hal_pin_name(self->rts));
+        mp_printf(print, "rts="MP_HAL_PIN_FMT ", ", mp_hal_pin_name(self->rts));
     }
 
     if (self->cts != NULL) {
-        mp_printf(print, "cts="MP_HAL_PIN_FMT ",\n", mp_hal_pin_name(self->cts));
+        mp_printf(print, "cts="MP_HAL_PIN_FMT ", ", mp_hal_pin_name(self->cts));
     }
 
-    mp_printf(print, "flow=%u,\n"
-        "timeout=%ld,\n"
-        "timeout_char=%ld,\n"
+     mp_printf(print, "flow=%u, "
+    */
+
+    mp_printf(print, "timeout=%ld, "
+        "timeout_char=%ld, "
         "rxbuf=%d)",
-        self->flow,
+        /* self->flow, */
         self->timeout_ms,
         self->timeout_char_ms,
         self->rx_ringbuf.size
