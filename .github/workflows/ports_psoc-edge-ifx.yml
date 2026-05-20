@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  mpy_hex_file: firmware.signed.merged.hex
+  mpy_hex_file: firmware.hex
 
 jobs:
   server-build:
