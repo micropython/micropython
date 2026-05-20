@@ -97,6 +97,10 @@
 #define MICROPY_PY_BINASCII                (CORE_FEAT)
 #endif
 
+#ifndef MICROPY_PY_SELECT
+#define MICROPY_PY_SELECT                  (MICROPY_PY_ASYNCIO)
+#endif
+
 #ifndef MICROPY_PY_NRF
 #define MICROPY_PY_NRF                     (CORE_FEAT)
 #endif
