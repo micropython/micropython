@@ -550,7 +550,7 @@ static machine_pdm_pcm_obj_t *mp_machine_pdm_pcm_make_new_instance(mp_int_t pdm_
     }
 
     if (self == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("All available PDM_PCM instances are allocated"));
+        mp_raise_ValueError(MP_ERROR_TEXT("all available PDM_PCM instances are allocated"));
     }
 
     return self;

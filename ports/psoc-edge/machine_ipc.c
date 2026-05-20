@@ -335,7 +335,7 @@ static mp_obj_t machine_ipc_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     // Validate cores selected
     if (args[ARG_src_core].u_int != CM33 || args[ARG_target_core].u_int != CM55) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid core values: Only CM33<->CM55 communication is supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid core values: only CM33<->CM55 communication is supported"));
     }
 
     // Store core information in the object for future reference (e.g., during endpoint registration)
@@ -493,9 +493,9 @@ static mp_obj_t machine_ipc_enable_core(size_t n_args, const mp_obj_t *args) {
 
         return mp_const_true;
     } else if (core_id == CM33) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid operation: CM33 core is already active and cannot be re-enabled"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid operation: CM33 core is already active and cannot be re-enabled"));
     } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported Core. Currently only CM55 is supported")); // ToDo: This should be generalised
+        mp_raise_ValueError(MP_ERROR_TEXT("unsupported core, only CM55 is supported")); // ToDo: This should be generalised
     }
 
     return mp_const_false;
@@ -549,7 +549,7 @@ static mp_obj_t machine_ipc_is_busy(size_t n_args, const mp_obj_t *args) {
 
     uint32_t channel = get_channel_for_core(core_id);
     if (channel == 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid core ID"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid core ID"));
     }
     bool locked = Cy_IPC_Drv_IsLockAcquired(Cy_IPC_Drv_GetIpcBaseAddress(channel));
     return mp_obj_new_bool(locked);

@@ -144,7 +144,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 
     if ((actual_rate > freq_hz) || (actual_rate == 0U)) {
         mp_raise_msg_varg(&mp_type_ValueError,
-            MP_ERROR_TEXT("Cannot reach desired I2C data rate %u Hz (actual: %u Hz)"),
+            MP_ERROR_TEXT("cannot reach desired I2C data rate %u Hz (actual: %u Hz)"),
             freq_hz, actual_rate);
     }
 
@@ -264,7 +264,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     machine_hw_i2c_obj_t *self = machine_hw_i2c_obj_alloc();
     if (self == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("machine.I2C: Maximum number of I2C instances reached"));
+        mp_raise_ValueError(MP_ERROR_TEXT("machine.I2C: maximum number of I2C instances reached"));
     }
 
     if (args[ARG_id].u_int != -1) {

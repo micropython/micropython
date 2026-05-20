@@ -194,7 +194,7 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
 
     result = Cy_SCB_I2C_Init(self->scb_obj->scb, &self->cfg, &self->ctx);
     if (result != CY_RSLT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C Target init failed: 0x%lx"), result);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C target init failed: 0x%lx"), result);
     }
 
     // Configure clock for I2C slave operation
