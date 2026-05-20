@@ -272,6 +272,7 @@ static void machine_can_init_helper(machine_can_obj_t *self, size_t n_args, cons
     int brp = calculate_brp(bitrate_nom, f_clock, &tseg1, &tseg2, sample_point, false);
 
     // Set up the hardware
+    self->bitrate = bitrate_nom;
     self->tseg1 = tseg1;
     self->tseg2 = tseg2;
     self->brp = brp;
@@ -567,6 +568,7 @@ static mp_obj_t machine_can_set_filters(mp_obj_t self_in, mp_obj_t filters) {
                 );
         }
     }
+    machine_can_port_set_filter_done(self);
 
     return mp_const_none;
 }

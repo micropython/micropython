@@ -92,7 +92,7 @@ typedef struct {
 typedef struct _machine_can_obj_t {
     mp_obj_base_t base;
     mp_uint_t can_idx;
-
+    uint32_t bitrate;
     // Timing register settings
     byte tseg1;
     byte tseg2;
@@ -153,6 +153,9 @@ static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags);
 // enumerate standard id filters separately to extended id filters (the
 // CAN_MSG_FLAG_EXT_ID bit in 'flags' differentiates the type).
 static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx, mp_uint_t can_id, mp_uint_t mask, mp_uint_t flags);
+
+// Report that the set of filters is complete for now.
+static void machine_can_port_set_filter_done(machine_can_obj_t *self);
 
 // Update interrupt configuration based on the new contents of 'self'
 static void machine_can_update_irqs(machine_can_obj_t *self);

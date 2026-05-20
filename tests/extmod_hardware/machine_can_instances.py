@@ -38,10 +38,10 @@ class Test(unittest.TestCase):
     def _test_controller_pair(self, id_a, id_b):
         # Setting up each CAN peripheral independently is deliberate here, to catch
         # catch cases where initialising CAN2 breaks CAN1 or vice versa
-        can_a = CAN(id_a, 125_000, mode=CAN.MODE_LOOPBACK)
+        can_a = CAN(id_a, 125_000, mode=CAN.MODE_SILENT_LOOPBACK)
         can_a.set_filters([(0x100, 0x700, 0)])
 
-        can_b = CAN(id_b, 125_000, mode=CAN.MODE_LOOPBACK)
+        can_b = CAN(id_b, 125_000, mode=CAN.MODE_SILENT_LOOPBACK)
         can_b.set_filters([(0x000, 0x7F0, 0)])
 
         try:
