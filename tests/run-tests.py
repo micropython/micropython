@@ -344,11 +344,9 @@ def platform_to_port(platform):
 
 
 def detect_inline_asm_arch(pyb, args):
-    for arch in ("rv32", "thumb", "xtensa"):
-        output = run_feature_check(pyb, args, "inlineasm_{}.py".format(arch))
-        if output.strip() == arch.encode():
-            return arch
-    return None
+    output = run_feature_check(pyb, args, "inlineasm.py").decode().strip()
+    arch, *features = output.split(",")
+    return arch, features
 
 
 def map_rv32_arch_flags(flags):
@@ -372,7 +370,7 @@ def detect_test_platform(pyb, args):
     )
     if arch == "None":
         arch = None
-    inlineasm_arch = detect_inline_asm_arch(pyb, args)
+    inlineasm_arch, inlineasm_features = detect_inline_asm_arch(pyb, args)
     if thread == "None":
         thread = None
     float_prec = int(float_prec)
@@ -390,6 +388,7 @@ def detect_test_platform(pyb, args):
         if arch_flags:
             args.mpy_cross_flags += " -march-flags=" + ",".join(arch_flags)
     args.inlineasm_arch = inlineasm_arch
+    args.inlineasm_features = inlineasm_features
     args.build = build
     args.thread = thread
     args.float_prec = float_prec
@@ -828,16 +827,14 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tstring = True
 
         if args.inlineasm_arch == "thumb":
-            # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
-            output = run_feature_check(pyb, args, "inlineasm_thumb2.py")
-            if output != b"thumb2\n":
+            if "thumb2" not in args.inlineasm_features:
                 skip_tests.add("inlineasm/thumb/asmbcc.py")
                 skip_tests.add("inlineasm/thumb/asmbitops.py")
                 skip_tests.add("inlineasm/thumb/asmconst.py")
                 skip_tests.add("inlineasm/thumb/asmdiv.py")
                 skip_tests.add("inlineasm/thumb/asmit.py")
                 skip_tests.add("inlineasm/thumb/asmspecialregs.py")
-            if args.arch not in ("armv7emsp", "armv7emdp"):
+            if "vfp" not in args.inlineasm_features:
                 skip_tests.add("inlineasm/thumb/asmfpaddsub.py")
                 skip_tests.add("inlineasm/thumb/asmfpcmp.py")
                 skip_tests.add("inlineasm/thumb/asmfpldrstr.py")
@@ -845,15 +842,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 skip_tests.add("inlineasm/thumb/asmfpsqrt.py")
 
         if args.inlineasm_arch == "rv32":
-            # Discover extension-specific inlineasm tests and add them to the
-            # list of tests to run if applicable.
             for extension in RV32_ARCH_FLAGS:
-                try:
-                    output = run_feature_check(pyb, args, "inlineasm_rv32_{}.py".format(extension))
-                    if output.strip() != "rv32_{}".format(extension).encode():
-                        skip_tests.add("inlineasm/rv32/asm_ext_{}.py".format(extension))
-                except FileNotFoundError:
-                    pass
+                if extension not in args.inlineasm_features:
+                    skip_tests.add(f"inlineasm/rv32/asm_ext_{extension}.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
@@ -873,7 +864,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         )
         skip_endian = upy_byteorder != cpy_byteorder
 
-        skip_inlineasm = args.inlineasm_arch is None
+        skip_inlineasm = not args.inlineasm_arch
 
     # Some tests shouldn't be run on GitHub Actions
     if os.getenv("GITHUB_ACTIONS") == "true":
