@@ -46,7 +46,6 @@
 // Port-specific includes
 #include "genhdr/pins_af.h"
 #include "modmachine.h"
-#include "mplogger.h"
 #include "mphalport.h"
 #include "machine_scb.h"
 #include "sys_int.h"

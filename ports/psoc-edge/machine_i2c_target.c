@@ -38,8 +38,9 @@
 // port-specific includes
 #include "genhdr/pins_af.h"
 #include "modmachine.h"
-#include "mplogger.h"
 #include "machine_scb.h"
+
+#define DEBUG_printf(...) // printf(__VA_ARGS__)
 
 // PDL event callback for slave operations
 static void i2c_slave_event_callback(uint32_t events);
@@ -215,7 +216,7 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
 
     Cy_SCB_I2C_Enable(self->scb_obj->scb);
 
-    mplogger_print("I2C Target initialized: addr=0x%02X, addrsize=%u-bit\n", addr, addrsize);
+    DEBUG_printf("I2C Target initialized: addr=0x%02X, addrsize=%u-bit\n", addr, addrsize);
 }
 
 /******************************************************************************/
@@ -350,5 +351,5 @@ static void mp_machine_i2c_target_deinit(machine_i2c_target_obj_t *self) {
 
     machine_scb_obj_free(self->scb_obj);
 
-    mplogger_print("I2C Target deinitialized\n");
+    DEBUG_printf("I2C Target deinitialized\n");
 }

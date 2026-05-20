@@ -26,7 +26,6 @@
 
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 #include <alloca.h>
-#include <stdint.h>
 #include "mpconfigboard.h"
 
 // Use core features for Thonny compatibility (larger firmware)
@@ -38,40 +37,32 @@
 #define MICROPY_EMIT_INLINE_THUMB               (1)
 #define MICROPY_MAKE_POINTER_CALLABLE(p)        ((void *)((mp_uint_t)(p) | 1))
 
-// options to control how MicroPython is built
-#define MICROPY_PY_BUILTINS_HELP_TEXT           psoc_edge_help_text
-#define MICROPY_USE_INTERNAL_PRINTF             (0)
-#define MICROPY_REPL_INFO                       (1)
-
+// Python internal features
+#define MICROPY_READER_VFS                      (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_STACK_CHECK_MARGIN              (1024)
-#define MICROPY_ALLOC_PATH_MAX                  (256)
-
-// Use the minimum headroom in the chunk allocator for parse nodes.
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT          (16)
-
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
-
-// Fine control over Python builtins, classes, modules, etc
-#define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
-#define MICROPY_PY_SYS_EXC_INFO                 (1)
-
-// Extended modules
-#define MICROPY_VFS                             (1)
-#define MICROPY_READER_VFS                      (1)
 #define MICROPY_SCHEDULER_DEPTH                 (8)
 #define MICROPY_SCHEDULER_STATIC_NODES          (1)
 #define MICROPY_USE_INTERNAL_ERRNO              (1)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT          (16)
+#define MICROPY_PY_MATH_GAMMA_FIX_NEGINF        (1)
+
+// Fine control over Python builtins, classes, modules, etc
+#define MICROPY_PY_SYS_PLATFORM                 "psoc-edge"
+#define MICROPY_PY_BUILTINS_HELP_TEXT           psoc_edge_help_text
+#define MICROPY_REPL_INFO                       (1)
+
+// Extended modules
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS            (1)
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc-edge/modtime.c"
 #define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE   (1)
 #define MICROPY_EPOCH_IS_1970                   (1)
-#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
-
-// Logger
-#define MICROPY_LOGGER_DEBUG                    (0)
+#define MICROPY_VFS                             (1)
+#define MICROPY_ALLOC_PATH_MAX                  (256)
 
 // Machine module
 #define MICROPY_PY_MACHINE                      (1)

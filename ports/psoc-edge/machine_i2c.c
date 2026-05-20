@@ -44,8 +44,9 @@
 // port-specific includes
 #include "genhdr/pins_af.h"
 #include "modmachine.h"
-#include "mplogger.h"
 #include "machine_scb.h"
+
+#define DEBUG_printf(...) // printf(__VA_ARGS__)
 
 #define DEFAULT_I2C_FREQ     (400000)
 
@@ -136,10 +137,10 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_8_BIT, 2U);
 
     uint32_t clk_scb_freq = Cy_SysClk_PeriphGetFrequency(CY_SYSCLK_DIV_8_BIT, 2U);
-    mplogger_print("DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
+    DEBUG_printf("DEBUG: clk_scb_freq=%u Hz\n", clk_scb_freq);
 
     uint32_t actual_rate = Cy_SCB_I2C_SetDataRate(self->scb_obj->scb, freq_hz, clk_scb_freq);
-    mplogger_print("DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
+    DEBUG_printf("DEBUG: actual_rate=%u Hz (requested=%u Hz)\n", actual_rate, freq_hz);
 
     if ((actual_rate > freq_hz) || (actual_rate == 0U)) {
         mp_raise_msg_varg(&mp_type_ValueError,
@@ -151,7 +152,7 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
 
     Cy_SCB_I2C_Enable(self->scb_obj->scb);
 
-    mplogger_print("I2C initialized: requested=%u Hz, actual=%u Hz, clk_scb=%u Hz\n",
+    DEBUG_printf("I2C initialized: requested=%u Hz, actual=%u Hz, clk_scb=%u Hz\n",
         freq_hz, actual_rate, clk_scb_freq);
 
     self->freq = freq_hz;
@@ -173,7 +174,7 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result;
 
-    mplogger_print("I2C Transfer: addr=0x%02X, len=%u, flags=0x%02X (%s)\n",
+    DEBUG_printf("I2C Transfer: addr=0x%02X, len=%u, flags=0x%02X (%s)\n",
         addr, len, flags, (flags & MP_MACHINE_I2C_FLAG_READ) ? "READ" : "WRITE");
 
     cy_stc_scb_i2c_master_xfer_config_t transfer;
@@ -190,11 +191,11 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
     }
 
     if (result != CY_RSLT_SUCCESS) {
-        mplogger_print("I2C Transfer start failed: 0x%lx\n", result);
+        DEBUG_printf("I2C Transfer start failed: 0x%lx\n", result);
         return -MP_EIO;  // I/O error
     }
 
-    mplogger_print("I2C Transfer started, waiting for completion...\n");
+    DEBUG_printf("I2C Transfer started, waiting for completion...\n");
 
     uint32_t start_time = mp_hal_ticks_us();
     uint32_t timeout_end = start_time + self->timeout;  // Both in microseconds
@@ -205,17 +206,17 @@ static int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t
 
         // Check for timeout using actual elapsed time
         if (mp_hal_ticks_us() >= timeout_end) {
-            mplogger_print("I2C Transfer timeout after %u us!\n", self->timeout);
+            DEBUG_printf("I2C Transfer timeout after %u us!\n", self->timeout);
             return -MP_ETIMEDOUT;
         }
     }
 
     uint32_t master_status = Cy_SCB_I2C_MasterGetStatus(self->scb_obj->scb, &self->ctx);
 
-    mplogger_print("I2C Transfer complete, status=0x%08lX\n", master_status);
+    DEBUG_printf("I2C Transfer complete, status=0x%08lX\n", master_status);
 
     if (master_status & CY_SCB_I2C_MASTER_ERR) {
-        mplogger_print("I2C Transfer error detected in status\n");
+        DEBUG_printf("I2C Transfer error detected in status\n");
         return -MP_EIO;  // I/O error
     }
 
@@ -268,7 +269,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     if (args[ARG_id].u_int != -1) {
         self->id = args[ARG_id].u_int;
-        mplogger_print("machine.I2C: ID parameter is ignored in this port.\n");
+        DEBUG_printf("machine.I2C: ID parameter is ignored in this port.\n");
     }
 
     self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
