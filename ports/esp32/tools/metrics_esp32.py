@@ -35,14 +35,18 @@ import sys
 import subprocess
 from dataclasses import dataclass
 
-IDF_VERS = ("v5.5.1", "v5.4.2")
+IDF_VERS = ("v5.5.4", "v5.5.1")
 
 BUILDS = (
     ("ESP32_GENERIC", ""),
     ("ESP32_GENERIC", "D2WD"),
     ("ESP32_GENERIC", "SPIRAM"),
     ("ESP32_GENERIC_C2", ""),
+    ("ESP32_GENERIC_C3", ""),
+    ("ESP32_GENERIC_C5", ""),
     ("ESP32_GENERIC_C6", ""),
+    ("ESP32_GENERIC_P4", ""),
+    ("ESP32_GENERIC_P4", "C6_WIFI"),
     ("ESP32_GENERIC_S3", ""),
     ("ESP32_GENERIC_S3", "SPIRAM_OCT"),
 )
@@ -226,7 +230,8 @@ def idf_install():
 def switch_ver(idf_ver):
     print(f"Switching version to {idf_ver}...", file=sys.stderr)
     idf_git("switch", "--detach", idf_ver)
-    idf_git("submodule", "update", "--init", "--recursive")
+    idf_git("submodule", "update", "--init", "--recursive", "--force")
+    idf_git("submodule", "foreach", "--recursive", "git clean -ffdx")
     idf_install()
 
 
