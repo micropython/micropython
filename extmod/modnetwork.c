@@ -55,6 +55,11 @@ extern const struct _mp_obj_type_t mod_network_nic_type_nina;
 extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
 #endif
 
+#if MICROPY_HW_NETWORK_USBNET
+extern const struct _mp_obj_type_t mod_network_nic_type_usbnet;
+#include "extmod/network_usbd_ncm.h"
+#endif
+
 #ifdef MICROPY_PY_NETWORK_INCLUDEFILE
 #include MICROPY_PY_NETWORK_INCLUDEFILE
 #endif
@@ -75,6 +80,11 @@ char mod_network_hostname_data[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1] = MICROP
 
 void mod_network_init(void) {
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
+    #if MICROPY_HW_NETWORK_USBNET
+    // Initialise the USB NCM netif early so it is ready when TinyUSB starts
+    // receiving packets during USB enumeration (before any Python code runs).
+    usbnet_auto_init();
+    #endif
 }
 
 void mod_network_deinit(void) {
@@ -203,6 +213,10 @@ static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 
     #if MICROPY_PY_NETWORK_ESP_HOSTED
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+    #endif
+
+    #if MICROPY_HW_NETWORK_USBNET
+    { MP_ROM_QSTR(MP_QSTR_USB_NET), MP_ROM_PTR(&mod_network_nic_type_usbnet) },
     #endif
 
     // Allow a port to take mostly full control of the network module.

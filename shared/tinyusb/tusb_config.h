@@ -94,14 +94,61 @@
 #define CFG_TUD_MSC_BUFSIZE (MICROPY_FATFS_MAX_SS)
 #endif // CFG_TUD_MSC
 
+#if MICROPY_HW_NETWORK_USBNET
+// TinyUSB supports both RNDIS and NCM protocols.
+// NCM is now recommended by Microsoft on Win 11 and above.
+#define CFG_TUD_NCM             (1)
+
+// NCM TinyUSB buffer configuration.
+// These depend on lwIP parameters (TCP_MSS, LWIP_MDNS_RESPONDER); lwipopts.h
+// is safe to include here because MICROPY_HW_NETWORK_USBNET implies LWIP.
+#include "lwipopts.h"
+
+// Must be >> MTU; can be set to 2048 without impact.
+#ifndef CFG_TUD_NCM_IN_NTB_MAX_SIZE
+#define CFG_TUD_NCM_IN_NTB_MAX_SIZE  ((2 + LWIP_MDNS_RESPONDER) * TCP_MSS + 100)
+#endif
+#ifndef CFG_TUD_NCM_OUT_NTB_MAX_SIZE
+#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE ((2 + LWIP_MDNS_RESPONDER) * TCP_MSS + 100)
+#endif
+
+// Number of NCM transfer blocks for reception side.
+#ifndef CFG_TUD_NCM_OUT_NTB_N
+#define CFG_TUD_NCM_OUT_NTB_N 1
+#endif
+// Number of NCM transfer blocks for transmission side.
+#ifndef CFG_TUD_NCM_IN_NTB_N
+#define CFG_TUD_NCM_IN_NTB_N  (2 + LWIP_MDNS_RESPONDER)
+#endif
+
+#ifndef MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING
+#define MICROPY_HW_NETWORK_USBNET_INTERFACE_STRING "Board NET"
+#endif
+#endif // MICROPY_HW_NETWORK_USBNET
+
+#define USBD_RHPORT (0) // Currently only one port is supported
+
 // Define built-in interface, string and endpoint numbering based on the above config
 
-#define USBD_STR_0 (0x00)
-#define USBD_STR_MANUF (0x01)
-#define USBD_STR_PRODUCT (0x02)
-#define USBD_STR_SERIAL (0x03)
-#define USBD_STR_CDC (0x04)
-#define USBD_STR_MSC (0x05)
+enum _USBD_STR {
+    USBD_STR_0 = (0x00),
+    USBD_STR_MANUF = (0x01),
+    USBD_STR_PRODUCT = (0x02),
+    USBD_STR_SERIAL = (0x03),
+    #if CFG_TUD_CDC
+    USBD_STR_CDC,
+    #endif
+    #if CFG_TUD_MSC
+    USBD_STR_MSC,
+    #endif
+    #if CFG_TUD_NCM
+    USBD_STR_NET,
+    USBD_STR_NET_MAC,
+    #endif
+    // One more than the highest built-in string index; runtime device string
+    // indexes should start at or above this value to avoid collisions.
+    USBD_STR_BUILTIN_MAX,
+};
 
 #define USBD_MAX_POWER_MA (250)
 
@@ -109,40 +156,60 @@
 #define MICROPY_HW_USB_DESC_STR_MAX (40)
 #endif
 
-#if CFG_TUD_CDC
-#define USBD_ITF_CDC (0) // needs 2 interfaces
-#define USBD_CDC_EP_CMD (0x81)
-#define USBD_CDC_EP_OUT (0x02)
-#define USBD_CDC_EP_IN (0x82)
-#endif // CFG_TUD_CDC
+enum _USBD_ITF {
+    #if CFG_TUD_CDC
+    USBD_ITF_CDC,
+    USBD_ITF_CDC_I2,
+    #endif // CFG_TUD_CDC
+    #if CFG_TUD_MSC
+    USBD_ITF_MSC,
+    #endif // CFG_TUD_MSC
+    #if CFG_TUD_NCM
+    USBD_ITF_NET,
+    USBD_ITF_NET_DATA,
+    #endif
+};
 
-#if CFG_TUD_MSC
-// Interface & Endpoint numbers for MSC come after CDC, if it is enabled
+enum _USBD_EP {
+    USBD_EP_BASE = 0x80,
+    #if CFG_TUD_CDC
+    USBD_CDC_EP_CMD,
+    USBD_CDC_EP_IN,
+    #endif // CFG_TUD_CDC
+    #if CFG_TUD_MSC
+    USBD_MSC_EP_IN,
+    #endif // CFG_TUD_MSC
+    #if CFG_TUD_NCM
+    USBD_NET_EP_CMD,
+    USBD_NET_EP_IN,
+    #endif // CFG_TUD_NCM
+};
+
+// define the matching in endpoints to each EP_OUT
 #if CFG_TUD_CDC
-#define USBD_ITF_MSC (2)
-#define EPNUM_MSC_OUT (0x03)
-#define EPNUM_MSC_IN (0x83)
-#else
-#define USBD_ITF_MSC (0)
-#define EPNUM_MSC_OUT (0x01)
-#define EPNUM_MSC_IN (0x81)
-#endif // CFG_TUD_CDC
-#endif // CFG_TUD_MSC
+#define USBD_CDC_EP_OUT  ((USBD_CDC_EP_IN)&~TUSB_DIR_IN_MASK)
+#endif
+#if CFG_TUD_MSC
+#define USBD_MSC_EP_OUT  ((USBD_MSC_EP_IN)&~TUSB_DIR_IN_MASK)
+#endif
+#if CFG_TUD_NCM
+#define USBD_NET_EP_OUT  ((USBD_NET_EP_IN)&~TUSB_DIR_IN_MASK)
+#endif
+
 
 /* Limits of builtin USB interfaces, endpoints, strings */
-#if CFG_TUD_MSC
-#define USBD_ITF_BUILTIN_MAX (USBD_ITF_MSC + 1)
-#define USBD_STR_BUILTIN_MAX (USBD_STR_MSC + 1)
-#define USBD_EP_BUILTIN_MAX (EPNUM_MSC_OUT + 1)
-#elif CFG_TUD_CDC
-#define USBD_ITF_BUILTIN_MAX (USBD_ITF_CDC + 2)
-#define USBD_STR_BUILTIN_MAX (USBD_STR_CDC + 1)
-#define USBD_EP_BUILTIN_MAX (((USBD_CDC_EP_IN)&~TUSB_DIR_IN_MASK) + 1)
-#else // !CFG_TUD_MSC && !CFG_TUD_CDC
-#define USBD_ITF_BUILTIN_MAX (0)
-#define USBD_STR_BUILTIN_MAX (0)
-#define USBD_EP_BUILTIN_MAX (0)
-#endif
+// Number of interfaces used by all enabled classes
+#define USBD_ITF_BUILTIN_MAX ( \
+    (CFG_TUD_CDC ? 2 : 0) + \
+    (CFG_TUD_MSC ? 1 : 0) + \
+    (CFG_TUD_NCM ? 2 : 0))
+
+// 1 plus the highest endpoint number used by all enabled classes
+#define USBD_EP_BUILTIN_MAX ( \
+    (CFG_TUD_CDC ? 2 : 0) + \
+    (CFG_TUD_MSC ? 1 : 0) + \
+    (CFG_TUD_NCM ? 2 : 0) + \
+    1)
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 
