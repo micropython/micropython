@@ -78,7 +78,7 @@ class Test(unittest.TestCase):
                             )
                 except OSError as e:
                     if e.errno != errno.ETIMEDOUT:
-                        raise
+                        raise e
                     print("recv timed out")
                 self.assertEqual(n_recv, 1, "Each instance should receive exactly 1 message")
         finally:
