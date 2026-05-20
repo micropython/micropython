@@ -346,7 +346,7 @@ OBJ += $(GEN_PINS_SRC:.c=.o)
 build_s: $(BUILD)/secboot/secboot.hex
 
 $(BUILD)/secboot/secboot.hex:
-	$(Q)$(MAKE) -C secboot BOARD=$(BOARD)
+	$(Q)$(MAKE) -C secboot BOARD=$(BOARD) BUILD=$(abspath $(BUILD)/secboot)
 
 deploy_s: $(BUILD)/secboot/secboot.signed.hex
 	$(call flash_target,$<)
@@ -360,7 +360,7 @@ $(BUILD)/secboot/secboot.signed.hex: $(BUILD)/secboot/secboot.hex
 	--symbol-search $(BOARD_DIR)/bsp-cfg
 
 clean_s:
-	$(Q)$(MAKE) -C secboot  BOARD=$(BOARD) clean
+	$(Q)$(MAKE) -C secboot  BOARD=$(BOARD) BUILD=$(abspath $(BUILD)/secboot) clean
 
 .PHONY: build_s sign_s deploy_s clean_s
 
@@ -371,10 +371,10 @@ clean_s:
 ## is already build, signed and flashed in the
 ## device 
 
-build_ns: $(BUILD)/firmware.hex
+build_ns: $(BUILD)/firmware.unshifted.hex
 
 shift_ns: $(BUILD)/firmware.shifted.hex
-$(BUILD)/firmware.shifted.hex: $(BUILD)/firmware.hex
+$(BUILD)/firmware.shifted.hex: $(BUILD)/firmware.unshifted.hex
 	@echo "Reallocating hex file..."
 	@$(EDGEPROTECTTOOLS) run-config -i config/shift_ns.json \
 	--set ns_hex $^ \
@@ -395,9 +395,12 @@ else
 SERIAL_ADAPTER_CMD = -c "adapter serial $(DEV_SERIAL_NUMBER)"
 endif
 
+FLM_FILE = $(BOARD_DIR)/bsp-cfg/PSE84_SMIF.FLM
+QSPI_CFG_FILE = $(BOARD_DIR)/bsp-cfg/qspi_config.cfg
+
 OPENOCD_OPEN_CMDS = \
 	-s $(BOARD_DIR)/bsp-cfg \
-	-c "set QSPI_FLASHLOADER $(BOARD_DIR)/bsp-cfg/PSE84_SMIF.FLM" \
+	-c "set QSPI_FLASHLOADER $(FLM_FILE)" \
 	-c "source [find interface/kitprog3.cfg]" \
 	$(SERIAL_ADAPTER_CMD) \
 	-c "transport select swd" \
@@ -461,19 +464,19 @@ deploy_multi: all qdeploy_multi
 ################################################################################
 # Main targets
 
-all: $(BUILD)/firmware.signed.merged.hex
+all: $(BUILD)/firmware.hex $(BUILD)/firmware.zip
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.unshifted.elf: $(OBJ)
 	$(ECHO) "Link $@"
 	@$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	@$(Q)$(SIZE) $@
 
-$(BUILD)/firmware.hex: $(BUILD)/firmware.elf
+$(BUILD)/firmware.unshifted.hex: $(BUILD)/firmware.unshifted.elf
 	$(ECHO) "Create $@"
 	@$(Q)$(OBJCOPY) -O ihex $^ $@
 
-sign_merge: $(BUILD)/firmware.signed.merged.hex
-$(BUILD)/firmware.signed.merged.hex: $(BUILD)/secboot/secboot.hex $(BUILD)/firmware.hex 
+sign_merge: $(BUILD)/firmware.hex
+$(BUILD)/firmware.hex: $(BUILD)/secboot/secboot.hex $(BUILD)/firmware.unshifted.hex 
 	@echo "Signing and combining hex files..."
 	@$(EDGEPROTECTTOOLS) run-config -i config/sign_shift_merge.json \
 	--set s_hex $(word 1,$^) \
@@ -483,10 +486,15 @@ $(BUILD)/firmware.signed.merged.hex: $(BUILD)/secboot/secboot.hex $(BUILD)/firmw
 	--set signed_merged_hex $@ \
 	--symbol-search $(BOARD_DIR)/bsp-cfg
 
-deploy: $(BUILD)/firmware.signed.merged.hex
+deploy: $(BUILD)/firmware.hex
 	$(call flash_target,$<)
 
-.PHONY: all sign_merge deploy 
+zip: $(BUILD)/firmware.zip
+$(BUILD)/firmware.zip: $(BUILD)/firmware.hex $(FLM_FILE) $(QSPI_CFG_FILE)
+	$(ECHO) "Create $@"
+	$(Q)$(ZIP) -q -j $@ $^
+
+.PHONY: all sign_merge deploy zip
 
 ###############################################################################
 # Help target
