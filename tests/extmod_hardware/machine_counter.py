@@ -46,7 +46,15 @@ def toggle(times):
 def callback(counter):
     global callback_counter_value
     callback_counter_value = counter.value()
-    print(f"\n callback counter value:{callback_counter_value:10}")
+    counter_status = counter.status()
+    if "esp32" in sys.platform:
+        print(
+            f"\n callback counter value:{callback_counter_value:10}, counter.status():{counter_status}, IRQ_MATCH:{counter_status & Counter.IRQ_MATCH > 0}, IRQ_ZERO:{counter_status & Counter.IRQ_ZERO > 0}"
+        )
+    elif sys.platform == "mimxrt":
+        print(
+            f"\n callback counter value:{callback_counter_value:10}, counter.status():{counter_status}, IRQ_MATCH:{counter_status & Counter.IRQ_MATCH > 0}"
+        )
 
 
 class TestConnections(unittest.TestCase):
@@ -118,7 +126,7 @@ class TestCounter(unittest.TestCase):
     @unittest.skipIf(sys.platform == "mimxrt", "Pin as a destination is not supported")
     def test_count_pin_direction(self):
         out_dir_pin(1)  # count UP
-        self.counter.init(in_pin, direction=in_dir_pin)
+        self.counter.init(in_pin, direction=in_dir_pin, match=50_000)
         out_pin(0)
         self.assertCounter(0)  # no rising edge
         out_pin(1)
@@ -138,14 +146,30 @@ class TestCounter(unittest.TestCase):
         toggle(100)
         self.assertCounter(0)
 
+        out_dir_pin(1)  # count UP
+        self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH | Counter.IRQ_ZERO)
+        toggle(60_000)
+        self.assertCounter(60_000)
+        # self.assertEqual(callback_counter_value, 50_000)
+        out_dir_pin(0)  # count DOWN
+        toggle(60_000 + 10)
+        self.assertCounter(-10)
+        self.assertEqual(callback_counter_value, 0)
+
     def test_irq(self):
-        self.counter.init(in_pin, direction=Counter.UP, match=100)
+        self.counter.init(in_pin, direction=Counter.UP, match=50_000)
         self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
         # if "esp32" in sys.platform:
         #     self.counter.irq(handler=callback, trigger=Counter.IRQ_ZERO)
-        toggle(200)
-        self.assertCounter(200)
-        self.assertEqual(callback_counter_value, 100)
+        toggle(60_000)
+        self.assertCounter(60_000)
+        self.assertEqual(callback_counter_value, 50_000)
+
+        self.counter.init(in_pin, direction=Counter.DOWN, match=-50_000)
+        self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
+        toggle(60_000)
+        self.assertCounter(-60_000)
+        self.assertEqual(callback_counter_value, -50_000)
 
 
 if __name__ == "__main__":
