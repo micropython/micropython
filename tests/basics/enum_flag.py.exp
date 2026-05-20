@@ -1,0 +1,35 @@
+Test 1: Basic Flag operations
+READ | WRITE = 3
+PASS
+
+Test 2: Flag AND operation
+READ & WRITE = 0
+PASS
+
+Test 3: Flag XOR operation
+READ ^ WRITE = 3
+PASS
+
+Test 4: Flag invert operation
+~READ = 6
+PASS
+
+Test 5: Flag with auto()
+IDLE = 1
+BUSY = 2
+ERROR = 3
+PASS
+
+Test 6: IntFlag basic operations
+R | W = 6
+PASS
+
+Test 7: IntFlag with integer operands
+R | 8 = 12
+PASS
+
+Test 8: IntFlag reverse operations
+8 | R = 12
+PASS
+
+All Flag/IntFlag tests passed!
