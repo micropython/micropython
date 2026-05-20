@@ -82,7 +82,7 @@ programming mode.
 For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
 
-Currently we only support esptool.py to copy across the firmware.  You can find
+Currently we only support esptool to copy across the firmware.  You can find
 this tool here: `<https://github.com/espressif/esptool/>`__, or install it
 using pip::
 
@@ -95,13 +95,13 @@ An older version (at least 1.2.1 is needed) works fine but will require Python
 Any other flashing program should work, so feel free to try them out or refer
 to the documentation for your board to see its recommendations.
 
-Using esptool.py you can erase the flash with the command::
+Using esptool you can erase the flash with the command::
 
-    esptool.py --port /dev/ttyUSB0 erase_flash
+    esptool --port /dev/ttyUSB0 erase-flash
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
+    esptool --port /dev/ttyUSB0 --baud 460800 write-flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
@@ -114,7 +114,7 @@ a NodeMCU board) you may need to manually set a compatible
 You'd usually pick the fastest option that is compatible with your device, but
 the ``-fm dout`` option (the slowest option) should have the best compatibility::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dout 0 esp8266-20170108-v1.8.7.bin
+    esptool --port /dev/ttyUSB0 --baud 460800 write-flash --flash_size=detect -fm dout 0 esp8266-20170108-v1.8.7.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -174,7 +174,7 @@ after it, here are troubleshooting recommendations:
   rate instead in such cases.
 
 * If lower baud rate didn't help, you may want to try older version of
-  esptool.py, which had a different programming algorithm::
+  esptool, which had a different programming algorithm::
 
     pip install esptool==1.0.1
 
@@ -200,11 +200,11 @@ after it, here are troubleshooting recommendations:
   corrupted and need to be reflashed correctly.
 
 * If you experience any issues with another flashing application (not
-  esptool.py), try esptool.py, it is a generally accepted flashing
+  esptool), try esptool, it is a generally accepted flashing
   application in the ESP8266 community.
 
 * If you still experience problems with even flashing the firmware, please
-  refer to esptool.py project page, https://github.com/espressif/esptool
+  refer to esptool project page, https://github.com/espressif/esptool
   for additional documentation and bug tracker where you can report problems.
 
 * If you are able to flash firmware, but ``--verify`` option or
