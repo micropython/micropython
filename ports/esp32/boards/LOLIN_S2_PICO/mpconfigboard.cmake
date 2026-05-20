@@ -1,8 +1,3 @@
-set(IDF_TARGET esp32s2)
-
-set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.spiram_sx
-)
+include(boards/ESP32_GENERIC_S2/mpconfigboard.cmake)
 
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

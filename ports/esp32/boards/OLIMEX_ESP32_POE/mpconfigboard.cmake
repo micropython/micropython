@@ -1,5 +1,6 @@
+include(boards/ESP32_GENERIC/mpconfigboard.cmake)
+
 set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.ble
+    ${SDKCONFIG_DEFAULTS}
     boards/OLIMEX_ESP32_POE/sdkconfig.board
 )
