@@ -41,7 +41,7 @@ void sys_int_init(sys_int_cfg_t *int_cfg) {
     };
 
     cy_en_sysint_status_t rslt = Cy_SysInt_Init(&intr_cfg, int_cfg->handler);
-    sys_int_assert_raise_val("System interrupt init failed (PSE PDL error code: %lx)", rslt);
+    sys_int_assert_raise_val("system interrupt init failed (PSE PDL error code: %lx)", rslt);
 
     NVIC_EnableIRQ(int_cfg->irq_num);
 }

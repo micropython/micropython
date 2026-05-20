@@ -152,10 +152,10 @@ mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *pe
         for (uint8_t i = 1; i < num_pins; i++) {
             const mp_hal_pin_af_config_t *pin_cfg = &periph_pins_config[i];
             if (pin_cfg->af->periph != periph_ptr) {
-                mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("All pins must belong to the same peripheral."));
+                mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("all pins must belong to the same peripheral."));
             }
             if (pin_cfg->af->unit != unit) {
-                mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("All pins must belong to the same unit."));
+                mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("all pins must belong to the same unit."));
             }
         }
     }

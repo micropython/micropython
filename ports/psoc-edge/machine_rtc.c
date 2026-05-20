@@ -292,7 +292,7 @@ static void rtc_alarm_setup(machine_rtc_obj_t *self) {
         tm.tm_mday, tm.tm_mon, CY_RTC_ALARM_1);
 
     if (status != CY_RTC_SUCCESS) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Failed to set alarm"));
+        mp_raise_ValueError(MP_ERROR_TEXT("failed to set alarm"));
     }
 
     /* Enable RTC ALARM1 interrupt */
@@ -420,7 +420,7 @@ static mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
         uint64_t alarm_time = self->alarm_elapse_time_s;
         return mp_obj_new_int_from_uint((alarm_time >= curr_time) ? ((alarm_time - curr_time) * 1000) : 0);
     }
-    mp_raise_ValueError(MP_ERROR_TEXT("Alarm not set"));
+    mp_raise_ValueError(MP_ERROR_TEXT("alarm not set"));
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_left_obj, 1, 2, machine_rtc_alarm_left);
 

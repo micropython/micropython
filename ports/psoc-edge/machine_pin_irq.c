@@ -136,7 +136,7 @@ static int machine_pin_irq_obj_get_index(uint8_t port, uint8_t pin) {
         return irq_index;
     }
 
-    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("No more Pin IRQ objects available"));
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no more Pin IRQ objects available"));
 
     return -1;
 }

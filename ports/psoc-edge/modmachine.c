@@ -63,7 +63,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
             PLL0_freq = AUDIO_SYS_CLOCK_169_344_000_HZ;
             break;
         default:
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid frequency type %lu"), freq_peri);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid frequency type %lu"), freq_peri);
             break;
     }
 }

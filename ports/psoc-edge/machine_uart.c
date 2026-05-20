@@ -110,7 +110,7 @@ static machine_uart_obj_t *mp_machine_uart_alloc(uint8_t uart_id) {
     }
 
     if (self == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("All available UART instances are allocated"));
+        mp_raise_ValueError(MP_ERROR_TEXT("all available UART instances are allocated"));
     }
 
     return self;
@@ -239,7 +239,7 @@ static void machine_uart_hw_init(machine_uart_obj_t *self) {
     };
 
     cy_en_scb_uart_status_t rslt = Cy_SCB_UART_Init(self->scb_obj->scb, &config, &self->ctx);
-    uart_assert_raise_val("Failed to initialize UART hardware, error code: %d", rslt);
+    uart_assert_raise_val("failed to initialize UART hardware, error code: %d", rslt);
 
     sys_int_init(&(self->scb_obj->irq));
     Cy_SCB_SetRxInterruptMask(self->scb_obj->scb, CY_SCB_RX_INTR_NOT_EMPTY);
