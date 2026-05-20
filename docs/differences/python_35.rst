@@ -55,6 +55,10 @@ Other Language Changes:
   | Added the *namereplace* error handlers. The *backslashreplace* error handlers now work with decoding and  |               |
   | translating.                                                                                              |               |
   +-----------------------------------------------------------------------------------------------------------+---------------+
+  | As of v1.28.0 String encoding/decoding properly validates the encoding parameter and raises               | Improved      |
+  | ``LookupError`` for unsupported encodings. Error handlers (``'ignore'``, ``'replace'``) are supported     |               |
+  | when enabled via build configuration. The ``errors`` parameter must be passed positionally.               |               |
+  +-----------------------------------------------------------------------------------------------------------+---------------+
   | Property docstrings are now writable. This is especially useful for collections.namedtuple() docstrings   |               |
   +-----------------------------------------------------------------------------------------------------------+---------------+
   | Circular imports involving relative imports are now supported.                                            |               |
