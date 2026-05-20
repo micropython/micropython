@@ -81,6 +81,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
 
         mp_obj_t module_fun;
 
+        #if MICROPY_PERSISTENT_CODE_LOAD
         if (exec_flags & EXEC_FLAG_SOURCE_IS_MPY) {
             assert(exec_flags & EXEC_FLAG_SOURCE_IS_READER);
             mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
@@ -89,6 +90,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_raw_code_load((mp_reader_t *)source, &cm);
             module_fun = mp_make_function_from_proto_fun(cm.rc, ctx, NULL);
         } else
+        #endif
         #if MICROPY_MODULE_FROZEN_MPY
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
             // source is a raw_code object, create the function
@@ -241,6 +243,8 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     return ret;
 }
 
+#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
+
 // This can be configured by a port (and even configured to a function to be
 // computed dynamically) to indicate the maximum number of bytes that can be
 // held in the stdin buffer.
@@ -330,7 +334,20 @@ static void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_s
 }
 
 static int do_reader_stdin(int c) {
-    if (c != 'A' && c != 'B') {
+    mp_uint_t exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
+
+    #if MICROPY_ENABLE_COMPILER
+    if (c == 'A') {
+        // Paste source code.
+    } else
+    #endif
+    #if MICROPY_PERSISTENT_CODE_LOAD
+    if (c == 'B') {
+        // Paste compiled mpy data.
+        exec_flags |= EXEC_FLAG_SOURCE_IS_MPY;
+    } else
+    #endif
+    {
         // Unsupported command.
         mp_hal_stdout_tx_strn("R\x00", 2);
         return 0;
@@ -342,12 +359,10 @@ static int do_reader_stdin(int c) {
     mp_reader_t reader;
     mp_reader_stdin_t reader_stdin;
     mp_reader_new_stdin(&reader, &reader_stdin, MICROPY_REPL_STDIN_BUFFER_MAX);
-    int exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
-    if (c == 'B') {
-        exec_flags |= EXEC_FLAG_SOURCE_IS_MPY;
-    }
     return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags);
 }
+
+#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
 
 #if MICROPY_REPL_EVENT_DRIVEN
 
