@@ -218,6 +218,10 @@
 #define MICROPY_PY_ESP32_PCNT               (SOC_PCNT_SUPPORTED)
 #endif
 
+#ifndef MICROPY_PY_ESP32_DS
+#define MICROPY_PY_ESP32_DS                 (0)
+#endif
+
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)

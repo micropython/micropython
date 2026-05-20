@@ -139,6 +139,7 @@ list(APPEND MICROPY_SOURCE_PORT
     esp32_rmt.c
     esp32_ulp.c
     esp32_ldo.c
+    esp32_ds.c
     modesp32.c
     machine_hw_spi.c
     mpthreadport.c
