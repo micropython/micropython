@@ -17,15 +17,74 @@ Functions
     CONST_X = const(123)
     CONST_Y = const(2 * CONST_X + 1)
 
-   Constants declared this way are still accessible as global variables from
-   outside the module they are declared in.  On the other hand, if a constant
-   begins with an underscore then it is hidden, it is not available as a global
-   variable, and does not take up any memory during execution.
+   When the parser encounters ``NAME = const(expr)``, it evaluates the expression
+   at compile time and substitutes the resulting value directly into the bytecode at
+   every use of ``NAME``, avoiding a global dictionary lookup each time.
 
-   This `const` function is recognised directly by the MicroPython parser and is
-   provided as part of the :mod:`micropython` module mainly so that scripts can be
-   written which run under both CPython and MicroPython, by following the above
-   pattern.
+   The ``const`` name is recognised directly by the parser so no import is actually
+   required in MicroPython.  However ``from micropython import const`` is recommended
+   so the script also runs on CPython where ``const`` is provided as an identity
+   function.  Note that the parser only recognises the bare name ``const`` -- using
+   ``micropython.const()`` (with module prefix) or an alias will not trigger the
+   optimisation.
+
+   Constants declared this way are still stored as global variables in the module's
+   dictionary, so other modules can access them (e.g.
+   ``import mymodule; print(mymodule.X)``).  Reassigning the global from another
+   module does not affect the inlined values within the defining module.  This global
+   entry costs at least two machine words of RAM.
+
+   **Module-private constants:** To avoid this RAM cost, prefix the name with an
+   underscore (e.g. ``_X = const(1)``).  This prevents the variable from being added
+   to the module dictionary and hides it from other modules.
+
+   The expression passed to ``const()`` must be evaluable at compile time.  Supported
+   types are:
+
+   - ``int`` (including expressions with arithmetic and bitwise operators)
+   - ``float``
+   - ``str``
+   - ``bytes``
+   - ``bool`` (``True``, ``False``), ``None``, ``...`` (Ellipsis)
+   - ``tuple`` of constants
+
+   The expression can reference previously defined constants.  Using runtime values
+   or function calls raises ``SyntaxError: not a constant``.
+
+   Examples::
+
+    BUFFER_SIZE = const(1024)
+    BUFFER_MASK = const(BUFFER_SIZE - 1)
+    FLAGS = const(0x01 | 0x02)
+    _SCALE = const(0.001)
+    _PREFIX = const("data_")
+    _HEADER = const(b"\x00\xff")
+    _MODES = const(("read", "write"))
+
+   Because the compiler evaluates boolean constants at compile time, ``const()``
+   can be used for conditional compilation.  Code guarded by a false constant is
+   eliminated from the bytecode entirely, and when frozen via ``mpy-cross`` the
+   unreachable code is stripped from the output::
+
+    FEATURE_X = const(True)
+
+    if FEATURE_X:
+        def feature_x_handler():
+            ...
+
+   Note that ``const()`` is not compatible with type annotations:
+   ``X: int = const(1)`` will not be optimised because the parser does not recognise
+   annotated assignments as the ``NAME = const(expr)`` pattern.
+
+   For cross-platform compatibility with CPython, the typical pattern is::
+
+    try:
+        from micropython import const
+    except ImportError:
+        const = lambda x: x
+
+   See also :ref:`constrained` and :ref:`speed_python` for practical guidance on
+   using constants to reduce memory usage and improve performance.
 
 .. function:: opt_level([level])
 
