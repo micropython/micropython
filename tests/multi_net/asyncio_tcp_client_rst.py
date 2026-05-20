@@ -28,7 +28,7 @@ async def handle_connection(reader, writer):
 async def main():
     global ev
     ev = asyncio.Event()
-    server = await asyncio.start_server(handle_connection, "0.0.0.0", PORT)
+    server = await asyncio.start_server(handle_connection, multitest.BIND_ADDR, PORT)
     multitest.next()
     async with server:
         await asyncio.wait_for(ev.wait(), 10)
