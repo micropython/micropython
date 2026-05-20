@@ -14,6 +14,13 @@ PSE_LIB_TOP_DIR ?= lib/psoc-edge
 PSE_LIB_DIR ?= $(TOP)/$(PSE_LIB_TOP_DIR)
 BOARD_TOP_DIR = ports/psoc-edge/boards/$(BOARD)
 
+INC += $(addprefix -I$(TOP)/lib/,\
+	CMSIS_6/CMSIS/Core/Include \
+	CMSIS_6/CMSIS/Core/Include/a-profile \
+	CMSIS_6/CMSIS/Core/Include/m-profile \
+	CMSIS_6/CMSIS/Core/Include/r-profile \
+)
+
 DEFINES = \
 	-DCOMPONENT_CM33 \
 	-DCORE_NAME_CM33_0=1 \
@@ -26,11 +33,6 @@ DEFINES = \
 
 INC += $(addprefix -I$(PSE_LIB_DIR)/,\
 	async-transfer/include \
-	\
-	cmsis/Core/Include \
-	cmsis/Core/Include/a-profile \
-	cmsis/Core/Include/m-profile \
-	cmsis/Core/Include/r-profile \
 	\
 	core-lib/include \
 	\

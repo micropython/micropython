@@ -37,9 +37,9 @@ include $(TOP)/extmod/extmod.mk
 # Project specific settings and compiler/linker flags
 
 # Required git submodules.
+GIT_SUBMODULES += lib/CMSIS_6
 GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
     async-transfer \
-	cmsis \
 	core-lib \
 	mtb-dsl-pse8xxgp \
 	mtb-ipc \
@@ -92,6 +92,16 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h : $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF
 	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) --output-af-header $(GEN_PINS_AF_HDR)
 
 #################################################################################
+# libs source files and libraries
+
+INC += $(addprefix -I$(TOP)/lib/,\
+	CMSIS_6/CMSIS/Core/Include \
+	CMSIS_6/CMSIS/Core/Include/a-profile \
+	CMSIS_6/CMSIS/Core/Include/m-profile \
+	CMSIS_6/CMSIS/Core/Include/r-profile \
+)
+
+#################################################################################
 # PSOC Edge source files and libraries
 
 DEFINES = \
@@ -107,11 +117,6 @@ DEFINES = \
 
 INC += $(addprefix -I$(PSE_LIB_DIR)/,\
 	async-transfer/include \
-	\
-	cmsis/Core/Include \
-	cmsis/Core/Include/a-profile \
-	cmsis/Core/Include/m-profile \
-	cmsis/Core/Include/r-profile \
 	\
 	core-lib/include \
 	\
