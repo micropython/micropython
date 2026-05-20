@@ -49,7 +49,7 @@
 #endif
 
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-#define QSTR_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(qstr_mutex), 1)
+#define QSTR_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(qstr_mutex), MP_THREAD_MUTEX_TIMEOUT_FOREVER)
 #define QSTR_EXIT() mp_thread_mutex_unlock(&MP_STATE_VM(qstr_mutex))
 #else
 #define QSTR_ENTER()
