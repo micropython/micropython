@@ -14,8 +14,7 @@ QSTR_DEFS += qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h 
 
 # Frozen manifest for VFS support
-MICROPY_FROZEN_MANIFEST = $(BOARD_DIR)/manifest.py
-FROZEN_MANIFEST         = $(MICROPY_FROZEN_MANIFEST)
+FROZEN_MANIFEST ?= boards/manifest.py
 
 ifneq ($(FROZEN_MANIFEST),)
   CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
