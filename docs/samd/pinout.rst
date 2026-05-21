@@ -425,17 +425,37 @@ SEEED XIAO pin assignment table
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
 === ==== ============ ==== ==== ====== ====== ====== ======
-  2 PA02        A0_D0   2    0     -      -     -      -
-  4 PA04        A1_D1   4    4     -     0/0   0/0     -
- 10 PA10        A2_D2  10   18    0/2    2/2   1/0    0/2
- 11 PA11        A3_D3  11   19    0/3    2/3   1/1    0/3
-  8 PA08        A4_D4   -   16    0/0    2/0   0/0    1/2
-  9 PA09        A5_D5   9   17    0/1    2/1   0/1    1/3
- 40 PB08        A6_D6   8    2     -     4/0   4/0     -
- 41 PB09        A7_D7   9    3     -     4/1   4/1     -
-  7 PA07        A8_D8   7    7     -     0/3   1/1     -
-  5 PA05        A9_D9   5    5     -     0/1   0/1     -
-  6 PA06      A10_D10   6    6     -     0/2   1/0     -
+  2 PA02        A0/D0   2    0     -      -     -      -
+  4 PA04        A1/D1   4    4     -     0/0   0/0     -
+ 10 PA10        A2/D2  10   18    0/2    2/2   1/0    0/2
+ 11 PA11        A3/D3  11   19    0/3    2/3   1/1    0/3
+  8 PA08        A4/D4   -   16    0/0    2/0   0/0    1/2
+  9 PA09        A5/D5   9   17    0/1    2/1   0/1    1/3
+ 40 PB08        A6/D6   8    2     -     4/0   4/0     -
+ 41 PB09        A7/D7   9    3     -     4/1   4/1     -
+  7 PA07        A8/D8   7    7     -     0/3   1/1     -
+  5 PA05        A9/D9   5    5     -     0/1   0/1     -
+  6 PA06      A10/D10   6    6     -     0/2   1/0     -
+ 28 PA28        D12 *   8    -     -      -     -      -
+ 17 PA17        D13 *   1    -    1/1    3/1   2/1    0/7
+ 16 PA16        D14 *   0    -    1/0    3/0   2/0    0/6
+ 15 PA15        D15 *  15    -    2/3    4/3   3/1    0/5
+ 14 PA14        D16 *  14    -    2/2    4/2   3/0    0/4
+ 13 PA13        D17 *  13    -    2/1    4/1   2/0    0/7
+ 12 PA12        D18 *  12    -    2/0    4/0   2/0    0/6
+ 19 PA19        D19 *   3    -    1/3    3/3   3/1    0/3
+ 20 PA20        D20 *   4    -    5/2    3/2   7/0    0/4
+ 21 PA21        D21 *   5    -    5/3    3/3   7/1    0/7
+ 42 PB10        D22 *  10    -     -     4/2   5/0    0/4
+ 43 PB11        D23 *  11    -     -     4/3   5/1    0/5
+ 55 PB23        D24 *   7    -     -     5/3   7/1     -
+ 23 PA23        D25 *   7    -    3/1    5/1   4/1    0/5
+ 22 PA22        D26 *   6    -    3/0    5/0   4/0    0/4
+ 18 PA18        D27 *   2    -    1/2    3/2   3/0    0/2
+ 17 PA17       SCL1 *   1    -    1/1    3/1   2/1    0/7
+ 16 PA16       SDA1 *   0    -    1/0    3/0   2/0    0/6
+ 27 PA27    RGB_LED *  15    -     -      -     -      -
+ 54 PB22     BUTTON *   6    -     -     5/2   7/0     -
  18 PA18       RX_LED   2    -    1/2    3/2   3/0    0/2
  41 PB09           RX   9    3     -     4/1   4/1     -
  40 PB08           TX   8    2     -     4/0   4/0     -
@@ -453,34 +473,21 @@ Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
   0 PA00            -   0    -     -     1/0   2/0     -
   1 PA01            -   1    -     -     1/1   2/1     -
   3 PA03            -   3    1     -      -     -      -
- 12 PA12            -  12    -    2/0    4/0   2/0    0/6
- 13 PA13            -  13    -    2/1    4/1   2/0    0/7
- 14 PA14            -  14    -    2/2    4/2   3/0    0/4
- 15 PA15            -  15    -    2/3    4/3   3/1    0/5
- 16 PA16            -   0    -    1/0    3/0   2/0    0/6
- 20 PA20            -   4    -    5/2    3/2   7/0    0/4
- 21 PA21            -   5    -    5/3    3/3   7/1    0/7
- 22 PA22            -   6    -    3/0    5/0   4/0    0/4
- 23 PA23            -   7    -    3/1    5/1   4/1    0/5
- 27 PA27            -  15    -     -      -     -      -
- 28 PA28            -   8    -     -      -     -      -
  34 PB02            -   2   10     -     5/0   6/0     -
  35 PB03            -   3   11     -     5/1   6/1     -
- 42 PB10            -  10    -     -     4/2   5/0    0/4
- 43 PB11            -  11    -     -     4/3   5/1    0/5
- 54 PB22            -   6    -     -     5/2   7/0     -
- 55 PB23            -   7    -     -     5/3   7/1     -
 === ==== ============ ==== ==== ====== ====== ====== ======
 
 For the definition of the table columns see the explanation at the table for
 Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
+Pins marked with an asterisk (*) are available only on the XIAO SAMD21 Plus.
+
 The default devices at the board are:
 
-- UART 4 at pins PB08/PB09, labelled A6_D6/A7_D7
-- I2C 2 at pins PA08/PA09, labelled A4_D4/A5_D5
-- SPI 0 at pins PA06/PA05/PA07, labelled A10_D10, A9_D9 and A8_D8
-- DAC output on pin PA02, labelled A0_D0
+- UART 4 at pins PB08/PB09, labelled D6/D7 (also A6/A7)
+- I2C 2 at pins PA08/PA09, labelled D4/D5 (also A4/A5)
+- SPI 0 at pins PA06/PA05/PA07, labelled D10, D9 and D8 (also A10, A9 and A8)
+- DAC output on pin PA02, labelled A0 (also D0)
 
 Adafruit Feather M0 Express pin assignment table
 ------------------------------------------------
