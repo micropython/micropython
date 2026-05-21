@@ -1,0 +1,4 @@
+MEMORY
+{
+    FLASH(rx) : ORIGIN = 0x10000000, LENGTH = __micropy_flash_size__
+}

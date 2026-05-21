@@ -1,0 +1,6 @@
+/* Delete scratch X and expand scratch Y */
+SCRATCH_X_LENGTH = 0;
+SCRATCH_Y_ORIGIN = SCRATCH_X_ORIGIN_DEFAULT;
+SCRATCH_Y_LENGTH = SCRATCH_Y_LENGTH_DEFAULT*2;
+
+INCLUDE "memmap_default.incl"
