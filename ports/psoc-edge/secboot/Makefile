@@ -90,13 +90,14 @@ endif
 # If the nsc_veneer.o is not present, it is 
 # generated without reference.
 NSC_VENEER = nsc_veneer.o
+NSC_VENEER_TEMP = $(BUILD)/$(NSC_VENEER).tmp
 ifneq ($(wildcard $(NSC_VENEER)),)
 IN_IMPLIB_FLAG = -Wl,--in-implib -Wl,$(NSC_VENEER)
 endif
 
 LDFLAGS = $(MACHINE_FLAGS) \
 	-Wl,--gc-sections \
-	-Wl,--cmse-implib $(IN_IMPLIB_FLAG) -Wl,--out-implib -Wl,$(NSC_VENEER).tmp \
+	-Wl,--cmse-implib $(IN_IMPLIB_FLAG) -Wl,--out-implib -Wl,$(NSC_VENEER_TEMP) \
 	-Wl,--print-memory-usage \
 	-Wl,--no-warn-rwx-segments \
 	-Xlinker -L $(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM \
@@ -192,8 +193,8 @@ $(BUILD):
 
 # Replace the original veneer with the generated temp veneer after build.
 cmse_post_build_update:
-	@$(Q)[ ! -f $(NSC_VENEER).tmp ] || cmp -s $(NSC_VENEER).tmp $(NSC_VENEER) || mv -f $(NSC_VENEER).tmp $(NSC_VENEER);\
-	rm -f $(NSC_VENEER).tmp
+	@$(Q)[ ! -f $(NSC_VENEER_TEMP) ] || cmp -s $(NSC_VENEER_TEMP) $(NSC_VENEER) || cp -f $(NSC_VENEER_TEMP) $(NSC_VENEER);\
+	rm -f $(NSC_VENEER_TEMP)
 
 # Clean
 clean:
