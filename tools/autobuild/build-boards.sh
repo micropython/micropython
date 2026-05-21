@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # The functions in this file can be run independently to build boards.
-# For example:
+# For example (using bash):
 #
 #   $ source tools/autobuild/build-boards.sh
 #   $ cd ports/rp2
@@ -11,7 +11,7 @@
 #
 #   $ source tools/autobuild/build-boards.sh
 #   $ cd ports/rp2
-#   $ MICROPY_AUTOBUILD_MAKE="make -j8" build_board boards/PICO/board.json -latest /tmp uf2
+#   $ MICROPY_AUTOBUILD_MAKE="make -j8" build_board boards/RPI_PICO/board.json -latest /tmp uf2
 
 function copy_artefacts {
     local dest_dir=$1
