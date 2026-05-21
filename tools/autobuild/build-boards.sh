@@ -15,13 +15,13 @@
 
 function copy_artefacts {
     local dest_dir=$1
-    local descr=$2
+    local board=$2
     local fw_tag=$3
     local build_dir=$4
     shift 4
 
     for ext in $@; do
-        dest=$dest_dir/$descr$fw_tag.$ext
+        dest=$dest_dir/$board$fw_tag.$ext
         if [ -r $build_dir/firmware.$ext ]; then
             mv $build_dir/firmware.$ext $dest
         elif [ -r $build_dir/micropython.$ext ]; then
@@ -47,19 +47,18 @@ function build_board {
     shift 3
 
     local board=$(echo $board_json | awk -F '/' '{ print $2 }')
-    local descr=$(cat $board_json | python3 -c "import json,sys; print(json.load(sys.stdin).get('id', '$board'))")
 
     # Build the "default" variant. For most boards this is the only thing we build.
-    echo "building $descr $board"
+    echo "building $board"
     local build_dir=/tmp/micropython-build-$board
-    $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir && copy_artefacts $dest_dir $descr $fw_tag $build_dir $@
+    $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir && copy_artefacts $dest_dir $board $fw_tag $build_dir $@
     rm -rf $build_dir
 
     # Query variants from board.json and build them.
     for variant in `cat $board_json | python3 -c "import json,sys; print(' '.join(json.load(sys.stdin).get('variants', {}).keys()))"`; do
         local variant_build_dir=$build_dir-$variant
-        echo "building variant $descr $board $variant"
-        $MICROPY_AUTOBUILD_MAKE BOARD=$board BOARD_VARIANT=$variant BUILD=$variant_build_dir && copy_artefacts $dest_dir $descr-$variant $fw_tag $variant_build_dir $@
+        echo "building $board-$variant"
+        $MICROPY_AUTOBUILD_MAKE BOARD=$board BOARD_VARIANT=$variant BUILD=$variant_build_dir && copy_artefacts $dest_dir $board-$variant $fw_tag $variant_build_dir $@
         rm -rf $variant_build_dir
     done
 }
