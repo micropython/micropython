@@ -49,16 +49,26 @@ function build_board {
     local board=$(echo $board_json | awk -F '/' '{ print $2 }')
 
     # Build the "default" variant. For most boards this is the only thing we build.
-    echo "building $board"
+    echo "$0: Autobuild started for $board"
     local build_dir=/tmp/micropython-build-$board
-    $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir && copy_artefacts $dest_dir $board $fw_tag $build_dir $@
+    if $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir; then
+        copy_artefacts $dest_dir $board $fw_tag $build_dir $@
+        echo "$0: Autobuild succeeded for $board"
+    else
+        echo "$0: Autobuild failed for $board"
+    fi
     rm -rf $build_dir
 
     # Query variants from board.json and build them.
     for variant in `cat $board_json | python3 -c "import json,sys; print(' '.join(json.load(sys.stdin).get('variants', {}).keys()))"`; do
         local variant_build_dir=$build_dir-$variant
-        echo "building $board-$variant"
-        $MICROPY_AUTOBUILD_MAKE BOARD=$board BOARD_VARIANT=$variant BUILD=$variant_build_dir && copy_artefacts $dest_dir $board-$variant $fw_tag $variant_build_dir $@
+        echo "$0: Autobuild started for $board-$variant"
+        if $MICROPY_AUTOBUILD_MAKE BOARD=$board BOARD_VARIANT=$variant BUILD=$variant_build_dir; then
+            copy_artefacts $dest_dir $board-$variant $fw_tag $variant_build_dir $@
+            echo "$0: Autobuild succeeded for $board-$variant"
+        else
+            echo "$0: Autobuild failed for $board-$variant"
+        fi
         rm -rf $variant_build_dir
     done
 }
