@@ -27,6 +27,12 @@ def instance0():
 
     multitest.next()
 
+    # don't babble until we know instance1 is ready to receive, or this instance
+    # may go to Error Passive while instance1 is still initialising CAN (meaning
+    # the "babble" won't saturate the bus, due to the Suspend Transmission
+    # requirement)
+    multitest.wait("instance1 ready")
+
     # "Babble" medium priority messages onto the bus to prevent
     # instance1() from sending anything lower priority than this
     while len(recv) < ITERS:
@@ -71,6 +77,12 @@ def instance1():
     can.irq(irq_send, trigger=can.IRQ_TX, hard=True)
 
     multitest.next()
+    multitest.broadcast("instance1 ready")
+
+    # make sure instance0 can queue outgoing medium-priority
+    # babble before we start trying to send, so we're trying to
+    # send onto an already busy bus
+    time.sleep_ms(100)
 
     for i in range(ITERS):
         # Fill the transmit queue with low priority messages (all extended IDs)
