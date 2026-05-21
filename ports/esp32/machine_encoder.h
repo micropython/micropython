@@ -32,15 +32,22 @@ typedef struct _mp_pcnt_obj_t {
 
     counter_t match; // match value
     counter_t counter_match; // (match - counter) - (match - counter) % INT16_ROLL
+    /*
     mp_obj_t handler_match;
     mp_obj_t handler_zero;
     mp_obj_t handler_roll_over;
     mp_obj_t handler_roll_under;
-    uint32_t event_status;
+    */
+    uint32_t mp_irq_flags;    // user IRQ active IRQ flags is event_status
+    uint32_t mp_irq_trigger;  // user IRQ trigger mask
+    mp_irq_obj_t *mp_irq_obj; // user IRQ object
 
     int filter;
     enum edge_bit_mask edge; // Counter only
-    int8_t phases; // Encoder: multiplier 1, 2 or 4 // Counter: 0 is 'direction=' keyword used, -1 is '_src=' keyword used
+    union {
+        int8_t phases; // Encoder: multiplier 1, 2 or 4
+        int8_t reverse_src; // Counter: 1 is '_src=' keyword used, 0 is 'direction=' keyword used
+    };
 } mp_pcnt_obj_t;
 
 #endif // MICROPY_INCLUDED_MACHINE_ENCODER_H
