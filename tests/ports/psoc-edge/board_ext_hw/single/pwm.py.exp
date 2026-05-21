@@ -18,4 +18,4 @@ PWM duty should be specified only in one format
 PWM frequency must be greater than 0
 PWM duty should be specified in either ns or u16
 Pin(P0_0) doesn't exist
-PWM instance for Pin P16_0 already exists, call deinit() first
+PWM instance for Pin P16_1 already exists, call deinit() first

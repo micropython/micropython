@@ -7,8 +7,8 @@ from machine import PWM, Pin
 import os
 import time
 
-pwm_pin = "P16_0"
-pin_in = "P16_1"
+pwm_pin = "P16_1"
+pin_in = "P16_0"
 
 input_pin = Pin(pin_in, Pin.IN)
 
