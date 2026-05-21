@@ -68,8 +68,6 @@ typedef struct _machine_pwm_obj_t {
 // PWM frequency.
 //
 // PWM-capable pins on KIT_PSE84_AI:
-//     P16_0 : counter 0  (shared — P9_1, P9_3, P14_3, P14_4, P17_0, P20_5 also route to counter 0;
-//           :              enabling any of those pins simultaneously will conflict with P16_0)
 //     P16_1 : counter 1
 //     P16_2 : counter 2
 //     P16_3 : counter 3
@@ -84,7 +82,6 @@ static const struct {
     uint32_t counter_num;
     en_clk_dst_t pclk_dst;     // PCLK clock destination for Cy_SysClk_PeriPclkAssignDivider
 } pwm_pin_map[] = {
-    {16, 0, 0, PCLK_TCPWM0_CLOCK_COUNTER_EN0},  // P16_0
     {16, 1, 1, PCLK_TCPWM0_CLOCK_COUNTER_EN1},  // P16_1
     {16, 2, 2, PCLK_TCPWM0_CLOCK_COUNTER_EN2},  // P16_2
     {16, 3, 3, PCLK_TCPWM0_CLOCK_COUNTER_EN3},  // P16_3
