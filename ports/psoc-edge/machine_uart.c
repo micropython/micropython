@@ -183,10 +183,23 @@ static void machine_uart_baudrate_set(machine_uart_obj_t *self) {
      */
     #define CLOCK_PERIPHERAL_FREQ_HZ (100000000UL)
 
-    Cy_SysClk_PeriphAssignDivider(self->scb_obj->clk, CY_SYSCLK_DIV_16_BIT, 0UL);
+    /**
+     * 16-bit divider 0 (PERI0 group 1) is pre-assigned to the I2C controller by
+     * the BSP and must not be disturbed. 16-bit divider 1 is pre-assigned to the
+     * BSP debug / REPL UART and is the natural choice for all MicroPython UART
+     * instances.
+     *
+     * TODO: Implement a proper per-SCB divider allocation scheme. The current
+     *       approach shares one divider across all UART instances, which means
+     *       concurrent UARTs must use the same baud rate.
+     */
+    #define MACHINE_UART_CLK_DIV_NUM (1UL)
+
     uint32_t divider = CLOCK_PERIPHERAL_FREQ_HZ / (self->baudrate * 12UL);
-    Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_16_BIT, 0UL, divider);
-    Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_16_BIT, 0UL);
+    Cy_SysClk_PeriphDisableDivider(CY_SYSCLK_DIV_16_BIT, MACHINE_UART_CLK_DIV_NUM);
+    Cy_SysClk_PeriphAssignDivider(self->scb_obj->clk, CY_SYSCLK_DIV_16_BIT, MACHINE_UART_CLK_DIV_NUM);
+    Cy_SysClk_PeriphSetDivider(CY_SYSCLK_DIV_16_BIT, MACHINE_UART_CLK_DIV_NUM, divider);
+    Cy_SysClk_PeriphEnableDivider(CY_SYSCLK_DIV_16_BIT, MACHINE_UART_CLK_DIV_NUM);
 }
 
 static inline uint8_t machine_uart_break_width(machine_uart_obj_t *self) {
