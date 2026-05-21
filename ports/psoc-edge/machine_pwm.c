@@ -217,9 +217,6 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
         mp_raise_msg_varg(&mp_type_ValueError,
             MP_ERROR_TEXT("PWM frequency must not exceed %lu Hz"), (unsigned long)(PWM_TCPWM_CLK_HZ / 2));
     }
-    self->frequency = (uint32_t)args[ARG_freq].u_int;
-
-    self->invert = args[ARG_invert].u_bool;
 
     if (args[ARG_duty_u16].u_int != VALUE_NOT_SET &&
         args[ARG_duty_ns].u_int != VALUE_NOT_SET) {
@@ -236,6 +233,10 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM duty should be specified in either ns or u16"));
     }
+
+    self->frequency = (uint32_t)args[ARG_freq].u_int;
+
+    self->invert = args[ARG_invert].u_bool;
 
     /* Apply frequency and duty cycle to the PWM config struct */
     pwm_config(self);
@@ -352,7 +353,16 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // Process the remaining parameters (skip dest at args[0]).
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_machine_pwm_init_helper(self, n_args - 1, args + 1, &kw_args);
+
+    // If pwm_init_helper raises, free the pool slot so the pin can be reused.
+    nlr_buf_t nl;
+    if (nlr_push(&nl) == 0) {
+        mp_machine_pwm_init_helper(self, n_args - 1, args + 1, &kw_args);
+        nlr_pop();
+    } else {
+        pwm_obj_free(self);
+        nlr_jump(nl.ret_val);
+    }
 
     return MP_OBJ_FROM_PTR(self);
 }
