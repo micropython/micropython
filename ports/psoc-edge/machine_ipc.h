@@ -30,6 +30,7 @@
 #include "py/obj.h"
 #include "cy_ipc_pipe.h"
 #include "ipc_communication.h"
+#include "shared/runtime/mpirq.h"
 
 /* IPC Pipe Endpoint-1 config */
 #define CY_IPC_CYPIPE_CHAN_MASK_EP1     CY_IPC_CH_MASK(CY_IPC_CHAN_CYPIPE_EP1)
@@ -56,28 +57,22 @@
 /* Sentinel value meaning a slot in sender_clients_arr is free (not yet registered) */
 #define IPC_CLIENT_ID_UNREGISTERED      (0xFFU)
 
-typedef struct {
-    uint8_t ep_sender_id;
-    uint8_t ep_sender_addr;
-    uint8_t client_id; // ID provided by client during registration; IPC_CLIENT_ID_UNREGISTERED means slot is free
-    mp_obj_t cback_handler; // Python callback to invoke when message received from CM55 in CM33-NS, stored here for easy access during send operation to invoke callback when response received from CM55
-} ipc_sender_endpoint_t;
+typedef struct _machine_ipc_client_obj_t {
+    mp_irq_obj_t base;   // handler, parent (self), ishard
+    uint8_t client_id;   // IPC_CLIENT_ID_UNREGISTERED means slot is free
+    uint8_t ep_id;
+    uint32_t ep_addr;
+    uint8_t last_cmd;    // last received command (set in ISR before mp_irq_handler)
+    uint32_t last_value; // last received value
+} machine_ipc_client_obj_t;
 
-// Array of sender client max of 8
-ipc_sender_endpoint_t sender_clients_arr[8];
+// Array of registered clients, max IPC_MAX_CLIENTS_PER_EP entries
+machine_ipc_client_obj_t sender_clients_arr[8];
 
-// DO NOT USE THIS FROM MPY SIDE TO SET UP
-/*typedef struct {
-    uint8_t ep_receiver_id;
-    uint8_t ep_receiver_addr;
-    uint32_t client_id;
-    mp_obj_t cback_handler;
-} ipc_receiver_endpoint_t;*/
-
-// A singleton IPC instance should be created for each core and clients can register to this instance to send messages to the other core. For receiving messages, clients will register their callbacks to the endpoint structure which will be used by the IPC ISR to call the appropriate callback when message is received from the other core.
+// A singleton IPC instance should be created for each core and clients can register to this instance to send messages to the other core. For receiving messages, clients will register their callbacks to the endpoint structure which will be used by the IPC ISR to schedule the appropriate callback in the MicroPython VM via the soft-IRQ scheduler (mp_irq_handler / mp_sched_schedule) when a message is received from the other core.
 typedef struct _machine_ipc_obj_t {
     mp_obj_base_t base;
-    ipc_sender_endpoint_t *sender_endpoint;
+    machine_ipc_client_obj_t *sender_endpoint;
     // ipc_receiver_endpoint_t *receiver_endpoint; // Pointer to receiver information structure
     uint8_t target_core;
     uint8_t src_core;
@@ -93,7 +88,7 @@ typedef struct
 
 
 bool is_cm55_enabled;
-extern const mp_obj_type_t ipc_sender_endpoint_type;
+extern const mp_obj_type_t machine_ipc_client_type;
 extern const mp_obj_type_t machine_ipc_type;
 void machine_ipc_deinit_all(void);
 

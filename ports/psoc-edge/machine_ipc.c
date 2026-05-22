@@ -59,6 +59,52 @@ CY_SECTION_SHAREDMEM static ipc_msg_t ipc_msg_buffer;
 machine_ipc_obj_t *machine_ipc_obj[IPC_MAX_CLIENTS_PER_EP] = {NULL};
 
 /*******************************************************************************
+* machine_ipc_client_obj_t IRQ methods and type
+*******************************************************************************/
+
+static mp_uint_t machine_ipc_client_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    if (new_trigger == 0) {
+        machine_ipc_client_obj_t *client = MP_OBJ_TO_PTR(self_in);
+        client->base.handler = mp_const_none;
+        if (client->client_id < IPC_MAX_CLIENTS_PER_EP) {
+            MP_STATE_PORT(machine_ipc_client_handlers)[client->client_id] = mp_const_none;
+        }
+    }
+    return 0;
+}
+
+static mp_uint_t machine_ipc_client_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    (void)self_in;
+    (void)info_type;
+    return 0;
+}
+
+static const mp_irq_methods_t machine_ipc_client_irq_methods = {
+    .trigger = machine_ipc_client_irq_trigger,
+    .info = machine_ipc_client_irq_info,
+};
+
+static void machine_ipc_client_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        return;
+    }
+    machine_ipc_client_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (attr == MP_QSTR_cmd) {
+        dest[0] = MP_OBJ_NEW_SMALL_INT(self->last_cmd);
+    } else if (attr == MP_QSTR_value) {
+        dest[0] = mp_obj_new_int_from_uint(self->last_value);
+    } else if (attr == MP_QSTR_id) {
+        dest[0] = MP_OBJ_NEW_SMALL_INT(self->client_id);
+    }
+}
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_ipc_client_type,
+    MP_QSTR_IPCClient,
+    MP_TYPE_FLAG_NONE,
+    attr, machine_ipc_client_attr);
+
+/*******************************************************************************
 * IPC Helper functions
 *******************************************************************************/
 
@@ -329,8 +375,13 @@ static mp_obj_t machine_ipc_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     // Initialise all client slots to unregistered sentinel so duplicate-check works
     for (uint8_t i = 0; i < IPC_MAX_CLIENTS_PER_EP; i++) {
+        mp_irq_init(&sender_clients_arr[i].base, &machine_ipc_client_irq_methods,
+            MP_OBJ_FROM_PTR(&sender_clients_arr[i]));
+        sender_clients_arr[i].base.base.type = &machine_ipc_client_type;
         sender_clients_arr[i].client_id = IPC_CLIENT_ID_UNREGISTERED;
-        sender_clients_arr[i].cback_handler = mp_const_none;
+        sender_clients_arr[i].last_cmd = 0;
+        sender_clients_arr[i].last_value = 0;
+        MP_STATE_PORT(machine_ipc_client_handlers)[i] = mp_const_none;
     }
 
     // Validate cores selected
@@ -344,44 +395,36 @@ static mp_obj_t machine_ipc_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     // Initialize sender endpoint structure based on source and target cores. Each endpoint can have max of IPC_MAX_CLIENTS_PER_EP clients,
     self->sender_endpoint = &sender_clients_arr[0];
-    self->sender_endpoint->ep_sender_id = args[ARG_src_core].u_int;
-    self->sender_endpoint->ep_sender_addr = CM33_IPC_PIPE_EP_ADDR;
+    self->sender_endpoint->ep_id = args[ARG_src_core].u_int;
+    self->sender_endpoint->ep_addr = CM33_IPC_PIPE_EP_ADDR;
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-/* Callback function to handle messages received from CM55 in CM33-NS. This will be registered with the IPC driver for the source endpoint (CM33) and will be called when a message is received from CM55.
-*  The callback will extract the message data and invoke the appropriate MPY callback based on the client_id in the message which indicates which client registered for this message.
-*  The client callback information is stored in the sender_clients_arr based on client_id during client registration.
+/* Callback to handle messages received from CM55 in CM33-NS. Registered with
+*  the IPC driver for the CM33 source endpoint; called from the IPC ISR
+*  (cm33_ipc_pipe_isr) when a message arrives from CM55.
+*  Extracts cmd/value from the message and stores them in the per-client object
+*  identified by client_id, then defers the Python callback to the MicroPython
+*  VM via mp_irq_handler / mp_sched_schedule instead of calling it directly.
 */
 void cm33_msg_callback(uint32_t *msg_data) {
-    if (msg_data != NULL) {
-        /* Cast the message received to the IPC structure */
-        ipc_msg_t *ipc_recv_msg = (ipc_msg_t *)msg_data;
+    if (msg_data == NULL) {
+        return;
+    }
+    ipc_msg_t *ipc_recv_msg = (ipc_msg_t *)msg_data;
+    uint8_t client_id = ipc_recv_msg->client_id;
 
-        /* Extract the command to be processed in the main loop */
-        uint8_t msg_cmd = ipc_recv_msg->cmd;
-        uint32_t msg_value = ipc_recv_msg->value;
-        uint8_t client_id = ipc_recv_msg->client_id;
+    if (client_id >= IPC_MAX_CLIENTS_PER_EP) {
+        mp_printf(&mp_plat_print, "[CM33] Invalid client_id %d in received message\r\n", client_id);
+        return;
+    }
 
-        // Find the registered client callback based on client_id and invoke it with the message data
-        if (client_id < IPC_MAX_CLIENTS_PER_EP) {
-            mp_obj_t callback = sender_clients_arr[client_id].cback_handler;
-            if (callback != mp_const_none) {
-                // Create a tuple with the message data to pass to the callback
-                mp_obj_t callback_args[3];
-                callback_args[0] = mp_obj_new_int(msg_cmd);
-                callback_args[1] = mp_obj_new_int_from_uint(msg_value);
-                callback_args[2] = mp_obj_new_int(client_id);
-
-                // Call the Python callback with the message data
-                mp_call_function_n_kw(callback, 3, 0, callback_args);
-            } else {
-                mp_printf(&mp_plat_print, "[CM33] No callback registered for client_id %d\r\n", client_id);
-            }
-        } else {
-            mp_printf(&mp_plat_print, "[CM33] Invalid client_id %d in received message\r\n", client_id);
-        }
+    machine_ipc_client_obj_t *client = &sender_clients_arr[client_id];
+    if (client->base.handler != mp_const_none) {
+        client->last_cmd = ipc_recv_msg->cmd;
+        client->last_value = ipc_recv_msg->value;
+        mp_irq_handler(&client->base);
     }
 }
 /********************************************************************************************************
@@ -422,11 +465,12 @@ static mp_obj_t machine_ipc_register_client(size_t n_args, const mp_obj_t *args)
         }
     }
 
-    // Set the client information in the global sender_clients_arr based on client_id which will be used during send operation to get the callback handler and other client information when message is received from CM55 in CM33-NS to invoke the correct callback based on client_id
+    // Set the client information in the global sender_clients_arr based on client_id
     sender_clients_arr[client_id].client_id = client_id;
-    sender_clients_arr[client_id].cback_handler = callback_handler;
-    sender_clients_arr[client_id].ep_sender_addr = endpoint_addr;
-    sender_clients_arr[client_id].ep_sender_id = endpoint_id;
+    sender_clients_arr[client_id].base.handler = callback_handler;
+    MP_STATE_PORT(machine_ipc_client_handlers)[client_id] = callback_handler;
+    sender_clients_arr[client_id].ep_addr = endpoint_addr;
+    sender_clients_arr[client_id].ep_id = endpoint_id;
 
     // Register the C callback with IPC pipe framework. The client_id parameter is the index in the callback array where the function pointer is saved
     cy_en_ipc_pipe_status_t status = Cy_IPC_Pipe_RegisterCallback(
@@ -518,7 +562,7 @@ static mp_obj_t machine_ipc_send(size_t n_args, const mp_obj_t *args) {
     uint32_t value = (n_args > 2) ? mp_obj_get_int(args[2]) : 0;
     uint8_t client_id = mp_obj_get_int(args[3]);
 
-    uint32_t src_ep_addr = self->sender_endpoint->ep_sender_addr;
+    uint32_t src_ep_addr = self->sender_endpoint->ep_addr;
     uint32_t target_ep_addr = get_ep_addr_for_core(self->target_core);
 
     // Use helper function to send message
@@ -581,12 +625,14 @@ static const mp_rom_map_elem_t machine_ipc_locals_dict_table[] = {
 static MP_DEFINE_CONST_DICT(machine_ipc_locals_dict, machine_ipc_locals_dict_table);
 
 MP_REGISTER_ROOT_POINTER(struct _machine_ipc_obj_t *machine_ipc_obj[IPC_MAX_CLIENTS_PER_EP]);
+MP_REGISTER_ROOT_POINTER(mp_obj_t machine_ipc_client_handlers[IPC_MAX_CLIENTS_PER_EP]);
 
 void machine_ipc_deinit_all(void) {
     cm55_enabled = false;
     for (uint8_t i = 0; i < IPC_MAX_CLIENTS_PER_EP; i++) {
         sender_clients_arr[i].client_id = IPC_CLIENT_ID_UNREGISTERED;
-        sender_clients_arr[i].cback_handler = mp_const_none;
+        sender_clients_arr[i].base.handler = mp_const_none;
+        MP_STATE_PORT(machine_ipc_client_handlers)[i] = mp_const_none;
     }
 }
 

@@ -361,12 +361,16 @@ Methods
 
         - ``client_id``: Unique client identifier (``0``–``7``). Each registered client
           must have a unique ID.
-        - ``callback``: A callable invoked as ``callback(cmd, value, client_id)`` when a
-          message arrives for this client. The callback parameters are:
-          
-        1. ``cmd``: Command byte received from the target core.
-        2. ``value``: 32-bit value received from the target core.
-        3. ``client_id``: The client ID that the message was sent to (same as the ``client_id`` argument passed to this method).
+        - ``callback``: A callable invoked as ``callback(client)`` when a message arrives
+          for this client. The callback receives a single ``IPCClient`` object with the
+          following read-only attributes:
+
+          - ``client.cmd``: Command byte received from the target core.
+          - ``client.value``: 32-bit value received from the target core.
+          - ``client.id``: The client ID this message was addressed to.
+
+          The callback is deferred and runs in the MicroPython scheduler context (not in
+          the ISR), so it is safe to allocate memory and call any MicroPython function.
 
         - ``endpoint_id``: Endpoint index for source core.
         - ``endpoint_addr``: Endpoint address for the source core.
@@ -377,11 +381,11 @@ Methods
 
     Example — registering two independent services::
 
-        def svc1_cb(cmd, val, cid):
-            print("Service1 received cmd=0x{:02X}".format(cmd))
+        def svc1_cb(client):
+            print("Service1 received cmd=0x{:02X}".format(client.cmd))
 
-        def svc2_cb(cmd, val, cid):
-            print("Service2 received cmd=0x{:02X}".format(cmd))
+        def svc2_cb(client):
+            print("Service2 received cmd=0x{:02X}".format(client.cmd))
 
         ipc.register_client(3, svc1_cb, 1, 1)   # Service 1
         ipc.register_client(4, svc2_cb, 1, 1)   # Service 2
@@ -445,13 +449,13 @@ with each service using its own client IDs on both the CM33 and CM55 sides::
     svc1 = {"received": False, "cmd": None}
     svc2 = {"received": False, "cmd": None}
 
-    def svc1_cb(cmd, val, cid):
+    def svc1_cb(client):
         svc1["received"] = True
-        svc1["cmd"] = cmd
+        svc1["cmd"] = client.cmd
 
-    def svc2_cb(cmd, val, cid):
+    def svc2_cb(client):
         svc2["received"] = True
-        svc2["cmd"] = cmd
+        svc2["cmd"] = client.cmd
 
     # Register both services on the CM33 endpoint (endpoint_id=1, endpoint_addr=1)
     ipc.register_client(3, svc1_cb, 1, 1)   # Service 1 -- CM33 client_id=3

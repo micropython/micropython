@@ -20,14 +20,14 @@ svc1 = {"received": False, "cmd": None}  # Service 1
 svc2 = {"received": False, "cmd": None}  # Service 2
 
 
-def svc1_cb(cmd, val, cid):
+def svc1_cb(client):
     svc1["received"] = True
-    svc1["cmd"] = cmd
+    svc1["cmd"] = client.cmd
 
 
-def svc2_cb(cmd, val, cid):
+def svc2_cb(client):
     svc2["received"] = True
-    svc2["cmd"] = cmd
+    svc2["cmd"] = client.cmd
 
 
 # Register both services on CM33's endpoint (EP_ADDR=1)
