@@ -612,10 +612,6 @@ SRC_C += \
 	systick.c \
 	sys_int.c \
 
-# DeepCraft model interface (deepcraft_model MicroPython module)
-DEEPCRAFT_MODEL_LIB_DIR ?= $(TOP)/lib/mtb-example-psoc-edge-voice-assistant-deploy-mpy/micropython-deepcraft-model-interface/
-include $(DEEPCRAFT_MODEL_LIB_DIR)deepcraft_interface.mk
-
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(MOD_SRC_C) $(GEN_PINS_SRC)
 
