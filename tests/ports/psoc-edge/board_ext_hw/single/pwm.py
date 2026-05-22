@@ -165,6 +165,73 @@ try:
 except Exception as e:
     print(e)
 
+#### freq getter / setter tests ####
+
+# freq_get returns the frequency set at construction (duty_u16)
+pwm = PWM(pwm_pin, freq=1000, duty_u16=32767)
+print(f"freq_get after init (duty_u16): {pwm.freq()}")
+pwm.deinit()
+
+# freq_get returns the frequency set at construction (duty_ns)
+pwm = PWM(pwm_pin, freq=500, duty_ns=1000000)
+print(f"freq_get after init (duty_ns): {pwm.freq()}")
+pwm.deinit()
+
+# freq_set changes output frequency (duty_u16, measured on hardware)
+pwm = PWM(pwm_pin, freq=10, duty_u16=32767)
+pwm.freq(50)
+calc_dc, calc_freq = measure_signal()
+validate_signal(exp_freq=50, calc_freq=calc_freq, exp_dc=50, calc_dc=calc_dc)
+pwm.deinit()
+
+# freq_set changes output frequency (duty_ns, measured on hardware)
+# duty_ns=2500000: 25% at 100 Hz -> 50% at 200 Hz (period shrinks from 10ms to 5ms)
+pwm = PWM(pwm_pin, freq=100, duty_ns=2500000)
+pwm.freq(200)
+calc_dc, calc_freq = measure_signal()
+validate_signal(exp_freq=200, calc_freq=calc_freq, exp_dc=50, calc_dc=calc_dc)
+pwm.deinit()
+
+# freq_get after freq_set returns the new frequency
+pwm = PWM(pwm_pin, freq=100, duty_u16=32767)
+pwm.freq(250)
+print(f"freq_get after freq_set: {pwm.freq()}")
+pwm.deinit()
+
+#### Negative freq_set tests ####
+
+# freq_set: frequency must be greater than 0
+pwm = PWM(pwm_pin, freq=100, duty_u16=32767)
+try:
+    pwm.freq(0)
+except Exception as e:
+    print(e)
+pwm.deinit()
+
+# freq_set: negative frequency
+pwm = PWM(pwm_pin, freq=100, duty_u16=32767)
+try:
+    pwm.freq(-1)
+except Exception as e:
+    print(e)
+pwm.deinit()
+
+# freq_set: frequency exceeds maximum
+pwm = PWM(pwm_pin, freq=100, duty_u16=32767)
+try:
+    pwm.freq(500001)
+except Exception as e:
+    print(e)
+pwm.deinit()
+
+# freq_set: duty_ns would exceed new (lower) period
+pwm = PWM(pwm_pin, freq=100, duty_ns=9000000)  # 9 ms on-time, period = 10 ms
+try:
+    pwm.freq(200)  # new period = 5 ms; 9 ms duty exceeds it
+except Exception as e:
+    print(e)
+pwm.deinit()
+
 # PWM instance already exists
 pwm = PWM(pwm_pin, freq=1, duty_u16=32767)
 time.sleep(2)  # Wait for the pwm signal to be initialized and started

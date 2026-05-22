@@ -13,9 +13,24 @@ Exp dc(%) matches calc dc(%)!
  dc: 25
 PWM frequency must not exceed 500000 Hz
 PWM frequency must be greater than 0
-PWM duty in ns is larger than the period 0 ns
+PWM duty in ns is larger than the period 20000000 ns
 PWM duty should be specified only in one format
 PWM frequency must be greater than 0
 PWM duty should be specified in either ns or u16
 Pin(P0_0) doesn't exist
+freq_get after init (duty_u16): 1000
+freq_get after init (duty_ns): 500
+Expected freq matches calc freq! 
+ freq: 50
+Exp dc(%) matches calc dc(%)! 
+ dc: 50
+Expected freq matches calc freq! 
+ freq: 200
+Exp dc(%) matches calc dc(%)! 
+ dc: 50
+freq_get after freq_set: 250
+PWM frequency must be greater than 0
+PWM frequency must be greater than 0
+PWM frequency must not exceed 500000 Hz
+PWM duty in ns is larger than the period 5000000 ns
 PWM instance for Pin P16_1 already exists, call deinit() first
