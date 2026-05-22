@@ -30,7 +30,6 @@
 
 // MTB includes
 #include "retarget_io_init.h"
-
 // micropython includes
 #include "mpconfigport.h"
 #include "mphalport.h"
@@ -42,7 +41,10 @@ extern mtb_hal_uart_t DEBUG_UART_hal_obj;
 extern mtb_hal_timer_t psoc_edge_timer;
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    mtb_hal_system_delay_ms(ms);
+    mp_uint_t start = mp_hal_ticks_ms();
+    while (mp_hal_ticks_ms() - start < ms) {
+        mp_event_handle_nowait();
+    }
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
