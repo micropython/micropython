@@ -172,6 +172,15 @@ static void pwm_pin_restore(const machine_pin_obj_t *pin) {
     Cy_GPIO_SetDrivemode(port, pin->pin, CY_GPIO_DM_HIGHZ);
 }
 
+// Reconfigure and restart the TCPWM counter using the current pwm_obj config struct.
+static void pwm_restart(machine_pwm_obj_t *self) {
+    Cy_TCPWM_PWM_Disable(TCPWM0, self->counter_num);
+    cy_en_tcpwm_status_t result = Cy_TCPWM_PWM_Init(TCPWM0, self->counter_num, &self->pwm_obj);
+    pwm_assert_raise_val("PWM init failed with return code %lx !", result);
+    Cy_TCPWM_PWM_Enable(TCPWM0, self->counter_num);
+    Cy_TCPWM_TriggerReloadOrIndex_Single(TCPWM0, self->counter_num);
+}
+
 // Compute period and compare register values from the stored frequency/duty and write to the PDL config struct.
 static void pwm_config(machine_pwm_obj_t *self) {
     if (self->frequency == 0) {
@@ -395,36 +404,44 @@ static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     /* Apply frequency and duty cycle to the PWM config struct */
     pwm_config(self);
 
-    // Disable the TCPWM counter
-    Cy_TCPWM_PWM_Disable(TCPWM0, self->counter_num);
-
-    cy_en_tcpwm_status_t result = Cy_TCPWM_PWM_Init(TCPWM0,
-        self->counter_num, &self->pwm_obj);
-    pwm_assert_raise_val("PWM init failed with return code %lx !", result);
-
-    /* Enable the TCPWM block */
-    Cy_TCPWM_PWM_Enable(TCPWM0, self->counter_num);
-
-    /* Start the PWM */
-    Cy_TCPWM_TriggerReloadOrIndex_Single(TCPWM0, self->counter_num);
+    // Reconfigure and restart the TCPWM counter with the new config.
+    pwm_restart(self);
 }
 
 // Return the current duty cycle as a 16-bit value (0-65535).
 static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
+    if (self->duty_type == DUTY_U16) {
+        return MP_OBJ_NEW_SMALL_INT(self->duty);
+    }
+    // Convert stored duty_ns to u16
+    return MP_OBJ_NEW_SMALL_INT(pwm_duty_cycle_ns_to_u16(self->duty, self->frequency));
 }
 
 // Set the duty cycle from a 16-bit value (0-65535).
 static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
+    self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
+    self->duty_type = DUTY_U16;
+
+    pwm_config(self);
+    pwm_restart(self);
 }
 
 // Return the current on-time duty cycle in nanoseconds.
 static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
+    if (self->duty_type == DUTY_NS) {
+        return MP_OBJ_NEW_SMALL_INT(self->duty);
+    }
+    // Convert stored duty_u16 to nanoseconds
+    return MP_OBJ_NEW_SMALL_INT(pwm_duty_cycle_u16_to_ns(self->duty, self->frequency));
 }
 
 // Set the duty cycle as an on-time in nanoseconds.
 static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM duty getter/setter not yet implemented"));
+    pwm_duty_ns_assert(duty_ns, self->frequency);
+
+    self->duty = duty_ns;
+    self->duty_type = DUTY_NS;
+
+    pwm_config(self);
+    pwm_restart(self);
 }
