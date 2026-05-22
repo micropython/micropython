@@ -28,11 +28,12 @@
 #include "sys_int.h"
 
 #include "py/misc.h"
+#include "py/runtime.h"
 #include "shared/runtime/mpirq.h"
 #include "machine_pin.h"
 
 /* ======================================================================================================================== */
-/* Port IRQ structures and library API to support port-pin IRQ configuration */
+
 
 /* Forward declaration */
 static void machine_pin_irq_port_handler(uint8_t port);
@@ -149,15 +150,17 @@ static void machine_pin_irq_port_handler(uint8_t port) {
      */
     for (uint8_t pin = 0; pin < CY_GPIO_PINS_MAX; pin++) {
         if (Cy_GPIO_GetInterruptStatus(Cy_GPIO_PortToAddr(port), pin)) {
-            uint32_t idx = machine_pin_irq_obj_find_index(port, pin);
-            machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
-
-            /* TODO: This should be later handled by mp_irq_handler() which
-            will schedule this call (all this requires the gc and the scheduler) */
-            mp_call_function_1(irq->base.handler, MP_OBJ_FROM_PTR(irq->base.parent));
-
+            /* Clear the GPIO source first so back-to-back edges can re-latch. */
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(port), pin);
-            sys_int_clear(irq->port_cfg);
+
+            uint32_t idx = machine_pin_irq_obj_find_index(port, pin);
+            machine_pin_irq_obj_t *irq = (idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES) ? machine_pin_irq_obj[idx] : NULL;
+
+            /* Call handler via mp_irq_handler for deferred execution in scheduler context. */
+            if (irq != NULL && irq->base.handler != mp_const_none) {
+                irq->flags = 1; /* Mark that an IRQ was triggered. */
+                mp_irq_handler(&irq->base);
+            }
         }
     }
 }
@@ -200,24 +203,21 @@ static void machine_pin_irq_set_priority(sys_int_cfg_t *port_cfg, uint32_t port,
     }
 }
 
-static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
+static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_pin_irq_obj_t *irq = machine_pin_irq_obj[machine_pin_irq_obj_find_index(self->port, self->pin)];
 
-    irq->flags = 0; // TODO: What is this flags used for?
-    irq->trigger = trigger; // TODO: Review this once mpirq module is enabled.
+    irq->flags = 0;
+    irq->trigger = new_trigger;
 
     Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
-    Cy_GPIO_SetInterruptEdge(Cy_GPIO_PortToAddr(self->port), self->pin, trigger);
+    Cy_GPIO_SetInterruptEdge(Cy_GPIO_PortToAddr(self->port), self->pin, new_trigger);
     Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 1u);
 
     sys_int_init(irq->port_cfg);
-
     return 0;
 }
 
-// TODO: This will be useful when mpirq module is enabled.
-// Review usage and implementation of triggers and flags.
 static mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_pin_irq_obj_t *irq = machine_pin_irq_obj[machine_pin_irq_obj_find_index(self->port, self->pin)];
@@ -241,13 +241,9 @@ machine_pin_irq_obj_t *machine_pin_irq_get_irq(const machine_pin_obj_t *self) {
 
     if (irq == NULL) {
         irq = m_new_obj(machine_pin_irq_obj_t);
-        // TODO: This can be replaced by mp_irq_init() once gc is enabled
-        // mp_irq_init(&irq->base, &machine_pin_irq_methods, MP_OBJ_FROM_PTR(self));
-        // irq->base.base.type = &mp_irq_type; //-> Requires the garbage collector be enabled!
-        irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-        irq->base.parent = MP_OBJ_FROM_PTR(self);
-        irq->base.handler = mp_const_none;
-        irq->base.ishard = false;
+        mp_irq_init(&irq->base, &machine_pin_irq_methods, MP_OBJ_FROM_PTR(self));
+        irq->flags = 0;
+        irq->trigger = 0;
         irq->port_cfg = &port_irq_cfg[self->port];
         machine_pin_irq_obj[idx] = irq;
     }
@@ -277,8 +273,7 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         machine_pin_irq_trigger(self, args[ARG_trigger].u_int);
     }
 
-    return mp_const_none;
-    // return MP_OBJ_FROM_PTR(irq); // TODO: Do we need to return the irq object? We could return irq->base. once mpirq mode is enabled.
+    return MP_OBJ_FROM_PTR(irq);
 }
 
 void machine_pin_irq_deinit_all(void) {
@@ -297,7 +292,5 @@ void machine_pin_irq_deinit_all(void) {
     }
 }
 
-// TODO: This will be enabled once the mpirq is fully functional
-// and when the gc is enabled.
-// The array of pin_irq object will be part of the root pointers and under garbage collection
-// MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES]);
+// Register pin IRQ objects as roots so they are retained by the GC.
+MP_REGISTER_ROOT_POINTER(struct _machine_pin_irq_obj_t *machine_pin_irq_obj[MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES]);
