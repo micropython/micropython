@@ -1,4 +1,8 @@
 irq
 irq
+irq flag falling: True
 irq
 irq
+irq flag rising: True
+irq hard
+error: trigger 0x00000034 unsupported
