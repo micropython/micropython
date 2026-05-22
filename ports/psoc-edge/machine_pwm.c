@@ -220,6 +220,8 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
         mp_raise_ValueError(MP_ERROR_TEXT("PWM duty should be specified only in one format"));
     }
 
+    self->frequency = (uint32_t)args[ARG_freq].u_int;
+
     if (args[ARG_duty_u16].u_int != VALUE_NOT_SET) {
         self->duty = args[ARG_duty_u16].u_int > 65535 ? 65535 : args[ARG_duty_u16].u_int;
         self->duty_type = DUTY_U16;
@@ -230,8 +232,6 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM duty should be specified in either ns or u16"));
     }
-
-    self->frequency = (uint32_t)args[ARG_freq].u_int;
 
     self->invert = args[ARG_invert].u_bool;
 
@@ -373,12 +373,40 @@ static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
 
 // Return the current PWM output frequency in Hz.
 static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM freq getter/setter not yet implemented"));
+    return MP_OBJ_NEW_SMALL_INT(self->frequency);
 }
 
 // Update the PWM output frequency; recalculates the period register.
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
-    mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("PWM freq getter/setter not yet implemented"));
+    if (freq <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("PWM frequency must be greater than 0"));
+    }
+    if ((uint32_t)freq > PWM_TCPWM_CLK_HZ / 2) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("PWM frequency must not exceed %lu Hz"), (unsigned long)(PWM_TCPWM_CLK_HZ / 2));
+    }
+    if (self->duty_type == DUTY_NS) {
+        pwm_duty_ns_assert(self->duty, (uint32_t)freq);
+    }
+
+    // set the frequency
+    self->frequency = (uint32_t)freq;
+
+    /* Apply frequency and duty cycle to the PWM config struct */
+    pwm_config(self);
+
+    // Disable the TCPWM counter
+    Cy_TCPWM_PWM_Disable(TCPWM0, self->counter_num);
+
+    cy_en_tcpwm_status_t result = Cy_TCPWM_PWM_Init(TCPWM0,
+        self->counter_num, &self->pwm_obj);
+    pwm_assert_raise_val("PWM init failed with return code %lx !", result);
+
+    /* Enable the TCPWM block */
+    Cy_TCPWM_PWM_Enable(TCPWM0, self->counter_num);
+
+    /* Start the PWM */
+    Cy_TCPWM_TriggerReloadOrIndex_Single(TCPWM0, self->counter_num);
 }
 
 // Return the current duty cycle as a 16-bit value (0-65535).
