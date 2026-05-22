@@ -226,7 +226,7 @@ are at slice 1, and so on. A certain channel can be assigned to
 different GPIO pins (see Pinout). For instance slice 0, channel A can be assigned
 to both GPIO0 and GPIO16.
 
-Use the ``machine.PWM`` class::
+Use the :ref:`machine.PWM <machine.PWM>` class::
 
     from machine import Pin, PWM
 
