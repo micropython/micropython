@@ -610,6 +610,10 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         }
                         break;
                     }
+                    case MP_QSTR_bandwidth: {
+                        esp_exceptions(esp_wifi_set_bandwidth(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
+                        break;
+                    }
                     case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         // TODO: Deprecated. Use network.hostname(name) instead.
@@ -706,6 +710,12 @@ static mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             wifi_second_chan_t second;
             esp_exceptions(esp_wifi_get_channel(&channel, &second));
             val = MP_OBJ_NEW_SMALL_INT(channel);
+            break;
+        }
+        case MP_QSTR_bandwidth: {
+            wifi_bandwidth_t bandwidth;
+            esp_exceptions(esp_wifi_get_bandwidth(self->if_id, &bandwidth));
+            val = MP_OBJ_NEW_SMALL_INT(bandwidth);
             break;
         }
         case MP_QSTR_ifname: {
@@ -807,6 +817,12 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(WIFI_PS_NONE) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(WIFI_PS_MIN_MODEM) },
     { MP_ROM_QSTR(MP_QSTR_PM_POWERSAVE), MP_ROM_INT(WIFI_PS_MAX_MODEM) },
+
+    { MP_ROM_QSTR(MP_QSTR_BANDWIDTH_20), MP_ROM_INT(WIFI_BW20) },
+    { MP_ROM_QSTR(MP_QSTR_BANDWIDTH_40), MP_ROM_INT(WIFI_BW40) },
+    { MP_ROM_QSTR(MP_QSTR_BANDWIDTH_80), MP_ROM_INT(WIFI_BW80) },
+    { MP_ROM_QSTR(MP_QSTR_BANDWIDTH_160), MP_ROM_INT(WIFI_BW160) },
+    { MP_ROM_QSTR(MP_QSTR_BANDWIDTH_80_80), MP_ROM_INT(WIFI_BW80_BW80) },
 };
 static MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
