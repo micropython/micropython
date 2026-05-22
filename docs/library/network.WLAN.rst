@@ -146,6 +146,7 @@ Methods
    txpower        Maximum transmit power in dBm (integer or float)
    pm             WiFi Power Management setting (see below for allowed values)
    protocol       (ESP32 Only.) WiFi Low level 802.11 protocol. See `WLAN.PROTOCOL_DEFAULT`.
+   bandwidth      (ESP32 Only.) WiFi channel bandwidth. See `WLAN.BANDWIDTH_20` and others.
    =============  ===========
 
 Constants
@@ -189,6 +190,26 @@ network interface parameter:
       documentation`_ for more details.
 
       Long range mode is not supported on ESP32-C2.
+
+.. data:: WLAN.BANDWIDTH_20
+        WLAN.BANDWIDTH_40
+        WLAN.BANDWIDTH_80
+        WLAN.BANDWIDTH_160
+        WLAN.BANDWIDTH_80_80
+
+      Allowed values for the ``WLAN.config(bandwidth=...)`` network interface parameter:
+
+      * ``BANDWIDTH_20``: specifies a 20MHz wide WiFi channel when in STA and AP mode
+      * ``BANDWIDTH_40``: specifies a 40MHz wide WiFi channel when in STA and AP mode
+      * ``BANDWIDTH_80``: specifies a 80MHz wide WiFi channel when in AP mode, may not
+        be available on all ESP32 models
+      * ``BANDWIDTH_160``: specifies a 160MHz wide WiFi channel when in AP mode, may not
+        be available on all ESP32 models
+      * ``BANDWIDTH_80_80``: specifies a multi-antenna 80MHz + 80MHz wide WiFi channel
+        setup when in AP mode, may not be available on all ESP32 models.
+
+      When in STA mode, bandwidth can only be changed when the adapter is not connected to a
+      network.  In AP mode it can be changed at any time.
 
 .. _ESP-IDF Wi-Fi Protocols: https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/wifi.html#wi-fi-protocol-mode
 .. _Espressif proprietary "long-range" mode:
