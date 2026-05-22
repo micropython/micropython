@@ -154,11 +154,17 @@ static void machine_pin_irq_port_handler(uint8_t port) {
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(port), pin);
 
             uint32_t idx = machine_pin_irq_obj_find_index(port, pin);
-            machine_pin_irq_obj_t *irq = (idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES) ? machine_pin_irq_obj[idx] : NULL;
+            machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
 
-            /* Call handler via mp_irq_handler for deferred execution in scheduler context. */
-            if (irq != NULL && irq->base.handler != mp_const_none) {
-                irq->flags = 1; /* Mark that an IRQ was triggered. */
+            /**
+             * Update the flags with the current trigger that caused the IRQ.
+             * There is not a PDL function to get the current trigger,
+             * so we use the configured trigger as the source of truth.
+             * This means that if both edges are enabled, the flags will
+             * indicate both edges even if only one of them caused the IRQ.
+             */
+            irq->flags = irq->trigger;
+            if (irq->base.handler != mp_const_none) {
                 mp_irq_handler(&irq->base);
             }
         }
@@ -203,9 +209,17 @@ static void machine_pin_irq_set_priority(sys_int_cfg_t *port_cfg, uint32_t port,
     }
 }
 
+#define MP_PIN_IRQ_ALLOWED_FLAGS (CY_GPIO_INTR_RISING | CY_GPIO_INTR_FALLING)
+
 static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_pin_irq_obj_t *irq = machine_pin_irq_obj[machine_pin_irq_obj_find_index(self->port, self->pin)];
+
+    /* Check the trigger */
+    mp_uint_t not_supported = new_trigger & ~MP_PIN_IRQ_ALLOWED_FLAGS;
+    if (new_trigger != 0 && not_supported) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
+    }
 
     irq->flags = 0;
     irq->trigger = new_trigger;
@@ -267,6 +281,12 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     machine_pin_irq_obj_t *irq = machine_pin_irq_get_irq(self);
 
     if (n_args > 1 || kw_args->used != 0) {
+
+        /* Check the handler */
+        mp_obj_t handler = args[ARG_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
         irq->base.handler = args[ARG_handler].u_obj;
         irq->base.ishard = args[ARG_hard].u_bool;
         machine_pin_irq_set_priority(irq->port_cfg, self->port, args[ARG_priority].u_int);
