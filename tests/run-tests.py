@@ -188,6 +188,10 @@ platform_tests_to_skip = {
         "micropython/extreme_exc.py",
         "micropython/heapalloc_exc_compressed_emg_exc.py",
     ),
+    "win32": (
+        "thread/thread_stacksize1.py",  # stack too small for debug builds
+        "thread/thread_stdin.py",  # stdin polling not supported in threads
+    ),
     "WiPy": (
         "misc/print_exception.py",  # requires error reporting full
     ),
