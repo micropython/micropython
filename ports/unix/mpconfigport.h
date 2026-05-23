@@ -45,6 +45,8 @@
 #ifndef MICROPY_PY_SYS_PLATFORM
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
+#elif defined(__GNU__)
+    #define MICROPY_PY_SYS_PLATFORM  "GNU"
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
 #endif
@@ -146,7 +148,11 @@ typedef long mp_off_t;
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
+#ifdef PATH_MAX
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
+#else
+#define MICROPY_ALLOC_PATH_MAX      (4096)
+#endif
 
 // Ensure builtinimport.c works with -m.
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
@@ -219,6 +225,11 @@ static inline unsigned long mp_random_seed_init(void) {
 #ifndef __APPLE__
 // For debugging purposes, make printf() available to any source file.
 #include <stdio.h>
+#endif
+
+#ifdef __GNU__
+// GNU/Hurd uses large error numbers.
+#define MICROPY_ERRNO_POSIX (1)
 #endif
 
 // Configure the implementation of machine.idle().

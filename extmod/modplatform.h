@@ -112,6 +112,8 @@
 #define MICROPY_PLATFORM_SYSTEM         "Android"
 #elif defined(__linux)
 #define MICROPY_PLATFORM_SYSTEM         "Linux"
+#elif defined(__GNU__)
+#define MICROPY_PLATFORM_SYSTEM         "GNU"
 #elif defined(__unix__)
 #define MICROPY_PLATFORM_SYSTEM         "Unix"
 #elif defined(__CYGWIN__)

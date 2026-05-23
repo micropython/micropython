@@ -1193,6 +1193,19 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_USE_INTERNAL_ERRNO (0)
 #endif
 
+// Strictly compliant with POSIX that error values are of type int.  This only
+// needs to be set on systems that disable MICROPY_USE_INTERNAL_ERRNO and have
+// large errno values.
+#ifndef MICROPY_ERRNO_POSIX
+#define MICROPY_ERRNO_POSIX (0)
+#endif
+
+#if MICROPY_ERRNO_POSIX
+typedef int mp_errno_t;
+#else
+typedef char mp_errno_t;
+#endif
+
 // Whether to use internally defined *printf() functions (otherwise external ones)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
 #define MICROPY_USE_INTERNAL_PRINTF (1)
