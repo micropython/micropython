@@ -27,6 +27,7 @@
 
 import contextlib
 import os
+import re
 import sys
 import glob
 import tempfile
@@ -40,6 +41,9 @@ MODE_FREEZE = 1
 MODE_COMPILE = 2
 # Same as compile, but handles require(..., pypi="name") as a requirements.txt entry.
 MODE_PYPROJECT = 3
+# Same surface as MODE_FREEZE, but freeze/package/module are no-ops so callers
+# can collect c_module() entries without touching files referenced by freeze().
+MODE_LIST_C_MODULES = 4
 
 # In compile mode, .py -> KIND_COMPILE_AS_MPY
 # In freeze mode, .py -> KIND_FREEZE_AS_MPY, .mpy->KIND_FREEZE_MPY
@@ -192,6 +196,8 @@ class ManifestFile:
         self._manifest_files = []
         # List of PyPI dependencies (when mode=MODE_PYPROJECT).
         self._pypi_dependencies = []
+        # List of C module directories.
+        self._c_modules = []
         # Don't allow including the same file twice.
         self._visited = set()
         # Stack of metadata for each level.
@@ -201,7 +207,9 @@ class ManifestFile:
         # List of directories to search for packages.
         self._library_dirs = []
         # Add default micropython-lib libraries if $(MPY_LIB_DIR) has been specified.
-        if self._path_vars["MPY_LIB_DIR"]:
+        # Use .get() to avoid KeyError if MPY_LIB_DIR wasn't passed (shouldn't happen
+        # in normal cmake/make builds, but be defensive for direct tool invocations).
+        if self._path_vars.get("MPY_LIB_DIR"):
             for lib in BASE_LIBRARY_NAMES:
                 self.add_library(lib, os.path.join("$(MPY_LIB_DIR)", lib))
 
@@ -221,11 +229,16 @@ class ManifestFile:
             "add_library": self.add_library,
             "package": self.package,
             "module": self.module,
+            # c_module() only has an effect in FREEZE / LIST_C_MODULES; in
+            # COMPILE / PYPROJECT modes it's a silent no-op so a manifest can be
+            # evaluated in any mode without raising NameError. Matches the way
+            # package()/module() behave in LIST_C_MODULES.
+            "c_module": self.c_module,
             "options": IncludeOptions(**kwargs),
         }
 
         # Extra legacy functions only for freeze mode.
-        if self._mode == MODE_FREEZE:
+        if self._mode in (MODE_FREEZE, MODE_LIST_C_MODULES):
             g.update(
                 {
                     "freeze": self.freeze,
@@ -243,6 +256,9 @@ class ManifestFile:
     def pypi_dependencies(self):
         # In MODE_PYPROJECT, this will return a list suitable for requirements.txt.
         return self._pypi_dependencies
+
+    def c_modules(self):
+        return self._c_modules
 
     def execute(self, manifest_file):
         if manifest_file.endswith(".py"):
@@ -478,6 +494,9 @@ class ManifestFile:
         """
         self._metadata[-1].check_initialised(self._mode)
 
+        if self._mode == MODE_LIST_C_MODULES:
+            return
+
         # Include "base_path/package_path/**/*.py" --> "package_path/**/*.py"
         self._search(base_path, package_path, files, exts=(".py",), kind=KIND_AUTO, opt=opt)
 
@@ -493,6 +512,9 @@ class ManifestFile:
         """
         self._metadata[-1].check_initialised(self._mode)
 
+        if self._mode == MODE_LIST_C_MODULES:
+            return
+
         # Include "base_path/module_path" --> "module_path"
         base_path = self._resolve_path(base_path)
         _, ext = os.path.splitext(module_path)
@@ -501,7 +523,56 @@ class ManifestFile:
         # TODO: version None
         self._add_file(os.path.join(base_path, module_path), module_path, opt=opt)
 
+    def c_module(self, module_path):
+        """
+        Include a C module directory in the build.
+
+        The module_path should be a directory containing a micropython.mk and/or
+        micropython.cmake file.
+
+        Supports $(VAR) path substitution:
+            c_module("$(MPY_DIR)/examples/usercmodule/cexample")
+            c_module("$(BOARD_DIR)/../../drivers/sensor")
+
+        Can be called multiple times to include multiple C modules.
+
+        Only has effect when collecting modules for the build system
+        (MODE_FREEZE / MODE_LIST_C_MODULES). Silent no-op in MODE_COMPILE /
+        MODE_PYPROJECT, so the same manifest can be evaluated in any mode.
+        """
+        if self._mode not in (MODE_FREEZE, MODE_LIST_C_MODULES):
+            return
+        resolved = self._resolve_path(module_path)
+        # Reject unresolved $(VAR) up front so a bad manifest fails with a
+        # clear message rather than a confusing "path does not exist" containing
+        # the variable literal.
+        unresolved = re.search(r"\$\([^)]+\)", resolved)
+        if unresolved:
+            raise ManifestFileError(
+                "Unresolved variable in c_module() path: {}".format(unresolved.group(0))
+            )
+        module_path = resolved
+        if not os.path.exists(module_path):
+            raise ManifestFileError("C module path does not exist: {}".format(module_path))
+        if not os.path.isdir(module_path):
+            raise ManifestFileError("C module path must be a directory: {}".format(module_path))
+        # Verify the directory contains a micropython.mk or micropython.cmake file.
+        has_mk = os.path.isfile(os.path.join(module_path, "micropython.mk"))
+        has_cmake = os.path.isfile(os.path.join(module_path, "micropython.cmake"))
+        if not has_mk and not has_cmake:
+            raise ManifestFileError(
+                "C module directory must contain micropython.mk or micropython.cmake: {}".format(
+                    module_path
+                )
+            )
+        self._c_modules.append(module_path)
+
     def _freeze_internal(self, path, script, exts, kind, opt):
+        # In list-c-modules mode we only care about c_module() entries; skip
+        # the file-system walk so freeze targets that don't exist (e.g. a
+        # board-conditional modules directory) don't abort the listing.
+        if self._mode == MODE_LIST_C_MODULES:
+            return
         if script is None:
             self._search(path, None, None, exts=exts, kind=kind, opt=opt)
         elif isinstance(script, str) and os.path.isdir(os.path.join(path, script)):
@@ -555,6 +626,8 @@ class ManifestFile:
         Freeze the given `path` and all .py scripts within it as a string,
         which will be compiled upon import.
         """
+        if self._mode == MODE_LIST_C_MODULES:
+            return
         self._search(path, None, None, exts=(".py",), kind=KIND_FREEZE_AS_STR)
 
     def freeze_as_mpy(self, path, script=None, opt=None):
