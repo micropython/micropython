@@ -33,6 +33,7 @@
 #define CHAR_CTRL_E (5)
 #define CHAR_CTRL_F (6)
 #define CHAR_CTRL_K (11)
+#define CHAR_CTRL_L (12)
 #define CHAR_CTRL_N (14)
 #define CHAR_CTRL_P (16)
 #define CHAR_CTRL_U (21)
