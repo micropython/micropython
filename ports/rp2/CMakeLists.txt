@@ -45,14 +45,25 @@ if(MICROPY_BOARD_VARIANT)
     endif()
 endif()
 
+# Save the cmake-command-line MICROPY_FROZEN_MANIFEST before board config
+# inclusion may overwrite it; resolved back after, so command-line takes
+# precedence over the board's default.
 set(MICROPY_USER_FROZEN_MANIFEST ${MICROPY_FROZEN_MANIFEST})
 
-# Include board config, it may override MICROPY_FROZEN_MANIFEST
+# Include board config, it may set MICROPY_FROZEN_MANIFEST
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 if(NOT MICROPY_BOARD_VARIANT)
     include(${MICROPY_BOARD_DIR}/mpconfigvariant.cmake OPTIONAL)
 else()
     include(${MICROPY_BOARD_DIR}/mpconfigvariant_${MICROPY_BOARD_VARIANT}.cmake)
+endif()
+
+# Resolve the frozen manifest now so it's available before py/manifest.cmake
+# runs (via py/usermod.cmake below).
+if(MICROPY_USER_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
+elseif(NOT MICROPY_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
 endif()
 
 # Set the PICO_BOARD if it's not already set (allow a board to override it).
@@ -498,13 +509,6 @@ elseif (${PICO_PLATFORM} STREQUAL "rp2350-riscv")
 else()
     message(WARNING "Unknown PICO_PLATFORM version (${PICO_PLATFORM}), falling back to rp2040")
     set(MICROPY_CROSS_FLAGS "-march=armv6m")
-endif()
-
-# Set the frozen manifest file
-if (MICROPY_USER_FROZEN_MANIFEST)
-    set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
-elseif (NOT MICROPY_FROZEN_MANIFEST)
-    set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
 endif()
 
 target_sources(${MICROPY_TARGET} PRIVATE
