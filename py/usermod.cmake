@@ -39,6 +39,13 @@ function(usermod_gather_sources SOURCES_VARNAME INCLUDE_DIRECTORIES_VARNAME INCL
     endif()
 endfunction()
 
+# Extract c_module() entries from MICROPY_FROZEN_MANIFEST and merge them into
+# USER_C_MODULES, so the loop below picks them up alongside USER_C_MODULES paths
+# passed on the cmake command line. The port is responsible for resolving
+# MICROPY_FROZEN_MANIFEST (including any board-config defaults) before
+# including this file.
+include(${MICROPY_DIR}/py/manifest.cmake)
+
 # Include CMake files for user modules.
 if (USER_C_MODULES)
     foreach(USER_C_MODULE_PATH ${USER_C_MODULES})

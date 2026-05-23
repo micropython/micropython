@@ -4,6 +4,12 @@ set(MICROPY_PY_DIR "${MICROPY_DIR}/py")
 
 list(APPEND MICROPY_INC_CORE "${MICROPY_DIR}")
 
+# Set MICROPY_LIB_DIR default if not already set by the port.
+# This needs to happen before usermod.cmake is included (for c_module() in manifests).
+if(NOT MICROPY_LIB_DIR)
+    set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
+endif()
+
 # All py/ source files
 set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/argcheck.c
