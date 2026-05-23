@@ -264,6 +264,32 @@ structures.  If not done correctly it will compile but importing will
 fail to find the module.
 
 
+Specifying C modules via a manifest
+-----------------------------------
+
+As an alternative to passing ``USER_C_MODULES`` on the command line, C modules
+can be listed inside a frozen manifest using ``c_module()``. This is convenient
+when a board or project always pulls in the same set of C modules: the manifest
+becomes the single place that declares both frozen Python code and the C
+modules required to support it.
+
+.. code-block:: python3
+
+    # In ports/myboard/boards/MYBOARD/manifest.py
+    include("$(PORT_DIR)/boards/manifest.py")
+    c_module("$(MPY_DIR)/examples/usercmodule/cexample")
+    c_module("$(BOARD_DIR)/../../drivers/sensor")
+
+The manifest will need to be loaded via ``FROZEN_MANIFEST`` (either set in
+``mpconfigboard.{mk,cmake}`` or passed on the make command line), and modules
+listed with ``c_module()`` combine additively with any paths supplied via
+``USER_C_MODULES`` on the command line. Duplicate paths are de-duplicated, so
+mixing the two is safe.
+
+See :ref:`manifest` for the full ``c_module()`` API and supported
+``$(VAR)`` path substitutions.
+
+
 Module usage in MicroPython
 ---------------------------
 
