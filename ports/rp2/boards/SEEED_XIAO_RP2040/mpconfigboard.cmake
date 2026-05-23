@@ -1,3 +1,7 @@
 # cmake file for Seeed Studio XIAO RP204
 
 set(PICO_BOARD "seeed_xiao_rp2040")
+
+if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    set(MICROPY_HW_FLASH_STORAGE_BYTES 1441792)  # 1408 * 1024
+endif()
