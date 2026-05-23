@@ -8,3 +8,7 @@ set(PICO_NUM_GPIOS 48)
 # which will instruct pico-sdk to look for waveshare_rp2350b_core.h
 list(APPEND PICO_BOARD_HEADER_DIRS ${MICROPY_BOARD_DIR})
 set(PICO_BOARD "waveshare_rp2350b_core")
+
+if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    set(MICROPY_HW_FLASH_STORAGE_BYTES 14680064)  # 14 * 1024 * 1024
+endif()

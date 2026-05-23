@@ -2,7 +2,6 @@
 
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME               "W5500-EVB-Pico"
-#define MICROPY_HW_FLASH_STORAGE_BYTES      (1408 * 1024)
 
 // Enable networking.
 #define MICROPY_PY_NETWORK                  (1)
