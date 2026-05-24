@@ -41,12 +41,14 @@
 #if MICROPY_HW_ESP_NEW_I2C_DRIVER
 #include "driver/i2c_master.h"
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 2)
+#error The new I2C driver requires esp-idf >= v5.5.2
+#endif
+
 typedef struct _machine_hw_i2c_obj_t {
     mp_obj_base_t base;
     i2c_master_bus_handle_t bus_handle;
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
     i2c_master_dev_handle_t dev_handle;
-    #endif
     uint8_t port : 8;
     gpio_num_t scl : 8;
     gpio_num_t sda : 8;
@@ -58,12 +60,10 @@ static machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];
 
 static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, bool first_init) {
 
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
     if (!first_init && self->dev_handle) {
         i2c_master_bus_rm_device(self->dev_handle);
         self->dev_handle = NULL;
     }
-    #endif
 
     if (!first_init && self->bus_handle) {
         i2c_del_master_bus(self->bus_handle);
@@ -79,14 +79,12 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, bool first_init) {
         .flags.enable_internal_pullup = true,
     };
     ESP_ERROR_CHECK(i2c_new_master_bus(&bus_cfg, &self->bus_handle));
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address = 0,  // Will be replaced
         .scl_speed_hz = self->freq,
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(self->bus_handle, &dev_cfg, &self->dev_handle));
-    #endif
 }
 
 static uint8_t *create_transfer_buffer(size_t n, mp_machine_i2c_buf_t *bufs, size_t *len_ptr) {
@@ -111,31 +109,8 @@ static uint8_t *create_transfer_buffer(size_t n, mp_machine_i2c_buf_t *bufs, siz
 int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // Probe the address to see if any device responds for esp-idf < v5.5.4.
-    // This test uses a fixed scl freq of 100_000.
     esp_err_t err = ESP_OK;
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 2)
-    err = i2c_master_probe(self->bus_handle, addr, self->timeout_us / 1000);
-    if (err != ESP_OK) {
-        return -MP_ENODEV;   // No device at address, return immediately
-    }
-    #endif
-
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
-    // Using ".device_address = I2C_DEVICE_ADDRESS_NOT_USED," below
-    // allows to write the address separately using the
-    // i2c_master_execute_defined_operations() API.
-    i2c_device_config_t dev_cfg = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = addr,
-        .scl_speed_hz = self->freq,
-    };
-    i2c_master_dev_handle_t dev_handle;
-    err = i2c_master_bus_add_device(self->bus_handle, &dev_cfg, &dev_handle);
-    #else
-    #define dev_handle self->dev_handle
-    err = i2c_master_device_change_address(dev_handle, addr, self->timeout_us / 1000);
-    #endif
+    err = i2c_master_device_change_address(self->dev_handle, addr, self->timeout_us / 1000);
     if (err != ESP_OK) {
         return -MP_ENODEV;
     }
@@ -151,7 +126,7 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
         // create a large buffer if needed
         buf = create_transfer_buffer(n - 1, bufs + 1, &len);
         // Do a write then read
-        err = i2c_master_transmit_receive(dev_handle, bufs[0].buf, bufs[0].len, buf, len, self->timeout_us / 1000);
+        err = i2c_master_transmit_receive(self->dev_handle, bufs[0].buf, bufs[0].len, buf, len, self->timeout_us / 1000);
         // Copy the data back if needed starting with the second buffer.
         if (n > 2) {
             len = 0;
@@ -166,7 +141,7 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
         buf = create_transfer_buffer(n, bufs, &len);
         // Transfer data and copy it from/to the buffers as needed.
         if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            err = i2c_master_receive(dev_handle, buf, len, self->timeout_us / 1000);
+            err = i2c_master_receive(self->dev_handle, buf, len, self->timeout_us / 1000);
             if (n > 1) {
                 len = 0;
                 for (size_t i = 0; i < n; ++i) {
@@ -182,12 +157,11 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
                     len += bufs[i].len;
                 }
             }
-            err = i2c_master_transmit(dev_handle, buf, len, self->timeout_us / 1000);
+            err = i2c_master_transmit(self->dev_handle, buf, len, self->timeout_us / 1000);
         }
         if (n > 1) {
             m_del(uint8_t, buf, len);
         }
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 2)
     } else if (!(flags & MP_MACHINE_I2C_FLAG_READ)) {
         // Write operation with len=0, bufs->buf = NULL, used by i2c.scan().
         // Use i2c_master_execute_defined_operations() allowing for len == 0.
@@ -196,13 +170,8 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
             { .command = I2C_MASTER_CMD_WRITE, .write = { .ack_check = true, .data = NULL, .total_bytes = 0 } },
             { .command = I2C_MASTER_CMD_STOP },  // Stop is still mandatory
         };
-        err = i2c_master_execute_defined_operations(dev_handle, i2c_ops, 3, self->timeout_us / 1000);
-    #endif
+        err = i2c_master_execute_defined_operations(self->dev_handle, i2c_ops, 3, self->timeout_us / 1000);
     }
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 0)
-    // Remove the temporary handle.
-    i2c_master_bus_rm_device(dev_handle);
-    #endif
 
     // Map errors
     if (err == ESP_FAIL || err == ESP_ERR_INVALID_STATE) {
