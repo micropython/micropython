@@ -1,7 +1,6 @@
 // https://wiki.seeedstudio.com/XIAO-RP2040-Plus/
 
 #define MICROPY_HW_BOARD_NAME          "Seeed Studio XIAO RP2040 Plus"
-#define MICROPY_HW_FLASH_STORAGE_BYTES (1408 * 1024)
 
 // No VID/PID defined for the Seeed XIAO RP2040 Plus
 // #define MICROPY_HW_USB_VID (0x)
