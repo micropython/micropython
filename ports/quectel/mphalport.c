@@ -187,7 +187,7 @@ int mp_hal_stdin_rx_chr(void) {
         }
         MP_THREAD_GIL_ENTER();
 
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 }
 
@@ -247,7 +247,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
             if (wait_time >= ms) {
                 return;
             }
-            MICROPY_EVENT_POLL_HOOK;
+            mp_event_wait_ms(1);
             t1 = mp_hal_ticks_us();
             dt = t1 - t0;
             if (dt / 1000 >= ms) {

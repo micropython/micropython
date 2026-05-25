@@ -148,20 +148,3 @@ typedef long mp_off_t;
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(mp_handle_pending_behaviour_t behavior); \
-        mp_handle_pending(true); \
-        MP_THREAD_GIL_EXIT(); \
-        MP_THREAD_GIL_ENTER(); \
-    } while (0);
-#else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(mp_handle_pending_behaviour_t behavior); \
-        mp_handle_pending(true); \
-        asm ("waiti 0"); \
-    } while (0);
-#endif
