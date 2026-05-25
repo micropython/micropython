@@ -44,6 +44,14 @@ irq = pin_irq.irq(irq_handler_hard, trigger=Pin.IRQ_FALLING, hard=True)
 pin_trigger(0)
 
 
+# Trigger set to None, should not trigger any interrupt.
+pin_irq.irq(None)
+pin_trigger(1)
+pin_trigger(0)
+pin_trigger(1)
+pin_trigger(0)
+
+
 # Invalid trigger
 try:
     irq.trigger(0x35)
