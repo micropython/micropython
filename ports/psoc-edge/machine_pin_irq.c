@@ -96,6 +96,43 @@ typedef struct _machine_pin_irq_obj_t {
 
 machine_pin_irq_obj_t *machine_pin_irq_obj[MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES];
 
+static machine_pin_irq_obj_t *machine_pin_get_irq_obj(machine_pin_obj_t *pin_obj) {
+    uint32_t idx = 0;
+    for (idx = 0; idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; idx++) {
+        machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
+        if (irq != NULL) {
+            machine_pin_obj_t *irq_parent = MP_OBJ_TO_PTR(irq->base.parent);
+            if (irq_parent == pin_obj) {
+                return irq;
+            }
+        }
+    }
+    return NULL;
+}
+
+static machine_pin_irq_obj_t *machine_pin_irq_obj_allocate(void) {
+    for (uint32_t idx = 0; idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; idx++) {
+        machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
+        if (irq == NULL) {
+            irq = m_new_obj(machine_pin_irq_obj_t);
+            machine_pin_irq_obj[idx] = irq;
+            return irq;
+        }
+    }
+
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no more Pin IRQ objects available"));
+}
+
+static void machine_pin_irq_obj_dealloc(machine_pin_irq_obj_t *irq) {
+    for (uint32_t idx = 0; idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; idx++) {
+        if (machine_pin_irq_obj[idx] == irq) {
+            m_del_obj(machine_pin_irq_obj_t, irq);
+            machine_pin_irq_obj[idx] = NULL;
+            return;
+        }
+    }
+}
+
 static uint32_t machine_pin_irq_obj_find_index(uint8_t port, uint8_t pin) {
     uint32_t idx = 0;
     for (idx = 0; idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; idx++) {
@@ -108,38 +145,6 @@ static uint32_t machine_pin_irq_obj_find_index(uint8_t port, uint8_t pin) {
         }
     }
     return idx;
-}
-
-static uint32_t machine_pin_irq_obj_allocate_index(uint8_t port, uint8_t pin) {
-    uint32_t idx = 0;
-    for (idx = 0; idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; idx++) {
-        machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
-        if (irq == NULL) {
-            return idx;
-        }
-    }
-
-    return idx;
-}
-
-/**
- * Get the index of the Pin IRQ object if already registered
- * in the array. If not registered, allocate a new index.
- * If no more indexes are available, raise RuntimeError.
- */
-static int machine_pin_irq_obj_get_index(uint8_t port, uint8_t pin) {
-    int irq_index = machine_pin_irq_obj_find_index(port, pin);
-    if (irq_index < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES) {
-        return irq_index;
-    }
-    irq_index = machine_pin_irq_obj_allocate_index(port, pin);
-    if (irq_index < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES) {
-        return irq_index;
-    }
-
-    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no more Pin IRQ objects available"));
-
-    return -1;
 }
 
 static void machine_pin_irq_port_handler(uint8_t port) {
@@ -209,32 +214,45 @@ static void machine_pin_irq_set_priority(sys_int_cfg_t *port_cfg, uint32_t port,
     }
 }
 
-#define MP_PIN_IRQ_ALLOWED_FLAGS (CY_GPIO_INTR_RISING | CY_GPIO_INTR_FALLING)
+#define MP_PIN_IRQ_TRIGGER_DISABLE  0x00UL
+#define MP_PIN_IRQ_ALLOWED_FLAGS    (CY_GPIO_INTR_RISING | CY_GPIO_INTR_FALLING)
 
-static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+static void machine_pin_irq_config(machine_pin_irq_obj_t *irq, uint32_t trigger) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent);
+    if (trigger == MP_PIN_IRQ_TRIGGER_DISABLE) {
+        sys_int_deinit(irq->port_cfg);
+        Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
+        Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 0u);
+        return;
+    } else {
+        Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
+        Cy_GPIO_SetInterruptEdge(Cy_GPIO_PortToAddr(self->port), self->pin, trigger);
+        Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 1u);
+        sys_int_init(irq->port_cfg);
+    }
+}
+
+static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    machine_pin_irq_obj_t *irq = machine_pin_irq_obj[machine_pin_irq_obj_find_index(self->port, self->pin)];
+    machine_pin_irq_obj_t *irq = machine_pin_get_irq_obj(self);
 
     /* Check the trigger */
-    mp_uint_t not_supported = new_trigger & ~MP_PIN_IRQ_ALLOWED_FLAGS;
-    if (new_trigger != 0 && not_supported) {
+    mp_uint_t not_supported = trigger & ~MP_PIN_IRQ_ALLOWED_FLAGS;
+    if (trigger != 0 && not_supported) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
     }
 
     irq->flags = 0;
-    irq->trigger = new_trigger;
+    irq->trigger = trigger;
 
-    Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
-    Cy_GPIO_SetInterruptEdge(Cy_GPIO_PortToAddr(self->port), self->pin, new_trigger);
-    Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 1u);
+    machine_pin_irq_config(irq, trigger);
 
-    sys_int_init(irq->port_cfg);
     return 0;
 }
 
 static mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    machine_pin_irq_obj_t *irq = machine_pin_irq_obj[machine_pin_irq_obj_find_index(self->port, self->pin)];
+    machine_pin_irq_obj_t *irq = machine_pin_get_irq_obj(self);
 
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return irq->flags;
@@ -249,20 +267,19 @@ static const mp_irq_methods_t machine_pin_irq_methods = {
     .info = machine_pin_irq_info,
 };
 
-machine_pin_irq_obj_t *machine_pin_irq_get_irq(const machine_pin_obj_t *self) {
-    int idx = machine_pin_irq_obj_get_index(self->port, self->pin);
-    machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
+static void machine_pin_irq_obj_init(machine_pin_irq_obj_t *irq, machine_pin_obj_t *parent_pin) {
+    mp_irq_init(&irq->base, &machine_pin_irq_methods, MP_OBJ_FROM_PTR(parent_pin));
+    irq->flags = 0;
+    irq->trigger = 0;
+    irq->port_cfg = &port_irq_cfg[parent_pin->port];
+}
 
-    if (irq == NULL) {
-        irq = m_new_obj(machine_pin_irq_obj_t);
-        mp_irq_init(&irq->base, &machine_pin_irq_methods, MP_OBJ_FROM_PTR(self));
-        irq->flags = 0;
-        irq->trigger = 0;
-        irq->port_cfg = &port_irq_cfg[self->port];
-        machine_pin_irq_obj[idx] = irq;
-    }
-
-    return irq;
+static void machine_pin_irq_obj_deinit(machine_pin_irq_obj_t *irq) {
+    irq->base.handler = mp_const_none;
+    irq->base.ishard = false;
+    irq->trigger = 0;
+    irq->flags = 0;
+    irq->port_cfg = NULL;
 }
 
 mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -278,15 +295,23 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_pin_irq_obj_t *irq = machine_pin_irq_get_irq(self);
+    machine_pin_irq_obj_t *irq = machine_pin_get_irq_obj(self);
+    if (irq == NULL) {
+        irq = machine_pin_irq_obj_allocate();
+        machine_pin_irq_obj_init(irq, self);
+    }
 
     if (n_args > 1 || kw_args->used != 0) {
-
         /* Check the handler */
         mp_obj_t handler = args[ARG_handler].u_obj;
         if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
             mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+            /* If handler is None, disable the IRQ */
+        } else if (handler == mp_const_none) {
+            machine_pin_irq_trigger(self, MP_PIN_IRQ_TRIGGER_DISABLE);
+            return MP_OBJ_FROM_PTR(irq);
         }
+
         irq->base.handler = args[ARG_handler].u_obj;
         irq->base.ishard = args[ARG_hard].u_bool;
         machine_pin_irq_set_priority(irq->port_cfg, self->port, args[ARG_priority].u_int);
@@ -300,14 +325,9 @@ void machine_pin_irq_deinit_all(void) {
     for (uint32_t i = 0; i < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; i++) {
         machine_pin_irq_obj_t *irq = machine_pin_irq_obj[i];
         if (irq != NULL) {
-            sys_int_deinit(irq->port_cfg);
-
-            machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent);
-            Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(self->port), self->pin);
-            Cy_GPIO_SetInterruptMask(Cy_GPIO_PortToAddr(self->port), self->pin, 0u);
-
-            m_del_obj(machine_pin_irq_obj_t, irq);
-            machine_pin_irq_obj[i] = NULL;
+            machine_pin_irq_config(irq, MP_PIN_IRQ_TRIGGER_DISABLE);
+            machine_pin_irq_obj_deinit(irq);
+            machine_pin_irq_obj_dealloc(irq);
         }
     }
 }
