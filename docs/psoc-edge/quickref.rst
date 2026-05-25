@@ -631,44 +631,10 @@ Constructor
       - ``freq`` — output frequency in Hz (**required**). Must be in the range 1 - 500 000.
       - ``duty_u16`` — duty cycle as a 16-bit unsigned integer 0-65535 (0 % - ~100 %).
       - ``duty_ns`` — duty cycle (high pulse width) in nanoseconds. Must not exceed the period (``1 000 000 000 / freq`` ns).
-            .. note:: Either one of ``duty_u16`` or ``duty_ns`` must be supplied.
       - ``invert`` — if ``True``, inverts the output polarity. Default is ``False``.
 
     Raises ``ValueError`` if the pin does not support PWM, if a PWM instance for that pin already exists without calling ``deinit()`` 
     first, or if the frequency or duty arguments are out of range.
-
-Methods
-^^^^^^^^
-
-See :ref:`machine.PWM <machine.PWM>` for the full API. The following notes describe
-port-specific behaviour:
-
-.. method:: PWM.init(*, freq, duty_u16, duty_ns, invert=False)
-
-    Same constraints as the constructor apply (see above).
-
-.. method:: PWM.deinit()
-
-    In addition to stopping the counter, the pin is restored to Hi-Z GPIO mode and
-    its instance slot is released for reuse.
-
-.. method:: PWM.freq([freq])
-
-    Frequency must be in the range **1 – 500 000 Hz**. When the duty cycle was set
-    via ``duty_ns``, the setter also validates that the stored on-time does not exceed
-    the new period; a ``ValueError`` is raised if it does.
-
-.. method:: PWM.duty_u16([duty_u16])
-
-    Values above 65535 are silently clamped to 65535. If the instance was last
-    configured with ``duty_ns``, the getter converts and returns the equivalent u16
-    value.
-
-.. method:: PWM.duty_ns([duty_ns])
-
-    Raises ``ValueError`` if the requested on-time exceeds the current period
-    (``1 000 000 000 / freq`` ns). If the instance was last configured with
-    ``duty_u16``, the getter converts and returns the equivalent nanosecond value.
 
 Complete example
 ^^^^^^^^^^^^^^^^
