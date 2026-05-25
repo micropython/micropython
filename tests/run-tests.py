@@ -832,10 +832,24 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     for test in glob(f"inlineasm/thumb/asm_{feature}_*.py"):
                         skip_tests.add(test)
 
-        if args.inlineasm_arch == "rv32":
+        elif args.inlineasm_arch == "rv32":
             for extension in RV32_ARCH_FLAGS:
                 if extension not in args.inlineasm_features:
                     skip_tests.add(f"inlineasm/rv32/asm_ext_{extension}.py")
+
+        elif args.inlineasm_arch == "xtensa":
+            core_version = -1
+            for feature in args.inlineasm_features:
+                if feature.startswith("lx") and feature[2:].isdigit():
+                    core_version = int(feature[2:])
+                    break
+            extractor = re.compile(r"^inlineasm/xtensa/asm_lx(\d+)_.*\.py$")
+            for test in glob("inlineasm/xtensa/asm_lx*_*.py"):
+                if version_match := extractor.match(test):
+                    test_version = int(version_match.group(1))
+                    if test_version <= core_version:
+                        continue
+                skip_tests.add(test)
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
