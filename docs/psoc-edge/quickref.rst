@@ -597,3 +597,105 @@ Methods
 .. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, *, ...)
 
     The same parameters as the constructor are supported, with the same limitations.
+    
+PWM
+----
+
+Pulse Width Modulation (PWM) signal output on the PSOC™ Edge. See :ref:`machine.PWM <machine.PWM>` for the standard MicroPython PWM API.
+
+.. note::
+
+    On this port, PWM output is available exclusively on pins **P16_1** through **P16_7**. Each pin is backed by an independent TCPWM0 counter, 
+    so each instance can run at a different frequency simultaneously. A maximum of **7** PWM instances can be active at the same time.
+
+.. note::
+
+    The base clock driving all counters is **1 MHz** (derived from the 100 MHz PCLK via a shared 16-bit divider). 
+    This gives a frequency range of **1 Hz - 500 kHz** and a period resolution of 1 µs.
+
+A PWM object can be created and started using::
+
+    from machine import PWM
+
+    pwm = PWM("P16_1", freq=1000, duty_u16=32767)  # 1 kHz, 50 % duty cycle
+
+Constructor
+^^^^^^^^^^^^
+
+.. class:: PWM(pin, *, freq, duty_u16, duty_ns, invert=False)
+
+    Construct and immediately start a PWM signal on *pin*.
+
+      - ``pin`` — the output pin. Accepts a string label (``"P16_1"``), a ``Pin.cpu.<pin>`` object, or a ``Pin.board.<pin>`` object.
+        The pin must be one of the PWM-capable pins P16_1 - P16_7.
+      - ``freq`` — output frequency in Hz (**required**). Must be in the range 1 - 500 000.
+      - ``duty_u16`` — duty cycle as a 16-bit unsigned integer 0-65535 (0 % - ~100 %).
+      - ``duty_ns`` — duty cycle (high pulse width) in nanoseconds. Must not exceed the period (``1 000 000 000 / freq`` ns).
+            .. note:: Either one of ``duty_u16`` or ``duty_ns`` must be supplied.
+      - ``invert`` — if ``True``, inverts the output polarity. Default is ``False``.
+
+    Raises ``ValueError`` if the pin does not support PWM, if a PWM instance for that pin already exists without calling ``deinit()`` 
+    first, or if the frequency or duty arguments are out of range.
+
+Methods
+^^^^^^^^
+
+See :ref:`machine.PWM <machine.PWM>` for the full API. The following notes describe
+port-specific behaviour:
+
+.. method:: PWM.init(*, freq, duty_u16, duty_ns, invert=False)
+
+    Same constraints as the constructor apply (see above).
+
+.. method:: PWM.deinit()
+
+    In addition to stopping the counter, the pin is restored to Hi-Z GPIO mode and
+    its instance slot is released for reuse.
+
+.. method:: PWM.freq([freq])
+
+    Frequency must be in the range **1 – 500 000 Hz**. When the duty cycle was set
+    via ``duty_ns``, the setter also validates that the stored on-time does not exceed
+    the new period; a ``ValueError`` is raised if it does.
+
+.. method:: PWM.duty_u16([duty_u16])
+
+    Values above 65535 are silently clamped to 65535. If the instance was last
+    configured with ``duty_ns``, the getter converts and returns the equivalent u16
+    value.
+
+.. method:: PWM.duty_ns([duty_ns])
+
+    Raises ``ValueError`` if the requested on-time exceeds the current period
+    (``1 000 000 000 / freq`` ns). If the instance was last configured with
+    ``duty_u16``, the getter converts and returns the equivalent nanosecond value.
+
+Complete example
+^^^^^^^^^^^^^^^^
+
+::
+
+    from machine import PWM
+
+    # Start a 1 kHz signal at 50 % duty cycle on P16_1
+    pwm = PWM("P16_1", freq=1000, duty_u16=32767)
+    print(pwm)                     # PWM(Pin.cpu.P16_1, freq=1000, duty=50.00%)
+
+    # Read back the current settings
+    print(pwm.freq())              # 1000
+    print(pwm.duty_u16())          # 32767
+    print(pwm.duty_ns())           # 500000  (0.5 ms duty cycle at 1 kHz)
+
+    # Update frequency only — duty ratio preserved
+    pwm.freq(2000)
+    print(pwm.freq())              # 2000
+
+    # Switch to nanosecond duty control: 250 µs duty cycle at 2 kHz = 50 %
+    pwm.duty_ns(250000)
+    print(pwm.duty_ns())           # 250000
+
+    # Reconfigure completely
+    pwm.init(freq=500, duty_u16=16383)   # 500 Hz, 25 %
+
+    # Stop and release the pin
+    pwm.deinit()
