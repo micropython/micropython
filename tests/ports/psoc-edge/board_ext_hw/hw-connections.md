@@ -4,6 +4,8 @@
 |-------------------|---------------|---------------|--------------------------------|
 | Pin               | P16_0         | P16_1         | Output to Input                |
 |                   |               |               |                                |
+| PWM               | P16_1         | P16_0         | PWM Output to IO Input         |
+|                   |               |               |                                |
 | UART              | P17_0         | P17_1         | UART RX to TX                  |
 |                   | P16_5         | P16_6         | UART CTS to RTS                |
 
