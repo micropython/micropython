@@ -7,7 +7,7 @@
         "USB-C"
     ],
     "images": [
-        "seeeduino-xiao.jpg"
+        "seeedstudio_xiao_samd21_plus.png"
     ],
     "mcu": "samd21",
     "product": "XIAO SAMD21 Plus",
