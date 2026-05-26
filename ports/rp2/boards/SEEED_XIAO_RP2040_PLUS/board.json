@@ -10,6 +10,9 @@
         "Battery Charging",
         "USB-C"
     ],
+    "images": [
+        "seeedstudio_xiao_rp2040_plus.png"
+    ],
     "mcu": "rp2040",
     "product": "XIAO RP2040 Plus",
     "url": "https://wiki.seeedstudio.com/XIAO-RP2040-Plus/",
