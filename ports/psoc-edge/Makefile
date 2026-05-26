@@ -105,10 +105,6 @@ GEN_PINS_AF_HDR= $(HEADER_BUILD)/pins_af.h
 # which source files might need it.
 $(OBJ): | $(GEN_PINS_HDR)
 
-# The qstr scan preprocesses SRC_QSTR which transitively includes genhdr/pins.h;
-# ensure pins headers are generated before the qstr extraction step.
-QSTR_GLOBAL_REQUIREMENTS += $(GEN_PINS_HDR) $(GEN_PINS_AF_HDR)
-
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
