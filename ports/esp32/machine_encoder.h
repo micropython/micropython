@@ -27,26 +27,23 @@ typedef struct _mp_pcnt_obj_t {
     int aPinNumber;
     int bPinNumber;
 
-    volatile counter_t counter; // the absolute value of the counter from the 0 (in constructor) or from the set value(x) method
-    volatile counter_t counter_accum; // = counter - match // relative value of counter from the absolute value to the match value;  it is updated after match events
+    int16_t count_max; // [1..INT16_ROLL]
+    int16_t count_min; // [-INT16_ROLL..0]
 
-    counter_t match; // match value
-    counter_t counter_match; // (match - counter) - (match - counter) % INT16_ROLL
-    /*
-    mp_obj_t handler_match;
-    mp_obj_t handler_zero;
-    mp_obj_t handler_roll_over;
-    mp_obj_t handler_roll_under;
-    */
-    uint32_t mp_irq_flags;    // user IRQ active IRQ flags is event_status
+    volatile counter_t counter;
+    volatile counter_t counter_offset;
+    counter_t match;
+    counter_t counter_match; // (match - total_counter) - (match - total_counter) % INT16_ROLL
+
+    volatile uint32_t mp_irq_flags;    // user IRQ active IRQ flags is event_status
     uint32_t mp_irq_trigger;  // user IRQ trigger mask
     mp_irq_obj_t *mp_irq_obj; // user IRQ object
 
-    int filter;
+    int16_t filter;
     enum edge_bit_mask edge; // Counter only
     union {
-        int8_t phases; // Encoder: multiplier 1, 2 or 4
-        int8_t reverse_src; // Counter: 1 is '_src=' keyword used, 0 is 'direction=' keyword used
+        int8_t phases;       // Encoder: multiplier 1, 2 or 4
+        int8_t reverse_src;  // Counter: 1 is '_src=' keyword used, 0 is 'direction=' keyword used
     };
 } mp_pcnt_obj_t;
 
