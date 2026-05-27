@@ -277,6 +277,8 @@ static void asm_debug_setcc_reg_reg_reg(asm_debug_t *as, int op, int reg1, int r
 // Word indices of REG_LOCAL_x in nlr_buf_t
 #define NLR_BUF_IDX_LOCAL_1 (5) // rbx
 
+#define N_NLR_SETJMP (0)
+
 #define N_DEBUG (1)
 #define EXPORT_FUN(name) emit_native_debug_##name
 #include "py/emitnative.c"
