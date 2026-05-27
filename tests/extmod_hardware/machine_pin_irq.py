@@ -10,22 +10,32 @@ except (AttributeError, ImportError):
     print("SKIP")
     raise SystemExit
 
-import time, unittest
+import sys, time, unittest
 from target_wiring import pin_loopback_pins
+
+has_hardirq = sys.platform not in ("esp32",)
+
+events_expected_rising = ["a", "b", 1, "c", "d", 1, "e", "f", "g", "h", "i"]
+events_expected_falling = ["a", "b", "c", 0, "d", "e", 0, "f", "g", "h", "i"]
+events_expected_rising_falling = ["a", "b", 1, "c", 0, "d", 1, "e", 0, "f", "g", "h", "i"]
 
 
 class TestBase:
     @classmethod
     def setUpClass(cls):
-        print("set up pins:", cls.pin_out, cls.pin_in)
-        cls.p0 = Pin(cls.pin_out)
-        cls.p1 = Pin(cls.pin_in)
+        print("set up pins:", cls.p0_name, cls.p1_name)
+        cls.p0 = Pin(cls.p0_name)
+        cls.p1 = Pin(cls.p1_name)
 
     def setUp(self):
         self.p0.init(Pin.OUT)
         self.p1.init(Pin.IN)
         self.events = [0] * 100
         self.num_events = 0
+
+    def tearDown(self):
+        self.p0.init(Pin.IN)
+        self.p1.init(Pin.IN)
 
     def add_event(self, data):
         self.events[self.num_events] = data
@@ -67,6 +77,9 @@ class TestBase:
         self.assertEqual(self.events[: self.num_events], events_expected)
 
     def _test_hardirq(self, trigger, events_expected):
+        if not has_hardirq:
+            self.skipTest("no hard IRQ")
+
         self.num_events = 0
 
         self.p0(0)
@@ -90,27 +103,30 @@ class TestBase:
 
         self.assertEqual(self.events[: self.num_events], events_expected)
 
-    def test_irq_rising(self):
-        events_expected = ["a", "b", 1, "c", "d", 1, "e", "f", "g", "h", "i"]
-        self._test_softirq(Pin.IRQ_RISING, events_expected)
-        self._test_hardirq(Pin.IRQ_RISING, events_expected)
+    def test_rising_softirq(self):
+        self._test_softirq(Pin.IRQ_RISING, events_expected_rising)
 
-    def test_irq_falling(self):
-        events_expected = ["a", "b", "c", 0, "d", "e", 0, "f", "g", "h", "i"]
-        self._test_softirq(Pin.IRQ_FALLING, events_expected)
-        self._test_hardirq(Pin.IRQ_FALLING, events_expected)
+    def test_rising_hardirq(self):
+        self._test_hardirq(Pin.IRQ_RISING, events_expected_rising)
 
-    def test_irq_rising_falling(self):
-        events_expected = ["a", "b", 1, "c", 0, "d", 1, "e", 0, "f", "g", "h", "i"]
-        self._test_softirq(Pin.IRQ_RISING | Pin.IRQ_FALLING, events_expected)
-        self._test_hardirq(Pin.IRQ_RISING | Pin.IRQ_FALLING, events_expected)
+    def test_falling_softirq(self):
+        self._test_softirq(Pin.IRQ_FALLING, events_expected_falling)
+
+    def test_falling_hardirq(self):
+        self._test_hardirq(Pin.IRQ_FALLING, events_expected_falling)
+
+    def test_rising_falling_softirq(self):
+        self._test_softirq(Pin.IRQ_RISING | Pin.IRQ_FALLING, events_expected_rising_falling)
+
+    def test_rising_falling_hardirq(self):
+        self._test_hardirq(Pin.IRQ_RISING | Pin.IRQ_FALLING, events_expected_rising_falling)
 
 
 # Generate test classes, one for each set of pins to test.
-for pin_out, pin_in in pin_loopback_pins:
-    cls_name = "Test_{}_{}".format(pin_out, pin_in)
+for p0_name, p1_name in pin_loopback_pins:
+    cls_name = "Test_{}_{}".format(p0_name, p1_name)
     globals()[cls_name] = type(
-        cls_name, (TestBase, unittest.TestCase), {"pin_out": pin_out, "pin_in": pin_in}
+        cls_name, (TestBase, unittest.TestCase), {"p0_name": p0_name, "p1_name": p1_name}
     )
 
 if __name__ == "__main__":
