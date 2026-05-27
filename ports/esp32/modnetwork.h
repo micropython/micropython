@@ -98,4 +98,19 @@ static inline void esp_exceptions(esp_err_t e) {
 void socket_events_deinit(void);
 void esp_initialise_wifi(void);
 
+#if MICROPY_PY_NETWORK_WLAN
+void esp_network_enable_ap_napt(esp_netif_t *uplink_netif);
+#else
+static inline void esp_network_enable_ap_napt(esp_netif_t *uplink_netif) {
+    (void)uplink_netif;
+}
+#endif
+
+#if MICROPY_PY_NETWORK_LAN
+void esp_network_reapply_lan_ap_napt(void);
+#else
+static inline void esp_network_reapply_lan_ap_napt(void) {
+}
+#endif
+
 #endif
