@@ -544,14 +544,8 @@ if(DEFINED PICO_FLASH_SIZE_BYTES)
     target_link_options(${MICROPY_TARGET} PRIVATE
         -Wl,--defsym=__micropy_flash_size__=${PICO_FLASH_SIZE_BYTES}
     )
-elseif(PICO_RP2040)
-    target_link_options(${MICROPY_TARGET} PRIVATE
-        -Wl,--defsym=__micropy_flash_size__=2048k # Default to 2MB
-    )
-elseif(PICO_RP2350)
-    target_link_options(${MICROPY_TARGET} PRIVATE
-        -Wl,--defsym=__micropy_flash_size__=4096k # Default to 4MB
-    )
+else(PICO_RP2040)
+    message(FATAL_ERROR "PICO_FLASH_SIZE_BYTES must be defined")
 endif()
 
 if(PICO_RP2350)
