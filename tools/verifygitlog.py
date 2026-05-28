@@ -38,7 +38,7 @@ class ErrorCollection:
 
 def git_log(pretty_format, *args):
     # Delete pretty argument from user args so it doesn't interfere with what we do.
-    args = ["git", "log"] + [arg for arg in args if "--pretty" not in args]
+    args = ["git", "log"] + [arg for arg in args if "--pretty" not in arg]
     args.append("--pretty=format:" + pretty_format)
     very_verbose("git_log", *args)
     # Generator yielding each output line.
