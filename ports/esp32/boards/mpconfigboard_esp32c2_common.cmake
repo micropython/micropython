@@ -8,4 +8,3 @@ set(SDKCONFIG_DEFAULTS
     # C2 has unusably low free RAM without these optimisations
     boards/sdkconfig.free_ram
 )
-

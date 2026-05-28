@@ -2,6 +2,7 @@ include(boards/mpconfigboard_esp32s2_common.cmake)
 
 list(APPEND SDKCONFIG_DEFAULTS
     boards/UM_TINYS2/sdkconfig.board
+    boards/sdkconfig.flash_qio_80m
 )
 
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

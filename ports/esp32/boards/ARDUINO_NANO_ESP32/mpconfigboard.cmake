@@ -7,6 +7,7 @@ endif()
 list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.240mhz
     boards/sdkconfig.spiram_oct
+    boards/sdkconfig.flash_qio_80m
     ${MICROPY_BOARD_DIR}/sdkconfig.board
 )
 
