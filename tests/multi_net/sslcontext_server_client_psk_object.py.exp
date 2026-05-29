@@ -1,0 +1,5 @@
+--- instance0 ---
+server: lookup b'micropython'
+b'client to server'
+--- instance1 ---
+b'server to client'
