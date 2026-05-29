@@ -79,6 +79,13 @@ CONFIG_MBEDTLS_ECP_DP_CURVE25519_ENABLED=n
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=n
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=n
 
+# Enable PSK (pre-shared-key) cipher suites, used by tls.SSLContext PSK support.
+CONFIG_MBEDTLS_PSK_MODES=y
+CONFIG_MBEDTLS_KEY_EXCHANGE_PSK=y
+CONFIG_MBEDTLS_KEY_EXCHANGE_DHE_PSK=y
+CONFIG_MBEDTLS_KEY_EXCHANGE_ECDHE_PSK=y
+CONFIG_MBEDTLS_KEY_EXCHANGE_RSA_PSK=y
+
 # Allow mbedTLS to allocate from PSRAM or internal memory
 #
 # (The ESP-IDF default is internal-only, partly for physical security to prevent

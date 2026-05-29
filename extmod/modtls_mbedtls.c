@@ -53,6 +53,7 @@
 #endif
 #include "mbedtls/debug.h"
 #include "mbedtls/error.h"
+#include "mbedtls/ssl_ciphersuites.h"
 #if MBEDTLS_VERSION_NUMBER >= 0x03000000
 #include "mbedtls/build_info.h"
 #else
@@ -94,6 +95,11 @@ typedef struct _mp_obj_ssl_context_t {
     mp_obj_t handler;
     #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
     mp_obj_t ecdsa_sign_callback;
+    #endif
+    #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
+    mp_obj_t psk_identity; // client: PSK identity to present
+    mp_obj_t psk_key;      // client: PSK key to use
+    mp_obj_t server_psk_keys; // server: mapping of identity -> PSK key
     #endif
     #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
     bool is_dtls_server;
@@ -292,6 +298,11 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
     self->ecdsa_sign_callback = mp_const_none;
     #endif
+    #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
+    self->psk_identity = mp_const_none;
+    self->psk_key = mp_const_none;
+    self->server_psk_keys = mp_const_none;
+    #endif
 
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
@@ -344,6 +355,13 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
+#if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
+static void ssl_context_restrict_to_psk_ciphersuites(mp_obj_ssl_context_t *self);
+static int ssl_context_psk_server_callback(void *p_ctx, mbedtls_ssl_context *ssl,
+    const unsigned char *identity, size_t identity_len);
+static void ssl_context_set_psk(mp_obj_ssl_context_t *self);
+#endif
+
 static void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
@@ -355,6 +373,14 @@ static void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
         } else if (attr == MP_QSTR_ecdsa_sign_callback) {
             dest[0] = self->ecdsa_sign_callback;
+        #endif
+        #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
+        } else if (attr == MP_QSTR_psk_identity) {
+            dest[0] = self->psk_identity;
+        } else if (attr == MP_QSTR_psk_key) {
+            dest[0] = self->psk_key;
+        } else if (attr == MP_QSTR_server_psk_keys) {
+            dest[0] = self->server_psk_keys;
         #endif
         } else {
             // Continue lookup in locals_dict.
@@ -370,6 +396,21 @@ static void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         } else if (attr == MP_QSTR_ecdsa_sign_callback) {
             dest[0] = MP_OBJ_NULL;
             self->ecdsa_sign_callback = dest[1];
+        #endif
+        #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
+        } else if (attr == MP_QSTR_psk_identity) {
+            dest[0] = MP_OBJ_NULL;
+            self->psk_identity = dest[1];
+            ssl_context_set_psk(self);
+        } else if (attr == MP_QSTR_psk_key) {
+            dest[0] = MP_OBJ_NULL;
+            self->psk_key = dest[1];
+            ssl_context_set_psk(self);
+        } else if (attr == MP_QSTR_server_psk_keys) {
+            dest[0] = MP_OBJ_NULL;
+            self->server_psk_keys = dest[1];
+            mbedtls_ssl_conf_psk_cb(&self->conf, ssl_context_psk_server_callback, self);
+            ssl_context_restrict_to_psk_ciphersuites(self);
         #endif
         } else if (attr == MP_QSTR_verify_callback) {
             dest[0] = MP_OBJ_NULL;
@@ -492,6 +533,95 @@ static mp_obj_t ssl_context_load_verify_locations(mp_obj_t self_in, mp_obj_t cad
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_load_verify_locations_obj, ssl_context_load_verify_locations);
+
+#if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
+// mbedtls_ssl_ciphersuite_uses_psk() is declared only in mbedTLS's private
+// library/ssl_ciphersuites_internal.h, but it is a regular (linkable) symbol.
+// Declare it here so it can be used without pulling in that private header.
+int mbedtls_ssl_ciphersuite_uses_psk(const mbedtls_ssl_ciphersuite_t *info);
+
+// Restrict the context to offer/accept only PSK cipher suites, so a PSK
+// connection cannot silently fall back to a non-PSK (e.g. certificate-based)
+// suite.  Does nothing if the user already chose ciphers via set_ciphers().
+static void ssl_context_restrict_to_psk_ciphersuites(mp_obj_ssl_context_t *self) {
+    if (self->ciphersuites != NULL) {
+        return;
+    }
+    const int *all = mbedtls_ssl_list_ciphersuites();
+    size_t n = 0;
+    for (const int *c = all; *c != 0; ++c) {
+        const mbedtls_ssl_ciphersuite_t *info = mbedtls_ssl_ciphersuite_from_id(*c);
+        if (info != NULL && mbedtls_ssl_ciphersuite_uses_psk(info)) {
+            ++n;
+        }
+    }
+    self->ciphersuites = m_new(int, n + 1);
+    size_t i = 0;
+    for (const int *c = all; *c != 0; ++c) {
+        const mbedtls_ssl_ciphersuite_t *info = mbedtls_ssl_ciphersuite_from_id(*c);
+        if (info != NULL && mbedtls_ssl_ciphersuite_uses_psk(info)) {
+            self->ciphersuites[i++] = *c;
+        }
+    }
+    self->ciphersuites[i] = 0;
+    mbedtls_ssl_conf_ciphersuites(&self->conf, self->ciphersuites);
+}
+
+// Install the client-side PSK (identity and key) into the mbedTLS config.  Both
+// the psk_identity and psk_key context attributes must be set, so this is a
+// no-op until then.  Also restricts the context to PSK cipher suites.
+static void ssl_context_set_psk(mp_obj_ssl_context_t *self) {
+    if (self->psk_identity == mp_const_none || self->psk_key == mp_const_none) {
+        return;
+    }
+    size_t identity_len;
+    const char *identity = mp_obj_str_get_data(self->psk_identity, &identity_len);
+    mp_buffer_info_t key;
+    mp_get_buffer_raise(self->psk_key, &key, MP_BUFFER_READ);
+    int ret = mbedtls_ssl_conf_psk(&self->conf, key.buf, key.len,
+        (const unsigned char *)identity, identity_len);
+    if (ret != 0) {
+        mbedtls_raise_error(ret);
+    }
+    ssl_context_restrict_to_psk_ciphersuites(self);
+}
+
+// mbedTLS server-side PSK callback.  It is invoked during the handshake with
+// the identity presented by the client.  The identity is passed to the lookup
+// as a `bytes` object (it is an opaque octet string on the wire, not
+// necessarily valid UTF-8).  We look it up by calling server_psk_keys.get()
+// (so a dict, or any object with a get() method, can be used) and install the
+// result as the key for this handshake.  A result of None (e.g. an unknown
+// identity) rejects the handshake.
+static int ssl_context_psk_server_callback(void *p_ctx, mbedtls_ssl_context *ssl,
+    const unsigned char *identity, size_t identity_len) {
+    mp_obj_ssl_context_t *self = (mp_obj_ssl_context_t *)p_ctx;
+    if (self->server_psk_keys == mp_const_none) {
+        return -1;
+    }
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        // Call server_psk_keys.get(identity), returning None for an unknown
+        // identity rather than raising (and catching) KeyError.
+        mp_obj_t dest[3];
+        mp_load_method(self->server_psk_keys, MP_QSTR_get, dest);
+        dest[2] = mp_obj_new_bytes(identity, identity_len);
+        mp_obj_t key = mp_call_method_n_kw(1, 0, dest);
+        int ret = -1;
+        if (key != mp_const_none) {
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(key, &bufinfo, MP_BUFFER_READ);
+            ret = mbedtls_ssl_set_hs_psk(ssl, bufinfo.buf, bufinfo.len);
+        }
+        nlr_pop();
+        return ret;
+    } else {
+        // The lookup misbehaved (e.g. server_psk_keys has no get() method, or
+        // get() raised, or returned a non-bytes value); reject the handshake.
+        return -1;
+    }
+}
+#endif
 
 static mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname, ARG_client_id };
