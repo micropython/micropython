@@ -52,6 +52,7 @@ https://github.com/bboser/MicroPython_ESP32_psRAM_LoBo/blob/quad_decoder/MicroPy
 
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, " | %d at %s\n", __LINE__, __FILE__);
 
+#define USE_DEFAULT_SERVICE 0 // 0 is worked
 #define INIT_SAVE_COUNTER 0 // 1 // 0-according to MIMXRT
 // #define USE_FUNC_filter_ns
 // #define USE_FUNC_pause_resume
@@ -74,11 +75,32 @@ https://github.com/bboser/MicroPython_ESP32_psRAM_LoBo/blob/quad_decoder/MicroPy
 #define DUMMY 0xffffFFFF
 
 extern const mp_obj_type_t machine_pin_type;
+#if USE_DEFAULT_SERVICE
+// Once off installation of the PCNT ISR service (using the default service).
+// Persists across soft reset.
+static bool pcnt_isr_service_installed = false;
+#else
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
+#endif
 static mp_pcnt_obj_t *pcnt_instances[PCNT_UNIT_MAX] = {};
 
-static void IRAM_ATTR pcnt_intr_handler(void *arg) {
+/*
+static IRAM_ATTR void pcnt_intr_handler(void *arg) {
+    mp_pcnt_obj_t *self = (mp_pcnt_obj_t *)arg;
+    pcnt_unit_t unit = self->unit;
+    uint32_t status;
+    pcnt_get_event_status(unit, &status);
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    // self->mp_irq_flags |= status;
+    self->mp_irq_flags = status;
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+    mp_irq_handler(self->mp_irq_obj);
+    mp_hal_wake_main_task_from_isr();
+}
+*/
+static IRAM_ATTR void pcnt_intr_handler(void *arg) {
     uint32_t intr_status = PCNT.int_st.val;
+    // mp_pcnt_obj_t *self = arg;
     for (int id = 0; id < PCNT_UNIT_MAX; ++id) {
         if (intr_status & BIT(id)) {
             mp_pcnt_obj_t *self = pcnt_instances[id];
@@ -135,16 +157,24 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
     PCNT.int_clr.val = intr_status; // clear interrupts
 }
 
-static void register_isr_handler(void) {
+static void pcnt_isr_activate(mp_pcnt_obj_t *self) {
+    #if USE_DEFAULT_SERVICE
+    // Ensure the global PCNT ISR service is installed.
+    if (!pcnt_isr_service_installed) {
+        check_esp_err(pcnt_isr_service_install(ESP_INTR_FLAG_IRAM));
+        pcnt_isr_service_installed = true;
+    }
+    pcnt_isr_handler_add(self->unit, pcnt_intr_handler, (void *)self);
+    #else
     if (pcnt_isr_handle == NULL) {
-        check_esp_err(pcnt_isr_register(pcnt_intr_handler, (void *)0, (int)0, &pcnt_isr_handle));
+        check_esp_err(pcnt_isr_register(pcnt_intr_handler, self, 0, &pcnt_isr_handle));
         if (pcnt_isr_handle == NULL) {
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("wrap interrupt failed"));
         }
         PCNT.int_clr.val = PCNT.int_st.val; // clear interrupts
     }
+    #endif
 }
-
 // Calculate the filter parameters based on an ns value
 // 1 / 80MHz = 12.5ns - min filter period
 // 12.5ns * FILTER_MAX = 12.5ns * 1023 = 12787.5ns - max filter period
@@ -170,7 +200,7 @@ static void pcnt_reset(mp_pcnt_obj_t *self) {
     self->bPinNumber = PCNT_PIN_NOT_USED;
 
     self->count_max = INT16_ROLL;
-    self->count_min = -INT16_ROLL;
+    self->count_min = 0; // -INT16_ROLL;
 
     self->counter = 0;
     self->counter_offset = 0;
@@ -195,12 +225,14 @@ static void pcnt_deinit(mp_pcnt_obj_t *self) {
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_1));
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_0));
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_ZERO));
-
+        #if USE_DEFAULT_SERVICE
+        check_esp_err(pcnt_isr_handler_remove(self->unit));
+        #endif
         check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
         check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
 
         check_esp_err(pcnt_counter_clear(self->unit));
-        pcnt_reset(self);
+        // pcnt_reset(self);
         pcnt_instances[self->unit] = NULL;
     }
 }
@@ -210,10 +242,12 @@ void machine_encoder_deinit_all(void) {
     for (int id = 0; id < PCNT_UNIT_MAX; ++id) {
         pcnt_deinit(pcnt_instances[id]);
     }
+    #if USE_DEFAULT_SERVICE == 0
     if (pcnt_isr_handle != NULL) {
         check_esp_err(pcnt_isr_unregister(pcnt_isr_handle));
         pcnt_isr_handle = NULL;
     }
+    #endif
 }
 
 // =================================================================
@@ -444,7 +478,7 @@ static void pcnt_start(mp_pcnt_obj_t *self) {
     check_esp_err(pcnt_intr_disable(self->unit));
 
     // Enable interrupts for PCNT unit
-    register_isr_handler();
+    pcnt_isr_activate(self);
     // Enable events on maximum and minimum limit values
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));

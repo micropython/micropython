@@ -8,7 +8,7 @@ typedef int64_t counter_t;
 typedef int32_t counter_t;
 #endif
 
-#define INT16_ROLL ((counter_t)32767)
+#define INT16_ROLL 32767 // ((counter_t)32767)
 
 #define FILTER_MAX 1023
 
