@@ -92,6 +92,33 @@ Constructors
      - ``pin_arguments`` are the same arguments as can be passed to Pin constructor.
 
      - ``invert`` - if True, the signal will be inverted (active low).
+   
+   .. note::
+      If the pin is inverted *and* an initial value is given, then the two constructors 
+      behave differently before a subsequent 'set'. 
+      The 1st creates the pin and sets it's initial value and then Signal inverts the logic.
+      Whereas, the second sets the pin to the inverted value.
+      
+      Example::
+
+        >>> c0 = Signal(Pin(0, Pin.OUT, value=0), invert=True)
+        >>> c0()
+        1
+        >>> c1 = Signal(1, Pin.OUT, value=0, invert=True)
+        >>> c1()
+        0
+      
+      This behavior is only different after construction and *before* a call
+      to a 'set' method.
+
+      Example::
+
+        >>> c0.off()
+        >>> c0()
+        0
+        >>> c1.off()
+        >>> c1()
+        0
 
 Methods
 -------
