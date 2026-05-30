@@ -26,5 +26,5 @@ idf_component_register(
         ${CMAKE_CURRENT_LIST_DIR}/..
         ${BUILD_DIR}
 	INCLUDE_DIRS ${includes}
-	REQUIRES micropython badge-bsp esp_mm
+	REQUIRES micropython appfs badge-bsp esp_mm
 )

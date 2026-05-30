@@ -1,4 +1,22 @@
 dependencies:
+  badgeteam/appfs:
+    component_hash: e5add582276a8119d002be11c310bbea08672f77cc9ba82eba55a9161403f401
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: idf
+      require: private
+      version: '>=5.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32
+    - esp32c6
+    - esp32p4
+    version: 1.0.2
   badgeteam/badge-bsp:
     component_hash: 243fbfebb4fd01cc818bd2cd419b2e64b6f6d76250658782b9e5214aff9b1a4d
     dependencies:
@@ -70,6 +88,30 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 0.5.3
+  espressif/eppp_link:
+    component_hash: 04f7f31868b8ae6014c96132740a192d09611a6e46aaa7038c865ffc7e26b38f
+    dependencies:
+    - name: espressif/esp_serial_slave_link
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.1.0
+    - name: idf
+      require: private
+      version: '>=5.2'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.1.5
+  espressif/esp_hosted:
+    component_hash: e23eb702781c804a62909e5394da0641a2bff9adccec6673a7bff60ce8c8b756
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.12.3
   espressif/esp_lcd_ek79007:
     component_hash: 8005700b7f10c7136b6e2a3f19a48f972aa1d13ed107ed298574e8d24d17ea83
     dependencies:
@@ -139,6 +181,36 @@ dependencies:
     - esp32s3
     - esp32p4
     version: 1.1.5
+  espressif/esp_serial_slave_link:
+    component_hash: ac1776806de0a6e371c84e87898bb983e19ce62aa7f1e2e5c4a3b0234a575d2c
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.1.2
+  espressif/esp_wifi_remote:
+    component_hash: 4ed1ebe454d63ddb4a91bbd8db74a6f883c85a863db1f79770c57fbd2e5c134c
+    dependencies:
+    - name: espressif/eppp_link
+      registry_url: https://components.espressif.com
+      require: private
+      version: '>=0.1'
+    - name: espressif/esp_hosted
+      registry_url: https://components.espressif.com
+      require: private
+      rules:
+      - if: target in [esp32h2, esp32p4]
+      version: '>=0.0.6'
+    - name: idf
+      require: private
+      version: '>=5.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.15.2
   espressif/led_strip:
     component_hash: 28621486f77229aaf81c71f5e15d6fbf36c2949cf11094e07090593e659e7639
     dependencies:
@@ -174,6 +246,30 @@ dependencies:
     - esp32p4
     - esp32h4
     version: e4c0ec3caab3d9c25374de7047653b9ced8f14ff
+  espressif/usb_host_msc:
+    component_hash: a7330d2bc4f81c21fd335df073405085bbad5cdf084a1be79fb52383d0d0d6fd
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    - name: espressif/usb
+      registry_url: https://components.espressif.com
+      require: public
+      rules:
+      - if: idf_version >=6.0
+      - if: target not in ["linux"]
+      version: ^1.0.0
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32s2
+    - esp32s3
+    - esp32p4
+    - esp32h4
+    - esp32s31
+    - linux
+    version: 1.2.0
   idf:
     source:
       type: idf
@@ -276,10 +372,14 @@ dependencies:
     - esp32p4
     version: 0.6.0
 direct_dependencies:
+- badgeteam/appfs
 - badgeteam/badge-bsp
+- espressif/esp_hosted
+- espressif/esp_wifi_remote
 - espressif/mdns
 - espressif/tinyusb
+- espressif/usb_host_msc
 - idf
-manifest_hash: 0dab89b774e28d1568d9270ae679a4a42642f006f2f274de6050aa72ff1539af
+manifest_hash: 9c396fcb20adaad6f5ad73e5aa29f14ccdedd5a878dbae5072c0a2ce91a054ff
 target: esp32p4
 version: 2.0.0

@@ -144,6 +144,7 @@ list(APPEND MICROPY_SOURCE_PORT
     mpthreadport.c
     machine_rtc.c
     machine_sdcard.c
+    machine_sdcard_nosetup.c
     machine_flash_wl.c
     modespnow.c
 )

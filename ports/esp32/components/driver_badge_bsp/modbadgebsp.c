@@ -10,8 +10,9 @@
 #include "py/objarray.h"
 
 #include "include/driver_badge_bsp.h"
+#include "appfs.h"
 
-#endif /* NO_QSTR */
+#endif /* !NO_QSTR */
 
 #define TAG "BADGEBSP"
 
@@ -65,6 +66,30 @@ static mp_obj_t driver_badgebsp_return_to_launcher() {
 
 static MP_DEFINE_CONST_FUN_OBJ_0(badgebsp_return_to_launcher_obj, driver_badgebsp_return_to_launcher);
 
+
+static mp_obj_t get_radio_state() {
+	bsp_radio_state_t bsp_radio_state = BSP_POWER_RADIO_STATE_OFF;
+	bsp_power_get_radio_state(&bsp_radio_state);
+    return mp_obj_new_int(bsp_radio_state);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(get_radio_state_obj, get_radio_state);
+
+static mp_obj_t set_radio_state(mp_obj_t radio_state) {
+    bsp_radio_state_t bsp_radio_state = (bsp_radio_state_t) mp_obj_get_int(radio_state);
+	bsp_power_set_radio_state(bsp_radio_state);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(set_radio_state_obj, set_radio_state);
+
+static mp_obj_t get_bootsel_arg() {
+    bool bootsel_valid       = false;
+    char const* bootsel_arg  = NULL;
+    appfs_handle_t bootsel_handle = appfsBootselGet(&bootsel_valid, &bootsel_arg);
+    //ESP_LOGI(TAG, "get_bootsel_arg, bootsel_handle = %d, bootsel_valid = %d, bootsel_arg = %s", bootsel_handle, bootsel_valid, bootsel_arg);
+	return bootsel_handle > 0 ? mp_obj_new_str(bootsel_arg, strlen(bootsel_arg)) : mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(get_bootsel_arg_obj, get_bootsel_arg);
+
 typedef enum {SAO_IO0_PIN, SAO_IO1_PIN, PROTO_0_PIN, PROTO_1_PIN} gpio_name_t;
 
 STATIC const mp_rom_map_elem_t badgebsp_module_globals_table[] = {
@@ -73,6 +98,9 @@ STATIC const mp_rom_map_elem_t badgebsp_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR_set_brightness), MP_ROM_PTR(&set_brightness_obj)},
     {MP_ROM_QSTR(MP_QSTR_set_handler), MP_ROM_PTR(&set_handler_obj)},
     {MP_ROM_QSTR(MP_QSTR_restart_to_launcher), MP_ROM_PTR(&badgebsp_return_to_launcher_obj)},
+    {MP_ROM_QSTR(MP_QSTR_get_radio_state), MP_ROM_PTR(&get_radio_state_obj)},
+    {MP_ROM_QSTR(MP_QSTR_set_radio_state), MP_ROM_PTR(&set_radio_state_obj)},
+    {MP_ROM_QSTR(MP_QSTR_get_bootsel_arg), MP_ROM_PTR(&get_bootsel_arg_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(badgebsp_module_globals, badgebsp_module_globals_table);

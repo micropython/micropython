@@ -10,7 +10,7 @@ dependencies:
   espressif/esp_hosted:
     rules:
       - if: "target == esp32p4"
-    version: "2.7.0"
+    version: "2.12.3"
   espressif/esp_wifi_remote:
     rules:
       - if: "target == esp32p4"
@@ -22,3 +22,5 @@ dependencies:
   idf:
     version: ">=5.3.0"
   badgeteam/badge-bsp: "^0.9.3"
+  badgeteam/appfs: "^1.0.2"
+  usb_host_msc: "1.2.0"

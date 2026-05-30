@@ -7,6 +7,7 @@
 #include "bsp/device.h"
 #include "bsp/display.h"
 #include "bsp/input.h"
+#include "bsp/power.h"
 
 __BEGIN_DECLS
 
