@@ -121,6 +121,7 @@ R_RISCV_SET32 = 56
 R_RISCV_32_PCREL = 57
 R_RISCV_PLT32 = 59
 R_XTENSA_PDIFF32 = 59
+R_XTENSA_NDIFF32 = 62
 R_RISCV_SET_ULEB128 = 60
 R_RISCV_SUB_ULEB128 = 61
 R_RISCV_TLSDESC_HI20 = 62
@@ -714,11 +715,11 @@ def do_relocation_text(env, text_addr, r):
     elif env.arch.name == "EM_XTENSA" and r_info_type in (
         R_XTENSA_DIFF32,
         R_XTENSA_PDIFF32,
+        R_XTENSA_NDIFF32,
         R_XTENSA_ASM_EXPAND,
     ):
         if not hasattr(s, "section") or s.section.name.startswith(".text"):
-            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated,
-            # and expand relaxations cannot occur in non-executable sections.
+            # Ignore relaxation relocations.
             return
         assert 0
 
