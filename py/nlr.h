@@ -46,6 +46,7 @@
 #define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
 #define MICROPY_NLR_NUM_REGS_RV32I          (14)
 #define MICROPY_NLR_NUM_REGS_RV64I          (14)
+#define MICROPY_NLR_NUM_REGS_LOONG64        (13)
 
 // *FORMAT-OFF*
 
@@ -99,6 +100,13 @@
         #define MICROPY_NLR_RV64I (1)
     #else
         #error Unsupported RISC-V variant.
+    #endif
+#elif defined(__loongarch__)
+    #if defined(__loongarch64)
+        #define MICROPY_NLR_LOONG64 (1)
+        #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_LOONG64)
+    #else
+        #error Unsupported Loongarch variant.
     #endif
 #else
     #define MICROPY_NLR_SETJMP (1)

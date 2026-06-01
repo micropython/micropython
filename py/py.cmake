@@ -61,6 +61,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/nativeglue.c
     ${MICROPY_PY_DIR}/nlr.c
     ${MICROPY_PY_DIR}/nlraarch64.c
+    ${MICROPY_PY_DIR}/nlrloong64.c
     ${MICROPY_PY_DIR}/nlrmips.c
     ${MICROPY_PY_DIR}/nlrpowerpc.c
     ${MICROPY_PY_DIR}/nlrrv32.c
