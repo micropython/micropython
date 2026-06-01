@@ -5,9 +5,10 @@ The "unix" port runs in standard Unix-like environments including Linux, BSD,
 macOS, and Windows Subsystem for Linux.
 
 The x86 and x64 architectures are supported (i.e. x86 32- and 64-bit), as well
-as ARM and MIPS. Extending the unix port to another architecture requires
-writing some assembly code for the exception handling and garbage collection.
-Alternatively, a fallback implementation based on setjmp/longjmp can be used.
+as ARM, MIPS, RISC-V, and LoongArch. Extending the unix port to another
+architecture requires writing some assembly code for the exception handling
+and garbage collection. Alternatively, a fallback implementation based on
+setjmp/longjmp can be used.
 
 Building
 --------
