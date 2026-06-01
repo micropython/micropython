@@ -189,6 +189,32 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
     arr[11] = s11;
 }
 
+#elif defined(__loongarch__) && defined(__loongarch64)
+
+// Fallback implementation for LOONG64, prefer gchelper_loong64.s.
+static void gc_helper_get_regs(gc_helper_regs_t arr) {
+    register uintptr_t s0 asm ("r23");
+    register uintptr_t s1 asm ("r24");
+    register uintptr_t s2 asm ("r25");
+    register uintptr_t s3 asm ("r26");
+    register uintptr_t s4 asm ("r27");
+    register uintptr_t s5 asm ("r28");
+    register uintptr_t s6 asm ("r29");
+    register uintptr_t s7 asm ("r30");
+    register uintptr_t s8 asm ("r31");
+    register uintptr_t s9 asm ("r22");
+    arr[0] = s0;
+    arr[1] = s1;
+    arr[2] = s2;
+    arr[3] = s3;
+    arr[4] = s4;
+    arr[5] = s5;
+    arr[6] = s6;
+    arr[7] = s7;
+    arr[8] = s8;
+    arr[9] = s9;
+}
+
 #else
 
 #error "Architecture not supported for gc_helper_get_regs. Set MICROPY_GCREGS_SETJMP to use the fallback implementation."

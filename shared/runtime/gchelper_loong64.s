@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2026 Alessandro Gatti
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_GCHELPER_H
-#define MICROPY_INCLUDED_LIB_UTILS_GCHELPER_H
 
-#include <stdint.h>
+    .global gc_helper_get_regs_and_sp
+    .type   gc_helper_get_regs_and_sp, @function
 
-#if MICROPY_GCREGS_SETJMP
-#include <setjmp.h>
-typedef jmp_buf gc_helper_regs_t;
-#else
+gc_helper_get_regs_and_sp:
 
-#if defined(__x86_64__)
-typedef uintptr_t gc_helper_regs_t[6];
-#elif defined(__i386__)
-typedef uintptr_t gc_helper_regs_t[4];
-#elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
-typedef uintptr_t gc_helper_regs_t[10];
-#elif defined(__aarch64__)
-typedef uintptr_t gc_helper_regs_t[11]; // x19-x29
-#elif defined(__riscv) && (__riscv_xlen <= 64)
-typedef uintptr_t gc_helper_regs_t[12]; // S0-S11
-#elif defined(__loongarch__) && defined(__loongarch64)
-typedef uintptr_t gc_helper_regs_t[10]; // S0-S9
-#endif
+    /* Store registers into the given array. */
 
-#endif
+    st.d  $r23, $r4, 0   /* Save S0.  */
+    st.d  $r24, $r4, 8   /* Save S1.  */
+    st.d  $r25, $r4, 16  /* Save S2.  */
+    st.d  $r26, $r4, 24  /* Save S3.  */
+    st.d  $r27, $r4, 32  /* Save S4.  */
+    st.d  $r28, $r4, 40  /* Save S5.  */
+    st.d  $r29, $r4, 48  /* Save S6.  */
+    st.d  $r30, $r4, 56  /* Save S7.  */
+    st.d  $r31, $r4, 64  /* Save S8.  */
+    st.d  $r22, $r4, 72  /* Save S9.  */
 
-void gc_helper_collect_regs_and_stack(void);
+    /* Return the stack pointer. */
 
-#endif // MICROPY_INCLUDED_LIB_UTILS_GCHELPER_H
+    add.d $r4, $r0, $r3
+    jirl  $r0, $r1, 0
+
+    .size gc_helper_get_regs_and_sp, .-gc_helper_get_regs_and_sp
