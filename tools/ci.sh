@@ -607,6 +607,12 @@ CI_UNIX_OPTS_QEMU_RISCV64=(
     MICROPY_STANDALONE=1
 )
 
+CI_UNIX_OPTS_QEMU_LOONG64=(
+    CROSS_COMPILE=loongarch64-linux-gnu-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+)
+
 CI_UNIX_OPTS_SANITIZE_ADDRESS=(
     # Macro MP_ASAN allows detecting ASan on gcc<=13
     CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -DMP_ASAN=1"
@@ -965,6 +971,36 @@ function ci_unix_qemu_riscv64_run_tests {
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'thread/stress_aes.py'
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
     popd
+}
+
+function ci_unix_qemu_loong64_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc6-loong64-cross libltdl-dev
+    sudo apt-get install qemu-user-static
+    qemu-loongarch64-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/loongarch64-linux-gnu /usr/gnemul/qemu-loongarch64
+    sudo ln -s /usr/bin/loongarch64-linux-gnu-gcc-14 /usr/bin/loongarch64-linux-gnu-gcc
+    sudo ln -s /usr/bin/loongarch64-linux-gnu-g++-14 /usr/bin/loongarch64-linux-gnu-g++
+}
+
+function ci_unix_qemu_loong64_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_LOONG64[@]}"
+    ci_unix_build_ffi_lib_helper loongarch64-linux-gnu-gcc
+}
+
+function ci_unix_qemu_loong64_run_tests {
+    # Issues with LOONG64 tests:
+    # - thread/stress_aes.py takes around 90 seconds
+    file ./ports/unix/build-coverage/micropython
+    # Loongarch64 isn't defined in the CI image's binfmt list.
+    cat << 'EOF' > ./ports/unix/build-coverage/micropython-runner
+#!/bin/sh
+MPY_PATH=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+qemu-loongarch64-static "$MPY_PATH"/micropython $@
+EOF
+    chmod +x ./ports/unix/build-coverage/micropython-runner
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython-runner MICROPY_TEST_TIMEOUT=180 ./run-tests.py)
 }
 
 function ci_unix_repr_b_build {
