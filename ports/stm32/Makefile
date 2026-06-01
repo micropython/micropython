@@ -669,7 +669,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 $(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
 	/bin/rm -f $@
-	$(STM32_CUBE_PROGRAMMER)/bin/STM32_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION)
+	$(STM32_CUBE_PROGRAMMER)/bin/STM32_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION) --align
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
