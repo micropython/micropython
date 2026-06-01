@@ -8,7 +8,7 @@ typedef int64_t counter_t;
 typedef int32_t counter_t;
 #endif
 
-#define INT16_ROLL 32767 // ((counter_t)32767)
+#define INT16_ROLL 32767
 
 #define FILTER_MAX 1023
 
@@ -17,8 +17,8 @@ enum edge_bit_mask {
     FALLING = 0x2
 };
 
-#define COUNTER_UP   (-2)
-#define COUNTER_DOWN (-4)
+#define COUNTER_UP   (1)
+#define COUNTER_DOWN (0)
 
 typedef struct _mp_pcnt_obj_t {
     mp_obj_base_t base;
@@ -42,8 +42,10 @@ typedef struct _mp_pcnt_obj_t {
     int16_t filter;
     enum edge_bit_mask edge; // Counter only
     union {
-        int8_t phases;       // Encoder: multiplier 1, 2 or 4
-        int8_t reverse_src;  // Counter: 1 is '_src=' keyword used, 0 is 'direction=' keyword used
+        int8_t phases;                // Encoder: multiplier 1, 2 or 4
+        int8_t direction_reverse_src; // Counter: -1 is '_src=Pin()' keyword used,
+                                      //           1 is 'direction=Pin()' keyword used,
+                                      //           0 is 'direction=Counter.UP/Counter.DOWN' constants in keyword used
     };
 } mp_pcnt_obj_t;
 
