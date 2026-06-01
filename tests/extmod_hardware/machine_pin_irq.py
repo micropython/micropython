@@ -15,9 +15,9 @@ from target_wiring import pin_loopback_pins
 
 has_hardirq = sys.platform not in ("esp32",)
 
-events_expected_rising = ["a", "b", 1, "c", "d", 1, "e", "f", "g", "h", "i"]
-events_expected_falling = ["a", "b", "c", 0, "d", "e", 0, "f", "g", "h", "i"]
-events_expected_rising_falling = ["a", "b", 1, "c", 0, "d", 1, "e", 0, "f", "g", "h", "i"]
+events_expected_rising = b"ab1cd1efghi"
+events_expected_falling = b"abc0de0fghi"
+events_expected_rising_falling = b"ab1c0d1e0fghi"
 
 
 class TestBase:
@@ -26,11 +26,11 @@ class TestBase:
         print("set up pins:", cls.p0_name, cls.p1_name)
         cls.p0 = Pin(cls.p0_name)
         cls.p1 = Pin(cls.p1_name)
+        cls.events = bytearray(30)
 
     def setUp(self):
         self.p0.init(Pin.OUT)
         self.p1.init(Pin.IN)
-        self.events = [0] * 100
         self.num_events = 0
 
     def tearDown(self):
@@ -38,7 +38,7 @@ class TestBase:
         self.p1.init(Pin.IN)
 
     def add_event(self, data):
-        self.events[self.num_events] = data
+        self.events[self.num_events] = ord(data)
         self.num_events += 1
 
     def change_pin(self, value):
@@ -47,7 +47,7 @@ class TestBase:
 
     def irq_handler(self, p):
         if p is self.p1:
-            self.add_event(p())
+            self.add_event("1" if p() else "0")
         else:
             print("expecting", self.p1)
 
