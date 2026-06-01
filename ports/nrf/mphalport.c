@@ -303,12 +303,13 @@ void mp_hal_delay_us(mp_uint_t us) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t now;
     if (ms == 0) {
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         return;
     }
     now = mp_hal_ticks_ms();
-    while (mp_hal_ticks_ms() - now < ms) {
+    do {
         MICROPY_EVENT_POLL_HOOK
-    }
+    } while (mp_hal_ticks_ms() - now < ms);
 }
 
 #else
