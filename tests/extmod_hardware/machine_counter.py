@@ -14,6 +14,9 @@ import unittest
 from machine import Pin
 from target_wiring import encoder_loopback_id, encoder_loopback_out_pins, encoder_loopback_in_pins
 
+COUNTER_UP = Counter.UP
+COUNTER_DOWN = Counter.DOWN
+
 id = encoder_loopback_id
 out0_pin, out1_pin = encoder_loopback_out_pins
 in0_pin, in1_pin = encoder_loopback_in_pins
@@ -21,7 +24,7 @@ in0_pin, in1_pin = encoder_loopback_in_pins
 out_pin = Pin(out0_pin, mode=Pin.OUT, value=0)
 in_pin = Pin(in0_pin, mode=Pin.IN)
 
-out_dir_pin = Pin(out1_pin, mode=Pin.OUT, value=0)
+out_dir_pin = Pin(out1_pin, mode=Pin.OUT, value=COUNTER_UP)
 in_dir_pin = Pin(in1_pin, mode=Pin.IN)
 
 
@@ -105,7 +108,7 @@ class TestCounter(unittest.TestCase):
 
     @unittest.skipIf(sys.platform == "mimxrt", "FALLING edge not supported")
     def test_count_falling_UP_DOWN(self):
-        self.counter.init(in_pin, direction=Counter.UP, edge=Counter.FALLING)
+        self.counter.init(in_pin, edge=Counter.FALLING)
         toggle(20)
         self.assertCounter(20)
         out_pin(1)
@@ -120,11 +123,10 @@ class TestCounter(unittest.TestCase):
         toggle(20)
         self.assertCounter(-(2**24 + 20))
 
-    # @unittest.skipIf(sys.platform == "mimxrt", "Pin as a count direction is not supported")
     def test_count_pin_direction(self):
         self.counter.init(in_pin, direction=in_dir_pin, match=5_000)
 
-        out_dir_pin(1)  # count UP
+        out_dir_pin(COUNTER_UP)
         out_pin(0)
         self.assertCounter(0)  # no rising edge
         out_pin(1)
@@ -134,7 +136,7 @@ class TestCounter(unittest.TestCase):
         toggle(100)
         self.assertCounter(101)
 
-        out_dir_pin(0)  # count DOWN
+        out_dir_pin(COUNTER_DOWN)
         out_pin(0)
         self.assertCounter(101)  # no rising edge
         out_pin(1)
@@ -145,7 +147,7 @@ class TestCounter(unittest.TestCase):
         self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
         self.assertEqual(self.counter.irq().trigger(), Counter.IRQ_MATCH)
 
-        out_dir_pin(1)  # count UP
+        out_dir_pin(COUNTER_UP)
         toggle(6_000)
         self.assertCounter(6_100)
         self.assertEqual(callback_counter_value, 5_000)
@@ -154,27 +156,30 @@ class TestCounter(unittest.TestCase):
         self.counter.init(match=5_000)
         self.counter.value(6_100)
 
-        out_dir_pin(0)  # count DOWN
+        out_dir_pin(COUNTER_DOWN)
         toggle(6_000)
         self.assertCounter(100)
         self.assertEqual(callback_counter_value, 5_000)
         self.assertEqual(number_of_callbacks, 2)
+        self.counter.irq().trigger(Counter.IRQ_MATCH)
 
         self.counter.init(match=50_000)
 
-        out_dir_pin(1)  # count UP
+        out_dir_pin(COUNTER_UP)
         toggle(60_000)
         self.assertCounter(60_000)
         self.assertEqual(callback_counter_value, 50_000)
         self.assertEqual(number_of_callbacks, 3)
+        self.counter.irq().trigger(Counter.IRQ_MATCH)
 
         self.counter.init(match=-50_000)
 
-        out_dir_pin(0)  # count DOWN
+        out_dir_pin(COUNTER_DOWN)
         toggle(60_000)
         self.assertCounter(-60_000)
         self.assertEqual(callback_counter_value, -50_000)
         self.assertEqual(number_of_callbacks, 4)
+        self.counter.irq().trigger(Counter.IRQ_MATCH)
 
     def test_irq_UP_DOWN(self):
         self.counter.init(in_pin, direction=Counter.UP, match=150_000)
