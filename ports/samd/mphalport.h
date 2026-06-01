@@ -42,7 +42,12 @@
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state)
 
 // Port level Wait-for-Event macro.
-#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) __WFE()
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do { \
+        if (TIMEOUT_MS != 0) { \
+            __WFE(); \
+        } \
+    } while (0)
 
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 

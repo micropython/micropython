@@ -70,9 +70,11 @@ void mp_hal_clr_pin_mux(mp_hal_pin_obj_t pin) {
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        mp_event_wait_ms(1);
-    }
+    uint32_t elapsed = 0;
+    do {
+        mp_event_wait_ms(ms - elapsed);
+        elapsed = systick_ms - t0;
+    } while (elapsed < ms);
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
