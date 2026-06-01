@@ -53,6 +53,8 @@
 #else
 #define MICROPY_PLATFORM_ARCH   "riscv"
 #endif
+#elif defined(__loongarch__) && defined(__loongarch64)
+#define MICROPY_PLATFORM_ARCH   "loongarch64"
 #else
 #define MICROPY_PLATFORM_ARCH   ""
 #endif
