@@ -138,6 +138,7 @@ static int ble_gattc_attr_write_cb(uint16_t conn_handle, const struct ble_gatt_e
 static int ble_secret_store_read(int obj_type, const union ble_store_key *key, union ble_store_value *value);
 static int ble_secret_store_write(int obj_type, const union ble_store_value *val);
 static int ble_secret_store_delete(int obj_type, const union ble_store_key *key);
+static void ble_secret_store_set_callbacks();
 #endif
 
 static int ble_hs_err_to_errno(int err) {
@@ -272,6 +273,12 @@ static void set_random_address(bool nrpa) {
 // For ble_hs_misc_restore_irks
 #include "nimble/host/src/ble_hs_priv.h"
 
+static inline void ble_secret_store_set_callbacks() {
+    ble_hs_cfg.store_read_cb = ble_secret_store_read;
+    ble_hs_cfg.store_write_cb = ble_secret_store_write;
+    ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
+}
+
 // Must be distinct to BLE_STORE_OBJ_TYPE_ in ble_store.h.
 #define SECRET_TYPE_OUR_IRK 10
 
@@ -330,6 +337,10 @@ static void sync_cb(void) {
     }
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    // Reconfigure the store callbacks after sync because some
+    // ports (ESP-IDF >=v5.5.3) overwrite these during startup
+    ble_secret_store_set_callbacks();
+
     rc = load_irk();
     assert(rc == 0);
     #endif
@@ -635,9 +646,7 @@ int mp_bluetooth_init(void) {
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     ble_hs_cfg.sm_our_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID | BLE_SM_PAIR_KEY_DIST_SIGN;
     ble_hs_cfg.sm_their_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID | BLE_SM_PAIR_KEY_DIST_SIGN;
-    ble_hs_cfg.store_read_cb = ble_secret_store_read;
-    ble_hs_cfg.store_write_cb = ble_secret_store_write;
-    ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
+    ble_secret_store_set_callbacks();
     #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
     // Make sure that the HCI UART and event handling task is running.
