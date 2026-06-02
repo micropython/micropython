@@ -1933,7 +1933,8 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
     size_t key_data_len;
 
     switch (obj_type) {
-        case BLE_STORE_OBJ_TYPE_PEER_SEC: {
+        case BLE_STORE_OBJ_TYPE_PEER_SEC:
+        case BLE_STORE_OBJ_TYPE_OUR_SEC: {
             if (ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)) {
                 // <type=peer,addr,*> (single)
                 // Find the entry for this specific peer.
@@ -1946,15 +1947,6 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
                 key_data = NULL;
                 key_data_len = 0;
             }
-            break;
-        }
-        case BLE_STORE_OBJ_TYPE_OUR_SEC: {
-            // <type=our,addr,*>
-            // Find our secret for this remote device.
-            assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
-            assert(key->sec.idx == 0);
-            key_data = (const uint8_t *)&key->sec.peer_addr;
-            key_data_len = sizeof(ble_addr_t);
             break;
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
