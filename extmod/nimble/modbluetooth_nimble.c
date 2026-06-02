@@ -53,7 +53,11 @@
 #include "nimble/host/src/ble_hs_hci_priv.h"
 #endif
 
-#define DEBUG_printf(...) // printf("nimble: " __VA_ARGS__)
+#if MYNEWT_VAL(BLE_HS_DEBUG)
+#define DEBUG_printf(...) printf("nimble: " __VA_ARGS__)
+#else
+#define DEBUG_printf(...)
+#endif
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
@@ -453,7 +457,273 @@ static int commmon_gap_event_cb(struct ble_gap_event *event, void *arg) {
         }
 
         default:
-            DEBUG_printf("commmon_gap_event_cb: unknown type %d\n", event->type);
+            #if MYNEWT_VAL(BLE_HS_DEBUG)
+            switch (event->type) {
+                #ifdef BLE_GAP_EVENT_CONNECT
+                case BLE_GAP_EVENT_CONNECT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONNECT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DISCONNECT
+                case BLE_GAP_EVENT_DISCONNECT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DISCONNECT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONN_UPDATE
+                case BLE_GAP_EVENT_CONN_UPDATE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONN_UPDATE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONN_UPDATE_REQ
+                case BLE_GAP_EVENT_CONN_UPDATE_REQ:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONN_UPDATE_REQ\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_L2CAP_UPDATE_REQ
+                case BLE_GAP_EVENT_L2CAP_UPDATE_REQ:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_L2CAP_UPDATE_REQ\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TERM_FAILURE
+                case BLE_GAP_EVENT_TERM_FAILURE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TERM_FAILURE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DISC
+                case BLE_GAP_EVENT_DISC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DISC\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DISC_COMPLETE
+                case BLE_GAP_EVENT_DISC_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DISC_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_ADV_COMPLETE
+                case BLE_GAP_EVENT_ADV_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_ADV_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_ENC_CHANGE
+                case BLE_GAP_EVENT_ENC_CHANGE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_ENC_CHANGE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PASSKEY_ACTION
+                case BLE_GAP_EVENT_PASSKEY_ACTION:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PASSKEY_ACTION\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_NOTIFY_RX
+                case BLE_GAP_EVENT_NOTIFY_RX:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_NOTIFY_RX\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_NOTIFY_TX
+                case BLE_GAP_EVENT_NOTIFY_TX:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_NOTIFY_TX\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_SUBSCRIBE
+                case BLE_GAP_EVENT_SUBSCRIBE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_SUBSCRIBE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_MTU
+                case BLE_GAP_EVENT_MTU:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_MTU\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_IDENTITY_RESOLVED
+                case BLE_GAP_EVENT_IDENTITY_RESOLVED:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_IDENTITY_RESOLVED\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_REPEAT_PAIRING
+                case BLE_GAP_EVENT_REPEAT_PAIRING:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_REPEAT_PAIRING\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PHY_UPDATE_COMPLETE
+                case BLE_GAP_EVENT_PHY_UPDATE_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PHY_UPDATE_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_EXT_DISC
+                case BLE_GAP_EVENT_EXT_DISC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_EXT_DISC\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_SYNC
+                case BLE_GAP_EVENT_PERIODIC_SYNC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_SYNC\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_REPORT
+                case BLE_GAP_EVENT_PERIODIC_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_SYNC_LOST
+                case BLE_GAP_EVENT_PERIODIC_SYNC_LOST:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_SYNC_LOST\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_SCAN_REQ_RCVD
+                case BLE_GAP_EVENT_SCAN_REQ_RCVD:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_SCAN_REQ_RCVD\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_TRANSFER
+                case BLE_GAP_EVENT_PERIODIC_TRANSFER:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_TRANSFER\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PATHLOSS_THRESHOLD
+                case BLE_GAP_EVENT_PATHLOSS_THRESHOLD:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PATHLOSS_THRESHOLD\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TRANSMIT_POWER
+                case BLE_GAP_EVENT_TRANSMIT_POWER:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TRANSMIT_POWER\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PARING_COMPLETE
+                case BLE_GAP_EVENT_PARING_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PARING_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_SUBRATE_CHANGE
+                case BLE_GAP_EVENT_SUBRATE_CHANGE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_SUBRATE_CHANGE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_VS_HCI
+                case BLE_GAP_EVENT_VS_HCI:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_VS_HCI\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIGINFO_REPORT
+                case BLE_GAP_EVENT_BIGINFO_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIGINFO_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_REATTEMPT_COUNT
+                case BLE_GAP_EVENT_REATTEMPT_COUNT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_REATTEMPT_COUNT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_AUTHORIZE
+                case BLE_GAP_EVENT_AUTHORIZE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_AUTHORIZE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TEST_UPDATE
+                case BLE_GAP_EVENT_TEST_UPDATE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TEST_UPDATE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DATA_LEN_CHG
+                case BLE_GAP_EVENT_DATA_LEN_CHG:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DATA_LEN_CHG\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONNLESS_IQ_REPORT
+                case BLE_GAP_EVENT_CONNLESS_IQ_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONNLESS_IQ_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONN_IQ_REPORT
+                case BLE_GAP_EVENT_CONN_IQ_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONN_IQ_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CTE_REQ_FAILED
+                case BLE_GAP_EVENT_CTE_REQ_FAILED:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CTE_REQ_FAILED\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_LINK_ESTAB
+                case BLE_GAP_EVENT_LINK_ESTAB:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_LINK_ESTAB\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_EATT
+                case BLE_GAP_EVENT_EATT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_EATT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PER_SUBEV_DATA_REQ
+                case BLE_GAP_EVENT_PER_SUBEV_DATA_REQ:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PER_SUBEV_DATA_REQ\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PER_SUBEV_RESP
+                case BLE_GAP_EVENT_PER_SUBEV_RESP:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PER_SUBEV_RESP\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_TRANSFER_V2
+                case BLE_GAP_EVENT_PERIODIC_TRANSFER_V2:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_TRANSFER_V2\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CACHE_ASSOC
+                case BLE_GAP_EVENT_CACHE_ASSOC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CACHE_ASSOC / BLE_GAP_EVENT_CIS_ESTAB\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CIS_REQUEST
+                case BLE_GAP_EVENT_CIS_REQUEST:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CIS_REQUEST\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CREATE_BIG_COMP
+                case BLE_GAP_EVENT_CREATE_BIG_COMP:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CREATE_BIG_COMP\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TERM_BIG_COMP
+                case BLE_GAP_EVENT_TERM_BIG_COMP:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TERM_BIG_COMP\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIG_SYNC_ESTAB
+                case BLE_GAP_EVENT_BIG_SYNC_ESTAB:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIG_SYNC_ESTAB\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIG_SYNC_LOST
+                case BLE_GAP_EVENT_BIG_SYNC_LOST:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIG_SYNC_LOST\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIGINFO_ADV_RPT
+                case BLE_GAP_EVENT_BIGINFO_ADV_RPT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIGINFO_ADV_RPT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CIS_ESTAB_V2
+                case BLE_GAP_EVENT_CIS_ESTAB_V2:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CIS_ESTAB_V2\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_RD_ALL_REM_FEAT
+                case BLE_GAP_EVENT_RD_ALL_REM_FEAT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_RD_ALL_REM_FEAT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_MONITOR_ADV_REPORT
+                case BLE_GAP_EVENT_MONITOR_ADV_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_MONITOR_ADV_REPORT\n");
+                    break;
+                #endif
+                default:
+                    DEBUG_printf("commmon_gap_event_cb: unknown type %d\n", event->type);
+                    break;
+            }
+            #endif
             return 0;
     }
 }
@@ -877,7 +1147,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
     switch (ctxt->op) {
         case BLE_GATT_ACCESS_OP_READ_CHR:
         case BLE_GATT_ACCESS_OP_READ_DSC: {
-            DEBUG_printf("write for %d %d (op=%d)\n", conn_handle, value_handle, ctxt->op);
+            DEBUG_printf("read for %d %d (op=%d)\n", conn_handle, value_handle, ctxt->op);
             // Allow Python code to override (by using gatts_write), or deny (by returning false) the read.
             // Note this will be a no-op if the ringbuffer implementation is being used (i.e. the stack isn't
             // run in the scheduler). The ringbuffer is not used on STM32 and Unix-H4 only.
@@ -1225,7 +1495,7 @@ static int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
-            DEBUG_printf("peripheral_gap_event_cb: status=%d\n", event->connect.status);
+            DEBUG_printf("peripheral_gap_event_cb: connect: status=%d\n", event->connect.status);
             if (event->connect.status == 0) {
                 // Connection established.
                 ble_gap_conn_find(event->connect.conn_handle, &desc);
@@ -1239,7 +1509,7 @@ static int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_DISCONNECT:
             // Disconnect.
-            DEBUG_printf("peripheral_gap_event_cb: reason=%d\n", event->disconnect.reason);
+            DEBUG_printf("peripheral_gap_event_cb: disconnect: reason=%d\n", event->disconnect.reason);
             reverse_addr_byte_order(addr, event->disconnect.conn.peer_id_addr.val);
             mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT, event->disconnect.conn.conn_handle, event->disconnect.conn.peer_id_addr.type, addr);
             return 0;
