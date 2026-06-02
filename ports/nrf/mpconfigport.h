@@ -228,6 +228,16 @@
 #endif
 
 #define MICROPY_PY_MACHINE_PWM      (MICROPY_PY_MACHINE_HW_PWM || MICROPY_PY_MACHINE_SOFT_PWM)
+
+// nrf91 (Cortex-M33 with TrustZone) has POWER->GPREGRET as a 2-element array
+// rather than separate GPREGRET/GPREGRET2 fields, and access requires the
+// secure/non-secure peripheral split. Not supported here.
+#if !defined(NRF91)
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP (1)
+#endif
+#define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "ports/nrf/machine_mem_backup.c"
+#endif
 #define MICROPY_PY_MACHINE_PWM_DUTY (1)
 
 #if MICROPY_PY_MACHINE_HW_PWM
