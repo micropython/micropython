@@ -76,7 +76,6 @@ class TestPep3119AbstractMethod(unittest.TestCase):
 
 class TestPep3119AbcGetCacheToken(unittest.TestCase):
     # abc.get_cache_token is not present in the MicroPython abc module.
-    @unittest.expectedFailure
     def test_abc_get_cache_token(self):
         from abc import get_cache_token
 

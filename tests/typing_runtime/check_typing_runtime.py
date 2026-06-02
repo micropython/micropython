@@ -12,6 +12,20 @@ import unittest
 from typing import TypeAlias
 
 
+def xfail_on_error(func):
+    """Report test as skipped ("xfail: ...") if it raises, or as ok if it
+    passes. Use instead of @unittest.expectedFailure when an unexpected pass
+    should NOT be reported as a failure (xpass)."""
+
+    def wrapper(self):
+        try:
+            func(self)
+        except Exception as e:
+            raise unittest.SkipTest("xfail: {}".format(e))
+
+    return wrapper
+
+
 class TestTypingTypeCheckingFlag(unittest.TestCase):
     # TYPE_CHECKING-guarded import is False at runtime in MicroPython.
     def test_type_checking_branch(self):
@@ -335,7 +349,7 @@ class TestTypingParamSpec(unittest.TestCase):
     # ParamSpec, 3.11 notation
     # https://docs.python.org/3/library/typing.html#typing.ParamSpec
     # FIXME cpydiff: ParamSpec / collections.abc.Callable may not be available in MicroPython.
-    @unittest.expectedFailure
+    @xfail_on_error
     def test_add_logging_with_paramspec(self):
         from typing import Callable, ParamSpec, TypeVar
 
