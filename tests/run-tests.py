@@ -1051,6 +1051,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Look at the output of the test to see if unittest was used.
         uses_unittest = False
+        unittest_ran_match = None
+        unittest_result_match = None
         output_mupy_lines = output_mupy.splitlines()
         if any(
             line == b"ImportError: no module named 'unittest'" for line in output_mupy_lines[-3:]
@@ -1067,13 +1069,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             and output_mupy_lines[-2] == b""
         ):
             # look for unittest summary
-            unittest_ran_match = re.match(rb"Ran (\d+) tests$", output_mupy_lines[-3])
+            unittest_ran_match = re.match(rb"Ran (?P<ran>\d+) tests$", output_mupy_lines[-3])
             unittest_result_match = re.match(
-                b"("
-                rb"(OK)( \(skipped=(\d+)\))?"
-                b"|"
-                rb"(FAILED) \(failures=(\d+), errors=(\d+)\)"
-                b")$",
+                rb"(?:"
+                rb"(?P<ok>OK)(?: \((?P<ok_extras>.+?)\))?"
+                rb"|"
+                rb"(?P<failed>FAILED) \(failures=(?P<failures>\d+), errors=(?P<errors>\d+)(?:, (?P<failed_extras>.+?))?\)"
+                rb")$",
                 output_mupy_lines[-1],
             )
             uses_unittest = unittest_ran_match and unittest_result_match
@@ -1110,19 +1112,53 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         test_passed = False
         extra_info = ""
         if uses_unittest:
-            test_passed = unittest_result_match.group(2) == b"OK"
-            num_test_cases = int(unittest_ran_match.group(1))
-            extra_info = "unittest: {} ran".format(num_test_cases)
-            if test_passed and unittest_result_match.group(4) is not None:
-                num_skipped = int(unittest_result_match.group(4))
-                num_test_cases -= num_skipped
-                extra_info += ", {} skipped".format(num_skipped)
-            elif not test_passed:
-                num_failures = int(unittest_result_match.group(6))
-                num_errors = int(unittest_result_match.group(7))
-                extra_info += ", {} failures, {} errors".format(num_failures, num_errors)
-            extra_info = "(" + extra_info + ")"
-            testcase_count.add(num_test_cases)
+            if unittest_ran_match is None or unittest_result_match is None:
+                unittest_tail = b"\n".join(output_mupy_lines[-3:]).decode(errors="replace")
+                raise RuntimeError(
+                    "Invalid unittest summary format in {}:\n{}".format(test_file, unittest_tail)
+                )
+            else:
+                test_passed = unittest_result_match.group("ok") == b"OK"
+                num_test_cases = int(unittest_ran_match.group("ran"))
+                extra_info = "unittest: {} ran".format(num_test_cases)
+                # Parse fields from the OK(...) or FAILED(...) tail.
+                extras_blob = unittest_result_match.group(
+                    "ok_extras" if test_passed else "failed_extras"
+                )
+                extras = {}
+                if extras_blob:
+                    for part in extras_blob.split(b","):
+                        if b"=" in part:
+                            k, _, v = part.partition(b"=")
+                            k = k.strip()
+                            v = v.strip()
+                            try:
+                                extras[k.decode(errors="replace")] = int(v)
+                            except ValueError:
+                                pass
+                if test_passed:
+                    num_skipped = extras.get("skipped", 0)
+                    if num_skipped:
+                        num_test_cases -= num_skipped
+                        extra_info += ", {} skipped".format(num_skipped)
+                    num_xfail = extras.get("expected failures", 0)
+                    if num_xfail:
+                        extra_info += ", {} xfail".format(num_xfail)
+                else:
+                    num_failures = int(unittest_result_match.group("failures"))
+                    num_errors = int(unittest_result_match.group("errors"))
+                    extra_info += ", {} failures, {} errors".format(num_failures, num_errors)
+                    num_xpass = extras.get("unexpected successes", 0)
+                    if num_xpass:
+                        extra_info += ", {} xpass".format(num_xpass)
+                    num_xfail = extras.get("expected failures", 0)
+                    if num_xfail:
+                        extra_info += ", {} xfail".format(num_xfail)
+                    num_skipped = extras.get("skipped", 0)
+                    if num_skipped:
+                        extra_info += ", {} skipped".format(num_skipped)
+                extra_info = "(" + extra_info + ")"
+                testcase_count.add(num_test_cases)
         else:
             testcase_count.add(len(output_expected.splitlines()))
             test_passed = output_expected == output_mupy
