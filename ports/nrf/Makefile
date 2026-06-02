@@ -241,6 +241,7 @@ SRC_NRFX += \
 SRC_C += \
 	main.c \
 	mphalport.c \
+	machine_mem_backup.c \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
