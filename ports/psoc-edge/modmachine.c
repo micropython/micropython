@@ -46,6 +46,13 @@ enum clock_freq_type freq_peri;
 
 #if MICROPY_PY_MACHINE
 
+#if MICROPY_PY_MACHINE_SPI_TARGET
+#define MICROPY_PY_MACHINE_SPITARGET_GLOBAL \
+    { MP_ROM_QSTR(MP_QSTR_SPITarget), MP_ROM_PTR(&machine_spi_target_type) },
+#else
+#define MICROPY_PY_MACHINE_SPITARGET_GLOBAL
+#endif
+
 // machine.idle()
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.
@@ -77,5 +84,6 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     { MP_ROM_QSTR(MP_QSTR_IPC),                 MP_ROM_PTR(&machine_ipc_type) }, \
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) }, \
     { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) }, \
+    MICROPY_PY_MACHINE_SPITARGET_GLOBAL
 
 #endif // MICROPY_PY_MACHINE

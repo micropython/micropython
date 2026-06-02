@@ -302,6 +302,7 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_common.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_i2c.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_sd_host.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_spi.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_uart.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_smif.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_smif_hb_flash.c \
@@ -452,6 +453,8 @@ MOD_SRC_C += \
 	machine_pin_irq.c \
 	machine_pdm_pcm_extmod.c\
 	machine_i2c.c\
+	machine_spi.c \
+	machine_spi_target.c \
 	machine_rtc.c \
 	modpsocedge.c \
 	machine_ipc.c \

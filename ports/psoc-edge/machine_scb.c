@@ -26,9 +26,10 @@
 
 #include "mpconfigport.h"
 
-#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SPI_TARGET || MICROPY_PY_MACHINE_UART
 
 #include "py/runtime.h"
+#include "cy_sysclk.h"
 #include "genhdr/pins_af.h"
 #include "machine_scb.h"
 
@@ -77,6 +78,25 @@ static machine_scb_obj_t machine_scb_obj[MICROPY_PY_MACHINE_SCB_NUM_ENTRIES] = {
     MICROPY_PY_MACHINE_FOR_ALL_SCB(MAP_SCB_IRQ_CONFIG)
 };
 
+typedef struct {
+    uint32_t peri_nr;
+    uint32_t group_nr;
+    uint32_t slave_nr;
+    uint32_t clk_hf_nr;
+} machine_scb_group_info_t;
+
+#define MAP_SCB_GROUP_INFO(scb) \
+    [scb] = { \
+        .peri_nr = CY_MMIO_SCB##scb##_PERI_NR, \
+        .group_nr = CY_MMIO_SCB##scb##_GROUP_NR, \
+        .slave_nr = CY_MMIO_SCB##scb##_SLAVE_NR, \
+        .clk_hf_nr = CY_MMIO_SCB##scb##_CLK_HF_NR, \
+    },
+
+static const machine_scb_group_info_t machine_scb_group_info[MICROPY_PY_MACHINE_SCB_NUM_ENTRIES] = {
+    MICROPY_PY_MACHINE_FOR_ALL_SCB(MAP_SCB_GROUP_INFO)
+};
+
 static void machine_scb_irq_handler(uint8_t scb) {
     machine_scb_obj_t *scb_obj = &machine_scb_obj[scb];
     if (scb_obj->parent != NULL && scb_obj->parent_handler != NULL) {
@@ -99,4 +119,10 @@ void machine_scb_obj_free(machine_scb_obj_t *scb) {
     scb->parent_handler = NULL;
 }
 
-#endif // MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+void machine_scb_enable_group(uint8_t scb) {
+    const machine_scb_group_info_t *gi = &machine_scb_group_info[scb];
+    Cy_SysClk_PeriGroupSlaveInit(gi->peri_nr, gi->group_nr,
+        gi->slave_nr, gi->clk_hf_nr);
+}
+
+#endif // MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SPI_TARGET || MICROPY_PY_MACHINE_UART

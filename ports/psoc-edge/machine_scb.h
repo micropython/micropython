@@ -42,5 +42,6 @@ typedef struct _machine_scb_obj_t {
 
 machine_scb_obj_t *machine_scb_obj_alloc(uint8_t scb, mp_obj_t parent, machine_scb_parent_irq_handler_t handler);
 void machine_scb_obj_free(machine_scb_obj_t *scb);
+void machine_scb_enable_group(uint8_t scb);
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_MACHINE_SCB_H
