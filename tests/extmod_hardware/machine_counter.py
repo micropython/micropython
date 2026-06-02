@@ -47,7 +47,7 @@ def callback(counter):
     counter_irq_flags = counter.irq().flags()
     if "esp32" in sys.platform:
         print(
-            f"\n callbacks:{number_of_callbacks}, counter.value():{callback_counter_value}, counter.cycles():{callback_counter_cycles}, counter.irq().flags():{counter_irq_flags}, MATCH:{counter_irq_flags & Counter.IRQ_MATCH}, ZERO:{counter_irq_flags & Counter.IRQ_ZERO}, MAX:{counter_irq_flags & Counter.IRQ_MAX}, MIN:{counter_irq_flags & Counter.IRQ_MIN}"
+            f"\n callbacks:{number_of_callbacks}, counter.value():{callback_counter_value}, counter.cycles():{callback_counter_cycles}, counter.irq().flags():{counter_irq_flags}, MATCH:{counter_irq_flags & Counter.IRQ_MATCH}, HERE:{counter_irq_flags & Counter.IRQ_HERE}"
         )
     else:
         print(
@@ -184,14 +184,14 @@ class TestCounter(unittest.TestCase):
         self.counter.irq().trigger(Counter.IRQ_MATCH)
 
     def test_irq_UP_DOWN(self):
-        self.counter.init(in_pin, direction=Counter.UP, match=150_000)
+        self.counter.init(in_pin, match=150_000)
         self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
         toggle(160_000)
         self.assertCounter(160_000)
         self.assertEqual(callback_counter_value, 150_000)
         self.assertEqual(number_of_callbacks, 5)
 
-        self.counter.init(in_pin, direction=Counter.DOWN, match=-150_000)
+        self.counter.init(direction=Counter.DOWN, match=-150_000)
         self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
         toggle(160_000)
         self.assertCounter(-160_000)
