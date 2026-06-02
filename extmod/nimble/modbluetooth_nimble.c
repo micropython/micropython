@@ -97,7 +97,7 @@ static bool has_public_address(void);
 static void set_random_address(bool nrpa);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-static int load_irk(void);
+static int load_irk(uint8_t *irk);
 #endif
 
 static void sync_cb(void);
@@ -142,6 +142,9 @@ static int ble_gattc_attr_write_cb(uint16_t conn_handle, const struct ble_gatt_e
 static int ble_secret_store_read(int obj_type, const union ble_store_key *key, union ble_store_value *value);
 static int ble_secret_store_write(int obj_type, const union ble_store_value *val);
 static int ble_secret_store_delete(int obj_type, const union ble_store_key *key);
+#ifdef BLE_STORE_GEN_KEY_IRK
+static int ble_secret_store_generate_key(uint8_t key, struct ble_store_gen_key *gen_key, uint16_t conn_handle);
+#endif
 static void ble_secret_store_set_callbacks();
 #endif
 
@@ -281,52 +284,40 @@ static inline void ble_secret_store_set_callbacks() {
     ble_hs_cfg.store_read_cb = ble_secret_store_read;
     ble_hs_cfg.store_write_cb = ble_secret_store_write;
     ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
+    #ifdef BLE_STORE_GEN_KEY_IRK
+    ble_hs_cfg.store_gen_key_cb = ble_secret_store_generate_key;
+    #endif
 }
 
 // Must be distinct to BLE_STORE_OBJ_TYPE_ in ble_store.h.
 #define SECRET_TYPE_OUR_IRK 10
 
-static int load_irk(void) {
-    // NimBLE unconditionally loads a fixed IRK on startup.
-    // See https://github.com/apache/mynewt-nimble/issues/887
-
+static int load_irk(uint8_t *irk) {
     // Dummy key to use for the store.
     // Technically the secret type is enough as there will only be
     // one IRK so the key doesn't matter, but a NULL (None) key means "search".
     const uint8_t key[3] = {'i', 'r', 'k'};
 
-    int rc;
-    const uint8_t *irk;
-    size_t irk_len;
-    if (mp_bluetooth_gap_on_get_secret(SECRET_TYPE_OUR_IRK, 0, key, sizeof(key), &irk, &irk_len) && irk_len == 16) {
-        DEBUG_printf("load_irk: Applying IRK from store.\n");
-        rc = ble_hs_pvcy_set_our_irk(irk);
-        if (rc) {
-            return rc;
-        }
+    const uint8_t *stored_irk;
+    size_t stored_irk_len;
+    if (mp_bluetooth_gap_on_get_secret(SECRET_TYPE_OUR_IRK, 0, key, sizeof(key), &stored_irk, &stored_irk_len) && stored_irk_len == 16) {
+        DEBUG_printf("load_irk: Retrieved IRK from store.\n");
+        memcpy(irk, stored_irk, 16);
+        return 0;
     } else {
         DEBUG_printf("load_irk: Generating new IRK.\n");
-        uint8_t rand_irk[16];
-        rc = ble_hs_hci_util_rand(rand_irk, 16);
+        int rc = ble_hs_hci_util_rand(irk, 16);
         if (rc) {
             return rc;
         }
         DEBUG_printf("load_irk: Saving new IRK.\n");
-        if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), rand_irk, 16)) {
+        if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), irk, 16)) {
             // Code that doesn't implement pairing/bonding won't support set/get secret.
             // So they'll just get the default fixed IRK.
-            return 0;
-        }
-        DEBUG_printf("load_irk: Applying new IRK.\n");
-        rc = ble_hs_pvcy_set_our_irk(rand_irk);
-        if (rc) {
-            return rc;
+            return -1;
         }
     }
-
-    // Loading an IRK will clear all peer IRKs, so reload them from the store.
-    rc = ble_hs_misc_restore_irks();
-    return rc;
+    return 0;
 }
 #endif
 
@@ -345,8 +336,20 @@ static void sync_cb(void) {
     // ports (ESP-IDF >=v5.5.3) overwrite these during startup
     ble_secret_store_set_callbacks();
 
-    rc = load_irk();
-    assert(rc == 0);
+    #ifndef BLE_STORE_GEN_KEY_IRK
+    // NimBLE unconditionally loads a fixed IRK on startup.
+    // See https://github.com/apache/mynewt-nimble/issues/887
+    uint8_t irk[16];
+    if (load_irk(irk) == 0) {
+        DEBUG_printf("sync_cb: Applying IRK.\n");
+        rc = ble_hs_pvcy_set_our_irk(irk);
+        assert(rc == 0);
+
+        // Loading an IRK will clear all peer IRKs, so reload them from the store.
+        rc = ble_hs_misc_restore_irks();
+        assert(rc == 0);
+    }
+    #endif
     #endif
 
     if (has_public_address()) {
@@ -2307,6 +2310,15 @@ static int ble_secret_store_delete(int obj_type, const union ble_store_key *key)
             return BLE_HS_ENOTSUP;
     }
 }
+
+#ifdef BLE_STORE_GEN_KEY_IRK
+static int ble_secret_store_generate_key(uint8_t key, struct ble_store_gen_key *gen_key, uint16_t conn_handle) {
+    if (key == BLE_STORE_GEN_KEY_IRK) {
+        return load_irk(gen_key->irk);
+    }
+    return -1;
+}
+#endif
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
