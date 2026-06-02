@@ -1,0 +1,12 @@
+SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+write_readinto loopback:  True
+transfer loopback:  True
+write ok:  True
+readinto ok:  True
+mode(0,0):  True
+mode(0,1):  True
+mode(1,0):  True
+mode(1,1):  True
+LSB first loopback:  True
+CS toggled transfer:  True
+done

@@ -107,3 +107,20 @@
       - board: KIT_PSE84_AI
         features:
           - wifi-idn-b0653ac13e11
+
+- name: spi
+  type: multi
+  test:
+    script: ports/psoc-edge/board_ext_hw/multi/spi_basic.py
+    device:
+      - board: KIT_PSE84_AI
+        features:
+          - spi
+
+- name: spi_single
+  test:
+    script: ports/psoc-edge/board_ext_hw/single/spi.py
+    device:
+      - board: KIT_PSE84_AI
+        features:
+          - spi

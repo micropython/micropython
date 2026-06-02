@@ -1,0 +1,57 @@
+--- instance0 ---
+
+***** SPI Target Test *****
+
+***** Test 1: Read *****
+
+Received: bytearray(b'\x01\x02\x03\x04')
+Status: PASS
+NEXT
+NEXT
+
+***** Test 2: Write *****
+
+Wrote: 4 bytes
+Status: PASS
+NEXT
+NEXT
+
+***** Test 3: Write+Read *****
+
+Sent: b'\x11"3D'
+Received: bytearray(b'\xde\xad\xbe\xef')
+Status: PASS
+NEXT
+
+***** Target Summary *****
+Overall: PASS
+--- instance1 ---
+
+***** SPI Master Test *****
+
+Waiting for target...
+Target ready
+
+***** Test 1: Write *****
+
+Sent: b'\x01\x02\x03\x04'
+Status: PASS
+NEXT
+
+***** Test 2: Read *****
+
+NEXT
+Received: bytearray(b'\xaa\xbb\xcc\xdd')
+Status: PASS
+NEXT
+
+***** Test 3: Transfer *****
+
+NEXT
+Sent: b'\xde\xad\xbe\xef'
+Received: bytearray(b'\x11"3D')
+Status: PASS
+NEXT
+
+***** Master Summary *****
+Overall: PASS
