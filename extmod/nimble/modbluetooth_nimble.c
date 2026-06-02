@@ -277,7 +277,7 @@ static void set_random_address(bool nrpa) {
 #include "nimble/host/src/ble_hs_pvcy_priv.h"
 // For ble_hs_hci_util_rand
 #include "nimble/host/src/ble_hs_hci_priv.h"
-// For ble_hs_misc_restore_irks
+// For ble_hs_misc_restore_irks and ble_hs_max_(attrs|services|client_configs)
 #include "nimble/host/src/ble_hs_priv.h"
 
 static inline void ble_secret_store_set_callbacks() {
@@ -868,17 +868,24 @@ void nimble_reset_gatts_bss(void) {
     // These variables are defined in ble_hs.c and are only ever incremented
     // (during service registration) and never reset.
     // See https://github.com/apache/mynewt-nimble/issues/896
-    ble_hs_max_attrs = 0;
-    ble_hs_max_services = 0;
-    ble_hs_max_client_configs = 0;
+
+    // Note: On the ESP32 port NimBLE can use dynamic allocation, meaning these
+    // can only be accessed safely while the NimBLE is active. The condition is
+    // harmless on other ports, as this state only get incremented while active
+    // meaning else resetting it does not do anything useful and we can skip it.
+    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
+        ble_hs_max_attrs = 0;
+        ble_hs_max_services = 0;
+        ble_hs_max_client_configs = 0;
+    }
 }
 
 int mp_bluetooth_init(void) {
     DEBUG_printf("mp_bluetooth_init\n");
-    // Clean up if necessary.
-    mp_bluetooth_deinit();
 
+    // Clean up if necessary.
     nimble_reset_gatts_bss();
+    mp_bluetooth_deinit();
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING;
 
