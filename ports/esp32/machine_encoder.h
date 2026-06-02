@@ -1,6 +1,9 @@
 #ifndef MICROPY_INCLUDED_MACHINE_ENCODER_H
 #define MICROPY_INCLUDED_MACHINE_ENCODER_H
 
+#define USE_MATCH2
+#define USE_MAX_MIN
+
 // #define USE_INT64
 #ifdef USE_INT64
 typedef int64_t counter_t;
@@ -27,13 +30,19 @@ typedef struct _mp_pcnt_obj_t {
     int aPinNumber;
     int bPinNumber;
 
+    #ifdef USE_MAX_MIN
     int16_t count_max; // [1..INT16_ROLL]
     int16_t count_min; // [-INT16_ROLL..0]
+    #endif
 
     volatile counter_t counter;
     volatile counter_t counter_offset;
     counter_t match;
     counter_t counter_match; // (match - total_counter) - (match - total_counter) % INT16_ROLL
+    #ifdef USE_MATCH2
+    counter_t match2;
+    counter_t counter_match2;
+    #endif
 
     volatile uint32_t mp_irq_flags;    // user IRQ active IRQ flags is event_status
     uint32_t mp_irq_trigger;  // user IRQ trigger mask

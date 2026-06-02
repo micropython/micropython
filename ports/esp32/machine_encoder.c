@@ -56,7 +56,6 @@ https://github.com/bboser/MicroPython_ESP32_psRAM_LoBo/blob/quad_decoder/MicroPy
 #define INIT_SAVE_COUNTER 0 // 1 // 0-according to MIMXRT
 // #define USE_FUNC_filter_ns
 // #define USE_FUNC_pause_resume
-// #define USE_MATCH2
 #define USE_FUNC_cycles // pcnt.cycles() == (pcnt.value() / (pcnt.count_max - pcnt.count_min))
 
 #ifdef USE_INT64
@@ -67,7 +66,12 @@ https://github.com/bboser/MicroPython_ESP32_psRAM_LoBo/blob/quad_decoder/MicroPy
 #define SET_INT(value) mp_obj_new_int(value)
 #endif
 
-#define PCNT_EVT_ALLOWED (PCNT_EVT_THRES_1 | PCNT_EVT_THRES_0 | PCNT_EVT_H_LIM | PCNT_EVT_H_LIM | PCNT_EVT_ZERO)
+// #define PCNT_EVT_ALLOWED (PCNT_EVT_THRES_1 | PCNT_EVT_THRES_0 | PCNT_EVT_H_LIM | PCNT_EVT_H_LIM | PCNT_EVT_ZERO)
+#ifdef USE_MATCH2
+#define PCNT_EVT_ALLOWED (PCNT_EVT_THRES_1 | PCNT_EVT_THRES_0 | PCNT_EVT_ZERO)
+#else
+#define PCNT_EVT_ALLOWED (PCNT_EVT_THRES_1 | PCNT_EVT_ZERO)
+#endif
 
 #define check(x) x // no checks for speed up in release build
 // #define check(x) check_esp_err(x)
@@ -115,44 +119,44 @@ static IRAM_ATTR void pcnt_intr_handler(void *arg) {
                 self->mp_irq_flags = status;
                 MICROPY_END_ATOMIC_SECTION(atomic_state);
 
+                pcnt_evt_type_t schedule = 0;
                 if (self->mp_irq_flags & PCNT_EVT_H_LIM) {
-                    // when counting up
+                    // occurs during counting up, it resets the counter to 0
                     self->counter += self->count_max;
                     if ((self->mp_irq_trigger & PCNT_EVT_H_LIM) && (self->mp_irq_obj->handler)) {
-                        mp_sched_schedule(self->mp_irq_obj->handler, MP_OBJ_FROM_PTR(self));
-                        mp_hal_wake_main_task_from_isr();
+                        schedule |= PCNT_EVT_H_LIM;
                     }
                 }
                 if (self->mp_irq_flags & PCNT_EVT_L_LIM) {
-                    // when counting down
+                    // occurs during counting down, it resets the counter to 0
                     self->counter += self->count_min;
                     if ((self->mp_irq_trigger & PCNT_EVT_L_LIM) && (self->mp_irq_obj->handler)) {
-                        mp_sched_schedule(self->mp_irq_obj->handler, MP_OBJ_FROM_PTR(self));
-                        mp_hal_wake_main_task_from_isr();
+                        schedule |= PCNT_EVT_L_LIM;
                     }
                 }
                 if (self->mp_irq_flags & PCNT_EVT_THRES_1) {
-                    // when counting up & threshold value > 0
+                    // occurs during counting up/down, it does not reset the counter
                     if (self->counter == self->counter_match) {
-                        mp_sched_schedule(self->mp_irq_obj->handler, MP_OBJ_FROM_PTR(self));
-                        mp_hal_wake_main_task_from_isr();
+                        schedule |= PCNT_EVT_THRES_1;
                     }
                 }
                 #ifdef USE_MATCH2
                 if (self->mp_irq_flags & PCNT_EVT_THRES_0) {
-                    // when counting down & threshold value < 0
-                    if (self->counter == self->counter_match + INT16_ROLL) {
-                        mp_sched_schedule(self->mp_irq_obj->handler, MP_OBJ_FROM_PTR(self));
-                        mp_hal_wake_main_task_from_isr();
+                    // occurs during counting up/down, it does not reset the counter
+                    if (self->counter == self->counter_match2) {
+                        schedule |= PCNT_EVT_THRES_0;
                     }
                 }
                 #endif
                 if (self->mp_irq_flags & PCNT_EVT_ZERO) {
-                    // when counting up/down
+                    // occurs during counting up/down, it does not reset the counter
                     if (self->counter == 0) {
-                        mp_sched_schedule(self->mp_irq_obj->handler, MP_OBJ_FROM_PTR(self));
-                        mp_hal_wake_main_task_from_isr();
+                        schedule |= PCNT_EVT_ZERO;
                     }
+                }
+                if (schedule) {
+                    mp_sched_schedule(self->mp_irq_obj->handler, MP_OBJ_FROM_PTR(self));
+                    mp_hal_wake_main_task_from_isr();
                 }
             }
         }
@@ -213,6 +217,7 @@ static void pcnt_reset(mp_pcnt_obj_t *self) {
 
     self->mp_irq_flags = 0;
     self->mp_irq_trigger = 0;
+    self->mp_irq_obj = NULL;
 
     self->filter = 0;
     self->edge = RISING;
@@ -283,40 +288,56 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pcnt_filter_obj, 1, 2, machin
 #endif
 
 static void set_pcnt_match(mp_pcnt_obj_t *self) {
-    if (self->match) {
-        check_esp_err(pcnt_counter_pause(self->unit));
-        check_esp_err(pcnt_intr_disable(self->unit));
+    check_esp_err(pcnt_counter_pause(self->unit));
+    check_esp_err(pcnt_intr_disable(self->unit));
+    /*
+    if (self->mp_irq_trigger & PCNT_EVT_THRES_1) {
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_1));
+    }
+    if (self->mp_irq_trigger & PCNT_EVT_THRES_1) {
         check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_0));
+    }
+    */
+    int16_t count;
+    check_esp_err(pcnt_get_counter_value(self->unit, &count));
 
-        int16_t count;
-        check_esp_err(pcnt_get_counter_value(self->unit, &count));
+    self->counter_offset += self->counter + count;
+    self->counter = 0;
+    // !!! pcnt_counter_clear below !!!
 
-        self->counter_offset += self->counter + count;
-        self->counter = 0;
-        // !!! pcnt_counter_clear below !!!
-
+    if (self->match) {
         counter_t match_dif = self->match - self->counter_offset;
         int16_t thres_event_value = match_dif % (counter_t)self->count_max; // !!! // ((counter_t)self->count_max - self->count_min); // (counter_t)INT16_ROLL; //
         self->counter_match = match_dif - thres_event_value;
 
-        // debug_printf("\nMATCH: match=%d, self->counter=%d, count=0=%d, match_dif=%d, self->counter_match=%d, thres_event_value=%d, %d, counter_offset=%d",
-        //     self->match, self->counter, count, match_dif, self->counter_match, thres_event_value, thres_event_value - INT16_ROLL, self->counter_offset);
+        // debug_printf("\nMATCH: match=%d, self->counter=%d, count=0=%d, match_dif=%d, self->counter_match=%d, thres_event_value=%d, %d, counter_offset=%d, drc=%d",
+        //     self->match, self->counter, count, match_dif, self->counter_match, thres_event_value, thres_event_value - INT16_ROLL, self->counter_offset, self->direction_reverse_src);
 
         check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_1, thres_event_value));
-        #ifdef USE_MATCH2
-        check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_0, thres_event_value - INT16_ROLL));
-        #endif
-        // !!! pcnt_set_event_value requares pcnt_counter_clear !!!
-        check_esp_err(pcnt_counter_clear(self->unit));
-
-        check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_THRES_1));
-        #ifdef USE_MATCH2
-        check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_THRES_0));
-        #endif
-        check_esp_err(pcnt_intr_enable(self->unit));
-        check_esp_err(pcnt_counter_resume(self->unit));
     }
+    #ifdef USE_MATCH2
+    if (self->match2) {
+        counter_t match_dif2 = self->match2 - self->counter_offset;
+        int16_t thres_event_value2 = match_dif2 % (counter_t)self->count_max; // !!! // ((counter_t)self->count_max - self->count_min); // (counter_t)INT16_ROLL; //
+        self->counter_match2 = match_dif2 - thres_event_value2;
+
+        check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_0, thres_event_value2));
+    }
+    #endif
+
+    // !!! pcnt_set_event_value requares pcnt_counter_clear !!!
+    check_esp_err(pcnt_counter_clear(self->unit));
+
+    if (self->mp_irq_trigger & PCNT_EVT_THRES_1) {
+        check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_THRES_1));
+    }
+    #ifdef USE_MATCH2
+    if (self->mp_irq_trigger & PCNT_EVT_THRES_0) {
+        check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_THRES_0));
+    }
+    #endif
+    check_esp_err(pcnt_intr_enable(self->unit));
+    check_esp_err(pcnt_counter_resume(self->unit));
 }
 
 static counter_t get_counter_value(mp_pcnt_obj_t *self) {
@@ -382,17 +403,25 @@ static mp_obj_t machine_pcnt_id(mp_obj_t self_obj) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pcnt_id_obj, machine_pcnt_id);
 
-static mp_uint_t esp32_pcnt_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+static mp_uint_t esp32_pcnt_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // Clear previous interrupts and enable the requested interrupts.
+    if (trigger & ~(PCNT_EVT_ALLOWED)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger:0x%x IRQ_XXX consts allowed"), PCNT_EVT_ALLOWED);
+    }
+    /*
+    // Disable previous interrupts and enable the requested interrupts.
     for (pcnt_evt_type_t evt_type = PCNT_EVT_THRES_1; evt_type <= (PCNT_EVT_MAX - 1); evt_type <<= 1) {
-        if (new_trigger & evt_type) {
-            pcnt_event_enable(self->unit, evt_type);
-        } else {
-            pcnt_event_disable(self->unit, evt_type);
+        if (trigger & PCNT_EVT_ALLOWED) {
+            if (trigger & evt_type) {
+                pcnt_event_enable(self->unit, evt_type);
+            } else {
+                pcnt_event_disable(self->unit, evt_type);
+            }
         }
     }
-    self->mp_irq_trigger = new_trigger;
+    */
+    self->mp_irq_trigger = trigger;
+    set_pcnt_match(self);
     return 0;
 }
 
@@ -434,6 +463,7 @@ static mp_obj_t machine_pcnt_irq(size_t n_pos_args, const mp_obj_t *pos_args, mp
         self->mp_irq_trigger = 0;
         self->mp_irq_flags = 0;
         self->mp_irq_obj = mp_irq_new(&esp32_pcnt_irq_methods, MP_OBJ_FROM_PTR(self));
+        self->mp_irq_obj->ishard = false;
     }
     #define any_args (n_pos_args > 1) || (kw_args->used != 0)
     if (any_args) {
@@ -448,7 +478,7 @@ static mp_obj_t machine_pcnt_irq(size_t n_pos_args, const mp_obj_t *pos_args, mp
         if (args[ARG_trigger].u_int != -1) {
             trigger = args[ARG_trigger].u_int;
             if (trigger & ~(PCNT_EVT_ALLOWED)) {
-                mp_raise_ValueError(MP_ERROR_TEXT("trigger must be IRQ_XXX const"));
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger:0x%x IRQ_XXX consts allowed"), PCNT_EVT_ALLOWED);
             }
         }
 
@@ -466,6 +496,10 @@ static mp_obj_t machine_pcnt_irq(size_t n_pos_args, const mp_obj_t *pos_args, mp
                 self->mp_irq_trigger |= PCNT_EVT_THRES_1;
                 set_pcnt_match(self);
             }
+            if (trigger & PCNT_EVT_THRES_0) {
+                self->mp_irq_trigger |= PCNT_EVT_THRES_0;
+                set_pcnt_match(self);
+            }
             if (trigger & PCNT_EVT_ZERO) {
                 /*
                 int16_t count;
@@ -478,7 +512,7 @@ static mp_obj_t machine_pcnt_irq(size_t n_pos_args, const mp_obj_t *pos_args, mp
         }
         check_esp_err(pcnt_intr_enable(self->unit));
     }
-    return self->mp_irq_obj;
+    return MP_OBJ_FROM_PTR(self->mp_irq_obj);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pcnt_irq_obj, 1, machine_pcnt_irq);
 
@@ -685,7 +719,7 @@ static void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     set_filter_value(self->unit, self->filter);
 
     pcnt_start(self);
-    if (self->match || (self->mp_irq_trigger & PCNT_EVT_THRES_1)) {
+    if (self->match) { // || (self->mp_irq_trigger & PCNT_EVT_THRES_1)) {
         set_pcnt_match(self);
     }
 }
@@ -780,7 +814,7 @@ static void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     set_filter_value(self->unit, self->filter);
 
     pcnt_start(self);
-    if (self->match || (self->mp_irq_trigger & PCNT_EVT_THRES_1)) {
+    if (self->match) { // || (self->mp_irq_trigger & PCNT_EVT_THRES_1)) {
         set_pcnt_match(self);
     }
 }
@@ -858,12 +892,14 @@ static void machine_pcnt_print(const mp_print_t *print, mp_obj_t self_obj, mp_pr
         if (self->match) {
             mp_printf(print, ", match=%ld", self->match);
         }
+        #ifdef USE_MAX_MIN
         // if (self->count_max != INT16_ROLL) {
         mp_printf(print, ", max=%d", self->count_max);
         // }
         // if (self->count_min != -INT16_ROLL) {
         mp_printf(print, ", min=%d", self->count_min);
         // }
+        #endif
         if (self->filter) {
             mp_printf(print, ", filter_ns=%d", filter_to_ns(self->filter));
         }
@@ -908,10 +944,16 @@ static void machine_pcnt_print(const mp_print_t *print, mp_obj_t self_obj, mp_pr
 #define MATCH2
 #endif
 
+#ifdef USE_MAX_MIN
+#define MAX_MIN { MP_ROM_QSTR(MP_QSTR_IRQ_MAX), MP_ROM_INT(PCNT_EVT_H_LIM) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MIN), MP_ROM_INT(PCNT_EVT_L_LIM) },
+#else
+#define MAX_MIN
+#endif
+
 #define COMMON_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_ZERO), MP_ROM_INT(PCNT_EVT_ZERO) }, \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_MAX), MP_ROM_INT(PCNT_EVT_H_LIM) }, \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_MIN), MP_ROM_INT(PCNT_EVT_L_LIM) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_HERE), MP_ROM_INT(PCNT_EVT_ZERO) }, \
+    MAX_MIN \
     MATCH2 \
     { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH), MP_ROM_INT(PCNT_EVT_THRES_1) }
 
