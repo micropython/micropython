@@ -154,6 +154,7 @@ class TestCounter(unittest.TestCase):
         self.assertEqual(number_of_callbacks, 1)
 
         self.counter.init(match=5_000)
+        self.counter.irq().trigger(Counter.IRQ_MATCH)
         self.counter.value(6_100)
 
         out_dir_pin(COUNTER_DOWN)
@@ -161,24 +162,25 @@ class TestCounter(unittest.TestCase):
         self.assertCounter(100)
         self.assertEqual(callback_counter_value, 5_000)
         self.assertEqual(number_of_callbacks, 2)
-        self.counter.irq().trigger(Counter.IRQ_MATCH)
 
         self.counter.init(match=50_000)
+        self.counter.irq().trigger(Counter.IRQ_MATCH)
 
         out_dir_pin(COUNTER_UP)
         toggle(60_000)
         self.assertCounter(60_000)
         self.assertEqual(callback_counter_value, 50_000)
         self.assertEqual(number_of_callbacks, 3)
-        self.counter.irq().trigger(Counter.IRQ_MATCH)
 
         self.counter.init(match=-50_000)
+        self.counter.irq().trigger(Counter.IRQ_MATCH)
 
         out_dir_pin(COUNTER_DOWN)
         toggle(60_000)
         self.assertCounter(-60_000)
         self.assertEqual(callback_counter_value, -50_000)
         self.assertEqual(number_of_callbacks, 4)
+
         self.counter.irq().trigger(Counter.IRQ_MATCH)
 
     def test_irq_UP_DOWN(self):
