@@ -94,8 +94,10 @@
 #define MICROPY_PY_MACHINE_WDT      (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/zephyr/machine_wdt.c"
 #endif
+#ifdef CONFIG_PWM
 #define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/zephyr/machine_pwm.c"
+#endif
 #if defined(CONFIG_NETWORKING) || defined(CONFIG_FILE_SYSTEM)
 #define MICROPY_PY_ERRNO            (1)
 #endif
