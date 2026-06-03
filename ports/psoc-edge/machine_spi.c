@@ -94,8 +94,7 @@ static void machine_spi_scb_isr(mp_obj_t hw_spi_obj) {
 static uint8_t machine_spi_pins_config_and_get_scb_unit(
     mp_hal_pin_obj_t sck,
     mp_hal_pin_obj_t mosi,
-    mp_hal_pin_obj_t miso)
-{
+    mp_hal_pin_obj_t miso) {
     // CS/SSEL is managed externally by the user via machine.Pin
     const mp_hal_pin_af_config_t spi_pins_config[] = {
         MP_HAL_PIN_AF_CONF(sck,
