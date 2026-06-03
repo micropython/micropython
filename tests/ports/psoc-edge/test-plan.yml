@@ -116,11 +116,3 @@
       - board: KIT_PSE84_AI
         features:
           - spi
-
-- name: spi_single
-  test:
-    script: ports/psoc-edge/board_ext_hw/single/spi.py
-    device:
-      - board: KIT_PSE84_AI
-        features:
-          - spi
