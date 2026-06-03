@@ -149,13 +149,7 @@ static void machine_spi_target_hw_init(machine_spi_target_obj_t *self) {
 
     // Configure SPI PCLK divider (needed for slave's internal clock even though
     // the bit clock comes from master's SCK)
-    Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk,
-        SPI_TARGET_CLK_DIV_TYPE, self->div_num);
-    Cy_SysClk_PeriPclkAssignDivider(self->scb_obj->clk,
-        SPI_TARGET_CLK_DIV_TYPE, self->div_num);
-    Cy_SysClk_PeriPclkSetDivider(self->scb_obj->clk,
-        SPI_TARGET_CLK_DIV_TYPE, self->div_num, 0U);
-    Cy_SysClk_PeriPclkEnableDivider(self->scb_obj->clk,
+    MACHINE_PERI_PCLK_INIT_DIVIDER(self->scb_obj->clk,
         SPI_TARGET_CLK_DIV_TYPE, self->div_num);
 
     // Select SPI clock polarity and phase

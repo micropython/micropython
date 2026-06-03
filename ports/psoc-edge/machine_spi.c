@@ -145,13 +145,7 @@ static void machine_spi_hw_init(machine_spi_obj_t *self) {
         machine_spi_scb_isr);
 
     // Configure SPI clock divider
-    Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk,
-        SPI_CLK_DIV_TYPE, self->div_num);
-    Cy_SysClk_PeriPclkAssignDivider(self->scb_obj->clk,
-        SPI_CLK_DIV_TYPE, self->div_num);
-    Cy_SysClk_PeriPclkSetDivider(self->scb_obj->clk,
-        SPI_CLK_DIV_TYPE, self->div_num, 0U);
-    Cy_SysClk_PeriPclkEnableDivider(self->scb_obj->clk,
+    MACHINE_PERI_PCLK_INIT_DIVIDER(self->scb_obj->clk,
         SPI_CLK_DIV_TYPE, self->div_num);
 
     // Get HF clock frequency and calculate divider value for desired baudrate
@@ -165,12 +159,8 @@ static void machine_spi_hw_init(machine_spi_obj_t *self) {
     }
 
     // Apply divider
-    Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk,
-        SPI_CLK_DIV_TYPE, self->div_num);
-    Cy_SysClk_PeriPclkSetDivider(self->scb_obj->clk,
+    MACHINE_PERI_PCLK_APPLY_DIVIDER(self->scb_obj->clk,
         SPI_CLK_DIV_TYPE, self->div_num, div_val);
-    Cy_SysClk_PeriPclkEnableDivider(self->scb_obj->clk,
-        SPI_CLK_DIV_TYPE, self->div_num);
 
     // Select SPI clock polarity and phase
     cy_en_scb_spi_sclk_mode_t sclk_mode;
