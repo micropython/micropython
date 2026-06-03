@@ -97,8 +97,13 @@ StreamWriter = Stream
 #
 # async
 def open_connection(host, port, ssl=None, server_hostname=None):
-    from errno import EINPROGRESS
-    import socket
+    global EINPROGRESS, socket
+    try:
+        EINPROGRESS
+        socket
+    except NameError:
+        from errno import EINPROGRESS
+        import socket
 
     ai = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[0]  # TODO this is blocking!
     s = socket.socket(ai[0], ai[1], ai[2])
@@ -111,7 +116,11 @@ def open_connection(host, port, ssl=None, server_hostname=None):
     # wrap with SSL, if requested
     if ssl:
         if ssl is True:
-            import ssl as _ssl
+            global _ssl
+            try:
+                _ssl
+            except NameError:
+                import ssl as _ssl
 
             ssl = _ssl.SSLContext(_ssl.PROTOCOL_TLS_CLIENT)
         if not server_hostname:
@@ -177,7 +186,11 @@ class Server:
 # Helper function to start a TCP stream server, running as a new task
 # TODO could use an accept-callback on socket read activity instead of creating a task
 async def start_server(cb, host, port, backlog=5, ssl=None):
-    import socket
+    global socket
+    try:
+        socket
+    except NameError:
+        import socket
 
     # Create and bind server socket.
     addr_info = socket.getaddrinfo(host, port)[0]  # TODO this is blocking!
