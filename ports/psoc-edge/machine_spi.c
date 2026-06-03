@@ -236,7 +236,7 @@ static void machine_spi_init_helper(machine_spi_obj_t *self, size_t n_args, size
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -251,8 +251,12 @@ static void machine_spi_init_helper(machine_spi_obj_t *self, size_t n_args, size
 
     bool reinit = false;
 
-    if (args[ARG_baudrate].u_int != -1) {
-        self->baudrate = args[ARG_baudrate].u_int;
+    if (args[ARG_baudrate].u_obj != mp_const_none) {
+        mp_int_t baudrate = mp_obj_get_int(args[ARG_baudrate].u_obj);
+        if (baudrate <= 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("baudrate must be > 0"));
+        }
+        self->baudrate = (uint32_t)baudrate;
         reinit = true;
     }
     if (args[ARG_polarity].u_int != -1) {
@@ -299,7 +303,7 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -311,8 +315,12 @@ static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
 
     bool reinit = false;
 
-    if (args[ARG_baudrate].u_int != -1) {
-        self->baudrate = args[ARG_baudrate].u_int;
+    if (args[ARG_baudrate].u_obj != mp_const_none) {
+        mp_int_t baudrate = mp_obj_get_int(args[ARG_baudrate].u_obj);
+        if (baudrate <= 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("baudrate must be > 0"));
+        }
+        self->baudrate = (uint32_t)baudrate;
         reinit = true;
     }
     if (args[ARG_polarity].u_int != -1) {
