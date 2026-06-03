@@ -14,3 +14,15 @@ Status: PASS
 ***** Test 4: Checking boundary conditions *****
 
 PASS
+
+***** Test 6: time() vs time_ns() *****
+
+Status: PASS
+
+***** Test 7: time_ns() strict monotonicity *****
+
+Status: PASS
+
+***** Test 8: Delay vs elapsed time *****
+
+Status: PASS
