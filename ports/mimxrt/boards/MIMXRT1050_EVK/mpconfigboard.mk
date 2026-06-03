@@ -12,6 +12,9 @@ MICROPY_HW_FLASH_QE_CMD = 0x01
 MICROPY_HW_FLASH_QE_ARG = 0x40
 MICROPY_HW_ROMFS_BYTES = 0  # Disabled for a board with Hyperflash
 
+# Currently no TinyUF2 support for Hyperflash
+USE_UF2_BOOTLOADER = 0
+
 MICROPY_PY_LWIP = 1
 MICROPY_PY_SSL = 1
 MICROPY_SSL_MBEDTLS = 1
