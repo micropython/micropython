@@ -159,7 +159,14 @@ static void machine_pin_irq_port_handler(uint8_t port) {
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(port), pin);
 
             uint32_t idx = machine_pin_irq_obj_find_index(port, pin);
+            if (idx >= MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES) {
+                continue;
+            }
+
             machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
+            if (irq == NULL) {
+                continue;
+            }
 
             /**
              * Update the flags with the current trigger that caused the IRQ.
