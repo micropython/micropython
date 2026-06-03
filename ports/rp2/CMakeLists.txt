@@ -532,6 +532,13 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
     -g  # always include debug information in the ELF
+
+    # pico-sdk already passes --specs=nosys.specs to stub out syscall handlers,
+    # passing nano.specs as well means that newlib-nano libc functions will be used
+    # (note this is mostly a linker option, but should be passed to the compiler as
+    # well to add the newlib-nano header to the search path. Currently this happens
+    # inconsistently as pico-sdk files aren't built with this option.)
+    --specs=nano.specs
 )
 
 target_link_options(${MICROPY_TARGET} PRIVATE
@@ -539,6 +546,8 @@ target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--wrap=runtime_init_clocks
     -Wl,--print-memory-usage
     -Wl,--cref
+    # see note about nano.specs, above
+    --specs=nano.specs
 )
 
 if(DEFINED PICO_FLASH_SIZE_BYTES)
