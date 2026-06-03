@@ -20,7 +20,7 @@ endif
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
-GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
+GIT_SUBMODULES += lib/CMSIS_6 lib/tinyusb lib/nxp_driver
 UF2CONV ?= $(TOP)/tools/uf2conv.py
 
 # MicroPython feature configurations
@@ -73,7 +73,7 @@ GEN_PINS_SRC = $(BUILD)/pins_gen.c
 INC += -I$(BOARD_DIR)
 INC += -I$(BUILD)
 INC += -I$(TOP)
-INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 INC += -I$(TOP)/lib/oofatfs
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
@@ -93,19 +93,11 @@ endif
 # =============================================================================
 
 # TinyUSB Stack source
-SRC_TINYUSB_C += \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/class/dfu/dfu_rt_device.c \
-	lib/tinyusb/src/class/hid/hid_device.c \
-	lib/tinyusb/src/class/midi/midi_device.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/class/usbtmc/usbtmc_device.c \
-	lib/tinyusb/src/class/vendor/vendor_device.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_control.c \
-	lib/tinyusb/src/portable/chipidea/ci_hs/dcd_ci_hs.c \
-	lib/tinyusb/src/tusb.c
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/chipidea/ci_hs/dcd_ci_hs.c \
+	))
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
 ifeq ($(MICROPY_PY_LWIP),1)
@@ -185,6 +177,10 @@ endif
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += $(MCUX_SDK_DIR)/drivers/usdhc/fsl_usdhc.c
 INC_HAL_IMX += -I$(TOP)/$(MCUX_SDK_DIR)/drivers/usdhc
+
+SRC_HAL_IMX_C += $(MCUX_SDK_DIR)/drivers/flexcan/fsl_flexcan.c
+INC_HAL_IMX += -I$(TOP)/$(MCUX_SDK_DIR)/drivers/flexcan
+MICROPY_PY_MACHINE_CAN = 1
 endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
@@ -396,7 +392,7 @@ hal/resethandler_MIMXRT10xx.S: $(GEN_FLEXRAM_CONFIG_SRC)
 # =============================================================================
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX) $(GEN_PINS_SRC)
 
 # =============================================================================
 # Compiler Flags
@@ -414,6 +410,7 @@ endif
 # Set default values for optional variables
 MICROPY_HW_SDRAM_AVAIL ?= 0
 MICROPY_HW_SDRAM_SIZE ?= 0
+MICROPY_PY_MACHINE_CAN ?= 0
 
 # Configure default compiler flags
 CFLAGS += \
@@ -434,6 +431,7 @@ CFLAGS += \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
 	-DMICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE) \
+	-DMICROPY_PY_MACHINE_CAN=$(MICROPY_PY_MACHINE_CAN) \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
 	-DXIP_EXTERNAL_FLASH=1 \
 	-fdata-sections \
@@ -447,15 +445,6 @@ CFLAGS += \
 	-Werror \
 	-Wfloat-conversion \
 	-Wno-error=unused-parameter
-
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-
-# TODO make this common -- shouldn't be using these "private" vars from py.mk
-ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
-LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
-LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
-endif
 
 # Configure respective board flash type
 # Add hal/flexspi_nor_flash.h or hal/flexspi_hyper_flash.h respectively
@@ -547,11 +536,12 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_IMX_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ETH_C:.c=.o))

@@ -155,10 +155,11 @@ Methods
       The callback has three arguments:
 
       1. The Endpoint number for the completed transfer.
-      2. Result value: ``True`` if the transfer succeeded, ``False``
-         otherwise.
-      3. Number of bytes successfully transferred. In the case of a
-         "short" transfer, The result is ``True`` and ``xferred_bytes``
+      2. Result value. This is an integer which is ``0`` (`XFER_SUCCESS`) on
+         success, or one of the non-zero values `XFER_FAILED` or `XFER_STALLED`
+         if the transfer failed.
+      3. Number of bytes successfully transferred. In the case of a "short"
+         transfer, the result is ``0`` (`XFER_SUCCESS`) and ``xferred_bytes``
          will be smaller than the length of the buffer submitted for the
          transfer.
 
@@ -300,5 +301,21 @@ Constants
             descriptor.
           - ``desc_cfg`` - ``bytes`` object containing the complete built-in USB
             configuration descriptor.
+
+.. data:: USBDevice.XFER_SUCCESS
+.. data:: USBDevice.XFER_FAILED
+.. data:: USBDevice.XFER_STALLED
+
+          These are integer constants that represent the possible transfer
+          result values passed to the ``xfer_cb`` callback (see
+          `USBDevice.config`).
+
+          - ``XFER_SUCCESS`` has value ``0`` and indicates the transfer was
+            successful.
+          - ``XFER_FAILED`` indicates the transfer failed due to low-level
+            integrity errors.
+          - ``XFER_STALLED`` indicates that the host has stalled this endpoint.
+
+          All failure values are non-zero integers.
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme

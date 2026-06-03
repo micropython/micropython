@@ -240,8 +240,7 @@ While the port is in beta, it's known to be generally stable. If you
 experience strange bootloops, crashes, lockups, here's a list to check against:
 
 - You didn't erase flash before programming MicroPython firmware.
-- Firmware can be occasionally flashed incorrectly. Just retry. Recent
-  esptool.py versions have --verify option.
+- Firmware can be occasionally flashed incorrectly. Just retry.
 - Power supply you use doesn't provide enough power for ESP8266 or isn't
   stable enough.
 - A module/flash may be defective (not unheard of for cheap modules).

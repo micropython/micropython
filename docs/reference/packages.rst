@@ -38,13 +38,15 @@ install third-party libraries. The simplest way is to download a file directly::
 When installing a file directly, the ``target`` argument is still supported to set
 the destination path, but ``mpy`` and ``version`` are ignored.
 
-The URL can also start with ``github:`` or ``gitlab:`` as a simple way of pointing to content
-hosted on GitHub or GitLab::
+The URL can also start with ``github:``, ``gitlab:``, or ``codeberg:`` as a simple
+way of pointing to content hosted on GitHub, GitLab, or Codeberg::
 
     >>> mip.install("github:org/repo/path/foo.py")  # Uses default branch
     >>> mip.install("github:org/repo/path/foo.py", version="branch-or-tag")  # Optionally specify the branch or tag
     >>> mip.install("gitlab:org/repo/path/foo.py")  # Uses default branch
     >>> mip.install("gitlab:org/repo/path/foo.py", version="branch-or-tag")  # Optionally specify the branch or tag
+    >>> mip.install("codeberg:org/repo/path/foo.py")  # Uses default branch
+    >>> mip.install("codeberg:org/repo/path/foo.py", version="branch-or-tag")  # Optionally specify the branch or tag
 
 More sophisticated packages (i.e. with more than one file, or with dependencies)
 can be downloaded by specifying the path to their ``package.json``.
@@ -52,6 +54,7 @@ can be downloaded by specifying the path to their ``package.json``.
     >>> mip.install("http://example.com/x/package.json")
     >>> mip.install("github:org/user/path/package.json")
     >>> mip.install("gitlab:org/user/path/package.json")
+    >>> mip.install("codeberg:org/user/path/package.json")
 
 If no json file is specified, then "package.json" is implicitly added::
 
@@ -60,6 +63,8 @@ If no json file is specified, then "package.json" is implicitly added::
     >>> mip.install("github:org/repo", version="branch-or-tag")
     >>> mip.install("gitlab:org/repo")  # Uses default branch of that repo
     >>> mip.install("gitlab:org/repo", version="branch-or-tag")
+    >>> mip.install("codeberg:org/repo")  # Uses default branch of that repo
+    >>> mip.install("codeberg:org/repo", version="branch-or-tag")
 
 Using ``mip`` on the Unix port
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,6 +94,8 @@ can be used from a host PC to install packages to a locally connected device
     $ mpremote mip install github:org/repo@branch-or-tag
     $ mpremote mip install gitlab:org/repo
     $ mpremote mip install gitlab:org/repo@branch-or-tag
+    $ mpremote mip install codeberg:org/repo
+    $ mpremote mip install codeberg:org/repo@branch-or-tag
 
 The ``--target=path``, ``--no-mpy``, and ``--index`` arguments can be set::
 

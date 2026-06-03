@@ -1,7 +1,0 @@
-MicroPython \.\+ version
-Type "help()" for more information.
->>> # Check for emacs keys in REPL
->>> t = \.\+
->>> t == 2
-True
->>> 

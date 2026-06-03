@@ -72,36 +72,28 @@ be used for MicroPython. Different uncrustify versions produce slightly
 different formatting, and the configuration file formats are often
 incompatible. v0.73 or newer *will not work*.
 
-Depending on your operating system version, it may be possible to install a pre-compiled
-uncrustify version:
+Depending on your operating system version, it may be possible to install a
+compatible pre-compiled uncrustify version. Otherwise, a compatible version is
+available via the PyPI package archive:
 
-Ubuntu, Debian
---------------
-
-Ubuntu versions 21.10 or 22.04LTS, and Debian versions bullseye or bookworm all
-include v0.72 so can be installed directly:
+Pip
+---
 
 ```
-$ apt install uncrustify
+pip install micropython-uncrustify
 ```
 
-Arch Linux
-----------
+This installs a native compiled uncrustify binary as a Python executable, so it
+can be installed into a virtualenv.
 
-The current Arch uncrustify version is too new. There is an [old Arch package
-for v0.72](https://archive.archlinux.org/packages/u/uncrustify/) that can be
-installed from the Arch Linux archive ([more
-information](https://wiki.archlinux.org/title/Downgrading_packages#Arch_Linux_Archive)). Use
-the [IgnorePkg feature](https://wiki.archlinux.org/title/Pacman#Skip_package_from_being_upgraded)
-to prevent it re-updating.
-
-Brew
+Pipx
 ----
 
-This command may work, please raise a new Issue if it doesn't:
+It's also possible to install via [pipx](https://pipx.pypa.io/) if not using a
+virtualenv:
 
 ```
-curl -L https://github.com/Homebrew/homebrew-core/raw/2b07d8192623365078a8b855a164ebcdf81494a6/Formula/uncrustify.rb > uncrustify.rb && brew install uncrustify.rb && rm uncrustify.rb
+pipx install micropython-uncrustify
 ```
 
 Code spell checking
@@ -127,6 +119,9 @@ To have code formatting and commit message conventions automatically checked,
 a configuration file is provided for the [pre-commit](https://pre-commit.com/)
 tool.
 
+Pre-commit will automatically install the correct version of dependencies
+such as codespell, uncrustify, etc.
+
 First install `pre-commit`, either from your system package manager or via
 `pip`. When installing `pre-commit` via pip, it is recommended to use a
 virtual environment. Other sources, such as Brew are also available, see
@@ -138,10 +133,6 @@ $ pacman -Sy python-precommit  # Arch Linux
 $ brew install pre-commit      # Brew
 $ pip install pre-commit       # PyPI
 ```
-
-Next, install [uncrustify (see above)](#uncrustify). Other dependencies are managed by
-pre-commit automatically, but uncrustify needs to be installed and available on
-the PATH.
 
 Then, inside the MicroPython repository, register the git hooks for pre-commit
 by running:

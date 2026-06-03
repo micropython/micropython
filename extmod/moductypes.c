@@ -155,7 +155,7 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
 
 // Get size of aggregate type descriptor
 static mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_uint_t *max_field_size) {
-    if (t->len == 0) {
+    if (t->len < 2) {
         syntax_error();
     }
 

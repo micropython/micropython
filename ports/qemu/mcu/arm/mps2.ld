@@ -23,6 +23,9 @@ SECTIONS
 
     .ARM.exidx : AT ( _etext ) {
         . = ALIGN(4);
+        *(.ARM.extab*)
+        *(.gnu.linkonce.armextab.*)
+        . = ALIGN(4);
         __exidx_start = .;
         *(.ARM.exidx*)
         *(.gnu.linkonce.armexidx.*)

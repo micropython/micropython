@@ -287,7 +287,7 @@ static void wait_for_register_update(Tcc *tcc) {
         if (tcc->INTFLAG.reg & TCC_INTFLAG_OVF) {
             break;
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     // Clear the flag, telling that a cycle has been handled.
     tcc->INTFLAG.reg = TCC_INTFLAG_OVF;

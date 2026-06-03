@@ -139,6 +139,12 @@ void exit(int status) {
     }
 }
 
+void abort(void) {
+    for (;;) {
+    }
+    MP_UNREACHABLE;
+}
+
 #ifndef NDEBUG
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;

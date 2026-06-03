@@ -26,10 +26,10 @@ calculate(5)
 {\x05}
 def function_with_blanks():
     print('First line')
-    
+{\x20}{\x20}{\x20}{\x20}
     print('After blank line')
-    
-    
+{\x20}{\x20}{\x20}{\x20}
+{\x20}{\x20}{\x20}{\x20}
     print('After two blank lines')
 
 function_with_blanks()
@@ -40,10 +40,10 @@ function_with_blanks()
 class TestClass:
     def __init__(self, value):
         self.value = value
-    
+{\x20}{\x20}{\x20}{\x20}
     def display(self):
         print(f'Value is: {self.value}')
-    
+{\x20}{\x20}{\x20}{\x20}
     def double(self):
         self.value *= 2
         return self.value
@@ -82,7 +82,7 @@ def bad_syntax(:
 {\x05}
 def will_error():
     undefined_variable
-    
+{\x20}{\x20}{\x20}{\x20}
 will_error()
 {\x04}
 

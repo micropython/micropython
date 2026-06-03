@@ -43,6 +43,7 @@
 #if (__riscv_xlen == 32)
 #define MICROPY_EMIT_RV32           (1)
 #define MICROPY_EMIT_RV32_ZBA       (1)
+#define MICROPY_EMIT_RV32_ZCMP      (1)
 #define MICROPY_EMIT_INLINE_RV32    (1)
 #elif (__riscv_xlen == 64)
 #define MICROPY_PERSISTENT_CODE_LOAD_NATIVE (1)
@@ -67,7 +68,7 @@
 #define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_ROM             (1)
-#define MICROPY_VFS_ROM_IOCTL       (0)
+#define MICROPY_VFS_ROM_IOCTL       (MICROPY_HW_ROMFS_ENABLE_PART0 || MICROPY_HW_ROMFS_ENABLE_PART1)
 
 // type definitions for the specific machine
 

@@ -103,20 +103,27 @@ static mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
     }
 }
 
+static mp_obj_tuple_t *tuple_subclass_helper(mp_obj_t obj) {
+    assert(obj != MP_OBJ_NULL);
+    const mp_obj_type_t *tuple_type = mp_obj_get_type(obj);
+    if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(tuple_type, iter) != mp_obj_tuple_getiter) {
+        // Slow path for user subclasses
+        obj = mp_obj_cast_to_native_base(obj, MP_OBJ_FROM_PTR(&mp_type_tuple));
+        if (obj == MP_OBJ_NULL) {
+            return NULL;
+        }
+    }
+    return MP_OBJ_TO_PTR(obj);
+}
+
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
 static mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in) {
     mp_check_self(mp_obj_is_tuple_compatible(self_in));
-    const mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-    if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(another_type, iter) != mp_obj_tuple_getiter) {
-        // Slow path for user subclasses
-        another_in = mp_obj_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
-        if (another_in == MP_OBJ_NULL) {
-            return MP_OBJ_NULL;
-        }
+    mp_obj_tuple_t *another = tuple_subclass_helper(another_in);
+    if (!another) {
+        return MP_OBJ_NULL;
     }
-    mp_obj_tuple_t *another = MP_OBJ_TO_PTR(another_in);
-
     return mp_obj_new_bool(mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len));
 }
 
@@ -145,10 +152,10 @@ mp_obj_t mp_obj_tuple_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD: {
-            if (!mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(rhs)), MP_OBJ_FROM_PTR(&mp_type_tuple))) {
+            mp_obj_tuple_t *p = tuple_subclass_helper(rhs);
+            if (!p) {
                 return MP_OBJ_NULL; // op not supported
             }
-            mp_obj_tuple_t *p = MP_OBJ_TO_PTR(rhs);
             mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(o->len + p->len, NULL));
             mp_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(s);

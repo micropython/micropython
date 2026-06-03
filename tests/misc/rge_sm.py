@@ -78,7 +78,11 @@ def singleTraj(system, trajStart, h=0.02, tend=1.0):
     # compute the trajectory
 
     rk = RungeKutta(system, trajStart, tstart, h)
-    rk.solve(tend)
+    try:
+        rk.solve(tend)
+    except MemoryError:
+        print("SKIP")
+        raise SystemExit
 
     # print out trajectory
 

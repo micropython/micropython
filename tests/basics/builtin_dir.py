@@ -1,5 +1,12 @@
 # test builtin dir
 
+try:
+    dir
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
+
 # dir of locals
 print('__name__' in dir())
 

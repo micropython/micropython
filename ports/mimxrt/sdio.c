@@ -259,7 +259,7 @@ static status_t sdio_transfer_dma(USDHC_Type *base,
     while ((sdmmc.xfer_flags != xfer_flags) &&
            !(sdmmc.xfer_flags & SDIO_TRANSFER_ERROR) &&
            (mp_hal_ticks_ms() - start) < timeout_ms) {
-        MICROPY_EVENT_POLL_HOOK;
+        mp_event_wait_ms(1);
     }
 
     if (sdmmc.xfer_flags == 0) {

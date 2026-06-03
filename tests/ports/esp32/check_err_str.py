@@ -32,7 +32,7 @@ try:
 except OSError as e:
     exc = e
 micropython.heap_unlock()
-print("exc:", exc)  # exc empty due to no memory
+print("exc:", repr(exc))  # exc empty due to no memory
 
 # same again but having an emergency buffer
 micropython.alloc_emergency_exception_buf(256)

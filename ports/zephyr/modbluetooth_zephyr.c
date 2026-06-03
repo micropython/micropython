@@ -409,8 +409,7 @@ int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, cons
         .id = 0,
         .sid = 0,
         .secondary_max_skip = 0,
-        .options = (connectable ? BT_LE_ADV_OPT_CONNECTABLE : 0)
-            | BT_LE_ADV_OPT_ONE_TIME
+        .options = (connectable ? BT_LE_ADV_OPT_CONN : 0)
             | BT_LE_ADV_OPT_USE_IDENTITY
             | BT_LE_ADV_OPT_SCANNABLE,
         .interval_min = interval_us / 625,

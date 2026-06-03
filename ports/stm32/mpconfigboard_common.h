@@ -262,6 +262,7 @@
 #ifndef MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_ENABLE_USBDEV (1)
 #define MICROPY_HW_TINYUSB_LL_INIT mp_usbd_ll_init
+void mp_usbd_ll_init(void);
 #endif
 
 #ifndef MICROPY_HW_USB_CDC

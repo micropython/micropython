@@ -13,7 +13,7 @@ MIN_DATA = 3
 MIN_EXEC = 3
 
 impl = str(sys.implementation)
-if "ESP32C2" in impl:
+if "ESP32-C2" in impl:
     # ESP32-C2 is less fragmented (yay!) and only has two memory regions
     MIN_DATA = 2
     MIN_EXEC = 2

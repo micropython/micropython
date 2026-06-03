@@ -26,7 +26,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "PCA10031"
 #define MICROPY_HW_MCU_NAME         "NRF51822"
-#define MICROPY_PY_SYS_PLATFORM     "nrf51-dongle"
 
 #define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MACHINE_SOFT_PWM (1)
@@ -59,3 +58,8 @@
 #define MICROPY_HW_SPI0_MISO        (17)
 
 #define HELP_TEXT_BOARD_LED         "1,2,3"
+
+// The JLink CDC on the PCA10031 cannot accept more than 64 incoming bytes at a time.
+// That makes the UART REPL unreliable in general.  But it can be improved to some
+// extent by setting the raw-paste buffer size to that limit of 64.
+#define MICROPY_REPL_STDIN_BUFFER_MAX (64)

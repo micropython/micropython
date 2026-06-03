@@ -47,9 +47,6 @@ CFLAGS += -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-
 LIBS =
 
 SRC_C = \
@@ -77,7 +74,7 @@ else
 all: $(BUILD)/firmware.elf
 endif
 
-$(BUILD)/_frozen_mpy.c: $(TOP)/tests/frozen/frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
+$(BUILD)/_frozen_mpy.c: $(TOP)/tests/assets/frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
 	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
 

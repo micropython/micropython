@@ -83,7 +83,7 @@ int mp_hal_stdin_rx_chr(void) {
         if (_chr >= 0) {
             return _chr;
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 }
 
@@ -94,7 +94,7 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     while (len--) {
         char c = *str++;
         while (mp_console_putchar(c) == -1) {
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
     }
     #else
@@ -140,7 +140,7 @@ int mp_console_init(void) {
     tty_set_rx_buf(&mp_console_serial, mp_console_rxbuf, sizeof(mp_console_rxbuf));
 
     tty_set_rx_timeout(&mp_console_serial, 0);
-    tty_set_tx_timeout(&mp_console_serial, 1);
+    tty_set_tx_timeout(&mp_console_serial, 2);
 
     return 0;
 }

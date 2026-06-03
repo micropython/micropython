@@ -58,7 +58,7 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/libhydrogen lib/stm32lib lib/tinyusb
+GIT_SUBMODULES += lib/CMSIS_6 lib/libhydrogen lib/stm32lib lib/tinyusb
 
 CROSS_COMPILE ?= arm-none-eabi-
 LD_DIR=boards
@@ -105,18 +105,18 @@ CMSIS_MCU_HDR = $(STM32LIB_CMSIS_ABS)/Include/$(CMSIS_MCU_LOWER).h
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 INC += -I$(STM32LIB_CMSIS_ABS)/Include
 INC += -I$(STM32LIB_HAL_ABS)/Inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I$(TOP)/lib/tinyusb/src
-INC += -I$(TOP)/shared/tinyusb/
+INC += -Itinyusb_port
 INC += -Ilwip_inc
 
 CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU) -DUSE_FULL_LL_DRIVER
-CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
+CFLAGS += $(CFLAGS_MCU)
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
@@ -130,7 +130,7 @@ endif
 # as doesn't recognise -mcpu=cortex-m55
 AFLAGS += -march=armv8.1-m.main
 else
-AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
+AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU))
 endif
 
 # Configure for nan-boxing object model if requested
@@ -189,17 +189,8 @@ endif
 COPT ?= -Os -DNDEBUG
 endif
 
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
-
-# TODO make this common -- shouldn't be using these "private" vars from py.mk
-ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
-LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
-LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
-endif
-
 # Options for mpy-cross
-MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH_$(MCU_SERIES))
+MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 
 SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
@@ -470,13 +461,13 @@ USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
 
 # TinyUSB Stack source
 -include $(TOP)/lib/tinyusb/src/tinyusb.mk
-TINYUSB_SRC_C := $(addprefix lib/tinyusb/, \
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
 	$(TINYUSB_SRC_C) \
 	src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c \
 	src/portable/synopsys/dwc2/dcd_dwc2.c \
 	src/portable/synopsys/dwc2/dwc2_common.c \
 	src/portable/synopsys/dwc2/hcd_dwc2.c \
-	)
+	))
 
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 LIB_SRC_C += mbedtls/mbedtls_port.c
@@ -720,7 +711,7 @@ $(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)/qstr.i.last
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 $(HEADER_BUILD)/modstm_const.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
 	$(ECHO) "GEN stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) $(CFLAGS_MCU) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"

@@ -2,6 +2,7 @@
 
 print(bytearray(b"hello world").find(b"ll"))
 print(bytearray(b"hello\x00world").rfind(b"l"))
+print(bytearray(b"hello world").find(ord(b"l")))
 
 print(bytearray(b"abc  efg ").strip(b"g a"))
 print(bytearray(b"   spacious   ").lstrip())
@@ -14,10 +15,18 @@ print(bytearray(b"abcabc").rsplit(b"bc"))
 
 print(bytearray(b"asdfasdf").replace(b"a", b"b"))
 
-print("00\x0000".index("0", 0))
-print("00\x0000".index("0", 3))
-print("00\x0000".rindex("0", 0))
-print("00\x0000".rindex("0", 3))
+print(b"00\x0000".index(b"0", 0))
+print(b"00\x0000".index(b"0", 3))
+print(b"00\x0000".index(ord("0"), 0))
+print(b"00\x0000".index(ord("0"), 3))
+print(b"00\x0000".index(0, 0))
+try:
+    print(b"00\x0000".index(0, 3))
+except ValueError:
+    print("ValueError")
+print(b"00\x0000".index(b"0", 3))
+print(b"00\x0000".rindex(b"0", 0))
+print(b"00\x0000".rindex(b"0", 3))
 
 print(bytearray(b"foobar").endswith(b"bar"))
 print(bytearray(b"1foo").startswith(b"foo", 1))

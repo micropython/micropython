@@ -27,7 +27,7 @@ MPY_CROSS_FLAGS += -march=armv7emdp
 CROSS_COMPILE ?= arm-none-eabi-
 ALIF_DFP_REL_TOP ?= lib/alif_ensemble-cmsis-dfp
 ALIF_DFP_REL_HERE ?= $(TOP)/lib/alif_ensemble-cmsis-dfp
-CMSIS_DIR ?= $(TOP)/lib/cmsis/inc
+CMSIS_DIR ?= $(TOP)/lib/CMSIS_5/CMSIS/Core/Include
 
 MCU_CORE ?= M55_HP
 LD_FILE ?= mcu/ensemble.ld.S
@@ -113,6 +113,7 @@ SRC_C = \
 	alif_flash.c \
 	cyw43_port_spi.c \
 	fatfs_port.c \
+	lptimer_ext.c \
 	machine_pin.c \
 	machine_i2c.c \
 	machine_spi.c \
@@ -177,14 +178,9 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	dht/dht.c \
 	)
 
-TINYUSB_SRC_C += \
-	lib/tinyusb/src/tusb.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_control.c \
-	tinyusb_port/tusb_alif_dcd.c \
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, $(TINYUSB_SRC_C)))
+TINYUSB_SRC_C += tinyusb_port/tusb_alif_dcd.c
 
 ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/clk.c \

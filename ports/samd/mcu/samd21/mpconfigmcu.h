@@ -6,7 +6,6 @@
 // MicroPython emitters
 #define MICROPY_EMIT_THUMB              (SAMD21_EXTRA_FEATURES)
 #define MICROPY_EMIT_INLINE_THUMB       (SAMD21_EXTRA_FEATURES)
-#define MICROPY_EMIT_THUMB_ARMV7M       (0)
 #define MICROPY_MODULE_BUILTIN_INIT     (1)
 
 // Selected extensions beyond the basic features set.
@@ -75,6 +74,13 @@ unsigned long trng_random_u32(int delay);
 #endif
 #ifndef MICROPY_PY_MACHINE_I2C_TARGET
 #define MICROPY_PY_MACHINE_I2C_TARGET   (SAMD21_EXTRA_FEATURES)
+#endif
+
+#ifndef MICROPY_PY_MACHINE_ADC_READ_TIMED
+#define MICROPY_PY_MACHINE_ADC_READ_TIMED (SAMD21_EXTRA_FEATURES)
+#endif
+#ifndef MICROPY_PY_MACHINE_DAC_WRITE_TIMED
+#define MICROPY_PY_MACHINE_DAC_WRITE_TIMED (SAMD21_EXTRA_FEATURES)
 #endif
 
 #ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU

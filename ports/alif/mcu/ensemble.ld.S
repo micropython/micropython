@@ -75,6 +75,14 @@ SECTIONS
     . = ALIGN(16);
   } > ROM
 
+  /* For C++ exception handling */
+  .ARM :
+  {
+    __exidx_start = .;
+    *(.ARM.exidx*)
+    __exidx_end = .;
+  } > ROM
+
   .copy.table : ALIGN(4)
   {
     __copy_table_start__ = .;

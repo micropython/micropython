@@ -1,0 +1,6 @@
+<JsProxy 2>
+[ 1, 2, 3 ]
+[ 1, 2, 3 ]
+<JsProxy 3>
+{ key: 'value' }
+{ key: 'value' }

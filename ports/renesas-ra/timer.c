@@ -339,7 +339,7 @@ static mp_obj_t pyb_timer_freq(size_t n_args, const mp_obj_t *args) {
         uint32_t freq;
         if (0) {
         #if MICROPY_PY_BUILTINS_FLOAT
-        } else if (mp_obj_is_type(args[1], &mp_type_float)) {
+        } else if (mp_obj_is_float(args[1])) {
             freq = (int)mp_obj_get_float(args[1]);
         #endif
         } else {

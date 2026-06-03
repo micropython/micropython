@@ -328,7 +328,7 @@ static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         int32_t timeout = 1000;
         while (self->rxlen > 0 && timeout) {
             timeout--;
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         spi->SPI.INTENCLR.reg = SERCOM_SPI_INTENCLR_RXC;
     } else {

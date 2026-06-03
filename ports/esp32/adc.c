@@ -54,7 +54,7 @@ mp_int_t madcblock_read_helper(machine_adc_block_obj_t *self, adc_channel_t chan
     adc_is_init_guard(self);
 
     int reading = 0;
-    adc_oneshot_read(self->handle, channel_id, &reading);
+    check_esp_err(adc_oneshot_read(self->handle, channel_id, &reading));
     return reading;
 }
 

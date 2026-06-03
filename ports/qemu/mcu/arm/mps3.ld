@@ -22,7 +22,13 @@ SECTIONS
         *(.text*)
         *(.rodata*)
         . = ALIGN(4);
+        *(.ARM.extab*)
+        *(.gnu.linkonce.armextab.*)
+        . = ALIGN(4);
+        __exidx_start = .;
         *(.ARM.exidx*)
+        *(.gnu.linkonce.armexidx.*)
+        __exidx_end = .;
         . = ALIGN(4);
         _etext = .;
         _sidata = _etext;

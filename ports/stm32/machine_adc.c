@@ -28,6 +28,7 @@
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "adc.h"
 
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
@@ -95,6 +96,17 @@
 
 // Timeout for waiting for end-of-conversion
 #define ADC_EOC_TIMEOUT_MS (10)
+
+#if ADC_V2
+// Busy-wait with timeout for ADC peripheral operations. 250ms is a generous
+// upper bound; normal operations complete in microseconds.
+#define ADC_WAIT_TIMEOUT_MS (250)
+#define ADC_WAIT(cond) do { \
+        uint32_t _t0 = mp_hal_ticks_ms(); \
+        while ((cond) && (mp_hal_ticks_ms() - _t0 < ADC_WAIT_TIMEOUT_MS)) { \
+        } \
+} while (0)
+#endif
 
 // Channel IDs for machine.ADC object
 typedef enum _machine_adc_internal_ch_t {
@@ -277,19 +289,18 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
         #else
         LL_ADC_StartCalibration(adc, LL_ADC_CALIB_OFFSET_LINEARITY, LL_ADC_SINGLE_ENDED);
         #endif
-        while (LL_ADC_IsCalibrationOnGoing(adc)) {
-        }
+        ADC_WAIT(LL_ADC_IsCalibrationOnGoing(adc));
     }
 
     if (adc->CR & ADC_CR_ADEN) {
         // ADC enabled, need to disable it to change configuration
         if (adc->CR & ADC_CR_ADSTART) {
-            adc->CR |= ADC_CR_ADSTP;
-            while (adc->CR & ADC_CR_ADSTP) {
-            }
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADSTP;
+            ADC_WAIT(adc->CR & ADC_CR_ADSTP);
         }
-        adc->CR |= ADC_CR_ADDIS;
-        while (adc->CR & ADC_CR_ADDIS) {
+        if (!(adc->CR & ADC_CR_ADSTART)) {
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADDIS;
+            ADC_WAIT(adc->CR & ADC_CR_ADDIS);
         }
     }
     #endif
@@ -349,18 +360,26 @@ static int adc_get_bits(ADC_TypeDef *adc) {
     return adc_cr_to_bits_table[res];
 }
 
-static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
+static bool adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     #if ADC_V2
-    if (!(adc->CR & ADC_CR_ADEN)) {
-        if (adc->CR & 0x3f) {
-            // Cannot enable ADC with CR!=0
-            return;
+    if (!(adc->CR & ADC_CR_ADEN) || (adc->CR & ADC_CR_ADSTART)) {
+        if (adc->CR & ADC_CR_BITS_PROPERTY_RS) {
+            // Stop and disable before (re-)enabling.
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADSTP;
+            ADC_WAIT(adc->CR & ADC_CR_ADSTP);
+            if (adc->CR & ADC_CR_ADSTP) {
+                return false;
+            }
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADDIS;
+            ADC_WAIT(adc->CR & ADC_CR_ADDIS);
+            if (adc->CR & ADC_CR_ADDIS) {
+                return false;
+            }
         }
-        adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
-        adc->CR |= ADC_CR_ADEN;
+        adc->ISR = ADC_ISR_ADRDY;
+        adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADEN;
         adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
-        while (!(adc->ISR & ADC_ISR_ADRDY)) {
-        }
+        ADC_WAIT(!(adc->ISR & ADC_ISR_ADRDY));
     }
     #else
     if (!(adc->CR2 & ADC_CR2_ADON)) {
@@ -508,6 +527,7 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
 
     #endif
+    return true;
 }
 
 static uint32_t adc_read_channel(ADC_TypeDef *adc) {
@@ -523,7 +543,8 @@ static uint32_t adc_read_channel(ADC_TypeDef *adc) {
     #endif
     {
         #if ADC_V2
-        adc->CR |= ADC_CR_ADSTART;
+        adc->ISR = ADC_ISR_EOC | ADC_ISR_EOS | ADC_ISR_OVR; // clear stale flags
+        adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADSTART;
         #else
         adc->CR2 |= ADC_CR2_SWSTART;
         #endif
@@ -542,7 +563,9 @@ uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sa
     channel = adc_ll_channel(channel);
 
     // Select, configure and read the channel.
-    adc_config_channel(adc, channel, sample_time);
+    if (!adc_config_channel(adc, channel, sample_time)) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ADC not responding"));
+    }
     uint32_t raw = adc_read_channel(adc);
 
     // If VBAT was sampled then deselect it to prevent battery drain.

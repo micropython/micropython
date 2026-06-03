@@ -143,7 +143,7 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     // shortcut) and channel 1 for capturing the current time.
 
     const nrfx_timer_config_t config = {
-        .frequency = NRF_TIMER_FREQ_1MHz,
+        .frequency = 1000000,
         .mode = NRF_TIMER_MODE_TIMER,
         .bit_width = NRF_TIMER_BIT_WIDTH_24,
         #ifdef NRF51

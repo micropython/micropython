@@ -6,7 +6,6 @@
 
 /* Delete the defined partitions and create bigger one for storage. */
 /delete-node/ &slot1_partition;
-/delete-node/ &scratch_partition;
 /delete-node/ &storage_partition;
 &flash0 {
 	partitions {

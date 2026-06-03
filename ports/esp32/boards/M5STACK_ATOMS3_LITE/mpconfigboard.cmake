@@ -1,7 +1,6 @@
-set(IDF_TARGET esp32s3)
+include(boards/mpconfigboard_esp32s3_common.cmake)
 
-set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    boards/sdkconfig.ble
-    boards/ESP32_GENERIC_S3/sdkconfig.board
-)
+list(APPEND SDKCONFIG_DEFAULTS boards/sdkconfig.flash_qio_80m)
+
+# This board has no PSRAM
+list(REMOVE_ITEM SDKCONFIG_DEFAULTS boards/sdkconfig.spiram_sx)

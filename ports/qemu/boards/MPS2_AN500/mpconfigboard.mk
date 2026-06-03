@@ -5,6 +5,9 @@ CFLAGS += -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
 CFLAGS += -DQEMU_SOC_MPS2
 CFLAGS += -DMICROPY_HW_MCU_NAME='"Cortex-M7"'
 
+MICROPY_HW_ROMFS_PART0_START = 0x60C00000
+MICROPY_HW_ROMFS_PART0_SIZE = 0x00400000
+
 LDSCRIPT = mcu/arm/mps2.ld
 
 SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb2.o

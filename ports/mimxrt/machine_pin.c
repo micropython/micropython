@@ -329,7 +329,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 static void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     const machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
-    mp_printf(print, "Pin(%s)", qstr_str(self->name));
+    mp_printf(print, "Pin(%q)", (qstr)self->name);
 }
 
 // pin(id, mode, pull, ...)

@@ -88,6 +88,7 @@
 #define MICROPY_PY_MACHINE_UART_IRQ (0)
 #endif
 
+#if MICROPY_PY_MACHINE_SOFTI2C
 // Temporary support for legacy construction of SoftI2C via I2C type.
 #define MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args) \
     do { \
@@ -100,7 +101,9 @@
             return MP_OBJ_TYPE_GET_SLOT(&mp_machine_soft_i2c_type, make_new)(&mp_machine_soft_i2c_type, n_args, n_kw, all_args); \
         } \
     } while (0)
+#endif
 
+#if MICROPY_PY_MACHINE_SOFTSPI
 // Temporary support for legacy construction of SoftSPI via SPI type.
 #define MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, all_args) \
     do { \
@@ -113,6 +116,7 @@
             return MP_OBJ_TYPE_GET_SLOT(&mp_machine_soft_spi_type, make_new)(&mp_machine_soft_spi_type, n_args, n_kw, all_args); \
         } \
     } while (0)
+#endif
 
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SOFTI2C
 
@@ -157,6 +161,7 @@ typedef struct _mp_machine_i2c_p_t {
     bool transfer_supports_write1;
     #endif
     void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+    void (*deinit)(mp_obj_base_t *obj); // can be NULL
     int (*start)(mp_obj_base_t *obj);
     int (*stop)(mp_obj_base_t *obj);
     int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);

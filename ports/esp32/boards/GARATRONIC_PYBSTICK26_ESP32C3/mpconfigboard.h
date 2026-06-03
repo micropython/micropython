@@ -1,5 +1,5 @@
 #define MICROPY_HW_BOARD_NAME               "PYBSTICK26_ESP32C3"
-#define MICROPY_HW_MCU_NAME                 "ESP32C3"
+#define MICROPY_HW_MCU_NAME                 "ESP32-C3"
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "pybstick26_esp32c3"
 
 #define MICROPY_HW_I2C0_SCL                 (1)

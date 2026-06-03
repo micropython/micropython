@@ -116,7 +116,19 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
 }
 
 mp_uint_t mp_hal_ticks_cpu(void) {
+    #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK || MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+    // SysTick and LPTIMER run relatively slowly, so use cycle counter for CPU ticks.
+    if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
+        // Enable CYCCNT.
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        DWT->CYCCNT = 0;
+        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    }
+    return DWT->CYCCNT;
+    #else
+    // UTIMER runs at CPU frequency so use it directly as CPU ticks.
     return system_tick_get_u32();
+    #endif
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
@@ -133,7 +145,7 @@ mp_uint_t mp_hal_ticks_us(void) {
 mp_uint_t mp_hal_ticks_ms(void) {
     // Convert system tick to millisecond counter.
     #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
-    return system_tick_get_u64() / 1000ULL;
+    return system_tick_get_ms_fast();
     #elif MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
     return system_tick_get_u64() * 1000ULL / system_tick_source_hz;
     #else

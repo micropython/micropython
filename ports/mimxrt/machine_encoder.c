@@ -73,8 +73,8 @@ typedef struct _encoder_xbar_signal_t {
 #define XBAR_IN                    (1)
 #define XBAR_OUT                   (0)
 
-#define COUNTER_UP                 (-2)
-#define COUNTER_DOWN               (-3)
+#define COUNTER_UP                 (0)
+#define COUNTER_DOWN               (1)
 #define MODE_ENCODER               (0)
 #define MODE_COUNTER               (1)
 #define MP_ENCODER_ALLOWED_FLAGS   (kENC_HOMETransitionFlag | kENC_INDEXPulseFlag | kENC_PositionCompareFlag | kENC_PositionRollUnderFlag | kENC_PositionRollOverFlag)

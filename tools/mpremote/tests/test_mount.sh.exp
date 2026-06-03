@@ -8,3 +8,10 @@ hello world
 -----
 ['hello world\n']
 Local directory ${TMP} is mounted at /remote
+-----
+100
+Local directory ${TMP} is mounted at /remote
+-----
+4
+[25185, 25699]
+Local directory ${TMP} is mounted at /remote

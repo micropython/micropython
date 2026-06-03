@@ -135,14 +135,15 @@ enum lfs2_open_flags {
 
     // internally used flags
 #ifndef LFS2_READONLY
-    LFS2_F_DIRTY   = 0x010000, // File does not match storage
-    LFS2_F_WRITING = 0x020000, // File has been written since last flush
+    LFS2_F_DIRTY   = 0x00010000, // File does not match storage due to write
+    LFS2_F_DUSTY   = 0x00020000, // File does not match storage due to desync
+    LFS2_F_WRITING = 0x00040000, // File has been written since last flush
 #endif
-    LFS2_F_READING = 0x040000, // File has been read since last flush
+    LFS2_F_READING = 0x00080000, // File has been read since last flush
 #ifndef LFS2_READONLY
-    LFS2_F_ERRED   = 0x080000, // An error occurred during write
+    LFS2_F_ERRED   = 0x00100000, // An error occurred during write
 #endif
-    LFS2_F_INLINE  = 0x100000, // Currently inlined in directory entry
+    LFS2_F_INLINE  = 0x01000000, // Currently inlined in directory entry
 };
 
 // File seek flags

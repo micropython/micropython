@@ -9,4 +9,7 @@ LDSCRIPT = mcu/arm/stm32.ld
 
 SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb2.o
 
+# 114k heap, because this board only has 128k RAM and the stack needs 10k.
+MICROPY_HEAP_SIZE ?= 116736
+
 MPY_CROSS_FLAGS += -march=armv7m

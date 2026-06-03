@@ -53,11 +53,11 @@
 #endif
 
 // Logging macros.
-#define debug_printf(...)   do_printf(ANSI_C_BLUE); do_printf(__VA_ARGS__); do_printf(ANSI_C_DEFAULT);
-#define info_printf(...)    do_printf(ANSI_C_GREEN); do_printf(__VA_ARGS__); do_printf(ANSI_C_DEFAULT);
-#define warn_printf(...)    do_printf(ANSI_C_YELLOW); do_printf(__VA_ARGS__); do_printf(ANSI_C_DEFAULT);
-#define error_printf(...)   do_printf(ANSI_C_RED); do_printf(__VA_ARGS__); do_printf(ANSI_C_DEFAULT);
-#define crit_printf(...)    do_printf(ANSI_C_MAGENTA); do_printf(__VA_ARGS__); do_printf(ANSI_C_DEFAULT);
+#define debug_printf(fmt, ...)   do { do_printf(ANSI_C_BLUE "%s() " fmt ANSI_C_DEFAULT, __func__, ##__VA_ARGS__); } while (0)
+#define info_printf(fmt, ...)    do { do_printf(ANSI_C_GREEN "%s() " fmt ANSI_C_DEFAULT, __func__, ##__VA_ARGS__); } while (0)
+#define warn_printf(fmt, ...)    do { do_printf(ANSI_C_YELLOW "%s() " fmt ANSI_C_DEFAULT, __func__, ##__VA_ARGS__); } while (0)
+#define error_printf(fmt, ...)   do { do_printf(ANSI_C_RED "%s() " fmt ANSI_C_DEFAULT, __func__, ##__VA_ARGS__); } while (0)
+#define crit_printf(fmt, ...)    do { do_printf(ANSI_C_MAGENTA "%s() " fmt ANSI_C_DEFAULT, __func__, ##__VA_ARGS__); } while (0)
 
 typedef enum {
     ESP_HOSTED_MODE_BT,
@@ -80,4 +80,8 @@ void *esp_hosted_hal_alloc(void *user, size_t size);
 void esp_hosted_hal_free(void *user, void *ptr);
 void *esp_hosted_hal_calloc(size_t nmemb, size_t size);
 void *esp_hosted_hal_realloc(void *ptr, size_t size);
+
+// Schedules the driver's polling function (implemented by ports).
+extern void mod_network_poll_events(void);
+
 #endif // MICROPY_INCLUDED_DRIVERS_ESP_HOSTED_HAL_H

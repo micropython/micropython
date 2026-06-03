@@ -83,8 +83,8 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_RX_RING_BUF_DEF_SIZE} },
-        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_TX_RING_BUF_DEF_SIZE} },
+        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_TX_RING_BUF_DEF_SIZE} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_RX_RING_BUF_DEF_SIZE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -126,7 +126,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     if (args[ARG_stop].u_int == 1) {
         stop_bits = UART_CFG_STOP_BITS_1;
     } else if (args[ARG_stop].u_int == 2) {
-        data_bits = UART_CFG_STOP_BITS_2;
+        stop_bits = UART_CFG_STOP_BITS_2;
     } else {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid stop bits"));
     }
@@ -143,7 +143,7 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     const struct uart_config cfg = {
         .baudrate = args[ARG_baudrate].u_int,
         .parity = parity,
-        .stop_bits = args[ARG_stop].u_int,
+        .stop_bits = stop_bits,
         .data_bits = data_bits,
         .flow_ctrl = flow_ctrl
     };
@@ -217,7 +217,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
 
     // wait for any pending transmission to complete
     while (!mp_machine_uart_txdone(self)) {
-        MICROPY_EVENT_POLL_HOOK;
+        mp_event_wait_indefinite();
     }
 
     int _ex_size = 0;
@@ -252,7 +252,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
         }
     } else if (request == MP_STREAM_FLUSH) {
         while (!mp_machine_uart_txdone(self)) {
-            MICROPY_EVENT_POLL_HOOK;
+            mp_event_wait_indefinite();
         }
     } else {
         *errcode = MP_EINVAL;
@@ -265,7 +265,9 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
 static void uart_interrupt_handler(const struct device *dev, void *user_data) {
     machine_uart_obj_t *self = (machine_uart_obj_t *)user_data;
 
-    while (uart_irq_update(dev) && uart_irq_is_pending(dev)) {
+    mp_hal_signal_event();
+
+    while (uart_irq_update(dev), uart_irq_is_pending(dev)) {
         if (uart_irq_rx_ready(dev)) {
             uint8_t _rx_buffer[32];
             size_t _free_space = MIN(ringbuf_free(&self->rx_ringbuffer), sizeof(_rx_buffer));

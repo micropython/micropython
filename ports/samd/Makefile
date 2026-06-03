@@ -52,14 +52,14 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/asf4 lib/tinyusb
+GIT_SUBMODULES += lib/CMSIS_6 lib/asf4 lib/tinyusb
 
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -Imcu/$(MCU_SERIES_LOWER)
-INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/utils/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/config
@@ -108,19 +108,11 @@ ifeq ($(MICROPY_HW_ROMFS_BYTES),0)
 	CFLAGS += -DMICROPY_VFS_ROM=0
 endif
 
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-
-# TODO make this common -- shouldn't be using these "private" vars from py.mk
-ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
-LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
-LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
-endif
-
 MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 
 SRC_C += \
 	mcu/$(MCU_SERIES_LOWER)/clock_config.c \
+	dma_manager.c \
 	help.c \
 	machine_bitstream.c \
 	machine_dac.c \
@@ -139,6 +131,7 @@ SRC_C += \
 	samd_soc.c \
 	samd_spiflash.c \
 	usbd.c \
+	tc_manager.c \
 
 SHARED_SRC_C += \
 	drivers/dht/dht.c \
@@ -167,14 +160,12 @@ ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
-TINYUSB_SRC_C += $(addprefix lib/tinyusb/src/,\
-	class/cdc/cdc_device.c \
-	common/tusb_fifo.c \
-	device/usbd.c \
-	device/usbd_control.c \
-	portable/microchip/samd/dcd_samd.c \
-	tusb.c \
-	)
+# TinyUSB Stack source
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/microchip/samd/dcd_samd.c \
+	))
 
 DRIVERS_SRC_C += \
 	drivers/bus/softspi.c \

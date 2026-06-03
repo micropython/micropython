@@ -31,9 +31,20 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/spi.h>
 
-// Use the basic configuration level to get a balance between size and features.
-#ifndef MICROPY_CONFIG_ROM_LEVEL
+#if defined(CONFIG_MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
+#elif defined(CONFIG_MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#elif defined(CONFIG_MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
+#elif defined(CONFIG_MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#elif defined(CONFIG_MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
+#elif defined(CONFIG_MICROPY_CONFIG_ROM_LEVEL_EVERYTHING)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EVERYTHING)
+#else
+#error "Undefined Feature Level"
 #endif
 
 // Usually passed from Makefile
@@ -64,6 +75,7 @@
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/zephyr/modmachine.c"
 #define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #ifdef CONFIG_I2C_TARGET
 #define MICROPY_PY_MACHINE_I2C_TARGET (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/zephyr/machine_i2c_target.c"
@@ -82,8 +94,10 @@
 #define MICROPY_PY_MACHINE_WDT      (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/zephyr/machine_wdt.c"
 #endif
+#ifdef CONFIG_PWM
 #define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/zephyr/machine_pwm.c"
+#endif
 #if defined(CONFIG_NETWORKING) || defined(CONFIG_FILE_SYSTEM)
 #define MICROPY_PY_ERRNO            (1)
 #endif
@@ -100,6 +114,9 @@
 #define MICROPY_PY_BINASCII         (1)
 #define MICROPY_PY_HASHLIB          (1)
 #define MICROPY_PY_OS               (1)
+#if CONFIG_HARDWARE_DEVICE_CS_GENERATOR || CONFIG_PSA_CSPRNG_GENERATOR
+#define MICROPY_PY_OS_URANDOM       (1)
+#endif
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/zephyr/modtime.c"
 #define MICROPY_PY_ZEPHYR           (1)
@@ -180,22 +197,6 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MP_SSIZE_MAX (0x7fffffff)
-
-#if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-        MP_THREAD_GIL_EXIT(); \
-        k_msleep(1); \
-        MP_THREAD_GIL_ENTER(); \
-    } while (0);
-#else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-        k_msleep(1); \
-    } while (0);
-#endif
 
 // Compatibility switches
 

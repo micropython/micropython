@@ -155,6 +155,7 @@ static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 
+#if MICROPY_PY_BUILTINS_DIR
 static mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
     mp_obj_t dir = mp_obj_new_list(0, NULL);
     if (n_args == 0) {
@@ -187,6 +188,7 @@ static mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
     return dir;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
+#endif
 
 static mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     return mp_binary_op(MP_BINARY_OP_DIVMOD, o1_in, o2_in);
@@ -364,18 +366,21 @@ static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
 static mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
-    switch (n_args) {
-        case 2:
-            return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
-        default:
-            #if !MICROPY_PY_BUILTINS_POW3
-            mp_raise_NotImplementedError(MP_ERROR_TEXT("3-arg pow() not supported"));
-            #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
-            return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
-            #else
-            return mp_obj_int_pow3(args[0], args[1], args[2]);
-            #endif
+    // Treat pow(x, y, None) as pow(x, y), matching CPython.
+    if (n_args == 2
+        #if MICROPY_PY_BUILTINS_POW3
+        || args[2] == mp_const_none
+        #endif
+        ) {
+        return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
     }
+    #if !MICROPY_PY_BUILTINS_POW3
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("3-arg pow() not supported"));
+    #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
+    return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
+    #else
+    return mp_obj_int_pow3(args[0], args[1], args[2]);
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
@@ -684,7 +689,9 @@ static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_delattr), MP_ROM_PTR(&mp_builtin_delattr_obj) },
     #endif
+    #if MICROPY_PY_BUILTINS_DIR
     { MP_ROM_QSTR(MP_QSTR_dir), MP_ROM_PTR(&mp_builtin_dir_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_divmod), MP_ROM_PTR(&mp_builtin_divmod_obj) },
     #if MICROPY_PY_BUILTINS_EVAL_EXEC
     { MP_ROM_QSTR(MP_QSTR_eval), MP_ROM_PTR(&mp_builtin_eval_obj) },

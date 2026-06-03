@@ -24,7 +24,7 @@ or a non-standard pin assignment. The exact subset of arguments supported will
 vary from platform to platform.
 
 .. class:: SDCard(slot=1, width=1, cd=None, wp=None, sck=None, miso=None, mosi=None,
-                  cs=None, cmd=None, data=None, freq=20000000)
+                  cs=None, cmd=None, data=None, ldo=None, freq=20000000)
 
     This class provides access to SD or MMC storage cards using either
     a dedicated SD/MMC interface hardware or through an SPI channel.
@@ -59,6 +59,9 @@ vary from platform to platform.
 
      - *data* can be used to specify a list or tuple of SD data bus pins
        (ESP32-S3 only).
+
+     - *ldo* can be used to specify the internal LDO channel used for SD
+       card logic level for SDIO 3.0 (ESP32-P4 only).
 
      - *freq* selects the SD/MMC interface frequency in Hz.
 
@@ -187,6 +190,16 @@ parameters ``sck``, ``cs``, ``miso``, ``mosi`` as needed to assign pins.
 
 In either mode the ``cd`` and ``wp`` pins default to disabled, unless set in the
 constructor.
+
+ESP32-P4
+~~~~~~~~
+
+The ESP32-P4 has multiple internal adjustable LDO regulators, and some boards use
+one of LDOs to control the SD card logic level required by SDIO 3.0. Most boards
+will automatically select the correct LDO channel, but it may be necessary to
+manually specify the ``ldo`` parameter as an integer (1 through 4). For example::
+
+    sd = SDCard(ldo=4)
 
 Other ESP32 chips
 ~~~~~~~~~~~~~~~~~

@@ -111,12 +111,12 @@ void mp_hal_stdio_mode_raw(void) {
     termios.c_lflag = 0;
     termios.c_cc[VMIN] = 1;
     termios.c_cc[VTIME] = 0;
-    tcsetattr(0, TCSAFLUSH, &termios);
+    tcsetattr(0, TCSANOW, &termios);
 }
 
 void mp_hal_stdio_mode_orig(void) {
     // restore terminal settings
-    tcsetattr(0, TCSAFLUSH, &orig_termios);
+    tcsetattr(0, TCSANOW, &orig_termios);
 }
 
 #endif

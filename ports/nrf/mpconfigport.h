@@ -87,9 +87,7 @@
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN      (CORE_FEAT)
 #endif
 
-#ifndef MICROPY_PY_SYS_PLATFORM
 #define MICROPY_PY_SYS_PLATFORM            "nrf"
-#endif
 
 #ifndef MICROPY_PY_SYS_STDFILES
 #define MICROPY_PY_SYS_STDFILES            (CORE_FEAT)
@@ -97,6 +95,10 @@
 
 #ifndef MICROPY_PY_BINASCII
 #define MICROPY_PY_BINASCII                (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_PY_SELECT
+#define MICROPY_PY_SELECT                  (MICROPY_PY_ASYNCIO)
 #endif
 
 #ifndef MICROPY_PY_NRF
@@ -279,6 +281,7 @@
 #define MICROPY_PY_ATTRTUPLE                  (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY         (1)
 #define MICROPY_PY_BUILTINS_DICT_FROMKEYS     (1)
+#define MICROPY_PY_BUILTINS_DIR               (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE         (1)
 #define MICROPY_PY_BUILTINS_EVAL_EXEC         (1)
 #define MICROPY_PY_BUILTINS_FILTER            (1)

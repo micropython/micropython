@@ -87,9 +87,7 @@
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD            (1)
 #define MICROPY_EMIT_THUMB                      (1)
-#define MICROPY_EMIT_THUMB_ARMV7M               (1)
 #define MICROPY_EMIT_INLINE_THUMB               (1)
-#define MICROPY_EMIT_INLINE_THUMB_FLOAT         (1)
 
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)

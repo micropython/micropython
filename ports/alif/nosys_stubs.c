@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 #include <errno.h>
+#include <unistd.h>
 
 int _write(int handle, char *buffer, int size) {
     errno = ENOSYS;
@@ -42,5 +43,14 @@ int _close(int f) {
 
 int _lseek(int f, int ptr, int dir) {
     errno = ENOSYS;
+    return -1;
+}
+
+pid_t _getpid(void) {
+    return 0;
+}
+
+int _kill(pid_t pid, int sig) {
+    errno = EINVAL;
     return -1;
 }

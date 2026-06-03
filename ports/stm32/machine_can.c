@@ -335,6 +335,10 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
 }
 #endif // MICROPY_HW_ENABLE_FDCAN
 
+// Empty function here.
+static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
+}
+
 static machine_can_state_t machine_can_port_get_state(machine_can_obj_t *self) {
     // machine_can_port.h defines MP_CAN_STATE_xxx enums, verify they all match
     // numerically with stm32 can.h CAN_STATE_xxx enums

@@ -59,10 +59,8 @@ EXPORTED_FUNCTIONS_EXTRA += ,\
 	_proxy_c_to_js_call,\
 	_proxy_c_to_js_delete_attr,\
 	_proxy_c_to_js_dir,\
-	_proxy_c_to_js_get_array,\
-	_proxy_c_to_js_get_dict,\
 	_proxy_c_to_js_get_iter,\
-	_proxy_c_to_js_get_type,\
+	_proxy_c_to_js_get_type_and_data,\
 	_proxy_c_to_js_has_attr,\
 	_proxy_c_to_js_iternext,\
 	_proxy_c_to_js_lookup_attr,\
@@ -71,6 +69,7 @@ EXPORTED_FUNCTIONS_EXTRA += ,\
 	_proxy_convert_mp_to_js_obj_cside
 
 EXPORTED_RUNTIME_METHODS_EXTRA += ,\
+	HEAPU8,\
 	PATH,\
 	PATH_FS,\
 	UTF8ToString,\
@@ -130,7 +129,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all repl min test test_min
+.PHONY: all repl min test test//% test_min
 
 all: $(BUILD)/micropython.mjs
 
@@ -149,6 +148,9 @@ min: $(BUILD)/micropython.min.mjs
 
 test: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+
+test//%: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly -i "$*"
 
 test_min: $(BUILD)/micropython.min.mjs $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly

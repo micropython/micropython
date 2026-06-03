@@ -15,6 +15,7 @@
 *.mpy binary
 *.der binary
 *.ttf binary
+*.bin binary
 
 # These should also not be modified by git.
 tests/basics/string_cr_conversion.py -text

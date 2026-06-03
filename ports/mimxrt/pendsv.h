@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_MIMXRT_PENDSV_H
 #define MICROPY_INCLUDED_MIMXRT_PENDSV_H
 
+#include "py/mpconfig.h"
+
 enum {
     PENDSV_DISPATCH_SOFT_TIMER,  // For later & for having at least one entry
     #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP

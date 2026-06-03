@@ -1,6 +1,7 @@
 from machine import CAN
 import time
 from random import seed, randrange
+import sys
 
 import micropython
 
@@ -103,7 +104,10 @@ def irq_send(can):
 def instance1():
     # note: this test can pass with hard=True, but in a debug build
     # the completion IRQ may race ahead of setting tx_queue[idx], below
-    can.irq(irq_send, trigger=can.IRQ_TX, hard=False)
+    if "mimxrt" in sys.platform:
+        can.irq(irq_send, trigger=can.IRQ_TX, hard=True)
+    else:
+        can.irq(irq_send, trigger=can.IRQ_TX, hard=False)
     data = bytearray(MSG_LEN)
 
     multitest.next()

@@ -172,7 +172,8 @@ print(f"  Value: {t_nested_expr.interpolations[0].value}")
 print("\n=== Interpolation attribute tests ===")
 i_basic = Interpolation(42, "x")
 print(f"Basic conversion: {i_basic.conversion}")
-print(f"Basic format_spec: {i_basic.format_spec}")
+# Put in quotes to make empty string visible.
+print(f"Basic format_spec: '{i_basic.format_spec}'")
 
 i_with_conv = Interpolation(42, "x", "s")
 print(f"With conversion: {i_with_conv.conversion}")

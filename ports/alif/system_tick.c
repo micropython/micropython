@@ -31,6 +31,11 @@
 
 #if MICROPY_HW_SYSTEM_TICK_USE_SYSTICK
 
+// SysTick is used as the system timer source, with the following properties:
+// - SysTick IRQ fires every 1ms to update a millisecond counter
+// - access to the millisecond counter is very fast
+// - ms ticks will be lost if IRQs are disabled for longer than 1ms
+
 #include "shared/runtime/softtimer.h"
 #include "pendsv.h"
 
@@ -92,6 +97,12 @@ void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
 }
 
 #elif MICROPY_HW_SYSTEM_TICK_USE_LPTIMER
+
+// LPTIMER is used as the system timer source, with the following properties:
+// - 64-bit hardware counter running at 32768Hz
+// - reading the counter is very slow due to the LPTIMER being clocked at a very
+//   slow rate, and synchronisation to the CPU bus takes a long time
+// - delays are tickless, CPU only wakes up at end of timeout
 
 #include "lptimer.h"
 #include "sys_ctrl_lptimer.h"
@@ -221,6 +232,11 @@ void system_tick_schedule_after_us(uint32_t ticks_us) {
 }
 
 #elif MICROPY_HW_SYSTEM_TICK_USE_UTIMER
+
+// UTIMER is used as the system timer source, with the following properties:
+// - 32-bit counter with 32-bit overflow variable running at 400MHz
+// - costs about 10uW
+// - delays are tickless, CPU only wakes up at end of timeout
 
 #include "utimer.h"
 

@@ -39,7 +39,7 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 28
+#define MICROPY_VERSION_MINOR 29
 #define MICROPY_VERSION_MICRO 0
 #define MICROPY_VERSION_PRERELEASE 1
 
@@ -464,7 +464,11 @@ typedef uint64_t mp_uint_t;
 
 // Whether to emit ARMv7-M instruction support in thumb native code
 #ifndef MICROPY_EMIT_THUMB_ARMV7M
+#if defined(__ARM_ARCH_ISA_THUMB) && __ARM_ARCH_ISA_THUMB == 2
 #define MICROPY_EMIT_THUMB_ARMV7M (1)
+#else
+#define MICROPY_EMIT_THUMB_ARMV7M (0)
+#endif
 #endif
 
 // Whether to enable the thumb inline assembler
@@ -474,7 +478,11 @@ typedef uint64_t mp_uint_t;
 
 // Whether to enable float support in the Thumb2 inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB_FLOAT
+#if defined(__ARM_ARCH_ISA_THUMB) && __ARM_ARCH_ISA_THUMB == 2 && defined(__ARM_FP)
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
+#else
+#define MICROPY_EMIT_INLINE_THUMB_FLOAT (0)
+#endif
 #endif
 
 // Whether to emit ARM native code
@@ -1471,6 +1479,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_ROUND_INT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to implement dir() to enumerate object fields.
+#ifndef MICROPY_PY_BUILTINS_DIR
+#define MICROPY_PY_BUILTINS_DIR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
 // Whether to support complete set of special methods for user
 // classes, or only the most used ones. "Inplace" methods are
 // controlled by MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS below.
@@ -1559,6 +1572,16 @@ typedef time_t mp_timestamp_t;
 // Add the ability to list the available modules when executing help('modules')
 #ifndef MICROPY_PY_BUILTINS_HELP_MODULES
 #define MICROPY_PY_BUILTINS_HELP_MODULES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Use this to configure output of help('modules')
+#ifndef MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS
+#define MICROPY_PY_BUILTINS_HELP_NUM_COLUMNS (4)
+#endif
+
+// Use this to configure output of help('modules')
+#ifndef MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH
+#define MICROPY_PY_BUILTINS_HELP_COLUMN_WIDTH (18)
 #endif
 
 // Whether to provide mem-info related functions in micropython module
@@ -1864,7 +1887,7 @@ typedef time_t mp_timestamp_t;
 // implementation). This is present for compatibility but can be disabled to
 // save space.
 #ifndef MICROPY_PY_SELECT_SELECT
-#define MICROPY_PY_SELECT_SELECT (1)
+#define MICROPY_PY_SELECT_SELECT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 // Whether to provide the "time" module
@@ -1912,6 +1935,11 @@ typedef time_t mp_timestamp_t;
 // Is a recursive mutex type in use?
 #ifndef MICROPY_PY_THREAD_RECURSIVE_MUTEX
 #define MICROPY_PY_THREAD_RECURSIVE_MUTEX (MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL)
+#endif
+
+// Whether to provide the "weakref" module.
+#ifndef MICROPY_PY_WEAKREF
+#define MICROPY_PY_WEAKREF (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
 // Extended modules
@@ -2103,6 +2131,16 @@ typedef time_t mp_timestamp_t;
 // The default backlog value for socket.listen(backlog)
 #ifndef MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT
 #define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (2)
+#endif
+
+// Whether to enable lwIP bindings to be used as the implementation of the `socket` module
+#ifndef MICROPY_PY_LWIP
+#define MICROPY_PY_LWIP (0)
+#endif
+
+// Whether to support raw sockets via the `socket.SOCK_RAW` constant
+#ifndef MICROPY_PY_LWIP_SOCK_RAW
+#define MICROPY_PY_LWIP_SOCK_RAW (MICROPY_PY_LWIP)
 #endif
 
 #ifndef MICROPY_PY_SSL

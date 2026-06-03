@@ -27,6 +27,12 @@
 #include <arm_cmse.h>
 #include <nrf.h>
 
+// NRF_FPU_S was removed from the nRF9160 device headers in nrfx v3.
+// Define it here using the known secure-domain base address.
+#ifndef NRF_FPU_S
+#define NRF_FPU_S ((NRF_FPU_Type *)0x5002C000UL)
+#endif
+
 // Secure flash 32K.
 #define SECURE_32K_FLASH_PAGE_START    (0)
 #define SECURE_32K_FLASH_PAGE_END      (0)
@@ -53,19 +59,19 @@ static void configure_flash(void) {
     for (uint8_t i = SECURE_32K_FLASH_PAGE_START; i <= SECURE_32K_FLASH_PAGE_END; i++) {
         uint32_t perm = 0;
         perm |= (SPU_FLASHREGION_PERM_EXECUTE_Enable << SPU_FLASHREGION_PERM_EXECUTE_Pos);
-        perm |= (SPU_FLASHREGION_PERM_WRITE_Enable   << SPU_FLASHREGION_PERM_WRITE_Pos);
-        perm |= (SPU_FLASHREGION_PERM_READ_Enable    << SPU_FLASHREGION_PERM_READ_Pos);
-        perm |= (SPU_FLASHREGION_PERM_LOCK_Locked    << SPU_FLASHREGION_PERM_LOCK_Pos);
+        perm |= (SPU_FLASHREGION_PERM_WRITE_Enable << SPU_FLASHREGION_PERM_WRITE_Pos);
+        perm |= (SPU_FLASHREGION_PERM_READ_Enable << SPU_FLASHREGION_PERM_READ_Pos);
+        perm |= (SPU_FLASHREGION_PERM_LOCK_Locked << SPU_FLASHREGION_PERM_LOCK_Pos);
         perm |= (SPU_FLASHREGION_PERM_SECATTR_Secure << SPU_FLASHREGION_PERM_SECATTR_Pos);
         NRF_SPU_S->FLASHREGION[i].PERM = perm;
     }
 
     for (uint8_t i = NONSECURE_32K_FLASH_PAGE_START; i <= NONSECURE_32K_FLASH_PAGE_END; i++) {
         uint32_t perm = 0;
-        perm |= (SPU_FLASHREGION_PERM_EXECUTE_Enable     << SPU_FLASHREGION_PERM_EXECUTE_Pos);
-        perm |= (SPU_FLASHREGION_PERM_WRITE_Enable       << SPU_FLASHREGION_PERM_WRITE_Pos);
-        perm |= (SPU_FLASHREGION_PERM_READ_Enable        << SPU_FLASHREGION_PERM_READ_Pos);
-        perm |= (SPU_FLASHREGION_PERM_LOCK_Locked        << SPU_FLASHREGION_PERM_LOCK_Pos);
+        perm |= (SPU_FLASHREGION_PERM_EXECUTE_Enable << SPU_FLASHREGION_PERM_EXECUTE_Pos);
+        perm |= (SPU_FLASHREGION_PERM_WRITE_Enable << SPU_FLASHREGION_PERM_WRITE_Pos);
+        perm |= (SPU_FLASHREGION_PERM_READ_Enable << SPU_FLASHREGION_PERM_READ_Pos);
+        perm |= (SPU_FLASHREGION_PERM_LOCK_Locked << SPU_FLASHREGION_PERM_LOCK_Pos);
         perm |= (SPU_FLASHREGION_PERM_SECATTR_Non_Secure << SPU_FLASHREGION_PERM_SECATTR_Pos);
         NRF_SPU_S->FLASHREGION[i].PERM = perm;
     }
@@ -93,8 +99,7 @@ static void configure_ram(void) {
     }
 }
 
-static void peripheral_setup(uint8_t peripheral_id)
-{
+static void peripheral_setup(uint8_t peripheral_id) {
     NVIC_DisableIRQ(peripheral_id);
     uint32_t perm = 0;
     perm |= (SPU_PERIPHID_PERM_PRESENT_IsPresent << SPU_PERIPHID_PERM_PRESENT_Pos);
@@ -105,8 +110,7 @@ static void peripheral_setup(uint8_t peripheral_id)
     NVIC_SetTargetState(peripheral_id);
 }
 
-static void configure_peripherals(void)
-{
+static void configure_peripherals(void) {
     NRF_SPU_S->GPIOPORT[0].PERM = 0;
     peripheral_setup(PERIPHERAL_ID_GET(NRF_REGULATORS_S));
     peripheral_setup(PERIPHERAL_ID_GET(NRF_CLOCK_S));
@@ -143,13 +147,12 @@ static void configure_peripherals(void)
 
 typedef void __attribute__((cmse_nonsecure_call)) nsfunc(void);
 
-static void jump_to_non_secure(void)
-{
+static void jump_to_non_secure(void) {
     TZ_SAU_Disable();
     SAU->CTRL |= SAU_CTRL_ALLNS_Msk;
 
     // Set NS vector table.
-    uint32_t * vtor_ns = (uint32_t *)0x8000;
+    uint32_t *vtor_ns = (uint32_t *)0x8000;
     SCB_NS->VTOR = (uint32_t)vtor_ns;
 
     // Allow for FPU to be used by NS.
@@ -165,7 +168,7 @@ static void jump_to_non_secure(void)
 
     // Cast NS Reset_Handler to a non-secure function.
     nsfunc *fp = (nsfunc *)vtor_ns[1];
-    fp =  (nsfunc *)((intptr_t)(fp) & ~1);
+    fp = (nsfunc *)((intptr_t)(fp) & ~1);
 
     if (cmse_is_nsfptr(fp)) {
         __DSB();
@@ -184,6 +187,6 @@ void _start(void) {
     jump_to_non_secure();
 
     while (1) {
-	;
+        ;
     }
 }

@@ -48,7 +48,7 @@ ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0,
 // interrupt handler) and there is in/out data pending on the USB CDC interface.
 #define MICROPY_EVENT_POLL_HOOK_WITH_USB \
     do { \
-        MICROPY_EVENT_POLL_HOOK; \
+        mp_event_wait_ms(1); \
         mp_usbd_task(); \
     } while (0)
 
@@ -71,7 +71,7 @@ void mp_hal_clr_pin_mux(mp_hal_pin_obj_t pin) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t t0 = systick_ms;
     while (systick_ms - t0 < ms) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 }
 

@@ -86,6 +86,10 @@ MPY_CROSS_MCU_ARCH_u5 = armv7m
 MPY_CROSS_MCU_ARCH_wb = armv7m
 MPY_CROSS_MCU_ARCH_wl = armv7m
 
+# Select the correct flags for the given MCU series.
+CFLAGS_MCU = $(CFLAGS_MCU_$(MCU_SERIES))
+MPY_CROSS_MCU_ARCH = $(MPY_CROSS_MCU_ARCH_$(MCU_SERIES))
+
 # gcc up to 14.2.0 have a known loop-optimisation bug:
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116799
 # This bug manifests for Cortex M55 targets, so require a newer compiler on such targets.

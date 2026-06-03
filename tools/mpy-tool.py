@@ -1507,6 +1507,8 @@ def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
 
 
 def read_mpy(filename):
+    import re
+
     with open(filename, "rb") as fileobj:
         reader = MPYReader(filename, fileobj)
         segments = []
@@ -1551,7 +1553,10 @@ def read_mpy(filename):
             obj_table.append(read_obj(reader, segments))
 
         # Compute the compiled-module escaped name.
-        cm_escaped_name = qstr_table[0].str.replace("/", "_")[:-3]
+        module_name = qstr_table[0].str
+        if not all(0x7F >= ord(codepoint) >= 0x20 for codepoint in module_name):
+            raise MPYReadError(filename, "cannot have unicode characters in module name")
+        cm_escaped_name = re.sub("[^a-zA-Z0-9_]", "_", "_".join(module_name.split(".")[:-1]))
 
         # Read the outer raw code, which will in turn read all its children.
         raw_code_file_offset = reader.tell()
@@ -1732,7 +1737,7 @@ def freeze_mpy(firmware_qstr_idents, compiled_modules):
         if module_name.endswith("/__init__.py"):
             short_name = module_name[: -len("/__init__.py")]
         else:
-            short_name = module_name[: -len(".py")]
+            short_name = ".".join(module_name.split(".")[:-1])
         print('MICROPY_FROZEN_LIST_ITEM("%s", "%s")' % (short_name, module_name))
     print("#endif")
 

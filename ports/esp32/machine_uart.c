@@ -372,21 +372,12 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
     check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
 
-    if (args[ARG_tx].u_obj != MP_OBJ_NULL) {
-        self->tx = machine_pin_get_id(args[ARG_tx].u_obj);
-    }
-
-    if (args[ARG_rx].u_obj != MP_OBJ_NULL) {
-        self->rx = machine_pin_get_id(args[ARG_rx].u_obj);
-    }
-
-    if (args[ARG_rts].u_obj != MP_OBJ_NULL) {
-        self->rts = machine_pin_get_id(args[ARG_rts].u_obj);
-    }
-
-    if (args[ARG_cts].u_obj != MP_OBJ_NULL) {
-        self->cts = machine_pin_get_id(args[ARG_cts].u_obj);
-    }
+    // set pins
+    #define SET_PIN(prop, arg) if (arg != MP_OBJ_NULL) prop = mp_obj_is_int(arg) && mp_obj_get_int(arg) == -1 ? UART_PIN_NO_CHANGE : machine_pin_get_id(arg);
+    SET_PIN(self->tx, args[ARG_tx].u_obj);
+    SET_PIN(self->rx, args[ARG_rx].u_obj);
+    SET_PIN(self->rts, args[ARG_rts].u_obj);
+    SET_PIN(self->cts, args[ARG_cts].u_obj);
     check_esp_err(uart_set_pin(self->uart_num, self->tx, self->rx, self->rts, self->cts));
 
     // set data bits

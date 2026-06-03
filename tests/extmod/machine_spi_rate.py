@@ -6,6 +6,15 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+try:
+    wr_short = b"abcdefghijklmnop" * 10
+    rd_short = bytearray(len(wr_short))
+    wr_long = wr_short * 20
+    rd_long = bytearray(len(wr_long))
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
 import time, sys
 from target_wiring import spi_standalone_args_list
 
@@ -54,13 +63,6 @@ def test_instances():
 
         # Ensure the same test output regardless of how many SPI instances are tested
         print_results = False
-
-
-wr_short = b"abcdefghijklmnop" * 10
-rd_short = bytearray(len(wr_short))
-
-wr_long = wr_short * 20
-rd_long = bytearray(len(wr_long))
 
 
 def test_spi(spi_args, baudrate, polarity, phase, print_results):

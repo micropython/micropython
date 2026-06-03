@@ -86,7 +86,7 @@ SRC_C += shared/readline/readline.c
 SRC_C += shared/runtime/pyexec.c
 endif
 
-LIB += -lws2_32
+LIBS += -lws2_32
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
@@ -103,8 +103,6 @@ ifeq ($(shell $(CC) -dumpmachine),i686-w64-mingw32)
 # https://lemire.me/blog/2020/06/26/gcc-not-nearest
 CFLAGS += -msse -mfpmath=sse -march=pentium4
 endif
-
-CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))
 
 include $(TOP)/py/mkrules.mk
 

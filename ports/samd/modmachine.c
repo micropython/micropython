@@ -99,7 +99,7 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 static void mp_machine_idle(void) {
-    MICROPY_EVENT_POLL_HOOK;
+    mp_event_wait_ms(1);
 }
 
 static mp_int_t mp_machine_reset_cause(void) {

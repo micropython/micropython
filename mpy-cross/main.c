@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@
 #include "py/persistentcode.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/parsenum.h"
+#include "py/parsenumbase.h"
 #include "genhdr/mpversion.h"
 #ifdef _WIN32
 #include "ports/windows/fmode.h"
@@ -49,6 +50,10 @@ static asm_rv32_backend_options_t rv32_options = { 0 };
 // Command line options, with their defaults
 static uint emit_opt = MP_EMIT_OPT_NONE;
 mp_uint_t mp_verbose_flag = 0;
+
+#if MICROPY_ENABLE_SOURCE_LINE
+static bool include_source_lines = true;
+#endif
 
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
@@ -163,6 +168,12 @@ static int usage(char **argv) {
         "  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
         , heap_size);
     impl_opts_cnt++;
+    #if MICROPY_ENABLE_SOURCE_LINE
+    printf(
+        "  source-lines    -- include source line numbers (default)\n"
+        "  no-source-lines -- exclude source line numbers\n");
+    impl_opts_cnt += 2;
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
@@ -186,6 +197,14 @@ static void pre_process_options(int argc, char **argv) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #endif
+                #if MICROPY_ENABLE_SOURCE_LINE
+                } else if (strcmp(argv[a + 1], "source-lines") == 0) {
+                    // Allow excluding source lines for debug builds.
+                    include_source_lines = true;
+                } else if (strcmp(argv[a + 1], "no-source-lines") == 0) {
+                    // Allow excluding source lines for debug builds.
+                    include_source_lines = false;
                 #endif
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
@@ -228,45 +247,35 @@ static char *backslash_to_forwardslash(char *path) {
 }
 
 // This will need to be reworked in case mpy-cross needs to set more bits than
-// what its small int representation allows to fit in there.
-static bool parse_integer(const char *value, mp_uint_t *integer) {
+// what `unsigned long` can fit.
+static bool parse_integer(const char *value, unsigned long *integer) {
     assert(value && "Attempting to parse a NULL string");
     assert(integer && "Attempting to store into a NULL integer buffer");
 
     size_t value_length = strlen(value);
-    int base = 10;
-    if (value_length > 2 && value[0] == '0') {
-        if ((value[1] | 0x20) == 'b') {
-            base = 2;
-        } else if ((value[1] | 0x20) == 'x') {
-            base = 16;
-        } else {
-            return false;
-        }
+    int base = 0;
+    size_t skip = mp_parse_num_base(value, value_length, &base);
+    // These can trip strtoul up.
+    if (base < 2 || value_length == skip || value[skip] == '+') {
+        return false;
     }
-
-    bool valid = false;
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t parsed = mp_parse_num_integer(value, value_length, base, NULL);
-        if (mp_obj_is_small_int(parsed)) {
-            *integer = MP_OBJ_SMALL_INT_VALUE(parsed);
-            valid = true;
-        }
-        nlr_pop();
+    errno = 0;
+    char *end = NULL;
+    *integer = strtoul(value + skip, &end, base);
+    if (end != (value + value_length) || errno != 0) {
+        return false;
     }
-
-    return valid;
+    return true;
 }
 
 #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
-static bool parse_rv32_flags_string(const char *source, mp_uint_t *flags) {
+static bool parse_rv32_flags_string(const char *source, unsigned long *flags) {
     assert(source && "Flag arguments string is NULL.");
     assert(flags && "Collected flags pointer is NULL.");
 
     const char *current = source;
     const char *end = source + strlen(source);
-    mp_uint_t collected_flags = 0;
+    unsigned long collected_flags = 0;
     while (current < end) {
         const char *separator = strchr(current, ',');
         if (separator == NULL) {
@@ -311,6 +320,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
     mp_dynamic_compiler.backend_options = NULL;
+    #if MICROPY_ENABLE_SOURCE_LINE
+    mp_dynamic_compiler.include_source_lines = include_source_lines;
+    #endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
@@ -439,10 +451,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
         if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC) {
             mp_dynamic_compiler.backend_options = (void *)&rv32_options;
-            mp_uint_t raw_flags = 0;
+            unsigned long raw_flags = 0;
             if (parse_integer(arch_flags, &raw_flags) || parse_rv32_flags_string(arch_flags, &raw_flags)) {
-                if ((raw_flags & ~((mp_uint_t)RV32_EXT_ALL)) == 0) {
-                    rv32_options.allowed_extensions = raw_flags;
+                if ((raw_flags & ~((unsigned long)RV32_EXT_ALL)) == 0) {
+                    rv32_options.allowed_extensions = (uint8_t)raw_flags;
                     processed = true;
                 }
             }

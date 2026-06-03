@@ -58,13 +58,20 @@ ifeq ($(DEBUG), 0)
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 endif
 
-FROZEN_MANIFEST ?= modules/manifest.py
+# Enable asyncio by default and select appropriate manifest.
+MICROPY_PY_ASYNCIO ?= 1
+ifeq ($(MICROPY_PY_ASYNCIO),1)
+FROZEN_MANIFEST ?= boards/manifest.py
+else
+FROZEN_MANIFEST ?= boards/manifest_minimal.py
+endif
+CFLAGS += -DMICROPY_PY_ASYNCIO=$(MICROPY_PY_ASYNCIO)
 
 # include py core make definitions
 include ../../py/py.mk
 include ../../extmod/extmod.mk
 
-GIT_SUBMODULES += lib/nrfx lib/tinyusb
+GIT_SUBMODULES += lib/CMSIS_6 lib/nrfx lib/tinyusb
 
 MICROPY_VFS_FAT ?= 0
 
@@ -73,7 +80,7 @@ CROSS_COMPILE ?= arm-none-eabi-
 INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
-INC += -I./../../lib/cmsis/inc
+INC += -I./../../lib/CMSIS_6/CMSIS/Core/Include
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/music
@@ -88,6 +95,8 @@ INC += -I../../lib/nrfx/drivers
 INC += -I../../lib/nrfx/drivers/include
 INC += -I../../lib/nrfx/mdk
 INC += -I../../lib/nrfx/hal
+INC += -I../../lib/nrfx/haly
+INC += -I../../lib/nrfx/helpers
 INC += -I../../lib/nrfx/drivers/src/
 INC += -I../../shared/readline
 
@@ -99,6 +108,7 @@ SYSTEM_C_SRC :=
 ifeq ($(MCU_SUB_VARIANT),nrf51822)
 	SYSTEM_C_SRC += $(addprefix lib/nrfx/mdk/, system_nrf51.c)
         NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
+        NRF_DEFINES += -DNRF51822_XXAA
 else ifeq ($(MCU_SUB_VARIANT),nrf52832)
 	SYSTEM_C_SRC += $(addprefix lib/nrfx/mdk/, system_nrf52.c)
         NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
@@ -139,7 +149,7 @@ LDFLAGS += -Wl,--gc-sections
 endif
 
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
-CFLAGS += $(INC) -Wall -Werror -ansi -std=c11 $(COPT) $(NRF_DEFINES) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Werror -std=c11 $(COPT) $(NRF_DEFINES) $(CFLAGS_EXTRA)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
@@ -224,6 +234,10 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	nrfx_clock.c \
 	)
 
+SRC_NRFX += \
+	lib/nrfx/soc/nrfx_atomic.c \
+	lib/nrfx/helpers/nrfx_flag32_allocator.c
+
 SRC_C += \
 	main.c \
 	mphalport.c \
@@ -252,14 +266,12 @@ endif
 
 SRC_C += drivers/usb/usb_cdc.c
 
-SRC_C += $(addprefix lib/tinyusb/src/,\
-	common/tusb_fifo.c \
-	device/usbd.c \
-	device/usbd_control.c \
-	class/cdc/cdc_device.c \
-	tusb.c \
-	portable/nordic/nrf5x/dcd_nrf5x.c \
-	)
+# TinyUSB Stack source
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/nordic/nrf5x/dcd_nrf5x.c \
+	))
 
 endif
 
@@ -306,6 +318,7 @@ OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 $(BUILD)/$(OOFATFS_DIR)/ff.o: COPT += -Os
@@ -443,12 +456,12 @@ sd: nrfutil_dfu_sd nrfutil_dfu_deploy
 
 nrfutil_dfu_sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)hexmerge.py -o $(BUILD)/stripped_sd.hex --range=0x1000: $(SOFTDEV_HEX)
-	$(Q)nrfutil pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
-	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
+	$(Q)nrfutil nrf5sdk-tools pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
+	$(Q)nrfutil nrf5sdk-tools dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
 
 nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
-	$(Q)nrfutil pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
-	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
+	$(Q)nrfutil nrf5sdk-tools pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
+	$(Q)nrfutil nrf5sdk-tools dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
 
 deploy: nrfutil_dfu_deploy
 

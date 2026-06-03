@@ -2,6 +2,7 @@
 
 try:
     from cexample import AdvancedTimer
+    import time  # used to skip this test on minimal unix variant
 except ImportError:
     print("SKIP")
     raise SystemExit

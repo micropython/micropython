@@ -31,6 +31,7 @@
 #include "py/misc.h"
 
 #include <soc/nrfx_irqs.h>
+#include <soc/nrfx_atomic.h>
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE MP_ARRAY_SIZE
@@ -42,6 +43,36 @@
 
 void mp_hal_delay_us(mp_uint_t us);
 #define NRFX_DELAY_US            mp_hal_delay_us
+
+#define nrfx_atomic_t nrfx_atomic_u32_t
+#define NRFX_ATOMIC_FETCH_STORE(p_data, value) nrfx_atomic_u32_fetch_store(p_data, value)
+#define NRFX_ATOMIC_FETCH_OR(p_data, value)    nrfx_atomic_u32_fetch_or(p_data, value)
+#define NRFX_ATOMIC_FETCH_AND(p_data, value)   nrfx_atomic_u32_fetch_and(p_data, value)
+#define NRFX_ATOMIC_FETCH_XOR(p_data, value)   nrfx_atomic_u32_fetch_xor(p_data, value)
+#define NRFX_ATOMIC_FETCH_ADD(p_data, value)   nrfx_atomic_u32_fetch_add(p_data, value)
+#define NRFX_ATOMIC_FETCH_SUB(p_data, value)   nrfx_atomic_u32_fetch_sub(p_data, value)
+#define NRFX_ATOMIC_CAS(p_data, old_value, new_value) \
+    nrfx_atomic_u32_cmp_exch(p_data, &(old_value), new_value)
+
+#define NRFX_CLZ(value) __CLZ(value)
+#define NRFX_CTZ(value) __CLZ(__RBIT(value))
+
+// Event readback is required on all nRF51/nRF52 devices
+#define NRFX_EVENT_READBACK_ENABLED 1
+
+// Override NRFY_CACHE_INV to suppress unused variable warnings
+// on targets without data cache (nRF51/nRF52).
+#define NRFY_CACHE_INV(p_buffer, size) do { (void)(p_buffer); (void)(size); } while (0)
+#define NRFY_CACHE_WB(p_buffer, size) do { (void)(p_buffer); (void)(size); } while (0)
+#define NRFY_CACHE_WBINV(p_buffer, size) do { (void)(p_buffer); (void)(size); } while (0)
+
+#define NRFX_DPPI_CHANNELS_USED   0
+#define NRFX_DPPI_GROUPS_USED     0
+#define NRFX_PPI_CHANNELS_USED    0
+#define NRFX_PPI_GROUPS_USED      0
+#define NRFX_EGUS_USED            0
+#define NRFX_GPIOTE_CHANNELS_USED 0
+#define NRFX_TIMERS_USED          0
 
 #if BLUETOOTH_SD
 
@@ -148,5 +179,7 @@ void mp_hal_delay_us(mp_uint_t us);
 #endif // !BLUETOOTH_SD
 
 #define NRFX_IRQ_IS_ENABLED(irq_number) (0 != (NVIC->ISER[irq_number / 32] & (1UL << (irq_number % 32))))
+
+#define NRFX_IRQ_IS_PENDING(irq_number) (0 != (NVIC->ISPR[irq_number / 32] & (1UL << (irq_number % 32))))
 
 #endif // NRFX_GLUE_H

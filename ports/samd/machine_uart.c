@@ -167,7 +167,7 @@ void common_uart_irq_handler(int uart_id) {
                     uart->USART.DATA.bit.DATA =
                         ringbuf_get(&self->write_buffer) | (ringbuf_get(&self->write_buffer) << 8);
                 }
-            } else {
+            } else if (uart->USART.INTENCLR.bit.DRE != 0) {
                 #if MICROPY_PY_MACHINE_UART_IRQ
                 // Set the TXIDLE flag
                 mp_irq_flags |= SERCOM_USART_INTFLAG_TXC;
@@ -184,7 +184,7 @@ void common_uart_irq_handler(int uart_id) {
         // Check the flags to see if the uart user handler should be called
         // The handler for RXIDLE is called in the timer callback
         if (self->mp_irq_trigger & mp_irq_flags) {
-            self->mp_irq_flags = mp_irq_flags;
+            self->mp_irq_flags = self->mp_irq_trigger & mp_irq_flags;
             mp_irq_handler(self->mp_irq_obj);
         }
         #endif
@@ -581,7 +581,7 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     // Wait for the tx buffer to drain.
     #if MICROPY_HW_UART_TXBUF
     while (ringbuf_avail(&self->write_buffer) > 0) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     #endif
     // Wait for the TX queue & register to clear
@@ -699,7 +699,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
                     return i;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
         i++;
@@ -751,7 +751,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
                     return i;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         if (bits >= 9) {
             mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
@@ -778,7 +778,7 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
                     return i;
                 }
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         }
         if (self->bits > 8 && i < (size - 1)) {
             uart->USART.DATA.bit.DATA = *(uint16_t *)src;
@@ -822,7 +822,7 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
             if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
-            MICROPY_EVENT_POLL_HOOK
+            mp_event_wait_ms(1);
         } while (mp_hal_ticks_ms_64() < timeout);
         *errcode = MP_ETIMEDOUT;
         ret = MP_STREAM_ERROR;

@@ -133,7 +133,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 }
 
 static void mp_machine_idle(void) {
-    MICROPY_EVENT_POLL_HOOK;
+    mp_event_wait_ms(1);
 }
 
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {

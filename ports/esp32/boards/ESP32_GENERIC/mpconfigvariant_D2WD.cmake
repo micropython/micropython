@@ -1,5 +1,4 @@
-set(SDKCONFIG_DEFAULTS
-    ${SDKCONFIG_DEFAULTS}
+list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.flash_2MiB
     boards/ESP32_GENERIC/sdkconfig.d2wd
 )

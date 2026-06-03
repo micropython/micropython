@@ -5,7 +5,7 @@
 #endif
 
 #ifndef MICROPY_HW_MCU_NAME
-#define MICROPY_HW_MCU_NAME                 "ESP32C2"
+#define MICROPY_HW_MCU_NAME                 "ESP32-C2"
 #endif
 
 #define MICROPY_HW_ENABLE_SDCARD            (0)

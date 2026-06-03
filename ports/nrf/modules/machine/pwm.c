@@ -332,6 +332,7 @@ static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
 static void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
 
     nrfx_pwm_config_t config;
+    memset(&config, 0, sizeof(config));
 
     // check if ready to go
     if (self->p_config->defer_start == true || self->p_config->freq_div < 0 || self->p_config->duty_mode[self->channel] == DUTY_NOT_SET) {
@@ -340,10 +341,10 @@ static void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
 
     self->p_config->active = RUNNING;
 
-    config.output_pins[0] = self->p_config->duty_mode[0] != DUTY_NOT_SET ? self->p_config->pwm_pin[0] : NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[1] = self->p_config->duty_mode[1] != DUTY_NOT_SET ? self->p_config->pwm_pin[1] : NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[2] = self->p_config->duty_mode[2] != DUTY_NOT_SET ? self->p_config->pwm_pin[2] : NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[3] = self->p_config->duty_mode[3] != DUTY_NOT_SET ? self->p_config->pwm_pin[3] : NRFX_PWM_PIN_NOT_USED;
+    config.output_pins[0] = self->p_config->duty_mode[0] != DUTY_NOT_SET ? self->p_config->pwm_pin[0] : NRF_PWM_PIN_NOT_CONNECTED;
+    config.output_pins[1] = self->p_config->duty_mode[1] != DUTY_NOT_SET ? self->p_config->pwm_pin[1] : NRF_PWM_PIN_NOT_CONNECTED;
+    config.output_pins[2] = self->p_config->duty_mode[2] != DUTY_NOT_SET ? self->p_config->pwm_pin[2] : NRF_PWM_PIN_NOT_CONNECTED;
+    config.output_pins[3] = self->p_config->duty_mode[3] != DUTY_NOT_SET ? self->p_config->pwm_pin[3] : NRF_PWM_PIN_NOT_CONNECTED;
 
     uint32_t tick_freq = PWM_MAX_BASE_FREQ / (1 << self->p_config->freq_div);
     uint32_t period = tick_freq / self->p_config->freq;

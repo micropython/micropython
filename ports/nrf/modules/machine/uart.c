@@ -64,7 +64,7 @@ typedef struct _machine_uart_buf_t {
 #define nrfx_uart_config_t        nrfx_uarte_config_t
 
 #define nrfx_uart_rx              nrfx_uarte_rx
-#define nrfx_uart_tx              nrfx_uarte_tx
+#define nrfx_uart_tx(inst, buf, len) nrfx_uarte_tx(inst, buf, len, 0)
 #define nrfx_uart_tx_in_progress  nrfx_uarte_tx_in_progress
 #define nrfx_uart_init            nrfx_uarte_init
 #define nrfx_uart_uninit          nrfx_uarte_uninit
@@ -258,15 +258,24 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     machine_uart_obj_t *self = &machine_uart_obj[uart_id];
 
     nrfx_uart_config_t config;
+    memset(&config, 0, sizeof(config));
 
     // flow control
+    #if NRFX_UART_ENABLED
     #if MICROPY_HW_UART1_HWFC
     config.hal_cfg.hwfc = NRF_UART_HWFC_ENABLED;
     #else
     config.hal_cfg.hwfc = NRF_UART_HWFC_DISABLED;
     #endif
-
     config.hal_cfg.parity = NRF_UART_PARITY_EXCLUDED;
+    #else
+    #if MICROPY_HW_UART1_HWFC
+    config.config.hwfc = NRF_UART_HWFC_ENABLED;
+    #else
+    config.config.hwfc = NRF_UART_HWFC_DISABLED;
+    #endif
+    config.config.parity = NRF_UART_PARITY_EXCLUDED;
+    #endif
 
     // Higher priority than pin interrupts, otherwise printing exceptions from
     // interrupt handlers gets stuck.
@@ -288,12 +297,26 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     config.baudrate = args[ARG_baudrate].u_int / 400 * (uint32_t)(400ULL * (uint64_t)UINT32_MAX / 16000000ULL);
     config.baudrate = (config.baudrate + 0x800) & 0xffffff000; // rounding
 
+    #if NRFX_UART_ENABLED
     config.pseltxd = MICROPY_HW_UART1_TX;
     config.pselrxd = MICROPY_HW_UART1_RX;
-
     #if MICROPY_HW_UART1_HWFC
     config.pselrts = MICROPY_HW_UART1_RTS;
     config.pselcts = MICROPY_HW_UART1_CTS;
+    #else
+    config.pselrts = NRF_UART_PSEL_DISCONNECTED;
+    config.pselcts = NRF_UART_PSEL_DISCONNECTED;
+    #endif
+    #else
+    config.txd_pin = MICROPY_HW_UART1_TX;
+    config.rxd_pin = MICROPY_HW_UART1_RX;
+    #if MICROPY_HW_UART1_HWFC
+    config.rts_pin = MICROPY_HW_UART1_RTS;
+    config.cts_pin = MICROPY_HW_UART1_CTS;
+    #else
+    config.rts_pin = NRF_UARTE_PSEL_DISCONNECTED;
+    config.cts_pin = NRF_UARTE_PSEL_DISCONNECTED;
+    #endif
     #endif
     self->timeout = args[ARG_timeout].u_int;
     self->timeout_char = args[ARG_timeout_char].u_int;

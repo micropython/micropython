@@ -3,10 +3,8 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-phyboard"
 
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
-    } while (0);
+// Do not use WFE when waiting for an event.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS)
 
 // phyBOARD-RT1170 SoM onboard LEDs (red and green from phyCORE SoM)
 // Carrier board provides additional RGB LEDs via GPIO
@@ -106,6 +104,16 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_LPSR_08_LPI2C5_SDA }, { IOMUXC_GPIO_LPSR_09_LPI2C5_SCL }, \
     { 0 }, { 0 },
+
+#define MICROPY_HW_CAN1_NAME "CAN1"
+#define MICROPY_HW_NUM_CAN (1)
+#define MICROPY_HW_CAN_INDEX { 3 }
+#define MICROPY_HW_NUM_CAN_IRQS (1)
+
+#define IOMUX_TABLE_CAN \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_LPSR_00_FLEXCAN3_TX }, { IOMUXC_GPIO_LPSR_01_FLEXCAN3_RX },
 
 #define MICROPY_PY_MACHINE_I2S (1)
 #define MICROPY_HW_I2S_NUM (1)
