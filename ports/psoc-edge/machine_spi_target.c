@@ -102,8 +102,7 @@ static uint8_t machine_spi_target_pins_config_and_get_scb_unit(
     mp_hal_pin_obj_t sck,
     mp_hal_pin_obj_t mosi,
     mp_hal_pin_obj_t miso,
-    mp_hal_pin_obj_t ssel)
-{
+    mp_hal_pin_obj_t ssel) {
     // Pin config: SCK, MOSI, SSEL are inputs; MISO is output
     const mp_hal_pin_af_config_t spi_pins_config[] = {
         MP_HAL_PIN_AF_CONF(sck,
