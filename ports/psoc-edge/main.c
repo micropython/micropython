@@ -65,12 +65,13 @@
 #define MPY_TASK_STACK_SIZE     (5120u)
 #define MPY_TASK_PRIORITY       (1u)
 
-// Size of the MicroPython GC heap.
-// Must be small enough that .bss + this array still fits within the m33_data
-// region (256 KB) while leaving adequate dynamic heap for FreeRTOS task stacks
-// (~40 KB) and the WiFi/WCM/LwIP stack (~60-80 KB).
-#ifndef MICROPY_GC_HEAP_SIZE
-#define MICROPY_GC_HEAP_SIZE    (96 * 1024u)
+// GC heap boundaries are provided by the linker (pse84_ns_cm33.ld).
+// __GcHeapStart = __HeapBase + 0x20000 (WiFi) / 0x8000 (non-WiFi)
+// __GcHeapEnd   = __HeapLimit
+// The C-heap zone [__HeapBase .. __GcHeapStart) is left for sbrk/malloc,
+// used by FreeRTOS task stacks and the WiFi/WCM/LwIP stack.
+#if MICROPY_ENABLE_GC
+extern uint8_t __GcHeapStart, __GcHeapEnd;
 #endif
 
 typedef enum {
@@ -87,12 +88,6 @@ extern void machine_ipc_deinit_all(void);
 
 void mpy_task(void *arg);
 static TaskHandle_t mpy_task_handle;
-
-// Static GC heap in .bss – keeps it out of the dynamic heap that FreeRTOS
-// task stacks and the WiFi/WCM/LwIP stack consume at runtime.
-#if MICROPY_ENABLE_GC
-static char mpy_gc_heap[MICROPY_GC_HEAP_SIZE];
-#endif
 
 boot_mode_t check_boot_mode(void) {
     boot_mode_t boot_mode;
@@ -153,7 +148,10 @@ int main(void) {
 void mpy_task(void *arg) {
     // One-time initialisation – must be before the soft_reset label.
     #if MICROPY_ENABLE_GC
-    gc_init(mpy_gc_heap, mpy_gc_heap + MICROPY_GC_HEAP_SIZE);
+    if (&__GcHeapEnd <= &__GcHeapStart) {
+        CY_ASSERT(0);
+    }
+    gc_init(&__GcHeapStart, &__GcHeapEnd);
     mp_cstack_init_with_top((void *)&arg, MPY_TASK_STACK_SIZE * sizeof(StackType_t));
     #endif
 

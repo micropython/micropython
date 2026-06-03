@@ -468,7 +468,15 @@ ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1 -DMICROPY_PY_NETWORK_IFX_WCM=1 -Wno-stringop-truncation
 	MOD_SRC_C += network_ifx_wcm.c 
 	MOD_SRC_C += modsocket.c
+	# WiFi build: reserve 128 KB of .heap for FreeRTOS + WiFi/WCM/LwIP C allocations.
+	LDFLAGS += -Wl,--defsym=__GcHeapStart=__HeapBase+0x20000
+else
+	# Non-WiFi build: reserve 32 KB of .heap for FreeRTOS C allocations.
+	LDFLAGS += -Wl,--defsym=__GcHeapStart=__HeapBase+0x8000
 endif
+
+# GC heap consumes the remainder of .heap up to __HeapLimit.
+LDFLAGS += -Wl,--defsym=__GcHeapEnd=__HeapLimit
 
 SRC_C += \
 	help.c \
