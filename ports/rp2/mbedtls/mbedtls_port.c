@@ -47,4 +47,13 @@ mbedtls_ms_time_t mbedtls_ms_time(void) {
     current_ms = rp2_rtctime_seconds(tv) * 1000;
     return current_ms;
 }
+
+struct tm *mbedtls_platform_gmtime_r(const mbedtls_time_t *tt, struct tm *tm_buf) {
+    // Default mbedTLS platform implementation calls gmtime() here. This is
+    // unnecessary as this function signature already matches gmtime_r(), and
+    // additionally on newlib-nano gmtime() tries to malloc the reent buffer on
+    // demand - which will fail.
+    return gmtime_r(tt, tm_buf);
+}
+
 #endif
