@@ -3,6 +3,7 @@
 #include <esp_system.h>
 #include <esp_err.h>
 #include <esp_log.h>
+#include <esp_task.h>
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -30,7 +31,7 @@ void driver_badgebsp_init() {
 
     bsp_input_get_queue(&input_queue);
 
-    xTaskCreatePinnedToCore(button_handler, "button_handler_task", 2048, NULL, 5,  NULL, MP_TASK_COREID);
+    xTaskCreatePinnedToCore(button_handler, "button_handler_task", 2048, NULL, ESP_TASKD_EVENT_PRIO,  NULL, MP_TASK_COREID);
 }
 
 static mp_obj_t buttons() {
