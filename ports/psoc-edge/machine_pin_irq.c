@@ -319,8 +319,12 @@ mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
             return MP_OBJ_FROM_PTR(irq);
         }
 
+        if (args[ARG_hard].u_bool) {
+            mp_raise_ValueError(MP_ERROR_TEXT("hard unsupported"));
+        }
+
         irq->base.handler = args[ARG_handler].u_obj;
-        irq->base.ishard = args[ARG_hard].u_bool;
+        irq->base.ishard = false;
         machine_pin_irq_set_priority(irq->port_cfg, self->port, args[ARG_priority].u_int);
         machine_pin_irq_trigger(self, args[ARG_trigger].u_int);
     }
