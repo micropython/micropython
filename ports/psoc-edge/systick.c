@@ -1,0 +1,130 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2026 Infineon Technologies AG
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include <stdint.h>
+
+#include "cybsp.h"
+#include "cy_systick.h"
+
+#include "mphalport.h"
+
+#include "py/runtime.h"
+
+volatile uint64_t psoc_edge_systick_ms_count;
+uint32_t psoc_edge_systick_cpu_hz;
+
+// Use the SysTick pending-interrupt state as rollover evidence. This matches our
+// callback-based ms counter model ("ISR increment still outstanding") and avoids
+// Cy_SysTick_GetCountFlag()'s read-to-clear side effect.
+#define MP_HAL_SYSTICK_WRAP_PENDING() (((SCB->ICSR) & SCB_ICSR_PENDSTSET_Msk) != 0u)
+
+typedef struct {
+    uint64_t ms_count;
+    uint32_t systick_reload;
+    uint32_t systick_val;
+    uint32_t cpu_hz;
+} mp_hal_systick_snapshot_t;
+
+static void psoc_edge_systick_callback(void) {
+    psoc_edge_systick_ms_count += 1;
+}
+
+void mp_hal_ticks_init(void) {
+    psoc_edge_systick_cpu_hz = SystemCoreClock;
+    if (psoc_edge_systick_cpu_hz < 1000) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("invalid SystemCoreClock (< 1000 Hz)."));
+    }
+
+    // Configure SysTick for 1ms period and count overflows in software.
+    uint32_t systick_interval = psoc_edge_systick_cpu_hz / 1000;
+
+    psoc_edge_systick_ms_count = 0;
+    Cy_SysTick_Init(CY_SYSTICK_CLOCK_SOURCE_CLK_CPU, systick_interval - 1);
+    Cy_SysTick_SetCallback(0, psoc_edge_systick_callback);
+}
+
+static mp_hal_systick_snapshot_t mp_hal_systick_snapshot(void) {
+    mp_hal_systick_snapshot_t snap;
+
+    mp_uint_t irq_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    snap.ms_count = psoc_edge_systick_ms_count;
+    snap.systick_reload = Cy_SysTick_GetReload();
+    snap.systick_val = Cy_SysTick_GetValue();
+    // SysTick may have wrapped but its ISR not run yet; account for that pending rollover
+    // so software time does not momentarily go backwards across the wrap boundary.
+    if (MP_HAL_SYSTICK_WRAP_PENDING()) {
+        snap.ms_count += 1;
+    }
+    snap.cpu_hz = psoc_edge_systick_cpu_hz;
+    MICROPY_END_ATOMIC_SECTION(irq_state);
+
+    if (snap.cpu_hz == 0) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("invalid systick CPU clock."));
+    }
+
+    return snap;
+}
+
+uint64_t mp_hal_systick_ticks_us64(void) {
+    mp_hal_systick_snapshot_t snap = mp_hal_systick_snapshot();
+
+    uint32_t elapsed_cycles = snap.systick_reload - snap.systick_val;
+    return snap.ms_count * 1000ULL + ((uint64_t)elapsed_cycles * 1000000ULL) / snap.cpu_hz;
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return mp_hal_systick_ticks_us64() / 1000ULL;
+}
+
+mp_uint_t mp_hal_ticks_us(void) {
+    return mp_hal_systick_ticks_us64();
+}
+
+mp_uint_t mp_hal_ticks_cpu(void) {
+    mp_hal_systick_snapshot_t snap = mp_hal_systick_snapshot();
+    return snap.ms_count * snap.cpu_hz + (snap.systick_reload - snap.systick_val);
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    mp_uint_t start = mp_hal_ticks_ms();
+    while (mp_hal_ticks_ms() - start < ms) {
+        mp_event_handle_nowait();
+    }
+}
+
+void mp_hal_delay_us(mp_uint_t us) {
+    mp_uint_t start = mp_hal_ticks_us();
+    while (mp_hal_ticks_us() - start < us) {
+        mp_event_handle_nowait();
+    }
+}
+
+extern uint64_t mp_hal_time_get_epoch_seconds(void);
+
+uint64_t mp_hal_time_ns(void) {
+    uint64_t s = mp_hal_time_get_epoch_seconds();
+    return s * 1000000000ULL + mp_hal_systick_ticks_us64() * 1000ULL;
+}

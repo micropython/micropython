@@ -25,7 +25,6 @@
  */
 
 // std includes
-#include "stdbool.h"   // because of missing include in shared/timeutils/timeutils.h
 #include "stdio.h"
 
 // MTB includes
@@ -39,10 +38,8 @@
 #include "mphalport.h"
 
 #include "py/runtime.h"
-#include "shared/timeutils/timeutils.h"
 
 extern mtb_hal_uart_t DEBUG_UART_hal_obj;
-extern mtb_hal_timer_t psoc_edge_timer;
 
 void mp_hal_get_random(size_t n, uint8_t *buf) {
     uint32_t r = 0;
@@ -53,41 +50,6 @@ void mp_hal_get_random(size_t n, uint8_t *buf) {
         buf[i] = (uint8_t)r;
         r >>= 8;
     }
-}
-
-void mp_hal_delay_ms(mp_uint_t ms) {
-    mp_uint_t start = mp_hal_ticks_ms();
-    while (mp_hal_ticks_ms() - start < ms) {
-        mp_event_handle_nowait();
-    }
-}
-
-void mp_hal_delay_us(mp_uint_t us) {
-    mtb_hal_system_delay_us(us);
-}
-
-uint64_t mp_hal_time_ns(void) {
-    // TODO: This is not fully functional until rtc machine module is implemented.
-    cy_stc_rtc_config_t current_date_time = {0};
-    Cy_RTC_GetDateAndTime(&current_date_time);
-
-    uint64_t s = timeutils_seconds_since_epoch(current_date_time.year, current_date_time.month, current_date_time.date,
-        current_date_time.hour, current_date_time.min, current_date_time.sec);
-
-    // add ticks to make sure time is strictly monotonic
-    return s * 1000000000ULL + mtb_hal_timer_read(&psoc_edge_timer) * 1000ULL;
-}
-
-mp_uint_t mp_hal_ticks_ms(void) {
-    return mtb_hal_timer_read(&psoc_edge_timer) / 1000;
-}
-
-mp_uint_t mp_hal_ticks_us(void) {
-    return mtb_hal_timer_read(&psoc_edge_timer);
-}
-
-mp_uint_t mp_hal_ticks_cpu(void) {
-    return mtb_hal_timer_read(&psoc_edge_timer);
 }
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {

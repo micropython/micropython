@@ -37,18 +37,30 @@
 #include "py/runtime.h"
 #include "machine_pin.h"
 
+#include "cybsp.h"
+
+static inline void enable_irq(mp_uint_t state) {
+    if (state == 0) {
+        __enable_irq();
+    }
+}
+
+static inline mp_uint_t disable_irq(void) {
+    mp_uint_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
+
 #define mp_hal_delay_us_fast mp_hal_delay_us
 
 void mp_hal_delay_us(mp_uint_t us);
 void mp_hal_delay_us_fast(mp_uint_t us);
 void mp_hal_delay_ms(mp_uint_t ms);
 
-uint64_t mp_hal_time_ns(void);
-
-mp_uint_t mp_hal_ticks_us(void);
-mp_uint_t mp_hal_ticks_ms(void);
-mp_uint_t mp_hal_ticks_cpu(void);
-
+void mp_hal_stdio_init(void);
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
