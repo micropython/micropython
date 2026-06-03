@@ -314,6 +314,7 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_syspm_pdcm.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_syspm_ppu.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_syspm_v4.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_systick_v2.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_tcpwm_counter.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_tcpwm_pwm.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/ppu_v1.c \
@@ -487,6 +488,7 @@ SRC_C += \
 	help.c \
 	main.c \
 	mphalport.c \
+	systick.c \
 	sys_int.c \
 
 # List of sources for qstr extraction
