@@ -156,6 +156,20 @@ static bool rtc_validate_date_time(int sec, int min, int hour, int mday, int mon
     return mday <= days_in_month;
 }
 
+void machine_rtc_get_datetime(timeutils_struct_time_t *time) {
+    cy_stc_rtc_config_t current_date_time = {0};
+    Cy_RTC_GetDateAndTime(&current_date_time);
+
+    time->tm_year = current_date_time.year + RTC_CENTURY;
+    time->tm_mon = current_date_time.month;
+    time->tm_mday = current_date_time.date;
+    time->tm_hour = current_date_time.hour;
+    time->tm_min = current_date_time.min;
+    time->tm_sec = current_date_time.sec;
+    time->tm_wday = current_date_time.dayOfWeek - 1u;
+    time->tm_yday = timeutils_year_day(current_date_time.year + RTC_CENTURY, current_date_time.month, current_date_time.date);
+}
+
 void machine_rtc_init_all(void) {
     /* Variable used to store return status of RTC API */
     cy_en_rtc_status_t rtc_status;
@@ -180,18 +194,18 @@ void machine_rtc_init_all(void) {
 // overwritten with the correct value. datetime() does not raise an error for incorrect
 // weekday values - the hardware ensures weekday always matches the actual calendar date.
 static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {
-    cy_stc_rtc_config_t curr_date_time = {0};  // Initialize all fields to 0
     if (n_args == 1) {
         /* Get the current date and time */
-        Cy_RTC_GetDateAndTime(&curr_date_time);
+        timeutils_struct_time_t time;
+        machine_rtc_get_datetime(&time);
         mp_obj_t tuple[8] = {
-            mp_obj_new_int(curr_date_time.year + RTC_CENTURY),
-            mp_obj_new_int(curr_date_time.month),
-            mp_obj_new_int(curr_date_time.date),
-            mp_obj_new_int(curr_date_time.dayOfWeek),
-            mp_obj_new_int(curr_date_time.hour),
-            mp_obj_new_int(curr_date_time.min),
-            mp_obj_new_int(curr_date_time.sec),
+            mp_obj_new_int(time.tm_year),
+            mp_obj_new_int(time.tm_mon),
+            mp_obj_new_int(time.tm_mday),
+            mp_obj_new_int(time.tm_wday + 1u),
+            mp_obj_new_int(time.tm_hour),
+            mp_obj_new_int(time.tm_min),
+            mp_obj_new_int(time.tm_sec),
             mp_obj_new_int(0),
         };
         return mp_obj_new_tuple(8, tuple);
