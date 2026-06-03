@@ -80,11 +80,11 @@ typedef enum {
 } boot_mode_t;
 
 extern void machine_rtc_init_all(void);
-extern void time_init(void);
 extern void machine_pin_irq_deinit_all(void);
 extern void machine_hw_i2c_deinit_all(void);
 extern void machine_pdm_pcm_deinit_all(void);
 extern void machine_ipc_deinit_all(void);
+extern void mp_hal_ticks_init(void);
 
 void mpy_task(void *arg);
 static TaskHandle_t mpy_task_handle;
@@ -155,7 +155,7 @@ void mpy_task(void *arg) {
     mp_cstack_init_with_top((void *)&arg, MPY_TASK_STACK_SIZE * sizeof(StackType_t));
     #endif
 
-    time_init();
+    mp_hal_ticks_init();
     #if MICROPY_PY_NETWORK
     network_hw_init();
     #endif
