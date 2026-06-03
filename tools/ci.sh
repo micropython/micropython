@@ -42,8 +42,7 @@ function ci_picotool_setup {
 # c code formatting
 
 function ci_c_code_formatting_setup {
-    sudo apt-get update
-    sudo apt-get install uncrustify
+    pip install micropython-uncrustify==1.0.0.post1
     uncrustify --version
 }
 
