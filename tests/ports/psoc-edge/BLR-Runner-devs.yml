@@ -15,3 +15,13 @@
   uid: 101A1398012D2400
   features:
     - uart
+
+  - name: KIT_PSE84_AI
+  uid: 0E240C98012D2400
+  features:
+    - spi
+
+- name: KIT_PSE84_AI
+  uid: 0C170798012D2400
+  features:
+    - spi
