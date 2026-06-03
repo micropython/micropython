@@ -16,7 +16,7 @@
   features:
     - uart
 
-  - name: KIT_PSE84_AI
+- name: KIT_PSE84_AI
   uid: 0E240C98012D2400
   features:
     - spi
