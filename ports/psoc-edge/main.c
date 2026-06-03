@@ -59,8 +59,8 @@ extern uint8_t __HeapBase, __HeapLimit;
 #endif
 
 extern void machine_rtc_init_all(void);
-extern void time_init(void);
 extern void machine_pin_irq_deinit_all(void);
+extern void mp_hal_ticks_init(void);
 
 boot_mode_t check_boot_mode(void) {
     boot_mode_t boot_mode;
@@ -113,7 +113,7 @@ int main(void) {
     mp_cstack_init_with_top((void *)&__StackTop, (size_t)&__StackSize);
     #endif
 
-    time_init();
+    mp_hal_ticks_init();
 
 soft_reset:
     machine_rtc_init_all();
