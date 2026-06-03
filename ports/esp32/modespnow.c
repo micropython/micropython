@@ -401,10 +401,9 @@ static uint8_t *_get_bytes_len_w(mp_obj_t obj, size_t len) {
 #endif
 
 // Return C pointer to the MAC address.
-// Raise ValueError if mac_addr is wrong type or is not 6 bytes long.
+// Raise TypeError or ValueError if mac_addr is wrong type or is not 6 bytes long.
 static const uint8_t *_get_peer(mp_obj_t mac_addr) {
-    return mp_obj_is_true(mac_addr)
-        ? _get_bytes_len(mac_addr, ESP_NOW_ETH_ALEN) : NULL;
+    return _get_bytes_len(mac_addr, ESP_NOW_ETH_ALEN);
 }
 
 // Copy data from the ring buffer - wait if buffer is empty up to timeout_ms
@@ -529,7 +528,7 @@ static void _wait_for_pending_responses(esp_espnow_obj_t *self) {
 static mp_obj_t espnow_send(size_t n_args, const mp_obj_t *args) {
     esp_espnow_obj_t *self = _get_singleton_initialised();
     // Check the various combinations of input arguments
-    const uint8_t *peer = (n_args > 2) ? _get_peer(args[1]) : NULL;
+    const uint8_t *peer = (n_args > 2 && args[1] != mp_const_none) ? _get_peer(args[1]) : NULL;
     mp_obj_t msg = (n_args > 2) ? args[2] : (n_args == 2) ? args[1] : MP_OBJ_NULL;
     bool sync = n_args <= 3 || args[3] == mp_const_none || mp_obj_is_true(args[3]);
 
@@ -688,7 +687,7 @@ static void _update_peer_count() {
 //          [channel=1..11|0], [ifidx=0|1], [encrypt=True|False])
 // Positional args set to None will be left at defaults.
 // Raise OSError if ESPNow.init() has not been called.
-// Raise ValueError if mac or LMK are not bytes-like objects or wrong length.
+// Raise TypeError or ValueError if mac or LMK are not bytes-like objects or wrong length.
 // Raise TypeError if invalid keyword args or too many positional args.
 // Return None.
 static mp_obj_t espnow_add_peer(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -705,7 +704,7 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(espnow_add_peer_obj, 2, espnow_add_peer);
 
 // ESPNow.del_peer(peer_mac): Unregister peer_mac.
 // Raise OSError if ESPNow.init() has not been called.
-// Raise ValueError if peer is not a bytes-like objects or wrong length.
+// Raise TypeError or ValueError if peer is not a bytes-like objects or wrong length.
 // Return None.
 static mp_obj_t espnow_del_peer(mp_obj_t _, mp_obj_t peer) {
     uint8_t peer_addr[ESP_NOW_ETH_ALEN];
@@ -753,7 +752,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_peers_obj, espnow_get_peers);
 #if MICROPY_PY_ESPNOW_EXTRA_PEER_METHODS
 // ESPNow.get_peer(peer_mac): Get the peer info for peer_mac as a tuple.
 // Raise OSError if ESPNow.init() has not been called.
-// Raise ValueError if mac or LMK are not bytes-like objects or wrong length.
+// Raise TypeError or ValueError if mac or LMK are not bytes-like objects or wrong length.
 // Return a tuple of (peer_addr, lmk, channel, ifidx, encrypt).
 static mp_obj_t espnow_get_peer(mp_obj_t _, mp_obj_t arg1) {
     esp_now_peer_info_t peer = {0};
@@ -770,7 +769,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(espnow_get_peer_obj, espnow_get_peer);
 //          [channel=1..11|0], [ifidx=0|1], [encrypt=True|False])
 // Positional args set to None will be left at current values.
 // Raise OSError if ESPNow.init() has not been called.
-// Raise ValueError if mac or LMK are not bytes-like objects or wrong length.
+// Raise TypeError or ValueError if mac or LMK are not bytes-like objects or wrong length.
 // Raise TypeError if invalid keyword args or too many positional args.
 // Return None.
 static mp_obj_t espnow_mod_peer(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {

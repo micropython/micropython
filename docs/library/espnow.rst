@@ -265,7 +265,7 @@ after reboot/reset). This reduces the reliability of receiving ESP-NOW messages
         `active()<network.WLAN.active>`.
       - ``OSError(num, "ESP_ERR_ESPNOW_NO_MEM")`` internal ESP-NOW buffers are
         full.
-      - ``ValueError()`` on invalid values for the parameters.
+      - ``ValueError()`` or ``TypeError()`` on invalid values or types for the parameters.
 
     **Note**: A peer will respond with success if its wifi interface is
     `active()<network.WLAN.active>` and set to the same channel as the sender,
@@ -505,7 +505,7 @@ must first register the sender and use the same encryption keys as the sender
         - ``OSError(num, "ESP_ERR_ESPNOW_CHAN")`` if a channel value was
           set that doesn't match the channel currently configured for this
           interface.
-        - ``ValueError()`` on invalid keyword args or values.
+        - ``ValueError()`` or ``TypeError()`` on invalid keyword args or values.
 
 .. method:: ESPNow.del_peer(mac)
 
@@ -520,7 +520,7 @@ must first register the sender and use the same encryption keys as the sender
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_INIT")`` if not initialised.
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_FOUND")`` if *mac* is not
           registered.
-        - ``ValueError()`` on invalid *mac* values.
+        - ``ValueError()`` or ``TypeError()`` on invalid *mac* values.
 
 .. method:: ESPNow.get_peer(mac) (ESP32 only)
 
@@ -536,7 +536,7 @@ must first register the sender and use the same encryption keys as the sender
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_INIT")`` if not initialised.
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_FOUND")`` if *mac* is not
           registered.
-        - ``ValueError()`` on invalid *mac* values.
+        - ``ValueError()`` or ``TypeError()`` on invalid *mac* values.
 
 .. method:: ESPNow.peer_count() (ESP32 only)
 
