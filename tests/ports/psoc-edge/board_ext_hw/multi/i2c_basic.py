@@ -35,7 +35,7 @@ def instance0():
         if flags & I2CTarget.IRQ_END_WRITE:
             write_seen[0] = True
 
-    i2c_target.irq(irq_handler, hard=True)
+    i2c_target.irq(irq_handler)
 
     # Signal to master that target is ready.
     multitest.next()
