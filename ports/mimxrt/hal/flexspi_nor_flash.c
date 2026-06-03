@@ -89,7 +89,7 @@ static ps_div_t div_table_mhz[] = {
 };
 #endif
 
-__attribute__((section(".ram_functions"))) void flexspi_nor_update_lut_clk(uint32_t freq_index) {
+__attribute__((section(".ram_functions"))) void flexspi_update_lut_clk(uint32_t freq_index) {
     // Create a local copy of the LookupTable. Modify the entry for WRITESTATUSREG
     // Add an entry for PAGEPROGRAM_QUAD.
     uint32_t lookuptable_copy[64];
