@@ -60,7 +60,6 @@ void mp_hal_delay_us(mp_uint_t us);
 void mp_hal_delay_us_fast(mp_uint_t us);
 void mp_hal_delay_ms(mp_uint_t ms);
 
-void mp_hal_stdio_init(void);
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
