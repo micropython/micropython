@@ -90,6 +90,29 @@ static void machine_spi_scb_isr(mp_obj_t hw_spi_obj) {
     Cy_SCB_SPI_Interrupt(self->scb_obj->scb, &self->ctx);
 }
 
+// Configure SPI master pins and return SCB unit
+static uint8_t machine_spi_pins_config_and_get_scb_unit(
+    mp_hal_pin_obj_t sck,
+    mp_hal_pin_obj_t mosi,
+    mp_hal_pin_obj_t miso)
+{
+    // CS/SSEL is managed externally by the user via machine.Pin
+    const mp_hal_pin_af_config_t spi_pins_config[] = {
+        MP_HAL_PIN_AF_CONF(sck,
+            CY_GPIO_DM_STRONG_IN_OFF, 1,
+            MACHINE_PIN_AF_SIGNAL_SPI_CLK),
+        MP_HAL_PIN_AF_CONF(mosi,
+            CY_GPIO_DM_STRONG_IN_OFF, 1,
+            MACHINE_PIN_AF_SIGNAL_SPI_MOSI),
+        MP_HAL_PIN_AF_CONF(miso,
+            CY_GPIO_DM_HIGHZ, 0,
+            MACHINE_PIN_AF_SIGNAL_SPI_MISO),
+    };
+    uint8_t scb_unit = spi_pins_config[0].af->unit;
+    mp_hal_periph_pins_af_config(spi_pins_config, 3);
+    return scb_unit;
+}
+
 static void machine_spi_hw_init(machine_spi_obj_t *self) {
     // Input validation
     if (self->baudrate == 0) {
@@ -109,21 +132,9 @@ static void machine_spi_hw_init(machine_spi_obj_t *self) {
         mp_raise_ValueError(MP_ERROR_TEXT("sck, mosi, and miso pins are required"));
     }
 
-    // Pin config -> discovers SCB unit
-    // CS/SSEL is managed externally by the user via machine.Pin
-    const mp_hal_pin_af_config_t spi_pins_config[] = {
-        MP_HAL_PIN_AF_CONF(self->sck,
-            CY_GPIO_DM_STRONG_IN_OFF, 1,
-            MACHINE_PIN_AF_SIGNAL_SPI_CLK),
-        MP_HAL_PIN_AF_CONF(self->mosi,
-            CY_GPIO_DM_STRONG_IN_OFF, 1,
-            MACHINE_PIN_AF_SIGNAL_SPI_MOSI),
-        MP_HAL_PIN_AF_CONF(self->miso,
-            CY_GPIO_DM_HIGHZ, 0,
-            MACHINE_PIN_AF_SIGNAL_SPI_MISO),
-    };
-    uint8_t scb_unit = spi_pins_config[0].af->unit;
-    mp_hal_periph_pins_af_config(spi_pins_config, 3);
+    // Configure SPI pins and discover SCB unit
+    uint8_t scb_unit = machine_spi_pins_config_and_get_scb_unit(
+        self->sck, self->mosi, self->miso);
 
     // Power on the peripheral group that contains this SCB.
     // Note: "Slave" in PeriGroupSlaveInit refers to the bus architecture

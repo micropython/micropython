@@ -97,6 +97,33 @@ static void machine_spi_target_scb_isr(mp_obj_t obj) {
     Cy_SCB_SPI_Interrupt(self->scb_obj->scb, &self->ctx);
 }
 
+// Configure SPI target (slave) pins and return SCB unit
+static uint8_t machine_spi_target_pins_config_and_get_scb_unit(
+    mp_hal_pin_obj_t sck,
+    mp_hal_pin_obj_t mosi,
+    mp_hal_pin_obj_t miso,
+    mp_hal_pin_obj_t ssel)
+{
+    // Pin config: SCK, MOSI, SSEL are inputs; MISO is output
+    const mp_hal_pin_af_config_t spi_pins_config[] = {
+        MP_HAL_PIN_AF_CONF(sck,
+            CY_GPIO_DM_HIGHZ, 0,
+            MACHINE_PIN_AF_SIGNAL_SPI_CLK),
+        MP_HAL_PIN_AF_CONF(mosi,
+            CY_GPIO_DM_HIGHZ, 0,
+            MACHINE_PIN_AF_SIGNAL_SPI_MOSI),
+        MP_HAL_PIN_AF_CONF(miso,
+            CY_GPIO_DM_STRONG_IN_OFF, 1,
+            MACHINE_PIN_AF_SIGNAL_SPI_MISO),
+        MP_HAL_PIN_AF_CONF(ssel,
+            CY_GPIO_DM_HIGHZ, 0,
+            MACHINE_PIN_AF_SIGNAL_SPI_SELECT0),
+    };
+    uint8_t scb_unit = spi_pins_config[0].af->unit;
+    mp_hal_periph_pins_af_config(spi_pins_config, 4);
+    return scb_unit;
+}
+
 static void machine_spi_target_hw_init(machine_spi_target_obj_t *self) {
     // Input validation
     if ((self->polarity > 1U) || (self->phase > 1U)) {
@@ -110,23 +137,9 @@ static void machine_spi_target_hw_init(machine_spi_target_obj_t *self) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid firstbit"));
     }
 
-    // Pin config: SCK, MOSI, SSEL are inputs; MISO is output
-    const mp_hal_pin_af_config_t spi_pins_config[] = {
-        MP_HAL_PIN_AF_CONF(self->sck,
-            CY_GPIO_DM_HIGHZ, 0,
-            MACHINE_PIN_AF_SIGNAL_SPI_CLK),
-        MP_HAL_PIN_AF_CONF(self->mosi,
-            CY_GPIO_DM_HIGHZ, 0,
-            MACHINE_PIN_AF_SIGNAL_SPI_MOSI),
-        MP_HAL_PIN_AF_CONF(self->miso,
-            CY_GPIO_DM_STRONG_IN_OFF, 1,
-            MACHINE_PIN_AF_SIGNAL_SPI_MISO),
-        MP_HAL_PIN_AF_CONF(self->ssel,
-            CY_GPIO_DM_HIGHZ, 0,
-            MACHINE_PIN_AF_SIGNAL_SPI_SELECT0),
-    };
-    uint8_t scb_unit = spi_pins_config[0].af->unit;
-    mp_hal_periph_pins_af_config(spi_pins_config, 4);
+    // Configure SPI target pins and discover SCB unit
+    uint8_t scb_unit = machine_spi_target_pins_config_and_get_scb_unit(
+        self->sck, self->mosi, self->miso, self->ssel);
 
     // Power on the peripheral group that contains this SCB.
     machine_scb_enable_group(scb_unit);
