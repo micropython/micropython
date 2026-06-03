@@ -83,6 +83,7 @@ typedef struct _machine_rtc_obj_t {
     uint64_t alarm_elapse_time_s;
     bool alarmset;
     bool repeat;
+    volatile bool time_updated;
 } machine_rtc_obj_t;
 
 void srss_interrupt_rtc_IRQHandler(void);
@@ -94,10 +95,21 @@ static machine_rtc_obj_t machine_rtc_obj = {
     .alarm_period_s = 0,
     .alarm_elapse_time_s = 0,
     .alarmset = false,
-    .repeat = false
+    .repeat = false,
+    .time_updated = true,
 };
 
 static bool rtc_irq_initialized = false;
+
+static inline void machine_rtc_mark_time_updated(void) {
+    machine_rtc_obj.time_updated = true;
+}
+
+bool machine_rtc_read_and_clear_time_updated(void) {
+    bool updated = machine_rtc_obj.time_updated;
+    machine_rtc_obj.time_updated = false;
+    return updated;
+}
 
 static inline uint32_t rtc_breg_read(uint32_t index) {
     return BACKUP_BREG_SET2[index];
@@ -186,6 +198,10 @@ void machine_rtc_init_all(void) {
         rtc_access_retry--;
         Cy_SysLib_Delay(RTC_RETRY_DELAY_MS);
     } while ((rtc_status != CY_RTC_SUCCESS) && (rtc_access_retry != 0));
+
+    if (rtc_status == CY_RTC_SUCCESS) {
+        machine_rtc_mark_time_updated();
+    }
 }
 
 // Helper function to set/get datetime
@@ -229,6 +245,7 @@ static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
 
         uint32_t year = year_full - RTC_CENTURY;
         Cy_RTC_SetDateAndTimeDirect(sec, min, hour, date, month, year);
+        machine_rtc_mark_time_updated();
     }
     return mp_const_none;
 }
@@ -363,6 +380,7 @@ static mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
     /* Resets RTC to 1st Jan' 2015 as mentioned in MPY guide*/
     Cy_RTC_SetDateAndTimeDirect(RTC_INIT_SECOND, RTC_INIT_MINUTE, RTC_INIT_HOUR,
         RTC_INIT_MDAY, RTC_INIT_MONTH, RTC_INIT_YEAR);
+    machine_rtc_mark_time_updated();
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_deinit_obj, machine_rtc_deinit);

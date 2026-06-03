@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "cybsp.h"
@@ -123,8 +124,34 @@ void mp_hal_delay_us(mp_uint_t us) {
 }
 
 extern uint64_t mp_hal_time_get_epoch_seconds(void);
+extern bool machine_rtc_read_and_clear_time_updated(void);
 
 uint64_t mp_hal_time_ns(void) {
-    uint64_t s = mp_hal_time_get_epoch_seconds();
-    return s * 1000000000ULL + mp_hal_systick_ticks_us64() * 1000ULL;
+    static uint64_t time_us_offset_from_epoch = 0;
+    // Resync whenever RTC time was updated (set/deinit/init path marks this).
+    bool need_resync = machine_rtc_read_and_clear_time_updated();
+
+    while (need_resync) {
+        // Wait until RTC second changes so we can anchor the monotonic timer
+        // to a known wall-clock second boundary.
+        uint64_t prev_seconds = mp_hal_time_get_epoch_seconds();
+        uint64_t edge_ticks_us;
+        uint64_t edge_seconds;
+
+        do {
+            edge_seconds = mp_hal_time_get_epoch_seconds();
+        } while (edge_seconds == prev_seconds);
+
+        // Capture the monotonic timestamp immediately after observing the RTC
+        // second rollover so the fixed offset stays aligned to wall-clock time.
+        // `edge_seconds` is the first observed second after the rollover.
+        edge_ticks_us = mp_hal_systick_ticks_us64();
+        time_us_offset_from_epoch = edge_seconds * 1000000ULL - edge_ticks_us;
+
+        // If RTC was updated during calibration, repeat once more to align with
+        // the latest RTC second boundary.
+        need_resync = machine_rtc_read_and_clear_time_updated();
+    }
+
+    return (time_us_offset_from_epoch + mp_hal_systick_ticks_us64()) * 1000ULL;
 }
