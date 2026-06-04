@@ -4,6 +4,7 @@ comparison report.
 
 Usage (run from anywhere):
     tools/make_report.py --variant name=/path/to/micropython [--variant ...] \
+                         [--board name=/dev/ttyACM0 [--board ...]] \
                          [--keep-path name] [--keep-path ...] \
                          [--out report.md] [paths ...]
 
@@ -16,6 +17,13 @@ Each variant gets a column. Cell values use short tags:
     skip covers both runtime `skipTest()` calls and testcases whose whole
     file SKIP'd (or crashed); the file's tests are still
     listed if another variant ran them.
+
+`--board name=PORT` adds a column that runs the tests on a bare-metal target
+(e.g. `--board RPI_PICO2=/dev/ttyACM0`). Unittest-style tests are run on the
+board individually via `mpremote` and reported per testcase (directly
+comparable to variant columns); traditional tests under `basics` are run via
+`tests/run-tests.py -t PORT` and reported at file-level granularity. The test's
+required modules must already be present on the board's filesystem.
 
 `--keep-path` can be specified for individual variants by name. If specified
 for a variant, MICROPYPATH will not be overridden when running tests for
@@ -258,7 +266,14 @@ def is_whole_file_skip(text, max_lines=5):
 
 
 def run_variant(binary, test_file, keep_path=False):
-    """Run one test file under one variant. Return (stdout, returncode)."""
+    """Run one test file under one variant. Return (stdout, returncode).
+
+    Unless `keep_path` is set, MICROPYPATH is overridden with the essential
+    paths only (deliberately excluding any typing/stub libs in the caller's
+    environment) so a plain variant acts as a true baseline. Use `keep_path`
+    for variants that should keep the environment's MICROPYPATH (e.g. a
+    "mip-installed" baseline).
+    """
     env = os.environ.copy()
     if not keep_path:
         env["MICROPYPATH"] = os.pathsep.join(
@@ -284,29 +299,58 @@ def run_variant(binary, test_file, keep_path=False):
         return "BINARY NOT FOUND: %s" % binary, -1
 
 
-def run_traditional_variant(binary, files, result_dir, keep_path=False):
-    """Run traditional tests via run-tests.py.
+def run_variant_on_board(port, test_file, timeout=300):
+    """Run one unittest file on a bare-metal board via `mpremote`.
+
+    Returns (stdout, returncode), mirroring `run_variant` so the same
+    unittest-output parsing applies. The test's required modules must already
+    be present on the board's filesystem.
+    """
+    cmd = ["mpremote", "connect", port, "run", test_file]
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=TESTS_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=timeout,
+        )
+        return proc.stdout.decode("utf-8", "replace"), proc.returncode
+    except subprocess.TimeoutExpired:
+        return "TIMEOUT", -1
+    except FileNotFoundError:
+        return "mpremote NOT FOUND", -1
+
+
+def run_traditional_variant(binary, files, result_dir, keep_path=False, device=None):
+    """Run tests via run-tests.py and return per-file results.
+
+    When `device` is given, tests run on a bare-metal target via the
+    run-tests.py `-t` option (and `binary` is ignored). Otherwise tests run
+    on the local `binary` via the MICROPY_MICROPYTHON environment variable.
 
     Return (stdout_text, returncode, status_map) where status_map maps
     'dir/name.py' -> short result tag.
     """
     env = os.environ.copy()
-    env["MICROPY_MICROPYTHON"] = binary
     cmd = [sys.executable, "run-tests.py", "-r", result_dir, "-j", "1"]
+    if device is not None:
+        cmd.extend(["-t", device])
+    else:
+        env["MICROPY_MICROPYTHON"] = binary
     if keep_path:
         cmd.append("--keep-path")
     cmd.extend(normalize_input_path(p) for p in files)
 
     try:
+        # Stream run-tests.py output directly to the terminal so the user sees
+        # progress (board runs over serial can be slow).
         proc = subprocess.run(
             cmd,
             cwd=TESTS_DIR,
             env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
             timeout=1800,
         )
-        text = proc.stdout.decode("utf-8", "replace")
     except subprocess.TimeoutExpired:
         return "TIMEOUT", -1, {}
     except FileNotFoundError:
@@ -332,7 +376,7 @@ def run_traditional_variant(binary, files, result_dir, keep_path=False):
         # Return empty map; caller decides whether to mark tests as skip or ERROR.
         pass
 
-    return text, proc.returncode, status_map
+    return "", proc.returncode, status_map
 
 
 def sanitize_name(name):
@@ -540,13 +584,106 @@ def bold_failures(text):
     return re.sub(r"\b(FAIL|ERROR|false_positive)\b", r"**\1**", text)
 
 
+def run_unittest_files(runners, unittest_files, keep_path_names, table, file_status, file_summary):
+    """Run each unittest file under every runner and record per-testcase rows.
+
+    `runners` is a list of (name, kind, target) where kind is "variant"
+    (target is a local binary path) or "board" (target is a serial port run
+    via mpremote). Both produce the same unittest output, parsed identically.
+    """
+    for f in unittest_files:
+        for rname, kind, target in runners:
+            keep_path = rname in keep_path_names
+            if kind == "board":
+                print("  [%s] %s ..." % (rname, f), file=sys.stderr)
+                text, rc = run_variant_on_board(target, f)
+            else:
+                text, rc = run_variant(target, f, keep_path=keep_path)
+            if is_whole_file_skip(text):
+                file_status[(f, rname)] = "skip"
+                continue
+            file_status[(f, rname)] = "crash" if rc != 0 else "ran"
+            for cls, name, tag in parse_unittest_output(text):
+                if cls.startswith("__main__."):
+                    cls = cls.replace("__main__.", "")
+                key = (f, cls, name)
+                table.setdefault(key, {})
+                if tag in file_summary[rname]:
+                    file_summary[rname][tag] += 1
+                file_summary[rname]["total"] += 1
+                table[key][rname] = bold_failures(tag)
+
+
+def fill_missing_cells(columns, table, file_status, file_summary):
+    """Fill cells for columns that did not produce a row for a testcase.
+
+    A missing cell is counted as `skip` (whole-file SKIP) or `ERROR` (the
+    column crashed running that file) so per-column totals match row counts.
+    """
+    for key, per in table.items():
+        f = key[0]
+        for cname in columns:
+            if cname in per:
+                continue
+            status = file_status.get((f, cname), "skip")
+            tag = "ERROR" if status == "crash" else "skip"
+            per[cname] = bold_failures(tag)
+            file_summary[cname][tag] += 1
+            file_summary[cname]["total"] += 1
+
+
+def run_traditional_files(runners, traditional_files, keep_path_names, table, file_summary):
+    """Run traditional (non-unittest) tests via run-tests.py for every runner.
+
+    These are reported at file-level granularity in a single rollup row per
+    file. Boards run on-target via `run-tests.py -t PORT`.
+    """
+    if not traditional_files:
+        return
+    for rname, kind, target in runners:
+        keep_path = rname in keep_path_names
+        result_dir = os.path.join(TESTS_DIR, "results", "make_report_" + sanitize_name(rname))
+        os.makedirs(result_dir, exist_ok=True)
+        print(
+            "\n=== Running %d traditional test(s) for %s %r ==="
+            % (len(traditional_files), kind, rname),
+            file=sys.stderr,
+        )
+        device = target if kind == "board" else None
+        binary = None if kind == "board" else target
+        _text, rc, status_map = run_traditional_variant(
+            binary,
+            traditional_files,
+            result_dir=result_dir,
+            keep_path=keep_path,
+            device=device,
+        )
+        for f in traditional_files:
+            tag = status_map.get(f)
+            if tag is None:
+                tag = "ERROR" if rc != 0 else "skip"
+            key = (f, "traditional", "result")
+            table.setdefault(key, {})
+            table[key][rname] = bold_failures(tag)
+            if tag in file_summary[rname]:
+                file_summary[rname][tag] += 1
+            file_summary[rname]["total"] += 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--variant",
         action="append",
-        required=True,
+        default=[],
         help="name=path to a micropython binary (may be repeated)",
+    )
+    ap.add_argument(
+        "--board",
+        action="append",
+        default=[],
+        help="name=serialport for a bare-metal target run via run-tests.py -t "
+        "(e.g. RPI_PICO2=/dev/ttyACM0; may be repeated)",
     )
     ap.add_argument(
         "--keep-path",
@@ -571,10 +708,14 @@ def main():
     ap.add_argument(
         "paths",
         nargs="*",
-        default=["typing", "typing/pep"],
-        help="test files or directories (relative to tests/)",
+        default=[],
+        help="test files or directories (relative to tests/). If omitted, a "
+        "default suite (typing_runtime, typing, typing/pep, basics) is used.",
     )
     args = ap.parse_args()
+
+    if not args.variant and not args.board:
+        ap.error("at least one --variant or --board is required")
 
     variants = OrderedDict()
     for spec in args.variant:
@@ -585,20 +726,30 @@ def main():
             path = os.path.abspath(os.path.join(REPO_ROOT, path))
         variants[name] = path
 
+    boards = OrderedDict()
+    for spec in args.board:
+        if "=" not in spec:
+            ap.error("--board must be name=serialport")
+        name, _, port = spec.partition("=")
+        if name in variants:
+            ap.error("--board name %r collides with a --variant name" % name)
+        boards[name] = port
+
+    # Columns are all variants followed by all boards.
+    columns = list(variants) + list(boards)
+
     # Build a set of variant names for which to keep the path
     keep_path_variants = set(args.keep_path)
 
-    unittest_paths, traditional_paths = split_paths_by_mode(args.paths, args.mode)
-
-    if args.mode == "auto":
-        # Always include both suites in auto mode.
-        for default_path in ("typing_runtime", "typing", "typing/pep"):
+    # Only fall back to the full default suite when the user gave no paths.
+    user_paths = list(args.paths)
+    if not user_paths:
+        for default_path in ("typing_runtime", "typing", "typing/pep", "basics"):
             full = os.path.join(TESTS_DIR, default_path)
             if os.path.isdir(full) or (os.path.isfile(full) and full.endswith(".py")):
-                unittest_paths.append(default_path)
-        basics_dir = os.path.join(TESTS_DIR, "basics")
-        if os.path.isdir(basics_dir):
-            traditional_paths.append("basics")
+                user_paths.append(default_path)
+
+    unittest_paths, traditional_paths = split_paths_by_mode(user_paths, args.mode)
 
     unittest_paths = list(
         OrderedDict((normalize_input_path(p), None) for p in unittest_paths).keys()
@@ -614,74 +765,20 @@ def main():
     file_status = {}  # (file, variant) -> "ran" | "skip" | "crash"
     file_summary = {
         v: dict.fromkeys(("ok", "xfail", "false_positive", "skip", "FAIL", "ERROR", "total"), 0)
-        for v in variants
+        for v in columns
     }
     sizes = {v: get_binary_size(p) for v, p in variants.items()}
 
-    for f in unittest_files:
-        for vname, vbin in variants.items():
-            keep_path = vname in keep_path_variants
-            text, rc = run_variant(vbin, f, keep_path=keep_path)
-            if is_whole_file_skip(text):
-                file_status[(f, vname)] = "skip"
-                continue
-            if rc != 0:
-                file_status[(f, vname)] = "crash"
-            else:
-                file_status[(f, vname)] = "ran"
-            cases = parse_unittest_output(text)
-            for cls, name, tag in cases:
-                if cls.startswith("__main__."):
-                    cls = cls.replace("__main__.", "")
-                key = (f, cls, name)
-                if key not in table:
-                    table[key] = {}
-                # Count using the original tag before bolding
-                if tag in file_summary[vname]:
-                    file_summary[vname][tag] += 1
-                file_summary[vname]["total"] += 1
-                # Apply bold formatting for display
-                tag = bold_failures(tag)
-                table[key][vname] = tag
+    # Runners: local variants first, then bare-metal boards. Both produce
+    # per-testcase unittest rows so their columns are directly comparable.
+    runners = [(n, "variant", p) for n, p in variants.items()]
+    runners += [(n, "board", p) for n, p in boards.items()]
 
-    # Second pass: testcases that some variants ran but others did not are
-    # counted as `skip` (whole-file SKIP) or `ERROR` (variant crashed) so
-    # per-variant totals match the global row count.
-    for key, per in table.items():
-        f = key[0]
-        for vname in variants:
-            if vname in per:
-                continue
-            status = file_status.get((f, vname), "skip")
-            tag = "ERROR" if status == "crash" else "skip"
-            per[vname] = bold_failures(tag)
-            file_summary[vname][tag] += 1
-            file_summary[vname]["total"] += 1
-
-    for vname, vbin in variants.items():
-        if not traditional_paths:
-            break
-        keep_path = vname in keep_path_variants
-        result_dir = os.path.join(TESTS_DIR, "results", "make_report_" + sanitize_name(vname))
-        os.makedirs(result_dir, exist_ok=True)
-        _text, rc, status_map = run_traditional_variant(
-            vbin,
-            traditional_files,
-            result_dir=result_dir,
-            keep_path=keep_path,
-        )
-
-        for f in traditional_files:
-            tag = status_map.get(f)
-            if tag is None:
-                tag = "ERROR" if rc != 0 else "skip"
-            key = (f, "traditional", "result")
-            if key not in table:
-                table[key] = {}
-            table[key][vname] = bold_failures(tag)
-            if tag in file_summary[vname]:
-                file_summary[vname][tag] += 1
-            file_summary[vname]["total"] += 1
+    run_unittest_files(
+        runners, unittest_files, keep_path_variants, table, file_status, file_summary
+    )
+    fill_missing_cells(columns, table, file_status, file_summary)
+    run_traditional_files(runners, traditional_files, keep_path_variants, table, file_summary)
 
     headers = {f: read_header_comments(os.path.join(TESTS_DIR, f)) for f in unittest_files}
 
@@ -713,7 +810,7 @@ def main():
         metadata["hide_options"].append("--hide-xfail")
 
     md = render_markdown(
-        list(variants),
+        columns,
         unittest_files,
         traditional_files,
         table,
