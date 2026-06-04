@@ -53,7 +53,9 @@ Q({:#x})
 Q({:#b})
 Q( )
 Q(\n)
+#if MICROPY_STACK_CHECK
 Q(maximum recursion depth exceeded)
+#endif
 Q(<module>)
 Q(<lambda>)
 Q(<listcomp>)

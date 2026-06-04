@@ -1779,7 +1779,7 @@ MP_NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename
     nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
 }
 
-#if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
+#if MICROPY_STACK_CHECK
 MP_NORETURN void mp_raise_recursion_depth(void) {
     mp_raise_type_arg(&mp_type_RuntimeError, MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded));
 }
