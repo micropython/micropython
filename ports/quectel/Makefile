@@ -82,7 +82,7 @@ SRC_C += $(SRC_MOD) \
 		 $(SRC_EXTMOD_C) \
 		 $(LIBS) \
 		 $(QUEC_SRC) \
-		 $(BUILD)/frozen_content.c
+		 frozen_content.c
 
 SRC_CXX += $(SRC_MOD_CXX)
 
