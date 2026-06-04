@@ -5,9 +5,10 @@ The "unix" port runs in standard Unix-like environments including Linux, BSD,
 macOS, and Windows Subsystem for Linux.
 
 The x86 and x64 architectures are supported (i.e. x86 32- and 64-bit), as well
-as ARM and MIPS. Extending the unix port to another architecture requires
-writing some assembly code for the exception handling and garbage collection.
-Alternatively, a fallback implementation based on setjmp/longjmp can be used.
+as ARM, MIPS, and RISC-V. Extending the unix port to another architecture
+requires writing some assembly code for the exception handling and garbage
+collection.  Alternatively, a fallback implementation based on setjmp/longjmp
+can be used.
 
 Building
 --------
@@ -18,7 +19,7 @@ To build the unix port locally then you will need:
 
 * git command line executable, unless you downloaded a source .tar.xz file from
   https://micropython.org/download/
-* gcc (or clang for macOS) toolchain
+* an appropriate gcc (or clang for macOS) toolchain for your target
 * GNU Make
 * Python 3.x
 
@@ -181,3 +182,64 @@ Several classes of checks are disabled via compiler flags:
   check is intended to make sure locals in a "returned from" stack frame are not
   used. However, this mode interferes with various assumptions that
   MicroPython's stack checking, NLR, and GC rely on.
+
+### Notes about x86 (i686) support
+
+It used to be possible to create an x86 (32-bits) build on a x64 (64-bits) host
+by passing `MICROPY_FORCE_32BIT=1` to `make`.  That option was retired: x86
+usage has declined quite a bit in the past few years, and MicroPython now
+supports at least one more mixed 32/64-bits target architecture for which
+enabling `MICROPY_FORCE_32BIT` would make builds fail.
+
+x86 will be treated as a cross-compilation target from now on.  This means you
+will need to install a suitable compiler (on Ubuntu you can install the
+`gcc-i686-linux-gnu` and `g++-i686-linux-gnu` packages, for example) and pass
+the toolchain's command prefix to the `CROSS_COMPILE` command line variable.
+
+This change is also extended to native modules, for which you may need to pass
+the toolchain's command prefix to the `CROSS` command line variable if your
+x86 compiler cannot be invoked with `i686-linux-gnu-gcc`.
+
+Or, as an example:
+
+```bash
+$ printf "%s %s %s %s\n" $(lsb_release -d | cut -f 2) $(uname -m)
+Ubuntu 24.04.3 LTS x86_64
+
+$ i686-linux-gnu-gcc --version | head -n 1
+i686-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+
+$ CROSS_COMPILE=i686-linux-gnu- make -C ports/unix
+make: Entering directory '/ports/unix'
+Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
+...
+LINK build-standard/micropython
+   text    data     bss     dec     hex filename
+ 718479   36016    2092  756587   b8b6b build-standard/micropython
+make: Leaving directory '/ports/unix'
+
+$ file -b ports/unix/build-standard/micropython | cut -d, -f-2
+ELF 32-bit LSB pie executable, Intel 80386
+
+# `i686-linux-gnu-` is the default prefix for x86 native modules now, it has
+# been explicitly mentioned here in case you want to see how to set it.
+
+$ make -C examples/natmod/features0 ARCH=x86 CROSS=i686-linux-gnu-
+make: Entering directory '/examples/natmod/features0'
+GEN build/features0.config.h
+CC features0.c
+LINK build/features0.o
+arch:         EM_386
+text size:    196
+bss size:     0
+GOT entries:  4
+GEN features0.mpy
+make: Leaving directory '/examples/natmod/features0'
+
+$ cd examples/natmod/features0 && ../../../ports/unix/build-standard/micropython
+MicroPython v1.28.0-preview.63.g8189e9935a.dirty on 2026-01-09; linux [GCC 13.3.0] version
+Type "help()" for more information.
+>>> import features0
+>>> features0.factorial(10)
+3628800
+```

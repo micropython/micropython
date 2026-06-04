@@ -47,8 +47,8 @@ CLEAN_EXTRA += $(MOD).mpy .mpy_ld_cache
 ifeq ($(ARCH),x86)
 
 # x86
-CROSS =
-CFLAGS_ARCH += -m32 -fno-stack-protector
+CROSS = i686-linux-gnu-
+CFLAGS_ARCH += -fno-stack-protector
 MICROPY_FLOAT_IMPL ?= double
 
 else ifeq ($(ARCH),x64)
