@@ -265,17 +265,15 @@ def is_whole_file_skip(text, max_lines=5):
     return False
 
 
-def run_variant(binary, test_file, keep_path=False):
-    """Run one test file under one variant. Return (stdout, returncode).
-
-    Unless `keep_path` is set, MICROPYPATH is overridden with the essential
-    paths only (deliberately excluding any typing/stub libs in the caller's
-    environment) so a plain variant acts as a true baseline. Use `keep_path`
-    for variants that should keep the environment's MICROPYPATH (e.g. a
-    "mip-installed" baseline).
-    """
+def get_env(keep_path):
     env = os.environ.copy()
-    if not keep_path:
+    if keep_path:
+        if not env.get("MICROPYPATH"):
+            raise RuntimeError(
+                "--keep-path specified but MICROPYPATH is not set in the environment; test may fail due to missing modules"
+            )
+    else:
+        # Build MICROPYPATH for the test to use.
         env["MICROPYPATH"] = os.pathsep.join(
             (
                 ".frozen",
@@ -283,6 +281,12 @@ def run_variant(binary, test_file, keep_path=False):
                 os.path.join(REPO_ROOT, "lib", "micropython-lib", "python-stdlib", "unittest"),
             )
         )
+    return env
+
+
+def run_variant(binary, test_file, keep_path=False):
+    """Run one test file under one variant. Return (stdout, returncode)."""
+    env = get_env(keep_path)
     try:
         proc = subprocess.run(
             [binary, test_file],
@@ -332,7 +336,7 @@ def run_traditional_variant(binary, files, result_dir, keep_path=False, device=N
     Return (stdout_text, returncode, status_map) where status_map maps
     'dir/name.py' -> short result tag.
     """
-    env = os.environ.copy()
+    env = get_env(keep_path)
     cmd = [sys.executable, "run-tests.py", "-r", result_dir, "-j", "1"]
     if device is not None:
         cmd.extend(["-t", device])
@@ -451,18 +455,16 @@ def render_markdown(
         cmdline_paths = metadata.get("cmdline_paths") or []
         hide_opts = metadata.get("hide_options") or []
         out.append(
-            " - Specified test(s): "
-            + (", ".join(cmdline_paths) if cmdline_paths else "(default)")
-            + "\n"
+            " - Specified test(s): " + (", ".join(cmdline_paths) if cmdline_paths else "(default)")
         )
-        out.append(f"   - micropython: {metadata['main_branch']} ({metadata['main_commit']})\n")
+        out.append(f"   - micropython: {metadata['main_branch']} ({metadata['main_commit']})")
         if metadata.get("lib_branch") and metadata.get("lib_commit"):
             out.append(
-                f"   - micropython-lib: {metadata['lib_branch']} ({metadata['lib_commit']})\n"
+                f"   - micropython-lib: {metadata['lib_branch']} ({metadata['lib_commit']})"
             )
-        out.append(f" - Generated: {metadata['timestamp']}\n")
-        out.append(" - Hide options: " + (", ".join(hide_opts) if hide_opts else "none") + "\n")
-        out.append(f" - Rows hidden: {hidden_rows}\n")
+        out.append(f" - Generated: {metadata['timestamp']}")
+        out.append(" - Hide options: " + (", ".join(hide_opts) if hide_opts else "none") + "")
+        # out.append(f" - Rows hidden: {hidden_rows}")
         out.append("")
 
     out.append(
@@ -574,7 +576,7 @@ def render_markdown(
         for test_name, cells in rendered_rows:
             out.append("| %s | %s |" % (test_name, " | ".join(cells)))
         out.append("")
-    if metadata:
+    if metadata and hidden_rows > 0:
         out[6] = f" - Rows hidden: {hidden_rows}\n"
 
     return "\n".join(out)
@@ -584,7 +586,9 @@ def bold_failures(text):
     return re.sub(r"\b(FAIL|ERROR|false_positive)\b", r"**\1**", text)
 
 
-def run_unittest_files(runners, unittest_files, keep_path_names, table, file_status, file_summary):
+def run_unittest_files(
+    runners, unittest_files, keep_path_names: list[str], table, file_status, file_summary
+):
     """Run each unittest file under every runner and record per-testcase rows.
 
     `runners` is a list of (name, kind, target) where kind is "variant"
