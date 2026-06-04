@@ -142,7 +142,12 @@ def fit_signed(bits, value):
 
 
 def asm_jump_x86(entry):
-    return struct.pack("<BI", 0xE9, entry)
+    if fit_signed(7, entry):
+        return struct.pack("Bb", 0xEB, entry)
+    elif fit_signed(31, entry):
+        return struct.pack("<Bi", 0xE9, entry)
+    else:
+        raise LinkError("large jumps on x86/x64 are not supported")
 
 
 def asm_jump_thumb(entry):
