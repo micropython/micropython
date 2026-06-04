@@ -23,11 +23,11 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Software Development :: Embedded Systems",
     "Topic :: System :: Hardware",
 ]
-requires-python = ">=3.4"
+requires-python = ">=3.10"
 dynamic = ["dependencies", "version"]
 
 [project.optional-dependencies]
