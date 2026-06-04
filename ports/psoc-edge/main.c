@@ -65,11 +65,11 @@
 #define MPY_TASK_STACK_SIZE     (5120u)
 #define MPY_TASK_PRIORITY       (1u)
 
-// GC heap boundaries are provided by the linker (pse84_ns_cm33.ld).
-// __GcHeapStart = __HeapBase + 0x20000 (WiFi) / 0x8000 (non-WiFi)
+// GC heap boundaries come from --defsym in the Makefile (MICROPY_C_HEAP_SIZE).
+// __GcHeapStart = __HeapBase + MICROPY_C_HEAP_SIZE  (default: 0x16000 WiFi, 0x8000 no-WiFi)
 // __GcHeapEnd   = __HeapLimit
-// The C-heap zone [__HeapBase .. __GcHeapStart) is left for sbrk/malloc,
-// used by FreeRTOS task stacks and the WiFi/WCM/LwIP stack.
+// [__HeapBase .. __GcHeapStart) is the C-malloc zone for WiFi/WCM/LwIP.
+// FreeRTOS uses its own static heap (configTOTAL_HEAP_SIZE) independently.
 #if MICROPY_ENABLE_GC
 extern uint8_t __GcHeapStart, __GcHeapEnd;
 #endif
