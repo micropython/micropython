@@ -1,4 +1,5 @@
-# MicroPython on ESP32, ESP IDF configuration with SPIRAM support
+# Extra ESP-IDF config for PSRAM (SPIRAM) support on original ESP32
+# (includes workarounds not needed on other chips, which should use sdkconfig.spiram_quad.)
 
 CONFIG_SPIRAM=y
 CONFIG_SPIRAM_CACHE_WORKAROUND=y
