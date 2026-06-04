@@ -89,7 +89,7 @@ extern void machine_spi_target_deinit_all(void);
 extern void machine_pdm_pcm_deinit_all(void);
 extern void machine_ipc_deinit_all(void);
 extern void mp_hal_ticks_init(void);
-
+extern void machine_timer_deinit_all(void);
 void mpy_task(void *arg);
 static TaskHandle_t mpy_task_handle;
 
@@ -224,6 +224,7 @@ soft_reset:
     #endif
     machine_pdm_pcm_deinit_all();
     machine_ipc_deinit_all();
+    machine_timer_deinit_all();
 
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
