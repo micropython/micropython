@@ -30,6 +30,7 @@
 
 #include "sdcard.h"
 #include "ticks.h"
+#include "fsl_cache.h"
 #include "fsl_iomuxc.h"
 #include "pin.h"
 
@@ -294,17 +295,28 @@ static void sdcard_error_recovery(USDHC_Type *base) {
 static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handle, usdhc_transfer_t *transfer, uint32_t timeout_ms) {
     status_t status;
 
-    usdhc_adma_config_t dma_config;
+    usdhc_adma_config_t dma_config = {
+        .dmaMode = kUSDHC_DmaModeAdma2,
+        #if !(defined(FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN) && FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN)
+        .burstLen = kUSDHC_EnBurstLenForINCR,
+        #endif
+        .admaTable = sdcard_adma_descriptor_table,
+        .admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE,
+    };
+    usdhc_adma_config_t *p_dma_config = &dma_config;
 
-    (void)memset(&dma_config, 0, sizeof(usdhc_adma_config_t));
-    dma_config.dmaMode = kUSDHC_DmaModeAdma2;
-
-    #if !(defined(FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN) && FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN)
-    dma_config.burstLen = kUSDHC_EnBurstLenForINCR;
+    #if __DCACHE_PRESENT
+    size_t byte_len = transfer->data->blockCount * transfer->data->blockSize;
+    if ((uintptr_t)transfer->data->rxData % FSL_FEATURE_L1DCACHE_LINESIZE_BYTE != 0 ||
+        byte_len % FSL_FEATURE_L1DCACHE_LINESIZE_BYTE != 0) {
+        // A DMA RX transfer that isn't cache line aligned can be corrupted if the CPU writes the same cache line during
+        // the read, so make a polling transfer instead.
+        //
+        // (Note that the USDHC driver will internally disable DMA if the address isn't 4 byte aligned, so this check only
+        // changes behaviour for addresses which are word aligned but not cache line aligned!)
+        p_dma_config = NULL;
+    }
     #endif
-
-    dma_config.admaTable = sdcard_adma_descriptor_table;
-    dma_config.admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE;
 
     // Wait while the card is busy before a transfer
     status = kStatus_Timeout;
@@ -313,7 +325,7 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
         if (((transfer->data->txData == NULL) && (transfer->data->rxData == NULL)) ||
             (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
             // Not busy anymore or no TX-Data
-            status = USDHC_TransferBlocking(base, &dma_config, transfer);
+            status = USDHC_TransferBlocking(base, p_dma_config, transfer);
             if (status != kStatus_Success) {
                 sdcard_error_recovery(base);
             }
@@ -321,6 +333,14 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
         }
         ticks_delay_us64(10);
     }
+
+    #if __DCACHE_PRESENT
+    if (p_dma_config && transfer->data->rxData) {
+        // Invalidate any cache lines that were filled while the transfer was in progress
+        L1CACHE_InvalidateDCacheByRange((uintptr_t)transfer->data->rxData, byte_len);
+    }
+    #endif
+
     return status;
 
 }
