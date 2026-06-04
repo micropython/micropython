@@ -1346,6 +1346,9 @@ the last matching regex is used:
         action="store_true",
         help="print the result for each test",
     )
+    cmd_parser.add_argument(
+        "-c", "--trace-output", action="store_true", help="trace test output while running"
+    )
     args = cmd_parser.parse_args()
 
     global verbose_each_test

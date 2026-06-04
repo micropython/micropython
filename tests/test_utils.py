@@ -292,7 +292,23 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
-        output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
+        trace_output = args.trace_output and "feature_check" not in test_file
+        if trace_output:
+            print(f"**** running {test_file}")
+        accum = []
+
+        def foo(x):
+            if x == b"\x04":
+                return
+            if trace_output:
+                sys.stdout.buffer.write(x)
+                sys.stdout.buffer.flush()
+            accum.append(x)
+
+        pyb.exec_(script, timeout=TEST_TIMEOUT, data_consumer=foo)
+        if trace_output:
+            print("**** done")
+        output_mupy = b"".join(accum)
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
