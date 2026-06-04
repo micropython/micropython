@@ -68,6 +68,7 @@ typedef struct _machine_timer_obj_t {
     uint16_t mode;               // TIMER_MODE_ONE_SHOT or TIMER_MODE_PERIODIC
     mp_obj_t callback;
     bool active;
+    bool constructed;
     sys_int_cfg_t irq_cfg;
 } machine_timer_obj_t;
 
@@ -238,7 +239,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
             mp_raise_ValueError(MP_ERROR_TEXT("freq must be > 0"));
         }
         period_ticks = TIMER_CLK_HZ / (uint32_t)freq;
-    } else if (args[ARG_period].u_int >= 0) {
+    } else if (args[ARG_period].u_int > 0) {
         mp_int_t tick_hz = args[ARG_tick_hz].u_int;
         if (tick_hz <= 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("tick_hz must be > 0"));
@@ -246,6 +247,8 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
         period_ticks = (uint32_t)(
             (uint64_t)TIMER_CLK_HZ * (uint64_t)(uint32_t)args[ARG_period].u_int
             / (uint64_t)(uint32_t)tick_hz);
+    } else if (mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_period), MP_MAP_LOOKUP) != NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("period must be > 0"));
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("either freq or period must be specified"));
     }
@@ -275,11 +278,17 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
     }
 
     machine_timer_obj_t *self = &timer_obj[id];
+    if (self->constructed) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("Timer(%u) already created."), (unsigned)id);
+    }
+
     self->base.type = &machine_timer_type;
     self->id = (uint8_t)id;
     self->counter_num = timer_hw[id].counter_num;
     self->irq_num = timer_hw[id].irq_num;
     self->pclk_dst = timer_hw[id].pclk_dst;
+    self->constructed = true;
 
     if (n_args > 1 || n_kw > 0) {
         mp_map_t kw_map;
@@ -324,7 +333,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit)
 static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in,
     mp_print_kind_t kind) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "Timer(%u, mode=%s, active=%s)",
+    mp_printf(print, "Timer(Id=%u, mode=%s, active=%s)",
         (unsigned)self->id,
         self->mode == TIMER_MODE_ONE_SHOT ? "ONE_SHOT" : "PERIODIC",
         self->active ? "True" : "False");
@@ -342,6 +351,7 @@ void machine_timer_init_all(void) {
         timer_obj[i].pclk_dst = timer_hw[i].pclk_dst;
         timer_obj[i].callback = mp_const_none;
         timer_obj[i].active = false;
+        timer_obj[i].constructed = false;
     }
 }
 
@@ -354,6 +364,7 @@ void machine_timer_deinit_all(void) {
         }
         self->callback = mp_const_none;
         self->active = false;
+        self->constructed = false;
     }
 }
 
