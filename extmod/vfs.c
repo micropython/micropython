@@ -173,7 +173,9 @@ static mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
         mp_vfs_blockdev_init(&blockdev, bdev_obj);
         uint8_t buf[44];
         for (size_t block_num = 0; block_num <= 1; ++block_num) {
-            mp_vfs_blockdev_read_ext(&blockdev, block_num, 8, sizeof(buf), buf);
+            if (mp_vfs_blockdev_read_ext(&blockdev, block_num, 8, sizeof(buf), buf) != 0) {
+                continue;
+            }
             #if MICROPY_VFS_LFS1
             if (memcmp(&buf[32], "littlefs", 8) == 0) {
                 // LFS1

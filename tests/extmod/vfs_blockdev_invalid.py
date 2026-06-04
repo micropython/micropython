@@ -88,6 +88,23 @@ def test(vfs_class, test_data):
             assert error_read is not None
             assert (type(e), str(e)) == error_read
 
+        # Try mounting this block device
+        #
+        # Failing mount operation will return EIO rather than EINVAL, but otherwise
+        # the result should match error_open
+        error_mount = ERROR_EIO if error_open == ERROR_EINVAL else error_open
+        try:
+            vfs.mount(bdev, "/test_ram")
+            assert error_mount is None
+        except Exception as e:
+            assert error_mount is not None
+            assert (type(e), str(e)) == error_mount
+        finally:
+            try:
+                vfs.umount("/test_ram")
+            except OSError:
+                pass
+
 
 try:
     test(
