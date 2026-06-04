@@ -1510,19 +1510,13 @@ def do_preprocess(args):
         args.output = args.files[0][:-1] + "config.h"
     static_qstrs, qstr_vals = extract_qstrs(args.files)
     with open(args.output, "w") as f:
-        print(
-            "#include <stdint.h>\n"
-            "typedef uintptr_t mp_uint_t;\n"
-            "typedef intptr_t mp_int_t;\n"
-            "typedef uintptr_t mp_off_t;",
-            file=f,
-        )
+        print("#include <stdint.h>\ntypedef uintptr_t mp_off_t;", file=f)
         for i, q in enumerate(static_qstrs):
             print("#define %s (%u)" % (q, i + 1), file=f)
         for i, q in enumerate(sorted(qstr_vals)):
             print("#define %s (mp_native_qstr_table[%d])" % (q, i + 1), file=f)
         print("extern const uint16_t mp_native_qstr_table[];", file=f)
-        print("extern const mp_uint_t mp_native_obj_table[];", file=f)
+        print("extern const uintptr_t mp_native_obj_table[];", file=f)
 
 
 def do_link(args):

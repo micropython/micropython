@@ -2,6 +2,7 @@
 # MPY_DIR must be set to the top of the MicroPython source tree
 
 BUILD ?= build-$(ARCH)
+CC = $(CROSS)gcc
 
 ECHO = @echo
 RM = /bin/rm
@@ -123,7 +124,7 @@ else
 $(error architecture '$(ARCH)' not supported)
 endif
 
-ifneq ($(findstring -musl,$(shell $(CROSS)gcc -dumpmachine)),)
+ifneq ($(findstring -musl,$(shell $(CC) -dumpmachine)),)
 USE_MUSL := 1
 endif
 
@@ -132,15 +133,27 @@ ifeq ($(ARCH),$(filter $(ARCH),rv32imc rv64imc))
 # bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
 # is "nosys" so a value must be provided.  To avoid having per-distro
 # workarounds, always select Picolibc if available.
-PICOLIBC_SPECS := $(shell $(CROSS)gcc --print-file-name=picolibc.specs)
+PICOLIBC_SPECS := $(shell $(CC) --print-file-name=picolibc.specs)
 ifneq ($(PICOLIBC_SPECS),picolibc.specs)
+# LLVM toolchains supporting more than one target seem to ignore the `-march`
+# flag passed when looking up the specs file, so if your system has Picolibc
+# libraries for more than one architectures supported by the compiler the
+# lookup will return the first available file.
+#
+# For example, on Ubuntu 24.02 if you have both `picolibc-aarch64-linux-gnu`
+# and `picolibc-riscv64-unknown-elf` packages installed, the Qualcomm LLVM
+# toolchain (which supports both AArch64 and RISC-V 64) will always return the
+# AArch64 picolibc specs even when building for RISC-V.
+ifeq ($(shell grep -q "$(PICOLIBC_BASE)" "$(PICOLIBC_SPECS)"; echo $$?),0)
 CFLAGS_ARCH += -specs=$(PICOLIBC_SPECS)
 USE_PICOLIBC := 1
+endif
 endif
 endif
 
 MICROPY_FLOAT_IMPL_UPPER = $(shell echo $(MICROPY_FLOAT_IMPL) | tr '[:lower:]' '[:upper:]')
 CFLAGS += $(CFLAGS_ARCH) -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_$(MICROPY_FLOAT_IMPL_UPPER)
+CFLAGS += $(CFLAGS_EXTRA)
 
 ifeq ($(LINK_RUNTIME),1)
 # All of these picolibc-specific directives are here to work around a
@@ -167,15 +180,37 @@ LIBM_NAME := libc.a
 else
 LIBM_NAME := libm.a
 endif
-LIBGCC_PATH := $(realpath $(shell $(CROSS)gcc $(CFLAGS) --print-libgcc-file-name))
-LIBM_PATH := $(realpath $(shell $(CROSS)gcc $(CFLAGS) --print-file-name=$(LIBM_NAME)))
+# Clang will output the path to libclang_rt.builtins.a instead.  The problem is
+# that some symbols are duplicated between the builtins library and libc.a.  In
+# these cases let's leave it to the user to figure out how to handle this for
+# the time being.
+TOOLCHAIN_LIBGCC := $(realpath $(shell $(CC) $(CFLAGS) --print-libgcc-file-name))
+ifneq ($(findstring clang,$(shell $(CC) --version)),clang)
+LIBGCC_PATH = $(TOOLCHAIN_LIBGCC)
+else
+ifneq ($(LINK_CLANG_CLANGRT),0)
+LIBGCC_PATH = $(TOOLCHAIN_LIBGCC)
+else
+LIBGCC_PATH =
+endif
+endif
+LIBM_PATH := $(realpath $(shell $(CC) $(CFLAGS) --print-file-name=$(LIBM_NAME)))
 ifeq ($(USE_PICOLIBC),1)
 ifeq ($(LIBM_PATH),)
 PICOLIBC_ROOT ?= /usr/lib/picolibc/$(PICOLIBC_BASE)/lib
 LIBM_PATH := $(PICOLIBC_ROOT)/$(PICOLIBC_TARGET)/$(LIBM_NAME)
 endif
 endif
-MPY_LD_FLAGS += $(addprefix -l, $(LIBGCC_PATH) $(LIBM_PATH))
+ifneq ($(LINK_CLANG_LIBC),)
+ifeq ($(findstring clang,$(shell $(CC) --version)),clang)
+LIBC_PATH := $(realpath $(shell $(CC) $(CFLAGS) --print-file-name=libc.a))
+else
+LIBC_PATH =
+endif
+else
+LIBC_PATH =
+endif
+MPY_LD_FLAGS += $(addprefix -l, $(LIBGCC_PATH) $(LIBM_PATH) $(LIBC_PATH))
 endif
 ifneq ($(MPY_EXTERN_SYM_FILE),)
 MPY_LD_FLAGS += --externs "$(realpath $(MPY_EXTERN_SYM_FILE))"
@@ -183,8 +218,6 @@ endif
 ifneq ($(ARCH_FLAGS),)
 MPY_LD_FLAGS += --arch-flags "$(ARCH_FLAGS)"
 endif
-
-CFLAGS += $(CFLAGS_EXTRA)
 
 ################################################################################
 # Build rules
@@ -210,12 +243,12 @@ $(CONFIG_H): $(SRC)
 # Build .o from .c source files
 $(BUILD)/%.o: %.c $(CONFIG_H) Makefile
 	$(ECHO) "CC $<"
-	$(Q)$(CROSS)gcc $(CFLAGS) -o $@ -c $<
+	$(Q)$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build .o from .S source files
 $(BUILD)/%.o: %.S $(CONFIG_H) Makefile
 	$(ECHO) "AS $<"
-	$(Q)$(CROSS)gcc $(CFLAGS) -o $@ -c $<
+	$(Q)$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build .mpy from .py source files
 $(BUILD)/%.mpy: %.py
