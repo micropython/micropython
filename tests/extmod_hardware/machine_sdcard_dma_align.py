@@ -1,36 +1,70 @@
 # Test DMA read operations when the buffer alignment in RAM varies.
 #
+# Runs on both pyb.SDCard and machine.SDCard with default arguments,
+# although some port-specific info is needed (see below)
+#
 # Test requirements:
-# A mostly empty FAT formatted SDCard installed in SD socket
+# A mostly empty FAT formatted SDCard installed in SD socket (a card with other
+# files may be much slower to start the test.)
 import errno
 import os
-import pyb
 import machine
 import micropython
+import sys
 import vfs
 import unittest
 
 from micropython import const
 
+# Use pyb classes on stm32, machine class otherwise
+try:
+    from pyb import SDCard, Timer
+except ImportError:
+    try:
+        from machine import SDCard, Timer
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
+
+READBLOCKS_SUCCESS = (0, True)  # some drivers return True for success, some return 0...
+
 _BLOCK_SZ = const(512)
 _OFFS_WIDTH = const(64)  # Should be at least the cache line size plus the GC block size
 _TEST_BUF_SZ = const(_BLOCK_SZ + _OFFS_WIDTH)
-
-# More repeats = longer test run, more chance of triggering a cache coherence issue
-_REPEATS = const(8)
 
 MOUNT_POINT = "/sd"
 FILE_PATH = "/sd/stm32_align.blk"
 
 # Skip the whole test if there isn't a mountable SDCard
 try:
-    sd = pyb.SDCard()
+    sd = SDCard()
+    fs = vfs.VfsFat(sd)
     vfs.mount(sd, MOUNT_POINT)
     vfs.umount(MOUNT_POINT)
     del sd
 except (OSError, AttributeError):
     print("SKIP")
     raise SystemExit
+
+
+# Set some port-specific parameters for test repeats & interrupt frequency
+# (ports which can issue interrupts at a high frequency don't need to run as many
+# repeats of the test in order to trigger a failure due to cache bugs.)
+if "pyboard" in sys.platform:
+
+    def make_timer(timer_cb):
+        # Pyboard SF6 can do at least this frequency and still run the test,
+        # possibly as high as 40kHz depending on the callback details.
+        return Timer(1, freq=35_000, callback=timer_cb, hard=True)
+
+    REPEATS = 8
+elif "mimxrt" in sys.platform:
+
+    def make_timer(timer_cb):
+        return Timer(-1, period=1, callback=timer_cb, hard=True)
+
+    # virtual timer limited to 1kHz so run more iterations (slow test!)
+    REPEATS = 64
 
 
 def verify_contents(buf, silent=False):
@@ -57,7 +91,7 @@ def verify_contents(buf, silent=False):
 class TestSDAlign(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.sd = pyb.SDCard()
+        cls.sd = SDCard()
         vfs.mount(cls.sd, MOUNT_POINT)
         buf = bytearray(_BLOCK_SZ)
         try:
@@ -77,9 +111,11 @@ class TestSDAlign(unittest.TestCase):
 
         # Now look for the sector which holds the temporary file
         # (assume is in the first 20MB of the SD Card)
+        vfs.umount(MOUNT_POINT)
         for b in range(1, 40960):
-            if not cls.sd.readblocks(b, buf):
-                raise RuntimeError("Failed to call readblocks on SDCard. block:", b)
+            res = cls.sd.readblocks(b, buf)
+            if res not in READBLOCKS_SUCCESS:
+                raise RuntimeError("Failed to call readblocks on SDCard:", res, "block:", b)
             if verify_contents(buf, True):
                 print("Temporary file contents found in block {}".format(b))
                 cls.block = b
@@ -96,22 +132,26 @@ class TestSDAlign(unittest.TestCase):
             print("Deleted temp file")
         except OSError:
             pass
-        vfs.umount(MOUNT_POINT)
+        try:
+            vfs.umount(MOUNT_POINT)
+        except OSError:
+            pass
         del cls.sd
 
     def setUp(self):
         self.offs = 0
 
     @micropython.native
-    def _test_reads_inner(self, buf, repeats=_REPEATS):
+    def _test_reads_inner(self, buf, repeats=REPEATS):
         for offs in range(_OFFS_WIDTH):
             with self.subTest(offs=offs):
                 self.offs = offs
                 slice = memoryview(buf)[offs : offs + _BLOCK_SZ]
                 assert len(slice) == _BLOCK_SZ
                 for r in range(repeats):
-                    self.assertTrue(
+                    self.assertIn(
                         self.sd.readblocks(self.block, slice),
+                        READBLOCKS_SUCCESS,
                         "Read failed for block {} offs {} repeat {}/{}".format(
                             self.block, offs, r, repeats
                         ),
@@ -131,7 +171,7 @@ class TestSDAlign(unittest.TestCase):
         # of hitting one of these cases, but even if the issue is present the test only fails
         # once per ~250 iterations. The other tests inject explicit reads and writes so they fail
         # more or less immediately.
-        self._test_reads_inner(buf, repeats=_REPEATS * 4)
+        self._test_reads_inner(buf, repeats=REPEATS * 4)
 
     def test_interrupted_reads(self):
         # Test reading at all available offsets in a buffer, while an interrupt is
@@ -148,7 +188,7 @@ class TestSDAlign(unittest.TestCase):
                 self.val = buf[self.scan % _TEST_BUF_SZ]
                 self.scan += 1
 
-            t = pyb.Timer(1, freq=30_000, callback=timer_cb, hard=True)
+            t = make_timer(timer_cb)
             self._test_reads_inner(buf)
         finally:
             if t:
@@ -176,8 +216,7 @@ class TestSDAlign(unittest.TestCase):
                 if offs < _TEST_BUF_SZ - 3:
                     buf[offs] = 0x56
 
-            # pybd SF2 at default CPU frequency can manage >30kHz <40kHz
-            t = pyb.Timer(1, freq=35_000, callback=timer_cb, hard=True)
+            t = make_timer(timer_cb)
             self._test_reads_inner(buf)
         finally:
             if t:
