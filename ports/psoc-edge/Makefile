@@ -251,6 +251,7 @@ LDFLAGS += $(MACHINE_FLAGS) \
 	-Xlinker -L $(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM \
 	-Xlinker -L $(BOARD_DIR)/bsp-cfg \
 	-T$(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/pse84_ns_cm33.ld \
+	-T$(TOP)/ports/psoc-edge/mpy_gc_assert.ld \
 	-Wl,-Map,$(BUILD)/firmware.map \
 
 PSE_BSP_CFG_C += $(addprefix $(BOARD_DIR)/bsp-cfg/,\
