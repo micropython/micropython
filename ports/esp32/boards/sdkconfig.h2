@@ -1,0 +1,10 @@
+# Workaround for https://github.com/espressif/esp-idf/issues/14456
+CONFIG_ESP_SYSTEM_HW_STACK_GUARD=n
+
+# 802.15.4 not currently supported in MicroPython, disabling saves
+# a little compile time (no difference in binary)
+CONFIG_IEEE802154_ENABLED=n
+
+# Using the SPI flash implementation in ROM saves about 10KB of binary size
+# (and some static RAM)
+CONFIG_SPI_FLASH_ROM_IMPL=y
