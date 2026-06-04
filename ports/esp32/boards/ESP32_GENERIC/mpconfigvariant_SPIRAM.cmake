@@ -1,5 +1,5 @@
 list(APPEND SDKCONFIG_DEFAULTS
-    boards/sdkconfig.spiram
+    boards/sdkconfig.spiram_esp32
 )
 
 list(APPEND MICROPY_DEF_BOARD

@@ -1,4 +1,4 @@
-# Extra ESP-IDF config for quad mode PSRAM (SPIRAM) support on ESP32-C5, ESP32-S2 & ESP32-S3
+# Extra ESP-IDF config for Quad mode PSRAM (SPIRAM) support on ESP32-C5, ESP32-S2 & ESP32-S3
 CONFIG_SPIRAM_MODE_QUAD=y
 CONFIG_SPIRAM_SPEED_80M=y
 CONFIG_SPIRAM=y
