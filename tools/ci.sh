@@ -458,6 +458,26 @@ function ci_qemu_build_rv64 {
 }
 
 ########################################################################################
+# ports/quectel
+
+function ci_quectel_setup {
+    ci_gcc_arm_setup
+    mkdir $HOME/Downloads
+    curl -L http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu55_55.1-7ubuntu0.5_amd64.deb -o $HOME/Downloads/libicu55.deb
+    sudo dpkg -i $HOME/Downloads/libicu55.deb || true
+    curl -L "https://github.com/QuecPython/toolchain/releases/download/V1.1.0/helios-toolchain" -o $HOME/Downloads/helios-toolchain
+    chmod +x $HOME/Downloads/helios-toolchain
+    sudo $HOME/Downloads/helios-toolchain --target $HOME/helios
+    echo "$HOME/helios/bin" >> $GITHUB_PATH
+}
+
+function ci_quectel_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/quectel submodules
+    make ${MAKEOPTS} -C ports/quectel BOARD=EC600UCN_LB
+}
+
+########################################################################################
 # ports/renesas-ra
 
 function ci_renesas_ra_setup {
