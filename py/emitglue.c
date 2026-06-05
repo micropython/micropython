@@ -48,10 +48,6 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
-#if MICROPY_DEBUG_PRINTERS
-mp_uint_t mp_verbose_flag = 0;
-#endif
-
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;

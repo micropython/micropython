@@ -3654,7 +3654,7 @@ emit_finished:
 
         #if MICROPY_DEBUG_PRINTERS
         // now that the module context is valid, the raw codes can be printed
-        if (mp_verbose_flag >= 2) {
+        if (MP_STATE_VM(mp_verbose_flag) >= 2) {
             for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
                 mp_raw_code_t *rc = s->raw_code;
                 if (rc->kind == MP_CODE_BYTECODE) {

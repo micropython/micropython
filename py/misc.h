@@ -262,8 +262,6 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 
 int DEBUG_printf(const char *fmt, ...);
 
-extern mp_uint_t mp_verbose_flag;
-
 /** float internals *************/
 
 #if MICROPY_PY_BUILTINS_FLOAT

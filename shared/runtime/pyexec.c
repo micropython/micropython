@@ -111,7 +111,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
             #if defined(MICROPY_UNIX_COVERAGE)
             // allow to print the parse tree in the coverage build
-            if (mp_verbose_flag >= 3) {
+            if (MP_STATE_VM(mp_verbose_flag) >= 3) {
                 printf("----------------\n");
                 mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
                 printf("----------------\n");

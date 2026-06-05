@@ -105,6 +105,9 @@ void mp_init(void) {
     #if MICROPY_EMIT_NATIVE
     MP_STATE_VM(default_emit_opt) = MP_EMIT_OPT_NONE;
     #endif
+    #if MICROPY_DEBUG_PRINTERS
+    MP_STATE_VM(mp_verbose_flag) = 0;
+    #endif
     #endif
 
     // init global module dict
