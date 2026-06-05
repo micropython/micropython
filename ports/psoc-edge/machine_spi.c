@@ -44,7 +44,7 @@
 
 #define SPI_OVERSAMPLE          (4U)
 #define SPI_CLK_DIV_TYPE        CY_SYSCLK_DIV_8_BIT
-#define SPI_CLK_DIV_BASE        (3U)
+#define SPI_CLK_DIV_BASE        (4U)
 
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
@@ -299,52 +299,23 @@ static void machine_spi_init_helper(machine_spi_obj_t *self, size_t n_args, size
 static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
 
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
+    // Convert runtime pos/kw args into the kw-array form expected by init_helper.
+    size_t n_kw = kw_args->used;
+    size_t all_args_len = n_args + 2 * n_kw;
+    mp_obj_t all_args[all_args_len == 0 ? 1 : all_args_len];
 
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    bool reinit = false;
-
-    if (args[ARG_baudrate].u_obj != mp_const_none) {
-        mp_int_t baudrate = mp_obj_get_int(args[ARG_baudrate].u_obj);
-        if (baudrate <= 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("baudrate must be > 0"));
+    size_t out = 0;
+    for (size_t i = 0; i < n_args; i++) {
+        all_args[out++] = pos_args[i];
+    }
+    for (size_t i = 0; i < kw_args->alloc; i++) {
+        if (mp_map_slot_is_filled(kw_args, i)) {
+            all_args[out++] = kw_args->table[i].key;
+            all_args[out++] = kw_args->table[i].value;
         }
-        self->baudrate = (uint32_t)baudrate;
-        reinit = true;
-    }
-    if (args[ARG_polarity].u_int != -1) {
-        self->polarity = args[ARG_polarity].u_int;
-        reinit = true;
-    }
-    if (args[ARG_phase].u_int != -1) {
-        self->phase = args[ARG_phase].u_int;
-        reinit = true;
-    }
-    if (args[ARG_bits].u_int != -1) {
-        self->bits = args[ARG_bits].u_int;
-        reinit = true;
-    }
-    if (args[ARG_firstbit].u_int != -1) {
-        self->firstbit = args[ARG_firstbit].u_int;
-        reinit = true;
     }
 
-    if (reinit) {
-        if (self->scb_obj != NULL) {
-            machine_spi_hw_deinit(self);
-        }
-        machine_spi_hw_init(self);
-    }
+    machine_spi_init_helper(self, n_args, n_kw, all_args);
 }
 
 static void machine_spi_deinit(mp_obj_base_t *self_in) {

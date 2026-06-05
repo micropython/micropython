@@ -44,7 +44,7 @@
 #define DEFAULT_SPI_TARGET_TIMEOUT_MS  (5000U)  // must stay below SPI_TARGET_TICKS_WRAP_MS
 
 #define SPI_TARGET_CLK_DIV_TYPE        CY_SYSCLK_DIV_8_BIT
-#define SPI_TARGET_CLK_DIV_BASE        (3U)   // Each SCB lives in its own PERI group with independent dividers
+#define SPI_TARGET_CLK_DIV_BASE        (4U)
 
 // mp_hal_ticks_ms() on this port wraps every SPI_TARGET_TICKS_WRAP_MS.
 // This computes elapsed time across one wrap; caller keeps timeout < wrap period.
