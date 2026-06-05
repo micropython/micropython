@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022-2024 Infineon Technologies AG
+ * Copyright (c) 2026 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -231,20 +231,21 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
     }
     self->callback = callback;
 
-    // Compute period in timer clock ticks
+    // Compute period in timer clock ticks in 64-bit, then range-check.
+    uint64_t period_ticks_64;
     uint32_t period_ticks;
     if (args[ARG_freq].u_obj != mp_const_none) {
         mp_int_t freq = mp_obj_get_int(args[ARG_freq].u_obj);
         if (freq <= 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("freq must be > 0"));
         }
-        period_ticks = TIMER_CLK_HZ / (uint32_t)freq;
+        period_ticks_64 = (uint64_t)TIMER_CLK_HZ / (uint64_t)(uint32_t)freq;
     } else if (args[ARG_period].u_int > 0) {
         mp_int_t tick_hz = args[ARG_tick_hz].u_int;
         if (tick_hz <= 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("tick_hz must be > 0"));
         }
-        period_ticks = (uint32_t)(
+        period_ticks_64 = (
             (uint64_t)TIMER_CLK_HZ * (uint64_t)(uint32_t)args[ARG_period].u_int
             / (uint64_t)(uint32_t)tick_hz);
     } else if (mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_period), MP_MAP_LOOKUP) != NULL) {
@@ -253,9 +254,11 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("either freq or period must be specified"));
     }
 
-    if (period_ticks == 0U || period_ticks > 0xFFFFFFFFUL) {
+    if (period_ticks_64 == 0U || period_ticks_64 > UINT32_MAX) {
         mp_raise_ValueError(MP_ERROR_TEXT("period out of range for 32-bit counter"));
     }
+
+    period_ticks = (uint32_t)period_ticks_64;
 
     machine_timer_start(self, period_ticks);
     return mp_const_none;
