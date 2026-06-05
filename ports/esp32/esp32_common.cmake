@@ -144,11 +144,14 @@ list(APPEND MICROPY_SOURCE_PORT
     mpthreadport.c
     machine_rtc.c
     machine_sdcard.c
+    machine_sdcard_nosetup.c
+    machine_flash_wl.c
     modespnow.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 list(APPEND MICROPY_SOURCE_PORT ${CMAKE_BINARY_DIR}/pins.c)
 
+# message(STATUS "*********** esp32_common.cmake before ${MICROPY_SOURCE_BOARD}")
 list(APPEND MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
@@ -159,6 +162,8 @@ list(APPEND MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_BOARD}
     ${MICROPY_SOURCE_TINYUSB}
 )
+# message(STATUS "*********** esp32_common.cmake after ${MICROPY_SOURCE_QSTR}")
+
 
 list(APPEND IDF_COMPONENTS
     app_update
@@ -195,6 +200,7 @@ list(APPEND IDF_COMPONENTS
     ulp
     usb
     vfs
+    wear_levelling
 )
 
 if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")

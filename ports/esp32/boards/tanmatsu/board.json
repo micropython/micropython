@@ -1,0 +1,40 @@
+{
+    "deploy": {
+        "flash_start": "0x10000",
+        "flash_mode": "qio",
+        "flash_size": "16MB",
+        "flash_freq": "80m"
+    },
+
+    "build": {
+        "mcu": "esp32",
+        "variant": "esp32",
+        "sdkconfig": "sdkconfig.mch2022"
+    },
+
+    "connect": {
+        "uart": {
+            "port": 0,
+            "baudrate": 115200,
+            "tx": 1,
+            "rx": 3
+        }
+    },
+
+    "storage": {
+        "filesystem": "littlefs",
+        "block_size": 4096,
+        "sdcard": true
+    },
+
+    "memory": {
+        "psram": true,
+        "psram_size": "8MB",
+        "psram_speed": "80MHz"
+    },
+
+    "network": {
+        "wifi": false,
+        "ble": false
+    }
+}

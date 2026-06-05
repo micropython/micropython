@@ -1,0 +1,105 @@
+menu "Driver: Audio mixer"
+	config DRIVER_SNDMIXER_ENABLE
+		bool "Enable the audio driver"
+		default n
+	
+	choice
+		prompt "I2S port"
+		default DRIVER_SNDMIXER_I2S_PORT0
+		depends on DRIVER_SNDMIXER_ENABLE
+	config DRIVER_SNDMIXER_I2S_PORT0
+		bool "Port 0"
+	config DRIVER_SNDMIXER_I2S_PORT1
+		bool "Port 1"
+	endchoice
+	
+	choice
+		prompt "I2S mode"
+		default DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_LSB
+		depends on DRIVER_SNDMIXER_ENABLE
+	config DRIVER_SNDMIXER_I2S_DAC_EXTERNAL
+		bool "External I2S DAC"
+	config DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_MSB
+		bool "External I2S DAC, MSB first"
+	config DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_LSB
+		bool "External I2S DAC, LSB first"
+	config DRIVER_SNDMIXER_I2S_DAC_INTERNAL
+		depends on DRIVER_SNDMIXER_I2S_PORT0
+		bool "Internal DAC"
+	endchoice
+	
+	choice
+		prompt "Internal DAC usage"
+		default DRIVER_SNDMIXER_I2S_INTERNAL_DAC_BOTH
+		depends on DRIVER_SNDMIXER_ENABLE && DRIVER_SNDMIXER_I2S_DAC_INTERNAL
+	config DRIVER_SNDMIXER_I2S_INTERNAL_DAC_DISABLED
+		bool "Disabled"
+	config DRIVER_SNDMIXER_I2S_INTERNAL_DAC_RIGHT
+		bool "Right enabled"
+	config DRIVER_SNDMIXER_I2S_INTERNAL_DAC_LEFT
+		bool "Left enabled"
+	config DRIVER_SNDMIXER_I2S_INTERNAL_DAC_BOTH
+		bool "Both enabled"
+	endchoice
+	config DRIVER_SNDMIXER_PIN_MCK
+		depends on DRIVER_SNDMIXER_ENABLE && (DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_MSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_LSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL)
+		int "GPIO to use as MCK pin"
+		default -1
+
+	config DRIVER_SNDMIXER_PIN_BCK
+		depends on DRIVER_SNDMIXER_ENABLE && (DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_MSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_LSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL)
+		int "GPIO to use as BCK pin"
+	
+	config DRIVER_SNDMIXER_PIN_WS
+		depends on DRIVER_SNDMIXER_ENABLE && (DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_MSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_LSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL)
+		int "GPIO to use as WS pin"
+	
+	config DRIVER_SNDMIXER_PIN_DATA_OUT
+		depends on DRIVER_SNDMIXER_ENABLE && (DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_MSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL_LSB || DRIVER_SNDMIXER_I2S_DAC_EXTERNAL)
+		int "GPIO to use as DATA OUT pin"
+	
+	choice
+		prompt "I2S channel format"
+		default DRIVER_SNDMIXER_I2S_CHANNEL_FORMAT_RL
+		depends on DRIVER_SNDMIXER_ENABLE
+	config DRIVER_SNDMIXER_I2S_CHANNEL_FORMAT_RL
+		bool "Right, Left"
+	config DRIVER_SNDMIXER_I2S_CHANNEL_FORMAT_AL
+		bool "All left"
+	config DRIVER_SNDMIXER_I2S_CHANNEL_FORMAT_AR
+		bool "All right"
+	config DRIVER_SNDMIXER_I2S_CHANNEL_FORMAT_OL
+		bool "Only left"
+	config DRIVER_SNDMIXER_I2S_CHANNEL_FORMAT_OR
+		bool "Only Right"
+	endchoice
+
+	choice DRIVER_SNDMIXER_DATA_FORMAT
+    		prompt "I2S data format"
+    		default DRIVER_SNDMIXER_I2S_DATA_FORMAT_UNSIGNED
+    		depends on DRIVER_SNDMIXER_ENABLE
+    	config DRIVER_SNDMIXER_I2S_DATA_FORMAT_UNSIGNED
+    		bool "Unsigned integers (e.g. internal DAC)"
+    	config DRIVER_SNDMIXER_I2S_DATA_FORMAT_SIGNED
+    		bool "(2's compliment) signed integers (most i2s DACs)"
+    	endchoice
+	
+	config DRIVER_SNDMIXER_SAMPLE_RATE
+		depends on DRIVER_SNDMIXER_ENABLE
+		int "Sample rate"
+		default 20000
+	config DRIVER_SNDMIXER_BITS_PER_SAMPLE
+		depends on DRIVER_SNDMIXER_ENABLE
+		int "Bits per sample"
+		default 16
+	
+	config DRIVER_SNDMIXER_BUFFZIE
+		depends on DRIVER_SNDMIXER_ENABLE
+		int "Buffer size"
+		default 4096
+
+	config DRIVER_SNDMIXER_DEBUG
+		depends on DRIVER_SNDMIXER_ENABLE
+		bool "Enable verbose debug messages"
+		default n
+endmenu

@@ -1,0 +1,6 @@
+menu "Driver: Badge BSP display"
+	config DRIVER_BADGE_BSP_ENABLE
+		bool "Enable the Badge BSP display driver"
+		default n
+		
+endmenu

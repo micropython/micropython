@@ -40,7 +40,7 @@
 #include "modmachine.h"
 #include "machine_rtc.h"
 
-#if MICROPY_HW_ENABLE_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_SDCARD_NOSETUP
 #define MICROPY_PY_MACHINE_SDCARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
 #else
 #define MICROPY_PY_MACHINE_SDCARD_ENTRY
@@ -56,6 +56,7 @@
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_FlashWL), MP_ROM_PTR(&machine_flash_wl_type) }, \
     MICROPY_PY_MACHINE_SDCARD_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
     MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY \
