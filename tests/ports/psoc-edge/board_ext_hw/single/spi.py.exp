@@ -1,4 +1,4 @@
-SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+SPI(baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P17_2', mosi='P17_3', miso='P17_5')
 write_readinto loopback:  True
 transfer loopback:  True
 write ok:  True

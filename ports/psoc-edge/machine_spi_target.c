@@ -27,7 +27,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include <stdio.h>
 #include <string.h>
 #include "cybsp.h"
 #include "cy_scb_spi.h"

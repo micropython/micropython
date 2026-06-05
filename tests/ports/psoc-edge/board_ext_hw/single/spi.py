@@ -1,5 +1,5 @@
 # SPI single-board loopback test
-# Hardware: short MOSI (P16_1) to MISO (P16_2)
+# Hardware: short MOSI (P9_2) to MISO (P9_1)
 #
 # Tests SPI master basic functionality using loopback.
 
@@ -12,9 +12,9 @@ spi = SPI(
     phase=0,
     bits=8,
     firstbit=SPI.MSB,
-    sck="P16_0",
-    mosi="P16_1",
-    miso="P16_2",
+    sck="P9_3",
+    mosi="P9_2",
+    miso="P9_1",
 )
 print(spi)
 
@@ -49,9 +49,9 @@ for pol in (0, 1):
             phase=pha,
             bits=8,
             firstbit=SPI.MSB,
-            sck="P16_0",
-            mosi="P16_1",
-            miso="P16_2",
+            sck="P9_3",
+            mosi="P9_2",
+            miso="P9_1",
         )
         tx = b"\xaa\x55"
         rx = bytearray(2)
@@ -66,9 +66,9 @@ spi = SPI(
     phase=0,
     bits=8,
     firstbit=SPI.LSB,
-    sck="P16_0",
-    mosi="P16_1",
-    miso="P16_2",
+    sck="P9_3",
+    mosi="P9_2",
+    miso="P9_1",
 )
 tx = b"\xf0\x0f"
 rx = bytearray(2)
@@ -83,11 +83,11 @@ spi = SPI(
     phase=0,
     bits=8,
     firstbit=SPI.MSB,
-    sck="P16_0",
-    mosi="P16_1",
-    miso="P16_2",
+    sck="P9_3",
+    mosi="P9_2",
+    miso="P9_1",
 )
-cs = Pin("P16_3", Pin.OUT, value=1)
+cs = Pin("P9_0", Pin.OUT, value=1)
 cs(0)
 tx = b"\x9f\x00\x00\x00"
 rx = bytearray(4)

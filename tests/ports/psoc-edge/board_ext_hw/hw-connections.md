@@ -16,3 +16,9 @@
 | I2C               | P17_0         | P17_0         | I2C SCL to SCL (with pullup)   |
 |                   | P17_1         | P17_1         | I2C SDA to SDA (with pullup)   |
 |                   | GND           | GND           | Common Ground                  |
+|                   |               |               |                                |
+| SPI               | P16_0         | P16_0         | SPI SCK to SCK                 |
+|                   | P16_1         | P16_1         | SPI MOSI to MOSI               |
+|                   | P16_2         | P16_2         | SPI MISO to MISO               |
+|                   | P16_3         | P16_3         | SPI SSEL to CS out             |
+|                   | GND           | GND           | Common Ground                  |

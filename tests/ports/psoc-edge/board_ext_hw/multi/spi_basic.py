@@ -51,7 +51,8 @@ def instance0():
     tx = b"\xaa\xbb\xcc\xdd"
     n = target.write(tx)
     print("Wrote:", n, "bytes")
-    print("Status:", "PASS" if n == 4 else "FAIL")
+    write_pass = n == 4
+    print("Status:", "PASS" if write_pass else "FAIL")
 
     # Signal master that write is done
     multitest.next()
@@ -75,7 +76,7 @@ def instance0():
 
     # Summary
     print("\n***** Target Summary *****")
-    all_pass = read_pass and readinto_pass
+    all_pass = read_pass and write_pass and readinto_pass
     print("Overall:", "PASS" if all_pass else "FAIL")
 
 
@@ -101,15 +102,13 @@ def instance1():
     print("Waiting for target...")
     multitest.next()
     print("Target ready\n")
-    time.sleep_ms(50)
 
     # Test 1: Write to target
     print("***** Test 1: Write *****\n")
     tx = b"\x01\x02\x03\x04"
-    rx = bytearray(4)
     cs(0)
     time.sleep_us(10)
-    spi.write_readinto(tx, rx)
+    spi.write(tx)
     time.sleep_us(10)
     cs(1)
     print("Sent:", tx)
@@ -122,13 +121,10 @@ def instance1():
     print("\n***** Test 2: Read *****\n")
     # Signal target to start writing
     multitest.next()
-    time.sleep_ms(50)
-
-    tx = b"\x00\x00\x00\x00"
     rx = bytearray(4)
     cs(0)
     time.sleep_us(10)
-    spi.write_readinto(tx, rx)
+    spi.readinto(rx)
     time.sleep_us(10)
     cs(1)
     print("Received:", rx)
@@ -142,7 +138,6 @@ def instance1():
     print("\n***** Test 3: Transfer *****\n")
     # Signal target to start write_readinto
     multitest.next()
-    time.sleep_ms(50)
 
     tx = b"\xde\xad\xbe\xef"
     rx = bytearray(4)

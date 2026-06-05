@@ -26,7 +26,6 @@
 
 #include "py/runtime.h"
 #include "extmod/modmachine.h"
-#include <stdio.h>
 #include <string.h>
 #include "py/mphal.h"
 #include "py/mperrno.h"
@@ -37,7 +36,7 @@
 #include "machine_scb.h"
 #include "modmachine.h"
 
-#define DEFAULT_SPI_BAUDRATE    (115200)
+#define DEFAULT_SPI_BAUDRATE    (1000000)
 #define DEFAULT_SPI_POLARITY    (0)
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (8)
