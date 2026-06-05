@@ -302,8 +302,8 @@ Practical guidance for this port:
 Hardware SPI bus
 ----------------
 
-See :ref:`machine.SPI <machine.SPI>` and :ref:`machine.SPITarget <machine.SPITarget>`
-for the complete SPI API reference.
+See :ref:`machine.SPI <machine.SPI>` for the complete SPI master API reference.
+``SPITarget`` is a PSOC™ Edge-specific class and has no separate library page.
 
 Hardware SPI on PSOC™ Edge uses the SCB peripheral and supports both controller
 (master) and target (slave) modes.
