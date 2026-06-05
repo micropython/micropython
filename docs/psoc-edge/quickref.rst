@@ -299,6 +299,90 @@ Practical guidance for this port:
           custom protocol handling in IRQ callbacks.
 
 
+Hardware SPI bus
+----------------
+
+See :ref:`machine.SPI <machine.SPI>` and :ref:`machine.SPITarget <machine.SPITarget>`
+for the complete SPI API reference.
+
+Hardware SPI on PSOC™ Edge uses the SCB peripheral and supports both controller
+(master) and target (slave) modes.
+
+Controller mode (Master)
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the ``SPI`` class for controller-mode transfers::
+
+    from machine import SPI, Pin
+
+    spi = SPI(
+        baudrate=1_000_000,
+        polarity=0,
+        phase=0,
+        bits=8,
+        firstbit=SPI.MSB,
+        sck='P9_0',
+        mosi='P9_1',
+        miso='P9_2',
+    )
+
+    cs = Pin('P9_3', Pin.OUT, value=1)
+    tx = b'\x9f\x00\x00\x00'
+    rx = bytearray(4)
+
+    cs(0)
+    spi.write_readinto(tx, rx)
+    cs(1)
+    print(rx)
+
+Constructor arguments:
+
+    - ``id``: accepted for API compatibility, currently ignored.
+    - ``baudrate``: SPI clock in Hz. Default is ``1_000_000``.
+    - ``polarity`` / ``phase``: must be ``0`` or ``1``.
+    - ``bits``: only ``8`` is supported.
+    - ``firstbit``: ``SPI.MSB`` or ``SPI.LSB``.
+    - ``sck``, ``mosi``, ``miso``: required SPI signal pins.
+
+.. note::
+
+    Chip select (CS/SS) is controlled by user code with ``machine.Pin``.
+    It is not driven automatically by ``machine.SPI``.
+
+
+Target mode (Slave)
+^^^^^^^^^^^^^^^^^^^
+
+Use the ``SPITarget`` class for target-mode communication::
+
+    from machine import SPITarget
+
+    spi_t = SPITarget(
+        sck='P9_0',
+        mosi='P9_1',
+        miso='P9_2',
+        ssel='P9_3',
+        polarity=0,
+        phase=0,
+        bits=8,
+        firstbit=SPITarget.MSB,
+    )
+
+    tx = b'\x11\x22\x33\x44'
+    rx = bytearray(4)
+    spi_t.write_readinto(tx, rx)
+
+    spi_t.deinit()
+
+Port-specific notes:
+
+    - ``sck``, ``mosi``, ``miso``, and ``ssel`` are all required.
+    - ``bits`` is fixed to 8.
+    - ``read()``, ``write()``, and ``write_readinto()`` are blocking and use an
+      internal timeout.
+    - A single ``SPITarget`` instance is supported in this port configuration.
+
+
 
 Inter-Processor Communication (IPC)
 -------------------------------------
