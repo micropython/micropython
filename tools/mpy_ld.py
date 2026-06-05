@@ -128,6 +128,7 @@ R_RISCV_TLSDESC_HI20 = 62
 R_RISCV_TLSDESC_LOAD_LO12 = 63
 R_RISCV_TLSDESC_ADD_LO12 = 64
 R_RISCV_TLSDESC_CALL = 65
+R_ARM_GOT_PREL = 96
 
 ################################################################################
 # Architecture configuration
@@ -254,28 +255,28 @@ ARCH_DATA = {
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV6M << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb,
     ),
     "armv7m": ArchData(
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV7M << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb2,
     ),
     "armv7emsp": ArchData(
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV7EMSP << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb2,
     ),
     "armv7emdp": ArchData(
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV7EMDP << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb2,
     ),
     "xtensa": ArchData(
@@ -681,10 +682,14 @@ def do_relocation_text(env, text_addr, r):
         # Relcation pointing to GOT
         reloc = addr = env.got_entries[s.name].offset
 
-    elif env.arch.name == "EM_X86_64" and r_info_type in (
-        R_X86_64_GOTPCREL,
-        R_X86_64_REX_GOTPCRELX,
-    ):
+    elif (
+        env.arch.name == "EM_X86_64"
+        and r_info_type
+        in (
+            R_X86_64_GOTPCREL,
+            R_X86_64_REX_GOTPCRELX,
+        )
+    ) or (env.arch.name == "EM_ARM" and r_info_type == R_ARM_GOT_PREL):
         # Relcation pointing to GOT
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
