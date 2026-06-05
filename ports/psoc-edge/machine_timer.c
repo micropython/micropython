@@ -322,6 +322,7 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     }
     self->callback = mp_const_none;
     self->active = false;
+    self->constructed = false;
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
