@@ -122,7 +122,7 @@
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
 #endif
 #ifndef MICROPY_PY_MACHINE_CAN
-#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX)
+#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_PY_MACHINE_CAN (1)
 #else
 #define MICROPY_PY_MACHINE_CAN (0)

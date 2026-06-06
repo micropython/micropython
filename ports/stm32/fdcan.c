@@ -53,6 +53,18 @@
 #define FDCAN_IT_RX_FULL_MASK (FDCAN_IT_RX_FIFO0_FULL | FDCAN_IT_RX_FIFO1_FULL)
 #define FDCAN_IT_RX_MESSAGE_LOST_MASK (FDCAN_IT_RX_FIFO0_MESSAGE_LOST | FDCAN_IT_RX_FIFO1_MESSAGE_LOST)
 
+#if defined(STM32N6)
+// adaptations for N6 to G4 naming convention in HAL
+#define FDCAN_IT_GROUP_RX_FIFO0         (FDCAN_ILS_RF0NL | FDCAN_ILS_RF0FL | FDCAN_ILS_RF0LL)
+#define FDCAN_IT_GROUP_BIT_LINE_ERROR   (FDCAN_ILS_EPL | FDCAN_ILS_ELOL)
+#define FDCAN_IT_GROUP_PROTOCOL_ERROR   (FDCAN_ILS_ARAL | FDCAN_ILS_PEDL | FDCAN_ILS_PEAL | FDCAN_ILS_WDIL | FDCAN_ILS_BOL | FDCAN_ILS_EWL)
+#define FDCAN_IT_GROUP_RX_FIFO1         (FDCAN_ILS_RF1NL | FDCAN_ILS_RF1FL | FDCAN_ILS_RF1LL)
+
+// The dedicated Message RAM should be 2560 words, but the way it's defined in stm32n6xx_hal_fdcan.c
+// as (SRAMCAN_BASE + FDCAN_MESSAGE_RAM_SIZE - 0x4U) limits the usable number of words to 2559 words.
+#define FDCAN_MESSAGE_RAM_SIZE  (2560 - 1)
+#endif // STM32N6
+
 #if defined(STM32H7)
 // adaptations for H7 to G4 naming convention in HAL
 #define FDCAN_IT_GROUP_RX_FIFO0         (FDCAN_ILS_RF0NL | FDCAN_ILS_RF0FL | FDCAN_ILS_RF0LL)
@@ -146,7 +158,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
     init->DataTimeSeg1 = 1;
     init->DataTimeSeg2 = 1;
     init->TxFifoQueueMode = fifo_queue_mode;
-    #elif defined(STM32H7)
+    #elif defined(STM32H7) || defined(STM32N6)
     // The dedicated FDCAN RAM is 2560 32-bit words and shared between the FDCAN instances.
     // To support 2 FDCAN instances simultaneously, the Message RAM is divided in half by
     // setting the second FDCAN memory offset to half the RAM size. With this configuration,
@@ -189,7 +201,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
     init->RxFifo0ElmtSize = FDCAN_DATA_BYTES_64;
     init->RxFifo1ElmtsNbr = 24;
     init->RxFifo1ElmtSize = FDCAN_DATA_BYTES_64;
-    #endif // STM32H7
+    #endif // STM32H7 || STM32N6
 
     const machine_pin_obj_t *pins[2];
 
@@ -316,7 +328,9 @@ void can_clearfilter(FDCAN_HandleTypeDef *can, uint32_t f, bool is_extid) {
 
 uint32_t can_get_source_freq(void) {
     // Find CAN kernel clock
-    #if defined(STM32H7)
+    #if defined(STM32N6)
+    return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_FDCAN);
+    #elif defined(STM32H7)
     switch (__HAL_RCC_GET_FDCAN_SOURCE()) {
         case RCC_FDCANCLKSOURCE_HSE:
             return HSE_VALUE;
@@ -362,7 +376,11 @@ static void encode_datalength(CanTxMsgTypeDef *txmsg) {
     size_t len_bytes = txmsg->DataLength;
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(DLCtoBytes); i++) {
         if (len_bytes <= DLCtoBytes[i]) {
+            #if defined(STM32N6)
+            txmsg->DataLength = i;
+            #else
             txmsg->DataLength = (i << 16);
+            #endif
             return;
         }
     }
