@@ -7,7 +7,7 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
-# Check if error handlers are available (requires MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE)
+# Check if error handlers are available (requires MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS)
 # When feature is disabled, invalid UTF-8 raises UnicodeError even with 'replace'
 # When feature is enabled, invalid UTF-8 with 'replace' returns a string
 try:
@@ -87,6 +87,10 @@ print(repr(b'\xe4\xb8\x80'.decode('utf-8', 'replace')))
 
 # Test 4-byte UTF-8 sequence - valid (e.g., U+1F600 - 😀)
 print(repr(b'\xf0\x9f\x98\x80'.decode('utf-8', 'replace')))
+
+# Test valid multi-byte sequence mixed with invalid bytes (exercises got==need path)
+print(repr(b'\xff\xc2\xa9'.decode('utf-8', 'replace')))    # \ufffd + © after invalid \xff
+print(repr(b'\xff\xe4\xb8\x80'.decode('utf-8', 'replace')))  # \ufffd + 一 after invalid \xff
 
 # Test incomplete 3-byte sequence (missing 2 continuation bytes)
 print(repr(b'\xe4'.decode('utf-8', 'replace')))

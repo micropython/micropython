@@ -43,6 +43,10 @@ for encoding in invalid_encodings:
     except LookupError as e:
         print('LookupError:', encoding)
 
+# Test bytes method accepting bytearray as argument (arg type normalization)
+print(b'hello world'.find(bytearray(b'world')))
+print(bytearray(b'hello world').find(bytearray(b'world')))
+
 # Test invalid encodings for str.encode()
 for encoding in invalid_encodings:
     try:
