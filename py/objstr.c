@@ -246,24 +246,12 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 // Data has invalid UTF-8, handle based on error mode
                 #if MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
                 // Error handlers are enabled
-                #if !MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
-                // Raise NotImplementedError if 'replace' is used but not enabled
-                if (strcmp(errors, "replace") == 0) {
-                    mp_raise_NotImplementedError(NULL);
-                }
-                #endif
 
                 if (strcmp(errors, "ignore") == 0
-                    #if MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
                     || strcmp(errors, "replace") == 0
-                    #endif
                     ) {
                     // Build new string skipping/replacing invalid bytes
-                    #if MICROPY_PY_BUILTINS_BYTES_DECODE_REPLACE
                     bool do_replace = strcmp(errors, "replace") == 0;
-                    #else
-                    const bool do_replace = false;
-                    #endif
                     vstr_t vstr;
                     vstr_init(&vstr, str_len);
                     const byte *p = str_data;
@@ -1445,7 +1433,6 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     VSTR_FIXED(ch_vstr, 4);
                     vstr_add_char(&ch_vstr, c);
                     mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, fill, width);
-                    vstr_clear(&ch_vstr);
                     #else
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, fill, width);
@@ -1747,12 +1734,11 @@ static mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     if (c >= 0x110000) {
                         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("%c arg not in range(0x110000)"));
                     }
+                    char ch_buf[4];
                     vstr_t ch_vstr;
-                    vstr_init_len(&ch_vstr, 4);
-                    ch_vstr.len = 0;
+                    vstr_init_fixed_buf(&ch_vstr, sizeof(ch_buf), ch_buf);
                     vstr_add_char(&ch_vstr, c);
                     mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, ' ', width);
-                    vstr_clear(&ch_vstr);
                     #else
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, ' ', width);
@@ -2117,6 +2103,15 @@ MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 #if MICROPY_CPYTHON_COMPAT
 // These methods are superfluous in the presence of str() and bytes()
 // constructors.
+
+static void check_utf8_encoding(const char *encoding) {
+    if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
+          strcmp(encoding, "ascii") == 0)) {
+        mp_raise_msg_varg(&mp_type_LookupError,
+            MP_ERROR_TEXT("encoding not supported: %s"), encoding);
+    }
+}
+
 // TODO: should accept kwargs too
 static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
     mp_obj_t new_args[3];
@@ -2126,16 +2121,7 @@ static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     } else if (n_args >= 2) {
-        // Validate encoding parameter
-        // MicroPython only supports UTF-8 encoding
-        const char *encoding = mp_obj_str_get_str(args[1]);
-
-        // Accept utf-8 and ascii (ascii is a subset of utf-8)
-        if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
-              strcmp(encoding, "ascii") == 0)) {
-            mp_raise_msg_varg(&mp_type_LookupError,
-                MP_ERROR_TEXT("encoding not supported: %s"), encoding);
-        }
+        check_utf8_encoding(mp_obj_str_get_str(args[1]));
     }
     return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
@@ -2150,16 +2136,7 @@ static mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     } else if (n_args >= 2) {
-        // Validate encoding parameter
-        // MicroPython only supports UTF-8 encoding
-        const char *encoding = mp_obj_str_get_str(args[1]);
-
-        // Accept utf-8 and ascii (ascii is a subset of utf-8)
-        if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
-              strcmp(encoding, "ascii") == 0)) {
-            mp_raise_msg_varg(&mp_type_LookupError,
-                MP_ERROR_TEXT("encoding not supported: %s"), encoding);
-        }
+        check_utf8_encoding(mp_obj_str_get_str(args[1]));
     }
     return bytes_make_new(NULL, n_args, 0, args);
 }
