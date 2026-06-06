@@ -4,7 +4,7 @@
 
 #include <unistd.h>
 
-#if !defined(__linux__)
+#if !defined(__linux__) || (defined(__clang__) && (defined(__x86_64__) || defined(__i386__) || __ARM_ARCH == 7))
 void *memcpy(void *dst, const void *src, size_t n) {
     return mp_fun_table.memmove_(dst, src, n);
 }
