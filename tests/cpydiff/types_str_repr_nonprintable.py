@@ -7,5 +7,5 @@ workaround: Accept the difference for embedded use cases, or use ascii() or manu
 
 # These are noncharacters that CPython escapes but MicroPython prints
 # showing as hex to avoid display issues in documentation tables
-print("U+FFFF:", repr("\uffff").encode('utf-8').hex())
-print("U+1FFFF:", repr("\U0001ffff").encode('utf-8').hex())
+print("U+FFFF:", repr("\uffff").encode("utf-8").hex())
+print("U+1FFFF:", repr("\U0001ffff").encode("utf-8").hex())
