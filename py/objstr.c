@@ -1136,6 +1136,23 @@ static MP_NORETURN void terse_str_format_value_error(void) {
 #define terse_str_format_value_error()
 #endif
 
+// Print the character with the code point given by the integer object arg.
+// Used by both the str.format and the modulo (%c) formatters.
+static void mp_print_char(const mp_print_t *print, mp_obj_t arg, unsigned int flags, char fill, int width) {
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    mp_uint_t c = mp_obj_get_int(arg);
+    if (c >= 0x110000) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("%c arg not in range(0x110000)"));
+    }
+    VSTR_FIXED(ch_vstr, 4);
+    vstr_add_char(&ch_vstr, c);
+    mp_print_strn(print, ch_vstr.buf, ch_vstr.len, flags, fill, width);
+    #else
+    char ch = mp_obj_get_int(arg);
+    mp_print_strn(print, &ch, 1, flags, fill, width);
+    #endif
+}
+
 static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     vstr_t vstr;
     mp_print_t print;
@@ -1425,18 +1442,7 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     continue;
 
                 case 'c': {
-                    #if MICROPY_PY_BUILTINS_STR_UNICODE
-                    mp_uint_t c = mp_obj_get_int(arg);
-                    if (c >= 0x110000) {
-                        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
-                    }
-                    VSTR_FIXED(ch_vstr, 4);
-                    vstr_add_char(&ch_vstr, c);
-                    mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, fill, width);
-                    #else
-                    char ch = mp_obj_get_int(arg);
-                    mp_print_strn(&print, &ch, 1, flags, fill, width);
-                    #endif
+                    mp_print_char(&print, arg, flags, fill, width);
                     continue;
                 }
 
@@ -1729,20 +1735,7 @@ static mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     }
                     mp_print_strn(&print, s, 1, flags, ' ', width);
                 } else if (arg_looks_integer(arg)) {
-                    #if MICROPY_PY_BUILTINS_STR_UNICODE
-                    mp_uint_t c = mp_obj_get_int(arg);
-                    if (c >= 0x110000) {
-                        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("%c arg not in range(0x110000)"));
-                    }
-                    char ch_buf[4];
-                    vstr_t ch_vstr;
-                    vstr_init_fixed_buf(&ch_vstr, sizeof(ch_buf), ch_buf);
-                    vstr_add_char(&ch_vstr, c);
-                    mp_print_strn(&print, ch_vstr.buf, ch_vstr.len, flags, ' ', width);
-                    #else
-                    char ch = mp_obj_get_int(arg);
-                    mp_print_strn(&print, &ch, 1, flags, ' ', width);
-                    #endif
+                    mp_print_char(&print, arg, flags, ' ', width);
                 } else {
                     mp_raise_TypeError(MP_ERROR_TEXT("integer needed"));
                 }
