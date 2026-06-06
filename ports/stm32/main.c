@@ -420,6 +420,7 @@ void stm32_main(uint32_t reset_mode) {
 
     // Enable some APB peripherals during sleep.
     LL_APB1_GRP1_EnableClockLowPower(LL_APB1_GRP1_PERIPH_ALL); // I2C, I3C, LPTIM, SPI, TIM, UART, WWDG
+    LL_APB1_GRP2_EnableClockLowPower(LL_APB1_GRP2_PERIPH_FDCAN); // FDCAN
     LL_APB2_GRP1_EnableClockLowPower(LL_APB2_GRP1_PERIPH_ALL); // SAI, SPI, TIM, UART
     LL_APB4_GRP1_EnableClockLowPower(LL_APB4_GRP1_PERIPH_ALL); // I2C, LPTIM, LPUART, RTC, SPI
     #endif
