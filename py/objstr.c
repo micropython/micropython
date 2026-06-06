@@ -223,9 +223,9 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
                 #if MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
                 // Check if error handler is specified (3rd argument)
-                const char *errors = "strict";
+                qstr errors = MP_QSTR_; // default to ""
                 if (n_args >= 3 && args[2] != mp_const_none) {
-                    errors = mp_obj_str_get_str(args[2]);
+                    errors = mp_obj_str_get_qstr(args[2]);
                 }
                 #endif
 
@@ -247,11 +247,9 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 #if MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
                 // Error handlers are enabled
 
-                if (strcmp(errors, "ignore") == 0
-                    || strcmp(errors, "replace") == 0
-                    ) {
+                if (errors == MP_QSTR_ignore || errors == MP_QSTR_replace) {
                     // Build new string skipping/replacing invalid bytes
-                    bool do_replace = strcmp(errors, "replace") == 0;
+                    bool do_replace = (errors == MP_QSTR_replace);
                     vstr_t vstr;
                     vstr_init(&vstr, str_len);
                     const byte *p = str_data;
@@ -1139,10 +1137,10 @@ static MP_NORETURN void terse_str_format_value_error(void) {
 // Print the character with the code point given by the integer object arg.
 // Used by both the str.format and the modulo (%c) formatters.
 static void mp_print_char(const mp_print_t *print, mp_obj_t arg, unsigned int flags, char fill, int width) {
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_FULL_CHECKS
     mp_uint_t c = mp_obj_get_int(arg);
     if (c >= 0x110000) {
-        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("%c arg not in range(0x110000)"));
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("char not in range(0x110000)"));
     }
     VSTR_FIXED(ch_vstr, 4);
     vstr_add_char(&ch_vstr, c);
@@ -2097,11 +2095,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 // These methods are superfluous in the presence of str() and bytes()
 // constructors.
 
-static void check_utf8_encoding(const char *encoding) {
-    if (!(strcmp(encoding, "utf-8") == 0 || strcmp(encoding, "utf8") == 0 ||
-          strcmp(encoding, "ascii") == 0)) {
+static void check_utf8_encoding(qstr encoding) {
+    if (!(encoding == MP_QSTR_utf_hyphen_8 || encoding == MP_QSTR_utf8 ||
+          encoding == MP_QSTR_ascii)) {
         mp_raise_msg_varg(&mp_type_LookupError,
-            MP_ERROR_TEXT("encoding not supported: %s"), encoding);
+            MP_ERROR_TEXT("encoding not supported: %q"), encoding);
     }
 }
 
@@ -2114,7 +2112,7 @@ static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     } else if (n_args >= 2) {
-        check_utf8_encoding(mp_obj_str_get_str(args[1]));
+        check_utf8_encoding(mp_obj_str_get_qstr(args[1]));
     }
     return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
@@ -2129,7 +2127,7 @@ static mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     } else if (n_args >= 2) {
-        check_utf8_encoding(mp_obj_str_get_str(args[1]));
+        check_utf8_encoding(mp_obj_str_get_qstr(args[1]));
     }
     return bytes_make_new(NULL, n_args, 0, args);
 }
