@@ -93,6 +93,9 @@
 #ifndef MICROPY_PY_ESPNOW
 #define MICROPY_PY_ESPNOW                   (1)
 #endif
+#ifndef MICROPY_PY_SMARTCONFIG
+#define MICROPY_PY_SMARTCONFIG              (1)
+#endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
 #endif
