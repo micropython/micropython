@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "modmachine.h"
+#include "shared/runtime/mpirq.h"
 #include "sys_int.h"
 
 #include "cy_tcpwm_counter.h"
@@ -67,6 +68,7 @@ typedef struct _machine_timer_obj_t {
     en_clk_dst_t pclk_dst;
     uint16_t mode;               // TIMER_MODE_ONE_SHOT or TIMER_MODE_PERIODIC
     mp_obj_t callback;
+    bool ishard;
     bool active;
     bool constructed;
     sys_int_cfg_t irq_cfg;
@@ -107,8 +109,9 @@ static void machine_timer_isr(machine_timer_obj_t *self) {
             Cy_TCPWM_Counter_Disable(TCPWM0, self->counter_num);
             self->active = false;
         }
-        if (self->callback != mp_const_none) {
-            mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
+        if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+            // Uncaught exception: disable callback so periodic timers don't spam errors.
+            self->callback = mp_const_none;
         }
     }
 }
@@ -204,13 +207,14 @@ static void machine_timer_start(machine_timer_obj_t *self, uint32_t period_ticks
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
-    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq };
+    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_PERIODIC} },
         { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_period,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_tick_hz,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_hard,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -230,6 +234,12 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("callback must be callable"));
     }
     self->callback = callback;
+
+    mp_obj_t hard = args[ARG_hard].u_obj;
+    if (!mp_obj_is_bool(hard)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hard must be bool"));
+    }
+    self->ishard = (hard == mp_const_true);
 
     // Compute period in timer clock ticks in 64-bit, then range-check.
     uint64_t period_ticks_64;
@@ -265,7 +275,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
 }
 
 // ---------------------------------------------------------------------------
-// machine.Timer(id [, mode=, freq=, period=, tick_hz=, callback=])
+// machine.Timer(id [, mode=, freq=, period=, tick_hz=, callback=, hard=])
 // ---------------------------------------------------------------------------
 
 static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
@@ -291,7 +301,6 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
     self->counter_num = timer_hw[id].counter_num;
     self->irq_num = timer_hw[id].irq_num;
     self->pclk_dst = timer_hw[id].pclk_dst;
-    self->constructed = true;
 
     if (n_args > 1 || n_kw > 0) {
         mp_map_t kw_map;
@@ -299,11 +308,13 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
         machine_timer_init_helper(self, n_args - 1, args + 1, &kw_map);
     }
 
+    self->constructed = true;
+
     return MP_OBJ_FROM_PTR(self);
 }
 
 // ---------------------------------------------------------------------------
-// timer.init(mode=, freq=, period=, tick_hz=, callback=)
+// timer.init(mode=, freq=, period=, tick_hz=, callback=, hard=)
 // ---------------------------------------------------------------------------
 
 static mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args,
@@ -324,6 +335,7 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
         sys_int_deinit(&self->irq_cfg);
     }
     self->callback = mp_const_none;
+    self->ishard = false;
     self->active = false;
     self->constructed = false;
     return mp_const_none;
@@ -354,6 +366,7 @@ void machine_timer_init_all(void) {
         timer_obj[i].irq_num = timer_hw[i].irq_num;
         timer_obj[i].pclk_dst = timer_hw[i].pclk_dst;
         timer_obj[i].callback = mp_const_none;
+        timer_obj[i].ishard = false;
         timer_obj[i].active = false;
         timer_obj[i].constructed = false;
     }
@@ -367,6 +380,7 @@ void machine_timer_deinit_all(void) {
             sys_int_deinit(&self->irq_cfg);
         }
         self->callback = mp_const_none;
+        self->ishard = false;
         self->active = false;
         self->constructed = false;
     }
