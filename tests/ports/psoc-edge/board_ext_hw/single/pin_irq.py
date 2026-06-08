@@ -40,6 +40,8 @@ def irq_handler_hard(pin):
     print("irq hard")
 
 
+# TODO: Re-enable hard irq. Not working after FreeRTOS based implementation.
+# irq = pin_irq.irq(irq_handler_hard, trigger=Pin.IRQ_FALLING, hard=True)
 irq = pin_irq.irq(irq_handler_hard, trigger=Pin.IRQ_FALLING)
 pin_trigger(0)
 

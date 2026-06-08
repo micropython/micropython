@@ -82,7 +82,7 @@
 
 #define MICROPY_PY_MACHINE_I2C_TARGET           (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (1)
-#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ  (0)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ  (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/psoc-edge/machine_i2c_target.c"
 
 #define MICROPY_PY_MACHINE_PDM_PCM              (1)
