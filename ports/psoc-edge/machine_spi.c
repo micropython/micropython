@@ -45,6 +45,7 @@
 #define SPI_OVERSAMPLE          (4U)
 #define SPI_CLK_DIV_TYPE        CY_SYSCLK_DIV_8_BIT
 #define SPI_CLK_DIV_BASE        (4U)
+#define SPI_CLK_DIV_INVALID      (0xFFU)
 
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
@@ -65,11 +66,56 @@ typedef struct _machine_spi_obj_t {
 
 machine_spi_obj_t *machine_hw_spi_obj[MICROPY_PY_MACHINE_SPI_NUM_ENTRIES] = { NULL };
 
+static inline uint32_t machine_spi_div8_count_for_clk(en_clk_dst_t clk_dst) {
+    uint32_t grp_num = (((uint32_t)clk_dst) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
+    uint32_t inst_num = (((uint32_t)clk_dst) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
+    return PERI_PCLK_GR_DIV_8_NR(inst_num, grp_num);
+}
+
+static inline bool machine_spi_same_divider_group(en_clk_dst_t clk_a, en_clk_dst_t clk_b) {
+    uint32_t a_grp = (((uint32_t)clk_a) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
+    uint32_t a_inst = (((uint32_t)clk_a) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
+    uint32_t b_grp = (((uint32_t)clk_b) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
+    uint32_t b_inst = (((uint32_t)clk_b) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
+    return (a_grp == b_grp) && (a_inst == b_inst);
+}
+
+static bool machine_spi_try_alloc_divider(machine_spi_obj_t *self, en_clk_dst_t clk_dst) {
+    uint32_t max_div = machine_spi_div8_count_for_clk(clk_dst);
+    if (SPI_CLK_DIV_BASE >= max_div) {
+        return false;
+    }
+
+    for (uint8_t div = SPI_CLK_DIV_BASE; div < max_div; ++div) {
+        bool used = false;
+        for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SPI_NUM_ENTRIES; i++) {
+            machine_spi_obj_t *obj = machine_hw_spi_obj[i];
+            if ((obj == NULL) || (obj == self) || (obj->scb_obj == NULL)) {
+                continue;
+            }
+            if (!machine_spi_same_divider_group(obj->scb_obj->clk, clk_dst)) {
+                continue;
+            }
+            if (obj->div_num == div) {
+                used = true;
+                break;
+            }
+        }
+
+        if (!used) {
+            self->div_num = div;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static inline machine_spi_obj_t *machine_hw_spi_obj_alloc(void) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SPI_NUM_ENTRIES; i++) {
         if (machine_hw_spi_obj[i] == NULL) {
             machine_hw_spi_obj[i] = mp_obj_malloc(machine_spi_obj_t, &machine_spi_type);
-            machine_hw_spi_obj[i]->div_num = SPI_CLK_DIV_BASE + i;
+            machine_hw_spi_obj[i]->div_num = SPI_CLK_DIV_INVALID;
             return machine_hw_spi_obj[i];
         }
     }
@@ -107,12 +153,11 @@ static uint8_t machine_spi_pins_config_and_get_scb_unit(
             MACHINE_PIN_AF_SIGNAL_SPI_MISO),
     };
     uint8_t scb_unit = spi_pins_config[0].af->unit;
-    mp_hal_periph_pins_af_config(spi_pins_config, 3);
+    mp_hal_periph_pins_af_config(spi_pins_config, MP_ARRAY_SIZE(spi_pins_config));
     return scb_unit;
 }
 
-static void machine_spi_hw_init(machine_spi_obj_t *self) {
-    // Input validation
+static void machine_spi_validate_config(machine_spi_obj_t *self) {
     if (self->baudrate == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("baudrate must be > 0"));
     }
@@ -129,7 +174,9 @@ static void machine_spi_hw_init(machine_spi_obj_t *self) {
     if (self->sck == NULL || self->mosi == NULL || self->miso == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("sck, mosi, and miso pins are required"));
     }
+}
 
+static void machine_spi_hw_init(machine_spi_obj_t *self) {
     // Configure SPI pins and discover SCB unit
     uint8_t scb_unit = machine_spi_pins_config_and_get_scb_unit(
         self->sck, self->mosi, self->miso);
@@ -143,9 +190,15 @@ static void machine_spi_hw_init(machine_spi_obj_t *self) {
     self->scb_obj = machine_scb_obj_alloc(scb_unit, self,
         machine_spi_scb_isr);
 
+    if (!machine_spi_try_alloc_divider(self, self->scb_obj->clk)) {
+        machine_scb_obj_free(self->scb_obj);
+        self->scb_obj = NULL;
+        mp_raise_ValueError(MP_ERROR_TEXT("SPI clock dividers exhausted"));
+    }
+
     // Configure SPI clock divider
-    MACHINE_PERI_PCLK_INIT_DIVIDER(self->scb_obj->clk,
-        SPI_CLK_DIV_TYPE, self->div_num);
+    MACHINE_PERI_PCLK_CONFIG_DIVIDER(self->scb_obj->clk,
+        SPI_CLK_DIV_TYPE, self->div_num, 0U);
 
     // Get HF clock frequency and calculate divider value for desired baudrate
     uint32_t clk_hf_freq = Cy_SysClk_PeriPclkGetFrequency(
@@ -158,7 +211,7 @@ static void machine_spi_hw_init(machine_spi_obj_t *self) {
     }
 
     // Apply divider
-    MACHINE_PERI_PCLK_APPLY_DIVIDER(self->scb_obj->clk,
+    MACHINE_PERI_PCLK_CONFIG_DIVIDER(self->scb_obj->clk,
         SPI_CLK_DIV_TYPE, self->div_num, div_val);
 
     // Select SPI clock polarity and phase
@@ -223,12 +276,15 @@ static void machine_spi_hw_deinit(machine_spi_obj_t *self) {
     Cy_SCB_SPI_Disable(self->scb_obj->scb, &self->ctx);
     Cy_SCB_SPI_DeInit(self->scb_obj->scb);
     sys_int_deinit(&self->scb_obj->irq);
-    Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk, SPI_CLK_DIV_TYPE, self->div_num);
+    if (self->div_num != SPI_CLK_DIV_INVALID) {
+        Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk, SPI_CLK_DIV_TYPE, self->div_num);
+        self->div_num = SPI_CLK_DIV_INVALID;
+    }
     machine_scb_obj_free(self->scb_obj);
     self->scb_obj = NULL;
 }
 
-// Shared argument parser used by the constructor (make_new).
+// Parse and validate user arguments shared by constructor and init().
 static void machine_spi_init_helper(machine_spi_obj_t *self, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits,
            ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
@@ -289,6 +345,7 @@ static void machine_spi_init_helper(machine_spi_obj_t *self, size_t n_args, size
 
     // Reinitialize hardware if any config changed
     if (reinit) {
+        machine_spi_validate_config(self);
         if (self->scb_obj != NULL) {
             machine_spi_hw_deinit(self);
         }
@@ -296,6 +353,7 @@ static void machine_spi_init_helper(machine_spi_obj_t *self, size_t n_args, size
     }
 }
 
+// Thin protocol adapter for mp_machine_spi_p.init signature.
 static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
 

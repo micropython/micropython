@@ -148,8 +148,8 @@ static void machine_spi_target_hw_init(machine_spi_target_obj_t *self) {
 
     // Configure SPI PCLK divider (needed for slave's internal clock even though
     // the bit clock comes from master's SCK)
-    MACHINE_PERI_PCLK_INIT_DIVIDER(self->scb_obj->clk,
-        SPI_TARGET_CLK_DIV_TYPE, self->div_num);
+    MACHINE_PERI_PCLK_CONFIG_DIVIDER(self->scb_obj->clk,
+        SPI_TARGET_CLK_DIV_TYPE, self->div_num, 0U);
 
     // Select SPI clock polarity and phase
     cy_en_scb_spi_sclk_mode_t sclk_mode;
@@ -318,6 +318,7 @@ static mp_obj_t machine_spi_target_write(mp_obj_t self_in, mp_obj_t buf_in) {
 
     Cy_SCB_SPI_ClearTxFifo(self->scb_obj->scb);
 
+    uint32_t start = mp_hal_ticks_ms();
     size_t written = 0;
     uint8_t *tx_buf = bufinfo.buf;
 
@@ -325,11 +326,14 @@ static mp_obj_t machine_spi_target_write(mp_obj_t self_in, mp_obj_t buf_in) {
         if (Cy_SCB_GetNumInTxFifo(self->scb_obj->scb) < Cy_SCB_GetFifoSize(self->scb_obj->scb)) {
             Cy_SCB_SPI_Write(self->scb_obj->scb, tx_buf[written++]);
         } else {
+            if (spi_target_elapsed_ms(start) > self->timeout) {
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget write timeout"));
+            }
             mp_event_handle_nowait();
         }
     }
 
-    uint32_t start = mp_hal_ticks_ms();
+    start = mp_hal_ticks_ms();
     while (!Cy_SCB_SPI_IsTxComplete(self->scb_obj->scb)) {
         if (spi_target_elapsed_ms(start) > self->timeout) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget write timeout"));

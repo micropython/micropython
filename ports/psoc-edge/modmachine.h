@@ -32,17 +32,10 @@
 #include "py/obj.h"
 #include "cy_sysclk.h"
 
-#define MACHINE_PERI_PCLK_INIT_DIVIDER(clk, div_type, div_num) \
+#define MACHINE_PERI_PCLK_CONFIG_DIVIDER(clk, div_type, div_num, div_val) \
     do { \
         Cy_SysClk_PeriPclkDisableDivider((clk), (div_type), (div_num)); \
         Cy_SysClk_PeriPclkAssignDivider((clk), (div_type), (div_num)); \
-        Cy_SysClk_PeriPclkSetDivider((clk), (div_type), (div_num), 0U); \
-        Cy_SysClk_PeriPclkEnableDivider((clk), (div_type), (div_num)); \
-    } while (0)
-
-#define MACHINE_PERI_PCLK_APPLY_DIVIDER(clk, div_type, div_num, div_val) \
-    do { \
-        Cy_SysClk_PeriPclkDisableDivider((clk), (div_type), (div_num)); \
         Cy_SysClk_PeriPclkSetDivider((clk), (div_type), (div_num), (div_val)); \
         Cy_SysClk_PeriPclkEnableDivider((clk), (div_type), (div_num)); \
     } while (0)

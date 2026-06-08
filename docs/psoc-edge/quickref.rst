@@ -374,6 +374,53 @@ Use the ``SPITarget`` class for target-mode communication::
 
     spi_t.deinit()
 
+Constructor arguments:
+
+    - ``id``: accepted for API compatibility, currently ignored.
+    - ``sck``: SPI clock pin.
+    - ``mosi``: target TX pin.
+    - ``miso``: target RX pin.
+    - ``ssel``: chip-select input pin.
+    - ``polarity`` / ``phase``: must be ``0`` or ``1``.
+    - ``bits``: only ``8`` is supported.
+    - ``firstbit``: ``SPITarget.MSB`` or ``SPITarget.LSB``.
+
+Constants:
+
+    - ``SPITarget.MSB``: most-significant-bit first.
+    - ``SPITarget.LSB``: least-significant-bit first.
+
+Methods:
+
+.. method:: SPITarget.read(buf)
+
+    Read bytes from the SPI target RX FIFO into writable buffer ``buf``.
+    Returns the number of bytes read.
+
+    Raises ``OSError`` on timeout.
+
+.. method:: SPITarget.write(buf)
+
+    Write bytes from buffer ``buf`` to the SPI target TX FIFO.
+    Returns the number of bytes written.
+
+    Raises ``OSError`` on timeout.
+
+.. method:: SPITarget.write_readinto(tx_buf, rx_buf)
+
+    Full-duplex transfer in target mode. Writes bytes from ``tx_buf`` and
+    reads bytes into ``rx_buf``.
+
+    ``tx_buf`` and ``rx_buf`` must have the same length.
+    Returns the number of bytes transferred.
+
+    Raises ``ValueError`` if buffer lengths differ.
+    Raises ``OSError`` on timeout.
+
+.. method:: SPITarget.deinit()
+
+    Deinitialise the SPITarget instance and release its underlying SCB resource.
+
 Port-specific notes:
 
     - ``sck``, ``mosi``, ``miso``, and ``ssel`` are all required.
