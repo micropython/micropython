@@ -112,18 +112,6 @@ static const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
 };
 MP_DEFINE_CONST_DICT(mp_machine_spi_locals_dict, machine_spi_locals_dict_table);
 
-// The port can provide the hardware machine.SPI type implementation here.
-#if MICROPY_PY_MACHINE_SPI
-#ifdef MICROPY_PY_MACHINE_SPI_INCLUDEFILE
-// Avoid internal static-name collisions with generic binding helpers above.
-#define machine_spi_init machine_spi_port_init
-#define machine_spi_deinit machine_spi_port_deinit
-#include MICROPY_PY_MACHINE_SPI_INCLUDEFILE
-#undef machine_spi_deinit
-#undef machine_spi_init
-#endif
-#endif
-
 #endif // MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 
 /******************************************************************************/

@@ -74,7 +74,6 @@
 #define MICROPY_PY_MACHINE_SOFTI2C              (0)
 
 #define MICROPY_PY_MACHINE_SPI                  (1)
-#define MICROPY_PY_MACHINE_SPI_INCLUDEFILE      "ports/psoc-edge/machine_spi.c"
 
 #define MICROPY_PY_MACHINE_SPI_TARGET           (1)
 #define MICROPY_PY_MACHINE_SPI_TARGET_MAX       (1)
