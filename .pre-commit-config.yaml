@@ -5,12 +5,14 @@ repos:
         name: MicroPython codeformat.py for changed C files
         entry: tools/codeformat.py -v -c -f
         language: python
+        language_version: python3
         additional_dependencies:
           - micropython-uncrustify==1.0.0.post1
       - id: verifygitlog
         name: MicroPython git commit message format checker
         entry: tools/verifygitlog.py --check-file --ignore-rebase
         language: python
+        language_version: python3
         verbose: true
         stages: [commit-msg]
   - repo: https://github.com/charliermarsh/ruff-pre-commit

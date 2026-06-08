@@ -30,8 +30,7 @@ include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
 # extmod/extmod.mk enables mbedTLS sources based on MICROPY_SSL_MBEDTLS.
-ifeq ($(MICROPY_PSOC6_SSL_MBEDTLS),1)
-MICROPY_SSL_MBEDTLS = 1
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
 MBEDTLS_CONFIG_FILE = \"mbedtls/mbedtls_config_port.h\"
 endif
 
@@ -396,7 +395,7 @@ ifeq ($(MICROPY_PSOC_EDGE_LWIP),1)
 	INC += -Ilwip_inc
 endif
 
-ifeq ($(MICROPY_PSOC6_SSL_MBEDTLS),1)
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
   INC += -I$(TOP)/extmod/mbedtls
 	INC += -I$(TOP)/ports/psoc-edge/mbedtls
 	CFLAGS += -DMICROPY_SSL_MBEDTLS=1 -DMICROPY_MBEDTLS_USE_MTB_ENTROPY=1
