@@ -392,7 +392,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-ifeq ($(MICROPY_PSOC6_LWIP),1)
+ifeq ($(MICROPY_PSOC_EDGE_LWIP),1)
 	INC += -Ilwip_inc
 endif
 
@@ -441,7 +441,7 @@ SHARED_SRC_C += $(addprefix shared/,\
 	timeutils/timeutils.c \
 	)
 
-ifeq ($(MICROPY_PSOC6_LWIP),1)
+ifeq ($(MICROPY_PSOC_EDGE_LWIP),1)
   SHARED_SRC_C += $(addprefix shared/,\
 	netutils/dhcpserver.c \
 	netutils/netutils.c \
