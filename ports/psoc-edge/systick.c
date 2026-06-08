@@ -49,29 +49,43 @@ typedef struct {
     uint32_t cpu_hz;
 } mp_hal_systick_snapshot_t;
 
+#if !defined(CY_RTOS_AWARE)
 static void psoc_edge_systick_callback(void) {
     psoc_edge_systick_ms_count += 1;
 }
+#endif
 
 void mp_hal_ticks_init(void) {
     psoc_edge_systick_cpu_hz = SystemCoreClock;
+    psoc_edge_systick_ms_count = 0;
+    #if defined(CY_RTOS_AWARE)
+    // SysTick is already configured by FreeRTOS vPortSetupTimerInterrupt() at
+    // 1 ms per tick (configTICK_RATE_HZ == 1000). psoc_edge_systick_ms_count is
+    // driven from xTaskGetTickCount() inside mp_hal_systick_snapshot() so no
+    // Cypress HAL callback setup is needed here.
+    #else
     if (psoc_edge_systick_cpu_hz < 1000) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("invalid SystemCoreClock (< 1000 Hz)."));
     }
-
     // Configure SysTick for 1ms period and count overflows in software.
     uint32_t systick_interval = psoc_edge_systick_cpu_hz / 1000;
-
-    psoc_edge_systick_ms_count = 0;
     Cy_SysTick_Init(CY_SYSTICK_CLOCK_SOURCE_CLK_CPU, systick_interval - 1);
     Cy_SysTick_SetCallback(0, psoc_edge_systick_callback);
+    #endif
 }
 
 static mp_hal_systick_snapshot_t mp_hal_systick_snapshot(void) {
     mp_hal_systick_snapshot_t snap;
 
     mp_uint_t irq_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    #if defined(CY_RTOS_AWARE)
+    // Drive ms_count from FreeRTOS tick counter (1 tick == 1 ms, configTICK_RATE_HZ == 1000).
+    // Keep psoc_edge_systick_ms_count in sync so any external reader stays consistent.
+    snap.ms_count = (uint64_t)xTaskGetTickCount();
+    psoc_edge_systick_ms_count = snap.ms_count;
+    #else
     snap.ms_count = psoc_edge_systick_ms_count;
+    #endif
     snap.systick_reload = Cy_SysTick_GetReload();
     snap.systick_val = Cy_SysTick_GetValue();
     // SysTick may have wrapped but its ISR not run yet; account for that pending rollover
