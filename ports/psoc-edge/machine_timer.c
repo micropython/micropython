@@ -70,7 +70,6 @@ typedef struct _machine_timer_obj_t {
     mp_obj_t callback;
     bool ishard;
     bool active;
-    bool constructed;
     sys_int_cfg_t irq_cfg;
 } machine_timer_obj_t;
 
@@ -96,7 +95,7 @@ static const timer_hw_t timer_hw[MACHINE_TIMER_NUM_INSTANCES] = {
 // Static instance pool — one entry per hardware timer
 // ---------------------------------------------------------------------------
 
-static machine_timer_obj_t timer_obj[MACHINE_TIMER_NUM_INSTANCES];
+static machine_timer_obj_t *timer_obj[MACHINE_TIMER_NUM_INSTANCES] = { NULL };
 
 // ---------------------------------------------------------------------------
 // IRQ handlers — one per timer, each delegates to the common body
@@ -117,13 +116,19 @@ static void machine_timer_isr(machine_timer_obj_t *self) {
 }
 
 static void timer0_irq_handler(void) {
-    machine_timer_isr(&timer_obj[0]);
+    if (timer_obj[0] != NULL) {
+        machine_timer_isr(timer_obj[0]);
+    }
 }
 static void timer1_irq_handler(void) {
-    machine_timer_isr(&timer_obj[1]);
+    if (timer_obj[1] != NULL) {
+        machine_timer_isr(timer_obj[1]);
+    }
 }
 static void timer2_irq_handler(void) {
-    machine_timer_isr(&timer_obj[2]);
+    if (timer_obj[2] != NULL) {
+        machine_timer_isr(timer_obj[2]);
+    }
 }
 
 static const cy_israddress timer_handlers[MACHINE_TIMER_NUM_INSTANCES] = {
@@ -183,7 +188,7 @@ static void machine_timer_start(machine_timer_obj_t *self, uint32_t period_ticks
     };
 
     cy_en_tcpwm_status_t result = Cy_TCPWM_Counter_Init(TCPWM0, self->counter_num, &cfg);
-    if (result != CY_RSLT_SUCCESS) {
+    if (result != CY_TCPWM_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError,
             MP_ERROR_TEXT("Timer(%u) init failed (PDL error 0x%lx)"),
             (unsigned)self->id, (unsigned long)result);
@@ -290,25 +295,35 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
             MACHINE_TIMER_NUM_INSTANCES - 1);
     }
 
-    machine_timer_obj_t *self = &timer_obj[id];
-    if (self->constructed) {
+    if (timer_obj[id] != NULL) {
         mp_raise_msg_varg(&mp_type_ValueError,
             MP_ERROR_TEXT("Timer(%u) already created."), (unsigned)id);
     }
 
-    self->base.type = &machine_timer_type;
+    machine_timer_obj_t *self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
+    timer_obj[id] = self;
+
     self->id = (uint8_t)id;
     self->counter_num = timer_hw[id].counter_num;
     self->irq_num = timer_hw[id].irq_num;
     self->pclk_dst = timer_hw[id].pclk_dst;
+    self->callback = mp_const_none;
+    self->ishard = false;
+    self->active = false;
 
     if (n_args > 1 || n_kw > 0) {
         mp_map_t kw_map;
         mp_map_init_fixed_table(&kw_map, n_kw, args + n_args);
-        machine_timer_init_helper(self, n_args - 1, args + 1, &kw_map);
-    }
 
-    self->constructed = true;
+        nlr_buf_t nl;
+        if (nlr_push(&nl) == 0) {
+            machine_timer_init_helper(self, n_args - 1, args + 1, &kw_map);
+            nlr_pop();
+        } else {
+            timer_obj[id] = NULL;
+            nlr_jump(nl.ret_val);
+        }
+    }
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -337,7 +352,7 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     self->callback = mp_const_none;
     self->ishard = false;
     self->active = false;
-    self->constructed = false;
+    timer_obj[self->id] = NULL;
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
@@ -359,30 +374,19 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in,
 // Module-level lifecycle called from main.c
 // ---------------------------------------------------------------------------
 
-void machine_timer_init_all(void) {
-    for (uint8_t i = 0; i < MACHINE_TIMER_NUM_INSTANCES; i++) {
-        timer_obj[i].id = i;
-        timer_obj[i].counter_num = timer_hw[i].counter_num;
-        timer_obj[i].irq_num = timer_hw[i].irq_num;
-        timer_obj[i].pclk_dst = timer_hw[i].pclk_dst;
-        timer_obj[i].callback = mp_const_none;
-        timer_obj[i].ishard = false;
-        timer_obj[i].active = false;
-        timer_obj[i].constructed = false;
-    }
-}
-
 void machine_timer_deinit_all(void) {
     for (uint8_t i = 0; i < MACHINE_TIMER_NUM_INSTANCES; i++) {
-        machine_timer_obj_t *self = &timer_obj[i];
-        Cy_TCPWM_Counter_Disable(TCPWM0, self->counter_num);
-        if (self->active) {
-            sys_int_deinit(&self->irq_cfg);
+        machine_timer_obj_t *self = timer_obj[i];
+        if (self != NULL) {
+            Cy_TCPWM_Counter_Disable(TCPWM0, self->counter_num);
+            if (self->active) {
+                sys_int_deinit(&self->irq_cfg);
+            }
+            self->callback = mp_const_none;
+            self->ishard = false;
+            self->active = false;
+            timer_obj[i] = NULL;
         }
-        self->callback = mp_const_none;
-        self->ishard = false;
-        self->active = false;
-        self->constructed = false;
     }
 }
 
