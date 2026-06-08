@@ -150,7 +150,7 @@ INC += \
 
 MACHINE_FLAGS = \
 	-mcpu=cortex-m33 \
-	--specs=nano.specs \
+	--specs=nosys.specs \
 	-mfloat-abi=softfp \
 	-mfpu=fpv5-sp-d16 \
 	-mthumb
