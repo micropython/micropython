@@ -8,8 +8,31 @@
 #   P16_2 (MISO)   <->  P16_2 (MISO)
 #   P16_3 (SSEL)   <->  P16_3 (CS out)
 #   GND            <->  GND
+#
+# Other supported board mappings:
+#   CY8CPROTO-062-4343W / CY8CPROTO-063-BLE:
+#   SCK=P9_2, MOSI=P9_0, MISO=P9_1, SSEL=P9_3
 
+import os
 import time
+
+
+def _get_spi_pins_for_board():
+    board = os.uname().machine
+
+    if "KIT_PSE84_AI" in board:
+        return ("P16_0", "P16_1", "P16_2", "P16_3")
+    if "CY8CPROTO-062-4343W" in board or "CY8CPROTO-063-BLE" in board:
+        return ("P9_2", "P9_0", "P9_1", "P9_3")
+    if "CY8CKIT-062S2-AI" in board:
+        print("SKIP: SPI target path is not supported on CY8CKIT-062S2-AI")
+        raise SystemExit
+
+    print("SKIP: Unsupported board for SPI multi-device test:", board)
+    raise SystemExit
+
+
+SCK_PIN, MOSI_PIN, MISO_PIN, SSEL_PIN = _get_spi_pins_for_board()
 
 
 def instance0():
@@ -23,10 +46,10 @@ def instance0():
         phase=0,
         bits=8,
         firstbit=SPITarget.MSB,
-        sck="P16_0",
-        mosi="P16_1",
-        miso="P16_2",
-        ssel="P16_3",
+        sck=SCK_PIN,
+        mosi=MOSI_PIN,
+        miso=MISO_PIN,
+        ssel=SSEL_PIN,
     )
 
     # Signal to master that target is ready
@@ -92,11 +115,11 @@ def instance1():
         phase=0,
         bits=8,
         firstbit=SPI.MSB,
-        sck="P16_0",
-        mosi="P16_1",
-        miso="P16_2",
+        sck=SCK_PIN,
+        mosi=MOSI_PIN,
+        miso=MISO_PIN,
     )
-    cs = Pin("P16_3", Pin.OUT, value=1)
+    cs = Pin(SSEL_PIN, Pin.OUT, value=1)
 
     # Wait for target to be ready
     print("Waiting for target...")

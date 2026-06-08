@@ -39,7 +39,8 @@
 #define DEFAULT_SPI_BAUDRATE    (1000000)
 #define DEFAULT_SPI_POLARITY    (0)
 #define DEFAULT_SPI_PHASE       (0)
-#define DEFAULT_SPI_BITS        (8)
+#define SPI_SUPPORTED_BITS      (8U)
+#define DEFAULT_SPI_BITS        (SPI_SUPPORTED_BITS)
 #define DEFAULT_SPI_TIMEOUT     (50000)
 
 #define SPI_OVERSAMPLE          (4U)
@@ -168,7 +169,7 @@ static void machine_spi_validate_config(machine_spi_obj_t *self) {
     if ((self->polarity > 1U) || (self->phase > 1U)) {
         mp_raise_ValueError(MP_ERROR_TEXT("polarity/phase must be 0 or 1"));
     }
-    if (self->bits != 8U) {
+    if (self->bits != SPI_SUPPORTED_BITS) {
         mp_raise_ValueError(MP_ERROR_TEXT("bits must be 8"));
     }
     if ((self->firstbit != MICROPY_PY_MACHINE_SPI_MSB) &&
