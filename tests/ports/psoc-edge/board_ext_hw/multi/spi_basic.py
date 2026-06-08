@@ -18,7 +18,12 @@ import time
 
 
 def _get_spi_pins_for_board():
-    board = os.uname().machine
+    uname_fn = getattr(os, "uname", None)
+    if uname_fn is None:
+        # Some firmware builds do not expose os.uname(); default to KIT mapping.
+        return ("P16_0", "P16_1", "P16_2", "P16_3")
+
+    board = uname_fn().machine
     board_norm = board.upper().replace("-", "_")
 
     if "KIT_PSE84_AI" in board_norm or "PSE84" in board_norm:
