@@ -188,13 +188,13 @@ def test_hard_parameter_checks():
     # reserves a small emergency buffer so exceptions in
     # interrupt/hard-IRQ context can still be created and reported safely
     micropython.alloc_emergency_exception_buf(100)
-    hard_events = []
     hard_seen = False
 
     def cb_hard(timer):
         nonlocal hard_seen
         try:
-            hard_events.append(1)
+            # Any heap allocation in hard IRQ context should raise MemoryError.
+            _ = bytearray(1)
         except MemoryError:
             hard_seen = True
             return
@@ -204,7 +204,7 @@ def test_hard_parameter_checks():
         time.sleep_ms(250)
     finally:
         tim_hard.deinit()
-    print_result("hard_true_callback_invoked", hard_seen)
+    print_result("hard_true tested", hard_seen)
 
     # 3) hard must be bool.
     try:
