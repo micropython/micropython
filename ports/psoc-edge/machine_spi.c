@@ -86,7 +86,11 @@ static bool machine_spi_try_alloc_divider(machine_spi_obj_t *self, en_clk_dst_t 
         return false;
     }
 
-    for (uint8_t div = SPI_CLK_DIV_BASE; div < max_div; ++div) {
+    for (uint32_t div = SPI_CLK_DIV_BASE; div < max_div; ++div) {
+        if (div > SPI_CLK_DIV_INVALID) {
+            break;
+        }
+
         bool used = false;
         for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SPI_NUM_ENTRIES; i++) {
             machine_spi_obj_t *obj = machine_hw_spi_obj[i];
@@ -96,14 +100,14 @@ static bool machine_spi_try_alloc_divider(machine_spi_obj_t *self, en_clk_dst_t 
             if (!machine_spi_same_divider_group(obj->scb_obj->clk, clk_dst)) {
                 continue;
             }
-            if (obj->div_num == div) {
+            if (obj->div_num == (uint8_t)div) {
                 used = true;
                 break;
             }
         }
 
         if (!used) {
-            self->div_num = div;
+            self->div_num = (uint8_t)div;
             return true;
         }
     }
