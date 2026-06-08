@@ -321,12 +321,12 @@ Use the ``SPI`` class for controller-mode transfers::
         phase=0,
         bits=8,
         firstbit=SPI.MSB,
-        sck='P9_0',
-        mosi='P9_1',
-        miso='P9_2',
+        sck='P16_0',
+        mosi='P16_1',
+        miso='P16_2',
     )
 
-    cs = Pin('P9_3', Pin.OUT, value=1)
+    cs = Pin('P16_3', Pin.OUT, value=1)
     tx = b'\x9f\x00\x00\x00'
     rx = bytearray(4)
 
@@ -358,10 +358,10 @@ Use the ``SPITarget`` class for target-mode communication::
     from machine import SPITarget
 
     spi_t = SPITarget(
-        sck='P9_0',
-        mosi='P9_1',
-        miso='P9_2',
-        ssel='P9_3',
+        sck='P16_0',
+        mosi='P16_1',
+        miso='P16_2',
+        ssel='P16_3',
         polarity=0,
         phase=0,
         bits=8,
@@ -424,6 +424,7 @@ Methods:
 Port-specific notes:
 
     - ``sck``, ``mosi``, ``miso``, and ``ssel`` are all required.
+    - Pin mapping is board-specific. On KIT_PSE84_AI, SPI multi-test wiring uses ``P16_0/P16_1/P16_2/P16_3``.
     - ``bits`` is fixed to 8.
     - ``read()``, ``write()``, and ``write_readinto()`` are blocking and use an
       internal timeout.
