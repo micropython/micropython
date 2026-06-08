@@ -19,12 +19,13 @@ import time
 
 def _get_spi_pins_for_board():
     board = os.uname().machine
+    board_norm = board.upper().replace("-", "_")
 
-    if "KIT_PSE84_AI" in board:
+    if "KIT_PSE84_AI" in board_norm or "PSE84" in board_norm:
         return ("P16_0", "P16_1", "P16_2", "P16_3")
-    if "CY8CPROTO-062-4343W" in board or "CY8CPROTO-063-BLE" in board:
+    if "CY8CPROTO_062_4343W" in board_norm or "CY8CPROTO_063_BLE" in board_norm:
         return ("P9_2", "P9_0", "P9_1", "P9_3")
-    if "CY8CKIT-062S2-AI" in board:
+    if "CY8CKIT_062S2_AI" in board_norm:
         print("SKIP: SPI target path is not supported on CY8CKIT-062S2-AI")
         raise SystemExit
 
