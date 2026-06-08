@@ -62,10 +62,13 @@ void mp_hal_ticks_init(void) {
     // SysTick is already configured by FreeRTOS vPortSetupTimerInterrupt() at
     // 1 ms per tick (configTICK_RATE_HZ == 1000). psoc_edge_systick_ms_count is
     // driven from xTaskGetTickCount() inside mp_hal_systick_snapshot() so no
-    // Cypress HAL callback setup is needed here.
+    // callback setup is needed here.
     #else
     if (psoc_edge_systick_cpu_hz < 1000) {
-        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("invalid SystemCoreClock (< 1000 Hz)."));
+        // Invalid system clock for a ms ticker.
+        // As micropython is not yet initialized, therefore
+        // mp_raise_msg() is not usable here.
+        CY_ASSERT(0);
     }
     // Configure SysTick for 1ms period and count overflows in software.
     uint32_t systick_interval = psoc_edge_systick_cpu_hz / 1000;
