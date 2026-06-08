@@ -1,4 +1,5 @@
 from machine import Timer
+import micropython
 import time
 
 oneshot_triggered = False
@@ -160,6 +161,85 @@ def test_recreate_after_deinit():
     print("Recreate Timer(0) after deinit: OK")
 
 
+def print_result(name, ok):
+    print("{}: {}".format(name, "OK" if ok else "FAIL"))
+
+
+# Test hard parameter behavior.
+def test_hard_parameter_checks():
+    print("*****Timer hard Parameter Tests*****")
+
+    # 1) hard defaults to False (soft callback path).
+    soft_events = []
+
+    def cb_soft(timer):
+        # callback with list append works.
+        soft_events.append(1)
+
+    tim_soft = Timer(0, period=50, tick_hz=1000, mode=Timer.PERIODIC, callback=cb_soft)
+    try:
+        time.sleep_ms(250)
+    finally:
+        tim_soft.deinit()
+    print_result("default_soft", len(soft_events) > 0)
+
+    # 2) hard=True should execute callback successfully.
+
+    # reserves a small emergency buffer so exceptions in
+    # interrupt/hard-IRQ context can still be created and reported safely
+    micropython.alloc_emergency_exception_buf(100)
+    hard_events = []
+    hard_seen = False
+
+    def cb_hard(timer):
+        nonlocal hard_seen
+        try:
+            hard_events.append(1)
+        except MemoryError:
+            hard_seen = True
+            return
+
+    tim_hard = Timer(1, period=50, tick_hz=1000, mode=Timer.PERIODIC, callback=cb_hard, hard=True)
+    try:
+        time.sleep_ms(250)
+    finally:
+        tim_hard.deinit()
+    print_result("hard_true_callback_invoked", hard_seen)
+
+    # 3) hard must be bool.
+    try:
+        Timer(2, period=100, tick_hz=1000, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=1)
+        print_result("hard_bool_validation", False)
+    except ValueError:
+        print_result("hard_bool_validation", True)
+    except Exception:
+        print_result("hard_bool_validation", False)
+
+    # 4) hard accepts both bool values.
+    hard_false_ok = False
+    hard_true_ok = False
+
+    try:
+        t_bool = Timer(
+            2, period=200, tick_hz=1000, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=False
+        )
+        t_bool.deinit()
+        hard_false_ok = True
+    except Exception:
+        hard_false_ok = False
+
+    try:
+        t_bool = Timer(
+            2, period=200, tick_hz=1000, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=True
+        )
+        t_bool.deinit()
+        hard_true_ok = True
+    except Exception:
+        hard_true_ok = False
+
+    print_result("hard_bool_values", hard_false_ok and hard_true_ok)
+
+
 ########## Main Execution ############
 
 if __name__ == "__main__":
@@ -172,3 +252,4 @@ if __name__ == "__main__":
     test_frequency_input()
     test_negative_cases()
     test_recreate_after_deinit()
+    test_hard_parameter_checks()

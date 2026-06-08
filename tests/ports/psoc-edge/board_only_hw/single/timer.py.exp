@@ -27,3 +27,8 @@ tick_hz_zero: tick_hz must be > 0
 missing_freq_period: either freq or period must be specified
 period_ticks_zero: period out of range for 32-bit counter
 Recreate Timer(0) after deinit: OK
+*****Timer hard Parameter Tests*****
+default_soft: OK
+hard_true_callback_invoked: OK
+hard_bool_validation: OK
+hard_bool_values: OK
