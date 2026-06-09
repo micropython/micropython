@@ -376,7 +376,6 @@ Use the ``SPITarget`` class for target-mode communication::
 
 Constructor arguments:
 
-    - ``id``: accepted for API compatibility, currently ignored.
     - ``sck``: SPI clock pin.
     - ``mosi``: target TX pin.
     - ``miso``: target RX pin.
