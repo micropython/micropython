@@ -22,9 +22,3 @@
 |                   | P16_2         | P16_2         | SPI MISO to MISO               |
 |                   | P16_3         | P16_3         | SPI SSEL to CS out             |
 |                   | GND           | GND           | Common Ground                  |
-
-## SPI pin set for multi-board tests (P16 only)
-
-| Board Type                | SCK  | MOSI | MISO | SSEL |
-|--------------------------|------|------|------|------|
-| KIT_PSE84_AI             | P16_0 | P16_1 | P16_2 | P16_3 |

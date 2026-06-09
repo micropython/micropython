@@ -342,6 +342,8 @@ static mp_obj_t machine_spi_target_write(mp_obj_t self_in, mp_obj_t buf_in) {
     while (written < bufinfo.len) {
         if (Cy_SCB_GetNumInTxFifo(self->scb_obj->scb) < Cy_SCB_GetFifoSize(self->scb_obj->scb)) {
             Cy_SCB_SPI_Write(self->scb_obj->scb, tx_buf[written++]);
+            // Timeout tracks FIFO stall time, not total transfer time.
+            start = mp_hal_ticks_ms();
         } else {
             if (spi_target_elapsed_ms(start) > self->timeout) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget write timeout"));
@@ -384,15 +386,24 @@ static mp_obj_t machine_spi_target_write_readinto(mp_obj_t self_in, mp_obj_t tx_
     uint32_t start = mp_hal_ticks_ms();
 
     while (rx_idx < len) {
+        bool progressed = false;
+
         // Load TX FIFO
         while (tx_idx < len &&
                Cy_SCB_GetNumInTxFifo(self->scb_obj->scb) < Cy_SCB_GetFifoSize(self->scb_obj->scb)) {
             Cy_SCB_SPI_Write(self->scb_obj->scb, tx_buf[tx_idx++]);
+            progressed = true;
         }
 
         // Read RX FIFO
         while (rx_idx < len && Cy_SCB_SPI_GetNumInRxFifo(self->scb_obj->scb) > 0) {
             rx_buf[rx_idx++] = (uint8_t)Cy_SCB_SPI_Read(self->scb_obj->scb);
+            progressed = true;
+        }
+
+        if (progressed) {
+            // Timeout tracks no-progress stalls (e.g. FIFO-full with no clocking).
+            start = mp_hal_ticks_ms();
         }
 
         if (spi_target_elapsed_ms(start) > self->timeout) {
