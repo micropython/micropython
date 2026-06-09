@@ -77,7 +77,7 @@ GIT_SUBMODULES += lib/mpy-test-ext
 ifeq ($(MICROPY_PY_DEEPCRAFT),1)
 GIT_SUBMODULES += lib/micropython-deepcraft-model-interface
 DEEPCRAFT_MODEL_LIB_DIR := $(TOP)/lib/micropython-deepcraft-model-interface/
-include $(TOP)/lib/micropython-deepcraft-model-interface/deepcraft_interface.mk
+-include $(TOP)/lib/micropython-deepcraft-model-interface/deepcraft_interface.mk
 endif
 
 
