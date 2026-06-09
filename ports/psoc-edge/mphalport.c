@@ -30,7 +30,9 @@
 
 // MTB includes
 #include "retarget_io_init.h"
-#include "mtb_hal_trng.h"
+
+// PDL includes
+#include "cy_crypto_core_trng.h"
 
 // micropython includes
 #include "mpconfigport.h"
@@ -44,11 +46,9 @@ extern mtb_hal_timer_t psoc_edge_timer;
 
 void mp_hal_get_random(size_t n, uint8_t *buf) {
     uint32_t r = 0;
-    mtb_hal_trng_t trng_obj;
-    mtb_hal_trng_setup(&trng_obj, NULL);
     for (size_t i = 0; i < n; i++) {
         if ((i & 3) == 0) {
-            mtb_hal_trng_get_uint32(&trng_obj, &r);
+            Cy_Crypto_Core_Trng_Ext(CRYPTO, 32U, &r);
         }
         buf[i] = (uint8_t)r;
         r >>= 8;
