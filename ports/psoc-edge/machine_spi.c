@@ -42,7 +42,6 @@
 #define SPI_SUPPORTED_BITS      (8U)
 #define DEFAULT_SPI_BITS        (SPI_SUPPORTED_BITS)
 #define DEFAULT_SPI_TIMEOUT     (50000)
-#define SPI_TRANSFER_SCRATCH_LEN (32U)
 
 #define SPI_OVERSAMPLE          (4U)
 #define SPI_CLK_DIV_TYPE        CY_SYSCLK_DIV_8_BIT
@@ -67,55 +66,6 @@ typedef struct _machine_spi_obj_t {
 } machine_spi_obj_t;
 
 machine_spi_obj_t *machine_hw_spi_obj[MICROPY_PY_MACHINE_SPI_NUM_ENTRIES] = { NULL };
-
-static inline uint32_t machine_spi_div8_count_for_clk(en_clk_dst_t clk_dst) {
-    uint32_t grp_num = (((uint32_t)clk_dst) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
-    uint32_t inst_num = (((uint32_t)clk_dst) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
-    return PERI_PCLK_GR_DIV_8_NR(inst_num, grp_num);
-}
-
-static inline bool machine_spi_same_divider_group(en_clk_dst_t clk_a, en_clk_dst_t clk_b) {
-    uint32_t a_grp = (((uint32_t)clk_a) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
-    uint32_t a_inst = (((uint32_t)clk_a) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
-    uint32_t b_grp = (((uint32_t)clk_b) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
-    uint32_t b_inst = (((uint32_t)clk_b) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
-    return (a_grp == b_grp) && (a_inst == b_inst);
-}
-
-static bool machine_spi_try_alloc_divider(machine_spi_obj_t *self, en_clk_dst_t clk_dst) {
-    uint32_t max_div = machine_spi_div8_count_for_clk(clk_dst);
-    if (SPI_CLK_DIV_BASE >= max_div) {
-        return false;
-    }
-
-    for (uint32_t div = SPI_CLK_DIV_BASE; div < max_div; ++div) {
-        if (div > SPI_CLK_DIV_INVALID) {
-            break;
-        }
-
-        bool used = false;
-        for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SPI_NUM_ENTRIES; i++) {
-            machine_spi_obj_t *obj = machine_hw_spi_obj[i];
-            if ((obj == NULL) || (obj == self) || (obj->scb_obj == NULL)) {
-                continue;
-            }
-            if (!machine_spi_same_divider_group(obj->scb_obj->clk, clk_dst)) {
-                continue;
-            }
-            if (obj->div_num == (uint8_t)div) {
-                used = true;
-                break;
-            }
-        }
-
-        if (!used) {
-            self->div_num = (uint8_t)div;
-            return true;
-        }
-    }
-
-    return false;
-}
 
 static inline machine_spi_obj_t *machine_hw_spi_obj_alloc(void) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SPI_NUM_ENTRIES; i++) {
@@ -196,7 +146,11 @@ static void machine_spi_hw_init(machine_spi_obj_t *self) {
     self->scb_obj = machine_scb_obj_alloc(scb_unit, self,
         machine_spi_scb_isr);
 
-    if (!machine_spi_try_alloc_divider(self, self->scb_obj->clk)) {
+    if (!machine_scb_div8_try_alloc(self->scb_obj->clk,
+        SPI_CLK_DIV_BASE,
+        SPI_CLK_DIV_INVALID,
+        self,
+        &self->div_num)) {
         machine_scb_obj_free(self->scb_obj);
         self->scb_obj = NULL;
         mp_raise_ValueError(MP_ERROR_TEXT("SPI clock dividers exhausted"));
@@ -283,6 +237,7 @@ static void machine_spi_hw_deinit(machine_spi_obj_t *self) {
     Cy_SCB_SPI_DeInit(self->scb_obj->scb);
     sys_int_deinit(&self->scb_obj->irq);
     if (self->div_num != SPI_CLK_DIV_INVALID) {
+        machine_scb_div8_free(self->scb_obj->clk, self->div_num, self);
         Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk, SPI_CLK_DIV_TYPE, self->div_num);
         self->div_num = SPI_CLK_DIV_INVALID;
     }
@@ -400,70 +355,38 @@ static void machine_spi_transfer(mp_obj_base_t *self_in,
         return;
     }
 
-    uint32_t start = mp_hal_ticks_us();
-
-    // Fast path: full duplex with direct user buffers.
-    if (src != NULL && dest != NULL) {
-        cy_en_scb_spi_status_t status = Cy_SCB_SPI_Transfer(
-            self->scb_obj->scb, (void *)src, dest, len, &self->ctx);
-
-        if (status != CY_SCB_SPI_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("SPI transfer failed: 0x%lx"), (uint32_t)status);
-        }
-
-        while (Cy_SCB_SPI_GetTransferStatus(self->scb_obj->scb, &self->ctx) & CY_SCB_SPI_TRANSFER_ACTIVE) {
-            if (mp_hal_ticks_us() - start > self->timeout) {
-                Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
-                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
-            }
-            mp_event_handle_nowait();
-        }
-        return;
+    // Prepare TX buffer: if src is NULL (read-only), send 0xFF fill bytes
+    uint8_t tx_fill[len];
+    const uint8_t *tx_buf = src;
+    if (tx_buf == NULL) {
+        memset(tx_fill, 0xFF, len);
+        tx_buf = tx_fill;
     }
 
-    uint8_t tx_scratch[SPI_TRANSFER_SCRATCH_LEN];
-    uint8_t rx_scratch[SPI_TRANSFER_SCRATCH_LEN];
-    size_t offset = 0;
+    // Prepare RX buffer: if dest is NULL (write-only), use a dummy buffer
+    uint8_t rx_dummy[len];
+    uint8_t *rx_buf = dest;
+    if (rx_buf == NULL) {
+        rx_buf = rx_dummy;
+    }
 
-    while (offset < len) {
-        size_t chunk_len = len - offset;
-        if (chunk_len > SPI_TRANSFER_SCRATCH_LEN) {
-            chunk_len = SPI_TRANSFER_SCRATCH_LEN;
+    // Start full-duplex transfer (interrupt-driven via ISR)
+    cy_en_scb_spi_status_t status = Cy_SCB_SPI_Transfer(
+        self->scb_obj->scb, (void *)tx_buf, rx_buf, len, &self->ctx);
+
+    if (status != CY_SCB_SPI_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_OSError,
+            MP_ERROR_TEXT("SPI transfer failed: 0x%lx"), (uint32_t)status);
+    }
+
+    // Wait for transfer to complete
+    uint32_t start = mp_hal_ticks_us();
+    while (Cy_SCB_SPI_GetTransferStatus(self->scb_obj->scb, &self->ctx) & CY_SCB_SPI_TRANSFER_ACTIVE) {
+        if (mp_hal_ticks_us() - start > self->timeout) {
+            Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
         }
-
-        const uint8_t *tx_buf = src;
-        if (tx_buf != NULL) {
-            tx_buf += offset;
-        } else {
-            memset(tx_scratch, 0xFF, chunk_len);
-            tx_buf = tx_scratch;
-        }
-
-        uint8_t *rx_buf = dest;
-        if (rx_buf != NULL) {
-            rx_buf += offset;
-        } else {
-            rx_buf = rx_scratch;
-        }
-
-        cy_en_scb_spi_status_t status = Cy_SCB_SPI_Transfer(
-            self->scb_obj->scb, (void *)tx_buf, rx_buf, chunk_len, &self->ctx);
-
-        if (status != CY_SCB_SPI_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("SPI transfer failed: 0x%lx"), (uint32_t)status);
-        }
-
-        while (Cy_SCB_SPI_GetTransferStatus(self->scb_obj->scb, &self->ctx) & CY_SCB_SPI_TRANSFER_ACTIVE) {
-            if (mp_hal_ticks_us() - start > self->timeout) {
-                Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
-                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
-            }
-            mp_event_handle_nowait();
-        }
-
-        offset += chunk_len;
+        mp_event_handle_nowait();
     }
 }
 

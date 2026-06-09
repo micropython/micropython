@@ -45,6 +45,7 @@
 
 #define SPI_TARGET_CLK_DIV_TYPE        CY_SYSCLK_DIV_8_BIT
 #define SPI_TARGET_CLK_DIV_BASE        (4U)
+#define SPI_TARGET_CLK_DIV_INVALID      (0xFFU)
 
 // mp_hal_ticks_ms() on this port wraps every SPI_TARGET_TICKS_WRAP_MS.
 // This computes elapsed time across one wrap; caller keeps timeout < wrap period.
@@ -76,7 +77,7 @@ static inline machine_spi_target_obj_t *machine_spi_target_obj_alloc(void) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SPI_TARGET_MAX; i++) {
         if (machine_spi_target_obj[i] == NULL) {
             machine_spi_target_obj[i] = mp_obj_malloc(machine_spi_target_obj_t, &machine_spi_target_type);
-            machine_spi_target_obj[i]->div_num = SPI_TARGET_CLK_DIV_BASE + i;
+            machine_spi_target_obj[i]->div_num = SPI_TARGET_CLK_DIV_INVALID;
             return machine_spi_target_obj[i];
         }
     }
@@ -146,6 +147,16 @@ static void machine_spi_target_hw_init(machine_spi_target_obj_t *self) {
     self->scb_obj = machine_scb_obj_alloc(scb_unit, self,
         machine_spi_target_scb_isr);
 
+    if (!machine_scb_div8_try_alloc(self->scb_obj->clk,
+        SPI_TARGET_CLK_DIV_BASE,
+        SPI_TARGET_CLK_DIV_INVALID,
+        self,
+        &self->div_num)) {
+        machine_scb_obj_free(self->scb_obj);
+        self->scb_obj = NULL;
+        mp_raise_ValueError(MP_ERROR_TEXT("SPITarget clock dividers exhausted"));
+    }
+
     // Configure SPI PCLK divider (needed for slave's internal clock even though
     // the bit clock comes from master's SCK)
     MACHINE_PERI_PCLK_CONFIG_DIVIDER(self->scb_obj->clk,
@@ -199,6 +210,8 @@ static void machine_spi_target_hw_init(machine_spi_target_obj_t *self) {
         Cy_SCB_SPI_Init(self->scb_obj->scb, &self->cfg, &self->ctx);
 
     if (result != CY_SCB_SPI_SUCCESS) {
+        machine_scb_div8_free(self->scb_obj->clk, self->div_num, self);
+        self->div_num = SPI_TARGET_CLK_DIV_INVALID;
         machine_scb_obj_free(self->scb_obj);
         self->scb_obj = NULL;
         mp_raise_msg_varg(&mp_type_ValueError,
@@ -213,7 +226,11 @@ static void machine_spi_target_hw_deinit(machine_spi_target_obj_t *self) {
     Cy_SCB_SPI_Disable(self->scb_obj->scb, &self->ctx);
     Cy_SCB_SPI_DeInit(self->scb_obj->scb);
     sys_int_deinit(&self->scb_obj->irq);
-    Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk, SPI_TARGET_CLK_DIV_TYPE, self->div_num);
+    if (self->div_num != SPI_TARGET_CLK_DIV_INVALID) {
+        machine_scb_div8_free(self->scb_obj->clk, self->div_num, self);
+        Cy_SysClk_PeriPclkDisableDivider(self->scb_obj->clk, SPI_TARGET_CLK_DIV_TYPE, self->div_num);
+        self->div_num = SPI_TARGET_CLK_DIV_INVALID;
+    }
     machine_scb_obj_free(self->scb_obj);
     self->scb_obj = NULL;
 }

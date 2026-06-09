@@ -97,6 +97,28 @@ static const machine_scb_group_info_t machine_scb_group_info[MICROPY_PY_MACHINE_
     MICROPY_PY_MACHINE_FOR_ALL_SCB(MAP_SCB_GROUP_INFO)
 };
 
+typedef struct {
+    const void *owner;
+    en_clk_dst_t clk_dst;
+    uint8_t div_num;
+} machine_scb_div8_alloc_t;
+
+static machine_scb_div8_alloc_t machine_scb_div8_alloc[MICROPY_PY_MACHINE_SCB_NUM_ENTRIES] = {0};
+
+static inline uint32_t machine_scb_div8_count_for_clk(en_clk_dst_t clk_dst) {
+    uint32_t grp_num = (((uint32_t)clk_dst) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
+    uint32_t inst_num = (((uint32_t)clk_dst) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
+    return PERI_PCLK_GR_DIV_8_NR(inst_num, grp_num);
+}
+
+static inline bool machine_scb_same_divider_group(en_clk_dst_t clk_a, en_clk_dst_t clk_b) {
+    uint32_t a_grp = (((uint32_t)clk_a) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
+    uint32_t a_inst = (((uint32_t)clk_a) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
+    uint32_t b_grp = (((uint32_t)clk_b) & PERI_PCLK_GR_NUM_Msk) >> PERI_PCLK_GR_NUM_Pos;
+    uint32_t b_inst = (((uint32_t)clk_b) & PERI_PCLK_INST_NUM_Msk) >> PERI_PCLK_INST_NUM_Pos;
+    return (a_grp == b_grp) && (a_inst == b_inst);
+}
+
 static void machine_scb_irq_handler(uint8_t scb) {
     machine_scb_obj_t *scb_obj = &machine_scb_obj[scb];
     if (scb_obj->parent != NULL && scb_obj->parent_handler != NULL) {
@@ -123,6 +145,72 @@ void machine_scb_enable_group(uint8_t scb) {
     const machine_scb_group_info_t *gi = &machine_scb_group_info[scb];
     Cy_SysClk_PeriGroupSlaveInit(gi->peri_nr, gi->group_nr,
         gi->slave_nr, gi->clk_hf_nr);
+}
+
+bool machine_scb_div8_try_alloc(en_clk_dst_t clk_dst, uint8_t div_base, uint8_t div_invalid,
+    const void *owner, uint8_t *div_num_out) {
+    uint32_t max_div = machine_scb_div8_count_for_clk(clk_dst);
+    if (div_base >= max_div || div_num_out == NULL || owner == NULL) {
+        return false;
+    }
+
+    for (uint32_t div = div_base; div < max_div; ++div) {
+        if (div > div_invalid) {
+            break;
+        }
+
+        bool used = false;
+        for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SCB_NUM_ENTRIES; i++) {
+            if (machine_scb_div8_alloc[i].owner == NULL) {
+                continue;
+            }
+            if (!machine_scb_same_divider_group(machine_scb_div8_alloc[i].clk_dst, clk_dst)) {
+                continue;
+            }
+            if (machine_scb_div8_alloc[i].div_num == (uint8_t)div) {
+                used = true;
+                break;
+            }
+        }
+
+        if (!used) {
+            for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SCB_NUM_ENTRIES; i++) {
+                if (machine_scb_div8_alloc[i].owner == NULL) {
+                    machine_scb_div8_alloc[i].owner = owner;
+                    machine_scb_div8_alloc[i].clk_dst = clk_dst;
+                    machine_scb_div8_alloc[i].div_num = (uint8_t)div;
+                    *div_num_out = (uint8_t)div;
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    return false;
+}
+
+void machine_scb_div8_free(en_clk_dst_t clk_dst, uint8_t div_num, const void *owner) {
+    if (owner == NULL) {
+        return;
+    }
+
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_SCB_NUM_ENTRIES; i++) {
+        if (machine_scb_div8_alloc[i].owner != owner) {
+            continue;
+        }
+        if (machine_scb_div8_alloc[i].div_num != div_num) {
+            continue;
+        }
+        if (!machine_scb_same_divider_group(machine_scb_div8_alloc[i].clk_dst, clk_dst)) {
+            continue;
+        }
+
+        machine_scb_div8_alloc[i].owner = NULL;
+        machine_scb_div8_alloc[i].div_num = 0;
+        machine_scb_div8_alloc[i].clk_dst = 0;
+        return;
+    }
 }
 
 #endif // MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SPI_TARGET || MICROPY_PY_MACHINE_UART
