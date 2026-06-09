@@ -133,18 +133,17 @@ static void machine_pin_irq_obj_dealloc(machine_pin_irq_obj_t *irq) {
     }
 }
 
-static uint32_t machine_pin_irq_obj_find_index(uint8_t port, uint8_t pin) {
-    uint32_t idx = 0;
-    for (idx = 0; idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; idx++) {
+static machine_pin_irq_obj_t *machine_pin_irq_find(uint8_t port, uint8_t pin) {
+    for (uint32_t idx = 0; idx < MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES; idx++) {
         machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
         if (irq != NULL) {
             machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent);
             if (self->port == port && self->pin == pin) {
-                return idx;
+                return irq;
             }
         }
     }
-    return idx;
+    return NULL;
 }
 
 static void machine_pin_irq_port_handler(uint8_t port) {
@@ -158,15 +157,7 @@ static void machine_pin_irq_port_handler(uint8_t port) {
             /* Clear the GPIO source first so back-to-back edges can re-latch. */
             Cy_GPIO_ClearInterrupt(Cy_GPIO_PortToAddr(port), pin);
 
-            uint32_t idx = machine_pin_irq_obj_find_index(port, pin);
-            if (idx >= MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES) {
-                continue;
-            }
-
-            machine_pin_irq_obj_t *irq = machine_pin_irq_obj[idx];
-            if (irq == NULL) {
-                continue;
-            }
+            machine_pin_irq_obj_t *irq = machine_pin_irq_find(port, pin);
 
             /**
              * Update the flags with the current trigger that caused the IRQ.
