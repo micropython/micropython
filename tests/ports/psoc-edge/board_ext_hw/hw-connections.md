@@ -23,14 +23,8 @@
 |                   | P16_3         | P16_3         | SPI SSEL to CS out             |
 |                   | GND           | GND           | Common Ground                  |
 
-## Board-specific SPI pin sets for multi-board tests
+## SPI pin set for multi-board tests (P16 only)
 
 | Board Type                | SCK  | MOSI | MISO | SSEL |
 |--------------------------|------|------|------|------|
 | KIT_PSE84_AI             | P16_0 | P16_1 | P16_2 | P16_3 |
-| CY8CPROTO-062-4343W      | P9_2 | P9_0 | P9_1 | P9_3 |
-| CY8CPROTO-063-BLE        | P9_2 | P9_0 | P9_1 | P9_3 |
-| CY8CKIT-062S2-AI         | N/A  | N/A  | N/A  | N/A  |
-
-Note: `CY8CKIT-062S2-AI` is currently not supported by `board_ext_hw/multi/spi_basic.py`
-for SPI target mode on `P9_x`, so the test is skipped on that board.
