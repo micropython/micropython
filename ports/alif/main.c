@@ -59,6 +59,7 @@ extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
 extern void machine_pwm_deinit_all(void);
 extern void machine_pin_irq_deinit(void);
+extern void machine_can_deinit_all(void);
 
 MP_NORETURN void panic(const char *msg) {
     mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
@@ -171,6 +172,9 @@ int main(void) {
         #endif
         #if MICROPY_PY_MACHINE_I2C_TARGET
         mp_machine_i2c_target_deinit_all();
+        #endif
+        #if MICROPY_PY_MACHINE_CAN
+        machine_can_deinit_all();
         #endif
         soft_timer_deinit();
         machine_pwm_deinit_all();
