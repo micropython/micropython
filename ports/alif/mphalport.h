@@ -272,6 +272,9 @@ enum {
     MP_HAL_PIN_ALT_UART_TX,
     MP_HAL_PIN_ALT_UT_T0,
     MP_HAL_PIN_ALT_UT_T1,
+    MP_HAL_PIN_ALT_CAN_TXD,
+    MP_HAL_PIN_ALT_CAN_RXD,
+    MP_HAL_PIN_ALT_CAN_STBY,
 };
 
 typedef struct _machine_pin_obj_t {
