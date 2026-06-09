@@ -79,6 +79,18 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  standard_silent:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Build
+      run: tools/ci.sh unix_standard_silent_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_standard_silent_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   coverage:
     runs-on: ubuntu-latest
     steps:
