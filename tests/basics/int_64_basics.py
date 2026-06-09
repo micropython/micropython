@@ -145,12 +145,12 @@ if r is not None:
 try:
     print((1 << 48) >> -4)
 except ValueError as e:
-    print(e)
+    print(str(e) or "negative shift count")
 
 try:
     print((1 << 48) << -6)
 except ValueError as e:
-    print(e)
+    print(str(e) or "negative shift count")
 
 # Test that the most extreme 64 bit integer values all parse with int()
 print(int("-9223372036854775807"))
