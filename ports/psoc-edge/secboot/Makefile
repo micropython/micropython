@@ -66,6 +66,7 @@ INC += \
 
 MACHINE_FLAGS = \
 	-mcpu=cortex-m33 \
+	--specs=nano.specs \
 	--specs=nosys.specs \
 	-mfloat-abi=hard \
 	-mfpu=fpv5-sp-d16 \
