@@ -73,15 +73,13 @@ GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
 )
 
 GIT_SUBMODULES += lib/mpy-test-ext
+
 ifeq ($(MICROPY_PY_DEEPCRAFT),1)
 GIT_SUBMODULES += lib/micropython-deepcraft-model-interface
-# Use absolute path so the -I include flag resolves correctly for the compiler.
 DEEPCRAFT_MODEL_LIB_DIR := $(TOP)/lib/micropython-deepcraft-model-interface/
 include $(TOP)/lib/micropython-deepcraft-model-interface/deepcraft_interface.mk
-SRC_C := $(filter-out $(DEEPCRAFT_MODEL_LIB_DIR)%,$(SRC_C))
-SRC_C += lib/micropython-deepcraft-model-interface/deepcraft/deepcraft_engine.c
-SRC_C += lib/micropython-deepcraft-model-interface/deepcraft/deepcraft_interface.c
 endif
+
 
 # Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-
@@ -553,6 +551,16 @@ LDFLAGS += -Wl,--defsym=__GcHeapEnd=__HeapLimit
 endif
 
 LIBS += -lm
+
+
+
+#ifeq ($(MICROPY_PY_DEEPCRAFT),1)
+#include $(DEEPCRAFT_MODEL_LIB_DIR)/deepcraft_interface.mk
+#$(TOP)/lib/micropython-deepcraft-model-interface/deepcraft_interface.mk
+#SRC_C := $(filter-out $(DEEPCRAFT_MODEL_LIB_DIR)%,$(SRC_C))
+#SRC_C += lib/micropython-deepcraft-model-interface/deepcraft/deepcraft_engine.c
+#SRC_C += lib/micropython-deepcraft-model-interface/deepcraft/deepcraft_interface.c
+#endif
 
 # PSOC Edge uses Cortex-M33 and Cortex-M55 (ARMv8-M architecture)
 # However, since ARMv8-M is not directly supported by mpy-cross,
