@@ -25,7 +25,8 @@ ctx.set_ciphers(ciphers[:1])
 try:
     ctx.set_ciphers(ciphers[0])
 except TypeError as e:
-    print(e)
+    # Error message varies depending on the error detail level
+    print("TypeError")
 
 try:
     ctx.set_ciphers(["BAR"])

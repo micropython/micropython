@@ -19,7 +19,8 @@ except ValueError as er:
 try:
     ssl.wrap_socket(io.BytesIO(), key=key)
 except TypeError as er:
-    print(repr(er))
+    # Error message varies depending on the error detail level
+    print("TypeError")
 
 # Valid key, invalid cert
 try:
