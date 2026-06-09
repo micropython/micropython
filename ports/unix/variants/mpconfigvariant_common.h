@@ -83,7 +83,9 @@
 #define MICROPY_PY_GC_COLLECT_RETVAL   (1)
 
 // Enable detailed error messages and warnings.
+#ifndef MICROPY_ERROR_REPORTING
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
+#endif
 #define MICROPY_WARNINGS               (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN  (1)
 

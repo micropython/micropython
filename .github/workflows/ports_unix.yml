@@ -67,6 +67,18 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  standard_terse:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Build
+      run: tools/ci.sh unix_standard_terse_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_standard_terse_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   coverage:
     runs-on: ubuntu-latest
     steps:
