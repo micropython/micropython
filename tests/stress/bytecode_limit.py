@@ -23,7 +23,7 @@ for n in number_of_body_copies:
         print("SKIP")
         raise SystemExit
     except RuntimeError as er:
-        results.append(repr(er))
+        results.append("RuntimeError('{}')".format(str(er) or "bytecode overflow"))
 print(results)
 
 # Test changing size of code info (source line/bytecode mapping) due to changing
