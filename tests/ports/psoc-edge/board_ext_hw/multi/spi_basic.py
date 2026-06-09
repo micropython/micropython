@@ -9,10 +9,6 @@
 #   P16_3 (SSEL)   <->  P16_3 (CS out)
 #   GND            <->  GND
 #
-# Other supported board mappings:
-#   CY8CPROTO-062-4343W / CY8CPROTO-063-BLE:
-#   SCK=P9_2, MOSI=P9_0, MISO=P9_1, SSEL=P9_3
-
 import os
 import time
 
@@ -28,11 +24,6 @@ def _get_spi_pins_for_board():
 
     if "KIT_PSE84_AI" in board_norm or "PSE84" in board_norm:
         return ("P16_0", "P16_1", "P16_2", "P16_3")
-    if "CY8CPROTO_062_4343W" in board_norm or "CY8CPROTO_063_BLE" in board_norm:
-        return ("P9_2", "P9_0", "P9_1", "P9_3")
-    if "CY8CKIT_062S2_AI" in board_norm:
-        print("SKIP: SPI target path is not supported on CY8CKIT-062S2-AI")
-        raise SystemExit
 
     print("SKIP: Unsupported board for SPI multi-device test:", board)
     raise SystemExit
@@ -64,7 +55,7 @@ def instance0():
     # Test 1: Read from master
     print("***** Test 1: Read *****\n")
     rx = bytearray(4)
-    n = target.read(rx)
+    n = target.readinto(rx)
     print("Received:", rx[:n])
     read_pass = rx[:n] == b"\x01\x02\x03\x04"
     print("Status:", "PASS" if read_pass else "FAIL")

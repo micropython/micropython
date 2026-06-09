@@ -30,15 +30,6 @@
 
 // micropython includes
 #include "py/obj.h"
-#include "cy_sysclk.h"
-
-#define MACHINE_PERI_PCLK_CONFIG_DIVIDER(clk, div_type, div_num, div_val) \
-    do { \
-        Cy_SysClk_PeriPclkDisableDivider((clk), (div_type), (div_num)); \
-        Cy_SysClk_PeriPclkAssignDivider((clk), (div_type), (div_num)); \
-        Cy_SysClk_PeriPclkSetDivider((clk), (div_type), (div_num), (div_val)); \
-        Cy_SysClk_PeriPclkEnableDivider((clk), (div_type), (div_num)); \
-    } while (0)
 
 enum clock_freq_type {
     AUDIO_SYS_CLOCK_73_728_000_HZ = 73728000UL /* (Ideally 73.728 MHz) For sample rates: 8 KHz / 16 KHz / 48 KHz */,

@@ -159,7 +159,7 @@ static void machine_spi_target_hw_init(machine_spi_target_obj_t *self) {
 
     // Configure SPI PCLK divider (needed for slave's internal clock even though
     // the bit clock comes from master's SCK)
-    MACHINE_PERI_PCLK_CONFIG_DIVIDER(self->scb_obj->clk,
+    machine_scb_peri_pclk_config_divider(self->scb_obj->clk,
         SPI_TARGET_CLK_DIV_TYPE, self->div_num, 0U);
 
     // Select SPI clock polarity and phase
@@ -414,6 +414,7 @@ void machine_spi_target_deinit_all(void) {
 }
 
 static const mp_rom_map_elem_t machine_spi_target_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_readinto),       MP_ROM_PTR(&machine_spi_target_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_read),           MP_ROM_PTR(&machine_spi_target_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),          MP_ROM_PTR(&machine_spi_target_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&machine_spi_target_write_readinto_obj) },

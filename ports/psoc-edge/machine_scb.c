@@ -147,6 +147,14 @@ void machine_scb_enable_group(uint8_t scb) {
         gi->slave_nr, gi->clk_hf_nr);
 }
 
+void machine_scb_peri_pclk_config_divider(en_clk_dst_t clk_dst,
+    cy_en_divider_types_t div_type, uint8_t div_num, uint32_t div_val) {
+    Cy_SysClk_PeriPclkDisableDivider(clk_dst, div_type, div_num);
+    Cy_SysClk_PeriPclkAssignDivider(clk_dst, div_type, div_num);
+    Cy_SysClk_PeriPclkSetDivider(clk_dst, div_type, div_num, div_val);
+    Cy_SysClk_PeriPclkEnableDivider(clk_dst, div_type, div_num);
+}
+
 bool machine_scb_div8_try_alloc(en_clk_dst_t clk_dst, uint8_t div_base, uint8_t div_invalid,
     const void *owner, uint8_t *div_num_out) {
     uint32_t max_div = machine_scb_div8_count_for_clk(clk_dst);

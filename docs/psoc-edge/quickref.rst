@@ -391,12 +391,16 @@ Constants:
 
 Methods:
 
-.. method:: SPITarget.read(buf)
+.. method:: SPITarget.readinto(buf)
 
     Read bytes from the SPI target RX FIFO into writable buffer ``buf``.
     Returns the number of bytes read.
 
     Raises ``OSError`` on timeout.
+
+.. method:: SPITarget.read(buf)
+
+    Alias of ``SPITarget.readinto(buf)`` for compatibility.
 
 .. method:: SPITarget.write(buf)
 
@@ -420,14 +424,13 @@ Methods:
 
     Deinitialise the SPITarget instance and release its underlying SCB resource.
 
-Port-specific notes:
+The SPITarget implementation on PSoC Edge has the following port-specific details:
 
-    - ``sck``, ``mosi``, ``miso``, and ``ssel`` are all required.
-    - Pin mapping is board-specific. On KIT_PSE84_AI, SPI multi-test wiring uses ``P16_0/P16_1/P16_2/P16_3``.
-    - ``bits`` is fixed to 8.
-    - ``read()``, ``write()``, and ``write_readinto()`` are blocking and use an
-      internal timeout.
-    - A single ``SPITarget`` instance is supported in this port configuration.
+- ``sck``, ``mosi``, ``miso``, and ``ssel`` are all required.
+- ``bits`` is fixed to 8.
+- ``readinto()``, ``write()``, and ``write_readinto()`` are blocking and use an
+    internal timeout.
+- A single ``SPITarget`` instance is supported in this port configuration.
 
 
 
