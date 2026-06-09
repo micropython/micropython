@@ -43,7 +43,7 @@ for function_name, function, test_vals in functions:
             ans = "{:.5g}".format(function(value))
         except ValueError as e:
             ans = str(e)
-            if ans.startswith("expected a "):
+            if ans.startswith("expected a ") or ans == "":
                 # CPython 3.14 changed messages to be more detailed; convert them back to simple ones
                 ans = "math domain error"
         print("{}({:.5g}) = {}".format(function_name, value, ans))
