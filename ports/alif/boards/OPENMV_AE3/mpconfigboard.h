@@ -11,6 +11,11 @@
 #define MICROPY_HW_ROMFS_ENABLE_PART0 (1)
 #define MICROPY_HW_ROMFS_ENABLE_PART1 (CORE_M55_HP)
 
+// CAN bus
+#define MICROPY_PY_MACHINE_CAN      (1)
+#define MICROPY_HW_CAN1_NAME        "CAN1"
+#define MICROPY_HW_NUM_CAN          (1)
+
 // I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_P0_5)
 #define MICROPY_HW_I2C1_SDA         (pin_P0_4)
