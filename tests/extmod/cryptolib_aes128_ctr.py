@@ -13,7 +13,7 @@ try:
     _new(b"x" * 16, b"x" * 16)
 except ValueError as e:
     # is CTR support disabled?
-    if e.args[0] == "mode":
+    if len(e.args) == 0 or e.args[0] == "mode":
         print("SKIP")
         raise SystemExit
     raise e

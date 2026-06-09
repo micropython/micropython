@@ -25,4 +25,4 @@ async def main():
 try:
     asyncio.run(main())
 except RuntimeError as er:
-    print(er)
+    print(str(er) or "can't cancel self")
