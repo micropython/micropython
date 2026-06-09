@@ -42,6 +42,7 @@
 #define SPI_SUPPORTED_BITS      (8U)
 #define DEFAULT_SPI_BITS        (SPI_SUPPORTED_BITS)
 #define DEFAULT_SPI_TIMEOUT     (50000)
+#define SPI_TRANSFER_SCRATCH_LEN (32U)
 
 #define SPI_OVERSAMPLE          (4U)
 #define SPI_CLK_DIV_TYPE        CY_SYSCLK_DIV_8_BIT
@@ -399,38 +400,70 @@ static void machine_spi_transfer(mp_obj_base_t *self_in,
         return;
     }
 
-    // Prepare TX buffer: if src is NULL (read-only), send 0xFF fill bytes
-    uint8_t tx_fill[len];
-    const uint8_t *tx_buf = src;
-    if (tx_buf == NULL) {
-        memset(tx_fill, 0xFF, len);
-        tx_buf = tx_fill;
-    }
-
-    // Prepare RX buffer: if dest is NULL (write-only), use a dummy buffer
-    uint8_t rx_dummy[len];
-    uint8_t *rx_buf = dest;
-    if (rx_buf == NULL) {
-        rx_buf = rx_dummy;
-    }
-
-    // Start full-duplex transfer (interrupt-driven via ISR)
-    cy_en_scb_spi_status_t status = Cy_SCB_SPI_Transfer(
-        self->scb_obj->scb, (void *)tx_buf, rx_buf, len, &self->ctx);
-
-    if (status != CY_SCB_SPI_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_OSError,
-            MP_ERROR_TEXT("SPI transfer failed: 0x%lx"), (uint32_t)status);
-    }
-
-    // Wait for transfer to complete
     uint32_t start = mp_hal_ticks_us();
-    while (Cy_SCB_SPI_GetTransferStatus(self->scb_obj->scb, &self->ctx) & CY_SCB_SPI_TRANSFER_ACTIVE) {
-        if (mp_hal_ticks_us() - start > self->timeout) {
-            Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
+
+    // Fast path: full duplex with direct user buffers.
+    if (src != NULL && dest != NULL) {
+        cy_en_scb_spi_status_t status = Cy_SCB_SPI_Transfer(
+            self->scb_obj->scb, (void *)src, dest, len, &self->ctx);
+
+        if (status != CY_SCB_SPI_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_OSError,
+                MP_ERROR_TEXT("SPI transfer failed: 0x%lx"), (uint32_t)status);
         }
-        mp_event_handle_nowait();
+
+        while (Cy_SCB_SPI_GetTransferStatus(self->scb_obj->scb, &self->ctx) & CY_SCB_SPI_TRANSFER_ACTIVE) {
+            if (mp_hal_ticks_us() - start > self->timeout) {
+                Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
+            }
+            mp_event_handle_nowait();
+        }
+        return;
+    }
+
+    uint8_t tx_scratch[SPI_TRANSFER_SCRATCH_LEN];
+    uint8_t rx_scratch[SPI_TRANSFER_SCRATCH_LEN];
+    size_t offset = 0;
+
+    while (offset < len) {
+        size_t chunk_len = len - offset;
+        if (chunk_len > SPI_TRANSFER_SCRATCH_LEN) {
+            chunk_len = SPI_TRANSFER_SCRATCH_LEN;
+        }
+
+        const uint8_t *tx_buf = src;
+        if (tx_buf != NULL) {
+            tx_buf += offset;
+        } else {
+            memset(tx_scratch, 0xFF, chunk_len);
+            tx_buf = tx_scratch;
+        }
+
+        uint8_t *rx_buf = dest;
+        if (rx_buf != NULL) {
+            rx_buf += offset;
+        } else {
+            rx_buf = rx_scratch;
+        }
+
+        cy_en_scb_spi_status_t status = Cy_SCB_SPI_Transfer(
+            self->scb_obj->scb, (void *)tx_buf, rx_buf, chunk_len, &self->ctx);
+
+        if (status != CY_SCB_SPI_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_OSError,
+                MP_ERROR_TEXT("SPI transfer failed: 0x%lx"), (uint32_t)status);
+        }
+
+        while (Cy_SCB_SPI_GetTransferStatus(self->scb_obj->scb, &self->ctx) & CY_SCB_SPI_TRANSFER_ACTIVE) {
+            if (mp_hal_ticks_us() - start > self->timeout) {
+                Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
+            }
+            mp_event_handle_nowait();
+        }
+
+        offset += chunk_len;
     }
 }
 
