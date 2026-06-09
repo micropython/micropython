@@ -721,11 +721,19 @@ function ci_unix_standard_v2_run_tests {
     ci_unix_run_tests_full_helper standard
 }
 
-function ci_unix_standard_terse_build {
+function ci_unix_standard_error_terse_build {
     ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_ERROR_REPORTING=MICROPY_ERROR_REPORTING_TERSE"
 }
 
-function ci_unix_standard_terse_run_tests {
+function ci_unix_standard_error_terse_run_tests {
+    make -C ports/unix VARIANT=standard test
+}
+
+function ci_unix_standard_error_none_build {
+    ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_ERROR_REPORTING=MICROPY_ERROR_REPORTING_NONE" MICROPY_ROM_TEXT_COMPRESSION=0
+}
+
+function ci_unix_standard_error_none_run_tests {
     make -C ports/unix VARIANT=standard test
 }
 

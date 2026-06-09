@@ -67,14 +67,26 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
-  standard_terse:
+  standard_error_terse:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
     - name: Build
-      run: tools/ci.sh unix_standard_terse_build
+      run: tools/ci.sh unix_standard_error_terse_build
     - name: Run main test suite
-      run: tools/ci.sh unix_standard_terse_run_tests
+      run: tools/ci.sh unix_standard_error_terse_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
+  standard_error_none:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Build
+      run: tools/ci.sh unix_standard_error_none_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_standard_error_none_run_tests
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
