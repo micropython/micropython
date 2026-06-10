@@ -95,6 +95,7 @@
 
 
 #define MICROPY_PY_SSL_DTLS                     (0)
+#define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS)
 
 // By default networking should include sockets, ssl, websockets, webrepl
 

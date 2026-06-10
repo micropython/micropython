@@ -400,8 +400,6 @@ ifeq ($(MICROPY_SSL_MBEDTLS),1)
 	CFLAGS += -DMICROPY_SSL_MBEDTLS=1 -DMICROPY_MBEDTLS_USE_MTB_ENTROPY=1
 endif
 
-CFLAGS += -DMICROPY_TRACKED_ALLOC=1
-
 CFLAGS += $(INC)
 
 # Select debugging or optimisation build.
