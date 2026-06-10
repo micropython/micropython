@@ -271,24 +271,52 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
     if had_crash:
         return True, script
 
+    # See if the output should be traced (printed to stdout), but not for feature_check tests.
+    trace_output = args.trace_output and "feature_check" not in test_file
+    if trace_output:
+        print(f"TRACE: {test_file}")
+
+    # Function to collect output data as the test is run.
+    output_mupy = bytearray()
+
+    def data_consumer(data):
+        if data == b"\x04":
+            # End of stream.
+            return
+        if trace_output:
+            # Print out the data as it's received.
+            sys.stdout.buffer.write(data)
+            sys.stdout.buffer.flush()
+        output_mupy.extend(data)
+
     try:
         pyb.enter_raw_repl(timeout_overall=TEST_ENTER_RAW_REPL_TIMEOUT)
+
+        # Inject target wiring if needed by the test.
         if requires_target_wiring and pyb.target_wiring_script:
             pyb.exec_(
                 "import sys;sys.modules['target_wiring']=__build_class__(lambda:exec("
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
-        output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
+
+        # Execute the test, and collect the output.
+        pyb.exec_(script, timeout=TEST_TIMEOUT, data_consumer=data_consumer)
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
-            if prepend_start_test and e.args[1] == b"" and b"MemoryError" in e.args[2]:
+            no_output = len(output_mupy) == 0
+            data_consumer(e.args[1])
+            data_consumer(e.args[2])
+            if prepend_start_test and no_output and b"MemoryError" in e.args[2]:
                 output_mupy = b"SKIP-TOO-LARGE\n"
             else:
-                output_mupy = e.args[1] + e.args[2] + b"CRASH"
+                output_mupy += b"CRASH"
         else:
-            output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
+            data_consumer(bytes(e.args[0], "ascii") + b"\n")
+            output_mupy += b"CRASH"
+
+    output_mupy = bytes(output_mupy)
 
     if prepend_start_test:
         if output_mupy.startswith(b"START TEST\r\n"):
