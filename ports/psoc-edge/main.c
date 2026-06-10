@@ -34,9 +34,11 @@
 #include "cybsp.h"
 #include "retarget_io_init.h"
 
+#if MICROPY_PY_FREERTOS
 // FreeRTOS header files
 #include <FreeRTOS.h>
 #include <task.h>
+#endif
 
 // micropython includes
 #include "py/builtin.h"
@@ -48,7 +50,6 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
-#include "extmod/modnetwork.h"
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -56,11 +57,13 @@
 #endif
 
 #if MICROPY_PY_NETWORK
+#include "extmod/modnetwork.h"
 #include "network_ifx_wcm.h"
 #endif
 
 // port-specific includes
 
+#if MICROPY_PY_FREERTOS
 // FreeRTOS task parameters for the MicroPython task
 #define MPY_TASK_STACK_SIZE     (5120u)
 #define MPY_TASK_PRIORITY       (1u)
@@ -72,6 +75,12 @@
 // FreeRTOS uses its own static heap (configTOTAL_HEAP_SIZE) independently.
 #if MICROPY_ENABLE_GC
 extern uint8_t __GcHeapStart, __GcHeapEnd;
+#endif
+#else
+#if MICROPY_ENABLE_GC
+extern uint8_t __StackTop, __StackSize;
+extern uint8_t __HeapBase, __HeapLimit;
+#endif
 #endif
 
 typedef enum {
@@ -90,8 +99,11 @@ extern void machine_pdm_pcm_deinit_all(void);
 extern void machine_ipc_deinit_all(void);
 extern void mp_hal_ticks_init(void);
 extern void machine_timer_deinit_all(void);
-void mpy_task(void *arg);
+
+void micropython_task(void *arg);
+#if MICROPY_PY_FREERTOS
 static TaskHandle_t mpy_task_handle;
+#endif
 
 boot_mode_t check_boot_mode(void) {
     boot_mode_t boot_mode;
@@ -138,25 +150,32 @@ int main(void) {
     /* Initialize retarget-io middleware */
     init_retarget_io();
 
-    xTaskCreate(mpy_task, "MicroPython task", MPY_TASK_STACK_SIZE, NULL, MPY_TASK_PRIORITY, &mpy_task_handle);
+    #if MICROPY_PY_FREERTOS
+    xTaskCreate(micropython_task, "MicroPython task", MPY_TASK_STACK_SIZE, NULL, MPY_TASK_PRIORITY, &mpy_task_handle);
     vTaskStartScheduler();
+    #else
+    micropython_task(NULL);
+    #endif
 
     // Should never get here
     CY_ASSERT(0);
     return 0;
 }
 
-// mpy_task runs the entire MicroPython interpreter inside a FreeRTOS task.
-// This is required unconditionally because the PSoC Edge firmware is built
-// with FreeRTOS and the WiFi stack (cy_wcm/WHD) relies on RTOS primitives.
-void mpy_task(void *arg) {
+
+void micropython_task(void *arg) {
     // One-time initialisation – must be before the soft_reset label.
     #if MICROPY_ENABLE_GC
+    #if MICROPY_PY_FREERTOS
     if (&__GcHeapEnd <= &__GcHeapStart) {
         CY_ASSERT(0);
     }
     gc_init(&__GcHeapStart, &__GcHeapEnd);
     mp_cstack_init_with_top((void *)&arg, MPY_TASK_STACK_SIZE * sizeof(StackType_t));
+    #else
+    gc_init(&__HeapBase, &__HeapLimit);
+    mp_cstack_init_with_top((void *)&__StackTop, (size_t)&__StackSize);
+    #endif
     #endif
 
     mp_hal_ticks_init();
