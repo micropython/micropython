@@ -1238,6 +1238,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_VFS (0)
 #endif
 
+// Whether to include support for fast native block devices.
+#ifndef MICROPY_VFS_BLOCKDEV_NATIVE
+#define MICROPY_VFS_BLOCKDEV_NATIVE (0)
+#endif
+
 // Whether to include support for writable filesystems.
 #ifndef MICROPY_VFS_WRITABLE
 #define MICROPY_VFS_WRITABLE (1)

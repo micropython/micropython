@@ -105,6 +105,7 @@
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_VFS                 (1)
+#define MICROPY_VFS_BLOCKDEV_NATIVE (1)
 
 // control over Python builtins
 #ifndef MICROPY_PY_BUILTINS_HELP_TEXT
