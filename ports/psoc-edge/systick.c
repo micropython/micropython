@@ -49,7 +49,7 @@ typedef struct {
     uint32_t cpu_hz;
 } mp_hal_systick_snapshot_t;
 
-#if !defined(CY_RTOS_AWARE)
+#if !MICROPY_PY_FREERTOS
 static void psoc_edge_systick_callback(void) {
     psoc_edge_systick_ms_count += 1;
 }
@@ -58,7 +58,7 @@ static void psoc_edge_systick_callback(void) {
 void mp_hal_ticks_init(void) {
     psoc_edge_systick_cpu_hz = SystemCoreClock;
     psoc_edge_systick_ms_count = 0;
-    #if defined(CY_RTOS_AWARE)
+    #if MICROPY_PY_FREERTOS
     // SysTick is already configured by FreeRTOS vPortSetupTimerInterrupt() at
     // 1 ms per tick (configTICK_RATE_HZ == 1000). psoc_edge_systick_ms_count is
     // driven from xTaskGetTickCount() inside mp_hal_systick_snapshot() so no
@@ -81,7 +81,7 @@ static mp_hal_systick_snapshot_t mp_hal_systick_snapshot(void) {
     mp_hal_systick_snapshot_t snap;
 
     mp_uint_t irq_state = MICROPY_BEGIN_ATOMIC_SECTION();
-    #if defined(CY_RTOS_AWARE)
+    #if MICROPY_PY_FREERTOS
     // Drive ms_count from FreeRTOS tick counter (1 tick == 1 ms, configTICK_RATE_HZ == 1000).
     // Keep psoc_edge_systick_ms_count in sync so any external reader stays consistent.
     snap.ms_count = (uint64_t)xTaskGetTickCount();
