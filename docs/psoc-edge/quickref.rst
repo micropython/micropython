@@ -802,6 +802,116 @@ Complete example
     pwm.deinit()
 
 
+Timer
+-----
+
+Hardware timer using the TCPWM0 peripheral on the PSOC™ Edge. See :ref:`machine.Timer <machine.Timer>` for the standard MicroPython Timer API.
+
+.. note::
+
+    This port provides **3** independent hardware timer instances (IDs ``0``, ``1``, ``2``), backed by TCPWM0 Group 0 counters 3, 5, and 6
+    respectively. Only one instance per ID can exist at a time; constructing a second ``Timer(id)`` without calling ``deinit()`` first raises a
+    ``ValueError``.
+
+.. note::
+
+    The timer clock is **1 MHz** (shared with the system tick). This means:
+
+      - The minimum resolvable period is **1 µs**.
+      - With ``tick_hz=1000`` (default) the minimum ``period`` is **1 ms** and the maximum is **4 294 967 ms** (~49.7 days).
+      - With ``freq``, the minimum frequency is **1 Hz** and the maximum is **1 000 000 Hz** (1 MHz).
+      - Computed period ticks must fit in a **32-bit** counter (1 - 4 294 967 295); values outside this range raise a ``ValueError``.
+
+A timer can be created and started using::
+
+    from machine import Timer
+
+    def tick(timer):
+        print("tick")
+
+    tim = Timer(0, mode=Timer.PERIODIC, period=500, callback=tick)
+
+Constructor
+^^^^^^^^^^^^
+
+.. class:: Timer(id, *, mode=Timer.PERIODIC, period, freq, tick_hz=1000, callback, hard=False)
+
+    Construct a hardware timer.
+
+      - ``id`` — timer instance identifier. Must be **0**, **1**, or **2**.
+      - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
+      - ``period`` — timer period in units of ``tick_hz`` (see below). Must be ``> 0``.
+        Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
+      - ``freq`` — timer frequency in Hz. Must be ``> 0``. Takes precedence over ``period`` when both are supplied.
+      - ``tick_hz`` — the reference frequency for the ``period`` argument, in Hz. Default is **1000** (i.e. ``period`` in milliseconds).
+        Must be ``> 0``. Ignored when ``freq`` is used.
+      - ``callback`` — a callable invoked on each timer expiry. Receives the ``Timer`` object as its only argument.
+        Must be a callable; passing a non-callable raises a ``ValueError``.
+      - ``hard`` — must be a ``bool``. If ``True``, the callback runs directly in the hardware IRQ context (no scheduler).
+        Heap allocation inside the callback will raise ``MemoryError``; use ``micropython.alloc_emergency_exception_buf()`` before
+        arming a hard timer. Default is ``False`` (soft callback, deferred via the MicroPython scheduler).
+
+    Raises ``ValueError`` if:
+
+      - ``id`` is outside ``0``-``2``.
+      - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
+      - Neither ``freq`` nor ``period`` is provided.
+      - ``period`` is ``0`` or negative.
+      - ``freq`` is ``0`` or negative.
+      - ``tick_hz`` is ``0`` or negative.
+      - The computed period exceeds the 32-bit counter range (e.g. ``freq=2_000_000``).
+      - ``hard`` is not a ``bool``.
+      - ``callback`` is not callable.
+
+Complete example
+^^^^^^^^^^^^^^^^
+
+::
+
+    from machine import Timer
+    import micropython
+    import time
+
+    # --- Periodic soft timer (default) ---
+    count = 0
+
+    def on_tick(timer):
+        global count
+        count += 1
+        print("tick", count)
+
+    tim = Timer(0, mode=Timer.PERIODIC, period=500, callback=on_tick)
+    time.sleep(3)          # let it fire ~6 times
+    tim.deinit()
+
+    # --- One-shot timer ---
+    def on_done(timer):
+        print("one-shot fired")
+
+    tim = Timer(1, mode=Timer.ONE_SHOT, period=1000, callback=on_done)
+    time.sleep(2)
+    tim.deinit()
+
+    # --- Frequency-based timer ---
+    def on_freq(timer):
+        print("2 Hz tick")
+
+    tim = Timer(2, mode=Timer.PERIODIC, freq=2, callback=on_freq)
+    time.sleep(3)
+    tim.deinit()
+
+    # --- Hard IRQ timer (allocation-free callback required) ---
+    micropython.alloc_emergency_exception_buf(100)
+    fired = [False]
+
+    def on_hard(timer):
+        fired[0] = True     # list index write is allocation-free
+
+    tim = Timer(0, mode=Timer.ONE_SHOT, period=100, callback=on_hard, hard=True)
+    time.sleep_ms(200)
+    tim.deinit()
+    print("hard fired:", fired[0])
+
 Network Module
 --------------
 
@@ -922,115 +1032,3 @@ to a Wi-Fi network:
             time.sleep(1)
 
         print("[Network] Connection failed")
-	
-
-Timer
------
-
-Hardware timer using the TCPWM0 peripheral on the PSOC™ Edge. See :ref:`machine.Timer <machine.Timer>` for the standard MicroPython Timer API.
-
-.. note::
-
-    This port provides **3** independent hardware timer instances (IDs ``0``, ``1``, ``2``), backed by TCPWM0 Group 0 counters 3, 5, and 6
-    respectively. Only one instance per ID can exist at a time; constructing a second ``Timer(id)`` without calling ``deinit()`` first raises a
-    ``ValueError``.
-
-.. note::
-
-    The timer clock is **1 MHz** (shared with the system tick). This means:
-
-      - The minimum resolvable period is **1 µs**.
-      - With ``tick_hz=1000`` (default) the minimum ``period`` is **1 ms** and the maximum is **4 294 967 ms** (~49.7 days).
-      - With ``freq``, the minimum frequency is **1 Hz** and the maximum is **1 000 000 Hz** (1 MHz).
-      - Computed period ticks must fit in a **32-bit** counter (1 - 4 294 967 295); values outside this range raise a ``ValueError``.
-
-A timer can be created and started using::
-
-    from machine import Timer
-
-    def tick(timer):
-        print("tick")
-
-    tim = Timer(0, mode=Timer.PERIODIC, period=500, callback=tick)
-
-Constructor
-^^^^^^^^^^^^
-
-.. class:: Timer(id, *, mode=Timer.PERIODIC, period, freq, tick_hz=1000, callback, hard=False)
-
-    Construct a hardware timer.
-
-      - ``id`` — timer instance identifier. Must be **0**, **1**, or **2**.
-      - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
-      - ``period`` — timer period in units of ``tick_hz`` (see below). Must be ``> 0``.
-        Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
-      - ``freq`` — timer frequency in Hz. Must be ``> 0``. Takes precedence over ``period`` when both are supplied.
-      - ``tick_hz`` — the reference frequency for the ``period`` argument, in Hz. Default is **1000** (i.e. ``period`` in milliseconds).
-        Must be ``> 0``. Ignored when ``freq`` is used.
-      - ``callback`` — a callable invoked on each timer expiry. Receives the ``Timer`` object as its only argument.
-        Must be a callable; passing a non-callable raises a ``ValueError``.
-      - ``hard`` — must be a ``bool``. If ``True``, the callback runs directly in the hardware IRQ context (no scheduler).
-        Heap allocation inside the callback will raise ``MemoryError``; use ``micropython.alloc_emergency_exception_buf()`` before
-        arming a hard timer. Default is ``False`` (soft callback, deferred via the MicroPython scheduler).
-
-    Raises ``ValueError`` if:
-
-      - ``id`` is outside ``0``-``2``.
-      - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
-      - Neither ``freq`` nor ``period`` is provided.
-      - ``period`` is ``0`` or negative.
-      - ``freq`` is ``0`` or negative.
-      - ``tick_hz`` is ``0`` or negative.
-      - The computed period exceeds the 32-bit counter range (e.g. ``freq=2_000_000``).
-      - ``hard`` is not a ``bool``.
-      - ``callback`` is not callable.
-
-Complete example
-^^^^^^^^^^^^^^^^
-
-::
-
-    from machine import Timer
-    import micropython
-    import time
-
-    # --- Periodic soft timer (default) ---
-    count = 0
-
-    def on_tick(timer):
-        global count
-        count += 1
-        print("tick", count)
-
-    tim = Timer(0, mode=Timer.PERIODIC, period=500, callback=on_tick)
-    time.sleep(3)          # let it fire ~6 times
-    tim.deinit()
-
-    # --- One-shot timer ---
-    def on_done(timer):
-        print("one-shot fired")
-
-    tim = Timer(1, mode=Timer.ONE_SHOT, period=1000, callback=on_done)
-    time.sleep(2)
-    tim.deinit()
-
-    # --- Frequency-based timer ---
-    def on_freq(timer):
-        print("2 Hz tick")
-
-    tim = Timer(2, mode=Timer.PERIODIC, freq=2, callback=on_freq)
-    time.sleep(3)
-    tim.deinit()
-
-    # --- Hard IRQ timer (allocation-free callback required) ---
-    micropython.alloc_emergency_exception_buf(100)
-    fired = [False]
-
-    def on_hard(timer):
-        fired[0] = True     # list index write is allocation-free
-
-    tim = Timer(0, mode=Timer.ONE_SHOT, period=100, callback=on_hard, hard=True)
-    time.sleep_ms(200)
-    tim.deinit()
-    print("hard fired:", fired[0])
-
