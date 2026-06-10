@@ -85,6 +85,6 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) }, \
     { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
-	MICROPY_PY_MACHINE_SPITARGET_GLOBAL
+    MICROPY_PY_MACHINE_SPITARGET_GLOBAL
 
 #endif // MICROPY_PY_MACHINE
