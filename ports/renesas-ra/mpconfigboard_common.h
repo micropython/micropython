@@ -70,8 +70,8 @@
 #endif
 
 // Whether to enable access to SDCARD, through SDHI controller
-#ifndef MICROPY_HW_HAS_SDHI_CARD
-#define MICROPY_HW_HAS_SDHI_CARD (0)
+#ifndef MICROPY_PY_MACHINE_SDCARD
+#define MICROPY_PY_MACHINE_SDCARD (0)
 #endif
 
 // Whether to enable the RTC, exposed as pyb.RTC
