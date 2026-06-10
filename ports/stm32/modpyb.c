@@ -226,7 +226,7 @@ static const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #if MICROPY_PY_PYB_LEGACY
     { MP_ROM_QSTR(MP_QSTR_SD), MP_ROM_PTR(&pyb_sdcard_obj) }, // now obsolete
     #endif
-    { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&pyb_sdcard_type) },
+    { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
     #endif
     #if MICROPY_HW_ENABLE_MMCARD
     { MP_ROM_QSTR(MP_QSTR_MMCard), MP_ROM_PTR(&pyb_mmcard_type) },

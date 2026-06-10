@@ -742,7 +742,7 @@ int sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blo
 
 // There are singleton SDCard/MMCard objects
 #if MICROPY_HW_ENABLE_SDCARD
-const mp_obj_base_t pyb_sdcard_obj = {&pyb_sdcard_type};
+const mp_obj_base_t pyb_sdcard_obj = {&machine_sdcard_type};
 #endif
 #if MICROPY_HW_ENABLE_MMCARD
 const mp_obj_base_t pyb_mmcard_obj = {&pyb_mmcard_type};
@@ -923,7 +923,7 @@ static MP_DEFINE_CONST_DICT(pyb_sdcard_locals_dict, pyb_sdcard_locals_dict_table
 
 #if MICROPY_HW_ENABLE_SDCARD
 MP_DEFINE_CONST_OBJ_TYPE(
-    pyb_sdcard_type,
+    machine_sdcard_type,
     MP_QSTR_SDCard,
     MP_TYPE_FLAG_NONE,
     make_new, pyb_sdcard_make_new,
