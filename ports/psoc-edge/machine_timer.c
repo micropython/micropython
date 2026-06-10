@@ -64,7 +64,6 @@ typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
     uint8_t id;                  // 0, 1, or 2
     uint32_t counter_num;        // TCPWM0 counter index: 3, 5, or 6
-    IRQn_Type irq_num;
     en_clk_dst_t pclk_dst;
     uint16_t mode;               // TIMER_MODE_ONE_SHOT or TIMER_MODE_PERIODIC
     mp_obj_t callback;
@@ -195,7 +194,6 @@ static void machine_timer_start(machine_timer_obj_t *self, uint32_t period_ticks
     }
 
     // Register IRQ before enabling so no TC edge is missed.
-    self->irq_cfg.irq_num = self->irq_num;
     self->irq_cfg.priority = SYS_INT_IRQ_LOWEST_PRIORITY;
     self->irq_cfg.handler = timer_handlers[self->id];
     sys_int_init(&self->irq_cfg);
@@ -305,11 +303,11 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
 
     self->id = (uint8_t)id;
     self->counter_num = timer_hw[id].counter_num;
-    self->irq_num = timer_hw[id].irq_num;
     self->pclk_dst = timer_hw[id].pclk_dst;
     self->callback = mp_const_none;
     self->ishard = false;
     self->active = false;
+    self->irq_cfg.irq_num = timer_hw[id].irq_num;
 
     if (n_args > 1 || n_kw > 0) {
         mp_map_t kw_map;
@@ -364,10 +362,12 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit)
 static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in,
     mp_print_kind_t kind) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "Timer(Id=%u, mode=%s, active=%s)",
+    uint32_t period_ticks = Cy_TCPWM_Counter_GetPeriod(TCPWM0, self->counter_num) + 1U;
+    uint32_t freq = period_ticks != 0U ? (TIMER_CLK_HZ / period_ticks) : 0U;
+    mp_printf(print, "Timer(id=%u, mode=Timer.%s, freq=%u)",
         (unsigned)self->id,
-        self->mode == TIMER_MODE_ONE_SHOT ? "ONE_SHOT" : "PERIODIC",
-        self->active ? "True" : "False");
+        self->mode == TIMER_MODE_ONE_SHOT ? "OneShot" : "Periodic",
+        (unsigned)freq);
 }
 
 // ---------------------------------------------------------------------------
