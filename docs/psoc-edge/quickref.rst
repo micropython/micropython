@@ -398,10 +398,6 @@ Methods:
 
     Raises ``OSError`` on timeout.
 
-.. method:: SPITarget.read(buf)
-
-    Alias of ``SPITarget.readinto(buf)`` for compatibility.
-
 .. method:: SPITarget.write(buf)
 
     Write bytes from buffer ``buf`` to the SPI target TX FIFO.

@@ -426,7 +426,6 @@ void machine_spi_target_deinit_all(void) {
 
 static const mp_rom_map_elem_t machine_spi_target_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto),       MP_ROM_PTR(&machine_spi_target_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read),           MP_ROM_PTR(&machine_spi_target_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),          MP_ROM_PTR(&machine_spi_target_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&machine_spi_target_write_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),         MP_ROM_PTR(&machine_spi_target_deinit_obj) },
