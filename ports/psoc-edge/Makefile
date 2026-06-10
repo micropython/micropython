@@ -42,7 +42,10 @@ include $(TOP)/extmod/extmod.mk
 # Project specific settings and compiler/linker flags
 
 # Required git submodules.
-GIT_SUBMODULES += lib/CMSIS_6
+GIT_SUBMODULES += \
+	lib/CMSIS_6 \
+	lib/mbedtls \
+
 GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
 	abstraction-rtos \
     async-transfer \
@@ -69,7 +72,6 @@ GIT_SUBMODULES += $(addprefix lib/psoc-edge/,\
 	wpa3-external-supplicant \
 )
 
-GIT_SUBMODULES += lib/mbedtls
 GIT_SUBMODULES += lib/mpy-test-ext
 
 # Define toolchain and other tools.
@@ -80,11 +82,6 @@ OPENOCD ?= openocd
 # SDK locations.
 PSE_LIB_TOP_DIR ?= lib/psoc-edge
 PSE_LIB_DIR ?= $(TOP)/$(PSE_LIB_TOP_DIR)
-
-# WHD resource configuration for standalone MicroPython build.
-WHD_FW_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/firmware/COMPONENT_55500/COMPONENT_SM/55500A1.trxcse
-WHD_NVRAM_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-resources/nvram/COMPONENT_WIFI6/COMPONENT_55500/COMPONENT_MURATA-2FY/cyw55500-sdio-mur-2FY.txt
-WHD_CLM_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-resources/clm/COMPONENT_WIFI6/COMPONENT_55500/COMPONENT_CYW55513_MOD_PSE84_SOM/55500A1.clm_blob
 
 ################################################################################
 # Pin generation
@@ -131,23 +128,45 @@ INC += $(addprefix -I$(TOP)/lib/,\
 
 DEFINES = \
 	-DCOMPONENT_CM33 \
-	-DCOMPONENT_FREERTOS \
-	-DCOMPONENT_PSE84 \
-	-DCYBSP_WIFI_CAPABLE \
-	-DCOMPONENT_WIFI_INTERFACE_SDIO \
 	-DCORE_NAME_CM33_0=1 \
 	-DCOMPONENT_MTB_HAL \
 	-DCOMPONENT_MW_ASYNC_TRANSFER \
 	-DCOMPONENT_MW_MTB_IPC \
 	-DCOMPONENT_MW_MTB_SRF \
 	-DCOMPONENT_NON_SECURE_DEVICE \
-	-DCY_RTOS_AWARE \
+	-DCYBSP_MCUBOOT_HEADER_SIZE=0x400 \
+	-DCY_RETARGET_IO_CONVERT_LF_TO_CRLF \
+
+ifeq ($(MICROPY_PY_FREERTOS),1)
+DEFINES += \
+	-DCOMPONENT_FREERTOS \
+	-DCY_RTOS_AWARE
+endif
+
+ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
+# WHD resource configuration for standalone MicroPython build.
+WHD_FW_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/firmware/COMPONENT_55500/COMPONENT_SM/55500A1.trxcse
+WHD_NVRAM_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-resources/nvram/COMPONENT_WIFI6/COMPONENT_55500/COMPONENT_MURATA-2FY/cyw55500-sdio-mur-2FY.txt
+WHD_CLM_FILE ?= $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-resources/clm/COMPONENT_WIFI6/COMPONENT_55500/COMPONENT_CYW55513_MOD_PSE84_SOM/55500A1.clm_blob
+
+WHD_FW_SIZE := $(shell stat -c%s $(WHD_FW_FILE))
+WHD_NVRAM_SIZE := $(shell stat -c%s $(WHD_NVRAM_FILE))
+WHD_CLM_SIZE := $(shell stat -c%s $(WHD_CLM_FILE))
+
+DEFINES += \
+	-DCOMPONENT_PSE84 \
+	-DCYBSP_WIFI_CAPABLE \
+	-DCOMPONENT_WIFI_INTERFACE_SDIO \
 	-DBLHS_SUPPORT \
 	-DCY_WIFI_COUNTRY=WHD_COUNTRY_UNITED_STATES \
 	-DCYBSP_WIFI_WL_HOSTWAKE_DRIVE_MODE=MTB_HAL_GPIO_DRIVE_OPENDRAINDRIVESLOW \
 	-DCYBSP_WIFI_WL_HOSTWAKE_INIT_STATE=WHD_TRUE \
-	-DCYBSP_MCUBOOT_HEADER_SIZE=0x400 \
-	-DCY_RETARGET_IO_CONVERT_LF_TO_CRLF \
+	-DFW_IMAGE_SIZE=$(WHD_FW_SIZE) -DFW_IMAGE_NAME=\"$(WHD_FW_FILE)\" \
+	-DNVRAM_IMAGE_SIZE=$(WHD_NVRAM_SIZE) -DNVRAM_IMAGE_NAME=\"$(WHD_NVRAM_FILE)\" \
+	-DCLM_IMAGE_SIZE=$(WHD_CLM_SIZE) -DCLM_IMAGE_NAME=\"$(WHD_CLM_FILE)\" \
+	-UWHD_PRINT_VERSION_ENABLE \
+	-DWHD_PRINT_DISABLE 
+endif
 
 INC += $(addprefix -I$(PSE_LIB_DIR)/,\
 	async-transfer/include \
@@ -189,43 +208,46 @@ INC += \
 	-I$(BOARD_DIR)/mtb-prj \
 	-Idualcore/include
 
-ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
-WHD_FW_SIZE := $(shell stat -c%s $(WHD_FW_FILE))
-WHD_NVRAM_SIZE := $(shell stat -c%s $(WHD_NVRAM_FILE))
-WHD_CLM_SIZE := $(shell stat -c%s $(WHD_CLM_FILE))
-
+ifeq ($(MICROPY_PY_FREERTOS),1)
 INC += \
-	-I$(PSE_LIB_DIR)/wifi-host-driver \
 	-I$(PSE_LIB_DIR)/abstraction-rtos/include \
 	-I$(PSE_LIB_DIR)/abstraction-rtos/include/COMPONENT_FREERTOS \
+	-I$(PSE_LIB_DIR)/freertos/Source/include \
+	-I$(PSE_LIB_DIR)/freertos/Source/portable/COMPONENT_CM33 \
+	-I$(PSE_LIB_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ 
+endif
+
+ifeq ($(MICROPY_PSOC_EDGE_LWIP),1)
+INC += \
+	-I$(PSE_LIB_DIR)/lwip-network-interface-integration/include \
+	-I$(PSE_LIB_DIR)/lwip-network-interface-integration/source \
+	\
+	-I$(PSE_LIB_DIR)/lwip-freertos-integration/arch \
+	\
+	-I$(PSE_LIB_DIR)/lwip/src/include
+endif
+
+ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
+INC += \
 	-I$(PSE_LIB_DIR)/clib-support/include \
 	-I$(PSE_LIB_DIR)/clib-support/source/TOOLCHAIN_GCC_ARM \
+	\
 	-I$(PSE_LIB_DIR)/connectivity-utilities \
 	-I$(PSE_LIB_DIR)/connectivity-utilities/cy_log \
 	-I$(PSE_LIB_DIR)/connectivity-utilities/network \
-	-I$(PSE_LIB_DIR)/freertos/Source/include \
-	-I$(PSE_LIB_DIR)/freertos/Source/portable/COMPONENT_CM33 \
-	-I$(PSE_LIB_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ \
-	-I$(PSE_LIB_DIR)/lwip-network-interface-integration/include \
-	-I$(PSE_LIB_DIR)/lwip-network-interface-integration/source \
-	-I$(PSE_LIB_DIR)/lwip-freertos-integration/arch \
-	-I$(PSE_LIB_DIR)/lwip/src/include \
+	\
 	-I$(PSE_LIB_DIR)/whd-bsp-integration \
+	\
 	-I$(PSE_LIB_DIR)/wifi-connection-manager/include \
 	-I$(PSE_LIB_DIR)/wifi-connection-manager/source/COMPONENT_55500 \
+	\
+	-I$(PSE_LIB_DIR)/wifi-host-driver \
 	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/inc \
 	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources \
 	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/firmware \
 	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/resource_imp \
 	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src \
-	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/include
-
-DEFINES += \
-	-DFW_IMAGE_SIZE=$(WHD_FW_SIZE) -DFW_IMAGE_NAME=\"$(WHD_FW_FILE)\" \
-	-DNVRAM_IMAGE_SIZE=$(WHD_NVRAM_SIZE) -DNVRAM_IMAGE_NAME=\"$(WHD_NVRAM_FILE)\" \
-	-DCLM_IMAGE_SIZE=$(WHD_CLM_SIZE) -DCLM_IMAGE_NAME=\"$(WHD_CLM_FILE)\" \
-	-UWHD_PRINT_VERSION_ENABLE \
-	-DWHD_PRINT_DISABLE
+	-I$(PSE_LIB_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/include 
 endif
 
 MACHINE_FLAGS = \
@@ -241,7 +263,7 @@ CFLAGS += -c $(MACHINE_FLAGS) \
 	-g \
 	-Wall \
 	-pipe \
-	$(DEFINES) \
+	$(DEFINES)
 
 LDFLAGS += $(MACHINE_FLAGS) \
 	-Wl,--gc-sections \
@@ -249,8 +271,11 @@ LDFLAGS += $(MACHINE_FLAGS) \
 	-Xlinker -L $(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM \
 	-Xlinker -L $(BOARD_DIR)/bsp-cfg \
 	-T$(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/pse84_ns_cm33.ld \
-	-T$(TOP)/ports/psoc-edge/mpy_gc_assert.ld \
-	-Wl,-Map,$(BUILD)/firmware.map \
+	-Wl,-Map,$(BUILD)/firmware.map 
+
+ifeq ($(MICROPY_PY_FREERTOS),1)
+LDFLAGS += -T$(TOP)/ports/psoc-edge/mpy_gc_assert.ld 
+endif
 
 PSE_BSP_CFG_C += $(addprefix $(BOARD_DIR)/bsp-cfg/,\
 	cycfg.c \
@@ -337,42 +362,137 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
     TARGET_$(BOARD)/COMPONENT_CM33/COMPONENT_NON_SECURE_DEVICE/ns_system_pse84.c \
 	)
 
+ifeq ($(MICROPY_PY_FREERTOS),1)
+PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
+	abstraction-rtos/source/cy_worker_thread.c \
+	abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_freertos_common.c \
+	abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_freertos_helpers.c \
+	abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_rtos_freertos.c \
+	\
+	freertos/Source/croutine.c \
+	freertos/Source/event_groups.c \
+	freertos/Source/list.c \
+	freertos/Source/queue.c \
+	freertos/Source/stream_buffer.c \
+	freertos/Source/tasks.c \
+	freertos/Source/timers.c \
+	freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/port.c \
+	freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/portasm.c \
+	freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/portdsram.c \
+	freertos/Source/portable/MemMang/heap_3.c \
+	)
+endif
+
+ifeq ($(MICROPY_PSOC_EDGE_LWIP), 1)
+PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
+	lwip-network-interface-integration/source/cy_ethernetif.c \
+	lwip-network-interface-integration/source/cy_lwip_dhcp_server.c \
+	lwip-network-interface-integration/source/cy_network_mw_core.c \
+	\
+	lwip-freertos-integration/arch/sys_arch.c \
+	\
+	lwip/src/api/api_lib.c \
+	lwip/src/api/api_msg.c \
+	lwip/src/api/err.c \
+	lwip/src/api/if_api.c \
+	lwip/src/api/netbuf.c \
+	lwip/src/api/netdb.c \
+	lwip/src/api/netifapi.c \
+	lwip/src/api/sockets.c \
+	lwip/src/api/tcpip.c \
+	lwip/src/core/altcp.c \
+	lwip/src/core/altcp_alloc.c \
+	lwip/src/core/altcp_tcp.c \
+	lwip/src/core/def.c \
+	lwip/src/core/dns.c \
+	lwip/src/core/inet_chksum.c \
+	lwip/src/core/init.c \
+	lwip/src/core/ip.c \
+	lwip/src/core/mem.c \
+	lwip/src/core/memp.c \
+	lwip/src/core/netif.c \
+	lwip/src/core/pbuf.c \
+	lwip/src/core/raw.c \
+	lwip/src/core/stats.c \
+	lwip/src/core/sys.c \
+	lwip/src/core/tcp.c \
+	lwip/src/core/tcp_in.c \
+	lwip/src/core/tcp_out.c \
+	lwip/src/core/timeouts.c \
+	lwip/src/core/udp.c \
+	lwip/src/core/ipv4/acd.c \
+	lwip/src/core/ipv4/autoip.c \
+	lwip/src/core/ipv4/dhcp.c \
+	lwip/src/core/ipv4/etharp.c \
+	lwip/src/core/ipv4/icmp.c \
+	lwip/src/core/ipv4/igmp.c \
+	lwip/src/core/ipv4/ip4.c \
+	lwip/src/core/ipv4/ip4_addr.c \
+	lwip/src/core/ipv4/ip4_frag.c \
+	lwip/src/core/ipv6/dhcp6.c \
+	lwip/src/core/ipv6/ethip6.c \
+	lwip/src/core/ipv6/icmp6.c \
+	lwip/src/core/ipv6/inet6.c \
+	lwip/src/core/ipv6/ip6.c \
+	lwip/src/core/ipv6/ip6_addr.c \
+	lwip/src/core/ipv6/ip6_frag.c \
+	lwip/src/core/ipv6/mld6.c \
+	lwip/src/core/ipv6/nd6.c \
+	lwip/src/netif/bridgeif.c \
+	lwip/src/netif/bridgeif_fdb.c \
+	lwip/src/netif/ethernet.c \
+	lwip/src/netif/lowpan6.c \
+	lwip/src/netif/lowpan6_ble.c \
+	lwip/src/netif/lowpan6_common.c \
+	lwip/src/netif/slipif.c \
+	lwip/src/netif/zepif.c \
+	)
+endif
+
 ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
-PSE_LIB_SRC_C += \
-	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/cy_worker_thread.c \
-	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_freertos_common.c \
-	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_freertos_helpers.c \
-	$(PSE_LIB_TOP_DIR)/abstraction-rtos/source/COMPONENT_FREERTOS/cyabs_rtos_freertos.c \
-	$(PSE_LIB_TOP_DIR)/clib-support/source/cy_time.c \
-	$(PSE_LIB_TOP_DIR)/clib-support/source/COMPONENT_FREERTOS/cy_mutex_pool.c \
-	$(PSE_LIB_TOP_DIR)/clib-support/source/TOOLCHAIN_GCC_ARM/cy_clib_support_newlib.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/croutine.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/event_groups.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/list.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/queue.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/stream_buffer.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/tasks.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/timers.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/port.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/portasm.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/COMPONENT_FREERTOS_NTZ/portdsram.c \
-	$(PSE_LIB_TOP_DIR)/freertos/Source/portable/MemMang/heap_3.c \
-	$(PSE_LIB_TOP_DIR)/connectivity-utilities/network/cy_nw_helper_common.c \
-	$(PSE_LIB_TOP_DIR)/wifi-connection-manager/source/cy_wcm.c \
-	$(PSE_LIB_TOP_DIR)/whd-bsp-integration/COMPONENT_LWIP/cy_network_buffer_lwip.c \
-	$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/resources/resource_imp/whd_resources.c \
-	$(PSE_LIB_TOP_DIR)/lwip-network-interface-integration/source/cy_ethernetif.c \
-	$(PSE_LIB_TOP_DIR)/lwip-network-interface-integration/source/cy_lwip_dhcp_server.c \
-	$(PSE_LIB_TOP_DIR)/lwip-network-interface-integration/source/cy_network_mw_core.c \
-	$(PSE_LIB_TOP_DIR)/lwip-freertos-integration/arch/sys_arch.c \
-	$(PSE_LIB_TOP_DIR)/whd-bsp-integration/cybsp_wifi.c \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/*.c)) \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/*.c)) \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/api/*.c)) \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/core/*.c)) \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/core/ipv4/*.c)) \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/core/ipv6/*.c)) \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/$(PSE_LIB_TOP_DIR)/lwip/src/netif/*.c))
+PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
+	clib-support/source/cy_time.c \
+	clib-support/source/COMPONENT_FREERTOS/cy_mutex_pool.c \
+	clib-support/source/TOOLCHAIN_GCC_ARM/cy_clib_support_newlib.c \
+	\
+	connectivity-utilities/network/cy_nw_helper_common.c \
+	\
+	wifi-connection-manager/source/cy_wcm.c \
+	\
+	whd-bsp-integration/COMPONENT_LWIP/cy_network_buffer_lwip.c \
+	whd-bsp-integration/cybsp_wifi.c \
+	\
+	wifi-host-driver/WHD/COMPONENT_WIFI6/resources/resource_imp/whd_resources.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_ap.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_buffer_api.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_cdc_bdc.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_chip.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_chip_constants.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_clm.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_commonring.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_debug.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_events.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_flowring.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_hal_port.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_logging.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_management.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_msgbuf_txrx.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_network_if.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_proto.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_resource_if.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_ring.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_sdpcm.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_thread.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_utils.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_wifi.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_wifi_api.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_wifi_p2p.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_common.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_m2m_protocol.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_sdio_protocol.c \
+	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_spi_protocol.c \
+	)
 endif
 
 PSE_SRC_ASM = $(PSE_LIB_TOP_DIR)/mtb-dsl-pse8xxgp/pdl/drivers/source/TOOLCHAIN_GCC_ARM/cy_syslib_ext.S \
@@ -393,16 +513,36 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 ifeq ($(MICROPY_PSOC_EDGE_LWIP),1)
-	INC += -Ilwip_inc
+INC += -Ilwip_inc
 endif
 
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
-  INC += -I$(TOP)/extmod/mbedtls
-	INC += -I$(TOP)/ports/psoc-edge/mbedtls
-	CFLAGS += -DMICROPY_SSL_MBEDTLS=1 -DMICROPY_MBEDTLS_USE_MTB_ENTROPY=1
+INC += -I$(TOP)/extmod/mbedtls
+INC += -I$(TOP)/ports/psoc-edge/mbedtls
 endif
 
 CFLAGS += $(INC)
+
+ifeq ($(MICROPY_PY_FREERTOS),1)
+CFLAGS += -DMICROPY_PY_FREERTOS=1
+endif
+
+ifeq ($(MICROPY_PY_EXT_FLASH),1)
+CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
+endif
+
+ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
+CFLAGS += \
+	-DMICROPY_PY_NETWORK=1 \
+	-DMICROPY_PY_NETWORK_IFX_WCM=1 \
+	-Wno-stringop-truncation
+endif
+
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+CFLAGS += \
+	-DMICROPY_SSL_MBEDTLS=1 \
+	-DMICROPY_MBEDTLS_USE_MTB_ENTROPY=1
+endif
 
 # Select debugging or optimisation build.
 ifeq ($(DEBUG), 1)
@@ -415,6 +555,24 @@ endif
 AFLAGS = -mthumb -march=armv8.1-m.main+fp+mve.fp
 
 LDFLAGS +=
+
+ifeq ($(MICROPY_PY_FREERTOS),1)
+# Size of the C-malloc heap carved from the linker .heap zone (sbrk/malloc).
+# FreeRTOS uses its own static heap (configTOTAL_HEAP_SIZE) and does NOT draw
+# from this zone.  WiFi (WHD/WCM/LwIP) does, so it needs a larger reservation.
+# The GC heap receives the remainder: [__HeapBase+MICROPY_C_HEAP_SIZE .. __HeapLimit].
+# Defaults can be overridden on the make command line, e.g. make MICROPY_C_HEAP_SIZE=0x20000.
+ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
+MICROPY_C_HEAP_SIZE ?= 0x16000
+else
+MICROPY_C_HEAP_SIZE ?= 0x8000
+endif
+
+# GC heap split: carve [__HeapBase .. __HeapBase+MICROPY_C_HEAP_SIZE) for C malloc
+# and give the remainder to the MicroPython GC heap.
+LDFLAGS += -Wl,--defsym=__GcHeapStart=__HeapBase+$(MICROPY_C_HEAP_SIZE)
+LDFLAGS += -Wl,--defsym=__GcHeapEnd=__HeapLimit
+endif
 
 LIBS += -lm
 
@@ -440,11 +598,11 @@ SHARED_SRC_C += $(addprefix shared/,\
 	)
 
 ifeq ($(MICROPY_PSOC_EDGE_LWIP),1)
-  SHARED_SRC_C += $(addprefix shared/,\
+SHARED_SRC_C += $(addprefix shared/,\
 	netutils/dhcpserver.c \
 	netutils/netutils.c \
 	netutils/trace.c \
-  )
+	)
 endif
 
 MOD_SRC_C += \
@@ -456,37 +614,23 @@ MOD_SRC_C += \
 	machine_spi.c \
 	machine_spi_target.c \
 	machine_rtc.c \
-	modpsocedge.c \
 	machine_ipc.c \
 	machine_scb.c \
+<<<<<<< HEAD
 	machine_timer.c \
+=======
+	modpsocedge.c \
+>>>>>>> f3e78c89e (psoc-edge/Makefile: Rearranged based on included modules/features.)
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
-	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
-	MOD_SRC_C += psoc_edge_qspi_flash.c 
+MOD_SRC_C += psoc_edge_qspi_flash.c 
 endif
 
 ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
-CFLAGS += -DMICROPY_PY_NETWORK=1 -DMICROPY_PY_NETWORK_IFX_WCM=1 -Wno-stringop-truncation
-	MOD_SRC_C += network_ifx_wcm.c 
-	MOD_SRC_C += modsocket.c
+MOD_SRC_C += \
+	network_ifx_wcm.c \
+	modsocket.c
 endif
-
-# Size of the C-malloc heap carved from the linker .heap zone (sbrk/malloc).
-# FreeRTOS uses its own static heap (configTOTAL_HEAP_SIZE) and does NOT draw
-# from this zone.  WiFi (WHD/WCM/LwIP) does, so it needs a larger reservation.
-# The GC heap receives the remainder: [__HeapBase+MICROPY_C_HEAP_SIZE .. __HeapLimit].
-# Defaults can be overridden on the make command line, e.g. make MICROPY_C_HEAP_SIZE=0x20000.
-ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
-MICROPY_C_HEAP_SIZE ?= 0x16000
-else
-MICROPY_C_HEAP_SIZE ?= 0x8000
-endif
-
-# GC heap split: carve [__HeapBase .. __HeapBase+MICROPY_C_HEAP_SIZE) for C malloc
-# and give the remainder to the MicroPython GC heap.
-LDFLAGS += -Wl,--defsym=__GcHeapStart=__HeapBase+$(MICROPY_C_HEAP_SIZE)
-LDFLAGS += -Wl,--defsym=__GcHeapEnd=__HeapLimit
 
 SRC_C += \
 	help.c \
@@ -598,7 +742,7 @@ endef
 ## Supports test and CI HIL operations.
 
 ifndef EXT_HEX_FILE
-HEX_FILE = $(BUILD)/firmware.signed.merged.hex
+HEX_FILE = $(BUILD)/firmware.hex
 else
 HEX_FILE = $(EXT_HEX_FILE)
 endif
