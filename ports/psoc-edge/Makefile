@@ -394,15 +394,11 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	lwip/src/api/api_lib.c \
 	lwip/src/api/api_msg.c \
 	lwip/src/api/err.c \
-	lwip/src/api/if_api.c \
 	lwip/src/api/netbuf.c \
 	lwip/src/api/netdb.c \
 	lwip/src/api/netifapi.c \
 	lwip/src/api/sockets.c \
 	lwip/src/api/tcpip.c \
-	lwip/src/core/altcp.c \
-	lwip/src/core/altcp_alloc.c \
-	lwip/src/core/altcp_tcp.c \
 	lwip/src/core/def.c \
 	lwip/src/core/dns.c \
 	lwip/src/core/inet_chksum.c \
@@ -413,15 +409,12 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	lwip/src/core/netif.c \
 	lwip/src/core/pbuf.c \
 	lwip/src/core/raw.c \
-	lwip/src/core/stats.c \
-	lwip/src/core/sys.c \
 	lwip/src/core/tcp.c \
 	lwip/src/core/tcp_in.c \
 	lwip/src/core/tcp_out.c \
 	lwip/src/core/timeouts.c \
 	lwip/src/core/udp.c \
 	lwip/src/core/ipv4/acd.c \
-	lwip/src/core/ipv4/autoip.c \
 	lwip/src/core/ipv4/dhcp.c \
 	lwip/src/core/ipv4/etharp.c \
 	lwip/src/core/ipv4/icmp.c \
@@ -429,23 +422,7 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	lwip/src/core/ipv4/ip4.c \
 	lwip/src/core/ipv4/ip4_addr.c \
 	lwip/src/core/ipv4/ip4_frag.c \
-	lwip/src/core/ipv6/dhcp6.c \
-	lwip/src/core/ipv6/ethip6.c \
-	lwip/src/core/ipv6/icmp6.c \
-	lwip/src/core/ipv6/inet6.c \
-	lwip/src/core/ipv6/ip6.c \
-	lwip/src/core/ipv6/ip6_addr.c \
-	lwip/src/core/ipv6/ip6_frag.c \
-	lwip/src/core/ipv6/mld6.c \
-	lwip/src/core/ipv6/nd6.c \
-	lwip/src/netif/bridgeif.c \
-	lwip/src/netif/bridgeif_fdb.c \
 	lwip/src/netif/ethernet.c \
-	lwip/src/netif/lowpan6.c \
-	lwip/src/netif/lowpan6_ble.c \
-	lwip/src/netif/lowpan6_common.c \
-	lwip/src/netif/slipif.c \
-	lwip/src/netif/zepif.c \
 	)
 endif
 
@@ -469,29 +446,21 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_chip.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_chip_constants.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_clm.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_commonring.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_debug.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_events.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_flowring.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_hal_port.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_logging.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_management.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_msgbuf_txrx.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_network_if.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_proto.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_resource_if.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_ring.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_sdpcm.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_thread.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_utils.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_wifi.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_wifi_api.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/whd_wifi_p2p.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_common.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_m2m_protocol.c \
 	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_sdio_protocol.c \
-	wifi-host-driver/WHD/COMPONENT_WIFI6/src/bus_protocols/whd_bus_spi_protocol.c \
 	)
 endif
 
@@ -616,11 +585,8 @@ MOD_SRC_C += \
 	machine_rtc.c \
 	machine_ipc.c \
 	machine_scb.c \
-<<<<<<< HEAD
 	machine_timer.c \
-=======
 	modpsocedge.c \
->>>>>>> f3e78c89e (psoc-edge/Makefile: Rearranged based on included modules/features.)
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 MOD_SRC_C += psoc_edge_qspi_flash.c 
