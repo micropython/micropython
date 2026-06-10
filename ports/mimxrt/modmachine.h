@@ -29,7 +29,6 @@
 
 #include "py/obj.h"
 
-extern const mp_obj_type_t machine_sdcard_type;
 extern const mp_obj_type_t machine_can_type;
 
 void machine_adc_init(void);

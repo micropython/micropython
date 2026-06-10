@@ -50,11 +50,6 @@
 #define MICROPY_PY_MACHINE_LED_ENTRY
 #endif
 
-#if MICROPY_PY_MACHINE_SDCARD
-#define MICROPY_PY_MACHINE_SDCARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
-#else
-#define MICROPY_PY_MACHINE_SDCARD_ENTRY
-#endif
 #if MICROPY_PY_MACHINE_QECNT
 #define MICROPY_PY_MACHINE_ENCODER_ENTRY { MP_ROM_QSTR(MP_QSTR_Encoder), MP_ROM_PTR(&machine_encoder_type) },
 #define MICROPY_PY_MACHINE_COUNTER_ENTRY { MP_ROM_QSTR(MP_QSTR_Counter), MP_ROM_PTR(&machine_counter_type) },
@@ -68,7 +63,6 @@
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
-    MICROPY_PY_MACHINE_SDCARD_ENTRY \
     MICROPY_PY_MACHINE_ENCODER_ENTRY \
     MICROPY_PY_MACHINE_COUNTER_ENTRY \
     \

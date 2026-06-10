@@ -25,6 +25,7 @@
  */
 
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_SDCARD
 
