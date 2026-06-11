@@ -809,7 +809,8 @@ Hardware timer using the TCPWM0 peripheral on the PSOC™ Edge. See :ref:`machin
 
 .. note::
 
-    This port provides **3** independent hardware timer instances (IDs ``0``, ``1``, ``2``), backed by TCPWM0 Group 0 counters 3, 5, and 6
+    This port provides **4** independent hardware timer instances (IDs ``0``, ``1``, ``2``, ``3``), backed by TCPWM0 Group 0 counters 3, 5, 6,
+    and 2
     respectively. Only one instance per ID can exist at a time; constructing a second ``Timer(id)`` without calling ``deinit()`` first raises a
     ``ValueError``.
 
@@ -838,7 +839,7 @@ Constructor
 
     Construct a hardware timer.
 
-      - ``id`` — timer instance identifier. Must be **0**, **1**, or **2**.
+    - ``id`` — timer instance identifier. Must be **0**, **1**, **2**, or **3**.
       - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
       - ``period`` — timer period in **milliseconds**. Must be ``> 0``.
         Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
@@ -851,7 +852,7 @@ Constructor
 
     Raises ``ValueError`` if:
 
-      - ``id`` is outside ``0``-``2``.
+    - ``id`` is outside ``0``-``3``.
       - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
       - Neither ``freq`` nor ``period`` is provided.
       - ``period`` is ``0`` or negative.
