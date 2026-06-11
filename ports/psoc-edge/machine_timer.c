@@ -38,6 +38,8 @@
 #include "cy_tcpwm.h"
 #include "cy_sysclk.h"
 #include "cycfg_peripheral_clocks.h"
+#include "cycfg_peripherals.h"
+#include "mtb_hal.h"
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -45,8 +47,7 @@
 
 #define MACHINE_TIMER_NUM_INSTANCES  (3)
 
-// PCLK 16-bit divider #2 is shared with the system tick timer (modtime.c) and
-// is already running at 1 MHz after time_init() is called at startup.
+// Shared general-purpose timer divider target frequency used by this module.
 #define TIMER_CLK_HZ  (1000000UL)
 
 // Input-pin disabled sentinel (upper 2 bits are ignored; mask to 2-bit field)
@@ -96,6 +97,25 @@ static const timer_hw_t timer_hw[MACHINE_TIMER_NUM_INSTANCES] = {
 
 static machine_timer_obj_t *timer_obj[MACHINE_TIMER_NUM_INSTANCES] = { NULL };
 
+static bool machine_timer_clock_configured = false;
+
+static void machine_timer_configure_clock(void) {
+    if (machine_timer_clock_configured) {
+        return;
+    }
+
+    // Keep timer periods stable even when other modules stop configuring this divider.
+    cy_rslt_t rslt = mtb_hal_clock_set_peri_clock_freq(&CYBSP_GENERAL_PURPOSE_TIMER_clock_ref,
+        TIMER_CLK_HZ, 1000);
+    if (rslt != CY_RSLT_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("Timer clock setup failed (0x%lx)"),
+            (unsigned long)rslt);
+    }
+
+    machine_timer_clock_configured = true;
+}
+
 // ---------------------------------------------------------------------------
 // IRQ handlers — one per timer, each delegates to the common body
 // ---------------------------------------------------------------------------
@@ -107,8 +127,11 @@ static void machine_timer_isr(machine_timer_obj_t *self) {
             Cy_TCPWM_Counter_Disable(TCPWM0, self->counter_num);
             self->active = false;
         }
-        if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
-            // Uncaught exception: disable callback so periodic timers don't spam errors.
+        if (self->callback != mp_const_none
+            && mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+            // Uncaught exception: stop timer and disable callback to avoid repeated IRQ spam.
+            Cy_TCPWM_Counter_Disable(TCPWM0, self->counter_num);
+            self->active = false;
             self->callback = mp_const_none;
         }
     }
@@ -141,6 +164,8 @@ static const cy_israddress timer_handlers[MACHINE_TIMER_NUM_INSTANCES] = {
 // ---------------------------------------------------------------------------
 
 static void machine_timer_start(machine_timer_obj_t *self, uint32_t period_ticks) {
+    machine_timer_configure_clock();
+
     // Stop counter and unregister any existing IRQ before reconfiguring.
     Cy_TCPWM_Counter_Disable(TCPWM0, self->counter_num);
     if (self->active) {
@@ -243,6 +268,14 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("hard must be bool"));
     }
     self->ishard = (hard == mp_const_true);
+
+    // Hard IRQ callbacks not supported on FreeRTOS: scheduler cannot be locked from ISR context.
+    // TODO: Re-enable hard irq and remove this patch
+    #if defined(CY_RTOS_AWARE)
+    if (self->ishard) {
+        self->ishard = false;  // silently convert to soft callback
+    }
+    #endif
 
     // Compute period in timer clock ticks in 64-bit, then range-check.
     uint64_t period_ticks_64;
