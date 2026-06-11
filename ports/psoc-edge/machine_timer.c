@@ -24,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-// Hardware timer using TCPWM0 Group 0 counters 3, 5, 6 (IDs 0, 1, 2).
-// Counter 2 is reserved for the system tick timer (modtime.c).
-// Counters 0, 1, 4, 7 are allocated by the BSP.  3, 5, 6 are free for use.
+// Hardware timer using TCPWM0 Group 0 counters 3, 5, 6, 2 (IDs 0, 1, 2, 3).
+// Counters 0, 1, 4, 7 are allocated by the BSP.  2, 3, 5, 6 are used by Timer.
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -45,7 +44,7 @@
 // Constants
 // ---------------------------------------------------------------------------
 
-#define MACHINE_TIMER_NUM_INSTANCES  (3)
+#define MACHINE_TIMER_NUM_INSTANCES  (4)
 
 // Shared general-purpose timer divider target frequency used by this module.
 #define TIMER_CLK_HZ  (1000000UL)
@@ -63,8 +62,8 @@
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
-    uint8_t id;                  // 0, 1, or 2
-    uint32_t counter_num;        // TCPWM0 counter index: 3, 5, or 6
+    uint8_t id;                  // 0, 1, 2, or 3
+    uint32_t counter_num;        // TCPWM0 counter index: 3, 5, 6, or 2
     en_clk_dst_t pclk_dst;
     uint16_t mode;               // TIMER_MODE_ONE_SHOT or TIMER_MODE_PERIODIC
     mp_obj_t callback;
@@ -89,6 +88,7 @@ static const timer_hw_t timer_hw[MACHINE_TIMER_NUM_INSTANCES] = {
     { 3U, tcpwm_0_interrupts_3_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN3 },
     { 5U, tcpwm_0_interrupts_5_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN5 },
     { 6U, tcpwm_0_interrupts_6_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN6 },
+    { 2U, tcpwm_0_interrupts_2_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN2 },
 };
 
 // ---------------------------------------------------------------------------
@@ -152,11 +152,17 @@ static void timer2_irq_handler(void) {
         machine_timer_isr(timer_obj[2]);
     }
 }
+static void timer3_irq_handler(void) {
+    if (timer_obj[3] != NULL) {
+        machine_timer_isr(timer_obj[3]);
+    }
+}
 
 static const cy_israddress timer_handlers[MACHINE_TIMER_NUM_INSTANCES] = {
     timer0_irq_handler,
     timer1_irq_handler,
     timer2_irq_handler,
+    timer3_irq_handler,
 };
 
 // ---------------------------------------------------------------------------
