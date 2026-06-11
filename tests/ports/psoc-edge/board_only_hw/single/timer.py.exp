@@ -23,7 +23,6 @@ invalid_mode: invalid mode
 invalid_callback: callback must be callable
 freq_zero: freq must be > 0
 period_zero: period must be > 0
-tick_hz_zero: tick_hz must be > 0
 missing_freq_period: either freq or period must be specified
 period_ticks_zero: period out of range for 32-bit counter
 Recreate Timer(0) after deinit: OK

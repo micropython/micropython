@@ -137,10 +137,6 @@ def test_negative_cases():
             "period_zero:", lambda: tim.init(mode=Timer.ONE_SHOT, period=0, callback=call_oneshot)
         )
         expect_value_error(
-            "tick_hz_zero:",
-            lambda: tim.init(mode=Timer.ONE_SHOT, period=1000, tick_hz=0, callback=call_oneshot),
-        )
-        expect_value_error(
             "missing_freq_period:", lambda: tim.init(mode=Timer.ONE_SHOT, callback=call_oneshot)
         )
         expect_value_error(
@@ -176,7 +172,7 @@ def test_hard_parameter_checks():
         # callback with list append works.
         soft_events.append(1)
 
-    tim_soft = Timer(0, period=50, tick_hz=1000, mode=Timer.PERIODIC, callback=cb_soft)
+    tim_soft = Timer(0, period=50, mode=Timer.PERIODIC, callback=cb_soft)
     try:
         time.sleep_ms(250)
     finally:
@@ -202,7 +198,7 @@ def test_hard_parameter_checks():
     #         hard_seen = True
     #         return
 
-    # tim_hard = Timer(1, period=50, tick_hz=1000, mode=Timer.PERIODIC, callback=cb_hard, hard=True)
+    # tim_hard = Timer(1, period=50, mode=Timer.PERIODIC, callback=cb_hard, hard=True)
     # try:
     #     time.sleep_ms(250)
     # finally:
@@ -211,7 +207,7 @@ def test_hard_parameter_checks():
 
     # 3) hard must be bool.
     try:
-        Timer(2, period=100, tick_hz=1000, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=1)
+        Timer(2, period=100, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=1)
         print_result("hard_bool_validation", False)
     except ValueError:
         print_result("hard_bool_validation", True)
@@ -223,18 +219,14 @@ def test_hard_parameter_checks():
     hard_true_ok = False
 
     try:
-        t_bool = Timer(
-            2, period=200, tick_hz=1000, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=False
-        )
+        t_bool = Timer(2, period=200, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=False)
         t_bool.deinit()
         hard_false_ok = True
     except Exception:
         hard_false_ok = False
 
     try:
-        t_bool = Timer(
-            2, period=200, tick_hz=1000, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=True
-        )
+        t_bool = Timer(2, period=200, mode=Timer.ONE_SHOT, callback=call_oneshot, hard=True)
         t_bool.deinit()
         hard_true_ok = True
     except Exception:
