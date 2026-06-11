@@ -235,12 +235,11 @@ static void machine_timer_start(machine_timer_obj_t *self, uint32_t period_ticks
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
-    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, ARG_hard };
+    enum { ARG_mode, ARG_callback, ARG_period, ARG_freq, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_PERIODIC} },
         { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_period,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_tick_hz,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_hard,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
     };
@@ -287,13 +286,9 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
         }
         period_ticks_64 = (uint64_t)TIMER_CLK_HZ / (uint64_t)(uint32_t)freq;
     } else if (args[ARG_period].u_int > 0) {
-        mp_int_t tick_hz = args[ARG_tick_hz].u_int;
-        if (tick_hz <= 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("tick_hz must be > 0"));
-        }
-        period_ticks_64 = (
-            (uint64_t)TIMER_CLK_HZ * (uint64_t)(uint32_t)args[ARG_period].u_int
-            / (uint64_t)(uint32_t)tick_hz);
+        // period is in milliseconds; convert to timer clock ticks (1 MHz base).
+        period_ticks_64 = (uint64_t)TIMER_CLK_HZ * (uint64_t)(uint32_t)args[ARG_period].u_int
+            / 1000UL;
     } else if (mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_period), MP_MAP_LOOKUP) != NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("period must be > 0"));
     } else {
@@ -311,7 +306,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
 }
 
 // ---------------------------------------------------------------------------
-// machine.Timer(id [, mode=, freq=, period=, tick_hz=, callback=, hard=])
+// machine.Timer(id [, mode=, freq=, period=, callback=, hard=])
 // ---------------------------------------------------------------------------
 
 static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
@@ -360,7 +355,7 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
 }
 
 // ---------------------------------------------------------------------------
-// timer.init(mode=, freq=, period=, tick_hz=, callback=, hard=)
+// timer.init(mode=, freq=, period=, callback=, hard=)
 // ---------------------------------------------------------------------------
 
 static mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args,
