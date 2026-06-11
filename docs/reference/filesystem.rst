@@ -163,6 +163,9 @@ normally would be used from Python code, for example::
         f.write('Hello world')
     print(open('/ramdisk/hello.txt').read())
 
+For further details of the block device methods and their return values
+see :class:`vfs.AbstractBlockDev`.
+
 Filesystems
 -----------
 

@@ -163,6 +163,9 @@ that the block device supports the extended interface.
         of *offset*, read bytes from the device into *buf* (an array of bytes).
         The number of bytes to read is given by the length of *buf*.
 
+        Upon success the method should return ``None`` or 0.  Upon failure it should
+        return a negative integer corresponding to an ``OSError`` errno code.
+
     .. method:: writeblocks(block_num, buf)
                 writeblocks(block_num, buf, offset)
 
@@ -183,6 +186,9 @@ that the block device supports the extended interface.
 
         Note that implementations must never implicitly erase blocks if the offset
         argument is specified, even if it is zero.
+
+        Upon success the method should return ``None`` or 0.  Upon failure it should
+        return a negative integer corresponding to an ``OSError`` errno code.
 
     .. method:: ioctl(op, arg)
 
