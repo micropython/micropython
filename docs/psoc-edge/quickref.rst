@@ -839,27 +839,27 @@ Constructor
 
     Construct a hardware timer.
 
-    - ``id`` — timer instance identifier. Must be **0**, **1**, **2**, or **3**.
-      - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
-      - ``period`` — timer period in **milliseconds**. Must be ``> 0``.
-        Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
-      - ``freq`` — timer frequency in Hz. Must be ``> 0``. Takes precedence over ``period`` when both are supplied.
-      - ``callback`` — a callable invoked on each timer expiry. Receives the ``Timer`` object as its only argument.
-        Must be a callable; passing a non-callable raises a ``ValueError``.
-      - ``hard`` — must be a ``bool``. If ``True``, the callback runs directly in the hardware IRQ context (no scheduler).
-        Heap allocation inside the callback will raise ``MemoryError``; use ``micropython.alloc_emergency_exception_buf()`` before
-        arming a hard timer. Default is ``False`` (soft callback, deferred via the MicroPython scheduler).
+            - ``id`` — timer instance identifier. Must be **0**, **1**, **2**, or **3**.
+            - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
+            - ``period`` — timer period in **milliseconds**. Must be ``> 0``.
+                Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
+            - ``freq`` — timer frequency in Hz. Must be ``> 0``. Takes precedence over ``period`` when both are supplied.
+            - ``callback`` — a callable invoked on each timer expiry. Receives the ``Timer`` object as its only argument.
+                Must be a callable; passing a non-callable raises a ``ValueError``.
+            - ``hard`` — must be a ``bool``. If ``True``, the callback runs directly in the hardware IRQ context (no scheduler).
+                Heap allocation inside the callback will raise ``MemoryError``; use ``micropython.alloc_emergency_exception_buf()`` before
+                arming a hard timer. Default is ``False`` (soft callback, deferred via the MicroPython scheduler).
 
     Raises ``ValueError`` if:
 
-    - ``id`` is outside ``0``-``3``.
-      - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
-      - Neither ``freq`` nor ``period`` is provided.
-      - ``period`` is ``0`` or negative.
-      - ``freq`` is ``0`` or negative.
-      - The computed period exceeds the 32-bit counter range (e.g. ``freq=2_000_000``).
-      - ``hard`` is not a ``bool``.
-      - ``callback`` is not callable.
+            - ``id`` is outside ``0``-``3``.
+            - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
+            - Neither ``freq`` nor ``period`` is provided.
+            - ``period`` is ``0`` or negative.
+            - ``freq`` is ``0`` or negative.
+            - The computed period exceeds the 32-bit counter range (e.g. ``freq=2_000_000``).
+            - ``hard`` is not a ``bool``.
+            - ``callback`` is not callable.
 
 Complete example
 ^^^^^^^^^^^^^^^^
