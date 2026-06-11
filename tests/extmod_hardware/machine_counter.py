@@ -34,6 +34,12 @@ def toggle(times):
         out_pin(0)
 
 
+def toggle__src(times):
+    for _ in range(times):
+        out_dir_pin(1)
+        out_dir_pin(0)
+
+
 number_of_callbacks = 0
 callback_counter_value = None
 callback_counter_cycles = None
@@ -47,7 +53,7 @@ def callback(counter):
     counter_irq_flags = counter.irq().flags()
     if "esp32" in sys.platform:
         print(
-            f"\n    callbacks:{number_of_callbacks}, counter.value():{callback_counter_value}, counter.cycles():{callback_counter_cycles}, counter.irq().flags():{counter_irq_flags}, MATCH:{counter_irq_flags & Counter.IRQ_MATCH}, HERE:{counter_irq_flags & Counter.IRQ_HERE}, MAX:{counter_irq_flags & Counter.IRQ_MAX},  MIN:{counter_irq_flags & Counter.IRQ_MIN}, Z:{counter_irq_flags & 3}"
+            f"\n    callbacks:{number_of_callbacks}, counter.value():{callback_counter_value}, counter.cycles():{callback_counter_cycles}, counter.irq().flags():{counter_irq_flags}, MATCH:{counter_irq_flags & Counter.IRQ_MATCH}, HERE:{counter_irq_flags & Counter.IRQ_HERE}, MAX:{counter_irq_flags & Counter.IRQ_MAX}, MIN:{counter_irq_flags & Counter.IRQ_MIN}"
         )
     else:
         print(
@@ -167,8 +173,8 @@ class TestCounter(unittest.TestCase):
         self.assertEqual(self.counter.cycles(), 5)
 
     def test_max_UP_DOWN(self):
-        global callback_counter_value
-        self.counter.init(in_pin, direction=in_dir_pin, match=225, max=100)
+        global callback_counter_value, number_of_callbacks
+        self.counter.init(in_pin, direction=in_dir_pin, match=225, max=100, min=-100)
         self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
 
         out_dir_pin(COUNTER_UP)
@@ -180,7 +186,7 @@ class TestCounter(unittest.TestCase):
         toggle(225)
         self.assertCounter(450)
 
-        callback_counter_value = 0
+        callback_counter_value = None
         out_dir_pin(COUNTER_DOWN)
         toggle(225)
         self.assertCounter(225)
@@ -190,25 +196,97 @@ class TestCounter(unittest.TestCase):
         toggle(225)
         self.assertCounter(0)
 
+        if "esp32" in sys.platform:
+            self.counter.irq(handler=callback, trigger=Counter.IRQ_MAX | Counter.IRQ_MIN)
+
+            callback_counter_value = None
+            number_of_callbacks = 0
+
+            out_dir_pin(COUNTER_UP)
+            toggle(450)
+            self.assertCounter(450)
+            self.assertEqual(callback_counter_value, 400)
+            self.assertEqual(number_of_callbacks, 4)
+
+            out_dir_pin(COUNTER_DOWN)
+            toggle(450 + 150)
+            self.assertCounter(-150)
+            self.assertEqual(callback_counter_value, -100)
+            self.assertEqual(number_of_callbacks, 9)
+
+        if "esp32" in sys.platform:
+            self.counter.value(50)  # here
+            self.counter.irq(handler=callback, trigger=Counter.IRQ_HERE)
+
+            callback_counter_value = None
+            number_of_callbacks = 0
+
+            out_dir_pin(COUNTER_UP)
+            toggle(100)
+            self.assertCounter(150)
+            self.assertEqual(callback_counter_value, None)
+            self.assertEqual(number_of_callbacks, 0)
+
+            out_dir_pin(COUNTER_DOWN)
+            toggle(150)
+            self.assertCounter(0)
+            self.assertEqual(callback_counter_value, 50)
+            self.assertEqual(number_of_callbacks, 1)
+
     def test_max_DOWN_UP(self):
-        global callback_counter_value
-        self.counter.init(in_pin, direction=in_dir_pin, match=-225, max=100)
+        global callback_counter_value, number_of_callbacks
+        self.counter.init(in_pin, direction=in_dir_pin, match=-225, max=100, min=-100)
         self.counter.irq(handler=callback, trigger=Counter.IRQ_MATCH)
 
         out_dir_pin(COUNTER_DOWN)
         toggle(450)
         self.assertCounter(-450)
-        if self.counter.irq().trigger():
-            self.assertEqual(callback_counter_value, -225)
-            self.assertEqual(number_of_callbacks, 1)
+        self.assertEqual(callback_counter_value, -225)
+        self.assertEqual(number_of_callbacks, 1)
 
-        callback_counter_value = 0
+        callback_counter_value = None
         out_dir_pin(COUNTER_UP)
         toggle(450)
         self.assertCounter(0)
-        if self.counter.irq().trigger():
-            self.assertEqual(callback_counter_value, -225)
-            self.assertEqual(number_of_callbacks, 2)
+        self.assertEqual(callback_counter_value, -225)
+        self.assertEqual(number_of_callbacks, 2)
+
+        if "esp32" in sys.platform:
+            self.counter.irq(handler=callback, trigger=Counter.IRQ_MAX | Counter.IRQ_MIN)
+
+            callback_counter_value = None
+            number_of_callbacks = 0
+
+            out_dir_pin(COUNTER_DOWN)
+            toggle(450)
+            self.assertCounter(-450)
+            self.assertEqual(callback_counter_value, -400)
+            self.assertEqual(number_of_callbacks, 4)
+
+            out_dir_pin(COUNTER_UP)
+            toggle(450 + 150)
+            self.assertCounter(150)
+            self.assertEqual(callback_counter_value, 100)
+            self.assertEqual(number_of_callbacks, 9)
+
+        if "esp32" in sys.platform:
+            self.counter.value(-50)  # here
+            self.counter.irq(handler=callback, trigger=Counter.IRQ_HERE)
+
+            callback_counter_value = None
+            number_of_callbacks = 0
+
+            out_dir_pin(COUNTER_DOWN)
+            toggle(100)
+            self.assertCounter(-150)
+            self.assertEqual(callback_counter_value, None)
+            self.assertEqual(number_of_callbacks, 0)
+
+            out_dir_pin(COUNTER_UP)
+            toggle(150)
+            self.assertCounter(0)
+            self.assertEqual(callback_counter_value, -50)
+            self.assertEqual(number_of_callbacks, 1)
 
     def test_count_pin_direction(self):
         self.counter.init(in_pin, direction=in_dir_pin, match=5_000)
@@ -344,7 +422,7 @@ class TestCounter(unittest.TestCase):
         self.assertEqual(callback_counter_value, -90_000)
         self.assertEqual(number_of_callbacks, 2)
 
-        callback_counter_value = 0
+        callback_counter_value = None
         out_dir_pin(COUNTER_UP)
         toggle(5_000)
         self.assertCounter(-90_000)
@@ -354,6 +432,26 @@ class TestCounter(unittest.TestCase):
         toggle(90_000 + 100)
         self.assertCounter(100)
         self.assertEqual(callback_counter_value, 0)
+        self.assertEqual(number_of_callbacks, 4)
+
+    @unittest.skipIf(sys.platform == "mimxrt", "_src input pin not supported")
+    def test__src(self):
+        out_dir_pin(0)  # used as output for _src input
+
+        self.counter.init(src=in_pin, _src=in_dir_pin, match=-50_000)
+        self.counter.irq(
+            handler=callback,
+            trigger=Counter.IRQ_MATCH | Counter.IRQ_HERE | Counter.IRQ_MAX | Counter.IRQ_MIN,
+        )
+
+        toggle(50_000)
+        self.assertCounter(50_000)
+        self.assertEqual(callback_counter_value, 32767)
+        self.assertEqual(number_of_callbacks, 1)
+
+        toggle__src(50_000 + 55_000)
+        self.assertCounter(-55_000)
+        self.assertEqual(callback_counter_value, -50_000)
         self.assertEqual(number_of_callbacks, 4)
 
 
