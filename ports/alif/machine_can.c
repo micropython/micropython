@@ -77,6 +77,7 @@ typedef struct machine_can_port {
     machine_can_mode_t can_mode;
     bool is_enabled;
     bool irq_state_changed;
+    mp_int_t irq_flags;
     uint16_t num_error_warning;
     uint16_t num_error_passive;
     uint16_t num_bus_off;
@@ -98,11 +99,18 @@ void CANFD_IRQHandler(void) {
     if (self != NULL) {
         machine_can_port_t *port = self->port;
         mp_int_t irq_flags = 0;
+        // Get all Interrupt flags at once.
+        uint32_t irq_event = (port->canfd_base->CANFD_RTIF & CANFD_RTIF_REG_Msk)
+            | ((port->canfd_base->CANFD_ERRINT & CANFD_ERRINT_REG_Msk) << 8U);
 
-        uint32_t irq_event = canfd_irq_handler(port->canfd_base);
+        // Nothing to do, return.
+        if (irq_event == 0) {
+            return;
+        }
+
         machine_can_state_t temp_state = port->can_state;
 
-        // tbd: Add the error IRQ handling here
+        // State & Error interrupts
         if (irq_event & CANFD_RBUF_OVERRUN_EVENT) {
             port->num_rx_overrun++;
         }
@@ -133,30 +141,26 @@ void CANFD_IRQHandler(void) {
             port->irq_state_changed = true;
         }
 
-        // Disable the event interrupts avoiding retrigger but keep
-        // the flags set
+        // Data RX and TX interrupts.
         if (irq_event & CANFD_RBUF_AVAILABLE_EVENT) {
             irq_flags |= MP_CAN_IRQ_RX;
-            port->canfd_base->CANFD_RTIE &= ~CANFD_RTIE_RIE;
         }
         if (irq_event & (CANFD_SECONDARY_BUF_TX_COMPLETE_EVENT | CANFD_PRIMARY_BUF_TX_COMPLETE_EVENT)) {
             irq_flags |= MP_CAN_IRQ_TX;
-            canfd_disable_tx_interrupts(port->canfd_base);
         }
         if (irq_event & CANFD_TX_ABORT_EVENT) {
-            irq_flags |= MP_CAN_IRQ_TX_FAILED;
+            irq_flags |= (MP_CAN_IRQ_TX_FAILED | MP_CAN_IRQ_TX);
         }
-        // Invokes the low level API to clear the interrupt flags
-        // Except for regular RX and TX, which will be reset in the
-        // flags() method.
-        canfd_clear_interrupt(port->canfd_base, irq_event &
-            ~(CANFD_SECONDARY_BUF_TX_COMPLETE_EVENT | CANFD_PRIMARY_BUF_TX_COMPLETE_EVENT |
-                CANFD_TX_ABORT_EVENT | CANFD_RBUF_AVAILABLE_EVENT));
+
+        port->irq_flags = irq_flags;
 
         // Call the MP callback if the events match the trigger.
         if (irq_flags & self->mp_irq_trigger) {
             mp_irq_handler(self->mp_irq_obj);
         }
+        // Clear data and error interrupt flags
+        port->canfd_base->CANFD_RTIF = CANFD_RTIF_REG_Msk;
+        port->canfd_base->CANFD_ERRINT = CANFD_ERRINT_REG_Msk;
     }
 }
 
@@ -189,18 +193,18 @@ static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
 // enumerate standard id filters separately to extended id filters (the
 // CAN_MSG_FLAG_EXT_ID bit in 'flags' differentiates the type).
 static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx, mp_uint_t can_id, mp_uint_t mask, mp_uint_t flags) {
-    canfd_acpt_fltr_t filter_config;
+    canfd_acpt_fltr_t filter_config = { 0x0U };
 
     if (filter_idx < CANFD_MAX_ACCEPTANCE_FILTERS) {
 
         if (flags & CAN_MSG_FLAG_EXT_ID) {
             filter_config.frame_type = CANFD_ACPT_FILTER_CFG_EXT_FRAMES;
         } else {
-            filter_config.frame_type = CANFD_ACPT_FILTER_CFG_ALL_FRAMES;
+            filter_config.frame_type = CANFD_ACPT_FILTER_CFG_STD_FRAMES;
         }
 
-        filter_config.ac_code = can_id & 0x1FFFFFFFUL;
-        filter_config.ac_mask = ~mask & 0x1FFFFFFFUL;  // The mask has to be inverted
+        filter_config.ac_code = can_id;
+        filter_config.ac_mask = mask;  // Inverting is done in canfd_enable_acpt_fltr().
         filter_config.op_code = CANFD_ACPT_FLTR_OP_ADD_MASKABLE_ID;
         filter_config.filter = filter_idx;
         canfd_enable_acpt_fltr(self->port->canfd_base, filter_config);
@@ -217,14 +221,10 @@ static void machine_can_update_irqs(machine_can_obj_t *self) {
     struct machine_can_port *port = self->port;
     uint16_t triggers = self->mp_irq_trigger;
 
-    // Clear possibly outstanding interrupts, which are handled outside
-    // CANFD_IRQHandler.
-    canfd_clear_interrupt(port->canfd_base,
-        CANFD_SECONDARY_BUF_TX_COMPLETE_EVENT | CANFD_PRIMARY_BUF_TX_COMPLETE_EVENT |
-        CANFD_TX_ABORT_EVENT | CANFD_RBUF_AVAILABLE_EVENT);
-
     if (triggers & MP_CAN_IRQ_RX) {
         port->canfd_base->CANFD_RTIE |= CANFD_RTIE_RIE;
+    } else {
+        port->canfd_base->CANFD_RTIE &= ~CANFD_RTIE_RIE;
     }
     if (triggers & MP_CAN_IRQ_TX) {
         canfd_enable_tx_interrupts(port->canfd_base);
@@ -234,11 +234,11 @@ static void machine_can_update_irqs(machine_can_obj_t *self) {
 // Return the irq().flags() result. Calling this function may also update the hardware state machine.
 static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     machine_can_port_t *port = self->port;
-    mp_int_t irq_flags = 0;
+    mp_int_t irq_flags = port->irq_flags;
 
     uint32_t irq_event = canfd_irq_handler(port->canfd_base);
 
-    if (irq_event & CANFD_RBUF_AVAILABLE_EVENT) {
+    if (canfd_rx_msg_available(port->canfd_base)) {
         irq_flags |= MP_CAN_IRQ_RX;
     }
     if (irq_event & (CANFD_SECONDARY_BUF_TX_COMPLETE_EVENT | CANFD_PRIMARY_BUF_TX_COMPLETE_EVENT)) {
@@ -247,15 +247,13 @@ static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     if (irq_event & CANFD_TX_ABORT_EVENT) {
         irq_flags |= MP_CAN_IRQ_TX_FAILED;
     }
-    // Clear the flags and re-enable the interrupts.
-    canfd_clear_interrupt(port->canfd_base, irq_event);
-    port->canfd_base->CANFD_RTIE |= CANFD_RTIE_RIE;
-    canfd_enable_tx_interrupts(port->canfd_base);
 
     if (port->irq_state_changed) {
         port->irq_state_changed = false;
         irq_flags |= MP_CAN_IRQ_STATE;
     }
+    // CLear the flags from the previous IRQ Handler event
+    port->irq_flags = 0;
 
     return irq_flags;
 }
@@ -313,13 +311,21 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     canfd_set_stb_mode(port->canfd_base, CANFD_SECONDARY_BUF_MODE_PRIORITY);
     canfd_set_rbuf_overflow_mode(port->canfd_base, CANFD_RBUF_OVF_MODE_DISCARD_NEW_MSG);
     canfd_set_rbuf_storage_format(port->canfd_base, CANFD_RBUF_STORE_NORMAL_MSG);
-    canfd_set_rbuf_almost_full_warn_limit(port->canfd_base, 1); // This is the default
+    canfd_set_rbuf_almost_full_warn_limit(port->canfd_base, 14);
     canfd_set_err_warn_limit(port->canfd_base, 96); // This is the default
 
-    // Enable the CANFD interrupt events.
-    canfd_disable_rx_interrupts(port->canfd_base);
+    // Enable/Disable the CANFD interrupt events.
+    // Enable RX interrupt except CANFD_RTIE_RIE
+    port->canfd_base->CANFD_RTIE =
+        (CANFD_RTIE_ROIE | CANFD_RTIE_RFIE | CANFD_RTIE_RAFIE);
+    if (self->mp_irq_trigger & MP_CAN_IRQ_RX) {
+        port->canfd_base->CANFD_RTIE |= CANFD_RTIE_RIE;
+    }
     canfd_disable_tx_interrupts(port->canfd_base);
     canfd_enable_error_interrupts(port->canfd_base);
+
+    // Clear all filters
+    canfd_reset_acpt_fltrs(self->port->canfd_base);
 
     // Enable the MCU interrupts for CANFD.
     NVIC_ClearPendingIRQ(CANFD_IRQ_IRQn);
@@ -389,6 +395,7 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     canfd_select_tx_buf(port->canfd_base, port->data_transfer.tx_header.buf_type);
     /* Invokes interrupt mode send function */
     canfd_send(port->canfd_base, port->data_transfer.tx_header, data, data_len);
+
     // Enable TX interrupt.
     canfd_enable_tx_interrupts(port->canfd_base);
 
@@ -399,9 +406,15 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
 }
 
 static bool machine_can_port_cancel_send(machine_can_obj_t *self, mp_uint_t idx) {
-    canfd_abort_tx(self->port->canfd_base, CANFD_BUF_TYPE_SECONDARY);
-    // tbd: wait until the flag is set?
-    return true;
+    if (canfd_stb_empty(self->port->canfd_base)) {
+        // Nothing to cancel
+        return false;
+    } else {
+        // Cancel ALL queued messages, since a specific message cannot be selected.
+        canfd_abort_tx(self->port->canfd_base, CANFD_BUF_TYPE_SECONDARY);
+        // tbd: wait until the flag is set?
+        return true;
+    }
 }
 
 static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *dlen, mp_uint_t *id, mp_uint_t *flags, mp_uint_t *errors) {
@@ -409,11 +422,11 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
 
     mp_int_t err_fifo = 0;
 
-    if (port->canfd_base->CANFD_RTIF & CANFD_RTIF_ROIF) {
-        err_fifo |= CAN_RECV_ERR_OVERRUN;
-    }
-    if (port->canfd_base->CANFD_RTIF & CANFD_RTIF_RFIF) {
+    if ((port->canfd_base->CANFD_RCTRL & CANFD_RCTRL_RSTAT_Msk) == 3) {
         err_fifo |= CAN_RECV_ERR_FULL;
+    }
+    if (port->canfd_base->CANFD_RCTRL & CANFD_RCTRL_ROV) {
+        err_fifo |= CAN_RECV_ERR_OVERRUN;
     }
 
     *errors = err_fifo;
@@ -429,6 +442,7 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
         *flags = (port->data_transfer.rx_header.rtr ? CAN_MSG_FLAG_RTR : 0) |
             (port->data_transfer.rx_header.frame_type ? CAN_MSG_FLAG_EXT_ID : 0);
         *dlen = port->data_transfer.rx_header.dlc;
+
         return true;
     } else {
         return false;
