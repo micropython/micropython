@@ -267,13 +267,19 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     if (port == NULL) {
         port = &canfd_port;
         self->port = port;
+
+        // Both 160M and HFOSC clocks must be enabled evem if only one
+        // of them is used.
+        enable_cgu_clk38p4m();
+        enable_cgu_clk160m();
+
         // Enable the CANFD clock, Source 160 MHz, CANFD clock 20 MHz.
         canfd_clock_enable(RTE_CANFD_CLK_SOURCE, CANFD_CLK_DIVISOR);
         // Configure the RX/TX pins.
         mp_hal_pin_config(pin_CAN_RXD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(CAN_RXD, 1), true);
-        mp_hal_pin_config(pin_CAN_TXD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
-            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_8MA, MP_HAL_PIN_ALT(CAN_TXD, 1), true);
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_2MA, MP_HAL_PIN_ALT(CAN_RXD, 1), true);
+        mp_hal_pin_config(pin_CAN_TXD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE,
+            MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_2MA, MP_HAL_PIN_ALT(CAN_TXD, 1), false);
     }
 
     // Clear counters
@@ -288,7 +294,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     canfd_reset(port->canfd_base);
 
     // Set the bit timing
-    port->canfd_base->CANFD_S_SEG_1 = self->tseg1 - 2;
+    port->canfd_base->CANFD_S_SEG_1 = self->tseg1 - 1;
     port->canfd_base->CANFD_S_SEG_2 = self->tseg2 - 1;
     port->canfd_base->CANFD_S_SJW = self->sjw - 1;
     port->canfd_base->CANFD_S_PRESC = self->brp - 1;
@@ -311,8 +317,8 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     canfd_set_err_warn_limit(port->canfd_base, 96); // This is the default
 
     // Enable the CANFD interrupt events.
-    canfd_enable_tx_interrupts(port->canfd_base);
-    canfd_enable_rx_interrupts(port->canfd_base);
+    canfd_disable_rx_interrupts(port->canfd_base);
+    canfd_disable_tx_interrupts(port->canfd_base);
     canfd_enable_error_interrupts(port->canfd_base);
 
     // Enable the MCU interrupts for CANFD.
