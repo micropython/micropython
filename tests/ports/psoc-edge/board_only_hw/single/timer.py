@@ -34,6 +34,9 @@ def test_oneshot():
     finally:
         tim_oneshot.deinit()  # Deinitialize the Oneshot timer
 
+    tim_new_id = Timer(3, period=100, mode=Timer.ONE_SHOT, callback=call_oneshot)
+    tim_new_id.deinit()
+
 
 # Periodic timer
 def test_periodic():
@@ -108,7 +111,7 @@ def test_negative_cases():
         lambda: Timer(-1, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
     )
     expect_value_error(
-        "invalid_id_3:", lambda: Timer(3, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot)
+        "invalid_id_4:", lambda: Timer(4, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot)
     )
 
     # Constructor check for duplicate object creation on the same ID.

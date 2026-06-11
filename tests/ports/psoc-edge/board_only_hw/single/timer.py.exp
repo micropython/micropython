@@ -16,8 +16,8 @@ Periodic timer triggered
 Periodic timer triggered
 Frequency-based timer triggered
 *****Negative Timer Parameter Tests*****
-invalid_id_-1: Timer id must be in range 0-2
-invalid_id_3: Timer id must be in range 0-2
+invalid_id_-1: Timer id must be in range 0-3
+invalid_id_4: Timer id must be in range 0-3
 duplicate_id_2: Timer(2) already created.
 invalid_mode: invalid mode
 invalid_callback: callback must be callable
