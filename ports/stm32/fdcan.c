@@ -53,29 +53,22 @@
 #define FDCAN_IT_RX_FULL_MASK (FDCAN_IT_RX_FIFO0_FULL | FDCAN_IT_RX_FIFO1_FULL)
 #define FDCAN_IT_RX_MESSAGE_LOST_MASK (FDCAN_IT_RX_FIFO0_MESSAGE_LOST | FDCAN_IT_RX_FIFO1_MESSAGE_LOST)
 
-#if defined(STM32N6)
-// adaptations for N6 to G4 naming convention in HAL
+#if defined(STM32H7) || defined(STM32N6)
+// adaptations for H7/N6 to G4 naming convention in HAL
 #define FDCAN_IT_GROUP_RX_FIFO0         (FDCAN_ILS_RF0NL | FDCAN_ILS_RF0FL | FDCAN_ILS_RF0LL)
-#define FDCAN_IT_GROUP_BIT_LINE_ERROR   (FDCAN_ILS_EPL | FDCAN_ILS_ELOL)
-#define FDCAN_IT_GROUP_PROTOCOL_ERROR   (FDCAN_ILS_ARAL | FDCAN_ILS_PEDL | FDCAN_ILS_PEAL | FDCAN_ILS_WDIL | FDCAN_ILS_BOL | FDCAN_ILS_EWL)
-#define FDCAN_IT_GROUP_RX_FIFO1         (FDCAN_ILS_RF1NL | FDCAN_ILS_RF1FL | FDCAN_ILS_RF1LL)
-
-// The dedicated Message RAM should be 2560 words, but the way it's defined in stm32n6xx_hal_fdcan.c
-// as (SRAMCAN_BASE + FDCAN_MESSAGE_RAM_SIZE - 0x4U) limits the usable number of words to 2559 words.
-#define FDCAN_MESSAGE_RAM_SIZE  (2560 - 1)
-#endif // STM32N6
-
 #if defined(STM32H7)
-// adaptations for H7 to G4 naming convention in HAL
-#define FDCAN_IT_GROUP_RX_FIFO0         (FDCAN_ILS_RF0NL | FDCAN_ILS_RF0FL | FDCAN_ILS_RF0LL)
 #define FDCAN_IT_GROUP_BIT_LINE_ERROR   (FDCAN_ILS_EPE | FDCAN_ILS_ELOE)
 #define FDCAN_IT_GROUP_PROTOCOL_ERROR   (FDCAN_ILS_ARAE | FDCAN_ILS_PEDE | FDCAN_ILS_PEAE | FDCAN_ILS_WDIE | FDCAN_ILS_BOE | FDCAN_ILS_EWE)
+#else
+#define FDCAN_IT_GROUP_BIT_LINE_ERROR   (FDCAN_ILS_EPL | FDCAN_ILS_ELOL)
+#define FDCAN_IT_GROUP_PROTOCOL_ERROR   (FDCAN_ILS_ARAL | FDCAN_ILS_PEDL | FDCAN_ILS_PEAL | FDCAN_ILS_WDIL | FDCAN_ILS_BOL | FDCAN_ILS_EWL)
+#endif
 #define FDCAN_IT_GROUP_RX_FIFO1         (FDCAN_ILS_RF1NL | FDCAN_ILS_RF1FL | FDCAN_ILS_RF1LL)
 
 // The dedicated Message RAM should be 2560 words, but the way it's defined in stm32h7xx_hal_fdcan.c
 // as (SRAMCAN_BASE + FDCAN_MESSAGE_RAM_SIZE - 0x4U) limits the usable number of words to 2559 words.
 #define FDCAN_MESSAGE_RAM_SIZE  (2560 - 1)
-#endif // STM32H7
+#endif // STM32H7 || STM32N6
 
 #if defined(STM32G4)
 // These HAL APIs are not implemented for STM32G4, so we implement them here...

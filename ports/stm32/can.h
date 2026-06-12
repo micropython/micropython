@@ -62,15 +62,12 @@
 #if defined(STM32G4)
 #define CAN_HW_MAX_STD_FILTER 28
 #define CAN_HW_MAX_EXT_FILTER 8
-#elif defined(STM32H7)
+#elif defined(STM32H7) || defined(STM32N6)
 // The RAM filtering section is configured for 64 x 1 word elements for 11-bit standard
 // identifiers, and 31 x 2 words elements for 29-bit extended identifiers.
 // The total number of words reserved for the filtering per FDCAN instance is 126 words.
 #define CAN_HW_MAX_STD_FILTER 64
 #define CAN_HW_MAX_EXT_FILTER 31
-#elif defined(STM32N6)
-#define CAN_HW_MAX_STD_FILTER 128
-#define CAN_HW_MAX_EXT_FILTER 64
 #endif
 
 // Value reported via machine.CAN.FILTER_MAX, somewhat optimistic as requires using
@@ -126,10 +123,8 @@ typedef struct {
     unsigned rx_fifo1_pending;
 } can_counters_t;
 
-#if defined(STM32H7)
+#if defined(STM32H7) || defined(STM32N6)
 #define CAN_TX_QUEUE_LEN 16
-#elif defined(STM32N6)
-#define CAN_TX_QUEUE_LEN 32
 #else
 // FDCAN STM32G4, bxCAN
 #define CAN_TX_QUEUE_LEN 3
