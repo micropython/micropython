@@ -137,6 +137,11 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
     init->NominalTimeSeg1 = bs1; // NominalTimeSeg1 = Propagation_segment + Phase_segment_1
     init->NominalTimeSeg2 = bs2;
 
+    init->DataPrescaler = 1;
+    init->DataSyncJumpWidth = 1;
+    init->DataTimeSeg1 = 1;
+    init->DataTimeSeg2 = 1;
+
     init->AutoRetransmission = ENABLE;
     init->TransmitPause = DISABLE;
     init->ProtocolException = ENABLE;
@@ -146,10 +151,6 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
 
     #if defined(STM32G4)
     init->ClockDivider = FDCAN_CLOCK_DIV1;
-    init->DataPrescaler = 1;
-    init->DataSyncJumpWidth = 1;
-    init->DataTimeSeg1 = 1;
-    init->DataTimeSeg2 = 1;
     init->TxFifoQueueMode = fifo_queue_mode;
     #elif defined(STM32H7) || defined(STM32N6)
     // The dedicated FDCAN RAM is 2560 32-bit words and shared between the FDCAN instances.
@@ -190,6 +191,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
     //  2 words header + 16 words data field (to support up to 64 bytes of data).
     // The total number of words reserved for the Rx FIFOs per FDCAN instance is 864 words.
     init->RxBuffersNbr = 0;
+    init->RxBufferSize = FDCAN_DATA_BYTES_64;
     init->RxFifo0ElmtsNbr = 24;
     init->RxFifo0ElmtSize = FDCAN_DATA_BYTES_64;
     init->RxFifo1ElmtsNbr = 24;
