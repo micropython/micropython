@@ -162,6 +162,25 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
+Hardware pin inversion
+^^^^^^^^^^^^^^^^^^^^^^
+
+The ``invert`` keyword argument to ``Pin()`` and ``Pin.init()`` enables
+hardware inversion of both the input and output paths (using the RP2040/RP2350
+pad ``inover`` and ``outover`` controls).  This is useful for active-low
+signals such as buttons or LEDs without software inversion::
+
+    btn = Pin(15, Pin.IN, Pin.PULL_UP, invert=True)
+    if btn.value():
+        print("pressed")
+
+    led = Pin(16, Pin.OUT, invert=True)
+    led.on()  # drives the pad low
+
+Note that GPIO IRQ triggers operate on a separate hardware path and are not
+affected by ``invert``.  You may need to swap rising/falling triggers
+accordingly.
+
 Programmable IO (PIO)
 ---------------------
 
