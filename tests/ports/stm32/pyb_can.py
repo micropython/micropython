@@ -8,14 +8,16 @@ from array import array
 import micropython
 import pyb
 import sys
+import time
 
 # Classic CAN (aka bxCAN) hardware has a different filter API
 # and some different behaviours to newer FDCAN hardware
 IS_CLASSIC = hasattr(CAN, "MASK16")
 
-# STM32H7 series has a gold-plated FDCAN peripheral with much deeper TX Queue
+# STM32H7/STM32N6 series have a gold-plated FDCAN peripheral with much deeper TX Queue
 # than all other parts
-IS_H7 = (not IS_CLASSIC) and "STM32H7" in str(sys.implementation)
+sys_impl = str(sys.implementation)
+HAS_DEEP_TXQ = (not IS_CLASSIC) and ("STM32H7" in sys_impl or "STM32N6" in sys_impl)
 
 # test we can correctly create by id (2 handled in can2.py test)
 for bus in (-1, 0, 1, 4):
@@ -52,7 +54,7 @@ else:
     can.setfilter(0, CAN.MASK, 0, (0, 0), extframe=False)
 
 can.send("abcd", 123, timeout=5000)
-pyb.delay(10)  # For FDCAN, needs some time to send
+time.sleep_ms(10)  # For FDCAN, needs some time to send
 print("any+info", can.any(0), can.info())
 print(can.recv(0))
 
@@ -168,7 +170,7 @@ try:
 except ValueError:
     print("failed")
 else:
-    pyb.delay(10)
+    time.sleep_ms(10)
     r = can.recv(0)
     if r[0] == 0x7FF + 1 and r[4] == b"abcde":
         print("extframe passed")
@@ -190,13 +192,13 @@ for n in [0, 8, 16, 24]:
         can.setfilter(0, CAN.MASK, 0, (filter_id, filter_mask), extframe=True)
 
     can.send("ok", id_ok, timeout=5, extframe=True)
-    pyb.delay(10)
+    time.sleep_ms(10)
     if can.any(0):
         msg = can.recv(0)
         print((hex(filter_id), hex(filter_mask), hex(msg[0]), msg[1], msg[4]))
 
     can.send("fail", id_fail, timeout=5, extframe=True)
-    pyb.delay(10)
+    time.sleep_ms(10)
     if can.any(0):
         msg = can.recv(0)
         print((hex(filter_id), hex(filter_mask), hex(msg[0]), msg[1], msg[4]))
@@ -227,10 +229,10 @@ try:
     can.send("abcde", 2, timeout=0)
     can.send("abcde", 3, timeout=0)
     can.send("abcde", 4, timeout=0)
-    if not IS_H7:
+    if not HAS_DEEP_TXQ:
         can.send("abcde", 5, timeout=0)
     else:
-        # Hack around the STM32H7's deeper transmit queue by pretending this call failed
+        # Hack around a deep transmit queue by pretending this call failed
         # (STM32G4 will fail here, using otherwise the same code, so there is still some test coverage.)
         print("send fail ok")
 except OSError as e:
@@ -240,7 +242,7 @@ except OSError as e:
     else:
         print("send fail not ok", e)
 
-pyb.delay(500)
+time.sleep_ms(500)
 while can.any(0):
     print(can.recv(0))
 
