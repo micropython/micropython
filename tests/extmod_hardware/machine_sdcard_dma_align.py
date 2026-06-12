@@ -26,8 +26,6 @@ except ImportError:
         print("SKIP")
         raise SystemExit
 
-READBLOCKS_SUCCESS = (0, True)  # some drivers return True for success, some return 0...
-
 _BLOCK_SZ = const(512)
 _OFFS_WIDTH = const(64)  # Should be at least the cache line size plus the GC block size
 _TEST_BUF_SZ = const(_BLOCK_SZ + _OFFS_WIDTH)
@@ -114,7 +112,7 @@ class TestSDAlign(unittest.TestCase):
         vfs.umount(MOUNT_POINT)
         for b in range(1, 40960):
             res = cls.sd.readblocks(b, buf)
-            if res not in READBLOCKS_SUCCESS:
+            if res != 0:
                 raise RuntimeError("Failed to call readblocks on SDCard:", res, "block:", b)
             if verify_contents(buf, True):
                 print("Temporary file contents found in block {}".format(b))
@@ -149,9 +147,9 @@ class TestSDAlign(unittest.TestCase):
                 slice = memoryview(buf)[offs : offs + _BLOCK_SZ]
                 assert len(slice) == _BLOCK_SZ
                 for r in range(repeats):
-                    self.assertIn(
+                    self.assertEqual(
                         self.sd.readblocks(self.block, slice),
-                        READBLOCKS_SUCCESS,
+                        0,
                         "Read failed for block {} offs {} repeat {}/{}".format(
                             self.block, offs, r, repeats
                         ),
