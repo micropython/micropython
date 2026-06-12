@@ -64,6 +64,9 @@
 #include "modesp32.h"
 #include "modmachine.h"
 #include "modnetwork.h"
+#if MICROPY_PY_NETWORK_WLAN_CSI
+#include "network_wlan_csi.h"
+#endif
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
@@ -188,6 +191,10 @@ soft_reset_exit:
     #if MICROPY_PY_ESPNOW
     espnow_deinit(mp_const_none);
     MP_STATE_PORT(espnow_singleton) = NULL;
+    #endif
+
+    #if MICROPY_PY_NETWORK_WLAN_CSI
+    wifi_csi_deinit();
     #endif
 
     // Deinit uart before timers, as esp32 uart
