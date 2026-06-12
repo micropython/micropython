@@ -34,9 +34,6 @@ def test_oneshot():
     finally:
         tim_oneshot.deinit()  # Deinitialize the Oneshot timer
 
-    tim_new_id = Timer(3, period=100, mode=Timer.ONE_SHOT, callback=call_oneshot)
-    tim_new_id.deinit()
-
 
 # Periodic timer
 def test_periodic():
@@ -99,6 +96,10 @@ def test_frequency_input():
                 break
     finally:
         tim_freq.deinit()
+
+    # Verify Timer ID 3 (counter 2) can be constructed and deinitialized.
+    tim_id3 = Timer(3, period=100, mode=Timer.ONE_SHOT, callback=call_oneshot)
+    tim_id3.deinit()
 
 
 # Negative test cases to validate that invalid parameters raise ValueError as expected.
