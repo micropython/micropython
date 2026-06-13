@@ -29,8 +29,13 @@ elif "esp32" in sys.platform:
     try:
         i2s_instances = ((0, Pin(18), Pin(19), Pin(21), Pin(14)),)
     except ValueError:
-        # fallback to lower pin number for ESP32-C3
-        i2s_instances = ((0, Pin(6), Pin(7), Pin(10), Pin(11)),)
+        if sys.implementation._machine:
+            if "ESP32-H2" in sys.implementation._machine:
+                # fallback to lower pin number for ESP32-H2
+                i2s_instances = ((0, Pin(3), Pin(4), Pin(10), Pin(12)),)
+            else:
+                # fallback to lower pin number for ESP32-C3
+                i2s_instances = ((0, Pin(6), Pin(7), Pin(10), Pin(11)),)
     # Allow for small additional RTOS overhead
     MAX_DELTA_MS = 8
 
