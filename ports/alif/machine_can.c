@@ -83,6 +83,8 @@ typedef struct machine_can_port {
     uint16_t num_bus_off;
     uint16_t num_rx_overrun;
     canfd_transfer_t data_transfer;
+    canfd_acpt_fltr_t filter_config[CANFD_MAX_ACCEPTANCE_FILTERS];
+    int num_canfd_acpt_fltr;
 } machine_can_port_t;
 
 // Just one CAN device.
@@ -174,6 +176,7 @@ static bool machine_can_port_supports_mode(const machine_can_obj_t *self, machin
 
 static void machine_can_port_clear_filters(machine_can_obj_t *self) {
     canfd_reset_acpt_fltrs(self->port->canfd_base);
+    self->port->num_canfd_acpt_fltr = 0;
 }
 
 static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
@@ -188,32 +191,36 @@ static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
 // The extmod layer calls this function in a loop with incrementing filter_idx
 // values. It's up to the port how to apply the filters from here, and to raise
 // an exception if there are too many.
-//
-// If the CAN_FILTERS_STD_EXT_SEPARATE flag is set to 1, filter_idx will
-// enumerate standard id filters separately to extended id filters (the
-// CAN_MSG_FLAG_EXT_ID bit in 'flags' differentiates the type).
+// Filters can only be configured in Reset state, so the filter setting are collected
+// here and applied by forcing a re-init.
+// machine_can_port_set_filter() will be called with increasing values for filter_idx,
+// allowing using it as the total number of filters.
 static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx, mp_uint_t can_id, mp_uint_t mask, mp_uint_t flags) {
-    canfd_acpt_fltr_t filter_config = { 0x0U };
 
     if (filter_idx < CANFD_MAX_ACCEPTANCE_FILTERS) {
+        canfd_acpt_fltr_t *filter_config = &self->port->filter_config[filter_idx];
 
         if (flags & CAN_MSG_FLAG_EXT_ID) {
-            filter_config.frame_type = CANFD_ACPT_FILTER_CFG_EXT_FRAMES;
+            filter_config->frame_type = CANFD_ACPT_FILTER_CFG_EXT_FRAMES;
         } else {
-            filter_config.frame_type = CANFD_ACPT_FILTER_CFG_STD_FRAMES;
+            filter_config->frame_type = CANFD_ACPT_FILTER_CFG_STD_FRAMES;
         }
 
-        filter_config.ac_code = can_id;
-        filter_config.ac_mask = mask;  // Inverting is done in canfd_enable_acpt_fltr().
-        filter_config.op_code = CANFD_ACPT_FLTR_OP_ADD_MASKABLE_ID;
-        filter_config.filter = filter_idx;
-        canfd_enable_acpt_fltr(self->port->canfd_base, filter_config);
+        filter_config->ac_code = can_id;
+        filter_config->ac_mask = mask;  // Inverting is done in canfd_enable_acpt_fltr().
+        filter_config->op_code = CANFD_ACPT_FLTR_OP_ADD_MASKABLE_ID;
+        filter_config->filter = filter_idx;
+        self->port->num_canfd_acpt_fltr = filter_idx + 1;
     }
 }
 
 // Report that the set of filters is complete for now.
+// Since filters can only be enabled in reset state, a call init()
+// to do so..
 static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
-    ;
+    if (self->port->num_canfd_acpt_fltr > 0) {
+        machine_can_port_init(self);
+    }
 }
 
 // Update interrupt configuration based on the new contents of 'self'
@@ -231,7 +238,7 @@ static void machine_can_update_irqs(machine_can_obj_t *self) {
     }
 }
 
-// Return the irq().flags() result. Calling this function may also update the hardware state machine.
+// Return the irq().flags() result.
 static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     machine_can_port_t *port = self->port;
     mp_int_t irq_flags = port->irq_flags;
@@ -266,7 +273,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         port = &canfd_port;
         self->port = port;
 
-        // Both 160M and HFOSC clocks must be enabled evem if only one
+        // Both 160M and HFOSC clocks must be enabled even if only one
         // of them is used.
         enable_cgu_clk38p4m();
         enable_cgu_clk160m();
@@ -297,6 +304,12 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     port->canfd_base->CANFD_S_SJW = self->sjw - 1;
     port->canfd_base->CANFD_S_PRESC = self->brp - 1;
 
+    // Clear all filters and set the,m again.
+    canfd_reset_acpt_fltrs(self->port->canfd_base);
+    for (int i = 0; i < port->num_canfd_acpt_fltr; i++) {
+        canfd_enable_acpt_fltr(self->port->canfd_base, port->filter_config[i]);
+    }
+
     // Switch to the requested mode. Normal mode as default.
     if (self->mode == MP_CAN_MODE_LOOPBACK) {
         canfd_enable_external_loop_back_mode(port->canfd_base);
@@ -323,9 +336,6 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     }
     canfd_disable_tx_interrupts(port->canfd_base);
     canfd_enable_error_interrupts(port->canfd_base);
-
-    // Clear all filters
-    canfd_reset_acpt_fltrs(self->port->canfd_base);
 
     // Enable the MCU interrupts for CANFD.
     NVIC_ClearPendingIRQ(CANFD_IRQ_IRQn);
