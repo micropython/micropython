@@ -1,7 +1,7 @@
 import sys
 from pyb import UART
 
-if "STM32WB" in sys.implementation._machine:
+if "STM32WB" in sys.implementation._machine or "STM32U5" in sys.implementation._machine:
     # UART(1) is usually connected to the REPL on these MCUs.
     print("SKIP")
     raise SystemExit

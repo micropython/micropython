@@ -75,6 +75,8 @@ builtin tests suitable for the target platform are ran.
 # Code to allow a target MicroPython to import an .mpy from RAM
 # Note: the module is named `__injected_test` but it needs to have `__name__` set to
 # `__main__` so that the test sees itself as the main module, eg so unittest works.
+# Use `sys.path.append()` to make it visible, so things in existing current dir (eg
+# target_wiring.py) can still be imported.
 _injected_import_hook_code = """\
 import sys, os, io, vfs
 class __File(io.IOBase):
@@ -86,6 +88,8 @@ class __File(io.IOBase):
   def ioctl(self, request, arg):
     if request == 4: # MP_STREAM_CLOSE
       return 0
+    if request == 11: # MP_STREAM_GET_BUFFER_SIZE
+      return 32 - 7
     return -1
   def readinto(self, buf):
     buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
@@ -101,7 +105,7 @@ class __FS:
   def getcwd(self):
     return ""
   def stat(self, path):
-    if path == '__injected_test.mpy':
+    if path == '/__injected_test.mpy':
       return (0,0,0,0,0,0,0,0,0,0)
     else:
       raise OSError(2) # ENOENT
@@ -109,7 +113,8 @@ class __FS:
     self.stat(path)
     return __File()
 vfs.mount(__FS(), '/__vfstest')
-os.chdir('/__vfstest')
+#os.chdir('/__vfstest')
+sys.path.append('/__vfstest')
 {import_prologue}
 __import__('__injected_test')
 """
@@ -279,7 +284,23 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
                 + repr(pyb.target_wiring_script)
                 + "),'target_wiring')"
             )
-        output_mupy = pyb.exec_(script, timeout=TEST_TIMEOUT)
+        trace_output = args.trace_output and "feature_check" not in test_file
+        if trace_output:
+            print(f"**** running {test_file}")
+        accum = []
+
+        def foo(x):
+            if x == b"\x04":
+                return
+            if trace_output:
+                sys.stdout.buffer.write(x)
+                sys.stdout.buffer.flush()
+            accum.append(x)
+
+        pyb.exec_(script, timeout=TEST_TIMEOUT, data_consumer=foo)
+        if trace_output:
+            print("**** done")
+        output_mupy = b"".join(accum)
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
@@ -301,7 +322,7 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
 
 # Print a summary of the results and save them to a JSON file.
 # Returns True if everything succeeded, False otherwise.
-def create_test_report(args, test_results, testcase_count=None):
+def create_test_report(args, test_results, testcase_count=None, *, verbose=True):
     passed_tests = list(r for r in test_results if r[1] == "pass")
     skipped_tests = list(r for r in test_results if r[1] == "skip" and r[2] != "too large")
     skipped_tests_too_large = list(
@@ -334,17 +355,14 @@ def create_test_report(args, test_results, testcase_count=None):
         )
 
     if len(skipped_tests) > 0:
-        print(
-            "{} tests skipped: {}".format(
-                len(skipped_tests), " ".join(test[0] for test in skipped_tests)
-            )
-        )
+        details = ": " + " ".join(test[0] for test in skipped_tests) if verbose else ""
+        print("{} tests skipped".format(len(skipped_tests)) + details)
 
     if len(skipped_tests_too_large) > 0:
+        details = ": " + " ".join(test[0] for test in skipped_tests_too_large) if verbose else ""
         print(
-            "{} tests skipped because they are too large: {}".format(
-                len(skipped_tests_too_large), " ".join(test[0] for test in skipped_tests_too_large)
-            )
+            "{} tests skipped because they are too large".format(len(skipped_tests_too_large))
+            + details
         )
 
     if len(failed_tests) > 0:
