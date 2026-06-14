@@ -1548,6 +1548,9 @@ def do_link(args):
                 load_object_file(env, f, fn)
 
         if args.libs:
+            ar_util.init_cache(
+                f"{ar_util.DEFAULT_CACHE_BASE_PATH}-{args.arch}", ar_util.DEFAULT_CACHE_PREFIX
+            )
             # Load archive info
             archives = []
             for item in args.libs:

@@ -10,6 +10,7 @@
 build/
 build-*/
 docs/genrst/
+.mpy_ld_cache-*/
 
 # Test failure outputs and intermediate artefacts
 tests/results/*

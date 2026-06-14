@@ -39,6 +39,10 @@ except:
     Archive = None
 
 
+DEFAULT_CACHE_BASE_PATH = ".mpy_ld_cache"
+DEFAULT_CACHE_PREFIX = "ar_"
+
+
 class PickleCache:
     def __init__(self, path, prefix=""):
         self.path = path
@@ -63,11 +67,21 @@ class PickleCache:
             return pickle.load(f)
 
 
-def cached(key, cache):
+PICKLE_CACHE = None
+
+
+def init_cache(path, prefix):
+    global PICKLE_CACHE
+    PICKLE_CACHE = PickleCache(path, prefix)
+
+
+def cached(key, provider):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             cache_key = key(*args, **kwargs)
+            cache = provider()
+            assert cache is not None
             try:
                 d = cache.load(cache_key)
                 if d["key"] != cache_key:
@@ -114,7 +128,7 @@ class CachedArFile:
         sha.update(bytes.fromhex("00000000000000000000000000000001"))
         return sha.hexdigest()
 
-    @cached(key=_cache_key, cache=PickleCache(path=".mpy_ld_cache", prefix="ar_"))
+    @cached(key=_cache_key, provider=lambda: PICKLE_CACHE)
     def load_symbols(self):
         print("Loading", self.fn)
         objs = defaultdict(lambda: {"def": set(), "undef": set(), "weak": set()})
