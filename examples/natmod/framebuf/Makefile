@@ -2,7 +2,8 @@
 MPY_DIR = ../../..
 
 # Name of module (different to built-in framebuf so it can coexist)
-MOD = framebuf_$(ARCH)
+MOD_BASE = framebuf
+MOD = $(MOD_BASE)_$(ARCH)
 
 # Source files (.c or .py)
 SRC = framebuf.c
@@ -18,5 +19,8 @@ endif
 ifeq ($(ARCH),xtensa)
 MPY_EXTERN_SYM_FILE=$(MPY_DIR)/ports/esp8266/boards/eagle.rom.addr.v6.ld
 endif
+
+# Strip the architecture name from the internal filename.
+MPY_LD_FLAGS = "--source-name=$(MOD_BASE).mpy"
 
 include $(MPY_DIR)/py/dynruntime.mk

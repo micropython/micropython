@@ -2,7 +2,8 @@
 MPY_DIR = ../../..
 
 # Name of module (different to built-in btree so it can coexist)
-MOD = btree_$(ARCH)
+MOD_BASE = btree
+MOD = $(MOD_BASE)_$(ARCH)
 
 # Source files (.c or .py)
 SRC = btree_c.c
@@ -43,6 +44,9 @@ ifeq ($(ARCH),armv6m)
 # Link with libgcc.a for division helper functions
 LINK_RUNTIME = 1
 endif
+
+# Strip the architecture name from the internal filename.
+MPY_LD_FLAGS = "--source-name=$(MOD_BASE).mpy"
 
 include $(MPY_DIR)/py/dynruntime.mk
 

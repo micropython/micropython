@@ -2,7 +2,8 @@
 MPY_DIR = ../../..
 
 # Name of module (different to built-in uzlib so it can coexist)
-MOD = deflate_$(ARCH)
+MOD_BASE = deflate
+MOD = $(MOD_BASE)_$(ARCH)
 
 # Source files (.c or .py)
 SRC = deflate.c
@@ -20,5 +21,8 @@ ifeq ($(ARCH),xtensa)
 LINK_RUNTIME = 1
 MPY_EXTERN_SYM_FILE=$(MPY_DIR)/ports/esp8266/boards/eagle.rom.addr.v6.ld
 endif
+
+# Strip the architecture name from the internal filename.
+MPY_LD_FLAGS = "--source-name=$(MOD_BASE).mpy"
 
 include $(MPY_DIR)/py/dynruntime.mk

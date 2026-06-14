@@ -2,7 +2,8 @@
 MPY_DIR = ../../..
 
 # Name of module (different to built-in random so it can coexist)
-MOD = random_$(ARCH)
+MOD_BASE = random
+MOD = $(MOD_BASE)_$(ARCH)
 
 # Source files (.c or .py)
 SRC = random.c
@@ -18,5 +19,8 @@ ifeq ($(ARCH),$(filter $(ARCH),armv6m armv7m))
 # Link with libm.a for soft-float helper functions
 LINK_RUNTIME = 1
 endif
+
+# Strip the architecture name from the internal filename.
+MPY_LD_FLAGS = "--source-name=$(MOD_BASE).mpy"
 
 include $(MPY_DIR)/py/dynruntime.mk
