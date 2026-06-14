@@ -76,7 +76,6 @@ typedef struct machine_can_port {
     machine_can_state_t can_state;
     machine_can_mode_t can_mode;
     bool is_enabled;
-    bool irq_state_changed;
     mp_int_t irq_flags;
     uint16_t num_error_warning;
     uint16_t num_error_passive;
@@ -101,25 +100,20 @@ void CANFD_IRQHandler(void) {
     if (self != NULL) {
         machine_can_port_t *port = self->port;
         mp_int_t irq_flags = 0;
+
         // Get all Interrupt flags at once.
         uint32_t irq_event = (port->canfd_base->CANFD_RTIF & CANFD_RTIF_REG_Msk)
             | ((port->canfd_base->CANFD_ERRINT & CANFD_ERRINT_REG_Msk) << 8U);
-
-        // Nothing to do, return.
-        if (irq_event == 0) {
-            return;
-        }
-
-        machine_can_state_t temp_state = port->can_state;
 
         // State & Error interrupts
         if (irq_event & CANFD_RBUF_OVERRUN_EVENT) {
             port->num_rx_overrun++;
         }
-        if (irq_event & CANFD_ERROR_PASSIVE_EVENT && canfd_error_passive_mode(port->canfd_base)) {
+        machine_can_state_t temp_state = port->can_state;
+        if (canfd_error_passive_mode(port->canfd_base)) {
             temp_state = MP_CAN_STATE_PASSIVE;
-            // Count only at the transition WARNING -> PASSIVE
-            if (port->can_state == MP_CAN_STATE_WARNING) {
+            // Count only at the transition into PASSIVE from below.
+            if (port->can_state < MP_CAN_STATE_PASSIVE) {
                 port->num_error_passive++;
             }
         } else {
@@ -135,12 +129,18 @@ void CANFD_IRQHandler(void) {
         }
         if (canfd_get_bus_status(port->canfd_base) == CANFD_BUS_STATUS_OFF) {
             temp_state = MP_CAN_STATE_BUS_OFF;
-            port->num_bus_off++;
+            if (port->can_state != MP_CAN_STATE_BUS_OFF) {
+                port->num_bus_off++;
+            }
         }
-        if (temp_state != port->can_state) {
+        if (temp_state > port->can_state) {
             irq_flags |= MP_CAN_IRQ_STATE;
-            port->can_state = temp_state;
-            port->irq_state_changed = true;
+        }
+        port->can_state = temp_state;
+
+        // Nothing else to do, return.
+        if (irq_event == 0) {
+            return;
         }
 
         // Data RX and TX interrupts.
@@ -161,8 +161,8 @@ void CANFD_IRQHandler(void) {
             mp_irq_handler(self->mp_irq_obj);
         }
         // Clear data and error interrupt flags
-        port->canfd_base->CANFD_RTIF = CANFD_RTIF_REG_Msk;
-        port->canfd_base->CANFD_ERRINT = CANFD_ERRINT_REG_Msk;
+        port->canfd_base->CANFD_RTIF |= irq_event & 0xff;
+        port->canfd_base->CANFD_ERRINT |= irq_event >> 8;
     }
 }
 
@@ -192,7 +192,7 @@ static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
 // values. It's up to the port how to apply the filters from here, and to raise
 // an exception if there are too many.
 // Filters can only be configured in Reset state, so the filter setting are collected
-// here and applied by forcing a re-init.
+// here and later applied by forcing a re-init.
 // machine_can_port_set_filter() will be called with increasing values for filter_idx,
 // allowing using it as the total number of filters.
 static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx, mp_uint_t can_id, mp_uint_t mask, mp_uint_t flags) {
@@ -243,23 +243,10 @@ static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     machine_can_port_t *port = self->port;
     mp_int_t irq_flags = port->irq_flags;
 
-    uint32_t irq_event = canfd_irq_handler(port->canfd_base);
-
+    // Check if meanwhile messages arrived.
     if (canfd_rx_msg_available(port->canfd_base)) {
         irq_flags |= MP_CAN_IRQ_RX;
     }
-    if (irq_event & (CANFD_SECONDARY_BUF_TX_COMPLETE_EVENT | CANFD_PRIMARY_BUF_TX_COMPLETE_EVENT)) {
-        irq_flags |= MP_CAN_IRQ_TX;
-    }
-    if (irq_event & CANFD_TX_ABORT_EVENT) {
-        irq_flags |= MP_CAN_IRQ_TX_FAILED;
-    }
-
-    if (port->irq_state_changed) {
-        port->irq_state_changed = false;
-        irq_flags |= MP_CAN_IRQ_STATE;
-    }
-    // CLear the flags from the previous IRQ Handler event
     port->irq_flags = 0;
 
     return irq_flags;
@@ -300,7 +287,8 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     port->num_error_passive = 0;
     port->num_bus_off = 0;
     port->num_rx_overrun = 0;
-    port->irq_state_changed = false;
+    // Clear the TEC/REC error counters & leave a bus-off state
+    port->canfd_base->CANFD_CFG_STAT |= CANFD_CFG_STAT_BUSOFF;
     port->can_state = MP_CAN_STATE_ACTIVE;
 
     // Configure the Controller
@@ -467,6 +455,7 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
     }
 }
 
+// Update the state and return the new value.
 static machine_can_state_t machine_can_port_get_state(machine_can_obj_t *self) {
     return self->port->can_state;
 }
