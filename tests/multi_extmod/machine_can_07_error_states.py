@@ -108,6 +108,8 @@ def instance1():
 
     # Send a single message to the receiver, to verify it's working
     can.send(_ID, b"PAYLOAD")
+    time.sleep_ms(50)  # irq_sender should fire during this window
+
     active_counters = can.get_counters()
     # print(active_counters)  # DEBUG
 
@@ -189,14 +191,18 @@ def instance1():
     # with this test setup, as Bus Off requires more than just "normal" frame
     # transmit errors.
 
-    # restarting the controller may cause it to leave its error state, or not, depending
-    # on the implementation - but it shouldn't cause any recovery issues. Also cancels all pending TX
-    # (note: have to do this before 'fix baud' or we create a race condition for pending tx)
-    can.restart()
-
-    # tell the receiver to go back to a valid baud rate
+    # tell the receiver to go back to a valid baud rate, causing the pending tx
+    # to be sent.
     multitest.broadcast("fix baud")
     multitest.wait("fixed baud")
+
+    # Restarting the controller may cause it to leave its error state, or not, depending
+    # on the implementation - but it shouldn't cause any recovery issues. Also cancels all pending TX.
+    # If restart() clears the TEC and REC error counters, resetting the error state to ACTIVE,
+    # and if that is done while instance0 is still trying to send at the wrong baud rate,
+    # the error state rushes up again pretty fast. Therefore the baud rate is fixed before
+    # calling restart().
+    can.restart()
 
     idx_more = can.send(_ID, b"MOREMORE")
     time.sleep_ms(50)  # irq_sender should fire during this window
