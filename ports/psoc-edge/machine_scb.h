@@ -33,6 +33,7 @@
 typedef void (*machine_scb_parent_irq_handler_t)(mp_obj_t scb_obj);
 
 typedef struct _machine_scb_obj_t {
+    int8_t id;
     CySCB_Type *scb;
     sys_int_cfg_t irq;
     en_clk_dst_t clk;
@@ -46,5 +47,7 @@ typedef struct _machine_scb_obj_t {
 
 machine_scb_obj_t *machine_scb_obj_alloc(uint8_t scb, mp_obj_t parent, machine_scb_parent_irq_handler_t handler);
 void machine_scb_obj_free(machine_scb_obj_t *scb);
+
+bool machine_scb_is_free(uint8_t scb);
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_MACHINE_SCB_H

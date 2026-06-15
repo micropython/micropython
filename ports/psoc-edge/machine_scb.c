@@ -63,6 +63,7 @@ MICROPY_PY_MACHINE_FOR_ALL_SCB(DEFINE_SCB_IRQ_HANDLER)
 
 #define MAP_SCB_IRQ_CONFIG(scb) \
     [scb] = { \
+        scb, \
         SCB##scb, \
         { \
             scb_##scb##_interrupt_IRQn, \
@@ -113,6 +114,10 @@ void machine_scb_obj_free(machine_scb_obj_t *scb) {
     scb->parent = NULL;
     scb->parent_handler = NULL;
     Cy_SysClk_PeriGroupSlaveDeinit(scb->peri_nr, scb->group_nr, scb->slave_nr);
+}
+
+bool machine_scb_is_free(uint8_t scb) {
+    return machine_scb_obj[scb].parent == NULL;
 }
 
 #endif // MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
