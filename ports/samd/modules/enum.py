@@ -6,7 +6,7 @@ def _make_enum(v, n, e):
     T = type(v)
 
     def _setattr(self, k, v):
-        raise AttributeError("EnumValue is immutable")
+        raise AttributeError(f"{self.__class__.__name__} is immutable")
 
     # Create class: type(name, bases, dict), which inherits a base type (int, str, etc.)
     return type(
@@ -29,7 +29,7 @@ class Enum:
         if name and names:
             # Support Functional API: Enum("Name", {"KEY1": VALUE1, "KEY2": VALUE2, ..})
             # Dynamically create: class <name>
-            new_cls = type(name, (cls,), {"_inited": True})
+            new_cls = type(name, (cls,), {"_i": True})  # _inited
             for k, v in names.items():
                 setattr(new_cls, k, _make_enum(v, k, name))
             return super().__new__(new_cls)
@@ -41,7 +41,7 @@ class Enum:
         return super().__new__(cls)
 
     def __init__(self, name=None, names=None):
-        if "_inited" not in self.__class__.__dict__:
+        if "_i" not in self.__class__.__dict__:
             self.list()
 
     @classmethod
@@ -57,12 +57,12 @@ class Enum:
 
     @classmethod
     def list(cls):
-        if "_inited" not in cls.__dict__:
+        if "_i" not in cls.__dict__:
             # Copy dict.items() to avoid RuntimeError when changing the dictionary
             for k, v in list(cls.__dict__.items()):
                 if not k.startswith("_") and not callable(v):
                     setattr(cls, k, _make_enum(v, k, cls.__name__))
-            cls._inited = True
+            cls._i = True
         return [
             m for k in dir(cls) if not k.startswith("_") and hasattr(m := getattr(cls, k), "name")
         ]
@@ -81,12 +81,12 @@ class Enum:
         return self._lookup(v)
 
     def __setattr__(self, k, v):
-        if "_inited" in self.__class__.__dict__:
-            raise AttributeError(f"Enum '{self.__class__.__name__}' is immutable")
+        if "_i" in self.__class__.__dict__:
+            raise AttributeError(f"{self.__class__.__name__} is immutable")
         super().__setattr__(k, v)
 
     def __delattr__(self, k):
-        raise AttributeError("Enum is immutable")
+        raise AttributeError(f"{self.__class__.__name__} is immutable")
 
     @classmethod
     def __len__(cls):
