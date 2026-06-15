@@ -39,6 +39,7 @@
 #include "cycfg_peripheral_clocks.h"
 #include "cycfg_peripherals.h"
 #include "mtb_hal.h"
+#include "machine_tcpwm.h"
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -343,18 +344,19 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
     self->active = false;
     self->irq_cfg.irq_num = timer_hw[id].irq_num;
 
-    if (n_args > 1 || n_kw > 0) {
-        mp_map_t kw_map;
-        mp_map_init_fixed_table(&kw_map, n_kw, args + n_args);
-
-        nlr_buf_t nl;
-        if (nlr_push(&nl) == 0) {
+    nlr_buf_t nl;
+    if (nlr_push(&nl) == 0) {
+        machine_tcpwm_counter_alloc(self->counter_num, MP_OBJ_FROM_PTR(self));
+        if (n_args > 1 || n_kw > 0) {
+            mp_map_t kw_map;
+            mp_map_init_fixed_table(&kw_map, n_kw, args + n_args);
             machine_timer_init_helper(self, n_args - 1, args + 1, &kw_map);
-            nlr_pop();
-        } else {
-            timer_obj[id] = NULL;
-            nlr_jump(nl.ret_val);
         }
+        nlr_pop();
+    } else {
+        machine_tcpwm_counter_free(self->counter_num, MP_OBJ_FROM_PTR(self));
+        timer_obj[id] = NULL;
+        nlr_jump(nl.ret_val);
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -384,6 +386,7 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     self->callback = mp_const_none;
     self->ishard = false;
     self->active = false;
+    machine_tcpwm_counter_free(self->counter_num, MP_OBJ_FROM_PTR(self));
     timer_obj[self->id] = NULL;
     return mp_const_none;
 }
@@ -419,6 +422,7 @@ void machine_timer_deinit_all(void) {
             self->callback = mp_const_none;
             self->ishard = false;
             self->active = false;
+            machine_tcpwm_counter_free(self->counter_num, MP_OBJ_FROM_PTR(self));
             timer_obj[i] = NULL;
         }
     }
