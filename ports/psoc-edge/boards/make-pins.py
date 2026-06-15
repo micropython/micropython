@@ -1,5 +1,6 @@
 from operator import add
 import os
+import re
 import sys
 from collections import defaultdict, namedtuple
 
@@ -11,9 +12,9 @@ SUPPORTED_AF = {
     "UART": ["TX", "RX", "CTS", "RTS"],
     "SPI": ["CLK", "MOSI", "MISO", "SELECT0", "SELECT1"],
     "PDM": ["CLK", "DATA"],
+    "TCPWM": ["LINE"],
     # TODO: Other active functionalities that we need to figure out:
     # - TDM
-    # - TCPWM
     # - SMIF
     # - CANFD
     # - PERIx_TR_IO
@@ -95,8 +96,6 @@ class PSE84Pin(boardgen.Pin):
         signal_channel = af.split("_")[2]
 
         # Find where the numeric part starts
-        import re
-
         match = re.match(r"^([A-Za-z]+)(\d+)$", signal_channel)
 
         if match:
@@ -108,6 +107,27 @@ class PSE84Pin(boardgen.Pin):
             af_unit = None
 
         af_supported = af_fn in SUPPORTED_AF and af_signal in SUPPORTED_AF[af_fn]
+
+        pin_af = PinAf(af_idx, af_fn, af_unit, af_signal, af_supported, af_name, af_ptr)
+        self._afs.append(pin_af)
+
+    def add_af_tcpwm(self, af_idx, af_name, af):
+        # The TCPWM alternate functions can appear directly as TCPWM0_LINE<n>
+        # or as a suffix after another function, e.g. SMIFx_..._TCPWM0_LINE<n>.
+        match = re.search(r"(TCPWM\d+)_(LINE(?:_COMPL)?)(\d+)$", af)
+        if not match:
+            return
+
+        af_ptr = match.group(1)
+        af_fn = "TCPWM"
+        af_signal = match.group(2)
+        af_unit = match.group(3)
+
+        # Keep the generated AF compatible with machine_pin_af_obj_t.unit, which
+        # is currently uint8_t. The LINE256+ entries are intentionally ignored.
+        af_supported = (
+            int(af_unit) <= 255 and af_fn in SUPPORTED_AF and af_signal in SUPPORTED_AF[af_fn]
+        )
 
         pin_af = PinAf(af_idx, af_fn, af_unit, af_signal, af_supported, af_name, af_ptr)
         self._afs.append(pin_af)
@@ -154,6 +174,8 @@ class PSE84Pin(boardgen.Pin):
             self.add_af_scb(af_idx, af_name, af)
         elif af.startswith("PDM"):
             self.add_af_pdm(af_idx, af_name, af)
+        elif "TCPWM" in af:
+            self.add_af_tcpwm(af_idx, af_name, af)
         else:
             # TODO: Extend the parsing to other peripherals.
             pass
