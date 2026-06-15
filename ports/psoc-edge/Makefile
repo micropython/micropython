@@ -552,16 +552,6 @@ endif
 
 LIBS += -lm
 
-
-
-#ifeq ($(MICROPY_PY_DEEPCRAFT),1)
-#include $(DEEPCRAFT_MODEL_LIB_DIR)/deepcraft_interface.mk
-#$(TOP)/lib/micropython-deepcraft-model-interface/deepcraft_interface.mk
-#SRC_C := $(filter-out $(DEEPCRAFT_MODEL_LIB_DIR)%,$(SRC_C))
-#SRC_C += lib/micropython-deepcraft-model-interface/deepcraft/deepcraft_engine.c
-#SRC_C += lib/micropython-deepcraft-model-interface/deepcraft/deepcraft_interface.c
-#endif
-
 # PSOC Edge uses Cortex-M33 and Cortex-M55 (ARMv8-M architecture)
 # However, since ARMv8-M is not directly supported by mpy-cross,
 # we use armv7emsp as the closest compatible architecture
