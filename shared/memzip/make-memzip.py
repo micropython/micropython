@@ -9,6 +9,8 @@
 
 import argparse
 import os
+import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -63,9 +65,19 @@ def main():
     parser.add_argument(dest="source_dir", default="memzip_files")
     args = parser.parse_args(sys.argv[1:])
 
+    output_zip = pathlib.Path(args.zip_filename)
+    if output_zip.suffix != ".zip":
+        args.zip_filename = output_zip.with_suffix(".zip")
+    output_c = pathlib.Path(args.c_filename)
+    if output_c.suffix != ".c":
+        args.c_filename = output_c.with_suffix(".c")
+
     print("args.zip_filename =", args.zip_filename)
     print("args.c_filename =", args.c_filename)
     print("args.source_dir =", args.source_dir)
+
+    if not shutil.which("zip"):
+        raise FileNotFoundError("zip archiver not available")
 
     create_zip(args.zip_filename, args.source_dir)
     create_c_from_file(args.c_filename, args.zip_filename)
