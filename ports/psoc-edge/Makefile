@@ -592,6 +592,7 @@ MOD_SRC_C += \
 	machine_rtc.c \
 	machine_ipc.c \
 	machine_scb.c \
+	machine_tcpwm.c \
 	machine_timer.c \
 	modpsocedge.c \
 
