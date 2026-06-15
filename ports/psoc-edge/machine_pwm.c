@@ -32,7 +32,9 @@
 #include "cy_tcpwm_pwm.h"
 #include "cycfg_peripherals.h"
 #include "cycfg_peripheral_clocks.h"
+#include "mphalport.h"
 #include "machine_pin.h"
+#include "machine_tcpwm.h"
 
 typedef enum {
     VALUE_NOT_SET = -1,
@@ -45,6 +47,7 @@ typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;                     /**< MicroPython base object */
     cy_stc_tcpwm_pwm_config_t pwm_obj;      /**< PDL PWM configuration struct */
     const machine_pin_obj_t *pin;           /**< Resolved GPIO pin object for PWM output */
+    const machine_pin_af_obj_t *pin_af;      /**< TCPWM alternate function selected for the output pin */
     uint32_t counter_num;                   /**< TCPWM0 counter index assigned to this PWM instance */
     en_clk_dst_t pclk_dst;                  /**< PCLK clock destination for this counter's clock assignment */
     uint32_t frequency;                     /**< PWM output frequency in Hz */
@@ -63,46 +66,6 @@ typedef struct _machine_pwm_obj_t {
 #define PWM_TCPWM_CLK_HZ        1000000UL
 #define PWM_TCPWM_CLK_DIV_VAL   99U
 
-// Maps (port, pin) : TCPWM0 counter index and PCLK destination for pins that support PWM via
-// HSIOM_SEL_ACT_1 routing. Each entry has a unique counter, so each pin can carry an independent
-// PWM frequency.
-//
-// PWM-capable pins on KIT_PSE84_AI:
-//     P16_1 : counter 1
-//     P16_2 : counter 2
-//     P16_3 : counter 3
-//     P16_4 : counter 4
-//     P16_5 : counter 5
-//     P16_6 : counter 6
-//     P16_7 : counter 7
-
-static const struct {
-    uint8_t port;
-    uint8_t pin;
-    uint32_t counter_num;
-    en_clk_dst_t pclk_dst;     // PCLK clock destination for Cy_SysClk_PeriPclkAssignDivider
-} pwm_pin_map[] = {
-    {16, 1, 1, PCLK_TCPWM0_CLOCK_COUNTER_EN1},  // P16_1
-    {16, 2, 2, PCLK_TCPWM0_CLOCK_COUNTER_EN2},  // P16_2
-    {16, 3, 3, PCLK_TCPWM0_CLOCK_COUNTER_EN3},  // P16_3
-    {16, 4, 4, PCLK_TCPWM0_CLOCK_COUNTER_EN4},  // P16_4
-    {16, 5, 5, PCLK_TCPWM0_CLOCK_COUNTER_EN5},  // P16_5
-    {16, 6, 6, PCLK_TCPWM0_CLOCK_COUNTER_EN6},  // P16_6
-    {16, 7, 7, PCLK_TCPWM0_CLOCK_COUNTER_EN7},  // P16_7
-};
-
-// Look up the pin→counter mapping. Returns false if the pin is not PWM-capable.
-static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num, en_clk_dst_t *pclk_dst) {
-    for (uint8_t i = 0; i < MP_ARRAY_SIZE(pwm_pin_map); i++) {
-        if (pwm_pin_map[i].port == port && pwm_pin_map[i].pin == pin) {
-            *counter_num = pwm_pin_map[i].counter_num;
-            *pclk_dst = pwm_pin_map[i].pclk_dst;
-            return true;
-        }
-    }
-    return false;
-}
-
 #define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
@@ -119,6 +82,17 @@ static bool pwm_pin_get_counter(uint8_t port, uint8_t pin, uint32_t *counter_num
 
 static machine_pwm_obj_t *pwm_obj[MICROPY_PY_MACHINE_PWM_MAX_OBJS] = { NULL };
 static bool pwm_clk_configured = false; // true after the shared divider is programmed to PWM_TCPWM_CLK_HZ
+
+static const machine_pin_af_obj_t *pwm_pin_af_find(const machine_pin_obj_t *pin) {
+    for (uint8_t i = 0; i < pin->af_num; i++) {
+        const machine_pin_af_obj_t *af = &pin->af[i];
+        if (af->signal == MACHINE_PIN_AF_SIGNAL_TCPWM_LINE) {
+            return af;
+        }
+    }
+
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin %q does not support PWM output"), pin->name);
+}
 
 // Search the instance pool for an existing PWM object on the given port/pin; returns NULL if not found.
 static inline machine_pwm_obj_t *pwm_obj_find_by_pin(uint8_t port, uint8_t pin) {
@@ -158,11 +132,11 @@ static void pwm_duty_ns_assert(mp_int_t duty_ns, uint32_t freq) {
     }
 }
 
-// Configure the GPIO pin to route the TCPWM output via HSIOM (HSIOM_SEL_ACT_1 = 9 for all TCPWM0 outputs)
-static void pwm_pin_config(const machine_pin_obj_t *pin) {
-    GPIO_PRT_Type *port = Cy_GPIO_PortToAddr(pin->port);
-    Cy_GPIO_SetHSIOM(port, pin->pin, HSIOM_SEL_ACT_1);
-    Cy_GPIO_SetDrivemode(port, pin->pin, CY_GPIO_DM_STRONG_IN_OFF);
+// Configure the GPIO pin to route the TCPWM output via HSIOM.
+static void pwm_pin_config(machine_pwm_obj_t *self) {
+    GPIO_PRT_Type *port = Cy_GPIO_PortToAddr(self->pin->port);
+    Cy_GPIO_SetHSIOM(port, self->pin->pin, self->pin_af->idx);
+    Cy_GPIO_SetDrivemode(port, self->pin->pin, CY_GPIO_DM_STRONG_IN_OFF);
 }
 
 // Restore the GPIO pin to plain GPIO mode (Hi-Z, no peripheral routing)
@@ -248,7 +222,7 @@ static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     pwm_config(self);
 
     /* Route the TCPWM output to the configured GPIO pin */
-    pwm_pin_config(self->pin);
+    pwm_pin_config(self);
 
     /* Program the shared 16-bit divider to PWM_TCPWM_CLK_HZ on the first PWM init, then
      * connect it to this counter's PCLK input. All channels share divider CYBSP_PWM_LED_CTRL_CLK_DIV_NUM
@@ -299,6 +273,10 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
             MP_ERROR_TEXT("PWM instance for Pin %q already exists, call deinit() first"), pin->name);
     }
 
+    const machine_pin_af_obj_t *pin_af = pwm_pin_af_find(pin);
+    uint32_t counter_num = pin_af->unit;
+    en_clk_dst_t pclk_dst = machine_tcpwm_counter_pclk(counter_num);
+
     // Allocate a new instance from the PWM object pool.
     machine_pwm_obj_t *self = pwm_obj_alloc();
     if (self == NULL) {
@@ -306,12 +284,9 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     self->pin = pin;
-
-    // Look up the TCPWM counter and PCLK destination for this pin
-    if (!pwm_pin_get_counter(self->pin->port, self->pin->pin, &self->counter_num, &self->pclk_dst)) {
-        pwm_obj_free(self);
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin %q does not support PWM output"), self->pin->name);
-    }
+    self->pin_af = pin_af;
+    self->counter_num = counter_num;
+    self->pclk_dst = pclk_dst;
 
     // Default config parameters for the PWM object.
     self->pwm_obj.pwmMode = CY_TCPWM_PWM_MODE_PWM;
@@ -360,12 +335,15 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 
-    // If pwm_init_helper raises, free the pool slot so the pin can be reused.
+    // If allocation or init raises, free the counter and pool slot so they can be reused.
     nlr_buf_t nl;
     if (nlr_push(&nl) == 0) {
+        machine_tcpwm_counter_alloc(self->counter_num, MP_OBJ_FROM_PTR(self));
         mp_machine_pwm_init_helper(self, n_args - 1, args + 1, &kw_args);
         nlr_pop();
     } else {
+        machine_tcpwm_counter_free(self->counter_num, MP_OBJ_FROM_PTR(self));
+        pwm_pin_restore(self->pin);
         pwm_obj_free(self);
         nlr_jump(nl.ret_val);
     }
@@ -377,6 +355,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     Cy_TCPWM_PWM_Disable(TCPWM0, self->counter_num);
     pwm_pin_restore(self->pin);
+    machine_tcpwm_counter_free(self->counter_num, MP_OBJ_FROM_PTR(self));
     pwm_obj_free(self);
 }
 
