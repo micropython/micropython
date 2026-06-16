@@ -103,7 +103,15 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
             return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
         }
         uint32_t dest = romfs_base;
-        uint32_t dest_max = dest + mp_obj_get_int(args[2]);
+        uint32_t dest_max;
+        if (n_args == 3) {
+            // Only length given, offset defaults to start of partition.
+            dest_max = dest + mp_obj_get_int(args[2]);
+        } else {
+            // Both offset and length given.
+            dest += mp_obj_get_int(args[2]);
+            dest_max = dest + mp_obj_get_int(args[3]);
+        }
         if (dest_max > romfs_base + romfs_len) {
             return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
         }
@@ -165,6 +173,20 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
             int ret = ospi_flash_write(dest, bufinfo.len, bufinfo.buf);
             mp_event_handle_nowait();
             return MP_OBJ_NEW_SMALL_INT(ret);
+        }
+        #endif
+    }
+
+    if (cmd == MP_VFS_ROM_IOCTL_GET_MIN_PREPARE) {
+        // Get minimum erase size.
+
+        if (mram_is_valid_addr(romfs_base)) {
+            return MP_OBJ_NEW_SMALL_INT(MRAM_SECTOR_SIZE);
+        }
+
+        #if MICROPY_HW_ENABLE_OSPI
+        if (ospi_is_valid_addr(ospi_base, romfs_base)) {
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_FLASH_BLOCK_SIZE_BYTES);
         }
         #endif
     }
