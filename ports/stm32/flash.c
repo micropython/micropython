@@ -259,6 +259,16 @@ bool flash_is_valid_addr(uint32_t addr) {
     return base <= addr && addr < end_of_flash;
 }
 
+uint32_t flash_get_max_sector_size(void) {
+    #if FLASH_LAYOUT_IS_HOMOGENEOUS
+    // All sectors are the same size.
+    return FLASH_LAYOUT_SECTOR_SIZE;
+    #else
+    // The last sector is the largest.
+    return flash_layout[MP_ARRAY_SIZE(flash_layout) - 1].sector_size;
+    #endif
+}
+
 int32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     #if FLASH_LAYOUT_IS_HOMOGENEOUS
     if (addr >= FLASH_LAYOUT_START_ADDR) {
