@@ -55,11 +55,13 @@
 #define MP_BLOCKDEV_IOCTL_BLOCK_ERASE   (6)
 
 // Constants for vfs.rom_ioctl() function.
+// The 4-arg form of WRITE_PREPARE is only available if GET_MIN_PREPARE returns >0.
 #define MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS     (1) // rom_ioctl(1)
 #define MP_VFS_ROM_IOCTL_GET_SEGMENT                (2) // rom_ioctl(2, <id>)
-#define MP_VFS_ROM_IOCTL_WRITE_PREPARE              (3) // rom_ioctl(3, <id>, <len>)
+#define MP_VFS_ROM_IOCTL_WRITE_PREPARE              (3) // rom_ioctl(3, <id>, <len>) or rom_ioctl(3, <id>, <offset>, <len>)
 #define MP_VFS_ROM_IOCTL_WRITE                      (4) // rom_ioctl(4, <id>, <offset>, <buf>)
 #define MP_VFS_ROM_IOCTL_WRITE_COMPLETE             (5) // rom_ioctl(5, <id>)
+#define MP_VFS_ROM_IOCTL_GET_MIN_PREPARE            (6) // rom_ioctl(6, <id>)
 
 #if MICROPY_VFS_BLOCKDEV_NATIVE
 // Function signatures used when MP_BLOCKDEV_FLAG_NATIVE is set.
