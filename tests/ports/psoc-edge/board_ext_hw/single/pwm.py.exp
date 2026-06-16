@@ -48,4 +48,5 @@ Exp dc(%) matches calc dc(%)!
  dc: 25
 duty_ns_get after duty_ns_set: 2500000
 PWM duty in ns is larger than the period 10000000 ns
-PWM instance for Pin P16_1 already exists, call deinit() first
+pwm_vs_pwm_same_pin_conflict: PWM instance for Pin P16_1 already exists, call deinit() first
+pwm_vs_timer_conflict: TCPWM0 counter 2 is already in use by another Timer or PWM instance

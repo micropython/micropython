@@ -3,7 +3,7 @@
 Setup: Connect pwm_pin to pin_in
 """
 
-from machine import PWM, Pin
+from machine import PWM, Pin, Timer
 import os
 import time
 
@@ -11,6 +11,10 @@ pwm_pin = "P16_1"
 pin_in = "P16_0"
 
 input_pin = Pin(pin_in, Pin.IN)
+
+
+def timer_noop_cb(t):
+    pass
 
 
 def measure_signal():
@@ -296,11 +300,22 @@ except Exception as e:
     print(e)
 pwm.deinit()
 
-# PWM instance already exists
-pwm = PWM(pwm_pin, freq=1, duty_u16=32767)
+# A new PWM wants to use a TCPWM instance used by another PWM in the same pin.
+pwm_owner = PWM(pwm_pin, freq=1, duty_u16=32767)
 time.sleep(2)  # Wait for the pwm signal to be initialized and started
 try:
-    pwm2 = PWM(pwm_pin, freq=1, duty_u16=32767)
+    pwm_conflict = PWM(pwm_pin, freq=1, duty_u16=32767)
 except Exception as e:
-    print(e)
-    pwm.deinit()
+    print(f"pwm_vs_pwm_same_pin_conflict: {e}")
+finally:
+    pwm_owner.deinit()
+
+# A new PWM wants to use a TCPWM instance used by a Timer.
+# P16_2 uses TCPWM0 counter 2, which is also used by Timer(0).
+timer_owner = Timer(0, period=10000, mode=Timer.PERIODIC, callback=timer_noop_cb)
+try:
+    pwm_conflict = PWM("P16_2", freq=100, duty_u16=32767)
+except Exception as e:
+    print(f"pwm_vs_timer_conflict: {e}")
+finally:
+    timer_owner.deinit()
