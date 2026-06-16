@@ -110,7 +110,15 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
             return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
         }
         uint32_t dest = romfs_base;
-        uint32_t dest_max = dest + mp_obj_get_int(args[2]);
+        uint32_t dest_max;
+        if (n_args == 3) {
+            // Only length given, offset defaults to start of partition.
+            dest_max = dest + mp_obj_get_int(args[2]);
+        } else {
+            // Both offset and length given.
+            dest += mp_obj_get_int(args[2]);
+            dest_max = dest + mp_obj_get_int(args[3]);
+        }
         if (dest_max > romfs_base + romfs_len) {
             return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
         }
@@ -213,6 +221,28 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
             dest -= xspi_get_xip_base(&xspi_flash2);
             int ret = spi_bdev_writeblocks_raw(MICROPY_HW_ROMFS_XSPI_SPIBDEV_OBJ, bufinfo.buf, 0, dest, bufinfo.len);
             return MP_OBJ_NEW_SMALL_INT(ret);
+        }
+        #endif
+    }
+
+    if (cmd == MP_VFS_ROM_IOCTL_GET_MIN_PREPARE) {
+        // Get minimum erase size.
+
+        #if MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH
+        if (flash_is_valid_addr(romfs_base)) {
+            return MP_OBJ_NEW_SMALL_INT(flash_get_max_sector_size());
+        }
+        #endif
+
+        #if MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI
+        if (qspi_is_valid_addr(romfs_base)) {
+            return MP_OBJ_NEW_SMALL_INT(MP_SPIFLASH_ERASE_BLOCK_SIZE);
+        }
+        #endif
+
+        #if MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI
+        if (xspi_is_valid_addr(&xspi_flash2, romfs_base)) {
+            return MP_OBJ_NEW_SMALL_INT(MP_SPIFLASH_ERASE_BLOCK_SIZE);
         }
         #endif
     }
