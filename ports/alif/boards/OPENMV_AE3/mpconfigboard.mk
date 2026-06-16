@@ -7,6 +7,7 @@ PORT = /dev/ttyUSB0
 
 ALIF_TOOLKIT_CFG_PART = AE302F80F55D5AE
 ALIF_TOOLKIT_CFG_FILE = \"app-device-config-ae3.json\"
+ALIF_TOOLKIT_APP_WRITE_MRAM_ARGS = --switch  # disable baudrate switching (the board cannot do it)
 
 CORE_M55_HP := $(if $(filter M55_HP,$(MCU_CORE)),1,0)
 
