@@ -16,9 +16,11 @@ Periodic timer triggered
 Periodic timer triggered
 Frequency-based timer triggered
 *****Negative Timer Parameter Tests*****
-invalid_id_-1: Timer id must be in range 0-3
-invalid_id_4: Timer id must be in range 0-3
-duplicate_id_2: Timer(2) already created.
+invalid_id_-1: Timer id must be in range 0-27
+invalid_id_28: Timer id must be in range 0-27
+id_4_16bit_limit: 16-bit Timer(4) period exceeds 65535 ticks; use a shorter period/higher freq, or use a 32-bit Timer (id 0-3)
+timer_vs_timer_conflict: Timer(2) already created.
+timer_vs_pwm_conflict: TCPWM0 counter 2 is already in use by another Timer or PWM instance
 invalid_mode: invalid mode
 invalid_callback: callback must be callable
 freq_zero: freq must be > 0

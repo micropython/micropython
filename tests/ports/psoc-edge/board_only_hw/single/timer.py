@@ -1,4 +1,4 @@
-from machine import Timer
+from machine import PWM, Timer
 import micropython
 import time
 
@@ -112,18 +112,35 @@ def test_negative_cases():
         lambda: Timer(-1, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
     )
     expect_value_error(
-        "invalid_id_4:", lambda: Timer(4, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot)
+        "invalid_id_28:",
+        lambda: Timer(28, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
     )
 
-    # Constructor check for duplicate object creation on the same ID.
+    # Group-1 timer IDs (e.g. 4) are valid, but period is constrained by 16-bit counter width.
+    expect_value_error(
+        "id_4_16bit_limit:",
+        lambda: Timer(4, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
+    )
+
+    # Constructor check for duplicate object creation on the same Timer ID.
     tdup = Timer(2, period=10000, mode=Timer.ONE_SHOT, callback=call_oneshot)
     try:
         expect_value_error(
-            "duplicate_id_2:",
+            "timer_vs_timer_conflict:",
             lambda: Timer(2, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
         )
     finally:
         tdup.deinit()
+
+    # Constructor check for Timer/PWM ownership conflict on the same TCPWM instance.
+    pwm_owner = PWM("P16_2", freq=100, duty_u16=32767)
+    try:
+        expect_value_error(
+            "timer_vs_pwm_conflict:",
+            lambda: Timer(0, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
+        )
+    finally:
+        pwm_owner.deinit()
 
     # Exercise init() validation paths without consuming additional timer IDs.
     tim = Timer(0)
