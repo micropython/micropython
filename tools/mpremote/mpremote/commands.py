@@ -561,6 +561,29 @@ def do_rtc(state, args):
         print(state.transport.eval("machine.RTC().datetime()"))
 
 
+def _do_romfs_query_partition(transport, rom_id):
+    transport.exec(f"dev=vfs.rom_ioctl(2,{rom_id})")
+    if transport.eval("isinstance(dev,int) and dev<0"):
+        raise CommandError(f"ROMFS{rom_id} partition not found on device")
+
+    has_object = transport.eval("hasattr(dev,'ioctl')")
+    if has_object:
+        rom_block_count = transport.eval("dev.ioctl(4,0)")
+        rom_block_size = transport.eval("dev.ioctl(5,0)")
+        rom_size = rom_block_count * rom_block_size
+    else:
+        rom_size = transport.eval("len(dev)")
+        rom_block_size = transport.eval(f"vfs.rom_ioctl(6,{rom_id})")
+        if rom_block_size <= 0:
+            rom_block_size = rom_size
+
+    print(
+        f"ROMFS{rom_id} partition has size {rom_size} bytes ({rom_size // rom_block_size} blocks of {rom_block_size} bytes each)"
+    )
+
+    return has_object, rom_size, rom_block_size
+
+
 def _do_romfs_query(state, args):
     state.ensure_raw_repl()
     state.did_action()
@@ -576,18 +599,7 @@ def _do_romfs_query(state, args):
         return
 
     for rom_id in range(num_rom_partitions):
-        state.transport.exec(f"dev=vfs.rom_ioctl(2,{rom_id})")
-        has_object = state.transport.eval("hasattr(dev,'ioctl')")
-        if has_object:
-            rom_block_count = state.transport.eval("dev.ioctl(4,0)")
-            rom_block_size = state.transport.eval("dev.ioctl(5,0)")
-            rom_size = rom_block_count * rom_block_size
-            print(
-                f"ROMFS{rom_id} partition has size {rom_size} bytes ({rom_block_count} blocks of {rom_block_size} bytes each)"
-            )
-        else:
-            rom_size = state.transport.eval("len(dev)")
-            print(f"ROMFS{rom_id} partition has size {rom_size} bytes")
+        _do_romfs_query_partition(state.transport, rom_id)
         romfs = state.transport.eval("bytes(memoryview(dev)[:12])")
         print(f"  Raw contents: {romfs.hex(':')} ...")
         if not romfs.startswith(b"\xd2\xcd\x31"):
@@ -644,20 +656,7 @@ def _do_romfs_deploy(state, args):
     state.transport.exec("import vfs")
     if not state.transport.eval("hasattr(vfs,'rom_ioctl')"):
         raise CommandError("ROMFS is not enabled on this device")
-    transport.exec(f"dev=vfs.rom_ioctl(2,{rom_id})")
-    if transport.eval("isinstance(dev,int) and dev<0"):
-        raise CommandError(f"ROMFS{rom_id} partition not found on device")
-    has_object = transport.eval("hasattr(dev,'ioctl')")
-    if has_object:
-        rom_block_count = transport.eval("dev.ioctl(4,0)")
-        rom_block_size = transport.eval("dev.ioctl(5,0)")
-        rom_size = rom_block_count * rom_block_size
-        print(
-            f"ROMFS{rom_id} partition has size {rom_size} bytes ({rom_block_count} blocks of {rom_block_size} bytes each)"
-        )
-    else:
-        rom_size = transport.eval("len(dev)")
-        print(f"ROMFS{rom_id} partition has size {rom_size} bytes")
+    has_object, rom_size, rom_block_size = _do_romfs_query_partition(transport, rom_id)
 
     # Check if ROMFS image is valid
     if not romfs.startswith(VfsRomWriter.ROMFS_HEADER):
@@ -670,16 +669,27 @@ def _do_romfs_deploy(state, args):
         sys.exit(1)
 
     # Prepare ROMFS partition for writing.
-    print(f"Preparing ROMFS{rom_id} partition for writing")
     transport.exec("import vfs\ntry:\n vfs.umount('/rom')\nexcept:\n pass")
     chunk_size = 4096
     if has_object:
         for offset in range(0, len(romfs), rom_block_size):
+            print(f"\rPreparing at offset {offset}", end="")
             transport.exec(f"dev.ioctl(6,{offset // rom_block_size})")
         chunk_size = min(chunk_size, rom_block_size)
     else:
-        rom_min_write = transport.eval(f"vfs.rom_ioctl(3,{rom_id},{len(romfs)})")
+        if rom_block_size < rom_size:
+            offset = 0
+            while offset < len(romfs):
+                print(f"\rPreparing at offset {offset}", end="")
+                remain = min(len(romfs) - offset, 32768)
+                prepare = (remain + rom_block_size - 1) // rom_block_size * rom_block_size
+                rom_min_write = transport.eval(f"vfs.rom_ioctl(3,{rom_id},{offset},{prepare})")
+                offset += prepare
+        else:
+            print("\rPreparing at offset 0", end="")
+            rom_min_write = transport.eval(f"vfs.rom_ioctl(3,{rom_id},{len(romfs)})")
         chunk_size = max(chunk_size, rom_min_write)
+    print()
 
     # Detect capabilities of the device to use the fastest method of transfer.
     has_bytes_fromhex = transport.eval("hasattr(bytes,'fromhex')")
