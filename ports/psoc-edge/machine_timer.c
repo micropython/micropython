@@ -24,8 +24,9 @@
  * THE SOFTWARE.
  */
 
-// Hardware timer using TCPWM0 Group 0 counters 3, 5, 6, 2 (IDs 0, 1, 2, 3).
-// Counters 0, 1, 4, 7 are allocated by the BSP.  2, 3, 5, 6 are used by Timer.
+// Hardware timer using TCPWM0 counters.
+// IDs 0..3 Group 0 mapping counters 2, 3, 5, 6.
+// IDs 4..27 Group 1 mapping counters 256..279.
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -45,7 +46,7 @@
 // Constants
 // ---------------------------------------------------------------------------
 
-#define MACHINE_TIMER_NUM_INSTANCES  (4)
+#define MACHINE_TIMER_NUM_INSTANCES  (28)
 
 // Shared general-purpose timer divider target frequency used by this module.
 #define TIMER_CLK_HZ  (1000000UL)
@@ -63,8 +64,8 @@
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
-    uint8_t id;                  // 0, 1, 2, or 3
-    uint32_t counter_num;        // TCPWM0 counter index: 3, 5, 6, or 2
+    uint8_t id;                  // 0..27
+    uint32_t counter_num;        // TCPWM0 counter index mapped from timer_hw[]
     en_clk_dst_t pclk_dst;
     uint16_t mode;               // TIMER_MODE_ONE_SHOT or TIMER_MODE_PERIODIC
     mp_obj_t callback;
@@ -75,22 +76,109 @@ typedef struct _machine_timer_obj_t {
 
 const mp_obj_type_t machine_timer_type;  // forward declaration
 
+// Maximum period register value for each counter group.
+#define TIMER_GROUP0_PERIOD_MAX  (UINT32_MAX)  // 32-bit counters
+#define TIMER_GROUP1_PERIOD_MAX  (0xFFFFU)     // 16-bit counters
+
 // ---------------------------------------------------------------------------
 // Per-ID hardware mapping
 // ---------------------------------------------------------------------------
 
-typedef struct {
-    uint32_t counter_num;
-    IRQn_Type irq_num;
-    en_clk_dst_t pclk_dst;
-} timer_hw_t;
-
-static const timer_hw_t timer_hw[MACHINE_TIMER_NUM_INSTANCES] = {
-    { 3U, tcpwm_0_interrupts_3_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN3 },
-    { 5U, tcpwm_0_interrupts_5_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN5 },
-    { 6U, tcpwm_0_interrupts_6_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN6 },
-    { 2U, tcpwm_0_interrupts_2_IRQn, PCLK_TCPWM0_CLOCK_COUNTER_EN2 },
+static const uint32_t timer_hw[MACHINE_TIMER_NUM_INSTANCES] = {
+    2U,
+    3U,
+    5U,
+    6U,
+    256U,
+    257U,
+    258U,
+    259U,
+    260U,
+    261U,
+    262U,
+    263U,
+    264U,
+    265U,
+    266U,
+    267U,
+    268U,
+    269U,
+    270U,
+    271U,
+    272U,
+    273U,
+    274U,
+    275U,
+    276U,
+    277U,
+    278U,
+    279U,
 };
+
+static IRQn_Type machine_timer_counter_irq(uint32_t counter_num) {
+    switch (counter_num) {
+        case 2U:
+            return tcpwm_0_interrupts_2_IRQn;
+        case 3U:
+            return tcpwm_0_interrupts_3_IRQn;
+        case 5U:
+            return tcpwm_0_interrupts_5_IRQn;
+        case 6U:
+            return tcpwm_0_interrupts_6_IRQn;
+        case 256U:
+            return tcpwm_0_interrupts_256_IRQn;
+        case 257U:
+            return tcpwm_0_interrupts_257_IRQn;
+        case 258U:
+            return tcpwm_0_interrupts_258_IRQn;
+        case 259U:
+            return tcpwm_0_interrupts_259_IRQn;
+        case 260U:
+            return tcpwm_0_interrupts_260_IRQn;
+        case 261U:
+            return tcpwm_0_interrupts_261_IRQn;
+        case 262U:
+            return tcpwm_0_interrupts_262_IRQn;
+        case 263U:
+            return tcpwm_0_interrupts_263_IRQn;
+        case 264U:
+            return tcpwm_0_interrupts_264_IRQn;
+        case 265U:
+            return tcpwm_0_interrupts_265_IRQn;
+        case 266U:
+            return tcpwm_0_interrupts_266_IRQn;
+        case 267U:
+            return tcpwm_0_interrupts_267_IRQn;
+        case 268U:
+            return tcpwm_0_interrupts_268_IRQn;
+        case 269U:
+            return tcpwm_0_interrupts_269_IRQn;
+        case 270U:
+            return tcpwm_0_interrupts_270_IRQn;
+        case 271U:
+            return tcpwm_0_interrupts_271_IRQn;
+        case 272U:
+            return tcpwm_0_interrupts_272_IRQn;
+        case 273U:
+            return tcpwm_0_interrupts_273_IRQn;
+        case 274U:
+            return tcpwm_0_interrupts_274_IRQn;
+        case 275U:
+            return tcpwm_0_interrupts_275_IRQn;
+        case 276U:
+            return tcpwm_0_interrupts_276_IRQn;
+        case 277U:
+            return tcpwm_0_interrupts_277_IRQn;
+        case 278U:
+            return tcpwm_0_interrupts_278_IRQn;
+        case 279U:
+            return tcpwm_0_interrupts_279_IRQn;
+        default:
+            mp_raise_msg_varg(&mp_type_ValueError,
+                MP_ERROR_TEXT("Timer counter %lu does not have an IRQ mapping"),
+                (unsigned long)counter_num);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Static instance pool — one entry per hardware timer
@@ -118,7 +206,7 @@ static void machine_timer_configure_clock(void) {
 }
 
 // ---------------------------------------------------------------------------
-// IRQ handlers — one per timer, each delegates to the common body
+// IRQ handling helpers
 // ---------------------------------------------------------------------------
 
 static void machine_timer_isr(machine_timer_obj_t *self) {
@@ -138,33 +226,13 @@ static void machine_timer_isr(machine_timer_obj_t *self) {
     }
 }
 
-static void timer0_irq_handler(void) {
-    if (timer_obj[0] != NULL) {
-        machine_timer_isr(timer_obj[0]);
+static void machine_timer_irq_handler(void) {
+    for (size_t i = 0; i < MACHINE_TIMER_NUM_INSTANCES; i++) {
+        if (timer_obj[i] != NULL) {
+            machine_timer_isr(timer_obj[i]);
+        }
     }
 }
-static void timer1_irq_handler(void) {
-    if (timer_obj[1] != NULL) {
-        machine_timer_isr(timer_obj[1]);
-    }
-}
-static void timer2_irq_handler(void) {
-    if (timer_obj[2] != NULL) {
-        machine_timer_isr(timer_obj[2]);
-    }
-}
-static void timer3_irq_handler(void) {
-    if (timer_obj[3] != NULL) {
-        machine_timer_isr(timer_obj[3]);
-    }
-}
-
-static const cy_israddress timer_handlers[MACHINE_TIMER_NUM_INSTANCES] = {
-    timer0_irq_handler,
-    timer1_irq_handler,
-    timer2_irq_handler,
-    timer3_irq_handler,
-};
 
 // ---------------------------------------------------------------------------
 // Start (or restart) a timer with the given period in clock ticks
@@ -227,7 +295,7 @@ static void machine_timer_start(machine_timer_obj_t *self, uint32_t period_ticks
 
     // Register IRQ before enabling so no TC edge is missed.
     self->irq_cfg.priority = SYS_INT_IRQ_LOWEST_PRIORITY;
-    self->irq_cfg.handler = timer_handlers[self->id];
+    self->irq_cfg.handler = machine_timer_irq_handler;
     sys_int_init(&self->irq_cfg);
 
     self->active = true;
@@ -306,6 +374,14 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("period out of range for 32-bit counter"));
     }
 
+    // Group 1 counters (num >= 256) are 16-bit; reject values that would overflow their period register.
+    if (self->counter_num >= 256U && period_ticks_64 > TIMER_GROUP1_PERIOD_MAX) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("16-bit Timer(%u) period exceeds %lu ticks; use a shorter period/higher freq, or use a 32-bit Timer (id 0-3)"),
+            (unsigned)self->id,
+            (unsigned long)TIMER_GROUP1_PERIOD_MAX);
+    }
+
     period_ticks = (uint32_t)period_ticks_64;
 
     machine_timer_start(self, period_ticks);
@@ -337,12 +413,12 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type,
     timer_obj[id] = self;
 
     self->id = (uint8_t)id;
-    self->counter_num = timer_hw[id].counter_num;
-    self->pclk_dst = timer_hw[id].pclk_dst;
+    self->counter_num = timer_hw[id];
+    self->pclk_dst = machine_tcpwm_counter_pclk(self->counter_num);
     self->callback = mp_const_none;
     self->ishard = false;
     self->active = false;
-    self->irq_cfg.irq_num = timer_hw[id].irq_num;
+    self->irq_cfg.irq_num = machine_timer_counter_irq(self->counter_num);
 
     nlr_buf_t nl;
     if (nlr_push(&nl) == 0) {

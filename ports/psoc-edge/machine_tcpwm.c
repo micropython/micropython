@@ -70,8 +70,56 @@ en_clk_dst_t machine_tcpwm_counter_pclk(uint32_t counter_num) {
             return PCLK_TCPWM0_CLOCK_COUNTER_EN6;
         case 7:
             return PCLK_TCPWM0_CLOCK_COUNTER_EN7;
+        case 256:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN256;
+        case 257:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN257;
+        case 258:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN258;
+        case 259:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN259;
+        case 260:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN260;
+        case 261:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN261;
+        case 262:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN262;
+        case 263:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN263;
+        case 264:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN264;
+        case 265:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN265;
+        case 266:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN266;
+        case 267:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN267;
+        case 268:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN268;
+        case 269:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN269;
+        case 270:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN270;
+        case 271:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN271;
+        case 272:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN272;
+        case 273:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN273;
+        case 274:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN274;
+        case 275:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN275;
+        case 276:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN276;
+        case 277:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN277;
+        case 278:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN278;
+        case 279:
+            return PCLK_TCPWM0_CLOCK_COUNTER_EN279;
         default:
             mp_raise_msg_varg(&mp_type_ValueError,
-                MP_ERROR_TEXT("TCPWM0 counter %lu is not supported for PWM"), counter_num);
+                MP_ERROR_TEXT("TCPWM0 counter %lu is not supported"), counter_num);
     }
 }
