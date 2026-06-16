@@ -41,13 +41,20 @@
 #define CAN_BRP_MAX         255
 
 #define CAN_TSEG1_MIN       2
-#define CAN_TSEG1_MAX       255
+#define CAN_TSEG1_MAX       65
 #define CAN_TSEG2_MIN       1
-#define CAN_TSEG2_MAX       255
+#define CAN_TSEG2_MAX       32
 #define CAN_SJW_MIN         1
-#define CAN_SJW_MAX         127
-#define CAN_TX_QUEUE_LEN    18
-#define CAN_HW_MAX_FILTER   64
+#define CAN_SJW_MAX         16
+
+#define CAN_TX_QUEUE_LEN    9
+#define CAN_TX_FIFO_LEN     16
+#define CAN_TX_FIFO_EMPTY   0
+#define CAN_TX_FIFO_LE_HALF_FULL 1
+#define CAN_TX_FIFO_GT_HALF_FULL 2
+#define CAN_TX_FIFO_FULL    3
+
+#define CAN_HW_MAX_FILTER   3
 
 #if RTE_CANFD_CLK_SOURCE
     #define CANFD_CLK_DIVISOR (CANFD_CLK_SRC_160MHZ_CLK / RTE_CANFD_CLK_SPEED)
@@ -182,10 +189,10 @@ static void machine_can_port_clear_filters(machine_can_obj_t *self) {
 static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
     #if MICROPY_HW_ENABLE_FDCAN
     if (flags & CAN_MSG_FLAG_FD_F) {
-        return 64;
+        return CANFD_FAST_DATA_FRAME_SIZE_MAX;
     }
     #endif
-    return 8;
+    return CANFD_NOM_DATA_FRAME_SIZE_MAX;
 }
 
 // The extmod layer calls this function in a loop with incrementing filter_idx
@@ -366,23 +373,23 @@ static void machine_can_port_deinit(machine_can_obj_t *self) {
 static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, const byte *data, size_t data_len, mp_uint_t flags) {
     struct machine_can_port *port = self->port;
 
-    /* If the node is in other than below modes, returns an error */
+    // If the node is in other than below modes, returns an error
     if ((self->mode != MP_CAN_MODE_NORMAL) &&
         (self->mode != MP_CAN_MODE_LOOPBACK) &&
         (self->mode != MP_CAN_MODE_SILENT_LOOPBACK)) {
         return -1;
     }
-
-    memset(&port->data_transfer.tx_header, 0x0, sizeof(canfd_tx_info_t));
-
-    /* Perform below if secondary Tx buf chosen */
-    if (canfd_stb_free(port->canfd_base)) {
-        port->data_transfer.tx_header.buf_type = CANFD_BUF_TYPE_SECONDARY;
-    } else {
+    // Check if the FIFO is more than half full. If yes, return an error.
+    // If the check is made for FIFO being full, then the sending gets
+    // corrupted under heavy load. Reason to be determined.
+    if ((port->canfd_base->CANFD_TCTRL & CANFD_TCTRL_TSSTAT_Msk) >= CAN_TX_FIFO_GT_HALF_FULL) {
         return -1;
     }
 
-    /* Stores the message id based on message frame ID type */
+    memset(&port->data_transfer.tx_header, 0x0, sizeof(canfd_tx_info_t));
+    port->data_transfer.tx_header.buf_type = CANFD_BUF_TYPE_SECONDARY;
+
+    // Stores the message id based on message frame ID type
     port->data_transfer.tx_header.frame_type = !!(flags & CAN_MSG_FLAG_EXT_ID);
 
     if (port->data_transfer.tx_header.frame_type) {
@@ -391,15 +398,15 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
         port->data_transfer.tx_header.id = ARM_CAN_STANDARD_ID(id);
     }
 
-    /* Copies the message header */
+    // Copies the message header
     port->data_transfer.tx_header.edl = 0;
     port->data_transfer.tx_header.brs = !!(flags & CAN_MSG_FLAG_BRS);
     port->data_transfer.tx_header.dlc = data_len;
     port->data_transfer.tx_header.rtr = !!(flags & CAN_MSG_FLAG_RTR);
 
-    /* Invokes the low level functions to prepare and send the message */
+    // Invokes the low level functions to prepare and send the message
     canfd_select_tx_buf(port->canfd_base, port->data_transfer.tx_header.buf_type);
-    /* Invokes interrupt mode send function */
+    // Invokes interrupt mode send function
     canfd_send(port->canfd_base, port->data_transfer.tx_header, data, data_len);
 
     // Enable TX interrupt.
@@ -473,10 +480,12 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
 
 // Updates values in self->counters (which counters are updated by this
 // function versus from ISRs and the like is port specific.
-// For tx_pending value only the fact of pending messages is known.
+// For tx_pending value only rough numbers of the queue size are available:
+// Empty->0, up to half full->1, more than half full->9, full->16.
 // For rx_pending value only the fact of pending messages is known.
 
 static void machine_can_port_update_counters(machine_can_obj_t *self) {
+    static uint8_t tx_queue_sizes[4] = { 0, 1, CAN_TX_FIFO_LEN / 2 + 1, CAN_TX_FIFO_LEN };
     struct machine_can_port *port = self->port;
     machine_can_counters_t *counters = &self->counters;
 
@@ -485,7 +494,7 @@ static void machine_can_port_update_counters(machine_can_obj_t *self) {
     counters->num_warning = port->num_error_warning;
     counters->num_passive = port->num_error_passive;
     counters->num_bus_off = port->num_bus_off;
-    counters->tx_pending = !canfd_stb_empty(port->canfd_base);
+    counters->tx_pending = tx_queue_sizes[(port->canfd_base->CANFD_TCTRL & CANFD_TCTRL_TSSTAT_Msk)];
     counters->rx_pending = canfd_rx_msg_available(port->canfd_base);
     counters->rx_overruns = port->num_rx_overrun;
 }
