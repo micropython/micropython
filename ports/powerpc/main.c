@@ -32,6 +32,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 
 void __stack_chk_fail(void);
@@ -98,13 +99,9 @@ int main(int argc, char **argv) {
 }
 
 void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    void *dummy;
     gc_collect_start();
-    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    gc_helper_collect_regs_and_stack();
     gc_collect_end();
-    gc_dump_info(&mp_plat_print);
 }
 
 mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
