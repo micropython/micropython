@@ -50,6 +50,8 @@
 #else
 #error "Unsupported RISC-V platform!"
 #endif
+#elif defined(__powerpc__) && defined(__powerpc64__)
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #endif
 
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
@@ -72,7 +74,7 @@
 
 // type definitions for the specific machine
 
-#if defined(__riscv) && (__riscv_xlen == 64)
+#if (defined(__riscv) && (__riscv_xlen == 64)) || (defined(__powerpc__) && defined(__powerpc64__))
 #define MP_SSIZE_MAX (0x7fffffffffffffff)
 #else
 #define MP_SSIZE_MAX (0x7fffffff)

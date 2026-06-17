@@ -78,6 +78,11 @@ docker container run -v .:/micropython --rm -it micropython/mpy-qemu-riscv make 
 Also, if you replace `VIRT_RV64` with `VIRT_RV32` you should be able to run
 32-bits tests as well!
 
+### PowerPC 64
+
+For PPC64-based boards the build requires a Linux PowerPC 64 toolchain built for
+little endian output, such as `powerpc64le-linux-gnu-gcc`.
+
 Build instructions
 ------------------
 
@@ -102,6 +107,7 @@ Available boards are:
 | `MPS2_AN385`      | `arm`        | `mps2-an385`             |
 | `MPS2_AN500`      | `arm`        | `mps2-an500`             |
 | `NETDUINO2`       | `arm`        | `netduino2`              |
+| `POWERNV9`        | `ppc64`      | `powernv9`               |
 | `SABRELITE`       | `arm`        | `sabrelite`              |
 | `VIRT_RV32`       | `riscv32`    | `virt`                   |
 | `VIRT_RV64`       | `riscv64`    | `virt`                   |

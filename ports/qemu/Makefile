@@ -22,6 +22,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
+MICROPY_INTERNAL_MATHS_LIB ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
 MICROPY_HEAP_SIZE ?= 143360
@@ -36,6 +37,10 @@ MICROPY_HEAP_SIZE ?= 143360
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_asm_rv32.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
 ifeq ($(QEMU_ARCH),riscv64)
+MICROPY_HEAP_SIZE ?= 204800
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
+endif
+ifeq ($(QEMU_ARCH),ppc64)
 MICROPY_HEAP_SIZE ?= 204800
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
 endif
@@ -169,6 +174,29 @@ SRC_BOARD_O += mcu/rv64/entrypoint.o
 endif
 
 ################################################################################
+# PowerPC 64-bit specific settings
+
+ifeq ($(QEMU_ARCH),ppc64)
+
+CROSS_COMPILE ?= powerpc64le-linux-gnu-
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name) \
+       $(shell $(CC) $(CFLAGS) -print-file-name=libm.a) \
+       $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
+LDFLAGS += -nostdlib -N -EL
+MICROPY_ROM_TEXT_COMPRESSION = 0
+# Set to 0 for MICROWATT once its board definition will be added.
+MICROPY_INTERNAL_MATHS_LIB = 1
+QEMU_RUN_ELF = 0
+
+SRC_C += \
+	mcu/ppc64/startup.c \
+	mcu/ppc64/ticks.c \
+
+SRC_BOARD_O += mcu/ppc64/head.o
+
+endif
+
+################################################################################
 # Project specific settings and compiler/linker flags
 
 QEMU_BASE ?= qemu-system-
@@ -259,6 +287,11 @@ SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 
+OBJ += $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_BOARD_O))
+
+ifeq ($(MICROPY_INTERNAL_MATHS_LIB),1)
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
@@ -274,10 +307,8 @@ else
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 endif
 endif
+endif
 
-OBJ += $(PY_O)
-OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_BOARD_O))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
@@ -286,7 +317,7 @@ SRC_QSTR += $(SRC_C) $(LIBM_SRC_C)
 ################################################################################
 # Main targets
 
-all: $(BUILD)/firmware.elf
+all: $(BUILD)/firmware.elf $(BUILD)/firmware.bin
 
 .PHONY: repl
 repl: $(QEMU_RUN_TARGET)
@@ -318,6 +349,9 @@ test_natmod: $(BUILD)/firmware.elf
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary $^ $@
 
 ################################################################################
 # Remaining make rules
