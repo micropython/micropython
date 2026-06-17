@@ -215,6 +215,47 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
     arr[9] = s9;
 }
 
+#elif defined(__powerpc__) && defined(__powerpc64__)
+
+static void gc_helper_get_regs(gc_helper_regs_t arr) {
+    register uintptr_t r14 __asm("r14");
+    register uintptr_t r15 __asm("r15");
+    register uintptr_t r16 __asm("r16");
+    register uintptr_t r17 __asm("r17");
+    register uintptr_t r18 __asm("r18");
+    register uintptr_t r19 __asm("r19");
+    register uintptr_t r20 __asm("r20");
+    register uintptr_t r21 __asm("r21");
+    register uintptr_t r22 __asm("r22");
+    register uintptr_t r23 __asm("r23");
+    register uintptr_t r24 __asm("r24");
+    register uintptr_t r25 __asm("r25");
+    register uintptr_t r26 __asm("r26");
+    register uintptr_t r27 __asm("r27");
+    register uintptr_t r28 __asm("r28");
+    register uintptr_t r29 __asm("r29");
+    register uintptr_t r30 __asm("r30");
+    register uintptr_t r31 __asm("r31");
+    arr[0] = r14;
+    arr[1] = r15;
+    arr[2] = r16;
+    arr[3] = r17;
+    arr[4] = r18;
+    arr[5] = r19;
+    arr[6] = r20;
+    arr[7] = r21;
+    arr[8] = r22;
+    arr[9] = r23;
+    arr[10] = r24;
+    arr[11] = r25;
+    arr[12] = r26;
+    arr[13] = r27;
+    arr[14] = r28;
+    arr[15] = r29;
+    arr[16] = r30;
+    arr[17] = r31;
+}
+
 #else
 
 #error "Architecture not supported for gc_helper_get_regs. Set MICROPY_GCREGS_SETJMP to use the fallback implementation."
