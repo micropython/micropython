@@ -237,11 +237,11 @@ $(BUILD)/%.mpy: %.py
 	$(Q)$(MPY_CROSS) $(MPY_CROSS_FLAGS) -o $@ $<
 
 # Build native .mpy from object files
-$(BUILD)/$(MOD).native.mpy: $(SRC_O)
+$(BUILD)/$(MOD).mpy: $(SRC_O)
 	$(ECHO) "LINK $<"
 	$(Q)$(MPY_LD) --arch $(ARCH) --qstrs $(CONFIG_H) $(MPY_LD_FLAGS) -o $@ $^
 
 # Build final .mpy from all intermediate .mpy files
-$(MOD).mpy: $(BUILD)/$(MOD).native.mpy $(SRC_MPY)
+$(MOD).mpy: $(BUILD)/$(MOD).mpy $(SRC_MPY)
 	$(ECHO) "GEN $@"
 	$(Q)$(MPY_TOOL) --merge -o $@ $^
