@@ -91,6 +91,7 @@
 #include "stm32l1xx_hal_wwdg.h"
 #include "stm32l1xx_hal_exti.h"
 #include "stm32l1xx_ll_adc.h"
+#include "stm32l1xx_ll_bus.h"
 #include "stm32l1xx_ll_pwr.h"
 #include "stm32l1xx_ll_rtc.h"
 #include "stm32l1xx_ll_usart.h"

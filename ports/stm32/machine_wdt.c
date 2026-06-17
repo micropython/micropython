@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2023 Damien P. George
+ * Copyright (c) 2016-2026 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,76 @@
 
 #if defined(STM32H7)
 #define IWDG (IWDG1)
+#define WWDG (WWDG1)
 #endif
+
+#if defined(WWDG_CFR_WDGTB_2)
+#define WWDG_PRESCALER_MAX (7U)
+#else
+#define WWDG_PRESCALER_MAX (3U)
+#endif
+#define WWDG_COUNTER_MAX (64U)
 
 typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
+    __IO uint32_t *feed_register;
+    uint32_t feed_value;
 } machine_wdt_obj_t;
 
-static const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
+static const machine_wdt_obj_t machine_iwdt = {{&machine_wdt_type}, &IWDG->KR, 0xaaaa};
+static machine_wdt_obj_t machine_wwdt = {{&machine_wdt_type}, &WWDG->CR, 0};
+
+#if defined(STM32H7)
+// This is not provided by the HAL, so define it here.
+static uint32_t HAL_RCC_GetPCLK3Freq(void) {
+    return LL_RCC_CALC_PCLK3_FREQ(HAL_RCC_GetHCLKFreq(), LL_RCC_GetAPB3Prescaler());
+}
+#endif
+
+static machine_wdt_obj_t *make_wwdt(mp_int_t timeout_ms) {
+    // WWDG is clocked from PCLKx divided by 4096.
+    uint32_t pclk;
+    #if defined(STM32H7)
+    pclk = HAL_RCC_GetPCLK3Freq();
+    #else
+    pclk = HAL_RCC_GetPCLK1Freq();
+    #endif
+
+    // Compute the number of ticks corresponding to the requested millisecond timeout.
+    uint64_t timeout_ticks = (uint64_t)timeout_ms * (uint64_t)(pclk / 1000U) / 4096ULL;
+
+    // Increase the prescaler to try and get timeout_ticks below its maximum value.
+    uint32_t prescaler = 0;
+    while (prescaler < WWDG_PRESCALER_MAX && timeout_ticks > WWDG_COUNTER_MAX) {
+        ++prescaler;
+        timeout_ticks = (timeout_ticks + 1) / 2;
+    }
+
+    // Check that the timeout is within range of the peripheral limits.
+    if (timeout_ticks <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("WDT timeout too short"));
+    } else if (timeout_ticks > WWDG_COUNTER_MAX) {
+        unsigned int max_timeout_ms = WWDG_COUNTER_MAX * 4096U * (1U << WWDG_PRESCALER_MAX) / (HAL_RCC_GetPCLK1Freq() / 1000U);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT timeout too long, max %ums"), max_timeout_ms);
+    }
+
+    // Compute the value that will feed the WWDG.
+    machine_wwdt.feed_value = WWDG_CR_WDGA | (0x3f + timeout_ticks) << WWDG_CR_T_Pos;
+
+    // Initialise and start the WWDG.
+    #if defined(STM32H7)
+    LL_APB3_GRP1_EnableClock(LL_APB3_GRP1_PERIPH_WWDG1);
+    #if defined(RCC_GCR_WW1RSC)
+    LL_RCC_WWDG1_EnableSystemReset();
+    #endif
+    #else
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_WWDG);
+    #endif
+    WWDG->CFR = prescaler << WWDG_CFR_WDGTB_Pos | 0x7f << WWDG_CFR_W_Pos;
+    WWDG->CR = machine_wwdt.feed_value;
+
+    return &machine_wwdt;
+}
 
 static machine_wdt_obj_t *make_iwdt(mp_int_t timeout_ms) {
     // compute prescaler
@@ -70,7 +133,7 @@ static machine_wdt_obj_t *make_iwdt(mp_int_t timeout_ms) {
     // start the watch dog
     IWDG->KR = 0xcccc;
 
-    return (machine_wdt_obj_t *)&machine_wdt;
+    return (machine_wdt_obj_t *)&machine_iwdt;
 }
 
 static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_int_t timeout_ms) {
@@ -78,6 +141,8 @@ static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_i
         qstr qst = mp_obj_str_get_qstr(id_obj);
         if (qst == MP_QSTR_IWDG) {
             return make_iwdt(timeout_ms);
+        } else if (qst == MP_QSTR_WWDG) {
+            return make_wwdt(timeout_ms);
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%q) doesn't exist"), qst);
         }
@@ -92,6 +157,5 @@ static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_i
 }
 
 static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
-    (void)self;
-    IWDG->KR = 0xaaaa;
+    *self->feed_register = self->feed_value;
 }
