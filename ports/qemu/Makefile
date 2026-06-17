@@ -117,7 +117,8 @@ endif
 
 AFLAGS += -mabi=$(RV32_ABI) -march=$(RV32_ARCH)
 CFLAGS += $(AFLAGS)
-LDFLAGS += -mabi=$(RV32_ABI) -march=$(RV32_ARCH) -Wl,-EL
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LDFLAGS += -EL -nostdlib
 
 SRC_C += \
 	mcu/rv32/interrupts.c \
@@ -151,7 +152,8 @@ endif
 
 AFLAGS += -mabi=$(RV64_ABI) -march=$(RV64_ARCH)
 CFLAGS += $(AFLAGS) -mcmodel=medany
-LDFLAGS += -mabi=$(RV64_ABI) -march=$(RV64_ARCH) -Wl,-EL -mcmodel=medany
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LDFLAGS += -EL -nostdlib
 
 SRC_C += \
 	mcu/rv64/interrupts.c \
@@ -196,7 +198,7 @@ CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -We
 	 -ffunction-sections -fdata-sections
 CFLAGS += $(CFLAGS_EXTRA)
 
-LDFLAGS += -T $(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
+LDFLAGS += -T $(LDSCRIPT) --gc-sections -Map=$(@:.elf=.map)
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -217,7 +219,6 @@ else
 $(info picolibc used $(PICOLIBC_SPECS))
 SPECS_FRAGMENT = --specs=$(PICOLIBC_SPECS)
 CFLAGS += $(SPECS_FRAGMENT)
-LDFLAGS += $(SPECS_FRAGMENT)
 endif
 
 # Mount the ROMFS test image only if no other ROMFS partition has been mounted on slot 0.
@@ -303,7 +304,7 @@ test_natmod: $(BUILD)/firmware.elf
 		done
 
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
 ################################################################################
