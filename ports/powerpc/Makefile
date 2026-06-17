@@ -38,6 +38,7 @@ SRC_C = \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
+	shared/runtime/gchelper_generic.c \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
 	$(BUILD)/_frozen_mpy.c \
