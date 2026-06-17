@@ -45,6 +45,8 @@ typedef uintptr_t gc_helper_regs_t[11]; // x19-x29
 typedef uintptr_t gc_helper_regs_t[12]; // S0-S11
 #elif defined(__loongarch__) && defined(__loongarch64)
 typedef uintptr_t gc_helper_regs_t[10]; // S0-S9
+#elif defined(__powerpc__) && defined(__powerpc64__)
+typedef uintptr_t gc_helper_regs_t[18]; // r14-r31
 #endif
 
 #endif
