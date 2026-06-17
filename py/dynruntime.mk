@@ -106,38 +106,18 @@ else ifeq ($(ARCH),rv32imc)
 # rv32imc
 CROSS = riscv64-unknown-elf-
 CFLAGS_ARCH += -march=rv32imac -mabi=ilp32 -mno-relax
-# If Picolibc is available then select it explicitly.  Ubuntu 24.04 ships its
-# bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
-# is "nosys" so a value must be provided.  To avoid having per-distro
-# workarounds, always select Picolibc if available.
-PICOLIBC_SPECS := $(shell $(CROSS)gcc --print-file-name=picolibc.specs)
-ifneq ($(PICOLIBC_SPECS),picolibc.specs)
-CFLAGS_ARCH += -specs=$(PICOLIBC_SPECS)
-USE_PICOLIBC := 1
-PICOLIBC_ARCH := rv32imac
-PICOLIBC_ABI := ilp32
-endif
-
 MICROPY_FLOAT_IMPL ?= none
+PICOLIBC_BASE := riscv64-unknown-elf
+PICOLIBC_TARGET := rv32imac/ilp32
 
 else ifeq ($(ARCH),rv64imc)
 
 # rv64imc
 CROSS = riscv64-unknown-elf-
 CFLAGS_ARCH += -march=rv64imac -mabi=lp64 -mno-relax
-# If Picolibc is available then select it explicitly.  Ubuntu 24.04 ships its
-# bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
-# is "nosys" so a value must be provided.  To avoid having per-distro
-# workarounds, always select Picolibc if available.
-PICOLIBC_SPECS := $(shell $(CROSS)gcc --print-file-name=picolibc.specs)
-ifneq ($(PICOLIBC_SPECS),picolibc.specs)
-CFLAGS_ARCH += -specs=$(PICOLIBC_SPECS)
-USE_PICOLIBC := 1
-PICOLIBC_ARCH := rv64imac
-PICOLIBC_ABI := lp64
-endif
-
 MICROPY_FLOAT_IMPL ?= none
+PICOLIBC_BASE := riscv64-unknown-elf
+PICOLIBC_TARGET := rv64imac/lp64
 
 else
 $(error architecture '$(ARCH)' not supported)
@@ -147,12 +127,24 @@ ifneq ($(findstring -musl,$(shell $(CROSS)gcc -dumpmachine)),)
 USE_MUSL := 1
 endif
 
+ifeq ($(ARCH),$(filter $(ARCH),rv32imc rv64imc))
+# If Picolibc is available then select it explicitly.  Ubuntu 24.04 ships its
+# bare metal RISC-V toolchain with Picolibc rather than Newlib, and the default
+# is "nosys" so a value must be provided.  To avoid having per-distro
+# workarounds, always select Picolibc if available.
+PICOLIBC_SPECS := $(shell $(CROSS)gcc --print-file-name=picolibc.specs)
+ifneq ($(PICOLIBC_SPECS),picolibc.specs)
+CFLAGS_ARCH += -specs=$(PICOLIBC_SPECS)
+USE_PICOLIBC := 1
+endif
+endif
+
 MICROPY_FLOAT_IMPL_UPPER = $(shell echo $(MICROPY_FLOAT_IMPL) | tr '[:lower:]' '[:upper:]')
 CFLAGS += $(CFLAGS_ARCH) -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_$(MICROPY_FLOAT_IMPL_UPPER)
 
 ifeq ($(LINK_RUNTIME),1)
 # All of these picolibc-specific directives are here to work around a
-# limitation of Ubuntu 22.04's RISC-V bare metal toolchain.  In short, the
+# limitation of Ubuntu 24.04's RISC-V bare metal toolchain.  In short, the
 # specific version of GCC in use (10.2.0) does not seem to take into account
 # extra paths provided by an explicitly passed specs file when performing name
 # resolution via `--print-file-name`.
@@ -163,7 +155,7 @@ ifeq ($(LINK_RUNTIME),1)
 # flags that are passed to GCC.  The `PICOLIBC_ROOT` environment variable is
 # checked to override the starting point for the library file search, and if
 # it is not set then the default value is used, assuming that this is running
-# on an Ubuntu 22.04 machine.
+# on an Ubuntu 24.04 machine.
 #
 # This should be revised when the CI base image is updated to a newer Ubuntu
 # version (that hopefully contains a newer RISC-V compiler) or to another Linux
@@ -179,14 +171,8 @@ LIBGCC_PATH := $(realpath $(shell $(CROSS)gcc $(CFLAGS) --print-libgcc-file-name
 LIBM_PATH := $(realpath $(shell $(CROSS)gcc $(CFLAGS) --print-file-name=$(LIBM_NAME)))
 ifeq ($(USE_PICOLIBC),1)
 ifeq ($(LIBM_PATH),)
-# The CROSS toolchain prefix usually ends with a dash, but that may not be
-# always the case.  If the prefix ends with a dash it has to be taken out as
-# Picolibc's architecture directory won't have it in its name.  GNU Make does
-# not have any facility to perform character-level text manipulation so we
-# shell out to sed.
-CROSS_PREFIX := $(shell echo $(CROSS) | sed -e 's/-$$//')
-PICOLIBC_ROOT ?= /usr/lib/picolibc/$(CROSS_PREFIX)/lib
-LIBM_PATH := $(PICOLIBC_ROOT)/$(PICOLIBC_ARCH)/$(PICOLIBC_ABI)/$(LIBM_NAME)
+PICOLIBC_ROOT ?= /usr/lib/picolibc/$(PICOLIBC_BASE)/lib
+LIBM_PATH := $(PICOLIBC_ROOT)/$(PICOLIBC_TARGET)/$(LIBM_NAME)
 endif
 endif
 MPY_LD_FLAGS += $(addprefix -l, $(LIBGCC_PATH) $(LIBM_PATH))
