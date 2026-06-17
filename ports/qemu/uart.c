@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018-2024 Damien P. George
+ * Copyright (c) 2019 Michael Neuling, IBM Corporation.
  * Copyright (c) 2023 Alessandro Gatti
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -196,7 +197,7 @@ void uart_tx_strn(const char *buf, size_t len) {
     }
 }
 
-#elif defined(QEMU_SOC_VIRT)
+#elif defined(QEMU_SOC_VIRT) || defined(QEMU_SOC_POWERNV)
 
 // Line status register bits.
 #define UART_LSR_THRE (0x20)
@@ -208,7 +209,11 @@ typedef struct _UART_t {
     volatile uint8_t LSR;
 } UART_t;
 
+#if defined(QEMU_SOC_VIRT)
 #define UART0 ((UART_t *)(0x10000000))
+#else
+#define UART0 ((UART_t *)(0x60300d00103f8))
+#endif
 
 void uart_init(void) {
 }

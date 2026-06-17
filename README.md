@@ -200,7 +200,7 @@ primarily for maintenance, development and testing:
   to another microcontroller.
 
 - The [qemu](ports/qemu) port is a QEMU-based emulated target for Cortex-A,
-  Cortex-M, RISC-V 32-bit and RISC-V 64-bit architectures.
+  Cortex-M, RISC-V 32-bit, RISC-V 64-bit, and PowerPC 64-bit architectures.
 
 The MicroPython cross-compiler, mpy-cross
 -----------------------------------------

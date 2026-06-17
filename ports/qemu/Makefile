@@ -42,6 +42,11 @@ MICROPY_HEAP_SIZE ?= 204800
 MICROPY_STACK_SIZE ?= 10240
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
 endif
+ifeq ($(QEMU_ARCH),ppc64)
+MICROPY_HEAP_SIZE ?= 204800
+MICROPY_STACK_SIZE ?= 20480
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
+endif
 
 MICROPY_FLOAT_IMPL ?= float
 
@@ -172,6 +177,25 @@ SRC_BOARD_O += mcu/rv64/entrypoint.o
 endif
 
 ################################################################################
+# PowerPC 64-bit specific settings
+
+ifeq ($(QEMU_ARCH),ppc64)
+
+CROSS_COMPILE ?= powerpc64le-linux-gnu-
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LDFLAGS += -nostdlib -N -EL
+MICROPY_ROM_TEXT_COMPRESSION = 0
+QEMU_RUN_KERNEL = 0
+
+SRC_C += \
+	mcu/ppc64/startup.c \
+	mcu/ppc64/ticks.c \
+
+SRC_BOARD_O += mcu/ppc64/head.o
+
+endif
+
+################################################################################
 # Project specific settings and compiler/linker flags
 
 QEMU_BASE ?= qemu-system-
@@ -270,11 +294,13 @@ else
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_SW_C)
 endif
 else
+ifeq ($(MICROPY_FLOAT_IMPL),float)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
 else
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
+endif
 endif
 endif
 
@@ -289,7 +315,7 @@ SRC_QSTR += $(SRC_C) $(LIBM_SRC_C)
 ################################################################################
 # Main targets
 
-all: $(BUILD)/firmware.elf
+all: $(BUILD)/firmware.elf $(BUILD)/firmware.bin
 
 .PHONY: repl
 repl: $(QEMU_RUN_TARGET)
@@ -321,6 +347,9 @@ test_natmod: $(BUILD)/firmware.elf
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary $^ $@
 
 ################################################################################
 # Remaining make rules
