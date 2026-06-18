@@ -29,8 +29,11 @@
 
 #include "py/obj.h"
 #include "cy_sysclk.h"
+#include <stdbool.h>
+#include "genhdr/pins_af.h"
 
 void machine_tcpwm_counter_alloc(uint32_t counter_num, mp_obj_t owner);
+bool machine_tcpwm_counter_try_alloc(uint32_t counter_num, mp_obj_t owner);
 void machine_tcpwm_counter_free(uint32_t counter_num, mp_obj_t owner);
 en_clk_dst_t machine_tcpwm_counter_pclk(uint32_t counter_num);
 
