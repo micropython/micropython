@@ -29,6 +29,12 @@ function ci_gcc_riscv_setup {
     riscv64-unknown-elf-gcc --version
 }
 
+function ci_gcc_ppc64_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+    powerpc64le-linux-gnu-gcc --version
+}
+
 function ci_picotool_setup {
     # Manually installing picotool ensures we use a release version, and speeds up the build.
     git clone https://github.com/raspberrypi/pico-sdk.git
@@ -384,6 +390,13 @@ function ci_qemu_setup_rv64 {
     qemu-system-riscv64 --version
 }
 
+function ci_qemu_setup_ppc64 {
+    ci_gcc_ppc64_setup
+    sudo apt-get update
+    sudo apt-get install qemu-system
+    qemu-system-ppc64 --version
+}
+
 function ci_qemu_build_arm_prepare {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
@@ -443,6 +456,12 @@ function ci_qemu_build_rv64 {
     # Test building and running native .mpy with rv64imc architecture.
     ci_native_mpy_modules_build rv64imc
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test_natmod
+}
+
+function ci_qemu_build_ppc64 {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 submodules
+    make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 test
 }
 
 ########################################################################################
