@@ -809,28 +809,23 @@ Hardware timer using the TCPWM0 peripheral on the PSOC™ Edge. See :ref:`machin
 
 .. note::
 
-    This port provides **4** independent hardware timer instances (IDs ``0``, ``1``, ``2``, ``3``), backed by TCPWM0 Group 0 counters 3, 5, 6,
-    and 2
-    respectively. Only one instance per ID can exist at a time; constructing a second ``Timer(id)`` without calling ``deinit()`` first raises a
-    ``ValueError``.
+    This port provides **28** independent hardware timer instances (IDs ``0`` to ``27``).
+
+    - **32-bit timers**: IDs ``0``, ``1``, ``2``, ``3``.
+    - **16-bit timers**: IDs ``4`` through ``27``.
+
+    Only one instance per ID can exist at a time; constructing a second ``Timer(id)`` without calling ``deinit()`` first raises a ``ValueError``.
 
 .. note::
 
     The timer clock is **1 MHz** (shared with the system tick). This means:
 
-      - The minimum resolvable period is **1 µs**.
-      - With ``period`` the minimum value is **1 ms** and the maximum is **4 294 967 ms** (~49.7 days).
-      - With ``freq``, the minimum frequency is **1 Hz** and the maximum is **1 000 000 Hz** (1 MHz).
-      - Computed period ticks must fit in a **32-bit** counter (1 - 4 294 967 295); values outside this range raise a ``ValueError``.
-
-A timer can be created and started using::
-
-    from machine import Timer
-
-    def tick(timer):
-        print("tick")
-
-    tim = Timer(0, mode=Timer.PERIODIC, period=500, callback=tick)
+    - The minimum resolvable period is **1 µs**.
+    - With ``period``, the minimum value is **1 ms**.
+    - For **32-bit timers** (IDs ``0`` to ``3``), the maximum period is **4 294 967 ms** (~49.7 days).
+    - For **16-bit timers** (IDs ``4`` to ``27``), the maximum period is **65 ms**.
+    - With ``freq``, the minimum frequency is **1 Hz** and the maximum is **1 000 000 Hz** (1 MHz).
+    - Computed period ticks must fit the selected counter width: **1-4 294 967 295** for 32-bit timers, **1-65 535** for 16-bit timers.
 
 Constructor
 ^^^^^^^^^^^^
@@ -839,27 +834,29 @@ Constructor
 
     Construct a hardware timer.
 
-            - ``id`` — timer instance identifier. Must be **0**, **1**, **2**, or **3**.
-            - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
-            - ``period`` — timer period in **milliseconds**. Must be ``> 0``.
-                Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
-            - ``freq`` — timer frequency in Hz. Must be ``> 0``. Takes precedence over ``period`` when both are supplied.
-            - ``callback`` — a callable invoked on each timer expiry. Receives the ``Timer`` object as its only argument.
-                Must be a callable; passing a non-callable raises a ``ValueError``.
-            - ``hard`` — must be a ``bool``. If ``True``, the callback runs directly in the hardware IRQ context (no scheduler).
-                Heap allocation inside the callback will raise ``MemoryError``; use ``micropython.alloc_emergency_exception_buf()`` before
-                arming a hard timer. Default is ``False`` (soft callback, deferred via the MicroPython scheduler).
+        - ``id`` — timer instance identifier. Must be in the range **0** to **27**.
+        - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
+        - ``period`` — timer period in **milliseconds**. Must be ``> 0``.
+            Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
+        - ``freq`` — timer frequency in Hz. Must be ``> 0``. Takes precedence over ``period`` when both are supplied.
+        - ``callback`` — a callable invoked on each timer expiry. Receives the ``Timer`` object as its only argument.
+            Must be a callable; passing a non-callable raises a ``ValueError``.
+        - ``hard`` — must be a ``bool``.
 
     Raises ``ValueError`` if:
 
-            - ``id`` is outside ``0``-``3``.
-            - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
-            - Neither ``freq`` nor ``period`` is provided.
-            - ``period`` is ``0`` or negative.
-            - ``freq`` is ``0`` or negative.
-            - The computed period exceeds the 32-bit counter range (e.g. ``freq=2_000_000``).
-            - ``hard`` is not a ``bool``.
-            - ``callback`` is not callable.
+        - ``id`` is outside ``0``-``27``.
+        - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
+        - Neither ``freq`` nor ``period`` is provided.
+        - ``period`` is ``0`` or negative.
+        - ``freq`` is ``0`` or negative.
+        - The computed period exceeds the selected counter range (32-bit IDs ``0``-``3``, 16-bit IDs ``4``-``27``), e.g. ``Timer(4, period=1000, ...)``.
+        - ``hard`` is not a ``bool``.
+        - ``callback`` is not callable.
+
+.. note::
+
+    The ``hard`` parameter for ``Timer`` is still under development for this port and is not yet completely implemented.
 
 Complete example
 ^^^^^^^^^^^^^^^^
