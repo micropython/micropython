@@ -532,6 +532,11 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
     -g  # always include debug information in the ELF
+
+    # Let the compiler lower sqrt()/sqrtf() to the hardware VSQRT instruction
+    # instead of a library call.  MicroPython's math module detects domain
+    # errors via isnan/isinf on the result, not errno, so this is safe.
+    -fno-math-errno
 )
 
 target_link_options(${MICROPY_TARGET} PRIVATE
