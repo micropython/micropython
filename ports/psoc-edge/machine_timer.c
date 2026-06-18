@@ -152,13 +152,22 @@ static void machine_timer_isr(machine_timer_obj_t *self) {
     }
 }
 
-static void machine_timer_irq_handler(void) {
-    for (size_t i = 0; i < MACHINE_TIMER_NUM_INSTANCES; i++) {
-        if (timer_obj[i] != NULL) {
-            machine_timer_isr(timer_obj[i]);
-        }
+// Generate one IRQ handler per timer id for direct dispatch without scanning.
+#define TIMER_IRQ_HANDLER_DECL(id, counter, irq) \
+    static void machine_timer_irq_handler_##id(void) { \
+        machine_timer_obj_t *self = timer_obj[id]; \
+        if (self != NULL) { \
+            machine_timer_isr(self); \
+        } \
     }
-}
+MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_IRQ_HANDLER_DECL)
+#undef TIMER_IRQ_HANDLER_DECL
+
+#define TIMER_IRQ_HANDLER_ENTRY(id, counter, irq) machine_timer_irq_handler_##id,
+static const cy_israddress machine_timer_irq_handlers[MACHINE_TIMER_NUM_INSTANCES] = {
+    MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_IRQ_HANDLER_ENTRY)
+};
+#undef TIMER_IRQ_HANDLER_ENTRY
 
 // ---------------------------------------------------------------------------
 // Start (or restart) a timer with the given period in clock ticks
@@ -221,7 +230,7 @@ static void machine_timer_start(machine_timer_obj_t *self, uint32_t period_ticks
 
     // Register IRQ before enabling so no TC edge is missed.
     self->irq_cfg.priority = SYS_INT_IRQ_LOWEST_PRIORITY;
-    self->irq_cfg.handler = machine_timer_irq_handler;
+    self->irq_cfg.handler = machine_timer_irq_handlers[self->id];
     sys_int_init(&self->irq_cfg);
 
     self->active = true;
