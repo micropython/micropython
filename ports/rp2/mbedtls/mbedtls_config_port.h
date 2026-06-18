@@ -34,7 +34,6 @@
 time_t rp2_rtctime_seconds(time_t *timer);
 #define MBEDTLS_PLATFORM_TIME_MACRO rp2_rtctime_seconds
 #define MBEDTLS_PLATFORM_MS_TIME_ALT mbedtls_ms_time
-#define MBEDTLS_PLATFORM_GMTIME_R_ALT 1
 
 // Set MicroPython-specific options.
 #define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)
