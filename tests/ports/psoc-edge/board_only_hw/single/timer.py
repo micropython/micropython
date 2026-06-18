@@ -1,5 +1,4 @@
 from machine import PWM, Timer
-import micropython
 import time
 
 oneshot_triggered = False
