@@ -40,7 +40,8 @@
 #include "cycfg_peripheral_clocks.h"
 #include "cycfg_peripherals.h"
 #include "mtb_hal.h"
-#include "machine_tcpwm.h"
+#include "tcpwm.h"
+#include "genhdr/pins_af.h"
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -81,104 +82,29 @@ const mp_obj_type_t machine_timer_type;  // forward declaration
 #define TIMER_GROUP1_PERIOD_MAX  (0xFFFFU)     // 16-bit counters
 
 // ---------------------------------------------------------------------------
-// Per-ID hardware mapping
+// Per-ID hardware mapping — generated from the board AF configuration.
+// Macro is defined in pins_af.h as MICROPY_PY_MACHINE_TIMER_HW_MAP(X).
+// Each row: X(timer_id, tcpwm_counter_num, irq)
 // ---------------------------------------------------------------------------
 
+#define TIMER_HW_ENTRY(id, counter, irq) counter,
 static const uint32_t timer_hw[MACHINE_TIMER_NUM_INSTANCES] = {
-    2U,
-    3U,
-    5U,
-    6U,
-    256U,
-    257U,
-    258U,
-    259U,
-    260U,
-    261U,
-    262U,
-    263U,
-    264U,
-    265U,
-    266U,
-    267U,
-    268U,
-    269U,
-    270U,
-    271U,
-    272U,
-    273U,
-    274U,
-    275U,
-    276U,
-    277U,
-    278U,
-    279U,
+    MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_HW_ENTRY)
 };
+#undef TIMER_HW_ENTRY
 
+#define TIMER_IRQ_CASE(id, counter, irq) case counter: \
+        return irq;
 static IRQn_Type machine_timer_counter_irq(uint32_t counter_num) {
     switch (counter_num) {
-        case 2U:
-            return tcpwm_0_interrupts_2_IRQn;
-        case 3U:
-            return tcpwm_0_interrupts_3_IRQn;
-        case 5U:
-            return tcpwm_0_interrupts_5_IRQn;
-        case 6U:
-            return tcpwm_0_interrupts_6_IRQn;
-        case 256U:
-            return tcpwm_0_interrupts_256_IRQn;
-        case 257U:
-            return tcpwm_0_interrupts_257_IRQn;
-        case 258U:
-            return tcpwm_0_interrupts_258_IRQn;
-        case 259U:
-            return tcpwm_0_interrupts_259_IRQn;
-        case 260U:
-            return tcpwm_0_interrupts_260_IRQn;
-        case 261U:
-            return tcpwm_0_interrupts_261_IRQn;
-        case 262U:
-            return tcpwm_0_interrupts_262_IRQn;
-        case 263U:
-            return tcpwm_0_interrupts_263_IRQn;
-        case 264U:
-            return tcpwm_0_interrupts_264_IRQn;
-        case 265U:
-            return tcpwm_0_interrupts_265_IRQn;
-        case 266U:
-            return tcpwm_0_interrupts_266_IRQn;
-        case 267U:
-            return tcpwm_0_interrupts_267_IRQn;
-        case 268U:
-            return tcpwm_0_interrupts_268_IRQn;
-        case 269U:
-            return tcpwm_0_interrupts_269_IRQn;
-        case 270U:
-            return tcpwm_0_interrupts_270_IRQn;
-        case 271U:
-            return tcpwm_0_interrupts_271_IRQn;
-        case 272U:
-            return tcpwm_0_interrupts_272_IRQn;
-        case 273U:
-            return tcpwm_0_interrupts_273_IRQn;
-        case 274U:
-            return tcpwm_0_interrupts_274_IRQn;
-        case 275U:
-            return tcpwm_0_interrupts_275_IRQn;
-        case 276U:
-            return tcpwm_0_interrupts_276_IRQn;
-        case 277U:
-            return tcpwm_0_interrupts_277_IRQn;
-        case 278U:
-            return tcpwm_0_interrupts_278_IRQn;
-        case 279U:
-            return tcpwm_0_interrupts_279_IRQn;
+        MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_IRQ_CASE)
         default:
             mp_raise_msg_varg(&mp_type_ValueError,
                 MP_ERROR_TEXT("Timer counter %lu does not have an IRQ mapping"),
                 (unsigned long)counter_num);
     }
 }
+#undef TIMER_IRQ_CASE
 
 // ---------------------------------------------------------------------------
 // Static instance pool — one entry per hardware timer
@@ -491,15 +417,7 @@ void machine_timer_deinit_all(void) {
     for (uint8_t i = 0; i < MACHINE_TIMER_NUM_INSTANCES; i++) {
         machine_timer_obj_t *self = timer_obj[i];
         if (self != NULL) {
-            Cy_TCPWM_Counter_Disable(TCPWM0, self->counter_num);
-            if (self->active) {
-                sys_int_deinit(&self->irq_cfg);
-            }
-            self->callback = mp_const_none;
-            self->ishard = false;
-            self->active = false;
-            machine_tcpwm_counter_free(self->counter_num, MP_OBJ_FROM_PTR(self));
-            timer_obj[i] = NULL;
+            machine_timer_deinit(MP_OBJ_FROM_PTR(self));
         }
     }
 }

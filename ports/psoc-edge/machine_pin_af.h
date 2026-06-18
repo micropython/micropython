@@ -68,7 +68,7 @@ extern const char *machine_pin_af_signal_str[];
 typedef struct {
     en_hsiom_sel_t idx;
     machine_pin_af_fn_t fn;
-    uint8_t unit;
+    uint16_t unit;
     machine_pin_af_signal_t signal;
     void *periph;
 } machine_pin_af_obj_t;

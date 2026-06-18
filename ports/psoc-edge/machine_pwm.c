@@ -34,7 +34,8 @@
 #include "cycfg_peripheral_clocks.h"
 #include "mphalport.h"
 #include "machine_pin.h"
-#include "machine_tcpwm.h"
+#include "tcpwm.h"
+#include "genhdr/pins_af.h"
 
 typedef enum {
     VALUE_NOT_SET = -1,
@@ -65,6 +66,7 @@ typedef struct _machine_pwm_obj_t {
 // Maximum PWM output frequency = PWM_TCPWM_CLK_HZ / 2 = 500 kHz (period0 = 2).
 #define PWM_TCPWM_CLK_HZ        1000000UL
 #define PWM_TCPWM_CLK_DIV_VAL   99U
+#define PWM_GROUP1_PERIOD_MAX   (0xFFFFU)
 
 #define pwm_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
@@ -83,15 +85,26 @@ typedef struct _machine_pwm_obj_t {
 static machine_pwm_obj_t *pwm_obj[MICROPY_PY_MACHINE_PWM_MAX_OBJS] = { NULL };
 static bool pwm_clk_configured = false; // true after the shared divider is programmed to PWM_TCPWM_CLK_HZ
 
-static const machine_pin_af_obj_t *pwm_pin_af_find(const machine_pin_obj_t *pin) {
-    for (uint8_t i = 0; i < pin->af_num; i++) {
-        const machine_pin_af_obj_t *af = &pin->af[i];
-        if (af->signal == MACHINE_PIN_AF_SIGNAL_TCPWM_LINE) {
+static const machine_pin_af_obj_t *pwm_pin_af_find_and_alloc(machine_pwm_obj_t *self) {
+    bool has_pwm_af = false;
+    for (uint8_t i = 0; i < self->pin->af_num; i++) {
+        const machine_pin_af_obj_t *af = &self->pin->af[i];
+        if (af->signal != MACHINE_PIN_AF_SIGNAL_TCPWM_LINE) {
+            continue;
+        }
+        has_pwm_af = true;
+        if (machine_tcpwm_counter_try_alloc(af->unit, MP_OBJ_FROM_PTR(self))) {
+            self->counter_num = af->unit;
+            self->pclk_dst = machine_tcpwm_counter_pclk(self->counter_num);
             return af;
         }
     }
 
-    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin %q does not support PWM output"), pin->name);
+    if (has_pwm_af) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("No free TCPWM counter is available for Pin %q"), self->pin->name);
+    }
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin %q does not support PWM output"), self->pin->name);
 }
 
 // Search the instance pool for an existing PWM object on the given port/pin; returns NULL if not found.
@@ -160,8 +173,16 @@ static void pwm_config(machine_pwm_obj_t *self) {
     if (self->frequency == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("PWM frequency must be greater than 0"));
     }
-    self->pwm_obj.period0 = PWM_TCPWM_CLK_HZ / self->frequency;
-    self->pwm_obj.period1 = PWM_TCPWM_CLK_HZ / self->frequency;
+    uint32_t period = PWM_TCPWM_CLK_HZ / self->frequency;
+    if (self->counter_num >= 256U && period > PWM_GROUP1_PERIOD_MAX) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("PWM frequency too low for 16-bit counter %lu; period %lu exceeds %lu ticks"),
+            (unsigned long)self->counter_num,
+            (unsigned long)period,
+            (unsigned long)PWM_GROUP1_PERIOD_MAX);
+    }
+    self->pwm_obj.period0 = period;
+    self->pwm_obj.period1 = period;
 
     if (self->duty_type == DUTY_U16) {
         self->pwm_obj.compare0 = pwm_duty_cycle_u16_to_compare(self->duty, self->pwm_obj.period0);
@@ -273,10 +294,6 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
             MP_ERROR_TEXT("PWM instance for Pin %q already exists, call deinit() first"), pin->name);
     }
 
-    const machine_pin_af_obj_t *pin_af = pwm_pin_af_find(pin);
-    uint32_t counter_num = pin_af->unit;
-    en_clk_dst_t pclk_dst = machine_tcpwm_counter_pclk(counter_num);
-
     // Allocate a new instance from the PWM object pool.
     machine_pwm_obj_t *self = pwm_obj_alloc();
     if (self == NULL) {
@@ -284,9 +301,19 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     self->pin = pin;
-    self->pin_af = pin_af;
-    self->counter_num = counter_num;
-    self->pclk_dst = pclk_dst;
+    self->counter_num = UINT32_MAX;
+    nlr_buf_t nl_af;
+    if (nlr_push(&nl_af) == 0) {
+        self->pin_af = pwm_pin_af_find_and_alloc(self);
+        nlr_pop();
+    } else {
+        if (self->counter_num != UINT32_MAX) {
+            // If a counter was tentatively allocated, it is released as well.
+            machine_tcpwm_counter_free(self->counter_num, MP_OBJ_FROM_PTR(self));
+        }
+        pwm_obj_free(self);
+        nlr_jump(nl_af.ret_val);
+    }
 
     // Default config parameters for the PWM object.
     self->pwm_obj.pwmMode = CY_TCPWM_PWM_MODE_PWM;
@@ -338,7 +365,6 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // If allocation or init raises, free the counter and pool slot so they can be reused.
     nlr_buf_t nl;
     if (nlr_push(&nl) == 0) {
-        machine_tcpwm_counter_alloc(self->counter_num, MP_OBJ_FROM_PTR(self));
         mp_machine_pwm_init_helper(self, n_args - 1, args + 1, &kw_args);
         nlr_pop();
     } else {
