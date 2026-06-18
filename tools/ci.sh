@@ -348,19 +348,6 @@ function ci_nrf_build {
 }
 
 ########################################################################################
-# ports/powerpc
-
-function ci_powerpc_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
-}
-
-function ci_powerpc_build {
-    make ${MAKEOPTS} -C ports/powerpc UART=potato
-    make ${MAKEOPTS} -C ports/powerpc UART=lpc_serial
-}
-
-########################################################################################
 # ports/qemu
 
 function ci_qemu_setup_arm {
