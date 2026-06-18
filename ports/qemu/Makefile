@@ -76,6 +76,8 @@ CFLAGS += -DMICROPY_HW_ROMFS_PART1_START=$(MICROPY_HW_ROMFS_PART1_START)
 CFLAGS += -DMICROPY_HW_ROMFS_PART1_SIZE=$(MICROPY_HW_ROMFS_PART1_SIZE)
 endif
 
+QEMU_RUN_ELF = 1
+
 ################################################################################
 # ARM specific settings
 
@@ -85,6 +87,8 @@ CROSS_COMPILE ?= arm-none-eabi-
 
 LDFLAGS += -nostdlib
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+
+QEMU_ARGS += -semihosting
 
 SRC_C += \
 	mcu/arm/errorhandler.c \
@@ -105,7 +109,7 @@ GCC_VERSION = $(word 1, $(subst ., , $(shell $(CC) -dumpversion)))
 
 RV32_ABI = ilp32
 
-QEMU_ARGS += -bios none -cpu rv32,zcd=off,zcmp=on
+QEMU_ARGS += -bios none -cpu rv32,zcd=off,zcmp=on -semihosting
 
 # GCC 10 and lower do not recognise the Zicsr extension in the architecture name.
 ifeq ($(shell test $(GCC_VERSION) -le 10; echo $$?),0)
@@ -140,7 +144,7 @@ GCC_VERSION = $(word 1, $(subst ., , $(shell $(CC) -dumpversion)))
 
 RV64_ABI = lp64
 
-QEMU_ARGS += -bios none
+QEMU_ARGS += -bios none -semihosting
 
 # GCC 10 and lower do not recognise the Zicsr extension in the architecture name.
 ifeq ($(shell test $(GCC_VERSION) -le 10; echo $$?),0)
@@ -169,7 +173,7 @@ endif
 
 QEMU_BASE ?= qemu-system-
 QEMU_SYSTEM = $(QEMU_BASE)$(QEMU_ARCH)
-QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null -semihosting
+QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null
 QEMU_ARGS += $(QEMU_EXTRA)
 
 # Load ROMFS images into emulated memory if configured.
@@ -230,7 +234,15 @@ ifneq ($(MICROPY_HW_ROMFS_PART0_START),)
 QEMU_TEST_ARGS = -device loader,file=$(ROMFS_TEST_IMAGE),addr=$(MICROPY_HW_ROMFS_PART0_START),force-raw=on
 endif
 
-RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) $(QEMU_TEST_ARGS) -serial pty -kernel ../ports/qemu/$<" $(RUN_TESTS_ARGS)
+ifeq ($(QEMU_RUN_ELF),1)
+QEMU_RUN_CMD = -kernel
+QEMU_RUN_TARGET = $(BUILD)/firmware.elf
+else
+QEMU_RUN_CMD = -bios
+QEMU_RUN_TARGET = $(BUILD)/firmware.bin
+endif
+
+RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) $(QEMU_TEST_ARGS) -serial pty $(QEMU_RUN_CMD) ../ports/qemu/$<" $(RUN_TESTS_ARGS)
 
 ################################################################################
 # Source files and libraries
@@ -277,20 +289,20 @@ SRC_QSTR += $(SRC_C) $(LIBM_SRC_C)
 all: $(BUILD)/firmware.elf
 
 .PHONY: repl
-repl: $(BUILD)/firmware.elf
+repl: $(QEMU_RUN_TARGET)
 	$(ECHO) "Use machine.reset() to exit"
-	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial mon:stdio -kernel $<
+	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial mon:stdio $(QEMU_RUN_CMD) $<
 
 .PHONY: run
-run: $(BUILD)/firmware.elf
-	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel $<
+run: $(QEMU_RUN_TARGET)
+	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty $(QEMU_RUN_CMD) $<
 
 .PHONY: test
-test: $(BUILD)/firmware.elf
+test: $(QEMU_RUN_TARGET)
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) $(RUN_TESTS_EXTRA)
 
 .PHONY: test_full
-test_full: $(BUILD)/firmware.elf
+test_full: $(QEMU_RUN_TARGET)
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS)
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy --emit native
