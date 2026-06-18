@@ -532,22 +532,31 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
     -g  # always include debug information in the ELF
-
-    # pico-sdk already passes --specs=nosys.specs to stub out syscall handlers,
-    # passing nano.specs as well means that newlib-nano libc functions will be used
-    # (note this is mostly a linker option, but should be passed to the compiler as
-    # well to add the newlib-nano header to the search path. Currently this happens
-    # inconsistently as pico-sdk files aren't built with this option.)
-    --specs=nano.specs
 )
+
+if(PICO_RP2040)
+    # Enable nano.specs for RP2040 only.
+    #
+    # Pico-sdk already enables nosys.specs to stub out syscall handlers,
+    # passing nano.specs to compiler & linker means that newlib-nano libc
+    # functions will be used.
+    #
+    # On RP2350 nano.specs also reduces code size, but using size optimised
+    # versions of memcpy, memset instead of unrolled versions has a measurable
+    # impact on performance with the more complex CPU.
+    target_compile_options(${MICROPY_TARGET} PRIVATE
+        --specs=nano.specs
+    )
+    target_link_options(${MICROPY_TARGET} PRIVATE
+        --specs=nano.specs
+    )
+endif()
 
 target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--defsym=__micropy_c_heap_size__=${MICROPY_C_HEAP_SIZE}
     -Wl,--wrap=runtime_init_clocks
     -Wl,--print-memory-usage
     -Wl,--cref
-    # see note about nano.specs, above
-    --specs=nano.specs
 )
 
 if(DEFINED PICO_FLASH_SIZE_BYTES)
