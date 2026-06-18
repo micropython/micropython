@@ -182,7 +182,6 @@ are built in CI but not regularly tested by the MicroPython maintainers:
 | [cc3200](ports/cc3200)     | Texas Instruments CC3200                                          | [For WiPy](https://docs.micropython.org/en/latest/wipy/quickref.html)   |
 | [esp8266](ports/esp8266)   | Espressif ESP8266 SoC                                             | [here](https://docs.micropython.org/en/latest/esp8266/quickref.html)    |
 | [pic16bit](ports/pic16bit) | Microchip PIC 16-bit                                              |                                                                         |
-| [powerpc](ports/powerpc)   | IBM PowerPC (including Microwatt)                                 |                                                                         |
 
 Additional Ports
 ================
