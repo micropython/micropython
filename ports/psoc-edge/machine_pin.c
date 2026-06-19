@@ -196,6 +196,27 @@ const machine_pin_obj_t *machine_pin_get_named_pin(const mp_obj_dict_t *named_pi
     return NULL;
 }
 
+const machine_pin_obj_t *machine_pin_get_af_pin(machine_pin_af_unit_t af_unit, machine_pin_af_signal_t af_signal) {
+    const mp_map_t *cpu_map = &machine_pin_cpu_pins_locals_dict.map;
+
+    for (size_t i = 0; i < cpu_map->alloc; i++) {
+        const mp_map_elem_t *elem = &cpu_map->table[i];
+        if (elem->value == MP_OBJ_NULL) {
+            continue;
+        }
+
+        const machine_pin_obj_t *pin = MP_OBJ_TO_PTR(elem->value);
+        for (uint8_t j = 0; j < pin->af_num; j++) {
+            const machine_pin_af_obj_t *af = &pin->af[j];
+            if (af->unit == af_unit && af->signal == af_signal) {
+                return pin;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 const machine_pin_obj_t *machine_pin_get_pin_obj(mp_obj_t obj) {
     const machine_pin_obj_t *pin_obj;
 
