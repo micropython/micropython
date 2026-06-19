@@ -43,7 +43,7 @@ jobs:
             ci_func: esp32_build_p4
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     # Only the newest IDF version will build the ESP-IDF lockfiles correctly,
     # so we need to disable MICROPY_MAINTAINER_BUILD on older versions.
