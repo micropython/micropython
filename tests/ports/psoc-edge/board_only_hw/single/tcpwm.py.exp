@@ -1,0 +1,5 @@
+*****TCPWM Ownership/Conflict Tests*****
+pwm_vs_pwm_same_pin_conflict: PWM instance for Pin P16_1 already exists, call deinit() first
+pwm_vs_timer_conflict: no conflict (fallback counter allocated)
+pwm_vs_timer_conflict_all_counters: No free TCPWM counter is available for Pin P16_2
+timer_vs_pwm_conflict: TCPWM0 counter 2 is already in use by another Timer or PWM instance

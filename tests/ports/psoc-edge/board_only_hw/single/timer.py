@@ -1,4 +1,4 @@
-from machine import PWM, Timer
+from machine import Timer
 import time
 
 oneshot_triggered = False
@@ -130,16 +130,6 @@ def test_negative_cases():
         )
     finally:
         tdup.deinit()
-
-    # Constructor check for Timer/PWM ownership conflict on the same TCPWM instance.
-    pwm_owner = PWM("P16_2", freq=100, duty_u16=32767)
-    try:
-        expect_value_error(
-            "timer_vs_pwm_conflict:",
-            lambda: Timer(0, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
-        )
-    finally:
-        pwm_owner.deinit()
 
     # Exercise init() validation paths without consuming additional timer IDs.
     tim = Timer(0)
