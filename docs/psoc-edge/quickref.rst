@@ -809,10 +809,10 @@ Hardware timer using the TCPWM0 peripheral on the PSOC™ Edge. See :ref:`machin
 
 .. note::
 
-    This port provides **28** independent hardware timer instances (IDs ``0`` to ``27``).
+    This port provides **32** independent hardware timer instances (IDs ``0`` to ``31``).
 
-    - **32-bit timers**: IDs ``0``, ``1``, ``2``, ``3``.
-    - **16-bit timers**: IDs ``4`` through ``27``.
+    - **32-bit timers**: IDs ``0`` through ``7`` (TCPWM0 counters ``0`` through ``7``).
+    - **16-bit timers**: IDs ``8`` through ``31`` (TCPWM0 counters ``256`` through ``279``).
 
     Only one instance per ID can exist at a time; constructing a second ``Timer(id)`` without calling ``deinit()`` first raises a ``ValueError``.
 
@@ -822,8 +822,8 @@ Hardware timer using the TCPWM0 peripheral on the PSOC™ Edge. See :ref:`machin
 
     - The minimum resolvable period is **1 µs**.
     - With ``period``, the minimum value is **1 ms**.
-    - For **32-bit timers** (IDs ``0`` to ``3``), the maximum period is **4 294 967 ms** (~49.7 days).
-    - For **16-bit timers** (IDs ``4`` to ``27``), the maximum period is **65 ms**.
+    - For **32-bit timers** (IDs ``0`` to ``7``), the maximum period is **4 294 967 ms** (~49.7 days).
+    - For **16-bit timers** (IDs ``8`` to ``31``), the maximum period is **65 ms**.
     - With ``freq``, the minimum frequency is **1 Hz** and the maximum is **1 000 000 Hz** (1 MHz).
     - Computed period ticks must fit the selected counter width: **1-4 294 967 295** for 32-bit timers, **1-65 535** for 16-bit timers.
     - The ``hard`` parameter for ``Timer`` is still under development for this port and is not yet completely implemented.
