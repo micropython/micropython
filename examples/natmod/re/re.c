@@ -32,19 +32,6 @@ void mp_cstack_check(void) {
     }
 }
 
-#if !defined(__linux__) || (defined(__clang__) && (defined(__x86_64__) || defined(__i386__) || __ARM_ARCH == 7))
-void *memcpy(void *dst, const void *src, size_t n) {
-    return mp_fun_table.memmove_(dst, src, n);
-}
-void *memset(void *s, int c, size_t n) {
-    return mp_fun_table.memset_(s, c, n);
-}
-#endif
-
-void *memmove(void *dest, const void *src, size_t n) {
-    return mp_fun_table.memmove_(dest, src, n);
-}
-
 mp_obj_full_type_t match_type;
 mp_obj_full_type_t re_type;
 
