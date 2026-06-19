@@ -3,15 +3,6 @@
 
 #include "py/dynruntime.h"
 
-#if !defined(__linux__)
-void *memcpy(void *dst, const void *src, size_t n) {
-    return mp_fun_table.memmove_(dst, src, n);
-}
-void *memset(void *s, int c, size_t n) {
-    return mp_fun_table.memset_(s, c, n);
-}
-#endif
-
 mp_obj_full_type_t deflateio_type;
 
 #include "extmod/moddeflate.c"
