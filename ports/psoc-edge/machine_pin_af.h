@@ -40,6 +40,8 @@ typedef enum {
     /* TODO: Add additional functionalities */
 } machine_pin_af_fn_t;
 
+extern const char *machine_pin_af_fn_str[];
+
 typedef enum {
     MACHINE_PIN_AF_SIGNAL_I2C_SDA,
     MACHINE_PIN_AF_SIGNAL_I2C_SCL,
@@ -65,12 +67,16 @@ typedef enum {
 
 extern const char *machine_pin_af_signal_str[];
 
+#define MACHINE_PIN_AF_UNIT_NONE  0xFF
+typedef uint16_t machine_pin_af_unit_t;
+typedef void *machine_pin_af_periph_t;
+
 typedef struct {
     en_hsiom_sel_t idx;
     machine_pin_af_fn_t fn;
-    uint16_t unit;
+    machine_pin_af_unit_t unit;
     machine_pin_af_signal_t signal;
-    void *periph;
+    machine_pin_af_periph_t periph;
 } machine_pin_af_obj_t;
 
 extern const mp_obj_type_t machine_pin_af_type;
