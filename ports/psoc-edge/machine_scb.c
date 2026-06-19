@@ -63,6 +63,7 @@ MICROPY_PY_MACHINE_FOR_ALL_SCB(DEFINE_SCB_IRQ_HANDLER)
 
 #define MAP_SCB_IRQ_CONFIG(scb) \
     [scb] = { \
+        scb, \
         SCB##scb, \
         { \
             scb_##scb##_interrupt_IRQn, \
@@ -70,6 +71,10 @@ MICROPY_PY_MACHINE_FOR_ALL_SCB(DEFINE_SCB_IRQ_HANDLER)
             SCB##scb##_IRQ_Handler \
         }, \
         PCLK_SCB##scb##_CLOCK_SCB_EN, \
+        CY_MMIO_SCB##scb##_PERI_NR, \
+        CY_MMIO_SCB##scb##_GROUP_NR, \
+        CY_MMIO_SCB##scb##_SLAVE_NR, \
+        CY_MMIO_SCB##scb##_CLK_HF_NR, \
         NULL, \
         NULL, \
     },
@@ -131,6 +136,16 @@ machine_scb_obj_t *machine_scb_obj_alloc(uint8_t scb, mp_obj_t parent, machine_s
     if (obj->parent != NULL) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SCB %u is already in use by another I2C, SPI or UART instance."), scb);
     }
+    /*
+     * Enable the peripheral clock gate for this SCB. The BSP's
+     * cycfg_config_reservations() only does this for the SCBs that are
+     * configured in the board design (e.g. the debug UART). Any SCB
+     * that was not pre-configured will have its clock gate disabled, and
+     * attempting to read or write its registers stalls the AHB bus,
+     * causing a hard lock-up. Calling this for already-enabled SCBs is
+     * idempotent.
+     */
+    Cy_SysClk_PeriGroupSlaveInit(obj->peri_nr, obj->group_nr, obj->slave_nr, obj->clk_hf_nr);
     obj->parent = parent;
     obj->parent_handler = handler;
     return &machine_scb_obj[scb];
@@ -139,6 +154,12 @@ machine_scb_obj_t *machine_scb_obj_alloc(uint8_t scb, mp_obj_t parent, machine_s
 void machine_scb_obj_free(machine_scb_obj_t *scb) {
     scb->parent = NULL;
     scb->parent_handler = NULL;
+    Cy_SysClk_PeriGroupSlaveDeinit(scb->peri_nr, scb->group_nr, scb->slave_nr);
+}
+
+bool machine_scb_is_free(uint8_t scb) {
+    return machine_scb_obj[scb].parent == NULL;
+
 }
 
 void machine_scb_enable_group(uint8_t scb) {
