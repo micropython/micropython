@@ -479,11 +479,11 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
     self->data = mp_hal_get_pin_obj(args[ARG_data].u_obj);
 
     const mp_hal_pin_af_config_t pdm_pins_config[] = {
-        MP_HAL_PIN_AF_CONF(self->sck, CY_GPIO_DM_STRONG_IN_OFF, 1, MACHINE_PIN_AF_SIGNAL_PDM_CLK),
-        MP_HAL_PIN_AF_CONF(self->data, CY_GPIO_DM_HIGHZ, 1, MACHINE_PIN_AF_SIGNAL_PDM_DATA),
+        MP_HAL_PIN_AF_CONF_INIT(self->sck, CY_GPIO_DM_STRONG_IN_OFF, 1, MACHINE_PIN_AF_SIGNAL_PDM_CLK),
+        MP_HAL_PIN_AF_CONF_INIT(self->data, CY_GPIO_DM_HIGHZ, 1, MACHINE_PIN_AF_SIGNAL_PDM_DATA),
     };
 
-    mp_hal_periph_pins_af_config(pdm_pins_config, 2);
+    mp_hal_periph_pins_af_init(pdm_pins_config, 2);
     /** } */
 
     /**

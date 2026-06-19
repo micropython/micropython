@@ -112,14 +112,14 @@ static void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq_hz) {
     };
 
     const mp_hal_pin_af_config_t i2c_pins_config[] = {
-        MP_HAL_PIN_AF_CONF(self->scl, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SCL),
-        MP_HAL_PIN_AF_CONF(self->sda, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SDA),
+        MP_HAL_PIN_AF_CONF_INIT(self->scl, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SCL),
+        MP_HAL_PIN_AF_CONF_INIT(self->sda, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SDA),
     };
 
     uint8_t scb_unit = i2c_pins_config[0].af->unit;
     self->scb_obj = machine_scb_obj_alloc(scb_unit, self, machine_hw_i2c_scb_isr);
 
-    mp_hal_periph_pins_af_config(i2c_pins_config, 2);
+    mp_hal_periph_pins_af_init(i2c_pins_config, 2);
 
     result = Cy_SCB_I2C_Init(self->scb_obj->scb, &self->cfg, &self->ctx);
     i2c_assert_raise_val("I2C init failed: 0x%lx", result);

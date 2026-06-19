@@ -105,21 +105,21 @@ static uint8_t machine_spi_target_pins_config_and_get_scb_unit(
     mp_hal_pin_obj_t ssel) {
     // Pin config: SCK, MOSI, SSEL are inputs; MISO is output
     const mp_hal_pin_af_config_t spi_pins_config[] = {
-        MP_HAL_PIN_AF_CONF(sck,
+        MP_HAL_PIN_AF_CONF_INIT(sck,
             CY_GPIO_DM_HIGHZ, 0,
             MACHINE_PIN_AF_SIGNAL_SPI_CLK),
-        MP_HAL_PIN_AF_CONF(mosi,
+        MP_HAL_PIN_AF_CONF_INIT(mosi,
             CY_GPIO_DM_HIGHZ, 0,
             MACHINE_PIN_AF_SIGNAL_SPI_MOSI),
-        MP_HAL_PIN_AF_CONF(miso,
+        MP_HAL_PIN_AF_CONF_INIT(miso,
             CY_GPIO_DM_STRONG_IN_OFF, 1,
             MACHINE_PIN_AF_SIGNAL_SPI_MISO),
-        MP_HAL_PIN_AF_CONF(ssel,
+        MP_HAL_PIN_AF_CONF_INIT(ssel,
             CY_GPIO_DM_HIGHZ, 0,
             MACHINE_PIN_AF_SIGNAL_SPI_SELECT0),
     };
     uint8_t scb_unit = spi_pins_config[0].af->unit;
-    mp_hal_periph_pins_af_config(spi_pins_config, 4);
+    mp_hal_periph_pins_af_init(spi_pins_config, 4);
     return scb_unit;
 }
 

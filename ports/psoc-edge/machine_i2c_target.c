@@ -184,13 +184,13 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
     self->addrsize = addrsize;
 
     const mp_hal_pin_af_config_t i2c_pins_config[] = {
-        MP_HAL_PIN_AF_CONF(self->scl, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SCL),
-        MP_HAL_PIN_AF_CONF(self->sda, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SDA),
+        MP_HAL_PIN_AF_CONF_INIT(self->scl, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SCL),
+        MP_HAL_PIN_AF_CONF_INIT(self->sda, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SDA),
     };
 
     self->scb_obj = machine_scb_obj_alloc(i2c_pins_config[0].af->unit, self, machine_i2c_target_scb_isr);
 
-    mp_hal_periph_pins_af_config(i2c_pins_config, 2);
+    mp_hal_periph_pins_af_init(i2c_pins_config, 2);
 
     result = Cy_SCB_I2C_Init(self->scb_obj->scb, &self->cfg, &self->ctx);
     if (result != CY_RSLT_SUCCESS) {
