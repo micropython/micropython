@@ -26,6 +26,14 @@
 
 #include "machine_pin_af.h"
 
+const char *machine_pin_af_fn_str[] = {
+    [MACHINE_PIN_AF_FN_I2C] = "I2C",
+    [MACHINE_PIN_AF_FN_SPI] = "SPI",
+    [MACHINE_PIN_AF_FN_UART] = "UART",
+    [MACHINE_PIN_AF_FN_PDM] = "PDM",
+    /* TODO: Add additional functionalities */
+};
+
 const char *machine_pin_af_signal_str[] = {
     [MACHINE_PIN_AF_SIGNAL_I2C_SDA] = "I2C_SDA",
     [MACHINE_PIN_AF_SIGNAL_I2C_SCL] = "I2C_SCL",
