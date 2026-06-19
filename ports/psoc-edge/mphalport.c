@@ -107,7 +107,7 @@ void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
     Cy_GPIO_Write(Cy_GPIO_PortToAddr(pin->port), pin->pin, polarity);
 }
 
-mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, uint32_t af_signal) {
+mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, machine_pin_af_signal_t af_signal) {
     for (uint8_t i = 0; i < pin->af_num; i++) {
         const machine_pin_af_obj_t *af = &pin->af[i];
         if (af->signal == af_signal) {
@@ -118,18 +118,20 @@ mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, uint32_t af_signal)
     mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin '%q' does not support '%s'."), pin->name, machine_pin_af_signal_str[af_signal]);
 }
 
-mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins) {
-    /**
-     * If there is more than one pin,
-     * validate if all pins share
-     * the same AF peripheral pointer and unit
-     */
-    if (num_pins > 1) {
-        const mp_hal_pin_af_config_t *first_pin_cfg = &periph_pins_config[0];
-        mp_hal_af_periph_t periph_ptr = first_pin_cfg->af->periph;
-        uint32_t unit = first_pin_cfg->af->unit;
-        for (uint8_t i = 1; i < num_pins; i++) {
-            const mp_hal_pin_af_config_t *pin_cfg = &periph_pins_config[i];
+machine_pin_af_unit_t mp_hal_periph_pins_af_get_af_unit(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins) {
+    bool found_first_valid_pin = false;
+    machine_pin_af_periph_t periph_ptr = NULL;
+    uint32_t unit = MACHINE_PIN_AF_UNIT_NONE;
+    for (uint8_t i = 0; i < num_pins; i++) {
+        const mp_hal_pin_af_config_t *pin_cfg = &periph_pins_config[i];
+        if (pin_cfg->pin == NULL || pin_cfg->af == NULL) {
+            continue;
+        }
+        if (!found_first_valid_pin) {
+            periph_ptr = pin_cfg->af->periph;
+            unit = pin_cfg->af->unit;
+            found_first_valid_pin = true;
+        } else {
             if (pin_cfg->af->periph != periph_ptr) {
                 mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("all pins must belong to the same peripheral."));
             }
@@ -139,6 +141,68 @@ mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *pe
         }
     }
 
+    return unit;
+}
+
+void mp_hal_periph_pins_af_resolve_fn_unit(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t pin_num, machine_pin_af_fn_t fn, machine_pin_af_unit_t *fn_unit) {
+    uint8_t resolved_fn_unit;
+    uint8_t suggested_fn_unit = *fn_unit;
+
+    /**
+     * Resolve the AF unit for the provided pins.
+     * It can be that the configuration still don't have
+     * any pin AF assigned.
+     * Therefore, its AF unit is not yet determined.
+     */
+    machine_pin_af_unit_t pin_af_unit = mp_hal_periph_pins_af_get_af_unit(periph_pins_config, pin_num);
+
+    /* No pins have been defined. */
+    if (pin_af_unit == MACHINE_PIN_AF_UNIT_NONE) {
+        /* The suggested AF unit candidate is chosen if defined. */
+        if (suggested_fn_unit != MACHINE_PIN_AF_UNIT_NONE) {
+            resolved_fn_unit = (uint8_t)suggested_fn_unit;
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("no id or pins have been provided. At least one of them must be specified."));
+        }
+    } else {
+        /* The pins have been defined. */
+        /* The suggested AF unit has been also defined.*/
+        if (suggested_fn_unit != MACHINE_PIN_AF_UNIT_NONE) {
+            if (suggested_fn_unit == pin_af_unit) {
+                /* The suggested AF unit matches the AF unit discovered from the passed pins */
+                resolved_fn_unit = (uint8_t)suggested_fn_unit;
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("the id does not match the discovered id from the provided pins."));
+            }
+        } else {
+            /* No suggested AF unit has been passed */
+            resolved_fn_unit = pin_af_unit;
+        }
+    }
+
+    (*fn_unit) = resolved_fn_unit;
+}
+
+void mp_hal_periph_pins_af_resolve_pin_af(mp_hal_pin_af_config_t *periph_pins_config, uint8_t pin_num, machine_pin_af_unit_t fn_unit) {
+    for (uint8_t i = 0; i < pin_num; i++) {
+        if (periph_pins_config[i].af == NULL && periph_pins_config[i].pin == NULL) {
+            periph_pins_config[i].pin = machine_pin_get_af_pin(fn_unit, periph_pins_config[i].signal);
+            if (periph_pins_config[i].pin == NULL) {
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("no signal '%s' available for id %d."), machine_pin_af_signal_str[periph_pins_config[i].signal], fn_unit);
+            }
+            periph_pins_config[i].af = mp_hal_pin_af_find(periph_pins_config[i].pin, periph_pins_config[i].signal);
+        } else {
+            /**
+             * It should not enter here. As this function should
+             * be only called after pin - AF unit matching */
+            if (periph_pins_config[i].af->unit != fn_unit && periph_pins_config[i].pin != NULL) {
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("the pin '%q' does not match the AF unit %d."), periph_pins_config[i].pin->name, fn_unit);
+            }
+        }
+    }
+}
+
+machine_pin_af_periph_t mp_hal_periph_pins_af_init(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins) {
     for (uint8_t i = 0; i < num_pins; i++) {
         const mp_hal_pin_af_config_t *pin_cfg = &periph_pins_config[i];
         Cy_GPIO_Pin_FastInit(Cy_GPIO_PortToAddr(pin_cfg->pin->port), pin_cfg->pin->pin, pin_cfg->cy_drive_mode, pin_cfg->init_value, pin_cfg->af->idx);

@@ -84,9 +84,11 @@ uint32_t mp_hal_pin_read(mp_hal_pin_obj_t pin);
 uint32_t mp_hal_pin_get_drive(mp_hal_pin_obj_t pin);
 void mp_hal_pin_set_drive(mp_hal_pin_obj_t pin, uint32_t drive);
 
-#define mp_hal_pin_af_obj_t const machine_pin_af_obj_t *
+/**
+ * HAL Pin AF helper functions and types
+ */
 
-mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, uint32_t af_signal);
+#define mp_hal_pin_af_obj_t const machine_pin_af_obj_t *
 
 typedef struct {
     mp_hal_pin_obj_t pin;
@@ -96,23 +98,32 @@ typedef struct {
     mp_hal_pin_af_obj_t af;
 }mp_hal_pin_af_config_t;
 
-#define MP_HAL_PIN_AF_CONF(_pin, _cy_drive_mode, _init_value, _af_signal) { \
+#define MP_HAL_PIN_AF_CONF_INIT(_pin, _cy_drive_mode, _init_value, _af_signal) (mp_hal_pin_af_config_t) { \
         .pin = _pin, \
+        .signal = _af_signal, \
         .cy_drive_mode = _cy_drive_mode, \
         .init_value = _init_value, \
         .af = mp_hal_pin_af_find(_pin, _af_signal) \
 }
 
-#define MP_HAL_PIN_AF_INIT(conf_obj, _pin, _cy_drive_mode, _init_value, _af_signal) \
+#define MP_HAL_PIN_AF_CONF_INIT_GPIO_SIGNAL(_cy_drive_mode, _init_value, _af_signal) (mp_hal_pin_af_config_t) { \
+        .pin = NULL, \
+        .signal = _af_signal, \
+        .cy_drive_mode = _cy_drive_mode, \
+        .init_value = _init_value, \
+        .af = NULL \
+}
+
+#define MP_HAL_PIN_AF_CONF_SET_PIN_AF(conf_obj, _pin) \
     conf_obj.pin = _pin; \
-    conf_obj.cy_drive_mode = _cy_drive_mode; \
-    conf_obj.init_value = _init_value; \
-    conf_obj.af = mp_hal_pin_af_find(_pin, _af_signal);
+    conf_obj.af = mp_hal_pin_af_find(_pin, conf_obj.signal);
 
-typedef void *mp_hal_af_periph_t;
 
-mp_hal_af_periph_t mp_hal_periph_pins_af_config(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins);
+mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, machine_pin_af_signal_t af_signal);
 
 void mp_hal_get_random(size_t n, uint8_t *buf);
+void mp_hal_periph_pins_af_resolve_fn_unit(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t pin_num, machine_pin_af_fn_t fn, machine_pin_af_unit_t *fn_unit);
+void mp_hal_periph_pins_af_resolve_pin_af(mp_hal_pin_af_config_t *periph_pins_config, uint8_t pin_num, machine_pin_af_unit_t fn_unit);
+machine_pin_af_periph_t mp_hal_periph_pins_af_init(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins);
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H
