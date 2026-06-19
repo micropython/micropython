@@ -483,6 +483,9 @@ static void mp_machine_pdm_pcm_init_helper(machine_pdm_pcm_obj_t *self, mp_arg_v
         MP_HAL_PIN_AF_CONF_INIT(self->data, CY_GPIO_DM_HIGHZ, 1, MACHINE_PIN_AF_SIGNAL_PDM_DATA),
     };
 
+    machine_pin_af_unit_t af_unit = MACHINE_PIN_AF_UNIT_NONE;
+    mp_hal_periph_pins_af_resolve_fn_unit(pdm_pins_config, 2, MACHINE_PIN_AF_FN_PDM, &af_unit);
+
     mp_hal_periph_pins_af_init(pdm_pins_config, 2);
     /** } */
 

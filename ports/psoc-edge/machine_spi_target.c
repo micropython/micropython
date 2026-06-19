@@ -118,8 +118,12 @@ static uint8_t machine_spi_target_pins_config_and_get_scb_unit(
             CY_GPIO_DM_HIGHZ, 0,
             MACHINE_PIN_AF_SIGNAL_SPI_SELECT0),
     };
-    uint8_t scb_unit = spi_pins_config[0].af->unit;
-    mp_hal_periph_pins_af_init(spi_pins_config, 4);
+
+    machine_pin_af_unit_t af_unit = MACHINE_PIN_AF_UNIT_NONE;
+    mp_hal_periph_pins_af_resolve_fn_unit(spi_pins_config, MP_ARRAY_SIZE(spi_pins_config), MACHINE_PIN_AF_FN_SPI, &af_unit);
+
+    uint8_t scb_unit = (uint8_t)af_unit;
+    mp_hal_periph_pins_af_init(spi_pins_config, MP_ARRAY_SIZE(spi_pins_config));
     return scb_unit;
 }
 

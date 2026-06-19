@@ -188,7 +188,10 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
         MP_HAL_PIN_AF_CONF_INIT(self->sda, CY_GPIO_DM_OD_DRIVESLOW, 1, MACHINE_PIN_AF_SIGNAL_I2C_SDA),
     };
 
-    self->scb_obj = machine_scb_obj_alloc(i2c_pins_config[0].af->unit, self, machine_i2c_target_scb_isr);
+    machine_pin_af_unit_t af_unit = MACHINE_PIN_AF_UNIT_NONE;
+    mp_hal_periph_pins_af_resolve_fn_unit(i2c_pins_config, 2, MACHINE_PIN_AF_FN_I2C, &af_unit);
+
+    self->scb_obj = machine_scb_obj_alloc(af_unit, self, machine_i2c_target_scb_isr);
 
     mp_hal_periph_pins_af_init(i2c_pins_config, 2);
 
