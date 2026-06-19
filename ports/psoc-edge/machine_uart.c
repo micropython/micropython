@@ -40,7 +40,7 @@
 #include "py/ringbuf.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "py/misc.h"
+#include "py/nlr.h"
 #include "py/stream.h"
 
 // Port-specific includes
@@ -57,25 +57,24 @@
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
+// Flow control macros not part of PSOC Edge PDL
+#define UART_FLOW_CONTROL_NONE    (0)
+#define UART_FLOW_CONTROL_RTS     (1)
+#define UART_FLOW_CONTROL_CTS     (2)
+
 // Class-level constants exposed to Python
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(CY_SCB_RX_INTR_NOT_EMPTY) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_BREAK), MP_ROM_INT(CY_SCB_RX_INTR_UART_BREAK_DETECT) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(CY_SCB_TX_INTR_UART_DONE) }, \
-
-/**
- * TODO: Enable CTS/RTS class constants and flow control settings
-
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_FLOW_CONTROL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_FLOW_CONTROL_CTS) }, \
- */
 
 /******************************************************************************/
-// Object type
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
-    uint8_t id;                       // Private variable in this port. ID not associated to any port pin UART group.
+    int id;                         // id matches the SCB id.
     machine_scb_obj_t *scb_obj;
     mp_hal_pin_obj_t tx;
     mp_hal_pin_obj_t rx;
@@ -97,14 +96,23 @@ typedef struct _machine_uart_obj_t {
     #endif
 } machine_uart_obj_t;
 
-static machine_uart_obj_t *mp_machine_uart_alloc(uint8_t uart_id) {
-    (void)uart_id;
+static machine_uart_obj_t *mp_machine_uart_obj_get(uint8_t id) {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_UART_NUM_ENTRIES; i++) {
+        if (MP_STATE_PORT(machine_uart_obj[i]) != NULL) {
+            if (MP_STATE_PORT(machine_uart_obj[i])->id == id) {
+                return MP_STATE_PORT(machine_uart_obj[i]);
+            }
+        }
+    }
+    return NULL;
+}
+
+static machine_uart_obj_t *mp_machine_uart_obj_alloc(void) {
     machine_uart_obj_t *self = NULL;
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_UART_NUM_ENTRIES; i++) {
         if (MP_STATE_PORT(machine_uart_obj[i]) == NULL) {
             self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
             MP_STATE_PORT(machine_uart_obj[i]) = self;
-            self->id = i;
             break;
         }
     }
@@ -116,8 +124,13 @@ static machine_uart_obj_t *mp_machine_uart_alloc(uint8_t uart_id) {
     return self;
 }
 
-static void mp_machine_uart_free(machine_uart_obj_t *self) {
-    MP_STATE_PORT(machine_uart_obj[self->id]) = NULL;
+static void mp_machine_uart_obj_free(machine_uart_obj_t *self) {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_UART_NUM_ENTRIES; i++) {
+        if (MP_STATE_PORT(machine_uart_obj[i]) == self) {
+            MP_STATE_PORT(machine_uart_obj[i]) = NULL;
+            break;
+        }
+    }
 }
 
 MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *machine_uart_obj[MICROPY_PY_MACHINE_UART_NUM_ENTRIES]);
@@ -174,6 +187,34 @@ static void machine_uart_scb_isr(mp_obj_t hw_uart_obj) {
         Cy_SCB_ClearTxInterrupt(self->scb_obj->scb, CY_SCB_TX_INTR_UART_DONE);
     }
     #endif
+}
+
+void machine_uart_obj_make_or_reuse(machine_uart_obj_t **self_ptr, uint8_t id, bool *is_new) {
+    /**
+     * UART() constructor path:
+     *
+     * Create or reuse and object based on the id.
+     * If the object for the given id already exists,
+     * reuse it and reinit the hardware with the new params.
+     * If the object is being created for the first time,
+     * allocate it and the associated SCB object.
+     */
+
+    /* Use object if it already exists */
+    (*self_ptr) = mp_machine_uart_obj_get(id);
+    (*is_new) = false;
+
+    if (*self_ptr == NULL) {
+        /* Create a new object and allocate the scb instance if free.*/
+        if (machine_scb_is_free(id)) {
+            (*self_ptr) = mp_machine_uart_obj_alloc();
+            (*self_ptr)->id = id;
+            (*self_ptr)->scb_obj = machine_scb_obj_alloc(id, *self_ptr, machine_uart_scb_isr);
+        } else {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SCB %u is already in use by a machine.I2C or machine.SPI instance."), id);
+        }
+        (*is_new) = true;
+    }
 }
 
 static void machine_uart_baudrate_set(machine_uart_obj_t *self) {
@@ -247,6 +288,11 @@ static void machine_uart_hw_init(machine_uart_obj_t *self) {
     Cy_SCB_UART_Enable(self->scb_obj->scb);
 }
 
+static void machine_uart_hw_deinit(machine_uart_obj_t *self) {
+    Cy_SCB_UART_Disable(self->scb_obj->scb, &self->ctx);
+    sys_int_deinit(&self->scb_obj->irq);
+}
+
 static bool machine_uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout_ms) {
     uint32_t timeout_time_ms = mp_hal_ticks_ms() + timeout_ms;
 
@@ -291,8 +337,6 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         self->stop
         );
 
-    /**
-     * TODO: Implement RTS/CTS flow control print
     if (self->rts != NULL) {
         mp_printf(print, "rts="MP_HAL_PIN_FMT ", ", mp_hal_pin_name(self->rts));
     }
@@ -301,197 +345,200 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         mp_printf(print, "cts="MP_HAL_PIN_FMT ", ", mp_hal_pin_name(self->cts));
     }
 
-     mp_printf(print, "flow=%u, "
-    */
-
-    mp_printf(print, "timeout=%ld, "
+    mp_printf(print, "flow=%u, "
+        "timeout=%ld, "
         "timeout_char=%ld, "
         "rxbuf=%d)",
-        /* self->flow, */
+        self->flow,
         self->timeout_ms,
         self->timeout_char_ms,
         self->rx_ringbuf.size
         );
 }
 
-
-static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
-
-    machine_uart_obj_t *self = mp_machine_uart_alloc(0);
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_machine_uart_init_helper(self, n_args, args, &kw_args);
-
-    return MP_OBJ_FROM_PTR(self);
-}
-
-static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
-    Cy_SCB_UART_Disable(self->scb_obj->scb, &self->ctx);
-    sys_int_deinit(&self->scb_obj->irq);
-
-    m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
-
-    machine_scb_obj_free(self->scb_obj);
-    mp_machine_uart_free(self);
-}
-
 #define DEFAULT_UART_BAUDRATE     (115200)
 #define DEFAULT_UART_BITS         (8)
 #define DEFAULT_UART_STOP         (1)
 #define DEFAULT_UART_RXBUF_SIZE   (256)
-/**
- * TODO: Enable CTS/RTS flow control settings and pins
- * Hardware flow control flags (compatible with machine.UART.RTS / machine.UART.CTS)
- *
-#define UART_FLOW_CONTROL_NONE    (0)
-#define UART_FLOW_CONTROL_RTS     (1)
-#define UART_FLOW_CONTROL_CTS     (2)
-*/
 
 enum {
     ARG_tx, ARG_rx,
     ARG_baudrate, ARG_bits, ARG_parity, ARG_stop,
-    /* ARG_rts, ARG_cts, ARG_flow, */
+    ARG_rts, ARG_cts, ARG_flow,
     ARG_timeout, ARG_timeout_char, ARG_rxbuf
 };
 
 static const mp_arg_t allowed_args[] = {
-    { MP_QSTR_tx,           MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-    { MP_QSTR_rx,           MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    { MP_QSTR_tx,           MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    { MP_QSTR_rx,           MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_baudrate,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_BAUDRATE} },
     { MP_QSTR_bits,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_BITS} },
     { MP_QSTR_parity,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_stop,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_STOP} },
-    /* TODO: Enable rts and cts flow control
     { MP_QSTR_rts,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_cts,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_flow,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_FLOW_CONTROL_NONE} },
-    */
     { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_rxbuf,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_UART_RXBUF_SIZE} },
 };
 
-static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+/**
+ * Core init implementation. Accepts a pointer-to-pointer for self so it can
+ * allocate a new object when *self_ptr is NULL (constructor path). When called
+ * from init() the object is already allocated so *self_ptr is non-NULL.
+ */
+static void machine_uart_init_impl(machine_uart_obj_t **self_ptr, int uart_id, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     /* -- TX / RX pins -- */
-    self->tx = mp_hal_get_pin_obj(args[ARG_tx].u_obj);
-    self->rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
-
+    uint8_t pin_num = 2U;
     #define MAX_MACHINE_UART_OBJ_AF_PINS 4
-    mp_hal_pin_af_config_t uart_pins_config[MAX_MACHINE_UART_OBJ_AF_PINS];
+    mp_hal_pin_af_config_t uart_pins_af_config[MAX_MACHINE_UART_OBJ_AF_PINS] = {
+        /* TX */ MP_HAL_PIN_AF_CONF_INIT_GPIO_SIGNAL(CY_GPIO_DM_STRONG_IN_OFF, 1, MACHINE_PIN_AF_SIGNAL_UART_TX),
+        /* RX */ MP_HAL_PIN_AF_CONF_INIT_GPIO_SIGNAL(CY_GPIO_DM_HIGHZ, 0, MACHINE_PIN_AF_SIGNAL_UART_RX),
+    };
 
-    MP_HAL_PIN_AF_INIT(uart_pins_config[0], self->tx, CY_GPIO_DM_STRONG_IN_OFF, 1, MACHINE_PIN_AF_SIGNAL_UART_TX);
-    MP_HAL_PIN_AF_INIT(uart_pins_config[1], self->rx, CY_GPIO_DM_HIGHZ, 0, MACHINE_PIN_AF_SIGNAL_UART_RX);
-
-    uint8_t scb_unit = uart_pins_config[0].af->unit;
-
-    if (self->scb_obj != NULL) {
-        mp_machine_uart_deinit(self);
+    if (args[ARG_tx].u_obj != mp_const_none) {
+        mp_hal_pin_obj_t tx_pin = mp_hal_get_pin_obj(args[ARG_tx].u_obj);
+        MP_HAL_PIN_AF_CONF_SET_PIN_AF(uart_pins_af_config[0], tx_pin);
     }
-    self->scb_obj = machine_scb_obj_alloc(scb_unit, self, machine_uart_scb_isr);
 
-    uint8_t num_af_pins = 2U; // TX and RX are always present, RTS and CTS are optional depending on flow control settings
+    if (args[ARG_rx].u_obj != mp_const_none) {
+        mp_hal_pin_obj_t rx_pin = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
+        MP_HAL_PIN_AF_CONF_SET_PIN_AF(uart_pins_af_config[1], rx_pin);
+    }
 
     /* -- Flow control pins -- */
-    self->flow = 0; // Default to no flow control
-    self->rts = NULL;
-    self->cts = NULL;
+    uint32_t flow = (uint32_t)args[ARG_flow].u_int;
 
-    /**
-     * TODO: Enable CTS/RTS
-    self->flow = (uint32_t)args[ARG_flow].u_int;
+    /** TODO: Currently throw error if flow is not NONE.
+     * This needs to be implemented
+     * {
+     */
+    if (flow != UART_FLOW_CONTROL_NONE) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flow control not supported yet. Keep flow=0"));
+    }
+    /** } */
 
-    if (self->flow & UART_FLOW_CONTROL_RTS) {
-        if (args[ARG_rts].u_obj == mp_const_none) {
-            mp_raise_ValueError(MP_ERROR_TEXT("rts pin required for RTS flow control"));
+    #define PIN_AF_CONFIG_INDEX_NONE (0xFF)
+    uint8_t pin_af_conf_rts_index = PIN_AF_CONFIG_INDEX_NONE;
+    if (flow & UART_FLOW_CONTROL_RTS) {
+        pin_af_conf_rts_index = pin_num;
+        pin_num++;
+        uart_pins_af_config[pin_af_conf_rts_index] = MP_HAL_PIN_AF_CONF_INIT_GPIO_SIGNAL(CY_GPIO_DM_STRONG_IN_OFF, 1, MACHINE_PIN_AF_SIGNAL_UART_RTS);
+        if (args[ARG_rts].u_obj != mp_const_none) {
+            mp_hal_pin_obj_t rts_pin = mp_hal_get_pin_obj(args[ARG_rts].u_obj);
+            MP_HAL_PIN_AF_CONF_SET_PIN_AF(uart_pins_af_config[pin_af_conf_rts_index], rts_pin);
         }
-        self->rts = mp_hal_get_pin_obj(args[ARG_rts].u_obj);
-        MP_HAL_PIN_AF_INIT(uart_pins_config[num_af_pins], self->rts, CY_GPIO_DM_STRONG_IN_OFF, 1, MACHINE_PIN_AF_SIGNAL_UART_RTS);
-        num_af_pins += 1U;
-    } else {
-        self->rts = NULL;
     }
 
-    if (self->flow & UART_FLOW_CONTROL_CTS) {
-        if (args[ARG_cts].u_obj == mp_const_none) {
-            mp_raise_ValueError(MP_ERROR_TEXT("cts pin required for CTS flow control"));
+    uint8_t pin_af_conf_cts_index = PIN_AF_CONFIG_INDEX_NONE;
+    if (flow & UART_FLOW_CONTROL_CTS) {
+        pin_af_conf_cts_index = pin_num;
+        pin_num++;
+        uart_pins_af_config[pin_af_conf_cts_index] = MP_HAL_PIN_AF_CONF_INIT_GPIO_SIGNAL(CY_GPIO_DM_HIGHZ, 0, MACHINE_PIN_AF_SIGNAL_UART_CTS);
+        if (args[ARG_cts].u_obj != mp_const_none) {
+            mp_hal_pin_obj_t cts_pin = mp_hal_get_pin_obj(args[ARG_cts].u_obj);
+            MP_HAL_PIN_AF_CONF_SET_PIN_AF(uart_pins_af_config[pin_af_conf_cts_index], cts_pin);
         }
-        self->cts = mp_hal_get_pin_obj(args[ARG_cts].u_obj);
-        MP_HAL_PIN_AF_INIT(uart_pins_config[num_af_pins], self->cts, CY_GPIO_DM_HIGHZ, 0, MACHINE_PIN_AF_SIGNAL_UART_CTS);
-        num_af_pins += 1U;
-    } else {
-        self->cts = NULL;
     }
-    */
 
-    /* Configure the alternate functions for the selected pins */
-    mp_hal_periph_pins_af_config(uart_pins_config, num_af_pins);
+    /* -- Resolve ID - pin match -- */
+    uint8_t fn_unit = uart_id;
+    mp_hal_periph_pins_af_resolve_fn_unit(uart_pins_af_config, pin_num, MACHINE_PIN_AF_FN_UART, (machine_pin_af_unit_t *)&fn_unit);
+
+    /* -- Resolve not provided AF pins -- */
+    mp_hal_periph_pins_af_resolve_pin_af(uart_pins_af_config, pin_num, (machine_pin_af_unit_t)fn_unit);
 
     /* -- Baudrate -- */
-    self->baudrate = (uint32_t)args[ARG_baudrate].u_int;
-    if (self->baudrate == 0U) {
+    uint32_t baudrate = (uint32_t)args[ARG_baudrate].u_int;
+    if (baudrate == 0U) {
         mp_raise_ValueError(MP_ERROR_TEXT("baudrate must be non-zero"));
     }
-    machine_uart_baudrate_set(self);
 
     /* -- Data bits -- */
-    int bits = args[ARG_bits].u_int;
+    uint8_t bits = args[ARG_bits].u_int;
     /**
      * TODO: Add support for 7 (or below <8 bits) and 9 bits.
      */
     if (bits != 8) {
         mp_raise_ValueError(MP_ERROR_TEXT("bits must be 8"));
     }
-    self->bits = (uint8_t)bits;
 
     /* -- Parity -- */
     mp_obj_t parity_arg = args[ARG_parity].u_obj;
+    uint8_t parity;
     if (parity_arg == mp_const_none) {
-        self->parity = (uint8_t)CY_SCB_UART_PARITY_NONE;
+        parity = (uint8_t)CY_SCB_UART_PARITY_NONE;
     } else {
         int p = mp_obj_get_int(parity_arg);
         if (p == 0) {
-            self->parity = (uint8_t)CY_SCB_UART_PARITY_EVEN;
+            parity = (uint8_t)CY_SCB_UART_PARITY_EVEN;
         } else if (p == 1) {
-            self->parity = (uint8_t)CY_SCB_UART_PARITY_ODD;
+            parity = (uint8_t)CY_SCB_UART_PARITY_ODD;
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("parity must be None, 0 (even) or 1 (odd)"));
         }
     }
 
     /* -- Stop bits -- */
-    int stop = args[ARG_stop].u_int;
-    if (stop == 1) {
-        self->stop = (uint8_t)CY_SCB_UART_STOP_BITS_1;
-    } else if (stop == 2) {
-        self->stop = (uint8_t)CY_SCB_UART_STOP_BITS_2;
+    int stop_arg = args[ARG_stop].u_int;
+    uint8_t stop;
+    if (stop_arg == 1) {
+        stop = (uint8_t)CY_SCB_UART_STOP_BITS_1;
+    } else if (stop_arg == 2) {
+        stop = (uint8_t)CY_SCB_UART_STOP_BITS_2;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("stop bits must be 1 or 2"));
     }
 
     /* -- Timeouts -- */
-    if (args[ARG_timeout].u_int < 0) {
+    uint32_t timeout_ms = args[ARG_timeout].u_int;
+    if (timeout_ms < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("timeout must be non-negative"));
     }
-    self->timeout_ms = (uint32_t)args[ARG_timeout].u_int;
 
-    if (args[ARG_timeout_char].u_int < 0) {
+    uint32_t timeout_char_ms = args[ARG_timeout_char].u_int;
+    if (timeout_char_ms < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("timeout_char must be non-negative"));
     }
-    self->timeout_char_ms = (uint32_t)args[ARG_timeout_char].u_int;
     /* Make sure timeout_char is at least as long as a whole character (13 bits to be safe). */
-    uint32_t min_timeout_char = 13000 / self->baudrate + 1;
-    if (self->timeout_char_ms < min_timeout_char) {
-        self->timeout_char_ms = min_timeout_char;
+    uint32_t min_timeout_char = 13000 / baudrate + 1;
+    if (timeout_char_ms < min_timeout_char) {
+        timeout_char_ms = min_timeout_char;
     }
 
-    /* -- RX software ring buffer -- */
-    ringbuf_alloc(&self->rx_ringbuf, args[ARG_rxbuf].u_int);
+    machine_uart_obj_t *self = *self_ptr;
+
+    /* -- Object allocation -- */
+    bool is_new;
+    bool is_make_obj_required = (*self_ptr == NULL) ? true : false;
+    if (is_make_obj_required) {
+        machine_uart_obj_make_or_reuse(self_ptr, fn_unit, &is_new);
+        self = *self_ptr;
+    }
+
+    /* -- Reinitialization reset -- */
+    /* For reused UART() object or init() path */
+    if (!is_new) {
+        machine_uart_hw_deinit(self);
+        m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
+    }
+
+    /* -- UART params init -- */
+    self->tx = uart_pins_af_config[0].pin;
+    self->rx = uart_pins_af_config[1].pin;
+    self->rts = (pin_af_conf_rts_index != PIN_AF_CONFIG_INDEX_NONE) ? uart_pins_af_config[pin_af_conf_rts_index].pin : MP_OBJ_NULL;
+    self->cts = (pin_af_conf_cts_index != PIN_AF_CONFIG_INDEX_NONE) ? uart_pins_af_config[pin_af_conf_cts_index].pin : MP_OBJ_NULL;
+    self->flow = flow;
+    self->baudrate = baudrate;
+    self->bits = bits;
+    self->parity = parity;
+    self->stop = stop;
+    self->timeout_ms = timeout_ms;
+    self->timeout_char_ms = timeout_char_ms;
 
     /* -- IRQ init -- */
     #if MICROPY_PY_MACHINE_UART_IRQ
@@ -501,7 +548,60 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     #endif
 
     /* -- Initialise hardware -- */
-    machine_uart_hw_init(self);
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        ringbuf_alloc(&self->rx_ringbuf, args[ARG_rxbuf].u_int);
+        mp_hal_periph_pins_af_init(uart_pins_af_config, pin_num);
+        machine_uart_baudrate_set(self);
+        machine_uart_hw_init(self);
+        nlr_pop();
+    } else {
+        // Ensure partially-initialized instances are fully released on init failure.
+        machine_uart_hw_deinit(self);
+        m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
+        nlr_raise(nlr.ret_val);
+    }
+}
+
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+
+    /**
+     * Only the constructor takes the id.
+     * Its validation together with the rest of the arguments is
+     * delegated to machine_uart_init_implt() which also allocates
+     * the object self = NULL.
+    */
+    int uart_id = MACHINE_PIN_AF_UNIT_NONE;
+    size_t init_n_args = n_args;
+    const mp_obj_t *init_args = args;
+    if (n_args > 0 && mp_obj_is_int(args[0])) {
+        uart_id = mp_obj_get_int(args[0]);
+        if (uart_id < 0 || uart_id >= MICROPY_PY_MACHINE_SCB_NUM_ENTRIES) {
+            mp_raise_ValueError(MP_ERROR_TEXT("UART id out of range"));
+        }
+        init_n_args = n_args - 1;
+        init_args = args + 1;
+    } else if (n_args > 0) {
+        mp_raise_TypeError(MP_ERROR_TEXT("UART id must be an integer"));
+    }
+
+    machine_uart_obj_t *self = NULL;
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    machine_uart_init_impl(&self, uart_id, init_n_args, init_args, &kw_args);
+    return MP_OBJ_FROM_PTR(self);
+}
+
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    machine_uart_hw_deinit(self);
+    m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
+    machine_scb_obj_free(self->scb_obj);
+    mp_machine_uart_obj_free(self);
+}
+
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    machine_uart_init_impl(&self, self->id, n_args, pos_args, kw_args);
 }
 
 static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
@@ -621,6 +721,15 @@ static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
         ret = MP_STREAM_ERROR;
     }
     return ret;
+}
+
+void machine_uart_deinit_all() {
+    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_UART_NUM_ENTRIES; i++) {
+        machine_uart_obj_t *self = MP_STATE_PORT(machine_uart_obj[i]);
+        if (self != NULL) {
+            mp_machine_uart_deinit(self);
+        }
+    }
 }
 
 #if MICROPY_PY_MACHINE_UART_IRQ
