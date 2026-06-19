@@ -25,8 +25,8 @@
  */
 
 // Hardware timer using TCPWM0 counters.
-// IDs 0..3 Group 0 mapping counters 2, 3, 5, 6.
-// IDs 4..27 Group 1 mapping counters 256..279.
+// IDs 0..7 are Group 0 (32-bit) counters.
+// IDs 8..31 are Group 1 (16-bit) counters.
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -47,7 +47,7 @@
 // Constants
 // ---------------------------------------------------------------------------
 
-#define MACHINE_TIMER_NUM_INSTANCES  (28)
+#define MACHINE_TIMER_NUM_INSTANCES  (32)
 
 // Shared general-purpose timer divider target frequency used by this module.
 #define TIMER_CLK_HZ  (1000000UL)
@@ -65,7 +65,7 @@
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
-    uint8_t id;                  // 0..27
+    uint8_t id;                  // 0..31
     uint32_t counter_num;        // TCPWM0 counter index mapped from timer_hw[]
     en_clk_dst_t pclk_dst;
     uint16_t mode;               // TIMER_MODE_ONE_SHOT or TIMER_MODE_PERIODIC
@@ -87,17 +87,17 @@ const mp_obj_type_t machine_timer_type;  // forward declaration
 // Each row: X(timer_id, tcpwm_counter_num, irq)
 // ---------------------------------------------------------------------------
 
-#define TIMER_HW_ENTRY(id, counter, irq) counter,
+#define TIMER_HW_ENTRY(id, counter, irq, pclk) counter,
 static const uint32_t timer_hw[MACHINE_TIMER_NUM_INSTANCES] = {
-    MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_HW_ENTRY)
+    MICROPY_PY_MACHINE_TCPWM_HW_MAP(TIMER_HW_ENTRY)
 };
 #undef TIMER_HW_ENTRY
 
-#define TIMER_IRQ_CASE(id, counter, irq) case counter: \
+#define TIMER_IRQ_CASE(id, counter, irq, pclk) case counter: \
         return irq;
 static IRQn_Type machine_timer_counter_irq(uint32_t counter_num) {
     switch (counter_num) {
-        MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_IRQ_CASE)
+        MICROPY_PY_MACHINE_TCPWM_HW_MAP(TIMER_IRQ_CASE)
         default:
             mp_raise_msg_varg(&mp_type_ValueError,
                 MP_ERROR_TEXT("Timer counter %lu does not have an IRQ mapping"),
@@ -153,19 +153,19 @@ static void machine_timer_isr(machine_timer_obj_t *self) {
 }
 
 // Generate one IRQ handler per timer id for direct dispatch without scanning.
-#define TIMER_IRQ_HANDLER_DECL(id, counter, irq) \
+#define TIMER_IRQ_HANDLER_DECL(id, counter, irq, pclk) \
     static void machine_timer_irq_handler_##id(void) { \
         machine_timer_obj_t *self = timer_obj[id]; \
         if (self != NULL) { \
             machine_timer_isr(self); \
         } \
     }
-MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_IRQ_HANDLER_DECL)
+MICROPY_PY_MACHINE_TCPWM_HW_MAP(TIMER_IRQ_HANDLER_DECL)
 #undef TIMER_IRQ_HANDLER_DECL
 
-#define TIMER_IRQ_HANDLER_ENTRY(id, counter, irq) machine_timer_irq_handler_##id,
+#define TIMER_IRQ_HANDLER_ENTRY(id, counter, irq, pclk) machine_timer_irq_handler_##id,
 static const cy_israddress machine_timer_irq_handlers[MACHINE_TIMER_NUM_INSTANCES] = {
-    MICROPY_PY_MACHINE_TIMER_HW_MAP(TIMER_IRQ_HANDLER_ENTRY)
+    MICROPY_PY_MACHINE_TCPWM_HW_MAP(TIMER_IRQ_HANDLER_ENTRY)
 };
 #undef TIMER_IRQ_HANDLER_ENTRY
 
@@ -312,7 +312,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self,
     // Group 1 counters (num >= 256) are 16-bit; reject values that would overflow their period register.
     if (self->counter_num >= 256U && period_ticks_64 > TIMER_GROUP1_PERIOD_MAX) {
         mp_raise_msg_varg(&mp_type_ValueError,
-            MP_ERROR_TEXT("16-bit Timer(%u) period exceeds %lu ticks; use a shorter period/higher freq, or use a 32-bit Timer (id 0-3)"),
+            MP_ERROR_TEXT("16-bit Timer(%u) period exceeds %lu ticks; use a shorter period/higher freq, or use a 32-bit Timer (id 0-7)"),
             (unsigned)self->id,
             (unsigned long)TIMER_GROUP1_PERIOD_MAX);
     }

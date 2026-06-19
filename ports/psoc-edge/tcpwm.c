@@ -79,10 +79,10 @@ void machine_tcpwm_counter_free(uint32_t counter_num, mp_obj_t owner) {
 }
 
 en_clk_dst_t machine_tcpwm_counter_pclk(uint32_t counter_num) {
-#define TCPWM_PCLK_CASE(counter, pclk_dst) case counter: \
+#define TCPWM_PCLK_CASE(id, counter, irq, pclk_dst) case counter: \
         return pclk_dst;
     switch (counter_num) {
-        MICROPY_PY_MACHINE_TCPWM0_COUNTER_MAP(TCPWM_PCLK_CASE)
+        MICROPY_PY_MACHINE_TCPWM_HW_MAP(TCPWM_PCLK_CASE)
         default:
             mp_raise_msg_varg(&mp_type_ValueError,
                 MP_ERROR_TEXT("TCPWM0 counter %lu is not supported"), counter_num);

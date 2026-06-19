@@ -382,76 +382,64 @@ class PSE84PinGenerator(boardgen.PinGenerator):
         )
         print(file=out_header)
 
-    def print_timer_hw_map(self, out_header):
-        # PSE8x fixed timer-to-counter-to-IRQ mapping.
-        # This is hardware-defined per MCU and does not depend on board configuration.
-        print(file=out_header)
-        print("// Per-ID hardware mapping for timers to TCPWM counters and IRQs.", file=out_header)
-        print("// Each row: X(timer_id, tcpwm_counter_num, irq)", file=out_header)
-        print("#define MICROPY_PY_MACHINE_TIMER_HW_MAP(X) \\", file=out_header)
-
-        timer_entries = [
-            # Group 0: Timers 0-3 use counters 2, 3, 5, 6
-            "    X(0,   2U,   tcpwm_0_interrupts_2_IRQn) \\",
-            "    X(1,   3U,   tcpwm_0_interrupts_3_IRQn) \\",
-            "    X(2,   5U,   tcpwm_0_interrupts_5_IRQn) \\",
-            "    X(3,   6U,   tcpwm_0_interrupts_6_IRQn) \\",
-            # Group 1: Timers 4-27 use counters 256-279
-            "    X(4,   256U, tcpwm_0_interrupts_256_IRQn) \\",
-            "    X(5,   257U, tcpwm_0_interrupts_257_IRQn) \\",
-            "    X(6,   258U, tcpwm_0_interrupts_258_IRQn) \\",
-            "    X(7,   259U, tcpwm_0_interrupts_259_IRQn) \\",
-            "    X(8,   260U, tcpwm_0_interrupts_260_IRQn) \\",
-            "    X(9,   261U, tcpwm_0_interrupts_261_IRQn) \\",
-            "    X(10,  262U, tcpwm_0_interrupts_262_IRQn) \\",
-            "    X(11,  263U, tcpwm_0_interrupts_263_IRQn) \\",
-            "    X(12,  264U, tcpwm_0_interrupts_264_IRQn) \\",
-            "    X(13,  265U, tcpwm_0_interrupts_265_IRQn) \\",
-            "    X(14,  266U, tcpwm_0_interrupts_266_IRQn) \\",
-            "    X(15,  267U, tcpwm_0_interrupts_267_IRQn) \\",
-            "    X(16,  268U, tcpwm_0_interrupts_268_IRQn) \\",
-            "    X(17,  269U, tcpwm_0_interrupts_269_IRQn) \\",
-            "    X(18,  270U, tcpwm_0_interrupts_270_IRQn) \\",
-            "    X(19,  271U, tcpwm_0_interrupts_271_IRQn) \\",
-            "    X(20,  272U, tcpwm_0_interrupts_272_IRQn) \\",
-            "    X(21,  273U, tcpwm_0_interrupts_273_IRQn) \\",
-            "    X(22,  274U, tcpwm_0_interrupts_274_IRQn) \\",
-            "    X(23,  275U, tcpwm_0_interrupts_275_IRQn) \\",
-            "    X(24,  276U, tcpwm_0_interrupts_276_IRQn) \\",
-            "    X(25,  277U, tcpwm_0_interrupts_277_IRQn) \\",
-            "    X(26,  278U, tcpwm_0_interrupts_278_IRQn) \\",
-            "    X(27,  279U, tcpwm_0_interrupts_279_IRQn)",  # Last entry: no backslash
+    def print_tcpwm_hw_map(self, out_header):
+        # Unified TCPWM hardware map combining timer-id, counter, IRQ and PCLK.
+        # Both the timer map and the counter map cover the same 32 counters, so
+        # a single source-of-truth macro is sufficient.
+        # Each row: X(timer_id, tcpwm_counter_num, irq, pclk_dst)
+        hw_entries = [
+            # Group 0 (32-bit): Timer IDs 0-7 -> counters 0-7.
+            (0, "0U", "tcpwm_0_interrupts_0_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN0"),
+            (1, "1U", "tcpwm_0_interrupts_1_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN1"),
+            (2, "2U", "tcpwm_0_interrupts_2_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN2"),
+            (3, "3U", "tcpwm_0_interrupts_3_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN3"),
+            (4, "4U", "tcpwm_0_interrupts_4_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN4"),
+            (5, "5U", "tcpwm_0_interrupts_5_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN5"),
+            (6, "6U", "tcpwm_0_interrupts_6_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN6"),
+            (7, "7U", "tcpwm_0_interrupts_7_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN7"),
+            # Group 1 (16-bit): Timer IDs 8-31 -> counters 256-279.
+            (8, "256U", "tcpwm_0_interrupts_256_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN256"),
+            (9, "257U", "tcpwm_0_interrupts_257_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN257"),
+            (10, "258U", "tcpwm_0_interrupts_258_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN258"),
+            (11, "259U", "tcpwm_0_interrupts_259_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN259"),
+            (12, "260U", "tcpwm_0_interrupts_260_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN260"),
+            (13, "261U", "tcpwm_0_interrupts_261_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN261"),
+            (14, "262U", "tcpwm_0_interrupts_262_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN262"),
+            (15, "263U", "tcpwm_0_interrupts_263_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN263"),
+            (16, "264U", "tcpwm_0_interrupts_264_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN264"),
+            (17, "265U", "tcpwm_0_interrupts_265_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN265"),
+            (18, "266U", "tcpwm_0_interrupts_266_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN266"),
+            (19, "267U", "tcpwm_0_interrupts_267_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN267"),
+            (20, "268U", "tcpwm_0_interrupts_268_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN268"),
+            (21, "269U", "tcpwm_0_interrupts_269_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN269"),
+            (22, "270U", "tcpwm_0_interrupts_270_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN270"),
+            (23, "271U", "tcpwm_0_interrupts_271_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN271"),
+            (24, "272U", "tcpwm_0_interrupts_272_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN272"),
+            (25, "273U", "tcpwm_0_interrupts_273_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN273"),
+            (26, "274U", "tcpwm_0_interrupts_274_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN274"),
+            (27, "275U", "tcpwm_0_interrupts_275_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN275"),
+            (28, "276U", "tcpwm_0_interrupts_276_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN276"),
+            (29, "277U", "tcpwm_0_interrupts_277_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN277"),
+            (30, "278U", "tcpwm_0_interrupts_278_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN278"),
+            (31, "279U", "tcpwm_0_interrupts_279_IRQn", "PCLK_TCPWM0_CLOCK_COUNTER_EN279"),
         ]
 
-        for entry in timer_entries:
-            print(entry, file=out_header)
         print(file=out_header)
-
-    def print_tcpwm_counter_map(self, out_header):
-        print(file=out_header)
-        print("// All exposed TCPWM LINE counters and their PCLK destinations.", file=out_header)
-        print("// Each row: X(tcpwm_counter_num, pclk_dst)", file=out_header)
-        print("#define MICROPY_PY_MACHINE_TCPWM0_COUNTER_MAP(X) \\", file=out_header)
-
-        lines = []
-        for counter in self._tcpwm_counters:
-            pclk = f"PCLK_TCPWM0_CLOCK_COUNTER_EN{counter}"
-            lines.append(f"    X({counter}U, {pclk})")
-
-        if lines:
-            for i, line in enumerate(lines):
-                suffix = " \\" if i < len(lines) - 1 else ""
-                print(f"{line}{suffix}", file=out_header)
-        else:
-            print("    /* no TCPWM LINE counters exposed */", file=out_header)
-
+        print(
+            "// Unified TCPWM hardware map: timer_id, counter_num, IRQ, PCLK destination.",
+            file=out_header,
+        )
+        print("// Each row: X(timer_id, tcpwm_counter_num, irq, pclk_dst)", file=out_header)
+        print("#define MICROPY_PY_MACHINE_TCPWM_HW_MAP(X) \\", file=out_header)
+        for i, (tid, counter, irq, pclk) in enumerate(hw_entries):
+            suffix = " \\" if i < len(hw_entries) - 1 else ""
+            print(f"    X({tid:2d}, {counter}, {irq}, {pclk}){suffix}", file=out_header)
         print(file=out_header)
 
     def print_af_header(self, out_af_header):
         self.print_scb_defines(out_af_header)
         self.print_tcpwm_defines(out_af_header)
-        self.print_timer_hw_map(out_af_header)
-        self.print_tcpwm_counter_map(out_af_header)
+        self.print_tcpwm_hw_map(out_af_header)
 
     # Add additional header file for AF defines and constants
     def extra_args(self, parser):
