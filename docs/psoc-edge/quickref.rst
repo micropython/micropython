@@ -826,37 +826,7 @@ Hardware timer using the TCPWM0 peripheral on the PSOC™ Edge. See :ref:`machin
     - For **16-bit timers** (IDs ``4`` to ``27``), the maximum period is **65 ms**.
     - With ``freq``, the minimum frequency is **1 Hz** and the maximum is **1 000 000 Hz** (1 MHz).
     - Computed period ticks must fit the selected counter width: **1-4 294 967 295** for 32-bit timers, **1-65 535** for 16-bit timers.
-
-Constructor
-^^^^^^^^^^^^
-
-.. class:: Timer(id, *, mode=Timer.PERIODIC, period, freq, callback, hard=False)
-
-    Construct a hardware timer.
-
-        - ``id`` — timer instance identifier. Must be in the range **0** to **27**.
-        - ``mode`` — ``Timer.ONE_SHOT`` or ``Timer.PERIODIC``. Default is ``Timer.PERIODIC``.
-        - ``period`` — timer period in **milliseconds**. Must be ``> 0``.
-            Either ``period`` or ``freq`` must be provided; supplying both raises a ``ValueError``.
-        - ``freq`` — timer frequency in Hz. Must be ``> 0``. Takes precedence over ``period`` when both are supplied.
-        - ``callback`` — a callable invoked on each timer expiry. Receives the ``Timer`` object as its only argument.
-            Must be a callable; passing a non-callable raises a ``ValueError``.
-        - ``hard`` — must be a ``bool``.
-
-    Raises ``ValueError`` if:
-
-        - ``id`` is outside ``0``-``27``.
-        - A ``Timer`` with the given ``id`` already exists (call ``deinit()`` first).
-        - Neither ``freq`` nor ``period`` is provided.
-        - ``period`` is ``0`` or negative.
-        - ``freq`` is ``0`` or negative.
-        - The computed period exceeds the selected counter range (32-bit IDs ``0``-``3``, 16-bit IDs ``4``-``27``), e.g. ``Timer(4, period=1000, ...)``.
-        - ``hard`` is not a ``bool``.
-        - ``callback`` is not callable.
-
-.. note::
-
-    The ``hard`` parameter for ``Timer`` is still under development for this port and is not yet completely implemented.
+    - The ``hard`` parameter for ``Timer`` is still under development for this port and is not yet completely implemented.
 
 Complete example
 ^^^^^^^^^^^^^^^^
