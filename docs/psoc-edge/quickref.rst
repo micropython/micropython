@@ -720,7 +720,6 @@ Constructor
 
    These parameters are not implemented:
    
-   - ``id``
    - ``txbuf``
    - ``invert`` 
   
