@@ -96,7 +96,7 @@ def test_frequency_input():
     finally:
         tim_freq.deinit()
 
-    # Verify Timer ID 3 (counter 2) can be constructed and deinitialized.
+    # Verify Timer ID 3 (counter 3) can be constructed and deinitialized.
     tim_id3 = Timer(3, period=100, mode=Timer.ONE_SHOT, callback=call_oneshot)
     tim_id3.deinit()
 
@@ -111,14 +111,14 @@ def test_negative_cases():
         lambda: Timer(-1, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
     )
     expect_value_error(
-        "invalid_id_28:",
-        lambda: Timer(28, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
+        "invalid_id_32:",
+        lambda: Timer(32, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
     )
 
-    # Group-1 timer IDs (e.g. 4) are valid, but period is constrained by 16-bit counter width.
+    # Group-1 timer IDs (e.g. 8) are valid, but period is constrained by 16-bit counter width.
     expect_value_error(
-        "id_4_16bit_limit:",
-        lambda: Timer(4, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
+        "id_8_16bit_limit:",
+        lambda: Timer(8, period=1000, mode=Timer.ONE_SHOT, callback=call_oneshot),
     )
 
     # Constructor check for duplicate object creation on the same Timer ID.

@@ -17,8 +17,8 @@ finally:
     pwm_owner.deinit()
 
 # A new PWM wants to use a TCPWM instance used by a Timer.
-# P16_2 uses TCPWM0 counter 2, which is also used by Timer(0).
-timer_owner = Timer(0, period=10000, mode=Timer.PERIODIC, callback=timer_noop_cb)
+# P16_2 uses TCPWM0 counter 2, which is now used by Timer(2).
+timer_owner = Timer(2, period=10000, mode=Timer.PERIODIC, callback=timer_noop_cb)
 try:
     pwm_conflict = PWM("P16_2", freq=100, duty_u16=32767)
 except Exception as e:
@@ -32,9 +32,9 @@ finally:
 
 # A new PWM wants to use a TCPWM instance used by Timers, and all fallback
 # counters on the pin are already occupied.
-# P16_2 exposes LINE counters 2 and 258. Reserve both via Timer(0) and Timer(6).
-timer_owner_a = Timer(0, period=10000, mode=Timer.PERIODIC, callback=timer_noop_cb)
-timer_owner_b = Timer(6, period=10, mode=Timer.PERIODIC, callback=timer_noop_cb)
+# P16_2 exposes LINE counters 2 and 258. Reserve both via Timer(2) and Timer(10).
+timer_owner_a = Timer(2, period=10000, mode=Timer.PERIODIC, callback=timer_noop_cb)
+timer_owner_b = Timer(10, period=10, mode=Timer.PERIODIC, callback=timer_noop_cb)
 try:
     pwm_conflict = PWM("P16_2", freq=100, duty_u16=32767)
 except Exception as e:
@@ -50,7 +50,7 @@ finally:
 pwm_owner = PWM("P16_2", freq=100, duty_u16=32767)
 try:
     try:
-        Timer(0, period=1000, mode=Timer.ONE_SHOT, callback=timer_noop_cb)
+        Timer(2, period=1000, mode=Timer.ONE_SHOT, callback=timer_noop_cb)
     except ValueError as e:
         print("timer_vs_pwm_conflict:", e)
 finally:
