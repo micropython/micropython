@@ -5,15 +5,6 @@ import sys
 
 import micropython
 
-# The Alif port has an opaque send queue. The Alif CAN controller
-# provides no information about the slot number where the message
-# is stored, and it does not allow to cancel specific messages.
-# This test needs the slot number, which is not available.
-
-if "alif" in sys.platform:
-    print("SKIP")
-    raise SystemExit
-
 micropython.alloc_emergency_exception_buf(256)
 seed(0)
 
