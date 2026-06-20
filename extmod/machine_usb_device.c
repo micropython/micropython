@@ -117,7 +117,14 @@ static mp_obj_t usb_device_submit_xfer(mp_obj_t self, mp_obj_t ep, mp_obj_t buff
         mp_raise_OSError(MP_EBUSY);
     }
 
+    #if TUSB_VERSION_NUMBER >= 2001
+    // TinyUSB 0.20.1 added an is_isr argument; this submit path runs from the
+    // MicroPython scheduler, never an ISR. (ESP-IDF bundles an older TinyUSB
+    // without the argument.)
+    result = usbd_edpt_xfer(RHPORT, ep_addr, buf_info.buf, buf_info.len, false);
+    #else
     result = usbd_edpt_xfer(RHPORT, ep_addr, buf_info.buf, buf_info.len);
+    #endif
 
     if (result) {
         // Store the buffer object until the transfer completes
