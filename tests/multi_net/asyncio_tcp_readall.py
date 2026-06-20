@@ -10,17 +10,13 @@ PORT = 8000
 
 
 async def handle_connection(reader, writer):
-    writer.write(b"a")
-    await writer.drain()
+    await writer.awrite(b"a")
 
     # Split the first 2 bytes up so the client must wait for the second one
     await asyncio.sleep(1)
 
-    writer.write(b"b")
-    await writer.drain()
-
-    writer.write(b"c")
-    await writer.drain()
+    await writer.awrite(b"b")
+    await writer.awrite(b"c")
 
     print("close")
     writer.close()
