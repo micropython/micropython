@@ -2,16 +2,6 @@ from machine import CAN
 import time
 import sys
 
-# The Alif port has an opaque send queue. The Alif CAN controller
-# provides no information about the slot number where the message
-# is stored, and it does not allow to cancel specific messages.
-# This test needs both the slot number, and uses cancel_send() for
-# dedicated messages, which both is not available.
-
-if "alif" in sys.platform:
-    print("SKIP")
-    raise SystemExit
-
 # Check that cancelling a low priority outgoing message and replacing it with a
 # high priority message causes it to be transmitted successfully onto a busy bus
 
@@ -47,7 +37,8 @@ def instance0():
     # instance1() from sending anything lower priority than this
     while len(recv) < ITERS:
         for id in range(0x5000, 0x6000):
-            can.send(id, b"BABBLE", CAN.FLAG_EXT_ID)
+            while can.send(id, b"BABBLE", CAN.FLAG_EXT_ID) is None:
+                pass
             if len(recv) >= ITERS:
                 break
 
