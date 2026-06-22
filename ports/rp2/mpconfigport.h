@@ -97,6 +97,7 @@
 #endif
 #define MICROPY_ALLOC_PATH_MAX                  (128)
 #define MICROPY_QSTR_BYTES_IN_HASH              (1)
+#define MICROPY_GC_FAST_TABLE_SCANS             (1)
 
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD            (1)
