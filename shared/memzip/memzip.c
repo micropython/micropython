@@ -65,8 +65,7 @@ bool memzip_is_dir(const char *filename) {
 
 }
 
-MEMZIP_RESULT memzip_locate(const char *filename, void **data, size_t *len)
-{
+MEMZIP_RESULT memzip_locate(const char *filename, void **data, size_t *len) {
     const MEMZIP_FILE_HDR *file_hdr = memzip_find_file_header(filename);
     if (file_hdr == NULL) {
         return MZ_NO_FILE;
