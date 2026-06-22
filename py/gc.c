@@ -78,6 +78,33 @@
 #define ATB_2_IS_FREE(a) (((a) & ATB_MASK_2) == 0)
 #define ATB_3_IS_FREE(a) (((a) & ATB_MASK_3) == 0)
 
+#if MICROPY_GC_FAST_TABLE_SCANS
+// An ATB byte/word that is entirely AT_TAIL (0b10) entries: four / sixteen
+// consecutive tail blocks, i.e. the interior of a large allocation. Used by
+// the sweep to coalesce long tail runs instead of walking them block by block.
+#define ATB_ALL_TAIL_BYTE (0xaa)
+#define ATB_ALL_TAIL_WORD (0xaaaaaaaaUL)
+#define BLOCKS_PER_ATB_WORD (BLOCKS_PER_ATB * 4)
+
+// Read four ATB bytes as a word during the sweep's tail-run fast path.
+// We deliberately avoid `*(uint32_t *)atb`: the allocation table is a byte
+// array, so casting it to uint32_t* violates strict aliasing, and py/ is built
+// with strict aliasing enabled on most ports - an optimiser would then be free
+// to assume this word read doesn't alias the byte stores to the same table and
+// reorder them. memcpy is the well-defined idiom; with the alignment hint (the
+// caller guarantees `atb` is word-aligned, via the byte-step dance) the compiler
+// lowers it to a single aligned load, so it is as fast as the cast and never
+// triggers an unaligned-access fault on Cortex-M0+ / Xtensa / RISC-V.
+static inline uint32_t gc_read_atb_word(const byte *atb) {
+    #if defined(__GNUC__)
+    atb = __builtin_assume_aligned(atb, sizeof(uint32_t));
+    #endif
+    uint32_t w;
+    memcpy(&w, atb, sizeof(w));
+    return w;
+}
+#endif
+
 #if MICROPY_GC_SPLIT_HEAP
 #define NEXT_AREA(area) ((area)->next)
 #else
@@ -689,10 +716,55 @@ static void gc_sweep_free_blocks(void) {
 
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         size_t last_used_block = 0;
-        assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+        size_t end_block = area->gc_last_used_block;
+        assert(end_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 
-        for (size_t block = 0; block <= area->gc_last_used_block; block++) {
+        for (size_t block = 0; block <= end_block; block++) {
             MICROPY_GC_HOOK_LOOP(block);
+
+            // Fast path: coalesce long runs of tail blocks (the body of a large
+            // allocation) a whole ATB word/byte at a time instead of block by
+            // block. A run of AT_TAIL never contains a HEAD/MARK, so free_tail is
+            // constant across it; an all-tail word is therefore wholly live or
+            // wholly dead. This is the dominant sweep cost for multi-block buffers.
+            #if MICROPY_GC_FAST_TABLE_SCANS
+            if ((block & (BLOCKS_PER_ATB - 1)) == 0) {
+                byte *atb = &area->gc_alloc_table_start[block / BLOCKS_PER_ATB];
+                // Coalesce the run: word-step (16 blocks) when the ATB pointer is
+                // word-aligned and a full all-tail word remains, otherwise byte-step
+                // (4 blocks). The byte steps also walk up to alignment and mop up the
+                // final partial word. The word read only runs when atb is aligned, as
+                // an unaligned access would fault on Cortex-M0+ / RISC-V. In both
+                // cases: free the run if dead (free_tail), else extend last_used_block.
+                while (block + BLOCKS_PER_ATB - 1 <= end_block && *atb == ATB_ALL_TAIL_BYTE) {
+                    if (((uintptr_t)atb & 3) == 0
+                        && block + BLOCKS_PER_ATB_WORD - 1 <= end_block
+                        && gc_read_atb_word(atb) == ATB_ALL_TAIL_WORD) {
+                        // Long runs are swept here; let ports run their GC-loop hook.
+                        MICROPY_GC_HOOK_LOOP(block);
+                        if (free_tail) {
+                            memset(atb, 0, sizeof(uint32_t));
+                        } else {
+                            last_used_block = block + BLOCKS_PER_ATB_WORD - 1;
+                        }
+                        block += BLOCKS_PER_ATB_WORD;
+                        atb += 4;
+                    } else {
+                        if (free_tail) {
+                            *atb = 0;
+                        } else {
+                            last_used_block = block + BLOCKS_PER_ATB - 1;
+                        }
+                        block += BLOCKS_PER_ATB;
+                        atb += 1;
+                    }
+                }
+                if (block > end_block) {
+                    break;
+                }
+            }
+            #endif
+
             switch (ATB_GET_KIND(area, block)) {
                 case AT_HEAD:
                     free_tail = 1;
