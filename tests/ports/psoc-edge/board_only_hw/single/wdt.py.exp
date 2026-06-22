@@ -1,0 +1,14 @@
+***** Test 1: Wrong WDT id *****
+ValueError raised - PASS
+***** Test 2: WDT timeout too short *****
+ValueError raised - PASS
+***** Test 3: WDT timeout too long *****
+ValueError raised - PASS
+***** Test 4: WDT created with 5000 ms timeout *****
+WDT created - PASS
+***** Test 5: Feed *****
+Feed OK - PASS
+***** Test 6: Feed again *****
+Feed OK - PASS
+***** Test 7: Second WDT instance rejected *****
+ValueError raised - PASS
