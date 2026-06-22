@@ -84,6 +84,11 @@
 // the sweep to coalesce long tail runs instead of walking them block by block.
 #define ATB_ALL_TAIL_BYTE (0xaa)
 #define ATB_ALL_TAIL_WORD (0xaaaaaaaaUL)
+// An ATB byte/word that is entirely AT_FREE (0b00): four / sixteen consecutive
+// free blocks, i.e. a large gap (e.g. a freed buffer below still-live data).
+// The sweep coalesces these the same way it coalesces all-tail runs.
+#define ATB_ALL_FREE_BYTE (0x00)
+#define ATB_ALL_FREE_WORD (0x00000000UL)
 #define BLOCKS_PER_ATB_WORD (BLOCKS_PER_ATB * 4)
 
 // Read four ATB bytes as a word during the sweep's tail-run fast path.
@@ -736,28 +741,41 @@ static void gc_sweep_free_blocks(void) {
                 // final partial word. The word read only runs when atb is aligned, as
                 // an unaligned access would fault on Cortex-M0+ / RISC-V. In both
                 // cases: free the run if dead (free_tail), else extend last_used_block.
-                while (block + BLOCKS_PER_ATB - 1 <= end_block && *atb == ATB_ALL_TAIL_BYTE) {
+                // Coalesce both all-tail runs (allocation bodies) and all-free
+                // runs (large gaps below live data). An all-tail byte/word is freed
+                // when dead (free_tail) else extends last_used_block; an all-free
+                // byte/word needs no action - it is already free and not "used".
+                while (block + BLOCKS_PER_ATB - 1 <= end_block
+                       && (*atb == ATB_ALL_TAIL_BYTE || *atb == ATB_ALL_FREE_BYTE)) {
+                    int is_tail = (*atb == ATB_ALL_TAIL_BYTE);
                     if (((uintptr_t)atb & 3) == 0
-                        && block + BLOCKS_PER_ATB_WORD - 1 <= end_block
-                        && gc_read_atb_word(atb) == ATB_ALL_TAIL_WORD) {
-                        // Long runs are swept here; let ports run their GC-loop hook.
-                        MICROPY_GC_HOOK_LOOP(block);
-                        if (free_tail) {
-                            memset(atb, 0, sizeof(uint32_t));
-                        } else {
-                            last_used_block = block + BLOCKS_PER_ATB_WORD - 1;
+                        && block + BLOCKS_PER_ATB_WORD - 1 <= end_block) {
+                        uint32_t w = gc_read_atb_word(atb);
+                        if (w == ATB_ALL_TAIL_WORD || w == ATB_ALL_FREE_WORD) {
+                            // Long runs are swept here; let ports run their GC-loop hook.
+                            MICROPY_GC_HOOK_LOOP(block);
+                            if (w == ATB_ALL_TAIL_WORD) {
+                                if (free_tail) {
+                                    memset(atb, 0, sizeof(uint32_t));
+                                } else {
+                                    last_used_block = block + BLOCKS_PER_ATB_WORD - 1;
+                                }
+                            }
+                            block += BLOCKS_PER_ATB_WORD;
+                            atb += 4;
+                            continue;
                         }
-                        block += BLOCKS_PER_ATB_WORD;
-                        atb += 4;
-                    } else {
+                        // aligned but a mixed word: fall to the byte step
+                    }
+                    if (is_tail) {
                         if (free_tail) {
                             *atb = 0;
                         } else {
                             last_used_block = block + BLOCKS_PER_ATB - 1;
                         }
-                        block += BLOCKS_PER_ATB;
-                        atb += 1;
                     }
+                    block += BLOCKS_PER_ATB;
+                    atb += 1;
                 }
                 if (block > end_block) {
                     break;
