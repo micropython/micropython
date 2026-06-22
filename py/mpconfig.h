@@ -780,6 +780,15 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_GC_SPLIT_HEAP_AUTO (0)
 #endif
 
+// Whether the GC scans its per-block tables a word (16/32 blocks) at a time
+// instead of one block at a time, where a whole word is uniform. Covers the
+// sweep's allocation-table tail-block and free runs, and the finaliser-table
+// scan. Greatly speeds collection when large pure-data buffers (e.g. multi-
+// KB/MB bytearrays) or large free gaps are present; costs a little code.
+#ifndef MICROPY_GC_FAST_TABLE_SCANS
+#define MICROPY_GC_FAST_TABLE_SCANS (0)
+#endif
+
 // Hook to run code during time consuming garbage collector operations
 // *i* is the loop index variable (e.g. can be used to run every x loops)
 #ifndef MICROPY_GC_HOOK_LOOP
