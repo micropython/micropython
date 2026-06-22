@@ -36,18 +36,12 @@ import subprocess
 PATHS = [
     "drivers/**/*.[ch]",
     "examples/**/*.[ch]",
-    "extmod/*.[ch]",
-    "extmod/btstack/*.[ch]",
-    "extmod/nimble/**/*.[ch]",
+    "extmod/**/*.[ch]",
     "lib/mbedtls_errors/tester.c",
-    "shared/libc/*.[ch]",
-    "shared/netutils/*.[ch]",
-    "shared/timeutils/*.[ch]",
-    "shared/runtime/*.[ch]",
-    "shared/tinyusb/*.[ch]",
     "mpy-cross/*.[ch]",
     "ports/**/*.[ch]",
-    "py/*.[ch]",
+    "py/**/*.[ch]",
+    "shared/**/*.[ch]",
 ]
 
 EXCLUSIONS = [
