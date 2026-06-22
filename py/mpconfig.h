@@ -700,6 +700,14 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE (128)
 #endif
 
+// Allow pure-data allocations (e.g. bytearray/array buffers) to be tagged so
+// the GC mark phase skips scanning their contents for pointers. Costs one bit
+// per heap block for the no-trace table; saves scanning large data buffers
+// (framebuffers etc.) on every collection.
+#ifndef MICROPY_GC_NO_SCAN
+#define MICROPY_GC_NO_SCAN (0)
+#endif
+
 // Whether to use fast versions of bitwise operations (and, or, xor) when the
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE
