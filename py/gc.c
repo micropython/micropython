@@ -657,6 +657,22 @@ static void gc_sweep_run_finalisers(void) {
         // Small speed optimisation: skip over empty FTB blocks
         size_t ftb_end = area->gc_last_used_block / BLOCKS_PER_FTB; // index is inclusive
         for (size_t ftb_idx = 0; ftb_idx <= ftb_end; ftb_idx++) {
+            #if MICROPY_GC_FAST_TABLE_SCANS && MICROPY_ENABLE_FINALISER && !MICROPY_PY_WEAKREF
+            // Sibling of the sweep's uniform-run coalescing, for the finaliser
+            // table: skip spans with no finaliser bits a word (32 blocks) at a
+            // time. The FTB over a large pure-data buffer is all zero but is
+            // otherwise scanned byte-by-byte up to the high-water mark (costly on
+            // a PSRAM heap). Aligned word loads only (byte-walk to alignment via
+            // the for-loop first); a non-zero word always falls through to the
+            // per-byte handler, so finaliser execution is unaffected. Restricted
+            // to the FTB-only case (weakref disabled), the table walked here.
+            if (((uintptr_t)&area->gc_finaliser_table_start[ftb_idx] & 3) == 0
+                && ftb_idx + 3 <= ftb_end
+                && gc_read_atb_word(&area->gc_finaliser_table_start[ftb_idx]) == 0) {
+                ftb_idx += 3; // the for-loop's ++ advances a full 4-byte word
+                continue;
+            }
+            #endif
             #if MICROPY_ENABLE_FINALISER
             byte ftb = area->gc_finaliser_table_start[ftb_idx];
             size_t block = ftb_idx * BLOCKS_PER_FTB;
