@@ -44,7 +44,10 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
     }
     vstr->alloc = alloc;
     vstr->len = 0;
-    vstr->buf = m_new(char, vstr->alloc);
+    // vstr holds raw bytes only (string/repr/JSON building), never heap
+    // pointers, so tag it no-scan to keep it out of the GC mark scan. Growth
+    // via m_renew preserves the tag (gc_realloc carries it across a move).
+    vstr->buf = m_new_no_scan(char, vstr->alloc);
     vstr->fixed_buf = false;
 }
 
