@@ -97,6 +97,8 @@
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc-edge/machine_pwm.c"
 
+#define MICROPY_PY_MACHINE_WDT                  (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/psoc-edge/machine_wdt.c"
 
 #define MICROPY_PY_SSL_DTLS                     (0)
 #define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS)

@@ -331,6 +331,7 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_crypto_core_hw.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_crypto_core_trng.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_rtc.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_wdt.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_common.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_i2c.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_sd_host.c \
