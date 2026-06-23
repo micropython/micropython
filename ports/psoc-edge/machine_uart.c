@@ -189,7 +189,7 @@ static void machine_uart_scb_isr(mp_obj_t hw_uart_obj) {
     #endif
 }
 
-void machine_uart_obj_make_or_reuse(machine_uart_obj_t **self_ptr, uint8_t id, bool *is_new) {
+static void machine_uart_obj_make_or_reuse(machine_uart_obj_t **self_ptr, uint8_t id, bool *is_new) {
     /**
      * UART() constructor path:
      *
@@ -446,11 +446,11 @@ static void machine_uart_init_impl(machine_uart_obj_t **self_ptr, int uart_id, s
     }
 
     /* -- Resolve ID - pin match -- */
-    uint8_t fn_unit = uart_id;
-    mp_hal_periph_pins_af_resolve_fn_unit(uart_pins_af_config, pin_num, MACHINE_PIN_AF_FN_UART, (machine_pin_af_unit_t *)&fn_unit);
+    machine_pin_af_unit_t fn_unit = (machine_pin_af_unit_t)uart_id;
+    mp_hal_periph_pins_af_resolve_fn_unit(uart_pins_af_config, pin_num, MACHINE_PIN_AF_FN_UART, &fn_unit);
 
     /* -- Resolve not provided AF pins -- */
-    mp_hal_periph_pins_af_resolve_pin_af(uart_pins_af_config, pin_num, (machine_pin_af_unit_t)fn_unit);
+    mp_hal_periph_pins_af_resolve_pin_af(uart_pins_af_config, pin_num, fn_unit);
 
     /* -- Baudrate -- */
     uint32_t baudrate = (uint32_t)args[ARG_baudrate].u_int;
@@ -495,15 +495,15 @@ static void machine_uart_init_impl(machine_uart_obj_t **self_ptr, int uart_id, s
     }
 
     /* -- Timeouts -- */
-    uint32_t timeout_ms = args[ARG_timeout].u_int;
-    if (timeout_ms < 0) {
+    if (args[ARG_timeout].u_int < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("timeout must be non-negative"));
     }
+    uint32_t timeout_ms = args[ARG_timeout].u_int;
 
-    uint32_t timeout_char_ms = args[ARG_timeout_char].u_int;
-    if (timeout_char_ms < 0) {
+    if (args[ARG_timeout_char].u_int < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("timeout_char must be non-negative"));
     }
+    uint32_t timeout_char_ms = args[ARG_timeout_char].u_int;
     /* Make sure timeout_char is at least as long as a whole character (13 bits to be safe). */
     uint32_t min_timeout_char = 13000 / baudrate + 1;
     if (timeout_char_ms < min_timeout_char) {
@@ -513,7 +513,7 @@ static void machine_uart_init_impl(machine_uart_obj_t **self_ptr, int uart_id, s
     machine_uart_obj_t *self = *self_ptr;
 
     /* -- Object allocation -- */
-    bool is_new;
+    bool is_new = false;
     bool is_make_obj_required = (*self_ptr == NULL) ? true : false;
     if (is_make_obj_required) {
         machine_uart_obj_make_or_reuse(self_ptr, fn_unit, &is_new);
