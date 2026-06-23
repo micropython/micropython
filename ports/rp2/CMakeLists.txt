@@ -480,6 +480,9 @@ endif()
 list(APPEND MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/mbedtls/mbedtls_alt.c
 )
+if (MICROPY_PY_LWIP)
+    list(APPEND MICROPY_SOURCE_EXTMOD ${MICROPY_DIR}/extmod/network_lwip.c)
+endif()
 
 # Add qstr sources for extmod and usermod, in case they are modified by components above.
 list(APPEND MICROPY_SOURCE_QSTR

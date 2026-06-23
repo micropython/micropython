@@ -16,4 +16,7 @@
 
 #include "pico/rand.h"
 
+#define PPP_SUPPORT                     1
+#define PPPOS_SUPPORT                   1
+
 #endif // MICROPY_INCLUDED_RP2_LWIP_LWIPOPTS_H

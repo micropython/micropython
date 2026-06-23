@@ -35,6 +35,10 @@
 #include "lwip/netif.h"
 #include "lwip/timeouts.h"
 
+#ifndef sys_untimeout_all_with_arg
+#define sys_untimeout_all_with_arg(arg) do {} while(0)
+#endif
+
 // Poll lwIP every 64ms by default
 #define LWIP_TICK_RATE_MS 64
 
