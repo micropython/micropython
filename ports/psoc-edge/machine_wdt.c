@@ -27,41 +27,24 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_wdt.c via MICROPY_PY_MACHINE_WDT_INCLUDEFILE.
 
-// PSoC Edge WDT implementation using the PDL cy_wdt driver.
-//
-// Hardware: CY_IP_MXS22SRSS, 22-bit counter clocked by PILO at 32768 Hz.
-//
-// The WDT resets the device on the 3rd consecutive unhandled match event.
-// Reset period:
-//   ticks = MatchValue + 2 * 2^(match_bits + 1)
-//
-// Cy_WDT_SetMatchBits(N) writes N to SRSS_WDT_MATCH2.IGNORE_BITS_ABOVE, making
-// bits [N:0] the active comparison window → effective period = 2^(N+1) ticks.
-// MatchValue offsets the first match within that period.
-//
-// Feed (Cy_WDT_ClearWatchdog) clears the pending match flag, resetting the
-// 3-match counter to zero.
-
 #include "cy_wdt.h"
 #include "cy_sysclk.h"
 
 #include "modmachine.h"
 
-// PILO frequency used by the WDT on PSoC Edge (CY_IP_MXS22SRSS).
+// PILO frequency used by the WDT
 #define WDT_CLK_FREQ_HZ     (CY_SYSCLK_PILO_FREQ)   // 32768 Hz
 
-// WDT counter bit-width on PSoC Edge.
-#define WDT_COUNTER_BITS    (22U)
+// WDT counter bit-width
+#define WDT_COUNTER_BITS    (SRSS_NUM_WDT_A_BITS)
 
-// Maximum achievable timeout:
-//   max_ticks = (2^22 - 1) + 2 * 2^22 = 3 * 2^22 - 1 = 12582911
-//   max_ms    = 12582911 * 1000 / 32768 = 383999 ms
+// Maximum timeout: MatchValue = period - 1, period = 2^SRSS_NUM_WDT_A_BITS
+//   max_ticks = 3 * 2^SRSS_NUM_WDT_A_BITS - 1
 #define WDT_TIMEOUT_MAX_MS  ((uint32_t)(((3ULL * (1UL << WDT_COUNTER_BITS) - 1ULL) \
     * 1000ULL) / WDT_CLK_FREQ_HZ))
 
-// Minimum achievable timeout (IgnoreBits = WDT_COUNTER_BITS - 1 = 21,
-// period = 2 ticks, MatchValue = 0 → ticks = 2):
-//   min_ms = 2 * 1000 / 32768 < 1ms; we clamp to 1 ms.
+// Minimum: hardware enforces IGNORE_BITS_ABOVE >= 3 (period >= 16 ticks ≈ 0.49 ms).
+// We clamp to 1 ms as a safe lower bound.
 #define WDT_TIMEOUT_MIN_MS  (1U)
 
 typedef struct _machine_wdt_obj_t {
@@ -81,23 +64,14 @@ static uint32_t wdt_log2_floor(uint32_t x) {
     return n;
 }
 
-// Configure and start the WDT with the given timeout in milliseconds.
-// The WDT will reset the device if not fed within approximately timeout_ms.
 static void wdt_init(mp_int_t timeout_ms) {
-    // Convert ms to PILO ticks (no overflow: max is 12582911 < 2^24).
+    // Convert ms to PILO ticks.
     uint32_t timeout_ticks = (uint32_t)((uint64_t)timeout_ms * WDT_CLK_FREQ_HZ / 1000UL);
 
-    // Choose IgnoreBits such that period = 2^(22 - IgnoreBits) <= timeout_ticks / 2.
-    // This ensures MatchValue = timeout_ticks - 2 * period >= 0.
+    // Choose period_bits such that period = 2^period_bits <= timeout_ticks / 2.
+    // This ensures match = timeout_ticks - 2 * period >= 0.
     uint32_t half_ticks = timeout_ticks / 2U;
     uint32_t period_bits = (half_ticks > 0U) ? wdt_log2_floor(half_ticks) : 1U;
-    // Clamp to the valid counter width.
-    if (period_bits > WDT_COUNTER_BITS) {
-        period_bits = WDT_COUNTER_BITS;
-    }
-    if (period_bits < 1U) {
-        period_bits = 1U;
-    }
 
     // SetMatchBits(N) makes bits [N:0] active → (N+1)-bit counter → period = 2^(N+1).
     // We want period = 2^period_bits, so bitPos = period_bits - 1.
@@ -139,7 +113,7 @@ static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t
 
 static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     (void)self;
-    // Unlock → clear → lock, matching the official Infineon example pattern.
+
     Cy_WDT_Unlock();
     Cy_WDT_ClearWatchdog();
     Cy_WDT_Lock();
