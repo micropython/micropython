@@ -39,12 +39,7 @@ typedef struct _machine_wdt_obj_t {
 
 static const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
 
-static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_int_t timeout_ms) {
-    mp_int_t id = mp_obj_get_int(id_obj);
-    if (id != 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
-    }
-
+static machine_wdt_obj_t *make_iwdt(mp_int_t timeout_ms) {
     // compute prescaler
     int32_t timeout = timeout_ms;
     uint32_t prescaler;
@@ -76,6 +71,24 @@ static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_i
     IWDG->KR = 0xcccc;
 
     return (machine_wdt_obj_t *)&machine_wdt;
+}
+
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_int_t timeout_ms) {
+    if (mp_obj_is_str(id_obj)) {
+        qstr qst = mp_obj_str_get_qstr(id_obj);
+        if (qst == MP_QSTR_IWDG) {
+            return make_iwdt(timeout_ms);
+        } else {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%q) doesn't exist"), qst);
+        }
+    } else {
+        mp_int_t id = mp_obj_get_int(id_obj);
+        if (id == 0) {
+            return make_iwdt(timeout_ms);
+        } else {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
+        }
+    }
 }
 
 static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
