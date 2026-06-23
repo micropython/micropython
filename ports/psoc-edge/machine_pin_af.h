@@ -38,6 +38,8 @@ typedef enum {
     MACHINE_PIN_AF_FN_PDM,
     MACHINE_PIN_AF_FN_TCPWM,
     /* TODO: Add additional functionalities */
+
+    MACHINE_PIN_AF_FN_NONE = 0xFF
 } machine_pin_af_fn_t;
 
 extern const char *machine_pin_af_fn_str[];
