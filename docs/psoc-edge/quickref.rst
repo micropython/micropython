@@ -208,8 +208,21 @@ See :ref:`machine.RTC <machine.RTC>`: ::
     RTC alarm timing on this port has second-level resolution. Millisecond alarm values are accepted, but are rounded
     up to whole seconds internally.
 
+Watch dog timer (WDT)
+---------------------
 
-Hardware I2C bus
+See :ref:`machine.WDT <machine.WDT>`: ::
+
+    from machine import WDT
+
+    wdt = WDT(timeout=2000) # initialise wdt with id = 0 (default),
+                            # timeout in milliseconds
+    wdt.feed() # Feed the WDT. Do this periodically before the timeout.
+
+.. note::
+    The minimum timeout is 1 millisecond and the maximum timeout is 383999 milliseconds (~6.4 minutes).
+
+Hardware I2C bus 
 ----------------
 
 See :ref:`machine.I2C <machine.I2C>` and :ref:`machine.I2CTarget <machine.I2CTarget>` for the complete I2C API reference.
