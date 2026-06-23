@@ -33,77 +33,10 @@
 
 #if MICROPY_PY_MACHINE_BITSTREAM
 
-typedef enum {
-    BITSTREAM_PROFILE_CUSTOM = 0,
-    BITSTREAM_PROFILE_WS2812_800,
-    BITSTREAM_PROFILE_SK6812,
-    BITSTREAM_PROFILE_WS2812_400,
-} psoc_edge_bitstream_profile_t;
-
-static const uint32_t timing_ws2812_800[4] = {400, 850, 800, 450};
-static const uint32_t timing_sk6812[4] = {300, 900, 600, 600};
-static const uint32_t timing_ws2812_400[4] = {800, 1700, 1600, 900};
-
-static inline psoc_edge_bitstream_profile_t bitstream_detect_profile(const uint32_t *timing_ns) {
-    if (memcmp(timing_ns, timing_ws2812_800, sizeof(timing_ws2812_800)) == 0) {
-        return BITSTREAM_PROFILE_WS2812_800;
-    }
-    if (memcmp(timing_ns, timing_sk6812, sizeof(timing_sk6812)) == 0) {
-        return BITSTREAM_PROFILE_SK6812;
-    }
-    if (memcmp(timing_ns, timing_ws2812_400, sizeof(timing_ws2812_400)) == 0) {
-        return BITSTREAM_PROFILE_WS2812_400;
-    }
-    for (size_t i = 0; i < 4; ++i) {
-        if (timing_ns[i] <= 1500) {
-            mp_raise_ValueError(MP_ERROR_TEXT("custom timing must be > 1500 ns"));
-        }
-    }
-    return BITSTREAM_PROFILE_CUSTOM;
-}
-
 // Convert nanoseconds to CPU cycles, ensuring at least 1 cycle.
 static inline uint32_t psoc_edge_ns_to_cycles(uint32_t cpu_hz, uint32_t ns) {
     uint32_t cycles = ((uint64_t)cpu_hz * ns) / 1000000000ULL;
     return cycles == 0 ? 1 : cycles;
-}
-
-static inline void psoc_edge_apply_timing_adjustments(
-    psoc_edge_bitstream_profile_t profile,
-    uint32_t cpu_hz,
-    uint32_t *high0,
-    uint32_t *period0,
-    uint32_t *high1,
-    uint32_t *period1
-    ) {
-    uint32_t high_adjust = 0;
-    uint32_t period_adjust = 0;
-
-    switch (profile) {
-        case BITSTREAM_PROFILE_WS2812_800:
-            high_adjust = psoc_edge_ns_to_cycles(cpu_hz, 80);
-            break;
-        case BITSTREAM_PROFILE_SK6812:
-            high_adjust = psoc_edge_ns_to_cycles(cpu_hz, 80);
-            period_adjust = psoc_edge_ns_to_cycles(cpu_hz, 40);
-            break;
-        case BITSTREAM_PROFILE_WS2812_400:
-            high_adjust = psoc_edge_ns_to_cycles(cpu_hz, 100);
-            period_adjust = psoc_edge_ns_to_cycles(cpu_hz, 80);
-            break;
-        default:
-            break;
-    }
-
-    if (high_adjust != 0) {
-        *high0 = *high0 > high_adjust ? (*high0 - high_adjust) : 1;
-        *high1 = *high1 > high_adjust ? (*high1 - high_adjust) : 1;
-    }
-
-    if (period_adjust != 0) {
-        *period0 = *period0 > (*high0 + period_adjust) ? (*period0 - period_adjust) : (*high0 + 1);
-        *period1 = *period1 > (*high1 + period_adjust) ? (*period1 - period_adjust) : (*high1 + 1);
-    }
 }
 
 static inline void psoc_edge_enable_cycle_counter(void) {
@@ -122,7 +55,6 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
     uint32_t pin_num = pin->pin;
     uint32_t cpu_hz = SystemCoreClock;
     uint32_t timing_cycles[4];
-    psoc_edge_bitstream_profile_t profile;
 
     mp_hal_pin_output(pin);
 
@@ -131,12 +63,10 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
     }
 
     for (size_t i = 0; i < 4; ++i) {
-        if (timing_ns[i] == 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("timing must be > 0"));
+        if (timing_ns[i] < 300) {
+            mp_raise_ValueError(MP_ERROR_TEXT("timing must be >= 300 ns"));
         }
     }
-
-    profile = bitstream_detect_profile(timing_ns);
 
     uint32_t high0 = psoc_edge_ns_to_cycles(cpu_hz, timing_ns[0]);
     uint32_t low0 = psoc_edge_ns_to_cycles(cpu_hz, timing_ns[1]);
@@ -145,9 +75,6 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
 
     uint32_t period0 = high0 + low0;
     uint32_t period1 = high1 + low1;
-
-    /* Comment out this call to disable timing calibration. */
-    psoc_edge_apply_timing_adjustments(profile, cpu_hz, &high0, &period0, &high1, &period1);
 
     timing_cycles[0] = high0;
     timing_cycles[1] = period0;
