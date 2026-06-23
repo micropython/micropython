@@ -40,7 +40,7 @@ try:
     vfs.mount(sd, MOUNT_POINT)
     vfs.umount(MOUNT_POINT)
     del sd
-except (OSError, AttributeError):
+except (OSError, ValueError, AttributeError):
     print("SKIP")
     raise SystemExit
 
