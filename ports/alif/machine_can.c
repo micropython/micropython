@@ -273,6 +273,14 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         port = &canfd_port;
         self->port = port;
 
+        // port is in static RAM and not cleared unless there is a
+        // power cycle. Thus clearing the filter is required.
+        memset(port, 0, sizeof(machine_can_port_t));
+        port->can_hw_id = 1;
+        port->canfd_base = (CANFD_Type *)CANFD_BASE;
+        port->canfd_cnt_base = (CANFD_CNT_Type *)CANFD_CNT_BASE;
+        port->can_state = MP_CAN_STATE_STOPPED;
+
         // Both 160M and HFOSC clocks must be enabled even if only one
         // of them is used.
         enable_cgu_clk38p4m();
@@ -465,9 +473,12 @@ static machine_can_state_t machine_can_port_get_state(machine_can_obj_t *self) {
 
 // For now, just call deinit() and init() to restart.
 static void machine_can_port_restart(machine_can_obj_t *self) {
-    // CLear the error counters & leave a bus-off state
-    self->port->canfd_base->CANFD_CFG_STAT |= CANFD_CFG_STAT_BUSOFF;
-    machine_can_port_deinit(self);
+    // Disable IRQ preventing IRQ from cancelling messages.
+    canfd_disable_tx_interrupts(self->port->canfd_base);
+    // Cancel ALL queued messages, since a specific message cannot be selected.
+    canfd_abort_tx(self->port->canfd_base, CANFD_BUF_TYPE_SECONDARY);
+    // init() clears the error counters, leave a bus-off state and
+    // set the bus state to ACTIVE again.
     machine_can_port_init(self);
 }
 
