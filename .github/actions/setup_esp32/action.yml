@@ -19,7 +19,7 @@ runs:
 
   - name: Cached ESP-IDF install
     id: cache_esp_idf
-    uses: actions/cache@v5
+    uses: actions/cache@v6
     with:
       path: |
         ./esp-idf/
