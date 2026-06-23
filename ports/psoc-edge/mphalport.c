@@ -118,7 +118,7 @@ mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, machine_pin_af_sign
     mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin '%q' does not support '%s'."), pin->name, machine_pin_af_signal_str[af_signal]);
 }
 
-machine_pin_af_unit_t mp_hal_periph_pins_af_get_af_unit(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins) {
+machine_pin_af_unit_t mp_hal_periph_pins_af_get_af_unit(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins, machine_pin_af_fn_t fn) {
     bool found_first_valid_pin = false;
     machine_pin_af_periph_t periph_ptr = NULL;
     uint32_t unit = MACHINE_PIN_AF_UNIT_NONE;
@@ -132,6 +132,9 @@ machine_pin_af_unit_t mp_hal_periph_pins_af_get_af_unit(const mp_hal_pin_af_conf
             unit = pin_cfg->af->unit;
             found_first_valid_pin = true;
         } else {
+            if (pin_cfg->af->fn != fn) {
+                mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("all pins must belong to the same function."));
+            }
             if (pin_cfg->af->periph != periph_ptr) {
                 mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("all pins must belong to the same peripheral."));
             }
@@ -154,7 +157,7 @@ void mp_hal_periph_pins_af_resolve_fn_unit(const mp_hal_pin_af_config_t *periph_
      * any pin AF assigned.
      * Therefore, its AF unit is not yet determined.
      */
-    machine_pin_af_unit_t pin_af_unit = mp_hal_periph_pins_af_get_af_unit(periph_pins_config, pin_num);
+    machine_pin_af_unit_t pin_af_unit = mp_hal_periph_pins_af_get_af_unit(periph_pins_config, pin_num, fn);
 
     /* No pins have been defined. */
     if (pin_af_unit == MACHINE_PIN_AF_UNIT_NONE) {
