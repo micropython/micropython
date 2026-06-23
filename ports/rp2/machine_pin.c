@@ -35,8 +35,10 @@
 #include "modmachine.h"
 #include "machine_pin.h"
 
+#include "hardware/gpio.h"
 #include "hardware/irq.h"
 #include "hardware/regs/intctrl.h"
+#include "hardware/regs/io_bank0.h"
 #include "hardware/structs/iobank0.h"
 #include "hardware/structs/padsbank0.h"
 
@@ -228,6 +230,13 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
                 mp_printf(print, ", alt=%q", af->name);
             }
         }
+        uint inover = (io_bank0_hw->io[self->id].ctrl & IO_BANK0_GPIO0_CTRL_INOVER_BITS)
+            >> IO_BANK0_GPIO0_CTRL_INOVER_LSB;
+        uint outover = (io_bank0_hw->io[self->id].ctrl & IO_BANK0_GPIO0_CTRL_OUTOVER_BITS)
+            >> IO_BANK0_GPIO0_CTRL_OUTOVER_LSB;
+        if (inover == GPIO_OVERRIDE_INVERT && outover == GPIO_OVERRIDE_INVERT) {
+            mp_printf(print, ", invert=True");
+        }
     } else {
         #if MICROPY_HW_PIN_EXT_COUNT
         mode_qst = (self->is_output) ? MP_QSTR_OUT : MP_QSTR_IN;
@@ -238,13 +247,14 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 enum {
-    ARG_mode, ARG_pull, ARG_value, ARG_alt
+    ARG_mode, ARG_pull, ARG_value, ARG_alt, ARG_invert
 };
 static const mp_arg_t allowed_args[] = {
     {MP_QSTR_mode,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_pull,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_FUNC_SIO}},
+    {MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
 };
 
 static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -259,6 +269,10 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 
     if (is_ext_pin(self) && args[ARG_alt].u_int != GPIO_FUNC_SIO) {
         mp_raise_ValueError(MP_ERROR_TEXT("alternate functions are not supported for external pins"));
+    }
+
+    if (is_ext_pin(self) && args[ARG_invert].u_obj != mp_const_none) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invert is not supported for external pins"));
     }
 
     // get initial value of pin (only valid for OUT and OPEN_DRAIN modes)
@@ -304,6 +318,14 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
             pull = mp_obj_get_int(args[ARG_pull].u_obj);
         }
         gpio_set_pulls(self->id, pull & GPIO_PULL_UP, pull & GPIO_PULL_DOWN);
+
+        // Configure hardware input/output inversion (gpio_set_inover/gpio_set_outover).
+        if (args[ARG_invert].u_obj != mp_const_none) {
+            uint override = mp_obj_is_true(args[ARG_invert].u_obj)
+                ? GPIO_OVERRIDE_INVERT : GPIO_OVERRIDE_NORMAL;
+            gpio_set_inover(self->id, override);
+            gpio_set_outover(self->id, override);
+        }
     }
     return mp_const_none;
 }
