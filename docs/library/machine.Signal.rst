@@ -94,10 +94,8 @@ Constructors
      - ``invert`` - if True, the signal will be inverted (active low).
    
    .. note::
-      If the pin is inverted *and* an initial value is given, then the two constructors 
-      behave differently before a subsequent 'set'. 
-      The 1st creates the pin and sets it's initial value and then Signal inverts the logic.
-      Whereas, the second sets the pin to the inverted value.
+      The value of the pin can be set in the Pin constructor *and/or* the Signal constructor. 
+      If the Signal is also *inverted* then a value set in the *Pin* constructor will be in the opposite sense. 
       
       Example::
 
@@ -108,6 +106,9 @@ Constructors
         >>> c1()
         0
       
+      The 1st creates the pin and sets it's initial value and then Signal inverts the logic.
+      Whereas, the second sets the pin to the inverted value.
+
       This behavior is only different after construction and *before* a call
       to a 'set' method.
 
