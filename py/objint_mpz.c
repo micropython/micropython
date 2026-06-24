@@ -30,7 +30,7 @@
 
 #include "py/parsenumbase.h"
 #include "py/smallint.h"
-#include "py/objint.h"
+#include "py/objint_impl.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -110,12 +110,6 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     mp_obj_int_t *o = mp_obj_int_new_mpz();
     mpz_set_from_bytes(&o->mpz, big_endian, len, buf);
     return MP_OBJ_FROM_PTR(o);
-}
-
-bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
-    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
-    return mpz_as_bytes(&self->mpz, big_endian, self->mpz.neg, len, buf);
 }
 
 int mp_obj_int_sign(mp_obj_t self_in) {
@@ -469,5 +463,23 @@ mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
     return mpz_as_float(&self->mpz);
 }
 #endif
+
+void mp_obj_int_to_bytes(mp_obj_t self_in, size_t buf_len, byte *buf, bool big_endian, bool is_signed, bool overflow_check) {
+    if (mp_obj_is_exact_type(self_in, &mp_type_int)) {
+        const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+        const mpz_t *mpz = &self->mpz;
+        if (overflow_check && !is_signed && mpz->neg) {
+            mp_obj_int_raise_unsigned_negative_overflow_error();
+        }
+        if (!mpz_as_bytes(mpz, big_endian, is_signed, buf_len, buf) && overflow_check) {
+            mp_obj_int_raise_to_bytes_overflow_error(buf_len);
+        }
+    } else {
+        // self_in is either a smallint, or another type convertible to mp_int_t (i.e. bool)
+        mp_int_t val = mp_obj_get_int(self_in);
+        mp_obj_small_int_to_bytes(val, buf_len, buf, big_endian, is_signed, overflow_check);
+    }
+}
+
 
 #endif
