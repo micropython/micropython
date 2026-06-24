@@ -24,6 +24,8 @@ errors.
 .. note:: The planned ``can`` and ``aiocan`` micropython-lib modules will be the
           recommended way to use CAN with MicroPython.
 
+Availability: **STM32, MIMXRT**
+
 Constructor
 -----------
 
