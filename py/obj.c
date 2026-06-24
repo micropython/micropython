@@ -338,7 +338,7 @@ long long mp_obj_get_ll(mp_const_obj_t arg) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
     } else {
         long long res;
-        mp_obj_int_to_bytes_impl((mp_obj_t)arg, MP_ENDIANNESS_BIG, sizeof(res), (byte *)&res);
+        mp_obj_int_to_bytes((mp_obj_t)arg, sizeof(res), (byte *)&res, MP_ENDIANNESS_BIG, false, false);
         return res;
     }
 }
