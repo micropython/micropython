@@ -62,17 +62,6 @@ static inline void psoc_edge_enable_cycle_counter(void) {
     }
 }
 
-/**
- * machine_bitstream_high_low - Transmit bit-stream with custom timing.
- *
- * @pin: GPIO pin object
- * @timing_ns: 4-element array [T0H, T0L, T1H, T1L] in nanoseconds
- * @buf: byte buffer to transmit
- * @len: length of buffer
- *
- * Transmits MSB-first (bit 7 to bit 0) using absolute DWT cycle-counter timing.
- * Minimum per-element timing: 300 ns. Maximum: platform-dependent (typically 10+ µs).
- */
 void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
 
     GPIO_PRT_Type *port = Cy_GPIO_PortToAddr(pin->port);
