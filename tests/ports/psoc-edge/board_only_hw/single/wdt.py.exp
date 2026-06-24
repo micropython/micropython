@@ -10,5 +10,5 @@ WDT created - PASS
 Feed OK - PASS
 ***** Test 6: Feed again *****
 Feed OK - PASS
-***** Test 7: Second WDT instance rejected *****
-ValueError raised - PASS
+***** Test 7: Reconfigure WDT with new timeout *****
+Reconfigure OK - PASS

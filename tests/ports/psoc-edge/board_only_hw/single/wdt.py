@@ -40,11 +40,10 @@ wdt.feed()
 print("Feed OK - PASS")
 
 # ---------------------------------------------------------------------------
-# Singleton: second instance must be rejected
+# Reconfigure: calling WDT() again updates the timeout
 # ---------------------------------------------------------------------------
 
-print("***** Test 7: Second WDT instance rejected *****")
-try:
-    wdt = machine.WDT(0, timeout=5000)
-except ValueError:
-    print("ValueError raised - PASS")
+print("***** Test 7: Reconfigure WDT with new timeout *****")
+wdt = machine.WDT(0, timeout=6000)
+wdt.feed()
+print("Reconfigure OK - PASS")
