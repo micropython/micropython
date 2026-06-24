@@ -109,7 +109,7 @@ Constructors
       The 1st creates the pin and sets it's initial value and then Signal inverts the logic.
       Whereas, the second sets the pin to the inverted value.
 
-      This behavior is only different after construction and *before* a call
+      This behavior is only different after construction and before a call
       to a 'set' method.
 
       Example::
