@@ -951,21 +951,27 @@ def process_riscv32_relocation(env, text_addr, r):
         R_RISCV_LO12_S,
     ):
         parent = None
-        for potential_parent in s.section.reloc:
-            if potential_parent["r_offset"] != s["st_value"]:
-                continue
-            if potential_parent["r_info_type"] not in (
-                R_RISCV_GOT_HI20,
-                R_RISCV_PCREL_HI20,
-                R_RISCV_HI20,
-            ):
-                continue
-            parent = potential_parent
-            break
-        if parent is None:
-            assert 0, r
+        if hasattr(s.section, "reloc"):
+            for potential_parent in s.section.reloc:
+                if potential_parent["r_offset"] != s["st_value"]:
+                    continue
+                if potential_parent["r_info_type"] not in (
+                    R_RISCV_GOT_HI20,
+                    R_RISCV_PCREL_HI20,
+                    R_RISCV_HI20,
+                ):
+                    continue
+                parent = potential_parent
+                break
         addr = s.section.addr + s["st_value"]
-        reloc = parent.computed_reloc
+        if parent is not None:
+            reloc = parent.computed_reloc
+        elif r_info_type in (R_RISCV_LO12_I, R_RISCV_LO12_S):
+            # Absolute LO12: sym points directly to the data (e.g. .LC1 in
+            # .srodata.cst4 from picolibc). The full address is already known.
+            reloc = addr + r_addend
+        else:
+            assert 0, r
         reloc_type = RISCV_RELOCATIONS_TYPE_MAP[r_info_type]
 
     elif r_info_type in (
@@ -1157,7 +1163,9 @@ def load_object_file(env, f, felf):
             if s.data_size == 0:
                 # Ignore empty sections
                 pass
-            elif s.name.startswith((".literal", ".text", ".rodata", ".data.rel.ro", ".bss")):
+            elif s.name.startswith(
+                (".literal", ".text", ".rodata", ".srodata", ".data.rel.ro", ".bss")
+            ):
                 sec = Section.from_elfsec(s, felf)
                 sections_shndx[idx] = sec
                 if s.name.startswith(".literal"):
