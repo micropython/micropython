@@ -151,6 +151,12 @@ The following parameters have port-specific behavior:
 
     **None** of the non-core methods from the Pin API are currently implemented for this port.
 
+Signal 
+^^^^^^
+
+There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
+which can be used to invert a pin. Useful for illuminating active-low LEDs
+using ``Signal.on()`` or ``Signal.value(1)``.
 
 Real time clock (RTC)
 ---------------------

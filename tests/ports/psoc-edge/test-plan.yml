@@ -40,6 +40,14 @@
         features:
           - pin
 
+- name: signal
+  test:
+    script: ports/psoc-edge/board_ext_hw/single/signal.py
+    device:
+      - board: KIT_PSE84_AI
+        features:
+          - pin
+
 - name: pin_irq
   # TODO: Once the test-run.py stability is fixed, and 
   # deinit completed, group it with "pin" suite.
