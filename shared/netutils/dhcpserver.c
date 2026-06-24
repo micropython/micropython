@@ -126,7 +126,7 @@ static int dhcp_socket_sendto(struct udp_pcb **udp, struct netif *netif, const v
         return -MP_ENOMEM;
     }
 
-    memcpy(p->payload, buf, len);
+    pbuf_take(p, buf, len);
 
     ip_addr_t dest;
     IP_ADDR4(&dest, ip >> 24 & 0xff, ip >> 16 & 0xff, ip >> 8 & 0xff, ip & 0xff);
