@@ -1,4 +1,5 @@
 import machine
+import time
 
 # ---------------------------------------------------------------------------
 # Invalid parameter tests (before WDT is started)
@@ -24,18 +25,24 @@ except ValueError:
     print("ValueError raised - PASS")
 
 # ---------------------------------------------------------------------------
-# Valid creation and feed
+# Valid creation and feed near the timeout boundary.
+# If the WDT fires before feed() is called the board resets and the
+# test produces no further output (i.e. it fails).
+# Sleep is 70% of the nominal timeout to stay safe across the PILO
+# ±15% accuracy range (worst-case actual timeout = timeout/1.15).
 # ---------------------------------------------------------------------------
 
 print("***** Test 4: WDT created with 5000 ms timeout *****")
 wdt = machine.WDT(id=0, timeout=5000)
 print("WDT created - PASS")
 
-print("***** Test 5: Feed *****")
+print("***** Test 5: Feed near boundary (cycle 1) *****")
+time.sleep_ms(3500)
 wdt.feed()
 print("Feed OK - PASS")
 
-print("***** Test 6: Feed again *****")
+print("***** Test 6: Feed near boundary (cycle 2) *****")
+time.sleep_ms(3500)
 wdt.feed()
 print("Feed OK - PASS")
 

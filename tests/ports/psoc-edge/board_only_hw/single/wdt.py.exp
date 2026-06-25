@@ -6,9 +6,9 @@ ValueError raised - PASS
 ValueError raised - PASS
 ***** Test 4: WDT created with 5000 ms timeout *****
 WDT created - PASS
-***** Test 5: Feed *****
+***** Test 5: Feed near boundary (cycle 1) *****
 Feed OK - PASS
-***** Test 6: Feed again *****
+***** Test 6: Feed near boundary (cycle 2) *****
 Feed OK - PASS
 ***** Test 7: Reconfigure WDT with new timeout *****
 Reconfigure OK - PASS

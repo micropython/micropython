@@ -32,6 +32,8 @@
 
 #include "modmachine.h"
 
+// Assumes the default WDT clock source (PILO, 32768 Hz). If Cy_WDT_SetClkSource()
+// is used to switch the source, this value must be updated. See Cy_WDT_GetClkSource().
 #define WDT_CLK_FREQ_HZ     (CY_SYSCLK_PILO_FREQ)   // 32768 Hz
 
 // Maximum timeout in ms: (3 * 2^SRSS_NUM_WDT_A_BITS - 1) * 1000 / WDT_CLK_FREQ_HZ
@@ -58,6 +60,9 @@ static uint32_t wdt_log2_floor(uint32_t x) {
 
 static void wdt_init(mp_int_t timeout_ms) {
     // Convert timeout to PILO ticks, then compute match/period registers.
+    // SetMatchBits(N): bits [N:0] active, period = 2^(N+1). Reset fires on the
+    // 3rd successive match: reset_ticks = match + 2*period (from counter = 0).
+    // Ref: https://infineon.github.io/mtb-dsl-pse8xxgp/html/group__group__wdt__functions.html
     uint32_t timeout_ticks = (uint32_t)((uint64_t)timeout_ms * WDT_CLK_FREQ_HZ / 1000UL);
     uint32_t half_ticks = timeout_ticks / 2U;
     uint32_t period_bits = (half_ticks > 0U) ? wdt_log2_floor(half_ticks) : 1U;
@@ -67,8 +72,16 @@ static void wdt_init(mp_int_t timeout_ms) {
     if (match >= period) {
         match = period - 1U;
     }
+    // match=0 is valid but the counter (reset to 0) does not fire a match
+    // event at t=0; the first natural hit occurs after one full period, making
+    // the reset arrive one period late. Clamp to 1 (error < 1 tick = 0.03 ms).
+    if (match == 0U) {
+        match = 1U;
+    }
 
     Cy_WDT_Unlock();
+    Cy_WDT_Disable();       // required before ResetCounter
+    Cy_WDT_ResetCounter();  // counter starts at 0 for accurate timeout
     Cy_WDT_SetMatchBits(match_bits);
     Cy_WDT_SetMatch(match);
     Cy_WDT_ClearInterrupt();
