@@ -28,8 +28,6 @@ except ValueError:
 # Valid creation and feed near the timeout boundary.
 # If the WDT fires before feed() is called the board resets and the
 # test produces no further output (i.e. it fails).
-# Sleep is 70% of the nominal timeout to stay safe across the PILO
-# ±15% accuracy range (worst-case actual timeout = timeout/1.15).
 # ---------------------------------------------------------------------------
 
 print("***** Test 4: WDT created with 5000 ms timeout *****")
