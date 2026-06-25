@@ -282,6 +282,31 @@ function ci_esp32_build_p4 {
 }
 
 ########################################################################################
+# ports/ameba
+
+AMEBA_RTOS_REPO=https://github.com/Ameba-AIoT/ameba-rtos.git
+
+function ci_ameba_setup {
+    if [ -z "$AMEBA_RTOS_VER" ]; then
+        echo "AMEBA_RTOS_VER environment variable must be set before running"
+        return 1
+    fi
+    echo "Using ameba-rtos version $AMEBA_RTOS_VER"
+    git clone --filter=blob:none "$AMEBA_RTOS_REPO" ameba-rtos
+    git -C ameba-rtos checkout --detach "$AMEBA_RTOS_VER"
+    git -C ameba-rtos submodule update --init --recursive --filter=tree:0
+    # env.sh downloads the prebuilt GCC toolchain and creates the build venv.
+    source ameba-rtos/env.sh
+}
+
+function ci_ameba_build {
+    source ameba-rtos/env.sh
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/ameba submodules
+    make ${MAKEOPTS} -C ports/ameba BOARD=PKE8721DAF
+}
+
+########################################################################################
 # ports/esp8266
 
 function ci_esp8266_setup {
