@@ -45,10 +45,11 @@ wdt.feed()
 print("Feed OK - PASS")
 
 # ---------------------------------------------------------------------------
-# Reconfigure: calling WDT() again updates the timeout
+# Reconfigure to a short timeout without feeding so the WDT fires within
+# post_test_delay_ms. wdt_reset_cause_check.py verifies reset_cause() == WDT_RESET.
 # ---------------------------------------------------------------------------
 
-print("***** Test 7: Reconfigure WDT with new timeout *****")
-wdt = machine.WDT(0, timeout=6000)
-wdt.feed()
+print("***** Test 7: Reconfigure WDT to trigger reset *****")
+wdt = machine.WDT(0, timeout=1500)
 print("Reconfigure OK - PASS")
+# WDT fires ~1500 ms after this; board resets within post_test_delay_ms.

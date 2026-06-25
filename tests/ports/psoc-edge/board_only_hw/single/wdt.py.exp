@@ -10,5 +10,5 @@ WDT created - PASS
 Feed OK - PASS
 ***** Test 6: Feed near boundary (cycle 2) *****
 Feed OK - PASS
-***** Test 7: Reconfigure WDT with new timeout *****
+***** Test 7: Reconfigure WDT to trigger reset *****
 Reconfigure OK - PASS

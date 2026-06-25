@@ -29,9 +29,21 @@
 - name: no-extended-hardware
   test: 
     script: ports/psoc-edge/board_only_hw/single
+    exclude:
+      - ports/psoc-edge/board_only_hw/single/wdt.py
+      - ports/psoc-edge/board_only_hw/single/wdt_reset_cause_check.py
     device: 
       - board: KIT_PSE84_AI
 
+- name: watchdog
+  test:
+    script:
+      - ports/psoc-edge/board_only_hw/single/wdt.py
+      - ports/psoc-edge/board_only_hw/single/wdt_reset_cause_check.py
+    post_test_delay_ms: 2000
+    device:
+      - board: KIT_PSE84_AI
+            
 - name: pin-signal
   test: 
     script: 
