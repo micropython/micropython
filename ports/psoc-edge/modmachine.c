@@ -25,8 +25,6 @@
  */
 
 // std includes
-#include <stdio.h>
-#include <stdlib.h>
 
 // mpy includes
 #include "py/obj.h"
@@ -38,6 +36,7 @@
 
 // port-specific includes
 #include "cybsp.h"
+#include "cy_syslib.h"
 #include "modmachine.h"
 #include "modpsocedge.h"
 
@@ -53,12 +52,58 @@ enum clock_freq_type freq_peri;
 #define MICROPY_PY_MACHINE_SPITARGET_GLOBAL
 #endif
 
+// Reset cause values — PWRON=0 matches the C zero-initialisation of
+// reset_cause. SOFT must be non-zero so machine_deinit() can mark a
+// soft reset unambiguously.
+#define MACHINE_PWRON_RESET     (0)
+#define MACHINE_HARD_RESET      (1)
+#define MACHINE_WDT_RESET       (2)
+#define MACHINE_DEEPSLEEP_RESET (3)
+#define MACHINE_SOFT_RESET      (4)
+
+static uint32_t reset_cause;
+
+// Called before each MicroPython soft reset so the next call to
+// machine.reset_cause() returns machine.SOFT_RESET.
+void machine_deinit(void) {
+    reset_cause = MACHINE_SOFT_RESET;
+}
+
 // machine.idle()
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.
 static void mp_machine_idle(void) {
     __WFI(); // standard ARM instruction
 }
+
+#if MICROPY_PY_MACHINE_RESET
+
+MP_NORETURN static void mp_machine_reset(void) {
+    NVIC_SystemReset();
+    for (;;) {
+    }
+}
+
+static mp_int_t mp_machine_reset_cause(void) {
+    if (reset_cause == MACHINE_SOFT_RESET) {
+        return MACHINE_SOFT_RESET;
+    }
+    // RES_CAUSE registers are sticky; read directly without clearing so
+    // repeated calls return a consistent value.
+    uint32_t reason = Cy_SysLib_GetResetReason();
+    if (reason & CY_SYSLIB_RESET_HWWDT) {
+        return MACHINE_WDT_RESET;
+    } else if (reason & CY_SYSLIB_RESET_DPSLP_FAULT) {
+        return MACHINE_DEEPSLEEP_RESET;
+    } else if (reason & (CY_SYSLIB_RESET_XRES | CY_SYSLIB_RESET_SOFT)) {
+        // XRES: external reset pin. SOFT: NVIC_SystemReset() / machine.reset().
+        return MACHINE_HARD_RESET;
+    } else {
+        return MACHINE_PWRON_RESET;
+    }
+}
+
+#endif // MICROPY_PY_MACHINE_RESET
 /* TODO: currently unused
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     freq_peri = mp_obj_get_int(args[0]); // Assuming the enum values are used as integers
@@ -86,6 +131,12 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) }, \
-    MICROPY_PY_MACHINE_SPITARGET_GLOBAL
+    MICROPY_PY_MACHINE_SPITARGET_GLOBAL \
+    /* Reset cause constants */ \
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MACHINE_PWRON_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(MACHINE_HARD_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(MACHINE_WDT_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(MACHINE_DEEPSLEEP_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(MACHINE_SOFT_RESET) },
 
 #endif // MICROPY_PY_MACHINE

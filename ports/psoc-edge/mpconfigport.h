@@ -67,6 +67,7 @@
 // Machine module
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET                (1)
 
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 

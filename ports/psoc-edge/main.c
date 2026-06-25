@@ -101,6 +101,7 @@ extern void machine_ipc_deinit_all(void);
 extern void mp_hal_ticks_init(void);
 extern void machine_timer_deinit_all(void);
 extern void machine_wdt_deinit(void);
+extern void machine_deinit(void);
 
 void micropython_task(void *arg);
 #if MICROPY_PY_FREERTOS
@@ -237,6 +238,7 @@ soft_reset:
 
     mp_printf(&mp_plat_print, "MPY: soft reboot\n");
 
+    machine_deinit();
     machine_pin_irq_deinit_all();
     machine_uart_deinit_all();
     machine_hw_i2c_deinit_all();
