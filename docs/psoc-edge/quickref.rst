@@ -158,7 +158,7 @@ There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
 using ``Signal.on()`` or ``Signal.value(1)``.
 
-machine.bitstream() (low-level one-wire output)
+Bitstream
 ------------------------------------------------
 
 Use :func:`machine.bitstream` directly for timing-sensitive one-wire protocols::
@@ -174,11 +174,8 @@ Use :func:`machine.bitstream` directly for timing-sensitive one-wire protocols::
 
 .. note::
     Port-specific behavior and limits on PSOC™ Edge:
-
-    - The implementation uses cycle-counter busy-waiting, with timing quantised to CPU cycles at the current core clock.
+    
     - Each timing value must be at least 300 ns; smaller values raise ``ValueError``.
-    - Interrupts are disabled for the full transfer window. Longer buffers increase IRQ latency and can delay other time-critical tasks.
-    - The output pin is forced to GPIO output mode by the driver before transmission.
     - If the runtime core clock is invalid (0 Hz), transmission raises ``ValueError``.
 
 Real time clock (RTC)
