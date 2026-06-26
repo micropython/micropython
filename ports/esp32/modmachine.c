@@ -39,6 +39,10 @@
 #include "modmachine.h"
 #include "machine_rtc.h"
 
+extern mp_obj_fun_builtin_var_t config_adc_udp_stream_obj;
+extern mp_obj_fun_builtin_fixed_t start_adc_udp_stream_obj;
+extern mp_obj_fun_builtin_fixed_t stop_adc_udp_stream_obj;
+
 #if MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_PY_MACHINE_SDCARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
 #else

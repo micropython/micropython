@@ -1,6 +1,9 @@
 #include <string.h>
 #include <errno.h>
 
+#include "py/runtime.h"
+#include "py/obj.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -353,7 +356,6 @@ static mp_obj_t stop_adc_udp_stream(void){
 	ESP_LOGI(TAG, "ADC->UDP streaming stopped");
 	return MP_OBJ_NEW_SMALL_INT(0);
 }
-
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(config_adc_udp_stream_obj, 1, 3, config_adc_udp_stream);
-static MP_DEFINE_CONST_FUN_OBJ_3(start_adc_udp_stream_obj, start_adc_udp_stream);
-static MP_DEFINE_CONST_FUN_OBJ_0(stop_adc_udp_stream_obj, stop_adc_udp_stream);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(config_adc_udp_stream_obj, 1, 3, config_adc_udp_stream);
+MP_DEFINE_CONST_FUN_OBJ_3(start_adc_udp_stream_obj, start_adc_udp_stream);
+MP_DEFINE_CONST_FUN_OBJ_0(stop_adc_udp_stream_obj, stop_adc_udp_stream);
