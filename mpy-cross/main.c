@@ -47,6 +47,12 @@
 static asm_rv32_backend_options_t rv32_options = { 0 };
 #endif
 
+#if MICROPY_EMIT_NATIVE && (MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
+#include "py/asmxtensa.h"
+
+static asm_xtensa_backend_options_t xtensa_options = { 0 };
+#endif
+
 // Command line options, with their defaults
 static uint emit_opt = MP_EMIT_OPT_NONE;
 mp_uint_t mp_verbose_flag = 0;
@@ -100,10 +106,17 @@ static int compile_and_save(const char *file, const char *output_file, const cha
         mp_compiled_module_t cm;
         cm.context = m_new_obj(mp_module_context_t);
         cm.arch_flags = 0;
-        #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+        #if MICROPY_EMIT_NATIVE
+        #if MICROPY_EMIT_RV32
         if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC && mp_dynamic_compiler.backend_options != NULL) {
             cm.arch_flags = ((asm_rv32_backend_options_t *)mp_dynamic_compiler.backend_options)->allowed_extensions;
         }
+        #endif
+        #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN
+        if ((mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSA || mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSAWIN) && mp_dynamic_compiler.backend_options != NULL) {
+            cm.arch_flags = ((asm_xtensa_backend_options_t *)mp_dynamic_compiler.backend_options)->core_version;
+        }
+        #endif
         #endif
 
         mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
@@ -152,6 +165,7 @@ static int usage(char **argv) {
         "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug\n"
         "-march-flags=<flags> : set architecture-specific flags (can be either a dec/hex/bin value or a comma-separated flags string)\n"
         "                       supported flags for rv32imc: zba, zcmp\n"
+        "                       supported flags for xtensa/xtensawin: lx3, lx4, lx5, lx6, lx7, lx8\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -293,6 +307,42 @@ static bool parse_rv32_flags_string(const char *source, unsigned long *flags) {
     }
     *flags = collected_flags;
     return collected_flags != 0;
+}
+#endif
+
+#if MICROPY_EMIT_NATIVE && (MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
+static bool parse_xtensa_flags_string(const char *source, unsigned long *flags) {
+    assert(source && "Flag arguments string is NULL.");
+    assert(flags && "Collected flags pointer is NULL.");
+
+    const char *current = source;
+    const char *end = source + strlen(source);
+    unsigned long collected_flags = 0;
+    bool core_version_set = false;
+    while (current < end) {
+        const char *separator = strchr(current, ',');
+        if (separator == NULL) {
+            separator = end;
+        }
+        ptrdiff_t length = separator - current;
+        if (length == (sizeof("lx3") - 1) && memcmp(current, "lx", length - 1) == 0) {
+            if (core_version_set) {
+                return false;
+            }
+            int core_version = current[2] - '0';
+            if (core_version >= 3 && core_version <= 8) {
+                collected_flags = core_version - 2;
+                core_version_set = true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+        current = separator + 1;
+    }
+    *flags = collected_flags;
+    return core_version_set;
 }
 #endif
 
@@ -448,7 +498,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     if (arch_flags && mp_dynamic_compiler.native_arch != MP_NATIVE_ARCH_NONE) {
         bool processed = false;
-        #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+        #if MICROPY_EMIT_NATIVE
+        #if MICROPY_EMIT_RV32
         if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC) {
             mp_dynamic_compiler.backend_options = (void *)&rv32_options;
             unsigned long raw_flags = 0;
@@ -459,6 +510,19 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 }
             }
         }
+        #endif
+        #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN
+        if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSA || mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSAWIN) {
+            mp_dynamic_compiler.backend_options = (void *)&xtensa_options;
+            unsigned long raw_flags = 0;
+            if (parse_integer(arch_flags, &raw_flags) || parse_xtensa_flags_string(arch_flags, &raw_flags)) {
+                if (raw_flags >= 1 && raw_flags <= 6) {
+                    xtensa_options.core_version = (uint8_t)raw_flags;
+                    processed = true;
+                }
+            }
+        }
+        #endif
         #endif
         if (!processed) {
             mp_printf(&mp_stderr_print, "unrecognised arch flags\n");
