@@ -59,6 +59,14 @@ config MICROPY_USB_DEVICE_PID
 	hex "USB PID"
 	default 0x0001
 
+config MICROPY_ZEPHYR_USBD_RUNTIME
+	bool "Enable runtime configuration of USB classes"
+	default n
+	help
+	  Boards that need CDC ACM for console need USB enabled before
+	  python code is run to see the logs. Others can use python APIs
+	  to configure USB.
+
 choice MICROPY_CONFIG_ROM_LEVEL
 	prompt  "MicroPython Features level"
 	default MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES
