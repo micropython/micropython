@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "features": [
+        "External Flash",
+        "External RAM",
+        "microSD",
+        "USB"
+    ],
+    "images": [
+        "STM32H743_CORE_V10.jpg",
+        "STM32H743_CORE_V10_B.jpg",
+        "STM32H743_CORE_V13.jpg",
+        "STM32H743_CORE_V13_B.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "STM32H743 CORE",
+    "url": "",
+    "variants": {
+        "V10": "CORE BOARD V1.0",
+        "V13": "CORE BOARD V1.3"
+    },
+    "vendor": "Aliexpress"
+}

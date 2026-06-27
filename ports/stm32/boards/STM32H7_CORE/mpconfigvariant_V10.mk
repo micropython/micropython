@@ -1,0 +1,1 @@
+CFLAGS += -DBOARD_V10
