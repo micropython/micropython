@@ -77,6 +77,7 @@ set(MICROPY_SOURCE_PORT
     uart_core.c
     zephyr_device.c
     zephyr_storage.c
+    zephyr_video.c
     zephyr_filesystem.c
     mpthreadport.c
 )
