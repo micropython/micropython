@@ -229,6 +229,9 @@ static mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
                 if (pfd.revents & POLLIN) {
                     ret |= MP_STREAM_POLL_RD;
                 }
+                if (pfd.revents & POLLPRI) {
+                    ret |= MP_STREAM_POLL_PRI;
+                }
                 if (pfd.revents & POLLOUT) {
                     ret |= MP_STREAM_POLL_WR;
                 }
