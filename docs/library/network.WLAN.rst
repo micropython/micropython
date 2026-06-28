@@ -151,7 +151,6 @@ Methods
    bandwidth      (ESP32 Only.) WiFi channel bandwidth. See `WLAN.BANDWIDTH_20` and others.
    =============  ===========
 
-<<<<<<< HEAD
 CSI Methods (ESP32 only)
 ------------------------
 
@@ -252,8 +251,118 @@ CSI Methods (ESP32 only)
    Frames are dropped when the buffer is full and new frames arrive faster than
    they can be read. Increase ``buffer_size`` in ``csi_enable()`` to reduce
    drops.
-=======
->>>>>>> bb242a6d2 (esp32/network-wlan: Added WPA-Enterprise.)
+
+WPA Enterprise Mode (ESP32 only)
+--------------------------------
+
+    The ESP32 port supports WPA2 and WPA3 Enterprise modes, as well as explicit 5 GHz
+    WiFi ``band_mode``.
+
+    Example::
+
+        import network
+
+        wlan = network.WLAN(network.WLAN.IF_STA)
+        wlan.active(True)
+        wlan.config(...)
+        wlan.connect("SSID", "dummy password", eap_method=wlan.EAP_PWD, min_sec=wlan.SEC_WPA3,
+                     username=username, password=password, band_mode=wlan.MODE_5G_ONLY)
+
+    Please note that in WPA Enterprise mode, positional parameter 2 (key)
+    is not used but must not be empty.
+
+    Parameters:
+
+        * eap_method -- EAP method to use (integer)
+
+    Connect to the specified wireless network, using WPA-Enterprise authentication and
+    the specified parameters. The EAP methods provided are:
+
+        * network.WLAN.EAP_NONE (default, for WPA Personal compatibility)
+        * network.WLAN.EAP_PWD
+        * network.WLAN.EAP_PEAP
+        * network.WLAN.EAP_TTLS
+        * network.WLAN.EAP_TLS (UNTESTED and thus EXPERIMENTAL)
+
+    Common parameters:
+
+        * ssid -- WiFi access point name, (string, e.g. "eduroam")
+        * min_sec -- minimum security (integer, e.g. ``network.WLAN.SEC_WPA2``, ``network.WLAN.SEC_WPA3``) (implies ``pmf_req``)
+        * band_mode -- set WiFi band mode (integer, one of ``network.WLAN.MODE_2G_ONLY``, ``network.WLAN.MODE_5G_ONLY``, ``network.WLAN.MODE_AUTO`` (default))
+        * pmf_req -- explicitly request Protected Management Frames (i.e., WPA3) (boolean, default False)
+
+    Please note that ESP-IDF 5.5 interprets WPA2/3 transition mode a bit differently
+    than `WPA3 Specification 3.5 <https://www.wi-fi.org/file/wpa3-specification>`_.
+    On ESP32, ``SEC_WPA2`` is effectively WPA2/3 transition mode (i.e. if AP and STA both
+    advertise WPA3, then WPA3 is chosen), whereas ``SEC_WPA2_WPA3`` is treated as WPA3 only == ``SEC_WPA3``.
+    This implementation thus maps ``SEC_WPA2_WPA3`` to ``SEC_WPA2``. So if you want WPA3
+    only, use ``SEC_WPA3``, otherwise use ``SEC_WPA2`` or ``SEC_WPA2_WPA3`` which both give
+    you transition mode. On ESP32, you cannot select WPA2 only.
+
+    Please note that this release does not implement WPA3 Enterprise 192-bit mode for reasons
+    described in `eduroam and Wi-Fi CERTIFIED WPA3 Security <https://eduroam.org/eduroam-and-wpa3/>`_.
+
+    EAP-PWD parameters
+
+        * username -- your network username (string)
+        * password -- your network password (string)
+
+    EAP-PEAP parameters:
+
+        * username -- your network username (string)
+        * password -- your network password (string)
+        * identity -- anonymous identity (string)
+        * ca_cert -- the CA certificate (filename, string)
+
+    EAP-TTLS parameters:
+
+        * username -- your network username (string)
+        * password -- your network password (string)
+        * identity -- anonymous identity (string)
+        * ca_cert -- the CA certificate (filename, string)
+        * ttls_phase2_method -- TTLS Phase 2 method (integer)
+
+    EAP-TTLS supports the following TTLS Phase 2 methods (1):
+
+        * network.WLAN.EAP_TTLS_PHASE2_EAP (0)
+        * network.WLAN.EAP_TTLS_PHASE2_MSCHAPV2 (1)
+        * network.WLAN.EAP_TTLS_PHASE2_MSCHAP (2)
+        * network.WLAN.EAP_TTLS_PHASE2_PAP (3)
+        * network.WLAN.EAP_TTLS_PHASE2_CHAP (4)
+
+    Please note that MSCHAPv2 and CHAP have known security issues and should be avoided.
+
+    EAP-TLS parameters:
+
+        * client_cert -- client certificate filename (string)
+        * private_key -- private key filename (string)
+        * private_key_password -- private key password (string, optional)
+        * disable_time_check -- suppress the validity check for the local client certificate when using EAP-TLS (boolean,
+          default False). This option is included for the sake of completeness only. In practice,
+          you want to renew the client certificate before expiry.
+        * ca_cert -- the CA certificate (filename, string, optional)
+
+    CA Certificate files need to be uploaded to the VFS / FAT partition first, e.g.::
+
+        mpremote cp <file> :
+
+    In particular in eduroam networks, EAP-PWD should be used whenever possible.
+    It connects swiftly and uses the least resources. When using one of the other methods,
+    make sure the system time is correct to prevent certificate validation errors.
+    Best practice is to use a battery buffered RTC and to set the system time using NTP
+    regularly. A temporary workaround if no battery buffered RTC is
+    available is to set the system time to the image build time.
+
+    Example::
+
+        import sys
+        import machine
+        (year, month, day) = sys.version.split(" on ")[1].split("-")
+        rtc = machine.RTC()
+        date_time = (int(year), int(month), int(day), 0, 0, 0, 0, 0)
+        rtc.init(date_time)
+
+    (1) Please note that some eduroam networks appear to default to MSCHAPv2 in all cases, of all methods.
 
 
 Constants
@@ -322,89 +431,6 @@ network interface parameter:
 .. _Espressif proprietary "long-range" mode:
 .. _Espressif long-range documentation: https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/wifi.html#long-range-lr
 
-
-ESP32 Specific Extensions
--------------------------
-
-    The ESP32 port supports WPA2 Enterprise mode.
-
-    Parameters:
-
-        * eap_method -- EAP method to use (integer)
-
-    Connect to the specified wireless network, using WPA-Enterprise authentication and
-    the specified parameters. The EAP methods provided are:
-
-        * network.WLAN.EAP-PWD
-        * network.WLAN.EAP-PEAP
-        * network.WLAN.EAP-TTLS
-        * network.WLAN.EAP-TLS
-
-    EAP-TLS is UNTESTED and thus EXPERIMENTAL.
-
-    Common parameters:
-
-        * ssid -- WiFi access point name, (string, e.g. "eduroam")
-
-    EAP-PWD parameters
-
-        * username -- your network username (string)
-        * password -- your network password (string)
-
-    EAP-PEAP parameters:
-
-        * username -- your network username (string)
-        * password -- your network password (string)
-        * identity -- anonymous identity (string)
-        * ca_cert -- the CA certificate (filename, string)
-
-    EAP-TTLS parameters:
-
-        * username -- your network username (string)
-        * password -- your network password (string)
-        * identity -- anonymous identity (string)
-        * ca_cert -- the CA certificate (filename, string)
-        * ttls_phase2_method -- TTLS Phase 2 method (integer)
-
-    EAP-TTLS supports the following TTLS Phase 2 methods (1):
-
-        * network.WLAN.EAP_TTLS_PHASE2_EAP (0)
-        * network.WLAN.EAP_TTLS_PHASE2_MSCHAPV2 (1)
-        * network.WLAN.EAP_TTLS_PHASE2_MSCHAP (2)
-        * network.WLAN.EAP_TTLS_PHASE2_PAP (3)
-        * network.WLAN.EAP_TTLS_PHASE2_CHAP (4)
-
-    Please note that MSCHAPv2 and CHAP have known security issues and should be avoided.
-
-    EAP-TLS parameters:
-
-        * client_cert -- client certificate filename (string)
-        * private_key -- private key filename (string)
-        * private_key_password -- private key password (string, optional)
-        * disable_time_check -- suppress the validity check for the local client certificate when using EAP-TLS (boolean,
-          default False). This option is included for the sake of completeness only. In practice,
-          you want to renew the client certificate before expiry.
-        * ca_cert -- the CA certificate (filename, string, optional)
-
-
-    CA Certificate files need to be uploaded to the VFS / FAT partition first, e.g.::
-
-     mpremote cp <file> :
-
-    EAP-PWD should be used whenever possible. It connects swiftly and uses the least resources.
-    When using one of the other methods, make sure the system time is correct to prevent
-    certificate validation errors. Best practice is to use a battery buffered RTC and to set
-    the system time using NTP regularly. A temporary workaround if no battery buffered RTC is
-    available is to set the system time to the image build time, like:
-
-     import sys
-     import machine
-     (year, month, day) = sys.version.split(" on ")[1].split("-")
-     rtc = machine.RTC()
-     date_time = (int(year), int(month), int(day), 0, 0, 0, 0, 0)
-     rtc.init(date_time)
-
-    (1) Please note that some eduroam networks appear to default to MSCHAPv2 in all cases, of all methods.
 
 
 
