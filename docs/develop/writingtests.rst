@@ -46,6 +46,11 @@ If you run your tests, this test should appear in the test output:
 Tests are run by comparing the output from the test target against the output from CPython.
 So any test should use print statements to indicate test results.
 
+When writing tests for name or string-related functionality, please add both English/ASCII 
+as well as non-English/non-ASCII text and include Unicode examples.
+Please do add comments in English explaining the meaning and intent of the Unicode text. 
+This help ensure Unicode support is tested and verified across different platforms.
+
 For tests that can't be compared to CPython (i.e. micropython-specific functionality),
 you can provide a ``.py.exp`` file which will be used as the truth for comparison.
 
