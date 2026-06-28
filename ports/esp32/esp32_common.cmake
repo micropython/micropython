@@ -196,7 +196,7 @@ list(APPEND IDF_COMPONENTS
     ulp
     usb
     vfs
-	wpa_supplicant
+	# wpa_supplicant
 )
 
 if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")

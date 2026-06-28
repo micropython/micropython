@@ -41,6 +41,9 @@
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
+#if MICROPY_PY_NETWORK_WPA_ENTERPRISE
+#include "esp_eap_client.h"
+#endif
 
 #if MICROPY_PY_NETWORK_WLAN_CSI
 #include "network_wlan_csi.h"
@@ -315,6 +318,7 @@ static mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_wlan_active_obj, 1, 2, network_wlan_active);
 
+#if MICROPY_PY_NETWORK_WPA_ENTERPRISE
 // WLAN connect including WPA2/WPA3 Enterprise Connect
 // there are no official constants in ESP-IDF for this so far
 // the ESP_EAP_TYPE constants are different (see below)
@@ -322,30 +326,32 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_wlan_active_obj, 1, 2, networ
 #define WIFI_AUTH_EAP_PWD 1
 #define WIFI_AUTH_EAP_PEAP 2
 #define WIFI_AUTH_EAP_TTLS 3
+#if MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
 #define WIFI_AUTH_EAP_TLS 4
-
-// ESP-IDF 5.5.1 appears to map WPA2/WPA3 transition mode (WPA2_WPA3 modes) to WPA3 only
-// this is different from the WPA Standard v3.5
-// OTOH if the AP advertises WPA3, ESP-IDF will connect using WPA3
-// so we map SEC_WPA2_WPA3{_ENT} to SEC_WPA2{_ENT} for better compatibility with the WPA Standard
-// so we support SEC_OPEN, SEC_WPA, SEC_WPA2, and SEC_WPA3 for WPA Personal (default SEC_WPA2)
-// as well as SEC_WPA2_ENT and SEC_WPA3_ENT for WPA Enterprise (default SEC_WPA2_ENT)
-// note that setting SEC_WPA2 does not mean WPA2 _only_ for ESP-IDF
+#endif
+#endif
 
 static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_key, ARG_bssid,
+           #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
            ARG_min_sec,
            ARG_eap_method, ARG_username, ARG_password,
            ARG_identity, ARG_ca_cert, ARG_ttls_phase2_method,
-           ARG_client_cert, ARG_private_key, ARG_private_key_password, ARG_disable_time_check,
+           #if MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
+           ARG_client_cert, ARG_private_key, ARG_private_key_password,
+           #endif
+           ARG_disable_time_check,
            #if CONFIG_SOC_WIFI_SUPPORT_5G
            ARG_band_mode,
            #endif
-           ARG_pmf_req};
+           ARG_pmf_req
+           #endif
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
         // min_sec defaults to SEC_WPA2 Personal mode
         { MP_QSTR_min_sec, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_AUTH_WPA2_PSK} },
         // eap_method defaults to EAP_NONE for WPA Personal compatibility
@@ -356,14 +362,17 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_ca_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         // ttls_phase2_method defaults to MSCHAPV2
         { MP_QSTR_ttls_phase2_method, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ESP_EAP_TTLS_PHASE2_MSCHAPV2} },
+        #if MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
         { MP_QSTR_client_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_private_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_private_key_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_disable_time_check, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        #endif
         #if CONFIG_SOC_WIFI_SUPPORT_5G
         { MP_QSTR_band_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_BAND_MODE_AUTO} },
         #endif
         { MP_QSTR_pmf_req, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} }
+        #endif
     };
 
     // parse args
@@ -371,6 +380,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     wifi_config_t wifi_sta_config = {0};
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     size_t len;
     const char *p;
     int16_t min_sec = (int16_t)args[ARG_min_sec].u_int;
@@ -467,9 +477,11 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
                 esp_eap_method = ESP_EAP_TYPE_TTLS;
                 break;
 
+            #if MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
             case WIFI_AUTH_EAP_TLS:
                 esp_eap_method = ESP_EAP_TYPE_TLS;
                 break;
+            #endif
 
             default:
                 mp_raise_ValueError(MP_ERROR_TEXT("eap_method wrong, missing or EAP_NONE: not allowed for WPA Enterprise."));
@@ -519,6 +531,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             esp_exceptions(esp_eap_client_set_ttls_phase2_method(ttls_phase2_method));
         }
 
+        #if MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
         if (eap_method == WIFI_AUTH_EAP_TLS) {
             // UNTESTED!
             // EAP-TLS uses client cert, private key, and (optionally) private key password, and (optionally) ca_cert
@@ -565,21 +578,48 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
                 esp_exceptions(esp_eap_client_set_ca_cert((const unsigned char *)p, len + 1));
             }
         }
+        #endif // MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
 
         esp_exceptions(esp_wifi_sta_enterprise_enable());
     } // WPA*_ENTERPRISE
+    #else // ! MICROPY_PY_NETWORK_WPA_ENTERPRISE
+    // configure any parameters that are given
+    if (n_args > 1) {
+        size_t len;
+        const char *p;
+        if (args[ARG_ssid].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
+            memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
+        }
+        if (args[ARG_key].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
+            memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
+        }
+        if (args[ARG_bssid].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
+            if (len != sizeof(wifi_sta_config.sta.bssid)) {
+                mp_raise_ValueError(NULL);
+            }
+            wifi_sta_config.sta.bssid_set = 1;
+            memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
+        }
+        esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
+    }
+    #endif // MICROPY_PY_NETWORK_WPA_ENTERPRISE
 
     esp_exceptions(esp_netif_set_hostname(wlan_sta_obj.netif, mod_network_hostname_data));
 
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     if (!wifi_started) {
         esp_exceptions(esp_wifi_start());
     }
 
-    // ESP-IDF should always auto connect to 5G if available
-    // in some eduroam networks, it seems to default to 2G nonetheless
+    // ESP-IDF should always auto connect to 5G if available WIFI_BAND_MODE_AUTO
+    // in an enterprise context, a user may want to explicitly use 2.4 or 5 GHz bands
     #if CONFIG_SOC_WIFI_SUPPORT_5G
     int16_t band_mode = (int16_t)args[ARG_band_mode].u_int;
     esp_exceptions(esp_wifi_set_band_mode(band_mode));
+    #endif
     #endif
 
     wifi_sta_reconnects = 0;
@@ -596,7 +636,9 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_connect_obj, 1, network_wlan_conn
 static mp_obj_t network_wlan_disconnect(mp_obj_t self_in) {
     wifi_sta_connect_requested = false;
     esp_exceptions(esp_wifi_disconnect());
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     esp_exceptions(esp_wifi_sta_enterprise_disable());
+    #endif
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_wlan_disconnect_obj, network_wlan_disconnect);
@@ -1054,17 +1096,22 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     #if !CONFIG_IDF_TARGET_ESP32C2
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
     #endif
+
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     { MP_ROM_QSTR(MP_QSTR_EAP_NONE), MP_ROM_INT(WIFI_AUTH_EAP_NONE) },
     { MP_ROM_QSTR(MP_QSTR_EAP_PWD), MP_ROM_INT(WIFI_AUTH_EAP_PWD) },
     { MP_ROM_QSTR(MP_QSTR_EAP_PEAP), MP_ROM_INT(WIFI_AUTH_EAP_PEAP) },
     { MP_ROM_QSTR(MP_QSTR_EAP_TTLS), MP_ROM_INT(WIFI_AUTH_EAP_TTLS) },
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
     { MP_ROM_QSTR(MP_QSTR_EAP_TLS), MP_ROM_INT(WIFI_AUTH_EAP_TLS) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_EAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_EAP) },
     { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_MSCHAPV2), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_MSCHAPV2) },
     { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_MSCHAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_MSCHAP) },
     { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_PAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_PAP) },
     { MP_ROM_QSTR(MP_QSTR_EAP_TTLS_PHASE2_CHAP), MP_ROM_INT(ESP_EAP_TTLS_PHASE2_CHAP) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(WIFI_PS_NONE) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(WIFI_PS_MIN_MODEM) },
