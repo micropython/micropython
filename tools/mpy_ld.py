@@ -459,14 +459,10 @@ class LinkEnv:
         for sec in self.sections:
             log(LOG_LEVEL_2, "  {:08x} {} size={}".format(sec.addr, sec.name, len(sec.data)))
 
-    def find_addr(self, name):
+    def find_sym(self, name):
         if name in self.known_syms:
-            s = self.known_syms[name]
-            return s.section.addr + s["st_value"]
+            return self.known_syms[name]
         raise LinkError("unknown symbol: {}".format(name))
-
-    def find_entry_addr(self):
-        return self.find_addr("mpy_init")
 
 
 def build_got_generic(env):
@@ -1194,6 +1190,18 @@ def load_object_file(env, f, felf):
         raise LinkError("\n".join(dup_errors))
 
 
+def generate_entry_point_jump(env):
+    entry_point = env.find_sym("mpy_init")
+    address = entry_point.section.addr + entry_point["st_value"]
+    alignment = entry_point.section.alignment
+    if alignment == 1:
+        return env.arch.asm_jump(address)
+    last_jump_length = len(env.arch.asm_jump(address))
+    aligned_jump = align_to(last_jump_length, alignment)
+    jump = env.arch.asm_jump(address + aligned_jump - last_jump_length)
+    return jump.ljust(align_to(len(jump), alignment), b"\0")
+
+
 def link_objects(env, native_qstr_vals_len):
     # Build GOT information
     if env.arch.name == "EM_XTENSA":
@@ -1289,8 +1297,7 @@ def link_objects(env, native_qstr_vals_len):
         raise LinkError("\n".join(undef_errors))
 
     # Generate the entry trampoline assuming the offset is already known.
-    env.entry_point = env.find_entry_addr()
-    jump = env.arch.asm_jump(env.entry_point)
+    jump = generate_entry_point_jump(env)
     env.entry_trampoline_len = len(jump)
 
     # Align sections, assign their addresses, and create full_text
@@ -1390,7 +1397,7 @@ def build_mpy(env, fmpy, internal_name, native_qstr_vals, arch_flags):
     # Rewrite the entry trampoline if the proper value isn't known earlier, and
     # ensure the trampoline size remains the same.
     if env.arch.delayed_entry_offset:
-        jump = env.arch.asm_jump(env.find_entry_addr())
+        jump = generate_entry_point_jump(env)
         env.full_text[: len(jump)] = jump
         assert len(jump) == env.entry_trampoline_len
 
