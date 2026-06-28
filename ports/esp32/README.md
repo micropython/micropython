@@ -249,6 +249,17 @@ import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
 
+Building the WPA Enterprise Feature
+-----------------------------------
+
+This release supports WPA2/3 Enterprise on ESP32. Here's how to enable this feature.
+
+  * This feature adds about 53.5 kbyte to the binary image size (on RISC-V; slightly less on Xtensa MCUs). Be sure to select a partition table with a large enough factory partition, or roll your own. As you may know, idf.py build tells you the micropython.bin binary size when finished. This size constraint precludes the WPA2 Enterprise feature for smaller devices, e.g. the D2WD variant of ESP32_GENERIC. 
+  * In ports/esp32/esp32_common.cmake, uncomment the wpa_supplicant line in the "APPEND IDF_COMPONENTS" list
+  * In ports/esp32/mpconfigport.h, set the macro MICROPY_PY_NETWORK_WPA_ENTERPRISE to (1)
+  * If you want to also enable EAP-TLS, which is considered experimental, then in ports/esp32/mpconfigport.h set the macro MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL to (1) 
+  * In menuconfig, you may also want to temporarily enable "Print debug messages from WPA Supplicant" and set the log level to "INFO" to verify your build works properly with your AP and network.
+
 Partition table and filesystem size
 -----------------------------------
 
