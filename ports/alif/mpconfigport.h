@@ -156,6 +156,8 @@
 #define MICROPY_PY_MACHINE_MEM_BACKUP           (1)
 #endif
 #define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "ports/alif/machine_mem_backup.c"
+#define MICROPY_PY_MACHINE_WDT                  (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/alif/machine_wdt.c"
 #define MICROPY_PY_NETWORK                      (CORE_M55_HP)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "mpy-alif"
