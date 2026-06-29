@@ -72,7 +72,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
         "bctr  ;"
         :
         : "r" (&nlr->regs), "r" (nlr)
-        :
+        : "r4"
         );
 
     return 0;
@@ -162,7 +162,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
         "bctr  ;"
         :
         : "r" (&nlr->regs), "r" (nlr)
-        :
+        : "r4"
         );
 
     return 0;
