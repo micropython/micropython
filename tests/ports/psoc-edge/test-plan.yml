@@ -43,6 +43,15 @@
         features:
           - pin
 
+- name: bitstream
+  type: multi
+  test:
+    script:
+      - ports/psoc-edge/board_ext_hw/multi/bitstream_tx.py
+      - ports/psoc-edge/board_ext_hw/multi/bitstream_rx.py
+    device:
+      - board: KIT_PSE84_AI
+
 - name: i2c
   type: multi
   test: 

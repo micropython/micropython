@@ -1,2 +1,3 @@
 bitstream call ok: True
 bitstream rejects short timing: True
+bitstream tx ok: True
