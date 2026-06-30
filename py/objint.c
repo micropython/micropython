@@ -397,16 +397,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
     }
     return MP_OBJ_NULL; // op not supported
 }
-/*
-void *reverce_memcpy(void *dest, const void *src, size_t len) {
-    char *d = (char *)dest + len - 1;
-    const char *s = src;
-    while (len--) {
-        *d-- = *s++;
-    }
-    return dest;
-}
-*/
+
 // classmethod int.from_bytes(bytes, byteorder='big', *, signed=False)
 static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_byteorder, ARG_signed };
