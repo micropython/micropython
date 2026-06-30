@@ -29,8 +29,9 @@ timing = (500000, 1500000, 1500000, 500000)  # nanoseconds (500us / 1500us)
 # 4-byte test pattern
 test_data = bytes([0x12, 0x34, 0x56, 0x78])
 
-# Small delay to ensure RX is ready
-time.sleep_ms(200)
+# In multi_stub mode this script is started first (as stub), then DUT RX starts.
+# Keep TX idle long enough so DUT has time to arm IRQ capture before transmit.
+time.sleep_ms(2500)
 
 try:
     bitstream(pin_tx, 0, timing, test_data)
