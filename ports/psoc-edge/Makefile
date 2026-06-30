@@ -163,9 +163,13 @@ CFLAGS += -c $(MACHINE_FLAGS) \
 	-pipe \
 	$(DEFINES) \
 
+# Increase the default stack size from (4 KB) to (16 KB).
+APP_MSP_STACK_SIZE ?= 0x4000
+
 LDFLAGS += $(MACHINE_FLAGS) \
 	-Wl,--gc-sections \
 	-Wl,--print-memory-usage \
+	-Wl,--defsym=APP_MSP_STACK_SIZE=$(APP_MSP_STACK_SIZE) \
 	-Xlinker -L $(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM \
 	-Xlinker -L $(BOARD_DIR)/bsp-cfg \
 	-T$(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/pse84_ns_cm33.ld \
