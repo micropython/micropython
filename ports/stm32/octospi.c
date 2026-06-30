@@ -30,8 +30,10 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "mpu.h"
 #include "octospi.h"
 #include "pin_static_af.h"
+#include "storage.h"
 
 #if defined(MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2)
 
@@ -43,7 +45,70 @@
 #define MICROPY_HW_OSPI_CS_HIGH_CYCLES (2) // nCS stays high for 2 cycles
 #endif
 
+// Region size in units of 1024*1024 bytes.
+#ifndef MICROPY_HW_SPI_MPU_REGION_SIZE
+#define MICROPY_HW_OSPI_MPU_REGION_SIZE ((1 << (MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2 - 3)) >> 20)
+#endif
+
+static inline void octospi_mpu_disable_all(void) {
+    #if defined(STM32H5)
+    // TODO: for STM32H5 implementation.
+    #else
+    // Configure MPU to disable access to entire QSPI region, to prevent CPU
+    // speculative execution from accessing this region and modifying QSPI registers.
+    uint32_t irq_state = mpu_config_start();
+    mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x00, MPU_REGION_SIZE_256MB));
+    mpu_config_end(irq_state);
+    #endif
+}
+
+static inline void octospi_mpu_enable_mapped(void) {
+    #if defined(STM32H5)
+    // TODO: for STM32H5 implementation.
+    #else
+    // Configure MPU to allow access to only the valid part of external SPI flash.
+    // The memory accesses to the mapped OctoSPI are faster if the MPU is not used
+    // for the memory-mapped region, so 3 MPU regions are used to disable access
+    // to everything except the valid address space, using holes in the bottom
+    // of the regions and nesting them.
+    // Note: Disabling a subregion (by setting its corresponding SRD bit to 1)
+    // means another region overlapping the disabled range matches instead.  If no
+    // other enabled region overlaps the disabled subregion, and the access is
+    // unprivileged or the background region is disabled, the MPU issues a fault.
+    uint32_t irq_state = mpu_config_start();
+    if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 128) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0xFF, MPU_REGION_SIZE_256MB));
+    } else if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 64) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x0F, MPU_REGION_SIZE_256MB));
+    } else if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 32) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x03, MPU_REGION_SIZE_256MB));
+    } else if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 16) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+    } else if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 8) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_OSPI2, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x0F, MPU_REGION_SIZE_32MB));
+    } else if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 4) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_OSPI2, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x03, MPU_REGION_SIZE_32MB));
+    } else if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 2) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_OSPI2, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_32MB));
+    } else if (MICROPY_HW_OSPI_MPU_REGION_SIZE > 1) {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_OSPI2, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x0F, MPU_REGION_SIZE_32MB));
+        mpu_config_region(MPU_REGION_OSPI3, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_16MB));
+    } else {
+        mpu_config_region(MPU_REGION_OSPI1, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_OSPI2, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x01, MPU_REGION_SIZE_32MB));
+        mpu_config_region(MPU_REGION_OSPI3, OCTOSPI_MAP_ADDR, MPU_CONFIG_NOACCESS(0x03, MPU_REGION_SIZE_4MB));
+    }
+    mpu_config_end(irq_state);
+    #endif
+}
+
 void octospi_init(void) {
+
+    octospi_mpu_disable_all();
     // Configure OCTOSPI pins (allows 1, 2, 4 or 8 line configuration).
     #if defined(STM32H7)
     #define STATIC_AF_OCTOSPI(signal) STATIC_AF_OCTOSPIM_P1_##signal
@@ -105,6 +170,63 @@ void octospi_init(void) {
     OCTOSPI1->CR |= OCTOSPI_CR_EN;
 }
 
+void octospi_memory_map(void) {
+    // Enable memory-mapped mode
+
+    // Work out command to use for reads, based on size of the memory.
+    uint8_t cmd;
+    uint8_t adsize;
+    if ((MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) >= 24) {
+        cmd = 0xec;
+        adsize = 3;
+    } else {
+        cmd = 0xeb;
+        adsize = 2;
+    }
+
+    OCTOSPI1->ABR = 0; // disable continuous read mode
+
+    OCTOSPI1->CCR =
+        0 << OCTOSPI_CCR_DQSE_Pos
+            | 0 << OCTOSPI_CCR_SIOO_Pos // send instruction every transaction
+            | 3 << OCTOSPI_CCR_DMODE_Pos // data on 4 lines
+            | 0 << OCTOSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
+            | 3 << OCTOSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+            | adsize << OCTOSPI_CCR_ADSIZE_Pos
+            | 3 << OCTOSPI_CCR_ADMODE_Pos // address on 4 lines
+            | 1 << OCTOSPI_CCR_IMODE_Pos // instruction on 1 line
+    ;
+
+    OCTOSPI1->TCR =
+        4 << OCTOSPI_TCR_DCYC_Pos
+            | 1 << OCTOSPI_TCR_SSHIFT_Pos
+            | 0 << OCTOSPI_TCR_DHQC_Pos
+    ;
+
+    OCTOSPI1->IR = cmd;
+
+    // Enter memory map mode.
+    OCTOSPI1->CR |= OCTOSPI_CR_FMODE;
+    octospi_mpu_enable_mapped();
+}
+
+void octospi_memory_map_exit(void) {
+    // Prevent access to QSPI memory-mapped region.
+    octospi_mpu_disable_all();
+
+    // Abort any ongoing transfer if peripheral is busy.
+    if (OCTOSPI1->SR & OCTOSPI_SR_BUSY) {
+        OCTOSPI1->CR |= OCTOSPI_CR_ABORT;
+        while (OCTOSPI1->CR & OCTOSPI_CR_ABORT) {
+        }
+    }
+}
+
+void octospi_memory_map_restart(void) {
+    octospi_memory_map_exit();
+    octospi_memory_map();
+}
+
 static int octospi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
     (void)self_in;
     (void)arg;
@@ -113,15 +235,23 @@ static int octospi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
             octospi_init();
             break;
         case MP_QSPI_IOCTL_BUS_ACQUIRE:
-            // Abort any ongoing transfer if peripheral is busy.
-            if (OCTOSPI1->SR & OCTOSPI_SR_BUSY) {
-                OCTOSPI1->CR |= OCTOSPI_CR_ABORT;
-                while (OCTOSPI1->CR & OCTOSPI_CR_ABORT) {
-                }
-            }
+            // Disable memory-mapped region during bus access
+            octospi_memory_map_exit();
             break;
         case MP_QSPI_IOCTL_BUS_RELEASE:
+            // Switch to memory-map mode when bus is idle
+            octospi_memory_map();
             break;
+        case MP_QSPI_IOCTL_MEMORY_MODIFIED: {
+            #if defined(__ICACHE_PRESENT) && (__ICACHE_PRESENT == 1U)
+            uintptr_t *addr_len = (uintptr_t *)arg;
+            volatile void *addr = (volatile void *)(OCTOSPI_MAP_ADDR + addr_len[0]);
+            size_t len = addr_len[1];
+            SCB_InvalidateICache_by_Addr(addr, len);
+            SCB_InvalidateDCache_by_Addr(addr, len);
+            #endif
+            break;
+        }
     }
     return 0; // success
 }
