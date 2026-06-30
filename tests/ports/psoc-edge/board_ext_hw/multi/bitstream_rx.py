@@ -1,7 +1,8 @@
 from machine import Pin
 import time
 
-pin_rx = Pin("P16_0", mode=Pin.IN, pull=Pin.PULL_UP)
+pin_rx0 = Pin("P16_0", mode=Pin.IN, pull=Pin.PULL_UP)
+pin_rx1 = Pin("P16_1", mode=Pin.IN, pull=Pin.PULL_UP)
 
 # Timing thresholds for decoding
 # Bitstream timing (ns) gets measured in us via time.ticks_us()
@@ -9,44 +10,73 @@ pin_rx = Pin("P16_0", mode=Pin.IN, pull=Pin.PULL_UP)
 # Threshold at 1000us discriminates between 500us (bit 0 high) and 1500us (bit 1 high) pulses
 threshold_us = 1000  # 1000us threshold
 
-edges = []
+edges0 = []
+edges1 = []
 capture_active = False
-saw_high = False
-saw_low = False
-level_changes = 0
+saw_high0 = False
+saw_low0 = False
+level_changes0 = 0
+saw_high1 = False
+saw_low1 = False
+level_changes1 = 0
 
 
-def edge_handler(pin):
+def edge_handler0(pin):
     global capture_active
     if capture_active:
         try:
-            edges.append(time.ticks_us())
+            edges0.append(time.ticks_us())
+        except:
+            pass
+
+
+def edge_handler1(pin):
+    global capture_active
+    if capture_active:
+        try:
+            edges1.append(time.ticks_us())
         except:
             pass
 
 
 # Setup IRQ to capture rising and falling edges
-pin_rx.irq(handler=edge_handler, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
+pin_rx0.irq(handler=edge_handler0, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
+pin_rx1.irq(handler=edge_handler1, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
 
 # Start edge capture and sample pin level during the wait. This helps distinguish
 # missing electrical connectivity from a pure bitstream/IRQ decode issue.
 capture_active = True
-last_level = pin_rx.value()
-if last_level:
-    saw_high = True
+last_level0 = pin_rx0.value()
+if last_level0:
+    saw_high0 = True
 else:
-    saw_low = True
+    saw_low0 = True
+
+last_level1 = pin_rx1.value()
+if last_level1:
+    saw_high1 = True
+else:
+    saw_low1 = True
 
 for _ in range(120):
     time.sleep_ms(100)
-    level = pin_rx.value()
-    if level:
-        saw_high = True
+    level0 = pin_rx0.value()
+    if level0:
+        saw_high0 = True
     else:
-        saw_low = True
-    if level != last_level:
-        level_changes += 1
-        last_level = level
+        saw_low0 = True
+    if level0 != last_level0:
+        level_changes0 += 1
+        last_level0 = level0
+
+    level1 = pin_rx1.value()
+    if level1:
+        saw_high1 = True
+    else:
+        saw_low1 = True
+    if level1 != last_level1:
+        level_changes1 += 1
+        last_level1 = level1
 
 capture_active = False
 
@@ -85,22 +115,35 @@ def has_expected_frame(edges, threshold_us, expected_bytes):
     return False
 
 
-matched = has_expected_frame(edges, threshold_us, expected)
+matched0 = has_expected_frame(edges0, threshold_us, expected)
+matched1 = has_expected_frame(edges1, threshold_us, expected)
+matched = matched0 or matched1
 
 if matched:
     print("bitstream rx ok: True")
     print("data match: True")
 else:
-    print("edges captured:", len(edges))
-    print("pin high seen:", saw_high)
-    print("pin low seen:", saw_low)
-    print("pin level changes:", level_changes)
-    if len(edges) >= 2:
+    print("edges captured p16_0:", len(edges0))
+    print("pin p16_0 high seen:", saw_high0)
+    print("pin p16_0 low seen:", saw_low0)
+    print("pin p16_0 level changes:", level_changes0)
+    print("edges captured p16_1:", len(edges1))
+    print("pin p16_1 high seen:", saw_high1)
+    print("pin p16_1 low seen:", saw_low1)
+    print("pin p16_1 level changes:", level_changes1)
+    if len(edges0) >= 2:
         pulse_widths = []
-        for i in range(len(edges) - 1):
-            pulse_widths.append(time.ticks_diff(edges[i + 1], edges[i]))
-        print("first pulse width (us):", pulse_widths[0])
-        print("last pulse width (us):", pulse_widths[-1])
-        print("max pulse width (us):", max(pulse_widths))
+        for i in range(len(edges0) - 1):
+            pulse_widths.append(time.ticks_diff(edges0[i + 1], edges0[i]))
+        print("p16_0 first pulse width (us):", pulse_widths[0])
+        print("p16_0 last pulse width (us):", pulse_widths[-1])
+        print("p16_0 max pulse width (us):", max(pulse_widths))
+    if len(edges1) >= 2:
+        pulse_widths = []
+        for i in range(len(edges1) - 1):
+            pulse_widths.append(time.ticks_diff(edges1[i + 1], edges1[i]))
+        print("p16_1 first pulse width (us):", pulse_widths[0])
+        print("p16_1 last pulse width (us):", pulse_widths[-1])
+        print("p16_1 max pulse width (us):", max(pulse_widths))
     print("bitstream rx ok: True")
     print("data match: False")

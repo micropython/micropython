@@ -3,6 +3,7 @@ import time
 
 pin_tx = Pin("P16_0", mode=Pin.OUT, value=0)
 pin_api = Pin("P16_1", mode=Pin.OUT, value=0)
+pin_tx_alt = Pin("P16_1", mode=Pin.OUT, value=0)
 
 # API validation cases.
 api_timing = (500, 1500, 1500, 500)
@@ -33,14 +34,17 @@ try:
     # Long static levels let RX verify basic electrical visibility in CI even if
     # no bitstream edges are captured.
     pin_tx.value(1)
+    pin_tx_alt.value(1)
     time.sleep_ms(2000)
     pin_tx.value(0)
+    pin_tx_alt.value(0)
     time.sleep_ms(1000)
 
     # In CI, board scheduling can jitter heavily. Broadcast multiple frames so RX can
     # catch at least one full frame regardless of start alignment.
     for _ in range(40):
         bitstream(pin_tx, 0, timing, test_data)
+        bitstream(pin_tx_alt, 0, timing, test_data)
         time.sleep_ms(250)
     print("bitstream tx ok: True")
 except Exception as e:
