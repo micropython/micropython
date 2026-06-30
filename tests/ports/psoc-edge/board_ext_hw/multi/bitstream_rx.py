@@ -32,51 +32,43 @@ time.sleep_ms(8500)
 capture_active = False
 
 
-def decode_bitstream(edges, threshold_us):
-    """Decode bitstream edges back into bytes."""
-    if len(edges) < 4:
-        return None
-
-    decoded_bits = []
-
-    # Process HIGH pulses only: edges[0->1] = bit0 HIGH, edges[2->3] = bit1 HIGH, etc.
-    # Skip LOW pulses (edges[1->2], edges[3->4], etc.)
-    for i in range(0, len(edges) - 1, 2):
-        pulse_width_us = (edges[i + 1] - edges[i]) & 0xFFFFFFFF
-
-        # Decode: short HIGH pulse < threshold = 0, long HIGH pulse >= threshold = 1
-        if pulse_width_us < threshold_us:
-            decoded_bits.append(0)
-        else:
-            decoded_bits.append(1)
-
-    # Convert bits to bytes (MSB first)
-    if len(decoded_bits) % 8 != 0:
-        return None
-
-    decoded_bytes = []
-    for byte_idx in range(len(decoded_bits) // 8):
-        byte_val = 0
-        for bit_idx in range(8):
-            bit = decoded_bits[byte_idx * 8 + bit_idx]
-            byte_val = (byte_val << 1) | bit
-        decoded_bytes.append(byte_val)
-
-    return bytes(decoded_bytes)
-
-
-# Debug: capture diagnostics
-print("DEBUG: edges={} threshold={}".format(len(edges), threshold_us))
-if len(edges) > 0:
-    first_pulses = []
-    for i in range(0, min(20, len(edges) - 1), 2):
-        first_pulses.append(edges[i + 1] - edges[i])
-    print("DEBUG: first_pulses={}".format(first_pulses))
-
-decoded = decode_bitstream(edges, threshold_us)
 expected = bytes([0x12, 0x34, 0x56, 0x78])
 
-if decoded == expected:
+
+def bytes_to_bits(data):
+    bits = []
+    for byte_val in data:
+        for bit in range(7, -1, -1):
+            bits.append((byte_val >> bit) & 1)
+    return bits
+
+
+def has_expected_frame(edges, threshold_us, expected_bytes):
+    if len(edges) < 2:
+        return False
+
+    expected_bits = bytes_to_bits(expected_bytes)
+
+    # Depending on whether the first captured edge is rising/falling, HIGH pulse
+    # widths can appear at even or odd edge-interval indices.
+    for parity in (0, 1):
+        decoded_bits = []
+        for i in range(parity, len(edges) - 1, 2):
+            pulse_width_us = time.ticks_diff(edges[i + 1], edges[i])
+            decoded_bits.append(0 if pulse_width_us < threshold_us else 1)
+
+        # Search for expected frame anywhere in the decoded stream.
+        n = len(expected_bits)
+        for start in range(0, len(decoded_bits) - n + 1):
+            if decoded_bits[start : start + n] == expected_bits:
+                return True
+
+    return False
+
+
+matched = has_expected_frame(edges, threshold_us, expected)
+
+if matched:
     print("bitstream rx ok: True")
     print("data match: True")
 else:

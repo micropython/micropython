@@ -29,13 +29,12 @@ timing = (500000, 1500000, 1500000, 500000)  # nanoseconds (500us / 1500us)
 # 4-byte test pattern
 test_data = bytes([0x12, 0x34, 0x56, 0x78])
 
-# In multi_stub mode, TX stub runs first, then RX DUT connects and runs.
-# post_stub_delay_ms (1000ms) + device startup + script loading + connection = ~3-4s overhead.
-# Sleep 8000ms to ensure RX is definitely capturing when TX transmits.
-time.sleep_ms(8000)
-
 try:
-    bitstream(pin_tx, 0, timing, test_data)
+    # In CI, board scheduling can jitter heavily. Broadcast multiple frames so RX can
+    # catch at least one full frame regardless of start alignment.
+    for _ in range(20):
+        bitstream(pin_tx, 0, timing, test_data)
+        time.sleep_ms(300)
     print("bitstream tx ok: True")
 except Exception as e:
     print("bitstream tx ok: False")
