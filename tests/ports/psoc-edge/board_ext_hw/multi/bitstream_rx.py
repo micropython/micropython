@@ -26,10 +26,9 @@ def edge_handler(pin):
 pin_rx.irq(handler=edge_handler, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
 
 # Start edge capture; wait for transmission
-# 4000ms window: TX transmits at ~3000ms from its start, RX starts ~1500ms after TX.
-# TX transmit lands ~1500ms into this window. Shorter window lets board return to REPL faster.
+# TX waits 8000ms before transmitting. RX window should be long enough for both wait and transmission.
 capture_active = True
-time.sleep_ms(4000)
+time.sleep_ms(8500)
 capture_active = False
 
 
@@ -40,11 +39,12 @@ def decode_bitstream(edges, threshold_us):
 
     decoded_bits = []
 
-    # Process edge pairs: rising, falling = one bit's high pulse
+    # Process HIGH pulses only: edges[0->1] = bit0 HIGH, edges[2->3] = bit1 HIGH, etc.
+    # Skip LOW pulses (edges[1->2], edges[3->4], etc.)
     for i in range(0, len(edges) - 1, 2):
         pulse_width_us = (edges[i + 1] - edges[i]) & 0xFFFFFFFF
 
-        # Decode: short pulse < threshold = 0, long pulse >= threshold = 1
+        # Decode: short HIGH pulse < threshold = 0, long HIGH pulse >= threshold = 1
         if pulse_width_us < threshold_us:
             decoded_bits.append(0)
         else:

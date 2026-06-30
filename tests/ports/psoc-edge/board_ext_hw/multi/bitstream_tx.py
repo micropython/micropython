@@ -29,10 +29,10 @@ timing = (500000, 1500000, 1500000, 500000)  # nanoseconds (500us / 1500us)
 # 4-byte test pattern
 test_data = bytes([0x12, 0x34, 0x56, 0x78])
 
-# In multi_stub mode this script is started first (as stub), then DUT RX starts.
-# post_stub_delay_ms (1000ms) + mpremote connection time (~500ms) means RX arms ~1500ms
-# after TX starts. Sleep 3000ms so TX always transmits after RX is capturing.
-time.sleep_ms(3000)
+# In multi_stub mode, TX stub runs first, then RX DUT connects and runs.
+# post_stub_delay_ms (1000ms) + device startup + script loading + connection = ~3-4s overhead.
+# Sleep 8000ms to ensure RX is definitely capturing when TX transmits.
+time.sleep_ms(8000)
 
 try:
     bitstream(pin_tx, 0, timing, test_data)
