@@ -11,6 +11,9 @@ threshold_us = 1000  # 1000us threshold
 
 edges = []
 capture_active = False
+saw_high = False
+saw_low = False
+level_changes = 0
 
 
 def edge_handler(pin):
@@ -25,10 +28,26 @@ def edge_handler(pin):
 # Setup IRQ to capture rising and falling edges
 pin_rx.irq(handler=edge_handler, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
 
-# Start edge capture; wait for transmission
-# Keep RX active long enough to overlap a long TX broadcast window in CI.
+# Start edge capture and sample pin level during the wait. This helps distinguish
+# missing electrical connectivity from a pure bitstream/IRQ decode issue.
 capture_active = True
-time.sleep_ms(12000)
+last_level = pin_rx.value()
+if last_level:
+    saw_high = True
+else:
+    saw_low = True
+
+for _ in range(120):
+    time.sleep_ms(100)
+    level = pin_rx.value()
+    if level:
+        saw_high = True
+    else:
+        saw_low = True
+    if level != last_level:
+        level_changes += 1
+        last_level = level
+
 capture_active = False
 
 
@@ -73,6 +92,9 @@ if matched:
     print("data match: True")
 else:
     print("edges captured:", len(edges))
+    print("pin high seen:", saw_high)
+    print("pin low seen:", saw_low)
+    print("pin level changes:", level_changes)
     if len(edges) >= 2:
         pulse_widths = []
         for i in range(len(edges) - 1):

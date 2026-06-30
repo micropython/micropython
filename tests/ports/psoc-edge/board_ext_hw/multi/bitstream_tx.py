@@ -30,6 +30,13 @@ timing = (500000, 1500000, 1500000, 500000)  # nanoseconds (500us / 1500us)
 test_data = bytes([0x12, 0x34, 0x56, 0x78])
 
 try:
+    # Long static levels let RX verify basic electrical visibility in CI even if
+    # no bitstream edges are captured.
+    pin_tx.value(1)
+    time.sleep_ms(2000)
+    pin_tx.value(0)
+    time.sleep_ms(1000)
+
     # In CI, board scheduling can jitter heavily. Broadcast multiple frames so RX can
     # catch at least one full frame regardless of start alignment.
     for _ in range(40):
