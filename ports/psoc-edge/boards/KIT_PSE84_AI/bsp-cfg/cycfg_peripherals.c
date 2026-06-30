@@ -1336,3 +1336,16 @@ void init_cycfg_peripherals(void) {
     #endif /* defined (CY_DEVICE_CONFIGURATOR_IP_ENABLE_FEATURE) */
     Cy_SysClk_PeriphAssignDivider(PCLK_TCPWM0_CLOCK_COUNTER_EN7, CY_SYSCLK_DIV_8_BIT, 3U);
 }
+
+/**
+ * This function is not part of the generated sources.
+ * It is added by MicroPython to avoid unused peripheral default allocations.
+ */
+
+void init_cycfg_peripheral_s_minimal(void) {
+    #if defined(CY_DEVICE_CONFIGURATOR_IP_ENABLE_FEATURE)
+    Cy_SysClk_PeriGroupSlaveInit(CY_MMIO_SDHC0_PERI_NR, CY_MMIO_SDHC0_GROUP_NR, CY_MMIO_SDHC0_SLAVE_NR, CY_MMIO_SDHC0_CLK_HF_NR);
+    #endif /* defined (CY_DEVICE_CONFIGURATOR_IP_ENABLE_FEATURE) */
+    Cy_SysClk_PeriPclkAssignDivider(PCLK_SDHC0_CLK_HF, CY_SYSCLK_DIV_8_BIT, 0U);
+    Cy_SysClk_PeriGroupSlaveInit(CY_MMIO_SMIF01_PERI_NR, CY_MMIO_SMIF01_GROUP_NR, CY_MMIO_SMIF01_SLAVE_NR, CY_MMIO_SMIF01_CLK_HF_NR);
+}

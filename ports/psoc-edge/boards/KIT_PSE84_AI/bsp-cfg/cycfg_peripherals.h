@@ -358,6 +358,7 @@ extern const mtb_hal_pwm_configurator_t CYBSP_DEAD_TIME_PWM_hal_config;
 #endif /* defined (COMPONENT_MTB_HAL) && (MTB_HAL_DRIVER_AVAILABLE_PWM) */
 
 void init_cycfg_peripherals(void);
+void init_cycfg_peripheral_s_minimal(void);
 
 #if defined(__cplusplus)
 }

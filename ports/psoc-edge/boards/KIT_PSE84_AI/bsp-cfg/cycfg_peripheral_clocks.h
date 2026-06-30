@@ -247,6 +247,7 @@ extern "C" {
 #endif /* !defined (CYBSP_SDHC_0_CLK_DIV_GRP_NUM) */
 
 void init_cycfg_peripheral_clocks(void);
+void init_cycfg_peripheral_clocks_s_minimal(void);
 
 #if defined(__cplusplus)
 }

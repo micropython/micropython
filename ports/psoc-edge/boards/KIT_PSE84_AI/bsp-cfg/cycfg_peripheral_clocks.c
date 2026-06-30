@@ -81,3 +81,15 @@ void init_cycfg_peripheral_clocks(void) {
     Cy_SysClk_PeriPclkSetDivider((en_clk_dst_t)CYBSP_SDHC_0_CLK_DIV_GRP_NUM, CY_SYSCLK_DIV_8_BIT, 0U, 1U);
     Cy_SysClk_PeriPclkEnableDivider((en_clk_dst_t)CYBSP_SDHC_0_CLK_DIV_GRP_NUM, CY_SYSCLK_DIV_8_BIT, 0U);
 }
+
+
+/**
+ * This function is not part of the generated sources.
+ * It is added by MicroPython to avoid unused peripheral default allocations.
+ */
+
+void init_cycfg_peripheral_clocks_s_minimal(void) {
+    Cy_SysClk_PeriPclkDisableDivider((en_clk_dst_t)CYBSP_SDHC_0_CLK_DIV_GRP_NUM, CY_SYSCLK_DIV_8_BIT, 0U);
+    Cy_SysClk_PeriPclkSetDivider((en_clk_dst_t)CYBSP_SDHC_0_CLK_DIV_GRP_NUM, CY_SYSCLK_DIV_8_BIT, 0U, 1U);
+    Cy_SysClk_PeriPclkEnableDivider((en_clk_dst_t)CYBSP_SDHC_0_CLK_DIV_GRP_NUM, CY_SYSCLK_DIV_8_BIT, 0U);
+}
