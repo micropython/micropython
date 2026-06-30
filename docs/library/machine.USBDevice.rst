@@ -4,9 +4,9 @@
 class USBDevice -- USB Device driver
 ====================================
 
-.. note:: ``machine.USBDevice`` is currently only supported for esp32, rp2 and
-          samd ports. Native USB support is also required, and not every board
-          supports native USB.
+Availability: **ESP32, RP2, SAMD**
+
+.. note:: Native USB support is required, and not every board supports native USB.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
 Python code.
