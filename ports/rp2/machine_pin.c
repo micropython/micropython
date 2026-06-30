@@ -606,4 +606,4 @@ mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
     return pin->id;
 }
 
-MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[30]);
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[NUM_BANK0_GPIOS]);
