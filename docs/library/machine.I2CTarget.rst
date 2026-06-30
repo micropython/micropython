@@ -74,6 +74,8 @@ example, to see the raw events as they are triggered::
     )
     i2c.irq(irq_handler, trigger=all_triggers, hard=True)
 
+Availability: **Alif, ESP32, MIMXRT, RP2, SAMD, STM32, Zephyr**
+
 Constructors
 ------------
 
