@@ -44,11 +44,14 @@
           - pin
 
 - name: bitstream
-  type: multi
+  type: multi_stub
   test:
-    script:
-      - ports/psoc-edge/board_ext_hw/multi/bitstream_tx.py
-      - ports/psoc-edge/board_ext_hw/multi/bitstream_rx.py
+    script: ports/psoc-edge/board_ext_hw/multi/bitstream_rx.py
+    post_stub_delay_ms: 300
+    device:
+      - board: KIT_PSE84_AI
+  stub:
+    script: ports/psoc-edge/board_ext_hw/multi/bitstream_tx.py
     device:
       - board: KIT_PSE84_AI
 
