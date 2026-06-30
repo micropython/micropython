@@ -1,8 +1,8 @@
 from machine import Pin
 import time
 
-pin_rx0 = Pin("P16_0", mode=Pin.IN, pull=Pin.PULL_UP)
-pin_rx1 = Pin("P16_1", mode=Pin.IN, pull=Pin.PULL_UP)
+pin_rx0 = Pin("P17_0", mode=Pin.IN, pull=Pin.PULL_UP)
+pin_rx1 = Pin("P17_1", mode=Pin.IN, pull=Pin.PULL_UP)
 
 # Timing thresholds for decoding
 # Bitstream timing (ns) gets measured in us via time.ticks_us()
@@ -123,27 +123,27 @@ if matched:
     print("bitstream rx ok: True")
     print("data match: True")
 else:
-    print("edges captured p16_0:", len(edges0))
-    print("pin p16_0 high seen:", saw_high0)
-    print("pin p16_0 low seen:", saw_low0)
-    print("pin p16_0 level changes:", level_changes0)
-    print("edges captured p16_1:", len(edges1))
-    print("pin p16_1 high seen:", saw_high1)
-    print("pin p16_1 low seen:", saw_low1)
-    print("pin p16_1 level changes:", level_changes1)
+    print("edges captured p17_0:", len(edges0))
+    print("pin p17_0 high seen:", saw_high0)
+    print("pin p17_0 low seen:", saw_low0)
+    print("pin p17_0 level changes:", level_changes0)
+    print("edges captured p17_1:", len(edges1))
+    print("pin p17_1 high seen:", saw_high1)
+    print("pin p17_1 low seen:", saw_low1)
+    print("pin p17_1 level changes:", level_changes1)
     if len(edges0) >= 2:
         pulse_widths = []
         for i in range(len(edges0) - 1):
             pulse_widths.append(time.ticks_diff(edges0[i + 1], edges0[i]))
-        print("p16_0 first pulse width (us):", pulse_widths[0])
-        print("p16_0 last pulse width (us):", pulse_widths[-1])
-        print("p16_0 max pulse width (us):", max(pulse_widths))
+        print("p17_0 first pulse width (us):", pulse_widths[0])
+        print("p17_0 last pulse width (us):", pulse_widths[-1])
+        print("p17_0 max pulse width (us):", max(pulse_widths))
     if len(edges1) >= 2:
         pulse_widths = []
         for i in range(len(edges1) - 1):
             pulse_widths.append(time.ticks_diff(edges1[i + 1], edges1[i]))
-        print("p16_1 first pulse width (us):", pulse_widths[0])
-        print("p16_1 last pulse width (us):", pulse_widths[-1])
-        print("p16_1 max pulse width (us):", max(pulse_widths))
+        print("p17_1 first pulse width (us):", pulse_widths[0])
+        print("p17_1 last pulse width (us):", pulse_widths[-1])
+        print("p17_1 max pulse width (us):", max(pulse_widths))
     print("bitstream rx ok: True")
     print("data match: False")

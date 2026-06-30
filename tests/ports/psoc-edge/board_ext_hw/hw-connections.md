@@ -13,7 +13,8 @@
 
 | Test Name         | Board 1 Pin   | Board 2 Pin   | Description                    |
 |-------------------|---------------|---------------|--------------------------------|
-| Bitstream         | P16_0         | P16_0         | Bitstream TX to RX             |
+| Bitstream         | P17_0         | P17_0         | Bitstream TX to RX (primary)   |
+|                   | P17_1         | P17_1         | Bitstream TX to RX (fallback)  |
 |                   | GND           | GND           | Common Ground                  |
 |                   |               |               |                                |
 | I2C               | P17_0         | P17_0         | I2C SCL to SCL (with pullup)   |

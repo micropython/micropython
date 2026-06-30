@@ -1,9 +1,9 @@
 from machine import Pin, bitstream
 import time
 
-pin_tx = Pin("P16_0", mode=Pin.OUT, value=0)
-pin_api = Pin("P16_1", mode=Pin.OUT, value=0)
-pin_tx_alt = Pin("P16_1", mode=Pin.OUT, value=0)
+pin_tx = Pin("P17_0", mode=Pin.OUT, value=0)
+pin_api = Pin("P17_1", mode=Pin.OUT, value=0)
+pin_tx_alt = Pin("P17_1", mode=Pin.OUT, value=0)
 
 # API validation cases.
 api_timing = (500, 1500, 1500, 500)
