@@ -30,8 +30,9 @@ timing = (500000, 1500000, 1500000, 500000)  # nanoseconds (500us / 1500us)
 test_data = bytes([0x12, 0x34, 0x56, 0x78])
 
 # In multi_stub mode this script is started first (as stub), then DUT RX starts.
-# Keep TX idle long enough so DUT has time to arm IRQ capture before transmit.
-time.sleep_ms(2500)
+# post_stub_delay_ms (1000ms) + mpremote connection time (~500ms) means RX arms ~1500ms
+# after TX starts. Sleep 3000ms so TX always transmits after RX is capturing.
+time.sleep_ms(3000)
 
 try:
     bitstream(pin_tx, 0, timing, test_data)

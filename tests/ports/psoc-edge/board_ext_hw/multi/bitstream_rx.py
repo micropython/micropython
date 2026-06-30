@@ -26,8 +26,10 @@ def edge_handler(pin):
 pin_rx.irq(handler=edge_handler, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
 
 # Start edge capture; wait for transmission
+# 4000ms window: TX transmits at ~3000ms from its start, RX starts ~1500ms after TX.
+# TX transmit lands ~1500ms into this window. Shorter window lets board return to REPL faster.
 capture_active = True
-time.sleep_ms(5000)  # Allow transmission to complete
+time.sleep_ms(4000)
 capture_active = False
 
 
