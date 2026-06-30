@@ -70,7 +70,8 @@ SECTIONS
          * FLASH ... we will include any thing excluded here in .data below by default */
         *(.init)
         /* Change for MicroPython... exclude gc.c, parse.c, vm.c from flash */
-        *(EXCLUDE_FILE(*libgcc.a: *libc.a: *lib_a-mem*.o *libm.a: *gc.c.obj *vm.c.obj *parse.c.obj) .text*)
+        *(EXCLUDE_FILE(*libgcc.a: *libc.a: *libc_a-mem*.o *libc_a-str*.o *libm.a:
+                       *gc.c.obj *vm.c.obj *parse.c.obj *mem_ops_*.o) .text*)
         *(.fini)
         /* Pull all c'tors into .text */
         *crtbegin.o(.ctors)
