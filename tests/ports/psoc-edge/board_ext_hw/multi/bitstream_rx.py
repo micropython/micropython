@@ -26,9 +26,9 @@ def edge_handler(pin):
 pin_rx.irq(handler=edge_handler, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
 
 # Start edge capture; wait for transmission
-# TX waits 8000ms before transmitting. RX window should be long enough for both wait and transmission.
+# Keep RX active long enough to overlap a long TX broadcast window in CI.
 capture_active = True
-time.sleep_ms(8500)
+time.sleep_ms(12000)
 capture_active = False
 
 
@@ -72,5 +72,13 @@ if matched:
     print("bitstream rx ok: True")
     print("data match: True")
 else:
+    print("edges captured:", len(edges))
+    if len(edges) >= 2:
+        pulse_widths = []
+        for i in range(len(edges) - 1):
+            pulse_widths.append(time.ticks_diff(edges[i + 1], edges[i]))
+        print("first pulse width (us):", pulse_widths[0])
+        print("last pulse width (us):", pulse_widths[-1])
+        print("max pulse width (us):", max(pulse_widths))
     print("bitstream rx ok: True")
     print("data match: False")

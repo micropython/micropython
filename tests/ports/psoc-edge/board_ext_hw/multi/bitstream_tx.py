@@ -32,9 +32,9 @@ test_data = bytes([0x12, 0x34, 0x56, 0x78])
 try:
     # In CI, board scheduling can jitter heavily. Broadcast multiple frames so RX can
     # catch at least one full frame regardless of start alignment.
-    for _ in range(20):
+    for _ in range(40):
         bitstream(pin_tx, 0, timing, test_data)
-        time.sleep_ms(300)
+        time.sleep_ms(250)
     print("bitstream tx ok: True")
 except Exception as e:
     print("bitstream tx ok: False")

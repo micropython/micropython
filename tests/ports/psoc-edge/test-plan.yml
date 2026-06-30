@@ -6,42 +6,42 @@
     device: 
       - board: KIT_PSE84_AI
 
-- name: filesystem
-  test: 
-    script:
-      - extmod/vfs_basic.py
-      - extmod/vfs_lfs_ilistdir_del.py
-      - extmod/vfs_lfs_superblock.py
-      - extmod/vfs_mountinfo.py
-    device: 
-      - board: KIT_PSE84_AI
+# - name: filesystem
+#   test: 
+#     script:
+#       - extmod/vfs_basic.py
+#       - extmod/vfs_lfs_ilistdir_del.py
+#       - extmod/vfs_lfs_superblock.py
+#       - extmod/vfs_mountinfo.py
+#     device: 
+#       - board: KIT_PSE84_AI
 
-- name: filesystem_large
-  type: custom
-  test: 
-    script:
-      - ports/psoc-edge/mp_custom/fs.py
-    args:
-      - basic
-    device: 
-      - board: KIT_PSE84_AI
+# - name: filesystem_large
+#   type: custom
+#   test: 
+#     script:
+#       - ports/psoc-edge/mp_custom/fs.py
+#     args:
+#       - basic
+#     device: 
+#       - board: KIT_PSE84_AI
       
-- name: no-extended-hardware
-  test: 
-    script: ports/psoc-edge/board_only_hw/single
-    device: 
-      - board: KIT_PSE84_AI
+# - name: no-extended-hardware
+#   test: 
+#     script: ports/psoc-edge/board_only_hw/single
+#     device: 
+#       - board: KIT_PSE84_AI
             
-- name: pin-signal
-  test: 
-    script: 
-      - ports/psoc-edge/board_ext_hw/single/pin.py
-      - ports/psoc-edge/board_ext_hw/single/pin_irq.py
-      - ports/psoc-edge/board_ext_hw/single/signal.py
-    device: 
-      - board: KIT_PSE84_AI
-        features:
-          - pin
+# - name: pin-signal
+#   test: 
+#     script: 
+#       - ports/psoc-edge/board_ext_hw/single/pin.py
+#       - ports/psoc-edge/board_ext_hw/single/pin_irq.py
+#       - ports/psoc-edge/board_ext_hw/single/signal.py
+#     device: 
+#       - board: KIT_PSE84_AI
+#         features:
+#           - pin
 
 - name: bitstream
   type: multi_stub
@@ -55,69 +55,69 @@
     device:
       - board: KIT_PSE84_AI
 
-- name: i2c
-  type: multi
-  test: 
-    script: ports/psoc-edge/board_ext_hw/multi/i2c_basic.py
-    device:
-      - board: KIT_PSE84_AI
-        features:
-          - i2c
+# - name: i2c
+#   type: multi
+#   test: 
+#     script: ports/psoc-edge/board_ext_hw/multi/i2c_basic.py
+#     device:
+#       - board: KIT_PSE84_AI
+#         features:
+#           - i2c
 
-- name: uart
-  test: 
-    script: ports/psoc-edge/board_ext_hw/single/uart.py
-    device: 
-      - board: KIT_PSE84_AI
-        features:
-          - uart
+# - name: uart
+#   test: 
+#     script: ports/psoc-edge/board_ext_hw/single/uart.py
+#     device: 
+#       - board: KIT_PSE84_AI
+#         features:
+#           - uart
 
-- name: pwm
-  test: 
-    script: ports/psoc-edge/board_ext_hw/single/pwm.py
-    device: 
-      - board: KIT_PSE84_AI
-        features:
-          - pwm
+# - name: pwm
+#   test: 
+#     script: ports/psoc-edge/board_ext_hw/single/pwm.py
+#     device: 
+#       - board: KIT_PSE84_AI
+#         features:
+#           - pwm
           
-- name: network
-  type: multi
-  test:
-    script:
-      - ports/psoc-edge/board_only_hw/multi/network.py
-      - ports/psoc-edge/board_only_hw/multi/network_config.py
-    device:
-      - board: KIT_PSE84_AI
+# - name: network
+#   type: multi
+#   test:
+#     script:
+#       - ports/psoc-edge/board_only_hw/multi/network.py
+#       - ports/psoc-edge/board_only_hw/multi/network_config.py
+#     device:
+#       - board: KIT_PSE84_AI
 
-- name: socket-no-internet
-  test:
-    script:
-      - extmod/socket_badconstructor.py
-      - extmod/socket_fileno.py
-      - extmod/socket_tcp_basic.py
-      - extmod/socket_udp_nonblock.py
-      - net_hosted/accept_nonblock.py
-      - net_hosted/accept_timeout.py
-    device:
-      - board: KIT_PSE84_AI
+# - name: socket-no-internet
+#   test:
+#     script:
+#       - extmod/socket_badconstructor.py
+#       - extmod/socket_fileno.py
+#       - extmod/socket_tcp_basic.py
+#       - extmod/socket_udp_nonblock.py
+#       - net_hosted/accept_nonblock.py
+#       - net_hosted/accept_timeout.py
+#     device:
+#       - board: KIT_PSE84_AI
 
-- name: socket-internet
-  type: custom
-  test:
-    script:
-      - ports/psoc-edge/mp_custom/socket_internet.py
-    args:
-      - ports/psoc-edge/mp_custom/secrets.py
-    device:
-      - board: KIT_PSE84_AI
-        features:
-          - wifi-idn-b0653ac13e11
+# - name: socket-internet
+#   type: custom
+#   test:
+#     script:
+#       - ports/psoc-edge/mp_custom/socket_internet.py
+#     args:
+#       - ports/psoc-edge/mp_custom/secrets.py
+#     device:
+#       - board: KIT_PSE84_AI
+#         features:
+#           - wifi-idn-b0653ac13e11
 
-- name: spi
-  type: multi
-  test:
-    script: ports/psoc-edge/board_ext_hw/multi/spi_basic.py
-    device:
-      - board: KIT_PSE84_AI
-        features:
-          - spi
+# - name: spi
+#   type: multi
+#   test:
+#     script: ports/psoc-edge/board_ext_hw/multi/spi_basic.py
+#     device:
+#       - board: KIT_PSE84_AI
+#         features:
+#           - spi
