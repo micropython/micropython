@@ -1,2 +1,3 @@
+link low: True
 bitstream rx ok: True
 data match: True
