@@ -21,19 +21,9 @@ def edge_handler(pin):
 
 pin_rx.irq(handler=edge_handler, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
 
-# Connectivity check: TX drives P16_0 LOW immediately at stub start.
-# RX pin has a pull-up, so it sits HIGH when disconnected.
-# Seeing LOW here proves TX is actively connected and pulling the line down.
-# Wait 1s for TX to be running and stable before sampling.
-time.sleep_ms(1000)
-link_low = pin_rx.value() == 0
-print("link low:", link_low)
-
-# Arm IRQ for bitstream capture.
-# TX transmits at T=8s from stub start; RX starts at T≈2s from stub start.
-# Bitstream arrives ~6s into this 7.5s capture window.
+# Capture window: TX transmits at ~8s from stub start; window must cover that.
 capture_active = True
-time.sleep_ms(7500)
+time.sleep_ms(8500)
 capture_active = False
 
 

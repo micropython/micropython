@@ -29,13 +29,8 @@ timing = (500000, 1500000, 1500000, 500000)  # nanoseconds (500us / 1500us)
 # 4-byte test pattern
 test_data = bytes([0x12, 0x34, 0x56, 0x78])
 
-# Drive pin LOW immediately as a connectivity beacon.
-# RX has a pull-up; if TX is electrically connected, RX will see LOW here.
-# This actively overrides the pull-up and proves the wire is present.
-pin_tx.value(0)
-
-# In multi_stub mode TX stub starts first; sleep long enough for RX DUT to connect,
-# sample the LOW beacon, then arm its capture window before transmission begins.
+# In multi_stub mode TX stub starts first; sleep long enough for RX DUT to connect
+# and arm its capture window before transmission begins.
 time.sleep_ms(8000)
 
 try:
