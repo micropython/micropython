@@ -29,8 +29,14 @@
 
 #include "hardware/watchdog.h"
 
-// The maximum timeout in milliseconds is: 0xffffff / 2 / 1000
+// The maximum timeout is set by the 24-bit watchdog counter and the number of
+// ticks it decrements per microsecond (WATCHDOG_XFACTOR): 2 on RP2040, 1 on
+// RP2350.  So the max in milliseconds is 0xffffff / WATCHDOG_XFACTOR / 1000.
+#if PICO_RP2350
+#define WDT_TIMEOUT_MAX 16777
+#else
 #define WDT_TIMEOUT_MAX 8388
+#endif
 
 typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
