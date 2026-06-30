@@ -35,6 +35,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
+#include "py/ringbuf.h"
 #include "shared/runtime/mpirq.h"
 
 #define CAN_BRP_MIN         2
@@ -53,6 +54,7 @@
 #define CAN_TX_FIFO_LE_HALF_FULL 1
 #define CAN_TX_FIFO_GT_HALF_FULL 2
 #define CAN_TX_FIFO_FULL    3
+#define CAN_IRQ_RINGBUF_LEN ((CAN_TX_QUEUE_LEN + 16) * 2)
 
 #define CAN_HW_MAX_FILTER   3
 
@@ -83,7 +85,7 @@ typedef struct machine_can_port {
     machine_can_state_t can_state;
     machine_can_mode_t can_mode;
     bool is_enabled;
-    mp_int_t irq_flags;
+    int16_t id_sent;
     uint16_t num_error_warning;
     uint16_t num_error_passive;
     uint16_t num_bus_off;
@@ -91,6 +93,7 @@ typedef struct machine_can_port {
     canfd_transfer_t data_transfer;
     canfd_acpt_fltr_t filter_config[CANFD_MAX_ACCEPTANCE_FILTERS];
     int num_canfd_acpt_fltr;
+    ringbuf_t irq_flags_buffer;
 } machine_can_port_t;
 
 // Just one CAN device.
@@ -161,10 +164,12 @@ void CANFD_IRQHandler(void) {
             irq_flags |= (MP_CAN_IRQ_TX_FAILED | MP_CAN_IRQ_TX);
         }
 
-        port->irq_flags = irq_flags;
-
         // Call the MP callback if the events match the trigger.
         if (irq_flags & self->mp_irq_trigger) {
+            if (ringbuf_free(&port->irq_flags_buffer) >= 2) {
+                ringbuf_put(&port->irq_flags_buffer, irq_flags & 0xff);
+                ringbuf_put(&port->irq_flags_buffer, (irq_flags >> 16));
+            }
             mp_irq_handler(self->mp_irq_obj);
         }
         // Clear data and error interrupt flags
@@ -248,13 +253,11 @@ static void machine_can_update_irqs(machine_can_obj_t *self) {
 // Return the irq().flags() result.
 static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     machine_can_port_t *port = self->port;
-    mp_int_t irq_flags = port->irq_flags;
+    mp_int_t irq_flags = 0;
 
-    // Check if meanwhile messages arrived.
-    if (canfd_rx_msg_available(port->canfd_base)) {
-        irq_flags |= MP_CAN_IRQ_RX;
+    if (ringbuf_avail(&port->irq_flags_buffer) >= 2) {
+        irq_flags = ringbuf_get(&port->irq_flags_buffer) | (ringbuf_get(&port->irq_flags_buffer) << 16);
     }
-    port->irq_flags = 0;
 
     return irq_flags;
 }
@@ -297,6 +300,9 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     // Clear the TEC/REC error counters & leave a bus-off state
     port->canfd_base->CANFD_CFG_STAT |= CANFD_CFG_STAT_BUSOFF;
     port->can_state = MP_CAN_STATE_ACTIVE;
+    if (port->irq_flags_buffer.buf == NULL) {
+        ringbuf_alloc(&(port->irq_flags_buffer), CAN_IRQ_RINGBUF_LEN);
+    }
 
     // Configure the Controller
     canfd_reset(port->canfd_base);
