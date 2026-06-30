@@ -65,6 +65,14 @@ def decode_bitstream(edges, threshold_us):
     return bytes(decoded_bytes)
 
 
+# Debug: capture diagnostics
+print("DEBUG: edges={} threshold={}".format(len(edges), threshold_us))
+if len(edges) > 0:
+    first_pulses = []
+    for i in range(0, min(20, len(edges) - 1), 2):
+        first_pulses.append(edges[i + 1] - edges[i])
+    print("DEBUG: first_pulses={}".format(first_pulses))
+
 decoded = decode_bitstream(edges, threshold_us)
 expected = bytes([0x12, 0x34, 0x56, 0x78])
 
