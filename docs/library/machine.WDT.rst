@@ -15,7 +15,7 @@ Example usage::
     wdt = WDT(timeout=2000)  # enable it with a timeout of 2s
     wdt.feed()
 
-Availability: **ESP32, ESP8266, MIMXRT, RP2, SAMD, STM32, Zephyr**
+Availability: **Alif, ESP32, ESP8266, MIMXRT, RP2, SAMD, STM32, Zephyr**
 
 Constructors
 ------------
@@ -26,6 +26,10 @@ Constructors
    Once it is running the timeout cannot be changed and the WDT cannot be stopped either.
 
    Notes:
+
+   - On the alif port the HP and HE cores have independent watchdogs, both accessed
+     by the default ``id=0``.  The maximum timeout on the HP core is 10737ms.  The
+     watchdog does not run during deepsleep.
 
    - On the esp8266 port a timeout cannot be specified, it is determined by the underlying
      system.
