@@ -8,17 +8,17 @@ def test_int(x, byteorder, signed):
     elif x < 2**62 and x >= -(2**62):
         size = 8
     
-    print(f"x:{x}, x:0x{x:X}, size:{size}", end="")
+    print("x:{}, x:0x{}, size:{}".format(x, x, size), end="")
     b = x.to_bytes(size, byteorder=byteorder, signed=signed)
-    print(f", to_bytes:{b}", end="")
+    print(", to_bytes:{}".format(b), end="")
     y = int.from_bytes(b, byteorder=byteorder, signed=signed)
-    print(f", y = x.from_bytes:{y}, {x == y}")
+    print(", y = x.from_bytes:{}, {}".format(y, x == y))
     print()
     assert x == y
 
 
 def do_test_int(n, byteorder, signed):
-    print(f"========== test_int() n:{n}, byteorder:{byteorder}, signed:{signed}, positive ==========")
+    print("========== test_int() n:{}, byteorder:{}, signed:{}, positive ==========".format(n, byteorder, signed))
     test_int(0, byteorder, signed)
     test_int(2, byteorder, signed)
     test_int(2**7 - 2, byteorder, signed)
@@ -47,7 +47,7 @@ def do_test_int(n, byteorder, signed):
     test_int(2**62 + 2, byteorder, signed)
 
     if signed:
-        print(f"---------- test_int() n:{n}, byteorder:{byteorder}, signed:{signed}, negative ----------")
+        print("---------- test_int() n:{}, byteorder:{}, signed:{}, negative ----------".format(n, byteorder, signed))
         test_int(-0, byteorder, signed)
         test_int(-2, byteorder, signed)
         test_int(-(2**7 - 2), byteorder, signed)
@@ -98,17 +98,17 @@ def test_bytes(b, uint, byteorder, signed):
     size = len(b)
     assert b == uint.to_bytes(size, byteorder='little', signed=False)
     sint = signed_from_unsigned(uint, size)
-    print(f"bytes:{b}, size:{size}, byteorder:{byteorder}, signed:{signed}, ", end="")
+    print("bytes:{}, size:{}, byteorder:{}, signed:{}, ".format(b, size, byteorder, signed), end="")
     if byteorder == "big":
         b = reverse(b)
-        print(f"reverse:{b}, ", end="")
+        print("reverse:{}, ".format(b), end="")
     i = int.from_bytes(b, byteorder=byteorder, signed=signed)
     if signed:
-        print(f"sint:{sint}, from_bytes:{i}, {i == sint}, ", end="")
+        print("sint:{}, from_bytes:{}, {}, ".format(sint, i, i == sint), end="")
     else:
-        print(f"uint:{uint}, from_bytes:{i}, {i == uint}, ", end="")
+        print("uint:{}, from_bytes:{}, {}, ".format(uint, i, i == uint), end="")
     to_b = i.to_bytes(size, byteorder=byteorder, signed=signed)
-    print(f"to_bytes:{to_b}")
+    print("to_bytes:{}".format(to_b))
     print()
     if signed:
         assert i == sint
@@ -117,7 +117,7 @@ def test_bytes(b, uint, byteorder, signed):
 
 
 def do_test_bytes(n, byteorder, signed):
-    print(f"********** test_bytes() n:{n}, byteorder:{byteorder}, signed:{signed} **********")
+    print("********** test_bytes() n:{}, byteorder:{}, signed:{} **********".format(n, byteorder, signed))
     # bytes in little byteorder
     test_bytes(b"\x00", 0, byteorder, signed)
     test_bytes(b"\x02", 2, byteorder, signed)
@@ -134,8 +134,8 @@ def do_test_bytes(n, byteorder, signed):
     test_bytes(b"\x00\x00\x00\x00\x00\xFE", 254 << 40, byteorder, signed)
     test_bytes(b"\x00\x00\x00\x00\x00\x00\x02", 2 << 48, byteorder, signed)
     test_bytes(b"\x00\x00\x00\x00\x00\x00\xFE", 254 << 48, byteorder, signed)
-    # test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\x02", 2 << 56, byteorder, signed)
-    # test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\xFE", 254 << 56, byteorder, signed)
+    test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\x02", 2 << 56, byteorder, signed)
+    test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\xFE", 254 << 56, byteorder, signed)
 
 
 do_test_bytes(n=1, byteorder="little", signed=False)
