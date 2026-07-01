@@ -35,6 +35,7 @@ class PIOASMEmit:
         push_thresh=32,
         pull_thresh=32,
         fifo_join=PIO.JOIN_NONE,
+        in_count=0,
     ):
         # array is a built-in module so importing it here won't require
         # scanning the filesystem.
@@ -42,14 +43,19 @@ class PIOASMEmit:
 
         self.labels = {}
         execctrl = side_pindir << 29
+        # fifo_join encodes the legacy JOIN_NONE/TX/RX modes in bits [31:30] (values 0-2),
+        # and the RP2350 FJOIN_RX_GET/PUT modes in bits [15:14] (values 4/8/12).
+        # in_count (RP2350): SHIFTCTRL bits [4:0], masks unneeded IN-mapped pins to zero.
         shiftctrl = (
-            fifo_join << 30
+            (fifo_join & 3) << 30
+            | (fifo_join >> 2) << 14
             | (pull_thresh & 0x1F) << 25
             | (push_thresh & 0x1F) << 20
             | out_shiftdir << 19
             | in_shiftdir << 18
             | autopull << 17
             | autopush << 16
+            | (in_count & 0x1F)
         )
         self.prog = [array("H"), -1, -1, -1, execctrl, shiftctrl, out_init, set_init, sideset_init]
 
@@ -135,7 +141,9 @@ class PIOASMEmit:
 
     def wait(self, polarity, src, index):
         if src == 6:
-            src = 1  # "pin"
+            src = 1  # "pin" (IN-mapped pins)
+        elif src == 3:
+            pass  # "jmp_pin" (RP2350: PINCTRL_JMP_PIN with 2-bit offset in index)
         elif src != 0:
             src = 2  # "irq"
         return self.word(0x2000 | polarity << 7 | src << 5 | index)
@@ -184,6 +192,7 @@ _pio_funcs = {
     "gpio": 0,
     # "pin": see below, translated to 1
     # "irq": see below function, translated to 2
+    "jmp_pin": 3,  # RP2350: PINCTRL_JMP_PIN source for wait, index is 2-bit offset (0-3)
     # source/dest constants for in_, out, mov, set
     "pins": 0,
     "x": 1,
@@ -216,6 +225,9 @@ _pio_funcs = {
     # "block": see above
     "clear": 0x40,
     "rel": lambda x: x | 0x10,
+    # RP2350: cross-PIO irq modifiers; applied to the irq index, e.g. irq(next_pio(2))
+    "next_pio": lambda x: x | 0x08,
+    "prev_pio": lambda x: x | 0x18,
 }
 
 

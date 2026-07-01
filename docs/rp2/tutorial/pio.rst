@@ -1,21 +1,26 @@
 Programmable IO
 ===============
 
-The RP2040 has hardware support for standard communication protocols like I2C,
-SPI and UART. For protocols where there is no hardware support, or where there
-is a requirement of custom I/O behaviour, Programmable Input Output (PIO) comes
-into play.  Also, some MicroPython applications make use of a technique called
-bit banging in which pins are rapidly turned on and off to transmit data.  This
-can make the entire process slow as the processor concentrates on bit banging
-rather than executing other logic.  However, PIO allows bit banging to happen
-in the background while the CPU is executing the main work.
+The RP2040 and RP2350 have hardware support for standard communication
+protocols like I2C, SPI and UART. For protocols where there is no hardware
+support, or where there is a requirement of custom I/O behaviour, Programmable
+Input Output
+(PIO) comes into play.  Also, some MicroPython applications make use of a
+technique called bit banging in which pins are rapidly turned on and off to
+transmit data.  This can make the entire process slow as the processor
+concentrates on bit banging rather than executing other logic.  However, PIO
+allows bit banging to happen in the background while the CPU is executing the
+main work.
 
-Along with the two central Cortex-M0+ processing cores, the RP2040 has two PIO
-blocks each of which has four independent state machines.  These state machines
-can transfer data to/from other entities using First-In-First-Out (FIFO) buffers,
-which allow the state machine and main processor to work independently yet also
-synchronise their data.  Each FIFO has four words (each of 32 bits) which can be
-linked to the DMA to transfer larger amounts of data.
+The RP2040 has two PIO blocks each with four independent state machines (8
+total).  The RP2350 adds a third PIO block for 12 state machines in total, and
+introduces PIO version 1 with additional instruction capabilities (see
+:ref:`PIO assembly language instructions <pio_assembly_instructions>`).
+These state machines can transfer
+data to/from other entities using First-In-First-Out (FIFO) buffers, which
+allow the state machine and main processor to work independently yet also
+synchronise their data.  Each FIFO has four words (each of 32 bits) which can
+be linked to the DMA to transfer larger amounts of data.
 
 All PIO instructions follow a common pattern::
 
