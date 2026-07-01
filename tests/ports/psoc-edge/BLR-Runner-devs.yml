@@ -20,8 +20,10 @@
   uid: 0E240C98012D2400
   features:
     - spi
+    - bitstream
 
 - name: KIT_PSE84_AI
   uid: 0C170798012D2400
   features:
     - spi
+    - bitstream
