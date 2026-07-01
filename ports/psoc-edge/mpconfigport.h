@@ -104,6 +104,9 @@
 
 #define MICROPY_PY_MACHINE_BITSTREAM            (1)
 
+extern void machine_deinit();
+#define MICROPY_PORT_DEINIT_FUNC machine_deinit()
+
 #define MICROPY_PY_SSL_DTLS                     (0)
 #define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS)
 

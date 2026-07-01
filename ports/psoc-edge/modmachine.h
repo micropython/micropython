@@ -31,6 +31,23 @@
 // micropython includes
 #include "py/obj.h"
 
+// functions to be called from other .c files.
+void machine_init(void);
+void machine_deinit(void);
+uint32_t machine_get_hw_reset_reason(void);
+
+void machine_pin_irq_deinit_all(void);
+void machine_uart_deinit_all(void);
+void machine_hw_i2c_deinit_all(void);
+void machine_spi_deinit_all(void);
+#if MICROPY_PY_MACHINE_SPI_TARGET
+void machine_spi_target_deinit_all(void);
+#endif
+void machine_pdm_pcm_deinit_all(void);
+void machine_ipc_deinit_all(void);
+void machine_timer_deinit_all(void);
+void machine_wdt_deinit(void);
+
 enum clock_freq_type {
     AUDIO_SYS_CLOCK_73_728_000_HZ = 73728000UL /* (Ideally 73.728 MHz) For sample rates: 8 KHz / 16 KHz / 48 KHz */,
     AUDIO_SYS_CLOCK_169_344_000_HZ = 169344000UL /* (Ideally 169.344 MHz) For sample rates: 22.05 KHz / 44.1 KHz */,

@@ -28,23 +28,44 @@
 // micropython includes
 #include "py/runtime.h"
 
-
 // port-specific includes
+#include "cy_syslib.h"
+#include "modmachine.h"
 #include "modpsocedge.h"
+
+// psoc_edge.system_reset_cause(): returns the hardware reset cause captured at
+// boot by machine_init().  Unlike machine.reset_cause(), this is not clobbered
+// by machine_deinit() on each CTRL+D, so the CI watchdog test can read the
+// correct WDT cause even after a soft-reset.
+mp_obj_t psocedge_system_reset_cause(void) {
+    uint32_t reason = machine_get_hw_reset_reason();
+
+    uint32_t result;
+    if (reason & CY_SYSLIB_RESET_HWWDT) {
+        result = SYSTEM_RESET_WDT;
+    } else if (reason & CY_SYSLIB_RESET_DPSLP_FAULT) {
+        result = SYSTEM_RESET_DEEPSLEEP_FAULT;
+    } else if (reason & (CY_SYSLIB_RESET_XRES | CY_SYSLIB_RESET_SOFT)) {
+        result = SYSTEM_RESET_SOFT;
+    } else {
+        result = SYSTEM_RESET_NONE;
+    }
+    return MP_OBJ_NEW_SMALL_INT(result);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(psocedge_system_reset_cause_obj, psocedge_system_reset_cause);
 
 static const mp_rom_map_elem_t psoc_edge_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),         MP_ROM_QSTR(MP_QSTR_psoc_edge) },
+    { MP_ROM_QSTR(MP_QSTR_system_reset_cause), MP_ROM_PTR(&psocedge_system_reset_cause_obj) },
     #if MICROPY_ENABLE_EXT_QSPI_FLASH
     { MP_ROM_QSTR(MP_QSTR_QSPI_Flash),       MP_ROM_PTR(&psoc_edge_qspi_flash_type) },
     #endif
 };
 static MP_DEFINE_CONST_DICT(psoc_edge_module_globals, psoc_edge_module_globals_table);
 
-
 const mp_obj_module_t mp_module_psoc_edge = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&psoc_edge_module_globals,
 };
-
 
 MP_REGISTER_MODULE(MP_QSTR_psoc_edge, mp_module_psoc_edge);

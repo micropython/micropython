@@ -27,10 +27,19 @@
 #ifndef MICROPY_INCLUDED_PSOCEDGE_MODPSOCEDGE_H
 #define MICROPY_INCLUDED_PSOCEDGE_MODPSOCEDGE_H
 
-
 // micropython includes
 #include "py/obj.h"
 
+// Return values for psoc_edge.system_reset_cause().
+typedef enum {
+    SYSTEM_RESET_NONE,             // no identifiable cause (power-on)
+    SYSTEM_RESET_WDT,              // WDT reset (CY_SYSLIB_RESET_HWWDT)
+    SYSTEM_RESET_DEEPSLEEP_FAULT,  // deep-sleep fault
+    SYSTEM_RESET_SOFT,             // NVIC_SystemReset() or physical reset pin
+} system_reset_reason_t;
+
 extern const mp_obj_type_t psoc_edge_qspi_flash_type;
+
+mp_obj_t psocedge_system_reset_cause(void);
 
 #endif // MICROPY_INCLUDED_PSOCEDGE_MODPSOCEDGE_H

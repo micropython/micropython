@@ -62,6 +62,7 @@
 #endif
 
 // port-specific includes
+#include "modmachine.h"
 
 #if MICROPY_PY_FREERTOS
 // FreeRTOS task parameters for the MicroPython task
@@ -182,6 +183,7 @@ void micropython_task(void *arg) {
     #endif
 
     mp_hal_ticks_init();
+    machine_init();
     #if MICROPY_PY_NETWORK
     network_hw_init();
     #endif
@@ -238,18 +240,6 @@ soft_reset:
 
     mp_printf(&mp_plat_print, "MPY: soft reboot\n");
 
-    machine_deinit();
-    machine_pin_irq_deinit_all();
-    machine_uart_deinit_all();
-    machine_hw_i2c_deinit_all();
-    machine_spi_deinit_all();
-    #if MICROPY_PY_MACHINE_SPI_TARGET
-    machine_spi_target_deinit_all();
-    #endif
-    machine_pdm_pcm_deinit_all();
-    machine_ipc_deinit_all();
-    machine_timer_deinit_all();
-    machine_wdt_deinit();
 
     #if MICROPY_PY_NETWORK
     mod_network_deinit();

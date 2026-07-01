@@ -106,7 +106,8 @@ static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id, mp_int_t
 
 static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     (void)self;
-
+    // ClearWatchdog() calls ClearInterrupt() internally on this target, which
+    // resets both the free-running counter and the unhandled-match counter.
     Cy_WDT_Unlock();
     Cy_WDT_ClearWatchdog();
     Cy_WDT_Lock();

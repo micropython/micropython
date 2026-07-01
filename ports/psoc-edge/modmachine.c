@@ -38,7 +38,6 @@
 #include "cybsp.h"
 #include "cy_syslib.h"
 #include "modmachine.h"
-#include "modpsocedge.h"
 
 enum clock_freq_type PLL0_freq = AUDIO_SYS_CLOCK_73_728_000_HZ;
 enum clock_freq_type freq_peri;
@@ -52,7 +51,7 @@ enum clock_freq_type freq_peri;
 #define MICROPY_PY_MACHINE_SPITARGET_GLOBAL
 #endif
 
-// Reset cause values — PWRON=0 matches the C zero-initialisation of
+// Reset cause values: PWRON=0 matches the C zero-initialisation of
 // reset_cause. SOFT must be non-zero so machine_deinit() can mark a
 // soft reset unambiguously.
 #define MACHINE_PWRON_RESET     (0)
@@ -62,11 +61,46 @@ enum clock_freq_type freq_peri;
 #define MACHINE_SOFT_RESET      (4)
 
 static uint32_t reset_cause;
+static uint32_t hw_reset_reason; // raw Cy_SysLib_GetResetReason() captured at boot
+
+// Called once at hardware boot (before the soft_reset loop in main.c) to
+// capture the reset cause from hardware. Clears the sticky SRSS_RES_CAUSE
+// register immediately so the bits do not persist into subsequent resets
+// (e.g. machine.reset() must not inherit a stale WDT bit).
+// hw_reset_reason keeps the raw value so psocedge_system_reset_cause() can
+// read it later without going back to hardware.
+void machine_init(void) {
+    hw_reset_reason = Cy_SysLib_GetResetReason();
+    Cy_SysLib_ClearResetReason();
+    if (hw_reset_reason & CY_SYSLIB_RESET_HWWDT) {
+        reset_cause = MACHINE_WDT_RESET;
+    } else if (hw_reset_reason & CY_SYSLIB_RESET_DPSLP_FAULT) {
+        reset_cause = MACHINE_DEEPSLEEP_RESET;
+    } else if (hw_reset_reason & (CY_SYSLIB_RESET_XRES | CY_SYSLIB_RESET_SOFT)) {
+        reset_cause = MACHINE_HARD_RESET;
+    }
+    // else stays MACHINE_PWRON_RESET (0 = C zero-initialisation)
+}
+
+uint32_t machine_get_hw_reset_reason(void) {
+    return hw_reset_reason;
+}
 
 // Called before each MicroPython soft reset so the next call to
 // machine.reset_cause() returns machine.SOFT_RESET.
 void machine_deinit(void) {
     reset_cause = MACHINE_SOFT_RESET;
+    machine_pin_irq_deinit_all();
+    machine_uart_deinit_all();
+    machine_hw_i2c_deinit_all();
+    machine_spi_deinit_all();
+    #if MICROPY_PY_MACHINE_SPI_TARGET
+    machine_spi_target_deinit_all();
+    #endif
+    machine_pdm_pcm_deinit_all();
+    machine_ipc_deinit_all();
+    machine_timer_deinit_all();
+    machine_wdt_deinit();
 }
 
 // machine.idle()
@@ -85,22 +119,7 @@ MP_NORETURN static void mp_machine_reset(void) {
 }
 
 static mp_int_t mp_machine_reset_cause(void) {
-    if (reset_cause == MACHINE_SOFT_RESET) {
-        return MACHINE_SOFT_RESET;
-    }
-    // RES_CAUSE registers are sticky; read directly without clearing so
-    // repeated calls return a consistent value.
-    uint32_t reason = Cy_SysLib_GetResetReason();
-    if (reason & CY_SYSLIB_RESET_HWWDT) {
-        return MACHINE_WDT_RESET;
-    } else if (reason & CY_SYSLIB_RESET_DPSLP_FAULT) {
-        return MACHINE_DEEPSLEEP_RESET;
-    } else if (reason & (CY_SYSLIB_RESET_XRES | CY_SYSLIB_RESET_SOFT)) {
-        // XRES: external reset pin. SOFT: NVIC_SystemReset() / machine.reset().
-        return MACHINE_HARD_RESET;
-    } else {
-        return MACHINE_PWRON_RESET;
-    }
+    return reset_cause;
 }
 
 #endif // MICROPY_PY_MACHINE_RESET
@@ -137,6 +156,6 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(MACHINE_HARD_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(MACHINE_WDT_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(MACHINE_DEEPSLEEP_RESET) }, \
-    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(MACHINE_SOFT_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(MACHINE_SOFT_RESET) }
 
 #endif // MICROPY_PY_MACHINE
