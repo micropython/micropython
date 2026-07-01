@@ -51,6 +51,23 @@ CWARN = -Wall -Werror
 CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
+# Stack smashing protection.  Disabled by default because:
+#   1. There is a small performance cost to the instrumentation.
+#   2. On macOS, Apple Clang's longjmp includes __longjmp_chk which validates
+#      stack-frame bounds during unwind.  MicroPython's NLR mechanism uses
+#      longjmp to unwind multiple frames at once; combined with the struct-type
+#      locals that -fstack-protector-strong instruments (every function that
+#      calls nlr_push gets a canary), this can trigger false __stack_chk_fail
+#      aborts on macOS.  Linux glibc's longjmp does not have this check so the
+#      issue does not appear there.
+#
+# Enable with MICROPY_STACK_PROTECTOR=1, e.g. in a CI job that targets Linux:
+#   make MICROPY_STACK_PROTECTOR=1
+MICROPY_STACK_PROTECTOR ?= 0
+ifeq ($(MICROPY_STACK_PROTECTOR),1)
+CFLAGS += -fstack-protector-strong
+endif
+
 # Force the use of 64-bits for file sizes in C library functions on 32-bit platforms.
 # This option has no effect on 64-bit builds.
 CFLAGS += -D_FILE_OFFSET_BITS=64
