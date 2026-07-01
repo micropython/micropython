@@ -13,4 +13,4 @@ SRC_BOARD_O = shared/runtime/gchelper_generic.o
 
 MPY_CROSS_FLAGS +=
 
-MICROPY_FLOAT_IMPL = float
+MICROPY_FLOAT_IMPL = none # float

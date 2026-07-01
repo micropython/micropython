@@ -179,13 +179,13 @@ endif
 ifeq ($(QEMU_ARCH),ppc64)
 
 CROSS_COMPILE ?= powerpc64le-linux-gnu-
-LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name) \
-       $(shell $(CC) $(CFLAGS) -print-file-name=libm.a) \
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+       # $(shell $(CC) $(CFLAGS) -print-file-name=libm.a) \
        $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
 LDFLAGS += -nostdlib -N -EL
 MICROPY_ROM_TEXT_COMPRESSION = 0
 # Set to 0 for MICROWATT once its board definition will be added.
-MICROPY_INTERNAL_MATHS_LIB = 1
+MICROPY_INTERNAL_MATHS_LIB = 0  # Set back to 1 once FP support is fixed.
 QEMU_RUN_ELF = 0
 
 SRC_C += \
