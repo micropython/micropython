@@ -65,5 +65,25 @@ if matched:
     print("bitstream rx ok: True")
     print("data match: True")
 else:
+    # Debug: show edges count, pulse widths and best decoded bytes on failure
+    n_edges = len(edges)
+    print("dbg edges:", n_edges)
+    if n_edges >= 2:
+        pws = [time.ticks_diff(edges[i + 1], edges[i]) for i in range(min(n_edges - 1, 20))]
+        print("dbg pulses(us):", pws)
+    # Try to decode parity=0 and show raw bytes
+    for parity in (0, 1):
+        bits = []
+        for i in range(parity, n_edges - 1, 2):
+            pw = time.ticks_diff(edges[i + 1], edges[i])
+            bits.append(0 if pw < threshold_us else 1)
+        if len(bits) >= 32:
+            decoded = []
+            for b in range(len(bits) // 8):
+                v = 0
+                for k in range(8):
+                    v = (v << 1) | bits[b * 8 + k]
+                decoded.append(v)
+            print("dbg decoded(p={})".format(parity), [hex(x) for x in decoded[:8]])
     print("bitstream rx ok: True")
     print("data match: False")
