@@ -308,6 +308,7 @@ ifeq ($(MICROPY_PY_EXT_FLASH),1)
 endif
 
 SRC_C += \
+	clk.c \
 	help.c \
 	main.c \
 	mphalport.c \
