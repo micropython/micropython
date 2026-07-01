@@ -29,12 +29,13 @@ timing = (500000, 1500000, 1500000, 500000)  # nanoseconds (500us / 1500us)
 # 4-byte test pattern
 test_data = bytes([0x12, 0x34, 0x56, 0x78])
 
-# In multi_stub mode TX stub starts first; sleep long enough for RX DUT to connect
-# and arm its capture window before transmission begins.
-time.sleep_ms(8000)
-
 try:
-    bitstream(pin_tx, 0, timing, test_data)
+    # Transmit repeatedly so RX can catch a frame regardless of CI startup latency.
+    # Each frame is ~64ms; 40 frames × 400ms gap = ~18s active window.
+    # RX captures for 15s, so any overlap will yield a valid decode.
+    for _ in range(40):
+        bitstream(pin_tx, 0, timing, test_data)
+        time.sleep_ms(400)
     print("bitstream tx ok: True")
 except Exception as e:
     print("bitstream tx ok: False")

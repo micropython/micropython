@@ -6,24 +6,25 @@ pin_rx = Pin("P16_0", mode=Pin.IN, pull=Pin.PULL_UP)
 # Threshold: 500us = bit 0, 1500us = bit 1
 threshold_us = 1000
 
+# Cap edges to avoid OOM from capturing many repeated frames.
+# 256 = 4 complete frames (32 bits × 2 edges × 4); the decoder only needs 1.
+MAX_EDGES = 256
 edges = []
 capture_active = False
 
 
 def edge_handler(pin):
     global capture_active
-    if capture_active:
-        try:
-            edges.append(time.ticks_us())
-        except:
-            pass
+    if capture_active and len(edges) < MAX_EDGES:
+        edges.append(time.ticks_us())
 
 
 pin_rx.irq(handler=edge_handler, trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING)
 
-# Capture window: TX transmits at ~8s from stub start; window must cover that.
+# TX transmits repeatedly from stub start (~18s window).
+# Capture for 15s so RX overlaps TX regardless of CI DUT connection latency.
 capture_active = True
-time.sleep_ms(8500)
+time.sleep_ms(15000)
 capture_active = False
 
 
