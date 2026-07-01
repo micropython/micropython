@@ -851,8 +851,10 @@ size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigne
 }
 
 void mpz_set_from_bytes(mpz_t *z, bool big_endian, bool is_signed, size_t len, const byte *buf) {
+    /*
     z->neg = 0;
     z->len = 0;
+    */
     if (len == 0) {
         return;
     }
