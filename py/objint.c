@@ -434,7 +434,7 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t
                 return mp_obj_int_from_bytes_impl(big_endian, is_signed, bufinfo.len, bufinfo.buf);
             }
             #endif
-            value = (value << 8) | *buf;
+            value = ((mp_uint_t)value << 8) | *buf;
         }
     }
     return mp_obj_new_int(value);
