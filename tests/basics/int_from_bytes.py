@@ -86,7 +86,9 @@ def reverse(b):
 def signed_from_unsigned(uint, size):
     if uint == 0:
         return 0
-    if uint & (1 << (size * 8 - 1)):
+    b = size * 8 - 1
+    b = 1 << b
+    if uint & b:
         mask = (2 ** (size * 8)) - 1
         sint = -((uint ^ mask) + 1)
         return sint
