@@ -111,6 +111,7 @@ mp_uint_t mp_hal_ticks_cpu(void) {
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     mp_uint_t start = mp_hal_ticks_ms();
+    mp_event_handle_nowait();
     while (mp_hal_ticks_ms() - start < ms) {
         mp_event_handle_nowait();
     }
@@ -118,6 +119,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 
 void mp_hal_delay_us(mp_uint_t us) {
     mp_uint_t start = mp_hal_ticks_us();
+    mp_event_handle_nowait();
     while (mp_hal_ticks_us() - start < us) {
         mp_event_handle_nowait();
     }
