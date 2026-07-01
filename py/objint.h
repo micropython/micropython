@@ -54,7 +54,6 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
     int base, const char *prefix, char base_char, char comma);
 
-void *reverce_memcpy(void *dest, const void *src, size_t len);
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len, const byte *buf);
 // Write an integer to a byte sequence.
