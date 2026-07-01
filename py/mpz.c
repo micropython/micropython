@@ -896,10 +896,12 @@ void mpz_set_from_bytes(mpz_t *z, bool big_endian, bool is_signed, size_t len, c
         z->dig[dig_idx++] = d & DIG_MASK;
     }
     z->len = mpn_remove_trailing_zeros(z->dig, z->dig + dig_idx);
+    /*
     if (z->len == 1 && z->dig[0] == 0) {
         z->len = 0;
         z->neg = 0;
     }
+    */
 }
 
 #if 0
