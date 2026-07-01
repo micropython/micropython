@@ -418,7 +418,7 @@ endef
 ## Supports test and CI HIL operations.
 
 ifndef EXT_HEX_FILE
-HEX_FILE = $(BUILD)/firmware.signed.merged.hex
+HEX_FILE = $(BUILD)/firmware.hex
 else
 HEX_FILE = $(EXT_HEX_FILE)
 endif
