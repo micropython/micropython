@@ -10,3 +10,9 @@
 #define MICROPY_HW_SPI1_MOSI (9)
 #define MICROPY_HW_SPI1_MISO (8)
 #define MICROPY_HW_SPI1_SCK  (7)
+
+// microSD (Sense expansion board) in SPI mode: machine.SDCard(slot=2).
+#define MICROPY_HW_SDCARD_SPI_MOSI (9)
+#define MICROPY_HW_SDCARD_SPI_MISO (8)
+#define MICROPY_HW_SDCARD_SPI_SCK  (7)
+#define MICROPY_HW_SDCARD_SPI_CS   (21)

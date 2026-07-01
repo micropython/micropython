@@ -1,3 +1,9 @@
 #define MICROPY_HW_BOARD_NAME "LILYGO TTGO LoRa32"
 #define MICROPY_HW_MCU_NAME "ESP32"
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-ttgo-lora32"
+
+// microSD card in SPI mode: machine.SDCard(slot=2).
+#define MICROPY_HW_SDCARD_SPI_MOSI (15)
+#define MICROPY_HW_SDCARD_SPI_MISO (2)
+#define MICROPY_HW_SDCARD_SPI_SCK  (14)
+#define MICROPY_HW_SDCARD_SPI_CS   (13)

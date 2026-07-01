@@ -12,3 +12,9 @@
 #define MICROPY_HW_SPI1_MOSI                (6)
 #define MICROPY_HW_SPI1_MISO                (3)
 #define MICROPY_HW_SPI1_SCK                 (5)
+
+// microSD card in SPI mode: machine.SDCard(slot=2).
+#define MICROPY_HW_SDCARD_SPI_MOSI          (11)
+#define MICROPY_HW_SDCARD_SPI_MISO          (2)
+#define MICROPY_HW_SDCARD_SPI_SCK           (14)
+#define MICROPY_HW_SDCARD_SPI_CS            (13)
