@@ -24,7 +24,7 @@ You can easily download the script from the terminal using the following command
     $ curl -s -L https://raw.githubusercontent.com/micropython/micropython/master/ports/psoc-edge/tools/mp-ifx-flash.py > mp-ifx-flash.py
 
 Ensure you have a recent version of `Python 3.x <https://www.python.org/downloads/>`_ and the
-`pip <https://pip.pypa.io/en/stable/installation/>`_ package installer installed. Then install the following packages:
+`pip <https://pip.pypa.io/en/stable/installation/>`_ package installed. Then install the following packages:
 
 .. code-block:: bash
 
