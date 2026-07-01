@@ -759,6 +759,10 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_VM_HOOK_RETURN
 #endif
 
+#ifndef MICROPY_EVENT_POLL_HOOK
+#define MICROPY_EVENT_POLL_HOOK
+#endif
+
 // Hook for mp_sched_schedule when a function gets scheduled on sched_queue
 // (this macro executes within an atomic section)
 #ifndef MICROPY_SCHED_HOOK_SCHEDULED
