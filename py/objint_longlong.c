@@ -39,9 +39,6 @@
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
-#define MP_LONG_LONG_MAX LLONG_MAX
-#define MP_LONG_LONG_MIN LLONG_MIN
-
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
@@ -65,7 +62,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len,
             len--;
         }
         for (; len--; buf += delta) {
-            if ((value > (MP_LONG_LONG_MAX >> 8)) || (value < (MP_LONG_LONG_MIN >> 8))) {
+            if ((value > (LLONG_MAX >> 8)) || (value < (LLONG_MIN >> 8))) {
                 raise_long_long_overflow();
             }
             value = (value << 8) | *buf;
