@@ -37,6 +37,8 @@ typedef enum {
 
     MACHINE_PIN_AF_FN_PDM,
     /* TODO: Add additional functionalities */
+
+    MACHINE_PIN_AF_FN_NONE = 0xFF
 } machine_pin_af_fn_t;
 
 extern const char *machine_pin_af_fn_str[];
@@ -65,7 +67,7 @@ typedef enum {
 extern const char *machine_pin_af_signal_str[];
 
 #define MACHINE_PIN_AF_UNIT_NONE  0xFF
-typedef uint8_t machine_pin_af_unit_t;
+typedef uint16_t machine_pin_af_unit_t;
 typedef void *machine_pin_af_periph_t;
 
 typedef struct {
