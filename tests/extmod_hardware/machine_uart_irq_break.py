@@ -31,7 +31,7 @@ for bits_per_s in (2400, 9600, 57600):
         time.sleep_ms(10)
         uart.sendbreak()
         time.sleep_ms(10)
-        if "esp32" in sys.platform:
-            # On esp32 a read is needed to read in the break byte.
+        if "esp32" in sys.platform or "psoc-edge" in sys.platform:
+            # On these platforms a read is needed to read in the break byte.
             uart.read()
     print("done")
