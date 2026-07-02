@@ -138,7 +138,7 @@ static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     mp_uint_t c = mp_obj_get_int(o_in);
     if (c >= 0x110000) {
-        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
+        mp_raise_ValueError(MP_ERROR_TEXT("char not in range(0x110000)"));
     }
     VSTR_FIXED(buf, 4);
     vstr_add_char(&buf, c);

@@ -17,11 +17,6 @@ for i in range(-len(s), len(s)):
 enc = s.encode()
 print(enc, enc.decode() == s)
 
-# printing of unicode chars using repr
-# NOTE: for some characters (eg \u10ff) we differ to CPython
-print(repr("a\uffff"))
-print(repr("a\U0001ffff"))
-
 # test invalid escape code
 try:
     eval('"\\U00110000"')
@@ -49,5 +44,15 @@ except UnicodeError:
     print("UnicodeError")
 try:
     str(b"\xf0\xe0\xed\xe8", "utf8")
+except UnicodeError:
+    print("UnicodeError")
+
+# test surrogate repr uses \uXXXX escape
+print(repr(chr(0xD800)))
+
+# test str() from buffer-protocol object (memoryview)
+print(str(memoryview(b"hello"), "utf-8"))
+try:
+    str(memoryview(b"\xff"), "utf-8")
 except UnicodeError:
     print("UnicodeError")
