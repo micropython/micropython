@@ -123,6 +123,10 @@ MicroPython code execution will suspend the browser so be sure to atomize usage
 within this environment. Unfortunately interrupts have not been implemented for the
 browser.
 
+In Node.js, pressing Ctrl+C during Python execution sends a keyboard interrupt
+(``KeyboardInterrupt``) to the running MicroPython instance via ``mp_js_hook``,
+which polls stdin for the interrupt character every 10 bytecodes.
+
 Testing
 -------
 
