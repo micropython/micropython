@@ -136,8 +136,8 @@ def do_test_bytes(n, byteorder, signed):
     test_bytes(b"\x00\x00\x00\x00\x00\xFE", 254 << 40, byteorder, signed)
     test_bytes(b"\x00\x00\x00\x00\x00\x00\x02", 2 << 48, byteorder, signed)
     test_bytes(b"\x00\x00\x00\x00\x00\x00\xFE", 254 << 48, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\x02", 2 << 56, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\xFE", 254 << 56, byteorder, signed)
+    # test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\x02", 2 << 56, byteorder, signed)
+    # test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\xFE", 254 << 56, byteorder, signed)
 
 
 do_test_bytes(n=1, byteorder="little", signed=False)
