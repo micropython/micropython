@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/netutils/netutils.h"
+#include "eth.h"
 #include "systick.h"
 #include "pendsv.h"
 #include "extmod/modnetwork.h"
@@ -68,6 +69,10 @@ static void pyb_lwip_poll(void) {
     #if MICROPY_PY_NETWORK_WIZNET5K
     // Poll the NIC for incoming data
     wiznet5k_poll();
+    #endif
+
+    #if defined(MICROPY_HW_ETH_MDC)
+    eth_phy_link_status_poll();
     #endif
 
     // Run the lwIP internal updates
