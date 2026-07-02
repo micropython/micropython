@@ -63,7 +63,7 @@ for i in range(len(user_files)):
     try:
         __import__(mod)
     except ValueError as er:
-        print(mod, "ValueError", er)
+        print(mod, "ValueError", str(er) or "incompatible .mpy file")
 
 # unmount and undo path addition
 vfs.umount("/userfs")

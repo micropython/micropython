@@ -729,6 +729,14 @@ function ci_unix_standard_terse_run_tests {
     make -C ports/unix VARIANT=standard test
 }
 
+function ci_unix_standard_silent_build {
+    ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_ERROR_REPORTING=MICROPY_ERROR_REPORTING_NONE" MICROPY_ROM_TEXT_COMPRESSION=0
+}
+
+function ci_unix_standard_silent_run_tests {
+    make -C ports/unix VARIANT=standard test
+}
+
 function ci_unix_coverage_setup {
     pip3 install setuptools
     pip3 install pyelftools

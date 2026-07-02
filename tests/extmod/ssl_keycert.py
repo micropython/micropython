@@ -13,7 +13,7 @@ key = b"0\x82\x019\x02\x01\x00\x02A\x00\xf9\xe0}\xbd\xd7\x9cI\x18\x06\xc3\xcb\xb
 try:
     ssl.wrap_socket(io.BytesIO(), key=b"!")
 except ValueError as er:
-    print(repr(er))
+    print("ValueError")
 
 # Valid key, no cert
 try:
@@ -26,4 +26,4 @@ except TypeError as er:
 try:
     ssl.wrap_socket(io.BytesIO(), key=key, cert=b"!")
 except ValueError as er:
-    print(repr(er))
+    print("ValueError")

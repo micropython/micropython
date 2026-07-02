@@ -320,7 +320,11 @@ const mp_fun_table_t mp_fun_table = {
     gc_realloc,
     mp_printf,
     mp_vprintf,
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+    NULL,
+    #else
     mp_raise_msg,
+    #endif
     mp_obj_get_type,
     mp_obj_new_str,
     mp_obj_new_bytes,

@@ -45,12 +45,12 @@ print(d.popleft(), d.popleft())
 try:
     d.popleft()
 except IndexError as e:
-    print(repr(e))
+    print(str(e) or 'empty', len(d))
 
 try:
     d.pop()
 except IndexError as e:
-    print(repr(e))
+    print(str(e) or 'empty', len(d))
 
 d.append(5)
 d.append(6)
@@ -58,12 +58,12 @@ print(len(d))
 try:
     d.append(7)
 except IndexError as e:
-    print(repr(e))
+    print(str(e) or 'full', len(d))
 
 try:
     d.appendleft(8)
 except IndexError as e:
-    print(repr(e))
+    print(str(e) or 'full', len(d))
 
 print(len(d))
 
@@ -72,4 +72,4 @@ print(len(d))
 try:
     d.popleft()
 except IndexError as e:
-    print(repr(e))
+    print(str(e) or 'empty', len(d))
