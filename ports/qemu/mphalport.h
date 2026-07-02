@@ -28,3 +28,12 @@
 #include "shared/runtime/interrupt_char.h"
 
 void mp_hal_get_random(size_t n, uint8_t *buf);
+
+#if defined(__ARM_32BIT_STATE)
+#if __has_builtin(__builtin___clear_cache)
+#define MP_HAL_CLEAN_DCACHE(fun_data, fun_len) \
+    do { \
+        __builtin___clear_cache((void *)fun_data, (char *)fun_data + fun_len); \
+    } while (0)
+#endif
+#endif
