@@ -133,6 +133,16 @@ enum {
 #define GPIO_AF9_CAN2 GPIO_AF9_FDCAN2
 #endif
 
+#if defined(STM32N6)
+// Make N6 FDCAN more like CAN
+#define CAN1 FDCAN1
+#define CAN2 FDCAN2
+#define CAN3 FDCAN3
+#define GPIO_AF6_CAN1 GPIO_AF6_FDCAN1
+#define GPIO_AF6_CAN2 GPIO_AF6_FDCAN2
+#define GPIO_AF6_CAN3 GPIO_AF6_FDCAN3
+#endif
+
 enum {
     PIN_ADC1  = (1 << 0),
     PIN_ADC2  = (1 << 1),

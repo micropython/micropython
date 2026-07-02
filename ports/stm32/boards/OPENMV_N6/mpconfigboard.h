@@ -77,6 +77,15 @@
 #define MICROPY_HW_SPI4_MISO        (pyb_pin_SPI4_MISO)
 #define MICROPY_HW_SPI4_MOSI        (pyb_pin_SPI4_MOSI)
 
+// FDCAN bus
+#define MICROPY_HW_CAN1_NAME        "FDCAN1"
+#define MICROPY_HW_CAN1_TX          (pyb_pin_CAN1_TX)
+#define MICROPY_HW_CAN1_RX          (pyb_pin_CAN1_RX)
+// Support is not yet added for FDCAN CAN3 (see fdcan.c for details)
+// #define MICROPY_HW_CAN3_NAME        "FDCAN3"
+// #define MICROPY_HW_CAN3_TX          (pyb_pin_CAN3_TX)
+// #define MICROPY_HW_CAN3_RX          (pyb_pin_CAN3_RX)
+
 // USER is pulled high, and pressing the button makes the input go low.
 #define MICROPY_HW_USRSW_PIN        (pyb_pin_BUTTON)
 #define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
