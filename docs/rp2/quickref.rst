@@ -207,10 +207,26 @@ See :ref:`machine.UART <machine.UART>`. ::
     uart1.write('hello')  # write 5 bytes
     uart1.read(5)         # read up to 5 bytes
 
-.. note::
+It is possible to access the REPL over UART, but this is disabled by
+default.  To duplicate the REPL stream over UART, use :func:`os.dupterm`.
+This code should be in ``boot.py`` or ``main.py`` to establish UART on boot.
 
-    REPL over UART is disabled by default. You can see the :ref:`rp2_intro` for
-    details on how to enable REPL over UART.
+.. code-block:: python
+
+    from machine import UART
+    import os
+    uart = UART(0)
+    os.dupterm(uart, 0)
+    uart.irq(os.dupterm_notify, machine.UART.IRQ_RX) # ensure inputs are handled
+
+To use UART for REPL instead of the standard USB interface (for example if you are
+using :mod:`machine.USBDevice`), you will need to :doc:`build MicroPython from source </develop/gettingstarted>`.
+Modify ``ports/rp2/mpconfigport.h``, and change the ``MICROPY_HW_ENABLE_UART_REPL``
+variable to ``1``:
+
+.. code-block:: c
+
+    #define MICROPY_HW_ENABLE_UART_REPL             (1) // useful if there is no USB
 
 
 PWM (pulse width modulation)
