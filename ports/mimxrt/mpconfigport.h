@@ -144,6 +144,9 @@ uint32_t trng_random_u32(void);
 #endif
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP    (1)
+#endif
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (2)

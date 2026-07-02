@@ -1,0 +1,17 @@
+regions is tuple: True
+at least one region: True
+all memoryviews: True
+all len > 0: True
+all valid itemsize: True
+memoryview: True
+len > 0: True
+itemsize ok: True
+True
+True
+True
+True
+True
+True
+True
+ValueError
+ValueError

@@ -1426,7 +1426,7 @@ typedef time_t mp_timestamp_t;
 
 // Whether to support memoryview.itemsize attribute
 #ifndef MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-#define MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE (MICROPY_PY_MACHINE_MEM_BACKUP || MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
 #endif
 
 // Whether to support set object
@@ -2092,6 +2092,11 @@ typedef time_t mp_timestamp_t;
 // Whether to provide the "machine.mem8/16/32" objects
 #ifndef MICROPY_PY_MACHINE_MEMX
 #define MICROPY_PY_MACHINE_MEMX (MICROPY_PY_MACHINE)
+#endif
+
+// Whether to provide the "machine.mem_backup" function
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP (0)
 #endif
 
 // Whether to provide the "machine.Signal" class

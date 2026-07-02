@@ -1018,3 +1018,13 @@ static mp_obj_t extra_coverage(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
 
 #endif
+
+// Static backing store for machine.mem_backup testing on unix.
+#if MICROPY_PY_MACHINE_MEM_BACKUP
+#include "extmod/modmachine.h"
+static uint8_t machine_mem_backup_buf[64];
+const mp_obj_array_t machine_mem_backup_regions[] = {
+    BACKUP_MV('B', sizeof(machine_mem_backup_buf), (void *)machine_mem_backup_buf),
+};
+const size_t machine_mem_backup_region_count = MP_ARRAY_SIZE(machine_mem_backup_regions);
+#endif

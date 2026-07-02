@@ -14,6 +14,7 @@ FROZEN_MANIFEST ?= mcu/$(MCU_SERIES_LOWER)/manifest.py
 SRC_S += shared/runtime/gchelper_thumb2.s
 
 SRC_C += \
+	machine_mem_backup.c \
 	fatfs_port.c \
 
 UF2CONV_FLAGS += -f 0x55114460

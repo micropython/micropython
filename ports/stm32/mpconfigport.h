@@ -130,6 +130,13 @@
 #endif
 #define MICROPY_PY_MACHINE_CAN_INCLUDEFILE "ports/stm32/machine_can.c"
 #define MICROPY_PY_MACHINE_DHT_READINTO (1)
+// Backup memory via BKPSRAM or RTC BKP registers
+// (see ports/stm32/machine_mem_backup.c).
+#if MICROPY_HW_ENABLE_RTC
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP (1)
+#endif
+#endif
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_I2C      (MICROPY_HW_ENABLE_HW_I2C)
@@ -158,6 +165,7 @@
 #define MICROPY_PY_MACHINE_WDT      (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE "ports/stm32/machine_wdt.c"
 #endif
+
 #define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_WEBSOCKET        (MICROPY_PY_LWIP)

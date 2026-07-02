@@ -49,6 +49,119 @@ Example use (registers are specific to an stm32 microcontroller):
     # read PA3
     value = (machine.mem32[GPIOA + GPIO_IDR] >> 3) & 1
 
+.. function:: mem_backup(region=0)
+
+   Return a writable `memoryview` over a persistent hardware memory region that
+   survives at least :ref:`soft_reset` on all ports; battery-backed ports also
+   survive power-off. Per-port persistence guarantees vary, see the table below.
+
+   *region* selects which backup region to access (default 0, the primary region).
+   Pass ``-1`` to get a tuple of all available regions instead.
+
+   The element type depends on the port's hardware alignment requirements:
+   ``'B'`` (unsigned byte) on ports with byte-addressable backup memory,
+   ``'I'`` (unsigned 32-bit) on ports backed by word-sized registers.
+   Use ``mem.itemsize`` to discover the access granularity at runtime.
+
+   The total size in bytes is ``len(mem) * mem.itemsize``, where ``len(mem)``
+   is the number of elements and ``mem.itemsize`` is the size of each element.
+   For example, on a port with 4 word-sized registers, ``len(mem)`` is 4 and
+   ``mem.itemsize`` is 4, giving 16 bytes total. On a port with 4096 bytes
+   of byte-addressable backup SRAM, ``len(mem)`` is 4096 and ``mem.itemsize``
+   is 1.
+
+   Cross-port guarantees for portable code: ``mem.itemsize`` is either ``1``
+   or ``4``; valid indices are ``0..len(mem)-1``; out-of-range access raises
+   ``IndexError``; values are stored in host-native byte order. Region index
+   semantics are not portable, see notes below for ``stm32`` in particular.
+
+   Usage::
+
+      import machine
+
+      mem = machine.mem_backup()
+      mem[0] = 0x12345678                # write element 0
+      print(hex(mem[0]))                 # read element 0
+      print(len(mem))                    # number of elements
+      print(mem.itemsize)                # bytes per element
+      print(len(mem) * mem.itemsize)     # total bytes available
+
+      # Discover all available regions
+      for i, r in enumerate(machine.mem_backup(-1)):
+          print(i, len(r), r.itemsize)
+
+   The total byte size and backing hardware vary by port:
+
+   ======  ===============================================  ===========  ==============
+   Port    Backing storage                                  Total bytes  Battery-backed
+   ======  ===============================================  ===========  ==============
+   alif    Backup SRAM                                      4096         yes
+   esp32   RTC slow memory                                  2048         no
+   mimxrt  SNVS LPGPR registers (4 per chip)                12-16        yes
+   nrf     POWER GPREGRET registers                         4-8          no
+   rp2     Watchdog scratch registers                       28-60        no
+   samd    Backup RAM (SAMD51 only)                         8192         yes
+   stm32   Backup SRAM + BKP registers (F4/F7/H5/H7/U5/N6)  2048-8192    yes
+   stm32   RTC BKP registers (other families)               20-128       yes
+   ======  ===============================================  ===========  ==============
+
+   .. note::
+
+      On esp32 and rp2, data persists across :ref:`soft_reset`,
+      `machine.reset()` and `machine.deepsleep()` wake but is lost on
+      power-off and on poweron-style resets. On esp32 in particular this
+      includes pressing the EN/RESET button on most dev boards, which the
+      chip reports as a power-on reset.
+
+   Some ports split backup storage across multiple regions, or exclude
+   registers reserved by the bootloader or system firmware:
+
+   ======  ====================  ================================================
+   Port    Register(s)           Note
+   ======  ====================  ================================================
+   mimxrt  LPGPR[3]              Excluded; used by TinyUF2 (when used)
+   rp2     scratch[4]            Excluded; used by pico-sdk on reset
+   rp2     powman scratch[0..7]  Region 2 on RP2350 only
+   stm32   BKP registers         Region 1 on BKPSRAM families (F4/F7/H5/H7/U5/N6)
+   ======  ====================  ================================================
+
+   Use ``machine.mem_backup(-1)`` to discover available regions and their sizes.
+
+   On stm32 the region index does not have a uniform meaning across boards:
+   region 0 is BKPSRAM (``itemsize=1``) on BKPSRAM families and BKP registers
+   (``itemsize=4``) on others. Portable code should branch on ``mem.itemsize``
+   before structuring data.
+
+   Some registers within a region are accessible but reserved by convention
+   and should not be overwritten:
+
+   ======  ==============  =========================================================
+   Port    Register(s)     Used by
+   ======  ==============  =========================================================
+   stm32   BKP0R           Arduino bootloader (Portenta H7, Giga, Opta, Nicla)
+   stm32   BKP16R-BKP18R   ``rfcore_firmware.py`` on STM32WB
+   stm32   last BKP reg    clock frequency (``MICROPY_HW_CLK_LAST_FREQ``)
+   stm32   BKP31R (N6)     mboot bootloader entry
+   ======  ==============  =========================================================
+
+   The buffer allows direct register access and can be combined with
+   ``uctypes`` for structured layouts::
+
+      import machine, uctypes
+
+      mem = machine.mem_backup()
+
+      # Structured access via uctypes (check len(mem) for your board)
+      layout = {
+          "flags": (0 * 4, uctypes.UINT32),    # register 0
+          "counter": (1 * 4, uctypes.UINT32),  # register 1
+      }
+      regs = uctypes.struct(uctypes.addressof(mem), layout)
+      regs.flags = 0x01
+      print(regs.counter)
+
+   Availability: alif, esp32, mimxrt, rp2, samd, stm32 ports.
+
 Reset related functions
 -----------------------
 

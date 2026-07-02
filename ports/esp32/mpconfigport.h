@@ -168,6 +168,17 @@
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
+#ifndef MICROPY_HW_RTC_USER_MEM_MAX
+#define MICROPY_HW_RTC_USER_MEM_MAX         2048
+#endif
+// machine.mem_backup exposes the RTC user memory as a byte memoryview.
+// RTC.memory() coexists but uses separate length tracking; writes via
+// mem_backup won't update RTC.memory()'s length, and vice versa.
+#if MICROPY_HW_RTC_USER_MEM_MAX > 0
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP    (1)
+#endif
+#endif
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK (1)
 #endif
