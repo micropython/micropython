@@ -151,6 +151,12 @@ static const machine_adc_obj_t madc_obj[] = {
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_3, GPIO_NUM_52},
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_4, GPIO_NUM_53},
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_5, GPIO_NUM_54},
+    #elif CONFIG_IDF_TARGET_ESP32H2
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_0, GPIO_NUM_1},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_1, GPIO_NUM_2},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_2, GPIO_NUM_3},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_3, GPIO_NUM_4},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_4, GPIO_NUM_5},
     #endif
 };
 
