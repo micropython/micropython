@@ -33,7 +33,7 @@ jobs:
         docker-images: false
         tool-cache: true
         swap-storage: false
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - id: versions
       name: Read Zephyr version
       run: source tools/ci.sh && echo "ZEPHYR=$ZEPHYR_VERSION" | tee "$GITHUB_OUTPUT"
