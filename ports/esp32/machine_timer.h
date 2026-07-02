@@ -30,33 +30,45 @@
 #ifndef MICROPY_INCLUDED_ESP32_MACHINE_TIMER_H
 #define MICROPY_INCLUDED_ESP32_MACHINE_TIMER_H
 
-#include "hal/timer_hal.h"
-#include "hal/timer_ll.h"
-#include "soc/timer_periph.h"
+#include "driver/gptimer.h"
+#include "esp_timer.h"
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
 
-    timer_hal_context_t hal_context;
-    mp_uint_t group;
-    mp_uint_t index;
+    // Positive means hardware, -1 means virtual
+    mp_int_t id;
+    union {
+        gptimer_handle_t hardware;
+        esp_timer_handle_t virtual;
+    } handle;
 
-    mp_uint_t repeat;
-    // ESP32 timers are 64-bit
+    // Period is in units of the timers' frequency,
+    // as returned by machine_timer_freq_hz()
     uint64_t period;
+    bool repeat;
 
-    mp_obj_t callback;
+    // Virtual timers don't have counters, thus we
+    // emulate it by calculating based on the time
+    int64_t virtual_started;
+    int64_t virtual_stopped;
 
-    intr_handle_t handle;
-    void (*handler)(struct _machine_timer_obj_t *timer);
+    // Default handler simply schedules execution of the context
+    // (which usually is a callable Python object). Other C code
+    // may set different handlers; see for example UART's RXIDLE.
+    bool (*handler)(struct _machine_timer_obj_t *timer);
+    mp_obj_t handler_ctx;
 
+    // Pointer to next timer in linked list of active timers
     struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
 
-machine_timer_obj_t *machine_timer_create(mp_uint_t timer);
-void machine_timer_enable(machine_timer_obj_t *self);
-void machine_timer_disable(machine_timer_obj_t *self);
-
-uint32_t machine_timer_freq_hz(void);
+// Externalize machine timer for use elsewhere in board support
+machine_timer_obj_t *machine_timer_create(mp_int_t id);
+uint32_t machine_timer_freq_hz(machine_timer_obj_t *self);
+void machine_timer_configure(machine_timer_obj_t *self);
+void machine_timer_start(machine_timer_obj_t *self);
+void machine_timer_stop(machine_timer_obj_t *self);
+mp_obj_t machine_timer_deinit(mp_obj_t self_in);
 
 #endif // MICROPY_INCLUDED_ESP32_MACHINE_TIMER_H
