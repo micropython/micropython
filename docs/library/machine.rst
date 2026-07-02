@@ -145,8 +145,9 @@ Power related functions
    that require processing.  Such events, or wake sources, should be configured before
    sleeping, like `Pin` change or `RTC` timeout.
 
-   The precise behaviour and power-saving capabilities of lightsleep and deepsleep is
-   highly dependent on the underlying hardware, but the general properties are:
+   The precise behaviour and power-saving capabilities of lightsleep and
+   deepsleep, as well as the available wake-up sources, are all highly dependent
+   on the underlying hardware. The general properties are:
 
    * A lightsleep has full RAM and state retention.  Upon wake execution is resumed
      from the point where the sleep was requested, with all subsystems operational.
@@ -156,6 +157,8 @@ Power related functions
      script, similar to a hard or power-on reset. The `reset_cause()` function will
      return `machine.DEEPSLEEP` and this can be used to distinguish a deepsleep wake
      from other resets.
+
+   For more details consult the quick reference for the port you are using.
 
 .. function:: wake_reason()
 
