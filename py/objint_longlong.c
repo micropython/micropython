@@ -65,7 +65,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len,
             if ((value > (LLONG_MAX >> 8)) || (value < (LLONG_MIN >> 8))) {
                 raise_long_long_overflow();
             }
-            value = (value << 8) | *buf;
+            value = ((unsigned long long)value << 8) | *buf;
         }
     }
     return mp_obj_new_int_from_ll(value);
