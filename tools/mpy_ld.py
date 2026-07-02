@@ -213,6 +213,70 @@ def asm_jump_riscv(entry):
         )
 
 
+def asm_jump_abs_word_x86():
+    # CI: build and test
+    # must be placed at a word-aligned address
+    # nop * 3
+    # mov PTR, eax
+    # jmp *eax
+    nop = 0x90
+    mov = 0xB8
+    jmp = 0xE0FF
+    return struct.pack("<3BBIH", nop, nop, nop, mov, 0, jmp), 4
+
+
+def asm_jump_abs_word_x64():
+    # CI: build and test
+    # must be placed at a word-aligned address
+    # nop * 6
+    # mov PTR, rax
+    # jmp *rax
+    nop = 0x90
+    mov = 0xB848
+    jmp = 0xE0FF
+    return struct.pack("<6BHQH", nop, nop, nop, nop, nop, nop, mov, 0, jmp), 8
+
+
+def asm_jump_abs_word_thumb():
+    # CI: build and test
+    # must be placed at a word-aligned address
+    # ldr r3, [pc, #0]
+    # bx r3
+    # PTR
+    r3 = 3
+    ldr = 0x4800 | r3 << 8
+    bx = 0x4700 | r3 << 3
+    return struct.pack("<HHI", ldr, bx, 0), 4
+
+
+def asm_jump_abs_word_riscv32():
+    # CI: build and test
+    # must be placed at a word-aligned address
+    # auipc a3, 0
+    # c.lw a3, 8(a3)
+    # c.jr a3
+    # PTR
+    rd = 13  # X13 = A3 (argument #4)
+    auipc = 0x00000017 | rd << 7
+    clw = 0x4000 | 8 << 7 | (rd - 8) << 7 | (rd - 8) << 2
+    cjr = 0x8002 | rd << 7
+    return struct.pack("<IHHI", auipc, clw, cjr, 0), 8
+
+
+def asm_jump_abs_word_riscv64():
+    # CI: build and test
+    # must be placed at a word-aligned address
+    # auipc a3, 0
+    # c.ld a3, 8(a3)
+    # c.jr a3
+    # PTR
+    rd = 13  # X13 = A3 (argument #4)
+    auipc = 0x0017 | rd << 7
+    cld = 0x6000 | 8 << 7 | (rd - 8) << 7 | (rd - 8) << 2
+    cjr = 0x8002 | rd << 7
+    return struct.pack("<IHHQ", auipc, cld, cjr, 0), 8
+
+
 class ArchData:
     def __init__(
         self,
@@ -221,6 +285,7 @@ class ArchData:
         word_size,
         arch_got,
         asm_jump,
+        asm_jump_abs_word=None,
         *,
         separate_rodata=False,
         delayed_entry_offset=False,
@@ -231,6 +296,7 @@ class ArchData:
         self.word_size = word_size
         self.arch_got = arch_got
         self.asm_jump = asm_jump
+        self.asm_jump_abs_word = asm_jump_abs_word
         self.separate_rodata = separate_rodata
         self.delayed_entry_offset = delayed_entry_offset
 
@@ -242,6 +308,7 @@ ARCH_DATA = {
         4,
         (R_386_PC32, R_386_GOT32, R_386_GOT32X),
         asm_jump_x86,
+        asm_jump_abs_word_x86,
     ),
     "x64": ArchData(
         "EM_X86_64",
@@ -249,6 +316,7 @@ ARCH_DATA = {
         8,
         (R_X86_64_GOTPCREL, R_X86_64_REX_GOTPCRELX),
         asm_jump_x86,
+        asm_jump_abs_word_x64,
     ),
     "armv6m": ArchData(
         "EM_ARM",
@@ -256,6 +324,7 @@ ARCH_DATA = {
         4,
         (R_ARM_GOT_BREL,),
         asm_jump_thumb,
+        asm_jump_abs_word_thumb,
     ),
     "armv7m": ArchData(
         "EM_ARM",
@@ -263,6 +332,7 @@ ARCH_DATA = {
         4,
         (R_ARM_GOT_BREL,),
         asm_jump_thumb2,
+        asm_jump_abs_word_thumb,
     ),
     "armv7emsp": ArchData(
         "EM_ARM",
@@ -270,6 +340,7 @@ ARCH_DATA = {
         4,
         (R_ARM_GOT_BREL,),
         asm_jump_thumb2,
+        asm_jump_abs_word_thumb,
     ),
     "armv7emdp": ArchData(
         "EM_ARM",
@@ -277,6 +348,7 @@ ARCH_DATA = {
         4,
         (R_ARM_GOT_BREL,),
         asm_jump_thumb2,
+        asm_jump_abs_word_thumb,
     ),
     "xtensa": ArchData(
         "EM_XTENSA",
@@ -301,6 +373,7 @@ ARCH_DATA = {
         4,
         (R_RISCV_32, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
         asm_jump_riscv,
+        asm_jump_abs_word_riscv32,
     ),
     "rv64imc": ArchData(
         "EM_RISCV",
@@ -308,6 +381,7 @@ ARCH_DATA = {
         8,
         (R_RISCV_64, R_RISCV_GOT_HI20, R_RISCV_GOT32_PCREL),
         asm_jump_riscv,
+        asm_jump_abs_word_riscv64,
     ),
 }
 
@@ -544,6 +618,9 @@ def populate_got(env):
         if sym.name in env.externs:
             got_entry.sec_name = ".external.fixed_addr"
             got_entry.link_addr = env.externs[sym.name]
+        elif sym.name in ("memcpy", "memset", "memmove"):
+            got_entry.sec_name = f".external.{sym.name}"
+            got_entry.link_addr = 0
         else:
             sec = sym.section
             addr = sym["st_value"]
@@ -577,6 +654,13 @@ def populate_got(env):
         elif got_entry.sec_name == ".external.fixed_addr":
             # Fixed-address symbols should not be relocated.
             continue
+        elif got_entry.sec_name.startswith(".external.mem"):
+            # memset/memmove/memcpy
+            dest = ".text"
+            if "memset" in got_entry.sec_name:
+                dest = 50
+            else:
+                dest = 51
         elif got_entry.sec_name.startswith(".text"):
             dest = ".text"
         elif got_entry.sec_name.startswith(".rodata"):
@@ -1273,6 +1357,30 @@ def link_objects(env, native_qstr_vals_len):
             if sym.name in fun_table:
                 sym.section = mp_fun_table_sec
                 sym.mp_fun_table_offset = fun_table[sym.name]
+            elif sym.name in ("memset", "memcpy", "memmove"):
+                n = sym.name
+                if n == "memcpy":
+                    n = "memmove"
+                sec_name = f".internal.{n}"
+                section = None
+                for sec in env.sections:
+                    if sec.name == sec_name:
+                        section = sec
+                        break
+                if section is None and env.arch.name != "EM_XTENSA":
+                    code, reloc = env.arch.asm_jump_abs_word()
+                    section = Section(sec_name, code, env.arch.word_size, "<internal>")
+                    env.sections.insert(1, section)
+
+                    class Reloc:
+                        pass
+
+                    r = Reloc()
+                    r.index = {"memset": 50, "memmove": 51}[n]
+                    r.offset = reloc
+                    section.reloc.append(r)
+                    section.reloc_name = "unknown"
+                sym.section = section
             else:
                 undef_errors.append("{}: undefined symbol: {}".format(sym.filename, sym.name))
 
@@ -1327,6 +1435,8 @@ def link_objects(env, native_qstr_vals_len):
                 do_relocation_text(env, sec.addr, r)
             elif sec.name.startswith(".data.rel.ro"):
                 do_relocation_data(env, sec.addr, r)
+            elif sec.name.startswith(".internal"):
+                env.mpy_relocs.append((".text", sec.addr + r.offset, r.index))
             else:
                 assert 0, sec.name
 
@@ -1366,6 +1476,12 @@ class MPYOutput:
             self.write_bytes(b"\x00")
 
     def write_reloc(self, base, offset, dest, n):
+        if dest > 2 and n > 1:
+            # dest>2 cannot encode n, so do it manually.
+            for _ in range(n):
+                self.write_reloc(base, offset, dest, 1)
+                offset += 1
+            return
         need_offset = not (base == self.prev_base and offset == self.prev_offset + 1)
         self.prev_offset = offset + n - 1
         if dest <= 2:
