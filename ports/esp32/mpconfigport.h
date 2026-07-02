@@ -146,6 +146,9 @@
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/esp32/machine_i2c_target.c"
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX   (2)
 #endif
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 2) && !defined(MICROPY_HW_ESP_NEW_I2C_DRIVER)
+#define MICROPY_HW_ESP_NEW_I2C_DRIVER       (1)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
@@ -192,6 +195,18 @@
 #ifndef MICROPY_PY_NETWORK_WLAN
 #define MICROPY_PY_NETWORK_WLAN             (1)
 #endif
+#ifndef MICROPY_PY_MACHINE_SDCARD
+#define MICROPY_PY_MACHINE_SDCARD           (1)
+#endif
+#ifndef MICROPY_PY_NETWORK_WLAN_CSI
+#define MICROPY_PY_NETWORK_WLAN_CSI         (CONFIG_ESP_WIFI_CSI_ENABLED)
+#endif
+#if MICROPY_PY_NETWORK_WLAN_CSI
+// CSI_DEFAULT_BUFFER_SIZE is used in network_wlan_csi.c
+#ifndef MICROPY_PY_NETWORK_WLAN_CSI_DEFAULT_BUFFER_SIZE
+#define MICROPY_PY_NETWORK_WLAN_CSI_DEFAULT_BUFFER_SIZE (16)
+#endif
+#endif
 #ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #endif
@@ -204,9 +219,6 @@
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (esp_rom_get_cpu_ticks_per_us() * 1000000 / 200) // roughly
-#ifndef MICROPY_HW_ESP_NEW_I2C_DRIVER
-#define MICROPY_HW_ESP_NEW_I2C_DRIVER       (0)
-#endif
 #define MICROPY_PY_SSL                      (MICROPY_PY_NETWORK)
 #define MICROPY_SSL_MBEDTLS                 (MICROPY_PY_SSL)
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_NETWORK)

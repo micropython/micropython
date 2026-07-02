@@ -1,7 +1,9 @@
 import sys
 
 print((2**64).to_bytes(9, "little"))
+print((-(2**64)).to_bytes(9, "little", signed=True))
 print((2**64).to_bytes(9, "big"))
+print((-(2**64)).to_bytes(9, "big", signed=True))
 
 b = bytes(range(20))
 
@@ -25,38 +27,63 @@ try:
 except OverflowError:
     print("OverflowError")
 
-# or one that it too short
+# or one that is too short
 try:
     ib.to_bytes(18, "big")
 except OverflowError:
     print("OverflowError")
 
-# negative representations
-
-# MicroPython int.to_bytes() behaves as if signed=True for negative numbers
-if "micropython" in repr(sys.implementation):
-
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e)
-else:
-    # Implement MicroPython compatible behaviour for CPython
-    def to_bytes_compat(i, l, e):
-        return i.to_bytes(l, e, signed=i < 0)
-
-
-print(to_bytes_compat(-ib, 20, "big"))
-print(to_bytes_compat(ib * -ib, 40, "big"))
-
-# case where an additional byte is needed for sign bit
-ib = (2**64) - 1
-print(ib.to_bytes(8, "little"))
-
-ib *= -1
-
+# including when signed
 try:
-    print(to_bytes_compat(ib, 8, "little"))
+    ib.to_bytes(18, "big", signed=True)
 except OverflowError:
     print("OverflowError")
 
-print(to_bytes_compat(ib, 9, "little"))
-print(to_bytes_compat(ib, 9, "big"))
+# negative representations
+
+# negative numbers should raise an error if signed=False
+try:
+    (-(2**64)).to_bytes(9, "little", signed=False)
+except OverflowError:
+    print("OverflowError")
+
+
+print((-ib).to_bytes(20, "big", signed=True))
+print((ib * -ib).to_bytes(40, "big", signed=True))
+
+# cases where an additional byte is needed for sign bit
+
+MAX_U24 = (2**24) - 1
+MAX_U32 = (2**32) - 1
+MAX_U64 = (2**64) - 1
+
+for ib, nbytes in (
+    (-127, 1),
+    (255, 1),
+    (-255, 1),
+    (65535, 2),
+    (-65535, 2),
+    (-65534, 2),
+    (MAX_U24, 3),
+    (-MAX_U24, 3),
+    (1 - MAX_U24, 3),
+    (MAX_U32, 4),
+    (-MAX_U32, 4),
+    (1 - MAX_U32, 4),
+    (2 - MAX_U32, 4),
+    (MAX_U64, 8),
+    (-MAX_U64, 8),
+    (1 - MAX_U64, 8),
+    (2 - MAX_U64, 8),
+    (2 * MAX_U64, 8),
+    (-2 * MAX_U64, 8),
+):
+    print("ib", hex(ib), "nbytes", nbytes, ":")
+    for signed in False, True:
+        for endian in "little", "big":
+            for nbytes_offs in (-1, 0, 1):
+                try:
+                    as_bytes = ib.to_bytes(nbytes + nbytes_offs, endian, signed=signed)
+                except OverflowError:
+                    as_bytes = "OverflowError"
+                print(as_bytes, "signed", signed, "endian", endian, "nbytes_offs", nbytes_offs)

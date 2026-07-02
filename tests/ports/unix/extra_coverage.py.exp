@@ -144,9 +144,6 @@ TypeError: can't convert NoneType to int
 TypeError: can't convert NoneType to int
 ValueError: \$
 Warning: test
-# binary
-123
-456
 # VM
 2 1
 # scheduler

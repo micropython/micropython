@@ -29,9 +29,10 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs_fat.h"
 
-#if MICROPY_HW_ENABLE_SDCARD
+#if MICROPY_PY_MACHINE_SDCARD
 
 #if SOC_SDMMC_HOST_SUPPORTED
 #include "driver/sdmmc_host.h"
@@ -56,9 +57,6 @@
 // Cards gets initialised by ioctl op==1 and de-inited by ioctl 2
 // Hosts are de-inited in __del__. Slots do not need de-initing.
 //
-
-// Forward declaration
-const mp_obj_type_t machine_sdcard_type;
 
 typedef struct _sdcard_obj_t {
     mp_obj_base_t base;
@@ -584,4 +582,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_sdcard_locals_dict
     );
 
-#endif // MICROPY_HW_ENABLE_SDCARD
+#endif // MICROPY_PY_MACHINE_SDCARD

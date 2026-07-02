@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "External RAM",
+        "WiFi",
+        "USB",
+        "USB-C",
+        "Battery Charging"
+    ],
+    "images": [
+        "seeed_xiao_esp32c5.jpg"
+    ],
+    "mcu": "esp32c5",
+    "product": "XIAO ESP32C5",
+    "url": "https://wiki.seeedstudio.com/xiao_esp32c5_getting_started/",
+    "vendor": "Seeed Studio"
+}

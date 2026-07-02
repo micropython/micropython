@@ -110,11 +110,11 @@ static mp_uint_t vfs_rom_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t 
     switch (request) {
         case MP_STREAM_SEEK: {
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
-            if (s->whence == 0) { // SEEK_SET
+            if (s->whence == MP_SEEK_SET) {
                 self->file_offset = (size_t)s->offset;
-            } else if (s->whence == 1) { // SEEK_CUR
+            } else if (s->whence == MP_SEEK_CUR) {
                 self->file_offset += s->offset;
-            } else { // SEEK_END
+            } else { // MP_SEEK_END
                 self->file_offset = self->file_size + s->offset;
             }
             if (self->file_offset > self->file_size) {

@@ -45,8 +45,8 @@ static machine_wdt_obj_t wdt_default = {
     {&machine_wdt_type}, NULL, -1
 };
 
-static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
-    if (id != 0) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id, mp_int_t timeout_ms) {
+    if (id != MP_OBJ_NEW_SMALL_INT(0)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid WDT id"));
     }
 

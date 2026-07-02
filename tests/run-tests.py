@@ -1215,6 +1215,9 @@ the last matching regex is used:
 """,
     )
     cmd_parser.add_argument(
+        "-c", "--trace-output", action="store_true", help="trace test output while running"
+    )
+    cmd_parser.add_argument(
         "-t", "--test-instance", default="unix", help="the MicroPython instance to test"
     )
     cmd_parser.add_argument(

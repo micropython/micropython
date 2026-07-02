@@ -84,8 +84,8 @@ void pybwdt_sl_alive (void) {
 /******************************************************************************/
 // MicroPython bindings
 
-static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
-    if (id != 0) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id, mp_int_t timeout_ms) {
+    if (id != MP_OBJ_NEW_SMALL_INT(0)) {
         mp_raise_OSError(MP_ENODEV);
     }
     if (timeout_ms < PYBWDT_MIN_TIMEOUT_MS) {

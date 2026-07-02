@@ -49,7 +49,6 @@ static asm_rv32_backend_options_t rv32_options = { 0 };
 
 // Command line options, with their defaults
 static uint emit_opt = MP_EMIT_OPT_NONE;
-mp_uint_t mp_verbose_flag = 0;
 
 #if MICROPY_ENABLE_SOURCE_LINE
 static bool include_source_lines = true;
@@ -340,7 +339,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "." MP_STRINGIFY(MPY_SUB_VERSION) "\n");
                 return 0;
             } else if (strcmp(argv[a], "-v") == 0) {
-                mp_verbose_flag++;
+                // This verbose option doesn't currently do anything.
             } else if (strncmp(argv[a], "-O", 2) == 0) {
                 if (unichar_isdigit(argv[a][2])) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
@@ -481,12 +480,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
 
     int ret = compile_and_save(input_file, output_file, source_file);
-
-    #if MICROPY_PY_MICROPYTHON_MEM_INFO
-    if (mp_verbose_flag) {
-        mp_micropython_mem_info(0, NULL);
-    }
-    #endif
 
     mp_deinit();
 

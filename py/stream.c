@@ -461,13 +461,13 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream___exit___obj, 4, 4, mp_stream___ex
 static mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     // TODO: Could be uint64
     mp_off_t offset = mp_obj_get_int(args[1]);
-    int whence = SEEK_SET;
+    int whence = MP_SEEK_SET;
     if (n_args == 3) {
         whence = mp_obj_get_int(args[2]);
     }
 
     // In POSIX, it's error to seek before end of stream, we enforce it here.
-    if (whence == SEEK_SET && offset < 0) {
+    if (whence == MP_SEEK_SET && offset < 0) {
         mp_raise_OSError(MP_EINVAL);
     }
 
@@ -484,7 +484,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj, 2, 3, stream_seek);
 
 static mp_obj_t stream_tell(mp_obj_t self) {
     mp_obj_t offset = MP_OBJ_NEW_SMALL_INT(0);
-    mp_obj_t whence = MP_OBJ_NEW_SMALL_INT(SEEK_CUR);
+    mp_obj_t whence = MP_OBJ_NEW_SMALL_INT(MP_SEEK_CUR);
     const mp_obj_t args[3] = {self, offset, whence};
     return stream_seek(3, args);
 }

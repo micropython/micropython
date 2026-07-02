@@ -76,9 +76,10 @@ static void set_timeout(uint32_t timeout) {
     #endif
 }
 
-static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_int_t timeout_ms) {
     #if defined(MCU_SAMD51)
     // Verify the WDT id. SAMD51 only, saving a few bytes for SAMD21
+    mp_int_t id = mp_obj_get_int(id_obj);
     if (id != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
     }

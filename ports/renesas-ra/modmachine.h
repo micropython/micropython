@@ -31,7 +31,6 @@
 
 extern const mp_obj_type_t machine_touchpad_type;
 extern const mp_obj_type_t machine_dac_type;
-extern const mp_obj_type_t machine_sdcard_type;
 
 void machine_init(void);
 void machine_deinit(void);

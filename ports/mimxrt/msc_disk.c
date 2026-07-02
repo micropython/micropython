@@ -29,7 +29,9 @@
 #include BOARD_FLASH_OPS_HEADER_H
 #include "stdlib.h"
 #include "modmimxrt.h"
+
 #if MICROPY_PY_MACHINE_SDCARD
+#include "extmod/modmachine.h"
 #include "sdcard.h"
 
 #ifndef MICROPY_HW_SDCARD_SDMMC
