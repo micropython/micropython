@@ -80,3 +80,6 @@
 [submodule "lib/CMSIS_6"]
 	path = lib/CMSIS_6
 	url = https://github.com/ARM-software/CMSIS_6.git
+[submodule "lib/wiznet6k"]
+	path = lib/wiznet6k
+	url = https://github.com/Wiznet/ioLibrary_Driver
