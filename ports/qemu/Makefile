@@ -22,6 +22,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
+MICROPY_INTERNAL_MATHS_LIB ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
 MICROPY_HEAP_SIZE ?= 143360
@@ -36,6 +37,10 @@ MICROPY_HEAP_SIZE ?= 143360
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_asm_rv32.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
 ifeq ($(QEMU_ARCH),riscv64)
+MICROPY_HEAP_SIZE ?= 204800
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
+endif
+ifeq ($(QEMU_ARCH),ppc64)
 MICROPY_HEAP_SIZE ?= 204800
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
 endif
@@ -76,6 +81,8 @@ CFLAGS += -DMICROPY_HW_ROMFS_PART1_START=$(MICROPY_HW_ROMFS_PART1_START)
 CFLAGS += -DMICROPY_HW_ROMFS_PART1_SIZE=$(MICROPY_HW_ROMFS_PART1_SIZE)
 endif
 
+QEMU_RUN_ELF = 1
+
 ################################################################################
 # ARM specific settings
 
@@ -85,6 +92,8 @@ CROSS_COMPILE ?= arm-none-eabi-
 
 LDFLAGS += -nostdlib
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+
+QEMU_ARGS += -semihosting
 
 SRC_C += \
 	mcu/arm/errorhandler.c \
@@ -105,7 +114,7 @@ GCC_VERSION = $(word 1, $(subst ., , $(shell $(CC) -dumpversion)))
 
 RV32_ABI = ilp32
 
-QEMU_ARGS += -bios none -cpu rv32,zcd=off,zcmp=on
+QEMU_ARGS += -bios none -cpu rv32,zcd=off,zcmp=on -semihosting
 
 # GCC 10 and lower do not recognise the Zicsr extension in the architecture name.
 ifeq ($(shell test $(GCC_VERSION) -le 10; echo $$?),0)
@@ -117,7 +126,8 @@ endif
 
 AFLAGS += -mabi=$(RV32_ABI) -march=$(RV32_ARCH)
 CFLAGS += $(AFLAGS)
-LDFLAGS += -mabi=$(RV32_ABI) -march=$(RV32_ARCH) -Wl,-EL
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LDFLAGS += -EL -nostdlib
 
 SRC_C += \
 	mcu/rv32/interrupts.c \
@@ -139,7 +149,7 @@ GCC_VERSION = $(word 1, $(subst ., , $(shell $(CC) -dumpversion)))
 
 RV64_ABI = lp64
 
-QEMU_ARGS += -bios none
+QEMU_ARGS += -bios none -semihosting
 
 # GCC 10 and lower do not recognise the Zicsr extension in the architecture name.
 ifeq ($(shell test $(GCC_VERSION) -le 10; echo $$?),0)
@@ -151,7 +161,8 @@ endif
 
 AFLAGS += -mabi=$(RV64_ABI) -march=$(RV64_ARCH)
 CFLAGS += $(AFLAGS) -mcmodel=medany
-LDFLAGS += -mabi=$(RV64_ABI) -march=$(RV64_ARCH) -Wl,-EL -mcmodel=medany
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LDFLAGS += -EL -nostdlib
 
 SRC_C += \
 	mcu/rv64/interrupts.c \
@@ -163,11 +174,34 @@ SRC_BOARD_O += mcu/rv64/entrypoint.o
 endif
 
 ################################################################################
+# PowerPC 64-bit specific settings
+
+ifeq ($(QEMU_ARCH),ppc64)
+
+CROSS_COMPILE ?= powerpc64le-linux-gnu-
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+       # $(shell $(CC) $(CFLAGS) -print-file-name=libm.a) \
+       $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
+LDFLAGS += -nostdlib -N -EL
+MICROPY_ROM_TEXT_COMPRESSION = 0
+# Set to 0 for MICROWATT once its board definition will be added.
+MICROPY_INTERNAL_MATHS_LIB = 0  # Set back to 1 once FP support is fixed.
+QEMU_RUN_ELF = 0
+
+SRC_C += \
+	mcu/ppc64/startup.c \
+	mcu/ppc64/ticks.c \
+
+SRC_BOARD_O += mcu/ppc64/head.o
+
+endif
+
+################################################################################
 # Project specific settings and compiler/linker flags
 
 QEMU_BASE ?= qemu-system-
 QEMU_SYSTEM = $(QEMU_BASE)$(QEMU_ARCH)
-QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null -semihosting
+QEMU_ARGS += -machine $(QEMU_MACHINE) -nographic -monitor null
 QEMU_ARGS += $(QEMU_EXTRA)
 
 # Load ROMFS images into emulated memory if configured.
@@ -196,7 +230,7 @@ CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -We
 	 -ffunction-sections -fdata-sections
 CFLAGS += $(CFLAGS_EXTRA)
 
-LDFLAGS += -T $(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
+LDFLAGS += -T $(LDSCRIPT) --gc-sections -Map=$(@:.elf=.map)
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -217,7 +251,6 @@ else
 $(info picolibc used $(PICOLIBC_SPECS))
 SPECS_FRAGMENT = --specs=$(PICOLIBC_SPECS)
 CFLAGS += $(SPECS_FRAGMENT)
-LDFLAGS += $(SPECS_FRAGMENT)
 endif
 
 # Mount the ROMFS test image only if no other ROMFS partition has been mounted on slot 0.
@@ -229,7 +262,15 @@ ifneq ($(MICROPY_HW_ROMFS_PART0_START),)
 QEMU_TEST_ARGS = -device loader,file=$(ROMFS_TEST_IMAGE),addr=$(MICROPY_HW_ROMFS_PART0_START),force-raw=on
 endif
 
-RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) $(QEMU_TEST_ARGS) -serial pty -kernel ../ports/qemu/$<" $(RUN_TESTS_ARGS)
+ifeq ($(QEMU_RUN_ELF),1)
+QEMU_RUN_CMD = -kernel
+QEMU_RUN_TARGET = $(BUILD)/firmware.elf
+else
+QEMU_RUN_CMD = -bios
+QEMU_RUN_TARGET = $(BUILD)/firmware.bin
+endif
+
+RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) $(QEMU_TEST_ARGS) -serial pty $(QEMU_RUN_CMD) ../ports/qemu/$<" $(RUN_TESTS_ARGS)
 
 ################################################################################
 # Source files and libraries
@@ -246,6 +287,11 @@ SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 
+OBJ += $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_BOARD_O))
+
+ifeq ($(MICROPY_INTERNAL_MATHS_LIB),1)
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
@@ -261,10 +307,8 @@ else
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 endif
 endif
+endif
 
-OBJ += $(PY_O)
-OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_BOARD_O))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
@@ -273,23 +317,23 @@ SRC_QSTR += $(SRC_C) $(LIBM_SRC_C)
 ################################################################################
 # Main targets
 
-all: $(BUILD)/firmware.elf
+all: $(BUILD)/firmware.elf $(BUILD)/firmware.bin
 
 .PHONY: repl
-repl: $(BUILD)/firmware.elf
+repl: $(QEMU_RUN_TARGET)
 	$(ECHO) "Use machine.reset() to exit"
-	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial mon:stdio -kernel $<
+	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial mon:stdio $(QEMU_RUN_CMD) $<
 
 .PHONY: run
-run: $(BUILD)/firmware.elf
-	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel $<
+run: $(QEMU_RUN_TARGET)
+	$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty $(QEMU_RUN_CMD) $<
 
 .PHONY: test
-test: $(BUILD)/firmware.elf
+test: $(QEMU_RUN_TARGET)
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) $(RUN_TESTS_EXTRA)
 
 .PHONY: test_full
-test_full: $(BUILD)/firmware.elf
+test_full: $(QEMU_RUN_TARGET)
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS)
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy
 	cd $(TOP)/tests && ./run-tests.py $(RUN_TESTS_FULL_ARGS) --via-mpy --emit native
@@ -303,8 +347,11 @@ test_natmod: $(BUILD)/firmware.elf
 		done
 
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary $^ $@
 
 ################################################################################
 # Remaining make rules

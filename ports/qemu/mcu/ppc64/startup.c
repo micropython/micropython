@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019, Michael Neuling, IBM Corporation.
+ * Copyright (c) 2026 Alessandro Gatti
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_POWERPC_UNISTD_H
-#define MICROPY_INCLUDED_POWERPC_UNISTD_H
 
-// powerpc gcc compiler doesn't seem to have unistd.h file
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-typedef int ssize_t;
+#include "uart.h"
 
-#endif // MICROPY_INCLUDED_POWERPC_UNISTD_H
+extern int main(int argc, char **argv);
+
+void _entry_point(void) {
+    // Enable UART
+    uart_init();
+    // Now that we have a basic system up and running we can call main
+    main(0, 0);
+    // Finished
+    exit(0);
+}
+
+void exit(int status) {
+    // QEMU doesn't support semihosting for PPC64 yet.  Crash the machine
+    // on exit, since we cannot exit cleanly.
+    __builtin_unreachable();
+}
+
+#ifndef NDEBUG
+void __assert_fail(const char *file, int line, const char *func, const char *expr) {
+    (void)func;
+    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    exit(1);
+}
+#endif

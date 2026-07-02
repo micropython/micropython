@@ -59,7 +59,6 @@ Tier 3 ports:
   - cc3200
   - esp8266
   - pic16bit
-  - powerpc
 
 Tier M ports:
 

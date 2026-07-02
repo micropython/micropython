@@ -62,3 +62,15 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+
+  build_and_test_ppc64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Install packages
+      run: tools/ci.sh qemu_setup_ppc64
+    - name: Build and run test suite
+      run: tools/ci.sh qemu_build_ppc64
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures

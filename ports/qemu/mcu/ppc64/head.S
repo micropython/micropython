@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#define STACK_TOP 0x60000
-
 #define FIXUP_ENDIAN                                           \
     tdi   0,0,0x48;   /* Reverse endian of b . + 8          */ \
     b     191f;       /* Skip trampoline if endian is good  */ \
@@ -69,13 +67,21 @@ _start:
     boot_entry:
     /* Save R3 to non-volatile register */
     mr      %r14, %r3
+
+    #if MICROPY_HW_FPU == 1
+    /* Enable FPU */
+    mfmsr   %r0
+    ori     %r0, %r0, 0x2000
+    mtmsr   %r0
+    #endif
+
     restart:
     /*
      * setup stack with a safety gap, since we might write to the
      * previous frame.
      */
-    LOAD_IMM64(%r1, STACK_TOP - 0x100)
-    LOAD_IMM64(%r12, main)
+    LOAD_IMM64(%r1, _estack)
+    LOAD_IMM64(%r12, _entry_point)
     mtctr   %r12
     bctrl
 
