@@ -112,6 +112,7 @@
 
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
+#define MICROPY_GC_NO_SCAN                      (1)
 
 // Python internal features
 #define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS || MICROPY_BLUETOOTH_BTSTACK)

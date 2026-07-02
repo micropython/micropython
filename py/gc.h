@@ -65,6 +65,9 @@ void gc_weakref_sweep(void);
 
 enum {
     GC_ALLOC_FLAG_HAS_FINALISER = 1,
+    // Block contains no heap pointers, so the GC mark phase can skip scanning
+    // its contents (see MICROPY_GC_NO_SCAN). Only valid for pure-data buffers.
+    GC_ALLOC_FLAG_NO_SCAN = 2,
 };
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags);
