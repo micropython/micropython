@@ -31,5 +31,6 @@ implementation and the best practices to use them.
    packages.rst
    asm_thumb2_index.rst
    filesystem.rst
+   romfs.rst
    pyboard.py.rst
    micropython2_migration.rst
