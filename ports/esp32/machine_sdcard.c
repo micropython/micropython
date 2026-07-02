@@ -44,6 +44,8 @@
 #include "sdmmc_cmd.h"
 #include "esp_log.h"
 
+#include "machine_sdcard.h"
+
 #define DEBUG 0
 #if DEBUG
 #define DEBUG_printf(...) ESP_LOGI("modsdcard", __VA_ARGS__)
@@ -88,19 +90,10 @@ typedef struct _sdcard_obj_t {
 
 static const spi_bus_config_t spi_bus_defaults[NUM_SD_SPI_BUS] = {
     {
-        #if CONFIG_IDF_TARGET_ESP32
-        .miso_io_num = GPIO_NUM_19,
-        .mosi_io_num = GPIO_NUM_23,
-        .sclk_io_num = GPIO_NUM_18,
-        #elif CONFIG_IDF_TARGET_ESP32S3
-        .miso_io_num = GPIO_NUM_36,
-        .mosi_io_num = GPIO_NUM_35,
-        .sclk_io_num = GPIO_NUM_37,
-        #else
-        .miso_io_num = GPIO_NUM_NC,
-        .mosi_io_num = GPIO_NUM_NC,
-        .sclk_io_num = GPIO_NUM_NC,
-        #endif
+        // Primary SPI SD bus (slot 2): board-configurable via machine_sdcard.h.
+        .miso_io_num = MICROPY_HW_SDCARD_SPI_MISO,
+        .mosi_io_num = MICROPY_HW_SDCARD_SPI_MOSI,
+        .sclk_io_num = MICROPY_HW_SDCARD_SPI_SCK,
         .data2_io_num = GPIO_NUM_NC,
         .data3_io_num = GPIO_NUM_NC,
         .data4_io_num = GPIO_NUM_NC,
@@ -139,16 +132,14 @@ static const uint8_t spi_dma_channel_defaults[NUM_SD_SPI_BUS] = {
 static const sdspi_device_config_t spi_dev_defaults[NUM_SD_SPI_BUS] = {
     #if NUM_SD_SPI_BUS > 1
     {
+        // Primary SPI SD bus (slot 2): CS is board-configurable via
+        // machine_sdcard.h; host_id stays chip-specific.
         #if CONFIG_IDF_TARGET_ESP32
         .host_id = VSPI_HOST,
-        .gpio_cs = GPIO_NUM_5,
-        #elif CONFIG_IDF_TARGET_ESP32S3
-        .host_id = SPI3_HOST,
-        .gpio_cs = GPIO_NUM_34,
         #else
         .host_id = SPI3_HOST,
-        .gpio_cs = GPIO_NUM_NC,
         #endif
+        .gpio_cs = MICROPY_HW_SDCARD_SPI_CS,
         .gpio_cd = SDSPI_SLOT_NO_CD,
         .gpio_wp = SDSPI_SLOT_NO_WP,
         .gpio_int = SDSPI_SLOT_NO_INT,
@@ -351,6 +342,16 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         spi_dma_chan_t dma_channel = SPI_DMA_CH_AUTO;
         #endif
         sdspi_device_config_t dev_config = spi_dev_defaults[slot_num];
+
+        #if NUM_SD_SPI_BUS == 1
+        // Single-bus chips use SDSPI_DEVICE_CONFIG_DEFAULT() for the only SPI SD
+        // bus (slot 2), which hard-codes its CS pin. If a board provides a
+        // default CS, apply it instead (keeping the IDF default otherwise). An
+        // explicit cs= argument still takes precedence below.
+        if (MICROPY_HW_SDCARD_SPI_CS != GPIO_NUM_NC) {
+            dev_config.gpio_cs = MICROPY_HW_SDCARD_SPI_CS;
+        }
+        #endif
 
         SET_CONFIG_PIN(bus_config, miso_io_num, ARG_miso);
         SET_CONFIG_PIN(bus_config, mosi_io_num, ARG_mosi);
