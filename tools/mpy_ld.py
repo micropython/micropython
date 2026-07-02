@@ -128,6 +128,7 @@ R_RISCV_TLSDESC_HI20 = 62
 R_RISCV_TLSDESC_LOAD_LO12 = 63
 R_RISCV_TLSDESC_ADD_LO12 = 64
 R_RISCV_TLSDESC_CALL = 65
+R_ARM_GOT_PREL = 96
 
 ################################################################################
 # Architecture configuration
@@ -254,28 +255,28 @@ ARCH_DATA = {
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV6M << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb,
     ),
     "armv7m": ArchData(
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV7M << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb2,
     ),
     "armv7emsp": ArchData(
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV7EMSP << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb2,
     ),
     "armv7emdp": ArchData(
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV7EMDP << 2,
         4,
-        (R_ARM_GOT_BREL,),
+        (R_ARM_GOT_BREL, R_ARM_GOT_PREL),
         asm_jump_thumb2,
     ),
     "xtensa": ArchData(
@@ -459,14 +460,10 @@ class LinkEnv:
         for sec in self.sections:
             log(LOG_LEVEL_2, "  {:08x} {} size={}".format(sec.addr, sec.name, len(sec.data)))
 
-    def find_addr(self, name):
+    def find_sym(self, name):
         if name in self.known_syms:
-            s = self.known_syms[name]
-            return s.section.addr + s["st_value"]
+            return self.known_syms[name]
         raise LinkError("unknown symbol: {}".format(name))
-
-    def find_entry_addr(self):
-        return self.find_addr("mpy_init")
 
 
 def build_got_generic(env):
@@ -685,10 +682,14 @@ def do_relocation_text(env, text_addr, r):
         # Relcation pointing to GOT
         reloc = addr = env.got_entries[s.name].offset
 
-    elif env.arch.name == "EM_X86_64" and r_info_type in (
-        R_X86_64_GOTPCREL,
-        R_X86_64_REX_GOTPCRELX,
-    ):
+    elif (
+        env.arch.name == "EM_X86_64"
+        and r_info_type
+        in (
+            R_X86_64_GOTPCREL,
+            R_X86_64_REX_GOTPCRELX,
+        )
+    ) or (env.arch.name == "EM_ARM" and r_info_type == R_ARM_GOT_PREL):
         # Relcation pointing to GOT
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
@@ -1194,6 +1195,18 @@ def load_object_file(env, f, felf):
         raise LinkError("\n".join(dup_errors))
 
 
+def generate_entry_point_jump(env):
+    entry_point = env.find_sym("mpy_init")
+    address = entry_point.section.addr + entry_point["st_value"]
+    alignment = entry_point.section.alignment
+    if alignment == 1:
+        return env.arch.asm_jump(address)
+    last_jump_length = len(env.arch.asm_jump(address))
+    aligned_jump = align_to(last_jump_length, alignment)
+    jump = env.arch.asm_jump(address + aligned_jump - last_jump_length)
+    return jump.ljust(align_to(len(jump), alignment), b"\0")
+
+
 def link_objects(env, native_qstr_vals_len):
     # Build GOT information
     if env.arch.name == "EM_XTENSA":
@@ -1289,8 +1302,7 @@ def link_objects(env, native_qstr_vals_len):
         raise LinkError("\n".join(undef_errors))
 
     # Generate the entry trampoline assuming the offset is already known.
-    env.entry_point = env.find_entry_addr()
-    jump = env.arch.asm_jump(env.entry_point)
+    jump = generate_entry_point_jump(env)
     env.entry_trampoline_len = len(jump)
 
     # Align sections, assign their addresses, and create full_text
@@ -1390,7 +1402,7 @@ def build_mpy(env, fmpy, internal_name, native_qstr_vals, arch_flags):
     # Rewrite the entry trampoline if the proper value isn't known earlier, and
     # ensure the trampoline size remains the same.
     if env.arch.delayed_entry_offset:
-        jump = env.arch.asm_jump(env.find_entry_addr())
+        jump = generate_entry_point_jump(env)
         env.full_text[: len(jump)] = jump
         assert len(jump) == env.entry_trampoline_len
 
@@ -1510,19 +1522,13 @@ def do_preprocess(args):
         args.output = args.files[0][:-1] + "config.h"
     static_qstrs, qstr_vals = extract_qstrs(args.files)
     with open(args.output, "w") as f:
-        print(
-            "#include <stdint.h>\n"
-            "typedef uintptr_t mp_uint_t;\n"
-            "typedef intptr_t mp_int_t;\n"
-            "typedef uintptr_t mp_off_t;",
-            file=f,
-        )
+        print("#include <stdint.h>\ntypedef uintptr_t mp_off_t;", file=f)
         for i, q in enumerate(static_qstrs):
             print("#define %s (%u)" % (q, i + 1), file=f)
         for i, q in enumerate(sorted(qstr_vals)):
             print("#define %s (mp_native_qstr_table[%d])" % (q, i + 1), file=f)
         print("extern const uint16_t mp_native_qstr_table[];", file=f)
-        print("extern const mp_uint_t mp_native_obj_table[];", file=f)
+        print("extern const uintptr_t mp_native_obj_table[];", file=f)
 
 
 def do_link(args):
