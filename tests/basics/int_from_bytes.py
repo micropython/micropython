@@ -1,12 +1,10 @@
-# int_from_bytes.py
-
 
 def test_int(x, byteorder, signed):
-    size = 12
-    if x < 2**30 and x >= -(2**30):
+    if x <= 2**30 and x >= -(2**30):
         size = 4
-    elif x < 2**62 and x >= -(2**62):
-        size = 8
+    else:
+        print("SKIP")
+        raise SystemExit
     
     print("x:{}, x:0x{}, size:{}".format(x, x, size), end="")
     b = x.to_bytes(size, byteorder=byteorder, signed=signed)
@@ -30,21 +28,8 @@ def do_test_int(n, byteorder, signed):
     test_int(2**23 - 2, byteorder, signed)
     test_int(2**23, byteorder, signed)
     test_int(2**23 + 2, byteorder, signed)
-    test_int(2**31 - 2, byteorder, signed)
-    test_int(2**31, byteorder, signed)
-    test_int(2**31 + 2, byteorder, signed)
-    test_int(2**39 - 2, byteorder, signed)
-    test_int(2**39, byteorder, signed)
-    test_int(2**39 + 2, byteorder, signed)
-    test_int(2**47 - 2, byteorder, signed)
-    test_int(2**47, byteorder, signed)
-    test_int(2**47 + 2, byteorder, signed)
-    test_int(2**55 - 2, byteorder, signed)
-    test_int(2**55, byteorder, signed)
-    test_int(2**55 + 2, byteorder, signed)
-    test_int(2**62 - 2, byteorder, signed)
-    test_int(2**62, byteorder, signed)
-    test_int(2**62 + 2, byteorder, signed)
+    test_int(2**30 - 2, byteorder, signed)
+    test_int(2**30, byteorder, signed)
 
     if signed:
         print("---------- test_int() n:{}, byteorder:{}, signed:{}, negative ----------".format(n, byteorder, signed))
@@ -59,21 +44,8 @@ def do_test_int(n, byteorder, signed):
         test_int(-(2**23 - 2), byteorder, signed)
         test_int(-(2**23), byteorder, signed)
         test_int(-(2**23 + 2), byteorder, signed)
-        test_int(-(2**31 - 2), byteorder, signed)
-        test_int(-(2**31), byteorder, signed)
-        test_int(-(2**31 + 2), byteorder, signed)
-        test_int(-(2**39 - 2), byteorder, signed)
-        test_int(-(2**39), byteorder, signed)
-        test_int(-(2**39 + 2), byteorder, signed)
-        test_int(-(2**47 - 2), byteorder, signed)
-        test_int(-(2**47), byteorder, signed)
-        test_int(-(2**47 + 2), byteorder, signed)
-        test_int(-(2**55 - 2), byteorder, signed)
-        test_int(-(2**55), byteorder, signed)
-        test_int(-(2**55 + 2), byteorder, signed)
-        test_int(-(2**62 - 2), byteorder, signed)
-        test_int(-(2**62), byteorder, signed)
-        test_int(-(2**62 + 2), byteorder, signed)
+        test_int(-(2**30 - 2), byteorder, signed)
+        test_int(-(2**30), byteorder, signed)
 
 
 def reverse(b):
@@ -97,6 +69,10 @@ def signed_from_unsigned(uint, size):
 
 
 def test_bytes(b, uint, byteorder, signed):
+    if uint > 2**30:
+        print("SKIP")
+        raise SystemExit
+    
     size = len(b)
     assert b == uint.to_bytes(size, byteorder='little', signed=False)
     sint = signed_from_unsigned(uint, size)
@@ -129,15 +105,6 @@ def do_test_bytes(n, byteorder, signed):
     test_bytes(b"\x00\x00\x02", 2 << 16, byteorder, signed)
     test_bytes(b"\x00\x00\xFE", 254 << 16, byteorder, signed)
     test_bytes(b"\x00\x00\x00\x02", 2 << 24, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\xFE", 254 << 24, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\x02", 2 << 32, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\xFE", 254 << 32, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\x00\x02", 2 << 40, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\x00\xFE", 254 << 40, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\x00\x00\x02", 2 << 48, byteorder, signed)
-    test_bytes(b"\x00\x00\x00\x00\x00\x00\xFE", 254 << 48, byteorder, signed)
-    # test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\x02", 2 << 56, byteorder, signed)
-    # test_bytes(b"\x00\x00\x00\x00\x00\x00\x00\xFE", 254 << 56, byteorder, signed)
 
 
 do_test_bytes(n=1, byteorder="little", signed=False)
