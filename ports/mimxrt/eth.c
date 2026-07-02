@@ -341,13 +341,17 @@ static void eth_phy_init(phy_handle_t *phyHandle, phy_config_t *phy_config,
     if (status == kStatus_Success) {
         uint64_t t = ticks_us64() + PHY_AUTONEGO_TIMEOUT_US;
         // Wait for auto-negotiation success and link up
-        do {
+        for (;;) {
             PHY_GetAutoNegotiationStatus(phyHandle, &autonego);
             PHY_GetLinkStatus(phyHandle, &link);
             if (autonego && link) {
                 break;
             }
-        } while (ticks_us64() < t);
+            if (ticks_us64() > t) {
+                break;
+            }
+            mp_hal_delay_ms(2);
+        }
         if (!autonego) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Auto-negotiation failed."));
         }
