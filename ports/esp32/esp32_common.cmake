@@ -46,6 +46,7 @@ if(NOT CMAKE_BUILD_EARLY_EXPANSION)
         set(MICROPY_PY_BTREE ON)
     endif()
 
+    include(${MICROPY_DIR}/py/manifest.cmake)
     include(${MICROPY_DIR}/py/usermod.cmake)
     include(${MICROPY_DIR}/extmod/extmod.cmake)
 endif()
