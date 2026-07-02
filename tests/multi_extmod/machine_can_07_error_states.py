@@ -189,14 +189,15 @@ def instance1():
     # with this test setup, as Bus Off requires more than just "normal" frame
     # transmit errors.
 
+    # tell the receiver to go back to a valid baud rate, causing the pending tx
+    # to be sent.
+    multitest.broadcast("fix baud")
+    multitest.wait("fixed baud")
+
     # restarting the controller may cause it to leave its error state, or not, depending
     # on the implementation - but it shouldn't cause any recovery issues. Also cancels all pending TX
     # (note: have to do this before 'fix baud' or we create a race condition for pending tx)
     can.restart()
-
-    # tell the receiver to go back to a valid baud rate
-    multitest.broadcast("fix baud")
-    multitest.wait("fixed baud")
 
     idx_more = can.send(_ID, b"MOREMORE")
     time.sleep_ms(50)  # irq_sender should fire during this window

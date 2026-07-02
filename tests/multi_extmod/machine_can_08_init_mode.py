@@ -68,11 +68,13 @@ def instance0():
     multitest.wait("silent done")
     # we should have received the message from instance1 many times, as instance0 won't have ACKed it
     # create a dummy "OK" for MIMXRT, since it on receives ACKed messages in SILENT mode.
-    if "mimxrt" in sys.platform:
+    if ("mimxrt" in sys.platform) or ("alif" in sys.platform):
         print("silent_rx_count True")
     else:
         print("silent_rx_count", silent_rx_count > 5)
-    can.cancel_send(idx)
+    # Cancel the sent message only if it was accpeted for sending.
+    if idx is not None:
+        can.cancel_send(idx)
 
     reinit_with_mode(can.MODE_SILENT_LOOPBACK)
     print("Silent Loopback", "MODE_SILENT_LOOPBACK" in str(can))

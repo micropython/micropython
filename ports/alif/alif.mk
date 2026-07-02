@@ -192,6 +192,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/pm.c \
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
 	drivers/source/adc.c \
+	drivers/source/canfd.c \
 	drivers/source/i2c.c \
 	drivers/source/mhu_driver.c \
 	drivers/source/mhu_receiver.c \
