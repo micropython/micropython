@@ -86,6 +86,7 @@ static bool mdns_initialised = false;
 
 static uint8_t conf_wifi_sta_reconnects = 0;
 static uint8_t wifi_sta_reconnects;
+static uint8_t network_country_code_set = 0;
 
 // The rules for this default are defined in the documentation of esp_wifi_set_protocol()
 // rather than in code, so we have to recreate them here.
@@ -266,6 +267,19 @@ static mp_obj_t network_wlan_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     esp_initialise_wifi();
+
+    #ifdef MICROPY_PY_NETWORK_COUNTRY
+    char country_code[4] = { '0', '1', ' ', '\0' };
+    if (!(mod_network_country_code[0] == 'X' && mod_network_country_code[1] == 'X')) {
+        country_code[0] = mod_network_country_code[0];
+        country_code[1] = mod_network_country_code[1];
+    }
+    if (network_country_code_set) {
+        // Always follow the AP's country if one is set.
+        esp_exceptions(esp_wifi_set_country_code(country_code, true));
+        network_country_code_set = 0;
+    }
+    #endif
 
     int idx = (n_args > 0) ? mp_obj_get_int(args[0]) : ESP_IF_WIFI_STA;
     if (idx == ESP_IF_WIFI_STA) {
@@ -775,6 +789,58 @@ unknown:
     mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(network_wlan_config_obj, 1, network_wlan_config);
+
+#ifdef MICROPY_PY_NETWORK_COUNTRY
+mp_obj_t mp_network_country(size_t n_args, const mp_obj_t *pos_args) {
+    // ESP-IDF docs state the country code is three characters long.
+    char country_code[4] = { '0', '1', ' ', '\0' };
+    esp_err_t state;
+
+    // This function can be called at any time once the `network` module is
+    // imported.  Currently the static wifi flags indicate only whether the
+    // radio interface is active or not, whilst we need to know if the
+    // interface is initialised.
+
+    if (n_args == 0) {
+        state = esp_wifi_get_country_code(country_code);
+        if (state != ESP_ERR_WIFI_NOT_INIT) {
+            esp_exceptions(state);
+            if (country_code[0] == '0' && country_code[1] == '1') {
+                mod_network_country_code[0] = 'X';
+                mod_network_country_code[1] = 'X';
+            } else {
+                mod_network_country_code[0] = country_code[0];
+                mod_network_country_code[1] = country_code[1];
+            }
+        }
+
+        return mp_obj_new_str((const char *)mod_network_country_code, 2);
+    }
+
+    if (n_args == 1) {
+        size_t length = 0;
+        const char *code = mp_obj_str_get_data(pos_args[0], &length);
+        if (length < 2) {
+            mp_raise_ValueError(NULL);
+        }
+        mod_network_country_code[0] = code[0];
+        mod_network_country_code[1] = code[1];
+        // Maintain compatibility with the default implementation.
+        if (!(mod_network_country_code[0] == 'X' && mod_network_country_code[1] == 'X')) {
+            country_code[0] = mod_network_country_code[0];
+            country_code[1] = mod_network_country_code[1];
+        }
+        state = esp_wifi_set_country_code(country_code, true);
+        if (state != ESP_ERR_WIFI_NOT_INIT) {
+            esp_exceptions(state);
+        } else {
+            network_country_code_set = 1;
+        }
+    }
+
+    return mp_const_none;
+}
+#endif
 
 static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_wlan_active_obj) },
