@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "Baochip-1x",
+    "product": "Dabao",
+    "thumbnail": "",
+    "url": "https://www.crowdsupply.com/baochip/dabao",
+    "vendor": "Baochip"
+}
