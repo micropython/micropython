@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "LoRa",
+        "External Flash"
+    ],
+    "images": [
+        "pycom-lopy.png"
+    ],
+    "mcu": "esp32",
+    "product": "LoPy / L01",
+    "thumbnail": "",
+    "url": "https://pycom.io",
+    "vendor": "Pycom"
+}
