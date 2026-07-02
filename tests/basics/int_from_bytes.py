@@ -77,10 +77,10 @@ def do_test_int(n, byteorder, signed):
 
 
 def reverse(b):
-    r = bytearray(len(b))
-    for i in range(len(b)):
-        r[i] = b[len(b) - 1 - i]
-    return r
+    r = []
+    for x in b:
+        r.insert(0, x)
+    return bytes(r)
 
 
 def signed_from_unsigned(uint, size):
