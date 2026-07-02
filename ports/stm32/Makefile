@@ -464,6 +464,7 @@ USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
 TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
 	$(TINYUSB_SRC_C) \
 	src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c \
+	src/portable/st/stm32_fsdev/fsdev_common.c \
 	src/portable/synopsys/dwc2/dcd_dwc2.c \
 	src/portable/synopsys/dwc2/dwc2_common.c \
 	src/portable/synopsys/dwc2/hcd_dwc2.c \

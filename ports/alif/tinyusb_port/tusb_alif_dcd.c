@@ -256,7 +256,7 @@ void dcd_set_address(uint8_t rhport, uint8_t dev_addr)
     // set and STATUS sent back to the host. Xfer call below is purely for
     // internal TinyUSB state to conclude transaction and issue next SETUP req.
 
-    dcd_edpt_xfer(rhport, tu_edpt_addr(0, TUSB_DIR_IN), NULL, 0);
+    dcd_edpt_xfer(rhport, tu_edpt_addr(0, TUSB_DIR_IN), NULL, 0, false);
 }
 
 // Called to remote wake up host when suspended (e.g hid keyboard)
@@ -367,8 +367,9 @@ void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr) TU_ATTR_WEAK;
 
 // Submit a transfer, When complete dcd_event_xfer_complete() is invoked to
 // notify the stack
-bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t total_bytes)
+bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t total_bytes, bool is_isr)
 {
+    (void) is_isr;
     // DEPSTRTXFER command
     LOG("%010u >%s %u %x %u", DWT->CYCCNT, __func__, ep_addr, (uint32_t) buffer, total_bytes);
 
@@ -431,7 +432,7 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
 
 // Submit a transfer using fifo, When complete dcd_event_xfer_complete() is invoked to notify the stack
 // This API is optional, may be useful for register-based for transferring data.
-bool dcd_edpt_xfer_fifo(uint8_t rhport, uint8_t ep_addr, tu_fifo_t * ff, uint16_t total_bytes) TU_ATTR_WEAK;
+bool dcd_edpt_xfer_fifo(uint8_t rhport, uint8_t ep_addr, tu_fifo_t * ff, uint16_t total_bytes, bool is_isr) TU_ATTR_WEAK;
 
 // Stall endpoint, any queuing transfer should be removed from endpoint
 void dcd_edpt_stall(uint8_t rhport, uint8_t ep_addr)
