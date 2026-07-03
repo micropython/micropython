@@ -45,7 +45,7 @@ MAG_INT,P6_4
 ,-P6_5
 
 # Int IMU 
-IMU0_INT,P6_6
+IMU2_INT,P6_6
 
 # KitProg UART TX
 ,-P6_7
@@ -95,10 +95,10 @@ PDM_DATA,P8_6
 #,-P8_7
 
 # J5 connector
-SERIAL_INT0,P9_0
-SERIAL_INT1,P9_1
-SERIAL_INT2,P9_2
-SERIAL_INT3,P9_3
+,P9_0
+,P9_1
+,P9_2
+,P9_3
 
 # Bluetooth
 ,-P10_0
