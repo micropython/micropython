@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pico.h"
+#include "pico/runtime_init.h"
 #include "clocks_extra.h"
 #include "hardware/regs/clocks.h"
 #include "hardware/platform_defs.h"
@@ -15,13 +16,8 @@
 #include "hardware/gpio.h"
 #include "hardware/ticks.h"
 #include "hardware/vreg.h"
-
-#if PICO_RP2040
-// The RTC clock frequency is 48MHz divided by power of 2 (to ensure an integer
-// division ratio will be used in the clocks block).  A divisor of 1024 generates
-// an RTC clock tick of 46875Hz.  This frequency is relatively close to the
-// customary 32 or 32.768kHz 'slow clock' crystals and provides good timing resolution.
-#define RTC_CLOCK_FREQ_HZ       (USB_CLK_KHZ * KHZ / 1024)
+#if HAS_RP2040_RTC
+#include "hardware/rtc.h"
 #endif
 
 static void start_all_ticks(void) {
@@ -36,8 +32,8 @@ static void start_all_ticks(void) {
     }
 }
 
-// Wrap the SDK's clocks_init() function to save code size
-void __wrap_runtime_init_clocks(void) {
+// Override the SDK's __weak runtime_init_clocks() with the USB-always variant.
+void runtime_init_clocks(void) {
     runtime_init_clocks_optional_usb(true);
 }
 
@@ -61,15 +57,14 @@ void runtime_init_clocks_optional_usb(bool init_usb) {
     }
 
     /// \tag::pll_init[]
-    pll_init(pll_sys, PLL_COMMON_REFDIV, PLL_SYS_VCO_FREQ_HZ, PLL_SYS_POSTDIV1, PLL_SYS_POSTDIV2);
+    pll_init(pll_sys, PLL_SYS_REFDIV, PLL_SYS_VCO_FREQ_HZ, PLL_SYS_POSTDIV1, PLL_SYS_POSTDIV2);
     if (init_usb) {
-        pll_init(pll_usb, PLL_COMMON_REFDIV, PLL_USB_VCO_FREQ_HZ, PLL_USB_POSTDIV1, PLL_USB_POSTDIV2);
+        pll_init(pll_usb, PLL_USB_REFDIV, PLL_USB_VCO_FREQ_HZ, PLL_USB_POSTDIV1, PLL_USB_POSTDIV2);
     }
     /// \end::pll_init[]
 
     // Configure clocks
 
-    // todo amy, what is this N1,2,4 meant to mean?
     // RP2040 CLK_REF = XOSC (usually) 12MHz / 1 = 12MHz
     // RP2350 CLK_REF = XOSC (XOSC_MHZ) / N (1,2,4) = 12MHz
 
@@ -81,67 +76,72 @@ void runtime_init_clocks_optional_usb(bool init_usb) {
     //   non-aux inputs to the glitchless mux, so the aux select doesn't
     //   matter. The value of 0 here happens to be the sys PLL.
 
-    clock_configure(clk_ref,
+    clock_configure_undivided(clk_ref,
         CLOCKS_CLK_REF_CTRL_SRC_VALUE_XOSC_CLKSRC,
         0,             // No aux mux
-        XOSC_HZ,
         XOSC_HZ);
 
+    // This must be done after we've configured CLK_REF to XOSC due to the need to time a delay
     #if SYS_CLK_VREG_VOLTAGE_AUTO_ADJUST && defined(SYS_CLK_VREG_VOLTAGE_MIN)
     if (vreg_get_voltage() < SYS_CLK_VREG_VOLTAGE_MIN) {
         vreg_set_voltage(SYS_CLK_VREG_VOLTAGE_MIN);
+        // wait for voltage to settle; must use CPU cycles as TIMER is not yet clocked correctly
         busy_wait_at_least_cycles((uint32_t)((SYS_CLK_VREG_VOLTAGE_AUTO_ADJUST_DELAY_US * (uint64_t)XOSC_HZ) / 1000000));
     }
     #endif
 
     /// \tag::configure_clk_sys[]
     // CLK SYS = PLL SYS (usually) 125MHz / 1 = 125MHz
-    clock_configure(clk_sys,
+    clock_configure_undivided(clk_sys,
         CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLKSRC_CLK_SYS_AUX,
         CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
-        SYS_CLK_KHZ * KHZ,
-        SYS_CLK_KHZ * KHZ);
+        SYS_CLK_HZ);
     /// \end::configure_clk_sys[]
 
     if (init_usb) {
         // CLK USB = PLL USB 48MHz / 1 = 48MHz
-        clock_configure(clk_usb,
+        clock_configure_undivided(clk_usb,
             0, // No GLMUX
             CLOCKS_CLK_USB_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB,
-            USB_CLK_KHZ * KHZ,
-            USB_CLK_KHZ * KHZ);
+            USB_CLK_HZ);
     }
 
     // CLK ADC = PLL USB 48MHZ / 1 = 48MHz
-    clock_configure(clk_adc,
+    clock_configure_undivided(clk_adc,
         0,             // No GLMUX
         CLOCKS_CLK_ADC_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB,
-        USB_CLK_KHZ * KHZ,
-        USB_CLK_KHZ * KHZ);
+        USB_CLK_HZ);
 
     #if HAS_RP2040_RTC
     // CLK RTC = PLL USB 48MHz / 1024 = 46875Hz
+    #if (USB_CLK_HZ % RTC_CLOCK_FREQ_HZ == 0)
+    // this doesn't pull in 64 bit arithmetic
+    clock_configure_int_divider(clk_rtc,
+        0,             // No GLMUX
+        CLOCKS_CLK_RTC_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB,
+        USB_CLK_HZ,
+        USB_CLK_HZ / RTC_CLOCK_FREQ_HZ);
+    #else
     clock_configure(clk_rtc,
         0,             // No GLMUX
         CLOCKS_CLK_RTC_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB,
-        USB_CLK_KHZ * KHZ,
+        USB_CLK_HZ,
         RTC_CLOCK_FREQ_HZ);
+    #endif
     #endif
 
     // CLK PERI = clk_sys. Used as reference clock for UART and SPI serial.
-    clock_configure(clk_peri,
+    clock_configure_undivided(clk_peri,
         0,
         CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS,
-        SYS_CLK_KHZ * KHZ,
-        SYS_CLK_KHZ * KHZ);
+        SYS_CLK_HZ);
 
-    #if PICO_RP2350
+    #if HAS_HSTX
     // CLK_HSTX = clk_sys. Transmit bit clock for the HSTX peripheral.
-    clock_configure(clk_hstx,
+    clock_configure_undivided(clk_hstx,
         0,
         CLOCKS_CLK_HSTX_CTRL_AUXSRC_VALUE_CLK_SYS,
-        SYS_CLK_KHZ * KHZ,
-        SYS_CLK_KHZ * KHZ);
+        SYS_CLK_HZ);
     #endif
 
     // Finally, all clocks are configured so start the ticks
