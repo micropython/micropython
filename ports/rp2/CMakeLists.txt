@@ -259,6 +259,20 @@ elseif(PICO_RISCV)
     )
 endif()
 
+# PSRAM setup is only available on RP2350.
+if(PICO_RP2350)
+    list(APPEND PICO_SDK_COMPONENTS
+        hardware_psram
+    )
+    # The port drives PSRAM bring-up explicitly (see rp2_psram.c), so disable
+    # the SDK's runtime_init auto-setup. This also avoids depending on the SDK's
+    # include-based linker scripts, which define the __psram_* symbols that
+    # runtime_init_setup_psram() references.
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        PICO_RUNTIME_NO_INIT_PSRAM=1
+    )
+endif()
+
 # Use our custom pico_float_micropython float implementation.  This is needed for two reasons:
 # - to fix inf handling in pico-sdk's __wrap___aeabi_fadd();
 # - so we can use our own libm functions, to fix inaccuracies in the pico-sdk versions.
