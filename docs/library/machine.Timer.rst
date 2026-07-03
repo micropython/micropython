@@ -20,8 +20,7 @@ There are two types of Timer in MicroPython, but not all ports support both:
 
 - Virtual timers. These are managed in software, and are generally more
   flexible. Multiple virtual timers can be constructed and active at once. The
-  ``id`` of a virtual timer is ``-1``. Not all ports support virtual timers, but
-  it's recommended to use them when available.
+  ``id`` of a virtual timer is ``-1``.
 - Hardware timers. Hardware timers have integer ``id`` values starting at ``0``.
   The number of available ``id`` values is determined by the hardware. Hardware
   timers may be more accurate for very fine sub-millisecond timing (especially

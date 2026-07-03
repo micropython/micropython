@@ -19,15 +19,11 @@ import unittest
 # Hardware timers are only supported on the esp32 port
 SUPPORTS_HARDWARE_TIMERS = sys.platform == "esp32"
 
-# Virtual timers are not supported on the esp32 port
-SUPPORTS_VIRTUAL_TIMERS = sys.platform != "esp32"
-
 # Hard IRQs are not supported on the esp32 port
 SUPPORTS_HARD_IRQ = sys.platform != "esp32"
 
 
 class Test(unittest.TestCase):
-    @unittest.skipUnless(SUPPORTS_VIRTUAL_TIMERS, "no virtual timers")
     def test_virtual_create(self):
         self._test_create(-1)
         self._test_create_multiple(-1, -1)
@@ -37,12 +33,10 @@ class Test(unittest.TestCase):
         self._test_create(0)
         self._test_create_multiple(0, 1)
 
-    @unittest.skipUnless(SUPPORTS_VIRTUAL_TIMERS, "no virtual timers")
     def test_virtual_softirq(self):
         self._test_all_freq_period(-1, Timer.ONE_SHOT, False)
         self._test_all_freq_period(-1, Timer.PERIODIC, False)
 
-    @unittest.skipUnless(SUPPORTS_VIRTUAL_TIMERS, "no virtual timers")
     @unittest.skipUnless(SUPPORTS_HARD_IRQ, "no hard-irq support")
     def test_virtual_hardirq(self):
         self._test_all_freq_period(-1, Timer.ONE_SHOT, True)
