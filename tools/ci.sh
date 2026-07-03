@@ -426,6 +426,34 @@ function ci_psoc_edge_deploy_hil {
     docker exec mpy-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board ${board} --hex-file ${hex_file} ${dev_files_arg} -q"
 }
 
+# CM55 IPC echo firmware, built & published by
+# Infineon/mtb-example-psoc-edge-voice-assistant-deploy-mpy.
+# Must be flashed BEFORE ipc.py runs, because ipc.py calls enable_core(CM55).
+CM55_ECHO_FW_URL="https://github.com/Infineon/mtb-example-psoc-edge-voice-assistant-deploy-mpy/releases/latest/download/test_ipc_mpy.zip"
+
+function ci_psoc_edge_flash_cm55_echo_hil {
+    board=$1
+    serial=$2   # optional KitProg3 serial for multi-board setups
+
+    # Download the prebuilt echo firmware package into the mounted repo
+    docker exec mpy-ci /bin/bash -c \
+        "cd /micropython-psoc-edge && curl -fsSL -o test_ipc_mpy.zip ${CM55_ECHO_FW_URL}"
+
+    if [ -z "$serial" ]; then
+        serial_arg=""
+    else
+        serial_arg="-n ${serial}"
+    fi
+
+    # from-package flashes the .hex using QSPI_FLASHLOADER=<.FLM> and
+    # -s <dir with qspi_config.cfg> (SMIF_BANKS @ 0x60000000), then verify_image.
+    docker exec mpy-ci /bin/bash -c \
+        "cd /micropython-psoc-edge/ports/psoc-edge && \
+         python3 tools/mp-ifx-flash.py from-package \
+           --board ${board} \
+           --zip-package ../../test_ipc_mpy.zip ${serial_arg}"
+}
+
 function ci_psoc_edge_teardown_hil {
     docker stop mpy-ci
 }
