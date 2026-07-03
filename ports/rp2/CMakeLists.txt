@@ -632,11 +632,15 @@ endif()
 #  a linker script modification) until we explicitly add  macro calls around the function
 #  defs to move them into RAM.
 if (NOT MICROPY_BOARD_LINKER_SCRIPT)
+    # Use the Pico SDK's include-based ("overridable") default linker script,
+    # supplying only the parts MicroPython needs to change via override paths.
     if(PICO_RP2040)
-        set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2040.ld)
+        pico_add_linker_script_override_path(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_rp2040)
     elseif(PICO_RP2350)
-        set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2350.ld)
+        pico_add_linker_script_override_path(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_rp2350)
     endif()
+    pico_add_linker_script_override_path(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_rp2)
+    set(MICROPY_BOARD_LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/memmap_mp_rp2.ld)
 endif()
 
 if (PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)

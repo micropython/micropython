@@ -1,0 +1,9 @@
+/* MicroPython flash layout: the FLASH (application) region sits at the base of
+   flash, with the writable user filesystem (FLASH_FS) carved off the top. The
+   origin/length below must match the filesystem base computed in rp2_flash.c:
+     FLASH_FS base = flash_size - flash_storage_bytes */
+MEMORY
+{
+    FLASH(rx)    : ORIGIN = 0x10000000, LENGTH = __micropy_flash_size__ - __micropy_flash_storage_bytes__
+    FLASH_FS(rx) : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH), LENGTH = __micropy_flash_storage_bytes__
+}
