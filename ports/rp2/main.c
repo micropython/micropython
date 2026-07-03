@@ -48,7 +48,6 @@
 #include "mpnetworkport.h"
 #include "genhdr/mpversion.h"
 #include "mp_usbd.h"
-#include "rp2_psram.h"
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
@@ -67,9 +66,22 @@
 #endif
 #include "pico/aon_timer.h"
 #include "shared/timeutils/timeutils.h"
+#if MICROPY_HW_ENABLE_PSRAM
+#include "hardware/psram.h"
+// When the pico-sdk board header configures the PSRAM chip-select, make sure the
+// downstream MicroPython config (MICROPY_HW_PSRAM_CS_PIN) agrees with it.
+#if defined(PICO_PSRAM_CS_PIN) && defined(MICROPY_HW_PSRAM_CS_PIN) && (PICO_PSRAM_CS_PIN != MICROPY_HW_PSRAM_CS_PIN)
+#error "MICROPY_HW_PSRAM_CS_PIN does not match the board header's PICO_PSRAM_CS_PIN"
+#endif
+#endif
 
 extern uint8_t __StackTop, __StackBottom;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
+#if MICROPY_HW_ENABLE_PSRAM
+// Provided by the SDK's PSRAM linker sections: __psram_start__ is ORIGIN(PSRAM)
+// (the PSRAM base) and __psram_end__ is the end of any __in_psram data.
+extern uint8_t __psram_start__, __psram_end__;
+#endif
 
 // Embed version info in the binary in machine readable form
 bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -99,7 +111,12 @@ int main(int argc, char **argv) {
     rp2_flash_set_timing();
 
     #if MICROPY_HW_ENABLE_PSRAM
-    size_t psram_size = psram_init(MICROPY_HW_PSRAM_CS_PIN);
+    // The SDK's runtime_init brought PSRAM up at the boot clock; re-tune the QMI
+    // timing now that the system clock has been set to its final value.
+    if (psram_is_available()) {
+        psram_configure_params(PICO_DEFAULT_PSRAM_MAX_FREQ, PICO_DEFAULT_PSRAM_MAX_SELECT, PICO_DEFAULT_PSRAM_MIN_DESELECT);
+        psram_reinitialize();
+    }
     #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
@@ -131,12 +148,16 @@ int main(int argc, char **argv) {
     mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
 
     #if MICROPY_HW_ENABLE_PSRAM
+    size_t psram_size = psram_get_size(); // 0 if PSRAM was not brought up
     if (psram_size) {
+        // Use PSRAM from the end of any __in_psram data up to the top of the chip.
+        void *psram_heap_start = &__psram_end__;
+        void *psram_heap_end = &__psram_start__ + psram_size;
         #if MICROPY_GC_SPLIT_HEAP
         gc_init(&__GcHeapStart, &__GcHeapEnd);
-        gc_add((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
+        gc_add(psram_heap_start, psram_heap_end);
         #else
-        gc_init((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
+        gc_init(psram_heap_start, psram_heap_end);
         #endif
     } else {
         gc_init(&__GcHeapStart, &__GcHeapEnd);

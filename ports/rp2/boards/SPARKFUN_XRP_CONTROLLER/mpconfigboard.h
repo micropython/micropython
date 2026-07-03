@@ -46,6 +46,3 @@ int mp_hal_is_pin_reserved(int n);
 #define MICROPY_HW_UART1_RX (9)
 #define MICROPY_HW_UART1_CTS (10)
 #define MICROPY_HW_UART1_RTS (11)
-
-#define MICROPY_HW_PSRAM_CS_PIN (47)
-#define MICROPY_HW_ENABLE_PSRAM (1)

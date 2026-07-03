@@ -170,7 +170,6 @@ set(MICROPY_SOURCE_PORT
     pendsv.c
     rp2_flash.c
     rp2_pio.c
-    rp2_psram.c
     rp2_dma.c
     uart.c
     usbd.c
@@ -592,6 +591,39 @@ target_link_options(${MICROPY_TARGET} PRIVATE
 target_compile_definitions(${MICROPY_TARGET} PRIVATE
     MICROPY_HW_ROMFS_BYTES=${MICROPY_HW_ROMFS_BYTES}
 )
+
+# PSRAM (RP2350 only) is brought up by the SDK's hardware_psram library at boot
+# (runtime_init). Boards that fit PSRAM set MICROPY_HW_ENABLE_PSRAM and
+# MICROPY_HW_PSRAM_CS_PIN in their mpconfigboard.cmake.
+#
+# Defer to the pico-sdk board header where it configures PSRAM: if it sets a size
+# (PICO_PSRAM_SIZE_BYTES, which the SDK exposes as a CMake variable), use the
+# header's chip-select and size as-is. main.c asserts the header chip-select
+# matches MICROPY_HW_PSRAM_CS_PIN. Otherwise drive the SDK from the downstream
+# config: auto-detect the size on the configured chip-select.
+#
+# MicroPython re-tunes the QMI timing after clock changes (see main.c and
+# modmachine.c); flash programming restores it via the SDK's CS1 setup callback.
+if(PICO_RP2350 AND MICROPY_HW_ENABLE_PSRAM)
+    list(APPEND PICO_SDK_COMPONENTS
+        hardware_psram
+    )
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_HW_ENABLE_PSRAM=1
+    )
+    if(DEFINED MICROPY_HW_PSRAM_CS_PIN)
+        target_compile_definitions(${MICROPY_TARGET} PRIVATE
+            MICROPY_HW_PSRAM_CS_PIN=${MICROPY_HW_PSRAM_CS_PIN}
+        )
+    endif()
+    if(NOT PICO_PSRAM_SIZE_BYTES)
+        # No size configured upstream: auto-detect on the configured chip-select.
+        target_compile_definitions(${MICROPY_TARGET} PRIVATE
+            PICO_PSRAM_CS_PIN=${MICROPY_HW_PSRAM_CS_PIN}
+            PICO_AUTO_DETECT_PSRAM_SIZE=1
+        )
+    endif()
+endif()
 
 # Apply optimisations to performance-critical source code.
 set_source_files_properties(

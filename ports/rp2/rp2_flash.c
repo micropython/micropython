@@ -33,7 +33,6 @@
 #include "modrp2.h"
 #include "hardware/flash.h"
 #include "pico/binary_info.h"
-#include "rp2_psram.h"
 #ifdef PICO_RP2350
 #include "hardware/structs/ioqspi.h"
 #include "hardware/structs/qmi.h"
@@ -189,11 +188,10 @@ static uint32_t begin_critical_flash_section(void) {
 }
 
 static void end_critical_flash_section(uint32_t state) {
-    // The ROM function to program flash will have reset flash and PSRAM timings to defaults
+    // The ROM function to program flash will have reset the flash timing to
+    // defaults. (PSRAM timing is restored automatically by the SDK's flash
+    // routines via the QMI CS1 setup callback registered by psram_reinitialize.)
     rp2_flash_set_timing_internal(clock_get_hz(clk_sys));
-    #if MICROPY_HW_ENABLE_PSRAM
-    psram_init(MICROPY_HW_PSRAM_CS_PIN);
-    #endif
     restore_interrupts(state);
     if (use_multicore_lockout()) {
         multicore_lockout_end_blocking();

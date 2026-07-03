@@ -11,3 +11,7 @@ endif()
 
 # To change the gpio count for QFN-80
 # set(PICO_NUM_GPIOS 48)
+
+# 8MB PSRAM on GPIO8.
+set(MICROPY_HW_ENABLE_PSRAM 1)
+set(MICROPY_HW_PSRAM_CS_PIN 8)

@@ -17,3 +17,7 @@ set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
 if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
     set(MICROPY_HW_FLASH_STORAGE_BYTES 14680064)  # 14 * 1024 * 1024
 endif()
+
+# 8MB PSRAM. The chip-select (GPIO8) and size come from the pico-sdk board
+# header (sparkfun_thingplus_rp2350.h).
+set(MICROPY_HW_ENABLE_PSRAM 1)

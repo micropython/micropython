@@ -31,8 +31,10 @@
 #include "mp_usbd.h"
 #include "modmachine.h"
 #include "uart.h"
-#include "rp2_psram.h"
 #include "rp2_flash.h"
+#if MICROPY_HW_ENABLE_PSRAM
+#include "hardware/psram.h"
+#endif
 #include "clocks_extra.h"
 #include "hardware/pll.h"
 #include "hardware/structs/rosc.h"
@@ -133,7 +135,11 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_uart_init();
     #endif
     #if MICROPY_HW_ENABLE_PSRAM
-    psram_init(MICROPY_HW_PSRAM_CS_PIN);
+    // Re-tune the PSRAM QMI timing for the new system clock.
+    if (psram_is_available()) {
+        psram_configure_params(PICO_DEFAULT_PSRAM_MAX_FREQ, PICO_DEFAULT_PSRAM_MAX_SELECT, PICO_DEFAULT_PSRAM_MIN_DESELECT);
+        psram_reinitialize();
+    }
     #endif
 }
 
