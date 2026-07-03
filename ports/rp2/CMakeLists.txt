@@ -356,7 +356,7 @@ if (MICROPY_BLUETOOTH_BTSTACK)
 
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_BLUETOOTH_BTSTACK=1
-        MICROPY_BLUETOOTH_BTSTACK_CONFIG_FILE=\"btstack_inc/btstack_config.h\"
+        "MICROPY_BLUETOOTH_BTSTACK_CONFIG_FILE=\"btstack_inc/btstack_config.h\""
     )
 
     # For modbluetooth_btstack.c includes
@@ -594,7 +594,7 @@ set_source_files_properties(
 
 target_compile_definitions(${MICROPY_TARGET} PRIVATE
     ${MICROPY_DEF_BOARD}
-    FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
+    "FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\""
     LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
     LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
     PICO_FLOAT_PROPAGATE_NANS=1
