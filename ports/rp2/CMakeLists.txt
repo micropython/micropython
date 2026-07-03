@@ -569,6 +569,21 @@ if(DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
     )
 endif()
 
+# MICROPY_HW_ROMFS_BYTES optionally reserves a read-only ROMFS partition just
+# below the filesystem. Expose it to the linker (so the FLASH application region
+# excludes it and the linker errors if the firmware overlaps it) and as a
+# compile definition (so rp2_flash.c places ROMFS at the matching address).
+# CMake is the single source of truth for the size, keeping both consistent.
+if(NOT DEFINED MICROPY_HW_ROMFS_BYTES)
+    set(MICROPY_HW_ROMFS_BYTES 0)
+endif()
+target_link_options(${MICROPY_TARGET} PRIVATE
+    -Wl,--defsym=__micropy_romfs_bytes__=${MICROPY_HW_ROMFS_BYTES}
+)
+target_compile_definitions(${MICROPY_TARGET} PRIVATE
+    MICROPY_HW_ROMFS_BYTES=${MICROPY_HW_ROMFS_BYTES}
+)
+
 # Apply optimisations to performance-critical source code.
 set_source_files_properties(
     ${MICROPY_PY_DIR}/map.c

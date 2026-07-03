@@ -1,9 +1,19 @@
-/* MicroPython flash layout: the FLASH (application) region sits at the base of
-   flash, with the writable user filesystem (FLASH_FS) carved off the top. The
-   origin/length below must match the filesystem base computed in rp2_flash.c:
-     FLASH_FS base = flash_size - flash_storage_bytes */
+/* MicroPython flash layout, from the base of flash upwards:
+
+     FLASH        application binary (code + read-only data)
+     FLASH_ROMFS  optional read-only ROMFS partition (0 bytes by default)
+     FLASH_FS     writable user filesystem
+
+   The ROMFS and filesystem partitions are carved off the top of flash. By
+   subtracting them from the FLASH (application) region here, the linker will
+   error out if the firmware ever grows into either partition, rather than
+   silently overlapping them at runtime. The origins/lengths below must match
+   the partition addresses computed in rp2_flash.c:
+     FLASH_FS base    = flash_size - flash_storage_bytes
+     FLASH_ROMFS base = FLASH_FS base - romfs_bytes */
 MEMORY
 {
-    FLASH(rx)    : ORIGIN = 0x10000000, LENGTH = __micropy_flash_size__ - __micropy_flash_storage_bytes__
-    FLASH_FS(rx) : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH), LENGTH = __micropy_flash_storage_bytes__
+    FLASH(rx)       : ORIGIN = 0x10000000, LENGTH = __micropy_flash_size__ - __micropy_flash_storage_bytes__ - __micropy_romfs_bytes__
+    FLASH_ROMFS(rx) : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH), LENGTH = __micropy_romfs_bytes__
+    FLASH_FS(rx)    : ORIGIN = ORIGIN(FLASH_ROMFS) + LENGTH(FLASH_ROMFS), LENGTH = __micropy_flash_storage_bytes__
 }
