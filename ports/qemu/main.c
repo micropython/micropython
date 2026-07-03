@@ -37,10 +37,14 @@
 #error MICROPY_HEAP_SIZE must be a positive integer.
 #endif
 
+#if MICROPY_STACK_SIZE <= 0
+#error MICROPY_STACK_SIZE must be a positive integer.
+#endif
+
 static uint32_t gc_heap[MICROPY_HEAP_SIZE / sizeof(uint32_t)];
 
 int main(int argc, char **argv) {
-    mp_cstack_init_with_sp_here(10240);
+    mp_cstack_init_with_sp_here(MICROPY_STACK_SIZE);
     gc_init(gc_heap, (char *)gc_heap + MICROPY_HEAP_SIZE);
 
     for (;;) {

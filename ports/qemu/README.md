@@ -172,3 +172,5 @@ The following options can be specified on the `make` command line:
   example, `make test_natmod TEST_NATMODS="btree heapq re"`).
 - `MICROPY_HEAP_SIZE`: pass in an optional value (in bytes) for overriding the GC
   heap size used by the port.
+- `MICROPY_STACK_SIZE`: pass in an optional value (in bytes) for overriding the interpreter
+  stack size used by the port.

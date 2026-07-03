@@ -25,6 +25,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 ifeq ($(QEMU_ARCH),arm)
 MICROPY_HEAP_SIZE ?= 143360
+MICROPY_STACK_SIZE ?= 10240
 ifeq ($(BOARD),MICROBIT)
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py'))"
 else
@@ -33,10 +34,12 @@ endif
 endif
 ifeq ($(QEMU_ARCH),riscv32)
 MICROPY_HEAP_SIZE ?= 143360
+MICROPY_STACK_SIZE ?= 10240
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_asm_rv32.py', 'frozen_const.py', 'frozen_viper.py', 'native_frozen_align.py'))"
 endif
 ifeq ($(QEMU_ARCH),riscv64)
 MICROPY_HEAP_SIZE ?= 204800
+MICROPY_STACK_SIZE ?= 10240
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
 endif
 
@@ -48,7 +51,7 @@ include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/berkeley-db-1.xx
 
-CFLAGS += -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE)
+CFLAGS += -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) -DMICROPY_STACK_SIZE=$(MICROPY_STACK_SIZE)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
