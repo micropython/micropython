@@ -361,6 +361,19 @@ def map_rv32_arch_flags(flags):
     return mapped_flags
 
 
+def map_xtensa_arch_flags(flags, windowed):
+    # Right now the mere fact that the platform uses register windows
+    # indicates a minimum core version of LX6.
+    if flags & ~0x07 != 0:
+        raise Exception("Unexpected flag bits set in value {}".format(flags))
+    mapped_flags = []
+    if flags == 0:
+        mapped_flags.append("lx6" if windowed else "lx3")
+    else:
+        mapped_flags.append("lx{}".format(2 + (flags & 0x07)))
+    return mapped_flags
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
@@ -378,6 +391,8 @@ def detect_test_platform(pyb, args):
     unicode = unicode == "True"
     if arch == "rv32imc":
         arch_flags = map_rv32_arch_flags(int(arch_flags))
+    elif arch in ("xtensa", "xtensawin"):
+        arch_flags = map_xtensa_arch_flags(int(arch_flags), arch == "xtensawin")
     else:
         arch_flags = None
 
