@@ -428,7 +428,6 @@ function ci_psoc_edge_deploy_hil {
 
 # CM55 IPC echo firmware, built & published by
 # Infineon/mtb-example-psoc-edge-voice-assistant-deploy-mpy.
-# Must be flashed BEFORE ipc.py runs, because ipc.py calls enable_core(CM55).
 CM55_ECHO_FW_URL="https://github.com/Infineon/mtb-example-psoc-edge-voice-assistant-deploy-mpy/releases/latest/download/test_ipc_mpy.zip"
 
 function ci_psoc_edge_flash_cm55_echo_hil {
