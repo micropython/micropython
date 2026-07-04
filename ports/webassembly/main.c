@@ -49,6 +49,21 @@
 // the top-level call into C.
 static size_t external_call_depth = 0;
 
+#if MICROPY_ENABLE_VM_YIELD
+// Of those external calls, how many are suspend-capable entry points
+// (mp_js_do_exec / _import). Suspending to the event loop is only safe when every
+// external frame is one of these, i.e. external_call_depth equals this —
+// otherwise a synchronous proxy re-entry sits in between. Under JSPI that suspend
+// would fail outright ("trying to suspend without WebAssembly.promising"); under
+// Asyncify it could unwind through a frame the JS caller isn't awaiting.
+static size_t mp_js_suspendable_depth = 0;
+#define MP_JS_SUSPENDABLE_INC() (++mp_js_suspendable_depth)
+#define MP_JS_SUSPENDABLE_DEC() (--mp_js_suspendable_depth)
+#else
+#define MP_JS_SUSPENDABLE_INC()
+#define MP_JS_SUSPENDABLE_DEC()
+#endif
+
 // Emscripten defaults to a 64k C-stack, so our limit should be less than that.
 #define CSTACK_SIZE (32 * 1024)
 
@@ -62,12 +77,90 @@ void external_call_depth_inc(void) {
 
 void external_call_depth_dec(mp_obj_t root_obj) {
     --external_call_depth;
-    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    // The condition always reads external_call_depth (so it isn't flagged as
+    // set-but-unused in configs that don't otherwise read it); the body is only
+    // needed when the GC collects at the top level.
     if (external_call_depth == 0) {
+        #if MICROPY_GC_SPLIT_HEAP_AUTO
         gc_collect_top_level(root_obj);
+        #endif
     }
-    #endif
 }
+
+#if MICROPY_ENABLE_VM_YIELD
+
+// Cooperative yield. The MicroPython entry points are built to suspend to the JS
+// event loop mid-execution — via Asyncify, or JSPI Wasm stack switching — so we
+// can hand the event loop a turn. This keeps the page responsive during long
+// running or self-looping Python (input delivered, output flushed) without the
+// script having to cooperate. It is driven from the VM hook (see mpconfigport.h)
+// and mp_hal_delay_ms().
+//
+// Yields only happen while it is safe to suspend, i.e. inside one of the
+// suspend-capable entry points (external_call_depth > 0), and are throttled to
+// roughly one frame so compute-bound code isn't crippled.
+
+#ifndef MICROPY_VM_YIELD_INTERVAL_MS
+#define MICROPY_VM_YIELD_INTERVAL_MS (16.0)
+#endif
+
+static double mp_js_last_yield_ms = -1.0;
+
+// True only when the stack can actually be suspended: we're inside a
+// suspend-capable entry point and there is no synchronous proxy re-entry above us.
+static inline bool mp_js_can_suspend(void) {
+    return mp_js_suspendable_depth > 0 && external_call_depth == mp_js_suspendable_depth;
+}
+
+// Optional per-variant hook, invoked at a yield point while it is safe to
+// suspend (a host embedding can override it to e.g. block here while paused).
+// The default does nothing.
+MP_WEAK void mp_js_yield_hook(void) {
+}
+
+void mp_js_yield(void) {
+    #if MICROPY_VARIANT_ENABLE_JS_HOOK
+    // The cooperative yield takes over the VM hook from the plain JS_HOOK path
+    // (see mpconfigport.h), so poll the JS-side interrupt hook here to preserve
+    // mid-execution Ctrl-C (node stdin) for variants that enable it. Runs on every
+    // call, independent of whether it is safe to suspend below.
+    extern void mp_js_hook(void);
+    mp_js_hook();
+    #endif
+    if (!mp_js_can_suspend()) {
+        return;
+    }
+    double now = emscripten_get_now();
+    if (mp_js_last_yield_ms < 0.0) {
+        mp_js_last_yield_ms = now;  // prime the throttle without yielding
+        return;
+    }
+    if (now - mp_js_last_yield_ms >= MICROPY_VM_YIELD_INTERVAL_MS) {
+        mp_js_yield_hook();
+        mp_js_last_yield_ms = emscripten_get_now();
+        emscripten_sleep(0);
+    }
+}
+
+// Reset the yield throttle; call after something else has just yielded (e.g. a
+// display flip) to avoid an immediate redundant yield.
+void mp_js_yield_reset(void) {
+    mp_js_last_yield_ms = emscripten_get_now();
+}
+
+// Sleep via the event loop for the whole delay when it is safe to suspend
+// (responsive, no busy-spin); returns false if suspending isn't safe so the
+// caller can fall back to a busy wait. Used by mp_hal_delay_ms().
+bool mp_js_sleep_ms(mp_uint_t ms) {
+    if (!mp_js_can_suspend()) {
+        return false;
+    }
+    emscripten_sleep(ms);
+    mp_js_yield_reset();
+    return true;
+}
+
+#endif
 
 void mp_js_init(int pystack_size, int heap_size) {
     mp_cstack_init_with_sp_here(CSTACK_SIZE);
@@ -115,6 +208,7 @@ void mp_js_register_js_module(const char *name, uint32_t *value) {
 
 void mp_js_do_import(const char *name, uint32_t *out) {
     external_call_depth_inc();
+    MP_JS_SUSPENDABLE_INC();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t ret = mp_import_name(qstr_from_str(name), mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
@@ -140,10 +234,12 @@ void mp_js_do_import(const char *name, uint32_t *out) {
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
         external_call_depth_dec(nlr.ret_val);
     }
+    MP_JS_SUSPENDABLE_DEC();
 }
 
 void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
     external_call_depth_inc();
+    MP_JS_SUSPENDABLE_INC();
     mp_parse_input_kind_t input_kind = MP_PARSE_FILE_INPUT;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -160,6 +256,7 @@ void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
         external_call_depth_dec(nlr.ret_val);
     }
+    MP_JS_SUSPENDABLE_DEC();
 }
 
 void mp_js_do_exec_async(const char *src, size_t len, uint32_t *out) {

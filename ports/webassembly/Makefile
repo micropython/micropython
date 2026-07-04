@@ -45,7 +45,13 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(VARIANT_DIR)
 
-CFLAGS += -std=c99 -Wall -Werror -Wdouble-promotion -Wfloat-conversion
+# Overridable by variants: the experimental JSPI variant builds with
+# SUPPORT_LONGJMP=wasm (it needs a pure-Wasm call stack; see variants/jspi), and
+# CSTD stays overridable for variants that require a GNU C mode.
+CSTD ?= c99
+SUPPORT_LONGJMP ?= emscripten
+
+CFLAGS += -std=$(CSTD) -Wall -Werror -Wdouble-promotion -Wfloat-conversion
 CFLAGS += -Os -DNDEBUG
 CFLAGS += $(INC)
 
@@ -91,7 +97,7 @@ JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
 	cwrap,\
 	FS$(EXPORTED_RUNTIME_METHODS_EXTRA)"
 JSFLAGS += --js-library library.js
-JSFLAGS += -s SUPPORT_LONGJMP=emscripten
+JSFLAGS += -s SUPPORT_LONGJMP=$(SUPPORT_LONGJMP)
 JSFLAGS += -s MODULARIZE -s EXPORT_NAME=_createMicroPythonModule
 
 ################################################################################
@@ -129,7 +135,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all repl min test test//% test_min
+.PHONY: all repl min test test//% test_min test_async
 
 all: $(BUILD)/micropython.mjs
 
@@ -154,6 +160,15 @@ test//%: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
 
 test_min: $(BUILD)/micropython.min.mjs $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+
+# The async-only fixtures exercise features (cooperative yield, in-place stop,
+# bounded GC, run_sync) that only work on a suspend-capable build; they SKIP on
+# any other. Run just these, rather than the whole suite, against an asyncify or
+# jspi build. Override ASYNC_TESTS to point at a different fixture (subset).
+ASYNC_TESTS ?= ports/webassembly/async_*.mjs
+
+test_async: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly $(ASYNC_TESTS)
 
 ################################################################################
 # Remaining make rules.

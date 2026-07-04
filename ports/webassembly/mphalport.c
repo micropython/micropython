@@ -28,6 +28,11 @@
 #include "py/mphal.h"
 #include "library.h"
 
+#if MICROPY_ENABLE_VM_YIELD
+// Defined in main.c: sleeps via the event loop when it's safe to suspend.
+extern bool mp_js_sleep_ms(mp_uint_t ms);
+#endif
+
 static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     write(2, str, len);
@@ -40,6 +45,13 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
+    #if MICROPY_ENABLE_VM_YIELD
+    // On JSPI builds, sleep via the event loop for the whole delay (responsive,
+    // no busy-spin) when it's safe to suspend. Otherwise fall back to a busy wait.
+    if (mp_js_sleep_ms(ms)) {
+        return;
+    }
+    #endif
     uint32_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
     }
