@@ -1056,6 +1056,9 @@ function ci_webassembly_build {
     # Also build the asyncify variant; its tests/ports/webassembly/async_*.mjs
     # fixtures exercise the cooperative yield that the pyscript build leaves off.
     make ${MAKEOPTS} -C ports/webassembly VARIANT=asyncify
+    # asyncify-fast trims the Asyncify instrumentation to a hand-picked set;
+    # asyncify_fast.mjs checks every suspend path still unwinds.
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=asyncify-fast
 }
 
 function ci_webassembly_run_tests {
@@ -1066,6 +1069,9 @@ function ci_webassembly_run_tests {
     make -C ports/webassembly VARIANT=pyscript test_min
     # Run those fixtures against the asyncify build, where they actually execute.
     make -C ports/webassembly VARIANT=asyncify test_async
+    # asyncify_fast.mjs needs the selective-instrumentation build.
+    make -C ports/webassembly VARIANT=asyncify-fast test_async \
+        ASYNC_TESTS=ports/webassembly/asyncify_fast.mjs
 }
 
 ########################################################################################

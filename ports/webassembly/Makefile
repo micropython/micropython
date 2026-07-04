@@ -139,7 +139,9 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 all: $(BUILD)/micropython.mjs
 
-$(BUILD)/micropython.mjs: $(OBJ) library.js $(SRC_JS)
+# LINK_DEPS lets a variant add link-time inputs (e.g. asyncify-fast's
+# ASYNCIFY_ADD=@asyncify_add.txt) so editing them forces a relink.
+$(BUILD)/micropython.mjs: $(OBJ) library.js $(SRC_JS) $(LINK_DEPS)
 	$(ECHO) "LINK $@"
 	$(Q)emcc $(LDFLAGS) -o $@ $(OBJ) $(JSFLAGS)
 	$(Q)cat $(SRC_JS) >> $@
