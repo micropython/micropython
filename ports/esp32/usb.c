@@ -31,6 +31,7 @@
 #if MICROPY_HW_ENABLE_USBDEV
 
 #include "esp_mac.h"
+#include "esp_err.h"
 #include "esp_rom_gpio.h"
 #include "esp_private/usb_phy.h"
 
@@ -45,11 +46,19 @@ void usb_phy_init(void) {
     static const usb_phy_config_t phy_conf = {
         .controller = USB_PHY_CTRL_OTG,
         .otg_mode = USB_OTG_MODE_DEVICE,
+        #if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
+        .target = USB_PHY_TARGET_UTMI,
+        #else
         .target = USB_PHY_TARGET_INT,
+        #endif
+        .otg_speed = USB_PHY_SPEED_UNDEFINED,
     };
 
     // Init ESP USB Phy
-    usb_new_phy(&phy_conf, &phy_hdl);
+    esp_err_t ret = usb_new_phy(&phy_conf, &phy_hdl);
+    if (ret != ESP_OK) {
+        printf("[esp-vision] USB PHY init failed: %s\r\n", esp_err_to_name(ret));
+    }
 }
 
 #if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4

@@ -37,17 +37,32 @@
 
 #include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/timer_periph.h"
+#else
 #include "soc/timer_periph.h"
+#endif
 #include "esp_private/esp_clk_tree_common.h"
 #include "esp_private/periph_ctrl.h"
 #include "machine_timer.h"
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/timg_ll.h"
+#ifndef SOC_TIMER_GROUP_TIMERS_PER_GROUP
+#define SOC_TIMER_GROUP_TIMERS_PER_GROUP TIMG_LL_GET(GPTIMERS_PER_INST)
+#endif
+#ifndef SOC_TIMER_GROUP_TOTAL_TIMERS
+#define SOC_TIMER_GROUP_TOTAL_TIMERS (TIMG_LL_GET(INST_NUM) * TIMG_LL_GET(GPTIMERS_PER_INST))
+#endif
+#endif
 
 #define TIMER_CLK_SRC GPTIMER_CLK_SRC_DEFAULT
 #define TIMER_DIVIDER  8
 
 #define TIMER_FLAGS    0
 
-#if CONFIG_IDF_TARGET_ESP32P4
+#if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
 static uint8_t __DECLARE_RCC_ATOMIC_ENV __attribute__ ((unused));
 #endif
 const mp_obj_type_t machine_timer_type;
@@ -175,12 +190,21 @@ void machine_timer_enable(machine_timer_obj_t *self) {
     // Initialise the timer.
     timer_hal_init(&self->hal_context, self->group, self->index);
 
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    PERIPH_RCC_ACQUIRE_ATOMIC(soc_timg_gptimer_signals[self->group][0].parent_module, ref_count) {
+        if (ref_count == 0) {
+            timg_ll_enable_bus_clock(self->group, true);
+            timg_ll_reset_register(self->group);
+        }
+    }
+    #else
     PERIPH_RCC_ACQUIRE_ATOMIC(timer_group_periph_signals.groups[self->index].module, ref_count) {
         if (ref_count == 0) {
             timer_ll_enable_bus_clock(self->index, true);
             timer_ll_reset_register(self->index);
         }
     }
+    #endif
 
     timer_ll_enable_counter(self->hal_context.dev, self->index, false);
 
@@ -210,7 +234,11 @@ void machine_timer_enable(machine_timer_obj_t *self) {
         ESP_ERROR_CHECK(esp_intr_enable(self->handle));
     } else {
         ESP_ERROR_CHECK(esp_intr_alloc(
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+            soc_timg_gptimer_signals[self->group][self->index].irq_id,
+            #else
             timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
+            #endif
             TIMER_FLAGS,
             machine_timer_isr,
             self,

@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "modmachine.h"
 #include "driver/gpio.h"
+#include "esp_idf_version.h"
 
 #if SOC_TOUCH_SENSOR_SUPPORTED
 
@@ -37,7 +38,11 @@
 #include "driver/touch_sensor.h"
 #elif SOC_TOUCH_SENSOR_VERSION == 3 // At present, it can only be used on ESP32P4.
 #include "driver/touch_sens.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 1, 0)
+#include "hal/touch_sensor_channel.h"
+#else
 #include "soc/touch_sensor_channel.h"
+#endif
 #else
 #error "Unknown touch hardware version"
 #endif

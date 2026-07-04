@@ -65,7 +65,11 @@ typedef struct _machine_rtc_obj_t {
 #if MICROPY_HW_RTC_MEM_INIT_ALWAYS
 #define _USER_MEM_ATTR RTC_DATA_ATTR
 #else
+#if SOC_RTC_MEM_SUPPORTED
 #define _USER_MEM_ATTR RTC_NOINIT_ATTR
+#else
+#define _USER_MEM_ATTR DRAM_ATTR
+#endif
 #endif
 
 // Optionally compile user memory functionality if the size of memory is greater than 0
