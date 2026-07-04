@@ -18,6 +18,10 @@
 SUPPORT_LONGJMP = wasm
 CFLAGS += -s SUPPORT_LONGJMP=wasm
 
+# emscripten_scan_registers() needs Asyncify; under JSPI the GC scans the C stack
+# only (see main.c MICROPY_GC_SCAN_REGISTERS).
+CFLAGS += -DMICROPY_GC_SCAN_REGISTERS=0
+
 JSFLAGS += -s ASYNCIFY=0
 JSFLAGS += -s JSPI=1
 JSFLAGS += -s JSPI_EXPORTS=["mp_js_do_exec","mp_js_do_exec_async","mp_js_do_import"]

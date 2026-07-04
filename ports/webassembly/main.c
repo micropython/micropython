@@ -40,6 +40,7 @@
 #include "shared/runtime/pyexec.h"
 
 #include "emscripten.h"
+#include <emscripten/stack.h>  // emscripten_stack_get_current (JSPI C-stack scan)
 #include "lexer_dedent.h"
 #include "library.h"
 #include "proxy_c.h"
@@ -67,8 +68,50 @@ static size_t mp_js_suspendable_depth = 0;
 // Emscripten defaults to a 64k C-stack, so our limit should be less than that.
 #define CSTACK_SIZE (32 * 1024)
 
+// emscripten_scan_registers() spills and scans CPU registers for GC roots, but
+// it is implemented via Asyncify and is unavailable under JSPI (calling it there
+// reads out of bounds). JSPI builds set this to 0 and instead scan the C stack
+// explicitly between a tracked top-of-stack and the current SP (see below).
+#ifndef MICROPY_GC_SCAN_REGISTERS
+#define MICROPY_GC_SCAN_REGISTERS (1)
+#endif
+
+// Under JSPI the running program executes on a stack-switched stack whose bounds
+// emscripten doesn't know (emscripten_scan_stack would read out of bounds, and
+// registers can't be spilled). So we track the top of the live MicroPython C
+// stack ourselves — the address of a local at the outermost entry point — and
+// the mid-loop GC scans from there down to the current SP. This is the only
+// place GC roots held by a long-running loop can live (the value stack and
+// locals are in the alloca'd code_state on the C stack), so a conservative scan
+// of that range preserves them without needing the registers.
+#if MICROPY_GC_SPLIT_HEAP_AUTO && !MICROPY_GC_SCAN_REGISTERS
+#define MICROPY_GC_TRACK_CSTACK (1)
+#else
+#define MICROPY_GC_TRACK_CSTACK (0)
+#endif
+
+#if MICROPY_GC_TRACK_CSTACK
+static void *mp_js_cstack_top = NULL;
+// Record the top of the C stack at the outermost external (JS->wasm) entry. Used
+// as a macro so the marker's address is in the *caller's* frame (mp_js_do_exec /
+// mp_js_do_import), above every live MicroPython root.
+#define MP_JS_NOTE_CSTACK_TOP() do { \
+        volatile char _stack_marker; \
+        if (external_call_depth == 1) { mp_js_cstack_top = (void *)&_stack_marker; } \
+} while (0)
+#else
+#define MP_JS_NOTE_CSTACK_TOP()
+#endif
+
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 static void gc_collect_top_level(mp_obj_t root_obj);
+#if MICROPY_ENABLE_VM_YIELD
+// Collect now if a collection is pending, scanning the running program's C stack
+// (and, on Asyncify, registers) for roots. Defined with the rest of the GC glue
+// below; called from the VM yield hook so long-running loops that never reach the
+// top level still reclaim garbage instead of growing the heap. See mp_js_yield().
+static void gc_collect_if_pending(void);
+#endif
 #endif
 
 void external_call_depth_inc(void) {
@@ -127,6 +170,13 @@ void mp_js_yield(void) {
     extern void mp_js_hook(void);
     mp_js_hook();
     #endif
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    // Reclaim garbage mid-loop. Under split-heap-auto gc_collect() defers to the
+    // top level (where the C stack is clean); a program that loops forever never
+    // gets there, so do a real, root-scanning collection here at the VM hook — a
+    // safe point between bytecodes — whenever the heap has asked to grow.
+    gc_collect_if_pending();
+    #endif
     if (!mp_js_can_suspend()) {
         return;
     }
@@ -151,11 +201,25 @@ void mp_js_yield_reset(void) {
 // Sleep via the event loop for the whole delay when it is safe to suspend
 // (responsive, no busy-spin); returns false if suspending isn't safe so the
 // caller can fall back to a busy wait. Used by mp_hal_delay_ms().
+//
+// The delay is sliced so a scheduled exception (e.g. a KeyboardInterrupt posted
+// by the host to stop a script) breaks the sleep promptly instead of having to
+// wait out the whole duration: mp_handle_pending() raises it between slices.
+#ifndef MICROPY_VM_SLEEP_SLICE_MS
+#define MICROPY_VM_SLEEP_SLICE_MS (16)
+#endif
+
 bool mp_js_sleep_ms(mp_uint_t ms) {
     if (!mp_js_can_suspend()) {
         return false;
     }
-    emscripten_sleep(ms);
+    mp_uint_t remaining = ms;
+    while (remaining > 0) {
+        mp_uint_t step = remaining < MICROPY_VM_SLEEP_SLICE_MS ? remaining : MICROPY_VM_SLEEP_SLICE_MS;
+        emscripten_sleep(step);
+        remaining -= step;
+        mp_handle_pending(true);  // raises (does not return) if an exception is pending
+    }
     mp_js_yield_reset();
     return true;
 }
@@ -176,11 +240,23 @@ void mp_js_init(int pystack_size, int heap_size) {
     #endif
 
     #if MICROPY_GC_SPLIT_HEAP_AUTO
-    // When MICROPY_GC_SPLIT_HEAP_AUTO is enabled, set the GC threshold to a low
-    // value so that a collection is triggered before the heap fills up.  The actual
-    // garbage collection will happen later when control returns to the top-level,
-    // via the `gc_collect_pending` flag and `gc_collect_top_level()`.
+    #if MICROPY_ENABLE_VM_YIELD
+    // This build collects mid-execution from the VM hook (gc_collect_if_pending),
+    // so the allocation threshold is the memory/smoothness knob for self-looping
+    // programs: a collection is requested once this many bytes have been allocated
+    // since the last one, bounding transient garbage to roughly this much while
+    // keeping the (Asyncify-expensive) collection infrequent. ~40 MB gives a few
+    // tens of MB of working set with a smooth frame rate on heavy demos.
+    #ifndef MICROPY_GC_LOOP_ALLOC_THRESHOLD
+    #define MICROPY_GC_LOOP_ALLOC_THRESHOLD (40 * 1024 * 1024)
+    #endif
+    MP_STATE_MEM(gc_alloc_threshold) = MICROPY_GC_LOOP_ALLOC_THRESHOLD / MICROPY_BYTES_PER_GC_BLOCK;
+    #else
+    // Pure defer-to-top-level build (no mid-loop collect): keep the threshold low
+    // so a collection is requested before the heap fills, then runs at the top
+    // level via gc_collect_pending / gc_collect_top_level().
     MP_STATE_MEM(gc_alloc_threshold) = 16 * 1024 / MICROPY_BYTES_PER_GC_BLOCK;
+    #endif
     #endif
 
     mp_init();
@@ -209,6 +285,7 @@ void mp_js_register_js_module(const char *name, uint32_t *value) {
 void mp_js_do_import(const char *name, uint32_t *out) {
     external_call_depth_inc();
     MP_JS_SUSPENDABLE_INC();
+    MP_JS_NOTE_CSTACK_TOP();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t ret = mp_import_name(qstr_from_str(name), mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
@@ -240,6 +317,7 @@ void mp_js_do_import(const char *name, uint32_t *out) {
 void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
     external_call_depth_inc();
     MP_JS_SUSPENDABLE_INC();
+    MP_JS_NOTE_CSTACK_TOP();
     mp_parse_input_kind_t input_kind = MP_PARSE_FILE_INPUT;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -276,6 +354,16 @@ int mp_js_repl_process_char(int c) {
     return ret;
 }
 
+// Used by the root-scanning collectors below: the non-split-heap gc_collect() and
+// (when the mid-loop collector is compiled, i.e. an Asyncify yield build) the
+// register-scanning gc_collect_if_pending(). Other configs scan neither, so guard
+// the definition to avoid an unused-function warning.
+#if !MICROPY_GC_SPLIT_HEAP_AUTO || (MICROPY_GC_SCAN_REGISTERS && MICROPY_ENABLE_VM_YIELD)
+static void gc_scan_func(void *begin, void *end) {
+    gc_collect_root((void **)begin, (void **)end - (void **)begin + 1);
+}
+#endif
+
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 
 static bool gc_collect_pending = false;
@@ -300,16 +388,55 @@ static void gc_collect_top_level(mp_obj_t root_obj) {
     }
 }
 
-#else
-
-static void gc_scan_func(void *begin, void *end) {
-    gc_collect_root((void **)begin, (void **)end - (void **)begin + 1);
+// Collect mid-execution from the VM yield hook. Unlike gc_collect_top_level()
+// this scans the running program's C stack (and registers, on Asyncify) for
+// roots, so live locals/temporaries are preserved — making it safe to call while
+// Python code is on the stack, like the non-split-heap gc_collect() does.
+//
+// It runs whenever a collection is pending. How often that is — and therefore how
+// much transient garbage builds up, and how often the (Asyncify-expensive) scan
+// runs — is governed by gc_alloc_threshold (set in mp_js_init): a collection is
+// requested once that many bytes have been allocated since the last one. So the
+// memory/smoothness trade-off for self-looping programs is tuned there, not here.
+//
+// The mid-loop collector and its cstack helper are reachable only from
+// mp_js_yield(), so they compile only when the cooperative yield is enabled.
+#if MICROPY_ENABLE_VM_YIELD
+#if MICROPY_GC_TRACK_CSTACK
+// Conservatively scan the live C-stack range [current SP, tracked top] for roots.
+static void gc_collect_cstack(void) {
+    void *sp = (void *)emscripten_stack_get_current();
+    void *top = mp_js_cstack_top;
+    if (top != NULL && sp < top) {
+        gc_collect_root((void **)sp, ((char *)top - (char *)sp) / sizeof(void *));
+    }
 }
+#endif
+
+static void gc_collect_if_pending(void) {
+    if (!gc_collect_pending) {
+        return;
+    }
+    gc_collect_pending = false;
+    gc_collect_start();
+    #if MICROPY_GC_SCAN_REGISTERS
+    emscripten_scan_stack(gc_scan_func);
+    emscripten_scan_registers(gc_scan_func);
+    #elif MICROPY_GC_TRACK_CSTACK
+    gc_collect_cstack();
+    #endif
+    gc_collect_end();
+}
+#endif // MICROPY_ENABLE_VM_YIELD
+
+#else
 
 void gc_collect(void) {
     gc_collect_start();
     emscripten_scan_stack(gc_scan_func);
+    #if MICROPY_GC_SCAN_REGISTERS
     emscripten_scan_registers(gc_scan_func);
+    #endif
     gc_collect_end();
 }
 

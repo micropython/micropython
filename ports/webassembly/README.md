@@ -175,6 +175,12 @@ context, created and returned by `loadMicroPython()`.
 - `runPythonAsync(code)`: execute Python code and return the result, allowing for
   top-level await expressions (this call must be await'ed on the JavaScript side).
 
+- `interrupt()`: schedule a `KeyboardInterrupt` on the running VM.  On a
+  suspend-capable build (see Build variants) this is safe to call while a
+  `runPython`/`runPythonAsync` call is in flight, and unwinds it at the next
+  bytecode check; a host can use it to stop a running script without tearing down
+  the instance.
+
 - `replInit()`: initialise the REPL.
 
 - `replProcessChar(chr)`: process an incoming character at the REPL.

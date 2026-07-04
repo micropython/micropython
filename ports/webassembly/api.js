@@ -228,6 +228,14 @@ export async function loadMicroPython(options) {
             }
             return ret;
         },
+        // Schedule a KeyboardInterrupt on the running VM. Safe to call while an
+        // mp_js_do_exec* call is suspended (JSPI/Asyncify): it only sets the
+        // pending-exception flag, which the VM raises at its next bytecode check,
+        // unwinding out of the in-flight runPython. Lets a host stop a running
+        // script without tearing down the whole instance.
+        interrupt() {
+            Module.ccall("mp_sched_keyboard_interrupt", "null", [], []);
+        },
         replInit() {
             Module.ccall("mp_js_repl_init", "null", ["null"]);
         },
