@@ -18,3 +18,4 @@ MicroPython documentation and references
     zephyr/quickref.rst
     renesas-ra/quickref.rst
     samd/quickref.rst
+    uefi/quickref.rst

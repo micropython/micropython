@@ -1,0 +1,125 @@
+# This file is part of the MicroPython project, http://micropython.org/
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2026 Nicko van Someren
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# uefi.status — EFI_STATUS constants and the uefi.Error exception.
+#
+# EFI_STATUS is a UINTN whose top bit marks an error. The pythonic layer calls
+# check() on raw return values to turn the error range into a raised uefi.Error
+# (a subclass of OSError, so existing `except OSError` paths still catch it).
+
+_HIGH_BIT = 1 << 63
+
+SUCCESS = 0
+
+# Error codes (top bit set). Values per the UEFI spec, Appendix D.
+LOAD_ERROR = 0x8000000000000001
+INVALID_PARAMETER = 0x8000000000000002
+UNSUPPORTED = 0x8000000000000003
+BAD_BUFFER_SIZE = 0x8000000000000004
+BUFFER_TOO_SMALL = 0x8000000000000005
+NOT_READY = 0x8000000000000006
+DEVICE_ERROR = 0x8000000000000007
+WRITE_PROTECTED = 0x8000000000000008
+OUT_OF_RESOURCES = 0x8000000000000009
+VOLUME_CORRUPTED = 0x800000000000000A
+VOLUME_FULL = 0x800000000000000B
+NO_MEDIA = 0x800000000000000C
+MEDIA_CHANGED = 0x800000000000000D
+NOT_FOUND = 0x800000000000000E
+ACCESS_DENIED = 0x800000000000000F
+NO_RESPONSE = 0x8000000000000010
+NO_MAPPING = 0x8000000000000011
+TIMEOUT = 0x8000000000000012
+NOT_STARTED = 0x8000000000000013
+ALREADY_STARTED = 0x8000000000000014
+ABORTED = 0x8000000000000015
+ICMP_ERROR = 0x8000000000000016
+TFTP_ERROR = 0x8000000000000017
+PROTOCOL_ERROR = 0x8000000000000018
+INCOMPATIBLE_VERSION = 0x8000000000000019
+SECURITY_VIOLATION = 0x800000000000001A
+CRC_ERROR = 0x800000000000001B
+END_OF_MEDIA = 0x800000000000001C
+END_OF_FILE = 0x800000000000001F
+INVALID_LANGUAGE = 0x8000000000000020
+COMPROMISED_DATA = 0x8000000000000021
+
+_NAMES = {
+    SUCCESS: "EFI_SUCCESS",
+    LOAD_ERROR: "EFI_LOAD_ERROR",
+    INVALID_PARAMETER: "EFI_INVALID_PARAMETER",
+    UNSUPPORTED: "EFI_UNSUPPORTED",
+    BAD_BUFFER_SIZE: "EFI_BAD_BUFFER_SIZE",
+    BUFFER_TOO_SMALL: "EFI_BUFFER_TOO_SMALL",
+    NOT_READY: "EFI_NOT_READY",
+    DEVICE_ERROR: "EFI_DEVICE_ERROR",
+    WRITE_PROTECTED: "EFI_WRITE_PROTECTED",
+    OUT_OF_RESOURCES: "EFI_OUT_OF_RESOURCES",
+    VOLUME_CORRUPTED: "EFI_VOLUME_CORRUPTED",
+    VOLUME_FULL: "EFI_VOLUME_FULL",
+    NO_MEDIA: "EFI_NO_MEDIA",
+    MEDIA_CHANGED: "EFI_MEDIA_CHANGED",
+    NOT_FOUND: "EFI_NOT_FOUND",
+    ACCESS_DENIED: "EFI_ACCESS_DENIED",
+    NO_RESPONSE: "EFI_NO_RESPONSE",
+    NO_MAPPING: "EFI_NO_MAPPING",
+    TIMEOUT: "EFI_TIMEOUT",
+    NOT_STARTED: "EFI_NOT_STARTED",
+    ALREADY_STARTED: "EFI_ALREADY_STARTED",
+    ABORTED: "EFI_ABORTED",
+    ICMP_ERROR: "EFI_ICMP_ERROR",
+    TFTP_ERROR: "EFI_TFTP_ERROR",
+    PROTOCOL_ERROR: "EFI_PROTOCOL_ERROR",
+    INCOMPATIBLE_VERSION: "EFI_INCOMPATIBLE_VERSION",
+    SECURITY_VIOLATION: "EFI_SECURITY_VIOLATION",
+    CRC_ERROR: "EFI_CRC_ERROR",
+    END_OF_MEDIA: "EFI_END_OF_MEDIA",
+    END_OF_FILE: "EFI_END_OF_FILE",
+    INVALID_LANGUAGE: "EFI_INVALID_LANGUAGE",
+    COMPROMISED_DATA: "EFI_COMPROMISED_DATA",
+}
+
+
+def name(status):
+    """Human-readable EFI_STATUS name, e.g. 'EFI_NOT_FOUND'."""
+    n = _NAMES.get(status)
+    if n is not None:
+        return n
+    return "EFI_STATUS_0x%016X" % status
+
+
+class Error(OSError):
+    """Raised when a UEFI call returns a non-SUCCESS EFI_STATUS."""
+
+    def __init__(self, status):
+        self.status = status
+        self.name = name(status)
+        super().__init__(status, self.name)
+
+
+def check(status):
+    """Raise uefi.Error if status is in the error range; return status otherwise."""
+    if status & _HIGH_BIT:
+        raise Error(status)
+    return status
