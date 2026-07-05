@@ -1,9 +1,6 @@
-set(IDF_TARGET esp32s31)
+include(boards/mpconfigboard_esp32s31_common.cmake)
 
 list(APPEND SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
+    boards/sdkconfig.flash_qio_80m
     boards/sdkconfig.csi
-    boards/sdkconfig.s31
 )
-
-set(MICROPY_PY_TINYUSB ON)

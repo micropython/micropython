@@ -181,11 +181,8 @@ list(APPEND IDF_COMPONENTS
     driver
     esp_adc
     esp_driver_dac
-    esp_driver_ppa
-    esp_driver_jpeg
-    esp_driver_gpio
+    esp_driver_i2c
     esp_driver_ledc
-    esp_lcd
     esp_app_format
     esp_mm
     esp_common

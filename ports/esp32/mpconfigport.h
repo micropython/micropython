@@ -99,11 +99,7 @@
 #endif
 #endif
 #ifndef MICROPY_PY_BLUETOOTH
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-#define MICROPY_PY_BLUETOOTH                (0)
-#else
 #define MICROPY_PY_BLUETOOTH                (1)
-#endif
 #endif
 
 #if MICROPY_PY_BLUETOOTH
