@@ -130,6 +130,23 @@ typedef struct _esp_espnow_obj_t {
     size_t peer_count;              // Cache the # of peers for send(sync=True)
     mp_obj_t recv_cb;               // Callback when a packet is received
     mp_obj_t recv_cb_arg;           // Argument passed to callback
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    // Default PHY rate for ESP-NOW transmissions (wifi_phy_rate_t enum).
+    // Set via ESPNow.config(rate=<value>). Value -1 means "not configured",
+    //   and no per-peer rate will be applied to newly added peers.
+    // When >= 0, the value is applied to:
+    //   - All existing peers immediately (in config())
+    //   - Each newly added peer (in add_peer())
+    //   via esp_now_set_peer_rate_config() (IDF 6.0+ per-peer API).
+    // For IDF < 6.0, the legacy global API esp_wifi_config_espnow_rate()
+    //   is used instead and this field is not compiled in.
+    // See module-level RATE_* constants for valid values, e.g.:
+    //   RATE_LORA_250K, RATE_1M, RATE_2M, RATE_5M, RATE_6M,
+    //   RATE_11M, RATE_12M, RATE_24M, RATE_54M
+    // Note: Lower bit rates (1M/2M/5M/11M) use long preamble (_L suffix)
+    //   for more robust error correction.
+    mp_int_t default_rate;          // Default: -1 (unconfigured)          
+    #endif
     #if MICROPY_PY_ESPNOW_RSSI
     mp_obj_t peers_table;           // A dictionary of discovered peers
     #endif // MICROPY_PY_ESPNOW_RSSI
@@ -177,6 +194,9 @@ static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     self->recv_timeout_ms = DEFAULT_RECV_TIMEOUT_MS;
     self->recv_buffer = NULL;       // Buffer is allocated in espnow_init()
     self->recv_cb = mp_const_none;
+     #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    self->default_rate = -1;        
+    #endif
     #if MICROPY_PY_ESPNOW_RSSI
     self->peers_table = mp_obj_new_dict(0);
     // Prevent user code modifying the dict
@@ -282,13 +302,26 @@ static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         self->recv_timeout_ms = args[ARG_timeout_ms].u_int;
     }
     if (args[ARG_rate].u_int >= 0) {
-        wifi_mode_t mode = get_wifi_mode();
-        if (mode == WIFI_MODE_STA || mode == WIFI_MODE_APSTA) {
-            check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
-        }
-        if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) {
-            check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
-        }
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+            self->default_rate = args[ARG_rate].u_int;
+            esp_now_peer_info_t peer = {0};
+            bool from_head = true;
+            while (esp_now_fetch_peer(from_head, &peer) == ESP_OK) {
+                from_head = false;
+                esp_now_rate_config_t rate_config = {
+                    .rate = self->default_rate,
+                };
+                esp_now_set_peer_rate_config(peer.peer_addr, &rate_config);
+            }
+        #else
+            wifi_mode_t mode = get_wifi_mode();
+            if (mode == WIFI_MODE_STA || mode == WIFI_MODE_APSTA) {
+                check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
+            }
+            if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) {
+                check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
+            }
+        #endif
     }
     if (args[ARG_get].u_obj == MP_OBJ_NULL) {
         return mp_const_none;
@@ -696,6 +729,17 @@ static mp_obj_t espnow_add_peer(size_t n_args, const mp_obj_t *args, mp_map_t *k
     _update_peer_info(&peer, n_args - 2, args + 2, kw_args);
 
     check_esp_err(esp_now_add_peer(&peer));
+
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    esp_espnow_obj_t *self = _get_singleton_initialised();
+    if (self->default_rate >= 0) {
+        esp_now_rate_config_t rate_config = {
+            .rate = self->default_rate,
+        };
+        esp_now_set_peer_rate_config(peer.peer_addr, &rate_config);
+    }
+    #endif
+
     _update_peer_count();
 
     return mp_const_none;

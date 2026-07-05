@@ -45,7 +45,7 @@
 #define MICROPY_EMIT_RV32                   (0)
 #else
 #define MICROPY_EMIT_RV32                   (1)
-#if CONFIG_IDF_TARGET_ESP32P4
+#if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
 #define MICROPY_EMIT_RV32_ZCMP              (1)
 #endif
 #endif
@@ -92,11 +92,7 @@
 
 // extended modules
 #ifndef MICROPY_PY_ESPNOW
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-#define MICROPY_PY_ESPNOW                   (0)
-#else
 #define MICROPY_PY_ESPNOW                   (1)
-#endif
 #endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
@@ -127,18 +123,14 @@
 #define MICROPY_PY_MACHINE_RESET            (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
-#ifndef MICROPY_PY_MACHINE_ADC
 #define MICROPY_PY_MACHINE_ADC              (1)
-#endif
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
 #define MICROPY_PY_MACHINE_ADC_INIT         (1)
 #define MICROPY_PY_MACHINE_ADC_DEINIT       (1)
 #define MICROPY_PY_MACHINE_ADC_READ         (1)
 #define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
-#ifndef MICROPY_PY_MACHINE_ADC_BLOCK
 #define MICROPY_PY_MACHINE_ADC_BLOCK        (1)
-#endif
 #define MICROPY_PY_MACHINE_ADC_BLOCK_INCLUDEFILE "ports/esp32/machine_adc_block.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
@@ -238,9 +230,6 @@
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (esp_rom_get_cpu_ticks_per_us() * 1000000 / 200) // roughly
-#ifndef MICROPY_HW_ESP_NEW_I2C_DRIVER
-#define MICROPY_HW_ESP_NEW_I2C_DRIVER       (0)
-#endif
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
 #define MICROPY_PY_SSL                      (0)
 #define MICROPY_SSL_MBEDTLS                 (0)
