@@ -117,6 +117,8 @@ endif()
 
 list(APPEND MICROPY_SOURCE_PORT
     panichandler.c
+    adc.c
+    main.c
     ppp_set_auth.c
     uart.c
     usb.c
@@ -155,12 +157,10 @@ list(APPEND MICROPY_SOURCE_PORT
 
 if(NOT CONFIG_IDF_TARGET_ESP32S31)
     list(APPEND MICROPY_SOURCE_PORT
-        adc.c
         machine_touchpad.c)
 endif()
 
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
-list(PREPEND MICROPY_SOURCE_PORT ${MICROPY_ESP32_MAIN_SOURCE})
 list(APPEND MICROPY_SOURCE_PORT ${CMAKE_BINARY_DIR}/pins.c)
 
 list(APPEND MICROPY_SOURCE_QSTR

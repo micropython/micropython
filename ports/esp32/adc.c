@@ -85,6 +85,9 @@ static esp_err_t ensure_adc_calibration(machine_adc_block_obj_t *self, adc_atten
         .bitwidth = self->bitwidth,
     };
     ret = adc_cali_create_scheme_curve_fitting(&cali_config, &self->calib[atten]);
+    #elif CONFIG_IDF_TARGET_ESP32S31
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("ADC calibration not supported on this chip"));
+    ret = -1;
     #else
     adc_cali_line_fitting_config_t cali_config = {
         .unit_id = self->unit_id,
