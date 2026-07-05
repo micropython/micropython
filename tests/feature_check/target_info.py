@@ -40,6 +40,6 @@ except NameError:
 try:
     (lambda: 0)(0)
 except TypeError as er:
-    error_reporting = {0: "none", 27: "terse", 54: "normal", 56: "detailed"}[len(er.value)]
+    error_reporting = {0: "none", 27: "terse", 54: "normal", 56: "detailed"}[len(er.value or "")]
 
 print(platform, arch, arch_flags, build, thread, float_prec, len("α") == 1, error_reporting)

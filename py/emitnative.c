@@ -204,6 +204,7 @@ typedef enum {
     VTYPE_BUILTIN_CAST = 0x70 | MP_NATIVE_TYPE_OBJ,
 } vtype_kind_t;
 
+#if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
 static qstr vtype_to_qstr(vtype_kind_t vtype) {
     switch (vtype) {
         case VTYPE_PYOBJ:
@@ -227,6 +228,7 @@ static qstr vtype_to_qstr(vtype_kind_t vtype) {
             return MP_QSTR_None;
     }
 }
+#endif
 
 typedef struct _stack_info_t {
     vtype_kind_t vtype;

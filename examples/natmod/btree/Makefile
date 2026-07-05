@@ -16,6 +16,7 @@ BERKELEY_DB_CONFIG_FILE ?= \"extmod/berkeley-db/berkeley_db_config_port.h\"
 CFLAGS += -I$(BTREE_DIR)/include
 CFLAGS += -DBERKELEY_DB_CONFIG_FILE=$(BERKELEY_DB_CONFIG_FILE)
 CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter
+CFLAGS += -Wno-deprecated-non-prototype
 
 SRC += $(addprefix $(realpath $(BTREE_DIR))/,\
 	btree/bt_close.c \
@@ -47,6 +48,13 @@ endif
 
 # Strip the architecture name from the internal filename.
 MPY_LD_FLAGS = "--source-name=$(MOD_BASE).mpy"
+
+ifeq ($(ARCH),armv7m)
+ifeq ($(findstring clang,$(shell $(CC) --version)),clang)
+# Link with libclang_rt.builtins.a for memset/memcpy.
+LINK_RUNTIME = 1
+endif
+endif
 
 include $(MPY_DIR)/py/dynruntime.mk
 

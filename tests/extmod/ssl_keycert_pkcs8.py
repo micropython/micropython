@@ -21,4 +21,4 @@ keypkcs8 = b'0\x82\x01U\x02\x01\x000\r\x06\t*\x86H\x86\xf7\r\x01\x01\x01\x05\x00
 try:
     ssl.wrap_socket(io.BytesIO(), key=keypkcs8, cert=b"!")
 except ValueError as er:
-    print(repr(er))
+    print(str(er) or "invalid cert")

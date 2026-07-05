@@ -260,11 +260,7 @@
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #ifndef MICROPY_PY_ESP32_PCNT
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-#define MICROPY_PY_ESP32_PCNT               (0)
-#else
 #define MICROPY_PY_ESP32_PCNT               (SOC_PCNT_SUPPORTED)
-#endif
 #endif
 
 // fatfs configuration

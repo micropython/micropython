@@ -183,6 +183,7 @@ list(APPEND IDF_COMPONENTS
     esp_driver_dac
     esp_driver_i2c
     esp_driver_ledc
+    esp_driver_pcnt
     esp_app_format
     esp_mm
     esp_common
@@ -277,7 +278,7 @@ set(MICROPY_TARGET ${COMPONENT_TARGET})
 if(CONFIG_IDF_TARGET_ARCH_XTENSA)
     set(MICROPY_CROSS_FLAGS -march=xtensawin)
 elseif(CONFIG_IDF_TARGET_ARCH_RISCV)
-    if (CONFIG_IDF_TARGET_ESP32P4)
+    if (CONFIG_IDF_TARGET_ESP32P4 OR CONFIG_IDF_TARGET_ESP32S31)
         set(MICROPY_CROSS_FLAGS "-march=rv32imc -march-flags=zcmp")
     else()
         set(MICROPY_CROSS_FLAGS -march=rv32imc)

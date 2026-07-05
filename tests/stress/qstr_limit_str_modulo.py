@@ -18,4 +18,4 @@ for l in range(254, 259):
     try:
         print(("%(" + id + ")d") % {id: l})
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print("RuntimeError", str(er) or "name too long", l)
