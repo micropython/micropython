@@ -35,8 +35,8 @@ mergeInto(LibraryManager.library, {
             const mp_interrupt_char = Module.ccall(
                 "mp_hal_get_interrupt_char",
                 "number",
-                ["number"],
-                ["null"],
+                [],
+                [],
             );
             const fs = require("fs");
 
@@ -48,8 +48,8 @@ mergeInto(LibraryManager.library, {
                         Module.ccall(
                             "mp_sched_keyboard_interrupt",
                             "null",
-                            ["null"],
-                            ["null"],
+                            [],
+                            [],
                         );
                     } else {
                         process.stdout.write(String.fromCharCode(buf[0]));
