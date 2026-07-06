@@ -25,3 +25,6 @@
 |                   | P16_2         | P16_2         | SPI MISO to MISO               |
 |                   | P16_3         | P16_3         | SPI SSEL to CS out             |
 |                   | GND           | GND           | Common Ground                  |
+|                   |               |               |                                |
+| time_pulse_us     | P16_0         | P16_0         | Pulse out to pulse in          |
+|                   | GND           | GND           | Common Ground                  |

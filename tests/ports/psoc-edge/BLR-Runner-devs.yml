@@ -21,9 +21,11 @@
   features:
     - spi
     - bitstream
+    - time-pulse
 
 - name: KIT_PSE84_AI
   uid: 0C170798012D2400
   features:
     - spi
     - bitstream
+    - time-pulse

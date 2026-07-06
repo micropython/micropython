@@ -130,3 +130,12 @@
       - board: KIT_PSE84_AI
         features:
           - spi
+
+- name: time-pulse
+  type: multi
+  test:
+    script: ports/psoc-edge/board_ext_hw/multi/time_pulse_us.py
+    device:
+      - board: KIT_PSE84_AI
+        features:
+          - time-pulse
