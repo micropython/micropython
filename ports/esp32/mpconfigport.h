@@ -206,11 +206,7 @@
 #define MICROPY_PY_MACHINE_SDCARD           (1)
 #endif
 #ifndef MICROPY_PY_NETWORK_WLAN_CSI
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-#define MICROPY_PY_NETWORK_WLAN_CSI         (0)
-#else
 #define MICROPY_PY_NETWORK_WLAN_CSI         (CONFIG_ESP_WIFI_CSI_ENABLED)
-#endif
 #endif
 #if MICROPY_PY_NETWORK_WLAN_CSI
 // CSI_DEFAULT_BUFFER_SIZE is used in network_wlan_csi.c
