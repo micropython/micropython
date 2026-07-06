@@ -232,13 +232,8 @@
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (esp_rom_get_cpu_ticks_per_us() * 1000000 / 200) // roughly
 #define MICROPY_PY_SSL                      (MICROPY_PY_NETWORK)
 #define MICROPY_SSL_MBEDTLS                 (MICROPY_PY_SSL)
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-#define MICROPY_PY_WEBSOCKET                (0)
-#define MICROPY_PY_WEBREPL                  (0)
-#else
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_NETWORK)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_NETWORK)
-#endif
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
