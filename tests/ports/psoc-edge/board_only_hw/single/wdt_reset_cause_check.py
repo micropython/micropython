@@ -2,7 +2,7 @@ import psoc_edge
 
 # ---------------------------------------------------------------------------
 # Runs after wdt.py triggered a WDT reset.
-# On PSoC Edge, Cy_WDT fires via the XRES line; the WDT ISR stamps
+# On PSOC Edge, Cy_WDT fires via the XRES line; the WDT ISR stamps
 # BACKUP_BREG_SET0[0] before XRES fires so psoc_edge.system_reset_cause()
 # can distinguish a WDT reset from a physical reset-button press.
 # It reads hardware directly, bypassing the SW reset_cause variable that
