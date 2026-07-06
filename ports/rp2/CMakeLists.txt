@@ -410,6 +410,11 @@ if (MICROPY_PY_NETWORK_CYW43)
 
     list(APPEND MICROPY_SOURCE_PORT
         machine_pin_cyw43.c
+        rp2_init_cyw43.c
+    )
+
+    list(APPEND MICROPY_SOURCE_QSTR
+        ${MICROPY_PORT_DIR}/rp2_init_cyw43.c
     )
 
     target_link_libraries(${MICROPY_TARGET}
