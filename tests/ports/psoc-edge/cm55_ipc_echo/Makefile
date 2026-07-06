@@ -111,7 +111,7 @@ VPATH = $(sort $(dir $(SRC_C)) $(dir $(SRC_S)))
 # ---------------------------------------------------------------------------
 # Build rules
 # ---------------------------------------------------------------------------
-ZIP ?= zip
+PYTHON ?= python3
 
 .PHONY: all clean deploy package
 
@@ -151,10 +151,12 @@ QSPI_CFG_FILE := $(BSP_CFG)/qspi_config.cfg
 
 # Bundle hex + QSPI flashloader + qspi config so it can be flashed with
 # ports/psoc-edge/tools/mp-ifx-flash.py `from-package` (used by CI).
+# Uses python3 (always available) instead of the `zip` binary, which is not
+# guaranteed to be installed in the CI container.
 package: $(BUILD)/$(APP).zip
 $(BUILD)/$(APP).zip: $(BUILD)/$(APP).hex $(FLM_FILE) $(QSPI_CFG_FILE)
 	@echo "ZIP $@"
-	@$(ZIP) -q -j $@ $^
+	@$(PYTHON) -c "import sys, os, zipfile; z = zipfile.ZipFile(sys.argv[1], 'w', zipfile.ZIP_DEFLATED); [z.write(f, os.path.basename(f)) for f in sys.argv[2:]]; z.close()" $@ $^
 
 deploy: $(BUILD)/$(APP).hex
 	$(OPENOCD) \
