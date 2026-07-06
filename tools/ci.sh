@@ -407,7 +407,17 @@ function ci_psoc_edge_setup_hil {
 
 function ci_psoc_edge_build_hil {
     board=$1
-    docker exec mpy-ci make BOARD=${board}
+    docker exec mpy-ci make BOARD=${board} DUALCORE=0
+}
+
+function ci_psoc_edge_deploy_cm55_hil {
+    board=$1
+    devs_file=$2
+    uids=$(etdevs-query uid --filter name=${board} --devs-yml ${devs_file})
+    for uid in $uids; do
+        echo "Deploying CM55 firmware to device with UID: ${uid}"
+        docker exec mpy-ci make deploy_cm55 BOARD=${board} DEV_SERIAL_NUMBER=${uid}
+    done
 }
 
 function ci_psoc_edge_deploy_hil {
@@ -424,45 +434,6 @@ function ci_psoc_edge_deploy_hil {
     fi
     
     docker exec mpy-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board ${board} --hex-file ${hex_file} ${dev_files_arg} -q"
-}
-
-# CM55 IPC echo firmware. Built in-tree from tests/ports/psoc-edge/cm55_ipc_echo
-# (no external repo dependency) and flashed before the ipc.py board test runs.
-CM55_ECHO_DIR="tests/ports/psoc-edge/cm55_ipc_echo"
-
-function ci_psoc_edge_flash_cm55_echo_hil {
-    board=$1
-    devs_file=$2   # optional devs YAML (as used by ci_psoc_edge_deploy_hil)
-
-    # Build the CM55 echo image and bundle it (.hex + .FLM + .cfg) for flashing.
-    docker exec mpy-ci /bin/bash -c \
-        "cd /micropython-psoc-edge/${CM55_ECHO_DIR} && \
-         make clean && make package BOARD=${board}"
-
-    zip_pkg="../../${CM55_ECHO_DIR}/build/cm55_ipc_echo.zip"
-
-    # Determine which KitProg3 serial adapters to flash. 
-    if [ -z "$devs_file" ]; then
-        serials=""   # single-board / local fallback: let OpenOCD use the default adapter
-    else
-        serials=$(docker exec mpy-ci /bin/bash -c \
-            "cd /micropython-psoc-edge && python3 -c \"import sys, yaml; print('\n'.join(d['uid'] for d in yaml.safe_load(open(sys.argv[1])) if d['name'] == sys.argv[2]))\" ${devs_file} ${board}")
-    fi
-
-    # from-package flashes the .hex using QSPI_FLASHLOADER=<.FLM> and
-    # -s <dir with qspi_config.cfg> (SMIF_BANKS @ 0x60000000), then verify_image.
-    if [ -z "$serials" ]; then
-        docker exec mpy-ci /bin/bash -c \
-            "cd /micropython-psoc-edge/ports/psoc-edge && \
-             python3 tools/mp-ifx-flash.py from-package --board ${board} --zip-package ${zip_pkg}"
-    else
-        for sn in $serials; do
-            echo "Flashing CM55 echo on ${board} (adapter ${sn})"
-            docker exec mpy-ci /bin/bash -c \
-                "cd /micropython-psoc-edge/ports/psoc-edge && \
-                 python3 tools/mp-ifx-flash.py from-package --board ${board} --zip-package ${zip_pkg} -n ${sn}"
-        done
-    fi
 }
 
 function ci_psoc_edge_teardown_hil {
