@@ -145,7 +145,7 @@ typedef struct _esp_espnow_obj_t {
     //   RATE_11M, RATE_12M, RATE_24M, RATE_54M
     // Note: Lower bit rates (1M/2M/5M/11M) use long preamble (_L suffix)
     //   for more robust error correction.
-    mp_int_t default_rate;          // Default: -1 (unconfigured)          
+    mp_int_t default_rate;          // Default: -1 (unconfigured)
     #endif
     #if MICROPY_PY_ESPNOW_RSSI
     mp_obj_t peers_table;           // A dictionary of discovered peers
@@ -194,8 +194,8 @@ static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     self->recv_timeout_ms = DEFAULT_RECV_TIMEOUT_MS;
     self->recv_buffer = NULL;       // Buffer is allocated in espnow_init()
     self->recv_cb = mp_const_none;
-     #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-    self->default_rate = -1;        
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    self->default_rate = -1;
     #endif
     #if MICROPY_PY_ESPNOW_RSSI
     self->peers_table = mp_obj_new_dict(0);
@@ -303,24 +303,24 @@ static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     }
     if (args[ARG_rate].u_int >= 0) {
         #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-            self->default_rate = args[ARG_rate].u_int;
-            esp_now_peer_info_t peer = {0};
-            bool from_head = true;
-            while (esp_now_fetch_peer(from_head, &peer) == ESP_OK) {
-                from_head = false;
-                esp_now_rate_config_t rate_config = {
-                    .rate = self->default_rate,
-                };
-                esp_now_set_peer_rate_config(peer.peer_addr, &rate_config);
-            }
+        self->default_rate = args[ARG_rate].u_int;
+        esp_now_peer_info_t peer = {0};
+        bool from_head = true;
+        while (esp_now_fetch_peer(from_head, &peer) == ESP_OK) {
+            from_head = false;
+            esp_now_rate_config_t rate_config = {
+                .rate = self->default_rate,
+            };
+            esp_now_set_peer_rate_config(peer.peer_addr, &rate_config);
+        }
         #else
-            wifi_mode_t mode = get_wifi_mode();
-            if (mode == WIFI_MODE_STA || mode == WIFI_MODE_APSTA) {
-                check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
-            }
-            if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) {
-                check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
-            }
+        wifi_mode_t mode = get_wifi_mode();
+        if (mode == WIFI_MODE_STA || mode == WIFI_MODE_APSTA) {
+            check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
+        }
+        if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) {
+            check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
+        }
         #endif
     }
     if (args[ARG_get].u_obj == MP_OBJ_NULL) {

@@ -114,9 +114,9 @@ static void esp32_pcnt_init_helper(esp32_pcnt_obj_t *self, size_t n_pos_args, co
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_pos_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
     pcnt_unit_disable(self->unit);
-    
+
     // The pin/mode_pin, rising, falling, mode_low, mode_high args all apply
     // to the channel (defaults to channel zero).
     mp_uint_t channel = args[ARG_channel].u_int;
@@ -167,7 +167,7 @@ static void esp32_pcnt_init_helper(esp32_pcnt_obj_t *self, size_t n_pos_args, co
         check_esp_err(pcnt_channel_set_edge_action(self->channels[channel], rising, falling));
         check_esp_err(pcnt_channel_set_level_action(self->channels[channel], mode_high, mode_low));
     }
-    
+
     // The rest of the arguments apply to the whole unit.
 
     if (args[ARG_filter].u_obj != MP_OBJ_NULL) {

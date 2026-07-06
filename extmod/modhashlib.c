@@ -38,7 +38,13 @@
 #if MICROPY_PY_HASHLIB_SHA256
 
 #if MICROPY_SSL_MBEDTLS
-#include "mbedtls/sha256.h"
+#if MBEDTLS_VERSION_MAJOR >= 4
+// mbedtls 4.x (ESP-IDF v6+): legacy hash APIs removed, use PSA Crypto
+    #include "psa/crypto.h"
+#else
+// mbedtls 3.x and below (ESP-IDF v5 and below): standard legacy APIs
+    #include "mbedtls/sha256.h"
+#endif
 #else
 #include "lib/crypto-algorithms/sha256.h"
 #endif
@@ -52,8 +58,14 @@
 #endif
 
 #if MICROPY_SSL_MBEDTLS
-#include "mbedtls/md5.h"
-#include "mbedtls/sha1.h"
+#if MBEDTLS_VERSION_MAJOR >= 4
+// mbedtls 4.x: PSA Crypto for SHA1 and MD5
+    #include "psa/crypto.h"
+#else
+// mbedtls 3.x and below: standard legacy APIs
+    #include "mbedtls/md5.h"
+    #include "mbedtls/sha1.h"
+#endif
 #endif
 
 #endif
@@ -74,6 +86,56 @@ static void hashlib_ensure_not_final(mp_obj_hash_t *self) {
 static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_MBEDTLS
+
+#if MBEDTLS_VERSION_MAJOR >= 4
+// ===== mbedtls 4.x (ESP-IDF v6+): PSA Crypto implementation =====
+
+static mp_obj_t hashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(psa_hash_operation_t), type);
+    o->final = false;
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&o->state;
+    *op = psa_hash_operation_init();
+    psa_status_t status = psa_hash_setup(op, PSA_ALG_SHA_256);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash setup failed"));
+    }
+    if (n_args == 1) {
+        hashlib_sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
+
+static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
+    psa_status_t status = psa_hash_update(op, bufinfo.buf, bufinfo.len);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash update failed"));
+    }
+    return mp_const_none;
+}
+
+static mp_obj_t hashlib_sha256_digest(mp_obj_t self_in) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
+    self->final = true;
+    vstr_t vstr;
+    vstr_init_len(&vstr, PSA_HASH_LENGTH(PSA_ALG_SHA_256));
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
+    size_t hash_len;
+    psa_status_t status = psa_hash_finish(op, (uint8_t *)vstr.buf, vstr.len, &hash_len);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash finish failed"));
+    }
+    return mp_obj_new_bytes_from_vstr(&vstr);
+}
+
+#else
+// ===== mbedtls 3.x and below (ESP-IDF v5 and below): legacy implementation =====
 
 #if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
 #define mbedtls_sha256_starts_ret mbedtls_sha256_starts
@@ -111,6 +173,8 @@ static mp_obj_t hashlib_sha256_digest(mp_obj_t self_in) {
     mbedtls_sha256_finish_ret((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
+
+#endif // MBEDTLS_VERSION_MAJOR >= 4
 
 #else
 
@@ -203,6 +267,56 @@ static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
 
 #if MICROPY_SSL_MBEDTLS
 
+#if MBEDTLS_VERSION_MAJOR >= 4
+// ===== mbedtls 4.x (ESP-IDF v6+): PSA Crypto implementation =====
+
+static mp_obj_t hashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(psa_hash_operation_t), type);
+    o->final = false;
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&o->state;
+    *op = psa_hash_operation_init();
+    psa_status_t status = psa_hash_setup(op, PSA_ALG_SHA_1);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash setup failed"));
+    }
+    if (n_args == 1) {
+        hashlib_sha1_update(MP_OBJ_FROM_PTR(o), args[0]);
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
+
+static mp_obj_t hashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
+    psa_status_t status = psa_hash_update(op, bufinfo.buf, bufinfo.len);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash update failed"));
+    }
+    return mp_const_none;
+}
+
+static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
+    self->final = true;
+    vstr_t vstr;
+    vstr_init_len(&vstr, PSA_HASH_LENGTH(PSA_ALG_SHA_1));
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
+    size_t hash_len;
+    psa_status_t status = psa_hash_finish(op, (uint8_t *)vstr.buf, vstr.len, &hash_len);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash finish failed"));
+    }
+    return mp_obj_new_bytes_from_vstr(&vstr);
+}
+
+#else
+// ===== mbedtls 3.x and below (ESP-IDF v5 and below): legacy implementation =====
+
 #if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
 #define mbedtls_sha1_starts_ret mbedtls_sha1_starts
 #define mbedtls_sha1_update_ret mbedtls_sha1_update
@@ -240,6 +354,8 @@ static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
     mbedtls_sha1_free((mbedtls_sha1_context *)self->state);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
+#endif // MBEDTLS_VERSION_MAJOR >= 4
+
 #endif
 
 static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_sha1_update_obj, hashlib_sha1_update);
@@ -297,6 +413,56 @@ static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
 
 #if MICROPY_SSL_MBEDTLS
 
+#if MBEDTLS_VERSION_MAJOR >= 4
+// ===== mbedtls 4.x (ESP-IDF v6+): PSA Crypto implementation =====
+
+static mp_obj_t hashlib_md5_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(psa_hash_operation_t), type);
+    o->final = false;
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&o->state;
+    *op = psa_hash_operation_init();
+    psa_status_t status = psa_hash_setup(op, PSA_ALG_MD5);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash setup failed"));
+    }
+    if (n_args == 1) {
+        hashlib_md5_update(MP_OBJ_FROM_PTR(o), args[0]);
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
+
+static mp_obj_t hashlib_md5_update(mp_obj_t self_in, mp_obj_t arg) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
+    psa_status_t status = psa_hash_update(op, bufinfo.buf, bufinfo.len);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash update failed"));
+    }
+    return mp_const_none;
+}
+
+static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
+    self->final = true;
+    vstr_t vstr;
+    vstr_init_len(&vstr, PSA_HASH_LENGTH(PSA_ALG_MD5));
+    psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
+    size_t hash_len;
+    psa_status_t status = psa_hash_finish(op, (uint8_t *)vstr.buf, vstr.len, &hash_len);
+    if (status != PSA_SUCCESS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("hash finish failed"));
+    }
+    return mp_obj_new_bytes_from_vstr(&vstr);
+}
+
+#else
+// ===== mbedtls 3.x and below (ESP-IDF v5 and below): legacy implementation =====
+
 #if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
 #define mbedtls_md5_starts_ret mbedtls_md5_starts
 #define mbedtls_md5_update_ret mbedtls_md5_update
@@ -334,6 +500,8 @@ static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
     mbedtls_md5_free((mbedtls_md5_context *)self->state);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
+#endif // MBEDTLS_VERSION_MAJOR >= 4
+
 #endif // MICROPY_SSL_MBEDTLS
 
 static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_md5_update_obj, hashlib_md5_update);

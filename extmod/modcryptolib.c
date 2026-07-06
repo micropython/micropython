@@ -61,7 +61,17 @@ struct ctr_params {
 #endif
 
 #if MICROPY_SSL_MBEDTLS
-#include <mbedtls/aes.h>
+#include "mbedtls/version.h"
+#if MBEDTLS_VERSION_MAJOR >= 4
+// mbedtls 4.x (ESP-IDF v6+): symmetric crypto headers moved to private tree.
+// MBEDTLS_DECLARE_PRIVATE_IDENTIFIERS exposes legacy APIs for backward compatibility.
+    #define MBEDTLS_DECLARE_PRIVATE_IDENTIFIERS
+    #include "mbedtls/compat-3-crypto.h"
+    #include "mbedtls/private/aes.h"
+#else
+// mbedtls 3.x and below (ESP-IDF v5 and below): standard public header path
+    #include <mbedtls/aes.h>
+#endif
 
 // we can't run mbedtls AES key schedule until we know whether we're used for encrypt or decrypt.
 // therefore, we store the key & keysize and on the first call to encrypt/decrypt we override them

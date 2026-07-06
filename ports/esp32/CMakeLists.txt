@@ -69,6 +69,19 @@ idf_build_set_property(DEPENDENCIES_LOCK ${LOCKFILE_PATH})
 # Define the project.
 project(micropython)
 
+# ========== mbedtls 4.x (ESP-IDF v6+) Compatibility ==========
+# In mbedtls 4.x, symmetric crypto headers (aes.h, sha*.h) were moved to a
+# private include tree. Dynamically detect the mbedtls component path and
+# inject the private include directory via CMAKE_C_FLAGS.
+idf_component_get_property(mbedtls_dir mbedtls COMPONENT_DIR)
+set(mbedtls_builtin_inc "${mbedtls_dir}/mbedtls/tf-psa-crypto/drivers/builtin/include")
+
+# Only applies to mbedtls 4.x+ where private/aes.h exists; silently skipped on older versions
+if(EXISTS "${mbedtls_builtin_inc}/mbedtls/private/aes.h")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${mbedtls_builtin_inc}")
+    message(STATUS "mbedtls 4.x detected, added private symmetric crypto include path: ${mbedtls_builtin_inc}")
+endif()
+# ========== End Compatibility ==========
 # Check for lockfile changes and either warn or error depending on build type
 message("Checking lockfile contents...")
 execute_process(COMMAND git diff --exit-code ${LOCKFILE_PATH} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
