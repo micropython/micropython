@@ -485,6 +485,628 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &lan_locals_dict
     );
 
+// ── WLAN (WiFi station) over EFI WiFi2 ───────────────────────────────────────
+// L2 association via EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL (+ EFI_SUPPLICANT_
+// PROTOCOL for the WPA2-PSK credentials); everything above L2 (DHCP, addressing,
+// sockets, DNS, TLS) reuses the LAN path on the same NIC handle. STA only — there
+// is no UEFI SoftAP protocol, so IF_AP is unsupported. connect() is non-blocking
+// (MCU idiom): it posts the ConnectNetwork token and returns; status()/
+// isconnected() observe progress. See README.md / TODO.md.
+
+#define WLAN_IF_STA 0
+#define WLAN_IF_AP  1
+
+// Public status codes (network.WLAN.STAT_* and module-level network.STAT_*).
+#define WLAN_STAT_IDLE           0
+#define WLAN_STAT_CONNECTING     1
+#define WLAN_STAT_GOT_IP         2
+#define WLAN_STAT_NO_AP_FOUND    3
+#define WLAN_STAT_WRONG_PASSWORD 4
+#define WLAN_STAT_CONNECT_FAIL   5
+
+// Internal association state machine. connect() is fully non-blocking: it kicks off
+// the scan and returns; wlan_poll() (driven by status()/isconnected()) advances
+// SCANNING -> set credentials -> CONNECTING -> ASSOCIATED/FAILED. Each poll returns
+// immediately and the caller sleeps between them, so the CPU stays idle (letting the
+// driver's timer callbacks run) instead of spinning on a busy wait.
+enum { CONN_IDLE, CONN_SCANNING, CONN_CONNECTING, CONN_ASSOCIATED, CONN_FAILED };
+
+// How long to wait, in ms, for the scan and for the association to complete.
+#define WLAN_SCAN_TIMEOUT_MS    15000
+#define WLAN_CONNECT_TIMEOUT_MS 45000
+
+static const EFI_GUID g_wmc2 = EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL_GUID;
+static const EFI_GUID g_supplicant = EFI_SUPPLICANT_PROTOCOL_GUID;
+static const EFI_GUID g_supplicant_sb = EFI_SUPPLICANT_SERVICE_BINDING_PROTOCOL_GUID;
+
+// Single-radio pending-connect state. File-static (not GC-managed) so the tokens/
+// buffers keep stable addresses for the firmware and the completion notify (which
+// runs at TPL_CALLBACK) never touches the GC heap. See uefi_net.c.
+static struct {
+    // Scan phase.
+    net_op_t scan_op;
+    EFI_80211_GET_NETWORKS_TOKEN scan_tok;
+    EFI_80211_GET_NETWORKS_DATA scan_data;
+    // Connect phase — data.Network points into the retained scan_result, so it stays
+    // valid (and no other WiFi2 call happens) between scan completion and ConnectNetwork.
+    net_op_t op;
+    EFI_80211_CONNECT_NETWORK_TOKEN token;
+    EFI_80211_CONNECT_NETWORK_DATA data;
+    EFI_80211_GET_NETWORKS_RESULT *scan_result;   // retained; freed on teardown
+    EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL *wmc;  // cached so the poll can issue connect
+    EFI_HANDLE nic;
+    EFI_HANDLE sup_child;    // supplicant child we created (holds the PSK); freed on teardown
+    EFI_HANDLE sup_nic;      // handle the supplicant SB child was created on (may != nic)
+    uint32_t phase_start;    // mp_hal_ticks_ms() at the start of the current phase
+    uint8_t key[EFI_MAX_SSID_LEN * 2 + 1];   // credentials, applied at scan completion
+    uint8_t key_len;
+    uint8_t has_key;
+    int state;
+    int fail_stat;           // WLAN_STAT_* when state == CONN_FAILED
+    uint8_t ssid[EFI_MAX_SSID_LEN];
+    uint8_t ssid_len;
+    uint8_t quality;         // last connect/scan NetworkQuality, reported as status('rssi')
+} g_conn;
+
+// WLAN object — MUST share the {base, handle} prefix with network_lan_obj_t so the
+// shared L3 method objects (lan_active/lan_ipconfig/lan_ifconfig) work on it.
+typedef struct _network_wlan_obj_t {
+    mp_obj_base_t base;
+    EFI_HANDLE handle;
+    uint8_t is_sta;
+} network_wlan_obj_t;
+
+static const mp_obj_type_t network_wlan_type;
+
+static EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL *open_wmc2(EFI_HANDLE h) {
+    EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL *w = NULL;
+    if (EFI_ERROR(BS->HandleProtocol(h, (EFI_GUID *)&g_wmc2, (void **)&w))) {
+        return NULL;
+    }
+    return w;
+}
+
+static EFI_HANDLE net_wmc2_first(void) {
+    UINTN count = 0;
+    EFI_HANDLE *hb = NULL;
+    EFI_HANDLE h = NULL;
+    if (EFI_ERROR(BS->LocateHandleBuffer(ByProtocol, (EFI_GUID *)&g_wmc2, NULL, &count, &hb)) || hb == NULL) {
+        return NULL;
+    }
+    if (count > 0) {
+        h = hb[0];
+    }
+    BS->FreePool(hb);
+    return h;
+}
+
+// True once the interface holds a non-zero IPv4 station address (implies associated
+// + a DHCP/static lease). Same test lan_isconnected() uses, keyed on a bare handle.
+static int iface_has_ip(EFI_HANDLE h) {
+    EFI_IP4_CONFIG2_PROTOCOL *cfg = open_ip4cfg2(h);
+    if (cfg == NULL) {
+        return 0;
+    }
+    uint8_t buf[512];
+    UINTN sz = sizeof(buf);
+    if (EFI_ERROR(cfg->GetData(cfg, Ip4Config2DataTypeInterfaceInfo, &sz, buf))) {
+        return 0;
+    }
+    const UINT8 *ip = ((EFI_IP4_CONFIG2_INTERFACE_INFO *)buf)->StationAddress.Addr;
+    return ip[0] | ip[1] | ip[2] | ip[3];
+}
+
+static void wlan_destroy_sup_child(void) {
+    if (g_conn.sup_child != NULL) {
+        net_sb_destroy_child(g_conn.sup_nic, &g_supplicant_sb, g_conn.sup_child);
+        g_conn.sup_child = NULL;
+    }
+}
+
+static void wlan_free_scan(void) {
+    if (g_conn.scan_result != NULL) {
+        BS->FreePool(g_conn.scan_result);
+        g_conn.scan_result = NULL;
+    }
+}
+
+// Close any pending completion events, release the supplicant child, free the
+// retained scan result.
+static void wlan_cleanup_pending(void) {
+    if (g_conn.scan_op.event != NULL) {
+        net_op_close(&g_conn.scan_op);
+    }
+    if (g_conn.op.event != NULL) {
+        net_op_close(&g_conn.op);
+    }
+    wlan_destroy_sup_child();
+    wlan_free_scan();
+}
+
+// Run one WMC2 GetNetworks (broadcast scan-all) and return the driver-allocated
+// Result (caller frees via BS->FreePool), or NULL. Blocking, bounded by timeout_ms.
+// Used by scan(); connect() drives its own scan non-blocking via wlan_poll().
+static EFI_80211_GET_NETWORKS_RESULT *wlan_get_networks(EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL *wmc,
+    int timeout_ms) {
+    EFI_80211_GET_NETWORKS_DATA data;
+    memset(&data, 0, sizeof(data));
+    data.NumOfSSID = 0;    // broadcast probe: scan all
+    net_op_t op;
+    op.event = NULL;
+    if (EFI_ERROR(net_op_init(&op))) {
+        return NULL;
+    }
+    EFI_80211_GET_NETWORKS_TOKEN tok;
+    memset(&tok, 0, sizeof(tok));
+    tok.Event = op.event;
+    tok.Data = &data;
+    EFI_80211_GET_NETWORKS_RESULT *res = NULL;
+    EFI_STATUS st = wmc->GetNetworks(wmc, &tok);
+    if ((!EFI_ERROR(st) || st == EFI_NOT_READY) && net_op_wait(&op, timeout_ms) == 0 &&
+        !EFI_ERROR(tok.Status)) {
+        res = tok.Result;
+    }
+    net_op_close(&op);
+    return res;
+}
+
+static int wlan_set_psk(EFI_HANDLE nic, const uint8_t *ssid, size_t ssid_len,
+    const uint8_t *key, size_t key_len);
+
+// Advance the non-blocking connect state machine (from status()/isconnected()). Each
+// call is cheap and returns immediately; the caller sleeps between polls, so the CPU
+// idles and the driver's timer callbacks (which drive scan + association) get to run.
+static void wlan_poll(void) {
+    // SCANNING: once GetNetworks finishes, find our SSID, push credentials and issue
+    // ConnectNetwork — with no intervening WiFi2 call, so the descriptor pointer into
+    // the retained scan Result stays valid.
+    if (g_conn.state == CONN_SCANNING) {
+        if (g_conn.scan_op.done) {
+            g_conn.scan_result = EFI_ERROR(g_conn.scan_tok.Status) ? NULL : g_conn.scan_tok.Result;
+            net_op_close(&g_conn.scan_op);
+            EFI_80211_NETWORK *match = NULL;
+            if (g_conn.scan_result != NULL) {
+                for (UINT8 i = 0; i < g_conn.scan_result->NumOfNetworkDesc; i++) {
+                    EFI_80211_NETWORK_DESCRIPTION *d = &g_conn.scan_result->NetworkDesc[i];
+                    if (d->Network.SSId.SSIdLen == g_conn.ssid_len &&
+                        memcmp(d->Network.SSId.SSId, g_conn.ssid, g_conn.ssid_len) == 0) {
+                        match = &d->Network;
+                        g_conn.quality = d->NetworkQuality;
+                        break;
+                    }
+                }
+            }
+            if (match == NULL) {
+                g_conn.state = CONN_FAILED;
+                g_conn.fail_stat = WLAN_STAT_NO_AP_FOUND;
+                wlan_free_scan();
+                return;
+            }
+            if (g_conn.has_key) {
+                wlan_set_psk(g_conn.nic, g_conn.ssid, g_conn.ssid_len, g_conn.key, g_conn.key_len);
+            }
+            g_conn.data.Network = match;
+            g_conn.data.FailureTimeout = 30;
+            EFI_STATUS st = net_op_init(&g_conn.op);
+            if (!EFI_ERROR(st)) {
+                g_conn.token.Event = g_conn.op.event;
+                g_conn.token.Data = &g_conn.data;
+                st = g_conn.wmc->ConnectNetwork(g_conn.wmc, &g_conn.token);
+            }
+            if (EFI_ERROR(st) && st != EFI_NOT_READY) {
+                g_conn.state = CONN_FAILED;
+                g_conn.fail_stat = WLAN_STAT_CONNECT_FAIL;
+                wlan_cleanup_pending();
+                return;
+            }
+            g_conn.state = CONN_CONNECTING;
+            g_conn.phase_start = mp_hal_ticks_ms();
+        } else if (mp_hal_ticks_ms() - g_conn.phase_start > WLAN_SCAN_TIMEOUT_MS) {
+            g_conn.state = CONN_FAILED;
+            g_conn.fail_stat = WLAN_STAT_NO_AP_FOUND;
+            wlan_cleanup_pending();
+        }
+        return;
+    }
+    // CONNECTING: wait for association + the 4-way handshake to complete.
+    if (g_conn.state == CONN_CONNECTING) {
+        if (g_conn.op.done) {
+            if (!EFI_ERROR(g_conn.token.Status) && g_conn.token.ResultCode == ConnectSuccess) {
+                g_conn.state = CONN_ASSOCIATED;
+            } else {
+                g_conn.state = CONN_FAILED;
+                switch (g_conn.token.ResultCode) {
+                    case ConnectRefused:         // auth/assoc rejected — most often a bad key
+                        g_conn.fail_stat = WLAN_STAT_WRONG_PASSWORD;
+                        break;
+                    case ConnectFailureTimeout:  // no AP answered in FailureTimeout
+                        g_conn.fail_stat = WLAN_STAT_NO_AP_FOUND;
+                        break;
+                    default:
+                        g_conn.fail_stat = WLAN_STAT_CONNECT_FAIL;
+                        break;
+                }
+            }
+            net_op_close(&g_conn.op);
+        } else if (mp_hal_ticks_ms() - g_conn.phase_start > WLAN_CONNECT_TIMEOUT_MS) {
+            g_conn.state = CONN_FAILED;
+            g_conn.fail_stat = WLAN_STAT_CONNECT_FAIL;
+            wlan_cleanup_pending();
+        }
+    }
+}
+
+// Best-effort security class from a scan result's RSN suites: 0 open, 2 WPA (TKIP),
+// 3 WPA2 (CCMP). WiFi2 exposes no finer detail; default secured networks to WPA2.
+static int security_from_network(const EFI_80211_NETWORK *n) {
+    if (n->AKMSuite == NULL || n->AKMSuite->AKMSuiteCount == 0) {
+        return 0;
+    }
+    if (n->CipherSuite != NULL && n->CipherSuite->CipherSuiteCount > 0) {
+        UINT8 c = n->CipherSuite->CipherSuiteList[0].SuiteType;
+        if (c == EFI_80211_CIPHER_SUITE_CCMP) {
+            return 3;
+        }
+        if (c == 2 /* TKIP */) {
+            return 2;
+        }
+    }
+    return 3;
+}
+
+static mp_obj_t wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_int_t iface = n_args > 0 ? mp_obj_get_int(args[0]) : WLAN_IF_STA;
+    if (iface == WLAN_IF_AP) {
+        mp_raise_OSError(MP_EOPNOTSUPP);    // no UEFI SoftAP protocol
+    }
+    if (iface != WLAN_IF_STA) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid WLAN interface"));
+    }
+    EFI_HANDLE h = net_wmc2_first();
+    if (h == NULL) {
+        mp_raise_OSError(MP_ENODEV);        // no EFI WiFi2 NIC present
+    }
+    network_wlan_obj_t *o = mp_obj_malloc(network_wlan_obj_t, type);
+    o->handle = h;
+    o->is_sta = 1;
+    return MP_OBJ_FROM_PTR(o);
+}
+
+// scan() -> [(ssid, bssid, channel, RSSI, security, hidden), ...]. Blocking (rides
+// WFE, Ctrl-C-able). NOTE: WiFi2's network description carries no BSSID and no
+// channel, so bssid is b'' and channel 0; RSSI is NetworkQuality (0..100), not dBm.
+static mp_obj_t wlan_scan(mp_obj_t self_in) {
+    network_wlan_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL *wmc = open_wmc2(self->handle);
+    if (wmc == NULL) {
+        mp_raise_OSError(MP_ENODEV);
+    }
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    EFI_80211_GET_NETWORKS_RESULT *res = wlan_get_networks(wmc, 10000);
+    if (res != NULL) {
+        for (UINT8 i = 0; i < res->NumOfNetworkDesc; i++) {
+            EFI_80211_NETWORK_DESCRIPTION *d = &res->NetworkDesc[i];
+            int sslen = d->Network.SSId.SSIdLen;
+            if (sslen > EFI_MAX_SSID_LEN) {
+                sslen = EFI_MAX_SSID_LEN;
+            }
+            mp_obj_t t[6] = {
+                mp_obj_new_bytes(d->Network.SSId.SSId, sslen),
+                mp_const_empty_bytes,                          // bssid: not exposed by WiFi2
+                MP_OBJ_NEW_SMALL_INT(0),                       // channel: not exposed by WiFi2
+                MP_OBJ_NEW_SMALL_INT(d->NetworkQuality),       // RSSI proxy (link quality 0..100)
+                MP_OBJ_NEW_SMALL_INT(security_from_network(&d->Network)),
+                MP_OBJ_NEW_SMALL_INT(sslen == 0 ? 1 : 0),      // hidden
+            };
+            mp_obj_list_append(list, mp_obj_new_tuple(6, t));
+        }
+        BS->FreePool(res);
+    }
+    return list;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
+
+// Set the WPA2-PSK credentials on a supplicant. Required data formats: the SSID is a
+// full EFI_80211_SSID struct (len + 32 bytes); the PSK is a NUL-terminated ASCII
+// string whose DataSize includes the NUL. TargetSSIDName is optional (the connect
+// descriptor also carries the SSID), so its result is ignored. The driver runs the
+// 4-way handshake through the supplicant. Returns 1 if the PSK was accepted.
+static int wlan_sup_setdata(EFI_SUPPLICANT_PROTOCOL *sup, const uint8_t *ssid, size_t ssid_len,
+    const uint8_t *key, size_t key_len) {
+    EFI_80211_SSID ss;
+    memset(&ss, 0, sizeof(ss));
+    ss.SSIdLen = (uint8_t)ssid_len;
+    memcpy(ss.SSId, ssid, ssid_len);
+    sup->SetData(sup, EfiSupplicant80211TargetSSIDName, &ss, sizeof(ss));   // optional; ignore result
+    uint8_t psk[EFI_MAX_SSID_LEN * 2 + 1];   // WPA PSK is <= 63 chars + NUL
+    memcpy(psk, key, key_len);
+    psk[key_len] = 0;
+    EFI_STATUS s2 = sup->SetData(sup, EfiSupplicant80211PskPassword, psk, key_len + 1);
+    return !EFI_ERROR(s2);
+}
+
+// Locate the supplicant and set the credentials on it. Prefer the supplicant on the
+// WMC2 NIC handle — the instance the driver uses during ConnectNetwork; fall back to a
+// supplicant service binding (create a child) or a supplicant on another handle.
+// Returns 1 if credentials were set.
+static int wlan_set_psk(EFI_HANDLE nic, const uint8_t *ssid, size_t ssid_len,
+    const uint8_t *key, size_t key_len) {
+    UINTN n = 0;
+    EFI_HANDLE *hb = NULL;
+
+    // Preferred: a supplicant installed directly on the WMC2 NIC handle. A standalone
+    // supplicant service binding, if present, is a separate, unrelated instance.
+    EFI_SUPPLICANT_PROTOCOL *nsup = NULL;
+    if (!EFI_ERROR(BS->HandleProtocol(nic, (EFI_GUID *)&g_supplicant, (void **)&nsup)) && nsup != NULL) {
+        return wlan_sup_setdata(nsup, ssid, ssid_len, key, key_len);
+    }
+
+    // Strategy 1: a supplicant service binding on any handle — create a child.
+    if (!EFI_ERROR(BS->LocateHandleBuffer(ByProtocol, (EFI_GUID *)&g_supplicant_sb, NULL, &n, &hb)) && hb) {
+        for (UINTN i = 0; i < n; i++) {
+            EFI_HANDLE child = NULL;
+            if (EFI_ERROR(net_sb_create_child(hb[i], &g_supplicant_sb, &child))) {
+                continue;
+            }
+            EFI_SUPPLICANT_PROTOCOL *sup = NULL;
+            if (EFI_ERROR(BS->HandleProtocol(child, (EFI_GUID *)&g_supplicant, (void **)&sup)) || sup == NULL) {
+                net_sb_destroy_child(hb[i], &g_supplicant_sb, child);
+                continue;
+            }
+            g_conn.sup_nic = hb[i];
+            g_conn.sup_child = child;
+            BS->FreePool(hb);
+            return wlan_sup_setdata(sup, ssid, ssid_len, key, key_len);
+        }
+        BS->FreePool(hb);
+        hb = NULL;
+    }
+
+    // Strategy 2: a supplicant protocol installed directly on some handle.
+    n = 0;
+    if (!EFI_ERROR(BS->LocateHandleBuffer(ByProtocol, (EFI_GUID *)&g_supplicant, NULL, &n, &hb)) && hb) {
+        for (UINTN i = 0; i < n; i++) {
+            EFI_SUPPLICANT_PROTOCOL *sup = NULL;
+            if (EFI_ERROR(BS->HandleProtocol(hb[i], (EFI_GUID *)&g_supplicant, (void **)&sup)) || sup == NULL) {
+                continue;
+            }
+            BS->FreePool(hb);
+            return wlan_sup_setdata(sup, ssid, ssid_len, key, key_len);
+        }
+        BS->FreePool(hb);
+    }
+    return 0;
+}
+
+// connect(ssid, key=None, *, bssid=None). Non-blocking: kicks off the scan and
+// returns immediately; the scan → set-credentials → ConnectNetwork sequence is driven
+// by wlan_poll() from status()/isconnected(). An open network omits `key`.
+static mp_obj_t wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    network_wlan_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    enum { ARG_ssid, ARG_key, ARG_bssid };
+    static const mp_arg_t allowed[] = {
+        { MP_QSTR_ssid, MP_ARG_OBJ, { .u_obj = mp_const_none } },
+        { MP_QSTR_key, MP_ARG_OBJ, { .u_obj = mp_const_none } },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
+    };
+    mp_arg_val_t vals[MP_ARRAY_SIZE(allowed)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed), allowed, vals);
+
+    if (vals[ARG_ssid].u_obj == mp_const_none) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ssid required"));
+    }
+    size_t ssid_len;
+    const char *ssid = mp_obj_str_get_data(vals[ARG_ssid].u_obj, &ssid_len);
+    if (ssid_len > EFI_MAX_SSID_LEN) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ssid too long"));
+    }
+    const char *key = NULL;
+    size_t key_len = 0;
+    if (vals[ARG_key].u_obj != mp_const_none) {
+        key = mp_obj_str_get_data(vals[ARG_key].u_obj, &key_len);
+        if (key_len > 63) {
+            mp_raise_ValueError(MP_ERROR_TEXT("key too long"));
+        }
+    }
+    if (vals[ARG_bssid].u_obj != mp_const_none) {
+        // WiFi2's connect data has no BSSID field, so we can't pin a specific AP.
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("bssid not supported by EFI WiFi2"));
+    }
+
+    EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL *wmc = open_wmc2(self->handle);
+    if (wmc == NULL) {
+        mp_raise_OSError(MP_ENODEV);
+    }
+
+    wlan_cleanup_pending();          // drop any prior child/event/scan before we reset
+    memset(&g_conn, 0, sizeof(g_conn));
+    g_conn.nic = self->handle;
+    g_conn.wmc = wmc;
+    memcpy(g_conn.ssid, ssid, ssid_len);
+    g_conn.ssid_len = (uint8_t)ssid_len;
+    if (key != NULL && key_len > 0) {
+        memcpy(g_conn.key, key, key_len);
+        g_conn.key_len = (uint8_t)key_len;
+        g_conn.has_key = 1;
+    }
+
+    // Kick off the scan (full/broadcast) and return; wlan_poll() finds our SSID once it
+    // completes, sets credentials, and issues ConnectNetwork with the descriptor still
+    // inside the driver's own scan Result (no intervening WiFi2 call).
+    if (EFI_ERROR(net_op_init(&g_conn.scan_op))) {
+        g_conn.state = CONN_IDLE;
+        mp_raise_OSError(MP_EIO);
+    }
+    memset(&g_conn.scan_data, 0, sizeof(g_conn.scan_data));
+    g_conn.scan_data.NumOfSSID = 0;
+    memset(&g_conn.scan_tok, 0, sizeof(g_conn.scan_tok));
+    g_conn.scan_tok.Event = g_conn.scan_op.event;
+    g_conn.scan_tok.Data = &g_conn.scan_data;
+    EFI_STATUS st = wmc->GetNetworks(wmc, &g_conn.scan_tok);
+    if (EFI_ERROR(st) && st != EFI_NOT_READY) {
+        net_op_close(&g_conn.scan_op);
+        g_conn.state = CONN_IDLE;
+        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("WMC2 GetNetworks: 0x%x"), (unsigned)st);
+    }
+    g_conn.state = CONN_SCANNING;
+    g_conn.phase_start = mp_hal_ticks_ms();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_connect_obj, 1, wlan_connect);
+
+static mp_obj_t wlan_disconnect(mp_obj_t self_in) {
+    network_wlan_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL *wmc = open_wmc2(self->handle);
+    if (wmc == NULL) {
+        mp_raise_OSError(MP_ENODEV);
+    }
+    net_op_t op;
+    op.event = NULL;
+    if (!EFI_ERROR(net_op_init(&op))) {
+        EFI_80211_DISCONNECT_NETWORK_TOKEN tok;
+        memset(&tok, 0, sizeof(tok));
+        tok.Event = op.event;
+        EFI_STATUS st = wmc->DisconnectNetwork(wmc, &tok);
+        if (!EFI_ERROR(st) || st == EFI_NOT_READY) {
+            net_op_wait(&op, 5000);
+        }
+        net_op_close(&op);
+    }
+    wlan_cleanup_pending();
+    g_conn.state = CONN_IDLE;
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_disconnect_obj, wlan_disconnect);
+
+static mp_obj_t wlan_isconnected(mp_obj_t self_in) {
+    network_wlan_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    wlan_poll();
+    return mp_obj_new_bool(iface_has_ip(self->handle));
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(wlan_isconnected_obj, wlan_isconnected);
+
+// status() -> STAT_*; status('rssi') -> link quality (0..100, not dBm — WiFi2 gives
+// no dBm RSSI).
+static mp_obj_t wlan_status(size_t n_args, const mp_obj_t *args) {
+    network_wlan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    wlan_poll();
+    if (n_args > 1) {
+        const char *p = mp_obj_str_get_str(args[1]);
+        if (strcmp(p, "rssi") == 0) {
+            return MP_OBJ_NEW_SMALL_INT(g_conn.quality);
+        }
+        mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
+    }
+    if (iface_has_ip(self->handle)) {
+        return MP_OBJ_NEW_SMALL_INT(WLAN_STAT_GOT_IP);
+    }
+    switch (g_conn.state) {
+        case CONN_SCANNING:
+        case CONN_CONNECTING:
+        case CONN_ASSOCIATED:   // associated, still waiting on a DHCP lease
+            return MP_OBJ_NEW_SMALL_INT(WLAN_STAT_CONNECTING);
+        case CONN_FAILED:
+            return MP_OBJ_NEW_SMALL_INT(g_conn.fail_stat);
+        default:
+            return MP_OBJ_NEW_SMALL_INT(WLAN_STAT_IDLE);
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_status_obj, 1, 2, wlan_status);
+
+// active([up]) — for WiFi, bind the IP stack (ConnectController) so Ip4Config2/DHCP
+// exist, but DO NOT touch the SNP (no Start/Initialize): the WiFi2 driver owns the
+// radio, and initializing the SNP underneath it breaks association. Query returns
+// whether the L3 stack is bound.
+static mp_obj_t wlan_active(size_t n_args, const mp_obj_t *args) {
+    network_wlan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args > 1) {
+        if (mp_obj_is_true(args[1])) {
+            BS->ConnectController(self->handle, NULL, NULL, 1 /* recursive */);
+        } else {
+            BS->DisconnectController(self->handle, NULL, NULL);
+        }
+    }
+    return mp_obj_new_bool(open_ip4cfg2(self->handle) != NULL);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_active_obj, 1, 2, wlan_active);
+
+// config('mac'|'ssid'|'channel'|'hostname') query; config(hostname=...) set.
+static mp_obj_t wlan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    network_wlan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (kwargs->used == 0) {
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+        const char *p = mp_obj_str_get_str(args[1]);
+        if (strcmp(p, "mac") == 0) {
+            EFI_SIMPLE_NETWORK_PROTOCOL *snp = open_snp(self->handle);
+            if (snp == NULL || snp->Mode == NULL) {
+                mp_raise_OSError(MP_ENODEV);
+            }
+            return mp_obj_new_bytes(snp->Mode->CurrentAddress.Addr, 6);
+        }
+        if (strcmp(p, "ssid") == 0) {
+            return mp_obj_new_bytes(g_conn.ssid, g_conn.ssid_len);
+        }
+        if (strcmp(p, "channel") == 0) {
+            return MP_OBJ_NEW_SMALL_INT(0);   // not exposed by WiFi2
+        }
+        if (strcmp(p, "hostname") == 0) {
+            return mp_obj_new_str(net_hostname, strlen(net_hostname));
+        }
+        mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+    for (size_t i = 0; i < kwargs->alloc; i++) {
+        if (!mp_map_slot_is_filled(kwargs, i)) {
+            continue;
+        }
+        const char *k = mp_obj_str_get_str(kwargs->table[i].key);
+        if (strcmp(k, "hostname") == 0) {
+            size_t len;
+            const char *v = mp_obj_str_get_data(kwargs->table[i].value, &len);
+            if (len >= sizeof(net_hostname)) {
+                mp_raise_ValueError(MP_ERROR_TEXT("hostname too long"));
+            }
+            memcpy(net_hostname, v, len);
+            net_hostname[len] = 0;
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(wlan_config_obj, 1, wlan_config);
+
+static const mp_rom_map_elem_t wlan_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&wlan_active_obj) },         // binds stack, not SNP
+    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&wlan_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&wlan_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&wlan_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&wlan_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wlan_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&wlan_config_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&lan_ipconfig_obj) },      // shared L3
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&lan_ifconfig_obj) },      // shared L3
+    { MP_ROM_QSTR(MP_QSTR_IF_STA), MP_ROM_INT(WLAN_IF_STA) },
+    { MP_ROM_QSTR(MP_QSTR_IF_AP), MP_ROM_INT(WLAN_IF_AP) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(WLAN_STAT_IDLE) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(WLAN_STAT_CONNECTING) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(WLAN_STAT_GOT_IP) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(WLAN_STAT_NO_AP_FOUND) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(WLAN_STAT_WRONG_PASSWORD) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(WLAN_STAT_CONNECT_FAIL) },
+};
+static MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
+
+static MP_DEFINE_CONST_OBJ_TYPE(
+    network_wlan_type,
+    MP_QSTR_WLAN,
+    MP_TYPE_FLAG_NONE,
+    make_new, wlan_make_new,
+    locals_dict, &wlan_locals_dict
+    );
+
 // ── Module-level functions ───────────────────────────────────────────────────
 static mp_obj_t network_interfaces(void) {
     UINTN n = net_nic_count();
@@ -695,6 +1317,14 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(network_ipconfig_obj, 0, network_ipconfig);
 static const mp_rom_map_elem_t network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&network_wlan_type) },
+    // Connection-status codes (the network docs describe these as module constants).
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(WLAN_STAT_IDLE) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(WLAN_STAT_CONNECTING) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(WLAN_STAT_GOT_IP) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(WLAN_STAT_NO_AP_FOUND) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(WLAN_STAT_WRONG_PASSWORD) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(WLAN_STAT_CONNECT_FAIL) },
     { MP_ROM_QSTR(MP_QSTR_interfaces), MP_ROM_PTR(&network_interfaces_obj) },
     { MP_ROM_QSTR(MP_QSTR_hostname), MP_ROM_PTR(&network_hostname_obj) },
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&network_country_obj) },

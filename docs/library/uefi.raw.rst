@@ -285,9 +285,8 @@ Graphics
 
 .. note::
 
-    The ``raw`` surface grows as the port does.  Most programs never touch it
-    directly -- the higher-level :mod:`uefi` wrappers (and the standard
-    :mod:`time`, :mod:`machine` and :mod:`os` modules) cover the common cases --
-    but every primitive above is available when a wrapper does not yet exist.
-    A few Boot Services helpers used only inside the port's C code (``Stall``, TPL
-    control) are surfaced through :mod:`time` and :mod:`machine` rather than here.
+    Most programs never touch ``raw`` directly -- the higher-level :mod:`uefi`
+    wrappers (and the standard :mod:`time`, :mod:`machine` and :mod:`os` modules)
+    cover the common cases -- but every primitive above is available for cases a
+    wrapper does not cover.  A few Boot Services helpers (``Stall``, TPL control)
+    are surfaced through :mod:`time` and :mod:`machine` rather than here.

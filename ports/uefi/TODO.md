@@ -27,18 +27,15 @@ Unblock (any of these enables the whole family for the arch it covers):
   allocation for the loaded code (UEFI pages are typically RWX pre-`ExitBootServices`, but firmware
   that sets NX would need pages marked executable).
 
-## network.WLAN (WiFi)
+## network.WLAN (WiFi) — WPA3 / enterprise
 
-- **Why deferred:** hardware-gated. Association can only be validated on real WiFi hardware; QEMU
-  has no 802.11. The scan/credential marshalling is unit-testable under QEMU, but `connect()` needs
-  a test machine.
-- **Unblock:** implement `network.WLAN` gated on the WiFi protocol's presence; validate `scan()` +
-  WPA2 `connect()` + DHCP + a socket exchange on real hardware.
+Station-mode WPA2-PSK is implemented. Not yet supported: WPA3-SAE and enterprise/EAP
+(`EFI_EAP_CONFIGURATION_PROTOCOL`) authentication, and AP/SoftAP mode (UEFI exposes no protocol
+for it).
 
-## TLS — extended live tests
+## TLS — extended tests
 
-Both TLS backends ship and are covered by a hermetic suite plus live client tests (echo, verify,
-hostname-reject). Not yet wired: a server-side test, mutual TLS (client cert), an
+Wired but not yet covered: a server-side test, mutual TLS (client cert), an
 `asyncio.open_connection(ssl=)` / `start_server(ssl=)` round-trip, and a real-internet smoke test.
 An mbedTLS config size-trim (prune unused suites/curves) is also outstanding.
 

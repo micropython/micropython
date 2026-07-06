@@ -202,15 +202,20 @@ firmware/%.fd:
 test: stage $(FW_DEP)
 	$(Q)python3 tests/harness.py --arch $(ARCH) --mode selftest
 
-# TLS parity gate: run the selftest under each TLS backend in turn (clean between,
-# since they share the per-arch build dir). Run for ARCH=aa64 and x64.
+# TLS parity gate: run the selftest under each TLS backend in turn. The selftest build
+# dir is shared per-arch and its generated qstrs differ per backend, so it must be
+# removed between backends (a plain `clean` targets the non-selftest dir). Run for
+# ARCH=aa64 and x64.
 TLS_BACKENDS ?= mbedtls efi
 test-tls: $(FW_DEP)
 	@for b in $(TLS_BACKENDS); do \
 	  echo "===== TLS=$$b ARCH=$(ARCH) ====="; \
-	  $(MAKE) --no-print-directory clean TLS=$$b >/dev/null 2>&1; \
+	  rm -rf build-$(ARCH)-selftest; \
 	  $(MAKE) --no-print-directory test TLS=$$b ARCH=$(ARCH) || exit 1; \
 	done
+	@# Remove the last backend's selftest build so a later default-TLS `make test`
+	@# rebuilds cleanly rather than reusing this dir (backends can't share it).
+	$(Q)rm -rf build-$(ARCH)-selftest
 	@echo "test-tls: all backends [$(TLS_BACKENDS)] passed on $(ARCH)"
 
 # Like `test`, but on the network firmware (firmware/net, built by

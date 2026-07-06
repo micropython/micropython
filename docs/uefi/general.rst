@@ -31,13 +31,12 @@ The consequences of the UEFI execution model shape the whole port:
 * **Single-threaded and cooperative.**  As with most MicroPython ports, there is no
   preemptive scheduler. Concurrency is however available through :mod:`asyncio`,
   which idles the CPU in the firmware's ``WaitForEvent`` primitive instead of spinning.
-  There is no (currently) :mod:`_thread`.
+  There is no :mod:`_thread`.
 * **Event notifies behave like interrupts.**  When the firmware signals an
   event, its notify function can preempt running Python at a raised task-priority
   level (TPL).  The port therefore treats notifies like hardware ISRs: the C
   notify does the minimum and *schedules* Python callbacks to run later at a safe
-  point (they never run inside the notify).  See the timing/async design for
-  details.
+  point (they never run inside the notify).
 * **You are a guest holding the boot timeout.**  The application disables the
   platform watchdog at start-up (although you can restart it if you wish).
   A clean exit returns control to whatever launched the application (for example
@@ -65,84 +64,71 @@ double-precision floats out of the box and never initialises the FPU itself.
 
 The HAL and module code are architecture-agnostic; only the exception-unwinding
 assembly, the GC register scan, and the build flags differ between the two
-targets. The current build setup does not support 32 bit builds, since they are
-very rare on modern machines, but there is no reason why they should not work.
+targets.
 
 
 
 Building and running
 --------------------
 
-The image is built with a standalone Clang + ``lld-link`` toolchain that emits a
-PE32+ UEFI application, and its Python libraries are frozen in via the manifest,
-so the resulting ``micropython.efi`` is self-contained.
+The port builds to a single self-contained ``micropython.efi`` -- a PE32+ UEFI
+application with the Python standard library and the :mod:`uefi` package frozen
+in, so it has no external run-time dependencies.  It can be run under QEMU with
+OVMF (x86-64) or AAVMF (aarch64) firmware, or copied to any FAT volume and
+launched from the UEFI shell or firmware boot manager on real hardware.
 
-Development and testing is driven from ``ports/uefi/`` with a single ``Makefile``
-that is both the build and the task runner, and everything runs in a reproducible
-container:
+See :ref:`uefi_intro` in the tutorial for a step-by-step walkthrough of building
+and running the image.
 
-* ``make build`` -- build ``mpy-cross``, the ``.efi`` image, and stage a QEMU ESP.
-* ``make test`` -- boot a headless self-test build under QEMU and return non-zero
-  on failure (the authoritative pass/fail signal).
-* ``make run`` -- launch the interactive serial REPL under QEMU.
-* ``make run-gfx`` -- launch with a graphics display window (host only).
+Capabilities
+------------
 
-``ARCH=aa64`` (the default, and the fast native target on Apple-Silicon dev
-machines) selects aarch64; ``ARCH=x64`` selects x86-64.  See
-:ref:`uefi_intro` in the tutorial for a step-by-step walkthrough, and the
-``MicroPython-UEFI-DevEnv.md`` document in the port directory for the full
-toolchain and automation reference.
+The port provides:
 
-Capability tiers
-----------------
+* **The full MicroPython language**, with double-precision floats, exceptions and
+  the garbage collector, over an **interactive REPL** on the UEFI text console or
+  serial.
+* **A filesystem.**  The volume the application is launched from is auto-mounted
+  at ``/`` (a VFS over ``EFI_SIMPLE_FILE_SYSTEM``), giving ``import``/``open`` and
+  the :mod:`os` functions; other volumes can be mounted with :mod:`uefi.fs`.
+* **:mod:`machine`** -- ``mem*`` memory/MMIO access, ``reset``, ``freq``,
+  ``unique_id``, ``idle``, sleep, ``WDT`` and ``Timer``.
+* **:mod:`time`** (monotonic ticks and the firmware wall clock), :mod:`asyncio`,
+  :mod:`select`, and a pollable ``sys.stdin``.
+* **The :mod:`uefi` module** -- the protocol/handle database, PCI I/O, NVRAM
+  variables, events and timers, device paths, image loading and the boot manager,
+  the text console, and the GOP display as a :mod:`framebuf` ``FrameBuffer``.
+* **Networking** through the standard :mod:`socket`, :mod:`network` and :mod:`ssl`
+  modules over the firmware's EFI network stack: TCP/UDP (client and server), DNS,
+  ICMP ping, wired (:class:`network.LAN`) and WiFi station-mode
+  (:class:`network.WLAN`) interfaces, and TLS (vendored mbedtls by default, or the
+  firmware's ``EFI_TLS_PROTOCOL`` when built with ``TLS=efi``).
+* **:mod:`os.urandom` / :mod:`random`** seeded from the firmware RNG.
+* **A broad set of standard-library modules** -- :mod:`re`, :mod:`json`,
+  :mod:`deflate`, :mod:`binascii`, :mod:`hashlib`, :mod:`framebuf`, :mod:`struct`,
+  :mod:`collections`, :mod:`uctypes` and more.
 
-The port is organised into capability tiers, each building on the previous one:
+Run ``help('modules')`` at the REPL to list what a given build includes.
 
-* **Tier 0 -- interactive REPL.**  Console/serial I/O, timing, the garbage
-  collector, exception handling and frozen modules.  Full language, no
-  filesystem.
-* **Tier 1 -- scripting environment.**  A filesystem (VFS over
-  ``EFI_SIMPLE_FILE_SYSTEM``) for ``import``/``open`` off the ESP, wall-clock
-  :mod:`time`, ``machine`` basics, and :mod:`asyncio` wired onto ``WaitForEvent``.
-  This is the sweet spot: a scriptable firmware environment for validation,
-  manufacturing-line automation, bring-up tooling and register poking.
-* **Tier 2 -- hardware / firmware introspection.**  The :mod:`uefi` module:
-  the protocol/handle database, PCI I/O, NVRAM variables, events and timers,
-  device paths, graphics output, the text console, image loading and the boot
-  manager.  A live, programmable replacement for ad-hoc UEFI-shell scripts.
-* **Tier 3 -- networking.**  The standard :mod:`socket`, :mod:`network` and
-  :mod:`ssl` modules over the firmware's native EFI network stack, with
-  :mod:`asyncio` integration and TLS via ``EFI_TLS_PROTOCOL``.
+Limitations
+-----------
 
-What is and isn't available
----------------------------
-
-Available: the full language with double-precision floats; :mod:`machine`
-(``mem*``, ``reset``, ``freq``, ``unique_id``, ``idle``, sleep, ``WDT``,
-``Timer``); a filesystem with ``import``/``open``/:mod:`os`; :mod:`time`
-(monotonic ticks and wall clock); :mod:`asyncio`, :mod:`select` and pollable
-``sys.stdin``; :mod:`os.urandom`/:mod:`random` seeded from the firmware RNG; a
-broad set of pure standard-library modules (:mod:`re`, :mod:`json`,
-:mod:`deflate`, :mod:`binascii`, :mod:`hashlib`, :mod:`framebuf`, ...); and the
-port-specific :mod:`uefi` module.
-
-Networking is available through the standard :mod:`socket`, :mod:`network` and
-:mod:`ssl` modules (TCP/UDP, client and server, DNS, ICMP ping, and TLS over the
-firmware's ``EFI_TLS_PROTOCOL``).
-
-Not available: :mod:`_thread` (no threading model in boot services).
+* **No :mod:`_thread`.**  The firmware environment is single-threaded and
+  cooperative; use :mod:`asyncio` for concurrency.
+* **WiFi is station-only and IPv4.**  :class:`network.WLAN` is a client of an
+  existing access point; there is no access-point / SoftAP mode (the firmware
+  exposes no such protocol).
+* **64-bit only.**  x86-64 and aarch64 are supported; there is no 32-bit build.
+* **No native or compiled-code emitters.**  ``@micropython.native`` /
+  ``@micropython.viper``, native ``.mpy`` modules and inline assembly are
+  unavailable; frozen and ``.mpy`` bytecode is the portable speed path.
 
 Cautions specific to this environment
 -------------------------------------
 
-* **No memory protection.**  A wild pointer via ``machine.mem*`` or a misused
-  :mod:`uefi` protocol call can hang or corrupt the platform.  There is no OS to
-  catch you.
 * **NVRAM is not scratch storage.**  ``SetVariable`` (see :mod:`uefi.variable`)
   writes SPI flash and some firmware rate-limits or is damaged by abuse -- fine
   for a few config keys, wrong for a general datastore.
-* **The text console is quirky.**  Prefer the serial REPL; the UEFI text console
-  can mangle control characters and cursor handling on some firmware.
 * **Secure Boot / Variable Policy.**  Some operations (image loading, variable
   writes) may be refused by platform security policy; the :mod:`uefi` module
   surfaces the firmware status rather than hiding it.

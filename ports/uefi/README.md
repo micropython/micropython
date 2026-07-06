@@ -15,8 +15,8 @@ work see `TODO.md`.
   exercised via TCG emulation / CI and is the real-hardware target.
 - **Toolchain:** standalone `clang` cross-targeting PE32+, linked by `lld-link` into an EFI
   application. No EDK2 `.inf`; the optional `edk2` submodule is used for headers/firmware only.
-- **Validated under** QEMU + OVMF (x64) / AAVMF (aarch64). Deployment target: System76 Lemur
-  Pro (coreboot + EDK2/UefiPayloadPkg).
+- **Runs under** QEMU + OVMF (x64) / AAVMF (aarch64). Deployment target: coreboot +
+  EDK2/UefiPayloadPkg firmware.
 - **Double-precision float** via the bundled `lib/libm_dbl`.
 
 ### The x86-64 ABI landmine
@@ -34,7 +34,7 @@ access), flip a flag and nudge an idle loop (`mp_uefi_wake`); the interpreter sl
 `WaitForEvent` (`mp_uefi_wfe`) and drains scheduled work via `mp_handle_pending`. This gives
 `asyncio`, non-blocking I/O, `machine.Timer` callbacks, and Ctrl-C that breaks into running code.
 
-## What's implemented (all green on aa64 + x64)
+## What's implemented
 
 - **Core + REPL** — the interpreter, GC, NLR; an interactive REPL over the UEFI console
   (`ConIn`/`ConOut`) and serial, with history/editing.
@@ -45,38 +45,35 @@ access), flip a flag and nudge an idle loop (`mp_uefi_wake`); the interpreter sl
   a `framebuf` (`uefi.Display`), and an `EFI_LOAD_FILE2` file-provider (`uefi.load_file`, enough
   to build a boot loader).
 - **Networking** — `network` + `socket` over the native EFI transports (TCP4/UDP4/IP4 + DNS4/
-  DHCP/IP4Config2), with `asyncio` integration (client + server, async `accept`). Samples cover
-  HTTPS fetch, a network boot loader, and a disk boot loader.
+  DHCP/IP4Config2), with `asyncio` integration (client + server, async `accept`). `network.WLAN`
+  drives WiFi (station mode, WPA2-PSK) over EFI WiFi2 — `scan()`, non-blocking `connect()`,
+  `disconnect()`, `status()` — reusing the same L3 (DHCP/sockets/TLS) path as the wired `LAN`.
+  Samples cover HTTPS fetch, WiFi association, a network boot loader, and a disk boot loader.
 - **TLS / `ssl`** — two backends chosen at **compile time** (`TLS=mbedtls|efi|none`, default
   `mbedtls`), presenting the same `tls`/`ssl` API:
   - `TLS=mbedtls` — vendored `lib/mbedtls`, freestanding.
   - `TLS=efi` — drives the firmware `EFI_TLS_PROTOCOL` (TlsDxe/OpenSSL), ~187 KB smaller since it
     ships no crypto. Needs the network firmware; `wrap_socket` raises `OSError(ENODEV)` without it.
-  - Full handshake + verify parity is proven live (client echo / verify-OK / hostname-reject)
-    against a host TLS peer, plus a hermetic suite, under both backends on both arches.
+  - Both backends do a full TLS handshake with certificate and hostname verification.
 - **Compiled bytecode** — frozen `.mpy`, runtime `import` of external `.mpy` off the VFS, and the
   `marshal` module (`compile → dumps → loads → exec`). All arch-neutral.
 - **stdlib** — `re`, `json`, `struct`, `binascii`, `hashlib`, `heapq`, `cmath`, `random`,
   `framebuf`, `deflate`, `platform`, `asyncio`, `time`, `select`, etc.
 
-## What's left
+## Limitations
 
-Nothing structural — no missing core capability and no known correctness gap on either arch. The
-remaining items are validation, process, and self-contained features. See `TODO.md` for detail.
+- **Native machine code is unavailable.** `@micropython.native`, `@micropython.viper`,
+  native-code `.mpy` (natmod) and inline assembly are disabled: MicroPython has no aarch64 code
+  emitter, and its x64 emitter assumes the System-V ABI while this core is `-mabi=ms`. Frozen
+  `.mpy` / `marshal` bytecode is the portable speed path.
+- **WiFi is station-only and IPv4.** `network.WLAN` has no AP/SoftAP mode (UEFI exposes no such
+  protocol); scan results carry no BSSID or channel, and RSSI is reported as a 0–100 link quality
+  rather than dBm. Association can take 10–20 s; poll `status()` until it leaves `STAT_CONNECTING`.
+- **Secure Boot and aarch64-on-metal are untested.** The port runs under QEMU + OVMF/AAVMF on
+  both architectures and on x86-64 platform firmware; running on aarch64 hardware and booting as a
+  signed image under Secure Boot are not yet exercised.
 
-- **Real-hardware validation** — everything is QEMU-validated; the Lemur Pro (and Secure Boot on
-  metal) is the outstanding validation step.
-- **Upstreaming** — a clean PR against current `micropython/master`, wiring into upstream CI, and
-  running the full upstream `tests/` corpus on-device (the port runs a curated selftest today).
-- **`network.WLAN` (WiFi)** — hardware-gated; QEMU has no 802.11, so `connect()` needs a rig.
-- **Native machine code** — `@micropython.native` / `@micropython.viper`, native-code `.mpy`
-  (natmod), and inline assembly are **deliberately off**: MicroPython has no aarch64 emitter, and
-  its x64 emitter is System-V-ABI vs our `-mabi=ms` core (the landmine). Bytecode is the portable
-  speed story. Unblock paths are in `TODO.md`.
-- **Smaller deferrals** — extended TLS live tests (server / mutual-TLS / asyncio-`ssl` /
-  real-internet) and an mbedTLS config size-trim; DHCP hostname option 12; a couple of variable-
-  policy modes; volume-label and EFI-compression helpers; installing protocols backed by a *live*
-  Python callback (only data-backed providers are done); library API docs (`docs/library/uefi*`).
+Deferred features and finer gaps are tracked in `TODO.md`.
 
 ## Build & test
 

@@ -17,12 +17,10 @@ boot from, it runs a MicroPython REPL.
 Building
 --------
 
-All development happens in the ``ports/uefi/`` directory, driven by a single
-``Makefile`` inside a reproducible container.  The two architectures are selected
-with ``ARCH``:
+The port is built with a single ``Makefile`` in the ``ports/uefi/`` directory.
+The two architectures are selected with ``ARCH``:
 
-* ``ARCH=aa64`` (default) -- aarch64, which runs natively under QEMU on
-  Apple-Silicon machines and is the fast inner-loop target.
+* ``ARCH=aa64`` (default) -- aarch64 (AAPCS64).
 * ``ARCH=x64`` -- x86-64 (the Microsoft x64 ABI target).
 
 To build the image and stage a QEMU EFI System Partition::
@@ -50,11 +48,7 @@ serial console.  Try::
 The REPL is on the serial line rather than the graphical console, because serial
 is byte-clean and handles control characters (Ctrl-C, arrow keys, paste mode)
 reliably.  To bring up a real graphics window (for experimenting with the
-``framebuf``/GOP framebuffer), use ``make run-gfx`` on the host.
-
-The self-test build (``make test``) is a separate, headless, hermetic variant
-used as the automated pass/fail signal; the default image is the interactive
-REPL.
+``framebuf``/GOP framebuffer), use ``make run-gfx``.
 
 Running on real hardware
 ------------------------
