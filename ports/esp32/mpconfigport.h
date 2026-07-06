@@ -157,11 +157,7 @@
 #define MICROPY_PY_MACHINE_DAC              (SOC_DAC_SUPPORTED)
 #endif
 #ifndef MICROPY_PY_MACHINE_I2S
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-#define MICROPY_PY_MACHINE_I2S              (0)
-#else
 #define MICROPY_PY_MACHINE_I2S              (SOC_I2S_SUPPORTED)
-#endif
 #endif
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/esp32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_FINALISER    (1)
