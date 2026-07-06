@@ -52,7 +52,7 @@
 #endif
 
 extern mp_obj_fun_builtin_var_t config_adc_udp_stream_obj;
-extern mp_obj_fun_builtin_fixed_t start_adc_udp_stream_obj;
+extern mp_obj_fun_builtin_var_t start_adc_udp_stream_obj;
 extern mp_obj_fun_builtin_fixed_t stop_adc_udp_stream_obj;
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
