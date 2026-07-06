@@ -3,8 +3,7 @@
 #
 # Builds the CM55 ping-pong echo image (main.c) required by the board test
 # tests/ports/psoc-edge/board_only_hw/single/ipc.py and flashes it to the
-# m55_nvm region (0x60580000). Uses ONLY sources already present in this
-# repository (no ModusToolbox getlibs, no downloads).
+# m55_nvm region (0x60580000).
 #
 # Usage (from this directory):
 #     make                # build build/cm55_ipc_echo.hex

@@ -76,7 +76,7 @@ jobs:
           cp mpy-psoc-edge_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/${{ env.mpy_hex_file }} tools/psoc-edge
           source tools/ci.sh && ci_psoc_edge_deploy_hil ${{ matrix.board }} ${{ env.mpy_hex_file }} tests/ports/psoc-edge/${{ runner.name }}-devs.yml
       - name: Flash CM55 IPC echo firmware
-        run: source tools/ci.sh && ci_psoc_edge_flash_cm55_echo_hil ${{ matrix.board }}
+        run: source tools/ci.sh && ci_psoc_edge_flash_cm55_echo_hil ${{ matrix.board }} tests/ports/psoc-edge/${{ runner.name }}-devs.yml
       - name: Decrypt Wi-Fi secrets
         if: ${{ hashFiles('tests/ports/psoc-edge/mp_custom/secrets.py.gpg') != '' && env.LARGE_SECRET_PASSPHRASE != '' }}
         run: sh tools/psoc-edge/decrypt_secrets.sh

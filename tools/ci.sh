@@ -432,26 +432,37 @@ CM55_ECHO_DIR="tests/ports/psoc-edge/cm55_ipc_echo"
 
 function ci_psoc_edge_flash_cm55_echo_hil {
     board=$1
-    serial=$2   # optional KitProg3 serial for multi-board setups
+    devs_file=$2   # optional devs YAML (as used by ci_psoc_edge_deploy_hil)
 
     # Build the CM55 echo image and bundle it (.hex + .FLM + .cfg) for flashing.
     docker exec mpy-ci /bin/bash -c \
         "cd /micropython-psoc-edge/${CM55_ECHO_DIR} && \
          make clean && make package BOARD=${board}"
 
-    if [ -z "$serial" ]; then
-        serial_arg=""
+    zip_pkg="../../${CM55_ECHO_DIR}/build/cm55_ipc_echo.zip"
+
+    # Determine which KitProg3 serial adapters to flash. 
+    if [ -z "$devs_file" ]; then
+        serials=""   # single-board / local fallback: let OpenOCD use the default adapter
     else
-        serial_arg="-n ${serial}"
+        serials=$(docker exec mpy-ci /bin/bash -c \
+            "cd /micropython-psoc-edge && python3 -c \"import sys, yaml; print('\n'.join(d['uid'] for d in yaml.safe_load(open(sys.argv[1])) if d['name'] == sys.argv[2]))\" ${devs_file} ${board}")
     fi
 
     # from-package flashes the .hex using QSPI_FLASHLOADER=<.FLM> and
     # -s <dir with qspi_config.cfg> (SMIF_BANKS @ 0x60000000), then verify_image.
-    docker exec mpy-ci /bin/bash -c \
-        "cd /micropython-psoc-edge/ports/psoc-edge && \
-         python3 tools/mp-ifx-flash.py from-package \
-           --board ${board} \
-           --zip-package ../../${CM55_ECHO_DIR}/build/cm55_ipc_echo.zip ${serial_arg}"
+    if [ -z "$serials" ]; then
+        docker exec mpy-ci /bin/bash -c \
+            "cd /micropython-psoc-edge/ports/psoc-edge && \
+             python3 tools/mp-ifx-flash.py from-package --board ${board} --zip-package ${zip_pkg}"
+    else
+        for sn in $serials; do
+            echo "Flashing CM55 echo on ${board} (adapter ${sn})"
+            docker exec mpy-ci /bin/bash -c \
+                "cd /micropython-psoc-edge/ports/psoc-edge && \
+                 python3 tools/mp-ifx-flash.py from-package --board ${board} --zip-package ${zip_pkg} -n ${sn}"
+        done
+    fi
 }
 
 function ci_psoc_edge_teardown_hil {
