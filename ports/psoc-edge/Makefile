@@ -678,6 +678,22 @@ deploy_ns: $(BUILD)/firmware.shifted.hex
 
 .PHONY: build_ns shift_ns deploy_ns
 
+## Dual core targets
+DUALCORE ?= 1
+CM55_APP ?= ipc_echo
+CM55_APP_HEX ?= $(BUILD)/dualcore/apps/${CM55_APP}/${CM55_APP}.hex
+build_cm55: $(CM55_APP_HEX)
+
+$(CM55_APP_HEX):
+	$(Q)$(MAKE) -C dualcore/apps/$(CM55_APP) BOARD=$(BOARD) BUILD=$(abspath $(BUILD)/dualcore/apps/$(CM55_APP))
+
+deploy_cm55: $(CM55_APP_HEX)
+	$(call flash_target,$<)
+
+clean_cm55:
+	$(Q)$(MAKE) -C dualcore/apps/$(CM55_APP) BOARD=$(BOARD) BUILD=$(abspath $(BUILD)/dualcore/apps/$(CM55_APP)) clean
+
+
 ## Openocd reusable flashing target
 
 # Deploy on an specific serial device if passed
@@ -767,14 +783,25 @@ $(BUILD)/firmware.unshifted.hex: $(BUILD)/firmware.unshifted.elf
 	$(ECHO) "Create $@"
 	@$(Q)$(OBJCOPY) -O ihex $^ $@
 
+
+# Include optional CM55 dual core app.
+CONFIG_SIGN_MERGE_JSON = config/sign_shift_merge.json
+CM55_HEX ?=
+ifeq ($(DUALCORE),1)
+CONFIG_SIGN_MERGE_JSON = config/sign_shift_merge_dual.json
+CM55_HEX = $(CM55_APP_HEX)
+EDGEPT_CM55_SET = --set cm55_hex $(CM55_HEX)
+endif
+
 sign_merge: $(BUILD)/firmware.hex
-$(BUILD)/firmware.hex: $(BUILD)/secboot/secboot.hex $(BUILD)/firmware.unshifted.hex 
+$(BUILD)/firmware.hex: $(BUILD)/secboot/secboot.hex $(BUILD)/firmware.unshifted.hex ${CM55_HEX} 
 	@echo "Signing and combining hex files..."
-	@$(EDGEPROTECTTOOLS) run-config -i config/sign_shift_merge.json \
+	@$(EDGEPROTECTTOOLS) run-config -i $(CONFIG_SIGN_MERGE_JSON) \
 	--set s_hex $(word 1,$^) \
 	--set s_signed_hex $(BUILD)/secboot/secboot.signed.hex \
 	--set ns_hex $(word 2,$^) \
 	--set ns_shifted_hex $(BUILD)/firmware.shifted.hex \
+	$(EDGEPT_CM55_SET) \
 	--set signed_merged_hex $@ \
 	--symbol-search $(BOARD_DIR)/bsp-cfg
 
@@ -812,7 +839,10 @@ help:
 	$(info sign_s                   Sign the secure boot firmware)
 	$(info shift_ns                 Reallocate the non secure firmware )		
 	$(info sign_merge               Sign the secure boot firmware, reallocate the non)
-	$(info ..                       secure firmware, and merge them into a single file) 
+	$(info ..                       secure firmware, and merge them into a single file)
+	$(info build_cm55               Build the CM55 dual core application)
+	$(info deploy_cm55              Deploy the CM55 dual core application)
+	$(info clean_cm55               Remove the CM55 dual core application build directory)
 	$(info )
 	$(info Test and CI support targets:)
 	$(info )
