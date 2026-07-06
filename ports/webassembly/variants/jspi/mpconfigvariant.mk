@@ -31,3 +31,6 @@ JSFLAGS += -s ALLOW_MEMORY_GROWTH
 
 # Tell api.js to use the JSPI (direct promising call) invocation path.
 SRC_JS += async_jspi.js
+
+# jsffi.run_sync(): block on a JS awaitable by suspending the stack (modjsffi.c).
+CFLAGS += -DMICROPY_PY_JS_RUN_SYNC=1

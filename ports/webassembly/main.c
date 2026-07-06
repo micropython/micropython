@@ -151,7 +151,8 @@ static double mp_js_last_yield_ms = -1.0;
 
 // True only when the stack can actually be suspended: we're inside a
 // suspend-capable entry point and there is no synchronous proxy re-entry above us.
-static inline bool mp_js_can_suspend(void) {
+// Non-static so jsffi.run_sync() (modjsffi.c) can gate on it before suspending.
+bool mp_js_can_suspend(void) {
     return mp_js_suspendable_depth > 0 && external_call_depth == mp_js_suspendable_depth;
 }
 

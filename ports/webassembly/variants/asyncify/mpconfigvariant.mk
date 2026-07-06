@@ -11,3 +11,6 @@ JSFLAGS += -s ALLOW_MEMORY_GROWTH
 # Drive the entry points via ccall({async: true}) (see api.js invoke());
 # async_asyncify.js announces the backend to api.js.
 SRC_JS += async_asyncify.js
+
+# jsffi.run_sync(): block on a JS awaitable by suspending the stack (modjsffi.c).
+CFLAGS += -DMICROPY_PY_JS_RUN_SYNC=1

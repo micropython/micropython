@@ -88,6 +88,13 @@
 #define MICROPY_ENABLE_VM_YIELD (0)
 #endif
 
+// jsffi.run_sync(): synchronously block on a JS awaitable by suspending the
+// stack (see modjsffi.c). Enabled by suspend-capable variants; needs the VM
+// yield (for mp_js_can_suspend) and MICROPY_PY_JSFFI.
+#ifndef MICROPY_PY_JS_RUN_SYNC
+#define MICROPY_PY_JS_RUN_SYNC (0)
+#endif
+
 #if MICROPY_ENABLE_VM_YIELD
 #define MICROPY_VM_HOOK_COUNT (30)
 #define MICROPY_VM_HOOK_INIT static uint16_t vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
