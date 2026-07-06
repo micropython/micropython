@@ -169,7 +169,7 @@ tables directly from the port's start-up globals, exposing them via
 
 All Boot Services calls become invalid after ``ExitBootServices``;
 :func:`uefi.raw.boot_services_active` gates them (the port is a
-pre-``ExitBootServices`` application, so it is currently always true).
+pre-``ExitBootServices`` application, so it is always true).
 
 Example
 -------

@@ -416,6 +416,154 @@ struct _EFI_TCP4_PROTOCOL {
     EFI_STATUS(EFIAPI * Poll)(EFI_TCP4_PROTOCOL * This);
 };
 
+/* ---- EFI WiFi2: EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL (802.11 station MLME) ----
+ * Scan / associate / disconnect. Async, token/event based like the transports above.
+ * The WPA credentials live in the companion EFI_SUPPLICANT_PROTOCOL (below); this
+ * protocol drives the RSNA 4-way handshake through that supplicant internally. */
+#define EFI_MAX_SSID_LEN 32
+
+typedef enum {
+    IeeeInfrastructureBSS,
+    IeeeIndependentBSS,
+    IeeeMeshBSS,
+    IeeeAnyBss
+} EFI_80211_BSS_TYPE;
+
+typedef enum {
+    ConnectSuccess,
+    ConnectRefused,                  /* auth/assoc rejected — typically a bad key */
+    ConnectFailed,
+    ConnectFailureTimeout,
+    ConnectFailedReasonUnspecified
+} EFI_80211_CONNECT_NETWORK_RESULT_CODE;
+
+typedef struct { UINT8 Addr[6];
+} EFI_80211_MAC_ADDRESS;
+
+typedef struct {
+    UINT8 SSIdLen;
+    UINT8 SSId[EFI_MAX_SSID_LEN];
+} EFI_80211_SSID;
+
+/* One AKM or cipher selector: IEEE 802.11 OUI (00-0F-AC for RSN) + a type byte. */
+typedef struct {
+    UINT8 Oui[3];
+    UINT8 SuiteType;
+} EFI_80211_SUITE_SELECTOR;
+
+typedef struct {
+    UINT16 AKMSuiteCount;
+    EFI_80211_SUITE_SELECTOR AKMSuiteList[1];
+} EFI_80211_AKM_SUITE_SELECTOR;
+
+typedef struct {
+    UINT16 CipherSuiteCount;
+    EFI_80211_SUITE_SELECTOR CipherSuiteList[1];
+} EFI_80211_CIPHER_SUITE_SELECTOR;
+
+typedef struct {
+    EFI_80211_BSS_TYPE BSSType;
+    EFI_80211_SSID SSId;
+    EFI_80211_AKM_SUITE_SELECTOR *AKMSuite;      /* NULL for an open network */
+    EFI_80211_CIPHER_SUITE_SELECTOR *CipherSuite;
+} EFI_80211_NETWORK;
+
+typedef struct {
+    EFI_80211_NETWORK Network;
+    UINT8 NetworkQuality;            /* 0..100 (no dBm RSSI is exposed by WiFi2) */
+} EFI_80211_NETWORK_DESCRIPTION;
+
+typedef struct {
+    UINT32 NumOfSSID;                /* 0 = broadcast probe (scan all) */
+    EFI_80211_SSID SSIDList[1];
+} EFI_80211_GET_NETWORKS_DATA;
+
+typedef struct {
+    UINT8 NumOfNetworkDesc;
+    EFI_80211_NETWORK_DESCRIPTION NetworkDesc[1];
+} EFI_80211_GET_NETWORKS_RESULT;
+
+typedef struct {
+    EFI_EVENT Event;
+    EFI_STATUS Status;
+    EFI_80211_GET_NETWORKS_DATA *Data;
+    EFI_80211_GET_NETWORKS_RESULT *Result;       /* driver-allocated; caller frees */
+} EFI_80211_GET_NETWORKS_TOKEN;
+
+typedef struct {
+    EFI_80211_NETWORK *Network;
+    UINT32 FailureTimeout;           /* seconds before ConnectFailureTimeout */
+} EFI_80211_CONNECT_NETWORK_DATA;
+
+typedef struct {
+    EFI_EVENT Event;
+    EFI_STATUS Status;
+    EFI_80211_CONNECT_NETWORK_DATA *Data;
+    EFI_80211_CONNECT_NETWORK_RESULT_CODE ResultCode;
+} EFI_80211_CONNECT_NETWORK_TOKEN;
+
+typedef struct {
+    EFI_EVENT Event;
+    EFI_STATUS Status;
+} EFI_80211_DISCONNECT_NETWORK_TOKEN;
+
+typedef struct _EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL;
+struct _EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL {
+    EFI_STATUS(EFIAPI * GetNetworks)(EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL * This,
+        EFI_80211_GET_NETWORKS_TOKEN *Token);
+    EFI_STATUS(EFIAPI * ConnectNetwork)(EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL * This,
+        EFI_80211_CONNECT_NETWORK_TOKEN *Token);
+    EFI_STATUS(EFIAPI * DisconnectNetwork)(EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL * This,
+        EFI_80211_DISCONNECT_NETWORK_TOKEN *Token);
+};
+
+/* RSN (802.11i) suite constants — OUI 00-0F-AC. AKM 2 = PSK; cipher 4 = CCMP (AES). */
+#define EFI_80211_SUITE_OUI_0 0x00
+#define EFI_80211_SUITE_OUI_1 0x0F
+#define EFI_80211_SUITE_OUI_2 0xAC
+#define EFI_80211_AKM_SUITE_PSK    2
+#define EFI_80211_CIPHER_SUITE_CCMP 4
+
+/* ---- EFI_SUPPLICANT_PROTOCOL (holds WPA credentials; service-binding) ---- */
+typedef enum {
+    EfiSupplicant80211AKMSuite,
+    EfiSupplicant80211GroupDataCipherSuite,
+    EfiSupplicant80211PairwiseCipherSuite,
+    EfiSupplicant80211PskPassword,
+    EfiSupplicant80211TargetSSIDName,
+    EfiSupplicant80211StationMac,
+    EfiSupplicant80211TargetSSIDMac,
+    EfiSupplicant80211PTK,
+    EfiSupplicant80211GTK,
+    EfiSupplicantState,
+    EfiSupplicant80211LinkState,
+    EfiSupplicantKeyRefresh,
+    EfiSupplicant80211SupportedAKMSuites,
+    EfiSupplicant80211SupportedSoftwareCipherSuites,
+    EfiSupplicant80211SupportedHardwareCipherSuites,
+    EfiSupplicant80211IGTK,
+    EfiSupplicant80211PMK,
+    EfiSupplicantDataTypeMaximum
+} EFI_SUPPLICANT_DATA_TYPE;
+
+/* EFI_80211_LINK_STATE (queried via GetData(EfiSupplicant80211LinkState)). */
+typedef enum {
+    Ieee80211UnauthenticatedUnassociated,
+    Ieee80211AuthenticatedUnassociated,
+    Ieee80211PendingRSNAuthentication,
+    Ieee80211AuthenticatedAssociated
+} EFI_80211_LINK_STATE;
+
+typedef struct _EFI_SUPPLICANT_PROTOCOL EFI_SUPPLICANT_PROTOCOL;
+struct _EFI_SUPPLICANT_PROTOCOL {
+    void *BuildResponsePacket;
+    void *ProcessPacket;
+    EFI_STATUS(EFIAPI * SetData)(EFI_SUPPLICANT_PROTOCOL * This, EFI_SUPPLICANT_DATA_TYPE DataType,
+        void *Data, UINTN DataSize);
+    EFI_STATUS(EFIAPI * GetData)(EFI_SUPPLICANT_PROTOCOL * This, EFI_SUPPLICANT_DATA_TYPE DataType,
+        UINT8 *Data, UINTN *DataSize);
+};
+
 /* ---- Well-known GUIDs (mirror of uefi.guid, for the C side) ---- */
 #define EFI_SIMPLE_NETWORK_PROTOCOL_GUID \
     { 0xa19832b9, 0xac25, 0x11d3, { 0x9a, 0x2d, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d } }
@@ -439,6 +587,12 @@ struct _EFI_TCP4_PROTOCOL {
     { 0x41d94cd2, 0x35b6, 0x455a, { 0x82, 0x58, 0xd4, 0xe5, 0x13, 0x34, 0xaa, 0xdd } }
 #define EFI_IP4_SERVICE_BINDING_PROTOCOL_GUID \
     { 0xc51711e7, 0xb4bf, 0x404a, { 0xbf, 0xb8, 0x0a, 0x04, 0x8e, 0xf1, 0xff, 0xe4 } }
+#define EFI_WIRELESS_MAC_CONNECTION_II_PROTOCOL_GUID \
+    { 0x1b0fb9bf, 0x699d, 0x4fdd, { 0xa7, 0xc3, 0x25, 0x46, 0x68, 0x1b, 0xf6, 0x3b } }
+#define EFI_SUPPLICANT_PROTOCOL_GUID \
+    { 0x54fcc43e, 0xaa89, 0x4333, { 0x9a, 0x85, 0xcd, 0xea, 0x24, 0x05, 0x1e, 0x9e } }
+#define EFI_SUPPLICANT_SERVICE_BINDING_PROTOCOL_GUID \
+    { 0x45bcd98e, 0x59ad, 0x4174, { 0x95, 0x46, 0x34, 0x4a, 0x07, 0x48, 0x58, 0x98 } }
 
 /* ── Shared C helpers (uefi_net.c): async completion tokens + service binding ── */
 /* A posted UEFI async op: an EVT_NOTIFY_SIGNAL event whose notify sets `done` and

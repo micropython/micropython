@@ -803,6 +803,24 @@ static const char *selftest_src =
     "    except OSError:\n"
     "        pass\n"
     "    print('network ok (no NIC present)')\n"
+    // WLAN (WiFi) module surface: constants + graceful absence. With no 802.11 device
+    // present WLAN(IF_STA) raises ENODEV; where a WiFi2 NIC exists it constructs and the
+    // scan/connect methods are available. IF_AP is always unsupported (no UEFI SoftAP).
+    "assert hasattr(network, 'WLAN')\n"
+    "assert network.WLAN.IF_STA == 0 and network.WLAN.IF_AP == 1\n"
+    "assert network.STAT_GOT_IP == network.WLAN.STAT_GOT_IP\n"
+    "try:\n"
+    "    network.WLAN(network.WLAN.IF_AP)\n"
+    "    raise AssertionError('WLAN IF_AP should be unsupported')\n"
+    "except OSError:\n"
+    "    pass\n"
+    "try:\n"
+    "    _w = network.WLAN(network.WLAN.IF_STA)\n"
+    "    assert _w.scan is not None\n"                 // methods bound; scan() needs a radio
+    "    _wlan_radio = True\n"
+    "except OSError:\n"
+    "    _wlan_radio = False\n"
+    "print('network wlan ok (radio present:', _wlan_radio, ')')\n"
     // socket module: getaddrinfo. Numeric passthrough is hermetic (no NIC
     // needed); DNS resolution runs only when an interface is up (--net firmware),
     // over EFI_DNS4 using the DHCP-provided resolver (SLIRP's 10.0.2.3).

@@ -85,7 +85,7 @@ The type atoms describe field and argument types:
 
 ``U8 U16 U32 U64 I8 I16 I32 I64`` (integers), ``Bool``, ``VPtr`` (``void*``),
 ``WStr`` (``CHAR16*``, marshalled to/from UTF-16LE), ``Str`` (``CHAR8*``),
-``Ptr(target)`` (a typed pointer; currently an alias for ``VPtr``), and
+``Ptr(target)`` (a typed pointer; an alias for ``VPtr``), and
 ``Status`` (a ``UINTN`` return, checked by default).
 
 Pre-baked descriptors

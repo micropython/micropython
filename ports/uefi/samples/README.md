@@ -25,6 +25,7 @@ the REPL, so you can keep poking at them afterwards.)
 | `net_https.py` | Fetch https://www.google.com/ over TLS via asyncio          | networking   |
 | `net_server.py`| A tiny HTTP server on :8080 (reachable from the host)       | networking   |
 | `net_boot.py`  | Network boot loader: HTTPS-download a kernel+initramfs, boot | networking   |
+| `wifi_connect.py`| Scan, join a WPA2 network, get a DHCP lease over EFI WiFi2 | WiFi hardware |
 | `boot_disk.py` | Boot a kernel+initramfs read from the boot volume (no network)| boot images  |
 
 `draw.py` and `clock.py` need a display, so launch with `make run-gfx` (not `make run`).
@@ -34,6 +35,10 @@ virtio-net NIC on QEMU user-net (which reaches the outside world) and select the
 network firmware — build it once with `bash docker/build-ovmf-net.sh`. After
 `net_server.py` is serving, open <http://localhost:8080/> on your host (the run
 targets forward host tcp/8080 to the guest).
+
+`wifi_connect.py` needs real WiFi hardware with UEFI WiFi2 drivers (QEMU has no
+802.11), so it only runs on metal — edit `SSID`/`KEY` and run it over the serial
+REPL.
 
 ## Running a script directly (like `python foo.py`)
 

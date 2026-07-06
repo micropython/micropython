@@ -165,7 +165,9 @@ Networking
 
 Networking runs over the firmware's native EFI network stack (no vendored TCP/IP),
 using the standard MicroPython :mod:`network`, :mod:`socket` and :mod:`ssl`
-modules.
+modules.  Both a **wired** interface (:class:`network.LAN`) and **WiFi**
+(:class:`network.WLAN`, station mode) are supported, and both share the same L3
+path (DHCP, sockets, DNS, TLS).
 
 Bring an interface up and configure IPv4 (DHCP or static) with :mod:`network`.
 The wired interface is :class:`network.LAN` over ``EFI_SIMPLE_NETWORK_PROTOCOL``
@@ -180,6 +182,46 @@ and ``EFI_IP4_CONFIG2_PROTOCOL``::
 
 ``network.ping(ip)`` sends an ICMP echo (numeric IPv4), and ``network.ipconfig(
 dns='8.8.8.8')`` overrides the resolver used by ``socket.getaddrinfo``.
+
+WiFi
+~~~~
+
+:class:`network.WLAN` drives WiFi in **station mode** (WPA2-PSK) over the firmware's
+``EFI_WIRELESS_MAC_CONNECTION_II`` (WiFi2) and supplicant protocols.  It reuses the
+same DHCP/socket/TLS path as :class:`~network.LAN`::
+
+    import network, time
+
+    wlan = network.WLAN(network.WLAN.IF_STA)
+    wlan.active(True)                       # bind the IP stack (does not touch the radio)
+
+    for ssid, bssid, chan, rssi, security, hidden in wlan.scan():
+        print(ssid, 'quality', rssi, 'sec', security)
+
+    wlan.connect('your-ssid', 'your-password')   # non-blocking; open network omits the key
+    wlan.ipconfig(dhcp4=True)
+    while wlan.status() == network.STAT_CONNECTING:
+        time.sleep_ms(250)                  # association can take 10-20 s
+    if wlan.isconnected():
+        print(wlan.ipconfig('addr4'))       # sockets/ssl now work as on the wired LAN
+
+``connect()`` is non-blocking -- it starts the scan/association and returns; poll
+``status()`` until it leaves ``STAT_CONNECTING``.  The status codes are
+``STAT_IDLE``, ``STAT_CONNECTING``, ``STAT_GOT_IP``, ``STAT_NO_AP_FOUND``,
+``STAT_WRONG_PASSWORD`` and ``STAT_CONNECT_FAIL`` (available both on the
+:class:`~network.WLAN` class and as :mod:`network` module constants).  ``scan()``
+returns ``(ssid, bssid, channel, rssi, security, hidden)`` tuples, and
+``config('mac'|'ssid'|'channel'|'hostname')`` / ``config(hostname=...)`` query and
+set interface parameters.
+
+.. note::
+
+    WiFi is **station-only and IPv4**: there is no AP/SoftAP mode (UEFI exposes no
+    such protocol), and because EFI WiFi2 carries no BSSID or channel in a scan
+    result, ``bssid`` is ``b''``, ``channel`` is ``0``, and ``rssi`` /
+    ``status('rssi')`` is a 0--100 link-quality figure rather than dBm.  Pinning a
+    specific AP by ``bssid`` is not supported.  There is no 802.11 in QEMU, so WiFi
+    only runs on real hardware with UEFI WiFi2 drivers.
 
 :mod:`socket` provides TCP and UDP over ``EFI_TCP4``/``EFI_UDP4``, with name
 resolution via ``EFI_DNS4``.  Both **client and server** sockets are supported
@@ -202,10 +244,15 @@ resolution via ``EFI_DNS4``.  Both **client and server** sockets are supported
     conn, peer = srv.accept()
 
 TLS is available through :mod:`ssl` / ``tls`` (``ssl.wrap_socket`` and
-``ssl.SSLContext``), driven by the firmware's ``EFI_TLS_PROTOCOL`` rather than a
-vendored library, so it adds little to the image size.  Both client and server
-endpoints (``PROTOCOL_TLS_CLIENT`` / ``PROTOCOL_TLS_SERVER``) and certificate
-verification (``CERT_NONE``/``OPTIONAL``/``REQUIRED``) are supported::
+``ssl.SSLContext``).  The backend is chosen at **build time** (``TLS=`` on the
+``make`` command line): ``mbedtls`` (the default) uses the vendored
+``lib/mbedtls`` and is fully freestanding; ``efi`` instead drives the firmware's
+``EFI_TLS_PROTOCOL``, which ships no crypto of its own so it makes the image
+~187 KB smaller but needs the network firmware (``wrap_socket`` raises
+``OSError(ENODEV)`` without it); ``none`` omits TLS entirely.  Whichever backend is
+built presents the same API -- client and server endpoints
+(``PROTOCOL_TLS_CLIENT`` / ``PROTOCOL_TLS_SERVER``), a full handshake, and
+certificate and hostname verification (``CERT_NONE``/``OPTIONAL``/``REQUIRED``)::
 
     import socket, ssl
 
@@ -216,9 +263,10 @@ verification (``CERT_NONE``/``OPTIONAL``/``REQUIRED``) are supported::
     s.send(b'GET / HTTP/1.0\r\n\r\n')
     print(s.read(512))
 
-See the ``net_*.py`` scripts in the port's ``samples/`` directory (``net_info``,
-``net_ping``, ``net_get``, ``net_https``, ``net_server``, ``net_boot``) for full
-programs; run them with ``make run`` after building the network firmware.
+See the networking scripts in the port's ``samples/`` directory (``net_info``,
+``net_ping``, ``net_get``, ``net_https``, ``net_server``, ``net_boot`` and
+``wifi_connect``) for full programs; run them with ``make run`` after building the
+network firmware (``wifi_connect`` needs real WiFi hardware).
 
 Graphics
 --------

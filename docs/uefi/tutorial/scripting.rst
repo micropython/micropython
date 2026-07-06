@@ -78,7 +78,7 @@ can allocate and do real work::
         print('tick', count)
 
     tim = Timer(-1, mode=Timer.PERIODIC, period=500, callback=tick)
-    time.sleep(3)     # ~6 ticks print while we sleep
+    time.sleep(3)     # ~6 ticks print during this sleep
     tim.deinit()
 
 Asyncio

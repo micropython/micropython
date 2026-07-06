@@ -34,6 +34,9 @@ tests/tls_test_key.pem
 # Transient docker/firmware build logs.
 *-build.log
 
+# Local, machine-specific test scripts (serial/SSH rigs, WiFi creds, host names).
+local_tests/
+
 # Local tooling / caches / OS + editor cruft.
 .venv/
 __pycache__/

@@ -95,7 +95,7 @@ It is re-exported at the top level as :class:`uefi.VariablePolicy`.
         *namespace*): minimum/maximum size, must-have / can't-have attribute
         masks, and a lock policy.  *lock* is one of :data:`LOCK_NONE`,
         :data:`LOCK_NOW`, :data:`LOCK_ON_CREATE` or :data:`LOCK_ON_VAR_STATE`
-        (the last currently raises ``NotImplementedError``).
+        (the last raises ``NotImplementedError``).
 
     .. staticmethod:: lock_interface()
 
