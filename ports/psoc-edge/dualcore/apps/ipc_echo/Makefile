@@ -6,19 +6,14 @@
 # m55_nvm region (0x60580000).
 #
 # Usage (from this directory):
-#     make                # build build/cm55_ipc_echo.hex
-#     make deploy         # build + flash to the board
+#     make                # build build/ipc_echo.hex
 #     make clean
 #
-# Optional overrides:
-#     make deploy DEV_SERIAL_NUMBER=<kitprog3-serial>
-#     make OPENOCD=/opt/openocd/bin/openocd deploy
 # ---------------------------------------------------------------------------
 
 BOARD ?= KIT_PSE84_AI
 
-# Repo-relative locations (this Makefile lives in tests/ports/psoc-edge/cm55_ipc_echo).
-TOP      := ../../../..
+TOP      := ../../../../..
 PORT_DIR := $(TOP)/ports/psoc-edge
 PSE_DIR  := $(TOP)/lib/psoc-edge
 BOARD_DIR := $(PORT_DIR)/boards/$(BOARD)
@@ -33,7 +28,7 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE    := $(CROSS_COMPILE)size
 OPENOCD ?= openocd
 
-APP := cm55_ipc_echo
+APP := ipc_echo
 
 # ---------------------------------------------------------------------------
 # Compiler / linker flags (Cortex-M55, non-secure, matches the CM33 port setup).
@@ -97,7 +92,8 @@ SRC_C = \
 	$(PSE_DIR)/mtb-dsl-pse8xxgp/pdl/drivers/source/cy_sysclk_v2.c \
 	$(PSE_DIR)/mtb-dsl-pse8xxgp/pdl/drivers/source/cy_ipc_drv.c \
 	$(PSE_DIR)/mtb-dsl-pse8xxgp/pdl/drivers/source/cy_ipc_pipe.c \
-	$(PSE_DIR)/mtb-dsl-pse8xxgp/pdl/drivers/source/cy_ipc_sema.c
+	$(PSE_DIR)/mtb-dsl-pse8xxgp/pdl/drivers/source/cy_ipc_sema.c \
+	$(PSE_DIR)/mtb-dsl-pse8xxgp/support/source/mtb_stdlib_stubs.c \
 
 # Toolchain-specific assembly (Cy_SysLib_DelayCycles, critical sections).
 SRC_S = \
@@ -111,8 +107,6 @@ VPATH = $(sort $(dir $(SRC_C)) $(dir $(SRC_S)))
 # Build rules
 # ---------------------------------------------------------------------------
 PYTHON ?= python3
-
-.PHONY: all clean deploy package
 
 all: $(BUILD)/$(APP).hex
 
@@ -136,41 +130,8 @@ $(BUILD)/$(APP).hex: $(BUILD)/$(APP).elf
 $(BUILD)/obj:
 	@mkdir -p $@
 
-# ---------------------------------------------------------------------------
-# Flash (OpenOCD + in-repo QSPI flashloader). Mirrors ports/psoc-edge deploy.
-# ---------------------------------------------------------------------------
-ifndef DEV_SERIAL_NUMBER
-SERIAL_ADAPTER_CMD =
-else
-SERIAL_ADAPTER_CMD = -c "adapter serial $(DEV_SERIAL_NUMBER)"
-endif
-
-FLM_FILE      := $(BSP_CFG)/PSE84_SMIF.FLM
-QSPI_CFG_FILE := $(BSP_CFG)/qspi_config.cfg
-
-# Bundle hex + QSPI flashloader + qspi config so it can be flashed with
-# ports/psoc-edge/tools/mp-ifx-flash.py `from-package` (used by CI).
-# Uses python3 (always available) instead of the `zip` binary, which is not
-# guaranteed to be installed in the CI container.
-package: $(BUILD)/$(APP).zip
-$(BUILD)/$(APP).zip: $(BUILD)/$(APP).hex $(FLM_FILE) $(QSPI_CFG_FILE)
-	@echo "ZIP $@"
-	@$(PYTHON) -c "import sys, os, zipfile; z = zipfile.ZipFile(sys.argv[1], 'w', zipfile.ZIP_DEFLATED); [z.write(f, os.path.basename(f)) for f in sys.argv[2:]]; z.close()" $@ $^
-
-deploy: $(BUILD)/$(APP).hex
-	$(OPENOCD) \
-		-s $(BSP_CFG) \
-		-c "set QSPI_FLASHLOADER $(FLM_FILE)" \
-		-c "source [find interface/kitprog3.cfg]" \
-		$(SERIAL_ADAPTER_CMD) \
-		-c "transport select swd" \
-		-c "source [find target/infineon/pse84xgxs2.cfg]" \
-		-c "init" \
-		-c "reset init" \
-		-c "adapter speed 12000" \
-		-c "flash write_image erase $<" \
-		-c "verify_image $<" \
-		-c "reset run; shutdown"
-
+# Clean
 clean:
 	@rm -rf $(BUILD)
+
+.PHONY: all clean
