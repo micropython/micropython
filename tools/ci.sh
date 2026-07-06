@@ -426,17 +426,18 @@ function ci_psoc_edge_deploy_hil {
     docker exec mpy-ci /bin/bash -c "cd ../../tools/psoc-edge && python3 mpy-pse.py device-setup --board ${board} --hex-file ${hex_file} ${dev_files_arg} -q"
 }
 
-# CM55 IPC echo firmware, built & published by
-# Infineon/mtb-example-psoc-edge-voice-assistant-deploy-mpy.
-CM55_ECHO_FW_URL="https://github.com/Infineon/mtb-example-psoc-edge-voice-assistant-deploy-mpy/releases/latest/download/test_ipc_mpy.zip"
+# CM55 IPC echo firmware. Built in-tree from tests/ports/psoc-edge/cm55_ipc_echo
+# (no external repo dependency) and flashed before the ipc.py board test runs.
+CM55_ECHO_DIR="tests/ports/psoc-edge/cm55_ipc_echo"
 
 function ci_psoc_edge_flash_cm55_echo_hil {
     board=$1
     serial=$2   # optional KitProg3 serial for multi-board setups
 
-    # Download the prebuilt echo firmware package into the mounted repo
+    # Build the CM55 echo image and bundle it (.hex + .FLM + .cfg) for flashing.
     docker exec mpy-ci /bin/bash -c \
-        "cd /micropython-psoc-edge && curl -fsSL -o test_ipc_mpy.zip ${CM55_ECHO_FW_URL}"
+        "cd /micropython-psoc-edge/${CM55_ECHO_DIR} && \
+         make clean && make package BOARD=${board}"
 
     if [ -z "$serial" ]; then
         serial_arg=""
@@ -450,7 +451,7 @@ function ci_psoc_edge_flash_cm55_echo_hil {
         "cd /micropython-psoc-edge/ports/psoc-edge && \
          python3 tools/mp-ifx-flash.py from-package \
            --board ${board} \
-           --zip-package ../../test_ipc_mpy.zip ${serial_arg}"
+           --zip-package ../../${CM55_ECHO_DIR}/build/cm55_ipc_echo.zip ${serial_arg}"
 }
 
 function ci_psoc_edge_teardown_hil {
