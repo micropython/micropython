@@ -33,8 +33,6 @@ def instance0():
     blocking_delay_ms(1000)
     pulse_out.low()
 
-    pulse_out.deinit()
-
 
 def instance1():
     # Measurer: arms time_pulse_us then signals instance0 to start.
@@ -49,5 +47,3 @@ def instance1():
     print(
         f"Pulse timing verified: {True if (0.98 < (width / 1000000) < 1.2) else 'False, width=' + str(width / 1000000)}"
     )
-
-    pulse_in.deinit()
