@@ -614,6 +614,12 @@ CI_UNIX_OPTS_QEMU_LOONG64=(
     MICROPY_STANDALONE=1
 )
 
+CI_UNIX_OPTS_QEMU_X64=(
+    CROSS_COMPILE=x86_64-linux-gnu-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+)
+
 CI_UNIX_OPTS_SANITIZE_ADDRESS=(
     # Macro MP_ASAN allows detecting ASan on gcc<=13
     CFLAGS_EXTRA="-fsanitize=address --param asan-use-after-return=0 -DMP_ASAN=1"
@@ -1028,6 +1034,34 @@ qemu-loongarch64-static "$MPY_PATH"/micropython $@
 EOF
     chmod +x ./ports/unix/build-coverage/micropython-runner
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython-runner MICROPY_TEST_TIMEOUT=180 ./run-tests.py)
+}
+
+function ci_unix_qemu_x64_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-x86-64-linux-gnu g++-x86-64-linux-gnu libc6-amd64-cross libltdl-dev
+    sudo apt-get install qemu-user-static
+    python3 -m pip install pyelftools
+    python3 -m pip install ar
+    qemu-x86_64-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/x86_64-linux-gnu /usr/gnemul/qemu-x86_64
+}
+
+function ci_unix_qemu_x64_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_X64[@]}"
+    ci_unix_build_ffi_lib_helper x86_64-linux-gnu-gcc
+    ci_native_mpy_modules_build x64
+}
+
+function ci_unix_qemu_x64_run_tests {
+    # Issues with x64 tests on non-x64 hosts:
+    # - thread/stress_aes.py takes around 90 seconds
+    # - ports/unix/ffi_callback.py crashes QEMU (x86_64-binfmt-P: QEMU internal SIGSEGV {code=MAPERR, addr=0x20})
+    file ./ports/unix/build-coverage/micropython
+    pushd tests
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude '(thread/stress_aes.py|ports/unix/ffi_callback.py)'
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
+    popd
 }
 
 function ci_unix_repr_b_build {
