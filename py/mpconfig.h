@@ -1375,6 +1375,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_STR_UNICODE_CHECK (MICROPY_PY_BUILTINS_STR_UNICODE)
 #endif
 
+// Whether bytes.decode() supports the 'ignore' and 'replace' error handlers
+#ifndef MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
+#define MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether str.center() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_CENTER
 #define MICROPY_PY_BUILTINS_STR_CENTER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)

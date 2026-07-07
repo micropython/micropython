@@ -34,14 +34,14 @@ jobs:
           - esp32_build_cmod_spiram_s2
           - esp32_build_s3_c3
           - esp32_build_c2_c5_c6
-          - esp32_build_p4
+          - esp32_build_h2_p4
           - esp32_build_s31
         #exclude:
           # Exclude some jobs on the oldest IDF version, to save resources
           #- idf_ver: *oldest
           #  ci_func: esp32_build_c2_c5_c6
           #- idf_ver: *oldest
-          #  ci_func: esp32_build_p4
+          #  ci_func: esp32_build_h2_p4
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
