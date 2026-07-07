@@ -407,7 +407,7 @@ function ci_psoc_edge_setup_hil {
 
 function ci_psoc_edge_build_hil {
     board=$1
-    docker exec mpy-ci make BOARD=${board} DUALCORE=0
+    docker exec mpy-ci make BOARD=${board}
 }
 
 function ci_psoc_edge_deploy_cm55_hil {
