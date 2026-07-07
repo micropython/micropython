@@ -861,43 +861,44 @@ void mpz_set_from_bytes(mpz_t *z, bool big_endian, bool is_signed, size_t len, c
     if (is_signed && (buf[big_endian ? 0 : len - 1] & 0x80)) {
         z->neg = 1;
     }
-    mpz_need_dig(z, (len * 8 + DIG_SIZE - 1) / DIG_SIZE);
-
     int delta = 1;
     if (big_endian) {
         buf += len - 1;
         delta = -1;
     }
+    mpz_need_dig(z, (len * 8 + DIG_SIZE - 1) / DIG_SIZE);
     mpz_dbl_dig_t d = 0;
     int num_bits = 0;
-    size_t dig_idx = 0;
     mpz_dbl_dig_t byte_val;
     mpz_dbl_dig_t carry = z->neg ? 1 : 0;
-
-    for (size_t i = 0; i < len; ++i) {
-        byte_val = *buf;
-        if (z->neg) {
-            byte_val = ((~byte_val) & 0xff) + carry;
-            carry = byte_val >> 8;
-            byte_val &= 0xff;
-        }
-
-        d |= (byte_val & DIG_MASK) << num_bits;
-        num_bits += 8;
-        buf += delta;
-
-        while (num_bits >= DIG_SIZE) {
-            if (dig_idx < z->alloc) {
-                z->dig[dig_idx++] = d & DIG_MASK;
+    while (len) {
+        while (len && num_bits < DIG_SIZE) {
+            byte_val = *buf;
+            if (z->neg) {
+                byte_val = ((~byte_val) & 0xff) + carry;
+                carry = byte_val >> 8;
+                byte_val &= 0xff;
             }
-            d >>= DIG_SIZE;
-            num_bits -= DIG_SIZE;
+            d |= (byte_val & DIG_MASK) << num_bits;
+            num_bits += 8;
+            buf += delta;
+            len--;
         }
+        z->dig[z->len++] = d & DIG_MASK;
+        // Need this #if because it's C undefined behavior to do: uint32_t >> 32
+        #if DIG_SIZE != 8 && DIG_SIZE != 16 && DIG_SIZE != 32
+        d >>= DIG_SIZE;
+        #else
+        d = 0;
+        #endif
+        num_bits -= DIG_SIZE;
     }
+    /*
     if (num_bits > 0 && dig_idx < z->alloc) {
         z->dig[dig_idx++] = d & DIG_MASK;
     }
-    z->len = mpn_remove_trailing_zeros(z->dig, z->dig + dig_idx);
+    */
+    z->len = mpn_remove_trailing_zeros(z->dig, z->dig + z->len);
     /*
     if (z->len == 1 && z->dig[0] == 0) {
         z->len = 0;
