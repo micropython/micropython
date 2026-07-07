@@ -679,7 +679,7 @@ deploy_ns: $(BUILD)/firmware.shifted.hex
 .PHONY: build_ns shift_ns deploy_ns
 
 ## Dual core targets
-DUALCORE ?= 1
+DUALCORE ?= 0
 CM55_APP ?= ipc_echo
 CM55_APP_HEX ?= $(BUILD)/dualcore/apps/${CM55_APP}/${CM55_APP}.hex
 build_cm55: $(CM55_APP_HEX)
