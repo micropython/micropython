@@ -55,7 +55,7 @@ MICROPY_FLOAT_IMPL ?= double
 else ifeq ($(ARCH),x64)
 
 # x64
-CROSS =
+CROSS = x86_64-linux-gnu-
 CFLAGS_ARCH += -fno-stack-protector
 MICROPY_FLOAT_IMPL ?= double
 
