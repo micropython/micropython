@@ -110,6 +110,12 @@ static void mp_machine_idle(void) {
     __WFI(); // standard ARM instruction
 }
 
+static mp_obj_t mp_machine_unique_id(void) {
+    uint64_t id = Cy_SysLib_GetUniqueId();
+    return mp_obj_new_bytes((const byte *)&id, sizeof(id));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, mp_machine_unique_id);
+
 #if MICROPY_PY_MACHINE_RESET
 
 MP_NORETURN static void mp_machine_reset(void) {
@@ -142,6 +148,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     /* Modules */ \
+    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_PDM_PCM),             MP_ROM_PTR(&machine_pdm_pcm_type) }, \
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
