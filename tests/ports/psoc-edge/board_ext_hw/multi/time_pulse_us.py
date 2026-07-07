@@ -23,10 +23,12 @@ def instance0():
     # Signal generator: drives a 1 s high pulse after the measurer is ready.
     pulse_out = Pin(pulse_pin, Pin.OUT, value=0)
 
-    # Wait until instance1 is ready to measure.
     multitest.next()
+    # Wait until instance1 has broadcast that it is inside time_pulse_us.
+    multitest.wait("MEASURER_READY")
 
-    blocking_delay_ms(200)
+    # Small delay to ensure instance1 has entered the C measurement loop.
+    blocking_delay_ms(50)
 
     # Generate high pulse for 1 s.
     pulse_out.high()
@@ -35,11 +37,12 @@ def instance0():
 
 
 def instance1():
-    # Measurer: arms time_pulse_us then signals instance0 to start.
+    # Measurer: signals instance0 immediately before entering time_pulse_us.
     pulse_in = Pin(pulse_pin, Pin.IN, Pin.PULL_DOWN)
 
-    # Signal instance0 that measurement is ready.
     multitest.next()
+    # Broadcast readiness, then enter the measurement loop with no delay.
+    multitest.broadcast("MEASURER_READY")
 
     # Measure the pulse width (timeout 10 s).
     width = time_pulse_us(pulse_in, 1, 10000000)
