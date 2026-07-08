@@ -104,7 +104,9 @@
       - extmod/socket_badconstructor.py
       - extmod/socket_fileno.py
       - extmod/socket_tcp_basic.py
-      - extmod/socket_udp_nonblock.py
+      # TODO: Re-enable tests after effectively installing unittest 
+      # only for the target boards running the affected tests.
+      # - extmod/socket_udp_nonblock.py
       - net_hosted/accept_nonblock.py
       - net_hosted/accept_timeout.py
     device:
