@@ -92,6 +92,14 @@ def _download_file(transport, url, dest):
     transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
 
 
+def _normalise_target(target):
+    if target == ":":
+        return "."
+    if target.startswith(":"):
+        return target[1:]
+    return target
+
+
 def _install_json(transport, package_json_url, index, target, version, mpy):
     base_url = ""
     if package_json_url.startswith(_ALLOWED_MIP_URL_PREFIXES):
@@ -194,6 +202,8 @@ def do_mip(state, args):
 
             if args.mpy is None:
                 args.mpy = True
+
+            args.target = _normalise_target(args.target)
 
             try:
                 _install_package(
