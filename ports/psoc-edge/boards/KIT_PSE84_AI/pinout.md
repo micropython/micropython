@@ -56,39 +56,39 @@ Only signals which allow a functional instantiation on a peripheral are listed.
 
 ## On-board Peripherals Without Accessible Pins
 
-| Pin   | (Pin.board.name) | Peripheral                                      |
-|-------|------------------|-------------------------------------------------|
-| P3_0  | I3C_SCL          | Magnetic Sensor                                 |
-| P3_1  | I3C_SDA          | Magnetic Sensor                                 |
-| P6_4  | MAG_INT          | Magnetic Sensor                                 |
-| P6_6  | IMU2_INT         | IMU Sensor                                      |
-| P7_0  | USER_BUTTON      | User Button                                     |
-| P7_7  | IMU1_INT         | IMU Sensor                                      |
-| P8_0  | I2C_SCL_1V8      | Humidity Sensor, Pressure Sensor, IMU Sensor    |
-| P8_1  | I2C_SDA_1V8      | Humidity Sensor, Pressure Sensor, IMU Sensor    |
-| P8_5  | PDM_CLK          | Digital Microphones                             |
-| P8_6  | PDM_DATA         | Digital Microphones                             |
-| P10_5 | USER_LED2        | User LED2                                       |
-| P10_7 | USER_LED1        | User LED1                                       |
-| P11_3 | PRESS_SENS_INT   | Pressure Sensor                                 |
-| P12_3 | I2S_TX_FYSYNC    | Audio Amplifier                                 |
-| P14_0 | AMIC1_CTB_INP    | Analog Microphone 1                             |
-| P14_1 | AMIC1_CTB_INN    | Analog Microphone 1                             |
-| P14_2 | AMIC1_CTB_OUT    | Analog Microphone 1                             |
-| P14_3 | AMIC2_CTB_OUT    | Analog Microphone 2                             |
-| P14_4 | AMIC2_CTB_INP    | Analog Microphone 2                             |
-| P14_5 | AMIC2_CTB_INN    | Analog Microphone 2                             |
-| P14_6 | AMIC1_CTB_REF    | Analog Microphone 1                             |
-| P14_7 | AMIC2_CTB_REF    | Analog Microphone 2                             |
-| P20_3 | RADAR_INT        | Radar                                           |
-| P20_4 | USER_LED_G       | RGB LED Green Channel                           |
-| P20_5 | USER_LED_B       | RGB LED Blue Channel                            |
-| P20_6 | USER_LED_R       | RGB LED Red Channel                             |
-| P20_7 | RADAR_RESET      | Radar                                           |
-| P21_1 | I2S_TX_SD        | Audio Amplifier                                 |
-| P21_2 | I2S_TX_SCK       | Audio Amplifier                                 |
-| P21_3 | I2S_TX_MCK       | Audio Amplifier                                 |
-| P21_4 | RADAR_SPI_MISO   | Radar                                           |
-| P21_5 | RADAR_SPI_MOSI   | Radar                                           |
-| P21_6 | RADAR_SPI_CLK    | Radar                                           |
-| P21_7 | RADAR_SPI_CS     | Radar                                           |
+| Pin   | (Pin.board.name) | Peripheral Instance | Peripheral                                      |
+|-------|------------------|---------------------|-------------------------------------------------|
+| P3_0  | I3C_SCL          | I3C                 | Magnetic Sensor                                 |
+| P3_1  | I3C_SDA          | I3C                 | Magnetic Sensor                                 |
+| P6_4  | MAG_INT          | -                   | Magnetic Sensor                                 |
+| P6_6  | IMU2_INT         | -                   | IMU Sensor                                      |
+| P7_0  | USER_BUTTON      | -                   | User Button                                     |
+| P7_7  | IMU1_INT         | -                   | IMU Sensor                                      |
+| P8_0  | I2C_SCL_1V8      | I2C0                | Humidity Sensor, Pressure Sensor, IMU Sensor    |
+| P8_1  | I2C_SDA_1V8      | I2C0                | Humidity Sensor, Pressure Sensor, IMU Sensor    |
+| P8_5  | PDM_CLK          | PDM3                | Digital Microphones                             |
+| P8_6  | PDM_DATA         | PDM3                | Digital Microphones                             |
+| P10_5 | USER_LED2        | -                   | User LED2                                       |
+| P10_7 | USER_LED1        | -                   | User LED1                                       |
+| P11_3 | PRESS_SENS_INT   | -                   | Pressure Sensor                                 |
+| P12_3 | I2S_TX_FYSYNC    | I2S0                | Audio Amplifier                                 |
+| P14_0 | AMIC1_CTB_INP    | AMIC1               | Analog Microphone 1                             |
+| P14_1 | AMIC1_CTB_INN    | AMIC1               | Analog Microphone 1                             |
+| P14_2 | AMIC1_CTB_OUT    | AMIC1               | Analog Microphone 1                             |
+| P14_3 | AMIC2_CTB_OUT    | AMIC2               | Analog Microphone 2                             |
+| P14_4 | AMIC2_CTB_INP    | AMIC2               | Analog Microphone 2                             |
+| P14_5 | AMIC2_CTB_INN    | AMIC2               | Analog Microphone 2                             |
+| P14_6 | AMIC1_CTB_REF    | AMIC1               | Analog Microphone 1                             |
+| P14_7 | AMIC2_CTB_REF    | AMIC2               | Analog Microphone 2                             |
+| P20_3 | RADAR_INT        | -                   | Radar                                           |
+| P20_4 | USER_LED_G       | -                   | RGB LED Green Channel                           |
+| P20_5 | USER_LED_B       | -                   | RGB LED Blue Channel                            |
+| P20_6 | USER_LED_R       | -                   | RGB LED Red Channel                             |
+| P20_7 | RADAR_RESET      | -                   | Radar                                           |
+| P21_1 | I2S_TX_SD        | I2S0                | Audio Amplifier                                 |
+| P21_2 | I2S_TX_SCK       | I2S0                | Audio Amplifier                                 |
+| P21_3 | I2S_TX_MCK       | I2S0                | Audio Amplifier                                 |
+| P21_4 | RADAR_SPI_MISO   | SPI3                | Radar                                           |
+| P21_5 | RADAR_SPI_MOSI   | SPI3                | Radar                                           |
+| P21_6 | RADAR_SPI_CLK    | SPI3                | Radar                                           |
+| P21_7 | RADAR_SPI_CS     | SPI3                | Radar                                           |
