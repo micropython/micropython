@@ -6,6 +6,6 @@ b'foo'
 <class 'int'>
 OSError
 OSError
-writing bytearray(b'foobar')
+writing <memoryview>
 flushed
 flushed

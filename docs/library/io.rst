@@ -116,9 +116,18 @@ Classes
 
    .. method:: IOBase.write(buf)
 
-      Write *buf* (a ``bytearray``) to the stream. Return the number of
-      bytes written, or ``None`` if a non-blocking stream cannot accept data.
-      Return a negative errno value to signal an error.
+      Write *buf* (a ``memoryview`` onto the data to write) to the stream.
+      Return the number of bytes written, or ``None`` if a non-blocking
+      stream cannot accept data. Return a negative errno value to signal an
+      error.
+
+      .. warning::
+
+         *buf* (for both ``write()`` and ``readinto()``) is backed by a
+         temporary buffer that is only valid for the duration of the call.
+         Don't store a reference to *buf* itself or otherwise let it outlive
+         the call; if you need to keep the data, copy it out first (e.g.
+         ``bytes(buf)``).
 
    .. method:: IOBase.ioctl(op, arg)
 

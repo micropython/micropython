@@ -54,8 +54,27 @@ static mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 static mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode, qstr qst) {
     mp_obj_t dest[3];
     mp_load_method(obj, qst, dest);
-    mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, size, buf};
-    dest[2] = MP_OBJ_FROM_PTR(&ar);
+    mp_obj_array_t ar;
+    if (qst == MP_QSTR_readinto) {
+        // readinto() needs a mutable, resizable bytearray view: some
+        // implementations do eg buf[:] = data[off:off + len(buf)] to fill it,
+        // relying on bytearray's ability to shrink in place when fewer bytes
+        // are available than requested (eg near EOF). A fixed-size
+        // memoryview can't support that (slice-assigning a shorter value
+        // raises ValueError), so this can't use the same fix as write().
+        ar = (mp_obj_array_t) {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, size, buf};
+        dest[2] = MP_OBJ_FROM_PTR(&ar);
+    } else {
+        #if MICROPY_PY_BUILTINS_MEMORYVIEW
+        // A memoryview onto the caller's buffer is enough for write() to read the
+        // data, is cheap (no allocation of the buffer's content), and, unlike a
+        // bytearray, doesn't support in-place resizing (eg buf += buf raises
+        // TypeError) instead of trying to gc_realloc a pointer the GC doesn't own.
+        dest[2] = mp_obj_new_memoryview(BYTEARRAY_TYPECODE, size, buf);
+        #else
+        dest[2] = mp_obj_new_bytearray(size, buf);
+        #endif
+    }
     mp_obj_t ret_obj = mp_call_method_n_kw(1, 0, dest);
     if (ret_obj == mp_const_none) {
         *errcode = MP_EAGAIN;
