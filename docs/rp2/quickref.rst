@@ -209,7 +209,7 @@ See :ref:`machine.UART <machine.UART>`. ::
 
 It is possible to access the REPL over UART, but this is disabled by
 default.  To duplicate the REPL stream over UART, use :func:`os.dupterm`.
-This code should be in ``boot.py`` or ``main.py`` to establish UART on boot.
+This code should be in :ref:`boot.py` or :ref:`main.py` to establish UART on boot.
 
 .. code-block:: python
 
