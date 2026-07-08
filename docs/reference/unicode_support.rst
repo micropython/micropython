@@ -3,8 +3,9 @@
 Unicode Support
 ===============
 
-MicroPython provides Unicode support for strings, with the level of support
-depending on the build configuration.
+MicroPython provides Unicode support for strings.  All Tier 1, 2 and 3 ports
+have Unicode support enabled by default, but it is possible to change that with
+a different build configuration.
 
 Terminology
 -----------
@@ -151,7 +152,9 @@ Unicode features are controlled by several build-time flags in ``mpconfigport.h`
     Unicode character and string operations work on character boundaries rather
     than byte boundaries.
 
-    Default: Enabled at ``MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES`` and above.
+    Default: Enabled at ``MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES`` and above.
+
+    Enabled on all Tier 1, 2 and 3 ports.
 
 ``MICROPY_PY_BUILTINS_STR_UNICODE_CHECK``
     Enable UTF-8 validation during string operations. When disabled, string
@@ -159,12 +162,17 @@ Unicode features are controlled by several build-time flags in ``mpconfigport.h`
 
     Default: Follows ``MICROPY_PY_BUILTINS_STR_UNICODE`` setting.
 
+    Enabled on all Tier 1, 2 and 3 ports.
+
 ``MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS``
     Enable the ``'ignore'`` and ``'replace'`` error handlers for
     :meth:`bytes.decode`. When enabled, invalid UTF-8 bytes can be either
     skipped (``'ignore'``) or replaced with U+FFFD (``'replace'``).
 
     Default: Enabled at ``MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES`` and above.
+
+    Enabled on alif, esp32, esp8266, mimxrt, renesas-ra, rp2, samd (SAMD51 only),
+    stm32, unix and webassembly ports.
 
 Example Configuration
 ~~~~~~~~~~~~~~~~~~~~~
