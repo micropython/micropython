@@ -1603,7 +1603,7 @@ void mp_import_all(mp_obj_t module) {
 
     #if MICROPY_MODULE___ALL__
 
-    mp_load_method_maybe(module, MP_QSTR___all__, dest);
+    mp_load_method_protected(module, MP_QSTR___all__, dest, false);
     if (dest[0] != MP_OBJ_NULL) {
         // When __all__ is defined, we must explicitly load all specified
         // symbols, possibly invoking the module __getattr__ function

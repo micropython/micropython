@@ -18,6 +18,7 @@ print("VisibleClass" in globals())
 print("_hiddenFun" in globals())
 print("_HiddenClass" in globals())
 print(visibleFun())
+print("__getattr__" in globals())
 
 # 2. test explicit visibility as defined by __all__ (as an array)
 from pkgstar_all_array import *
@@ -57,3 +58,14 @@ try:
     print("missed detection of incorrect __all__ definition")
 except TypeError as er:
     print("TypeError triggered for bad __all__ definition")
+
+# 6. test that a genuine bug in __getattr__ (as opposed to it correctly
+# raising AttributeError for "no __all__ here") is not swallowed
+try:
+    from pkgstar_getattr_error import *
+
+    print("missed propagation of __getattr__ bug")
+except ValueError as er:
+    print("ValueError triggered by buggy __getattr__")
+except AttributeError as er:
+    print("wrongly swallowed as AttributeError")

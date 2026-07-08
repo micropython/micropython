@@ -18,3 +18,7 @@ def _hiddenFun():
 class _HiddenClass:
     def __init__(self):
         self._val = -1
+
+
+def __getattr__(attr):
+    raise AttributeError(attr)
