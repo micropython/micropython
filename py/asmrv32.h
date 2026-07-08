@@ -780,9 +780,9 @@ static inline uint8_t asm_rv32_allowed_extensions(void) {
 #define REG_ARG_2 ASM_RV32_REG_A1
 #define REG_ARG_3 ASM_RV32_REG_A2
 #define REG_ARG_4 ASM_RV32_REG_A3
-#define REG_TEMP0 ASM_RV32_REG_T1
-#define REG_TEMP1 ASM_RV32_REG_T2
-#define REG_TEMP2 ASM_RV32_REG_T3
+#define REG_TEMP0 ASM_RV32_REG_A4
+#define REG_TEMP1 ASM_RV32_REG_A5
+#define REG_TEMP2 ASM_RV32_REG_A6
 #define REG_FUN_TABLE ASM_RV32_REG_S1
 #define REG_LOCAL_1 ASM_RV32_REG_S3
 #define REG_LOCAL_2 ASM_RV32_REG_S2
