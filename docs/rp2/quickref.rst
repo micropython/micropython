@@ -217,7 +217,7 @@ This code should be in :ref:`boot.py` or :ref:`main.py` to establish UART on boo
     import os
     uart = UART(0)
     os.dupterm(uart, 0)
-    uart.irq(os.dupterm_notify, machine.UART.IRQ_RX) # ensure inputs are handled
+    uart.irq(os.dupterm_notify, UART.IRQ_RXIDLE) # ensure inputs are handled
 
 To use UART for REPL instead of the standard USB interface (for example if you are
 using :mod:`machine.USBDevice`), you will need to :doc:`build MicroPython from source </develop/gettingstarted>`.
