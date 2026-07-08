@@ -114,7 +114,28 @@ static mp_obj_t mp_machine_unique_id(void) {
     uint64_t id = Cy_SysLib_GetUniqueId();
     return mp_obj_new_bytes((const byte *)&id, sizeof(id));
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, mp_machine_unique_id);
+
+static mp_obj_t mp_machine_get_freq(void) {
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq not implemented"));
+}
+
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    (void)args;
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not implemented"));
+}
+
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    (void)args;
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.lightsleep not implemented"));
+}
+
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    (void)args;
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.deepsleep not implemented"));
+}
 
 #if MICROPY_PY_MACHINE_RESET
 
@@ -148,7 +169,6 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     /* Modules */ \
-    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_PDM_PCM),             MP_ROM_PTR(&machine_pdm_pcm_type) }, \
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
