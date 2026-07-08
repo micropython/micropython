@@ -1,3 +1,9 @@
+try:
+    1 << 63
+except OverflowError:
+    print("SKIP")  # Port can't represent this size of integer
+    raise SystemExit
+        
 
 def test_int(x, byteorder, signed):
     size = 12
@@ -90,14 +96,11 @@ def reverse(b):
 def signed_from_unsigned(uint, size):
     if uint == 0:
         return 0
-    b = size * 8 - 1
-    b = 1 << b
-    if uint & b:
+    if uint & (1 << (size * 8 - 1)):
         mask = (2 ** (size * 8)) - 1
         sint = -((uint ^ mask) + 1)
         return sint
-    else:
-        return uint
+    return uint
 
 
 def test_bytes(b, uint, byteorder, signed):
