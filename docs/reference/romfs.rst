@@ -63,6 +63,45 @@ stm32           Supported on boards with ROMFS partition configured.
 unix            Supported (primarily for testing).
 ==============  ====================================================
 
+Enabling ROMFS for a port or board
+----------------------------------
+
+ROMFS support is not enabled in exactly the same way on every port.  In
+general a board or variant configuration for ROMFS needs three things:
+
+1. Enable the ROMFS feature in the firmware build.  Some ports define
+   ``MICROPY_VFS_ROM`` directly, and others derive it from board settings.
+2. Provide one or more ROMFS partitions or memory regions that the firmware can
+   expose via ``vfs.rom_ioctl()``.
+
+3. On most bare-metal ports, enabling ROMFS also requires the board's linker
+   layout or flash map to reserve space for the ROMFS partition.
+
+To see how a given port enables ROMFS, search that port's ``mpconfigport.h``,
+board ``mpconfigboard.h``/``mpconfigboard.mk`` files, linker scripts, and any
+``vfs_rom_ioctl.c`` implementation.
+
+The most common patterns are:
+
+- **ESP32**: provide a partition table with a ``romfs`` entry.  See the
+  example partition table in ``ports/esp32/partitions-4MiB-romfs.csv``.
+- **ESP8266**: has a defined board variant ``ESP8266_GENERIC/FLASH_2M_ROMFS``.
+- **rp2**, **samd**, **mimxrt**: set ``MICROPY_HW_ROMFS_BYTES`` to a non-zero
+  size in the board or MCU makefile.
+- **stm32**: set one or more of these board-level macros:
+  ``MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH``,
+  ``MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI``, or
+  ``MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI``.
+- **alif**: set ``MICROPY_HW_ROMFS_ENABLE_PART0`` or
+  ``MICROPY_HW_ROMFS_ENABLE_PART1`` in the board configuration.
+- **nrf**: define ``_micropy_hw_romfs_part0_size`` in the board linker script.
+- **qemu**: set ``MICROPY_HW_ROMFS_PART0_START`` and
+  ``MICROPY_HW_ROMFS_PART0_SIZE`` in the board makefile.
+- **renesas-ra**: define ``_micropy_hw_romfs_part0_start`` and
+  ``_micropy_hw_romfs_part0_size`` in the board linker script.
+
+
+
 Workflow
 --------
 
