@@ -515,9 +515,8 @@ void asm_rv32_emit_mov_reg_local_addr(asm_rv32_t *state, mp_uint_t rd, mp_uint_t
     asm_rv32_opcode_cadd(state, rd, ASM_RV32_REG_SP);
 }
 
-static const uint8_t RV32_LOAD_OPCODE_TABLE[3] = {
-    0x04, 0x05, 0x02
-};
+// ((word: 4) << 8) | ((halfword: 4) << 4) | (byte: 4)
+#define RV32_LOAD_OPCODE_FT3(size) ((0x0254 >> (size << 2)) & 0x0F)
 
 void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_t rs, int32_t offset, mp_uint_t operation_size) {
     assert(operation_size <= 2 && "Operation size value out of range.");
@@ -532,7 +531,7 @@ void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_
 
     if (MP_FIT_SIGNED(12, scaled_offset)) {
         // lbu|lhu|lw rd, offset(rs)
-        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_TABLE[operation_size], rd, rs, scaled_offset));
+        asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_FT3(operation_size), rd, rs, scaled_offset));
         return;
     }
 
@@ -545,7 +544,7 @@ void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_
     // lbu|lhu|lw rd, LO(offset)(rd)
     load_upper_immediate(state, rd, upper);
     asm_rv32_opcode_cadd(state, rd, rs);
-    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_TABLE[operation_size], rd, rd, lower));
+    asm_rv32_emit_word_opcode(state, RV32_ENCODE_TYPE_I(0x03, RV32_LOAD_OPCODE_FT3(operation_size), rd, rd, lower));
 }
 
 void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
