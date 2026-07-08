@@ -193,7 +193,7 @@ fetch_next_byte:
     }
 
     // check if we need to insert a newline at end of file
-    if (chr2 == MP_LEXER_EOF && lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n') {
+    if (chr2 == MP_LEXER_EOF && lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n' && lex->chr1 != '\\') {
         chr2 = '\n';
     }
 

@@ -17,6 +17,7 @@ def test_syntax(code):
 
 # non-newline after line-continuation character (lexer error)
 test_syntax("a \\a\n")
+test_syntax("123\\")
 
 # dedent mismatch (lexer error)
 test_syntax("def f():\n  a\n a\n")
