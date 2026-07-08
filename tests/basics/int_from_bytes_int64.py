@@ -1,10 +1,16 @@
+try:
+    1 << 63
+except OverflowError:
+    print("SKIP")  # Port can't represent this size of integer at all
+    raise SystemExit
+        
 
 def test_int(x, byteorder, signed):
-    if x <= 2**62 and x >= -(2**62):
+    size = 12
+    if x <= 2**30 and x >= -(2**30):
+        size = 4
+    elif x <= 2**62 and x >= -(2**62):
         size = 8
-    else:
-        print("SKIP")
-        raise SystemExit
     
     print("x:{}, x:0x{}, size:{}".format(x, x, size), end="")
     b = x.to_bytes(size, byteorder=byteorder, signed=signed)
@@ -93,10 +99,6 @@ def signed_from_unsigned(uint, size):
 
 
 def test_bytes(b, uint, byteorder, signed):
-    if uint > 2**62:
-        print("SKIP")
-        raise SystemExit
-    
     size = len(b)
     assert b == uint.to_bytes(size, byteorder='little', signed=False)
     sint = signed_from_unsigned(uint, size)
