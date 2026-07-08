@@ -22,7 +22,6 @@
     - spi
     - bitstream
     - time-pulse
-    - unique-id
 
 - name: KIT_PSE84_AI
   uid: 0C170798012D2400

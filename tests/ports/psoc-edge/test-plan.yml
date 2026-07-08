@@ -32,18 +32,8 @@
     exclude:
       - ports/psoc-edge/board_only_hw/single/wdt.py
       - ports/psoc-edge/board_only_hw/single/wdt_reset_cause_check.py
-      - ports/psoc-edge/board_only_hw/single/unique_id.py
     device: 
       - board: KIT_PSE84_AI
-
-- name: unique-id
-  test:
-    script:
-      - ports/psoc-edge/board_only_hw/single/unique_id.py
-    device:
-      - board: KIT_PSE84_AI
-        features:
-          - unique-id
 
 - name: watchdog
   test:
