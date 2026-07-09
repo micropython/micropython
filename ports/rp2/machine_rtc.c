@@ -32,6 +32,7 @@
 
 #include "pico/aon_timer.h"
 
+#include "genhdr/mpversion.h"
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -62,6 +63,13 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
+static void set_rtc(const timeutils_struct_time_t *tm) {
+    struct timespec ts = { 0, 0 };
+    ts.tv_sec = timeutils_seconds_since_epoch(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+    aon_timer_set_time(&ts);
+    mp_hal_time_ns_set_from_rtc();
+}
+
 static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         struct timespec ts;
@@ -90,17 +98,26 @@ static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
             .tm_min = mp_obj_get_int(items[5]),
             .tm_sec = mp_obj_get_int(items[6]),
         };
-        struct timespec ts = { 0, 0 };
-        ts.tv_sec = timeutils_seconds_since_epoch(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-        aon_timer_set_time(&ts);
-        mp_hal_time_ns_set_from_rtc();
+        set_rtc(&tm);
     }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
+static mp_obj_t machine_rtc_set_build_date(mp_obj_t self_ignore) {
+    const timeutils_struct_time_t BUILD_DATE = {
+        .tm_year = MICROPY_BUILD_YEAR,
+        .tm_mon = MICROPY_BUILD_MONTH,
+        .tm_mday = MICROPY_BUILD_DAY,
+    };
+    set_rtc(&BUILD_DATE);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_set_build_date_obj, machine_rtc_set_build_date);
+
 static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_build_date), MP_ROM_PTR(&machine_rtc_set_build_date_obj) },
 };
 static MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
