@@ -14,10 +14,8 @@
 #define MICROPY_KBD_EXCEPTION           (1)
 #define MICROPY_HELPER_REPL             (1)
 #define MICROPY_REPL_AUTO_INDENT        (1)
-#define MICROPY_ENABLE_SOURCE_LINE      (1)
 #define MICROPY_STREAMS_NON_BLOCK       (1)
 #define MICROPY_PY_BUILTINS_HELP        (1)
-#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_ENABLE_SCHEDULER        (1)
 #define MICROPY_PY_BUILTINS_BYTES_HEX   (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW  (1)
@@ -29,10 +27,10 @@
 #define MICROPY_PY_IO_IOBASE            (1)
 #define MICROPY_PY_OS                   (1)
 #define MICROPY_PY_JSON                 (1)
+#define MICROPY_PY_GENERATOR_PEND_THROW (0)
 #define MICROPY_PY_RE                   (1)
 #define MICROPY_PY_BINASCII             (1)
 #define MICROPY_PY_UCTYPES              (1)
-#define MICROPY_PY_HEAPQ                (1)
 #define MICROPY_PY_RANDOM               (1)
 #define MICROPY_PY_PLATFORM             (1)
 
@@ -49,6 +47,8 @@ unsigned long trng_random_u32(int delay);
 
 // selected extensions of the extra features set
 #define MICROPY_PY_OS_URANDOM           (1)
+#define MICROPY_ENABLE_SOURCE_LINE      (SAMD21_EXTRA_FEATURES)
+#define MICROPY_PY_BUILTINS_HELP_MODULES (SAMD21_EXTRA_FEATURES)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (SAMD21_EXTRA_FEATURES)
 #define MICROPY_COMP_RETURN_IF_EXPR     (SAMD21_EXTRA_FEATURES)
 #define MICROPY_OPT_MPZ_BITWISE         (SAMD21_EXTRA_FEATURES)
