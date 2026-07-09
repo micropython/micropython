@@ -46,7 +46,7 @@ static void cell_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
 #define CELL_TYPE_PRINT
 #endif
 
-static MP_DEFINE_CONST_OBJ_TYPE(
+MP_DEFINE_CONST_OBJ_TYPE(
     // cell representation is just value in < >
     mp_type_cell, MP_QSTR_, MP_TYPE_FLAG_NONE
     CELL_TYPE_PRINT
