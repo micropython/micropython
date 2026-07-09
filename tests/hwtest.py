@@ -286,7 +286,9 @@ def main():
     cmd_parser.add_argument(
         "--build-natmods", action="store_true", help="build all/selected natmods"
     )
-    cmd_parser.add_argument("-s", "--tests", default=ALL_TEST_CODES, help="tests to run: " + ALL_TEST_CODES)
+    cmd_parser.add_argument(
+        "-s", "--tests", default=ALL_TEST_CODES, help="tests to run: " + ALL_TEST_CODES
+    )
     cmd_parser.add_argument(
         "-r", "--reference", default=None, help="reference device for WLAN and BLE tests"
     )
@@ -340,19 +342,19 @@ def main():
 
     print()
 
-    tests_natmod = [
+    tests_natmod = sorted(
         file for file in glob.iglob("extmod/*.py") if file.split("/")[1].startswith(NATMOD_LIBS)
-    ]
-    tests_multi_net = [file for file in glob.iglob("multi_net/*.py")]
-    tests_multi_wlan = [file for file in glob.iglob("multi_wlan/*.py")]
-    tests_multi_bluetooth = [
+    )
+    tests_multi_net = sorted(file for file in glob.iglob("multi_net/*.py"))
+    tests_multi_wlan = sorted(file for file in glob.iglob("multi_wlan/*.py"))
+    tests_multi_bluetooth = sorted(
         file for file in glob.iglob("multi_bluetooth/*.py") if "/stress_" not in file
-    ]
-    tests_multi_net_no_tls = [
+    )
+    tests_multi_net_no_tls = sorted(
         file
         for file in tests_multi_net
         if file.startswith(("multi_net/asyncio_tcp_", "multi_net/tcp_", "multi_net/udp_"))
-    ]
+    )
 
     # Remove existing results for all given targets.
     for target in targets:
@@ -407,9 +409,17 @@ def main():
                 if select_native and target.arch is not None:
                     run_cmds.append(("_native", run_tests_native_cmd))
                 for run_name, run_cmd in run_cmds:
-                    do_test("extmod_hardware" + run_name, run_cmd + ["-d", "extmod_hardware"], run_tests_target)
+                    do_test(
+                        "extmod_hardware" + run_name,
+                        run_cmd + ["-d", "extmod_hardware"],
+                        run_tests_target,
+                    )
                     if target.port == "pyboard":
-                        do_test("stm32_hardware" + run_name, run_cmd + ["-d", "ports/stm32_hardware"], run_tests_target)
+                        do_test(
+                            "stm32_hardware" + run_name,
+                            run_cmd + ["-d", "ports/stm32_hardware"],
+                            run_tests_target,
+                        )
 
             if select_wlan and target.has_wlan:
                 target.setup_wlan()
@@ -417,7 +427,9 @@ def main():
                     tests_net = tests_multi_net
                     if target.port == "esp8266":
                         tests_net = tests_multi_net_no_tls
-                    do_test("net", run_tests_cmd + ["-d", "net_hosted", "net_inet"], run_tests_target)
+                    do_test(
+                        "net", run_tests_cmd + ["-d", "net_hosted", "net_inet"], run_tests_target
+                    )
                     run_multitests_p2([target], tests_net)
                     if ref_target and ref_target.has_wlan_connected:
                         run_multitests_p2([target, ref_target], tests_net)
