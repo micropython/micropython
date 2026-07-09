@@ -32,6 +32,7 @@
 #include <sys/time.h>
 #include "driver/gpio.h"
 
+#include "genhdr/mpversion.h"
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -106,6 +107,12 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
+static void set_rtc(const timeutils_struct_time_t *tm) {
+    struct timeval tv = { 0 };
+    tv.tv_sec = timeutils_seconds_since_epoch(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+    settimeofday(&tv, NULL);
+}
+
 static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args, int hour_index) {
     if (n_args == 1) {
         // Get time
@@ -135,17 +142,15 @@ static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 8, &items);
 
-        struct timeval tv = {0};
-        tv.tv_sec = timeutils_seconds_since_epoch(
-            mp_obj_get_int(items[0]),
-            mp_obj_get_int(items[1]),
-            mp_obj_get_int(items[2]),
-            mp_obj_get_int(items[hour_index]),
-            mp_obj_get_int(items[hour_index + 1]),
-            mp_obj_get_int(items[hour_index + 2])
-            );
-        tv.tv_usec = mp_obj_get_int(items[7]);
-        settimeofday(&tv, NULL);
+        timeutils_struct_time_t tm = {
+            .tm_year = mp_obj_get_int(items[0]),
+            .tm_mon = mp_obj_get_int(items[1]),
+            .tm_mday = mp_obj_get_int(items[2]),
+            .tm_hour = mp_obj_get_int(items[hour_index]),
+            .tm_min = mp_obj_get_int(items[hour_index + 1]),
+            .tm_sec = mp_obj_get_int(items[hour_index + 2])
+        };
+        set_rtc(&tm);
 
         return mp_const_none;
     }
@@ -154,6 +159,17 @@ static mp_obj_t machine_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     return machine_rtc_datetime_helper(n_args, args, 4);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
+
+static mp_obj_t machine_rtc_set_build_date(mp_obj_t self_ignore) {
+    const timeutils_struct_time_t BUILD_DATE = {
+        .tm_year = MICROPY_BUILD_YEAR,
+        .tm_mon = MICROPY_BUILD_MONTH,
+        .tm_mday = MICROPY_BUILD_DAY,
+    };
+    set_rtc(&BUILD_DATE);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_set_build_date_obj, machine_rtc_set_build_date);
 
 static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
@@ -192,6 +208,7 @@ static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     #if MICROPY_HW_RTC_USER_MEM_MAX > 0
     { MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&machine_rtc_memory_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_set_build_date), MP_ROM_PTR(&machine_rtc_set_build_date_obj) },
 };
 static MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
