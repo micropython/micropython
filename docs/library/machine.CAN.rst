@@ -194,6 +194,10 @@ Methods
    .. note:: This intentionally low-level implementation is designed so the
       caller can establish a software queue of outgoing messages.
 
+   .. note:: The **Alif** port always returns 0, since the transmit buffer index is not reported by
+       the CAN controller.
+
+
    .. important:: The CAN "transmit queue" is not a FIFO queue, it is priority
                   ordered, and although it can hold up to `CAN.TX_QUEUE_LEN`
                   items there may be other hardware restrictions on messages
@@ -337,6 +341,10 @@ Methods
    transmission is cancelled and then the same buffer is used to send another
    message (especially if the CAN controller IRQ is not "hard").
 
+   .. note:: The **Alif** port cannot address a specific message to be cancelled.
+      Instead all messages in the TX queue will be cancelled.
+
+
 .. method:: CAN.state()
 
    Returns an integer value indicating the current state of the controller.
@@ -368,6 +376,9 @@ Methods
 
   .. note:: If a controller doesn't support a particular counter, it will return
             ``None`` for that list element.
+
+  .. note:: The **Alif** port cannot report the exact number of pending RX or TX messages. It
+            will report a number > 0, if messages are pending.
 
 .. method:: CAN.get_timings(list=None /)
 
