@@ -24,43 +24,24 @@
  * THE SOFTWARE.
  */
 
-// Wall-clock time for the time module, from RuntimeServices->GetTime (the
-// platform RTC). Included into extmod/modtime.c via MICROPY_PY_TIME_INCLUDEFILE
-// (not compiled standalone). Provides time(), time_ns(), and gmtime/localtime/
-// mktime via shared/timeutils.
+// Wall-clock time for the time module. Included into extmod/modtime.c via
+// MICROPY_PY_TIME_INCLUDEFILE (not compiled standalone). Provides time(), time_ns(),
+// and gmtime/localtime/mktime via shared/timeutils. All three views come from the one
+// anchored wall clock (mp_uefi_wall_ns, uefi_time.c): the RTC seeds the anchor and the
+// counter interpolates, so seconds and sub-seconds are always mutually coherent.
 
 #include "py/obj.h"
 #include "shared/timeutils/timeutils.h"
-#include "efi.h"
 #include "uefi_port.h"
 
-// Seconds since the MicroPython epoch from the RTC; *nanos_out gets the sub-second
-// part. Returns 0 if the RTC is unavailable.
-static mp_timestamp_t uefi_rtc_seconds(uint32_t *nanos_out) {
-    EFI_TIME t;
-    if (mp_uefi_st->RuntimeServices == NULL ||
-        EFI_ERROR(mp_uefi_st->RuntimeServices->GetTime(&t, NULL))) {
-        if (nanos_out != NULL) {
-            *nanos_out = 0;
-        }
-        return 0;
-    }
-    if (nanos_out != NULL) {
-        *nanos_out = t.Nanosecond;
-    }
-    return timeutils_seconds_since_epoch(t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second);
-}
-
 static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
-    timeutils_seconds_since_epoch_to_struct_time(uefi_rtc_seconds(NULL), tm);
+    timeutils_seconds_since_epoch_to_struct_time((mp_timestamp_t)(mp_uefi_wall_ns() / 1000000000ULL), tm);
 }
 
 static mp_obj_t mp_time_time_get(void) {
-    return mp_obj_new_int_from_ull((unsigned long long)uefi_rtc_seconds(NULL));
+    return mp_obj_new_int_from_ull((unsigned long long)(mp_uefi_wall_ns() / 1000000000ULL));
 }
 
 uint64_t mp_hal_time_ns(void) {
-    uint32_t ns;
-    mp_timestamp_t s = uefi_rtc_seconds(&ns);
-    return (uint64_t)timeutils_seconds_since_epoch_to_nanoseconds_since_1970(s) + ns;
+    return mp_uefi_wall_ns();
 }

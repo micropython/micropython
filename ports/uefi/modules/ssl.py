@@ -51,7 +51,10 @@ def wrap_socket(
     do_handshake=True,
 ):
     ctx = _tls.SSLContext(PROTOCOL_TLS_SERVER if server_side else PROTOCOL_TLS_CLIENT)
-    if key is not None and cert is not None:
+    # Load whenever either is supplied (upstream semantics): the tls layer validates
+    # and raises the right error for a bad or missing key/cert, rather than us silently
+    # skipping it when only one is given.
+    if cert is not None or key is not None:
         ctx.load_cert_chain(cert, key)
     if cadata is not None:
         ctx.load_verify_locations(cadata)

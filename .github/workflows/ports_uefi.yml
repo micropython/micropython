@@ -1,0 +1,121 @@
+name: uefi port
+
+# Runs the UEFI port's test suite (tests/run_uefi_tests.py, including tests/ports/uefi) on
+# QEMU, with each architecture on its OWN native runner so QEMU is same-ISA (fast, no
+# cross-emulation): aa64 on an arm64 runner, x64 on an x86-64 runner.
+#
+# The app is BUILT in the canonical dev image (clang/lld toolchain, run as the runner user so
+# artifacts aren't root-owned); QEMU runs directly on the runner HOST (pexpect/pyserial in a
+# venv). x86-64 runners expose /dev/kvm, so x64 runs under KVM (near-native); GitHub's arm64
+# runners don't, so aa64 runs under TCG. The runner logs QEMU's real accelerator via query-kvm.
+#
+# Scoped to the port-uefi-ci branch (and manual dispatch) so it does NOT run on the open PR
+# branch; it will be squashed into the port.
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'shared/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/uefi/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aa64
+            runs-on: ubuntu-24.04-arm   # native arm64 -> native aarch64 QEMU
+          - arch: x64
+            runs-on: ubuntu-24.04       # native x86-64 -> native x86-64 QEMU
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive          # lib/micropython-lib (unittest), lib/mbedtls (TLS), ...
+
+      # Docker is used only for the BUILD (toolchain isolation). QEMU is run directly on the
+      # runner host — faster, more stable, and with clean direct /dev/kvm access instead of
+      # a nested VM inside a container (which is where ARM nested-virt gets fragile).
+      - name: Install host QEMU + Python test deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qemu-system-arm qemu-system-x86
+          python3 -m venv .venv
+          .venv/bin/pip install --no-cache-dir pexpect pyserial
+
+      # `--target build` = the lean toolchain stage (no QEMU/venv/firmware), so this does
+      # NOT build EDK2. The release firmware is built + cached separately below.
+      - name: Build toolchain image
+        run: docker build -f ports/uefi/Dockerfile --target build -t mpy-uefi-dev ports/uefi
+
+      # Restore + save are split (not the combined actions/cache) so the SAVE is a normal
+      # step right after the build — the combined action saves in a post-job step that is
+      # skipped when the job fails or is cancelled, so an EDK2 build would never persist.
+      # Key hashes only the firmware sources, so editing this workflow doesn't invalidate it.
+      - name: Restore RELEASE firmware cache (EDK2 build is slow)
+        id: fwcache
+        uses: actions/cache/restore@v4
+        with:
+          path: ports/uefi/firmware/release
+          key: uefi-fw-release-${{ matrix.arch }}-${{ hashFiles('ports/uefi/Dockerfile', 'ports/uefi/docker/build-ovmf-release.sh') }}
+
+      - name: Build RELEASE firmware
+        if: steps.fwcache.outputs.cache-hit != 'true'
+        run: cd ports/uefi && bash docker/build-ovmf-release.sh
+
+      - name: Save RELEASE firmware cache
+        if: steps.fwcache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ports/uefi/firmware/release
+          key: uefi-fw-release-${{ matrix.arch }}-${{ hashFiles('ports/uefi/Dockerfile', 'ports/uefi/docker/build-ovmf-release.sh') }}
+
+      # Build+stage the app inside the dev image, but as the runner user (so the staged
+      # files aren't root-owned and the host run can write into esp/).
+      - name: Build + stage app (in container, ${{ matrix.arch }})
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/work" -w /work/ports/uefi mpy-uefi-dev make stage ARCH=${{ matrix.arch }}
+
+      # Run the suite with QEMU directly on the host. Use KVM if the runner exposes
+      # /dev/kvm (near-native: per-test app (re)launches cost ~ms not ~seconds); the runner
+      # logs QEMU's actual accelerator via query-kvm. GitHub's ARM64 runners don't expose
+      # /dev/kvm, so aa64 falls back to TCG there.
+      - name: Run test suite on host (${{ matrix.arch }})
+        run: |
+          cd ports/uefi
+          if [ -e /dev/kvm ]; then
+            # /dev/kvm is root:kvm; the runner user isn't in the kvm group, so QEMU (run
+            # on the host, not as root) gets EPERM without this. chmod is the standard
+            # GitHub-Actions approach (immediate, unlike a group change).
+            sudo chmod 666 /dev/kvm
+            echo "::notice::/dev/kvm present — requesting KVM (confirmed by the query-kvm log line)"
+            export UEFI_TEST_ACCEL=kvm UEFI_TEST_CPU=host
+          else
+            echo "::warning::/dev/kvm absent — TCG software emulation (slow)"
+          fi
+          UEFI_TEST_SERIAL_LOG="$RUNNER_TEMP/serial.log" \
+          UEFI_TEST_ARCH=${{ matrix.arch }} PYTHONUNBUFFERED=1 "$GITHUB_WORKSPACE/.venv/bin/python" -u tests/run_uefi_tests.py
+
+      - name: Print failures
+        if: failure()
+        run: cd tests && "$GITHUB_WORKSPACE/.venv/bin/python" run-tests.py --print-failures || true
+
+      - name: Dump serial log on failure (boot/relaunch diagnosis)
+        if: failure()
+        run: |
+          echo "===== last 200 lines of the guest serial log ====="
+          tail -n 200 "$RUNNER_TEMP/serial.log" 2>/dev/null || echo "(no serial log captured)"

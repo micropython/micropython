@@ -761,11 +761,14 @@ static mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_arg_check_num(n_args, n_kw, 0, 3, false);
     int af = n_args > 0 ? mp_obj_get_int(args[0]) : MOD_AF_INET;
     int stype = n_args > 1 ? mp_obj_get_int(args[1]) : MOD_SOCK_STREAM;
+    // Unsupported family/type are reported as OSError (like a real socket() syscall:
+    // EAFNOSUPPORT / EINVAL), not NotImplementedError — CPython and the mainline ports
+    // raise OSError here, and callers (e.g. socket_badconstructor) catch it as such.
     if (af != MOD_AF_INET) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("only AF_INET (IPv4) supported"));
+        mp_raise_OSError(MP_EAFNOSUPPORT);
     }
     if (stype != MOD_SOCK_DGRAM && stype != MOD_SOCK_STREAM && stype != MOD_SOCK_RAW) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("SOCK_STREAM / SOCK_DGRAM / SOCK_RAW only"));
+        mp_raise_OSError(MP_EINVAL);
     }
     socket_obj_t *s = mp_obj_malloc_with_finaliser(socket_obj_t, type);
     s->type = (uint8_t)stype;
@@ -1131,6 +1134,11 @@ static mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
         // Readiness for select / asyncio. TCP readability is driven by the
         // persistent Receive (its notify wakes the idle loop); we report writable
         // optimistically (send blocks per timeout).
+        // A closed socket is an invalid descriptor: report POLLNVAL, as a real
+        // poll() would for a dead fd (mainline ports get this from the host poll()).
+        if (s->closed) {
+            return MP_STREAM_POLL_NVAL;
+        }
         mp_uint_t flags = arg;
         mp_uint_t ret = 0;
         if ((flags & MP_STREAM_POLL_RD) && s->type == MOD_SOCK_STREAM && !s->closed && s->listening) {

@@ -77,22 +77,25 @@ Deferred features and finer gaps are tracked in `TODO.md`.
 
 ## Build & test
 
-All commands run in the canonical Docker dev image (`mpy-uefi-dev`); from the host, wrap with
-`make docker-<target>` or `docker run … mpy-uefi-dev make <target>`. `ARCH` is `aa64` (default)
-or `x64`.
+Build/dev commands run in the canonical Docker dev image (`mpy-uefi-dev`); from the host, wrap
+with `make docker-<target>` or `docker run … mpy-uefi-dev make <target>`. `make test` is the
+exception — it builds+stages in the container but drives QEMU **natively on the host** (so it
+runs on the machine's own architecture, fast, no cross-emulation). `ARCH` is `aa64` (default)
+or `x64`; `make test` picks the host's native arch automatically.
 
 | Command | What it does |
 |---|---|
-| `make test` | Build + boot the headless selftest in QEMU; the authoritative pass/fail signal. |
-| `make test-net` | `make test` on the network firmware (virtio-net on SLIRP) — runs the DHCP/DNS/socket/TLS tests and the host-driven server + TLS-peer tests. |
-| `make test-gfx` | `make test` with a display adapter so the GOP path runs (headless). |
-| `make test-repl` | Drive the live serial REPL with pexpect. |
-| `make test-tls` | Build + run the selftest under each TLS backend in turn (parity gate). |
+| `make test` | Run the upstream test suite (including the port's own `tests/ports/uefi` checks) over the byte-clean raw REPL against QEMU on the host's **native** arch; the authoritative pass/fail signal. `TESTS=…` passes extra flags/files. |
+| `make test-gfx` / `make test-net` | `make test` plus a headless display adapter (GOP/Display tests run) / a NIC + network firmware (network tests run). |
+| `make test-repl` / `test-runfile` / `test-bootopt` | Interactive & launch-path smoke checks (`tests/harness.py`): drive the live REPL / a shell-launched script / a boot-option script. |
 | `make run` / `run-gfx` | Interactive serial REPL / a real graphics window (host-only). |
 
-Determinism: tests are hermetic (frozen selftest + an exit device — x64 `isa-debug-exit`, aa64 a
-serial sentinel), never timing-dependent; always pass a timeout. The network firmware is built
-separately with `bash docker/build-ovmf-net.sh` (adds the DNS/HTTP/**TLS** stack + VirtioNetDxe).
+Determinism: the port tests self-check with fixed output and a committed `.py.exp`; between
+tests the runner cleanly exits the app and the EFI Shell's `startup.nsh` relaunches a fresh,
+hermetic interpreter (no QEMU reset), and it meters uploads with the REPL's raw-paste flow
+control (no timing guesswork). Always pass a timeout. The all-protocols network firmware
+(RELEASE + the DNS/HTTP/**TLS** stack + VirtioNetDxe) is built with
+`bash docker/build-ovmf-release-net.sh`.
 
 ## Layout
 

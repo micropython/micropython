@@ -23,15 +23,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Headless boot-and-assert driver for the MicroPython UEFI port.
+"""Interactive / launch-path smoke checks for the MicroPython UEFI port.
 
-The authoritative pass/fail signal behind `make test`. Boots the staged ESP under
-QEMU + firmware for the chosen ARCH, then decides pass/fail deterministically:
-
-  * x64  : QEMU `isa-debug-exit` -> process exit code 33 == pass (corroborated by
-           the serial sentinel).
-  * aa64 : no isa-debug-exit on the `virt` machine; key on the serial sentinel and a
-           clean guest shutdown.
+The full test suite is run by tests/run_uefi_tests.py (`make test`) over the raw REPL.
+This harness covers the checks that don't fit that model — driving the live REPL
+(`--mode repl`), a shell-launched script (`--mode runfile`), and a boot-option script
+(`--mode bootopt`) — booting the staged ESP under QEMU + firmware for the chosen ARCH.
 
 Designed to run inside the dev container (firmware seeded from /opt/ovmf into
 ./firmware by the Makefile). Always pass a timeout so a bad boot fails fast.
@@ -47,18 +44,21 @@ import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent  # ports/uefi
 FW = ROOT / "firmware"
-FW_NET = FW / "net"  # network-enabled firmware (docker/build-ovmf-net.sh)
 ESP = ROOT / "esp"
 
 
+# net_flags / graphics_flags below are the QEMU device flags for a NIC / a display
+# adapter. They are imported by tests/run_uefi_tests.py for its --net / --graphics modes;
+# this harness's own repl/runfile/bootopt smoke checks run bare (no NIC/display).
 def net_flags(arch: str) -> list[str]:
     """QEMU devices for a working UEFI network stack reaching SLIRP user-net.
 
     virtio-rng is MANDATORY: the EDK2 upper network stack (IP4/DHCP/TCP) has a DEPEX
     on gEfiRngProtocol, produced only by VirtioRngDxe — without it only SNP loads and
-    ifconfig/IP4Config2 never appear. Slots are pinned on aa64 so the NIC/RNG don't
-    take slot 0x2 and shift the ESP disk's device path (which would drop AAVMF into
-    the Shell). SLIRP hands out 10.0.2.15 / gw 10.0.2.2 / DNS 10.0.2.3 deterministically.
+    ifconfig/IP4Config2 never appear. Slots are pinned on aa64 so the NIC/RNG don't take
+    slot 0x2 and shift the ESP disk's PCIe address — which would move it off FS0:, the
+    filesystem the Shell's startup.nsh selects to launch the app. SLIRP hands out
+    10.0.2.15 / gw 10.0.2.2 / DNS 10.0.2.3 deterministically.
     """
     rng_addr = ",addr=0xc" if arch == "aa64" else ""
     nic_addr = ",addr=0xb" if arch == "aa64" else ""
@@ -76,94 +76,9 @@ def net_flags(arch: str) -> list[str]:
     ]
 
 
+# hostfwd ports for net_flags (used when a NIC is attached).
 NET_SERVER_PORT = 8888
 NET_SERVER_PORT2 = 8889
-# The guest reaches a host TLS server at 10.0.2.2 (SLIRP gateway -> host loopback);
-# no hostfwd needed for guest->host. This is the TLS peer for the T-series.
-TLS_SERVER_PORT = 8890
-TLS_CERT = ROOT / "tests" / "tls_test_cert.pem"
-TLS_KEY = ROOT / "tests" / "tls_test_key.pem"
-
-
-def _ensure_tls_cert():
-    """Generate the throwaway TLS test cert/key on demand (they're git-ignored).
-    Normally `make stage` produces them first; this covers a direct harness run."""
-    if not (TLS_CERT.exists() and TLS_KEY.exists()):
-        subprocess.run(["bash", str(ROOT / "tests" / "gen-tls-test-cert.sh")], check=True)
-
-
-def _tls_echo_server(port, deadline, result):
-    """Host TLS echo peer: accept, handshake with the self-signed test cert, echo one
-    payload. Runs until the guest completes an exchange or the deadline passes."""
-    import socket as pysock
-    import ssl as pyssl
-
-    ctx = pyssl.SSLContext(pyssl.PROTOCOL_TLS_SERVER)
-    ctx.load_cert_chain(str(TLS_CERT), str(TLS_KEY))
-    srv = pysock.socket(pysock.AF_INET, pysock.SOCK_STREAM)
-    srv.setsockopt(pysock.SOL_SOCKET, pysock.SO_REUSEADDR, 1)
-    try:
-        srv.bind(("127.0.0.1", port))
-    except OSError as e:
-        result["err"] = "bind: " + str(e)
-        return
-    srv.listen(5)
-    srv.settimeout(1.0)
-    # Serve every connection until the deadline: the guest opens several (T1 echo,
-    # T2a verify-ok, T2b verify-reject). A rejected client aborts the handshake, so
-    # our wrap_socket raises — expected; keep serving.
-    result["served"] = 0
-    while time.time() < deadline:
-        try:
-            conn, _ = srv.accept()
-        except OSError:
-            continue
-        try:
-            conn.settimeout(10.0)
-            tconn = ctx.wrap_socket(conn, server_side=True)
-            data = tconn.recv(64)
-            if data:
-                tconn.sendall(data)
-                result["echo"] = data
-                result["ok"] = True
-                result["served"] += 1
-            tconn.close()
-        except OSError as e:
-            result["err"] = str(e)  # e.g. the T2b client rejecting our cert
-    srv.close()
-
-
-def _net_server_probe(port, deadline, result, payload=b"HELLO-FROM-HOST"):
-    """Host client for a guest server test: connect to the guest (via hostfwd),
-    send a payload, and record the echo. Retries until the guest is listening."""
-    import socket as pysock
-
-    while time.time() < deadline:
-        try:
-            c = pysock.create_connection(("127.0.0.1", port), timeout=2)
-        except OSError:
-            time.sleep(0.3)
-            continue
-        try:
-            # The guest binds its listener only when it reaches this test, so an early
-            # connect can be RST (SLIRP can't reach a guest port yet) or read empty.
-            # Keep retrying the whole exchange until we get the echo, or the deadline.
-            c.settimeout(max(2.0, min(30.0, deadline - time.time())))
-            c.sendall(payload)
-            echo = c.recv(64)
-            if echo:
-                result["echo"] = echo
-                result["ok"] = echo == payload
-                return
-        except OSError as e:
-            result["err"] = str(e)
-        finally:
-            c.close()
-        time.sleep(0.3)
-
-
-X64_SUCCESS = 33  # (0x10 << 1) | 1
-SENTINEL_PASS = "MPY-UEFI: SELFTEST PASS"  # printed by main.c on success
 
 
 def graphics_flags(arch: str, mode: str) -> list[str]:
@@ -190,8 +105,8 @@ def graphics_flags(arch: str, mode: str) -> list[str]:
     else:
         # 'virt' has no legacy VGA; virtio-gpu-pci supports EDID-driven sizing. Pin
         # the PCIe slots (GPU 0x9, xHCI 0xa) so they don't take slot 0x2 and shift
-        # the boot disk's address — which would invalidate AAVMF's cached boot
-        # option and drop us into the UEFI Shell instead of auto-launching.
+        # the boot disk's address — which would move the ESP off FS0:, the filesystem
+        # the Shell's startup.nsh selects to launch the app.
         dev = ["-device", f"virtio-gpu-pci,edid=on,xres={xres},yres={yres},addr=0x9"]
         kbd = ["-device", "qemu-xhci,addr=0xa", "-device", "usb-kbd"]
     if mode == "window":
@@ -200,10 +115,8 @@ def graphics_flags(arch: str, mode: str) -> list[str]:
     return dev + kbd + ["-display", "none"]
 
 
-def qemu_cmd(
-    arch: str, serial: str = "file", gdb: bool = False, graphics: str = "off", net: bool = False
-) -> list[str]:
-    fw = FW_NET if net else FW  # network firmware for --net, lean default otherwise
+def qemu_cmd(arch: str, serial: str = "file") -> list[str]:
+    fw = FW
     common = ["-m", "512M", "-no-reboot"]
     drives = ["-drive", f"format=raw,file=fat:rw:{ESP}"]
     if arch == "x64":
@@ -239,11 +152,9 @@ def qemu_cmd(
     else:
         raise SystemExit(f"unknown arch {arch!r} (use x64 or aa64)")
     cmd += common
-    if net:
-        cmd += net_flags(arch)
-    cmd += ["-display", "none"] if graphics == "off" else graphics_flags(arch, graphics)
-    # "file": serial captured to a log (selftest). "stdio": serial on the process
-    # stdin/stdout so the REPL can be driven (repl mode). Monitor disabled either way.
+    cmd += ["-display", "none"]
+    # "file": serial captured to a log. "stdio": serial on the process stdin/stdout so
+    # the REPL can be driven (repl/runfile/bootopt modes). Monitor disabled either way.
     if serial == "stdio":
         # signal=off so a Ctrl-C (0x03) on stdin is delivered to the guest serial
         # (our ConIn) instead of raising SIGINT in QEMU and killing it — required
@@ -258,8 +169,6 @@ def qemu_cmd(
         ]
     else:
         cmd += ["-serial", f"file:{FW}/serial.log", "-monitor", "none"]
-    if gdb:
-        cmd += ["-gdb", "tcp::1234"]
     return cmd
 
 
@@ -275,60 +184,6 @@ def _print_tail(name: str, n: int = 40) -> None:
         print(_tail(p.read_text(errors="replace"), n))
 
 
-def run_selftest(arch: str, timeout: int = 60, graphics: str = "off", net: bool = False) -> int:
-    FW.mkdir(exist_ok=True)
-    (FW / "serial.log").write_text("")
-    (FW / "debug.log").write_text("")
-    probe: dict = {}
-    probe2: dict = {}
-    tls_probe: dict = {}
-    if net:
-        # Drive the guest's TCP servers from the host while QEMU runs: the blocking
-        # accept (N6) on NET_SERVER_PORT, the asyncio.start_server (N6b) on ...PORT2.
-        # Also run a host TLS echo peer the guest connects OUT to (T-series).
-        _ensure_tls_cert()
-        deadline = time.time() + timeout
-        threading.Thread(
-            target=_net_server_probe, args=(NET_SERVER_PORT, deadline, probe), daemon=True
-        ).start()
-        threading.Thread(
-            target=_net_server_probe,
-            args=(NET_SERVER_PORT2, deadline, probe2, b"ASYNC-FROM-HOST"),
-            daemon=True,
-        ).start()
-        threading.Thread(
-            target=_tls_echo_server, args=(TLS_SERVER_PORT, deadline, tls_probe), daemon=True
-        ).start()
-    try:
-        proc = subprocess.run(qemu_cmd(arch, graphics=graphics, net=net), timeout=timeout)
-        rc = proc.returncode
-    except subprocess.TimeoutExpired:
-        print(f"FAIL: QEMU timed out after {timeout}s")
-        _print_tail("serial.log")
-        return 1
-
-    if net:
-        print(f"host->guest server probe (N6):  {probe or 'no connection'}")
-        print(f"host->guest server probe (N6b): {probe2 or 'no connection'}")
-        print(f"guest->host TLS echo peer (T1): {tls_probe or 'no connection'}")
-    log = (FW / "serial.log").read_text(errors="replace")
-    sentinel = SENTINEL_PASS in log
-    ok = (rc == X64_SUCCESS or sentinel) if arch == "x64" else sentinel
-
-    if ok:
-        print(f"PASS ({arch}, qemu exit {rc}, sentinel found)")
-        return 0
-    print(f"FAIL ({arch}, qemu exit {rc}, sentinel={'yes' if sentinel else 'no'})")
-    _print_tail("serial.log")
-    if arch == "x64":
-        _print_tail("debug.log")
-    return 1
-
-
-# (input line, substring expected in the response) pairs driven over the live REPL.
-# \x7f exercises the Delete key (TerminalDxe surfaces it as SCAN_DELETE): the two
-# deletes must erase "zz", leaving "11 * 11" -> 121. If Delete didn't erase, the
-# line would be "zz11 * 11" and raise NameError instead.
 REPL_STEPS = [
     ("2 + 3", "5"),
     ("zz\x7f\x7f11 * 11", "121"),
@@ -504,6 +359,103 @@ def run_runfile(arch: str, timeout: int = 60) -> int:
     return 1
 
 
+# Script (run in phase 1, in the shell/ShellParameters flow) that writes a Boot####
+# entry whose device path points at our own app on the boot volume and whose
+# OptionalData is the command line "argtest.py", then points BootNext at it. NOTE the
+# manual UTF-16LE encoder: MicroPython's str.encode("utf-16-le") silently emits UTF-8,
+# which would corrupt the file-path node and the optional data.
+_BOOTOPT_MK = r"""def u16(s):
+    b = bytearray()
+    for ch in s:
+        c = ord(ch); b.append(c & 0xFF); b.append((c >> 8) & 0xFF)
+    return bytes(b)
+import uefi
+from uefi import boot as BT, protocols as P, variable as V, guid as G, device_path as DP
+img = uefi.Handle(uefi.raw.image_handle())
+li = P.LOADED_IMAGE.open(img)
+voldp = uefi.Handle(li.device_handle).device_path()
+li.close()
+node = DP.DevicePathNode(DP.MEDIA, DP.MEDIA_FILEPATH, u16("\\EFI\\BOOT\\__EFI__\x00"))
+full = DP.DevicePath(list(voldp) + [node])
+lo = BT.LoadOption("MP LoadOpt Test", full, u16("argtest.py\x00"))
+a = V.NON_VOLATILE | V.BOOTSERVICE_ACCESS | V.RUNTIME_ACCESS
+V.set("Boot0007", G.GLOBAL_VARIABLE, lo.to_bytes(), a)
+V.set("BootNext", G.GLOBAL_VARIABLE, b"\x07\x00", a)
+print("MKBOOT-OK")
+"""
+
+
+def _cmd_with_vars(arch: str, vars_path: str) -> list[str]:
+    """qemu_cmd (serial on stdio) with the pflash VARS store swapped for `vars_path`,
+    so the two boot phases share a private, writable variable store."""
+    vfile = str(FW / ("AAVMF_VARS.fd" if arch == "aa64" else "OVMF_VARS.fd"))
+    return [arg.replace(vfile, str(vars_path)) for arg in qemu_cmd(arch, serial="stdio")]
+
+
+def run_bootopt(arch: str = "aa64", timeout: int = 60) -> int:
+    """Verify the app consumes a boot option's OptionalData as its command line — the
+    boot-manager launch path (LoadedImage->LoadOptions), distinct from the shell
+    (ShellParameters) path. Two phases share one private vars store: phase 1 (shell)
+    runs a script that writes a Boot#### entry (device path -> our app, OptionalData
+    "argtest.py") and BootNext; phase 2 boots fresh, so BDS honours BootNext and
+    launches us with those LoadOptions. Hermetic; uses the aa64 startup.nsh shell flow.
+    """
+    import pexpect
+    import shutil
+    import tempfile
+
+    efi = "BOOTAA64.EFI" if arch == "aa64" else "BOOTX64.EFI"
+    normal_nsh = "@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\%s\r\n" % efi
+    (ESP / "mkbootnext.py").write_text(_BOOTOPT_MK.replace("__EFI__", efi))
+    (ESP / "argtest.py").write_text('import sys\nprint("LOADOPT", sys.argv)\n')
+    vars_src = FW / ("AAVMF_VARS.fd" if arch == "aa64" else "OVMF_VARS.fd")
+    tv = tempfile.NamedTemporaryFile(suffix="_VARS.fd", delete=False)
+    tv.close()
+    shutil.copy(vars_src, tv.name)
+
+    def _phase(want: str) -> bool:
+        cmd = _cmd_with_vars(arch, tv.name)
+        child = pexpect.spawn(
+            cmd[0], cmd[1:], timeout=timeout, encoding="utf-8", codec_errors="replace"
+        )
+        try:
+            child.expect_exact(want)
+            return True
+        except (pexpect.TIMEOUT, pexpect.EOF):
+            return False
+        finally:
+            if child.isalive():
+                child.terminate(force=True)
+
+    p1 = p2 = False
+    try:
+        # Phase 1: shell writes the boot option + BootNext (persisted to the vars store).
+        (ESP / "startup.nsh").write_text(
+            "@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\%s mkbootnext.py\r\nexit\r\n" % efi
+        )
+        p1 = _phase("MKBOOT-OK")
+        # Phase 2: fresh boot; BDS honours BootNext -> app launched with LoadOptions.
+        (ESP / "startup.nsh").write_text("@echo -off\r\n")
+        p2 = _phase("LOADOPT ['argtest.py']")
+    finally:
+        (ESP / "startup.nsh").write_text(normal_nsh)  # restore normal auto-launch
+        for f in ("mkbootnext.py", "argtest.py"):
+            try:
+                (ESP / f).unlink()
+            except OSError:
+                pass
+        try:
+            os.unlink(tv.name)
+        except OSError:
+            pass
+
+    if p1 and p2:
+        print(f"PASS (bootopt {arch}): boot-option OptionalData ran as the command line")
+        return 0
+    print(f"FAIL (bootopt {arch}): setup={p1} launch={p2}")
+    return 1
+
+
 def main() -> int:
     # Docker hands us a non-blocking stdout pipe; force blocking so large or
     # bursty writes can't raise BlockingIOError mid-print.
@@ -511,29 +463,19 @@ def main() -> int:
         os.set_blocking(sys.stdout.fileno(), True)
     except (ValueError, OSError):
         pass
+    # The full test suite is run by tests/run_uefi_tests.py (make test); this harness
+    # covers the interactive/launch-path smoke checks that don't fit the raw-REPL runner.
     ap = argparse.ArgumentParser()
     ap.add_argument("--arch", choices=["x64", "aa64"], default="aa64")
-    ap.add_argument("--mode", choices=["selftest", "repl", "runfile"], default="selftest")
-    ap.add_argument(
-        "--graphics",
-        choices=["off", "headless", "window"],
-        default="off",
-        help="attach a display adapter so GOP is published (default: off)",
-    )
+    ap.add_argument("--mode", choices=["repl", "runfile", "bootopt"], default="repl")
     ap.add_argument("--timeout", type=int, default=60)
-    ap.add_argument(
-        "--net",
-        action="store_true",
-        help="use the network firmware (firmware/net) + a virtio-net NIC on SLIRP",
-    )
     ap.add_argument("path", nargs="?")
     a = ap.parse_args()
-    if a.mode == "repl":
-        return run_repl(a.arch, max(a.timeout, 90))
     if a.mode == "runfile":
         return run_runfile(a.arch, max(a.timeout, 60))
-    # Network firmware boots slower and the self-test polls up to ~20s for a lease.
-    return run_selftest(a.arch, max(a.timeout, 120) if a.net else a.timeout, a.graphics, net=a.net)
+    if a.mode == "bootopt":
+        return run_bootopt(a.arch, max(a.timeout, 60))
+    return run_repl(a.arch, max(a.timeout, 90))
 
 
 if __name__ == "__main__":

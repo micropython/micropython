@@ -26,25 +26,35 @@
 
 // Configuration for the MicroPython UEFI port (aarch64 + x86-64/MS-ABI).
 //
-// Based on CORE_FEATURES (below), with double-precision float, MPZ ints, the
-// async/timing framework, a VFS over EFI_SIMPLE_FILE_SYSTEM, frozen asyncio, and
-// the host-independent stdlib modules switched on. See README.md.
+// Based on EXTRA_FEATURES, with double-precision float, MPZ ints, the async/timing
+// framework, a VFS over EFI_SIMPLE_FILE_SYSTEM, and frozen asyncio. See README.md.
 
 #include <stdint.h>
 
-// Base on the CORE feature set (a usable Python: full builtins, async/await, the
-// standard library surface), then disable what the freestanding UEFI environment
-// can't support yet and enable the port-specific extras below.
-#define MICROPY_CONFIG_ROM_LEVEL            (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+// Base on the EXTRA feature set — the level used by the "big" ports (unix standard,
+// webassembly). UEFI targets run on full PCs with ample RAM/flash, so the natural
+// baseline is a full-featured Python; we then disable only what the freestanding UEFI
+// environment genuinely can't support (native/viper emitter and real threads are not
+// ROM-gated and stay off separately) and add the port-specific extras below.
+#define MICROPY_CONFIG_ROM_LEVEL            (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
 // Named errors/tracebacks (the MINIMUM default is terse, which hides identifiers).
 #define MICROPY_ERROR_REPORTING            (MICROPY_ERROR_REPORTING_NORMAL)
+
+// Emergency exception buffer: preserves an exception's args + traceback when it's raised
+// with no heap available (e.g. from a scheduled/ISR-context callback). Not ROM-gated.
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 
 // GC is off by default; the REPL helpers + keyboard-interrupt are EXTRA-level.
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_HELPER_REPL                 (1)
 #define MICROPY_REPL_AUTO_INDENT            (1)
 #define MICROPY_KBD_EXCEPTION               (1)
+// raw-REPL raw-paste flow-control window (bytes the host may have in flight before the
+// first grant). Pinned here because reliability of the paste upload couples it to the
+// stdin ring: MICROPY_UEFI_STDIN_BUFFER_LEN (uefi_event.c) must be comfortably larger
+// than twice this. Default is 256; keep them in step if either changes.
+#define MICROPY_REPL_STDIN_BUFFER_MAX       (256)
 
 // ConOut is a UTF-16 terminal-emulation API, not a byte-clean pipe: it does not
 // interpret raw VT100 escapes (e.g. erase-to-EOL "\x1b[K"). Keep VT100 off and let
@@ -233,6 +243,8 @@ unsigned int mp_uefi_random_seed(void);
 #define MICROPY_PY_MATH_FACTORIAL           (1)
 #define MICROPY_PY_MATH_ISCLOSE             (1)
 #define MICROPY_PY_COLLECTIONS_DEQUE        (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE_ITER   (1)  // iterate a deque
+#define MICROPY_PY_COLLECTIONS_DEQUE_SUBSCR (1)  // index a deque (d[i])
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT  (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -259,12 +271,20 @@ unsigned int mp_uefi_random_seed(void);
 #define MICROPY_PY_DELATTR_SETATTR          (1)  // __delattr__/__setattr__
 #define MICROPY_PY_SYS_PS1_PS2              (1)  // sys.ps1 / sys.ps2 custom prompts
 #define MICROPY_PY_SYS_TRACEBACKLIMIT       (1)
+#define MICROPY_PY_FUNCTION_ATTRS           (1)  // function.__name__ / __globals__
+// Source line numbers in tracebacks (a few bytes of bytecode per line map). Off at
+// CORE_FEATURES; worth it for readable exceptions and CPython-matching tracebacks.
+#define MICROPY_ENABLE_SOURCE_LINE          (1)
 // weakref.ref()/finalize(): real weak references (the GC integration in gc.c is
 // gated on this flag). EVERYTHING-level by default.
 #define MICROPY_PY_WEAKREF                  (1)
 
-// sys: path is on by default (seeds ".frozen" for frozen imports). Trim the rest.
-#define MICROPY_PY_SYS_MODULES              (0)
+// Honour a module's __all__ in `from x import *` (CPython-compatible import).
+#define MICROPY_MODULE___ALL__             (1)
+
+// sys: path is on by default (seeds ".frozen" for frozen imports).
+#define MICROPY_PY_SYS_MODULES              (1) // sys.modules (import machinery + tests)
+#define MICROPY_PY_SYS_MAXSIZE              (1) // sys.maxsize
 #define MICROPY_PY_SYS_EXIT                 (1) // required by MICROPY_PY_MACHINE
 #define MICROPY_PY_SYS_ARGV                 (1) // populated when launched as `app.efi script.py ...`
 
@@ -283,6 +303,10 @@ unsigned int mp_uefi_random_seed(void);
 typedef intptr_t mp_int_t;   // must be pointer-sized
 typedef uintptr_t mp_uint_t; // must be pointer-sized
 typedef long mp_off_t;
+
+// The core defaults MP_SSIZE_MAX to SSIZE_MAX (a POSIX <sys/types.h> symbol our
+// freestanding libc lacks). mp_int_t is intptr_t, so its max is INTPTR_MAX.
+#define MP_SSIZE_MAX (INTPTR_MAX)
 
 #define MICROPY_HW_BOARD_NAME "uefi"
 #define MICROPY_HW_MCU_NAME   "x86-64/aarch64"

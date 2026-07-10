@@ -31,12 +31,14 @@
 // Lifecycle (Model B, like the mainline ports): an armed timer holds a live UEFI
 // event whose notify references it, so it is kept alive by a GC-root registry —
 // dropping the Python reference does not stop an active timer; deinit() does, and
-// machine_timer_deinit_all() stops everything at interpreter teardown. Callbacks
-// are soft: the notify (hard-ISR context, TPL_CALLBACK) only schedules them.
+// machine_timer_deinit_all() stops everything at interpreter teardown. Callbacks may be
+// soft (scheduled to run later at TPL_APPLICATION) or hard (`hard=True` — run directly in
+// the notify's TPL_CALLBACK context with the heap locked); see machine_timer_notify.
 
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "shared/runtime/mpirq.h"
 #include "uefi_port.h"
 #include "efi.h"
 
@@ -49,6 +51,7 @@ typedef struct _machine_timer_obj_t {
     uint32_t mode;
     uint64_t period_us;  // expiry interval
     mp_obj_t callback;   // Python callable(timer), or mp_const_none
+    bool ishard;         // hard IRQ: run callback in notify context (heap locked)
     struct _machine_timer_obj_t *next; // registry link while armed
 } machine_timer_obj_t;
 
@@ -76,13 +79,18 @@ static void machine_timer_unlink(machine_timer_obj_t *self) {
     }
 }
 
-// Timer-event notify: hard-ISR context (TPL_CALLBACK). Schedule the Python
-// callback to run at a safe point; never call into the VM from here.
+// Timer-event notify: runs in hard-ISR context (TPL_CALLBACK), on the foreground stack
+// (UEFI dispatches CALLBACK notifies at a TPL transition, so the interpreter's stack
+// limit still applies). mp_irq_dispatch does the right thing for each kind: a soft IRQ
+// (ishard=false) is only scheduled, to run later at TPL_APPLICATION with the heap live;
+// a hard IRQ (ishard=true) runs the callback right here with the GC and scheduler locked
+// (so it must not allocate — the usual hard-IRQ caveat), nlr-guarded.
 static void EFIAPI machine_timer_notify(EFI_EVENT event, void *context) {
     (void)event;
     machine_timer_obj_t *self = context;
-    if (self->callback != mp_const_none) {
-        mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception in a hard-IRQ callback: disable it so it can't refire.
+        self->callback = mp_const_none;
     }
 }
 
@@ -120,13 +128,14 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq };
+    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_PERIODIC} },
         { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_period,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_tick_hz,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_hard,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -145,6 +154,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
         self->period_us = 1;
     }
     self->callback = args[ARG_callback].u_obj;
+    self->ishard = args[ARG_hard].u_bool;
 
     if (self->event == NULL) {
         if (EFI_ERROR(mp_uefi_create_timer(machine_timer_notify, self, &self->event))) {
@@ -162,6 +172,7 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     machine_timer_obj_t *self = mp_obj_malloc_with_finaliser(machine_timer_obj_t, &machine_timer_type);
     self->event = NULL;
     self->callback = mp_const_none;
+    self->ishard = false;
     self->next = NULL;
 
     // Optional leading timer id; only the virtual timer (-1) is supported.

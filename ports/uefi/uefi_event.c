@@ -45,8 +45,14 @@
 #include "uefi_port.h"
 
 // --- stdin ring buffer, filled by the ConIn poll notify (the "RX ISR") ---
+// Sizing matters for the raw-REPL raw-paste upload path (the test harness): raw-paste
+// lets the host have up to MICROPY_REPL_STDIN_BUFFER_MAX bytes in flight before the
+// first flow-control grant (the device advertises a buf_max/2 window and implicitly
+// grants two of them). A whole poll's worth can land in the ring in one notify, so the
+// ring must be comfortably LARGER than twice that ceiling — 1 KiB vs a 256 B ceiling.
+// A byte dropped here (ringbuf_put on a full ring) silently corrupts the uploaded script.
 #ifndef MICROPY_UEFI_STDIN_BUFFER_LEN
-#define MICROPY_UEFI_STDIN_BUFFER_LEN (256)
+#define MICROPY_UEFI_STDIN_BUFFER_LEN (1024)
 #endif
 static uint8_t stdin_ringbuf_array[MICROPY_UEFI_STDIN_BUFFER_LEN];
 static ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
@@ -61,6 +67,24 @@ static int interrupt_char = -1;
 static EFI_EVENT wakeup_event;
 static EFI_EVENT wfe_timer;
 static EFI_EVENT conin_timer;
+
+// The DXE core's low-level periodic tick (EFI_TIMER_ARCH_PROTOCOL) is the granularity of
+// every BootServices timer event we use (WFE timeout, machine.Timer). The firmware default
+// is coarse (~10 ms on AAVMF), which shows up as up to ~10 ms of sleep/timer jitter. We
+// retune it finer while we run, then restore it. 2.5 ms is a deliberate middle ground:
+// fine enough that jitter is well under a typical 10 ms tolerance, but 4x coarser than
+// 1 ms — bounding the extra interrupt load and, more importantly, avoiding swamping any
+// firmware consumer that registered a sub-tick periodic timer with a slow handler.
+#define MPY_UEFI_TIMER_PERIOD_100NS (25000ULL) // 2.5 ms
+static EFI_TIMER_ARCH_PROTOCOL *timer_arch = NULL;
+static UINT64 saved_timer_period = 0; // non-zero once we've changed it (needs restore)
+
+// Byte-clean serial REPL. ConOut/ConIn go through the firmware's TerminalDxe, a
+// terminal *emulator* that mangles non-printable bytes (the raw REPL's 0x04 EOT is
+// rendered as '?') and eats input escapes — so it can't carry the raw-REPL protocol.
+// In serial-REPL mode we drive EFI_SERIAL_IO_PROTOCOL directly instead. See main.c.
+bool mp_uefi_serial_repl = false;
+static EFI_SERIAL_IO_PROTOCOL *serial_io = NULL;
 
 // Map a UEFI scan-only key (UnicodeChar == 0) to the byte sequence readline
 // understands. We re-emit the CSI escape sequences (the firmware parsed them out
@@ -92,10 +116,40 @@ static const char *scan_to_seq(uint16_t scan) {
     }
 }
 
+// Drain the serial RX (byte-clean) into the stdin ringbuf. Runs from the poll notify
+// in serial-REPL mode; no scan-code translation (the raw REPL wants raw bytes).
+static void serial_poll_rx(void) {
+    bool buffered = false;
+    UINT32 control;
+    while (serial_io->GetControl(serial_io, &control) == EFI_SUCCESS &&
+           !(control & EFI_SERIAL_INPUT_BUFFER_EMPTY)) {
+        uint8_t b;
+        UINTN sz = 1;
+        if (serial_io->Read(serial_io, &sz, &b) != EFI_SUCCESS || sz != 1) {
+            break;
+        }
+        if ((int)b == interrupt_char) {
+            #if MICROPY_KBD_EXCEPTION
+            mp_sched_keyboard_interrupt();
+            #endif
+            continue;   // don't buffer the interrupt char itself
+        }
+        ringbuf_put(&stdin_ringbuf, b);
+        buffered = true;
+    }
+    if (buffered) {
+        mp_uefi_st->BootServices->SignalEvent(wakeup_event);
+    }
+}
+
 // --- the ConIn poll notify: hard-ISR context, TPL_CALLBACK ---
 static void EFIAPI conin_notify(EFI_EVENT event, void *context) {
     (void)event;
     (void)context;
+    if (mp_uefi_serial_repl) {
+        serial_poll_rx();
+        return;
+    }
     EFI_SIMPLE_TEXT_INPUT_PROTOCOL *in = mp_uefi_st->ConIn;
     EFI_INPUT_KEY key;
     bool buffered = false;
@@ -125,6 +179,40 @@ static void EFIAPI conin_notify(EFI_EVENT event, void *context) {
     if (buffered) {
         mp_uefi_st->BootServices->SignalEvent(wakeup_event);
     }
+}
+
+// Switch REPL I/O to a byte-clean serial channel: grab EFI_SERIAL_IO_PROTOCOL, take
+// the serial away from TerminalDxe (DisconnectController) so we own it exclusively
+// (no RX contention, no ConOut->serial doubling), and flip the mode flag so the HAL
+// (mp_hal_stdout_tx_strn) and the poll notify (serial_poll_rx) use it. Returns true on
+// success; on failure the caller stays on the ConOut/ConIn console. See main.c.
+bool mp_uefi_serial_init(void) {
+    EFI_BOOT_SERVICES *bs = mp_uefi_st->BootServices;
+    static const EFI_GUID g_serial = EFI_SERIAL_IO_PROTOCOL_GUID;
+    UINTN count = 0;
+    EFI_HANDLE *hb = NULL;
+    if (EFI_ERROR(bs->LocateHandleBuffer(ByProtocol, (EFI_GUID *)&g_serial, NULL, &count, &hb)) ||
+        hb == NULL || count == 0) {
+        return false;
+    }
+    EFI_HANDLE h = hb[0];
+    bs->FreePool(hb);
+    // Grab the interface first (it survives disconnecting the consumer), then detach
+    // TerminalDxe so the firmware no longer reads/writes this serial behind our back.
+    if (EFI_ERROR(bs->HandleProtocol(h, (EFI_GUID *)&g_serial, (void **)&serial_io)) ||
+        serial_io == NULL) {
+        return false;
+    }
+    bs->DisconnectController(h, NULL, NULL);
+    mp_uefi_serial_repl = true;
+    return true;
+}
+
+// Byte-clean serial TX — the raw bytes go straight out, so control codes (the raw
+// REPL's 0x04 EOT, etc.) survive. Used by mp_hal_stdout_tx_strn in serial-REPL mode.
+void mp_uefi_serial_tx(const char *str, size_t len) {
+    UINTN sz = len;
+    serial_io->Write(serial_io, &sz, (void *)str);
 }
 
 // --- atomic section: raise to TPL_HIGH_LEVEL, masking our notifies ---
@@ -249,15 +337,36 @@ void mp_uefi_async_init(void) {
     EFI_BOOT_SERVICES *bs = mp_uefi_st->BootServices;
 
     mp_uefi_time_init();
+    // Seed the wall-clock anchor now that the counter is calibrated (RuntimeServices
+    // is always available); every later wall-time read interpolates from here.
+    mp_uefi_time_anchor();
 
     // Plain waitable event the producers signal to break a WFE.
     bs->CreateEvent(0, TPL_APPLICATION, NULL, NULL, &wakeup_event);
     // One-shot timeout timer for bounded waits (waited on, no notify).
     bs->CreateEvent(EVT_TIMER, TPL_APPLICATION, NULL, NULL, &wfe_timer);
-    // Periodic ConIn poll: fires the "RX ISR" notify at TPL_CALLBACK every 10 ms,
-    // so keys are drained (and Ctrl-C is delivered) even while Python code runs.
+    // Periodic ConIn poll: fires the "RX ISR" notify at TPL_CALLBACK every 5 ms, so keys
+    // are drained (and Ctrl-C delivered) even while Python code runs. 5 ms (vs the old
+    // 10 ms) halves how much the host can pump into QEMU's UART FIFO between drains, which
+    // — together with the enlarged stdin ring — keeps the raw-paste upload path from ever
+    // overrunning. Cheap on the GHz-class machines this targets; well within the timer's
+    // 2.5 ms tick resolution.
     bs->CreateEvent(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_CALLBACK, conin_notify, NULL, &conin_timer);
-    bs->SetTimer(conin_timer, TimerPeriodic, 100000ULL); // 10 ms in 100 ns units
+    bs->SetTimer(conin_timer, TimerPeriodic, 50000ULL); // 5 ms in 100 ns units
+
+    // Best-effort: retune the DXE-core timer tick finer (see MPY_UEFI_TIMER_PERIOD_100NS).
+    // Only ever go finer than the current period — never coarsen a firmware that is already
+    // fine — and remember the old value so mp_uefi_async_deinit can restore it.
+    static const EFI_GUID g_timer_arch = EFI_TIMER_ARCH_PROTOCOL_GUID;
+    if (!EFI_ERROR(bs->LocateProtocol((void *)&g_timer_arch, NULL, (void **)&timer_arch))
+        && timer_arch != NULL) {
+        UINT64 cur = 0;
+        if (!EFI_ERROR(timer_arch->GetTimerPeriod(timer_arch, &cur))
+            && cur > MPY_UEFI_TIMER_PERIOD_100NS
+            && !EFI_ERROR(timer_arch->SetTimerPeriod(timer_arch, MPY_UEFI_TIMER_PERIOD_100NS))) {
+            saved_timer_period = cur;
+        }
+    }
 }
 
 // --- teardown, called before mp_deinit() ---
@@ -265,6 +374,12 @@ void mp_uefi_async_init(void) {
 // WFE is attempted) once the interpreter is being torn down.
 void mp_uefi_async_deinit(void) {
     EFI_BOOT_SERVICES *bs = mp_uefi_st->BootServices;
+    // Restore the firmware's original timer tick before we hand control back to the boot
+    // manager / shell, which expects its clock unchanged.
+    if (timer_arch != NULL && saved_timer_period != 0) {
+        timer_arch->SetTimerPeriod(timer_arch, saved_timer_period);
+        saved_timer_period = 0;
+    }
     if (conin_timer != NULL) {
         bs->SetTimer(conin_timer, TimerCancel, 0);
         bs->CloseEvent(conin_timer);

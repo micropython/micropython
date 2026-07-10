@@ -34,6 +34,7 @@
 
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "shared/timeutils/timeutils.h"
 #include "efi.h"
 #include "uefi_port.h"
 
@@ -78,6 +79,10 @@ static inline uint64_t counter_to_ms(uint64_t t) {
     return (t / counter_hz) * 1000ULL + ((t % counter_hz) * 1000ULL) / counter_hz;
 }
 
+static inline uint64_t counter_to_ns(uint64_t t) {
+    return (t / counter_hz) * 1000000000ULL + ((t % counter_hz) * 1000000000ULL) / counter_hz;
+}
+
 void mp_uefi_time_init(void) {
     #if defined(__aarch64__)
     counter_hz = read_counter_hz();
@@ -113,6 +118,43 @@ mp_uint_t mp_hal_ticks_cpu(void) {
 // The monotonic counter frequency in Hz (for machine.freq()).
 uint64_t mp_uefi_counter_hz(void) {
     return counter_hz;
+}
+
+uint64_t mp_uefi_ticks_ns(void) {
+    return counter_to_ns(read_counter());
+}
+
+// --- Anchored wall clock ---------------------------------------------------
+// One monotone source of wall time: the RTC is sampled only at the anchor, and the
+// elapsed time since then is interpolated from the monotonic counter. So both the
+// seconds and the sub-second part of time_ns()/machine.RTC come from the same clock,
+// avoiding any second/sub-second skew near a tick roll-over. Drift vs the true RTC is
+// bounded by the counter's accuracy over one session (negligible for UEFI uptimes) and
+// reset on every re-anchor.
+static uint64_t wall_anchor_ns = 0;  // wall time (ns since 1970) at the anchor instant
+static uint64_t ticks_anchor_ns = 0; // monotonic counter (ns) at that same instant
+
+// Read the RTC as nanoseconds since 1970; 0 if RuntimeServices/GetTime is unavailable.
+static uint64_t rtc_read_wall_ns(void) {
+    EFI_TIME t;
+    if (mp_uefi_st->RuntimeServices == NULL ||
+        EFI_ERROR(mp_uefi_st->RuntimeServices->GetTime(&t, NULL))) {
+        return 0;
+    }
+    mp_timestamp_t s = timeutils_seconds_since_epoch(t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second);
+    return (uint64_t)timeutils_seconds_since_epoch_to_nanoseconds_since_1970(s) + t.Nanosecond;
+}
+
+// (Re)establish the anchor from the current RTC reading. Call at init (after
+// mp_uefi_time_init calibrates the counter) and after any in-band RTC set.
+void mp_uefi_time_anchor(void) {
+    wall_anchor_ns = rtc_read_wall_ns();
+    ticks_anchor_ns = mp_uefi_ticks_ns();
+}
+
+// Current wall time (ns since 1970): the anchor plus counter-interpolated elapsed time.
+uint64_t mp_uefi_wall_ns(void) {
+    return wall_anchor_ns + (mp_uefi_ticks_ns() - ticks_anchor_ns);
 }
 
 void mp_hal_delay_us(mp_uint_t us) {

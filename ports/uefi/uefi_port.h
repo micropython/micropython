@@ -52,6 +52,14 @@ void efi_event_deinit_all(void); // defined in modefi.c
 // Mount the boot volume at "/" (uefi_vfs.c). Called once, after mp_init().
 void mp_uefi_vfs_mount_boot(void);
 
+// Byte-clean serial REPL (uefi_event.c). mp_uefi_serial_init() switches REPL I/O from
+// the ConOut/ConIn console (TerminalDxe, which mangles the raw-REPL protocol) to a
+// directly-driven EFI_SERIAL_IO_PROTOCOL; when the flag is set the stdin/stdout HAL
+// uses the serial. Returns true on success.
+extern bool mp_uefi_serial_repl;
+bool mp_uefi_serial_init(void);
+void mp_uefi_serial_tx(const char *str, size_t len);
+
 // Build a VFS object (mountable via os.mount) from an EFI_SIMPLE_FILE_SYSTEM_PROTOCOL
 // interface pointer: opens the volume root. Backs uefi.fs multi-volume mounting.
 // Returns an mp_obj_t (typed void* to keep this header free of py/obj.h).
@@ -64,6 +72,17 @@ void mp_uefi_wfe(int64_t timeout_ms);
 
 // Monotonic counter frequency in Hz (machine.freq()).
 uint64_t mp_uefi_counter_hz(void);
+
+// Wall clock (uefi_time.c). The wall time is a single anchored clock: the RTC
+// (RuntimeServices->GetTime) is sampled only to (re)establish the anchor, and the
+// sub-second part is interpolated from the monotonic counter — so seconds and
+// sub-seconds always come from one monotone source (no second/sub-second skew at a
+// tick roll-over). mp_uefi_wall_ns() returns nanoseconds since 1970; time(), time_ns(),
+// localtime() and machine.RTC all derive from it. Re-anchor after any in-band RTC set
+// (machine.RTC.datetime(), uefi.raw.set_time()); a manual RS->SetTime is not seen.
+void mp_uefi_time_anchor(void);
+uint64_t mp_uefi_wall_ns(void);
+uint64_t mp_uefi_ticks_ns(void); // monotonic counter, scaled to ns (arbitrary origin)
 
 // Atomic section = raise to TPL_HIGH_LEVEL / restore. Returns the previous TPL.
 uintptr_t mp_uefi_begin_atomic(void);

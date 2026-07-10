@@ -219,7 +219,7 @@ set interface parameters.
     WiFi is **station-only and IPv4**: there is no AP/SoftAP mode (UEFI exposes no
     such protocol), and because EFI WiFi2 carries no BSSID or channel in a scan
     result, ``bssid`` is ``b''``, ``channel`` is ``0``, and ``rssi`` /
-    ``status('rssi')`` is a 0--100 link-quality figure rather than dBm.  Pinning a
+    ``status('rssi')`` is a 0-100 link-quality figure rather than dBm.  Pinning a
     specific AP by ``bssid`` is not supported.  There is no 802.11 in QEMU, so WiFi
     only runs on real hardware with UEFI WiFi2 drivers.
 

@@ -135,7 +135,9 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 extern const mp_obj_type_t machine_timer_type;
+extern const mp_obj_type_t machine_rtc_type;
 
-// Add Timer to the machine module's globals.
+// Add Timer and RTC to the machine module's globals.
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
+    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) },

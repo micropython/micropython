@@ -22,12 +22,15 @@ else
   $(error Unknown ARCH '$(ARCH)' — use aa64 or x64)
 endif
 
-# `make test` builds a headless self-test variant; every other goal builds the
-# interactive REPL. Distinct build dir + define so switching never reuses stale
-# objects. (Set before mkenv.mk so its `BUILD ?= build` doesn't win.)
-ifneq ($(filter test test-net test-gfx,$(MAKECMDGOALS)),)
-  APP_DEF := -DMPY_UEFI_SELFTEST
-  BUILD := build-$(ARCH)-selftest
+# Build variant: the interactive REPL (default), or — with SERIAL_REPL=1 — the REPL
+# defaulting to the byte-clean serial port. Distinct build dir + define so switching
+# never reuses stale objects. (Set before mkenv.mk so its `BUILD ?= build` doesn't win.)
+ifeq ($(SERIAL_REPL),1)
+  # REPL on the serial port by default (byte-clean raw REPL); the ConOut console shows a
+  # pointer banner and `--console` forces it back. (The standard build also honours
+  # `--serial` at launch, which is what the test suite uses, so this is rarely needed.)
+  APP_DEF := -DMPY_UEFI_SERIAL_REPL
+  BUILD := build-$(ARCH)-serial
 else
   APP_DEF :=
   BUILD := build-$(ARCH)
@@ -104,6 +107,7 @@ SRC_C = \
 	uefi_time.c \
 	uefi_event.c \
 	machine_timer.c \
+	machine_rtc.c \
 	modefi.c \
 	moduefi_raw.c \
 	modnetwork_uefi.c \
@@ -121,6 +125,7 @@ SRC_C = \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/runtime/pyexec.c \
+	shared/runtime/mpirq.c \
 	shared/readline/readline.c \
 	shared/timeutils/timeutils.c \
 
@@ -140,7 +145,8 @@ endif
 # gated by their MICROPY_PY_* flags. Only the port-local + shared sources are listed
 # above and need explicit qstr collection here.
 SRC_QSTR += shared/runtime/pyexec.c shared/readline/readline.c shared/runtime/sys_stdio_mphal.c
-SRC_QSTR += machine_timer.c modefi.c moduefi_raw.c uefi_vfs.c modnetwork_uefi.c modsocket_uefi.c
+SRC_QSTR += shared/runtime/mpirq.c
+SRC_QSTR += machine_timer.c machine_rtc.c modefi.c moduefi_raw.c uefi_vfs.c modnetwork_uefi.c modsocket_uefi.c
 
 # Double-precision libm (MICROPY_FLOAT_IMPL_DOUBLE): the bundled lib/libm_dbl,
 # software sqrt (we exclude thumb_vfp_sqrt.c, which is ARM-thumb-only).
@@ -165,7 +171,7 @@ $(EFI): $(OBJ)
 	-$(Q)llvm-size $@ 2>/dev/null || true
 
 # ---- orchestration ----
-.PHONY: stage test test-tls test-net test-gfx test-repl test-runfile run run-gfx debug ovmf test-os distclean shell
+.PHONY: stage test test-net test-gfx test-repl test-runfile test-bootopt run run-gfx debug ovmf test-os distclean shell
 
 # Stage the built .efi into the virtual FAT ESP at the firmware's auto-launch path.
 stage: $(EFI) tests/tls_test_cert.der
@@ -181,10 +187,10 @@ stage: $(EFI) tests/tls_test_cert.der
 	$(Q)cp samples/*.py esp/samples/
 	@# The CA the network TLS self-test verifies against (DER: both backends parse it).
 	$(Q)cp tests/tls_test_cert.der esp/tls_test_cert.der
-	@# Auto-launch our app if BDS drops into the UEFI Shell. This happens when a
-	@# display adapter is attached (make test-gfx / run-gfx): AAVMF then prefers
-	@# its boot-manager/Shell flow over the removable-media boot option. Dormant on
-	@# the headless path, which boots the app directly and never enters the Shell.
+	@# Default startup.nsh: auto-launch our app when the firmware runs the Shell. AAVMF
+	@# (aa64) drops into the Shell and runs this; OVMF (x64) auto-boots the removable-media
+	@# app directly instead. `make test` and the harness modes stage their own startup.nsh
+	@# during a run (this is what `make run`/`run-gfx` use).
 	@printf '@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\$(EFI_NAME)\r\n' > esp/startup.nsh
 	$(ECHO) "staged $(EFI) -> esp/EFI/BOOT/$(EFI_NAME)"
 
@@ -199,39 +205,28 @@ firmware/%.fd:
 	@if [ -d /opt/ovmf ]; then cp -n /opt/ovmf/*.fd firmware/ 2>/dev/null || true; fi
 	@test -f $@ || { echo "Missing $@ — run 'make ovmf' (host) to build firmware"; exit 1; }
 
-test: stage $(FW_DEP)
-	$(Q)python3 tests/harness.py --arch $(ARCH) --mode selftest
+# `make test`: run the upstream MicroPython test suite (tests/run_uefi_tests.py, which
+# includes the port's own tests/ports/uefi checks) against QEMU on the host's NATIVE
+# architecture — aa64 on an arm64 host, x64 on x86-64 — so QEMU runs the same ISA and is
+# fast (no cross-emulation). Builds+stages the app in the container first, then drives
+# QEMU natively on the host. Needs the RELEASE firmware (docker/build-ovmf-release.sh)
+# and pexpect+pyserial (a .venv is used automatically if present). Extra tests/flags via
+# TESTS=, e.g. `make test TESTS=--graphics`, `make test TESTS="ports/uefi/efi_raw.py"`.
+NATIVE_ARCH := $(shell uname -m | sed -e 's/^arm64$$/aa64/' -e 's/^aarch64$$/aa64/' \
+                                      -e 's/^x86_64$$/x64/' -e 's/^amd64$$/x64/')
+# Host Python for the suite runner (needs pexpect+pyserial); a local .venv wins. Distinct
+# from mkenv.mk's own PYTHON (used for the build). Override with TEST_PYTHON=... if needed.
+TEST_PYTHON ?= $(shell test -x .venv/bin/python && echo .venv/bin/python || echo python3)
+test:
+	$(MAKE) docker-stage ARCH=$(NATIVE_ARCH)
+	$(Q)UEFI_TEST_ARCH=$(NATIVE_ARCH) $(TEST_PYTHON) tests/run_uefi_tests.py $(TESTS)
 
-# TLS parity gate: run the selftest under each TLS backend in turn. The selftest build
-# dir is shared per-arch and its generated qstrs differ per backend, so it must be
-# removed between backends (a plain `clean` targets the non-selftest dir). Run for
-# ARCH=aa64 and x64.
-TLS_BACKENDS ?= mbedtls efi
-test-tls: $(FW_DEP)
-	@for b in $(TLS_BACKENDS); do \
-	  echo "===== TLS=$$b ARCH=$(ARCH) ====="; \
-	  rm -rf build-$(ARCH)-selftest; \
-	  $(MAKE) --no-print-directory test TLS=$$b ARCH=$(ARCH) || exit 1; \
-	done
-	@# Remove the last backend's selftest build so a later default-TLS `make test`
-	@# rebuilds cleanly rather than reusing this dir (backends can't share it).
-	$(Q)rm -rf build-$(ARCH)-selftest
-	@echo "test-tls: all backends [$(TLS_BACKENDS)] passed on $(ARCH)"
-
-# Like `test`, but on the network firmware (firmware/net, built by
-# docker/build-ovmf-net.sh) with a virtio-net NIC on SLIRP user-net — so the
-# self-test's network phases (DHCP lease, DNS, sockets) run end-to-end. virtio-rng
-# is added because the EDK2 upper network stack has a DEPEX on the RNG protocol.
-test-net: stage
-	@test -f firmware/net/$(if $(filter x64,$(ARCH)),OVMF,AAVMF)_CODE.fd \
-	  || { echo "Missing firmware/net — run 'bash docker/build-ovmf-net.sh' first"; exit 1; }
-	$(Q)python3 tests/harness.py --arch $(ARCH) --mode selftest --net
-
-# Like `test`, but with a display adapter attached (headless: no host window) so
-# the GOP path is exercised on both arches — on aa64 `virt` GOP is otherwise
-# absent. Stays hermetic, so it runs in the container like `test`.
-test-gfx: stage $(FW_DEP)
-	$(Q)python3 tests/harness.py --arch $(ARCH) --mode selftest --graphics headless
+# `make test-gfx` / `test-net`: the same suite with a headless display adapter
+# (GOP/Display tests run) or a NIC + network firmware (network tests run).
+test-gfx:
+	$(MAKE) --no-print-directory test TESTS="--graphics $(TESTS)"
+test-net:
+	$(MAKE) --no-print-directory test TESTS="--net $(TESTS)"
 
 # Headless REPL smoke test: pipes Python in over serial and asserts on the output.
 test-repl: stage $(FW_DEP)
@@ -241,6 +236,12 @@ test-repl: stage $(FW_DEP)
 # runs with sys.argv set. Uses the shell-launch (startup.nsh) path — aa64.
 test-runfile: stage $(FW_DEP)
 	$(Q)python3 tests/harness.py --arch $(ARCH) --mode runfile
+
+# Launch via a boot-manager entry (BootNext) whose OptionalData is a script argument,
+# and assert it runs with sys.argv — the LoadedImage->LoadOptions path (distinct from
+# the shell's ShellParameters). Two-phase (write entry, then fresh boot) — aa64.
+test-bootopt: stage $(FW_DEP)
+	$(Q)python3 tests/harness.py --arch $(ARCH) --mode bootopt
 
 # `make run` drops you into a live, interactive MicroPython REPL in QEMU;
 # `make debug` boots with a gdbstub. Both put the serial console on your terminal.
