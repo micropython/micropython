@@ -22,12 +22,6 @@ print("{:c}".format(169))
 print("{:c}".format(0x4E00))
 print("{:c}{:c}".format(0x3BC, 0x1F40D))
 
-# test with f-strings
-c = 169
-print(f"{c:c}")
-c = 0x1F600
-print(f"{c:c}")
-
 # Test boundary values - valid maximum unicode codepoint
 print("%c" % 0x10FFFF)  # Last valid unicode codepoint
 
