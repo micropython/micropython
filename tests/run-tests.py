@@ -987,7 +987,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_slice = test_name.find("slice") != -1
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
-        is_fstring = test_name.startswith("string_fstring")
+        is_fstring = test_name.startswith("string_fstring") or test_name.endswith("_fstring")
         is_tstring = test_name.startswith("string_tstring") or test_name.endswith("_tstring")
         is_inlineasm = test_name.startswith("asm")
 
