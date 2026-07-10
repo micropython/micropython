@@ -702,6 +702,13 @@ function ci_unix_run_tests_full_helper {
     ci_unix_run_tests_full_extra $micropython
 }
 
+function ci_unix_run_native_mpy_tests_helper {
+    variant=$1
+    shift
+    MICROPYPATH=examples/natmod/features2 ./ports/unix/build-$variant/micropython -m features2
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-$variant/micropython ./run-natmodtests.py "$@" extmod/*.py)
+}
+
 function ci_native_mpy_modules_build {
     if [ "$1" = "" ]; then
         arch=x64
@@ -727,6 +734,14 @@ function ci_native_mpy_modules_32bit_build {
     ci_native_mpy_modules_build x86
 }
 
+function ci_native_mpy_modules_clang_build {
+    # This currently only supports the host architecture (assumed to be x64).
+    for natmod in btree deflate features1 features2 features3 features4 framebuf heapq random re
+    do
+        make -C examples/natmod/$natmod CC=clang
+    done
+}
+
 function ci_unix_minimal_build {
     make ${MAKEOPTS} -C ports/unix VARIANT=minimal
 }
@@ -742,6 +757,10 @@ function ci_unix_standard_build {
 
 function ci_unix_standard_run_tests {
     ci_unix_run_tests_full_helper standard
+}
+
+function ci_unix_standard_run_native_mpy_tests {
+    ci_unix_run_native_mpy_tests_helper standard "$@"
 }
 
 function ci_unix_standard_v2_build {
@@ -818,8 +837,7 @@ function ci_unix_coverage_run_mpy_merge_tests {
 }
 
 function ci_unix_coverage_run_native_mpy_tests {
-    MICROPYPATH=examples/natmod/features2 ./ports/unix/build-coverage/micropython -m features2
-    (cd tests && ./run-natmodtests.py "$@" extmod/*.py)
+    ci_unix_run_native_mpy_tests_helper coverage "$@"
 }
 
 function ci_unix_32bit_setup {
@@ -885,6 +903,7 @@ function ci_unix_gil_enabled_run_tests {
 function ci_unix_clang_setup {
     sudo apt-get update
     sudo apt-get install clang
+    pip3 install ar pyelftools
     clang --version
 }
 
