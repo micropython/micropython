@@ -238,7 +238,9 @@ static void do_load(mp_module_context_t *module_obj, vstr_t *file) {
 
     #endif // MICROPY_MODULE_FROZEN
 
+    #if (MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD) || MICROPY_ENABLE_COMPILER
     qstr file_qstr = qstr_from_str(file_str);
+    #endif
 
     // If we support loading .mpy files then check if the file extension is of
     // the correct format and, if so, load and execute the file.
