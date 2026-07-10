@@ -503,6 +503,7 @@ function ci_samd_build {
     make ${MAKEOPTS} -C ports/samd submodules
     make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M0_EXPRESS
     make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M4_EXPRESS
+    make ${MAKEOPTS} -C ports/samd BOARD=SPARKFUN_SAMD21_DEV_BREAKOUT
 }
 
 ########################################################################################
