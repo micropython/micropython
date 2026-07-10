@@ -157,6 +157,38 @@ typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL {
     EFI_EVENT WaitForKey;
 } EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
 
+/* ---- EFI_SERIAL_IO_PROTOCOL (byte-clean serial, bypassing TerminalDxe) ---- */
+#define EFI_SERIAL_IO_PROTOCOL_GUID \
+    {0xBB25CF6F, 0xF1D4, 0x11D2, {0x9A, 0x0C, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0xFD}}
+#define EFI_SERIAL_INPUT_BUFFER_EMPTY 0x00000004   /* GetControl bit: no RX data */
+typedef struct _EFI_SERIAL_IO_PROTOCOL EFI_SERIAL_IO_PROTOCOL;
+struct _EFI_SERIAL_IO_PROTOCOL {
+    UINT32 Revision;
+    EFI_STATUS(EFIAPI * Reset)(EFI_SERIAL_IO_PROTOCOL * This);
+    /* enum params typed as UINT32 — we only call Write/Read/GetControl. */
+    EFI_STATUS(EFIAPI * SetAttributes)(EFI_SERIAL_IO_PROTOCOL * This, UINT64 BaudRate,
+        UINT32 ReceiveFifoDepth, UINT32 Timeout, UINT32 Parity, UINT8 DataBits, UINT32 StopBits);
+    EFI_STATUS(EFIAPI * SetControl)(EFI_SERIAL_IO_PROTOCOL * This, UINT32 Control);
+    EFI_STATUS(EFIAPI * GetControl)(EFI_SERIAL_IO_PROTOCOL * This, UINT32 *Control);
+    EFI_STATUS(EFIAPI * Write)(EFI_SERIAL_IO_PROTOCOL * This, UINTN *BufferSize, void *Buffer);
+    EFI_STATUS(EFIAPI * Read)(EFI_SERIAL_IO_PROTOCOL * This, UINTN *BufferSize, void *Buffer);
+    void *Mode;
+};
+
+// EFI_TIMER_ARCH_PROTOCOL (PI spec): the DXE core's low-level periodic tick that drives all
+// BootServices timer events. We only Get/SetTimerPeriod (100ns units) to make the tick finer
+// than the ~10ms firmware default; RegisterHandler/GenerateSoftInterrupt are typed as void*
+// and MUST NOT be called (the handler slot is the DXE core's, single-owner).
+#define EFI_TIMER_ARCH_PROTOCOL_GUID \
+    {0x26baccb3, 0x6f42, 0x11d4, {0xbc, 0xe7, 0x00, 0x80, 0xc7, 0x3c, 0x88, 0x81}}
+typedef struct _EFI_TIMER_ARCH_PROTOCOL EFI_TIMER_ARCH_PROTOCOL;
+struct _EFI_TIMER_ARCH_PROTOCOL {
+    void *RegisterHandler;
+    EFI_STATUS(EFIAPI * SetTimerPeriod)(EFI_TIMER_ARCH_PROTOCOL * This, UINT64 TimerPeriod);
+    EFI_STATUS(EFIAPI * GetTimerPeriod)(EFI_TIMER_ARCH_PROTOCOL * This, UINT64 *TimerPeriod);
+    void *GenerateSoftInterrupt;
+};
+
 /* ---- BOOT SERVICES (typed: pool/pages/memmap/stall/exit/watchdog/wait) ---- */
 typedef uint64_t EFI_PHYSICAL_ADDRESS;
 typedef uint64_t EFI_VIRTUAL_ADDRESS;

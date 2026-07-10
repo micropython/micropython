@@ -69,15 +69,27 @@ RUN cd /edk2 && bash -c '. ./edksetup.sh && \
       GCC5_BIN=$P build -a X64 -t GCC5 -b NOOPT -p OvmfPkg/OvmfPkgX64.dsc $NET_FLAGS'
 
 # ---- Stage 2: dev / build / test / debug ----
-FROM ubuntu:24.04 AS dev
+# ---- Stage `build`: just the build toolchain (compile the .efi + mpy-cross/freeze) ----
+# Deliberately NO qemu, venv, or baked firmware — so building this stage does NOT pull in
+# the EDK2 build that the `dev` stage's `COPY --from=ovmf-builder` requires. CI uses this
+# (`docker build --target build`): it runs QEMU on the host and builds the release firmware
+# separately (and caches it), so it never needs EDK2 baked into the toolchain image.
+FROM ubuntu:24.04 AS build
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential clang lld llvm \
-      qemu-system-x86 qemu-system-arm gdb-multiarch \
       git make python3 python3-venv \
       mtools dosfstools \
       ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /work
 
+# ---- Stage `dev`: full local environment = build toolchain + QEMU + venv + firmware ----
+# For `make run` / `make docker-<mode>` / interactive use. Building this DOES build
+# ovmf-builder (EDK2), via the firmware COPY below — that's expected; only local dev needs it.
+FROM build AS dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      qemu-system-x86 qemu-system-arm gdb-multiarch \
+      ca-certificates && rm -rf /var/lib/apt/lists/*
 # Python is managed by uv — a dedicated venv, never global pip installs.
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 RUN uv venv /opt/venv \
@@ -86,7 +98,7 @@ RUN uv venv /opt/venv \
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH=/opt/venv/bin:$PATH
 
-# Carry the prebuilt firmware so `just test` needs no separate fetch.
+# Carry the prebuilt firmware so `make run` / harness modes need no separate fetch.
 # X64:
 COPY --from=ovmf-builder /edk2/Build/OvmfX64/NOOPT_GCC5/FV/OVMF_CODE.fd /opt/ovmf/OVMF_CODE.fd
 COPY --from=ovmf-builder /edk2/Build/OvmfX64/NOOPT_GCC5/FV/OVMF_VARS.fd /opt/ovmf/OVMF_VARS.fd
@@ -94,5 +106,3 @@ COPY --from=ovmf-builder /edk2/Build/OvmfX64/NOOPT_GCC5/FV/OVMF_VARS.fd /opt/ovm
 COPY --from=ovmf-builder /edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/FV/QEMU_EFI.fd  /opt/ovmf/AAVMF_CODE.fd
 COPY --from=ovmf-builder /edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/FV/QEMU_VARS.fd /opt/ovmf/AAVMF_VARS.fd
 RUN truncate -s 64M /opt/ovmf/AAVMF_CODE.fd /opt/ovmf/AAVMF_VARS.fd
-
-WORKDIR /work

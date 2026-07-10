@@ -671,6 +671,11 @@ static mp_obj_t uefi_raw_set_time(size_t n_args, const mp_obj_t *args) {
     t.TimeZone = (n_args > 7) ? (INT16)mp_obj_get_int(args[7]) : 0x07FF;
     t.Daylight = (n_args > 8) ? (UINT8)mp_obj_get_int(args[8]) : 0;
     EFI_STATUS st = RS->SetTime(&t);
+    if (!EFI_ERROR(st)) {
+        // We changed the RTC in-band: re-seed the wall-clock anchor so time()/time_ns()/
+        // machine.RTC track the new setting (they interpolate from the anchor).
+        mp_uefi_time_anchor();
+    }
     return mp_obj_new_int_from_uint(st);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uefi_raw_set_time_obj, 6, 9, uefi_raw_set_time);

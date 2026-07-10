@@ -65,6 +65,10 @@ static void conout_flush(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *out, CHAR16 *buf, size
 // BS/LF/CR pass straight through to ConOut, which handles them. The cooked path
 // inserts CR before LF on top of this.
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    if (mp_uefi_serial_repl) {
+        mp_uefi_serial_tx(str, len);   // byte-clean: control codes pass through
+        return len;
+    }
     EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *out = mp_uefi_st->ConOut;
     CHAR16 buf[65];
     size_t i = 0;
