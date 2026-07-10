@@ -163,6 +163,7 @@
 #include "stm32u5xx_hal_ramcfg.h"
 #include "stm32u5xx_hal_mdf.h"
 #include "stm32u5xx_hal_xspi.h"
+#include "stm32u5xx_ll_bus.h"
 #include "stm32u5xx_ll_usart.h"
 #include "stm32u5xx_ll_lpuart.h"
 #include "stm32u5xx_ll_rtc.h"

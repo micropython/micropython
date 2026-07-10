@@ -15,4 +15,4 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 except ValueError as er:
-    print(repr(er))
+    print(str(er) or "invalid cert")

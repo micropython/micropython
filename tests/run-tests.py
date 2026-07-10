@@ -197,8 +197,8 @@ platform_tests_to_skip = {
 
 # Tests to skip when MICROPY_ERROR_REPORTING is at a certain level.
 error_reporting_tests_to_skip = {
-    # Skip at level MICROPY_ERROR_REPORTING_NONE.
-    "none": (
+    # Skip at level MICROPY_ERROR_REPORTING_TERSE.
+    "terse": (
         "cmdline/repl_paste.py",
         # This test needs updates before being removed from this list.
         "extmod/vfs_blockdev_invalid.py",
@@ -209,8 +209,10 @@ error_reporting_tests_to_skip = {
         "misc/sys_settrace_features.py",
     ),
 }
-# Skip at level MICROPY_ERROR_REPORTING_TERSE.
-error_reporting_tests_to_skip["terse"] = error_reporting_tests_to_skip["none"]
+# Skip at level MICROPY_ERROR_REPORTING_NONE.
+error_reporting_tests_to_skip["none"] = error_reporting_tests_to_skip["terse"] + (
+    "extmod/asyncio_gather_notimpl.py",
+)
 
 # Tests with known intermittent failures. These tests still run, but failures
 # are reclassified as "ignored" instead of "fail" so they don't affect the CI
@@ -1135,7 +1137,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Print a note if this looks like it might have been a misfired unittest
         if not uses_unittest and not test_passed:
-            with open(test_file, "r") as f:
+            with open(test_file, "r", encoding="utf-8") as f:
                 if any(re.match("^import.+unittest", l) for l in f.readlines()):
                     print(
                         "NOTE: {} may be a unittest that doesn't run unittest.main()".format(

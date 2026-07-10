@@ -19,7 +19,7 @@ To build the unix port locally then you will need:
 
 * git command line executable, unless you downloaded a source .tar.xz file from
   https://micropython.org/download/
-* gcc (or clang for macOS) toolchain
+* an appropriate GCC or Clang toolchain for your target (macOS only supports Clang)
 * GNU Make
 * Python 3.x
 
@@ -167,7 +167,7 @@ optimisations, assertions enabled, and debug symbols.
 
 ### Sanitizers
 
-Sanitizers are extra runtime checks supported by gcc and clang. The CI process
+Sanitizers are extra runtime checks supported by GCC and Clang. The CI process
 supports building with the "undefined behavior" (UBSan) or "address" (ASan)
 sanitizers. The script `tools/ci.sh` is the source of truth about how to build
 and run in these modes.
@@ -182,3 +182,125 @@ Several classes of checks are disabled via compiler flags:
   check is intended to make sure locals in a "returned from" stack frame are not
   used. However, this mode interferes with various assumptions that
   MicroPython's stack checking, NLR, and GC rely on.
+
+### Notes about x86 (i686) support
+
+It used to be possible to create an x86 (32-bits) build on a x64 (64-bits) host
+by passing `MICROPY_FORCE_32BIT=1` to `make`.  That option was retired: x86
+usage has declined quite a bit in the past few years, and MicroPython now
+supports at least one more mixed 32/64-bits target architecture for which
+enabling `MICROPY_FORCE_32BIT` would make builds fail.
+
+x86 will be treated as a cross-compilation target from now on.  This means you
+will need to install a suitable compiler (on Ubuntu you can install either the
+`gcc-i686-linux-gnu` and `g++-i686-linux-gnu` packages for GCC, or the `clang`
+package for Clang, for example) and pass the appropriate command arguments to
+`make` depending on which compiler you chose.
+
+### Building x86 (i686) code with GCC
+
+For GCC, you will need to pass the toolchain's command prefix to the
+`CROSS_COMPILE` command line variable.
+
+This change is also extended to native modules, for which you may need to pass
+the toolchain's command prefix to the `CROSS` command line variable if your
+x86 compiler cannot be invoked with `i686-linux-gnu-gcc`.
+
+Or, as an example:
+
+```bash
+$ printf "%s %s %s %s\n" $(lsb_release -d | cut -f 2) $(uname -m)
+Ubuntu 24.04.4 LTS x86_64
+
+$ i686-linux-gnu-gcc --version | head -n 1
+i686-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+
+$ CROSS_COMPILE=i686-linux-gnu- make -C ports/unix
+make: Entering directory '/ports/unix'
+Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
+...
+LINK build-standard/micropython
+   text    data     bss     dec     hex filename
+ 723115   36104    2124  761343   b9dff build-standard/micropython
+make: Leaving directory '/ports/unix'
+
+$ file -b ports/unix/build-standard/micropython | cut -d, -f-2
+ELF 32-bit LSB pie executable, Intel 80386
+
+# `i686-linux-gnu-` is the default prefix for x86 native modules now, it has
+# been explicitly mentioned here in case you want to see how to set it.
+
+$ make -C examples/natmod/features0 ARCH=x86 CROSS=i686-linux-gnu-
+make: Entering directory '/examples/natmod/features0'
+GEN build/features0.config.h
+CC features0.c
+LINK build/features0.o
+arch:         EM_386
+text size:    192
+bss size:     0
+GOT entries:  4
+GEN features0.mpy
+make: Leaving directory '/examples/natmod/features0'
+
+$ cd examples/natmod/features0 && ../../../ports/unix/build-standard/micropython
+MicroPython v1.29.0-preview.490.gb4c58f7ba5.dirty on 2026-07-04; linux [GCC 13.3.0] version
+Type "help()" for more information.
+>>> import features0
+>>> features0.factorial(10)
+3628800
+```
+
+### Building x86 (i686) code with Clang
+
+For Clang, you will need need to pass both the name of the compiler to invoke
+as the `CC` command line variable and the extra command line arguments needed
+to let Clang know you are building an i686 binary as the `CFLAGS_EXTRA` and
+`LDFLAGS_EXTRA` command line variables (usually
+`--target=i686-unknown-linux-gnu`).
+
+For native modules, since linking is not done by the compiler, only the `CC`
+and `CFLAGS_EXTRA` arguments are needed.
+
+Or, as an example:
+
+```bash
+$ printf "%s %s %s %s\n" $(lsb_release -d | cut -f 2) $(uname -m)
+Ubuntu 24.04.4 LTS x86_64
+
+$ clang --version | head -1
+Ubuntu clang version 18.1.3 (1ubuntu1)
+
+$ clang -print-targets | grep -i 32-bit.x86
+    x86         - 32-bit X86: Pentium-Pro and above
+
+$ make -C ports/unix CC=clang CFLAGS_EXTRA="--target=i686-unknown-linux-gnu" LDFLAGS_EXTRA='--target=i686-unknown-linux-gnu'
+make: Entering directory '/ports/unix'
+Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
+...
+LINK build-standard/micropython
+   text    data     bss     dec     hex filename
+ 836241   34748    2052  873041   d5251 build-standard/micropython
+make: Leaving directory '/ports/unix'
+
+$ file -b ports/unix/build-standard/micropython | cut -d, -f-2
+ELF 32-bit LSB pie executable, Intel 80386
+
+$ make -C examples/natmod/features0 ARCH=x86 CC=clang CFLAGS_EXTRA="--target=i686-unknown-linux-gnu"
+make: Entering directory '/examples/natmod/features0'
+GEN build-x86/features0.config.h
+CC features0.c
+LINK build-x86/features0.o
+arch:         EM_386
+text size:    180
+bss size:     0
+GOT entries:  2
+GEN features0.mpy
+make: Leaving directory '/examples/natmod/features0'
+
+$ cd examples/natmod/features0 && ../../../ports/unix/build-standard/micropython
+MicroPython v1.29.0-preview.490.gb4c58f7ba5.dirty on 2026-07-04; linux [Clang 18.1.3] version
+Type "help()" for more information.
+>>> import features0
+>>> features0.factorial(10)
+3628800
+```

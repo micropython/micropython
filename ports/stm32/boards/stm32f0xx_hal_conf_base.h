@@ -84,6 +84,7 @@
 #include "stm32f0xx_hal_usart.h"
 #include "stm32f0xx_hal_wwdg.h"
 #include "stm32f0xx_ll_adc.h"
+#include "stm32f0xx_ll_bus.h"
 #include "stm32f0xx_ll_rtc.h"
 #include "stm32f0xx_ll_usart.h"
 

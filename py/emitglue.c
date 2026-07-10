@@ -103,17 +103,20 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, cons
     // Some architectures require flushing/invalidation of the I/D caches,
     // so that the generated native code which was created in data RAM will
     // be available for execution from instruction RAM.
-    #if defined(__thumb__) || defined(__thumb2__)
+    #if defined(__linux__) && defined(MP_HAL_CLEAN_DCACHE)
+    // On Linux always flush caches if there's a chance, just in case.
+    MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
+    #elif defined(__thumb__) || defined(__thumb2__)
     #if __ICACHE_PRESENT == 1
     // Flush D-cache, so the code emitted is stored in RAM.
     MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
     // Invalidate I-cache, so the newly-created code is reloaded from RAM.
     SCB_InvalidateICache();
     #endif
+    #elif defined(__ARM_32BIT_STATE) && defined(MP_HAL_CLEAN_DCACHE)
+    // Flush the D-cache.
+    MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
     #elif defined(__arm__)
-    #if (defined(__linux__) && defined(__GNUC__)) || __ARM_ARCH == 7
-    __builtin___clear_cache((void *)fun_data, (char *)fun_data + fun_len);
-    #else
     // Flush I-cache and D-cache.
     asm volatile (
         "0:"
@@ -122,7 +125,6 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, cons
         "mov r0, #0\n"
         "mcr p15, 0, r0, c7, c7, 0\n" // invalidate I-cache and D-cache
         : : : "r0", "cc");
-    #endif
     #elif defined(__riscv) && defined(MP_HAL_CLEAN_DCACHE)
     // Flush the D-cache.
     MP_HAL_CLEAN_DCACHE(fun_data, fun_len);

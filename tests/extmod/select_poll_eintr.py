@@ -1,5 +1,8 @@
 # Test interruption of select.poll by EINTR signal, when
 # MICROPY_PY_SELECT_POSIX_OPTIMISATIONS is enabled.
+#
+# Note: this test should run and pass under CPython, but it has a .py.exp file
+# so that port 8000 does not need to be available to get the expected output.
 
 try:
     import time, gc, select, socket, _thread

@@ -420,6 +420,7 @@ void stm32_main(uint32_t reset_mode) {
 
     // Enable some APB peripherals during sleep.
     LL_APB1_GRP1_EnableClockLowPower(LL_APB1_GRP1_PERIPH_ALL); // I2C, I3C, LPTIM, SPI, TIM, UART, WWDG
+    LL_APB1_GRP2_EnableClockLowPower(LL_APB1_GRP2_PERIPH_FDCAN); // FDCAN
     LL_APB2_GRP1_EnableClockLowPower(LL_APB2_GRP1_PERIPH_ALL); // SAI, SPI, TIM, UART
     LL_APB4_GRP1_EnableClockLowPower(LL_APB4_GRP1_PERIPH_ALL); // I2C, LPTIM, LPUART, RTC, SPI
     #endif
@@ -665,6 +666,12 @@ soft_reset:
     // Run optional frozen boot code.
     #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
     pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
+    #endif
+
+    #if MICROPY_PY_NETWORK
+    // Initialize network subsystem before boot.py so that network
+    // interfaces can be instantiated in boot.py.
+    mod_network_init();
     #endif
 
     // Run boot.py (or whatever else a board configures at this stage).

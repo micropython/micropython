@@ -94,6 +94,7 @@
 #include "stm32h7xx_hal_usart.h"
 #include "stm32h7xx_hal_wwdg.h"
 #include "stm32h7xx_ll_adc.h"
+#include "stm32h7xx_ll_bus.h"
 #include "stm32h7xx_ll_lpuart.h"
 #include "stm32h7xx_ll_pwr.h"
 #include "stm32h7xx_ll_rcc.h"

@@ -35,6 +35,7 @@
 #define PHY_BCR                 (0x0000)
 #define PHY_BCR_SOFT_RESET      (0x8000)
 #define PHY_BCR_AUTONEG_EN      (0x1000)
+#define PHY_BCR_AUTONEG_RESTART (0x0200)
 #define PHY_BCR_POWER_DOWN      (0x0800U)
 
 #undef PHY_BSR
@@ -49,6 +50,11 @@
 #define PHY_ANAR_SPEED_100HALF  (0x0080)
 #define PHY_ANAR_SPEED_100FULL  (0x0100)
 #define PHY_ANAR_IEEE802_3      (0x0001)
+
+// 1000BASE-T Control Register (gigabit advertisement).
+#define PHY_1000BTCR            (0x0009)
+#define PHY_1000BTCR_1000HALF   (0x0100)
+#define PHY_1000BTCR_1000FULL   (0x0200)
 
 #define PHY_SPEED_10HALF        (0x01)
 #define PHY_SPEED_100HALF       (0x02)

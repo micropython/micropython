@@ -13,6 +13,7 @@ Example usage::
     rtc.datetime((2020, 1, 21, 2, 10, 32, 36, 0))
     print(rtc.datetime())
 
+Availability: **Alif, ESP32, ESP8266, MIMXRT, Renesas-RA, RP2, SAMD, STM32**
 
 Constructors
 ------------

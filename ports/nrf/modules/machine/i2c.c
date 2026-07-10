@@ -69,6 +69,8 @@
 #define NRFX_TWI_EVT_DATA_NACK    NRFX_TWIM_EVT_DATA_NACK
 #define NRFX_TWI_EVT_BUS_ERROR    NRFX_TWIM_EVT_BUS_ERROR
 
+#define NRFX_TWI_FLAG_TX_NO_STOP NRFX_TWIM_FLAG_TX_NO_STOP
+
 #define NRF_TWI_FREQ_100K NRF_TWIM_FREQ_100K
 #define NRF_TWI_FREQ_250K NRF_TWIM_FREQ_250K
 #define NRF_TWI_FREQ_400K NRF_TWIM_FREQ_400K
@@ -157,6 +159,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     config.frequency = freq;
 
     config.hold_bus_uninit = false;
+    config.interrupt_priority = 6;
 
     // First reset the TWI
     nrfx_twi_uninit(&self->p_twi);
@@ -182,7 +185,8 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
         err_code = nrfx_twi_xfer(&self->p_twi, &desc, 0);
     } else {
         nrfx_twi_xfer_desc_t desc = NRFX_TWI_XFER_DESC_TX(addr, buf, len);
-        err_code = nrfx_twi_xfer(&self->p_twi, &desc, (flags & MP_MACHINE_I2C_FLAG_STOP) == 0);
+        uint32_t xfer_flags = (flags & MP_MACHINE_I2C_FLAG_STOP) ? 0 : NRFX_TWI_FLAG_TX_NO_STOP;
+        err_code = nrfx_twi_xfer(&self->p_twi, &desc, xfer_flags);
         transfer_ret = len;
     }
 
@@ -198,8 +202,7 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
         return -MP_ETIMEDOUT;
     }
 
-    // Poll for transfer completion with timeout (timeout=0 means no timeout,
-    // the loop relies on MICROPY_EVENT_POLL_HOOK for Ctrl-C).
+    // Poll until xfer_done (timeout=0 means wait forever).
     mp_uint_t start = mp_hal_ticks_us();
     while (!self->xfer_done) {
         if (self->timeout > 0 && (mp_hal_ticks_us() - start) >= self->timeout) {
@@ -207,10 +210,14 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
             nrfx_twi_enable(&self->p_twi);
             return -MP_ETIMEDOUT;
         }
-        MICROPY_EVENT_POLL_HOOK;
+        mp_event_wait_ms(1);
     }
 
-    nrfx_twi_disable(&self->p_twi);
+    // Leave the peripheral SUSPENDED (enabled, bus held) after a NOSTOP TX
+    // so the next xfer issues a repeated START. Disabling would release SDA.
+    if (flags & (MP_MACHINE_I2C_FLAG_READ | MP_MACHINE_I2C_FLAG_STOP)) {
+        nrfx_twi_disable(&self->p_twi);
+    }
 
     if (self->xfer_evt == NRFX_TWI_EVT_ADDRESS_NACK) {
         return -MP_ENODEV;

@@ -114,6 +114,12 @@ Methods
    to logical 0. For inverted/active-low signal, active status corresponds
    to logical 0, while inactive - to logical 1.
 
+.. method:: Signal.__call__([x])
+
+   Signal objects are callable.  The call method provides a (fast) shortcut to set
+   and get the value of the pin.  It is equivalent to Signal.value([x]).
+   See :meth:`Signal.value` for more details.
+
 .. method:: Signal.on()
 
    Activate signal.

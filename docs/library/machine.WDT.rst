@@ -15,7 +15,7 @@ Example usage::
     wdt = WDT(timeout=2000)  # enable it with a timeout of 2s
     wdt.feed()
 
-Availability of this class: pyboard, WiPy, esp8266, esp32, rp2040, mimxrt.
+Availability: **ESP32, ESP8266, MIMXRT, RP2, SAMD, STM32, Zephyr**
 
 Constructors
 ------------
@@ -25,8 +25,18 @@ Constructors
    Create a WDT object and start it. The timeout must be given in milliseconds.
    Once it is running the timeout cannot be changed and the WDT cannot be stopped either.
 
-   Notes: On the esp8266 a timeout cannot be specified, it is determined by the underlying system.
-   On rp2040 devices, the maximum timeout is 8388 ms.
+   Notes:
+
+   - On the esp8266 port a timeout cannot be specified, it is determined by the underlying
+     system.
+
+   - On rp2040 devices the maximum timeout is 8388 ms.
+
+   - On the stm32 port the default ``id=0`` is the IWDG, which can also be specified by
+     an id of ``"IWDG"``.  Use an id of ``"WWDG"`` to access the WWDG peripheral.
+     For dual-core STM32H7 MCUs there are also ``"IWDG2"`` and ``"WWDG2"``.
+     The WWDG has a very limited maximum timeout across all MCUs, of around 100ms (but
+     it depends heavily on the APB clock).
 
 Methods
 -------

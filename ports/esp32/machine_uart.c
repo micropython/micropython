@@ -39,6 +39,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "uart.h"
+#include "machine_uart.h"
 #include "machine_timer.h"
 
 #if SOC_UART_SUPPORT_XTAL_CLK
@@ -60,6 +61,30 @@
 #define MP_UART_ALLOWED_FLAGS (UART_IRQ_RX | UART_IRQ_RXIDLE | UART_IRQ_BREAK)
 #define RXIDLE_TIMER_MIN (machine_timer_freq_hz() * 5 / 10000) // 500us minimum rxidle time
 #define UART_QUEUE_SIZE (3)
+
+typedef struct _machine_uart_default_pins_t {
+    gpio_num_t tx;
+    gpio_num_t rx;
+} machine_uart_default_pins_t;
+
+// Indexed by uart_port_t. The LP UART (if present) follows the HP UARTs in
+// the enum, so a single table indexed by UART_NUM_MAX covers all of them.
+static const machine_uart_default_pins_t machine_uart_default_pins[UART_NUM_MAX] = {
+    [UART_NUM_0] = { MICROPY_HW_UART0_TX, MICROPY_HW_UART0_RX },
+    [UART_NUM_1] = { MICROPY_HW_UART1_TX, MICROPY_HW_UART1_RX },
+    #if SOC_UART_HP_NUM > 2
+    [UART_NUM_2] = { MICROPY_HW_UART2_TX, MICROPY_HW_UART2_RX },
+    #endif
+    #if SOC_UART_HP_NUM > 3
+    [UART_NUM_3] = { MICROPY_HW_UART3_TX, MICROPY_HW_UART3_RX },
+    #endif
+    #if SOC_UART_HP_NUM > 4
+    [UART_NUM_4] = { MICROPY_HW_UART4_TX, MICROPY_HW_UART4_RX },
+    #endif
+    #if SOC_UART_LP_NUM >= 1
+    [LP_UART_NUM_0] = { MICROPY_HW_LP_UART0_TX, MICROPY_HW_LP_UART0_RX },
+    #endif
+};
 
 enum {
     RXIDLE_INACTIVE,
@@ -270,46 +295,12 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         self->uart_queue = NULL;
         self->rxidle_state = RXIDLE_INACTIVE;
 
-        // Set the MicroPython default UART pins. These may be overwritten with
-        // caller-provided pins, below
-        switch (self->uart_num) {
-            case UART_NUM_0:
-                self->rx = UART_PIN_NO_CHANGE; // GPIO 3
-                self->tx = UART_PIN_NO_CHANGE; // GPIO 1
-                break;
-            case UART_NUM_1:
-                #if CONFIG_IDF_TARGET_ESP32 && CONFIG_SPIRAM
-                // ESP32 usually uses pins 9 and 10 for SPIRAM bus, so avoid those pins as defaults.
-                self->rx = 4;
-                self->tx = 5;
-                #else
-                self->rx = 9;
-                self->tx = 10;
-                #endif
-                break;
-            #if SOC_UART_HP_NUM > 2
-            case UART_NUM_2:
-                self->rx = 16;
-                self->tx = 17;
-                break;
-            #endif
-            #if SOC_UART_LP_NUM >= 1
-            case LP_UART_NUM_0:
-                self->rx = 4;
-                self->tx = 5;
-                break;
-            #endif
-            #if SOC_UART_HP_NUM > 3
-            case UART_NUM_3:
-                break;
-            #endif
-            #if SOC_UART_HP_NUM > 4
-            case UART_NUM_4:
-                break;
-            #endif
-            case UART_NUM_MAX:
-                assert(0); // Range is checked in mp_machine_uart_make_new, value should be unreachable
-        }
+        // Set the MicroPython default UART pins, overridable per board via
+        // MICROPY_HW_UARTn_TX/RX. These may be overwritten with caller-provided
+        // pins, below. The valid range of uart_num is checked in
+        // mp_machine_uart_make_new.
+        self->tx = machine_uart_default_pins[self->uart_num].tx;
+        self->rx = machine_uart_default_pins[self->uart_num].rx;
     } else {
         // wait for all data to be transmitted before changing settings
         uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));

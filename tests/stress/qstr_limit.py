@@ -13,7 +13,7 @@ for l in range(254, 259):
     try:
         exec(var + "=1", g)
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)
         continue
     print(var in g)
 
@@ -27,7 +27,7 @@ for l in range(254, 259):
     try:
         exec("f({}=1)".format(make_id(l)))
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)
 
 # type construction
 for l in range(254, 259):
@@ -35,7 +35,7 @@ for l in range(254, 259):
     try:
         print(type(id, (), {}))
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)
 
 
 # hasattr, setattr, getattr
@@ -49,11 +49,11 @@ for l in range(254, 259):
     try:
         setattr(a, id, 123)
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)
     try:
         print(hasattr(a, id), getattr(a, id))
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)
 
 # format with keys
 for l in range(254, 259):
@@ -61,7 +61,7 @@ for l in range(254, 259):
     try:
         print(("{" + id + "}").format(**{id: l}))
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)
 
 # import module
 # (different OS's have different results so only run those that are consistent)
@@ -71,7 +71,7 @@ for l in (100, 101, 256, 257, 258):
     except ImportError:
         print("ok", l)
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)
 
 # import package
 for l in (100, 101, 102, 128, 129):
@@ -80,4 +80,4 @@ for l in (100, 101, 102, 128, 129):
     except ImportError:
         print("ok", l)
     except RuntimeError as er:
-        print("RuntimeError", er, l)
+        print(str(er) or "name too long", l)

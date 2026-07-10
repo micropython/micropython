@@ -97,6 +97,10 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     // Create the new timer.
     machine_timer_obj_t *self = mp_obj_malloc_with_finaliser(machine_timer_obj_t, &machine_timer_type);
 
+    // Initialize the kernel timer structure
+    k_timer_init(&self->my_timer, machine_timer_callback, NULL);
+    k_timer_user_data_set(&self->my_timer, self);
+
     // Add the timer to the linked-list of timers
     self->next = MP_STATE_PORT(machine_timer_obj_head);
     MP_STATE_PORT(machine_timer_obj_head) = self;
@@ -149,8 +153,6 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     self->callback = args[ARG_callback].u_obj;
     self->ishard = args[ARG_hard].u_bool;
 
-    k_timer_init(&self->my_timer, machine_timer_callback, NULL);
-    k_timer_user_data_set(&self->my_timer, self);
     k_timer_start(&self->my_timer, K_MSEC(self->period_ms), K_MSEC(self->period_ms));
 
     return mp_const_none;
