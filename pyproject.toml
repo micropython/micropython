@@ -112,7 +112,7 @@ package-dir = {"" = "ports/python"}
 
 [project]
 name = "jonnor-micropython"
-version = "1.28.0.2"
+version = "1.28.0.3"
 description = "CPython wrapper for MicroPython"
 authors = [{name = "MicroPython community"}]
 dependencies = ["pybind11"]
