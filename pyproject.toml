@@ -101,3 +101,18 @@ exclude = [
   "tests/micropython/test_normalize_newlines.py",
   "tests/micropython/viper_args.py",
 ]
+
+[build-system]
+requires = ["setuptools>=64", "wheel", "pybind11"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = []
+package-dir = {"" = "ports/python"}
+
+[project]
+name = "jonnor-micropython"
+version = "1.28.0.2"
+description = "CPython wrapper for MicroPython"
+authors = [{name = "MicroPython community"}]
+dependencies = ["pybind11"]

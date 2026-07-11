@@ -48,8 +48,24 @@ jobs:
           name: wheels-${{ matrix.cibw_platform }}
           path: wheelhouse/*.whl
 
+  make_sdist:
+    name: Make SDist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        persist-credentials: false # good security practice
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sdist
+        path: dist/*.tar.gz
+
   publish:
-    needs: build_wheels
+    needs: [build_wheels, make_sdist]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     environment: pypi
@@ -61,7 +77,7 @@ jobs:
           path: dist
           merge-multiple: true
 
-      # avoid trying to upload pyodide wheels - not supported by PyPi
+      # avoid trying to upload old pyodide tagged wheels - not supported by PyPi
       - run: rm -f dist/*pyodide*.whl
 
       - uses: pypa/gh-action-pypi-publish@release/v1
