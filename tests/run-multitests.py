@@ -598,7 +598,7 @@ def main():
     cmd_args = cmd_parser.parse_args()
 
     # clear search path to make sure tests use only builtin modules and those in extmod
-    os.environ["MICROPYPATH"] = os.pathsep.join((".frozen", "../extmod"))
+    os.environ["MICROPYPATH"] = os.pathsep.join((".frozen", base_path("../extmod")))
 
     test_files = prepare_test_file_list(cmd_args.files)
     max_instances = max(t[1] for t in test_files)
