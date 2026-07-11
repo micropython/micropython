@@ -319,3 +319,10 @@ install: $(BUILD)/$(PROG)
 
 uninstall:
 	-rm $(BINDIR)/$(PROG)
+
+# Build static library
+$(BUILD)/libmicropython.a: $(OBJ)
+	$(AR) rcs $@ $^
+
+.PHONY: libmicropython
+libmicropython: $(BUILD)/libmicropython.a
