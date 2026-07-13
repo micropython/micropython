@@ -95,6 +95,30 @@
 #define BLOCK_FROM_PTR(area, ptr) (((byte *)(ptr) - area->gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(area, block) (((block) * BYTES_PER_BLOCK + (uintptr_t)area->gc_pool_start))
 
+// Word-aligned scanning of the packed allocation table. The representation is
+// unchanged (2 bits/block, interleaved); the mark and sweep loops just load a
+// whole word at a time and classify all its blocks with SWAR masks instead of
+// touching the table a byte or a block at a time. uint32_t keeps reads 4-byte
+// aligned (unaligned word access faults on Cortex-M0) and lets us use 32-bit
+// ctz on all targets.
+typedef uint32_t gc_word_t;
+#define GC_ATB_BLOCKS_PER_WORD (16) // 2 bits/block, 32 bits/word
+#define GC_ATB_LOW_BITS ((gc_word_t)0x55555555) // bit 0 of every 2-bit field
+#define GC_ATB_HIGH_BITS ((gc_word_t)0xaaaaaaaa) // bit 1 of every 2-bit field
+#define GC_ATB_ALL_TAIL (GC_ATB_HIGH_BITS) // every field == AT_TAIL (0b10)
+#if defined(__GNUC__) || defined(__clang__)
+#define GC_CTZ(x) ((size_t)__builtin_ctz(x))
+#else
+static inline size_t GC_CTZ(gc_word_t x) {
+    size_t n = 0;
+    while (!(x & 1)) {
+        x >>= 1;
+        n++;
+    }
+    return n;
+}
+#endif
+
 // After the ATB, there must be a byte filled with AT_FREE so that gc_mark_tree
 // cannot erroneously conclude that a block extends past the end of the GC heap
 // due to bit patterns in the FTB (or first block, if finalizers are disabled)
@@ -150,6 +174,10 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     //     W = A * BLOCKS_PER_ATB / BLOCKS_PER_WTB
     //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB / BLOCKS_PER_WTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+
+    // Align the allocation table so its words can be read directly (unaligned
+    // word access faults on Cortex-M0).
+    start = (void *)(((uintptr_t)start + sizeof(gc_word_t) - 1) & ~(uintptr_t)(sizeof(gc_word_t) - 1));
     size_t total_byte_len = (byte *)end - (byte *)start;
     #if MICROPY_ENABLE_FINALISER || MICROPY_PY_WEAKREF
     area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE)
@@ -167,6 +195,11 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     #else
     area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE) / (1 + MP_BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
     #endif
+
+    // Round the table down to a whole number of scan words so every ATB word
+    // maps to real blocks (no partial trailing word to mask in the sweep/mark
+    // scans). Costs at most one word of blocks at the end of the heap.
+    area->gc_alloc_table_byte_len &= ~(size_t)(sizeof(gc_word_t) - 1);
 
     area->gc_alloc_table_start = (byte *)start;
 
@@ -597,12 +630,18 @@ static void gc_deal_with_stack_overflow(void) {
     while (MP_STATE_MEM(gc_stack_overflow)) {
         MP_STATE_MEM(gc_stack_overflow) = 0;
 
-        // scan entire memory looking for blocks which have been marked but not their children
+        // Scan the whole heap for marked heads whose children weren't fully
+        // traced. A MARK field is 0b11, so both bits set: find them a word at a
+        // time and ctz to each, rather than testing every block.
         for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
-            for (size_t block = 0; block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
-                MICROPY_GC_HOOK_LOOP(block);
-                // trace (again) if mark bit set
-                if (ATB_GET_KIND(area, block) == AT_MARK) {
+            const gc_word_t *atb = (const gc_word_t *)(const void *)area->gc_alloc_table_start;
+            size_t total_words = area->gc_alloc_table_byte_len / sizeof(gc_word_t);
+            for (size_t w = 0; w < total_words; w++) {
+                MICROPY_GC_HOOK_LOOP(w);
+                gc_word_t marked = atb[w] & (atb[w] >> 1) & GC_ATB_LOW_BITS;
+                while (marked) {
+                    size_t block = w * GC_ATB_BLOCKS_PER_WORD + GC_CTZ(marked) / 2;
+                    marked &= marked - 1; // clear lowest set bit
                     #if MICROPY_GC_SPLIT_HEAP
                     gc_mark_subtree(area, block);
                     #else
@@ -691,34 +730,71 @@ static void gc_sweep_free_blocks(void) {
         size_t last_used_block = 0;
         assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 
-        for (size_t block = 0; block <= area->gc_last_used_block; block++) {
-            MICROPY_GC_HOOK_LOOP(block);
-            switch (ATB_GET_KIND(area, block)) {
-                case AT_HEAD:
-                    free_tail = 1;
-                    DEBUG_printf("gc_sweep_free_blocks(%p)\n", (void *)PTR_FROM_BLOCK(area, block));
-                    #if MICROPY_PY_GC_COLLECT_RETVAL
-                    MP_STATE_MEM(gc_collected)++;
+        // Sweep a word (16 blocks) at a time. Load the ATB word into a register
+        // once, classify/clear all its blocks there, and write back at most
+        // once. Uniform words (all-free, or a full run of tails) are handled
+        // without the per-block loop so large buffers stay word-speed.
+        gc_word_t *atb = (gc_word_t *)(void *)area->gc_alloc_table_start;
+        size_t last_word = area->gc_last_used_block / GC_ATB_BLOCKS_PER_WORD;
+
+        for (size_t w = 0; w <= last_word; w++) {
+            MICROPY_GC_HOOK_LOOP(w);
+            gc_word_t aw = atb[w];
+
+            if (aw == 0) {
+                continue; // all free
+            }
+            if (aw == GC_ATB_ALL_TAIL) {
+                // A full word of tails: part of one multi-block object.
+                if (free_tail) {
+                    atb[w] = 0; // dead object: free the run
+                    #if CLEAR_ON_SWEEP
+                    memset((void *)PTR_FROM_BLOCK(area, w * GC_ATB_BLOCKS_PER_WORD), 0, GC_ATB_BLOCKS_PER_WORD * BYTES_PER_BLOCK);
                     #endif
-                    // fall through to free the head
-                    MP_FALLTHROUGH
+                } else {
+                    last_used_block = w * GC_ATB_BLOCKS_PER_WORD + GC_ATB_BLOCKS_PER_WORD - 1;
+                }
+                continue;
+            }
 
-                case AT_TAIL:
-                    if (free_tail) {
-                        ATB_ANY_TO_FREE(area, block);
-                        #if CLEAR_ON_SWEEP
-                        memset((void *)PTR_FROM_BLOCK(area, block), 0, BYTES_PER_BLOCK);
+            // Mixed word: walk the 2-bit fields, updating the register copy.
+            gc_word_t new_w = aw;
+            for (size_t k = 0; k < GC_ATB_BLOCKS_PER_WORD; k++) {
+                size_t sh = 2 * k;
+                switch ((aw >> sh) & 3) {
+                    case AT_HEAD:
+                        // Unmarked head: free it and start a dead-tail run.
+                        free_tail = 1;
+                        new_w &= ~((gc_word_t)AT_HEAD << sh);
+                        #if MICROPY_PY_GC_COLLECT_RETVAL
+                        MP_STATE_MEM(gc_collected)++;
                         #endif
-                    } else {
-                        last_used_block = block;
-                    }
-                    break;
+                        #if CLEAR_ON_SWEEP
+                        memset((void *)PTR_FROM_BLOCK(area, w * GC_ATB_BLOCKS_PER_WORD + k), 0, BYTES_PER_BLOCK);
+                        #endif
+                        break;
 
-                case AT_MARK:
-                    ATB_MARK_TO_HEAD(area, block);
-                    free_tail = 0;
-                    last_used_block = block;
-                    break;
+                    case AT_TAIL:
+                        if (free_tail) {
+                            new_w &= ~((gc_word_t)AT_TAIL << sh);
+                            #if CLEAR_ON_SWEEP
+                            memset((void *)PTR_FROM_BLOCK(area, w * GC_ATB_BLOCKS_PER_WORD + k), 0, BYTES_PER_BLOCK);
+                            #endif
+                        } else {
+                            last_used_block = w * GC_ATB_BLOCKS_PER_WORD + k;
+                        }
+                        break;
+
+                    case AT_MARK:
+                        // Live head: MARK -> HEAD (clear the high bit).
+                        new_w &= ~((gc_word_t)AT_TAIL << sh);
+                        free_tail = 0;
+                        last_used_block = w * GC_ATB_BLOCKS_PER_WORD + k;
+                        break;
+                }
+            }
+            if (new_w != aw) {
+                atb[w] = new_w;
             }
         }
 
@@ -910,8 +986,28 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
         // look for a run of n_blocks available blocks
         for (; area != NULL; area = NEXT_AREA(area), i = 0) {
             n_free = 0;
-            for (i = area->gc_last_free_atb_index; i < area->gc_alloc_table_byte_len; i++) {
+            size_t bytelen = area->gc_alloc_table_byte_len;
+            i = area->gc_last_free_atb_index;
+            while (i < bytelen) {
                 MICROPY_GC_HOOK_LOOP(i);
+                // When not mid-run and word-aligned, skip whole fully-occupied
+                // words (16 blocks) at a time. This collapses the worst-case
+                // scan past a large allocated region (the tail of allocation
+                // latency) without slowing the common case: a free block near
+                // the resume point leaves the loop immediately and is found on
+                // the per-byte path below.
+                if (n_free == 0 && (i & (sizeof(gc_word_t) - 1)) == 0) {
+                    while (i + sizeof(gc_word_t) <= bytelen) {
+                        gc_word_t aw = *(const gc_word_t *)(const void *)(area->gc_alloc_table_start + i);
+                        if (((aw | (aw >> 1)) & GC_ATB_LOW_BITS) != GC_ATB_LOW_BITS) {
+                            break; // word has at least one free block
+                        }
+                        i += sizeof(gc_word_t);
+                    }
+                    if (i >= bytelen) {
+                        break;
+                    }
+                }
                 byte a = area->gc_alloc_table_start[i];
                 // *FORMAT-OFF*
                 if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
@@ -919,6 +1015,7 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
                 if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
                 if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
                 // *FORMAT-ON*
+                i++;
             }
 
             // No free blocks found on this heap. Mark this heap as
