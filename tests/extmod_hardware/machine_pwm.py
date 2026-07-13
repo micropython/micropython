@@ -78,10 +78,10 @@ def _test_freq_duty(self, pulse_in, pwm, freq, duty_u16):
         for level in (0, 1):
             t = 0
             for _ in range(n_averaging):
-                t += time_pulse_us(pulse_in, level, timeout, 3)
+                t += time_pulse_us(pulse_in, level, timeout, 4)
             t //= n_averaging
             expected = expected_us[level]
-            print(" level={} timing_er={}".format(level, abs(t - expected)), end="")
+            print(" level={} timing_er={}".format(level, abs(t - expected)), end=" :")
             self.assertLessEqual(abs(t - expected), timing_margin_us)
 
     print()
