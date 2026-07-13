@@ -10,6 +10,8 @@
 #   * ProtocolWatch — device hot-plug via RegisterProtocolNotify.
 #   * wait_async(ev) — suspend an asyncio task until an Event/Timer is signalled.
 
+from micropython import const
+
 from _uefi import Event
 from . import raw
 from . import status
@@ -17,11 +19,10 @@ from .guid import GUID
 from .handle import Handle
 
 # EFI_TIMER_DELAY values for raw.set_timer.
-_TIMER_CANCEL = 0
-_TIMER_PERIODIC = 1
-_TIMER_RELATIVE = 2
-_MS_TO_100NS = 10000  # 1 ms = 10000 * 100 ns
-_BY_REGISTER_NOTIFY = 1
+_TIMER_CANCEL = const(0)
+_TIMER_PERIODIC = const(1)
+_TIMER_RELATIVE = const(2)
+_MS_TO_100NS = const(10000)  # 1 ms = 10000 * 100 ns
 
 
 async def wait_async(ev):

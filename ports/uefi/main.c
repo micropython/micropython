@@ -85,7 +85,7 @@ static void mpy_uefi_teardown(void) {
     #if MICROPY_PY_MACHINE
     machine_timer_deinit_all();
     #endif
-    efi_event_deinit_all();
+    uefi_event_obj_deinit_all();
     mp_uefi_async_deinit();
 }
 
@@ -427,7 +427,7 @@ const char uefi_help_text[] =
     "  CTRL-D        -- on a blank line, exit\n"
     "\n"
     "The filesystem of the boot volume is mounted at '/'. Useful modules:\n"
-    "  os, time, machine, efi, asyncio, select, json, re, struct, hashlib\n"
+    "  os, time, machine, uefi, asyncio, select, json, re, struct, hashlib\n"
     "\n"
     "For a list of available modules, type help('modules').\n";
 

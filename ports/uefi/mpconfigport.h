@@ -108,11 +108,11 @@ void mp_uefi_sched_signal(void);
 // time module: ticks_*/sleep* over the hardware timebase (uefi_time.c). It's a
 // BASIC-level feature (above CORE), so enable it explicitly. Wall clock
 // (time()/time_ns()/gmtime/localtime/mktime) comes from RuntimeServices->GetTime
-// via modtime_uefi.c. Use the Unix (1970) epoch for CPython compatibility.
+// via modtime.c. Use the Unix (1970) epoch for CPython compatibility.
 #define MICROPY_PY_TIME                          (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS            (1)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
-#define MICROPY_PY_TIME_INCLUDEFILE             "ports/uefi/modtime_uefi.c"
+#define MICROPY_PY_TIME_INCLUDEFILE             "ports/uefi/modtime.c"
 #define MICROPY_EPOCH_IS_1970                   (1)
 
 // Finalisers (EXTRA-level): let a dropped machine.Timer's __del__ stop its UEFI
@@ -131,7 +131,7 @@ void mp_uefi_sched_signal(void);
 #define MICROPY_PY_MACHINE_RESET            (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_WDT              (1)
-#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/uefi/modmachine_wdt.c"
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/uefi/machine_wdt.c"
 #define MICROPY_PY_MACHINE_SIGNAL           (0)
 
 // help() + help('modules'). Custom intro text defined in main.c.

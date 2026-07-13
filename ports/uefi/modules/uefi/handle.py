@@ -9,6 +9,8 @@
 # CloseProtocol pair (or a bare LocateProtocol result), so the firmware open is
 # released deterministically via close()/context-manager/__del__.
 
+from micropython import const
+
 from . import raw
 from . import status
 from .guid import GUID
@@ -22,8 +24,8 @@ BY_DRIVER = 0x10
 EXCLUSIVE = 0x20
 
 # EFI_LOCATE_SEARCH_TYPE values (for raw.locate_handle_buffer).
-_ALL_HANDLES = 0
-_BY_PROTOCOL = 2
+_ALL_HANDLES = const(0)
+_BY_PROTOCOL = const(2)
 
 
 class Handle:

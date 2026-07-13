@@ -37,9 +37,7 @@ class PoolBuffer:
         """Copy `data` into the buffer at `offset`."""
         if offset + len(data) > self.size:
             raise ValueError("write past end of buffer")
-        dst = uctypes.bytearray_at(self.ptr + offset, len(data))
-        for i in range(len(data)):
-            dst[i] = data[i]
+        uctypes.bytearray_at(self.ptr + offset, len(data))[:] = data
 
     def bytes(self, offset=0, size=None):
         """Read `size` bytes (default: to the end) out of the buffer as bytes."""

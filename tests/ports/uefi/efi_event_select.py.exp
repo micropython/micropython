@@ -6,4 +6,4 @@ False
 []
 1
 True
-efi.Event ok
+uefi.Event ok

@@ -24,9 +24,9 @@
 #define BS (mp_uefi_st->BootServices)
 #define RS (mp_uefi_st->RuntimeServices)
 
-// The pollable EVT_NOTIFY_SIGNAL event type, defined in modefi.c; folded into the
-// `_uefi` module so the Python layer reaches it as uefi.Event.
-extern const mp_obj_type_t efi_event_type;
+// The pollable EVT_NOTIFY_SIGNAL event type, defined in uefi_event_obj.c; folded
+// into the `_uefi` module so the Python layer reaches it as uefi.Event.
+extern const mp_obj_type_t uefi_event_type;
 
 // ── The trampoline ──────────────────────────────────────────────────────────
 // A single fixed-arity prototype. We always call with the maximum arg count,
@@ -869,8 +869,8 @@ static const mp_rom_map_elem_t uefi_raw_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wstr_at), MP_ROM_PTR(&uefi_raw_wstr_at_obj) },
     { MP_ROM_QSTR(MP_QSTR_open_volume), MP_ROM_PTR(&uefi_raw_open_volume_obj) },
     { MP_ROM_QSTR(MP_QSTR_convert_rgb565), MP_ROM_PTR(&uefi_raw_convert_rgb565_obj) },
-    // The C uefi.Event type (defined in modefi.c) folded under this module.
-    { MP_ROM_QSTR(MP_QSTR_Event), MP_ROM_PTR(&efi_event_type) },
+    // The C uefi.Event type (defined in uefi_event_obj.c) folded under this module.
+    { MP_ROM_QSTR(MP_QSTR_Event), MP_ROM_PTR(&uefi_event_type) },
 };
 static MP_DEFINE_CONST_DICT(uefi_raw_globals, uefi_raw_globals_table);
 

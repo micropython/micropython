@@ -38,10 +38,14 @@ endif
 
 include ../../py/mkenv.mk
 
-# Frozen modules: freeze the in-tree asyncio package (no filesystem on UEFI). We
-# don't use micropython-lib, so point MPY_LIB_DIR at the repo root (it has a
-# README.md) to satisfy the frozen recipe's submodule check without initialising
-# that submodule. mpy-cross is auto-built via MICROPY_MPYCROSS_DEPENDENCY.
+# Frozen modules: freeze the in-tree asyncio package (no filesystem on UEFI), plus
+# individual files pulled straight from the lib/micropython-lib submodule by path
+# (manifest.py's ssl freeze; tests/run_uefi_tests.py stages unittest onto the test
+# VFS the same way) — so that submodule must be checked out to build, same as it
+# already was to test. We don't use micropython-lib's require()/package-metadata
+# mechanism though, so point MPY_LIB_DIR at the repo root (it has a README.md) to
+# satisfy the frozen recipe's submodule-presence check. mpy-cross is auto-built
+# via MICROPY_MPYCROSS_DEPENDENCY.
 FROZEN_MANIFEST ?= manifest.py
 MPY_LIB_DIR = $(TOP)
 
@@ -108,10 +112,10 @@ SRC_C = \
 	uefi_event.c \
 	machine_timer.c \
 	machine_rtc.c \
-	modefi.c \
+	uefi_event_obj.c \
 	moduefi_raw.c \
-	modnetwork_uefi.c \
-	modsocket_uefi.c \
+	modnetwork.c \
+	modsocket.c \
 	uefi_net.c \
 	uefi_vfs.c \
 	uefi_rng.c \
@@ -146,7 +150,7 @@ endif
 # above and need explicit qstr collection here.
 SRC_QSTR += shared/runtime/pyexec.c shared/readline/readline.c shared/runtime/sys_stdio_mphal.c
 SRC_QSTR += shared/runtime/mpirq.c
-SRC_QSTR += machine_timer.c machine_rtc.c modefi.c moduefi_raw.c uefi_vfs.c modnetwork_uefi.c modsocket_uefi.c
+SRC_QSTR += machine_timer.c machine_rtc.c uefi_event_obj.c moduefi_raw.c uefi_vfs.c modnetwork.c modsocket.c
 
 # Double-precision libm (MICROPY_FLOAT_IMPL_DOUBLE): the bundled lib/libm_dbl,
 # software sqrt (we exclude thumb_vfp_sqrt.c, which is ARM-thumb-only).

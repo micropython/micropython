@@ -20,20 +20,10 @@ import uctypes
 
 from . import raw
 from . import status
+from . import utf16
 from .buffer import PoolBuffer, LOADER_DATA
 from .handle import Handle
 from .protocols import LOADED_IMAGE
-
-
-def _utf16le(s):
-    b = bytearray()
-    for ch in s:
-        c = ord(ch)
-        b.append(c & 0xFF)
-        b.append((c >> 8) & 0xFF)
-    b.append(0)
-    b.append(0)
-    return bytes(b)
 
 
 class Image:
@@ -78,7 +68,7 @@ class Image:
         Call after load, before start().
         """
         if isinstance(data, str):
-            data = _utf16le(data)
+            data = utf16.encode(data)
         else:
             data = bytes(data)
         self._options = PoolBuffer.from_bytes(data, memory_type=LOADER_DATA)

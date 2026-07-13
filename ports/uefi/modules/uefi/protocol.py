@@ -19,6 +19,7 @@ import uctypes
 from . import raw
 from . import status
 from . import handle as _handle
+from . import utf16
 from .guid import GUID
 
 _LE = uctypes.LITTLE_ENDIAN
@@ -104,17 +105,6 @@ def _build_layout(members):
 
 
 # ── Argument coercion ────────────────────────────────────────────────────────
-def _utf16le(s):
-    b = bytearray()
-    for ch in s:
-        c = ord(ch)
-        b.append(c & 0xFF)
-        b.append((c >> 8) & 0xFF)
-    b.append(0)
-    b.append(0)
-    return bytes(b)
-
-
 def _coerce(t, v, keep):
     kind = t.kind
     if kind == "int":
@@ -132,7 +122,7 @@ def _coerce(t, v, keep):
     if kind == "wstr":
         if v is None:
             return 0
-        buf = _utf16le(v)
+        buf = utf16.encode(v)
         keep.append(buf)
         return uctypes.addressof(buf)
     if kind == "str":
