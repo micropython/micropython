@@ -200,6 +200,9 @@ soft_reset_exit:
     #if MICROPY_PY_MACHINE_UART
     machine_uart_deinit_all();
     #endif
+    #if MICROPY_PY_MACHINE_CAN
+    machine_can_deinit_all();
+    #endif
 
     #if MICROPY_PY_ESP32_PCNT
     esp32_pcnt_deinit_all();
