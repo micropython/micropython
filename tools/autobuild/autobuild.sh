@@ -92,6 +92,8 @@ cd ../mimxrt
 build_mimxrt_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../nrf
 build_nrf_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../psoc-edge
+build_psoc_edge_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../renesas-ra
 build_renesas_ra_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../rp2
