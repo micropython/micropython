@@ -11,11 +11,14 @@
 # writes flash — don't loop. Enumeration order isn't stable; collect fully before
 # mutating. RUNTIME_ACCESS without NON_VOLATILE is a volatile runtime variable.
 
+from micropython import const
+
 from . import raw
 from . import status
 from .guid import GUID
 from .protocol import ProtocolDescriptor, Field, Method, U64, VPtr
 from . import guid as _guid
+from . import utf16
 
 # EFI_VARIABLE_* attribute flags (EFI_VARIABLE_ prefix stripped per convention).
 NON_VOLATILE = 0x01
@@ -96,8 +99,8 @@ LOCK_NOW = 1
 LOCK_ON_CREATE = 2
 LOCK_ON_VAR_STATE = 3
 
-_ENTRY_REVISION = 0x00010000  # VARIABLE_POLICY_ENTRY_REVISION
-_ENTRY_HEADER = 44  # sizeof(VARIABLE_POLICY_ENTRY) — name follows
+_ENTRY_REVISION = const(0x00010000)  # VARIABLE_POLICY_ENTRY_REVISION
+_ENTRY_HEADER = const(44)  # sizeof(VARIABLE_POLICY_ENTRY) — name follows
 
 VARIABLE_POLICY = ProtocolDescriptor(
     "EDKII_VARIABLE_POLICY_PROTOCOL",
@@ -120,17 +123,6 @@ def _proto():
     if _policy is None:
         _policy = VARIABLE_POLICY.locate()  # raises uefi.Error if absent
     return _policy
-
-
-def _utf16le(s):
-    b = bytearray()
-    for ch in s:
-        c = ord(ch)
-        b.append(c & 0xFF)
-        b.append((c >> 8) & 0xFF)
-    b.append(0)
-    b.append(0)
-    return bytes(b)
 
 
 def _le16(v):
@@ -173,7 +165,7 @@ class VariablePolicy:
         if lock == LOCK_ON_VAR_STATE:
             raise NotImplementedError("LOCK_ON_VAR_STATE policies not yet supported")
         ns = GUID(namespace).bytes
-        name_u16 = _utf16le(name) if name is not None else b"\x00\x00"
+        name_u16 = utf16.encode(name) if name is not None else b"\x00\x00"
         total = _ENTRY_HEADER + len(name_u16)
         # VARIABLE_POLICY_ENTRY: Version, Size, OffsetToName, Namespace(16),
         # MinSize, MaxSize, AttributesMustHave, AttributesCantHave,

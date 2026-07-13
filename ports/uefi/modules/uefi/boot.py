@@ -17,6 +17,7 @@ from . import raw
 from . import status
 from . import variable
 from . import guid as _guid
+from . import utf16
 from .device_path import DevicePath
 from .driver import Image
 
@@ -31,27 +32,6 @@ CATEGORY_APP = 0x00000100
 
 # Boot variables should persist and be visible at runtime.
 _VAR_ATTRS = variable.NON_VOLATILE | variable.BOOTSERVICE_ACCESS | variable.RUNTIME_ACCESS
-
-
-def _utf16le(s):
-    b = bytearray()
-    for ch in s:
-        c = ord(ch)
-        b.append(c & 0xFF)
-        b.append((c >> 8) & 0xFF)
-    b.append(0)
-    b.append(0)
-    return bytes(b)
-
-
-def _utf16le_decode(b):
-    out = []
-    for i in range(0, len(b) - 1, 2):
-        c = b[i] | (b[i + 1] << 8)
-        if c == 0:
-            break
-        out.append(chr(c))
-    return "".join(out)
 
 
 class LoadOption:
@@ -76,7 +56,7 @@ class LoadOption:
         end = 6
         while end + 1 < len(data) and not (data[end] == 0 and data[end + 1] == 0):
             end += 2
-        description = _utf16le_decode(data[6:end])
+        description = utf16.decode(data[6:end])
         dp_start = end + 2  # skip the CHAR16 NUL
         dp_bytes = data[dp_start : dp_start + fpl]
         device_path = DevicePath.from_bytes(dp_bytes)
@@ -86,7 +66,7 @@ class LoadOption:
     def to_bytes(self):
         """Serialise to the packed EFI_LOAD_OPTION form for SetVariable."""
         dp = self.device_path.to_bytes()
-        desc = _utf16le(self.description)
+        desc = utf16.encode(self.description)
         return (
             self.attributes.to_bytes(4, "little")
             + len(dp).to_bytes(2, "little")

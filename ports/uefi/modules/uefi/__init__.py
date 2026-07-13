@@ -13,6 +13,7 @@
 from . import raw
 from . import status
 from . import guid
+from . import utf16
 from . import buffer
 from . import handle
 from . import protocol

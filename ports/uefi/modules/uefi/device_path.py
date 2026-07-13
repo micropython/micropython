@@ -14,6 +14,7 @@ import uctypes
 from . import raw
 from . import status
 from . import guid
+from . import utf16
 from .protocol import ProtocolDescriptor, Method, VPtr, Bool, WStr
 
 # Node types.
@@ -71,24 +72,6 @@ def _fromtext():
     if _from_text is None:
         _from_text = DEVICE_PATH_FROM_TEXT.locate()  # raises uefi.Error if absent
     return _from_text
-
-
-def _utf16le_decode(b):
-    out = []
-    i = 0
-    n = len(b)
-    while i + 1 < n:
-        c = b[i] | (b[i + 1] << 8)
-        i += 2
-        if c == 0:
-            break
-        if 0xD800 <= c <= 0xDBFF and i + 1 < n:
-            lo = b[i] | (b[i + 1] << 8)
-            if 0xDC00 <= lo <= 0xDFFF:
-                i += 2
-                c = 0x10000 + ((c - 0xD800) << 10) + (lo - 0xDC00)
-        out.append(chr(c))
-    return "".join(out)
 
 
 class DevicePathNode:
@@ -174,7 +157,7 @@ class DevicePath:
         """The path string from the first Media/FilePath node, or None."""
         for n in self.nodes:
             if n.type == MEDIA and n.subtype == MEDIA_FILEPATH:
-                return _utf16le_decode(n.data)
+                return utf16.decode(n.data)
         return None
 
     def pci_node(self):

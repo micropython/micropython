@@ -202,7 +202,7 @@ void mp_uefi_end_atomic(uintptr_t old_tpl) {
 }
 
 // --- timer primitives (the UEFI-event bridge) ---
-// Reused now by machine.Timer and later by efi.Timer / efi.Event. The notify runs
+// Reused now by machine.Timer and later by uefi.Timer / uefi.Event. The notify runs
 // at TPL_CALLBACK and is hard-ISR context: it must only schedule work (e.g.
 // mp_sched_schedule), never touch the VM/heap directly.
 EFI_STATUS mp_uefi_create_timer(EFI_EVENT_NOTIFY notify, void *context, EFI_EVENT *out) {
@@ -239,7 +239,7 @@ void mp_uefi_sched_signal(void) {
     mp_uefi_wake();
 }
 
-// --- signal-event primitive (efi.Event, protocol completion tokens) ---
+// --- signal-event primitive (uefi.Event, protocol completion tokens) ---
 // A UEFI event whose signalling runs `notify` (hard-ISR, TPL_CALLBACK). Unlike a
 // waitable event it can't be passed to WaitForEvent, but the notify funnels into
 // the wakeup loop — the uniform model for "an external thing signalled us".

@@ -24,7 +24,7 @@ void mp_uefi_async_init(void);
 // torn-down interpreter. machine_timer_deinit_all() is defined in modmachine.c.
 void mp_uefi_async_deinit(void);
 void machine_timer_deinit_all(void);
-void efi_event_deinit_all(void); // defined in modefi.c
+void uefi_event_obj_deinit_all(void); // defined in uefi_event_obj.c
 
 // Mount the boot volume at "/" (uefi_vfs.c). Called once, after mp_init().
 void mp_uefi_vfs_mount_boot(void);
@@ -66,13 +66,13 @@ uintptr_t mp_uefi_begin_atomic(void);
 void mp_uefi_end_atomic(uintptr_t old_tpl);
 
 // L2 timer primitives: a UEFI timer event whose expiry runs `notify` (hard-ISR
-// context, TPL_CALLBACK). Used by machine.Timer and, later, efi.Timer/efi.Event.
+// context, TPL_CALLBACK). Used by machine.Timer and, later, uefi.Timer/uefi.Event.
 EFI_STATUS mp_uefi_create_timer(EFI_EVENT_NOTIFY notify, void *context, EFI_EVENT *out);
 void mp_uefi_arm_timer(EFI_EVENT ev, int periodic, uint64_t period_us);
 void mp_uefi_cancel_timer(EFI_EVENT ev);
 void mp_uefi_close_event(EFI_EVENT ev);
 
-// L2 signal-event primitives: a UEFI EVT_NOTIFY_SIGNAL event (efi.Event, protocol
+// L2 signal-event primitives: a UEFI EVT_NOTIFY_SIGNAL event (uefi.Event, protocol
 // completion tokens). The notify runs hard-ISR at TPL_CALLBACK. mp_uefi_wake()
 // nudges a blocked foreground to re-poll.
 EFI_STATUS mp_uefi_create_signal_event(EFI_EVENT_NOTIFY notify, void *context, EFI_EVENT *out);

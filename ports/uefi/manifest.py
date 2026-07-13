@@ -7,5 +7,10 @@
 # when the optional _asyncio C accelerator is absent.
 include("$(MPY_DIR)/extmod/asyncio")
 
-# Port-local pure-Python modules (e.g. gzip, a wrapper over the C deflate module).
+# CPython-compatible `ssl` facade over the built-in `tls` module: the real
+# micropython-lib package (unmodified), not a local reimplementation — same
+# path tests/run_uefi_tests.py already reaches into for `unittest`.
+freeze("$(MPY_DIR)/lib/micropython-lib/python-stdlib/ssl", "ssl.py")
+
+# Port-local pure-Python modules (the uefi.* package and friends).
 freeze("modules")

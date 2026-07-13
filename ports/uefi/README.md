@@ -2,11 +2,6 @@
 
 A port of MicroPython to run as a **UEFI application** (pre-`ExitBootServices`), so the
 firmware environment — console, filesystem, timers, networking — is scriptable in Python.
-Developed **in-tree** at `ports/uefi/` in a fork of MicroPython, with the intent to upstream.
-
-This is the single high-level description of the port. For the agent operating manual (build
-rules, the ABI landmine, what-not-to-touch) see `CLAUDE.md`; for the running list of deferred
-work see `TODO.md`.
 
 ## Targets & toolchain
 
@@ -103,3 +98,64 @@ Everything lives under `ports/uefi/`: the C core (`main.c`, `mphalport.c`, `uefi
 `efi*.h`), the frozen Python (`modules/`), samples (`samples/`), the test harness (`tests/`), the
 firmware/dev scaffolding (`Dockerfile`, `docker/`, `scripts/`), and the build (`Makefile`). Port
 work stays here; the shared core (`py/`, `extmod/`, `shared/`, `lib/`, `mpy-cross/`) is not edited.
+
+### File naming convention
+
+`uefi_*.c`/`uefi_port.h` is port infrastructure, not Python-visible on its own. `efi*.h` is a
+hand-rolled firmware ABI header transcribing UEFI/EDK2 spec structures and protocol GUIDs.
+A Python-visible module shows up as one of three shapes, matching upstream MicroPython's own
+conventions (compare any other port's `modmachine.c`/`machine_wdt.c`):
+
+- **Self-registering** — calls `MP_REGISTER_MODULE` itself: `moduefi_raw.c` -> `_uefi`,
+  `modnetwork.c` -> `network`, `modsocket.c` -> `socket`, `modtls_efitls.c` -> `tls`.
+- **`INCLUDEFILE` fragment** — never compiled standalone; textually `#include`d into a
+  generic `extmod/*.c` file via a `MICROPY_PY_*_INCLUDEFILE` macro, which does the actual
+  registration: `modmachine.c` -> `extmod/modmachine.c`, `modtime.c` -> `extmod/modtime.c`,
+  `machine_wdt.c` -> `extmod/machine_wdt.c`. Every upstream port names these the same way
+  (`modmachine.c`/`modtime.c` keep the `mod` prefix, `machine_wdt.c` doesn't) — it's
+  precedent, not a rule tied to the mechanism.
+- **Satellite type file** — compiled standalone with no `MP_REGISTER_MODULE` of its own,
+  wired into a sibling module's globals table instead: `machine_timer.c`/`machine_rtc.c` ->
+  `modmachine.c`'s `MICROPY_PY_MACHINE_EXTRA_GLOBALS`, `uefi_event_obj.c` ->
+  `moduefi_raw.c`'s globals table.
+
+### File map
+
+The C sources fall into a few layers; within each, files are listed innermost/lowest-level
+first.
+
+**Entry point & port configuration** — how the port itself is set up and built.
+- `main.c` — entry point: heap/GC/stack setup, launch-arg parsing, REPL dispatch, clean-exit contract
+- `mpconfigport.h` — `MICROPY_PY_*` feature flags, ABI/GC/scheduler hooks
+- `qstrdefsport.h` — port-specific qstrs (none needed yet)
+
+**Hardware abstraction** - standard interfaces for required hardware
+- `mphalport.h` / `mphalport.c` — the HAL: console supporting UEFI 16-bit IO, `Stall`-based delay
+
+**Standard MicroPython module implementations** - the modules Python code actually imports.
+- `modmachine.c` (+ `machine_timer.c`, `machine_rtc.c`, `machine_wdt.c`) — `machine`: idle/reset/freq/sleep/unique_id, wires in `Timer`/`RTC`/`WDT`
+- `modnetwork.c` — `network`: interface up/down, static/DHCP IP config
+- `modsocket.c` — `socket`: address constants, `getaddrinfo`, the socket stream type
+- `modtime.c` — `time` wall-clock fragment (`#include`d into `extmod/modtime.c`, not compiled standalone)
+- `modtls_efitls.c` — `tls`, `EFI_TLS_PROTOCOL` backend (sibling to `extmod/modtls_{mbedtls,axtls}.c`)
+
+**EFI wrappers** — low-level firmware ABI up to the high-level Python-facing types built on it.
+- `efi.h`, `efi_net.h`, `efi_tls.h` — hand-rolled UEFI/EDK2 protocol & struct definitions
+- `moduefi_raw.c` — `_uefi`: the raw Boot/Runtime Services surface + the `call` EFIAPI trampoline
+- `uefi_event_obj.c` — `uefi.Event`: the pollable high-level event type built on it
+
+**UEFI-environment-to-library-API glue** — turning firmware services into what MicroPython's
+core/HAL expects (`time`, VFS, RNG, GC, the scheduler's blocking primitive).
+- `uefi_time.c` — hardware timebase behind `time`/`machine.Timer`
+- `uefi_event.c` — the WFE blocking primitive, timer/signal-event primitives, byte-clean serial REPL
+- `uefi_vfs.c` — VFS backend over `EFI_SIMPLE_FILE_SYSTEM_PROTOCOL`
+- `uefi_net.c` — shared plumbing behind `network`/`socket` (async completion helpers)
+- `uefi_rng.c` — entropy behind `os.urandom()`
+- `uefi_gccollect.c` — conservative-GC root scan (register dump is ABI-specific)
+- `uefi_port.h` — shared declarations for the above (live UEFI tables, test-exit path)
+
+**Toolchain / freestanding-build scaffolding** — gaps from targeting `*-unknown-windows` with
+no OS underneath.
+- `libc_extra.c`, `math_extra.c`, `uefi_stubs.c` — libc/compiler-support functions the shared core needs
+- `include/*.h` — libc/Win headers the clang triple expects (`alloca`, `assert`, `errno`, `inttypes`, `math`, `stdio`, `stdlib`, `string`, `time`, `unistd`, `windows`, `winsock2`, `ws2tcpip`)
+- `mbedtls/mbedtls_config_port.h`, `uefi_mbedtls_port.c` — mbedTLS build config + platform hooks (`TLS=mbedtls`)
