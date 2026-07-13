@@ -1,0 +1,33 @@
+{
+    "schema-version": 1.0,
+    "content":
+    [
+        {
+            "name": "sign_secboot_hex",
+            "enabled" : true,
+            "commands" :
+            [
+                {
+                    "command" : "sign",
+                    "inputs" :
+                    [
+                        {
+                            "file" : "{{ s_hex }}",
+                            "header-size": "0x400",
+                            "fill-value" : "0xff",
+                            "slot-size" : "0x240000",
+                            "hex-address" : "{{CYMEM_CM33_0_S_m33s_nvm_S_START}}"
+                        }
+                    ],
+                    "outputs":
+                    [
+                        {
+                            "file" : "{{ s_signed_hex }}",
+                            "format": "ihex"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
