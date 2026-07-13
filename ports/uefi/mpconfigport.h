@@ -265,6 +265,10 @@ unsigned int mp_uefi_random_seed(void);
 #define MICROPY_PY_SYS_EXIT                 (1) // required by MICROPY_PY_MACHINE
 #define MICROPY_PY_SYS_ARGV                 (1) // populated when launched as `app.efi script.py ...`
 
+// sys.exit(N)'s N is carried through pyexec's return value to our own EFI_STATUS
+// return, albeit truncated to 8 bits.
+#define MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING (1)
+
 // TLS / ssl (MICROPY_PY_SSL / MICROPY_SSL_MBEDTLS set by the Makefile TLS= choice).
 // mbedtls's bare-metal calloc/free route through the GC-tracked allocator.
 #if MICROPY_PY_SSL

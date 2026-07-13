@@ -1,8 +1,12 @@
 name: uefi port
 
-# Runs the UEFI port's test suite (tests/run_uefi_tests.py, including tests/ports/uefi) on
-# QEMU, with each architecture on its OWN native runner so QEMU is same-ISA (fast, no
-# cross-emulation): aa64 on an arm64 runner, x64 on an x86-64 runner.
+# Runs the UEFI port's test suite (upstream tests/run-tests.py, including tests/ports/uefi)
+# on QEMU, with each architecture on its OWN native runner so QEMU is same-ISA (fast, no
+# cross-emulation): aa64 on an arm64 runner, x64 on an x86-64 runner. run-tests.py is the
+# only command invoked directly; it connects to this port via `-t uefi:exec:<engine>`,
+# where the engine is ports/uefi/tests/uefi_target.py (see ports/uefi/Makefile's `test`
+# target, which this mirrors instead of reusing directly since the build+stage here needs
+# the runner-user --user flag, not a root-owned docker-stage rebuild).
 #
 # The app is BUILT in the canonical dev image (clang/lld toolchain, run as the runner user so
 # artifacts aren't root-owned); QEMU runs directly on the runner HOST (pexpect/pyserial in a
@@ -96,7 +100,6 @@ jobs:
       # /dev/kvm, so aa64 falls back to TCG there.
       - name: Run test suite on host (${{ matrix.arch }})
         run: |
-          cd ports/uefi
           if [ -e /dev/kvm ]; then
             # /dev/kvm is root:kvm; the runner user isn't in the kvm group, so QEMU (run
             # on the host, not as root) gets EPERM without this. chmod is the standard
@@ -107,8 +110,15 @@ jobs:
           else
             echo "::warning::/dev/kvm absent — TCG software emulation (slow)"
           fi
+          # Mirrors ports/uefi/Makefile's `test` target: run-tests.py is the only command
+          # invoked directly, and it's driven with -t uefi:exec:<engine> exactly like a
+          # local `make test` would (never tests/uefi_target.py on its own). We don't just
+          # run `make test` because that re-triggers docker-stage as root; the build+stage
+          # step above already did it as the runner user.
+          cd tests
           UEFI_TEST_SERIAL_LOG="$RUNNER_TEMP/serial.log" \
-          UEFI_TEST_ARCH=${{ matrix.arch }} PYTHONUNBUFFERED=1 "$GITHUB_WORKSPACE/.venv/bin/python" -u tests/run_uefi_tests.py
+          UEFI_TEST_ARCH=${{ matrix.arch }} PYTHONUNBUFFERED=1 ./run-tests.py \
+            -t "uefi:exec:$GITHUB_WORKSPACE/.venv/bin/python $GITHUB_WORKSPACE/ports/uefi/tests/uefi_target.py"
 
       - name: Print failures
         if: failure()
