@@ -58,3 +58,37 @@ def get_state():
 def is_pressed(button):
     """Return True if the given button constant is currently pressed."""
     return bool(get_state() & (1 << button))
+
+
+class buttons:
+    """machine.Pin-like objects for each button, e.g. board.buttons.Back()."""
+
+    class _Button:
+        _bit = None
+
+        def value(self):
+            return 1 if get_state() & (1 << self._bit) else 0
+
+        def __call__(self):
+            return self.value()
+
+    class Back(_Button):
+        _bit = BACK
+
+    class Confirm(_Button):
+        _bit = CONFIRM
+
+    class Left(_Button):
+        _bit = LEFT
+
+    class Right(_Button):
+        _bit = RIGHT
+
+    class Up(_Button):
+        _bit = UP
+
+    class Down(_Button):
+        _bit = DOWN
+
+    class Power(_Button):
+        _bit = POWER
