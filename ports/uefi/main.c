@@ -5,8 +5,17 @@
 //
 // efi_main sets up the heap + GC and reaches mp_init(), then runs the interactive REPL
 // (on the ConOut console, or the byte-clean serial port with `--serial`) or a script
-// passed on the command line (`app.efi foo.py`). The test suite drives the serial REPL
-// (see tests/run_uefi_tests.py); there is no baked-in self-test.
+// passed on the command line (`app.efi foo.py`). Any forced exit (Ctrl-D, sys.exit(),
+// or an uncaught exception) is a clean exit, unconditionally: control returns to our
+// caller — the shell, or a boot manager — never a power-off, and never a difference in
+// behaviour between raw-REPL and friendly-REPL. The test suite drives the raw REPL over
+// `--serial --raw`; the EFI shell's startup.nsh loop relaunches the image after each
+// exit and passes `--faux-soft` on those relaunches, which is how this port presents a
+// stock, unmodified pyboard.py with the soft-reset protocol it expects (see
+// run_repl()/uefi_launch_argv()). sys.exit(N) is preserved through to our own EFI_STATUS
+// return (see uefi_exit_status()) so a Python boot-decision script's exit code reaches
+// whatever launched it — a real UEFI boot manager, or another script via
+// uefi.driver.Image.start().
 
 #include <stdint.h>
 #include <string.h>
@@ -45,36 +54,41 @@ static char *stack_top;
 #define MPY_UEFI_STACK_LIMIT_FALLBACK (96 * 1024)
 
 
-static void run_repl(void) {
+// Set by --faux-soft: this launch is standing in for an in-place soft reset (the EFI
+// shell's startup.nsh loop relaunching a freshly-booted image after a clean exit), not
+// a genuine cold boot. Only then do we print "soft reboot" -- the literal text stock
+// pyboard.py's enter_raw_repl(soft_reset=True) waits for after it sends Ctrl-D. See
+// uefi_launch_argv() for --raw, the other half of this: booting straight into raw-REPL
+// mode (skipping the friendly-REPL banner/prompt) so the relaunched image lands exactly
+// where that same stock protocol expects it, with no extra Ctrl-A needed.
+static bool uefi_faux_soft;
+
+// Returns the last pyexec_*_repl() forced-exit code (PYEXEC_FORCED_EXIT, optionally
+// OR'd with a sys.exit(N) value -- see uefi_exit_status()).
+static int run_repl(void) {
+    if (uefi_faux_soft) {
+        mp_hal_stdout_tx_str("soft reboot\r\n");
+    }
     mp_hal_stdout_tx_str("\r\nMicroPython on UEFI\r\n");
     mp_hal_stdout_tx_str("Type help() for more information; Ctrl-D to exit.\r\n");
     mp_hal_stdout_tx_str("Samples: exec(open('/samples/sysinfo.py').read())  "
         "(see /samples/README.md)\r\n");
+    int ret;
     for (;;) {
-        int ret = (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL)
+        ret = (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL)
             ? pyexec_raw_repl() : pyexec_friendly_repl();
         if (ret != 0) {
-            // A forced exit (SystemExit / sys.exit() / Ctrl-D on an empty line). WHERE it
-            // came from decides what to do:
-            //  * From the RAW REPL, in serial mode: a *test* raised it (e.g. the inlineasm.py
-            //    feature check does `raise SystemExit` on a target without inline asm). The
-            //    automated harness is mid raw-REPL session and expects the interpreter to stay
-            //    alive and in raw REPL, so loop back into a fresh raw REPL rather than
-            //    returning. (Per-test isolation still holds: the harness relaunches the app
-            //    between tests — see below.) Returning here instead would drop us to a fresh
-            //    friendly REPL out from under the harness, desyncing it.
-            //  * From the FRIENDLY REPL: the real request to quit. Return to the caller (the
-            //    clean-exit contract: an application returns control to whoever launched it, it
-            //    does not power off). This is how the harness ends each test — it drops out of
-            //    raw REPL with Ctrl-B, then sends Ctrl-D at the friendly prompt — so the EFI
-            //    shell's startup.nsh loop relaunches us as a fresh, hermetic interpreter with
-            //    no QEMU reset (far faster, and it sidesteps a wedge that repeated resets hit).
-            if (mp_uefi_serial_repl && pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-                continue;
-            }
+            // A forced exit (SystemExit / sys.exit() / Ctrl-D on an empty line), from
+            // either REPL mode alike: always a clean exit, returning control to our
+            // caller (the shell, or the boot manager) -- the clean-exit contract, never
+            // a power-off. With --raw + --faux-soft (see above), the shell's
+            // startup.nsh loop relaunching us after this exit IS what stock pyboard.py
+            // calls a soft reset; the same exit is also just a normal quit when nothing
+            // is relaunching us (interactive use, or app.efi foo.py finishing).
             break;
         }
     }
+    return ret;
 }
 
 
@@ -154,10 +168,17 @@ static bool char16_eq_ascii(const CHAR16 *w, const char *a) {
 // which we skip); the boot manager instead passes them raw in LoadedImage->LoadOptions
 // (a CHAR16 command line, script first) — which the shell path never sees.
 //
-// Leading `--serial`/`--console` options are consumed here to select the REPL transport
-// (*serial_out; defaults to the build's MPY_UEFI_SERIAL_REPL setting) so they don't reach
-// sys.argv or get mistaken for a script. Returns the remaining token count and sets
-// *argv_out to the first non-option token, or 0 for a bare launch (-> REPL).
+// Leading `--serial`/`--console`/`--raw`/`--faux-soft` options are consumed here so
+// they don't reach sys.argv or get mistaken for a script:
+//   --serial      select the byte-clean EFI_SERIAL_IO transport (*serial_out; defaults
+//                 to the build's MPY_UEFI_SERIAL_REPL setting).
+//   --raw         boot straight into raw-REPL mode (skip the friendly-REPL banner and
+//                 prompt) -- used only by the automated test harness, which never wants
+//                 the friendly REPL. Genuine interactive `--serial` use omits it.
+//   --faux-soft   this launch is standing in for a soft reset (see run_repl()); prints
+//                 "soft reboot" so it satisfies stock pyboard.py's reset protocol.
+// Returns the remaining token count and sets *argv_out to the first non-option token,
+// or 0 for a bare launch (-> REPL).
 static UINTN uefi_launch_argv(CHAR16 ***argv_out, bool *serial_out) {
     static CHAR16 lo_buf[512];
     static CHAR16 *lo_argv[16];
@@ -198,6 +219,10 @@ static UINTN uefi_launch_argv(CHAR16 ***argv_out, bool *serial_out) {
             serial = true;
         } else if (char16_eq_ascii(argv[0], "--console")) {
             serial = false;
+        } else if (char16_eq_ascii(argv[0], "--raw")) {
+            pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
+        } else if (char16_eq_ascii(argv[0], "--faux-soft")) {
+            uefi_faux_soft = true;
         } else {
             break;
         }
@@ -212,11 +237,12 @@ static UINTN uefi_launch_argv(CHAR16 ***argv_out, bool *serial_out) {
 }
 
 // If launched with a script argument (`app.efi foo.py [args]`, from the shell OR a
-// boot option), set sys.argv and run that file — like `python foo.py` — and return 1.
-// Otherwise return 0 (REPL).
-static int uefi_run_script(CHAR16 **argv, UINTN argc) {
+// boot option), set sys.argv and run that file — like `python foo.py` — set *exit_ret
+// to its pyexec_file() result (see uefi_exit_status()), and return true. Otherwise
+// return false (REPL).
+static bool uefi_run_script(CHAR16 **argv, UINTN argc, int *exit_ret) {
     if (argc == 0) {
-        return 0;
+        return false;
     }
     char buf[260];
     // sys.argv = [script, arg1, ...].
@@ -233,8 +259,18 @@ static int uefi_run_script(CHAR16 **argv, UINTN argc) {
             *c = '/';
         }
     }
-    pyexec_file(path);
-    return 1;
+    *exit_ret = pyexec_file(path);
+    return true;
+}
+
+// Map a pyexec result (from run_repl() or uefi_run_script()) to the EFI_STATUS efi_main
+// returns. We only get to return one byte of return value in EFIERR(N).
+static EFI_STATUS uefi_exit_status(int ret) {
+    int code = ret & ~PYEXEC_FORCED_EXIT;
+    if (code == PYEXEC_NORMAL_EXIT) {
+        return EFI_SUCCESS;
+    }
+    return EFIERR(code & 0xFF);
 }
 
 // Total free conventional RAM (bytes), from the UEFI memory map. 0 if unavailable.
@@ -383,15 +419,9 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
     bool serial;
     UINTN argc = uefi_launch_argv(&argv, &serial);
     if (serial) {
-        // The interactive REPL is about to move to the serial port: ConOut is byte-lossy
-        // for the raw-REPL protocol (its TerminalDxe layer mangles control bytes), so we
-        // drive the UART directly. Leave a note on the ConOut console first — before we
-        // take the serial away from TerminalDxe — so a user who booted this build on a
-        // machine with a display isn't left staring at a dead prompt, and knows how to
-        // force the REPL back here. The wording deliberately avoids the interpreter's own
-        // "MicroPython on UEFI" banner text: on single-UART targets (e.g. aarch64 `virt`)
-        // this console and the serial are the same wire, and a test harness keys on that
-        // exact banner to detect the live interpreter.
+        // Let the user know that the MicroPython is only going to run on the serial port.
+        // This is sometimes needed because ConOut is not a clean byte channel and it
+        // mangles various control codes.
         EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *out = mp_uefi_st->ConOut;
         out->OutputString(out, L"\r\n[MicroPython REPL is on the serial port; this console "
             L"is inactive.\r\nRe-launch with `--console` to use the REPL here instead.]\r\n");
@@ -399,9 +429,12 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
         // false and the HAL stays on this ConOut console (the banner above notwithstanding).
         mp_uefi_serial_init();
     }
-    // `app.efi foo.py [args]` runs the script and exits; bare launch -> REPL.
-    if (!uefi_run_script(argv, argc)) {
-        run_repl();
+    // `app.efi foo.py [args]` runs the script and exits; bare launch -> REPL. Either
+    // way capture the pyexec result so sys.exit(N) can reach our caller (see
+    // uefi_exit_status()).
+    int exit_ret = 0;
+    if (!uefi_run_script(argv, argc, &exit_ret)) {
+        exit_ret = run_repl();
     }
     mpy_uefi_teardown();
     mp_deinit();
@@ -413,7 +446,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
     // boot manager) — it must NOT power the machine off. The marker lets the test
     // harness detect the exit without depending on what the caller does next.
     mp_hal_stdout_tx_str("MPY-UEFI: exit\r\n");
-    return EFI_SUCCESS;
+    return uefi_exit_status(exit_ret);
 }
 
 // Text printed by help() (MICROPY_PY_BUILTINS_HELP_TEXT).

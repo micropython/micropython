@@ -40,7 +40,7 @@ include ../../py/mkenv.mk
 
 # Frozen modules: freeze the in-tree asyncio package (no filesystem on UEFI), plus
 # individual files pulled straight from the lib/micropython-lib submodule by path
-# (manifest.py's ssl freeze; tests/run_uefi_tests.py stages unittest onto the test
+# (manifest.py's ssl freeze; the `stage` recipe below stages unittest onto the test
 # VFS the same way) — so that submodule must be checked out to build, same as it
 # already was to test. We don't use micropython-lib's require()/package-metadata
 # mechanism though, so point MPY_LIB_DIR at the repo root (it has a README.md) to
@@ -191,6 +191,10 @@ stage: $(EFI) tests/tls_test_cert.der
 	$(Q)cp samples/*.py esp/samples/
 	@# The CA the network TLS self-test verifies against (DER: both backends parse it).
 	$(Q)cp tests/tls_test_cert.der esp/tls_test_cert.der
+	@# unittest lives on the boot volume (imported via sys.path's "" cwd entry) rather
+	@# than being frozen into a special build — so the tested firmware is the standard one.
+	@mkdir -p esp/unittest
+	$(Q)cp $(TOP)/lib/micropython-lib/python-stdlib/unittest/unittest/__init__.py esp/unittest/__init__.py
 	@# Default startup.nsh: auto-launch our app when the firmware runs the Shell. AAVMF
 	@# (aa64) drops into the Shell and runs this; OVMF (x64) auto-boots the removable-media
 	@# app directly instead. `make test` and the harness modes stage their own startup.nsh
@@ -209,28 +213,50 @@ firmware/%.fd:
 	@if [ -d /opt/ovmf ]; then cp -n /opt/ovmf/*.fd firmware/ 2>/dev/null || true; fi
 	@test -f $@ || { echo "Missing $@ — run 'make ovmf' (host) to build firmware"; exit 1; }
 
-# `make test`: run the upstream MicroPython test suite (tests/run_uefi_tests.py, which
-# includes the port's own tests/ports/uefi checks) against QEMU on the host's NATIVE
-# architecture — aa64 on an arm64 host, x64 on x86-64 — so QEMU runs the same ISA and is
-# fast (no cross-emulation). Builds+stages the app in the container first, then drives
-# QEMU natively on the host. Needs the RELEASE firmware (docker/build-ovmf-release.sh)
-# and pexpect+pyserial (a .venv is used automatically if present). Extra tests/flags via
-# TESTS=, e.g. `make test TESTS=--graphics`, `make test TESTS="ports/uefi/efi_raw.py"`.
+# `make test`: run the upstream, unmodified tests/run-tests.py (which includes the
+# port's own tests/ports/uefi checks) against QEMU on the host's NATIVE architecture —
+# aa64 on an arm64 host, x64 on x86-64 — so QEMU runs the same ISA and is fast (no
+# cross-emulation). Builds+stages the app in the container first, then drives QEMU
+# natively on the host.
+#
+# `-t uefi:exec:"<engine>"` is the ONLY uefi-specific thing here: tests/uefi_target.py
+# is a thin device driver (bring QEMU up, then exec into it so its stdin/stdout become
+# exactly what run-tests.py's pyboard.py is talking to — see that file and main.c for
+# why an unmodified pyboard.py can drive this port directly). The "uefi:" prefix
+# selects this port's longer initial-connection timeout in tests/test_utils.py
+# (_TARGET_CONNECT_TIMEOUT_S) — a cold VM+firmware boot needs more than the 10s default
+# real hardware/ports/qemu, whose device is already sitting idle, ever need.
+#
+# This is the only command anyone runs: never invoke tests/uefi_target.py directly.
+# Needs the RELEASE firmware (docker/build-ovmf-release.sh) and pexpect (a .venv is
+# used automatically if present). Extra tests/flags via TESTS=, e.g.
+# `make test TESTS="ports/uefi/efi_raw.py"` — passed straight through to run-tests.py.
 NATIVE_ARCH := $(shell uname -m | sed -e 's/^arm64$$/aa64/' -e 's/^aarch64$$/aa64/' \
                                       -e 's/^x86_64$$/x64/' -e 's/^amd64$$/x64/')
-# Host Python for the suite runner (needs pexpect+pyserial); a local .venv wins. Distinct
-# from mkenv.mk's own PYTHON (used for the build). Override with TEST_PYTHON=... if needed.
+# Host Python for the engine (needs pexpect); a local .venv wins. Distinct from
+# mkenv.mk's own PYTHON (used for the build). Override with TEST_PYTHON=... if needed.
 TEST_PYTHON ?= $(shell test -x .venv/bin/python && echo .venv/bin/python || echo python3)
+# Absolute paths: the exec: command below runs with whatever cwd run-tests.py has
+# (tests/, since that's where it lives), not ports/uefi/, so a relative .venv path
+# would resolve wrong. A bare command name (no "/") still resolves via $PATH either way.
+ENGINE := $(abspath tests/uefi_target.py)
+ifneq ($(findstring /,$(TEST_PYTHON)),)
+TEST_PYTHON_ABS := $(abspath $(TEST_PYTHON))
+else
+TEST_PYTHON_ABS := $(TEST_PYTHON)
+endif
 test:
 	$(MAKE) docker-stage ARCH=$(NATIVE_ARCH)
-	$(Q)UEFI_TEST_ARCH=$(NATIVE_ARCH) $(TEST_PYTHON) tests/run_uefi_tests.py $(TESTS)
+	$(Q)cd $(TOP)/tests && UEFI_TEST_ARCH=$(NATIVE_ARCH) ./run-tests.py \
+		-t 'uefi:exec:$(TEST_PYTHON_ABS) $(ENGINE)' $(TESTS)
 
 # `make test-gfx` / `test-net`: the same suite with a headless display adapter
-# (GOP/Display tests run) or a NIC + network firmware (network tests run).
+# (GOP/Display tests run) or a NIC + network firmware (network tests run) — set via
+# env var, since tests/uefi_target.py takes no arguments of its own (see that file).
 test-gfx:
-	$(MAKE) --no-print-directory test TESTS="--graphics $(TESTS)"
+	$(Q)UEFI_TEST_GRAPHICS=1 $(MAKE) --no-print-directory test TESTS="$(TESTS)"
 test-net:
-	$(MAKE) --no-print-directory test TESTS="--net $(TESTS)"
+	$(Q)UEFI_TEST_NET=1 $(MAKE) --no-print-directory test TESTS="$(TESTS)"
 
 # Headless REPL smoke test: pipes Python in over serial and asserts on the output.
 test-repl: stage $(FW_DEP)

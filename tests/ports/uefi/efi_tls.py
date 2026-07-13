@@ -1,6 +1,10 @@
 # TLS/ssl hermetic surface (no network): the ssl shim maps onto the C `tls` module for
 # either backend (mbedtls or efi). SKIP when built TLS=none. Handshake/cert behaviour is
 # covered by the upstream ssl_* tests; here we check the context surface only.
+#
+# ssl.py is the real, unmodified micropython-lib package (manifest.py) -- it wraps
+# tls.SSLContext in its own class rather than aliasing it, and doesn't define SSLError,
+# so those are not part of the surface this checks.
 try:
     import tls
     import ssl
@@ -8,8 +12,8 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-print(tls.SSLContext is ssl.SSLContext)
-print(ssl.SSLError is OSError)
+print(hasattr(ssl, "SSLContext"))
+print(ssl.SSLContext is not tls.SSLContext)
 print(
     all(
         getattr(tls, c) == getattr(ssl, c) for c in ("CERT_NONE", "CERT_OPTIONAL", "CERT_REQUIRED")
