@@ -40,3 +40,5 @@ print(type(t))
 p = ConstPin(0)
 print(machine.time_pulse_us(p, 1, 10))
 print(machine.time_pulse_us(p, 0, 10))
+
+machine.time_pulse_us(p, 0, 10, 3)
