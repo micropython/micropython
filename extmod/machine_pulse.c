@@ -75,7 +75,7 @@ static mp_obj_t machine_time_pulse_us_(size_t n_args, const mp_obj_t *args) {
         nchanges = mp_obj_get_int(args[3]);
     }
     mp_uint_t us = machine_time_pulse_us(pin, level, timeout_us, nchanges);
-    // May return -1 or -2 or -3 in case of timeout
+    // May return from -1 to -nchanges in case of timeout
     return mp_obj_new_int(us);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj, 2, 4, machine_time_pulse_us_);
