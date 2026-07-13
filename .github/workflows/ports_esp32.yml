@@ -19,8 +19,8 @@ concurrency:
 
 env:
    # Oldest and newest supported ESP-IDF versions, should match ports/esp32/README.md
-   IDF_OLDEST_VER: &oldest "v5.3"
-   IDF_NEWEST_VER: &newest "v5.5.2"
+   IDF_OLDEST_VER: &oldest "master"
+   IDF_NEWEST_VER: &newest "master"
 
 jobs:
   build_idf:
@@ -35,12 +35,13 @@ jobs:
           - esp32_build_s3_c3
           - esp32_build_c2_c5_c6
           - esp32_build_h2_p4
-        exclude:
+          - esp32_build_s31
+        #exclude:
           # Exclude some jobs on the oldest IDF version, to save resources
-          - idf_ver: *oldest
-            ci_func: esp32_build_c2_c5_c6
-          - idf_ver: *oldest
-            ci_func: esp32_build_h2_p4
+          #- idf_ver: *oldest
+          #  ci_func: esp32_build_c2_c5_c6
+          #- idf_ver: *oldest
+          #  ci_func: esp32_build_h2_p4
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7

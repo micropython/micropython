@@ -45,8 +45,24 @@
 #include "modnetwork.h"
 #include "extmod/modnetwork.h"
 
+// Ethernet PHY driver headers
 #if PHY_LAN867X_ENABLED
 #include "esp_eth_phy_lan867x.h"
+#endif
+#if PHY_LAN87XX_ENABLED
+#include "esp_eth_phy_lan87xx.h"
+#endif
+#if PHY_IP101_ENABLED
+#include "esp_eth_phy_ip101.h"
+#endif
+#if PHY_RTL8201_ENABLED
+#include "esp_eth_phy_rtl8201.h"
+#endif
+#if PHY_DP83848_ENABLED
+#include "esp_eth_phy_dp83848.h"
+#endif
+#if PHY_KSZ80XX_ENABLED
+#include "esp_eth_phy_ksz80xx.h"
 #endif
 
 typedef struct _lan_if_obj_t {
@@ -269,23 +285,33 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     switch (args[ARG_phy_type].u_int) {
         #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
+        #if PHY_LAN87XX_ENABLED
         case PHY_LAN8710:
         case PHY_LAN8720:
             self->phy = esp_eth_phy_new_lan87xx(&phy_config);
             break;
+        #endif
+        #if PHY_IP101_ENABLED
         case PHY_IP101:
             self->phy = esp_eth_phy_new_ip101(&phy_config);
             break;
+        #endif
+        #if PHY_RTL8201_ENABLED
         case PHY_RTL8201:
             self->phy = esp_eth_phy_new_rtl8201(&phy_config);
             break;
+        #endif
+        #if PHY_DP83848_ENABLED
         case PHY_DP83848:
             self->phy = esp_eth_phy_new_dp83848(&phy_config);
             break;
+        #endif
+        #if PHY_KSZ80XX_ENABLED
         case PHY_KSZ8041:
         case PHY_KSZ8081:
             self->phy = esp_eth_phy_new_ksz80xx(&phy_config);
             break;
+        #endif
         #if PHY_LAN867X_ENABLED
         case PHY_LAN8670:
             self->phy = esp_eth_phy_new_lan867x(&phy_config);
@@ -343,9 +369,13 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         if (self->mdc_pin == -1 || self->mdio_pin == -1) {
             mp_raise_ValueError(MP_ERROR_TEXT("mdc and mdio must be specified"));
         }
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+        esp32_config.smi_gpio.mdc_num = self->mdc_pin;
+        esp32_config.smi_gpio.mdio_num = self->mdio_pin;
+        #else
         esp32_config.smi_mdc_gpio_num = self->mdc_pin;
         esp32_config.smi_mdio_gpio_num = self->mdio_pin;
-
+        #endif
         #if CONFIG_IDF_TARGET_ESP32P4
         if (self->crs_dv_pin != -1) {
             esp32_config.emac_dataif_gpio.rmii.crs_dv_num = self->crs_dv_pin;

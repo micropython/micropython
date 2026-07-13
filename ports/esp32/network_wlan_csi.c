@@ -35,12 +35,13 @@
 
 #include "esp_timer.h"
 #include "esp_wifi.h"
+#include "esp_idf_version.h"
 #include "network_wlan_csi.h"
 #include "modnetwork.h"
 #include <stdint.h>
 #include <string.h>
 
-#if CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32C5
+#if CONFIG_SOC_WIFI_HE_SUPPORT
 #define WIFI_CSI_RXCTRL_V2 (1)
 #else
 #define WIFI_CSI_RXCTRL_V2 (0)

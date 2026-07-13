@@ -8,6 +8,7 @@
 #include <alloca.h>
 #include "esp_random.h"
 #include "esp_system.h"
+#include "esp_idf_version.h"
 #include "freertos/FreeRTOS.h"
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
@@ -44,7 +45,7 @@
 #define MICROPY_EMIT_RV32                   (0)
 #else
 #define MICROPY_EMIT_RV32                   (1)
-#if CONFIG_IDF_TARGET_ESP32P4
+#if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
 #define MICROPY_EMIT_RV32_ZCMP              (1)
 #endif
 #endif
@@ -190,6 +191,8 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32h2"
 #elif CONFIG_IDF_TARGET_ESP32P4
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32p4"
+#elif CONFIG_IDF_TARGET_ESP32S31
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s31"
 #endif
 #endif
 #define MICROPY_PY_NETWORK_INCLUDEFILE      "ports/esp32/modnetwork.h"
@@ -251,7 +254,9 @@
 
 #if MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_SCHEDULER_STATIC_NODES        (1)
+#ifndef MICROPY_HW_USB_CDC_DTR_RTS_BOOTLOADER
 #define MICROPY_HW_USB_CDC_DTR_RTS_BOOTLOADER (1)
+#endif
 
 #ifndef MICROPY_HW_USB_VID
 #define USB_ESPRESSIF_VID 0x303A
@@ -283,14 +288,19 @@
 #define MICROPY_HW_USB_PRODUCT_FS_STRING "Espressif Device"
 #endif
 
-#if CONFIG_IDF_TARGET_ESP32P4
-// By default, ESP32-P4 uses the HS USB PHY (RHPORT1) for TinyUSB
-// and configures the full speed USB port as USB Serial/JTAG device
+#if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
+// By default, ESP32-P4 uses the HS USB PHY on RHPORT1 for TinyUSB (the full
+// speed USB port runs as a USB Serial/JTAG device). ESP32-S31 is HS-only with
+// the USB PHY on RHPORT0.
 #ifndef MICROPY_HW_USB_HS
 #define MICROPY_HW_USB_HS 1
 #endif // MICROPY_HW_USB_HS
 #if MICROPY_HW_USB_HS && !defined(CFG_TUSB_RHPORT0_MODE) && !defined(CFG_TUSB_RHPORT1_MODE)
+#if CONFIG_IDF_TARGET_ESP32S31
+#define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#else
 #define CFG_TUSB_RHPORT1_MODE   (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#endif
 #endif
 #endif
 
@@ -409,7 +419,7 @@ typedef long mp_off_t;
 void boardctrl_startup(void);
 
 #ifndef MICROPY_PY_NETWORK_LAN
-#if SOC_EMAC_SUPPORTED || (CONFIG_ETH_USE_SPI_ETHERNET && (CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL || CONFIG_ETH_SPI_ETHERNET_DM9051 || CONFIG_ETH_SPI_ETHERNET_W5500))
+#if CONFIG_IDF_TARGET_ESP32 || (CONFIG_ETH_USE_SPI_ETHERNET && (CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL || CONFIG_ETH_SPI_ETHERNET_DM9051 || CONFIG_ETH_SPI_ETHERNET_W5500))
 #define MICROPY_PY_NETWORK_LAN              (1)
 #else
 #define MICROPY_PY_NETWORK_LAN              (0)

@@ -29,6 +29,13 @@
 #include "esp_wifi_types.h"
 #include "esp_netif.h"
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+typedef int esp_interface_t;
+#define ESP_IF_WIFI_STA ((esp_interface_t)WIFI_IF_STA)
+#define ESP_IF_WIFI_AP ((esp_interface_t)WIFI_IF_AP)
+#define ESP_IF_ETH ((esp_interface_t)WIFI_IF_MAX)
+#endif
+
 // lan867x component requires Original ESP32
 #if CONFIG_IDF_TARGET_ESP32
 #define PHY_LAN867X_ENABLED (1)
@@ -37,7 +44,7 @@
 #endif
 
 // PHY_GENERIC support requires newer IDF version
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0) && CONFIG_IDF_TARGET_ESP32
 #define PHY_GENERIC_ENABLED (1)
 #else
 #define PHY_GENERIC_ENABLED (0)

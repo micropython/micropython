@@ -41,13 +41,23 @@
 #include "py/gc.h"
 #include "extmod/vfs.h"
 
+// Include version header first for version-based conditional compilation
+#include "mbedtls/version.h"
+
+#if MBEDTLS_VERSION_MAJOR >= 4
+// mbedtls 4.x (ESP-IDF v6+): entropy and ctr_drbg APIs removed, PSA handles RNG internally
+    #include "psa/crypto.h"
+#else
+// mbedtls 3.x and below (ESP-IDF v5 and below): standard legacy APIs
+    #include "mbedtls/entropy.h"
+    #include "mbedtls/ctr_drbg.h"
+#endif
+
 // mbedtls_time_t
 #include "mbedtls/platform.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/pk.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
 #ifdef MBEDTLS_SSL_PROTO_DTLS
 #include "mbedtls/timing.h"
 #endif
@@ -56,8 +66,6 @@
 #include "mbedtls/ssl_ciphersuites.h"
 #if MBEDTLS_VERSION_NUMBER >= 0x03000000
 #include "mbedtls/build_info.h"
-#else
-#include "mbedtls/version.h"
 #endif
 #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
 #include "mbedtls/ecdsa.h"
@@ -84,8 +92,11 @@
 // This corresponds to an SSLContext object.
 typedef struct _mp_obj_ssl_context_t {
     mp_obj_base_t base;
+    #if MBEDTLS_VERSION_MAJOR < 4
+    // mbedtls 3.x and below: explicit entropy/ctr_drbg contexts required
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
+    #endif
     mbedtls_ssl_config conf;
     mbedtls_x509_crt cacert;
     mbedtls_x509_crt cert;
@@ -288,8 +299,6 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
 
     // Initialise mbedTLS state.
     mbedtls_ssl_config_init(&self->conf);
-    mbedtls_entropy_init(&self->entropy);
-    mbedtls_ctr_drbg_init(&self->ctr_drbg);
     mbedtls_x509_crt_init(&self->cacert);
     mbedtls_x509_crt_init(&self->cert);
     mbedtls_pk_init(&self->pkey);
@@ -315,6 +324,16 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     psa_crypto_init();
     #endif
 
+    #if MBEDTLS_VERSION_MAJOR >= 4
+    // mbedtls 4.x (ESP-IDF v6+): RNG is handled internally by PSA Crypto.
+    // No explicit entropy/ctr_drbg initialization needed.
+    int ret = mbedtls_ssl_config_defaults(&self->conf, endpoint,
+        transport, MBEDTLS_SSL_PRESET_DEFAULT);
+    #else
+    // mbedtls 3.x and below (ESP-IDF v5 and below): explicit RNG setup required
+    mbedtls_entropy_init(&self->entropy);
+    mbedtls_ctr_drbg_init(&self->ctr_drbg);
+
     const byte seed[] = "mpy";
     int ret = mbedtls_ctr_drbg_seed(&self->ctr_drbg, mbedtls_entropy_func, &self->entropy, seed, sizeof(seed));
     if (ret != 0) {
@@ -323,6 +342,7 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
 
     ret = mbedtls_ssl_config_defaults(&self->conf, endpoint,
         transport, MBEDTLS_SSL_PRESET_DEFAULT);
+    #endif
     if (ret != 0) {
         mbedtls_raise_error(ret);
     }
@@ -334,7 +354,10 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     }
     mbedtls_ssl_conf_authmode(&self->conf, self->authmode);
     mbedtls_ssl_conf_verify(&self->conf, &ssl_sock_cert_verify, self);
+    #if MBEDTLS_VERSION_MAJOR < 4
+    // mbedtls 3.x and below: explicit RNG configuration required
     mbedtls_ssl_conf_rng(&self->conf, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+    #endif
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&self->conf, mbedtls_debug, NULL);
     #endif
@@ -343,7 +366,13 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     self->is_dtls_server = (protocol == MP_PROTOCOL_DTLS_SERVER);
     if (self->is_dtls_server) {
         mbedtls_ssl_cookie_init(&self->cookie_ctx);
+        #if MBEDTLS_VERSION_MAJOR >= 4
+        // mbedtls 4.x: cookie setup no longer takes RNG parameters
+        ret = mbedtls_ssl_cookie_setup(&self->cookie_ctx);
+        #else
+        // mbedtls 3.x and below: RNG parameters required
         ret = mbedtls_ssl_cookie_setup(&self->cookie_ctx, mbedtls_ctr_drbg_random, &self->ctr_drbg);
+        #endif
         if (ret != 0) {
             mbedtls_raise_error(ret);
         }
@@ -425,8 +454,11 @@ static mp_obj_t ssl_context___del__(mp_obj_t self_in) {
     mbedtls_pk_free(&self->pkey);
     mbedtls_x509_crt_free(&self->cert);
     mbedtls_x509_crt_free(&self->cacert);
+    #if MBEDTLS_VERSION_MAJOR < 4
+    // mbedtls 3.x and below: free explicit entropy/ctr_drbg contexts
     mbedtls_ctr_drbg_free(&self->ctr_drbg);
     mbedtls_entropy_free(&self->entropy);
+    #endif
     mbedtls_ssl_config_free(&self->conf);
     #ifdef MBEDTLS_SSL_DTLS_HELLO_VERIFY
     if (self->is_dtls_server) {
@@ -484,9 +516,14 @@ static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, m
     size_t key_len;
     const unsigned char *key = asn1_get_data(key_obj, &key_len);
     int ret;
-    #if MBEDTLS_VERSION_NUMBER >= 0x03000000
+    #if MBEDTLS_VERSION_MAJOR >= 4
+    // mbedtls 4.x (ESP-IDF v6+): RNG parameters removed. PSA Crypto handles randomness internally.
+    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0);
+    #elif MBEDTLS_VERSION_NUMBER >= 0x03000000
+    // mbedtls 3.x (ESP-IDF v5): RNG parameters mandatory for blinding countermeasure
     ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     #else
+    // mbedtls 2.x and below: no RNG parameters
     ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0);
     #endif
     if (ret != 0) {

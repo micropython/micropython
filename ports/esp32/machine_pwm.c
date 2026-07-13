@@ -35,7 +35,12 @@
 #include "py/mphal.h"
 #include "esp_err.h"
 #include "driver/ledc.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/ledc_periph.h"
+#else
 #include "soc/ledc_periph.h"
+#endif
 #include "soc/gpio_sig_map.h"
 #include "esp_clk_tree.h"
 #include "py/mpprint.h"
@@ -224,7 +229,12 @@ static void reconfigure_pin(machine_pwm_obj_t *self) {
     // This allows to read the pin level.
     gpio_set_direction(self->pin, GPIO_MODE_INPUT_OUTPUT);
     #endif
-    esp_rom_gpio_connect_out_signal(self->pin, ledc_periph_signal[self->mode].sig_out0_idx + self->channel, self->output_invert, 0);
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 1, 0)
+    int ledc_sig_out = ledc_periph_signal[0].speed_mode[self->mode].sig_out_idx[self->channel];
+    #else
+    int ledc_sig_out = ledc_periph_signal[self->mode].sig_out0_idx + self->channel;
+    #endif
+    esp_rom_gpio_connect_out_signal(self->pin, ledc_sig_out, self->output_invert, 0);
 }
 
 static void apply_duty(machine_pwm_obj_t *self) {

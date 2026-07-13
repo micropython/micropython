@@ -55,6 +55,8 @@
 #define GPIO_FIRST_NON_OUTPUT (34)
 #elif CONFIG_IDF_TARGET_ESP32S2
 #define GPIO_FIRST_NON_OUTPUT (46)
+#elif CONFIG_IDF_TARGET_ESP32P4
+#define GPIO_FIRST_NON_OUTPUT (54)
 #endif
 
 // Return the gpio_num_t index for a given machine_pin_obj_t pointer.

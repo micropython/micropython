@@ -42,13 +42,38 @@
 #endif
 #include "driver/sdspi_host.h"
 #include "sdmmc_cmd.h"
+#include "esp_idf_version.h"
 #include "esp_log.h"
+
+#if SOC_SDMMC_HOST_SUPPORTED
+MP_WEAK esp_err_t esp_vision_sdcard_preinit_host(sdmmc_host_t *host, int slot) {
+    (void)host;
+    (void)slot;
+    return ESP_OK;
+}
+
+MP_WEAK void esp_vision_sdcard_deinit_host(sdmmc_host_t *host, int slot) {
+    (void)host;
+    (void)slot;
+}
+#endif
 
 #define DEBUG 0
 #if DEBUG
 #define DEBUG_printf(...) ESP_LOGI("modsdcard", __VA_ARGS__)
 #else
 #define DEBUG_printf(...) (void)0
+#endif
+
+#if SOC_SDMMC_HOST_SUPPORTED && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0) && \
+    defined(CONFIG_ESP_HOSTED_SDIO_HOST_INTERFACE) && defined(CONFIG_ESP_HOSTED_SDIO_SLOT)
+static esp_err_t sdmmc_host_init_dummy(void) {
+    return ESP_OK;
+}
+
+static esp_err_t sdmmc_host_deinit_dummy(void) {
+    return ESP_OK;
+}
 #endif
 
 //
@@ -140,7 +165,7 @@ static const sdspi_device_config_t spi_dev_defaults[NUM_SD_SPI_BUS] = {
     #if NUM_SD_SPI_BUS > 1
     {
         #if CONFIG_IDF_TARGET_ESP32
-        .host_id = VSPI_HOST,
+        .host_id = SPI3_HOST,
         .gpio_cs = GPIO_NUM_5,
         #elif CONFIG_IDF_TARGET_ESP32S3
         .host_id = SPI3_HOST,
@@ -321,6 +346,14 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         sdmmc_host_t _temp_host = SDMMC_HOST_DEFAULT();
         _temp_host.max_freq_khz = freq / 1000;
         _temp_host.slot = slot_num;
+        #if SOC_SDMMC_HOST_SUPPORTED && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0) && \
+        defined(CONFIG_ESP_HOSTED_SDIO_HOST_INTERFACE) && defined(CONFIG_ESP_HOSTED_SDIO_SLOT)
+        if (slot_num != CONFIG_ESP_HOSTED_SDIO_SLOT) {
+            _temp_host.init = &sdmmc_host_init_dummy;
+            _temp_host.deinit = &sdmmc_host_deinit_dummy;
+        }
+        #endif
+        check_esp_err(esp_vision_sdcard_preinit_host(&_temp_host, slot_num));
         self->host = _temp_host;
     }
     #endif
@@ -337,7 +370,14 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
 
     DEBUG_printf("  Calling host.init()");
 
-    check_esp_err(self->host.init());
+    esp_err_t host_init_ret = self->host.init();
+    #if SOC_SDMMC_HOST_SUPPORTED && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0) && \
+    defined(CONFIG_ESP_HOSTED_SDIO_HOST_INTERFACE) && defined(CONFIG_ESP_HOSTED_SDIO_SLOT)
+    if (!is_spi && host_init_ret == ESP_ERR_NOT_FOUND && slot_num != CONFIG_ESP_HOSTED_SDIO_SLOT) {
+        host_init_ret = ESP_OK;
+    }
+    #endif
+    check_esp_err(host_init_ret);
     self->flags |= SDCARD_CARD_FLAGS_HOST_INIT_DONE;
 
     if (is_spi) {

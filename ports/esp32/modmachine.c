@@ -35,12 +35,19 @@
 #include "esp_mac.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
+#include "esp_idf_version.h"
 
 #include "py/objtuple.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 
-#if SOC_TOUCH_SENSOR_SUPPORTED
+#if MICROPY_PY_MACHINE_SDCARD
+#define MICROPY_PY_MACHINE_SDCARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
+#else
+#define MICROPY_PY_MACHINE_SDCARD_ENTRY
+#endif
+
+#if SOC_TOUCH_SENSOR_SUPPORTED && !CONFIG_IDF_TARGET_ESP32S31
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
 #else
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY
@@ -50,6 +57,7 @@
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
+    MICROPY_PY_MACHINE_SDCARD_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
     MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) }, \
@@ -200,7 +208,11 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
 
         if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
             #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+            if (ESP_OK != esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(
+            #else
             if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
+                #endif
                 machine_rtc_config.gpio_pins,
                 machine_rtc_config.gpio_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));

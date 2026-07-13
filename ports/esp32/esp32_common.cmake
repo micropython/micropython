@@ -23,7 +23,7 @@ if(CONFIG_IDF_TARGET_ARCH_RISCV)
 endif()
 
 if(NOT DEFINED MICROPY_PY_TINYUSB)
-    if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3 OR CONFIG_IDF_TARGET_ESP32P4)
+    if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3 OR CONFIG_IDF_TARGET_ESP32P4 OR CONFIG_IDF_TARGET_ESP32S31)
         set(MICROPY_PY_TINYUSB ON)
     endif()
 endif()
@@ -43,7 +43,7 @@ if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     # Enable extmod components that will be configured by extmod.cmake.
     # A board may also have enabled additional components.
     if (NOT DEFINED MICROPY_PY_BTREE)
-        set(MICROPY_PY_BTREE ON)
+        set(MICROPY_PY_BTREE OFF)
     endif()
 
     include(${MICROPY_DIR}/py/usermod.cmake)
@@ -70,10 +70,14 @@ list(APPEND MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-    ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
 )
+
+if($ENV{IDF_VERSION} VERSION_LESS "6.0")
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c)
+endif()
 
 list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
@@ -107,6 +111,10 @@ if(MICROPY_PY_TINYUSB)
         ${MICROPY_BOARD_DIR})
 endif()
 
+if(NOT MICROPY_ESP32_MAIN_SOURCE)
+    set(MICROPY_ESP32_MAIN_SOURCE ${MICROPY_PORT_DIR}/main.c)
+endif()
+
 list(APPEND MICROPY_SOURCE_PORT
     panichandler.c
     adc.c
@@ -122,7 +130,6 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_bitstream.c
     machine_timer.c
     machine_pin.c
-    machine_touchpad.c
     machine_dac.c
     machine_i2c.c
     network_common.c
@@ -147,6 +154,12 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_sdcard.c
     modespnow.c
 )
+
+if(NOT CONFIG_IDF_TARGET_ESP32S31)
+    list(APPEND MICROPY_SOURCE_PORT
+        machine_touchpad.c)
+endif()
+
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 list(APPEND MICROPY_SOURCE_PORT ${CMAKE_BINARY_DIR}/pins.c)
 
@@ -167,6 +180,10 @@ list(APPEND IDF_COMPONENTS
     bt
     driver
     esp_adc
+    esp_driver_dac
+    esp_driver_i2c
+    esp_driver_ledc
+    esp_driver_pcnt
     esp_app_format
     esp_mm
     esp_common
@@ -188,15 +205,26 @@ list(APPEND IDF_COMPONENTS
     log
     lwip
     mbedtls
-    newlib
     nvs_flash
     sdmmc
     soc
     spi_flash
     ulp
-    usb
     vfs
 )
+
+if($ENV{IDF_VERSION} VERSION_LESS "6.0")
+    list(APPEND IDF_COMPONENTS newlib)
+endif()
+
+if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "6.0")
+    list(APPEND IDF_COMPONENTS
+        esp_hal_timg
+        esp_driver_rmt
+        esp_driver_sdspi
+        esp_driver_sdmmc
+        esp_driver_tsens)
+endif()
 
 if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")
     list(APPEND IDF_COMPONENTS
@@ -250,7 +278,7 @@ set(MICROPY_TARGET ${COMPONENT_TARGET})
 if(CONFIG_IDF_TARGET_ARCH_XTENSA)
     set(MICROPY_CROSS_FLAGS -march=xtensawin)
 elseif(CONFIG_IDF_TARGET_ARCH_RISCV)
-    if (CONFIG_IDF_TARGET_ESP32P4)
+    if (CONFIG_IDF_TARGET_ESP32P4 OR CONFIG_IDF_TARGET_ESP32S31)
         set(MICROPY_CROSS_FLAGS "-march=rv32imc -march-flags=zcmp")
     else()
         set(MICROPY_CROSS_FLAGS -march=rv32imc)

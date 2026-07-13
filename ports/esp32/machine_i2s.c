@@ -49,6 +49,16 @@
 // The size of 240 bytes is an engineering optimum that balances transfer performance with an acceptable use of heap space
 #define SIZEOF_TRANSFORM_BUFFER_IN_BYTES (240)
 
+#ifndef SOC_I2S_NUM
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+#define SOC_I2S_NUM 2
+#elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+#define SOC_I2S_NUM 1
+#else
+#define SOC_I2S_NUM 2
+#endif
+#endif
+
 typedef enum {
     I2S_TX_TRANSFER,
     I2S_RX_TRANSFER,
@@ -69,7 +79,7 @@ typedef enum {
 
 typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
-    i2s_port_t i2s_id;
+    int i2s_id;
     i2s_chan_handle_t i2s_chan_handle;
     mp_hal_pin_obj_t sck;
     mp_hal_pin_obj_t ws;
@@ -101,7 +111,7 @@ static const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
 };
 
 void machine_i2s_init0() {
-    for (i2s_port_t p = 0; p < I2S_NUM_AUTO; p++) {
+    for (int p = 0; p < SOC_I2S_NUM; p++) {
         MP_STATE_PORT(machine_i2s_obj)[p] = NULL;
     }
 }
@@ -400,7 +410,7 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
 }
 
 static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
-    if (i2s_id < 0 || i2s_id >= I2S_NUM_AUTO) {
+    if (i2s_id < 0 || i2s_id >= SOC_I2S_NUM) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
