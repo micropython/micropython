@@ -316,6 +316,15 @@ Miscellaneous functions
    microseconds.  The *pulse_level* argument should be 0 to time a low pulse
    or 1 to time a high pulse.
 
+   If the current input value of the pin is different to *pulse_level*,
+   the function first (*) waits until the pin input becomes equal to *pulse_level*,
+   then (**) times the duration that the pin is equal to *pulse_level*.
+
+   The above behaviour is for when nchanges=2. That behaviour can be generalised by
+   passing in a larger value for nchanges which is the number of times the function
+   waits for the pin to change. On error the return value can be down to -nchanges and
+   indicates how many edges were missed.
+
    If *nchanges* is 3, if the pin is initially equal to *pulse_level* then first
    waits until the pin input becomes different from *pulse_level* (***).
    Then if the current input value of the pin is different to *pulse_level*,
