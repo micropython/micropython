@@ -26,6 +26,8 @@ elif "mimxrt" in sys.platform:
     bit_margin = 1
 elif "nrf" in sys.platform:
     timing_margin_us = 130
+elif "psoc-edge" in sys.platform:
+    timing_margin_us = 190
 elif "pyboard" in sys.platform:
     initial_delay_ms = 50  # UART sends idle frame after init, so wait for that
     bit_margin = 1  # first start-bit must wait to sync with the UART clock
