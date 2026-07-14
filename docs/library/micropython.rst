@@ -186,6 +186,10 @@ Functions
    There is a finite queue to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the queue is full.
 
+   As a special case, it's possible to pass `micropython.kbd_intr` to this function
+   as the first argument (and ``None`` as the second argument), and that will
+   schedule a `KeyboardInterrupt` to be raised "very soon" in the main thread.
+
 Classes
 -------
 
