@@ -558,6 +558,14 @@ typedef uint64_t mp_uint_t;
 // generated or loaded from a file).  This does not cover inline asm code.
 #define MICROPY_ENABLE_NATIVE_CODE (MICROPY_EMIT_NATIVE || MICROPY_PERSISTENT_CODE_LOAD_NATIVE)
 
+// Whether to align the native function table to an arbitrary boundary.  This
+// is needed if MICROPY_EMIT_RV32_ZCMT is enabled and the function table isn't
+// copied in RAM, in which case this should be set to 64.  0 means leaving the
+// compiler in charge of figuring out the alignment.
+#ifndef MICROPY_NATIVE_FUN_TABLE_ALIGNMENT
+#define MICROPY_NATIVE_FUN_TABLE_ALIGNMENT (0)
+#endif
+
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
