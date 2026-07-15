@@ -29,13 +29,28 @@
 #include <stdlib.h>
 
 #include "uart.h"
+#include "mpconfigport.h"
 
 extern void set_interrupt_table(void);
 extern int main(int argc, char **argv);
+extern const uintptr_t mp_fun_table;
 
 void _entry_point(void) {
     // Set interrupt table
     set_interrupt_table();
+    #if MICROPY_EMIT_RV32_ZCMT
+    // Relocate the table address to always perform a jump and link (index has
+    // to be between 32 and 255), so that calling function index #32 will perform
+    // a jump-and-link to the real function at index #0 (see §28.14.5).
+    __asm volatile (
+        // Use the JVT CSR index directly for compatibility.
+        "csrw    0x017, %0 \n"
+        "fence.i           \n"
+        :
+        : "r" ((ptrdiff_t)&mp_fun_table - (ptrdiff_t)(32 * sizeof(uintptr_t)))
+        : "memory"
+        );
+    #endif
     // Enable UART
     uart_init();
     // Now that we have a basic system up and running we can call main
