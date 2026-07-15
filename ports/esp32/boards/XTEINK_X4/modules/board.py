@@ -29,6 +29,12 @@ _adc2 = ADC(_pins.BUTTON_ADC_2)
 _adc2.atten(ADC.ATTN_11DB)
 _power = Pin(_pins.BUTTON, Pin.IN, Pin.PULL_UP)
 
+# Battery voltage is halved by a 2:1 divider before reaching the ADC pin.
+_BATTERY_DIVIDER_MULTIPLIER = 2.0
+
+_adc_bat = ADC(_pins.BAT_ADC)
+_adc_bat.atten(ADC.ATTN_11DB)
+
 
 def _button_from_adc(raw, ranges):
     for upper, lower, button in ranges:
@@ -58,6 +64,23 @@ def get_state():
 def is_pressed(button):
     """Return True if the given button constant is currently pressed."""
     return bool(get_state() & (1 << button))
+
+
+def get_battery_voltage():
+    """Return the battery voltage in volts, accounting for the divider."""
+    millivolts = _adc_bat.read_uv() / 1000 * _BATTERY_DIVIDER_MULTIPLIER
+    return millivolts / 1000
+
+
+def get_battery_percentage():
+    """Return an estimated battery charge percentage (0-100).
+
+    Uses a cubic fit derived from real LiPo discharge samples, ported from
+    the OpenX4 community SDK's BatteryMonitor.
+    """
+    v = get_battery_voltage()
+    percent = -144.9390 * v**3 + 1655.8629 * v**2 - 6158.8520 * v + 7501.3202
+    return round(min(100.0, max(0.0, percent)))
 
 
 class buttons:
