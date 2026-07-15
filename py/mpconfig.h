@@ -525,6 +525,11 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_EMIT_RV32_ZCMP (0)
 #endif
 
+// Whether to emit RISC-V RV32 Zcmt opcodes in native code
+#ifndef MICROPY_EMIT_RV32_ZCMT
+#define MICROPY_EMIT_RV32_ZCMT (0)
+#endif
+
 // Whether to enable the RISC-V RV32 inline assembler
 #ifndef MICROPY_EMIT_INLINE_RV32
 #define MICROPY_EMIT_INLINE_RV32 (0)
