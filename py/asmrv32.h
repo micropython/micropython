@@ -209,6 +209,8 @@ void asm_rv32_end_pass(asm_rv32_t *state);
     ((((r2s >= ASM_RV32_REG_S0 && r2s <= ASM_RV32_REG_S1) ? \
     (r2s - ASM_RV32_REG_S0) : (r2s - ASM_RV32_REG_S2 + 2)) & 0x07) << 2))
 
+#define RV32_ENCODE_TYPE_CMJT(op, ft6, index) \
+    ((op & 0x03) | ((ft6 & 0x3F) << 10) | ((index & 0xFF) << 2))
 
 #define RV32_ENCODE_TYPE_CR(op, ft4, rs1, rs2) \
     ((op & 0x03) | ((rs2 & 0x1F) << 2) | ((rs1 & 0x1F) << 7) | ((ft4 & 0x0F) << 12))
@@ -452,6 +454,16 @@ static inline void asm_rv32_opcode_cxor(asm_rv32_t *state, mp_uint_t rd, mp_uint
     // CA: 100011 ... 01 ... 01
     asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CA(0x01, 0x23, 0x01, rd, rs));
 }
+
+// CM.JALT INDEX
+static inline void asm_rv32_opcode_cmjalt(asm_rv32_t *state, mp_uint_t index) {
+    // CMJT: 101000 ........ 10
+    asm_rv32_emit_halfword_opcode(state, RV32_ENCODE_TYPE_CMJT(0x02, 0x28, index));
+}
+
+// Indices < 32 trigger a plain jump, otherwise a jump with link.
+// CM.JT INDEX
+#define asm_rv32_opcode_cmjt asm_rv32_opcode_cmjalt
 
 // CM.MVA01S R1S', R2S'
 static inline void asm_rv32_opcode_cmmva01s(asm_rv32_t *state, mp_uint_t r1s, mp_uint_t r2s) {

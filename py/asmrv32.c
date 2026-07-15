@@ -61,6 +61,10 @@ static bool asm_rv32_allow_zcmp_opcodes(void) {
     return asm_rv32_allowed_extensions() & RV32_EXT_ZCMP;
 }
 
+static bool asm_rv32_allow_zcmt_opcodes(void) {
+    return asm_rv32_allowed_extensions() & RV32_EXT_ZCMT;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void asm_rv32_emit_word_opcode(asm_rv32_t *state, mp_uint_t word) {
@@ -336,9 +340,24 @@ void asm_rv32_end_pass(asm_rv32_t *state) {
 }
 
 void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
-    mp_uint_t offset = index * ASM_WORD_SIZE;
     state->saved_registers_mask |= (1U << ASM_RV32_REG_RA);
 
+    // To always trigger a jump-with-link opcode, cm.jalt table indices are
+    // always offset by 32.
+
+    #if !MICROPY_DYNAMIC_COMPILER && ((MICROPY_RV32_EXTENSIONS & RV32_EXT_ZCMT) != 0)
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(mp_fun_table) <= (255 - 32));
+
+    // cm.jalt offset + 32
+    asm_rv32_opcode_cmjalt(state, index + 32);
+    #else
+    if (asm_rv32_allow_zcmt_opcodes() && (index <= (255 - 32))) {
+        // cm.jalt offset + 32
+        asm_rv32_opcode_cmjalt(state, index + 32);
+        return;
+    }
+
+    mp_uint_t offset = index * ASM_WORD_SIZE;
     if (RV32_IS_IN_C_REGISTER_WINDOW(REG_FUN_TABLE) && RV32_IS_IN_C_REGISTER_WINDOW(INTERNAL_TEMPORARY) && FIT_UNSIGNED(offset, 6)) {
         state->saved_registers_mask |= (1U << INTERNAL_TEMPORARY);
         // c.lw   temporary, offset(fun_table)
@@ -368,6 +387,7 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
     asm_rv32_opcode_cadd(state, REG_TEMP2, REG_FUN_TABLE);
     asm_rv32_opcode_lw(state, REG_TEMP2, REG_TEMP2, lower);
     asm_rv32_opcode_cjalr(state, REG_TEMP2);
+    #endif
 }
 
 void asm_rv32_emit_jump_if_reg_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t label) {
