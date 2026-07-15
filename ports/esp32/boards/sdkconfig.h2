@@ -5,3 +5,8 @@ CONFIG_IEEE802154_ENABLED=n
 # Using the SPI flash implementation in ROM saves about 10KB of binary size
 # (and some static RAM)
 CONFIG_SPI_FLASH_ROM_IMPL=y
+
+# mDNS component is enabled (for SPI based Ethernet), but disable
+# mDNS netifs for Wi-Fi STA, AP to save a small amount of resources
+CONFIG_MDNS_PREDEF_NETIF_STA=n
+CONFIG_MDNS_PREDEF_NETIF_AP=n
