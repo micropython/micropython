@@ -1,5 +1,7 @@
 dependencies:
-  espressif/mdns: "~1.1.0"
+  # holding off on updating mdns as newer versions have higher
+  # resource usage
+  espressif/mdns: "~1.3.0"
   espressif/tinyusb:
     rules:
       - if: "target in [esp32s2, esp32s3, esp32p4]"
