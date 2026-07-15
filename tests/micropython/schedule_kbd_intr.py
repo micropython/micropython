@@ -13,7 +13,7 @@ except ImportError:
 # Test basic scheduling.
 
 try:
-    schedule(kbd_intr, None)
+    schedule(kbd_intr)
 except ValueError:
     # Scheduling `kbd_intr` is not supported on this target.
     print("SKIP")
@@ -30,16 +30,16 @@ except KeyboardInterrupt:
 # Should be able to schedule it many times without error, and that
 # should only trigger one KeyboardInterrupt.
 
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
-schedule(kbd_intr, None)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
+schedule(kbd_intr)
 try:
     sleep(0)
     sleep(0)
@@ -56,7 +56,7 @@ for _ in range(100):
 
 
 def callback(_):
-    schedule(kbd_intr, None)
+    schedule(kbd_intr)
     # This should not raise because we are in schedule context.
     for _ in range(100):
         sleep(0)
