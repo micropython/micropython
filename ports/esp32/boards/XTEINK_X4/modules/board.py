@@ -1,10 +1,17 @@
-# Xteink X4 button helper
+# Xteink X4 helper
 #
-# The power button is a direct active-low GPIO. The six navigation buttons
-# share a resistor ladder read across two ADC pins: BUTTON_ADC_1 covers
-# Back/Confirm/Left/Right, BUTTON_ADC_2 covers Up/Down. ADC thresholds below
-# are the calibrated values from the OpenX4 community SDK
+# The power button is a direct active-low GPIO.
+#
+# The six navigation buttons share a resistor ladder read across two ADC pins:
+# BUTTON_ADC_1 covers Back/Confirm/Left/Right, BUTTON_ADC_2 covers Up/Down. ADC
+# thresholds below are the calibrated values from the OpenX4 community SDK
 # (github.com/open-x4-epaper/community-sdk), verified against this board.
+#
+# Battery voltage can be measured on BAT_ADC but there is a voltage divider
+# that halves the actual battery voltage so that it fits within the ADC range.
+#
+# Battery percentage is based on the voltage reading, applying a calibrated
+# curve - again from the OpenX4 community.
 
 from machine import ADC, Pin
 from micropython import const
