@@ -43,7 +43,7 @@ def _button_from_adc(raw: int, ranges: tuple) -> int:
     return -1
 
 
-def get_state() -> int:
+def _get_state() -> int:
     """Return a bitmask of all buttons currently pressed.
 
     Bit N is set for button N, using the BACK/CONFIRM/LEFT/RIGHT/UP/DOWN/POWER
@@ -59,11 +59,6 @@ def get_state() -> int:
     if not _power.value():
         state |= 1 << POWER
     return state
-
-
-def is_pressed(button: int) -> bool:
-    """Return True if the given button constant is currently pressed."""
-    return bool(get_state() & (1 << button))
 
 
 def get_battery_voltage() -> float:
@@ -90,7 +85,7 @@ class buttons:
         _bit = None
 
         def value(self) -> int:
-            return 1 if get_state() & (1 << self._bit) else 0
+            return 1 if _get_state() & (1 << self._bit) else 0
 
         def __call__(self) -> int:
             return self.value()
