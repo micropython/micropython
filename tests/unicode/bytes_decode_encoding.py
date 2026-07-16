@@ -36,6 +36,12 @@ print("👍".encode("utf-8"))
 print(repr(b"\xf4\x90\x80\x80".decode("utf-8")))
 print(repr(b"\xf5\x80\x80\x80".decode("utf-8")))
 
+# Test invalid ASCII characters in decode
+try:
+    print(repr(b"ni\xe5\xa5\xbd".decode("ascii")))
+except UnicodeError:
+    print("UnicodeError")
+
 # Test invalid encodings for bytes.decode()
 # These should raise LookupError
 invalid_encodings = ["latin-1", "latin1", "utf-16", "utf-32", "iso-8859-1", "cp1252"]

@@ -103,3 +103,7 @@ print(repr(b"\xff\xe4\xb8\x80".decode("utf-8", "ignore")))  # 一 preserved afte
 
 # Test multiple incomplete sequences in a row
 print(repr(b"\xe4\xf0\xe4".decode("utf-8", "ignore")))
+
+# Test ignoring invalid ASCII
+print(repr(b"\xe5\xa5\xbd".decode("ascii", "ignore")))  # valid utf8, not valid ascii
+print(repr(b"a\xbb\xcc\xddef\x01".decode("ascii", "ignore")))  # fully invalid

@@ -124,3 +124,7 @@ print(repr(b"hello\xf0world".decode("utf-8", "replace")))
 
 # Test multiple incomplete sequences in a row
 print(repr(b"\xe4\xf0\xe4".decode("utf-8", "replace")))
+
+# Test replacing invalid ASCII
+print(repr(b"\xe5\xa5\xbd".decode("ascii", "replace")))  # valid utf8, not valid ascii
+print(repr(b"a\xbb\xcc\xddef\x01".decode("ascii", "replace")))  # fully invalid
