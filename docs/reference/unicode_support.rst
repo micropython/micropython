@@ -49,8 +49,10 @@ The :meth:`bytes.decode` and :meth:`str.encode` methods support the following en
 - UTF-8 (``'utf-8'`` or ``'utf8'``)
 - ASCII (``'ascii'``)
 
-Other encodings (such as ``'latin-1'``, ``'utf-16'``, etc.) are not supported and
-will raise ``LookupError``.
+Other encodings (such as ``'latin-1'``, ``'utf-16'``, etc.) are not supported
+and will raise ``LookupError``. The encoding argument must also match one of the
+supported strings exactly (for example, ``'utf8'`` is valid but ``'UTF8'``
+is not). `More details <cpydiff_types_bytes_decode_encoding>`.
 
 Example::
 
@@ -91,6 +93,21 @@ The same ``errors`` handling applies when decoding any bytes-like object, includ
 via the ``str()`` constructor (for example ``str(buf, 'utf-8', 'replace')`` where
 ``buf`` is a ``bytes``, ``bytearray``, ``memoryview`` or ``array`` object).
 
+Encoding to Bytes
+~~~~~~~~~~~~~~~~~
+
+Function ``str.encode()`` and the ``bytes()`` constructor accept an ``encoding``
+argument which can be ``'utf8'``, ``'utf-8'`` or ``'ascii'``::
+
+  >>> "abc".encode("ascii")
+  b'abc'
+
+If encoding ``'ascii'`` is specified then an exception is raised if the string
+contains non-ASCII characters.
+
+The ``'ignore'`` and ``'replace'`` ``errors`` values are not supported in these
+conversions from string to bytes and `any errors argument is ignored
+<cpydiff_types_str_encode_errors>`.
 
 String Methods
 --------------
