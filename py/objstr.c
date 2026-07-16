@@ -188,11 +188,12 @@ static void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 }
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK && MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
-// Build a new string from data containing invalid UTF-8, either skipping the
+// Build a new string from data containing invalid UTF-8 or ASCII, either skipping the
 // invalid bytes (errors=="ignore") or replacing them with U+FFFD
 // (errors=="replace").
-static mp_obj_t str_from_invalid_utf8(const mp_obj_type_t *type, const byte *str_data, size_t str_len, qstr errors) {
+static mp_obj_t str_from_invalid(mp_encoding_t encoding, const mp_obj_type_t *type, const byte *str_data, size_t str_len, qstr errors) {
     bool do_replace = (errors == MP_QSTR_replace);
+    bool is_utf8 = (encoding == MP_ENCODING_UTF8);
     vstr_t vstr;
     vstr_init(&vstr, str_len);
     const byte *p = str_data;
@@ -204,7 +205,7 @@ static mp_obj_t str_from_invalid_utf8(const mp_obj_type_t *type, const byte *str
             // Valid ASCII
             vstr_add_byte(&vstr, c);
             p++;
-        } else if (c >= 0xc0 && c < 0xf8) {
+        } else if (is_utf8 && c >= 0xc0 && c < 0xf8) {
             // Potential multi-byte sequence
             uint8_t need = (0xe5 >> ((c >> 3) & 0x6)) & 3;
             const byte *seq_start = p;
@@ -230,11 +231,11 @@ static mp_obj_t str_from_invalid_utf8(const mp_obj_type_t *type, const byte *str
             }
             // For 'ignore' mode, do nothing (skip invalid bytes)
         } else if (do_replace) {
-            // Invalid start byte - replace with U+FFFD
+            // Invalid start byte or non-ascii char - replace with U+FFFD
             vstr_add_char(&vstr, 0xFFFD);
             p++;
         } else {
-            // Invalid start byte - skip for 'ignore' mode
+            // Invalid start byte or non-ascii char - skip for 'ignore' mode
             p++;
         }
     }
@@ -242,6 +243,22 @@ static mp_obj_t str_from_invalid_utf8(const mp_obj_type_t *type, const byte *str
     return mp_obj_new_str_type_from_vstr(type, &vstr);
 }
 #endif // MICROPY_PY_BUILTINS_STR_UNICODE_CHECK && MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
+
+#if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+static mp_encoding_t parse_encoding_arg(qstr encoding) {
+    if (encoding == MP_QSTR_utf_hyphen_8 || encoding == MP_QSTR_utf8) {
+        return MP_ENCODING_UTF8;
+    }
+    if (encoding == MP_QSTR_ascii) {
+        return MP_ENCODING_ASCII;
+    }
+    #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+    mp_raise_type(&mp_type_LookupError);
+    #else
+    mp_raise_msg_varg(&mp_type_LookupError, MP_ERROR_TEXT("unknown encoding: %q"), encoding);
+    #endif
+}
+#endif
 
 mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     #if MICROPY_CPYTHON_COMPAT
@@ -282,7 +299,8 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             }
 
             #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-            if (!utf8_check(str_data, str_len)) {
+            mp_encoding_t encoding = parse_encoding_arg(mp_obj_str_get_qstr(args[1]));
+            if (!unicode_encoding_check(encoding, str_data, str_len)) {
                 #if MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
                 // Check if error handler is specified (3rd argument)
                 qstr errors = MP_QSTR_; // default to ""
@@ -290,7 +308,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                     errors = mp_obj_str_get_qstr(args[2]);
                 }
                 if (errors == MP_QSTR_ignore || errors == MP_QSTR_replace) {
-                    return str_from_invalid_utf8(type, str_data, str_len, errors);
+                    return str_from_invalid(encoding, type, str_data, str_len, errors);
                 }
                 #endif // MICROPY_PY_BUILTINS_BYTES_DECODE_ERRORS
                 mp_raise_msg(&mp_type_UnicodeError, NULL);
@@ -2090,14 +2108,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 // These methods are superfluous in the presence of str() and bytes()
 // constructors.
 
-static void check_utf8_encoding(qstr encoding) {
-    if (!(encoding == MP_QSTR_utf_hyphen_8 || encoding == MP_QSTR_utf8 ||
-          encoding == MP_QSTR_ascii)) {
-        mp_raise_msg_varg(&mp_type_LookupError,
-            MP_ERROR_TEXT("encoding not supported: %q"), encoding);
-    }
-}
-
 // TODO: should accept kwargs too
 static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
     mp_obj_t new_args[2];
@@ -2106,8 +2116,6 @@ static mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
         args = new_args;
         n_args++;
-    } else if (n_args >= 2) {
-        check_utf8_encoding(mp_obj_str_get_qstr(args[1]));
     }
     return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
@@ -2122,7 +2130,7 @@ static mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     } else if (n_args >= 2) {
-        check_utf8_encoding(mp_obj_str_get_qstr(args[1]));
+        parse_encoding_arg(mp_obj_str_get_qstr(args[1]));
     }
     return bytes_make_new(NULL, n_args, 0, args);
 }
@@ -2428,7 +2436,7 @@ static mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t 
 
 mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-    if (!utf8_check((byte *)vstr->buf, vstr->len)) {
+    if (!unicode_encoding_check(MP_ENCODING_UTF8, (byte *)vstr->buf, vstr->len)) {
         mp_raise_msg(&mp_type_UnicodeError, NULL);
     }
     #endif // MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
@@ -2448,7 +2456,7 @@ mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr) {
 
 mp_obj_t mp_obj_new_str(const char *data, size_t len) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-    if (!utf8_check((byte *)data, len)) {
+    if (!unicode_encoding_check(MP_ENCODING_UTF8, (byte *)data, len)) {
         mp_raise_msg(&mp_type_UnicodeError, NULL);
     }
     #endif

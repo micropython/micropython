@@ -11,6 +11,7 @@ b'\xc2\xa9'
 b'\xf0\x9f\x91\x8d'
 '\U00110000'
 '\U00140000'
+UnicodeError
 LookupError: latin-1
 LookupError: latin1
 LookupError: utf-16
