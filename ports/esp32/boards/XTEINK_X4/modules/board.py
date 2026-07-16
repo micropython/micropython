@@ -11,13 +11,13 @@ from micropython import const
 
 _pins = Pin.board
 
-BACK = const(0)
-CONFIRM = const(1)
-LEFT = const(2)
-RIGHT = const(3)
-UP = const(4)
-DOWN = const(5)
-POWER = const(6)
+BACK: int = const(0)
+CONFIRM: int = const(1)
+LEFT: int = const(2)
+RIGHT: int = const(3)
+UP: int = const(4)
+DOWN: int = const(5)
+POWER: int = const(6)
 
 # (upper, lower, button) bounds per button: pressed when lower < raw <= upper.
 _RANGES_1 = ((3900, 3100, BACK), (3100, 2090, CONFIRM), (2090, 750, LEFT), (750, -1, RIGHT))
@@ -36,14 +36,14 @@ _adc_bat = ADC(_pins.BAT_ADC)
 _adc_bat.atten(ADC.ATTN_11DB)
 
 
-def _button_from_adc(raw, ranges):
+def _button_from_adc(raw: int, ranges: tuple) -> int:
     for upper, lower, button in ranges:
         if lower < raw <= upper:
             return button
     return -1
 
 
-def get_state():
+def get_state() -> int:
     """Return a bitmask of all buttons currently pressed.
 
     Bit N is set for button N, using the BACK/CONFIRM/LEFT/RIGHT/UP/DOWN/POWER
@@ -61,18 +61,18 @@ def get_state():
     return state
 
 
-def is_pressed(button):
+def is_pressed(button: int) -> bool:
     """Return True if the given button constant is currently pressed."""
     return bool(get_state() & (1 << button))
 
 
-def get_battery_voltage():
+def get_battery_voltage() -> float:
     """Return the battery voltage in volts, accounting for the divider."""
     millivolts = _adc_bat.read_uv() / 1000 * _BATTERY_DIVIDER_MULTIPLIER
     return millivolts / 1000
 
 
-def get_battery_percentage():
+def get_battery_percentage() -> int:
     """Return an estimated battery charge percentage (0-100).
 
     Uses a cubic fit derived from real LiPo discharge samples, ported from
@@ -89,29 +89,29 @@ class buttons:
     class _Button:
         _bit = None
 
-        def value(self):
+        def value(self) -> int:
             return 1 if get_state() & (1 << self._bit) else 0
 
-        def __call__(self):
+        def __call__(self) -> int:
             return self.value()
 
     class Back(_Button):
-        _bit = BACK
+        _bit: int = BACK
 
     class Confirm(_Button):
-        _bit = CONFIRM
+        _bit: int = CONFIRM
 
     class Left(_Button):
-        _bit = LEFT
+        _bit: int = LEFT
 
     class Right(_Button):
-        _bit = RIGHT
+        _bit: int = RIGHT
 
     class Up(_Button):
-        _bit = UP
+        _bit: int = UP
 
     class Down(_Button):
-        _bit = DOWN
+        _bit: int = DOWN
 
     class Power(_Button):
-        _bit = POWER
+        _bit: int = POWER
