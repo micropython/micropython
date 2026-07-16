@@ -534,8 +534,12 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         // Check number of args matches this function, and call mp_arg_check_num_sig if not
         ASM_JUMP_IF_REG_NONZERO(emit->as, REG_ARG_2, *emit->label_slot + 4, true);
-        ASM_MOV_REG_IMM(emit->as, REG_ARG_3, scope->num_pos_args);
-        ASM_JUMP_IF_REG_EQ(emit->as, REG_ARG_1, REG_ARG_3, *emit->label_slot + 5);
+        if (scope->num_pos_args > 0) {
+            ASM_MOV_REG_IMM(emit->as, REG_ARG_3, scope->num_pos_args);
+            ASM_JUMP_IF_REG_EQ(emit->as, REG_ARG_1, REG_ARG_3, *emit->label_slot + 5);
+        } else {
+            ASM_JUMP_IF_REG_ZERO(emit->as, REG_ARG_1, *emit->label_slot + 5, false);
+        }
         mp_asm_base_label_assign(&emit->as->base, *emit->label_slot + 4);
         ASM_MOV_REG_IMM(emit->as, REG_ARG_3, MP_OBJ_FUN_MAKE_SIG(scope->num_pos_args, scope->num_pos_args, false));
         ASM_CALL_IND(emit->as, MP_F_ARG_CHECK_NUM_SIG);
