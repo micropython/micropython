@@ -366,11 +366,20 @@ static mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             mp_raise_TypeError(MP_ERROR_TEXT("string argument without an encoding"));
             #endif
         }
+
         GET_STR_DATA_LEN(args[0], str_data, str_len);
         GET_STR_HASH(args[0], str_hash);
         if (str_hash == 0) {
             str_hash = qstr_compute_hash(str_data, str_len);
         }
+
+        #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+        mp_encoding_t encoding = parse_encoding_arg(mp_obj_str_get_qstr(args[1]));
+        if (encoding == MP_ENCODING_ASCII && !unicode_encoding_check(MP_ENCODING_ASCII, str_data, str_len)) {
+            mp_raise_msg(&mp_type_UnicodeError, NULL);
+        }
+        #endif
+
         mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(&mp_type_bytes, NULL, str_len));
         o->data = str_data;
         o->hash = str_hash;
@@ -2129,8 +2138,6 @@ static mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
         args = new_args;
         n_args++;
-    } else if (n_args >= 2) {
-        parse_encoding_arg(mp_obj_str_get_qstr(args[1]));
     }
     return bytes_make_new(NULL, n_args, 0, args);
 }
