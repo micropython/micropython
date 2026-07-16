@@ -254,8 +254,15 @@ static double mp_obj_get_float_to_d(mp_obj_t o) {
 
 #endif
 
+#if MICROPY_NATIVE_FUN_TABLE_ALIGNMENT > 0
+#define ALIGN(x) __attribute__((aligned(x)))
+#define FUN_TABLE_ALIGNMENT ALIGN(MICROPY_NATIVE_FUN_TABLE_ALIGNMENT)
+#else
+#define FUN_TABLE_ALIGNMENT
+#endif
+
 // these must correspond to the respective enum in nativeglue.h
-const mp_fun_table_t mp_fun_table = {
+const mp_fun_table_t mp_fun_table FUN_TABLE_ALIGNMENT = {
     mp_const_none,
     mp_const_false,
     mp_const_true,

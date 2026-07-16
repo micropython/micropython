@@ -150,7 +150,7 @@ static int usage(char **argv) {
         "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
         "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug\n"
         "-march-flags=<flags> : set architecture-specific flags (can be either a dec/hex/bin value or a comma-separated flags string)\n"
-        "                       supported flags for rv32imc: zba, zcmp\n"
+        "                       supported flags for rv32imc: zba, zcmp, zcmt\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -285,6 +285,8 @@ static bool parse_rv32_flags_string(const char *source, unsigned long *flags) {
             collected_flags |= RV32_EXT_ZBA;
         } else if (length == (sizeof("zcmp") - 1) && memcmp(current, "zcmp", length) == 0) {
             collected_flags |= RV32_EXT_ZCMP;
+        } else if (length == (sizeof("zcmt") - 1) && memcmp(current, "zcmt", length) == 0) {
+            collected_flags |= RV32_EXT_ZCMT;
         } else {
             return false;
         }

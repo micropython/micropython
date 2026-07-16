@@ -1674,6 +1674,7 @@ def parse_linkerscript(source):
 RV32_EXTENSIONS = {
     "zba": 1 << 0,
     "zcmp": 1 << 1,
+    "zcmt": 1 << 2,
 }
 
 

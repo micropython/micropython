@@ -36,6 +36,7 @@ from test_utils import (
 RV32_ARCH_FLAGS = {
     "zba": 1 << 0,
     "zcmp": 1 << 1,
+    "zcmt": 1 << 2,
 }
 
 # Tests require at least CPython 3.3. If your default python3 executable
