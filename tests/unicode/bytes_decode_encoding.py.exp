@@ -9,6 +9,7 @@ test
 b'\xc2\xa9'
 👍
 b'\xf0\x9f\x91\x8d'
+b'abcde'
 '\U00110000'
 '\U00140000'
 UnicodeError
@@ -26,3 +27,4 @@ LookupError: utf-16
 LookupError: utf-32
 LookupError: iso-8859-1
 LookupError: cp1252
+UnicodeError
