@@ -1149,6 +1149,9 @@ void eth_phy_link_status_poll(void) {
     uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
     bool current_link_status = (bsr & PHY_BSR_LINK_STATUS) != 0;
 
+    // DHCP restart runs at end of function, after any MAC reconfig.
+    bool needs_dhcp_restart = false;
+
     // Handle link up/down transitions.
     if (current_link_status != self->last_link_status) {
         self->last_link_status = current_link_status;
@@ -1158,7 +1161,7 @@ void eth_phy_link_status_poll(void) {
             netif_set_link_up(netif);
             self->mac_speed_configured = false;
             self->autoneg_start_ms = mp_hal_ticks_ms();
-            eth_dhcp_restart_if_needed(netif);
+            needs_dhcp_restart = true;
         } else {
             netif_set_link_down(netif);
             self->mac_speed_configured = false;
@@ -1237,7 +1240,10 @@ void eth_phy_link_status_poll(void) {
         self->mac_reconfig_in_progress = false;
         self->mac_speed_configured = true;
 
-        // MAC was reconfigured; restart DHCP if needed.
+        needs_dhcp_restart = true;
+    }
+
+    if (needs_dhcp_restart) {
         struct netif *netif = &self->netif;
         MICROPY_PY_LWIP_ENTER
         eth_dhcp_restart_if_needed(netif);
