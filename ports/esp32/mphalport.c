@@ -194,10 +194,6 @@ mp_uint_t mp_hal_ticks_ms(void) {
     return esp_timer_get_time() / 1000;
 }
 
-mp_uint_t mp_hal_ticks_us(void) {
-    return esp_timer_get_time();
-}
-
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint64_t us = (uint64_t)ms * 1000ULL;
     uint64_t dt;
