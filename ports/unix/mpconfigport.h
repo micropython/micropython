@@ -106,9 +106,12 @@ typedef long mp_off_t;
 // Always enable GC.
 #define MICROPY_ENABLE_GC           (1)
 
-#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__) || (defined(__riscv) && __riscv_xlen <= 64) || (defined(__loongarch__) && defined(__loongarch64)))
-// Fall back to setjmp() implementation for discovery of GC pointers in registers.
-#define MICROPY_GCREGS_SETJMP (1)
+// Fall back to setjmp() implementation for discovery of GC pointers in registers
+// if running on intel-based macOS, or on architectures for which there is no
+// specialised GC pointer discovery mechanism.
+#if (defined(__APPLE__) && defined(__MACH__) && (defined(__i386__) || defined(__x86_64__))) || \
+    (!(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__) || (defined(__riscv) && __riscv_xlen <= 64) || (defined(__loongarch__) && defined(__loongarch64))))
+#define MICROPY_GCREGS_SETJMP       (1)
 #endif
 
 // Enable the VFS, and enable the posix "filesystem".
