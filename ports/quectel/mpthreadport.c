@@ -271,7 +271,8 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
 }
 
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    return Helios_Mutex_Lock(*mutex, wait ? QPY_WAIT_FOREVER : QPY_NO_WAIT);
+    int ret = Helios_Mutex_Lock(*mutex, wait ? QPY_WAIT_FOREVER : QPY_NO_WAIT);
+    return ret == 0 ? 1 : 0;
 }
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
