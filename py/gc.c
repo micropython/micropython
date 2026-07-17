@@ -638,7 +638,8 @@ static void gc_deal_with_stack_overflow(void) {
             size_t total_words = area->gc_alloc_table_byte_len / sizeof(gc_word_t);
             for (size_t w = 0; w < total_words; w++) {
                 MICROPY_GC_HOOK_LOOP(w);
-                gc_word_t marked = atb[w] & (atb[w] >> 1) & GC_ATB_LOW_BITS;
+                gc_word_t aw = MP_LE32TOH(atb[w]);
+                gc_word_t marked = aw & (aw >> 1) & GC_ATB_LOW_BITS;
                 while (marked) {
                     size_t block = w * GC_ATB_BLOCKS_PER_WORD + GC_CTZ(marked) / 2;
                     marked &= marked - 1; // clear lowest set bit
@@ -733,13 +734,15 @@ static void gc_sweep_free_blocks(void) {
         // Sweep a word (16 blocks) at a time. Load the ATB word into a register
         // once, classify/clear all its blocks there, and write back at most
         // once. Uniform words (all-free, or a full run of tails) are handled
-        // without the per-block loop so large buffers stay word-speed.
+        // without the per-block loop so large buffers stay word-speed. The table
+        // is little-endian, so normalise on load/store to keep field 2*k as
+        // block w*16+k on big-endian hosts.
         gc_word_t *atb = (gc_word_t *)(void *)area->gc_alloc_table_start;
         size_t last_word = area->gc_last_used_block / GC_ATB_BLOCKS_PER_WORD;
 
         for (size_t w = 0; w <= last_word; w++) {
             MICROPY_GC_HOOK_LOOP(w);
-            gc_word_t aw = atb[w];
+            gc_word_t aw = MP_LE32TOH(atb[w]);
 
             if (aw == 0) {
                 continue; // all free
@@ -800,7 +803,7 @@ static void gc_sweep_free_blocks(void) {
                 }
             }
             if (new_w != aw) {
-                atb[w] = new_w;
+                atb[w] = MP_HTOLE32(new_w);
             }
         }
 

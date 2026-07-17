@@ -2472,6 +2472,26 @@ typedef time_t mp_timestamp_t;
 #endif
 #endif
 
+#ifndef MP_HTOLE16
+#if MP_ENDIANNESS_LITTLE
+#define MP_HTOLE16(x) (x)
+#define MP_LE16TOH(x) (x)
+#else
+#define MP_HTOLE16(x) MP_BSWAP16(x)
+#define MP_LE16TOH(x) MP_HTOLE16(x)
+#endif
+#endif
+
+#ifndef MP_HTOLE32
+#if MP_ENDIANNESS_LITTLE
+#define MP_HTOLE32(x) (x)
+#define MP_LE32TOH(x) (x)
+#else
+#define MP_HTOLE32(x) MP_BSWAP32(x)
+#define MP_LE32TOH(x) MP_HTOLE32(x)
+#endif
+#endif
+
 // Warning categories are by default implemented as strings, though
 // hook is left for a port to define them as something else.
 #if MICROPY_WARNINGS_CATEGORY
