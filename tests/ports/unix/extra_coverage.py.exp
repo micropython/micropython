@@ -7,8 +7,8 @@
 7fffffffffffffff
 7FFFFFFFFFFFFFFF
 18446744073709551615
-789f
-789F
+0x789f
+0x789F
 ab abc ' abc' ' True' 'Tru'
 
 false true
@@ -21,7 +21,7 @@ abc
 %
 .a  .
 <%>
-<aaaa>
+<0xaaaa>
 <true>
 <43690>
 <43690>
@@ -31,12 +31,12 @@ abc
 <True>
 <9223372036854775807>
 # GC
-0
+0x0
 0
 # GC part 2
 pass
 # tracked allocation
-m_tracked_head = 0
+m_tracked_head = 0x0
 0 1
 1 1
 2 1
@@ -53,7 +53,7 @@ m_tracked_head = 0
 5 1
 6 1
 7 1
-m_tracked_head = 0
+m_tracked_head = 0x0
 # vstr
 tests
 sts

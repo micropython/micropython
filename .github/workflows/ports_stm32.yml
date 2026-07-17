@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Install packages
       run: tools/ci.sh stm32_setup && tools/ci.sh stm32_path >> $GITHUB_PATH
     - name: Build ci_${{matrix.ci_func }}

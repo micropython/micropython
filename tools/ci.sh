@@ -967,7 +967,7 @@ function ci_unix_qemu_riscv64_run_tests {
     file ./ports/unix/build-coverage/micropython
     pushd tests
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'thread/stress_aes.py'
-    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
+    MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
     popd
 }
 

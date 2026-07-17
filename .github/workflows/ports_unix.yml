@@ -24,6 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Build
       run: tools/ci.sh unix_minimal_build
     - name: Run main test suite
@@ -36,6 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Build with reproducible date
       run: tools/ci.sh unix_minimal_build
       env:
@@ -47,6 +53,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Build
       run: tools/ci.sh unix_standard_build
     - name: Run main test suite
@@ -59,6 +68,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Build
       run: tools/ci.sh unix_standard_v2_build
     - name: Run main test suite
@@ -71,6 +83,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -92,12 +107,6 @@ jobs:
       run: |
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        fail_ci_if_error: true
-        verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
@@ -106,6 +115,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -129,6 +141,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -148,6 +163,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -167,6 +185,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Build
       run: tools/ci.sh unix_float_build
     - name: Run main test suite
@@ -179,6 +200,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Build
       run: tools/ci.sh unix_gil_enabled_build
     - name: Run main test suite
@@ -191,6 +215,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Install packages
       run: tools/ci.sh unix_clang_setup
     - name: Build
@@ -205,6 +232,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - name: Install packages
       run: tools/ci.sh unix_clang_setup
     - name: Build
@@ -219,6 +249,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -236,6 +269,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -255,6 +291,9 @@ jobs:
     runs-on: macos-26
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       with:
         python-version: '3.8'
@@ -270,6 +309,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -289,6 +331,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -308,6 +353,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -327,6 +375,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
@@ -352,6 +403,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 30
+    - run: tools/undrop_submodules.sh
     - uses: actions/setup-python@v6
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
