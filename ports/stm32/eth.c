@@ -1179,11 +1179,6 @@ void eth_phy_link_status_poll(void) {
     // If link is up but MAC speed/duplex not yet configured, check if
     // autonegotiation has completed.
     if (current_link_status && !self->mac_speed_configured) {
-        // Re-verify link is still up before proceeding (it may have dropped).
-        if (!self->last_link_status) {
-            return;
-        }
-
         bsr = eth_phy_read(self->phy_addr, PHY_BSR);
         bool autoneg_timeout = (mp_hal_ticks_ms() - self->autoneg_start_ms) > PHY_AUTONEG_TIMEOUT_MS;
 
