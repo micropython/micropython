@@ -1,7 +1,11 @@
 name: JavaScript code lint and formatting with Biome
 
-on: [push, pull_request]
-
+on:
+  push:
+  pull_request:
+      - '.github/workflows/biome.yml'
+      - 'tests/**'
+      - 'ports/webassembly/**'
 jobs:
   eslint:
     runs-on: ubuntu-latest
