@@ -62,8 +62,7 @@ def _test_freq_duty(self, pulse_in, pwm, freq, duty_u16):
     if duty_u16 == 0 or duty_u16 == 65535:
         # Expect a constant output level.
         no_pulse = (
-            time_pulse_us(pulse_in, 0, timeout, 3) < 0
-            and time_pulse_us(pulse_in, 1, timeout, 3) < 0
+            time_pulse_us(pulse_in, 0, timeout) < 0 and time_pulse_us(pulse_in, 1, timeout) < 0
         )
         self.assertTrue(no_pulse)
         if expected_high_us == 0:
