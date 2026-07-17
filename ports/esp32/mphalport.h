@@ -36,6 +36,7 @@
 #include "freertos/task.h"
 
 #include "driver/spi_master.h"
+#include "esp_timer.h"
 #include "esp_cache.h"
 #include "esp_cpu.h"
 #include "soc/gpio_reg.h"
@@ -89,7 +90,9 @@ static inline void mp_end_atomic_section(mp_uint_t state) {
 #define MICROPY_BEGIN_ATOMIC_SECTION() mp_begin_atomic_section()
 #define MICROPY_END_ATOMIC_SECTION(state) mp_end_atomic_section(state)
 
-mp_uint_t mp_hal_ticks_us(void);
+__attribute__((always_inline)) static inline mp_uint_t mp_hal_ticks_us(void) {
+    return esp_timer_get_time();
+}
 __attribute__((always_inline)) static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return esp_cpu_get_cycle_count();
 }
