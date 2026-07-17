@@ -758,7 +758,13 @@ static void gc_sweep_free_blocks(void) {
             }
 
             // Mixed word: walk the 2-bit fields, updating the register copy.
+            // Keep this loop rolled: its trip count is a compile-time constant,
+            // so -O3 (and -O2 with the vectoriser) fully unrolls it into ~2 KB.
+            // Guarded because gcc < 8 and MSVC reject the pragma under -Werror.
             gc_word_t new_w = aw;
+            #if defined(__clang__) || (defined(__GNUC__) && __GNUC__ >= 8)
+            #pragma GCC unroll 1
+            #endif
             for (size_t k = 0; k < GC_ATB_BLOCKS_PER_WORD; k++) {
                 size_t sh = 2 * k;
                 switch ((aw >> sh) & 3) {
