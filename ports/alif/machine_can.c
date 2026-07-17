@@ -348,7 +348,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
 
     // Enable the MCU interrupts for CANFD.
     NVIC_ClearPendingIRQ(CANFD_IRQ_IRQn);
-    NVIC_SetPriority(CANFD_IRQ_IRQn, RTE_CANFD_IRQ_PRIORITY);
+    NVIC_SetPriority(CANFD_IRQ_IRQn, IRQ_PRI_CAN);
     NVIC_EnableIRQ(CANFD_IRQ_IRQn);
 
     port->is_enabled = true;
