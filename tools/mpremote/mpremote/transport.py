@@ -101,7 +101,7 @@ class Transport:
     def fs_stat(self, src):
         try:
             self.exec("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src)))
+            return os.stat_result(self.eval("tuple(os.stat(%s))" % ("'%s'" % src)))
         except TransportExecError as e:
             raise _convert_filesystem_error(e, src) from None
 
