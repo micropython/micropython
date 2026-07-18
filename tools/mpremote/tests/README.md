@@ -23,7 +23,7 @@ To run the tests do:
 
 To run a single test do:
 
-    $ ./run-mpremote-tests.sh test_filesystem.sh
+    $ ./run-mpremote-tests.sh ./test_filesystem.sh
 
 Each test should print "OK" if it passed.  Otherwise it will print "CRASH", or "FAIL"
 and a diff of the expected and actual test output.
