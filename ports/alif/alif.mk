@@ -85,7 +85,7 @@ endif
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -Og -ggdb3
+CFLAGS += -Og -ggdb
 # Disable text compression in debug builds
 MICROPY_ROM_TEXT_COMPRESSION = 0
 else
