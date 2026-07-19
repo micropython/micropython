@@ -32,7 +32,7 @@ the REPL, so you can keep poking at them afterwards.)
 
 The `net_*.py` samples need networking. `make run` and `make run-gfx` attach a
 virtio-net NIC on QEMU user-net (which reaches the outside world) and select the
-network firmware — build it once with `bash docker/build-ovmf-net.sh`. After
+network firmware — build it once with `bash tools/build-ovmf.sh --net`. After
 `net_server.py` is serving, open <http://localhost:8080/> on your host (the run
 targets forward host tcp/8080 to the guest).
 

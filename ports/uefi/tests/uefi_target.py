@@ -52,7 +52,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))  # ports/uefi/tests
 PORT = os.path.dirname(HERE)  # ports/uefi
 TOP = os.path.dirname(os.path.dirname(PORT))  # repo root
 sys.path.insert(0, HERE)  # so we can reuse harness device helpers
-from harness import graphics_flags, net_flags  # noqa: E402
+from harness import SHELL_FIRST_SETUP_SRC, graphics_flags, net_flags  # noqa: E402
 
 ESP = os.environ.get("UEFI_TEST_ESP", os.path.join(PORT, "esp"))
 RELFW = os.path.join(PORT, "firmware", "release")
@@ -100,29 +100,10 @@ _SERIAL_LOG = os.environ.get("UEFI_TEST_SERIAL_LOG")
 # Bootstrap script (run once, in the app): make the firmware's built-in UEFI Shell the FIRST
 # boot option, with a zero timeout. Booting the Shell first keeps the cold boot off the
 # removable-media/PXE fallback — with a NIC present OVMF otherwise detours into "Start PXE over
-# IPv4" and never reaches the Shell. The Shell then runs startup.nsh's relaunch loop.
-_SETUP_SRC = r"""from uefi import boot as BT, variable as V, guid as G
-a = V.NON_VOLATILE | V.BOOTSERVICE_ACCESS | V.RUNTIME_ACCESS
-shell = None
-order = BT.boot_order()
-for num in list(order) + [n for n in range(0x40) if n not in order]:
-    name = "Boot%04X" % num
-    if not V.exists(name, G.GLOBAL_VARIABLE):
-        continue
-    try:
-        lo = BT.LoadOption.parse(V.get(name, G.GLOBAL_VARIABLE))
-    except Exception:
-        continue
-    if "Shell" in lo.description:
-        shell = num
-        break
-if shell is None:
-    print("SETUP-FAIL")
-else:
-    BT.set_boot_order([shell])
-    V.set("Timeout", G.GLOBAL_VARIABLE, b"\x00\x00", a)
-    print("SETUP-OK")
-"""
+# IPv4" and never reaches the Shell. The Shell then runs startup.nsh's relaunch loop. Shared
+# with tests/harness.py's own ensure_shell_first() (used by test-runfile/test-bootopt), which
+# is the source of truth for this constant.
+_SETUP_SRC = SHELL_FIRST_SETUP_SRC
 
 
 def _expect_heartbeat(child, patterns, timeout, interval=4):
@@ -234,7 +215,7 @@ def main():
             sys.stderr.write(
                 f"uefi target: missing {f} -- build and stage first "
                 f"(make ARCH={ARCH} stage; UEFI_TEST_NET needs "
-                f"docker/build-ovmf-release-net.sh)\n"
+                f"tools/build-ovmf.sh --release --net)\n"
             )
             sys.exit(1)
 

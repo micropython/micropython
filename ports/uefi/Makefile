@@ -1,10 +1,19 @@
 # MicroPython UEFI port — builds the .efi (clang -> PE32+, lld-link) AND provides
-# the orchestration phony targets (test/run/debug/ovmf). Runs inside the dev
-# container; from the Mac use `make docker-<target>` (bottom of file).
+# the orchestration phony targets (build/stage/test/run/debug/ovmf). The actual
+# compile only ever happens inside the dev container (see IN_CONTAINER below): the
+# main build/run targets auto-detect and re-exec themselves there when run bare from
+# the Mac, so `make ARCH=x64` (or `make docker-<target>`, or running inside a `make
+# shell` session) all do the same thing. Never build directly on the host: clang
+# would need the exact same cross-target support as the container's toolchain, and
+# — worse — mpy-cross/build is ONE path shared by every ARCH and invocation style;
+# a host-built binary landing there is silently the wrong ABI for the *next*
+# in-container build (cryptic "Exec format error", since py.mk only rebuilds it when
+# missing, not when it's simply wrong for the caller).
 #
 # ARCH selects the target: aa64 (default, native QEMU on Apple Silicon) | x64.
 
 ARCH ?= aa64
+IN_CONTAINER := $(wildcard /.dockerenv)
 
 ifeq ($(ARCH),aa64)
   CLANG_TARGET := aarch64-unknown-windows
@@ -167,15 +176,30 @@ OBJ += $(BUILD)/frozen_content.o
 
 EFI := $(BUILD)/mpy-uefi.efi
 
-all: $(EFI)
-
 $(EFI): $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)lld-link $(LDFLAGS_EFI) $(OBJ) -out:$@
 	-$(Q)llvm-size $@ 2>/dev/null || true
 
 # ---- orchestration ----
-.PHONY: stage test test-net test-gfx test-repl test-runfile test-bootopt run run-gfx debug ovmf test-os distclean shell
+.PHONY: all build stage test test-net test-gfx test-repl test-runfile test-bootopt run run-gfx debug ovmf test-os distclean shell
+
+# `all`/`stage`/`build` (build is `stage`'s alias — README's documented entry point)
+# only ever run for real inside the dev container (see IN_CONTAINER, top of file).
+# Bare on the host they re-exec themselves there via docker instead of trying to
+# compile locally — see the file header for why that matters. `run`/`debug` do the
+# same, but need `-it` for the interactive REPL that lands on your terminal.
+ifeq ($(IN_CONTAINER),)
+all stage build:
+	docker run --rm --user "$$(id -u):$$(id -g)" -e HOME=/tmp \
+		-v $(REPO):/work -w /work/ports/uefi $(DEV_IMG) make $@ ARCH=$(ARCH)
+run debug:
+	docker run --rm -it --user "$$(id -u):$$(id -g)" -e HOME=/tmp \
+		-v $(REPO):/work -w /work/ports/uefi $(DEV_IMG) make $@ ARCH=$(ARCH)
+else
+all: $(EFI)
+
+build: stage
 
 # Stage the built .efi into the virtual FAT ESP at the firmware's auto-launch path.
 stage: $(EFI) tests/tls_test_cert.der
@@ -201,6 +225,12 @@ stage: $(EFI) tests/tls_test_cert.der
 	@# during a run (this is what `make run`/`run-gfx` use).
 	@printf '@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\$(EFI_NAME)\r\n' > esp/startup.nsh
 	$(ECHO) "staged $(EFI) -> esp/EFI/BOOT/$(EFI_NAME)"
+
+run: stage $(FW_DEP)
+	$(Q)./scripts/run.sh $(ARCH)
+debug: stage $(FW_DEP)
+	$(Q)./scripts/debug.sh $(ARCH)
+endif
 
 # TLS test cert/key/DER for the network self-test — generated on demand (git-ignored).
 # The .der target also produces the .pem cert + key the harness's TLS peer uses.
@@ -228,7 +258,7 @@ firmware/%.fd:
 # real hardware/ports/qemu, whose device is already sitting idle, ever need.
 #
 # This is the only command anyone runs: never invoke tests/uefi_target.py directly.
-# Needs the RELEASE firmware (docker/build-ovmf-release.sh) and pexpect (a .venv is
+# Needs the RELEASE firmware (tools/build-ovmf.sh --release) and pexpect (a .venv is
 # used automatically if present). Extra tests/flags via TESTS=, e.g.
 # `make test TESTS="ports/uefi/efi_raw.py"` — passed straight through to run-tests.py.
 NATIVE_ARCH := $(shell uname -m | sed -e 's/^arm64$$/aa64/' -e 's/^aarch64$$/aa64/' \
@@ -260,33 +290,23 @@ test-net:
 
 # Headless REPL smoke test: pipes Python in over serial and asserts on the output.
 test-repl: stage $(FW_DEP)
-	$(Q)python3 tests/harness.py --arch $(ARCH) --mode repl
+	$(Q)$(TEST_PYTHON) tests/harness.py --arch $(ARCH) --mode repl
 
 # Launch from the shell with a script argument (`app.efi foo.py ...`) and assert it
 # runs with sys.argv set. Uses the shell-launch (startup.nsh) path — aa64.
 test-runfile: stage $(FW_DEP)
-	$(Q)python3 tests/harness.py --arch $(ARCH) --mode runfile
+	$(Q)$(TEST_PYTHON) tests/harness.py --arch $(ARCH) --mode runfile
 
 # Launch via a boot-manager entry (BootNext) whose OptionalData is a script argument,
 # and assert it runs with sys.argv — the LoadedImage->LoadOptions path (distinct from
 # the shell's ShellParameters). Two-phase (write entry, then fresh boot) — aa64.
 test-bootopt: stage $(FW_DEP)
-	$(Q)python3 tests/harness.py --arch $(ARCH) --mode bootopt
+	$(Q)$(TEST_PYTHON) tests/harness.py --arch $(ARCH) --mode bootopt
 
-# `make run` drops you into a live, interactive MicroPython REPL in QEMU;
-# `make debug` boots with a gdbstub. Both put the serial console on your terminal.
-# From the host they auto-wrap in an interactive (-it) container; inside the
-# container they exec QEMU directly. So `make run` works the same everywhere.
-IN_CONTAINER := $(wildcard /.dockerenv)
-ifeq ($(IN_CONTAINER),)
-run debug:
-	docker run --rm -it -v $(REPO):/work -w /work/ports/uefi $(DEV_IMG) make $@ ARCH=$(ARCH)
-else
-run: stage $(FW_DEP)
-	$(Q)./scripts/run.sh $(ARCH)
-debug: stage $(FW_DEP)
-	$(Q)./scripts/debug.sh $(ARCH)
-endif
+# `make run` drops you into a live, interactive MicroPython REPL in QEMU; `make debug`
+# boots with a gdbstub. Both put the serial console on your terminal. See IN_CONTAINER
+# (top of file) for the host auto-wrap that makes both work the same from the Mac,
+# inside `make shell`, or in CI.
 
 # Visible graphics window so GOP is on a usable screen. Host-only: a cocoa window
 # can't come from the Linux container, so this runs host QEMU directly (no docker
@@ -295,24 +315,28 @@ run-gfx:
 	$(Q)./scripts/run-gfx.sh $(ARCH)
 
 ovmf:
-	$(Q)./docker/build-ovmf.sh
+	$(Q)./tools/build-ovmf.sh
 
 # Build the minimal aarch64 test OS (EFI-stub kernel + BusyBox initramfs) into
 # test-images/, for exercising the boot path (samples/boot_disk.py, net_boot.py).
 # Needs apt/busybox, so run it in the dev container: `make docker-test-os`.
 test-os:
-	$(Q)bash test-images/build-test-os.sh
+	$(Q)bash tools/build-test-os.sh
 
 distclean: clean
 	$(RM) -rf build-aa64 build-x64 esp firmware/serial.log firmware/debug.log
 
 # ---- run any target inside the dev container (from the Mac) ----
-# e.g. `make docker-test ARCH=aa64`, `make shell`
+# e.g. `make docker-test ARCH=aa64`, `make shell`. --user matches the auto-wrap above
+# (and CI): keeps everything the container writes into the host-mounted tree owned by
+# you, not root.
 REPO := $(abspath $(TOP))
 DEV_IMG ?= mpy-uefi-dev
 docker-%:
-	docker run --rm -v $(REPO):/work -w /work/ports/uefi $(DEV_IMG) make $* ARCH=$(ARCH)
+	docker run --rm --user "$$(id -u):$$(id -g)" -e HOME=/tmp \
+		-v $(REPO):/work -w /work/ports/uefi $(DEV_IMG) make $* ARCH=$(ARCH)
 shell:
-	docker run --rm -it -v $(REPO):/work -w /work/ports/uefi $(DEV_IMG) bash
+	docker run --rm -it --user "$$(id -u):$$(id -g)" -e HOME=/tmp \
+		-v $(REPO):/work -w /work/ports/uefi $(DEV_IMG) bash
 
 include $(TOP)/py/mkrules.mk
