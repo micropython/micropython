@@ -102,12 +102,13 @@ firmware) since it drives QEMU on the runner host directly rather than inside th
 ## Layout
 
 Everything lives under `ports/uefi/`: the C core (`main.c`, `mphalport.c`, `uefi_*.c`, `mod*.c`,
-`efi*.h`), the frozen Python (`modules/`), samples (`samples/`), the test harness (`tests/`), and
-the build (`Makefile`). Two scaffolding dirs stay clearly separate from that source: `tools/`
+`efi*.h`), the frozen Python (`modules/`), the test harness (`tests/`), and the build
+(`Makefile`). Two scaffolding dirs stay clearly separate from that source: `tools/`
 (`Dockerfile`, `build-ovmf.sh`, `build-test-os.sh`) builds the toolchain/firmware and is Docker-
 only; `scripts/` (`run.sh`, `debug.sh`, `run-gfx.sh`, `env.sh`) launches QEMU directly on the host
-and needs no Docker. Port work stays here; the shared core (`py/`, `extmod/`, `shared/`, `lib/`,
-`mpy-cross/`) is not edited.
+and needs no Docker. Sample scripts live in the top-level `examples/uefi/` (matching every other
+port's convention), staged onto the boot volume by `make stage`. Port work stays here; the
+shared core (`py/`, `extmod/`, `shared/`, `lib/`, `mpy-cross/`) is not edited.
 
 ### File naming convention
 
