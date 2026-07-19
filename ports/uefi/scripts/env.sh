@@ -24,13 +24,13 @@ esac
 
 # Prefer the network-enabled firmware (full IP4/TCP/UDP/DNS/TLS stack) if it has been
 # built — the lean default firmware lacks the upper network stack. Build it with
-# `bash docker/build-ovmf-net.sh`.
+# `bash tools/build-ovmf.sh --net`.
 if [ -f "$FW/net/$(basename "$FW_CODE")" ]; then
   FW_CODE="$FW/net/$(basename "$FW_CODE")"
   FW_VARS="$FW/net/$(basename "$FW_VARS")"
 else
   echo "note: firmware/net not built — networking will be unavailable." >&2
-  echo "      build it with:  bash docker/build-ovmf-net.sh" >&2
+  echo "      build it with:  bash tools/build-ovmf.sh --net" >&2
 fi
 
 # QEMU network devices (see README.md):

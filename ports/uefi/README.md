@@ -90,14 +90,24 @@ tests the runner cleanly exits the app and the EFI Shell's `startup.nsh` relaunc
 hermetic interpreter (no QEMU reset), and it meters uploads with the REPL's raw-paste flow
 control (no timing guesswork). Always pass a timeout. The all-protocols network firmware
 (RELEASE + the DNS/HTTP/**TLS** stack + VirtioNetDxe) is built with
-`bash docker/build-ovmf-release-net.sh`.
+`bash tools/build-ovmf.sh --release --net`.
+
+The dev image itself (`mpy-uefi-dev`) is built with:
+```
+docker build -f tools/Dockerfile -t mpy-uefi-dev tools
+```
+CI instead builds only the leaner `--target build` stage (toolchain only, no QEMU/venv/baked
+firmware) since it drives QEMU on the runner host directly rather than inside the container.
 
 ## Layout
 
 Everything lives under `ports/uefi/`: the C core (`main.c`, `mphalport.c`, `uefi_*.c`, `mod*.c`,
-`efi*.h`), the frozen Python (`modules/`), samples (`samples/`), the test harness (`tests/`), the
-firmware/dev scaffolding (`Dockerfile`, `docker/`, `scripts/`), and the build (`Makefile`). Port
-work stays here; the shared core (`py/`, `extmod/`, `shared/`, `lib/`, `mpy-cross/`) is not edited.
+`efi*.h`), the frozen Python (`modules/`), samples (`samples/`), the test harness (`tests/`), and
+the build (`Makefile`). Two scaffolding dirs stay clearly separate from that source: `tools/`
+(`Dockerfile`, `build-ovmf.sh`, `build-test-os.sh`) builds the toolchain/firmware and is Docker-
+only; `scripts/` (`run.sh`, `debug.sh`, `run-gfx.sh`, `env.sh`) launches QEMU directly on the host
+and needs no Docker. Port work stays here; the shared core (`py/`, `extmod/`, `shared/`, `lib/`,
+`mpy-cross/`) is not edited.
 
 ### File naming convention
 

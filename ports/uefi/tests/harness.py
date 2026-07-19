@@ -4,7 +4,7 @@
 
 """Interactive / launch-path smoke checks for the MicroPython UEFI port.
 
-The full test suite is run by tests/run_uefi_tests.py (`make test`) over the raw REPL.
+The full test suite is run by tests/uefi_target.py, via `run-tests.py`/`make test`, over the raw REPL.
 This harness covers the checks that don't fit that model — driving the live REPL
 (`--mode repl`), a shell-launched script (`--mode runfile`), and a boot-option script
 (`--mode bootopt`) — booting the staged ESP under QEMU + firmware for the chosen ARCH.
@@ -16,18 +16,46 @@ Designed to run inside the dev container (firmware seeded from /opt/ovmf into
 import argparse
 import os
 import pathlib
+import random
+import socket
 import subprocess
 import sys
 import threading
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent  # ports/uefi
-FW = ROOT / "firmware"
-ESP = ROOT / "esp"
+# Overridable (mirrors tests/uefi_target.py's UEFI_TEST_ESP) so multiple runs -- e.g. a
+# parallel test-repl/test-runfile/test-bootopt battery -- can each work against their own
+# copy instead of racing on the same startup.nsh / VARS.fd.
+FW = pathlib.Path(os.environ.get("UEFI_TEST_FW", str(ROOT / "firmware")))
+ESP = pathlib.Path(os.environ.get("UEFI_TEST_ESP", str(ROOT / "esp")))
+
+
+def _free_port(lo: int = 20000, hi: int = 60000, tries: int = 50, exclude=frozenset()) -> int:
+    """Find a free TCP port on localhost by actually binding to it.
+
+    Picked at random from a wide, high range rather than letting the OS choose an
+    ephemeral one: this port is embedded in a QEMU hostfwd rule set up before the guest
+    is listening, so we need a number we can name up front, not a connected socket to
+    hold onto. The random+bind-test loop also means a host process that happens to be
+    squatting a fixed, well-known port (e.g. Jupyter's default of 8888) can never collide.
+    """
+    for _ in range(tries):
+        port = random.randint(lo, hi)
+        if port in exclude:
+            continue
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                s.bind(("127.0.0.1", port))
+            except OSError:
+                continue
+            return port
+    raise RuntimeError(f"no free port found in [{lo}, {hi}] after {tries} tries")
 
 
 # net_flags / graphics_flags below are the QEMU device flags for a NIC / a display
-# adapter. They are imported by tests/run_uefi_tests.py for its --net / --graphics modes;
+# adapter. They are imported by tests/uefi_target.py for its --net / --graphics modes;
 # this harness's own repl/runfile/bootopt smoke checks run bare (no NIC/display).
 def net_flags(arch: str) -> list[str]:
     """QEMU devices for a working UEFI network stack reaching SLIRP user-net.
@@ -42,22 +70,22 @@ def net_flags(arch: str) -> list[str]:
     rng_addr = ",addr=0xc" if arch == "aa64" else ""
     nic_addr = ",addr=0xb" if arch == "aa64" else ""
     # hostfwd maps host 127.0.0.1:<port> -> guest :<port> so the guest server
-    # self-tests (listen/accept) can be driven by a host client: NET_SERVER_PORT for
-    # the blocking accept (N6), NET_SERVER_PORT2 for the asyncio.start_server (N6b).
+    # self-tests (listen/accept) can be driven by a host client: one free port for
+    # the blocking accept (N6), another for the asyncio.start_server (N6b). Picked
+    # fresh (and bind-verified free) each call, rather than a fixed port number, so a
+    # long-lived host process on a well-known port (Jupyter/8888 and friends) never
+    # collides with the test run.
+    server_port = _free_port()
+    server_port2 = _free_port(exclude={server_port})
     return [
         "-device",
         "virtio-rng-pci" + rng_addr,
         "-netdev",
         "user,id=net0,hostfwd=tcp:127.0.0.1:%d-:%d,hostfwd=tcp:127.0.0.1:%d-:%d"
-        % (NET_SERVER_PORT, NET_SERVER_PORT, NET_SERVER_PORT2, NET_SERVER_PORT2),
+        % (server_port, server_port, server_port2, server_port2),
         "-device",
         "virtio-net-pci,netdev=net0" + nic_addr,
     ]
-
-
-# hostfwd ports for net_flags (used when a NIC is attached).
-NET_SERVER_PORT = 8888
-NET_SERVER_PORT2 = 8889
 
 
 def graphics_flags(arch: str, mode: str) -> list[str]:
@@ -296,37 +324,53 @@ def run_runfile(arch: str, timeout: int = 60) -> int:
     and check the script runs with sys.argv set — the `python foo.py` path.
 
     Relies on the shell launching us (which installs EFI_SHELL_PARAMETERS_PROTOCOL);
-    that's the aa64 auto-boot path (via startup.nsh). We swap in a startup.nsh that
-    passes arguments, then restore the normal one afterwards.
+    that's the aa64 auto-boot path (via startup.nsh). BootOrder isn't guaranteed to
+    reach the Shell on its own (see ensure_shell_first), so this bootstraps a private
+    VARS copy first, then swaps in a startup.nsh that passes arguments, then
+    restores the normal one afterwards.
     """
     import pexpect  # provided by the dev image's uv venv
+    import shutil
+    import tempfile
 
     efi = "BOOTAA64.EFI" if arch == "aa64" else "BOOTX64.EFI"
     normal_nsh = "@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\%s\r\n" % efi
-    (ESP / "argtest.py").write_text("import sys\nprint('ARGV', sys.argv)\n")
-    (ESP / "startup.nsh").write_text(
-        "@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\%s argtest.py alpha beta\r\n" % efi
-    )
+    vars_src = FW / ("AAVMF_VARS.fd" if arch == "aa64" else "OVMF_VARS.fd")
+    tv = tempfile.NamedTemporaryFile(suffix="_VARS.fd", delete=False)
+    tv.close()
+    shutil.copy(vars_src, tv.name)
 
-    cmd = qemu_cmd(arch, serial="stdio")
-    child = pexpect.spawn(
-        cmd[0], cmd[1:], timeout=timeout, encoding="utf-8", codec_errors="replace"
-    )
+    (ESP / "argtest.py").write_text("import sys\nprint('ARGV', sys.argv)\n")
+    ok = False
     transcript = []
-    child.logfile_read = type(
-        "W", (), {"write": lambda _self, s: transcript.append(s), "flush": lambda _self: None}
-    )()
     try:
-        child.expect_exact("ARGV ['argtest.py', 'alpha', 'beta']")
-        ok = True
-    except (pexpect.TIMEOUT, pexpect.EOF):
-        ok = False
+        ensure_shell_first(arch, tv.name, timeout)
+        (ESP / "startup.nsh").write_text(
+            "@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\%s argtest.py alpha beta\r\n" % efi
+        )
+        cmd = _cmd_with_vars(arch, tv.name)
+        child = pexpect.spawn(
+            cmd[0], cmd[1:], timeout=timeout, encoding="utf-8", codec_errors="replace"
+        )
+        child.logfile_read = type(
+            "W", (), {"write": lambda _self, s: transcript.append(s), "flush": lambda _self: None}
+        )()
+        try:
+            child.expect_exact("ARGV ['argtest.py', 'alpha', 'beta']")
+            ok = True
+        except (pexpect.TIMEOUT, pexpect.EOF):
+            ok = False
+        finally:
+            if child.isalive():
+                child.terminate(force=True)
     finally:
-        if child.isalive():
-            child.terminate(force=True)
         (ESP / "startup.nsh").write_text(normal_nsh)  # restore normal auto-launch
         try:
             (ESP / "argtest.py").unlink()
+        except OSError:
+            pass
+        try:
+            os.unlink(tv.name)
         except OSError:
             pass
 
@@ -371,13 +415,82 @@ def _cmd_with_vars(arch: str, vars_path: str) -> list[str]:
     return [arg.replace(vfile, str(vars_path)) for arg in qemu_cmd(arch, serial="stdio")]
 
 
+# Guest-side script (run once, in the app) that makes the firmware's built-in UEFI
+# Shell the first BootOrder entry, Timeout=0. Shared with tests/uefi_target.py, whose
+# own bootstrap() imports this constant rather than keeping a second copy.
+SHELL_FIRST_SETUP_SRC = r"""from uefi import boot as BT, variable as V, guid as G
+a = V.NON_VOLATILE | V.BOOTSERVICE_ACCESS | V.RUNTIME_ACCESS
+shell = None
+order = BT.boot_order()
+for num in list(order) + [n for n in range(0x40) if n not in order]:
+    name = "Boot%04X" % num
+    if not V.exists(name, G.GLOBAL_VARIABLE):
+        continue
+    try:
+        lo = BT.LoadOption.parse(V.get(name, G.GLOBAL_VARIABLE))
+    except Exception:
+        continue
+    if "Shell" in lo.description:
+        shell = num
+        break
+if shell is None:
+    print("SETUP-FAIL")
+else:
+    BT.set_boot_order([shell])
+    V.set("Timeout", G.GLOBAL_VARIABLE, b"\x00\x00", a)
+    print("SETUP-OK")
+"""
+
+
+def ensure_shell_first(arch: str, vars_path: str, timeout: int = 60) -> None:
+    """Boot `vars_path` once and force the firmware's built-in UEFI Shell to the
+    front of BootOrder (Timeout=0), so a *subsequent* boot on this same vars store
+    reaches the Shell -- and hence startup.nsh -- directly.
+
+    A freshly-built VARS store's default BootOrder is not guaranteed to put the
+    Shell first: BDS may auto-boot the ESP as removable media instead, bypassing
+    the Shell (and any startup.nsh) entirely -- confirmed on a from-scratch
+    aa64 `tools/build-ovmf.sh` output, which boots straight to "Boot0001 UEFI Misc
+    Device" (the app on the ESP) rather than the Shell. This drives whichever the
+    platform does: if the Shell runs first, feed it the setup script directly
+    (SETUP-OK); if the app boots straight to its REPL instead, type the same script
+    by hand. Either way, BootOrder is left Shell-first afterwards. Mutates
+    vars_path in place; the caller is responsible for the startup.nsh it needs next.
+    """
+    import pexpect
+
+    efi = "BOOTAA64.EFI" if arch == "aa64" else "BOOTX64.EFI"
+    setup_file = ESP / "_shell_first_setup.py"
+    setup_file.write_text(SHELL_FIRST_SETUP_SRC)
+    (ESP / "startup.nsh").write_text(
+        "@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\%s _shell_first_setup.py\r\n" % efi
+    )
+    cmd = _cmd_with_vars(arch, vars_path)
+    child = pexpect.spawn(
+        cmd[0], cmd[1:], timeout=timeout, encoding="utf-8", codec_errors="replace"
+    )
+    try:
+        idx = child.expect(["SETUP-OK", ">>> "], timeout=timeout)
+        if idx == 1:  # direct-boot landed in the REPL instead of the Shell -- drive by hand
+            child.send("exec(open('/_shell_first_setup.py').read())\r")
+            child.expect_exact("SETUP-OK", timeout=30)
+    finally:
+        if child.isalive():
+            child.terminate(force=True)
+        try:
+            setup_file.unlink()
+        except OSError:
+            pass
+
+
 def run_bootopt(arch: str = "aa64", timeout: int = 60) -> int:
     """Verify the app consumes a boot option's OptionalData as its command line — the
     boot-manager launch path (LoadedImage->LoadOptions), distinct from the shell
-    (ShellParameters) path. Two phases share one private vars store: phase 1 (shell)
-    runs a script that writes a Boot#### entry (device path -> our app, OptionalData
-    "argtest.py") and BootNext; phase 2 boots fresh, so BDS honours BootNext and
-    launches us with those LoadOptions. Hermetic; uses the aa64 startup.nsh shell flow.
+    (ShellParameters) path. Two phases share one private vars store, bootstrapped
+    Shell-first (see ensure_shell_first): phase 1 (shell) runs a script that writes
+    a Boot#### entry (device path -> our app, OptionalData "argtest.py") and
+    BootNext; phase 2 boots fresh, so BDS honours BootNext and launches us with
+    those LoadOptions. Hermetic; uses the aa64 startup.nsh shell flow.
     """
     import pexpect
     import shutil
@@ -391,6 +504,7 @@ def run_bootopt(arch: str = "aa64", timeout: int = 60) -> int:
     tv = tempfile.NamedTemporaryFile(suffix="_VARS.fd", delete=False)
     tv.close()
     shutil.copy(vars_src, tv.name)
+    ensure_shell_first(arch, tv.name, timeout)
 
     def _phase(want: str) -> bool:
         cmd = _cmd_with_vars(arch, tv.name)
@@ -442,7 +556,7 @@ def main() -> int:
         os.set_blocking(sys.stdout.fileno(), True)
     except (ValueError, OSError):
         pass
-    # The full test suite is run by tests/run_uefi_tests.py (make test); this harness
+    # The full test suite is run by tests/uefi_target.py (make test); this harness
     # covers the interactive/launch-path smoke checks that don't fit the raw-REPL runner.
     ap = argparse.ArgumentParser()
     ap.add_argument("--arch", choices=["x64", "aa64"], default="aa64")

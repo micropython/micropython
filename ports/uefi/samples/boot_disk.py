@@ -10,7 +10,7 @@
 # net_boot.py; it isolates the LoadImage / LoadFile2 / StartImage path (no network).
 #
 # The default paths are the minimal aarch64 test OS from
-# ports/uefi/test-images/build-test-os.sh (stage them onto the boot volume first).
+# ports/uefi/tools/build-test-os.sh (stage them onto the boot volume first).
 
 import os
 import uctypes

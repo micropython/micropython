@@ -63,7 +63,7 @@ jobs:
       # `--target build` = the lean toolchain stage (no QEMU/venv/firmware), so this does
       # NOT build EDK2. The release firmware is built + cached separately below.
       - name: Build toolchain image
-        run: docker build -f ports/uefi/Dockerfile --target build -t mpy-uefi-dev ports/uefi
+        run: docker build -f ports/uefi/tools/Dockerfile --target build -t mpy-uefi-dev ports/uefi/tools
 
       # Restore + save are split (not the combined actions/cache) so the SAVE is a normal
       # step right after the build — the combined action saves in a post-job step that is
@@ -74,18 +74,18 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ports/uefi/firmware/release
-          key: uefi-fw-release-${{ matrix.arch }}-${{ hashFiles('ports/uefi/Dockerfile', 'ports/uefi/docker/build-ovmf-release.sh') }}
+          key: uefi-fw-release-${{ matrix.arch }}-${{ hashFiles('ports/uefi/tools/Dockerfile', 'ports/uefi/tools/build-ovmf.sh') }}
 
       - name: Build RELEASE firmware
         if: steps.fwcache.outputs.cache-hit != 'true'
-        run: cd ports/uefi && bash docker/build-ovmf-release.sh
+        run: cd ports/uefi && bash tools/build-ovmf.sh --release
 
       - name: Save RELEASE firmware cache
         if: steps.fwcache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ports/uefi/firmware/release
-          key: uefi-fw-release-${{ matrix.arch }}-${{ hashFiles('ports/uefi/Dockerfile', 'ports/uefi/docker/build-ovmf-release.sh') }}
+          key: uefi-fw-release-${{ matrix.arch }}-${{ hashFiles('ports/uefi/tools/Dockerfile', 'ports/uefi/tools/build-ovmf.sh') }}
 
       # Build+stage the app inside the dev image, but as the runner user (so the staged
       # files aren't root-owned and the host run can write into esp/).

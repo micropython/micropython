@@ -7,12 +7,12 @@
 #   initramfs-aa64.cpio.gz  a BusyBox initramfs: mounts /proc,/sys,/dev, prints a
 #                           recognisable banner, and drops to a shell
 #
-# Run inside the dev container (native aarch64), writing next to this script:
-#   docker compose run --rm dev bash ports/uefi/test-images/build-test-os.sh
+# Run inside the dev container (native aarch64), writing into ../test-images/:
+#   docker run --rm -v "$PWD:/work" -w /work/ports/uefi mpy-uefi-dev bash tools/build-test-os.sh
 # or from the host:  make -C ports/uefi test-os   (see the Makefile target).
 set -e
 
-OUT="$(cd "$(dirname "$0")" && pwd)"
+OUT="$(cd "$(dirname "$0")/../test-images" && pwd)"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 cd "$work"

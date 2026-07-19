@@ -28,4 +28,4 @@ if nic.isconnected():
     print("Link    : up")
 else:
     print("No lease — is the firmware networked? (use `make run`, and build")
-    print("          firmware/net with `bash docker/build-ovmf-net.sh`)")
+    print("          firmware/net with `bash tools/build-ovmf.sh --net`)")
