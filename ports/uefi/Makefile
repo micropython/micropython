@@ -210,9 +210,9 @@ stage: $(EFI) tests/tls_test_cert.der
 	@# A precompiled .mpy, to exercise runtime bytecode import off the VFS.
 	@printf 'def answer():\n    return 6 * 7\nWHO = "mpy-load"\n' > $(BUILD)/mpytest.py
 	$(Q)$(MICROPY_MPYCROSS) -o esp/mpytest.mpy $(BUILD)/mpytest.py
-	@# Sample scripts, mounted at /samples in the REPL (see samples/README.md).
+	@# Example scripts, mounted at /samples in the REPL (see examples/uefi/README.md).
 	@mkdir -p esp/samples
-	$(Q)cp samples/*.py esp/samples/
+	$(Q)cp $(TOP)/examples/uefi/*.py esp/samples/
 	@# The CA the network TLS self-test verifies against (DER: both backends parse it).
 	$(Q)cp tests/tls_test_cert.der esp/tls_test_cert.der
 	@# unittest lives on the boot volume (imported via sys.path's "" cwd entry) rather
@@ -318,7 +318,7 @@ ovmf:
 	$(Q)./tools/build-ovmf.sh
 
 # Build the minimal aarch64 test OS (EFI-stub kernel + BusyBox initramfs) into
-# test-images/, for exercising the boot path (samples/boot_disk.py, net_boot.py).
+# test-images/, for exercising the boot path (examples/uefi/boot_disk.py, net_boot.py).
 # Needs apt/busybox, so run it in the dev container: `make docker-test-os`.
 test-os:
 	$(Q)bash tools/build-test-os.sh

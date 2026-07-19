@@ -70,7 +70,7 @@ Example
 -------
 
 A minimal in-memory boot: download a kernel and initramfs, present the initrd, and
-start the kernel (see ``ports/uefi/samples/net_boot.py`` for the full loader)::
+start the kernel (see ``examples/uefi/net_boot.py`` for the full loader)::
 
     import uefi
     from uefi import load_file
