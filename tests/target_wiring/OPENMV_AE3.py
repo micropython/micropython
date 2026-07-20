@@ -12,6 +12,9 @@
 # - P4 and P5 (P0_5/P0_4, for UART1 TX and RX)
 # - P0 and P2
 # - P1 and P3
+#
+# NOTE: this board now fails pin tests, OPEN_DRAIN and PULL_UP
+# they should pass on pure 1.8v pins without the voltage buffers
 
 pin_loopback_pins = [("P4", "P5"), ("P0", "P2"), ("P1", "P3")]
 
@@ -27,3 +30,7 @@ spi_standalone_args_list = [(0,)]
 
 i2c_args_controller = {"scl": "P2", "sda": "P3"}
 i2c_args_target = (2,)  # on pins P0/P1
+
+# CAN args assume no connection for single device tests
+can_args = (1,)
+can_kwargs = {}
