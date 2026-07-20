@@ -258,6 +258,11 @@ elseif(PICO_RISCV)
         hardware_riscv
     )
 endif()
+if(PICO_RP2350)
+    list(APPEND PICO_SDK_COMPONENTS
+        hardware_powman
+    )
+endif()
 
 # Use our custom pico_float_micropython float implementation.  This is needed for two reasons:
 # - to fix inf handling in pico-sdk's __wrap___aeabi_fadd();
