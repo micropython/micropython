@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -136,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -173,7 +173,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -192,7 +192,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -263,7 +263,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -280,7 +280,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -299,7 +299,7 @@ jobs:
     runs-on: macos-26
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       with:
         python-version: '3.8'
     - name: Build
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -333,7 +333,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -352,7 +352,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -371,7 +371,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -390,7 +390,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -409,7 +409,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
@@ -434,7 +434,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
