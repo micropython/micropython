@@ -68,7 +68,8 @@ def preprocess():
         def run(files):
             try:
                 filtered_lines = []
-                with subprocess.Popen(args.pp + flags + files, stdout=subprocess.PIPE) as proc:
+                cmd = args.pp + flags + files
+                with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
                     recent_file = None
                     for line in proc.stdout:
                         if line.isspace():
@@ -80,6 +81,9 @@ def preprocess():
                                 filtered_lines.append(recent_file)
                                 recent_file = None
                             filtered_lines.append(line)
+                    proc.wait()
+                    if proc.returncode:
+                        raise PreprocessorError("command failed: " + " ".join(cmd))
                 return b"".join(filtered_lines)
             except subprocess.CalledProcessError as er:
                 raise PreprocessorError(str(er))
