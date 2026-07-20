@@ -1,0 +1,27 @@
+# DABAO board pin definitions
+# board_name,cpu_name
+#
+# Only list pins that need a board-level alias distinct from the cpu name.
+# All 96 CPU pins (PA0-PF15) are always accessible via Pin.cpu regardless.
+# Prefix '-' on board_name to define the CPU pin object but omit it from
+# Pin.board (used for internal/non-user-facing signals).
+
+# UART2 REPL
+UART2_TX,PB14
+UART2_RX,PB13
+
+# I2C0
+I2C0_SCL,PB11
+I2C0_SDA,PB12
+
+# SPI2
+SPI2_CLK,PC0
+SPI2_MOSI,PC1
+SPI2_MISO,PC2
+SPI2_CS,PC3
+
+# PC13 is the PROG strap AND the 0.85V regulator feedback path.  Driving
+# it LOW briefly selects boot1 on the next reset; sustained LOW can
+# interfere with the regulator feedback.  machine.bootloader() uses
+# pin_PC13 internally; exposed here so users can drive it deliberately.
+PROG,PC13
