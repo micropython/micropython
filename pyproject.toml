@@ -34,6 +34,7 @@ extend-exclude = [
 extend-include = ["tools/cc1"]
 line-length = 99
 target-version = "py38"
+builtins = ["ptr", "ptr8", "ptr16", "ptr32", "uint", "micropython", "const"]
 
 [tool.ruff.lint]
 exclude = [  # Ruff finds Python SyntaxError in these files
