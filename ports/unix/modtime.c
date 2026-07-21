@@ -88,37 +88,43 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
 static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
+    // Rejects NaN, and values too large for the microsecond count below.
+    bool val_ok = val >= 0 && val <= (mp_float_t)(UINT64_MAX / 1000000);
     #else
     mp_int_t val = mp_obj_get_int(arg);
+    bool val_ok = val >= 0;
     #endif
-    if (val < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
+    if (!val_ok) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sleep length out of range"));
     }
 
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t ipart;
-    tv.tv_usec = (time_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
-    tv.tv_sec = (suseconds_t)ipart;
-    int res;
-    while (1) {
+    mp_float_t fpart = MICROPY_FLOAT_C_FUN(modf)(val, &ipart);
+    // Tracked here because not all platforms update the timeout on return.
+    uint64_t remain_us = (uint64_t)ipart * 1000000
+        + (uint64_t)MICROPY_FLOAT_C_FUN(round)(fpart * MICROPY_FLOAT_CONST(1000000.));
+    for (;;) {
         mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
+        struct timeval tv;
+        tv.tv_sec = (time_t)(remain_us / 1000000);
+        tv.tv_usec = (suseconds_t)(remain_us % 1000000);
+        mp_uint_t t0 = mp_hal_ticks_us();
         MP_THREAD_GIL_EXIT();
-        res = sleep_select(0, NULL, NULL, NULL, &tv);
+        int res = sleep_select(0, NULL, NULL, NULL, &tv);
         MP_THREAD_GIL_ENTER();
-        #if MICROPY_SELECT_REMAINING_TIME
-        // TODO: This assumes Linux behavior of modifying tv to the remaining
-        // time.
-        if (res != -1 || errno != EINTR) {
+        if (res == -1 && errno != EINTR) {
+            RAISE_ERRNO(res, errno);
+        }
+        // An unsigned tick difference can only under-count on wrap, so the
+        // sleep never ends early.
+        uint64_t elapsed_us = (mp_uint_t)(mp_hal_ticks_us() - t0);
+        if (res == 0 || elapsed_us >= remain_us) {
             break;
         }
-        // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
-        #else
-        break;
-        #endif
+        remain_us -= elapsed_us;
     }
-    RAISE_ERRNO(res, errno);
     #else
     int seconds = (int)val;
     for (;;) {
