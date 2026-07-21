@@ -42,6 +42,10 @@ static inline int msec_sleep_tv(struct timeval *tv) {
     return 0;
 }
 #define sleep_select(a, b, c, d, e) msec_sleep_tv((e))
+#elif MICROPY_ENABLE_SCHEDULER
+// Sleep with the scheduler wakeup signal able to interrupt the wait, so a
+// scheduled callback aborts the sleep with EINTR to be processed promptly.
+#define sleep_select(a, b, c, d, e) mp_unix_sched_select((e))
 #else
 #define sleep_select select
 #endif

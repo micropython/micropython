@@ -29,12 +29,119 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/select.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
+
+#if MICROPY_ENABLE_SCHEDULER && !defined(_WIN32)
+
+// Signal used to wake blocking waits when a callback is scheduled. Use a
+// real-time signal if available, above those used by mpthreadport.c.
+// Fall back to SIGURG, which is ignored by default and rarely used.
+#ifdef SIGRTMIN
+#define MP_SCHED_SIGNAL (SIGRTMIN + 7)
+#else
+#define MP_SCHED_SIGNAL (SIGURG)
+#endif
+
+// Longest single event wait, so an indefinite wait degrades to bounded
+// latency in case a wakeup is ever missed.
+#define MP_SCHED_SLEEP_MAX_MS (1000)
+
+static bool sched_signal_installed;
+
+static void sched_sighandler(int signum) {
+    (void)signum;
+}
+
+void mp_unix_init_sched_signal(void) {
+    struct sigaction sa;
+    sa.sa_flags = 0; // No SA_RESTART: pselect() returns EINTR.
+    sa.sa_handler = sched_sighandler;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(MP_SCHED_SIGNAL, &sa, NULL) != 0) {
+        // Signal unavailable on this platform: waits fall back to plain
+        // timeouts and mp_hal_signal_event() does nothing.
+        return;
+    }
+    // Mask delivery of the signal in every thread (children inherit this
+    // mask). Raising it then never interrupts any thread; it just stays
+    // queued on the process until a waiter accepts it by unmasking it
+    // inside pselect(), in mp_unix_sched_select().
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, MP_SCHED_SIGNAL);
+    #if MICROPY_PY_THREAD
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
+    #else
+    sigprocmask(SIG_BLOCK, &set, NULL);
+    #endif
+    sched_signal_installed = true;
+}
+
+void mp_unix_deinit_sched_signal(void) {
+    if (!sched_signal_installed) {
+        return;
+    }
+    sched_signal_installed = false;
+    // SIG_IGN discards any still-pending signal; SIG_DFL would terminate
+    // the process on a late delivery (real-time signals default to Term).
+    struct sigaction sa;
+    sa.sa_flags = 0;
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+    sigaction(MP_SCHED_SIGNAL, &sa, NULL);
+}
+
+void mp_hal_signal_event(void) {
+    if (sched_signal_installed) {
+        // Async-signal-safe. Delivery is masked in every thread, so this
+        // only marks the signal pending for a waiter; no thread is
+        // interrupted.
+        kill(getpid(), MP_SCHED_SIGNAL);
+    }
+}
+
+// Sleep for the given duration or until woken by mp_hal_signal_event().
+// pselect() unmasks the wakeup signal only while waiting, so a wakeup
+// raised at any earlier point is still pending and aborts the wait
+// immediately. Returns 0 on timeout, -1 with errno EINTR on wakeup.
+int mp_unix_sched_select(struct timeval *tv) {
+    if (!sched_signal_installed) {
+        return select(0, NULL, NULL, NULL, tv);
+    }
+    struct timespec ts;
+    ts.tv_sec = tv->tv_sec;
+    ts.tv_nsec = tv->tv_usec * 1000;
+    sigset_t waitmask;
+    #if MICROPY_PY_THREAD
+    pthread_sigmask(SIG_BLOCK, NULL, &waitmask);
+    #else
+    sigprocmask(SIG_BLOCK, NULL, &waitmask);
+    #endif
+    sigdelset(&waitmask, MP_SCHED_SIGNAL);
+    return pselect(0, NULL, NULL, NULL, &ts, &waitmask);
+}
+
+// Wait for an event (scheduled callback) or timeout, for
+// MICROPY_INTERNAL_WFE. May wake spuriously, at most once per stale
+// pending signal; callers loop and re-check for events.
+void mp_unix_sched_sleep(uint32_t timeout_ms) {
+    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+        return;
+    }
+    if (timeout_ms > MP_SCHED_SLEEP_MAX_MS) {
+        timeout_ms = MP_SCHED_SLEEP_MAX_MS;
+    }
+    struct timeval tv = {timeout_ms / 1000, (timeout_ms % 1000) * 1000};
+    mp_unix_sched_select(&tv);
+}
+#endif
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 25)
@@ -44,8 +151,6 @@
 #endif
 
 #ifndef _WIN32
-#include <signal.h>
-
 static void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
@@ -57,6 +162,13 @@ static void sighandler(int signum) {
         mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         sigset_t mask;
         sigemptyset(&mask);
+        #if MICROPY_ENABLE_SCHEDULER
+        // Keep the scheduler wakeup signal masked: it must stay pending
+        // until accepted by a waiter (see mp_unix_init_sched_signal). This
+        // also restores the steady-state mask when the longjmp cuts short
+        // a pselect() that had it temporarily unmasked.
+        sigaddset(&mask, MP_SCHED_SIGNAL);
+        #endif
         // On entry to handler, its signal is blocked, and unblocked on
         // normal exit. As we instead perform longjmp, unblock it manually.
         sigprocmask(SIG_SETMASK, &mask, NULL);

@@ -221,6 +221,15 @@ static inline unsigned long mp_random_seed_init(void) {
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();
 
+// Wake blocking waits when a callback is scheduled (see unix_mphal.c).
+// MICROPY_ENABLE_SCHEDULER cannot be tested here because it is given its
+// default value later, in py/mpconfig.h; guarding on _WIN32 alone is safe
+// because py/scheduler.c only uses this hook when the scheduler is enabled.
+#ifndef _WIN32
+void mp_hal_signal_event(void);
+#define MICROPY_SCHED_HOOK_SCHEDULED mp_hal_signal_event()
+#endif
+
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
 #endif
