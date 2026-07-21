@@ -64,7 +64,7 @@ class Queue:
 
     def task_done(self):
         if not self._unfinished:
-            raise ValueError("task_done() called too many times")
+            raise ValueError("task_done called too many times")
         self._unfinished -= 1
         if not self._unfinished:
             self._evjoin.set()
