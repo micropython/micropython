@@ -90,6 +90,14 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
+    #else
+    mp_int_t val = mp_obj_get_int(arg);
+    #endif
+    if (val < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
+    }
+
+    #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t ipart;
     tv.tv_usec = (time_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
     tv.tv_sec = (suseconds_t)ipart;
@@ -112,7 +120,7 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     }
     RAISE_ERRNO(res, errno);
     #else
-    int seconds = mp_obj_get_int(arg);
+    int seconds = (int)val;
     for (;;) {
         mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         MP_THREAD_GIL_EXIT();
