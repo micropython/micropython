@@ -31,49 +31,42 @@ class Queue:
         return len(self._queue)
 
     def empty(self):
-        return len(self._queue) == 0
+        return not len(self._queue)
 
     def full(self):
         return self.maxsize > 0 and len(self._queue) >= self.maxsize
 
-    def _get(self):
-        v = self._queue.pop(0)
-        self._evget.set()
-        self._evget.clear()
-        return v
-
     def get_nowait(self):
         if self.empty():
             raise QueueEmpty
-        return self._get()
+        self._evget.set()
+        self._evget.clear()
+        return self._queue.pop(0)
 
     async def get(self):
         while self.empty():
             await self._evput.wait()
-        return self._get()
+        return self.get_nowait()
 
-    def _put(self, v):
+    def put_nowait(self, v):
+        if self.full():
+            raise QueueFull
         self._queue.append(v)
         self._unfinished += 1
         self._evjoin.clear()
         self._evput.set()
         self._evput.clear()
 
-    def put_nowait(self, v):
-        if self.full():
-            raise QueueFull
-        self._put(v)
-
     async def put(self, v):
         while self.full():
             await self._evget.wait()
-        self._put(v)
+        self.put_nowait(v)
 
     def task_done(self):
-        if self._unfinished <= 0:
+        if not self._unfinished:
             raise ValueError("task_done() called too many times")
         self._unfinished -= 1
-        if self._unfinished == 0:
+        if not self._unfinished:
             self._evjoin.set()
 
     async def join(self):
