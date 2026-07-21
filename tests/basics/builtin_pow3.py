@@ -12,6 +12,9 @@ print(pow(1, 1, 1))
 print(pow(0, 1, 1))
 print(pow(1, 0, 1))
 print(pow(1, 0, 2))
+print(pow(0, 0, 5))
+print(pow(0, 1, 5))
+print(pow(0, 0, 1))
 
 # 3 arg pow is defined to only work on integers
 try:
