@@ -1,0 +1,33 @@
+-----
+Hello 世界
+Emoji: 🎉🐍
+Accents: café, naïve, résumé
+-----
+touch :quote'test.txt
+ls :
+           0 quote'test.txt
+rm :quote'test.txt
+ls :
+-----
+cp ${TMP}/unicode_content.txt :
+Hello 世界
+Emoji: 🎉🐍
+Café résumé naïve
+sha256sum :unicode_content.txt
+8f22a7c6092948ff41897b28dca429cd6a3de87a5bd6e113d24adf91f3cbeeac
+8f22a7c6092948ff41897b28dca429cd6a3de87a5bd6e113d24adf91f3cbeeac  -
+-----
+🔢 Data
+🔢 Data
+
+Local directory ${TMP} is mounted at /remote
+-----
+a=b
+-----
+Hello 世界
+'日本語'
+-----
+Hello World
+你好
+====================
+-----
