@@ -208,14 +208,14 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         #endif
         ARG_freq,
     };
-    #if SOC_SDMMC_HOST_SUPPORTED
-    static const int DEFAULT_SLOT = MICROPY_HW_SDMMC_DEFAULT_SLOT;
-    #else
-    static const int DEFAULT_SLOT = SD_SLOT_MAX;
-    #endif
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SLOT} },
+        #if SOC_SDMMC_HOST_SUPPORTED
+        { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_SDMMC_DEFAULT_SLOT} },
+        { MP_QSTR_width,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_SDMMC_DEFAULT_WIDTH} },
+        #else
+        { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SD_SLOT_MAX} },
         { MP_QSTR_width,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        #endif
         { MP_QSTR_cd,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_wp,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         // These are only needed if using SPI mode
