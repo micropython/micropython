@@ -559,6 +559,13 @@ class State:
 
 
 def main():
+    if sys.platform == "win32":
+        # Configure stdout/stderr before any imports that might print: on some Windows
+        # consoles the default code page/encoding can't represent all Unicode.
+        from .console import ConsoleWindows
+
+        ConsoleWindows.configure_unicode_output()
+
     config = load_user_config()
     prepare_command_expansions(config)
 

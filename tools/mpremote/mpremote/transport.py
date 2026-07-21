@@ -29,14 +29,59 @@ from collections import namedtuple
 from .mp_errno import MP_ERRNO_TABLE
 
 
-def stdout_write_bytes(b):
+# Buffer for accumulating bytes that may be split UTF-8 sequences
+_stdout_buffer = b""
+
+
+def stdout_write_bytes(b: bytes):
+    """Write bytes to stdout, handling UTF-8 encoding and buffering incomplete sequences.
+
+    Strips CTRL-D (0x04) bytes and buffers incomplete UTF-8 sequences across calls.
+    Uses binary mode with sequence validation when available, otherwise decodes
+    with replacement characters for invalid sequences.
+    """
+    global _stdout_buffer
     b = b.replace(b"\x04", b"")
+    if not b:
+        return
+
+    _stdout_buffer += b
+
     if hasattr(sys.stdout, "buffer"):
-        sys.stdout.buffer.write(b)
-        sys.stdout.buffer.flush()
+        # Try to decode to find complete UTF-8 sequences
+        # Write only complete sequences, keep incomplete trailing bytes buffered
+        try:
+            # Try to decode the entire buffer
+            _stdout_buffer.decode("utf-8")
+            # Success - all bytes form valid UTF-8, write them all
+            sys.stdout.buffer.write(_stdout_buffer)
+            sys.stdout.buffer.flush()
+            _stdout_buffer = b""
+        except UnicodeDecodeError as e:
+            # Check if error is at the end (incomplete sequence) vs middle (invalid)
+            if e.start == 0 and e.reason == "unexpected end of data":
+                # Starts with incomplete sequence - keep buffering
+                pass
+            elif e.start > 0:
+                # Write valid prefix, keep incomplete/invalid suffix
+                valid_bytes = _stdout_buffer[: e.start]
+                sys.stdout.buffer.write(valid_bytes)
+                sys.stdout.buffer.flush()
+                _stdout_buffer = _stdout_buffer[e.start :]
+                # If remaining is just incomplete trailing bytes, keep them
+                # If it's invalid, write with replacement
+                if len(_stdout_buffer) > 4:  # Max UTF-8 sequence is 4 bytes
+                    sys.stdout.buffer.write(_stdout_buffer[:1])
+                    _stdout_buffer = _stdout_buffer[1:]
+            else:
+                # Invalid sequence at start - write one byte and continue
+                sys.stdout.buffer.write(_stdout_buffer[:1])
+                sys.stdout.buffer.flush()
+                _stdout_buffer = _stdout_buffer[1:]
     else:
-        text = b.decode(sys.stdout.encoding, "strict")
+        text = _stdout_buffer.decode(sys.stdout.encoding, "replace")
         sys.stdout.write(text)
+        _stdout_buffer = b""
 
 
 class TransportError(Exception):
