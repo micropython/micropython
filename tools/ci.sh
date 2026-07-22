@@ -594,6 +594,7 @@ function ci_stm32_misc_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA submodules
     make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA
+    make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_UNO_Q
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G0B1RE
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_G474RE
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L152RE
