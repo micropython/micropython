@@ -152,6 +152,18 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "samd/armv6m": (
+        # Fails timing bounds.
+        "extmod/time_res.py",
+        # Require more detailed error messages.
+        "micropython/emg_exc.py",
+        "micropython/heapalloc_exc_compressed.py",
+        "micropython/heapalloc_exc_compressed_emg_exc.py",
+        "micropython/native_with.py",
+        "micropython/opt_level_lineno.py",
+        "micropython/viper_with.py",
+        "misc/print_exception.py",
+    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
@@ -931,6 +943,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     # Skip platform-specific tests.
     skip_tests.update(platform_tests_to_skip.get(args.platform, ()))
+    if args.arch is not None:
+        skip_tests.update(platform_tests_to_skip.get(args.platform + "/" + args.arch, ()))
 
     # Skip error-reporting-specific tests.
     skip_tests.update(error_reporting_tests_to_skip.get(args.error_reporting, ()))
@@ -987,7 +1001,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_slice = test_name.find("slice") != -1
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
-        is_fstring = test_name.startswith("string_fstring")
+        is_fstring = test_name.startswith("string_fstring") or test_name.endswith("_fstring")
         is_tstring = test_name.startswith("string_tstring") or test_name.endswith("_tstring")
         is_inlineasm = test_name.startswith("asm")
 
