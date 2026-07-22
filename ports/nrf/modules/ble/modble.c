@@ -81,10 +81,37 @@ mp_obj_t ble_obj_address(void) {
     return mac_str;
 }
 
+/// \method address_set()
+/// Set device address 
+mp_obj_t ble_obj_address_set(mp_obj_t ble_obj_address_set_obj) {
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(ble_obj_address_set_obj, &bufinfo, MP_BUFFER_READ);
+
+    // Check if the buffer has at least 6 bytes
+    if (bufinfo.len != 6) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Not a valid MAC address"));
+        return mp_const_none;
+    }
+
+    ble_drv_addr_t new_ble_addr;
+
+    // Manually copy the bytes from the buffer to the addr field
+    for (int i = 0; i < 6; i++) {
+        new_ble_addr.addr[5-i] = ((uint8_t *)bufinfo.buf)[i];
+    }
+
+    ble_drv_address_set(&new_ble_addr);
+    
+    return mp_const_none;
+}
+
+
 static MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enable_obj, ble_obj_enable);
 static MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_disable_obj, ble_obj_disable);
 static MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enabled_obj, ble_obj_enabled);
 static MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_address_obj, ble_obj_address);
+static MP_DEFINE_CONST_FUN_OBJ_1(ble_obj_address_set_obj, ble_obj_address_set);
 
 static const mp_rom_map_elem_t ble_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ble) },
@@ -92,6 +119,7 @@ static const mp_rom_map_elem_t ble_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable),  MP_ROM_PTR(&ble_obj_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_enabled),  MP_ROM_PTR(&ble_obj_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_address),  MP_ROM_PTR(&ble_obj_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address_set),  MP_ROM_PTR(&ble_obj_address_set_obj) },
 };
 
 
