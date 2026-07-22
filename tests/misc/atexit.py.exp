@@ -1,0 +1,3 @@
+printed before exit
+atexit: registered last with access to local var
+atexit: registered first
