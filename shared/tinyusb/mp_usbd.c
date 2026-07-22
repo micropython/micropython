@@ -64,4 +64,9 @@ void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len) {
     out_str[hex_len] = 0;
 }
 
+// Required by TinyUSB drivers that need a blocking delay (e.g. dwc2 USB_HS_PHYC PLL init).
+void tusb_time_delay_ms_api(uint32_t ms) {
+    mp_hal_delay_ms(ms);
+}
+
 #endif // MICROPY_HW_ENABLE_USBDEV
