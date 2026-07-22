@@ -1364,6 +1364,10 @@ void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t 
     mpz_set_from_int(dest, 1);
 
     if (rhs->len == 0) {
+        // Python style modulo: 1 % mod is 1 + mod, as abs(mod) >= 2 here
+        if (mod->neg) {
+            mpz_add_inpl(dest, dest, mod);
+        }
         return;
     }
 
