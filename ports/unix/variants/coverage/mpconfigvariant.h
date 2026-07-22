@@ -46,6 +46,7 @@
 #define MICROPY_VFS_ROM_IOCTL          (1)
 #define MICROPY_PY_CRYPTOLIB_CTR       (1)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
+#define MICROPY_PY_MAP_LARGE           (1)
 
 // Enable os.uname for attrtuple coverage test
 #define MICROPY_PY_OS_UNAME            (1)
