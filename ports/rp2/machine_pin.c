@@ -220,6 +220,37 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
                 mp_printf(print, ", pull=%q", MP_QSTR_PULL_DOWN);
             }
         }
+        // avoid printing the output drive strength when it is obviously
+        // irrelevant because the Pin object is configured as pure input
+        if (mode_qst != MP_QSTR_IN) {
+            enum gpio_drive_strength drive = gpio_get_drive_strength(self->id);
+            enum gpio_slew_rate slewrate = gpio_get_slew_rate(self->id);
+            if (
+                drive != GPIO_DRIVE_STRENGTH_4MA ||
+                slewrate != GPIO_SLEW_RATE_SLOW
+                ) {
+                qstr drive_name;
+                switch (drive) {
+                    case MACHINE_PIN_DRIVE_0:
+                        drive_name = MP_QSTR_DRIVE_0;
+                        break;
+                    default:
+                    case MACHINE_PIN_DRIVE_1:
+                        drive_name = MP_QSTR_DRIVE_1;
+                        break;
+                    case MACHINE_PIN_DRIVE_2:
+                        drive_name = MP_QSTR_DRIVE_2;
+                        break;
+                    case MACHINE_PIN_DRIVE_3:
+                        drive_name = MP_QSTR_DRIVE_3;
+                        break;
+                }
+                mp_printf(print, ", drive=%q", drive_name);
+                if (slewrate != GPIO_SLEW_RATE_SLOW) {
+                    mp_printf(print, "|%q", MP_QSTR_DRIVE_FAST);
+                }
+            }
+        }
         if (funcsel != GPIO_FUNC_SIO) {
             const machine_pin_af_obj_t *af = machine_pin_find_alt_by_index(self, funcsel);
             if (af == NULL) {
@@ -238,12 +269,13 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 enum {
-    ARG_mode, ARG_pull, ARG_value, ARG_alt
+    ARG_mode, ARG_pull, ARG_value, ARG_drive, ARG_alt
 };
 static const mp_arg_t allowed_args[] = {
     {MP_QSTR_mode,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_pull,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+    {MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MACHINE_PIN_DRIVE_DEFAULT}},
     {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_FUNC_SIO}},
 };
 
@@ -257,6 +289,16 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         mp_raise_ValueError(MP_ERROR_TEXT("pulls are not supported for external pins"));
     }
 
+    // get drive strength value encoding strength and slew rate
+    // (both only relevant for OUT and OPEN_DRAIN modes)
+    uint drive = args[ARG_drive].u_int;
+    if (
+        (is_ext_pin(self) && drive != MACHINE_PIN_DRIVE_DEFAULT) ||
+        (drive > (MACHINE_PIN_DRIVE_MAX | MACHINE_PIN_DRIVE_FAST))
+        ) {
+        mp_raise_ValueError(MP_ERROR_TEXT("unsupported drive strength"));
+    }
+
     if (is_ext_pin(self) && args[ARG_alt].u_int != GPIO_FUNC_SIO) {
         mp_raise_ValueError(MP_ERROR_TEXT("alternate functions are not supported for external pins"));
     }
@@ -266,6 +308,13 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     if (args[ARG_value].u_obj != mp_const_none) {
         value = mp_obj_is_true(args[ARG_value].u_obj);
     }
+
+    // configure slew rate
+    gpio_set_slew_rate(
+        self->id,
+        (drive & MACHINE_PIN_DRIVE_FAST) ? GPIO_SLEW_RATE_FAST : GPIO_SLEW_RATE_SLOW
+        );
+    drive &= MACHINE_PIN_DRIVE_MASK;
 
     // configure mode
     if (args[ARG_mode].u_obj != mp_const_none) {
@@ -283,8 +332,10 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 // set initial output value before configuring mode
                 gpio_put(self->id, value);
             }
+            gpio_set_drive_strength(self->id, drive);
             mp_hal_pin_output(self->id);
         } else if (mode == MACHINE_PIN_MODE_OPEN_DRAIN) {
+            gpio_set_drive_strength(self->id, drive);
             mp_hal_pin_open_drain_with_value(self->id, value == -1 ? 1 : value);
         } else {
             // Configure alternate function.
@@ -504,6 +555,11 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ALT), MP_ROM_INT(MACHINE_PIN_MODE_ALT) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_0), MP_ROM_INT(MACHINE_PIN_DRIVE_0) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_1), MP_ROM_INT(MACHINE_PIN_DRIVE_1) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_2), MP_ROM_INT(MACHINE_PIN_DRIVE_2) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_3), MP_ROM_INT(MACHINE_PIN_DRIVE_3) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_FAST), MP_ROM_INT(MACHINE_PIN_DRIVE_FAST) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_IRQ_EDGE_RISE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_IRQ_EDGE_FALL) },
 
