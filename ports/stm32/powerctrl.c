@@ -30,6 +30,7 @@
 #include "powerctrl.h"
 #include "rtc.h"
 #include "extmod/modbluetooth.h"
+#include "usb.h"
 #ifndef NO_QSTR
 #include "genhdr/pllfreqtable.h"
 #endif
@@ -792,6 +793,13 @@ static void powerctrl_low_power_exit_wb55() {
 #endif
 
 void powerctrl_enter_stop_mode(void) {
+    #if MICROPY_HW_STM_USB_STACK
+    bool usb_connected = pyb_usb_dev_connected();
+    if (usb_connected) {
+        pyb_usb_dev_disconnect();
+    }
+    #endif
+
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
@@ -1047,6 +1055,12 @@ void powerctrl_enter_stop_mode(void) {
 
     // Enable IRQs now that all clocks are reconfigured
     enable_irq(irq_state);
+
+    #if MICROPY_HW_STM_USB_STACK
+    if (usb_connected) {
+        pyb_usb_dev_connect();
+    }
+    #endif
 }
 
 #if defined(STM32N6)
