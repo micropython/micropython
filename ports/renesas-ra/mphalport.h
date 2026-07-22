@@ -64,6 +64,15 @@ static inline void mp_hal_wake_main_task_from_isr(void) {
     // Defined for tinyusb support, nothing needs to be done here.
 }
 
+#if USB_CFG_LDO_REGULATOR == USB_CFG_ENABLE
+#include "r_ioport.h"
+
+static inline void mp_hal_usb_set_vdcen(void) {
+    // Set VDCEN bit to enable USB LDO regulator
+    R_USB_FS0->USBMC = (R_USB_FS0_USBMC_VDCEN_Msk);
+}
+#endif
+
 // timing functions
 
 #include "irq.h"
