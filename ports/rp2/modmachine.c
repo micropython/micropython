@@ -148,8 +148,9 @@ static void alarm_sleep_callback(uint alarm_id) {
 #define DEBUG_LIGHTSLEEP 0
 
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    const mp_int_t MAX_TIMER_DELAY_MS = (1ULL << 32) / 1000;
     mp_int_t delay_ms = 0;
-    bool use_timer_alarm = false;
+    bool dormant_mode = (n_args == 0);
 
     if (n_args == 1) {
         delay_ms = mp_obj_get_int(args[0]);
@@ -158,11 +159,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
             mp_hal_delay_ms(delay_ms);
             return;
         }
-        use_timer_alarm = delay_ms < (1ULL << 32) / 1000;
-        if (use_timer_alarm) {
-            // Use timer alarm to wake.
-        } else {
-            // TODO: Use RTC alarm to wake.
+        if (delay_ms >= MAX_TIMER_DELAY_MS) {
+            // Note: Support could be added in future by using RTC alarm for this wakeup
             mp_raise_ValueError(MP_ERROR_TEXT("sleep too long"));
         }
     }
@@ -185,12 +183,14 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     in_lightsleep = true;
     #endif
 
-    #if MICROPY_HW_ENABLE_USBDEV
-    // Only disable the USB clock if a USB host has not configured the device
-    // or if going to DORMANT mode.
-    bool disable_usb = !(tud_mounted() && n_args > 0);
-    #else
     bool disable_usb = true;
+    #if MICROPY_HW_ENABLE_USBDEV
+    // Don't disable USB if a host has configured the device. Also, don't go to DORMANT
+    // mode as this messes up the USB device state
+    if (tud_mounted()) {
+        disable_usb = false;
+        dormant_mode = false;
+    }
     #endif
     if (disable_usb) {
         clock_stop(clk_usb);
@@ -241,7 +241,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     #endif
 
     bool alarm_armed = false;
-    if (n_args == 0) {
+    if (dormant_mode) {
         #if MICROPY_PY_NETWORK_CYW43
         gpio_set_dormant_irq_enabled(CYW43_PIN_WL_HOST_WAKE, GPIO_IRQ_LEVEL_HIGH, true);
         #endif
@@ -249,30 +249,27 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     } else {
         uint32_t save_sleep_en0 = clocks_hw->sleep_en0;
         uint32_t save_sleep_en1 = clocks_hw->sleep_en1;
-        if (use_timer_alarm) {
-            // Use timer alarm to wake.
-            clocks_hw->sleep_en0 = 0x0;
-            #if PICO_RP2040
-            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
-            #elif PICO_RP2350
-            if (watchdog_active) {
-                // clk_sys watchdog and clk_ref ticks must be enabled for the watchdog counter to decrement on RP2350.
-                clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_WATCHDOG_BITS;
-            } else {
-                clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS;
-            }
-            #else
-            #error Unknown processor
-            #endif
+
+        // Configure timer alarm to wake.
+        clocks_hw->sleep_en0 = 0x0;
+        #if PICO_RP2040
+        clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
+        #elif PICO_RP2350
+        if (watchdog_active) {
+            // clk_sys watchdog and clk_ref ticks must be enabled for the watchdog counter to decrement on RP2350.
+            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_WATCHDOG_BITS;
+        } else {
+            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_REF_TICKS_BITS | CLOCKS_SLEEP_EN1_CLK_SYS_TIMER0_BITS;
+        }
+        #else
+        #error Unknown processor
+        #endif
+        if (delay_ms > 0) {
             hardware_alarm_claim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
             hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, alarm_sleep_callback);
             if (hardware_alarm_set_target(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, make_timeout_time_ms(delay_ms)) == PICO_OK) {
                 alarm_armed = true;
             }
-        } else {
-            // TODO: Use RTC alarm to wake.
-            clocks_hw->sleep_en0 = 0x0;
-            clocks_hw->sleep_en1 = 0x0;
         }
 
         if (!disable_usb) {
@@ -331,26 +328,24 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_hal_time_ns_set_from_rtc();
 
     // Note: This must be done after MICROPY_END_ATOMIC_SECTION
-    if (use_timer_alarm) {
-        if (alarm_armed) {
-            hardware_alarm_cancel(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
-        }
-        hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, NULL);
-        hardware_alarm_unclaim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
-
-        #if DEBUG_LIGHTSLEEP
-        // Check irq.h for the list of IRQ's
-        // for rp2040 00000042: TIMER_IRQ_1 woke the device as expected
-        //            00000020: USBCTRL_IRQ woke the device (probably early)
-        // For rp2350 00000000:00000002: TIMER0_IRQ_1 woke the device as expected
-        //            00000000:00004000: USBCTRL_IRQ woke the device (probably early)
-        #if PICO_RP2040
-        mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx\n", pending_intr);
-        #else
-        mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx:%08lx\n", pending_intr[1], pending_intr[0]);
-        #endif
-        #endif
+    if (alarm_armed) {
+        hardware_alarm_cancel(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
     }
+    hardware_alarm_set_callback(MICROPY_HW_LIGHTSLEEP_ALARM_NUM, NULL);
+    hardware_alarm_unclaim(MICROPY_HW_LIGHTSLEEP_ALARM_NUM);
+
+    #if DEBUG_LIGHTSLEEP
+    // Check irq.h for the list of IRQ's
+    // for rp2040 00000042: TIMER_IRQ_1 woke the device as expected
+    //            00000020: USBCTRL_IRQ woke the device (probably early)
+    // For rp2350 00000000:00000002: TIMER0_IRQ_1 woke the device as expected
+    //            00000000:00004000: USBCTRL_IRQ woke the device (probably early)
+    #if PICO_RP2040
+    mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx\n", pending_intr);
+    #else
+    mp_printf(MP_PYTHON_PRINTER, "lightsleep: pending_intr=%08lx:%08lx\n", pending_intr[1], pending_intr[0]);
+    #endif
+    #endif // DEBUG_LIGHTSLEEP
 
     #if MICROPY_PY_THREAD
     // Clearing the flag here is atomic, and we know we're the ones who set it

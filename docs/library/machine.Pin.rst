@@ -196,6 +196,8 @@ Methods
        These values can also be OR'ed together to make a pin generate interrupts in
        more than one power mode.
 
+       .. note:: The ``wake`` parameter is only available on the cc3200 port.
+
      - ``hard`` if true a hardware interrupt is used. This reduces the delay
        between the pin change and the handler being called. Hard interrupt
        handlers may not allocate memory; see :ref:`isr_rules`.
