@@ -15,6 +15,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_i2c_target.c
     ${MICROPY_EXTMOD_DIR}/machine_i2s.c
     ${MICROPY_EXTMOD_DIR}/machine_mem.c
+    ${MICROPY_EXTMOD_DIR}/machine_pinbase.c
     ${MICROPY_EXTMOD_DIR}/machine_pulse.c
     ${MICROPY_EXTMOD_DIR}/machine_pwm.c
     ${MICROPY_EXTMOD_DIR}/machine_signal.c
