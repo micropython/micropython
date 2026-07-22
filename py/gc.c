@@ -206,6 +206,10 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
 
     #if MICROPY_GC_SPLIT_HEAP
     area->next = NULL;
+
+    // Update the global min/max region that covers all heaps
+    MP_STATE_MEM(area_pool_min) = MIN(MP_STATE_MEM(area_pool_min), area->gc_pool_start);
+    MP_STATE_MEM(area_pool_max) = MAX(MP_STATE_MEM(area_pool_max), area->gc_pool_end);
     #endif
 
     DEBUG_printf("GC layout:\n");
@@ -234,6 +238,13 @@ void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void *)((uintptr_t)end & (~(BYTES_PER_BLOCK - 1)));
     DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte *)end - (byte *)start);
+
+    #if MICROPY_GC_SPLIT_HEAP
+    // Note: min/max are deliberately swapped here, gc_setup_area() will update them to
+    // the correct values for the min/max of the first actual pool region
+    MP_STATE_MEM(area_pool_min) = end;
+    MP_STATE_MEM(area_pool_max) = start;
+    #endif
 
     gc_setup_area(&MP_STATE_MEM(area), start, end);
 
@@ -392,12 +403,24 @@ bool gc_is_locked(void) {
 }
 
 #if MICROPY_GC_SPLIT_HEAP
-// Returns the area to which this pointer belongs, or NULL if it isn't
-// allocated on the GC-managed heap.
-static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
-    if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {   // must be aligned on a block
-        return NULL;
+static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr);
+
+// Returns the area to which this arbitrary pointer belongs, or NULL if it isn't
+// allocated on the GC-managed heap. Contains "fast path" inline checks for invalid
+// data which isn't a pointer to the heap. Equivalent of VERIFY_PTR for the non-split-heap case.
+static inline MP_ALWAYSINLINE mp_state_mem_area_t *gc_verify_ptr_get_area(const void *ptr) {
+    // These inline checks are similar to VERIFY_PTR macro, below
+    if ((byte *)ptr < MP_STATE_MEM(area_pool_min) || (byte *)ptr > MP_STATE_MEM(area_pool_max)) {
+        return NULL;  // not in the overall pool region
     }
+    if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {
+        return NULL;  // not aligned on a block boundary
+    }
+    return gc_get_ptr_area(ptr);
+}
+
+// Returns the area to which a pointer belongs. Assumes pointer is valid to a heap block.
+static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         if (ptr >= (void *)area->gc_pool_start   // must be above start of pool
             && ptr < (void *)area->gc_pool_end) {   // must be below end of pool
@@ -406,7 +429,7 @@ static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     }
     return NULL;
 }
-#endif
+#else
 
 // ptr should be of type void*
 #define VERIFY_PTR(ptr) ( \
@@ -414,6 +437,8 @@ static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     && ptr >= (void *)MP_STATE_MEM(area).gc_pool_start      /* must be above start of pool */ \
     && ptr < (void *)MP_STATE_MEM(area).gc_pool_end         /* must be below end of pool */ \
     )
+
+#endif
 
 #ifdef TRACE_MARK
 #error "TRACE_MARK is replaced by TRACE_MARK_R and TRACE_MARK_S"
@@ -470,7 +495,7 @@ void gc_collect_root(void **ptrs, size_t len) {
         MICROPY_GC_HOOK_LOOP(i);
         void *ptr = gc_get_ptr(ptrs, i);
         #if MICROPY_GC_SPLIT_HEAP
-        mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
+        mp_state_mem_area_t *area = gc_verify_ptr_get_area(ptr);
         if (!area) {
             continue;
         }
@@ -527,7 +552,7 @@ static void gc_mark_subtree(size_t block)
             // If this is a heap pointer that hasn't been marked, mark it and push
             // it's children to the stack.
             #if MICROPY_GC_SPLIT_HEAP
-            mp_state_mem_area_t *ptr_area = gc_get_ptr_area(ptr);
+            mp_state_mem_area_t *ptr_area = gc_verify_ptr_get_area(ptr);
             if (!ptr_area) {
                 // Not a heap-allocated pointer (might even be random data).
                 continue;
