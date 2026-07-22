@@ -34,3 +34,4 @@ implementation and the best practices to use them.
    unicode_support.rst
    pyboard.py.rst
    micropython2_migration.rst
+   udp_multicast.rst
