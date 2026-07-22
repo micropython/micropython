@@ -25,6 +25,23 @@ If these peripherals / features are enabled then these external pins must be avo
 there are no conflicts. [pins.csv](pins.csv) should be consulted to check all pins assigned
 to alternate functions on the board.
 
+Pin notes
+---------
+
+The on-board SPI flash chip footprint shares pins with the gpio headers,
+so when the flash is loaded and enabled in the build the following pins
+should not be used for other purposes:
+
+* PA4, PA5 and PA7 are used by SPI1 (FLASH_CS, FLASH_SCK, FLASH_MOSI) on all
+  variants.
+* PA6 is used as FLASH_MISO on v1.3 and v3.1; on v2.0 the MISO line is
+  routed to PB4 instead.  Because of this, SPI3 is not usable on v2.0 when
+  the flash is in use (PB4 conflicts with SPI3_MISO).
+* On v3.1, users have reported that PB4 can behave unreliably as a
+  general-purpose input when a flash chip is loaded, even though MISO is
+  routed to PA6 on this revision.  As a workaround, configure PB4 as an
+  output and drive it low before any other use.
+
 Customising the build
 ---------------------
 
