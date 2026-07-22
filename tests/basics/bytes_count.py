@@ -48,6 +48,10 @@ print(b"aaaa".count(b'a', 1, 5))
 print(b"aaaa".count(b'a', -1, 5))
 print(b"abbabba".count(b"abba"))
 
+# start > end: count must be 0 (CPython); empty needle hit buggy utf8 path.
+print(b"abc".count(b"", 2, 1))
+print(b"abc".count(b"a", 2, 1))
+
 print(b'\xaa \xaa'.count(b'\xaa'))
 print(b'\xaa \xaa \xaa \xaa'.count(b'\xaa'))
 print(b'\xaa \xaa \xaa \xaa'.count(b'\xaa'), 1)
