@@ -84,6 +84,10 @@ extern const mp_obj_type_t esp32_rmt_type;
 extern const mp_obj_type_t esp32_ulp_type;
 extern const mp_obj_type_t esp32_ldo_type;
 
+#if MICROPY_PY_ESP32_DS
+extern const mp_obj_type_t esp32_ds_type;
+#endif
+
 #if MICROPY_PY_ESP32_PCNT
 extern const mp_obj_type_t esp32_pcnt_type;
 
