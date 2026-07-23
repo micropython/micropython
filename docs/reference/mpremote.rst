@@ -211,6 +211,12 @@ The full list of supported commands are:
   a single piece of code without having to worry about deploying it to the
   filesystem.
 
+  **Note:** Only the contents of the local file are sent to the device; the
+  local filename has no special meaning, so passing a file called ``main.py``
+  is no different from any other name.  The script is executed in raw REPL
+  after a soft reset, so the device's own ``main.py`` is not run beforehand.
+  Any ``main.py`` already stored on the device filesystem is left untouched.
+
   By default, ``mpremote run`` will display any output from the script until it
   terminates. The ``--no-follow`` flag can be specified to return immediately and leave
   the device running the script in the background.
