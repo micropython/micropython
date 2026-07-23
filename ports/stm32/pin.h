@@ -46,12 +46,12 @@ typedef struct {
     mp_obj_base_t base;
     qstr_short_t name;
     uint16_t pin_mask;
-    uint32_t port   : 4; // Allows GPIOA through GPIOP
+    uint32_t port   : 5; // Allows GPIOA through GPIOQ
     uint32_t pin    : 4; // ST MCUs have a maximum of 16 pins per port
     uint32_t num_af : 4;
     uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
     uint32_t adc_num  : 3;  // 1 bit per ADC
-    // 12 bits available here
+    // 11 bits available here
     pin_gpio_t *gpio;
     const pin_af_obj_t *af;
 } machine_pin_obj_t;

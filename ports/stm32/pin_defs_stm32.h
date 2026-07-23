@@ -43,6 +43,8 @@ enum {
     PORT_M,
     PORT_N,
     PORT_O,
+    PORT_P,
+    PORT_Q,
 };
 
 // Must have matching entries in SUPPORTED_FN in boards/make-pins.py
