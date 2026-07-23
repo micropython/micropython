@@ -7,6 +7,7 @@
 
 pin_loopback_pins = [("D0", "D1"), ("D12", "D14"), ("D13", "D15")]
 pwm_loopback_pins = pin_loopback_pins
+adc_loopback_pins = pin_loopback_pins
 
 # LPUART(1) is on PA2/PA3.
 uart_loopback_args = ("LP1",)

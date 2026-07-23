@@ -13,6 +13,8 @@ pin_loopback_pins = [("X1", "X2"), ("X3", "X9"), ("X4", "X10")]
 # Test all connected pin pairs to test multiple different TIMs.
 pwm_loopback_pins = pin_loopback_pins
 
+adc_loopback_pins = pin_loopback_pins
+
 # UART("XA") is on X1/X2  (usually UART(4) on PA0/PA1).
 uart_loopback_args = ("XA",)
 uart_loopback_kwargs = {}
