@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the MicroPython project, https://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2025 Alessandro Gatti
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,43 @@
  * THE SOFTWARE.
  */
 
-// Set base feature level.
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#ifndef MICROPY_INCLUDED_UNIX_PIN_H
+#define MICROPY_INCLUDED_UNIX_PIN_H
 
-#if defined(__linux__)
-#define MICROPY_PY_GPIO (1)
+#include "py/mphal.h"
+
+#if MICROPY_PY_GPIO
+
+#ifndef __linux__
+#error "Platform does not support GPIO access"
 #endif
 
-// Enable extra Unix features.
-#include "../mpconfigvariant_common.h"
+#include <stdint.h>
+
+#if MICROPY_PY_GPIO_IRQ
+#include <sys/epoll.h>
+#endif
+
+#include "py/obj.h"
+#include "py/runtime.h"
+
+extern const mp_obj_type_t machine_pin_type;
+
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t port;
+    int fd;
+    uint32_t number;
+    #if MICROPY_PY_GPIO_IRQ
+    struct epoll_event event;
+    mp_obj_t callback;
+    bool hard_callback;
+    #endif
+} machine_pin_obj_t;
+
+void mp_pin_init(void);
+void mp_pin_deinit(void);
+
+#endif
+
+#endif
