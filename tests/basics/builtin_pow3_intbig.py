@@ -9,6 +9,9 @@ except NotImplementedError:
 
 print(pow(555557, 1000002, 1000003))
 
+# a zero exponent with a large negative modulus
+print(pow(3, 0, -(2**70)))
+
 # Tests for 3 arg pow with large values
 
 # This value happens to be prime
