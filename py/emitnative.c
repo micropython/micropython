@@ -736,6 +736,10 @@ static bool emit_native_end_pass(emit_t *emit) {
     assert(emit->exc_stack_size == 0);
 
     if (emit->pass == MP_PASS_EMIT) {
+        if (!emit->as->base.stable) {
+            return false;
+        }
+        emit->as->base.code_size = emit->as->base.code_offset;
         void *f = mp_asm_base_get_code(&emit->as->base);
         mp_uint_t f_len = mp_asm_base_get_code_size(&emit->as->base);
 
