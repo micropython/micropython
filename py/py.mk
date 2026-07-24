@@ -22,12 +22,13 @@ QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/mpversion.h
 CSUPEROPT = -O3
 
 # External modules written in C.
+
+# Process manifest for C module extraction (appends to USER_C_MODULES).
+include $(TOP)/py/manifest.mk
+
 ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
-
-# Confirm the provided path exists, show abspath if not to make it clearer to fix.
-$(if $(wildcard $(USER_C_MODULES)/.),,$(error USER_C_MODULES doesn't exist: $(abspath $(USER_C_MODULES))))
 
 # C/C++ files that are included in the QSTR/module build
 SRC_USERMOD_C :=
@@ -46,19 +47,47 @@ LIBS_USERMOD :=
 # added to SRC_USERMOD_C below
 SRC_USERMOD :=
 
-$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
-    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
-    $(info Including User C Module from $(USERMOD_DIR))\
-	$(eval include $(module))\
+# For each C module directory, scan for micropython.mk and include it.
+# Accumulate USERMOD_DIRS so we can later strip each module's parent path
+# from its source files while preserving the module basename in the build
+# tree (e.g. build/cexample/foo.o, not build/foo.o, so files that share a
+# name across modules don't collide on the same .o target).
+USERMOD_DIRS :=
+$(foreach _UDIR, $(USER_C_MODULES), \
+    $(if $(wildcard $(_UDIR)/.),,$(error USER_C_MODULES path doesn't exist: $(abspath $(_UDIR)))) \
+    $(foreach module, $(wildcard $(_UDIR)/micropython.mk) $(wildcard $(_UDIR)/*/micropython.mk), \
+        $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
+        $(eval USERMOD_DIRS += $(USERMOD_DIR))\
+        $(info Including User C Module from $(USERMOD_DIR))\
+        $(eval include $(module))\
+    )\
 )
 
 SRC_USERMOD_C += $(SRC_USERMOD)
 
-SRC_USERMOD_PATHFIX_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_C))
-SRC_USERMOD_PATHFIX_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_CXX))
-SRC_USERMOD_PATHFIX_LIB_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_LIB_C))
-SRC_USERMOD_PATHFIX_LIB_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_LIB_CXX))
-SRC_USERMOD_PATHFIX_LIB_ASM += $(patsubst $(USER_C_MODULES)/%.S,%.S,$(SRC_USERMOD_LIB_ASM))
+# Strip each USERMOD_DIR's leading path from source files, keeping the module
+# basename as the leading directory so build outputs land at
+# BUILD/<module>/<file>.o. Uses per-directory patsubst on the paths as-is
+# rather than $(abspath) so a parent directory containing whitespace doesn't
+# break word-based patsubst.
+SRC_USERMOD_PATHFIX_C := $(SRC_USERMOD_C)
+SRC_USERMOD_PATHFIX_CXX := $(SRC_USERMOD_CXX)
+SRC_USERMOD_PATHFIX_LIB_C := $(SRC_USERMOD_LIB_C)
+SRC_USERMOD_PATHFIX_LIB_CXX := $(SRC_USERMOD_LIB_CXX)
+SRC_USERMOD_PATHFIX_LIB_ASM := $(SRC_USERMOD_LIB_ASM)
+USERMOD_DIRS := $(sort $(USERMOD_DIRS))
+$(foreach _MDIR, $(USERMOD_DIRS), \
+    $(eval _MBASE := $(notdir $(_MDIR))) \
+    $(eval SRC_USERMOD_PATHFIX_C := $$(patsubst $(_MDIR)/%,$(_MBASE)/%,$$(SRC_USERMOD_PATHFIX_C))) \
+    $(eval SRC_USERMOD_PATHFIX_CXX := $$(patsubst $(_MDIR)/%,$(_MBASE)/%,$$(SRC_USERMOD_PATHFIX_CXX))) \
+    $(eval SRC_USERMOD_PATHFIX_LIB_C := $$(patsubst $(_MDIR)/%,$(_MBASE)/%,$$(SRC_USERMOD_PATHFIX_LIB_C))) \
+    $(eval SRC_USERMOD_PATHFIX_LIB_CXX := $$(patsubst $(_MDIR)/%,$(_MBASE)/%,$$(SRC_USERMOD_PATHFIX_LIB_CXX))) \
+    $(eval SRC_USERMOD_PATHFIX_LIB_ASM := $$(patsubst $(_MDIR)/%,$(_MBASE)/%,$$(SRC_USERMOD_PATHFIX_LIB_ASM))) \
+)
+
+# Parent directories of each USERMOD_DIR, added to vpath below so paths like
+# cexample/foo.c (produced by the patsubst above) resolve to source files.
+USERMOD_DIR_PARENTS := $(sort $(foreach _MDIR, $(USERMOD_DIRS), $(patsubst %/,%,$(dir $(_MDIR)))))
 
 CFLAGS += $(CFLAGS_USERMOD)
 CXXFLAGS += $(CXXFLAGS_USERMOD)
