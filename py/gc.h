@@ -36,6 +36,11 @@ void gc_init(void *start, void *end);
 // Used to add additional memory areas to the heap.
 void gc_add(void *start, void *end);
 
+// Returns the area to which this pointer belongs, or NULL if it isn't
+// allocated on the GC-managed heap.
+struct _mp_state_mem_area_t;
+struct _mp_state_mem_area_t *gc_get_ptr_area(const void *ptr);
+
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 // Port must implement this function to return the maximum available block of
 // RAM to allocate a new heap area into using MP_PLAT_ALLOC_HEAP.
