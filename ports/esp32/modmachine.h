@@ -19,6 +19,9 @@ void machine_pins_deinit(void);
 void machine_pwm_deinit_all(void);
 // TODO: void machine_rmt_deinit_all(void);
 void machine_uart_deinit_all(void);
+#if MICROPY_PY_MACHINE_CAN
+void machine_can_deinit_all(void);
+#endif
 void machine_i2s_init0();
 
 #endif // MICROPY_INCLUDED_ESP32_MODMACHINE_H

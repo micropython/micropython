@@ -19,3 +19,7 @@ pwm_loopback_pins = [(4, 5)]
 encoder_loopback_id = 0
 encoder_loopback_out_pins = (4, 12)
 encoder_loopback_in_pins = (5, 13)
+
+# CAN args assume no connection for single device tests
+can_args = (1,)
+can_kwargs = {}
