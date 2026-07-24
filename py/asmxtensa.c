@@ -161,21 +161,17 @@ void asm_xtensa_j_label(asm_xtensa_t *as, uint label) {
     asm_xtensa_op_j(as, rel);
 }
 
-static bool calculate_branch_displacement(asm_xtensa_t *as, uint label, ptrdiff_t *displacement) {
-    assert(displacement != NULL && "Displacement pointer is NULL");
-
+static ptrdiff_t calculate_branch_displacement(asm_xtensa_t *as, uint label) {
     uint32_t label_offset = get_label_dest(as, label);
-    *displacement = (ptrdiff_t)(label_offset - as->base.code_offset - 4);
-    return (label_offset != (uint32_t)-1) && (*displacement < 0);
+    return (ptrdiff_t)(label_offset - as->base.code_offset - 4);
 }
 
 void asm_xtensa_bccz_reg_label(asm_xtensa_t *as, uint cond, uint reg, uint label) {
-    ptrdiff_t rel = 0;
-    bool can_emit_short_jump = calculate_branch_displacement(as, label, &rel);
+    ptrdiff_t rel = calculate_branch_displacement(as, label);
 
-    if (can_emit_short_jump && SIGNED_FIT12(rel)) {
-        // Backwards BCCZ opcodes with an offset that fits in 12 bits can
-        // be emitted without any change.
+    if (SIGNED_FIT12(rel)) {
+        // BCCZ opcodes with an offset that fits in 12 bits can be emitted
+        // without any change.
         asm_xtensa_op_bccz(as, cond, reg, rel);
         return;
     }
@@ -194,12 +190,11 @@ void asm_xtensa_bccz_reg_label(asm_xtensa_t *as, uint cond, uint reg, uint label
 }
 
 void asm_xtensa_bcc_reg_reg_label(asm_xtensa_t *as, uint cond, uint reg1, uint reg2, uint label) {
-    ptrdiff_t rel = 0;
-    bool can_emit_short_jump = calculate_branch_displacement(as, label, &rel);
+    ptrdiff_t rel = calculate_branch_displacement(as, label);
 
-    if (can_emit_short_jump && SIGNED_FIT8(rel)) {
-        // Backwards BCC opcodes with an offset that fits in 8 bits can
-        // be emitted without any change.
+    if (SIGNED_FIT8(rel)) {
+        // BCC opcodes with an offset that fits in 8 bits can be emitted
+        // without any change.
         asm_xtensa_op_bcc(as, cond, reg1, reg2, rel);
         return;
     }
