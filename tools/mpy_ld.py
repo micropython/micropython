@@ -1796,8 +1796,9 @@ def validate_arch_flags(args):
     if args.arch_flags is None:
         args.arch_flags = 0
         return
-    if args.arch != "rv32imc":
+    if args.arch not in ("rv32imc", "xtensa", "xtensawin"):
         raise ValueError('Architecture "{}" does not support extra flags'.format(args.arch))
+
     if (args.arch_flags.startswith("0") and len(args.arch_flags) > 2) or args.arch_flags.isdigit():
         if args.arch_flags[1] in "bB":
             base = 2
@@ -1809,9 +1810,18 @@ def validate_arch_flags(args):
     else:
         flags_value = 0
         for flag in args.arch_flags.lower().split(","):
-            if flag not in RV32_EXTENSIONS:
-                raise ValueError('Invalid architecture flags value "{}"'.format(flag))
-            flags_value |= RV32_EXTENSIONS[flag]
+            if args.arch == "rv32imc":
+                if flag in RV32_EXTENSIONS:
+                    flags_value |= RV32_EXTENSIONS[flag]
+                    continue
+            elif args.arch in ("xtensa", "xtensawin"):
+                if core_match := re.match(r"^lx(\d)$", flag):
+                    if flags_value == 0:
+                        core_version = int(core_match.group(1))
+                        if 8 >= core_version >= 3:
+                            flags_value = core_version - 2
+                            continue
+            raise ValueError('Invalid architecture flags value "{}"'.format(flag))
         args.arch_flags = flags_value
 
 
