@@ -206,6 +206,15 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
 
     #if MICROPY_GC_SPLIT_HEAP
     area->next = NULL;
+
+    // Update the global min/max region that covers all heaps
+    if (MP_STATE_MEM(area_pool_min)) {
+        MP_STATE_MEM(area_pool_min) = MIN(MP_STATE_MEM(area_pool_min), area->gc_pool_start);
+        MP_STATE_MEM(area_pool_max) = MAX(MP_STATE_MEM(area_pool_max), area->gc_pool_end);
+    } else {
+        MP_STATE_MEM(area_pool_min) = area->gc_pool_start;
+        MP_STATE_MEM(area_pool_max) = area->gc_pool_end;
+    }
     #endif
 
     DEBUG_printf("GC layout:\n");
@@ -395,8 +404,11 @@ bool gc_is_locked(void) {
 // Returns the area to which this pointer belongs, or NULL if it isn't
 // allocated on the GC-managed heap.
 static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
-    if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {   // must be aligned on a block
-        return NULL;
+    if ((byte *)ptr < MP_STATE_MEM(area_pool_min) || (byte *)ptr > MP_STATE_MEM(area_pool_max)) {
+        return NULL;  // not in the overall pool region
+    }
+    if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {
+        return NULL;  // not aligned on a block boundary
     }
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         if (ptr >= (void *)area->gc_pool_start   // must be above start of pool

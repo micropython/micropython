@@ -129,6 +129,10 @@ typedef struct _mp_state_mem_t {
     #endif
 
     mp_state_mem_area_t area;
+    #if MICROPY_GC_SPLIT_HEAP
+    byte *area_pool_min;  // Min of all gc_pool_start values across all areas
+    byte *area_pool_max;  // Max of all gc_pool_end values across all areas
+    #endif
 
     int gc_stack_overflow;
     MICROPY_GC_STACK_ENTRY_TYPE gc_block_stack[MICROPY_ALLOC_GC_STACK_SIZE];
