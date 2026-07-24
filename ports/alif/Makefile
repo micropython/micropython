@@ -93,6 +93,7 @@ $(BUILD)/$(ALIF_TOC_CONFIG): mcu/$(ALIF_TOC_CONFIG).in | $(BUILD)
 
 $(ALIF_TOC_BIN): $(ALIF_TOC_APPS)
 	$(Q)$(PYTHON) $(ALIF_TOOLS)/app-gen-toc.py \
+		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
 		--filename $(abspath $(BUILD)/$(ALIF_TOC_CONFIG)) \
 		--output-dir $(BUILD) \
 		--firmware-dir $(BUILD) \
@@ -109,7 +110,8 @@ deploy: $(ALIF_TOC_BIN)
 		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
 		--port $(PORT) \
 		--pad \
-		--images file:$(BUILD)/application_package.ds
+		--images file:$(BUILD)/application_package.ds \
+		$(ALIF_TOOLKIT_APP_WRITE_MRAM_ARGS) \
 
 .PHONY: deploy-jlink
 deploy-jlink: $(ALIF_TOC_APPS)
