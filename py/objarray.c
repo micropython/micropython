@@ -107,7 +107,9 @@ static mp_obj_array_t *array_new(char typecode, size_t n) {
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
-    o->items = m_new(byte, typecode_size * o->len);
+    // array/bytearray items are always pure numeric data (no heap pointers),
+    // so tag the buffer no-scan to keep it out of the GC mark scan.
+    o->items = m_new_no_scan(byte, typecode_size * o->len);
     return o;
 }
 #endif
