@@ -42,9 +42,10 @@ enum {
 };
 
 static mp_obj_t mod_json_dump_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, unsigned int mode) {
-    enum { ARG_separators };
+    enum { ARG_separators, ARG_default };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_separators, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_default, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -60,6 +61,16 @@ static mp_obj_t mod_json_dump_helper(size_t n_args, const mp_obj_t *pos_args, mp
         mp_obj_get_array_fixed_n(args[ARG_separators].u_obj, 2, &items);
         print_ext.item_separator = mp_obj_str_get_str(items[0]);
         print_ext.key_separator = mp_obj_str_get_str(items[1]);
+    }
+
+    if (args[ARG_default].u_obj != mp_const_none) {
+        if (!mp_obj_is_callable(args[ARG_default].u_obj)) {
+            const mp_obj_type_t *type = mp_obj_get_type(args[ARG_default].u_obj);
+            mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("'%q' object is not callable"), type->name);
+        }
+        print_ext.default_cb = (void *)(uintptr_t)args[ARG_default].u_obj;
+    } else {
+        print_ext.default_cb = NULL;
     }
 
     if (mode == DUMP_MODE_TO_STRING) {
