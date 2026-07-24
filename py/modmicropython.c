@@ -157,13 +157,38 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd
 #endif
 
 #if MICROPY_ENABLE_SCHEDULER
-static mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
-    if (!mp_sched_schedule(function, arg)) {
+
+#if MICROPY_KBD_EXCEPTION && MICROPY_SCHEDULER_STATIC_NODES
+static mp_sched_node_t mp_keyboard_interrupt_sched_node;
+static void mp_sched_keyboard_interrupt_wrapper(mp_sched_node_t *node) {
+    mp_sched_keyboard_interrupt();
+}
+#endif
+
+static mp_obj_t mp_micropython_schedule(size_t n_args, const mp_obj_t *args) {
+    #if MICROPY_KBD_EXCEPTION
+    if (n_args == 1 && args[0] == MP_OBJ_FROM_PTR(&mp_micropython_kbd_intr_obj)) {
+        #if MICROPY_SCHEDULER_STATIC_NODES
+        // Allow calling `micropython.schedule(micropython.kbd_intr, None)` as a
+        // special case to schedule a keyboard interrupt.
+        mp_sched_schedule_node(&mp_keyboard_interrupt_sched_node, mp_sched_keyboard_interrupt_wrapper);
+        return mp_const_none;
+        #else
+        // Signal that passing `micropython.kbd_intr` is not supported.
+        mp_raise_ValueError(NULL);
+        #endif
+    }
+    #endif
+    if (n_args == 1) {
+        mp_raise_TypeError(NULL);
+    }
+    if (!mp_sched_schedule(args[0], args[1])) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("schedule queue full"));
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_schedule_obj, 1, 2, mp_micropython_schedule);
+
 #endif
 
 static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
