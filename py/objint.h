@@ -55,7 +55,7 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     int base, const char *prefix, char base_char, char comma);
 
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
-mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf);
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool is_signed, size_t len, const byte *buf);
 // Write an integer to a byte sequence.
 // If overflow_check is true, raises OverflowError if 'self_in' doesn't fit. If false, truncate to fit.
 void mp_obj_int_to_bytes(mp_obj_t self_in, size_t buf_len, byte *buf, bool big_endian, bool is_signed, bool overflow_check);
