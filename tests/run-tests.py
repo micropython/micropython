@@ -145,6 +145,11 @@ platform_tests_to_skip = {
     "renesas-ra": (
         "extmod/time_time_ns.py",  # RA fsp rtc function doesn't support nano sec info
     ),
+    "uefi": (
+        # Driven over the raw REPL, so code runs as "<stdin>" with no real filename; the
+        # test's expected output regex requires the source filename in the traceback.
+        "basics/weakref_callback_exception.py",
+    ),
     "rp2": (
         # Skip thread tests that require more that 2 threads.
         "thread/stress_heap.py",
