@@ -25,6 +25,7 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
@@ -59,6 +60,11 @@ static void soft_timer_schedule_at_ms(uint32_t ticks_ms) {
 // and is explicitly GC traced by soft_timer_gc_mark_all().
 static soft_timer_entry_t *soft_timer_heap;
 
+// Safe pairheap accessor that avoids the undefined behaviour of
+// &e->pairheap when e is NULL. Note this is valid only because
+// pairheap is the first member (guaranteed by MP_STATIC_ASSERT).
+#define SOFT_TIMER_HEAP(e)  ((mp_pairheap_t *)(e))
+
 static int soft_timer_lt(mp_pairheap_t *n1, mp_pairheap_t *n2) {
     soft_timer_entry_t *e1 = (soft_timer_entry_t *)n1;
     soft_timer_entry_t *e2 = (soft_timer_entry_t *)n2;
@@ -74,7 +80,7 @@ void soft_timer_deinit(void) {
         soft_timer_entry_t *entry = (soft_timer_entry_t *)mp_pairheap_peek(soft_timer_lt, &heap_from->pairheap);
         heap_from = (soft_timer_entry_t *)mp_pairheap_pop(soft_timer_lt, &heap_from->pairheap);
         if (!(entry->flags & SOFT_TIMER_FLAG_GC_ALLOCATED)) {
-            heap_to = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &heap_to->pairheap, &entry->pairheap);
+            heap_to = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, SOFT_TIMER_HEAP(heap_to), &entry->pairheap);
         }
     }
     soft_timer_heap = heap_to;
@@ -99,7 +105,7 @@ void soft_timer_handler(void) {
         }
         if (entry->mode == SOFT_TIMER_MODE_PERIODIC) {
             entry->expiry_ms += entry->delta_ms;
-            heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &heap->pairheap, &entry->pairheap);
+            heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, SOFT_TIMER_HEAP(heap), &entry->pairheap);
         }
     }
     soft_timer_heap = heap;
@@ -122,13 +128,17 @@ void soft_timer_gc_mark_all(void) {
         if (entry->flags & SOFT_TIMER_FLAG_GC_ALLOCATED) {
             gc_collect_root((void **)&entry, 1);
         }
-        heap_to = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &heap_to->pairheap, &entry->pairheap);
+        heap_to = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, SOFT_TIMER_HEAP(heap_to), &entry->pairheap);
     }
     soft_timer_heap = heap_to;
     MICROPY_PY_PENDSV_EXIT;
 }
 
 void soft_timer_static_init(soft_timer_entry_t *entry, uint16_t mode, uint32_t delta_ms, void (*cb)(soft_timer_entry_t *)) {
+    // Ensure that pairheap is always the first member of soft_timer_entry_t
+    // to allow casting between pointers of soft_timer_entry_t and mp_pairheap_t.
+    MP_STATIC_ASSERT(offsetof(soft_timer_entry_t, pairheap) == 0);
+
     mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
     entry->flags = 0;
     entry->mode = mode;
@@ -140,7 +150,7 @@ void soft_timer_insert(soft_timer_entry_t *entry, uint32_t initial_delta_ms) {
     mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
     entry->expiry_ms = soft_timer_get_ms() + initial_delta_ms;
     MICROPY_PY_PENDSV_ENTER;
-    soft_timer_heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &soft_timer_heap->pairheap, &entry->pairheap);
+    soft_timer_heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, SOFT_TIMER_HEAP(soft_timer_heap), &entry->pairheap);
     if (entry == soft_timer_heap) {
         // This new timer became the earliest one so schedule a callback.
         soft_timer_schedule_at_ms(entry->expiry_ms);
@@ -150,6 +160,6 @@ void soft_timer_insert(soft_timer_entry_t *entry, uint32_t initial_delta_ms) {
 
 void soft_timer_remove(soft_timer_entry_t *entry) {
     MICROPY_PY_PENDSV_ENTER;
-    soft_timer_heap = (soft_timer_entry_t *)mp_pairheap_delete(soft_timer_lt, &soft_timer_heap->pairheap, &entry->pairheap);
+    soft_timer_heap = (soft_timer_entry_t *)mp_pairheap_delete(soft_timer_lt, SOFT_TIMER_HEAP(soft_timer_heap), &entry->pairheap);
     MICROPY_PY_PENDSV_EXIT;
 }
