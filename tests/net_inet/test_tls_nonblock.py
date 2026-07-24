@@ -61,7 +61,7 @@ def test_one(site, opts):
             # print("shook hands")
 
         # Write HTTP request
-        out = b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "latin")
+        out = b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "ascii")
         while len(out) > 0:
             n = s.write(out)
             if n is None:
