@@ -17,8 +17,17 @@ MicroPython device over a serial connection.  Commands supported are:
     mpremote repl                    -- enter REPL
 """
 
+import sys
+
+if sys.platform == "win32":
+    # Configure stdout/stderr before any imports that might print: on some Windows
+    # consoles the default code page/encoding can't represent all Unicode.
+    from .console import ConsoleWindows
+
+    ConsoleWindows.configure_unicode_output()
+
 import argparse
-import os, sys, time
+import os, time
 from collections.abc import Mapping
 from textwrap import dedent
 
@@ -492,6 +501,7 @@ def do_command_expansion(args):
 
     last_arg_idx = len(args)
     pre = []
+    exp_args = ()  # Initialize to empty tuple for commands with no expected args
     while args and args[0] in _command_expansions:
         cmd = args.pop(0)
         exp_args, exp_sub, _ = _command_expansions[cmd]
@@ -518,7 +528,7 @@ def do_command_expansion(args):
         args[0:0] = exp_sub
         last_arg_idx = len(exp_sub)
 
-    if last_arg_idx < len(args) and "=" in args[last_arg_idx]:
+    if exp_args and last_arg_idx < len(args) and "=" in args[last_arg_idx]:
         # Extra unknown arguments given.
         arg = args[last_arg_idx].split("=", 1)[0]
         usage_error(cmd, exp_args, f"given unexpected argument {arg}")
