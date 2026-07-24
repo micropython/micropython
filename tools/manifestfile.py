@@ -305,6 +305,9 @@ class ManifestFile:
             for dirpath, _, filenames in os.walk(package_path or ".", followlinks=True):
                 for file in filenames:
                     file = os.path.relpath(os.path.join(dirpath, file), ".")
+                    # Skip manifest.py files
+                    if os.path.basename(file) == "manifest.py":
+                        continue
                     _, ext = os.path.splitext(file)
                     if ext.lower() in exts:
                         self._add_file(
