@@ -76,6 +76,8 @@ Celsius::
 Networking
 ----------
 
+.. _esp32_network_wlan:
+
 WLAN
 ^^^^
 
@@ -120,6 +122,10 @@ connection succeeds or the interface gets disabled.  This can be changed by
 calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
 attempts (0 means it won't retry, -1 will restore the default behaviour of trying
 to reconnect forever).
+
+Please note that this release supports WPA2/3 Personal and Enterprise modes as well 
+as 5 GHz band mode (on 5 GHz capable devices only). Please refer to 
+the :class:`network.WLAN` class documentation.
 
 .. _esp32_network_lan:
 
