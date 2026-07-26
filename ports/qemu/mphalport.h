@@ -37,3 +37,23 @@ void mp_hal_get_random(size_t n, uint8_t *buf);
     } while (0)
 #endif
 #endif
+
+#if defined(__ARM_ARCH_PROFILE) && (__ARM_ARCH_PROFILE == 'M')
+// Cortex-M atomic section (save/disable then restore interrupts via PRIMASK).
+// PRIMASK only exists on the M profile; other ARM profiles (e.g. Cortex-A on
+// SABRELITE, which also defines __ARM_ARCH_ISA_THUMB) keep the default no-op.
+__attribute__((always_inline)) static inline uint32_t mp_atomic_begin(void) {
+    uint32_t state;
+    __asm volatile ("mrs %0, primask; cpsid i" : "=r" (state) :: "memory");
+    return state;
+}
+__attribute__((always_inline)) static inline void mp_atomic_end(uint32_t state) {
+    __asm volatile ("msr primask, %0" :: "r" (state) : "memory");
+}
+
+#define MICROPY_BEGIN_ATOMIC_SECTION() mp_atomic_begin()
+#define MICROPY_END_ATOMIC_SECTION(state) mp_atomic_end(state)
+
+#define MICROPY_PY_PENDSV_ENTER uint32_t atomic_state = mp_atomic_begin()
+#define MICROPY_PY_PENDSV_EXIT mp_atomic_end(atomic_state)
+#endif
