@@ -187,7 +187,7 @@ __attribute__((naked)) MP_NORETURN void DebugMon_Handler(void) {
     exception_handler(DEBUG_MONITOR);
 }
 
-__attribute__((naked)) MP_NORETURN void PendSV_Handler(void) {
+__attribute__((naked, weak)) MP_NORETURN void PendSV_Handler(void) {
     exception_handler(PENDING_SV);
 }
 
