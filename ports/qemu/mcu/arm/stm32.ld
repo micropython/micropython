@@ -9,43 +9,11 @@ MEMORY
     RAM : ORIGIN = 0x20000000, LENGTH = 128K
 }
 
+REGION_ALIAS("ISR", ROM)
+REGION_ALIAS("TEXT", ROM)
+REGION_ALIAS("DATA", RAM)
+REGION_ALIAS("BSS", RAM)
+
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 
-SECTIONS
-{
-    .text : {
-        . = ALIGN(4);
-        KEEP(*(.isr_vector))
-        *(.text*)
-        *(.rodata*)
-        . = ALIGN(4);
-        *(.ARM.extab*)
-        *(.gnu.linkonce.armextab.*)
-        __exidx_start = .;
-        *(.ARM.exidx*)
-        *(.gnu.linkonce.armexidx.*)
-        __exidx_end = .;
-        . = ALIGN(4);
-        _etext = .;
-        _sidata = _etext;
-    } > ROM
-
-    .data : AT ( _sidata )
-    {
-        . = ALIGN(4);
-        _sdata = .;
-        *(.data*)
-        . = ALIGN(4);
-        _edata = .;
-    } >RAM
-
-    .bss :
-    {
-        . = ALIGN(4);
-        _sbss = .;
-        *(.bss*)
-        *(COMMON)
-        . = ALIGN(4);
-        _ebss = .;
-    } >RAM
-}
+INCLUDE "mcu/arm/cortex-m.ld"
