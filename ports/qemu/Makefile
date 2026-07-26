@@ -224,6 +224,14 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
+ifeq ($(MICROPY_PY_LWIP),1)
+INC += -Ilwip_inc
+SRC_C += \
+	shared/runtime/mpirq.c \
+	shared/runtime/softtimer.c \
+
+endif
+
 CFLAGS += -DMICROPY_HW_BOARD_NAME='"$(QEMU_MACHINE)"'
 CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 $(COPT) \
 	 -ffunction-sections -fdata-sections
@@ -277,7 +285,10 @@ RUN_TESTS_FULL_ARGS = -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) $(QEMU_TEST_ARGS) 
 SRC_C += \
 	main.c \
 	uart.c \
+	lan9118.c \
 	mphalport.c \
+	mpnetworkport.c \
+	network_lan.c \
 	vfs_rom_ioctl.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
