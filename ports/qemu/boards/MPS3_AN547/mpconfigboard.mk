@@ -1,5 +1,6 @@
 QEMU_ARCH = arm
 QEMU_MACHINE = mps3-an547
+QEMU_EXTRA += -nic user
 
 CFLAGS += -mthumb -mcpu=cortex-m55 -mfloat-abi=hard -mfpu=fpv5-d16
 CFLAGS += -DQEMU_SOC_MPS3
@@ -17,3 +18,7 @@ MPY_CROSS_FLAGS += -march=armv7emdp
 
 MICROPY_FLOAT_IMPL ?= double
 SUPPORTS_HARDWARE_FP_DOUBLE ?= 1
+
+MICROPY_PY_LWIP ?= 1
+CFLAGS += -DMICROPY_HW_ETH_LAN9118=1
+CFLAGS += -DLAN9118_BASE=0x41400000
