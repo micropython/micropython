@@ -48,53 +48,6 @@ MEMORY
     ROMFS (xr)  : ORIGIN = ORIGIN(STACK) + LENGTH(STACK), LENGTH = 4M
 }
 
-SECTIONS
-{
-    /* Code + Read-Only data segment */
+_pointer_size = 4;
 
-    .text : ALIGN (4K)
-    {
-        *(.start)
-        *(.text)
-        . = ALIGN (4K);
-        *(.rodata)
-        _sirodata = .;
-    } > ROM
-
-    .rodata : AT (_sirodata) ALIGN (4K)
-    {
-        *(.rodata)
-    } > ROM
-
-    /* Data + BSS segment */
-
-    .data : ALIGN (4K)
-    {
-        *(.data)
-        _sibss = .;
-    } > RAM
-
-    .bss : AT (_sibss) ALIGN (4K)
-    {
-        /* Mark global pointer address. */
-        _global_pointer = .;
-
-        /* Mark BSS start. */
-        . = . + 4;
-        _sbss = .;
-        *(.bss)
-        /* Mark BSS end. */
-        _ebss = .;
-    } > RAM
-
-    /* Isolated stack segment. */
-
-    .stack : ALIGN(4K)
-    {
-        /* Mark stack start. */
-        _sstack = .;
-        . = LENGTH(STACK);
-        /* Mark stack end. */
-        _estack = .;
-    } > STACK
-}
+INCLUDE "mcu/riscv/virt.ld"
