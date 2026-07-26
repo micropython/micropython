@@ -26,6 +26,9 @@
 
 #include <stdint.h>
 
+#include "py/mphal.h"
+#include "shared/runtime/softtimer.h"
+
 // CPU frequency
 #ifndef CPU_FREQ_HZ
 #define CPU_FREQ_HZ             25000000u
@@ -42,7 +45,11 @@
 #define SYSTICK_CSR_TICKINT     (1 << 1)
 #define SYSTICK_CSR_CLKSOURCE   (1 << 2)
 
-static volatile uint32_t _ticks_ms = 0;
+// System handler priority register 3 (PendSV = PRI_14, SysTick = PRI_15).
+#define SCB_SHPR3               (*(volatile uint32_t *)0xE000ED20)
+
+// Exposed to the soft timer as MICROPY_SOFT_TIMER_TICKS_MS.
+volatile uint32_t _ticks_ms = 0;
 #if defined(__ARM_ARCH_ISA_ARM)
 static volatile uint32_t _ticks_us = 0;
 #endif
@@ -53,6 +60,13 @@ void ticks_init(void) {
     SYSTICK_CVR = 0;
     SYSTICK_RVR = (CPU_FREQ_HZ / 1000) - 1;
     SYSTICK_CSR = SYSTICK_CSR_ENABLE | SYSTICK_CSR_TICKINT | SYSTICK_CSR_CLKSOURCE;
+    // Set PendSV interrupt at the lowest priority, and keep SysTick at the
+    // highest (its reset default), so that raising BASEPRI to mask PendSV
+    // (MICROPY_PY_PENDSV_ENTER) does not also mask SysTick.  This port has no
+    // CMSIS NVIC_SetPriority(), so write the system handler priority register
+    // directly; the reset priority grouping (all bits are group priority) is
+    // used.
+    SCB_SHPR3 = (SCB_SHPR3 & ~((0xffu << 16) | (0xffu << 24))) | (IRQ_PRI_PENDSV << 16);
     #endif
 }
 
@@ -80,6 +94,26 @@ uintptr_t ticks_us(void) {
     #endif
 }
 
+#ifdef MICROPY_SOFT_TIMER_TICKS_MS
+// Interrupt Control and State Register (ICSR), used to pend a PendSV.
+#define SCB_ICSR            (*(volatile uint32_t *)0xE000ED04)
+#define SCB_ICSR_PENDSVSET  (1 << 28)
+
+// Run the soft-timer handler from PendSV, pended by SysTick below.  This
+// overrides the default (fault-catching) PendSV_Handler from errorhandler.c.
+void PendSV_Handler(void) {
+    soft_timer_handler();
+}
+#endif
+
 void SysTick_Handler(void) {
-    _ticks_ms++;
+    uint32_t tick = _ticks_ms + 1;
+    _ticks_ms = tick;
+
+    #ifdef MICROPY_SOFT_TIMER_TICKS_MS
+    if (soft_timer_next == tick) {
+        // Pend a PendSV to run the soft-timer handler.
+        SCB_ICSR = SCB_ICSR_PENDSVSET;
+    }
+    #endif
 }
