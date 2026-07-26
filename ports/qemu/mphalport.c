@@ -99,11 +99,25 @@ mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
 
-// Provide a dummy version of mp_hal_get_random() using a LCG
+// Provide a pseudo-random number generator using a LCG.
 static uint32_t random_state;
+uint32_t mp_hal_get_pseudo_random_u32(void) {
+    random_state = random_state * 1664525 + 1013904223;
+    return random_state;
+}
+
 void mp_hal_get_random(size_t n, uint8_t *buf) {
     for (size_t i = 0; i < n; ++i) {
-        random_state = random_state * 1664525 + 1013904223;
-        buf[i] = random_state >> 24;
+        buf[i] = mp_hal_get_pseudo_random_u32() >> 24;
     }
+}
+
+// QEMU has no unique hardware ID, so return a fixed LAA.
+void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    buf[0] = 0x02;
+    buf[1] = 0x00;
+    buf[2] = 0x00;
+    buf[3] = 0x12;
+    buf[4] = 0x34;
+    buf[5] = 0x56 + idx;
 }
