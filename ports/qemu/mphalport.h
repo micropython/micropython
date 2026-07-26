@@ -25,8 +25,14 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
 #include "shared/runtime/interrupt_char.h"
 
+enum {
+    MP_HAL_MAC_ETH0 = 0,
+};
+
+void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_random(size_t n, uint8_t *buf);
 
 #if defined(__ARM_32BIT_STATE)

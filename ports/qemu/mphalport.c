@@ -107,3 +107,13 @@ void mp_hal_get_random(size_t n, uint8_t *buf) {
         buf[i] = random_state >> 24;
     }
 }
+
+// QEMU has no unique hardware ID, so return a fixed LAA.
+void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    buf[0] = 0x02;
+    buf[1] = 0x00;
+    buf[2] = 0x00;
+    buf[3] = 0x12;
+    buf[4] = 0x34;
+    buf[5] = 0x56 + idx;
+}
