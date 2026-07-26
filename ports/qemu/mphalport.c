@@ -83,13 +83,10 @@ mp_uint_t mp_hal_ticks_us(void) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    if (ms) {
-        mp_uint_t start = mp_hal_ticks_ms();
-        while (mp_hal_ticks_ms() - start < ms) {
-        }
-    } else {
-        mp_handle_pending(true);
-    }
+    mp_uint_t start = mp_hal_ticks_ms();
+    do {
+        mp_event_handle_nowait();
+    } while (mp_hal_ticks_ms() - start < ms);
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
