@@ -243,12 +243,8 @@ void mp_handle_pending(mp_handle_pending_behaviour_t behavior) {
 
     // Handle any pending callbacks.
     #if MICROPY_ENABLE_SCHEDULER
-    bool run_scheduler = (MP_STATE_VM(sched_state) == MP_SCHED_PENDING);
-    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-    // Avoid races by running the scheduler on the main thread, only.
-    // (Not needed if GIL enabled, as GIL ensures thread safety here.)
-    run_scheduler = run_scheduler && mp_thread_is_main_thread();
-    #endif
+    bool run_scheduler = (MP_STATE_VM(sched_state) == MP_SCHED_PENDING)
+        && mp_sched_thread_can_run_callbacks();
     if (run_scheduler) {
         mp_sched_run_pending();
     }
