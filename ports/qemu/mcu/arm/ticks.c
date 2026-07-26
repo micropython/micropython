@@ -26,6 +26,9 @@
 
 #include <stdint.h>
 
+#include "py/runtime.h"
+#include "shared/runtime/softtimer.h"
+
 // CPU frequency
 #ifndef CPU_FREQ_HZ
 #define CPU_FREQ_HZ             25000000u
@@ -42,7 +45,8 @@
 #define SYSTICK_CSR_TICKINT     (1 << 1)
 #define SYSTICK_CSR_CLKSOURCE   (1 << 2)
 
-static volatile uint32_t _ticks_ms = 0;
+// Exposed to the soft timer as MICROPY_SOFT_TIMER_TICKS_MS.
+volatile uint32_t _ticks_ms = 0;
 #if defined(__ARM_ARCH_ISA_ARM)
 static volatile uint32_t _ticks_us = 0;
 #endif
@@ -80,6 +84,24 @@ uintptr_t ticks_us(void) {
     #endif
 }
 
+#ifdef MICROPY_SOFT_TIMER_TICKS_MS
+// This port has no PendSV, schedule soft-timer handler
+// via scheduler node to run at the next scheduler point.
+static mp_sched_node_t soft_timer_node;
+
+static void soft_timer_node_run(mp_sched_node_t *node) {
+    (void)node;
+    soft_timer_handler();
+}
+#endif
+
 void SysTick_Handler(void) {
-    _ticks_ms++;
+    uint32_t tick = _ticks_ms + 1;
+    _ticks_ms = tick;
+
+    #ifdef MICROPY_SOFT_TIMER_TICKS_MS
+    if (soft_timer_next == tick) {
+        mp_sched_schedule_node(&soft_timer_node, soft_timer_node_run);
+    }
+    #endif
 }
