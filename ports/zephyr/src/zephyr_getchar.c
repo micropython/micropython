@@ -24,7 +24,6 @@
 
 extern int mp_interrupt_char;
 void mp_sched_keyboard_interrupt(void);
-void mp_hal_signal_event(void);
 
 static uint8_t uart_ringbuf[CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE];
 static uint16_t i_get = 0, i_put = 0;
@@ -36,7 +35,6 @@ static int console_irq_input_hook(uint8_t ch) {
         return 1;
     }
     if (ch == mp_interrupt_char) {
-        mp_hal_signal_event();
         mp_sched_keyboard_interrupt();
         return 1;
     } else {

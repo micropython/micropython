@@ -42,6 +42,9 @@ void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
     #endif
+
+    // Outside the atomic section, which isn't async-signal-safe on all ports.
+    mp_hal_signal_event();
 }
 
 #if MICROPY_KBD_EXCEPTION
