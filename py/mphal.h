@@ -113,8 +113,8 @@ uint64_t mp_hal_time_ns(void);
 #endif
 
 // Ends a blocking MICROPY_INTERNAL_WFE(), so the waiter re-evaluates its wait
-// conditions.  May be called from an interrupt, and always from within an
-// atomic section.
+// conditions.  May be called from a signal handler or interrupt, and not
+// necessarily from within an atomic section.
 #ifndef mp_hal_signal_event
 // Fallback definition for ports whose wait cannot be ended early.
 #define mp_hal_signal_event() (void)0
