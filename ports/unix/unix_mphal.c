@@ -85,6 +85,11 @@ void mp_hal_wake_event_init(void) {
         fprintf(stderr, "FATAL: cannot create wake event: %s\n", strerror(errno));
         exit(1);
     }
+    if (wake_event_fd >= FD_SETSIZE) {
+        // Waiting on it uses select(), and FD_SET() is undefined from here up.
+        fprintf(stderr, "FATAL: wake event fd %d exceeds FD_SETSIZE\n", wake_event_fd);
+        exit(1);
+    }
 }
 
 void mp_hal_wake_event_deinit(void) {
@@ -100,6 +105,14 @@ void mp_hal_wake_event_deinit(void) {
     close(rd);
 }
 
+static void wake_event_drain(int fd) {
+    // Empty it fully or the next wait returns at once: an eventfd reads its
+    // counter in one go, a self-pipe holds a byte per raise.
+    char buf[64];
+    while (read(fd, buf, sizeof(buf)) > 0) {
+    }
+}
+
 void mp_hal_signal_event(void) {
     int fd = wake_event_wr_fd;
     if (fd < 0) {
@@ -112,6 +125,35 @@ void mp_hal_signal_event(void) {
     ssize_t ret = write(fd, &token, sizeof(token));
     (void)ret;
     errno = errno_save;
+}
+
+int mp_hal_wake_event_wait_tv(struct timeval *tv) {
+    // Only the thread that runs scheduled callbacks may consume the event: one
+    // taken by another thread is one the thread that can act on it never sees.
+    // Other threads just wait out the timeout.
+    int fd = wake_event_fd;
+    if (fd < 0 || !mp_sched_thread_can_run_callbacks()) {
+        return select(0, NULL, NULL, NULL, tv);
+    }
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
+    int ret = select(fd + 1, &rfds, NULL, NULL, tv);
+    if (ret > 0) {
+        wake_event_drain(fd);
+        errno = EINTR;
+        return -1;
+    }
+    return ret;
+}
+
+void mp_hal_wake_event_wait_ms(mp_uint_t timeout_ms) {
+    if (timeout_ms == MP_HAL_WAKE_EVENT_FOREVER) {
+        mp_hal_wake_event_wait_tv(NULL);
+        return;
+    }
+    struct timeval tv = {timeout_ms / 1000, (timeout_ms % 1000) * 1000};
+    mp_hal_wake_event_wait_tv(&tv);
 }
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
@@ -322,8 +364,11 @@ uint64_t mp_hal_time_ns(void) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     if (ms) {
         mp_uint_t start = mp_hal_ticks_ms();
-        while (mp_hal_ticks_ms() - start < ms) {
-            mp_event_wait_ms(1);
+        mp_uint_t elapsed = 0;
+        // The wait can return early, so loop until the time is up.
+        while (elapsed < ms) {
+            mp_event_wait_ms(ms - elapsed);
+            elapsed = mp_hal_ticks_ms() - start;
         }
     } else {
         mp_handle_pending(true);

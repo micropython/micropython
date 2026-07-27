@@ -36,16 +36,6 @@
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 
-#ifdef _WIN32
-static inline int msec_sleep_tv(struct timeval *tv) {
-    msec_sleep(tv->tv_sec * 1000.0 + tv->tv_usec / 1000.0);
-    return 0;
-}
-#define sleep_select(a, b, c, d, e) msec_sleep_tv((e))
-#else
-#define sleep_select select
-#endif
-
 // mingw32 defines CLOCKS_PER_SEC as ((clock_t)<somevalue>) but preprocessor does not handle casts
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 #define MP_REMOVE_BRACKETSA(x)
@@ -112,13 +102,12 @@ static mp_obj_t mp_time_sleep(mp_obj_t arg) {
         tv.tv_usec = (suseconds_t)(remain_us % 1000000);
         mp_uint_t t0 = mp_hal_ticks_us();
         MP_THREAD_GIL_EXIT();
-        int res = sleep_select(0, NULL, NULL, NULL, &tv);
+        int res = mp_hal_wake_event_wait_tv(&tv);
         MP_THREAD_GIL_ENTER();
         if (res == -1 && errno != EINTR) {
             RAISE_ERRNO(res, errno);
         }
-        // An unsigned tick difference can only under-count on wrap, so the
-        // sleep never ends early.
+        // An unsigned difference can only under-count on wrap, never ending early.
         uint64_t elapsed_us = (mp_uint_t)(mp_hal_ticks_us() - t0);
         if (res == 0 || elapsed_us >= remain_us) {
             break;
