@@ -372,6 +372,10 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pcd_ex.c \
 	ll_usb.c \
 	)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7))
+# HAL F4-1.16.0 and F7-1.7.0 have an unused debug variable in USB_ActivateDedicatedEndpoint.
+$(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-error=unused-but-set-variable
+endif
 endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
