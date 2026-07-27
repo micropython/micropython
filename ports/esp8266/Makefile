@@ -196,18 +196,18 @@ FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
 deploy: $(FWBIN)
 	$(ECHO) "Writing $< to the board"
-	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) write_flash --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
+	$(Q)$(ESPTOOL) --chip esp8266 --port $(PORT) --baud $(BAUD) write_flash --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
 
 erase:
 	$(ECHO) "Erase flash"
-	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) erase_flash
+	$(Q)$(ESPTOOL) --chip esp8266 --port $(PORT) --baud $(BAUD) erase_flash
 
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
 $(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)$(ESPTOOL) elf2image $^
+	$(Q)$(ESPTOOL) --chip esp8266 elf2image $^
 	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
 
 $(BUILD)/firmware.elf: $(OBJ)
