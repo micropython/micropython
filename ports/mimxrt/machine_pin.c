@@ -249,7 +249,8 @@ void machine_pin_config(const machine_pin_obj_t *self, uint8_t mode,
         GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
         GPIO_PortClearInterruptFlags(self->gpio, ~0);
 
-        NVIC_SetPriority(irq_num, IRQ_PRI_EXTINT);
+        assert(irq_num >= 0); // possible values include NotAvail_IRQn=-128, but in practice that never occurs
+        NVIC_SetPriority(IRQn_NONNEG(irq_num), IRQ_PRI_EXTINT);
         EnableIRQ(irq_num);
     }
 }
