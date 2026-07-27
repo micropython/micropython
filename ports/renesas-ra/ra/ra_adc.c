@@ -332,7 +332,7 @@ void ra_adc_set_resolution(uint8_t res) {
         adcer = adc_reg->ADCER;
         adcer &= (uint16_t) ~0x0006;
         adcer |= (uint16_t)adprc;
-        adc_reg->ADCER;
+        adc_reg->ADCER = adcer;
         resolution = res;
     }
     #else
@@ -347,7 +347,7 @@ void ra_adc_set_resolution(uint8_t res) {
         adcer = adc_reg->ADCER;
         adcer &= (uint16_t) ~0x0006;
         adcer |= (uint16_t)adprc;
-        adc_reg->ADCER;
+        adc_reg->ADCER = adcer;
         resolution = res;
     }
     #endif
