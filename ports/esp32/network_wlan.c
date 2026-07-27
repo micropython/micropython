@@ -400,7 +400,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         #endif
         p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
         #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
-        }
+    }
         #endif
         memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
     }
