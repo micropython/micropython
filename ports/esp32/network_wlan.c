@@ -339,8 +339,8 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
            ARG_identity, ARG_ca_cert, ARG_ttls_phase2_method,
            #if MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
            ARG_client_cert, ARG_private_key, ARG_private_key_password,
-           #endif
            ARG_disable_time_check,
+           #endif
            #if CONFIG_SOC_WIFI_SUPPORT_5G
            ARG_band_mode,
            #endif
@@ -380,24 +380,28 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     wifi_config_t wifi_sta_config = {0};
-    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     size_t len;
     const char *p;
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     int16_t min_sec = (int16_t)args[ARG_min_sec].u_int;
+    #endif
 
-    // this is mandatory and should not be None
     if (args[ARG_ssid].u_obj != mp_const_none) {
         p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
         memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
     }
 
     if (args[ARG_key].u_obj != mp_const_none) {
+        #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
         if (min_sec == WIFI_AUTH_WPA2_ENTERPRISE || min_sec == WIFI_AUTH_WPA3_ENTERPRISE) {
             // setting dummy password to prevent warning if key = None for Enterprise modes
             p = "dummypwd";
         } else {
-            p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
+        #endif
+        p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
+        #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
         }
+        #endif
         memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
     }
 
@@ -410,6 +414,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
     }
 
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     switch (min_sec) {
         case WIFI_AUTH_OPEN:
             mp_printf(&mp_plat_print, "Warning: SEC_OPEN is insecure and should be avoided!\n");
@@ -453,10 +458,12 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             break;
     }
     wifi_sta_config.sta.threshold.authmode = min_sec;
+    #endif // MICROPY_PY_NETWORK_WPA_ENTERPRISE
 
     esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     // that's it for WPA Personal
 
+    #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     if (min_sec == WIFI_AUTH_WPA2_ENTERPRISE || min_sec == WIFI_AUTH_WPA3_ENTERPRISE) {
         int16_t esp_eap_method;
         int16_t eap_method = (int16_t)args[ARG_eap_method].u_int;
@@ -544,7 +551,6 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             size_t private_key_password_len = 0;
             const char *private_key_password = NULL;
 
-            mp_printf(&mp_plat_print, "\nPlease note that EAP-TLS is so far UNTESTED and thus EXPERIMENTAL.\nUse at your own risk!\n\n");
             if (args[ARG_client_cert].u_obj != mp_const_none) {
                 client_cert = mp_obj_str_get_data(args[ARG_client_cert].u_obj, &client_cert_len);
             } else {
@@ -581,30 +587,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         #endif // MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL
 
         esp_exceptions(esp_wifi_sta_enterprise_enable());
-    } // WPA*_ENTERPRISE
-    #else // ! MICROPY_PY_NETWORK_WPA_ENTERPRISE
-    // configure any parameters that are given
-    if (n_args > 1) {
-        size_t len;
-        const char *p;
-        if (args[ARG_ssid].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
-            memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
-        }
-        if (args[ARG_key].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
-            memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
-        }
-        if (args[ARG_bssid].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
-            if (len != sizeof(wifi_sta_config.sta.bssid)) {
-                mp_raise_ValueError(NULL);
-            }
-            wifi_sta_config.sta.bssid_set = 1;
-            memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
-        }
-        esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
-    }
+    } // if (min_sec ==
     #endif // MICROPY_PY_NETWORK_WPA_ENTERPRISE
 
     esp_exceptions(esp_netif_set_hostname(wlan_sta_obj.netif, mod_network_hostname_data));
