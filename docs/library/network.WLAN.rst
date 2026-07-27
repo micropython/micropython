@@ -282,7 +282,7 @@ WPA Enterprise Mode (ESP32 only)
         * network.WLAN.EAP_PWD
         * network.WLAN.EAP_PEAP
         * network.WLAN.EAP_TTLS
-        * network.WLAN.EAP_TLS (the Micropython bindings are UNTESTED and 
+        * network.WLAN.EAP_TLS (the MicroPython bindings are UNTESTED and 
           thus EXPERIMENTAL)
 
     Common parameters:
