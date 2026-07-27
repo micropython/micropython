@@ -29,6 +29,9 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <windows.h>
 #include <unistd.h>
@@ -270,6 +273,34 @@ void msec_sleep(double msec) {
     }
     SleepEx((DWORD)msec, TRUE);
 }
+
+// The wake event.  Auto-reset, so a wait consumes it atomically, a raise with
+// nothing waiting latches for the next wait, and repeated raises coalesce.
+static HANDLE wake_event = NULL;
+
+void mp_hal_wake_event_init(void) {
+    wake_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    if (wake_event == NULL) {
+        fprintf(stderr, "FATAL: cannot create wake event: %lu\n", (unsigned long)GetLastError());
+        exit(1);
+    }
+}
+
+void mp_hal_wake_event_deinit(void) {
+    // Cleared before closing, so a concurrent raise is dropped rather than
+    // signalled on a reused handle.
+    HANDLE h = wake_event;
+    wake_event = NULL;
+    CloseHandle(h);
+}
+
+void mp_hal_signal_event(void) {
+    HANDLE h = wake_event;
+    if (h != NULL) {
+        SetEvent(h);
+    }
+}
+
 
 #ifdef _MSC_VER
 int usleep(__int64 usec) {
