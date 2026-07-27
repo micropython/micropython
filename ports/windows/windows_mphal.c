@@ -301,6 +301,45 @@ void mp_hal_signal_event(void) {
     }
 }
 
+// INFINITE is the all-ones DWORD, so a finite wait of 49 days stops one
+// millisecond short of it and the caller loops for the rest.
+static DWORD wake_event_wait_dword(uint64_t ms) {
+    return ms < INFINITE ? (DWORD)ms : INFINITE - 1;
+}
+
+int mp_hal_wake_event_wait_tv(struct timeval *tv) {
+    DWORD ms;
+    if (tv == NULL) {
+        ms = INFINITE;
+    } else {
+        // Round up, so a sub-millisecond sleep waits rather than spinning to
+        // the deadline; the timer granularity is coarser than that anyway.
+        ms = wake_event_wait_dword((uint64_t)tv->tv_sec * 1000 + ((uint64_t)tv->tv_usec + 999) / 1000);
+    }
+    if (!mp_sched_thread_can_run_callbacks()) {
+        SleepEx(ms, TRUE);
+        return 0;
+    }
+    // Anything but a timeout, including WAIT_IO_COMPLETION from the alertable
+    // wait, sends the caller back round to recompute what is left.
+    if (WaitForSingleObjectEx(wake_event, ms, TRUE) != WAIT_TIMEOUT) {
+        errno = EINTR;
+        return -1;
+    }
+    return 0;
+}
+
+void mp_hal_wake_event_wait_ms(mp_uint_t timeout_ms) {
+    DWORD ms = timeout_ms == MP_HAL_WAKE_EVENT_FOREVER
+        ? INFINITE : wake_event_wait_dword(timeout_ms);
+    // Only the thread that runs scheduled callbacks may consume the event.
+    if (!mp_sched_thread_can_run_callbacks()) {
+        SleepEx(ms, TRUE);
+        return;
+    }
+    // Alertable, so queued APCs still run.
+    WaitForSingleObjectEx(wake_event, ms, TRUE);
+}
 
 #ifdef _MSC_VER
 int usleep(__int64 usec) {
@@ -310,14 +349,13 @@ int usleep(__int64 usec) {
 #endif
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    #if MICROPY_ENABLE_SCHEDULER
     mp_uint_t start = mp_hal_ticks_ms();
-    while (mp_hal_ticks_ms() - start < ms) {
-        mp_event_wait_ms(1);
+    mp_uint_t elapsed = 0;
+    // The wait can return early, so loop until the time is up.
+    while (elapsed < ms) {
+        mp_event_wait_ms(ms - elapsed);
+        elapsed = mp_hal_ticks_ms() - start;
     }
-    #else
-    msec_sleep((double)ms);
-    #endif
 }
 
 void mp_hal_get_random(size_t n, uint8_t *buf) {
