@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <sys/time.h>
 
 #ifndef CHAR_CTRL_C
 #define CHAR_CTRL_C (3)
@@ -37,14 +38,11 @@
 #define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
 #endif
 
-// In lieu of a WFI(), slow down polling from being a tight loop.
-//
-// Note that we don't delay for the full TIMEOUT_MS, as execution
-// can't be woken from the delay.
+// Block until the timeout expires or the wake event is raised.
 #define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
     do { \
         MP_THREAD_GIL_EXIT(); \
-        mp_hal_delay_us(500); \
+        mp_hal_wake_event_wait_ms(TIMEOUT_MS); \
         MP_THREAD_GIL_ENTER(); \
     } while (0)
 
@@ -123,6 +121,15 @@ void mp_hal_wake_event_deinit(void);
 // replaces the no-op fallback in py/mphal.h.
 #define mp_hal_signal_event mp_hal_signal_event
 void mp_hal_signal_event(void);
+
+// Wait for the wake event or the timeout, whichever is first; may return early
+// regardless.  MP_HAL_WAKE_EVENT_FOREVER waits with no timeout at all.
+#define MP_HAL_WAKE_EVENT_FOREVER ((mp_uint_t)-1)
+void mp_hal_wake_event_wait_ms(mp_uint_t timeout_ms);
+
+// As above with a timeval, for sub-millisecond resolution; NULL waits with no
+// timeout.  Returns 0 on timeout, or -1 with errno EINTR if cut short.
+int mp_hal_wake_event_wait_tv(struct timeval *tv);
 
 #if MICROPY_PY_BLUETOOTH
 enum {
