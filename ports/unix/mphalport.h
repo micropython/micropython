@@ -114,6 +114,16 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
 
 void mp_hal_get_random(size_t n, uint8_t *buf);
 
+// The wake event ends a blocking wait when something needs attention.  It
+// latches, so a raise between waits isn't lost.
+void mp_hal_wake_event_init(void);
+void mp_hal_wake_event_deinit(void);
+
+// Raises it, from any thread or from a signal handler.  Defining the name
+// replaces the no-op fallback in py/mphal.h.
+#define mp_hal_signal_event mp_hal_signal_event
+void mp_hal_signal_event(void);
+
 #if MICROPY_PY_BLUETOOTH
 enum {
     MP_HAL_MAC_BDADDR,

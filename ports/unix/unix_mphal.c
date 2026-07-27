@@ -25,16 +25,94 @@
  */
 
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
 #include <sys/time.h>
+#include <sys/select.h>
 #include <fcntl.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
+
+#ifdef __linux__
+#include <sys/eventfd.h>
+// An eventfd is read and written as a 64-bit counter.
+typedef uint64_t wake_event_token_t;
+#else
+// The self-pipe carries one byte per wakeup.
+typedef uint8_t wake_event_token_t;
+#endif
+
+// The wake event: a Linux eventfd, or a self-pipe elsewhere.  Reading
+// wake_event_fd drains it, writing wake_event_wr_fd raises it; on Linux both
+// are the same descriptor, and both are negative when not initialised.
+static int wake_event_fd = -1;
+static int wake_event_wr_fd = -1;
+
+#ifndef __linux__
+static int set_cloexec_nonblock(int fd) {
+    // pipe2() would do this atomically at creation but is absent on macOS.
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+        return -1;
+    }
+    return fcntl(fd, F_SETFD, FD_CLOEXEC);
+}
+#endif
+
+void mp_hal_wake_event_init(void) {
+    #ifdef __linux__
+    wake_event_fd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
+    wake_event_wr_fd = wake_event_fd;
+    #else
+    int fds[2];
+    if (pipe(fds) == 0) {
+        if (set_cloexec_nonblock(fds[0]) == 0 && set_cloexec_nonblock(fds[1]) == 0) {
+            wake_event_fd = fds[0];
+            wake_event_wr_fd = fds[1];
+        } else {
+            close(fds[0]);
+            close(fds[1]);
+        }
+    }
+    #endif
+    if (wake_event_fd < 0) {
+        fprintf(stderr, "FATAL: cannot create wake event: %s\n", strerror(errno));
+        exit(1);
+    }
+}
+
+void mp_hal_wake_event_deinit(void) {
+    // Cleared before closing, so a concurrent raise is dropped rather than
+    // written to a reused descriptor.
+    int rd = wake_event_fd;
+    int wr = wake_event_wr_fd;
+    wake_event_fd = -1;
+    wake_event_wr_fd = -1;
+    if (wr != rd) {
+        close(wr);
+    }
+    close(rd);
+}
+
+void mp_hal_signal_event(void) {
+    int fd = wake_event_wr_fd;
+    if (fd < 0) {
+        return;
+    }
+    // Reachable from a signal handler, so no allocation, and errno is
+    // preserved.  A failed write means the event is already raised.
+    int errno_save = errno;
+    wake_event_token_t token = 1;
+    ssize_t ret = write(fd, &token, sizeof(token));
+    (void)ret;
+    errno = errno_save;
+}
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 25)
