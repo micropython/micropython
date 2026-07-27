@@ -491,12 +491,7 @@ static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
 // Update interrupt configuration based on the new contents of 'self'
 static void machine_can_update_irqs(machine_can_obj_t *self) {
     struct machine_can_port *port = self->port;
-    uint16_t triggers = self->mp_irq_trigger;
-    uint64_t irq_flags = 0;
     uint64_t irq_tx_mask = ~((1ULL << port->flexcan_txmb_start) - 1);
-    if (triggers & MP_CAN_IRQ_RX) {
-        irq_flags |= kFLEXCAN_RxFifoFrameAvlFlag;
-    }
     // Clear all pending MB interrupt flags
     FLEXCAN_ClearMbStatusFlags(port->can_inst,
         irq_tx_mask | (kFLEXCAN_RxFifoOverflowFlag | kFLEXCAN_RxFifoWarningFlag | kFLEXCAN_RxFifoFrameAvlFlag));
