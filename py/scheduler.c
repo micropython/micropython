@@ -156,6 +156,9 @@ void mp_sched_unlock(void) {
             #endif
             mp_sched_num_pending()) {
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+            // Only one callback runs per mp_handle_pending(), so raise again
+            // for those still queued.  Each run removes one, so this ends.
+            mp_hal_signal_event();
         } else {
             MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
         }
