@@ -93,8 +93,13 @@ static void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
         );
 }
 
+// A port can override this to lazily bring up the cyw43 chip on first use.
+MP_WEAK void network_cyw43_init(void) {
+}
+
 static mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    network_cyw43_init();
     if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
         return MP_OBJ_FROM_PTR(&network_cyw43_wl_sta);
     } else {
