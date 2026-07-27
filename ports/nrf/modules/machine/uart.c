@@ -511,17 +511,16 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf, mp_uin
 
 static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
-    (void)self;
-    mp_uint_t ret = 0;
-
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
+        mp_uint_t ret = 0;
         if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self) != 0) {
             ret |= MP_STREAM_POLL_RD;
         }
         if ((flags & MP_STREAM_POLL_WR) && !nrfx_uart_tx_in_progress(self->p_uart)) {
             ret |= MP_STREAM_POLL_WR;
         }
+        return ret;
     } else if (request == MP_STREAM_FLUSH) {
         while (nrfx_uart_tx_in_progress(self->p_uart)) {
             MICROPY_EVENT_POLL_HOOK;
