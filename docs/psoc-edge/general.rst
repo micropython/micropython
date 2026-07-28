@@ -10,7 +10,7 @@ The PSOC™ Edge devices are based on high performance Arm® Cortex®-M55, inclu
 
 The PSOC™ Edge port supports boards powered by the `Infineon PSOC™ Edge family of microcontrollers <https://www.infineon.com/products/microcontroller/32-bit-psoc-arm-cortex/32-bit-psoc-edge-arm>`_ and currently supports the following MCUs:
 
-* PSoC™ Edge 84
+* PSOC™ Edge E84
 
 .. _Supported boards:
 
