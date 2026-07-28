@@ -21,6 +21,13 @@ working with this port it may be useful to get an overview of the microcontrolle
    general.rst
    installation.rst
 
+.. note::
+
+    You can follow the latest progress for this port in the `Infineon MicroPython
+    PSOC™ Edge fork <https://github.com/Infineon/micropython-psoc-edge>`_.
+    We are working to bring those features here. Meanwhile, you can try them early
+    by installing the fork version.
+
 Pins and GPIO
 -------------
 
