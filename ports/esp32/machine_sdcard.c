@@ -407,7 +407,27 @@ static mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         }
 
         #if SOC_SDMMC_USE_GPIO_MATRIX
-        // Optionally configure all the SDMMC pins, if chip supports this
+        // Apply board-level pin defaults (mpconfigboard.h), then let an explicit
+        // clk/cmd/data argument override below. Grouped by bus width and nested
+        // so each wider mode builds on the narrower one: CLK/CMD/D0 (1-bit), then
+        // D1-D3 (4-bit), then D4-D7 (8-bit eMMC). An unset group stays at the
+        // driver default (GPIO_NUM_NC).
+        if (MICROPY_HW_SDMMC_CLK != GPIO_NUM_NC) {
+            slot_config.clk = MICROPY_HW_SDMMC_CLK;
+            slot_config.cmd = MICROPY_HW_SDMMC_CMD;
+            slot_config.d0 = MICROPY_HW_SDMMC_D0;
+            if (MICROPY_HW_SDMMC_D1 != GPIO_NUM_NC) {
+                slot_config.d1 = MICROPY_HW_SDMMC_D1;
+                slot_config.d2 = MICROPY_HW_SDMMC_D2;
+                slot_config.d3 = MICROPY_HW_SDMMC_D3;
+                if (MICROPY_HW_SDMMC_D4 != GPIO_NUM_NC) {
+                    slot_config.d4 = MICROPY_HW_SDMMC_D4;
+                    slot_config.d5 = MICROPY_HW_SDMMC_D5;
+                    slot_config.d6 = MICROPY_HW_SDMMC_D6;
+                    slot_config.d7 = MICROPY_HW_SDMMC_D7;
+                }
+            }
+        }
         SET_CONFIG_PIN(slot_config, clk, ARG_sck); // reuse SPI SCK for CLK
         SET_CONFIG_PIN(slot_config, cmd, ARG_cmd);
         if (arg_vals[ARG_data].u_obj != mp_const_none) {
