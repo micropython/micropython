@@ -47,7 +47,9 @@
 // This counter tracks the current depth of calls into C code that originated
 // externally, ie from JavaScript.  When the counter is 0 that corresponds to
 // the top-level call into C.
+#if MICROPY_GC_SPLIT_HEAP_AUTO
 static size_t external_call_depth = 0;
+#endif
 
 // Emscripten defaults to a 64k C-stack, so our limit should be less than that.
 #define CSTACK_SIZE (32 * 1024)
@@ -57,12 +59,14 @@ static void gc_collect_top_level(mp_obj_t root_obj);
 #endif
 
 void external_call_depth_inc(void) {
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
     ++external_call_depth;
+    #endif
 }
 
 void external_call_depth_dec(mp_obj_t root_obj) {
-    --external_call_depth;
     #if MICROPY_GC_SPLIT_HEAP_AUTO
+    --external_call_depth;
     if (external_call_depth == 0) {
         gc_collect_top_level(root_obj);
     }
