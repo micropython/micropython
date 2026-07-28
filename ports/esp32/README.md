@@ -272,7 +272,7 @@ default. Here's how to enable it.
     messages from WPA Supplicant" and set the log level to "INFO" to verify
     your build works properly with your AP and network.
 
-(1) The Micropython bindings for EAP-TLS are considered experimental, not
+(1) The MicroPython bindings for EAP-TLS are considered experimental, not
 the underlying ESP-IDF code, which has been supported by Espressif for quite
 some time now.
 
