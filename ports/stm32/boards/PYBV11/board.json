@@ -17,7 +17,9 @@
         "DP": "Double-precision float",
         "DP_THREAD": "Double precision float + Threads",
         "NETWORK": "Wiznet 5200 Driver",
-        "THREAD": "Threading"
+        "THREAD": "Threading",
+        "TYPING_2B": "Typing_2b",
+        "TYPING_2C": "Typing_2c"
     },
     "vendor": "George Robotics"
 }
