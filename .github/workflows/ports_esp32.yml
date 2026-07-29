@@ -31,8 +31,8 @@ jobs:
           - *oldest
           - *newest
         ci_func:  # names are functions in ci.sh
-          - esp32_build_cmod_spiram_s2
-          - esp32_build_s3_c3
+          - esp32_build_cmod_spiram_d2wd
+          - esp32_build_s2_s3_c3
           - esp32_build_c2_c5_c6
           - esp32_build_h2_p4
         exclude:
