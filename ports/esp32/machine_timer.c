@@ -89,7 +89,7 @@ static bool machine_timer_handler(machine_timer_obj_t *self) {
 
 machine_timer_obj_t *machine_timer_create(mp_int_t id) {
     // Check hardware timer ID is valid
-    if (id >= SOC_TIMER_GROUP_TOTAL_TIMERS) {
+    if (id >= (mp_int_t)SOC_TIMER_GROUP_TOTAL_TIMERS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(%d) doesn't exist, there are only %d hardware timers"), id, SOC_TIMER_GROUP_TOTAL_TIMERS);
     }
 
