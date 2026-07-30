@@ -17,7 +17,14 @@ if sys.platform == "nrf":
 import unittest
 
 # Hardware timers are only supported on the esp32 port
-SUPPORTS_HARDWARE_TIMERS = sys.platform == "esp32"
+NUM_HARDWARE_TIMERS = 0
+if sys.platform == "esp32":
+    if "ESP32-C2" in sys.implementation._machine:
+        # Only one hardware timer on ESP32-C2
+        NUM_HARDWARE_TIMERS = 1
+    else:
+        # at least two on other ESP32 SoCs
+        NUM_HARDWARE_TIMERS = 2
 
 # Hard IRQs are not supported on the esp32 port
 SUPPORTS_HARD_IRQ = sys.platform != "esp32"
@@ -28,9 +35,12 @@ class Test(unittest.TestCase):
         self._test_create(-1)
         self._test_create_multiple(-1, -1)
 
-    @unittest.skipUnless(SUPPORTS_HARDWARE_TIMERS, "no hardware timers")
+    @unittest.skipUnless(NUM_HARDWARE_TIMERS > 0, "no hardware timers")
     def test_hardware_create(self):
         self._test_create(0)
+
+    @unittest.skipUnless(NUM_HARDWARE_TIMERS >= 2, "less than 2 hardware timers")
+    def test_hardware_create_multiple(self):
         self._test_create_multiple(0, 1)
 
     def test_virtual_softirq(self):
@@ -42,12 +52,12 @@ class Test(unittest.TestCase):
         self._test_all_freq_period(-1, Timer.ONE_SHOT, True)
         self._test_all_freq_period(-1, Timer.PERIODIC, True)
 
-    @unittest.skipUnless(SUPPORTS_HARDWARE_TIMERS, "no hardware timers")
+    @unittest.skipUnless(NUM_HARDWARE_TIMERS > 0, "no hardware timers")
     def test_hardware_softirq(self):
         self._test_all_freq_period(0, Timer.ONE_SHOT, False)
         self._test_all_freq_period(0, Timer.PERIODIC, False)
 
-    @unittest.skipUnless(SUPPORTS_HARDWARE_TIMERS, "no hardware timers")
+    @unittest.skipUnless(NUM_HARDWARE_TIMERS > 0, "no hardware timers")
     @unittest.skipUnless(SUPPORTS_HARD_IRQ, "no hard-irq support")
     def test_hardware_hardirq(self):
         self._test_all_freq_period(0, Timer.ONE_SHOT, True)
