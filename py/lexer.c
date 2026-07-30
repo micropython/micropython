@@ -275,6 +275,9 @@ static const char *const tok_kw[] = {
     "await",
     #endif
     "break",
+    #if MICROPY_PY_MATCH
+    "case",
+    #endif
     "class",
     "continue",
     "def",
@@ -291,6 +294,9 @@ static const char *const tok_kw[] = {
     "in",
     "is",
     "lambda",
+    #if MICROPY_PY_MATCH
+    "match",
+    #endif
     "nonlocal",
     "not",
     "or",
@@ -721,6 +727,9 @@ static bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
+    // Previous token kind (used for soft-keyword decisions before we overwrite tok_kind).
+    mp_token_kind_t prev_tok_kind = lex->tok_kind;
+
     // start new token text
     vstr_reset(&lex->vstr);
 
@@ -932,7 +941,21 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         for (size_t i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
             int cmp = strcmp(s, tok_kw[i]);
             if (cmp == 0) {
-                lex->tok_kind = MP_TOKEN_KW_FALSE + i;
+                mp_token_kind_t kw = MP_TOKEN_KW_FALSE + i;
+                #if MICROPY_PY_MATCH
+                // Soft-keyword approximation for match/case: only at statement start.
+                // This keeps attribute access like re.match working (unlike hard keywords).
+                if ((kw == MP_TOKEN_KW_MATCH || kw == MP_TOKEN_KW_CASE)
+                    && prev_tok_kind != MP_TOKEN_NEWLINE
+                    && prev_tok_kind != MP_TOKEN_INDENT
+                    && prev_tok_kind != MP_TOKEN_DEDENT
+                    && prev_tok_kind != MP_TOKEN_END
+                    && prev_tok_kind != MP_TOKEN_DEL_SEMICOLON
+                    && prev_tok_kind != MP_TOKEN_DEL_COLON) {
+                    break; // leave as MP_TOKEN_NAME
+                }
+                #endif
+                lex->tok_kind = kw;
                 if (lex->tok_kind == MP_TOKEN_KW___DEBUG__) {
                     lex->tok_kind = (MP_STATE_VM(mp_optimise_value) == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
                 }
@@ -1075,6 +1098,9 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
 
     // store sentinel for first indentation level
     lex->indent_level[0] = 0;
+
+    // Sentinel so the first token can be recognised as a soft keyword (match/case).
+    lex->tok_kind = MP_TOKEN_END;
 
     // load lexer with start of file, advancing lex->column to 1
     // start with dummy bytes and use next_char() for proper EOL/EOF handling
