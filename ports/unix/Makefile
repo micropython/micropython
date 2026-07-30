@@ -63,20 +63,24 @@ CFLAGS += -D_FILE_OFFSET_BITS=64
 # This option has no effect on 64-bit builds.
 CFLAGS += -D_TIME_BITS=64
 
+# Debug info flag is added if either DEBUG=1 or STRIP= is passed to make
+# (to produce a debug binary, or a release binary with all symbols, respectively.)
+DEBUG_INFO = -g
+
 # Debugging/Optimization
 ifdef DEBUG
 COPT ?= -Og
+CFLAGS += $(DEBUG_INFO)
 else
 COPT ?= -Os
 COPT += -DNDEBUG
+ifndef STRIP
+CFLAGS += $(DEBUG_INFO)
 endif
+endif  # ifdef DEBUG
 
 # Remove unused sections.
 COPT += -fdata-sections -ffunction-sections
-
-# Note: Symbols and debug information will still be stripped from the final binary
-# unless "DEBUG=1" or "STRIP=" is passed to make, see README.md for details.
-CFLAGS += -g
 
 ifndef DEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
