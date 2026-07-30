@@ -5,20 +5,44 @@ def test_literal():
         match x:
             case True:
                 return "true"
+            case False:
+                return "false"
             case None:
                 return "none"
             case 1:
                 return "one"
+            case 1.5:
+                return "float"
+            case _:
+                return "other"
+
+    assert f(True) == "true"
+    assert f(False) == "false"
+    assert f(None) == "none"
+    assert f(1) == "one"
+    assert f(1.5) == "float"
+    assert f(9) == "other"
+
+    def g(x):
+        match x:
             case "a":
                 return "str"
             case _:
                 return "other"
 
-    assert f(True) == "true"
-    assert f(None) == "none"
-    assert f(1) == "one"
-    assert f("a") == "str"
-    assert f(9) == "other"
+    assert g("a") == "str"
+    assert g("b") == "other"
+
+    def h(x):
+        match x:
+            case b"ab":
+                return "bytes"
+            case _:
+                return "other"
+
+    assert h(b"ab") == "bytes"
+    assert h(b"x") == "other"
+
 
 
 def test_capture():
@@ -44,6 +68,24 @@ def test_or_and_guard():
     assert f(4) == "no"
 
 
+def test_or_sequence_captures():
+    def f(x):
+        match x:
+            case (a, 1) | (a, 2):
+                return ("seq", a)
+            case () | []:
+                return "empty"
+            case _:
+                return "no"
+
+    assert f((9, 1)) == ("seq", 9)
+    assert f((9, 2)) == ("seq", 9)
+    assert f([8, 1]) == ("seq", 8)  # sequence patterns match lists too
+    assert f(()) == "empty"
+    assert f([]) == "empty"
+    assert f((9, 3)) == "no"
+
+
 def test_sequence():
     def f(x):
         match x:
@@ -61,9 +103,39 @@ def test_sequence():
     assert f(()) == "empty"
     assert f((1,)) == "no"
 
+    def g(x):
+        match x:
+            case (_, z):
+                return z
+            case _:
+                return None
+
+    assert g((0, 5)) == 5
+    assert g([9, 4]) == 4
+
+
+
+def test_soft_keyword_assign():
+    match = 1
+    assert match == 1
+    match = 2
+    assert match == 2
+    match  = 6
+    assert match == 6
+    case = 3
+    assert case == 3
+    # Semicolon form kept in exec so tools that treat match as soft-keyword
+    # do not mis-parse this file.
+    ns = {}
+    exec("pass; match = 4\npass; case = 5", ns)
+    assert ns["match"] == 4
+    assert ns["case"] == 5
+
 
 test_literal()
 test_capture()
 test_or_and_guard()
+test_or_sequence_captures()
 test_sequence()
+test_soft_keyword_assign()
 print("PASS")
