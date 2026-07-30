@@ -65,7 +65,7 @@ CFLAGS += -D_TIME_BITS=64
 
 # Debug info flag is added if either DEBUG=1 or STRIP= is passed to make
 # (to produce a debug binary, or a release binary with all symbols, respectively.)
-DEBUG_INFO = -g
+DEBUG_INFO = -ggdb3
 
 # Debugging/Optimization
 ifdef DEBUG

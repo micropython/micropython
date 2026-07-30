@@ -53,7 +53,7 @@ endif
 # QSTR generation uses the same CFLAGS, with these modifications.
 QSTR_GEN_FLAGS = -DNO_QSTR
 # Note: := to force evaluation immediately.
-QSTR_GEN_CFLAGS := $(CFLAGS)
+QSTR_GEN_CFLAGS := $(filter-out -g%,$(CFLAGS))
 QSTR_GEN_CFLAGS += $(QSTR_GEN_FLAGS)
 QSTR_GEN_CXXFLAGS := $(CXXFLAGS)
 QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
