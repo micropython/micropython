@@ -201,14 +201,12 @@ typedef struct machine_can_port {
         uint8_t idx;
         bool failed;
     } txd_ring[CAN_TX_QUEUE_LEN];
-    volatile bool rx_pending;
     volatile bool state_pending;
 } machine_can_port_t;
 
 static void can_hw_create(machine_can_obj_t *self);
 static void can_hw_apply_filter(machine_can_obj_t *self);
 static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr);
-static machine_can_state_t machine_can_port_get_state(machine_can_obj_t *self);
 
 static void can_check_esp_err(esp_err_t err) {
     if (err != ESP_OK) {
@@ -245,8 +243,9 @@ static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
 // Wake the MicroPython irq handler if the event type is enabled. The handler
 // reads the actual event(s) back via machine_can_port_irq_flags().
 static void can_sched_irq(machine_can_obj_t *self, mp_uint_t trigger_bit) {
-    if ((trigger_bit & self->mp_irq_trigger) && self->mp_irq_obj != NULL &&
-        self->mp_irq_obj->handler != mp_const_none) {
+    // A non-zero mp_irq_trigger implies mp_irq_obj is set, and mp_irq_handler()
+    // itself tolerates a None handler, so no further guards are needed here.
+    if (trigger_bit & self->mp_irq_trigger) {
         mp_irq_handler(self->mp_irq_obj);
     }
 }
@@ -319,7 +318,6 @@ static bool can_on_rx_done(twai_node_handle_t node, const twai_rx_done_event_dat
     }
     port->rx_head = next;
 
-    port->rx_pending = true;
     can_sched_irq(self, MP_CAN_IRQ_RX);
     return false;
 }
@@ -392,21 +390,25 @@ static void machine_can_update_irqs(machine_can_obj_t *self) {
 // returning 0 when drained. The handler is expected to loop until 0.
 static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     machine_can_port_t *port = self->port;
+    mp_uint_t flags = 0;
+    // RX is level-triggered: report it while frames remain in the ring, so a
+    // handler looping on `flags() & IRQ_RX` drains them all and it isn't masked
+    // by a queued TX completion.
+    if (port->rx_head != port->rx_tail) {
+        flags |= MP_CAN_IRQ_RX;
+    }
+    // TX completions each carry a buffer index, so report one per call.
     if (port->txd_tail != port->txd_head) {
         mp_uint_t idx = port->txd_ring[port->txd_tail].idx;
         bool failed = port->txd_ring[port->txd_tail].failed;
         port->txd_tail = (port->txd_tail + 1) % CAN_TX_QUEUE_LEN;
-        return MP_CAN_IRQ_TX | (idx << MP_CAN_IRQ_IDX_SHIFT) | (failed ? MP_CAN_IRQ_TX_FAILED : 0);
-    }
-    if (port->rx_pending) {
-        port->rx_pending = false;
-        return MP_CAN_IRQ_RX;
+        flags |= MP_CAN_IRQ_TX | (idx << MP_CAN_IRQ_IDX_SHIFT) | (failed ? MP_CAN_IRQ_TX_FAILED : 0);
     }
     if (port->state_pending) {
         port->state_pending = false;
-        return MP_CAN_IRQ_STATE;
+        flags |= MP_CAN_IRQ_STATE;
     }
-    return 0;
+    return flags;
 }
 
 // -------------------------------------------------------------------------
@@ -522,7 +524,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         port->tx_slots[i].state = CAN_TX_FREE;
     }
     port->txd_head = port->txd_tail = 0;
-    port->rx_pending = port->state_pending = false;
+    port->state_pending = false;
     port->num_warning = port->num_passive = port->num_bus_off = 0;
 
     can_hw_create(self);
@@ -705,12 +707,6 @@ static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr) {
 static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, const byte *data, size_t data_len, mp_uint_t flags) {
     machine_can_port_t *port = self->port;
 
-    // Can't transmit at all if the bus is off or the node is stopped.
-    machine_can_state_t state = machine_can_port_get_state(self);
-    if (state == MP_CAN_STATE_BUS_OFF || state == MP_CAN_STATE_STOPPED) {
-        mp_raise_OSError(MP_EIO);
-    }
-
     bool ext = (flags & CAN_MSG_FLAG_EXT_ID) != 0;
     bool rtr = (flags & CAN_MSG_FLAG_RTR) != 0;
     uint32_t prio = can_tx_prio(id, ext, rtr);
@@ -753,13 +749,16 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     slot->state = CAN_TX_PENDING;
     portEXIT_CRITICAL(&port->tx_mux);
 
+    // can_tx_kick() submits the highest-priority pending frame if the TX buffer
+    // is free. A hard error (bus-off / stopped / listen-only) means this frame
+    // can't be sent at all: drop it and report a failure to queue (return -1 ->
+    // None) rather than raising, matching the other ports' send() behaviour.
     esp_err_t err = can_tx_kick(port, false);
     if (err != ESP_OK && err != ESP_ERR_TIMEOUT) {
-        // Bus-off / disabled / listen-only: the frame cannot be sent at all.
         portENTER_CRITICAL(&port->tx_mux);
         slot->state = CAN_TX_FREE;
         portEXIT_CRITICAL(&port->tx_mux);
-        mp_raise_OSError(MP_EIO);
+        return -1;
     }
     return idx;
 }
