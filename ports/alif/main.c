@@ -200,7 +200,7 @@ void nlr_jump_fail(void *val) {
 
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
-    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    mp_printf(&mp_plat_print, "Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     panic("Assertion failed");
 }
 #endif
