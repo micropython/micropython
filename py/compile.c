@@ -1341,7 +1341,8 @@ static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *d
         }
         for (size_t i = 0; i < *n; i++) {
             if (dest[i] == q) {
-                return true; // already present (ok within one closed pattern tree for nested? PEP disallows duplicate in one pattern - keep simple)
+                compile_syntax_error(comp, pn, MP_ERROR_TEXT("multiple assignments to name in pattern"));
+                return false;
             }
         }
         if (*n >= max_n) {
@@ -1356,7 +1357,7 @@ static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *d
     }
     mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
     int kind = MP_PARSE_NODE_STRUCT_KIND(pns);
-    if (kind == PN_match_literal) {
+    if (kind == PN_match_literal || kind == PN_const_object) {
         return true;
     }
     if (kind == PN_match_closed_pattern) {
@@ -1482,6 +1483,12 @@ static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse
         return;
     }
 
+    if (kind == PN_const_object) {
+        // Non-interned bytes/float/complex literals are folded to const objects.
+        compile_match_literal_equal(comp, q_subj, pn, l_fail);
+        return;
+    }
+
     if (kind == PN_match_seq_tuple || kind == PN_match_seq_list) {
         mp_parse_node_t *items = NULL;
         size_t n_items = 0;
@@ -1516,6 +1523,13 @@ static void compile_match_or_pattern(compiler_t *comp, qstr q_subj, mp_parse_nod
     size_t n_alts = mp_parse_node_extract_list(&pn, PN_match_or_pattern, &alts);
     if (n_alts <= 1) {
         mp_parse_node_t only = (n_alts == 1) ? alts[0] : pn;
+        // Strict: a single pattern may not bind the same name more than once.
+        enum { MATCH_MAX_CAPS = 16 };
+        qstr caps[MATCH_MAX_CAPS];
+        size_t n = 0;
+        if (!match_collect_captures(comp, only, caps, &n, MATCH_MAX_CAPS)) {
+            return;
+        }
         compile_match_closed_pattern(comp, q_subj, only, l_fail);
         return;
     }
