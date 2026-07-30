@@ -333,7 +333,10 @@
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 #if SOC_CPU_IDRAM_SPLIT_USING_PMP && !CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT
-// On targets with this configuration all RAM is executable so no need for a custom commit function.
+// On targets with this configuration all heap is executable (IRAM region), provided we allocate it as such
+// (on many targets the malloc() function already returns instruction memory in this config so this macro is
+// redundant, but on ESP32-C2 it does not - and it may change in a future ESP-IDF.)
+#define MP_PLAT_ALLOC_HEAP(size) heap_caps_malloc(size, MALLOC_CAP_EXEC)
 #else
 void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
