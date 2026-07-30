@@ -1357,12 +1357,6 @@ static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *d
     }
     mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
     int kind = MP_PARSE_NODE_STRUCT_KIND(pns);
-    if (kind == PN_match_literal || kind == PN_const_object) {
-        return true;
-    }
-    if (kind == PN_match_closed_pattern) {
-        return match_collect_captures(comp, pns->nodes[0], dest, n, max_n);
-    }
     if (kind == PN_match_seq_tuple || kind == PN_match_seq_list) {
         if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
             return true;
@@ -1374,19 +1368,8 @@ static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *d
                 return false;
             }
         }
-        return true;
     }
-    if (kind == PN_match_or_pattern) {
-        // Should not recurse into or here; caller handles alts separately.
-        return true;
-    }
-    // Nested closed via or-list extract may pass raw children.
-    size_t num = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (size_t i = 0; i < num; i++) {
-        if (!match_collect_captures(comp, pns->nodes[i], dest, n, max_n)) {
-            return false;
-        }
-    }
+    // Other structs (const objects, folded literals) have no captures.
     return true;
 }
 
@@ -1410,33 +1393,19 @@ static bool match_capture_sets_equal(qstr *a, size_t na, qstr *b, size_t nb) {
 }
 
 static bool match_closed_is_irrefutable(mp_parse_node_t pn) {
-    if (MP_PARSE_NODE_IS_ID(pn)) {
-        return true; // capture or _
-    }
-    if (!MP_PARSE_NODE_IS_STRUCT(pn)) {
-        return false;
-    }
-    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
-    int kind = MP_PARSE_NODE_STRUCT_KIND(pns);
-    if (kind == PN_match_closed_pattern) {
-        return match_closed_is_irrefutable(pns->nodes[0]);
-    }
-    // Literals and sequences are refutable.
-    return false;
+    // Only bare names / _ are irrefutable in this subset (parser folds or-rules).
+    return MP_PARSE_NODE_IS_ID(pn);
 }
 
 static bool match_or_is_irrefutable(mp_parse_node_t pn) {
     mp_parse_node_t *alts;
     size_t n_alts = mp_parse_node_extract_list(&pn, PN_match_or_pattern, &alts);
-    if (n_alts == 0) {
-        return match_closed_is_irrefutable(pn);
-    }
     for (size_t i = 0; i < n_alts; i++) {
         if (!match_closed_is_irrefutable(alts[i])) {
             return false;
         }
     }
-    return true;
+    return n_alts > 0;
 }
 
 static void compile_match_literal_equal(compiler_t *comp, qstr q_subj, mp_parse_node_t lit, uint l_fail) {
@@ -1473,22 +1442,6 @@ static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse
     mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
     int kind = MP_PARSE_NODE_STRUCT_KIND(pns);
 
-    if (kind == PN_match_closed_pattern) {
-        compile_match_closed_pattern(comp, q_subj, pns->nodes[0], l_fail);
-        return;
-    }
-
-    if (kind == PN_match_literal) {
-        compile_match_literal_equal(comp, q_subj, pns->nodes[0], l_fail);
-        return;
-    }
-
-    if (kind == PN_const_object) {
-        // Non-interned bytes/float/complex literals are folded to const objects.
-        compile_match_literal_equal(comp, q_subj, pn, l_fail);
-        return;
-    }
-
     if (kind == PN_match_seq_tuple || kind == PN_match_seq_list) {
         mp_parse_node_t *items = NULL;
         size_t n_items = 0;
@@ -1502,9 +1455,6 @@ static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse
         EMIT_ARG(binary_op, MP_BINARY_OP_EQUAL);
         EMIT_ARG(pop_jump_if, false, l_fail);
         for (size_t i = 0; i < n_items; i++) {
-            // Element subject: reuse a per-index temp via stack subscr into nested match.
-            // Store element in a temporary name .match_e then recurse... Keep it simple:
-            // load subject[i] into .match_e and match against that.
             qstr q_elem = qstr_from_str(".match_e");
             compile_load_id(comp, q_subj);
             EMIT_ARG(load_const_small_int, i);
@@ -1515,7 +1465,8 @@ static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse
         return;
     }
 
-    compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid pattern"));
+    // Const objects (bytes/float/...) and any other folded literal struct.
+    compile_match_literal_equal(comp, q_subj, pn, l_fail);
 }
 
 static void compile_match_or_pattern(compiler_t *comp, qstr q_subj, mp_parse_node_t pn, uint l_fail) {
