@@ -727,8 +727,10 @@ static bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
+    #if MICROPY_PY_MATCH
     // Previous token kind (used for soft-keyword decisions before we overwrite tok_kind).
     mp_token_kind_t prev_tok_kind = lex->tok_kind;
+    #endif
 
     // start new token text
     vstr_reset(&lex->vstr);
