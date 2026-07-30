@@ -27,6 +27,11 @@
 // This file enables and configures features common to all variants
 // other than "minimal".
 
+// Experimental match/case (subset of PEP 634) for unix non-minimal variants.
+#ifndef MICROPY_PY_MATCH
+#define MICROPY_PY_MATCH               (1)
+#endif
+
 // Send raise KeyboardInterrupt directly from the signal handler rather than
 // scheduling it into the VM.
 #define MICROPY_ASYNC_KBD_INTR         (!MICROPY_PY_THREAD_GIL)
