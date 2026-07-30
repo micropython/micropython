@@ -945,16 +945,25 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             if (cmp == 0) {
                 mp_token_kind_t kw = MP_TOKEN_KW_FALSE + i;
                 #if MICROPY_PY_MATCH
-                // Soft-keyword approximation for match/case: only at statement start.
-                // This keeps attribute access like re.match working (unlike hard keywords).
-                if ((kw == MP_TOKEN_KW_MATCH || kw == MP_TOKEN_KW_CASE)
-                    && prev_tok_kind != MP_TOKEN_NEWLINE
-                    && prev_tok_kind != MP_TOKEN_INDENT
-                    && prev_tok_kind != MP_TOKEN_DEDENT
-                    && prev_tok_kind != MP_TOKEN_END
-                    && prev_tok_kind != MP_TOKEN_DEL_SEMICOLON
-                    && prev_tok_kind != MP_TOKEN_DEL_COLON) {
-                    break; // leave as MP_TOKEN_NAME
+                // Soft-keyword approximation for match/case:
+                // - only at statement start (keeps re.match / class case working)
+                // - not when followed by '=' (keeps match = ... / case = ... working)
+                if (kw == MP_TOKEN_KW_MATCH || kw == MP_TOKEN_KW_CASE) {
+                    bool at_stmt_start =
+                        prev_tok_kind == MP_TOKEN_NEWLINE
+                        || prev_tok_kind == MP_TOKEN_INDENT
+                        || prev_tok_kind == MP_TOKEN_DEDENT
+                        || prev_tok_kind == MP_TOKEN_END
+                        || prev_tok_kind == MP_TOKEN_DEL_SEMICOLON
+                        || prev_tok_kind == MP_TOKEN_DEL_COLON;
+                    bool followed_by_assign = is_char(lex, '=')
+                        || (is_whitespace(lex) && !is_physical_newline(lex) && is_char_following(lex, '='))
+                        || (is_whitespace(lex) && !is_physical_newline(lex)
+                            && unichar_isspace(lex->chr1) && lex->chr1 != '\n'
+                            && lex->chr2 == '=');
+                    if (!at_stmt_start || followed_by_assign) {
+                        break; // leave as MP_TOKEN_NAME
+                    }
                 }
                 #endif
                 lex->tok_kind = kw;
