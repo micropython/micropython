@@ -87,7 +87,7 @@
 // #define MICROPY_HW_CAN3_RX          (pyb_pin_CAN3_RX)
 
 // USER is pulled high, and pressing the button makes the input go low.
-#define MICROPY_HW_USRSW_PIN        (pyb_pin_BUTTON)
+#define MICROPY_HW_USRSW_PIN        (pyb_pin_SW)
 #define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
 #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
 #define MICROPY_HW_USRSW_PRESSED    (0)
