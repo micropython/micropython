@@ -341,10 +341,14 @@ static mp_obj_t vfs_posix_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_
     vfs_posix_require_writable(self_in);
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *old_path = vfs_posix_get_path_str(self, old_path_in);
+    size_t old_path_len = strlen(old_path) + 1;
+    char *old_path_copy = m_new(char, old_path_len);
+    memcpy(old_path_copy, old_path, old_path_len);
     const char *new_path = vfs_posix_get_path_str(self, new_path_in);
     MP_THREAD_GIL_EXIT();
-    int ret = rename(old_path, new_path);
+    int ret = rename(old_path_copy, new_path);
     MP_THREAD_GIL_ENTER();
+    m_del(char, old_path_copy, old_path_len);
     if (ret != 0) {
         mp_raise_OSError(errno);
     }
