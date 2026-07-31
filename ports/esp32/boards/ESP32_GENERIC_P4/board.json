@@ -19,7 +19,10 @@
     "url": "https://www.espressif.com/en/products/modules",
     "variants": {
         "C5_WIFI": "Support for external C5 WiFi/BLE",
-        "C6_WIFI": "Support for external C6 WiFi/BLE"
+        "C6_WIFI": "Support for external C6 WiFi/BLE",
+        "PRE_REV3": "Boards with early 0.x and 1.x chip revisions",
+        "PRE_REV3_C5_WIFI": "0.x and 1.x chip revisions with external C5 WiFi/BLE",
+        "PRE_REV3_C6_WIFI": "0.x and 1.x chip revisions with external C6 WiFi/BLE"
     },
     "vendor": "Espressif"
 }

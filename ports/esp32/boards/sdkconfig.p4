@@ -1,5 +1,7 @@
-# Select the minimum chip revision to cover all possible boards.
-CONFIG_ESP32P4_REV_MIN_0=y
+# By default only build for and support ESP32-P4 revisions 3.x and above
+# - Use the 'PRE_REV3' variants to build for earlier revisions
+# - https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/kconfig-reference.html
+CONFIG_ESP32P4_REV_MIN_300=y
 
 # Flash
 CONFIG_FLASHMODE_QIO=y
