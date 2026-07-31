@@ -49,7 +49,7 @@ jobs:
     - name: Install Python 3.11
       # As of 20260112 the default Python version in Windows image is 3.12, which breaks settrace tests
       # Use 3.11 for now
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.11'
     - uses: microsoft/setup-msbuild@v3
@@ -106,7 +106,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       # note: can go back to installing mingw-w64-${{ matrix.env }}-python after
       # MSYS2 updates to Python >3.12 (due to settrace compatibility issue)
       with:

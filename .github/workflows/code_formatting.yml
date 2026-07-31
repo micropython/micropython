@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
     - name: Install packages
       run: tools/ci.sh c_code_formatting_setup
     - name: Run code formatting
