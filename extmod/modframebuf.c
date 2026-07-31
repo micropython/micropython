@@ -830,7 +830,7 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
     // extract arguments
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
     const char *str = mp_obj_str_get_str(args_in[1]);
-    mp_int_t x0 = mp_obj_get_int(args_in[2]);
+    mp_int_t x = mp_obj_get_int(args_in[2]);
     mp_int_t y0 = mp_obj_get_int(args_in[3]);
     mp_int_t col = 1;
     if (n_args >= 5) {
@@ -850,20 +850,28 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
         }
         // get char data
         const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
-        // loop over char data
-        for (int j = 0; j < size; j++, x0++) {
-            if (0 <= x0 && x0 < self->width) { // clip x
-                uint vline_data = chr_data[j * 8 / size]; // each byte is a column of 8 pixels, LSB at top
-                if (vline_data) { // skip empty columns
-                    for (int i = 0, y = y0; i < size; i++, y++) {
-                        if (0 <= y && y < self->height) { // clip y
-                            // scan over vertical column
-                            if (vline_data & (1 << (i * 8 / size))) { // only draw if pixel set
-                                setpixel(self, x0, y, col);
-                            }
-                        }
+        // track fractional char column/row in 1/8ths of a pixel
+        mp_int_t x_frac = 0;
+        for (int j = 0; j < size && x < self->width; j++, x++) { // loop x left to right
+            if (x >= 0) {
+                uint8_t vline_data = *chr_data; // each byte is a column of 8 pixels, LSB at top
+                // scan over vertical column; exit when no more set bits
+                mp_int_t y_frac = 0;
+                for (mp_int_t y = y0; vline_data && y < self->height; y++) {
+                    if (vline_data & 0x1 && y >= 0) {
+                        setpixel(self, x, y, col);
+                    }
+                    y_frac += 8;
+                    while (y_frac >= size) {
+                        y_frac -= size;
+                        vline_data >>= 1;
                     }
                 }
+            }
+            x_frac += 8;
+            while (x_frac >= size) {
+                x_frac -= size;
+                chr_data++;
             }
         }
     }
