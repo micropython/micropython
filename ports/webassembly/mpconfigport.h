@@ -80,7 +80,32 @@
 #define MICROPY_VARIANT_ENABLE_JS_HOOK (0)
 #endif
 
-#if MICROPY_VARIANT_ENABLE_JS_HOOK
+// Whether the VM (and mp_hal_delay_ms) drive a cooperative yield, handing the JS
+// event loop a turn periodically so the page stays responsive during long-running
+// or self-looping Python. Implemented by mp_js_yield() in main.c; enable it in
+// variants that build with a suspend-capable backend (Asyncify or JSPI).
+#ifndef MICROPY_ENABLE_VM_YIELD
+#define MICROPY_ENABLE_VM_YIELD (0)
+#endif
+
+// jsffi.run_sync(): synchronously block on a JS awaitable by suspending the
+// stack (see modjsffi.c). Enabled by suspend-capable variants; needs the VM
+// yield (for mp_js_can_suspend) and MICROPY_PY_JSFFI.
+#ifndef MICROPY_PY_JS_RUN_SYNC
+#define MICROPY_PY_JS_RUN_SYNC (0)
+#endif
+
+#if MICROPY_ENABLE_VM_YIELD
+#define MICROPY_VM_HOOK_COUNT (30)
+#define MICROPY_VM_HOOK_INIT static uint16_t vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
+#define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
+        vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
+        extern void mp_js_yield(void); \
+        mp_js_yield(); \
+}
+#define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
+#define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
+#elif MICROPY_VARIANT_ENABLE_JS_HOOK
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \

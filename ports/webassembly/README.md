@@ -25,6 +25,28 @@ To generate the minified file `micropython.min.mjs`, run:
 
     $ make min
 
+Build variants
+--------------
+
+The port builds in several variants, selected with `make VARIANT=<name>` (the
+output goes to `build-<name>/`):
+
+- `standard` (default): the synchronous build.
+- `pyscript`: the standard build plus a frozen manifest, used by PyScript.
+- `asyncify`: adds a cooperative yield so long-running or self-looping Python
+  periodically hands the JS event loop a turn (keeping the page responsive
+  without the script having to `await`), and enables `jsffi.run_sync()`.  Built
+  with Emscripten's Asyncify.
+- `asyncify-fast`: the `asyncify` variant with the Asyncify instrumentation
+  narrowed to a curated set of functions, for a much smaller and faster build.
+- `jspi`: experimental; the same asynchronous behaviour built on Emscripten's
+  JSPI (Wasm stack switching) instead of Asyncify.  Requires a runtime with
+  Wasm stack-switching support.
+
+The asynchronous variants announce their backend to the JavaScript wrapper, so
+`runPython`/`runPythonAsync` transparently suspend to the event loop where the
+build supports it; the wrapper API is otherwise identical across variants.
+
 Running with Node.js
 --------------------
 
@@ -156,6 +178,12 @@ context, created and returned by `loadMicroPython()`.
 
 - `runPythonAsync(code)`: execute Python code and return the result, allowing for
   top-level await expressions (this call must be await'ed on the JavaScript side).
+
+- `interrupt()`: schedule a `KeyboardInterrupt` on the running VM.  On a
+  suspend-capable build (see Build variants) this is safe to call while a
+  `runPython`/`runPythonAsync` call is in flight, and unwinds it at the next
+  bytecode check; a host can use it to stop a running script without tearing down
+  the instance.
 
 - `replInit()`: initialise the REPL.
 

@@ -100,6 +100,82 @@ static mp_obj_t mp_jsffi_mem_info(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mp_jsffi_mem_info_obj, mp_jsffi_mem_info);
 
+#if MICROPY_PY_JS_RUN_SYNC
+
+// run_sync(awaitable): block the current flow on a JS thenable by suspending the
+// WASM stack until it settles, then return its resolved value (or raise its
+// rejection). Portable across Asyncify and JSPI because it drives the suspend
+// with emscripten_sleep. Nested run_sync from a synchronous re-entry is refused
+// by mp_js_can_suspend(); each in-flight await gets an integer handle into a
+// JS-side Map, so this stays correct if a future concurrent-task world ever has
+// more than one suspended continuation at a time.
+
+// mp_js_can_suspend() lives in main.c (compiled with MICROPY_ENABLE_VM_YIELD,
+// which every suspend-capable variant enables alongside MICROPY_PY_JS_RUN_SYNC).
+extern bool mp_js_can_suspend(void);
+
+// *FORMAT-OFF*
+EM_JS(int, mp_js_run_sync_start, (int ref), {
+    if (!Module.__mpRunSync) {
+        Module.__mpRunSync = new Map();
+        Module.__mpRunSyncNext = 1;
+    }
+    const id = Module.__mpRunSyncNext++;
+    const slot = { done: 0, value: undefined };
+    Module.__mpRunSync.set(id, slot);
+    Promise.resolve(proxy_js_ref[ref]).then(
+        (v) => { slot.value = v; slot.done = 1; },
+        (e) => { slot.value = e; slot.done = 2; },
+    );
+    return id;
+});
+
+EM_JS(int, mp_js_run_sync_poll, (int id), {
+    return Module.__mpRunSync.get(id).done;
+});
+
+EM_JS(void, mp_js_run_sync_take, (int id, uint32_t * out), {
+    const slot = Module.__mpRunSync.get(id);
+    Module.__mpRunSync.delete(id);
+    proxy_convert_js_to_mp_obj_jsside(slot.value, out);
+});
+// *FORMAT-ON*
+
+static mp_obj_t mp_jsffi_run_sync(mp_obj_t awaitable) {
+    if (!mp_js_can_suspend()) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("run_sync: no suspender in this context"));
+    }
+    if (!mp_obj_is_jsproxy(awaitable)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("run_sync expects a JS awaitable"));
+    }
+
+    int id = mp_js_run_sync_start(mp_obj_jsproxy_get_ref(awaitable));
+    int done;
+    while ((done = mp_js_run_sync_poll(id)) == 0) {
+        emscripten_sleep(0);      // suspend via Asyncify/JSPI; settles on the loop
+        mp_handle_pending(true);  // raise a pending KeyboardInterrupt to abort
+    }
+
+    uint32_t out[3];
+    mp_js_run_sync_take(id, out);
+    mp_obj_t result = proxy_convert_js_to_mp_obj_cside(out);
+    if (done == 2) {
+        // Rejected: surface the JS error like a thrown JS call does.
+        nlr_raise(mp_obj_is_jsproxy(result)
+            ? mp_obj_jsproxy_make_js_exception(result)
+            : mp_make_raise_obj(result));
+    }
+    return result;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_run_sync_obj, mp_jsffi_run_sync);
+
+static mp_obj_t mp_jsffi_can_run_sync(void) {
+    return mp_obj_new_bool(mp_js_can_suspend());
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_jsffi_can_run_sync_obj, mp_jsffi_can_run_sync);
+
+#endif // MICROPY_PY_JS_RUN_SYNC
+
 static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jsffi) },
 
@@ -108,6 +184,10 @@ static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_create_proxy), MP_ROM_PTR(&mp_jsffi_create_proxy_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_js), MP_ROM_PTR(&mp_jsffi_to_js_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem_info), MP_ROM_PTR(&mp_jsffi_mem_info_obj) },
+    #if MICROPY_PY_JS_RUN_SYNC
+    { MP_ROM_QSTR(MP_QSTR_run_sync), MP_ROM_PTR(&mp_jsffi_run_sync_obj) },
+    { MP_ROM_QSTR(MP_QSTR_can_run_sync), MP_ROM_PTR(&mp_jsffi_can_run_sync_obj) },
+    #endif
 };
 static MP_DEFINE_CONST_DICT(mp_module_jsffi_globals, mp_module_jsffi_globals_table);
 

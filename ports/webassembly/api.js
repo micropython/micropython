@@ -88,6 +88,50 @@ export async function loadMicroPython(options) {
     Module = await _createMicroPythonModule(Module);
     globalThis.Module = Module;
     proxy_js_init();
+
+    // The MicroPython entry points (mp_js_do_exec / _async / _import) can run
+    // synchronously or suspend to the JS event loop, depending on the build's
+    // async backend, announced by the build via globalThis.__MICROPYTHON_ASYNC__
+    // (see async_asyncify.js / async_jspi.js, added to SRC_JS by the variant):
+    //   "jspi"     - the export is a promising function; call it directly.
+    //   "asyncify" - suspend via ccall({async: true}).
+    //   undefined  - a plain synchronous ccall (upstream behaviour).
+    // `invoke` issues the call the right way and `settle` awaits only a real
+    // Promise; both async backends produce one, so the rest of the code is
+    // identical for either.
+    const asyncMode = globalThis.__MICROPYTHON_ASYNC__;
+
+    const invoke = (name, argTypes, args) =>
+        asyncMode === "jspi"
+            ? Module[`_${name}`].apply(null, args)
+            : Module.ccall(
+                  name,
+                  "number",
+                  argTypes,
+                  args,
+                  asyncMode === "asyncify" ? { async: true } : undefined,
+              );
+
+    const isThenable = (x) =>
+        x !== null &&
+        (typeof x === "object" || typeof x === "function") &&
+        typeof x.then === "function";
+
+    // Once `call` has settled, free the temporary input buffer and convert the
+    // result slot `value` to a JS object.
+    const settle = (call, value, freeInput) => {
+        const finish = () => {
+            freeInput();
+            return proxy_convert_mp_to_js_obj_jsside_with_free(value);
+        };
+        return isThenable(call)
+            ? call.then(finish, (err) => {
+                  freeInput();
+                  throw err;
+              })
+            : finish();
+    };
+
     const pyimport = (name) => {
         const value = Module._malloc(3 * 4);
         Module.ccall(
@@ -98,6 +142,7 @@ export async function loadMicroPython(options) {
         );
         return proxy_convert_mp_to_js_obj_jsside_with_free(value);
     };
+
     Module.ccall(
         "mp_js_init",
         "null",
@@ -105,6 +150,7 @@ export async function loadMicroPython(options) {
         [pystack, heapsize],
     );
     Module.ccall("proxy_c_init", "null", [], []);
+
     return {
         _module: Module,
         PyProxy: PyProxy,
@@ -138,32 +184,57 @@ export async function loadMicroPython(options) {
             const buf = Module._malloc(len + 1);
             Module.stringToUTF8(code, buf, len + 1);
             const value = Module._malloc(3 * 4);
-            Module.ccall(
-                "mp_js_do_exec",
-                "number",
-                ["pointer", "number", "pointer"],
-                [buf, len, value],
+            return settle(
+                invoke(
+                    "mp_js_do_exec",
+                    ["pointer", "number", "pointer"],
+                    [buf, len, value],
+                ),
+                value,
+                () => Module._free(buf),
             );
-            Module._free(buf);
-            return proxy_convert_mp_to_js_obj_jsside_with_free(value);
         },
         runPythonAsync(code) {
             const len = Module.lengthBytesUTF8(code);
             const buf = Module._malloc(len + 1);
             Module.stringToUTF8(code, buf, len + 1);
             const value = Module._malloc(3 * 4);
-            Module.ccall(
-                "mp_js_do_exec_async",
-                "number",
-                ["pointer", "number", "pointer"],
-                [buf, len, value],
+            // Top-level await is driven by the returned coroutine thenable, so a
+            // plain build issues a synchronous ccall (as upstream does) and lets
+            // that thenable do the awaiting. invoke() adds ccall({async: true})
+            // or the JSPI promising call only where the build can also suspend
+            // mid-execution for the cooperative yield.
+            const ret = settle(
+                invoke(
+                    "mp_js_do_exec_async",
+                    ["pointer", "number", "pointer"],
+                    [buf, len, value],
+                ),
+                value,
+                () => Module._free(buf),
             );
-            Module._free(buf);
-            const ret = proxy_convert_mp_to_js_obj_jsside_with_free(value);
+            // A synchronously-returned top-level coroutine is a PyProxyThenable;
+            // adopt it with Promise.resolve so its `then` is driven with both the
+            // resolve and reject callbacks (calling it with only one is an arity
+            // error). A real Promise (a build whose call suspended) is awaited and
+            // its result adopted the same way.
             if (ret instanceof PyProxyThenable) {
                 return Promise.resolve(ret);
             }
+            if (isThenable(ret)) {
+                return ret.then((r) =>
+                    r instanceof PyProxyThenable ? Promise.resolve(r) : r,
+                );
+            }
             return ret;
+        },
+        // Schedule a KeyboardInterrupt on the running VM. Safe to call while an
+        // mp_js_do_exec* call is suspended (JSPI/Asyncify): it only sets the
+        // pending-exception flag, which the VM raises at its next bytecode check,
+        // unwinding out of the in-flight runPython. Lets a host stop a running
+        // script without tearing down the whole instance.
+        interrupt() {
+            Module.ccall("mp_sched_keyboard_interrupt", "null", [], []);
         },
         replInit() {
             Module.ccall("mp_js_repl_init", "null", ["null"]);
