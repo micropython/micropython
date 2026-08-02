@@ -419,8 +419,17 @@ dispatch_loop:
                     // and forwards to its members map. Attribute lookups on instance
                     // types are extremely common, so avoid all the other checks and
                     // calls that normally happen first.
+                    // Note: must check that top is NOT a type object (to handle
+                    // accessing attributes on classes with custom metaclasses).
+                    // A type object has type==type or type subclassing from type.
                     mp_map_elem_t *elem = NULL;
-                    if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
+                    const mp_obj_type_t *top_type = mp_obj_get_type(top);
+                    // Fast path: check for regular instance types (not type objects)
+                    // The top_type != &mp_type_type check avoids the expensive subclass
+                    // test for the common case of non-type objects
+                    if (mp_obj_is_instance_type(top_type) && top_type != &mp_type_type &&
+                        !mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(top_type),
+                                                  MP_OBJ_FROM_PTR(&mp_type_type))) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
                         elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
                     }
