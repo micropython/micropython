@@ -104,3 +104,6 @@
 [submodule "lib/psoc-edge/async-transfer"]
 	path = lib/psoc-edge/async-transfer
 	url = https://github.com/Infineon/async-transfer.git
+[submodule "extmod/wasmmod"]
+	path = extmod/wasmmod
+	url = https://github.com/pymergetic/wasmmod.git

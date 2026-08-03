@@ -105,6 +105,15 @@ set(MICROPY_SOURCE_LIB_LIBM
 set(MICROPY_SOURCE_LIB_LIBM_SQRT_SW ${MICROPY_DIR}/lib/libm/ef_sqrt.c)
 set(MICROPY_SOURCE_LIB_LIBM_SQRT_HW ${MICROPY_DIR}/lib/libm/thumb_vfp_sqrtf.c)
 
+# Guest WASM loader — https://github.com/pymergetic/wasmmod — EXPERIMENTAL
+# Pre-release / alpha submodule; default-off. API and pin may change.
+# Submodule: extmod/wasmmod (Rouven Raudzus <raudzus@pymergetic.com>)
+# Runtime: nested WAMR (https://github.com/bytecodealliance/wasm-micro-runtime, Apache-2.0)
+
+if(MICROPY_PY_WASM)
+    include(${MICROPY_DIR}/extmod/wasmmod/ports/micropython/micropython.cmake)
+endif()
+
 # Library for btree module and associated code
 
 if(MICROPY_PY_BTREE)
