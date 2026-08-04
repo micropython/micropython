@@ -85,8 +85,10 @@ MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_ipconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_nic_ipconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_config_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
+MP_DECLARE_CONST_FUN_OBJ_3(esp_mdns_service_obj);
 
 mp_obj_t esp_ifname(esp_netif_t *netif);
+void esp_mdns_init(bool raise_exceptions);
 
 MP_NORETURN void esp_exceptions_helper(esp_err_t e);
 
