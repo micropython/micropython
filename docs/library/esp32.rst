@@ -205,6 +205,57 @@ Constants
     Used in `idf_heap_info`.
 
 
+.. _esp32.DS:
+
+DS
+--
+
+This class provides access to the ESP32-S3 digital signature peripheral.
+
+.. note:: This is only available in custom builds with ``MICROPY_PY_ESP32_DS=1``.
+   For example, build the board with ``make BOARD=ESP32_GENERIC_S3 CMAKE_ARGS='-DMICROPY_PY_ESP32_DS=1'``.
+
+.. class:: DS()
+
+    Create a digital signature helper object.
+
+.. method:: DS.sign(message, data, key_id)
+
+    Sign *message* using the digital signature peripheral and return the
+    signature as a ``bytes`` object.
+
+    *message* must be a read-only buffer containing the preformatted message to
+    sign. Its length must match the RSA size encoded by *data*.
+
+    *data* must be a read-only buffer containing the provisioned
+    ``esp_ds_data_t`` structure required by ESP-IDF.
+
+    *key_id* selects the HMAC key slot to use. It must be one of the
+    ``KEY0`` to ``KEY5`` constants, or ``KEY_KM`` when that key is available.
+
+    A ``ValueError`` is raised if the length of *message* or *data* is invalid,
+    or if *key_id* is not a supported key slot. Other failures from the
+    underlying ESP-IDF digital signature API raise ``OSError``.
+
+    .. note:: This peripheral requires device provisioning outside MicroPython.
+       The contents of *data* and the selected key slot must be prepared using
+       the appropriate ESP-IDF provisioning flow.
+
+.. data:: DS.KEY_MAX
+          DS.KEY0
+          DS.KEY1
+          DS.KEY2
+          DS.KEY3
+          DS.KEY4
+          DS.KEY5
+          DS.KEY_KM
+
+    Integer constants for the available HMAC key slots.
+
+    ``KEY_KM`` is only available on targets that support the key manager HMAC
+    deploy key.
+
+
 .. _esp32.PCNT:
 
 PCNT
