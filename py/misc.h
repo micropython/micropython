@@ -100,6 +100,15 @@ typedef unsigned int uint;
 
 #define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
 #define m_new_maybe(type, num) ((type *)(m_malloc_maybe(sizeof(type) * (num))))
+// m_new_no_scan: like m_new, but the buffer is tagged so the GC won't scan it
+// for pointers. ONLY use for buffers that are guaranteed to hold pure data
+// (no mp_obj_t / heap pointers), e.g. bytearray/array item storage.
+#if MICROPY_GC_NO_SCAN
+void *m_malloc_no_scan(size_t num_bytes);
+#define m_new_no_scan(type, num) ((type *)(m_malloc_no_scan(sizeof(type) * (num))))
+#else
+#define m_new_no_scan(type, num) m_new(type, num)
+#endif
 #define m_new0(type, num) ((type *)(m_malloc0(sizeof(type) * (num))))
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_maybe(type) (m_new_maybe(type, 1))
