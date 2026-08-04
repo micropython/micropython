@@ -162,7 +162,7 @@
   *
   * Timers run from APBx if APBx_PRESC=1, else 2x APBx
   */
-MP_WEAK void SystemClock_Config(void) {
+MP_WEAK int SystemClock_Config(void) {
     #if defined(STM32F7)
     // The DFU bootloader changes the clocksource register from its default power
     // on reset value, so we set it back here, so the clocksources are the same
@@ -693,6 +693,8 @@ MP_WEAK void SystemClock_Config(void) {
     #ifdef MICROPY_HW_ANALOG_SWITCH_PC3
     HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC3, MICROPY_HW_ANALOG_SWITCH_PC3);
     #endif
+
+    return 0;
 }
 
 #endif
