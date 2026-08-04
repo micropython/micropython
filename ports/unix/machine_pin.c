@@ -35,6 +35,9 @@
 #if MICROPY_PY_GPIO_IRQ && !MICROPY_PY_THREAD
 #error "GPIO IRQ support needs threading to work"
 #endif
+#if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION && !MICROPY_PY_THREAD
+#error "GPIO dynamic pin allocation needs threading to work"
+#endif
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -47,6 +50,10 @@
 #include <pthread.h>
 #include <signal.h>
 #include <sys/epoll.h>
+#endif
+#if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+#include <unistd.h>
+#include <sys/inotify.h>
 #endif
 
 #include <linux/gpio.h>
@@ -84,6 +91,9 @@ typedef struct _gpio_port_t {
     mp_obj_t *pins;
     int fd;
     uint32_t lines;
+    #if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+    int watch_descriptor;
+    #endif
 } gpio_port_t;
 
 #if MICROPY_PY_GPIO_IRQ
@@ -93,6 +103,16 @@ static void *gpio_epoll_thread(void *arg);
 static pthread_t gpio_epoll_thread_id = 0;
 static int gpio_epoll_fd = -1;
 static volatile bool gpio_epoll_thread_stop = false;
+
+#endif
+
+#if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+
+static void *gpio_inotify_thread(void *arg);
+
+static pthread_t gpio_inotify_thread_id = 0;
+static int gpio_inotify_fd = -1;
+static volatile bool gpio_inotify_thread_stop = false;
 
 #endif
 
@@ -380,6 +400,45 @@ static void gpio_epoll_remove_pin(mp_obj_t pin_in) {
 
 #endif
 
+#if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+
+static void gpio_inotify_init(void) {
+    MP_THREAD_GIL_EXIT();
+    gpio_inotify_fd = inotify_init1(IN_CLOEXEC);
+    MP_THREAD_GIL_ENTER();
+    if (gpio_inotify_fd < 0) {
+        mp_raise_OSError(errno);
+    }
+
+    MP_THREAD_GIL_EXIT();
+    int result = pthread_create(&gpio_inotify_thread_id, NULL, &gpio_inotify_thread, (void *)&gpio_inotify_thread_stop);
+    MP_THREAD_GIL_ENTER();
+    if (result != 0) {
+        mp_raise_OSError(errno);
+    }
+}
+
+static void gpio_inotify_deinit(void) {
+    gpio_inotify_thread_stop = true;
+    MP_THREAD_GIL_EXIT();
+    close(gpio_inotify_fd);
+    MP_THREAD_GIL_ENTER();
+    gpio_inotify_fd = -1;
+    MP_THREAD_GIL_EXIT();
+    int result = pthread_cancel(gpio_inotify_thread_id);
+    MP_THREAD_GIL_ENTER();
+    assert(result >= 0 && "pthread_cancel failed to cancel the inotify thread");
+    MP_THREAD_GIL_EXIT();
+    result = pthread_join(gpio_inotify_thread_id, NULL);
+    MP_THREAD_GIL_ENTER();
+    assert(result >= 0 && "pthread_join failed to wait until the inotify exited");
+    (void)result;
+    gpio_inotify_thread_id = 0;
+    m_del(struct inotify_event, MP_STATE_PORT(inotify_events), MICROPY_PY_GPIO_ALLOCATION_QUEUE_SIZE);
+}
+
+#endif
+
 // This expects to receive an already resolved port name!
 static gpio_port_t *gpio_add_port(mp_obj_t path) {
     mp_map_t *ports = &MP_STATE_PORT(ports);
@@ -395,6 +454,10 @@ static gpio_port_t *gpio_add_port(mp_obj_t path) {
     if (fd < 0) {
         mp_raise_OSError(errno);
     }
+
+    #if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+    int watch_descriptor = -1;
+    #endif
 
     gpio_port_t *port;
     nlr_buf_t nlr;
@@ -417,12 +480,27 @@ static gpio_port_t *gpio_add_port(mp_obj_t path) {
         port->fd = fd;
         port->lines = info.lines;
 
+        #if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+        // TODO: See if an inotify watch on the /dev entry is sufficient, otherwise
+        //       rebuild a sysfs path out of this.
+        watch_descriptor = inotify_add_watch(gpio_inotify_fd, mp_obj_str_get_str(path), IN_DELETE | IN_DELETE_SELF);
+        if (watch_descriptor < 0) {
+            mp_raise_OSError(errno);
+        }
+        port->watch_descriptor = watch_descriptor;
+        #endif
+
         slot = mp_map_lookup(ports, path, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         assert(slot && "No slot to fill was returned on port add");
         slot->value = MP_OBJ_FROM_PTR(port);
 
         nlr_pop();
     } else {
+        #if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+        if (watch_descriptor != -1) {
+            inotify_rm_watch(gpio_inotify_fd, watch_descriptor);
+        }
+        #endif
         close(fd);
 
         // Re-raise the exception.
@@ -1098,16 +1176,92 @@ done:
 }
 #endif
 
+#if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+static void *gpio_inotify_thread(void *arg) {
+    // Keep a reference to the stop variable.
+    volatile bool *stop = (volatile bool *)arg;
+
+    for (;;) {
+        ssize_t read_count = read(gpio_inotify_fd, MP_STATE_PORT(inotify_events), MICROPY_PY_GPIO_ALLOCATION_QUEUE_SIZE * sizeof(struct inotify_event));
+        if (*stop) {
+            goto done;
+        }
+
+        if (read_count < 0) {
+            // This is not correct but the code isn't in its final form yet.
+            continue;
+        }
+
+        const char *current_pointer = MP_STATE_PORT(inotify_events);
+        for (;;) {
+            const struct inotify_event *event = (const struct inotify_event *)current_pointer;
+            mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+            // Find which port is involved with the removal event.
+            mp_map_t *ports = &MP_STATE_PORT(ports);
+            if (ports->table != NULL) {
+                for (size_t port_index = 0; port_index < ports->alloc; port_index++) {
+                    if (!mp_map_slot_is_filled(ports, port_index)) {
+                        continue;
+                    }
+                    mp_map_elem_t slot = ports->table[port_index];
+                    gpio_port_t *port = MP_OBJ_TO_PTR(slot.value);
+                    if (port->watch_descriptor != event->wd) {
+                        continue;
+                    }
+                    // This port was removed.  Evict all pins so the last one
+                    // will deallocate the port as well.
+                    for (size_t pin = 0; pin < port->lines; pin++) {
+                        if (port->pins[pin] != MP_OBJ_NULL) {
+                            gpio_evict_pin(port->pins[pin]);
+                        }
+                    }
+                    // Remove the watch.
+                    inotify_rm_watch(gpio_inotify_fd, event->wd);
+                    break;
+                }
+            }
+            MICROPY_END_ATOMIC_SECTION(atomic_state);
+            current_pointer += sizeof(struct inotify_event) + event->len;
+            if (((ptrdiff_t)current_pointer - (ptrdiff_t)MP_STATE_PORT(inotify_events)) >= read_count) {
+                break;
+            }
+        }
+    }
+
+done:
+    return NULL;
+}
+#endif
+
 void mp_pin_init(void) {
     mp_map_init(&MP_STATE_PORT(ports), 0);
 
     #if MICROPY_PY_GPIO_IRQ
     MP_STATE_PORT(epoll_events) = m_new(struct epoll_event, MICROPY_PY_GPIO_IRQ_QUEUE_SIZE);
+    #endif
+    #if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+    // The documentation suggests to align the buffer using the structure size
+    // as the alignment boundary, to improve performance.  In this case we can
+    // make the trade-off to wait a millisecond or so later to know that a
+    // GPIO port went away.  Even if something happens between the port
+    // disappearance and the inotify report, any ioctl on the port's pin file
+    // descriptors (or on the port's descriptor itself) would fail, and this
+    // should be accounted for anyway.
+    MP_STATE_PORT(inotify_events) = m_new(struct inotify_event, MICROPY_PY_GPIO_ALLOCATION_QUEUE_SIZE);
+    #endif
+
+    #if MICROPY_PY_GPIO_IRQ
     gpio_epoll_init();
+    #endif
+    #if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+    gpio_inotify_init();
     #endif
 }
 
 void mp_pin_deinit(void) {
+    #if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+    gpio_inotify_deinit();
+    #endif
     #if MICROPY_PY_GPIO_IRQ
     gpio_epoll_deinit();
     #endif
@@ -1215,6 +1369,10 @@ MP_REGISTER_ROOT_POINTER(mp_map_t ports);
 MP_REGISTER_ROOT_POINTER(void *epoll_events);
 // Is this safe?  What happens if the GC scans mp_set_t->table?
 MP_REGISTER_ROOT_POINTER(mp_set_t epoll_pins);
+#endif
+
+#if MICROPY_PY_GPIO_DYNAMIC_ALLOCATION
+MP_REGISTER_ROOT_POINTER(void *inotify_events);
 #endif
 
 #endif
