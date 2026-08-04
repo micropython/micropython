@@ -62,6 +62,8 @@ static const mp_obj_type_t task_queue_type;
 static const mp_obj_type_t task_type;
 
 static mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+static mp_obj_t task_queue_push_raw(mp_obj_t self_in, mp_obj_t task_in);
+static mp_obj_t task_prioritize_raw(mp_obj_t self_in, mp_obj_t ph_key);
 
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
@@ -113,14 +115,32 @@ static mp_obj_t task_queue_peek(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(task_queue_peek_obj, task_queue_peek);
 
 static mp_obj_t task_queue_push(size_t n_args, const mp_obj_t *args) {
-    mp_obj_task_queue_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_task_t *task = MP_OBJ_TO_PTR(args[1]);
-    task->data = mp_const_none;
-    if (n_args == 2) {
-        task->ph_key = ticks();
-    } else {
+    if (n_args >= 3) {
         assert(mp_obj_is_small_int(args[2]));
         task->ph_key = args[2];
+    }
+    return task_queue_push_raw(args[0], args[1]);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_obj, 2, 3, task_queue_push);
+
+static mp_obj_t task_queue_push_raw(mp_obj_t self_in, mp_obj_t task_in) {
+    mp_obj_task_queue_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_task_t *task = MP_OBJ_TO_PTR(task_in);
+    task->data = mp_const_none;
+    // if v.ph_key is None:
+    if (task->ph_key == mp_const_none) {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(task->state)), MP_OBJ_FROM_PTR(&task_queue_type))) {
+            mp_obj_task_queue_t *waiting_queue = MP_OBJ_TO_PTR(task->state);
+            mp_obj_task_t *waiting_task = (mp_obj_task_t *)mp_pairheap_peek(task_lt, TASK_PAIRHEAP(waiting_queue->heap));
+            if (waiting_task != NULL) {
+                task->ph_key = waiting_task->ph_key;
+            } else {
+                task->ph_key = ticks();
+            }
+        } else {
+            task->ph_key = ticks();
+        }
     }
     self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, TASK_PAIRHEAP(self->heap), TASK_PAIRHEAP(task));
     #if MICROPY_PY_ASYNCIO_TASK_QUEUE_PUSH_CALLBACK
@@ -130,7 +150,7 @@ static mp_obj_t task_queue_push(size_t n_args, const mp_obj_t *args) {
     #endif
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_obj, 2, 3, task_queue_push);
+static MP_DEFINE_CONST_FUN_OBJ_2(task_queue_push_raw_obj, task_queue_push_raw);
 
 static mp_obj_t task_queue_pop(mp_obj_t self_in) {
     mp_obj_task_queue_t *self = MP_OBJ_TO_PTR(self_in);
@@ -139,6 +159,7 @@ static mp_obj_t task_queue_pop(mp_obj_t self_in) {
         mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty heap"));
     }
     self->heap = (mp_obj_task_t *)mp_pairheap_pop(task_lt, &self->heap->pairheap);
+    head->ph_key = mp_const_none;
     return MP_OBJ_FROM_PTR(head);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(task_queue_pop_obj, task_queue_pop);
@@ -147,6 +168,7 @@ static mp_obj_t task_queue_remove(mp_obj_t self_in, mp_obj_t task_in) {
     mp_obj_task_queue_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_task_t *task = MP_OBJ_TO_PTR(task_in);
     self->heap = (mp_obj_task_t *)mp_pairheap_delete(task_lt, &self->heap->pairheap, &task->pairheap);
+    task->ph_key = mp_const_none;
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(task_queue_remove_obj, task_queue_remove);
@@ -154,6 +176,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(task_queue_remove_obj, task_queue_remove);
 static const mp_rom_map_elem_t task_queue_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_peek), MP_ROM_PTR(&task_queue_peek_obj) },
     { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&task_queue_push_obj) },
+    { MP_ROM_QSTR(MP_QSTR_push_raw), MP_ROM_PTR(&task_queue_push_raw_obj) },
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&task_queue_pop_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&task_queue_remove_obj) },
 };
@@ -181,7 +204,7 @@ static mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->coro = args[0];
     self->data = mp_const_none;
     self->state = TASK_STATE_RUNNING_NOT_WAITED_ON;
-    self->ph_key = MP_OBJ_NEW_SMALL_INT(0);
+    self->ph_key = mp_const_none;
     if (n_args == 2) {
         mp_asyncio_context = args[1];
     }
@@ -220,17 +243,13 @@ static mp_obj_t task_cancel(mp_obj_t self_in) {
         dest[2] = MP_OBJ_FROM_PTR(self);
         mp_call_method_n_kw(1, 0, dest);
         // _task_queue.push(self)
-        dest[0] = _task_queue;
-        dest[1] = MP_OBJ_FROM_PTR(self);
-        task_queue_push(2, dest);
+        task_queue_push_raw(_task_queue, MP_OBJ_FROM_PTR(self));
     } else if (ticks_diff(self->ph_key, ticks()) > 0) {
         // On the main running queue but scheduled in the future, so bring it forward to now.
         // _task_queue.remove(self)
         task_queue_remove(_task_queue, MP_OBJ_FROM_PTR(self));
         // _task_queue.push(self)
-        dest[0] = _task_queue;
-        dest[1] = MP_OBJ_FROM_PTR(self);
-        task_queue_push(2, dest);
+        task_queue_push_raw(_task_queue, MP_OBJ_FROM_PTR(self));
     }
 
     self->data = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_CancelledError));
@@ -238,6 +257,49 @@ static mp_obj_t task_cancel(mp_obj_t self_in) {
     return mp_const_true;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
+
+static mp_obj_t task_prioritize(size_t n_args, const mp_obj_t *args) {
+    mp_int_t prio_time = mp_hal_ticks_ms();
+    if (n_args >= 2) {
+        prio_time += mp_obj_int_get_checked(args[1]);
+    }
+    return task_prioritize_raw(args[0], MP_OBJ_NEW_SMALL_INT(prio_time & (MICROPY_PY_TIME_TICKS_PERIOD - 1)));
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_prioritize_obj, 1, 2, task_prioritize);
+
+static mp_obj_t task_prioritize_raw(mp_obj_t self_in, mp_obj_t ph_key) {
+    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
+
+    // if not self.state:
+    if (TASK_IS_DONE(self)) {
+        // return False
+        return mp_const_false;
+    }
+
+    // if self.ph_key is None or core.ticks_diff(ph_key, self.ph_key) < 0:
+    if (self->ph_key == mp_const_none || ticks_diff(ph_key, self->ph_key) < 0) {
+        // self.ph_key = ph_key
+        self->ph_key = ph_key;
+
+        // if isinstance(self.data, Task):
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(self->data)), MP_OBJ_FROM_PTR(&task_type))) {
+            // # waiting on another task, bump that task's priority forward
+            // return self.data.prioritize_raw(ph_key)
+            return task_prioritize_raw(self->data, ph_key); // i.e. tail call recursion
+        }
+        // elif isinstance(self.data, TaskQueue):
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(self->data)), MP_OBJ_FROM_PTR(&task_queue_type))) {
+            // # waiting in a queue, bump ourselves forward in that queue
+            // self.data.remove(self)
+            task_queue_remove(self->data, self_in);
+            // self.data.push_raw(self)
+            task_queue_push_raw(self->data, self_in);
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(task_prioritize_raw_obj, task_prioritize_raw);
+
 
 static void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
@@ -254,6 +316,12 @@ static void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[1] = self_in;
         } else if (attr == MP_QSTR_cancel) {
             dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
+            dest[1] = self_in;
+        } else if (attr == MP_QSTR_prioritize) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_prioritize_obj);
+            dest[1] = self_in;
+        } else if (attr == MP_QSTR_prioritize_raw) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_prioritize_raw_obj);
             dest[1] = self_in;
         } else if (attr == MP_QSTR_ph_key) {
             dest[0] = self->ph_key;
@@ -294,8 +362,7 @@ static mp_obj_t task_iternext(mp_obj_t self_in) {
     } else {
         // Put calling task on waiting queue.
         mp_obj_t cur_task = mp_obj_dict_get(mp_asyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
-        mp_obj_t args[2] = { self->state, cur_task };
-        task_queue_push(2, args);
+        task_queue_push_raw(self->state, cur_task);
         // Set calling task's data to this task that it waits on, to double-link it.
         ((mp_obj_task_t *)MP_OBJ_TO_PTR(cur_task))->data = self_in;
     }
