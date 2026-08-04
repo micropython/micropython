@@ -691,6 +691,25 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 static bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
 
+    // If there's a native base class with an attr handler, give it the chance to handle this
+    // store/delete before the value is stored in the instance dict.
+    // The handler follows the standard attr protocol (see mp_store_attr): it leaves dest[0] as
+    // MP_OBJ_SENTINEL if it doesn't own the attribute, in which case we fall through to normal
+    // dict storage.  Any exception it raises (e.g. a setter rejecting the value) propagates to
+    // the caller, exactly as in CPython.
+    const mp_obj_type_t *native_base = NULL;
+    if (instance_count_native_bases(self->base.type, &native_base) != 0 && native_base != &mp_type_object) {
+        if (MP_OBJ_TYPE_HAS_SLOT(native_base, attr)) {
+            mp_obj_t dest[2] = {MP_OBJ_SENTINEL, value};
+            MP_OBJ_TYPE_GET_SLOT(native_base, attr)(self->subobj[0], attr, dest);
+            if (dest[0] != MP_OBJ_SENTINEL) {
+                // The native attr handler handled the store/delete.
+                return true;
+            }
+            // The native attr handler doesn't own this attribute; fall through to dict storage.
+        }
+    }
+
     if (!(self->base.type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
         // Class doesn't have any special accessors so skip their checks
         goto skip_special_accessors;
