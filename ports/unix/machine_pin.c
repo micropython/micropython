@@ -32,12 +32,22 @@
 #error "Platform does not support GPIO access"
 #endif
 
+#if MICROPY_PY_GPIO_IRQ && !MICROPY_PY_THREAD
+#error "GPIO IRQ support needs threading to work"
+#endif
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#if MICROPY_PY_GPIO_IRQ
+#include <pthread.h>
+#include <signal.h>
+#include <sys/epoll.h>
+#endif
 
 #include <linux/gpio.h>
 
@@ -75,6 +85,16 @@ typedef struct _gpio_port_t {
     int fd;
     uint32_t lines;
 } gpio_port_t;
+
+#if MICROPY_PY_GPIO_IRQ
+
+static void *gpio_epoll_thread(void *arg);
+
+static pthread_t gpio_epoll_thread_id = 0;
+static int gpio_epoll_fd = -1;
+static volatile bool gpio_epoll_thread_stop = false;
+
+#endif
 
 static void gpio_ioctl(int fd, int call, void *payload) {
     MP_THREAD_GIL_EXIT();
@@ -184,6 +204,182 @@ static mp_obj_t resolve_gpio_device_name(mp_obj_t device) {
     return mp_obj_new_str_from_cstr(path);
 }
 
+#if MICROPY_PY_GPIO_IRQ
+
+static void gpio_epoll_init(void) {
+    mp_set_init(&MP_STATE_PORT(epoll_pins), 0);
+
+    MP_THREAD_GIL_EXIT();
+    gpio_epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+    MP_THREAD_GIL_ENTER();
+    if (gpio_epoll_fd < 0) {
+        mp_raise_OSError(errno);
+    }
+
+    MP_THREAD_GIL_EXIT();
+    int result = pthread_create(&gpio_epoll_thread_id, NULL, &gpio_epoll_thread, (void *)&gpio_epoll_thread_stop);
+    MP_THREAD_GIL_ENTER();
+    if (result != 0) {
+        mp_raise_OSError(errno);
+    }
+}
+
+static void gpio_epoll_deinit(void) {
+    gpio_epoll_thread_stop = true;
+    MP_THREAD_GIL_EXIT();
+    close(gpio_epoll_fd);
+    MP_THREAD_GIL_ENTER();
+    gpio_epoll_fd = -1;
+    MP_THREAD_GIL_EXIT();
+    int result = pthread_cancel(gpio_epoll_thread_id);
+    MP_THREAD_GIL_ENTER();
+    assert(result >= 0 && "pthread_cancel failed to cancel the epoll thread");
+    MP_THREAD_GIL_EXIT();
+    result = pthread_join(gpio_epoll_thread_id, NULL);
+    MP_THREAD_GIL_ENTER();
+    assert(result >= 0 && "pthread_join failed to wait until the epoll thread exited");
+    (void)result;
+    gpio_epoll_thread_id = 0;
+    // The pins set can be safely cleared without being in a critical section.
+    mp_set_clear(&MP_STATE_PORT(epoll_pins));
+    m_del(struct epoll_event, MP_STATE_PORT(epoll_events), MICROPY_PY_GPIO_IRQ_QUEUE_SIZE);
+}
+
+// epoll() descriptor set management functions.
+
+static void gpio_epoll_undo_addition(void *pin) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    mp_obj_t removed_object = mp_set_lookup(&MP_STATE_PORT(epoll_pins), MP_OBJ_FROM_PTR(pin), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+    assert(removed_object != MP_OBJ_NULL && "Nothing to undo?");
+    (void)removed_object;
+}
+
+static void gpio_epoll_add_pin(mp_obj_t pin_in) {
+    machine_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_in);
+
+    assert((pin->fd >= 0) && "Adding a pin with an invalid descriptor to the epoll list");
+
+    memset(&pin->event, 0x00, sizeof(struct epoll_event));
+    // Only report edge-trigger epoll events: we just need to know that the pin
+    // file descriptor has some incoming data, a.k.a. a line change event
+    // structure was written to the descriptor.
+    //
+    // TODO: Make EPOLLWAKEUP optional, but it requires a new keyword argument
+    //       in machine.Pin.irq.
+    pin->event.events = EPOLLIN | EPOLLET | EPOLLWAKEUP;
+    pin->event.data.ptr = pin;
+
+    mp_set_t *epoll_pins = &MP_STATE_PORT(epoll_pins);
+
+    int result = 0;
+    bool raise_exception = false;
+    nlr_buf_t nlr;
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+
+    // There's no direct way to just query a set whether an element is stored
+    // in there or not, so we traverse the items table instead.
+
+    bool element_already_added = false;
+
+    for (size_t index = 0; index < epoll_pins->alloc; index++) {
+        mp_obj_t element = epoll_pins->table[index];
+        if (element == pin_in) {
+            element_already_added = true;
+            break;
+        }
+    }
+
+    assert((!element_already_added || (element_already_added && (pin->event.events != 0 && pin->event.data.ptr != 0))) && "epoll set went out of sync");
+
+    if (!element_already_added) {
+        // Adding the file descriptor to an epoll group descriptor may fail,
+        // and if it does then we have to clean up the epoll pins set.
+        // Updating the set may also incur on a faillible memory reallocation
+        // too.  It's easier to undo a set addition rather than dealing with
+        // epoll once more.
+        //
+        // TODO: is NLR safe to use if enclosed inside a critical section?
+
+        if (nlr_push(&nlr) == 0) {
+            // mp_set_lookup may raise from mp_set_rehash on low memory.
+            mp_set_lookup(epoll_pins, pin_in, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+            MP_THREAD_GIL_EXIT();
+            result = epoll_ctl(gpio_epoll_fd, EPOLL_CTL_ADD, pin->fd, &pin->event);
+            MP_THREAD_GIL_ENTER();
+            nlr_pop();
+            if (result < 0) {
+                gpio_epoll_undo_addition(pin);
+            }
+        } else {
+            gpio_epoll_undo_addition(pin);
+            raise_exception = true;
+        }
+    }
+
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+
+    // Move back to the previous inner if-then-else if NLRs are safe.
+    if (raise_exception) {
+        nlr_jump(nlr.ret_val);
+    }
+
+    if (result < 0) {
+        mp_raise_OSError(-result);
+    }
+}
+
+static void gpio_epoll_remove_pin(mp_obj_t pin_in) {
+    // This may be invoked during GPIO subsystem deinitialisation, so if the
+    // epoll thread should stop leave things alone (the group descriptor is
+    // probably already closed by now).
+    if (gpio_epoll_thread_stop) {
+        return;
+    }
+
+    machine_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_in);
+
+    assert((pin->fd >= 0) && "Removing a pin with an invalid descriptor from the epoll group");
+    memset(&pin->event, 0x00, sizeof(struct epoll_event));
+
+    int result = 0;
+    bool element_found = false;
+    mp_set_t *epoll_pins = &MP_STATE_PORT(epoll_pins);
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+
+    for (size_t index = 0; index < epoll_pins->alloc; index++) {
+        mp_obj_t element = epoll_pins->table[index];
+        if (element == pin_in) {
+            element_found = true;
+            break;
+        }
+    }
+
+    if (element_found) {
+        // Removing an item from a set will always succeed, so the only check here
+        // is whether the removal of the pin's file descriptor from the epoll
+        // descriptors group succeeded or not.
+
+        MP_THREAD_GIL_EXIT();
+        result = epoll_ctl(gpio_epoll_fd, EPOLL_CTL_DEL, pin->fd, NULL);
+        MP_THREAD_GIL_ENTER();
+        if (result >= 0) {
+            mp_obj_t removed_object = mp_set_lookup(&MP_STATE_PORT(epoll_pins), MP_OBJ_FROM_PTR(pin), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+            pin->callback = mp_const_none;
+            assert(removed_object != MP_OBJ_NULL && "Pin descriptor not found in epoll group");
+            (void)removed_object;
+        }
+    }
+
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+
+    if (result < 0) {
+        mp_raise_OSError(-result);
+    }
+}
+
+#endif
+
 // This expects to receive an already resolved port name!
 static gpio_port_t *gpio_add_port(mp_obj_t path) {
     mp_map_t *ports = &MP_STATE_PORT(ports);
@@ -251,6 +447,10 @@ static mp_obj_t gpio_find_pin(mp_obj_t port_key, uint32_t pin) {
 }
 
 static void gpio_evict_pin(mp_obj_t pin_in) {
+    #if MICROPY_PY_GPIO_IRQ
+    gpio_epoll_remove_pin(pin_in);
+    #endif
+
     machine_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_in);
     mp_map_t *ports = &MP_STATE_PORT(ports);
     mp_map_elem_t *slot = mp_map_lookup(ports, pin->port, MP_MAP_LOOKUP);
@@ -430,6 +630,8 @@ static mp_obj_t init_helper(uint32_t pin_number, size_t n_args, const mp_obj_t *
         machine_pin_obj_t *pin = MP_OBJ_TO_PTR(existing_pin);
 
         // Reconfigure the pin with the new parameters.
+        // WARNING: If an IRQ callback was attached before this point, it will
+        //          stay bound to the pin instance.
         if (pin->fd >= 0) {
             gpio_ioctl(pin->fd, GPIO_V2_LINE_SET_CONFIG_IOCTL, &config);
             return existing_pin;
@@ -475,6 +677,11 @@ static mp_obj_t init_helper(uint32_t pin_number, size_t n_args, const mp_obj_t *
         self->port = MP_OBJ_FROM_PTR(port);
         self->number = pin_number;
         self->fd = request.fd;
+
+        #if MICROPY_PY_GPIO_IRQ
+        self->callback = mp_const_none;
+        memset(&self->event, 0x00, sizeof(struct epoll_event));
+        #endif
 
         self_out = MP_OBJ_FROM_PTR(self);
 
@@ -587,6 +794,9 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
 mp_obj_t machine_pin_del(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_GPIO_IRQ
+    gpio_epoll_remove_pin(self_in);
+    #endif
     MP_THREAD_GIL_EXIT();
     close(self->fd);
     MP_THREAD_GIL_ENTER();
@@ -611,6 +821,76 @@ mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
     return machine_pin_call(args[0], n_args - 1, 0, args + 1);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
+
+#if MICROPY_PY_GPIO_IRQ
+
+static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger, ARG_hard };
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ,  { .u_obj = mp_const_none                                                  } },
+        { MP_QSTR_trigger, MP_ARG_INT,  { .u_int = GPIO_V2_LINE_FLAG_EDGE_RISING | GPIO_V2_LINE_FLAG_EDGE_FALLING } },
+        { MP_QSTR_hard,    MP_ARG_BOOL, { .u_bool = false                                                         } },
+    };
+
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (n_args > 1 || kw_args->used != 0) {
+        mp_uint_t trigger = args[ARG_trigger].u_int;
+        if ((trigger & ~(GPIO_V2_LINE_FLAG_EDGE_RISING | GPIO_V2_LINE_FLAG_EDGE_FALLING)) != 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid trigger"));
+        }
+
+        struct gpio_v2_line_info line_info;
+        memset(&line_info, 0x00, sizeof(line_info));
+        line_info.offset = self->number;
+        gpio_port_t *port = MP_OBJ_TO_PTR(self->port);
+        assert(port && "GPIO port has gone away");
+        gpio_ioctl(port->fd, GPIO_V2_GET_LINEINFO_IOCTL, &line_info);
+
+        if (line_info.flags & GPIO_V2_LINE_FLAG_OUTPUT) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid pin mode"));
+        }
+
+        // Pin.irq(callback) should still use the previous trigger mask.
+        if (args[ARG_handler].u_obj == mp_const_none || trigger != 0) {
+            line_info.flags &= ~(GPIO_V2_LINE_FLAG_EDGE_RISING | GPIO_V2_LINE_FLAG_EDGE_FALLING);
+        }
+        line_info.flags &= ~GPIO_V2_LINE_FLAG_USED;
+
+        gpio_epoll_remove_pin(pos_args[0]);
+        if (args[ARG_handler].u_obj != mp_const_none) {
+            self->callback = args[ARG_handler].u_obj;
+            gpio_epoll_add_pin(pos_args[0]);
+            line_info.flags |= trigger;
+        }
+
+        // If this fails and the pin was meant to update the triggers mask,
+        // then it will still be part of the epoll descriptors list, but it
+        // won't receive any updates.  There's a minor overhead as the
+        // system has to still handle the edge change but not notify the
+        // descriptor.  The operation can be retried safely.
+        //
+        // If the pin was meant to lose all triggers instead and this fails,
+        // again, the situation should still be recoverable.  In this case,
+        // the pin won't be part of the epoll descriptors list, and no events
+        // will be forwarded.  Like in the other case there's still some
+        // overhead since events will be processed and then discarded, but
+        // again, the operation can be retried.
+
+        struct gpio_v2_line_config line_configuration;
+        memset(&line_configuration, 0x00, sizeof(struct gpio_v2_line_config));
+        line_configuration.flags = line_info.flags;
+
+        gpio_ioctl(self->fd, GPIO_V2_LINE_SET_CONFIG_IOCTL, &line_configuration);
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
+#endif
 
 static mp_obj_tuple_t *gpio_port_enumerate_lines(mp_obj_t port_name) {
     assert(port_name && "Port name is NULL");
@@ -737,11 +1017,76 @@ static MP_DEFINE_CONST_FUN_OBJ_0(machine_pin_enumerate_obj, machine_pin_enumerat
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#if MICROPY_PY_GPIO_IRQ
+static void *gpio_epoll_thread(void *arg) {
+    // Keep a reference to the stop variable.
+    volatile bool *stop = (volatile bool *)arg;
+
+    assert(MP_STATE_PORT(epoll_events) != NULL && "GPIO epoll thread started at the wrong time?");
+
+    struct gpio_v2_line_event event_payload;
+
+    for (;;) {
+        int events = epoll_wait(gpio_epoll_fd, MP_STATE_PORT(epoll_events), MICROPY_PY_GPIO_IRQ_QUEUE_SIZE, -1);
+        if (*stop) {
+            goto done;
+        }
+
+        if (events <= 0) {
+            // This is not correct but the code isn't in its final form yet.
+            continue;
+        }
+
+        for (int event_index = 0; event_index < events; event_index++) {
+            struct epoll_event *event = ((struct epoll_event *)(&MP_STATE_PORT(epoll_events))[event_index]);
+
+            machine_pin_obj_t *pin = event->data.ptr;
+            assert(pin && (pin->callback != MP_OBJ_NULL) && "Event for a tracked pin with no callback");
+
+            // Remove the event from from the source file descriptor buffer.
+            int bytes_read = read(pin->fd, &event_payload, sizeof(struct gpio_v2_line_event));
+            if (bytes_read < (ssize_t)sizeof(struct gpio_v2_line_event)) {
+                // TODO: Report an error condition here!
+                continue;
+            }
+
+            // TODO: Is this actually correct?  In theory this should work if
+            //       all modifications to the pin object involve setting the
+            //       relevant pointers to MP_OBJ_NULL, but then what happens if
+            //       the IRQ handlers are collected?  This needs more thought.
+            mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+            mp_obj_t lookup_result = mp_set_lookup(&MP_STATE_PORT(epoll_pins), MP_OBJ_FROM_PTR(event->data.ptr), MP_MAP_LOOKUP);
+            MICROPY_END_ATOMIC_SECTION(atomic_state);
+            if (lookup_result == MP_OBJ_NULL) {
+                continue;
+            }
+
+            // There is currently no facility to easily run a function on the
+            // main thread from another thread, so schedule the IRQ handler at
+            // whichever priority the interpreter sees fit.
+            mp_sched_schedule(pin->callback, MP_OBJ_FROM_PTR(pin));
+        }
+    }
+
+done:
+    return NULL;
+}
+#endif
+
 void mp_pin_init(void) {
     mp_map_init(&MP_STATE_PORT(ports), 0);
+
+    #if MICROPY_PY_GPIO_IRQ
+    MP_STATE_PORT(epoll_events) = m_new(struct epoll_event, MICROPY_PY_GPIO_IRQ_QUEUE_SIZE);
+    gpio_epoll_init();
+    #endif
 }
 
 void mp_pin_deinit(void) {
+    #if MICROPY_PY_GPIO_IRQ
+    gpio_epoll_deinit();
+    #endif
+
     mp_map_t *ports = &MP_STATE_PORT(ports);
     if (ports->table == NULL) {
         return;
@@ -789,6 +1134,10 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on),          MP_ROM_PTR(&machine_pin_on_obj)              },
     { MP_ROM_QSTR(MP_QSTR_toggle),      MP_ROM_PTR(&machine_pin_toggle_obj)          },
 
+    #if MICROPY_PY_GPIO_IRQ
+    { MP_ROM_QSTR(MP_QSTR_irq),         MP_ROM_PTR(&machine_pin_irq_obj)             },
+    #endif
+
     { MP_ROM_QSTR(MP_QSTR_close),       MP_ROM_PTR(&machine_pin_del_obj)             },
     { MP_ROM_QSTR(MP_QSTR_available),   MP_ROM_PTR(&machine_pin_available_obj)       },
     { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj)                 },
@@ -805,6 +1154,11 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),     MP_ROM_INT(GPIO_V2_LINE_FLAG_BIAS_PULL_UP)   },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),   MP_ROM_INT(GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE),   MP_ROM_INT(GPIO_V2_LINE_FLAG_BIAS_DISABLED)  },
+
+    #if MICROPY_PY_GPIO_IRQ
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),  MP_ROM_INT(GPIO_V2_LINE_FLAG_EDGE_RISING)    },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_V2_LINE_FLAG_EDGE_FALLING)   },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
@@ -826,5 +1180,11 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 // Is this safe?  What happens if the GC scans mp_map_t->table?
 MP_REGISTER_ROOT_POINTER(mp_map_t ports);
+
+#if MICROPY_PY_GPIO_IRQ
+MP_REGISTER_ROOT_POINTER(void *epoll_events);
+// Is this safe?  What happens if the GC scans mp_set_t->table?
+MP_REGISTER_ROOT_POINTER(mp_set_t epoll_pins);
+#endif
 
 #endif
