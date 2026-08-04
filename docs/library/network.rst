@@ -210,6 +210,12 @@ The following are functions available in the network module.
 
     The default code ``"XX"`` represents the "worldwide" region.
 
+    On ESP32, setting an invalid country code before instantiating the radio
+    interface (ie. calling ``network.WLAN(…)`` the first time) will succeed but
+    then all calls to ``network.WLAN(…)`` will fail until a valid country code is
+    set.  It is best to delay calling ``network.country`` until the radio is
+    initialised first.
+
 .. function:: hostname([name])
 
     Get or set the hostname that will identify this device on the network. It will
