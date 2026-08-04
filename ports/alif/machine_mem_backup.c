@@ -27,10 +27,8 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_mem.c via MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE.
 
-// Backup SRAM is in peripheral space; word writes only. No CMSIS macro exists.
-#define ALIF_BACKUP_SRAM_BASE  (0x4902C000U)
-#define ALIF_BACKUP_SRAM_BYTES (4096U)
+#include "modmachine.h"
 
 static const mp_obj_array_t machine_mem_backup_regions[] = {
-    BACKUP_MV('I', ALIF_BACKUP_SRAM_BYTES / 4, (void *)ALIF_BACKUP_SRAM_BASE),
+    BACKUP_MV('I', MP_BACKUP_SRAM_BYTES / 4, (void *)MP_BACKUP_SRAM_BASE),
 };
