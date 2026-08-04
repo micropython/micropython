@@ -353,45 +353,35 @@ WPA Enterprise Mode (ESP32 only)
         mpremote cp <file> :
 
     In particular in eduroam networks, EAP-PWD should be used whenever possible.
-    It connects swiftly and uses the least resources. 
+    It connects swiftly, uses the least resources, and it does not require 
+    uploading a CA certificate. In many if not all eduroam networks, this is 
+    the official way of connecting Android smartphones.
     
-    When using one of the other methods, make sure the system time is correct 
-    to prevent certificate validation errors. Best practice is to use a battery 
-    buffered I2C RTC and to set the system time using NTP when convenient. A 
-    temporary workaround if no battery buffered RTC is available is to set 
-    the system time to the image build time.
-
-    Example::
-
-        import sys
-        import machine
-        (year, month, day) = sys.version.split(" on ")[1].split("-")
-        rtc = machine.RTC()
-        date_time = (int(year), int(month), int(day), 0, 0, 0, 0, 0)
-        rtc.init(date_time)
-
-    If using a battery buffered I2C RTC is not feasible at all for some reason,
-    another workaround is to set the system time to the build date at the very 
-    first boot after flashing as shown above, then connect to the AP and set the
-    time like so, before starting your application proper:
-     
-        import ntptime
-        ntptime.settime() 
+    When using one of the other EAP methods which involve uploading a CA 
+    certificate to your device (i.e. PEAP, TTLS or TLS), chances are that your 
+    system time is not correct after the very first boot after flashing the 
+    device, and then the ESP-IDF is likely to complain about a failed 
+    authentication. The reason is commonly a failing time validity check of 
+    said CA certificate because the system time is outside of the validity 
+    period of the certificate. In a serious project and in production, best 
+    practice is to use a battery buffered (I2C) RTC together with 
+    ``ntptime.settime()``. 
     
-    Please note that ``ntptime.settime()`` sets the RTC hard, without gradually
-    adjusting it. Chances are you end up with the system time jumping. If your
-    application depends on a uniform continuous system time, you'll probably 
-    want to avoid setting the system time this way during normal operation.
-
-    In this case (or even in general), you can for example retrieve the time 
-    in regular intervals (say, on an hourly basis) like this: 
+    If an external RTC is not feasible, you can after manually setting the time 
+    on first boot and connecting to the Wifi AP retrieve the current time 
+    using NTP, set the internal RTC, and then save the NTP time to NVS or a file, 
+    e.g. once per day or so. When rebooting, use the last saved time to set the 
+    internal RTC, connect, and continue as before. If it's only a short reboot 
+    and not years later, this sort of makes the current time reboot safe (not 
+    exactly, but good enough).
     
-        t = ntptime.time() 
-    
-    and write ``t`` to NVS or to a file. When the MCU is rebooted later, the 
-    last known good time can then be set from the file or NVS instead from 
-    the build date. This way, your system is continuous during operation, and 
-    it kind of survives a reboot (well, close enough).
+    As a last resort, you may decide to deactivate CONFIG_MBEDTLS_HAVE_TIME_DATE 
+    in ``sdkconfig``. This disables all TLS certificate time checks, so make sure 
+    you understand the implications. (In an nutshell: although the net is full 
+    of how-to articles how to switch off certificate validity checks, this has 
+    to be considered a bad security practice because `it makes each and every 
+    connection insecure <https://daniel.haxx.se/blog/2025/02/11/disabling-cert-checks-we-have-not-learned-much/>`_
+    , just like putting your house key under the doormat.)
 
 5 GHz WiFi band_mode (ESP32 only)
 ---------------------------------
@@ -431,7 +421,6 @@ Constants
         * ``PM_POWERSAVE``: enable WiFi power management with additional power
           savings and reduced WiFi performance
         * ``PM_NONE``: disable wifi power management
-
 
 ESP32 Protocol Constants
 ------------------------

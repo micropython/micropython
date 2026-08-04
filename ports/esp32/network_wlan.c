@@ -372,7 +372,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_band_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_BAND_MODE_AUTO} },
         #endif
         { MP_QSTR_pmf_req, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} }
-        #endif
+        #endif // MICROPY_PY_NETWORK_WPA_ENTERPRISE
     };
 
     // parse args
@@ -392,16 +392,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
     }
 
     if (args[ARG_key].u_obj != mp_const_none) {
-        #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
-        if (min_sec == WIFI_AUTH_WPA2_ENTERPRISE || min_sec == WIFI_AUTH_WPA3_ENTERPRISE) {
-            // setting dummy password to prevent warning if key = None for Enterprise modes
-            p = "dummypwd";
-        } else {
-        #endif
         p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
-        #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
-    }
-        #endif
         memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
     }
 
@@ -417,11 +408,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
     #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
     switch (min_sec) {
         case WIFI_AUTH_OPEN:
-            mp_printf(&mp_plat_print, "Warning: SEC_OPEN is insecure and should be avoided!\n");
-            break;
-
         case WIFI_AUTH_WPA_PSK:
-            mp_printf(&mp_plat_print, "Warning: SEC_WPA is insecure and should be avoided!\n");
             break;
 
         case WIFI_AUTH_WPA2_WPA3_PSK:
@@ -431,8 +418,6 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         // fall through
 
         case WIFI_AUTH_WPA2_PSK:
-            break;
-
         case WIFI_AUTH_WPA3_PSK:
             break;
 
@@ -469,6 +454,10 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         int16_t eap_method = (int16_t)args[ARG_eap_method].u_int;
         int16_t ttls_phase2_method = (int16_t)args[ARG_ttls_phase2_method].u_int;
 
+        // setting dummy password to prevent warning if key = None for Enterprise modes
+        if(!strlen((const char *)wifi_sta_config.sta.password)) {
+            memcpy(wifi_sta_config.sta.password, "dummypwd", MIN(8, sizeof(wifi_sta_config.sta.password)));
+        }
         // set esp_eap_method explicitly, otherwise ESP-IDF defaults to EAP-PEAP with MSCHAPv2
         switch (eap_method) {
             case WIFI_AUTH_EAP_PWD:
