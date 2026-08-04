@@ -123,10 +123,16 @@ def make_version_header(repo_path, filename):
 #define MICROPY_GIT_TAG "%s"
 #define MICROPY_GIT_HASH "%s"
 #define MICROPY_BUILD_DATE "%s"
+#define MICROPY_BUILD_YEAR %d
+#define MICROPY_BUILD_MONTH %d
+#define MICROPY_BUILD_DAY %d
 """ % (
         git_tag,
         git_hash or "<no hash>",
         build_date.strftime("%Y-%m-%d"),
+        int(build_date.strftime("%Y")),
+        int(build_date.strftime("%m")),
+        int(build_date.strftime("%d")),
     )
 
     # Check if the file contents changed from last time
