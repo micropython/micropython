@@ -42,9 +42,9 @@ else:
 def simple_irq(i2c_target):
     flags = i2c_target.irq().flags()
     if flags & I2CTarget.IRQ_END_READ:
-        print("IRQ_END_READ", i2c_target.memaddr)
+        print("IRQ_END_READ", i2c_target.memaddr, "bytes read:", i2c_target.numbytes)
     if flags & I2CTarget.IRQ_END_WRITE:
-        print("IRQ_END_WRITE", i2c_target.memaddr)
+        print("IRQ_END_WRITE", i2c_target.memaddr, "bytes written:", i2c_target.numbytes)
 
 
 # I2C controller
