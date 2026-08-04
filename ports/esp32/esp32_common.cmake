@@ -133,6 +133,7 @@ list(APPEND MICROPY_SOURCE_PORT
     mpnimbleport.c
     modsocket.c
     lwip_patch.c
+    nimble_patch.c
     modesp.c
     esp32_nvs.c
     esp32_partition.c
@@ -310,6 +311,15 @@ target_link_options(${MICROPY_TARGET} PUBLIC
   -Wl,--wrap=esp_panic_handler
   -Wl,--wrap=esp_efuse_rtc_calib_get_ver
 )
+
+# Bluetooth-specific linker options
+if (MICROPY_PY_BLUETOOTH)
+    target_link_options(${MICROPY_TARGET} PUBLIC
+        # Patch NimBLE peer RPA resolving (see nimble_patch.c)
+        -Wl,--undefined=ble_rpa_replace_peer_params_with_rl
+        -Wl,--wrap=ble_rpa_replace_peer_params_with_rl
+    )
+endif()
 
 # Collect all of the include directories and compile definitions for the IDF components,
 # including those added by the IDF Component Manager via idf_components.yaml.

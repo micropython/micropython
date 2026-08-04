@@ -53,7 +53,11 @@
 #include "nimble/host/src/ble_hs_hci_priv.h"
 #endif
 
-#define DEBUG_printf(...) // printf("nimble: " __VA_ARGS__)
+#if MYNEWT_VAL(BLE_HS_DEBUG)
+#define DEBUG_printf(...) printf("nimble: " __VA_ARGS__)
+#else
+#define DEBUG_printf(...)
+#endif
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
@@ -93,7 +97,7 @@ static bool has_public_address(void);
 static void set_random_address(bool nrpa);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-static int load_irk(void);
+static int load_irk(uint8_t *irk);
 #endif
 
 static void sync_cb(void);
@@ -138,6 +142,10 @@ static int ble_gattc_attr_write_cb(uint16_t conn_handle, const struct ble_gatt_e
 static int ble_secret_store_read(int obj_type, const union ble_store_key *key, union ble_store_value *value);
 static int ble_secret_store_write(int obj_type, const union ble_store_value *val);
 static int ble_secret_store_delete(int obj_type, const union ble_store_key *key);
+#ifdef BLE_STORE_GEN_KEY_IRK
+static int ble_secret_store_generate_key(uint8_t key, struct ble_store_gen_key *gen_key, uint16_t conn_handle);
+#endif
+static void ble_secret_store_set_callbacks();
 #endif
 
 static int ble_hs_err_to_errno(int err) {
@@ -269,53 +277,47 @@ static void set_random_address(bool nrpa) {
 #include "nimble/host/src/ble_hs_pvcy_priv.h"
 // For ble_hs_hci_util_rand
 #include "nimble/host/src/ble_hs_hci_priv.h"
-// For ble_hs_misc_restore_irks
+// For ble_hs_misc_restore_irks and ble_hs_max_(attrs|services|client_configs)
 #include "nimble/host/src/ble_hs_priv.h"
+
+static inline void ble_secret_store_set_callbacks() {
+    ble_hs_cfg.store_read_cb = ble_secret_store_read;
+    ble_hs_cfg.store_write_cb = ble_secret_store_write;
+    ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
+    #ifdef BLE_STORE_GEN_KEY_IRK
+    ble_hs_cfg.store_gen_key_cb = ble_secret_store_generate_key;
+    #endif
+}
 
 // Must be distinct to BLE_STORE_OBJ_TYPE_ in ble_store.h.
 #define SECRET_TYPE_OUR_IRK 10
 
-static int load_irk(void) {
-    // NimBLE unconditionally loads a fixed IRK on startup.
-    // See https://github.com/apache/mynewt-nimble/issues/887
-
+static int load_irk(uint8_t *irk) {
     // Dummy key to use for the store.
     // Technically the secret type is enough as there will only be
     // one IRK so the key doesn't matter, but a NULL (None) key means "search".
     const uint8_t key[3] = {'i', 'r', 'k'};
 
-    int rc;
-    const uint8_t *irk;
-    size_t irk_len;
-    if (mp_bluetooth_gap_on_get_secret(SECRET_TYPE_OUR_IRK, 0, key, sizeof(key), &irk, &irk_len) && irk_len == 16) {
-        DEBUG_printf("load_irk: Applying IRK from store.\n");
-        rc = ble_hs_pvcy_set_our_irk(irk);
-        if (rc) {
-            return rc;
-        }
+    const uint8_t *stored_irk;
+    size_t stored_irk_len;
+    if (mp_bluetooth_gap_on_get_secret(SECRET_TYPE_OUR_IRK, 0, key, sizeof(key), &stored_irk, &stored_irk_len) && stored_irk_len == 16) {
+        DEBUG_printf("load_irk: Retrieved IRK from store.\n");
+        memcpy(irk, stored_irk, 16);
+        return 0;
     } else {
         DEBUG_printf("load_irk: Generating new IRK.\n");
-        uint8_t rand_irk[16];
-        rc = ble_hs_hci_util_rand(rand_irk, 16);
+        int rc = ble_hs_hci_util_rand(irk, 16);
         if (rc) {
             return rc;
         }
         DEBUG_printf("load_irk: Saving new IRK.\n");
-        if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), rand_irk, 16)) {
+        if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), irk, 16)) {
             // Code that doesn't implement pairing/bonding won't support set/get secret.
             // So they'll just get the default fixed IRK.
-            return 0;
-        }
-        DEBUG_printf("load_irk: Applying new IRK.\n");
-        rc = ble_hs_pvcy_set_our_irk(rand_irk);
-        if (rc) {
-            return rc;
+            return -1;
         }
     }
-
-    // Loading an IRK will clear all peer IRKs, so reload them from the store.
-    rc = ble_hs_misc_restore_irks();
-    return rc;
+    return 0;
 }
 #endif
 
@@ -330,8 +332,24 @@ static void sync_cb(void) {
     }
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-    rc = load_irk();
-    assert(rc == 0);
+    // Reconfigure the store callbacks after sync because some
+    // ports (ESP-IDF >=v5.5.3) overwrite these during startup
+    ble_secret_store_set_callbacks();
+
+    #ifndef BLE_STORE_GEN_KEY_IRK
+    // NimBLE unconditionally loads a fixed IRK on startup.
+    // See https://github.com/apache/mynewt-nimble/issues/887
+    uint8_t irk[16];
+    if (load_irk(irk) == 0) {
+        DEBUG_printf("sync_cb: Applying IRK.\n");
+        rc = ble_hs_pvcy_set_our_irk(irk);
+        assert(rc == 0);
+
+        // Loading an IRK will clear all peer IRKs, so reload them from the store.
+        rc = ble_hs_misc_restore_irks();
+        assert(rc == 0);
+    }
+    #endif
     #endif
 
     if (has_public_address()) {
@@ -431,8 +449,284 @@ static int commmon_gap_event_cb(struct ble_gap_event *event, void *arg) {
             return 0;
         }
 
+        case BLE_GAP_EVENT_PASSKEY_ACTION: {
+            DEBUG_printf("commmon_gap_event_cb: passkey action: conn_handle=%d action=%d num=" UINT_FMT "\n", event->passkey.conn_handle, event->passkey.params.action, (mp_uint_t)event->passkey.params.numcmp);
+
+            #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+            mp_bluetooth_gap_on_passkey_action(event->passkey.conn_handle, event->passkey.params.action, event->passkey.params.numcmp);
+            #endif
+
+            return 0;
+        }
+
         default:
-            DEBUG_printf("commmon_gap_event_cb: unknown type %d\n", event->type);
+            #if MYNEWT_VAL(BLE_HS_DEBUG)
+            switch (event->type) {
+                #ifdef BLE_GAP_EVENT_CONNECT
+                case BLE_GAP_EVENT_CONNECT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONNECT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DISCONNECT
+                case BLE_GAP_EVENT_DISCONNECT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DISCONNECT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONN_UPDATE
+                case BLE_GAP_EVENT_CONN_UPDATE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONN_UPDATE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONN_UPDATE_REQ
+                case BLE_GAP_EVENT_CONN_UPDATE_REQ:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONN_UPDATE_REQ\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_L2CAP_UPDATE_REQ
+                case BLE_GAP_EVENT_L2CAP_UPDATE_REQ:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_L2CAP_UPDATE_REQ\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TERM_FAILURE
+                case BLE_GAP_EVENT_TERM_FAILURE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TERM_FAILURE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DISC
+                case BLE_GAP_EVENT_DISC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DISC\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DISC_COMPLETE
+                case BLE_GAP_EVENT_DISC_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DISC_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_ADV_COMPLETE
+                case BLE_GAP_EVENT_ADV_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_ADV_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_ENC_CHANGE
+                case BLE_GAP_EVENT_ENC_CHANGE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_ENC_CHANGE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PASSKEY_ACTION
+                case BLE_GAP_EVENT_PASSKEY_ACTION:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PASSKEY_ACTION\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_NOTIFY_RX
+                case BLE_GAP_EVENT_NOTIFY_RX:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_NOTIFY_RX\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_NOTIFY_TX
+                case BLE_GAP_EVENT_NOTIFY_TX:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_NOTIFY_TX\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_SUBSCRIBE
+                case BLE_GAP_EVENT_SUBSCRIBE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_SUBSCRIBE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_MTU
+                case BLE_GAP_EVENT_MTU:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_MTU\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_IDENTITY_RESOLVED
+                case BLE_GAP_EVENT_IDENTITY_RESOLVED:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_IDENTITY_RESOLVED\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_REPEAT_PAIRING
+                case BLE_GAP_EVENT_REPEAT_PAIRING:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_REPEAT_PAIRING\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PHY_UPDATE_COMPLETE
+                case BLE_GAP_EVENT_PHY_UPDATE_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PHY_UPDATE_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_EXT_DISC
+                case BLE_GAP_EVENT_EXT_DISC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_EXT_DISC\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_SYNC
+                case BLE_GAP_EVENT_PERIODIC_SYNC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_SYNC\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_REPORT
+                case BLE_GAP_EVENT_PERIODIC_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_SYNC_LOST
+                case BLE_GAP_EVENT_PERIODIC_SYNC_LOST:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_SYNC_LOST\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_SCAN_REQ_RCVD
+                case BLE_GAP_EVENT_SCAN_REQ_RCVD:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_SCAN_REQ_RCVD\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_TRANSFER
+                case BLE_GAP_EVENT_PERIODIC_TRANSFER:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_TRANSFER\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PATHLOSS_THRESHOLD
+                case BLE_GAP_EVENT_PATHLOSS_THRESHOLD:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PATHLOSS_THRESHOLD\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TRANSMIT_POWER
+                case BLE_GAP_EVENT_TRANSMIT_POWER:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TRANSMIT_POWER\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PARING_COMPLETE
+                case BLE_GAP_EVENT_PARING_COMPLETE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PARING_COMPLETE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_SUBRATE_CHANGE
+                case BLE_GAP_EVENT_SUBRATE_CHANGE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_SUBRATE_CHANGE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_VS_HCI
+                case BLE_GAP_EVENT_VS_HCI:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_VS_HCI\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIGINFO_REPORT
+                case BLE_GAP_EVENT_BIGINFO_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIGINFO_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_REATTEMPT_COUNT
+                case BLE_GAP_EVENT_REATTEMPT_COUNT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_REATTEMPT_COUNT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_AUTHORIZE
+                case BLE_GAP_EVENT_AUTHORIZE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_AUTHORIZE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TEST_UPDATE
+                case BLE_GAP_EVENT_TEST_UPDATE:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TEST_UPDATE\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_DATA_LEN_CHG
+                case BLE_GAP_EVENT_DATA_LEN_CHG:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_DATA_LEN_CHG\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONNLESS_IQ_REPORT
+                case BLE_GAP_EVENT_CONNLESS_IQ_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONNLESS_IQ_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CONN_IQ_REPORT
+                case BLE_GAP_EVENT_CONN_IQ_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CONN_IQ_REPORT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CTE_REQ_FAILED
+                case BLE_GAP_EVENT_CTE_REQ_FAILED:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CTE_REQ_FAILED\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_LINK_ESTAB
+                case BLE_GAP_EVENT_LINK_ESTAB:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_LINK_ESTAB\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_EATT
+                case BLE_GAP_EVENT_EATT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_EATT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PER_SUBEV_DATA_REQ
+                case BLE_GAP_EVENT_PER_SUBEV_DATA_REQ:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PER_SUBEV_DATA_REQ\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PER_SUBEV_RESP
+                case BLE_GAP_EVENT_PER_SUBEV_RESP:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PER_SUBEV_RESP\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_PERIODIC_TRANSFER_V2
+                case BLE_GAP_EVENT_PERIODIC_TRANSFER_V2:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_PERIODIC_TRANSFER_V2\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CACHE_ASSOC
+                case BLE_GAP_EVENT_CACHE_ASSOC:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CACHE_ASSOC / BLE_GAP_EVENT_CIS_ESTAB\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CIS_REQUEST
+                case BLE_GAP_EVENT_CIS_REQUEST:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CIS_REQUEST\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CREATE_BIG_COMP
+                case BLE_GAP_EVENT_CREATE_BIG_COMP:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CREATE_BIG_COMP\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_TERM_BIG_COMP
+                case BLE_GAP_EVENT_TERM_BIG_COMP:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_TERM_BIG_COMP\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIG_SYNC_ESTAB
+                case BLE_GAP_EVENT_BIG_SYNC_ESTAB:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIG_SYNC_ESTAB\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIG_SYNC_LOST
+                case BLE_GAP_EVENT_BIG_SYNC_LOST:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIG_SYNC_LOST\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_BIGINFO_ADV_RPT
+                case BLE_GAP_EVENT_BIGINFO_ADV_RPT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_BIGINFO_ADV_RPT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_CIS_ESTAB_V2
+                case BLE_GAP_EVENT_CIS_ESTAB_V2:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_CIS_ESTAB_V2\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_RD_ALL_REM_FEAT
+                case BLE_GAP_EVENT_RD_ALL_REM_FEAT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_RD_ALL_REM_FEAT\n");
+                    break;
+                #endif
+                #ifdef BLE_GAP_EVENT_MONITOR_ADV_REPORT
+                case BLE_GAP_EVENT_MONITOR_ADV_REPORT:
+                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_MONITOR_ADV_REPORT\n");
+                    break;
+                #endif
+                default:
+                    DEBUG_printf("commmon_gap_event_cb: unknown type %d\n", event->type);
+                    break;
+            }
+            #endif
             return 0;
     }
 }
@@ -495,16 +789,6 @@ static int central_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
             // Allow re-pairing.
             return BLE_GAP_REPEAT_PAIRING_RETRY;
-        }
-
-        case BLE_GAP_EVENT_PASSKEY_ACTION: {
-            DEBUG_printf("central_gap_event_cb: passkey action: conn_handle=%d action=%d num=" UINT_FMT "\n", event->passkey.conn_handle, event->passkey.params.action, (mp_uint_t)event->passkey.params.numcmp);
-
-            #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-            mp_bluetooth_gap_on_passkey_action(event->passkey.conn_handle, event->passkey.params.action, event->passkey.params.numcmp);
-            #endif
-
-            return 0;
         }
 
         case BLE_GAP_EVENT_SUBSCRIBE: {
@@ -584,17 +868,24 @@ void nimble_reset_gatts_bss(void) {
     // These variables are defined in ble_hs.c and are only ever incremented
     // (during service registration) and never reset.
     // See https://github.com/apache/mynewt-nimble/issues/896
-    ble_hs_max_attrs = 0;
-    ble_hs_max_services = 0;
-    ble_hs_max_client_configs = 0;
+
+    // Note: On the ESP32 port NimBLE can use dynamic allocation, meaning these
+    // can only be accessed safely while the NimBLE is active. The condition is
+    // harmless on other ports, as this state only get incremented while active
+    // meaning else resetting it does not do anything useful and we can skip it.
+    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
+        ble_hs_max_attrs = 0;
+        ble_hs_max_services = 0;
+        ble_hs_max_client_configs = 0;
+    }
 }
 
 int mp_bluetooth_init(void) {
     DEBUG_printf("mp_bluetooth_init\n");
-    // Clean up if necessary.
-    mp_bluetooth_deinit();
 
+    // Clean up if necessary.
     nimble_reset_gatts_bss();
+    mp_bluetooth_deinit();
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING;
 
@@ -635,9 +926,7 @@ int mp_bluetooth_init(void) {
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     ble_hs_cfg.sm_our_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID | BLE_SM_PAIR_KEY_DIST_SIGN;
     ble_hs_cfg.sm_their_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID | BLE_SM_PAIR_KEY_DIST_SIGN;
-    ble_hs_cfg.store_read_cb = ble_secret_store_read;
-    ble_hs_cfg.store_write_cb = ble_secret_store_write;
-    ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
+    ble_secret_store_set_callbacks();
     #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
     // Make sure that the HCI UART and event handling task is running.
@@ -868,7 +1157,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
     switch (ctxt->op) {
         case BLE_GATT_ACCESS_OP_READ_CHR:
         case BLE_GATT_ACCESS_OP_READ_DSC: {
-            DEBUG_printf("write for %d %d (op=%d)\n", conn_handle, value_handle, ctxt->op);
+            DEBUG_printf("read for %d %d (op=%d)\n", conn_handle, value_handle, ctxt->op);
             // Allow Python code to override (by using gatts_write), or deny (by returning false) the read.
             // Note this will be a no-op if the ringbuffer implementation is being used (i.e. the stack isn't
             // run in the scheduler). The ringbuffer is not used on STM32 and Unix-H4 only.
@@ -1216,7 +1505,7 @@ static int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
-            DEBUG_printf("peripheral_gap_event_cb: status=%d\n", event->connect.status);
+            DEBUG_printf("peripheral_gap_event_cb: connect: status=%d\n", event->connect.status);
             if (event->connect.status == 0) {
                 // Connection established.
                 ble_gap_conn_find(event->connect.conn_handle, &desc);
@@ -1230,7 +1519,7 @@ static int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_DISCONNECT:
             // Disconnect.
-            DEBUG_printf("peripheral_gap_event_cb: reason=%d\n", event->disconnect.reason);
+            DEBUG_printf("peripheral_gap_event_cb: disconnect: reason=%d\n", event->disconnect.reason);
             reverse_addr_byte_order(addr, event->disconnect.conn.peer_id_addr.val);
             mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT, event->disconnect.conn.conn_handle, event->disconnect.conn.peer_id_addr.type, addr);
             return 0;
@@ -1924,7 +2213,8 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
     size_t key_data_len;
 
     switch (obj_type) {
-        case BLE_STORE_OBJ_TYPE_PEER_SEC: {
+        case BLE_STORE_OBJ_TYPE_PEER_SEC:
+        case BLE_STORE_OBJ_TYPE_OUR_SEC: {
             if (ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)) {
                 // <type=peer,addr,*> (single)
                 // Find the entry for this specific peer.
@@ -1937,15 +2227,6 @@ static int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
                 key_data = NULL;
                 key_data_len = 0;
             }
-            break;
-        }
-        case BLE_STORE_OBJ_TYPE_OUR_SEC: {
-            // <type=our,addr,*>
-            // Find our secret for this remote device.
-            assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
-            assert(key->sec.idx == 0);
-            key_data = (const uint8_t *)&key->sec.peer_addr;
-            key_data_len = sizeof(ble_addr_t);
             break;
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
@@ -2036,6 +2317,15 @@ static int ble_secret_store_delete(int obj_type, const union ble_store_key *key)
             return BLE_HS_ENOTSUP;
     }
 }
+
+#ifdef BLE_STORE_GEN_KEY_IRK
+static int ble_secret_store_generate_key(uint8_t key, struct ble_store_gen_key *gen_key, uint16_t conn_handle) {
+    if (key == BLE_STORE_GEN_KEY_IRK) {
+        return load_irk(gen_key->irk);
+    }
+    return -1;
+}
+#endif
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
