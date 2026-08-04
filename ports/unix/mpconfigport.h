@@ -223,6 +223,24 @@ static inline unsigned long mp_random_seed_init(void) {
 // TODO: Make this configurable at runtime instead?
 #define MICROPY_PY_GPIO_IRQ_QUEUE_SIZE    (16)
 
+#if MICROPY_PY_GPIO_IRQ
+// Depending on the hardware, it may happen that pin events may be delivered in
+// an out-of-order fashion to the polling thread.  In this case, a timestamp is
+// kept on each pin object to keep track of the last event that was successfully
+// processed, and events that have occurred before that instant are discarded.
+//
+// To better tailor behaviour of timestamp management, this also enables three
+// new flags to `machine.Pin(…, clock=)`:
+//
+// - `Pin.CLOCK_MONOTONIC` - the default, this sources the timestamp from the
+//                           monotonic system clock
+// - `Pin.CLOCK_REALTIME`  - this sources the timestamp from the realtime system
+//                           clock
+// - `Pin.CLOCK_HTE`       - this sources the timestamp from the GPIO hardware's
+//                           time provider, if one is present.
+#define MICROPY_PY_GPIO_IRQ_TIMESTAMP     (1)
+#endif
+
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW   mp_pin_make_new
 #endif
 #endif

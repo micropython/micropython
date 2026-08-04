@@ -37,6 +37,10 @@
 
 #include <stdint.h>
 
+#if MICROPY_PY_GPIO_IRQ
+#include <sys/epoll.h>
+#endif
+
 #include "py/obj.h"
 #include "py/runtime.h"
 
@@ -47,6 +51,13 @@ typedef struct {
     mp_obj_t port;
     int fd;
     uint32_t number;
+    #if MICROPY_PY_GPIO_IRQ
+    #if MICROPY_PY_GPIO_IRQ_TIMESTAMP
+    uint64_t last_timestamp;
+    #endif
+    struct epoll_event event;
+    mp_obj_t callback;
+    #endif
 } machine_pin_obj_t;
 
 void mp_pin_init(void);
