@@ -206,6 +206,25 @@ static inline unsigned long mp_random_seed_init(void) {
 #endif
 
 #if MICROPY_PY_GPIO
+// If the GPIO pins are provided by a device that may or may not be always
+// attached to the system (ie. USB GPIO extender, PCI device that can be
+// disabled via `rmmod`, etc.), then enable this at the expense of a larger
+// binary.  Otherwise, if the pins are provided by a SoC (f.e. via a device
+// tree file) or if you can guarantee the device providing the pins will never
+// be removed from a running system, feel free to disable this (with a smaller
+// footprint and slightly faster execution).
+//
+// This requires threading support to be enabled, as it is essentially a
+// background thread doing blocking reads on a file descriptor.
+#define MICROPY_PY_GPIO_DYNAMIC_ALLOCATION (MICROPY_PY_THREAD)
+
+// Device removal events may be batched, this indicates how many events can be
+// reported at the same time per inotify operation.  Each entry takes up
+// sizeof(struct inotify_event) bytes of heap.
+//
+// TODO: Make this configurable at runtime instead?
+#define MICROPY_PY_GPIO_ALLOCATION_QUEUE_SIZE (16)
+
 // If you do not need IRQs or you are polling the GPIO pins anyway, you can
 // disable this (with a smaller footprint and slightly faster execution).
 //
