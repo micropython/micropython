@@ -82,6 +82,7 @@ int main(void) {
     MICROPY_BOARD_EARLY_INIT();
 
     lptimer_init();
+    machine_init();
     machine_rtc_init();
 
     #if MICROPY_HW_ENABLE_UART_REPL
@@ -179,6 +180,7 @@ int main(void) {
         soft_timer_deinit();
         machine_pwm_deinit_all();
         machine_pin_irq_deinit();
+        machine_set_soft_reset();
         gc_sweep_all();
         mp_deinit();
     }
