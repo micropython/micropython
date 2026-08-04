@@ -63,6 +63,11 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
+// Use setjmp/longjmp based GC helper on Intel-based Darwin
+#if defined(__APPLE__) && defined(__MACH__) && (defined(__i386__) || defined(__x86_64__))
+#define MICROPY_GCREGS_SETJMP       (1)
+#endif
+
 // Configure which emitter to use for this target.
 #if !defined(MICROPY_EMIT_X64) && defined(__x86_64__)
     #define MICROPY_EMIT_X64        (1)

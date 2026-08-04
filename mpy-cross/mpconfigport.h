@@ -109,6 +109,11 @@ typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
+// Use setjmp/longjmp based GC helper on Intel-based Darwin
+#if defined(__APPLE__) && defined(__MACH__) && (defined(__i386__) || defined(__x86_64__))
+#define MICROPY_GCREGS_SETJMP       (1)
+#endif
+
 // We need to provide a declaration/definition of alloca()
 #if defined(__FreeBSD__) || defined(__NetBSD__)
 #include <stdlib.h>
