@@ -20,6 +20,9 @@ CONFIG_HEAP_PLACE_FUNCTION_INTO_FLASH=y
 # Use the SPI flash functions in ROM (when available). This may limit flash chip
 # support and cause issues with some flash chips. Each SoC family has different
 # set of chip support baked into ROM.
+# IMPORTANT: On some chips such as the ESP32-S3-WROOM-1-N8R8 it may cause panics
+# (Cache error / MMU entry fault error) when writing to high PSRAM addresses, see
+# https://github.com/micropython/micropython/pull/19469 for more details.
 CONFIG_SPI_FLASH_ROM_IMPL=y
 
 # Run the Bluetooth controller from flash not IRAM
