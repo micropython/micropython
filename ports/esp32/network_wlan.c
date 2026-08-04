@@ -455,7 +455,7 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         int16_t ttls_phase2_method = (int16_t)args[ARG_ttls_phase2_method].u_int;
 
         // setting dummy password to prevent warning if key = None for Enterprise modes
-        if(!strlen((const char *)wifi_sta_config.sta.password)) {
+        if (!strlen((const char *)wifi_sta_config.sta.password)) {
             memcpy(wifi_sta_config.sta.password, "dummypwd", MIN(8, sizeof(wifi_sta_config.sta.password)));
         }
         // set esp_eap_method explicitly, otherwise ESP-IDF defaults to EAP-PEAP with MSCHAPv2
