@@ -749,6 +749,32 @@ Pairing and bonding
           should show the passkey that was provided in the ``_IRQ_PASSKEY_ACTION`` event
           and then respond with either ``0`` (cancel pairing), or ``1`` (accept pairing).
 
+.. method:: BLE.gap_indicate_service_changed(conn_handle, handle_start, handle_end, /)
+
+    When a client is bonded to a server it will typically cache the results of the discovery 
+    process to speed up future connections. If the services/characteristic handles change on 
+    the server in future a previously-bonded client may not be able to communicate correctly 
+    as it will be using the previously cached handles.
+    This function can be run on the server to send an indication to the client that handles
+    have changed and trigger service discovery on the client.
+
+    If ``conn_handle`` is None, then all connected devices will be indicated. If CCCD bonding 
+    is supported then any un-connected bonded devices will automatically be indicated the next 
+    time they connect.
+
+    The ``handle_start`` and ``handle_end`` arguments can be used to specify the range of 
+    characteristics that have changed, or typically ``handle_start=0x0000, handle_end=0xFFFF``
+    will be used to discover all again.
+
+    Note: with an iOS client it's been seen that if this function is called greater than ~100ms 
+    after a new connection is established the connection can be dropped, or the characteristics
+    covered by the declared range will lock up and be no longer readable, so it's important to 
+    send this command within the first few ms after a connection is made.
+    
+    Alternatively, it appears that if the start and end handles are both set to ``0x0000``, 
+    the lock-up doesn't occur regardless of when the call is made. Android clients appear to 
+    accept the null handles as a re-discover all, though the BLE spec makes no mention of this.
+
 
 class UUID
 ----------
