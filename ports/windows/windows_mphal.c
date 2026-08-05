@@ -268,6 +268,7 @@ void msec_sleep(double msec) {
     if (msec < 0.0) {
         msec = 0.0;
     }
+    // Use alertable sleep so APC functions (e.g. mp_thread_gc) can be delivered.
     SleepEx((DWORD)msec, TRUE);
 }
 
