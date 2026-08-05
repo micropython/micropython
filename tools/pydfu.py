@@ -415,6 +415,20 @@ def read_dfu_file(filename):
     return elements
 
 
+def read_bin_file(filename, address):
+    """Reads binary file(.bin) and stores it as single
+    element in element array just like read_dfu_file() would.
+    """
+    element = {}
+    print("File: {}".format(filename))
+    with open(filename, "rb") as fin:
+        element["data"] = fin.read()
+    element["size"] = len(element["data"])
+    element["num"] = 0
+    element["addr"] = address
+    return [element]
+
+
 class FilterDFU(object):
     """Class for filtering USB devices to identify devices which are in DFU
     mode.
@@ -566,6 +580,13 @@ def main():
     parser.add_argument(
         "-u", "--upload", help="read file from DFU device", dest="path", default=False
     )
+    parser.add_argument(
+        "-a",
+        "--address",
+        help="specify target memory address(hex or dec) when uploading .bin files",
+        type=lambda x: int(x, 0),
+        default=None,
+    )
     parser.add_argument("-x", "--exit", help="Exit DFU", action="store_true", default=False)
     parser.add_argument(
         "-v", "--verbose", help="increase output verbosity", action="store_true", default=False
@@ -594,7 +615,14 @@ def main():
         command_run = True
 
     if args.path:
-        elements = read_dfu_file(args.path)
+        if str(args.path).endswith(".bin"):
+            if args.address is None:
+                raise ValueError("Address must be specified using -a when uploading binary")
+
+            elements = read_bin_file(args.path, args.addr)
+        else:
+            elements = read_dfu_file(args.path)
+
         if not elements:
             print("No data in dfu file")
             return
