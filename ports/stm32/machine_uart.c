@@ -367,6 +367,14 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
         } else if (strcmp(port, MICROPY_HW_UART10_NAME) == 0) {
             uart_id = PYB_UART_10;
         #endif
+        #ifdef MICROPY_HW_UART11_NAME
+        } else if (strcmp(port, MICROPY_HW_UART11_NAME) == 0) {
+            uart_id = PYB_UART_11;
+        #endif
+        #ifdef MICROPY_HW_UART12_NAME
+        } else if (strcmp(port, MICROPY_HW_UART12_NAME) == 0) {
+            uart_id = PYB_UART_12;
+        #endif
         #ifdef MICROPY_HW_LPUART1_NAME
         } else if (strcmp(port, MICROPY_HW_LPUART1_NAME) == 0) {
             uart_id = PYB_LPUART_1;

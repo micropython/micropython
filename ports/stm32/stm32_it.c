@@ -1044,6 +1044,22 @@ void USART10_IRQHandler(void) {
 }
 #endif
 
+#if defined(USART11)
+void USART11_IRQHandler(void) {
+    IRQ_ENTER(USART11_IRQn);
+    uart_irq_handler(11);
+    IRQ_EXIT(USART11_IRQn);
+}
+#endif
+
+#if defined(UART12)
+void UART12_IRQHandler(void) {
+    IRQ_ENTER(UART12_IRQn);
+    uart_irq_handler(12);
+    IRQ_EXIT(UART12_IRQn);
+}
+#endif
+
 #endif
 
 #if defined(LPUART1)
