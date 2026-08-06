@@ -1,0 +1,11 @@
+---
+description: Hint — host branch invariant; full rule in wasmmod package
+alwaysApply: true
+---
+
+# Host branches (hint)
+
+Canonical rule: [`extmod/wasmmod/.cursor/rules/wasmmod-host-branches.mdc`](../../extmod/wasmmod/.cursor/rules/wasmmod-host-branches.mdc)
+and [`extmod/wasmmod/BRANCHES.md`](../../extmod/wasmmod/BRANCHES.md).
+
+**Invariant:** metalpython `wasmmod` must stay a git ancestor of `master`. Bump `extmod/wasmmod` on host branch `wasmmod` first, then merge to `master`.

@@ -1,0 +1,11 @@
+---
+description: Hint — full modularize-at-scale rule lives in wasmmod package
+alwaysApply: true
+---
+
+# Modularize at scale (hint)
+
+Canonical rule: [`extmod/wasmmod/.cursor/rules/modularize-at-scale.mdc`](../../extmod/wasmmod/.cursor/rules/modularize-at-scale.mdc)
+(package checkout: `packages/wasmmod/.cursor/rules/modularize-at-scale.mdc`).
+
+**Threshold:** split before ~1000 LOC; rethink structure past ~500. Do not grow blobs.

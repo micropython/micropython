@@ -1,0 +1,10 @@
+---
+description: Hint — open os-sdk monorepo for constellation agents
+alwaysApply: true
+---
+
+# Workspace (hint)
+
+Agents that touch wasmmod + metal-cdn + tools: open **`/home/ladmin/Devel/os-sdk`**, not this package alone.
+
+Canonical rules live under `extmod/wasmmod/.cursor/rules/` after the submodule is current.

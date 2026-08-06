@@ -12,6 +12,9 @@ build-*/
 docs/genrst/
 .mpy_ld_cache-*/
 
+# rust-analyzer / flycheck (metalpython is not a Cargo root)
+/target/
+
 # Test failure outputs and intermediate artefacts
 tests/results/*
 tests/ports/unix/ffi_lib.so
