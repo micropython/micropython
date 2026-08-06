@@ -170,7 +170,7 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
         MP_STATE_VM(sched_queue)[iput].func = function;
         MP_STATE_VM(sched_queue)[iput].arg = arg;
-        MICROPY_SCHED_HOOK_SCHEDULED;
+        mp_hal_signal_event();
         ret = true;
     } else {
         // schedule queue is full
@@ -196,7 +196,7 @@ bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback)
             MP_STATE_VM(sched_tail)->next = node;
         }
         MP_STATE_VM(sched_tail) = node;
-        MICROPY_SCHED_HOOK_SCHEDULED;
+        mp_hal_signal_event();
         ret = true;
     } else {
         // already scheduled
