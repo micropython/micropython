@@ -838,11 +838,11 @@ void machine_uart_deinit_all() {
     CY_SCB_RX_INTR_UART_BREAK_DETECT | \
     CY_SCB_TX_INTR_UART_DONE)
 
-static mp_obj_t machine_uart_rx_idle_soft(mp_obj_t self_in);
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_rx_idle_soft_obj, machine_uart_rx_idle_soft);
+static mp_obj_t machine_uart_irq_rx_idle_soft(mp_obj_t self_in);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_irq_rx_idle_soft_obj, machine_uart_irq_rx_idle_soft);
 
 
-static mp_obj_t machine_uart_rx_idle_soft(mp_obj_t self_in) {
+static mp_obj_t machine_uart_irq_rx_idle_soft(mp_obj_t self_in) {
     /**
      * The irq handle is only scheduled when no bytes
      * have been received within the frame time.
@@ -858,7 +858,7 @@ static mp_obj_t machine_uart_rx_idle_soft(mp_obj_t self_in) {
             }
             self->rx_idle_irq_pending = false;
         } else {
-            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
+            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_irq_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
         }
     }
 
@@ -886,7 +886,7 @@ static void machine_uart_irq_rx_idle(machine_uart_obj_t *self) {
         self->rx_idle_timeout = mp_hal_ticks_ms() + frame_time_ms * RX_IDLE_NUM_OF_FRAMES_MARGIN;
         if (!self->rx_idle_irq_pending) {
             self->rx_idle_irq_pending = true;
-            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
+            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_irq_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
         }
     }
 }
