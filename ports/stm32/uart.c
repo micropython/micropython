@@ -248,6 +248,16 @@ bool uart_exists(int uart_id) {
             return true;
         #endif
 
+        #if defined(MICROPY_HW_UART11_TX) && defined(MICROPY_HW_UART11_RX)
+        case PYB_UART_11:
+            return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART12_TX) && defined(MICROPY_HW_UART12_RX)
+        case PYB_UART_12:
+            return true;
+        #endif
+
         #if defined(MICROPY_HW_LPUART1_TX) && defined(MICROPY_HW_LPUART1_RX)
         case PYB_LPUART_1:
             return true;
@@ -557,8 +567,21 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             __HAL_RCC_UART9_CLK_ENABLE();
             pins[0] = MICROPY_HW_UART9_TX;
             pins[1] = MICROPY_HW_UART9_RX;
+            #if defined(MICROPY_HW_UART9_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART9_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART9_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART9_CTS;
+            }
+            #endif
             #if defined(MICROPY_HW_UART9_RX_PULL)
             pins_pull[1] = MICROPY_HW_UART9_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART9_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART9_CTS_PULL;
             #endif
             break;
         #endif
@@ -577,8 +600,75 @@ bool uart_init(machine_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART10_TX;
             pins[1] = MICROPY_HW_UART10_RX;
+            #if defined(MICROPY_HW_UART10_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART10_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART10_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART10_CTS;
+            }
+            #endif
             #if defined(MICROPY_HW_UART10_RX_PULL)
             pins_pull[1] = MICROPY_HW_UART10_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART10_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART10_CTS_PULL;
+            #endif
+            break;
+        #endif
+
+        #if defined(MICROPY_HW_UART11_TX) && defined(MICROPY_HW_UART11_RX)
+        case PYB_UART_11:
+            uart_unit = 11;
+            UARTx = USART11;
+            irqn = USART11_IRQn;
+            __HAL_RCC_USART11_CLK_ENABLE();
+            pins[0] = MICROPY_HW_UART11_TX;
+            pins[1] = MICROPY_HW_UART11_RX;
+            #if defined(MICROPY_HW_UART11_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART11_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART11_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART11_CTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART11_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART11_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART11_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART11_CTS_PULL;
+            #endif
+            break;
+        #endif
+
+        #if defined(MICROPY_HW_UART12_TX) && defined(MICROPY_HW_UART12_RX)
+        case PYB_UART_12:
+            uart_unit = 12;
+            UARTx = UART12;
+            irqn = UART12_IRQn;
+            __HAL_RCC_UART12_CLK_ENABLE();
+            pins[0] = MICROPY_HW_UART12_TX;
+            pins[1] = MICROPY_HW_UART12_RX;
+            #if defined(MICROPY_HW_UART12_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART12_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART12_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART12_CTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART12_RX_PULL)
+            pins_pull[1] = MICROPY_HW_UART12_RX_PULL;
+            #endif
+            #if defined(MICROPY_HW_UART12_CTS_PULL)
+            pins_pull[3] = MICROPY_HW_UART12_CTS_PULL;
             #endif
             break;
         #endif
