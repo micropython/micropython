@@ -68,6 +68,10 @@
 #define UART_FLOW_CONTROL_NONE    (0)
 #define UART_FLOW_CONTROL_RTS     (1)
 #define UART_FLOW_CONTROL_CTS     (2)
+
+// The RX FIFO level at which the RTS pin is deasserted to throttle the sender.
+// Threshold is set to 112 bytes, which is fifo size (128) - 16 bytes (cushion).
+#define UART_RTS_RX_FIFO_LEVEL    (112UL)
 #define UART_IRQ_RXIDLE           (CY_SCB_RX_INTR_NOT_EMPTY)
 
 // Class-level constants exposed to Python
@@ -152,17 +156,38 @@ static void machine_uart_irq_rx_break(machine_uart_obj_t *self);
 static void machine_uart_irq_tx_idle(machine_uart_obj_t *self);
 #endif
 
+static inline void machine_uart_irq_rx_not_empty_config(machine_uart_obj_t *self, bool enable) {
+    uint32_t mask = Cy_SCB_GetRxInterruptMask(self->scb_obj->scb);
+    if (enable) {
+        mask |= CY_SCB_RX_INTR_NOT_EMPTY;
+    } else {
+        mask &= ~CY_SCB_RX_INTR_NOT_EMPTY;
+    }
+    Cy_SCB_SetRxInterruptMask(self->scb_obj->scb, mask);
+}
+
+static inline void machine_uart_irq_rx_pause(machine_uart_obj_t *self) {
+    machine_uart_irq_rx_not_empty_config(self, false);
+}
+
+static inline void machine_uart_irq_rx_resume(machine_uart_obj_t *self) {
+    machine_uart_irq_rx_not_empty_config(self, true);
+}
+
 static void machine_uart_fill_rx_ring_buff(machine_uart_obj_t *self) {
     uint32_t available_rx_frames = Cy_SCB_UART_GetNumInRxFifo(self->scb_obj->scb);
     for (uint32_t i = 0; i < available_rx_frames; i++) {
-        if (!ringbuf_put(&self->rx_ringbuf, (uint8_t)Cy_SCB_UART_Get(self->scb_obj->scb))) {
+        if (ringbuf_free(&self->rx_ringbuf) == 0) {
             /**
-             * No overflow handling.
-             * Just return and wait for next interrupt
-             * to read the remaining data.
+             * Pause rx irq to avoid interrupt storms while the
+             * ring buffer is full. Supports RTS flow control,
+             * if enabled, to throttle the sender.
              */
+            machine_uart_irq_rx_pause(self);
             return;
         }
+
+        ringbuf_put(&self->rx_ringbuf, (uint8_t)Cy_SCB_UART_Get(self->scb_obj->scb));
     }
 }
 
@@ -340,12 +365,9 @@ static void machine_uart_hw_init(machine_uart_obj_t *self) {
         .receiverAddressMask = 0UL,
         .acceptAddrInFifo = false,
 
-        /**
-         * TODO: Enable CTS/RTS based on user config.
-         */
-        .enableCts = false,
+        .enableCts = (self->flow & UART_FLOW_CONTROL_CTS) != 0,
         .ctsPolarity = CY_SCB_UART_ACTIVE_LOW,
-        .rtsRxFifoLevel = 0UL,
+        .rtsRxFifoLevel = (self->flow & UART_FLOW_CONTROL_RTS) ? UART_RTS_RX_FIFO_LEVEL : 0UL,
         .rtsPolarity = CY_SCB_UART_ACTIVE_LOW,
 
         .rxFifoTriggerLevel = 0UL,
@@ -498,14 +520,17 @@ static void machine_uart_init_impl(machine_uart_obj_t **self_ptr, int uart_id, s
     /* -- Flow control pins -- */
     uint32_t flow = (uint32_t)args[ARG_flow].u_int;
 
-    /** TODO: Currently throw error if flow is not NONE.
-     * This needs to be implemented
-     * {
-     */
-    if (flow != UART_FLOW_CONTROL_NONE) {
-        mp_raise_ValueError(MP_ERROR_TEXT("flow control not supported yet. Keep flow=0"));
+    if ((flow & ~(UART_FLOW_CONTROL_RTS | UART_FLOW_CONTROL_CTS)) != 0U) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flow must be UART.RTS, UART.CTS or both"));
     }
-    /** } */
+
+    if ((args[ARG_rts].u_obj != mp_const_none) && ((flow & UART_FLOW_CONTROL_RTS) == 0U)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flow must include UART.RTS when rts pin is provided"));
+    }
+
+    if ((args[ARG_cts].u_obj != mp_const_none) && ((flow & UART_FLOW_CONTROL_CTS) == 0U)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flow must include UART.CTS when cts pin is provided"));
+    }
 
     #define PIN_AF_CONFIG_INDEX_NONE (0xFF)
     uint8_t pin_af_conf_rts_index = PIN_AF_CONFIG_INDEX_NONE;
@@ -696,7 +721,9 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
 #if MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR
 static mp_int_t mp_machine_uart_readchar(machine_uart_obj_t *self) {
     if (machine_uart_rx_wait(self, self->timeout_ms)) {
-        return (uint8_t)ringbuf_get(&self->rx_ringbuf);
+        uint8_t data = (uint8_t)ringbuf_get(&self->rx_ringbuf);
+        machine_uart_irq_rx_resume(self);
+        return data;
     }
 
     return MP_STREAM_ERROR;
@@ -732,6 +759,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
         ringbuf_memcpy_get_internal(&self->rx_ringbuf, (uint8_t *)buf_in + read_count, to_read);
         read_count += to_read;
         size -= to_read;
+        machine_uart_irq_rx_resume(self);
     } while (size > 0 && machine_uart_rx_wait(self, self->timeout_char_ms));
 
     return read_count;
