@@ -47,7 +47,7 @@
 #include "genhdr/pins_af.h"
 #include "modmachine.h"
 #include "mphalport.h"
-#include "machine_scb.h"
+#include "scb.h"
 #include "sys_int.h"
 #include "clk.h"
 
@@ -87,7 +87,7 @@
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     int id;                         // id matches the SCB id.
-    machine_scb_obj_t *scb_obj;
+    scb_obj_t *scb_obj;
     pclk_div_obj_t *pclk_div;
     mp_hal_pin_obj_t tx;
     mp_hal_pin_obj_t rx;
@@ -239,11 +239,11 @@ static void machine_uart_obj_make_or_reuse(machine_uart_obj_t **self_ptr, uint8_
 
     if (*self_ptr == NULL) {
         /* Create a new object and allocate the scb instance if free.*/
-        if (machine_scb_is_free(id)) {
+        if (scb_is_free(id)) {
             (*self_ptr) = mp_machine_uart_obj_alloc();
             (*self_ptr)->id = id;
             (*self_ptr)->pclk_div = NULL;
-            (*self_ptr)->scb_obj = machine_scb_obj_alloc(id, *self_ptr, machine_uart_scb_isr);
+            (*self_ptr)->scb_obj = scb_obj_alloc(id, *self_ptr, machine_uart_scb_isr);
             pclk_div_slave_init((*self_ptr)->scb_obj->clk, (*self_ptr)->scb_obj->mmio_slave_nr);
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SCB %u is already in use by a machine.I2C or machine.SPI instance."), id);
@@ -676,7 +676,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     const mp_obj_t *init_args = args;
     if (n_args > 0 && mp_obj_is_int(args[0])) {
         uart_id = mp_obj_get_int(args[0]);
-        if (uart_id < 0 || uart_id >= MICROPY_PY_MACHINE_SCB_NUM_ENTRIES) {
+        if (uart_id < 0 || uart_id >= MICROPY_PY_SCB_NUM_ENTRIES) {
             mp_raise_ValueError(MP_ERROR_TEXT("UART id out of range"));
         }
         init_n_args = n_args - 1;
@@ -696,7 +696,7 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     machine_uart_hw_deinit(self);
     m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
     pclk_div_slave_deinit(self->scb_obj->clk, self->scb_obj->mmio_slave_nr);
-    machine_scb_obj_free(self->scb_obj);
+    scb_obj_free(self->scb_obj);
     mp_machine_uart_obj_free(self);
 }
 
@@ -1015,7 +1015,7 @@ void machine_uart_repl_init() {
 
     uint8_t scb_unit = uart_pins_config[0].af->unit;
 
-    repl_uart_obj.scb_obj = machine_scb_obj_alloc(scb_unit, &repl_uart_obj, machine_uart_scb_isr);
+    repl_uart_obj.scb_obj = scb_obj_alloc(scb_unit, &repl_uart_obj, machine_uart_scb_isr);
     repl_uart_obj.id = scb_unit;
     mp_hal_periph_pins_af_init(uart_pins_config, 2);
 
