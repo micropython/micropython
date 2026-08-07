@@ -1,0 +1,46 @@
+# Build + run artifacts for the UEFI port (all self-contained under ports/uefi/).
+
+# Compiled objects, the built .efi, and the mpy-cross/frozen output dirs.
+build/
+build-*/
+*.efi
+*.EFI
+*.o
+*.obj
+*.lib
+*.pdb
+
+# Staged ESP (make stage): the FAT image tree QEMU boots.
+esp/
+
+# Firmware: seeded from the dev image (/opt/ovmf) or built by tools/build-ovmf.sh,
+# plus QEMU serial/debug logs. All regenerated — never source.
+firmware/
+
+# Built test-OS images (large; produced by tools/build-test-os.sh).
+test-images/vmlinuz-*
+test-images/initramfs-*
+test-images/*.img
+
+# Optional edk2 submodule build output (if added).
+edk2/Build/
+edk2/Conf/
+
+# Throwaway TLS test cert/key, generated on demand by tests/gen-tls-test-cert.sh.
+tests/tls_test_cert.pem
+tests/tls_test_cert.der
+tests/tls_test_key.pem
+
+# Transient docker/firmware build logs.
+*-build.log
+
+# Local, machine-specific test scripts (serial/SSH rigs, WiFi creds, host names).
+local_tests/
+
+# Local tooling / caches / OS + editor cruft.
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.claude/
+CLAUDE.md
