@@ -1,0 +1,57 @@
+name: Cleanup docs preview
+
+# Removes a PR's published preview from the separate previews repository when
+# the PR is closed or merged. This uses pull_request_target so the deploy key
+# is available, but it never checks out or runs PR code: it only deletes the
+# preview directory, so it is not exposed to untrusted input.
+
+on:
+  pull_request_target:
+    types:
+      - closed
+    paths:
+      - docs/**
+      - tests/cpydiff/**
+
+# Share the deploy workflow's lane so a close cannot race a final deploy.
+concurrency:
+  group: docs-preview-publish
+
+permissions: {}  # no access to this repository is required
+
+env:
+  preview_repo: ${{ github.repository_owner }}/micropython-docs-previews
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Remove preview directory from previews repository
+      env:
+        DEPLOY_KEY: ${{ secrets.PREVIEW_DEPLOY_KEY }}
+        PR: ${{ github.event.number }}
+      run: |
+        if [ -z "$DEPLOY_KEY" ]; then
+          echo "PREVIEW_DEPLOY_KEY is not set; nothing to clean up."
+          exit 0
+        fi
+        # github.event.number is a trusted integer from the event payload, but
+        # validate defensively before using it in a path.
+        if ! [[ "$PR" =~ ^[1-9][0-9]*$ ]]; then
+          echo "Refusing to clean up: invalid PR number '$PR'." >&2
+          exit 1
+        fi
+        mkdir -p ~/.ssh && chmod 700 ~/.ssh
+        echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+        git clone --branch gh-pages --depth 1 \
+          "git@github.com:${preview_repo}.git" previews
+        cd previews
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        rm -rf "pr-${PR}"
+        git add -A
+        git diff --cached --quiet || \
+          git commit -m "Remove docs preview for PR #${PR}"
+        git push
