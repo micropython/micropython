@@ -9,6 +9,11 @@ well as some modules from micropython-lib. The 512kiB variant further removes
 all filesystem support, as well as framebuffer support, some Python language
 features, and has less detailed error messages.
 
+Boards with more than 4MiB of flash (e.g. 8MiB or 16MiB) need an extra
+step to write the `esp_init_data` RF calibration data, otherwise WiFi will not
+start. See [Boards with more than 4MB of flash](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#boards-with-more-than-4mb-of-flash)
+in the tutorial for details.
+
 Note: v1.12-334 and newer (including v1.13) require an ESP8266 module with
 2MiB of flash or more, and use littlefs as the filesystem by default.  When
 upgrading from older firmware please backup your files first, and either
