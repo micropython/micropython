@@ -61,14 +61,9 @@ static void network_timer_callback(soft_timer_entry_t *self) {
 }
 
 void mod_network_lwip_init(void) {
-    static bool timer_started = false;
-    if (timer_started) {
-        soft_timer_remove(&network_timer);
-        timer_started = false;
-    }
     // Start poll timer.
+    soft_timer_remove(&network_timer);
     soft_timer_static_init(&network_timer, SOFT_TIMER_MODE_PERIODIC, 50, network_timer_callback);
     soft_timer_reinsert(&network_timer, 50);
-    timer_started = true;
 }
 #endif // MICROPY_PY_LWIP
