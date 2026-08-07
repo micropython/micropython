@@ -11,7 +11,6 @@ if (!globalThis.jspiProbe) {
     console.log("SKIP");
     process.exit(0);
 }
-delete globalThis.jspiProbe;
 
 await mp.runPythonAsync(`
 import jsffi
