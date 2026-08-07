@@ -123,6 +123,7 @@ function ci_code_size_build {
             OUTFILE=$2
             IGNORE_ERRORS=$3
 
+            git restore ports/esp32/lockfiles/*  # esp32 port may update local lockfile
             git checkout --detach $COMMIT
             git submodule update --init $SUBMODULES
             git show -s
