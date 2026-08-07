@@ -229,7 +229,9 @@ CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -We
 	 -ffunction-sections -fdata-sections
 CFLAGS += $(CFLAGS_EXTRA)
 
-LDFLAGS += -T $(LDSCRIPT) --gc-sections -Map=$(@:.elf=.map)
+LINKERSCRIPT = $(BUILD)/linkerscript.ld
+
+LDFLAGS += -T $(LINKERSCRIPT) --gc-sections -Map=$(@:.elf=.map)
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -344,7 +346,13 @@ test_natmod: $(BUILD)/firmware.elf
 		./run-natmodtests.py -t execpty:"$(QEMU_SYSTEM) $(QEMU_ARGS) -serial pty -kernel ../$(DIRNAME)/$<" $(RUN_TESTS_EXTRA) extmod/$$natmod*.py; \
 		done
 
-$(BUILD)/firmware.elf: $(LDSCRIPT) $(OBJ)
+$(BUILD):
+	$(Q)$(MKDIR) -p $(BUILD)
+
+$(LINKERSCRIPT): $(LDSCRIPT) | $(BUILD)
+	$(Q)$(CROSS_COMPILE)cpp $^ | grep -v '^#' > $@
+
+$(BUILD)/firmware.elf: $(LINKERSCRIPT) $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
