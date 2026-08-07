@@ -1319,6 +1319,240 @@ static void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(label_assign, l_end);
 }
 
+#if MICROPY_PY_MATCH
+
+// Temporary id for the match subject (not a valid user identifier).
+static qstr match_subject_qstr(void) {
+    return qstr_from_str(".match");
+}
+
+static bool match_closed_is_irrefutable(mp_parse_node_t pn);
+static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse_node_t pn, uint l_fail);
+
+// Collect capture names from a closed pattern into dest[0..*n). Returns false on error.
+static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *dest, size_t *n, size_t max_n) {
+    if (MP_PARSE_NODE_IS_NULL(pn)) {
+        return true;
+    }
+    if (MP_PARSE_NODE_IS_ID(pn)) {
+        qstr q = MP_PARSE_NODE_LEAF_ARG(pn);
+        if (q == MP_QSTR__) {
+            return true;
+        }
+        for (size_t i = 0; i < *n; i++) {
+            if (dest[i] == q) {
+                compile_syntax_error(comp, pn, MP_ERROR_TEXT("multiple assignments to name in pattern"));
+                return false;
+            }
+        }
+        if (*n >= max_n) {
+            compile_syntax_error(comp, pn, MP_ERROR_TEXT("too many capture names"));
+            return false;
+        }
+        dest[(*n)++] = q;
+        return true;
+    }
+    if (!MP_PARSE_NODE_IS_STRUCT(pn)) {
+        return true; // literal leaf
+    }
+    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
+    int kind = MP_PARSE_NODE_STRUCT_KIND(pns);
+    if (kind == PN_match_seq_tuple || kind == PN_match_seq_list) {
+        if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
+            return true;
+        }
+        mp_parse_node_t *items;
+        size_t n_items = mp_parse_node_extract_list(&pns->nodes[0], PN_match_seq_items, &items);
+        for (size_t i = 0; i < n_items; i++) {
+            if (!match_collect_captures(comp, items[i], dest, n, max_n)) {
+                return false;
+            }
+        }
+    }
+    // Other structs (const objects, folded literals) have no captures.
+    return true;
+}
+
+static bool match_capture_sets_equal(qstr *a, size_t na, qstr *b, size_t nb) {
+    if (na != nb) {
+        return false;
+    }
+    for (size_t i = 0; i < na; i++) {
+        bool found = false;
+        for (size_t j = 0; j < nb; j++) {
+            if (a[i] == b[j]) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool match_closed_is_irrefutable(mp_parse_node_t pn) {
+    // Only bare names / _ are irrefutable in this subset (parser folds or-rules).
+    return MP_PARSE_NODE_IS_ID(pn);
+}
+
+static bool match_or_is_irrefutable(mp_parse_node_t pn) {
+    mp_parse_node_t *alts;
+    size_t n_alts = mp_parse_node_extract_list(&pn, PN_match_or_pattern, &alts);
+    for (size_t i = 0; i < n_alts; i++) {
+        if (!match_closed_is_irrefutable(alts[i])) {
+            return false;
+        }
+    }
+    return n_alts > 0;
+}
+
+static void compile_match_literal_equal(compiler_t *comp, qstr q_subj, mp_parse_node_t lit, uint l_fail) {
+    compile_load_id(comp, q_subj);
+    compile_node(comp, lit);
+    // PEP 634: True/False/None use identity; other literals use equality.
+    mp_binary_op_t op = MP_BINARY_OP_EQUAL;
+    if (MP_PARSE_NODE_IS_TOKEN(lit)) {
+        mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(lit);
+        if (tok == MP_TOKEN_KW_NONE || tok == MP_TOKEN_KW_TRUE || tok == MP_TOKEN_KW_FALSE) {
+            op = MP_BINARY_OP_IS;
+        }
+    }
+    EMIT_ARG(binary_op, op);
+    EMIT_ARG(pop_jump_if, false, l_fail);
+}
+
+static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse_node_t pn, uint l_fail) {
+    if (MP_PARSE_NODE_IS_ID(pn)) {
+        qstr q = MP_PARSE_NODE_LEAF_ARG(pn);
+        if (q != MP_QSTR__) {
+            compile_load_id(comp, q_subj);
+            compile_store_id(comp, q);
+        }
+        return;
+    }
+
+    if (!MP_PARSE_NODE_IS_STRUCT(pn)) {
+        // Bare literal leaf (integer/string/token) from grammar pass-through.
+        compile_match_literal_equal(comp, q_subj, pn, l_fail);
+        return;
+    }
+
+    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
+    int kind = MP_PARSE_NODE_STRUCT_KIND(pns);
+
+    if (kind == PN_match_seq_tuple || kind == PN_match_seq_list) {
+        mp_parse_node_t *items = NULL;
+        size_t n_items = 0;
+        if (!MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
+            n_items = mp_parse_node_extract_list(&pns->nodes[0], PN_match_seq_items, &items);
+        }
+        compile_load_id(comp, MP_QSTR_len);
+        compile_load_id(comp, q_subj);
+        EMIT_ARG(call_function, 1, 0, 0);
+        EMIT_ARG(load_const_small_int, n_items);
+        EMIT_ARG(binary_op, MP_BINARY_OP_EQUAL);
+        EMIT_ARG(pop_jump_if, false, l_fail);
+        for (size_t i = 0; i < n_items; i++) {
+            qstr q_elem = qstr_from_str(".match_e");
+            compile_load_id(comp, q_subj);
+            EMIT_ARG(load_const_small_int, i);
+            EMIT_ARG(subscr, MP_EMIT_SUBSCR_LOAD);
+            compile_store_id(comp, q_elem);
+            compile_match_closed_pattern(comp, q_elem, items[i], l_fail);
+        }
+        return;
+    }
+
+    // Const objects (bytes/float/...) and any other folded literal struct.
+    compile_match_literal_equal(comp, q_subj, pn, l_fail);
+}
+
+static void compile_match_or_pattern(compiler_t *comp, qstr q_subj, mp_parse_node_t pn, uint l_fail) {
+    mp_parse_node_t *alts;
+    size_t n_alts = mp_parse_node_extract_list(&pn, PN_match_or_pattern, &alts);
+    if (n_alts <= 1) {
+        mp_parse_node_t only = (n_alts == 1) ? alts[0] : pn;
+        // Strict: a single pattern may not bind the same name more than once.
+        enum { MATCH_MAX_CAPS = 16 };
+        qstr caps[MATCH_MAX_CAPS];
+        size_t n = 0;
+        if (!match_collect_captures(comp, only, caps, &n, MATCH_MAX_CAPS)) {
+            return;
+        }
+        compile_match_closed_pattern(comp, q_subj, only, l_fail);
+        return;
+    }
+
+    // Strict: all alternatives must bind the same capture set.
+    enum { MATCH_MAX_CAPS = 16 };
+    qstr caps0[MATCH_MAX_CAPS];
+    size_t n0 = 0;
+    if (!match_collect_captures(comp, alts[0], caps0, &n0, MATCH_MAX_CAPS)) {
+        return;
+    }
+    for (size_t i = 1; i < n_alts; i++) {
+        qstr caps[MATCH_MAX_CAPS];
+        size_t n = 0;
+        if (!match_collect_captures(comp, alts[i], caps, &n, MATCH_MAX_CAPS)) {
+            return;
+        }
+        if (!match_capture_sets_equal(caps0, n0, caps, n)) {
+            compile_syntax_error(comp, alts[i], MP_ERROR_TEXT("alternative patterns bind different names"));
+            return;
+        }
+    }
+
+    uint l_matched = comp_next_label(comp);
+    for (size_t i = 0; i < n_alts; i++) {
+        uint l_next = (i + 1 < n_alts) ? comp_next_label(comp) : l_fail;
+        compile_match_closed_pattern(comp, q_subj, alts[i], l_next);
+        EMIT_ARG(jump, l_matched);
+        if (i + 1 < n_alts) {
+            EMIT_ARG(label_assign, l_next);
+        }
+    }
+    EMIT_ARG(label_assign, l_matched);
+}
+
+static void compile_match_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    qstr q_subj = match_subject_qstr();
+    compile_node(comp, pns->nodes[0]);
+    compile_store_id(comp, q_subj);
+
+    mp_parse_node_t *cases;
+    size_t n_cases = mp_parse_node_extract_list(&pns->nodes[1], PN_match_case_block_list, &cases);
+    uint l_end = comp_next_label(comp);
+
+    for (size_t i = 0; i < n_cases; i++) {
+        assert(MP_PARSE_NODE_IS_STRUCT_KIND(cases[i], PN_match_case_block));
+        mp_parse_node_struct_t *pns_case = (mp_parse_node_struct_t *)cases[i];
+
+        bool irrefutable = match_or_is_irrefutable(pns_case->nodes[0]);
+        if (irrefutable && i + 1 != n_cases) {
+            compile_syntax_error(comp, cases[i], MP_ERROR_TEXT("irrefutable pattern is not last"));
+            return;
+        }
+
+        uint l_fail = comp_next_label(comp);
+        compile_match_or_pattern(comp, q_subj, pns_case->nodes[0], l_fail);
+
+        // Optional guard.
+        if (!MP_PARSE_NODE_IS_NULL(pns_case->nodes[1])) {
+            c_if_cond(comp, pns_case->nodes[1], false, l_fail);
+        }
+
+        compile_node(comp, pns_case->nodes[2]); // body
+        EMIT_ARG(jump, l_end);
+        EMIT_ARG(label_assign, l_fail);
+    }
+
+    EMIT_ARG(label_assign, l_end);
+}
+
+#endif // MICROPY_PY_MATCH
+
 static void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint l_end = comp_next_label(comp);
 
