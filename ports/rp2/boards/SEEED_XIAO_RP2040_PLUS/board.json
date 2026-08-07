@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "RGB LED",
+        "Battery Charging",
+        "USB-C"
+    ],
+    "images": [
+        "seeedstudio_xiao_rp2040_plus.png"
+    ],
+    "mcu": "rp2040",
+    "product": "XIAO RP2040 Plus",
+    "url": "https://wiki.seeedstudio.com/XIAO-RP2040-Plus/",
+    "vendor": "Seeed Studio"
+}
