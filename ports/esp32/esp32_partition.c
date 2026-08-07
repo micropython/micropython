@@ -289,6 +289,7 @@ static mp_obj_t esp32_partition_get_next_update(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_get_next_update_obj, esp32_partition_get_next_update);
 
 static mp_obj_t esp32_partition_mark_app_valid_cancel_rollback(mp_obj_t cls_in) {
+    (void)cls_in;
     check_esp_err(esp_ota_mark_app_valid_cancel_rollback());
     return mp_const_none;
 }
@@ -296,6 +297,111 @@ static MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_mark_app_valid_cancel_rollback_
     esp32_partition_mark_app_valid_cancel_rollback);
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(esp32_partition_mark_app_valid_cancel_rollback_obj,
     MP_ROM_PTR(&esp32_partition_mark_app_valid_cancel_rollback_fun_obj));
+
+static mp_obj_t esp32_partition_mark_app_invalid_rollback_and_reboot(mp_obj_t cls_in) {
+    (void)cls_in;
+    check_esp_err(esp_ota_mark_app_invalid_rollback_and_reboot());
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_mark_app_invalid_rollback_and_reboot_fun_obj,
+    esp32_partition_mark_app_invalid_rollback_and_reboot);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(esp32_partition_mark_app_invalid_rollback_and_reboot_obj,
+    MP_ROM_PTR(&esp32_partition_mark_app_invalid_rollback_and_reboot_fun_obj));
+
+static mp_obj_t esp32_check_rollback_is_possible(mp_obj_t cls_in) {
+    (void)cls_in;
+    return mp_obj_new_bool(esp_ota_check_rollback_is_possible());
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_check_rollback_is_possible_fun_obj, esp32_check_rollback_is_possible);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(esp32_check_rollback_is_possible_obj, MP_ROM_PTR(&esp32_check_rollback_is_possible_fun_obj));
+
+static mp_obj_t esp32_app_description(mp_obj_t self_in) {
+    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    esp_app_desc_t app;
+
+    check_esp_err(esp_ota_get_partition_description(self->part, &app));
+
+    mp_obj_t tuple[] = {
+        mp_obj_new_int_from_uint(app.secure_version),
+        mp_obj_new_str(app.version, strlen(app.version)),
+        mp_obj_new_str(app.project_name, strlen(app.project_name)),
+        mp_obj_new_str(app.time, strlen(app.time)),
+        mp_obj_new_str(app.date, strlen(app.date)),
+        mp_obj_new_str(app.idf_ver, strlen(app.idf_ver)),
+        mp_obj_new_bytes(app.app_elf_sha256, 32)
+    };
+    return mp_obj_new_tuple(7, tuple);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_app_description_obj, esp32_app_description);
+
+static mp_obj_t esp32_app_get_state(mp_obj_t self_in) {
+    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    esp_ota_img_states_t state;
+
+    check_esp_err(esp_ota_get_state_partition(self->part, &state));
+
+    // Return the ESP-IDF enum value directly. Use APP_STATE_* constants to interpret.
+    return MP_OBJ_NEW_SMALL_INT((mp_int_t)state);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_app_get_state_obj, esp32_app_get_state);
+
+static mp_obj_t esp32_ota_begin(size_t n_args, const mp_obj_t *args) {
+    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    esp_ota_handle_t handle;
+    size_t image_size = 0;
+
+    if (n_args == 2) {
+        image_size = mp_obj_get_int(args[1]);
+    }
+    check_esp_err(esp_ota_begin(self->part, image_size, &handle));
+    return mp_obj_new_int_from_uint(handle);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_ota_begin_obj, 1, 2, esp32_ota_begin);
+
+static mp_obj_t esp32_ota_write(mp_obj_t self_in, const mp_obj_t handle_in, const mp_obj_t data_in) {
+    (void)self_in;
+    const esp_ota_handle_t handle = mp_obj_get_int(handle_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
+
+    check_esp_err(esp_ota_write(handle, bufinfo.buf, bufinfo.len));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ota_write_obj, esp32_ota_write);
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
+static mp_obj_t esp32_ota_write_with_offset(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    const esp_ota_handle_t handle = mp_obj_get_int(args[1]);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+    const uint32_t offset = mp_obj_get_int(args[3]);
+
+    check_esp_err(esp_ota_write_with_offset(handle, bufinfo.buf, bufinfo.len, offset));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_ota_write_with_offset_obj, 4, 4, esp32_ota_write_with_offset);
+#endif
+
+static mp_obj_t esp32_ota_end(mp_obj_t self_in, const mp_obj_t handle_in) {
+    (void)self_in;
+    const esp_ota_handle_t handle = mp_obj_get_int(handle_in);
+
+    check_esp_err(esp_ota_end(handle));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ota_end_obj, esp32_ota_end);
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
+static mp_obj_t esp32_ota_abort(mp_obj_t self_in, const mp_obj_t handle_in) {
+    (void)self_in;
+    const esp_ota_handle_t handle = mp_obj_get_int(handle_in);
+
+    check_esp_err(esp_ota_abort(handle));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ota_abort_obj, esp32_ota_abort);
+#endif
 
 static const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&esp32_partition_find_obj) },
@@ -307,12 +413,34 @@ static const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_set_boot), MP_ROM_PTR(&esp32_partition_set_boot_obj) },
     { MP_ROM_QSTR(MP_QSTR_mark_app_valid_cancel_rollback), MP_ROM_PTR(&esp32_partition_mark_app_valid_cancel_rollback_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mark_app_invalid_rollback_and_reboot), MP_ROM_PTR(&esp32_partition_mark_app_invalid_rollback_and_reboot_obj) },
+    { MP_ROM_QSTR(MP_QSTR_check_rollback_is_possible), MP_ROM_PTR(&esp32_check_rollback_is_possible_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_next_update), MP_ROM_PTR(&esp32_partition_get_next_update_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_app_description), MP_ROM_PTR(&esp32_app_description_obj) },
+    { MP_ROM_QSTR(MP_QSTR_app_state), MP_ROM_PTR(&esp32_app_get_state_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ota_begin), MP_ROM_PTR(&esp32_ota_begin_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ota_write), MP_ROM_PTR(&esp32_ota_write_obj) },
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
+    { MP_ROM_QSTR(MP_QSTR_ota_write_with_offset), MP_ROM_PTR(&esp32_ota_write_with_offset_obj) },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_ota_end), MP_ROM_PTR(&esp32_ota_end_obj) },
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
+    { MP_ROM_QSTR(MP_QSTR_ota_abort), MP_ROM_PTR(&esp32_ota_abort_obj) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_BOOT), MP_ROM_INT(ESP32_PARTITION_BOOT) },
     { MP_ROM_QSTR(MP_QSTR_RUNNING), MP_ROM_INT(ESP32_PARTITION_RUNNING) },
     { MP_ROM_QSTR(MP_QSTR_TYPE_APP), MP_ROM_INT(ESP_PARTITION_TYPE_APP) },
     { MP_ROM_QSTR(MP_QSTR_TYPE_DATA), MP_ROM_INT(ESP_PARTITION_TYPE_DATA) },
+
+    // App state constants for app_state() return values
+    { MP_ROM_QSTR(MP_QSTR_APP_STATE_NEW), MP_ROM_INT(ESP_OTA_IMG_NEW) },
+    { MP_ROM_QSTR(MP_QSTR_APP_STATE_PENDING_VERIFY), MP_ROM_INT(ESP_OTA_IMG_PENDING_VERIFY) },
+    { MP_ROM_QSTR(MP_QSTR_APP_STATE_VALID), MP_ROM_INT(ESP_OTA_IMG_VALID) },
+    { MP_ROM_QSTR(MP_QSTR_APP_STATE_INVALID), MP_ROM_INT(ESP_OTA_IMG_INVALID) },
+    { MP_ROM_QSTR(MP_QSTR_APP_STATE_ABORTED), MP_ROM_INT(ESP_OTA_IMG_ABORTED) },
+    { MP_ROM_QSTR(MP_QSTR_APP_STATE_UNDEFINED), MP_ROM_INT(ESP_OTA_IMG_UNDEFINED) },
 };
 static MP_DEFINE_CONST_DICT(esp32_partition_locals_dict, esp32_partition_locals_dict_table);
 
