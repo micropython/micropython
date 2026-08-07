@@ -83,13 +83,10 @@ mp_uint_t mp_hal_ticks_us(void) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    if (ms) {
-        mp_uint_t start = mp_hal_ticks_ms();
-        while (mp_hal_ticks_ms() - start < ms) {
-        }
-    } else {
-        mp_handle_pending(true);
-    }
+    mp_uint_t start = mp_hal_ticks_ms();
+    do {
+        mp_event_handle_nowait();
+    } while (mp_hal_ticks_ms() - start < ms);
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
@@ -109,4 +106,14 @@ void mp_hal_get_random(size_t n, uint8_t *buf) {
         random_state = random_state * 1664525 + 1013904223;
         buf[i] = random_state >> 24;
     }
+}
+
+// QEMU has no unique hardware ID, so return a fixed LAA.
+void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    buf[0] = 0x02;
+    buf[1] = 0x00;
+    buf[2] = 0x00;
+    buf[3] = 0x12;
+    buf[4] = 0x34;
+    buf[5] = 0x56 + idx;
 }

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Arduino SA
+ * Copyright (c) 2026 Ibrahim Abdelkader <iabdalkader@openmv.io>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,10 @@
 #if MICROPY_PY_LWIP
 
 #include "lwip/timeouts.h"
+#include "eth.h"
+
+// Poll lwIP (and the polled NIC RX) at this rate, in milliseconds.
+#define LWIP_TICK_RATE_MS (8)
 
 static mp_sched_node_t network_poll_node;
 static soft_timer_entry_t network_timer;
@@ -39,17 +43,12 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
+// Runs at scheduler level: drain the NIC RX FIFO (no RX interrupt on this port)
+// and run the lwIP timeouts.
 static void network_poll(mp_sched_node_t *node) {
-    // Run the lwIP internal updates
+    (void)node;
+    eth_poll();
     sys_check_timeouts();
-
-    #if MICROPY_PY_NETWORK_ESP_HOSTED
-    extern int esp_hosted_wifi_poll(void);
-    // Poll the NIC for incoming data
-    if (esp_hosted_wifi_poll() == -1) {
-        soft_timer_remove(&network_timer);
-    }
-    #endif
 }
 
 void mod_network_poll_events(void) {
@@ -57,13 +56,15 @@ void mod_network_poll_events(void) {
 }
 
 static void network_timer_callback(soft_timer_entry_t *self) {
+    (void)self;
     mod_network_poll_events();
 }
 
 void mod_network_lwip_init(void) {
-    // Start poll timer.
+    // Start the periodic poll timer.
     soft_timer_remove(&network_timer);
-    soft_timer_static_init(&network_timer, SOFT_TIMER_MODE_PERIODIC, 50, network_timer_callback);
-    soft_timer_reinsert(&network_timer, 50);
+    soft_timer_static_init(&network_timer, SOFT_TIMER_MODE_PERIODIC, LWIP_TICK_RATE_MS, network_timer_callback);
+    soft_timer_reinsert(&network_timer, LWIP_TICK_RATE_MS);
 }
+
 #endif // MICROPY_PY_LWIP

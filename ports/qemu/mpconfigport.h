@@ -72,6 +72,51 @@
 #define MICROPY_VFS_ROM             (1)
 #define MICROPY_VFS_ROM_IOCTL       (MICROPY_HW_ROMFS_ENABLE_PART0 || MICROPY_HW_ROMFS_ENABLE_PART1)
 
+#ifndef MICROPY_HW_ETH_LAN9118
+#define MICROPY_HW_ETH_LAN9118      (0)
+#endif
+
+#define MICROPY_SCHEDULER_STATIC_NODES (MICROPY_PY_LWIP)
+
+#if MICROPY_PY_LWIP
+// The soft timer drives the background network poll; it reads the SysTick
+// millisecond counter maintained in mcu/arm/ticks.c.
+#ifndef __IO
+#define __IO volatile
+#endif
+#define MICROPY_SOFT_TIMER_TICKS_MS _ticks_ms
+#endif
+
+#ifndef MICROPY_PY_NETWORK
+#define MICROPY_PY_NETWORK          (MICROPY_HW_ETH_LAN9118)
+#endif
+
+// optional network features
+#if MICROPY_PY_NETWORK
+#ifndef MICROPY_PY_SOCKET
+#define MICROPY_PY_SOCKET           (1)
+#endif
+#endif
+
+#if MICROPY_HW_ETH_LAN9118
+extern const struct _mp_obj_type_t network_lan_type;
+#define MICROPY_HW_NIC_ETH          { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+#else
+#define MICROPY_HW_NIC_ETH
+#endif
+
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_ETH  \
+    MICROPY_BOARD_NETWORK_INTERFACES \
+
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-qemu"
+#endif
+
 // type definitions for the specific machine
 
 #if (defined(__riscv) && (__riscv_xlen == 64)) || (defined(__powerpc__) && defined(__powerpc64__))
