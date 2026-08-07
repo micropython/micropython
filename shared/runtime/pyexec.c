@@ -54,6 +54,8 @@ static bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_FILENAME    (1 << 5)
 #define EXEC_FLAG_SOURCE_IS_READER      (1 << 6)
 #define EXEC_FLAG_NO_INTERRUPT          (1 << 7)
+#define EXEC_FLAG_SOURCE_IS_MPY         (1 << 8)
+#include "py/persistentcode.h"
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -78,6 +80,17 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #endif
 
         mp_obj_t module_fun;
+
+        #if MICROPY_PERSISTENT_CODE_LOAD
+        if (exec_flags & EXEC_FLAG_SOURCE_IS_MPY) {
+            assert(exec_flags & EXEC_FLAG_SOURCE_IS_READER);
+            mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
+            ctx->module.globals = mp_globals_get();
+            mp_compiled_module_t cm = { .context = ctx };
+            mp_raw_code_load((mp_reader_t *)source, &cm);
+            module_fun = mp_make_function_from_proto_fun(cm.rc, ctx, NULL);
+        } else
+        #endif
         #if MICROPY_MODULE_FROZEN_MPY
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
             // source is a raw_code object, create the function
@@ -230,7 +243,7 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     return ret;
 }
 
-#if MICROPY_ENABLE_COMPILER
+#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
 
 // This can be configured by a port (and even configured to a function to be
 // computed dynamically) to indicate the maximum number of bytes that can be
@@ -252,7 +265,10 @@ static mp_uint_t mp_reader_stdin_readbyte(void *data) {
         return MP_READER_EOF;
     }
 
-    int c = mp_hal_stdin_rx_chr();
+    int c;
+    bool escape = false;
+retry:
+    c = mp_hal_stdin_rx_chr();
 
     if (c == CHAR_CTRL_C || c == CHAR_CTRL_D) {
         reader->eof = true;
@@ -272,6 +288,16 @@ static mp_uint_t mp_reader_stdin_readbyte(void *data) {
     if (--reader->window_remain == 0) {
         mp_hal_stdout_tx_strn("\x01", 1); // indicate window available to host
         reader->window_remain = reader->window_max;
+    }
+
+    if (escape) {
+        if (c == 'C' || c == 'D' || c == 'E') {
+            c = c - 'C' + CHAR_CTRL_C;
+        }
+    } else if (c == CHAR_CTRL_E) {
+        // Escape code.
+        escape = true;
+        goto retry;
     }
 
     return c;
@@ -308,7 +334,20 @@ static void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_s
 }
 
 static int do_reader_stdin(int c) {
-    if (c != 'A') {
+    mp_uint_t exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
+
+    #if MICROPY_ENABLE_COMPILER
+    if (c == 'A') {
+        // Paste source code.
+    } else
+    #endif
+    #if MICROPY_PERSISTENT_CODE_LOAD
+    if (c == 'B') {
+        // Paste compiled mpy data.
+        exec_flags |= EXEC_FLAG_SOURCE_IS_MPY;
+    } else
+    #endif
+    {
         // Unsupported command.
         mp_hal_stdout_tx_strn("R\x00", 2);
         return 0;
@@ -320,9 +359,10 @@ static int do_reader_stdin(int c) {
     mp_reader_t reader;
     mp_reader_stdin_t reader_stdin;
     mp_reader_new_stdin(&reader, &reader_stdin, MICROPY_REPL_STDIN_BUFFER_MAX);
-    int exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
     return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags);
 }
+
+#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
 
 #if MICROPY_REPL_EVENT_DRIVEN
 
@@ -731,7 +771,6 @@ friendly_repl_reset:
 }
 
 #endif // MICROPY_REPL_EVENT_DRIVEN
-#endif // MICROPY_ENABLE_COMPILER
 
 int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
