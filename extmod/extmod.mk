@@ -419,6 +419,16 @@ endif
 endif
 
 ################################################################################
+# wasm (guest loader — https://github.com/pymergetic/wasmmod) — EXPERIMENTAL
+# Pre-release / alpha submodule; default-off. API and pin may change.
+# Submodule: extmod/wasmmod (Rouven Raudzus <raudzus@pymergetic.com>)
+# Runtime: nested WAMR (https://github.com/bytecodealliance/wasm-micro-runtime, Apache-2.0)
+
+ifeq ($(MICROPY_PY_WASM),1)
+include $(TOP)/extmod/wasmmod/ports/micropython/micropython.mk
+endif
+
+################################################################################
 # btree
 
 ifeq ($(MICROPY_PY_BTREE),1)
