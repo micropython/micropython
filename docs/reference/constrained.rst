@@ -116,6 +116,9 @@ to a constant e.g. ``0x100``, ``1 << 8`` or ``(True, "string", b"bytes")``
 (see section below for details).  It can even include other const
 symbols that have already been defined, e.g. ``1 << BIT``.
 
+See :func:`micropython.const` for complete documentation including scope
+requirements, import syntax, and other important limitations.
+
 **Constant data structures**
 
 Where there is a substantial volume of constant data and the platform supports
