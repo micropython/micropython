@@ -39,6 +39,7 @@ typedef struct _mp_asm_base_t {
     // Set to true using mp_asm_base_suppress_code() if the code generator
     // should suppress emitted code due to it being dead code.
     bool suppress;
+    bool stable;
 
     size_t code_offset;
     size_t code_size;
