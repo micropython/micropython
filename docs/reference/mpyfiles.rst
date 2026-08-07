@@ -14,9 +14,13 @@ next directory if neither is found.  As such, ``foo.py`` will take precedence
 over ``foo.mpy``.
 
 These .mpy files can contain bytecode which is usually generated from Python
-source files (.py files) via the ``mpy-cross`` program.  For some architectures
-an .mpy file can also contain native machine code, which can be generated in
-a variety of ways, most notably from C source code.
+source files (.py files) via the ``mpy-cross`` program. 
+
+For some architectures an .mpy file can also contain native machine code,
+which can be generated in a variety of ways, most notably from C source code.
+See :ref:`natmod`.
+
+.mpy files can be installed as packages (using mpremote). See :ref:`packages`.
 
 Versioning and compatibility of .mpy files
 ------------------------------------------

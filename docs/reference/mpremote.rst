@@ -760,3 +760,11 @@ device. See :ref:`packages`.
 
 Install the ``functools`` package from :term:`micropython-lib` to the
 ``/flash/third-party`` directory on the device. See :ref:`packages`.
+
+.. code-block:: bash
+
+  mpremote mip install https://emlearn.github.io/emlearn-micropython/builds/latest/{MPY_ARCH}_{MPY_VERSION}/emlearn_iir.mpy
+
+Install a .mpy native module from specified URL. See :ref:`natmod`.
+
+
