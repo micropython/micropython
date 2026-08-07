@@ -100,6 +100,8 @@ static mp_obj_t mp_machine_get_freq(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
 }
 
+static mp_obj_t frequency_overrides[2] = {};
+
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]);
 
@@ -141,6 +143,10 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
         psram_reinitialize();
     }
     #endif
+
+    if (n_args > 0) {
+        memcpy(frequency_overrides, args, MIN(n_args, 2) * sizeof(mp_obj_t));
+    }
 }
 
 static void mp_machine_idle(void) {
@@ -363,6 +369,10 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     // (higher up, inside the critical section)
     in_lightsleep = false;
     #endif
+
+    if (frequency_overrides[0] != MP_OBJ_NULL) {
+        mp_machine_set_freq(1 + (frequency_overrides[1] != NULL ? 1 : 0), frequency_overrides);
+    }
 }
 
 MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
