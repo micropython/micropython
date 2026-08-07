@@ -332,7 +332,7 @@
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
-#if SOC_CPU_IDRAM_SPLIT_USING_PMP && !CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT
+#if SOC_CPU_IDRAM_SPLIT_USING_PMP && !CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT && !CONFIG_IDF_TARGET_ESP32C2
 // On targets with this configuration all RAM is executable so no need for a custom commit function.
 #else
 void *esp_native_code_commit(void *, size_t, void *);
