@@ -111,7 +111,7 @@ To always read a positive integer
    ======  ===============================================  ===========  ==============
    Port    Backing storage                                  Total bytes  Battery-backed
    ======  ===============================================  ===========  ==============
-   alif    Backup SRAM                                      4096         yes
+   alif    Backup SRAM                                      4080         yes
    esp32   RTC slow memory                                  2048         no
    mimxrt  SNVS LPGPR registers (4 per chip)                12-16        yes
    nrf     POWER GPREGRET registers                         1-2          no

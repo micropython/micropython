@@ -26,6 +26,16 @@
 #ifndef MICROPY_INCLUDED_ALIF_MODMACHINE_H
 #define MICROPY_INCLUDED_ALIF_MODMACHINE_H
 
+// Backup SRAM is in peripheral space; word writes only. No CMSIS macro exists.
+// 16 bytes are reserved for MicroPython alif system use.
+#define MP_BACKUP_SRAM_BASE  (0x4902C000U)
+#define MP_BACKUP_SRAM_BYTES (4096U - 16U)
+#define MP_BACKUP_STATE_BASE (0x4902C000U + MP_BACKUP_SRAM_BYTES)
+
+void machine_init(void);
+void machine_set_wdt_reset(void);
+void machine_set_soft_reset(void);
+
 void machine_rtc_init(void);
 void machine_rtc_set_wakeup(uint32_t seconds);
 void machine_rtc_cancel_wakeup(void);

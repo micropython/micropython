@@ -30,6 +30,7 @@
 #include "cgu_ext.h"
 #include "wdt.h"
 #include "se_services.h"
+#include "modmachine.h"
 
 #if CORE_M55_HP
 #define WDT_CTRL (WDT_CTRL_Type *)(WDT_HP_CTRL_BASE)
@@ -50,6 +51,7 @@ static machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}, 0};
 void NMI_Handler(void) {
     wdt_unlock(WDT_CTRL);
     wdt_stop(WDT_CTRL);
+    machine_set_wdt_reset();
     se_services_reset_soc();
 }
 
