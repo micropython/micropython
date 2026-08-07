@@ -219,9 +219,11 @@ mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
     machine_timer_stop(self);
     if (self->id >= 0) {
-        esp_err_t result = gptimer_disable(self->handle.hardware);
-        if (result != ESP_ERR_INVALID_STATE) {
-            check_esp_err(result);
+        if (self->handler != NULL) {
+            esp_err_t result = gptimer_disable(self->handle.hardware);
+            if (result != ESP_ERR_INVALID_STATE) {
+                check_esp_err(result);
+            }
         }
     } else {
         // Virtual timers may be immediately garbage collected
