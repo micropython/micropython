@@ -59,10 +59,6 @@ def _test_freq_duty(self, pulse_in, pwm, freq, duty_u16):
     expected_us = (expected_low_us, expected_high_us)
     timeout = 2 * expected_total_us
 
-    # Wait for output to settle.
-    time_pulse_us(pulse_in, 0, timeout)
-    time_pulse_us(pulse_in, 1, timeout)
-
     if duty_u16 == 0 or duty_u16 == 65535:
         # Expect a constant output level.
         no_pulse = (
@@ -80,12 +76,11 @@ def _test_freq_duty(self, pulse_in, pwm, freq, duty_u16):
         n_averaging = 10
         for level in (0, 1):
             t = 0
-            time_pulse_us(pulse_in, level, timeout)
             for _ in range(n_averaging):
-                t += time_pulse_us(pulse_in, level, timeout)
+                t += time_pulse_us(pulse_in, level, timeout, 4)
             t //= n_averaging
             expected = expected_us[level]
-            print(" level={} timing_er={}".format(level, abs(t - expected)), end="")
+            print(" level={} timing_er={}".format(level, abs(t - expected)), end=" :")
             self.assertLessEqual(abs(t - expected), timing_margin_us)
 
     print()
