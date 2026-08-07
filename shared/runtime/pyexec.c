@@ -470,6 +470,8 @@ static int pyexec_friendly_repl_process_char(int c) {
             vstr_reset(MP_STATE_VM(repl_line));
             repl.paste_mode = true;
             return 0;
+        } else if (vstr_len(MP_STATE_VM(repl_line)) == 0) {
+            goto input_restart;
         }
 
         if (ret < 0) {
