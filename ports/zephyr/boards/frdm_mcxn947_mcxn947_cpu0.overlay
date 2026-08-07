@@ -1,0 +1,29 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size = <16>;
+			prog-size = <256>;
+			cache-size = <1024>;
+			lookahead-size = <32>;
+			block-cycles = <4>;
+		};
+	};
+};
+
+/*
+ * Enable SPI on the MikroBus connector. Pinctrl is already defined by
+ * the board's common dtsi; it is left disabled there because two of its
+ * pins (MOSI/SCK) are shared with SAI1 (P3_20/P3_21). Not an issue here
+ * since this port does not use SAI1.
+ */
+&flexcomm6_lpspi6 {
+	status = "okay";
+};
