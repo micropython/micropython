@@ -97,6 +97,15 @@ for n in names + [basefd, nextfd]:
 os.rename(temp_dir + "/test", temp_dir + "/test2")
 print(os.listdir(temp_dir))
 
+# construct new VfsPosix with absolute path
+fs = vfs.VfsPosix(os.getcwd() + os.sep + temp_dir)
+f = fs.open("/test", "w")
+f.close()
+print(sorted(os.listdir(temp_dir)))
+fs.rename("/test", "/_test")
+print(sorted(os.listdir(temp_dir)))
+fs.remove("/_test")
+
 # construct new VfsPosix with path argument
 fs = vfs.VfsPosix(temp_dir)
 # when VfsPosix is used the intended way via vfs.mount(), it can only be called
