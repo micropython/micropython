@@ -181,26 +181,40 @@ static uint8_t  pclk_div_get_max_num_for_peri_group(en_clk_dst_t clk_dst, cy_en_
     return max_num;
 }
 
-static uint8_t pclk_div_get_free_num(en_clk_dst_t clk_dst, cy_en_divider_types_t div_type) {
-    uint8_t peri_gr_div_max_num = pclk_div_get_max_num_for_peri_group(clk_dst, div_type);
-
-    for (uint8_t i = 0; i < peri_gr_div_max_num; i++) {
-        bool used = false;
-        for (uint8_t j = 0; j < PERI_PCLK_DIVIDER_MAX_NUM; j++) {
-            if (pclk_div_obj[j] != NULL) {
-                if (pclk_div_obj[j]->peri_inst == CLK_DEST_INST(clk_dst) &&
-                    pclk_div_obj[j]->group == CLK_DEST_GROUP(clk_dst) &&
-                    pclk_div_obj[j]->type == div_type &&
-                    pclk_div_obj[j]->number == i) {
-                    used = true;
-                    break;
+static uint8_t pclk_div_get_free_num(en_clk_dst_t clk_dst, cy_en_divider_types_t *div_type) {
+    /**
+     * Allow for usage of higher resolution divider when the
+     * required one is not free.
+     * An 8 bits can use 16 bits or 16.5 bits or 24.5 bits.
+     * A 16 bits can use 16.5 bits or 24.5 bits
+     * A 16.5 bits can use 24.5 bits.
+     * A 24.5 bits can only use 24.5 bits.
+     * As the cy_en_divider_types_t is an enum from 0 to 3,
+     * it can be used to iterate through the available divider types.
+     */
+    cy_en_divider_types_t min_available_div_type = *div_type;
+    do {
+        *div_type = min_available_div_type;
+        uint8_t peri_gr_div_max_num = pclk_div_get_max_num_for_peri_group(clk_dst, *div_type);
+        for (uint8_t i = 0; i < peri_gr_div_max_num; i++) {
+            bool used = false;
+            for (uint8_t j = 0; j < PERI_PCLK_DIVIDER_MAX_NUM; j++) {
+                if (pclk_div_obj[j] != NULL) {
+                    if (pclk_div_obj[j]->peri_inst == CLK_DEST_INST(clk_dst) &&
+                        pclk_div_obj[j]->group == CLK_DEST_GROUP(clk_dst) &&
+                        pclk_div_obj[j]->type == *div_type &&
+                        pclk_div_obj[j]->number == i) {
+                        used = true;
+                        break;
+                    }
                 }
             }
+            if (!used) {
+                return i;
+            }
         }
-        if (!used) {
-            return i;
-        }
-    }
+    } while (++min_available_div_type <= CY_SYSCLK_DIV_24_5_BIT);
+
 
     return PCLK_DIV_NO_FREE_DIVIDER;
 }
@@ -259,7 +273,7 @@ pclk_div_obj_t *pclk_div_init(en_clk_dst_t clk_dst, uint32_t divider, uint8_t di
     cy_en_divider_types_t div_type = pclk_div_get_type(divider, divider_frac);
 
     /* Get the a free peri-group divider number*/
-    uint8_t div_num = pclk_div_get_free_num(clk_dst, div_type);
+    uint8_t div_num = pclk_div_get_free_num(clk_dst, &div_type);
     if (div_num == PCLK_DIV_NO_FREE_DIVIDER) {
         return NULL;
     }
