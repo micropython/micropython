@@ -173,7 +173,9 @@ enum {
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
+#if MICROPY_HW_ENABLE_RNG
 void mp_hal_get_random(size_t n, uint8_t *buf);
+#endif
 
 static inline void mp_hal_wake_main_task_from_isr(void) {
     // Defined for tinyusb support, nothing needs to be done here.
