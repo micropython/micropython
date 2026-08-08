@@ -41,6 +41,8 @@ typedef enum {
     PYB_UART_8 = 8,
     PYB_UART_9 = 9,
     PYB_UART_10 = 10,
+    PYB_UART_11 = 11,
+    PYB_UART_12 = 12,
     #ifdef LPUART1
     PYB_LPUART_1 = MICROPY_HW_MAX_UART + 1,
     #endif
