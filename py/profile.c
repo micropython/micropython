@@ -184,7 +184,24 @@ static mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t 
     mp_prof_is_executing = true;
 
     mp_obj_t a[3] = {MP_OBJ_FROM_PTR(args->frame), args->event, args->arg};
+
+    // The callback may raise, and the exception is allowed to propagate into
+    // the traced program (that is how a debugger unwinds a target out of a
+    // frame it is stopped in). The recursion guard and the trace callback must
+    // still be brought back to a sane state on that path: an nlr jump straight
+    // out of here would leave mp_prof_is_executing set, which every trace hook
+    // in the VM tests, so a single raise would silently disable tracing for the
+    // rest of the process with no way to re-enable it. CPython unsets the trace
+    // function when it raises; do the same, so the state after a raise is one
+    // sys.settrace() can recover from.
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) != 0) {
+        mp_prof_is_executing = false;
+        prof_trace_cb = MP_OBJ_NULL;
+        nlr_jump(nlr.ret_val);
+    }
     mp_obj_t top = mp_call_function_n_kw(callback, 3, 0, a);
+    nlr_pop();
 
     mp_prof_is_executing = false;
 
