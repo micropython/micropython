@@ -3,6 +3,17 @@
 This directory contains tests for most parts of MicroPython.  To run it you will need
 CPython 3.8.2 or newer, which is used to validate MicroPython's behaviour.
 
+The tests are organized into several categories:
+- Unit and regression tests: tests for MicroPython's core functionality, including the
+  compiler, runtime, and built-in modules
+- perf_bench: performance benchmarks
+- internal_bench: internal performance benchmarks
+- Serial reliability and performance test
+- Test key/certificates
+- CPython vs MicroPython Differences
+
+## Unit and regression tests
+
 To run all stable tests, run the "run-tests.py" script in this directory.  By default
 that will run the test suite against the unix port of MicroPython.
 
@@ -63,7 +74,7 @@ module, should go in the import/ subdirectory.
 The `perf_bench` directory contains some performance benchmarks that can be used
 to benchmark different MicroPython firmwares or host ports.
 
-The runner utility is `run-perfbench,py`. Execute `./run-perfbench.py --help`
+The runner utility is `run-perfbench.py`. Execute `./run-perfbench.py --help`
 for a full list of command line options.
 
 ### Benchmarking a target
@@ -249,3 +260,87 @@ $ openssl ecparam -name prime256v1 -genkey -noout -out ec_key.pem
 $ openssl pkey -in ec_key.pem -out ec_key.der -outform DER
 $ openssl req -new -x509 -key ec_key.pem -out ec_cert.der -outform DER -days 3650 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
 ```
+
+## CPython vs MicroPython Differences
+
+The `tests/cpydiff` folder contains test files that document and verify the differences
+between the CPython and MicroPython implementations.
+
+These tests are designed to:
+- Execute the same code on both CPython and MicroPython
+- Document behavioral differences between the two implementations
+- Generate documentation pages that help users understand these differences
+
+### How It Works
+
+1. Each test file contains Python code that demonstrates a specific difference.
+2. The tests are executed on both CPython and MicroPython.
+3. The output from both implementations is captured and compared. If the outputs are the
+   same, the generation will fail (because the outputs should be different).
+4. The results, along with metadata from the file docstrings, are used to generate
+   documentation.
+
+### Documentation Generation
+
+The documentation is automatically generated using:
+```
+tools/gen-cpydiff.py
+```
+
+This script:
+- Parses the docstring metadata from each test file
+- Runs the tests on both implementations
+- Combines the results to create comprehensive documentation pages
+- Outputs formatted reStructuredText documentation showing the differences
+
+**Note:** This script is automatically executed as part of the documentation publishing
+process when building the docs.
+
+### Test File Format
+
+The test filename should match the categories of the test. For example, a test with
+categories `Syntax,Operators` should be named `syntax_operators_*.py`.
+
+Each test file should include a docstring with the following format, and include a
+minimal code snippet that reproduces the difference when run on both CPython and the
+unix port of MicroPython:
+
+```python
+"""
+categories: Category,Subcategory
+description: Brief description of the difference being tested
+cause: Explanation of why this difference exists
+workaround: How to work around this difference (or "Unknown" if none)
+"""
+# Minimal Python code reproducing the difference
+import sys
+print(sys.implementation.name)
+```
+
+The categories and subcategories are used to organize the documentation into sections.
+Files with the same category and/or subcategory will be placed in the same section.
+
+Common categories include:
+- Syntax
+- Core (Core language)
+- Types (Builtin types)
+- Modules
+
+### Building the Documentation
+
+The documentation is automatically regenerated during the documentation build process.
+To manually regenerate after adding or modifying tests:
+
+1. Set environment variables if needed:
+   - `MICROPY_MICROPYTHON`: Path to MicroPython executable
+   - `MICROPY_CPYTHON3`: Path to CPython 3.x executable (default: "python3")
+
+2. Run the generation script from the project root:
+   ```
+   python tools/gen-cpydiff.py
+   ```
+
+The generated documentation will be placed in `docs/genrst/` as reStructuredText files.
+
+Also see `docs/README.md` for more information on building the documentation locally
+to validate the rendering of the resulting documentation page(s).
