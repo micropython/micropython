@@ -249,3 +249,46 @@ $ openssl ecparam -name prime256v1 -genkey -noout -out ec_key.pem
 $ openssl pkey -in ec_key.pem -out ec_key.der -outform DER
 $ openssl req -new -x509 -key ec_key.pem -out ec_cert.der -outform DER -days 3650 -nodes -subj '/CN=micropython.local/O=MicroPython/C=AU'
 ```
+
+### ESP32 digital signature test
+
+The `tests/ports/esp32/esp32_ds.py` test exercises `esp32.DS.sign()` against a
+fixed 2048-bit RSA test vector. It embeds the private key, derives the DS blob
+at runtime, and skips cleanly when `esp32.DS` is not enabled in the target
+firmware.
+
+To run it on hardware, provision the matching HMAC key in `KEY1` without read
+or write protection.
+
+> **Warning: burning the key onto the board is not reversible. The key block is
+one-way programmed and cannot be erased. Use a board you can dedicate to this
+test setup.**
+
+The test vector uses the fixed 32-byte HMAC key
+`00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff`.
+If you want to generate a fresh random key file for your own board setup, you can use:
+
+```
+$ head -c 32 /dev/random > ds_hmac_key.bin
+```
+
+For this regression test, the file you burn must contain the fixed key above.
+
+Provision the key to `KEY1` on the board with no read or write protection:
+
+```
+$ espefuse.py --chip esp32s3 --port /dev/ttyUSB0 burn_key --no-write-protect --no-read-protect BLOCK_KEY1 ds_hmac_key.bin HMAC_DOWN_DIGITAL_SIGNATURE
+```
+
+The board is now ready to run the test.
+
+For host-side setup or for generating a matching `ds_blob.bin` from a private
+key and the same 32-byte HMAC key file, use `ports/esp32/tools/gen_ds_blob.py`:
+
+```
+$ python3 ports/esp32/tools/gen_ds_blob.py --key rsa_private.pem --hmac ds_hmac_key.bin --out ds_blob.bin
+```
+
+This tool is also useful for board users who want to generate their own DS
+blobs for a provisioning setup. See `tests/ports/esp32/esp32_ds.py` for a
+concrete example of how DS is exercised on actual hardware.
