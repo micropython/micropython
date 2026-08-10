@@ -741,6 +741,57 @@ static bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *nu
     return false;
 }
 
+static bool fold_strings(parser_t *parser, uint8_t rule_id, size_t num_args) {
+    // this code folds strings being constructed via concatenation, eg "a"+"b",
+    mp_obj_t arg0;
+    size_t arg0_len;
+    char *arg0_str = NULL;
+    if (rule_id == RULE_arith_expr) {
+        mp_parse_node_t pn = peek_result(parser, num_args - 1);
+        if (!MP_PARSE_NODE_IS_LEAF(pn) || MP_PARSE_NODE_LEAF_KIND(pn) != MP_PARSE_NODE_STRING) {
+            return false;
+        }
+        qstr arg0_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
+        arg0 = MP_OBJ_NEW_QSTR(arg0_qstr);
+        arg0_len = qstr_len(arg0_qstr);
+        for (ssize_t i = num_args - 2; i >= 1; i -= 2) {
+            pn = peek_result(parser, i - 1);
+            mp_obj_t arg1;
+            if (!MP_PARSE_NODE_IS_LEAF(pn) || MP_PARSE_NODE_LEAF_KIND(pn) != MP_PARSE_NODE_STRING) {
+                goto done;
+            }
+            arg1 = MP_OBJ_NEW_QSTR(MP_PARSE_NODE_LEAF_ARG(pn));
+            if (MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i)) != MP_TOKEN_OP_PLUS) {
+                goto done;
+            }
+            size_t arg1_len;
+            const char *arg1_str = mp_obj_str_get_data(arg1, &arg1_len);
+            if (arg0_str) {
+                arg0_str = m_renew(char, arg0_str, arg0_len, arg0_len + arg1_len);
+            } else {
+                arg0_str = m_new(char, arg0_len + arg1_len);
+                memcpy(arg0_str, qstr_str(MP_OBJ_QSTR_VALUE(arg0)), arg0_len);
+            }
+            memcpy(arg0_str + arg0_len, arg1_str, arg1_len);
+            arg0_len += arg1_len;
+        }
+
+        for (size_t i = num_args; i > 0; i--) {
+            pop_result(parser);
+        }
+
+        // As this is an anonymous object, do not put it into the "const" pool.
+        qstr concatenation = qstr_from_strn(arg0_str, arg0_len);
+        push_result_node(parser, mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, concatenation));
+        return true;
+    }
+done:
+    if (arg0_str) {
+        m_del(char, arg0_str, arg0_len);
+    }
+    return false;
+}
+
 static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     // this code does folding of arbitrary numeric expressions, eg 1 + 2 * 3 + 4
     // it does not do partial folding, eg 1 + 2 + x -> 3 + x
@@ -1015,6 +1066,10 @@ static void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 
     #if MICROPY_COMP_CONST_FOLDING
     if (fold_logical_constants(parser, rule_id, &num_args)) {
+        // we folded this rule so return straight away
+        return;
+    }
+    if (fold_strings(parser, rule_id, num_args)) {
         // we folded this rule so return straight away
         return;
     }
