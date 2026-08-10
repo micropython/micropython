@@ -382,28 +382,13 @@ The full list of supported commands are:
   This happens automatically when ``mpremote`` terminates, but it can be used
   in a sequence to unmount an earlier mount before subsequent command are run.
 
-.. _mpremote_command_romfs:
-
 - **romfs** -- manage ROMFS partitions on the device:
 
   .. code-block:: bash
 
       $ mpremote romfs <sub-command>
 
-  ``<sub-command>`` may be:
-
-  - ``romfs query`` to list all the available ROMFS partitions and their size
-  - ``romfs [-o <output>] build <source>`` to create a ROMFS image from the given
-    source directory; the default output file is the source appended by ``.romfs``
-  - ``romfs [-p <partition>] deploy <source>`` to deploy a ROMFS image to the device;
-    will also create a temporary ROMFS image if the source is a directory
-
-  The ``build`` and ``deploy`` sub-commands both support the ``-m``/``--mpy`` option
-  to automatically compile ``.py`` files to ``.mpy`` when creating the ROMFS image.
-  This option is enabled by default, but only works if the ``mpy_cross`` Python
-  package has been installed (eg via ``pip install mpy_cross``).  If the package is
-  not installed then a warning is printed and ``.py`` files remain as is.  Compiling
-  of ``.py`` files can be disabled with the ``--no-mpy`` option.
+  See :ref:`mpremote ROMFS commands <mpremote_command_romfs>` for details.
 
 .. _mpremote_command_rtc:
 
@@ -453,6 +438,107 @@ The full list of supported commands are:
 
   This will make the device enter its bootloader. The bootloader is port- and
   board-specific (e.g. DFU on stm32, UF2 on rp2040/Pico).
+
+.. _mpremote_command_romfs:
+
+ROMFS commands
+--------------
+
+The ``romfs`` command provides three sub-commands for managing ROMFS images on
+a connected device.
+
+.. _mpremote_command_romfs_query:
+
+mpremote romfs query
+~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    $ mpremote romfs query
+
+Lists all available ROMFS partitions on the device and their sizes.  Also
+shows the first 12 bytes of each partition in hex and reports whether a
+valid ROMFS image is present.
+
+Example output::
+
+    ROMFS0 partition has size 131072 bytes (32 blocks of 4096 bytes each)
+      Raw contents: d2:cd:31:XX:XX:XX:XX:XX:XX:XX:XX:XX ...
+      ROMFS image size: 1234
+
+.. _mpremote_command_romfs_build:
+
+mpremote romfs build
+~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    $ mpremote romfs [-o <output>] build <source>
+
+Build a ROMFS image from the directory *source* on the host PC.  The image
+is written to *output* (default: ``<source>.romfs``).
+
+Options:
+
+- ``-o <output>``, ``--output <output>``: Specify the output file path.
+- ``-m``, ``--mpy`` (default): Automatically compile ``.py`` files to
+  ``.mpy`` using ``mpy_cross`` before adding them to the image.  This requires
+  the ``mpy_cross`` Python package (``pip install mpy_cross``); without it,
+  ``mpremote`` prints a warning and leaves the ``.py`` files unchanged.
+- ``--no-mpy``: Disable automatic compilation of ``.py`` files.
+
+Example::
+
+    $ mpremote romfs build myapp/
+    Building romfs filesystem, source directory: myapp/
+    /
+    |-- main.py -> .mpy
+    \-- lib/
+        \-- helper.py -> .mpy
+    Writing 2048 bytes to output file myapp.romfs
+
+.. _mpremote_command_romfs_deploy:
+
+mpremote romfs deploy
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    $ mpremote romfs [-p <partition>] deploy <source>
+
+Deploy a ROMFS image to the device.  *source* can be either:
+
+- A directory on the host: the ROMFS image is built in memory and deployed
+  directly.
+- A ``.romfs`` or ``.img`` file: the image is read from disk and deployed.
+
+Options:
+
+- ``-p <partition>``, ``--partition <partition>``: Specify the target
+  partition index (default: ``0``).
+- ``-m``, ``--mpy`` (default): Compile ``.py`` to ``.mpy`` when *source*
+  is a directory.  If ``mpy_cross`` is not installed, ``mpremote`` prints a
+  warning and leaves the ``.py`` files unchanged.
+- ``--no-mpy``: Disable automatic compilation of ``.py`` files.
+
+After deployment, the device must be soft-reset for the new ROMFS to be
+mounted at ``/rom``.
+
+Example::
+
+    $ mpremote romfs deploy myapp/
+    Building romfs filesystem, source directory: myapp/
+    /
+    |-- main.py -> .mpy
+    \-- lib/
+        \-- helper.py -> .mpy
+    Image size is 2048 bytes
+    ROMFS0 partition has size 131072 bytes (32 blocks of 4096 bytes each)
+    Preparing ROMFS0 partition for writing
+    Deploying ROMFS to ROMFS0 partition
+    ROMFS image deployed
+
+    $ mpremote soft-reset
 
 .. _mpremote_reset:
 
