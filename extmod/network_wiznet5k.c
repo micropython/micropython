@@ -802,7 +802,7 @@ static mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         #endif
         printf(" %02x", WIZCHIP_READ(reg));
     }
-    for (int sn = 0; sn < 4; ++sn) {
+    for (int sn = 0; sn < _WIZCHIP_SOCK_NUM_; ++sn) {
         printf("\nWiz SREG[%d]:", sn);
         for (int i = 0; i < 0x30; ++i) {
             if (i % 16 == 0) {
