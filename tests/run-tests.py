@@ -363,6 +363,19 @@ def map_rv32_arch_flags(flags):
     return mapped_flags
 
 
+def map_xtensa_arch_flags(flags, windowed):
+    # Right now the mere fact that the platform uses register windows
+    # indicates a minimum core version of LX6.
+    if flags & ~0x07 != 0:
+        raise Exception("Unexpected flag bits set in value {}".format(flags))
+    mapped_flags = []
+    if flags == 0:
+        mapped_flags.append("lx6" if windowed else "lx3")
+    else:
+        mapped_flags.append("lx{}".format(2 + (flags & 0x07)))
+    return mapped_flags
+
+
 def detect_test_platform(pyb, args):
     # Run a script to detect various bits of information about the target test instance.
     output = run_feature_check(pyb, args, "target_info.py")
@@ -380,6 +393,8 @@ def detect_test_platform(pyb, args):
     unicode = unicode == "True"
     if arch == "rv32imc":
         arch_flags = map_rv32_arch_flags(int(arch_flags))
+    elif arch in ("xtensa", "xtensawin"):
+        arch_flags = map_xtensa_arch_flags(int(arch_flags), arch == "xtensawin")
     else:
         arch_flags = None
 
@@ -835,10 +850,24 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     for test in glob(f"inlineasm/thumb/asm_{feature}_*.py"):
                         skip_tests.add(test)
 
-        if args.inlineasm_arch == "rv32":
+        elif args.inlineasm_arch == "rv32":
             for extension in RV32_ARCH_FLAGS:
                 if extension not in args.inlineasm_features:
                     skip_tests.add(f"inlineasm/rv32/asm_ext_{extension}.py")
+
+        elif args.inlineasm_arch == "xtensa":
+            core_version = -1
+            for feature in args.inlineasm_features:
+                if feature.startswith("lx") and feature[2:].isdigit():
+                    core_version = int(feature[2:])
+                    break
+            extractor = re.compile(r"^inlineasm/xtensa/asm_lx(\d+)_.*\.py$")
+            for test in glob("inlineasm/xtensa/asm_lx*_*.py"):
+                if version_match := extractor.match(test):
+                    test_version = int(version_match.group(1))
+                    if test_version <= core_version:
+                        continue
+                skip_tests.add(test)
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
