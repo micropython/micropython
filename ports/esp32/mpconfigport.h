@@ -208,6 +208,7 @@
 #define MICROPY_PY_NETWORK_MODULE_GLOBALS_INCLUDEFILE "ports/esp32/modnetwork_globals.h"
 #ifndef MICROPY_PY_NETWORK_WLAN
 #define MICROPY_PY_NETWORK_WLAN             (1)
+#define MICROPY_PY_NETWORK_COUNTRY          mp_network_country
 #endif
 #ifndef MICROPY_PY_MACHINE_SDCARD
 #define MICROPY_PY_MACHINE_SDCARD           (1)
