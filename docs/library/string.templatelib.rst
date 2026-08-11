@@ -12,7 +12,10 @@ interpolated values before they are combined.
 **Availability:** template strings require ``MICROPY_PY_TSTRINGS`` to be enabled
 at compile time. They are enabled by default at the full feature level, which
 includes the alif, mimxrt and samd (SAMD51 only) ports, the unix coverage variant
-and the webassembly pyscript variant.
+and the webassembly pyscript variant. The zephyr port also enables them when
+configured for the full-features (or higher) ROM level via Kconfig. ``mpy-cross``
+always accepts t-string syntax when cross-compiling ``.mpy`` files, regardless of
+the target port's ROM level.
 
 Classes
 -------
