@@ -25,6 +25,7 @@
  */
 
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "rng.h"
 
 #if MICROPY_HW_ENABLE_RNG
@@ -52,17 +53,16 @@ uint32_t mp_hal_get_hw_random_u32(void) {
     while (!(RNG->SR & RNG_SR_DRDY)) {
         if (HAL_GetTick() - start >= RNG_TIMEOUT_MS) {
             #if defined(RNG_CR_CONDRST)
-            if (retry_count > RNG_RETRY_MAX_COUNT) {
-                return 0;
+            if (retry_count <= RNG_RETRY_MAX_COUNT) {
+                // Reset and retry waiting RNG_SR_DRDY.
+                RNG->CR |= RNG_CR_CONDRST;
+                RNG->CR = (RNG->CR & ~RNG_CR_CONDRST);
+                start = HAL_GetTick();
+                retry_count++;
+                continue;
             }
-            // Reset and retry waiting RNG_SR_DRDY.
-            RNG->CR |= RNG_CR_CONDRST;
-            RNG->CR = (RNG->CR & ~RNG_CR_CONDRST);
-            start = HAL_GetTick();
-            retry_count++;
-            #else
-            return 0;
             #endif
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("RNG failed"));
         }
     }
 
