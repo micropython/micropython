@@ -26,7 +26,7 @@
 	branch = circuitpython
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = https://github.com/hathach/tinyusb
+	url = https://github.com/micropython/tinyusb.git
 [submodule "lib/mynewt-nimble"]
 	path = lib/mynewt-nimble
 	url = https://github.com/micropython/mynewt-nimble.git
