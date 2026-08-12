@@ -22,6 +22,13 @@ cat << EOF > "${TMP}/mount_package/subpackage/y.py"
 def y():
   print("y")
 EOF
+
+output=$($MPREMOTE mount ${TMP} eval "'mounted successfully'" 2>&1) || true
+if [[ "$output" == *"MemoryError"* ]]; then
+    echo "SKIP ('MemoryError' insufficient memory)"
+    exit 0
+fi
+
 $MPREMOTE mount ${TMP} exec "import mount_package; mount_package.x(); mount_package.y()"
 
 # Write to a file on the device and see that it's written locally.

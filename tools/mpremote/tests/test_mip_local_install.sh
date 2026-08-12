@@ -13,6 +13,8 @@ MODULE_DIR=${PACKAGE_DIR}/${PACKAGE}
 # Get the test directory (where this script and ramdisk.py are located)
 TEST_DIR=$(dirname $0)
 
+$MPREMOTE exec "import os; os.VfsFat" || { echo "SKIP (ramdisk not supported)"; exit 0; }
+
 target=/__ramdisk
 
 echo ----- Setup
