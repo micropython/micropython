@@ -25,8 +25,9 @@ Functions
      Note that for mbedtls based ports, ``ssl.CERT_NONE`` and ``ssl.CERT_OPTIONAL`` will not
      validate any certificate, only ``ssl.CERT_REQUIRED`` will.
 
-   - *cadata* is a bytes object containing the CA certificate chain (in DER format) that will
-     validate the peer's certificate.  Currently only a single DER-encoded certificate is supported.
+   - *cadata* is a str or bytes object containing the CA certificate chain that will validate the
+     peer's certificate.  It can be one or more certificates in PEM format, or single DER-encoded
+     certificate.
 
    Depending on the underlying module implementation in a particular
    :term:`MicroPython port`, some or all keyword arguments above may be not supported.
