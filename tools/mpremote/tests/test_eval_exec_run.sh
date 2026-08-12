@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Make sure we have access to /tmp/run.py
+rm -f /tmp/run.py
+trap 'rm -f /tmp/run.py' EXIT
+
 $MPREMOTE exec "print('mpremote')"
 
 $MPREMOTE exec "print('before sleep'); import time; time.sleep(0.1); print('after sleep')"
