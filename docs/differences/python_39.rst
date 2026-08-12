@@ -41,93 +41,104 @@ Other Language Changes:
 .. table::
   :widths: 90 10
 
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | *__import__()* now raises *ImportError* instead of *ValueError*                                             | Complete             |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | Python now gets the absolute path of the script filename specified on the command line (ex: *python3*       | Not implemented      |
-  | *script.py*): the *__file__* attribute of the *__main__* module became an absolute path, rather than a      |                      |
-  | relative path                                                                                               |                      |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | By default, for best performance, the errors argument is only checked at the first encoding/decoding error  | Partial [#encargs]_  |
-  | and the encoding argument is sometimes ignored for empty strings                                            |                      |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | *"".replace("", s, n)* now returns *s* instead of an empty string for all non-zero n. It is now consistent  | Complete             |
-  | with *"".replace("", s)*                                                                                    |                      |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | Any valid expression can now be used as a decorator. Previously, the grammar was much more restrictive      | Not implemented      |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | Parallel running of *aclose()* / *asend()* / *athrow()* is now prohibited, and *ag_running* now reflects    | Not implemented      |
-  | the actual running status of the async generator                                                            | [#asyncgen]_         |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | Unexpected errors in calling the *__iter__* method are no longer masked by TypeError in the in operator and | Partial [#itermask]_ |
-  | functions contains(), indexOf() and countOf() of the operator module                                        |                      |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
-  | Unparenthesized lambda expressions can no longer be the expression part in an if clause in comprehensions   | Not implemented      |
-  | and generator expressions                                                                                   |                      |
-  +-------------------------------------------------------------------------------------------------------------+----------------------+
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | *__import__()* now raises *ImportError* instead of *ValueError*                                             | Complete      |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | Python now gets the absolute path of the script filename specified on the command line (ex: *python3*       | Not           |
+  | *script.py*): the *__file__* attribute of the *__main__* module became an absolute path, rather than a      | implemented   |
+  | relative path                                                                                               |               |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | By default, for best performance, the errors argument is only checked at the first encoding/decoding error  | Partial       |
+  | and the encoding argument is sometimes ignored for empty strings                                            | [#encargs]_   |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | *"".replace("", s, n)* now returns *s* instead of an empty string for all non-zero n. It is now consistent  | Complete      |
+  | with *"".replace("", s)*                                                                                    |               |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | Any valid expression can now be used as a decorator. Previously, the grammar was much more restrictive      | Not           |
+  |                                                                                                             | implemented   |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | Parallel running of *aclose()* / *asend()* / *athrow()* is now prohibited, and *ag_running* now reflects    | Not           |
+  | the actual running status of the async generator                                                            | implemented   |
+  |                                                                                                             | [#asyncgen]_  |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | Unexpected errors in calling the *__iter__* method are no longer masked by TypeError in the in operator and | Partial       |
+  | functions contains(), indexOf() and countOf() of the operator module                                        | [#itermask]_  |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
+  | Unparenthesized lambda expressions can no longer be the expression part in an if clause in comprehensions   | Not           |
+  | and generator expressions                                                                                   | implemented   |
+  +-------------------------------------------------------------------------------------------------------------+---------------+
 
 Changes to built-in modules:
 
 .. table::
   :widths: 90 10
 
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | `asyncio <https://docs.python.org/3/whatsnew/3.9.html#asyncio>`_                                                                     |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Due to significant security concerns, the reuse_address parameter of *asyncio.loop.create_datagram_endpoint()*| Not relevant         |
-  | is no longer supported                                                                                        |                      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added a new coroutine *shutdown_default_executor()* that schedules a shutdown for the default executor that   | Not relevant         |
-  | waits on the *ThreadPoolExecutor* to finish closing. Also, *asyncio.run()* has been updated to use the new    |                      |
-  | coroutine.                                                                                                    |                      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added *asyncio.PidfdChildWatcher*, a Linux-specific child watcher implementation that polls process file      | Not relevant         |
-  | descriptors                                                                                                   |                      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | added a new *coroutine asyncio.to_thread()*                                                                   | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | When cancelling the task due to a timeout, *asyncio.wait_for()* will now wait until the cancellation is       | Complete             |
-  | complete also in the case when timeout is <= 0, like it does with positive timeouts                           |                      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | *asyncio* now raises *TyperError* when calling incompatible methods with an *ssl.SSLSocket* socket            | Not relevant         |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | `gc <https://docs.python.org/3/whatsnew/3.9.html#gc>`_                                                                               |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Garbage collection does not block on resurrected objects                                                      | Not relevant         |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added a new function *gc.is_finalized()* to check if an object has been finalized by the garbage collector    | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | `math <https://docs.python.org/3/whatsnew/3.9.html#math>`_                                                                           |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Expanded the *math.gcd()* function to handle multiple arguments. Formerly, it only supported two arguments    | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added *math.lcm()*: return the least common multiple of specified arguments                                   | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added *math.nextafter()*: return the next floating-point value after x towards y                              | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added *math.ulp()*: return the value of the least significant bit of a float                                  | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | `os <https://docs.python.org/3/whatsnew/3.9.html#os>`_                                                                               |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Exposed the Linux-specific *os.pidfd_open()* and *os.P_PIDFD*                                                 | Not relevant         |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | The *os.unsetenv()* function is now also available on Windows                                                 | Complete             |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | The *os.putenv()* and *os.unsetenv()* functions are now always available                                      | Partial [#osenv]_    |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  |  Added *os.waitstatus_to_exitcode()* function: convert a wait status to an exit code                          | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | `random <https://docs.python.org/3/whatsnew/3.9.html#random>`_                                                                       |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added a new *random.Random.randbytes* method: generate random bytes                                           | Not implemented      |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | `sys <https://docs.python.org/3/whatsnew/3.9.html#sys>`_                                                                             |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Added a new *sys.platlibdir* attribute: name of the platform-specific library directory                       | Not relevant         |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
-  | Previously, *sys.stderr* was block-buffered when non-interactive. Now stderr defaults to always being         | Not relevant         |
-  | line-buffered                                                                                                 | [#stderr]_           |
-  +---------------------------------------------------------------------------------------------------------------+----------------------+
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | `asyncio <https://docs.python.org/3/whatsnew/3.9.html#asyncio>`_                                                              |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Due to significant security concerns, the reuse_address parameter of *asyncio.loop.create_datagram_endpoint()*| Not relevant  |
+  | is no longer supported                                                                                        |               |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added a new coroutine *shutdown_default_executor()* that schedules a shutdown for the default executor that   | Not relevant  |
+  | waits on the *ThreadPoolExecutor* to finish closing. Also, *asyncio.run()* has been updated to use the new    |               |
+  | coroutine.                                                                                                    |               |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added *asyncio.PidfdChildWatcher*, a Linux-specific child watcher implementation that polls process file      | Not relevant  |
+  | descriptors                                                                                                   |               |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | added a new *coroutine asyncio.to_thread()*                                                                   | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | When cancelling the task due to a timeout, *asyncio.wait_for()* will now wait until the cancellation is       | Complete      |
+  | complete also in the case when timeout is <= 0, like it does with positive timeouts                           |               |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | *asyncio* now raises *TyperError* when calling incompatible methods with an *ssl.SSLSocket* socket            | Not relevant  |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | `gc <https://docs.python.org/3/whatsnew/3.9.html#gc>`_                                                                        |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Garbage collection does not block on resurrected objects                                                      | Not relevant  |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added a new function *gc.is_finalized()* to check if an object has been finalized by the garbage collector    | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | `math <https://docs.python.org/3/whatsnew/3.9.html#math>`_                                                                    |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Expanded the *math.gcd()* function to handle multiple arguments. Formerly, it only supported two arguments    | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added *math.lcm()*: return the least common multiple of specified arguments                                   | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added *math.nextafter()*: return the next floating-point value after x towards y                              | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added *math.ulp()*: return the value of the least significant bit of a float                                  | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | `os <https://docs.python.org/3/whatsnew/3.9.html#os>`_                                                                        |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Exposed the Linux-specific *os.pidfd_open()* and *os.P_PIDFD*                                                 | Not relevant  |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | The *os.unsetenv()* function is now also available on Windows                                                 | Complete      |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | The *os.putenv()* and *os.unsetenv()* functions are now always available                                      | Partial       |
+  |                                                                                                               | [#osenv]_     |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  |  Added *os.waitstatus_to_exitcode()* function: convert a wait status to an exit code                          | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | `random <https://docs.python.org/3/whatsnew/3.9.html#random>`_                                                                |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added a new *random.Random.randbytes* method: generate random bytes                                           | Not           |
+  |                                                                                                               | implemented   |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | `sys <https://docs.python.org/3/whatsnew/3.9.html#sys>`_                                                                      |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Added a new *sys.platlibdir* attribute: name of the platform-specific library directory                       | Not relevant  |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
+  | Previously, *sys.stderr* was block-buffered when non-interactive. Now stderr defaults to always being         | Not relevant  |
+  | line-buffered                                                                                                 | [#stderr]_    |
+  +---------------------------------------------------------------------------------------------------------------+---------------+
 
 .. rubric:: Notes
 

@@ -42,66 +42,69 @@ Other Language Changes:
 .. table::
   :widths: 90 10
 
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | ``async`` and ``await`` are now reserved keywords                                                               | Complete                 |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | ``dict`` objects must preserve insertion-order                                                                  | Not implemented          |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | More than 255 arguments can now be passed to a function; a function can now have more than 255 parameters       | Not implemented          |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | ``bytes.fromhex()`` and ``bytearray.fromhex()`` now ignore all ASCII whitespace, not only spaces                | Complete                 |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | ``str``, ``bytes``, and ``bytearray`` gained support for the new ``isascii()`` method, which can be used to     | Not implemented          |
-  | test if a string or bytes contain only the ASCII characters                                                     |                          |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | ``ImportError`` now displays module name and module ``__file__`` path when ``from ... import ...`` fails        | Not implemented          |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | Circular imports involving absolute imports with binding a submodule to a name are now supported                | Complete                 |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | ``object.__format__(x, '')`` is now equivalent to ``str(x)`` rather than ``format(str(self), '')``              | Partial [#fformat]_      |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | In order to better support dynamic creation of stack traces, ``types.TracebackType`` can now be                 | Not implemented          |
-  | instantiated from Python code, and the ``tb_next`` attribute on tracebacks is now writable                      |                          |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | When using the ``-m`` switch, ``sys.path[0]`` is now eagerly expanded to the full starting directory path,      | Not implemented          |
-  | rather than being left as the empty directory (which allows imports from the current working directory          |                          |
-  | at the time when an import occurs)                                                                              |                          |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
-  | The new ``-X importtime`` option or the ``PYTHONPROFILEIMPORTTIME`` environment variable can be used to         | Not relevant             |
-  | show the timing of each module import                                                                           |                          |
-  +-----------------------------------------------------------------------------------------------------------------+--------------------------+
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | ``async`` and ``await`` are now reserved keywords                                                               | Complete       |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | ``dict`` objects must preserve insertion-order                                                                  | Not implemented|
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | More than 255 arguments can now be passed to a function; a function can now have more than 255 parameters       | Not implemented|
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | ``bytes.fromhex()`` and ``bytearray.fromhex()`` now ignore all ASCII whitespace, not only spaces                | Complete       |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | ``str``, ``bytes``, and ``bytearray`` gained support for the new ``isascii()`` method, which can be used to     | Not implemented|
+  | test if a string or bytes contain only the ASCII characters                                                     |                |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | ``ImportError`` now displays module name and module ``__file__`` path when ``from ... import ...`` fails        | Not implemented|
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | Circular imports involving absolute imports with binding a submodule to a name are now supported                | Complete       |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | ``object.__format__(x, '')`` is now equivalent to ``str(x)`` rather than ``format(str(self), '')``              | Partial        |
+  |                                                                                                                 | [#fformat]_    |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | In order to better support dynamic creation of stack traces, ``types.TracebackType`` can now be                 | Not implemented|
+  | instantiated from Python code, and the ``tb_next`` attribute on tracebacks is now writable                      |                |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | When using the ``-m`` switch, ``sys.path[0]`` is now eagerly expanded to the full starting directory path,      | Not implemented|
+  | rather than being left as the empty directory (which allows imports from the current working directory          |                |
+  | at the time when an import occurs)                                                                              |                |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
+  | The new ``-X importtime`` option or the ``PYTHONPROFILEIMPORTTIME`` environment variable can be used to         | Not relevant   |
+  | show the timing of each module import                                                                           |                |
+  +-----------------------------------------------------------------------------------------------------------------+----------------+
 
 Changes to built-in modules:
 
 .. table::
   :widths: 90 10
 
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | `asyncio <https://docs.python.org/3/whatsnew/3.7.html#asyncio>`_                                                                      |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | Too many to list                                                                                           | Partial [#fasyncio]_     |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | `gc <https://docs.python.org/3/whatsnew/3.7.html#gc>`_                                                                                |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | New features include *gc.freeze()*, *gc.unfreeze()*, *gc-get_freeze_count*                                 | Not implemented          |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | `math <https://docs.python.org/3/whatsnew/3.7.html#math>`_                                                                            |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | math.remainder() added to implement IEEE 754-style remainder                                               | Not implemented          |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | `re <https://docs.python.org/3/whatsnew/3.7.html#re>`_                                                                                |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | A number of tidy up features including better support for splitting on empty strings and copy support for  | Not implemented [#fre]_  |
-  | compiled expressions and match objects                                                                     |                          |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_                                                                              |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | sys.breakpointhook() added. sys.get(/set)_coroutine_origin_tracking_depth() added                          | Not implemented          |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_                                                                            |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
-  | Mostly updates to support nanosecond resolution in PEP564, see above                                       | Partial [#ftime]_        |
-  +------------------------------------------------------------------------------------------------------------+--------------------------+
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `asyncio <https://docs.python.org/3/whatsnew/3.7.html#asyncio>`_                                                            |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | Too many to list                                                                                           | Partial        |
+  |                                                                                                            | [#fasyncio]_   |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `gc <https://docs.python.org/3/whatsnew/3.7.html#gc>`_                                                                      |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | New features include *gc.freeze()*, *gc.unfreeze()*, *gc-get_freeze_count*                                 | Not implemented|
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `math <https://docs.python.org/3/whatsnew/3.7.html#math>`_                                                                  |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | math.remainder() added to implement IEEE 754-style remainder                                               | Not implemented|
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `re <https://docs.python.org/3/whatsnew/3.7.html#re>`_                                                                      |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | A number of tidy up features including better support for splitting on empty strings and copy support for  | Not implemented|
+  | compiled expressions and match objects                                                                     | [#fre]_        |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_                                                                    |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | sys.breakpointhook() added. sys.get(/set)_coroutine_origin_tracking_depth() added                          | Not implemented|
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_                                                                  |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | Mostly updates to support nanosecond resolution in PEP564, see above                                       | Partial        |
+  |                                                                                                            | [#ftime]_      |
+  +------------------------------------------------------------------------------------------------------------+----------------+
 
 .. rubric:: Notes
 
