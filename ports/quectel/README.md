@@ -78,7 +78,7 @@ $ make submodules
 $ make BOARD=<board_name>
 ```
 
-This will compile the firmware in `micropython/lib/helios/output/release/<board_name>` directory. 
+The compiled firmware will be in the `build-<board>/release/<board_name>` directory.
 
 It may be necessary to create a symlink to the micropython folder in the services directory of HeliosSDK. To do this create a services folder in the sdk directory and create the link with the following command:
 ```
@@ -121,7 +121,7 @@ helios make services/micropython @EG915UEC_AC EG915UECACR03A01M08
 
 *Check the compilation target*
 
-The generated firmware package is stored in the *`output/release`* folder in the HeliosSDK root directory.
+The generated firmware package is stored in the `build-<board>/release/<board_name>` folder in the quectel port directory.
 
 To clean the compilation target, type the following command in the command line and press "**Enter**":
 ```
