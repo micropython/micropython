@@ -771,3 +771,36 @@ add_custom_command(
     VERBATIM
     COMMAND_EXPAND_LISTS
 )
+
+########################################################################################
+# Patch tinyusb to fix known issues.
+
+if(NOT UPDATE_SUBMODULES)
+    find_program(PATCH_EXECUTABLE patch REQUIRED)
+
+    # Need to patch cdc_device.c.
+    set(TINYUSB_CDC_DEVICE_ORIGINAL "${PICO_TINYUSB_PATH}/src/class/cdc/cdc_device.c")
+    set(TINYUSB_CDC_DEVICE_PATCH_FILE "${MICROPY_DIR}/shared/tinyusb/cdc_device.c.patch")
+    set(TINYUSB_CDC_DEVICE_PATCHED "${CMAKE_BINARY_DIR}/cdc_device.c")
+
+    # Command to patch the original file.
+    add_custom_command(
+        OUTPUT "${TINYUSB_CDC_DEVICE_PATCHED}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${TINYUSB_CDC_DEVICE_ORIGINAL}" "${TINYUSB_CDC_DEVICE_PATCHED}"
+        COMMAND ${PATCH_EXECUTABLE} "${TINYUSB_CDC_DEVICE_PATCHED}" "${TINYUSB_CDC_DEVICE_PATCH_FILE}"
+        DEPENDS "${TINYUSB_CDC_DEVICE_ORIGINAL}" "${TINYUSB_CDC_DEVICE_PATCH_FILE}"
+        VERBATIM
+    )
+
+    # Set include directories for the patched file.
+    set_source_files_properties("${TINYUSB_CDC_DEVICE_PATCHED}"
+        PROPERTIES
+        INCLUDE_DIRECTORIES "${PICO_TINYUSB_PATH}/src/class/cdc"
+    )
+
+    # Modify list of tinyusb sources to replace original file with patched file.
+    get_target_property(TINYUSB_SOURCES tinyusb_device_base INTERFACE_SOURCES)
+    list(REMOVE_ITEM TINYUSB_SOURCES "${TINYUSB_CDC_DEVICE_ORIGINAL}")
+    list(APPEND TINYUSB_SOURCES "${TINYUSB_CDC_DEVICE_PATCHED}")
+    set_target_properties(tinyusb_device_base PROPERTIES INTERFACE_SOURCES "${TINYUSB_SOURCES}")
+endif()

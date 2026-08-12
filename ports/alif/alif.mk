@@ -180,6 +180,7 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	)
 
 -include $(TOP)/lib/tinyusb/src/tinyusb.mk
+include $(TOP)/shared/tinyusb/tinyusb_patch.mk
 TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, $(TINYUSB_SRC_C)))
 TINYUSB_SRC_C += tinyusb_port/tusb_alif_dcd.c
 

@@ -94,6 +94,7 @@ endif
 
 # TinyUSB Stack source
 -include $(TOP)/lib/tinyusb/src/tinyusb.mk
+include $(TOP)/shared/tinyusb/tinyusb_patch.mk
 TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
 	$(TINYUSB_SRC_C) \
 	src/portable/chipidea/ci_hs/dcd_ci_hs.c \

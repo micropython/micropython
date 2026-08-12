@@ -162,6 +162,7 @@ LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 # TinyUSB Stack source
 -include $(TOP)/lib/tinyusb/src/tinyusb.mk
+include $(TOP)/shared/tinyusb/tinyusb_patch.mk
 TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
 	$(TINYUSB_SRC_C) \
 	src/portable/microchip/samd/dcd_samd.c \

@@ -268,6 +268,7 @@ SRC_C += drivers/usb/usb_cdc.c
 
 # TinyUSB Stack source
 -include $(TOP)/lib/tinyusb/src/tinyusb.mk
+include $(TOP)/shared/tinyusb/tinyusb_patch.mk
 TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
 	$(TINYUSB_SRC_C) \
 	src/portable/nordic/nrf5x/dcd_nrf5x.c \
