@@ -176,7 +176,7 @@ int mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, i
 
     mp_thread_mutex_unlock(&thread_mutex);
 
-    return (int)th;// return task_node
+    return (int)th->id;// return task_node
 }
 
 // forrest.liu@20210408 increase the priority for that python thread can,t be scheduled
