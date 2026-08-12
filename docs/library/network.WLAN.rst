@@ -30,7 +30,14 @@ Methods
 
     Activate ("up") or deactivate ("down") network interface, if boolean
     argument is passed. Otherwise, query current state if no argument is
-    provided. Most other methods require active interface.
+    provided. Most other methods require the interface being active.
+
+.. note:: On ESP32 the WLAN interface will not operate correctly and will
+    probably lock up the board if the system clock frequency has been changed to
+    a value below 80MHz.  Whilst this limitation may have been lifted from more
+    recent members of the ESP32 product line, for compatibility reasons across
+    hardware variants it is suggested to keep the system clock frequency above
+    80MHz if you use the WLAN interface.
 
 .. method:: WLAN.connect(ssid=None, key=None, *, bssid=None)
 
