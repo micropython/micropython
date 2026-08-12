@@ -1,17 +1,13 @@
 -----
 hello
 -----
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-NameError: name 'a' isn't defined
+False
 -----
 resume
 -----
 soft-reset
 2
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-NameError: name 'a' isn't defined
+False
 -----
 3
 5

@@ -12,6 +12,8 @@ set -e
 # Get the test directory (where this script and ramdisk.py are located)
 TEST_DIR=$(dirname $0)
 
+$MPREMOTE exec "import os; os.VfsFat" || { echo "SKIP (ramdisk not supported)"; exit 0; }
+
 # Initialize ramdisk for file tests
 $MPREMOTE run "${TEST_DIR}/ramdisk.py"
 

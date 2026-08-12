@@ -48,6 +48,10 @@ def stdout_write_bytes(b: bytes):
     _stdout_buffer += b
 
     if hasattr(sys.stdout, "buffer"):
+        # The buffer might already contain some characters.
+        # Flush them before we start writing unbuffered.
+        sys.stdout.flush()
+
         # Try to decode to find complete UTF-8 sequences
         # Write only complete sequences, keep incomplete trailing bytes buffered
         try:
