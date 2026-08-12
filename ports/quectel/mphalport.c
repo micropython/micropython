@@ -242,7 +242,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
         {
             t0 = mp_hal_ticks_us();
             MP_THREAD_GIL_EXIT();
-            mp_uint_t wait_time = qpy_mthread_sleep_deal_fun(ms);
+            mp_uint_t wait_time = qpy_mthread_sleep_deal_fun(ms ? ms : 1);
             MP_THREAD_GIL_ENTER();
             if (wait_time >= ms) {
                 return;
