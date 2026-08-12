@@ -275,7 +275,7 @@ Changes to built-in and library modules:
   +-------------------------------------------------------------------------------------------------------------+--------------------------+
   | `re <https://docs.python.org/3.13/whatsnew/3.13.html#re>`_                                                                             |
   +-------------------------------------------------------------------------------------------------------------+--------------------------+
-  | Rename ``re.error`` to ``PatternError`` for improved clarity. ``re.error`` is kept for backward             | Not implemented [#re]_   |
+  | Rename ``re.error`` to ``PatternError`` for improved clarity. ``re.error`` is kept for backward             | Not implemented [#relib]_|
   | compatibility.                                                                                              |                          |
   +-------------------------------------------------------------------------------------------------------------+--------------------------+
   | `shutil <https://docs.python.org/3.13/whatsnew/3.13.html#shutil>`_                                                                     |
@@ -466,7 +466,7 @@ Changes to built-in and library modules:
 .. [#q] MicroPython has no ``queue`` module, in either the firmware or micropython-lib.
    :class:`collections.deque` and ``asyncio.ThreadSafeFlag`` are the usual substitutes.
 
-.. [#re] MicroPython's :mod:`re` module defines neither ``re.error`` nor
+.. [#relib] MicroPython's :mod:`re` module defines neither ``re.error`` nor
    ``PatternError``; a bad pattern raises a plain :exc:`ValueError`.  Code that needs to
    be portable should therefore catch :exc:`ValueError`, which both spellings of the
    CPython exception derive from.

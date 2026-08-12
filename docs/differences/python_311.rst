@@ -229,7 +229,7 @@ Changes to built-in modules:
   +--------------------------------------------------------------------------------------------------+-----------------------------------+
   | `re <https://docs.python.org/3/whatsnew/3.11.html#re>`_                                                                              |
   +--------------------------------------------------------------------------------------------------+-----------------------------------+
-  | Atomic grouping (``(?>...)``) and possessive quantifiers (``*+``, ``++``, ``?+``, ``{m,n}+``)    | Not implemented [#re]_            |
+  | Atomic grouping (``(?>...)``) and possessive quantifiers (``*+``, ``++``, ``?+``, ``{m,n}+``)    | Not implemented [#relib]_         |
   | are now supported in regular expressions.                                                        |                                   |
   +--------------------------------------------------------------------------------------------------+-----------------------------------+
   | `shutil <https://docs.python.org/3/whatsnew/3.11.html#shutil>`_                                                                      |
@@ -285,7 +285,7 @@ Changes to built-in modules:
   +--------------------------------------------------------------------------------------------------+-----------------------------------+
   | `unicodedata <https://docs.python.org/3/whatsnew/3.11.html#unicodedata>`_                                                            |
   +--------------------------------------------------------------------------------------------------+-----------------------------------+
-  | The Unicode database has been updated to version 14.0.0.                                         | Not relevant [#unicodedata]_      |
+  | The Unicode database has been updated to version 14.0.0.                                         | Not relevant [#udata]_            |
   +--------------------------------------------------------------------------------------------------+-----------------------------------+
   | `unittest <https://docs.python.org/3/whatsnew/3.11.html#unittest>`_                                                                  |
   +--------------------------------------------------------------------------------------------------+-----------------------------------+
@@ -334,7 +334,7 @@ machinery [#warnmod]_, so none of these produce a diagnostic:
   +---------------------------------------------------------------------------------------------------------+----------------------------+
   | The :func:`locale.getdefaultlocale` and ``locale.resetlocale()`` functions are deprecated.              | Not relevant               |
   +---------------------------------------------------------------------------------------------------------+----------------------------+
-  | Stricter rules will now be applied for numerical group references and group names in regular            | Not relevant [#re]_        |
+  | Stricter rules will now be applied for numerical group references and group names in regular            | Not relevant [#relib]_     |
   | expressions.                                                                                            |                            |
   +---------------------------------------------------------------------------------------------------------+----------------------------+
   | In the :mod:`re` module, the ``re.template()`` function and the corresponding ``re.TEMPLATE`` and       | Not relevant               |
@@ -362,7 +362,7 @@ Removals:
 
   +-----------------------------------------------------------------------------------------------------+--------------------------------+
   | Removed the ``@asyncio.coroutine`` decorator enabling legacy generator-based coroutines to be       | Not relevant                   |
-  | compatible with :keyword:`async` / :keyword:`await` code, and ``asyncio.coroutines.CoroWrapper``.   |                                |
+  | compatible with ``async`` / ``await`` code, and ``asyncio.coroutines.CoroWrapper``.                 |                                |
   +-----------------------------------------------------------------------------------------------------+--------------------------------+
   | The *reuse_address* parameter of :meth:`asyncio.loop.create_datagram_endpoint` is now entirely      | Not relevant                   |
   | removed.                                                                                            |                                |
@@ -451,7 +451,7 @@ Removals:
 .. [#glob] micropython-lib's ``pathlib.Path.glob()`` and ``rglob()`` support only a single ``*``
    wildcard and always yield entries of any kind, so a trailing separator has no special meaning.
 
-.. [#re] MicroPython's ``re`` module is based on `re1.5 <https://github.com/pfalcon/re1.5>`_, a
+.. [#relib] MicroPython's ``re`` module is based on `re1.5 <https://github.com/pfalcon/re1.5>`_, a
    compact backtracking engine that is unrelated to CPython's.  It has no atomic groups, possessive
    quantifiers, named groups or group references; unsupported syntax raises ``ValueError: regex too
    complex``.
@@ -478,7 +478,7 @@ Removals:
    ``print_*()`` functions; there are no ``StackSummary``, ``FrameSummary`` or ``TracebackException``
    classes.
 
-.. [#unicodedata] MicroPython has no ``unicodedata`` module and no Unicode character database.  Only
+.. [#udata] MicroPython has no ``unicodedata`` module and no Unicode character database.  Only
    the ASCII range is handled for case conversion and character classification.
 
 .. [#warnmod] micropython-lib's ``warnings`` module provides only a ``warn()`` function that prints

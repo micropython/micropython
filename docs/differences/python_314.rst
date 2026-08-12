@@ -162,7 +162,7 @@ Changes to built-in modules:
   +----------------------------------------------------------------------------------------------------------------+------------------------------+
   | `io <https://docs.python.org/3/whatsnew/3.14.html#io>`_                                                                                       |
   +----------------------------------------------------------------------------------------------------------------+------------------------------+
-  | Calling ``read()`` on a non-blocking text stream may now raise :exc:`BlockingIOError` rather than returning an | Not implemented [#io]_       |
+  | Calling ``read()`` on a non-blocking text stream may now raise :exc:`BlockingIOError` rather than returning an | Not implemented [#iolib]_    |
   | empty string.                                                                                                  |                              |
   +----------------------------------------------------------------------------------------------------------------+------------------------------+
   | Added the ``io.Reader`` and ``io.Writer`` protocols for static typing.                                         | Not relevant [#ann]_         |
@@ -310,7 +310,7 @@ Changes to built-in modules:
    ``mip``, and generally implements only a commonly used subset of the
    CPython API.
 
-.. [#io] MicroPython has no text-mode/binary-mode stream distinction of the
+.. [#iolib] MicroPython has no text-mode/binary-mode stream distinction of the
    kind this change describes.  Non-blocking streams conventionally return
    ``None`` from ``read()`` when no data is available rather than raising.
    :exc:`BlockingIOError` does exist as an :exc:`OSError` subclass.
