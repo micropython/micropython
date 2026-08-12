@@ -32,7 +32,7 @@
 #define RNG_TIMEOUT_MS (10)
 #define RNG_RETRY_MAX_COUNT (10)
 
-uint32_t rng_get(void) {
+uint32_t mp_hal_get_hw_random_u32(void) {
     // Enable the RNG peripheral if it's not already enabled
     if (!(RNG->CR & RNG_CR_RNGEN)) {
         #if defined(STM32H7)
@@ -72,7 +72,7 @@ uint32_t rng_get(void) {
 
 // Return a 30-bit hardware generated random number.
 static mp_obj_t pyb_rng_get(void) {
-    return mp_obj_new_int(rng_get() >> 2);
+    return mp_obj_new_int(mp_hal_get_hw_random_u32() >> 2);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
 

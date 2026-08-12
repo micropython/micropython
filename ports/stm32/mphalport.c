@@ -227,7 +227,7 @@ void mp_hal_get_random(size_t n, uint8_t *buf) {
     uint32_t val = 0;
     for (int i = 0; i < n; i++) {
         if ((i & 3) == 0) {
-            val = rng_get();
+            val = mp_hal_get_hw_random_u32();
         }
         buf[i] = val;
         val >>= 8;

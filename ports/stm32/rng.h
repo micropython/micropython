@@ -28,7 +28,7 @@
 
 #include "py/obj.h"
 
-uint32_t rng_get(void);
+uint32_t mp_hal_get_hw_random_u32(void);
 
 MP_DECLARE_CONST_FUN_OBJ_0(pyb_rng_get_obj);
 

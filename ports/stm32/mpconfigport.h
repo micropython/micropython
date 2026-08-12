@@ -106,7 +106,7 @@
 #define MICROPY_PY_OS_UNAME         (1)
 #if MICROPY_HW_ENABLE_RNG
 #define MICROPY_PY_OS_URANDOM       (1)
-#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (rng_get())
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (mp_hal_get_hw_random_u32())
 #endif
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
@@ -300,4 +300,4 @@ typedef long mp_off_t;
 #include <alloca.h>
 
 // Needed for MICROPY_PY_RANDOM_SEED_INIT_FUNC.
-uint32_t rng_get(void);
+uint32_t mp_hal_get_hw_random_u32(void);

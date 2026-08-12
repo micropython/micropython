@@ -1,10 +1,12 @@
 // Header for libhydrogen use only.  Act like a Particle board for the random
 // implementation.  This code is not actually called when just decrypting and
-// verifying a signature, but a correct implementation is provided anyway.
+// verifying a signature, so call a function that does not exist in order to
+// trigger a link error if it is unintentionally used.
 
-#include "py/mphal.h"
-#include "rng.h"
+#include <stdint.h>
+
+uint32_t invalid_function_used_to_prevent_code_being_used(void);
 
 static inline uint32_t HAL_RNG_GetRandomNumber(void) {
-    return rng_get();
+    return invalid_function_used_to_prevent_code_being_used();
 }

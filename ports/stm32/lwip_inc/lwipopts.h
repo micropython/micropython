@@ -8,7 +8,7 @@
 #define LWIP_LOOPIF_MULTICAST           1
 #define LWIP_LOOPBACK_MAX_PBUFS         8
 
-#define LWIP_RAND() rng_get()
+#define LWIP_RAND() mp_hal_get_hw_random_u32()
 
 // Increase memory for lwIP to get better performance.
 #if defined(STM32N6)
@@ -23,6 +23,6 @@
 // Include common lwIP configuration (also mpconfig.h).
 #include "extmod/lwip-include/lwipopts_common.h"
 
-extern uint32_t rng_get(void);
+extern uint32_t mp_hal_get_hw_random_u32(void);
 
 #endif // MICROPY_INCLUDED_STM32_LWIP_LWIPOPTS_H
