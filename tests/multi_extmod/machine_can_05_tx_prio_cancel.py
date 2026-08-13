@@ -43,6 +43,8 @@ def instance0():
     # requirement)
     multitest.wait("instance1 ready")
 
+    bcast_countdown = 5
+
     # "Babble" medium priority messages onto the bus to prevent
     # instance1() from sending anything lower priority than this
     while len(recv) < ITERS:
@@ -50,6 +52,12 @@ def instance0():
             can.send(id, b"BABBLE", CAN.FLAG_EXT_ID)
             if len(recv) >= ITERS:
                 break
+            if bcast_countdown > 0:
+                # queue some "babble" messages onto the bus before signalling to
+                # instance1 that it can start trying to send
+                bcast_countdown -= 1
+                if not bcast_countdown:
+                    multitest.broadcast("instance0 babbling")
 
     print("received", ITERS, "messages")
     for can_id in recv:
@@ -92,7 +100,7 @@ def instance1():
     # make sure instance0 can queue outgoing medium-priority
     # babble before we start trying to send, so we're trying to
     # send onto an already busy bus
-    time.sleep_ms(100)
+    multitest.wait("instance0 babbling")
 
     for i in range(ITERS):
         # Fill the transmit queue with low priority messages (all extended IDs)
