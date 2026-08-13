@@ -475,6 +475,17 @@ TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
 	src/portable/synopsys/dwc2/hcd_dwc2.c \
 	))
 
+# HaLow driver linkage (prebuilt morselib, transceiver firmware blobs), included
+# only when HaLow is enabled as it fetches the driver's nested submodule.  Absent
+# until the submodule is fetched, which "make submodules" must still parse past.
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+-include $(TOP)/lib/mm-halow-driver/mm_halow.mk
+CFLAGS += $(MM_HALOW_CFLAGS)
+LIBS += $(MM_HALOW_LIBS)
+OBJ += $(MM_HALOW_OBJ)
+SRC_THIRDPARTY_C += $(MM_HALOW_SRC_C)
+endif
+
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 LIB_SRC_C += mbedtls/mbedtls_port.c
 endif
