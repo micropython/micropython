@@ -36,11 +36,24 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+#include "mm_halow.h"
+#include "pendsv.h"
+#endif
+
 // Poll lwIP every 64ms by default
 #define LWIP_TICK_RATE_MS 64
 
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+#define HALOW_TICK_RATE_MS 1
+#endif
+
 // Soft timer for running lwIP in the background.
 static soft_timer_entry_t mp_network_soft_timer;
+
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+static soft_timer_entry_t mp_halow_soft_timer;
+#endif
 
 u32_t sys_now(void) {
     return mp_hal_ticks_ms();
@@ -66,6 +79,21 @@ static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
     #endif
 }
 
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+static void mp_halow_soft_timer_callback(soft_timer_entry_t *self) {
+    (void)self;
+    if (mm_halow_poll) {
+        mm_halow_poll();
+    }
+}
+
+void mm_halow_schedule_poll(void) {
+    if (mm_halow_poll) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_HALOW, mm_halow_poll);
+    }
+}
+#endif
+
 void mod_network_lwip_init(void) {
     soft_timer_static_init(
         &mp_network_soft_timer,
@@ -75,6 +103,17 @@ void mod_network_lwip_init(void) {
         );
 
     soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
+
+    #if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+    soft_timer_static_init(
+        &mp_halow_soft_timer,
+        SOFT_TIMER_MODE_PERIODIC,
+        HALOW_TICK_RATE_MS,
+        mp_halow_soft_timer_callback
+        );
+
+    soft_timer_reinsert(&mp_halow_soft_timer, HALOW_TICK_RATE_MS);
+    #endif
 }
 
 #endif // MICROPY_PY_LWIP
