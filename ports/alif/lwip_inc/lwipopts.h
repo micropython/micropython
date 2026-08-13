@@ -10,7 +10,7 @@
 
 #define LWIP_RAND() se_services_rand64()
 
-#define MEM_SIZE                        (16 * 1024)
+#define MEM_SIZE                        (64 * 1024)
 #define TCP_MSS                         (1460)
 #define TCP_OVERSIZE                    (TCP_MSS)
 #define TCP_WND                         (8 * TCP_MSS)
