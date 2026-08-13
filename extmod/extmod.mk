@@ -53,6 +53,7 @@ SRC_EXTMOD_C += \
 	extmod/modwebsocket.c \
 	extmod/network_cyw43.c \
 	extmod/network_esp_hosted.c \
+	extmod/network_halow.c \
 	extmod/network_lwip.c \
 	extmod/network_ninaw10.c \
 	extmod/network_ppp_lwip.c \
@@ -467,6 +468,54 @@ SRC_THIRDPARTY_C += $(addprefix $(CYW43_DIR)/src/,\
 
 $(BUILD)/$(CYW43_DIR)/src/cyw43_%.o: CFLAGS += -std=c11
 endif # MICROPY_PY_NETWORK_CYW43
+
+################################################################################
+# halow (Morse Micro 802.11ah)
+
+ifeq ($(MICROPY_PY_NETWORK_HALOW),1)
+HALOW_DIR = drivers/halow
+MMIOT_DIR = lib/mm-iot-sdk/framework
+GIT_SUBMODULES += lib/mm-iot-sdk
+
+CFLAGS += -DMICROPY_PY_NETWORK_HALOW=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_HALOW=1
+
+ifeq ($(MICROPY_PY_NETWORK_HALOW_AP),1)
+CFLAGS += -DMICROPY_PY_NETWORK_HALOW_AP=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_HALOW_AP=1
+endif
+
+INC += -I$(TOP)/$(HALOW_DIR)
+INC += -I$(TOP)/$(MMIOT_DIR)/morselib/include
+INC += -I$(TOP)/$(MMIOT_DIR)/src/mmutils
+INC += -I$(TOP)/$(MMIOT_DIR)/src/mmregdb
+
+DRIVERS_SRC_C += $(addprefix $(HALOW_DIR)/,\
+	halow_ctrl.c \
+	halow_hal.c \
+	halow_libc.c \
+	halow_lwip.c \
+	halow_osal.c \
+	halow_pktmem.c \
+	halow_sched.c \
+	)
+
+# Support code that morselib expects the integrator to provide: the packet
+# memory pools, the regulatory database and assorted helpers.
+# Packet memory is provided by halow_pktmem.c rather than the SDK's mmpktmem,
+# so that all of the driver's memory comes from the MicroPython heap.
+SRC_THIRDPARTY_C += $(addprefix $(MMIOT_DIR)/src/,\
+	mmregdb/mmregdb.c \
+	mmutils/mmbuf.c \
+	mmutils/mmcrc.c \
+	mmutils/mmutils_wlan.c \
+	)
+
+# The prebuilt morselib and the transceiver's firmware blobs are not listed here:
+# this file is shared by every port, and none of that belongs in it.  A board
+# that wants the driver includes drivers/halow/halow.mk for the linkage.
+
+endif # MICROPY_PY_NETWORK_HALOW
 
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),)
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),0)
