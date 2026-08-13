@@ -19,12 +19,6 @@
 		};
 	};
 
-	heap_sram1 {
-		compatible = "micropython,heap";
-		size = <DT_SIZE_K(116)>;
-		memory-region = <&sram1>;
-	};
-
 	heap_psram {
 		compatible = "micropython,heap";
 		size = <DT_SIZE_M(4)>;

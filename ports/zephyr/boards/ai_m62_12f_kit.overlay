@@ -18,12 +18,6 @@
 			block-cycles=<4>;
 		};
 	};
-
-	heap_sram1 {
-		compatible = "micropython,heap";
-		size = <DT_SIZE_K(116)>;
-		memory-region = <&sram1>;
-	};
 };
 
 &wdt0 {
