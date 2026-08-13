@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) 2025 MASSDRIVER EI (massdriver.space)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<256>;
+			cache-size=<1024>;
+			lookahead-size=<32>;
+			block-cycles=<4>;
+		};
+	};
+};
+
+&wdt0 {
+	status = "okay";
+};
+
+/* Provide some mappings for peripherals and enable the peripherals */
+
+&pinctrl {
+	i2c0_default: i2c0_default {
+		group1 {
+			pinmux = <GPIO1_I2C_SDA>,
+				 <GPIO0_I2C_SCL>;
+			bias-pull-up;
+			input-schmitt-enable;
+		};
+	};
+
+	spi0_default: spi0_default {
+		group1 {
+			pinmux = <GPIO11_SPI_SCLK>,
+				 <GPIO12_SPI_MOSI>,
+				 <GPIO17_SPI_MISO>;
+			bias-pull-up;
+			input-schmitt-enable;
+		};
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+
+	pinctrl-0 = <&i2c0_default>;
+	pinctrl-names = "default";
+};
+
+&spi0 {
+	status = "okay";
+
+	pinctrl-0 = <&spi0_default>;
+	pinctrl-names = "default";
+};
