@@ -41,6 +41,9 @@
 #include "lib/littlefs/lfs2_util.h"
 #include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
+#if MICROPY_PY_NETWORK_HALOW
+#include "extmod/network_halow.h"
+#endif
 #include "extmod/machine_can.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
@@ -757,6 +760,9 @@ soft_reset_exit:
     #endif
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
+    #endif
+    #if MICROPY_PY_NETWORK_HALOW
+    network_halow_deinit_all();
     #endif
     soft_timer_deinit();
     timer_deinit();
