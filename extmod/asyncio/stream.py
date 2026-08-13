@@ -206,20 +206,4 @@ async def start_server(cb, host, port, backlog=5, ssl=None):
     return srv
 
 
-################################################################################
-# Legacy uasyncio compatibility
-
-
-async def stream_awrite(self, buf, off=0, sz=-1):
-    if off != 0 or sz != -1:
-        buf = memoryview(buf)
-        if sz == -1:
-            sz = len(buf)
-        buf = buf[off : off + sz]
-    self.write(buf)
-    await self.drain()
-
-
 Stream.aclose = Stream.wait_closed
-Stream.awrite = stream_awrite
-Stream.awritestr = stream_awrite  # TODO explicitly convert to bytes?
