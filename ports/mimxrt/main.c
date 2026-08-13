@@ -57,6 +57,9 @@
 #include "systick.h"
 #include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
+#if MICROPY_PY_NETWORK_HALOW
+#include "extmod/network_halow.h"
+#endif
 #include "extmod/vfs.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
@@ -195,6 +198,9 @@ int main(void) {
         #endif
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
+        #endif
+        #if MICROPY_PY_NETWORK_HALOW
+        network_halow_deinit_all();
         #endif
         #if MICROPY_PY_MACHINE_UART
         machine_uart_deinit_all();
