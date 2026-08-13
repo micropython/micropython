@@ -73,7 +73,15 @@ class Stream:
                 buf = buf[ret:]
         self.out_buf += buf
 
-    async def awrite(self, buf):
+    def drain(self):
+        buf = self.out_buf
+        if not buf:
+            # Must always yield, so a tight loop can't block the scheduler.
+            yield from core.sleep_ms(0)
+            return
+
+        self.out_buf = b""
+
         mv = memoryview(buf)
         off = 0
         while off < len(mv):
@@ -82,13 +90,11 @@ class Stream:
             if ret is not None:
                 off += ret
 
-    async def drain(self):
-        buf = self.out_buf
-        if not buf:
-            # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
-            return await core.sleep_ms(0)
-        self.out_buf = b""
-        await self.awrite(buf)
+    async def awrite(self, buf):
+        if self.out_buf:
+            await self.drain()
+        self.out_buf = buf
+        await self.drain()
 
 
 # Stream can be used for both reading and writing to save code size
