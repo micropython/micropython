@@ -11,25 +11,22 @@
 	};
 };
 
+/delete-node/ &code_partition;
 &flash0 {
 	partitions {
-		compatible = "fixed-partitions";
+		ranges;
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		second_stage_bootloader: partition@0 {
-			label = "second_stage_bootloader";
-			reg = <0x00000000 0x100>;
-			read-only;
-		};
-
-		code_partition: partition@100 {
-			label = "code-partition";
-			reg = <0x0000100 (DT_SIZE_M(1) - 0x100)>;
+		code_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			label = "code";
+			reg = <0x0000000 (DT_SIZE_M(1))>;
 			read-only;
 		};
 
 		storage_partition: partition@100000 {
+			compatible = "zephyr,mapped-partition";
 			label = "storage";
 			reg = <0x00100000 DT_SIZE_M(3)>;
 		};
