@@ -57,3 +57,15 @@ try:
     print("missed detection of incorrect __all__ definition")
 except TypeError as er:
     print("TypeError triggered for bad __all__ definition")
+
+# 6. test when package uses __getattr__ and raises AttributeError for __getattr__("__all__")
+from pkgstar_getattr_attr_er import *
+
+print("publicFun3" in globals())
+print(publicFun3())
+
+# 7. test when package uses __getattr__ and raises ValueError for __getattr__("__all__")
+try:
+    from pkgstar_getattr_value_er import *
+except ValueError as er:
+    print("ValueError triggered with args", er.args)
