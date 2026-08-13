@@ -58,6 +58,10 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
+ifeq ($(MICROPY_PY_NETWORK_HALOW),1)
+include $(TOP)/drivers/halow/halow.mk
+endif
+
 GIT_SUBMODULES += lib/CMSIS_6 lib/libhydrogen lib/stm32lib lib/tinyusb
 
 CROSS_COMPILE ?= arm-none-eabi-
