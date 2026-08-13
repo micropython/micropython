@@ -19,6 +19,16 @@ QSTR_DEFS += qstrdefsport.h
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
+# HaLow driver linkage (prebuilt morselib, transceiver firmware blobs).  Absent
+# until the submodule is fetched, which "make submodules" must still parse past.
+-include $(TOP)/lib/mm-halow-driver/mm_halow.mk
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+CFLAGS += $(MM_HALOW_CFLAGS)
+LIBS += $(MM_HALOW_LIBS)
+OBJ += $(MM_HALOW_OBJ)
+SRC_THIRDPARTY_C += $(MM_HALOW_SRC_C)
+endif
+
 ################################################################################
 # Project specific settings and compiler/linker flags
 
