@@ -148,6 +148,8 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define mp_hal_pin_read(p)      (((p)->gpio->IDR >> (p)->pin) & 1)
 #define mp_hal_pin_write(p, v)  ((v) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))
 #define mp_hal_pin_interrupt(pin, handler, trigger, hard) extint_register_pin(pin, trigger, hard, handler)
+#define mp_hal_pin_interrupt_enable(p, enable) \
+    ((enable) ? extint_enable((p)->pin) : extint_disable((p)->pin))
 
 enum mp_hal_pin_interrupt_trigger {
     MP_HAL_PIN_TRIGGER_NONE,
@@ -160,6 +162,8 @@ void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint3
 bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);
 void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed);
 void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj);
+void extint_enable(uint line);
+void extint_disable(uint line);
 
 mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t spi_in);
 
