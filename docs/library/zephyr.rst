@@ -53,6 +53,7 @@ Classes
     :maxdepth: 1
 
     zephyr.DiskAccess.rst
+    zephyr.Display.rst
     zephyr.FlashArea.rst
 
 Additional Modules
