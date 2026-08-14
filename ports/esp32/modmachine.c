@@ -326,9 +326,7 @@ static mp_obj_t machine_wake_pins(void) {
 
     // Only a few (~8) pins might cause wakeup.
     // Therefore, we calculate the required space in a first pass.
-    for (index = 0, len = 0; index < 64; index++) {
-        len += (status & (1ULL << index)) ? 1 : 0;
-    }
+    len = mp_popcount(status >> 32) + mp_popcount(status & 0xFFFFFFFF);
     if (len) {
         mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
 
