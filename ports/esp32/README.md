@@ -261,8 +261,6 @@ default. Here's how to enable it.
     idf.py build tells you the micropython.bin binary size when finished.
     This size constraint precludes the WPA2 Enterprise feature for smaller
     devices, e.g. the D2WD variant of ESP32_GENERIC.
-  * In ports/esp32/esp32_common.cmake, make sure wpa_supplicant is present
-    in the "APPEND IDF_COMPONENTS" list
   * In ports/esp32/mpconfigport.h, set the macro MICROPY_PY_NETWORK_WPA_ENTERPRISE
     to (1)
   * If you want to also enable EAP-TLS, which is considered experimental (1),
