@@ -220,3 +220,45 @@ The attribute IDs that are used as arguments to the :meth:`zsensor.Sensor.attr_s
 :meth:`zsensor.Sensor.attr_get_float`, :meth:`zsensor.Sensor.attr_get_int`,
 :meth:`zsensor.Sensor.attr_get_millis`, and :meth:`zsensor.Sensor.attr_get_micros`
 methods are constants in the :mod:`zsensor` module named ``ATTR_*``.
+
+Display
+-------
+
+Use the :ref:`zephyr.Display <zephyr.Display>` class to control displays provided by Zephyr::
+
+    import zephyr, framebuf
+
+    # Create Display instance from Node identifier
+    display = zephyr.Display("ssd1306@3c")
+
+    # Create a FrameBuffer of the correct format for the display
+    fb = framebuf.FrameBuffer(bytearray(int(64*128/8)), 128, 64, framebuf.MVLSB)
+
+    # Disable blanking
+    display.blanking(False)
+
+    # Write text to framebuf
+    fb.text('Hello World', 0, 0, 1)
+
+    # Write framebuf buffer to Display
+    display.write(fb)
+
+Or::
+
+    # framebuf module must be available for as_framebuf to generate the augmented FrameBuffer class
+    import zephyr, framebuf
+
+    # Create Display instance for the first display configured
+    display = zephyr.Display(0)
+
+    # Disable blanking
+    display.blanking(False)
+
+    # Get a FrameBuffer for the Display as currently configured
+    fb = display.as_framebuf()
+
+    # Write text to framebuf
+    fb.text('Hello World', 0, 0, 1)
+
+    # Write framebuf buffer to Display
+    fb.show()
