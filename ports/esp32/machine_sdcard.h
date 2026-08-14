@@ -26,6 +26,17 @@
 #ifndef MICROPY_INCLUDED_ESP32_MACHINE_SDCARD_H
 #define MICROPY_INCLUDED_ESP32_MACHINE_SDCARD_H
 
+// Default slot and bus width for a native SD/MMC machine.SDCard(). These are
+// conservative defaults (the historically usable slot 1, 1-bit); which slot is
+// wired and how many data lines are routed is board specific, so a board should
+// override these in its mpconfigboard.h to match its layout.
+#ifndef MICROPY_HW_SDMMC_DEFAULT_SLOT
+#define MICROPY_HW_SDMMC_DEFAULT_SLOT       (1)
+#endif
+#ifndef MICROPY_HW_SDMMC_DEFAULT_WIDTH
+#define MICROPY_HW_SDMMC_DEFAULT_WIDTH      (1)
+#endif
+
 // Default pins for the primary SPI-mode SD card bus (slot 2). SPI mode is
 // available on every ESP32 variant, so a board may override these in its
 // mpconfigboard.h to make machine.SDCard(slot=2) work without explicit pins.
