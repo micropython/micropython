@@ -377,11 +377,7 @@ WPA Enterprise Mode (ESP32 only)
     
     As a last resort, you may decide to deactivate CONFIG_MBEDTLS_HAVE_TIME_DATE 
     in ``sdkconfig``. This disables all TLS certificate time checks, so make sure 
-    you understand the implications. (In an nutshell: although the net is full 
-    of how-to articles how to switch off certificate validity checks, this has 
-    to be considered a bad security practice because `it makes each and every 
-    connection insecure <https://daniel.haxx.se/blog/2025/02/11/disabling-cert-checks-we-have-not-learned-much/>`_
-    , just like putting your house key under the doormat.)
+    you understand the implications.
 
 5 GHz WiFi band_mode (ESP32 only)
 ---------------------------------
