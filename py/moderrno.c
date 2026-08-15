@@ -73,8 +73,9 @@ static const mp_obj_dict_t errorcode_dict = {
     .map = {
         .all_keys_are_qstrs = 0, // keys are integers
         .is_fixed = 1,
-        .is_ordered = 1,
+        _MP_MAP_IS_ORDERED_INIT
         .used = MP_ARRAY_SIZE(errorcode_table),
+        _MP_MAP_FILLED_INIT(MP_ARRAY_SIZE(errorcode_table))
         .alloc = MP_ARRAY_SIZE(errorcode_table),
         .table = (mp_map_elem_t *)(mp_rom_map_elem_t *)errorcode_table,
     },
