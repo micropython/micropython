@@ -166,9 +166,26 @@ static inline void mpu_config_end(uint32_t irq_state) {
 #endif
 
 static inline void mpu_init(void) {
+    // The bootloader can hand over with the MPU still enabled (observed with
+    // the OpenMV N6 bootloader: CTRL=ENABLE|HFNMIENA|PRIVDEFENA and its own
+    // MAIR attributes).  Reprogramming MAIR/regions or rewriting CTRL while
+    // the MPU is live and code is executing from external (XSPI) flash
+    // raises a spurious MemManage (IACCVIOL) on the Cortex-M55, dependent on
+    // where the flash fetch happens to fall -- so boot failure depends on
+    // code layout.  Disable the MPU and clear every region first, then
+    // configure from a clean state.
+    __DMB();
+    MPU->CTRL = 0;
+    __DSB();
+    __ISB();
+    for (uint32_t region = 0; region < ((MPU->TYPE & MPU_TYPE_DREGION_Msk) >> MPU_TYPE_DREGION_Pos); ++region) {
+        MPU->RNR = region;
+        MPU->RBAR = 0;
+        MPU->RLAR = 0;
+    }
+
     // Configure MPU_ATTRIBUTES_NUMBER0: inner-outer non-cacheable (=0x44).
     // This attribute is used both here and in mpu_config_region().
-    __DMB();
     MPU->MAIR0 = (MPU->MAIR0 & ~MPU_MAIR0_Attr0_Msk)
         | 0x44 << MPU_MAIR0_Attr0_Pos;
 
@@ -187,7 +204,7 @@ static inline void mpu_init(void) {
     // Enable the MPU.
     MPU->CTRL = MPU_PRIVILEGED_DEFAULT | MPU_CTRL_ENABLE_Msk;
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
-    __DMB();
+    __DSB();
     __ISB();
 }
 
