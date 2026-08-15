@@ -496,7 +496,15 @@ static int eth_mac_init(eth_t *self) {
     #endif
 
     // Burst mode configuration
-    #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
+    #if defined(STM32N6)
+    // Also raise the AXI outstanding-request limits from their reset value
+    // of 1 to the maximum of 4: with a single outstanding request the RX
+    // DMA cannot drain the MTL RX FIFO at 1Gbit line rate and it overflows
+    // even with free RX descriptors available.
+    ETH->DMASBMR = (ETH->DMASBMR & ~ETH_DMASBMR_AAL & ~ETH_DMASBMR_FB)
+        | 3 << ETH_DMASBMR_RD_OSR_LMT_Pos
+        | 3 << ETH_DMASBMR_WR_OSR_LMT_Pos;
+    #elif defined(STM32H5) || defined(STM32H7)
     ETH->DMASBMR = ETH->DMASBMR & ~ETH_DMASBMR_AAL & ~ETH_DMASBMR_FB;
     #else
     ETH->DMABMR = 0;
