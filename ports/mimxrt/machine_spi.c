@@ -60,6 +60,9 @@
 #define SDO (iomux_table[index + 2])
 #define SDI (iomux_table[index + 3])
 #define CS1 (iomux_table[index + 4])
+#define CS0_ALT (iomux_table[index + 5])
+#define SDI_ALT (iomux_table[index + 6])
+#define IOMUX_INDEX(spi) (((spi) - 1) * 7)
 
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
@@ -72,6 +75,7 @@ typedef struct _machine_spi_obj_t {
 } machine_spi_obj_t;
 
 typedef struct _iomux_table_t {
+    const machine_pin_obj_t *pin;
     uint32_t muxRegister;
     uint32_t muxMode;
     uint32_t inputRegister;
@@ -85,33 +89,50 @@ static const iomux_table_t iomux_table[] = {
     IOMUX_TABLE_SPI
 };
 
-bool lpspi_set_iomux(int8_t spi, uint8_t drive, int8_t cs) {
-    int index = (spi - 1) * 5;
+
+bool lpspi_set_iomux(int8_t spi, uint8_t drive, const machine_pin_obj_t *pin_miso, const machine_pin_obj_t *pin_mosi, const machine_pin_obj_t *pin_cs) {
+    int index = IOMUX_INDEX(spi);
 
     if (SCK.muxRegister != 0) {
         IOMUXC_SetPinMux(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister, 0U);
         IOMUXC_SetPinConfig(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister,
             pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, SCK.configRegister));
 
-        if (cs == 0 && CS0.muxRegister != 0) {
+        if (pin_cs == CS0.pin && CS0.muxRegister != 0) {
             IOMUXC_SetPinMux(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister, 0U);
             IOMUXC_SetPinConfig(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister,
                 pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, CS0.configRegister));
-        } else if (cs == 1 && CS1.muxRegister != 0) {
+        } else if (pin_cs == CS0_ALT.pin && CS0_ALT.muxRegister != 0) {
+            IOMUXC_SetPinMux(CS0_ALT.muxRegister, CS0_ALT.muxMode, CS0_ALT.inputRegister, CS0_ALT.inputDaisy, CS0_ALT.configRegister, 0U);
+            IOMUXC_SetPinConfig(CS0_ALT.muxRegister, CS0_ALT.muxMode, CS0_ALT.inputRegister, CS0_ALT.inputDaisy, CS0_ALT.configRegister,
+                pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, CS0_ALT.configRegister));
+        } else if (pin_cs == CS1.pin && CS1.muxRegister != 0) {
             IOMUXC_SetPinMux(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister, 0U);
             IOMUXC_SetPinConfig(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister,
                 pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, CS1.configRegister));
-        } else if (cs != -1) {
+        } else if (pin_cs != NULL) {
             mp_raise_ValueError(MP_ERROR_TEXT("The chosen CS is not available"));
         }
 
-        IOMUXC_SetPinMux(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister, 0U);
-        IOMUXC_SetPinConfig(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister,
-            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, SDO.configRegister));
+        if (pin_mosi == NULL || pin_mosi == SDO.pin) {
+            IOMUXC_SetPinMux(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister, 0U);
+            IOMUXC_SetPinConfig(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister,
+                pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, SDO.configRegister));
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("The chosen MOSI is not available"));
+        }
 
-        IOMUXC_SetPinMux(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister, 0U);
-        IOMUXC_SetPinConfig(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister,
-            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, drive, SDI.configRegister));
+        if (pin_miso == NULL || pin_miso == SDI.pin) {
+            IOMUXC_SetPinMux(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister, 0U);
+            IOMUXC_SetPinConfig(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister,
+                pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, drive, SDI.configRegister));
+        } else if (pin_miso == SDI_ALT.pin && SDI_ALT.muxRegister != 0) {
+            IOMUXC_SetPinMux(SDI_ALT.muxRegister, SDI_ALT.muxMode, SDI_ALT.inputRegister, SDI_ALT.inputDaisy, SDI_ALT.configRegister, 0U);
+            IOMUXC_SetPinConfig(SDI_ALT.muxRegister, SDI_ALT.muxMode, SDI_ALT.inputRegister, SDI_ALT.inputDaisy, SDI_ALT.configRegister,
+                pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, drive, SDI_ALT.configRegister));
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("The chosen MISO is not available"));
+        }
 
         return true;
     } else {
@@ -129,7 +150,7 @@ static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap_ns, ARG_drive, ARG_cs };
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap_ns, ARG_drive, ARG_miso, ARG_mosi, ARG_cs };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_INT, {.u_int = DEFAULT_SPI_ID} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
@@ -139,7 +160,9 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
         { MP_QSTR_gap_ns,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_drive,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_DRIVE} },
-        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // Parse the arguments.
@@ -181,15 +204,29 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
     self->master_config->lastSckToPcsDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
     self->master_config->pcsToSckDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
-    int8_t cs = args[ARG_cs].u_int;
-    // In the SPI master_config for automatic CS the value cs=0 is set already,
-    // so only cs=1 has to be addressed here. The case cs == -1 for manual CS is handled
-    // in the function spi_set_iomux() and the value in the master_config can stay at 0.
-    if (cs == 1) {
-        self->master_config->whichPcs = cs;
+
+    const machine_pin_obj_t *pin_miso = NULL;
+    if (args[ARG_miso].u_obj != MP_OBJ_NULL) {
+        pin_miso = pin_find(args[ARG_miso].u_obj);
     }
+    const machine_pin_obj_t *pin_mosi = NULL;
+    if (args[ARG_mosi].u_obj != MP_OBJ_NULL) {
+        pin_mosi = pin_find(args[ARG_mosi].u_obj);
+    }
+    const machine_pin_obj_t *pin_cs = NULL;
+    if (args[ARG_cs].u_obj != mp_const_none) {
+        pin_cs = pin_find(args[ARG_cs].u_obj);
+    }
+
+    int index = IOMUX_INDEX(spi_index_table[spi_id]);
+
+    self->master_config->whichPcs = 0;
+    if (pin_cs != NULL && pin_cs == CS1.pin) {
+        self->master_config->whichPcs = 1;
+    }
+
     LPSPI_MasterInit(self->spi_inst, self->master_config, BOARD_BOOTCLOCKRUN_LPSPI_CLK_ROOT);
-    lpspi_set_iomux(spi_index_table[spi_id], drive, cs);
+    lpspi_set_iomux(spi_index_table[spi_id], drive, pin_miso, pin_mosi, pin_cs);
 
     return MP_OBJ_FROM_PTR(self);
 }
