@@ -185,7 +185,6 @@ add_dependencies(BUILD_VERSION_HEADER zephyr_generated_headers)
 add_dependencies(${MICROPY_TARGET} zephyr_generated_headers)
 
 target_sources(app PRIVATE
-    src/zephyr_start.c
     src/zephyr_getchar.c
     src/usbd.c
 )
