@@ -166,6 +166,17 @@ static inline void mpu_config_end(uint32_t irq_state) {
 #endif
 
 static inline void mpu_init(void) {
+    // The bootloader can hand over with the MPU enabled, so disable it and clear every region.
+    __DMB();
+    MPU->CTRL = 0;
+    __DSB();
+    __ISB();
+    for (uint32_t region = 0; region < ((MPU->TYPE & MPU_TYPE_DREGION_Msk) >> MPU_TYPE_DREGION_Pos); ++region) {
+        MPU->RNR = region;
+        MPU->RBAR = 0;
+        MPU->RLAR = 0;
+    }
+
     // Configure MPU_ATTRIBUTES_NUMBER0: inner-outer non-cacheable (=0x44).
     // This attribute is used both here and in mpu_config_region().
     __DMB();
@@ -187,7 +198,7 @@ static inline void mpu_init(void) {
     // Enable the MPU.
     MPU->CTRL = MPU_PRIVILEGED_DEFAULT | MPU_CTRL_ENABLE_Msk;
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
-    __DMB();
+    __DSB();
     __ISB();
 }
 
