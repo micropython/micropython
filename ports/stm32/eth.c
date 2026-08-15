@@ -1060,6 +1060,15 @@ static err_t eth_netif_init(struct netif *netif) {
     netif->output = etharp_output;
     netif->mtu = 1500;
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
+    #if defined(STM32N6)
+    // Outgoing checksums are inserted by hardware, and incoming IPv4/UDP/TCP
+    // checksums are verified by hardware too (MACCR.IPC is set and the MTL
+    // drops checksum-errored frames, as FEP is left clear), so lwip only
+    // needs to verify ICMP checksums in software.
+    NETIF_SET_CHECKSUM_CTRL(netif,
+        NETIF_CHECKSUM_CHECK_ICMP
+        | NETIF_CHECKSUM_CHECK_ICMP6);
+    #else
     // Checksums only need to be checked on incoming frames, not computed on outgoing frames
     NETIF_SET_CHECKSUM_CTRL(netif,
         NETIF_CHECKSUM_CHECK_IP
@@ -1067,6 +1076,7 @@ static err_t eth_netif_init(struct netif *netif) {
         | NETIF_CHECKSUM_CHECK_TCP
         | NETIF_CHECKSUM_CHECK_ICMP
         | NETIF_CHECKSUM_CHECK_ICMP6);
+    #endif
     return ERR_OK;
 }
 
