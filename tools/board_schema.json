@@ -1,0 +1,123 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "MicroPython board.json",
+    "description": "Schema for MicroPython board definition files. Features list must be kept in sync with VALID_FEATURES in tools/autobuild/build-downloads.py.",
+    "type": "object",
+    "required": ["deploy", "features", "images", "mcu", "product", "url", "vendor"],
+    "properties": {
+        "deploy": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Paths to deployment instruction markdown files, relative to board directory."
+        },
+        "deploy_options": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "Optional deployment options such as flash_offset."
+        },
+        "docs": {
+            "type": "string",
+            "description": "URL to board documentation."
+        },
+        "features": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "Audio Codec",
+                    "Battery Charging",
+                    "BLE",
+                    "Camera",
+                    "CAN",
+                    "DAC",
+                    "Display",
+                    "Dual-core",
+                    "Environment Sensor",
+                    "Ethernet",
+                    "External Flash",
+                    "External RAM",
+                    "Feather",
+                    "IMU",
+                    "JST-PH",
+                    "JST-SH",
+                    "LoRa",
+                    "Microphone",
+                    "microSD",
+                    "mikroBUS",
+                    "PoE",
+                    "RGB LED",
+                    "SDCard",
+                    "Secure Element",
+                    "USB",
+                    "USB-C",
+                    "WiFi"
+                ]
+            },
+            "uniqueItems": true,
+            "description": "Board features from the standard set. Must match VALID_FEATURES in tools/autobuild/build-downloads.py."
+        },
+        "features_non_filterable": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Vendor-specific features not in the standard filterable set."
+        },
+        "images": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[^/\\\\]+$"
+            },
+            "minItems": 1,
+            "description": "Image filenames (flat names, no path separators). Stored in micropython-media repo."
+        },
+        "mcu": {
+            "type": "string",
+            "minLength": 1,
+            "description": "MCU identifier (e.g. esp32, stm32f4, rp2040)."
+        },
+        "old_variants": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 2,
+                "maxItems": 2
+            },
+            "description": "Deprecated variants. Maps variant name to [description, deprecation_message]."
+        },
+        "product": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable product name."
+        },
+        "thumbnail": {
+            "type": "string",
+            "description": "Thumbnail image filename."
+        },
+        "url": {
+            "type": "string",
+            "description": "Product or vendor URL."
+        },
+        "variants": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "Build variants. Maps variant identifier to human-readable description."
+        },
+        "vendor": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Manufacturer or vendor name."
+        }
+    },
+    "additionalProperties": false
+}
