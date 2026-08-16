@@ -44,12 +44,20 @@
 #define WL_IRQ_HANDLER GPIO9_IRQ6Handler
 
 // Must run at IRQ priority above PendSV so it can wake cyw43-driver when PendSV is disabled.
+// WL_IRQ is low-level triggered.  Mask the handler here while the event is processed, and unmask it in cyw43_post_poll_hook().
 void WL_IRQ_HANDLER(void) {
     if (gpio_read_int_rawstatus(pin_WL_IRQ->gpio, pin_WL_IRQ->pin)) {
+        gpio_mask_interrupt(pin_WL_IRQ->gpio, pin_WL_IRQ->pin);
         gpio_interrupt_eoi(pin_WL_IRQ->gpio, pin_WL_IRQ->pin);
         pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
         __SEV();
     }
+}
+
+// Called by cyw43-driver at the end of every cyw43_poll (CYW43_POST_POLL_HOOK).
+void cyw43_post_poll_hook(void) {
+    gpio_interrupt_eoi(pin_WL_IRQ->gpio, pin_WL_IRQ->pin);
+    gpio_unmask_interrupt(pin_WL_IRQ->gpio, pin_WL_IRQ->pin);
 }
 
 static void spi_bus_init(void) {
