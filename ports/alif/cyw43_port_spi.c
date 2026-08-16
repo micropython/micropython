@@ -36,7 +36,7 @@
 // CYW43 is connected to SPI3.
 #define HW_SPI_UNIT (3)
 #define HW_SPI ((SPI_Type *)SPI3_BASE)
-#define SPI_BAUDRATE (16000000)
+#define SPI_BAUDRATE (32000000)
 #define SPI_RX_FIFO_SIZE (16)
 
 // WL_IRQ is on P9_6.
@@ -80,6 +80,10 @@ static void spi_bus_init(void) {
     // Starts out clock_polarity=1, clock_phase=0.
     spi_mode_master(HW_SPI);
     spi_set_bus_speed(HW_SPI, SPI_BAUDRATE, GetSystemAHBClock());
+    // Above 16MHz the MISO round-trip (chip output delay plus trace) exceeds
+    // the default sample point; delay RX sampling to compensate.  Without
+    // this the chip's firmware download fails at 24MHz and above.
+    spi_set_rx_sample_delay(HW_SPI, 2);
     spi_set_mode(HW_SPI, SPI_MODE_2);
     spi_set_protocol(HW_SPI, SPI_PROTO_SPI);
     spi_set_dfs(HW_SPI, 8);
