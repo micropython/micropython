@@ -28,6 +28,7 @@
 
 // The board-level config will be included here, so it can set some CYW43 values.
 #include "extmod/mpbthci.h"
+#include "gpio.h"
 #include "extmod/cyw43_config_common.h"
 
 #ifndef static_assert
@@ -79,8 +80,23 @@ static inline void cyw43_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uin
     }
 }
 static inline void cyw43_hal_pin_config_irq_falling(mp_hal_pin_obj_t pin, bool enable) {
-    mp_hal_pin_config_irq_falling(pin, enable);
+    // Only used for WL_IRQ.  Configure it LEVEL-low sensitive rather than
+    // falling-edge: the chip holds the line low while it has pending frames,
+    // so an edge trigger loses wakeups under sustained receive (see the
+    // handler comment in cyw43_port_spi.c).
+    if (enable) {
+        gpio_interrupt_set_level_trigger(pin->gpio, pin->pin);
+        gpio_interrupt_set_polarity_low(pin->gpio, pin->pin);
+        gpio_enable_interrupt(pin->gpio, pin->pin);
+        gpio_unmask_interrupt(pin->gpio, pin->pin);
+    } else {
+        gpio_mask_interrupt(pin->gpio, pin->pin);
+        gpio_disable_interrupt(pin->gpio, pin->pin);
+    }
 }
+
+extern void cyw43_post_poll_hook(void);
+#define CYW43_POST_POLL_HOOK cyw43_post_poll_hook();
 
 #define cyw43_bluetooth_controller_init mp_bluetooth_hci_controller_init
 #define cyw43_bluetooth_controller_deinit mp_bluetooth_hci_controller_deinit
