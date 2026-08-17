@@ -411,6 +411,7 @@ static void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
 
 static int commmon_gap_event_cb(struct ble_gap_event *event, void *arg) {
     struct ble_gap_conn_desc desc;
+    uint8_t addr[6] = {0};
 
     switch (event->type) {
         #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
@@ -426,6 +427,17 @@ static int commmon_gap_event_cb(struct ble_gap_event *event, void *arg) {
             if (ble_gap_conn_find(event->conn_update.conn_handle, &desc) == 0) {
                 mp_bluetooth_gap_on_connection_update(event->conn_update.conn_handle, desc.conn_itvl, desc.conn_latency, desc.supervision_timeout, event->conn_update.status == 0 ? 0 : 1);
             }
+            return 0;
+        }
+
+        case BLE_GAP_EVENT_IDENTITY_RESOLVED: {
+            DEBUG_printf("commmon_gap_event_cb: identity resolved\n");
+            #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+            if (ble_gap_conn_find(event->identity_resolved.conn_handle, &desc) == 0) {
+                reverse_addr_byte_order(addr, desc.peer_id_addr.val);
+                mp_bluetooth_gap_on_identity_resolved(event->identity_resolved.conn_handle, desc.peer_id_addr.type, addr);
+            }
+            #endif
             return 0;
         }
 
@@ -535,11 +547,6 @@ static int commmon_gap_event_cb(struct ble_gap_event *event, void *arg) {
                 #ifdef BLE_GAP_EVENT_MTU
                 case BLE_GAP_EVENT_MTU:
                     DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_MTU\n");
-                    break;
-                #endif
-                #ifdef BLE_GAP_EVENT_IDENTITY_RESOLVED
-                case BLE_GAP_EVENT_IDENTITY_RESOLVED:
-                    DEBUG_printf("commmon_gap_event_cb: unhandled type BLE_GAP_EVENT_IDENTITY_RESOLVED\n");
                     break;
                 #endif
                 #ifdef BLE_GAP_EVENT_REPEAT_PAIRING
