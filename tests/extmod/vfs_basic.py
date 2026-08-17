@@ -45,7 +45,7 @@ class Filesystem:
 
     def stat(self, path):
         print(self.id, "stat", repr(path))
-        return (self.id,)
+        return (self.id, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     def statvfs(self, path):
         print(self.id, "statvfs", repr(path))
@@ -64,7 +64,7 @@ for path in os.listdir("/"):
     vfs.umount("/" + path)
 
 # stat root dir
-print(os.stat("/"))
+print(tuple(os.stat("/")))
 
 # statvfs root dir; verify that f_namemax has a sensible size
 print(os.statvfs("/")[9] >= 32)
@@ -131,7 +131,7 @@ os.mkdir("test_dir")
 os.remove("test_file")
 os.rename("test_file", "test_file2")
 os.rmdir("test_dir")
-print(os.stat("test_file"))
+print(tuple(os.stat("test_file")))
 print(os.statvfs("/test_mnt"))
 open("test_file")
 open("test_file", "wb")
@@ -148,7 +148,7 @@ except OSError:
 
 # root dir
 vfs.mount(Filesystem(3), "/")
-print(os.stat("/"))
+print(tuple(os.stat("/")))
 print(os.statvfs("/"))
 print(os.listdir())
 open("test")

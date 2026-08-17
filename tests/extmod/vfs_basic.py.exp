@@ -40,7 +40,7 @@ OSError
 1 rename 'test_file' 'test_file2'
 1 rmdir 'test_dir'
 1 stat 'test_file'
-(1,)
+(1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 1 statvfs '/'
 (1,)
 1 open test_file r
