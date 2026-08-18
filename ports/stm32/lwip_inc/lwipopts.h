@@ -15,7 +15,11 @@
 #define MEM_SIZE                        (64 * 1024)
 #define PBUF_POOL_SIZE                  (32)
 #define TCP_MSS                         (1460)
-#define TCP_WND                         (16 * TCP_MSS)
+// The receive window is sized for WiFi round-trip times: 16*MSS caps TCP
+// receive at window/RTT (~31Mbit/s at the ~6ms RTT of a CYW43439 link),
+// measurably below what the link carries.  32*MSS is covered by the
+// existing PBUF_POOL with no additional static cost.
+#define TCP_WND                         (32 * TCP_MSS)
 #define TCP_SND_BUF                     (16 * TCP_MSS)
 #define MEMP_NUM_TCP_SEG                (64)
 #endif
