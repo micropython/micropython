@@ -57,6 +57,8 @@ Functions
     Configure whether non-RTC GPIO pin configuration is retained during
     deep-sleep mode for held pads. *enable* should be a boolean value.
 
+    .. note:: This is only available on ESP32, ESP32-C2, ESP32-C3, ESP32-S2, and ESP32-S3.
+
 .. function:: raw_temperature()
 
     Read the raw value of the internal temperature sensor, returning an integer.
