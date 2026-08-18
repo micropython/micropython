@@ -5,6 +5,7 @@
 
 pin_loopback_pins = [("D0", "D1")]
 pwm_loopback_pins = [("D0", "D1")]
+adc_loopback_pins = [("D0", "D1")]
 
 uart_loopback_args = ()
 uart_loopback_kwargs = {"tx": "D1", "rx": "D0"}
