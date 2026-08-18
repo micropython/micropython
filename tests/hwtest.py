@@ -41,6 +41,7 @@ class Target:
         self.has_wlan = None
         self.has_wlan_connected = False
         self.has_ble = None
+        self.has_espnow = False
 
     def info(self):
         features = ""
@@ -69,6 +70,7 @@ class Target:
         self.has_unittest = try_import(t, "unittest")
         self.has_wlan = try_import(t, "network") and t.eval("hasattr(network, 'WLAN')")
         self.has_ble = try_import(t, "bluetooth") and t.eval("hasattr(bluetooth, 'BLE')")
+        self.has_espnow = try_import(t, "espnow")
         t.close()
 
     def setup_wlan(self):
@@ -76,7 +78,11 @@ class Target:
         t.enter_raw_repl()
         rtc_set(self, t)
         if self.has_filesystem:
-            for file in glob.glob("net_inet/*.der") + glob.glob("multi_net/*.der"):
+            for file in (
+                glob.glob("net_inet/*.der")
+                + glob.glob("net_inet/*.pem")
+                + glob.glob("multi_net/*.der")
+            ):
                 put_file(t, *file.rsplit("/", 1))
         self.has_wlan_connected = wlan_connect(self, t)
         t.close()
@@ -312,6 +318,7 @@ def main():
     select_native = "n" in selected_tests
     select_wlan = "w" in selected_tests
     select_ble = "b" in selected_tests
+    select_espnow = True
 
     print("Selected tests:", ", ".join(TEST_CODE_NAME[t] for t in selected_tests))
 
@@ -350,6 +357,7 @@ def main():
     tests_multi_bluetooth = sorted(
         file for file in glob.iglob("multi_bluetooth/*.py") if "/stress_" not in file
     )
+    tests_multi_espnow = sorted(file for file in glob.iglob("multi_espnow/*.py"))
     tests_multi_net_no_tls = sorted(
         file
         for file in tests_multi_net
@@ -449,6 +457,11 @@ def main():
         if select_ble and targets_ble:
             print("=" * 64)
             run_multitests_on_two_targets(targets_ble, tests_multi_bluetooth)
+
+        targets_espnow = [t for t in targets if t.has_espnow]
+        if select_espnow and targets_espnow:
+            print("=" * 64)
+            run_multitests_on_two_targets(targets_espnow, tests_multi_espnow)
 
     except KeyboardInterrupt:
         print("INTERRUPT")
