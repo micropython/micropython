@@ -74,7 +74,7 @@ class TestBase:
         inv_value = 1 - value
         self.p1.init(Pin.IN)
         for _ in range(4):
-            self.p0.init(Pin.OUT, value=inv_value)
+            self.p0.init(Pin.OUT, None, value=inv_value)
             self.assertEqual(self.p1(), inv_value)
             self.p0.init(Pin.IN, pull)
             self.assertEqual(self.p1(), value)
@@ -85,7 +85,29 @@ class TestBase:
     def test_pull_down(self):
         self._test_pull(Pin.PULL_DOWN, 0)
 
-    def test_open_drain(self):
+    def test_open_drain_out(self):
+        self.p0.init(Pin.OPEN_DRAIN, Pin.PULL_UP)
+        self.p1.init(Pin.IN, Pin.PULL_UP)
+        for _ in range(4):
+            self.p0(1)
+            self.assertEqual(self.p0(), 1)
+            self.assertEqual(self.p1(), 1)
+            self.p0(0)
+            self.assertEqual(self.p0(), 0)
+            self.assertEqual(self.p1(), 0)
+
+    def test_open_drain_in(self):
+        self.p0.init(Pin.OUT, None)
+        self.p1.init(Pin.OPEN_DRAIN, Pin.PULL_UP)
+        for _ in range(4):
+            self.p0(1)
+            self.assertEqual(self.p0(), 1)
+            self.assertEqual(self.p1(), 1)
+            self.p0(0)
+            self.assertEqual(self.p0(), 0)
+            self.assertEqual(self.p1(), 0)
+
+    def test_open_drain_pair(self):
         self.p0.init(Pin.OPEN_DRAIN, Pin.PULL_UP)
         self.p1.init(Pin.OPEN_DRAIN, Pin.PULL_UP)
         for _ in range(4):
