@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Arduino SA
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,47 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_QEMU_ETH_H
+#define MICROPY_INCLUDED_QEMU_ETH_H
 
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "shared/runtime/softtimer.h"
+enum {
+    ETH_PHY_LAN9118 = 0,
+};
 
-#if MICROPY_PY_LWIP
+typedef struct _eth_t eth_t;
+extern eth_t eth_instance;
 
-#include "lwip/timeouts.h"
+int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type);
+void eth_poll();
+void eth_set_trace(eth_t *self, uint32_t value);
+struct netif *eth_netif(eth_t *self);
+int eth_link_status(eth_t *self);
+bool eth_is_enabled(eth_t *self);
+int eth_start(eth_t *self);
+int eth_stop(eth_t *self);
+void eth_low_power_mode(eth_t *self, bool enable);
 
-static mp_sched_node_t network_poll_node;
-static soft_timer_entry_t network_timer;
-
-u32_t sys_now(void) {
-    return mp_hal_ticks_ms();
-}
-
-static void network_poll(mp_sched_node_t *node) {
-    // Run the lwIP internal updates
-    sys_check_timeouts();
-
-    #if MICROPY_PY_NETWORK_ESP_HOSTED
-    extern int esp_hosted_wifi_poll(void);
-    // Poll the NIC for incoming data
-    if (esp_hosted_wifi_poll() == -1) {
-        soft_timer_remove(&network_timer);
-    }
-    #endif
-}
-
-void mod_network_poll_events(void) {
-    mp_sched_schedule_node(&network_poll_node, network_poll);
-}
-
-static void network_timer_callback(soft_timer_entry_t *self) {
-    mod_network_poll_events();
-}
-
-void mod_network_lwip_init(void) {
-    // Start poll timer.
-    soft_timer_remove(&network_timer);
-    soft_timer_static_init(&network_timer, SOFT_TIMER_MODE_PERIODIC, 50, network_timer_callback);
-    soft_timer_reinsert(&network_timer, 50);
-}
-#endif // MICROPY_PY_LWIP
+#endif // MICROPY_INCLUDED_QEMU_ETH_H
