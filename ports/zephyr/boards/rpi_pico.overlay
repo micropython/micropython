@@ -29,12 +29,13 @@
 /delete-node/ &code_partition;
 &flash0 {
 	partitions {
-		compatible = "fixed-partitions";
+		ranges;
 		#address-cells = <1>;
 		#size-cells = <1>;
 
 		/* Code slot: 640 KiB - 0x100 placed after second-stage bootloader. */
 		code_partition: partition@100 {
+			compatible = "zephyr,mapped-partition";
 			label = "code-partition";
 			reg = <0x00000100 (DT_SIZE_K(640) - 0x100)>;
 			read-only;
@@ -42,6 +43,7 @@
 
 		/* Storage slot: 1408 KiB placed after code_partition. */
 		storage_partition: partition@a0000 {
+			compatible = "zephyr,mapped-partition";
 			label = "storage";
 			reg = <0x000a0000 DT_SIZE_K(1408)>;
 		};
