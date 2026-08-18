@@ -793,12 +793,13 @@ static mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
     u16_t write_len = MIN(available, len);
 
     // If tcp_write returns ERR_MEM then there's currently not enough memory to
-    // queue the write, so wait and keep trying until it succeeds (with 10s limit).
+    // queue the write, so poll and keep trying until it succeeds (with 10s limit).
     // Note: if the socket is non-blocking then this code will actually block until
     // there's enough memory to do the write, but by this stage we have already
     // committed to being able to write the data.
     err_t err;
-    for (int i = 0; i < 200; ++i) {
+    mp_uint_t write_start = mp_hal_ticks_ms();
+    for (;;) {
         err = tcp_write(socket->pcb.tcp, buf, write_len, TCP_WRITE_FLAG_COPY);
         if (err != ERR_MEM) {
             break;
@@ -807,8 +808,11 @@ static mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         if (err != ERR_OK) {
             break;
         }
+        if (mp_hal_ticks_ms() - write_start > 10000) {
+            break;
+        }
         MICROPY_PY_LWIP_EXIT
-        mp_hal_delay_ms(50);
+        poll_sockets();
         MICROPY_PY_LWIP_REENTER
     }
 
