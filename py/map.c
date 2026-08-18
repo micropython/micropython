@@ -32,6 +32,7 @@
 #include "py/mpconfig.h"
 #include "py/misc.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -134,16 +135,28 @@ static void mp_map_rehash(mp_map_t *map) {
     DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, old_alloc, new_alloc);
     mp_map_elem_t *old_table = map->table;
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
-    // If we reach this point, table resizing succeeded, now we can edit the old map.
-    map->alloc = new_alloc;
-    map->used = 0;
-    map->all_keys_are_qstrs = 1;
-    map->table = new_table;
+
+    // If we reach this point then allocating the new table succeeded, so construct the new map.
+    mp_map_t new_map = {
+        .all_keys_are_qstrs = 1,
+        .is_fixed = 0,
+        .is_ordered = 0,
+        .used = 0,
+        .alloc = new_alloc,
+        .table = new_table,
+    };
     for (size_t i = 0; i < old_alloc; i++) {
         if (old_table[i].key != MP_OBJ_NULL && old_table[i].key != MP_OBJ_SENTINEL) {
-            mp_map_lookup(map, old_table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = old_table[i].value;
+            mp_map_lookup(&new_map, old_table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = old_table[i].value;
         }
     }
+
+    // Swap the old map for the new one.
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    *map = new_map;
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+
+    // Free the old table.
     m_del(mp_map_elem_t, old_table, old_alloc);
 }
 
