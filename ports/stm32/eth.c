@@ -496,7 +496,15 @@ static int eth_mac_init(eth_t *self) {
     #endif
 
     // Burst mode configuration
-    #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6)
+    #if defined(STM32N6)
+    // Also raise the AXI outstanding-request limits from their reset value
+    // of 1 to the maximum of 4: with a single outstanding request the RX
+    // DMA cannot drain the MTL RX FIFO at 1Gbit line rate and it overflows
+    // even with free RX descriptors available.
+    ETH->DMASBMR = (ETH->DMASBMR & ~ETH_DMASBMR_AAL & ~ETH_DMASBMR_FB)
+        | 3 << ETH_DMASBMR_RD_OSR_LMT_Pos
+        | 3 << ETH_DMASBMR_WR_OSR_LMT_Pos;
+    #elif defined(STM32H5) || defined(STM32H7)
     ETH->DMASBMR = ETH->DMASBMR & ~ETH_DMASBMR_AAL & ~ETH_DMASBMR_FB;
     #else
     ETH->DMABMR = 0;
@@ -685,7 +693,8 @@ static int eth_mac_init(eth_t *self) {
     #elif defined(STM32N6)
     ETH->MTL_QUEUE[0].MTLTXQOMR |= ETH_MTLTXQxOMR_FTQ; // flush TX FIFO
     ETH->MTL_QUEUE[1].MTLTXQOMR |= ETH_MTLTXQxOMR_FTQ; // flush TX FIFO
-    ETH->DMA_CH[RX_DMA_CH].DMACRXCR = RX_BUF_SIZE << ETH_DMACxRXCR_RBSZ_Pos;
+    ETH->DMA_CH[RX_DMA_CH].DMACRXCR = 32 << ETH_DMACxRXCR_RXPBL_Pos
+        | RX_BUF_SIZE << ETH_DMACxRXCR_RBSZ_Pos;
     ETH->DMA_CH[RX_DMA_CH].DMACRXCR |= ETH_DMACxRXCR_SR; // start RX
     ETH->DMA_CH[TX_DMA_CH].DMACTXCR = 4 << ETH_DMACxTXCR_TXPBL_Pos;
     ETH->DMA_CH[TX_DMA_CH].DMACTXCR |= ETH_DMACxTXCR_ST; // start TX
@@ -1051,6 +1060,15 @@ static err_t eth_netif_init(struct netif *netif) {
     netif->output = etharp_output;
     netif->mtu = 1500;
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
+    #if defined(STM32N6)
+    // Outgoing checksums are inserted by hardware, and incoming IPv4/UDP/TCP
+    // checksums are verified by hardware too (MACCR.IPC is set and the MTL
+    // drops checksum-errored frames, as FEP is left clear), so lwip only
+    // needs to verify ICMP checksums in software.
+    NETIF_SET_CHECKSUM_CTRL(netif,
+        NETIF_CHECKSUM_CHECK_ICMP
+        | NETIF_CHECKSUM_CHECK_ICMP6);
+    #else
     // Checksums only need to be checked on incoming frames, not computed on outgoing frames
     NETIF_SET_CHECKSUM_CTRL(netif,
         NETIF_CHECKSUM_CHECK_IP
@@ -1058,6 +1076,7 @@ static err_t eth_netif_init(struct netif *netif) {
         | NETIF_CHECKSUM_CHECK_TCP
         | NETIF_CHECKSUM_CHECK_ICMP
         | NETIF_CHECKSUM_CHECK_ICMP6);
+    #endif
     return ERR_OK;
 }
 
