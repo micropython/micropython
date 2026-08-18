@@ -81,6 +81,7 @@
 #define MICROPY_PY_FSTRINGS         (1)
 #define MICROPY_PY_TSTRINGS         (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
+#define MICROPY_PY_BUILTINS_CLASS_ANNOTATIONS (1)
 
 // Fall back to setjmp() implementation for discovery of GC pointers in registers
 // if running on intel-based macOS, or on architectures for which there is no
