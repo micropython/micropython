@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 MASSDRIVER EI (massdriver.space)
+ * Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -17,6 +17,12 @@
 			lookahead-size=<32>;
 			block-cycles=<4>;
 		};
+	};
+
+	heap_psram {
+		compatible = "micropython,heap";
+		size = <DT_SIZE_M(4)>;
+		memory-region = <&psram>;
 	};
 };
 
