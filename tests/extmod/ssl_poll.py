@@ -69,6 +69,7 @@ class _Pipe(io.IOBase):
 
         self.write_buffers = []
         self.last_poll_arg = None
+        self.close_call_count = 0
 
     def readinto(self, buf):
         if self.block_reads or len(self._other.write_buffers) == 0:
@@ -103,6 +104,7 @@ class _Pipe(io.IOBase):
             return ret
 
         elif request == _MP_STREAM_CLOSE:
+            self.close_call_count += 1
             return 0
 
         raise NotImplementedError()
@@ -126,9 +128,9 @@ def assert_poll(s, i, arg, expected_arg, expected_ret):
 def assert_raises(cb, *args, **kwargs):
     try:
         cb(*args, **kwargs)
-        raise AssertionError("should have raised")
-    except Exception as exc:
-        pass
+    except Exception:
+        return
+    raise AssertionError("should have raised")
 
 
 client_io, server_io = _Pipe.new_pair()
@@ -194,6 +196,11 @@ client_sock.close()
 assert_poll(
     client_sock, client_io, _MP_STREAM_POLL_RD, None, _MP_STREAM_POLL_NVAL
 )  # Did not go to the socket
+assert client_io.close_call_count == 1
+
+# Closing the TLS socket again does not close the transport twice.
+client_sock.close()
+assert client_io.close_call_count == 1
 
 
 # Errors propagates to poll:
@@ -208,3 +215,8 @@ assert_raises(client_sock.read, 128)
 assert_poll(
     client_sock, client_io, _MP_STREAM_POLL_RD, None, _MP_STREAM_POLL_NVAL
 )  # Did not go to the socket
+assert client_io.close_call_count == 1
+
+# Closing after a fatal handshake error does not close the transport twice.
+client_sock.close()
+assert client_io.close_call_count == 1
