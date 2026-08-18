@@ -6,6 +6,8 @@
 #
 # requires: target-wiring
 
+import sys
+
 try:
     from machine import PWM
 except ImportError:
@@ -28,11 +30,16 @@ def _test_freq(self, freq):
     self.assertEqual(self.pwm.duty_u16(), 0)
 
     # Test maximum ns.
-    self.pwm.duty_ns(1_000_000_000 // freq)
+    max_ns = 1_000_000_000 // freq
+    self.pwm.duty_ns(max_ns)
     self.assertEqual(self.pwm.duty_u16(), 65535)
 
     # Test over maximum ns.
-    self.pwm.duty_ns(1_000_000_000 // freq + 100)
+    max_ns_delta = 100
+    if sys.platform == "mimxrt":
+        # mimxrt checks for out-of-bounds, so use a smaller value
+        max_ns_delta = 10
+    self.pwm.duty_ns(max_ns + max_ns_delta)
     self.assertEqual(self.pwm.duty_u16(), 65535)
 
     # Test various values.
@@ -49,6 +56,9 @@ def _test_freq(self, freq):
         self.pwm.duty_ns(duty_ns)
         er = self.pwm.duty_u16() - duty_u16
         self.assertLessEqual(er, 1)
+
+    # Set duty back to 0 using duty_u16 so freq can be freely changed.
+    self.pwm.duty_u16(0)
 
 
 # Given a set of pins, this test class will test multiple frequencies and duty cycles.
