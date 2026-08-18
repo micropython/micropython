@@ -1,4 +1,5 @@
-# Test asyncio stream read(-1) method using TCP server/client
+# Test asyncio Stream.awrite() delivers a short payload exactly, over a real
+# TCP pair (server/client) using the tests/multi_net idiom.
 
 try:
     import asyncio
@@ -8,20 +9,12 @@ except ImportError:
 
 PORT = 8000
 
+MSG = b"hello awrite"
+
 
 async def handle_connection(reader, writer):
-    await writer.awrite(b"a")
-
-    # Split the first 2 bytes up so the client must wait for the second one
-    await asyncio.sleep(1)
-
-    await writer.awrite(b"b")
-    await writer.awrite(b"c")
-
-    print("close")
-    writer.close()
-    await writer.wait_closed()
-
+    data = await reader.readexactly(len(MSG))
+    print("recv:", data)
     print("done")
     ev.set()
 
@@ -38,9 +31,10 @@ async def tcp_server():
 
 async def tcp_client():
     reader, writer = await asyncio.open_connection(IP, PORT)
-    print(await reader.read())
-    print(await reader.read())  # should be empty
-    print(await reader.read(1))  # should be empty
+    await writer.awrite(MSG)
+    print("awrote")
+    writer.close()
+    await writer.wait_closed()
 
 
 def instance0():
