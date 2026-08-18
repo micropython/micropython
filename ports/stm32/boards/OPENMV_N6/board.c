@@ -28,9 +28,10 @@
 #include "boardctrl.h"
 #include "xspi.h"
 
-// Values for OTP fuses for VDDIO2/3, to select low voltage mode (<2.5V).
+// Values for OTP fuses for VDDIO2/3/4, to select low voltage mode (<2.5V).
 // See RM0486, Section 5, Table 18.
 #define BSEC_HW_CONFIG_ID       (124U)
+#define BSEC_HWS_HSLV_VDDIO4    (1U << 14)
 #define BSEC_HWS_HSLV_VDDIO3    (1U << 15)
 #define BSEC_HWS_HSLV_VDDIO2    (1U << 16)
 
@@ -48,7 +49,7 @@ void mboot_board_early_init(void) {
     // Program high speed IO optimization fuses if they aren't already set.
     uint32_t fuse;
     BSEC_HandleTypeDef hbsec = { .Instance = BSEC };
-    const uint32_t mask = BSEC_HWS_HSLV_VDDIO2 | BSEC_HWS_HSLV_VDDIO3;
+    const uint32_t mask = BSEC_HWS_HSLV_VDDIO2 | BSEC_HWS_HSLV_VDDIO3 | BSEC_HWS_HSLV_VDDIO4;
     if (HAL_BSEC_OTP_Read(&hbsec, BSEC_HW_CONFIG_ID, &fuse) != HAL_OK) {
         fuse = 0;
     } else if ((fuse & mask) != mask) {
