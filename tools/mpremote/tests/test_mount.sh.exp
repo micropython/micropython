@@ -1,17 +1,17 @@
 -----
+Local directory ${TMP} is mounted at /remote
 x
 y
-Local directory ${TMP} is mounted at /remote
 -----
 Local directory ${TMP} is mounted at /remote
 hello world
 -----
+Local directory ${TMP} is mounted at /remote
 ['hello world\n']
-Local directory ${TMP} is mounted at /remote
 -----
+Local directory ${TMP} is mounted at /remote
 100
-Local directory ${TMP} is mounted at /remote
 -----
+Local directory ${TMP} is mounted at /remote
 4
 [25185, 25699]
-Local directory ${TMP} is mounted at /remote

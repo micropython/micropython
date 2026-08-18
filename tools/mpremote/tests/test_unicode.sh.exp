@@ -17,10 +17,10 @@ sha256sum :unicode_content.txt
 8f22a7c6092948ff41897b28dca429cd6a3de87a5bd6e113d24adf91f3cbeeac
 8f22a7c6092948ff41897b28dca429cd6a3de87a5bd6e113d24adf91f3cbeeac  -
 -----
+Local directory ${TMP} is mounted at /remote
 🔢 Data
 🔢 Data
 
-Local directory ${TMP} is mounted at /remote
 -----
 a=b
 -----
