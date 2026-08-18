@@ -104,3 +104,6 @@
 [submodule "lib/psoc-edge/async-transfer"]
 	path = lib/psoc-edge/async-transfer
 	url = https://github.com/Infineon/async-transfer.git
+[submodule "lib/wiznet6k"]
+	path = lib/wiznet6k
+	url = https://github.com/Wiznet/ioLibrary_Driver

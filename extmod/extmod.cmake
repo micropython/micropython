@@ -55,6 +55,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/network_ppp_lwip.c
     ${MICROPY_EXTMOD_DIR}/network_usbd_ncm.c
     ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
+    ${MICROPY_EXTMOD_DIR}/network_wiznet6k.c
     ${MICROPY_EXTMOD_DIR}/os_dupterm.c
     ${MICROPY_EXTMOD_DIR}/vfs.c
     ${MICROPY_EXTMOD_DIR}/vfs_blockdev.c
