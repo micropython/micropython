@@ -123,7 +123,11 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     if (usbd) {
         result = usbd_get_buffer_in_cb(usbd->desc_cfg, MP_BUFFER_READ);
     }
-    return result ? result : &mp_usbd_builtin_desc_cfg;
+    #if CFG_TUD_CDC
+    return result ? result : mp_usbd_default_desc_cfg;
+    #else
+    return result ? result : mp_usbd_builtin_desc_cfg;
+    #endif
 }
 
 #if (CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED)
@@ -274,10 +278,15 @@ static uint16_t runtime_dev_open(uint8_t rhport, tusb_desc_interface_t const *it
         return 0;
     }
 
-    // If TinyUSB built-in drivers are enabled, don't claim any interface in the built-in range
+    // If TinyUSB built-in drivers are enabled, don't claim any interface in the built-in range.
+    // When a flag-mask custom config is active, use its actual interface count rather than the
+    // compiled maximum, so runtime drivers can use interfaces above the custom config's range.
     #if USBD_ITF_BUILTIN_MAX > 0
-    if (mp_usb_device_builtin_enabled(usbd) && itf_desc->bInterfaceNumber < USBD_ITF_BUILTIN_MAX) {
-        return 0;
+    {
+        uint8_t itf_limit = usbd->builtin_itf_max ? usbd->builtin_itf_max : USBD_ITF_BUILTIN_MAX;
+        if (mp_usb_device_builtin_enabled(usbd) && itf_desc->bInterfaceNumber < itf_limit) {
+            return 0;
+        }
     }
     #endif
 
@@ -425,11 +434,11 @@ void mp_usbd_init(void) {
 
     if (usbd == NULL) {
         // No runtime USB device
-        #if CFG_TUD_CDC || CFG_TUD_MSC
-        // Builtin  drivers are available, so initialise as defaults
+        #if CFG_TUD_CDC
+        // CDC is available, so initialise USB for the serial REPL
         need_usb = true;
         #else
-        // No builtin drivers, nothing to initialise
+        // No CDC, nothing to initialise by default
         need_usb = false;
         #endif
     } else {
