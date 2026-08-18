@@ -104,3 +104,6 @@
 [submodule "lib/psoc-edge/async-transfer"]
 	path = lib/psoc-edge/async-transfer
 	url = https://github.com/Infineon/async-transfer.git
+[submodule "lib/mm-iot-sdk"]
+	path = lib/mm-iot-sdk
+	url = https://github.com/MorseMicro/mm-iot-sdk.git

@@ -43,6 +43,10 @@
 extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #endif
 
+#if MICROPY_PY_NETWORK_HALOW
+extern const struct _mp_obj_type_t mp_network_halow_type;
+#endif
+
 #if MICROPY_PY_NETWORK_WIZNET5K
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #endif
@@ -191,6 +195,10 @@ static const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(CYW43_LINK_FAIL) },
     { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(CYW43_LINK_UP) },
     #endif
+    #endif
+
+    #if MICROPY_PY_NETWORK_HALOW
+    { MP_ROM_QSTR(MP_QSTR_HALOW), MP_ROM_PTR(&mp_network_halow_type) },
     #endif
 
     #if MICROPY_PY_NETWORK_WIZNET5K
