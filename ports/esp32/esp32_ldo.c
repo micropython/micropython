@@ -102,17 +102,6 @@ static mp_obj_t esp32_ldo_release(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(esp32_ldo_release_obj, esp32_ldo_release);
 
-static mp_obj_t esp32_ldo_del(mp_obj_t self_in) {
-    esp32_ldo_obj_t *self = self_in;
-    if (self->ldo_channel_handle != NULL) {
-        esp_ldo_release_channel(self->ldo_channel_handle);
-        self->ldo_channel_handle = NULL;
-    }
-    return mp_const_none;
-}
-
-static MP_DEFINE_CONST_FUN_OBJ_1(esp32_ldo_del_obj, esp32_ldo_del);
-
 static mp_obj_t esp32_ldo_enter(mp_obj_t self_in) {
     return self_in;
 }
@@ -129,7 +118,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_ldo_exit_obj, 4, 4, esp32_ldo_e
 static const mp_rom_map_elem_t esp32_ldo_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_adjust_voltage), MP_ROM_PTR(&esp32_ldo_adjust_voltage_obj)},
     {MP_ROM_QSTR(MP_QSTR_release), MP_ROM_PTR(&esp32_ldo_release_obj)},
-    {MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_ldo_del_obj)},
     {MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&esp32_ldo_enter_obj)},
     {MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&esp32_ldo_exit_obj)},
 };
