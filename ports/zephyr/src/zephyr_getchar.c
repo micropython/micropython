@@ -22,7 +22,6 @@
 
 extern int mp_interrupt_char;
 void mp_sched_keyboard_interrupt(void);
-void mp_hal_signal_event(void);
 
 #define UART_BUFSIZE (512)
 static uint8_t uart_ringbuf[UART_BUFSIZE];
@@ -35,7 +34,6 @@ static int console_irq_input_hook(uint8_t ch) {
         return 1;
     }
     if (ch == mp_interrupt_char) {
-        mp_hal_signal_event();
         mp_sched_keyboard_interrupt();
         return 1;
     } else {
