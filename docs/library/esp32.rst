@@ -639,4 +639,4 @@ For more details see Espressif's `ESP-IDF LDO documentation.
 
 .. method:: LDO.release()
 
-    Release the LDO channel.
+    Release the LDO channel, disabling its voltage output. Create a new LDO object to re-enable the output.

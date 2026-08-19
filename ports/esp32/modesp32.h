@@ -87,6 +87,7 @@ extern const mp_obj_type_t esp32_ldo_type;
 #if MICROPY_PY_ESP32_PCNT
 extern const mp_obj_type_t esp32_pcnt_type;
 
+void esp32_ldo_deinit_all(void);
 void esp32_pcnt_deinit_all(void);
 #endif
 
