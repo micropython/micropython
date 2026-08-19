@@ -89,6 +89,13 @@ Functions
     ``osdebug(0)`` enables all available OS debug log messages (in the
     default build configuration this is ``LOG_INFO``).
 
+    ``osdebug(REPL)`` routes the OS debug log messages to the active REPL
+    stream(s) -- USB CDC, USB-JTAG-Serial, the UART REPL or a
+    ``dupterm``/WebREPL terminal -- instead of the default console. This is
+    useful on boards where the REPL is on native USB while the default console
+    log output goes to a separate UART. ``REPL`` is a constant of the ``esp``
+    module. ``osdebug(REPL, level)`` does the same and sets the log level.
+
     ``osdebug(0, level)`` sets the OS debug log message level to the
      specified value. The log levels are defined as constants:
 
