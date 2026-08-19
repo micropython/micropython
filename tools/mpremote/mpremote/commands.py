@@ -5,6 +5,7 @@ import os
 import sys
 import tempfile
 import zlib
+import time
 
 import serial.tools.list_ports
 
@@ -43,6 +44,8 @@ def do_connect(state, args=None):
                 if p.vid is not None and p.pid is not None:
                     try:
                         state.transport = SerialTransport(p.device, baudrate=115200)
+                        # Store the actual device path for reconnect
+                        state.connect_device = p.device
                         return
                     except TransportError as er:
                         if not er.args[0].startswith("failed to access"):
@@ -51,10 +54,11 @@ def do_connect(state, args=None):
         elif dev.startswith("id:"):
             # Search for a device with the given serial number.
             serial_number = dev[len("id:") :]
-            dev = None
             for p in serial.tools.list_ports.comports():
                 if p.serial_number == serial_number:
                     state.transport = SerialTransport(p.device, baudrate=115200)
+                    # For id: mode, store the original id: string for reconnect
+                    state.connect_device = dev
                     return
             raise TransportError("no device with serial number {}".format(serial_number))
         else:
@@ -62,12 +66,69 @@ def do_connect(state, args=None):
             if dev.startswith("port:"):
                 dev = dev[len("port:") :]
             state.transport = SerialTransport(dev, baudrate=115200)
+            # Store the actual device path for reconnect
+            state.connect_device = dev
             return
     except TransportError as er:
         msg = er.args[0]
         if msg.startswith("failed to access"):
             msg += " (it may be in use by another program)"
         raise CommandError(msg)
+
+
+def do_reconnect(state):
+    """Attempt to reconnect to the same device after disconnect."""
+    if not state.reconnect_enabled or not state.connect_device:
+        return False
+
+    # Show the waiting message with the exact connection identifier used
+    device_name = state.connect_device
+    print(f"Waiting for reconnection on {device_name}...")
+
+    # Add a small initial delay to let the device fully disconnect
+    time.sleep(1)
+
+    while True:
+        try:
+            dev = state.connect_device
+
+            if dev.startswith("id:"):
+                # For id: mode, search for the device by serial number
+                serial_number = dev[len("id:") :]
+                for p in serial.tools.list_ports.comports():
+                    if p.serial_number == serial_number:
+                        try:
+                            state.transport = SerialTransport(p.device, baudrate=115200)
+                            # Restore resume state if it was set
+                            if state.was_resumed:
+                                state._auto_soft_reset = False
+                            # Give the device a moment to stabilize
+                            time.sleep(0.5)
+                            return True
+                        except TransportError:
+                            pass
+            else:
+                # For direct port connections, try the specific port
+                for attempt in range(3):
+                    try:
+                        state.transport = SerialTransport(dev, baudrate=115200)
+                        # Restore resume state if it was set
+                        if state.was_resumed:
+                            state._auto_soft_reset = False
+                        # Give the device a moment to stabilize
+                        time.sleep(0.5)
+                        return True
+                    except TransportError:
+                        if attempt < 2:  # Not the last attempt
+                            time.sleep(0.5)  # Wait a bit before retry
+                        else:
+                            pass  # Last attempt failed, continue to wait
+
+        except Exception:
+            pass
+
+        # Wait before retrying
+        time.sleep(1)
 
 
 def do_disconnect(state, _args=None):
@@ -529,6 +590,12 @@ def do_umount(state, path):
 
 def do_resume(state, _args=None):
     state._auto_soft_reset = False
+    state.was_resumed = True
+
+
+def do_once_cmd(state, _args=None):
+    """Disable automatic reconnection - exit on disconnect."""
+    state.reconnect_enabled = False
 
 
 def do_soft_reset(state, _args=None):
