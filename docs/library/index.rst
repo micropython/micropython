@@ -204,6 +204,18 @@ The following libraries are specific to the Zephyr port.
 
   zephyr.rst
 
+
+Libraries specific to the UEFI port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following library is specific to the UEFI port and exposes the UEFI firmware
+environment (Boot/Runtime Services, protocols, variables, events and graphics).
+
+.. toctree::
+  :maxdepth: 2
+
+  uefi.rst
+
 .. _micropython_lib_extending:
 
 Extending built-in libraries from Python
