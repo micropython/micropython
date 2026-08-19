@@ -188,11 +188,12 @@ static char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 static int do_repl(void) {
+    int ret = 0;
     #if MICROPY_USE_READLINE == 1
 
     // use MicroPython supplied readline-based REPL
 
-    int ret = 0;
+    mp_hal_stdio_mode_raw();
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if ((ret = pyexec_raw_repl()) != 0) {
@@ -204,7 +205,7 @@ static int do_repl(void) {
             }
         }
     }
-    return ret;
+    mp_hal_stdio_mode_orig();
 
     #else
 
@@ -231,14 +232,14 @@ static int do_repl(void) {
             line = line3;
         }
 
-        int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
+        ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
         free(line);
         if (ret & FORCED_EXIT) {
             return ret;
         }
     }
-
     #endif
+    return ret;
 }
 
 static inline int convert_pyexec_result(int ret) {
