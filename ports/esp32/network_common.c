@@ -36,14 +36,22 @@
 #include "py/runtime.h"
 #include "py/parsenum.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "shared/netutils/netutils.h"
 #include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
+
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+#ifndef NO_QSTR
+#include "mdns.h"
+#endif
+#endif
 
 MP_NORETURN void esp_exceptions_helper(esp_err_t e) {
     switch (e) {
@@ -339,3 +347,68 @@ static mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj, 0, 1, esp_phy_mode);
+
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+static bool mdns_initialised = false;
+void esp_mdns_init(bool raise_exceptions) {
+    esp_err_t res;
+    mp_rom_error_text_t msg;
+    if (!mdns_initialised) {
+        res = mdns_init();
+        if (res != ESP_OK) {
+            msg = MP_ERROR_TEXT("Failed to initialize mDNS (%d)");
+            goto fail;
+        }
+        #if MICROPY_HW_ENABLE_MDNS_RESPONDER
+        res = mdns_hostname_set(mod_network_hostname_data);
+        if (res != ESP_OK) {
+            mdns_free();
+            msg = MP_ERROR_TEXT("Failed to set mDNS hostname (%d)");
+            goto fail;
+        }
+        res = mdns_instance_name_set(mod_network_hostname_data);
+        if (res != ESP_OK) {
+            mdns_free();
+            msg = MP_ERROR_TEXT("Failed to set mDNS instance name (%d)");
+            goto fail;
+        }
+        #endif
+        mdns_initialised = true;
+    }
+    return;
+
+fail:
+    if (raise_exceptions) {
+        mp_raise_msg_varg(&mp_type_OSError, msg, res);
+    } else {
+        #if MICROPY_ROM_TEXT_COMPRESSION
+        byte decompressed[MP_MAX_UNCOMPRESSED_TEXT_LEN + 1] = { 0 };
+        if (MP_IS_COMPRESSED_ROM_STRING(msg)) {
+            mp_decompress_rom_string(decompressed, (const mp_rom_error_text_t)msg);
+            msg = (mp_rom_error_text_t)decompressed;
+        }
+        #endif
+        printf((const char *)msg, res);
+        printf("\n");
+    }
+}
+void esp_mdns_deinit() {
+    if (mdns_initialised) {
+        mdns_free();
+        mdns_initialised = false;
+    }
+}
+
+#if MICROPY_HW_ENABLE_MDNS_RESPONDER
+mp_obj_t esp_mdns_service(mp_obj_t service_type, mp_obj_t proto, mp_obj_t port) {
+    esp_mdns_init(true);
+    if (port == mp_const_none) {
+        check_esp_err(mdns_service_remove(mp_obj_str_get_str(service_type), mp_obj_str_get_str(proto)));
+    } else {
+        check_esp_err(mdns_service_add(NULL, mp_obj_str_get_str(service_type), mp_obj_str_get_str(proto), mp_obj_get_int(port), NULL, 0));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_3(esp_mdns_service_obj, esp_mdns_service);
+#endif
+#endif
