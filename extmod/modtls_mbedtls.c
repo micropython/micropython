@@ -54,11 +54,7 @@
 #include "mbedtls/debug.h"
 #include "mbedtls/error.h"
 #include "mbedtls/ssl_ciphersuites.h"
-#if MBEDTLS_VERSION_NUMBER >= 0x03000000
 #include "mbedtls/build_info.h"
-#else
-#include "mbedtls/version.h"
-#endif
 #if MICROPY_PY_SSL_ECDSA_SIGN_ALT
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/asn1.h"
@@ -218,13 +214,7 @@ static inline void store_active_context(mp_obj_ssl_context_t *ssl_context) {
 }
 
 static void ssl_check_async_handshake_failure(mp_obj_ssl_socket_t *sslsock, int *errcode) {
-    if (
-        #if MBEDTLS_VERSION_NUMBER >= 0x03000000
-        (*errcode < 0) && (mbedtls_ssl_is_handshake_over(&sslsock->ssl) == 0) && (*errcode != MBEDTLS_ERR_SSL_CONN_EOF)
-        #else
-        (*errcode < 0) && (*errcode != MBEDTLS_ERR_SSL_CONN_EOF)
-        #endif
-        ) {
+    if ((*errcode < 0) && (mbedtls_ssl_is_handshake_over(&sslsock->ssl) == 0) && (*errcode != MBEDTLS_ERR_SSL_CONN_EOF)) {
         // Asynchronous handshake is done by mbdetls_ssl_read/write.  If the return code is
         // MBEDTLS_ERR_XX (i.e < 0) and the handshake is not done due to a handshake failure,
         // then notify peer with proper error code and raise local error with mbedtls_raise_error.
@@ -483,12 +473,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ci
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
     const unsigned char *key = asn1_get_data(key_obj, &key_len);
-    int ret;
-    #if MBEDTLS_VERSION_NUMBER >= 0x03000000
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
-    #else
-    ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0);
-    #endif
+    int ret = mbedtls_pk_parse_key(&self->pkey, key, key_len, NULL, 0, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     if (ret != 0) {
         mbedtls_raise_error(MBEDTLS_ERR_PK_BAD_INPUT_DATA); // use general error for all key errors
     }
