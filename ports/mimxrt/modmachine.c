@@ -135,6 +135,10 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+
+    // Stop a potentially active alarm.
+    machine_rtc_alarm_off(true);
+
     if (n_args != 0) {
         mp_int_t seconds = mp_obj_get_int(args[0]) / 1000;
         if (seconds > 0) {
@@ -147,11 +151,22 @@ MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args
         }
     }
 
+    // Allow wakeup from deepsleep by a low level at the wakeup pin.
     #if defined(MIMXRT117x_SERIES)
-    machine_pin_config(pin_WAKEUP_DIG, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
-    GPC_CM_EnableIrqWakeup(GPC_CPU_MODE_CTRL_0, GPIO13_Combined_0_31_IRQn, true);
+    // Wakeup by the wakeup pin will not yet be supported. There seems to be
+    // a hardware problem that the wakeup works only once after a power cycle.
+    // The next time the attempt to switch power off is ignored. The code
+    // below sets the proper configuration for the wakeup pin. It is kept here
+    // just in case that a solution is found.
+    // Note that a board's reset button may not work when the power is off.
+    // The board can still be woken by a >1 sec low pulse at the ONOFF pin.
+
+    // Due to a different structure of the SNVS PAD register, specifying
+    // PIN_PULL_DISABLED will actually enable the 100k pull-up.
+    // machine_pin_config(pin_WAKEUP_DIG, PIN_MODE_IT_FALLING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
+    // GPC_CM_EnableIrqWakeup(GPC_CPU_MODE_CTRL_0, GPIO13_Combined_0_31_IRQn, true);
     #elif defined(pin_WAKEUP)
-    machine_pin_config(pin_WAKEUP, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
+    machine_pin_config(pin_WAKEUP, PIN_MODE_IT_RISING, PIN_PULL_UP_100K, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
     GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
     #endif
 
