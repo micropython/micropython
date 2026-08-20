@@ -146,6 +146,12 @@ if(MICROPY_PY_BTREE)
         BERKELEY_DB_CONFIG_FILE="${BERKELEY_DB_CONFIG_FILE}"
     )
 
+    # We need to suppress certain warnings to get berkeley-db to compile cleanly.
+    # Should be kept in sync with extmod.mk.
+    target_compile_options(micropy_extmod_btree PRIVATE
+        -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter -Wno-deprecated-non-prototype -Wno-unknown-warning-option
+    )
+
     # The include directories and compile definitions below are needed to build
     # modbtree.c and should be added to the main MicroPython target.
 
