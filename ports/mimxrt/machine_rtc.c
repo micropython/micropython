@@ -137,7 +137,13 @@ static const mp_irq_methods_t machine_rtc_irq_methods = {
     .info = machine_rtc_irq_info,
 };
 
-void SNVS_HP_WRAPPER_IRQHandler(void) {
+#if defined(MIMXRT117x_SERIES)
+#define RTC_IRQ_HANDLER SNVS_HP_NON_TZ_IRQHandler
+#else
+#define RTC_IRQ_HANDLER SNVS_HP_WRAPPER_IRQHandler
+#endif
+
+void RTC_IRQ_HANDLER(void) {
     if (SNVS->LPSR & SNVS_LPSR_LPTA_MASK) {
         SNVS->LPSR = SNVS_LPSR_LPTA_MASK;
         machine_rtc_irq_obj_t *irq = MP_STATE_PORT(machine_rtc_irq_object);
