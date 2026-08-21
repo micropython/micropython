@@ -7,18 +7,18 @@ workaround: Not required, fixed.
 
 import sys
 
-sys.path.append(sys.path[1] + "/modules")
+sys.path.append(sys.path[1] + "/modules3")
 sys.path.append(sys.path[1] + "/modules2")
 
-# import from the second subpackage first
+# import from the first subpackage first
+import subpkg.baz
 import subpkg.bar
-import subpkg.foo
 
 print("Two modules of a split non-namespace package imported")
 
 import subpkg
 
-assert subpkg.one == 1
-assert not hasattr(subpkg, "two")
+assert subpkg.two == 2
 
-print("The first module's __init__ is used")
+print("__init__ is used from the second module")
+print(subpkg.__path__)
