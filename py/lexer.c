@@ -949,6 +949,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 // - only at statement start (keeps re.match / class case working)
                 // - not when followed by '=' (keeps match = ... / case = ... working)
                 if (kw == MP_TOKEN_KW_MATCH || kw == MP_TOKEN_KW_CASE) {
+                    // Soft-keyword: only at statement start, and not when followed by '='.
                     bool at_stmt_start =
                         prev_tok_kind == MP_TOKEN_NEWLINE
                         || prev_tok_kind == MP_TOKEN_INDENT
@@ -956,11 +957,12 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                         || prev_tok_kind == MP_TOKEN_END
                         || prev_tok_kind == MP_TOKEN_DEL_SEMICOLON
                         || prev_tok_kind == MP_TOKEN_DEL_COLON;
-                    bool followed_by_assign = is_char(lex, '=')
-                        || (is_whitespace(lex) && !is_physical_newline(lex) && is_char_following(lex, '='))
-                        || (is_whitespace(lex) && !is_physical_newline(lex)
-                            && unichar_isspace(lex->chr1) && lex->chr1 != '\n'
-                            && lex->chr2 == '=');
+                    // Allow spaces before '=' (eg "match  = 1"); stop at newline.
+                    unichar c0 = CUR_CHAR(lex);
+                    bool followed_by_assign = c0 == '='
+                        || (unichar_isspace(c0) && c0 != '\n'
+                            && (lex->chr1 == '='
+                                || (unichar_isspace(lex->chr1) && lex->chr1 != '\n' && lex->chr2 == '=')));
                     if (!at_stmt_start || followed_by_assign) {
                         break; // leave as MP_TOKEN_NAME
                     }

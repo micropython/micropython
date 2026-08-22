@@ -1321,16 +1321,12 @@ static void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 #if MICROPY_PY_MATCH
 
-// Temporary id for the match subject (not a valid user identifier).
-static qstr match_subject_qstr(void) {
-    return qstr_from_str(".match");
-}
+enum { MATCH_MAX_CAPS = 16 };
 
-static bool match_closed_is_irrefutable(mp_parse_node_t pn);
 static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse_node_t pn, uint l_fail);
 
 // Collect capture names from a closed pattern into dest[0..*n). Returns false on error.
-static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *dest, size_t *n, size_t max_n) {
+static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *dest, size_t *n) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         return true;
     }
@@ -1341,12 +1337,12 @@ static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *d
         }
         for (size_t i = 0; i < *n; i++) {
             if (dest[i] == q) {
-                compile_syntax_error(comp, pn, MP_ERROR_TEXT("multiple assignments to name in pattern"));
+                compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid syntax"));
                 return false;
             }
         }
-        if (*n >= max_n) {
-            compile_syntax_error(comp, pn, MP_ERROR_TEXT("too many capture names"));
+        if (*n >= MATCH_MAX_CAPS) {
+            compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid syntax"));
             return false;
         }
         dest[(*n)++] = q;
@@ -1364,7 +1360,7 @@ static bool match_collect_captures(compiler_t *comp, mp_parse_node_t pn, qstr *d
         mp_parse_node_t *items;
         size_t n_items = mp_parse_node_extract_list(&pns->nodes[0], PN_match_seq_items, &items);
         for (size_t i = 0; i < n_items; i++) {
-            if (!match_collect_captures(comp, items[i], dest, n, max_n)) {
+            if (!match_collect_captures(comp, items[i], dest, n)) {
                 return false;
             }
         }
@@ -1378,30 +1374,25 @@ static bool match_capture_sets_equal(qstr *a, size_t na, qstr *b, size_t nb) {
         return false;
     }
     for (size_t i = 0; i < na; i++) {
-        bool found = false;
-        for (size_t j = 0; j < nb; j++) {
+        size_t j = 0;
+        for (; j < nb; j++) {
             if (a[i] == b[j]) {
-                found = true;
                 break;
             }
         }
-        if (!found) {
+        if (j == nb) {
             return false;
         }
     }
     return true;
 }
 
-static bool match_closed_is_irrefutable(mp_parse_node_t pn) {
-    // Only bare names / _ are irrefutable in this subset (parser folds or-rules).
-    return MP_PARSE_NODE_IS_ID(pn);
-}
-
 static bool match_or_is_irrefutable(mp_parse_node_t pn) {
+    // Only bare names / _ are irrefutable in this subset (parser folds or-rules).
     mp_parse_node_t *alts;
     size_t n_alts = mp_parse_node_extract_list(&pn, PN_match_or_pattern, &alts);
     for (size_t i = 0; i < n_alts; i++) {
-        if (!match_closed_is_irrefutable(alts[i])) {
+        if (!MP_PARSE_NODE_IS_ID(alts[i])) {
             return false;
         }
     }
@@ -1454,8 +1445,8 @@ static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse
         EMIT_ARG(load_const_small_int, n_items);
         EMIT_ARG(binary_op, MP_BINARY_OP_EQUAL);
         EMIT_ARG(pop_jump_if, false, l_fail);
+        qstr q_elem = qstr_from_str(".match_e");
         for (size_t i = 0; i < n_items; i++) {
-            qstr q_elem = qstr_from_str(".match_e");
             compile_load_id(comp, q_subj);
             EMIT_ARG(load_const_small_int, i);
             EMIT_ARG(subscr, MP_EMIT_SUBSCR_LOAD);
@@ -1472,36 +1463,29 @@ static void compile_match_closed_pattern(compiler_t *comp, qstr q_subj, mp_parse
 static void compile_match_or_pattern(compiler_t *comp, qstr q_subj, mp_parse_node_t pn, uint l_fail) {
     mp_parse_node_t *alts;
     size_t n_alts = mp_parse_node_extract_list(&pn, PN_match_or_pattern, &alts);
-    if (n_alts <= 1) {
-        mp_parse_node_t only = (n_alts == 1) ? alts[0] : pn;
-        // Strict: a single pattern may not bind the same name more than once.
-        enum { MATCH_MAX_CAPS = 16 };
-        qstr caps[MATCH_MAX_CAPS];
-        size_t n = 0;
-        if (!match_collect_captures(comp, only, caps, &n, MATCH_MAX_CAPS)) {
-            return;
-        }
-        compile_match_closed_pattern(comp, q_subj, only, l_fail);
-        return;
-    }
+    mp_parse_node_t first = (n_alts >= 1) ? alts[0] : pn;
 
-    // Strict: all alternatives must bind the same capture set.
-    enum { MATCH_MAX_CAPS = 16 };
+    // Strict: each alternative must bind the same capture set (no duplicates within one).
     qstr caps0[MATCH_MAX_CAPS];
     size_t n0 = 0;
-    if (!match_collect_captures(comp, alts[0], caps0, &n0, MATCH_MAX_CAPS)) {
+    if (!match_collect_captures(comp, first, caps0, &n0)) {
         return;
     }
     for (size_t i = 1; i < n_alts; i++) {
         qstr caps[MATCH_MAX_CAPS];
         size_t n = 0;
-        if (!match_collect_captures(comp, alts[i], caps, &n, MATCH_MAX_CAPS)) {
+        if (!match_collect_captures(comp, alts[i], caps, &n)) {
             return;
         }
         if (!match_capture_sets_equal(caps0, n0, caps, n)) {
-            compile_syntax_error(comp, alts[i], MP_ERROR_TEXT("alternative patterns bind different names"));
+            compile_syntax_error(comp, alts[i], MP_ERROR_TEXT("invalid syntax"));
             return;
         }
+    }
+
+    if (n_alts <= 1) {
+        compile_match_closed_pattern(comp, q_subj, first, l_fail);
+        return;
     }
 
     uint l_matched = comp_next_label(comp);
@@ -1517,7 +1501,8 @@ static void compile_match_or_pattern(compiler_t *comp, qstr q_subj, mp_parse_nod
 }
 
 static void compile_match_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    qstr q_subj = match_subject_qstr();
+    // Temporary id for the match subject (not a valid user identifier).
+    qstr q_subj = qstr_from_str(".match");
     compile_node(comp, pns->nodes[0]);
     compile_store_id(comp, q_subj);
 
@@ -1529,9 +1514,8 @@ static void compile_match_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(cases[i], PN_match_case_block));
         mp_parse_node_struct_t *pns_case = (mp_parse_node_struct_t *)cases[i];
 
-        bool irrefutable = match_or_is_irrefutable(pns_case->nodes[0]);
-        if (irrefutable && i + 1 != n_cases) {
-            compile_syntax_error(comp, cases[i], MP_ERROR_TEXT("irrefutable pattern is not last"));
+        if (match_or_is_irrefutable(pns_case->nodes[0]) && i + 1 != n_cases) {
+            compile_syntax_error(comp, cases[i], MP_ERROR_TEXT("invalid syntax"));
             return;
         }
 
