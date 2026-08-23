@@ -39,6 +39,10 @@
 #error "GPIO dynamic pin allocation needs threading to work"
 #endif
 
+#if MICROPY_PY_GPIO_API_VERSION < 1 && MICROPY_PY_GPIO_API_VERSION > 2
+#error "Unsupported GPIO API version"
+#endif
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -74,6 +78,103 @@
 #define DEBUG_printf DEBUG_printf
 #else
 #define DEBUG_printf(...) (void)0
+#endif
+
+// v1/v2 compatibility definitions
+
+#if MICROPY_PY_GPIO_API_VERSION == 1
+typedef struct gpiohandle_config gpio_config_struct_t;
+typedef struct gpiohandle_data gpio_data_struct_t;
+typedef struct gpiohandle_request gpio_request_struct_t;
+typedef struct gpioline_info gpio_line_info_t;
+typedef struct gpioline_info_changed gpio_irq_event_t;
+#define GPIO_REQ_INPUT GPIO_HANDLE_REQUEST_INPUT
+#define GPIO_REQ_OUTPUT GPIO_HANDLE_REQUEST_INPUT
+#define GPIO_REQ_OPEN_DRAIN GPIO_HANDLE_REQUEST_OPEN_DRAIN
+#define GPIO_REQ_OPEN_SOURCE GPIO_HANDLE_REQUEST_OPEN_DRAIN
+#define GPIO_REQ_BIAS_DISABLE GPIO_HANDLE_REQUEST_BIAS_DISABLE
+#define GPIO_REQ_BIAS_PULL_UP GPIO_HANDLE_REQUEST_BIAS_PULL_UP
+#define GPIO_REQ_BIAS_PULL_DOWN GPIO_HANDLE_REQUEST_BIAS_PULL_DOWN
+#define GPIO_RES_IS_OUTPUT GPIOLINE_FLAG_IS_OUT
+#if MICROPY_PY_GPIO_IRQ
+#define GPIO_REQ_IRQ_RISING GPIOEVENT_REQUEST_RISING_EDGE
+#define GPIO_REQ_IRQ_FALLING GPIOEVENT_REQUEST_FALLING_EDGE
+#define GPIO_IRQ_GET_TIMESTAMP(event) ((event).timestamp)
+#endif
+#define GPIO_BUSY GPIOLINE_FLAG_KERNEL
+#define IOCTL_GET_LINE GPIO_GET_LINEHANDLE_IOCTL
+#define IOCTL_GET_LINEINFO GPIO_GET_LINEINFO_IOCTL
+#define IOCTL_GET_VALUE GPIOHANDLE_GET_LINE_VALUES_IOCTL
+#define IOCTL_SET_CONFIG GPIOHANDLE_SET_CONFIG_IOCTL
+#define IOCTL_SET_VALUE GPIOHANDLE_SET_LINE_VALUES_IOCTL
+#define GPIO_INIT_GET_VALUE(data) \
+    do { \
+        memset(&(data), 0x00, sizeof((data))); \
+    } while (0)
+#define GPIO_GET_VALUE(data) (!!(data).values[0])
+#define GPIO_SET_VALUE(data, value) \
+    do { \
+        (data).values[0] = !!(value); \
+    } while (0)
+#define GPIO_INIT_REQUEST(data, config, pin, consumer) \
+    do { \
+        (data).lineoffsets[0] = (pin); \
+        (data).flags = (config).flags; \
+        (data).default_values[0] = (config).default_values[0]; \
+        (data).lines = 1; \
+        strcpy((data).consumer_label, (consumer)); \
+    } while (0)
+#define GPIO_INIT_GET_INFO(data, pin) \
+    do { \
+        (data).line_offset = (pin); \
+    } while (0)
+#else
+typedef struct gpio_v2_line_config gpio_config_struct_t;
+typedef struct gpio_v2_line_values gpio_data_struct_t;
+typedef struct gpio_v2_line_request gpio_request_struct_t;
+typedef struct gpio_v2_line_info gpio_line_info_t;
+typedef struct gpio_v2_line_event gpio_irq_event_t;
+#define GPIO_REQ_INPUT GPIO_V2_LINE_FLAG_INPUT
+#define GPIO_REQ_OUTPUT GPIO_V2_LINE_FLAG_OUTPUT
+#define GPIO_REQ_OPEN_DRAIN GPIO_V2_LINE_FLAG_OPEN_DRAIN
+#define GPIO_REQ_OPEN_SOURCE GPIO_V2_LINE_FLAG_OPEN_SOURCE
+#define GPIO_REQ_BIAS_DISABLE GPIO_V2_LINE_FLAG_BIAS_DISABLED
+#define GPIO_REQ_BIAS_PULL_UP GPIO_V2_LINE_FLAG_BIAS_PULL_UP
+#define GPIO_REQ_BIAS_PULL_DOWN GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN
+#define GPIO_RES_IS_OUTPUT GPIO_V2_LINE_FLAG_OUTPUT
+#if MICROPY_PY_GPIO_IRQ
+#define GPIO_REQ_IRQ_RISING GPIO_V2_LINE_FLAG_EDGE_RISING
+#define GPIO_REQ_IRQ_FALLING GPIO_V2_LINE_FLAG_EDGE_FALLING
+#define GPIO_IRQ_GET_TIMESTAMP(event) ((event).timestamp_ns)
+#endif
+#define GPIO_BUSY GPIO_V2_LINE_FLAG_USED
+#define IOCTL_GET_LINE GPIO_V2_GET_LINE_IOCTL
+#define IOCTL_GET_LINEINFO GPIO_V2_GET_LINEINFO_IOCTL
+#define IOCTL_GET_VALUE GPIO_V2_LINE_GET_VALUES_IOCTL
+#define IOCTL_SET_CONFIG GPIO_V2_LINE_SET_CONFIG_IOCTL
+#define IOCTL_SET_VALUE GPIO_V2_LINE_SET_VALUES_IOCTL
+#define GPIO_INIT_GET_VALUE(data) \
+    do { \
+        memset(&(data), 0x00, sizeof((data))); \
+        (data).mask = (data).bits = 1U; \
+    } while (0)
+#define GPIO_GET_VALUE(data) (!!((data).bits & 1U))
+#define GPIO_SET_VALUE(data, value) \
+    do { \
+        (data).mask = 1U; \
+        (data).bits = !!(value); \
+    } while (0)
+#define GPIO_INIT_REQUEST(data, config, pin, consumer) \
+    do { \
+        (data).offsets[0] = (pin); \
+        (data).config = (config); \
+        (data).num_lines = 1; \
+        strcpy((data).consumer, (consumer)); \
+    } while (0)
+#define GPIO_INIT_GET_INFO(data, pin) \
+    do { \
+        (data).offset = (pin); \
+    } while (0)
 #endif
 
 static const char *GPIO_DEVICES_ROOT = "/sys/bus/gpio/devices/";
@@ -593,10 +694,10 @@ static uint32_t gpio_get_pin_number(mp_obj_t number_in) {
     return number;
 }
 
-static void gpio_fill_line_config_struct(struct gpio_v2_line_config *config, uint32_t pin, mp_obj_t mode, mp_obj_t pull, mp_obj_t value, mp_obj_t clock) {
+static void gpio_fill_line_config_struct(gpio_config_struct_t *config, uint32_t pin, mp_obj_t mode, mp_obj_t pull, mp_obj_t value, mp_obj_t clock) {
     assert(config && "GPIO config structrure must not be NULL");
 
-    memset(config, 0x00, sizeof(struct gpio_v2_line_config));
+    memset(config, 0x00, sizeof(gpio_config_struct_t));
 
     // Checks for mode and pull could be made simpler by just checking whether
     // the value bit is in the combined OR of all valid options, and then use
@@ -604,31 +705,26 @@ static void gpio_fill_line_config_struct(struct gpio_v2_line_config *config, uin
     // why, so we have to do this instead.
 
     if (mode != mp_const_none) {
-        mp_int_t pin_mode = mp_obj_get_int(mode);
-        if ((pin_mode & ~(GPIO_V2_LINE_FLAG_INPUT | GPIO_V2_LINE_FLAG_OUTPUT | GPIO_V2_LINE_FLAG_OPEN_DRAIN | GPIO_V2_LINE_FLAG_OPEN_SOURCE)) != 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid pin mode"));
-        }
-        if ((pin_mode & (GPIO_V2_LINE_FLAG_INPUT | GPIO_V2_LINE_FLAG_OUTPUT)) == (GPIO_V2_LINE_FLAG_INPUT | GPIO_V2_LINE_FLAG_OUTPUT)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid pin mode"));
-        }
-        if ((pin_mode & (GPIO_V2_LINE_FLAG_OPEN_DRAIN | GPIO_V2_LINE_FLAG_OPEN_SOURCE)) == (GPIO_V2_LINE_FLAG_OPEN_DRAIN | GPIO_V2_LINE_FLAG_OPEN_SOURCE)) {
+        mp_int_t pin_mode = mp_obj_get_int(mode) & (GPIO_REQ_INPUT | GPIO_REQ_OUTPUT | GPIO_REQ_OPEN_DRAIN | GPIO_REQ_OPEN_SOURCE);
+        if (mp_popcount(pin_mode) != 1) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid pin mode"));
         }
         config->flags |= pin_mode;
     }
 
     if (pull != MP_OBJ_NEW_SMALL_INT(-1)) {
-        MP_STATIC_ASSERT((GPIO_V2_LINE_FLAG_BIAS_DISABLED & (GPIO_V2_LINE_FLAG_BIAS_PULL_UP | GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN)) == 0);
-        mp_int_t pull_mode = mp_obj_get_int(pull);
-        if ((pull_mode & ~(GPIO_V2_LINE_FLAG_BIAS_DISABLED | GPIO_V2_LINE_FLAG_BIAS_PULL_UP | GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN)) != 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid pull mode"));
-        }
+        MP_STATIC_ASSERT((GPIO_REQ_BIAS_DISABLE & (GPIO_REQ_BIAS_PULL_UP | GPIO_REQ_BIAS_PULL_DOWN)) == 0);
+        mp_int_t pull_mode = mp_obj_get_int(pull) & ~(GPIO_REQ_BIAS_DISABLE | GPIO_REQ_BIAS_PULL_UP | GPIO_REQ_BIAS_PULL_DOWN);
         if (mp_popcount(pull_mode) > 1) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid pull mode"));
         }
         config->flags |= pull_mode;
     }
 
+    #if MICROPY_PY_GPIO_API_VERSION == 1
+    config->default_values[0] = mp_obj_is_true(value) ? 1 : 0;
+    (void)clock;
+    #else
     if (value != MP_OBJ_NULL) {
         config->num_attrs = 1;
         config->attrs[0].attr.id = GPIO_V2_LINE_ATTR_ID_OUTPUT_VALUES;
@@ -647,18 +743,17 @@ static void gpio_fill_line_config_struct(struct gpio_v2_line_config *config, uin
         }
         config->flags |= clock_mode;
     }
-    #else
+    #endif
     (void)clock;
     #endif
 }
 
 static int gpio_set_state_inner(int fd, mp_int_t state) {
-    struct gpio_v2_line_values values;
+    gpio_data_struct_t values;
     memset(&values, 0x00, sizeof(values));
-    values.mask = 1U;
-    values.bits = state != 0 ? 1U : 0U;
+    GPIO_SET_VALUE(values, state);
     MP_THREAD_GIL_EXIT();
-    int result = ioctl(fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &values);
+    int result = ioctl(fd, IOCTL_SET_VALUE, &values);
     MP_THREAD_GIL_ENTER();
     return result;
 }
@@ -666,15 +761,13 @@ static int gpio_set_state_inner(int fd, mp_int_t state) {
 static int gpio_get_state_inner(int fd, mp_int_t *state) {
     assert(state && "GPIO state value pointer cannot be NULL");
 
-    struct gpio_v2_line_values values;
-    memset(&values, 0x00, sizeof(values));
-    values.mask = 1U;
-    values.bits = 1U;
+    gpio_data_struct_t values;
+    GPIO_INIT_GET_VALUE(values);
     MP_THREAD_GIL_EXIT();
-    int result = ioctl(fd, GPIO_V2_LINE_GET_VALUES_IOCTL, &values);
+    int result = ioctl(fd, IOCTL_GET_VALUE, &values);
     MP_THREAD_GIL_ENTER();
     if (result >= 0) {
-        *state = (values.bits & 1U) ? 1 : 0;
+        *state = GPIO_GET_VALUE(values);
     }
     return result;
 }
@@ -711,7 +804,7 @@ static mp_obj_t init_helper(uint32_t pin_number, size_t n_args, const mp_obj_t *
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    struct gpio_v2_line_config config;
+    gpio_config_struct_t config;
     gpio_fill_line_config_struct(&config, pin_number, args[ARG_mode].u_obj, args[ARG_pull].u_obj, args[ARG_value].u_obj, args[ARG_clock].u_obj);
 
     mp_obj_t port_path = resolve_gpio_device_name(args[ARG_port].u_obj);
@@ -727,7 +820,7 @@ static mp_obj_t init_helper(uint32_t pin_number, size_t n_args, const mp_obj_t *
         // WARNING: If an IRQ callback was attached before this point, it will
         //          stay bound to the pin instance.
         if (pin->fd >= 0) {
-            gpio_ioctl(pin->fd, GPIO_V2_LINE_SET_CONFIG_IOCTL, &config);
+            gpio_ioctl(pin->fd, IOCTL_SET_CONFIG, &config);
             return existing_pin;
         }
 
@@ -755,14 +848,10 @@ static mp_obj_t init_helper(uint32_t pin_number, size_t n_args, const mp_obj_t *
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin number"));
     }
 
-    struct gpio_v2_line_request request;
+    gpio_request_struct_t request;
     memset(&request, 0x00, sizeof(request));
-    request.offsets[0] = pin_number;
-    request.config = config;
-    request.num_lines = 1;
-    strcpy(request.consumer, consumer);
-
-    gpio_ioctl(port->fd, GPIO_V2_GET_LINE_IOCTL, &request);
+    GPIO_INIT_REQUEST(request, config, pin_number, consumer);
+    gpio_ioctl(port->fd, IOCTL_GET_LINE, &request);
 
     mp_obj_t self_out;
     nlr_buf_t nlr;
@@ -936,26 +1025,26 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     if (n_args > 1 || kw_args->used != 0) {
         mp_uint_t trigger = args[ARG_trigger].u_int;
-        if ((trigger & ~(GPIO_V2_LINE_FLAG_EDGE_RISING | GPIO_V2_LINE_FLAG_EDGE_FALLING)) != 0) {
+        if ((trigger & ~(GPIO_REQ_IRQ_RISING | GPIO_REQ_IRQ_FALLING)) != 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid trigger"));
         }
 
-        struct gpio_v2_line_info line_info;
+        gpio_line_info_t line_info;
         memset(&line_info, 0x00, sizeof(line_info));
-        line_info.offset = self->number;
+        GPIO_INIT_GET_INFO(line_info, self->number);
         gpio_port_t *port = MP_OBJ_TO_PTR(self->port);
         assert(port && "GPIO port has gone away");
-        gpio_ioctl(port->fd, GPIO_V2_GET_LINEINFO_IOCTL, &line_info);
+        gpio_ioctl(port->fd, IOCTL_GET_LINEINFO, &line_info);
 
-        if (line_info.flags & GPIO_V2_LINE_FLAG_OUTPUT) {
+        if (line_info.flags & GPIO_RES_IS_OUTPUT) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid pin mode"));
         }
 
         // Pin.irq(callback) should still use the previous trigger mask.
         if (args[ARG_handler].u_obj == mp_const_none || trigger != 0) {
-            line_info.flags &= ~(GPIO_V2_LINE_FLAG_EDGE_RISING | GPIO_V2_LINE_FLAG_EDGE_FALLING);
+            line_info.flags &= ~(GPIO_REQ_IRQ_RISING | GPIO_REQ_IRQ_FALLING);
         }
-        line_info.flags &= ~GPIO_V2_LINE_FLAG_USED;
+        line_info.flags &= ~GPIO_BUSY;
 
         gpio_epoll_remove_pin(pos_args[0]);
         if (args[ARG_handler].u_obj != mp_const_none) {
@@ -977,11 +1066,11 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         // overhead since events will be processed and then discarded, but
         // again, the operation can be retried.
 
-        struct gpio_v2_line_config line_configuration;
-        memset(&line_configuration, 0x00, sizeof(struct gpio_v2_line_config));
+        gpio_config_struct_t line_configuration;
+        memset(&line_configuration, 0x00, sizeof(line_configuration));
         line_configuration.flags = line_info.flags;
 
-        gpio_ioctl(self->fd, GPIO_V2_LINE_SET_CONFIG_IOCTL, &line_configuration);
+        gpio_ioctl(self->fd, IOCTL_SET_CONFIG, &line_configuration);
     }
 
     return mp_const_none;
@@ -1025,20 +1114,20 @@ static mp_obj_tuple_t *gpio_port_enumerate_lines(mp_obj_t port_name) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_tuple_t *pins = MP_OBJ_TO_PTR(mp_obj_new_tuple((size_t)lines, NULL));
-        struct gpio_v2_line_info line_info;
         // name, consumer, available
         mp_obj_t line_objects[3] = {};
         for (uint32_t index = 0; index < lines; index++) {
+            gpio_line_info_t line_info;
             memset((void *)&line_info, 0x00, sizeof(line_info));
-            line_info.offset = index;
-            gpio_ioctl(fd, GPIO_V2_GET_LINEINFO_IOCTL, &line_info);
+            GPIO_INIT_GET_INFO(line_info, index);
+            gpio_ioctl(fd, IOCTL_GET_LINEINFO, &line_info);
             // If a pin is unnamed or is not yet claimed, then `.name` and
             // `.consumer` will be empty, and there's no real need to create
             // object copies when they can just be a reference to MP_QSTR_
             // instead - that saves some memory.
             line_objects[0] = line_info.name[0] != '\0' ? mp_obj_new_str_from_cstr(line_info.name) : MP_OBJ_NEW_QSTR(MP_QSTR_);
             line_objects[1] = line_info.consumer[0] != '\0' ? mp_obj_new_str_from_cstr(line_info.consumer) : MP_OBJ_NEW_QSTR(MP_QSTR_);
-            line_objects[2] = mp_obj_new_bool((line_info.flags & GPIO_V2_LINE_FLAG_USED) == 0);
+            line_objects[2] = mp_obj_new_bool((line_info.flags & GPIO_BUSY) == 0);
             pins->items[index] = mp_obj_new_tuple(3, (const void *)&line_objects);
         }
         port->items[0] = port_name;
@@ -1141,17 +1230,17 @@ static void *gpio_epoll_thread(void *arg) {
             assert(pin && (pin->callback != MP_OBJ_NULL) && "Event for a tracked pin with no callback");
 
             // Remove the event from from the source file descriptor buffer.
-            int bytes_read = read(pin->fd, &event_payload, sizeof(struct gpio_v2_line_event));
-            if (bytes_read < (ssize_t)sizeof(struct gpio_v2_line_event)) {
+            int bytes_read = read(pin->fd, &event_payload, sizeof(gpio_irq_event_t));
+            if (bytes_read < (ssize_t)sizeof(gpio_irq_event_t)) {
                 // TODO: Report an error condition here!
                 continue;
             }
 
-            if (event_payload.timestamp_ns <= pin->last_timestamp) {
+            if (GPIO_IRQ_GET_TIMESTAMP(event_payload) <= pin->last_timestamp) {
                 // Event lost :(
                 continue;
             }
-            pin->last_timestamp = event_payload.timestamp_ns;
+            pin->last_timestamp = GPIO_IRQ_GET_TIMESTAMP(event_payload);
 
             // TODO: Is this actually correct?  In theory this should work if
             //       all modifications to the pin object involve setting the
@@ -1304,41 +1393,41 @@ void mp_pin_deinit(void) {
 static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
 
-    { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&machine_pin_del_obj)             },
+    { MP_ROM_QSTR(MP_QSTR___del__),     MP_ROM_PTR(&machine_pin_del_obj)       },
 
-    { MP_ROM_QSTR(MP_QSTR_init),        MP_ROM_PTR(&machine_pin_init_obj)            },
+    { MP_ROM_QSTR(MP_QSTR_init),        MP_ROM_PTR(&machine_pin_init_obj)      },
 
-    { MP_ROM_QSTR(MP_QSTR_value),       MP_ROM_PTR(&machine_pin_value_obj)           },
-    { MP_ROM_QSTR(MP_QSTR_off),         MP_ROM_PTR(&machine_pin_off_obj)             },
-    { MP_ROM_QSTR(MP_QSTR_on),          MP_ROM_PTR(&machine_pin_on_obj)              },
-    { MP_ROM_QSTR(MP_QSTR_toggle),      MP_ROM_PTR(&machine_pin_toggle_obj)          },
+    { MP_ROM_QSTR(MP_QSTR_value),       MP_ROM_PTR(&machine_pin_value_obj)     },
+    { MP_ROM_QSTR(MP_QSTR_off),         MP_ROM_PTR(&machine_pin_off_obj)       },
+    { MP_ROM_QSTR(MP_QSTR_on),          MP_ROM_PTR(&machine_pin_on_obj)        },
+    { MP_ROM_QSTR(MP_QSTR_toggle),      MP_ROM_PTR(&machine_pin_toggle_obj)    },
 
     #if MICROPY_PY_GPIO_IRQ
-    { MP_ROM_QSTR(MP_QSTR_irq),         MP_ROM_PTR(&machine_pin_irq_obj)             },
+    { MP_ROM_QSTR(MP_QSTR_irq),         MP_ROM_PTR(&machine_pin_irq_obj)       },
     #endif
 
-    { MP_ROM_QSTR(MP_QSTR_close),       MP_ROM_PTR(&machine_pin_del_obj)             },
-    { MP_ROM_QSTR(MP_QSTR_available),   MP_ROM_PTR(&machine_pin_available_obj)       },
-    { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj)                 },
-    { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&machine_pin_del_obj)             },
+    { MP_ROM_QSTR(MP_QSTR_close),       MP_ROM_PTR(&machine_pin_del_obj)       },
+    { MP_ROM_QSTR(MP_QSTR_available),   MP_ROM_PTR(&machine_pin_available_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj)           },
+    { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&machine_pin_del_obj)       },
 
-    { MP_ROM_QSTR(MP_QSTR_enumerate),   MP_ROM_PTR(&machine_pin_enumerate_obj)       },
+    { MP_ROM_QSTR(MP_QSTR_enumerate),   MP_ROM_PTR(&machine_pin_enumerate_obj) },
 
     // class constants
 
-    { MP_ROM_QSTR(MP_QSTR_IN),          MP_ROM_INT(GPIO_V2_LINE_FLAG_INPUT)          },
-    { MP_ROM_QSTR(MP_QSTR_OUT),         MP_ROM_INT(GPIO_V2_LINE_FLAG_OUTPUT)         },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),  MP_ROM_INT(GPIO_V2_LINE_FLAG_OPEN_DRAIN)     },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_SOURCE), MP_ROM_INT(GPIO_V2_LINE_FLAG_OPEN_SOURCE)    },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP),     MP_ROM_INT(GPIO_V2_LINE_FLAG_BIAS_PULL_UP)   },
-    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),   MP_ROM_INT(GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_NONE),   MP_ROM_INT(GPIO_V2_LINE_FLAG_BIAS_DISABLED)  },
+    { MP_ROM_QSTR(MP_QSTR_IN),          MP_ROM_INT(GPIO_REQ_INPUT)          },
+    { MP_ROM_QSTR(MP_QSTR_OUT),         MP_ROM_INT(GPIO_REQ_OUTPUT)         },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),  MP_ROM_INT(GPIO_REQ_OPEN_DRAIN)     },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_SOURCE), MP_ROM_INT(GPIO_REQ_OPEN_SOURCE)    },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP),     MP_ROM_INT(GPIO_REQ_BIAS_PULL_UP)   },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),   MP_ROM_INT(GPIO_REQ_BIAS_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_NONE),   MP_ROM_INT(GPIO_REQ_BIAS_DISABLE)   },
 
     #if MICROPY_PY_GPIO_IRQ
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),  MP_ROM_INT(GPIO_V2_LINE_FLAG_EDGE_RISING)    },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_V2_LINE_FLAG_EDGE_FALLING)   },
-    #if MICROPY_PY_GPIO_IRQ_TIMESTAMP
-    { MP_ROM_QSTR(MP_QSTR_CLOCK_MONOTONIC), MP_ROM_INT(0)                            },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),  MP_ROM_INT(GPIO_REQ_IRQ_RISING)     },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_REQ_IRQ_FALLING)    },
+    #if MICROPY_PY_GPIO_API_VERSION == 2 && MICROPY_PY_GPIO_IRQ_TIMESTAMP
+    { MP_ROM_QSTR(MP_QSTR_CLOCK_MONOTONIC), MP_ROM_INT(0)                   },
     { MP_ROM_QSTR(MP_QSTR_CLOCK_REALTIME), MP_ROM_INT(GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME) },
     { MP_ROM_QSTR(MP_QSTR_CLOCK_HTE),   MP_ROM_INT(GPIO_V2_LINE_FLAG_EVENT_CLOCK_HTE) },
     #endif

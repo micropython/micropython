@@ -209,6 +209,15 @@ static inline unsigned long mp_random_seed_init(void) {
 #endif
 
 #if MICROPY_PY_GPIO
+
+// Use the GPIO v2 ioctl()s to control GPIO lines.  GPIO v2 is available from
+// kernel 5.10 and onwards; if usage of GPIO v1 ioctl()s is a requirement, then
+// set MICROPY_PY_GPIO_API_VERSION to 1.  Any other values besides 1 and 2 will
+// trigger a compilation error.
+#ifndef MICROPY_PY_GPIO_API_VERSION
+#define MICROPY_PY_GPIO_API_VERSION       (2)
+#endif
+
 // If the GPIO pins are provided by a device that may or may not be always
 // attached to the system (ie. USB GPIO extender, PCI device that can be
 // disabled via `rmmod`, etc.), then enable this at the expense of a larger
@@ -242,7 +251,7 @@ static inline unsigned long mp_random_seed_init(void) {
 // TODO: Make this configurable at runtime instead?
 #define MICROPY_PY_GPIO_IRQ_QUEUE_SIZE    (16)
 
-#if MICROPY_PY_GPIO_IRQ
+#if MICROPY_PY_GPIO_IRQ && MICROPY_PY_GPIO_API_VERSION == 2
 // Depending on the hardware, it may happen that pin events may be delivered in
 // an out-of-order fashion to the polling thread.  In this case, a timestamp is
 // kept on each pin object to keep track of the last event that was successfully
@@ -258,6 +267,8 @@ static inline unsigned long mp_random_seed_init(void) {
 // - `Pin.CLOCK_HTE`       - this sources the timestamp from the GPIO hardware's
 //                           time provider, if one is present.
 #define MICROPY_PY_GPIO_IRQ_TIMESTAMP     (1)
+#else
+#define MICROPY_PY_GPIO_IRQ_TIMESTAMP     (0)
 #endif
 
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW   mp_pin_make_new
