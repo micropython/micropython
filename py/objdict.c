@@ -296,6 +296,12 @@ static mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_out);
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    if (args[0] == MP_OBJ_FROM_PTR(&mp_type_ordereddict)) {
+        self->base.type = &mp_type_ordereddict;
+        self->map.is_ordered = 1;
+    }
+    #endif
     while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     }
