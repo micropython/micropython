@@ -115,7 +115,12 @@ jobs:
     - name: Run gcov coverage analysis
       run: |
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
+        (cd ports/unix && gcov -o build-coverage *.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
+        # The port compiles its own sources by bare filename, so gcov records
+        # them with no path to match against the tree.  Make them relative to
+        # ports/unix like the reports above already are.
+        (cd ports/unix && sed -i '1s|^\(.*Source:\)\([^/]*\)$|\1../../ports/unix/\2|' *.gcov)
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v7
       with:
@@ -154,7 +159,12 @@ jobs:
     - name: Run gcov coverage analysis
       run: |
         (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
+        (cd ports/unix && gcov -o build-coverage *.c || true)
         (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
+        # The port compiles its own sources by bare filename, so gcov records
+        # them with no path to match against the tree.  Make them relative to
+        # ports/unix like the reports above already are.
+        (cd ports/unix && sed -i '1s|^\(.*Source:\)\([^/]*\)$|\1../../ports/unix/\2|' *.gcov)
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v7
       with:
