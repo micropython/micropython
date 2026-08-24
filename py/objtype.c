@@ -443,6 +443,7 @@ static mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 val = MP_OBJ_NEW_SMALL_INT(mp_obj_get_int_truncated(val));
                 break;
             case MP_UNARY_OP_INT_MAYBE:
+            case MP_UNARY_OP_LEN:
                 // Must return int
                 if (!mp_obj_is_int(val)) {
                     mp_raise_TypeError(NULL);
