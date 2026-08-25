@@ -70,6 +70,11 @@ Methods
         * 0 -- visible
         * 1 -- hidden
 
+    On the ESP32 port, ``scan(block=False)`` starts the scan without blocking and
+    returns ``None``; the WLAN object then becomes readable (:func:`select.poll` or
+    ``asyncio``) when results are ready, retrieved by a final ``scan()``.  Other
+    ports do not accept ``block``.  See the :ref:`ESP32 quickref <esp32_network_async>`.
+
 .. method:: WLAN.status([param])
 
     Return the current status of the wireless connection.
