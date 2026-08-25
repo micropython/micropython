@@ -12,11 +12,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-try:
-    import unittest
-except MemoryError:
-    print("SKIP-TOO-LARGE")  # some small boards can't fit unittest in RAM
-    raise SystemExit
+import unittest
 
 # Ports without bigint support don't support typecode 'q'
 try:

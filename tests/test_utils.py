@@ -261,11 +261,20 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
     # If the print does not execute this means that the test did not even start, eg it was
     # too large for the target.
     prepend_start_test = not is_special
+    import_unittest = -1
     if prepend_start_test:
         if script.startswith(b"#"):
             script = b"print('START TEST')" + script
         else:
             script = b"print('START TEST')\n" + script
+
+        import_unittest = script.find(b"\nimport unittest\n")
+        if import_unittest != -1:
+            script = (
+                script[: import_unittest + 16]
+                + b";print('IMPORTED UNITTEST')"
+                + script[import_unittest + 16 :]
+            )
 
     had_crash, script = prepare_script_for_target(args, script, test_file, force_plain=is_special)
 
@@ -315,6 +324,12 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
             data_consumer(e.args[1])
             data_consumer(e.args[2])
             if prepend_start_test and no_output and b"MemoryError" in e.args[2]:
+                output_mupy = b"SKIP-TOO-LARGE\n"
+            elif (
+                import_unittest > 0
+                and b"MemoryError" in e.args[2]
+                and b"IMPORTED UNITTEST" not in output_mupy
+            ):
                 output_mupy = b"SKIP-TOO-LARGE\n"
             else:
                 output_mupy += b"CRASH"
