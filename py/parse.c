@@ -38,6 +38,7 @@
 #include "py/objint.h"
 #include "py/objstr.h"
 #include "py/builtin.h"
+#include "py/objmodule.h"
 
 #if MICROPY_ENABLE_COMPILER
 

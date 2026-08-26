@@ -35,6 +35,10 @@
 #include "py/builtin.h"
 #include "py/stream.h"
 
+#if MICROPY_VFS
+#include "extmod/vfs.h"
+#endif
+
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
@@ -603,6 +607,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_obj_id);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
 #if MICROPY_PY_TSTRINGS
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___template___obj, 1, MP_OBJ_FUN_ARGS_MAX, mp_obj_new_template);
+#endif
+
+#if MICROPY_VFS
+// Adapt the VFS implementation to the generic built-in open() interface.
+mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    return mp_vfs_open(n_args, args, kwargs);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 0, mp_builtin_open);
 #endif
 
 static const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {

@@ -37,12 +37,22 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
+#if MICROPY_VFS
+#include "extmod/vfs.h"
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
+#endif
+
+#if MICROPY_VFS
+mp_import_stat_t mp_import_stat(const char *path) {
+    return mp_vfs_import_stat(path);
+}
 #endif
 
 #if MICROPY_ENABLE_EXTERNAL_IMPORT

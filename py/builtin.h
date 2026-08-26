@@ -34,27 +34,6 @@ typedef enum {
     MP_IMPORT_STAT_FILE,
 } mp_import_stat_t;
 
-#if MICROPY_VFS
-
-// Delegate to the VFS for import stat and builtin open.
-
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-mp_import_stat_t mp_vfs_import_stat(const char *path);
-mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-
-MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_open_obj);
-
-static inline mp_import_stat_t mp_import_stat(const char *path) {
-    return mp_vfs_import_stat(path);
-}
-
-static inline mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_vfs_open(n_args, args, kwargs);
-}
-
-#else
-
 // A port can provide implementations of these functions.
 mp_import_stat_t mp_import_stat(const char *path);
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
@@ -62,13 +41,10 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 // A port can provide this object.
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
-#endif
-
 // A port can provide its own import handler by defining mp_builtin___import__.
 #ifndef mp_builtin___import__
 #define mp_builtin___import__ mp_builtin___import___default
 #endif
-mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args);
 
 mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args);
@@ -130,15 +106,6 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj);
 
 // Modules needed by the runtime.
 extern const mp_obj_dict_t mp_module_builtins_globals;
-extern const mp_obj_module_t mp_module___main__;
-extern const mp_obj_module_t mp_module_builtins;
-extern const mp_obj_module_t mp_module_sys;
-
-// Modules needed by the parser when MICROPY_COMP_MODULE_CONST is enabled.
-extern const mp_obj_module_t mp_module_errno;
-extern const mp_obj_module_t mp_module_uctypes;
-extern const mp_obj_module_t mp_module_machine;
-extern const mp_obj_module_t mp_module_math;
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 
