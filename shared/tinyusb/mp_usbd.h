@@ -64,6 +64,15 @@
 // Initialise TinyUSB device.
 static inline void mp_usbd_init_tud(void) {
     tusb_init();
+    #if TUSB_VERSION_NUMBER < 2100 && MICROPY_HW_USB_CDC
+    // TinyUSB prior to 0.21.0 had TX persistence configurable at runtime.
+    tud_cdc_configure_t cfg = {
+        .rx_persistent = 0,
+        .tx_persistent = 1,
+        .tx_overwritabe_if_not_connected = 1,
+    };
+    tud_cdc_configure(&cfg);
+    #endif
 }
 
 // Run the TinyUSB device task
