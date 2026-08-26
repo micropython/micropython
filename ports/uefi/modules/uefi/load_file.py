@@ -21,6 +21,8 @@ import uctypes
 
 from . import raw
 from . import status
+from . import coerce
+from . import device_path as _dp
 from .device_path import DevicePath
 
 # LINUX_EFI_INITRD_MEDIA_GUID, packed (mixed-endian EFI_GUID) — the vendor-media
@@ -35,13 +37,6 @@ def linux_initrd_path():
     return DevicePath.from_bytes(node + b"\x7f\xff\x04\x00")
 
 
-def _addr_len(data):
-    # Accept a PoolBuffer (the .ptr/.size contract) or any bytes-like buffer.
-    if hasattr(data, "ptr"):
-        return int(data.ptr), int(data.size)
-    return uctypes.addressof(data), len(data)
-
-
 class FileProvider:
     """Presents a byte buffer to the firmware as a loadable file at a device path.
 
@@ -54,16 +49,22 @@ class FileProvider:
 
     def __init__(self, data, device_path, *, load_file2=True):
         self._data = data  # keep the source alive (borrowed by C)
-        addr, size = _addr_len(data)
-        dp = device_path.to_bytes()  # named local: outlive the install call
+        addr, size = coerce.addr_len(data)
+        # A named local: the packed path must outlive the install call, and the
+        # firmware then keeps its own copy.
+        dp = _dp.as_device_path(device_path).to_bytes()
         st, handle, token = raw.load_file_install(
             uctypes.addressof(dp), len(dp), addr, size, bool(load_file2)
         )
         status.check(st)
         self.handle = handle
+        self.ptr = handle  # the .ptr contract: this provider's EFI_HANDLE
         self.size = size
         self.load_file2 = bool(load_file2)
         self._token = token
+
+    def __int__(self):
+        return self.handle or 0
 
     def close(self):
         """Uninstall the protocol and release the handle."""
@@ -71,6 +72,7 @@ class FileProvider:
             status.check(raw.load_file_uninstall(self._token))
             self._token = 0
             self.handle = 0
+            self.ptr = 0
 
     def __enter__(self):
         return self

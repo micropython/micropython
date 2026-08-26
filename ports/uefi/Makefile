@@ -122,6 +122,7 @@ SRC_C = \
 	machine_timer.c \
 	machine_rtc.c \
 	uefi_event_obj.c \
+	uefi_guid_obj.c \
 	moduefi_raw.c \
 	modnetwork.c \
 	modsocket.c \
@@ -159,7 +160,7 @@ endif
 # above and need explicit qstr collection here.
 SRC_QSTR += shared/runtime/pyexec.c shared/readline/readline.c shared/runtime/sys_stdio_mphal.c
 SRC_QSTR += shared/runtime/mpirq.c
-SRC_QSTR += machine_timer.c machine_rtc.c uefi_event_obj.c moduefi_raw.c uefi_vfs.c modnetwork.c modsocket.c
+SRC_QSTR += machine_timer.c machine_rtc.c uefi_event_obj.c uefi_guid_obj.c moduefi_raw.c uefi_vfs.c modnetwork.c modsocket.c
 
 # Double-precision libm (MICROPY_FLOAT_IMPL_DOUBLE): the bundled lib/libm_dbl,
 # software sqrt (we exclude thumb_vfp_sqrt.c, which is ARM-thumb-only).

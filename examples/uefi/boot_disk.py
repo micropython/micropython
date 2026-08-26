@@ -13,7 +13,6 @@
 # ports/uefi/tools/build-test-os.sh (stage them onto the boot volume first).
 
 import os
-import uctypes
 import uefi
 from uefi import load_file
 from uefi.buffer import PoolBuffer, LOADER_DATA
@@ -28,11 +27,13 @@ def read_to_pool(path):
     """Read `path` off the boot volume straight into a pool buffer (no big bytes)."""
     size = os.stat(path)[6]
     buf = PoolBuffer(size, memory_type=LOADER_DATA)
+    # A memoryview over the pool: slicing it aliases the same memory, so readinto
+    # fills the buffer in place with no intermediate copy.
+    mv = memoryview(buf.view)
     got = 0
     with open(path, "rb") as f:
         while got < size:
-            view = uctypes.bytearray_at(buf.ptr + got, min(65536, size - got))
-            n = f.readinto(view)
+            n = f.readinto(mv[got : min(got + 65536, size)])
             if not n:
                 break
             got += n

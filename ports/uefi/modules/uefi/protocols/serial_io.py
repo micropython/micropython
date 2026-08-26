@@ -4,7 +4,7 @@
 # EFI_SERIAL_IO_PROTOCOL — UART access. Current settings live in a SERIAL_IO_MODE
 # struct reached via the `mode` pointer: bio.struct_at("mode", SERIAL_IO_MODE).
 
-from ..protocol import ProtocolDescriptor, Field, Method, U8, U32, U64, VPtr
+from ..protocol import ProtocolDescriptor, Field, Method, Out, U8, U32, U64, VPtr
 from .. import guid
 
 SERIAL_IO_MODE = ProtocolDescriptor(
@@ -31,7 +31,7 @@ SERIAL_IO = ProtocolDescriptor(
             "set_attributes", (U64, U32, U32, U32, U8, U32)
         ),  # baud, fifo, timeout, parity, databits, stopbits
         Method("set_control", (U32,)),
-        Method("get_control", (VPtr,)),
+        Method("get_control", (Out(U32),)),  # -> the control-bit mask
         Method("write", (VPtr, VPtr)),  # (UINTN *BufferSize, void *Buffer)
         Method("read", (VPtr, VPtr)),
         Field("mode", VPtr),

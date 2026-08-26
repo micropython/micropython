@@ -11,6 +11,12 @@
 #     through uefi.raw.call (the EFIAPI trampoline) — the one thing uctypes cannot
 #     do itself.
 #
+# Method arguments are declared by type atom and coerced on the way through, so a
+# pointer slot takes any .ptr-bearing object or byte block, a Guid slot takes any
+# GUID spelling, and a WStr slot takes a str. An argument the method *writes to* is
+# declared Out(type): the stub owns the scratch buffer and returns the decoded
+# value, so out-parameters read as return values (see Out).
+#
 # Pointer/integer arguments only (UEFI methods never take floats/structs by value),
 # matching the trampoline's contract. See README.md.
 
@@ -20,6 +26,7 @@ from . import raw
 from . import status
 from . import handle as _handle
 from . import utf16
+from . import coerce
 from .guid import GUID
 
 _LE = uctypes.LITTLE_ENDIAN
@@ -33,7 +40,7 @@ class _Type:
         self.size = size
         self.align = size
         self.code = code
-        self.kind = kind  # "int" | "ptr" | "wstr" | "str"
+        self.kind = kind  # "int" | "ptr" | "guid" | "wstr" | "str"
 
 
 U8 = _Type(1, uctypes.UINT8, "int")
@@ -52,12 +59,31 @@ VPtr = _Type(8, uctypes.UINT64, "ptr")  # void*
 WStr = _Type(8, uctypes.UINT64, "wstr")  # CHAR16* (UTF-16LE)
 Str = _Type(8, uctypes.UINT64, "str")  # CHAR8*  (UTF-8/ASCII)
 Status = _Type(8, uctypes.UINT64, "int")  # UINTN return, checked by default
+Guid = _Type(8, uctypes.UINT64, "guid")  # EFI_GUID*, coerced from any spelling
 
 
 def Ptr(target=None):
     # Typed pointer. `target` (an optional descriptor) is advisory for now; the
     # field still reads back as a raw address. Kept for descriptor readability.
     return VPtr
+
+
+class Out:
+    """An output argument: the callee writes through the pointer we pass.
+
+    An `Out(U64)` slot is filled by the method, not supplied by the caller: the
+    stub allocates the scratch buffer, passes its address, and returns the value
+    decoded as the declared type. A method with one Out returns that value; with
+    several, a tuple of them. When the method is `check=False` the raw return
+    value comes first, so the status is not lost.
+    """
+
+    def __init__(self, type=VPtr):
+        self.type = type
+        self.size = type.size
+        self.align = type.align
+        self.code = type.code
+        self.kind = "out"
 
 
 # ── Members ──────────────────────────────────────────────────────────────────
@@ -87,6 +113,7 @@ def _build_layout(members):
     # Walk the members in declaration order, accumulating offsets with natural
     # alignment (matching how a C compiler lays out the interface struct). Methods
     # occupy a word-sized function-pointer slot, stored under a "__fn_<name>" key.
+    # (Out() only ever appears in a Method's arg_types, never as a Field.)
     layout = {}
     methods = {}
     off = 0
@@ -115,10 +142,20 @@ def _coerce(t, v, keep):
         p = getattr(v, "ptr", None)
         if p is not None:
             return int(p)
-        if isinstance(v, (bytes, bytearray)):
-            keep.append(v)
-            return uctypes.addressof(v)
-        return int(v)
+        if isinstance(v, int):
+            return v
+        # Any byte block: bytes/bytearray/memoryview, a GUID, a DevicePath, ...
+        # Immutable bytes are copied first — firmware writing through the address
+        # of an interned bytes object would corrupt every other reference to it.
+        buf = coerce.as_writable(v)
+        keep.append(buf)
+        return uctypes.addressof(buf)
+    if kind == "guid":
+        if v is None:
+            return 0
+        g = GUID(v)  # a GUID, 16 bytes, or a string
+        keep.append(g)
+        return uctypes.addressof(g)
     if kind == "wstr":
         if v is None:
             return 0
@@ -134,13 +171,42 @@ def _coerce(t, v, keep):
     return int(v)
 
 
-def _coerce_args(arg_types, args, keep):
-    if len(args) != len(arg_types):
-        raise TypeError("expected %d args, got %d" % (len(arg_types), len(args)))
-    out = []
-    for t, v in zip(arg_types, args):
-        out.append(_coerce(t, v, keep))
-    return out
+def _decode_out(t, buf):
+    # Read an Out slot's scratch buffer back as the declared type.
+    v = int.from_bytes(buf, "little")
+    if t is Bool:
+        return v != 0
+    if t is I8 and v >= 0x80:
+        return v - 0x100
+    if t is I16 and v >= 0x8000:
+        return v - 0x10000
+    if t is I32 and v >= 0x80000000:
+        return v - 0x100000000
+    if t is I64 and v >= 0x8000000000000000:
+        return v - 0x10000000000000000
+    return v
+
+
+def _coerce_args(arg_types, args, keep, outs):
+    # Out slots are not supplied by the caller, so only the in slots are counted.
+    n_in = 0
+    for t in arg_types:
+        if t.kind != "out":
+            n_in += 1
+    if len(args) != n_in:
+        raise TypeError("expected %d args, got %d" % (n_in, len(args)))
+    cargs = []
+    i = 0
+    for t in arg_types:
+        if t.kind == "out":
+            buf = bytearray(t.size)
+            keep.append(buf)
+            outs.append((t.type, buf))
+            cargs.append(uctypes.addressof(buf))
+        else:
+            cargs.append(_coerce(t, args[i], keep))
+            i += 1
+    return cargs
 
 
 # ── Wrapper ──────────────────────────────────────────────────────────────────
@@ -163,14 +229,22 @@ class ProtocolWrapper:
 
             def _call(*args, _fn=fn, _meth=meth, _self_ptr=self_ptr):
                 keep = []
-                cargs = _coerce_args(_meth.arg_types, args, keep)
+                outs = []
+                cargs = _coerce_args(_meth.arg_types, args, keep, outs)
                 if _meth.this:
                     r = raw.call(_fn, _self_ptr, *cargs)
                 else:
                     r = raw.call(_fn, *cargs)
                 if _meth.check:
                     status.check(r)
-                return r
+                if not outs:
+                    return r
+                # Out slots (see Out): the decoded values replace the return, with
+                # the raw return kept in front when it wasn't checked for us.
+                vals = [_decode_out(t, buf) for t, buf in outs]
+                if not _meth.check:
+                    return tuple([r] + vals)
+                return vals[0] if len(vals) == 1 else tuple(vals)
 
             return _call
         # Otherwise a data field — let uctypes resolve it (AttributeError if not).
@@ -182,6 +256,11 @@ class ProtocolWrapper:
             object.__setattr__(self, name, value)
         else:
             setattr(self._s, name, value)
+
+    def __int__(self):
+        # The `.ptr` contract in integer form: the interface pointer (see
+        # uefi.handle.Handle), so a wrapper can be handed to raw calls directly.
+        return self.ptr
 
     def struct_at(self, field, descriptor):
         # Overlay another descriptor on a pointer-typed field of this interface.
@@ -220,10 +299,13 @@ class ProtocolDescriptor:
 
     def wrap(self, iface_ptr, protocol_handle=None):
         # Overlay on an interface pointer we already hold (no open/close ownership
-        # unless a ProtocolHandle is supplied).
+        # unless a ProtocolHandle is supplied). `iface_ptr` may be the raw address
+        # or any object carrying it as `.ptr` — a ProtocolHandle, say.
         return ProtocolWrapper(self, iface_ptr, protocol_handle)
 
     def open(self, handle, attributes=_handle.GET_PROTOCOL):
+        # `handle` is anything Handle() accepts: a Handle, a bare EFI_HANDLE int
+        # (as read out of a VPtr field), or any .ptr-bearing object.
         ph = _handle.ProtocolHandle.open(handle, self.guid, attributes)
         return ProtocolWrapper(self, ph.ptr, ph)
 

@@ -8,6 +8,10 @@
 # by an End node (Type 0x7F, SubType 0xFF). DevicePath wraps that as a list of
 # DevicePathNode, with to_text()/from_text() via the firmware's DevicePathToText /
 # FromText protocols (a minimal built-in formatter is used if To-Text is absent).
+#
+# The four forms — a DevicePath, its packed bytes, its text, and a raw
+# EFI_DEVICE_PATH_PROTOCOL pointer — are interchangeable at any device-path
+# parameter in the package; as_device_path() is the coercion they go through.
 
 import uctypes
 
@@ -15,6 +19,7 @@ from . import raw
 from . import status
 from . import guid
 from . import utf16
+from . import coerce as _coerce
 from .protocol import ProtocolDescriptor, Method, VPtr, Bool, WStr
 
 # Node types.
@@ -116,6 +121,7 @@ class DevicePath:
 
     @classmethod
     def from_bytes(cls, b):
+        b = _coerce.as_buffer(b)
         nodes = []
         i = 0
         while i + 4 <= len(b):
@@ -184,3 +190,20 @@ class DevicePath:
 
     def __repr__(self):
         return "DevicePath(%r)" % self.to_text()
+
+
+def as_device_path(value):
+    """A DevicePath from any of the four interchangeable spellings.
+
+    A DevicePath is returned unchanged; a str is parsed as device-path text
+    (needs the firmware's DevicePathFromText); a byte block is parsed as the
+    packed node list; an int is read as an EFI_DEVICE_PATH_PROTOCOL pointer.
+    Every device-path parameter in the package coerces through here.
+    """
+    if isinstance(value, DevicePath):
+        return value
+    if isinstance(value, str):
+        return DevicePath.from_text(value)
+    if isinstance(value, int):
+        return DevicePath.from_ptr(value)
+    return DevicePath.from_bytes(value)

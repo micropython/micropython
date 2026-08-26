@@ -9,12 +9,19 @@
 #
 # ConOut/ConIn are the *active* console interfaces named in the System Table
 # (not just any text handle), so we read their pointers from there and wrap them.
+#
+# Keystrokes arrive three ways: read_key() polls, wait_key() blocks in the
+# firmware's WaitForEvent, and key_event() hands back ConIn's WaitForKey as a
+# pollable uefi.Event for select / asyncio (wait_key_async() is the coroutine
+# built on it). That event belongs to the firmware, so it is adopted rather than
+# owned: closing it here never closes ConIn's.
 
 import uctypes
 
+from _uefi import Event
 from . import raw
 from . import status
-from .protocol import ProtocolDescriptor, Field, Method, VPtr, U64, Bool, WStr, I32
+from .protocol import ProtocolDescriptor, Field, Method, Out, VPtr, U64, Bool, WStr, I32
 
 # EFI text colours: foreground 0..15, background 0..7 (background high-intensity
 # bit is reserved). Attribute = fg | (bg << 4).
@@ -80,7 +87,7 @@ TEXT_OUTPUT = ProtocolDescriptor(
         Method("reset", (Bool,)),
         Method("output_string", (WStr,), check=False),
         Method("test_string", (WStr,), check=False),
-        Method("query_mode", (U64, VPtr, VPtr)),  # (ModeNumber, *Columns, *Rows)
+        Method("query_mode", (U64, Out(U64), Out(U64))),  # (ModeNumber) -> (cols, rows)
         Method("set_mode", (U64,)),  # (ModeNumber)
         Method("set_attribute", (U64,)),  # (Attribute)
         Method("clear_screen", ()),
@@ -114,6 +121,7 @@ class Console:
         st = uctypes.struct(raw.system_table_ptr(), _ST_CONSOLE, uctypes.LITTLE_ENDIAN)
         self.out = TEXT_OUTPUT.wrap(st.conout)
         self.inp = TEXT_INPUT.wrap(st.conin)
+        self._key_event = None  # lazily adopted in key_event()
 
     # ── output ───────────────────────────────────────────────────────────────
     def write(self, text):
@@ -151,11 +159,7 @@ class Console:
 
     def size(self, mode=None):
         """(columns, rows) of `mode` (default: the current mode)."""
-        n = self.current_mode() if mode is None else mode
-        cols = bytearray(8)
-        rows = bytearray(8)
-        self.out.query_mode(n, cols, rows)
-        return int.from_bytes(cols, "little"), int.from_bytes(rows, "little")
+        return self.out.query_mode(self.current_mode() if mode is None else mode)
 
     # ── input ────────────────────────────────────────────────────────────────
     def read_key(self):
@@ -172,12 +176,26 @@ class Console:
         char = key[2] | (key[3] << 8)
         return (scan, chr(char) if char else "")
 
+    def key_event(self):
+        """ConIn's WaitForKey as a pollable uefi.Event (created once, cached).
+
+        The event belongs to the firmware, so this adopts it rather than owning
+        it: closing the Console never closes ConIn's event. Being an Event, it
+        drops into select / asyncio like any other, which is how you wait for a
+        keystroke without blocking the scheduler.
+        """
+        ev = self._key_event
+        if ev is None:
+            ev = Event(ptr=self.inp.wait_for_key)
+            self._key_event = ev
+        return ev
+
     def wait_key(self):
         """Block until a key is pressed; return (scancode, char).
 
         Uses BS->WaitForEvent on the ConIn WaitForKey event — a hard block at
         TPL_APPLICATION (it does not yield to asyncio), which is what a modal boot
-        menu wants.
+        menu wants. Use key_event() with select/asyncio to wait cooperatively.
         """
         ev = self.inp.wait_for_key
         while True:
@@ -185,6 +203,17 @@ class Console:
             k = self.read_key()
             if k is not None:
                 return k
+
+    async def wait_key_async(self):
+        """Suspend the current asyncio task until a key is pressed; return it."""
+        from .event import wait_async
+
+        ev = self.key_event()
+        while True:
+            k = self.read_key()
+            if k is not None:
+                return k
+            await wait_async(ev)
 
     def flush_input(self):
         """Discard any pending keystrokes."""

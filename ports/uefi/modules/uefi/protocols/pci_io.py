@@ -9,7 +9,7 @@
 # pci_read/write: (Width:u32, Offset:u32, Count:UINTN, Buffer). get_location writes
 # four UINTNs: Segment, Bus, Device, Function.
 
-from ..protocol import ProtocolDescriptor, Field, Method, U8, U32, U64, VPtr
+from ..protocol import ProtocolDescriptor, Field, Method, Out, U8, U32, U64, VPtr
 from .. import guid
 
 PCI_IO = ProtocolDescriptor(
@@ -30,7 +30,8 @@ PCI_IO = ProtocolDescriptor(
         Method("allocate_buffer", (U32, U32, U64, VPtr, U64)),
         Method("free_buffer", (U64, VPtr)),
         Method("flush", ()),
-        Method("get_location", (VPtr, VPtr, VPtr, VPtr)),  # *Segment, *Bus, *Device, *Function
+        # GetLocation writes four UINTNs; as Out slots it returns them decoded.
+        Method("get_location", (Out(U64), Out(U64), Out(U64), Out(U64))),
         Method("attributes", (U32, U64, VPtr)),
         Method("get_bar_attributes", (U8, VPtr, VPtr)),
         Method("set_bar_attributes", (U64, U8, VPtr, VPtr)),

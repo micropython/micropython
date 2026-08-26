@@ -12,6 +12,7 @@ import uctypes
 
 from . import raw
 from . import status
+from . import coerce
 from . import guid as _guid
 from .guid import GUID
 
@@ -28,11 +29,11 @@ UNSPECIFIED_TIMEZONE = 0x07FF
 def reset(mode=COLD, status_code=0, data=None):
     """Reset the platform (ResetSystem). Does NOT return for COLD/WARM/SHUTDOWN.
 
-    `data` is optional reset payload bytes (e.g. a NUL-terminated string for
-    PLATFORM_SPECIFIC resets). Note: this is a deliberate platform reset — the
-    port's *own* clean exit returns EFI_SUCCESS to its caller instead.
+    `data` is an optional reset payload — any byte block (e.g. a NUL-terminated
+    string for PLATFORM_SPECIFIC resets). Note: this is a deliberate platform
+    reset — the port's *own* clean exit returns EFI_SUCCESS to its caller instead.
     """
-    raw.reset_system(mode, status_code, data)
+    raw.reset_system(mode, status_code, coerce.as_buffer(data) if data is not None else None)
 
 
 def shutdown():
@@ -87,9 +88,9 @@ def configuration_tables():
 
 def configuration_table(which):
     """The pointer for one configuration table by GUID, or 0 if not present."""
-    want = GUID(which)
+    want = GUID(which).bytes
     for g, ptr in raw.configuration_tables():
-        if GUID(g) == want:
+        if g == want:
             return ptr
     return 0
 

@@ -5,26 +5,20 @@
 #   exec(open('/samples/sysinfo.py').read())
 
 import uefi
-import uctypes
 import gc
-from uefi import protocols as P
+from uefi import protocols as P, system
 
-# Firmware vendor + revision live near the top of the EFI System Table.
-st = uefi.raw.system_table_ptr()
-hdr = uctypes.struct(
-    st, {"vendor": uctypes.UINT64 | 24, "rev": uctypes.UINT32 | 32}, uctypes.LITTLE_ENDIAN
-)
-print("Firmware :", uefi.raw.wstr_at(hdr.vendor), "(rev 0x%08x)" % hdr.rev)
+print("Firmware :", system.firmware_vendor(), "(rev 0x%08x)" % system.firmware_revision())
 
 heap = gc.mem_alloc() + gc.mem_free()
 print("MPY heap : %d MiB (%d free)" % (heap // (1024 * 1024), gc.mem_free()))
 
-# Where did we boot from?
-img = uefi.Handle(uefi.raw.image_handle())
-li = P.LOADED_IMAGE.open(img)
-dev = uefi.Handle(li.device_handle)
+# Where did we boot from? A protocol opens on a bare EFI_HANDLE, and the volume
+# handle it reports back is a bare EFI_HANDLE too — both go straight where needed.
+li = P.LOADED_IMAGE.open(uefi.raw.image_handle())
+volume = li.device_handle
 li.close()
-print("Boot vol :", dev.device_path().to_text())
+print("Boot vol :", uefi.Handle(volume).device_path().to_text())
 
 # Handle-database size + display mode.
 print(

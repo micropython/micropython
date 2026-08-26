@@ -38,7 +38,7 @@ access), flip a flag and nudge an idle loop (`mp_uefi_wake`); the interpreter sl
 - **`machine` / `uefi`** — the Pythonic UEFI API: protocols, handles, events, GUIDs, device
   paths, driver/image loading, NVRAM variables, boot options, system services, console, GOP as
   a `framebuf` (`uefi.Display`), and an `EFI_LOAD_FILE2` file-provider (`uefi.load_file`, enough
-  to build a boot loader).
+  to build a boot loader). See [The `uefi` API](#the-uefi-api).
 - **Networking** — `network` + `socket` over the native EFI transports (TCP4/UDP4/IP4 + DNS4/
   DHCP/IP4Config2), with `asyncio` integration (client + server, async `accept`). `network.WLAN`
   drives WiFi (station mode, WPA2-PSK) over EFI WiFi2 — `scan()`, non-blocking `connect()`,
@@ -54,6 +54,90 @@ access), flip a flag and nudge an idle loop (`mp_uefi_wake`); the interpreter sl
   `marshal` module (`compile → dumps → loads → exec`). All arch-neutral.
 - **stdlib** — `re`, `json`, `struct`, `binascii`, `hashlib`, `heapq`, `cmath`, `random`,
   `framebuf`, `deflate`, `platform`, `asyncio`, `time`, `select`, etc.
+
+## The `uefi` API
+
+### Two layers
+
+`uefi.raw` is the low-level surface: thin wrappers over the Boot/Runtime Services tables plus
+`call`, the EFIAPI trampoline that invokes a protocol's function pointers. It returns raw
+`EFI_STATUS` integers (or tuples containing one) and never raises.
+
+`uefi.*` is the Pythonic layer built on it: `handle`, `protocol`, `guid`, `device_path`,
+`variable`, `boot`, `driver`, `event`, `buffer`, `fs`, `console`, `display`, `system`,
+`load_file`. These raise `uefi.Error` (an `OSError` subclass) on a firmware error and own their
+firmware resources, releasing them through `close()`, a context manager, or finalisation.
+
+### Values compose
+
+**Whatever one call gives you is accepted by the calls that consume it.** You never have to
+take a returned value apart to pass it on — no reaching for `.ptr`, no `.bytes`, no repacking.
+This holds across both layers, so a handle read out of a protocol struct goes straight into a
+wrapper function, and a wrapper object goes straight into `uefi.raw`.
+
+Four kinds of value cross API boundaries, each with several equally valid spellings:
+
+| Value | Spellings accepted anywhere it is taken |
+|---|---|
+| **GUID** | `uefi.GUID` · any 16-byte buffer · a string (canonical, bare 32 hex digits, or either in `{braces}`) |
+| **Pointer / handle** | a bare `int` · `Handle` · `Image` · `ProtocolHandle` · `ProtocolWrapper` · `PoolBuffer` · `Event` · `Timer` · `ProtocolWatch` · `FileProvider` |
+| **Byte block** | `bytes` · `bytearray` · `memoryview` · `PoolBuffer` · `DevicePath` · any object with `to_bytes()` |
+| **Device path** | `DevicePath` · its packed bytes · its text (`"PciRoot(0x0)/Pci(0x1,0x0)"`) · an `EFI_DEVICE_PATH_PROTOCOL` pointer |
+
+`uefi.GUID` is itself a 16-byte buffer, so besides every GUID parameter it also satisfies
+`bytes()`, `memoryview()`, `struct` and `uctypes.addressof()`. Every pointer-bearing object
+carries its firmware token as `.ptr` and converts under `int()`. `PoolBuffer` additionally
+exposes `.view`, a `bytearray` over the pool memory, and supports `len()` and indexing.
+
+The coercions are public, for code that needs them directly: `uefi.GUID()`, `uefi.Handle()`,
+`uefi.as_device_path()`, and `uefi.coerce.as_ptr()` / `as_buffer()` / `addr_len()`.
+
+```python
+import uefi
+
+# A handle read out of an interface struct is a plain integer ...
+li = uefi.protocols.LOADED_IMAGE.open(uefi.raw.image_handle())
+volume = li.device_handle
+li.close()
+
+# ... and that is enough to mount it, ask what it supports, or name its path.
+uefi.fs.mount(volume, "/boot")
+print(uefi.Handle(volume).supports(uefi.guid.SIMPLE_FILE_SYSTEM_PROTOCOL))
+path = uefi.Handle(volume).device_path()
+
+# A GUID goes to the raw layer as-is, in any spelling ...
+status, block_io = uefi.raw.locate_protocol(uefi.guid.BLOCK_IO_PROTOCOL)
+
+# ... a device path is a byte block wherever one is wanted ...
+MY_VARS = uefi.GUID("2f4e6b1a-1111-4c2d-9e3a-0123456789ab")  # your own namespace
+uefi.variable.set("MyPath", MY_VARS, path, uefi.variable.BOOTSERVICE_ACCESS)
+
+# ... and its text is a device path wherever one is wanted.
+option = uefi.LoadOption("My OS", path.to_text())
+```
+
+Where a value is genuinely absent, the API says so with `None` rather than an error:
+`Handle.device_path()` returns `None` for a handle that has no device path, and
+`Handle.open_info()` returns an empty list for a protocol nothing has opened.
+
+### Protocol descriptors
+
+A `ProtocolDescriptor` declares a UEFI interface struct as an ordered list of `Field(name, type)`
+and `Method(name, arg_types)` members. Data fields are read and written as attributes through a
+`uctypes` overlay; methods dispatch through the `raw.call` trampoline. `uefi.protocols` ships
+descriptors for the common protocols (`LOADED_IMAGE`, `BLOCK_IO`, `SIMPLE_FS`, `GOP`, `PCI_IO`,
+`SERIAL_IO`, `TIMESTAMP`, `COMPONENT_NAME`/`COMPONENT_NAME2`), and writing one for any other
+protocol is a matter of listing its members in order.
+
+Arguments a method *writes to* are declared `Out(type)`. The stub allocates the scratch buffer,
+passes its address, and returns the value decoded as that type — so an out-parameter is a return
+value, not something the caller sizes and unpacks:
+
+```python
+cols, rows = console.out.query_mode(0)      # two Out(U64) slots -> a tuple
+root = fs.open_volume()                     # one Out(VPtr)      -> the value itself
+status, name_ptr = cn.get_driver_name("en") # check=False        -> status first
+```
 
 ## Limitations
 
@@ -154,6 +238,7 @@ first.
 - `efi.h`, `efi_net.h`, `efi_tls.h` — hand-rolled UEFI/EDK2 protocol & struct definitions
 - `moduefi_raw.c` — `_uefi`: the raw Boot/Runtime Services surface + the `call` EFIAPI trampoline
 - `uefi_event_obj.c` — `uefi.Event`: the pollable high-level event type built on it
+- `uefi_guid_obj.c` — `uefi.GUID`: the EFI_GUID type, in C because it implements the buffer protocol
 
 **UEFI-environment-to-library-API glue** — turning firmware services into what MicroPython's
 core/HAL expects (`time`, VFS, RNG, GC, the scheduler's blocking primitive).
@@ -164,6 +249,28 @@ core/HAL expects (`time`, VFS, RNG, GC, the scheduler's blocking primitive).
 - `uefi_rng.c` — entropy behind `os.urandom()`
 - `uefi_gccollect.c` — conservative-GC root scan (register dump is ABI-specific)
 - `uefi_port.h` — shared declarations for the above (live UEFI tables, test-exit path)
+
+**Frozen Python (`modules/`)** — the `uefi` package, frozen into the image (there is no
+filesystem to import from at start-up). Listed lowest-level first.
+- `raw.py` — re-exports the `_uefi` C built-in as `uefi.raw`
+- `status.py` — `EFI_STATUS` constants, `uefi.Error`, `check()`
+- `coerce.py` — the argument-coercion vocabulary (`as_ptr`, `as_buffer`, `as_writable`, `addr_len`)
+- `utf16.py` — CHAR16 encode/decode for firmware wide-string fields
+- `guid.py` — the registry of well-known GUIDs, over the C `uefi.GUID` type
+- `buffer.py` — `PoolBuffer`: pool memory (`AllocatePool`/`FreePool`) as a byte block
+- `handle.py` — `Handle`, `ProtocolHandle`, `ProtocolOpenInfo`; handle-database discovery
+- `protocol.py` — the descriptor DSL (`Field`/`Method`/`Out`, the type atoms) + trampoline dispatch
+- `protocols/` — pre-baked `ProtocolDescriptor`s, one module per protocol
+- `device_path.py` — parse/format/build device paths; `as_device_path()`
+- `variable.py` — NVRAM variables and EDK2 Variable Policy
+- `driver.py` — `Image` load/start/unload; `connect`/`disconnect`; driver & controller names
+- `boot.py` — the boot manager: `LoadOption`, `BootOrder`, `Boot####`, `BootNext`
+- `event.py` — `Timer` and `ProtocolWatch` over `uefi.Event`; `wait_async()`
+- `fs.py` — mount other `EFI_SIMPLE_FILE_SYSTEM` volumes into the VFS
+- `console.py` — ConOut/ConIn text control, keystrokes, the pollable key event
+- `display.py` — `Display`: GOP as a `framebuf.FrameBuffer`
+- `system.py` — reset, watchdog, memory map, configuration tables, RTC, firmware identity
+- `load_file.py` — `FileProvider`: serve a buffer to firmware as `EFI_LOAD_FILE(2)`
 
 **Toolchain / freestanding-build scaffolding** — gaps from targeting `*-unknown-windows` with
 no OS underneath.

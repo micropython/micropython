@@ -7,7 +7,7 @@
 #     info = mode.struct_at("info", GOP_INFO)
 #     w, h = info.horizontal_resolution, info.vertical_resolution
 
-from ..protocol import ProtocolDescriptor, Field, Method, U32, U64, VPtr
+from ..protocol import ProtocolDescriptor, Field, Method, Out, U32, U64, VPtr
 from .. import guid
 
 # EFI_GRAPHICS_OUTPUT_MODE_INFORMATION.
@@ -45,7 +45,9 @@ GOP = ProtocolDescriptor(
     "EFI_GRAPHICS_OUTPUT_PROTOCOL",
     guid.GRAPHICS_OUTPUT_PROTOCOL,
     [
-        Method("query_mode", (U32, VPtr, VPtr)),  # (ModeNumber, *SizeOfInfo, **Info)
+        # QueryMode(ModeNumber) -> (size_of_info, info_ptr); the info buffer is
+        # firmware-allocated, so FreePool it when done.
+        Method("query_mode", (U32, Out(U64), Out(VPtr))),
         Method("set_mode", (U32,)),
         # Blt(*BltBuffer, BltOperation, SourceX, SourceY, DestX, DestY, Width, Height, Delta)
         Method("blt", (VPtr, U32, U64, U64, U64, U64, U64, U64, U64)),

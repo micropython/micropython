@@ -25,6 +25,7 @@ typedef struct _uefi_event_obj_t {
     mp_obj_base_t base;
     EFI_EVENT event;                // UEFI event, NULL once closed
     volatile int signaled;          // sticky flag, set by the notify
+    uint8_t borrowed;               // 1 = adopted, firmware owns it (see below)
     struct _uefi_event_obj_t *next; // registry link while open
 } uefi_event_obj_t;
 
@@ -64,7 +65,11 @@ static void EFIAPI uefi_event_notify(EFI_EVENT event, void *context) {
 
 static void uefi_event_do_close(uefi_event_obj_t *self) {
     if (self->event != NULL) {
-        mp_uefi_close_event(self->event);
+        // A borrowed event belongs to the firmware (e.g. ConIn's WaitForKey):
+        // drop our reference, never CloseEvent it.
+        if (!self->borrowed) {
+            mp_uefi_close_event(self->event);
+        }
         self->event = NULL;
         uefi_event_unlink(self);
     }
@@ -77,7 +82,9 @@ void uefi_event_obj_deinit_all(void) {
     while (e != NULL) {
         uefi_event_obj_t *next = e->next;
         if (e->event != NULL) {
-            mp_uefi_close_event(e->event);
+            if (!e->borrowed) {
+                mp_uefi_close_event(e->event);
+            }
             e->event = NULL;
         }
         e->next = NULL;
@@ -90,9 +97,16 @@ static mp_obj_t uefi_event_make_new(const mp_obj_type_t *type, size_t n_args, si
     (void)type;
     // Event(timer=False): a plain EVT_NOTIFY_SIGNAL event by default; timer=True
     // creates an EVT_TIMER|EVT_NOTIFY_SIGNAL event so raw.set_timer works on it.
-    enum { ARG_timer };
+    //
+    // Event(ptr=<EFI_EVENT>) instead *adopts* an event the firmware already owns —
+    // the one case where we cannot attach our own notify, because the event was
+    // created elsewhere (ConIn's WaitForKey being the motivating example). Such an
+    // event has no sticky flag to consult, so is_signaled()/poll go through
+    // BS->CheckEvent, and close() leaves the firmware's event alone.
+    enum { ARG_timer, ARG_ptr };
     static const mp_arg_t allowed[] = {
-        { MP_QSTR_timer, MP_ARG_BOOL, { .u_bool = false } },
+        { MP_QSTR_timer, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = false } },
+        { MP_QSTR_ptr, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
     };
     mp_arg_val_t vals[MP_ARRAY_SIZE(allowed)];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed), allowed, vals);
@@ -100,16 +114,40 @@ static mp_obj_t uefi_event_make_new(const mp_obj_type_t *type, size_t n_args, si
     uefi_event_obj_t *self = mp_obj_malloc_with_finaliser(uefi_event_obj_t, &uefi_event_type);
     self->event = NULL;
     self->signaled = 0;
+    self->borrowed = 0;
     self->next = NULL;
-    EFI_STATUS st = vals[ARG_timer].u_bool
-        ? mp_uefi_create_timer(uefi_event_notify, self, &self->event)
-        : mp_uefi_create_signal_event(uefi_event_notify, self, &self->event);
-    if (EFI_ERROR(st)) {
-        self->event = NULL;
-        mp_raise_OSError(MP_ENOMEM);
+
+    if (vals[ARG_ptr].u_obj != mp_const_none) {
+        EFI_EVENT ev = (EFI_EVENT)(uintptr_t)mp_obj_get_int_truncated(vals[ARG_ptr].u_obj);
+        if (ev == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("null event"));
+        }
+        self->event = ev;
+        self->borrowed = 1;
+    } else {
+        EFI_STATUS st = vals[ARG_timer].u_bool
+            ? mp_uefi_create_timer(uefi_event_notify, self, &self->event)
+            : mp_uefi_create_signal_event(uefi_event_notify, self, &self->event);
+        if (EFI_ERROR(st)) {
+            self->event = NULL;
+            mp_raise_OSError(MP_ENOMEM);
+        }
     }
     uefi_event_link(self);
     return MP_OBJ_FROM_PTR(self);
+}
+
+// True if the event is ready. Ours carries the sticky flag its notify set; a
+// borrowed one has to be asked, via CheckEvent (which also runs the firmware's
+// own EVT_NOTIFY_WAIT notify, exactly as WaitForEvent would).
+static bool uefi_event_ready(uefi_event_obj_t *self) {
+    if (!self->borrowed) {
+        return self->signaled != 0;
+    }
+    if (self->event == NULL) {
+        return false;
+    }
+    return mp_uefi_st->BootServices->CheckEvent(self->event) == EFI_SUCCESS;
 }
 
 // `.ptr` (the .ptr contract): the raw EFI_EVENT, for raw.set_timer /
@@ -125,10 +163,29 @@ static void uefi_event_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
+// int(event) -> the raw EFI_EVENT, so an Event can be handed straight to any raw
+// call that takes an event pointer (raw.set_timer, raw.wait_for_event, ...) — the
+// integer form of the same `.ptr` contract.
+static mp_obj_t uefi_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    uefi_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+        case MP_UNARY_OP_INT_MAYBE:
+            return mp_obj_new_int_from_uint((uintptr_t)self->event);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->event != NULL);
+        default:
+            return MP_OBJ_NULL;      // op not supported
+    }
+}
+
 static mp_obj_t uefi_event_signal(mp_obj_t self_in) {
     uefi_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->event == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("closed"));
+    }
+    if (self->borrowed) {
+        // The firmware owns it and decides when it fires (see make_new).
+        mp_raise_ValueError(MP_ERROR_TEXT("borrowed event"));
     }
     mp_uefi_signal_event(self->event); // fires the notify -> flag + wake
     return mp_const_none;
@@ -137,7 +194,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(uefi_event_signal_obj, uefi_event_signal);
 
 static mp_obj_t uefi_event_is_signaled(mp_obj_t self_in) {
     uefi_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(self->signaled);
+    return mp_obj_new_bool(uefi_event_ready(self));
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(uefi_event_is_signaled_obj, uefi_event_is_signaled);
 
@@ -155,7 +212,7 @@ static mp_obj_t uefi_event_wait(size_t n_args, const mp_obj_t *args) {
     bool has_timeout = (n_args > 1 && args[1] != mp_const_none);
     mp_uint_t timeout = has_timeout ? (mp_uint_t)mp_obj_get_int(args[1]) : 0;
     mp_uint_t start = mp_hal_ticks_ms();
-    while (!self->signaled) {
+    while (!uefi_event_ready(self)) {
         if (has_timeout) {
             mp_uint_t elapsed = mp_hal_ticks_ms() - start;
             if (elapsed >= timeout) {
@@ -182,7 +239,7 @@ static mp_uint_t uefi_event_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t
     uefi_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (request == MP_STREAM_POLL) {
         mp_uint_t ret = 0;
-        if ((arg & MP_STREAM_POLL_RD) && self->signaled) {
+        if ((arg & MP_STREAM_POLL_RD) && uefi_event_ready(self)) {
             ret |= MP_STREAM_POLL_RD;
         }
         return ret;
@@ -211,6 +268,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     make_new, uefi_event_make_new,
     attr, uefi_event_attr,
+    unary_op, uefi_event_unary_op,
     protocol, &uefi_event_stream_p,
     locals_dict, &uefi_event_locals_dict
     );

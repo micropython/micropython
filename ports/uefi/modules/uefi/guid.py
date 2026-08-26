@@ -7,78 +7,17 @@
 # (u16) are little-endian; the final 8 bytes (Data4) are stored in order. The
 # canonical text form is "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx".
 #
-# GUID exposes its packed form as the `bytes` attribute, which is what the
-# uefi.raw functions expect (they take a 16-byte buffer).
+# The type itself lives in C (uefi_guid_obj.c) because its defining property is
+# that it *is* those 16 packed bytes: it implements the buffer protocol, which a
+# pure-Python class cannot. So a GUID goes straight into bytes(), memoryview(),
+# uctypes.addressof(), struct, and every uefi.raw GUID parameter, with no `.bytes`
+# at the call site. GUID(value) accepts a GUID, any 16-byte buffer, or a string
+# (canonical, bare 32 hex digits, or either in {braces}) — every uefi API that
+# takes a GUID coerces through it, so any of those forms works anywhere.
+#
+# This module adds the registry of well-known GUIDs built on top of that type.
 
-import struct
-
-
-def _pack(s):
-    # Accept the canonical hyphenated form, a bare 32-hex-digit string, or either
-    # wrapped in {braces}; case-insensitive, surrounding whitespace ignored. The
-    # byte layout is the mixed-endian EFI_GUID: Data1/2/3 little-endian, Data4
-    # (final 8 bytes) stored in the same order they appear in the string, so once
-    # the hex is decoded to raw bytes only Data1/2/3 need re-packing.
-    t = s.strip().strip("{}").replace("-", "")
-    if len(t) != 32:
-        raise ValueError("bad GUID string: %r" % s)
-    try:
-        raw = bytes.fromhex(t)
-    except ValueError:
-        raise ValueError("bad GUID string: %r" % s)
-    d1, d2, d3 = struct.unpack(">IHH", raw[0:8])
-    return struct.pack("<IHH", d1, d2, d3) + raw[8:16]
-
-
-class GUID:
-    # Accepts a GUID (returned as-is), 16 raw bytes, or a string — canonical
-    # "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", a bare 32-hex-digit string, or either
-    # in {braces}. Every uefi API that takes a GUID coerces through here, so any of
-    # these forms works anywhere a GUID is expected.
-    def __init__(self, value):
-        if isinstance(value, GUID):
-            self.bytes = value.bytes
-        elif isinstance(value, (bytes, bytearray)):
-            if len(value) != 16:
-                raise ValueError("GUID needs 16 bytes, got %d" % len(value))
-            self.bytes = bytes(value)
-        elif isinstance(value, str):
-            self.bytes = _pack(value)
-        else:
-            raise TypeError("GUID expects a GUID, 16 bytes, or a string")
-
-    def __bytes__(self):
-        return self.bytes
-
-    def __eq__(self, other):
-        return isinstance(other, GUID) and other.bytes == self.bytes
-
-    def __hash__(self):
-        return hash(self.bytes)
-
-    def __str__(self):
-        b = self.bytes
-        return "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x" % (
-            b[3],
-            b[2],
-            b[1],
-            b[0],
-            b[5],
-            b[4],
-            b[7],
-            b[6],
-            b[8],
-            b[9],
-            b[10],
-            b[11],
-            b[12],
-            b[13],
-            b[14],
-            b[15],
-        )
-
-    def __repr__(self):
-        return "GUID('%s')" % self.__str__()
+from _uefi import GUID
 
 
 # ── Well-known GUIDs (trailing _GUID dropped per the naming convention) ──────

@@ -9,6 +9,12 @@
 #   * Timer  — an EVT_TIMER event with periodic/oneshot/async helpers.
 #   * ProtocolWatch — device hot-plug via RegisterProtocolNotify.
 #   * wait_async(ev) — suspend an asyncio task until an Event/Timer is signalled.
+#
+# Both classes follow the Event contract: `.ptr` and int() give the raw EFI_EVENT
+# (so either can be passed to raw.set_timer and friends), and is_signaled/clear/
+# wait behave as they do on an Event. `.event` is the underlying Event itself,
+# which is what select and asyncio take — pollability rides the C-level stream
+# protocol, which only the C type can carry.
 
 from micropython import const
 
@@ -38,43 +44,54 @@ async def wait_async(ev):
 
 
 class Timer:
-    """A UEFI timer built on an EVT_TIMER event — pollable and awaitable."""
+    """A UEFI timer built on an EVT_TIMER event — pollable and awaitable.
+
+    Honours the uefi.Event contract: `.ptr` / int() give the raw EFI_EVENT, and
+    is_signaled/clear/wait behave as they do on an Event. `.event` is the
+    underlying Event itself, which is what select and asyncio take (a Python
+    object cannot carry the C-level stream protocol, so pollability lives there).
+    """
 
     def __init__(self):
-        self._event = Event(timer=True)
+        self.event = Event(timer=True)
+
+    @property
+    def ptr(self):
+        return self.event.ptr
+
+    def __int__(self):
+        return self.event.ptr
 
     def set_periodic(self, interval_ms):
-        status.check(
-            raw.set_timer(self._event.ptr, _TIMER_PERIODIC, int(interval_ms) * _MS_TO_100NS)
-        )
+        status.check(raw.set_timer(self.event, _TIMER_PERIODIC, int(interval_ms) * _MS_TO_100NS))
 
     def set_oneshot(self, delay_ms):
-        status.check(raw.set_timer(self._event.ptr, _TIMER_RELATIVE, int(delay_ms) * _MS_TO_100NS))
+        status.check(raw.set_timer(self.event, _TIMER_RELATIVE, int(delay_ms) * _MS_TO_100NS))
 
     def cancel(self):
-        if self._event.ptr:
-            status.check(raw.set_timer(self._event.ptr, _TIMER_CANCEL, 0))
+        if self.event.ptr:
+            status.check(raw.set_timer(self.event, _TIMER_CANCEL, 0))
 
     def is_signaled(self):
-        return self._event.is_signaled()
+        return self.event.is_signaled()
 
     def clear(self):
-        self._event.clear()
+        self.event.clear()
 
     def wait(self, timeout_ms=None):
-        return self._event.wait(timeout_ms)
+        return self.event.wait(timeout_ms)
 
     async def wait_async(self):
-        await wait_async(self._event)
+        await wait_async(self.event)
 
     async def sleep_async(self, delay_ms):
         self.clear()
         self.set_oneshot(delay_ms)
-        await wait_async(self._event)
+        await wait_async(self.event)
         self.clear()
 
     def close(self):
-        self._event.close()  # CloseEvent cancels a pending timer
+        self.event.close()  # CloseEvent cancels a pending timer
 
     def __enter__(self):
         return self
@@ -92,17 +109,33 @@ class ProtocolWatch:
 
     def __init__(self, guid):
         self._guid = GUID(guid)
-        self._event = Event()
-        st, reg = raw.register_protocol_notify(self._guid.bytes, self._event.ptr)
+        self.event = Event()
+        st, reg = raw.register_protocol_notify(self._guid, self.event)
         status.check(st)
         self._registration = reg
         self._pending = []
+
+    @property
+    def ptr(self):
+        return self.event.ptr
+
+    def __int__(self):
+        return self.event.ptr
+
+    def is_signaled(self):
+        return self.event.is_signaled()
+
+    def clear(self):
+        self.event.clear()
+
+    def wait(self, timeout_ms=None):
+        return self.event.wait(timeout_ms)
 
     def poll(self):
         """Return the Handles that have (re)installed `guid` since the last poll."""
         # Clear first: an install racing our drain re-signals the flag, so we won't
         # miss it (the handle is queued in the registration regardless).
-        self._event.clear()
+        self.event.clear()
         out = []
         while True:
             st, h = raw.locate_handle_notify(self._registration)
@@ -119,11 +152,11 @@ class ProtocolWatch:
         while not self._pending:
             self._pending = self.poll()
             if not self._pending:
-                await wait_async(self._event)
+                await wait_async(self.event)
         return self._pending.pop(0)
 
     def close(self):
-        self._event.close()
+        self.event.close()
 
     def __enter__(self):
         return self

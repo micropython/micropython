@@ -20,7 +20,7 @@ print("present before:", watch.poll())
 
 # Install the protocol on a fresh handle with a dummy interface pointer -> fires it.
 iface = uefi.PoolBuffer(16)
-st, h = uefi.raw.install_protocol_interface(0, TEST.bytes, iface.ptr)
+st, h = uefi.raw.install_protocol_interface(0, TEST, iface)
 print("installed on handle %#x (status %d)" % (h, st))
 
 for hnd in watch.poll():
@@ -28,7 +28,7 @@ for hnd in watch.poll():
     print("  arrived:", hnd, "->", names)
 
 # Clean up.
-uefi.raw.uninstall_protocol_interface(h, TEST.bytes, iface.ptr)
+uefi.raw.uninstall_protocol_interface(h, TEST, iface)
 iface.close()
 watch.close()
 print("done")

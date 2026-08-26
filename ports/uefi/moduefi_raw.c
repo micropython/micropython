@@ -28,6 +28,11 @@
 // into the `_uefi` module so the Python layer reaches it as uefi.Event.
 extern const mp_obj_type_t uefi_event_type;
 
+// The EFI_GUID type (uefi_guid_obj.c), folded in the same way as uefi.GUID, plus
+// its coercion helper — the gate every GUID argument below goes through.
+extern const mp_obj_type_t uefi_guid_type;
+extern bool mp_uefi_guid_from_obj(mp_obj_t obj, uint8_t *out);
+
 // ── The trampoline ──────────────────────────────────────────────────────────
 // A single fixed-arity prototype. We always call with the maximum arg count,
 // zero-padding the unused tail: EFIAPI is caller-cleanup and the args are all
@@ -59,14 +64,22 @@ static mp_obj_t status_and_uint(EFI_STATUS st, UINTN value) {
     return mp_obj_new_tuple(2, items);
 }
 
-// Pull a 16-byte packed EFI_GUID out of a bytes-like argument.
-static EFI_GUID *guid_from_obj(mp_obj_t obj) {
-    mp_buffer_info_t bi;
-    mp_get_buffer_raise(obj, &bi, MP_BUFFER_READ);
-    if (bi.len != 16) {
-        mp_raise_ValueError(MP_ERROR_TEXT("guid must be 16 bytes"));
+// Pull a 16-byte packed EFI_GUID out of any accepted spelling: a uefi.GUID (which
+// is itself a 16-byte buffer), any other 16-byte buffer, or a GUID string. The
+// bytes are copied into caller-owned storage rather than borrowed, so the result
+// stays valid even if the source was a temporary built by the parse.
+static EFI_GUID *guid_from_obj(mp_obj_t obj, EFI_GUID *store) {
+    if (!mp_uefi_guid_from_obj(obj, (uint8_t *)store)) {
+        if (mp_obj_is_str(obj)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad GUID string"));
+        }
+        mp_buffer_info_t bi;
+        if (mp_get_buffer(obj, &bi, MP_BUFFER_READ)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("guid must be 16 bytes"));
+        }
+        mp_raise_TypeError(MP_ERROR_TEXT("expected a GUID, 16 bytes, or a string"));
     }
-    return (EFI_GUID *)bi.buf;
+    return store;
 }
 
 // Convert a Python str (UTF-8) to a null-terminated CHAR16 (UTF-16LE) buffer in
@@ -185,7 +198,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(uefi_raw_free_pool_obj, uefi_raw_free_pool);
 // ── Handle database ─────────────────────────────────────────────────────────
 static mp_obj_t uefi_raw_locate_handle_buffer(mp_obj_t search_type_in, mp_obj_t guid_in) {
     EFI_LOCATE_SEARCH_TYPE stype = (EFI_LOCATE_SEARCH_TYPE)mp_obj_get_int(search_type_in);
-    EFI_GUID *guid = (guid_in == mp_const_none) ? NULL : guid_from_obj(guid_in);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = (guid_in == mp_const_none) ? NULL : guid_from_obj(guid_in, &gbuf);
     UINTN count = 0;
     EFI_HANDLE *buf = NULL;
     EFI_STATUS st = BS->LocateHandleBuffer(stype, guid, NULL, &count, &buf);
@@ -204,7 +218,8 @@ static MP_DEFINE_CONST_FUN_OBJ_2(uefi_raw_locate_handle_buffer_obj, uefi_raw_loc
 static mp_obj_t uefi_raw_open_protocol(size_t n_args, const mp_obj_t *args) {
     // (handle, guid, agent, controller, attributes) -> (status, interface_ptr)
     EFI_HANDLE handle = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(args[0]);
-    EFI_GUID *guid = guid_from_obj(args[1]);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(args[1], &gbuf);
     EFI_HANDLE agent = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(args[2]);
     EFI_HANDLE controller = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(args[3]);
     UINT32 attributes = (UINT32)mp_obj_get_int_truncated(args[4]);
@@ -217,7 +232,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uefi_raw_open_protocol_obj, 5, 5, uef
 static mp_obj_t uefi_raw_close_protocol(size_t n_args, const mp_obj_t *args) {
     // (handle, guid, agent, controller) -> status
     EFI_HANDLE handle = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(args[0]);
-    EFI_GUID *guid = guid_from_obj(args[1]);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(args[1], &gbuf);
     EFI_HANDLE agent = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(args[2]);
     EFI_HANDLE controller = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(args[3]);
     EFI_STATUS st = BS->CloseProtocol(handle, guid, agent, controller);
@@ -247,7 +263,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(uefi_raw_protocols_per_handle_obj, uefi_raw_pro
 // which agents have a protocol open on a handle, and how (BY_DRIVER, etc.).
 static mp_obj_t uefi_raw_open_protocol_information(mp_obj_t handle_in, mp_obj_t guid_in) {
     EFI_HANDLE handle = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(handle_in);
-    EFI_GUID *guid = guid_from_obj(guid_in);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(guid_in, &gbuf);
     EFI_OPEN_PROTOCOL_INFORMATION_ENTRY *entries = NULL;
     UINTN count = 0;
     EFI_STATUS st = BS->OpenProtocolInformation(handle, guid, &entries, &count);
@@ -270,7 +287,8 @@ static mp_obj_t uefi_raw_open_protocol_information(mp_obj_t handle_in, mp_obj_t 
 static MP_DEFINE_CONST_FUN_OBJ_2(uefi_raw_open_protocol_information_obj, uefi_raw_open_protocol_information);
 
 static mp_obj_t uefi_raw_locate_protocol(size_t n_args, const mp_obj_t *args) {
-    EFI_GUID *guid = guid_from_obj(args[0]);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(args[0], &gbuf);
     void *registration = (n_args > 1) ? (void *)(uintptr_t)mp_obj_get_int_truncated(args[1]) : NULL;
     void *iface = NULL;
     EFI_STATUS st = BS->LocateProtocol(guid, registration, &iface);
@@ -284,7 +302,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uefi_raw_locate_protocol_obj, 1, 2, u
 static mp_obj_t uefi_raw_get_variable(mp_obj_t name_in, mp_obj_t guid_in) {
     CHAR16 name[256];
     str_to_char16le(name_in, name, MP_ARRAY_SIZE(name));
-    EFI_GUID *guid = guid_from_obj(guid_in);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(guid_in, &gbuf);
     UINT32 attrs = 0;
     UINTN size = 0;
     EFI_STATUS st = RS->GetVariable(name, guid, &attrs, &size, NULL);
@@ -315,7 +334,8 @@ static MP_DEFINE_CONST_FUN_OBJ_2(uefi_raw_get_variable_obj, uefi_raw_get_variabl
 static mp_obj_t uefi_raw_set_variable(size_t n_args, const mp_obj_t *args) {
     CHAR16 name[256];
     str_to_char16le(args[0], name, MP_ARRAY_SIZE(name));
-    EFI_GUID *guid = guid_from_obj(args[1]);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(args[1], &gbuf);
     UINT32 attrs = (UINT32)mp_obj_get_int_truncated(args[2]);
     void *data = NULL;
     UINTN size = 0;
@@ -335,7 +355,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uefi_raw_set_variable_obj, 4, 4, uefi
 static mp_obj_t uefi_raw_get_next_variable_name(mp_obj_t name_in, mp_obj_t guid_in) {
     CHAR16 stackbuf[512];
     EFI_GUID g;
-    memcpy(&g, guid_from_obj(guid_in), sizeof(EFI_GUID));
+    guid_from_obj(guid_in, &g);
     size_t units = str_to_char16le(name_in, stackbuf, MP_ARRAY_SIZE(stackbuf));
     UINTN namebytes = (units + 1) * sizeof(CHAR16);
 
@@ -383,7 +403,8 @@ static MP_DEFINE_CONST_FUN_OBJ_3(uefi_raw_set_timer_obj, uefi_raw_set_timer);
 // register_protocol_notify(guid, event_ptr) -> (status, registration_ptr).
 // Firmware signals `event` whenever an instance of `guid` is installed (hot-plug).
 static mp_obj_t uefi_raw_register_protocol_notify(mp_obj_t guid_in, mp_obj_t event_in) {
-    EFI_GUID *guid = guid_from_obj(guid_in);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(guid_in, &gbuf);
     EFI_EVENT ev = (EFI_EVENT)(uintptr_t)mp_obj_get_int_truncated(event_in);
     void *registration = NULL;
     EFI_STATUS st = BS->RegisterProtocolNotify(guid, ev, &registration);
@@ -407,7 +428,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(uefi_raw_locate_handle_notify_obj, uefi_raw_loc
 // handle 0 creates a fresh handle. uninstall_protocol_interface(handle, guid, iface) -> status.
 static mp_obj_t uefi_raw_install_protocol_interface(mp_obj_t handle_in, mp_obj_t guid_in, mp_obj_t iface_in) {
     EFI_HANDLE handle = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(handle_in);
-    EFI_GUID *guid = guid_from_obj(guid_in);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(guid_in, &gbuf);
     void *iface = (void *)(uintptr_t)mp_obj_get_int_truncated(iface_in);
     EFI_STATUS st = BS->InstallProtocolInterface(&handle, guid, EFI_NATIVE_INTERFACE, iface);
     return status_and_uint(st, (UINTN)(uintptr_t)handle);
@@ -416,7 +438,8 @@ static MP_DEFINE_CONST_FUN_OBJ_3(uefi_raw_install_protocol_interface_obj, uefi_r
 
 static mp_obj_t uefi_raw_uninstall_protocol_interface(mp_obj_t handle_in, mp_obj_t guid_in, mp_obj_t iface_in) {
     EFI_HANDLE handle = (EFI_HANDLE)(uintptr_t)mp_obj_get_int_truncated(handle_in);
-    EFI_GUID *guid = guid_from_obj(guid_in);
+    EFI_GUID gbuf;
+    EFI_GUID *guid = guid_from_obj(guid_in, &gbuf);
     void *iface = (void *)(uintptr_t)mp_obj_get_int_truncated(iface_in);
     EFI_STATUS st = BS->UninstallProtocolInterface(handle, guid, iface);
     return mp_obj_new_int_from_uint(st);
@@ -869,8 +892,10 @@ static const mp_rom_map_elem_t uefi_raw_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wstr_at), MP_ROM_PTR(&uefi_raw_wstr_at_obj) },
     { MP_ROM_QSTR(MP_QSTR_open_volume), MP_ROM_PTR(&uefi_raw_open_volume_obj) },
     { MP_ROM_QSTR(MP_QSTR_convert_rgb565), MP_ROM_PTR(&uefi_raw_convert_rgb565_obj) },
-    // The C uefi.Event type (defined in uefi_event_obj.c) folded under this module.
+    // The C uefi.Event / uefi.GUID types (uefi_event_obj.c, uefi_guid_obj.c) folded
+    // under this module.
     { MP_ROM_QSTR(MP_QSTR_Event), MP_ROM_PTR(&uefi_event_type) },
+    { MP_ROM_QSTR(MP_QSTR_GUID), MP_ROM_PTR(&uefi_guid_type) },
 };
 static MP_DEFINE_CONST_DICT(uefi_raw_globals, uefi_raw_globals_table);
 

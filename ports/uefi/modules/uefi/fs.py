@@ -23,10 +23,15 @@ def volumes():
 
 
 def open_volume(handle):
-    """Open `handle`'s volume and return a VFS object (mount it with os.mount)."""
-    ph = handle.open(guid.SIMPLE_FILE_SYSTEM_PROTOCOL)  # GET_PROTOCOL (untracked)
+    """Open a volume and return a VFS object (mount it with os.mount).
+
+    `handle` is any handle spelling: a Handle, a bare EFI_HANDLE int (such as
+    LoadedImage.device_handle), or any .ptr-bearing object.
+    """
+    # GET_PROTOCOL (untracked).
+    ph = _handle.ProtocolHandle.open(handle, guid.SIMPLE_FILE_SYSTEM_PROTOCOL)
     try:
-        return raw.open_volume(ph.ptr)  # OpenVolume → VfsEfi
+        return raw.open_volume(ph)  # OpenVolume → VfsEfi
     finally:
         ph.close()
 

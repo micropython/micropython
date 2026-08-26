@@ -15,7 +15,6 @@ import time
 import socket
 import tls
 import network
-import uctypes
 import uefi
 from uefi import load_file
 from uefi.buffer import PoolBuffer, LOADER_DATA
@@ -98,22 +97,21 @@ def download(url, name):
     print("  %s: %d bytes" % (name, length))
 
     buf = PoolBuffer(length, memory_type=LOADER_DATA)
+    # A memoryview over the pool lets us hand the socket a sub-range to fill without
+    # copying: slicing a memoryview aliases the same memory, where slicing the
+    # bytearray behind it would allocate.
+    mv = memoryview(buf.view)
     got = 0
-    # Body bytes already read alongside the headers (a small tail; copy directly).
+    # Body bytes already read alongside the headers (a small tail).
     if body:
-        n = min(len(body), length)
-        dst = uctypes.bytearray_at(buf.ptr, n)
-        for i in range(n):
-            dst[i] = body[i]
-        got = n
+        got = min(len(body), length)
+        mv[:got] = body[:got]
     # Bulk body: read straight into the pool buffer via readinto (a C-level copy —
     # no intermediate bytes, no per-byte Python loop), which matters at ~100 MB.
     # The progress bar is throttled to ~500 ms so it doesn't flood the serial console.
     last = time.ticks_ms()
     while got < length:
-        want = min(65536, length - got)
-        view = uctypes.bytearray_at(buf.ptr + got, want)
-        n = ss.readinto(view)
+        n = ss.readinto(mv[got : min(got + 65536, length)])
         if not n:
             break
         got += n

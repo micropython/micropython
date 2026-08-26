@@ -8,17 +8,19 @@
 # driver owns (do NOT free); read it with raw.wstr_at. Language is an RFC 4646
 # tag for CN2 ("en"); the older COMPONENT_NAME uses ISO 639-2 ("eng").
 
-from ..protocol import ProtocolDescriptor, Field, Method, Str, VPtr
+from ..protocol import ProtocolDescriptor, Field, Method, Out, Str, VPtr
 from .. import guid
 
 # GetDriverName(This, CHAR8 *Language, CHAR16 **DriverName)
 # GetControllerName(This, EFI_HANDLE Controller, EFI_HANDLE Child, CHAR8 *Language, CHAR16 **Name)
+# The name is an Out slot, and check=False keeps the status, so both methods
+# return (status, CHAR16*) — read the string with raw.wstr_at.
 COMPONENT_NAME2 = ProtocolDescriptor(
     "EFI_COMPONENT_NAME2_PROTOCOL",
     guid.COMPONENT_NAME2_PROTOCOL,
     [
-        Method("get_driver_name", (Str, VPtr), check=False),
-        Method("get_controller_name", (VPtr, VPtr, Str, VPtr), check=False),
+        Method("get_driver_name", (Str, Out(VPtr)), check=False),
+        Method("get_controller_name", (VPtr, VPtr, Str, Out(VPtr)), check=False),
         Field("supported_languages", Str),  # CHAR8* (space/semicolon-separated tags)
     ],
 )
@@ -28,8 +30,8 @@ COMPONENT_NAME = ProtocolDescriptor(
     "EFI_COMPONENT_NAME_PROTOCOL",
     guid.COMPONENT_NAME_PROTOCOL,
     [
-        Method("get_driver_name", (Str, VPtr), check=False),
-        Method("get_controller_name", (VPtr, VPtr, Str, VPtr), check=False),
+        Method("get_driver_name", (Str, Out(VPtr)), check=False),
+        Method("get_controller_name", (VPtr, VPtr, Str, Out(VPtr)), check=False),
         Field("supported_languages", Str),
     ],
 )

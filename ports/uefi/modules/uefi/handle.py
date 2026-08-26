@@ -3,11 +3,17 @@
 
 # uefi.handle — Handle wrappers and protocol open/close ownership.
 #
-# Handle wraps a raw EFI_HANDLE (exposed as `.ptr`, per the .ptr contract) and is
-# the entry point for the handle database: enumerate the protocols on a handle,
-# test for a protocol, or open one. A ProtocolHandle owns an OpenProtocol/
-# CloseProtocol pair (or a bare LocateProtocol result), so the firmware open is
-# released deterministically via close()/context-manager/__del__.
+# Handle wraps a raw EFI_HANDLE and is the entry point for the handle database:
+# enumerate the protocols on a handle, test for a protocol, or open one. A
+# ProtocolHandle owns an OpenProtocol/CloseProtocol pair (or a bare LocateProtocol
+# result), so the firmware open is released deterministically via close(), a
+# context manager, or finalisation.
+#
+# Handle() is also the package's handle coercion: it takes a Handle, a bare
+# EFI_HANDLE int (what raw.image_handle() and every descriptor pointer field give
+# you), or any object carrying its token as `.ptr`. Handles travel in both
+# directions — each of these objects exposes `.ptr` and converts under int(), so
+# it can go straight to the raw C surface, which reads pointers as integers.
 
 from micropython import const
 
@@ -29,8 +35,18 @@ _BY_PROTOCOL = const(2)
 
 
 class Handle:
+    # Handle(value) is the universal handle coercion: a Handle (re-wrapped), a bare
+    # EFI_HANDLE int — which is what raw.image_handle() and every descriptor VPtr
+    # field hand back — or any object carrying the token as `.ptr` (an Image, a
+    # ProtocolHandle). Every handle parameter in the package goes through it, so
+    # the two representations are interchangeable at every boundary.
     def __init__(self, ptr):
         self.ptr = int(ptr)
+
+    def __int__(self):
+        # The `.ptr` contract in integer form: lets a Handle be passed straight to
+        # the raw C surface, which reads pointer arguments as plain integers.
+        return self.ptr
 
     def __eq__(self, other):
         return isinstance(other, Handle) and other.ptr == self.ptr
@@ -47,10 +63,8 @@ class Handle:
         return [GUID(g) for g in lst]
 
     def supports(self, guid):
-        want = GUID(guid).bytes
-        st, lst = raw.protocols_per_handle(self.ptr)
-        status.check(st)
-        return any(g == want for g in lst)
+        want = GUID(guid)
+        return any(g == want for g in self.protocols())
 
     def open(self, guid, attributes=GET_PROTOCOL):
         return ProtocolHandle.open(self, guid, attributes)
@@ -61,9 +75,12 @@ class Handle:
         from . import device_path as _dp
 
         st, iface = raw.open_protocol(
-            self.ptr, DEVICE_PATH_PROTOCOL.bytes, raw.image_handle(), 0, GET_PROTOCOL
+            self.ptr, DEVICE_PATH_PROTOCOL, raw.image_handle(), 0, GET_PROTOCOL
         )
-        if st == status.NOT_FOUND:
+        # OpenProtocol reports EFI_UNSUPPORTED — not EFI_NOT_FOUND — for a protocol
+        # that simply isn't on the handle, so both mean "no device path here".
+        # Anything else is a real failure and is raised.
+        if st in (status.NOT_FOUND, status.UNSUPPORTED):
             return None
         status.check(st)
         return _dp.DevicePath.from_ptr(iface)
@@ -75,8 +92,10 @@ class Handle:
         each entry's `by_driver` / `by_child` tells you the driver↔controller
         relationships. Empty list if the protocol is present but unopened.
         """
-        st, entries = raw.open_protocol_information(self.ptr, GUID(guid).bytes)
-        if st == status.NOT_FOUND:
+        st, entries = raw.open_protocol_information(self.ptr, guid)
+        # As for device_path(): "the protocol isn't here" is not an error, but
+        # anything else (a bad handle, say) is raised rather than read as empty.
+        if st in (status.NOT_FOUND, status.UNSUPPORTED):
             return []
         status.check(st)
         return [ProtocolOpenInfo(*e) for e in entries]
@@ -115,18 +134,22 @@ class ProtocolHandle:
         self._attrs = attributes
         self._owns = owns
 
+    def __int__(self):
+        return self.ptr
+
     @classmethod
     def open(cls, handle, guid, attributes=GET_PROTOCOL):
+        h = Handle(handle)  # a Handle, an int, or any .ptr-bearing object
         g = GUID(guid)
         agent = raw.image_handle()
-        st, iface = raw.open_protocol(handle.ptr, g.bytes, agent, 0, attributes)
+        st, iface = raw.open_protocol(h.ptr, g, agent, 0, attributes)
         status.check(st)
-        return cls(iface, handle, g, attributes, owns=True)
+        return cls(iface, h, g, attributes, owns=True)
 
     @classmethod
     def locate(cls, guid):
         g = GUID(guid)
-        st, iface = raw.locate_protocol(g.bytes)
+        st, iface = raw.locate_protocol(g)
         status.check(st)
         return cls(iface, None, g, 0, owns=False)
 
@@ -134,7 +157,7 @@ class ProtocolHandle:
         # Only a tracked open (OpenProtocol) needs CloseProtocol; GET_PROTOCOL
         # opens aren't tracked by firmware, so its NOT_FOUND return is ignored.
         if self._owns and self.ptr and self._handle is not None:
-            raw.close_protocol(self._handle.ptr, self._guid.bytes, raw.image_handle(), 0)
+            raw.close_protocol(self._handle.ptr, self._guid, raw.image_handle(), 0)
         self._owns = False
         self.ptr = 0
 
@@ -159,7 +182,7 @@ def all_handles():
 
 
 def locate_handles(guid):
-    st, lst = raw.locate_handle_buffer(_BY_PROTOCOL, GUID(guid).bytes)
+    st, lst = raw.locate_handle_buffer(_BY_PROTOCOL, GUID(guid))
     status.check(st)
     return [Handle(h) for h in lst]
 

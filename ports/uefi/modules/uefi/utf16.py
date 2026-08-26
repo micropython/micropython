@@ -3,10 +3,8 @@
 
 # uefi.utf16 — CHAR16 (UTF-16LE) encode/decode, shared by every module that talks
 # to firmware wide-string fields (boot options, variable names, device-path text,
-# LoadOptions, ...). One copy: encode() was previously duplicated verbatim across
-# boot.py/protocol.py/variable.py/driver.py, and decode() existed in two places
-# with different behaviour (a naive UCS-2-only version alongside a correct,
-# surrogate-pair-aware one) — this file keeps the correct decoder only.
+# LoadOptions, ...). This is the single copy: both directions handle surrogate
+# pairs, so codepoints outside the BMP survive a round trip.
 
 
 def encode(s):

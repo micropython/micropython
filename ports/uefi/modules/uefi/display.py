@@ -50,11 +50,8 @@ class Display:
         """List (mode_number, width, height) for every supported display mode."""
         m = self.gop.struct_at("mode", GOP_MODE)
         out = []
-        size = bytearray(8)  # UINTN SizeOfInfo (out)
-        ip = bytearray(8)  # EFI_..._INFO * Info (out; firmware-allocated)
         for i in range(m.max_mode):
-            self.gop.query_mode(i, size, ip)
-            p = int.from_bytes(ip, "little")
+            _size, p = self.gop.query_mode(i)
             gi = GOP_INFO.wrap(p)
             out.append((i, gi.horizontal_resolution, gi.vertical_resolution))
             raw.free_pool(p)  # QueryMode allocates the info buffer; we own it

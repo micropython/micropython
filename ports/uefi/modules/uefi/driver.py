@@ -21,6 +21,8 @@ import uctypes
 from . import raw
 from . import status
 from . import utf16
+from . import coerce
+from . import device_path as _dp
 from .buffer import PoolBuffer, LOADER_DATA
 from .handle import Handle
 from .protocols import LOADED_IMAGE
@@ -33,6 +35,10 @@ class Image:
         self.ptr = int(image_handle)
         self._loaded = True
         self._options = None  # PoolBuffer backing LoadOptions, kept alive here
+
+    def __int__(self):
+        # The `.ptr` contract in integer form (see uefi.handle.Handle).
+        return self.ptr
 
     @classmethod
     def load_from_file(cls, path, *, boot_policy=False):
@@ -49,8 +55,12 @@ class Image:
 
     @classmethod
     def load_from_device_path(cls, dp, *, boot_policy=False):
-        """Load an image named by a DevicePath (the firmware reads it off its volume)."""
-        packed = dp.to_bytes()  # named local: must outlive the LoadImage call
+        """Load an image named by a device path (the firmware reads it off its volume).
+
+        `dp` is any device-path spelling: a DevicePath, its text form, packed
+        bytes, or a raw EFI_DEVICE_PATH_PROTOCOL pointer.
+        """
+        packed = _dp.as_device_path(dp).to_bytes()  # named local: outlives the call
         st, img = raw.load_image(boot_policy, raw.image_handle(), uctypes.addressof(packed), 0, 0)
         status.check(st)
         return cls(img)
@@ -62,15 +72,15 @@ class Image:
     def set_load_options(self, data):
         """Set the LoadOptions passed to the image at start() (its 'command line').
 
-        `data` may be bytes (used verbatim) or a str (encoded UTF-16LE with a NUL
-        terminator, the UEFI convention for a textual option string). The backing
-        buffer is a pool allocation held by this Image so it outlives start().
-        Call after load, before start().
+        `data` may be a str (encoded UTF-16LE with a NUL terminator, the UEFI
+        convention for a textual option string) or any byte block, used verbatim.
+        The backing buffer is a pool allocation held by this Image so it outlives
+        start(). Call after load, before start().
         """
         if isinstance(data, str):
             data = utf16.encode(data)
         else:
-            data = bytes(data)
+            data = coerce.as_buffer(data)
         self._options = PoolBuffer.from_bytes(data, memory_type=LOADER_DATA)
         li = self.loaded_image()
         li.load_options = self._options.ptr
@@ -120,13 +130,18 @@ class Image:
 def connect(handle, *, driver=None, remaining_path=None, recursive=False):
     """Connect one or more drivers to a controller (ConnectController).
 
-    driver=None lets the firmware choose applicable drivers; remaining_path is an
-    optional DevicePath restricting how far down the bus to connect; recursive
-    connects the whole subtree. EFI_NOT_FOUND (nothing to connect) is not an error.
+    `handle` and `driver` are any handle spelling (a Handle, a bare EFI_HANDLE
+    int, an Image); driver=None lets the firmware choose applicable drivers.
+    remaining_path is an optional device path — in any spelling — restricting how
+    far down the bus to connect; recursive connects the whole subtree.
+    EFI_NOT_FOUND (nothing to connect) is not an error.
     """
-    d = int(driver.ptr) if isinstance(driver, Handle) else int(driver or 0)
-    rp = uctypes.addressof(remaining_path.to_bytes()) if remaining_path is not None else 0
-    st = raw.connect_controller(int(handle.ptr), d, rp, bool(recursive))
+    d = coerce.as_ptr(driver)
+    # A named local: the packed bytes must stay referenced for the whole call, or
+    # the address we hand to the firmware can be collected out from under it.
+    packed = _dp.as_device_path(remaining_path).to_bytes() if remaining_path is not None else None
+    rp = uctypes.addressof(packed) if packed is not None else 0
+    st = raw.connect_controller(coerce.as_ptr(handle), d, rp, bool(recursive))
     if st != status.NOT_FOUND:
         status.check(st)
 
@@ -140,15 +155,14 @@ def driver_name(handle, language="en"):
     from .protocols import COMPONENT_NAME2
 
     try:
-        cn = COMPONENT_NAME2.open(Handle(handle) if not isinstance(handle, Handle) else handle)
+        cn = COMPONENT_NAME2.open(handle)
     except status.Error:
         return None
     try:
-        out = bytearray(8)
-        if cn.get_driver_name(language, out) != status.SUCCESS:
+        st, ptr = cn.get_driver_name(language)
+        if st != status.SUCCESS or not ptr:
             return None
-        ptr = int.from_bytes(out, "little")
-        return raw.wstr_at(ptr) if ptr else None
+        return raw.wstr_at(ptr)
     finally:
         cn.close()
 
@@ -157,19 +171,15 @@ def controller_name(driver_handle, controller, child=None, language="en"):
     """The driver's name for `controller` (and optional `child`), or None."""
     from .protocols import COMPONENT_NAME2
 
-    dh = driver_handle if isinstance(driver_handle, Handle) else Handle(driver_handle)
     try:
-        cn = COMPONENT_NAME2.open(dh)
+        cn = COMPONENT_NAME2.open(driver_handle)
     except status.Error:
         return None
     try:
-        out = bytearray(8)
-        c = controller.ptr if isinstance(controller, Handle) else int(controller)
-        ch = child.ptr if isinstance(child, Handle) else int(child or 0)
-        if cn.get_controller_name(c, ch, language, out) != status.SUCCESS:
+        st, ptr = cn.get_controller_name(coerce.as_ptr(controller), coerce.as_ptr(child), language)
+        if st != status.SUCCESS or not ptr:
             return None
-        ptr = int.from_bytes(out, "little")
-        return raw.wstr_at(ptr) if ptr else None
+        return raw.wstr_at(ptr)
     finally:
         cn.close()
 
@@ -177,9 +187,11 @@ def controller_name(driver_handle, controller, child=None, language="en"):
 def disconnect(handle, *, driver=None, child=None):
     """Disconnect drivers from a controller (DisconnectController).
 
-    driver=None disconnects all drivers; child=None disconnects all children of
-    the selected driver.
+    Handles take any spelling (see connect). driver=None disconnects all drivers;
+    child=None disconnects all children of the selected driver.
     """
-    d = int(driver.ptr) if isinstance(driver, Handle) else int(driver or 0)
-    c = int(child.ptr) if isinstance(child, Handle) else int(child or 0)
-    status.check(raw.disconnect_controller(int(handle.ptr), d, c))
+    status.check(
+        raw.disconnect_controller(
+            coerce.as_ptr(handle), coerce.as_ptr(driver), coerce.as_ptr(child)
+        )
+    )

@@ -5,7 +5,8 @@
 #
 # Read/write/enumerate firmware variables, and (where the firmware provides it)
 # register Variable Policy constraints. Names are Python str (marshalled to CHAR16
-# by the raw layer); namespaces are GUIDs; data is bytes.
+# by the raw layer); a namespace is any GUID spelling; data going in is any byte
+# block (bytes, a PoolBuffer, a DevicePath, ...) and comes back out as bytes.
 #
 # Pitfalls (see README.md): SetVariable on non-volatile vars
 # writes flash — don't loop. Enumeration order isn't stable; collect fully before
@@ -16,9 +17,10 @@ from micropython import const
 from . import raw
 from . import status
 from .guid import GUID
-from .protocol import ProtocolDescriptor, Field, Method, U64, VPtr
+from .protocol import ProtocolDescriptor, Field, Method, Out, Bool, U64, VPtr
 from . import guid as _guid
 from . import utf16
+from . import coerce
 
 # EFI_VARIABLE_* attribute flags (EFI_VARIABLE_ prefix stripped per convention).
 NON_VOLATILE = 0x01
@@ -42,26 +44,31 @@ def get(name, namespace):
 
 def get_with_attributes(name, namespace):
     """Return (attributes, data_bytes) for a variable."""
-    st, attrs, data = raw.get_variable(name, GUID(namespace).bytes)
+    st, attrs, data = raw.get_variable(name, namespace)
     status.check(st)
     return attrs, data
 
 
 def set(name, namespace, data, attributes=_DEFAULT_ATTRS):
-    """Create or replace a variable."""
-    status.check(raw.set_variable(name, GUID(namespace).bytes, attributes, data))
+    """Create or replace a variable.
+
+    `data` is any byte block — bytes, a PoolBuffer, a DevicePath, a GUID.
+    """
+    status.check(
+        raw.set_variable(name, namespace, attributes, coerce.as_buffer(data) if data else data)
+    )
 
 
 def delete(name, namespace):
     """Delete a variable (a no-op if it doesn't exist)."""
-    st = raw.set_variable(name, GUID(namespace).bytes, 0, None)
+    st = raw.set_variable(name, namespace, 0, None)
     if st != status.NOT_FOUND:
         status.check(st)
 
 
 def exists(name, namespace):
     """True if the variable is present."""
-    st, _attrs, _data = raw.get_variable(name, GUID(namespace).bytes)
+    st, _attrs, _data = raw.get_variable(name, namespace)
     if st == status.SUCCESS:
         return True
     if st == status.NOT_FOUND:
@@ -108,7 +115,7 @@ VARIABLE_POLICY = ProtocolDescriptor(
     [
         Field("revision", U64),
         Method("disable_variable_policy", ()),
-        Method("is_variable_policy_enabled", (VPtr,)),  # (BOOLEAN *State)
+        Method("is_variable_policy_enabled", (Out(Bool),)),  # (BOOLEAN *State) -> bool
         Method("register_variable_policy", (VPtr,)),  # (VARIABLE_POLICY_ENTRY *)
         Method("dump_variable_policy", (VPtr, VPtr)),
         Method("lock_variable_policy", ()),
@@ -146,9 +153,7 @@ class VariablePolicy:
 
     @staticmethod
     def is_enabled():
-        out = bytearray(1)
-        _proto().is_variable_policy_enabled(out)
-        return out[0] != 0
+        return _proto().is_variable_policy_enabled()
 
     @staticmethod
     def register(
@@ -164,7 +169,7 @@ class VariablePolicy:
         """Register a policy on a variable (or, with name=None, a namespace)."""
         if lock == LOCK_ON_VAR_STATE:
             raise NotImplementedError("LOCK_ON_VAR_STATE policies not yet supported")
-        ns = GUID(namespace).bytes
+        ns = GUID(namespace).bytes  # packed, for the policy entry below
         name_u16 = utf16.encode(name) if name is not None else b"\x00\x00"
         total = _ENTRY_HEADER + len(name_u16)
         # VARIABLE_POLICY_ENTRY: Version, Size, OffsetToName, Namespace(16),

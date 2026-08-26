@@ -13,9 +13,7 @@ if not pci:
     raise SystemExit
 
 p = P.PCI_IO.open(pci[0])
-b = [bytearray(8) for _ in range(4)]
-p.get_location(b[0], b[1], b[2], b[3])  # seg / bus / dev / fn
-loc = tuple(int.from_bytes(x, "little") for x in b)
+loc = p.get_location()  # four Out(U64) slots -> (seg, bus, dev, fn), decoded
 print(len(loc) == 4 and all(isinstance(v, int) for v in loc))
 p.close()
 print("pci ok")

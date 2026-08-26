@@ -18,6 +18,8 @@ from . import status
 from . import variable
 from . import guid as _guid
 from . import utf16
+from . import coerce
+from . import device_path as _dp
 from .device_path import DevicePath
 from .driver import Image
 
@@ -39,8 +41,10 @@ class LoadOption:
 
     def __init__(self, description, device_path, optional_data=b"", attributes=ACTIVE):
         self.description = description
-        self.device_path = device_path  # a DevicePath
-        self.optional_data = bytes(optional_data)
+        # Any device-path spelling: a DevicePath, its text form, packed bytes, or
+        # a raw EFI_DEVICE_PATH_PROTOCOL pointer.
+        self.device_path = _dp.as_device_path(device_path)
+        self.optional_data = bytes(coerce.as_buffer(optional_data))
         self.attributes = attributes
 
     @property
