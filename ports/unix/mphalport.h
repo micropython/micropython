@@ -85,6 +85,7 @@ static inline int mp_hal_readline(vstr_t *vstr, const char *p) {
 
 #endif
 
+#define mp_hal_delay_us mp_hal_delay_us
 static inline void mp_hal_delay_us(mp_uint_t us) {
     usleep(us);
 }
