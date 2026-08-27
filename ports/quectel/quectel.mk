@@ -68,4 +68,4 @@ QUEC_SRC_MOD +=  \
 	modhelios.c
 
 # py modules define
-QUEC_PY_MOD = modules/manifest.py
+QUEC_PY_MOD = boards/manifest.py
