@@ -77,12 +77,14 @@ static void usb_serial_jtag_isr_handler(void *arg) {
     }
 
     if (flags & USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY) {
-        // As per the ESP-IDF driver, allow for the possibility the USJ just sent a full
-        // 64-bit endpoint to the host and now it's waiting for another ZLP to flush the result
-        // to the OS
+        // This interrupt is only enabled after we've sent a full IN EP buffer to the host.
+
+        // As per the ESP-IDF driver, this is necessary if the USJ has just
+        // sent a full 64-byte EP to the host and now the host is waiting
+        // for another ZLP to signal that the transfer is actually done.
         usb_serial_jtag_ll_txfifo_flush();
 
-        // Disable this interrupt until next time we write into the FIFO
+        // Disable this interrupt until the next time we write a full EP buffer
         usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
     }
 }
@@ -122,9 +124,22 @@ void usb_serial_jtag_tx_strn(const char *str, size_t len) {
         l = usb_serial_jtag_ll_write_txfifo((const uint8_t *)str, l);
         str += l;
         len -= l;
+    }
+
+    // Clear any old "serial in empty" interrupt, as we're about to either
+    // manually flush or enable the interrupt if the TXFIFO is full (no risk of
+    // a lost flush as we check if the TXFIFO is full after we do this.)
+    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+
+    if (usb_serial_jtag_ll_txfifo_writable()) {
+        // If we haven't written a full EP buffer, manually flush it to send to the host
+        usb_serial_jtag_ll_txfifo_flush();
+    } else {
+        // If we have written a full EP buffer to send to the host then the hardware will flush
+        // automatically, but enable the "serial in empty" interrupt so we will send a ZLP once
+        // the full buffer has been sent.
         usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
     }
-    usb_serial_jtag_ll_txfifo_flush();
 }
 
 #endif // MICROPY_HW_ESP_USB_SERIAL_JTAG
