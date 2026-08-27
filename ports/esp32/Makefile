@@ -69,12 +69,33 @@ endif
 
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
+# Both EIM (Espressif Installation Manager) and the ESP-IDF `export` scripts for
+# all supported SDK versions set `$IDF_PATH` to point at the SDK root.  Right
+# now the `idf.py` script is located under `$IDF_PATH/tools`, so we look there
+# first, but we also do some sanity checks to have more accurate error messages
+# if something doesn't look right before starting the build.
+
+ifndef IDF_PATH
+$(error IDF_PATH environment variable not set - is your SDK set up correctly?)
+endif
+
+# If IDF_PATH points to a directory, look for idf.py there.
+ifeq ($(wildcard "$(IDF_PATH)/tools"),)
+IDF_PY := $(shell command -v "$(IDF_PATH)/tools/idf.py" 2> /dev/null)
+endif
+
+ifndef IDF_PY
+$(error IDF_PATH points to an invalid path or idf.py was not found at the expected location)
+endif
+
+$(info Using idf.py script at $(IDF_PY))
+
 define RUN_IDF_PY
-	$(Q)idf.py $(IDFPY_FLAGS) -B $(BUILD) $(1)
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD) $(1)
 endef
 
 all:
-	$(Q)idf.py $(IDFPY_FLAGS) -B $(BUILD) build || (echo -e $(HELP_BUILD_ERROR); false)
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD) build || (echo -e $(HELP_BUILD_ERROR); false)
 	$(Q)$(PYTHON) makeimg.py \
 		$(BUILD)/sdkconfig \
 		$(BUILD)/bootloader/bootloader.bin \
@@ -115,4 +136,4 @@ qemu:
 # This is done in a dedicated build directory as some CMake cache values are not
 # set correctly if not all submodules are loaded yet.
 submodules:
-	$(Q)idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure
