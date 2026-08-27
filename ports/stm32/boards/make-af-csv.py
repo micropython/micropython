@@ -324,10 +324,12 @@ SYS_FUNCTIONS = (
     "RCC",
     "NRST",
     "DAC",
-    "VBUS",
+    "USB",
     "LSCO",
     "SLEEP",
     "PWR",
+    "OPAMP",
+    "COMP",
 )
 
 # Exception: H7 power domain signals that appear in AF0 in the MCU XML
@@ -498,11 +500,13 @@ def collect_pin_signals(root):
         if pname is None:
             continue
         pin_full_name = pin.get("Name")
-        # BOOT0 appears in pin names (e.g. "PA14-BOOT0") but not as a
-        # <Signal> child. Inject it so it reaches the SYS column via
-        # SYS_FUNCTIONS.
+        # BOOT0 and NRST appear in pin names (e.g. "PA14-BOOT0",
+        # "PF2-NRST") but not as <Signal> children. Inject them so they
+        # reach the SYS column via SYS_FUNCTIONS.
         if "BOOT0" in pin_full_name and "BOOT0" not in result[pname]:
             result[pname].append("BOOT0")
+        if "NRST" in pin_full_name and "NRST" not in result[pname]:
+            result[pname].append("NRST")
         for sig in pin.findall("./Signal"):
             sig_name = sig.get("Name")
             io_modes = sig.get("IOModes")
