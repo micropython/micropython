@@ -69,12 +69,26 @@ endif
 
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
+# Check if it's exported from EIM first
+EIM_IDF_PY_FILE = $(shell command -v $(IDF_PATH)/tools/idf.py 2> /dev/null)
+ifdef EIM_IDF_PY_FILE
+IDF_PY ?= $(EIM_IDF_PY_FILE)
+else
+IDF_PY ?= idf.py
+endif
+
+ifeq ($(IDF_PY),)
+$(error Cannot find idf.py - please check your settings)
+endif
+
+$(echo Using idf.py script at $(IDF_PY))
+
 define RUN_IDF_PY
-	$(Q)idf.py $(IDFPY_FLAGS) -B $(BUILD) $(1)
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD) $(1)
 endef
 
 all:
-	$(Q)idf.py $(IDFPY_FLAGS) -B $(BUILD) build || (echo -e $(HELP_BUILD_ERROR); false)
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD) build || (echo -e $(HELP_BUILD_ERROR); false)
 	$(Q)$(PYTHON) makeimg.py \
 		$(BUILD)/sdkconfig \
 		$(BUILD)/bootloader/bootloader.bin \
@@ -115,4 +129,4 @@ qemu:
 # This is done in a dedicated build directory as some CMake cache values are not
 # set correctly if not all submodules are loaded yet.
 submodules:
-	$(Q)idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure
