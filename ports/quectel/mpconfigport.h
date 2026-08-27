@@ -58,6 +58,8 @@
 #define MICROPY_PY_DEFLATE                  (0)
 #define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+#define MICROPY_PY_MATH_GAMMA_FIX_NEGINF    (1)
+#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS   (1)
 
 #define MICROPY_PY_TIME_TIME_TIME_NS        (1)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
@@ -99,7 +101,7 @@
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
 
 #ifndef SSIZE_MAX
-#define SSIZE_MAX  0xFFFFFFFF
+#define SSIZE_MAX  (0x7fffffff)
 #endif
 
 #if defined(PLAT_Unisoc)
