@@ -15,6 +15,13 @@ import time
 
 from test_utils import test_instance_epilog, convert_device_shortcut_to_real_device
 
+TEST_READ_TIMEOUT = 1
+
+# For ESP32 boards with both native/USJ USB and a UART serial port, soft
+# reset may flush the UART buffer before it completes - this can be quite large
+# if it's backed up a lot of data during the previous test.
+SOFT_RESET_TIMEOUT = 5
+
 echo_test_script = """
 import sys
 bytes_min=%u
@@ -98,9 +105,25 @@ def drain_input(ser):
         time.sleep(0.1)
 
 
+def reset_into_raw_repl(ser):
+    try:
+        ser.timeout = SOFT_RESET_TIMEOUT
+        ser.flushInput()
+        ser.write(b"\x03\x01\x04")  # break, raw-repl, soft-reboot
+        EXPECTED1 = b"MPY: soft reboot\r\n"
+        EXPECTED2 = b"raw REPL; CTRL-B to exit\r\n>"
+        r1 = ser.read_until(EXPECTED1)
+        r2 = b""
+        if r1.endswith(EXPECTED1):
+            r2 = ser.read_until(EXPECTED2)
+        if not r2.endswith(EXPECTED2):
+            raise TestError("could not reset to raw REPL", r1 + r2)
+    finally:
+        ser.timeout = TEST_READ_TIMEOUT
+
+
 def send_script(ser, script):
-    ser.write(b"\x03\x01\x04")  # break, raw-repl, soft-reboot
-    drain_input(ser)
+    reset_into_raw_repl(ser)
     chunk_size = 32
     for i in range(0, len(script), chunk_size):
         ser.write(script[i : i + chunk_size])
@@ -270,13 +293,13 @@ def write_test(ser_repl, ser_data, bufsize, nbuf, verified):
 def do_test(dev_repl, dev_data=None, time_per_subtest=1):
     if dev_data is None:
         print("REPL and data on", dev_repl)
-        ser_repl = serial.Serial(dev_repl, baudrate=115200, timeout=1)
+        ser_repl = serial.Serial(dev_repl, baudrate=115200, timeout=TEST_READ_TIMEOUT)
         ser_data = ser_repl
     else:
         print("REPL on", dev_repl)
         print("data on", dev_data)
-        ser_repl = serial.Serial(dev_repl, baudrate=115200, timeout=1)
-        ser_data = serial.Serial(dev_data, baudrate=115200, timeout=1)
+        ser_repl = serial.Serial(dev_repl, baudrate=115200, timeout=TEST_READ_TIMEOUT)
+        ser_data = serial.Serial(dev_data, baudrate=115200, timeout=TEST_READ_TIMEOUT)
 
     # Do echo test first, and abort if it doesn't pass.
     echo_test(ser_repl, ser_data)
