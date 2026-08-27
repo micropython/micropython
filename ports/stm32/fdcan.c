@@ -70,11 +70,11 @@
 #define FDCAN_MESSAGE_RAM_SIZE  (2560 - 1)
 #endif // STM32H7 || STM32N6
 
-#if defined(STM32G4)
-// These HAL APIs are not implemented for STM32G4, so we implement them here...
+#if defined(STM32G4) || defined(STM32H5)
+// These HAL APIs are not implemented for STM32G4/H5, so we implement them here...
 static HAL_StatusTypeDef HAL_FDCAN_AddMessageToTxBuffer(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTypeDef *pTxHeader, uint8_t *pTxData, uint32_t BufferIndex);
 static HAL_StatusTypeDef HAL_FDCAN_EnableTxBufferRequest(FDCAN_HandleTypeDef *hfdcan, uint32_t BufferIndex);
-#endif // STM32G4
+#endif // STM32G4 || STM32H5
 
 // also defined in <PROC>_hal_fdcan.c, but not able to declare extern and reach the variable
 static const uint8_t DLCtoBytes[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
@@ -149,7 +149,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
     init->StdFiltersNbr = CAN_HW_MAX_STD_FILTER;
     init->ExtFiltersNbr = CAN_HW_MAX_EXT_FILTER;
 
-    #if defined(STM32G4)
+    #if defined(STM32G4) || defined(STM32H5)
     init->ClockDivider = FDCAN_CLOCK_DIV1;
     init->TxFifoQueueMode = fifo_queue_mode;
     #elif defined(STM32H7) || defined(STM32N6)
@@ -342,8 +342,8 @@ uint32_t can_get_source_freq(void) {
         default:
             abort(); // Should be unreachable, macro should return one of the above
     }
-    #elif defined(STM32G4)
-    // STM32G4 CAN clock from reset is HSE, unchanged by MicroPython
+    #elif defined(STM32G4) || defined(STM32H5)
+    // STM32G4/H5 CAN clock from reset is HSE, unchanged by MicroPython
     return HSE_VALUE;
     #else // G0, and assume other MCUs too.
     // CAN1/CAN2/CAN3 on APB1 use GetPCLK1Freq, alternatively use the following:
@@ -477,14 +477,14 @@ int can_receive(FDCAN_HandleTypeDef *can, can_rx_fifo_t fifo, FDCAN_RxHeaderType
     uint32_t index, *address;
     if (fifo == CAN_RX_FIFO0) {
         index = (*rxf & FDCAN_RXF0S_F0GI) >> FDCAN_RXF0S_F0GI_Pos;
-        #if defined(STM32G4)
+        #if defined(STM32G4) || defined(STM32H5)
         address = (uint32_t *)(can->msgRam.RxFIFO0SA + (index * (18U * 4U)));  // SRAMCAN_RF0_SIZE bytes, size not configurable
         #else
         address = (uint32_t *)(can->msgRam.RxFIFO0SA + (index * can->Init.RxFifo0ElmtSize * 4));
         #endif
     } else {
         index = (*rxf & FDCAN_RXF1S_F1GI) >> FDCAN_RXF1S_F1GI_Pos;
-        #if defined(STM32G4)
+        #if defined(STM32G4) || defined(STM32H5)
         address = (uint32_t *)(can->msgRam.RxFIFO1SA + (index * (18U * 4U)));  // SRAMCAN_RF1_SIZE bytes, size not configurable
         #else
         address = (uint32_t *)(can->msgRam.RxFIFO1SA + (index * can->Init.RxFifo1ElmtSize * 4));
@@ -666,7 +666,7 @@ void FDCAN2_IT1_IRQHandler(void) {
 }
 #endif
 
-#if defined(STM32G4)
+#if defined(STM32G4) || defined(STM32H5)
 // These implementations are copied from stm32h7xx_hal_fdcan.c with modifications for different G4 registers & code formatting
 
 // *FORMAT-OFF*
@@ -807,7 +807,7 @@ static void FDCAN_CopyMessageToRAM(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTy
   }
 }
 
-#endif // STM32G4
+#endif // STM32G4 || STM32H5
 
 // *FORMAT-ON*
 #endif // MICROPY_HW_ENABLE_CAN && MICROPY_HW_ENABLE_FDCAN
