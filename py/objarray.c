@@ -537,8 +537,10 @@ static mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_seq_clear(dest_items, o->len + len_adj, o->len, item_sz);
                     // TODO: alloc policy after shrinking
                 }
-                o->free -= len_adj;
-                o->len += len_adj;
+                if (len_adj != 0) {
+                    o->free -= len_adj;
+                    o->len += len_adj;
+                }
                 return mp_const_none;
                 #else
                 return MP_OBJ_NULL; // op not supported
