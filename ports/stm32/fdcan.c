@@ -371,7 +371,7 @@ static void encode_datalength(CanTxMsgTypeDef *txmsg) {
     size_t len_bytes = txmsg->DataLength;
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(DLCtoBytes); i++) {
         if (len_bytes <= DLCtoBytes[i]) {
-            #if defined(STM32N6)
+            #if defined(STM32H5) || defined(STM32N6)
             txmsg->DataLength = i;
             #else
             txmsg->DataLength = (i << 16);
@@ -755,7 +755,8 @@ static HAL_StatusTypeDef HAL_FDCAN_EnableTxBufferRequest(FDCAN_HandleTypeDef *hf
 
 #define SRAMCAN_TFQ_SIZE            (18U * 4U)         /* TX FIFO/Queue Elements Size in bytes  */
 
-// This function is copied 100% as-is from stm32g4xx_hal_fdcan.c, unfortunately
+// This function is copied from stm32g4xx_hal_fdcan.c, unfortunately. The only
+// change is for H5, where DataLength is a raw DLC index rather than a shifted value.
 static void FDCAN_CopyMessageToRAM(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTypeDef *pTxHeader, uint8_t *pTxData,
                                    uint32_t BufferIndex)
 {
@@ -781,11 +782,18 @@ static void FDCAN_CopyMessageToRAM(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTy
   }
 
   /* Build second word of Tx header element */
+  #if defined(STM32H5)
+  uint32_t dlc = pTxHeader->DataLength;
+  uint32_t header_dlc = dlc << 16U;
+  #else
+  uint32_t header_dlc = pTxHeader->DataLength;
+  uint32_t dlc = header_dlc >> 16U;
+  #endif
   TxElementW2 = ((pTxHeader->MessageMarker << 24U) |
                  pTxHeader->TxEventFifoControl |
                  pTxHeader->FDFormat |
                  pTxHeader->BitRateSwitch |
-                 pTxHeader->DataLength);
+                 header_dlc);
 
   /* Calculate Tx element address */
   TxAddress = (uint32_t *)(hfdcan->msgRam.TxFIFOQSA + (BufferIndex * SRAMCAN_TFQ_SIZE));
@@ -797,7 +805,7 @@ static void FDCAN_CopyMessageToRAM(FDCAN_HandleTypeDef *hfdcan, FDCAN_TxHeaderTy
   TxAddress++;
 
   /* Write Tx payload to the message RAM */
-  for (ByteCounter = 0; ByteCounter < DLCtoBytes[pTxHeader->DataLength >> 16U]; ByteCounter += 4U)
+  for (ByteCounter = 0; ByteCounter < DLCtoBytes[dlc]; ByteCounter += 4U)
   {
     *TxAddress = (((uint32_t)pTxData[ByteCounter + 3U] << 24U) |
                   ((uint32_t)pTxData[ByteCounter + 2U] << 16U) |
