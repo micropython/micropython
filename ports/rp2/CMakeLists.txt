@@ -71,6 +71,15 @@ if(NOT PICO_BOARD)
     string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
 endif()
 
+# Enable -mfloat-abi=hard on RP2350 ARM builds.
+# (RP2350 boards must define PICO_PLATFORM in their mpconfig*.cmake file(s) which are included
+# above.  The PICO_HARD_FLOAT_ABI option must be set before including pico_sdk_init.cmake below.)
+if(PICO_PLATFORM)
+    if(${PICO_PLATFORM} STREQUAL "rp2350")
+        set(PICO_HARD_FLOAT_ABI ON)
+    endif()
+endif()
+
 # Set the amount of C heap, if it's not already set.
 # If a board uses malloc then it must set this to at least 4096.
 if(NOT MICROPY_C_HEAP_SIZE)
