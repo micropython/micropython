@@ -1397,7 +1397,9 @@ the last matching regex is used:
                 test_dirs += (port_specific_test_dir,)
             if args.platform in PC_PLATFORMS:
                 # run PC tests
-                test_dirs += ("import",)
+                # Include extmod_hardware to check those tests can at least be
+                # compiled and/or skipped, including on unix minimal variant.
+                test_dirs += ("extmod_hardware", "import")
                 if args.build != "minimal":
                     test_dirs += ("cmdline", "io")
 
