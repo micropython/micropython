@@ -82,11 +82,15 @@ set(MICROPY_SOURCE_PORT
     zephyr_storage.c
     zephyr_filesystem.c
     mpthreadport.c
+    network_common.c
+    network_wlan.c
+    modnetwork.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
 set(MICROPY_SOURCE_SHARED
     libc/printf.c
+    netutils/netutils.c
     readline/readline.c
     runtime/gchelper_generic.c
     runtime/interrupt_char.c
