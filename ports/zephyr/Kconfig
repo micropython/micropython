@@ -83,6 +83,26 @@ choice MICROPY_CONFIG_ROM_LEVEL
 
 endchoice
 
+DT_CHOSEN_ZEPHYR_MBEDTLS_HEAP := zephyr,mbedtls-heap
+
+config MICROPY_MBEDTLS_HEAP_RELOCATE
+	bool "Relocate MbedTLS heap"
+	default $(dt_chosen_enabled,$(DT_CHOSEN_ZEPHYR_MBEDTLS_HEAP))
+	imply MBEDTLS_ENABLE_HEAP
+	imply MBEDTLS_HEAP_CUSTOM_SECTION
+	help
+		When a zephyr,mbedtls-heap chosen is present, redirect the mbedtls heap space
+		to the memory region it points at.
+
+if MICROPY_MBEDTLS_HEAP_RELOCATE
+
+DT_CHOSEN_ZEPHYR_MBEDTLS_HEAP_PATH := $(dt_chosen_path,$(DT_CHOSEN_ZEPHYR_MBEDTLS_HEAP))
+
+configdefault MBEDTLS_HEAP_SIZE
+	default $(dt_node_int_prop_int,$(DT_CHOSEN_ZEPHYR_MBEDTLS_HEAP_PATH),size)
+
+endif # MICROPY_MBEDTLS_HEAP_RELOCATE
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
