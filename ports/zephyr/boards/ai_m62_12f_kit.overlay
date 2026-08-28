@@ -42,6 +42,22 @@
 	status = "okay";
 };
 
+/* Fit envelope better to actual wireless RAM usage
+ * BLE takes off 32KB off WRAM
+ * Additionally, wifi picks about 68KB of uncached WRAM
+ */
+
+&all_ram {
+	reg = <0x62fc0000 DT_SIZE_K(380)>;
+	ranges = <0x0 0x62fc0000 DT_SIZE_K(380)>;
+};
+
+&wifi_ram {
+	/* 0x22fc0000 + all_ram */
+	reg = <0x2301f000 DT_SIZE_K(68)>;
+	ranges = <0x0 0x2301f000 DT_SIZE_K(68)>;
+};
+
 &pinctrl {
 	uart1_default: uart1_default {
 		group1 {
