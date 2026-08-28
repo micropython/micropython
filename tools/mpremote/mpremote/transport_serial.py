@@ -457,6 +457,7 @@ fs_hook_code = f"""\
 import os, io, struct, micropython
 
 SEEK_SET = 0
+SEEK_CUR = 1
 
 class RemoteCommand:
     def __init__(self):
@@ -682,6 +683,9 @@ class RemoteFile(io.IOBase):
         if n < 0:
             raise OSError(n)
         return n
+
+    def tell(self):
+        return self.seek(0, SEEK_CUR)
 
 
 class RemoteFS:
