@@ -194,4 +194,6 @@ target_sources(app PRIVATE
     src/usbd.c
 )
 
+zephyr_linker_sources_ifdef(CONFIG_MICROPY_MBEDTLS_HEAP_RELOCATE SECTIONS ld/mbedtls_heap_reloc.ld)
+
 target_link_libraries(app PRIVATE ${MICROPY_TARGET})
