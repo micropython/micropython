@@ -93,7 +93,7 @@ $(BUILD)/$(ALIF_TOC_CONFIG): mcu/$(ALIF_TOC_CONFIG).in | $(BUILD)
 
 $(ALIF_TOC_BIN): $(ALIF_TOC_APPS)
 	$(Q)$(PYTHON) $(ALIF_TOOLS)/app-gen-toc.py \
-		--filename $(abspath $(BUILD)/$(ALIF_TOC_CONFIG)) \
+		--filename "$(abspath $(BUILD)/$(ALIF_TOC_CONFIG))" \
 		--output-dir $(BUILD) \
 		--firmware-dir $(BUILD) \
 		--output $@
