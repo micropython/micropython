@@ -61,7 +61,6 @@
 #define MICROPY_STACK_CHECK_MARGIN  (512)
 #define MICROPY_STACK_SIZE_HARD_IRQ (CONFIG_ISR_STACK_SIZE)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_ENABLE_FINALISER    (MICROPY_VFS)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
@@ -102,7 +101,17 @@
 #define MICROPY_PY_ERRNO            (1)
 #endif
 #ifdef CONFIG_NETWORKING
+#define MICROPY_PY_ZEPHYR_NETWORK   (1)
+#ifdef CONFIG_NET_SOCKETS
 #define MICROPY_PY_SOCKET           (1)
+#ifdef CONFIG_NET_SOCKETS_SOCKOPT_TLS
+#define MICROPY_PY_ZEPHYR_TLS       (1)
+#endif
+#endif
+#ifdef CONFIG_WIFI
+#define MICROPY_PY_ZEPHYR_NETWORK_WLAN (1)
+#define MICROPY_SCHEDULER_STATIC_NODES (1)
+#endif
 #endif
 #ifdef CONFIG_BT
 #define MICROPY_PY_BLUETOOTH        (1)
@@ -129,6 +138,7 @@
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_VFS                 (1)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
+#define MICROPY_ENABLE_FINALISER    (MICROPY_VFS)
 
 #if defined(CONFIG_RISCV_ISA_RV32I) && defined(CONFIG_RISCV_ISA_EXT_M) && defined(CONFIG_RISCV_ISA_EXT_C)
 
@@ -202,4 +212,9 @@ typedef long mp_off_t;
 
 #ifdef CONFIG_NEWLIB_LIBC
 #define MICROPY_PY_MATH_POW_FIX_NAN (1)
+#endif
+
+/* Espressif WiFi stack has a name conflict with micropython hashlib module */
+#ifdef CONFIG_SOC_FAMILY_ESPRESSIF_ESP32
+#define MICROPY_PY_HASHLIB_SHA256 (0)
 #endif
