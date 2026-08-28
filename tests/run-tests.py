@@ -294,6 +294,8 @@ tests_requiring_slice = (
     "extmod/vfs_fat_ramdisklarge.py",
     "extmod/vfs_lfs.py",
     "extmod/vfs_rom.py",
+    "extmod_hardware/machine_i2c_target.py",
+    "extmod_hardware/machine_sdcard_dma_align.py",
     "float/string_format_modulo.py",
     "micropython/builtin_execfile.py",
     "micropython/extreme_exc.py",
