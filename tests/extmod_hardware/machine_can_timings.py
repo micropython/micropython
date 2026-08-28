@@ -29,14 +29,14 @@ class TestTimings(unittest.TestCase):
         for sample_point in (66, 75, 95):
             can = CAN(*can_args, bitrate=500_000, sample_point=sample_point, **can_kwargs)
             _bitrate, _sjw, tseg1, tseg2, _fd, _port = can.get_timings()
-            print(f"sample_point={sample_point}, tseg1={tseg1}, tseg2={tseg2}")
-            self.assertAlmostEqual(sample_point / 100, tseg1 / (tseg1 + tseg2), delta=0.05)
+            print("sample_point={}, tseg1={}, tseg2={}".format(sample_point, tseg1, tseg2))
+            self.assertAlmostEqual(sample_point / 100, tseg1 / (tseg1 + tseg2), delta=1 / 20)
             can.deinit()
 
     def test_tseg_args(self):
         # Verify that tseg1 and tseg2 are set correctly and sample_point is ignored if these are provided
         for tseg1, tseg2 in ((5, 2), (16, 8), (16, 5), (15, 5)):
-            print(f"tseg1={tseg1} tseg2={tseg2}")
+            print("tseg1={} tseg2={}".format(tseg1, tseg2))
             can = CAN(
                 *can_args, bitrate=250_000, tseg1=tseg1, tseg2=tseg2, sample_point=99, **can_kwargs
             )
