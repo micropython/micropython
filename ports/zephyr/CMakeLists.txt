@@ -85,6 +85,7 @@ set(MICROPY_SOURCE_PORT
     network_common.c
     network_wlan.c
     modnetwork.c
+    modtls.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
