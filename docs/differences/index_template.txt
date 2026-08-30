@@ -14,11 +14,17 @@ above.  The sections below describe the current status of these features.
     ../differences/python_38.rst
     ../differences/python_39.rst
     ../differences/python_310.rst
+    ../differences/numerics.rst
 
 For the features of Python that are implemented by MicroPython, there are
 sometimes differences in their behaviour compared to standard Python.  The
 operations listed in the sections below produce conflicting results in
 MicroPython when compared to standard Python.
+
+Another way of MicroPython differs from Python 3.x is that the precision of
+floating point numbers may be either single precision or double precision
+depending on the capabilities of the platform. This reduced precision can
+wreak havoc on accuracy if you are caught unawares.
 
 .. toctree::
     :maxdepth: 2
