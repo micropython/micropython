@@ -316,4 +316,38 @@ void mp_warning(const char *category, const char *msg, ...);
 #define mp_warning(...)
 #endif
 
+// Multi-level initialization system
+typedef enum {
+    MP_INIT_EARLY = 0,   // Critical early init (future use)
+    MP_INIT_CORE,        // Core subsystems (future use)
+    MP_INIT_DRIVER,      // Low-level drivers
+    MP_INIT_SERVICE,     // High-level services
+    MP_INIT_NUM_LEVELS
+} mp_init_level_t;
+
+typedef void (*mp_init_func_t)(void);
+
+#if MICROPY_ENABLE_INIT_LEVELS
+
+// Registration macros - embeds function name in section for debugging
+#define MP_INIT_REGISTER(level, priority, func) \
+    static const mp_init_func_t __mp_init_##level##_##priority##_##func \
+    __attribute__((section(".mp_init_" #level "." #priority "." #func), used)) = func
+
+#define MP_DEINIT_REGISTER(level, priority, func) \
+    static const mp_init_func_t __mp_deinit_##level##_##priority##_##func \
+    __attribute__((section(".mp_deinit_" #level "." #priority "." #func), used)) = func
+
+// Runner functions
+void mp_init_run_level(mp_init_level_t level);
+void mp_deinit_run_level(mp_init_level_t level);
+
+#else
+
+// Empty macros when feature is disabled
+#define MP_INIT_REGISTER(level, priority, func)
+#define MP_DEINIT_REGISTER(level, priority, func)
+
+#endif // MICROPY_ENABLE_INIT_LEVELS
+
 #endif // MICROPY_INCLUDED_PY_RUNTIME_H
