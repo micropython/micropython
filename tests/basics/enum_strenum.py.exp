@@ -1,0 +1,26 @@
+Test 1: Basic StrEnum
+Color.RED = red
+PASS
+
+Test 2: String operations
+Color.RED.upper() = RED
+PASS
+
+Test 3: String concatenation
+Color.RED + '_color' = red_color
+PASS
+
+Test 4: Enum properties still work
+Color.RED.name = RED
+Color.RED.value = red
+PASS
+
+Test 5: Lookup by value
+Color('red') is Color.RED: True
+PASS
+
+Test 6: StrEnum rejects non-string values
+Correctly raised TypeError: StrEnum values must be strings, not int
+PASS
+
+All StrEnum tests passed!
