@@ -279,6 +279,26 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr) {
     memcpy(p_addr->addr, local_ble_addr.addr, 6);
 }
 
+
+void ble_drv_address_set(ble_drv_addr_t * p_addr) {
+    SD_TEST_OR_ENABLE();
+
+    ble_gap_addr_t local_ble_addr;
+    local_ble_addr.addr_id_peer = 0x00;
+    local_ble_addr.addr_type = 0x00; // BLE_GAP_ADDR_TYPE_PUBLIC
+    memcpy(local_ble_addr.addr, p_addr->addr, 6);
+
+#if (BLUETOOTH_SD == 110)
+    uint32_t err_code = sd_ble_gap_address_set(&local_ble_addr);
+#else
+    uint32_t err_code = sd_ble_gap_addr_set(&local_ble_addr);
+#endif
+
+    if (err_code != 0) {
+        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("Can't set the device address. status: 0x" HEX2_FMT), (uint16_t)err_code);
+    }
+}
+
 bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
     SD_TEST_OR_ENABLE();
 
