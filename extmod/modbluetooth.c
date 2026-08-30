@@ -303,6 +303,12 @@ static mp_obj_t bluetooth_ble_active(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_active_obj, 1, 2, bluetooth_ble_active);
 
+static mp_obj_t bluetooth_ble_abort(void) {
+    mp_bluetooth_abort();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(bluetooth_ble_abort_obj, bluetooth_ble_abort);
+
 static mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (kwargs->used == 0) {
         // Get config value
@@ -934,6 +940,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_hci_cmd_obj, 5, 5, blue
 static const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     // General
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&bluetooth_ble_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_abort), MP_ROM_PTR(&bluetooth_ble_abort_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&bluetooth_ble_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&bluetooth_ble_irq_obj) },
     // GAP
