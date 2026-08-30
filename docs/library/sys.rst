@@ -101,9 +101,9 @@ Constants
    target has the ``_thread`` module.  If the target enables the GIL (global
    interpreter lock) then this attribute is ``"GIL"``.  Otherwise the attribute
    is ``"unsafe"`` and the target has threading but does not enable the GIL,
-   and mutable Python objects (such as `bytearray`, `list` and `dict`) that are
-   shared amongst threads must be protected explicitly by locks such as
-   ``_thread.allocate_lock``.
+   and mutable Python objects (such as `bytearray`, `list` and
+   :class:`~builtins.dict`) that are shared amongst threads must be protected
+   explicitly by locks such as ``_thread.allocate_lock``.
 
    .. admonition:: Difference to CPython
       :class: attention
