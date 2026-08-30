@@ -25,19 +25,10 @@
 	};
 };
 
-/* Delete defined partitions and make a layout matching the rp2 port RPI_PICO configuration. */
-/delete-node/ &code_partition;
 &flash0 {
 	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		/* Code slot: 640 KiB - 0x100 placed after second-stage bootloader. */
 		code_partition: partition@100 {
-			label = "code-partition";
 			reg = <0x00000100 (DT_SIZE_K(640) - 0x100)>;
-			read-only;
 		};
 
 		/* Storage slot: 1408 KiB placed after code_partition. */
