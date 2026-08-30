@@ -57,6 +57,10 @@
 #include "stack_size.h"
 #include "shared/runtime/pyexec.h"
 
+#if MICROPY_PY_OS_DUPTERM
+extern mp_obj_t mp_unix_stdio_obj;
+#endif
+
 // Command line options, with their defaults
 bool mp_compile_only = false;
 static uint emit_opt = MP_EMIT_OPT_NONE;
@@ -84,7 +88,6 @@ static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
-    mp_os_dupterm_tx_strn(str, len);
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -494,6 +497,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     mp_init();
+
+    #if MICROPY_PY_OS_DUPTERM
+    // Register the builtin stdio stream as dupterm slot 0.
+    MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_FROM_PTR(&mp_unix_stdio_obj);
+    #endif
 
     #if MICROPY_EMIT_NATIVE
     // Set default emitter options
