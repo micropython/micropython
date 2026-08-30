@@ -66,7 +66,7 @@ void MICROPY_WRAP_PANICHANDLER_FUN(__wrap_esp_panic_handler)(void *info) {
         "To learn more about how to debug and/or report this crash visit the wiki\r\n"
         "page at: https://github.com/micropython/micropython/wiki/ESP32-debugging\r\n"
         "\r\n"
-        "MPY version : " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN "\r\n"
+        "MPY version : " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN MICROPY_BUILD_ID_STR "\r\n"
         "IDF version : " IDF_VER "\r\n"
         "Machine     : " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n"
         "\r\n"
