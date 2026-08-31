@@ -371,20 +371,12 @@ static mp_uint_t get_label_dest(asm_x86_t *as, mp_uint_t label) {
 void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->base.code_offset;
-    if (dest != (mp_uint_t)-1 && rel < 0) {
-        // is a backwards jump, so we know the size of the jump on the first pass
-        // calculate rel assuming 8 bit relative jump
-        rel -= 2;
-        if (SIGNED_FIT8(rel)) {
-            asm_x86_write_byte_2(as, OPCODE_JMP_REL8, rel & 0xff);
-        } else {
-            rel += 2;
-            goto large_jump;
-        }
+    // calculate rel assuming 8 bit relative jump
+    rel -= 2;
+    if (SIGNED_FIT8(rel)) {
+        asm_x86_write_byte_2(as, OPCODE_JMP_REL8, rel & 0xff);
     } else {
-        // is a forwards jump, so need to assume it's large
-    large_jump:
-        rel -= 5;
+        rel -= 3;
         asm_x86_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x86_write_word32(as, rel);
     }
@@ -393,20 +385,12 @@ void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
 void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->base.code_offset;
-    if (dest != (mp_uint_t)-1 && rel < 0) {
-        // is a backwards jump, so we know the size of the jump on the first pass
-        // calculate rel assuming 8 bit relative jump
-        rel -= 2;
-        if (SIGNED_FIT8(rel)) {
-            asm_x86_write_byte_2(as, OPCODE_JCC_REL8 | jcc_type, rel & 0xff);
-        } else {
-            rel += 2;
-            goto large_jump;
-        }
+    // calculate rel assuming 8 bit relative jump
+    rel -= 2;
+    if (SIGNED_FIT8(rel)) {
+        asm_x86_write_byte_2(as, OPCODE_JCC_REL8 | jcc_type, rel & 0xff);
     } else {
-        // is a forwards jump, so need to assume it's large
-    large_jump:
-        rel -= 6;
+        rel -= 4;
         asm_x86_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x86_write_word32(as, rel);
     }
