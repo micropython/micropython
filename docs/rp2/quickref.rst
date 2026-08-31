@@ -119,6 +119,28 @@ Use the :mod:`time <time>` module::
     start = time.ticks_ms() # get millisecond counter
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
+Sleep Modes and Power Consumption
+---------------------------------
+
+On the rp2 port:
+
+* `time.sleep()` and `time.sleep_ms()` will suspend the CPU and reduce power
+  consumption compared to actively executing Python code, with no other
+  restrictions on functionality.
+* `machine.lightsleep()` can be used to suspend most internal peripherals and
+  clocks, with an optional timeout. This uses much less power, with some
+  restrictions on resuming execution:
+
+  * The board will be woken up immediately by any `machine.Pin.irq()` trigger
+    which is active when going into light sleep.
+  * If USB is active then `machine.lightsleep()` will wake up almost immediately
+    when the USB host sends the next packet.
+  * Other than `machine.Pin.irq()` and USB, other peripherals cannot wake the
+    board from light sleep.
+
+* `machine.deepsleep()` is implemented as a light sleep followed by a hard reset
+  of the board following wakeup.
+
 Timers
 ------
 
