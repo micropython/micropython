@@ -8,12 +8,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-try:
-    import unittest
-except MemoryError:
-    print("SKIP-TOO-LARGE")  # some small boards can't fit unittest in RAM
-    raise SystemExit
-
+import unittest
 
 # MicroPython V2.0 will enforce bounds on items (same as CPython), V1.x truncates
 #

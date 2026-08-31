@@ -243,8 +243,9 @@ def prepare_script_for_target(args, script_text, script_name, force_plain=False)
         except subprocess.CalledProcessError as er:
             return True, b"mpy-cross crash\n" + er.output + er.stderr
 
-        script_text = b"__buf=" + bytes(repr(mpy_data), "ascii") + b"\n"
-        script_text += bytes(_injected_import_hook_code, "ascii")
+        # script_text = b"__buf=" + bytes(repr(mpy_data), "ascii") + b"\n"
+        script_text = mpy_data
+        # script_text += bytes(_injected_import_hook_code, "ascii")
     else:
         print("error: using emit={} must go via .mpy".format(args.emit))
         sys.exit(1)
@@ -260,11 +261,20 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
     # If the print does not execute this means that the test did not even start, eg it was
     # too large for the target.
     prepend_start_test = not is_special
+    import_unittest = -1
     if prepend_start_test:
         if script.startswith(b"#"):
             script = b"print('START TEST')" + script
         else:
             script = b"print('START TEST')\n" + script
+
+        import_unittest = script.find(b"\nimport unittest\n")
+        if import_unittest != -1:
+            script = (
+                script[: import_unittest + 16]
+                + b";print('IMPORTED UNITTEST')"
+                + script[import_unittest + 16 :]
+            )
 
     had_crash, script = prepare_script_for_target(args, script, test_file, force_plain=is_special)
 
@@ -301,7 +311,12 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
             )
 
         # Execute the test, and collect the output.
-        pyb.exec_(script, timeout=TEST_TIMEOUT, data_consumer=data_consumer)
+        pyb.exec_(
+            script,
+            timeout=TEST_TIMEOUT,
+            data_consumer=data_consumer,
+            mpy=args.via_mpy and not is_special,
+        )
     except pyboard.PyboardError as e:
         had_crash = True
         if not is_special and e.args[0] == "exception":
@@ -309,6 +324,12 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
             data_consumer(e.args[1])
             data_consumer(e.args[2])
             if prepend_start_test and no_output and b"MemoryError" in e.args[2]:
+                output_mupy = b"SKIP-TOO-LARGE\n"
+            elif (
+                import_unittest > 0
+                and b"MemoryError" in e.args[2]
+                and b"IMPORTED UNITTEST" not in output_mupy
+            ):
                 output_mupy = b"SKIP-TOO-LARGE\n"
             else:
                 output_mupy += b"CRASH"

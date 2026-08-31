@@ -237,6 +237,19 @@ class SerialTransport(Transport):
         window_size = struct.unpack("<H", data)[0]
         window_remain = window_size
 
+        # expand escapes
+        cb = []
+        for b in command_bytes:
+            if b == 3 or b == 4 or b == 5:
+                cb.append(5)
+                if b == 5:
+                    cb.append(b)
+                else:
+                    cb.append(ord("C") + b - 3)
+            else:
+                cb.append(b)
+        command_bytes = bytes(cb)
+
         # Write out the command_bytes data.
         i = 0
         while i < len(command_bytes):
@@ -266,7 +279,7 @@ class SerialTransport(Transport):
         if not data.endswith(b"\x04"):
             raise TransportError("could not complete raw paste: {}".format(data))
 
-    def exec_raw_no_follow(self, command):
+    def exec_raw_no_follow(self, command, mpy=False):
         if isinstance(command, bytes):
             command_bytes = command
         else:
@@ -279,7 +292,10 @@ class SerialTransport(Transport):
 
         if self.use_raw_paste:
             # Try to enter raw-paste mode.
-            self.serial.write(b"\x05A\x01")
+            if mpy:
+                self.serial.write(b"\x05B\x01")
+            else:
+                self.serial.write(b"\x05A\x01")
             data = self.serial.read(2)
             if data == b"R\x00":
                 # Device understood raw-paste command but doesn't support it.
@@ -295,6 +311,9 @@ class SerialTransport(Transport):
                     raise TransportError("could not enter raw repl")
             # Don't try to use raw-paste mode again for this connection.
             self.use_raw_paste = False
+
+        if mpy:
+            raise TransportError("could not enter raw repl for mpy")
 
         # Write command using standard raw REPL, 256 bytes every 10ms.
         for i in range(0, len(command_bytes), 256):
