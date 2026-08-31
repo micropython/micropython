@@ -13,4 +13,4 @@ This tutorial is intended to get you started with the Zephyr port.
    repl.rst
    storage.rst
    pins.rst
-
+   video.rst

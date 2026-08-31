@@ -21,6 +21,7 @@ Features supported at this time:
 * `machine.SPI` class for SPI control.
 * `machine.PWM` class for PWM control.
 * `machine.ADC` class for ADC control.
+* `machine.Video` class for Video control.
 * `socket` module for networking (IPv4/IPv6).
 * `zsensor` module for reading sensors.
 * "Frozen modules" support to allow to bundle Python modules together
