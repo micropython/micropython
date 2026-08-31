@@ -47,7 +47,7 @@
 #include "genhdr/pins_af.h"
 #include "modmachine.h"
 #include "mphalport.h"
-#include "machine_scb.h"
+#include "scb.h"
 #include "sys_int.h"
 #include "clk.h"
 
@@ -68,6 +68,10 @@
 #define UART_FLOW_CONTROL_NONE    (0)
 #define UART_FLOW_CONTROL_RTS     (1)
 #define UART_FLOW_CONTROL_CTS     (2)
+
+// The RX FIFO level at which the RTS pin is deasserted to throttle the sender.
+// Threshold is set to 112 bytes, which is fifo size (128) - 16 bytes (cushion).
+#define UART_RTS_RX_FIFO_LEVEL    (112UL)
 #define UART_IRQ_RXIDLE           (CY_SCB_RX_INTR_NOT_EMPTY)
 
 // Class-level constants exposed to Python
@@ -83,7 +87,7 @@
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     int id;                         // id matches the SCB id.
-    machine_scb_obj_t *scb_obj;
+    scb_obj_t *scb_obj;
     pclk_div_obj_t *pclk_div;
     mp_hal_pin_obj_t tx;
     mp_hal_pin_obj_t rx;
@@ -152,17 +156,38 @@ static void machine_uart_irq_rx_break(machine_uart_obj_t *self);
 static void machine_uart_irq_tx_idle(machine_uart_obj_t *self);
 #endif
 
+static inline void machine_uart_irq_rx_not_empty_config(machine_uart_obj_t *self, bool enable) {
+    uint32_t mask = Cy_SCB_GetRxInterruptMask(self->scb_obj->scb);
+    if (enable) {
+        mask |= CY_SCB_RX_INTR_NOT_EMPTY;
+    } else {
+        mask &= ~CY_SCB_RX_INTR_NOT_EMPTY;
+    }
+    Cy_SCB_SetRxInterruptMask(self->scb_obj->scb, mask);
+}
+
+static inline void machine_uart_irq_rx_pause(machine_uart_obj_t *self) {
+    machine_uart_irq_rx_not_empty_config(self, false);
+}
+
+static inline void machine_uart_irq_rx_resume(machine_uart_obj_t *self) {
+    machine_uart_irq_rx_not_empty_config(self, true);
+}
+
 static void machine_uart_fill_rx_ring_buff(machine_uart_obj_t *self) {
     uint32_t available_rx_frames = Cy_SCB_UART_GetNumInRxFifo(self->scb_obj->scb);
     for (uint32_t i = 0; i < available_rx_frames; i++) {
-        if (!ringbuf_put(&self->rx_ringbuf, (uint8_t)Cy_SCB_UART_Get(self->scb_obj->scb))) {
+        if (ringbuf_free(&self->rx_ringbuf) == 0) {
             /**
-             * No overflow handling.
-             * Just return and wait for next interrupt
-             * to read the remaining data.
+             * Pause rx irq to avoid interrupt storms while the
+             * ring buffer is full. Supports RTS flow control,
+             * if enabled, to throttle the sender.
              */
+            machine_uart_irq_rx_pause(self);
             return;
         }
+
+        ringbuf_put(&self->rx_ringbuf, (uint8_t)Cy_SCB_UART_Get(self->scb_obj->scb));
     }
 }
 
@@ -214,11 +239,11 @@ static void machine_uart_obj_make_or_reuse(machine_uart_obj_t **self_ptr, uint8_
 
     if (*self_ptr == NULL) {
         /* Create a new object and allocate the scb instance if free.*/
-        if (machine_scb_is_free(id)) {
+        if (scb_is_free(id)) {
             (*self_ptr) = mp_machine_uart_obj_alloc();
             (*self_ptr)->id = id;
             (*self_ptr)->pclk_div = NULL;
-            (*self_ptr)->scb_obj = machine_scb_obj_alloc(id, *self_ptr, machine_uart_scb_isr);
+            (*self_ptr)->scb_obj = scb_obj_alloc(id, *self_ptr, machine_uart_scb_isr);
             pclk_div_slave_init((*self_ptr)->scb_obj->clk, (*self_ptr)->scb_obj->mmio_slave_nr);
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SCB %u is already in use by a machine.I2C or machine.SPI instance."), id);
@@ -340,12 +365,9 @@ static void machine_uart_hw_init(machine_uart_obj_t *self) {
         .receiverAddressMask = 0UL,
         .acceptAddrInFifo = false,
 
-        /**
-         * TODO: Enable CTS/RTS based on user config.
-         */
-        .enableCts = false,
+        .enableCts = (self->flow & UART_FLOW_CONTROL_CTS) != 0,
         .ctsPolarity = CY_SCB_UART_ACTIVE_LOW,
-        .rtsRxFifoLevel = 0UL,
+        .rtsRxFifoLevel = (self->flow & UART_FLOW_CONTROL_RTS) ? UART_RTS_RX_FIFO_LEVEL : 0UL,
         .rtsPolarity = CY_SCB_UART_ACTIVE_LOW,
 
         .rxFifoTriggerLevel = 0UL,
@@ -498,14 +520,17 @@ static void machine_uart_init_impl(machine_uart_obj_t **self_ptr, int uart_id, s
     /* -- Flow control pins -- */
     uint32_t flow = (uint32_t)args[ARG_flow].u_int;
 
-    /** TODO: Currently throw error if flow is not NONE.
-     * This needs to be implemented
-     * {
-     */
-    if (flow != UART_FLOW_CONTROL_NONE) {
-        mp_raise_ValueError(MP_ERROR_TEXT("flow control not supported yet. Keep flow=0"));
+    if ((flow & ~(UART_FLOW_CONTROL_RTS | UART_FLOW_CONTROL_CTS)) != 0U) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flow must be UART.RTS, UART.CTS or both"));
     }
-    /** } */
+
+    if ((args[ARG_rts].u_obj != mp_const_none) && ((flow & UART_FLOW_CONTROL_RTS) == 0U)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flow must include UART.RTS when rts pin is provided"));
+    }
+
+    if ((args[ARG_cts].u_obj != mp_const_none) && ((flow & UART_FLOW_CONTROL_CTS) == 0U)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flow must include UART.CTS when cts pin is provided"));
+    }
 
     #define PIN_AF_CONFIG_INDEX_NONE (0xFF)
     uint8_t pin_af_conf_rts_index = PIN_AF_CONFIG_INDEX_NONE;
@@ -651,7 +676,7 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     const mp_obj_t *init_args = args;
     if (n_args > 0 && mp_obj_is_int(args[0])) {
         uart_id = mp_obj_get_int(args[0]);
-        if (uart_id < 0 || uart_id >= MICROPY_PY_MACHINE_SCB_NUM_ENTRIES) {
+        if (uart_id < 0 || uart_id >= MICROPY_PY_SCB_NUM_ENTRIES) {
             mp_raise_ValueError(MP_ERROR_TEXT("UART id out of range"));
         }
         init_n_args = n_args - 1;
@@ -671,7 +696,7 @@ static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     machine_uart_hw_deinit(self);
     m_del(uint8_t, self->rx_ringbuf.buf, self->rx_ringbuf.size);
     pclk_div_slave_deinit(self->scb_obj->clk, self->scb_obj->mmio_slave_nr);
-    machine_scb_obj_free(self->scb_obj);
+    scb_obj_free(self->scb_obj);
     mp_machine_uart_obj_free(self);
 }
 
@@ -696,7 +721,9 @@ static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
 #if MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR
 static mp_int_t mp_machine_uart_readchar(machine_uart_obj_t *self) {
     if (machine_uart_rx_wait(self, self->timeout_ms)) {
-        return (uint8_t)ringbuf_get(&self->rx_ringbuf);
+        uint8_t data = (uint8_t)ringbuf_get(&self->rx_ringbuf);
+        machine_uart_irq_rx_resume(self);
+        return data;
     }
 
     return MP_STREAM_ERROR;
@@ -732,6 +759,7 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
         ringbuf_memcpy_get_internal(&self->rx_ringbuf, (uint8_t *)buf_in + read_count, to_read);
         read_count += to_read;
         size -= to_read;
+        machine_uart_irq_rx_resume(self);
     } while (size > 0 && machine_uart_rx_wait(self, self->timeout_char_ms));
 
     return read_count;
@@ -810,11 +838,11 @@ void machine_uart_deinit_all() {
     CY_SCB_RX_INTR_UART_BREAK_DETECT | \
     CY_SCB_TX_INTR_UART_DONE)
 
-static mp_obj_t machine_uart_rx_idle_soft(mp_obj_t self_in);
-static MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_rx_idle_soft_obj, machine_uart_rx_idle_soft);
+static mp_obj_t machine_uart_irq_rx_idle_soft(mp_obj_t self_in);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_irq_rx_idle_soft_obj, machine_uart_irq_rx_idle_soft);
 
 
-static mp_obj_t machine_uart_rx_idle_soft(mp_obj_t self_in) {
+static mp_obj_t machine_uart_irq_rx_idle_soft(mp_obj_t self_in) {
     /**
      * The irq handle is only scheduled when no bytes
      * have been received within the frame time.
@@ -830,7 +858,7 @@ static mp_obj_t machine_uart_rx_idle_soft(mp_obj_t self_in) {
             }
             self->rx_idle_irq_pending = false;
         } else {
-            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
+            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_irq_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
         }
     }
 
@@ -858,7 +886,7 @@ static void machine_uart_irq_rx_idle(machine_uart_obj_t *self) {
         self->rx_idle_timeout = mp_hal_ticks_ms() + frame_time_ms * RX_IDLE_NUM_OF_FRAMES_MARGIN;
         if (!self->rx_idle_irq_pending) {
             self->rx_idle_irq_pending = true;
-            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
+            mp_sched_schedule(MP_OBJ_FROM_PTR(&machine_uart_irq_rx_idle_soft_obj), MP_OBJ_FROM_PTR(self));
         }
     }
 }
@@ -987,7 +1015,7 @@ void machine_uart_repl_init() {
 
     uint8_t scb_unit = uart_pins_config[0].af->unit;
 
-    repl_uart_obj.scb_obj = machine_scb_obj_alloc(scb_unit, &repl_uart_obj, machine_uart_scb_isr);
+    repl_uart_obj.scb_obj = scb_obj_alloc(scb_unit, &repl_uart_obj, machine_uart_scb_isr);
     repl_uart_obj.id = scb_unit;
     mp_hal_periph_pins_af_init(uart_pins_config, 2);
 
