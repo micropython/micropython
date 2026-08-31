@@ -193,10 +193,10 @@ static bool controller_static_addr_available = false;
 static const uint8_t read_static_address_command_complete_prefix[] = { 0x0e, 0x1b, 0x01, 0x09, 0xfc };
 #endif
 
-static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+static void btstack_dispatch_hci_event(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
     (void)channel;
     (void)size;
-    DEBUG_printf("btstack_packet_handler_generic(packet_type=%u, packet=%p)\n", packet_type, packet);
+    DEBUG_printf("btstack_dispatch_hci_event(packet_type=%u, packet=%p)\n", packet_type, packet);
     if (packet_type != HCI_EVENT_PACKET) {
         return;
     }
@@ -372,6 +372,12 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
     }
 }
 
+static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    btstack_dispatch_hci_event(packet_type, channel, packet, size);
+    // Raised after dispatching, so a waiter sees the state this event carried.
+    mp_hal_signal_event();
+}
+
 static btstack_packet_callback_registration_t hci_event_callback_registration = {
     .callback = &btstack_packet_handler_generic
 };
@@ -510,12 +516,16 @@ static void btstack_init_deinit_timeout_handler(btstack_timer_source_t *ds) {
     // This signals both the loops in mp_bluetooth_init and mp_bluetooth_deinit,
     // as well as ports that run a polling loop.
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
+    // Runs off the run loop's timer, not its event dispatch, so raise here too.
+    mp_hal_signal_event();
 }
 
 #if !MICROPY_BLUETOOTH_USE_MP_HAL_GET_MAC_STATIC_ADDRESS
 static void btstack_static_address_ready(void *arg) {
     DEBUG_printf("btstack_static_address_ready.\n");
     *(volatile bool *)arg = true;
+    // Called from the run loop, which may not be the thread waiting on the flag.
+    mp_hal_signal_event();
 }
 #endif
 

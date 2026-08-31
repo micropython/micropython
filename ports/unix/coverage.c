@@ -19,6 +19,7 @@
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/bc.h"
+#include "py/mphal.h"
 
 // expected output of this file is found in extra_coverage.py.exp
 
@@ -795,11 +796,15 @@ static mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
         mp_printf(&mp_plat_print, "unlocked\n");
 
-        // drain pending callbacks, and test mp_event_wait_indefinite(), mp_event_wait_ms()
-        mp_event_wait_indefinite(); // the unix port only waits 500us in this call
+        // drain pending callbacks, and test mp_event_wait_ms()
         while (mp_sched_num_pending()) {
             mp_event_wait_ms(1);
         }
+
+        // test mp_event_wait_indefinite(), raising the wake event first so the
+        // wait has something to return on
+        mp_hal_signal_event();
+        mp_event_wait_indefinite();
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
         mp_sched_keyboard_interrupt();

@@ -112,4 +112,12 @@ uint64_t mp_hal_time_ns(void);
 #define MICROPY_INTERNAL_EVENT_HOOK (void)0
 #endif
 
+// Ends a blocking MICROPY_INTERNAL_WFE(), so the waiter re-evaluates its wait
+// conditions.  May be called from a signal handler or interrupt, and not
+// necessarily from within an atomic section.
+#ifndef mp_hal_signal_event
+// Fallback definition for ports whose wait cannot be ended early.
+#define mp_hal_signal_event() (void)0
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MPHAL_H
