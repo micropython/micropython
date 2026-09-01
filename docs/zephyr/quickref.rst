@@ -29,8 +29,8 @@ Use the :mod:`time <time>` module::
     start = time.ticks_ms()     # get millisecond counter
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
-Pins and GPIO
--------------
+GPIO
+----
 
 Use the :ref:`machine.Pin <machine.Pin>` class::
 
@@ -55,6 +55,19 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
     switch = Pin(("gpioc", 6), Pin.IN)            # create input pin for a switch
     switch.irq(lambda t: print("SW2 changed"))    # enable an interrupt when switch state is changed
+
+PinCtrl
+-------
+
+Use the :ref:`zephyr.PinCtrl <zephyr.PinCtrl>` class to configure pin roles::
+
+    from machine import UART
+    from zephyr import PinCtrl
+
+    rx = PinCtrl("GPIO0_UART1_RX", schmitt=True)
+    tx = PinCtrl(PinCtrl.MUXES.GPIO1_UART1_TX, schmitt=True)
+
+    ser = UART("uart1", rx=rx, tx=tx)
 
 PWM
 ---
