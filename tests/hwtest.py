@@ -100,7 +100,7 @@ def detect_octoprobe(device):
     t = SerialTransport(device)
     t.enter_raw_repl()
     t.exec("import os")
-    is_octoprobe_infra = "OCTOPROBE" in t.eval("os.listdir()")
+    is_octoprobe_infra = t.eval("hasattr(os, 'listdir')") and "OCTOPROBE" in t.eval("os.listdir()")
     t.close()
     return is_octoprobe_infra
 
