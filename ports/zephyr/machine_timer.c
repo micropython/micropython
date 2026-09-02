@@ -29,6 +29,7 @@
 
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared/runtime/mpirq.h"
@@ -101,9 +102,13 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     k_timer_init(&self->my_timer, machine_timer_callback, NULL);
     k_timer_user_data_set(&self->my_timer, self);
 
-    // Add the timer to the linked-list of timers
+    // Add the timer to the linked-list of timers.  The list is also accessed
+    // from the timer callback which runs in IRQ context, so guard against
+    // concurrent modification.
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     self->next = MP_STATE_PORT(machine_timer_obj_head);
     MP_STATE_PORT(machine_timer_obj_head) = self;
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 
     if (n_args > 0 || n_kw > 0) {
         mp_map_t kw_args;
@@ -164,7 +169,10 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
 
     k_timer_stop(&self->my_timer);
 
-    // remove it from the linked list
+    // Remove it from the linked list.  This can run in IRQ context (from the
+    // timer callback of a one-shot timer) as well as in thread context, so
+    // guard against concurrent modification.
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     for (machine_timer_obj_t *_timer = MP_STATE_PORT(machine_timer_obj_head); _timer != NULL; _timer = _timer->next) {
         if (_timer == self) {
             if (prev != NULL) {
@@ -178,6 +186,7 @@ static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
             prev = _timer;
         }
     }
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 
     return mp_const_none;
 }
