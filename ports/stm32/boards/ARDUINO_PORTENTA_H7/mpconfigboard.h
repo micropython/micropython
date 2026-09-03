@@ -99,7 +99,6 @@ void PORTENTA_board_osc_enable(int enable);
 // Peripheral clock sources
 #define MICROPY_HW_RCC_HSI48_STATE      (RCC_HSI48_ON)
 #define MICROPY_HW_RCC_USB_CLKSOURCE    (RCC_USBCLKSOURCE_HSI48)
-#define MICROPY_HW_RCC_RTC_CLKSOURCE    (RCC_RTCCLKSOURCE_LSI)
 #define MICROPY_HW_RCC_FMC_CLKSOURCE    (RCC_FMCCLKSOURCE_PLL2)
 #define MICROPY_HW_RCC_RNG_CLKSOURCE    (RCC_RNGCLKSOURCE_HSI48)
 #define MICROPY_HW_RCC_ADC_CLKSOURCE    (RCC_ADCCLKSOURCE_PLL3)
@@ -118,9 +117,16 @@ void PORTENTA_board_osc_enable(int enable);
 #define MICROPY_HW_ANALOG_SWITCH_PC2    (SYSCFG_SWITCH_PC2_OPEN)
 #define MICROPY_HW_ANALOG_SWITCH_PC3    (SYSCFG_SWITCH_PC3_OPEN)
 
-// There is an external 32kHz oscillator
-#define RTC_ASYNCH_PREDIV           (0)
-#define RTC_SYNCH_PREDIV            (0x7fff)
+// There is an accurate external 32kHz oscillator (a SiT1532 on OSC32_IN), but the
+// stock Arduino MCUboot bootloader is built with Mbed's lse_available=false and
+// reinitialises the RTC onto the LSI (wiping the calendar) at every hard reset if it
+// finds any other clock source selected.  So the RTC is left running from the LSI,
+// with prescalers for its nominal 32kHz; the LSE (and its 32768Hz prescalers) is
+// picked up automatically on boards whose bootloader has been updated to enable it.
+#define RTC_ASYNCH_PREDIV_LSE       (0)
+#define RTC_SYNCH_PREDIV_LSE        (0x7fff)
+#define RTC_ASYNCH_PREDIV_LSI       (0)
+#define RTC_SYNCH_PREDIV_LSI        (31999)
 #define MICROPY_HW_RTC_USE_BYPASS   (1)
 #define MICROPY_HW_RTC_USE_US       (1)
 #define MICROPY_HW_RTC_USE_CALOUT   (1)
