@@ -462,7 +462,7 @@ ifeq ($(MICROPY_FLOAT_IMPL),single)
     CFLAGS += \
         -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT \
         -fsingle-precision-constant \
-        -mfloat-abi=softfp \
+        -mfloat-abi=hard \
         -mfpu=fpv5-sp-d16
 else ifeq ($(MICROPY_FLOAT_IMPL),double)
     CFLAGS += \
