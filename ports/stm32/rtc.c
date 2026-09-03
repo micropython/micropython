@@ -67,6 +67,22 @@ static mp_uint_t rtc_info;
 #define RTC_SYNCH_PREDIV  (0x00ff)
 #endif
 
+// The prescalers are selected at startup for the clock source the RTC actually
+// runs from: the plain RTC_x_PREDIV values above divide a 32768Hz LSE, and the
+// _LSI values the LSI, dividing by its nominal 32000 by default.
+#ifndef RTC_ASYNCH_PREDIV_LSE
+#define RTC_ASYNCH_PREDIV_LSE RTC_ASYNCH_PREDIV
+#endif
+#ifndef RTC_SYNCH_PREDIV_LSE
+#define RTC_SYNCH_PREDIV_LSE RTC_SYNCH_PREDIV
+#endif
+#ifndef RTC_ASYNCH_PREDIV_LSI
+#define RTC_ASYNCH_PREDIV_LSI (0x7f)
+#endif
+#ifndef RTC_SYNCH_PREDIV_LSI
+#define RTC_SYNCH_PREDIV_LSI  (249)
+#endif
+
 static HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc);
 static void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool rtc_use_byp);
 static HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc);
@@ -123,8 +139,13 @@ void rtc_init_start(bool force_init) {
       - OutPutPolarity = High Polarity
       - OutPutType     = Open Drain */
     RTCHandle.Init.HourFormat = RTC_HOURFORMAT_24;
-    RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
-    RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;
+    if (rtc_use_lse) {
+        RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV_LSE;
+        RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV_LSE;
+    } else {
+        RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV_LSI;
+        RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV_LSI;
+    }
     RTCHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
     RTCHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
     RTCHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
@@ -143,6 +164,8 @@ void rtc_init_start(bool force_init) {
             && LL_RCC_LSE_IsReady()) {
             // LSE is enabled & ready --> no need to (re-)init RTC
             rtc_running = true;
+            RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV_LSE;
+            RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV_LSE;
             if (rtc_clock_source != LL_RCC_RTC_CLKSOURCE_LSE) {
                 LL_RCC_SetRTCClockSource(LL_RCC_RTC_CLKSOURCE_LSE);
             }
@@ -157,6 +180,8 @@ void rtc_init_start(bool force_init) {
                    && rtc_clock_source == LL_RCC_RTC_CLKSOURCE_LSI) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
             rtc_running = true;
+            RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV_LSI;
+            RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV_LSI;
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
@@ -172,6 +197,8 @@ void rtc_init_start(bool force_init) {
             == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0 | RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
             // LSE is enabled & ready --> no need to (re-)init RTC
             rtc_running = true;
+            RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV_LSE;
+            RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV_LSE;
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
@@ -182,6 +209,8 @@ void rtc_init_start(bool force_init) {
                    == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
             rtc_running = true;
+            RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV_LSI;
+            RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV_LSI;
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
@@ -210,8 +239,8 @@ void rtc_init_start(bool force_init) {
             // gets into a state where they are wrong then it will run slow or fast and
             // never be corrected.  In such a situation, attempt to reconfigure the values
             // without changing the data/time.
-            if (LL_RTC_GetSynchPrescaler(RTC) != RTC_SYNCH_PREDIV
-                || LL_RTC_GetAsynchPrescaler(RTC) != RTC_ASYNCH_PREDIV) {
+            if (LL_RTC_GetSynchPrescaler(RTC) != RTCHandle.Init.SynchPrediv
+                || LL_RTC_GetAsynchPrescaler(RTC) != RTCHandle.Init.AsynchPrediv) {
                 // Values are wrong, attempt to enter RTC init mode and change them.
                 LL_RTC_DisableWriteProtection(RTC);
                 LL_RTC_EnableInitMode(RTC);
@@ -219,8 +248,8 @@ void rtc_init_start(bool force_init) {
                 while (HAL_GetTick() - ticks_ms < RTC_TIMEOUT_VALUE) {
                     if (LL_RTC_IsActiveFlag_INIT(RTC)) {
                         // Reconfigure the RTC prescaler register PRER.
-                        LL_RTC_SetSynchPrescaler(RTC, RTC_SYNCH_PREDIV);
-                        LL_RTC_SetAsynchPrescaler(RTC, RTC_ASYNCH_PREDIV);
+                        LL_RTC_SetSynchPrescaler(RTC, RTCHandle.Init.SynchPrediv);
+                        LL_RTC_SetAsynchPrescaler(RTC, RTCHandle.Init.AsynchPrediv);
                         LL_RTC_DisableInitMode(RTC);
                         break;
                     }
@@ -259,6 +288,8 @@ void rtc_init_finalise() {
                 // LSE failed, fallback to LSI
                 rtc_use_lse = false;
                 rtc_info |= 0x01000000;
+                RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV_LSI;
+                RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV_LSI;
             }
             rtc_startup_tick = HAL_GetTick();
             PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse, false);
@@ -576,8 +607,8 @@ uint64_t mp_hal_time_ns(void) {
     HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
     ns = timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds);
     ns *= 1000000000ULL;
-    uint32_t usec = ((RTC_SYNCH_PREDIV - time.SubSeconds) * (1000000 / 64)) / ((RTC_SYNCH_PREDIV + 1) / 64);
-    ns += usec * 1000;
+    uint32_t synch_prediv = RTCHandle.Init.SynchPrediv;
+    ns += (uint64_t)(synch_prediv - time.SubSeconds) * 1000000000ULL / (synch_prediv + 1);
     #endif
     return ns;
 }
@@ -636,16 +667,17 @@ MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_info_obj, pyb_rtc_info);
 ///
 /// `subseconds` counts down from 255 to 0
 
-#define MEG_DIV_64 (1000000 / 64)
-#define MEG_DIV_SCALE ((RTC_SYNCH_PREDIV + 1) / 64)
-
 #if defined(MICROPY_HW_RTC_USE_US) && MICROPY_HW_RTC_USE_US
+// These use the runtime synchronous prescaler, which depends on whether the RTC
+// runs from the LSE or the LSI.
 uint32_t rtc_subsec_to_us(uint32_t ss) {
-    return ((RTC_SYNCH_PREDIV - ss) * MEG_DIV_64) / MEG_DIV_SCALE;
+    uint32_t synch_prediv = RTCHandle.Init.SynchPrediv;
+    return (uint64_t)(synch_prediv - ss) * 1000000 / (synch_prediv + 1);
 }
 
 uint32_t rtc_us_to_subsec(uint32_t us) {
-    return RTC_SYNCH_PREDIV - (us * MEG_DIV_SCALE / MEG_DIV_64);
+    uint32_t synch_prediv = RTCHandle.Init.SynchPrediv;
+    return synch_prediv - (uint64_t)us * (synch_prediv + 1) / 1000000;
 }
 #else
 #define rtc_us_to_subsec
