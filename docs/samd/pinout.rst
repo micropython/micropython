@@ -425,17 +425,17 @@ SEEED XIAO pin assignment table
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
 === ==== ============ ==== ==== ====== ====== ====== ======
-  2 PA02        A0_D0   2    0     -      -     -      -
-  4 PA04        A1_D1   4    4     -     0/0   0/0     -
- 10 PA10        A2_D2  10   18    0/2    2/2   1/0    0/2
- 11 PA11        A3_D3  11   19    0/3    2/3   1/1    0/3
-  8 PA08        A4_D4   -   16    0/0    2/0   0/0    1/2
-  9 PA09        A5_D5   9   17    0/1    2/1   0/1    1/3
- 40 PB08        A6_D6   8    2     -     4/0   4/0     -
- 41 PB09        A7_D7   9    3     -     4/1   4/1     -
-  7 PA07        A8_D8   7    7     -     0/3   1/1     -
-  5 PA05        A9_D9   5    5     -     0/1   0/1     -
-  6 PA06      A10_D10   6    6     -     0/2   1/0     -
+  2 PA02        D0/A0   2    0     -      -     -      -
+  4 PA04        D1/A1   4    4     -     0/0   0/0     -
+ 10 PA10        D2/A2  10   18    0/2    2/2   1/0    0/2
+ 11 PA11        D3/A3  11   19    0/3    2/3   1/1    0/3
+  8 PA08        D4/A4   -   16    0/0    2/0   0/0    1/2
+  9 PA09        D5/A5   9   17    0/1    2/1   0/1    1/3
+ 40 PB08        D6/A6   8    2     -     4/0   4/0     -
+ 41 PB09        D7/A7   9    3     -     4/1   4/1     -
+  7 PA07        D8/A8   7    7     -     0/3   1/1     -
+  5 PA05        D9/A9   5    5     -     0/1   0/1     -
+  6 PA06      D10/A10   6    6     -     0/2   1/0     -
  18 PA18       RX_LED   2    -    1/2    3/2   3/0    0/2
  41 PB09           RX   9    3     -     4/1   4/1     -
  40 PB08           TX   8    2     -     4/0   4/0     -
@@ -477,10 +477,17 @@ Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
 The default devices at the board are:
 
-- UART 4 at pins PB08/PB09, labelled A6_D6/A7_D7
-- I2C 2 at pins PA08/PA09, labelled A4_D4/A5_D5
-- SPI 0 at pins PA06/PA05/PA07, labelled A10_D10, A9_D9 and A8_D8
-- DAC output on pin PA02, labelled A0_D0
+- UART 4 at pins PB08/PB09, labelled D6/D7 (also A6/A7)
+- I2C 2 at pins PA08/PA09, labelled D4/D5 (also A4/A5)
+- SPI 0 at pins PA06/PA05/PA07, labelled D10, D9 and D8 (also A10, A9 and A8)
+- DAC output on pin PA02, labelled A0 (also D0)
+
+The labels A0-A10 and D0-D10 are separate aliases for the same 11 header pins.
+On the XIAO SAMD21 Plus, the additional expansion-header pins are D12 (PA28),
+D13 (PA17), D14 (PA16), D15 (PA15), D16 (PA14), D17 (PA13), D18 (PA12),
+D19 (PA19), D20 (PA20), D21 (PA21), D22 (PB10), D23 (PB11), D24 (PB23),
+D25 (PA23), D26 (PA22) and D27 (PA18). The Plus also exposes RGB_LED (PA27)
+and BUTTON (PB22).
 
 Adafruit Feather M0 Express pin assignment table
 ------------------------------------------------
