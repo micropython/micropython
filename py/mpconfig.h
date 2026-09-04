@@ -1365,6 +1365,14 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_BUILTINS_BYTES_HEX (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Record class-body annotations (PEP 526) in __annotations__. Required
+// for typing.get_type_hints, dataclasses, pydantic, attrs, and any
+// library that introspects field types. Default off because the
+// per-class dict allocation isn't free.
+#ifndef MICROPY_PY_BUILTINS_CLASS_ANNOTATIONS
+#define MICROPY_PY_BUILTINS_CLASS_ANNOTATIONS (0)
+#endif
+
 // Whether str object is proper unicode
 #ifndef MICROPY_PY_BUILTINS_STR_UNICODE
 #define MICROPY_PY_BUILTINS_STR_UNICODE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
