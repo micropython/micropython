@@ -70,6 +70,13 @@ most efficient way to install the ESP32 toolchain and build the project. If
 you use WSL then follow the Linux instructions rather than the Windows
 instructions.
 
+To obtain the toolchain and set up your environment, the Espressif instructions
+will guide you to either use the `install.sh` (or `install.bat` if you're on
+Windows) script, or to use their toolchain and environment manager, EIM.
+
+Installation via the install script
+-----------------------------------
+
 The Espressif instructions will guide you through using the `install.sh`
 (or `install.bat`) script to download the toolchain and set up your environment.
 The steps to take are summarised below.
@@ -108,6 +115,27 @@ install for multiple chips. Or omit the chip to install for all Espressif
 chips (which is slower).
 
 You will need to source `export.sh` for every new session.
+
+Installation via the EIM tool
+-----------------------------
+
+> [!WARNING]
+> EIM support is still somewhat experimental, as we've added a workaround for
+> some shortcomings in the tool's expectations for its own usage scenarios. Be
+> on the lookout for issues when building MicroPython with this method.
+
+Assuming you've installed the EIM tool correctly, you can use it to download the
+necessary components of one (or more) supported toolchain versions. The default
+settings will work for building MicroPython, although you may want to reduce the
+set of supported platforms if you're low on disk space.
+
+For more information on how to install and operate the EIM tool, visit [the
+official EIM site](https://docs.espressif.com/projects/idf-im-ui/en/latest/).
+
+Once you've activated your chosen environment as mentioned in the EIM
+documentation, you can just use the commands described in the next section: the
+build scripts will figure out whether an EIM environment is active, and pick
+it up from there.
 
 Building the firmware
 ---------------------
