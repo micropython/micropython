@@ -48,3 +48,7 @@ $MPREMOTE mount ${TMP} run "${TEST_DIR}/_test_mount_write_array.py"
 # Test readinto() with array returns byte count and fills correctly.
 echo -----
 $MPREMOTE mount ${TMP} run "${TEST_DIR}/_test_mount_readinto_array.py"
+
+# Test seek() and tell() on a remote file.
+echo -----
+$MPREMOTE mount ${TMP} exec "f = open('test.txt'); print(f.tell(), f.seek(4), f.tell(), f.seek(0, 2), f.tell(), f.seek(8), f.tell())"
