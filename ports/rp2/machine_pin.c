@@ -606,4 +606,11 @@ mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
     return pin->id;
 }
 
+mp_obj_t mp_hal_pin_to_obj(mp_hal_pin_obj_t pin) {
+    if (pin < MP_ARRAY_SIZE(machine_pin_obj_table)) {
+        return MP_OBJ_FROM_PTR(&machine_pin_obj_table[pin]);
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
+}
+
 MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[NUM_BANK0_GPIOS]);

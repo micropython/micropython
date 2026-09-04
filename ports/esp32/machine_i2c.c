@@ -355,9 +355,21 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(self);
 }
 
+static mp_obj_t machine_hw_i2c_scl(mp_obj_base_t *self_in) {
+    machine_hw_i2c_obj_t *self = (machine_hw_i2c_obj_t *)self_in;
+    return mp_hal_pin_to_obj(self->scl);
+}
+
+static mp_obj_t machine_hw_i2c_sda(mp_obj_base_t *self_in) {
+    machine_hw_i2c_obj_t *self = (machine_hw_i2c_obj_t *)self_in;
+    return mp_hal_pin_to_obj(self->sda);
+}
+
 static const mp_machine_i2c_p_t machine_hw_i2c_p = {
     .transfer_supports_write1 = true,
     .transfer = machine_hw_i2c_transfer,
+    .scl = machine_hw_i2c_scl,
+    .sda = machine_hw_i2c_sda,
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
