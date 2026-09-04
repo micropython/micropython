@@ -51,6 +51,10 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
+ifeq ($(MICROPY_PY_NETWORK_HALOW),1)
+include $(TOP)/drivers/halow/halow.mk
+endif
+
 # Set SDK directory based on MCU_SERIES
 MCUX_SDK_DIR = lib/nxp_driver/sdk
 MCU_DIR = $(MCUX_SDK_DIR)/devices/$(MCU_SERIES)

@@ -32,6 +32,9 @@
 #include "extmod/modbluetooth.h"
 #include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
+#if MICROPY_PY_NETWORK_HALOW
+#include "extmod/network_halow.h"
+#endif
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
@@ -173,6 +176,12 @@ int main(void) {
         #endif
         #if MICROPY_PY_MACHINE_I2C_TARGET
         mp_machine_i2c_target_deinit_all();
+        #endif
+        #if MICROPY_PY_NETWORK
+        mod_network_deinit();
+        #endif
+        #if MICROPY_PY_NETWORK_HALOW
+        network_halow_deinit_all();
         #endif
         #if MICROPY_PY_MACHINE_CAN
         machine_can_deinit_all();
