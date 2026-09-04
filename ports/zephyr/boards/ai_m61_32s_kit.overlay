@@ -1,10 +1,14 @@
 /*
- * Copyright (c) 2025 MASSDRIVER EI (massdriver.space)
+ * Copyright (c) 2025-2026 MASSDRIVER EI (massdriver.space)
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 / {
+	chosen {
+		zephyr,mbedtls-heap = &heap_mbedtls;
+	};
+
 	fstab {
 		compatible = "zephyr,fstab";
 		lfs: lfs {
@@ -21,11 +25,33 @@
 
 	heap_psram {
 		compatible = "micropython,heap";
-		size = <DT_SIZE_M(4)>;
+		size = <DT_SIZE_K(3968)>;
+		memory-region = <&psram>;
+	};
+
+	heap_mbedtls: heap_mbedtls {
+		compatible = "zephyr,heap";
+		size = <DT_SIZE_K(128)>;
 		memory-region = <&psram>;
 	};
 };
 
 &wdt0 {
 	status = "okay";
+};
+
+/* Fit envelope better to actual wireless RAM usage
+ * BLE takes off 32KB off WRAM
+ * Additionally, wifi picks about 68KB of uncached WRAM
+ */
+
+&all_ram {
+	reg = <0x62fc0000 DT_SIZE_K(380)>;
+	ranges = <0x0 0x62fc0000 DT_SIZE_K(380)>;
+};
+
+&wifi_ram {
+	/* 0x22fc0000 + all_ram */
+	reg = <0x2301f000 DT_SIZE_K(68)>;
+	ranges = <0x0 0x2301f000 DT_SIZE_K(68)>;
 };

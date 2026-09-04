@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<256>;
+			cache-size=<1024>;
+			lookahead-size=<32>;
+			block-cycles=<4>;
+		};
+	};
+
+	heap_psram {
+		compatible = "micropython,heap";
+		size = <DT_SIZE_M(6)>;
+		memory-region = <&ext_ram_mock>;
+	};
+
+	/* EXTRAM region does not result in a region that picks EXTRAM sections, bad espressif
+	 * However, the LD region already picks the mbedtls heap by default.
+	 */
+	ext_ram_mock: bad_memory_region {
+		compatible = "micropython,bad-region";
+		zephyr,memory-region = ".ext_ram_noinit.mpy_head";
+	};
+};
