@@ -37,6 +37,7 @@
 
 #include "modzephyr.h"
 #include "py/runtime.h"
+#include "zephyr_device.h"
 
 static mp_obj_t mod_is_preempt_thread(void) {
     return mp_obj_new_bool(k_is_preempt_thread());
@@ -70,6 +71,52 @@ static mp_obj_t mod_shell_exec(mp_obj_t cmd_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(mod_shell_exec_obj, mod_shell_exec);
 #endif // CONFIG_SHELL_BACKEND_SERIAL
 
+#ifdef CONFIG_MICROPY_DYNAMIC_DEVICE_INFOS
+static mp_obj_t mod_list_devices(void) {
+    size_t id = 0;
+    const mp_zephyr_device_data_t *dev_data;
+    mp_obj_t output = mp_obj_new_list(0, NULL);
+    const char *name_str, *api_str;
+
+    while (true) {
+        dev_data = device_find_by_id(id);
+        if (dev_data == NULL) {
+            break;
+        }
+        name_str = "";
+        api_str = "";
+        if (dev_data->name != NULL) {
+            name_str = dev_data->name;
+        }
+        if (dev_data->dev != NULL) {
+            api_str = device_get_api_str(device_get_api_kind(dev_data->dev));
+            if (api_str == NULL) {
+                api_str = "";
+            }
+        }
+        mp_obj_t tobj[3] = {
+            mp_obj_new_str_from_cstr(name_str),
+            mp_obj_new_str_from_cstr(api_str),
+        };
+        if (dev_data->label_cnt > 0) {
+            mp_obj_t tobj_buf[4];
+            size_t cnt;
+            for (cnt = 0; cnt < 4 && cnt < dev_data->label_cnt; cnt++) {
+                tobj_buf[cnt] = mp_obj_new_str_from_cstr(dev_data->labels[cnt]);
+            }
+            tobj[2] = mp_obj_new_tuple(cnt, tobj_buf);
+            mp_obj_list_append(output, mp_obj_new_tuple(3, tobj));
+        } else {
+            mp_obj_list_append(output, mp_obj_new_tuple(2, tobj));
+        }
+        id++;
+    }
+
+    return output;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_list_devices_obj, mod_list_devices);
+#endif
+
 static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zephyr) },
     { MP_ROM_QSTR(MP_QSTR_is_preempt_thread), MP_ROM_PTR(&mod_is_preempt_thread_obj) },
@@ -79,6 +126,9 @@ static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #endif
     #ifdef CONFIG_SHELL_BACKEND_SERIAL
     { MP_ROM_QSTR(MP_QSTR_shell_exec), MP_ROM_PTR(&mod_shell_exec_obj) },
+    #endif
+    #ifdef CONFIG_MICROPY_DYNAMIC_DEVICE_INFOS
+    { MP_ROM_QSTR(MP_QSTR_list_devices), MP_ROM_PTR(&mod_list_devices_obj) },
     #endif
     #ifdef CONFIG_DISK_ACCESS
     { MP_ROM_QSTR(MP_QSTR_DiskAccess), MP_ROM_PTR(&zephyr_disk_access_type) },
