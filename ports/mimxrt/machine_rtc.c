@@ -35,6 +35,14 @@
 #include "fsl_snvs_lp.h"
 #include "fsl_snvs_hp.h"
 
+#ifdef MIMXRT117x_SERIES
+#define RTC_IRQ_NUMBER SNVS_HP_NON_TZ_IRQn
+#define RTC_IRQ_HANDLER SNVS_HP_NON_TZ_IRQHandler
+#else
+#define RTC_IRQ_NUMBER SNVS_HP_WRAPPER_IRQn
+#define RTC_IRQ_HANDLER SNVS_HP_WRAPPER_IRQHandler
+#endif
+
 static mp_int_t timeout = 0;
 
 void machine_rtc_alarm_clear_en(void) {
@@ -51,11 +59,7 @@ void machine_rtc_alarm_set_en() {
 
 void machine_rtc_alarm_off(bool clear) {
     machine_rtc_alarm_clear_en();
-    #ifdef MIMXRT117x_SERIES
-    DisableIRQ(SNVS_HP_NON_TZ_IRQn);
-    #else
-    DisableIRQ(SNVS_HP_WRAPPER_IRQn);
-    #endif
+    DisableIRQ(RTC_IRQ_NUMBER);
 
     if (clear) {
         SNVS->LPTAR = 0;
@@ -65,11 +69,7 @@ void machine_rtc_alarm_off(bool clear) {
 }
 
 void machine_rtc_alarm_on() {
-    #ifdef MIMXRT117x_SERIES
-    EnableIRQ(SNVS_HP_NON_TZ_IRQn);
-    #else
-    EnableIRQ(SNVS_HP_WRAPPER_IRQn);
-    #endif
+    EnableIRQ(RTC_IRQ_NUMBER);
     machine_rtc_alarm_set_en();
 }
 
@@ -137,7 +137,7 @@ static const mp_irq_methods_t machine_rtc_irq_methods = {
     .info = machine_rtc_irq_info,
 };
 
-void SNVS_HP_WRAPPER_IRQHandler(void) {
+void RTC_IRQ_HANDLER(void) {
     if (SNVS->LPSR & SNVS_LPSR_LPTA_MASK) {
         SNVS->LPSR = SNVS_LPSR_LPTA_MASK;
         machine_rtc_irq_obj_t *irq = MP_STATE_PORT(machine_rtc_irq_object);
