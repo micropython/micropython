@@ -1,0 +1,5 @@
+dict delete+add cycles: OK
+post-lock contents: [14, 15, 16, 17, 18, 19] [14, 15, 16, 17, 18, 19]
+small dict cycles: OK
+all-tombstone add: OK
+after all-tombstone: ['new'] [99]

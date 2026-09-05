@@ -118,7 +118,7 @@ void pin_init0(void) {
     // assign all pins to the GPIO module so that peripherals can be connected to any
     // pins without conflicts after a soft reset
     const mp_map_t *named_map = &pin_board_pins_locals_dict.map;
-    for (uint i = 0; i < named_map->used - 1; i++) {
+    for (uint i = 0; i < mp_map_len(named_map) - 1; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
         pin_deassign (pin);
     }
@@ -216,7 +216,7 @@ static pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t n
 
 static pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit) {
     const mp_map_t *named_map = &named_pins->map;
-    for (uint i = 0; i < named_map->used; i++) {
+    for (uint i = 0; i < mp_map_len(named_map); i++) {
         if ((((pin_obj_t *)named_map->table[i].value)->port == port) &&
                 (((pin_obj_t *)named_map->table[i].value)->bit == bit)) {
             return named_map->table[i].value;
@@ -236,7 +236,7 @@ static int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, u
 
 static void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type) {
     const mp_map_t *named_map = &pin_board_pins_locals_dict.map;
-    for (uint i = 0; i < named_map->used - 1; i++) {
+    for (uint i = 0; i < mp_map_len(named_map) - 1; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
         // af is different than GPIO
         if (pin->af > PIN_MODE_0) {

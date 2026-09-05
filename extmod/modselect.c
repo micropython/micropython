@@ -205,7 +205,7 @@ static struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
 }
 
 static inline bool poll_set_all_are_fds(poll_set_t *poll_set) {
-    return poll_set->map.used == poll_set->used;
+    return mp_map_len(&poll_set->map) == poll_set->used;
 }
 
 #else
