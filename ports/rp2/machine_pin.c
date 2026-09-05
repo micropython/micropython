@@ -94,6 +94,13 @@ static inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
 #define is_ext_pin(x) false
 #endif
 
+static void mp_gpio_irq_enable(uint gpio, uint32_t events, bool enabled) {
+    // Setting IRQ enabled both allows handler to run and makes this pin wakeup from WFI/WFE
+    gpio_set_irq_enabled(gpio, events, enabled);
+    // ... also make an IRQ pin into a DORMANT mode wake source
+    gpio_set_dormant_irq_enabled(gpio, events, enabled);
+}
+
 static void gpio_irq(void) {
     for (int i = 0; i < num_intr_regs; ++i) {
         uint32_t intr = iobank0_hw->intr[i];
@@ -128,7 +135,7 @@ void machine_pin_deinit(void) {
         if (MICROPY_HW_PIN_RESERVED(i)) {
             continue;
         }
-        gpio_set_irq_enabled(i, GPIO_IRQ_ALL, false);
+        mp_gpio_irq_enable(i, GPIO_IRQ_ALL, false);
     }
     irq_remove_handler(IO_IRQ_BANK0, gpio_irq);
 }
@@ -439,7 +446,7 @@ void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trig
     machine_pin_irq_obj_t *irq = machine_pin_get_irq(pin);
 
     // Disable all IRQs while data is updated.
-    gpio_set_irq_enabled(pin, GPIO_IRQ_ALL, false);
+    mp_gpio_irq_enable(pin, GPIO_IRQ_ALL, false);
 
     // Update IRQ data.
     irq->base.handler = handler;
@@ -447,9 +454,9 @@ void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trig
     irq->flags = 0;
     irq->trigger = trigger;
 
-    // Enable IRQ if a handler is given.
-    if (handler != mp_const_none && trigger != MP_HAL_PIN_TRIGGER_NONE) {
-        gpio_set_irq_enabled(pin, trigger, true);
+    if (trigger != MP_HAL_PIN_TRIGGER_NONE) {
+        // Enable IRQ even if no handler is set, so pin can wake CPU from WFI/WFE/dormant
+        mp_gpio_irq_enable(pin, trigger, true);
     }
 }
 
@@ -575,10 +582,10 @@ MP_DEFINE_CONST_OBJ_TYPE(
 static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
-    gpio_set_irq_enabled(self->id, GPIO_IRQ_ALL, false);
+    mp_gpio_irq_enable(self->id, GPIO_IRQ_ALL, false);
     irq->flags = 0;
     irq->trigger = new_trigger;
-    gpio_set_irq_enabled(self->id, new_trigger, true);
+    mp_gpio_irq_enable(self->id, new_trigger, true);
     return 0;
 }
 
