@@ -27,13 +27,28 @@
 #include "sleep.h"
 #include "ports/unix/mphalport.h"
 
+// Override the unix atomic section macros with Windows versions.
+#if MICROPY_PY_THREAD
+#undef MICROPY_BEGIN_ATOMIC_SECTION
+#undef MICROPY_END_ATOMIC_SECTION
+#define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_windows_begin_atomic_section(), 0xffffffff)
+#define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_windows_end_atomic_section()
+#endif
+
 // Don't use the unix version of this macro.
 #undef MICROPY_INTERNAL_WFE
 
 #if MICROPY_ENABLE_SCHEDULER
 // Use minimum 1mSec sleep to make sure there is effectively a wait period:
 // something like usleep(500) truncates and ends up calling Sleep(0).
-#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) msec_sleep(MAX(1.0, (double)(TIMEOUT_MS)))
+// Release the GIL during sleep so other threads can run, and use alertable
+// sleep so APC functions (e.g. for GC) can be delivered.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do { \
+        MP_THREAD_GIL_EXIT(); \
+        msec_sleep(MAX(1.0, (double)(TIMEOUT_MS))); \
+        MP_THREAD_GIL_ENTER(); \
+    } while (0)
 #else
 #define MICROPY_INTERNAL_WFE(TIMEOUT_MS) /* No-op */
 #endif
