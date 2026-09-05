@@ -93,6 +93,30 @@ int vprintf_null(const char *format, va_list ap) {
     return 0;
 }
 
+// Route ESP-IDF runtime logs to the REPL stream(s)
+// (USB CDC / USB-JTAG / UART REPL / dupterm+WebREPL) via mp_hal_stdout_tx_strn.
+int vprintf_to_repl(const char *format, va_list ap) {
+    char buf[128];
+    int n = vsnprintf(buf, sizeof(buf), format, ap);
+    if (n > 0) {
+        size_t l = (size_t)n < sizeof(buf) ? (size_t)n : sizeof(buf) - 1;
+        // ESP-IDF logs end lines with a bare '\n'; the REPL terminal expects
+        // '\r\n', so translate (the normal IDF console layer is bypassed here).
+        size_t start = 0;
+        for (size_t i = 0; i < l; i++) {
+            if (buf[i] == '\n') {
+                mp_hal_stdout_tx_strn(buf + start, i - start);
+                mp_hal_stdout_tx_strn("\r\n", 2);
+                start = i + 1;
+            }
+        }
+        if (start < l) {
+            mp_hal_stdout_tx_strn(buf + start, l - start);
+        }
+    }
+    return n;
+}
+
 #if MICROPY_SSL_MBEDTLS
 static time_t platform_mbedtls_time(time_t *timer) {
     // mbedtls_time requires time in seconds from EPOCH 1970
