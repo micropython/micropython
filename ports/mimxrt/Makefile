@@ -285,6 +285,7 @@ SHARED_SRC_C += \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/netutils/dhcpserver.c \
+	shared/netutils/get_mac_ascii.c \
 	shared/netutils/netutils.c \
 	shared/netutils/trace.c \
 	shared/readline/readline.c \

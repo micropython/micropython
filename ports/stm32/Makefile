@@ -195,6 +195,7 @@ MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
 	netutils/dhcpserver.c \
+	netutils/get_mac_ascii.c \
 	netutils/netutils.c \
 	netutils/trace.c \
 	readline/readline.c \
