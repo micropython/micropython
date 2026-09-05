@@ -1,0 +1,5 @@
+{"right": {"right": null, "left": {"right": null, "left": null, "value": 4}, "value": 3}, "left": {"right": null, "left": null, "value": 2}, "value": 1}
+{"nodes": [{"right": null, "left": null, "value": 5}, {"right": null, "left": null, "value": 6}, {"right": null, "left": null, "value": 7}]}
+Exception
+Exception
+Exception
