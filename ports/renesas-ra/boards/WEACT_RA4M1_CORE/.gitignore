@@ -1,0 +1,11 @@
+/.settings/
+/cmake/
+/ra/
+/script/
+/src/
+/.api_xml
+/.secure_azone
+/.secure_xml
+/buildinfo.json
+/memory_regions.ld
+/ra_cfg.txt
