@@ -53,7 +53,9 @@
 
 void mp_hal_set_interrupt_char(char c);
 
-#define mp_hal_stdio_poll unused // this is not implemented, nor needed
+#if !MICROPY_PY_OS_DUPTERM
+#define mp_hal_stdio_poll unused // not implemented, nor needed without dupterm
+#endif
 void mp_hal_stdio_mode_raw(void);
 void mp_hal_stdio_mode_orig(void);
 
