@@ -166,6 +166,24 @@
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
 #define MICROPY_PY_MACHINE_UART_IRQ         (1)
+// machine.CAN uses the node-based TWAI driver (driver/twai_onchip.h), available
+// from ESP-IDF v5.4. A board opts in with MICROPY_HW_ENABLE_CAN and defines its
+// CAN pins (see machine_can.c).
+#ifndef MICROPY_HW_ENABLE_CAN
+#define MICROPY_HW_ENABLE_CAN              (0)
+#endif
+#ifndef MICROPY_PY_MACHINE_CAN
+#define MICROPY_PY_MACHINE_CAN              (MICROPY_HW_ENABLE_CAN && SOC_TWAI_SUPPORTED && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0))
+#endif
+#if MICROPY_PY_MACHINE_CAN
+#define MICROPY_PY_MACHINE_CAN_INCLUDEFILE  "ports/esp32/machine_can.c"
+#ifndef MICROPY_HW_NUM_CAN
+#define MICROPY_HW_NUM_CAN                  (1)
+#endif
+#ifndef MICROPY_HW_CAN_IS_RESERVED
+#define MICROPY_HW_CAN_IS_RESERVED(can_id)  (false)
+#endif
+#endif
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
 #ifndef MICROPY_HW_RTC_USER_MEM_MAX
