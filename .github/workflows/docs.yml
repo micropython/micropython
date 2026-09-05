@@ -5,7 +5,6 @@ on:
   pull_request:
     paths:
       - docs/**
-      - py/**
       - tests/cpydiff/**
 
 concurrency:
@@ -25,3 +24,17 @@ jobs:
       run: tools/ci.sh unix_build_helper
     - name: Build docs
       run: make -C docs/ html
+    # The following steps capture the built docs so the "Deploy docs preview"
+    # workflow can publish them. They run on pull requests only, where the
+    # GITHUB_TOKEN is read-only, so untrusted fork code never gains write access.
+    - name: Save PR number
+      if: github.event_name == 'pull_request'
+      run: echo "${{ github.event.number }}" > pr-number.txt
+    - name: Upload docs artifact
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v4
+      with:
+        name: docs-html
+        path: |
+          docs/build/html
+          pr-number.txt

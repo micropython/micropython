@@ -1,0 +1,107 @@
+name: Deploy docs preview
+
+# Runs after "Build docs" completes. Using workflow_run means this job runs in
+# the context of the base repository (not the PR fork), so it can access the
+# deploy key, while the build that ran untrusted PR code had only a read-only
+# token.
+#
+# Previews are published to a SEPARATE repository (<owner>/micropython-docs-
+# previews) so that this repository's history and clone size are never affected.
+# Pushing there uses a repo-scoped SSH deploy key held in the PREVIEW_DEPLOY_KEY
+# secret; this repository's GITHUB_TOKEN is never granted write access.
+#
+# If PREVIEW_DEPLOY_KEY is not set (e.g. on a fork, or before a maintainer has
+# configured the previews repository), the deployment steps are skipped and the
+# job succeeds without doing anything.
+
+on:
+  workflow_run:
+    workflows: ["Build docs"]
+    types:
+      - completed
+
+# Serialise with the cleanup workflow so concurrent pushes to the previews
+# repository from different PRs cannot reject each other.
+concurrency:
+  group: docs-preview-publish
+
+permissions:
+  pull-requests: write  # comment the preview link on the PR
+  actions: read         # download the artifact from the triggering run
+
+env:
+  preview_repo: ${{ github.repository_owner }}/micropython-docs-previews
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+    - name: Check previews are configured
+      id: config
+      env:
+        DEPLOY_KEY: ${{ secrets.PREVIEW_DEPLOY_KEY }}
+      run: |
+        if [ -n "$DEPLOY_KEY" ]; then
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "PREVIEW_DEPLOY_KEY is not set; skipping preview deployment."
+        fi
+    - name: Download docs artifact
+      if: steps.config.outputs.enabled == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        name: docs-html
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path: artifact
+    - name: Read and validate PR number
+      if: steps.config.outputs.enabled == 'true'
+      id: pr
+      run: |
+        # pr-number.txt comes from the build artifact, which is produced by
+        # untrusted PR code, so the value must be validated before it is used in
+        # a path. Accept a plain positive integer only.
+        n="$(cat artifact/pr-number.txt)"
+        if ! [[ "$n" =~ ^[1-9][0-9]*$ ]]; then
+          echo "Refusing to deploy: invalid PR number '$n'." >&2
+          exit 1
+        fi
+        echo "number=$n" >> "$GITHUB_OUTPUT"
+    - name: Publish preview to previews repository
+      if: steps.config.outputs.enabled == 'true'
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        deploy_key: ${{ secrets.PREVIEW_DEPLOY_KEY }}
+        external_repository: ${{ env.preview_repo }}
+        publish_dir: artifact/docs/build/html
+        destination_dir: pr-${{ steps.pr.outputs.number }}
+        keep_files: true  # preserve previews belonging to other PRs
+    - name: Comment preview link
+      if: steps.config.outputs.enabled == 'true'
+      uses: actions/github-script@v9
+      env:
+        preview_repo: ${{ env.preview_repo }}
+        pr_number: ${{ steps.pr.outputs.number }}
+      with:
+        script: |
+          const n = Number(process.env.pr_number);
+          const [owner, repo] = process.env.preview_repo.split('/');
+          const url = `https://${owner}.github.io/${repo}/pr-${n}/`;
+          const marker = '<!-- docs-preview -->';
+          const body = `${marker}\n📖 Documentation preview for this PR: ${url}`;
+          const { data: comments } = await github.rest.issues.listComments({
+            ...context.repo, issue_number: n,
+          });
+          const existing = comments.find(c => c.body.includes(marker));
+          if (existing) {
+            await github.rest.issues.updateComment({
+              ...context.repo, comment_id: existing.id, body,
+            });
+          } else {
+            await github.rest.issues.createComment({
+              ...context.repo, issue_number: n, body,
+            });
+          }
