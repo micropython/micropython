@@ -140,6 +140,38 @@ multiple identical strings. Each time a new string is allocated at runtime (for
 example, when two other strings are concatenated), MicroPython checks whether
 the new string can be interned to save RAM.
 
+To further elaborate on string concatenation, that applies both to strings
+constructed at runtime and to string literals: so a simple expression like
+``"a" + "b"`` could create up to three interned strings even if the expression
+could be folded into one single concatenated literal at parsing time. Regular
+and multi-line literal strings work exactly the same from this point of view.
+
+In cases like this, interning may end up taking more RAM than needed since all
+intermediate string fragments get stored even if they are only used to build a
+single literal. If the intermediate strings used for the concatenation won't
+appear again, that's RAM that could have been saved by storing the final version
+of the string in the source to begin with.
+
+Doing so not only consumes more RAM than it should, but it is also slower: the
+compiler will generate the necessary opcodes to build the string at runtime
+(ie. load first string object, load second string object, invoke the ``__add__``
+operator function on the first object with the second object, then use the
+result). Using ``@micropython.viper`` or ``@micropython.native`` here would not
+completely solve the problem, it will just generate native code versions of the
+same opcodes. The number of steps it will take to build such a string is the
+same.
+
+If needed (to follow stricter maximum line length rules in source files, for
+example), long string literals can be split using the standard CPython string
+concatenation operator ``\`` and still be considered one single string:
+
+.. code:: python
+
+    LONG_STRING = "long strings can be broken into " \
+        "separate sub-strings like this " \
+        "and will be interned as a single " \
+        "string by MicroPython."
+
 If you have code which performs performance-critical string operations then
 consider using :class:`bytes` objects and literals (i.e. ``b"abc"``). This skips
 the interning check, and can be several times faster than performing the same
