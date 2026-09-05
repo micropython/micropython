@@ -42,6 +42,9 @@ void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
     #endif
+
+    // Outside the atomic section, which isn't async-signal-safe on all ports.
+    mp_hal_signal_event();
 }
 
 #if MICROPY_KBD_EXCEPTION
@@ -153,6 +156,9 @@ void mp_sched_unlock(void) {
             #endif
             mp_sched_num_pending()) {
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+            // Only one callback runs per mp_handle_pending(), so raise again
+            // for those still queued.  Each run removes one, so this ends.
+            mp_hal_signal_event();
         } else {
             MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
         }
@@ -170,7 +176,7 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
         MP_STATE_VM(sched_queue)[iput].func = function;
         MP_STATE_VM(sched_queue)[iput].arg = arg;
-        MICROPY_SCHED_HOOK_SCHEDULED;
+        mp_hal_signal_event();
         ret = true;
     } else {
         // schedule queue is full
@@ -196,7 +202,7 @@ bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback)
             MP_STATE_VM(sched_tail)->next = node;
         }
         MP_STATE_VM(sched_tail) = node;
-        MICROPY_SCHED_HOOK_SCHEDULED;
+        mp_hal_signal_event();
         ret = true;
     } else {
         // already scheduled
@@ -243,12 +249,8 @@ void mp_handle_pending(mp_handle_pending_behaviour_t behavior) {
 
     // Handle any pending callbacks.
     #if MICROPY_ENABLE_SCHEDULER
-    bool run_scheduler = (MP_STATE_VM(sched_state) == MP_SCHED_PENDING);
-    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-    // Avoid races by running the scheduler on the main thread, only.
-    // (Not needed if GIL enabled, as GIL ensures thread safety here.)
-    run_scheduler = run_scheduler && mp_thread_is_main_thread();
-    #endif
+    bool run_scheduler = (MP_STATE_VM(sched_state) == MP_SCHED_PENDING)
+        && mp_sched_thread_can_run_callbacks();
     if (run_scheduler) {
         mp_sched_run_pending();
     }
