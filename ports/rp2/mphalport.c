@@ -272,7 +272,23 @@ void mp_wfe_or_timeout(uint32_t timeout_ms) {
 
 int mp_hal_is_pin_reserved(int n) {
     #if MICROPY_PY_NETWORK_CYW43
+    #if CYW43_PIN_WL_DYNAMIC
+    // While the chip is running its bus pins must not be reset (e.g. by a soft
+    // reset) or reused, otherwise the link to the chip would be broken.  The
+    // pins are only reserved once the chip has actually been brought up, so
+    // that they remain available on a board that has cyw43 enabled but no
+    // module attached.
+    if (rp2_cyw43_is_initialised()) {
+        for (size_t i = 0; i < CYW43_PIN_INDEX_WL_COUNT; ++i) {
+            if (n == (int)cyw43_get_pin_wl(i)) {
+                return true;
+            }
+        }
+    }
+    return false;
+    #else
     return n == CYW43_PIN_WL_HOST_WAKE;
+    #endif
     #else
     return false;
     #endif
