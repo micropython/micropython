@@ -200,7 +200,7 @@ extern int32_t first_writable_flash_sector;
 void systick_init(void);
 void led_init(void);
 void mboot_ui_systick(void);
-void SystemClock_Config(void);
+int SystemClock_Config(void);
 
 uint32_t get_le32(const uint8_t *b);
 uint64_t get_le64(const uint8_t *b);
@@ -224,7 +224,7 @@ static inline void mboot_entry_init_default(void) {
     #endif
 
     // set the system clock to be HSE
-    SystemClock_Config();
+    (void)SystemClock_Config();
 
     #if defined(STM32H7)
     // Ensure IRQs are enabled (needed coming out of ST bootloader on H7)

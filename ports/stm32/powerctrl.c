@@ -656,7 +656,10 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
 
             // Exit LPR and wait for the regulator to be ready.
             LL_PWR_ExitLowPowerRunMode();
-            while (!LL_PWR_IsActiveFlag_REGLPF()) {
+            int fail;
+            RCC_WAIT(LL_PWR_IsActiveFlag_REGLPF(), 2, fail);
+            if (fail) {
+                return -MP_ETIMEDOUT;
             }
         }
     }
@@ -664,32 +667,74 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     // Select VOS1 if SYSCLK will increase beyond threshold.
     if (sysclk > VOS2_THRESHOLD) {
         LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
-        while (LL_PWR_IsActiveFlag_VOS()) {
+        int fail;
+        RCC_WAIT(LL_PWR_IsActiveFlag_VOS(), 2, fail);
+        if (fail) {
+            return -MP_ETIMEDOUT;
         }
     }
 
     if (sysclk_mode == SYSCLK_MODE_HSE_64M) {
-        SystemClock_Config();
+        int ret = SystemClock_Config();
+        if (ret < 0) {
+            return ret;
+        }
     } else if (sysclk_mode == SYSCLK_MODE_MSI) {
+        int fail;
+
+        #if defined(STM32WB)
+        // Acquire the RCC semaphore, matching SystemClock_Config() and
+        // powerctrl_low_power_prep_wb55().  RM0434 Section 7.2.17.
+        RCC_WAIT(LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID), 500, fail);
+        if (fail) {
+            return -MP_ETIMEDOUT;
+        }
+
+        // CPU2 requires HCLK2 >= 32 MHz when awake (AN5289 Section 4.3).
+        // C2HPRE is a divider, so HCLK2 can never exceed SYSCLK; there is
+        // no way to maintain 32 MHz HCLK2 from a lower SYSCLK.  Wait up
+        // to 1 second for CPU2 to enter deep sleep before giving up.
+        // Returning EPERM here is safe: no RCC registers have been modified
+        // yet, so SystemCoreClock and SysTick remain correct.  The caller
+        // can retry after a delay.
+        if (sysclk < 32000000
+            && !LL_PWR_IsActiveFlag_C2DS()
+            && !LL_PWR_IsActiveFlag_C2SB()) {
+            RCC_WAIT(!(LL_PWR_IsActiveFlag_C2DS() || LL_PWR_IsActiveFlag_C2SB()), 1000, fail);
+            if (fail) {
+                LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+                return -MP_EPERM;
+            }
+        }
+        #endif
+
         // Set flash latency to maximum to ensure the latency is large enough for
         // both the current SYSCLK and the SYSCLK that will be selected below.
         LL_FLASH_SetLatency(FLASH_LATENCY_MAX);
-        while (LL_FLASH_GetLatency() != FLASH_LATENCY_MAX) {
+        RCC_WAIT(LL_FLASH_GetLatency() != FLASH_LATENCY_MAX, 2, fail);
+        if (fail) {
+            goto msi_fail;
         }
 
         // Before changing the MSIRANGE value, if MSI is on then it must also be ready.
-        while ((RCC->CR & (RCC_CR_MSIRDY | RCC_CR_MSION)) == RCC_CR_MSION) {
+        RCC_WAIT((RCC->CR & (RCC_CR_MSIRDY | RCC_CR_MSION)) == RCC_CR_MSION, 2, fail);
+        if (fail) {
+            goto msi_fail;
         }
         LL_RCC_MSI_SetRange(msirange << RCC_CR_MSIRANGE_Pos);
 
         // Clock SYSCLK from MSI.
         LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_MSI);
-        while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_MSI) {
+        RCC_WAIT(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_MSI, 5000, fail);
+        if (fail) {
+            goto msi_fail;
         }
 
         // Disable PLL to decrease power consumption.
         LL_RCC_PLL_Disable();
-        while (LL_RCC_PLL_IsReady() != 0) {
+        RCC_WAIT(LL_RCC_PLL_IsReady() != 0, 2, fail);
+        if (fail) {
+            goto msi_fail;
         }
         LL_RCC_PLL_DisableDomain_SYS();
 
@@ -709,6 +754,19 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
         // Update HAL state and SysTick.
         SystemCoreClockUpdate();
         powerctrl_config_systick();
+
+        #if defined(STM32WB)
+        LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+        #endif
+    }
+
+    // Error cleanup for MSI path (entered via goto msi_fail).
+    if (0) {
+    msi_fail:
+        #if defined(STM32WB)
+        LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+        #endif
+        return -MP_ETIMEDOUT;
     }
 
     // Return straight away if the clocks are already at the desired frequency.

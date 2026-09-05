@@ -43,7 +43,22 @@ static inline void stm32_system_init(void) {
 }
 #endif
 
-void SystemClock_Config(void);
+int SystemClock_Config(void);
+
+// Bounded spin-wait for clock/power flag transitions.  Timeout values
+// should match the STM32 HAL for the relevant family: HSE 100ms, PLL 2ms,
+// MSI 2ms, clock switch 5000ms, HSEM 500ms.
+// Sets result to 1 on timeout, 0 on success.  Evaluates cond at most once
+// per iteration (no post-loop re-evaluation) so it is safe with
+// side-effecting conditions like LL_HSEM_1StepLock.
+#define RCC_WAIT(cond, timeout_ms, result) \
+    do { \
+        uint32_t _t0 = mp_hal_ticks_ms(); \
+        (result) = 1; \
+        while (mp_hal_ticks_ms() - _t0 < (timeout_ms)) { \
+            if (!(cond)) { (result) = 0; break; } \
+        } \
+    } while (0)
 
 MP_NORETURN void powerctrl_mcu_reset(void);
 MP_NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr);

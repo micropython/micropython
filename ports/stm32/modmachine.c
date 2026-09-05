@@ -383,6 +383,10 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     int ret = powerctrl_set_sysclk(sysclk, ahb, apb1, apb2);
     if (ret == -MP_EINVAL) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
+    } else if (ret == -MP_ETIMEDOUT) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("freq change timeout"));
+    } else if (ret == -MP_EPERM) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("CPU2 active"));
     } else if (ret < 0) {
         MICROPY_BOARD_FATAL_ERROR("can't change freq");
     }
