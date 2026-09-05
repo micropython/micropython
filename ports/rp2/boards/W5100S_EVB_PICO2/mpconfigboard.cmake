@@ -1,0 +1,9 @@
+# To change the gpio count for QFN-80
+# set(PICO_NUM_GPIOS 48)
+
+set(PICO_BOARD_HEADER_DIRS ${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD})
+set(PICO_BOARD wiznet_w5100s_evb_pico2)
+
+set(MICROPY_PY_NETWORK_WIZNET5K W5100S)
+set(WIZNET_CHIP W5100S)
+set(MICROPY_PY_LWIP 1)
