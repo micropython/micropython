@@ -300,7 +300,6 @@ MOD_SRC_C += \
 	machine_pin_irq.c \
 	machine_rtc.c \
 	modpsocedge.c \
-	machine_scb.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
@@ -312,6 +311,7 @@ SRC_C += \
 	help.c \
 	main.c \
 	mphalport.c \
+	scb.c \
 	systick.c \
 	sys_int.c \
 
