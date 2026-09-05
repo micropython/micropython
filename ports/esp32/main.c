@@ -236,6 +236,7 @@ soft_reset_exit:
     esp32_ldo_deinit_all();
     #endif
     machine_deinit();
+    network_wlan_deinit();
 
     #if MICROPY_PY_SOCKET_EVENTS
     socket_events_deinit();

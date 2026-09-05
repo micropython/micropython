@@ -1,0 +1,61 @@
+SUCCESS: Scan with channel=1 succeeded.
+SUCCESS: Scan with channel=0 failed as expected.
+SUCCESS: Scan with channel=15 failed as expected.
+SUCCESS: Scan with channel='string' failed with TypeError as expected.
+SUCCESS: Scan with [] channel list failed with ValueError as expected.
+SUCCESS: Scan with [1] channel succeeded.
+SUCCESS: Scan with [0, 1] channel failed with ValueError as expected.
+SUCCESS: Scan with [14, 15] channel failed with ValueError as expected.
+SUCCESS: Scan with full channel list succeeded.
+SUCCESS: Scan with [0, 15] channel failed with ValueError as expected.
+SUCCESS: Scan with random channel list random_list succeeded
+SUCCESS: Scan with duplicates in channel list succeeded.
+SUCCESS: Scan with tuple channel list succeeded.
+SUCCESS: Scan with invalidly typed item in channel list failed with TypeError as expected
+SUCCESS: Scan with show_hidden=True succeeded
+SUCCESS: Scan with show_hidden=False succeeded
+SUCCESS: Scan with long SSID failed with ValueError as expected.
+SUCCESS: Scan with empty SSID succeeded
+SUCCESS: Scan with correct SSID completed
+SUCCESS: Real world SSID scan completed and found results
+SUCCESS: Scan with too long BSSID failed with ValueError as expected.
+SUCCESS: Scan with too short BSSID failed with ValueError as expected.
+SUCCESS: Scan with correct BSSID completed
+SUCCESS: Real world BSSID scan completed and found results
+SUCCESS: Scan with SSID found original network with matching BSSID
+SUCCESS: Scan with BSSID found original network with matching SSID
+SUCCESS: Scan with home_chan_dwell_time=256 failed with ValueError as expected.
+SUCCESS: Scan with home_chan_dwell_time=-1 failed with ValueError as expected.
+SUCCESS: Scan with home_chan_dwell_time='string' failed with TypeError as expected.
+SUCCESS: Scan with home_chan_dwell_time=100 succeeded.
+SUCCESS: Scan with scan_time_passive=2000 failed with ValueError as expected.
+SUCCESS: Scan with scan_time_passive=-1 failed with ValueError as expected.
+SUCCESS: Scan with scan_time_passive='string' failed with TypeError as expected.
+SUCCESS: Scan with scan_time_passive=100 succeeded.
+SUCCESS: Scan with scan_time_active_min=2000 failed with ValueError as expected.
+SUCCESS: Scan with scan_time_active_min=-1 failed with ValueError as expected.
+SUCCESS: Scan with scan_time_active_min='string' failed with TypeError as expected.
+SUCCESS: Scan with scan_time_active_min=1000 failed with ValueError as expected.
+SUCCESS: Scan with scan_time_active_min=100 succeeded.
+SUCCESS: Scan with scan_time_active_max=2000 failed with ValueError as expected.
+SUCCESS: Scan with scan_time_active_max=-1 failed with ValueError as expected.
+SUCCESS: Scan with scan_time_active_max='string' failed with TypeError as expected.
+SUCCESS: Scan with scan_time_active_max=1000 completed in reasonable time
+SUCCESS: Scan with scan_time_active_min=100 and scan_time_active_max=100 succeeded.
+SUCCESS: Scan with scan_time_active_min=150 and scan_time_active_max=100 failed with ValueError as expected.
+SUCCESS: Scan with active_scan=False completed in correct time
+SUCCESS: Scan with active_scan=True completed in correct time
+SUCCESS: Scan with no callback and non-blocking mode failed with TypeError as expected.
+SUCCESS: Scan with non-callable callback failed with TypeError as expected.
+SUCCESS: Scan with callback and blocking mode failed with RuntimeError as expected.
+SUCCESS: Callback function had networks found
+SUCCESS: Scan completed with valid callback in background mode
+SUCCESS: Complete test_non_blocking_background_scan
+SUCCESS: Scan while another scan is running failed with RuntimeError as expected.
+TypeError: function takes 0 positional arguments but 2 were given
+TypeError: function takes 1 positional arguments but 2 were given
+TypeError: function takes 3 positional arguments but 2 were given
+SUCCESS: good_user_callback received networks found
+SUCCESS: good_user_callback was called
+MPY: soft reboot
+SUCCESS: Scan in progress was cleared after soft reset.
