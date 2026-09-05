@@ -111,7 +111,7 @@ static inline int fp_iszero(mp_float_t x) {
 static inline int fp_equal(mp_float_t x, mp_float_t y) {
     mp_float_union_t x_check = { x };
     mp_float_union_t y_check = { y };
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C && !MICROPY_FLOAT_BOX_AS_NEEDED
     return (x_check.i & ~3) == (y_check.i & ~3);
     #else
     return x_check.i == y_check.i;
@@ -119,7 +119,7 @@ static inline int fp_equal(mp_float_t x, mp_float_t y) {
 }
 #else
 static inline mp_float_t fp_diff(mp_float_t x, mp_float_t y) {
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C && !MICROPY_FLOAT_BOX_AS_NEEDED
     mp_float_union_t x_check = { x };
     mp_float_union_t y_check = { y };
     x_check.i &= ~3;
