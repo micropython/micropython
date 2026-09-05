@@ -216,7 +216,7 @@ def parse_output(filename):
                 ": " in l
                 and ": SKIP" not in l
                 and "CRASH: " not in l
-                and "skipped: " not in l
+                and re.search("skipped.*: ", l) is None
                 and "failed: " not in l
             ):
                 name, values = l.strip().split(": ")
