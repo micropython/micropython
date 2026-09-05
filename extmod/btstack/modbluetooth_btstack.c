@@ -742,6 +742,12 @@ int mp_bluetooth_deinit(void) {
     return timeout ? MP_ETIMEDOUT : 0;
 }
 
+void mp_bluetooth_abort(void) {
+    if (btstack_init_deinit_timeout.process != NULL) {
+        btstack_init_deinit_timeout.process(&btstack_init_deinit_timeout);
+    }
+}
+
 bool mp_bluetooth_is_active(void) {
     return mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
 }
