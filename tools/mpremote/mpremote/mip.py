@@ -27,6 +27,27 @@ _HOSTS = {
 
 _ALLOWED_MIP_URL_PREFIXES = ("http://", "https://", "codeberg:", "github:", "gitlab:")
 
+# Bits 0-15 of sys.implementation._mpy: version/sub-version/arch (exact
+# match required). Bits 16+: optional arch-flags (e.g. RV32 extensions) -
+# a tag's flags must be a subset of what the device supports, not equal.
+_MPY_VERSION_MASK = 0xFF
+_MPY_BASE_MASK = 0xFFFF
+
+
+def _mpy_tag_ok(tag, device_mpy):
+    if device_mpy is None:
+        return False
+    # A bytecode-only tag (arch nibble 0) only needs the major version to
+    # match - mirrors mp_raw_code_load()'s own arch == MP_NATIVE_ARCH_NONE
+    # fast path in py/persistentcode.c, which skips the sub-version check
+    # entirely for non-native code (sub-version only encodes native-code ABI
+    # changes and is meaningless for portable bytecode).
+    if (tag >> 10) & 0xF == 0:
+        return (tag & _MPY_VERSION_MASK) == (device_mpy & _MPY_VERSION_MASK)
+    if (tag & _MPY_BASE_MASK) != (device_mpy & _MPY_BASE_MASK):
+        return False
+    return (tag >> 16) & (device_mpy >> 16) == (tag >> 16)
+
 
 # This implements os.makedirs(os.dirname(path))
 def _ensure_path_exists(transport, path):
@@ -94,6 +115,16 @@ def _download_file(transport, url, dest):
 
 def _install_json(transport, package_json_url, index, target, version, mpy):
     base_url = ""
+    # Lazy one-shot fetch: only round-trips to the device if a tagged entry
+    # is actually encountered below, so untagged packages pay no extra cost.
+    device_mpy = []
+
+    def _get_device_mpy():
+        if not device_mpy:
+            transport.exec("import sys")
+            device_mpy.append(transport.eval("getattr(sys.implementation, '_mpy', None)"))
+        return device_mpy[0]
+
     if package_json_url.startswith(_ALLOWED_MIP_URL_PREFIXES):
         try:
             with urllib.request.urlopen(_rewrite_url(package_json_url, version)) as response:
@@ -115,14 +146,20 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
         base_url = os.path.dirname(package_json_url)
     else:
         raise CommandError(f"Invalid url for package: {package_json_url}")
-    for target_path, short_hash in package_json.get("hashes", ()):
+    for entry in package_json.get("hashes", ()):
+        target_path, short_hash = entry[0], entry[1]
+        if len(entry) > 2 and not _mpy_tag_ok(entry[2], _get_device_mpy()):
+            continue
         fs_target_path = target + "/" + target_path
         if _check_exists(transport, fs_target_path, short_hash):
             print("Exists:", fs_target_path)
         else:
             file_url = f"{index}/file/{short_hash[:2]}/{short_hash}"
             _download_file(transport, file_url, fs_target_path)
-    for target_path, url in package_json.get("urls", ()):
+    for entry in package_json.get("urls", ()):
+        target_path, url = entry[0], entry[1]
+        if len(entry) > 2 and not _mpy_tag_ok(entry[2], _get_device_mpy()):
+            continue
         fs_target_path = target + "/" + target_path
         if base_url and not url.startswith(_ALLOWED_MIP_URL_PREFIXES):
             url = f"{base_url}/{url}"  # Relative URLs
