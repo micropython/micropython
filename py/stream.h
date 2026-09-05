@@ -51,6 +51,7 @@
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD       (0x0001)
+#define MP_STREAM_POLL_PRI      (0x0002)
 #define MP_STREAM_POLL_WR       (0x0004)
 #define MP_STREAM_POLL_ERR      (0x0008)
 #define MP_STREAM_POLL_HUP      (0x0010)
