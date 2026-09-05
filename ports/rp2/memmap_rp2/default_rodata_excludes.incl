@@ -1,0 +1,2 @@
+/* Change for MicroPython: keep libc.a and the newlib mem* in SRAM */
+*(EXCLUDE_FILE(*libgcc.a: *libc.a: *lib*_a-mem*.o *libm.a:) .rodata*)
