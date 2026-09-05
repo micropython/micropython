@@ -300,12 +300,9 @@ static void emit_compressed_function_epilogue(asm_rv32_t *state, mp_uint_t regis
     asm_rv32_opcode_cmpopret(state, MIN(3 + sequence_length, 15), state->stack_size & 0x03);
 }
 
-static bool calculate_displacement_for_label(asm_rv32_t *state, mp_uint_t label, ptrdiff_t *displacement) {
-    assert(displacement != NULL && "Displacement pointer is NULL");
-
+static ptrdiff_t calculate_displacement_for_label(asm_rv32_t *state, mp_uint_t label) {
     mp_uint_t label_offset = state->base.label_offsets[label];
-    *displacement = (ptrdiff_t)(label_offset - state->base.code_offset);
-    return (label_offset != (mp_uint_t)-1) && (*displacement < 0);
+    return (ptrdiff_t)(label_offset - state->base.code_offset);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -371,10 +368,9 @@ void asm_rv32_emit_call_ind(asm_rv32_t *state, mp_uint_t index) {
 }
 
 void asm_rv32_emit_jump_if_reg_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs2, mp_uint_t label) {
-    ptrdiff_t displacement = 0;
-    bool can_emit_short_jump = calculate_displacement_for_label(state, label, &displacement);
+    ptrdiff_t displacement = calculate_displacement_for_label(state, label);
 
-    if (can_emit_short_jump && FIT_SIGNED(displacement, 13)) {
+    if (FIT_SIGNED(displacement, 13)) {
         // beq rs1, rs2, displacement
         asm_rv32_opcode_beq(state, rs1, rs2, displacement);
         return;
@@ -397,16 +393,15 @@ void asm_rv32_emit_jump_if_reg_eq(asm_rv32_t *state, mp_uint_t rs1, mp_uint_t rs
 }
 
 void asm_rv32_emit_jump_if_reg_nonzero(asm_rv32_t *state, mp_uint_t rs, mp_uint_t label) {
-    ptrdiff_t displacement = 0;
-    bool can_emit_short_jump = calculate_displacement_for_label(state, label, &displacement);
+    ptrdiff_t displacement = calculate_displacement_for_label(state, label);
 
-    if (can_emit_short_jump && FIT_SIGNED(displacement, 8) && RV32_IS_IN_C_REGISTER_WINDOW(rs)) {
+    if (FIT_SIGNED(displacement, 8) && RV32_IS_IN_C_REGISTER_WINDOW(rs)) {
         // c.bnez rs', displacement
         asm_rv32_opcode_cbnez(state, RV32_MAP_IN_C_REGISTER_WINDOW(rs), displacement);
         return;
     }
 
-    if (can_emit_short_jump && FIT_SIGNED(displacement, 13)) {
+    if (FIT_SIGNED(displacement, 13)) {
         // bne rs, zero, displacement
         asm_rv32_opcode_bne(state, rs, ASM_RV32_REG_ZERO, displacement);
         return;
@@ -423,7 +418,7 @@ void asm_rv32_emit_jump_if_reg_nonzero(asm_rv32_t *state, mp_uint_t rs, mp_uint_
     //    jalr   zero, temporary, LO(displacement) ; PC + 8
     //    ...                                      ; PC + 12
 
-    if (can_emit_short_jump && RV32_IS_IN_C_REGISTER_WINDOW(rs)) {
+    if (RV32_IS_IN_C_REGISTER_WINDOW(rs)) {
         asm_rv32_opcode_cbeqz(state, RV32_MAP_IN_C_REGISTER_WINDOW(rs), 10);
         // Compensate for the C.BEQZ opcode.
         displacement -= ASM_HALFWORD_SIZE;
@@ -548,10 +543,9 @@ void asm_rv32_emit_load_reg_reg_offset(asm_rv32_t *state, mp_uint_t rd, mp_uint_
 }
 
 void asm_rv32_emit_jump(asm_rv32_t *state, mp_uint_t label) {
-    ptrdiff_t displacement = 0;
-    bool can_emit_short_jump = calculate_displacement_for_label(state, label, &displacement);
+    ptrdiff_t displacement = calculate_displacement_for_label(state, label);
 
-    if (can_emit_short_jump && FIT_SIGNED(displacement, 12)) {
+    if (FIT_SIGNED(displacement, 12)) {
         // c.j displacement
         asm_rv32_opcode_cj(state, displacement);
         return;
