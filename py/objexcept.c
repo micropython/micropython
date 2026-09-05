@@ -280,7 +280,23 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
         return;
     }
-    if (attr == MP_QSTR_args) {
+    if (attr == MP_QSTR___traceback__) {
+        // We expose traceback data via 'exc.__traceback__' to allow
+        // custom formatting of the traceback by user code.
+        size_t entry_count = self->traceback_len / TRACEBACK_ENTRY_LEN;
+        size_t *data = self->traceback_data;
+        mp_obj_t obj = mp_obj_new_list(entry_count, NULL);
+        mp_obj_list_t *list = MP_OBJ_TO_PTR(obj);
+        for (size_t i = 0; i < entry_count; i++) {
+            size_t *src = &data[i * TRACEBACK_ENTRY_LEN];
+            mp_obj_t entry[3];
+            entry[0] = MP_OBJ_NEW_QSTR(src[0]);       // filename
+            entry[1] = MP_OBJ_NEW_SMALL_INT(src[1]);  // line number
+            entry[2] = MP_OBJ_NEW_QSTR(src[2]);       // block
+            list->items[i] = mp_obj_new_tuple(3, entry);
+        }
+        dest[0] = obj;
+    } else if (attr == MP_QSTR_args) {
         decompress_error_text_maybe(self);
         dest[0] = MP_OBJ_FROM_PTR(self->args);
     } else if (attr == MP_QSTR_value || attr == MP_QSTR_errno) {
