@@ -160,11 +160,11 @@ static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, ")");
 }
 
-// pin.init(mode=None, pull=-1, *, value, drive, hold)
+// pin.init(mode=-1, pull=-1, *, value, drive, hold)
 static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_pull, ARG_value, ARG_drive, ARG_hold };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)}},
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)}},
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
@@ -176,9 +176,13 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     gpio_num_t index = PIN_OBJ_PTR_INDEX(self);
+    mp_int_t pin_io_mode = -1;
+    if (args[ARG_mode].u_obj != mp_const_none) {
+        pin_io_mode = mp_obj_get_int(args[ARG_mode].u_obj);
+    }
 
     // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
-    if (args[ARG_mode].u_obj != mp_const_none) {
+    if (pin_io_mode != -1) {
         if (rtc_gpio_is_valid_gpio(index)) {
             #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)
             rtc_gpio_deinit(index);
@@ -224,8 +228,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     }
 
     // configure mode
-    if (args[ARG_mode].u_obj != mp_const_none) {
-        mp_int_t pin_io_mode = mp_obj_get_int(args[ARG_mode].u_obj);
+    if (pin_io_mode != -1) {
         #ifdef GPIO_FIRST_NON_OUTPUT
         if (index >= GPIO_FIRST_NON_OUTPUT && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
             mp_raise_ValueError(MP_ERROR_TEXT("pin can only be input"));
