@@ -17,9 +17,9 @@ def instance0():
     for blocking_mode in [True, False]:
         for listen_arg in LISTEN_ARGS:
             test_num += 1
-            s = socket.socket()
+            s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind(socket.getaddrinfo("0.0.0.0", PORT)[0][-1])
+            s.bind(socket.getaddrinfo(multitest.BIND_ADDR, PORT, multitest.AF_FAMILY)[0][-1])
 
             # Call listen with or without argument based on test case
             if listen_arg is None:
@@ -64,8 +64,8 @@ def instance1():
             multitest.wait(f"server_ready_{test_num}")
 
             # Connect to server
-            s = socket.socket()
-            s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
+            s = socket.socket(multitest.AF_FAMILY, socket.SOCK_STREAM)
+            s.connect(socket.getaddrinfo(IP, PORT, multitest.AF_FAMILY)[0][-1])
             s.send(b"GET / HTTP/1.0\r\n\r\n")
             s.close()
 
