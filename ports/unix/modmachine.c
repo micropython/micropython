@@ -36,6 +36,13 @@
 #define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
+#if MICROPY_PY_GPIO
+
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
+
+#endif
+
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
