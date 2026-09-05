@@ -52,6 +52,11 @@ static mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
     // set the new classes __locals__ object
     mp_obj_dict_t *old_locals = mp_locals_get();
     mp_obj_t class_locals = mp_obj_new_dict(0);
+    #if MICROPY_PY_CLASS_ORDERED_LOCALS
+    // keep the locals ordered
+    mp_obj_dict_t *dict = MP_OBJ_TO_PTR(class_locals);
+    dict->map.is_ordered = 1;
+    #endif
     mp_locals_set(MP_OBJ_TO_PTR(class_locals));
 
     // call the class code
