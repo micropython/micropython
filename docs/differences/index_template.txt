@@ -3,8 +3,12 @@
 MicroPython differences from CPython
 ====================================
 
-MicroPython implements Python 3.4 and some select features of Python 3.5 and
-above.  The sections below describe the current status of these features.
+MicroPython implements Python 3.4, and select features from later versions are
+added over time as they are implemented.  This adoption is not strictly
+version-ordered: for example, template strings (:pep:`750`, added in Python
+3.14) are implemented, while structural pattern matching (:pep:`634`, added in
+Python 3.10) is not.  The sections below describe the current status of
+features from each version of Python since 3.5.
 
 .. toctree::
 
@@ -14,6 +18,10 @@ above.  The sections below describe the current status of these features.
     ../differences/python_38.rst
     ../differences/python_39.rst
     ../differences/python_310.rst
+    ../differences/python_311.rst
+    ../differences/python_312.rst
+    ../differences/python_313.rst
+    ../differences/python_314.rst
 
 For the features of Python that are implemented by MicroPython, there are
 sometimes differences in their behaviour compared to standard Python.  The
