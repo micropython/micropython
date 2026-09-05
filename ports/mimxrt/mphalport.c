@@ -136,12 +136,3 @@ void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
 MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     mp_hal_generate_laa_mac(idx, buf);
 }
-
-void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
-    static const char hexchr[16] = "0123456789ABCDEF";
-    uint8_t mac[6];
-    mp_hal_get_mac(idx, mac);
-    for (; chr_len; ++chr_off, --chr_len) {
-        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
-    }
-}
