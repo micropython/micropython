@@ -20,5 +20,6 @@ to `<https://www.python.org>`__.
 
    intro.rst
    pwm.rst
+   wdt.rst
    peripheral_access.rst
    reset.rst
