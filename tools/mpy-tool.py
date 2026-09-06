@@ -679,9 +679,9 @@ class CompiledModule:
         print("arch:", arch_name)
         if self.header[2] & MP_NATIVE_ARCH_FLAGS_PRESENT != 0:
             print("arch_flags:", hex(self.arch_flags))
-        print("qstr_table[%u]:" % len(self.qstr_table))
+        print("qstr_table[%u] (* for static qstrs):" % len(self.qstr_table))
         for q in self.qstr_table:
-            print("    %s" % q.str)
+            print("    {!r} {}".format(q.str, "*" if q.str in qstrutil.static_qstr_list else ""))
         print("obj_table:", self.obj_table)
         self.raw_code.disassemble()
 
