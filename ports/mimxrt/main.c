@@ -72,6 +72,7 @@ int main(void) {
     board_init();
     ticks_init();
     pendsv_init();
+    machine_init();
 
     #if MICROPY_HW_ENABLE_PSRAM
     size_t psram_size = configure_external_ram();
@@ -206,6 +207,7 @@ int main(void) {
         #if MICROPY_PY_MACHINE_QECNT
         machine_encoder_deinit_all();
         #endif
+        machine_set_soft_reset();
         gc_sweep_all();
         mp_deinit();
     }

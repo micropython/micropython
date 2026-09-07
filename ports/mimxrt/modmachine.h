@@ -31,6 +31,9 @@
 
 extern const mp_obj_type_t machine_can_type;
 
+void machine_init(void);
+void machine_set_soft_reset(void);
+
 void machine_adc_init(void);
 void machine_can_irq_deinit(void);
 void machine_pin_irq_deinit(void);
@@ -42,6 +45,7 @@ void machine_sdcard_init0(void);
 void mimxrt_sdram_init(void);
 void machine_i2s_init0();
 void machine_i2s_deinit_all(void);
+void machine_rtc_alarm_off(bool clear);
 void machine_rtc_start(void);
 uint64_t machine_rtc_get_ticks(void);
 uint64_t machine_rtc_get_seconds(void);
