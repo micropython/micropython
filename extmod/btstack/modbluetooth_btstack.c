@@ -272,6 +272,15 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
         DEBUG_printf("  --> btstack # conns changed\n");
     } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
         DEBUG_printf("  --> hci vendor specific\n");
+    } else if (event_type == SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED) {
+        DEBUG_printf("  --> identity resolved\n");
+        #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+        uint16_t conn_handle = sm_event_identity_resolving_succeeded_get_handle(packet);
+        uint8_t addr_type = sm_event_identity_resolving_succeeded_get_identity_addr_type(packet);
+        bd_addr_t addr;
+        sm_event_identity_resolving_succeeded_get_identity_address(packet, addr);
+        mp_bluetooth_gap_on_identity_resolved(conn_handle, addr_type, addr);
+        #endif
     } else if (event_type == SM_EVENT_AUTHORIZATION_RESULT ||
                event_type == SM_EVENT_PAIRING_COMPLETE ||
                // event_type == GAP_EVENT_DEDICATED_BONDING_COMPLETED || // No conn_handle
