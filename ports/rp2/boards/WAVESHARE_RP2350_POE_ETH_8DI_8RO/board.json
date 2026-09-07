@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "PoE",
+        "Relay",
+        "RS485",
+        "USB-C"
+    ],
+    "images": [],
+    "mcu": "rp2350",
+    "product": "RP2350-POE-ETH-8DI-8RO",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/rp2350-eth-8di-8ro.htm",
+    "variants": {
+        "RISCV": "RISC V"
+    },
+    "vendor": "Waveshare"
+}
