@@ -13,6 +13,10 @@
 { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_network_phy_mode_obj) },
 { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&esp_network_ipconfig_obj) },
 
+#if MICROPY_HW_ENABLE_MDNS_RESPONDER
+{ MP_ROM_QSTR(MP_QSTR_mdns_service), MP_ROM_PTR(&esp_mdns_service_obj) },
+#endif
+
 // These WLAN constants are now in the WLAN class and remain here only for backwards compatibility.
 #if !MICROPY_PREVIEW_VERSION_2 && MICROPY_PY_NETWORK_WLAN
 { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
