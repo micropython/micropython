@@ -157,6 +157,7 @@ endif
 SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
 	netutils/dhcpserver.c \
+	netutils/get_mac_ascii.c \
 	netutils/trace.c \
 	readline/readline.c \
 	runtime/gchelper_native.c \
