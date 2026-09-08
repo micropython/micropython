@@ -217,6 +217,25 @@ static inline void store_active_context(mp_obj_ssl_context_t *ssl_context) {
     #endif
 }
 
+static mp_uint_t ssl_socket_close_transport(mp_obj_ssl_socket_t *ssl_socket, int *error_code) {
+    mp_obj_t transport = ssl_socket->sock;
+
+    // Clear the active SSL context.
+    store_active_context(NULL);
+
+    // Already closed socket, do nothing.
+    if (transport == MP_OBJ_NULL) {
+        return 0;
+    }
+
+    // Detach the transport before cleanup so repeated closes are harmless.
+    ssl_socket->sock = MP_OBJ_NULL;
+
+    // Release TLS state before forwarding close to the owned transport.
+    mbedtls_ssl_free(&ssl_socket->ssl);
+    return mp_get_stream(transport)->ioctl(transport, MP_STREAM_CLOSE, 0, error_code);
+}
+
 static void ssl_check_async_handshake_failure(mp_obj_ssl_socket_t *sslsock, int *errcode) {
     if (
         #if MBEDTLS_VERSION_NUMBER >= 0x03000000
@@ -245,14 +264,16 @@ static void ssl_check_async_handshake_failure(mp_obj_ssl_socket_t *sslsock, int 
             // The length of the string written (not including the terminated nul byte),
             // or a negative err code.
             if (ret > 0) {
-                sslsock->sock = MP_OBJ_NULL;
-                mbedtls_ssl_free(&sslsock->ssl);
+                // Close the transport while preserving the certificate error.
+                int close_error_code = 0;
+                ssl_socket_close_transport(sslsock, &close_error_code);
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("%s"), xcbuf);
             }
         }
 
-        sslsock->sock = MP_OBJ_NULL;
-        mbedtls_ssl_free(&sslsock->ssl);
+        // Close the transport while preserving the TLS error.
+        int close_error_code = 0;
+        ssl_socket_close_transport(sslsock, &close_error_code);
         mbedtls_raise_error(*errcode);
     }
 }
@@ -966,15 +987,8 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     mp_obj_t sock = self->sock;
 
     if (request == MP_STREAM_CLOSE) {
-        // Clear the SSL context.
-        store_active_context(NULL);
-
-        if (sock == MP_OBJ_NULL) {
-            // Already closed socket, do nothing.
-            return 0;
-        }
-        self->sock = MP_OBJ_NULL;
-        mbedtls_ssl_free(&self->ssl);
+        // Release TLS state and close the owned transport exactly once.
+        return ssl_socket_close_transport(self, errcode);
     } else if (request == MP_STREAM_POLL) {
         if (sock == MP_OBJ_NULL || self->last_error != 0) {
             // Closed or error socket, return NVAL flag.
