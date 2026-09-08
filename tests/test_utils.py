@@ -63,7 +63,17 @@ The -t option accepts the following for the test instance:
 - execpty:<command> - execute a command and attach to the printed /dev/pts/<n> device
 - <a>.<b>.<c>.<d> - connect to the given IPv4 address
 - anything else specifies a serial port
+Any of the last six forms may be prefixed with a known target name and a colon, e.g.
+`-t uefi:exec:<command>`, to select that target's own initial-connection timeout
+(some targets take longer than the 10s default to reach their first raw REPL prompt
+after a cold boot) — see _TARGET_CONNECT_TIMEOUT_S in test_utils.py.
 """
+
+# Known targets whose first raw-REPL connection needs longer than the default 10s --
+# selected via a "<name>:" prefix on -t, e.g. `-t uefi:exec:<command>`.
+_TARGET_CONNECT_TIMEOUT_S = {
+    "uefi": 30,
+}
 
 test_directory_description = """\
 Tests are discovered by scanning test directories for .py files or using the
@@ -204,6 +214,13 @@ def convert_device_shortcut_to_real_device(device):
 
 
 def get_test_instance(test_instance, baudrate, user, password):
+    connect_timeout = 10  # pyboard.Pyboard.enter_raw_repl's own default
+
+    maybe_target_name = test_instance.split(":")[0]
+    if maybe_target_name in _TARGET_CONNECT_TIMEOUT_S:
+        connect_timeout = _TARGET_CONNECT_TIMEOUT_S[maybe_target_name]
+        test_instance = test_instance[len(maybe_target_name) + 1 :]
+
     if test_instance == "unix":
         return None
     elif test_instance == "webassembly":
@@ -215,7 +232,7 @@ def get_test_instance(test_instance, baudrate, user, password):
     pyb = pyboard.Pyboard(port, baudrate, user, password)
     pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
     try:
-        pyb.enter_raw_repl()
+        pyb.enter_raw_repl(timeout_overall=connect_timeout)
     except pyboard.PyboardError as e:
         print("error: could not detect test instance")
         print(e)
