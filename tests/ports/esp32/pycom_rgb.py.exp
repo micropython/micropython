@@ -1,0 +1,7 @@
+init: OK
+color red: OK
+color green: OK
+color blue: OK
+off: OK
+heartbeat: OK
+all tests passed
