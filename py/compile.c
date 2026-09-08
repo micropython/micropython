@@ -2027,7 +2027,22 @@ static void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t *)pn_rhs;
         int kind = MP_PARSE_NODE_STRUCT_KIND(pns1);
         if (kind == PN_annassign) {
-            // the annotation is in pns1->nodes[0] and is ignored
+            // The annotation is in pns1->nodes[0]. Inside a class body
+            // we ALSO record it in the class's __annotations__ dict —
+            // see PEP 526 + the class-body build_map injection below.
+            #if MICROPY_PY_BUILTINS_CLASS_ANNOTATIONS
+            if (comp->scope_cur->kind == SCOPE_CLASS
+                && MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
+                qstr name_qstr = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+                // Stack: push type expr, then __annotations__, then the
+                // name as a key. subscr STORE consumes value/dict/key
+                // in that order.
+                compile_node(comp, pns1->nodes[0]);
+                compile_load_id(comp, MP_QSTR___annotations__);
+                EMIT_ARG(load_const_str, name_qstr);
+                EMIT_ARG(subscr, MP_EMIT_SUBSCR_STORE);
+            }
+            #endif
             if (MP_PARSE_NODE_IS_NULL(pns1->nodes[1])) {
                 // an annotation of the form "x: y"
                 // inside a function this declares "x" as a local
@@ -3184,6 +3199,19 @@ static bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         compile_store_id(comp, MP_QSTR___module__);
         EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // 0 is class name
         compile_store_id(comp, MP_QSTR___qualname__);
+
+        #if MICROPY_PY_BUILTINS_CLASS_ANNOTATIONS
+        // Seed __annotations__ = {} at the start of every class body so
+        // PEP 526-style `name: type` lines inside the body can record
+        // their type expression. CPython uses SETUP_ANNOTATIONS to do
+        // this lazily; we don't ship that opcode so we always emit the
+        // empty dict — cost is one dict allocation per class definition
+        // (negligible). Without this, third-party libraries that
+        // introspect __annotations__ (typing.get_type_hints,
+        // dataclasses, pydantic, attrs) silently see no fields.
+        EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
+        compile_store_id(comp, MP_QSTR___annotations__);
+        #endif
 
         check_for_doc_string(comp, pns->nodes[2]);
         compile_node(comp, pns->nodes[2]); // 2 is class body
