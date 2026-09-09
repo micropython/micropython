@@ -4,22 +4,32 @@
 class WIZNET5K -- control WIZnet5x00 Ethernet modules
 =====================================================
 
-This class allows you to control WIZnet5x00 Ethernet adaptors based on
-the W5200 and W5500 chipsets.  The particular chipset that is supported
-by the firmware is selected at compile-time via the MICROPY_PY_NETWORK_WIZNET5K
-option.
+This class allows you to control WIZnet5x00 Ethernet adaptors based on the
+W5100, W5100S, W5200, W5300 and W5500 chipsets.  The particular chipset that is
+supported by the firmware is selected at compile-time via the
+MICROPY_PY_NETWORK_WIZNET5K option.  The driver is built on WIZnet's
+`ioLibrary_Driver <https://github.com/Wiznet/ioLibrary_Driver>`_.
 
 .. note:: The esp32 port also supports WIZnet W5500 chipsets, but this port
           uses the :ref:`network.LAN interface <esp32_spi_ethernet>`.
 
-Example usage::
+On a board with the chip fitted, such as the W5100S-EVB-Pico or the
+W5500-EVB-Pico, the constructor takes no arguments and configures the SPI bus
+and pins itself::
 
     import network
-    nic = network.WIZNET5K(pyb.SPI(1), pyb.Pin.board.X5, pyb.Pin.board.X4)
+    nic = network.WIZNET5K()
+    nic.active(True)
     print(nic.ipconfig("addr4"))
 
     # now use socket as usual
     ...
+
+With an external module, pass the SPI bus and the nSS and nRESET pins::
+
+    import network
+    nic = network.WIZNET5K(pyb.SPI(1), pyb.Pin.board.X5, pyb.Pin.board.X4)
+    print(nic.ipconfig("addr4"))
 
 For this example to work the WIZnet5x00 module must have the following connections:
 
@@ -38,6 +48,9 @@ Constructors
 
    Create a WIZNET5K driver object, initialise the WIZnet5x00 module using the given
    SPI bus and pins, and return the WIZNET5K object.
+
+   On a board that has the chip fitted, all three arguments may be omitted and the
+   board's own SPI bus and pins are used.
 
    Arguments are:
 
