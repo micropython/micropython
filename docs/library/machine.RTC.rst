@@ -95,6 +95,12 @@ Methods
    `memoryview` and `array.array`). ``RTC.memory()`` reads RTC memory and returns
    a `bytes` object.
 
+   Call this as an instance method (create an ``RTC`` object first)::
+
+      rtc = machine.RTC()
+      rtc.memory(b'data')
+      print(rtc.memory())
+
    Data written to RTC user memory is persistent across restarts, including
    :ref:`soft_reset` and `machine.deepsleep()`.
 
