@@ -561,6 +561,13 @@ static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_u
         return -1;
     }
 
+    // In blocking mode the library spins inside socket.c until the chip is
+    // ready, which leaves no chance to service a KeyboardInterrupt or let
+    // another thread run.  Ask for non-blocking mode instead, so those calls
+    // return SOCK_BUSY straight away and the waiting is done here.
+    uint8_t iomode = SOCK_IO_NONBLOCK;
+    ctlsocket((uint8_t)socket->fileno, CS_SET_IOMODE, &iomode);
+
     // indicate that this socket has been opened
     socket->domain = 1;
 
@@ -628,6 +635,38 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
     mp_int_t ret = wizchip_connect(socket->fileno, ip, port);
     MP_THREAD_GIL_ENTER();
 
+    if (ret == SOCK_BUSY) {
+        // The CONNECT command has been issued and the socket is non-blocking,
+        // so wait for it here the way the library does when it blocks.
+        uint8_t sn = (uint8_t)socket->fileno;
+        for (;;) {
+            // Read the status once per pass, so the two tests below cannot see
+            // the socket in two different states, and drop the GIL around the
+            // register access like the other calls into the chip do.
+            MP_THREAD_GIL_EXIT();
+            uint8_t sr = getSn_SR(sn);
+            uint8_t ir = getSn_IR(sn);
+            MP_THREAD_GIL_ENTER();
+
+            if (sr == SOCK_ESTABLISHED) {
+                ret = SOCK_OK;
+                break;
+            }
+            if (ir & Sn_IR_TIMEOUT) {
+                MP_THREAD_GIL_EXIT();
+                setSn_IR(sn, Sn_IR_TIMEOUT);
+                MP_THREAD_GIL_ENTER();
+                ret = SOCKERR_TIMEOUT;
+                break;
+            }
+            if (sr == SOCK_CLOSED) {
+                ret = SOCKERR_SOCKCLOSED;
+                break;
+            }
+            mp_event_handle_nowait();
+        }
+    }
+
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -639,31 +678,41 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 }
 
 static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
-    MP_THREAD_GIL_EXIT();
-    mp_int_t ret = wizchip_send(socket->fileno, (byte *)buf, len);
-    MP_THREAD_GIL_ENTER();
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+        mp_int_t ret = wizchip_send(socket->fileno, (byte *)buf, len);
+        MP_THREAD_GIL_ENTER();
 
-    // TODO convert Wiz errno's to POSIX ones
-    if (ret < 0) {
-        wiznet5k_socket_close(socket);
-        *_errno = -ret;
-        return -1;
+        if (ret != SOCK_BUSY) {
+            // TODO convert Wiz errno's to POSIX ones
+            if (ret < 0) {
+                wiznet5k_socket_close(socket);
+                *_errno = -ret;
+                return -1;
+            }
+            return ret;
+        }
+        mp_event_handle_nowait();
     }
-    return ret;
 }
 
 static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
-    MP_THREAD_GIL_EXIT();
-    mp_int_t ret = wizchip_recv(socket->fileno, buf, len);
-    MP_THREAD_GIL_ENTER();
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+        mp_int_t ret = wizchip_recv(socket->fileno, buf, len);
+        MP_THREAD_GIL_ENTER();
 
-    // TODO convert Wiz errno's to POSIX ones
-    if (ret < 0) {
-        wiznet5k_socket_close(socket);
-        *_errno = -ret;
-        return -1;
+        if (ret != SOCK_BUSY) {
+            // TODO convert Wiz errno's to POSIX ones
+            if (ret < 0) {
+                wiznet5k_socket_close(socket);
+                *_errno = -ret;
+                return -1;
+            }
+            return ret;
+        }
+        mp_event_handle_nowait();
     }
-    return ret;
 }
 
 static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
@@ -674,31 +723,41 @@ static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
         }
     }
 
-    MP_THREAD_GIL_EXIT();
-    mp_int_t ret = wizchip_sendto(socket->fileno, (byte *)buf, len, ip, port);
-    MP_THREAD_GIL_ENTER();
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+        mp_int_t ret = wizchip_sendto(socket->fileno, (byte *)buf, len, ip, port);
+        MP_THREAD_GIL_ENTER();
 
-    if (ret < 0) {
-        wiznet5k_socket_close(socket);
-        *_errno = -ret;
-        return -1;
+        if (ret != SOCK_BUSY) {
+            if (ret < 0) {
+                wiznet5k_socket_close(socket);
+                *_errno = -ret;
+                return -1;
+            }
+            return ret;
+        }
+        mp_event_handle_nowait();
     }
-    return ret;
 }
 
 static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     uint16_t port2;
-    MP_THREAD_GIL_EXIT();
-    mp_int_t ret = wizchip_recvfrom(socket->fileno, buf, len, ip, &port2);
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+        mp_int_t ret = wizchip_recvfrom(socket->fileno, buf, len, ip, &port2);
+        MP_THREAD_GIL_ENTER();
 
-    MP_THREAD_GIL_ENTER();
-    *port = port2;
-    if (ret < 0) {
-        wiznet5k_socket_close(socket);
-        *_errno = -ret;
-        return -1;
+        if (ret != SOCK_BUSY) {
+            *port = port2;
+            if (ret < 0) {
+                wiznet5k_socket_close(socket);
+                *_errno = -ret;
+                return -1;
+            }
+            return ret;
+        }
+        mp_event_handle_nowait();
     }
-    return ret;
 }
 
 static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
