@@ -80,6 +80,46 @@
 
 extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
 
+int32_t wizchip_sendto(uint8_t sn, uint8_t *buf, uint16_t len, uint8_t *addr, uint16_t port) {
+    #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+    uint8_t addrlen = 4;
+    return sendto_W6x00(sn, buf, len, addr, port, addrlen);
+    #else
+    return sendto_W5x00(sn, buf, len, addr, port);
+    #endif
+}
+int32_t wizchip_recvfrom(uint8_t sn, uint8_t *buf, uint16_t len, uint8_t *addr, uint16_t *port) {
+    #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+    uint8_t addrlen = 4;
+    return recvfrom_W6x00(sn, buf, len, addr, port, &addrlen);
+    #else
+    return recvfrom_W5x00(sn, buf, len, addr, port);
+    #endif
+}
+int8_t wizchip_socket(uint8_t sn, uint8_t protocol, uint16_t port, uint8_t flag) {
+    return socket(sn, protocol, port, flag);
+}
+int8_t wizchip_close(uint8_t sn) {
+    return close(sn);
+}
+int8_t wizchip_listen(uint8_t sn) {
+    return listen(sn);
+}
+int32_t wizchip_recv(uint8_t sn, uint8_t *buf, uint16_t len) {
+    return recv(sn, buf, len);
+}
+int32_t wizchip_send(uint8_t sn, uint8_t *buf, uint16_t len) {
+    return send(sn, buf, len);
+}
+int8_t wizchip_connect(uint8_t sn, uint8_t *addr, uint16_t port) {
+    #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+    uint8_t addrlen = 4;
+    return connect_W6x00(sn, addr, port, addrlen);
+    #else
+    return connect_W5x00(sn, addr, port);
+    #endif
+}
+
 #ifndef printf
 #define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 #endif
@@ -89,8 +129,10 @@ extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
 #endif
 
 #ifndef WIZCHIP_SREG_ADDR
-#if (_WIZCHIP_ == 5500)
+#if (_WIZCHIP_ == W5500)
 #define WIZCHIP_SREG_ADDR(sn, addr)    (_W5500_IO_BASE_ + (addr << 8) + (WIZCHIP_SREG_BLOCK(sn) << 3))
+#elif (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+#define WIZCHIP_SREG_ADDR(sn, addr)    (_WIZCHIP_IO_BASE_ + (addr << 8) + (WIZCHIP_SREG_BLOCK(sn)))
 #else
 #define WIZCHIP_SREG_ADDR(sn, addr)    (_WIZCHIP_IO_BASE_ + WIZCHIP_SREG_BLOCK(sn) + (addr))
 #endif
@@ -142,20 +184,11 @@ static void wiz_cs_deselect(void) {
     mp_hal_pin_high(wiznet5k_obj.cs);
 }
 
-void mpy_wiznet_yield(void) {
-    // Used in socket.c via -DWIZCHIP_YIELD=mpy_wiznet_yield in make/cmake
-    #if MICROPY_PY_THREAD
-    MICROPY_THREAD_YIELD();
-    #else
-    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
-    #endif
-}
-
 static void wiz_spi_read(uint8_t *buf, uint16_t len) {
     wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, len, buf, buf);
 }
 
-static void wiz_spi_write(const uint8_t *buf, uint16_t len) {
+static void wiz_spi_write(uint8_t *buf, uint16_t len) {
     wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, len, buf, NULL);
 }
 
@@ -217,11 +250,13 @@ void wiznet5k_deinit(void) {
 static void wiznet5k_init(void) {
     // Configure wiznet for raw ethernet frame usage.
 
-    // Configure 16k buffers for fast MACRAW
+    // Configure buffers for fast MACRAW
     #if _WIZCHIP_ < W5200
     uint8_t sn_size[8] = {8, 0, 0, 0, 8, 0, 0, 0};
-    #else
+    #elif (_WIZCHIP_ == W5200 || _WIZCHIP_ == W5300 || _WIZCHIP_ == W5500 || _WIZCHIP_ == W6100)
     uint8_t sn_size[16] = {16, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0};
+    #elif (_WIZCHIP_ == W6300)
+    uint8_t sn_size[16] = {32, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0};
     #endif
     ctlwizchip(CW_INIT_WIZCHIP, sn_size);
 
@@ -239,9 +274,6 @@ static void wiznet5k_init(void) {
         wiznet5k_config_interrupt(true);
     }
 
-    // Deinit before a new init to clear the state from a previous activation
-    wiznet5k_deinit();
-
     // Hook the Wiznet into lwIP
     wiznet5k_lwip_init(&wiznet5k_obj);
 
@@ -253,12 +285,14 @@ static void wiznet5k_init(void) {
 }
 
 static void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
+    (void)self;
     uint8_t ip[4] = {1, 1, 1, 1}; // dummy
-    int ret = WIZCHIP_EXPORT(sendto)(0, (byte *)buf, len, ip, 11); // dummy port
+    int ret = wizchip_sendto(0, (byte *)buf, len, ip, 11); // dummy port
     if (ret != len) {
-        printf("wiznet5k_send_ethernet: fatal error %d\n", ret);
-        netif_set_link_down(&self->netif);
-        netif_set_down(&self->netif);
+        // Nothing brings the interface back up again, and taking it down also
+        // stops the receive path and the lwIP timers, so DHCP could never
+        // retry.  Leave it up and let lwIP retransmit instead.
+        printf("wiznet5k_send_ethernet: error %d\n", ret);
     }
 }
 
@@ -271,11 +305,9 @@ static uint16_t wiznet5k_recv_ethernet(wiznet5k_obj_t *self) {
 
     byte ip[4];
     uint16_t port;
-    int ret = WIZCHIP_EXPORT(recvfrom)(0, self->eth_frame, 1514, ip, &port);
+    int ret = wizchip_recvfrom(0, self->eth_frame, 1514, ip, &port);
     if (ret <= 0) {
-        printf("wiznet5k_recv_ethernet: fatal error len=%u ret=%d\n", len, ret);
-        netif_set_link_down(&self->netif);
-        netif_set_down(&self->netif);
+        printf("wiznet5k_recv_ethernet: error len=%u ret=%d\n", len, ret);
         return 0;
     }
 
@@ -302,21 +334,29 @@ static err_t wiznet5k_netif_init(struct netif *netif) {
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
     wiznet5k_get_mac_address(netif->state, netif->hwaddr);
     netif->hwaddr_len = sizeof(netif->hwaddr);
-    int ret = WIZCHIP_EXPORT(socket)(0, Sn_MR_MACRAW, 0, 0);
+    int ret = wizchip_socket(0, Sn_MR_MACRAW, 0, 0);
     if (ret != 0) {
         printf("WIZNET fatal error in netif_init: %d\n", ret);
         return ERR_IF;
     }
 
     // Enable MAC filtering so we only get frames destined for us, to reduce load on lwIP
+    #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+    setSn_MR(0, getSn_MR(0) | Sn_MR_MF);
+    #else
     setSn_MR(0, getSn_MR(0) | Sn_MR_MFEN);
+    #endif
 
     #if LWIP_IPV6
     netif->output_ip6 = ethip6_output;
     netif->flags |= NETIF_FLAG_MLD6;
     #else
     // Drop IPv6 packets if firmware does not support it
+    #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+    setSn_MR(0, getSn_MR(0) | Sn_MR_MMB6);
+    #else
     setSn_MR(0, getSn_MR(0) | Sn_MR_MIP6B);
+    #endif
     #endif
 
     return ERR_OK;
@@ -329,6 +369,7 @@ static void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     IP_ADDR4(&ipconfig[2], 0, 0, 0, 0);
     IP_ADDR4(&ipconfig[3], 0, 0, 0, 0);
     netif_add(&self->netif, ip_2_ip4(&ipconfig[0]), ip_2_ip4(&ipconfig[1]), ip_2_ip4(&ipconfig[2]), self, wiznet5k_netif_init, ethernet_input);
+    netif_set_hostname(&self->netif, mod_network_hostname_data);
     self->netif.name[0] = 'e';
     self->netif.name[1] = '0';
     netif_set_default(&self->netif);
@@ -394,13 +435,15 @@ static void wiz_dhcp_conflict(void) {
 
 static void wiznet5k_init(void) {
     // Configure wiznet provided TCP / socket interface
-
     reg_dhcp_cbfunc(wiz_dhcp_assign, wiz_dhcp_update, wiz_dhcp_conflict);
-
-    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};         // 2k buffer for each socket
+    #if _WIZCHIP_ < W5200
+    uint8_t sn_size[8] = {2, 2, 2, 2, 2, 2, 2, 2};
+    #elif (_WIZCHIP_ == W5200 || _WIZCHIP_ == W5300 || _WIZCHIP_ == W5500 || _WIZCHIP_ == W6100)
+    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+    #elif (_WIZCHIP_ == W6300)
+    uint8_t sn_size[16] = {4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
+    #endif
     ctlwizchip(CW_INIT_WIZCHIP, sn_size);
-
-    ctlnetwork(CN_SET_NETINFO, (void *)&wiznet5k_obj.netinfo);
 
     // set some sensible default values; they are configurable using ifconfig method
     wiz_NetInfo netinfo = {
@@ -410,7 +453,18 @@ static void wiznet5k_init(void) {
         .gw = {192, 168, 0, 1},
         .dns = {8, 8, 8, 8}, // Google public DNS
         .dhcp = NETINFO_STATIC,
+        #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+        .lla = {0},     // Link Local Address
+        .gua = {0},     // Global Unicast Address
+        .sn6 = {0},     // IPv6 Prefix
+        .gw6 = {0},     // Gateway IPv6 Address
+        .dns6 = {0},    // DNS6 server
+        .ipmode = NETINFO_STATIC_V4
+        #endif
     };
+    // Keep whatever MAC address the chip already holds, so that pushing
+    // netinfo back later (eg from the DHCP callback) does not clear it.
+    getSHAR(netinfo.mac);
     wiznet5k_obj.netinfo = netinfo;
 
     // register with network module
@@ -420,6 +474,15 @@ static void wiznet5k_init(void) {
 }
 
 static int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
+    // With no address of our own the query cannot be answered, and DNS_run()
+    // only gives up on a one-second tick that nothing drives, so it would
+    // never return.  Fail the lookup rather than hang in the library.
+    wiz_NetInfo netinfo;
+    ctlnetwork(CN_GET_NETINFO, &netinfo);
+    if ((netinfo.ip[0] | netinfo.ip[1] | netinfo.ip[2] | netinfo.ip[3]) == 0) {
+        return -2;
+    }
+
     uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {8, 8, 8, 8};
     uint8_t *buf = m_new(uint8_t, MAX_DNS_BUF_SIZE);
     DNS_init(2, buf);
@@ -485,13 +548,13 @@ static void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
     uint8_t sn = (uint8_t)socket->fileno;
     if (sn < _WIZCHIP_SOCK_NUM_) {
         wiznet5k_obj.socket_used &= ~(1 << sn);
-        WIZCHIP_EXPORT(close)(sn);
+        wizchip_close(sn);
     }
 }
 
 static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     // open the socket in server mode (if port != 0)
-    mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->fileno, socket->type, port, 0);
+    mp_int_t ret = wizchip_socket(socket->fileno, socket->type, port, 0);
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -506,7 +569,7 @@ static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_u
 }
 
 static int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno) {
-    mp_int_t ret = WIZCHIP_EXPORT(listen)(socket->fileno);
+    mp_int_t ret = wizchip_listen(socket->fileno);
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -523,7 +586,11 @@ static int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
             socket2->type = socket->type;
             socket2->fileno = socket->fileno;
             getSn_DIPR((uint8_t)socket2->fileno, ip);
+            #if _WIZCHIP_ == W6100 || _WIZCHIP_ == W6300
+            *port = getSn_PORTR(socket2->fileno);
+            #else
             *port = getSn_PORT(socket2->fileno);
+            #endif
 
             // WIZnet turns the listening socket into the client socket, so we
             // need to re-bind and re-listen on another socket for the server.
@@ -558,7 +625,7 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 
     // now connect
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(connect)(socket->fileno, ip, port);
+    mp_int_t ret = wizchip_connect(socket->fileno, ip, port);
     MP_THREAD_GIL_ENTER();
 
     if (ret < 0) {
@@ -573,7 +640,7 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 
 static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(send)(socket->fileno, (byte *)buf, len);
+    mp_int_t ret = wizchip_send(socket->fileno, (byte *)buf, len);
     MP_THREAD_GIL_ENTER();
 
     // TODO convert Wiz errno's to POSIX ones
@@ -587,7 +654,7 @@ static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
 
 static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(recv)(socket->fileno, buf, len);
+    mp_int_t ret = wizchip_recv(socket->fileno, buf, len);
     MP_THREAD_GIL_ENTER();
 
     // TODO convert Wiz errno's to POSIX ones
@@ -608,7 +675,7 @@ static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
     }
 
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->fileno, (byte *)buf, len, ip, port);
+    mp_int_t ret = wizchip_sendto(socket->fileno, (byte *)buf, len, ip, port);
     MP_THREAD_GIL_ENTER();
 
     if (ret < 0) {
@@ -622,7 +689,8 @@ static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
 static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     uint16_t port2;
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(recvfrom)(socket->fileno, buf, len, ip, &port2);
+    mp_int_t ret = wizchip_recvfrom(socket->fileno, buf, len, ip, &port2);
+
     MP_THREAD_GIL_ENTER();
     *port = port2;
     if (ret < 0) {
@@ -648,7 +716,7 @@ static int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_
     if (timeout_ms == 0) {
         // set non-blocking mode
         uint8_t arg = SOCK_IO_NONBLOCK;
-        WIZCHIP_EXPORT(ctlsocket)(socket->fileno, CS_SET_IOMODE, &arg);
+        ctlsocket(socket->fileno, CS_SET_IOMODE, &arg);
     }
     */
 }
@@ -675,7 +743,9 @@ static void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
     uint8_t dhcp_retry = 0;
 
     while (ret != DHCP_IP_LEASED) {
-        mp_uint_t timeout = mp_hal_ticks_ms() + 3000;
+        mp_uint_t now = mp_hal_ticks_ms();
+        mp_uint_t timeout = now + 3000;
+        mp_uint_t next_tick = now + 1000;
         DHCP_init(1, test_buf);
 
         while (1) {
@@ -686,7 +756,14 @@ static void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
                 dhcp_retry++;
                 break;
             }
-            mpy_wiznet_yield();
+            // DHCP_run() needs a one-second tick to retransmit a request that
+            // was lost, and to eventually report DHCP_FAILED.  Without it a
+            // single dropped packet stalls the exchange until the timeout.
+            if (mp_hal_ticks_ms() >= next_tick) {
+                next_tick += 1000;
+                DHCP_time_handler();
+            }
+            mp_event_handle_nowait();
         }
 
         if (dhcp_retry > 3) {
@@ -795,20 +872,28 @@ static mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
-        #if _WIZCHIP_ == 5500
+        #if _WIZCHIP_ == W5500
         uint32_t reg = _W5500_IO_BASE_ | i << 8;
+        #elif (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+        uint32_t reg = _WIZCHIP_IO_BASE_ + (i << 8) + WIZCHIP_CREG_BLOCK;
         #else
         uint32_t reg = i;
         #endif
         printf(" %02x", WIZCHIP_READ(reg));
     }
+    #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+    // Sn_SR lives at 0x30 on these parts, so dump past it.
+    const int sreg_len = 0x40;
+    #else
+    const int sreg_len = 0x30;
+    #endif
     for (int sn = 0; sn < _WIZCHIP_SOCK_NUM_; ++sn) {
         printf("\nWiz SREG[%d]:", sn);
-        for (int i = 0; i < 0x30; ++i) {
+        for (int i = 0; i < sreg_len; ++i) {
             if (i % 16 == 0) {
                 printf("\n  %04x:", i);
             }
-            #if _WIZCHIP_ == 5500
+            #if _WIZCHIP_ == W5500
             uint32_t reg = _W5500_IO_BASE_ | i << 8 | WIZCHIP_SREG_BLOCK(sn) << 3;
             #else
             uint32_t reg = WIZCHIP_SREG_ADDR(sn, i);
@@ -821,10 +906,22 @@ static mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_regs_obj, wiznet5k_regs);
 
+static bool wiznet5k_link_up(void) {
+    #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+    // wizphy_getphylink() reaches the link state over MDIO on these parts,
+    // where it maps to the BMSR link bit.  That bit latches low, so a single
+    // read reports the link as down after any reset or link transition.
+    // PHYSR holds the current state directly.
+    return (getPHYSR() & PHYSR_LNK) != 0;
+    #else
+    return wizphy_getphylink() == PHY_LINK_ON;
+    #endif
+}
+
 static mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(
-        wizphy_getphylink() == PHY_LINK_ON
+        wiznet5k_link_up()
         && IS_ACTIVE(self)
         #if WIZNET5K_WITH_LWIP_STACK
         && ip_2_ip4(&self->netif.ip_addr)->addr != 0
@@ -840,18 +937,45 @@ static mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
     } else {
         if (mp_obj_is_true(args[1])) {
             if (!IS_ACTIVE(self)) {
-                /*!< Wiznet initialisation */
+                #if WIZNET5K_WITH_LWIP_STACK
+                // Drop any interface left over from a previous activation while
+                // the chip can still transmit.  Removing a netif makes lwIP send
+                // multicast leave messages, and the reset below closes every
+                // socket, so doing this afterwards just fails the send.
+                wiznet5k_deinit();
+                #endif
+
+                #if WIZNET5K_PROVIDED_STACK
+                // The reset below clears the chip's network configuration, and
+                // wiznet5k_init() then fills netinfo with defaults, so take a
+                // copy of whatever the interface was configured with.
+                wiz_NetInfo saved_netinfo = wiznet5k_obj.netinfo;
+                bool restore_netinfo = saved_netinfo.ip[0] != 0;
+                #endif
+
                 // Reset the chip
+                mp_hal_pin_config(wiznet5k_obj.rst, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_UP, 0);
+                mp_hal_delay_ms(10);
                 mp_hal_pin_low(wiznet5k_obj.rst);
                 mp_hal_delay_ms(1); // datasheet says 2us
                 mp_hal_pin_high(wiznet5k_obj.rst);
                 mp_hal_delay_ms(160); // datasheet says 150ms
 
-                // Set physical interface callbacks
                 reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
+                #if _WIZCHIP_ == W6100
+                reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
+                reg_wizchip_spi_cbfunc(wiz_spi_readbyte, wiz_spi_writebyte, wiz_spi_read, wiz_spi_write);
+                reg_wizchip_spiburst_cbfunc(wiz_spi_read, wiz_spi_write);
+                #else
                 reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
                 reg_wizchip_spi_cbfunc(wiz_spi_readbyte, wiz_spi_writebyte);
                 reg_wizchip_spiburst_cbfunc(wiz_spi_read, wiz_spi_write);
+                #endif
+
+                #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
+                uint8_t syslock = SYS_NET_LOCK;
+                ctlwizchip(CW_SYS_UNLOCK, &syslock);
+                #endif
 
                 // Configure lwip/provided specific settings
                 wiznet5k_init();
@@ -867,6 +991,18 @@ static mp_obj_t wiznet5k_active(size_t n_args, const mp_obj_t *args) {
                     mp_hal_get_mac(MP_HAL_MAC_ETH0, mac);
                     setSHAR(mac);
                 }
+
+                #if WIZNET5K_PROVIDED_STACK
+                // Put the saved configuration back, so that active(False)
+                // followed by active(True) does not lose the address.  Carry
+                // over the MAC just established above rather than the saved
+                // one, which was read before the reset.
+                if (restore_netinfo) {
+                    memcpy(saved_netinfo.mac, wiznet5k_obj.netinfo.mac, sizeof(saved_netinfo.mac));
+                    wiznet5k_obj.netinfo = saved_netinfo;
+                    ctlnetwork(CN_SET_NETINFO, &wiznet5k_obj.netinfo);
+                }
+                #endif
 
                 #if WIZNET5K_WITH_LWIP_STACK && LWIP_IPV6
                 netif_create_ip6_linklocal_address(&self->netif, 1);
@@ -909,7 +1045,12 @@ static mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(4, tuple);
     } else if (args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
         // Start the DHCP client
+        #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
         self->netinfo.dhcp = NETINFO_DHCP;
+        self->netinfo.ipmode = NETINFO_DHCP_V4;
+        #else
+        self->netinfo.dhcp = NETINFO_DHCP;
+        #endif
         wiznet5k_dhcp_init((void *)self);
         mp_obj_t tuple[4] = {
             netutils_format_ipv4_addr(self->netinfo.ip, NETUTILS_BIG),
@@ -922,13 +1063,19 @@ static mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
 
     } else {
         // Set static IP addresses
+        #if (_WIZCHIP_ == W6100 || _WIZCHIP_ == W6300)
         self->netinfo.dhcp = NETINFO_STATIC;
+        self->netinfo.ipmode = NETINFO_STATIC_V4;
+        #else
+        self->netinfo.dhcp = NETINFO_STATIC;
+        #endif
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
         netutils_parse_ipv4_addr(items[0], netinfo.ip, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[1], netinfo.sn, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[2], netinfo.gw, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[3], netinfo.dns, NETUTILS_BIG);
+
         ctlnetwork(CN_SET_NETINFO, &netinfo);
         return mp_const_none;
     }
@@ -967,7 +1114,7 @@ static mp_obj_t wiznet5k_status(size_t n_args, const mp_obj_t *args) {
 
     if (n_args == 1) {
         // No arguments: return link status
-        if (wizphy_getphylink() == PHY_LINK_ON) {
+        if (wiznet5k_link_up()) {
             if (IS_ACTIVE(self)) {
                 return MP_OBJ_NEW_SMALL_INT(2);
             } else {
@@ -1032,7 +1179,6 @@ static mp_obj_t wiznet5k_config(size_t n_args, const mp_obj_t *args, mp_map_t *k
                 }
             }
         }
-
         return mp_const_none;
     }
 }
