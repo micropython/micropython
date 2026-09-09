@@ -8,6 +8,7 @@ package(
         "event.py",
         "funcs.py",
         "lock.py",
+        "queue.py",
         "stream.py",
     ),
     base_path="..",
