@@ -473,13 +473,16 @@ ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),)
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),0)
 WIZNET5K_DIR=lib/wiznet5k
 GIT_SUBMODULES += lib/wiznet5k
-INC += -I$(TOP)/$(WIZNET5K_DIR) -I$(TOP)/$(WIZNET5K_DIR)/Ethernet
+INC += -I$(TOP)/$(WIZNET5K_DIR)
 CFLAGS += -DMICROPY_PY_NETWORK_WIZNET5K=$(MICROPY_PY_NETWORK_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_NETWORK_WIZNET5K)
 CFLAGS_THIRDPARTY += -DWIZCHIP_PREFIXED_EXPORTS=1
-ifeq ($(MICROPY_PY_LWIP),1)
-# When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
-CFLAGS_THIRDPARTY += -DWIZCHIP_USE_MAX_BUFFER
-endif
+# The library's headers include socket.h and wizchip_conf.h by bare name, so
+# its Ethernet directory goes on the include path, but only for the library
+# and the driver, so that nothing else can pick up its socket.h.
+WIZNET5K_INC = -I$(TOP)/$(WIZNET5K_DIR)/Ethernet
+$(BUILD)/$(WIZNET5K_DIR)/%.o: CFLAGS += $(WIZNET5K_INC)
+$(BUILD)/extmod/network_wiznet5k.o: CFLAGS += $(WIZNET5K_INC)
+$(HEADER_BUILD)/qstr.i.last: QSTR_GEN_CFLAGS += $(WIZNET5K_INC)
 SRC_THIRDPARTY_C += $(addprefix $(WIZNET5K_DIR)/,\
 	Ethernet/W$(MICROPY_PY_NETWORK_WIZNET5K)/w$(MICROPY_PY_NETWORK_WIZNET5K).c \
 	Ethernet/wizchip_conf.c \
