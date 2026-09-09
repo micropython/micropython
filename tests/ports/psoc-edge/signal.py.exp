@@ -1,0 +1,17 @@
+non-inverted
+on() drives high:   True
+off() drives low:   True
+value(1) drives high:  True
+value(0) drives low:   True
+value() getter high:   True
+value() getter low:    True
+inverted
+on() drives low:    True
+off() drives high:  True
+value(1) drives low:   True
+value(0) drives high:  True
+value() getter high:   True
+value() getter low:    True
+construct from id
+id construct on():   True
+id construct off():  True
