@@ -46,8 +46,8 @@
 #define SIGNED_FIT12(x) ((((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800))
 #define SIGNED_FIT18(x) ((((x) & 0xfffe0000) == 0) || (((x) & 0xfffe0000) == 0xfffe0000))
 
-#define ET_OUT_OF_RANGE MP_ERROR_TEXT("ERROR: xtensa %q out of range")
-#define ET_NOT_ALIGNED MP_ERROR_TEXT("ERROR: %q %q not word-aligned")
+#define ET_OUT_OF_RANGE MP_ERROR_TEXT("xtensa %q out of range")
+#define ET_NOT_ALIGNED MP_ERROR_TEXT("%q %q not word-aligned")
 
 void asm_xtensa_end_pass(asm_xtensa_t *as) {
     as->num_const = as->cur_const;
@@ -396,6 +396,38 @@ void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label) {
         }
     }
     asm_xtensa_op_l32r(as, reg, as->base.code_offset, dest);
+}
+
+void asm_xtensa_bri8(asm_xtensa_t *as, mp_uint_t r, mp_uint_t s, mp_uint_t t, mp_uint_t label, qstr opcode) {
+    uint32_t dest = get_label_dest(as, label);
+    int32_t rel = dest - as->base.code_offset - 4;
+    if (as->base.pass == MP_ASM_PASS_EMIT) {
+        if (!MP_FIT_UNSIGNED(8, rel) || (rel <= 0)) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, ET_OUT_OF_RANGE, opcode);
+        }
+    }
+    asm_xtensa_op24(as, ((rel & 0xFF) << 16) | (r << 12) | (s << 8) | (t << 4) | 0x06);
+}
+
+static mp_int_t encode_b4const(mp_int_t value) {
+    static const uint8_t B4CONST_TABLE[] = {
+        0, 1, 2, 3, 4, 5, 6, 7, 9, 11, 15, 31, 63, 127, 255
+    };
+
+    for (size_t index = 0; index < MP_ARRAY_SIZE(B4CONST_TABLE); index++) {
+        if (((mp_uint_t)value - 1) == B4CONST_TABLE[index]) {
+            return index + 1;
+        }
+    }
+    return value == -1 ? 0 : -1;
+}
+
+void asm_xtensa_reg_imm_compare_branch(asm_xtensa_t *as, mp_uint_t reg, mp_int_t imm, mp_uint_t label, mp_uint_t condition, qstr opcode) {
+    mp_int_t comparison = encode_b4const(imm);
+    if (comparison < 0) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("invalid comparison value %d"), imm);
+    }
+    asm_xtensa_bri8(as, comparison & 0x0F, reg, condition & 0x0F, label, opcode);
 }
 
 #endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN

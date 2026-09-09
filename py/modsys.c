@@ -90,6 +90,9 @@ static const MP_DEFINE_STR_OBJ(mp_sys_implementation_machine_obj, MICROPY_BANNER
 #if MICROPY_EMIT_RV32
 #include "py/asmrv32.h"
 #define MPY_FILE_ARCH_FLAGS (MICROPY_RV32_EXTENSIONS << 16)
+#elif MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN
+#include "py/asmxtensa.h"
+#define MPY_FILE_ARCH_FLAGS (MICROPY_XTENSA_FLAGS << 16)
 #else
 #define MPY_FILE_ARCH_FLAGS (0)
 #endif
