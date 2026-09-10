@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/objstr.h"
 
 // This module implements crypto ciphers API, roughly following
 // https://www.python.org/dev/peps/pep-0272/ . Exact implementation
@@ -62,6 +63,9 @@ struct ctr_params {
 
 #if MICROPY_SSL_MBEDTLS
 #include <mbedtls/aes.h>
+#if MICROPY_PY_CRYPTOLIB_GCM
+#include <mbedtls/gcm.h>
+#endif
 
 // we can't run mbedtls AES key schedule until we know whether we're used for encrypt or decrypt.
 // therefore, we store the key & keysize and on the first call to encrypt/decrypt we override them
@@ -356,9 +360,142 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &cryptolib_aes_locals_dict
     );
 
+// AES-GCM support (mbedTLS only)
+#if MICROPY_PY_CRYPTOLIB_GCM
+#if MICROPY_SSL_AXTLS
+#warning GCM is not implemented with axTLS
+#endif
+#if MICROPY_SSL_MBEDTLS
+typedef struct _mp_obj_aesgcm_t {
+    mp_obj_base_t base;
+    int key_len;
+    uint8_t key[32];
+} mp_obj_aesgcm_t;
+
+static mp_obj_t cryptolib_aesgcm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_obj_aesgcm_t *o = m_new_obj(mp_obj_aesgcm_t);
+    o->base.type = type;
+    mp_buffer_info_t keyinfo;
+    mp_get_buffer_raise(args[0], &keyinfo, MP_BUFFER_READ);
+    if (keyinfo.len != 16 && keyinfo.len != 32) {
+        mp_raise_ValueError(MP_ERROR_TEXT("key length"));
+    }
+    o->key_len = keyinfo.len;
+    memcpy(&o->key, keyinfo.buf, keyinfo.len);
+    return MP_OBJ_FROM_PTR(o);
+}
+
+// Adapted interface: encrypt/decrypt(nonce, input, ad=None, out_buf=None)
+#define CRYPTOLIB_AESGCM_TAG_LEN 16
+
+static mp_obj_t cryptolib_aesgcm_crypt(size_t n_args, const mp_obj_t *args, bool enc) {
+    mp_obj_aesgcm_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_buffer_info_t nonce;
+    mp_buffer_info_t input;
+    vstr_t output_vstr;
+    mp_buffer_info_t output;
+    mp_obj_t out_obj;
+    mp_buffer_info_t ad;
+
+    int in_out_delta = enc ? CRYPTOLIB_AESGCM_TAG_LEN : -CRYPTOLIB_AESGCM_TAG_LEN;
+
+    mp_get_buffer_raise(args[1], &nonce, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[2], &input, MP_BUFFER_READ);
+
+    if ((int)input.len + in_out_delta < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("input too small"));
+    }
+
+    size_t output_len = input.len + in_out_delta;
+
+    if (n_args > 3 && args[3] != mp_const_none) {
+        mp_get_buffer_raise(args[3], &ad, MP_BUFFER_READ);
+        if (ad.len == 0) {
+            ad.buf = NULL;
+        }
+    } else {
+        ad.buf = NULL;
+        ad.len = 0;
+    }
+
+    if (n_args > 4 && args[4] != mp_const_none) {
+        out_obj = args[4];
+        mp_get_buffer_raise(out_obj, &output, MP_BUFFER_WRITE);
+        if (output.len != output_len) {
+            mp_raise_ValueError(MP_ERROR_TEXT("incorrect output length"));
+        }
+    } else {
+        out_obj = MP_OBJ_NULL;
+        vstr_init_len(&output_vstr, output_len);
+        output.buf = (uint8_t *)output_vstr.buf;
+        output.len = output_len;
+    }
+
+    mbedtls_gcm_context gcm;
+    mbedtls_gcm_init(&gcm);
+    int rc = mbedtls_gcm_setkey(&gcm, MBEDTLS_CIPHER_ID_AES, self->key, self->key_len * 8);
+    if (rc == 0) {
+        if (enc) {
+            rc = mbedtls_gcm_crypt_and_tag(&gcm, MBEDTLS_GCM_ENCRYPT,
+                input.len,
+                nonce.buf, nonce.len,
+                ad.buf, ad.len,
+                input.buf, output.buf,
+                CRYPTOLIB_AESGCM_TAG_LEN,
+                ((unsigned char *)output.buf) + input.len);
+        } else {
+            rc = mbedtls_gcm_auth_decrypt(&gcm, input.len - CRYPTOLIB_AESGCM_TAG_LEN,
+                nonce.buf, nonce.len,
+                ad.buf, ad.len,
+                ((const unsigned char *)input.buf) + input.len - CRYPTOLIB_AESGCM_TAG_LEN,
+                CRYPTOLIB_AESGCM_TAG_LEN,
+                input.buf, output.buf);
+        }
+    }
+
+    mbedtls_gcm_free(&gcm);
+
+    if (rc != 0) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("mbedtls err: %d"), rc);
+    }
+    if (out_obj == MP_OBJ_NULL) {
+        out_obj = mp_obj_new_bytes_from_vstr(&output_vstr);
+    }
+    return out_obj;
+}
+static mp_obj_t cryptolib_aesgcm_encrypt(size_t n_args, const mp_obj_t *args) {
+    return cryptolib_aesgcm_crypt(n_args, args, true);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(cryptolib_aesgcm_encrypt_obj, 3, 5, cryptolib_aesgcm_encrypt);
+
+static mp_obj_t cryptolib_aesgcm_decrypt(size_t n_args, const mp_obj_t *args) {
+    return cryptolib_aesgcm_crypt(n_args, args, false);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(cryptolib_aesgcm_decrypt_obj, 3, 5, cryptolib_aesgcm_decrypt);
+
+static const mp_rom_map_elem_t cryptolib_aesgcm_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_encrypt), MP_ROM_PTR(&cryptolib_aesgcm_encrypt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_decrypt), MP_ROM_PTR(&cryptolib_aesgcm_decrypt_obj) },
+};
+static MP_DEFINE_CONST_DICT(cryptolib_aesgcm_locals_dict, cryptolib_aesgcm_locals_dict_table);
+
+static MP_DEFINE_CONST_OBJ_TYPE(
+    cryptolib_aesgcm_type,
+    MP_QSTR_aesgcm,
+    MP_TYPE_FLAG_NONE,
+    make_new, cryptolib_aesgcm_make_new,
+    locals_dict, &cryptolib_aesgcm_locals_dict
+    );
+#endif // MICROPY_SSL_MBEDTLS
+#endif // MICROPY_PY_CRYPTOLIB_GCM
+
 static const mp_rom_map_elem_t mp_module_cryptolib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cryptolib) },
     { MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&cryptolib_aes_type) },
+    #if MICROPY_PY_CRYPTOLIB_GCM && MICROPY_SSL_MBEDTLS
+    { MP_ROM_QSTR(MP_QSTR_aesgcm), MP_ROM_PTR(&cryptolib_aesgcm_type) },
+    #endif
     #if MICROPY_PY_CRYPTOLIB_CONSTS
     { MP_ROM_QSTR(MP_QSTR_MODE_ECB), MP_ROM_INT(UCRYPTOLIB_MODE_ECB) },
     { MP_ROM_QSTR(MP_QSTR_MODE_CBC), MP_ROM_INT(UCRYPTOLIB_MODE_CBC) },
