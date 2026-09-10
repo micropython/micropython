@@ -9,6 +9,20 @@
 		/* Use USB CDC ACM as the console. */
 		zephyr,console = &cdc_acm_uart0;
 	};
+
+	gpio0_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio0>;
+		gpio-out-ranges = <0 30>;
+		gpio-in-ranges = <0 30>;
+	};
+
+	named_related_0 {
+		compatible = "micropython,related-pins-arbitrary";
+		gpio-device = <&gpio0>;
+		gpio-strings = "LED", "led", "ADC0", "ADC1", "ADC2", "ADC3";
+		gpio-ids = <25>, <25>, <26 27 28 29>;
+	};
 };
 
 &flash0 {

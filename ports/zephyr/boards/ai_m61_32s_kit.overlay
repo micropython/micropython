@@ -24,6 +24,30 @@
 		size = <DT_SIZE_M(4)>;
 		memory-region = <&psram>;
 	};
+
+	gpio0_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio0>;
+		gpio-out-ranges = <0 32>;
+	};
+
+	gpio1_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio1>;
+		gpio-out-ranges = <32 3>;
+		gpio-in-ranges = <0 3>;
+	};
+
+	named_related_0 {
+		compatible = "micropython,related-pins-arbitrary";
+		gpio-device = <&gpio0>;
+		gpio-strings = "R", "G", "B", "CW", "WW",
+			"red", "green", "blue", "coldwhite", "warmwhite",
+			"BOOT";
+		gpio-ids = <12 14 15 29 27>,
+			<12 14 15 29 27>,
+			<2>;
+	};
 };
 
 &wdt0 {

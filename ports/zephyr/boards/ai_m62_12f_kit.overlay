@@ -18,6 +18,24 @@
 			block-cycles=<4>;
 		};
 	};
+
+	gpio0_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio0>;
+		gpio-out-ranges = <0 4>, <10 6>, <17 1>, <20 3>, <27 4>;
+		gpio-in-ranges = <0 4>, <10 6>, <17 1>, <20 3>, <27 4>;
+	};
+
+	named_related_0 {
+		compatible = "micropython,related-pins-arbitrary";
+		gpio-device = <&gpio0>;
+		gpio-strings = "R", "G", "B", "CW", "WW",
+			"red", "green", "blue", "coldwhite", "warmwhite",
+			"BOOT";
+		gpio-ids = <1 30 0 29 27>,
+			<1 30 0 29 27>,
+			<2>;
+	};
 };
 
 &wdt0 {

@@ -222,6 +222,12 @@ endif # MICROPY_DYNAMIC_PINCTRL_PINMUX_TYPE_CUSTOM
 
 endif # MICROPY_DYNAMIC_PINCTRL
 
+config MICROPY_RELATED_PINS
+	bool "Use platform-specific Pin identification"
+	help
+		This allows using Pins exactly like a normal micropython port by breaking
+		the GPIO device to Pin disconnect via platform-specific code.
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
