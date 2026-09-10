@@ -1,0 +1,43 @@
+name: ameba port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'shared/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/ameba/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # ameba-rtos SDK version (commit) to build against. Keep in sync with
+  # ports/ameba/README.md.
+  AMEBA_RTOS_VER: "ffc6e1a53d28bb500a4cc28328b683f20fa223df"
+
+jobs:
+  build_ameba:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    # The Realtek GCC toolchain is downloaded by ameba-rtos/env.sh into
+    # ~/rtk-toolchain; cache it across runs to avoid re-downloading.
+    - name: Cache toolchain
+      uses: actions/cache@v5
+      with:
+        path: ~/rtk-toolchain
+        key: rtk-toolchain-${{ env.AMEBA_RTOS_VER }}
+
+    - name: Setup ameba-rtos
+      run: tools/ci.sh ameba_setup
+
+    - name: Build
+      run: tools/ci.sh ameba_build
