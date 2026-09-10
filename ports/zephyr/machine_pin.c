@@ -43,6 +43,8 @@
 
 #if MICROPY_PY_MACHINE
 
+#include "machine_pin_related.c"
+
 typedef struct _machine_pin_irq_obj_t {
     mp_irq_obj_t base;
     struct _machine_pin_irq_obj_t *next;
@@ -123,7 +125,24 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     if (mp_obj_is_type(args[0], &machine_pin_type)) {
         // Already a Pin object, reuse it.
         pin = MP_OBJ_TO_PTR(args[0]);
-    } else if (mp_obj_is_type(args[0], &mp_type_tuple)) {
+    }
+    #ifdef CONFIG_MICROPY_RELATED_PINS
+    else if ((mp_obj_is_str(args[0]) || mp_obj_is_int(args[0]))) {
+
+        machine_pin_obj_t related_pin = machine_pin_get_related(args[0]);
+
+        if (related_pin.port == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("not a valid pin"));
+        }
+
+        pin = m_new_obj(machine_pin_obj_t);
+        pin->base = machine_pin_obj_template;
+        pin->port = related_pin.port;
+        pin->pin = related_pin.pin;
+        pin->irq = NULL;
+    }
+    #endif
+    else if (mp_obj_is_type(args[0], &mp_type_tuple)) {
         // Get the wanted (port, pin) values.
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[0], 2, &items);
@@ -135,10 +154,17 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
         pin->port = wanted_port;
         pin->pin = wanted_pin;
         pin->irq = NULL;
-    } else {
+    }
+    #ifdef CONFIG_MICROPY_RELATED_PINS
+    else {
+        mp_raise_ValueError(MP_ERROR_TEXT("not a valid pin or (\"port\", pin#) tuple"));
+    }
+    #else
+    else {
         // Unknown Pin.
         mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"port\", pin#)"));
     }
+    #endif
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
