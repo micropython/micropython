@@ -1,0 +1,3 @@
+time.sleep OK
+time.sleep_ms OK
+forced machine.lightsleep OK
