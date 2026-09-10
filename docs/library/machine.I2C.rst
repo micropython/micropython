@@ -107,6 +107,20 @@ General Methods
    those that respond.  A device responds if it pulls the SDA line low after
    its address (including a write bit) is sent on the bus.
 
+.. method:: I2C.scl()
+
+   Return the pin object used for the SCL line, or ``None`` if the port does
+   not report it.
+
+.. method:: I2C.sda()
+
+   Return the pin object used for the SDA line, or ``None`` if the port does
+   not report it.
+
+   `machine.SoftI2C` reports both pins on all ports.  For hardware I2C the
+   pins are reported on the esp32, renesas-ra, rp2, samd and stm32 ports; the
+   remaining ports return ``None``.
+
 Primitive I2C operations
 ------------------------
 

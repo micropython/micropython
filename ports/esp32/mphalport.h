@@ -115,6 +115,7 @@ void mp_hal_wake_main_task_from_isr(void);
 #define MP_HAL_PIN_FMT "%u"
 #define mp_hal_pin_obj_t gpio_num_t
 mp_hal_pin_obj_t machine_pin_get_id(mp_obj_t pin_in);
+mp_obj_t mp_hal_pin_to_obj(mp_hal_pin_obj_t pin);
 #define mp_hal_get_pin_obj(o) machine_pin_get_id(o)
 #define mp_hal_pin_name(p) (p)
 static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {

@@ -107,6 +107,7 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 
 #define mp_hal_pin_obj_t        const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   machine_pin_find(o)
+#define mp_hal_pin_to_obj(p)    MP_OBJ_FROM_PTR(p)
 #define mp_hal_pin_name(p)      ((p)->name)
 #define mp_hal_pin_input(p)     ra_gpio_mode_input((p)->pin)
 #define mp_hal_pin_output(p)    ra_gpio_mode_output((p)->pin)

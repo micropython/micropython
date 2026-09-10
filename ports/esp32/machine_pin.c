@@ -127,6 +127,16 @@ gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
     return PIN_OBJ_PTR_INDEX(self);
 }
 
+mp_obj_t mp_hal_pin_to_obj(mp_hal_pin_obj_t pin) {
+    if (0 <= pin && pin < MP_ARRAY_SIZE(machine_pin_obj_table)) {
+        const machine_pin_obj_t *self = &machine_pin_obj_table[pin];
+        if (self->base.type != NULL) {
+            return MP_OBJ_FROM_PTR(self);
+        }
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
+}
+
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
     gpio_num_t gpio_num = PIN_OBJ_PTR_INDEX(self);
