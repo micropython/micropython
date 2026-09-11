@@ -197,7 +197,7 @@ void uart_tx_strn(const char *buf, size_t len) {
     }
 }
 
-#elif defined(QEMU_SOC_VIRT) || defined(QEMU_SOC_POWERNV)
+#elif defined(QEMU_SOC_VIRT) || defined(QEMU_SOC_VIRT_AARCH64) || defined(QEMU_SOC_POWERNV)
 
 // Line status register bits.
 #define UART_LSR_THRE (0x20)
@@ -214,6 +214,55 @@ typedef struct _UART_t {
 #else
 #define UART0 ((UART_t *)(0x60300d00103f8))
 #endif
+
+#if defined(QEMU_SOC_VIRT_AARCH64)
+
+#define UART_FR_RXFE (1 << 4)
+#define UART_FR_TXFF (1 << 5)
+
+#define UART_CR_UARTEN (1 << 0)
+#define UART_CR_TXE    (1 << 8)
+#define UART_CR_RXE    (1 << 9)
+
+#define UART_IBRD       (*(volatile uint32_t *)(0x09000024))
+#define UART_FBRD       (*(volatile uint32_t *)(0x09000028))
+#define UART_LCRH       (*(volatile uint32_t *)(0x0900002C))
+#define UART_CR         (*(volatile uint32_t *)(0x09000030))
+#define UART_IFLS       (*(volatile uint32_t *)(0x09000034))
+#define UART_IM         (*(volatile uint32_t *)(0x09000038))
+#define UART_DR         (*(volatile uint32_t *)(0x09000000))
+#define UART_FR         (*(volatile uint32_t *)(0x09000018))
+
+void uart_init(void) {
+    UART_CR = 0;
+    UART_IBRD = 3;
+    UART_FBRD = 0;
+    UART_LCRH = 0x70;
+    UART_IFLS = 0x03;
+    UART_IM = 0;
+    UART_CR = UART_CR_UARTEN | UART_CR_TXE | UART_CR_RXE;
+}
+
+int uart_rx_chr(void) {
+    if (!(UART_FR & UART_FR_RXFE)) {
+        return UART_DR & 0xFF;
+    }
+    return UART_RX_NO_CHAR;
+}
+
+int uart_rx_any(void) {
+    return !(UART_FR & UART_FR_RXFE);
+}
+
+void uart_tx_strn(const char *buffer, size_t length) {
+    for (size_t index = 0; index < length; index++) {
+        while (UART_FR & UART_FR_TXFF) {
+        }
+        UART_DR = buffer[index];
+    }
+}
+
+#else
 
 void uart_init(void) {
 }
@@ -236,5 +285,7 @@ void uart_tx_strn(const char *buffer, size_t length) {
         UART0->DR = buffer[index];
     }
 }
+
+#endif
 
 #endif

@@ -83,6 +83,10 @@
         #else
             #error "Unsupported RISC-V architecture."
         #endif
+    #elif defined(__aarch64__)
+// AArch64 has no .mpy architecture ID (see issue #19386): native code
+// can be emitted at runtime, but native .mpy files cannot be loaded.
+        #error "AArch64 has no .mpy architecture ID; MICROPY_PERSISTENT_CODE_LOAD_NATIVE must be 0 (see issue #19386)"
     #else
         #error "Unsupported native architecture."
     #endif

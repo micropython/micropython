@@ -1,8 +1,8 @@
 MicroPython port to qemu
 ========================
 
-This is experimental, community-supported port for Cortex-M and RISC-V
-RV32IMC/RV64IMC emulation as provided by QEMU (http://qemu.org).
+This is experimental, community-supported port for Cortex-M, RISC-V
+RV32IMC/RV64IMC, and AArch64 emulation as provided by QEMU (http://qemu.org).
 
 The purposes of this port are to enable:
 
@@ -25,6 +25,13 @@ Dependencies
 
 For ARM-based boards the build requires a bare-metal ARM toolchain, such as
 `arm-none-eabi-gcc`.
+
+### AArch64
+
+For AArch64-based boards the build requires a bare-metal AArch64 toolchain, such as
+`aarch64-none-elf-gcc`.  The QEMU `virt` machine is used with `-cpu max`, which
+enables all CPU features supported by the version of QEMU being used; the
+firmware itself is built for the base ARMv8-A instruction set.
 
 ### RISC-V 32
 
@@ -101,16 +108,18 @@ different board pass the `BOARD` argument to `make`, for example:
 
 Available boards are:
 
-| Name for `BOARD=` | Architecture | Corresponding qemu board |
-| ----------------- | ------------ | ------------------------ |
-| `MICROBIT`        | `arm`        | `microbit`               |
-| `MPS2_AN385`      | `arm`        | `mps2-an385`             |
-| `MPS2_AN500`      | `arm`        | `mps2-an500`             |
-| `NETDUINO2`       | `arm`        | `netduino2`              |
-| `POWERNV9`        | `ppc64`      | `powernv9`               |
-| `SABRELITE`       | `arm`        | `sabrelite`              |
-| `VIRT_RV32`       | `riscv32`    | `virt`                   |
-| `VIRT_RV64`       | `riscv64`    | `virt`                   |
+| Name for `BOARD=`    | Architecture | Corresponding qemu board |
+| -------------------- | ------------ | ------------------------ |
+| `MICROBIT`           | `arm`        | `microbit`               |
+| `MPS2_AN385`         | `arm`        | `mps2-an385`             |
+| `MPS2_AN500`         | `arm`        | `mps2-an500`             |
+| `NETDUINO2`          | `arm`        | `netduino2`              |
+| `POWERNV9`           | `ppc64`      | `powernv9`               |
+| `SABRELITE`          | `arm`        | `sabrelite`              |
+| `VIRT_AARCH64`       | `aarch64`    | `virt`                   |
+| `VIRT_AARCH64_FLOAT` | `aarch64`    | `virt`                   |
+| `VIRT_RV32`          | `riscv32`    | `virt`                   |
+| `VIRT_RV64`          | `riscv64`    | `virt`                   |
 
 Running
 -------
@@ -120,7 +129,8 @@ To access the REPL directly use:
 
     $ make repl
 
-This will start `qemu-system-arm` (or `qemu-system-riscv32`) with the UART
+This will start `qemu-system-arm` (or `qemu-system-riscv32`, or
+`qemu-system-aarch64`) with the UART
 redirected to stdio.  It's also possible to redirect the UART to a pty device
 using:
 
