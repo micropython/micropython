@@ -101,9 +101,15 @@
 
 // SD Card SDMMC
 // SD_VSELECT: low(default)=3.3V IO, high=1.8V IO
-// SD_RESET: drive low to turn off SD VCC (pulled high by default)
+// SD_RESET: drive low to turn off SD VCC (pulled high by default on UHS-I capable
+//   hardware, in which case it reads high at startup; reads low otherwise)
 // SD_DETECT: pulled high in hardware, goes low when SD inserted
 #define MICROPY_HW_SDCARD_SDMMC             (1)
+#define MICROPY_HW_SDCARD_VSELECT_PIN       (pyb_pin_SD_VSELECT)
+#define MICROPY_HW_SDCARD_RESET_PIN         (pyb_pin_SD_RESET)
+// UHS-I SDR104 at 200MHz (the SDMMC kernel clock is HCLK at 200MHz).
+#define MICROPY_HW_SDCARD_UHS_SWITCH_PATTERN (SDMMC_SDR104_SWITCH_PATTERN)
+#define MICROPY_HW_SDCARD_UHS_CLK_DIV       (0)
 #define MICROPY_HW_SDCARD_CK                (pyb_pin_SD_SDIO_CK)
 #define MICROPY_HW_SDCARD_CMD               (pyb_pin_SD_SDIO_CMD)
 #define MICROPY_HW_SDCARD_D0                (pyb_pin_SD_SDIO_D0)
