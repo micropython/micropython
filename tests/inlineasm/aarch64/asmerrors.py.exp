@@ -1,0 +1,18 @@
+SyntaxError: too many params
+SyntaxError: wrong param order
+SyntaxError: unknown op
+SyntaxError: wrong arg count
+SyntaxError: bad register
+SyntaxError: not integer
+SyntaxError: register out of range
+SyntaxError: shift out of range
+SyntaxError: bad address
+SyntaxError: wrong address count
+SyntaxError: unknown 1-arg op
+SyntaxError: unknown 2-arg op
+SyntaxError: unknown 3-arg op
+SyntaxError: too many args
+SyntaxError: reg exceeds max
+SyntaxError: param not id
+SyntaxError: label not id
+SyntaxError: label undefined

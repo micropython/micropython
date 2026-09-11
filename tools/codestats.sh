@@ -32,15 +32,28 @@ bin_cc3200_1=ports/cc3200/build/LAUNCHXL/application.axf
 bin_cc3200_2=ports/cc3200/build/LAUNCHXL/release/application.axf
 bin_cc3200_3=ports/cc3200/build/WIPY/release/application.axf
 
+# AArch64 binaries
+bin_qemu_aarch64=ports/qemu/build-VIRT_AARCH64/firmware.elf
+bin_unix_aarch64=ports/unix/build-standard-aarch64/micropython
+
 # start at zero size; if build fails reuse previous valid size
 size_unix="0"
 size_stm32="0"
 size_barearm="0"
 size_minimal="0"
 size_cc3200="0"
+size_qemu_aarch64="0"
+size_unix_aarch64="0"
 
 # start at zero pystones
 pystones="0"
+pystones_aarch64="0"
+
+# cross-compilers for AArch64
+CROSS_AARCH64_LINUX=aarch64-linux-gnu-
+CROSS_AARCH64_BARE=aarch64-none-elf-
+QEMU_AARCH64_LINUX=qemu-aarch64
+QEMU_SYSROOT_AARCH64=/usr/aarch64-linux-gnu
 
 # this code runs pystone and averages the results
 pystoneavg=/tmp/pystoneavg.py
@@ -86,7 +99,7 @@ function get_size3() {
 if [ -r $output ]; then
     last_rev=$(tail -n1 $output | $AWK '{print $1}')
 else
-    echo "# hash size_unix size_stm32 size_barearm size_minimal size_cc3200 pystones" > $output
+    echo "# hash size_unix size_stm32 size_barearm size_minimal size_cc3200 size_qemu_aarch64 size_unix_aarch64 pystones pystones_aarch64" > $output
     last_rev="v1.0"
 fi
 
@@ -166,6 +179,23 @@ EOF
         size_cc3200=$(get_size3 $size_cc3200 $bin_cc3200_1 $bin_cc3200_2 $bin_cc3200_3)
     fi
 
+    #### qemu AArch64 (bare-metal) ####
+
+    if [ -r ports/qemu/Makefile ] && [ -r ports/qemu/boards/VIRT_AARCH64/mpconfigboard.mk ]; then
+        $RM $bin_qemu_aarch64
+        $MAKE -C ports/qemu BOARD=VIRT_AARCH64 CROSS_COMPILE=$CROSS_AARCH64_BARE
+        size_qemu_aarch64=$(get_size $size_qemu_aarch64 $bin_qemu_aarch64)
+    fi
+
+    #### unix AArch64 (cross-compiled, Linux) ####
+
+    if [ -r ports/unix/Makefile ]; then
+        $RM $bin_unix_aarch64
+        $MAKE -C ports/unix CROSS_COMPILE=$CROSS_AARCH64_LINUX VARIANT=standard BUILD=build-standard-aarch64 MICROPY_STANDALONE=1 deplibs
+        $MAKE -C ports/unix CROSS_COMPILE=$CROSS_AARCH64_LINUX VARIANT=standard BUILD=build-standard-aarch64 MICROPY_STANDALONE=1
+        size_unix_aarch64=$(get_size $size_unix_aarch64 $bin_unix_aarch64)
+    fi
+
     #### run pystone ####
 
     if [ -x $bin_unix ]; then
@@ -176,9 +206,18 @@ EOF
         fi
     fi
 
+    #### run pystone on AArch64 unix (via qemu-aarch64) ####
+
+    if [ -x $bin_unix_aarch64 ]; then
+        new_pystones=$($QEMU_AARCH64_LINUX -L $QEMU_SYSROOT_AARCH64 $bin_unix_aarch64 $pystoneavg)
+        if echo $new_pystones | grep -q "^stones"; then
+            pystones_aarch64=$(echo $new_pystones | $AWK '{print $2}')
+        fi
+    fi
+
     #### output data for this commit ####
 
-    echo "$hash $size_unix $size_stm32 $size_barearm $size_minimal $size_cc3200 $pystones" >> $output
+    echo "$hash $size_unix $size_stm32 $size_barearm $size_minimal $size_cc3200 $size_qemu_aarch64 $size_unix_aarch64 $pystones $pystones_aarch64" >> $output
 
 done
 

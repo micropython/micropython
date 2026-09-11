@@ -79,6 +79,15 @@
 #if !defined(MICROPY_EMIT_ARM) && defined(__arm__) && !defined(__thumb2__)
     #define MICROPY_EMIT_ARM        (1)
 #endif
+#if !defined(MICROPY_EMIT_AARCH64) && defined(__aarch64__)
+    #define MICROPY_EMIT_AARCH64    (1)
+#endif
+#if !defined(MICROPY_EMIT_INLINE_AARCH64) && defined(__aarch64__)
+    #define MICROPY_EMIT_INLINE_AARCH64 (1)
+#endif
+#if !defined(MICROPY_PERSISTENT_CODE_LOAD_NATIVE) && defined(__aarch64__)
+    #define MICROPY_PERSISTENT_CODE_LOAD_NATIVE (0)
+#endif
 #if !defined(MICROPY_EMIT_RV32) && defined(__riscv) && __riscv_xlen == 32
     #define MICROPY_EMIT_RV32       (1)
 #endif
@@ -110,7 +119,7 @@ typedef long mp_off_t;
 // if running on intel-based macOS, or on architectures for which there is no
 // specialised GC pointer discovery mechanism.
 #if (defined(__APPLE__) && defined(__MACH__) && (defined(__i386__) || defined(__x86_64__))) || \
-    (!(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__) || (defined(__riscv) && __riscv_xlen <= 64) || (defined(__loongarch__) && defined(__loongarch64))))
+    (!(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__) || defined(__aarch64__) || (defined(__riscv) && __riscv_xlen <= 64) || (defined(__loongarch__) && defined(__loongarch64))))
 #define MICROPY_GCREGS_SETJMP       (1)
 #endif
 
