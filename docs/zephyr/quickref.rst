@@ -32,29 +32,37 @@ Use the :mod:`time <time>` module::
 GPIO
 ----
 
-Use the :ref:`machine.Pin <machine.Pin>` class::
+If your board supports Related Pins, use the :ref:`machine.Pin <machine.Pin>` class like so::
 
     from machine import Pin
 
-    pin = Pin(("gpiob", 21), Pin.IN)    # create input pin on GPIO port B
-    print(pin)                          # print pin port and number
+    pin = Pin(21, Pin.IN)    # create input pin for pin ID 21 if related pins are integers
+    pin = Pin("B21", Pin.IN) # create input pin for pin "B21" if related pins are strings-generated or arbitrary
+    print(pin)               # print pin port and number the relation pointed to
 
-    pin.init(Pin.OUT, Pin.PULL_UP, value=1)     # reinitialize pin
+Or use the :ref:`machine.Pin <machine.Pin>` class like such::
 
-    pin.value(1)                        # set pin to high
-    pin.value(0)                        # set pin to low
+    from machine import Pin
 
-    pin.on()                            # set pin to high
-    pin.off()                           # set pin to low
+    pin = Pin(("gpiob", 21), Pin.IN) # create input pin 21 from the GPIO port labeled "gpiob"
+    print(pin)                       # print pin port and number
 
-    pin = Pin(("gpiob", 21), Pin.IN)              # create input pin on GPIO port B
+And for both formats::
 
-    pin = Pin(("gpiob", 21), Pin.OUT, value=1)    # set pin high on creation
+    pin.init(Pin.OUT, Pin.PULL_UP, value=1) # reinitialize pin
 
-    pin = Pin(("gpiob", 21), Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
+    pin.value(1) # set pin to high
+    pin.value(0) # set pin to low
 
-    switch = Pin(("gpioc", 6), Pin.IN)            # create input pin for a switch
-    switch.irq(lambda t: print("SW2 changed"))    # enable an interrupt when switch state is changed
+    pin.on()     # set pin to high
+    pin.off()    # set pin to low
+
+    pin = Pin(("gpiob", 21), Pin.OUT, value=1) # set pin high on creation
+
+    pin = Pin(21, Pin.IN, Pin.PULL_UP)         # enable internal pull-up resistor
+
+    switch = Pin(("gpioc", 6), Pin.IN)         # create input pin for a switch
+    switch.irq(lambda t: print("SW2 changed")) # enable an interrupt when switch state is changed
 
 Pinctrl
 -------
