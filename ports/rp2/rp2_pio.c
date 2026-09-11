@@ -218,6 +218,7 @@ enum {
     PROG_OUT_PINS,
     PROG_SET_PINS,
     PROG_SIDESET_PINS,
+    PROG_ORIGIN,
     PROG_MAX_FIELDS,
 };
 
@@ -342,9 +343,10 @@ static mp_obj_t rp2_pio_add_program(mp_obj_t self_in, mp_obj_t prog_in) {
     mp_obj_get_array_fixed_n(prog_in, PROG_MAX_FIELDS, &prog);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(prog[PROG_DATA], &bufinfo, MP_BUFFER_READ);
+    mp_int_t origin = mp_obj_get_int(prog[PROG_ORIGIN]);
 
     // Add the program data to the PIO instruction memory.
-    struct pio_program pio_program = { bufinfo.buf, bufinfo.len / 2, -1 };
+    struct pio_program pio_program = { bufinfo.buf, bufinfo.len / 2, origin };
     if (!pio_can_add_program(self->pio, &pio_program)) {
         mp_raise_OSError(MP_ENOMEM);
     }

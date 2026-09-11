@@ -23,7 +23,7 @@ The ``rp2`` module includes functions for assembling PIO programs.
 
 For running PIO programs, see :class:`rp2.StateMachine`.
 
-.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, side_pindir=False, in_shiftdir=PIO.SHIFT_LEFT, out_shiftdir=PIO.SHIFT_LEFT, autopush=False, autopull=False, push_thresh=32, pull_thresh=32, fifo_join=PIO.JOIN_NONE)
+.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, side_pindir=False, in_shiftdir=PIO.SHIFT_LEFT, out_shiftdir=PIO.SHIFT_LEFT, autopush=False, autopull=False, push_thresh=32, pull_thresh=32, fifo_join=PIO.JOIN_NONE, origin=-1)
 
     Assemble a PIO program.
 
@@ -59,6 +59,8 @@ For running PIO programs, see :class:`rp2.StateMachine`.
     - *fifo_join* configures whether the 4-word TX and RX FIFOs should be
       combined into a single 8-word FIFO for one direction only. The options
       are `PIO.JOIN_NONE`, `PIO.JOIN_RX` and `PIO.JOIN_TX`.
+    - *origin* provides an optional offset for this program into the PIO memory
+      block
 
 .. function:: asm_pio_encode(instr, sideset_count, sideset_opt=False)
 
