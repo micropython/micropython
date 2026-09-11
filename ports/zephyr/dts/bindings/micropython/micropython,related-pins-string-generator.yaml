@@ -1,0 +1,47 @@
+# Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
+# SPDX-License-Identifier: Apache-2.0
+
+title: MicroPython Related Pins using integer generator to string
+
+description: |
+        Generate a pin list associated with a GPIO device using a string format, this produces sets
+        similar to the Renesas port's Pin identifiers.
+
+compatible: "micropython,related-pins-string-generator"
+
+include: ["micropython,related-pins-common.yaml"]
+
+properties:
+  generator-expression:
+    type: string
+    required: true
+    description: |
+      String printf expression used to generate pin names. It must only use int specifiers.
+
+  gpio-out-ranges:
+    type: array
+    required: true
+    description: |
+      Integer ranges substituted in the generator expression.
+      It must not overlap other generator's ranges.
+      The format is identical to 'gpio-reserved-ranges' from a gpio-controller.
+      The count of pairs must match gpio-in-ranges'.
+
+  gpio-in-ranges:
+    type: array
+    default: [0, 32]
+    description: |
+      Integer Pin ranges on zephyr size.
+      The format is identical to 'gpio-reserved-ranges' from a gpio-controller.
+      The count of pairs must match gpio-out-ranges'.
+      The default covers the whole possible range of a GPIO controller.
+
+examples:
+  - |
+    gpio1_related {
+      compatible = "micropython,related-pins-string-generator";
+      gpio-device = <&gpio1>;
+      generator-expression = "P%2d";
+      gpio-out-ranges = <32 3>;
+      gpio-in-ranges = <0 3>;
+    };

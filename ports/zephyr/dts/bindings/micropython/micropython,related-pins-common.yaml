@@ -1,0 +1,13 @@
+# Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
+# SPDX-License-Identifier: Apache-2.0
+
+title: MicroPython Related Pins common properties
+
+include: [base.yaml]
+
+properties:
+  gpio-device:
+    type: phandle
+    required: true
+    description: |
+      GPIO device for this set of related pins

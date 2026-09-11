@@ -1,0 +1,33 @@
+# Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
+# SPDX-License-Identifier: Apache-2.0
+
+title: MicroPython Related Pins using arbitrary matches
+
+description: |
+        Generate a pin list associated with a GPIO device using arbitrary string to gpio matches.
+
+compatible: "micropython,related-pins-arbitrary"
+
+include: ["micropython,related-pins-common.yaml"]
+
+properties:
+  gpio-strings:
+    type: string-array
+    required: true
+    description: |
+      Strings values to use, in order.
+
+  gpio-ids:
+    type: array
+    required: true
+    description: |
+      GPIO numbers to use, in order.
+
+examples:
+  - |
+    gpio1_related {
+      compatible = "micropython,related-pins-arbitrary";
+      gpio-device = <&gpio1>;
+      gpio-strings = "LOREM", "IPSUM", "DOLOR";
+      gpio-ids = <0 1 2>;
+    };

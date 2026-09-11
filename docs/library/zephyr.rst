@@ -55,6 +55,7 @@ Classes
     zephyr.DiskAccess.rst
     zephyr.Display.rst
     zephyr.FlashArea.rst
+    zephyr.Pinctrl.rst
 
 Additional Modules
 ------------------

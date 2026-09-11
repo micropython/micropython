@@ -24,8 +24,68 @@
 		size = <DT_SIZE_M(4)>;
 		memory-region = <&psram>;
 	};
+
+	gpio0_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio0>;
+		gpio-out-ranges = <0 32>;
+	};
+
+	gpio1_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio1>;
+		gpio-out-ranges = <32 3>;
+		gpio-in-ranges = <0 3>;
+	};
+
+	named_related_0 {
+		compatible = "micropython,related-pins-arbitrary";
+		gpio-device = <&gpio0>;
+		gpio-strings = "R", "G", "B", "CW", "WW",
+			"red", "green", "blue", "coldwhite", "warmwhite",
+			"BOOT";
+		gpio-ids = <12 14 15 29 27>,
+			<12 14 15 29 27>,
+			<2>;
+	};
 };
 
 &wdt0 {
 	status = "okay";
+};
+
+&pinctrl {
+	uart1_default: uart1_default {
+		group1 {
+			pinmux = <GPIO3_UART1_TX>;
+		};
+	};
+};
+
+&uart1 {
+	status = "okay";
+	current-speed = <115200>;
+	zephyr,deferred-init;
+	/* A pinctrl struct MUST have been allocated at build time to use dynamic pinctrl,
+	 * but it can be nonsense if needed as the device is deferred-init
+	 * and pinctrl won't be applied until device init.
+	 */
+	pinctrl-0 = <&uart1_default>;
+	pinctrl-names = "default";
+};
+
+&pinctrl {
+	i2c1_default: i2c1_default {
+		group1 {
+			pinmux = <GPIO3_I2C1_SDA>;
+		};
+	};
+};
+
+&i2c1 {
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	zephyr,deferred-init;
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-names = "default";
 };
