@@ -59,7 +59,7 @@
 #endif
 
 // wrapper around everything in this file
-#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32 || N_DEBUG
+#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32 || N_AARCH64 || N_DEBUG
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
@@ -2627,6 +2627,23 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 default:
                     break;
             }
+            #elif N_AARCH64
+            asm_aarch64_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
+            static const uint ccs[6 + 6] = {
+                ASM_AARCH64_CC_LO,
+                ASM_AARCH64_CC_HI,
+                ASM_AARCH64_CC_EQ,
+                ASM_AARCH64_CC_LS,
+                ASM_AARCH64_CC_HS,
+                ASM_AARCH64_CC_NE,
+                ASM_AARCH64_CC_LT,
+                ASM_AARCH64_CC_GT,
+                ASM_AARCH64_CC_EQ,
+                ASM_AARCH64_CC_LE,
+                ASM_AARCH64_CC_GE,
+                ASM_AARCH64_CC_NE,
+            };
+            asm_aarch64_setcc_reg(emit->as, REG_RET, ccs[op_idx]);
             #elif N_DEBUG
             asm_debug_setcc_reg_reg_reg(emit->as, op_idx, REG_RET, REG_ARG_2, reg_rhs);
             #else

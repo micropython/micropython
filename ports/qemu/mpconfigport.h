@@ -39,6 +39,10 @@
 #define MICROPY_EMIT_INLINE_THUMB   (1)
 #endif
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+#elif defined(__aarch64__)
+#define MICROPY_EMIT_AARCH64        (1)
+#define MICROPY_EMIT_INLINE_AARCH64 (1)
+#define MICROPY_PERSISTENT_CODE_LOAD_NATIVE (0)
 #elif defined(__riscv)
 #if (__riscv_xlen == 32)
 #define MICROPY_EMIT_RV32           (1)
@@ -114,7 +118,7 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 // type definitions for the specific machine
 
-#if (defined(__riscv) && (__riscv_xlen == 64)) || (defined(__powerpc__) && defined(__powerpc64__))
+#if (defined(__riscv) && (__riscv_xlen == 64)) || (defined(__powerpc__) && defined(__powerpc64__)) || defined(__aarch64__)
 #define MP_SSIZE_MAX (0x7fffffffffffffff)
 #else
 #define MP_SSIZE_MAX (0x7fffffff)

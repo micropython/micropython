@@ -16,7 +16,17 @@ elif 10 >= mpy_arch >= 9:
 elif mpy_arch == 11:
     fields.append("rv32")
 else:
-    raise SystemExit
+    # AArch64 does not yet have a persistent .mpy architecture ID, so probe
+    # for its inline assembler directly instead of using sys.implementation._mpy.
+    try:
+        exec("""
+@micropython.asm_aarch64
+def f():
+    nop()
+""")
+        fields.append("aarch64")
+    except SyntaxError:
+        raise SystemExit
 
 arch = fields[0]
 has_asm = False
@@ -46,6 +56,16 @@ elif arch == "rv32":
 @micropython.asm_rv32
 def f():
     add(a0, a0, a0)
+""")
+        has_asm = True
+    except SyntaxError:
+        pass
+elif arch == "aarch64":
+    try:
+        exec("""
+@micropython.asm_aarch64
+def f():
+    add(x0, x0, x0)
 """)
         has_asm = True
     except SyntaxError:
@@ -85,5 +105,7 @@ def f():
         fields.append("zcmp")
     except SyntaxError:
         pass
+elif arch == "aarch64":
+    pass
 
 print(",".join(fields))

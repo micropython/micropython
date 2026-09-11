@@ -33,6 +33,8 @@
 #define MICROPY_EMIT_X64 (0)
 #define MICROPY_EMIT_THUMB (0)
 #define MICROPY_EMIT_ARM (0)
+#define MICROPY_EMIT_AARCH64 (0)
+#define MICROPY_EMIT_INLINE_AARCH64 (0)
 
 // Tune the parser to use less RAM by default.
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (64)

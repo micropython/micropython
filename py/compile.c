@@ -123,6 +123,8 @@ static const emit_method_table_t *emit_native_table[] = {
 #define NATIVE_EMITTER(f) emit_native_xtensawin_##f
 #elif MICROPY_EMIT_RV32
 #define NATIVE_EMITTER(f) emit_native_rv32_##f
+#elif MICROPY_EMIT_AARCH64
+#define NATIVE_EMITTER(f) emit_native_aarch64_##f
 #elif MICROPY_EMIT_NATIVE_DEBUG
 #define NATIVE_EMITTER(f) emit_native_debug_##f
 #else
@@ -162,6 +164,9 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
 #elif MICROPY_EMIT_INLINE_RV32
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_rv32
 #define ASM_EMITTER(f) emit_inline_rv32_##f
+#elif MICROPY_EMIT_INLINE_AARCH64
+#define ASM_DECORATOR_QSTR MP_QSTR_asm_aarch64
+#define ASM_EMITTER(f) emit_inline_aarch64_##f
 #else
 #error "unknown asm emitter"
 #endif

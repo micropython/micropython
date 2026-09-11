@@ -1,0 +1,14 @@
+QEMU_ARCH = aarch64
+QEMU_MACHINE = virt
+
+CFLAGS += -DQEMU_SOC_VIRT_AARCH64
+CFLAGS += -DMICROPY_HW_MCU_NAME='"qemu-aarch64-virt"'
+
+LDSCRIPT = mcu/aarch64/virt.ld
+
+SRC_BOARD_O += shared/runtime/gchelper_native.o shared/runtime/gchelper_aarch64.o
+
+CFLAGS += -DMICROPY_GC_ALLOC_THRESHOLD=0
+
+MICROPY_FLOAT_IMPL = float
+SUPPORTS_HARDWARE_FP_SINGLE = 1
