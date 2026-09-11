@@ -407,6 +407,21 @@ function ci_qemu_setup_ppc64 {
     qemu-system-ppc64 --version
 }
 
+function ci_qemu_setup_aarch64 {
+    sudo apt-get update
+    sudo apt-get install qemu-system
+    # Ubuntu has no aarch64-none-elf package; download the ARM GNU toolchain.
+    wget -q https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz
+    xzcat arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz | tar x
+    rm arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz
+    "$(ci_qemu_aarch64_path)/aarch64-none-elf-gcc" --version
+    qemu-system-aarch64 --version
+}
+
+function ci_qemu_aarch64_path {
+    echo "$(pwd)/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf/bin"
+}
+
 function ci_qemu_build_arm_prepare {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
@@ -473,6 +488,15 @@ function ci_qemu_build_ppc64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 submodules
     make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 test
+}
+
+function ci_qemu_build_aarch64 {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_AARCH64 submodules
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_AARCH64 test_full
+
+    (cd tests && ./run-tests.py -t execpty:"qemu-system-aarch64 -machine virt -cpu max -nographic -monitor null -semihosting -serial pty -kernel ../ports/qemu/build-VIRT_AARCH64/firmware.elf" -d inlineasm/aarch64)
+    (cd tests && ./run-tests.py -t execpty:"qemu-system-aarch64 -machine virt -cpu max -nographic -monitor null -semihosting -serial pty -kernel ../ports/qemu/build-VIRT_AARCH64/firmware.elf" -d ports/qemu)
 }
 
 ########################################################################################
@@ -654,6 +678,12 @@ CI_UNIX_OPTS_QEMU_LOONG64=(
 
 CI_UNIX_OPTS_QEMU_X64=(
     CROSS_COMPILE=x86_64-linux-gnu-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+)
+
+CI_UNIX_OPTS_QEMU_AARCH64=(
+    CROSS_COMPILE=aarch64-linux-gnu-
     VARIANT=coverage
     MICROPY_STANDALONE=1
 )
@@ -1119,6 +1149,47 @@ function ci_unix_qemu_x64_run_tests {
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude '(thread/stress_aes.py|ports/unix/ffi_callback.py)'
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
     popd
+}
+
+function ci_unix_qemu_aarch64_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+    sudo apt-get install qemu-user
+    qemu-aarch64 --version
+    sudo mkdir /etc/qemu-binfmt
+    sudo ln -s /usr/aarch64-linux-gnu/ /etc/qemu-binfmt/aarch64
+}
+
+function ci_unix_qemu_aarch64_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_AARCH64[@]}"
+    ci_unix_build_ffi_lib_helper aarch64-linux-gnu-gcc
+
+    micropython=$(pwd)/ports/unix/build-coverage/micropython
+    wrapper=$(pwd)/ports/unix/build-coverage/micropython-qemu.sh
+    cat > "$wrapper" << EOF
+#!/bin/bash
+exec qemu-aarch64 -L /usr/aarch64-linux-gnu "$micropython" "\$@"
+EOF
+    chmod +x "$wrapper"
+}
+
+function ci_unix_qemu_aarch64_run_tests {
+    # Issues with AArch64 tests:
+    # - extmod/select_poll_fd.py requires a low fd limit to trigger EINVAL
+    # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
+    file ./ports/unix/build-coverage/micropython
+    ulimit -n 1024
+    wrapper=$(pwd)/ports/unix/build-coverage/micropython-qemu.sh
+
+    (cd tests && MICROPY_MICROPYTHON=$wrapper MICROPY_TEST_TIMEOUT=60 ./run-tests.py --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=$wrapper MICROPY_TEST_TIMEOUT=60 ./run-tests.py --emit native --exclude 'thread/stress_recurse.py|thread/thread_gc1.py')
+    (cd tests && MICROPY_MICROPYTHON=$wrapper MICROPY_TEST_TIMEOUT=60 ./run-tests.py -d inlineasm/aarch64)
+}
+
+
+function ci_unix_qemu_aarch64_run_coverage {
+    (cd ports/unix && gcov -o build-coverage/py ../../py/asmaarch64.c ../../py/emitnaarch64.c ../../py/emitinlineaarch64.c)
 }
 
 function ci_unix_repr_b_build {

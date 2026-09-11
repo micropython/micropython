@@ -47,6 +47,11 @@ MICROPY_HEAP_SIZE ?= 204800
 MICROPY_STACK_SIZE ?= 20480
 FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
 endif
+ifeq ($(QEMU_ARCH),aarch64)
+MICROPY_HEAP_SIZE ?= 1048576
+MICROPY_STACK_SIZE ?= 20480
+FROZEN_MANIFEST ?= "require('unittest'); freeze('test-frzmpy', ('frozen_const.py',))"
+endif
 
 MICROPY_FLOAT_IMPL ?= float
 
@@ -196,6 +201,32 @@ SRC_BOARD_O += mcu/ppc64/head.o
 endif
 
 ################################################################################
+# AArch64 specific settings
+
+ifeq ($(QEMU_ARCH),aarch64)
+
+CROSS_COMPILE ?= aarch64-none-elf-
+
+
+LDFLAGS += -nostdlib
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+
+QEMU_ARGS += -cpu max -semihosting
+
+AFLAGS += -march=armv8-a
+CFLAGS += $(AFLAGS) -fno-stack-protector -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+
+SRC_C += \
+	mcu/aarch64/errorhandler.c \
+	mcu/aarch64/startup.c \
+	mcu/aarch64/ticks.c \
+	shared/runtime/semihosting_aarch64.c \
+
+SRC_BOARD_O += mcu/aarch64/entrypoint.o
+
+endif
+
+################################################################################
 # Project specific settings and compiler/linker flags
 
 QEMU_BASE ?= qemu-system-
@@ -300,7 +331,11 @@ SRC_C += \
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
+ifeq ($(QEMU_ARCH),aarch64)
+LIBM_SRC_C += lib/libm_dbl/aarch64_sqrt.c
+else
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_HW_C)
+endif
 else
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_SW_C)
 endif
@@ -308,7 +343,11 @@ else
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
+ifeq ($(QEMU_ARCH),aarch64)
+LIBM_SRC_C += lib/libm/aarch64_sqrtf.c
+else
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
+endif
 else
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 endif

@@ -142,6 +142,8 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	emitinlinethumb.o \
 	asmarm.o \
 	emitnarm.o \
+	asmaarch64.o \
+	emitnaarch64.o \
 	asmxtensa.o \
 	emitnxtensa.o \
 	emitinlinextensa.o \
@@ -149,6 +151,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	asmrv32.o \
 	emitnrv32.o \
 	emitinlinerv32.o \
+	emitinlineaarch64.o \
 	emitndebug.o \
 	formatfloat.o \
 	parsenumbase.o \
