@@ -205,6 +205,7 @@ extern const emit_method_table_t emit_native_arm_method_table;
 extern const emit_method_table_t emit_native_xtensa_method_table;
 extern const emit_method_table_t emit_native_xtensawin_method_table;
 extern const emit_method_table_t emit_native_rv32_method_table;
+extern const emit_method_table_t emit_native_aarch64_method_table;
 extern const emit_method_table_t emit_native_debug_method_table;
 
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops;
@@ -219,6 +220,7 @@ emit_t *emit_native_arm_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot,
 emit_t *emit_native_xtensa_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_xtensawin_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_rv32_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_aarch64_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_debug_new(mp_emit_common_t *emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 
 void emit_bc_set_max_num_labels(emit_t *emit, mp_uint_t max_num_labels);
@@ -231,6 +233,7 @@ void emit_native_arm_free(emit_t *emit);
 void emit_native_xtensa_free(emit_t *emit);
 void emit_native_xtensawin_free(emit_t *emit);
 void emit_native_rv32_free(emit_t *emit);
+void emit_native_aarch64_free(emit_t *emit);
 void emit_native_debug_free(emit_t *emit);
 
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
@@ -307,14 +310,17 @@ typedef struct _emit_inline_asm_method_table_t {
     void (*op)(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args);
 } emit_inline_asm_method_table_t;
 
+extern const emit_inline_asm_method_table_t emit_inline_aarch64_method_table;
 extern const emit_inline_asm_method_table_t emit_inline_rv32_method_table;
 extern const emit_inline_asm_method_table_t emit_inline_thumb_method_table;
 extern const emit_inline_asm_method_table_t emit_inline_xtensa_method_table;
 
+emit_inline_asm_t *emit_inline_aarch64_new(mp_uint_t max_num_labels);
 emit_inline_asm_t *emit_inline_rv32_new(mp_uint_t max_num_labels);
 emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels);
 emit_inline_asm_t *emit_inline_xtensa_new(mp_uint_t max_num_labels);
 
+void emit_inline_aarch64_free(emit_inline_asm_t *emit);
 void emit_inline_rv32_free(emit_inline_asm_t *emit);
 void emit_inline_thumb_free(emit_inline_asm_t *emit);
 void emit_inline_xtensa_free(emit_inline_asm_t *emit);

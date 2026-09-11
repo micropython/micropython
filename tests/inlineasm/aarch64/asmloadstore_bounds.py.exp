@@ -1,0 +1,15 @@
+SyntaxError: ldr past imm12 max
+SyntaxError: str past imm12 max
+SyntaxError: ldrh past imm12 max
+SyntaxError: strh past imm12 max
+SyntaxError: ldrb past imm12 max
+SyntaxError: strb past imm12 max
+SyntaxError: ldr not a multiple of 8
+SyntaxError: ldr near max not a multiple of 8
+SyntaxError: str near max not a multiple of 8
+SyntaxError: ldrh not a multiple of 2
+SyntaxError: strh near max not a multiple of 2
+SyntaxError: negative ldr offset
+SyntaxError: negative ldrb offset
+SyntaxError: negative str offset
+x11 preserved at max offsets: True
