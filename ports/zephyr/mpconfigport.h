@@ -218,3 +218,8 @@ typedef long mp_off_t;
 #ifdef CONFIG_SOC_FAMILY_ESPRESSIF_ESP32
 #define MICROPY_PY_HASHLIB_SHA256 (0)
 #endif
+
+/* Lots of code (especially RF driver blobs) do stupid things with printf and bypass all safeties
+ * Try to ensure we use Zephyr's printf
+ */
+#define MICROPY_USE_INTERNAL_PRINTF (0)

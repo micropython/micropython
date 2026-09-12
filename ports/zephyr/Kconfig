@@ -103,6 +103,14 @@ configdefault MBEDTLS_HEAP_SIZE
 
 endif # MICROPY_MBEDTLS_HEAP_RELOCATE
 
+config MICROPY_HANDLE_MISHANDLED_LOGGING
+	bool "Provide log stubs for bad vendor middleware"
+	default y if WIFI_NXP
+	help
+		Allows 'monkeypatching' vendor middleware with unrestrained unwanted logging.
+		Provides a printf-like mp_mishandle_printf function that can be used to replace
+		vendor calls to printf or other similar logging functions.
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
