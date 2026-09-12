@@ -15,6 +15,25 @@ except:
 # Exceptions
 
 
+class BaseExceptionGroup(BaseException):
+    def split(self, typ):
+        a, b = [], []
+        if isinstance(typ, (BaseException, tuple)):
+            for err in self.args[1]:
+                (a if isinstance(err, typ) else b).append(err)
+        else:
+            for err in self.args[1]:
+                (a if typ(err) else b).append(err)
+        return a, b
+
+
+class ExceptionGroup(Exception):  # TODO cannot also inherit from BaseExceptionGroup
+    pass
+
+
+ExceptionGroup.split = BaseExceptionGroup.split
+
+
 class CancelledError(BaseException):
     pass
 
@@ -32,7 +51,7 @@ _exc_context = {"message": "Task exception wasn't retrieved", "exception": None,
 
 
 # "Yield" once, then raise StopIteration
-class SingletonGenerator:
+class SleepHandler:
     def __init__(self):
         self.state = None
         self.exc = StopIteration()
@@ -51,9 +70,10 @@ class SingletonGenerator:
 
 
 # Pause task execution for the given time (integer in milliseconds, MicroPython extension)
-# Use a SingletonGenerator to do it without allocating on the heap
-def sleep_ms(t, sgen=SingletonGenerator()):
-    assert sgen.state is None
+# Try not to allocate a SleepHandler on the heap if possible.
+def sleep_ms(t, sgen=SleepHandler()):
+    if sgen.state is not None:  # the static one is busy
+        sgen = SleepHandler()
     sgen.state = ticks_add(ticks(), max(0, t))
     return sgen
 
