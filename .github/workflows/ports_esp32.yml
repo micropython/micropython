@@ -2,16 +2,17 @@ name: esp32 port
 
 on:
   push:
-  pull_request:
-    paths:
+    paths: &paths
       - '.github/workflows/*.yml'
-      - 'tools/**'
+      - 'tools/*.*'
       - 'py/**'
       - 'extmod/**'
       - 'shared/**'
       - 'lib/**'
       - 'drivers/**'
       - 'ports/esp32/**'
+  pull_request:
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

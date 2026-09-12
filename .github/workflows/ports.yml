@@ -2,11 +2,12 @@ name: Build ports metadata
 
 on:
   push:
+    paths: &paths
+      - ".github/workflows/*.yml"
+      - "tools/*.*"
+      - "ports/**"
   pull_request:
-    paths:
-      - '.github/workflows/*.yml'
-      - 'tools/**'
-      - ports/**
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,6 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v7
-    - name: Build ports download metadata
-      run: mkdir boards && ./tools/autobuild/build-downloads.py . ./boards
+      - uses: actions/checkout@v7
+      - name: Build ports download metadata
+        run: mkdir boards && ./tools/autobuild/build-downloads.py . ./boards
