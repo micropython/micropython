@@ -2,10 +2,11 @@ name: Package mpremote
 
 on:
   push:
+    paths: &paths
+      - ".github/workflows/*.yml"
+      - "tools/**"
   pull_request:
-    paths:
-      - '.github/workflows/*.yml'
-      - 'tools/**'
+    paths: *paths
 
 jobs:
   build:

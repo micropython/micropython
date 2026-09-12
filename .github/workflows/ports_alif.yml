@@ -2,16 +2,17 @@ name: alif port
 
 on:
   push:
+    paths: &paths
+      - ".github/workflows/*.yml"
+      - "tools/*.*"
+      - "py/**"
+      - "extmod/**"
+      - "shared/**"
+      - "lib/**"
+      - "drivers/**"
+      - "ports/alif/**"
   pull_request:
-    paths:
-      - '.github/workflows/*.yml'
-      - 'tools/*.*'
-      - 'py/**'
-      - 'extmod/**'
-      - 'shared/**'
-      - 'lib/**'
-      - 'drivers/**'
-      - 'ports/alif/**'
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,12 +23,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ci_func:  # names are functions in ci.sh
+        ci_func: # names are functions in ci.sh
           - alif_ae3_build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - name: Install packages
-      run: tools/ci.sh alif_setup
-    - name: Build ci_${{matrix.ci_func }}
-      run: tools/ci.sh ${{ matrix.ci_func }}
+      - uses: actions/checkout@v7
+      - name: Install packages
+        run: tools/ci.sh alif_setup
+      - name: Build ci_${{matrix.ci_func }}
+        run: tools/ci.sh ${{ matrix.ci_func }}

@@ -2,16 +2,17 @@ name: rp2 port
 
 on:
   push:
+    paths: &paths
+      - ".github/workflows/*.yml"
+      - "tools/*.*"
+      - "py/**"
+      - "extmod/**"
+      - "shared/**"
+      - "lib/**"
+      - "drivers/**"
+      - "ports/rp2/**"
   pull_request:
-    paths:
-      - '.github/workflows/*.yml'
-      - 'tools/*.*'
-      - 'py/**'
-      - 'extmod/**'
-      - 'shared/**'
-      - 'lib/**'
-      - 'drivers/**'
-      - 'ports/rp2/**'
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,12 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 'micropython repo'  # test build with space in path
+        working-directory: "micropython repo" # test build with space in path
     steps:
-    - uses: actions/checkout@v7
-      with:
-        path: 'micropython repo'
-    - name: Install packages
-      run: tools/ci.sh rp2_setup
-    - name: Build
-      run: tools/ci.sh rp2_build
+      - uses: actions/checkout@v7
+        with:
+          path: "micropython repo"
+      - name: Install packages
+        run: tools/ci.sh rp2_setup
+      - name: Build
+        run: tools/ci.sh rp2_build

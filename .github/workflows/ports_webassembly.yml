@@ -2,16 +2,17 @@ name: webassembly port
 
 on:
   push:
+    paths: &paths
+      - ".github/workflows/*.yml"
+      - "tools/*.*"
+      - "py/**"
+      - "extmod/**"
+      - "shared/**"
+      - "lib/**"
+      - "ports/webassembly/**"
+      - "tests/**"
   pull_request:
-    paths:
-      - '.github/workflows/*.yml'
-      - 'tools/*.*'
-      - 'py/**'
-      - 'extmod/**'
-      - 'shared/**'
-      - 'lib/**'
-      - 'ports/webassembly/**'
-      - 'tests/**'
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,13 +22,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - name: Install packages
-      run: tools/ci.sh webassembly_setup
-    - name: Build
-      run: tools/ci.sh webassembly_build
-    - name: Run tests
-      run: tools/ci.sh webassembly_run_tests
-    - name: Print failures
-      if: failure()
-      run: tests/run-tests.py --print-failures
+      - uses: actions/checkout@v7
+      - name: Install packages
+        run: tools/ci.sh webassembly_setup
+      - name: Build
+        run: tools/ci.sh webassembly_build
+      - name: Run tests
+        run: tools/ci.sh webassembly_run_tests
+      - name: Print failures
+        if: failure()
+        run: tests/run-tests.py --print-failures
