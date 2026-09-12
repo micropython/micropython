@@ -1,4 +1,3 @@
-/* Change for MicroPython: additionally exclude gc.c, vm.c and parse.c from
-   flash, so their .text is placed in RAM (via the default .data section) for
-   faster execution. Keeps the SDK's default exclusions for libgcc/libc/libm. */
+/* Change for MicroPython: exclude gc.c, vm.c, parse.c, libgcc, libc and libm from
+   flash so their .text is placed in SRAM (via the default .data section). */
 *(EXCLUDE_FILE(*libgcc.a: *libc.a: *lib*_a-mem*.o *libm.a: *py/gc.c.o *py/vm.c.o *py/parse.c.o) .text*)
