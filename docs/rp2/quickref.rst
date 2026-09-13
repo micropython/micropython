@@ -162,6 +162,39 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
+    p6 = Pin(6, Pin.OUT, drive=Pin.DRIVE_3) # nom. 12mA drive strength
+    p7 = Pin(7, Pin.OUT, drive=Pin.DRIVE_1|Pin.DRIVE_FAST) # high slew rate
+
+Four drive strengths are supported. As is common for microcontrollers,
+the RP2xxx datasheets label these with a nominal current
+(approximately the maximum current for which the output voltage can be
+guaranteed to remain at a TTL compatible level). **The short-circuit
+current will be much higher** and is not specified as either safe or
+to result in a current within a given range (so replacing the series
+resistor for driving a LED by merely selecting a low drive strength
+carries a risk). Additionally, the slew rate limitation can be
+disabled by bitwise OR of the intended drive strength constant with
+the ``Pin.DRIVE_FAST`` constant, for a total of 8 combinations of
+drive strength and slew rate settings:
+
+ - ``Pin.DRIVE_0``: nom. 2 mA
+ - ``Pin.DRIVE_1``: nom. 4 mA (default)
+ - ``Pin.DRIVE_2``: nom. 8 mA
+ - ``Pin.DRIVE_3``: nom. 12 mA
+ - ``Pin.DRIVE_0|Pin.DRIVE_FAST``: nom. 2 mA with fast (high) slew rate
+ - ``Pin.DRIVE_1|Pin.DRIVE_FAST``: nom. 4 mA with fast slew rate
+ - ``Pin.DRIVE_2|Pin.DRIVE_FAST``: nom. 8 mA with fast slew rate
+ - ``Pin.DRIVE_3|Pin.DRIVE_FAST``: nom. 12 mA with fast slew rate
+
+The default drive strength setting (nom. 4 mA with slow slew rate)
+corresponds to the power-on reset defaults of the RP2040 and RP235x
+chips. Note that choosing a fast slew rate may---in a circuit not
+designed for it---cause issues likely to surprise non-experts,
+e.g. ringing (voltage excursions potentially large enough to damage
+chips connected to it), signal integrity problems, and increased
+electromagnetic emanations (potentially interfering with other
+electronic devices, especially RF receivers).
+
 Programmable IO (PIO)
 ---------------------
 
