@@ -164,9 +164,6 @@
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
 #endif
 
-void mp_hal_signal_event(void);
-#define MICROPY_SCHED_HOOK_SCHEDULED mp_hal_signal_event()
-
 #define MICROPY_PY_SYS_PLATFORM "zephyr"
 
 #ifdef CONFIG_BOARD
