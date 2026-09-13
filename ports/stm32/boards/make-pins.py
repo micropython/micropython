@@ -12,7 +12,7 @@ import boardgen
 
 # Must have matching entries in AF_FN_* enum in ../pin_defs_stm32.h
 SUPPORTED_AF = {
-    "TIM": ["CH1", "CH2", "CH3", "CH4", "CH1N", "CH2N", "CH3N", "CH1_ETR", "ETR", "BKIN"],
+    "TIM": ["CH1", "CH2", "CH3", "CH4", "CH1N", "CH2N", "CH3N", "ETR", "BKIN"],
     "I2C": ["SDA", "SCL"],
     "I2S": ["CK", "MCK", "SD", "WS", "EXTSD"],
     "USART": ["RX", "TX", "CTS", "RTS", "CK"],
