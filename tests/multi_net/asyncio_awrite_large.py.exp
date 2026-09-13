@@ -1,0 +1,9 @@
+--- instance0 ---
+server running
+recv awrite True
+recv drain True
+done
+--- instance1 ---
+yielded True
+awrote
+drained
