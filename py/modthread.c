@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "py/runtime.h"
@@ -33,12 +34,33 @@
 
 #include "py/mpthread.h"
 
+#if MICROPY_PY_BUILTINS_FLOAT
+typedef struct _mp_obj_float_t {
+    mp_obj_base_t base;
+    mp_float_t value;
+} mp_obj_float_t;
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
+#endif
+
+#if MICROPY_PY_THREAD_LOCK_TIMEOUT
+#if MICROPY_PY_BUILTINS_FLOAT
+#define TIMEOUT_MAX ((mp_float_t)MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX / MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ)
+const mp_obj_float_t thread_timeout_max_obj = {{&mp_type_float}, TIMEOUT_MAX};
+#else
+#if MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ >= 1000000
+#define TIMEOUT_MAX ((int64_t)MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX / (MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ / 1000000))
+#else
+#define TIMEOUT_MAX ((int64_t)MICROPY_PY_THREAD_LOCK_TIMEOUT_MAX)
+#endif
+const mp_obj_int_t thread_timeout_max_obj = const mp_obj_int_t thread_timeout_max_obj = {{&mp_type_int}, TIMEOUT_MAX};
+#endif
 #endif
 
 /****************************************************************/
@@ -62,12 +84,44 @@ static mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
 static mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
     mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(args[0]);
     bool wait = true;
+    int64_t timeout = -1;
     if (n_args > 1) {
         wait = mp_obj_get_int(args[1]);
-        // TODO support timeout arg
+        if (n_args > 2) {
+            // Timeout is a float as in CPython
+            // For boards that do not have builtin float one can pass the timeout in us
+            #if MICROPY_PY_BUILTINS_FLOAT
+            // timeout is a float in CPython
+            mp_float_t _timeout = mp_obj_get_float(args[2]);
+            #else
+            // timeout is an integer microseconds if no floats
+            mp_int_t _timeout = mp_obj_get_int(args[2]);
+            #endif
+            if (!wait && _timeout >= 0) {
+                mp_raise_ValueError(MP_ERROR_TEXT("can't specify a timeout for a non-blocking call"));
+            }
+            #if !MICROPY_PY_THREAD_LOCK_TIMEOUT
+            if (_timeout >= 0) {
+                mp_raise_ValueError(MP_ERROR_TEXT("timeout not supported"));
+            }
+            #else
+            if (_timeout > TIMEOUT_MAX) {
+                mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("timeout larger than _thread.TIMEOUT_MAX"));
+            }
+            #endif
+            #if MICROPY_PY_BUILTINS_FLOAT
+            timeout = (int64_t)(MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ * _timeout);
+            #else
+            #if MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ >= 1000000
+            timeout = _timeout * (MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ / 1000000);
+            #else
+            timeout = _timeout / (1000000 / MICROPY_PY_THREAD_LOCK_TIMEOUT_RESOLUTION_HZ);
+            #endif
+            #endif
+        }
     }
     MP_THREAD_GIL_EXIT();
-    int ret = mp_thread_mutex_lock(&self->mutex, wait);
+    int ret = mp_thread_mutex_lock(&self->mutex, wait ? timeout : 0);
     MP_THREAD_GIL_ENTER();
     if (ret == 0) {
         return mp_const_false;
@@ -277,6 +331,9 @@ static const mp_rom_map_elem_t mp_module_thread_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_start_new_thread), MP_ROM_PTR(&mod_thread_start_new_thread_obj) },
     { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mod_thread_exit_obj) },
     { MP_ROM_QSTR(MP_QSTR_allocate_lock), MP_ROM_PTR(&mod_thread_allocate_lock_obj) },
+    #if MICROPY_PY_THREAD_LOCK_TIMEOUT
+    { MP_ROM_QSTR(MP_QSTR_TIMEOUT_MAX), MP_ROM_PTR(&thread_timeout_max_obj) },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_thread_globals, mp_module_thread_globals_table);

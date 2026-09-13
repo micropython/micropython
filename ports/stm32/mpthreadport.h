@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include "pybthread.h"
 
 typedef pyb_mutex_t mp_thread_mutex_t;
@@ -43,8 +44,8 @@ static inline void mp_thread_mutex_init(mp_thread_mutex_t *m) {
     pyb_mutex_init(m);
 }
 
-static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int wait) {
-    return pyb_mutex_lock(m, wait);
+static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int64_t timeout) {
+    return pyb_mutex_lock(m, timeout < 0);
 }
 
 static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *m) {

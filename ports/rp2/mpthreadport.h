@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_RP2_MPTHREADPORT_H
 
 #include "mutex_extra.h"
+#include <stdint.h>
 
 typedef struct mutex mp_thread_mutex_t;
 typedef recursive_mutex_nowait_t mp_thread_recursive_mutex_t;
@@ -53,8 +54,8 @@ static inline void mp_thread_mutex_init(mp_thread_mutex_t *m) {
     mutex_init(m);
 }
 
-static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int wait) {
-    if (wait) {
+static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int64_t timeout) {
+    if (timeout < 0) {
         mutex_enter_blocking(m);
         return 1;
     } else {
@@ -70,8 +71,8 @@ static inline void mp_thread_recursive_mutex_init(mp_thread_recursive_mutex_t *m
     recursive_mutex_nowait_init(m);
 }
 
-static inline int mp_thread_recursive_mutex_lock(mp_thread_recursive_mutex_t *m, int wait) {
-    if (wait) {
+static inline int mp_thread_recursive_mutex_lock(mp_thread_recursive_mutex_t *m, int64_t timeout) {
+    if (timeout < 0) {
         recursive_mutex_nowait_enter_blocking(m);
         return 1;
     } else {

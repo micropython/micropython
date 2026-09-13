@@ -217,7 +217,7 @@ void m_free(void *ptr)
 // while holding the GIL.)
 
 static inline void m_tracked_node_lock(void) {
-    mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), 1);
+    mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), MP_THREAD_MUTEX_TIMEOUT_FOREVER);
 }
 
 static inline void m_tracked_node_unlock(void) {
