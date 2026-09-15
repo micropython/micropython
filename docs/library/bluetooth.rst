@@ -39,6 +39,13 @@ Configuration
 
     The radio must be made active before using any other methods on this class.
 
+.. note:: On ESP32 the BLE interface will not operate correctly and will
+    probably lock up the board if the system clock frequency has been changed to
+    a value below 80MHz.  Whilst this limitation may have been lifted from more
+    recent members of the ESP32 product line, for compatibility reasons across
+    hardware variants it is suggested to keep the system clock frequency above
+    80MHz if you use the BLE interface.
+
 .. method:: BLE.config('param', /)
             BLE.config(*, param=value, ...)
 
