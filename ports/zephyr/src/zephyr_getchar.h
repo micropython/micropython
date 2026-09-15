@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_ZEPHYR_SRC_ZEPHYR_GETCHAR_H
+#define MICROPY_INCLUDED_ZEPHYR_SRC_ZEPHYR_GETCHAR_H
+
+#ifdef CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER
 
 void zephyr_getchar_init(void);
 int zephyr_getchar_check(void);
 int zephyr_getchar(void);
+
+#endif
+
+#endif /* MICROPY_INCLUDED_ZEPHYR_SRC_ZEPHYR_GETCHAR_H */
