@@ -70,6 +70,11 @@
 #ifndef CAN_SJW_MAX
 #define CAN_SJW_MAX 4
 #endif
+// The calculated prescaler must be a multiple of this. Ports whose hardware only
+// supports certain prescaler steps (e.g. even values on esp32) override this.
+#ifndef CAN_BRP_GRANULARITY
+#define CAN_BRP_GRANULARITY 1
+#endif
 
 #if MICROPY_HW_ENABLE_FDCAN
 // CAN-FD BRS (Baud Rate Switch) default limits
@@ -136,6 +141,9 @@ static int calculate_brp(int bitrate_nom, int f_clock, int *tseg1, int *tseg2, i
     int best_sample_err = 10000; // Units of .01%, start at max
 
     for (int brp = brp_max; brp >= brp_min; brp--) {
+        if (brp % CAN_BRP_GRANULARITY) {
+            continue; // prescaler value not supported by the hardware
+        }
         unsigned scaled_clock = f_clock / brp;
 
         if (find_tseg) {
