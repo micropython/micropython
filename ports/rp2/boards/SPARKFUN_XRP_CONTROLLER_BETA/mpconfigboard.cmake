@@ -1,6 +1,7 @@
 # cmake file for SparkFun XRP Controller (Beta)
 
 set(PICO_BOARD "pico_w")
+set(PICO_PLATFORM "rp2040")
 
 set(MICROPY_PY_LWIP ON)
 set(MICROPY_PY_NETWORK_CYW43 ON)
