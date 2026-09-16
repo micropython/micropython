@@ -44,7 +44,8 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
     }
     vstr->alloc = alloc;
     vstr->len = 0;
-    vstr->buf = m_new(char, vstr->alloc);
+    // m_renew preserves the tag when the buffer moves
+    vstr->buf = m_new_with_no_gc_pointers(char, vstr->alloc);
     vstr->fixed_buf = false;
 }
 
