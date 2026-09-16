@@ -24,6 +24,8 @@ A native .mpy module is built using the ``mpy_ld.py`` tool, which is found in th
 (.o files) and links them together to create a native .mpy files.  It requires
 CPython 3 and the library pyelftools v0.25 or greater.
 
+The :ref:`mpy_files` section describes how .mpy files are implemented inside MicroPython.
+
 Supported features and limitations
 ----------------------------------
 
