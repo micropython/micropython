@@ -3,7 +3,7 @@ name: Build ports metadata
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/ports.yml"
       - "tools/*.*"
       - "ports/**"
   pull_request:

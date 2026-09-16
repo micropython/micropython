@@ -3,7 +3,7 @@ name: .mpy file format and tools
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/mpy_format.yml"
       - "examples/**"
       - "mpy-cross/**"
       - "py/**"

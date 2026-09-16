@@ -3,7 +3,7 @@ name: renesas-ra port
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/ports_renesas-ra.yml"
       - "tools/*.*"
       - "py/**"
       - "extmod/**"

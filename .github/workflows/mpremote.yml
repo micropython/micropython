@@ -3,7 +3,7 @@ name: Package mpremote
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/mpremote.yml"
       - "tools/**"
   pull_request:
     paths: *paths

@@ -3,7 +3,7 @@ name: stm32 port
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/ports_stm32.yml"
       - "tools/*.*"
       - "py/**"
       - "extmod/**"

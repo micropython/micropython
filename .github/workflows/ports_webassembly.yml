@@ -3,7 +3,7 @@ name: webassembly port
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/ports_webassembly.yml"
       - "tools/*.*"
       - "py/**"
       - "extmod/**"

@@ -3,7 +3,7 @@ name: cc3200 port
 on:
   push:
     paths: &paths
-      - '.github/workflows/*.yml'
+      - '.github/workflows/ports_cc3200.yml'
       - 'tools/*.*'
       - 'py/**'
       - 'extmod/**'

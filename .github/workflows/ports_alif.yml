@@ -3,7 +3,7 @@ name: alif port
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/ports_alif.yml"
       - "tools/*.*"
       - "py/**"
       - "extmod/**"

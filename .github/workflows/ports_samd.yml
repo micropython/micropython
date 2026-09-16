@@ -3,7 +3,7 @@ name: samd port
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/ports_samd.yml"
       - "tools/*.*"
       - "py/**"
       - "extmod/**"

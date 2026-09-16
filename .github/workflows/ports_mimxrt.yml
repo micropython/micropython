@@ -3,7 +3,7 @@ name: mimxrt port
 on:
   push:
     paths: &paths
-      - ".github/workflows/*.yml"
+      - ".github/workflows/ports_mimxrt.yml"
       - "tools/*.*"
       - "py/**"
       - "extmod/**"
