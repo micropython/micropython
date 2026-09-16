@@ -97,7 +97,9 @@
 // Miscellaneous HAL settings
 #define VDD_VALUE           3300UL
 #define USE_RTOS            0
+#ifndef USE_SD_TRANSCEIVER
 #define USE_SD_TRANSCEIVER  0
+#endif
 #define USE_SPI_CRC         1
 
 // Disable dynamic callback registration
