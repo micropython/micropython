@@ -65,6 +65,9 @@ void gc_weakref_sweep(void);
 
 enum {
     GC_ALLOC_FLAG_HAS_FINALISER = 1,
+    // Block contains no GC pointers, so the mark phase can skip scanning it.
+    // Only valid for pure-data buffers.
+    GC_ALLOC_FLAG_CONTAINS_NO_GC_POINTERS = 2,
 };
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags);
