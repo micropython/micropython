@@ -182,7 +182,8 @@
     if (!mp_prof_is_executing && code_state->frame && MP_STATE_THREAD(prof_trace_callback)) { \
         MP_PROF_INSTR_DEBUG_PRINT(code_state->ip); \
     } \
-    if (!mp_prof_is_executing && code_state->frame && code_state->frame->callback) { \
+    if (!mp_prof_is_executing && code_state->frame && code_state->frame->callback \
+        && MP_STATE_THREAD(prof_trace_callback)) { \
         mp_prof_instr_tick(code_state, is_exception); \
     } \
 } while(0)
