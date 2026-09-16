@@ -135,6 +135,9 @@
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
+#ifndef MICROPY_PY_MACHINE_MCPWM
+#define MICROPY_PY_MACHINE_MCPWM            (SOC_MCPWM_SUPPORTED)
+#endif
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY         (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
