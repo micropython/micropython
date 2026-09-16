@@ -1159,7 +1159,7 @@ size_t gc_nbytes(const void *ptr) {
 void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     // check for pure allocation
     if (ptr_in == NULL) {
-        return gc_alloc(n_bytes, false);
+        return gc_alloc(n_bytes, 0);
     }
 
     // check for pure free
@@ -1279,10 +1279,12 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         return ptr_in;
     }
 
+    unsigned int alloc_flags = 0;
+
     #if MICROPY_ENABLE_FINALISER
-    bool ftb_state = FTB_GET(area, block);
-    #else
-    bool ftb_state = false;
+    if (FTB_GET(area, block)) {
+        alloc_flags |= GC_ALLOC_FLAG_HAS_FINALISER;
+    }
     #endif
 
     GC_EXIT();
@@ -1293,7 +1295,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     }
 
     // can't resize inplace; try to find a new contiguous chain
-    void *ptr_out = gc_alloc(n_bytes, ftb_state);
+    void *ptr_out = gc_alloc(n_bytes, alloc_flags);
 
     // check that the alloc succeeded
     if (ptr_out == NULL) {
