@@ -1011,6 +1011,17 @@ found:
     MP_STATE_MEM(gc_alloc_amount) += n_blocks;
     #endif
 
+    #if MICROPY_ENABLE_FINALISER
+    if (has_finaliser) {
+        // clear type pointer in case it is never set
+        ((mp_obj_base_t *)ret_ptr)->type = NULL;
+        // set mp_obj flag only if it has a finaliser
+        FTB_SET(area, start_block);
+    }
+    #else
+    (void)has_finaliser;
+    #endif
+
     GC_EXIT();
 
     #if MICROPY_GC_CONSERVATIVE_CLEAR
@@ -1023,19 +1034,6 @@ found:
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
     memset((byte *)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
-    #endif
-
-    #if MICROPY_ENABLE_FINALISER
-    if (has_finaliser) {
-        // clear type pointer in case it is never set
-        ((mp_obj_base_t *)ret_ptr)->type = NULL;
-        // set mp_obj flag only if it has a finaliser
-        GC_ENTER();
-        FTB_SET(area, start_block);
-        GC_EXIT();
-    }
-    #else
-    (void)has_finaliser;
     #endif
 
     #if EXTENSIVE_HEAP_PROFILING
