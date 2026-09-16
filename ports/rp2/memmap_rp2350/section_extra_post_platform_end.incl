@@ -7,8 +7,12 @@
 SECTIONS
 {
     /* Change for MicroPython: __StackLimit is historically the maximum heap
-       pointer, i.e. the end of the C heap. */
-    __StackLimit = __bss_end__ + __micropy_c_heap_size__;
+       pointer, i.e. the end of the C heap. Round it up to a page, because
+       newlib's malloc always leaves the break on a page boundary and _sbrk
+       refuses any request that crosses __StackLimit, so an unaligned ceiling
+       makes the last page of the C heap unusable. */
+    __StackLimit = __micropy_c_heap_size__ ?
+        ALIGN(__bss_end__ + __micropy_c_heap_size__, 4096) : __bss_end__;
 
     /* Define start and end of the GC heap. Reserve __micropy_extra_stack__ at
        the top of RAM for the C stack. */
