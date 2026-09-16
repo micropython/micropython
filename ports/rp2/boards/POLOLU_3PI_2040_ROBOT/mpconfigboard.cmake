@@ -1,5 +1,7 @@
 # cmake file for Pololu 3pi+ 2040 Robot
 
+set(PICO_PLATFORM "rp2040")
+
 if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
     set(MICROPY_HW_FLASH_STORAGE_BYTES 15728640)  # 15 * 1024 * 1024
 endif()
