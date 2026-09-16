@@ -3,7 +3,7 @@
         "../deploy_nativeusb.md"
     ],
     "deploy_options": {
-        "flash_offset": "0"
+        "flash_offset": "0x2000"
     },
     "docs": "",
     "features": [
