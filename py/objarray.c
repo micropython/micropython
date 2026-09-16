@@ -107,7 +107,8 @@ static mp_obj_array_t *array_new(char typecode, size_t n) {
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
-    o->items = m_new(byte, typecode_size * o->len);
+    // array items are always numeric data
+    o->items = m_new_with_no_gc_pointers(byte, typecode_size * o->len);
     return o;
 }
 #endif
