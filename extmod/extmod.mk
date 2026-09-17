@@ -53,6 +53,7 @@ SRC_EXTMOD_C += \
 	extmod/modwebsocket.c \
 	extmod/network_cyw43.c \
 	extmod/network_esp_hosted.c \
+	extmod/halow/network_halow.c \
 	extmod/network_lwip.c \
 	extmod/network_ninaw10.c \
 	extmod/network_ppp_lwip.c \
@@ -468,6 +469,24 @@ SRC_THIRDPARTY_C += $(addprefix $(CYW43_DIR)/src/,\
 
 $(BUILD)/$(CYW43_DIR)/src/cyw43_%.o: CFLAGS += -std=c11
 endif # MICROPY_PY_NETWORK_CYW43
+
+################################################################################
+# halow (802.11ah)
+
+# network.HALOW is turned on by selecting a PHY back-end; the binding itself is
+# PHY-neutral.  Deriving the umbrella switch from the back-end keeps the choice
+# explicit -- a board selects Morse Micro, not "HaLow" -- and lets a second
+# family be added later with its own switch that also turns network.HALOW on.
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+MICROPY_PY_NETWORK_HALOW = 1
+endif
+
+ifeq ($(MICROPY_PY_NETWORK_HALOW),1)
+
+CFLAGS += -DMICROPY_PY_NETWORK_HALOW=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_HALOW=1
+
+endif # MICROPY_PY_NETWORK_HALOW
 
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),)
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),0)
