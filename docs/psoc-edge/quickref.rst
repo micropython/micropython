@@ -237,12 +237,6 @@ Constructor
    
    - ``bits``. Only 8 bits.
 
-   These are planned for future implementation, but yet unavailable:
-
-   - ``rts``
-   - ``cts``
-   - ``flow``
-       
 .. Note::
 
    These parameters are not implemented:

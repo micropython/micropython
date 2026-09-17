@@ -275,7 +275,7 @@ class PSE84PinGenerator(boardgen.PinGenerator):
     def print_scb_defines(self, out_header):
         print(file=out_header)
         print(
-            f"#define MICROPY_PY_MACHINE_SCB_NUM_ENTRIES ({self._scb_max_index + 1})",
+            f"#define MICROPY_PY_SCB_NUM_ENTRIES ({self._scb_max_index + 1})",
             file=out_header,
         )
 
@@ -295,10 +295,10 @@ class PSE84PinGenerator(boardgen.PinGenerator):
         )
 
         print(file=out_header)
-        print("// The MICROPY_PY_MACHINE_FOR_ALL_SCB(DO) macro will", file=out_header)
+        print("// The MICROPY_PY_FOR_ALL_SCB(DO) macro will", file=out_header)
         print("// apply the DO macro to all user available SCB units.", file=out_header)
         print("// The DO macro takes the SCB unit as argument: DO(unit).", file=out_header)
-        print("#define MICROPY_PY_MACHINE_FOR_ALL_SCB(DO) \\", file=out_header)
+        print("#define MICROPY_PY_FOR_ALL_SCB(DO) \\", file=out_header)
 
         lines = [f"DO({scb})" for scb in self._unhidden_scb]
         macro_body = " \\\n".join(lines)

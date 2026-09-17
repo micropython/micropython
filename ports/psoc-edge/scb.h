@@ -24,26 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_PSOC_EDGE_MACHINE_SCB_H
-#define MICROPY_INCLUDED_PSOC_EDGE_MACHINE_SCB_H
+#ifndef MICROPY_INCLUDED_PSOC_EDGE_SCB_H
+#define MICROPY_INCLUDED_PSOC_EDGE_SCB_H
 
 #include "sys_int.h"
 #include "py/obj.h"
 
-typedef void (*machine_scb_parent_irq_handler_t)(mp_obj_t scb_obj);
+typedef void (*scb_parent_irq_handler_t)(mp_obj_t scb_obj);
 
-typedef struct _machine_scb_obj_t {
+typedef struct _scb_obj_t {
     int8_t id;
     CySCB_Type *scb;
     sys_int_cfg_t irq;
     en_clk_dst_t clk;
     uint8_t mmio_slave_nr;
     mp_obj_t parent;
-    machine_scb_parent_irq_handler_t parent_handler;
-} machine_scb_obj_t;
+    scb_parent_irq_handler_t parent_handler;
+} scb_obj_t;
 
-machine_scb_obj_t *machine_scb_obj_alloc(uint8_t scb, mp_obj_t parent, machine_scb_parent_irq_handler_t handler);
-void machine_scb_obj_free(machine_scb_obj_t *scb);
-bool machine_scb_is_free(uint8_t scb);
+scb_obj_t *scb_obj_alloc(uint8_t scb, mp_obj_t parent, scb_parent_irq_handler_t handler);
+void scb_obj_free(scb_obj_t *scb);
+bool scb_is_free(uint8_t scb);
 
-#endif // MICROPY_INCLUDED_PSOC_EDGE_MACHINE_SCB_H
+#endif // MICROPY_INCLUDED_PSOC_EDGE_SCB_H
