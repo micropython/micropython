@@ -119,6 +119,15 @@
 #define WTB_CLEAR(area, block) do { area->gc_weakref_table_start[(block) / BLOCKS_PER_WTB] &= (~(1 << ((block) & 7))); } while (0)
 #endif
 
+#if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+// STB = scan table byte
+// if set, then the corresponding block may contain GC pointers and is scanned
+#define BLOCKS_PER_STB (8)
+#define STB_GET(area, block) ((area->gc_scan_table_start[(block) / BLOCKS_PER_STB] >> ((block) & 7)) & 1)
+#define STB_SET(area, block) do { area->gc_scan_table_start[(block) / BLOCKS_PER_STB] |= (1 << ((block) & 7)); } while (0)
+#define STB_CLEAR(area, block) do { area->gc_scan_table_start[(block) / BLOCKS_PER_STB] &= (~(1 << ((block) & 7))); } while (0)
+#endif
+
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
 #define GC_MUTEX_INIT() mp_thread_recursive_mutex_init(&MP_STATE_MEM(gc_mutex))
 #define GC_ENTER() mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), 1)
@@ -144,14 +153,15 @@ static void gc_sweep_free_blocks(void);
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
-    // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
-    // T = A + F + W + P
+    // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, W=weakref table, S=scan table, P=pool; all in bytes):
+    // T = A + F + W + S + P
     //     F = A * BLOCKS_PER_ATB / BLOCKS_PER_FTB
     //     W = A * BLOCKS_PER_ATB / BLOCKS_PER_WTB
+    //     S = A * BLOCKS_PER_ATB / BLOCKS_PER_STB
     //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
-    // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB / BLOCKS_PER_WTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+    // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB / BLOCKS_PER_WTB + BLOCKS_PER_ATB / BLOCKS_PER_STB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     size_t total_byte_len = (byte *)end - (byte *)start;
-    #if MICROPY_ENABLE_FINALISER || MICROPY_PY_WEAKREF
+    #if MICROPY_ENABLE_FINALISER || MICROPY_PY_WEAKREF || MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
     area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE)
         * MP_BITS_PER_BYTE
         / (
@@ -161,6 +171,9 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
             #endif
             #if MICROPY_PY_WEAKREF
             + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_WTB
+            #endif
+            #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+            + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_STB
             #endif
             + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK
             );
@@ -183,6 +196,11 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     area->gc_weakref_table_start = next_table;
     next_table += gc_weakref_table_byte_len;
     #endif
+    #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+    size_t gc_scan_table_byte_len = (area->gc_alloc_table_byte_len * BLOCKS_PER_ATB + BLOCKS_PER_STB - 1) / BLOCKS_PER_STB;
+    area->gc_scan_table_start = next_table;
+    next_table += gc_scan_table_byte_len;
+    #endif
 
     // Allocate the GC pool of heap blocks.
     size_t gc_pool_block_len = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
@@ -198,6 +216,9 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
         #endif
         #if MICROPY_PY_WEAKREF
         + gc_weakref_table_byte_len
+        #endif
+        #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+        + gc_scan_table_byte_len
         #endif
         );
 
@@ -228,6 +249,12 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
         UINT_FMT " blocks\n", area->gc_weakref_table_start,
         gc_weakref_table_byte_len,
         gc_weakref_table_byte_len * BLOCKS_PER_WTB);
+    #endif
+    #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+    DEBUG_printf("  scan table at %p, length " UINT_FMT " bytes, "
+        UINT_FMT " blocks\n", area->gc_scan_table_start,
+        gc_scan_table_byte_len,
+        gc_scan_table_byte_len * BLOCKS_PER_STB);
     #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, "
         UINT_FMT " blocks\n", area->gc_pool_start,
@@ -352,6 +379,9 @@ static bool gc_try_add_heap(size_t failed_alloc) {
         #endif
         #if MICROPY_PY_WEAKREF
         + total_blocks / BLOCKS_PER_WTB
+        #endif
+        #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+        + total_blocks / BLOCKS_PER_STB
         #endif
         + total_blocks * BYTES_PER_BLOCK
         + ALLOC_TABLE_GAP_BYTE
@@ -536,7 +566,12 @@ static void gc_mark_subtree(size_t block)
         #endif
 
         // work out number of consecutive blocks in the chain starting with this one
+        // a block with no GC pointers has no children: leaving n_blocks at 0
+        // skips both the chain walk here and the scan loop below
         size_t n_blocks = 0;
+        #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+        if (STB_GET(area, block))
+        #endif
         do {
             n_blocks += 1;
         } while (ATB_GET_KIND(area, block + n_blocks) == AT_TAIL);
@@ -890,6 +925,8 @@ void gc_weakref_mark(void *ptr) {
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
+    // an object with a finaliser starts with a type pointer, so is never pointer-free
+    assert(!((alloc_flags & GC_ALLOC_FLAG_CONTAINS_NO_GC_POINTERS) && has_finaliser));
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
@@ -995,6 +1032,15 @@ found:
 
     // mark first block as used head
     ATB_FREE_TO_HEAD(area, start_block);
+
+    #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+    // unlike FTB/WTB there is no sweep-time clear, so write the bit on every alloc
+    if (alloc_flags & GC_ALLOC_FLAG_CONTAINS_NO_GC_POINTERS) {
+        STB_CLEAR(area, start_block);
+    } else {
+        STB_SET(area, start_block);
+    }
+    #endif
 
     // mark rest of blocks as used tail
     // TODO for a run of many blocks can make this more efficient
@@ -1285,6 +1331,14 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     bool ftb_state = false;
     #endif
 
+    unsigned int realloc_flags = ftb_state ? GC_ALLOC_FLAG_HAS_FINALISER : 0;
+    #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+    // the bit is clear for pointer-free blocks, so preserve the tag across the move
+    if (!STB_GET(area, block)) {
+        realloc_flags |= GC_ALLOC_FLAG_CONTAINS_NO_GC_POINTERS;
+    }
+    #endif
+
     GC_EXIT();
 
     if (!allow_move) {
@@ -1293,7 +1347,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     }
 
     // can't resize inplace; try to find a new contiguous chain
-    void *ptr_out = gc_alloc(n_bytes, ftb_state);
+    void *ptr_out = gc_alloc(n_bytes, realloc_flags);
 
     // check that the alloc succeeded
     if (ptr_out == NULL) {
