@@ -1,6 +1,7 @@
 # cmake file for nullbits Bit-C PRO
 
 set(PICO_BOARD "nullbits_bit_c_pro")
+set(PICO_PLATFORM "rp2040")
 
 # Freeze board.py
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
