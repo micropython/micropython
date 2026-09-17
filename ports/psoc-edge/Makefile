@@ -299,6 +299,7 @@ MOD_SRC_C += \
 	machine_pin_af.c \
 	machine_pin_irq.c \
 	machine_rtc.c \
+	machine_bitstream.c \
 	modpsocedge.c \
 	machine_scb.c \
 
