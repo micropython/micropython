@@ -85,6 +85,7 @@ void mp_hal_get_random(size_t n, uint8_t *buf);
 #define MP_HAL_PIN_FMT           "%q"
 #define mp_hal_pin_obj_t const pin_obj_t *
 #define mp_hal_get_pin_obj(o)    pin_find(o)
+#define mp_hal_pin_to_obj(p)     MP_OBJ_FROM_PTR(p)
 #define mp_hal_pin_name(p)       ((p)->name)
 #define mp_hal_pin_high(p)       nrf_gpio_pin_set(p->pin)
 #define mp_hal_pin_low(p)        nrf_gpio_pin_clear(p->pin)
