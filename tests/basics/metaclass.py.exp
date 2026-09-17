@@ -1,0 +1,12 @@
+Meta.__init__ Foo () {'__qualname__': 'Foo', '__module__': '__main__'}
+dct= {'__qualname__': 'Foo', '__module__': '__main__'}
+done
+create Foo2...
+Meta.__init__ Foo2 (<class 'Foo'>,) {'__module__': '__main__', 'x': 1, 'y': 2, '__qualname__': 'Foo2'}
+dct= {'__module__': '__main__', 'x': 1, 'y': 2, '__qualname__': 'Foo2'}
+done
+<class 'Foo2'> <class 'Meta'>
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+<class 'Foo'>
+<class 'Meta'>
+100
