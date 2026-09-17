@@ -486,6 +486,59 @@ ifeq ($(MICROPY_PY_NETWORK_HALOW),1)
 CFLAGS += -DMICROPY_PY_NETWORK_HALOW=1
 CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_HALOW=1
 
+# The Morse Micro back-end.  A board opts in with
+# MICROPY_PY_NETWORK_HALOW_MORSE_MICRO=1, which is what enables network.HALOW
+# above; a second family is added with its own switch and block, and
+# HALOW(phy=...) selects between them at run time.
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+MM_HALOW_DIR = lib/mm-halow-driver
+MMIOT_DIR = $(MM_HALOW_DIR)/lib/mm-iot-sdk/framework
+GIT_SUBMODULES += lib/mm-halow-driver
+
+CFLAGS += -DMICROPY_PY_NETWORK_HALOW_MORSE_MICRO=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_HALOW_MORSE_MICRO=1
+
+INC += -I$(TOP)/$(MM_HALOW_DIR)/src
+INC += -I$(TOP)/$(MMIOT_DIR)/morselib/include
+INC += -I$(TOP)/$(MMIOT_DIR)/src/mmutils
+INC += -I$(TOP)/$(MMIOT_DIR)/src/mmregdb
+
+# The driver reads its configuration from extmod/halow/morse/mm_halow_configport.h.
+INC += -I$(TOP)/extmod/halow/morse
+
+DRIVERS_SRC_C += $(addprefix $(MM_HALOW_DIR)/src/,\
+	mm_halow_ctrl.c \
+	mm_halow_hal.c \
+	mm_halow_lwip.c \
+	mm_halow_osal.c \
+	mm_halow_pktmem.c \
+	mm_halow_sched.c \
+	)
+
+# The MicroPython side of the driver's port interface: machine.SPI, the
+# GC-rooted private heap, RNG/MAC, and the optional pin interrupt; and the
+# adapter that presents the driver as a PHY-neutral halow_drv_t.
+SRC_EXTMOD_C += extmod/halow/morse/mm_halow_port.c
+SRC_EXTMOD_C += extmod/halow/morse/mm_halow_adapter.c
+
+# Support code that morselib expects the integrator to provide: the packet
+# memory pools, the regulatory database and assorted helpers.
+# Packet memory is provided by mm_halow_pktmem.c rather than the SDK's
+# mmpktmem, so that all of the driver's memory comes from the MicroPython heap.
+SRC_THIRDPARTY_C += $(addprefix $(MMIOT_DIR)/src/,\
+	mmregdb/mmregdb.c \
+	mmutils/mmbuf.c \
+	mmutils/mmcrc.c \
+	mmutils/mmutils_wlan.c \
+	)
+
+# The prebuilt morselib and the transceiver's firmware blobs are not listed
+# here: this file is shared by every port, and none of that belongs in it.  A
+# board that wants the driver includes lib/mm-halow-driver/mm_halow.mk for the
+# linkage.
+
+endif # MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+
 endif # MICROPY_PY_NETWORK_HALOW
 
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),)
