@@ -1,0 +1,15 @@
+chip: True
+init: OK
+freq: OK
+sf 6-12: OK
+sf 5: ValueError
+sf 13: ValueError
+bw: OK
+bw invalid: ValueError
+cr 5-8: OK
+cr 4: ValueError
+tx_power: OK
+config: OK
+rssi/snr: OK
+power modes: OK
+all tests passed
