@@ -71,6 +71,7 @@ typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
     i2s_port_t i2s_id;
     i2s_chan_handle_t i2s_chan_handle;
+    mp_hal_pin_obj_t mck;
     mp_hal_pin_obj_t sck;
     mp_hal_pin_obj_t ws;
     mp_hal_pin_obj_t sd;
@@ -306,9 +307,10 @@ i2s_event_callbacks_t i2s_callbacks_null = {
 
 static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
     // are Pins valid?
-    int8_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sck].u_obj);
-    int8_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_ws].u_obj);
-    int8_t sd = args[ARG_sd].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sd].u_obj);
+    int8_t mck = args[ARG_mck].u_obj == mp_const_none ? I2S_GPIO_UNUSED : machine_pin_get_id(args[ARG_mck].u_obj);
+    int8_t sck = args[ARG_sck].u_obj == mp_const_none ? I2S_GPIO_UNUSED : machine_pin_get_id(args[ARG_sck].u_obj);
+    int8_t ws = args[ARG_ws].u_obj == mp_const_none ? I2S_GPIO_UNUSED : machine_pin_get_id(args[ARG_ws].u_obj);
+    int8_t sd = args[ARG_sd].u_obj == mp_const_none ? I2S_GPIO_UNUSED : machine_pin_get_id(args[ARG_sd].u_obj);
 
     // is Mode valid?
     int8_t mode = args[ARG_mode].u_int;
@@ -337,6 +339,7 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     // is Ibuf valid?
     // Not checked: ESP-IDF I2S API will return error if requested buffer size exceeds available memory
 
+    self->mck = mck;
     self->sck = sck;
     self->ws = ws;
     self->sd = sd;
@@ -375,7 +378,7 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
         .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(self->rate),
         .slot_cfg = slot_cfg,
         .gpio_cfg = {
-            .mclk = I2S_GPIO_UNUSED,
+            .mclk = self->mck,
             .bclk = self->sck,
             .ws = self->ws,
             .invert_flags = {
