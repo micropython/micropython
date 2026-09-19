@@ -414,7 +414,14 @@ static mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         mp_raise_TypeError(MP_ERROR_TEXT("struct: no fields"));
     }
 
-    mp_obj_t deref = mp_obj_dict_get(self->desc, MP_OBJ_NEW_QSTR(attr));
+    // Look the field up without raising: if it's not a field of this struct, return MP_OBJ_NULL
+    // so the caller can follow the standard attr protocol (a subclass falling back to its
+    // instance dict, or load_attr raising AttributeError) instead of leaking a KeyError.
+    mp_map_elem_t *e = mp_map_lookup(mp_obj_dict_get_map(self->desc), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+    if (e == NULL) {
+        return MP_OBJ_NULL;
+    }
+    mp_obj_t deref = e->value;
     if (mp_obj_is_small_int(deref)) {
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(deref);
         mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
