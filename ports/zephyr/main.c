@@ -41,7 +41,7 @@
 
 #include <zephyr/storage/flash_map.h>
 
-#ifdef CONFIG_CONSOLE_SUBSYS
+#ifdef CONFIG_MICROPY_GETCHAR_CONSOLE_SUBSYS
 #include <zephyr/console/console.h>
 
 #if CONFIG_CONSOLE_GETCHAR_BUFSIZE < 512
@@ -129,13 +129,15 @@ void init_zephyr(void) {
 
 int main(void) {
     /* Initialize terminal device */
-    #ifdef CONFIG_CONSOLE_SUBSYS
+    #ifdef CONFIG_MICROPY_GETCHAR_CONSOLE_SUBSYS
     console_init();
     /* Always immediately hand control back to micropython */
     console_set_rx_timeout(K_NO_WAIT);
     console_set_tx_timeout(K_NO_WAIT);
-    #else
+    #elif CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER
     zephyr_getchar_init();
+    #else
+    #error A getchar driver must be chosen
     #endif
 
     #if MICROPY_PY_THREAD
