@@ -286,10 +286,11 @@ were a string.
 
 **Runtime compiler execution**
 
-The Python functions `eval` and `exec` invoke the compiler at runtime, which
-requires significant amounts of RAM. Note that the ``pickle`` library from
-`micropython-lib` employs `exec`. It may be more RAM efficient to use the
-`json` library for object serialisation.
+The Python functions :func:`~builtins.eval` and :func:`~builtins.exec` invoke
+the compiler at runtime, which requires significant amounts of RAM. Note that
+the ``pickle`` library from `micropython-lib` employs
+:func:`~builtins.exec`. It may be more RAM efficient to use the `json` library
+for object serialisation.
 
 **Storing strings in flash**
 
