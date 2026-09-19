@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2026 OpenMV LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_PENDSV_H
-#define MICROPY_INCLUDED_STM32_PENDSV_H
+#ifndef MICROPY_INCLUDED_EXTMOD_NETWORK_HALOW_H
+#define MICROPY_INCLUDED_EXTMOD_NETWORK_HALOW_H
 
-#include "boardctrl.h"
+extern const mp_obj_type_t mp_network_halow_type;
 
-enum {
-    PENDSV_DISPATCH_SOFT_TIMER,
-    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #if MICROPY_PY_NETWORK_CYW43
-    PENDSV_DISPATCH_CYW43,
-    #endif
-    #if MICROPY_PY_NETWORK_HALOW
-    PENDSV_DISPATCH_HALOW,
-    #endif
-    #if MICROPY_PY_NETWORK_WIZNET5K
-    PENDSV_DISPATCH_WIZNET,
-    #endif
-    #endif
-    #if MICROPY_PY_BLUETOOTH && !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-    PENDSV_DISPATCH_BLUETOOTH_HCI,
-    #endif
-    MICROPY_BOARD_PENDSV_ENTRIES
-    PENDSV_DISPATCH_MAX
-};
+// Releases the driver's memory pool, which comes from the GC heap, so call
+// before the heap is swept.
+void network_halow_deinit_all(void);
 
-#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
-
-typedef void (*pendsv_dispatch_t)(void);
-
-void pendsv_init(void);
-void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
-
-#endif // MICROPY_INCLUDED_STM32_PENDSV_H
+#endif // MICROPY_INCLUDED_EXTMOD_NETWORK_HALOW_H
