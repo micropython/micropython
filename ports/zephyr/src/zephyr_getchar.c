@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#ifdef CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER
+
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/drivers/console/uart_console.h>
@@ -24,12 +26,11 @@ extern int mp_interrupt_char;
 void mp_sched_keyboard_interrupt(void);
 void mp_hal_signal_event(void);
 
-#define UART_BUFSIZE (512)
-static uint8_t uart_ringbuf[UART_BUFSIZE];
-static uint16_t i_get, i_put;
+static uint8_t uart_ringbuf[CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE];
+static uint16_t i_get = 0, i_put = 0;
 
 static int console_irq_input_hook(uint8_t ch) {
-    int i_next = (i_put + 1) & (UART_BUFSIZE - 1);
+    int i_next = (i_put + 1) & (CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE - 1);
     if (i_next == i_get) {
         printk("UART buffer overflow - char dropped\n");
         return 1;
@@ -54,7 +55,7 @@ int zephyr_getchar(void) {
     if (i_get != i_put) {
         unsigned int key = irq_lock();
         int c = (int)uart_ringbuf[i_get++];
-        i_get &= UART_BUFSIZE - 1;
+        i_get &= CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE - 1;
         irq_unlock(key);
         return c;
     }
@@ -66,3 +67,5 @@ void zephyr_getchar_init(void) {
     // All NULLs because we're interested only in the callback above
     uart_register_input(NULL, NULL, NULL);
 }
+
+#endif /* CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER */

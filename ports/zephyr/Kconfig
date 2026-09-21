@@ -83,6 +83,37 @@ choice MICROPY_CONFIG_ROM_LEVEL
 
 endchoice
 
+choice MICROPY_GETCHAR
+	prompt  "Getchar driver to use for the console"
+	default MICROPY_GETCHAR_CONSOLE_DRIVER
+
+	config MICROPY_GETCHAR_CONSOLE_DRIVER
+		bool "Use the console driver getchar"
+		depends on UART_CONSOLE
+		depends on UART_CONSOLE_DEBUG_SERVER_HOOKS
+		help
+			Use the uart_console driver API directly to access interrupts via a mix
+			of UART-like drivers and standard I/O. The console buffer is managed by
+			MicroPython.
+
+	config MICROPY_GETCHAR_CONSOLE_SUBSYS
+		bool "Use the console subsys getchar"
+		depends on CONSOLE_SUBSYS
+		depends on CONSOLE_GETCHAR
+		help
+			Let Zephyr handle all the console management including the buffers via
+			the console subsystem.
+
+endchoice
+
+if MICROPY_GETCHAR_CONSOLE_DRIVER
+
+config MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE
+	int "Size of the console driver getchar buffer"
+	default 1024
+
+endif # MICROPY_GETCHAR_CONSOLE_DRIVER
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"
