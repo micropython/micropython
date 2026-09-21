@@ -5,6 +5,10 @@
  */
 
 / {
+	chosen {
+		zephyr,mbedtls-heap = &heap_mbedtls;
+	};
+
 	fstab {
 		compatible = "zephyr,fstab";
 		lfs: lfs {
@@ -21,11 +25,57 @@
 
 	heap_psram {
 		compatible = "micropython,heap";
-		size = <DT_SIZE_M(4)>;
+		size = <DT_SIZE_K(3968)>;
+		memory-region = <&psram>;
+	};
+
+	heap_mbedtls: heap_mbedtls {
+		compatible = "zephyr,heap";
+		size = <DT_SIZE_K(128)>;
 		memory-region = <&psram>;
 	};
 };
 
 &wdt0 {
 	status = "okay";
+};
+
+/delete-node/ &slot0_partition;
+/delete-node/ &storage_partition;
+
+&gd25lq32d {
+	partitions {
+		ranges;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		slot0_partition: partition@2000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-0";
+			reg = <0x00002000 (0x00200000 - 0x2000)>;
+			read-only;
+		};
+
+		storage_partition: partition@200000 {
+			compatible = "zephyr,mapped-partition";
+			label = "storage";
+			reg = <0x00200000 0x200000>;
+		};
+	};
+};
+
+/* Fit envelope better to actual wireless RAM usage
+ * BLE takes off 16KB off WRAM
+ * Additionally, wifi picks about 69KB of uncached WRAM
+ */
+
+&all_ram {
+	reg = <0x60fc0000 DT_SIZE_K(290)>;
+	ranges = <0x0 0x60fc0000 DT_SIZE_K(290)>;
+};
+
+&wifi_ram {
+	/* 0x20fc0000 + all_ram */
+	reg = <0x21008800 DT_SIZE_K(69)>;
+	ranges = <0x0 0x21008800 DT_SIZE_K(69)>;
 };
