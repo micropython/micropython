@@ -45,6 +45,7 @@
 #include <poll.h>
 
 #if !((MP_STREAM_POLL_RD) == (POLLIN) && \
+    (MP_STREAM_POLL_PRI) == (POLLPRI) && \
     (MP_STREAM_POLL_WR) == (POLLOUT) && \
     (MP_STREAM_POLL_ERR) == (POLLERR) && \
     (MP_STREAM_POLL_HUP) == (POLLHUP) && \
@@ -661,6 +662,7 @@ static const mp_rom_map_elem_t mp_module_select_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&mp_select_poll_obj) },
     { MP_ROM_QSTR(MP_QSTR_POLLIN), MP_ROM_INT(MP_STREAM_POLL_RD) },
+    { MP_ROM_QSTR(MP_QSTR_POLLPRI), MP_ROM_INT(MP_STREAM_POLL_PRI) },
     { MP_ROM_QSTR(MP_QSTR_POLLOUT), MP_ROM_INT(MP_STREAM_POLL_WR) },
     { MP_ROM_QSTR(MP_QSTR_POLLERR), MP_ROM_INT(MP_STREAM_POLL_ERR) },
     { MP_ROM_QSTR(MP_QSTR_POLLHUP), MP_ROM_INT(MP_STREAM_POLL_HUP) },

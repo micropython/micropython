@@ -26,6 +26,8 @@ except TypeError:
 
 poller.modify(s, select.POLLIN)
 
+poller.modify(s, select.POLLPRI)
+
 poller.unregister(s)
 
 try:
