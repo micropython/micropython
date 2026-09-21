@@ -97,6 +97,14 @@ Constructors
        one pin alternate function is supported the this argument is not required.  Not all
        ports implement this argument.
 
+     - ``invert`` enables hardware inversion of both the input and output signal paths.
+       If ``True``, input reads via :meth:`Pin.value` return inverted logic levels, and
+       output levels driven to the pad are inverted.  If ``False``, both paths are set
+       back to normal (non-inverted).  If omitted, the current inversion setting is
+       unchanged.  Not all ports implement this argument.
+
+       Availability: rp2 port.
+
    As specified above, the Pin class allows to set an alternate function for a particular
    pin, but it does not specify any further operations on such a pin.  Pins configured in
    alternate-function mode are usually not used as GPIO but are instead driven by other
