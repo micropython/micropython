@@ -76,7 +76,7 @@
 #define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
 #define MICROPY_PY_MACHINE_UART_IRQ             (1)
 #define MICROPY_STREAMS_NON_BLOCK               (1)
-
+#define MICROPY_PY_MACHINE_BITSTREAM            (1)
 // type definitions for the specific machine
 #define MP_SSIZE_MAX (0x7fffffff)
 
