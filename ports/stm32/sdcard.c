@@ -162,11 +162,72 @@ inline static bool usbd_msc_lu_includes_sdcard(void) {
 #define SDIO_BUS_WIDE_VALUE SDIO_BUS_WIDE_8B
 #endif
 
+// A board can support UHS-I mode (1.8V signalling) on UHS-I capable SD cards by defining:
+//   MICROPY_HW_SDCARD_VSELECT_PIN - output pin that switches the SD bus I/O rail (and the
+//     corresponding MCU I/O voltage domain) between 3.3V (low) and 1.8V (high)
+//   MICROPY_HW_SDCARD_RESET_PIN - active-low output pin controlling SD card VDD; it is also
+//     sampled at startup to detect whether the hardware supports UHS-I (it reads high if so)
+// and optionally:
+//   MICROPY_HW_SDCARD_UHS_SWITCH_PATTERN - CMD6 pattern selecting the UHS-I speed mode
+//   MICROPY_HW_SDCARD_UHS_CLK_DIV - SDMMC clock divider to use after the speed switch
+#if defined(MICROPY_HW_SDCARD_VSELECT_PIN) && defined(MICROPY_HW_SDCARD_RESET_PIN)
+#define SDCARD_ENABLE_UHS1 (1)
+#if !defined(USE_SD_TRANSCEIVER) || USE_SD_TRANSCEIVER == 0
+#error "UHS-I support requires USE_SD_TRANSCEIVER=1 in the HAL configuration"
+#endif
+#ifndef MICROPY_HW_SDCARD_UHS_SWITCH_PATTERN
+#define MICROPY_HW_SDCARD_UHS_SWITCH_PATTERN SDMMC_SDR50_SWITCH_PATTERN
+#endif
+#ifndef MICROPY_HW_SDCARD_UHS_CLK_DIV
+#define MICROPY_HW_SDCARD_UHS_CLK_DIV (1)
+#endif
+#if MICROPY_HW_SDCARD_SDMMC == 2
+#define SDCARD_DLYB DLYB_SDMMC2
+#else
+#define SDCARD_DLYB DLYB_SDMMC1
+#endif
+#if defined(STM32N6)
+// The SD bus pins sit in a switchable VDDIO power domain; a board can select which
+// one with MICROPY_HW_SDCARD_VDDIO (2-5), defaulting to the domain that the used
+// SDMMC's default pins are in.  The matching HSLV_VDDIOx OTP fuse must be set for
+// the 1.8V pad voltage range to be selectable.
+#ifndef MICROPY_HW_SDCARD_VDDIO
+#if MICROPY_HW_SDCARD_SDMMC == 2
+#define MICROPY_HW_SDCARD_VDDIO (5)
+#else
+#define MICROPY_HW_SDCARD_VDDIO (4)
+#endif
+#endif
+#if MICROPY_HW_SDCARD_VDDIO == 2
+#define SDCARD_VDDIO_SET_RANGE LL_PWR_SetVddIO2VoltageRange
+#define SDCARD_VDDIO_GET_RANGE LL_PWR_GetVddIO2VoltageRange
+#elif MICROPY_HW_SDCARD_VDDIO == 3
+#define SDCARD_VDDIO_SET_RANGE LL_PWR_SetVddIO3VoltageRange
+#define SDCARD_VDDIO_GET_RANGE LL_PWR_GetVddIO3VoltageRange
+#elif MICROPY_HW_SDCARD_VDDIO == 4
+#define SDCARD_VDDIO_SET_RANGE LL_PWR_SetVddIO4VoltageRange
+#define SDCARD_VDDIO_GET_RANGE LL_PWR_GetVddIO4VoltageRange
+#elif MICROPY_HW_SDCARD_VDDIO == 5
+#define SDCARD_VDDIO_SET_RANGE LL_PWR_SetVddIO5VoltageRange
+#define SDCARD_VDDIO_GET_RANGE LL_PWR_GetVddIO5VoltageRange
+#else
+#error "Invalid MICROPY_HW_SDCARD_VDDIO"
+#endif
+#endif
+#else
+#define SDCARD_ENABLE_UHS1 (0)
+#endif
+
 #define PYB_SDMMC_FLAG_SD       (0x01)
 #define PYB_SDMMC_FLAG_MMC      (0x02)
 #define PYB_SDMMC_FLAG_ACTIVE   (0x04)
 
 static uint8_t pyb_sdmmc_flags;
+
+#if SDCARD_ENABLE_UHS1
+// Set if the hardware supports UHS-I, detected at startup via MICROPY_HW_SDCARD_RESET_PIN.
+static bool sdcard_uhs_capable;
+#endif
 
 #define TIMEOUT_MS 30000
 
@@ -180,10 +241,7 @@ static union {
     #endif
 } sdmmc_handle;
 
-void sdcard_init(void) {
-    // Set SD/MMC to no mode and inactive
-    pyb_sdmmc_flags = 0;
-
+static void sdcard_pin_config(void) {
     // configure SD GPIO
     // we do this here an not in HAL_SD_MspInit because it apparently
     // makes it more robust to have the pins always pulled high
@@ -204,6 +262,41 @@ void sdcard_init(void) {
     mp_hal_pin_config_alt_static(MICROPY_HW_SDCARD_D7, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDCARD_D7);
     #endif
     #endif
+
+    #if SDCARD_ENABLE_UHS1
+    if (sdcard_uhs_capable) {
+        // UHS-I bus rates need the fastest GPIO drive setting.
+        mp_hal_pin_config_speed(MICROPY_HW_SDCARD_CK, MP_HAL_PIN_SPEED_VERY_HIGH);
+        mp_hal_pin_config_speed(MICROPY_HW_SDCARD_CMD, MP_HAL_PIN_SPEED_VERY_HIGH);
+        mp_hal_pin_config_speed(MICROPY_HW_SDCARD_D0, MP_HAL_PIN_SPEED_VERY_HIGH);
+        #if MICROPY_HW_SDCARD_BUS_WIDTH >= 4
+        mp_hal_pin_config_speed(MICROPY_HW_SDCARD_D1, MP_HAL_PIN_SPEED_VERY_HIGH);
+        mp_hal_pin_config_speed(MICROPY_HW_SDCARD_D2, MP_HAL_PIN_SPEED_VERY_HIGH);
+        mp_hal_pin_config_speed(MICROPY_HW_SDCARD_D3, MP_HAL_PIN_SPEED_VERY_HIGH);
+        #endif
+    }
+    #endif
+}
+
+void sdcard_init(void) {
+    // Set SD/MMC to no mode and inactive
+    pyb_sdmmc_flags = 0;
+
+    #if SDCARD_ENABLE_UHS1
+    // Sample the SD reset pin to detect UHS-I capable hardware: it reads high when
+    // the UHS-I power switch circuitry is present.
+    mp_hal_pin_config(MICROPY_HW_SDCARD_RESET_PIN, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+    sdcard_uhs_capable = mp_hal_pin_read(MICROPY_HW_SDCARD_RESET_PIN);
+    if (sdcard_uhs_capable) {
+        // Take over the card's power enable (keeping it powered) and select 3.3V signalling.
+        mp_hal_pin_high(MICROPY_HW_SDCARD_RESET_PIN);
+        mp_hal_pin_config(MICROPY_HW_SDCARD_RESET_PIN, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0);
+        mp_hal_pin_low(MICROPY_HW_SDCARD_VSELECT_PIN);
+        mp_hal_pin_config(MICROPY_HW_SDCARD_VSELECT_PIN, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0);
+    }
+    #endif
+
+    sdcard_pin_config();
 
     // configure the SD card detect pin
     // we do this here so we can detect if the SD card is inserted before powering it on
@@ -276,7 +369,127 @@ bool sdcard_is_present(void) {
 }
 
 #if MICROPY_HW_ENABLE_SDCARD
-static HAL_StatusTypeDef sdmmc_init_sd(void) {
+
+#if SDCARD_ENABLE_UHS1
+
+// Switch the SD bus I/O voltage.  Called by the HAL during the CMD11 voltage switch
+// sequence (with the bus clock stopped), and by this driver to restore 3.3V signalling.
+void HAL_SD_DriveTransceiver_1_8V_Callback(FlagStatus status) {
+    if (status == SET) {
+        // The card acknowledged the switch: change the bus I/O rail to 1.8V and then
+        // update the MCU pad voltage range to match the new rail voltage.
+        mp_hal_pin_high(MICROPY_HW_SDCARD_VSELECT_PIN);
+        mp_hal_delay_ms(1);
+        #if defined(STM32N6)
+        SDCARD_VDDIO_SET_RANGE(LL_PWR_VDDIO_VOLTAGE_RANGE_1V8);
+        #endif
+    } else {
+        // Restore the pad voltage range first (a 1.8V pad range on a 3.3V rail can
+        // damage the device), then switch the bus I/O rail back to 3.3V.
+        #if defined(STM32N6)
+        SDCARD_VDDIO_SET_RANGE(LL_PWR_VDDIO_VOLTAGE_RANGE_3V3);
+        #endif
+        mp_hal_pin_low(MICROPY_HW_SDCARD_VSELECT_PIN);
+    }
+}
+
+static void sdcard_power_cycle(void) {
+    // Return the bus to 3.3V signalling.
+    HAL_SD_DriveTransceiver_1_8V_Callback(RESET);
+
+    // Drive the SD bus pins low so the card is not back-powered via its I/O pins
+    // while its supply is off.
+    static const mp_hal_pin_obj_t bus_pins[] = {
+        MICROPY_HW_SDCARD_CK, MICROPY_HW_SDCARD_CMD, MICROPY_HW_SDCARD_D0,
+        #if MICROPY_HW_SDCARD_BUS_WIDTH >= 4
+        MICROPY_HW_SDCARD_D1, MICROPY_HW_SDCARD_D2, MICROPY_HW_SDCARD_D3,
+        #endif
+    };
+    for (size_t i = 0; i < MP_ARRAY_SIZE(bus_pins); ++i) {
+        mp_hal_pin_low(bus_pins[i]);
+        mp_hal_pin_config(bus_pins[i], MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0);
+    }
+
+    // Power cycle the SD card: its supply must fall below 0.5V for at least 1ms.
+    mp_hal_pin_low(MICROPY_HW_SDCARD_RESET_PIN);
+    mp_hal_delay_ms(20);
+    mp_hal_pin_high(MICROPY_HW_SDCARD_RESET_PIN);
+    mp_hal_delay_ms(10);
+
+    // Restore the SD bus pins.
+    sdcard_pin_config();
+}
+
+// Perform a CMD6 SWITCH_FUNC transaction, reading back the 64-byte switch status.
+// The HAL's own CMD6 helpers arm the data path via DCTRL.DTEN without linking it to
+// the command (CMDTRANS), which hangs on this SDMMC peripheral, so the transfer is
+// done here using the same command-transfer mechanism as regular block reads.
+static uint32_t sdcard_cmd6_switch(uint32_t arg, uint32_t *status) {
+    SDMMC_TypeDef *sdmmc = sdmmc_handle.sd.Instance;
+
+    uint32_t errorstate = SDMMC_CmdBlockLength(sdmmc, 64);
+    if (errorstate != HAL_SD_ERROR_NONE) {
+        return errorstate;
+    }
+
+    SDMMC_DataInitTypeDef config = {
+        .DataTimeOut = 6250000, // 250ms at the 25MHz switching clock
+        .DataLength = 64,
+        .DataBlockSize = SDMMC_DATABLOCK_SIZE_64B,
+        .TransferDir = SDMMC_TRANSFER_DIR_TO_SDMMC,
+        .TransferMode = SDMMC_TRANSFER_MODE_BLOCK,
+        .DPSM = SDMMC_DPSM_DISABLE,
+    };
+    (void)SDMMC_ConfigData(sdmmc, &config);
+    __SDMMC_CMDTRANS_ENABLE(sdmmc);
+
+    errorstate = SDMMC_CmdSwitch(sdmmc, arg);
+
+    if (errorstate == HAL_SD_ERROR_NONE) {
+        // The 64-byte status block fits entirely in the SDMMC FIFO, and takes well
+        // under a millisecond to arrive at the 25MHz switching clock, so wait out
+        // the transfer and then drain the FIFO unconditionally.  The status flags
+        // cannot be used to pace the drain: after the 1.8V switch the data path
+        // status reads stale until the FIFO is accessed, so the flag-driven receive
+        // loops that the HAL uses deadlock here.
+        mp_hal_delay_ms(2);
+        for (int i = 0; i < 16; ++i) {
+            status[i] = SDMMC_ReadFIFO(sdmmc);
+        }
+        // The status refreshes some time after the FIFO accesses above, so give it
+        // a grace period before believing what it says.
+        uint32_t sta;
+        for (int i = 0; ; ++i) {
+            sta = sdmmc->STA;
+            if (sta & (SDMMC_FLAG_DATAEND | SDMMC_FLAG_DTIMEOUT | SDMMC_FLAG_DCRCFAIL |
+                       SDMMC_FLAG_RXOVERR)) {
+                break;
+            }
+            if (i >= 100) {
+                break;
+            }
+            mp_hal_delay_us(100);
+        }
+        if (sta & (SDMMC_FLAG_DTIMEOUT | SDMMC_FLAG_DCRCFAIL | SDMMC_FLAG_RXOVERR)) {
+            errorstate = SDMMC_ERROR_GENERAL_UNKNOWN_ERR;
+        } else if (!(sta & SDMMC_FLAG_DATAEND)) {
+            // The card did not send the status block.
+            sdmmc->DCTRL = 0;
+            errorstate = SDMMC_ERROR_TIMEOUT;
+        }
+    }
+
+    __SDMMC_CMDTRANS_DISABLE(sdmmc);
+    __SDMMC_CLEAR_FLAG(sdmmc, SDMMC_STATIC_DATA_FLAGS);
+
+    return errorstate;
+}
+
+#endif // SDCARD_ENABLE_UHS1
+
+static HAL_StatusTypeDef sdmmc_init_sd_bus(bool uhs) {
+    (void)uhs;
+
     // SD device interface configuration
     sdmmc_handle.sd.Instance = SDIO;
     sdmmc_handle.sd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
@@ -287,10 +500,30 @@ static HAL_StatusTypeDef sdmmc_init_sd(void) {
     sdmmc_handle.sd.Init.BusWide = SDIO_BUS_WIDE_1B;
     sdmmc_handle.sd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     sdmmc_handle.sd.Init.ClockDiv = SDIO_TRANSFER_CLK_DIV;
+    #if SDCARD_ENABLE_UHS1
+    if (uhs) {
+        // Run card identification and the 1.8V voltage switch at 25MHz; the clock is
+        // raised to the UHS-I rate after the speed switch below.
+        sdmmc_handle.sd.Init.TranceiverPresent = SDMMC_TRANSCEIVER_PRESENT;
+        sdmmc_handle.sd.Init.ClockDiv = SDMMC_NSPEED_CLK_DIV;
+        // Keep the bus clock free-running in UHS-I mode (matching the ST BSPs); with
+        // clock power saving enabled the voltage switch and CMD6 sequences stall.
+        sdmmc_handle.sd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
+    } else {
+        sdmmc_handle.sd.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
+    }
+    #endif
 
     // init the SD interface, with retry if it's not ready yet
     HAL_StatusTypeDef status;
     for (int retry = 10; (status = HAL_SD_Init(&sdmmc_handle.sd)) != HAL_OK; retry--) {
+        #if SDCARD_ENABLE_UHS1
+        if (uhs) {
+            // Don't retry a failed UHS-I init here: the card may be stuck mid voltage
+            // switch and needs a power cycle, which the caller takes care of.
+            return status;
+        }
+        #endif
         if (retry == 0) {
             return status;
         }
@@ -306,7 +539,79 @@ static HAL_StatusTypeDef sdmmc_init_sd(void) {
     }
     #endif
 
+    #if SDCARD_ENABLE_UHS1
+    if (uhs) {
+        bool uhs_active = sdmmc_handle.sd.SdCard.CardSpeed == CARD_ULTRA_HIGH_SPEED;
+        #if defined(STM32N6)
+        if (uhs_active) {
+            // Verify that the pad voltage range switch took effect: without the
+            // matching HSLV_VDDIOx OTP fuse the VRSEL write is silently ignored and
+            // the pads remain in 3.3V mode, which passes the (slow) initialisation
+            // but fails at UHS-I bus rates.  Fail the attempt here so the caller
+            // power cycles the card and falls back to 3.3V operation.
+            if (SDCARD_VDDIO_GET_RANGE() != LL_PWR_VDDIO_VOLTAGE_RANGE_1V8) {
+                HAL_SD_DeInit(&sdmmc_handle.sd);
+                return HAL_ERROR;
+            }
+        }
+        #endif
+        uint32_t pattern;
+        uint32_t clk_div;
+        if (uhs_active) {
+            // The card accepted the 1.8V voltage switch during init: select the UHS-I
+            // speed mode.
+            pattern = MICROPY_HW_SDCARD_UHS_SWITCH_PATTERN;
+            clk_div = MICROPY_HW_SDCARD_UHS_CLK_DIV;
+        } else {
+            // The card remained at 3.3V signalling: select high speed mode (SDR25).
+            pattern = SDMMC_SDR25_SWITCH_PATTERN;
+            clk_div = SDIO_TRANSFER_CLK_DIV;
+        }
+        uint32_t switch_status[16];
+        uint32_t errorstate = sdcard_cmd6_switch(pattern, switch_status);
+        if (errorstate == HAL_SD_ERROR_NONE
+            && (((uint8_t *)switch_status)[16] & 0xf) != (pattern & 0xf)) {
+            // The card did not switch to the requested speed mode.
+            errorstate = SDMMC_ERROR_UNSUPPORTED_FEATURE;
+        }
+        if (errorstate != HAL_SD_ERROR_NONE) {
+            HAL_SD_DeInit(&sdmmc_handle.sd);
+            return HAL_ERROR;
+        }
+        if (uhs_active) {
+            // Sample the incoming data on the feedback clock, via the delay block.
+            MODIFY_REG(SDIO->CLKCR, SDMMC_CLKCR_SELCLKRX, SDMMC_CLKCR_SELCLKRX_1);
+            LL_DLYB_Enable(SDCARD_DLYB);
+            SDIO->CLKCR |= SDMMC_CLKCR_BUSSPEED;
+        }
+        // Raise the bus clock to its final rate.
+        sdmmc_handle.sd.Init.ClockDiv = clk_div;
+        MODIFY_REG(SDIO->CLKCR, SDMMC_CLKCR_CLKDIV, clk_div);
+    }
+    #endif
+
     return HAL_OK;
+}
+
+static HAL_StatusTypeDef sdmmc_init_sd(void) {
+    #if SDCARD_ENABLE_UHS1
+    if (sdcard_uhs_capable) {
+        // Try to bring the card up in UHS-I mode.  Power cycle the card before each
+        // attempt so it is in a known 3.3V state: a warm reset can leave the card in
+        // 1.8V mode (in which case it will not advertise 1.8V support), and a failed
+        // attempt can leave it stuck mid voltage switch.
+        for (int attempt = 0; attempt < 2; ++attempt) {
+            sdcard_power_cycle();
+            HAL_StatusTypeDef status = sdmmc_init_sd_bus(true);
+            if (status == HAL_OK) {
+                return HAL_OK;
+            }
+        }
+        // Fall back to a plain 3.3V init.
+        sdcard_power_cycle();
+    }
+    #endif
+    return sdmmc_init_sd_bus(false);
 }
 #endif
 
@@ -390,6 +695,13 @@ void sdcard_power_off(void) {
         #if MICROPY_HW_ENABLE_SDCARD
         case PYB_SDMMC_FLAG_ACTIVE | PYB_SDMMC_FLAG_SD:
             HAL_SD_DeInit(&sdmmc_handle.sd);
+            #if SDCARD_ENABLE_UHS1
+            if (sdcard_uhs_capable) {
+                // The card may be in 1.8V signalling mode; power cycle it so the next
+                // init starts from a known 3.3V state.
+                sdcard_power_cycle();
+            }
+            #endif
             break;
         #endif
         #if MICROPY_HW_ENABLE_MMCARD
