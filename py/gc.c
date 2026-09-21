@@ -1011,6 +1011,17 @@ found:
     MP_STATE_MEM(gc_alloc_amount) += n_blocks;
     #endif
 
+    #if MICROPY_ENABLE_FINALISER
+    if (has_finaliser) {
+        // clear type pointer in case it is never set
+        ((mp_obj_base_t *)ret_ptr)->type = NULL;
+        // set mp_obj flag only if it has a finaliser
+        FTB_SET(area, start_block);
+    }
+    #else
+    (void)has_finaliser;
+    #endif
+
     GC_EXIT();
 
     #if MICROPY_GC_CONSERVATIVE_CLEAR
@@ -1023,19 +1034,6 @@ found:
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
     memset((byte *)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
-    #endif
-
-    #if MICROPY_ENABLE_FINALISER
-    if (has_finaliser) {
-        // clear type pointer in case it is never set
-        ((mp_obj_base_t *)ret_ptr)->type = NULL;
-        // set mp_obj flag only if it has a finaliser
-        GC_ENTER();
-        FTB_SET(area, start_block);
-        GC_EXIT();
-    }
-    #else
-    (void)has_finaliser;
     #endif
 
     #if EXTENSIVE_HEAP_PROFILING
@@ -1159,7 +1157,7 @@ size_t gc_nbytes(const void *ptr) {
 void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     // check for pure allocation
     if (ptr_in == NULL) {
-        return gc_alloc(n_bytes, false);
+        return gc_alloc(n_bytes, 0);
     }
 
     // check for pure free
@@ -1279,10 +1277,12 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         return ptr_in;
     }
 
+    unsigned int alloc_flags = 0;
+
     #if MICROPY_ENABLE_FINALISER
-    bool ftb_state = FTB_GET(area, block);
-    #else
-    bool ftb_state = false;
+    if (FTB_GET(area, block)) {
+        alloc_flags |= GC_ALLOC_FLAG_HAS_FINALISER;
+    }
     #endif
 
     GC_EXIT();
@@ -1293,7 +1293,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     }
 
     // can't resize inplace; try to find a new contiguous chain
-    void *ptr_out = gc_alloc(n_bytes, ftb_state);
+    void *ptr_out = gc_alloc(n_bytes, alloc_flags);
 
     // check that the alloc succeeded
     if (ptr_out == NULL) {
