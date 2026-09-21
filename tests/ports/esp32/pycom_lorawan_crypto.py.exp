@@ -1,0 +1,12 @@
+cmac empty: bb1d6929
+cmac 16b: 070a16b4
+cmac 40b: dfa66747
+ctr roundtrip: True
+ctr differs: True
+mic length: 4
+mic type: bytes
+nwk_skey len: 16
+app_skey len: 16
+keys differ: True
+cmac deterministic: True
+all tests passed
