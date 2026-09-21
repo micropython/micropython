@@ -259,6 +259,13 @@ For an example on how this may affect you, the ``examples/natmod/btree``
 example module contains a workaround to make sure ``errno`` works (look for
 ``__PICOLIBC_ERRNO_FUNCTION`` in the Makefile and follow the trail from there).
 
+Calling libm functions with runtime arguments (``sinf``, ``cosf``, ``atan2f``,
+``expf``, ``powf``, etc.) via ``LINK_RUNTIME=1`` is fully supported on RISC-V
+with Picolibc.  Picolibc stores floating-point constants in the RISC-V
+small-data read-only sections (``.srodata.cst4`` / ``.srodata.cst8``), which
+``mpy_ld`` handles correctly.  See ``examples/natmod/features5`` for a
+worked example.
+
 Further examples
 ----------------
 
@@ -270,5 +277,6 @@ features of native .mpy modules.  Such features include:
 * rodata and BSS data
 * memory allocation
 * use of floating point
+* calling libm functions with runtime (non-constant) arguments on RISC-V with ``LINK_RUNTIME=1``
 * exception handling
 * including external C libraries
