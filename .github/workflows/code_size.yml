@@ -3,8 +3,9 @@ name: Check code size
 on:
   pull_request:
     paths:
-      - '.github/workflows/*.yml'
+      - '.github/workflows/code_size.yml'
       - 'tools/**'
+      - '!tools/mpremote/**'
       - 'py/**'
       - 'extmod/**'
       - 'shared/**'
