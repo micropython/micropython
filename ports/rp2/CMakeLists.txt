@@ -462,17 +462,8 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
 
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_NETWORK_WIZNET5K=1
-        WIZCHIP_PREFIXED_EXPORTS=1
         _WIZCHIP_=${MICROPY_PY_NETWORK_WIZNET5K}
-        WIZCHIP_YIELD=mpy_wiznet_yield
     )
-
-    if (MICROPY_PY_LWIP)
-        target_compile_definitions(${MICROPY_TARGET} PRIVATE
-            # When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
-            WIZCHIP_USE_MAX_BUFFER=1
-        )
-    endif()
 
     target_include_directories(${MICROPY_TARGET} PRIVATE
         ${MICROPY_DIR}/lib/wiznet5k/
