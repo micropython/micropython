@@ -429,12 +429,24 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
                 mp_raise_ValueError(MP_ERROR_TEXT("clk_in must be specified if clk_out is specified"));
             }
             esp32_config.clock_config.rmii.clock_mode = EMAC_CLK_OUT;
+            // IDF v6 made rmii.clock_gpio a plain int (the
+            // emac_rmii_clock_gpio_t enum was removed).
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+            esp32_config.clock_config.rmii.clock_gpio = self->clk_out_pin;
+            esp32_config.clock_config_out_in.rmii.clock_mode = EMAC_CLK_EXT_IN;
+            esp32_config.clock_config_out_in.rmii.clock_gpio = self->clk_in_pin;
+            #else
             esp32_config.clock_config.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_out_pin;
             esp32_config.clock_config_out_in.rmii.clock_mode = EMAC_CLK_EXT_IN;
             esp32_config.clock_config_out_in.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_in_pin;
+            #endif
         } else if (self->clk_in_pin != -1) {
             esp32_config.clock_config.rmii.clock_mode = EMAC_CLK_EXT_IN;
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+            esp32_config.clock_config.rmii.clock_gpio = self->clk_in_pin;
+            #else
             esp32_config.clock_config.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_in_pin;
+            #endif
         }
         #endif
 
