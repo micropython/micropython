@@ -34,6 +34,7 @@
 #include "freertos/task.h"
 #include "esp_mac.h"
 #include "esp_sleep.h"
+#include "esp_idf_version.h"
 #include "esp_pm.h"
 
 #include "py/objtuple.h"
@@ -200,7 +201,12 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
 
         if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
             #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+            // IDF v6 renamed esp_deep_sleep_enable_gpio_wakeup() (same args).
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+            if (ESP_OK != esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(
+            #else
             if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
+            #endif
                 machine_rtc_config.gpio_pins,
                 machine_rtc_config.gpio_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));
