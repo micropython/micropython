@@ -61,7 +61,15 @@ struct ctr_params {
 #endif
 
 #if MICROPY_SSL_MBEDTLS
+#include "mbedtls/version.h"
+#if MBEDTLS_VERSION_MAJOR >= 4
+// mbedtls 4.x (ESP-IDF v6+): the legacy AES API moved under the tf-psa-crypto
+// builtin driver tree. The port CMakeLists adds that include path; the header
+// is then available at mbedtls/private/aes.h.
+#include "mbedtls/private/aes.h"
+#else
 #include <mbedtls/aes.h>
+#endif
 
 // we can't run mbedtls AES key schedule until we know whether we're used for encrypt or decrypt.
 // therefore, we store the key & keysize and on the first call to encrypt/decrypt we override them
