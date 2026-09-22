@@ -64,20 +64,21 @@ dependencies:
       type: service
     version: 1.3.2
   espressif/tinyusb:
-    component_hash: ee1c962cff61eb975d508258d509974d58031cc27ff0d6c4117a67a613a49594
+    component_hash: a40b7f67df6ac254a4afd96c6401cc56f2059ae747d6d7e66b568bca53ad0edc
     dependencies:
     - name: idf
+      require: private
       version: '>=5.0'
     source:
-      git: https://github.com/micropython/tinyusb-espressif.git
-      path: .
-      type: git
+      registry_url: https://components.espressif.com/
+      type: service
     targets:
     - esp32s2
     - esp32s3
     - esp32p4
     - esp32h4
-    version: e4c0ec3caab3d9c25374de7047653b9ced8f14ff
+    - esp32s31
+    version: 0.19.0~3
   idf:
     source:
       type: idf
@@ -88,6 +89,6 @@ direct_dependencies:
 - espressif/mdns
 - espressif/tinyusb
 - idf
-manifest_hash: c9657436cd21313ed249a6a8e0a29f5048eb05371eb6eee5930e617df016b811
+manifest_hash: f0e7b17dd11abbb654610747f3d428d1e6885c2a2fdbe3af2bc7b1e928d933ed
 target: esp32p4
 version: 2.0.0

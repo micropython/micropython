@@ -45,7 +45,7 @@
 
 static void uart_irq_handler(void *arg);
 
-#if CONFIG_IDF_TARGET_ESP32P4
+#if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
 static uint8_t __DECLARE_RCC_ATOMIC_ENV __attribute__ ((unused));
 #endif
 

@@ -157,6 +157,23 @@ static const machine_adc_obj_t madc_obj[] = {
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_3, GPIO_NUM_52},
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_4, GPIO_NUM_53},
     {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_5, GPIO_NUM_54},
+    #elif CONFIG_IDF_TARGET_ESP32S31
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_0, GPIO_NUM_42},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_1, GPIO_NUM_43},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_2, GPIO_NUM_44},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_3, GPIO_NUM_45},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_4, GPIO_NUM_46},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_5, GPIO_NUM_47},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_6, GPIO_NUM_48},
+    {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_7, GPIO_NUM_49},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_0, GPIO_NUM_50},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_1, GPIO_NUM_51},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_2, GPIO_NUM_52},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_3, GPIO_NUM_53},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_4, GPIO_NUM_54},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_5, GPIO_NUM_55},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_6, GPIO_NUM_56},
+    {{&machine_adc_type}, ADCBLOCK2, ADC_CHANNEL_7, GPIO_NUM_57},
     #endif
 };
 
