@@ -211,15 +211,23 @@ if($ENV{IDF_VERSION} VERSION_LESS "6.0")
         usb)
 endif()
 
-# Components added in ESP-IDF v6.0 that are no longer pulled in transitively
-# by the driver meta-component.
+# Components added in ESP-IDF v6.0. The legacy `driver` meta-component became
+# an empty shim in v6, so every esp_driver_* component whose headers the port
+# includes directly must be listed explicitly.
 if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "6.0")
     list(APPEND IDF_COMPONENTS
         esp_hal_timg
+        esp_driver_dac
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_driver_ledc
+        esp_driver_pcnt
         esp_driver_rmt
-        esp_driver_sdspi
         esp_driver_sdmmc
-        esp_driver_tsens)
+        esp_driver_sdspi
+        esp_driver_spi
+        esp_driver_tsens
+        esp_driver_uart)
 endif()
 
 if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")
