@@ -1619,14 +1619,17 @@ void mp_import_all(mp_obj_t module) {
     #endif
 
     #if MICROPY_CPYTHON_COMPAT
-    // Load the dict from the module.  In MicroPython, if __dict__ is
-    // available then it always returns a native mp_obj_dict_t instance.
+    // Load the dict from the module.  Normally this is a native dict, but a
+    // user object in sys.modules may expose a non-dict __dict__.
     mp_load_method(module, MP_QSTR___dict__, dest);
     #else
     // Without MICROPY_CPYTHON_COMPAT __dict__ is not available, so just
     // assume the given module is actually an mp_obj_module_t instance.
     dest[0] = MP_OBJ_FROM_PTR(mp_obj_module_get_globals(module));
     #endif
+    if (!mp_obj_is_dict_or_ordereddict(dest[0])) {
+        mp_raise_TypeError(NULL);
+    }
 
     // By default, the set of public names includes all names found in the module's
     // namespace which do not begin with an underscore character ('_')
