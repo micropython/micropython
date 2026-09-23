@@ -68,7 +68,9 @@
     \
     /* Reset reasons */ \
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MP_PWRON_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(MP_HARD_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(MP_WDT_RESET) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(MP_DEEPSLEEP_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(MP_SOFT_RESET) }, \
 
 typedef enum {
@@ -84,6 +86,46 @@ typedef enum {
 #define DBL_TAP_MAGIC 0xf01669ef // Randomly selected, adjusted to have first and last bit set
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
 
+static uint8_t reset_cause;
+
+void machine_init(void) {
+    #ifdef MIMXRT117x_SERIES
+    const uint32_t user_reset_flag = kSRC_M7CoreIppUserResetFlag;
+    #else
+    const uint32_t user_reset_flag = kSRC_IppUserResetFlag;
+    #endif
+
+    // machine.deepsleep() uses SNVS_LPCR_TOP_MASK to turn off power, which sets
+    // SNVS_LPSR_EO_MASK.  Use that bit to tell if we are waking from deepsleep.
+    bool woke_from_deepsleep = !!(SNVS->LPSR & SNVS_LPSR_EO_MASK);
+    SNVS->LPSR = SNVS_LPSR_EO_MASK;
+
+    // Check if the device was reset due to low-power timer alarm.
+    if (SNVS->LPSR & SNVS_LPSR_LPTA_MASK) {
+        machine_rtc_alarm_off(true);
+        woke_from_deepsleep = true;
+    }
+
+    // Determine the current reset cause.
+    if (woke_from_deepsleep || (SRC->SRSR & user_reset_flag)) {
+        reset_cause = MP_DEEPSLEEP_RESET;
+    } else {
+        uint16_t wdog =
+            WDOG_GetStatusFlags(WDOG1) & (kWDOG_PowerOnResetFlag | kWDOG_TimeoutResetFlag | kWDOG_SoftwareResetFlag);
+        if (wdog == kWDOG_PowerOnResetFlag) {
+            reset_cause = MP_PWRON_RESET;
+        } else if (wdog == kWDOG_TimeoutResetFlag) {
+            reset_cause = MP_WDT_RESET;
+        } else {
+            reset_cause = MP_HARD_RESET;
+        }
+    }
+}
+
+void machine_set_soft_reset(void) {
+    reset_cause = MP_SOFT_RESET;
+}
+
 static mp_obj_t mp_machine_unique_id(void) {
     unsigned char id[8];
     mp_hal_get_unique_id(id);
@@ -98,23 +140,6 @@ MP_NORETURN static void mp_machine_reset(void) {
 }
 
 static mp_int_t mp_machine_reset_cause(void) {
-    #ifdef MIMXRT117x_SERIES
-    uint32_t user_reset_flag = kSRC_M7CoreIppUserResetFlag;
-    #else
-    uint32_t user_reset_flag = kSRC_IppUserResetFlag;
-    #endif
-    if (SRC->SRSR & user_reset_flag) {
-        return MP_DEEPSLEEP_RESET;
-    }
-    uint16_t reset_cause =
-        WDOG_GetStatusFlags(WDOG1) & (kWDOG_PowerOnResetFlag | kWDOG_TimeoutResetFlag | kWDOG_SoftwareResetFlag);
-    if (reset_cause == kWDOG_PowerOnResetFlag) {
-        reset_cause = MP_PWRON_RESET;
-    } else if (reset_cause == kWDOG_TimeoutResetFlag) {
-        reset_cause = MP_WDT_RESET;
-    } else {
-        reset_cause = MP_SOFT_RESET;
-    }
     return reset_cause;
 }
 
