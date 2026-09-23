@@ -25,7 +25,6 @@ typedef struct _espnow_obj_t {
     volatile size_t read_failure;
 } espnow_obj_t;
 
-extern void espnow_reset(void);
 
 extern void common_hal_espnow_construct(espnow_obj_t *self, mp_int_t buffer_size, mp_int_t phy_rate);
 extern void common_hal_espnow_init(espnow_obj_t *self);

@@ -29,5 +29,3 @@ typedef struct {
     QueueHandle_t event_queue;
     TaskHandle_t event_task;
 } busio_uart_obj_t;
-
-void uart_reset(void);

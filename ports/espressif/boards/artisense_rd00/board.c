@@ -10,6 +10,4 @@
 
 void board_init(void) {
     // Crystal
-    common_hal_never_reset_pin(&pin_GPIO15);
-    common_hal_never_reset_pin(&pin_GPIO16);
 }

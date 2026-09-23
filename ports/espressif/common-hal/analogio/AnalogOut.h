@@ -21,5 +21,3 @@ typedef struct {
     uint8_t channel;
     #endif
 } analogio_analogout_obj_t;
-
-void analogout_reset(void);

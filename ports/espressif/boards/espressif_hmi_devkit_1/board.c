@@ -10,8 +10,6 @@
 
 void board_init(void) {
     // Debug UART
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

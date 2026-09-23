@@ -14,19 +14,14 @@
 #define PIN_BIT(pin_number) (((uint64_t)1) << pin_number)
 
 extern void common_hal_reset_pin(const mcu_pin_obj_t *pin);
-extern void common_hal_never_reset_pin(const mcu_pin_obj_t *pin);
 
-extern void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
 extern void reset_pin_number(gpio_num_t pin_number);
 // reset all pins in `bitmask`
 extern void reset_pin_mask(uint64_t bitmask);
-extern void skip_reset_once_pin_number(gpio_num_t pin_number);
+extern void reset_pin_state(void);
 extern void claim_pin(const mcu_pin_obj_t *pin);
 extern void claim_pin_number(gpio_num_t pin_number);
 extern bool pin_number_is_free(gpio_num_t pin_number);
-extern void never_reset_pin_number(gpio_num_t pin_number);
 
 extern uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t *pin);
 extern void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin);

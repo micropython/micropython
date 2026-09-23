@@ -260,9 +260,3 @@ void common_hal_canio_can_deinit(canio_can_obj_t *self) {
     self->tx_pin = NULL;
     self->rx_pin = NULL;
 }
-
-void common_hal_canio_reset(void) {
-    (void)twai_stop();
-    (void)twai_driver_uninstall();
-    reserved_can = false;
-}

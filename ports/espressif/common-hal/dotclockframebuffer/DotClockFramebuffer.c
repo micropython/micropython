@@ -46,7 +46,6 @@ static void claim_and_record(const mcu_pin_obj_t *pin, uint64_t *used_pins_mask)
         int number = common_hal_mcu_pin_number(pin);
         *used_pins_mask |= (UINT64_C(1) << number);
         claim_pin_number(number);
-        never_reset_pin_number(number);
     }
 }
 

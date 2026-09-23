@@ -119,7 +119,6 @@ static void cardputer_keyboard_init(void) {
         false                         // use_gc_allocator
         );
 
-    demuxkeymatrix_never_reset(&cardputer_keyboard);
     ringbuf_init(&keyqueue, (uint8_t *)keybuf, sizeof(keybuf));
     attach_serial();
 }

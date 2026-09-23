@@ -38,7 +38,6 @@ static void display_init(void) {
     // & the board can't see the i2c bus at all.
     common_hal_digitalio_digitalinout_construct(&display_on, &pin_GPIO36);
     common_hal_digitalio_digitalinout_switch_to_output(&display_on, false, DRIVE_MODE_PUSH_PULL);
-    common_hal_digitalio_digitalinout_never_reset(&display_on);
 
     busio_i2c_obj_t *i2c = common_hal_board_create_i2c(0);
 

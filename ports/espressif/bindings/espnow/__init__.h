@@ -5,5 +5,3 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-
-void espnow_reset(void);

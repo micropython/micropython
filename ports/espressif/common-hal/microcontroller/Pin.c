@@ -14,8 +14,6 @@
 #include "driver/gpio.h"
 #include "soc/gpio_periph.h"
 
-static uint64_t _never_reset_pin_mask;
-static uint64_t _skip_reset_once_pin_mask;
 static uint64_t _preserved_pin_mask;
 static uint64_t _in_use_pin_mask;
 
@@ -326,31 +324,6 @@ static const uint64_t pin_mask_reset_forbidden =
 
 
 
-void never_reset_pin_number(gpio_num_t pin_number) {
-    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
-    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
-    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
-        return;
-    }
-    _never_reset_pin_mask |= PIN_BIT(pin_number);
-}
-
-void skip_reset_once_pin_number(gpio_num_t pin_number) {
-    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
-    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
-    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
-        return;
-    }
-    _skip_reset_once_pin_mask |= PIN_BIT(pin_number);
-}
-
-void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
-    if (pin == NULL) {
-        return;
-    }
-    never_reset_pin_number(pin->number);
-}
-
 MP_WEAK bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
@@ -359,17 +332,6 @@ static bool _reset_forbidden(gpio_num_t pin_number) {
     return pin_mask_reset_forbidden & PIN_BIT(pin_number);
 }
 
-static bool _never_reset(gpio_num_t pin_number) {
-    return _never_reset_pin_mask & PIN_BIT(pin_number);
-}
-
-static bool _skip_reset_once(gpio_num_t pin_number) {
-    return _skip_reset_once_pin_mask & PIN_BIT(pin_number);
-}
-
-static bool _preserved_pin(gpio_num_t pin_number) {
-    return _preserved_pin_mask & PIN_BIT(pin_number);
-}
 
 static void _reset_pin(gpio_num_t pin_number) {
     // Never ever reset pins used for flash, RAM, and basic communication.
@@ -425,6 +387,14 @@ void preserve_pin_number(gpio_num_t pin_number) {
 }
 
 void common_hal_alarm_clear_pin_preservations(void) {
+    // Release any actual holds, not just the tracking mask. Without this the
+    // pins would stay held after a pretend deep sleep ends.
+    uint64_t mask = _preserved_pin_mask;
+    for (int i = 0; i < 64; i++, mask >>= 1) {
+        if ((mask & 1) && GPIO_IS_VALID_OUTPUT_GPIO(i)) {
+            gpio_hold_dis(i);
+        }
+    }
     _preserved_pin_mask = 0;
 }
 
@@ -436,7 +406,6 @@ void reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
         return;
     }
-    _never_reset_pin_mask &= ~PIN_BIT(pin_number);
     _in_use_pin_mask &= ~PIN_BIT(pin_number);
 
     _reset_pin(pin_number);
@@ -461,25 +430,17 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     reset_pin_number(pin->number);
 }
 
-void reset_all_pins(void) {
+// Undo deep sleep holds and re-mark never-reset pins as in use. Called from
+// reset_port(); this restores the state-tracking parts of the old
+// reset_all_pins(), which no longer exists.
+void reset_pin_state(void) {
     // Undo deep sleep holds in case we woke up from deep sleep.
     // We still need to unhold individual pins, which is done by _reset_pin.
     #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     gpio_deep_sleep_hold_dis();
     #endif
 
-    for (gpio_num_t i = 0; i < SOC_GPIO_PIN_COUNT; i++) {
-        if (!GPIO_IS_VALID_GPIO(i) ||
-            _never_reset(i) ||
-            _skip_reset_once(i) ||
-            _preserved_pin(i)) {
-            continue;
-        }
-        _reset_pin(i);
-    }
-    _in_use_pin_mask = _never_reset_pin_mask | pin_mask_reset_forbidden;
-    // Don't continue to skip resetting these pins.
-    _skip_reset_once_pin_mask = 0;
+    _in_use_pin_mask = pin_mask_reset_forbidden;
 }
 
 void claim_pin_number(gpio_num_t pin_number) {

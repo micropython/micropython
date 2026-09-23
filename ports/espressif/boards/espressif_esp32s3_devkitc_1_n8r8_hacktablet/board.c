@@ -41,7 +41,6 @@ static void display_init(void) {
     // Turn on backlight
     // gpio_set_direction(2, GPIO_MODE_DEF_OUTPUT);
     // gpio_set_level(2, true);
-    common_hal_never_reset_pin(&pin_GPIO39);
 
     dotclockframebuffer_framebuffer_obj_t *framebuffer = &allocate_display_bus_or_raise()->dotclock;
     framebuffer->base.type = &dotclockframebuffer_framebuffer_type;

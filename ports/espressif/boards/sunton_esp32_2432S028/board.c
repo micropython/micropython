@@ -46,7 +46,6 @@ static void display_init(void) {
     busio_spi_obj_t *spi = &bus->inline_bus;
     mp_int_t rotation;
     common_hal_busio_spi_construct(spi, &pin_GPIO14, &pin_GPIO13, &pin_GPIO12, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
     common_hal_fourwire_fourwire_construct(bus,

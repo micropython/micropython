@@ -44,13 +44,11 @@ void board_init(void) {
     epd_enable_pin_obj.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&epd_enable_pin_obj, &pin_GPIO7);
     common_hal_digitalio_digitalinout_switch_to_output(&epd_enable_pin_obj, true, DRIVE_MODE_PUSH_PULL);
-    common_hal_digitalio_digitalinout_never_reset(&epd_enable_pin_obj);
 
     // Set up the SPI object used to control the display
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO12, &pin_GPIO11, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     // Set up the DisplayIO pin object
     bus->base.type = &fourwire_fourwire_type;

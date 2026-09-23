@@ -37,7 +37,6 @@ static void display_init(void) {
         &pin_GPIO12,    // MISO
         false);         // Not half-duplex
 
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
 

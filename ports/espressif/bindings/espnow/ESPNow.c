@@ -78,8 +78,9 @@ static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 //|
 static mp_obj_t espnow_deinit(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    espnow_check_for_deinit(self);
-    common_hal_espnow_deinit(self);
+    if (!common_hal_espnow_deinited(self)) {
+        common_hal_espnow_deinit(self);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(espnow_deinit_obj, espnow_deinit);
@@ -276,6 +277,7 @@ static const mp_rom_map_elem_t espnow_locals_dict_table[] = {
 
     // Deinit the object
     { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&espnow_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),      MP_ROM_PTR(&espnow_deinit_obj) },
 
     // Send messages
     { MP_ROM_QSTR(MP_QSTR_send),         MP_ROM_PTR(&espnow_send_obj) },

@@ -390,7 +390,6 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         if (low) {
             intr = GPIO_INTR_LOW_LEVEL;
         }
-        never_reset_pin_number(pin);
         gpio_wakeup_enable(pin, intr);
         gpio_set_intr_type(pin, intr);
         gpio_intr_enable(pin);

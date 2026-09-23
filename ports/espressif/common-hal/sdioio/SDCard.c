@@ -24,7 +24,6 @@
 static const char *TAG = "SDCard.c";
 
 static bool slot_in_use[2];
-static bool never_reset_sdio[2] = { false, false };
 
 static void common_hal_sdioio_sdcard_check_for_deinit(sdioio_sdcard_obj_t *self) {
     if (common_hal_sdioio_sdcard_deinited(self)) {
@@ -262,7 +261,6 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     }
 
     sdmmc_host_deinit_slot(self->slot);
-    never_reset_sdio[get_slot_index(self)] = false;
     slot_in_use[get_slot_index(self)] = false;
 
 
@@ -273,38 +271,6 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     for (size_t i = 0; i < self->num_data; i++) {
         reset_pin_number(self->data[i]);
         self->data[i] = COMMON_HAL_MCU_NO_PIN;
-    }
-
-    return;
-}
-
-void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {
-    if (common_hal_sdioio_sdcard_deinited(self)) {
-        return;
-    }
-
-    if (never_reset_sdio[get_slot_index(self)]) {
-        return;
-    }
-
-    never_reset_sdio[get_slot_index(self)] = true;
-
-    never_reset_pin_number(self->command);
-    never_reset_pin_number(self->clock);
-
-    for (size_t i = 0; i < self->num_data; i++) {
-        never_reset_pin_number(self->data[i]);
-    }
-}
-
-void sdioio_reset(void) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(slot_in_use); i++) {
-        if (!never_reset_sdio[i]) {
-            if (slot_in_use[i]) {
-                sdmmc_host_deinit_slot(i);
-            }
-            slot_in_use[i] = false;
-        }
     }
 
     return;

@@ -27,7 +27,6 @@ void board_init(void) {
 
     // // Set up the SPI object used to control the display
     // busio_spi_obj_t *spi = common_hal_board_create_spi(0);
-    // common_hal_busio_spi_never_reset(spi);
 
     // // Set up the DisplayIO pin object
     // fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
