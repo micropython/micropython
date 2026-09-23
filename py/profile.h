@@ -43,6 +43,7 @@ typedef struct _mp_obj_frame_t {
     mp_uint_t lasti;
     mp_uint_t lineno;
     bool trace_opcodes;
+    mp_obj_t f_trace;
 } mp_obj_frame_t;
 
 uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc);
@@ -52,7 +53,9 @@ mp_obj_t mp_obj_new_frame(const mp_code_state_t *code_state);
 
 // This is the implementation for the sys.settrace
 mp_obj_t mp_prof_settrace(mp_obj_t callback);
+mp_obj_t mp_prof_gettrace(void);
 
+mp_obj_t mp_prof_get_frame(size_t depth);
 mp_obj_t mp_prof_frame_enter(mp_code_state_t *code_state);
 mp_obj_t mp_prof_frame_update(const mp_code_state_t *code_state);
 
