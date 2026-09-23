@@ -24,23 +24,11 @@
 typedef enum {
     STATUS_FREE = 0,
     STATUS_BUSY,
-    STATUS_NEVER_RESET
 } uart_status_t;
 
 static uart_status_t uart_status[NUM_UARTS];
 
-void reset_uart(void) {
-    for (uint8_t num = 0; num < NUM_UARTS; num++) {
-        if (uart_status[num] == STATUS_BUSY) {
-            uart_status[num] = STATUS_FREE;
-            uart_deinit(UART_INST(num));
-        }
-    }
-}
 
-void never_reset_uart(uint8_t num) {
-    uart_status[num] = STATUS_NEVER_RESET;
-}
 
 static void pin_check(const uint8_t uart, const mcu_pin_obj_t *pin, const uint8_t pin_type) {
     if (pin == NULL) {
@@ -345,19 +333,4 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
         return false;
     }
     return uart_is_writable(self->uart);
-}
-
-static void pin_never_reset(uint8_t pin) {
-    if (pin != NO_PIN) {
-        never_reset_pin_number(pin);
-    }
-}
-
-void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
-    never_reset_uart(self->uart_id);
-    pin_never_reset(self->tx_pin);
-    pin_never_reset(self->rx_pin);
-    pin_never_reset(self->cts_pin);
-    pin_never_reset(self->rs485_dir_pin);
-    pin_never_reset(self->rts_pin);
 }

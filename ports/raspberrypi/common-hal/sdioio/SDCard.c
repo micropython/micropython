@@ -14,38 +14,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "hardware/platform_defs.h"  // NUM_PIOS
-
-// Live-instance tracking for soft-reset cleanup. The vendored SdFat PIO driver
-// claims its PIO block through the raw SDK (pio_claim_unused_sm), whose claim
-// bitset lives in static RAM and survives a soft reboot. Because the GC heap is
-// wiped without running finalizers, a successfully-constructed card would leak
-// its whole PIO block on every Ctrl-D (see sdio_init_troubleshooting.md,
-// "Error 43 is a PIO-leak red herring"). We keep a static table of the live
-// cards so sdioio_reset() can deinit them (→ pioEnd() → SDK unclaim) before the
-// heap is reset. A card is registered only after a fully successful construct
-// and removed on deinit; each card consumes a whole PIO, so NUM_PIOS slots is a
-// hard upper bound.
-static sdioio_sdcard_obj_t *_active_cards[NUM_PIOS];
-
-static void register_card(sdioio_sdcard_obj_t *self) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(_active_cards); i++) {
-        if (_active_cards[i] == NULL) {
-            _active_cards[i] = self;
-            return;
-        }
-    }
-}
-
-static void unregister_card(sdioio_sdcard_obj_t *self) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(_active_cards); i++) {
-        if (_active_cards[i] == self) {
-            _active_cards[i] = NULL;
-            return;
-        }
-    }
-}
-
 // Maximum SD clock the PIO driver is allowed to be asked for. At a typical
 // 150 MHz clk_sys the driver tops out near 37.5 MHz (clkDiv == 1); the cap is
 // generous and the achieved rate is reported back through the `frequency`
@@ -103,10 +71,6 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
 
     self->frequency = actual_frequency;
     self->capacity = sdfat_pio_card_sector_count(&self->card);
-
-    // Track the live card so sdioio_reset() can release its leaked PIO block on
-    // the next soft reboot.
-    register_card(self);
 }
 
 uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t *self) {
@@ -215,8 +179,6 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
         return;
     }
 
-    unregister_card(self);
-
     // Commit any open write before the PIO is released.
     sdfat_pio_card_sync(&self->card);
     sdfat_pio_card_end(&self->card);
@@ -229,36 +191,5 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     for (size_t i = 0; i < self->num_data; i++) {
         reset_pin_number(self->data[i]);
         self->data[i] = COMMON_HAL_MCU_NO_PIN;
-    }
-}
-
-void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {
-    if (common_hal_sdioio_sdcard_deinited(self)) {
-        return;
-    }
-
-    self->never_reset = true;
-
-    never_reset_pin_number(self->command);
-    never_reset_pin_number(self->clock);
-    for (size_t i = 0; i < self->num_data; i++) {
-        never_reset_pin_number(self->data[i]);
-    }
-
-    // Also protect the PIO state machines the driver claimed so the rp2pio
-    // soft-reset path keeps its never-reset bookkeeping coherent with them.
-    sdfat_pio_card_never_reset(&self->card);
-}
-
-void sdioio_reset(void) {
-    // Release every live card that isn't protected by never_reset. deinit()
-    // runs pioEnd(), which unclaims the PIO at the SDK level.
-    for (size_t i = 0; i < MP_ARRAY_SIZE(_active_cards); i++) {
-        sdioio_sdcard_obj_t *self = _active_cards[i];
-        if (self == NULL || self->never_reset) {
-            continue;
-        }
-        // deinit() calls unregister_card(), clearing this slot.
-        common_hal_sdioio_sdcard_deinit(self);
     }
 }

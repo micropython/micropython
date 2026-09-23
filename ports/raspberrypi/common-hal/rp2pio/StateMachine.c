@@ -33,7 +33,6 @@ static uint8_t _pin_reference_count[NUM_BANK0_GPIOS];
 static uint32_t _current_program_id[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 static uint8_t _current_program_offset[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 static uint8_t _current_program_len[NUM_PIOS][NUM_PIO_STATE_MACHINES];
-static bool _never_reset[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 
 static pio_pinmask_t _current_pins[NUM_PIOS];
 static pio_pinmask_t _current_sm_pins[NUM_PIOS][NUM_PIO_STATE_MACHINES];
@@ -191,24 +190,6 @@ static void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     pio_sm_unclaim(pio, sm);
 }
 
-void reset_rp2pio_statemachine(void) {
-    for (size_t i = 0; i < NUM_PIOS; i++) {
-        PIO pio = pio_get_instance(i);
-        for (size_t j = 0; j < NUM_PIO_STATE_MACHINES; j++) {
-            if (_never_reset[i][j]) {
-                continue;
-            }
-            _reset_statemachine(pio, j, false);
-        }
-    }
-    for (uint8_t irq = PIO0_IRQ_0; irq <= PIO1_IRQ_1; irq++) {
-        irq_handler_t int_handler = irq_get_exclusive_handler(irq);
-        if (int_handler > 0) {
-            irq_set_enabled(irq, false);
-            irq_remove_handler(irq, int_handler);
-        }
-    }
-}
 
 static pio_pinmask_t _check_pins_free(const mcu_pin_obj_t *first_pin, uint8_t pin_count, bool exclusive_pin_use) {
     pio_pinmask_t pins_we_use = PIO_PINMASK_NONE;
@@ -935,16 +916,6 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t *sel
     pio_sm_clkdiv_restart(self->pio, self->state_machine);
 }
 
-void rp2pio_statemachine_reset_ok(PIO pio, int sm) {
-    uint8_t pio_index = pio_get_index(pio);
-    _never_reset[pio_index][sm] = false;
-}
-
-void rp2pio_statemachine_never_reset(PIO pio, int sm) {
-    uint8_t pio_index = pio_get_index(pio);
-    _never_reset[pio_index][sm] = true;
-}
-
 // Pick a PIO that has room for a program of program_size instructions and at
 // least sm_count free state machines; returns its index, or NUM_PIOS if none
 // qualifies. This lets an out-of-tree PIO user (e.g. the sdioio SDIO driver,
@@ -987,7 +958,6 @@ void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins
     _interrupt_arg[pio_index][sm] = NULL;
     _interrupt_handler[pio_index][sm] = NULL;
     common_hal_mcu_enable_interrupts();
-    _never_reset[pio_index][sm] = false;
     _reset_statemachine(self->pio, sm, leave_pins);
     self->state_machine = NUM_PIO_STATE_MACHINES;
 }
@@ -1000,10 +970,6 @@ void common_hal_rp2pio_statemachine_mark_deinit(rp2pio_statemachine_obj_t *self)
     self->state_machine = NUM_PIO_STATE_MACHINES;
 }
 
-void common_hal_rp2pio_statemachine_never_reset(rp2pio_statemachine_obj_t *self) {
-    rp2pio_statemachine_never_reset(self->pio, self->state_machine);
-    // TODO: never reset all the pins
-}
 
 bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self) {
     return self->state_machine == NUM_PIO_STATE_MACHINES;

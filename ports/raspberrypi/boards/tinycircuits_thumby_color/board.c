@@ -55,8 +55,6 @@ void board_init(void) {
         false                   // Not half-duplex
         );
 
-    common_hal_busio_spi_never_reset(spi);
-
     bus->base.type = &fourwire_fourwire_type;
 
     common_hal_fourwire_fourwire_construct(

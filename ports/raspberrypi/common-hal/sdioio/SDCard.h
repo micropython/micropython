@@ -21,9 +21,4 @@ typedef struct {
     uint8_t command;
     uint8_t clock;
     uint8_t data[4];
-    bool never_reset;
 } sdioio_sdcard_obj_t;
-
-// Called by the supervisor on soft reset to release any card that is not
-// protected with never_reset.
-void sdioio_reset(void);

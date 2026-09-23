@@ -28,4 +28,3 @@ typedef struct {
 } busio_uart_obj_t;
 
 extern void reset_uart(void);
-extern void never_reset_uart(uint8_t num);

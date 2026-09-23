@@ -252,11 +252,9 @@ void board_init(void) {
     common_hal_digitalio_digitalinout_switch_to_output(&enable_pin_obj, true, DRIVE_MODE_PUSH_PULL);
 
     // Never reset
-    common_hal_digitalio_digitalinout_never_reset(&enable_pin_obj);
 
     // Set up the SPI object used to control the display
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
-    common_hal_busio_spi_never_reset(spi);
 
     // Set up the DisplayIO pin object
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;

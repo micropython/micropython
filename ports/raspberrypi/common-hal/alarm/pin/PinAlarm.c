@@ -195,7 +195,6 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             }
             gpio_set_dir(alarm->pin->number, GPIO_IN);
             // Don't reset at end of VM (instead, pinalarm_reset will reset before next VM)
-            common_hal_never_reset_pin(alarm->pin);
             alarm_reserved_pins |= (1ULL << alarm->pin->number);
 
             uint32_t event;

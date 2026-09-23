@@ -35,10 +35,10 @@ static void preinit_power_hold(void) {
 // released or the unit dies. The latch is a true set/reset latch, so a single
 // high pulse is enough, but the pin must never be left low.
 //
-// reset_all_pins() runs this for every pin at startup and again on every soft
-// reload, so the latch is re-asserted instead of being reset to an input. The
-// pin is deliberately not claimed with never_reset(), so user code can still
-// take board.POWER_HOLD and drive it low to power the unit off.
+// reset_pin_number() runs this whenever the pin is reset, so the latch is
+// re-asserted instead of being reset to an input. The pin is deliberately not
+// claimed, so user code can still take board.POWER_HOLD and drive it low to
+// power the unit off.
 bool board_reset_pin_number(uint8_t pin_number) {
     if (pin_number == MICROPY_HW_POWER_HOLD_PIN_NUMBER) {
         assert_power_hold();

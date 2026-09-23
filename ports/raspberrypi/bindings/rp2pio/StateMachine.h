@@ -44,7 +44,6 @@ void common_hal_rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self);
 bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self);
 void common_hal_rp2pio_statemachine_mark_deinit(rp2pio_statemachine_obj_t *self);
 
-void common_hal_rp2pio_statemachine_never_reset(rp2pio_statemachine_obj_t *self);
 
 void common_hal_rp2pio_statemachine_restart(rp2pio_statemachine_obj_t *self);
 void common_hal_rp2pio_statemachine_stop(rp2pio_statemachine_obj_t *self);

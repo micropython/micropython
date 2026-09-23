@@ -60,14 +60,6 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
 }
 
 
-void reset_countio(void) {
-    for (size_t i = 0; i < NUM_PWM_SLICES; i++) {
-        if (MP_STATE_PORT(counting)[i] != NULL) {
-            common_hal_countio_counter_deinit(MP_STATE_PORT(counting)[i]);
-        }
-    }
-}
-
 bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
     return self->pin == 0;
 }
@@ -79,6 +71,7 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
 
     pwm_set_enabled(self->slice_num, false);
     pwm_set_irq_enabled(self->slice_num, false);
+    pwm_clear_irq(self->slice_num);
 
     pwmio_release_slice_ab_channels(self->slice_num);
 

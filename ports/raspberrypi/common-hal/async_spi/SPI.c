@@ -124,12 +124,6 @@ bool common_hal_async_spi_spi_deinited(async_spi_spi_obj_t *self) {
     return self->clock == NULL;
 }
 
-void common_hal_async_spi_spi_never_reset(async_spi_spi_obj_t *self) {
-    common_hal_never_reset_pin(self->clock);
-    common_hal_never_reset_pin(self->mosi);
-    common_hal_never_reset_pin(self->miso);
-}
-
 void common_hal_async_spi_spi_mark_deinit(async_spi_spi_obj_t *self) {
     self->clock = NULL;
 }

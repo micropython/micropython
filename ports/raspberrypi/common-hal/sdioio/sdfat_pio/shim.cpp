@@ -77,8 +77,4 @@ void sdfat_pio_card_end(void *storage) {
     reinterpret_cast<PioSdioCard *>(storage)->end();
 }
 
-void sdfat_pio_card_never_reset(void *storage) {
-    reinterpret_cast<PioSdioCard *>(storage)->neverReset();
-}
-
 }  // extern "C"
