@@ -58,6 +58,21 @@ Functions
 
 .. function:: flash_read(byte_offset, length_or_buffer)
 
+    Read from flash space from the given byte_offset.
+
+    This function is present in both ESP8266 and ESP32, albeit with different
+    meanings for the second argument.
+
+    On ESP8266 the second argument indicates how many bytes to read from the
+    given starting point, and will return a ``bytes`` object of the requested
+    length containing the requested data.  Requesting more data than what is
+    available will raise ``OSError(EIO)`` instead of returning a partial buffer.
+
+    On ESP32, the second argument must be a buffer object to fill in
+    (eg. ``bytearray``), using the allocated buffer size as the number of bytes
+    to read from flash.  If the array could not be filled, the function will
+    raise ``OSError(EIO)`` instead of partially filling the input buffer.
+
 .. function:: flash_write(byte_offset, bytes)
 
 .. function:: flash_erase(sector_no)
