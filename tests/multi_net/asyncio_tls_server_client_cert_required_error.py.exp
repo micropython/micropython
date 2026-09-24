@@ -6,5 +6,5 @@ server done
 --- instance1 ---
 write: b'client data'
 drain
-(-30592, 'MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE')
+OSError
 client done

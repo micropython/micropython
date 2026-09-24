@@ -57,8 +57,11 @@ async def tcp_client(message):
         writer.write(message)
         print("drain")
         await writer.drain()
-    except Exception as e:
-        print(e)
+    except OSError:
+        # The transport may report an OSError before mbedTLS reads the pending
+        # TLS alert, so the exact error should be MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE but
+        # currently cannot be verified. See PR #19630.
+        print("OSError")
     print("client done")
     multitest.broadcast("finished")
 
