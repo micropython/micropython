@@ -9,17 +9,47 @@ dependencies:
     # Can be removed once fix is released in espressif/tinyusb
     git: https://github.com/micropython/tinyusb-espressif.git
     version: cherrypick/dwc2_zlp_fix
+  # esp_hosted / esp_wifi_remote: 0.15.x / 2.7.x don't build against IDF v6
+  # (the wifi_remote sources for v6.1 are only in 1.6.0+). Pick the version
+  # per IDF version so the 5.x lockfiles keep the existing pins.
   espressif/esp_hosted:
-    rules:
-      - if: "target == esp32p4"
-    version: "2.7.0"
+    matches:
+      - if: "target == esp32p4 && idf_version < 6.0"
+        version: "2.7.0"
+      - if: "target == esp32p4 && idf_version >= 6.0"
+        version: "2.12.8"
   espressif/esp_wifi_remote:
-    rules:
-      - if: "target == esp32p4"
-    version: "0.15.2"
+    matches:
+      - if: "target == esp32p4 && idf_version < 6.0"
+        version: "0.15.2"
+      - if: "target == esp32p4 && idf_version >= 6.0"
+        version: "1.6.0"
   espressif/lan867x:
     version: "~1.0.0"
     rules:
       - if: "target == esp32"
+  # Ethernet PHY drivers that moved out of ESP-IDF core in v6.0. Every
+  # registry version of these requires idf >= 6.0, so gate on idf_version to
+  # keep the 5.x lockfiles resolving without them.
+  espressif/ip101:
+    version: "~1.0.0"
+    rules:
+      - if: "idf_version >= 6.0 && target in [esp32, esp32p4]"
+  espressif/lan87xx:
+    version: "~1.0.0"
+    rules:
+      - if: "idf_version >= 6.0 && target in [esp32, esp32p4]"
+  espressif/rtl8201:
+    version: "~1.0.0"
+    rules:
+      - if: "idf_version >= 6.0 && target in [esp32, esp32p4]"
+  espressif/dp83848:
+    version: "~1.0.0"
+    rules:
+      - if: "idf_version >= 6.0 && target in [esp32, esp32p4]"
+  espressif/ksz80xx:
+    version: "~1.0.0"
+    rules:
+      - if: "idf_version >= 6.0 && target in [esp32, esp32p4]"
   idf:
     version: ">=5.3.0"
