@@ -36,17 +36,29 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
+// Log redirect handler defined in main.c.
+extern int vprintf_to_repl(const char *format, va_list ap);
+
+// Value of the esp.REPL destination constant for osdebug()'s first argument.
+#define ESP_OSDEBUG_REPL (-1)
+
 static mp_obj_t esp_osdebug(size_t n_args, const mp_obj_t *args) {
     esp_log_level_t level = LOG_LOCAL_LEVEL; // Maximum available level
     if (n_args == 2) {
         level = mp_obj_get_int(args[1]);
     }
     if (args[0] == mp_const_none) {
-        // Set logging back to boot default of ESP_LOG_ERROR
+        // Disable: route logs back to the default console, boot default level.
+        esp_log_set_vprintf(vprintf);
         esp_log_level_set("*", ESP_LOG_ERROR);
     } else {
-        // Enable logging at the given level
-        // TODO args[0] should set the UART to which debug is sent
+        if (mp_obj_get_int(args[0]) == ESP_OSDEBUG_REPL) {
+            // esp.REPL: route ESP-IDF logs into the REPL stream(s).
+            esp_log_set_vprintf(vprintf_to_repl);
+        } else {
+            // Any other value: route to the default console (UART).
+            esp_log_set_vprintf(vprintf);
+        }
         esp_log_level_set("*", level);
     }
     return mp_const_none;
@@ -127,6 +139,8 @@ static const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_out), MP_ROM_PTR(&esp_gpio_matrix_out_obj) },
 
     // Constants for second arg of osdebug()
+    { MP_ROM_QSTR(MP_QSTR_REPL), MP_ROM_INT(ESP_OSDEBUG_REPL) },
+
     { MP_ROM_QSTR(MP_QSTR_LOG_NONE), MP_ROM_INT((mp_uint_t)ESP_LOG_NONE)},
     { MP_ROM_QSTR(MP_QSTR_LOG_ERROR), MP_ROM_INT((mp_uint_t)ESP_LOG_ERROR)},
     { MP_ROM_QSTR(MP_QSTR_LOG_WARNING), MP_ROM_INT((mp_uint_t)ESP_LOG_WARN)},
