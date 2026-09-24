@@ -68,7 +68,7 @@ extern const struct _mp_obj_type_t mod_network_nic_type_ncm;
 ///
 /// This module provides network drivers and routing configuration.
 
-char mod_network_country_code[2] = "XX";
+char mod_network_country_code[2] = {'X', 'X'};
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #error "MICROPY_PY_NETWORK_HOSTNAME_DEFAULT must be set in mpconfigport.h or mpconfigboard.h"

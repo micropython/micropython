@@ -40,7 +40,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#if CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32C5
+// Chips with Wi-Fi 6 (HE) support report the CSI rx_ctrl in the extended v2
+// format. Use the soc capability macro rather than listing targets, so new
+// chips (eg ESP32-S31) are covered automatically.
+#if CONFIG_SOC_WIFI_HE_SUPPORT
 #define WIFI_CSI_RXCTRL_V2 (1)
 #else
 #define WIFI_CSI_RXCTRL_V2 (0)

@@ -36,11 +36,16 @@
 #include <stdio.h>
 #include "driver/uart.h" // For uart_get_sclk_freq()
 #include "hal/uart_hal.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/uart_periph.h"
+#else
 #include "soc/uart_periph.h"
+#endif
 
 static void uart_irq_handler(void *arg);
 
-#if CONFIG_IDF_TARGET_ESP32P4
+#if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
 static uint8_t __DECLARE_RCC_ATOMIC_ENV __attribute__ ((unused));
 #endif
 

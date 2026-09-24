@@ -42,6 +42,20 @@
 #error "machine.Timer requires MICROPY_ENABLE_FINALISER."
 #endif
 
+// SOC_TIMER_GROUP_TOTAL_TIMERS was removed from soc_caps.h in IDF v6.
+// Recreate the total hardware GPTimer count per target (values match the
+// IDF v5 soc_caps.h).
+#ifndef SOC_TIMER_GROUP_TOTAL_TIMERS
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
+#define SOC_TIMER_GROUP_TOTAL_TIMERS (4)
+#elif CONFIG_IDF_TARGET_ESP32C2
+#define SOC_TIMER_GROUP_TOTAL_TIMERS (1)
+#else
+// ESP32-C3, C5, C6, H2 (one timer per group, two groups).
+#define SOC_TIMER_GROUP_TOTAL_TIMERS (2)
+#endif
+#endif
+
 #define TIMER_CLK_SRC GPTIMER_CLK_SRC_DEFAULT
 #define TIMER_DIVIDER  8
 

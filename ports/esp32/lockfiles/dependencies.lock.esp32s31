@@ -28,11 +28,11 @@ dependencies:
   idf:
     source:
       type: idf
-    version: 5.5.5
+    version: 6.1.0
 direct_dependencies:
 - espressif/mdns
 - espressif/tinyusb
 - idf
 manifest_hash: f0e7b17dd11abbb654610747f3d428d1e6885c2a2fdbe3af2bc7b1e928d933ed
-target: esp32s3
-version: 2.0.0
+target: esp32s31
+version: 3.0.0
