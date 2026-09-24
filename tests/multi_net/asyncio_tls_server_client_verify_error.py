@@ -23,8 +23,10 @@ async def handle_connection(reader, writer):
     print("handle connection")
     try:
         data = await reader.read(100)
-    except Exception as e:
-        print(e)
+    except OSError:
+        # The transport may report an OSError before mbedTLS reads the pending
+        # TLS alert, so the exact error cannot be verified. See PR #19630.
+        print("OSError")
     ev.set()
 
 
