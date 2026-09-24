@@ -29,9 +29,8 @@ body:
       description: |
         To find the version:
 
-        1. Open a serial REPL.
-        2. Type Ctrl-B to see the startup message.
-        3. Copy-paste that output here.
+        1. Restart the device, or type Ctrl-D in a serial REPL to perform a soft reset.
+        2. Copy-paste the startup message here.
 
         If the version or configuration is modified from the official MicroPython releases or the master branch, please tell us the details of this as well.
       placeholder: |
