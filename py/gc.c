@@ -951,7 +951,8 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
             // space is freed.
             #if MICROPY_GC_SPLIT_HEAP
             if (n_blocks == 1) {
-                area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB; // or (size_t)-1
+                // Here i is an ATB byte index, so point past the end of the table.
+                area->gc_last_free_atb_index = area->gc_alloc_table_byte_len;
             }
             #endif
         }
