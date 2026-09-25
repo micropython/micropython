@@ -41,11 +41,40 @@ Other commands:
     $ ./tools/metrics.py sizes # print all firmware sizes
     $ ./tools/metrics.py clean # clean all ports
 
+On ESP-IDF ELFs, Berkeley `size`'s `data` column mixes DRAM `.data` with flash
+`.rodata` (DROM). For the esp32 port, `sizes` also emits an `ESP32_SECTIONS`
+block from `size -A` so `diff` can report `(dram.data)`, `(bss)`, `(iram)` and
+`(rodata)` separately, plus `(other.data)` / `(other.bss)` for any remaining
+Berkeley delta. Other ports are unchanged.
+
 """
 
 import collections, os, sys, re, shlex, subprocess, multiprocessing
 
 MAKE_FLAGS = ["-j{}".format(multiprocessing.cpu_count()), "CFLAGS_EXTRA=-DNDEBUG"]
+
+# Section sizes reported for esp32 via `size -A` (ESP-IDF linker layout).
+ESP32_SECTION_NAMES = (
+    ".dram0.data",
+    ".dram0.bss",
+    ".iram0.text",
+    ".flash.rodata",
+    ".flash.text",
+)
+# Diff annotation labels (flash.text omitted; covered by headline dec).
+ESP32_DIFF_SECTIONS = (
+    (".dram0.data", "dram.data"),
+    (".dram0.bss", "bss"),
+    (".iram0.text", "iram"),
+    (".flash.rodata", "rodata"),
+)
+# Sections above that Berkeley `size` accounts for in its data and bss columns.
+# Anything left over lands in other.data / other.bss, so growth in sections that
+# are not broken out above (eg .iram0.bss, .noinit, .rtc.data) is still reported.
+ESP32_BERKELEY_COLUMNS = (
+    (1, (".dram0.data", ".flash.rodata"), "other.data"),
+    (2, (".dram0.bss",), "other.bss"),
+)
 
 
 class PortData:
@@ -120,6 +149,34 @@ def parse_port_list(args):
         return ports
 
 
+def parse_esp32_sections_output(size_a_output):
+    """Parse `size -A` text; return dict of wanted ESP-IDF section sizes."""
+    sizes = {}
+    for line in size_a_output.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[0] in ESP32_SECTION_NAMES:
+            try:
+                sizes[parts[0]] = int(parts[1])
+            except ValueError:
+                pass
+    return sizes
+
+
+def print_esp32_sections(elf_path):
+    """Emit ESP32_SECTIONS block for elf_path, or nothing if size -A fails."""
+    try:
+        out = subprocess.check_output(["size", "-A", elf_path], text=True)
+    except (OSError, subprocess.CalledProcessError):
+        return
+    sizes = parse_esp32_sections_output(out)
+    if not sizes:
+        return
+    print("ESP32_SECTIONS", elf_path)
+    for name in ESP32_SECTION_NAMES:
+        if name in sizes:
+            print(name, sizes[name])
+
+
 def read_build_log(filename):
     data = collections.OrderedDict()
     lines = []
@@ -134,13 +191,31 @@ def read_build_log(filename):
             elif found_sizes:
                 lines.append(line)
     is_size_line = False
+    esp32_sections = {}
+    current_esp32 = None
     for line in lines:
+        if line.startswith("ESP32_SECTIONS "):
+            current_esp32 = line.split(None, 1)[1]
+            esp32_sections[current_esp32] = {}
+            is_size_line = False
+            continue
+        if current_esp32 is not None:
+            parts = line.split()
+            if len(parts) == 2 and parts[0].startswith("."):
+                try:
+                    esp32_sections[current_esp32][parts[0]] = int(parts[1])
+                    continue
+                except ValueError:
+                    pass
+            current_esp32 = None
         if is_size_line:
             fields = line.split()
             data[fields[-1]] = [int(f) for f in fields[:-2]]
             is_size_line = False
         else:
             is_size_line = line.startswith("text\t ")
+    if esp32_sections:
+        data["_esp32_sections"] = esp32_sections
     return data
 
 
@@ -162,6 +237,8 @@ def do_diff(args):
 
     ref1 = data1.pop("_ref", "(unknown ref)")
     ref2 = data2.pop("_ref", "(unknown ref)")
+    sections1 = data1.pop("_esp32_sections", {})
+    sections2 = data2.pop("_esp32_sections", {})
     print(f"Reference:  {ref1}")
     print(f"Comparison: {ref2}")
     max_delta = None
@@ -188,10 +265,25 @@ def do_diff(args):
         else:
             delta = data[3]
             percent = 100 * delta / value1[3]
-            if data[1] != 0:
-                warn += " %+u(data)" % data[1]
-            if data[2] != 0:
-                warn += " %+u(bss)" % data[2]
+            sec1 = sections1.get(key) if name == "esp32" else None
+            sec2 = sections2.get(key) if name == "esp32" else None
+            if sec1 is not None and sec2 is not None:
+                deltas = {
+                    sec_name: sec2.get(sec_name, 0) - sec1.get(sec_name, 0)
+                    for sec_name in ESP32_SECTION_NAMES
+                }
+                for sec_name, label in ESP32_DIFF_SECTIONS:
+                    if deltas[sec_name] != 0:
+                        warn += " %+d(%s)" % (deltas[sec_name], label)
+                for column, sec_names, label in ESP32_BERKELEY_COLUMNS:
+                    other = data[column] - sum(deltas[sec_name] for sec_name in sec_names)
+                    if other != 0:
+                        warn += " %+d(%s)" % (other, label)
+            else:
+                if data[1] != 0:
+                    warn += " %+u(data)" % data[1]
+                if data[2] != 0:
+                    warn += " %+u(bss)" % data[2]
         if warn:
             warn = "[incl%s]" % warn
         print("%11s: %+5u %+.3f%% %s%s" % (name, delta, percent, board, warn))
@@ -257,7 +349,10 @@ def do_sizes(args):
         syscmd("size", mpy_cross_output)
 
     for port in ports:
-        syscmd("size", "ports/{}/{}".format(port.dir, port.output))
+        elf = "ports/{}/{}".format(port.dir, port.output)
+        syscmd("size", elf)
+        if port.name == "esp32":
+            print_esp32_sections(elf)
 
 
 def main():
