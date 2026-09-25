@@ -197,6 +197,74 @@ class Lock
     queue is scheduled to run and the lock remains locked.  Otherwise, no tasks are
     waiting an the lock becomes unlocked.
 
+class Queue
+-----------
+
+.. class:: Queue(maxsize=0)
+
+    Create a new FIFO queue that can be used to coordinate producer/consumer
+    tasks.  If *maxsize* is less than or equal to zero, the queue length is
+    infinite.  Otherwise, when the queue reaches *maxsize* further calls to
+    `Queue.put` will block until an item is removed with `Queue.get`.
+
+.. method:: Queue.qsize()
+
+    Returns the number of items currently in the queue.
+
+.. method:: Queue.empty()
+
+    Returns ``True`` if the queue is empty, ``False`` otherwise.
+
+.. method:: Queue.full()
+
+    Returns ``True`` if there are `Queue.qsize` items in the queue and
+    *maxsize* is greater than zero, otherwise ``False``.
+
+.. method:: Queue.put(item)
+
+    Put *item* onto the queue.  If the queue is full then wait for space to
+    be available before adding the item.
+
+    This is a coroutine.
+
+.. method:: Queue.put_nowait(item)
+
+    Put *item* into the queue without blocking.  If no space is available
+    raise `QueueFull`.
+
+.. method:: Queue.get()
+
+    Remove and return an item from the queue.  If the queue is empty, wait
+    until an item is available.
+
+    This is a coroutine.
+
+.. method:: Queue.get_nowait()
+
+    Remove and return an item from the queue without blocking.  If no item
+    is available, raise `QueueEmpty`.
+
+.. method:: Queue.task_done()
+
+    Indicate that a previously retrieved item has been fully processed.
+    Used together with `Queue.join`.  Raises ``ValueError`` if called more
+    times than there were items placed in the queue.
+
+.. method:: Queue.join()
+
+    Block until every item that has been put into the queue has been
+    processed by a call to `Queue.task_done`.
+
+    This is a coroutine.
+
+.. exception:: QueueEmpty
+
+    Raised by `Queue.get_nowait` when the queue is empty.
+
+.. exception:: QueueFull
+
+    Raised by `Queue.put_nowait` when the queue is full.
+
 TCP stream connections
 ----------------------
 
