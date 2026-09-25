@@ -65,7 +65,19 @@ def f():
     except SyntaxError:
         pass
 elif arch == "xtensa":
-    pass
+    for opcode, core in (("salt", 7), ("minu", 4), ("add", 3)):
+        try:
+            exec(
+                """
+@micropython.asm_xtensa
+def f():
+    {}(a0, a0, a0)
+""".format(opcode)
+            )
+            fields.append("lx{}".format(core))
+            break
+        except SyntaxError:
+            pass
 elif arch == "rv32":
     try:
         exec("""
