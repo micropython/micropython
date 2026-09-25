@@ -168,6 +168,8 @@ typedef struct _mp_machine_i2c_p_t {
     int (*write)(mp_obj_base_t *obj, const uint8_t *src, size_t len);
     int (*transfer)(mp_obj_base_t *obj, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
     int (*transfer_single)(mp_obj_base_t *obj, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags);
+    mp_obj_t (*scl)(mp_obj_base_t *obj);
+    mp_obj_t (*sda)(mp_obj_base_t *obj);
 } mp_machine_i2c_p_t;
 
 // SoftI2C object.

@@ -59,6 +59,7 @@ static inline uint64_t mp_hal_time_ns(void) {
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
+#define mp_hal_pin_to_obj(p) MP_OBJ_FROM_PTR(p)
 
 static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     // TODO make it include the port
