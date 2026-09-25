@@ -129,6 +129,7 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
     ${MICROPY_DIR}/shared/netutils/dhcpserver.c
+    ${MICROPY_DIR}/shared/netutils/get_mac_ascii.c
     ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/netutils/trace.c
     ${MICROPY_DIR}/shared/readline/readline.c
