@@ -520,13 +520,13 @@ DRIVERS_SRC_C += $(addprefix $(MM_HALOW_DIR)/src/,\
 # adapter that presents the driver as a PHY-neutral halow_drv_t.
 SRC_EXTMOD_C += extmod/halow/morse/mm_halow_port.c
 SRC_EXTMOD_C += extmod/halow/morse/mm_halow_adapter.c
+SRC_EXTMOD_C += extmod/halow/morse/mm_halow_regdb.c
 
 # Support code that morselib expects the integrator to provide: the packet
 # memory pools, the regulatory database and assorted helpers.
 # Packet memory is provided by mm_halow_pktmem.c rather than the SDK's
 # mmpktmem, so that all of the driver's memory comes from the MicroPython heap.
 SRC_THIRDPARTY_C += $(addprefix $(MMIOT_DIR)/src/,\
-	mmregdb/mmregdb.c \
 	mmutils/mmbuf.c \
 	mmutils/mmcrc.c \
 	mmutils/mmutils_wlan.c \
