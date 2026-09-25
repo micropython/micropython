@@ -14,6 +14,7 @@ endif()
 set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/argcheck.c
     ${MICROPY_PY_DIR}/asmarm.c
+    ${MICROPY_PY_DIR}/asmaarch64.c
     ${MICROPY_PY_DIR}/asmbase.c
     ${MICROPY_PY_DIR}/asmrv32.c
     ${MICROPY_PY_DIR}/asmthumb.c
@@ -31,9 +32,11 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/emitcommon.c
     ${MICROPY_PY_DIR}/emitglue.c
     ${MICROPY_PY_DIR}/emitinlinerv32.c
+    ${MICROPY_PY_DIR}/emitinlineaarch64.c
     ${MICROPY_PY_DIR}/emitinlinethumb.c
     ${MICROPY_PY_DIR}/emitinlinextensa.c
     ${MICROPY_PY_DIR}/emitnarm.c
+    ${MICROPY_PY_DIR}/emitnaarch64.c
     ${MICROPY_PY_DIR}/emitndebug.c
     ${MICROPY_PY_DIR}/emitnrv32.c
     ${MICROPY_PY_DIR}/emitnthumb.c

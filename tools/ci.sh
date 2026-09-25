@@ -407,6 +407,24 @@ function ci_qemu_setup_ppc64 {
     qemu-system-ppc64 --version
 }
 
+function ci_qemu_setup_aarch64 {
+    sudo apt-get update
+    sudo apt-get install qemu-system
+    # Ubuntu has no aarch64-none-elf package; download the ARM GNU toolchain.
+    wget -q https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz
+    # Verify the download against the SHA256 checksum published by ARM, see
+    # https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz.sha256
+    echo "66f7ce7c1bf662f589a4caf440812375f3cd8000a033ccf0971127a0726d6921  arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz" | sha256sum -c -
+    xzcat arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz | tar x
+    rm arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz
+    "$(ci_qemu_aarch64_path)/aarch64-none-elf-gcc" --version
+    qemu-system-aarch64 --version
+}
+
+function ci_qemu_aarch64_path {
+    echo "$(pwd)/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf/bin"
+}
+
 function ci_qemu_build_arm_prepare {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu submodules
@@ -473,6 +491,20 @@ function ci_qemu_build_ppc64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 submodules
     make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 test
+}
+
+function ci_qemu_build_aarch64 {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_AARCH64 submodules
+    # Use "test" rather than "test_full": AArch64 has no .mpy architecture ID,
+    # so mpy-cross cannot compile .mpy files for this target. The default test
+    # discovery already covers inlineasm/aarch64 and ports/qemu.
+    # Exclude thread/stress_aes.py which times out under QEMU (see issue #18867).
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_AARCH64 RUN_TESTS_EXTRA="--exclude 'thread/stress_aes.py'" test
+    # Also build the single-precision float board, to catch build breakage in
+    # that variant (its test coverage is otherwise provided by the unix CI job
+    # and the double-precision board above).
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_AARCH64_FLOAT RUN_TESTS_EXTRA="--exclude 'thread/stress_aes.py'" test
 }
 
 ########################################################################################
@@ -654,6 +686,12 @@ CI_UNIX_OPTS_QEMU_LOONG64=(
 
 CI_UNIX_OPTS_QEMU_X64=(
     CROSS_COMPILE=x86_64-linux-gnu-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+)
+
+CI_UNIX_OPTS_QEMU_AARCH64=(
+    CROSS_COMPILE=aarch64-linux-gnu-
     VARIANT=coverage
     MICROPY_STANDALONE=1
 )
@@ -1119,6 +1157,52 @@ function ci_unix_qemu_x64_run_tests {
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude '(thread/stress_aes.py|ports/unix/ffi_callback.py)'
     MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-natmodtests.py extmod/btree*.py extmod/deflate*.py extmod/framebuf*.py extmod/heapq*.py extmod/random_basic*.py extmod/re*.py
     popd
+}
+
+function ci_unix_qemu_aarch64_setup {
+    sudo apt-get update
+    # libltdl-dev provides the ltdl.m4 libtool macros that libffi's autogen.sh
+    # needs: depending on submodule file timestamps, make may re-run it while
+    # building the standalone libffi in deplibs (as in ci_unix_qemu_x64_setup).
+    # Install the cross libc explicitly rather than relying on the cross
+    # compiler packages to pull it in.
+    sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libltdl-dev
+    sudo apt-get install qemu-user
+    qemu-aarch64 --version
+    sudo mkdir /etc/qemu-binfmt
+    sudo ln -s /usr/aarch64-linux-gnu/ /etc/qemu-binfmt/aarch64
+}
+
+function ci_unix_qemu_aarch64_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_AARCH64[@]}"
+    ci_unix_build_ffi_lib_helper aarch64-linux-gnu-gcc
+
+    micropython=$(pwd)/ports/unix/build-coverage/micropython
+    wrapper=$(pwd)/ports/unix/build-coverage/micropython-qemu.sh
+    cat > "$wrapper" << EOF
+#!/bin/bash
+exec qemu-aarch64 -L /usr/aarch64-linux-gnu "$micropython" "\$@"
+EOF
+    chmod +x "$wrapper"
+}
+
+function ci_unix_qemu_aarch64_run_tests {
+    # Issues with AArch64 tests:
+    # - extmod/select_poll_fd.py requires a low fd limit to trigger EINVAL
+    # - thread/stress_aes.py takes around 90 seconds when run under QEMU
+    # - thread/stress_recurse.py is flaky
+    # - thread/thread_gc1.py is flaky
+    local exclude='thread/stress_aes.py|thread/stress_recurse.py|thread/thread_gc1.py'
+    file ./ports/unix/build-coverage/micropython
+    ulimit -n 1024
+    wrapper=$(pwd)/ports/unix/build-coverage/micropython-qemu.sh
+    (cd tests && MICROPY_MICROPYTHON=$wrapper MICROPY_TEST_TIMEOUT=60 ./run-tests.py --exclude "$exclude")
+    (cd tests && MICROPY_MICROPYTHON=$wrapper MICROPY_TEST_TIMEOUT=60 ./run-tests.py --emit native --exclude "$exclude")
+    (cd tests && MICROPY_MICROPYTHON=$wrapper MICROPY_TEST_TIMEOUT=60 ./run-tests.py -d inlineasm/aarch64)
+}
+
+function ci_unix_qemu_aarch64_run_coverage {
+    (cd ports/unix && gcov -o build-coverage/py ../../py/asmaarch64.c ../../py/emitnaarch64.c ../../py/emitinlineaarch64.c)
 }
 
 function ci_unix_repr_b_build {

@@ -30,6 +30,7 @@ implementation and the best practices to use them.
    manifest.rst
    packages.rst
    asm_thumb2_index.rst
+   asm_aarch64.rst
    filesystem.rst
    romfs.rst
    unicode_support.rst
