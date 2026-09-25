@@ -1,0 +1,16 @@
+CONFIG_ESP32C3_REV_MIN_3=y
+
+# Workaround for https://github.com/espressif/esp-idf/issues/14456
+CONFIG_ESP_SYSTEM_HW_STACK_GUARD=n
+
+# 16 MB flash
+# Flash mode is left at the IDF default (DIO) since this board's flash chip
+# is not confirmed to have its WP#/HOLD# pins wired up for QIO. 80MHz was
+# unreliable on hardware (partition table read as corrupt at boot), so drop
+# to the conservative 40MHz.
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-8MiBplus-ota.csv"
