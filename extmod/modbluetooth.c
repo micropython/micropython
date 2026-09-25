@@ -257,11 +257,16 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // Bluetooth object: General
 // ----------------------------------------------------------------------------
 
+// A port can override this to lazily bring up the cyw43 chip on first use.
+MP_WEAK void bluetooth_ble_obj_init(void) {
+}
+
 static mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     (void)type;
     (void)n_args;
     (void)n_kw;
     (void)all_args;
+    bluetooth_ble_obj_init();
     if (MP_STATE_VM(bluetooth) == MP_OBJ_NULL) {
         mp_obj_bluetooth_ble_t *o = m_new0(mp_obj_bluetooth_ble_t, 1);
         o->base.type = &mp_type_bluetooth_ble;

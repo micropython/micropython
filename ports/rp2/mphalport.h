@@ -225,4 +225,11 @@ void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
 int mp_hal_is_pin_reserved(int n);
 void mp_hal_get_random(size_t n, uint8_t *buf);
 
+#if MICROPY_PY_NETWORK_CYW43
+// Bring up the cyw43 chip on first use (defined in rp2_init_cyw43.c).
+void rp2_cyw43_ensure_init(void);
+// Whether the cyw43 chip has been brought up (defined in rp2_init_cyw43.c).
+bool rp2_cyw43_is_initialised(void);
+#endif
+
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H

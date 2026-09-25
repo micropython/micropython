@@ -103,6 +103,10 @@ void cyw43_irq_init(void) {
     irq_set_enabled(IO_IRQ_BANK0, true);
 }
 
+void cyw43_irq_deinit(void) {
+    gpio_remove_raw_irq_handler(CYW43_PIN_WL_HOST_WAKE, gpio_irq_handler);
+}
+
 // This hook will run on whichever CPU serviced the PendSV interrupt
 void cyw43_post_poll_hook(void) {
     gpio_set_cpu0_host_wake_irq_enabled(true);
