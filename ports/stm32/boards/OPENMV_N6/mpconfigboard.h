@@ -158,6 +158,19 @@
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE           "lib/cyw43-driver/firmware/wifi_nvram_1yn.h"
 #define CYW43_BT_FIRMWARE_INCLUDE_FILE          "lib/cyw43-driver/firmware/cyw43_btfw_1yn.h"
 
+// Morse Micro MM8108 802.11ah shield
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+#define MICROPY_HW_HALOW_MORSE_MICRO_SPI_ID                 (2)             // P0/P1/P2 are SPI2
+#define MICROPY_HW_HALOW_MORSE_MICRO_CS                     (pyb_pin_P3)
+#define MICROPY_HW_HALOW_MORSE_MICRO_IRQ                    (pyb_pin_P8)
+#define MICROPY_PY_NETWORK_HALOW_PIN_IRQ        (1)
+#define MICROPY_HW_HALOW_MORSE_MICRO_RESET                  (pyb_pin_P7)
+#define MICROPY_HW_HALOW_MORSE_MICRO_WAKE                   (pyb_pin_P9)
+#define MICROPY_HW_HALOW_MORSE_MICRO_BUSY                   (pyb_pin_P11)
+#define MICROPY_HW_HALOW_MORSE_MICRO_BUSY_INVERTED          (1)             // shield inverts BUSY
+#define MICROPY_HW_HALOW_MORSE_MICRO_SET_MSPLIM             (1)             // mboot leaves MSPLIM set
+#endif
+
 // Bluetooth config
 #define MICROPY_HW_BLE_UART_ID                  (PYB_UART_2)
 #define MICROPY_HW_BLE_UART_BAUDRATE            (115200)

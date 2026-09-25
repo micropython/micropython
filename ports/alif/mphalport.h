@@ -90,6 +90,7 @@ extern ringbuf_t stdin_ringbuf;
 #define MP_HAL_PIN_SPEED_LOW                    (0)
 #define MP_HAL_PIN_SPEED_HIGH                   (PADCTRL_SLEW_RATE_FAST)
 
+#define MP_HAL_PIN_TRIGGER_NONE                 (0)
 #define MP_HAL_PIN_TRIGGER_FALL                 (1)
 #define MP_HAL_PIN_TRIGGER_RISE                 (2)
 
@@ -289,6 +290,8 @@ typedef struct _machine_pin_obj_t {
 } machine_pin_obj_t;
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
+void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard);
+void mp_hal_pin_interrupt_enable(mp_hal_pin_obj_t pin, bool enable);
 
 static inline qstr mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     return pin->name;
