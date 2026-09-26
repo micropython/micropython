@@ -234,8 +234,8 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->p_config->defer_start = false;
 
     // Allocate the device if it was not used before.
-    if (hard_configs[pwm_id].active == FREE) {
-        hard_configs[pwm_id].active = STOPPED;
+    if (self->p_config->active == FREE) {
+        self->p_config->active = STOPPED;
     }
 
     // start the PWM running for this channel
