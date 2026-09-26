@@ -117,12 +117,16 @@ static const machine_pwm_obj_t machine_hard_pwm_obj[] = {
     #endif
 };
 
+static void pwm_config_reset(machine_pwm_config_t *config) {
+    config->active = FREE;
+    config->freq_div = -1;
+    config->freq = 0;
+    memset(config->duty_mode, DUTY_NOT_SET, NRF_PWM_CHANNEL_COUNT);
+}
+
 void pwm_init0(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(hard_configs); i++) {
-        hard_configs[i].active = FREE;
-        hard_configs[i].freq_div = -1;
-        hard_configs[i].freq = 0;
-        memset(hard_configs[i].duty_mode, DUTY_NOT_SET, NRF_PWM_CHANNEL_COUNT);
+        pwm_config_reset(&hard_configs[i]);
     }
 }
 
@@ -251,14 +255,13 @@ void pwm_deinit_all(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(machine_hard_pwm_instances); i++) {
         mp_machine_pwm_deinit((machine_pwm_obj_t *)&machine_hard_pwm_obj[i * NRF_PWM_CHANNEL_COUNT]);
     }
-    pwm_init0();
 }
 
-// Stop the PWM module, but do not release it.
+// Stop the PWM module, which stops all its channels, and release it.
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    self->p_config->active = STOPPED;
     nrfx_pwm_stop(self->p_pwm, true);
     nrfx_pwm_uninit(self->p_pwm);
+    pwm_config_reset(self->p_config);
 }
 
 static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
