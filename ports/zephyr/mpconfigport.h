@@ -52,6 +52,10 @@
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
+#if (defined(__thumb2__) || defined(__thumb__))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+#endif
+
 // We can't guarantee object layout of nlr code so use long jump by default.
 #define MICROPY_NLR_THUMB_USE_LONG_JUMP (1)
 
