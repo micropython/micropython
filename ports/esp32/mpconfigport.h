@@ -315,6 +315,27 @@
 #if MICROPY_HW_USB_CDC && MICROPY_HW_ESP_USB_SERIAL_JTAG && (SOC_USB_OTG_PERIPH_NUM <= 1)
 #error "Invalid build config: Can't enable both native USB and USB Serial/JTAG peripheral"
 #endif
+
+// esp.osdebug(esp.REPL): ESP-IDF logs to the REPL, for a REPL on native USB.
+#ifndef MICROPY_PY_ESP_OSDEBUG_REPL
+#define MICROPY_PY_ESP_OSDEBUG_REPL         (MICROPY_HW_USB_CDC || MICROPY_HW_ESP_USB_SERIAL_JTAG)
+#endif
+
+// esp.REPL log buffer, by the log level compiled in (3 INFO, 4 DEBUG, 5 VERBOSE).
+#ifndef MICROPY_PY_ESP_OSDEBUG_REPL_BUF_SIZE
+#if CONFIG_LOG_MAXIMUM_LEVEL >= 5
+#define MICROPY_PY_ESP_OSDEBUG_REPL_BUF_SIZE (16384)
+#elif CONFIG_LOG_MAXIMUM_LEVEL == 4
+#define MICROPY_PY_ESP_OSDEBUG_REPL_BUF_SIZE (8192)
+#else
+#define MICROPY_PY_ESP_OSDEBUG_REPL_BUF_SIZE (2048)
+#endif
+#endif
+
+// Max time a logging task waits for space in a full esp.REPL buffer before dropping.
+#ifndef MICROPY_PY_ESP_OSDEBUG_REPL_WAIT_MS
+#define MICROPY_PY_ESP_OSDEBUG_REPL_WAIT_MS (50)
+#endif
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
