@@ -28,6 +28,7 @@
 #include "py/objarray.h"
 #include "py/runtime.h"
 #include "extmod/vfs.h"
+#include "irq.h"
 #include "modalif.h"
 #include "mpu.h"
 #include "mram.h"
@@ -59,6 +60,13 @@ static const mp_obj_array_t romfs_obj_table[] = {
     ROMFS_MEMORYVIEW(MICROPY_HW_ROMFS_PART1_START, MICROPY_HW_ROMFS_PART1_SIZE),
     #endif
 };
+
+// MRAM is programmed in blocks of this many bytes with interrupts disabled.  An
+// interrupt taken while a 128-bit line is being programmed can wedge the MRAM
+// controller, which then needs a power cycle to recover (the secure enclave boots
+// from MRAM, so a reset does not help).  256 bytes keeps each interrupts-off
+// window well under 1ms.
+#define MRAM_WRITE_BLOCK_SIZE (256)
 
 static inline bool mram_is_valid_addr(uintptr_t addr) {
     return MRAM_BASE <= addr && addr < MRAM_BASE + MRAM_SIZE;
@@ -153,14 +161,24 @@ mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
         }
 
         if (mram_is_valid_addr(dest)) {
-            // Write data to MRAM.
+            // Write data to MRAM, a block at a time.  Each block is written with
+            // interrupts disabled, then barriered and cleaned from the D-cache before
+            // interrupts are re-enabled, as required by the Alif MRAM driver.
             mpu_config_mram(false);
             const uint8_t *src = bufinfo.buf;
             const uint8_t *max = src + bufinfo.len;
             while (src < max) {
-                mram_write_128bit((uint8_t *)dest, src);
-                dest += MRAM_SECTOR_SIZE;
-                src += MRAM_SECTOR_SIZE;
+                const uint8_t *block_max = MIN(src + MRAM_WRITE_BLOCK_SIZE, max);
+                uintptr_t block_start = dest;
+                uint32_t atomic = disable_irq();
+                while (src < block_max) {
+                    mram_write_128bit((uint8_t *)dest, src);
+                    dest += MRAM_SECTOR_SIZE;
+                    src += MRAM_SECTOR_SIZE;
+                }
+                __DSB();
+                SCB_CleanDCache_by_Addr((uint32_t *)block_start, dest - block_start);
+                enable_irq(atomic);
             }
             mpu_config_mram(true);
             return MP_OBJ_NEW_SMALL_INT(0); // success
