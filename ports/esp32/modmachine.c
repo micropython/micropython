@@ -206,7 +206,7 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
             if (ESP_OK != esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(
             #else
             if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
-            #endif
+                #endif
                 machine_rtc_config.gpio_pins,
                 machine_rtc_config.gpio_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));
