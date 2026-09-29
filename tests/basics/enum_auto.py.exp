@@ -1,0 +1,52 @@
+Test 1: Basic auto() usage
+RED.value = 1
+GREEN.value = 2
+BLUE.value = 3
+PASS
+
+Test 2: Mixed auto() and explicit values
+PENDING.value = 11
+ACTIVE.value = 10
+PAUSED.value = 12
+STOPPED.value = 13
+PASS
+
+Test 3: auto() with IntEnum
+LOW.value = 1
+MEDIUM.value = 2
+HIGH.value = 3
+PASS
+
+Test 4: auto() with single member
+ONLY.value = 1
+PASS
+
+Test 5: All auto() values
+Values: [1, 2, 3, 4, 5]
+PASS
+
+Test 6: auto() after explicit value 0
+ZERO.value = 0
+ONE.value = 1
+TWO.value = 2
+PASS
+
+Test 7: auto() continues from highest value
+A.value = 101
+B.value = 100
+C.value = 102
+D.value = 50
+E.value = 103
+PASS
+
+Test 8: Enum member functionality with auto()
+Member count: 4
+PASS
+Direction(1) = NORTH
+PASS
+
+Test 9: auto() repr
+repr(auto()) = auto()
+PASS
+
+All enum.auto() tests completed!
