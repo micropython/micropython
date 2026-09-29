@@ -95,7 +95,19 @@ void machine_init(void) {
     const uint32_t user_reset_flag = kSRC_IppUserResetFlag;
     #endif
 
-    if (SRC->SRSR & user_reset_flag) {
+    // machine.deepsleep() uses SNVS_LPCR_TOP_MASK to turn off power, which sets
+    // SNVS_LPSR_EO_MASK.  Use that bit to tell if we are waking from deepsleep.
+    bool woke_from_deepsleep = !!(SNVS->LPSR & SNVS_LPSR_EO_MASK);
+    SNVS->LPSR = SNVS_LPSR_EO_MASK;
+
+    // Check if the device was reset due to low-power timer alarm.
+    if (SNVS->LPSR & SNVS_LPSR_LPTA_MASK) {
+        machine_rtc_alarm_off(true);
+        woke_from_deepsleep = true;
+    }
+
+    // Determine the current reset cause.
+    if (woke_from_deepsleep || (SRC->SRSR & user_reset_flag)) {
         reset_cause = MP_DEEPSLEEP_RESET;
     } else {
         uint16_t wdog =
