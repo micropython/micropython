@@ -4,6 +4,4 @@ include("$(MPY_DIR)/extmod/asyncio")
 require("bundle-networking")
 
 require("upysh")
-require("aioble")
 require("aiorepl")
-require("utop")

@@ -76,9 +76,12 @@
 
 #define MICROPY_HEAP_NAME(node) CONCAT(DT_NODE_FULL_NAME_TOKEN(node), _heap)
 
+/* DT_STRING is broadly equivalent to LINKER_DT_NODE_REGION_NAME for this purpose
+ * The caveat is names intended to be tokenized will not be, however this should be extremely rare.
+ */
 #define MICROPY_HEAP_DEFINE(node) \
     static char MICROPY_HEAP_NAME(node)[DT_PROP(node, size)] \
-    Z_GENERIC_SECTION(LINKER_DT_NODE_REGION_NAME(DT_PROP(node, memory_region)));
+    Z_GENERIC_SECTION(DT_STRING_UNQUOTED(DT_PROP(node, memory_region), zephyr_memory_region));
 
 DT_FOREACH_STATUS_OKAY(micropython_heap, MICROPY_HEAP_DEFINE)
 

@@ -70,6 +70,27 @@ static mp_obj_t mod_shell_exec(mp_obj_t cmd_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(mod_shell_exec_obj, mod_shell_exec);
 #endif // CONFIG_SHELL_BACKEND_SERIAL
 
+#ifdef CONFIG_SYS_HEAP_RUNTIME_STATS
+/* Zephyr system heap */
+extern struct sys_heap _system_heap;
+static mp_obj_t mod_system_heap_stats(void) {
+    struct sys_memory_stats stats;
+    int ret = sys_heap_runtime_stats_get(&_system_heap, &stats);
+    if (ret != 0) {
+        mp_raise_msg_varg(&mp_type_RuntimeError,
+            MP_ERROR_TEXT("failed to get Zephyr system heap statistics: %d"), ret);
+    }
+    mp_obj_t tobj[] = {
+        mp_obj_new_int(stats.free_bytes),
+        mp_obj_new_int(stats.allocated_bytes),
+        mp_obj_new_int(stats.max_allocated_bytes),
+    };
+    return mp_obj_new_tuple(ARRAY_SIZE(tobj), tobj);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_system_heap_stats_obj, mod_system_heap_stats);
+#endif
+
 static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zephyr) },
     { MP_ROM_QSTR(MP_QSTR_is_preempt_thread), MP_ROM_PTR(&mod_is_preempt_thread_obj) },
@@ -79,6 +100,9 @@ static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #endif
     #ifdef CONFIG_SHELL_BACKEND_SERIAL
     { MP_ROM_QSTR(MP_QSTR_shell_exec), MP_ROM_PTR(&mod_shell_exec_obj) },
+    #endif
+    #ifdef CONFIG_SYS_HEAP_RUNTIME_STATS
+    { MP_ROM_QSTR(MP_QSTR_system_heap_stats), MP_ROM_PTR(&mod_system_heap_stats_obj) },
     #endif
     #ifdef CONFIG_DISK_ACCESS
     { MP_ROM_QSTR(MP_QSTR_DiskAccess), MP_ROM_PTR(&zephyr_disk_access_type) },

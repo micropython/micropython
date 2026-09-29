@@ -1,0 +1,17 @@
+# Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
+# SPDX-License-Identifier: Apache-2.0
+
+title: Mock memory-region to fix misuse of zephyr,memory-region
+
+description: |
+    Mock a zephyr,memory-region node to fix platforms misusing it causing the linker section name to
+    not match the string name used.
+
+compatible: "micropython,bad-region"
+
+properties:
+  zephyr,memory-region:
+    type: string
+    required: true
+    description: |
+      Name of linker section to use.
