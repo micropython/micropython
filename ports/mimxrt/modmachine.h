@@ -31,6 +31,9 @@
 
 extern const mp_obj_type_t machine_can_type;
 
+void machine_init(void);
+void machine_set_soft_reset(void);
+
 void machine_adc_init(void);
 void machine_can_irq_deinit(void);
 void machine_pin_irq_deinit(void);
