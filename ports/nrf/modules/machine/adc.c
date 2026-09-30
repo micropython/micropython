@@ -112,9 +112,12 @@ static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t o, mp_print_k
 
 // for make_new
 static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id };
+    enum { ARG_id, ARG_sample_ns };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1) } },
+        #if defined(NRF52_SERIES)
+        { MP_QSTR_sample_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 3000} },
+        #endif
     };
 
     // parse args
@@ -125,6 +128,24 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     const machine_adc_obj_t *self = &machine_adc_obj[adc_id];
 
     #if defined(NRF52_SERIES)
+    // Use the shortest acquisition time that is at least sample_ns, or the longest
+    // available one.  Sources with a high impedance need a longer acquisition time.
+    mp_int_t sample_ns = args[ARG_sample_ns].u_int;
+    nrf_saadc_acqtime_t acq_time;
+    if (sample_ns <= 3000) {
+        acq_time = NRF_SAADC_ACQTIME_3US;
+    } else if (sample_ns <= 5000) {
+        acq_time = NRF_SAADC_ACQTIME_5US;
+    } else if (sample_ns <= 10000) {
+        acq_time = NRF_SAADC_ACQTIME_10US;
+    } else if (sample_ns <= 15000) {
+        acq_time = NRF_SAADC_ACQTIME_15US;
+    } else if (sample_ns <= 20000) {
+        acq_time = NRF_SAADC_ACQTIME_20US;
+    } else {
+        acq_time = NRF_SAADC_ACQTIME_40US;
+    }
+
     const nrfx_saadc_channel_t config = {                                                           \
         .channel_config =
         {
@@ -132,7 +153,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
             .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
             .gain = NRF_SAADC_GAIN1_4,
             .reference = NRF_SAADC_REFERENCE_VDD4,
-            .acq_time = NRF_SAADC_ACQTIME_3US,
+            .acq_time = acq_time,
             .mode = NRF_SAADC_MODE_SINGLE_ENDED,
             .burst = NRF_SAADC_BURST_DISABLED,
         },
