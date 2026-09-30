@@ -25,16 +25,136 @@
  */
 
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
 #include <sys/time.h>
+#include <sys/select.h>
 #include <fcntl.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
+
+#ifdef __linux__
+#include <sys/eventfd.h>
+// An eventfd is read and written as a 64-bit counter.
+typedef uint64_t wake_event_token_t;
+#else
+// The self-pipe carries one byte per wakeup.
+typedef uint8_t wake_event_token_t;
+#endif
+
+// The wake event: a Linux eventfd, or a self-pipe elsewhere.  Reading
+// wake_event_fd drains it, writing wake_event_wr_fd raises it; on Linux both
+// are the same descriptor, and both are negative when not initialised.
+static int wake_event_fd = -1;
+static int wake_event_wr_fd = -1;
+
+#ifndef __linux__
+static int set_cloexec_nonblock(int fd) {
+    // pipe2() would do this atomically at creation but is absent on macOS.
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+        return -1;
+    }
+    return fcntl(fd, F_SETFD, FD_CLOEXEC);
+}
+#endif
+
+void mp_hal_wake_event_init(void) {
+    #ifdef __linux__
+    wake_event_fd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
+    wake_event_wr_fd = wake_event_fd;
+    #else
+    int fds[2];
+    if (pipe(fds) == 0) {
+        if (set_cloexec_nonblock(fds[0]) == 0 && set_cloexec_nonblock(fds[1]) == 0) {
+            wake_event_fd = fds[0];
+            wake_event_wr_fd = fds[1];
+        } else {
+            close(fds[0]);
+            close(fds[1]);
+        }
+    }
+    #endif
+    if (wake_event_fd < 0) {
+        fprintf(stderr, "FATAL: cannot create wake event: %s\n", strerror(errno));
+        exit(1);
+    }
+    if (wake_event_fd >= FD_SETSIZE) {
+        // Waiting on it uses select(), and FD_SET() is undefined from here up.
+        fprintf(stderr, "FATAL: wake event fd %d exceeds FD_SETSIZE\n", wake_event_fd);
+        exit(1);
+    }
+}
+
+void mp_hal_wake_event_deinit(void) {
+    // Cleared before closing, so a concurrent raise is dropped rather than
+    // written to a reused descriptor.
+    int rd = wake_event_fd;
+    int wr = wake_event_wr_fd;
+    wake_event_fd = -1;
+    wake_event_wr_fd = -1;
+    if (wr != rd) {
+        close(wr);
+    }
+    close(rd);
+}
+
+static void wake_event_drain(int fd) {
+    // Empty it fully or the next wait returns at once: an eventfd reads its
+    // counter in one go, a self-pipe holds a byte per raise.
+    char buf[64];
+    while (read(fd, buf, sizeof(buf)) > 0) {
+    }
+}
+
+void mp_hal_signal_event(void) {
+    int fd = wake_event_wr_fd;
+    if (fd < 0) {
+        return;
+    }
+    // Reachable from a signal handler, so no allocation, and errno is
+    // preserved.  A failed write means the event is already raised.
+    int errno_save = errno;
+    wake_event_token_t token = 1;
+    ssize_t ret = write(fd, &token, sizeof(token));
+    (void)ret;
+    errno = errno_save;
+}
+
+int mp_hal_wake_event_wait_tv(struct timeval *tv) {
+    // Only the thread that runs scheduled callbacks may consume the event: one
+    // taken by another thread is one the thread that can act on it never sees.
+    // Other threads just wait out the timeout.
+    int fd = wake_event_fd;
+    if (fd < 0 || !mp_sched_thread_can_run_callbacks()) {
+        return select(0, NULL, NULL, NULL, tv);
+    }
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
+    int ret = select(fd + 1, &rfds, NULL, NULL, tv);
+    if (ret > 0) {
+        wake_event_drain(fd);
+        errno = EINTR;
+        return -1;
+    }
+    return ret;
+}
+
+void mp_hal_wake_event_wait_ms(mp_uint_t timeout_ms) {
+    if (timeout_ms == MP_HAL_WAKE_EVENT_FOREVER) {
+        mp_hal_wake_event_wait_tv(NULL);
+        return;
+    }
+    struct timeval tv = {timeout_ms / 1000, (timeout_ms % 1000) * 1000};
+    mp_hal_wake_event_wait_tv(&tv);
+}
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 25)
@@ -244,8 +364,11 @@ uint64_t mp_hal_time_ns(void) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     if (ms) {
         mp_uint_t start = mp_hal_ticks_ms();
-        while (mp_hal_ticks_ms() - start < ms) {
-            mp_event_wait_ms(1);
+        mp_uint_t elapsed = 0;
+        // The wait can return early, so loop until the time is up.
+        while (elapsed < ms) {
+            mp_event_wait_ms(ms - elapsed);
+            elapsed = mp_hal_ticks_ms() - start;
         }
     } else {
         mp_handle_pending(true);
