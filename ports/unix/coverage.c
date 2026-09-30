@@ -274,6 +274,16 @@ static mp_obj_t extra_coverage(void) {
         void *p = gc_alloc(4, 0);
         mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 0, false));
 
+        // using gc_realloc to resize a block with a finaliser, to test that
+        // the block is relocated and the finaliser bit is copied
+        p = gc_alloc(4, GC_ALLOC_FLAG_HAS_FINALISER);
+        void *q = gc_alloc(4, 0);
+        mp_printf(&mp_plat_print, "p==q:%d p-bits:%x q-bits:%x\n", p == q, gc_meta_bits(p), gc_meta_bits(q));
+        void *p_realloc = gc_realloc(p, 128, true);
+        mp_printf(&mp_plat_print, "p==p_realloc:%d p_realloc-bits:%x\n", p == p_realloc, gc_meta_bits(p_realloc));
+        gc_free(p_realloc);
+        gc_free(q);
+
         // calling gc_nbytes with a non-heap pointer
         mp_printf(&mp_plat_print, "%d\n", (int)gc_nbytes(NULL));
 

@@ -32,6 +32,8 @@ abc
 <9223372036854775807>
 # GC
 0
+p==q:0 p-bits:5 q-bits:1
+p==p_realloc:0 p_realloc-bits:5
 0
 1
 1
