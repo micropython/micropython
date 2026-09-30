@@ -1,0 +1,7 @@
+--- instance0 ---
+bitstream call ok: True
+bitstream rejects short timing: True
+bitstream tx ok: True
+--- instance1 ---
+bitstream rx ok: True
+data match: True
