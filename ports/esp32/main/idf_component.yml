@@ -9,21 +9,17 @@ dependencies:
     # Can be removed once fix is released in espressif/tinyusb
     git: https://github.com/micropython/tinyusb-espressif.git
     version: cherrypick/dwc2_zlp_fix
-  # esp_hosted / esp_wifi_remote: 0.15.x / 2.7.x don't build against IDF v6
-  # (the wifi_remote sources for v6.1 are only in 1.6.0+). Pick the version
-  # per IDF version so the 5.x lockfiles keep the existing pins.
+  # esp_hosted / esp_wifi_remote: pinned to the versions that build against
+  # both IDF v5.x and v6.x (older 0.15.x / 2.7.x don't build against IDF v6,
+  # the wifi_remote sources for v6.1 are only in 1.6.0+).
   espressif/esp_hosted:
-    matches:
-      - if: "target == esp32p4 && idf_version < 6.0"
-        version: "2.7.0"
-      - if: "target == esp32p4 && idf_version >= 6.0"
-        version: "2.12.8"
+    version: "2.12.8"
+    rules:
+      - if: "target == esp32p4"
   espressif/esp_wifi_remote:
-    matches:
-      - if: "target == esp32p4 && idf_version < 6.0"
-        version: "0.15.2"
-      - if: "target == esp32p4 && idf_version >= 6.0"
-        version: "1.6.0"
+    version: "1.6.0"
+    rules:
+      - if: "target == esp32p4"
   espressif/lan867x:
     version: "~1.0.0"
     rules:

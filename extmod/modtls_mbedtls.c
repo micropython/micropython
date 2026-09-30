@@ -47,12 +47,12 @@
 #include "mbedtls/version.h"
 
 #if MBEDTLS_VERSION_MAJOR < 4
-// mbedtls 3.x and below (ESP-IDF v5): explicit entropy/ctr_drbg contexts
+// mbedtls 3.x and below: explicit entropy/ctr_drbg contexts
 // are required for the RNG fed into ssl_config_defaults / ctr_drbg_seed.
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #else
-// mbedtls 4.x (ESP-IDF v6+): RNG is provided internally by PSA Crypto, so
+// mbedtls 4.x: RNG is provided internally by PSA Crypto, so
 // entropy/ctr_drbg are gone. psa_crypto_init() (called below) sets it up.
 #include "psa/crypto.h"
 #endif

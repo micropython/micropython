@@ -40,7 +40,7 @@
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/version.h"
 #if MBEDTLS_VERSION_MAJOR >= 4
-// mbedtls 4.x (ESP-IDF v6+): legacy hash API removed, use PSA Crypto.
+// mbedtls 4.x: legacy hash API removed, use PSA Crypto.
 #include "psa/crypto.h"
 #else
 #include "mbedtls/sha256.h"
@@ -82,8 +82,33 @@ static void hashlib_ensure_not_final(mp_obj_hash_t *self) {
 }
 
 #if MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR >= 4
-// Shared PSA Crypto helpers for mbedtls 4.x (ESP-IDF v6+). Each hash type
-// wraps these with its psa_algorithm_t constant; see the PSA_ALG_* uses below.
+
+// Shared PSA Crypto implementation for mbedtls 4.x. All hash types use these
+// functions; the algorithm is derived from the object's type.
+
+static const mp_obj_type_t hashlib_sha256_type;
+#if MICROPY_PY_HASHLIB_SHA1
+static const mp_obj_type_t hashlib_sha1_type;
+#endif
+#if MICROPY_PY_HASHLIB_MD5
+static const mp_obj_type_t hashlib_md5_type;
+#endif
+
+// Return the PSA algorithm of a hash type.
+static psa_algorithm_t hashlib_psa_alg_of_type(const mp_obj_type_t *type) {
+    #if MICROPY_PY_HASHLIB_SHA1
+    if (type == &hashlib_sha1_type) {
+        return PSA_ALG_SHA_1;
+    }
+    #endif
+    #if MICROPY_PY_HASHLIB_MD5
+    if (type == &hashlib_md5_type) {
+        return PSA_ALG_MD5;
+    }
+    #endif
+    return PSA_ALG_SHA_256;
+}
+
 static void hashlib_psa_setup(mp_obj_hash_t *o, psa_algorithm_t alg) {
     // Idempotent per the PSA spec, and required before any hash operation
     // (hashlib may be used before any TLS context initialised PSA).
@@ -95,15 +120,23 @@ static void hashlib_psa_setup(mp_obj_hash_t *o, psa_algorithm_t alg) {
     }
 }
 
-static void hashlib_psa_update(mp_obj_hash_t *self, const mp_buffer_info_t *bufinfo) {
+static mp_obj_t hashlib_psa_update(mp_obj_t self_in, mp_obj_t arg) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
     psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
-    if (psa_hash_update(op, bufinfo->buf, bufinfo->len) != PSA_SUCCESS) {
+    if (psa_hash_update(op, bufinfo.buf, bufinfo.len) != PSA_SUCCESS) {
         mp_raise_ValueError(MP_ERROR_TEXT("hash update failed"));
     }
+    return mp_const_none;
 }
 
-static mp_obj_t hashlib_psa_digest(mp_obj_hash_t *self, psa_algorithm_t alg) {
+static mp_obj_t hashlib_psa_digest(mp_obj_t self_in) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    hashlib_ensure_not_final(self);
     self->final = true;
+    psa_algorithm_t alg = hashlib_psa_alg_of_type(self->base.type);
     psa_hash_operation_t *op = (psa_hash_operation_t *)&self->state;
     vstr_t vstr;
     vstr_init_len(&vstr, PSA_HASH_LENGTH(alg));
@@ -113,42 +146,32 @@ static mp_obj_t hashlib_psa_digest(mp_obj_hash_t *self, psa_algorithm_t alg) {
     }
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-#endif
 
-#if MICROPY_PY_HASHLIB_SHA256
-static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
-
-#if MICROPY_SSL_MBEDTLS
-
-#if MBEDTLS_VERSION_MAJOR >= 4
-
-static mp_obj_t hashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t hashlib_psa_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(psa_hash_operation_t), type);
     o->final = false;
-    hashlib_psa_setup(o, PSA_ALG_SHA_256);
+    hashlib_psa_setup(o, hashlib_psa_alg_of_type(type));
     if (n_args == 1) {
-        hashlib_sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
+        hashlib_psa_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
     return MP_OBJ_FROM_PTR(o);
 }
+#endif
 
-static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
-    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
-    hashlib_ensure_not_final(self);
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    hashlib_psa_update(self, &bufinfo);
-    return mp_const_none;
-}
+#if MICROPY_PY_HASHLIB_SHA256
 
-static mp_obj_t hashlib_sha256_digest(mp_obj_t self_in) {
-    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
-    hashlib_ensure_not_final(self);
-    return hashlib_psa_digest(self, PSA_ALG_SHA_256);
-}
-
+#if MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR >= 4
+// With PSA Crypto (mbedtls 4.x) all hash types share the generic
+// hashlib_psa_* implementations above; the algorithm is derived from the
+// object's type.
+#define hashlib_sha256_make_new hashlib_psa_make_new
+#define hashlib_sha256_update   hashlib_psa_update
+#define hashlib_sha256_digest   hashlib_psa_digest
 #else
+static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
+
+#if MICROPY_SSL_MBEDTLS
 
 static mp_obj_t hashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
@@ -180,8 +203,6 @@ static mp_obj_t hashlib_sha256_digest(mp_obj_t self_in) {
     mbedtls_sha256_finish((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-
-#endif // MBEDTLS_VERSION_MAJOR >= 4
 
 #else
 
@@ -217,6 +238,7 @@ static mp_obj_t hashlib_sha256_digest(mp_obj_t self_in) {
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
+#endif // !MICROPY_SSL_MBEDTLS || MBEDTLS_VERSION_MAJOR < 4
 
 static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_sha256_update_obj, hashlib_sha256_update);
 static MP_DEFINE_CONST_FUN_OBJ_1(hashlib_sha256_digest_obj, hashlib_sha256_digest);
@@ -238,6 +260,12 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 #endif
 
 #if MICROPY_PY_HASHLIB_SHA1
+
+#if MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR >= 4
+#define hashlib_sha1_make_new hashlib_psa_make_new
+#define hashlib_sha1_update   hashlib_psa_update
+#define hashlib_sha1_digest   hashlib_psa_digest
+#else
 static mp_obj_t hashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_AXTLS
@@ -272,37 +300,7 @@ static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
 }
 #endif
 
-#if MICROPY_SSL_MBEDTLS
-
-#if MBEDTLS_VERSION_MAJOR >= 4
-
-static mp_obj_t hashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(psa_hash_operation_t), type);
-    o->final = false;
-    hashlib_psa_setup(o, PSA_ALG_SHA_1);
-    if (n_args == 1) {
-        hashlib_sha1_update(MP_OBJ_FROM_PTR(o), args[0]);
-    }
-    return MP_OBJ_FROM_PTR(o);
-}
-
-static mp_obj_t hashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg) {
-    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
-    hashlib_ensure_not_final(self);
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    hashlib_psa_update(self, &bufinfo);
-    return mp_const_none;
-}
-
-static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
-    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
-    hashlib_ensure_not_final(self);
-    return hashlib_psa_digest(self, PSA_ALG_SHA_1);
-}
-
-#else
+#if MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR < 4
 
 static mp_obj_t hashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
@@ -335,8 +333,8 @@ static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
     mbedtls_sha1_free((mbedtls_sha1_context *)self->state);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-#endif // MBEDTLS_VERSION_MAJOR >= 4
-#endif
+#endif // MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR < 4
+#endif // !MICROPY_SSL_MBEDTLS || MBEDTLS_VERSION_MAJOR < 4
 
 static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_sha1_update_obj, hashlib_sha1_update);
 static MP_DEFINE_CONST_FUN_OBJ_1(hashlib_sha1_digest_obj, hashlib_sha1_digest);
@@ -357,6 +355,12 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 #endif
 
 #if MICROPY_PY_HASHLIB_MD5
+
+#if MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR >= 4
+#define hashlib_md5_make_new hashlib_psa_make_new
+#define hashlib_md5_update   hashlib_psa_update
+#define hashlib_md5_digest   hashlib_psa_digest
+#else
 static mp_obj_t hashlib_md5_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_AXTLS
@@ -391,37 +395,7 @@ static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
 }
 #endif // MICROPY_SSL_AXTLS
 
-#if MICROPY_SSL_MBEDTLS
-
-#if MBEDTLS_VERSION_MAJOR >= 4
-
-static mp_obj_t hashlib_md5_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(psa_hash_operation_t), type);
-    o->final = false;
-    hashlib_psa_setup(o, PSA_ALG_MD5);
-    if (n_args == 1) {
-        hashlib_md5_update(MP_OBJ_FROM_PTR(o), args[0]);
-    }
-    return MP_OBJ_FROM_PTR(o);
-}
-
-static mp_obj_t hashlib_md5_update(mp_obj_t self_in, mp_obj_t arg) {
-    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
-    hashlib_ensure_not_final(self);
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    hashlib_psa_update(self, &bufinfo);
-    return mp_const_none;
-}
-
-static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
-    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
-    hashlib_ensure_not_final(self);
-    return hashlib_psa_digest(self, PSA_ALG_MD5);
-}
-
-#else
+#if MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR < 4
 
 static mp_obj_t hashlib_md5_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
@@ -454,8 +428,8 @@ static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
     mbedtls_md5_free((mbedtls_md5_context *)self->state);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-#endif // MBEDTLS_VERSION_MAJOR >= 4
-#endif // MICROPY_SSL_MBEDTLS
+#endif // MICROPY_SSL_MBEDTLS && MBEDTLS_VERSION_MAJOR < 4
+#endif // !MICROPY_SSL_MBEDTLS || MBEDTLS_VERSION_MAJOR < 4
 
 static MP_DEFINE_CONST_FUN_OBJ_2(hashlib_md5_update_obj, hashlib_md5_update);
 static MP_DEFINE_CONST_FUN_OBJ_1(hashlib_md5_digest_obj, hashlib_md5_digest);

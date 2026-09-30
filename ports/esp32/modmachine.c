@@ -41,6 +41,13 @@
 #include "modmachine.h"
 #include "machine_rtc.h"
 
+// IDF v6 renamed esp_deep_sleep_enable_gpio_wakeup() (same args).
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#define GPIO_WAKEUP_FUNC esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown
+#else
+#define GPIO_WAKEUP_FUNC esp_deep_sleep_enable_gpio_wakeup
+#endif
+
 #if SOC_TOUCH_SENSOR_SUPPORTED
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
 #else
@@ -201,12 +208,7 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
 
         if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
             #if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
-            // IDF v6 renamed esp_deep_sleep_enable_gpio_wakeup() (same args).
-            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
-            if (ESP_OK != esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(
-            #else
-            if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(
-                #endif
+            if (ESP_OK != GPIO_WAKEUP_FUNC(
                 machine_rtc_config.gpio_pins,
                 machine_rtc_config.gpio_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("wake-up pin not supported"));

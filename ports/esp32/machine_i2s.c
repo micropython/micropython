@@ -49,21 +49,12 @@
 // The size of 240 bytes is an engineering optimum that balances transfer performance with an acceptable use of heap space
 #define SIZEOF_TRANSFORM_BUFFER_IN_BYTES (240)
 
-// SOC_I2S_NUM (and the i2s_port_t/I2S_NUM_AUTO helpers usable as a port
-// count) were removed in IDF v6: I2S_NUM_AUTO is now -1, so it can no longer
-// be used as a loop/validity bound. Recreate the controller count per target
-// (values match the IDF v5 soc_caps.h).
+// SOC_I2S_NUM was removed from soc_caps.h in IDF v6 (and I2S_NUM_AUTO is now
+// -1, so it can no longer be used as a loop/validity bound). Fall back to the
+// I2S controller count from the I2S LL driver.
 #ifndef SOC_I2S_NUM
-#if CONFIG_IDF_TARGET_ESP32P4
-#define SOC_I2S_NUM (3U)
-#elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6) || \
-    defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32C2)
-#define SOC_I2S_NUM (1U)
-#else
-// ESP32, ESP32-S3, ESP32-S31 and any future target default to 2.
-#define SOC_I2S_NUM (2U)
-#endif
+#include "hal/i2s_periph.h"
+#define SOC_I2S_NUM I2S_LL_GET(INST_NUM)
 #endif
 
 typedef enum {

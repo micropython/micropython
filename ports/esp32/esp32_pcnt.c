@@ -23,9 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * ESP32 PCNT pulse counter, using the IDF "pulse_cnt" driver API (present
- * since IDF v5.2, and the only API from IDF v6 where the legacy driver/pcnt.h
- * was removed).
+ * ESP32 PCNT pulse counter. This driver uses the newer IDF "pulse_cnt" driver API
+ * internally, but the Python API is based on the legacy driver/pcnt.h driver which was
+ * removed in ESP-IDF v6.
  *
  * Mapping from the legacy five-event model:
  *   - PCNT_EVT_ZERO    -> watch point at 0 (dedicated zero-cross event)
@@ -64,15 +64,27 @@
 #define PCNT_EVT_L_LIM   (1 << 3)
 #define PCNT_EVT_H_LIM   (1 << 4)
 
-// SOC_PCNT_UNITS_PER_GROUP was removed from soc_caps.h in IDF v6. Recreate
-// the per-target unit count (values match the IDF v5 soc_caps.h). Used only
-// to validate the user-supplied unit id.
+// The soc_caps.h names for the PCNT unit and channel counts moved around
+// between IDF versions: v5 defines SOC_PCNT_UNITS_PER_GROUP and
+// SOC_PCNT_CHANNELS_PER_UNIT, v6.0/6.1 define PCNT_LL_UNITS_PER_INST and
+// PCNT_LL_CHANS_PER_UNIT in hal/pcnt_ll.h, and v6.2 renamed the soc_caps.h
+// macros again to _SOC_CAPS_PCNT_UNITS_PER_INST/_SOC_CAPS_PCNT_CHANS_PER_UNIT.
+// Alias to the v5 names, used to validate the user-supplied unit id and
+// channel argument.
 #ifndef SOC_PCNT_UNITS_PER_GROUP
-#if CONFIG_IDF_TARGET_ESP32
-#define SOC_PCNT_UNITS_PER_GROUP (8)
+#ifdef _SOC_CAPS_PCNT_UNITS_PER_INST
+#define SOC_PCNT_UNITS_PER_GROUP _SOC_CAPS_PCNT_UNITS_PER_INST
 #else
-// All other supported targets (S2, S3, C2, C3, C5, C6, H2, P4, S31) have 4.
-#define SOC_PCNT_UNITS_PER_GROUP (4)
+#include "hal/pcnt_ll.h"
+#define SOC_PCNT_UNITS_PER_GROUP PCNT_LL_GET(UNITS_PER_INST)
+#endif
+#endif
+
+#ifndef SOC_PCNT_CHANNELS_PER_UNIT
+#ifdef _SOC_CAPS_PCNT_CHANS_PER_UNIT
+#define SOC_PCNT_CHANNELS_PER_UNIT _SOC_CAPS_PCNT_CHANS_PER_UNIT
+#else
+#define SOC_PCNT_CHANNELS_PER_UNIT PCNT_LL_GET(CHANS_PER_UNIT)
 #endif
 #endif
 
@@ -314,7 +326,7 @@ static void esp32_pcnt_init_helper(esp32_pcnt_obj_t *self, size_t n_pos_args, co
     // The pin/mode_pin, rising, falling, mode_low, mode_high args all apply
     // to the channel (defaults to channel zero).
     mp_uint_t channel = args[ARG_channel].u_int;
-    if (channel >= 2) {
+    if (channel >= SOC_PCNT_CHANNELS_PER_UNIT) {
         mp_raise_ValueError(MP_ERROR_TEXT("channel"));
     }
 
@@ -360,20 +372,22 @@ static void esp32_pcnt_init_helper(esp32_pcnt_obj_t *self, size_t n_pos_args, co
         ) {
         // The numeric values of the legacy PCNT_COUNT_*/PCNT_MODE_* constants
         // (exposed to Python) match the new pcnt_channel_*_action_t enums.
-        mp_int_t rising = args[ARG_rising].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_EDGE_ACTION_HOLD : mp_obj_get_int(args[ARG_rising].u_obj);
-        mp_int_t falling = args[ARG_falling].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_EDGE_ACTION_HOLD : mp_obj_get_int(args[ARG_falling].u_obj);
-        mp_int_t mode_low = args[ARG_mode_low].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_LEVEL_ACTION_KEEP : mp_obj_get_int(args[ARG_mode_low].u_obj);
-        mp_int_t mode_high = args[ARG_mode_high].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_LEVEL_ACTION_KEEP : mp_obj_get_int(args[ARG_mode_high].u_obj);
-        if (rising < 0 || rising > PCNT_CHANNEL_EDGE_ACTION_DECREASE) {
+        // Negative inputs become large values when assigned to the mp_uint_t
+        // variables, so only an upper-bound check is needed.
+        mp_uint_t rising = args[ARG_rising].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_EDGE_ACTION_HOLD : mp_obj_get_int(args[ARG_rising].u_obj);
+        mp_uint_t falling = args[ARG_falling].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_EDGE_ACTION_HOLD : mp_obj_get_int(args[ARG_falling].u_obj);
+        mp_uint_t mode_low = args[ARG_mode_low].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_LEVEL_ACTION_KEEP : mp_obj_get_int(args[ARG_mode_low].u_obj);
+        mp_uint_t mode_high = args[ARG_mode_high].u_obj == MP_OBJ_NULL ? PCNT_CHANNEL_LEVEL_ACTION_KEEP : mp_obj_get_int(args[ARG_mode_high].u_obj);
+        if (rising > PCNT_CHANNEL_EDGE_ACTION_DECREASE) {
             mp_raise_ValueError(MP_ERROR_TEXT("rising"));
         }
-        if (falling < 0 || falling > PCNT_CHANNEL_EDGE_ACTION_DECREASE) {
+        if (falling > PCNT_CHANNEL_EDGE_ACTION_DECREASE) {
             mp_raise_ValueError(MP_ERROR_TEXT("falling"));
         }
-        if (mode_low < 0 || mode_low > PCNT_CHANNEL_LEVEL_ACTION_HOLD) {
+        if (mode_low > PCNT_CHANNEL_LEVEL_ACTION_HOLD) {
             mp_raise_ValueError(MP_ERROR_TEXT("mode_low"));
         }
-        if (mode_high < 0 || mode_high > PCNT_CHANNEL_LEVEL_ACTION_HOLD) {
+        if (mode_high > PCNT_CHANNEL_LEVEL_ACTION_HOLD) {
             mp_raise_ValueError(MP_ERROR_TEXT("mode_high"));
         }
         if (self->channels[channel] == NULL) {
