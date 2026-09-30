@@ -1122,6 +1122,32 @@ void gc_free(void *ptr) {
     #endif
 }
 
+// Get the ATB, FTB and WTB bits corresponding to the GC pointer.
+// `ptr` must be a valid GC block.
+uint32_t gc_meta_bits(void *ptr) {
+    // Get the GC area and block number of the pointer.
+    mp_state_mem_area_t *area;
+    #if MICROPY_GC_SPLIT_HEAP
+    area = gc_get_ptr_area(ptr);
+    assert(area);
+    #else
+    assert(VERIFY_PTR(ptr));
+    area = &MP_STATE_MEM(area);
+    #endif
+    size_t block = BLOCK_FROM_PTR(area, ptr);
+
+    // Get the GC bits associated with the pointer.
+    uint32_t bits = ATB_GET_KIND(area, block);
+    #if MICROPY_ENABLE_FINALISER
+    bits |= FTB_GET(area, block) << 2;
+    #endif
+    #if MICROPY_PY_WEAKREF
+    bits |= WTB_GET(area, block) << 3;
+    #endif
+
+    return bits;
+}
+
 size_t gc_nbytes(const void *ptr) {
     GC_ENTER();
 
