@@ -1209,7 +1209,7 @@ void gc_free(void *ptr) {
     #endif
 }
 
-// Get the ATB, FTB and WTB bits corresponding to the GC pointer.
+// Get the ATB, FTB, WTB and STB bits corresponding to the GC pointer.
 // `ptr` must be a valid GC block.
 uint32_t gc_meta_bits(void *ptr) {
     // Get the GC area and block number of the pointer.
@@ -1230,6 +1230,9 @@ uint32_t gc_meta_bits(void *ptr) {
     #endif
     #if MICROPY_PY_WEAKREF
     bits |= WTB_GET(area, block) << 3;
+    #endif
+    #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+    bits |= STB_GET(area, block) << 4;
     #endif
 
     return bits;
