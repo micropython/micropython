@@ -47,6 +47,17 @@ extern const mp_obj_type_t mp_type_JsException;
 void external_call_depth_inc(void);
 void external_call_depth_dec(mp_obj_t root_obj);
 
+#if MICROPY_JSPI
+// JSPI suspension gate, maintained in main.c; see the comment there.
+bool mp_js_can_suspend(void);
+bool mp_js_suspension_active(void);
+void mp_js_suspension_begin(void);
+void mp_js_suspension_end(void);
+#endif
+
+// Wrap a JsProxy of a JS Error into a raisable JsException instance.
+mp_obj_t mp_obj_jsproxy_make_js_exception(mp_obj_t error);
+
 void proxy_c_init(void);
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value);
 void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out);
