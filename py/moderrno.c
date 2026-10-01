@@ -43,6 +43,7 @@
     X(EAGAIN) \
     X(ENOMEM) \
     X(EACCES) \
+    X(EBUSY) \
     X(EEXIST) \
     X(ENODEV) \
     X(EISDIR) \
@@ -54,7 +55,6 @@
     X(ENOBUFS) \
     X(ENOTCONN) \
     X(ETIMEDOUT) \
-    X(ECONNREFUSED) \
     X(EHOSTUNREACH) \
     X(EALREADY) \
     X(EINPROGRESS) \
