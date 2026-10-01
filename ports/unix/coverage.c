@@ -284,6 +284,17 @@ static mp_obj_t extra_coverage(void) {
         gc_free(p_realloc);
         gc_free(q);
 
+        p = gc_alloc(4, GC_ALLOC_FLAG_CONTAINS_NO_GC_POINTERS);
+        q = gc_alloc(4, 0);
+        mp_printf(&mp_plat_print, "p==q:%d p-bits:%x q-bits:%x\n", p == q, gc_meta_bits(p), gc_meta_bits(q));
+        p_realloc = gc_realloc(p, 128, true);
+        mp_printf(&mp_plat_print, "p==p_realloc:%d p_realloc-bits:%x\n", p == p_realloc, gc_meta_bits(p_realloc));
+        gc_buf_contains_ptrs((byte *)p_realloc + 64);
+        mp_printf(&mp_plat_print, "p_realloc-bits:%x\n", gc_meta_bits(p_realloc));
+        gc_buf_contains_ptrs(NULL);
+        gc_free(p_realloc);
+        gc_free(q);
+
         // calling gc_nbytes with a non-heap pointer
         mp_printf(&mp_plat_print, "%d\n", (int)gc_nbytes(NULL));
 
