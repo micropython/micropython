@@ -55,7 +55,6 @@
     X(ENOBUFS) \
     X(ENOTCONN) \
     X(ETIMEDOUT) \
-    X(ECONNREFUSED) \
     X(EHOSTUNREACH) \
     X(EALREADY) \
     X(EINPROGRESS) \

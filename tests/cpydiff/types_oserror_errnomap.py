@@ -27,7 +27,6 @@ errno_list = [  # i.e. the set implemented by micropython
     errno.ENOBUFS,
     errno.ENOTCONN,
     errno.ETIMEDOUT,
-    errno.ECONNREFUSED,
     errno.EHOSTUNREACH,
     errno.EALREADY,
     errno.EINPROGRESS,
