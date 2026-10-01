@@ -71,6 +71,7 @@ enum {
 };
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags);
+void gc_buf_contains_ptrs(const void *ptr);
 void gc_free(void *ptr); // does not call finaliser
 uint32_t gc_meta_bits(void *ptr);
 size_t gc_nbytes(const void *ptr);
