@@ -933,6 +933,37 @@ void gc_weakref_mark(void *ptr) {
 }
 #endif
 
+void gc_buf_contains_ptrs(const void *ptr) {
+    #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+    GC_ENTER();
+
+    mp_state_mem_area_t *area;
+    #if MICROPY_GC_SPLIT_HEAP
+    area = gc_get_ptr_area(ptr);
+    #else
+    if (ptr >= (void *)MP_STATE_MEM(area).gc_pool_start && ptr < (void *)MP_STATE_MEM(area).gc_pool_end) {
+        area = &MP_STATE_MEM(area);
+    } else {
+        area = NULL;
+    }
+    #endif
+
+    if (area) {
+        size_t block = BLOCK_FROM_PTR(area, ptr);
+        if (ATB_GET_KIND(area, block) != AT_FREE) {
+            while (ATB_GET_KIND(area, block) == AT_TAIL) {
+                block -= 1;
+            }
+            STB_SET(area, block);
+        }
+    }
+
+    GC_EXIT();
+    #else
+    (void)ptr;
+    #endif
+}
+
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     // an object with a finaliser starts with a type pointer, so is never pointer-free
