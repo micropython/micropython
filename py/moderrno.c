@@ -43,6 +43,7 @@
     X(EAGAIN) \
     X(ENOMEM) \
     X(EACCES) \
+    X(EBUSY) \
     X(EEXIST) \
     X(ENODEV) \
     X(EISDIR) \

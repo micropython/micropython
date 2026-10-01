@@ -15,6 +15,7 @@ errno_list = [  # i.e. the set implemented by micropython
     errno.EAGAIN,
     errno.ENOMEM,
     errno.EACCES,
+    errno.EBUSY,
     errno.EEXIST,
     errno.ENODEV,
     errno.EISDIR,
