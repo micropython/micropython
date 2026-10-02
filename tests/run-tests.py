@@ -295,6 +295,7 @@ tests_requiring_slice = (
     "extmod/vfs_lfs.py",
     "extmod/vfs_rom.py",
     "float/string_format_modulo.py",
+    "micropython/buf_contains_ptrs.py",
     "micropython/builtin_execfile.py",
     "micropython/extreme_exc.py",
     "micropython/heapalloc_fail_bytearray.py",

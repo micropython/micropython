@@ -113,6 +113,9 @@ typedef struct _mp_state_mem_area_t {
     #if MICROPY_PY_WEAKREF
     byte *gc_weakref_table_start;
     #endif
+    #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+    byte *gc_scan_table_start;
+    #endif
     byte *gc_pool_start;
     byte *gc_pool_end;
 
