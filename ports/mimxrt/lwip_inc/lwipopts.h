@@ -11,7 +11,7 @@
 #ifndef MEM_SIZE
 #define MEM_SIZE                        (13 * 1024)
 #define TCP_MSS                         (1460)
-#define TCP_WND                         (7 * TCP_MSS)
+#define TCP_WND                         (5 * TCP_MSS)
 #define TCP_SND_BUF                     (6 * TCP_MSS)
 #define MEMP_NUM_TCP_SEG                (24)
 #define PBUF_POOL_SIZE                  (7)
