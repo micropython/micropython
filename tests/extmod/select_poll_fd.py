@@ -23,11 +23,13 @@ except OSError:
     print("SKIP")
     raise SystemExit
 
-# Register invalid file descriptor.
+# Register invalid file descriptor, then check the poller is still usable.
+poller = select.poll()
 try:
-    select.poll().register(-1)
+    poller.register(-1)
 except ValueError:
     print("ValueError")
+print(poller.poll(0))
 
 # Test polling stdout, it should be writable.
 poller = select.poll()
