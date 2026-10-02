@@ -175,6 +175,12 @@ static struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
                         continue;
                     }
 
+                    if (poll_obj->pollfd == NULL) {
+                        // Object doesn't have a file descriptor, so there's
+                        // nothing to update.
+                        continue;
+                    }
+
                     poll_obj->pollfd = new_fds + (poll_obj->pollfd - poll_set->pollfds);
                 }
 
