@@ -146,51 +146,54 @@ static void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
 // How much (in pollfds) to grow the allocation for poll_set->pollfds by.
 #define POLL_SET_ALLOC_INCREMENT (4)
 
+// Make sure poll_set->pollfds has a free slot, growing the allocation if needed.
+// After this call, poll_set_add_fd() will not allocate memory.
+static void poll_set_reserve_fd(poll_set_t *poll_set) {
+    if (poll_set->used < poll_set->max_used || poll_set->max_used < poll_set->alloc) {
+        // There is already a free slot.
+        return;
+    }
+
+    size_t new_alloc = poll_set->alloc + POLL_SET_ALLOC_INCREMENT;
+    // Try to grow in-place.
+    struct pollfd *new_fds = m_renew_maybe(struct pollfd, poll_set->pollfds, poll_set->alloc, new_alloc, false);
+    if (!new_fds) {
+        // Failed to grow in-place. Do a new allocation and copy over the pollfd values.
+        new_fds = m_new(struct pollfd, new_alloc);
+        memcpy(new_fds, poll_set->pollfds, sizeof(struct pollfd) * poll_set->alloc);
+
+        // Update existing poll_obj_t to update their pollfd field to
+        // point to the same offset inside the new allocation.
+        for (mp_uint_t i = 0; i < poll_set->map.alloc; ++i) {
+            if (!mp_map_slot_is_filled(&poll_set->map, i)) {
+                continue;
+            }
+
+            poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set->map.table[i].value);
+            if (poll_obj->pollfd == NULL) {
+                // Object doesn't have a file descriptor, so there's
+                // nothing to update.
+                continue;
+            }
+
+            poll_obj->pollfd = new_fds + (poll_obj->pollfd - poll_set->pollfds);
+        }
+
+        // Delete the old allocation.
+        m_del(struct pollfd, poll_set->pollfds, poll_set->alloc);
+    }
+
+    poll_set->pollfds = new_fds;
+    poll_set->alloc = new_alloc;
+}
+
 static struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
     struct pollfd *free_slot = NULL;
 
+    poll_set_reserve_fd(poll_set);
+
     if (poll_set->used == poll_set->max_used) {
-        // No free slots below max_used, so expand max_used (and possibly allocate).
-        if (poll_set->max_used >= poll_set->alloc) {
-            size_t new_alloc = poll_set->alloc + POLL_SET_ALLOC_INCREMENT;
-            // Try to grow in-place.
-            struct pollfd *new_fds = m_renew_maybe(struct pollfd, poll_set->pollfds, poll_set->alloc, new_alloc, false);
-            if (!new_fds) {
-                // Failed to grow in-place. Do a new allocation and copy over the pollfd values.
-                new_fds = m_new(struct pollfd, new_alloc);
-                memcpy(new_fds, poll_set->pollfds, sizeof(struct pollfd) * poll_set->alloc);
-
-                // Update existing poll_obj_t to update their pollfd field to
-                // point to the same offset inside the new allocation.
-                for (mp_uint_t i = 0; i < poll_set->map.alloc; ++i) {
-                    if (!mp_map_slot_is_filled(&poll_set->map, i)) {
-                        continue;
-                    }
-
-                    poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set->map.table[i].value);
-                    if (!poll_obj) {
-                        // This is the one we're currently adding,
-                        // poll_set_add_obj doesn't assign elem->value until
-                        // afterwards.
-                        continue;
-                    }
-
-                    if (poll_obj->pollfd == NULL) {
-                        // Object doesn't have a file descriptor, so there's
-                        // nothing to update.
-                        continue;
-                    }
-
-                    poll_obj->pollfd = new_fds + (poll_obj->pollfd - poll_set->pollfds);
-                }
-
-                // Delete the old allocation.
-                m_del(struct pollfd, poll_set->pollfds, poll_set->alloc);
-            }
-
-            poll_set->pollfds = new_fds;
-            poll_set->alloc = new_alloc;
-        }
+        // No free slots below max_used, so expand max_used.
         free_slot = &poll_set->pollfds[poll_set->max_used++];
     } else {
         // There should be a free slot below max_used.
@@ -236,12 +239,13 @@ static inline void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents)
 
 static void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t events, bool or_events) {
     for (mp_uint_t i = 0; i < obj_len; i++) {
-        mp_map_elem_t *elem = mp_map_lookup(&poll_set->map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-        if (elem->value == MP_OBJ_NULL) {
+        mp_obj_t key = mp_obj_id(obj[i]);
+        mp_map_elem_t *elem = mp_map_lookup(&poll_set->map, key, MP_MAP_LOOKUP);
+        if (elem == NULL) {
             // object not found; get its ioctl and add it to the poll list
 
-            // If an exception is raised below when adding the new object then the map entry for that
-            // object remains unpopulated, and methods like poll() may crash.  This case is not handled.
+            // Everything that may raise an exception is done before the object is added to
+            // the map and to pollfds, so a failed registration leaves the poll set unchanged.
 
             poll_obj_t *poll_obj = m_new_obj(poll_obj_t);
             poll_obj->obj = obj[i];
@@ -266,15 +270,24 @@ static void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_
                 }
             }
             if (fd >= 0) {
+                // Make room in pollfds now, so adding the fd below can't fail.
+                poll_set_reserve_fd(poll_set);
+            }
+            #else
+            const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
+            poll_obj->ioctl = stream_p->ioctl;
+            #endif
+
+            elem = mp_map_lookup(&poll_set->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+
+            #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+            if (fd >= 0) {
                 // Object has a file descriptor so add it to pollfds.
                 poll_obj->pollfd = poll_set_add_fd(poll_set, fd);
             } else {
                 // Object doesn't have a file descriptor.
                 poll_obj->pollfd = NULL;
             }
-            #else
-            const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
-            poll_obj->ioctl = stream_p->ioctl;
             #endif
 
             poll_obj_set_events(poll_obj, events);
