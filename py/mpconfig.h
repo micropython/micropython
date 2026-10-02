@@ -598,6 +598,12 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_COMP_CONST (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to treat "TYPE_CHECKING = False" as "_TYPE_CHECKING = const(False)", so that
+// "if TYPE_CHECKING:" blocks are removed at compile time (requires MICROPY_COMP_CONST)
+#ifndef MICROPY_COMP_TYPE_CHECKING
+#define MICROPY_COMP_TYPE_CHECKING (MICROPY_COMP_CONST && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
 // Whether to enable float constant folding like 1.2+3.4 (when MICROPY_COMP_CONST_FOLDING is also enabled)
 // and constant optimisation like id = const(1.2) (when MICROPY_COMP_CONST is also enabled)
 // and constant lookup like math.inf (when MICROPY_COMP_MODULE_CONST is also enabled)
