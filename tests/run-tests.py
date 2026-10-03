@@ -310,6 +310,9 @@ tests_requiring_slice = (
     "misc/rge_sm.py",
 )
 
+# These tests don't test the native emitter explicitly but rather use it to perform the test.
+tests_requiring_native_emitter = ("extmod_hardware/machine_sdcard_dma_align.py",)
+
 # Tests that require `import target_wiring` to work.
 tests_requiring_target_wiring = (
     "extmod/machine_spi_rate.py",
@@ -894,6 +897,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     if skip_slice:
         skip_tests.update(tests_requiring_slice)
+
+    if skip_native:
+        skip_tests.update(tests_requiring_native_emitter)
 
     if not has_complex:
         skip_tests.add("float/complex1.py")
