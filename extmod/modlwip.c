@@ -808,6 +808,21 @@ static mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         if (err != ERR_OK) {
             break;
         }
+        // A non-blocking socket writes the prefix that fits now rather than blocking here.
+        // ERR_MEM comes from the heap/segment pool, whose free size is not queryable, so
+        // shrink write_len and retry to find a fitting prefix; the shortened write returns
+        // as a partial count. Only when not even one byte fits is it ENOBUFS -- a resource
+        // error distinct from EAGAIN, which POLLOUT (reading tcp_sndbuf, not the pool) would
+        // contradict into a busy-spin.
+        if (socket->timeout == 0) {
+            if (write_len <= 1) {
+                MICROPY_PY_LWIP_EXIT
+                *_errno = MP_ENOBUFS;
+                return MP_STREAM_ERROR;
+            }
+            write_len /= 2;
+            continue;
+        }
         if (mp_hal_ticks_ms() - write_start > 10000U) {
             break;
         }
