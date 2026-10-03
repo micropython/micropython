@@ -8,4 +8,5 @@ list(APPEND MICROPY_DEF_BOARD
     # Disable some options to reduce firmware size.
     MICROPY_OPT_COMPUTED_GOTO=0
     MICROPY_PY_NETWORK_LAN=0
+    MICROPY_PY_BLUETOOTH=0
 )

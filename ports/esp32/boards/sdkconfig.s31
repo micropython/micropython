@@ -1,0 +1,19 @@
+# ESP32-S31 specific configuration.
+
+# For cmake build: the reference ESP32-S31 modules (eg WROOM-1-N16R16V)
+# carry 16 MiB of flash; the "plus" partition table auto-extends the vfs
+# partition to the end of flash.
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16MiBplus.csv"
+
+# Dual core: check the idle task on both cores (mirrors sdkconfig.base's
+# CPU0 setting).
+CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=n
+
+# Using the SPI flash implementation in ROM saves about 10KB of binary size
+# (and some static RAM).
+CONFIG_SPI_FLASH_ROM_IMPL=y
+
+# 802.15.4 not currently supported in MicroPython, disabling saves
+# a little compile time (no difference in binary).
+CONFIG_IEEE802154_ENABLED=n
