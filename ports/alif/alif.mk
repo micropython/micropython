@@ -19,6 +19,10 @@ QSTR_DEFS += qstrdefsport.h
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+include $(TOP)/lib/mm-halow-driver/mm_halow.mk
+endif
+
 ################################################################################
 # Project specific settings and compiler/linker flags
 

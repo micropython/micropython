@@ -339,7 +339,8 @@ static mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
     // Clear GPIO IRQ (must be done after configuring trigger)
     gpio_interrupt_eoi(self->gpio, self->pin);
 
-    // Clear and enable NVIC GPIO IRQ.
+    // Clear and enable NVIC GPIO IRQ.  A C-level registration lowers this
+    // afterwards -- see mp_hal_pin_interrupt().
     NVIC_ClearPendingIRQ(irq->irq_num);
     NVIC_SetPriority(irq->irq_num, IRQ_PRI_GPIO);
     NVIC_EnableIRQ(irq->irq_num);
@@ -365,6 +366,57 @@ static const mp_irq_methods_t machine_pin_irq_methods = {
 };
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
+static machine_pin_irq_obj_t *machine_pin_irq_obj_get(machine_pin_obj_t *self) {
+    machine_pin_irq_obj_t *irq = MACHINE_PIN_IRQ_OBJECT(self->port, self->pin);
+    if (irq == NULL) {
+        uint32_t idx = MACHINE_PIN_IRQ_INDEX(self->port, self->pin);
+        // Allocates: register from thread context at init, not from an ISR.
+        irq = m_new_obj(machine_pin_irq_obj_t);
+        irq->base.base.type = &mp_irq_type;
+        irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
+        irq->base.parent = MP_OBJ_FROM_PTR(self);
+        irq->base.handler = mp_const_none;
+        irq->base.ishard = false;
+        irq->reserved = false;
+        irq->irq_num = (self->port < 15) ? (GPIO0_IRQ0_IRQn + idx) : (LPGPIO_IRQ0_IRQn + self->pin);
+        MP_STATE_PORT(machine_pin_irq_obj[idx]) = irq;
+    }
+    return irq;
+}
+
+// Mask/unmask an already-registered pin interrupt.  Cheap enough to use for
+// interrupt coalescing: mask on the edge, unmask once the work has been done.
+void mp_hal_pin_interrupt_enable(mp_hal_pin_obj_t pin, bool enable) {
+    machine_pin_obj_t *self = (machine_pin_obj_t *)pin;
+    machine_pin_irq_obj_t *irq = MACHINE_PIN_IRQ_OBJECT(self->port, self->pin);
+    if (irq == NULL) {
+        return;
+    }
+    if (enable) {
+        gpio_unmask_interrupt(self->gpio, self->pin);
+        NVIC_EnableIRQ(irq->irq_num);
+    } else {
+        NVIC_DisableIRQ(irq->irq_num);
+        gpio_mask_interrupt(self->gpio, self->pin);
+    }
+}
+
+// Register a pin interrupt from C, for drivers that cannot go through
+// machine.Pin.irq().  A NULL handler or a zero trigger disables it.
+void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard) {
+    machine_pin_obj_t *self = (machine_pin_obj_t *)pin;
+    machine_pin_irq_obj_t *irq = machine_pin_irq_obj_get(self);
+    if (irq->reserved) {
+        return;
+    }
+    irq->base.handler = handler;
+    irq->base.ishard = hard;
+    machine_pin_irq_trigger(MP_OBJ_FROM_PTR(self), trigger);
+    // A driver wake-up only schedules work, so it belongs near the bottom --
+    // the same place this port puts the cyw43 host-wake IRQ.
+    NVIC_SetPriority(irq->irq_num, IRQ_PRI_CYW43);
+}
+
 static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
@@ -377,22 +429,7 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_pin_irq_obj_t *irq = MACHINE_PIN_IRQ_OBJECT(self->port, self->pin);
-
-    // Allocate a new IRQ object if it doesn't exist.
-    if (irq == NULL) {
-        irq = m_new_obj(machine_pin_irq_obj_t);
-        uint32_t idx = MACHINE_PIN_IRQ_INDEX(self->port, self->pin);
-
-        irq->base.base.type = &mp_irq_type;
-        irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-        irq->base.parent = MP_OBJ_FROM_PTR(self);
-        irq->base.handler = mp_const_none;
-        irq->base.ishard = false;
-        irq->reserved = false;
-        irq->irq_num = (self->port < 15) ? (GPIO0_IRQ0_IRQn + idx) : (LPGPIO_IRQ0_IRQn + self->pin);
-        MP_STATE_PORT(machine_pin_irq_obj[idx]) = irq;
-    }
+    machine_pin_irq_obj_t *irq = machine_pin_irq_obj_get(self);
 
     if (n_args > 1 || kw_args->used != 0) {
         if (irq->reserved) {

@@ -48,6 +48,10 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+#include "mm_halow.h"
+#endif
+
 // Poll lwIP every 128ms
 #define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
 
@@ -74,6 +78,20 @@ void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
         }
     }
     #endif
+
+    #if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+    if (mm_halow_poll) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_HALOW, mm_halow_poll);
+    }
+    #endif
 }
+
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+void mm_halow_schedule_poll(void) {
+    if (mm_halow_poll) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_HALOW, mm_halow_poll);
+    }
+}
+#endif
 
 #endif // MICROPY_PY_LWIP

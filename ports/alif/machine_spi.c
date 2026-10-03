@@ -169,7 +169,10 @@ static void spi_init(machine_spi_obj_t *spi, int32_t baudrate,
     spi_set_tx_threshold(spi->inst, 0);
     spi_set_rx_threshold(spi->inst, 0);
     if (!spi->is_lp) {
-        spi_set_rx_sample_delay(spi->inst, 0);
+        // At high bus speeds the round trip out to the peripheral and back on
+        // MISO is a large fraction of a bit period, so delay the receive sample
+        // point to land in the data eye rather than sampling on the edge.
+        spi_set_rx_sample_delay(spi->inst, baudrate >= 16000000 ? 2 : 0);
         spi_set_tx_fifo_start_level(spi->inst, 0);
     }
 
@@ -317,15 +320,9 @@ static void machine_spi_deinit(mp_obj_base_t *self_in) {
     }
 }
 
-static void machine_spi_poll_flag(SPI_Type *spi, uint32_t flag, uint32_t timeout) {
-    mp_uint_t tick_start = mp_hal_ticks_ms();
-    while (!(spi->SPI_SR & flag)) {
-        if (mp_hal_ticks_ms() - tick_start >= timeout) {
-            mp_raise_OSError(MP_ETIMEDOUT);
-        }
-        mp_event_handle_nowait();
-    }
-}
+// Depth of the SPI TX/RX FIFOs.  Bounding how far transmit runs ahead of
+// receive to this keeps the RX FIFO from overflowing.
+#define SPI_FIFO_DEPTH (16)
 
 static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
@@ -333,33 +330,56 @@ static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
     spi_set_tmod(self->inst, SPI_TMOD_TX_AND_RX);
 
-    for (size_t i = 0; i < len; i++) {
-        // Wait for space in the TX FIFO
-        machine_spi_poll_flag(self->inst, SPI_SR_TFNF, 100);
+    // Keep the TX FIFO fed and the RX FIFO drained so the bus clocks back to
+    // back.  Sending one word and then waiting for its round trip before sending
+    // the next leaves the bus idle between words and runs at a fraction of the
+    // clock rate.  Read the FIFO level registers once and then move a whole burst
+    // without re-reading status per word, and hold transmit no more than a FIFO
+    // depth ahead of receive so the RX FIFO cannot overflow.
+    size_t txi = 0;
+    size_t rxi = 0;
+    mp_uint_t tick_start = mp_hal_ticks_ms();
+    while (rxi < len) {
+        bool progress = false;
 
-        // Send data
-        if (src == NULL) {
-            *dr = 0xFFFFFFFFU;
-        } else if (self->bits > 16) {
-            *dr = ((uint32_t *)src)[i];
-        } else if (self->bits > 8) {
-            *dr = ((uint16_t *)src)[i];
-        } else {
-            *dr = ((uint8_t *)src)[i];
+        for (uint32_t avail = self->inst->SPI_RXFLR; avail > 0; avail--) {
+            uint32_t data = *dr;
+            if (dest != NULL) {
+                if (self->bits > 16) {
+                    ((uint32_t *)dest)[rxi] = data;
+                } else if (self->bits > 8) {
+                    ((uint16_t *)dest)[rxi] = (uint16_t)data;
+                } else {
+                    ((uint8_t *)dest)[rxi] = (uint8_t)data;
+                }
+            }
+            rxi++;
+            progress = true;
         }
 
-        // Wait for data in the RX FIFO
-        machine_spi_poll_flag(self->inst, SPI_SR_RFNE, 100);
+        uint32_t space = SPI_FIFO_DEPTH - self->inst->SPI_TXFLR;
+        while (space > 0 && txi < len && (txi - rxi) < SPI_FIFO_DEPTH) {
+            if (src == NULL) {
+                *dr = 0xFFFFFFFFU;
+            } else if (self->bits > 16) {
+                *dr = ((const uint32_t *)src)[txi];
+            } else if (self->bits > 8) {
+                *dr = ((const uint16_t *)src)[txi];
+            } else {
+                *dr = ((const uint8_t *)src)[txi];
+            }
+            txi++;
+            space--;
+            progress = true;
+        }
 
-        // Recv data
-        if (dest == NULL) {
-            (void)*dr;
-        } else if (self->bits > 16) {
-            ((uint32_t *)dest)[i] = *dr;
-        } else if (self->bits > 8) {
-            ((uint16_t *)dest)[i] = *dr;
+        if (progress) {
+            tick_start = mp_hal_ticks_ms();
         } else {
-            ((uint8_t *)dest)[i] = *dr;
+            if (mp_hal_ticks_ms() - tick_start >= 100) {
+                mp_raise_OSError(MP_ETIMEDOUT);
+            }
+            mp_event_handle_nowait();
         }
     }
 }

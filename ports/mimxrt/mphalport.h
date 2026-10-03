@@ -81,6 +81,8 @@ extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
+void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard);
+void mp_hal_pin_interrupt_enable(mp_hal_pin_obj_t pin, bool enable);
 #define mp_hal_get_pin_obj(o)   pin_find(o)
 #define mp_hal_pin_name(p)      ((p)->name)
 #define mp_hal_pin_input(p) machine_pin_set_mode(p, PIN_MODE_IN);
