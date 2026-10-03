@@ -59,6 +59,7 @@ class I2CTargetMemory:
         self.buf1 = bytearray(1)
         self.mem = mem
         self.memaddr = 0
+        self.numbytes = 0
         self.state = 0
         i2c_target.irq(
             self.irq,
@@ -76,9 +77,11 @@ class I2CTargetMemory:
         if flags & I2CTarget.IRQ_READ_REQ:
             self.buf1[0] = self.mem[self.memaddr]
             self.memaddr += 1
+            self.numbytes += len(self.buf1)
             i2c_target.write(self.buf1)
         if flags & I2CTarget.IRQ_WRITE_REQ:
             i2c_target.readinto(self.buf1)
+            self.numbytes += len(self.buf1)
             if self.state == 0:
                 self.state = 1
                 self.memaddr = self.buf1[0]
