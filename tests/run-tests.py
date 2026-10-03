@@ -294,6 +294,8 @@ tests_requiring_slice = (
     "extmod/vfs_fat_ramdisklarge.py",
     "extmod/vfs_lfs.py",
     "extmod/vfs_rom.py",
+    "extmod_hardware/machine_i2c_target.py",
+    "extmod_hardware/machine_sdcard_dma_align.py",
     "float/string_format_modulo.py",
     "micropython/builtin_execfile.py",
     "micropython/extreme_exc.py",
@@ -307,6 +309,9 @@ tests_requiring_slice = (
     "misc/non_compliant.py",
     "misc/rge_sm.py",
 )
+
+# These tests don't test the native emitter explicitly but rather use it to perform the test.
+tests_requiring_native_emitter = ("extmod_hardware/machine_sdcard_dma_align.py",)
 
 # Tests that require `import target_wiring` to work.
 tests_requiring_target_wiring = (
@@ -893,6 +898,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if skip_slice:
         skip_tests.update(tests_requiring_slice)
 
+    if skip_native:
+        skip_tests.update(tests_requiring_native_emitter)
+
     if not has_complex:
         skip_tests.add("float/complex1.py")
         skip_tests.add("float/complex1_intbig.py")
@@ -1389,7 +1397,9 @@ the last matching regex is used:
                 test_dirs += (port_specific_test_dir,)
             if args.platform in PC_PLATFORMS:
                 # run PC tests
-                test_dirs += ("import",)
+                # Include extmod_hardware to check those tests can at least be
+                # compiled and/or skipped, including on unix minimal variant.
+                test_dirs += ("extmod_hardware", "import")
                 if args.build != "minimal":
                     test_dirs += ("cmdline", "io")
 
