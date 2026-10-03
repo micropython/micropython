@@ -2,16 +2,18 @@ name: cc3200 port
 
 on:
   push:
-  pull_request:
-    paths:
+    paths: &paths
       - '.github/workflows/*.yml'
-      - 'tools/**'
+      - 'tools/*.*'
       - 'py/**'
       - 'extmod/**'
       - 'shared/**'
       - 'lib/**'
       - 'drivers/**'
       - 'ports/cc3200/**'
+  pull_request:
+    paths: *paths
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

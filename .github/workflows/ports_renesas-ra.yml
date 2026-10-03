@@ -2,16 +2,17 @@ name: renesas-ra port
 
 on:
   push:
+    paths: &paths
+      - ".github/workflows/*.yml"
+      - "tools/*.*"
+      - "py/**"
+      - "extmod/**"
+      - "shared/**"
+      - "lib/**"
+      - "drivers/**"
+      - "ports/renesas-ra/**"
   pull_request:
-    paths:
-      - '.github/workflows/*.yml'
-      - 'tools/**'
-      - 'py/**'
-      - 'extmod/**'
-      - 'shared/**'
-      - 'lib/**'
-      - 'drivers/**'
-      - 'ports/renesas-ra/**'
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,9 +22,8 @@ jobs:
   build_renesas_ra_board:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - name: Install packages
-      run: tools/ci.sh renesas_ra_setup
-    - name: Build
-      run: tools/ci.sh renesas_ra_board_build
-
+      - uses: actions/checkout@v7
+      - name: Install packages
+        run: tools/ci.sh renesas_ra_setup
+      - name: Build
+        run: tools/ci.sh renesas_ra_board_build

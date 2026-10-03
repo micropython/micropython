@@ -79,6 +79,29 @@ Functions
     except ImportError:
         const = lambda x: x
 
+   **Type checking guards:** As a special case, the parser treats an assignment of
+   exactly ``TYPE_CHECKING = False`` as an private constant that can be optimised 
+   by the compiler.  It is treated as if it were ``_TYPE_CHECKING = const(False)``.
+   This allows code that is only needed by static type checkers, such as imports
+   from ``typing`` or method stubs, to be added without any runtime or code size
+   overhead, because code guarded by ``if TYPE_CHECKING:`` is removed from the
+   bytecode::
+
+    TYPE_CHECKING = False
+    if TYPE_CHECKING:
+        from typing import List, Optional
+
+    class Display:
+        if TYPE_CHECKING:
+            def write_cmd(self, cmd: int) -> None: ...
+
+   Static type checkers always treat ``TYPE_CHECKING`` as ``True``, so they still
+   see the guarded code.  As with other module-private constants, no
+   ``TYPE_CHECKING`` global variable is created.  Only the bare name is recognised:
+   ``from typing import TYPE_CHECKING`` and ``typing.TYPE_CHECKING`` are not
+   optimised. 
+   This feature is controlled by ``MICROPY_COMP_TYPE_CHECKING``.
+
    See also :ref:`constrained` and :ref:`speed_python` for practical guidance on
    using constants to reduce memory usage and improve performance.
 

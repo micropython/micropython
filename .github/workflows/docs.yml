@@ -2,11 +2,13 @@ name: Build docs
 
 on:
   push:
-  pull_request:
-    paths:
+    paths: &paths
       - docs/**
       - py/**
       - tests/cpydiff/**
+      - tools/gen-cpydiff.py
+  pull_request:
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,11 +19,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-    - name: Install Python packages
-      run: pip install -r docs/requirements.txt
-    - name: Build unix port
-      run: tools/ci.sh unix_build_helper
-    - name: Build docs
-      run: make -C docs/ html
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+      - name: Install Python packages
+        run: pip install -r docs/requirements.txt
+      - name: Build unix port
+        run: tools/ci.sh unix_build_helper
+      - name: Build docs
+        run: make -C docs/ html
