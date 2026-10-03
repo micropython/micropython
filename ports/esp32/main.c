@@ -63,7 +63,9 @@
 #include "usb_serial_jtag.h"
 #include "modesp32.h"
 #include "modmachine.h"
+#if MICROPY_PY_NETWORK
 #include "modnetwork.h"
+#endif
 #if MICROPY_PY_NETWORK_WLAN_CSI
 #include "network_wlan_csi.h"
 #endif
@@ -254,9 +256,11 @@ void boardctrl_startup(void) {
         nvs_flash_init();
     }
 
-    // Query the physical size of the SPI flash and store it in the size
-    // variable of the global, default SPI flash handle.
-    esp_flash_get_physical_size(NULL, &esp_flash_default_chip->size);
+    // Query the physical size of the SPI flash. esp_flash_t became opaque in
+    // IDF v6, so keep the size in a local rather than writing it into the
+    // (opaque) default chip handle.
+    uint32_t flash_size = 0;
+    esp_flash_get_physical_size(NULL, &flash_size);
 
     // If there is no filesystem partition (no "vfs" or "ffat"), add a "vfs" partition
     // that extends from the end of the application partition up to the end of flash.
@@ -275,8 +279,8 @@ void boardctrl_startup(void) {
 
         // If we found the application partition and there is some space between the end of
         // that and the end of flash, create a "vfs" partition taking up all of that space.
-        if (offset > 0 && esp_flash_default_chip->size > offset) {
-            size_t size = esp_flash_default_chip->size - offset;
+        if (offset > 0 && flash_size > offset) {
+            size_t size = flash_size - offset;
             esp_partition_register_external(esp_flash_default_chip, offset, size, "vfs", ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, NULL);
         }
     }

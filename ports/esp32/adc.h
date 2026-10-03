@@ -31,6 +31,13 @@
 #include "py/runtime.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali_scheme.h"
+#include "esp_idf_version.h"
+
+// IDF v6 renamed ADC_ATTEN_DB_11 to ADC_ATTEN_DB_12 (the actual max
+// attenuation is 12 dB). Alias it so the code below keeps using the old name.
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#define ADC_ATTEN_DB_11 ADC_ATTEN_DB_12
+#endif
 
 #define ADC_ATTEN_COUNT SOC_ADC_ATTEN_NUM
 #define ADC_ATTEN_MIN ADC_ATTEN_DB_0
