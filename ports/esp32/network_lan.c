@@ -361,7 +361,13 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
-    if (!IS_SPI_PHY(args[ARG_phy_type].u_int)) {
+    // SPI PHYs and the emulated OpenCores MAC (created above) don't use the
+    // internal EMAC.
+    bool use_internal_emac = !IS_SPI_PHY(args[ARG_phy_type].u_int);
+    #if CONFIG_ETH_USE_OPENETH
+    use_internal_emac = use_internal_emac && args[ARG_phy_type].u_int != PHY_OPENETH;
+    #endif
+    if (use_internal_emac) {
         if (self->mdc_pin == -1 || self->mdio_pin == -1) {
             mp_raise_ValueError(MP_ERROR_TEXT("mdc and mdio must be specified"));
         }
