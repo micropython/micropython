@@ -38,6 +38,7 @@
 #include "bufhelper.h"
 #include "dma.h"
 #include "irq.h"
+#include "mapped_flash.h"
 
 #if !BUILDING_MBOOT
 #include "usbd_msc_interface.h"
@@ -661,14 +662,17 @@ int sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blo
     HAL_StatusTypeDef err = HAL_OK;
 
     if (query_irq() == IRQ_STATE_ENABLED) {
+        // Hold off USB (and the flash cache flush, at the same priority) when USB MSC exposes
+        // the SD card, which it would contend for, or when the data is in memory-mapped flash,
+        // which MSC or the flush can take out of memory-mapped mode under the DMA.
+        uint32_t basepri = 0;
+        bool hold_off = mapped_flash_is_valid_addr((uint32_t)src);
         #if MICROPY_HW_USB_MSC
-        uint32_t basepri;
-        bool usb_msc_sdcard = usbd_msc_lu_includes_sdcard();
-        if (usb_msc_sdcard) {
-            // we must disable USB irqs to prevent MSC contention with SD card
+        hold_off = hold_off || usbd_msc_lu_includes_sdcard();
+        #endif
+        if (hold_off) {
             basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
         }
-        #endif
 
         #if SDIO_USE_GPDMA
         DMA_HandleTypeDef sd_dma;
@@ -711,11 +715,9 @@ int sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blo
         }
         #endif
 
-        #if MICROPY_HW_USB_MSC
-        if (usb_msc_sdcard) {
+        if (hold_off) {
             restore_irq_pri(basepri);
         }
-        #endif
     } else {
         #if MICROPY_HW_ENABLE_MMCARD
         if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_MMC) {
