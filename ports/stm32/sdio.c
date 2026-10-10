@@ -29,6 +29,8 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "dma.h"
+#include "irq.h"
+#include "mapped_flash.h"
 #include "pin.h"
 #include "pin_static_af.h"
 #include "pendsv.h"
@@ -381,6 +383,16 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
 
     bool dma = (len > 16);
 
+    // The CYW43 firmware can be stored in memory-mapped external flash, and its download DMAs
+    // straight from there.  USB MSC reading a filesystem on the same flash, or the flash cache
+    // flush, takes the controller out of memory-mapped mode, which fails or stalls the DMA.  Hold
+    // them off (they share a priority) for such a write; the SDMMC IRQ outranks them.
+    bool hold_off = dma && write && mapped_flash_is_valid_addr((uint32_t)buf);
+    uint32_t basepri = 0;
+    if (hold_off) {
+        basepri = raise_irq_pri(IRQ_PRI_FLASH);
+    }
+
     SDMMC->ICR = SDMMC_STATIC_FLAGS; // clear interrupts
     SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
 
@@ -411,6 +423,9 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         #if defined(STM32F7)
         if ((uint32_t)buf & 3) {
             printf("sdio_transfer_cmd53: buf=%p is not aligned for DMA\n", buf);
+            if (hold_off) {
+                restore_irq_pri(basepri);
+            }
             return -MP_EINVAL;
         }
         uint32_t dma_config =
@@ -486,8 +501,15 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
                 dma_nohal_deinit(&dma_SDIO_0);
             }
             #endif
+            if (hold_off) {
+                restore_irq_pri(basepri);
+            }
             return -MP_ETIMEDOUT;
         }
+    }
+
+    if (hold_off) {
+        restore_irq_pri(basepri);
     }
 
     SDMMC->MASK &= SDMMC_MASK_SDIOITIE;

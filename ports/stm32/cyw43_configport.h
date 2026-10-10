@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_STM32_CYW43_CONFIGPORT_H
 
 #include "extint.h"
+#include "irq.h"
 #include "extmod/mpbthci.h"
 #include "extmod/cyw43_config_common.h"
 #include "sdio.h"
@@ -98,7 +99,9 @@ static inline void cyw43_hal_pin_config_irq_falling(cyw43_hal_pin_obj_t pin, int
 }
 
 static inline void cyw43_sdio_init(void) {
-    sdio_init(NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 14, 0));
+    // Above USB and the flash cache flush, which sdio_transfer_cmd53 holds off while it DMAs
+    // from memory-mapped flash.
+    sdio_init(IRQ_PRI_SDIO);
 }
 
 static inline void cyw43_sdio_reinit(void) {
