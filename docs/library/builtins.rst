@@ -103,15 +103,18 @@ Functions and types
 
 .. class:: int()
 
-   .. classmethod:: from_bytes(bytes, byteorder)
+   .. classmethod:: from_bytes(bytes, byteorder='big')
 
-      In MicroPython, `byteorder` parameter must be positional (this is
-      compatible with CPython).
+      In MicroPython, `byteorder` is optional (defaulting to ``'big'``) but,
+      unlike CPython, both arguments must be passed positionally and the
+      *signed* keyword argument is not supported (the bytes are always
+      interpreted as unsigned).
 
-   .. method:: to_bytes(size, byteorder, /, *, signed=False)
+   .. method:: to_bytes(length=1, byteorder='big', *, signed=False)
 
-      In MicroPython, `byteorder` parameter must be positional (this is
-      compatible with CPython).
+      In MicroPython, *length* and *byteorder* are both optional. Unlike
+      CPython, they may be passed either positionally or as keyword
+      arguments.
 
 .. function:: isinstance()
 
