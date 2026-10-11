@@ -398,37 +398,48 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
     return MP_OBJ_NULL; // op not supported
 }
 
-// this is a classmethod
-static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
-    // TODO: Support signed param (assumes signed=False at the moment)
-
+// classmethod int.from_bytes(bytes, byteorder='big', *, signed=False)
+static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_byteorder, ARG_signed };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_byteorder, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_big) } },
+        { MP_QSTR_signed,    MP_ARG_BOOL, {.u_bool = false} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     // get the buffer info
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_READ);
+    bool big_endian = args[ARG_byteorder].u_obj != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    bool is_signed = args[ARG_signed].u_bool;
 
     const byte *buf = (const byte *)bufinfo.buf;
     int delta = 1;
-    bool big_endian = n_args < 3 || args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
     if (!big_endian) {
         buf += bufinfo.len - 1;
         delta = -1;
     }
-
-    mp_uint_t value = 0;
+    mp_int_t value = 0;
     size_t len = bufinfo.len;
-    for (; len--; buf += delta) {
-        #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-        if (value > (MP_SMALL_INT_MAX >> 8)) {
-            // Result will overflow a small-int so construct a big-int
-            return mp_obj_int_from_bytes_impl(big_endian, bufinfo.len, bufinfo.buf);
+    if (len) {
+        if (is_signed && (*buf & 0x80) != 0) {
+            value = (int8_t)(*buf); // propagate the sign bit
+            buf += delta;
+            len--;
         }
-        #endif
-        value = (value << 8) | *buf;
+        for (; len--; buf += delta) {
+            #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+            if ((value > (MP_SMALL_INT_MAX >> 8)) || (value < (MP_SMALL_INT_MIN >> 8))) {
+                // Result will overflow a small-int so construct a big-int
+                return mp_obj_int_from_bytes_impl(big_endian, is_signed, bufinfo.len, bufinfo.buf);
+            }
+            #endif
+            value = ((mp_uint_t)value << 8) | *buf;
+        }
     }
-    return mp_obj_new_int_from_uint(value);
+    return mp_obj_new_int(value);
 }
-
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 4, int_from_bytes);
+static MP_DEFINE_CONST_FUN_OBJ_KW(int_from_bytes_fun_obj, 1, int_from_bytes);
 static MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
