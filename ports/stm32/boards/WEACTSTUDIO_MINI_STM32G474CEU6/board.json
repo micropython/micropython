@@ -1,0 +1,14 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "weact_mini_stm32g474ceu6.jpg"
+    ],
+    "mcu": "stm32g4",
+    "product": "Mini STM32G474CEU6",
+    "url": "https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/tree/master/Hardware/QFN48",
+    "vendor": "WeAct Studio"
+}
