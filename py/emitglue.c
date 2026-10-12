@@ -125,6 +125,12 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, cons
         "mov r0, #0\n"
         "mcr p15, 0, r0, c7, c7, 0\n" // invalidate I-cache and D-cache
         : : : "r0", "cc");
+    #elif MICROPY_EMIT_AARCH64
+    #if !defined(__aarch64__)
+    #error "MICROPY_EMIT_AARCH64 can only be enabled when targeting AArch64"
+    #endif
+    // Flush the D-cache and invalidate the I-cache over the newly written code.
+    __builtin___clear_cache((void *)fun_data, (char *)fun_data + fun_len);
     #elif defined(__riscv) && defined(MP_HAL_CLEAN_DCACHE)
     // Flush the D-cache.
     MP_HAL_CLEAN_DCACHE(fun_data, fun_len);

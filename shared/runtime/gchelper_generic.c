@@ -132,18 +132,24 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
 
 #elif defined(__aarch64__)
 
+// Fallback implementation, prefer gchelper_aarch64.s
+
 static void gc_helper_get_regs(gc_helper_regs_t arr) {
-    const register long x19 asm ("x19");
-    const register long x20 asm ("x20");
-    const register long x21 asm ("x21");
-    const register long x22 asm ("x22");
-    const register long x23 asm ("x23");
-    const register long x24 asm ("x24");
-    const register long x25 asm ("x25");
-    const register long x26 asm ("x26");
-    const register long x27 asm ("x27");
-    const register long x28 asm ("x28");
-    const register long x29 asm ("x29");
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wuninitialized"
+    #endif
+    register long x19 asm ("x19");
+    register long x20 asm ("x20");
+    register long x21 asm ("x21");
+    register long x22 asm ("x22");
+    register long x23 asm ("x23");
+    register long x24 asm ("x24");
+    register long x25 asm ("x25");
+    register long x26 asm ("x26");
+    register long x27 asm ("x27");
+    register long x28 asm ("x28");
+    register long x29 asm ("x29");
     arr[0] = x19;
     arr[1] = x20;
     arr[2] = x21;
@@ -155,6 +161,9 @@ static void gc_helper_get_regs(gc_helper_regs_t arr) {
     arr[8] = x27;
     arr[9] = x28;
     arr[10] = x29;
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
 }
 
 #elif defined(__riscv) && (__riscv_xlen <= 64)

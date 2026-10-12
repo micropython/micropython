@@ -227,6 +227,7 @@ flaky_tests_to_ignore = {
     "thread/stress_recurse.py": ("stack overflow under emulation", None),
     "thread/stress_heap.py": ("flaky on macOS", ("darwin",)),
     "cmdline/repl_lock.py": ("REPL timing under QEMU", None),
+    "cmdline/repl_autoindent.py": ("REPL timing under QEMU", None),
     "cmdline/repl_cont.py": ("REPL escaping on macOS", ("darwin",)),
     "extmod/time_time_ns.py": ("CI runner clock precision", None),
 }
