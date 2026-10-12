@@ -150,10 +150,6 @@ static void decompress_error_text_maybe(mp_obj_exception_t *o) {
             mp_decompress_rom_string(buf, (mp_rom_error_text_t)o_str->data);
             o_str->data = buf;
             o_str->len = strlen((const char *)buf);
-            o_str->hash = 0;
-        }
-        // Lazily compute the string hash.
-        if (o_str->hash == 0) {
             o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
         }
     }
