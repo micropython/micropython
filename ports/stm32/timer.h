@@ -31,12 +31,12 @@
 #define IS_TIM_32B_COUNTER_INSTANCE(tim) (false)
 #endif
 
-extern TIM_HandleTypeDef TIM5_Handle;
+extern TIM_HandleTypeDef servo_tim_handle;
 
 extern const mp_obj_type_t pyb_timer_type;
 
 void timer_init0(void);
-void timer_tim5_init(void);
+void timer_servo_init(void);
 TIM_HandleTypeDef *timer_tim6_init(uint freq);
 void timer_deinit(void);
 TIM_TypeDef *timer_id_to_reg(uint32_t tim_id);

@@ -63,8 +63,9 @@
 ///     tim.callback(lambda t: ...)     # set callback for update interrupt (t=tim instance)
 ///     tim.callback(None)              # clear callback
 ///
-/// *Note:* Timer 3 is used for fading the blue LED.  Timer 5 controls
-/// the servo driver, and Timer 6 is used for timed ADC/DAC reading/writing.
+/// *Note:* Timer 3 is used for fading the blue LED.  Timer 5 (or 4 on some
+/// boards) controls the servo driver, and Timer 6 is used for timed ADC/DAC
+/// reading/writing.
 /// It is recommended to use the other timers in your programs.
 
 // The timers can be used by multiple drivers, and need a common point for
@@ -73,7 +74,7 @@
 // TIM3:
 //  - LED 4, PWM to set the LED intensity
 //
-// TIM5:
+// TIM5, or TIM4 if MICROPY_HW_SERVO_TIM selects it:
 //  - servo controller, PWM
 //
 // TIM6:
@@ -144,7 +145,7 @@ typedef struct _pyb_timer_obj_t {
 #define TIMER_CNT_MASK(self)    ((self)->is_32bit ? 0xffffffff : 0xffff)
 #define TIMER_CHANNEL(self)     ((((self)->channel) - 1) << 2)
 
-TIM_HandleTypeDef TIM5_Handle;
+TIM_HandleTypeDef servo_tim_handle;
 TIM_HandleTypeDef TIM6_Handle;
 
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
@@ -171,10 +172,20 @@ void timer_deinit(void) {
     }
 }
 
-#if defined(TIM5)
-// TIM5 is set-up for the servo controller
+#if MICROPY_HW_ENABLE_SERVO
+// TIM5 (or TIM4) is set-up for the servo controller
 // This function inits but does not start the timer
-void timer_tim5_init(void) {
+void timer_servo_init(void) {
+    #if MICROPY_HW_SERVO_TIM == 4
+    // TIM4 clock enable
+    __HAL_RCC_TIM4_CLK_ENABLE();
+
+    // set up and enable interrupt
+    NVIC_SetPriority(TIM4_IRQn, IRQ_PRI_TIM4);
+    HAL_NVIC_EnableIRQ(TIM4_IRQn);
+
+    servo_tim_handle.Instance = TIM4;
+    #else
     // TIM5 clock enable
     __HAL_RCC_TIM5_CLK_ENABLE();
 
@@ -182,14 +193,16 @@ void timer_tim5_init(void) {
     NVIC_SetPriority(TIM5_IRQn, IRQ_PRI_TIM5);
     HAL_NVIC_EnableIRQ(TIM5_IRQn);
 
-    // PWM clock configuration
-    TIM5_Handle.Instance = TIM5;
-    TIM5_Handle.Init.Period = 2000 - 1; // timer cycles at 50Hz
-    TIM5_Handle.Init.Prescaler = (timer_get_source_freq(5) / 100000) - 1; // timer runs at 100kHz
-    TIM5_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    TIM5_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    servo_tim_handle.Instance = TIM5;
+    #endif
 
-    HAL_TIM_PWM_Init(&TIM5_Handle);
+    // PWM clock configuration
+    servo_tim_handle.Init.Period = 2000 - 1; // timer cycles at 50Hz
+    servo_tim_handle.Init.Prescaler = (timer_get_source_freq(MICROPY_HW_SERVO_TIM) / 100000) - 1; // timer runs at 100kHz
+    servo_tim_handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    servo_tim_handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+
+    HAL_TIM_PWM_Init(&servo_tim_handle);
 }
 #endif
 
@@ -225,7 +238,7 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 // Interrupt dispatch
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     #if MICROPY_HW_ENABLE_SERVO
-    if (htim == &TIM5_Handle) {
+    if (htim == &servo_tim_handle) {
         servo_timer_irq_callback();
     }
     #endif

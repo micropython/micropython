@@ -37,14 +37,30 @@
 // This file implements the pyb.Servo class which controls standard hobby servo
 // motors that have 3-wires (ground, power, signal).
 //
-// The driver uses hardware PWM to drive servos on pins X1, X2, X3, X4 which are
-// assumed to be on PA0, PA1, PA2, PA3 but not necessarily in that order (the
-// pins PA0-PA3 are used directly if the X pins are not defined).
+// By default the driver uses hardware PWM to drive servos on pins X1, X2, X3,
+// X4 which are assumed to be on PA0, PA1, PA2, PA3 but not necessarily in that
+// order (the pins PA0-PA3 are used directly if the X pins are not defined).
 //
 // TIM2 and TIM5 have CH1-CH4 on PA0-PA3 respectively.  They are both 32-bit
 // counters with 16-bit prescaler.  TIM5 is used by this driver.
+//
+// A board can instead put the servos on TIM4 (MICROPY_HW_SERVO_TIM), on the
+// pins MICROPY_HW_SERVO1 and up, servo N on channel N of the timer.  The board
+// then sets PYB_SERVO_NUM to the number of servo pins.
 
+#ifndef PYB_SERVO_NUM
 #define PYB_SERVO_NUM (4)
+#endif
+
+#if MICROPY_HW_SERVO_TIM == 4
+#define SERVO_TIM (TIM4)
+#define SERVO_TIM_AF (GPIO_AF2_TIM4)
+#define SERVO_TIM_IS_CLK_DISABLED() __HAL_RCC_TIM4_IS_CLK_DISABLED()
+#else
+#define SERVO_TIM (TIM5)
+#define SERVO_TIM_AF (GPIO_AF2_TIM5)
+#define SERVO_TIM_IS_CLK_DISABLED() __HAL_RCC_TIM5_IS_CLK_DISABLED()
+#endif
 
 typedef struct _pyb_servo_obj_t {
     mp_obj_base_t base;
@@ -62,6 +78,13 @@ typedef struct _pyb_servo_obj_t {
 
 static pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
 
+// The timer channel of a servo, 0-3.
+#if defined(MICROPY_HW_SERVO1)
+#define SERVO_CHANNEL(s) ((s) - &pyb_servo_obj[0])
+#else
+#define SERVO_CHANNEL(s) ((s)->pin->pin)
+#endif
+
 void servo_init(void) {
     // reset servo objects
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
@@ -76,6 +99,19 @@ void servo_init(void) {
         pyb_servo_obj[i].time_left = 0;
     }
 
+    #if defined(MICROPY_HW_SERVO1)
+    // assign servo objects to the board's pins, servo N on channel N
+    pyb_servo_obj[0].pin = MICROPY_HW_SERVO1;
+    #if PYB_SERVO_NUM >= 2
+    pyb_servo_obj[1].pin = MICROPY_HW_SERVO2;
+    #endif
+    #if PYB_SERVO_NUM >= 3
+    pyb_servo_obj[2].pin = MICROPY_HW_SERVO3;
+    #endif
+    #if PYB_SERVO_NUM >= 4
+    pyb_servo_obj[3].pin = MICROPY_HW_SERVO4;
+    #endif
+    #else
     // assign servo objects to specific pins (must be some permutation of PA0-PA3)
     #ifdef pyb_pin_X1
     pyb_servo_obj[0].pin = pyb_pin_X1;
@@ -87,6 +123,7 @@ void servo_init(void) {
     pyb_servo_obj[1].pin = pin_A1;
     pyb_servo_obj[2].pin = pin_A2;
     pyb_servo_obj[3].pin = pin_A3;
+    #endif
     #endif
 }
 
@@ -113,26 +150,26 @@ void servo_timer_irq_callback(void) {
                 need_it = true;
             }
             // set the pulse width
-            *(&TIM5->CCR1 + s->pin->pin) = s->pulse_cur;
+            *(&SERVO_TIM->CCR1 + SERVO_CHANNEL(s)) = s->pulse_cur;
         }
     }
     if (need_it) {
-        __HAL_TIM_ENABLE_IT(&TIM5_Handle, TIM_IT_UPDATE);
+        __HAL_TIM_ENABLE_IT(&servo_tim_handle, TIM_IT_UPDATE);
     } else {
-        __HAL_TIM_DISABLE_IT(&TIM5_Handle, TIM_IT_UPDATE);
+        __HAL_TIM_DISABLE_IT(&servo_tim_handle, TIM_IT_UPDATE);
     }
 }
 
 static void servo_init_channel(pyb_servo_obj_t *s) {
     static const uint8_t channel_table[4] =
     {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4};
-    uint32_t channel = channel_table[s->pin->pin];
+    uint32_t channel = channel_table[SERVO_CHANNEL(s)];
 
     // GPIO configuration
-    mp_hal_pin_config(s->pin, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF2_TIM5);
+    mp_hal_pin_config(s->pin, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, SERVO_TIM_AF);
 
-    if (__HAL_RCC_TIM5_IS_CLK_DISABLED()) {
-        timer_tim5_init();
+    if (SERVO_TIM_IS_CLK_DISABLED()) {
+        timer_servo_init();
     }
 
     // PWM mode configuration
@@ -141,10 +178,14 @@ static void servo_init_channel(pyb_servo_obj_t *s) {
     oc_init.Pulse = s->pulse_cur; // units of 10us
     oc_init.OCPolarity = TIM_OCPOLARITY_HIGH;
     oc_init.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&TIM5_Handle, &oc_init, channel);
+    HAL_TIM_PWM_ConfigChannel(&servo_tim_handle, &oc_init, channel);
 
     // start PWM
-    HAL_TIM_PWM_Start(&TIM5_Handle, channel);
+    #if defined(STM32H7)
+    // Reset the channel state to ready, which HAL_TIM_PWM_Start() requires.
+    HAL_TIM_PWM_Stop(&servo_tim_handle, channel);
+    #endif
+    HAL_TIM_PWM_Start(&servo_tim_handle, channel);
 }
 
 /******************************************************************************/
@@ -161,16 +202,16 @@ static mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     }
     switch (p) {
         case 1:
-            TIM5->CCR1 = v;
+            SERVO_TIM->CCR1 = v;
             break;
         case 2:
-            TIM5->CCR2 = v;
+            SERVO_TIM->CCR2 = v;
             break;
         case 3:
-            TIM5->CCR3 = v;
+            SERVO_TIM->CCR3 = v;
             break;
         case 4:
-            TIM5->CCR4 = v;
+            SERVO_TIM->CCR4 = v;
             break;
     }
     return mp_const_none;
@@ -181,8 +222,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(pyb_servo_set_obj, pyb_servo_set);
 static mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
     int pe = mp_obj_get_int(period);
     int pu = mp_obj_get_int(pulse);
-    TIM5->ARR = pe;
-    TIM5->CCR3 = pu;
+    SERVO_TIM->ARR = pe;
+    SERVO_TIM->CCR3 = pu;
     return mp_const_none;
 }
 

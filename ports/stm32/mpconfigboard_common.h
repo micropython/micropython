@@ -136,9 +136,16 @@
 #define MICROPY_HW_ENABLE_USB (0)
 #endif
 
-// Whether to enable the PA0-PA3 servo driver, exposed as pyb.Servo
+// Whether to enable the servo driver, exposed as pyb.Servo
 #ifndef MICROPY_HW_ENABLE_SERVO
 #define MICROPY_HW_ENABLE_SERVO (0)
+#endif
+
+// The timer the servo driver uses: TIM5 (the default) or TIM4.  With TIM5 the
+// servos are on PA0-PA3.  A board using TIM4 defines MICROPY_HW_SERVO1 and up,
+// servo N on channel N of the timer.
+#ifndef MICROPY_HW_SERVO_TIM
+#define MICROPY_HW_SERVO_TIM (5)
 #endif
 
 // Whether to enable a USR switch, exposed as pyb.Switch
