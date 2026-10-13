@@ -147,6 +147,20 @@ void mp_thread_gc_others(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
+#ifdef CONFIG_THREAD_LOCAL_STORAGE
+
+static Z_THREAD_LOCAL mp_state_thread_t *local_thread_state;
+
+mp_state_thread_t *mp_thread_get_state(void) {
+    return local_thread_state;
+}
+
+void mp_thread_set_state(mp_state_thread_t *state) {
+    local_thread_state = state;
+}
+
+#else
+
 mp_state_thread_t *mp_thread_get_state(void) {
     return (mp_state_thread_t *)k_thread_custom_data_get();
 }
@@ -154,6 +168,8 @@ mp_state_thread_t *mp_thread_get_state(void) {
 void mp_thread_set_state(mp_state_thread_t *state) {
     k_thread_custom_data_set((void *)state);
 }
+
+#endif
 
 mp_uint_t mp_thread_get_id(void) {
     return (mp_uint_t)k_current_get();

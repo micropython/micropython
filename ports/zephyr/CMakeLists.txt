@@ -84,11 +84,16 @@ set(MICROPY_SOURCE_PORT
     zephyr_display.c
     zephyr_regulator.c
     mpthreadport.c
+    network_common.c
+    network_wlan.c
+    modnetwork.c
+    modtls.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
 set(MICROPY_SOURCE_SHARED
     libc/printf.c
+    netutils/netutils.c
     readline/readline.c
     runtime/gchelper_generic.c
     runtime/interrupt_char.c
@@ -190,5 +195,21 @@ target_sources(app PRIVATE
     src/zephyr_getchar.c
     src/usbd.c
 )
+
+zephyr_linker_sources_ifdef(CONFIG_MICROPY_MBEDTLS_HEAP_RELOCATE SECTIONS ld/mbedtls_heap_reloc.ld)
+
+# Work around unwanted blob logging bypassing normal logging paths
+# RW61x
+# 'Monkeypatch' the PRINTF define everywhere to use a stub/log path instead of printk
+if (CONFIG_WIFI_NXP)
+zephyr_library_sources(${MICROPY_PORT_DIR}/src/mishandle_printf.c)
+zephyr_compile_options(-include${MICROPY_PORT_DIR}/src/mishandle_printf.h)
+zephyr_compile_definitions(PRINTF=mp_mishandle_printf)
+endif()
+# Infineon (RP2 W)
+# Just set the symbol to disable middleware logging
+if (CONFIG_WIFI_AIROC)
+zephyr_compile_definitions(WHD_PRINT_DISABLE)
+endif()
 
 target_link_libraries(app PRIVATE ${MICROPY_TARGET})
