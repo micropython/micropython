@@ -137,6 +137,7 @@ static inline void restore_irq_pri(uint32_t state) {
 #define IRQ_PRI_FLASH           2
 #define IRQ_PRI_OTG_FS          2
 #define IRQ_PRI_OTG_HS          2
+#define IRQ_PRI_TIM4            2
 #define IRQ_PRI_TIM5            2
 #define IRQ_PRI_CAN             2
 #define IRQ_PRI_TIMX            2
@@ -169,6 +170,7 @@ static inline void restore_irq_pri(uint32_t state) {
 
 #define IRQ_PRI_OTG_FS          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 #define IRQ_PRI_OTG_HS          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
+#define IRQ_PRI_TIM4            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 #define IRQ_PRI_TIM5            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 
 #define IRQ_PRI_CAN             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)

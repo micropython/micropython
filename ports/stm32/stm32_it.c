@@ -730,6 +730,9 @@ void TIM3_IRQHandler(void) {
 void TIM4_IRQHandler(void) {
     IRQ_ENTER(TIM4_IRQn);
     timer_irq_handler(4);
+    #if MICROPY_HW_ENABLE_SERVO && MICROPY_HW_SERVO_TIM == 4
+    HAL_TIM_IRQHandler(&servo_tim_handle);
+    #endif
     IRQ_EXIT(TIM4_IRQn);
 }
 #endif
@@ -737,7 +740,9 @@ void TIM4_IRQHandler(void) {
 void TIM5_IRQHandler(void) {
     IRQ_ENTER(TIM5_IRQn);
     timer_irq_handler(5);
-    HAL_TIM_IRQHandler(&TIM5_Handle);
+    #if MICROPY_HW_SERVO_TIM == 5
+    HAL_TIM_IRQHandler(&servo_tim_handle);
+    #endif
     IRQ_EXIT(TIM5_IRQn);
 }
 
