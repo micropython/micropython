@@ -370,7 +370,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 
 static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_timer_obj_t *self = self_in;
-    qstr mode = self->repeat ? MP_QSTR_ONE_SHOT : MP_QSTR_PERIODIC;
+    qstr mode = self->repeat ? MP_QSTR_PERIODIC : MP_QSTR_ONE_SHOT;
     uint64_t period = self->period / (machine_timer_freq_hz(self) / 1000); // convert to ms
     mp_printf(print, "Timer(%d, mode=%q, period=%lu)", self->id, mode, period);
 }
