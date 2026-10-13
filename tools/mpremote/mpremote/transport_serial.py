@@ -176,24 +176,23 @@ class SerialTransport(Transport):
         return data
 
     def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
-        self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
+        # Repeatedly interrupt any running program and request raw REPL until the prompt
+        # is reached or timeout expires. This gracefully handles boards (e.g. ESP32 on macOS/Linux)
+        # where opening the serial port triggers a hardware reset and bootloader sequence.
+        raw_prompt = b"raw REPL; CTRL-B to exit\r\n>"
+        end_s = time.monotonic() + timeout_overall if timeout_overall is not None else float("inf")
+        data = b""
 
-        # flush input (without relying on serial.flushInput())
-        n = self.serial.inWaiting()
-        while n > 0:
-            self.serial.read(n)
-            n = self.serial.inWaiting()
-
-        self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
+        while time.monotonic() < end_s:
+            self.serial.write(b"\r\x03\r\x01")  # Ctrl-C (interrupt) then Ctrl-A (raw REPL)
+            data += self.read_until(1, raw_prompt, timeout=0.25, timeout_overall=timeout_overall)
+            if data.endswith(raw_prompt):
+                break
+        else:
+            print(data)
+            raise TransportError("could not enter raw repl")
 
         if soft_reset:
-            data = self.read_until(
-                1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
-            )
-            if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
-                print(data)
-                raise TransportError("could not enter raw repl")
-
             self.serial.write(b"\x04")  # ctrl-D: soft reset
 
             # Waiting for "soft reboot" independently to "raw REPL" (done below)
@@ -204,10 +203,12 @@ class SerialTransport(Transport):
                 print(data)
                 raise TransportError("could not enter raw repl")
 
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
-        if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
-            print(data)
-            raise TransportError("could not enter raw repl")
+            data = self.read_until(
+                1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall
+            )
+            if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
+                print(data)
+                raise TransportError("could not enter raw repl")
 
         self.in_raw_repl = True
 
