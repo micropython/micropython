@@ -169,6 +169,38 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  coverage_aarch64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
+    - name: Install packages
+      run: tools/ci.sh unix_coverage_setup
+    - name: Build
+      run: tools/ci.sh unix_coverage_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_coverage_aarch64_run_tests
+    - name: Run gcov coverage analysis
+      run: |
+        (cd ports/unix && gcov -o build-coverage/py ../../py/*.c || true)
+        (cd ports/unix && gcov -o build-coverage/extmod ../../extmod/*.c || true)
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v7
+      with:
+        # See corresponding comment above.
+        fail_ci_if_error: ${{ secrets.CODECOV_TOKEN != '' || github.repository_owner == 'micropython' }}
+        verbose: true
+        flags: unix-coverage-aarch64
+        name: unix-coverage-aarch64
+        token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   nanbox:
     runs-on: ubuntu-latest
     steps:
@@ -405,6 +437,25 @@ jobs:
       run: tools/ci.sh unix_qemu_x64_build
     - name: Run main test suite
       run: tools/ci.sh unix_qemu_x64_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
+  qemu_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
+      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
+      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
+      with:
+        python-version: '3.11'
+    - name: Install packages
+      run: tools/ci.sh unix_qemu_aarch64_setup
+    - name: Build
+      run: tools/ci.sh unix_qemu_aarch64_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_qemu_aarch64_run_tests
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
