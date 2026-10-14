@@ -185,6 +185,7 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
 
         # Write to remote.
         state.transport.fs_writefile(dest[1:], data, progress_callback=show_progress_bar)
+        print("Uploaded  :", dest[1:])
     else:
         # If the destination path is just the directory, then add the source filename.
         if dest_isdir:
