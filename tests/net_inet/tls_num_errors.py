@@ -40,9 +40,9 @@ def test(addr):
         print("wrap: no exception")
     except OSError as e:
         heap_unlock()
-        # mbedtls produces "-29184"
+        # mbedtls produces "-29184" but not the full string MBEDTLS_ERR_SSL_INVALID_RECORD as well
         # axtls produces "RECORD_OVERFLOW"
-        ok = "-29184" in str(e) or "RECORD_OVERFLOW" in str(e)
+        ok = ("-29184" in str(e) and "INVALID_RECORD" not in str(e)) or "RECORD_OVERFLOW" in str(e)
         print("wrap:", ok)
         if not ok:
             print("got exception:", e)
