@@ -1,0 +1,87 @@
+/*
+ * Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/display/panel.h>
+#include <zephyr/dt-bindings/mipi_dbi/mipi_dbi.h>
+
+/ {
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<256>;
+			cache-size=<1024>;
+			lookahead-size=<32>;
+			block-cycles=<256>;
+		};
+
+		sd_fs: sd_fs {
+			compatible = "zephyr,fstab,fatfs";
+			mount-point = "/SD:";
+			disk-access;
+			automount;
+		};
+	};
+
+	/* Only define the PSRAM,
+	 * half of it is already humongous and we don't need to touch any of the other areas.
+	 */
+	heap_psram {
+		compatible = "micropython,heap";
+		size = <DT_SIZE_M(32)>;
+		memory-region = <&psram>;
+	};
+
+	gpio0_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio0>;
+		gpio-micropython-ranges = <0 9>, <11 21>;
+		gpio-zephyr-ranges = <0 9>, <11 21>;
+	};
+
+	gpio1_related {
+		compatible = "micropython,related-pins-integer-generator";
+		gpio-device = <&gpio1>;
+		gpio-micropython-ranges = <32 2>, <40 2>;
+		gpio-zephyr-ranges = <0 2>, <8 2>;
+	};
+
+	named_related_0 {
+		compatible = "micropython,related-pins-arbitrary";
+		gpio-device = <&gpio0>;
+		gpio-micropython-strings = "LED", "led", "user_led0",
+				"S1", "S2", "button_0", "button_1";
+		gpio-zephyr-ids = <8>, <8>, <8>,
+				<22 23>, <22 23>;
+	};
+};
+
+&wdt0 {
+	status = "okay";
+};
+
+&uart1 {
+	zephyr,deferred-init;
+};
+
+&pinctrl {
+	i2c1_default: i2c1_default {
+		group1 {
+			pinmux = <GPIO3_I2C1_SDA>;
+		};
+	};
+};
+
+&i2c1 {
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	zephyr,deferred-init;
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-names = "default";
+};
