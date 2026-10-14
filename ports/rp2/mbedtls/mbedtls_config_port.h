@@ -26,9 +26,6 @@
 #ifndef MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
-// Set mbedtls configuration
-#define MBEDTLS_ECP_NIST_OPTIM
-
 // Time hook
 #include <time.h>
 time_t rp2_rtctime_seconds(time_t *timer);
