@@ -359,9 +359,6 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
 
 /******************************************************************************/
 // Interface functions that use the cache
-//
-// These functions do not call mp_spiflash_notify_modified(), so shouldn't be
-// used for memory-mapped flash (for example).
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 
@@ -369,7 +366,6 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
     if (len == 0) {
         return 0;
     }
-    mp_spiflash_acquire_bus(self);
     mp_spiflash_cache_t *cache = self->config->cache;
     if (cache->user == self && cache->block != 0xffffffff) {
         uint32_t bis = addr / SECTOR_SIZE;
@@ -380,9 +376,8 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
             if (bis < cache->block) {
                 // Read direct from flash for first part
                 rest = cache->block * SECTOR_SIZE - addr;
-                int ret = mp_spiflash_read_data(self, addr, rest, dest);
+                int ret = mp_spiflash_read(self, addr, rest, dest);
                 if (ret != 0) {
-                    mp_spiflash_release_bus(self);
                     return ret;
                 }
                 len -= rest;
@@ -397,7 +392,6 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
             memcpy(dest, &cache->buf[offset], rest);
             len -= rest;
             if (len == 0) {
-                mp_spiflash_release_bus(self);
                 return 0;
             }
             dest += rest;
@@ -405,12 +399,12 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
         }
     }
     // Read rest direct from flash
-    int ret = mp_spiflash_read_data(self, addr, len, dest);
-    mp_spiflash_release_bus(self);
-    return ret;
+    return mp_spiflash_read(self, addr, len, dest);
 }
 
 static int mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
+    int ret = 0;
+
     #if USE_WR_DELAY
     if (!(self->flags & 1)) {
         return 0;
@@ -421,21 +415,18 @@ static int mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
     mp_spiflash_cache_t *cache = self->config->cache;
 
     // Erase sector
-    int ret = mp_spiflash_erase_block_internal(self, cache->block * SECTOR_SIZE);
-    if (ret != 0) {
-        return ret;
-    }
+    ret = mp_spiflash_erase_block_internal(self, cache->block * SECTOR_SIZE);
 
     // Write
-    for (int i = 0; i < 16; i += 1) {
+    for (int i = 0; ret == 0 && i < 16; i += 1) {
         uint32_t addr = cache->block * SECTOR_SIZE + i * PAGE_SIZE;
-        int ret = mp_spiflash_write_page(self, addr, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
-        if (ret != 0) {
-            return ret;
-        }
+        ret = mp_spiflash_write_page(self, addr, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
     }
+
+    mp_spiflash_notify_modified(self, cache->block * SECTOR_SIZE, SECTOR_SIZE);
     #endif
-    return 0;
+
+    return ret;
 }
 
 int mp_spiflash_cache_flush(mp_spiflash_t *self) {
@@ -492,17 +483,17 @@ static int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
     // And mark dirty
     self->flags |= 1;
 
+    return 0; // success
+
     #else
 
+    int ret = 0;
     uint32_t dirty = 0;
     for (size_t i = 0; i < len; ++i) {
         if (cache->buf[offset + i] != src[i]) {
             if (cache->buf[offset + i] != 0xff) {
                 // Erase sector
-                int ret = mp_spiflash_erase_block_internal(self, addr);
-                if (ret != 0) {
-                    return ret;
-                }
+                ret = mp_spiflash_erase_block_internal(self, addr);
                 dirty = 0xffff;
                 break;
             } else {
@@ -516,18 +507,16 @@ static int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
     memcpy(cache->buf + offset, src, len);
 
     // Write sector in pages of 256 bytes
-    for (size_t i = 0; i < 16; ++i) {
+    for (size_t i = 0; ret == 0 && i < 16; ++i) {
         if (dirty & (1 << i)) {
-            int ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
-            if (ret != 0) {
-                return ret;
-            }
+            ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
         }
     }
 
-    #endif
+    mp_spiflash_notify_modified(self, addr, SECTOR_SIZE);
+    return ret;
 
-    return 0; // success
+    #endif
 }
 
 int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
