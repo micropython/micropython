@@ -369,7 +369,6 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
     if (len == 0) {
         return 0;
     }
-    mp_spiflash_acquire_bus(self);
     mp_spiflash_cache_t *cache = self->config->cache;
     if (cache->user == self && cache->block != 0xffffffff) {
         uint32_t bis = addr / SECTOR_SIZE;
@@ -380,9 +379,8 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
             if (bis < cache->block) {
                 // Read direct from flash for first part
                 rest = cache->block * SECTOR_SIZE - addr;
-                int ret = mp_spiflash_read_data(self, addr, rest, dest);
+                int ret = mp_spiflash_read(self, addr, rest, dest);
                 if (ret != 0) {
-                    mp_spiflash_release_bus(self);
                     return ret;
                 }
                 len -= rest;
@@ -397,7 +395,6 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
             memcpy(dest, &cache->buf[offset], rest);
             len -= rest;
             if (len == 0) {
-                mp_spiflash_release_bus(self);
                 return 0;
             }
             dest += rest;
@@ -405,9 +402,7 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
         }
     }
     // Read rest direct from flash
-    int ret = mp_spiflash_read_data(self, addr, len, dest);
-    mp_spiflash_release_bus(self);
-    return ret;
+    return mp_spiflash_read(self, addr, len, dest);
 }
 
 static int mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
