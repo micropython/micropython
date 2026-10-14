@@ -502,12 +502,19 @@ static int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t add
     return 0;
 }
 
+static int octospi_direct_read(void *self_in, uint32_t addr, size_t len, uint8_t *dest) {
+    (void)self_in;
+    memcpy(dest, (const void *)(OCTOSPI_MAP_ADDR + addr), len);
+    return 0;
+}
+
 const mp_qspi_proto_t octospi_proto = {
     .ioctl = octospi_ioctl,
     .write_cmd_data = octospi_write_cmd_data,
     .write_cmd_addr_data = octospi_write_cmd_addr_data,
     .read_cmd = octospi_read_cmd,
     .read_cmd_qaddr_qdata = octospi_read_cmd_qaddr_qdata,
+    .direct_read = octospi_direct_read,
 };
 
 #endif // defined(MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2)
