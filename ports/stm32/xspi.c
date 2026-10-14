@@ -491,7 +491,7 @@ static int xspi_ioctl(void *self_in, uint32_t cmd, uintptr_t arg) {
             // XSPI must be manually initialise by calling `xspi_init()` at boot.
             // Here, just determine if it's in SPI or DTR mode.
             xspi_dtr_enabled = XSPIx->IR == 0xee11;
-            break;
+            return -MP_EALREADY; // indicate that flash is already fully initialised
         case MP_QSPI_IOCTL_BUS_ACQUIRE:
             xspi_memory_map_exit();
             break;

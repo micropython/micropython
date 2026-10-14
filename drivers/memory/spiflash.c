@@ -196,9 +196,9 @@ void mp_spiflash_init(mp_spiflash_t *self) {
         self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
     } else {
         uint8_t num_dummy = MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(self);
-        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, num_dummy);
-        if (self->config->bus.u_qspi.proto->direct_read != NULL) {
-            // A bus with a custom read function should not have any further initialisation done.
+        int ret = self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, num_dummy);
+        if (ret == -MP_EALREADY) {
+            // MP_EALREADY indicates that the SPI flash is already set up and should not have any further initialisation done.
             return;
         }
     }
