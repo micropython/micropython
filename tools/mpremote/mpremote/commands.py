@@ -155,8 +155,25 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
     # Download the contents of source.
     try:
         if src.startswith(":"):
-            data = state.transport.fs_readfile(src[1:], progress_callback=show_progress_bar)
             filename = _remote_path_basename(src[1:])
+
+            # Skip download if the destination file is identical.
+            if check_hash:
+                try:
+                    remote_hash = state.transport.fs_hashfile(src[1:], "sha256")
+                    with open(dest, "rb") as f:
+                        data = f.read()
+
+                    dest_hash = hashlib.sha256(data).digest()
+                    # remote_hash will be None if the device doesn't support
+                    # hashlib.sha256 (and therefore won't match).
+                    if remote_hash == dest_hash:
+                        print("Up to date:", dest)
+                        return
+                except OSError:
+                    pass
+
+            data = state.transport.fs_readfile(src[1:], progress_callback=show_progress_bar)
         else:
             with open(src, "rb") as f:
                 data = f.read()
