@@ -100,6 +100,14 @@ typedef unsigned int uint;
 
 #define m_new(type, num) ((type *)(m_malloc(sizeof(type) * (num))))
 #define m_new_maybe(type, num) ((type *)(m_malloc_maybe(sizeof(type) * (num))))
+#if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+// m_malloc/m_new with the buffer tagged so the GC won't scan it for pointers.
+// ONLY for buffers guaranteed to hold no mp_obj_t or other heap pointers.
+void *m_malloc_with_no_gc_pointers(size_t num_bytes);
+#define m_new_with_no_gc_pointers(type, num) ((type *)(m_malloc_with_no_gc_pointers(sizeof(type) * (num))))
+#else
+#define m_new_with_no_gc_pointers(type, num) m_new(type, num)
+#endif
 #define m_new0(type, num) ((type *)(m_malloc0(sizeof(type) * (num))))
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_maybe(type) (m_new_maybe(type, 1))

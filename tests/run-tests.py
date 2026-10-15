@@ -297,6 +297,7 @@ tests_requiring_slice = (
     "extmod_hardware/machine_i2c_target.py",
     "extmod_hardware/machine_sdcard_dma_align.py",
     "float/string_format_modulo.py",
+    "micropython/buf_contains_ptrs.py",
     "micropython/builtin_execfile.py",
     "micropython/extreme_exc.py",
     "micropython/heapalloc_fail_bytearray.py",

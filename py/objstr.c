@@ -2378,7 +2378,7 @@ mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte *data, size_t
     o->len = len;
     if (data) {
         o->hash = qstr_compute_hash(data, len);
-        byte *p = m_new(byte, len + 1);
+        byte *p = m_new_with_no_gc_pointers(byte, len + 1);
         o->data = p;
         memcpy(p, data, len * sizeof(byte));
         p[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings

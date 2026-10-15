@@ -182,6 +182,21 @@ Functions
    Note: `heap_locked()` is not enabled on most ports by default,
    requires ``MICROPY_PY_MICROPYTHON_HEAP_LOCKED``.
 
+.. function:: buf_contains_ptrs(buf)
+
+   Mark the heap allocation backing *buf* as possibly containing pointers to
+   other heap objects, so the garbage collector scans it.  *buf* can be any
+   object supporting the buffer protocol.
+
+   Some ports skip scanning pure-data buffers such as `bytearray` and
+   `array.array`.  If such a buffer is used to store object addresses, for
+   example via :mod:`uctypes`, `machine.mem32`, viper or inline assembler,
+   call this function on it so those objects are not freed while still
+   referenced.
+
+   Has no effect if *buf* is not on the heap, or if the port always scans these
+   buffers.
+
 .. function:: kbd_intr(chr)
 
    Set the character that will raise a `KeyboardInterrupt` exception.  By
