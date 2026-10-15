@@ -699,7 +699,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_set_type = False
     skip_async = False
     skip_const = False
-    skip_revops = False
     skip_fstring = False
     skip_tstring = False
     skip_endian = False
@@ -756,8 +755,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Check if __rOP__ special methods are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "reverse_ops.py")
-        if output == b"TypeError\n":
-            skip_revops = True
+        target_capabilities["reverse-op"] = output == b"reverse\n"
 
         # Check if fstring feature is enabled, and skip such tests if it doesn't
         output = run_feature_check(pyb, args, "fstring.py")
@@ -935,7 +933,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
-        skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_fstring and is_fstring
         skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm

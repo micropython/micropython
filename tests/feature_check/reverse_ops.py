@@ -1,9 +1,9 @@
 class Foo:
     def __radd__(self, other):
-        pass
+        return "reverse"
 
 
 try:
-    5 + Foo()
+    print(5 + Foo())
 except TypeError:
     print("TypeError")
