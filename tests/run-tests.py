@@ -772,6 +772,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_inlineasm = False
     has_complex = True
     has_coverage = False
+    target_capabilities = {}
 
     if True:
         # Even if we run completely different tests in a different directory,
@@ -1014,9 +1015,19 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm
 
+        skip_reasons = []
+        for requirement in test.requires_feature:
+            if not target_capabilities[requirement]:
+                skip_reasons.append(requirement)
+
         if skip_it:
             print("skip ", test_file)
             test_results.append((test_file, "skip", ""))
+            return
+        elif skip_reasons:
+            reasons = " ".join(skip_reasons)
+            print(f"skip  {test_file:40} (requires: {reasons})")
+            test_results.append((test_file, "skip", f"requires: {reasons}"))
             return
         elif args.dry_run:
             print("found", test_file)
