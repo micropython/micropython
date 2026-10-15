@@ -46,6 +46,15 @@ enum clock_freq_type freq_peri;
 
 #if MICROPY_PY_MACHINE
 
+void machine_deinit(void) {
+    machine_pin_irq_deinit_all();
+    machine_uart_deinit_all();
+    #if MICROPY_PY_MACHINE_I2C_TARGET
+    machine_i2c_target_deinit_all();
+    #endif
+    machine_i2c_deinit_all();
+}
+
 // machine.idle()
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.
