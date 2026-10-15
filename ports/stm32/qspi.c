@@ -31,6 +31,7 @@
 #include "mpu.h"
 #include "qspi.h"
 #include "pin_static_af.h"
+#include "sdio.h"
 #include "storage.h"
 
 #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
@@ -180,6 +181,11 @@ void qspi_memory_map(void) {
 }
 
 void qspi_memory_map_exit(void) {
+    #if MICROPY_PY_NETWORK_CYW43
+    // The CYW43 firmware may be stored here, and a DMA may be reading it.
+    sdio_wait_dma_write();
+    #endif
+
     // Prevent access to QSPI memory-mapped region.
     qspi_mpu_disable_all();
 
