@@ -1,4 +1,5 @@
 # Test builtin execfile function using VFS.
+# requires: slice
 
 try:
     import io, os, vfs

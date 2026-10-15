@@ -1,4 +1,5 @@
 # Test that native text/BSS/rodata loaded from a .mpy file is retained after a GC.
+# requires: slice
 
 try:
     import gc, sys, io, vfs

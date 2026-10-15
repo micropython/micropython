@@ -1,4 +1,5 @@
 # Check that micropython.RingIO works correctly.
+# requires: slice
 
 try:
     import micropython

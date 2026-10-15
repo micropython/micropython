@@ -1,4 +1,5 @@
 # test handling of failed heap allocation with list
+# requires: slice
 
 try:
     import micropython

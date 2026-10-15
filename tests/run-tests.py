@@ -265,53 +265,6 @@ tests_requiring_float = (
     "ports/unix/ffi_float2.py",
 )
 
-# These tests don't test slice explicitly but rather use it to perform the test.
-tests_requiring_slice = (
-    "basics/builtin_range.py",
-    "basics/bytearray1.py",
-    "basics/class_super.py",
-    "basics/containment.py",
-    "basics/errno1.py",
-    "basics/fun_str.py",
-    "basics/generator1.py",
-    "basics/globals_del.py",
-    "basics/memoryview1.py",
-    "basics/memoryview_gc.py",
-    "basics/object1.py",
-    "basics/python34.py",
-    "basics/struct_endian.py",
-    "extmod/btree1.py",
-    "extmod/deflate_decompress.py",
-    "extmod/framebuf16.py",
-    "extmod/framebuf4.py",
-    "extmod/machine1.py",
-    "extmod/time_mktime.py",
-    "extmod/time_res.py",
-    "extmod/tls_sslcontext_ciphers.py",
-    "extmod/vfs_blockdev_invalid2.py",
-    "extmod/vfs_fat_fileio1.py",
-    "extmod/vfs_fat_finaliser.py",
-    "extmod/vfs_fat_more.py",
-    "extmod/vfs_fat_ramdisk.py",
-    "extmod/vfs_fat_ramdisklarge.py",
-    "extmod/vfs_lfs.py",
-    "extmod/vfs_rom.py",
-    "extmod_hardware/machine_i2c_target.py",
-    "extmod_hardware/machine_sdcard_dma_align.py",
-    "float/string_format_modulo.py",
-    "micropython/builtin_execfile.py",
-    "micropython/extreme_exc.py",
-    "micropython/heapalloc_fail_bytearray.py",
-    "micropython/heapalloc_fail_list.py",
-    "micropython/heapalloc_fail_memoryview.py",
-    "micropython/import_mpy_invalid.py",
-    "micropython/import_mpy_native.py",
-    "micropython/import_mpy_native_gc.py",
-    "micropython/ringio_big.py",
-    "misc/non_compliant.py",
-    "misc/rge_sm.py",
-)
-
 
 # unescape wanted regex chars and escape unwanted ones
 def convert_regex_escapes(line):
@@ -744,7 +697,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_int_64 = False
     skip_bytearray = False
     skip_set_type = False
-    skip_slice = False
     skip_async = False
     skip_const = False
     skip_revops = False
@@ -790,8 +742,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Check if slice is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "slice.py")
-        if output != b"slice\n":
-            skip_slice = True
+        target_capabilities["slice"] = output == b"slice\n"
 
         # Check if async/await keywords are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "async_check.py")
@@ -878,9 +829,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if args.via_mpy:
             skip_tests.add("basics/string_escape.py")  # stores a utf-8 character in the mpy file
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
-
-    if skip_slice:
-        skip_tests.update(tests_requiring_slice)
 
     if not has_complex:
         skip_tests.add("float/complex1.py")
@@ -973,7 +921,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
-        is_slice = test_name.find("slice") != -1
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
         is_fstring = test_name.startswith("string_fstring") or test_name.endswith("_fstring")
@@ -986,7 +933,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_int_64 and is_int_64
         skip_it |= skip_bytearray and is_bytearray
         skip_it |= skip_set_type and is_set_type
-        skip_it |= skip_slice and is_slice
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and "reverse_op" in test_name

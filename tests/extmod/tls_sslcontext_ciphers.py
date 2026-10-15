@@ -1,4 +1,5 @@
 # Basic test of tls.SSLContext get_ciphers() and set_ciphers() methods.
+# requires: slice
 
 try:
     import tls

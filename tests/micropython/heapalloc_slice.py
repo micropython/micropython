@@ -1,4 +1,6 @@
 # slice operations that don't require allocation
+# requires: slice
+
 try:
     from micropython import heap_lock, heap_unlock
 except (ImportError, AttributeError):

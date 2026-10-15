@@ -1,4 +1,5 @@
 # test handling of failed heap allocation with memoryview
+# requires: slice
 
 try:
     import micropython

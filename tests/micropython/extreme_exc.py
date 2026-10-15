@@ -1,4 +1,5 @@
 # test some extreme cases of allocating exceptions and tracebacks
+# requires: slice
 
 try:
     import micropython

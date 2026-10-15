@@ -1,4 +1,5 @@
 # test errno's and errno module
+# requires: slice
 
 try:
     import errno

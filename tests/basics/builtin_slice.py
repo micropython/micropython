@@ -1,7 +1,9 @@
 # test builtin slice
-
+#
 # ensures that slices passed to user types are heap-allocated and can be
 # safely stored as well as not overriden by subsequent slices.
+#
+# requires: slice
 
 # print slice
 class A:

@@ -3,6 +3,8 @@
 #
 # Note: this test has a corresponding .py.exp file because hashing slice objects
 # was not allowed in CPython until 3.12.
+#
+# requires: slice
 
 try:
     from collections import OrderedDict

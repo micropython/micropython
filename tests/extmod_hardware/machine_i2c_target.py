@@ -2,6 +2,8 @@
 #
 # IMPORTANT: This test requires hardware connections: a SoftI2C instance must be
 # wired to a hardware I2C target.  See pin definitions below.
+#
+# requires: slice
 
 import sys
 

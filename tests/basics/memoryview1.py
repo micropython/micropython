@@ -1,4 +1,6 @@
 # test memoryview
+# requires: slice
+
 try:
     memoryview
 except:

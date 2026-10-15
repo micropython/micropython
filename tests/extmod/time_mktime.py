@@ -1,4 +1,5 @@
 # test conversion from date tuple to timestamp and back
+# requires: slice
 
 try:
     import time

@@ -1,3 +1,5 @@
+# requires: slice
+
 x = list(range(10))
 print(x[::-1])
 print(x[::2])

@@ -1,5 +1,6 @@
 # Test slice unary operations.
 # CPython allows hashing slices, but MicroPython does not.
+# requires: slice
 
 try:
     t = [][:]

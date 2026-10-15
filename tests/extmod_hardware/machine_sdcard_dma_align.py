@@ -7,7 +7,7 @@
 # A mostly empty FAT formatted SDCard installed in SD socket (a card with other
 # files may be much slower to start the test.)
 #
-# requires: native
+# requires: native slice
 
 import errno
 import os

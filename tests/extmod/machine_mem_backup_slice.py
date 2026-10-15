@@ -1,4 +1,5 @@
 # Test machine.mem_backup() function.
+# requires: slice
 
 try:
     import machine

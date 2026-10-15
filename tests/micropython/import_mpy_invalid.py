@@ -1,4 +1,5 @@
 # test importing of invalid .mpy files
+# requires: slice
 
 try:
     import sys, io, vfs

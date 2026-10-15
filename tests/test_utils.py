@@ -352,7 +352,7 @@ def create_test_list(test_filenames: [str]) -> [Test]:
                     line = line[len(_REQUIREMENT_PREFIX) :]
                     requirements.extend(str(r, "utf-8") for r in line.split())
         for requirement in requirements:
-            if requirement in ("native", "viper"):
+            if requirement in ("native", "slice", "viper"):
                 test.requires_feature.add(requirement)
             elif requirement == "target-wiring":
                 test.requires_target_wiring = True

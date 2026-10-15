@@ -1,4 +1,5 @@
 # test time resolutions
+# requires: slice
 
 try:
     import time

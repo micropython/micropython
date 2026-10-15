@@ -1,4 +1,5 @@
 # tuple slicing
+# requires: slice
 
 x = (1, 2, 3 * 4)
 

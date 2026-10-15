@@ -1,4 +1,5 @@
 # test making a FAT filesystem on a very large block device
+# requires: slice
 
 try:
     import os, vfs

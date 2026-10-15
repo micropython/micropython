@@ -1,4 +1,5 @@
 # test importing of .mpy files with native code
+# requires: slice
 
 try:
     import sys, io, vfs

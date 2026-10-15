@@ -1,4 +1,5 @@
 # test builtin slice attributes access
+# requires: slice
 
 # print slice attributes
 class A:

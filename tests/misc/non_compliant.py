@@ -1,4 +1,5 @@
 # tests for things that are not implemented, or have non-compliant behaviour
+# requires: slice
 
 try:
     import array

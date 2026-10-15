@@ -1,4 +1,5 @@
 # test builtin range type
+# requires: slice
 
 # print
 print(range(4))

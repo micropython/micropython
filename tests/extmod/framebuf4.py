@@ -1,3 +1,5 @@
+# requires: slice
+
 try:
     import framebuf
 except ImportError:

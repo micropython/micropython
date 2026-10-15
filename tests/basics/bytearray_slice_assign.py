@@ -1,3 +1,5 @@
+# requires: slice
+
 try:
     bytearray()[:] = bytearray()
 except TypeError:

@@ -1,3 +1,5 @@
+# requires: slice
+
 try:
     import errno, os, vfs
 

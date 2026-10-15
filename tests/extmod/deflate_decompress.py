@@ -1,3 +1,5 @@
+# requires: slice
+
 try:
     # Check if deflate is available.
     import deflate

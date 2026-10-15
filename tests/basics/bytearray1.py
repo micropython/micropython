@@ -1,3 +1,5 @@
+# requires: slice
+
 print(bytearray(4))
 a = bytearray([1, 2, 200])
 print(type(a))

@@ -1,4 +1,5 @@
 # tests that differ when running under Python 3.4 vs 3.5/3.6/3.7
+# requires: slice
 
 try:
     exec

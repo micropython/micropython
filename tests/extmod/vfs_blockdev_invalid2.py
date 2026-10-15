@@ -1,4 +1,5 @@
 # Tests where the block device returns invalid values
+# requires: slice
 
 try:
     import vfs

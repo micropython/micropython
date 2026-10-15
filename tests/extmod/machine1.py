@@ -1,4 +1,5 @@
 # test machine module
+# requires: slice
 
 try:
     import machine

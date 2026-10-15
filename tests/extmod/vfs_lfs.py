@@ -1,4 +1,5 @@
 # Test for VfsLittle using a RAM device
+# requires: slice
 
 try:
     import os, vfs

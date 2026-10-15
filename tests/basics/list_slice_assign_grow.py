@@ -1,3 +1,5 @@
+# requires: slice
+
 x = list(range(2))
 
 l = list(x)
