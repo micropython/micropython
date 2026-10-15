@@ -1,4 +1,5 @@
 # test native emitter can handle closures correctly
+# requires: native
 
 
 # basic closure

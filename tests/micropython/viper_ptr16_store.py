@@ -1,4 +1,5 @@
 # test ptr16 type
+# requires: viper
 
 
 @micropython.viper

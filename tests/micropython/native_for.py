@@ -1,4 +1,5 @@
 # test for native for loops
+# requires: native
 
 
 @micropython.native

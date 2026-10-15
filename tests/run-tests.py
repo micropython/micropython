@@ -312,9 +312,6 @@ tests_requiring_slice = (
     "misc/rge_sm.py",
 )
 
-# These tests don't test the native emitter explicitly but rather use it to perform the test.
-tests_requiring_native_emitter = ("extmod_hardware/machine_sdcard_dma_align.py",)
-
 
 # unescape wanted regex chars and escape unwanted ones
 def convert_regex_escapes(line):
@@ -743,7 +740,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
-    skip_native = False
     skip_int_big = False
     skip_int_64 = False
     skip_bytearray = False
@@ -767,8 +763,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Check if micropython.native is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "native_check.py")
-        if output != b"native\n":
-            skip_native = True
+        target_capabilities["native"] = output == b"native\n"
+
+        # For now, micropython.viper is in the same class as micropython.native
+        target_capabilities["viper"] = target_capabilities["native"]
 
         # Check if arbitrary-precision integers are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "int_big.py")
@@ -884,9 +882,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if skip_slice:
         skip_tests.update(tests_requiring_slice)
 
-    if skip_native:
-        skip_tests.update(tests_requiring_native_emitter)
-
     if not has_complex:
         skip_tests.add("float/complex1.py")
         skip_tests.add("float/complex1_intbig.py")
@@ -969,7 +964,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
         test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = (
             test_name.startswith("int_big")
@@ -987,7 +981,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
-        skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_int_64 and is_int_64

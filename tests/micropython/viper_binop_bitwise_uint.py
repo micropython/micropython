@@ -1,4 +1,5 @@
 # test bitwise operators on uint type
+# requires: viper
 
 
 @micropython.viper

@@ -1,4 +1,5 @@
 # test loading constants in viper functions
+# requires: viper
 
 
 @micropython.viper

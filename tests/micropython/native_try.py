@@ -1,4 +1,5 @@
 # test native try handling
+# requires: native
 
 
 # basic try-finally

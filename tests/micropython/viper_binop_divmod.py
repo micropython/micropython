@@ -1,4 +1,5 @@
 # test floor-division and modulo operators
+# requires: viper
 
 
 @micropython.viper

@@ -1,3 +1,5 @@
+# requires: native
+
 import native_frozen_align
 
 native_frozen_align.native_x(1)

@@ -1,4 +1,5 @@
 # test standard Python subscr using viper types
+# requires: viper
 
 
 @micropython.viper

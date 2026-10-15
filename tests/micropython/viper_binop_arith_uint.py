@@ -1,4 +1,5 @@
 # test arithmetic operators with uint type
+# requires: viper
 
 
 @micropython.viper

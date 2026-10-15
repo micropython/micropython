@@ -1,4 +1,5 @@
 # Test the marshal module in combination with native/viper functions.
+# requires: native
 
 try:
     import marshal

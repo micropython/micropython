@@ -1,4 +1,5 @@
 # Test MicroPython-specific restrictions of function.__code__ attribute.
+# requires: native
 
 try:
     (lambda: 0).__code__

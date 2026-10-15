@@ -1,6 +1,5 @@
 # Miscellaneous viper tests.
-
-import micropython
+# requires: viper
 
 
 # a for loop

@@ -1,4 +1,5 @@
 # test passing addresses to viper
+# requires: viper
 
 
 @micropython.viper

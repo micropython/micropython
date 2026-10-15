@@ -1,4 +1,7 @@
 # test multi comparison operators
+# requires: viper
+
+
 @micropython.viper
 def f(x: int, y: int):
     if 0 < x < y:

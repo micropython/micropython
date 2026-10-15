@@ -1,4 +1,7 @@
 # using False as a conditional
+# requires: viper
+
+
 @micropython.viper
 def f():
     x = False

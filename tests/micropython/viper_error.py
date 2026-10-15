@@ -1,4 +1,5 @@
 # test syntax and type errors specific to viper code generation
+# requires: viper
 
 
 def test(code, msg):

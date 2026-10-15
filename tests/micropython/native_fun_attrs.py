@@ -1,4 +1,5 @@
 # test native function attributes
+# requires: native
 
 
 def f():

@@ -1,4 +1,5 @@
 # test native while loop
+# requires: native
 
 
 @micropython.native

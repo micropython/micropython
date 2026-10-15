@@ -1,4 +1,5 @@
 # test viper with multiple subscripts in a single expression
+# requires: viper
 
 
 @micropython.viper

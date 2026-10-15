@@ -1,4 +1,5 @@
 # Test boundary conditions for various architectures
+# requires: viper
 
 SET_TEMPLATE = """
 @micropython.viper

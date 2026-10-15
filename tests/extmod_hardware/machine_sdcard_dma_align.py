@@ -6,6 +6,9 @@
 # Test requirements:
 # A mostly empty FAT formatted SDCard installed in SD socket (a card with other
 # files may be much slower to start the test.)
+#
+# requires: native
+
 import errno
 import os
 import machine

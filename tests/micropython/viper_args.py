@@ -1,4 +1,5 @@
 # test calling viper functions with different number of args
+# requires: viper
 
 
 @micropython.viper

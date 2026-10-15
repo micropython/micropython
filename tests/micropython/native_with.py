@@ -1,4 +1,5 @@
 # test with handling within a native function
+# requires: native
 
 
 class C:

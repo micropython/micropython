@@ -1,4 +1,5 @@
 # tests for natively compiled functions
+# requires: native
 
 
 # basic test

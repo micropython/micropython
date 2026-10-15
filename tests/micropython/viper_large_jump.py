@@ -1,3 +1,5 @@
+# requires: viper
+
 COUNT = 600
 
 

@@ -1,4 +1,5 @@
 # test that viper functions capture their globals context
+# requires: viper
 
 gl = {}
 

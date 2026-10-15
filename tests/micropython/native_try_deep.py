@@ -1,4 +1,5 @@
 # test native try handling
+# requires: native
 
 
 # deeply nested try (9 deep)

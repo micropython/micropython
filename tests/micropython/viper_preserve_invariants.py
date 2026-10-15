@@ -1,3 +1,5 @@
+# requires: viper
+
 RESULTS = []
 
 LOAD_TEMPLATE_REG = """

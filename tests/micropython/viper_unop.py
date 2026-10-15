@@ -1,4 +1,5 @@
 # test unary operators
+# requires: viper
 
 
 @micropython.viper

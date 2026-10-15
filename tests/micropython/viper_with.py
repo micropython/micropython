@@ -1,4 +1,5 @@
 # test with handling within a viper function
+# requires: viper
 
 
 class C:
