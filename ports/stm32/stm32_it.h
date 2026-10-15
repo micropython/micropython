@@ -3,6 +3,8 @@
  *
  * Original template from ST Cube library.  See below for header.
  *
+ * SPDX-License-Identifier: MIT AND BSD-3-Clause
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George

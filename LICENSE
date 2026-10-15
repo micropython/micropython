@@ -59,7 +59,7 @@ used during the build process and is not part of the compiled source code.
         /open-amp (BSD-3-clause)
         /pico-sdk (BSD-3-clause)
         /re15 (BSD-3-clause)
-        /stm32lib (BSD-3-clause)
+        /stm32lib (BSD-3-clause + Apache-2.0)
         /tinyusb (MIT)
         /uzlib (Zlib)
         /wiznet5k (MIT)
@@ -75,13 +75,13 @@ used during the build process and is not part of the compiled source code.
             /mutex_extra.c (BSD-3-clause)
             /clocks_extra.c (BSD-3-clause)
         /stm32
-            /usbd*.c (MCD-ST Liberty SW License Agreement V2)
+            /usbd_cdc_interface.* (MCD-ST Liberty SW License Agreement V2)
+            /usbd_conf.* (MCD-ST Liberty SW License Agreement V2)
+            /usbd_desc.c (MCD-ST Liberty SW License Agreement V2)
             /stm32_it.* (MIT + BSD-3-clause)
             /system_stm32*.c (MIT + BSD-3-clause)
-            /boards
-                /startup_stm32*.s (BSD-3-clause)
-                /*/stm32*.h (BSD-3-clause)
-            /usbdev (MCD-ST Liberty SW License Agreement V2)
+            /ulpi.c (BSD-3-clause)
+            /usbdev (MIT + MCD-ST Liberty SW License Agreement V2)
             /usbhost (MCD-ST Liberty SW License Agreement V2)
         /zephyr
             /src (Apache-2.0)
