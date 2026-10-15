@@ -520,4 +520,25 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
     return 0;
 }
 
+// Wait for a DMA write to finish, so that the caller can take memory-mapped flash
+// out of memory-mapped mode without breaking a transfer that reads from it (the
+// CYW43 firmware download DMAs straight from it).  Only waits while the data path
+// is active: before then nothing has been read, and the SDMMC IRQ that starts the
+// data path can't run until the caller, which has a higher priority, returns.
+// The DMA doesn't need an IRQ to finish, so this works with IRQs disabled too,
+// as does mp_hal_delay_us(), which bounds the wait at 10 ms.
+void sdio_wait_dma_write(void) {
+    if (sdmmc_irq_state == SDMMC_IRQ_STATE_DONE || !sdmmc_dma || !sdmmc_write) {
+        return;
+    }
+    #if defined(STM32F7)
+    const uint32_t active = SDMMC_STA_TXACT;
+    #else
+    const uint32_t active = SDMMC_STA_DPSMACT;
+    #endif
+    for (uint32_t us = 0; us < 10000 && (SDMMC->STA & active); ++us) {
+        mp_hal_delay_us(1);
+    }
+}
+
 #endif

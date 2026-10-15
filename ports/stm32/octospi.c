@@ -33,6 +33,7 @@
 #include "mpu.h"
 #include "octospi.h"
 #include "pin_static_af.h"
+#include "sdio.h"
 #include "storage.h"
 
 #if defined(MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2)
@@ -211,6 +212,11 @@ void octospi_memory_map(void) {
 }
 
 void octospi_memory_map_exit(void) {
+    #if MICROPY_PY_NETWORK_CYW43
+    // The CYW43 firmware may be stored here, and a DMA may be reading it.
+    sdio_wait_dma_write();
+    #endif
+
     // Prevent access to QSPI memory-mapped region.
     octospi_mpu_disable_all();
 
