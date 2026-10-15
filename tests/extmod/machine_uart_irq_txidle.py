@@ -1,5 +1,6 @@
 # Test machine.UART.IRQ_TXIDLE firing after a transmission.
 # Does not require any external connections.
+# requires: target-wiring
 
 try:
     from machine import UART

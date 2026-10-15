@@ -2,6 +2,8 @@
 #
 # IMPORTANT: This test requires hardware connections: the PWM-output and pulse-input
 # pins must be wired together (see the variable `pwm_loopback_pins`).
+#
+# requires: target-wiring
 
 try:
     from machine import time_pulse_us, Pin, PWM

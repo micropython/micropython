@@ -1,4 +1,5 @@
 # Test machine.SPI data transfer rates
+# requires: target-wiring
 
 try:
     from machine import Pin, SPI

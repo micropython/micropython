@@ -122,6 +122,7 @@ class Test:
     def __init__(self, filename):
         self.filename = filename
         self.requires_feature = set()
+        self.requires_target_wiring = False
 
 
 class PyboardNodeRunner:
@@ -351,7 +352,9 @@ def create_test_list(test_filenames: [str]) -> [Test]:
                     line = line[len(_REQUIREMENT_PREFIX) :]
                     requirements.extend(str(r, "utf-8") for r in line.split())
         for requirement in requirements:
-            if True:
+            if requirement == "target-wiring":
+                test.requires_target_wiring = True
+            else:
                 print()
                 print(f"{filename}: unknown test requirement: {requirement}")
                 sys.exit(2)

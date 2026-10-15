@@ -3,6 +3,8 @@
 # IMPORTANT: This test requires hardware connections:
 # - out0_pin and in0_pin must be wired together.
 # - out1_pin and in1_pin must be wired together.
+#
+# requires: target-wiring
 
 try:
     from machine import Encoder

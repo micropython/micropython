@@ -2,6 +2,8 @@
 #
 # IMPORTANT: This test requires hardware connections: the UART TX and RX
 # pins must be wired together.
+#
+# requires: target-wiring
 
 try:
     from machine import UART

@@ -315,19 +315,6 @@ tests_requiring_slice = (
 # These tests don't test the native emitter explicitly but rather use it to perform the test.
 tests_requiring_native_emitter = ("extmod_hardware/machine_sdcard_dma_align.py",)
 
-# Tests that require `import target_wiring` to work.
-tests_requiring_target_wiring = (
-    "extmod/machine_spi_rate.py",
-    "extmod/machine_uart_irq_txidle.py",
-    "extmod/machine_uart_tx.py",
-    "extmod_hardware/machine_can_timings.py",
-    "extmod_hardware/machine_encoder.py",
-    "extmod_hardware/machine_pwm.py",
-    "extmod_hardware/machine_uart_irq_break.py",
-    "extmod_hardware/machine_uart_irq_rx.py",
-    "extmod_hardware/machine_uart_irq_rxidle.py",
-)
-
 
 # unescape wanted regex chars and escape unwanted ones
 def convert_regex_escapes(line):
@@ -649,9 +636,8 @@ def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_fea
 
     else:
         # run via pyboard interface
-        requires_target_wiring = test.filename.endswith(tests_requiring_target_wiring)
         had_crash, output_mupy = pyb.run_script_on_remote_target(
-            args, test_file_abspath, is_special, requires_target_wiring
+            args, test_file_abspath, is_special, test.requires_target_wiring
         )
 
     # canonical form for all ports/platforms is to use \n for end-of-line
@@ -1437,7 +1423,7 @@ the last matching regex is used:
     tests = create_test_list(tests)
 
     # If any tests need it, prepare the target_wiring script for the target.
-    if pyb and any(test.filename.endswith(tests_requiring_target_wiring) for test in tests):
+    if pyb and any(test.requires_target_wiring for test in tests):
         detect_target_wiring_script(pyb, args)
 
     # End the target information line.

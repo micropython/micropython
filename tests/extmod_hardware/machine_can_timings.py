@@ -1,6 +1,8 @@
 # Test machine.CAN timings results
 #
 # Single device test, assumes no connections to the CAN pins
+#
+# requires: target-wiring
 
 try:
     from machine import CAN
