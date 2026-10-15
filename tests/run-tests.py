@@ -23,12 +23,14 @@ from test_utils import (
     test_instance_description,
     test_instance_epilog,
     test_directory_description,
+    Test,
     rm_f,
     normalize_newlines,
     set_injected_prologue,
     get_results_filename,
     convert_device_shortcut_to_real_device,
     get_test_instance,
+    create_test_list,
     create_test_report,
     FLAKY_REASON_PREFIX,
 )
@@ -472,9 +474,7 @@ tests_with_regex_output = [
 ]
 
 
-def run_micropython(
-    pyb, args, test_file, test_file_abspath, is_special=False, is_feature_check=False
-):
+def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_feature_check=False):
     had_crash = False
     if pyb is None:
         # run on PC
@@ -486,7 +486,7 @@ def run_micropython(
             # check for any cmdline options needed for this test
             cmdlist = [MICROPYTHON]
             send_sigint = False
-            with open(test_file, "rb") as f:
+            with open(test.filename, "rb") as f:
                 for line in f:
                     if line.startswith(b"# cmdline:"):
                         # subprocess.check_output on Windows only accepts strings, not bytes
@@ -498,7 +498,7 @@ def run_micropython(
 
             # run the test, possibly with redirected input
             try:
-                if os.path.basename(test_file).startswith("repl_"):
+                if os.path.basename(test.filename).startswith("repl_"):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
@@ -535,7 +535,7 @@ def run_micropython(
                         os.write(master, b"\x03")
                         return get(True)
 
-                    with open(test_file, "rb") as f:
+                    with open(test.filename, "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(cmdlist, stdin=f)
                         master, slave = pty.openpty()
                         try:
@@ -601,7 +601,7 @@ def run_micropython(
                             os.close(slave)
                 else:
                     output_mupy = subprocess.check_output(
-                        cmdlist + [test_file], stderr=subprocess.STDOUT
+                        cmdlist + [test.filename], stderr=subprocess.STDOUT
                     )
             except subprocess.CalledProcessError:
                 return b"CRASH"
@@ -616,7 +616,7 @@ def run_micropython(
             if sys.platform == "darwin":
                 cmdlist.extend(["-X", "realtime"])
 
-            cwd = os.path.dirname(test_file)
+            cwd = os.path.dirname(test.filename)
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
@@ -624,7 +624,7 @@ def run_micropython(
                 subprocess.check_output(
                     [MPYCROSS]
                     + args.mpy_cross_flags.split()
-                    + ["-o", mpy_filename, "-X", "emit=" + args.emit, test_file]
+                    + ["-o", mpy_filename, "-X", "emit=" + args.emit, test.filename]
                 )
                 mpy_modname = os.path.splitext(os.path.basename(mpy_filename))[0]
                 cmdlist.extend(["-m", mpy_modname])
@@ -649,7 +649,7 @@ def run_micropython(
 
     else:
         # run via pyboard interface
-        requires_target_wiring = test_file.endswith(tests_requiring_target_wiring)
+        requires_target_wiring = test.filename.endswith(tests_requiring_target_wiring)
         had_crash, output_mupy = pyb.run_script_on_remote_target(
             args, test_file_abspath, is_special, requires_target_wiring
         )
@@ -672,10 +672,10 @@ def run_micropython(
     if is_special or test_file_abspath in tests_with_regex_output:
         # convert parts of the output that are not stable across runs
         # Prefer emitter-specific expected output.
-        exp_file = test_file + "." + args.emit + ".exp"
+        exp_file = test.filename + "." + args.emit + ".exp"
         if not os.path.isfile(exp_file):
             # Fall back to generic expected output.
-            exp_file = test_file + ".exp"
+            exp_file = test.filename + ".exp"
         with open(exp_file, "rb") as f:
             lines_exp = []
             for line in f.readlines():
@@ -723,9 +723,8 @@ def run_feature_check(pyb, args, test_file):
         # REPL feature tests will not run via pyboard because they require prompt interactivity
         return b""
     test_file_path = base_path("feature_check", test_file)
-    return run_micropython(
-        pyb, args, test_file_path, test_file_path, is_special=True, is_feature_check=True
-    )
+    test = Test(test_file_path)
+    return run_micropython(pyb, args, test, test_file_path, is_special=True, is_feature_check=True)
 
 
 class TestError(Exception):
@@ -920,8 +919,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     # Skip thread mutation tests on targets that have unsafe threading behaviour.
     if args.thread == "unsafe":
         for t in tests:
-            if t.startswith("thread/mutate_"):
-                skip_tests.add(t)
+            if t.filename.startswith("thread/mutate_"):
+                skip_tests.add(t.filename)
 
     # Some tests shouldn't be run on pyboard
     if args.platform not in PC_PLATFORMS:
@@ -955,7 +954,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     skip_tests = [os.path.realpath(base_path(skip_test)) for skip_test in skip_tests]
 
-    def run_one_test(test_file):
+    def run_one_test(test):
+        test_file = test.filename
         test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
         # If test_file is one of our own tests always make it relative to our tests/ dir and
         # otherwise use the absolute path, regardless of actual path passed,
@@ -1024,7 +1024,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             return
 
         # Run the test on the MicroPython target.
-        output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
+        output_mupy = run_micropython(pyb, args, test, test_file_abspath)
 
         # Check if the target requested to skip this test.
         if output_mupy == b"SKIP\n":
@@ -1421,8 +1421,12 @@ the last matching regex is used:
         # tests explicitly given
         tests = args.files
 
+    # The `tests` list is a list of all test filenames.
+    # Turn that into a list of `Test` objects.
+    tests = create_test_list(tests)
+
     # If any tests need it, prepare the target_wiring script for the target.
-    if pyb and any(test.endswith(tests_requiring_target_wiring) for test in tests):
+    if pyb and any(test.filename.endswith(tests_requiring_target_wiring) for test in tests):
         detect_target_wiring_script(pyb, args)
 
     # End the target information line.

@@ -115,6 +115,11 @@ __import__('__injected_test')
 """
 
 
+class Test:
+    def __init__(self, filename):
+        self.filename = filename
+
+
 class PyboardNodeRunner:
     def __init__(self):
         mjs = os.getenv("MICROPY_MICROPYTHON_MJS")
@@ -325,6 +330,15 @@ def run_script_on_remote_target(pyb, args, test_file, is_special, requires_targe
             had_crash = True
 
     return had_crash, output_mupy
+
+
+# Given a list of filenames, create and return a corresponding list of Test objects.
+def create_test_list(test_filenames: [str]) -> [Test]:
+    tests = []
+    for filename in test_filenames:
+        test = Test(filename)
+        tests.append(test)
+    return tests
 
 
 # Print a summary of the results and save them to a JSON file.
