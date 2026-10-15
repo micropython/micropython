@@ -28,6 +28,9 @@ elif sys.platform == "rp2":
 elif sys.platform == "pyboard":
     i2c_args = ("Y",)
     i2c_kwargs = {}
+elif sys.platform == "psoc-edge":
+    i2c_args = (5,)  # on pins P17_0/P17_1
+    i2c_kwargs = {}
 elif sys.platform == "samd":
     i2c_args = ()  # pins SCL/SDA
     i2c_kwargs = {}
