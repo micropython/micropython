@@ -830,11 +830,15 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
     // extract arguments
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
     const char *str = mp_obj_str_get_str(args_in[1]);
-    mp_int_t x0 = mp_obj_get_int(args_in[2]);
+    mp_int_t x = mp_obj_get_int(args_in[2]);
     mp_int_t y0 = mp_obj_get_int(args_in[3]);
     mp_int_t col = 1;
     if (n_args >= 5) {
         col = mp_obj_get_int(args_in[4]);
+    }
+    mp_int_t size = 8;
+    if (n_args >= 6) {
+        size = mp_obj_get_int(args_in[5]);
     }
 
     // loop over chars
@@ -846,23 +850,34 @@ static mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
         }
         // get char data
         const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
-        // loop over char data
-        for (int j = 0; j < 8; j++, x0++) {
-            if (0 <= x0 && x0 < self->width) { // clip x
-                uint vline_data = chr_data[j]; // each byte is a column of 8 pixels, LSB at top
-                for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
-                    if (vline_data & 1) { // only draw if pixel set
-                        if (0 <= y && y < self->height) { // clip y
-                            setpixel(self, x0, y, col);
-                        }
+        // track fractional char column/row in 1/8ths of a pixel
+        mp_int_t x_frac = 0;
+        for (int j = 0; j < size && x < self->width; j++, x++) { // loop x left to right
+            if (x >= 0) {
+                uint8_t vline_data = *chr_data; // each byte is a column of 8 pixels, LSB at top
+                // scan over vertical column; exit when no more set bits
+                mp_int_t y_frac = 0;
+                for (mp_int_t y = y0; vline_data && y < self->height; y++) {
+                    if (vline_data & 0x1 && y >= 0) {
+                        setpixel(self, x, y, col);
+                    }
+                    y_frac += 8;
+                    while (y_frac >= size) {
+                        y_frac -= size;
+                        vline_data >>= 1;
                     }
                 }
+            }
+            x_frac += 8;
+            while (x_frac >= size) {
+                x_frac -= size;
+                chr_data++;
             }
         }
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 5, framebuf_text);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 6, framebuf_text);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 static const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
