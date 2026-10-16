@@ -73,6 +73,13 @@ static const char denied_prompt[] = "\r\nAccess denied\r\n";
 
 static char webrepl_passwd[10];
 
+// Check the WebREPL password.  Marked MP_WEAK so that a port or application
+// that requires a more secure implementation (e.g. constant-time comparison)
+// can override this by supplying its own definition with external linkage.
+MP_WEAK int webrepl_passwd_check(const char *input) {
+    return strcmp(input, webrepl_passwd);
+}
+
 static void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
     const mp_stream_p_t *sock_stream = mp_get_stream(websock);
     int err;
@@ -200,7 +207,7 @@ static mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             self->hdr.fname[self->data_to_recv] = 0;
             DEBUG_printf("webrepl: entered password: %s\n", self->hdr.fname);
 
-            if (strcmp(self->hdr.fname, webrepl_passwd) != 0) {
+            if (webrepl_passwd_check(self->hdr.fname) != 0) {
                 write_webrepl_str(self->sock, SSTR(denied_prompt));
                 return 0;
             }
