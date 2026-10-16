@@ -12,11 +12,11 @@ dependencies:
   espressif/esp_hosted:
     rules:
       - if: "target == esp32p4"
-    version: "2.7.0"
+    version: "2.13.1"
   espressif/esp_wifi_remote:
     rules:
       - if: "target == esp32p4"
-    version: "0.15.2"
+    version: "1.6.5"
   espressif/lan867x:
     version: "~1.0.0"
     rules:

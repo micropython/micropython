@@ -52,13 +52,14 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions. The
-current recommended version of ESP-IDF for MicroPython is v5.5.5. MicroPython
-also supports v5.3, v5.4, v5.4.1, v5.4.2, v5.5.1, v5.5.2 and v5.5.4.
+current recommended version of ESP-IDF for MicroPython is v5.5.6. MicroPython
+also supports v5.3, v5.4, v5.4.1, v5.4.2, v5.5.1, v5.5.2, v5.5.4, and v5.5.5.
 
 <!-- Important: If updating the above, please also update:
      * IDF_OLDEST_VER & IDF_NEWEST_VER in .github/workflows/port_esp32.yml
      * minimum version at bottom of main/idf_component.yml
-     * the lockfiles/ subdirectory.
+     * the lockfiles/ subdirectory
+     * the installation via install script steps below.
 -->
 
 To install the ESP-IDF the full instructions can be found at the
@@ -88,10 +89,10 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v5.5.1 --recursive https://github.com/espressif/esp-idf.git
+$ git clone -b v5.5.6 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v5.5.1` with any other supported version.
+You can replace `v5.5.6` with any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
 
@@ -100,7 +101,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v5.5.1
+$ git checkout v5.5.6
 $ git submodule update --init --recursive
 ```
 
