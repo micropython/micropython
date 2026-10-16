@@ -813,12 +813,15 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_EXT_PSK), MP_ROM_INT(WIFI_AUTH_WPA3_EXT_PSK) },
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_EXT_PSK_MIXED_MODE), MP_ROM_INT(WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE) },
     { MP_ROM_QSTR(MP_QSTR_SEC_DPP), MP_ROM_INT(WIFI_AUTH_DPP) },
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+    #if CONFIG_ESP_HOSTED_ENABLED || ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_ENT), MP_ROM_INT(WIFI_AUTH_WPA3_ENTERPRISE) },
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA2_WPA3_ENT), MP_ROM_INT(WIFI_AUTH_WPA2_WPA3_ENTERPRISE) },
     #endif
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 3)
+    #if CONFIG_ESP_HOSTED_ENABLED || ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 3)
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA_ENT), MP_ROM_INT(WIFI_AUTH_WPA_ENTERPRISE) },
+    #endif
+    #if CONFIG_ESP_HOSTED_ENABLED || ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 6)
+    { MP_ROM_QSTR(MP_QSTR_SEC_UNKNOWN), MP_ROM_INT(WIFI_AUTH_UNKNOWN) },
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_DEFAULT), MP_ROM_INT(WIFI_PROTOCOL_DEFAULT) },
@@ -838,7 +841,12 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
 };
 static MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 3)
+#if CONFIG_ESP_HOSTED_ENABLED
+_Static_assert(WIFI_AUTH_MAX == 18, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at managed_components/espressif__esp_wifi_remote/idf_v*/include/injected/esp_wifi_types_generic.h");
+#else
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 6)
+_Static_assert(WIFI_AUTH_MAX == 18, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types_generic.h");
+#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 3)
 _Static_assert(WIFI_AUTH_MAX == 17, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types_generic.h");
 #elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
 _Static_assert(WIFI_AUTH_MAX == 16, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types_generic.h");
@@ -846,6 +854,7 @@ _Static_assert(WIFI_AUTH_MAX == 16, "Synchronize WIFI_AUTH_XXX constants with th
 _Static_assert(WIFI_AUTH_MAX == 14, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types_generic.h");
 #else
 #error "Error in macro logic, all supported versions should be covered."
+#endif
 #endif
 
 MP_DEFINE_CONST_OBJ_TYPE(
