@@ -1,0 +1,13 @@
+# Keep the Docker build context tiny — none of this is needed to build the image.
+build/
+build-*/
+firmware/
+esp/
+*.efi
+*.EFI
+*.o
+__pycache__/
+*.pyc
+*.md
+.gdbinit
+.devcontainer/
