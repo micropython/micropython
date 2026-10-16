@@ -51,10 +51,6 @@
 #include "esp_wifi_ap_get_sta_list.h"
 #endif
 
-#ifndef NO_QSTR
-#include "mdns.h"
-#endif
-
 #if MICROPY_PY_NETWORK_WLAN
 
 #if (WIFI_MODE_STA & WIFI_MODE_AP != WIFI_MODE_NULL || WIFI_MODE_STA | WIFI_MODE_AP != WIFI_MODE_APSTA)
@@ -78,11 +74,6 @@ static bool wifi_sta_connected = false;
 
 // Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
 static uint8_t wifi_sta_disconn_reason = 0;
-
-#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
-// Whether mDNS has been initialised or not (shared with network_lan.c)
-bool mdns_initialised = false;
-#endif
 
 static uint8_t conf_wifi_sta_reconnects = 0;
 static uint8_t wifi_sta_reconnects;
@@ -196,14 +187,7 @@ static void network_wlan_ip_event_handler(void *event_handler_arg, esp_event_bas
             wifi_sta_connected = true;
             wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
             #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
-            if (!mdns_initialised) {
-                mdns_init();
-                #if MICROPY_HW_ENABLE_MDNS_RESPONDER
-                mdns_hostname_set(mod_network_hostname_data);
-                mdns_instance_name_set(mod_network_hostname_data);
-                #endif
-                mdns_initialised = true;
-            }
+            esp_mdns_init(false);
             #endif
             break;
 
