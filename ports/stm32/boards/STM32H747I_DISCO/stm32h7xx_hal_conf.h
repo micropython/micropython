@@ -14,14 +14,6 @@
 #define HSE_STARTUP_TIMEOUT (5000)
 #define LSE_STARTUP_TIMEOUT (5000)
 
-// Required for OpenAMP dual-core synchronization
-#define HAL_HSEM_MODULE_ENABLED
-#define HAL_QSPI_MODULE_ENABLED
-
-#ifdef HAL_HSEM_MODULE_ENABLED
-#include "stm32h7xx_hal_hsem.h"
-#endif
-
 #include "boards/stm32h7xx_hal_conf_base.h"
 
 #endif // MICROPY_INCLUDED_STM32H7XX_HAL_CONF_H
