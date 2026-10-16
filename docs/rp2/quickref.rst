@@ -106,6 +106,12 @@ connection succeeds or the interface gets disabled.
 .. _Pico W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#picow-technical-specification
 .. _Pico 2 W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico2w-technical-specification
 
+UDP MULTICAST
+^^^^^^^^^^^^^
+
+See client/server example in the :ref:`udp_multicast` tutorial.
+
+
 Delay and timing
 ----------------
 
