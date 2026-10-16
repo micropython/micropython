@@ -1,6 +1,5 @@
 # Test BLE GAP connect/disconnect with pairing and bonding, and read an encrypted
 # characteristic
-# TODO: reconnect after bonding to test that the secrets persist
 
 from micropython import const
 import time, machine, bluetooth
@@ -31,7 +30,6 @@ CHAR = (CHAR_UUID, _FLAG_READ | _FLAG_READ_ENCRYPTED)
 SERVICE = (SERVICE_UUID, (CHAR,))
 
 waiting_events = {}
-secrets = {}
 
 
 def irq(event, data):
