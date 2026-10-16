@@ -502,6 +502,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     (void)emit_opt;
     #endif
 
+    #if MICROPY_PY_GPIO
+    extern void mp_pin_init(void);
+    mp_pin_init();
+    #endif
+
     #if MICROPY_VFS_POSIX
     {
         // Mount the host FS at the root of our internal VFS
@@ -728,6 +733,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #if MICROPY_PY_BLUETOOTH
     int mp_bluetooth_deinit(void);
     mp_bluetooth_deinit();
+    #endif
+
+    #if MICROPY_PY_GPIO
+    extern void mp_pin_deinit(void);
+    mp_pin_deinit();
     #endif
 
     #if MICROPY_PY_THREAD
