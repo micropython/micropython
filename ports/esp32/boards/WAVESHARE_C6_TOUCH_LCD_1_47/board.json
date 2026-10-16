@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "BLE",
+        "External Flash",
+        "WiFi",
+        "USB",
+        "USB-C",
+        "Display"
+    ],
+    "images": [
+        "waveshare_esp32_c6_touch_lcd_1_47.jpg"
+    ],
+    "mcu": "esp32c6",
+    "product": "ESP32-C6-Touch-LCD-1.47",
+    "url": "https://www.waveshare.com/esp32-c6-touch-lcd-1.47.htm",
+    "vendor": "Waveshare"
+}
