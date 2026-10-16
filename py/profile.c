@@ -86,17 +86,26 @@ static void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 }
 
 static void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if (dest[0] != MP_OBJ_NULL) {
+    mp_obj_frame_t *o = MP_OBJ_TO_PTR(self_in);
+
+    if (dest[0] == MP_OBJ_SENTINEL) {
+        // store attr
+        switch (attr) {
+            case MP_QSTR_f_trace:
+                o->f_trace = dest[1];
+                dest[0] = MP_OBJ_NULL;
+                break;
+        }
+        return;
+    } else if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
         return;
     }
 
-    mp_obj_frame_t *o = MP_OBJ_TO_PTR(self_in);
-
     switch (attr) {
         case MP_QSTR_f_back:
             dest[0] = mp_const_none;
-            if (o->code_state->prev_state) {
+            if (o->code_state->prev_state && o->code_state->prev_state->frame) {
                 dest[0] = MP_OBJ_FROM_PTR(o->code_state->prev_state->frame);
             }
             break;
@@ -111,6 +120,12 @@ static void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             break;
         case MP_QSTR_f_lineno:
             dest[0] = MP_OBJ_NEW_SMALL_INT(o->lineno);
+            break;
+        case MP_QSTR_f_trace:
+            dest[0] = o->f_trace;
+            break;
+        case MP_QSTR_f_locals:
+            dest[0] = mp_obj_new_dict(0);
             break;
     }
 }
@@ -148,6 +163,7 @@ mp_obj_t mp_obj_new_frame(const mp_code_state_t *code_state) {
     o->lineno = mp_prof_bytecode_lineno(rc, o->lasti);
     o->trace_opcodes = false;
     o->callback = MP_OBJ_NULL;
+    o->f_trace = MP_OBJ_NULL;
 
     return MP_OBJ_FROM_PTR(o);
 }
@@ -168,7 +184,24 @@ static mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t 
     mp_prof_is_executing = true;
 
     mp_obj_t a[3] = {MP_OBJ_FROM_PTR(args->frame), args->event, args->arg};
+
+    // The callback may raise, and the exception is allowed to propagate into
+    // the traced program (that is how a debugger unwinds a target out of a
+    // frame it is stopped in). The recursion guard and the trace callback must
+    // still be brought back to a sane state on that path: an nlr jump straight
+    // out of here would leave mp_prof_is_executing set, which every trace hook
+    // in the VM tests, so a single raise would silently disable tracing for the
+    // rest of the process with no way to re-enable it. CPython unsets the trace
+    // function when it raises; do the same, so the state after a raise is one
+    // sys.settrace() can recover from.
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) != 0) {
+        mp_prof_is_executing = false;
+        prof_trace_cb = MP_OBJ_NULL;
+        nlr_jump(nlr.ret_val);
+    }
     mp_obj_t top = mp_call_function_n_kw(callback, 3, 0, a);
+    nlr_pop();
 
     mp_prof_is_executing = false;
 
@@ -185,6 +218,33 @@ mp_obj_t mp_prof_settrace(mp_obj_t callback) {
         prof_trace_cb = MP_OBJ_NULL;
     }
     return mp_const_none;
+}
+
+mp_obj_t mp_prof_gettrace(void) {
+    if (prof_trace_cb == MP_OBJ_NULL) {
+        return mp_const_none;
+    }
+    return prof_trace_cb;
+}
+
+mp_obj_t mp_prof_get_frame(size_t depth) {
+
+    mp_code_state_t *code_state = MP_STATE_THREAD(current_code_state);
+
+    for (size_t i = 0; i < depth; i++) {
+        code_state = code_state->prev_state;
+        if (code_state == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("call stack is not deep enough"));
+        }
+    }
+
+    mp_obj_frame_t *frame = MP_OBJ_TO_PTR(mp_obj_new_frame(code_state));
+    if (frame == NULL) {
+        // Couldn't allocate a frame object
+        return MP_OBJ_NULL;
+    }
+
+    return MP_OBJ_FROM_PTR(frame);
 }
 
 mp_obj_t mp_prof_frame_enter(mp_code_state_t *code_state) {
