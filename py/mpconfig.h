@@ -2099,6 +2099,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_MACHINE_MEMX (MICROPY_PY_MACHINE)
 #endif
 
+// Whether "machine.mem8/16/32" objects support reading/writing slices
+#ifndef MICROPY_PY_MACHINE_MEMX_SLICE
+#define MICROPY_PY_MACHINE_MEMX_SLICE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Whether to provide the "machine.mem_backup" function
 #ifndef MICROPY_PY_MACHINE_MEM_BACKUP
 #define MICROPY_PY_MACHINE_MEM_BACKUP (0)
