@@ -37,6 +37,8 @@ typedef struct _scb_obj_t {
     CySCB_Type *scb;
     sys_int_cfg_t irq;
     en_clk_dst_t clk;
+    uint8_t mmio_peri_nr;
+    uint8_t mmio_group_nr;
     uint8_t mmio_slave_nr;
     mp_obj_t parent;
     scb_parent_irq_handler_t parent_handler;
