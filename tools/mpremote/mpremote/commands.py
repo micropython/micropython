@@ -210,7 +210,7 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
         # Write to local file.
         with open(dest, "wb") as f:
             f.write(data)
-        print("Downloaded:", dest)
+        print("Received  :", dest)
 
 
 def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
