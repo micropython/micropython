@@ -69,6 +69,18 @@ idf_build_set_property(DEPENDENCIES_LOCK ${LOCKFILE_PATH})
 # Define the project.
 project(micropython)
 
+# mbedtls 4 (ESP-IDF v6+) moved the legacy symmetric-crypto headers (eg
+# mbedtls/aes.h) into the tf-psa-crypto builtin driver include tree. The
+# extmod crypto/hash modules still use the legacy API surface, so add that
+# include path when it exists. On mbedtls 3 (ESP-IDF v5) this is a no-op.
+idf_component_get_property(mbedtls_dir mbedtls COMPONENT_DIR)
+set(mbedtls_builtin_inc "${mbedtls_dir}/mbedtls/tf-psa-crypto/drivers/builtin/include")
+if(EXISTS "${mbedtls_builtin_inc}/mbedtls/private/aes.h")
+    idf_component_get_property(mbedtls_lib mbedtls COMPONENT_LIB)
+    target_include_directories(${mbedtls_lib} INTERFACE ${mbedtls_builtin_inc})
+    message(STATUS "mbedtls 4.x detected: added private symmetric crypto include path")
+endif()
+
 # Check for lockfile changes and either warn or error depending on build type
 message("Checking lockfile contents...")
 execute_process(COMMAND git diff --exit-code ${LOCKFILE_PATH} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
