@@ -550,8 +550,9 @@ def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_fea
             cmdlist = [os.path.abspath(MICROPYTHON), "-X", "emit=" + args.emit]
             if args.heapsize is not None:
                 cmdlist.extend(["-X", "heapsize=" + args.heapsize])
-            if sys.platform == "darwin":
-                cmdlist.extend(["-X", "realtime"])
+            if os.getenv("MICROPY_MICROPYTHON_WASM") is None:
+                if sys.platform == "darwin":
+                    cmdlist.extend(["-X", "realtime"])
 
             cwd = os.path.dirname(test.filename)
 
