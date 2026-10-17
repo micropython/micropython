@@ -131,7 +131,8 @@ def _remote_path_basename(a):
     return a.rsplit("/", 1)[-1]
 
 
-def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
+def do_filesystem_cp(state, src, dest, multiple, args):
+    check_hash=not args.force
     if dest.startswith(":"):
         dest_no_slash = dest.rstrip("/" + os.path.sep + (os.path.altsep or ""))
         dest_exists = state.transport.fs_exists(dest_no_slash[1:])
@@ -168,12 +169,19 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
                     # remote_hash will be None if the device doesn't support
                     # hashlib.sha256 (and therefore won't match).
                     if remote_hash == dest_hash:
-                        print("Up to date:", dest)
+                        if args.verbose:
+                            print("Up to date:", dest)
+                        else:
+                            print(".", end="", flush=True)
                         return
                 except OSError:
                     pass
 
-            data = state.transport.fs_readfile(src[1:], progress_callback=show_progress_bar)
+            if args.verbose:
+                data = state.transport.fs_readfile(src[1:], progress_callback=show_progress_bar)
+            else:
+                data = state.transport.fs_readfile(src[1:])
+
         else:
             with open(src, "rb") as f:
                 data = f.read()
@@ -195,14 +203,23 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
                 # remote_hash will be None if the device doesn't support
                 # hashlib.sha256 (and therefore won't match).
                 if remote_hash == source_hash:
-                    print("Up to date:", dest[1:])
+                    if args.verbose:
+                        print("Up to date:", dest[1:])
+                    else:
+                        print(".", end="", flush=True)
                     return
             except OSError:
                 pass
 
         # Write to remote.
-        state.transport.fs_writefile(dest[1:], data, progress_callback=show_progress_bar)
-        print("Sent      :", dest[1:])
+        if args.verbose:
+            state.transport.fs_writefile(dest[1:], data, progress_callback=show_progress_bar)
+        else:
+            state.transport.fs_writefile(dest[1:], data)
+        if args.verbose:
+            print("Sent      :", dest[1:])
+        else:
+            print(".", end="", flush=True)
     else:
         # If the destination path is just the directory, then add the source filename.
         if dest_isdir:
@@ -211,10 +228,13 @@ def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
         # Write to local file.
         with open(dest, "wb") as f:
             f.write(data)
-        print("Received  :", dest)
+        if args.verbose:
+            print("Received  :", dest)
+        else:
+            print(".", end="", flush=True)
 
 
-def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
+def do_filesystem_recursive_cp(state, src, dest, multiple, args):
     # Ignore trailing / on both src and dest. (Unix cp ignores them too)
     src = src.rstrip("/" + os.path.sep + (os.path.altsep if os.path.altsep else ""))
     dest = dest.rstrip("/" + os.path.sep + (os.path.altsep if os.path.altsep else ""))
@@ -287,7 +307,7 @@ def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
 
     # If no directories were encountered then we must have just had a file.
     if not dirs:
-        return do_filesystem_cp(state, src, dest, multiple, check_hash)
+        return do_filesystem_cp(state, src, dest, multiple, args)
 
     def _mkdir(a, *b):
         try:
@@ -317,7 +337,7 @@ def do_filesystem_recursive_cp(state, src, dest, multiple, check_hash):
         else:
             dest_path_joined = os.path.join(dest, *dest_path_split)
 
-        do_filesystem_cp(state, src_path_joined, dest_path_joined, False, check_hash)
+        do_filesystem_cp(state, src_path_joined, dest_path_joined, False, args)
 
 
 def do_filesystem_recursive_rm(state, path, args):
@@ -462,10 +482,10 @@ def do_filesystem(state, args):
             elif command == "cp":
                 if args.recursive:
                     do_filesystem_recursive_cp(
-                        state, path, cp_dest, len(paths) > 1, not args.force
+                        state, path, cp_dest, len(paths) > 1, args
                     )
                 else:
-                    do_filesystem_cp(state, path, cp_dest, len(paths) > 1, not args.force)
+                    do_filesystem_cp(state, path, cp_dest, len(paths) > 1, args)
             elif command == "tree":
                 do_filesystem_tree(state, path, args)
     except OSError as er:
