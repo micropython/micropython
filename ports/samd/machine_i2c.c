@@ -263,9 +263,21 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     return len;
 }
 
+static mp_obj_t machine_i2c_scl(mp_obj_base_t *self_in) {
+    machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
+    return mp_hal_pin_to_obj(self->scl);
+}
+
+static mp_obj_t machine_i2c_sda(mp_obj_base_t *self_in) {
+    machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
+    return mp_hal_pin_to_obj(self->sda);
+}
+
 static const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
+    .scl = machine_i2c_scl,
+    .sda = machine_i2c_sda,
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
