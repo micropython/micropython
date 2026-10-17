@@ -72,6 +72,9 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_AWAIT,
     #endif
     MP_TOKEN_KW_BREAK,
+    #if MICROPY_PY_MATCH
+    MP_TOKEN_KW_CASE,
+    #endif
     MP_TOKEN_KW_CLASS,
     MP_TOKEN_KW_CONTINUE,
     MP_TOKEN_KW_DEF,
@@ -88,6 +91,9 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_IN,
     MP_TOKEN_KW_IS,
     MP_TOKEN_KW_LAMBDA,
+    #if MICROPY_PY_MATCH
+    MP_TOKEN_KW_MATCH,
+    #endif
     MP_TOKEN_KW_NONLOCAL,
     MP_TOKEN_KW_NOT,
     MP_TOKEN_KW_OR,
