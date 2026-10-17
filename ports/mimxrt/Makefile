@@ -51,6 +51,10 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
+# HaLow driver linkage (prebuilt morselib, transceiver firmware blobs).  Absent
+# until the submodule is fetched, which "make submodules" must still parse past.
+-include $(TOP)/lib/mm-halow-driver/mm_halow.mk
+
 # Set SDK directory based on MCU_SERIES
 MCUX_SDK_DIR = lib/nxp_driver/sdk
 MCU_DIR = $(MCUX_SDK_DIR)/devices/$(MCU_SERIES)
@@ -537,6 +541,16 @@ endif
 # =============================================================================
 
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+CFLAGS += $(MM_HALOW_CFLAGS)
+# This port links with $(LD) rather than $(CC), so the driver's link group
+# goes in without the compiler driver's -Wl, prefix.
+COMMA := ,
+LIBS += $(subst -Wl$(COMMA),,$(MM_HALOW_LIBS))
+OBJ += $(MM_HALOW_OBJ)
+SRC_THIRDPARTY_C += $(MM_HALOW_SRC_C)
+endif
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))

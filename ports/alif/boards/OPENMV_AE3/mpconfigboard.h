@@ -85,3 +85,15 @@ extern void board_exit_standby(void);
 // Bluetooth config
 #define MICROPY_HW_BLE_UART_ID                  (0)
 #define MICROPY_HW_BLE_UART_BAUDRATE            (115200)
+
+// Morse Micro MM8108 802.11ah shield
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+#define MICROPY_HW_HALOW_MORSE_MICRO_SPI_ID                 (0)             // P0/P1/P2 are SPI0
+#define MICROPY_HW_HALOW_MORSE_MICRO_CS                     (pin_P5_2)      // P3
+#define MICROPY_HW_HALOW_MORSE_MICRO_IRQ                    (pin_P4_4)      // JTAG_TCK
+#define MICROPY_PY_NETWORK_HALOW_PIN_IRQ        (1)
+#define MICROPY_HW_HALOW_MORSE_MICRO_RESET                  (pin_P4_7)      // JTAG_TDO
+#define MICROPY_HW_HALOW_MORSE_MICRO_WAKE                   (pin_P4_5)      // JTAG_TMS
+#define MICROPY_HW_HALOW_MORSE_MICRO_BUSY                   (pin_P4_6)      // JTAG_TDI
+#define MICROPY_HW_HALOW_MORSE_MICRO_SET_MSPLIM             (1)             // startup sets MSPLIM
+#endif

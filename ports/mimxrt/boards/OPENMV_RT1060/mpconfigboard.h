@@ -258,3 +258,15 @@
 #define CFG_TUD_CDC_EP_BUFSIZE  (4096)
 #define CFG_TUD_CDC_RX_BUFSIZE  (4096)
 #define CFG_TUD_CDC_TX_BUFSIZE  (4096)
+
+// Morse Micro MM8108 802.11ah shield
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+#define MICROPY_HW_HALOW_MORSE_MICRO_SPI_ID                 (1)                     // P0/P1/P2 are LPSPI3, logical SPI 1
+#define MICROPY_HW_HALOW_MORSE_MICRO_CS                     (pin_GPIO_AD_B0_03)     // P3
+#define MICROPY_HW_HALOW_MORSE_MICRO_IRQ                    (pin_GPIO_B0_07)        // P8
+#define MICROPY_PY_NETWORK_HALOW_PIN_IRQ        (1)
+#define MICROPY_HW_HALOW_MORSE_MICRO_RESET                  (pin_GPIO_B0_06)        // P7
+#define MICROPY_HW_HALOW_MORSE_MICRO_WAKE                   (pin_GPIO_B1_00)        // P9
+#define MICROPY_HW_HALOW_MORSE_MICRO_BUSY                   (pin_WAKEUP)            // P11
+#define MICROPY_HW_HALOW_MORSE_MICRO_BUSY_INVERTED          (1)                     // shield inverts BUSY
+#endif

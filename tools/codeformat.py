@@ -45,6 +45,8 @@ PATHS = [
 ]
 
 EXCLUSIONS = [
+    # OpenMV HaLow regulatory DB, derived verbatim from the Morse SDK template.
+    "extmod/halow/morse/mm_halow_regdb.c",
     # Fixups broken by preprocessor macro
     "shared/readline/*.[ch]",
     # The cc3200 port is not fully formatted yet.
