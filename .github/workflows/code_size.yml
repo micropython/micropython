@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/*.yml'
       - 'tools/**'
+      - '!tools/mpremote/**'
       - 'py/**'
       - 'extmod/**'
       - 'shared/**'
