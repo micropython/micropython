@@ -201,12 +201,13 @@ $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
 ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
-# Build mpy-cross automatically if needed. Clear USER_C_MODULES and
-# FROZEN_MANIFEST so a port build with either set doesn't leak them into the
-# mpy-cross sub-make and cause manifest.mk there to parse the port's manifest
-# from the wrong cwd.
+# Build mpy-cross automatically if needed. Pin BUILD and clear USER_C_MODULES
+# and FROZEN_MANIFEST so a port build with BUILD=... / either of those set
+# doesn't leak them into the mpy-cross sub-make (BUILD ?= build won't override
+# a defined empty BUILD=; FROZEN_MANIFEST would parse the port manifest from
+# the wrong cwd).
 $(MICROPY_MPYCROSS_DEPENDENCY):
-	$(MAKE) -C "$(abspath $(dir $@)..)" USER_C_MODULES= FROZEN_MANIFEST=
+	$(MAKE) -C "$(abspath $(dir $@)..)" BUILD="$(abspath $(dir $@))" USER_C_MODULES= FROZEN_MANIFEST=
 endif
 
 ifneq ($(FROZEN_DIR),)
