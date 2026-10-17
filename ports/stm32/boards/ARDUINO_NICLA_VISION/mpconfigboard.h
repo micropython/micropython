@@ -135,7 +135,7 @@ void NICLAV_board_osc_enable(int enable);
 
 #if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // QSPI flash for storage
-#define MICROPY_HW_QSPI_PRESCALER           (2) // 100MHz
+#define MICROPY_HW_QSPI_PRESCALER           (3) // 66MHz (100MHz is unreliable on this board)
 #define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (27)
 // Reserve 4MiB for romfs and 1MiB for WiFi/BT firmware.
 #define MICROPY_HW_SPIFLASH_SIZE_BITS       (88 * 1024 * 1024)
