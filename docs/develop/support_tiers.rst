@@ -1,3 +1,5 @@
+.. _support_tiers:
+
 MicroPython Support Tiers
 =========================
 
