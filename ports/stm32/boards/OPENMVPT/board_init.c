@@ -6,10 +6,11 @@
 #define OMV_BOOTLOADER_MAGIC_VALUE  (0xB00710ADU)
 
 void board_early_init(void) {
-    // Bring FLIR Lepton out of reset.
+    // Hold the FLIR Lepton in reset until its master clock is running: the part
+    // wants MCLK present when reset is released.
     mp_hal_pin_config(pyb_pin_LEPTON_RSTN, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0);
     mp_hal_pin_config_speed(pyb_pin_LEPTON_RSTN, MP_HAL_PIN_SPEED_LOW);
-    mp_hal_pin_write(pyb_pin_LEPTON_RSTN, 1);
+    mp_hal_pin_write(pyb_pin_LEPTON_RSTN, 0);
 
     // Release powerdown.
     mp_hal_pin_config(pyb_pin_LEPTON_PWDN, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0);
@@ -50,6 +51,13 @@ void board_early_init(void) {
     HAL_TIM_PWM_Init(&mclk_tim_handle);
     HAL_TIM_PWM_ConfigChannel(&mclk_tim_handle, &mclk_tim_oc_handle, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&mclk_tim_handle, TIM_CHANNEL_2);
+
+    // Release the Lepton from reset after well over the 5000 MCLK periods it
+    // requires.  SystemClock_Config() has not run yet, so this is a spin rather
+    // than mp_hal_delay_ms(): at the 64MHz HSI boot clock it is well past 210us.
+    for (volatile uint32_t i = 0; i < 50000; i++) {
+    }
+    mp_hal_pin_write(pyb_pin_LEPTON_RSTN, 1);
 }
 
 void board_low_power(int mode) {
