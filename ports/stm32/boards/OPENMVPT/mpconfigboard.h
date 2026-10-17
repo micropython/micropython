@@ -160,9 +160,10 @@ void board_low_power(int mode);
 #define MICROPY_HW_LED3             (pin_C2) // blue
 #define MICROPY_HW_LED4             (pin_G3) // white
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-// NOTE: LEDs are active low.
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRR = (pin->pin_mask << 16))
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRR = pin->pin_mask)
+// NOTE: The RGB LED is active low.  The white illuminator is active high, PG3
+// drives the gate of an N-MOSFET.
+#define MICROPY_HW_LED_ON(pin)      ((pin)->gpio->BSRR = ((pin) == MICROPY_HW_LED4) ? (pin)->pin_mask : ((pin)->pin_mask << 16))
+#define MICROPY_HW_LED_OFF(pin)     ((pin)->gpio->BSRR = ((pin) == MICROPY_HW_LED4) ? ((pin)->pin_mask << 16) : (pin)->pin_mask)
 
 // Servos, on TIM4
 #define MICROPY_HW_SERVO_TIM        (4)
