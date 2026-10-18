@@ -32,6 +32,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_err.h"
 #include "esp_mac.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
@@ -211,9 +212,15 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
     }
 
     switch (wake_type) {
-        case MACHINE_WAKE_SLEEP:
-            esp_light_sleep_start();
+        case MACHINE_WAKE_SLEEP: {
+            esp_err_t err = esp_light_sleep_start();
+            if (err != ESP_OK) {
+                mp_raise_msg_varg(&mp_type_RuntimeError,
+                    MP_ERROR_TEXT("esp_light_sleep_start() failed: %s (0x%x)"),
+                    esp_err_to_name(err), (unsigned int)err);
+            }
             break;
+        }
         case MACHINE_WAKE_DEEPSLEEP:
             esp_deep_sleep_start();
             break;
