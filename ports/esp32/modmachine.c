@@ -212,7 +212,7 @@ static void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_
 
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
-            esp_light_sleep_start();
+            check_esp_err(esp_light_sleep_start());
             break;
         case MACHINE_WAKE_DEEPSLEEP:
             esp_deep_sleep_start();
