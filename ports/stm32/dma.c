@@ -850,6 +850,8 @@ const dma_descr_t dma_SPI_4_RX = { GPDMA1_Channel6, GPDMA1_REQUEST_SPI4_RX, dma_
 const dma_descr_t dma_SPI_4_TX = { GPDMA1_Channel7, GPDMA1_REQUEST_SPI4_TX, dma_id_7, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_5_RX = { GPDMA1_Channel8, GPDMA1_REQUEST_SPI5_RX, dma_id_8, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_5_TX = { GPDMA1_Channel9, GPDMA1_REQUEST_SPI5_TX, dma_id_9, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_6_RX = { GPDMA1_Channel10, GPDMA1_REQUEST_SPI6_RX, dma_id_10, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_6_TX = { GPDMA1_Channel11, GPDMA1_REQUEST_SPI6_TX, dma_id_11, &dma_init_struct_spi_i2c };
 
 static const uint8_t dma_irqn[NSTREAM] = {
     GPDMA1_Channel0_IRQn,
