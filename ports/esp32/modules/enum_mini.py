@@ -64,9 +64,10 @@ class Enum:
                 raise TypeError("must be dict")
 
             # build and return a new Enum subclass
+            names["__name__"] = value
             c = type(str(value), (cls,), names)
             c._i()
-            return c
+            return c()
 
         # lookup by value or name: Color(1) / Color("RED")
         if value is not None and cls is not Enum:
@@ -107,6 +108,10 @@ class Enum:
     def _i(cls):
         # build and return the dict that maps member instances to their values
         if "__members__" not in cls.__dict__:
+            for b in cls.__bases__:
+                if issubclass(b, Enum) and b is not Enum and b._i():
+                    raise TypeError(f"can't extend {b.__name__}")
+
             # convert raw class attributes into typed enum instances
             cls.__members__ = {}
             for k, v in list(cls.__dict__.items()):
