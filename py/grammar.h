@@ -57,9 +57,11 @@ DEF_RULE_NC(eval_input_2, and(1), tok(NEWLINE))
 // funcdef: 'def' NAME parameters ['->' test] ':' suite
 // async_funcdef: 'async' funcdef
 // parameters: '(' [typedargslist] ')'
-// typedargslist: tfpdef ['=' test] (',' tfpdef ['=' test])* [',' ['*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef]] | '*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef
+// typedargslist: tfpdef ['=' test] (',' tfpdef ['=' test])* ',' '/' [',' [typedargslist_nopos]] | typedargslist_nopos
+// typedargslist_nopos: tfpdef ['=' test] (',' tfpdef ['=' test])* [',' ['*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef]] | '*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef
 // tfpdef: NAME [':' test]
-// varargslist: vfpdef ['=' test] (',' vfpdef ['=' test])* [',' ['*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef]] |  '*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef
+// varargslist: vfpdef ['=' test] (',' vfpdef ['=' test])* ',' '/' [',' [varargslist_nopos]] | varargslist_nopos
+// varargslist_nopos: vfpdef ['=' test] (',' vfpdef ['=' test])* [',' ['*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef]] |  '*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef
 // vfpdef: NAME
 
 DEF_RULE_NC(decorator, and(4), tok(OP_AT), rule(dotted_name), opt_rule(trailer_paren), tok(NEWLINE))
@@ -75,14 +77,14 @@ DEF_RULE(funcdef, c(funcdef), and_blank(8), tok(KW_DEF), tok(NAME), tok(DEL_PARE
 DEF_RULE_NC(funcdefrettype, and_ident(2), tok(DEL_MINUS_MORE), rule(test))
 // note: typedargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(typedargslist, list_with_end, rule(typedargslist_item), tok(DEL_COMMA))
-DEF_RULE_NC(typedargslist_item, or(3), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star))
+DEF_RULE_NC(typedargslist_item, or(4), tok(OP_SLASH), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star))
 DEF_RULE_NC(typedargslist_name, and_ident(3), tok(NAME), opt_rule(generic_colon_test), opt_rule(generic_equal_test))
 DEF_RULE_NC(typedargslist_star, and(2), tok(OP_STAR), opt_rule(tfpdef))
 DEF_RULE_NC(typedargslist_dbl_star, and(3), tok(OP_DBL_STAR), tok(NAME), opt_rule(generic_colon_test))
 DEF_RULE_NC(tfpdef, and(2), tok(NAME), opt_rule(generic_colon_test))
 // note: varargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(varargslist, list_with_end, rule(varargslist_item), tok(DEL_COMMA))
-DEF_RULE_NC(varargslist_item, or(3), rule(varargslist_name), rule(varargslist_star), rule(varargslist_dbl_star))
+DEF_RULE_NC(varargslist_item, or(4), tok(OP_SLASH), rule(varargslist_name), rule(varargslist_star), rule(varargslist_dbl_star))
 DEF_RULE_NC(varargslist_name, and_ident(2), tok(NAME), opt_rule(generic_equal_test))
 DEF_RULE_NC(varargslist_star, and(2), tok(OP_STAR), opt_rule(vfpdef))
 DEF_RULE_NC(varargslist_dbl_star, and(2), tok(OP_DBL_STAR), tok(NAME))

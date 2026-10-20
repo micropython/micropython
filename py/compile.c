@@ -661,6 +661,10 @@ static void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
     int pn_kind;
     if (MP_PARSE_NODE_IS_ID(pn)) {
         pn_kind = -1;
+    } else if (MP_PARSE_NODE_IS_TOKEN(pn)) {
+        // positional-only "/" marker
+        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_OP_SLASH));
+        return;
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pn_kind = MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t *)pn);
@@ -2885,6 +2889,15 @@ static void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
             // comes before a star, so counts as a positional parameter
             comp->scope_cur->num_pos_args += 1;
         }
+    } else if (MP_PARSE_NODE_IS_TOKEN(pn)) {
+        // positional-only "/" marker
+        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_OP_SLASH));
+        if (comp->have_star || comp->scope_cur->num_pos_args == 0 || comp->scope_cur->num_pos_only_args != 0) {
+            // slash must be before any star, after at least one positional arg, and only once
+            compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid syntax"));
+        } else {
+            comp->scope_cur->num_pos_only_args = comp->scope_cur->num_pos_args;
+        }
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pns = (mp_parse_node_struct_t *)pn;
@@ -3472,6 +3485,7 @@ static void scope_compute_things(scope_t *scope) {
                     id->local_num += num_free;
                 }
             }
+            scope->num_pos_only_args += num_free; // free vars come before the params, and are also positional-only
             scope->num_pos_args += num_free; // free vars are counted as params for passing them into the function
             scope->num_locals += num_free;
         }
