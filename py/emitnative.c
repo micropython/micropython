@@ -704,7 +704,7 @@ static bool emit_native_end_pass(emit_t *emit) {
         size_t info_start = mp_asm_base_get_code_pos(&emit->as->base);
         emit_native_write_code_info_qstr(emit, emit->scope->simple_name);
         for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
-            qstr qst = MP_QSTR__star_;
+            qstr qst = MP_QSTRnull;
             for (int j = 0; j < emit->scope->id_info_len; ++j) {
                 id_info_t *id = &emit->scope->id_info[j];
                 if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {

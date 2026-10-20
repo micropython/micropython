@@ -121,6 +121,10 @@ void mp_bytecode_print(const mp_print_t *print, const mp_raw_code_t *rc, size_t 
         #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
         qst = cm->qstr_table[qst];
         #endif
+        if (qst == MP_QSTRnull) {
+            // parameter without a name (eg closed-over variable), make it visible
+            qst = MP_QSTR__star_;
+        }
         mp_printf(print, " %q", qst);
     }
     mp_printf(print, "\n");
