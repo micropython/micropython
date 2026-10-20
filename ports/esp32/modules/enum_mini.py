@@ -1,12 +1,12 @@
-# enum.py
-# Enum implementation without metaclasses
+# enum_mini.py
+# Minimalist Enum implementation without metaclasses
 # version="1.5.1"
 
 # ==============================================================================
 # Variable & Abbreviation Definitions:
 # ==============================================================================
 # Functions & Helper Methods:
-#   _c(cls, n, v, t) -> create_enum_item: Helper function to construct a typed enum instance.
+#   _c(cls, n, v) -> create_enum_item: Helper function to construct a typed enum instance.
 #   _i()        -> items: Classmethod to initialize and return the __members__ dict.
 #   a(s, k, v)  -> __setattr__: Inner setter guard raising AttributeError on enum items.
 #
@@ -34,16 +34,11 @@ def _n(n):
     return n[0].upper() + n[1:]
 
 
-def _c(cls, n, v, t=None):
+def _c(cls, n, v):
     # prevent modification of enum item attributes
     def a(s, k, v):
-        raise AttributeError("cannot set attribute")
+        raise AttributeError("readonly")
 
-    # IntEnum / StrEnum type checks
-    if t and not isinstance(v, t):
-        raise TypeError(f"{_n(t.__name__)}Enum {n!r} must be {t.__name__}")
-
-    # extract a printable class name (works for both classes and objects)
     e = cls.__name__
 
     # create a subclass inheriting the value's type (int, str, float etc.)
@@ -53,7 +48,7 @@ def _c(cls, n, v, t=None):
         {
             "name": n,
             "value": v,
-            "__str__": lambda s: str(v) if t else f"{e}.{n}",
+            "__str__": lambda s: f"{e}.{n}",
             "__repr__": lambda s: f"<{e}.{n}: {v!r}>",
             "__call__": lambda s: v,
             "__setattr__": a,
@@ -62,35 +57,19 @@ def _c(cls, n, v, t=None):
 
 
 class Enum:
-    _v_t = None  # expected value type (int, str, or None)
-
-    def __new__(cls, value=None, names=None, *, start=1):
-        # functional API: dynamic creation of a new Enum class
+    def __new__(cls, value=None, names=None):
+        # Functional API: Enum('Name', {'KEY': 'val'})
         if value is not None and names is not None:
-            is_str = cls._v_t is str
-
-            # parse 'names' parameter into a key-value dictionary
-            if isinstance(names, dict):
-                d = names
-            else:
-                s = isinstance(names, str)
-                # space or comma-separated string of names, or any other iterable
-                names = names.replace(",", " ").split() if s else list(names)
-                if names and isinstance(names[0], (list, tuple)):
-                    # list/tuple of (name, value) pairs
-                    d = dict(names)
-                elif is_str:
-                    d = {k: k.lower() if s else k for k in names}
-                else:
-                    d = {k: v for v, k in enumerate(names, start=start)}
+            if not isinstance(names, dict):
+                raise TypeError("must be dict")
 
             # build and return a new Enum subclass
-            c = type(str(value), (cls,), d)
+            c = type(str(value), (cls,), names)
             c._i()
             return c
 
         # lookup by value or name: Color(1) / Color("RED")
-        if value is not None and cls not in (Enum, IntEnum, StrEnum):
+        if value is not None and cls is not Enum:
             return cls.__call__(value)
 
         return super().__new__(cls)
@@ -109,36 +88,20 @@ class Enum:
         for i in cls._i():
             if i.value == v or i.name == v:
                 return i
-        raise ValueError(f"{v!r} not in {cls.__name__}")
-
-    @classmethod
-    def __getitem__(cls, k):
-        # instance-level name lookup: Color["RED"]
-        for i in cls._i():
-            if i.name == k:
-                return i
-        raise KeyError(k)
+        raise ValueError(f"invalid: {v!r}")
 
     # True if both classes are Enums and the member dicts match
     __eq__ = classmethod(lambda cls, o: getattr(o, "_i", False) and cls._i() == o._i())
     __iter__ = classmethod(lambda cls: iter(cls._i()))
     __len__ = classmethod(lambda cls: len(cls._i()))
-    __str__ = __repr__ = classmethod(lambda cls: f"<enum '{type(cls).__name__}'>")
 
     @classmethod
     def __setattr__(cls, k, v):
-        raise AttributeError("cannot set attribute")
+        raise AttributeError("readonly")
 
     @classmethod
     def __delattr__(cls, k):
-        raise AttributeError("cannot delete attribute")
-
-    @classmethod
-    def dump(cls):
-        # serialize the class into a string that can be converted back into a class using eval()
-        # cls == eval(cls.dump())()
-        d = {i.name: i.value for i in cls._i()}
-        return f"{cls._v_t and _n(cls._v_t.__name__) or ''}Enum('{cls.__name__}', {d})"
+        raise AttributeError("readonly")
 
     @classmethod
     def _i(cls):
@@ -150,18 +113,10 @@ class Enum:
                 if not k.startswith("_") and not callable(v):
                     if v in cls.__members__:
                         raise ValueError(f"duplicate value {v!r} in {cls.__name__}")
-                    e = _c(cls, k, v, cls._v_t)
+                    e = _c(cls, k, v)
                     setattr(cls, k, e)
                     cls.__members__[e] = v
         return cls.__members__
-
-
-class IntEnum(Enum):
-    _v_t = int
-
-
-class StrEnum(Enum):
-    _v_t = str
 
 
 # install class-builder hook
