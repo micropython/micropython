@@ -541,21 +541,26 @@ def extract_prelude(bytecode, ip):
 
 
 class QStrType:
-    def __init__(self, str):
+    def __init__(self, str, is_static):
         self.str = str
-        self.qstr_esc = qstrutil.qstr_escape(self.str)
-        self.qstr_id = "MP_QSTR_" + self.qstr_esc
+        self.is_static = is_static
+        if str is None:
+            self.qstr_esc = None
+            self.qstr_id = "MP_QSTRnull"
+        else:
+            self.qstr_esc = qstrutil.qstr_escape(self.str)
+            self.qstr_id = "MP_QSTR_" + self.qstr_esc
 
 
 class GlobalQStrList:
     def __init__(self):
         # Initialise global list of qstrs with static qstrs
-        self.qstrs = [None]  # MP_QSTRnull should never be referenced
+        self.qstrs = [QStrType(None, True)]
         for n in qstrutil.static_qstr_list:
-            self.qstrs.append(QStrType(n))
+            self.qstrs.append(QStrType(n, True))
 
     def add(self, s):
-        q = QStrType(s)
+        q = QStrType(s, False)
         self.qstrs.append(q)
         return q
 
@@ -563,8 +568,8 @@ class GlobalQStrList:
         return self.qstrs[i]
 
     def find_by_str(self, s):
-        for q in self.qstrs:
-            if q is not None and q.str == s:
+        for q in self.qstrs[1:]:
+            if q.str == s:
                 return q
         return None
 
@@ -681,7 +686,7 @@ class CompiledModule:
             print("arch_flags:", hex(self.arch_flags))
         print("qstr_table[%u] (* for static qstrs):" % len(self.qstr_table))
         for q in self.qstr_table:
-            print("    {!r} {}".format(q.str, "*" if q.str in qstrutil.static_qstr_list else ""))
+            print("    {!r} {}".format(q.str, "*" if q.is_static else ""))
         print("obj_table:", self.obj_table)
         self.raw_code.disassemble()
 
@@ -1185,7 +1190,7 @@ class RawCodeBytecode(RawCode):
         print("    ", end="")
         for b in bc[self.offset_source_info : self.offset_line_info]:
             print("0x%02x," % b, end="")
-        print(" // names: %s" % ", ".join(self.qstr_table[i].str for i in self.names))
+        print(" // names: %s" % ", ".join(str(self.qstr_table[i].str) for i in self.names))
 
         print("    ", end="")
         for b in bc[self.offset_line_info : self.offset_opcodes]:
@@ -1593,7 +1598,7 @@ def freeze_mpy(firmware_qstr_idents, compiled_modules):
     new = {}
     for q in global_qstrs.qstrs:
         # don't add duplicates that are already in the firmware
-        if q is None or q.qstr_esc in firmware_qstr_idents or q.qstr_esc in new:
+        if q.qstr_esc is None or q.qstr_esc in firmware_qstr_idents or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str, bytes_cons(q.str, "utf8"))
     # Sort by string value (because this is a sorted pool).
