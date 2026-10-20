@@ -350,6 +350,11 @@ static void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
 
 void wiznet5k_poll(void) {
     wiznet5k_obj_t *self = &wiznet5k_obj;
+    // A periodic or queued poll may run before activation or after deactivation.
+    // Do not access the SPI bus, including clearing interrupts, in that case.
+    if (!IS_ACTIVE(self)) {
+        return;
+    }
     if ((self->netif.flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
         uint16_t len;
         while ((len = wiznet5k_recv_ethernet(self)) > 0) {
