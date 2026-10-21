@@ -31,7 +31,7 @@
 
 // Macros to obfuscate a heap pointer as a small integer object.
 #define PTR_TO_INT_OBJ(ptr) (MP_OBJ_NEW_SMALL_INT(((uintptr_t)ptr) >> 1))
-#define PTR_FROM_INT_OBJ(obj) ((void *)(MP_OBJ_SMALL_INT_VALUE((obj)) << 1))
+#define PTR_FROM_INT_OBJ(obj) ((void *)((uintptr_t)MP_OBJ_SMALL_INT_VALUE((obj)) << 1))
 
 // Macros to convert between a weak reference and a heap pointer.
 #define WEAK_REFERENCE_FROM_HEAP_PTR(ptr) PTR_TO_INT_OBJ(ptr)
