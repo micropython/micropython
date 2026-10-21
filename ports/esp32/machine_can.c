@@ -121,7 +121,6 @@ typedef struct {
     uint32_t id;
     uint16_t flags;
     uint8_t dlc;
-    uint8_t err; // CAN_RECV_ERR_* describing the ring state when this frame arrived
     uint8_t data[8];
 } can_rx_slot_t;
 
@@ -179,7 +178,8 @@ typedef struct machine_can_port {
     volatile uint16_t rx_head;
     volatile uint16_t rx_tail;
     volatile uint16_t rx_overruns; // cumulative dropped-frame count (get_counters)
-    volatile bool rx_overrun_pending; // flag the next enqueued frame RECV_ERR_OVERRUN
+    uint8_t rx_error_flags; // accumulated until the next successful recv()
+    portMUX_TYPE rx_mux; // guards the RX ring and error flags across task/ISR access
 
     // TX priority queue of persistent slots; slot index is returned by send().
     // Guarded by tx_mux because send() (task) and on_tx_done (ISR) both mutate it.
@@ -286,25 +286,21 @@ static bool can_on_rx_done(twai_node_handle_t node, const twai_rx_done_event_dat
         return false;
     }
 
+    portENTER_CRITICAL_ISR(&port->rx_mux);
     uint16_t next = (port->rx_head + 1) % CAN_RX_RING_LEN;
     if (next == port->rx_tail) {
-        // Ring full: drop this frame and mark an overrun so the next frame that
-        // does get enqueued reports RECV_ERR_OVERRUN.
+        // Report the loss on the next recv(), including frames already queued.
         port->rx_overruns++;
-        port->rx_overrun_pending = true;
+        port->rx_error_flags |= CAN_RECV_ERR_OVERRUN;
+        portEXIT_CRITICAL_ISR(&port->rx_mux);
         return false;
     }
     can_rx_slot_t *slot = &port->rx_ring[port->rx_head];
     slot->id = rx.header.id;
     slot->flags = (rx.header.ide ? CAN_MSG_FLAG_EXT_ID : 0) | (rx.header.rtr ? CAN_MSG_FLAG_RTR : 0);
-    slot->err = 0;
-    if (port->rx_overrun_pending) {
-        slot->err |= CAN_RECV_ERR_OVERRUN;
-        port->rx_overrun_pending = false;
-    }
-    // Flag RECV_ERR_FULL if enqueuing this frame leaves no room for another.
+    // Latch FULL when the ring fills, regardless of which frame is read next.
     if (((next + 1) % CAN_RX_RING_LEN) == port->rx_tail) {
-        slot->err |= CAN_RECV_ERR_FULL;
+        port->rx_error_flags |= CAN_RECV_ERR_FULL;
     }
     mp_uint_t len = twaifd_dlc2len(rx.header.dlc);
     if (len > 8) {
@@ -317,6 +313,7 @@ static bool can_on_rx_done(twai_node_handle_t node, const twai_rx_done_event_dat
         slot->data[i] = (!rtr && i < len) ? buf[i] : 0;
     }
     port->rx_head = next;
+    portEXIT_CRITICAL_ISR(&port->rx_mux);
 
     can_sched_irq(self, MP_CAN_IRQ_RX);
     return false;
@@ -504,7 +501,8 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         memset(port, 0, sizeof(*port));
         self->port = port;
         // memset can't produce a valid unlocked spinlock (its "free" value is a
-        // sentinel, not zero), so initialise tx_mux explicitly.
+        // sentinel, not zero), so initialise the spinlocks explicitly.
+        port->rx_mux = (portMUX_TYPE)portMUX_INITIALIZER_UNLOCKED;
         port->tx_mux = (portMUX_TYPE)portMUX_INITIALIZER_UNLOCKED;
         // Select this controller's pins by index (see machine_can_pins).
         port->tx_io = machine_can_pins[self->can_idx].tx;
@@ -518,7 +516,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     }
     // Reset queues/counters for the fresh node.
     port->rx_head = port->rx_tail = port->rx_overruns = 0;
-    port->rx_overrun_pending = false;
+    port->rx_error_flags = 0;
     port->tx_inflight = -1;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
         port->tx_slots[i].state = CAN_TX_FREE;
@@ -793,7 +791,9 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
     machine_can_port_t *port = self->port;
 
     *errors = 0;
+    portENTER_CRITICAL(&port->rx_mux);
     if (port->rx_tail == port->rx_head) {
+        portEXIT_CRITICAL(&port->rx_mux);
         return false;
     }
     can_rx_slot_t *slot = &port->rx_ring[port->rx_tail];
@@ -804,8 +804,10 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
     *dlen = slot->dlc;
     *id = slot->id;
     *flags = slot->flags;
-    *errors = slot->err;
+    *errors = port->rx_error_flags;
+    port->rx_error_flags = 0;
     port->rx_tail = (port->rx_tail + 1) % CAN_RX_RING_LEN;
+    portEXIT_CRITICAL(&port->rx_mux);
     return true;
 }
 
@@ -868,8 +870,10 @@ static void machine_can_port_update_counters(machine_can_obj_t *self) {
         }
     }
     counters->tx_pending = tx_pending;
+    portENTER_CRITICAL(&port->rx_mux);
     counters->rx_pending = (uint16_t)((port->rx_head - port->rx_tail + CAN_RX_RING_LEN) % CAN_RX_RING_LEN);
     counters->rx_overruns = port->rx_overruns;
+    portEXIT_CRITICAL(&port->rx_mux);
 }
 
 static mp_obj_t machine_can_port_get_additional_timings(machine_can_obj_t *self, mp_obj_t optional_arg) {
