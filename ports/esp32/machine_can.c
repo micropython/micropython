@@ -26,7 +26,7 @@
 
 // ESP32 implementation of the shared machine.CAN port interface
 // (extmod/machine_can_port.h), backed by the ESP-IDF node-based TWAI driver
-// (driver/twai_onchip.h, available from ESP-IDF v5.4). This file is included
+// (esp_twai_onchip.h, available from ESP-IDF v5.5). This file is included
 // textually into extmod/machine_can.c via MICROPY_PY_MACHINE_CAN_INCLUDEFILE.
 //
 // The node driver delivers all events (rx, tx-done, state change, error) via
@@ -84,9 +84,9 @@
 // One ring entry is reserved to distinguish full from empty.
 #define CAN_TX_DONE_QUEUE_LEN (CAN_TX_QUEUE_LEN + 1)
 
-// RX filtering is done in software (in the on_rx_done ISR) rather than with the
-// single hardware acceptance filter, so multiple standard and extended filters
-// can be supported. This is the number of filters accepted by set_filters().
+// Multiple filters, zero-mask format selection and RTR matching use software
+// filtering in on_rx_done; a single nonzero-mask ID filter is offloaded to the
+// hardware. This is the number of filters accepted by set_filters().
 #define CAN_HW_MAX_FILTER (4)
 
 // Software receive ring depth.
@@ -133,13 +133,16 @@ typedef struct {
 } can_rx_slot_t;
 
 // TX slot lifecycle: FREE -> PENDING (queued by send) -> INFLIGHT (handed to the
-// driver's single TX buffer) -> FREE (on completion). Only one slot is INFLIGHT
+// driver's single TX buffer) -> COMPLETE -> FREE (when flags() consumes the
+// completion). Without TX IRQs, completion frees the slot immediately.
+// Only one slot is INFLIGHT
 // at a time; the driver has a single hardware TX buffer with no priority
 // arbitration, so priority ordering is done here in software.
 enum {
     CAN_TX_FREE,
     CAN_TX_PENDING,
     CAN_TX_INFLIGHT,
+    CAN_TX_COMPLETE,
 };
 
 typedef struct {
@@ -174,9 +177,8 @@ typedef struct machine_can_port {
     gpio_num_t rx_io;
     bool enabled;
 
-    // Software RX filters. The active copy is read by the on_rx_done ISR; the
-    // staged copy is built by set_filter*() and committed in set_filter_done().
-    uint8_t stage_mode;
+    // Canonical RX filters used for hardware configuration and ISR fallback.
+    // Staging is committed only after every filter has been validated.
     uint8_t stage_count;
     can_filter_t stage[CAN_HW_MAX_FILTER];
     volatile uint8_t filter_mode;
@@ -390,33 +392,44 @@ static bool can_on_rx_done(twai_node_handle_t node, const twai_rx_done_event_dat
     return false;
 }
 
+// Called with tx_mux held. Every queued completion owns its slot, so the ring
+// cannot overflow even when the VM defers callbacks indefinitely.
+static void can_tx_complete(machine_can_obj_t *self, int idx, bool failed) {
+    machine_can_port_t *port = self->port;
+    if (self->mp_irq_trigger & MP_CAN_IRQ_TX) {
+        uint8_t next = (port->txd_head + 1) % CAN_TX_DONE_QUEUE_LEN;
+        assert(next != port->txd_tail);
+        port->tx_slots[idx].state = CAN_TX_COMPLETE;
+        port->txd_ring[port->txd_head].idx = idx;
+        port->txd_ring[port->txd_head].failed = failed;
+        port->txd_head = next;
+    } else {
+        port->tx_slots[idx].state = CAN_TX_FREE;
+    }
+}
+
 static bool can_on_tx_done(twai_node_handle_t node, const twai_tx_done_event_data_t *edata, void *user) {
     (void)node;
     machine_can_obj_t *self = user;
     machine_can_port_t *port = self->port;
 
-    // Free the completed in-flight slot and report its index.
+    // Retire a completed attempt, or requeue an intermediate failed attempt.
     portENTER_CRITICAL_ISR(&port->tx_mux);
     int idx = port->tx_inflight;
     bool notify = false;
     if (idx >= 0) {
         can_tx_slot_t *slot = &port->tx_slots[idx];
         notify = edata->is_tx_success || slot->cancel_result != NULL;
-        slot->state = notify ? CAN_TX_FREE : CAN_TX_PENDING;
+        if (notify) {
+            can_tx_complete(self, idx, !edata->is_tx_success);
+        } else {
+            slot->state = CAN_TX_PENDING;
+        }
         if (slot->cancel_result != NULL) {
             *slot->cancel_result = edata->is_tx_success ? 2 : 1;
             slot->cancel_result = NULL;
         }
         port->tx_inflight = -1;
-    }
-    if (notify) {
-        // Queue the completion so each one is reported individually by flags().
-        uint8_t next = (port->txd_head + 1) % CAN_TX_DONE_QUEUE_LEN;
-        if (next != port->txd_tail) {
-            port->txd_ring[port->txd_head].idx = idx;
-            port->txd_ring[port->txd_head].failed = !edata->is_tx_success;
-            port->txd_head = next;
-        }
     }
     portEXIT_CRITICAL_ISR(&port->tx_mux);
     // Hand the next-highest-priority pending frame to the driver (ISR context).
@@ -460,9 +473,23 @@ static bool can_on_state_change(twai_node_handle_t node, const twai_state_change
 static void machine_can_update_irqs(machine_can_obj_t *self) {
     // Callbacks are always registered (on_rx_done must run to fill the ring);
     // the trigger mask in self->mp_irq_trigger gates whether the handler runs.
-    if (self->mp_irq_trigger && self->mp_irq_obj->ishard
-        && CONFIG_FREERTOS_ISR_STACKSIZE < 2 * CAN_HARD_IRQ_STACK_SIZE) {
+    bool invalid_stack = self->mp_irq_trigger && self->mp_irq_obj->ishard
+        && CONFIG_FREERTOS_ISR_STACKSIZE < 2 * CAN_HARD_IRQ_STACK_SIZE;
+    if (invalid_stack) {
         self->mp_irq_trigger = 0;
+    }
+    if (self->port != NULL && !(self->mp_irq_trigger & MP_CAN_IRQ_TX)) {
+        machine_can_port_t *port = self->port;
+        portENTER_CRITICAL_SAFE(&port->tx_mux);
+        for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
+            if (port->tx_slots[i].state == CAN_TX_COMPLETE) {
+                port->tx_slots[i].state = CAN_TX_FREE;
+            }
+        }
+        port->txd_head = port->txd_tail = 0;
+        portEXIT_CRITICAL_SAFE(&port->tx_mux);
+    }
+    if (invalid_stack) {
         mp_raise_ValueError(MP_ERROR_TEXT("hard CAN IRQ requires CONFIG_FREERTOS_ISR_STACKSIZE >= 8192"));
     }
 }
@@ -484,6 +511,8 @@ static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
         mp_uint_t idx = port->txd_ring[port->txd_tail].idx;
         bool failed = port->txd_ring[port->txd_tail].failed;
         port->txd_tail = (port->txd_tail + 1) % CAN_TX_DONE_QUEUE_LEN;
+        assert(port->tx_slots[idx].state == CAN_TX_COMPLETE);
+        port->tx_slots[idx].state = CAN_TX_FREE;
         flags |= MP_CAN_IRQ_TX | (idx << MP_CAN_IRQ_IDX_SHIFT) | (failed ? MP_CAN_IRQ_TX_FAILED : 0);
     }
     portEXIT_CRITICAL_SAFE(&port->tx_mux);
@@ -594,14 +623,13 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         // Select this controller's pins by index (see machine_can_pins).
         port->tx_io = machine_can_pins[self->can_idx].tx;
         port->rx_io = machine_can_pins[self->can_idx].rx;
-        // Accept all until set_filters() is called.
-        port->stage_mode = CAN_FILTER_ACCEPT_ALL;
-        port->filter_mode = CAN_FILTER_ACCEPT_ALL;
     } else {
         // Reconfiguring: tear down the existing node first.
         can_hw_delete(self);
     }
     // Reset queues/counters for the fresh node.
+    port->filter_count = port->stage_count = 0;
+    port->filter_mode = CAN_FILTER_ACCEPT_NONE;
     port->rx_head = port->rx_tail = port->rx_overruns = 0;
     port->rx_error_flags = 0;
     port->tx_inflight = -1;
@@ -631,10 +659,30 @@ static void machine_can_port_deinit(machine_can_obj_t *self) {
 // -------------------------------------------------------------------------
 
 static void can_hw_apply_filter(machine_can_obj_t *self) {
-    // Initial baseline: accept-all. set_filter_done() reconfigures from here as
-    // set_filters() is called.
+    // Derive the hardware mask from the canonical active filters every time
+    // the node is created (including restart), not just after set_filters().
+    machine_can_port_t *port = self->port;
     twai_mask_filter_config_t cfg = { .id = 0, .mask = 0 };
-    can_check_esp_err(twai_node_config_mask_filter(self->port->node, 0, &cfg));
+    uint8_t sw_mode;
+    if (port->filter_count == 0) {
+        cfg.id = cfg.mask = UINT32_MAX;
+        sw_mode = CAN_FILTER_ACCEPT_NONE;
+    } else if (port->filter_count == 1 && !port->filter[0].rtr && port->filter[0].mask != 0) {
+        cfg.id = port->filter[0].id;
+        cfg.mask = port->filter[0].mask;
+        cfg.is_ext = port->filter[0].ext;
+        sw_mode = CAN_FILTER_ACCEPT_ALL;
+    } else if (port->filter_count == 2 && port->filter[0].mask == 0
+               && port->filter[1].mask == 0 && port->filter[0].ext != port->filter[1].ext
+               && !port->filter[0].rtr && !port->filter[1].rtr) {
+        sw_mode = CAN_FILTER_ACCEPT_ALL;
+    } else {
+        // IDF treats mask=0 as fully open, ignoring frame format. Match
+        // single-format zero masks in software, just like RTR filters.
+        sw_mode = CAN_FILTER_LIST;
+    }
+    can_check_esp_err(twai_node_config_mask_filter(port->node, 0, &cfg));
+    port->filter_mode = sw_mode;
 }
 
 static void machine_can_port_clear_filters(machine_can_obj_t *self) {
@@ -642,18 +690,14 @@ static void machine_can_port_clear_filters(machine_can_obj_t *self) {
     // Baseline is "accept none"; set_filters(None) raises this to accept-all via
     // zero-mask set_filter() calls, filter tuples build the list, and an empty
     // iterable leaves it at accept-none.
-    port->stage_mode = CAN_FILTER_ACCEPT_NONE;
     port->stage_count = 0;
 }
 
 static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx, mp_uint_t can_id, mp_uint_t mask, mp_uint_t flags) {
     machine_can_port_t *port = self->port;
 
-    // A zero bit-mask means "match every ID" (accept all). extmod uses this
-    // twice (std + ext) for set_filters(None).
-    if (mask == 0) {
-        port->stage_mode = CAN_FILTER_ACCEPT_ALL;
-        return;
+    if (flags & ~(CAN_MSG_FLAG_EXT_ID | CAN_MSG_FLAG_RTR)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("flags"));
     }
     if (filter_idx >= CAN_HW_MAX_FILTER) {
         mp_raise_ValueError(MP_ERROR_TEXT("too many filters"));
@@ -665,45 +709,10 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
         .rtr = (flags & CAN_MSG_FLAG_RTR) != 0,
     };
     port->stage_count = filter_idx + 1;
-    port->stage_mode = CAN_FILTER_LIST;
 }
 
 static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
     machine_can_port_t *port = self->port;
-
-    // The single hardware mask filter matches id/mask and std/ext (but not RTR),
-    // so it can do the whole job for accept-all, accept-none, and exactly one
-    // non-RTR filter -- the common cases, with zero per-frame overhead. Anything
-    // else (multiple filters, or an RTR filter) leaves the hardware accept-all
-    // and matches in the RX ISR (see can_frame_accepted).
-    twai_mask_filter_config_t cfg;
-    uint8_t sw_mode;
-    if (port->stage_mode == CAN_FILTER_ACCEPT_ALL) {
-        cfg = (twai_mask_filter_config_t) { .id = 0, .mask = 0 };
-        sw_mode = CAN_FILTER_ACCEPT_ALL;
-    } else if (port->stage_mode == CAN_FILTER_ACCEPT_NONE) {
-        cfg = (twai_mask_filter_config_t) { .id = UINT32_MAX, .mask = UINT32_MAX };
-        sw_mode = CAN_FILTER_ACCEPT_NONE;
-    } else if (port->stage_count == 1 && !port->stage[0].rtr) {
-        cfg = (twai_mask_filter_config_t) {
-            .id = port->stage[0].id,
-            .mask = port->stage[0].mask,
-            .is_ext = port->stage[0].ext,
-        };
-        sw_mode = CAN_FILTER_ACCEPT_ALL;
-    } else {
-        cfg = (twai_mask_filter_config_t) { .id = 0, .mask = 0 };
-        sw_mode = CAN_FILTER_LIST;
-    }
-
-    // Commit the software filter list first, writing ACCEPT_NONE up front so the
-    // ISR never traverses a half-updated table.
-    port->filter_mode = CAN_FILTER_ACCEPT_NONE;
-    for (uint8_t i = 0; i < port->stage_count; i++) {
-        port->filter[i] = port->stage[i];
-    }
-    port->filter_count = port->stage_count;
-    port->filter_mode = sw_mode;
 
     // The mask filter can only be reconfigured with the node stopped; bounce it
     // if running.
@@ -713,7 +722,15 @@ static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
             can_check_esp_err(twai_node_disable(port->node));
             port->enabled = false;
         }
-        can_check_esp_err(twai_node_config_mask_filter(port->node, 0, &cfg));
+        // Stop interrupts before replacing the active list. Staging a bad
+        // filter configuration never changes the currently active filters.
+        portENTER_CRITICAL_SAFE(&port->rx_mux);
+        for (uint8_t i = 0; i < port->stage_count; i++) {
+            port->filter[i] = port->stage[i];
+        }
+        port->filter_count = port->stage_count;
+        portEXIT_CRITICAL_SAFE(&port->rx_mux);
+        can_hw_apply_filter(self);
         if (was_enabled) {
             can_check_esp_err(twai_node_enable(port->node));
             port->enabled = true;
@@ -884,16 +901,7 @@ static bool machine_can_port_cancel_send(machine_can_obj_t *self, mp_uint_t idx)
     }
     bool cancelled = port->tx_slots[idx].state == CAN_TX_PENDING;
     if (cancelled) {
-        port->tx_slots[idx].state = CAN_TX_FREE;
-    }
-    if (cancelled) {
-        // Report the cancellation as a failed transmit for this buffer index.
-        uint8_t next = (port->txd_head + 1) % CAN_TX_DONE_QUEUE_LEN;
-        if (next != port->txd_tail) {
-            port->txd_ring[port->txd_head].idx = idx;
-            port->txd_ring[port->txd_head].failed = true;
-            port->txd_head = next;
-        }
+        can_tx_complete(self, idx, true);
     }
     portEXIT_CRITICAL_SAFE(&port->tx_mux);
     if (cancelled) {
@@ -983,7 +991,7 @@ static void machine_can_port_update_counters(machine_can_obj_t *self) {
     counters->num_bus_off = port->num_bus_off;
     uint16_t tx_pending = 0;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
-        if (port->tx_slots[i].state != CAN_TX_FREE) {
+        if (port->tx_slots[i].state == CAN_TX_PENDING || port->tx_slots[i].state == CAN_TX_INFLIGHT) {
             tx_pending++;
         }
     }
