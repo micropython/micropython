@@ -93,6 +93,9 @@
 #define MICROPY_PY_SYS_ATEXIT          (1)
 #define MICROPY_PY_SYS_EXC_INFO        (1)
 
+// Enable the "weakref" module.
+#define MICROPY_PY_WEAKREF             (1)
+
 // Configure the "os" module with extra unix features.
 #define MICROPY_PY_OS_INCLUDEFILE      "ports/unix/modos.c"
 #define MICROPY_PY_OS_ERRNO            (1)
