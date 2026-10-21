@@ -177,6 +177,7 @@ typedef struct machine_can_port {
     gpio_num_t tx_io;
     gpio_num_t rx_io;
     bool enabled;
+    volatile bool bus_off;
 
     // Canonical RX filters used for hardware configuration and ISR fallback.
     // Staging is committed only after every filter has been validated.
@@ -453,6 +454,7 @@ static bool can_on_state_change(twai_node_handle_t node, const twai_state_change
     machine_can_obj_t *self = user;
     machine_can_port_t *port = self->port;
 
+    port->bus_off = edata->new_sta == TWAI_ERROR_BUS_OFF;
     switch (edata->new_sta) {
         case TWAI_ERROR_WARNING:
             port->num_warning++;
@@ -654,6 +656,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         can_hw_delete(self);
     }
     // Reset queues/counters for the fresh node.
+    port->bus_off = false;
     port->filter_count = port->stage_count = 0;
     port->filter_mode = CAN_FILTER_ACCEPT_NONE;
     port->rx_head = port->rx_tail = port->rx_overruns = 0;
@@ -795,6 +798,11 @@ static uint32_t can_tx_prio(uint32_t id, bool ext, bool rtr) {
 // lock but twai_node_transmit() is called outside it (it is ISR-safe, but must
 // not be nested inside the critical section).
 static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr) {
+    // Do not resubmit failed attempts to a bus-off native node. Its state
+    // callback runs before TX completion callbacks for the same interrupt.
+    if (port->bus_off) {
+        return ESP_ERR_INVALID_STATE;
+    }
     int idx = -1;
     if (from_isr) {
         portENTER_CRITICAL_ISR(&port->tx_mux);
@@ -846,6 +854,12 @@ static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr) {
 static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, const byte *data, size_t data_len, mp_uint_t flags) {
     machine_can_port_t *port = self->port;
 
+    // State errors take precedence over a full queue and must not consume a
+    // slot or change pending frames. Only queue exhaustion returns None.
+    if (!port->enabled || port->bus_off) {
+        mp_raise_OSError(MP_EIO);
+    }
+
     bool ext = (flags & CAN_MSG_FLAG_EXT_ID) != 0;
     bool rtr = (flags & CAN_MSG_FLAG_RTR) != 0;
     uint32_t prio = can_tx_prio(id, ext, rtr);
@@ -853,6 +867,10 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     // Equal-priority frames can share the queue: can_tx_kick() uses their
     // enqueue sequence to preserve FIFO order even when slot indexes are reused.
     portENTER_CRITICAL(&port->tx_mux);
+    if (port->bus_off) {
+        portEXIT_CRITICAL(&port->tx_mux);
+        mp_raise_OSError(MP_EIO);
+    }
     int idx = -1;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
         if (port->tx_slots[i].state == CAN_TX_FREE) {
@@ -885,9 +903,8 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     portEXIT_CRITICAL(&port->tx_mux);
 
     // can_tx_kick() submits the highest-priority pending frame if the TX buffer
-    // is free. A hard error (bus-off / stopped / listen-only) means this frame
-    // can't be sent at all: drop it and report a failure to queue (return -1 ->
-    // None) rather than raising, matching the other ports' send() behaviour.
+    // is free. Report native errors even if bus-off happened after the check
+    // above, rather than silently treating them as queue exhaustion.
     // Listen-only mode accepts a queued message, but cannot put it on the
     // bus. Keep it pending until cancellation or reinitialisation.
     esp_err_t err = self->mode == MP_CAN_MODE_SILENT ? ESP_OK : can_tx_kick(port, false);
@@ -895,7 +912,10 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
         portENTER_CRITICAL(&port->tx_mux);
         slot->state = CAN_TX_FREE;
         portEXIT_CRITICAL(&port->tx_mux);
-        return -1;
+        if (err == ESP_ERR_INVALID_STATE) {
+            mp_raise_OSError(MP_EIO);
+        }
+        can_check_esp_err(err);
     }
     return idx;
 }
@@ -1006,6 +1026,7 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
     port->txd_head = port->txd_tail = 0;
     port->state_pending = false;
     port->num_warning = port->num_passive = port->num_bus_off = 0;
+    port->bus_off = false;
     can_hw_create(self);
 }
 
