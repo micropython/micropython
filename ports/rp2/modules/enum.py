@@ -187,25 +187,147 @@ class IntEnum(Enum):
     _v_t = int
 
 
-class StrEnum(Enum):
+_STR_FINALIZED = object()
+
+
+class StrEnum(str, Enum):
+    """String members that retain their declared enum class on stock MicroPython."""
+
     _v_t = str
 
+    def __new__(cls, value=None, names=None, *, start=1):
+        if names is not None:
+            if cls is not StrEnum:
+                raise TypeError("cannot extend an enum")
+            return Enum.__new__(cls, value, names, start=start)
+        if "__members__" not in cls.__dict__:
+            raise TypeError("StrEnum is a base class")
+        if value is None:
+            return cls
+        for member in cls.__members__:
+            if member.value == value or member.name == value:
+                return member
+        raise ValueError(f"{value!r} is not a valid {cls.__name__}")
 
-# Install builder hook
+    def __init__(self, value=None, names=None, *, start=1):
+        # Lookup may return an existing member; never initialize it again.
+        pass
+
+    def __call__(self):
+        return self.value
+
+    @classmethod
+    def _i(cls):
+        return _finish_str_enum(cls)
+
+
+def _finish_str_enum(cls):
+    # Declared-class member construction is adapted from Dungeon Drifters:
+    # https://github.com/MrCodeGameandAnime/Dungeon-Drifters/blob/2fa5f9d0ca806e5e7dbd41f3ac9073465d26762b/root/portability/micropython/enum.py
+    if cls is StrEnum:
+        raise TypeError("StrEnum is a base class")
+    if "__members__" in cls.__dict__:
+        if cls.__dict__.get("_str_finalized") is not _STR_FINALIZED:
+            raise TypeError("__members__ is reserved for enum metadata")
+        return cls.__members__
+    if cls.__bases__ != (StrEnum,):
+        raise TypeError("StrEnum mixins and subclass extension are not supported")
+    if "__new__" in cls.__dict__ or "__init__" in cls.__dict__:
+        raise TypeError("custom StrEnum constructors are not supported")
+    declarations = []
+    values = set()
+    for name, value in cls.__dict__.items():
+        if name.startswith("_"):
+            continue
+        if not isinstance(value, str):
+            if callable(value) or isinstance(value, (staticmethod, classmethod, property)):
+                continue
+            raise TypeError(f"StrEnum member {name!r} value must be str")
+        # Preserve native content without invoking a subclass's __str__.
+        # Custom slicing cannot safely expose that content on stock MicroPython.
+        pending = [type(value)]
+        while pending:
+            base = pending.pop()
+            if base is str:
+                break
+            if base is object:
+                continue
+            indexer = base.__dict__.get("__getitem__")
+            if indexer is not None and indexer is not base.__dict__.get("_str_getitem"):
+                raise TypeError("StrEnum values must retain native string slicing")
+            for index in range(len(base.__bases__) - 1, -1, -1):
+                pending.append(base.__bases__[index])
+        value = value[:]
+        if value in values:
+            raise ValueError(f"duplicate value {value!r} in {cls.__name__}")
+        values.add(value)
+        declarations.append((name, value))
+
+    members = {}
+    ordered = []
+    for name, value in declarations:
+        if hasattr(str, "__new__"):
+            member = str.__new__(cls, value)
+        else:
+            member = object.__new__(cls)
+            super(StrEnum, member).__init__(value)
+        object.__setattr__(member, "name", name)
+        object.__setattr__(member, "value", value)
+        setattr(cls, name, member)
+        members[member] = value
+        ordered.append(member)
+
+    missing = object()
+
+    def getitem(self, key=missing):
+        # Stock MicroPython's class sequence fallback passes only the index.
+        # Instance indexing still uses the member's ordinary string content.
+        if key is missing:
+            return ordered[self]
+        return self.value[key]
+
+    cls.__getitem__ = getitem
+    cls._str_getitem = getitem
+    cls.__members__ = members
+    cls._str_finalized = _STR_FINALIZED
+    return members
+
+
+def _finish_class(cls, bases):
+    if issubclass(cls, StrEnum):
+        _finish_str_enum(cls)
+        return cls
+    return cls()
+
+
+# Share one dispatcher across full/mini and fresh imports. Retain old families
+# for aliases still in use, and never replace a later cooperative wrapper.
 import builtins
 
-_SN = "__ENUM_STATE__"  # _STATE_NAME
-if getattr(builtins, _SN, None):
-    builtins.__ENUM_STATE__["base"] = Enum
-else:
-    _orig = builtins.__build_class__
 
-    # def _build_class(f, n, *b, **kw):
-    def _bc(f, n, *b, **kw):
-        cls = _orig(f, n, *b, **kw)
-        return (
-            cls() if any(isinstance(base, type) and issubclass(base, Enum) for base in b) else cls
-        )
+def _register_enum(base, finish):
+    try:
+        state = __ENUM_STATE__
+    except NameError:
+        state = None
+    if state is None:
+        # Read the effective builtin: MicroPython's module attribute may still
+        # expose the original builtin after a cooperative override is installed.
+        state = {"original": __build_class__, "families": []}
 
-    builtins.__build_class__ = _bc
-    setattr(builtins, _SN, {"original": _orig, "base": Enum, "wrapper": _bc})
+        def dispatch(body, name, *bases, **keywords):
+            cls = state["original"](body, name, *bases, **keywords)
+            for family, finalizer in state["families"]:
+                if any(isinstance(parent, type) and issubclass(parent, family) for parent in bases):
+                    return finalizer(cls, bases)
+            return cls
+
+        state["wrapper"] = dispatch
+        builtins.__build_class__ = dispatch
+        builtins.__ENUM_STATE__ = state
+    elif "families" not in state:
+        raise RuntimeError("incompatible enum builder state")
+    state["families"].append((base, finish))
+
+
+_register_enum(Enum, _finish_class)
