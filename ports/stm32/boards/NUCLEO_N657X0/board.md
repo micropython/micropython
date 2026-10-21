@@ -1,8 +1,12 @@
-The mboot bootloader must first be built and deployed to this board.  Make sure that
-CN9 is in position 1-2 to select STLK as the 5V power source, that JP1 is in position
-1-2 (lower position) and JP2 is in position 2-3 (upper position).  Then plug in a USB
-cable into the ST-LINK port CN10.  This will allow mboot firmware to be programmed to
-the external SPI flash via ST's tools, eg:
+The mboot bootloader must first be built and deployed to this board.  Once its USB DFU
+port can be seen, the firmware below can be programmed as usual with any DFU loader.
+
+## Flashing mboot with ST-LINK
+
+Make sure that CN9 is in position 1-2 to select STLK as the 5V power source, that JP1
+is in position 1-2 (lower position) and JP2 is in position 2-3 (upper position).  Then
+plug in a USB cable into the ST-LINK port CN10.  This will allow mboot firmware to be
+programmed to the external SPI flash via ST's tools, eg:
 
     make -C ports/stm32/mboot BOARD=NUCLEO_N657X0 deploy-trusted
 
@@ -13,8 +17,42 @@ blinking at 1Hz to indicate that mboot is active.  If it's not active then hold 
 USER button and press NRST, and wait until all three LEDs are on, then release USER.
 Now mboot will be active.
 
-Once the USB DFU port can be seen, the firmware below can be programmed as usual with
-any DFU loader.
+## Flashing mboot without ST-LINK
+
+mboot can also be installed using only the STM32N6's own USB port, CN8, using the DFU
+mode of the chip's built-in bootloader (the boot ROM).  Do not plug anything into the
+ST-LINK port CN10.  Make sure that CN9 is in position 3-4 to select USB as the 5V power
+source.
+
+First build the signed (trusted) mboot image, which the boot ROM requires.  This needs
+STM32CubeProgrammer installed for its signing tool:
+
+    make -C ports/stm32/mboot BOARD=NUCLEO_N657X0 build-NUCLEO_N657X0/firmware-trusted.bin
+
+Then:
+
+1. Set JP1 (BOOT0) to 1 (upper position) and JP2 (BOOT1) to 0 (lower position), then plug
+   a USB cable into CN8.  The boot ROM will enumerate over USB in DFU mode.  The boot ROM
+   also does this with JP1 set to 0 if the external SPI flash is empty.
+
+2. Load mboot into RAM.  The boot ROM can't write to the external SPI flash, but it can
+   load mboot into RAM and run it:
+
+       dfu-util -a 0 -D ports/stm32/mboot/build-NUCLEO_N657X0/firmware-trusted.bin -R
+
+   mboot will present a USB DFU device on this USB port, and the red LED2 should be
+   blinking at 1Hz to indicate that mboot is active.  If MicroPython firmware is already
+   in the external SPI flash, mboot will run it instead, so hold the USER button while
+   loading mboot, wait until all three LEDs are on, then release USER.
+
+3. Program mboot into the external SPI flash, using mboot's own DFU device:
+
+       dfu-util -a 0 -s 0x70000000 -D ports/stm32/mboot/build-NUCLEO_N657X0/firmware-trusted.bin
+
+4. Set JP1 (BOOT0) back to 0 (lower position), leaving JP2 (BOOT1) at 0, and press NRST.
+   mboot should run again just like before.  If it's not active then hold the USER
+   button and press NRST, and wait until all three LEDs are on, then release USER.
+   Now mboot will be active.
 
 ## Chip revision and signing header version
 
