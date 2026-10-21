@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Ethernet",
+        "External Flash",
+        "USB-C"
+    ],
+    "images": [
+        "nucleo_n657x0.jpg"
+    ],
+    "mcu": "stm32n6",
+    "product": "Nucleo N657X0-Q",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/nucleo-n657x0-q.html",
+    "vendor": "ST Microelectronics"
+}
