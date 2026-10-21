@@ -298,6 +298,9 @@ static void can_sched_irq(machine_can_obj_t *self, mp_uint_t trigger_bit) {
             return;
         }
         mp_irq_handler(self->mp_irq_obj);
+        // Scheduling a soft callback doesn't wake a VM task blocked on REPL
+        // input or a delay. Service CAN events promptly, as other ESP32 IRQs do.
+        mp_hal_wake_main_task_from_isr();
     }
 }
 
