@@ -44,6 +44,8 @@
 // filters at runtime disables and re-enables the node.
 
 #include "py/runtime.h"
+#include "py/cstack.h"
+#include "py/mpthread.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "shared/runtime/mpirq.h"
@@ -87,6 +89,10 @@
 
 // Software receive ring depth.
 #define CAN_RX_RING_LEN (16)
+
+// Reserve half of an 8 KiB ISR stack for the IDF interrupt entry/driver and
+// half for Python. Boards enabling hard CAN callbacks must opt into this stack.
+#define CAN_HARD_IRQ_STACK_SIZE (4096)
 
 // TX/RX pins per controller, indexed by can_idx (0-based). A board defines
 // MICROPY_HW_CANn_TX / MICROPY_HW_CANn_RX (n is the 1-based controller id) and
@@ -246,6 +252,51 @@ static void can_sched_irq(machine_can_obj_t *self, mp_uint_t trigger_bit) {
     // A non-zero mp_irq_trigger implies mp_irq_obj is set, and mp_irq_handler()
     // itself tolerates a None handler, so no further guards are needed here.
     if (trigger_bit & self->mp_irq_trigger) {
+        if (self->mp_irq_obj->ishard) {
+            if (CONFIG_FREERTOS_ISR_STACKSIZE < 2 * CAN_HARD_IRQ_STACK_SIZE) {
+                // irq() will reject this configuration; don't dispatch if an
+                // interrupt arrives while the trigger is being configured.
+                return;
+            }
+            #if CONFIG_IDF_TARGET_ARCH_XTENSA
+            // setjmp() uses a syscall to spill register windows. This clobbers
+            // the level-1 exception registers that IDF's interrupt dispatcher
+            // still needs after our callback returns.
+            uint32_t saved_excsave1, saved_epc1;
+            __asm__ volatile ("rsr %0, excsave1; rsr %1, epc1"
+                : "=a" (saved_excsave1), "=a" (saved_epc1));
+            #endif
+            // The TWAI interrupt is allocated on the calling MicroPython core,
+            // but may interrupt a non-Python task (including the idle task).
+            // Such tasks have no MicroPython TLS. Borrow the main thread state
+            // for the duration of the callback, restoring the interrupted task
+            // afterward. All MicroPython tasks are pinned to MP_TASK_COREID.
+            #if MICROPY_PY_THREAD
+            mp_state_thread_t *saved_thread = mp_thread_get_state();
+            if (saved_thread == NULL) {
+                mp_thread_set_state(&mp_state_ctx.thread);
+            }
+            #endif
+            // Python runs on the ISR stack, not the interrupted task's stack.
+            char *saved_stack_top = MP_STATE_THREAD(stack_top);
+            #if MICROPY_STACK_CHECK
+            size_t saved_stack_limit = MP_STATE_THREAD(stack_limit);
+            #endif
+            mp_cstack_init_with_sp_here(CAN_HARD_IRQ_STACK_SIZE);
+            mp_irq_handler(self->mp_irq_obj);
+            MP_STATE_THREAD(stack_top) = saved_stack_top;
+            #if MICROPY_STACK_CHECK
+            MP_STATE_THREAD(stack_limit) = saved_stack_limit;
+            #endif
+            #if MICROPY_PY_THREAD
+            mp_thread_set_state(saved_thread);
+            #endif
+            #if CONFIG_IDF_TARGET_ARCH_XTENSA
+            __asm__ volatile ("wsr %0, excsave1; wsr %1, epc1"
+                : : "a" (saved_excsave1), "a" (saved_epc1) : "memory");
+            #endif
+            return;
+        }
         mp_irq_handler(self->mp_irq_obj);
     }
 }
@@ -380,7 +431,11 @@ static bool can_on_state_change(twai_node_handle_t node, const twai_state_change
 static void machine_can_update_irqs(machine_can_obj_t *self) {
     // Callbacks are always registered (on_rx_done must run to fill the ring);
     // the trigger mask in self->mp_irq_trigger gates whether the handler runs.
-    (void)self;
+    if (self->mp_irq_trigger && self->mp_irq_obj->ishard
+        && CONFIG_FREERTOS_ISR_STACKSIZE < 2 * CAN_HARD_IRQ_STACK_SIZE) {
+        self->mp_irq_trigger = 0;
+        mp_raise_ValueError(MP_ERROR_TEXT("hard CAN IRQ requires CONFIG_FREERTOS_ISR_STACKSIZE >= 8192"));
+    }
 }
 
 // Return one pending event per call (TX completions first, each with its index),
