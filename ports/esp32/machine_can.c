@@ -144,6 +144,7 @@ typedef struct {
     twai_frame_t frame;
     uint8_t data[8];
     uint32_t prio; // arbitration priority key, lower = higher priority
+    uint64_t sequence; // FIFO order among frames with the same priority
     uint8_t state;
 } can_tx_slot_t;
 
@@ -190,6 +191,7 @@ typedef struct machine_can_port {
     // TX priority queue of persistent slots; slot index is returned by send().
     // Guarded by tx_mux because send() (task) and on_tx_done (ISR) both mutate it.
     can_tx_slot_t tx_slots[CAN_TX_QUEUE_LEN];
+    uint64_t tx_sequence;
     volatile int16_t tx_inflight; // slot index handed to the driver, or -1
     portMUX_TYPE tx_mux;
 
@@ -576,6 +578,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     port->rx_head = port->rx_tail = port->rx_overruns = 0;
     port->rx_error_flags = 0;
     port->tx_inflight = -1;
+    port->tx_sequence = 0;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
         port->tx_slots[i].state = CAN_TX_FREE;
     }
@@ -721,10 +724,12 @@ static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr) {
         portENTER_CRITICAL(&port->tx_mux);
     }
     if (port->tx_inflight < 0) {
-        uint32_t best = UINT32_MAX;
         for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
-            if (port->tx_slots[i].state == CAN_TX_PENDING && port->tx_slots[i].prio < best) {
-                best = port->tx_slots[i].prio;
+            can_tx_slot_t *slot = &port->tx_slots[i];
+            if (slot->state == CAN_TX_PENDING && (idx < 0
+                                                  || slot->prio < port->tx_slots[idx].prio
+                                                  || (slot->prio == port->tx_slots[idx].prio
+                                                      && slot->sequence < port->tx_slots[idx].sequence))) {
                 idx = i;
             }
         }
@@ -767,23 +772,17 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     bool rtr = (flags & CAN_MSG_FLAG_RTR) != 0;
     uint32_t prio = can_tx_prio(id, ext, rtr);
 
-    // Find a free slot; reject (return None) if the queue is full, or if a
-    // pending frame has the same priority and the caller didn't allow reordering
-    // (the queue can't guarantee same-priority frames keep their order).
+    // Equal-priority frames can share the queue: can_tx_kick() uses their
+    // enqueue sequence to preserve FIFO order even when slot indexes are reused.
     portENTER_CRITICAL(&port->tx_mux);
     int idx = -1;
-    bool collision = false;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
-        uint8_t st = port->tx_slots[i].state;
-        if (st == CAN_TX_FREE) {
-            if (idx < 0) {
-                idx = i;
-            }
-        } else if (st == CAN_TX_PENDING && port->tx_slots[i].prio == prio) {
-            collision = true;
+        if (port->tx_slots[i].state == CAN_TX_FREE) {
+            idx = i;
+            break;
         }
     }
-    if (idx < 0 || (collision && !(flags & CAN_MSG_FLAG_UNORDERED))) {
+    if (idx < 0) {
         portEXIT_CRITICAL(&port->tx_mux);
         return -1;
     }
@@ -802,6 +801,7 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
         .buffer_len = data_len,
     };
     slot->prio = prio;
+    slot->sequence = port->tx_sequence++;
     slot->state = CAN_TX_PENDING;
     portEXIT_CRITICAL(&port->tx_mux);
 
