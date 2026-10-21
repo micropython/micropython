@@ -128,6 +128,11 @@ from frzqstr import returns_NULL
 
 print(returns_NULL())
 
+# test frozen functions with positional-only arguments
+print("# frz_posonly")
+
+import frz_posonly
+
 # test for freeze_mpy (importing prints several lines)
 import frozentest
 
