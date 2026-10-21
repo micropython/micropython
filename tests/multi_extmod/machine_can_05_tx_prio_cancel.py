@@ -83,6 +83,7 @@ def irq_send(can):
 
 def instance1():
     global last_idx, total_cancels
+    can.set_filters([(0x5000, 0x1FFFF000, CAN.FLAG_EXT_ID)])
     can.irq(irq_send, trigger=can.IRQ_TX, hard=True)
 
     multitest.next()
@@ -92,6 +93,11 @@ def instance1():
     # babble before we start trying to send, so we're trying to
     # send onto an already busy bus
     multitest.wait("instance0 babbling")
+    # Also confirm actual CAN traffic before filling the transmit queue.
+    deadline = time.ticks_add(time.ticks_ms(), 2000)
+    while can.recv() is None:
+        assert time.ticks_diff(deadline, time.ticks_ms()) > 0, "babble did not start"
+        time.sleep_ms(1)
 
     for i in range(ITERS):
         # Fill the transmit queue with low priority messages (all extended IDs)
