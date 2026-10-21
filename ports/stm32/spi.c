@@ -30,7 +30,6 @@
 #include "py/mphal.h"
 #include "spi.h"
 #include "extmod/modmachine.h"
-#include "extmod/modnetwork.h"
 
 // Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
@@ -576,23 +575,14 @@ void spi_deinit(const spi_t *spi_obj) {
 }
 
 void spi_deinit_all(void) {
-    #if MICROPY_PY_LWIP && MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_MACHINE_SPI
-    // lwIP and the NIC survive soft reset. Keep their hardware SPI bus alive
-    // so the retained poll callback can continue to access the controller.
-    const spi_t *network_spi = NULL;
-    mp_obj_t nic_spi = wiznet5k_get_active_spi();
-    if (nic_spi != MP_OBJ_NULL && mp_obj_is_type(nic_spi, &machine_spi_type)) {
-        network_spi = spi_from_mp_obj(nic_spi);
-    }
-    #endif
     for (int i = 0; i < MP_ARRAY_SIZE(spi_obj); i++) {
         const spi_t *spi = &spi_obj[i];
-        #if MICROPY_PY_LWIP && MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_MACHINE_SPI
-        if (spi == network_spi) {
-            continue;
-        }
-        #endif
         if (spi->spi != NULL && !MICROPY_HW_SPI_IS_RESERVED(i + 1) && !MICROPY_HW_SPI_IS_STATIC(i + 1)) {
+            #if MICROPY_PY_LWIP && MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_MACHINE_SPI
+            if (wiznet5k_spi_is_active(i)) {
+                continue;
+            }
+            #endif
             spi_deinit(spi);
         }
     }
