@@ -96,7 +96,7 @@ typedef struct _machine_can_obj_t {
     // Timing register settings
     byte tseg1;
     byte tseg2;
-    byte brp;
+    uint16_t brp;
     byte sjw;
 
     machine_can_mode_t mode;

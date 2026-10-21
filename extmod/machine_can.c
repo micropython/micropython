@@ -28,6 +28,7 @@
 
 #if MICROPY_PY_MACHINE_CAN
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include "extmod/modmachine.h"
@@ -75,6 +76,8 @@
 #ifndef CAN_BRP_GRANULARITY
 #define CAN_BRP_GRANULARITY 1
 #endif
+
+MP_STATIC_ASSERT(CAN_BRP_MAX <= UINT16_MAX);
 
 #if MICROPY_HW_ENABLE_FDCAN
 // CAN-FD BRS (Baud Rate Switch) default limits
@@ -135,6 +138,15 @@ static int calculate_brp(int bitrate_nom, int f_clock, int *tseg1, int *tseg2, i
     #else
     (void)is_fd_brs;
     #endif
+
+    // Explicit segments must not let an impossible bitrate silently clamp to
+    // the nearest prescaler. Use the hardware's achievable timing envelope.
+    int ts_min = find_tseg ? 1 + tseg1_min + tseg2_min : 1 + *tseg1 + *tseg2;
+    int ts_max = find_tseg ? 1 + tseg1_max + tseg2_max : ts_min;
+    if (bitrate_nom < f_clock / brp_max / ts_max
+        || bitrate_nom > f_clock / brp_min / ts_min) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bitrate out of range"));
+    }
 
     int brp_best = brp_min;
     int best_bitrate_err = bitrate_nom; // best case deviation from bitrate_nom, start at max
@@ -245,7 +257,11 @@ static void machine_can_init_helper(machine_can_obj_t *self, size_t n_args, cons
 
     // Verify arguments
 
-    int bitrate_nom = args[ARG_bitrate].u_int;
+    mp_int_t bitrate_arg = args[ARG_bitrate].u_int;
+    if (bitrate_arg <= 0 || bitrate_arg > INT_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bitrate out of range"));
+    }
+    int bitrate_nom = bitrate_arg;
 
     machine_can_mode_t mode = args[ARG_mode].u_int;
     if (mode >= MP_CAN_MODE_MAX || !machine_can_port_supports_mode(self, mode)) {
