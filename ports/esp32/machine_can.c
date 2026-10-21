@@ -73,6 +73,7 @@
 // via the advanced timing config so get_timings() stays accurate.
 #define CAN_USE_UPSTREAM_TIMING (1)
 #define CAN_PORT_PRINT_FUNCTION (0)
+#define CAN_CHECK_RECONFIGURE() can_check_task_context()
 
 // The TWAI source clock (TWAI_CLK_SRC_DEFAULT) frequency differs across chips
 // (80 MHz APB on ESP32/S3, 40 MHz XTAL on ESP32-P4, ...), so it is queried at
@@ -218,12 +219,19 @@ typedef struct machine_can_port {
 } machine_can_port_t;
 
 static void can_hw_create(machine_can_obj_t *self);
-static void can_hw_apply_filter(machine_can_obj_t *self);
+static void can_hw_delete(machine_can_obj_t *self);
+static esp_err_t can_hw_apply_filter(machine_can_obj_t *self);
 static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr);
 
 static void can_check_esp_err(esp_err_t err) {
     if (err != ESP_OK) {
         mp_raise_OSError(MP_EIO);
+    }
+}
+
+static void can_check_task_context(void) {
+    if (xPortInIsrContext()) {
+        mp_raise_OSError(MP_EPERM);
     }
 }
 
@@ -563,17 +571,19 @@ static void can_hw_create(machine_can_obj_t *self) {
     can_mode_flags(self->mode, &cfg);
 
     esp_err_t err = twai_new_node_onchip(&cfg, &port->node);
-    if (err == ESP_ERR_INVALID_ARG) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid CAN config"));
+    if (err != ESP_OK) {
+        goto error;
     }
-    can_check_esp_err(err);
 
     const twai_event_callbacks_t cbs = {
         .on_rx_done = can_on_rx_done,
         .on_tx_done = can_on_tx_done,
         .on_state_change = can_on_state_change,
     };
-    can_check_esp_err(twai_node_register_event_callbacks(port->node, &cbs, self));
+    err = twai_node_register_event_callbacks(port->node, &cbs, self);
+    if (err != ESP_OK) {
+        goto error;
+    }
 
     // Apply the exact timing computed by extmod (must be done while stopped).
     twai_timing_advanced_config_t timing = {
@@ -584,17 +594,33 @@ static void can_hw_create(machine_can_obj_t *self) {
         .sjw = self->sjw,
     };
     err = twai_node_reconfig_timing(port->node, &timing, NULL);
+    if (err != ESP_OK) {
+        goto error;
+    }
+
+    err = can_hw_apply_filter(self);
+    if (err != ESP_OK) {
+        goto error;
+    }
+
+    // Enable may fail after starting the hardware. Cleanup must attempt to
+    // stop it even when the API did not return success.
+    port->enabled = true;
+    err = twai_node_enable(port->node);
+    if (err != ESP_OK) {
+        goto error;
+    }
+    return;
+
+error:
+    can_hw_delete(self);
+    // The shared layer uses a NULL port to identify a stopped controller.
+    // Do not expose a half-initialised object to subsequent Python calls.
+    self->port = NULL;
     if (err == ESP_ERR_INVALID_ARG) {
-        twai_node_delete(port->node);
-        port->node = NULL;
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid CAN timing"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid CAN config"));
     }
     can_check_esp_err(err);
-
-    can_hw_apply_filter(self);
-
-    can_check_esp_err(twai_node_enable(port->node));
-    port->enabled = true;
 }
 
 static void can_hw_delete(machine_can_obj_t *self) {
@@ -658,7 +684,7 @@ static void machine_can_port_deinit(machine_can_obj_t *self) {
 // leaves it accept-all and matches in the RX ISR (see can_frame_accepted).
 // -------------------------------------------------------------------------
 
-static void can_hw_apply_filter(machine_can_obj_t *self) {
+static esp_err_t can_hw_apply_filter(machine_can_obj_t *self) {
     // Derive the hardware mask from the canonical active filters every time
     // the node is created (including restart), not just after set_filters().
     machine_can_port_t *port = self->port;
@@ -681,8 +707,11 @@ static void can_hw_apply_filter(machine_can_obj_t *self) {
         // single-format zero masks in software, just like RTR filters.
         sw_mode = CAN_FILTER_LIST;
     }
-    can_check_esp_err(twai_node_config_mask_filter(port->node, 0, &cfg));
-    port->filter_mode = sw_mode;
+    esp_err_t err = twai_node_config_mask_filter(port->node, 0, &cfg);
+    if (err == ESP_OK) {
+        port->filter_mode = sw_mode;
+    }
+    return err;
 }
 
 static void machine_can_port_clear_filters(machine_can_obj_t *self) {
@@ -730,10 +759,15 @@ static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
         }
         port->filter_count = port->stage_count;
         portEXIT_CRITICAL_SAFE(&port->rx_mux);
-        can_hw_apply_filter(self);
-        if (was_enabled) {
-            can_check_esp_err(twai_node_enable(port->node));
+        esp_err_t err = can_hw_apply_filter(self);
+        if (err == ESP_OK && was_enabled) {
             port->enabled = true;
+            err = twai_node_enable(port->node);
+        }
+        if (err != ESP_OK) {
+            can_hw_delete(self);
+            self->port = NULL;
+            can_check_esp_err(err);
         }
     }
 }

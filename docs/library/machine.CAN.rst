@@ -328,6 +328,10 @@ Methods
    .. note:: On ESP32, hard CAN callbacks require an ISR stack of at least
       8192 bytes, configured with ``CONFIG_FREERTOS_ISR_STACKSIZE=8192`` in the
       board's sdkconfig. Soft callbacks do not require this larger stack.
+      ``init()``, ``deinit()``, ``restart()`` and ``set_filters()`` cannot be
+      called from a hard interrupt: they raise ``OSError(EPERM)`` before
+      changing the controller. Use a soft callback or schedule task-context
+      work with :func:`micropython.schedule` instead.
 
 .. method:: CAN.cancel_send(index)
 

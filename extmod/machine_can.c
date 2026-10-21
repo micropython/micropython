@@ -79,6 +79,11 @@
 
 MP_STATIC_ASSERT(CAN_BRP_MAX <= UINT16_MAX);
 
+// Some ports use task-only driver APIs to recreate or reconfigure a node.
+#ifndef CAN_CHECK_RECONFIGURE
+#define CAN_CHECK_RECONFIGURE() ((void)0)
+#endif
+
 #if MICROPY_HW_ENABLE_FDCAN
 // CAN-FD BRS (Baud Rate Switch) default limits
 #ifndef CAN_FD_BRS_TSEG1_MIN
@@ -227,6 +232,7 @@ static int machine_can_get_actual_bitrate(machine_can_obj_t *self) {
 }
 
 static mp_obj_t machine_can_deinit(mp_obj_t self_in) {
+    CAN_CHECK_RECONFIGURE();
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Each CAN instance should have at most one peripheral object
     assert(self == MP_STATE_PORT(machine_can_objs)[self->can_idx]);
@@ -242,6 +248,7 @@ static mp_obj_t machine_can_deinit(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_can_deinit_obj, machine_can_deinit);
 
 static void machine_can_init_helper(machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    CAN_CHECK_RECONFIGURE();
     enum { ARG_bitrate, ARG_mode, ARG_sample_point, ARG_sjw, ARG_tseg1, ARG_tseg2};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitrate, MP_ARG_INT | MP_ARG_REQUIRED },
@@ -545,6 +552,7 @@ static mp_obj_t machine_can_recv(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_can_recv_obj, 1, 2, machine_can_recv);
 
 static mp_obj_t machine_can_set_filters(mp_obj_t self_in, mp_obj_t filters) {
+    CAN_CHECK_RECONFIGURE();
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_can_check_initialised(self);
     mp_obj_iter_buf_t iter_buf;
@@ -655,6 +663,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_can_get_timings_obj, 1, 2, ma
 
 
 static mp_obj_t machine_can_restart(mp_obj_t self_in) {
+    CAN_CHECK_RECONFIGURE();
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_can_check_initialised(self);
     machine_can_port_restart(self);
