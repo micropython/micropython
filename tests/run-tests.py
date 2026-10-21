@@ -854,7 +854,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             return
 
         # Run the test on the MicroPython target.
-        output_mupy = run_micropython(pyb, args, test)
+        try:
+            output_mupy = run_micropython(pyb, args, test)
+        except (OSError, KeyboardInterrupt):
+            print(f"interrupted {test_file}")
+            raise
 
         # Check if the target requested to skip this test.
         if output_mupy == b"SKIP\n":
