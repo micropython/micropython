@@ -81,6 +81,8 @@
 // Depth of the driver's software transmit queue, also the number of send()
 // buffer indexes reported to Python.
 #define CAN_TX_QUEUE_LEN (8)
+// One ring entry is reserved to distinguish full from empty.
+#define CAN_TX_DONE_QUEUE_LEN (CAN_TX_QUEUE_LEN + 1)
 
 // RX filtering is done in software (in the on_rx_done ISR) rather than with the
 // single hardware acceptance filter, so multiple standard and extended filters
@@ -145,6 +147,7 @@ typedef struct {
     uint8_t data[8];
     uint32_t prio; // arbitration priority key, lower = higher priority
     uint64_t sequence; // FIFO order among frames with the same priority
+    volatile int *cancel_result; // synchronous cancellation of a hardware attempt
     uint8_t state;
 } can_tx_slot_t;
 
@@ -208,7 +211,7 @@ typedef struct machine_can_port {
     struct {
         uint8_t idx;
         bool failed;
-    } txd_ring[CAN_TX_QUEUE_LEN];
+    } txd_ring[CAN_TX_DONE_QUEUE_LEN];
     volatile bool state_pending;
 } machine_can_port_t;
 
@@ -236,7 +239,10 @@ static int machine_can_port_f_clock(const machine_can_obj_t *self) {
 
 static bool machine_can_port_supports_mode(const machine_can_obj_t *self, machine_can_mode_t mode) {
     (void)self;
-    return mode < MP_CAN_MODE_MAX && mode != MP_CAN_MODE_SLEEP;
+    // Self reception still drives the external bus on classic TWAI. It is
+    // not an isolated loopback mode, so don't advertise silent loopback.
+    return mode < MP_CAN_MODE_MAX && mode != MP_CAN_MODE_SLEEP
+           && mode != MP_CAN_MODE_SILENT_LOOPBACK;
 }
 
 static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
@@ -254,6 +260,15 @@ static void can_sched_irq(machine_can_obj_t *self, mp_uint_t trigger_bit) {
     // A non-zero mp_irq_trigger implies mp_irq_obj is set, and mp_irq_handler()
     // itself tolerates a None handler, so no further guards are needed here.
     if (trigger_bit & self->mp_irq_trigger) {
+        if (!xPortInIsrContext()) {
+            // Software cancellations originate in the caller's task, not on
+            // the ISR stack. mp_irq_handler also handles hard callbacks here.
+            mp_irq_handler(self->mp_irq_obj);
+            if (!self->mp_irq_obj->ishard) {
+                mp_hal_wake_main_task();
+            }
+            return;
+        }
         if (self->mp_irq_obj->ishard) {
             if (CONFIG_FREERTOS_ISR_STACKSIZE < 2 * CAN_HARD_IRQ_STACK_SIZE) {
                 // irq() will reject this configuration; don't dispatch if an
@@ -383,23 +398,32 @@ static bool can_on_tx_done(twai_node_handle_t node, const twai_tx_done_event_dat
     // Free the completed in-flight slot and report its index.
     portENTER_CRITICAL_ISR(&port->tx_mux);
     int idx = port->tx_inflight;
+    bool notify = false;
     if (idx >= 0) {
-        port->tx_slots[idx].state = CAN_TX_FREE;
+        can_tx_slot_t *slot = &port->tx_slots[idx];
+        notify = edata->is_tx_success || slot->cancel_result != NULL;
+        slot->state = notify ? CAN_TX_FREE : CAN_TX_PENDING;
+        if (slot->cancel_result != NULL) {
+            *slot->cancel_result = edata->is_tx_success ? 2 : 1;
+            slot->cancel_result = NULL;
+        }
         port->tx_inflight = -1;
     }
-    portEXIT_CRITICAL_ISR(&port->tx_mux);
-    if (idx >= 0) {
+    if (notify) {
         // Queue the completion so each one is reported individually by flags().
-        uint8_t next = (port->txd_head + 1) % CAN_TX_QUEUE_LEN;
+        uint8_t next = (port->txd_head + 1) % CAN_TX_DONE_QUEUE_LEN;
         if (next != port->txd_tail) {
             port->txd_ring[port->txd_head].idx = idx;
             port->txd_ring[port->txd_head].failed = !edata->is_tx_success;
             port->txd_head = next;
         }
     }
+    portEXIT_CRITICAL_ISR(&port->tx_mux);
     // Hand the next-highest-priority pending frame to the driver (ISR context).
     can_tx_kick(port, true);
-    can_sched_irq(self, MP_CAN_IRQ_TX);
+    if (notify) {
+        can_sched_irq(self, MP_CAN_IRQ_TX);
+    }
     return false;
 }
 
@@ -451,17 +475,19 @@ static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
     // RX is level-triggered: report it while frames remain in the ring, so a
     // handler looping on `flags() & IRQ_RX` drains them all and it isn't masked
     // by a queued TX completion.
-    if (port->rx_head != port->rx_tail) {
+    if ((self->mp_irq_trigger & MP_CAN_IRQ_RX) && port->rx_head != port->rx_tail) {
         flags |= MP_CAN_IRQ_RX;
     }
     // TX completions each carry a buffer index, so report one per call.
-    if (port->txd_tail != port->txd_head) {
+    portENTER_CRITICAL_SAFE(&port->tx_mux);
+    if ((self->mp_irq_trigger & MP_CAN_IRQ_TX) && port->txd_tail != port->txd_head) {
         mp_uint_t idx = port->txd_ring[port->txd_tail].idx;
         bool failed = port->txd_ring[port->txd_tail].failed;
-        port->txd_tail = (port->txd_tail + 1) % CAN_TX_QUEUE_LEN;
+        port->txd_tail = (port->txd_tail + 1) % CAN_TX_DONE_QUEUE_LEN;
         flags |= MP_CAN_IRQ_TX | (idx << MP_CAN_IRQ_IDX_SHIFT) | (failed ? MP_CAN_IRQ_TX_FAILED : 0);
     }
-    if (port->state_pending) {
+    portEXIT_CRITICAL_SAFE(&port->tx_mux);
+    if ((self->mp_irq_trigger & MP_CAN_IRQ_STATE) && port->state_pending) {
         port->state_pending = false;
         flags |= MP_CAN_IRQ_STATE;
     }
@@ -478,7 +504,6 @@ static void can_mode_flags(machine_can_mode_t mode, twai_onchip_node_config_t *c
             cfg->flags.enable_listen_only = 1;
             break;
         case MP_CAN_MODE_LOOPBACK:
-        case MP_CAN_MODE_SILENT_LOOPBACK:
             // The controller receives its own frames and doesn't require an ACK.
             cfg->flags.enable_loopback = 1;
             cfg->flags.enable_self_test = 1;
@@ -501,7 +526,9 @@ static void can_hw_create(machine_can_obj_t *self) {
             .bus_off_indicator = -1,
         },
         .bit_timing = { .bitrate = self->bitrate },
-        .fail_retry_cnt = -1, // standard CAN automatic retransmission
+        // Retry in software so arbitration loss releases the single hardware
+        // buffer, allowing a newly queued higher-priority frame to go first.
+        .fail_retry_cnt = 0,
         .tx_queue_depth = CAN_TX_QUEUE_LEN,
     };
     can_mode_flags(self->mode, &cfg);
@@ -802,6 +829,7 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     };
     slot->prio = prio;
     slot->sequence = port->tx_sequence++;
+    slot->cancel_result = NULL;
     slot->state = CAN_TX_PENDING;
     portEXIT_CRITICAL(&port->tx_mux);
 
@@ -809,7 +837,9 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     // is free. A hard error (bus-off / stopped / listen-only) means this frame
     // can't be sent at all: drop it and report a failure to queue (return -1 ->
     // None) rather than raising, matching the other ports' send() behaviour.
-    esp_err_t err = can_tx_kick(port, false);
+    // Listen-only mode accepts a queued message, but cannot put it on the
+    // bus. Keep it pending until cancellation or reinitialisation.
+    esp_err_t err = self->mode == MP_CAN_MODE_SILENT ? ESP_OK : can_tx_kick(port, false);
     if (err != ESP_OK && err != ESP_ERR_TIMEOUT) {
         portENTER_CRITICAL(&port->tx_mux);
         slot->state = CAN_TX_FREE;
@@ -824,22 +854,49 @@ static bool machine_can_port_cancel_send(machine_can_obj_t *self, mp_uint_t idx)
     if (idx >= CAN_TX_QUEUE_LEN) {
         return false;
     }
-    // Only a still-pending frame can be cancelled; an in-flight one is already
-    // committed to the hardware TX buffer and can't be recalled.
-    portENTER_CRITICAL(&port->tx_mux);
+    // A hardware attempt is single-shot: wait for its outcome to distinguish
+    // a successful send from a cancellation before the next software retry.
+    // Never wait from a hard IRQ, where the completion ISR cannot run.
+    volatile int result = 0;
+    twai_node_status_t status;
+    bool bus_off = twai_node_get_info(port->node, &status, NULL) == ESP_OK
+        && status.state == TWAI_ERROR_BUS_OFF;
+    portENTER_CRITICAL_SAFE(&port->tx_mux);
+    if (bus_off && port->tx_slots[idx].state == CAN_TX_INFLIGHT) {
+        // Bus-off has already stopped the hardware attempt. IDF won't emit
+        // its completion or retry it on recovery, so cancel it locally.
+        port->tx_inflight = -1;
+        port->tx_slots[idx].state = CAN_TX_PENDING;
+    }
+    if (port->tx_slots[idx].state == CAN_TX_INFLIGHT && !xPortInIsrContext()) {
+        port->tx_slots[idx].cancel_result = &result;
+        portEXIT_CRITICAL_SAFE(&port->tx_mux);
+        uint32_t start = mp_hal_ticks_ms();
+        while (result == 0 && mp_hal_ticks_ms() - start < 500) {
+            mp_hal_delay_us(1);
+        }
+        portENTER_CRITICAL_SAFE(&port->tx_mux);
+        if (port->tx_slots[idx].cancel_result == &result) {
+            port->tx_slots[idx].cancel_result = NULL;
+        }
+        portEXIT_CRITICAL_SAFE(&port->tx_mux);
+        return result == 1;
+    }
     bool cancelled = port->tx_slots[idx].state == CAN_TX_PENDING;
     if (cancelled) {
         port->tx_slots[idx].state = CAN_TX_FREE;
     }
-    portEXIT_CRITICAL(&port->tx_mux);
     if (cancelled) {
         // Report the cancellation as a failed transmit for this buffer index.
-        uint8_t next = (port->txd_head + 1) % CAN_TX_QUEUE_LEN;
+        uint8_t next = (port->txd_head + 1) % CAN_TX_DONE_QUEUE_LEN;
         if (next != port->txd_tail) {
             port->txd_ring[port->txd_head].idx = idx;
             port->txd_ring[port->txd_head].failed = true;
             port->txd_head = next;
         }
+    }
+    portEXIT_CRITICAL_SAFE(&port->tx_mux);
+    if (cancelled) {
         can_sched_irq(self, MP_CAN_IRQ_TX);
     }
     return cancelled;
@@ -882,29 +939,32 @@ static machine_can_state_t machine_can_port_get_state(machine_can_obj_t *self) {
     if (twai_node_get_info(port->node, &status, NULL) != ESP_OK) {
         return MP_CAN_STATE_STOPPED;
     }
-    switch (status.state) {
-        case TWAI_ERROR_WARNING:
-            return MP_CAN_STATE_WARNING;
-        case TWAI_ERROR_PASSIVE:
-            return MP_CAN_STATE_PASSIVE;
-        case TWAI_ERROR_BUS_OFF:
-            return MP_CAN_STATE_BUS_OFF;
-        default:
-            return MP_CAN_STATE_ACTIVE;
+    if (status.state == TWAI_ERROR_BUS_OFF) {
+        return MP_CAN_STATE_BUS_OFF;
     }
+    // IDF's cached state can jump straight to ACTIVE when leaving PASSIVE,
+    // even though the counters are still above the warning threshold.
+    unsigned errors = MAX(status.tx_error_count, status.rx_error_count);
+    return errors >= 128 ? MP_CAN_STATE_PASSIVE
+        : errors >= 96 ? MP_CAN_STATE_WARNING : MP_CAN_STATE_ACTIVE;
 }
 
 static void machine_can_port_restart(machine_can_obj_t *self) {
     machine_can_port_t *port = self->port;
-    // Begin bus-off recovery; pending transmits are dropped.
-    twai_node_recover(port->node);
+    // Recreate the node to discard IDF's current frame as well as software
+    // pending frames. Merely resetting our slot states leaves IDF holding a
+    // pointer to a slot that send() may reuse. RX/filter state is preserved.
+    can_hw_delete(self);
     portENTER_CRITICAL(&port->tx_mux);
     port->tx_inflight = -1;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
         port->tx_slots[i].state = CAN_TX_FREE;
     }
     portEXIT_CRITICAL(&port->tx_mux);
+    port->txd_head = port->txd_tail = 0;
+    port->state_pending = false;
     port->num_warning = port->num_passive = port->num_bus_off = 0;
+    can_hw_create(self);
 }
 
 static void machine_can_port_update_counters(machine_can_obj_t *self) {

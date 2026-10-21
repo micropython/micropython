@@ -477,6 +477,9 @@ Changing the mode of a running controller requires calling `CAN.deinit()` and th
    all. The CAN controller receives its own transmitted messages without
    interacting with the CAN bus at all. The CAN TX and RX pins remain idle.
 
+   Not supported on ESP32. Requesting this mode raises ``ValueError``;
+   ``MODE_LOOPBACK`` on ESP32 receives its own frames but still drives the bus.
+
 .. _can-states:
 
 States
