@@ -121,16 +121,26 @@ def instance1():
             total_cancels += 1
 
         # send a high priority message, that we expect to go out
+        sent_before = total_sent
         idx = can.send(0x500 + i, b"HIPRIO", CAN.FLAG_EXT_ID)
         print(i, "send result", idx is not None)
 
-        # make sure this message is sent onto the bus
-        time.sleep_ms(1)
+        # Wait for completion rather than assuming a fixed delay is enough.
+        # Otherwise the next queue-fill can fail before adding a frame, leaving
+        # last_idx at zero and cancelling an older frame instead of replacing
+        # one low-priority frame on each iteration.
+        deadline = time.ticks_add(time.ticks_ms(), 1000)
+        while idx is not None and total_sent == sent_before:
+            assert time.ticks_diff(deadline, time.ticks_ms()) > 0, "high priority TX stalled"
+            time.sleep_ms(1)
 
     multitest.broadcast("sender done")
 
-    # let the entire transmit queue drain, now instance0 should have gone quiet
-    time.sleep_ms(50)
+    # Let the entire transmit queue drain, now instance0 should have gone quiet.
+    deadline = time.ticks_add(time.ticks_ms(), 1000)
+    while can.get_counters()[5]:
+        assert time.ticks_diff(deadline, time.ticks_ms()) > 0, "TX queue did not drain"
+        time.sleep_ms(1)
 
     print("total cancels", total_cancels)  # should equal ITERS
 
