@@ -417,6 +417,10 @@ void SystemClock_Config(void) {
 #elif defined(STM32N6)
 
 void SystemClock_Config(void) {
+    // Write back the detected VDDCORE supply (SDEN reads 0 if the SMPS is bypassed).
+    // Low-power modes can't be entered until this has been written once after power-on.
+    LL_PWR_ConfigSupply(PWR->CR1 & PWR_CR1_SDEN);
+
     // Enable HSI.
     LL_RCC_HSI_Enable();
     while (!LL_RCC_HSI_IsReady()) {
