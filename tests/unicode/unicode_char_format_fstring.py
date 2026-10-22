@@ -1,4 +1,5 @@
 # test %c formatting with unicode characters in f-strings
+# requires: fstring
 
 c = 169
 print(f"{c:c}")

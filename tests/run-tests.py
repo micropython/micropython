@@ -698,7 +698,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_int_64 = False
     skip_async = False
     skip_const = False
-    skip_fstring = False
     skip_tstring = False
     skip_endian = False
     skip_inlineasm = False
@@ -755,10 +754,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "reverse_ops.py")
         target_capabilities["reverse-op"] = output == b"reverse\n"
 
-        # Check if fstring feature is enabled, and skip such tests if it doesn't
+        # Check if fstrings are enabled.
         output = run_feature_check(pyb, args, "fstring.py")
-        if output != b"a=1\n":
-            skip_fstring = True
+        target_capabilities["fstring"] = output == b"a=1\n"
 
         # Check if tstring feature is enabled, and skip such tests if it doesn't
         output = run_feature_check(pyb, args, "tstring.py")
@@ -903,7 +901,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
-        is_fstring = test_name.startswith("string_fstring") or test_name.endswith("_fstring")
         is_tstring = test_name.startswith("string_tstring") or test_name.endswith("_tstring")
         is_inlineasm = test_name.startswith("asm")
 
@@ -913,7 +910,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_int_64 and is_int_64
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
-        skip_it |= skip_fstring and is_fstring
         skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm
 
