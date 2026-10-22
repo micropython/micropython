@@ -2,7 +2,7 @@
 # Initial setup of Makefile environment
 
 BOARD ?= ALIF_ENSEMBLE
-BOARD_DIR ?= boards/$(BOARD)
+BOARD_DIR ?= ./boards/$(BOARD)
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
@@ -262,7 +262,7 @@ $(BUILD)/ensemble.ld: $(LD_FILE)
 	$(ECHO) "Preprocess linker script $@"
 	$(Q)$(CPP) -P -E $(CFLAGS) $^ > $@
 
-$(BUILD)/firmware.elf: $(OBJ) $(BUILD)/ensemble.ld
+$(BUILD)/firmware.elf: $(OBJ) $(BUILD)/ensemble.ld $(LIBS_THIRDPARTY)
 	$(ECHO) "Link $@"
 	$(Q)$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
