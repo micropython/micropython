@@ -31,6 +31,8 @@
 
 #if MICROPY_PY_HASHLIB
 
+#if !NO_QSTR
+
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/version.h"
 #endif
@@ -46,6 +48,7 @@
 #include "mbedtls/sha256.h"
 #endif
 #else
+// axTLS
 #include "lib/crypto-algorithms/sha256.h"
 #endif
 
@@ -68,6 +71,8 @@
 #endif
 
 #endif
+
+#endif // !NO_QSTR
 
 typedef struct _mp_obj_hash_t {
     mp_obj_base_t base;

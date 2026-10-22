@@ -54,6 +54,8 @@ struct ctr_params {
     uint8_t encrypted_counter[16];
 };
 
+#if !NO_QSTR
+
 #if MICROPY_SSL_AXTLS
 #include "lib/axtls/crypto/crypto.h"
 
@@ -64,7 +66,7 @@ struct ctr_params {
 #include "mbedtls/version.h"
 #if MBEDTLS_VERSION_MAJOR >= 4
 // mbedtls 4.x: the legacy AES API moved under the tf-psa-crypto
-// builtin driver tree. The port CMakeLists adds that include path; the header
+// builtin driver tree. CMake and/or Makefile adds that include path; the header
 // is then available at mbedtls/private/aes.h.
 #include "mbedtls/private/aes.h"
 #else
@@ -86,6 +88,8 @@ struct mbedtls_aes_ctx_with_key {
 };
 #define AES_CTX_IMPL struct mbedtls_aes_ctx_with_key
 #endif
+
+#endif // !NO_QSTR
 
 typedef struct _mp_obj_aes_t {
     mp_obj_base_t base;

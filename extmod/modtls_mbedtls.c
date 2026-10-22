@@ -41,10 +41,17 @@
 #include "py/gc.h"
 #include "extmod/vfs.h"
 
-// mbedtls_time_t
-// Include version.h first so MBEDTLS_VERSION_MAJOR is available for the
-// conditional RNG includes below (works for mbedtls 2.x, 3.x and 4.x).
+// Include version header first for version-based conditional compilation
 #include "mbedtls/version.h"
+
+#if MBEDTLS_VERSION_MAJOR >= 4
+// mbedtls 4.x (ESP-IDF v6+): entropy and ctr_drbg APIs removed, PSA handles RNG internally
+    #include "psa/crypto.h"
+#else
+// mbedtls 3.x and below (ESP-IDF v5 and below): standard legacy APIs
+    #include "mbedtls/entropy.h"
+    #include "mbedtls/ctr_drbg.h"
+#endif
 
 #if MBEDTLS_VERSION_MAJOR < 4
 // mbedtls 3.x and below: explicit entropy/ctr_drbg contexts
