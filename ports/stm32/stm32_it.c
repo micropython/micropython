@@ -561,11 +561,8 @@ void TAMP_STAMP_IRQHandler(void) {
 #endif
 
 #if !defined(STM32U5)
-#if defined(STM32H5)
+#if defined(STM32H5) || defined(STM32N6)
 void RTC_IRQHandler(void)
-#elif defined(STM32N6)
-#define RTC_WKUP_IRQn RTC_S_IRQn
-void RTC_S_IRQHandler(void)
 #else
 void RTC_WKUP_IRQHandler(void)
 #endif
@@ -582,12 +579,6 @@ void RTC_WKUP_IRQHandler(void)
     #endif
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
-}
-#endif
-
-#if defined(STM32N6)
-void RTC_IRQHandler(void) {
-    RTC_S_IRQHandler();
 }
 #endif
 
