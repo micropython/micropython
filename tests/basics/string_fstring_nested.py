@@ -1,4 +1,5 @@
 # Test nesting of f-strings within f-strings.
+# requires: fstring
 
 x = 1
 

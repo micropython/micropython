@@ -34,6 +34,7 @@ _REQUIREMENT_PREFIX = b"# requires:"
 _VALID_REQUIREMENTS = (
     "bytearray",
     "frozenset",
+    "fstring",
     "native",
     "reverse-op",
     "set",

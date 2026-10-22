@@ -1,3 +1,5 @@
+# requires: fstring
+
 def f():
     return 4
 def g(_):

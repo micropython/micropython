@@ -1,5 +1,6 @@
 # Test nesting of f-strings within f-strings.
 # These test rely on Python 3.12+ to use the same quote style for nesting.
+# requires: fstring
 
 x = 1
 

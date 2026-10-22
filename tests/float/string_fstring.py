@@ -1,4 +1,6 @@
 # Format specifiers with nested replacement fields
+# requires: fstring
+
 space = 5
 prec = 2
 print(f"{3.14:{space}.{prec}}")
