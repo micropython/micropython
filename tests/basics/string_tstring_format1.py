@@ -1,3 +1,5 @@
+# requires: tstring
+
 print("\n=== Format spec edge cases ===")
 print(f"Empty fmt: {t'{42:}'}")
 print(f"Width: '{t'{42:10}'}'")

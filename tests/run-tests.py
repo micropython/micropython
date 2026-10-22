@@ -698,7 +698,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_int_64 = False
     skip_async = False
     skip_const = False
-    skip_tstring = False
     skip_endian = False
     skip_inlineasm = False
     has_complex = True
@@ -758,10 +757,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "fstring.py")
         target_capabilities["fstring"] = output == b"a=1\n"
 
-        # Check if tstring feature is enabled, and skip such tests if it doesn't
+        # Check if tstrings are enabled.
         output = run_feature_check(pyb, args, "tstring.py")
-        if output != b"tstring\n":
-            skip_tstring = True
+        target_capabilities["tstring"] = output == b"tstring\n"
 
         if args.inlineasm_arch == "thumb":
             for feature in ("thumb2", "vfp"):
@@ -901,7 +899,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
-        is_tstring = test_name.startswith("string_tstring") or test_name.endswith("_tstring")
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
@@ -910,7 +907,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_int_64 and is_int_64
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
-        skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm
 
         skip_reasons = []

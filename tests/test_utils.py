@@ -39,6 +39,7 @@ _VALID_REQUIREMENTS = (
     "reverse-op",
     "set",
     "slice",
+    "tstring",
     "viper",
 )
 

@@ -2,6 +2,7 @@
 # during ROM compression on constrained platforms (Windows x86, ASan).
 # CPython 3.14 message: "Template.__new__ *args need to be of type 'str' or 'Interpolation', got int"
 # MicroPython message: "Template.__new__ args must be str or Interpolation, got 'int'"
+# requires: tstring
 
 from string.templatelib import Template
 

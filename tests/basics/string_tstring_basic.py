@@ -1,3 +1,5 @@
+# requires: tstring
+
 from string.templatelib import Template, Interpolation
 
 print("=== Basic functionality ===")

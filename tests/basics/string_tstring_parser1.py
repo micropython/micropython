@@ -1,3 +1,5 @@
+# requires: tstring
+
 from string.templatelib import Template
 
 print("\n=== Empty expression tests ===")
