@@ -39,6 +39,9 @@ p==p_realloc:0 p_realloc-bits:5
 1
 # GC part 2
 pass
+# GC part 3
+1
+1
 # tracked allocation
 m_tracked_head = 0
 0 1
