@@ -1,10 +1,5 @@
-# basic sets
-
-try:
-    frozenset
-except NameError:
-    print("SKIP")
-    raise SystemExit
+# basic frozenset behaviour
+# requires: frozenset
 
 s = frozenset()
 print(s)

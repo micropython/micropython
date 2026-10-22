@@ -1,8 +1,4 @@
-try:
-    frozenset
-except NameError:
-    print("SKIP")
-    raise SystemExit
+# requires: frozenset set
 
 # Examples from https://docs.python.org/3/library/stdtypes.html#set
 # "Instances of set are compared to instances of frozenset based on their

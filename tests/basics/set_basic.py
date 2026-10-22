@@ -1,4 +1,5 @@
 # basic sets
+# requires: set
 
 s = {1}
 print(s)
