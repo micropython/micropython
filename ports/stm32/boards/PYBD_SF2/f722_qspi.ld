@@ -54,7 +54,7 @@ SECTIONS
         *py/emitinlinethumb.o(.text* .rodata*)
         *py/emitnthumb.o(.text* .rodata*)
         *lib/btstack/*(.text* .rodata*)
-        *lib/mbedtls/*(.text* .rodata*)
+        *lib_mbedtls/*:*(.text* .rodata*)
         *lib/mynewt-nimble/*(.text* .rodata*)
         *lib/cyw43-driver/*(.rodata.w4343*_combined)
         *lib/cyw43-driver/*(.rodata.cyw43_btfw_*)

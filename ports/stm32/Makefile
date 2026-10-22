@@ -6,7 +6,7 @@ BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to PYBV10.
 BOARD ?= PYBV10
-BOARD_DIR ?= boards/$(BOARD)
+BOARD_DIR ?= ./boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
@@ -670,7 +670,7 @@ $(BUILD)/firmware.pack.dfu: $(BUILD)/firmware.dfu $(MBOOT_PACK_KEYS_FILE)
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(call GENERATE_HEX,$@,$^)
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(LIBS_THIRDPARTY)
 	$(call GENERATE_ELF,$@,$^)
 
 $(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
