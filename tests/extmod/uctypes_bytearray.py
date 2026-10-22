@@ -1,3 +1,5 @@
+# requires: bytearray
+
 try:
     import uctypes
 except ImportError:

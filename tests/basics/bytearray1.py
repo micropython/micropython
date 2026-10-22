@@ -1,4 +1,4 @@
-# requires: slice
+# requires: bytearray slice
 
 print(bytearray(4))
 a = bytearray([1, 2, 200])

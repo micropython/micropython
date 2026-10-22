@@ -696,7 +696,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_tests = set()
     skip_int_big = False
     skip_int_64 = False
-    skip_bytearray = False
     skip_set_type = False
     skip_async = False
     skip_const = False
@@ -730,10 +729,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output != b"4611686018427387904\n":
             skip_int_64 = True
 
-        # Check if bytearray is supported, and skip such tests if it's not
+        # Check if bytearray is supported.
         output = run_feature_check(pyb, args, "bytearray.py")
-        if output != b"bytearray\n":
-            skip_bytearray = True
+        target_capabilities["bytearray"] = output == b"bytearray\n"
 
         # Check if set type (and set literals) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "set_check.py")
@@ -904,7 +902,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             or test_name.startswith("ffi_int")  # these tests contain large integer literals
         )
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
-        is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_const = test_name.startswith("const")
@@ -916,7 +913,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_int_64 and is_int_64
-        skip_it |= skip_bytearray and is_bytearray
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const

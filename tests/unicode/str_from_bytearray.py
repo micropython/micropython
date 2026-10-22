@@ -1,8 +1,8 @@
 # Test that a str/bytes created from a bytearray is an independent snapshot,
 # and not a view onto the (mutable) bytearray buffer.  Mutating or resizing the
 # source bytearray afterwards must not change the previously created object.
-
-# Skip if needed via `skip_bytearray` logic in run-tests.py
+#
+# requires: bytearray
 
 # Non-interned payloads (byte literals) are used so the result isn't returned as
 # an existing qstr.  Every scenario is covered with plain-ASCII data so the core
