@@ -10,7 +10,7 @@ BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to TEENSY40.
 BOARD ?= TEENSY40
-BOARD_DIR ?= boards/$(BOARD)
+BOARD_DIR ?= ./boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
@@ -567,7 +567,7 @@ endif
 
 # Process linker scripts with C preprocessor to exchange LDDEFINES and
 #	aggregate output of preprocessor in a single linker script `link.ld`
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(LIBS_THIRDPARTY)
 	$(ECHO) "PREPROCESS LINK $@"
 	$(Q)$(CC) -E -x c $(LDDEFINES) $(LD_FILES) | grep -v '^#' > $(BUILD)/link.ld
 	$(ECHO) "LINK $@"
