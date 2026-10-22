@@ -43,6 +43,8 @@
 // Filter/timing must be configured while the node is stopped, so changing
 // filters at runtime disables and re-enables the node.
 
+#include <stdatomic.h>
+
 #include "py/runtime.h"
 #include "py/cstack.h"
 #include "py/mpthread.h"
@@ -82,6 +84,7 @@
 // Depth of the driver's software transmit queue, also the number of send()
 // buffer indexes reported to Python.
 #define CAN_TX_QUEUE_LEN (8)
+MP_STATIC_ASSERT(CAN_TX_QUEUE_LEN < 32); // one bit per slot in tx_free
 // One ring entry is reserved to distinguish full from empty.
 #define CAN_TX_DONE_QUEUE_LEN (CAN_TX_QUEUE_LEN + 1)
 
@@ -153,6 +156,7 @@ typedef struct {
     uint64_t sequence; // FIFO order among frames with the same priority
     volatile int *cancel_result; // synchronous cancellation of a hardware attempt
     uint8_t state;
+    int8_t pending_next; // next slot in priority/FIFO order, or -1
 } can_tx_slot_t;
 
 // Filter mode: accept everything, nothing, or match against the filter list.
@@ -198,6 +202,10 @@ typedef struct machine_can_port {
     // TX priority queue of persistent slots; slot index is returned by send().
     // Guarded by tx_mux because send() (task) and on_tx_done (ISR) both mutate it.
     can_tx_slot_t tx_slots[CAN_TX_QUEUE_LEN];
+    // Writers hold tx_mux. send() may read this without masking interrupts to
+    // reject a full queue; it rechecks under the lock before reserving a slot.
+    _Atomic uint32_t tx_free;
+    int8_t tx_pending; // head of the ordered pending list, or -1
     uint64_t tx_sequence;
     volatile int16_t tx_inflight; // slot index handed to the driver, or -1
     portMUX_TYPE tx_mux;
@@ -401,6 +409,44 @@ static bool can_on_rx_done(twai_node_handle_t node, const twai_rx_done_event_dat
     return false;
 }
 
+// Called with tx_mux held. COMPLETE slots are not free until their TX event
+// is consumed, even though the hardware has finished with their frame.
+static void can_tx_slot_free(machine_can_port_t *port, int idx) {
+    port->tx_slots[idx].state = CAN_TX_FREE;
+    uint32_t free = atomic_load_explicit(&port->tx_free, memory_order_relaxed);
+    atomic_store_explicit(&port->tx_free, free | (1u << idx), memory_order_relaxed);
+}
+
+// Called with tx_mux held. Keep pending slots sorted so a successful TX
+// completion can select its successor in constant time. Retried attempts keep
+// their original sequence, ahead of newer frames with the same priority.
+static void can_tx_pending_insert(machine_can_port_t *port, int idx) {
+    can_tx_slot_t *slot = &port->tx_slots[idx];
+    int8_t *link = &port->tx_pending;
+    while (*link >= 0) {
+        can_tx_slot_t *next = &port->tx_slots[*link];
+        if (slot->prio < next->prio || (slot->prio == next->prio && slot->sequence < next->sequence)) {
+            break;
+        }
+        link = &next->pending_next;
+    }
+    slot->pending_next = *link;
+    *link = idx;
+    slot->state = CAN_TX_PENDING;
+}
+
+// Cancellation and submission rollback may remove any pending slot.
+// Called with tx_mux held, and only for a slot in the pending list.
+static void can_tx_pending_remove(machine_can_port_t *port, int idx) {
+    int8_t *link = &port->tx_pending;
+    while (*link != idx) {
+        assert(*link >= 0);
+        link = &port->tx_slots[*link].pending_next;
+    }
+    *link = port->tx_slots[idx].pending_next;
+    port->tx_slots[idx].pending_next = -1;
+}
+
 // Called with tx_mux held. Every queued completion owns its slot, so the ring
 // cannot overflow even when the VM defers callbacks indefinitely.
 static void can_tx_complete(machine_can_obj_t *self, int idx, bool failed) {
@@ -413,7 +459,7 @@ static void can_tx_complete(machine_can_obj_t *self, int idx, bool failed) {
         port->txd_ring[port->txd_head].failed = failed;
         port->txd_head = next;
     } else {
-        port->tx_slots[idx].state = CAN_TX_FREE;
+        can_tx_slot_free(port, idx);
     }
 }
 
@@ -432,7 +478,7 @@ static bool can_on_tx_done(twai_node_handle_t node, const twai_tx_done_event_dat
         if (notify) {
             can_tx_complete(self, idx, !edata->is_tx_success);
         } else {
-            slot->state = CAN_TX_PENDING;
+            can_tx_pending_insert(port, idx);
         }
         if (slot->cancel_result != NULL) {
             *slot->cancel_result = edata->is_tx_success ? 2 : 1;
@@ -493,7 +539,7 @@ static void machine_can_update_irqs(machine_can_obj_t *self) {
         portENTER_CRITICAL_SAFE(&port->tx_mux);
         for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
             if (port->tx_slots[i].state == CAN_TX_COMPLETE) {
-                port->tx_slots[i].state = CAN_TX_FREE;
+                can_tx_slot_free(port, i);
             }
         }
         port->txd_head = port->txd_tail = 0;
@@ -522,7 +568,7 @@ static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
         bool failed = port->txd_ring[port->txd_tail].failed;
         port->txd_tail = (port->txd_tail + 1) % CAN_TX_DONE_QUEUE_LEN;
         assert(port->tx_slots[idx].state == CAN_TX_COMPLETE);
-        port->tx_slots[idx].state = CAN_TX_FREE;
+        can_tx_slot_free(port, idx);
         flags |= MP_CAN_IRQ_TX | (idx << MP_CAN_IRQ_IDX_SHIFT) | (failed ? MP_CAN_IRQ_TX_FAILED : 0);
     }
     portEXIT_CRITICAL_SAFE(&port->tx_mux);
@@ -643,6 +689,7 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     if (port == NULL) {
         port = m_new_obj(machine_can_port_t);
         memset(port, 0, sizeof(*port));
+        atomic_init(&port->tx_free, 0);
         self->port = port;
         // memset can't produce a valid unlocked spinlock (its "free" value is a
         // sentinel, not zero), so initialise the spinlocks explicitly.
@@ -662,10 +709,12 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     port->rx_head = port->rx_tail = port->rx_overruns = 0;
     port->rx_error_flags = 0;
     port->tx_inflight = -1;
+    port->tx_pending = -1;
     port->tx_sequence = 0;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
         port->tx_slots[i].state = CAN_TX_FREE;
     }
+    atomic_store_explicit(&port->tx_free, (1u << CAN_TX_QUEUE_LEN) - 1, memory_order_relaxed);
     port->txd_head = port->txd_tail = 0;
     port->state_pending = false;
     port->num_warning = port->num_passive = port->num_bus_off = 0;
@@ -810,16 +859,10 @@ static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr) {
         portENTER_CRITICAL(&port->tx_mux);
     }
     if (port->tx_inflight < 0) {
-        for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
-            can_tx_slot_t *slot = &port->tx_slots[i];
-            if (slot->state == CAN_TX_PENDING && (idx < 0
-                                                  || slot->prio < port->tx_slots[idx].prio
-                                                  || (slot->prio == port->tx_slots[idx].prio
-                                                      && slot->sequence < port->tx_slots[idx].sequence))) {
-                idx = i;
-            }
-        }
+        idx = port->tx_pending;
         if (idx >= 0) {
+            port->tx_pending = port->tx_slots[idx].pending_next;
+            port->tx_slots[idx].pending_next = -1;
             port->tx_slots[idx].state = CAN_TX_INFLIGHT;
             port->tx_inflight = idx;
         }
@@ -840,7 +883,7 @@ static esp_err_t can_tx_kick(machine_can_port_t *port, bool from_isr) {
         } else {
             portENTER_CRITICAL(&port->tx_mux);
         }
-        port->tx_slots[idx].state = CAN_TX_PENDING;
+        can_tx_pending_insert(port, idx);
         port->tx_inflight = -1;
         if (from_isr) {
             portEXIT_CRITICAL_ISR(&port->tx_mux);
@@ -859,30 +902,33 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     if (!port->enabled || port->bus_off) {
         mp_raise_OSError(MP_EIO);
     }
+    // Polling a full queue must not repeatedly mask interrupts and delay the
+    // completion ISR which will free the next slot. This snapshot only rejects
+    // sends; all reservations and slot contents remain protected by tx_mux.
+    if (atomic_load_explicit(&port->tx_free, memory_order_relaxed) == 0) {
+        return -1;
+    }
 
     bool ext = (flags & CAN_MSG_FLAG_EXT_ID) != 0;
     bool rtr = (flags & CAN_MSG_FLAG_RTR) != 0;
     uint32_t prio = can_tx_prio(id, ext, rtr);
 
-    // Equal-priority frames can share the queue: can_tx_kick() uses their
-    // enqueue sequence to preserve FIFO order even when slot indexes are reused.
+    // Equal-priority frames share the queue in enqueue sequence order, even
+    // when slot indexes are reused or a failed attempt needs to be retried.
     portENTER_CRITICAL(&port->tx_mux);
     if (port->bus_off) {
         portEXIT_CRITICAL(&port->tx_mux);
         mp_raise_OSError(MP_EIO);
     }
-    int idx = -1;
-    for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
-        if (port->tx_slots[i].state == CAN_TX_FREE) {
-            idx = i;
-            break;
-        }
-    }
-    if (idx < 0) {
+    uint32_t free = atomic_load_explicit(&port->tx_free, memory_order_relaxed);
+    if (free == 0) {
         portEXIT_CRITICAL(&port->tx_mux);
         return -1;
     }
+    int idx = __builtin_ctz(free);
+    atomic_store_explicit(&port->tx_free, free & ~(1u << idx), memory_order_relaxed);
     can_tx_slot_t *slot = &port->tx_slots[idx];
+    assert(slot->state == CAN_TX_FREE);
     for (size_t i = 0; i < data_len && i < 8; i++) {
         slot->data[i] = data[i];
     }
@@ -899,7 +945,7 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     slot->prio = prio;
     slot->sequence = port->tx_sequence++;
     slot->cancel_result = NULL;
-    slot->state = CAN_TX_PENDING;
+    can_tx_pending_insert(port, idx);
     portEXIT_CRITICAL(&port->tx_mux);
 
     // can_tx_kick() submits the highest-priority pending frame if the TX buffer
@@ -910,7 +956,12 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id, con
     esp_err_t err = self->mode == MP_CAN_MODE_SILENT ? ESP_OK : can_tx_kick(port, false);
     if (err != ESP_OK && err != ESP_ERR_TIMEOUT) {
         portENTER_CRITICAL(&port->tx_mux);
-        slot->state = CAN_TX_FREE;
+        // A hard IRQ may already have cancelled the newly queued frame.
+        // In that case its completion still owns the slot until flags().
+        if (slot->state == CAN_TX_PENDING) {
+            can_tx_pending_remove(port, idx);
+            can_tx_slot_free(port, idx);
+        }
         portEXIT_CRITICAL(&port->tx_mux);
         if (err == ESP_ERR_INVALID_STATE) {
             mp_raise_OSError(MP_EIO);
@@ -937,7 +988,7 @@ static bool machine_can_port_cancel_send(machine_can_obj_t *self, mp_uint_t idx)
         // Bus-off has already stopped the hardware attempt. IDF won't emit
         // its completion or retry it on recovery, so cancel it locally.
         port->tx_inflight = -1;
-        port->tx_slots[idx].state = CAN_TX_PENDING;
+        can_tx_pending_insert(port, idx);
     }
     if (port->tx_slots[idx].state == CAN_TX_INFLIGHT && !xPortInIsrContext()) {
         port->tx_slots[idx].cancel_result = &result;
@@ -955,6 +1006,7 @@ static bool machine_can_port_cancel_send(machine_can_obj_t *self, mp_uint_t idx)
     }
     bool cancelled = port->tx_slots[idx].state == CAN_TX_PENDING;
     if (cancelled) {
+        can_tx_pending_remove(port, idx);
         can_tx_complete(self, idx, true);
     }
     portEXIT_CRITICAL_SAFE(&port->tx_mux);
@@ -1019,9 +1071,11 @@ static void machine_can_port_restart(machine_can_obj_t *self) {
     can_hw_delete(self);
     portENTER_CRITICAL(&port->tx_mux);
     port->tx_inflight = -1;
+    port->tx_pending = -1;
     for (int i = 0; i < CAN_TX_QUEUE_LEN; i++) {
         port->tx_slots[i].state = CAN_TX_FREE;
     }
+    atomic_store_explicit(&port->tx_free, (1u << CAN_TX_QUEUE_LEN) - 1, memory_order_relaxed);
     portEXIT_CRITICAL(&port->tx_mux);
     port->txd_head = port->txd_tail = 0;
     port->state_pending = false;
