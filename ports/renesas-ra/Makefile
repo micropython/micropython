@@ -128,13 +128,13 @@ CFLAGS += -fsingle-precision-constant
 endif
 endif
 
-LDFLAGS += -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
-LDFLAGS += --defsym=_estack_reserve=8
+LDFLAGS += -nostdlib -L -Wl,$(LD_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
+LDFLAGS += -Wl,--defsym=_estack_reserve=8
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += --gc-sections
+LDFLAGS += -Wl,--gc-sections
 
 # Debugging/Optimization
 CFLAGS += -g  # always include debug info in the ELF
@@ -417,7 +417,7 @@ $(TOP)/lib/fsp/README.md:
 
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
-	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $(1)
 endef
 
