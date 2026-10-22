@@ -346,6 +346,35 @@ static mp_obj_t extra_coverage(void) {
         mp_state_ctx.mem = mp_state_mem_orig;
     }
 
+    // GC realloc test, to check that growing a block in place into the last block of the heap
+    // leaves gc_last_used_block as a valid (inclusive) block index
+    {
+        mp_printf(&mp_plat_print, "# GC part 3\n");
+
+        // check the GC is unlocked and save its state
+        assert(MP_STATE_THREAD(gc_lock_depth) == 0);
+        mp_state_mem_t mp_state_mem_orig = mp_state_ctx.mem;
+
+        unsigned heap_size = 64 * MICROPY_BYTES_PER_GC_BLOCK;
+        char *heap = calloc(heap_size, 1);
+        gc_init(heap, heap + heap_size);
+        mp_state_mem_area_t *area = &MP_STATE_MEM(area);
+        size_t n_blocks = (area->gc_pool_end - area->gc_pool_start) / MICROPY_BYTES_PER_GC_BLOCK;
+
+        // grow a single block in place, one block at a time, until it fills the heap
+        void *p = gc_alloc(MICROPY_BYTES_PER_GC_BLOCK, 0);
+        size_t n = 1;
+        while (gc_realloc(p, (n + 1) * MICROPY_BYTES_PER_GC_BLOCK, false) != NULL) {
+            ++n;
+        }
+        mp_printf(&mp_plat_print, "%d\n", n == n_blocks);
+        mp_printf(&mp_plat_print, "%d\n", area->gc_last_used_block < n_blocks);
+        free(heap);
+
+        // restore the GC state (the original heap)
+        mp_state_ctx.mem = mp_state_mem_orig;
+    }
+
     // tracked allocation
     {
         #define NUM_PTRS (8)
