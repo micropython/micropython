@@ -1,4 +1,5 @@
 # test bytearray with its reuse of byte functions
+# requires: bytearray
 
 print(bytearray(b"hello world").find(b"ll"))
 print(bytearray(b"hello\x00world").rfind(b"l"))

@@ -1,4 +1,4 @@
-# requires: slice
+# requires: bytearray slice
 
 try:
     bytearray()[:] = bytearray()

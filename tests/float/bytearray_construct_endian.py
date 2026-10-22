@@ -1,4 +1,5 @@
 # test construction of bytearray from array with float type
+# requires: bytearray
 
 try:
     from array import array

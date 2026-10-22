@@ -1,4 +1,5 @@
 # test bytearray.append method
+# requires: bytearray
 
 a = bytearray(4)
 print(a)

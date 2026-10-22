@@ -1,4 +1,5 @@
 # test bytearray + bytearray
+# requires: bytearray
 
 b = bytearray(2)
 b[0] = 1

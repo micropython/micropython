@@ -1,3 +1,5 @@
+# requires: bytearray
+
 try:
     bytearray.count
 except AttributeError:

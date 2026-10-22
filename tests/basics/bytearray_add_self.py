@@ -1,5 +1,6 @@
 # add a bytearray to itself
 # This is not supported by CPython as of 3.11.18.
+# requires: bytearray
 
 b = bytearray(b"123456789")
 for _ in range(4):
