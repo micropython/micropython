@@ -1,3 +1,5 @@
+# requires: tstring
+
 print("# Empty expression (whitespace only)")
 try:
     exec('t"{ }"')

@@ -1,3 +1,5 @@
+# requires: tstring
+
 print("=== Parser error tests ===")
 try:
     exec('t_empty = t"{}"')
