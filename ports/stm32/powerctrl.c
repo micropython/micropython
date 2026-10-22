@@ -937,6 +937,17 @@ void powerctrl_enter_stop_mode(void) {
     while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_IC2_IC6_IC11) {
     }
 
+    #if MICROPY_HW_USB_HS
+    if (LL_AHB5_GRP1_IsEnabledClock(LL_AHB5_GRP1_PERIPH_OTGPHY1)) {
+        // The USB PHY lost its reference clock (HSE) in Stop mode, and doesn't recover
+        // until it's reset.  The reset also clears the reference clock frequency selection.
+        uint32_t phyc_cr = USB1_HS_PHYC->USBPHYC_CR;
+        LL_AHB5_GRP1_ForceReset(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+        LL_AHB5_GRP1_ReleaseReset(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+        USB1_HS_PHYC->USBPHYC_CR = phyc_cr;
+    }
+    #endif
+
     #else // defined(STM32H5)
 
     #if defined(STM32U5)

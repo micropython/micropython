@@ -811,7 +811,9 @@ void extint_init0(void) {
 
 static inline bool is_rtc_interrupt(uint32_t line) {
     return false
-           #if defined(STM32U5)
+           #if defined(STM32N6)
+           || line == EXTI_RTC_WAKEUP
+           #elif defined(STM32U5)
            || line == EXTI_RTC_WAKEUP
            || line == EXTI_RTC_ALARM
            || line == EXTI_RTC_TIMESTAMP
