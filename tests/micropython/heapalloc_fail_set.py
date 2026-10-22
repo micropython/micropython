@@ -1,4 +1,5 @@
 # test handling of failed heap allocation with set
+# requires: set
 
 try:
     import micropython

@@ -30,6 +30,17 @@ _RESULTS_FILE = "_results.json"
 # Prefix for test comment-lines containing a list of requirements for that test.
 _REQUIREMENT_PREFIX = b"# requires:"
 
+# Valid keywords for the "requires:" line.
+_VALID_REQUIREMENTS = (
+    "bytearray",
+    "frozenset",
+    "native",
+    "reverse-op",
+    "set",
+    "slice",
+    "viper",
+)
+
 # Maximum time to run a single test, in seconds.
 TEST_TIMEOUT = float(os.environ.get("MICROPY_TEST_TIMEOUT", 30))
 
@@ -371,7 +382,7 @@ def create_test_list(test_filenames: [str]) -> [Test]:
                     line = line[len(_REQUIREMENT_PREFIX) :]
                     requirements.extend(str(r, "utf-8") for r in line.split())
         for requirement in requirements:
-            if requirement in ("bytearray", "native", "reverse-op", "slice", "viper"):
+            if requirement in _VALID_REQUIREMENTS:
                 test.requires_feature.add(requirement)
             elif requirement == "target-wiring":
                 test.requires_target_wiring = True

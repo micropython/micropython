@@ -1,4 +1,6 @@
 # basic test
+# requires: set
+
 s = {1}
 print(s.remove(1))
 print(list(s))

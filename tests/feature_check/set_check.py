@@ -1,2 +1,4 @@
-# check if set literal syntax is supported
-print({1})
+# check if set and frozenset are enabled
+import builtins
+
+print(hasattr(builtins, "set"), hasattr(builtins, "frozenset"))

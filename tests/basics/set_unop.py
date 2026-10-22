@@ -1,4 +1,5 @@
 # test set unary operations
+# requires: set
 
 print(bool(set()))
 print(bool(set('abc')))
