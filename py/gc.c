@@ -646,7 +646,7 @@ static void gc_sweep_run_finalisers(void) {
     MP_STATIC_ASSERT(BLOCKS_PER_FTB == BLOCKS_PER_WTB);
     #endif
     for (const mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
-        assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+        assert(area->gc_last_used_block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
         // Small speed optimisation: skip over empty FTB blocks
         size_t ftb_end = area->gc_last_used_block / BLOCKS_PER_FTB; // index is inclusive
         for (size_t ftb_idx = 0; ftb_idx <= ftb_end; ftb_idx++) {
@@ -714,7 +714,7 @@ static void gc_sweep_free_blocks(void) {
 
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         size_t last_used_block = 0;
-        assert(area->gc_last_used_block <= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+        assert(area->gc_last_used_block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 
         for (size_t block = 0; block <= area->gc_last_used_block; block++) {
             MICROPY_GC_HOOK_LOOP(block);
@@ -1213,7 +1213,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     size_t block = BLOCK_FROM_PTR(area, ptr);
     assert(ATB_GET_KIND(area, block) == AT_HEAD);
 
-    // compute number of new blocks that are requested
+    // compute the total number of blocks needed for n_bytes
     size_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
 
     // Get the total number of consecutive blocks that are already allocated to
@@ -1278,9 +1278,11 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
     // check if we can expand in place
     if (new_blocks <= n_blocks + n_free) {
+        // last block of the expanded memory, inclusive
+        size_t end_block = block + new_blocks - 1;
+
         // mark few more blocks as used tail
-        size_t end_block = block + new_blocks;
-        for (size_t bl = block + n_blocks; bl < end_block; bl++) {
+        for (size_t bl = block + n_blocks; bl <= end_block; bl++) {
             assert(ATB_GET_KIND(area, bl) == AT_FREE);
             ATB_FREE_TO_TAIL(area, bl);
         }
