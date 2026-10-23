@@ -1,4 +1,5 @@
 # test constant optimisation, with consts that are floats
+# requires: const
 
 from micropython import const
 

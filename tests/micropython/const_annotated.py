@@ -1,5 +1,6 @@
 # Test type annotations in combination with const.
 # This test will only work when MICROPY_COMP_CONST and MICROPY_COMP_CONST_TUPLE are enabled.
+# requires: const
 
 from micropython import const
 

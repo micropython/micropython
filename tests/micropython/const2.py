@@ -1,4 +1,5 @@
 # check that consts are not replaced in anything except standalone identifiers
+# requires: const
 
 from micropython import const
 
