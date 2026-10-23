@@ -138,6 +138,7 @@ extern uint32_t machine_pin_open_drain_mask;
 #endif
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
+mp_obj_t mp_hal_pin_to_obj(mp_hal_pin_obj_t pin);
 
 static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     return pin;
