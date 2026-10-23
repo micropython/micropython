@@ -16,7 +16,6 @@ to `<https://www.python.org>`__.
 
 .. toctree::
    :maxdepth: 1
-   :numbered:
 
    intro.rst
    pwm.rst
