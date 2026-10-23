@@ -80,6 +80,7 @@ void mp_nrf_start_lfclk(void) {
         }
         #endif
         nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
+        rtc_offset_check();
     }
 }
 
@@ -151,8 +152,7 @@ void rtc1_init_time_ticks(void) {
     nrfx_rtc_enable(&rtc1);
 }
 
-mp_uint_t mp_hal_ticks_ms(void) {
-    // Compute: (rtc_overflows << 24 + COUNTER) * 1000 / 32768
+uint64_t ticks_ms_64(void) {    // Compute: (rtc_overflows << 24 + COUNTER) * 1000 / 32768
     //
     // Note that COUNTER * 1000 / 32768 would overflow during calculation, so use
     // the less obvious * 125 / 4096 calculation (overflow secure).
@@ -164,7 +164,11 @@ mp_uint_t mp_hal_ticks_ms(void) {
     uint32_t counter;
     // guard against overflow irq
     RTC1_GET_TICKS_ATOMIC(rtc1, overflows, counter)
-    return (overflows << 9) * 1000 + (counter * 125 / 4096);
+    return ((uint64_t)overflows << 9) * 1000 + (counter * 125 / 4096);
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return ticks_ms_64();
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
