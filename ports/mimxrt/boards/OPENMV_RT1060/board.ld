@@ -27,10 +27,12 @@ vfs_size            = ((flash_end) - (vfs_start));
 _micropy_hw_romfs_part0_start = flash_end;
 _micropy_hw_romfs_part0_size = MICROPY_HW_ROMFS_BYTES;
 text_size           = ((vfs_start) - (text_start));
+/* 64KiB of the FlexRAM is ITCM and 192KiB DTCM: the code placed in ITCM is
+   well under 64KiB, and the DTCM holds the HaLow driver's static state. */
 itcm_start          = 0x00000000;
-itcm_size           = 0x00020000;
+itcm_size           = 0x00010000;
 dtcm_start          = 0x20000000;
-dtcm_size           = 0x00020000;
+dtcm_size           = 0x00030000;
 ocrm_start          = 0x20200000;
 ocrm_size           = 0x000C0000;
 
