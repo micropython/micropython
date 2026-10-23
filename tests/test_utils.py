@@ -120,7 +120,26 @@ __import__('__injected_test')
 
 class Test:
     def __init__(self, filename):
-        self.filename = filename
+        # Make absolute filename, with canonical / for path separator.
+        self.filename_abs = os.path.abspath(filename).replace("\\", "/")
+
+        # If filename is one of our own tests always make it relative to our
+        # tests/ dir and otherwise use the absolute path, regardless of actual path
+        # passed, such that display and result output is always the same.
+        try:
+            test_file_relpath = os.path.relpath(filename, start=base_path())
+            if not test_file_relpath.startswith(".."):
+                filename = test_file_relpath
+            else:
+                filename = self.filename_abs
+        except ValueError:
+            # Path on different drive on Windows.
+            filename = self.filename_abs
+
+        # Use canonical / for path separator.
+        self.filename = filename.replace("\\", "/")
+
+        # Initialise requirements for this test.
         self.requires_feature = set()
         self.requires_target_wiring = False
 
