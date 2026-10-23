@@ -827,6 +827,20 @@ static bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                     // extract annassign rhs
                     pn1 = ((mp_parse_node_struct_t *)pn1)->nodes[1];
                 }
+                #if MICROPY_COMP_TYPE_CHECKING
+                if (MP_PARSE_NODE_LEAF_ARG(pn0) == MP_QSTR_TYPE_CHECKING
+                    && MP_PARSE_NODE_IS_TOKEN_KIND(pn1, MP_TOKEN_KW_FALSE)) {
+                    // TYPE_CHECKING = False is treated as _TYPE_CHECKING = const(False)
+                    // so that "if TYPE_CHECKING:" blocks are eliminated at compile time.
+                    mp_map_elem_t *elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(MP_QSTR_TYPE_CHECKING), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+                    assert(elem->value == MP_OBJ_NULL);
+                    elem->value = mp_const_false;
+                    pop_result(parser); // pop False
+                    pop_result(parser); // pop id
+                    push_result_rule(parser, 0, RULE_pass_stmt, 0); // replace with "pass"
+                    return true;
+                }
+                #endif
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_atom_expr_normal)
                     && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t *)pn1)->nodes[0])
                     && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t *)pn1)->nodes[0]) == MP_QSTR_const
