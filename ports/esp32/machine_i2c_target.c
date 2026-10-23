@@ -29,6 +29,8 @@
 
 #include "machine_i2c.h"
 #include "driver/i2c_slave.h"
+#include "esp_intr_alloc.h"
+#include "soc/i2c_periph.h"
 
 // These headers are needed to call i2c_ll_txfifo_rst().
 #include "hal/i2c_ll.h"
@@ -43,12 +45,31 @@ typedef struct _machine_i2c_target_obj_t {
     bool irq_active;
     int index;
     const i2c_slave_rx_done_event_data_t *rx_done_event_data;
+    intr_handle_t stop_intr_handle;
 } machine_i2c_target_obj_t;
 
 static machine_i2c_target_obj_t machine_i2c_target_obj[I2C_NUM_MAX];
 
 /******************************************************************************/
 // ESP-IDF hardware bindings
+
+// Called when a transaction completes (a STOP was received).  If the completed
+// transaction was a read by the controller, the controller may not have read
+// all of the bytes that were written to the TX FIFO, leaving stale data behind.
+// Reset the TX FIFO -- and the slave FSM, to discard any byte already loaded
+// into the shift register -- so the next read starts from fresh data.  This
+// must run while the bus is idle: resetting the FSM during the address-match
+// clock-stretch aborts the transaction.
+static void IRAM_ATTR i2c_slave_complete_isr(void *arg) {
+    machine_i2c_target_obj_t *self = arg;
+    i2c_dev_t *dev = self->handle->base->hal.dev;
+    if (i2c_ll_slave_get_read_write_status(dev) == I2C_SLAVE_READ_BY_MASTER) {
+        i2c_ll_txfifo_rst(dev);
+        #if !CONFIG_IDF_TARGET_ESP32S2
+        i2c_ll_master_fsm_rst(dev);
+        #endif
+    }
+}
 
 // Called when the controller is about to read from the TX/send buffer.
 static bool i2c_slave_request_cb(i2c_slave_dev_handle_t i2c_slave, const i2c_slave_request_event_data_t *evt_data, void *arg) {
@@ -90,6 +111,10 @@ static bool i2c_slave_receive_cb(i2c_slave_dev_handle_t i2c_slave, const i2c_sla
 }
 
 static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_data_t *data, uint32_t addr, uint32_t addrsize, bool first_init) {
+    if (self->stop_intr_handle != NULL) {
+        esp_intr_free(self->stop_intr_handle);
+        self->stop_intr_handle = NULL;
+    }
     if (!first_init && self->handle != NULL) {
         i2c_del_slave_device(self->handle);
         self->handle = NULL;
@@ -113,11 +138,35 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
     self->config.flags.enable_internal_pullup = 1;
 
     ESP_ERROR_CHECK(i2c_new_slave_device(&self->config, &self->handle));
+
+    // Workaround for an ESP32-S3/C3 slave hardware bug.  The v2 slave driver
+    // never enables automatic TX start, so the slave may emit its own address
+    // as the first byte of a read transaction.  The v1 driver (and newer IDF)
+    // enable this bit, so do the same here.
+    #if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3
+    i2c_ll_slave_enable_auto_start(self->handle->base->hal.dev, true);
+    i2c_ll_update(self->handle->base->hal.dev);
+    #endif
+
     i2c_slave_event_callbacks_t cbs = {
         .on_receive = i2c_slave_receive_cb,
         .on_request = i2c_slave_request_cb,
     };
     ESP_ERROR_CHECK(i2c_slave_register_event_callbacks(self->handle, &cbs, self));
+
+    // The IDF slave driver takes no action when a read transaction completes,
+    // so the controller may leave stale bytes in the TX FIFO.  Register an
+    // additional shared ISR on the same interrupt to reset the TX FIFO at the
+    // end of a read.  Shared ISRs are inserted at the head of the dispatch
+    // list, so this one runs before the IDF ISR clears the interrupt status.
+    ESP_ERROR_CHECK(esp_intr_alloc_intrstatus(
+        i2c_periph_signal[self->config.i2c_port].irq,
+        I2C_INTR_ALLOC_FLAG,
+        (uint32_t)i2c_ll_get_interrupt_status_reg(self->handle->base->hal.dev),
+        I2C_INTR_SLV_COMPLETE,
+        i2c_slave_complete_isr,
+        self,
+        &self->stop_intr_handle));
 }
 
 /******************************************************************************/
@@ -218,6 +267,10 @@ static void mp_machine_i2c_target_print(const mp_print_t *print, mp_obj_t self_i
 }
 
 static void mp_machine_i2c_target_deinit(machine_i2c_target_obj_t *self) {
+    if (self->stop_intr_handle != NULL) {
+        esp_intr_free(self->stop_intr_handle);
+        self->stop_intr_handle = NULL;
+    }
     if (self->handle != NULL) {
         i2c_del_slave_device(self->handle);
         self->handle = NULL;
