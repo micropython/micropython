@@ -195,7 +195,7 @@ void systick_init(void) {
 
 #if defined(STM32F4) || defined(STM32F7)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // This function assumes that HSI is used as the system clock (see RCC->CFGR, SWS bits)
 
     // Enable Power Control clock
@@ -269,11 +269,13 @@ void SystemClock_Config(void) {
     // whether we were started from DFU or from a power on reset.
     RCC->DCKCFGR2 = 0;
     #endif
+
+    return 0;
 }
 
 #elif defined(STM32H7)
 
-void SystemClock_Config(void) {
+int SystemClock_Config(void) {
     // This function assumes that HSI is used as the system clock (see RCC->CFGR, SWS bits)
 
     // Select VOS level as high voltage to give reliable operation
@@ -362,6 +364,8 @@ void SystemClock_Config(void) {
     // Update clock value and reconfigure systick now that the frequency changed
     SystemCoreClockUpdate();
     systick_init();
+
+    return 0;
 }
 
 #endif
