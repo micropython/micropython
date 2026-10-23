@@ -36,6 +36,8 @@
 #include "systick.h"
 #include "pendsv.h"
 #include "extmod/modnetwork.h"
+#include "extmod/modmachine.h"
+#include "spi.h"
 
 #if MICROPY_PY_LWIP
 #include "lwip/netif.h"
@@ -55,6 +57,16 @@
 #if MICROPY_PY_NETWORK_WIZNET5K
 void wiznet5k_poll(void);
 void wiznet5k_deinit(void);
+
+#if MICROPY_PY_MACHINE_SPI
+// spi_index is zero-based, matching spi_obj, not the Python SPI bus ID.
+bool wiznet5k_spi_is_active(size_t spi_index) {
+    mp_obj_t nic_spi = wiznet5k_get_active_spi();
+    return nic_spi != MP_OBJ_NULL
+           && mp_obj_is_type(nic_spi, &machine_spi_type)
+           && spi_from_mp_obj(nic_spi) == &spi_obj[spi_index];
+}
+#endif
 
 void wiznet5k_try_poll(void) {
     pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet5k_poll);

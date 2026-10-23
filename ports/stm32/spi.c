@@ -578,6 +578,11 @@ void spi_deinit_all(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(spi_obj); i++) {
         const spi_t *spi = &spi_obj[i];
         if (spi->spi != NULL && !MICROPY_HW_SPI_IS_RESERVED(i + 1) && !MICROPY_HW_SPI_IS_STATIC(i + 1)) {
+            #if MICROPY_PY_LWIP && MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_MACHINE_SPI
+            if (wiznet5k_spi_is_active(i)) {
+                continue;
+            }
+            #endif
             spi_deinit(spi);
         }
     }
