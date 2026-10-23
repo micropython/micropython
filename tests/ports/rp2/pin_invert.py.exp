@@ -1,0 +1,7 @@
+1
+0
+Pin(GPIO22, mode=IN, pull=PULL_UP, invert=True)
+1
+0
+1
+Pin(GPIO22, mode=OUT)
