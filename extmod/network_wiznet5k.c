@@ -64,6 +64,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/ethip6.h"
 #include "netif/etharp.h"
+#include "drivers/wiznet/macraw.h"
 
 #define TRACE_ETH_TX (0x0002)
 #define TRACE_ETH_RX (0x0004)
@@ -106,7 +107,6 @@ typedef struct _wiznet5k_obj_t {
     #if WIZNET5K_WITH_LWIP_STACK
     mp_hal_pin_obj_t pin_intn;
     bool use_interrupt;
-    uint8_t eth_frame[1514];
     uint32_t trace_flags;
     struct netif netif;
     struct dhcp dhcp_struct;
@@ -252,46 +252,21 @@ static void wiznet5k_init(void) {
     mod_network_register_nic(&wiznet5k_obj);
 }
 
-static void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
-    uint8_t ip[4] = {1, 1, 1, 1}; // dummy
-    int ret = WIZCHIP_EXPORT(sendto)(0, (byte *)buf, len, ip, 11); // dummy port
-    if (ret != len) {
-        printf("wiznet5k_send_ethernet: fatal error %d\n", ret);
-        netif_set_link_down(&self->netif);
-        netif_set_down(&self->netif);
-    }
-}
-
-// Stores the frame in self->eth_frame and returns number of bytes in the frame, 0 for no frame
-static uint16_t wiznet5k_recv_ethernet(wiznet5k_obj_t *self) {
-    uint16_t len = getSn_RX_RSR(0);
-    if (len == 0) {
-        return 0;
-    }
-
-    byte ip[4];
-    uint16_t port;
-    int ret = WIZCHIP_EXPORT(recvfrom)(0, self->eth_frame, 1514, ip, &port);
-    if (ret <= 0) {
-        printf("wiznet5k_recv_ethernet: fatal error len=%u ret=%d\n", len, ret);
-        netif_set_link_down(&self->netif);
-        netif_set_down(&self->netif);
-        return 0;
-    }
-
-    return ret;
-}
-
 /*******************************************************************************/
 // Wiznet5k lwIP interface
 
 static err_t wiznet5k_netif_output(struct netif *netif, struct pbuf *p) {
     wiznet5k_obj_t *self = netif->state;
-    pbuf_copy_partial(p, self->eth_frame, p->tot_len, 0);
     if (self->trace_flags & TRACE_ETH_TX) {
-        netutils_ethernet_trace(MP_PYTHON_PRINTER, p->tot_len, self->eth_frame, NETUTILS_TRACE_IS_TX | NETUTILS_TRACE_NEWLINE);
+        netutils_ethernet_trace(MP_PYTHON_PRINTER, p->len, p->payload, NETUTILS_TRACE_IS_TX | NETUTILS_TRACE_NEWLINE);
     }
-    wiznet5k_send_ethernet(self, p->tot_len, self->eth_frame);
+    int ret = wiznet_macraw_send(p, 0);
+    if (ret != p->tot_len) {
+        printf("wiznet5k_netif_output: fatal error %d\n", ret);
+        netif_set_link_down(netif);
+        netif_set_down(netif);
+        return ERR_IF;
+    }
     return ERR_OK;
 }
 
@@ -307,6 +282,7 @@ static err_t wiznet5k_netif_init(struct netif *netif) {
         printf("WIZNET fatal error in netif_init: %d\n", ret);
         return ERR_IF;
     }
+    wiznet_macraw_reset(0);
 
     // Enable MAC filtering so we only get frames destined for us, to reduce load on lwIP
     setSn_MR(0, getSn_MR(0) | Sn_MR_MFEN);
@@ -351,17 +327,21 @@ static void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
 void wiznet5k_poll(void) {
     wiznet5k_obj_t *self = &wiznet5k_obj;
     if ((self->netif.flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
-        uint16_t len;
-        while ((len = wiznet5k_recv_ethernet(self)) > 0) {
-            if (self->trace_flags & TRACE_ETH_RX) {
-                netutils_ethernet_trace(MP_PYTHON_PRINTER, len, self->eth_frame, NETUTILS_TRACE_NEWLINE);
-            }
-            struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-            if (p != NULL) {
-                pbuf_take(p, self->eth_frame, len);
-                if (self->netif.input(p, &self->netif) != ERR_OK) {
-                    pbuf_free(p);
+        uint16_t ready;
+        while ((ready = getSn_RX_RSR(0)) > 0) {
+            struct pbuf *packet = NULL;
+            int32_t status = wiznet_macraw_recv(&packet, 0);
+            if (packet != NULL) {
+                if (self->trace_flags & TRACE_ETH_RX) {
+                    netutils_ethernet_trace(MP_PYTHON_PRINTER, packet->len, packet->payload, NETUTILS_TRACE_NEWLINE);
                 }
+                if (status < 0 || self->netif.input(packet, &self->netif) != ERR_OK) {
+                    pbuf_free(packet);
+                }
+            } else {
+                // No pbuf memory available. Will need to process this later
+                // when there's available buffer space.
+                break;
             }
         }
     }
@@ -951,10 +931,13 @@ static mp_obj_t network_wiznet5k_ipconfig(size_t n_args, const mp_obj_t *args, m
 static MP_DEFINE_CONST_FUN_OBJ_KW(wiznet5k_ipconfig_obj, 1, network_wiznet5k_ipconfig);
 
 static mp_obj_t send_ethernet_wrapper(mp_obj_t self_in, mp_obj_t buf_in) {
-    wiznet5k_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    (void) self_in;
     mp_buffer_info_t buf;
     mp_get_buffer_raise(buf_in, &buf, MP_BUFFER_READ);
-    wiznet5k_send_ethernet(self, buf.len, buf.buf);
+    struct pbuf *pbuf = pbuf_alloc_reference(buf.buf, buf.len, PBUF_REF);
+    if (pbuf != NULL) {
+        wiznet_macraw_send(pbuf, 0);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(send_ethernet_obj, send_ethernet_wrapper);
