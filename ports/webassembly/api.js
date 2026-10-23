@@ -152,18 +152,28 @@ export async function loadMicroPython(options) {
             const buf = Module._malloc(len + 1);
             Module.stringToUTF8(code, buf, len + 1);
             const value = Module._malloc(3 * 4);
-            Module.ccall(
+            const done = Module.ccall(
                 "mp_js_do_exec_async",
                 "number",
                 ["pointer", "number", "pointer"],
                 [buf, len, value],
             );
-            Module._free(buf);
-            const ret = proxy_convert_mp_to_js_obj_jsside_with_free(value);
-            if (ret instanceof PyProxyThenable) {
-                return Promise.resolve(ret);
+            const finish = () => {
+                Module._free(buf);
+                const ret = proxy_convert_mp_to_js_obj_jsside_with_free(value);
+                if (ret instanceof PyProxyThenable) {
+                    return Promise.resolve(ret);
+                }
+                return ret;
+            };
+            if (done instanceof Promise) {
+                // On a jspi build this export is wrapped in
+                // WebAssembly.promising and execution may suspend (via
+                // jsffi.run_sync); the result slot is only valid once
+                // the returned promise resolves.
+                return done.then(finish);
             }
-            return ret;
+            return finish();
         },
         replInit() {
             Module.ccall("mp_js_repl_init", "null", ["null"]);

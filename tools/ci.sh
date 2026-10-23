@@ -1145,10 +1145,18 @@ function ci_webassembly_build {
     source emsdk/emsdk_env.sh
     make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
     make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=jspi
 }
 
 function ci_webassembly_run_tests {
     make -C ports/webassembly VARIANT=pyscript test_min
+    # The jspi variant needs a JSPI-capable node: >= 24 with
+    # --experimental-wasm-jspi, or a version with JSPI on by default.
+    if node -e "process.exit(typeof WebAssembly.promising === 'function' ? 0 : 1)"; then
+        make -C ports/webassembly VARIANT=jspi test
+    else
+        echo "Skipping jspi variant tests: node lacks JSPI support"
+    fi
 }
 
 ########################################################################################
