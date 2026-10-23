@@ -332,7 +332,13 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
-    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("long int not supported in this build"));
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small int overflow"));
+    return mp_const_none;
+}
+
+// This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
+mp_obj_t mp_obj_new_bigint_from_ll(long long val) {
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small int overflow"));
     return mp_const_none;
 }
 
