@@ -411,11 +411,11 @@ tests_with_regex_output = [
 ]
 
 
-def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_feature_check=False):
+def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
     had_crash = False
     if pyb is None:
         # run on PC
-        if test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/"))):
+        if test.filename_abs.startswith((base_path("cmdline/"), base_path("feature_check/"))):
             # special handling for tests of the unix cmdline program
             is_special = True
 
@@ -566,7 +566,7 @@ def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_fea
                 mpy_modname = os.path.splitext(os.path.basename(mpy_filename))[0]
                 cmdlist.extend(["-m", mpy_modname])
             else:
-                cmdlist.append(test_file_abspath)
+                cmdlist.append(test.filename_abs)
 
             # run the actual test
             try:
@@ -587,7 +587,7 @@ def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_fea
     else:
         # run via pyboard interface
         had_crash, output_mupy = pyb.run_script_on_remote_target(
-            args, test_file_abspath, is_special, test.requires_target_wiring
+            args, test.filename_abs, is_special, test.requires_target_wiring
         )
 
     # canonical form for all ports/platforms is to use \n for end-of-line
@@ -605,7 +605,7 @@ def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_fea
     if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
         return b"SKIP\n"
 
-    if is_special or test_file_abspath in tests_with_regex_output:
+    if is_special or test.filename_abs in tests_with_regex_output:
         # convert parts of the output that are not stable across runs
         # Prefer emitter-specific expected output.
         exp_file = test.filename + "." + args.emit + ".exp"
@@ -658,9 +658,10 @@ def run_feature_check(pyb, args, test_file):
     if pyb is not None and test_file.startswith("repl_"):
         # REPL feature tests will not run via pyboard because they require prompt interactivity
         return b""
-    test_file_path = base_path("feature_check", test_file)
-    test = Test(test_file_path)
-    return run_micropython(pyb, args, test, test_file_path, is_special=True, is_feature_check=True)
+    test = Test(base_path("feature_check", test_file))
+    # Force absolute path so the test can be found regardless of where run-tests.py is run from.
+    test.filename = test.filename_abs
+    return run_micropython(pyb, args, test, is_special=True, is_feature_check=True)
 
 
 class TestError(Exception):
@@ -884,20 +885,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     def run_one_test(test):
         test_file = test.filename
-        test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
-        # If test_file is one of our own tests always make it relative to our tests/ dir and
-        # otherwise use the absolute path, regardless of actual path passed,
-        # such that display and result output is always the same.
-        try:
-            test_file_relpath = os.path.relpath(test_file, start=base_path())
-            if not test_file_relpath.startswith(".."):
-                test_file = test_file_relpath
-            else:
-                test_file = test_file_abspath
-        except ValueError:
-            # Path on different drive on Windows.
-            test_file = test_file_abspath
-        test_file = test_file.replace("\\", "/")
 
         if args.filters:
             # Default verdict is the opposite of the first action
@@ -957,7 +944,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             return
 
         # Run the test on the MicroPython target.
-        output_mupy = run_micropython(pyb, args, test, test_file_abspath)
+        output_mupy = run_micropython(pyb, args, test)
 
         # Check if the target requested to skip this test.
         if output_mupy == b"SKIP\n":
@@ -1022,7 +1009,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # Run CPython to work out expected output.
                 try:
                     output_expected = subprocess.check_output(
-                        CPYTHON3_CMD + [test_file_abspath],
+                        CPYTHON3_CMD + [test.filename_abs],
                         cwd=os.path.dirname(test_file),
                         stderr=subprocess.STDOUT,
                     )
