@@ -76,6 +76,8 @@ Celsius::
 Networking
 ----------
 
+.. _esp32_network_wlan:
+
 WLAN
 ^^^^
 
@@ -120,6 +122,10 @@ connection succeeds or the interface gets disabled.  This can be changed by
 calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
 attempts (0 means it won't retry, -1 will restore the default behaviour of trying
 to reconnect forever).
+
+MicroPython ESP32 port supports WPA2/3 Personal as well as 5 GHz band mode
+(on 5 GHz capable devices only). It is possible to enable support for WPA Enterprise
+at compile time. Please refer to the :class:`network.WLAN` class documentation.
 
 .. _esp32_network_lan:
 
