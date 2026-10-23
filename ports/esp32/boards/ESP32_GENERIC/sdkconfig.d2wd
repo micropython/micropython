@@ -1,3 +1,18 @@
 # Setting specific to d2wd
 CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
 CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+
+# D2WD only has 2MiB of embedded flash. Disable niche stacks so BLE still fits
+# in the factory partition under IDF v6 (there is not enough space for both):
+# DTLS (CoAP-style UDP security), lwIP PPP (cellular modems) and the mbedTLS
+# PSK key exchanges all serve much smaller audiences than BLE on this part.
+# These overrides only apply to the D2WD variant; other boards are unaffected.
+CONFIG_MBEDTLS_SSL_PROTO_DTLS=n
+CONFIG_LWIP_PPP_SUPPORT=n
+CONFIG_LWIP_PPP_PAP_SUPPORT=n
+CONFIG_LWIP_PPP_CHAP_SUPPORT=n
+CONFIG_MBEDTLS_PSK_MODES=n
+CONFIG_MBEDTLS_KEY_EXCHANGE_PSK=n
+CONFIG_MBEDTLS_KEY_EXCHANGE_DHE_PSK=n
+CONFIG_MBEDTLS_KEY_EXCHANGE_ECDHE_PSK=n
+CONFIG_MBEDTLS_KEY_EXCHANGE_RSA_PSK=n
