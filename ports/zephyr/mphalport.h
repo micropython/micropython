@@ -22,6 +22,9 @@
 void mp_hal_init(void);
 void mp_hal_wait_event(bool exit_on_event, struct k_sem *sem, uint32_t timeout_ms);
 
+#define mp_hal_signal_event mp_hal_signal_event
+void mp_hal_signal_event(void);
+
 static inline mp_uint_t mp_hal_ticks_us(void) {
     return k_cyc_to_ns_floor64(k_cycle_get_32()) / 1000;
 }
