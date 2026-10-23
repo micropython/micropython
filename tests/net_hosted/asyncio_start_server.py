@@ -1,4 +1,5 @@
 # Test basic behaviour of asyncio.start_server()
+# requires: async
 
 try:
     import asyncio

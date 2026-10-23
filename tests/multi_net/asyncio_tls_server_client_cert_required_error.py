@@ -1,4 +1,5 @@
 # Test asyncio TCP server and client with TLS, giving a cert required error.
+# requires: async
 
 try:
     import os

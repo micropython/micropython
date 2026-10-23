@@ -1,6 +1,8 @@
 # Test MicroPython extensions on CPython asyncio:
 # - sleep_ms
 # - wait_for_ms
+#
+# requires: async
 
 try:
     import time, asyncio

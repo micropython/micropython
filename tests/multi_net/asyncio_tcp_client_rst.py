@@ -1,4 +1,5 @@
 # Test TCP server with client issuing TCP RST part way through read
+# requires: async
 
 try:
     import asyncio

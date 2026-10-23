@@ -1,4 +1,5 @@
 # Test that locks work when cancelling multiple waiters on the lock
+# requires: async
 
 try:
     import asyncio

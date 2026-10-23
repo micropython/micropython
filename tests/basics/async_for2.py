@@ -1,4 +1,5 @@
 # test waiting within "async for" __anext__ function
+# requires: async
 
 import sys
 if sys.implementation.name == 'micropython':

@@ -1,4 +1,5 @@
 # Test asyncio TCP server and client with TLS, using readline() to read data.
+# requires: async
 
 try:
     import os

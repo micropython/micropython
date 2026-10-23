@@ -1,4 +1,5 @@
 # Test asyncio.gather() function, features that are not implemented.
+# requires: async
 
 try:
     import asyncio

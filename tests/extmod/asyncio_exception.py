@@ -1,4 +1,5 @@
 # Test general exception handling
+# requires: async
 
 try:
     import asyncio

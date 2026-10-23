@@ -1,5 +1,6 @@
 # Test fairness of Event.set()
 # That tasks which continuously wait on events don't take over the scheduler
+# requires: async
 
 try:
     import asyncio
