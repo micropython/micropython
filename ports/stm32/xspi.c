@@ -24,19 +24,26 @@
  * THE SOFTWARE.
  */
 
-// This XSPI driver is currently configured to run in 1-line (SPI) mode.
-// It uses the mp_qspi_proto_t QSPI protocol and translates quad-commands
-// into 1-line commands.
+// This XSPI driver sets up the flash in 1-line (SPI) mode, then switches it to
+// octal DTR mode and reads it memory-mapped.  It uses the mp_qspi_proto_t QSPI
+// protocol, and translates the commands it receives into octal DTR commands (or
+// 1-line commands if DTR mode isn't enabled).
 
 #include <string.h>
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "irq.h"
 #include "xspi.h"
 
 #if defined(MICROPY_HW_XSPIFLASH_SIZE_BITS_LOG2)
 
+// The flash is set up at a slow clock MICROPY_HW_XSPI_PRESCALER_SLOW, then switched
+// to a faster clock MICROPY_HW_XSPI_PRESCALER once it's in octal DTR mode
+#ifndef MICROPY_HW_XSPI_PRESCALER_SLOW
+#define MICROPY_HW_XSPI_PRESCALER_SLOW (4) // F_CLK = F_AHB/4
+#endif
 #ifndef MICROPY_HW_XSPI_PRESCALER
-#define MICROPY_HW_XSPI_PRESCALER (4) // F_CLK = F_AHB/4
+#define MICROPY_HW_XSPI_PRESCALER (1) // F_CLK = F_AHB/1
 #endif
 
 #ifndef MICROPY_HW_XSPI_CS_HIGH_CYCLES
@@ -150,7 +157,7 @@ void xspi_init(void) {
 
     XSPIx->DCR2 =
         0 << XSPI_DCR2_WRAPSIZE_Pos // separate wrap reads are not supported by the memory
-            | (MICROPY_HW_XSPI_PRESCALER - 1) << XSPI_DCR2_PRESCALER_Pos
+            | (MICROPY_HW_XSPI_PRESCALER_SLOW - 1) << XSPI_DCR2_PRESCALER_Pos
     ;
 
     XSPIx->DCR3 =
@@ -186,10 +193,31 @@ void xspi_init(void) {
     // Can select either SPI or DTR mode.
     if (1) {
         xspi_switch_to_dtr();
+        XSPIx->DCR2 = (XSPIx->DCR2 & ~XSPI_DCR2_PRESCALER_Msk)
+            | (MICROPY_HW_XSPI_PRESCALER - 1) << XSPI_DCR2_PRESCALER_Pos;
         xspi_memory_map_888();
     } else {
         xspi_memory_map_111();
     }
+}
+
+void xspi_set_slow_clock(bool slow) {
+    if ((XSPIx->CR & XSPI_CR_FMODE_Msk) != (3 << XSPI_CR_FMODE_Pos)) {
+        // Not in memory-mapped mode, so not set up by xspi_init().
+        return;
+    }
+    // Only octal DTR mode uses the fast clock, 1-line mode always uses the slow clock.
+    bool dtr = XSPIx->IR == 0xee11;
+    uint32_t irq_state = disable_irq();
+    xspi_memory_map_exit();
+    XSPIx->DCR2 = (XSPIx->DCR2 & ~XSPI_DCR2_PRESCALER_Msk)
+        | ((slow || !dtr ? MICROPY_HW_XSPI_PRESCALER_SLOW : MICROPY_HW_XSPI_PRESCALER) - 1) << XSPI_DCR2_PRESCALER_Pos;
+    if (dtr) {
+        xspi_memory_map_888();
+    } else {
+        xspi_memory_map_111();
+    }
+    enable_irq(irq_state);
 }
 
 uint32_t xspi_get_xip_base(const xspi_flash_t *self) {
@@ -480,6 +508,10 @@ void xspi_switch_to_spi(void) {
     buf[0] = 0;
     buf[1] = 0;
     xspi_write_888_dtr_ext(0x728d, true, 0x00000000, 2, buf);
+
+    // 1-line mode isn't rated for the fast clock.
+    XSPIx->DCR2 = (XSPIx->DCR2 & ~XSPI_DCR2_PRESCALER_Msk)
+        | (MICROPY_HW_XSPI_PRESCALER_SLOW - 1) << XSPI_DCR2_PRESCALER_Pos;
 
     xspi_dtr_enabled = false;
 }

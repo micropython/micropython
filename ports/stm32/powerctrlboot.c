@@ -27,6 +27,9 @@
 #include "py/mphal.h"
 #include "irq.h"
 #include "powerctrl.h"
+#if defined(STM32N6)
+#include "xspi.h"
+#endif
 
 #if defined(STM32WB)
 void stm32_system_init(void) {
@@ -421,6 +424,12 @@ void SystemClock_Config(void) {
     // Low-power modes can't be entered until this has been written once after power-on.
     LL_PWR_ConfigSupply(LL_PWR_GetSupply());
 
+    #if MICROPY_HW_RUNS_FROM_EXT_FLASH
+    // This code runs from the external flash, which is clocked from HCLK, so run the
+    // flash at its slower setup clock while the system clock changes.
+    xspi_set_slow_clock(true);
+    #endif
+
     // Enable HSI.
     LL_RCC_HSI_Enable();
     while (!LL_RCC_HSI_IsReady()) {
@@ -538,6 +547,10 @@ void SystemClock_Config(void) {
     // Reconfigure clock state and SysTick.
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    #if MICROPY_HW_RUNS_FROM_EXT_FLASH
+    xspi_set_slow_clock(false);
+    #endif
 }
 
 #elif defined(STM32WB)
