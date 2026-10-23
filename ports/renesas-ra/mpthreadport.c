@@ -42,7 +42,7 @@ void mp_thread_init(void) {
 }
 
 void mp_thread_gc_others(void) {
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
     for (pyb_thread_t *th = pyb_thread_all; th != NULL; th = th->all_next) {
         gc_collect_root((void **)&th, 1);
         gc_collect_root(&th->arg, 1);
@@ -73,7 +73,7 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
     uint32_t *stack = m_new(uint32_t, stack_len);
     pyb_thread_t *th = m_new_obj(pyb_thread_t);
 
-    mp_thread_mutex_lock(&thread_mutex, 1);
+    mp_thread_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
 
     // create thread
     uint32_t id = pyb_thread_new(th, stack, stack_len, entry, arg);
