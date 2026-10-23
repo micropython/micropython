@@ -1320,6 +1320,11 @@ void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_i
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+void mp_bluetooth_gap_on_identity_resolved(uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr) {
+    mp_int_t args[] = {conn_handle, addr_type};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_IDENTITY_RESOLVED, args, 2, 0, addr, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
+}
+
 void mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle, bool encrypted, bool authenticated, bool bonded, uint8_t key_size) {
     mp_int_t args[] = {conn_handle, encrypted, authenticated, bonded, key_size};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_ENCRYPTION_UPDATE, args, 5, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
