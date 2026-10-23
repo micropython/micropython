@@ -9,8 +9,7 @@
 #include "modlog/modlog.h"
 #include "log_common/log_common.h"
 
-#define MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING (1)
-
+// Diagnostic logging configuration (see MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING in modbluetooth.h).
 #if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING
 #define DFLT_LOG_DEBUG(...) MODLOG_DEBUG(4, __VA_ARGS__)
 #else
