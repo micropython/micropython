@@ -55,6 +55,7 @@ void mp_asm_base_start_pass(mp_asm_base_t *as, int pass) {
         MP_PLAT_ALLOC_EXEC(as->code_offset, (void **)&as->code_base, &as->code_size);
         assert(as->code_size == 0 || as->code_base != NULL);
     }
+    as->stable = true;
     as->pass = pass;
     as->suppress = false;
     as->code_offset = 0;
@@ -71,7 +72,12 @@ uint8_t *mp_asm_base_get_cur_to_write_bytes(void *as_in, size_t num_bytes_to_wri
         return c;
     }
     if (as->pass == MP_ASM_PASS_EMIT) {
-        assert(as->code_offset + num_bytes_to_write <= as->code_size);
+        if (as->code_offset + num_bytes_to_write > as->code_size) {
+            // Track the extra amount of bytes to request on next pass.
+            as->stable = false;
+            as->code_offset += num_bytes_to_write;
+            return NULL;
+        }
         c = as->code_base + as->code_offset;
     }
     as->code_offset += num_bytes_to_write;
@@ -90,8 +96,11 @@ void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
         assert(as->label_offsets[label] == (size_t)-1);
         as->label_offsets[label] = as->code_offset;
     } else {
-        // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
-        assert(as->label_offsets[label] == as->code_offset);
+        if (as->label_offsets[label] != as->code_offset) {
+            as->stable = false;
+        }
+        as->label_offsets[label] = as->code_offset;
+
         #if MICROPY_DYNAMIC_COMPILER && MICROPY_EMIT_NATIVE_DEBUG
         if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_DEBUG) {
             mp_printf(MICROPY_EMIT_NATIVE_DEBUG_PRINTER, "label(label_%u)\n", (unsigned int)label);
