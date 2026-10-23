@@ -10,7 +10,7 @@ BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to TEENSY40.
 BOARD ?= TEENSY40
-BOARD_DIR ?= boards/$(BOARD)
+BOARD_DIR ?= ./boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
@@ -147,7 +147,7 @@ endif
 
 # UART IRQ wrapper for UART.IRQ_RXIDLE support (see machine_uart.c for implementation details)
 # Double wrapping is required because SDK stores function pointers in s_lpuartIsr[] dispatch table
-LDFLAGS += --wrap=LPUART_TransferCreateHandle --wrap=LPUART_TransferHandleIRQ
+LDFLAGS += -Wl,--wrap=LPUART_TransferCreateHandle -Wl,--wrap=LPUART_TransferHandleIRQ
 
 INC_HAL_IMX += \
 	-I$(TOP)/$(MCU_DIR) \
@@ -508,11 +508,11 @@ MPY_CROSS_FLAGS += -march=armv7m
 
 LDFLAGS += \
 	-nostdlib \
-	--cref \
-	--gc-sections \
-	--print-memory-usage \
-	-Map=$@.map \
-    --wrap=LPUART_TransferCreateHandle --wrap=LPUART_TransferHandleIRQ
+	-Wl,--cref \
+	-Wl,--gc-sections \
+	-Wl,--print-memory-usage \
+	-Wl,-Map=$@.map \
+    -Wl,--wrap=LPUART_TransferCreateHandle -Wl,--wrap=LPUART_TransferHandleIRQ
 
 # LDDEFINES are used for link time adaptation of linker scripts, utilizing
 #	the C preprocessor. Therefore keep LDDEFINES separated from LDFLAGS!
@@ -567,11 +567,11 @@ endif
 
 # Process linker scripts with C preprocessor to exchange LDDEFINES and
 #	aggregate output of preprocessor in a single linker script `link.ld`
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(LIBS_THIRDPARTY)
 	$(ECHO) "PREPROCESS LINK $@"
 	$(Q)$(CC) -E -x c $(LDDEFINES) $(LD_FILES) | grep -v '^#' > $(BUILD)/link.ld
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) -T$(BUILD)/link.ld $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(CC) -T$(BUILD)/link.ld $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
