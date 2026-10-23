@@ -1,4 +1,5 @@
 # Test current_task() function
+# requires: async
 
 try:
     import asyncio

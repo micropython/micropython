@@ -1,4 +1,5 @@
 # Test a task cancelling itself (currently unsupported)
+# requires: async
 
 try:
     import asyncio

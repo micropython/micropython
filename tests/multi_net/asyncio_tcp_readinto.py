@@ -1,4 +1,5 @@
 # Test asyncio stream readinto() method using TCP server/client
+# requires: async
 
 try:
     import array

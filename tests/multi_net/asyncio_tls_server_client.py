@@ -1,4 +1,5 @@
 # Test asyncio TCP server and client with TLS, transferring some data.
+# requires: async
 
 try:
     import os

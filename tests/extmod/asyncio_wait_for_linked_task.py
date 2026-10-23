@@ -1,5 +1,6 @@
 # Test asyncio.wait_for, with dependent tasks
 # https://github.com/micropython/micropython/issues/16759
+# requires: async
 
 try:
     import asyncio

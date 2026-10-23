@@ -32,6 +32,7 @@ _REQUIREMENT_PREFIX = b"# requires:"
 
 # Valid keywords for the "requires:" line.
 _VALID_REQUIREMENTS = (
+    "async",
     "bytearray",
     "const",
     "frozenset",

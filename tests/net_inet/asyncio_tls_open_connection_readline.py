@@ -1,3 +1,5 @@
+# requires: async
+
 import ssl
 import os
 import asyncio

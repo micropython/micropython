@@ -1,4 +1,5 @@
 # test waiting within async with enter/exit functions
+# requires: async
 
 import sys
 if sys.implementation.name == 'micropython':

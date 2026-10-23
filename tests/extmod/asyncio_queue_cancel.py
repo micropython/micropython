@@ -1,4 +1,5 @@
 # Test that Queue works when cancelling tasks waiting on get(), put() and join()
+# requires: async
 
 try:
     import asyncio

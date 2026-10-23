@@ -1,4 +1,5 @@
 # test await expression
+# requires: async
 
 import sys
 if sys.implementation.name == 'micropython':

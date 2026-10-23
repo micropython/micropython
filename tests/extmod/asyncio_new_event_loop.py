@@ -1,4 +1,5 @@
 # Test Loop.new_event_loop()
+# requires: async
 
 try:
     import asyncio

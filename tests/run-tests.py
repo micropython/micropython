@@ -696,7 +696,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_tests = set()
     skip_int_big = False
     skip_int_64 = False
-    skip_async = False
     skip_endian = False
     skip_inlineasm = False
     has_complex = True
@@ -738,10 +737,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "slice.py")
         target_capabilities["slice"] = output == b"slice\n"
 
-        # Check if async/await keywords are supported, and skip such tests if it's not
+        # Check if async/await keywords are supported.
         output = run_feature_check(pyb, args, "async_check.py")
-        if output != b"async\n":
-            skip_async = True
+        target_capabilities["async"] = output == b"async\n"
 
         # Check if const keyword (MicroPython extension) is supported.
         output = run_feature_check(pyb, args, "const.py")
@@ -895,14 +893,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             or test_name.startswith("ffi_int")  # these tests contain large integer literals
         )
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
-        is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_int_64 and is_int_64
-        skip_it |= skip_async and is_async
         skip_it |= skip_inlineasm and is_inlineasm
 
         skip_reasons = []

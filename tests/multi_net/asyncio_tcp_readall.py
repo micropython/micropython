@@ -1,4 +1,5 @@
 # Test asyncio stream read(-1) method using TCP server/client
+# requires: async
 
 try:
     import asyncio

@@ -1,4 +1,5 @@
 # Test asyncio TCP server and client using start_server() and open_connection()
+# requires: async
 
 try:
     import asyncio

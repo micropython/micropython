@@ -1,4 +1,5 @@
 # test async def
+# requires: async
 
 def dec(f):
     print('decorator')

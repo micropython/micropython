@@ -1,4 +1,5 @@
 # Test Queue class
+# requires: async
 
 try:
     import asyncio
