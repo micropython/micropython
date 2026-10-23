@@ -34,8 +34,10 @@
 
 #include "esp_ldo_regulator.h"
 
-// ESP-IDF doesn't yet contain a macro for the number of LDO channels available
-#if CONFIG_IDF_TARGET_ESP32P4
+// ESP-IDF doesn't always contain a macro for the number of LDO channels available
+#ifdef SOC_GP_LDO_NUM_UNITS
+#define LDO_CHANNELS SOC_GP_LDO_NUM_UNITS
+#elif CONFIG_IDF_TARGET_ESP32P4
 #define LDO_CHANNELS 4
 #else
 #error "Please add this chip's LDO driver support"
