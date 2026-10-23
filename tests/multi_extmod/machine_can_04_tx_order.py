@@ -77,6 +77,11 @@ for _ in range(NUM_MSGS * 2):
     sent.append([None, None])
 num_sent = 0
 
+# The sender may be slower than the bus. Record which high-priority messages
+# were actually queued before each low-priority message, rather than requiring
+# a low-priority message to wait for a high-priority message not yet submitted.
+high_queued_before_low = [-1] * NUM_MSGS
+
 
 def irq_send(can):
     global num_sent
@@ -112,6 +117,7 @@ def instance1():
 
     multitest.next()
 
+    last_high_queued = -1
     while pending_low or pending_high:
         if pending_high:
             val = pending_high.pop(0)
@@ -123,6 +129,7 @@ def instance1():
                     continue  # keep trying until a queue spot opens up
                 old = tx_queue[idx]
                 tx_queue[idx] = (True, val)
+                last_high_queued = val
                 if old:
                     print("error high priority queue race", idx, val, old)
                 break
@@ -140,6 +147,7 @@ def instance1():
 
                 old = tx_queue[idx]
                 tx_queue[idx] = (False, val)
+                high_queued_before_low[val] = last_high_queued
                 pending_low.pop(0)
                 if old is not None:
                     print("error low priority queue race", idx, val, old)
@@ -162,12 +170,14 @@ def instance1():
     check_sequence(sent_low, "Low prio sent")
     check_sequence(sent_high, "High prio sent")
 
-    # check that high priority message queue items always stayed ahead of the low priority
+    # Check all high-priority frames queued before each low-priority frame
+    # finished first. Later submissions may find the low-priority frame already
+    # in flight (or even completed), so cannot be required to overtake it.
     high_val = -1
     for idx, (prio, val) in enumerate(sent):
         if prio:
             high_val = val
-        elif high_val <= val and val < NUM_MSGS - 1:
+        elif high_val < high_queued_before_low[val]:
             print(
                 "Low priority message %d overtook high priority %d at index %d"
                 % (val, high_val, idx)
