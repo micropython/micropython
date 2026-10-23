@@ -101,6 +101,17 @@ static size_t calc_size_items(const char *fmt, size_t *total_sz) {
             total_cnt += cnt;
             size_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
+            // O(1) overflow guard: if cnt items of sz bytes each already
+            // exceed the remaining size_t budget, raise without looping.
+            // Alignment padding can add at most (align-1) extra bytes in
+            // total for the very first item; the items after that are
+            // already aligned because sz is always a multiple of align for
+            // every MicroPython struct format code.  Using sz per item is
+            // therefore exact for the common case and conservative (safe)
+            // for mixed formats.
+            if (sz > 0 && cnt > (SIZE_MAX - size) / sz) {
+                mp_raise_ValueError(MP_ERROR_TEXT("pack format too large"));
+            }
             while (cnt--) {
                 // Apply alignment
                 size = (size + align - 1) & ~(align - 1);
