@@ -697,7 +697,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_int_big = False
     skip_int_64 = False
     skip_async = False
-    skip_const = False
     skip_endian = False
     skip_inlineasm = False
     has_complex = True
@@ -744,10 +743,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output != b"async\n":
             skip_async = True
 
-        # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
+        # Check if const keyword (MicroPython extension) is supported.
         output = run_feature_check(pyb, args, "const.py")
-        if output != b"1\n":
-            skip_const = True
+        target_capabilities["const"] = output == b"1\n"
 
         # Check if __rOP__ special methods are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "reverse_ops.py")
@@ -898,7 +896,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         )
         is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
-        is_const = test_name.startswith("const")
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
@@ -906,7 +903,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_int_64 and is_int_64
         skip_it |= skip_async and is_async
-        skip_it |= skip_const and is_const
         skip_it |= skip_inlineasm and is_inlineasm
 
         skip_reasons = []
