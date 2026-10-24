@@ -48,7 +48,7 @@
 #include "shared/runtime/interrupt_char.h"
 #include "irq.h"
 
-#if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_STM_USB_STACK
 
 #if !MICROPY_HW_USB_IS_MULTI_OTG
 #define USE_USB_CNTR_SOFM (1)

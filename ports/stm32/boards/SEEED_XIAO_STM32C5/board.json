@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "https://wiki.seeedstudio.com/xiao_stm32c5_getting_started/",
+    "features": [
+        "Battery Charging",
+        "CAN",
+        "External Flash",
+        "IMU",
+        "USB-C"
+    ],
+    "images": [
+        "xiao_stm32c5.jpg"
+    ],
+    "mcu": "stm32c5",
+    "product": "XIAO STM32C5",
+    "url": "https://www.seeedstudio.com/XIAO-STM32C5-p-7011.html",
+    "vendor": "Seeed Studio"
+}

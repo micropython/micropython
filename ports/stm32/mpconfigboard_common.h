@@ -471,6 +471,7 @@ void mp_usbd_ll_init(void);
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (1)
+#define CFG_TUSB_MCU OPT_MCU_STM32C5
 
 // Configuration for STM32H5 series
 #elif defined(STM32H5)

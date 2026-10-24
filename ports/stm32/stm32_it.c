@@ -88,7 +88,7 @@
 #include "usb.h"
 #endif
 
-#if defined(MICROPY_HW_USB_FS)
+#if defined(MICROPY_HW_USB_FS) && !defined(STM32C5)
 extern PCD_HandleTypeDef pcd_fs_handle;
 #endif
 #if defined(MICROPY_HW_USB_HS)
@@ -315,7 +315,7 @@ void USB_UCPD1_2_IRQHandler(void) {
 }
 #endif
 
-#elif defined(STM32H5)
+#elif defined(STM32C5) || defined(STM32H5)
 
 #if MICROPY_HW_USB_FS
 void USB_DRD_FS_IRQHandler(void) {
