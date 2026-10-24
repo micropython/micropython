@@ -1,5 +1,8 @@
 // We use the ST Cube HAL library for most hardware peripherals
 #include STM32_HAL_H
+#if defined(STM32C5)
+#include "boards/stm32c5xx_hal_compat.h"
+#endif
 #include "pin.h"
 #include "usbd_conf.h"
 #include "py/ringbuf.h"
@@ -8,7 +11,9 @@
 extern uint8_t mp_hal_unique_id_address[12];
 
 // F0-1.9.0+F4-1.16.0+F7-1.7.0+G0-1.5.1+G4-1.3.0+H5-1.0.0+H7-1.11.0+L0-1.11.2+L1-1.10.3+L4-1.17.0+N6-1.2.0+U5-1.8.0+WB-1.23.0+WL-1.1.0
-#if defined(STM32F0)
+#if defined(STM32C5)
+#define MICROPY_PLATFORM_VERSION "HAL2.0.0"
+#elif defined(STM32F0)
 #define MICROPY_PLATFORM_VERSION "HAL1.9.0"
 #elif defined(STM32F4)
 #define MICROPY_PLATFORM_VERSION "HAL1.16.0"
@@ -38,11 +43,16 @@ extern uint8_t mp_hal_unique_id_address[12];
 #define MICROPY_PLATFORM_VERSION "HAL1.1.0"
 #endif
 
+#if defined(STM32C5)
+// C5 hal_status_t values are not sequential, use function instead of table
+int mp_hal_status_to_neg_errno(hal_status_t status);
+#else
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
 static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
     return -mp_hal_status_to_errno_table[status];
 }
+#endif
 
 extern ringbuf_t stdin_ringbuf;
 

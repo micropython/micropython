@@ -34,6 +34,20 @@
 #include "genhdr/pllfreqtable.h"
 #endif
 
+#if defined(STM32C5)
+// STM32C5 uses PSI instead of PLL. Provide stub implementations.
+// Full power control support will be added later.
+
+void powerctrl_check_enter_bootloader(void) {
+}
+
+MP_NORETURN void powerctrl_mcu_reset(void) {
+    NVIC_SystemReset();
+}
+
+
+#else // !STM32C5
+
 // These will be defined / expanded in pre-processor output for use in the
 // boards/pllvalues.py script, then generally stripped from final firmware.
 #ifdef HSI_VALUE
@@ -1223,3 +1237,5 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
     // MCU is reset on exit from standby, but just in case it's not, do an explicit reset.
     powerctrl_mcu_reset();
 }
+
+#endif // !STM32C5

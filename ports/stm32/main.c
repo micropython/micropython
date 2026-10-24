@@ -331,6 +331,12 @@ static void risaf_init(void) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    #if defined(STM32C5)
+    // Ensure SystemCoreClock is correct early (before HAL_InitTick uses it).
+    // The .data init value may not be programmed correctly by all flash tools.
+    SystemCoreClockUpdate();
+    #endif
+
     // Low-level MCU initialisation.
     stm32_system_init();
 

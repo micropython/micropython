@@ -38,6 +38,8 @@
 #define __HAL_RCC_LSI_DISABLE __HAL_RCC_LSI1_DISABLE
 #endif
 
+#if !defined(STM32C5)
+
 /// \moduleref pyb
 /// \class RTC - real time clock
 ///
@@ -967,3 +969,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, pyb_rtc_make_new,
     locals_dict, &pyb_rtc_locals_dict
     );
+
+#endif // !STM32C5

@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "https://www.st.com/resource/en/user_manual/um3616-stm32c5-nucleo144-board-mb2310-stmicroelectronics.pdf",
+    "features": [
+        "CAN",
+        "DAC",
+        "Ethernet",
+        "USB-C"
+    ],
+    "images": [
+        "nucleo_c5a3zg.jpg"
+    ],
+    "mcu": "stm32c5",
+    "product": "Nucleo C5A3ZG",
+    "url": "https://www.st.com/en/evaluation-tools/nucleo-c5a3zg.html",
+    "vendor": "ST Microelectronics"
+}

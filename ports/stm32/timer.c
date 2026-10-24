@@ -35,6 +35,8 @@
 #include "pin.h"
 #include "irq.h"
 
+#if !defined(STM32C5)
+
 /// \moduleref pyb
 /// \class Timer - periodically call a function
 ///
@@ -1864,3 +1866,5 @@ void timer_irq_handler(uint tim_id) {
 }
 
 MP_REGISTER_ROOT_POINTER(struct _pyb_timer_obj_t *pyb_timer_obj_all[MICROPY_HW_MAX_TIMER]);
+
+#endif // !STM32C5

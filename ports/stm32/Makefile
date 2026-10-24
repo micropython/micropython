@@ -123,6 +123,11 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
+ifeq ($(MCU_SERIES),c5)
+# C5 startup puts vector table in .vectors; remap to .isr_vector for linker
+CFLAGS += '-D__VECTOR_TABLE_ATTRIBUTE=__attribute__((used, section(".isr_vector")))'
+endif
+
 ifeq ($(MCU_SERIES),n6)
 ifeq ($(USE_MBOOT),1)
 CFLAGS += -DMICROPY_HW_RUNS_FROM_EXT_FLASH=1
@@ -338,6 +343,26 @@ SRC_O += \
 	shared/runtime/gchelper_thumb2.o
 endif
 
+ifeq ($(MCU_SERIES),c5)
+# STM32C5 uses CubeMX2-era HAL: no _ex variants, LL is header-only.
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal.c \
+	hal_adc.c \
+	hal_cortex.c \
+	hal_dma.c \
+	hal_flash.c \
+	hal_flash_itf.c \
+	hal_gpio.c \
+	hal_i2c.c \
+	hal_icache.c \
+	hal_pwr.c \
+	hal_rcc.c \
+	hal_rtc.c \
+	hal_spi.c \
+	hal_tim.c \
+	hal_uart.c \
+	)
+else
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
@@ -366,6 +391,7 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_flash_ex.c \
 	)
 endif
+endif # c5/other HAL split
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 n6 u5 wb))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
@@ -707,7 +733,11 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_
 $(BUILD)/powerctrl.o: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
+ifeq ($(MCU_SERIES),c5)
+	$(Q)echo "// STM32C5 uses PSI, not PLL - no frequency table needed" > $@
+else
 	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(HEADER_BUILD)/qstr.i.last > $@
+endif
 
 $(BUILD)/extmod/machine_i2s.o: $(GEN_PLLI2STABLE_HDR)
 $(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)/qstr.i.last

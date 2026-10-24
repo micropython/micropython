@@ -31,6 +31,8 @@
 #include "spi.h"
 #include "extmod/modmachine.h"
 
+#if !defined(STM32C5)
+
 // Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
 // SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
@@ -841,3 +843,5 @@ const mp_spi_proto_t spi_proto = {
     .ioctl = spi_proto_ioctl,
     .transfer = spi_proto_transfer,
 };
+
+#endif // !STM32C5
