@@ -19,15 +19,10 @@
 // • f(PLL_Q) = f(VCO clock) / PLLQ  (8 MHZ ~ 170 MHz)                  = 340 / 2 = 170MHz
 // • f(PLL_R) = f(VCO clock) / PLLR  (8 MHz ~ 170 MHz)                  = 340 / 2 = 170MHz
 // The board has an HSE XTAL 3225 8MHz connected at OSC_IN/OSC_OUT, the following gives 170MHz CPU speed
-// PLLM 1~8
 #define MICROPY_HW_CLK_PLLM         (2)
-// PLLN 8~127
 #define MICROPY_HW_CLK_PLLN         (85)
-// PLLP 2~31
 #define MICROPY_HW_CLK_PLLP         (2)
-// PLLQ 2,4,6,8
 #define MICROPY_HW_CLK_PLLQ         (2)
-// PLLR 2,4,6,8
 #define MICROPY_HW_CLK_PLLR         (2)
 
 // The board has a 32.768 kHz LSE NX3215SA connected at OSC32_IN/OSC32_OUT
@@ -43,26 +38,12 @@
 // UART config , same as NUCLEO_G474RE, if flash on U3 is used, then B10/B11 will be used by QSPI1 and UART3 is not usable
 #define MICROPY_HW_LPUART1_TX       (pin_A2)  // A2, B11, C1
 #define MICROPY_HW_LPUART1_RX       (pin_A3)  // A3, B10, C0
-// #define MICROPY_HW_UART1_TX         (pin_C4)  // A9, B6, C4, E0
-// #define MICROPY_HW_UART1_RX         (pin_C5)  // A10, B7, C5, E1  C5 is not breakout
-// #define MICROPY_HW_UART2_TX       (pin_A2)  // A14, B3, D5
-// #define MICROPY_HW_UART2_RX       (pin_A3)  // A15, B4, D6
-// #define MICROPY_HW_UART2_RTS      (pin_A1)  // D4
-// #define MICROPY_HW_UART2_CTS      (pin_A0)  // D3
 #define MICROPY_HW_UART3_TX         (pin_B10) // B9, B10, C10, D8
 #define MICROPY_HW_UART3_RX         (pin_B11) // B8 = boot0, B11, C11, D9, E15
-// #define MICROPY_HW_UART3_RTS      (pin_B14) // D12, F6
-// #define MICROPY_HW_UART3_CTS      (pin_B13) // A13, D11
-// #define MICROPY_HW_UART4_TX       (pin_)    // C10
-// #define MICROPY_HW_UART4_RX       (pin_)    // C11
 
 // I2C buses, same as NUCLEO G474RE
 #define MICROPY_HW_I2C1_SCL         (pin_B8) // A13, A15, B8 (=boot0)
 #define MICROPY_HW_I2C1_SDA         (pin_B9) // A14, B7, B9
-// #define MICROPY_HW_I2C2_SCL       (pin_)   // A9, C4
-// #define MICROPY_HW_I2C2_SDA       (pin_)   // A8, F0
-// #define MICROPY_HW_I2C3_SCL       (pin_)   // A8, C8
-// #define MICROPY_HW_I2C3_SDA       (pin_)   // B5, C9, C11
 
 // SPI, same as NUCLEO G474RE
 // if flash on U3 is used, then B0/B1/B10/B11/A6/A7 must be used for QSPI1
@@ -70,14 +51,6 @@
 #define MICROPY_HW_SPI1_SCK         (pin_A5) // A5, B3
 #define MICROPY_HW_SPI1_MISO        (pin_A6) // A6, B4
 #define MICROPY_HW_SPI1_MOSI        (pin_A7) // A7, B5
-// #define MICROPY_HW_SPI2_NSS       (pin_)   // B12, D15, F0
-// #define MICROPY_HW_SPI2_SCK       (pin_)   // B13, F1, F9, F10
-// #define MICROPY_HW_SPI2_MISO      (pin_)   // A10, B14
-// #define MICROPY_HW_SPI2_MOSI      (pin_)   // A11, B15
-// #define MICROPY_HW_SPI3_NSS       (pin_)   // A4, A15
-// #define MICROPY_HW_SPI3_SCK       (pin_)   // B3, C10
-// #define MICROPY_HW_SPI3_MISO      (pin_)   // B4, C11
-// #define MICROPY_HW_SPI3_MOSI      (pin_)   // B5, C12
 
 // user key config
 #define MICROPY_HW_USRSW_PIN       (pin_C13)
