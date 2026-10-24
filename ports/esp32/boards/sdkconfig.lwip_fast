@@ -1,0 +1,13 @@
+# Larger lwIP TCP window and buffers for higher WiFi throughput.
+#
+# The lwIP default window (~5760 B) caps a single TCP connection to a few
+# Mbit/s at typical WiFi RTT (throughput ~= window / RTT). A 64 KB window lifts
+# it toward the WiFi PHY limit, but can cost over 100 KB of internal RAM per
+# connection while bulk data is in flight, so it is only enabled on boards
+# with PSRAM fitted.
+CONFIG_LWIP_TCP_SND_BUF_DEFAULT=65534
+CONFIG_LWIP_TCP_WND_DEFAULT=65534
+
+# The receive mailbox must hold a full window of segments, otherwise lwIP
+# refuses them and RX throughput collapses.
+CONFIG_LWIP_TCP_RECVMBOX_SIZE=64
