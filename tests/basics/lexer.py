@@ -42,6 +42,20 @@ print(eval("'123'\\\r'456'"))
 print(eval("'123'\\\n'456'"))
 print(eval("'123'\\\r\n'456'"))
 
+# a line-continuation character at the very end of the input must be a syntax error
+try:
+    eval("123\\")
+except SyntaxError:
+    print("SyntaxError")
+try:
+    eval("123\\\n")
+except SyntaxError:
+    print("SyntaxError")
+try:
+    exec("123\\")
+except SyntaxError:
+    print("SyntaxError")
+
 # backslash used to escape a line-break in a string
 print('a\
 b')
