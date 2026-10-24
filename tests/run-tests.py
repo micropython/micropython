@@ -537,8 +537,10 @@ def run_micropython(pyb, args, test, test_file_abspath, is_special=False, is_fea
                             os.close(master)
                             os.close(slave)
                 else:
+                    # Command-line tests expect forward slashes in __file__ and sys.argv.
+                    script_filename = test.filename.replace(os.sep, "/")
                     output_mupy = subprocess.check_output(
-                        cmdlist + [test.filename], stderr=subprocess.STDOUT
+                        cmdlist + [script_filename], stderr=subprocess.STDOUT
                     )
             except subprocess.CalledProcessError:
                 return b"CRASH"
