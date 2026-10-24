@@ -1,6 +1,8 @@
 list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.240mhz
     boards/sdkconfig.spiram_oct
+    boards/sdkconfig.lwip_fast
+    boards/sdkconfig.lwip_fast_psram
 )
 
 list(APPEND MICROPY_DEF_BOARD

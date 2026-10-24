@@ -1,0 +1,11 @@
+# Put WiFi and lwIP buffers in PSRAM first, internal RAM is only a fallback.
+#
+# Use together with sdkconfig.lwip_fast. With its large window and several
+# sockets sending at once, the queued data fills and fragments internal RAM on
+# the ESP32-S3. The WiFi driver then finds no block for the TX buffer of a full
+# size frame, so nothing is sent and the queued data is never freed: TCP sending
+# stops for minutes while connects, small frames and RX still work. With the
+# buffers in octal PSRAM, internal RAM stays mostly free and the throughput cost
+# is small. On quad PSRAM (measured on ESP32-C5) the cost is much higher, so
+# this is only for boards with octal PSRAM.
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
