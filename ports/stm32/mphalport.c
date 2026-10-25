@@ -46,7 +46,7 @@ const byte mp_hal_status_to_errno_table[4] = {
 };
 #endif
 
-#if defined(STM32H5)
+#if defined(STM32C5) || defined(STM32H5)
 uint8_t mp_hal_unique_id_address[12];
 #endif
 

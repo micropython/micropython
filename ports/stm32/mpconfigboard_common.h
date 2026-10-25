@@ -465,7 +465,7 @@ void mp_usbd_ll_init(void);
 // Configuration for STM32C5 series
 #elif defined(STM32C5)
 
-#define MP_HAL_UNIQUE_ID_ADDRESS (0x08FFF800)
+#define MP_HAL_UNIQUE_ID_ADDRESS (mp_hal_unique_id_address)
 #define PYB_EXTI_NUM_VECTORS (16)
 #define MICROPY_HW_MAX_I2C (2)
 #define MICROPY_HW_MAX_TIMER (17)

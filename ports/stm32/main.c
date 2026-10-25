@@ -472,7 +472,8 @@ void stm32_main(uint32_t reset_mode) {
     MICROPY_BOARD_EARLY_INIT();
 
     // basic sub-system init
-    #if defined(STM32H5)
+    #if defined(STM32C5) || defined(STM32H5)
+    // The signature area only supports word reads; expose a byte-addressable copy.
     volatile uint32_t *src = (volatile uint32_t *)UID_BASE;
     uint32_t *dest = (uint32_t *)&mp_hal_unique_id_address[0];
     dest[0] = src[0];
