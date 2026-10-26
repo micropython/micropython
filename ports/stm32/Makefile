@@ -126,6 +126,9 @@ CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 ifeq ($(MCU_SERIES),n6)
 ifeq ($(USE_MBOOT),1)
 CFLAGS += -DMICROPY_HW_RUNS_FROM_EXT_FLASH=1
+LDFLAGS += -Wl,--defsym=_micropy_hw_runs_from_ext_flash=1
+else
+LDFLAGS += -Wl,--defsym=_micropy_hw_runs_from_ext_flash=0
 endif
 # as doesn't recognise -mcpu=cortex-m55
 AFLAGS += -march=armv8.1-m.main
