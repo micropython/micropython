@@ -1071,7 +1071,7 @@ void powerctrl_enter_stop_mode(void) {
 
 #if defined(STM32N6)
 
-// Upon wake from standby, STM32N6 can resume execution from retained SRAM1.
+// Upon wake from standby, STM32N6 can resume execution from retained IRAM.
 // Place a small bootloader there which initialises XSPI in memory-mapped mode
 // and jumps to the main application entry point.
 
@@ -1101,7 +1101,7 @@ MP_NORETURN void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
 
     #if defined(STM32N6)
-    // Upon wake from standby, jump to the code at SRAM1.
+    // Upon wake from standby, jump to the code in IRAM.
     // A board can reconfigure this in MICROPY_BOARD_ENTER_STANDBY if needed.
     LL_PWR_EnableTCMSBRetention();
     LL_PWR_EnableTCMFLXSBRetention();
