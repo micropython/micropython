@@ -1,22 +1,27 @@
 /*
     GNU linker script for STM32N657x0
 
-    IRAM is in ITCM, which is retained in standby.
+    Upon reset the upper 512k of SRAM2 (AXISRAM2) is filled from external flash by
+    the ROM bootloader.  When the application firmware runs from external flash, that
+    512k contains mboot, which isn't needed once the application runs.  Otherwise it
+    contains the application firmware itself (FLASH).
 
-    Note: upper 512k of SRAM2 is copied from external flash upon reset.
+    IRAM is in ITCM, which is retained in standby.  RAM is FLEXRAM, AXISRAM1 and
+    AXISRAM2, which are contiguous.  It includes the upper 512k of AXISRAM2 when the
+    firmware runs from external flash, and stops below it otherwise.
 */
 
 /* Specify the memory areas */
 MEMORY
 {
     ITCM_S (xrw)        : ORIGIN = 0x10000000, LENGTH = 64K
-    SRAM2_S_RAM (xrw)   : ORIGIN = 0x34100000, LENGTH = 512K /* only use first half, second half may contain firmware */
+    SRAM_S_RAM (xrw)    : ORIGIN = 0x34000000, LENGTH = _micropy_hw_runs_from_ext_flash ? 2048K : 1536K
     SRAM2_S_FSBL (xrw)  : ORIGIN = 0x34180400, LENGTH = 511K /* firmware loaded from SPI flash upon reset */
     EXT_FLASH (rx)      : ORIGIN = 0x70080000, LENGTH = 1536K
 }
 
 REGION_ALIAS("IRAM", ITCM_S);
-REGION_ALIAS("RAM", SRAM2_S_RAM);
+REGION_ALIAS("RAM", SRAM_S_RAM);
 REGION_ALIAS("FLASH", SRAM2_S_FSBL);
 REGION_ALIAS("FLASH_APP", EXT_FLASH);
 
