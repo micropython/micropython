@@ -31,6 +31,9 @@
 // External SPI flash, MX66UW1G45GXDI00.
 #define MICROPY_HW_XSPIFLASH_SIZE_BITS_LOG2     (30)
 
+// 32MB 16-bit PSRAM on XSPI1, added to the heap.
+#define MICROPY_HW_XSPI_PSRAM                   (1)
+
 // SPI flash, block device config.
 #define MICROPY_HW_BDEV_SPIFLASH                (&spi_bdev)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED       (&spi_bdev)
