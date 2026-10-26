@@ -1,19 +1,21 @@
 /*
     GNU linker script for STM32N657x0
 
+    IRAM is in ITCM, which is retained in standby.
+
     Note: upper 512k of SRAM2 is copied from external flash upon reset.
 */
 
 /* Specify the memory areas */
 MEMORY
 {
-    FLEXRAM_S (xrw)     : ORIGIN = 0x34000000, LENGTH = 80K
+    ITCM_S (xrw)        : ORIGIN = 0x10000000, LENGTH = 64K
     SRAM2_S_RAM (xrw)   : ORIGIN = 0x34100000, LENGTH = 512K /* only use first half, second half may contain firmware */
     SRAM2_S_FSBL (xrw)  : ORIGIN = 0x34180400, LENGTH = 511K /* firmware loaded from SPI flash upon reset */
     EXT_FLASH (rx)      : ORIGIN = 0x70080000, LENGTH = 1536K
 }
 
-REGION_ALIAS("IRAM", FLEXRAM_S);
+REGION_ALIAS("IRAM", ITCM_S);
 REGION_ALIAS("RAM", SRAM2_S_RAM);
 REGION_ALIAS("FLASH", SRAM2_S_FSBL);
 REGION_ALIAS("FLASH_APP", EXT_FLASH);
