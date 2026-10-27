@@ -1683,10 +1683,12 @@ static mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             case MOD_NETWORK_SOCK_STREAM: {
                 // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
                 tcp_arg(socket->pcb.tcp, NULL);
-                tcp_err(socket->pcb.tcp, NULL);
-                tcp_recv(socket->pcb.tcp, NULL);
 
                 if (socket->state != STATE_LISTENING) {
+                    // A listening pcb is a smaller struct without these callbacks.
+                    tcp_err(socket->pcb.tcp, NULL);
+                    tcp_recv(socket->pcb.tcp, NULL);
+
                     // Schedule a callback to abort the connection if it's not cleanly closed after
                     // the given timeout.  The callback must be set before calling tcp_close since
                     // the latter may free the pcb; if it doesn't then the callback will be active.
