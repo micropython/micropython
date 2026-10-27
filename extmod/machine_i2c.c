@@ -650,6 +650,26 @@ static mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args,
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_writeto_mem_obj, 1, machine_i2c_writeto_mem);
 
+static mp_obj_t machine_i2c_scl(mp_obj_t self_in) {
+    mp_obj_base_t *self = (mp_obj_base_t *)MP_OBJ_TO_PTR(self_in);
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
+    if (i2c_p->scl != NULL) {
+        return i2c_p->scl(self);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_scl_obj, machine_i2c_scl);
+
+static mp_obj_t machine_i2c_sda(mp_obj_t self_in) {
+    mp_obj_base_t *self = (mp_obj_base_t *)MP_OBJ_TO_PTR(self_in);
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)MP_OBJ_TYPE_GET_SLOT(self->type, protocol);
+    if (i2c_p->sda != NULL) {
+        return i2c_p->sda(self);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_sda_obj, machine_i2c_sda);
+
 static const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_i2c_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_i2c_deinit_obj) },
@@ -671,6 +691,8 @@ static const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readfrom_mem), MP_ROM_PTR(&machine_i2c_readfrom_mem_obj) },
     { MP_ROM_QSTR(MP_QSTR_readfrom_mem_into), MP_ROM_PTR(&machine_i2c_readfrom_mem_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeto_mem), MP_ROM_PTR(&machine_i2c_writeto_mem_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scl), MP_ROM_PTR(&machine_i2c_scl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sda), MP_ROM_PTR(&machine_i2c_sda_obj) },
 };
 MP_DEFINE_CONST_DICT(mp_machine_i2c_locals_dict, machine_i2c_locals_dict_table);
 
@@ -680,6 +702,16 @@ MP_DEFINE_CONST_DICT(mp_machine_i2c_locals_dict, machine_i2c_locals_dict_table);
 // Implementation of soft I2C
 
 #if MICROPY_PY_MACHINE_SOFTI2C
+
+static mp_obj_t mp_machine_soft_i2c_scl(mp_obj_base_t *self_in) {
+    mp_machine_soft_i2c_obj_t *self = (mp_machine_soft_i2c_obj_t *)self_in;
+    return mp_hal_pin_to_obj(self->scl);
+}
+
+static mp_obj_t mp_machine_soft_i2c_sda(mp_obj_base_t *self_in) {
+    mp_machine_soft_i2c_obj_t *self = (mp_machine_soft_i2c_obj_t *)self_in;
+    return mp_hal_pin_to_obj(self->sda);
+}
 
 static void mp_machine_soft_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_machine_soft_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -750,6 +782,8 @@ static const mp_machine_i2c_p_t mp_machine_soft_i2c_p = {
     .read = mp_machine_soft_i2c_read,
     .write = mp_machine_soft_i2c_write,
     .transfer = mp_machine_soft_i2c_transfer,
+    .scl = mp_machine_soft_i2c_scl,
+    .sda = mp_machine_soft_i2c_sda,
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
