@@ -1,4 +1,5 @@
 # test formatting floats with large precision, that it doesn't overflow the buffer
+# requires: int-big
 
 
 def test(num, num_str):

@@ -1,4 +1,5 @@
 # to test arbitrary precision integers
+# requires: int-big
 
 x = 1000000000000000000000000000000
 xn = -1000000000000000000000000000000

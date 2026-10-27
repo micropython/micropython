@@ -1,4 +1,5 @@
 # test builtin divmod
+# requires: int-big
 
 try:
     divmod(1 << 65, 0)

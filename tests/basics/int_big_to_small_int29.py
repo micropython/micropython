@@ -1,3 +1,5 @@
+# requires: int-big
+
 try:
     import micropython
     micropython.heap_lock

@@ -1,5 +1,7 @@
 # This test checks previously known problem values for 32-bit ports.
 # It's less useful for 64-bit ports.
+# requires: int-big
+
 try:
     import uctypes
 except ImportError:

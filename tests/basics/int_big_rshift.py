@@ -1,3 +1,5 @@
+# requires: int-big
+
 i = 123456789012345678901234567890
 print(i >> 1)
 print(i >> 1000)

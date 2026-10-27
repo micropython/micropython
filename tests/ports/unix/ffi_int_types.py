@@ -1,4 +1,5 @@
 # test 8/16/32/64 bit signed/unsigned integer arguments and return types for ffi functions
+# requires: int-big
 
 import ffi_int_base
 

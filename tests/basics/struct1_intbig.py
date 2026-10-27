@@ -1,3 +1,5 @@
+# requires: int-big
+
 try:
     import struct
 except ImportError:

@@ -1,4 +1,5 @@
 # test array types QqLl that require big-ints
+# requires: int-big
 
 try:
     from array import array

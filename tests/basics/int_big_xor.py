@@ -1,3 +1,5 @@
+# requires: int-big
+
 # test + +
 
 print(0 ^ (1 << 80))

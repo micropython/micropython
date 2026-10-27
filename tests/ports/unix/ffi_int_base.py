@@ -1,5 +1,6 @@
 # common tests for ffi_int_types/long32/long64
 # requires ffi_lib.c to be compiled as: $(CC) -shared -o ffi_lib.so ffi_lib.c
+# requires: int-big
 
 import os, sys
 

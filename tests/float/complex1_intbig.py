@@ -1,4 +1,5 @@
 # test basic complex number functionality
+# requires: int-big
 
 # convert bignum to complex on rhs
 ans = 1j + (1 << 70)

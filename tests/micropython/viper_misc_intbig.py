@@ -1,4 +1,4 @@
-# requires: viper
+# requires: int-big viper
 
 import sys
 

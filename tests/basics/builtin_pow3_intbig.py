@@ -1,5 +1,6 @@
 # test builtin pow() with integral values
 # 3 arg version
+# requires: int-big
 
 try:
     print(pow(3, 4, 7))

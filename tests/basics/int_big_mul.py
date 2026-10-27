@@ -1,3 +1,5 @@
+# requires: int-big
+
 # tests transition from small to large int representation by multiplication
 for rhs in range(2, 11):
     lhs = 1
