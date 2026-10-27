@@ -34,6 +34,7 @@ _REQUIREMENT_PREFIX = b"# requires:"
 _VALID_REQUIREMENTS = (
     "async",
     "bytearray",
+    "complex",
     "const",
     "frozenset",
     "fstring",
