@@ -1,4 +1,5 @@
 # test construction of bytes from array with float type
+# requires: host-endianness
 
 try:
     from array import array

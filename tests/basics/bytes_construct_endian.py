@@ -1,4 +1,5 @@
 # test construction of bytes from different objects
+# requires: host-endianness
 
 try:
     from array import array
