@@ -36,6 +36,7 @@ _VALID_REQUIREMENTS = (
     "bytearray",
     "complex",
     "const",
+    "coverage",
     "frozenset",
     "fstring",
     "host-endianness",

@@ -1,6 +1,6 @@
 # cmdline: -v -v -v
 # test printing of the parse-tree
-
+# requires: coverage
 for i in ():
     pass
 a = None
