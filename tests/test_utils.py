@@ -38,6 +38,7 @@ _VALID_REQUIREMENTS = (
     "frozenset",
     "fstring",
     "host-endianness",
+    "int-64",
     "int-big",
     "native",
     "reverse-op",
