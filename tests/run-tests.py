@@ -695,7 +695,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     skip_tests = set()
     skip_inlineasm = False
-    has_coverage = False
     target_capabilities = {}
 
     if True:
@@ -778,13 +777,15 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if "True" not in str(t, "ascii"):
             skip_tests.add("cmdline/repl_words_move.py")
 
+        # Check if it has coverage support.
+        output = run_feature_check(pyb, args, "coverage.py")
+        target_capabilities["coverage"] = output == b"coverage\n"
+
+        # Check if the target endianness matches the host endianness.
         upy_byteorder = run_feature_check(pyb, args, "byteorder.py")
-        has_coverage = run_feature_check(pyb, args, "coverage.py") == b"coverage\n"
         cpy_byteorder = subprocess.check_output(
             CPYTHON3_CMD + [base_path("feature_check/byteorder.py")]
         )
-
-        # Check if the target endianness matches the host endianness.
         target_capabilities["host-endianness"] = upy_byteorder == cpy_byteorder
 
         skip_inlineasm = not args.inlineasm_arch
@@ -818,11 +819,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if args.via_mpy:
             skip_tests.add("basics/string_escape.py")  # stores a utf-8 character in the mpy file
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
-
-    if not has_coverage:
-        skip_tests.add("cmdline/cmd_parsetree.py")
-        skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
-        skip_tests.add("extmod/ssl_poll.py")
 
     # Skip thread mutation tests on targets that have unsafe threading behaviour.
     if args.thread == "unsafe":
