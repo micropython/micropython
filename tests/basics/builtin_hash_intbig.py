@@ -1,4 +1,5 @@
 # test builtin hash function
+# requires: int-big
 
 print({1 << 66:1}) # hash big int
 print({-(1 << 66):2}) # hash negative big int

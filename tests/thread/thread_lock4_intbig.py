@@ -1,6 +1,8 @@
 # test using lock to coordinate access to global mutable objects
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+#
+# requires: int-big
 
 import time
 import _thread
