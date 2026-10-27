@@ -1,5 +1,6 @@
 # test support for 64-bit long integers
 # (some ports don't support arbitrary precision but do support these)
+# requires: int-64
 
 # this test is adapted from int_big1.py with numbers kept within 64-bit signed range
 

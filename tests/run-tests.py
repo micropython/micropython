@@ -694,7 +694,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
-    skip_int_64 = False
     skip_inlineasm = False
     has_complex = True
     has_coverage = False
@@ -720,8 +719,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Check if 'long long' precision integers are supported, even if arbitrary precision is not
         output = run_feature_check(pyb, args, "int_64.py")
-        if output != b"4611686018427387904\n":
-            skip_int_64 = True
+        target_capabilities["int-64"] = output == b"4611686018427387904\n"
 
         # Check if bytearray is supported.
         output = run_feature_check(pyb, args, "bytearray.py")
@@ -887,11 +885,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
         test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
-        skip_it |= skip_int_64 and is_int_64
         skip_it |= skip_inlineasm and is_inlineasm
 
         skip_reasons = []
