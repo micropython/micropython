@@ -695,7 +695,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     skip_tests = set()
     skip_inlineasm = False
-    has_complex = True
     has_coverage = False
     target_capabilities = {}
 
@@ -754,6 +753,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "tstring.py")
         target_capabilities["tstring"] = output == b"tstring\n"
 
+        # Check if complex numbers are supported.
+        output = run_feature_check(pyb, args, "complex.py")
+        target_capabilities["complex"] = output == b"complex\n"
+
         if args.inlineasm_arch == "thumb":
             for feature in ("thumb2", "vfp"):
                 if feature not in args.inlineasm_features:
@@ -776,7 +779,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("cmdline/repl_words_move.py")
 
         upy_byteorder = run_feature_check(pyb, args, "byteorder.py")
-        has_complex = run_feature_check(pyb, args, "complex.py") == b"complex\n"
         has_coverage = run_feature_check(pyb, args, "coverage.py") == b"coverage\n"
         cpy_byteorder = subprocess.check_output(
             CPYTHON3_CMD + [base_path("feature_check/byteorder.py")]
@@ -816,17 +818,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if args.via_mpy:
             skip_tests.add("basics/string_escape.py")  # stores a utf-8 character in the mpy file
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
-
-    if not has_complex:
-        skip_tests.add("float/complex1.py")
-        skip_tests.add("float/complex1_intbig.py")
-        skip_tests.add("float/complex1_micropython.py")
-        skip_tests.add("float/complex_reverse_op.py")
-        skip_tests.add("float/complex_special_methods.py")
-        skip_tests.add("float/int_big_float.py")
-        skip_tests.add("float/true_value.py")
-        skip_tests.add("float/types.py")
-        skip_tests.add("float/complex_dunder.py")
 
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")

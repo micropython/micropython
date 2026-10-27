@@ -1,5 +1,5 @@
 # test complex interacting with special reverse methods
-# requires: reverse-op
+# requires: complex reverse-op
 
 
 class A:

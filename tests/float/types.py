@@ -1,4 +1,5 @@
 # float types
+# requires: complex
 
 print(float)
 print(complex)

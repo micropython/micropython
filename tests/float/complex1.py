@@ -1,4 +1,5 @@
 # test basic complex number functionality
+# requires: complex
 
 # constructor
 print(complex(1))
