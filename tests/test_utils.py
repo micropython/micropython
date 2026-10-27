@@ -37,6 +37,7 @@ _VALID_REQUIREMENTS = (
     "const",
     "frozenset",
     "fstring",
+    "host-endianness",
     "native",
     "reverse-op",
     "set",

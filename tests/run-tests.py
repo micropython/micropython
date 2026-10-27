@@ -696,7 +696,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_tests = set()
     skip_int_big = False
     skip_int_64 = False
-    skip_endian = False
     skip_inlineasm = False
     has_complex = True
     has_coverage = False
@@ -784,7 +783,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         cpy_byteorder = subprocess.check_output(
             CPYTHON3_CMD + [base_path("feature_check/byteorder.py")]
         )
-        skip_endian = upy_byteorder != cpy_byteorder
+
+        # Check if the target endianness matches the host endianness.
+        target_capabilities["host-endianness"] = upy_byteorder == cpy_byteorder
 
         skip_inlineasm = not args.inlineasm_arch
 
@@ -886,7 +887,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
         test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_endian = test_name.endswith("_endian")
         is_int_big = (
             test_name.startswith("int_big")
             or test_name.endswith("_intbig")
@@ -896,7 +896,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
-        skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_int_64 and is_int_64
         skip_it |= skip_inlineasm and is_inlineasm

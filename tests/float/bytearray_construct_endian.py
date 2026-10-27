@@ -1,5 +1,5 @@
 # test construction of bytearray from array with float type
-# requires: bytearray
+# requires: bytearray host-endianness
 
 try:
     from array import array

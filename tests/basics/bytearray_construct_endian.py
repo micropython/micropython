@@ -1,5 +1,5 @@
 # test construction of bytearray from different objects
-# requires: bytearray
+# requires: bytearray host-endianness
 
 try:
     from array import array
