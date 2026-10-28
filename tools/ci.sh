@@ -360,8 +360,13 @@ function ci_nrf_build {
 
 function ci_psoc_edge_setup {
     ci_gcc_arm_setup
+    # installing edgeprotecttools requires uninstalling some default Python packages
+    # from the system, but then we need to reinstall pip so the binary is available
+    # (as on recent Ubuntu it's uninstalled with python3-packaging.)
     sudo apt remove python3-packaging python3-jsonschema python3-cryptography
+    sudo apt install python3-pip
     sudo pip3 install edgeprotecttools
+
 }
 
 function ci_psoc_edge_build {
