@@ -799,7 +799,8 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(STM32H7) || \
     defined(STM32F427xx) || defined(STM32F437xx) || \
     defined(STM32F429xx) || defined(STM32F439xx) || defined(STM32F469xx) || \
-    defined(STM32WB55xx) || defined(STM32WB35xx)
+    defined(STM32WB55xx) || defined(STM32WB35xx) || \
+    defined(STM32N6)
     // Disable SysTick Interrupt
     // Note: This seems to be required at least on the H7 REV Y,
     // otherwise the MCU will leave stop mode immediately on entry.
@@ -1051,7 +1052,8 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(STM32H7) || \
     defined(STM32F427xx) || defined(STM32F437xx) || \
     defined(STM32F429xx) || defined(STM32F439xx) || defined(STM32F469xx) || \
-    defined(STM32WB55xx) || defined(STM32WB35xx)
+    defined(STM32WB55xx) || defined(STM32WB35xx) || \
+    defined(STM32N6)
     // Enable SysTick Interrupt
     SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
     #endif
