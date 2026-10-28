@@ -1,0 +1,28 @@
+MicroPython \.\+ version
+Type "help()" for more information.
+>>> # REPL tests of invalid UTF-8 input: bytes that do not form a character are dropped
+>>> # continuation bytes without a lead byte
+>>> 'ab'
+'ab'
+>>> # bytes that never start a character, and their continuation bytes
+>>> 'ab'
+'ab'
+>>> # a character cut short by ASCII or by another character
+>>> 'abあ'
+'abあ'
+>>> # a character cut short by an escape sequence or by Enter
+>>> 'あxああ'
+'xあ'
+>>> 'い'
+'い'
+>>> # a character cut short by Ctrl-C, which cancels the line
+>>> 'う
+>>> \$
+>>> # input() only returns well-formed characters
+>>> input()
+え
+'え'
+>>> input()
+おか
+'おか'
+>>> \$

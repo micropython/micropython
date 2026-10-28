@@ -4,17 +4,54 @@ Type "help()" for more information.
 >>> # typed characters are kept
 >>> 'あいう', len('日本語')
 ('あいう', 3)
+>>> 'é', '𝄞😀', len('é𝄞😀')
+('é', '𝄞😀', 3)
 >>> # backspace and delete remove whole characters
 >>> 'あいう'[Kう'xう'
 'あxう'
 >>> 'éàü'[Kü'üy'
 'éüy'
+>>> '𝄞😀♪'[K'[K'
+'𝄞'
 >>> # cursor movement over characters
 >>> 語''語'日語'本語'
+'日本語'
+>>> '本''日本'本'語'
+'日本語'
+>>> 'ac'bc'日c'
+'ab日c'
+>>> '語''日語'本語'語'
 '日本語'
 >>> # history recall then edit
 >>> '𝄞♪'
 '𝄞♪'
 >>> '𝄞♪'[K[K♫'
 '𝄞♫'
+>>> # a recalled line with fewer characters but as many bytes erases the old one
+>>> '😀😀'
+'😀😀'
+>>> 'abcdefgh'[10D[K'😀😀'
+'😀😀'
+>>> 'ab''😀😀'# a recalled line with fewer characters but as many bytes erases the old one[76D[K'😀😀'[K'あ'
+'あ'
+>>> # input() edits the same way
+>>> input()
+あいう[Kうxう
+'あxう'
+>>> # tab completion after UTF-8 characters
+>>> s = 'あい'
+>>> '日本', s.startswith('あ')
+('日本', True)
+>>> # a long line, then recall and edit it
+>>> len('あいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcde')[87Dlen('[Kいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcde')[81D[Kうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcde')[80D
+78
+>>> len('うえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcde')[85Dlen('xうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcdeあいうえおabcde')[80D
+79
+>>> # editing stays within a continuation line
+>>> if 1:
+...     print('あいう')[Kう')[12D    print('あう')
+...     \$
+...     \$
+... \$
+あう
 >>> \$
