@@ -127,7 +127,27 @@ def _schedule_run_iter(dt):
     asyncio_timer = js.setTimeout(_run_iter, dt)
 
 
-def _run_iter():
+# True while _run_iter is running, including while it is suspended in
+# jsffi.run_sync().
+_run_iter_active = False
+
+
+# This is "async def" so that the timer's call returns a coroutine, which
+# the port then resumes through proxy_c_to_js_resume.  On a jspi build
+# that entry allows jsffi.run_sync() to suspend, so tasks may use it.
+async def _run_iter():
+    global _run_iter_active
+    if _run_iter_active:
+        # A suspended _run_iter will run the queued tasks when it resumes.
+        return
+    _run_iter_active = True
+    try:
+        _run_iter_body()
+    finally:
+        _run_iter_active = False
+
+
+def _run_iter_body():
     global cur_task
     excs_all = (CancelledError, Exception)  # To prevent heap allocation in loop
     excs_stop = (CancelledError, StopIteration)  # To prevent heap allocation in loop
