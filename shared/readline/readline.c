@@ -154,6 +154,21 @@ static void cut_back(size_t len) {
     vstr_cut_out_bytes(rl.line, rl.cursor_pos, len);
 }
 
+// Replace the text after the prompt with str, and draw it with the cursor at
+// the end.  The old text is erased if the new text has fewer characters, which
+// may not be the case when it has fewer bytes.
+static void replace_line(const char *str) {
+    cursor_back(rl.cursor_pos - rl.orig_line_len);
+    size_t old_columns = line_columns(rl.orig_line_len, rl.line->len);
+    rl.line->len = rl.orig_line_len;
+    vstr_add_str(rl.line, str);
+    if (line_columns(rl.orig_line_len, rl.line->len) < old_columns) {
+        mp_hal_erase_line_from_cursor(old_columns);
+    }
+    mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
+    rl.cursor_pos = rl.line->len;
+}
+
 #if MICROPY_REPL_EMACS_WORDS_MOVE
 static size_t cursor_count_word(int forward) {
     const char *line_buf = vstr_str(rl.line);
@@ -415,12 +430,7 @@ up_arrow_key:
                     // increase hist num
                     rl.hist_cur += 1;
                     // set line to history
-                    cursor_back(rl.cursor_pos - rl.orig_line_len);
-                    rl.line->len = rl.orig_line_len;
-                    vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
-                    // set redraw parameters
-                    redraw_from_cursor = true;
-                    redraw_step_forward = rl.line->len - rl.orig_line_len;
+                    replace_line(MP_STATE_PORT(readline_hist)[rl.hist_cur]);
                 }
             } else if (c == 'B') {
 #if MICROPY_REPL_EMACS_KEYS
@@ -431,14 +441,7 @@ down_arrow_key:
                     // decrease hist num
                     rl.hist_cur -= 1;
                     // set line to history
-                    cursor_back(rl.cursor_pos - rl.orig_line_len);
-                    vstr_cut_tail_bytes(rl.line, rl.line->len - rl.orig_line_len);
-                    if (rl.hist_cur >= 0) {
-                        vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
-                    }
-                    // set redraw parameters
-                    redraw_from_cursor = true;
-                    redraw_step_forward = rl.line->len - rl.orig_line_len;
+                    replace_line(rl.hist_cur >= 0 ? MP_STATE_PORT(readline_hist)[rl.hist_cur] : "");
                 }
             } else if (c == 'C') {
 #if MICROPY_REPL_EMACS_KEYS
