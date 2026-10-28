@@ -164,33 +164,27 @@ export async function loadMicroPython(options) {
             Module._free(buf);
             return proxy_convert_mp_to_js_obj_jsside_with_free(value);
         },
-        runPythonAsync(code) {
+        async runPythonAsync(code) {
             const len = Module.lengthBytesUTF8(code);
             const buf = Module._malloc(len + 1);
             Module.stringToUTF8(code, buf, len + 1);
             const value = Module._malloc(3 * 4);
-            const done = Module.ccall(
+            // On a jspi build this ccall returns a promise, because the
+            // code may suspend in jsffi.run_sync(); "value" is only valid
+            // once that promise is fulfilled.  On other builds the await
+            // passes the return value straight through.
+            await Module.ccall(
                 "mp_js_do_exec_async",
                 "number",
                 ["pointer", "number", "pointer"],
                 [buf, len, value],
             );
-            const finish = () => {
-                Module._free(buf);
-                const ret = proxy_convert_mp_to_js_obj_jsside_with_free(value);
-                if (ret instanceof PyProxyThenable) {
-                    return Promise.resolve(ret);
-                }
-                return ret;
-            };
-            if (done instanceof Promise) {
-                // On a jspi build this export is wrapped in
-                // WebAssembly.promising and execution may suspend (via
-                // jsffi.run_sync); the result slot is only valid once
-                // the returned promise resolves.
-                return done.then(finish);
+            Module._free(buf);
+            const ret = proxy_convert_mp_to_js_obj_jsside_with_free(value);
+            if (ret instanceof PyProxyThenable) {
+                return Promise.resolve(ret);
             }
-            return finish();
+            return ret;
         },
         replInit() {
             Module.ccall("mp_js_repl_init", "null", ["null"]);
