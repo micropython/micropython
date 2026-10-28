@@ -87,6 +87,23 @@ export async function loadMicroPython(options) {
     }
     Module = await _createMicroPythonModule(Module);
     globalThis.Module = Module;
+    // On a jspi build, jsffi.run_sync() suspends until its promise is
+    // fulfilled or rejected.  But a KeyboardInterrupt must also end that
+    // wait.  The solution is to wrap the interrupt function.  While
+    // run_sync() is suspended, js_run_sync_wait (in modjsffi.c) also
+    // waits on Module.jspiInterrupt.  ccall finds this function by name
+    // on Module, so every caller gets the wrapped one.
+    const schedKeyboardInterrupt = Module._mp_sched_keyboard_interrupt;
+    Module._mp_sched_keyboard_interrupt = () => {
+        if (Module.jspiInterrupt) {
+            // run_sync() is suspended.  Wake it and let it raise the
+            // KeyboardInterrupt itself, so no other code can receive
+            // the interrupt first.
+            Module.jspiInterrupt.resolve();
+        } else {
+            schedKeyboardInterrupt();
+        }
+    };
     proxy_js_init();
     const pyimport = (name) => {
         const value = Module._malloc(3 * 4);

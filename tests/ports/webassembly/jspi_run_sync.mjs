@@ -15,6 +15,11 @@ if (!globalThis.jspiProbe) {
 globalThis.slowValue = new Promise((resolve) => {
     setTimeout(() => resolve(42), 10);
 });
+globalThis.badThenable = {
+    get then() {
+        throw new Error("bad then");
+    },
+};
 
 await mp.runPythonAsync(`
 import jsffi
@@ -40,4 +45,11 @@ try:
     jsffi.run_sync(js.Promise.reject(js.Error("boom")))
 except jsffi.JsException as exc:
     print("JsException", "boom" in str(exc))
+
+# A JS exception thrown while starting the wait (here, by a "then"
+# getter) is raised the same way, rather than escaping into C.
+try:
+    jsffi.run_sync(js.badThenable)
+except jsffi.JsException as exc:
+    print("JsException", "bad then" in str(exc))
 `);
