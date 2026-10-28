@@ -634,7 +634,7 @@ CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS=(
 )
 
 CI_UNIX_OPTS_QEMU_MIPS=(
-    CROSS_COMPILE=mips-linux-gnu-
+    CROSS_COMPILE=mips-buildroot-linux-gnu-
     VARIANT=coverage
     MICROPY_STANDALONE=1
 )
@@ -998,18 +998,29 @@ function ci_unix_macos_run_tests {
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude '(float_parse|float_parse_doubleprec|ffi_callback).py')
 }
 
+MIPS_TOOLCHAIN=mips32--glibc--stable-2025.08-1
+
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross libltdl-dev
-    sudo apt-get install qemu-user-binfmt
+    sudo apt-get install libltdl-dev qemu-user-binfmt
+    MIPS_TARBALL=${MIPS_TOOLCHAIN}.tar.xz
+    # cache action is used to keep a copy of this tarball, save on download traffic
+    [ -e ${MIPS_TARBALL} ] || wget --no-verbose https://toolchains.bootlin.com/downloads/releases/toolchains/mips32/tarballs/${MIPS_TARBALL}
+    tar xf ${MIPS_TARBALL}
+    ./${MIPS_TOOLCHAIN}/bin/mips-buildroot-linux-gnu-gcc --version
     qemu-mips --version
+    # link the MIPS toolchain sysroot where qemu can find it
     sudo mkdir -p /usr/gnemul
-    sudo ln -s /usr/mips-linux-gnu /usr/gnemul/qemu-mips
+    sudo ln -s ${PWD}/${MIPS_TOOLCHAIN}/mips-buildroot-linux-gnu/sysroot /usr/gnemul/qemu-mips
+}
+
+function ci_unix_qemu_mips_path {
+    echo $(pwd)/${MIPS_TOOLCHAIN}/bin
 }
 
 function ci_unix_qemu_mips_build {
     ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_MIPS[@]}"
-    ci_unix_build_ffi_lib_helper mips-linux-gnu-gcc
+    ci_unix_build_ffi_lib_helper mips-buildroot-linux-gnu-gcc
 }
 
 function ci_unix_qemu_mips_run_tests {

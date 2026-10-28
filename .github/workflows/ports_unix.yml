@@ -323,8 +323,15 @@ jobs:
       # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
       with:
         python-version: '3.11'
+    - name: Cached MIPS toolchain
+      id: mips_toolchain
+      uses: actions/cache@v6
+      with:
+        path: ./mips32*.xz
+        key: mips32_toolchain_tarball
+
     - name: Install packages
-      run: tools/ci.sh unix_qemu_mips_setup
+      run: tools/ci.sh unix_qemu_mips_setup && tools/ci.sh unix_qemu_mips_path >> $GITHUB_PATH
     - name: Build
       run: tools/ci.sh unix_qemu_mips_build
     - name: Run main test suite
