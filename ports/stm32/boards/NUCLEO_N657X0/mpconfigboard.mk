@@ -22,6 +22,9 @@ LD_FILES = boards/stm32n657x0.ld boards/common_basic.ld
 TEXT0_ADDR = 0x34180400
 endif
 
+# Add AXISRAM3-6 and the NPU cache RAM to the heap.
+LD_FILES += boards/NUCLEO_N657X0/npu_ram_heap.ld
+
 # MicroPython settings
 MICROPY_FLOAT_IMPL = double
 MICROPY_PY_LWIP = 1
