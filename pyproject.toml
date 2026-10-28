@@ -56,6 +56,7 @@ exclude = [  # Ruff finds Python SyntaxError in these files
   "tests/cmdline/repl_ctrl_c_interrupt_execution.py",
   "tests/cmdline/repl_emacs_keys.py",
   "tests/cmdline/repl_paste.py",
+  "tests/cmdline/repl_unicode_edit.py",
   "tests/cmdline/repl_words_move.py",
   "tests/feature_check/repl_emacs_check.py",
   "tests/feature_check/repl_words_move_check.py",

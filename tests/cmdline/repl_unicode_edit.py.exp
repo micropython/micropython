@@ -1,0 +1,20 @@
+MicroPython \.\+ version
+Type "help()" for more information.
+>>> # REPL tests of UTF-8 line editing
+>>> # typed characters are kept
+>>> 'あいう', len('日本語')
+('あいう', 3)
+>>> # backspace and delete remove whole characters
+>>> 'あいう'[Kう'xう'
+'あxう'
+>>> 'éàü'[Kü'üy'
+'éüy'
+>>> # cursor movement over characters
+>>> 語''語'日語'本語'
+'日本語'
+>>> # history recall then edit
+>>> '𝄞♪'
+'𝄞♪'
+>>> '𝄞♪'[K[K♫'
+'𝄞♫'
+>>> \$

@@ -828,6 +828,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if args.via_mpy:
             skip_tests.add("basics/string_escape.py")  # stores a utf-8 character in the mpy file
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
+        skip_tests.add("cmdline/repl_unicode_edit.py")  # tests editing utf-8 characters
 
     if not has_complex:
         skip_tests.add("float/complex1.py")
