@@ -443,6 +443,20 @@ void stm32_main(uint32_t reset_mode) {
 
     #if defined(STM32N6)
     risaf_init();
+
+    // Enable AXISRAM3-6 and the NPU cache RAM.  AXISRAM3-6 control registers need
+    // to be read back after powering up (RM0486 section 10.4).
+    LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_RAMCFG);
+    CLEAR_BIT(RAMCFG_SRAM3_AXI_S->CR, RAMCFG_AXISRAM_POWERDOWN);
+    (void)RAMCFG_SRAM3_AXI_S->CR;
+    CLEAR_BIT(RAMCFG_SRAM4_AXI_S->CR, RAMCFG_AXISRAM_POWERDOWN);
+    (void)RAMCFG_SRAM4_AXI_S->CR;
+    CLEAR_BIT(RAMCFG_SRAM5_AXI_S->CR, RAMCFG_AXISRAM_POWERDOWN);
+    (void)RAMCFG_SRAM5_AXI_S->CR;
+    CLEAR_BIT(RAMCFG_SRAM6_AXI_S->CR, RAMCFG_AXISRAM_POWERDOWN);
+    (void)RAMCFG_SRAM6_AXI_S->CR;
+    LL_MEM_EnableClock(LL_MEM_AXISRAM3 | LL_MEM_AXISRAM4 | LL_MEM_AXISRAM5 | LL_MEM_AXISRAM6
+        | LL_MEM_CACHEAXIRAM);
     #endif
 
     #if defined(STM32F4) || defined(STM32F7)
