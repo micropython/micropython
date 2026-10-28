@@ -105,7 +105,7 @@ typedef struct _readline_t {
     #if MICROPY_REPL_AUTO_INDENT
     uint8_t auto_indent_state;
     #endif
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_REPL_UTF8
     uint8_t utf8_pending; // bytes of an incomplete UTF-8 character at cursor_pos
     #endif
     const char *prompt;
@@ -113,10 +113,10 @@ typedef struct _readline_t {
 
 static readline_t rl;
 
+#if MICROPY_REPL_UTF8
 // The line holds whole UTF-8 characters, apart from the utf8_pending bytes of
 // a character still being received, and the cursor moves over one character
 // at a time.  Each character is assumed to take one terminal column.
-#if MICROPY_PY_BUILTINS_STR_UNICODE
 static size_t char_len_back(size_t pos) {
     size_t start = pos - 1;
     while (start > rl.orig_line_len && UTF8_IS_CONT((byte)rl.line->buf[start])) {
@@ -132,10 +132,6 @@ static size_t char_len_forward(size_t pos) {
     }
     return end - pos;
 }
-#else
-#define char_len_back(pos) (1)
-#define char_len_forward(pos) (1)
-#endif
 
 static size_t line_columns(size_t start, size_t end) {
     return utf8_charlen((const byte *)rl.line->buf + start, end - start);
@@ -168,6 +164,15 @@ static void replace_line(const char *str) {
     mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
     rl.cursor_pos = rl.line->len;
 }
+#else
+// Each byte is one character and one column, and moving the cursor back is
+// left to the redraw at the end of readline_process_char().
+#define char_len_back(pos) (1)
+#define char_len_forward(pos) (1)
+#define line_columns(start, end) ((end) - (start))
+#define cursor_back(len) (redraw_step_back = (len))
+#define cut_back(len) (cursor_back(len), vstr_cut_out_bytes(rl.line, rl.cursor_pos - redraw_step_back, redraw_step_back))
+#endif
 
 #if MICROPY_REPL_EMACS_WORDS_MOVE
 static size_t cursor_count_word(int forward) {
@@ -210,7 +215,7 @@ static bool process_nl(int c) {
 }
 
 int readline_process_char(int c) {
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_REPL_UTF8
     if (rl.utf8_pending > 0 && !UTF8_IS_CONT(c)) {
         // drop an incomplete UTF-8 character; it was never drawn
         vstr_cut_out_bytes(rl.line, rl.cursor_pos, rl.utf8_pending);
@@ -218,6 +223,9 @@ int readline_process_char(int c) {
     }
     #endif
     size_t last_line_len = rl.line->len;
+    #if !MICROPY_REPL_UTF8
+    int redraw_step_back = 0;
+    #endif
     bool redraw_from_cursor = false;
     int redraw_step_forward = 0;
     if (rl.escape_seq == ESEQ_NONE) {
@@ -357,7 +365,7 @@ int readline_process_char(int c) {
             // set redraw parameters
             redraw_from_cursor = true;
             redraw_step_forward = 1;
-        #if MICROPY_PY_BUILTINS_STR_UNICODE
+        #if MICROPY_REPL_UTF8
         } else if (rl.utf8_pending > 0 || (0xc0 <= (byte)c && (byte)c < 0xf8)) {
             // byte of a multi-byte UTF-8 character; draw it once complete
             // (lead bytes are those accepted by unicode_encoding_check, and a
@@ -430,7 +438,16 @@ up_arrow_key:
                     // increase hist num
                     rl.hist_cur += 1;
                     // set line to history
+                    #if MICROPY_REPL_UTF8
                     replace_line(MP_STATE_PORT(readline_hist)[rl.hist_cur]);
+                    #else
+                    rl.line->len = rl.orig_line_len;
+                    vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
+                    // set redraw parameters
+                    redraw_step_back = rl.cursor_pos - rl.orig_line_len;
+                    redraw_from_cursor = true;
+                    redraw_step_forward = rl.line->len - rl.orig_line_len;
+                    #endif
                 }
             } else if (c == 'B') {
 #if MICROPY_REPL_EMACS_KEYS
@@ -441,7 +458,18 @@ down_arrow_key:
                     // decrease hist num
                     rl.hist_cur -= 1;
                     // set line to history
+                    #if MICROPY_REPL_UTF8
                     replace_line(rl.hist_cur >= 0 ? MP_STATE_PORT(readline_hist)[rl.hist_cur] : "");
+                    #else
+                    vstr_cut_tail_bytes(rl.line, rl.line->len - rl.orig_line_len);
+                    if (rl.hist_cur >= 0) {
+                        vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
+                    }
+                    // set redraw parameters
+                    redraw_step_back = rl.cursor_pos - rl.orig_line_len;
+                    redraw_from_cursor = true;
+                    redraw_step_forward = rl.line->len - rl.orig_line_len;
+                    #endif
                 }
             } else if (c == 'C') {
 #if MICROPY_REPL_EMACS_KEYS
@@ -529,7 +557,13 @@ delete_key:
 redraw:
 #endif
 
-    // redraw command prompt, efficiently (any step back is already done)
+    // redraw command prompt, efficiently
+    #if !MICROPY_REPL_UTF8
+    if (redraw_step_back > 0) {
+        mp_hal_move_cursor_back(redraw_step_back);
+        rl.cursor_pos -= redraw_step_back;
+    }
+    #endif
     if (redraw_from_cursor) {
         if (rl.line->len < last_line_len) {
             // erase old chars
@@ -614,7 +648,7 @@ void readline_init(vstr_t *line, const char *prompt) {
     rl.orig_line_len = line->len;
     rl.escape_seq = ESEQ_NONE;
     rl.escape_seq_buf[0] = 0;
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_REPL_UTF8
     rl.utf8_pending = 0;
     #endif
     rl.hist_cur = -1;
