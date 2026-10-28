@@ -91,7 +91,14 @@ static size_t suspendable_entry_depth = 0;
 static bool suspension_active = false;
 
 bool mp_js_can_suspend(void) {
-    return suspendable_entry_depth != 0
+    // Only the outermost call from JS may suspend.  If the call that
+    // allowed suspension is nested inside another call into C (it was
+    // started from JS code that Python itself called), then that outer
+    // call is still running on the same linear stack and shares this
+    // thread's exception handler chain and pystack.  Once the inner call
+    // suspends, the outer call returns and unwinds them past the
+    // suspended frames, which then resume into a corrupted state.
+    return suspendable_entry_depth == 1
            && suspendable_entry_depth == external_call_depth
            && !suspension_active;
 }
