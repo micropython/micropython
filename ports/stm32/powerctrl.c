@@ -849,6 +849,11 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    #if defined(STM32N6)
+    // Save which PLLs are on, to re-enable them after wake up from low power mode.
+    uint32_t rcc_cr_pll_on = RCC->CR & (RCC_CR_PLL1ON | RCC_CR_PLL2ON | RCC_CR_PLL3ON | RCC_CR_PLL4ON);
+    #endif
+
     #if defined(STM32WB)
     powerctrl_low_power_prep_wb55();
     #endif
@@ -927,9 +932,11 @@ void powerctrl_enter_stop_mode(void) {
 
     #elif defined(STM32N6)
 
-    // Enable PLL1, and switch the CPU and system clock source to use PLL1.
-    LL_RCC_PLL1_Enable();
-    while (!LL_RCC_PLL1_IsReady()) {
+    // Re-enable the PLLs, because the ICs used by the CPU and system clocks can come from
+    // any of them, then switch the CPU and system clock sources back to the ICs.  The PLL
+    // bits are in the same positions in RCC CR, CSR and SR.
+    RCC->CSR = rcc_cr_pll_on;
+    while ((RCC->SR & rcc_cr_pll_on) != rcc_cr_pll_on) {
     }
     LL_RCC_SetCpuClkSource(LL_RCC_CPU_CLKSOURCE_IC1);
     while (LL_RCC_GetCpuClkSource() != LL_RCC_CPU_CLKSOURCE_STATUS_IC1) {
