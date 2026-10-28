@@ -26,6 +26,8 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/mpprint.h"
+#include "esp_err.h"
 #include "usb.h"
 
 #if MICROPY_HW_ENABLE_USBDEV
@@ -45,11 +47,21 @@ void usb_phy_init(void) {
     static const usb_phy_config_t phy_conf = {
         .controller = USB_PHY_CTRL_OTG,
         .otg_mode = USB_OTG_MODE_DEVICE,
+        // S31 (and P4) use the internal UTMI PHY for high-speed USB; other
+        // targets use the integrated PHY.
+        #if CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32S31
+        .target = USB_PHY_TARGET_UTMI,
+        #else
         .target = USB_PHY_TARGET_INT,
+        #endif
+        .otg_speed = USB_PHY_SPEED_UNDEFINED,
     };
 
     // Init ESP USB Phy
-    usb_new_phy(&phy_conf, &phy_hdl);
+    esp_err_t ret = usb_new_phy(&phy_conf, &phy_hdl);
+    if (ret != ESP_OK) {
+        mp_printf(&mp_plat_print, "USB PHY init failed: %s\n", esp_err_to_name(ret));
+    }
 }
 
 #if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4

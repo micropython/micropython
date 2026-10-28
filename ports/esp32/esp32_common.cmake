@@ -23,7 +23,7 @@ if(CONFIG_IDF_TARGET_ARCH_RISCV)
 endif()
 
 if(NOT DEFINED MICROPY_PY_TINYUSB)
-    if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3 OR CONFIG_IDF_TARGET_ESP32P4)
+    if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3 OR CONFIG_IDF_TARGET_ESP32P4 OR CONFIG_IDF_TARGET_ESP32S31)
         set(MICROPY_PY_TINYUSB ON)
     endif()
 endif()
@@ -70,10 +70,16 @@ list(APPEND MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-    ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
 )
+
+# esp32_mbedtls_errors.c maps the mbedtls-3 era high error-code table that was
+# removed in mbedtls 4 (ESP-IDF v6+). Only build it on 5.x.
+if($ENV{IDF_VERSION} VERSION_LESS "6.0")
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c)
+endif()
 
 list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
@@ -189,15 +195,40 @@ list(APPEND IDF_COMPONENTS
     log
     lwip
     mbedtls
-    newlib
     nvs_flash
     sdmmc
     soc
     spi_flash
     ulp
-    usb
     vfs
 )
+
+# newlib and usb components were removed from ESP-IDF in v6.0, but are still
+# needed (listed explicitly here) when building against 5.x.
+if($ENV{IDF_VERSION} VERSION_LESS "6.0")
+    list(APPEND IDF_COMPONENTS
+        newlib
+        usb)
+endif()
+
+# Components added in ESP-IDF v6.0. The legacy `driver` meta-component became
+# an empty shim in v6, so every esp_driver_* component whose headers the port
+# includes directly must be listed explicitly.
+if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "6.0")
+    list(APPEND IDF_COMPONENTS
+        esp_hal_timg
+        esp_driver_dac
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_driver_ledc
+        esp_driver_pcnt
+        esp_driver_rmt
+        esp_driver_sdmmc
+        esp_driver_sdspi
+        esp_driver_spi
+        esp_driver_tsens
+        esp_driver_uart)
+endif()
 
 if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")
     list(APPEND IDF_COMPONENTS
@@ -251,7 +282,7 @@ set(MICROPY_TARGET ${COMPONENT_TARGET})
 if(CONFIG_IDF_TARGET_ARCH_XTENSA)
     set(MICROPY_CROSS_FLAGS -march=xtensawin)
 elseif(CONFIG_IDF_TARGET_ARCH_RISCV)
-    if (CONFIG_IDF_TARGET_ESP32P4)
+    if (CONFIG_IDF_TARGET_ESP32P4 OR CONFIG_IDF_TARGET_ESP32S31)
         set(MICROPY_CROSS_FLAGS "-march=rv32imc -march-flags=zcmp")
     else()
         set(MICROPY_CROSS_FLAGS -march=rv32imc)

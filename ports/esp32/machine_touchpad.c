@@ -37,7 +37,12 @@
 #include "driver/touch_sensor.h"
 #elif SOC_TOUCH_SENSOR_VERSION == 3 // At present, it can only be used on ESP32P4.
 #include "driver/touch_sens.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/touch_sensor_channel.h"
+#else
 #include "soc/touch_sensor_channel.h"
+#endif
 #else
 #error "Unknown touch hardware version"
 #endif
@@ -84,6 +89,21 @@ static const mtp_obj_t touchpad_obj[] = {
     {{&machine_touchpad_type}, GPIO_NUM_12, TOUCH_PAD_NUM12},
     {{&machine_touchpad_type}, GPIO_NUM_13, TOUCH_PAD_NUM13},
     {{&machine_touchpad_type}, GPIO_NUM_14, TOUCH_PAD_NUM14},
+    #elif CONFIG_IDF_TARGET_ESP32S31
+    {{&machine_touchpad_type}, GPIO_NUM_6, TOUCH_PAD_GPIO6_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_7, TOUCH_PAD_GPIO7_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_8, TOUCH_PAD_GPIO8_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_9, TOUCH_PAD_GPIO9_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_10, TOUCH_PAD_GPIO10_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_11, TOUCH_PAD_GPIO11_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_12, TOUCH_PAD_GPIO12_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_13, TOUCH_PAD_GPIO13_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_14, TOUCH_PAD_GPIO14_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_15, TOUCH_PAD_GPIO15_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_16, TOUCH_PAD_GPIO16_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_17, TOUCH_PAD_GPIO17_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_18, TOUCH_PAD_GPIO18_CHANNEL},
+    {{&machine_touchpad_type}, GPIO_NUM_19, TOUCH_PAD_GPIO19_CHANNEL},
     #elif CONFIG_IDF_TARGET_ESP32P4
     {{&machine_touchpad_type}, GPIO_NUM_2, TOUCH_PAD_GPIO2_CHANNEL},
     {{&machine_touchpad_type}, GPIO_NUM_3, TOUCH_PAD_GPIO3_CHANNEL},
