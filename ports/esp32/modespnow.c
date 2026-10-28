@@ -130,6 +130,16 @@ typedef struct _esp_espnow_obj_t {
     size_t peer_count;              // Cache the # of peers for send(sync=True)
     mp_obj_t recv_cb;               // Callback when a packet is received
     mp_obj_t recv_cb_arg;           // Argument passed to callback
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    // ESP-NOW PHY rate for transmissions, set via ESPNow.config(rate=...).
+    // -1 means "not configured" and no per-peer rate is applied. On IDF 6+
+    // the rate can only be set per-peer (esp_now_set_peer_rate_config), so it
+    // is remembered here and applied to existing peers in config() and to
+    // each newly added peer in add_peer(). On IDF 5 the legacy global
+    // esp_wifi_config_espnow_rate() is used instead and this field does not
+    // exist.
+    mp_int_t default_rate;          // Default: -1 (unconfigured)
+    #endif
     #if MICROPY_PY_ESPNOW_RSSI
     mp_obj_t peers_table;           // A dictionary of discovered peers
     #endif // MICROPY_PY_ESPNOW_RSSI
@@ -177,6 +187,9 @@ static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     self->recv_timeout_ms = DEFAULT_RECV_TIMEOUT_MS;
     self->recv_buffer = NULL;       // Buffer is allocated in espnow_init()
     self->recv_cb = mp_const_none;
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    self->default_rate = -1;
+    #endif
     #if MICROPY_PY_ESPNOW_RSSI
     self->peers_table = mp_obj_new_dict(0);
     // Prevent user code modifying the dict
@@ -282,6 +295,20 @@ static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         self->recv_timeout_ms = args[ARG_timeout_ms].u_int;
     }
     if (args[ARG_rate].u_int >= 0) {
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+        // IDF 6 removed the global esp_wifi_config_espnow_rate(); the rate is
+        // now configured per-peer. Remember it and apply to existing peers.
+        self->default_rate = args[ARG_rate].u_int;
+        esp_now_peer_info_t peer = {0};
+        bool from_head = true;
+        while (esp_now_fetch_peer(from_head, &peer) == ESP_OK) {
+            from_head = false;
+            esp_now_rate_config_t rate_config = {
+                .rate = self->default_rate,
+            };
+            check_esp_err(esp_now_set_peer_rate_config(peer.peer_addr, &rate_config));
+        }
+        #else
         wifi_mode_t mode = get_wifi_mode();
         if (mode == WIFI_MODE_STA || mode == WIFI_MODE_APSTA) {
             check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
@@ -289,6 +316,7 @@ static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) {
             check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
         }
+        #endif
     }
     if (args[ARG_get].u_obj == MP_OBJ_NULL) {
         return mp_const_none;
@@ -696,6 +724,19 @@ static mp_obj_t espnow_add_peer(size_t n_args, const mp_obj_t *args, mp_map_t *k
     _update_peer_info(&peer, n_args - 2, args + 2, kw_args);
 
     check_esp_err(esp_now_add_peer(&peer));
+
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    // Apply the configured default rate (if any) to the new peer, mirroring
+    // the IDF 5 global-rate behaviour.
+    esp_espnow_obj_t *self = _get_singleton_initialised();
+    if (self->default_rate >= 0) {
+        esp_now_rate_config_t rate_config = {
+            .rate = self->default_rate,
+        };
+        check_esp_err(esp_now_set_peer_rate_config(peer.peer_addr, &rate_config));
+    }
+    #endif
+
     _update_peer_count();
 
     return mp_const_none;
