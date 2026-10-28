@@ -1001,8 +1001,8 @@ function ci_unix_macos_run_tests {
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
     sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu libc6-mips-cross libltdl-dev
-    sudo apt-get install qemu-user-static
-    qemu-mips-static --version
+    sudo apt-get install qemu-user-binfmt
+    qemu-mips --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/mips-linux-gnu /usr/gnemul/qemu-mips
 }
@@ -1022,8 +1022,8 @@ function ci_unix_qemu_mips_run_tests {
 function ci_unix_qemu_arm_setup {
     sudo apt-get update
     sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libltdl-dev
-    sudo apt-get install qemu-user-static
-    qemu-arm-static --version
+    sudo apt-get install qemu-user-binfmt
+    qemu-arm --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/arm-linux-gnueabi /usr/gnemul/qemu-arm
 }
@@ -1046,8 +1046,8 @@ function ci_unix_qemu_riscv64_setup {
     sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libltdl-dev
     python3 -m pip install pyelftools
     python3 -m pip install ar
-    sudo apt-get install qemu-user-static
-    qemu-riscv64-static --version
+    sudo apt-get install qemu-user-binfmt
+    qemu-riscv64 --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/riscv64-linux-gnu /usr/gnemul/qemu-riscv64
 }
@@ -1071,8 +1071,8 @@ function ci_unix_qemu_riscv64_run_tests {
 function ci_unix_qemu_loong64_setup {
     sudo apt-get update
     sudo apt-get install gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc6-loong64-cross libltdl-dev
-    sudo apt-get install qemu-user-static
-    qemu-loongarch64-static --version
+    sudo apt-get install qemu-user-binfmt
+    qemu-loongarch64 --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/loongarch64-linux-gnu /usr/gnemul/qemu-loongarch64
     sudo ln -s /usr/bin/loongarch64-linux-gnu-gcc-14 /usr/bin/loongarch64-linux-gnu-gcc
@@ -1088,23 +1088,16 @@ function ci_unix_qemu_loong64_run_tests {
     # Issues with LOONG64 tests:
     # - thread/stress_aes.py takes around 90 seconds
     file ./ports/unix/build-coverage/micropython
-    # Loongarch64 isn't defined in the CI image's binfmt list.
-    cat << 'EOF' > ./ports/unix/build-coverage/micropython-runner
-#!/bin/sh
-MPY_PATH=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
-qemu-loongarch64-static "$MPY_PATH"/micropython $@
-EOF
-    chmod +x ./ports/unix/build-coverage/micropython-runner
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython-runner MICROPY_TEST_TIMEOUT=180 ./run-tests.py)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython MICROPY_TEST_TIMEOUT=180 ./run-tests.py)
 }
 
 function ci_unix_qemu_x64_setup {
     sudo apt-get update
     sudo apt-get install gcc-x86-64-linux-gnu g++-x86-64-linux-gnu libc6-amd64-cross libltdl-dev
-    sudo apt-get install qemu-user-static
+    sudo apt-get install qemu-user-binfmt
     python3 -m pip install pyelftools
     python3 -m pip install ar
-    qemu-x86_64-static --version
+    qemu-x86_64 --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/x86_64-linux-gnu /usr/gnemul/qemu-x86_64
 }
