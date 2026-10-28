@@ -17,8 +17,7 @@ CFLAGS += -sSUPPORT_LONGJMP=wasm
 JSFLAGS += -s JSPI
 # The promising entries: runPythonAsync(), the generator resume used
 # for code that awaits (so run_sync() also works after an await), and
-# the REPL character processor (the CLI drives the REPL through ccall's
-# async path, which under JSPI requires a promising export; making it
-# suspendable also lets run_sync() work when typed at the REPL).
-# Everything else stays synchronous, matching Pyodide's entry semantics.
-JSFLAGS += -s JSPI_EXPORTS=mp_js_do_exec_async,proxy_c_to_js_resume,mp_js_repl_process_char
+# the async REPL character processor (used by the CLI, so run_sync()
+# works when typed at the REPL).  Everything else stays synchronous,
+# matching Pyodide's entry semantics.
+JSFLAGS += -s JSPI_EXPORTS=mp_js_do_exec_async,proxy_c_to_js_resume,mp_js_repl_process_char_async

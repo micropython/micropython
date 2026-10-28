@@ -247,17 +247,22 @@ void mp_js_repl_init(void) {
 
 int mp_js_repl_process_char(int c) {
     external_call_depth_inc();
+    int ret = pyexec_event_repl_process_char(c);
+    external_call_depth_dec(MP_OBJ_NULL);
+    return ret;
+}
+
+// As mp_js_repl_process_char, but on a jspi build this function is
+// listed in JSPI_EXPORTS, so code typed at the REPL may call
+// jsffi.run_sync().  Its ccall then returns a promise.
+int mp_js_repl_process_char_async(int c) {
+    external_call_depth_inc();
     #if MICROPY_JSPI
-    // The REPL entry is wrapped in WebAssembly.promising by the build
-    // (see JSPI_EXPORTS in the jspi variant) so that ccall's async
-    // path works, and marked suspendable so that run_sync() typed at
-    // the REPL can park this entry like any other promising one.
-    size_t prev_depth = suspendable_entry_depth;
-    suspendable_entry_depth = external_call_depth;
+    size_t prev_depth = mp_js_allow_suspend_begin();
     #endif
     int ret = pyexec_event_repl_process_char(c);
     #if MICROPY_JSPI
-    suspendable_entry_depth = prev_depth;
+    mp_js_allow_suspend_end(prev_depth);
     #endif
     external_call_depth_dec(MP_OBJ_NULL);
     return ret;

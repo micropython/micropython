@@ -197,15 +197,37 @@ export async function loadMicroPython(options) {
                 [chr],
             );
         },
-        // Needed if the GC/asyncify is enabled.
+        // Needed if the GC/asyncify is enabled.  On a jspi build the REPL
+        // may suspend in jsffi.run_sync(), so characters are processed one
+        // at a time: each ccall starts only after the previous one has
+        // finished, which queues anything typed while a line is suspended.
+        // The one exception is the interrupt character (Ctrl-C), which
+        // interrupts the suspended line at once instead of waiting.
         async replProcessCharWithAsyncify(chr) {
-            return Module.ccall(
-                "mp_js_repl_process_char",
-                "number",
-                ["number"],
-                [chr],
-                { async: true },
+            if (Module.jspiInterrupt) {
+                const interruptChar = Module.ccall(
+                    "mp_hal_get_interrupt_char",
+                    "number",
+                    [],
+                    [],
+                );
+                if (chr === interruptChar) {
+                    Module._mp_sched_keyboard_interrupt();
+                    return 0;
+                }
+            }
+            const previous = Module.replPending ?? Promise.resolve();
+            const current = previous.then(() =>
+                Module.ccall(
+                    "mp_js_repl_process_char_async",
+                    "number",
+                    ["number"],
+                    [chr],
+                    { async: true },
+                ),
             );
+            Module.replPending = current.catch(() => {});
+            return current;
         },
     };
 }
