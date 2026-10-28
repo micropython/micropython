@@ -113,8 +113,9 @@ typedef struct _readline_t {
 
 static readline_t rl;
 
-// The line holds whole UTF-8 characters, and the cursor moves over one
-// character at a time.  Each character is assumed to take one terminal column.
+// The line holds whole UTF-8 characters, apart from the utf8_pending bytes of
+// a character still being received, and the cursor moves over one character
+// at a time.  Each character is assumed to take one terminal column.
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 static size_t char_len_back(size_t pos) {
     size_t start = pos - 1;
@@ -342,9 +343,12 @@ int readline_process_char(int c) {
             redraw_from_cursor = true;
             redraw_step_forward = 1;
         #if MICROPY_PY_BUILTINS_STR_UNICODE
-        } else if (UTF8_IS_NONASCII(c) && (rl.utf8_pending > 0 || !UTF8_IS_CONT(c))) {
+        } else if (rl.utf8_pending > 0 || (0xc0 <= (byte)c && (byte)c < 0xf8)) {
             // byte of a multi-byte UTF-8 character; draw it once complete
-            vstr_ins_byte(rl.line, rl.cursor_pos + rl.utf8_pending++, c);
+            // (lead bytes are those accepted by unicode_encoding_check, and a
+            // pending character only gets continuation bytes, see above)
+            vstr_ins_byte(rl.line, rl.cursor_pos + rl.utf8_pending, c);
+            rl.utf8_pending += 1;
             byte lead = rl.line->buf[rl.cursor_pos];
             if (rl.utf8_pending == (lead >= 0xf0 ? 4 : lead >= 0xe0 ? 3 : 2)) {
                 // set redraw parameters
