@@ -59,6 +59,9 @@ Compiles to:
     X = 1
     foo(1, 2)
 
+The parser also treats ``TYPE_CHECKING = False`` as a proper constant, so blocks guarded by
+``if TYPE_CHECKING:`` are removed entirely from the compiled bytecode.
+
 See :func:`micropython.const` for complete details on usage requirements and
 limitations.
 
