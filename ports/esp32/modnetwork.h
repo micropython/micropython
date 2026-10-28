@@ -26,14 +26,44 @@
 #ifndef MICROPY_INCLUDED_ESP32_MODNETWORK_H
 #define MICROPY_INCLUDED_ESP32_MODNETWORK_H
 
+#include "esp_idf_version.h"
 #include "esp_wifi_types.h"
 #include "esp_netif.h"
+
+// esp_interface_t and the ESP_IF_* constants were removed from esp_wifi in
+// IDF v6. Recreate them from the wifi_interface_t values (which is what the
+// enum aliased to). ESP_IF_ETH just needs a value distinct from the WIFI_IF_*
+// ones, and WIFI_IF_MAX is conveniently outside that range.
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+typedef int esp_interface_t;
+#define ESP_IF_WIFI_STA ((esp_interface_t)WIFI_IF_STA)
+#define ESP_IF_WIFI_AP  ((esp_interface_t)WIFI_IF_AP)
+#define ESP_IF_ETH      ((esp_interface_t)WIFI_IF_MAX)
+#endif
 
 // lan867x component requires Original ESP32
 #if CONFIG_IDF_TARGET_ESP32
 #define PHY_LAN867X_ENABLED (1)
 #else
 #define PHY_LAN867X_ENABLED (0)
+#endif
+
+// Drivers for the other internal-MAC PHYs (LAN87xx, IP101, RTL8201, DP83848,
+// KSZ80xx) are declared centrally in esp_eth_phy.h on IDF v5, and moved to
+// the component registry on IDF v6 (see main/idf_component.yml, which pulls
+// them in for exactly these two EMAC-capable targets).
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
+#define PHY_LAN87XX_ENABLED (1)
+#define PHY_IP101_ENABLED (1)
+#define PHY_RTL8201_ENABLED (1)
+#define PHY_DP83848_ENABLED (1)
+#define PHY_KSZ80XX_ENABLED (1)
+#else
+#define PHY_LAN87XX_ENABLED (0)
+#define PHY_IP101_ENABLED (0)
+#define PHY_RTL8201_ENABLED (0)
+#define PHY_DP83848_ENABLED (0)
+#define PHY_KSZ80XX_ENABLED (0)
 #endif
 
 // PHY_GENERIC support requires newer IDF version
