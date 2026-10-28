@@ -29,6 +29,7 @@ print(b"aaa".count(b"", 2))
 print(b"aaa".count(b"", 3))
 
 print(b"aaa".count(b"", 1, 2))
+print(b"aaa".count(b"", 2, 1))
 
 print(b"asdfasdfaaa".count(b"asdf", -100))
 print(b"asdfasdfaaa".count(b"asdf", -8))
