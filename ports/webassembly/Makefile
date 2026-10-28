@@ -152,13 +152,13 @@ repl: $(BUILD)/micropython.mjs
 min: $(BUILD)/micropython.min.mjs
 
 test: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< MICROPY_NODE="$(NODE)" ./run-tests.py -t webassembly
 
 test//%: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly -i "$*"
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< MICROPY_NODE="$(NODE)" ./run-tests.py -t webassembly -i "$*"
 
 test_min: $(BUILD)/micropython.min.mjs $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< MICROPY_NODE="$(NODE)" ./run-tests.py -t webassembly
 
 ################################################################################
 # Remaining make rules.

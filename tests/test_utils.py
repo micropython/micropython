@@ -6,6 +6,7 @@ import inspect
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 
@@ -152,6 +153,9 @@ class PyboardNodeRunner:
         else:
             mjs = os.path.abspath(mjs)
         self.micropython_mjs = mjs
+        # The node command, which may include flags, e.g. the flag that
+        # enables JSPI on a node that does not have it on by default.
+        self.node = shlex.split(os.getenv("MICROPY_NODE", "node"))
 
     def close(self):
         pass
@@ -160,7 +164,7 @@ class PyboardNodeRunner:
         cwd = os.path.dirname(test_file)
 
         # Create system command list.
-        cmdlist = ["node"]
+        cmdlist = list(self.node)
         if test_file.endswith(".py"):
             # Run a Python script indirectly via "node micropython.mjs <script.py>".
             cmdlist.append(self.micropython_mjs)
