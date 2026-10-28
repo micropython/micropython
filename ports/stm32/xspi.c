@@ -498,7 +498,7 @@ void xspi_switch_to_spi(void) {
 
     // Wait WEL=1, with small timeout.
     for (unsigned int i = 0; i < 100; ++i) {
-        xspi_read_111_ext(0x05, false, 0, 1, buf);
+        xspi_read_888_dtr_ext(0x05fa, true, 0, 4, 2, buf);
         if (buf[0] & 2) {
             break;
         }
