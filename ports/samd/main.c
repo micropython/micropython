@@ -39,7 +39,7 @@
 #include "dma_manager.h"
 #include "tc_manager.h"
 
-extern uint8_t _sstack, _estack, _sheap, _eheap;
+extern uint32_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
 extern void dac_deinit_all(void);
 extern void pin_irq_deinit_all(void);
@@ -47,7 +47,7 @@ extern void pwm_deinit_all(void);
 extern void sercom_deinit_all(void);
 
 void samd_main(void) {
-    mp_cstack_init_with_top(&_estack, &_estack - &_sstack);
+    mp_cstack_init_with_top(&_estack, (uint8_t *)&_estack - (uint8_t *)&_sstack);
     mp_hal_time_ns_set_from_rtc();
 
     for (;;) {

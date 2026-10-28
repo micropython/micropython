@@ -87,10 +87,10 @@ CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_EXTRA)
 
 # Strip the letter 'K' from MICROPY_HW_CODESIZE for use by C code.
-CFLAGS += -DMICROPY_HW_CODESIZE=$(strip $(subst K,' ', $(MICROPY_HW_CODESIZE)))
+CFLAGS += -DMICROPY_HW_CODESIZE=$(strip $(subst K,, $(MICROPY_HW_CODESIZE)))
 
-LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
-LDFLAGS += --defsym=_codesize=$(MICROPY_HW_CODESIZE) --defsym=_micropy_hw_romfs_part0_size=$(MICROPY_HW_ROMFS_BYTES)
+LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Wl,-Map=$@.map -Wl,--cref
+LDFLAGS += -Wl,--defsym=_codesize=$(MICROPY_HW_CODESIZE) -Wl,--defsym=_micropy_hw_romfs_part0_size=$(MICROPY_HW_ROMFS_BYTES)
 
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -100,12 +100,21 @@ ifeq ($(DEBUG),1)
 CFLAGS += -O0
 else
 CFLAGS += -Os -DNDEBUG
-LDFLAGS += --gc-sections --print-memory-usage
+LDFLAGS += -Wl,--gc-sections -Wl,--print-memory-usage
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 # Disable VFSROM support if the size was set to 0
 ifeq ($(MICROPY_HW_ROMFS_BYTES),0)
 	CFLAGS += -DMICROPY_VFS_ROM=0
+endif
+
+ifeq ($(LTO),1)
+CFLAGS += -flto=auto
+# LTO requires passing compiler flags to the linker as it will run the assembler.
+# To avoid risk of missing something relevant, pass all flags except for preprocessor args
+LDFLAGS += $(filter-out -I%,$(filter-out -D%,$(CFLAGS)))
+
+$(BUILD)/samd_isr.o $(BUILD)/pendsv.o: CFLAGS += -fno-lto
 endif
 
 MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
@@ -188,7 +197,7 @@ all: $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
