@@ -95,11 +95,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_coverage_setup
     - name: Build
@@ -136,11 +131,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -173,11 +163,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -192,11 +177,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -267,11 +247,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Build
       run: tools/ci.sh unix_settrace_stackless_build
     - name: Run main test suite
@@ -284,11 +259,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_32bit_setup
     - name: Build
@@ -318,11 +288,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Cached MIPS toolchain
       id: mips_toolchain
       uses: actions/cache@v6
@@ -344,11 +309,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_qemu_arm_setup
     - name: Build
@@ -363,11 +323,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_qemu_riscv64_setup
     - name: Build
@@ -382,11 +337,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_qemu_loong64_setup
     - name: Build
@@ -398,14 +348,9 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   qemu_x64:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_qemu_x64_setup
     - name: Build
@@ -420,11 +365,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_coverage_setup
     - name: Build
@@ -445,11 +385,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
-      # Python 3.12 is the default for ubuntu-24.04, but that has compatibility issues with settrace tests.
-      # Can remove this step when ubuntu-latest uses a more recent Python 3.x as the default.
-      with:
-        python-version: '3.11'
     - name: Install packages
       run: tools/ci.sh unix_coverage_setup
     - name: Build
