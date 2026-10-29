@@ -54,6 +54,8 @@ Outcomes
 The assessment can result in:
 
 * **CVE:** a vulnerability in released MicroPython code that needs its own record.
+* **Needs more evidence:** the input path, security consequence or affected configuration is not
+  established. Keep the report open for further investigation.
 * **Security-related bug without a CVE:** a hardening change or behaviour likely to cause security
   mistakes in applications, but without enough demonstrated impact to warrant a CVE. Fix it
   publicly and explain the behaviour in the changelog.
@@ -175,7 +177,25 @@ Step 3: what does it do?
 ------------------------
 
 Describe the result in terms of the code's behaviour. You don't need to demonstrate a working
-exploit to report memory corruption.
+exploit to report a suspected vulnerability.
+
+Evidence of the consequence
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Where safe and practical, reproduce the issue on an affected release and a representative build
+before requesting a CVE. Record the board or host, port, configuration, input and observed result.
+An instrumented build or sanitizer can show an invalid access even if the release build doesn't
+crash. A crash or invalid access doesn't by itself establish what an attacker can access or control.
+
+Source analysis can support a report when a runtime test isn't available or practical. Distinguish
+what the source shows from what was observed, and identify any assumptions about the input,
+configuration or consequence. A failed test doesn't prove that the issue cannot occur; record the
+conditions tested and investigate the difference. If a plausible security consequence remains
+unverified, keep the assessment open. If the evidence supports only an ordinary bug, classify it
+accordingly.
+
+Assess severity from the supported impact and access needed, not solely from whether a reproducer
+exists. A controlled test doesn't need to demonstrate code execution or a weaponised exploit.
 
 Memory corruption and unintended reads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -249,7 +269,9 @@ Step 4: putting it together
 ---------------------------
 
 Use the input from Step 2 and the effect from Step 3 to select the outcome. Apply the release and
-scope checks first.
+scope checks first. The CVE outcomes below assume the stated security consequence and its
+preconditions are supported by evidence. If they remain uncertain, gather more evidence rather
+than treating a possible consequence as established.
 
 .. list-table::
    :header-rows: 1

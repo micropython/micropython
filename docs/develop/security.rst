@@ -68,14 +68,18 @@ Please include:
   REPL) or commit hash, and whether you are running an official build or a modified one.
 * The affected port, board, and any non-default build configuration (``mpconfigport.h`` /
   ``mpconfigboard.h`` options, native modules, ``MICROPY_PREVIEW_VERSION_2``).
-* A minimal reproducible example pasted directly into the report.
+* Where practical, a minimal reproducible example pasted directly into the report, with the steps
+  to run it and the observed result.
 * For sanitizer-based reports, the full sanitizer trace, together with the compiler version and the
   build command and options used to produce it.
 * The impact: what an attacker gains, and what access they need to trigger it (eg the ability to
   run arbitrary Python at the REPL, load an untrusted ``.mpy``, or supply input to a specific API).
 * Any mitigation or workaround you are aware of.
 
-Please avoid destructive proof-of-concept payloads. Reporting is expected to follow the project
+If you cannot reproduce the issue, report the source analysis and what remains unverified. A
+working exploit is not needed. Test only devices and systems you own or are authorised to test,
+and avoid destructive proof-of-concept payloads. Share sensitive details through the private
+reporting channel when appropriate. Reporting is expected to follow the project
 `Code of Conduct <https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md>`_.
 
 Handling reports

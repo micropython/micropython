@@ -42,8 +42,10 @@ body:
       description: |
         Please provide a clear and concise description of the security issue.
 
-        * What does this issue allow an attacker to do?
-        * How does the attacker exploit this issue?
+        * What input triggers the issue, and what access does an attacker need to supply it?
+        * What can an attacker do as a result?
+        * If practical, include a minimal reproducer, the steps to run it and the observed result.
+          Otherwise, describe the source analysis and what remains unverified.
     validations:
       required: true
   - type: dropdown
