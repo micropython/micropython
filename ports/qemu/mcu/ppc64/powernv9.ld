@@ -31,3 +31,13 @@ SECTIONS
         PROVIDE(_estack = .);
     } = 0x0000000000000000
 }
+
+/* Recent powerpc64 toolchain glibc uses stdio bits macros to redefine
+ * snprintf to __snprintfieee128 (for -mlong-double-128) or
+ * __nldbl_snprintf (for -mlong-double-64). Linking fails as these
+ * symbols are in libc.a, not linked on bare metal. We actually
+ * want to link against the plain snprintf() function implemented
+ * in-tree under shared/libc/printf.c
+ */
+PROVIDE(__snprintfieee128 = snprintf);
+
